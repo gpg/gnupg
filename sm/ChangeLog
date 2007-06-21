@@ -1,3 +1,15 @@
+2007-06-21  Werner Koch  <wk@g10code.com>
+
+	* certreqgen-ui.c: New.
+	* gpgsm.c (main): Let --gen-key call it.
+	* certreqgen.c (gpgsm_genkey): Add optional IN_STREAM arg and
+	adjusted caller.
+
+	* gpgsm.h (ctrl_t): Remove.  It is now declared in ../common/util.h.
+
+	* call-agent.c (start_agent): Factored almost all code out to
+	../common/asshelp.c.
+
 2007-06-20  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (start_agent) [W32]: Start the agent on the fly.

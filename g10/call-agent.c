@@ -19,10 +19,6 @@
  * USA.
  */
 
-#if 0  /* let Emacs display a red warning */
-#error fixme: this shares a lot of code with the file in ../sm
-#endif
-
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +45,6 @@
 #endif
 
 static assuan_context_t agent_ctx = NULL;
-static int force_pipe_server; 
 
 struct cipher_parm_s 
 {
@@ -79,107 +74,18 @@ struct genkey_parm_s
 static int
 start_agent (void)
 {
-  int rc = 0;
-  char *infostr, *p;
-  assuan_context_t ctx;
-
   if (agent_ctx)
-    return 0; /* fixme: We need a context for each thread or serialize
+    return 0; /* Fixme: We need a context for each thread or serialize
                  the access to the agent. */
 
-  infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
-  if (!infostr || !*infostr)
-    {
-      const char *pgmname;
-      const char *argv[3];
-      int no_close_list[3];
-      int i;
-
-      if (opt.verbose)
-        log_info (_("no running gpg-agent - starting one\n"));
-
-      if (fflush (NULL))
-        {
-          gpg_error_t tmperr = gpg_error_from_syserror ();
-          log_error ("error flushing pending output: %s\n", strerror (errno));
-          return tmperr;
-        }
-
-      if (!opt.agent_program || !*opt.agent_program)
-        opt.agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
-      if ( !(pgmname = strrchr (opt.agent_program, '/')))
-        pgmname = opt.agent_program;
-      else
-        pgmname++;
-
-      argv[0] = pgmname;
-      argv[1] = "--server";
-      argv[2] = NULL;
-
-      i=0;
-      if (log_get_fd () != -1)
-        no_close_list[i++] = log_get_fd ();
-      no_close_list[i++] = fileno (stderr);
-      no_close_list[i] = -1;
-
-      /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (&ctx, opt.agent_program, argv,
-                                no_close_list);
-    }
-  else
-    {
-      int prot;
-      int pid;
-
-      infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, ':')) || p == infostr)
-        {
-          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_agent ();
-        }
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != ':')
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          log_error (_("gpg-agent protocol version %d is not supported\n"),
-                     prot);
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_agent ();
-        }
-
-      rc = assuan_socket_connect (&ctx, infostr, pid);
-      xfree (infostr);
-      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
-        {
-          log_info (_("can't connect to the agent - trying fall back\n"));
-          force_pipe_server = 1;
-          return start_agent ();
-        }
-    }
-
-  if (rc)
-    {
-      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
-      return gpg_error (GPG_ERR_NO_AGENT);
-    }
-  agent_ctx = ctx;
-
-  if (DBG_ASSUAN)
-    log_debug ("connection to agent established\n");
-
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL,NULL);
-  if (rc)
-    return rc;
-
-  return send_pinentry_environment (agent_ctx, GPG_ERR_SOURCE_DEFAULT,
-                                    opt.display, opt.ttyname, opt.ttytype,
-                                    opt.lc_ctype, opt.lc_messages);
+  return start_new_gpg_agent (&agent_ctx,
+                              GPG_ERR_SOURCE_DEFAULT,
+                              opt.homedir,
+                              opt.agent_program,
+                              opt.display, opt.ttyname, opt.ttytype,
+                              opt.lc_ctype, opt.lc_messages,
+                              opt.verbose, DBG_ASSUAN,
+                              NULL, NULL);
 }
 
 

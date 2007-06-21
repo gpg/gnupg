@@ -64,14 +64,6 @@ struct server_control_s
 {
   struct server_local_s *server_local;
 };
-typedef struct server_control_s *ctrl_t;
-
-
-
-
-/*-- server.c --*/
-int gpg_server (ctrl_t);
-
 
 
 

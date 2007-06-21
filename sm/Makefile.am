@@ -50,6 +50,7 @@ gpgsm_SOURCES = \
 	export.c \
 	delete.c \
 	certreqgen.c \
+	certreqgen-ui.c \
 	qualified.c
 
 

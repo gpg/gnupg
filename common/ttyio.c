@@ -50,6 +50,7 @@
 
 #include "util.h"
 #include "ttyio.h"
+#include "estream-printf.h"
 #include "common-defs.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
@@ -243,7 +244,7 @@ tty_printf( const char *fmt, ... )
 }
 
 
-/* Same as tty_printf but if FP is not NULL, behave like a regualr
+/* Same as tty_printf but if FP is not NULL, behave like a regular
    fprintf. */
 void
 tty_fprintf (FILE *fp, const char *fmt, ... )
@@ -562,6 +563,26 @@ tty_get( const char *prompt )
   else
     return do_get ( prompt, 0 );
 }
+
+/* Variable argument version of tty_get.  The prompt is is actually a
+   format string with arguments.  */
+char *
+tty_getf (const char *promptfmt, ... )
+{
+  va_list arg_ptr;
+  char *prompt;
+  char *answer;
+
+  va_start (arg_ptr, promptfmt);
+  if (estream_vasprintf (&prompt, promptfmt, arg_ptr) < 0)
+    log_fatal ("estream_vasprintf failed: %s\n", strerror (errno));
+  va_end (arg_ptr);
+  answer = tty_get (prompt);
+  xfree (prompt);
+  return answer;
+}
+
+
 
 char *
 tty_get_hidden( const char *prompt )

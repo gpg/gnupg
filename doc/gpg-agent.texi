@@ -369,20 +369,16 @@ this option at runtime does not kill an already forked scdaemon.
 
 @item --use-standard-socket
 @itemx --no-use-standard-socket
-@itemx --no-reuse-standard-socket
 @opindex use-standard-socket
 @opindex no-use-standard-socket
-@opindex no-reuse-standard-socket
 By enabling this option @command{gpg-agent} will listen on the socket
 named @file{S.gpg-agent}, located in the home directory, and not create
 a random socket below a temporary directory.  Tools connecting to
 @command{gpg-agent} should first try to connect to the socket given in
 environment variable @var{GPG_AGENT_INFO} and the fall back to this
 socket.  This option may not be used if the home directory is mounted as
-a remote file system.  If @option{--no-reuse-standard-socket} is used,
-@command{gpg-agent} will not try to reuse a socket which is already in
-use.  Note, that @option{--use-standard-socket} is the default on
-Windows systems.
+a remote file system.  Note, that @option{--use-standard-socket} is the
+default on Windows systems.
 
 
 @item --display @var{string}

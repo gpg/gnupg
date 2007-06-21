@@ -38,11 +38,10 @@
 #include "asshelp.h"
 #include "keydb.h" /* fixme: Move this to import.c */
 #include "membuf.h"
-#include "exechelp.h"
 
 
 static assuan_context_t agent_ctx = NULL;
-static int force_pipe_server = 0;
+
 
 struct cipher_parm_s
 {
@@ -72,159 +71,23 @@ struct learn_parm_s
 static int
 start_agent (ctrl_t ctrl)
 {
-  int rc = 0;
-  char *infostr, *p;
-  assuan_context_t ctx;
-
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
                  the access to the agent (which is suitable given that
                  the agent is not MT. */
 
-  infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
-  if (!infostr || !*infostr)
-    {
-      char *sockname;
 
-      /* First check whether we can connect at the standard
-         socket.  */
-      sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (&ctx, sockname, 0);
+  return start_new_gpg_agent (&agent_ctx,
+                              GPG_ERR_SOURCE_DEFAULT,
+                              opt.homedir,
+                              opt.agent_program,
+                              opt.display, opt.ttyname, opt.ttytype,
+                              opt.lc_ctype, opt.lc_messages,
+                              opt.verbose, DBG_ASSUAN,
+                              gpgsm_status2, ctrl);
 
-      if (rc)
-        {
-          /* With no success start a new server.  */
-          if (opt.verbose)
-            log_info (_("no running gpg-agent - starting one\n"));
-          
-          gpgsm_status (ctrl, STATUS_PROGRESS, "starting_agent ? 0 0");
-          
-          if (fflush (NULL))
-            {
-              gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-              log_error ("error flushing pending output: %s\n",
-                         strerror (errno));
-              xfree (sockname);
-              return tmperr;
-            }
-          
-          if (!opt.agent_program || !*opt.agent_program)
-            opt.agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
-
-#ifdef HAVE_W32_SYSTEM
-          {
-            /* Under Windows we start the server in daemon mode.  This
-               is because the default is to use the standard socket
-               and thus there is no need for the GPG_AGENT_INFO
-               envvar.  This is possible as we don't have a real unix
-               domain socket but use a plain file and thus there is no
-               need to care about non-local file systems. */
-            const char *argv[3];
-
-            /* The --no-reuse-standard option makes sure that we don't
-               start a second instance of a agent in case another
-               process has started one in the meantime.  */
-            argv[0] = "--daemon";
-            argv[1] = "--no-reuse-standard-socket"; 
-            argv[2] = NULL;  
-
-            rc = gnupg_spawn_process_detached (opt.agent_program, argv, NULL);
-            if (rc)
-              log_debug ("failed to start agent `%s': %s\n",
-                         opt.agent_program, gpg_strerror (rc));
-            else
-              {
-                /* Give the agent some time to prepare itself. */
-                gnupg_sleep (3);
-                /* Now try again to connect the agent.  */
-                rc = assuan_socket_connect (&ctx, sockname, 0);
-              }
-          }
-#else /*!HAVE_W32_SYSTEM*/
-          {
-            const char *pgmname;
-            const char *argv[3];
-            int no_close_list[3];
-            int i;
-
-            if ( !(pgmname = strrchr (opt.agent_program, '/')))
-              pgmname = opt.agent_program;
-            else
-              pgmname++;
-            
-            argv[0] = pgmname;
-            argv[1] = "--server";
-            argv[2] = NULL;
-            
-            i=0;
-            if (log_get_fd () != -1)
-              no_close_list[i++] = log_get_fd ();
-            no_close_list[i++] = fileno (stderr);
-            no_close_list[i] = -1;
-            
-            /* Connect to the agent and perform initial handshaking. */
-            rc = assuan_pipe_connect (&ctx, opt.agent_program, argv,
-                                      no_close_list);
-          }
-#endif /*!HAVE_W32_SYSTEM*/
-        }
-      xfree (sockname);
-    }
-  else
-    {
-      int prot;
-      int pid;
-
-      infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
-        {
-          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_agent (ctrl);
-        }
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != PATHSEP_C)
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          log_error (_("gpg-agent protocol version %d is not supported\n"),
-                     prot);
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_agent (ctrl);
-        }
-
-      rc = assuan_socket_connect (&ctx, infostr, pid);
-      xfree (infostr);
-      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
-        {
-          log_info (_("can't connect to the agent - trying fall back\n"));
-          force_pipe_server = 1;
-          return start_agent (ctrl);
-        }
-    }
-
-  if (rc)
-    {
-      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
-      return gpg_error (GPG_ERR_NO_AGENT);
-    }
-  agent_ctx = ctx;
-
-  if (DBG_ASSUAN)
-    log_debug ("connection to agent established\n");
-
-  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return rc;
-
-  return send_pinentry_environment (agent_ctx, GPG_ERR_SOURCE_DEFAULT,
-                                    opt.display, opt.ttyname, opt.ttytype,
-                                    opt.lc_ctype, opt.lc_messages);
 }
+
 
 
 static int

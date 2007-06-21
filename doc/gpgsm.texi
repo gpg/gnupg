@@ -164,8 +164,9 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --gen-key
 @opindex gen-key
-This command will only print an error message and direct the user to the
-@command{gpgsm-gencert.sh} script.
+This command allows the interactive creation of a certifcate signing
+request.  It is commonly used along with the @option{--output} option to
+save the created CSR into a file.
 
 @item --list-keys
 @itemx -k 

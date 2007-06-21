@@ -34,5 +34,21 @@ send_pinentry_environment (assuan_context_t ctx,
                            const char *opt_lc_ctype,
                            const char *opt_lc_messages);
 
+/* This fucntion is used by the call-agent.c modules to fire up a new
+   agent.  What a parameter list ;-).  */
+gpg_error_t
+start_new_gpg_agent (assuan_context_t *r_ctx,
+                     gpg_err_source_t errsource,
+                     const char *homedir,
+                     const char *agent_program,
+                     const char *opt_display,
+                     const char *opt_ttyname,
+                     const char *opt_ttytype,
+                     const char *opt_lc_ctype,
+                     const char *opt_lc_messages,
+                     int verbose, int debug,
+                     gpg_error_t (*status_cb)(ctrl_t, int, ...),
+                     ctrl_t status_cb_arg);
+
 
 #endif /*GNUPG_COMMON_ASSHELP_H*/

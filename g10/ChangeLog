@@ -1,3 +1,12 @@
+2007-06-21  Werner Koch  <wk@g10code.com>
+
+	* main.h: Include util.h.
+
+	* call-agent.c (start_agent): Factored almost all code out to
+	../common/asshelp.c.
+
+	* gpg.h (ctrl_t): Remove.  It is now declared in ../common/util.h.
+
 2007-06-20  Werner Koch  <wk@g10code.com>
 
 	* misc.c (setsysinfo, trap_unaligned): Remove.  It is also in

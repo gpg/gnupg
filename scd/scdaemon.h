@@ -116,7 +116,6 @@ struct server_control_s
   } in_data;  
 };
 
-typedef struct server_control_s *ctrl_t;
 typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/

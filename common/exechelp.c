@@ -593,7 +593,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
                       &sec_attr,     /* Thread security attributes.  */
-                      FALSE,          /* Inherit handles.  */
+                      FALSE,         /* Inherit handles.  */
                       cr_flags,      /* Creation flags.  */
                       NULL,          /* Environment.  */
                       NULL,          /* Use current drive/directory.  */

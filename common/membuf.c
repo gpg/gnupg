@@ -52,7 +52,7 @@ init_membuf_secure (membuf_t *mb, int initiallen)
   mb->len = 0;
   mb->size = initiallen;
   mb->out_of_core = 0;
-  mb->buf = xtrymalloc (initiallen);
+  mb->buf = xtrymalloc_secure (initiallen);
   if (!mb->buf)
     mb->out_of_core = errno;
 }
@@ -84,6 +84,13 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
     }
   memcpy (mb->buf + mb->len, buf, len);
   mb->len += len;
+}
+
+
+void
+put_membuf_str (membuf_t *mb, const char *string)
+{
+  put_membuf (mb, string, strlen (string));
 }
 
 

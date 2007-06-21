@@ -34,10 +34,13 @@ struct private_membuf_s
 
 typedef struct private_membuf_s membuf_t;
 
+/* Return the current length of the membuf.  */
+#define get_membuf_len(a) ((a)->len)
 
 void init_membuf (membuf_t *mb, int initiallen);
 void init_membuf_secure (membuf_t *mb, int initiallen);
 void put_membuf  (membuf_t *mb, const void *buf, size_t len);
+void put_membuf_str (membuf_t *mb, const char *string);
 void *get_membuf (membuf_t *mb, size_t *len);
 
 

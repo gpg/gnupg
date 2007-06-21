@@ -831,17 +831,20 @@ create_request (ctrl_t ctrl,
 
 
 
-/* Create a new key by reading the parameters from in_fd.  Multiple
-   keys may be created */
+/* Create a new key by reading the parameters from in_fd or in_stream.
+   Multiple keys may be created */
 int
-gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp)
+gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp)
 {
   int rc;
   FILE *in_fp;
   Base64Context b64writer = NULL;
   ksba_writer_t writer;
 
-  in_fp = fdopen (dup (in_fd), "rb");
+  if (in_stream)
+    in_fp = in_stream;
+  else
+    in_fp = fdopen (dup (in_fd), "rb");
   if (!in_fp)
     {
       gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
@@ -877,7 +880,8 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp)
 
  leave:
   gpgsm_destroy_writer (b64writer);
-  fclose (in_fp);
+  if (!in_stream)
+    fclose (in_fp);
   return rc;
 }
 

@@ -1,6 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
- *	Copyright (C) 2000, 2001, 2002, 2003, 2004,
- *                    2005 Free Software Foundation, Inc.
+ * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
+ *               2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -93,7 +93,6 @@ enum cmd_and_opt_values
   oMinPassphraseLen,
   oUseStandardSocket,
   oNoUseStandardSocket,
-  oNoReuseStandardSocket,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
@@ -131,8 +130,6 @@ static ARGPARSE_OPTS opts[] = {
   { oUseStandardSocket, "use-standard-socket", 0,
                       N_("use a standard location for the socket")},
   { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"},
-  { oNoReuseStandardSocket, "no-reuse-standard-socket", 0, "@"},
-
   { oPinentryProgram, "pinentry-program", 2 ,
                                N_("|PGM|use PGM as the PIN-Entry program") },
   { oPinentryTouchFile, "pinentry-touch-file", 2 , "@" },
@@ -188,10 +185,6 @@ static char *socket_name;
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
 
-/* If set to true and a standard socket is requested, we won't try to
-   bind to a socket which is already in use.  */
-static int no_reuse_standard_socket;
-
 /* Default values for options passed to the pinentry. */
 static char *default_display;
 static char *default_ttyname;
@@ -228,7 +221,7 @@ static void agent_init_default_ctrl (ctrl_t ctrl);
 static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
 static void handle_connections (int listen_fd, int listen_fd_ssh);
-static int check_for_running_agent (int);
+static int check_for_running_agent (int silent, int mode);
 
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
@@ -627,7 +620,6 @@ main (int argc, char **argv )
 
         case oUseStandardSocket: standard_socket = 1; break;
         case oNoUseStandardSocket: standard_socket = 0; break;
-        case oNoReuseStandardSocket: no_reuse_standard_socket = 1; break;
 
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
@@ -765,7 +757,7 @@ main (int argc, char **argv )
   if (!pipe_server && !is_daemon)
     {
       log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
-      check_for_running_agent (0);
+      check_for_running_agent (0, 0);
       agent_exit (0);
     }
   
@@ -1264,17 +1256,32 @@ create_server_socket (int is_standard_name, char *name)
 
 #ifdef HAVE_W32_SYSTEM
   rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == WSAEADDRINUSE
-      && !no_reuse_standard_socket)
+  if (is_standard_name && rc == -1 && errno == WSAEADDRINUSE)
     {
+      if (!check_for_running_agent (1, 1))
+        {
+          log_error (_("a gpg-agent is already running - "
+                      "not starting a new one\n"));
+          *name = 0; /* Inhibit removal of the socket by cleanup(). */
+          close (fd);
+          agent_exit (2);
+        }
+
       remove (name);
       rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
 #else
   rc = bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == EADDRINUSE  
-      && !no_reuse_standard_socket)
+  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
     {
+      if (!check_for_running_agent (1, 1))
+        {
+          log_error (_("a gpg-agent is already running - "
+                      "not starting a new one\n"));
+          *name = 0; /* Inhibit removal of the socket by cleanup(). */
+          close (fd);
+          agent_exit (2);
+        }
       remove (name);
       rc = bind (fd, (struct sockaddr*) serv_addr, len);
     }
@@ -1288,7 +1295,7 @@ create_server_socket (int is_standard_name, char *name)
                  gpg_strerror (gpg_error_from_errno (errno)));
       
       close (fd);
-      if (is_standard_name && no_reuse_standard_socket)
+      if (is_standard_name)
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
@@ -1725,9 +1732,10 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
 
 /* Figure out whether an agent is available and running. Prints an
-   error if not.  Usually started with MODE 0. */
+   error if not.  If SILENT is true, no mesdsages are printed.  Usually
+   started with MODE 0.  Returns 0 if the agent is running. */
 static int
-check_for_running_agent (int mode)
+check_for_running_agent (int silent, int mode)
 {
   int rc;
   char *infostr, *p;
@@ -1739,9 +1747,10 @@ check_for_running_agent (int mode)
       infostr = getenv ("GPG_AGENT_INFO");
       if (!infostr || !*infostr)
         {
-          if (!check_for_running_agent (1))
+          if (!check_for_running_agent (silent, 1))
             return 0; /* Okay, its running on the standard socket. */
-          log_error (_("no gpg-agent running in this session\n"));
+          if (!silent)
+            log_error (_("no gpg-agent running in this session\n"));
           return -1;
         }
 
@@ -1749,9 +1758,10 @@ check_for_running_agent (int mode)
       if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
         {
           xfree (infostr);
-          if (!check_for_running_agent (1))
+          if (!check_for_running_agent (silent, 1))
             return 0; /* Okay, its running on the standard socket. */
-          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+          if (!silent)
+            log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
           return -1;
         }
 
@@ -1763,9 +1773,10 @@ check_for_running_agent (int mode)
       if (prot != 1)
         {
           xfree (infostr);
-          log_error (_("gpg-agent protocol version %d is not supported\n"),
-                     prot);
-          if (!check_for_running_agent (1))
+          if (!silent)
+            log_error (_("gpg-agent protocol version %d is not supported\n"),
+                       prot);
+          if (!check_for_running_agent (silent, 1))
             return 0; /* Okay, its running on the standard socket. */
           return -1;
         }
@@ -1781,15 +1792,15 @@ check_for_running_agent (int mode)
   xfree (infostr);
   if (rc)
     {
-      if (!mode && !check_for_running_agent (1))
+      if (!mode && !check_for_running_agent (silent, 1))
         return 0; /* Okay, its running on the standard socket. */
 
-      if (!mode)
+      if (!mode && !silent)
         log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
       return -1;
     }
 
-  if (!opt.quiet)
+  if (!opt.quiet && !silent)
     log_info ("gpg-agent running and available\n");
 
   assuan_disconnect (ctx);

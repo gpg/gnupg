@@ -865,7 +865,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
-  rc = gpgsm_genkey (ctrl, inp_fd, out_fp);
+  rc = gpgsm_genkey (ctrl, inp_fd, NULL, out_fp);
   fclose (out_fp);
 
   /* close and reset the fds */

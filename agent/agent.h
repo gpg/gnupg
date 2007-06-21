@@ -150,8 +150,6 @@ struct server_control_s
                         PKSIGN command to the scdaemon.  */
 };
 
-typedef struct server_control_s *ctrl_t;
-
 
 struct pin_entry_info_s 
 {

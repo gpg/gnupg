@@ -23,9 +23,11 @@
 #define G10_MAIN_H
 
 #include "types.h"
-#include "../common/iobuf.h"
+#include "iobuf.h"
 #include "cipher.h"
 #include "keydb.h"
+#include "util.h"
+
 
 /* It could be argued that the default cipher should be 3DES rather
    than CAST5, and the default compression should be 0
@@ -299,6 +301,9 @@ void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 
+
+/*-- server.c --*/
+int gpg_server (ctrl_t);
 
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/

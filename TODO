@@ -95,7 +95,7 @@
 
 * When requiring libksba 1.0.1
 ** Remove the extra GPG_ERR_NO_VALUE tests 
-   They have need added on 2006-10-18 to fix a libksba problem.
+   They have been added on 2006-10-18 to fix a libksba problem.
 
 * When switching to libgcrypt 1.3
 ** scd#encode_md_for_card, g10#encode_md_value, sm@do_encode_md

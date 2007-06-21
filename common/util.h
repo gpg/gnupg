@@ -46,7 +46,6 @@
 #define asprintf estream_asprintf
 #define vasprintf estream_vasprintf
 
-
 /* GCC attributes.  */
 #if __GNUC__ >= 4 
 # define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
@@ -245,6 +244,11 @@ ttyname (int fd)
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 #define xtoi_4(p)   ((xtoi_2(p) * 256) + xtoi_2((p)+2))
 
+
+/*-- Forward declaration of the commonly used server control structure.  */
+/*   (We need it here as it is used by some callback prototypes.) */
+struct server_control_s;
+typedef struct server_control_s *ctrl_t;
 
 
 #endif /*GNUPG_COMMON_UTIL_H*/

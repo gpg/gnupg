@@ -31,9 +31,12 @@ void tty_printf (const char *fmt, ... )
                  __attribute__ ((format (printf,1,2)));
 void tty_fprintf (FILE *fp, const char *fmt, ... )
                  __attribute__ ((format (printf,2,3)));
+char *tty_getf (const char *promptfmt, ... )
+                 __attribute__ ((format (printf,1,2)));
 #else
 void tty_printf (const char *fmt, ... );
 void tty_fprintf (FILE *fp, const char *fmt, ... );
+char *tty_getf (const char *promptfmt, ... );
 #endif
 void tty_print_string (const unsigned char *p, size_t n);
 void tty_print_utf8_string (const unsigned char *p, size_t n);

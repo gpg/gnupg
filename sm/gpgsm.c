@@ -1590,11 +1590,14 @@ main ( int argc, char **argv)
 
 
     case aKeygen: /* Generate a key; well kind of. */
-      log_error 
-        (_("key generation is not available from the commandline\n"));
-      log_info (_("please use the script \"%s\" to generate a new key\n"),
-                "gpgsm-gencert.sh");
+      {
+        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        gpgsm_gencertreq_tty (&ctrl, fp);
+        if (fp != stdout)
+          fclose (fp);
+      }
       break;
+
 
     case aImport:
       gpgsm_import_files (&ctrl, argc, argv, open_read);

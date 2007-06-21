@@ -1,3 +1,12 @@
+2007-06-21  Werner Koch  <wk@g10code.com>
+
+	* agent.h (ctrl_t): Remove.  It is now declared in ../common/util.h. 
+
+	* gpg-agent.c (check_for_running_agent): New arg SILENT.  Changed
+	all callers.
+	(create_server_socket): If the standard socket is in use check
+	whether a agent is running and avoid starting another one.
+
 2007-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg-agent.c (main): Percent escape pathname in --gpgconf-list

@@ -16,6 +16,11 @@ certificates.
      The @emph{Certificate Revocation List} is a list containing
 certificates revoked by the issuer.
 
+@item CSR
+     The @emph{Certificate Signing Request} is a message send to a CA to
+ask them to issue a new certificate.  The data format of such a signing
+request is called PCKS#10.
+
 @item Keygrip
       This term is used by GnuPG to describe a 20 byte hash value used
 to identify a certain key without referencing to a concrete protocol.

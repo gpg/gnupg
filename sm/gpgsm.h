@@ -167,7 +167,6 @@ struct server_control_s
                          signer) */
   int use_ocsp;       /* Set to true if OCSP should be used. */
 };
-typedef struct server_control_s *ctrl_t;
 
 
 /* Data structure used in base64.c. */
@@ -317,7 +316,11 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int in_fd, FILE *out_fp);
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- certreqgen.c --*/
-int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
+int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp);
+
+/*-- certreqgen-ui.c --*/
+void gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *out_fp);
+
 
 /*-- qualified.c --*/
 gpg_error_t gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert,
