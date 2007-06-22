@@ -127,11 +127,11 @@ for i in FAQ; do
   cp ${bindir}/doc/$i $i.txt
   todos $i.txt
 done
-man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
+man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/_\b//g;s/\b.//g"`  >gpg.man
 todos gpg.man
-man -Tlatin1 -l ${srcdir}/doc/gpgv.1 | sed `printf "s/\b.//g"`  >gpgv.man
+man -Tlatin1 -l ${srcdir}/doc/gpgv.1 | sed `printf "s/_\b//g;s/\b.//g"`  >gpgv.man
 todos gpgv.man
-man -Tlatin1 -l ${srcdir}/doc/gnupg.7 | sed `printf "s/\b.//g"`  >gnupg.man
+man -Tlatin1 -l ${srcdir}/doc/gnupg.7 | sed `printf "s/_\b//g;s/\b.//g"`  >gnupg.man
 todos gnupg.man
 for i in README COPYING NEWS; do
   cp ${srcdir}/$i $i.txt
