@@ -60,19 +60,20 @@
 #endif
 #ifdef TEST
 # include <locale.h>
-#endif
-#ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
-#include _ESTREAM_PRINTF_EXTRA_INCLUDE
+#else
+# ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
+#  include _ESTREAM_PRINTF_EXTRA_INCLUDE
+# endif
 #endif
 #include "estream-printf.h"
 
 /* Allow redefinition of asprintf used malloc functions.  */
-#ifdef _ESTREAM_PRINTF_MALLOC
+#if defined(_ESTREAM_PRINTF_MALLOC) && !defined(TEST)
 #define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))  
 #else
 #define my_printf_malloc(a) malloc((a))
 #endif
-#ifdef _ESTREAM_PRINTF_FREE
+#if defined(_ESTREAM_PRINTF_FREE) && !defined(TEST)
 #define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))  
 #else
 #define my_printf_free(a)   free((a))
@@ -1329,7 +1330,7 @@ pr_bytes_so_far (estream_printf_out_t outfnc, void *outfncarg,
 /* Run the actual formatting.  OUTFNC and OUTFNCARG are the output
    functions.  FORMAT is format string ARGSPECS is the parsed format
    string, ARGSPECS_LEN the number of items in ARGSPECS.  VALUETABLE
-   holds the values and may be directly addressed using the poistion
+   holds the values and may be directly addressed using the position
    arguments given by ARGSPECS.  MYERRNO is used for the "%m"
    conversion. NBYTES well be updated to reflect the number of bytes
    send to the output function. */ 
@@ -1449,8 +1450,8 @@ do_format (estream_printf_out_t outfnc, void *outfncarg,
     }
   
   /* Print out any trailing stuff. */
-  s++;  /* Need to output a terminating nul; take it from format.  */
-  rc = outfnc (outfncarg, format, (n=s - format));
+  n = s - format;
+  rc = n? outfnc (outfncarg, format, n) : 0;
   if (!rc)
     *nbytes += n;
 
@@ -1619,10 +1620,8 @@ plain_stdio_out (void *outfncarg, const char *buf, size_t buflen)
 {
   FILE *fp = (FILE*)outfncarg;
 
-  fputs ("OUT->", fp);
   if ( fwrite (buf, buflen, 1, fp) != 1 )
     return -1;
-  fputs ("<-\n", fp);
   return 0;
 }
 
@@ -1715,6 +1714,8 @@ estream_vsnprintf (char *buf, size_t bufsize,
   parm.used = 0;
   parm.buffer = bufsize?buf:NULL;
   rc = estream_format (fixed_buffer_out, &parm, format, arg_ptr);
+  if (!rc)
+    rc = fixed_buffer_out (&parm, "", 1); /* Print terminating Nul.  */
   if (rc == -1)
     return -1;
   if (bufsize && buf && parm.count >= parm.size)
@@ -1807,7 +1808,9 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
     }
   
   rc = estream_format (dynamic_buffer_out, &parm, format, arg_ptr);
-
+  if (!rc)
+    rc = dynamic_buffer_out (&parm, "", 1); /* Print terminating Nul.  */
+  /* Fixme: Should we shrink the resulting buffer?  */
   if (rc != -1 && parm.error_flag)
     {
       rc = -1;
@@ -1820,9 +1823,9 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
       *bufp = NULL;
       return -1;
     }
-  
+  assert (parm.used);   /* We have at least the terminating Nul.  */
   *bufp = parm.buffer;
-  return parm.used - 1; /* Do not include the nul. */
+  return parm.used - 1; /* Do not include that Nul. */
 }
 
 /* A replacement for asprintf.  As with the BSD of asprintf version -1
@@ -1891,8 +1894,7 @@ one_test (const char *format, ...)
 static void
 run_tests (void)
 {
-#if 0
-  one_test ("%d %% %'d", 17, 19681977);
+  /*one_test ("%d %% %'d", 17, 19681977);*/
 
   one_test ("%d %% %d", 17, 768114563);
   one_test ("%d %% %d", 17, -768114563);
@@ -2011,7 +2013,8 @@ run_tests (void)
   one_test ("%50s", "the quick brown fox jumps over the lazy dogs back");
   one_test ("%51s", "the quick brown fox jumps over the lazy dogs back");
   one_test ("%-51s", "the quick brown fox jumps over the lazy dogs back");
-#endif
+
+  one_test ("/%s=", "CN");
 
   one_test ("%f", 3.1415926535);
   one_test ("%f", -3.1415926535);

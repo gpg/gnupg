@@ -309,6 +309,14 @@ command "tsign").
 @opindex check-sigs
 Same as @option{--list-sigs}, but the signatures are verified.
 
+The status of the verification is indicated by a flag directly following
+the "sig" tag (and thus before the flags described above for
+@option{--list-sigs}).  A "!" indicates that the signature has been
+successfully verified, a "-" denotes a bad signature and a "%" is used
+if an error occured while checking the signature (e.g. a non supported
+algorithm).
+
+
 @item --fingerprint
 @opindex fingerprint
 List all keys (or the specified ones) along with their

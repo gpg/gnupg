@@ -136,8 +136,6 @@ const char *iobuf_get_fname (iobuf_t a);
 
 void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
 
-int iobuf_translate_file_handle (int fd, int for_write);
-
 void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
 
 

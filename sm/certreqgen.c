@@ -573,8 +573,8 @@ proc_parameters (ctrl_t ctrl,
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);
-          log_error (_("line %d: key generation failed: %s\n"),
-                     r->lnr, gpg_strerror (rc));
+          log_error (_("line %d: key generation failed: %s <%s>\n"),
+                     r->lnr, gpg_strerror (rc), gpg_strsource (rc));
           xfree (cardkeyid);
           return rc;
         }
@@ -863,8 +863,8 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp)
   rc = read_parameters (ctrl, in_fp, writer);
   if (rc)
     {
-      log_error ("error creating certificate request: %s\n",
-                 gpg_strerror (rc));
+      log_error ("error creating certificate request: %s <%s>\n",
+                 gpg_strerror (rc), gpg_strsource (rc));
       goto leave;
     }
 

@@ -45,6 +45,9 @@
 #define es_mopen              _ESTREAM_PREFIX(es_mopen)
 #define es_open_memstream     _ESTREAM_PREFIX(es_open_memstream)
 #define es_fdopen             _ESTREAM_PREFIX(es_fdopen)
+#define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
+#define es_fpopen             _ESTREAM_PREFIX(es_fpopen)
+#define es_fpopen_nc          _ESTREAM_PREFIX(es_fpopen_nc)
 #define es_freopen            _ESTREAM_PREFIX(es_freopen)
 #define es_fopencookie        _ESTREAM_PREFIX(es_fopencookie)
 #define es_fclose             _ESTREAM_PREFIX(es_fclose)
@@ -136,8 +139,10 @@ struct es__stream
   size_t unread_data_len;
 
   /* Various flags.  */
-#define ES__FLAG_WRITING	(1 << 0)
-  unsigned int flags;
+  struct {
+    unsigned int writing: 1;
+    unsigned int reserved: 7;
+  } flags;
 
   /* A pointer to our internal data for this stream.  */
   struct estream_internal *intern;
@@ -197,6 +202,9 @@ estream_t es_mopen (unsigned char *ES__RESTRICT data,
 		    const char *ES__RESTRICT mode);
 estream_t es_open_memstream (char **ptr, size_t *size);
 estream_t es_fdopen (int filedes, const char *mode);
+estream_t es_fdopen_nc (int filedes, const char *mode);
+estream_t es_fpopen (FILE *fp, const char *mode);
+estream_t es_fpopen_nc (FILE *fp, const char *mode);
 estream_t es_freopen (const char *ES__RESTRICT path,
 		      const char *ES__RESTRICT mode,
 		      estream_t ES__RESTRICT stream);
@@ -232,14 +240,14 @@ int _es_getc_underflow (estream_t stream);
 int _es_putc_overflow (int c, estream_t stream);
 
 #define es_getc_unlocked(stream)				\
-  (((! ((stream)->flags & 1))					\
+  (((!(stream)->flags.writing)					\
     && ((stream)->data_offset < (stream)->data_len)		\
     && (! (stream)->unread_data_len))				\
   ? ((int) (stream)->buffer[((stream)->data_offset)++])		\
   : _es_getc_underflow ((stream)))
 
 #define es_putc_unlocked(c, stream)				\
-  ((((stream)->flags & 1)					\
+  (((stream)->flags.writing					\
     && ((stream)->data_offset < (stream)->buffer_size)		\
     && (c != '\n'))						\
   ? ((int) ((stream)->buffer[((stream)->data_offset)++] = (c)))	\

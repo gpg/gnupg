@@ -40,6 +40,7 @@
 #endif /* __riscos__ */
 
 #include "util.h"
+#include "sysutils.h"
 #include "iobuf.h"
 
 /* The size of the internal buffers. 
@@ -2350,37 +2351,12 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
   return nbytes;
 }
 
-/* This is the non iobuf specific function */
-int
-iobuf_translate_file_handle (int fd, int for_write)
-{
-#ifdef _WIN32
-  {
-    int x;
-
-    if (fd <= 2)
-      return fd;		/* do not do this for error, stdin, stdout, stderr */
-
-    x = _open_osfhandle (fd, for_write ? 1 : 0);
-    if (x == -1)
-      log_error ("failed to translate osfhandle %p\n", (void *) fd);
-    else
-      {
-	/*log_info ("_open_osfhandle %p yields %d%s\n",
-	   (void*)fd, x, for_write? " for writing":"" ); */
-	fd = x;
-      }
-  }
-#endif
-  return fd;
-}
-
 static int
 translate_file_handle (int fd, int for_write)
 {
 #ifdef _WIN32
 #ifdef FILE_FILTER_USES_STDIO
-  fd = iobuf_translate_file_handle (fd, for_write);
+  fd = translate_sys2libc_fd (fd, for_write);
 #else
   {
     int x;

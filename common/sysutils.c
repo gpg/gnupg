@@ -272,3 +272,32 @@ gnupg_sleep (unsigned int seconds)
 # endif
 #endif
 }
+
+
+/* This function is a NOP for POSIX systems but required under Windows
+   as the file handles as returned by OS calls (like CreateFile) are
+   different from the libc file descriptors (like open). This function
+   translates system file handles to libc file handles.  FOR_WRITE
+   gives the direction of the handle.  */
+int
+translate_sys2libc_fd (int fd, int for_write)
+{
+#ifdef HAVE_W32_SYSTEM
+  int x;
+  
+  if (fd <= 2)
+    return fd;	/* Do not do this for error, stdin, stdout, stderr.
+                   (This also ignores an fd of -1.) */
+
+  x = _open_osfhandle (fd, for_write ? 1 : 0);
+  if (x == -1)
+    log_error ("failed to translate osfhandle %p\n", (void *) fd);
+  else
+    {
+/*       log_info ("_open_osfhandle %p yields %d%s\n", */
+/*                 (void*)fd, x, for_write? " for writing":"" ); */
+      fd = x;
+    }
+#endif /* HAVE_W32_SYSTEM */
+  return fd;
+}

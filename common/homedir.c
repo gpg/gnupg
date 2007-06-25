@@ -126,38 +126,10 @@ default_homedir (void)
 }
 
 
-/* Return the name of the sysconfdir.  This is a static string.  This
-   function is required because under Windows we can't simply compile
-   it in.  */
-const char *
-gnupg_sysconfdir (void)
-{
 #ifdef HAVE_W32_SYSTEM
-#warning get the sysconfdir from somewhere else
-  return GNUPG_SYSCONFDIR;
-#else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_SYSCONFDIR;
-#endif /*!HAVE_W32_SYSTEM*/
-}
-
-
-const char *
-gnupg_bindir (void)
+static const char *
+w32_rootdir (void)
 {
-#ifdef HAVE_W32_SYSTEM
-  return gnupg_libexecdir ();
-#else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_BINDIR;
-#endif /*!HAVE_W32_SYSTEM*/
-}
-
-
-/* Return the name of the libexec directory.  The name is allocated in
-   a static area on the first use.  This function won't fail. */
-const char *
-gnupg_libexecdir (void)
-{
-#ifdef HAVE_W32_SYSTEM
   static int got_dir;
   static char dir[MAX_PATH+5];
 
@@ -184,17 +156,75 @@ gnupg_libexecdir (void)
   if (*dir)
     return dir;
   /* Fallback to the hardwired value. */
+  return GNUPG_LIBEXECDIR;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
+
+
+
+/* Return the name of the sysconfdir.  This is a static string.  This
+   function is required because under Windows we can't simply compile
+   it in.  */
+const char *
+gnupg_sysconfdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static char *name;
+
+  if (!name)
+    {
+      const char *s1, *s2;
+      s1 = w32_rootdir ();
+      s2 = DIRSEP_S "etc" DIRSEP_S "gnupg";
+      name = xmalloc (strlen (s1) + strlen (s2) + 1);
+      strcpy (stpcpy (name, s1), s2);
+    }
+  return name;
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_SYSCONFDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+const char *
+gnupg_bindir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  return w32_rootdir ();
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_BINDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+/* Return the name of the libexec directory.  The name is allocated in
+   a static area on the first use.  This function won't fail. */
+const char *
+gnupg_libexecdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  return w32_rootdir ();
+#else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBEXECDIR;
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 const char *
 gnupg_libdir (void)
 {
 #ifdef HAVE_W32_SYSTEM
-#warning get the libdir from somewhere else
-  return GNUPG_LIBDIR;
+  static char *name;
+
+  if (!name)
+    {
+      const char *s1, *s2;
+      s1 = w32_rootdir ();
+      s2 = DIRSEP_S "lib" DIRSEP_S "gnupg";
+      name = xmalloc (strlen (s1) + strlen (s2) + 1);
+      strcpy (stpcpy (name, s1), s2);
+    }
+  return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBDIR;
 #endif /*!HAVE_W32_SYSTEM*/
@@ -204,8 +234,17 @@ const char *
 gnupg_datadir (void)
 {
 #ifdef HAVE_W32_SYSTEM
-#warning get the datadir from somewhere else
-  return GNUPG_DATADIR;
+  static char *name;
+
+  if (!name)
+    {
+      const char *s1, *s2;
+      s1 = w32_rootdir ();
+      s2 = DIRSEP_S "share" DIRSEP_S "gnupg";
+      name = xmalloc (strlen (s1) + strlen (s2) + 1);
+      strcpy (stpcpy (name, s1), s2);
+    }
+  return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_DATADIR;
 #endif /*!HAVE_W32_SYSTEM*/

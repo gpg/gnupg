@@ -28,6 +28,7 @@ int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
 int check_permissions (const char *path,int extension,int checkonly);
 void gnupg_sleep (unsigned int seconds);
+int translate_sys2libc_fd (int fd, int for_write);
 
 #ifdef HAVE_W32_SYSTEM
 

@@ -93,7 +93,7 @@ if test "$1" = "--build-w32"; then
 	     --with-zlib=${w32root} \
              --with-pth-prefix=${w32root} \
              --without-included-gettext \
-             --disable-regex
+             --disable-regex "$@"
     rc=$?
     exit $rc
 fi

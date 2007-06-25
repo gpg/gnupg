@@ -1,3 +1,13 @@
+2007-06-25  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (check_special_filename): Use translate_sys2libc_fd and
+	add new arg FOR_WRITE.  Change callers to pass new arg.
+
+2007-06-24  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (open_es_fwrite): Avoid the dup by using the new
+	es_fdopen_nc().  
+
 2007-06-21  Werner Koch  <wk@g10code.com>
 
 	* certreqgen-ui.c: New.

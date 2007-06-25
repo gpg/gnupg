@@ -1,3 +1,45 @@
+2007-06-25  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (translate_sys2libc_fd): New using the code from iobuf.c.
+	* iobuf.c: Include sysutils.h.
+	(iobuf_translate_file_handle): Remove.
+	(translate_file_handle): Use new function.
+
+	* estream-printf.c [TEST]: Header including fixes. 
+	(do_format): Do not append a trailing Nul.  This avoids spurious
+	Nuls in the es_printf output.
+	(estream_vsnprintf, estream_vasprintf): Take this in account.
+
+	* estream.h (struct es__stream): Change FLAGS to a bit structure.
+	(ES__FLAG_WRITING): Replace by a bit from FLAGS.  * estream.c
+	(struct estream_internal): Rename FLAGS to MODEFLAGS so that they
+	are not confused with the estream flags.
+	(es_initialize, es_create): Add arg MODEFLAGS so that we can setup
+	the intial writemode.  Changed all callers to pass them.
+	(es_convert_mode): Set O_BINARY.
+	(es_func_fd_create, es_func_fp_create, es_func_file_create) [W32]:
+	Call setmode if requested.
+	
+2007-06-24  Werner Koch  <wk@g10code.com>
+
+	* estream.c (do_fpopen, es_fpopen, es_fpopen_nc): New.
+	(es_func_fp_create, es_func_fp_read, es_func_fp_write) 
+	(es_func_fp_seek, es_func_fp_destroy): New.
+
+2007-06-22  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_fdopen): Factored code out to..
+	(do_fdopen): .. new.
+	(es_fdopen_nc): New.
+	(estream_cookie_fd): Add field NO_CLOSE. 
+	(es_func_fd_create): Add arg NO_CLOSE and changed all callers.
+	(es_func_fd_destroy): Handle the new flag.
+
+	* homedir.c (gnupg_libexecdir) [W32]: Factor code out to ..
+	(w32_rootdir): .. new.
+	(gnupg_sysconfdir, gnupg_libdir, gnupg_datadir) [W32]: Return
+	name based on w32_rootdir().
+
 2007-06-21  Werner Koch  <wk@g10code.com>
 
 	* membuf.h (get_membuf_len): New.

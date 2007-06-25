@@ -155,7 +155,7 @@ main( int argc, char **argv )
           case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: 
-            log_set_fd (iobuf_translate_file_handle (pargs.r.ret_int, 1));
+            log_set_fd (translate_sys2libc_fd (pargs.r.ret_int, 1));
             break;
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;

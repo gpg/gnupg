@@ -481,7 +481,7 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
 static void emergency_cleanup (void);
-static int check_special_filename (const char *fname);
+static int check_special_filename (const char *fname, int for_write);
 static int open_read (const char *filename);
 static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
@@ -1732,7 +1732,7 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
 /* Check whether the filename has the form "-&nnnn", where n is a
    non-zero number.  Returns this number or -1 if it is not the case.  */
 static int
-check_special_filename (const char *fname)
+check_special_filename (const char *fname, int for_write)
 {
   if (allow_special_filenames
       && fname && *fname == '-' && fname[1] == '&' ) {
@@ -1742,7 +1742,7 @@ check_special_filename (const char *fname)
     for (i=0; isdigit (fname[i]); i++ )
       ;
     if ( !fname[i] ) 
-      return atoi (fname);
+      return translate_sys2libc_fd (atoi (fname), for_write);
   }
   return -1;
 }
@@ -1762,7 +1762,7 @@ open_read (const char *filename)
       set_binary (stdin);
       return 0; /* stdin */
     }
-  fd = check_special_filename (filename);
+  fd = check_special_filename (filename, 0);
   if (fd != -1)
     return fd;
   fd = open (filename, O_RDONLY | O_BINARY);
@@ -1790,7 +1790,7 @@ open_fwrite (const char *filename)
       return stdout;
     }
 
-  fd = check_special_filename (filename);
+  fd = check_special_filename (filename, 1);
   if (fd != -1)
     {
       fp = fdopen (dup (fd), "wb");
@@ -1825,14 +1825,14 @@ open_es_fwrite (const char *filename)
   if (filename[0] == '-' && !filename[1])
     {
       fflush (stdout);
-      fp = es_fdopen (dup (fileno(stdout)), "wb");
+      fp = es_fdopen_nc (fileno(stdout), "wb");
       return fp;
     }
 
-  fd = check_special_filename (filename);
+  fd = check_special_filename (filename, 1);
   if (fd != -1)
     {
-      fp = es_fdopen (dup (fd), "wb");
+      fp = es_fdopen_nc (fd, "wb");
       if (!fp)
         {
           log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));

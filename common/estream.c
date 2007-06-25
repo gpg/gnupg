@@ -67,6 +67,10 @@ void *memrchr (const void *block, int c, size_t size);
 
 
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 /* Generally used types.  */
 
 typedef void *(*func_realloc_t) (void *mem, size_t size);
@@ -139,8 +143,6 @@ typedef void *estream_mutex_t;
 
 #define ES_DEFAULT_OPEN_MODE (S_IRUSR | S_IWUSR)
 
-#define ES_FLAG_WRITING ES__FLAG_WRITING
-
 /* An internal stream object.  */
 
 struct estream_internal
@@ -148,9 +150,9 @@ struct estream_internal
   unsigned char buffer[BUFFER_BLOCK_SIZE];
   unsigned char unread_buffer[BUFFER_UNREAD_SIZE];
   estream_mutex_t lock;		 /* Lock. */
-  void *cookie;			 /* Cookie.               */
-  void *opaque;			 /* Opaque data.          */
-  unsigned int flags;		 /* Flags.                */
+  void *cookie;			 /* Cookie.                */
+  void *opaque;			 /* Opaque data.           */
+  unsigned int modeflags;	 /* Flags for the backend. */
   off_t offset;
   es_cookie_read_function_t func_read;
   es_cookie_write_function_t func_write;
@@ -325,7 +327,7 @@ es_init_do (void)
 /* Cookie for memory objects.  */
 typedef struct estream_cookie_mem
 {
-  unsigned int flags;		/* Open flags.  */
+  unsigned int modeflags;	/* Open flags.  */
   unsigned char *memory;	/* Data.  */
   size_t memory_size;		/* Size of MEMORY.  */
   size_t offset;		/* Current offset in MEMORY.  */
@@ -349,7 +351,7 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 		    unsigned int append_zero, unsigned int dont_free,
 		    char **ptr, size_t *size,
 		    func_realloc_t func_realloc, func_free_t func_free,
-		    unsigned int flags)
+		    unsigned int modeflags)
 {
   estream_cookie_mem_t mem_cookie;
   int err;
@@ -359,7 +361,7 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
     err = -1;
   else
     {
-      mem_cookie->flags = flags;
+      mem_cookie->modeflags = modeflags;
       mem_cookie->memory = data;
       mem_cookie->memory_size = data_n;
       mem_cookie->offset = 0;
@@ -416,7 +418,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
     {
       /* Regular write.  */
 
-      if (mem_cookie->flags & O_APPEND)
+      if (mem_cookie->modeflags & O_APPEND)
 	/* Append to data.  */
 	mem_cookie->offset = mem_cookie->data_len;
 	  
@@ -593,17 +595,20 @@ static es_cookie_io_functions_t estream_functions_mem =
     es_func_mem_destroy
   };
 
+
+
 /* Implementation of fd I/O.  */
 
 /* Cookie for fd objects.  */
 typedef struct estream_cookie_fd
 {
-  int fd;
+  int fd;        /* The file descriptor we are using for actual output.  */
+  int no_close;  /* If set we won't close the file descriptor.  */
 } *estream_cookie_fd_t;
 
 /* Create function for fd objects.  */
 static int
-es_func_fd_create (void **cookie, int fd, unsigned int flags)
+es_func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
 {
   estream_cookie_fd_t fd_cookie;
   int err;
@@ -613,7 +618,13 @@ es_func_fd_create (void **cookie, int fd, unsigned int flags)
     err = -1;
   else
     {
+#ifdef HAVE_DOSISH_SYSTEM
+      /* Make sure it is in binary mode if requested.  */
+      if ( (modeflags & O_BINARY) )
+        setmode (fd, O_BINARY);
+#endif
       fd_cookie->fd = fd;
+      fd_cookie->no_close = no_close;
       *cookie = fd_cookie;
       err = 0;
     }
@@ -680,7 +691,7 @@ es_func_fd_destroy (void *cookie)
 
   if (fd_cookie)
     {
-      err = close (fd_cookie->fd);
+      err = fd_cookie->no_close? 0 : close (fd_cookie->fd);
       ES_MEM_FREE (fd_cookie);
     }
   else
@@ -688,6 +699,7 @@ es_func_fd_destroy (void *cookie)
 
   return err;
 }
+
 
 static es_cookie_io_functions_t estream_functions_fd =
   {
@@ -697,12 +709,132 @@ static es_cookie_io_functions_t estream_functions_fd =
     es_func_fd_destroy
   };
 
+
+
+
+/* Implementation of FILE* I/O.  */
+
+/* Cookie for fp objects.  */
+typedef struct estream_cookie_fp
+{
+  FILE *fp;      /* The file pointer we are using for actual output.  */
+  int no_close;  /* If set we won't close the file pointer.  */
+} *estream_cookie_fp_t;
+
+/* Create function for fd objects.  */
+static int
+es_func_fp_create (void **cookie, FILE *fp, unsigned int modeflags, int no_close)
+{
+  estream_cookie_fp_t fp_cookie;
+  int err;
+
+  fp_cookie = ES_MEM_ALLOC (sizeof *fp_cookie);
+  if (!fp_cookie)
+    err = -1;
+  else
+    {
+#ifdef HAVE_DOSISH_SYSTEM
+      /* Make sure it is in binary mode if requested.  */
+      if ( (modeflags & O_BINARY) )
+        setmode (fileno (fp), O_BINARY);
+#endif
+      fp_cookie->fp = fp;
+      fp_cookie->no_close = no_close;
+      *cookie = fp_cookie;
+      err = 0;
+    }
+  
+  return err;
+}
+
+/* Read function for FILE* objects.  */
+static ssize_t
+es_func_fp_read (void *cookie, void *buffer, size_t size)
+
+{
+  estream_cookie_fp_t file_cookie = cookie;
+  ssize_t bytes_read;
+
+  bytes_read = fread (buffer, 1, size, file_cookie->fp);
+  if (!bytes_read && ferror (file_cookie->fp))
+    return -1;
+  return bytes_read;
+}
+
+/* Write function for FILE* objects.  */
+static ssize_t
+es_func_fp_write (void *cookie, const void *buffer, size_t size)
+			   
+{
+  estream_cookie_fp_t file_cookie = cookie;
+  size_t bytes_written;
+
+  bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
+  if (bytes_written != size)
+    return -1;
+  return bytes_written;
+}
+
+/* Seek function for FILE* objects.  */
+static int
+es_func_fp_seek (void *cookie, off_t *offset, int whence)
+{
+  estream_cookie_fp_t file_cookie = cookie;
+  long int offset_new;
+
+  if ( fseek (file_cookie->fp, (long int)*offset, whence) )
+    {
+      fprintf (stderr, "\nfseek failed: errno=%d (%s)\n", errno,strerror (errno));
+    return -1;
+    }
+
+  offset_new = ftell (file_cookie->fp);
+  if (offset_new == -1)
+    {
+      fprintf (stderr, "\nftell failed: errno=%d (%s)\n", errno,strerror (errno));
+    return -1;
+    }
+  *offset = offset_new;
+  return 0;
+}
+
+/* Destroy function for fd objects.  */
+static int
+es_func_fp_destroy (void *cookie)
+{
+  estream_cookie_fp_t fp_cookie = cookie;
+  int err;
+
+  if (fp_cookie)
+    {
+      fflush (fp_cookie->fp);
+      err = fp_cookie->no_close? 0 : fclose (fp_cookie->fp);
+      ES_MEM_FREE (fp_cookie);
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
+static es_cookie_io_functions_t estream_functions_fp =
+  {
+    es_func_fp_read,
+    es_func_fp_write,
+    es_func_fp_seek,
+    es_func_fp_destroy
+  };
+
+
+
+
 /* Implementation of file I/O.  */
 
 /* Create function for file objects.  */
 static int
 es_func_file_create (void **cookie, int *filedes,
-		     const char *path, unsigned int flags)
+		     const char *path, unsigned int modeflags)
 {
   estream_cookie_fd_t file_cookie;
   int err;
@@ -718,12 +850,17 @@ es_func_file_create (void **cookie, int *filedes,
       goto out;
     }
 
-  fd = open (path, flags, ES_DEFAULT_OPEN_MODE);
+  fd = open (path, modeflags, ES_DEFAULT_OPEN_MODE);
   if (fd == -1)
     {
       err = -1;
       goto out;
     }
+#ifdef HAVE_DOSISH_SYSTEM
+  /* Make sure it is in binary mode if requested.  */
+  if ( (modeflags & O_BINARY) )
+    setmode (fd, O_BINARY);
+#endif
 
   file_cookie->fd = fd;
   *cookie = file_cookie;
@@ -750,16 +887,10 @@ static es_cookie_io_functions_t estream_functions_file =
 /* Stream primitives.  */
 
 static int
-es_convert_mode (const char *mode, unsigned int *flags)
+es_convert_mode (const char *mode, unsigned int *modeflags)
 {
 
-  /* FIXME: We need to allow all mode flags permutations and for
-     binary mode we need to do a
-
-     #ifdef HAVE_DOSISH_SYSTEM
-       setmode (fd, O_BINARY);
-     #endif
-  */
+  /* FIXME: We need to allow all mode flags permutations.  */
   struct
   {
     const char *mode;
@@ -767,33 +898,34 @@ es_convert_mode (const char *mode, unsigned int *flags)
   } mode_flags[] = { { "r",
 		       O_RDONLY },
 		     { "rb",
-		       O_RDONLY },
+		       O_RDONLY | O_BINARY },
 		     { "w",
 		       O_WRONLY | O_TRUNC | O_CREAT },
 		     { "wb",
-		       O_WRONLY | O_TRUNC | O_CREAT },
+		       O_WRONLY | O_TRUNC | O_CREAT | O_BINARY },
 		     { "a",
 		       O_WRONLY | O_APPEND | O_CREAT },
 		     { "ab",
-		       O_WRONLY | O_APPEND | O_CREAT },
+		       O_WRONLY | O_APPEND | O_CREAT | O_BINARY },
 		     { "r+",
 		       O_RDWR },
 		     { "rb+",
-		       O_RDWR },
+		       O_RDWR | O_BINARY },
 		     { "r+b",
-		       O_RDONLY | O_WRONLY },
+		       O_RDONLY | O_WRONLY | O_BINARY },
 		     { "w+",
 		       O_RDWR | O_TRUNC | O_CREAT },
 		     { "wb+",
-		       O_RDWR | O_TRUNC | O_CREAT },
+		       O_RDWR | O_TRUNC | O_CREAT | O_BINARY },
 		     { "w+b",
-		       O_RDWR | O_TRUNC | O_CREAT },
+		       O_RDWR | O_TRUNC | O_CREAT | O_BINARY },
 		     { "a+",
 		       O_RDWR | O_CREAT | O_APPEND },
 		     { "ab+",
-		       O_RDWR | O_CREAT | O_APPEND },
+		       O_RDWR | O_CREAT | O_APPEND | O_BINARY },
 		     { "a+b",
-		       O_RDWR | O_CREAT | O_APPEND } };
+		       O_RDWR | O_CREAT | O_APPEND | O_BINARY }
+  };
   unsigned int i;
   int err; 
 
@@ -808,7 +940,7 @@ es_convert_mode (const char *mode, unsigned int *flags)
   else
     {
       err = 0;
-      *flags = mode_flags[i].flags;
+      *modeflags = mode_flags[i].flags;
     }
 
   return err;
@@ -868,7 +1000,7 @@ es_flush (estream_t stream)
   es_cookie_write_function_t func_write = stream->intern->func_write;
   int err;
 
-  assert (stream->flags & ES_FLAG_WRITING);
+  assert (stream->flags.writing);
 
   if (stream->data_offset)
     {
@@ -935,7 +1067,7 @@ es_flush (estream_t stream)
 static void
 es_empty (estream_t stream)
 {
-  assert (! (stream->flags & ES_FLAG_WRITING));
+  assert (!stream->flags.writing);
   stream->data_len = 0;
   stream->data_offset = 0;
   stream->unread_data_len = 0;
@@ -944,7 +1076,8 @@ es_empty (estream_t stream)
 /* Initialize STREAM.  */
 static void
 es_initialize (estream_t stream,
-	       void *cookie, int fd, es_cookie_io_functions_t functions)
+	       void *cookie, int fd, es_cookie_io_functions_t functions,
+               unsigned int modeflags)
 {
   stream->intern->cookie = cookie;
   stream->intern->opaque = NULL;
@@ -967,7 +1100,15 @@ es_initialize (estream_t stream,
   stream->data_offset = 0;
   stream->data_flushed = 0;
   stream->unread_data_len = 0;
-  stream->flags = 0;
+  /* Depending on the modeflags we set whether we start in writing or
+     reading mode.  This is required in case we are working on a
+     wronly stream which is not seeekable (like stdout).  Without this
+     pre-initialization we would do a seek at the first write call and
+     as this will fail no utput will be delivered. */
+  if ((modeflags & O_WRONLY) || (modeflags & O_RDWR) )
+    stream->flags.writing = 1;
+  else
+    stream->flags.writing = 0;
 }
 
 /* Deinitialize STREAM.  */
@@ -988,7 +1129,7 @@ es_deinitialize (estream_t stream)
   func_close = stream->intern->func_close;
 
   err = 0;
-  if (stream->flags & ES_FLAG_WRITING)
+  if (stream->flags.writing)
     SET_UNLESS_NONZERO (err, tmp_err, es_flush (stream));
   if (func_close)
     SET_UNLESS_NONZERO (err, tmp_err, (*func_close) (stream->intern->cookie));
@@ -1000,7 +1141,7 @@ es_deinitialize (estream_t stream)
 /* Create a new stream object, initialize it.  */
 static int
 es_create (estream_t *stream, void *cookie, int fd,
-	   es_cookie_io_functions_t functions)
+	   es_cookie_io_functions_t functions, unsigned int modeflags)
 {
   estream_internal_t stream_internal_new;
   estream_t stream_new;
@@ -1030,7 +1171,7 @@ es_create (estream_t *stream, void *cookie, int fd,
   stream_new->intern = stream_internal_new;
 
   ESTREAM_MUTEX_INITIALIZE (stream_new->intern->lock);
-  es_initialize (stream_new, cookie, fd, functions);
+  es_initialize (stream_new, cookie, fd, functions, modeflags);
 
   err = es_list_add (stream_new);
   if (err)
@@ -1186,13 +1327,13 @@ es_readn (estream_t ES__RESTRICT stream,
   data_read = 0;
   err = 0;
 
-  if (stream->flags & ES_FLAG_WRITING)
+  if (stream->flags.writing)
     {
       /* Switching to reading mode -> flush output.  */
       err = es_flush (stream);
       if (err)
 	goto out;
-      stream->flags &= ~ES_FLAG_WRITING;
+      stream->flags.writing = 0;
     }  
 
   /* Read unread data first.  */
@@ -1274,14 +1415,14 @@ es_seek (estream_t ES__RESTRICT stream, off_t offset, int whence,
       goto out;
     }
 
-  if (stream->flags & ES_FLAG_WRITING)
+  if (stream->flags.writing)
     {
       /* Flush data first in order to prevent flushing it to the wrong
 	 offset.  */
       err = es_flush (stream);
       if (err)
 	goto out;
-      stream->flags &= ~ES_FLAG_WRITING;
+      stream->flags.writing = 0;
     }
 
   off = offset;
@@ -1451,7 +1592,7 @@ es_writen (estream_t ES__RESTRICT stream,
   data_written = 0;
   err = 0;
   
-  if (! (stream->flags & ES_FLAG_WRITING))
+  if (!stream->flags.writing)
     {
       /* Switching to writing mode -> discard input data and seek to
 	 position at which reading has stopped.  We can do this only
@@ -1489,8 +1630,8 @@ es_writen (estream_t ES__RESTRICT stream,
   if (bytes_written)
     *bytes_written = data_written;
   if (data_written)
-    if (! (stream->flags & ES_FLAG_WRITING))
-      stream->flags |= ES_FLAG_WRITING;
+    if (!stream->flags.writing)
+      stream->flags.writing = 1;
 
   return err;
 }
@@ -1502,13 +1643,13 @@ es_peek (estream_t ES__RESTRICT stream, unsigned char **ES__RESTRICT data,
 {
   int err;
 
-  if (stream->flags & ES_FLAG_WRITING)
+  if (stream->flags.writing)
     {
       /* Switching to reading mode -> flush output.  */
       err = es_flush (stream);
       if (err)
 	goto out;
-      stream->flags &= ~ES_FLAG_WRITING;
+      stream->flags.writing = 0;
     }  
 
   if (stream->data_offset == stream->data_len)
@@ -1572,12 +1713,13 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   line_stream_cookie = NULL;
 
   err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0, BUFFER_BLOCK_SIZE,
-			    1, 0, 0, NULL, 0, ES_MEM_REALLOC, ES_MEM_FREE, O_RDWR);
+			    1, 0, 0, NULL, 0, ES_MEM_REALLOC, ES_MEM_FREE,
+                            O_RDWR);
   if (err)
     goto out;
 
   err = es_create (&line_stream, line_stream_cookie, -1,
-		   estream_functions_mem);
+		   estream_functions_mem, O_RDWR);
   if (err)
     goto out;
 
@@ -1738,7 +1880,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
   int err;
 
   /* Flush or empty buffer depending on mode.  */
-  if (stream->flags & ES_FLAG_WRITING)
+  if (stream->flags.writing)
     {
       err = es_flush (stream);
       if (err)
@@ -1839,7 +1981,7 @@ es_init (void)
 estream_t
 es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -1850,16 +1992,16 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   cookie = NULL;
   create_called = 0;
 
-  err = es_convert_mode (mode, &flags);
+  err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
   
-  err = es_func_file_create (&cookie, &fd, path, flags);
+  err = es_func_file_create (&cookie, &fd, path, modeflags);
   if (err)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_file);
+  err = es_create (&stream, cookie, fd, estream_functions_file, modeflags);
   if (err)
     goto out;
 
@@ -1878,7 +2020,7 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 	  func_realloc_t func_realloc, func_free_t func_free,
 	  const char *ES__RESTRICT mode)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -1888,18 +2030,18 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
   stream = NULL;
   create_called = 0;
   
-  err = es_convert_mode (mode, &flags);
+  err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
 
   err = es_func_mem_create (&cookie, data, data_n, data_len,
 			    BUFFER_BLOCK_SIZE, grow, 0, 0,
-			    NULL, 0, func_realloc, func_free, flags);
+			    NULL, 0, func_realloc, func_free, modeflags);
   if (err)
     goto out;
   
   create_called = 1;
-  err = es_create (&stream, cookie, -1, estream_functions_mem);
+  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags);
 
  out:
 
@@ -1913,25 +2055,25 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 estream_t
 es_open_memstream (char **ptr, size_t *size)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   int create_called;
   estream_t stream;
   void *cookie;
   int err;
 
-  flags = O_RDWR;
+  modeflags = O_RDWR;
   create_called = 0;
   stream = NULL;
   cookie = 0;
   
   err = es_func_mem_create (&cookie, NULL, 0, 0,
 			    BUFFER_BLOCK_SIZE, 1, 1, 1,
-			    ptr, size, ES_MEM_REALLOC, ES_MEM_FREE, flags);
+			    ptr, size, ES_MEM_REALLOC, ES_MEM_FREE, modeflags);
   if (err)
     goto out;
   
   create_called = 1;
-  err = es_create (&stream, cookie, -1, estream_functions_mem);
+  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags);
 
  out:
 
@@ -1947,18 +2089,18 @@ es_fopencookie (void *ES__RESTRICT cookie,
 		const char *ES__RESTRICT mode,
 		es_cookie_io_functions_t functions)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   estream_t stream;
   int err;
 
   stream = NULL;
-  flags = 0;
+  modeflags = 0;
   
-  err = es_convert_mode (mode, &flags);
+  err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
 
-  err = es_create (&stream, cookie, -1, functions);
+  err = es_create (&stream, cookie, -1, functions, modeflags);
   if (err)
     goto out;
 
@@ -1969,9 +2111,9 @@ es_fopencookie (void *ES__RESTRICT cookie,
 
 
 estream_t
-es_fdopen (int filedes, const char *mode)
+do_fdopen (int filedes, const char *mode, int no_close)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -1981,16 +2123,16 @@ es_fdopen (int filedes, const char *mode)
   cookie = NULL;
   create_called = 0;
 
-  err = es_convert_mode (mode, &flags);
+  err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
 
-  err = es_func_fd_create (&cookie, filedes, flags);
+  err = es_func_fd_create (&cookie, filedes, modeflags, no_close);
   if (err)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, filedes, estream_functions_fd);
+  err = es_create (&stream, cookie, filedes, estream_functions_fd, modeflags);
 
  out:
 
@@ -1999,7 +2141,78 @@ es_fdopen (int filedes, const char *mode)
 
   return stream;
 }
+
+estream_t
+es_fdopen (int filedes, const char *mode)
+{
+  return do_fdopen (filedes, mode, 0);
+}
+
+/* A variant of es_fdopen which does not close FILEDES at the end.  */
+estream_t
+es_fdopen_nc (int filedes, const char *mode)
+{
+  return do_fdopen (filedes, mode, 1);
+}
+
+
+estream_t
+do_fpopen (FILE *fp, const char *mode, int no_close)
+{
+  unsigned int modeflags;
+  int create_called;
+  estream_t stream;
+  void *cookie;
+  int err;
+
+  stream = NULL;
+  cookie = NULL;
+  create_called = 0;
+
+  err = es_convert_mode (mode, &modeflags);
+  if (err)
+    goto out;
+
+  fflush (fp);
+  err = es_func_fp_create (&cookie, fp, modeflags, no_close);
+  if (err)
+    goto out;
+
+  create_called = 1;
+  err = es_create (&stream, cookie, fileno (fp), estream_functions_fp,
+                   modeflags);
+
+ out:
+
+  if (err && create_called)
+    (*estream_functions_fp.func_close) (cookie);
+
+  return stream;
+}
+
   
+/* Create an estream from the stdio stream FP.  This mechanism is
+   useful in case the stdio streams have special properties and may
+   not be mixed with fd based functions.  This is for example the case
+   under Windows where the 3 standard streams are associated with the
+   console whereas a duped and fd-opened stream of one of this stream
+   won't be associated with the console.  As this messes things up it
+   is easier to keep on using the standard I/O stream as a backend for
+   estream. */
+estream_t
+es_fpopen (FILE *fp, const char *mode)
+{
+  return do_fpopen (fp, mode, 0);
+}
+
+
+/* Same as es_fpopen but does not close  FP at the end.  */
+estream_t
+es_fpopen_nc (FILE *fp, const char *mode)
+{
+  return do_fpopen (fp, mode, 1);
+}
+
 
 estream_t
 es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
@@ -2009,7 +2222,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 
   if (path)
     {
-      unsigned int flags;
+      unsigned int modeflags;
       int create_called;
       void *cookie;
       int fd;
@@ -2021,16 +2234,16 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 
       es_deinitialize (stream);
 
-      err = es_convert_mode (mode, &flags);
+      err = es_convert_mode (mode, &modeflags);
       if (err)
 	goto leave;
       
-      err = es_func_file_create (&cookie, &fd, path, flags);
+      err = es_func_file_create (&cookie, &fd, path, modeflags);
       if (err)
 	goto leave;
 
       create_called = 1;
-      es_initialize (stream, cookie, fd, estream_functions_file);
+      es_initialize (stream, cookie, fd, estream_functions_file, modeflags);
 
     leave:
 
@@ -2173,7 +2386,7 @@ es_fflush (estream_t stream)
   if (stream)
     {
       ESTREAM_LOCK (stream);
-      if (stream->flags & ES_FLAG_WRITING)
+      if (stream->flags.writing)
 	err = es_flush (stream);
       else
 	{
@@ -2686,7 +2899,7 @@ tmpfd (void)
 estream_t
 es_tmpfile (void)
 {
-  unsigned int flags;
+  unsigned int modeflags;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -2695,7 +2908,7 @@ es_tmpfile (void)
 
   create_called = 0;
   stream = NULL;
-  flags = O_RDWR | O_TRUNC | O_CREAT;
+  modeflags = O_RDWR | O_TRUNC | O_CREAT;
   cookie = NULL;
   
   fd = tmpfd ();
@@ -2705,12 +2918,12 @@ es_tmpfile (void)
       goto out;
     }
 
-  err = es_func_fd_create (&cookie, fd, flags);
+  err = es_func_fd_create (&cookie, fd, modeflags, 0);
   if (err)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_fd);
+  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags);
 
  out:
 

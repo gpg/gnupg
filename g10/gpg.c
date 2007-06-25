@@ -2161,19 +2161,19 @@ main (int argc, char **argv )
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
 
 	  case oStatusFD:
-            set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+            set_status_fd( translate_sys2libc_fd (pargs.r.ret_int, 1) );
             break;
 	  case oStatusFile:
             set_status_fd ( open_info_file (pargs.r.ret_str, 1) );
             break;
 	  case oAttributeFD:
-            set_attrib_fd(iobuf_translate_file_handle (pargs.r.ret_int, 1));
+            set_attrib_fd(translate_sys2libc_fd (pargs.r.ret_int, 1));
             break;
 	  case oAttributeFile:
             set_attrib_fd ( open_info_file (pargs.r.ret_str, 1) );
             break;
 	  case oLoggerFD:
-            log_set_fd (iobuf_translate_file_handle (pargs.r.ret_int, 1));
+            log_set_fd (translate_sys2libc_fd (pargs.r.ret_int, 1));
             break;
           case oLoggerFile:
             logfile = pargs.r.ret_str;
@@ -2437,14 +2437,14 @@ main (int argc, char **argv )
 	    set_passphrase_from_string(pargs.r.ret_str);
 	    break;
 	  case oPasswdFD:
-            pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            pwfd = translate_sys2libc_fd (pargs.r.ret_int, 0);
             break;
 	  case oPasswdFile:
             pwfd = open_info_file (pargs.r.ret_str, 0);
             break;
 	  case oPasswdRepeat: opt.passwd_repeat=pargs.r.ret_int; break;
 	  case oCommandFD:
-            opt.command_fd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            opt.command_fd = translate_sys2libc_fd (pargs.r.ret_int, 0);
             break;
 	  case oCommandFile:
             opt.command_fd = open_info_file (pargs.r.ret_str, 0);
