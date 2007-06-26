@@ -632,7 +632,7 @@ tty_get_answer_is_yes( const char *prompt )
 }
 
 
-/* Called by gnupg_rl_initialize to setup the reradline support. */
+/* Called by gnupg_rl_initialize to setup the readline support. */
 void
 tty_private_set_rl_hooks (void (*init_stream) (FILE *),
                           void (*set_completer) (rl_completion_func_t*),

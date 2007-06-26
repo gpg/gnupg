@@ -48,6 +48,7 @@
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
+#include "sysutils.h"
 #include "status.h"
 #include "call-agent.h"
 

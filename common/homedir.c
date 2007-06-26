@@ -1,5 +1,5 @@
 /* homedir.c - Setup the home directory.
- *	Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -83,18 +83,17 @@ w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
 #endif /*HAVE_W32_SYSTEM*/
 
 
-/* Set up the default home directory.  The usual --homedir option
-   should be parsed later. */
+/* Get the standard home directory.  In general this function should
+   not be used as it does not consider a registry value (under W32) or
+   the GNUPGHOME encironment variable.  It is better to use
+   default_homedir(). */
 const char *
-default_homedir (void)
+standard_homedir (void)
 {
-  const char *dir;
-
-  dir = getenv("GNUPGHOME");
 #ifdef HAVE_W32_SYSTEM
-  if (!dir || !*dir)
-    dir = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG", "HomeDir");
-  if (!dir || !*dir)
+  static const char *dir;
+
+  if (!dir)
     {
       char path[MAX_PATH];
       
@@ -112,11 +111,53 @@ default_homedir (void)
           strcpy (stpcpy (tmp, path), "\\gnupg");
           dir = tmp;
           
-          /* Try to create the directory if it does not yet
-             exists.  */
+          /* Try to create the directory if it does not yet exists.  */
           if (access (dir, F_OK))
             CreateDirectory (dir, NULL);
         }
+      else
+        dir = GNUPG_DEFAULT_HOMEDIR;
+    }
+  return dir;
+#else/*!HAVE_W32_SYSTEM*/
+  return GNUPG_DEFAULT_HOMEDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+/* Set up the default home directory.  The usual --homedir option
+   should be parsed later. */
+const char *
+default_homedir (void)
+{
+  const char *dir;
+
+  dir = getenv ("GNUPGHOME");
+#ifdef HAVE_W32_SYSTEM
+  if (!dir || !*dir)
+    {
+      static const char *saved_dir;
+      
+      if (!saved_dir)
+        {
+          if (!dir || !*dir)
+            {
+              char *tmp;
+
+              tmp = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
+                                              "HomeDir");
+              if (tmp && *tmp)
+                {
+                  xfree (tmp);
+                  tmp = NULL;
+                }
+              if (tmp)
+                saved_dir = tmp;
+            }
+          
+          if (!saved_dir)
+            saved_dir = standard_homedir ();
+        }
+      dir = saved_dir;
     }
 #endif /*HAVE_W32_SYSTEM*/
   if (!dir || !*dir)

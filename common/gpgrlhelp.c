@@ -21,8 +21,8 @@
 
 /* This module may by used by applications to initializes readline
    support.  It is required so that we can have hooks in other parts
-   of libcommon without actually requing to link against
-   libreadline. It works along ttyio.c which a proper part of
+   of libcommon without actually requiring to link against
+   libreadline.  It works along with ttyio.c which is a proper part of
    libcommon. */
 
 #include <config.h>

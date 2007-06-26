@@ -1,3 +1,7 @@
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (create_directories) [W32]: Made it work.
+
 2007-06-21  Werner Koch  <wk@g10code.com>
 
 	* agent.h (ctrl_t): Remove.  It is now declared in ../common/util.h. 

@@ -40,11 +40,14 @@
 #include "../jnlib/utf8conv.h"
 #include "../jnlib/dynload.h"
 
+#include "init.h"
+
 /* Redefine asprintf by our estream version which uses our own memory
    allocator..  */
 #include "estream-printf.h"
 #define asprintf estream_asprintf
 #define vasprintf estream_vasprintf
+
 
 /* GCC attributes.  */
 #if __GNUC__ >= 4 
@@ -119,8 +122,6 @@ gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
   strcpy (d, s);
 }
 
-/*-- init.c --*/
-void init_common_subsystems (void);
 
 /*-- signal.c --*/
 void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
@@ -170,6 +171,7 @@ char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 
 
 /*-- homedir.c --*/
+const char *standard_homedir (void);
 const char *default_homedir (void);
 const char *gnupg_sysconfdir (void);
 const char *gnupg_bindir (void);

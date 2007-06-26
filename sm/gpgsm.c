@@ -736,6 +736,7 @@ main ( int argc, char **argv)
   /*mtrace();*/
 
   /* trap_unaligned ();*/
+  gnupg_rl_initialize ();
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* We don't need any locking in libgcrypt unless we use any kind of

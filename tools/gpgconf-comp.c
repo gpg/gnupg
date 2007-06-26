@@ -33,9 +33,12 @@
 #include <time.h>
 #include <stdarg.h>
 #include <signal.h>
-#ifndef HAVE_W32_SYSTEM
-#include <pwd.h>
-#include <grp.h>
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN 1
+# include <windows.h>
+#else
+# include <pwd.h>
+# include <grp.h>
 #endif
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
@@ -45,6 +48,16 @@
 
 #include "gpgconf.h"
 
+
+/* There is a problem with gpg 1.4 under Windows: --gpgconf-list
+   returns a plain filename without escaping.  As long as we have not
+   fixed that we need to use gpg2 - it might actually be better to use
+   gpg2 in any case.  */
+#ifdef HAVE_W32_SYSTEM
+#define GPGNAME "gpg2"
+#else
+#define GPGNAME "gpg"
+#endif
 
 
 /* TODO:
@@ -156,7 +169,7 @@ static struct
 } gc_backend[GC_BACKEND_NR] =
   {
     { NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { "GnuPG", "gpg", NULL, "gpgconf-gpg.conf" },
+    { "GnuPG", GPGNAME, NULL, "gpgconf-gpg.conf" },
     { "GPGSM", "gpgsm", NULL, "gpgconf-gpgsm.conf" },
     { "GPG Agent", "gpg-agent", gpg_agent_runtime_change,
       "gpgconf-gpg-agent.conf" },
@@ -901,7 +914,9 @@ static struct
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
+#ifndef HAVE_W32_SYSTEM
     { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr }
+#endif
   };
 
 
@@ -1081,10 +1096,13 @@ gc_component_list_components (FILE *out)
 
   for (idx = 0; idx < GC_COMPONENT_NR; idx++)
     {
-      const char *desc = gc_component[idx].desc;
-      desc = my_dgettext (gc_component[idx].desc_domain, desc);
-      fprintf (out, "%s:%s\n",
-               gc_component[idx].name,  my_percent_escape (desc));
+      if (gc_component[idx].options)
+        {
+          const char *desc = gc_component[idx].desc;
+          desc = my_dgettext (gc_component[idx].desc_domain, desc);
+          fprintf (out, "%s:%s\n",
+                   gc_component[idx].name,  my_percent_escape (desc));
+        }
     }
 }
 
@@ -1098,7 +1116,8 @@ gc_component_find (const char *name)
 
   for (idx = 0; idx < GC_COMPONENT_NR; idx++)
     {
-      if (!strcmp (name, gc_component[idx].name))
+      if (gc_component[idx].options
+          && !strcmp (name, gc_component[idx].name))
 	return idx;
     }
   return -1;
@@ -1222,7 +1241,7 @@ gc_component_list_options (int component, FILE *out)
   const gc_option_t *option = gc_component[component].options;
   const gc_option_t *group_option = NULL;
 
-  while (option->name)
+  while (option && option->name)
     {
       /* Do not output unknown or internal options.  */
       if (!(option->flags & GC_OPT_FLAG_GROUP)
@@ -1595,7 +1614,7 @@ gc_component_retrieve_options (int component)
     {
       option = gc_component[component].options;
 
-      while (option->name)
+      while (option && option->name)
         {
           if (!(option->flags & GC_OPT_FLAG_GROUP))
             {
@@ -2507,7 +2526,7 @@ gc_component_change_options (int component, FILE *in)
      write them out to new configuration files, verify them
      externally, and then commit them.  */
   option = gc_component[component].options;
-  while (option->name)
+  while (option && option->name)
     {
       /* Go on if we have already seen this backend, or if there is
 	 nothing to do.  */
@@ -2649,11 +2668,7 @@ gc_component_change_options (int component, FILE *in)
 static int
 key_matches_user_or_group (char *user)
 {
-#ifdef HAVE_W32_SYSTEM
-# warning We need a real user and group lookup.
-#else
   char *group;
-  int n;
 
   if (*user == '*' && user[1] == 0)
     return 1; /* A single asterisk matches all users.  */
@@ -2662,6 +2677,30 @@ key_matches_user_or_group (char *user)
   if (group)
     *group++ = 0;
 
+#ifdef HAVE_W32_SYSTEM
+  /* Under Windows we don't support groups. */   
+  if (group && *group)
+    gc_error (0, 0, _("Note that group specifications are ignored\n"));
+  if (*user)
+    {
+      static char *my_name;
+
+      if (!my_name)
+        {
+          char tmp[1];
+          DWORD size = 1;
+
+          GetUserNameA (tmp, &size);
+          my_name = xmalloc (size);
+          if (!GetUserNameA (my_name, &size))
+            gc_error (1,0, "error getting current user name: %s",
+                      w32_strerror (-1));
+        }
+
+      if (!strcmp (user, my_name))
+        return 1; /* Found.  */
+    }
+#else /*!HAVE_W32_SYSTEM*/
   /* First check whether the user matches.  */
   if (*user)
     {
@@ -2683,6 +2722,7 @@ key_matches_user_or_group (char *user)
     {
       static char *my_group;
       static char **my_supgroups;
+      int n;
 
       if (!my_group)
         {
@@ -2719,7 +2759,7 @@ key_matches_user_or_group (char *user)
         if (!strcmp (group, my_supgroups[n]))
           return 1; /* Found.  */
     }
-#endif
+#endif /*!HAVE_W32_SYSTEM*/
   return 0; /* No match.  */
 }
 

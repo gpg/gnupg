@@ -1351,10 +1351,7 @@ static void
 create_directories (void)
 {
   struct stat statbuf;
-#ifdef HAVE_W32_SYSTEM
-#warning change it so that it works like in gpg.
-#endif
-  const char *defhome = GNUPG_DEFAULT_HOMEDIR;
+  const char *defhome = standard_homedir ();
   char *home;
 
   home = make_filename (opt.homedir, NULL);
@@ -1362,11 +1359,16 @@ create_directories (void)
     {
       if (errno == ENOENT)
         {
-          if ( (*defhome == '~'
+          if (
+#ifdef HAVE_W32_SYSTEM
+              ( !compare_filenames (home, defhome) )
+#else
+              (*defhome == '~'
                 && (strlen (home) >= strlen (defhome+1)
                     && !strcmp (home + strlen(home)
                                 - strlen (defhome+1), defhome+1)))
                || (*defhome != '~' && !strcmp (home, defhome) )
+#endif
                )
             {
 #ifdef HAVE_W32_SYSTEM

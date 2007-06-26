@@ -1,4 +1,21 @@
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am ($(PROGRAMS)): New.
+
+	* util.h (init_common_subsystems): Moved to ..
+	* init.h: .. New.
+	* util.h: Include init.h.
+
+	* homedir.c (standard_homedir): New.
+	(default_homedir) [W32]: Reimplemented in terms of
+	standard_homedir.  Fixed memory leak.
+
 2007-06-25  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c: Add more documentation and slighly restructured macro
+	defintion for better readability.
+	(FILEP_OR_FD): Rename to fp_or_fd_t.
+	(CLOSE_CACHE): Rename to close_cache_t.
 
 	* sysutils.c (translate_sys2libc_fd): New using the code from iobuf.c.
 	* iobuf.c: Include sysutils.h.

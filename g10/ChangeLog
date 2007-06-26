@@ -1,8 +1,13 @@
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (try_make_homedir): Support W32; use standard_homedir.
+
 2007-06-25  Werner Koch  <wk@g10code.com>
 
-	* gpg.c (main): Replace iobuf_translate_file_handle by
+	* gpg.c, gpgv.c: Include sysutils.h.
+	(main): Replace iobuf_translate_file_handle by
 	translate_sys2libc_fd.
-	* gpgv.c (main): Ditto.
+	
 
 2007-06-21  Werner Koch  <wk@g10code.com>
 

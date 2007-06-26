@@ -109,7 +109,7 @@
 ** GCRY_MD_USER
    Remove these definitions.
 ** MY_GCRY_PK_ECDSA
-   Removed this.
+   Remove this.
 
 * Extend selinux support to other modules
 

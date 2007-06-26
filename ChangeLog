@@ -1,3 +1,8 @@
+2007-06-25  Werner Koch  <wk@g10code.com>
+
+	* gl/mkdtemp.c (gen_tempname) [MKDIR_TAKES_ONE_ARG]: Avoid
+	compiler warning by using the proper config macro.
+
 2007-06-15  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Call AM_PO_SUBDIRS.

@@ -1,6 +1,6 @@
-/* iobuf.c  -  file handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2006  Free Software Foundation, Inc.
+/* iobuf.c  -  File Handling for OpenPGP.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006,
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,95 +31,129 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#ifdef HAVE_DOSISH_SYSTEM
-#include <windows.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
 #endif
 #ifdef __riscos__
-#include <kernel.h>
-#include <swis.h>
+# include <kernel.h>
+# include <swis.h>
 #endif /* __riscos__ */
 
 #include "util.h"
 #include "sysutils.h"
 #include "iobuf.h"
 
+/*-- Begin configurable part.  --*/
+
 /* The size of the internal buffers. 
    NOTE: If you change this value you MUST also adjust the regression
    test "armored_key_8192" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
+/* We don't want to use the STDIO based backend.  */
 #undef FILE_FILTER_USES_STDIO
 
-#ifdef HAVE_DOSISH_SYSTEM
-#define USE_SETMODE 1
-#endif
+/*-- End configurable part.  --*/
 
+
+/* Under W32 the default is to use the setmode call.  Define a macro
+   which allows us to enable this call.  */
+#ifdef HAVE_W32_SYSTEM
+# define USE_SETMODE 1
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Definition of constants and macros used by our file filter
+   implementation.  What we define here are 3 macros to make the
+   appropriate calls:
+
+   my_fileno 
+     Is expanded to fileno(a) if using a stdion backend and to a if we
+     are using the low-level backend.
+
+   my_fopen 
+     Is defined to fopen for the stdio backend and to direct_open if
+     we are using the low-evel backend.
+
+   my_fopen_ro 
+     Is defined to fopen for the stdio backend and to fd_cache_open if
+     we are using the low-evel backend.
+
+   fp_or_fd_t
+     Is the type we use for the backend stream or fiel descriptor.
+
+   INVALID_FP, FILEP_OR_FD_FOR_STDIN, FILEP_OR_FD_FOR_STDOUT
+     Are macros defined depending on the used backend.
+
+*/
 #ifdef FILE_FILTER_USES_STDIO
-#define my_fileno(a)  fileno ((a))
-#define my_fopen_ro(a,b) fopen ((a),(b))
-#define my_fopen(a,b)    fopen ((a),(b))
-typedef FILE *FILEP_OR_FD;
-#define INVALID_FP    NULL
-#define FILEP_OR_FD_FOR_STDIN  (stdin)
-#define FILEP_OR_FD_FOR_STDOUT  (stdout)
+# define my_fileno(a)     fileno ((a))
+# define my_fopen_ro(a,b) fopen ((a),(b))
+# define my_fopen(a,b)    fopen ((a),(b))
+  typedef FILE *fp_or_fd_t;
+# define INVALID_FP              NULL
+# define FILEP_OR_FD_FOR_STDIN   (stdin)
+# define FILEP_OR_FD_FOR_STDOUT  (stdout)
+#else /*!FILE_FILTER_USES_STDIO*/
+# define my_fopen_ro(a,b) fd_cache_open ((a),(b))
+# define my_fopen(a,b)    direct_open ((a),(b))
+# ifdef HAVE_W32_SYSTEM
+   /* (We assume that a HANDLE first into an int.)  */
+#  define my_fileno(a)  ((int)(a))
+   typedef HANDLE fp_or_fd_t;
+#  define INVALID_FP             ((HANDLE)-1)
+#  define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+#  define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+#  undef USE_SETMODE
+# else /*!HAVE_W32_SYSTEM*/
+#  define my_fileno(a)  (a)
+   typedef int fp_or_fd_t;
+#  define INVALID_FP             (-1)
+#  define FILEP_OR_FD_FOR_STDIN  (0)
+#  define FILEP_OR_FD_FOR_STDOUT (1)
+# endif /*!HAVE_W32_SYSTEM*/
+#endif /*!FILE_FILTER_USES_STDIO*/
+
+/* The context used by the file filter.  */
 typedef struct
 {
-  FILE *fp;			/* open file handle */
-  int keep_open;
-  int no_cache;
-  int print_only_name;		/* flags indicating that fname is not a real file */
-  char fname[1];		/* name of the file */
-}
-file_filter_ctx_t;
-#else
-#define my_fileno(a)  (a)
-#define my_fopen_ro(a,b) fd_cache_open ((a),(b))
-#define my_fopen(a,b) direct_open ((a),(b))
-#ifdef HAVE_DOSISH_SYSTEM
-typedef HANDLE FILEP_OR_FD;
-#define INVALID_FP  ((HANDLE)-1)
-#define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-#define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
-#undef USE_SETMODE
-#else
-typedef int FILEP_OR_FD;
-#define INVALID_FP  (-1)
-#define FILEP_OR_FD_FOR_STDIN  (0)
-#define FILEP_OR_FD_FOR_STDOUT (1)
-#endif
-typedef struct
-{
-  FILEP_OR_FD fp;		/* open file handle */
-  int keep_open;
+  fp_or_fd_t fp;       /* Open file pointer or handle.  */
+  int keep_open; 
   int no_cache;
   int eof_seen;
-  int print_only_name;		/* flags indicating that fname is not a real file */
-  char fname[1];		/* name of the file */
+  int print_only_name; /* Flags indicating that fname is not a real file.  */
+  char fname[1];       /* Name of the file.  */
 }
 file_filter_ctx_t;
 
+
+/* If we are not using stdio as the backend we make use of a "close
+   cache".  */
+#ifndef FILE_FILTER_USES_STDIO
 struct close_cache_s
 {
   struct close_cache_s *next;
-  FILEP_OR_FD fp;
+  fp_or_fd_t fp;
   char fname[1];
 };
-typedef struct close_cache_s *CLOSE_CACHE;
-static CLOSE_CACHE close_cache;
-#endif
+typedef struct close_cache_s *close_cache_t;
+static close_cache_t close_cache;
+#endif /*!FILE_FILTER_USES_STDIO*/
 
-#ifdef _WIN32
+
+
+#ifdef HAVE_W32_SYSTEM
 typedef struct
 {
   int sock;
   int keep_open;
   int no_cache;
   int eof_seen;
-  int print_only_name;		/* flags indicating that fname is not a real file */
-  char fname[1];		/* name of the file */
+  int print_only_name;	/* Flag indicating that fname is not a real file.  */
+  char fname[1];	/* Name of the file */
 }
 sock_filter_ctx_t;
-#endif /*_WIN32*/
+#endif /*HAVE_W32_SYSTEM*/
 
 /* The first partial length header block must be of size 512
  * to make it easier (and efficienter) we use a min. block size of 512
@@ -127,33 +161,41 @@ sock_filter_ctx_t;
 #define OP_MIN_PARTIAL_CHUNK	  512
 #define OP_MIN_PARTIAL_CHUNK_2POW 9
 
+/* The context we use for the block filter (used to handle OpenPGP
+   length information header).  */
 typedef struct
 {
   int use;
   size_t size;
   size_t count;
-  int partial;			/* 1 = partial header, 2 in last partial packet */
-  char *buffer;			/* used for partial header */
-  size_t buflen;		/* used size of buffer */
-  int first_c;			/* of partial header (which is > 0) */
+  int partial;	   /* 1 = partial header, 2 in last partial packet.  */
+  char *buffer;	   /* Used for partial header.  */
+  size_t buflen;   /* Used size of buffer.  */
+  int first_c;	   /* First character of a partial header (which is > 0).  */
   int eof;
 }
 block_filter_ctx_t;
 
+
+/* Global flag to tell whether special file names are enabled.  See
+   gpg.c for an explanation of these file names.  FIXME: it does not
+   belong into the iobuf subsystem. */
 static int special_names_enabled;
 
+/* Local prototypes.  */
 static int underflow (iobuf_t a);
 static int translate_file_handle (int fd, int for_write);
 
-#ifndef FILE_FILTER_USES_STDIO
 
+
+#ifndef FILE_FILTER_USES_STDIO
 /*
  * Invalidate (i.e. close) a cached iobuf
  */
 static void
 fd_cache_invalidate (const char *fname)
 {
-  CLOSE_CACHE cc;
+  close_cache_t cc;
 
   assert (fname);
   if (DBG_IOBUF)
@@ -165,7 +207,7 @@ fd_cache_invalidate (const char *fname)
 	{
 	  if (DBG_IOBUF)
 	    log_debug ("                did (%s)\n", cc->fname);
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
 	  CloseHandle (cc->fp);
 #else
 	  close (cc->fp);
@@ -176,11 +218,10 @@ fd_cache_invalidate (const char *fname)
 }
 
 
-
-static FILEP_OR_FD
+static fp_or_fd_t
 direct_open (const char *fname, const char *mode)
 {
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
   unsigned long da, cd, sm;
   HANDLE hfile;
 
@@ -213,7 +254,7 @@ direct_open (const char *fname, const char *mode)
 
   hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
   return hfile;
-#else
+#else /*!HAVE_W32_SYSTEM*/
   int oflag;
   int cflag = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
@@ -236,6 +277,7 @@ direct_open (const char *fname, const char *mode)
   if (strchr (mode, 'b'))
     oflag |= O_BINARY;
 #endif
+  /* No we need to distinguish between POSIX and RISC OS.  */
 #ifndef __riscos__
   return open (fname, oflag, cflag);
 #else
@@ -250,7 +292,7 @@ direct_open (const char *fname, const char *mode)
       return open (fname, oflag, cflag);
   }
 #endif
-#endif
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
@@ -259,14 +301,14 @@ direct_open (const char *fname, const char *mode)
  * Note that this caching strategy only works if the process does not chdir.
  */
 static void
-fd_cache_close (const char *fname, FILEP_OR_FD fp)
+fd_cache_close (const char *fname, fp_or_fd_t fp)
 {
-  CLOSE_CACHE cc;
+  close_cache_t cc;
 
   assert (fp);
   if (!fname || !*fname)
     {
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
       CloseHandle (fp);
 #else
       close (fp);
@@ -299,21 +341,21 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
 /*
  * Do an direct_open on FNAME but first try to reuse one from the fd_cache
  */
-static FILEP_OR_FD
+static fp_or_fd_t
 fd_cache_open (const char *fname, const char *mode)
 {
-  CLOSE_CACHE cc;
+  close_cache_t cc;
 
   assert (fname);
   for (cc = close_cache; cc; cc = cc->next)
     {
       if (cc->fp != INVALID_FP && !strcmp (cc->fname, fname))
 	{
-	  FILEP_OR_FD fp = cc->fp;
+	  fp_or_fd_t fp = cc->fp;
 	  cc->fp = INVALID_FP;
 	  if (DBG_IOBUF)
 	    log_debug ("fd_cache_open (%s) using cached fp\n", fname);
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
 	  if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff)
 	    {
 	      log_error ("rewind file failed on handle %p: ec=%d\n",
@@ -334,7 +376,6 @@ fd_cache_open (const char *fname, const char *mode)
     log_debug ("fd_cache_open (%s) not cached\n", fname);
   return direct_open (fname, mode);
 }
-
 
 #endif /*FILE_FILTER_USES_STDIO */
 
@@ -368,7 +409,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	     size_t * ret_len)
 {
   file_filter_ctx_t *a = opaque;
-  FILEP_OR_FD f = a->fp;
+  fp_or_fd_t f = a->fp;
   size_t size = *ret_len;
   size_t nbytes = 0;
   int rc = 0;
@@ -444,7 +485,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	}
       else
 	{
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
 	  unsigned long nread;
 
 	  nbytes = 0;
@@ -503,7 +544,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     {
       if (size)
 	{
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
 	  byte *p = buf;
 	  unsigned long n;
 
@@ -563,7 +604,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   else if (control == IOBUFCTRL_FREE)
     {
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
       if (f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT)
 	{
 	  if (DBG_IOBUF)
@@ -587,9 +628,10 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   return rc;
 }
 
-#ifdef _WIN32
-/* Becuase sockets are an special object under Lose32 we have to
- * use a special filter */
+
+#ifdef HAVE_W32_SYSTEM
+/* Because network sockets are special objects under Lose32 we have to
+   use a dedicated filter for them. */
 static int
 sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	     size_t * ret_len)
@@ -674,7 +716,7 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   return rc;
 }
-#endif /*_WIN32*/
+#endif /*HAVE_W32_SYSTEM*/
 
 /****************
  * This is used to implement the block write mode.
@@ -1050,7 +1092,7 @@ iobuf_cancel (iobuf_t a)
   const char *s;
   iobuf_t a2;
   int rc;
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_W32_SYSTEM) || defined(__riscos__)
   char *remove_name = NULL;
 #endif
 
@@ -1059,7 +1101,7 @@ iobuf_cancel (iobuf_t a)
       s = iobuf_get_real_fname (a);
       if (s && *s)
 	{
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_W32_SYSTEM) || defined(__riscos__)
 	  remove_name = xstrdup (s);
 #else
 	  remove (s);
@@ -1076,7 +1118,7 @@ iobuf_cancel (iobuf_t a)
     }
 
   rc = iobuf_close (a);
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
+#if defined(HAVE_W32_SYSTEM) || defined(__riscos__)
   if (remove_name)
     {
       /* Argg, MSDOS does not allow to remove open files.  So
@@ -1161,7 +1203,7 @@ iobuf_t
 iobuf_open (const char *fname)
 {
   iobuf_t a;
-  FILEP_OR_FD fp;
+  fp_or_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
   int print_only = 0;
@@ -1206,7 +1248,7 @@ iobuf_t
 iobuf_fdopen (int fd, const char *mode)
 {
   iobuf_t a;
-  FILEP_OR_FD fp;
+  fp_or_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
 
@@ -1214,7 +1256,7 @@ iobuf_fdopen (int fd, const char *mode)
   if (!(fp = fdopen (fd, mode)))
     return NULL;
 #else
-  fp = (FILEP_OR_FD) fd;
+  fp = (fp_or_fd_t) fd;
 #endif
   a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, 8192);
   fcx = xmalloc (sizeof *fcx + 20);
@@ -1236,7 +1278,7 @@ iobuf_t
 iobuf_sockopen (int fd, const char *mode)
 {
   iobuf_t a;
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
   sock_filter_ctx_t *scx;
   size_t len;
 
@@ -1265,7 +1307,7 @@ iobuf_t
 iobuf_create (const char *fname)
 {
   iobuf_t a;
-  FILEP_OR_FD fp;
+  fp_or_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
   int print_only = 0;
@@ -1339,7 +1381,7 @@ iobuf_t
 iobuf_openrw (const char *fname)
 {
   iobuf_t a;
-  FILEP_OR_FD fp;
+  fp_or_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
 
@@ -1379,7 +1421,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	    b->keep_open = intval;
 	    return 0;
 	  }
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
 	else if (!a->chain && a->filter == sock_filter)
 	  {
 	    sock_filter_ctx_t *b = a->filter_ov;
@@ -1414,7 +1456,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	    b->no_cache = intval;
 	    return 0;
 	  }
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
 	else if (!a->chain && a->filter == sock_filter)
 	  {
 	    sock_filter_ctx_t *b = a->filter_ov;
@@ -2027,9 +2069,9 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
     if ( !a->chain && a->filter == file_filter )
       {
         file_filter_ctx_t *b = a->filter_ov;
-        FILEP_OR_FD fp = b->fp;
+        fp_or_fd_t fp = b->fp;
         
-#if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
+#if defined(HAVE_W32_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
         ulong size;
         static int (* __stdcall get_file_size_ex) (void *handle,
                                                    LARGE_INTEGER *r_size);
@@ -2096,7 +2138,7 @@ iobuf_get_fd (iobuf_t a)
     if (!a->chain && a->filter == file_filter)
       {
         file_filter_ctx_t *b = a->filter_ov;
-        FILEP_OR_FD fp = b->fp;
+        fp_or_fd_t fp = b->fp;
 
         return my_fileno (fp);
       }
@@ -2184,7 +2226,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	  return -1;
 	}
 #else
-#ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_W32_SYSTEM
       if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff)
 	{
 	  log_error ("SetFilePointer failed on handle %p: ec=%d\n",
@@ -2354,10 +2396,10 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 static int
 translate_file_handle (int fd, int for_write)
 {
-#ifdef _WIN32
-#ifdef FILE_FILTER_USES_STDIO
+#ifdef HAVE_W32_SYSTEM
+# ifdef FILE_FILTER_USES_STDIO
   fd = translate_sys2libc_fd (fd, for_write);
-#else
+# else
   {
     int x;
 
@@ -2376,7 +2418,7 @@ translate_file_handle (int fd, int for_write)
 
     fd = x;
   }
-#endif
+# endif
 #endif
   return fd;
 }

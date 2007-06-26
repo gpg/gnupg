@@ -1,3 +1,14 @@
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (key_matches_user_or_group) [W32]: Implement user
+	name matching.
+	(GPGNAME): New.  Use it instead of "gpg".
+	(gc_component) [W32]:  Disable dirmngr for now.
+	(gc_component_retrieve_options): Ignore components without options.
+	(gc_component_change_options): Ditto.
+	(gc_component_list_options): Ditto.
+	(gc_component_find, gc_component_list_components): Ditto.
+
 2007-06-19  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (percent_escape): Rename to my_percent_escape.

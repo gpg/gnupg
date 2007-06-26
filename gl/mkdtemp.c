@@ -74,9 +74,6 @@
 
 #ifdef __MINGW32__
 # include <io.h>
-/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
-   Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) _mkdir)
 #endif
 
 #if !_LIBC
@@ -177,7 +174,11 @@ gen_tempname (char *tmpl)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
+#ifdef MKDIR_TAKES_ONE_ARG
+      fd = mkdir (tmpl);
+#else
       fd = __mkdir (tmpl, S_IRUSR | S_IWUSR | S_IXUSR);
+#endif
 
       if (fd >= 0)
 	{

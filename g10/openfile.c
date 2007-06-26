@@ -404,37 +404,35 @@ copy_options_file( const char *destdir )
 
 
 void
-try_make_homedir( const char *fname )
+try_make_homedir (const char *fname)
 {
-    const char *defhome = GNUPG_DEFAULT_HOMEDIR;
+  const char *defhome = standard_homedir ();
+
+  /* Create the directory only if the supplied directory name is the
+     same as the default one.  This way we avoid to create arbitrary
+     directories when a non-default home directory is used.  To cope
+     with HOME, we do compare only the suffix if we see that the
+     default homedir does start with a tilde.  */
+  if ( opt.dry_run || opt.no_homedir_creation )
+    return;
+
+  if (
 #ifdef HAVE_W32_SYSTEM
-#warning use a function and not a constant
+      ( !compare_filenames (fname, defhome) )
+#else
+      ( *defhome == '~'
+        && (strlen(fname) >= strlen (defhome+1)
+            && !strcmp(fname+strlen(fname)-strlen(defhome+1), defhome+1 ) ))
+      || (*defhome != '~'  && !compare_filenames( fname, defhome ) )
 #endif
-
-    /* Create the directory only if the supplied directory name
-     * is the same as the default one.  This way we avoid to create
-     * arbitrary directories when a non-default homedirectory is used.
-     * To cope with HOME, we do compare only the suffix if we see that
-     * the default homedir does start with a tilde.
-     */
-    if( opt.dry_run || opt.no_homedir_creation )
-	return;
-
-    if ( ( *defhome == '~'
-           && ( strlen(fname) >= strlen (defhome+1)
-                && !strcmp(fname+strlen(fname)-strlen(defhome+1),
-                           defhome+1 ) ))
-         || ( *defhome != '~'
-              && !compare_filenames( fname, defhome ) )
-        ) {
-	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
-	    log_fatal( _("can't create directory `%s': %s\n"),
-					fname,	strerror(errno) );
-	else if( !opt.quiet )
-	    log_info( _("directory `%s' created\n"), fname );
-	copy_options_file( fname );
-/*  	log_info(_("you have to start GnuPG again, " */
-/*  		   "so it can read the new configuration file\n") ); */
-/*  	g10_exit(1); */
+      )
+    {
+      if ( mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR) )
+        log_fatal ( _("can't create directory `%s': %s\n"),
+                    fname, strerror(errno) );
+      else if (!opt.quiet )
+        log_info ( _("directory `%s' created\n"), fname );
+      copy_options_file( fname );
+      
     }
 }

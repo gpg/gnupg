@@ -37,7 +37,7 @@ common_sources = \
 	openpgpdefs.h \
 	keyserver.h \
 	sexp-parse.h \
-	init.c \
+	init.c init.h \
 	sexputil.c \
 	sysutils.c sysutils.h \
 	homedir.c \
@@ -90,4 +90,7 @@ t_common_ldadd = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a \
 
 t_convert_DEPENDENCIES = convert.c libcommon.a
 t_convert_LDADD = $(t_common_ldadd)
+
+
+$(PROGRAMS): ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
 

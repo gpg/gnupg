@@ -34,11 +34,11 @@
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
 #include "../jnlib/utf8conv.h"
-#include "../common/i18n.h"
+#include "i18n.h"
+#include "init.h"
 #include "keybox-defs.h"
 
 #include <gcrypt.h>
-
 
 enum cmd_and_opt_values {
   aNull = 0,
