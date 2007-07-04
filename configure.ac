@@ -893,6 +893,8 @@ else
   AC_SUBST(POSUB)
 fi
 
+# We use HAVE_LANGINFO_CODESET in a couple of places.
+AM_LANGINFO_CODESET
 
 #
 # SELinux support
