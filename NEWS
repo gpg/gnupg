@@ -1,9 +1,12 @@
 Noteworthy changes in version 2.0.5
 ------------------------------------------------
 
- * Fixed bug when using the --p12-charset without --armor.
+ * Switched license to GPLv3.
 
- * Changes required for a port to Windows.
+ * Basic support for Windows.  Run "./autogen.sh --build-w32" to build
+   it.  As usual the mingw cross compiling toolchain is required.
+
+ * Fixed bug when using the --p12-charset without --armor.
 
  * The command --gen-key may now be used instead of the
    gpgsm-gencert.sh script.

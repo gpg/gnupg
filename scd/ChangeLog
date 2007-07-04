@@ -6,6 +6,7 @@
 	(handle_connections) [W32]: Enable a dummy sigs event.
 	(handle_connections): Use a proper count for select and not
 	FD_SETSIZE.
+	(fixed_gcry_pth_init, main): Kludge to fix pth initialization.
 
 2007-06-21  Werner Koch  <wk@g10code.com>
 

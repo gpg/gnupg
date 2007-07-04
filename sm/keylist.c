@@ -6,7 +6,7 @@
  *
  * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * GnuPG is distributed in the hope that it will be useful,
@@ -15,9 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -242,8 +240,7 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
                gpg_strerror (err)); 
 
   err = ksba_cert_get_key_usage (cert, &use);
-  if (gpg_err_code (err) == GPG_ERR_NO_DATA
-      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
       es_putc ('e', fp);
       es_putc ('s', fp);
@@ -646,11 +643,9 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   /* subjectKeyIdentifier */
   es_fputs ("    subjKeyId: ", fp);
   err = ksba_cert_get_subj_key_id (cert, NULL, &keyid);
-  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA
-      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA
-          || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         es_fputs ("[none]\n", fp);
       else
         {
@@ -666,11 +661,9 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   /* authorityKeyIdentifier */
   es_fputs ("    authKeyId: ", fp);
   err = ksba_cert_get_auth_key_id (cert, &keyid, &name, &sexp);
-  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA
-      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+  if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
     {
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA || !name
-          || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA || !name)
         es_fputs ("[none]\n", fp);
       else
         {
@@ -693,8 +686,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   es_fputs ("     keyUsage:", fp);
   err = ksba_cert_get_key_usage (cert, &kusage);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       if (err)
         es_fprintf (fp, " [error: %s]", gpg_strerror (err));
@@ -726,8 +718,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   es_fputs ("  extKeyUsage: ", fp);
   err = ksba_cert_get_ext_key_usages (cert, &string);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     { 
       if (err)
         es_fprintf (fp, "[error: %s]", gpg_strerror (err));
@@ -760,8 +751,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   es_fputs ("     policies: ", fp);
   err = ksba_cert_get_cert_policies (cert, &string);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       if (err)
         es_fprintf (fp, "[error: %s]", gpg_strerror (err));
@@ -986,8 +976,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 
 
   err = ksba_cert_get_key_usage (cert, &kusage);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       es_fputs ("    key usage:", fp);
       if (err)
@@ -1017,8 +1006,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
     }
 
   err = ksba_cert_get_ext_key_usages (cert, &string);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     { 
       es_fputs ("ext key usage: ", fp);
       if (err)
@@ -1048,8 +1036,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
     }
 
   err = ksba_cert_get_cert_policies (cert, &string);
-  if (gpg_err_code (err) != GPG_ERR_NO_DATA
-      && gpg_err_code (err) != GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       es_fputs ("     policies: ", fp);
       if (err)

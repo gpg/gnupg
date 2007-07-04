@@ -5,7 +5,7 @@
  *
  * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * GnuPG is distributed in the hope that it will be useful,
@@ -14,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -38,7 +36,7 @@
 
 
 /* This function is to be used early at program startup to make sure
-   that some subsystems are initialized.  This is in particualr
+   that some subsystems are initialized.  This is in particular
    important for W32 to initialize the sockets so that our socket
    emulation code used directly as well as in libassuan may be used.
    It should best be called before any I/O is done so that setup
@@ -51,7 +49,7 @@ init_common_subsystems (void)
   set_native_charset (NULL); 
 
 #ifdef HAVE_W32_SYSTEM
-  /* For W32 we need to initialize the socket layer.  This is becuase
+  /* For W32 we need to initialize the socket layer.  This is because
      we use recv and send in libassuan as well as at some other
      places.  If we are building with PTH we let pth_init do it.  We
      can't do much on error so we ignore them.  An error would anyway

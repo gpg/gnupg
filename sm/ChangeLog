@@ -1,3 +1,10 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (check_cert_policy): Remove extra checks for
+	GPG_ERR_NO_VALUE.  They are not needed since libksba 1.0.1.
+	* keylist.c (print_capabilities, list_cert_raw, list_cert_std): Ditto.
+	* certlist.c (cert_usage_p, cert_usage_p): Ditto.
+
 2007-06-26  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Call gnupg_rl_initialize.

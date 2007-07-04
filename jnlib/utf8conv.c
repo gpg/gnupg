@@ -6,7 +6,7 @@
  *
  * JNLIB is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * JNLIB is distributed in the hope that it will be useful, but
@@ -15,9 +15,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
+ * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -87,8 +85,8 @@ load_libiconv (void)
         {
           log_info (_("error loading `%s': %s\n"),
                      "iconv.dll",  dlerror ());
-          log_info (_("please see http://www.gnupg.org/download/iconv.html "
-                      "for more information\n"));
+          log_info (_("please see %s for more information\n"),
+                    "http://www.gnupg.org/download/iconv.html");
           iconv_open = NULL;
           iconv = NULL;
           iconv_close = NULL;
@@ -726,7 +724,7 @@ jnlib_iconv (jnlib_iconv_t cd,
     return 0;
 #endif /*HAVE_W32_SYSTEM*/      
 
-  return iconv ((iconv_t)cd, inbuf, inbytesleft, outbuf, outbytesleft);
+  return iconv ((iconv_t)cd, (char**)inbuf, inbytesleft, outbuf, outbytesleft);
 }
 
 /* Wrapper function for iconv_close, required for W32 as we dlopen that

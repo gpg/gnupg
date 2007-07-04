@@ -1,6 +1,7 @@
 2007-07-04  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (TIMERTICK_INTERVAL): New.
+	(fixed_gcry_pth_init, main): Kludge to fix Pth initialization.
 
 2007-07-03  Werner Koch  <wk@g10code.com>
 

@@ -1,3 +1,7 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* gpl.texi: Updated to GPLv3.
+
 2007-06-22  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (Operational GPG Commands): Describe the flags used by

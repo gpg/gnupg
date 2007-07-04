@@ -5,7 +5,7 @@
  *
  * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * GnuPG is distributed in the hope that it will be useful,
@@ -14,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -185,6 +183,10 @@ static void handle_connections (int listen_fd);
 
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
+static int fixed_gcry_pth_init (void)
+{
+  return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
+}
 
 
 
@@ -320,6 +322,7 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
+  gcry_threads_pth.init = fixed_gcry_pth_init;
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {

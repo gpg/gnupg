@@ -72,8 +72,6 @@
 ** Add a test to check the extkeyusage.
 
 * Windows port (W32)
-** Signals are not support 
-    This means we can't reread a configuration
 ** No card status notifications.
 ** Regex support is disabled
   We need to adjust the test to find the regex we have anyway in 
@@ -92,10 +90,6 @@
 * g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 
-
-* When requiring libksba 1.0.1
-** Remove the extra GPG_ERR_NO_VALUE tests 
-   They have been added on 2006-10-18 to fix a libksba problem.
 
 * When switching to libgcrypt 1.3
 ** scd#encode_md_for_card, g10#encode_md_value, sm@do_encode_md

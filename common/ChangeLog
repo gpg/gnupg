@@ -1,3 +1,8 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_init_do): Do not throw an error if pth as already
+	been initialized.
+
 2007-06-26  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am ($(PROGRAMS)): New.

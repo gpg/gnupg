@@ -5,7 +5,7 @@
  *
  * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * GnuPG is distributed in the hope that it will be useful,
@@ -14,9 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
- * USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -57,8 +55,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
   int have_ocsp_signing = 0;
 
   err = ksba_cert_get_ext_key_usages (cert, &extkeyusages);
-  if (gpg_err_code (err) == GPG_ERR_NO_DATA
-      || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+  if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0; /* no policy given */
   if (!err)
     {
@@ -117,8 +114,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
 
 
       err = ksba_cert_get_key_usage (cert, &use);
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA
-          || gpg_err_code (err) == GPG_ERR_NO_VALUE)
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         {
           err = 0;
           if (opt.verbose && mode < 2)
@@ -456,8 +452,7 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
                          subjectKeyIdentifier matches the requested
                          one. */
                     }
-                  else if (gpg_err_code (rc) == GPG_ERR_NO_DATA
-                           || gpg_err_code (rc) == GPG_ERR_NO_VALUE)
+                  else if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
                     goto nextone;
                 }
             }

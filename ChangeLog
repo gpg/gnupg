@@ -1,3 +1,20 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist-gzip.
+
+	Switched entire package to GPLv3+.
+
+	* configure.ac: Require libksba 1.0.2.
+
+	* COPYING:  Updated to GPLv3.
+	* COPYING.LIB: New as jnlib/ uses this license.
+
+	* gl/: Switched to GPLv3+.
+
+	* intl/ Removed.
+	* configure.ac (AM_GNU_GETTEXT): Add external flag.
+	(AM_ICONV): New.
+
 2007-07-03  Werner Koch  <wk@g10code.com>
 
 	* configure.ac [W32]: Use ws2_32 instead of wsock32.

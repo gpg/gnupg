@@ -1,3 +1,9 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* utf8conv.c (load_libiconv): Remove URL from translatble string.
+
+	Switched JNLIB from LGPLv2.1 to LGPLv3.
+
 2007-07-01  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (strusage): Use id 10 for the license string;

@@ -6,7 +6,7 @@
 # 
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 # 
 # GnuPG is distributed in the hope that it will be useful,
@@ -15,9 +15,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-# USA.
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
@@ -48,7 +46,7 @@ NEED_LIBASSUAN_API=1
 NEED_LIBASSUAN_VERSION=0.9.3
 
 NEED_KSBA_API=1
-NEED_KSBA_VERSION=1.0.0
+NEED_KSBA_VERSION=1.0.2
 
 
 PACKAGE=$PACKAGE_NAME
@@ -876,7 +874,8 @@ AC_MSG_NOTICE([checking for gettext])
 AM_PO_SUBDIRS
 AM_GNU_GETTEXT_VERSION([0.16.1])
 if test "$try_gettext" = yes; then
-  AM_GNU_GETTEXT(,[need-ngettext])
+  AM_ICONV
+  AM_GNU_GETTEXT([external],[need-ngettext])
 
   # gettext requires some extra checks.  These really should be part of
   # the basic AM_GNU_GETTEXT macro.  TODO: move other gettext-specific
@@ -1350,7 +1349,6 @@ fi
 AC_CONFIG_FILES([ m4/Makefile 
 Makefile
 po/Makefile.in
-intl/Makefile
 gl/Makefile
 include/Makefile
 jnlib/Makefile
