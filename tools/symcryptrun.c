@@ -424,7 +424,7 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
 {
   int err;
   char *pw;
-#ifdef HAVE_LANGINFO_CODESET
+#ifdef ENABLE_NLS
   char *orig_codeset = NULL;
 #endif
 
