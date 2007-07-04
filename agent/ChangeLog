@@ -1,3 +1,25 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (TIMERTICK_INTERVAL): New.
+
+2007-07-03  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_connections): Do not use FD_SETSIZE for
+	select but compute the correct number.
+
+2007-07-02  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_reloadagent) [W32]: New.
+	(register_commands) [W32]: New command RELOADAGENT.
+
+	* Makefile.am (gpg_agent_SOURCES): Remove w32main.c and w32main.h.
+	(gpg_agent_res_ldflags): Remove icon file as we don't have a
+	proper icon yet.
+	* gpg-agent.c (main): do not include w32main.h.  Remove all calls
+	to w32main.c.
+	(agent_sighup_action): New.
+	(handle_signal): Use it.
+
 2007-06-26  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (create_directories) [W32]: Made it work.

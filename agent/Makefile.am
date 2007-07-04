@@ -23,7 +23,7 @@ bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 noinst_PROGRAMS = $(TESTS)
 
-EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
+# EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
@@ -47,25 +47,21 @@ gpg_agent_SOURCES = \
 	call-scd.c \
 	learncard.c
 
-if HAVE_W32_SYSTEM
-gpg_agent_SOURCES += w32main.c w32main.h
-endif
-
 common_libs = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
 commonpth_libs = ../jnlib/libjnlib.a $(libcommonpth) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
-if HAVE_W32_SYSTEM
-.rc.o:
-	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
-	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
-
-gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o -Wl,--subsystem,windows
-gpg_agent_res_deps = gpg-agent-resource.o
-else
+#if HAVE_W32_SYSTEM
+#.rc.o:
+#	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
+#	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
+#
+#gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o -Wl,--subsystem,windows
+#gpg_agent_res_deps = gpg-agent-resource.o
+#else
 gpg_agent_res_ldflags =
 gpg_agent_res_deps =
-endif
+#endif
 
 
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)

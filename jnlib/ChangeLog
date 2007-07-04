@@ -1,3 +1,9 @@
+2007-07-01  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (strusage): Use id 10 for the license string;
+	default to GPL3+.  Change long note to version 3 or later.
+	(show_version): Print the license info.
+
 2007-06-19  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am: Add support for regression tests.

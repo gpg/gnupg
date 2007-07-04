@@ -1323,6 +1323,17 @@ cmd_killagent (assuan_context_t ctx, char *line)
   ctrl->server_local->stopme = 1;
   return 0;
 }
+
+/* RELOADAGENT
+
+   As signals are inconvenient under Windows, we provide this command
+   to allow reloading of the configuration.  */
+static int
+cmd_reloadagent (assuan_context_t ctx, char *line)
+{
+  agent_sighup_action ();
+  return 0;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
 
@@ -1506,6 +1517,7 @@ register_commands (assuan_context_t ctx)
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty },
 #ifdef HAVE_W32_SYSTEM
     { "KILLAGENT",      cmd_killagent },
+    { "RELOADAGENT",    cmd_reloadagent },
 #endif
     { "GETINFO",        cmd_getinfo },
     { NULL }

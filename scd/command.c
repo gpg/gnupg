@@ -1402,6 +1402,8 @@ cmd_unlock (assuan_context_t ctx, char *line)
    Multi purpose command to return certain information.  
    Supported values of WHAT are:
 
+   version     - Return the version of the program.
+
    socket_name - Return the name of the socket.
 
    status - Return the status of the current slot (in the future, may
@@ -1420,7 +1422,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
 
-  if (!strcmp (line, "socket_name"))
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "socket_name"))
     {
       const char *s = scd_get_socket_name ();
 

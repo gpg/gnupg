@@ -48,7 +48,6 @@
 #include "sysutils.h"
 #ifdef HAVE_W32_SYSTEM
 # include "../jnlib/w32-afunix.h"
-# include "w32main.h"
 #endif
 #include "setenv.h"
 
@@ -171,6 +170,14 @@ static ARGPARSE_OPTS opts[] = {
 #define MAX_CACHE_TTL_SSH     (120*60) /* 2 hours */
 #define MIN_PASSPHRASE_LEN    (8)      
 
+/* The timer tick used for housekeeping stuff.  For Windows we use a
+   longer period as the SetWaitableTimer seems to signal earlier than
+   the 2 seconds.  */
+#ifdef HAVE_W32_SYSTEM
+#define TIMERTICK_INTERVAL    (4)
+#else
+#define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
+#endif
 
 /* flag to indicate that a shutdown was requested */
 static int shutdown_pending;
@@ -408,16 +415,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
-/* The main entry point.  For W32 another name is used as the real
-   entry points needs to be named WinMain and is defined in
-   w32main.c. */
-#ifdef HAVE_W32_SYSTEM
-int
-w32_main (int argc, char **argv )
-#else
+/* The main entry point.  */
 int
 main (int argc, char **argv )
-#endif
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
@@ -851,7 +851,6 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
       printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
-      w32_setup_taskbar ();
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1) 
@@ -1430,6 +1429,17 @@ handle_tick (void)
 }
 
 
+/* A global fucntion which allows us to call the reload stuff from
+   other palces too.  This is only used when build for W32.  */
+void
+agent_sighup_action (void)
+{
+  agent_flush_cache ();
+  reread_configuration ();
+  agent_reload_trustlist ();
+}
+
+
 static void
 handle_signal (int signo)
 {
@@ -1439,9 +1449,7 @@ handle_signal (int signo)
     case SIGHUP:
       log_info ("SIGHUP received - "
                 "re-reading configuration and flushing cache\n");
-      agent_flush_cache ();
-      reread_configuration ();
-      agent_reload_trustlist ();
+      agent_sighup_action ();
       break;
       
     case SIGUSR1:
@@ -1545,6 +1553,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   fd_set fdset, read_fdset;
   int ret;
   int fd;
+  int nfd;
 
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
@@ -1562,23 +1571,24 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
-  ev = NULL;
-  signo = 0;
+  sigs = 0;
+  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #endif
   time_ev = NULL;
 
   FD_ZERO (&fdset);
   FD_SET (listen_fd, &fdset);
+  nfd = listen_fd;
   if (listen_fd_ssh != -1)
-    FD_SET (listen_fd_ssh, &fdset);
+    {
+      FD_SET (listen_fd_ssh, &fdset);
+      if (listen_fd_ssh > nfd)
+        nfd = listen_fd_ssh;
+    }
 
   for (;;)
     {
       sigset_t oldsigs;
-
-#ifdef HAVE_W32_SYSTEM
-      w32_poll_events ();
-#endif
 
       if (shutdown_pending)
         {
@@ -1596,7 +1606,8 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
       /* Create a timeout event if needed. */
       if (!time_ev)
-        time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
+        time_ev = pth_event (PTH_EVENT_TIME, 
+                             pth_timeout (TIMERTICK_INTERVAL, 0));
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
@@ -1604,7 +1615,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
       if (time_ev)
         pth_event_concat (ev, time_ev, NULL);
-      ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
+      ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
       if (time_ev)
         pth_event_isolate (time_ev);
 
@@ -1643,8 +1654,8 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
       
       /* We now might create new threads and because we don't want any
-         signals - we are handling here - to be delivered to a new
-         thread. Thus we need to block those signals. */
+         signals (as we are handling them here) to be delivered to a
+         new thread.  Thus we need to block those signals. */
       pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
 
       if (FD_ISSET (listen_fd, &read_fdset))

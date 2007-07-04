@@ -1,3 +1,7 @@
+2007-07-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [W32]: Use ws2_32 instead of wsock32.
+
 2007-06-25  Werner Koch  <wk@g10code.com>
 
 	* gl/mkdtemp.c (gen_tempname) [MKDIR_TAKES_ONE_ARG]: Avoid

@@ -844,64 +844,71 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 static void
 show_version()
 {
-    const char *s;
-    int i;
-    /* version line */
-    fputs(strusage(11), stdout);
-    if( (s=strusage(12)) )
-	printf(" (%s)", s );
-    printf(" %s\n", strusage(13) );
-    /* additional version lines */
-    for(i=20; i < 30; i++ )
-	if( (s=strusage(i)) )
-	    printf("%s\n", s );
-    /* copyright string */
-    if( (s=strusage(14)) )
-	printf("%s\n", s );
-    /* copying conditions */
-    if( (s=strusage(15)) )
-	fputs(s, stdout);
-    /* thanks */
-    if( (s=strusage(18)) )
-	fputs(s, stdout);
-    /* additional program info */
-    for(i=30; i < 40; i++ )
-	if( (s=strusage(i)) )
-	    fputs (s, stdout);
-    fflush(stdout);
+  const char *s;
+  int i;
+
+  /* Version line.  */
+  fputs (strusage (11), stdout);
+  if ((s=strusage (12)))
+    printf (" (%s)", s );
+  printf (" %s\n", strusage (13) );
+  /* Additional version lines. */
+  for (i=20; i < 30; i++)
+    if ((s=strusage (i)))
+      printf ("%s\n", s );
+  /* Copyright string.  */
+  if( (s=strusage (14)) )
+    printf("%s\n", s );
+  /* Licence string.  */
+  if( (s=strusage (10)) )
+    printf("%s\n", s );
+  /* Copying conditions. */
+  if ( (s=strusage(15)) )
+    fputs (s, stdout);
+  /* Thanks. */
+  if ((s=strusage(18)))
+    fputs (s, stdout);
+  /* Additional program info. */
+  for (i=30; i < 40; i++ )
+    if ( (s=strusage (i)) )
+      fputs (s, stdout);
+  fflush(stdout);
 }
 
 
 void
-usage( int level )
+usage (int level)
 {
-    if( !level ) {
-	fprintf(stderr,"%s %s; %s\n", strusage(11), strusage(13),
-						     strusage(14) );
-	fflush(stderr);
+  if (!level)
+    {
+      fprintf(stderr,"%s %s; %s\n", strusage(11), strusage(13), strusage (14));
+      fflush (stderr);
     }
-    else if( level == 1 ) {
-	fputs(strusage(40),stderr);
-	exit(2);
+  else if (level == 1)
+    {
+      fputs (strusage (40), stderr);
+      exit (2);
     }
-    else if( level == 2 ) {
-	puts(strusage(41));
-	exit(0);
+  else if (level == 2) 
+    {
+      puts (strusage(41));
+      exit (0);
     }
 }
 
 /* Level
- *     0: Copyright String auf stderr ausgeben
- *     1: Kurzusage auf stderr ausgeben und beenden
- *     2: Langusage auf stdout ausgeben und beenden
- *    11: name of program
- *    12: optional name of package which includes this program.
+ *     0: Print copyright string to stderr
+ *     1: Print a short usage hint to stderr and terminate
+ *     2: Print a long usage hint to stdout and terminate
+ *    10: Return license info string
+ *    11: Return the name of the program
+ *    12: Return optional name of package which includes this program.
  *    13: version  string
  *    14: copyright string
  *    15: Short copying conditions (with LFs)
  *    16: Long copying conditions (with LFs)
  *    17: Optional printable OS name
- *    18: Optional thanks list	 (with LFs)
+ *    18: Optional thanks list (with LFs)
  *    19: Bug report info
  *20..29: Additional lib version strings.
  *30..39: Additional program info (with LFs)
@@ -917,26 +924,27 @@ strusage( int level )
 	return p;
 
     switch( level ) {
+      case 10: p = ("License GPLv2+: GNU GPL version 2 or later "
+                    "<http://gnu.org/licenses/old-licenses/gpl-2.0.html>");
+        break;
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
       case 14: p = "Copyright (C) 2007 Free Software Foundation, Inc."; break;
       case 15: p =
-"This program comes with ABSOLUTELY NO WARRANTY.\n"
-"This is free software, and you are welcome to redistribute it\n"
-"under certain conditions. See the file COPYING for details.\n"; break;
+"This is free software: you are free to change and redistribute it.\n"
+"There is NO WARRANTY, to the extent permitted by law.\n";
+        break;
       case 16:	p =
 "This is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
+"the Free Software Foundation; either version 3 of the License, or\n"
 "(at your option) any later version.\n\n"
 "It is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 "GNU General Public License for more details.\n\n"
 "You should have received a copy of the GNU General Public License\n"
-"along with this program; if not, write to the Free Software\n"
-"Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,\n"
-"USA.\n";
+"along with this software.  If not, see  <http://www.gnu.org/licenses/>.\n";
 	break;
       case 40: /* short and long usage */
       case 41: p = ""; break;

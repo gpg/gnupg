@@ -150,6 +150,15 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
 #endif
 
+/* The timer tick used for housekeeping stuff.  For Windows we use a
+   longer period as the SetWaitableTimer seems to signal earlier than
+   the 2 seconds.  */
+#ifdef HAVE_W32_SYSTEM
+#define TIMERTICK_INTERVAL    (4)
+#else
+#define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
+#endif
+
 
 /* Flag to indicate that a shutdown was requested. */
 static int shutdown_pending;
@@ -280,7 +289,7 @@ main (int argc, char **argv )
   FILE *configfp = NULL;
   char *configname = NULL;
   const char *shell;
-  unsigned configlineno;
+  unsigned int configlineno;
   int parse_debug = 0;
   const char *debug_level = NULL;
   int default_config =1;
@@ -1040,6 +1049,7 @@ handle_connections (int listen_fd)
   fd_set fdset, read_fdset;
   int ret;
   int fd;
+  int nfd;
 
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
@@ -1055,13 +1065,18 @@ handle_connections (int listen_fd)
   pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
-  ev = NULL;
+  sigs = 0;
+  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #endif
   time_ev = NULL;
 
   FD_ZERO (&fdset);
+  nfd = 0;
   if (listen_fd != -1)
-    FD_SET (listen_fd, &fdset);
+    {
+      FD_SET (listen_fd, &fdset);
+      nfd = listen_fd;
+    }
 
   for (;;)
     {
@@ -1081,7 +1096,8 @@ handle_connections (int listen_fd)
 
       /* Create a timeout event if needed. */
       if (!time_ev)
-        time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
+        time_ev = pth_event (PTH_EVENT_TIME,
+                             pth_timeout (TIMERTICK_INTERVAL, 0));
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
@@ -1089,7 +1105,7 @@ handle_connections (int listen_fd)
 
       if (time_ev)
         pth_event_concat (ev, time_ev, NULL);
-      ret = pth_select_ev (FD_SETSIZE, &read_fdset, NULL, NULL, NULL, ev);
+      ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
       if (time_ev)
         pth_event_isolate (time_ev);
 

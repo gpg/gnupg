@@ -1,3 +1,12 @@
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_getinfo): New subcommand "version".
+
+	* scdaemon.c (TIMERTICK_INTERVAL): New.
+	(handle_connections) [W32]: Enable a dummy sigs event.
+	(handle_connections): Use a proper count for select and not
+	FD_SETSIZE.
+
 2007-06-21  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.h (ctrl_t): Remove.  It is now declared in ../common/util.h.

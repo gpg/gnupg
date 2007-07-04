@@ -1160,7 +1160,7 @@ GNUPG_CHECK_GNUMAKE
 # requiring any network stuff but linking to code in libcommon which
 # tracks in winsock stuff (e.g. init_common_subsystems.
 if test "$have_w32_system" = yes; then
-   W32SOCKLIBS="-lwsock32"
+   W32SOCKLIBS="-lws2_32"
    NETLIBS="${NETLIBS} ${W32SOCKLIBS}"
 fi
 

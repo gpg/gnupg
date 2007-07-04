@@ -225,7 +225,7 @@ start_pinentry (ctrl_t ctrl)
     pgmname++;
 
   /* OS X needs the entire file name in argv[0], so that it can locate
-     the resource bundle.  For other systems we stick to the the usual
+     the resource bundle.  For other systems we stick to the usual
      convention of supplying only the name of the program.  */
 #ifdef __APPLE__
   argv[0] = opt.pinentry_program;
