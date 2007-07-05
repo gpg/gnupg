@@ -48,7 +48,7 @@ endif
 
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 
-common_libs = ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
+common_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
 gpgsplit_LDADD = $(common_libs) \
