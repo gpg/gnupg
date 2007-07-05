@@ -11,6 +11,9 @@ Noteworthy changes in version 2.0.5
  * The command --gen-key may now be used instead of the
    gpgsm-gencert.sh script.
 
+ * Changed key generation to reveal less information about the
+   machine.  Bug fixes for gpg2's card key generation.
+
 
 Noteworthy changes in version 2.0.4 (2007-05-09)
 ------------------------------------------------

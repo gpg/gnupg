@@ -1981,8 +1981,9 @@ do_writekey (app_t app, ctrl_t ctrl,
 /* Handle the GENKEY command. */
 static gpg_error_t 
 do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
-          gpg_error_t (*pincb)(void*, const char *, char **),
-          void *pincb_arg)
+           time_t createtime,
+           gpg_error_t (*pincb)(void*, const char *, char **),
+           void *pincb_arg)
 {
   int rc;
   char numbuf[30];
@@ -2014,7 +2015,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (rc)
     return rc;
 
-  /* Prepare for key generation by verifying the ADmin PIN.  */
+  /* Prepare for key generation by verifying the Admin PIN.  */
   rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
     goto leave;
@@ -2067,7 +2068,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
 /*    log_printhex ("RSA e:", e, elen); */
   send_key_data (ctrl, "e", e, elen);
 
-  created_at = gnupg_get_time ();
+  created_at = createtime? createtime : gnupg_get_time ();
   sprintf (numbuf, "%lu", (unsigned long)created_at);
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);

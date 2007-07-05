@@ -1,3 +1,8 @@
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	* t-gettime.c: New. 
+	* gettime.c (isotime2epoch, epoch2isotime): New.
+
 2007-07-04  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_init_do): Do not throw an error if pth as already

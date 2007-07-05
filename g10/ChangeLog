@@ -1,3 +1,27 @@
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (card_generate_subkey, card_store_subkey): Enable
+	the code also for GnuPG-2.
+
+	* keygen.c (make_backsig): Add arg TIMESTAMP.
+	(write_keybinding): Add arg TIMESTAMP, pass it to make_backsig.
+	(write_direct_sig, write_selfsigs): Add arg TIMESTAMP.
+	(gen_elg, gen_dsa, gen_rsa): Add arg TIMESTAMP.
+	(do_create): Ditto.
+	(do_generate_keypair): Use the same timestamp for key creation
+	time and all key signatures. Return an error if write_direct_sig
+	for the secret key fails.
+	(generate_subkeypair): Ditto.
+	(gen_card_key): New arg TIMESTAMP.
+	(generate_card_subkeypair): Pass current time to gen_card_key.
+	(gen_card_key_with_backup): New arg TIMESTAMP.
+	(read_parameter_file): Add option Creation-Date.
+	(parse_creation_string): New.
+	(do_generate_keypair): Use the Creation-Date if available.
+	(save_unprotected_key_to_card): Use P for P and not D.
+	* call-agent.c (agent_scd_genkey): Add arg CREATETIME.
+	* keyedit.c (menu_backsign): Use the same timestamp for all backsigs.
+
 2007-06-26  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (try_make_homedir): Support W32; use standard_homedir.

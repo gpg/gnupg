@@ -1,5 +1,5 @@
 /* call-scd.c - fork of the scdaemon to do SC operations
- *	Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -79,6 +79,8 @@ struct inq_needpin_s
   assuan_context_t ctx;
   int (*getpin_cb)(void *, const char *, char*, size_t);
   void *getpin_cb_arg;
+  assuan_context_t passthru;  /* If not NULL, pass unknown inquiries
+                                 up to the caller.  */
 };
 
 
@@ -731,6 +733,36 @@ inq_needpin (void *opaque, const char *line)
     {
       rc = parm->getpin_cb (parm->getpin_cb_arg, "", NULL, 0);
     }
+  else if (parm->passthru)
+    {
+      unsigned char *value;
+      size_t valuelen;
+      int rest;
+      int needrest = !strncmp (line, "KEYDATA", 8);
+
+      /* Pass the inquiry up to our caller.  We limit the maximum
+         amount to an arbitrary value.  As we know that the KEYDATA
+         enquiry is pretty sensitive we disable logging then */
+      if ((rest = (needrest
+                   && !assuan_get_flag (parm->passthru, ASSUAN_CONFIDENTIAL))))
+        assuan_begin_confidential (parm->passthru);
+      rc = assuan_inquire (parm->passthru, line, &value, &valuelen, 8096);
+      if (rest)
+        assuan_end_confidential (parm->passthru);
+      if (!rc)
+        {
+          if ((rest = (needrest 
+                       && !assuan_get_flag (parm->ctx, ASSUAN_CONFIDENTIAL))))
+            assuan_begin_confidential (parm->ctx);
+          rc = assuan_send_data (parm->ctx, value, valuelen);
+          if (rest)
+            assuan_end_confidential (parm->ctx);
+          xfree (value);
+        }
+      else
+        log_error ("error forwarding inquiry `%s': %s\n", 
+                   line, gpg_strerror (rc));
+    }
   else
     {
       log_error ("unsupported inquiry `%s'\n", line);
@@ -780,6 +812,7 @@ agent_card_pksign (ctrl_t ctrl,
   inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.passthru = 0;
   snprintf (line, DIM(line)-1, 
             ctrl->use_auth_call? "PKAUTH %s":"PKSIGN %s", keyid);
   line[DIM(line)-1] = 0;
@@ -850,6 +883,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.passthru = 0;
   snprintf (line, DIM(line)-1, "PKDECRYPT %s", keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
@@ -1065,8 +1099,8 @@ pass_data_thru (void *opaque, const void *buffer, size_t length)
 
 /* Send the line CMDLINE with command for the SCDdaemon to it and send
    all status messages back.  This command is used as a general quoting
-   mechanism to pass everything verbatim to SCDAEMOPN.  The PIN
-   inquirey is handled inside gpg-agent. */
+   mechanism to pass everything verbatim to SCDAEMON.  The PIN
+   inquiry is handled inside gpg-agent.  */
 int
 agent_card_scd (ctrl_t ctrl, const char *cmdline,
                 int (*getpin_cb)(void *, const char *, char*, size_t),
@@ -1082,6 +1116,7 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
   inqparm.ctx = ctrl->scd_local->ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
+  inqparm.passthru = assuan_context;
   rc = assuan_transact (ctrl->scd_local->ctx, cmdline,
                         pass_data_thru, assuan_context,
                         inq_needpin, &inqparm,

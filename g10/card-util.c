@@ -999,7 +999,7 @@ restore_forced_chv1 (int *forced_chv1)
     }
 }
 
-#if GNUPG_MAJOR_VERSION == 1
+
 /* Helper for the key generation/edit functions.  */
 static void
 show_card_key_info (struct agent_card_info_s *info)
@@ -1012,9 +1012,8 @@ show_card_key_info (struct agent_card_info_s *info)
   print_sha1_fpr (NULL, info->fpr3valid? info->fpr3:NULL);
   tty_printf ("\n");
 }
-#endif
 
-#if GNUPG_MAJOR_VERSION == 1
+
 /* Helper for the key generation/edit functions.  */
 static int
 replace_existing_key_p (struct agent_card_info_s *info, int keyno)
@@ -1034,7 +1033,6 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
     }
   return 0;
 }
-#endif
 
 
 static void
@@ -1104,7 +1102,6 @@ generate_card_keys (const char *serialno)
 int
 card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 {
-#if GNUPG_MAJOR_VERSION == 1
   struct agent_card_info_s info;
   int okay = 0;
   int forced_chv1 = 0;
@@ -1151,9 +1148,6 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
   agent_release_card_info (&info);
   restore_forced_chv1 (&forced_chv1);
   return okay;
-#else
-  return 0;
-#endif
 }
 
 
@@ -1164,7 +1158,6 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 int 
 card_store_subkey (KBNODE node, int use)
 {
-#if GNUPG_MAJOR_VERSION == 1
   struct agent_card_info_s info;
   int okay = 0;
   int rc;
@@ -1266,7 +1259,7 @@ card_store_subkey (KBNODE node, int use)
   n = pubkey_get_nskey (sk->pubkey_algo);
   for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++)
     {
-      mpi_free (sk->skey[i]);
+      gcry_mpi_release (sk->skey[i]);
       sk->skey[i] = NULL;
     }
   i = pubkey_get_npkey (sk->pubkey_algo);
@@ -1285,9 +1278,6 @@ card_store_subkey (KBNODE node, int use)
     free_secret_key (copied_sk);
   agent_release_card_info (&info);
   return okay;
-#else
-  return 0;
-#endif
 }
 
 

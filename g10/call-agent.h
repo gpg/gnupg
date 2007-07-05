@@ -82,7 +82,7 @@ int agent_scd_writekey (int keyno, const char *serialno,
 
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                      const char *serialno);
+                      const char *serialno, u32 createtime);
 
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,

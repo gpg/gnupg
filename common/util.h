@@ -103,6 +103,8 @@ void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
 u32    make_timestamp (void);
 u32    scan_isodatestr (const char *string);
+time_t isotime2epoch (const char *string);
+void   epoch2isotime (gnupg_isotime_t timebuf, time_t atime);
 u32    add_days_to_timestamp (u32 stamp, u16 days);
 const char *strtimevalue (u32 stamp);
 const char *strtimestamp (u32 stamp); /* GMT */

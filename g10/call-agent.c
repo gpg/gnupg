@@ -1,5 +1,5 @@
 /* call-agent.c - divert operations to the agent
- * Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -498,21 +498,32 @@ scd_genkey_cb (void *opaque, const char *line)
 }
 
 /* Send a GENKEY command to the SCdaemon.  SERIALNO is not used in
-   this implementation. */
+   this implementation.  If CREATEDATE has been given, it will be
+   passed to SCDAEMON so that the key can be created with this
+   timestamp; note the user needs to use the returned timestamp as old
+   versions of scddaemon don't support this option.  */
 int
 agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                  const char *serialno)
+                  const char *serialno, u32 createtime)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  gnupg_isotime_t tbuf;
 
   rc = start_agent ();
   if (rc)
     return rc;
 
+  if (createtime)
+    epoch2isotime (tbuf, createtime);
+  else
+    *tbuf = 0;
+
   memset (info, 0, sizeof *info);
-  snprintf (line, DIM(line)-1, "SCD GENKEY %s%d",
-            force? "--force ":"", keyno);
+  snprintf (line, DIM(line)-1, "SCD GENKEY %s%s %s %d",
+            *tbuf? "--timestamp=":"", tbuf,
+            force? "--force":"", 
+            keyno);
   line[DIM(line)-1] = 0;
 
   memset (info, 0, sizeof *info);

@@ -819,6 +819,13 @@ The format of this file is as follows:
 	may either be entered in ISO date format (2000-08-15) or as
 	number of days, weeks, month or years. Without a letter days
 	are assumed.
+     Creation-Date: <iso-date>
+        Set the creation date of the key as stored in the key
+        information and which is also part of the fingerprint
+        calculation.  Either a date like "1986-04-26" or a full
+        timestamp like "19860426T042640" may be used.  The time is
+        considered to be UTC.  If it is not given the current time 
+        is used.
      Preferences: <string>
         Set the cipher, hash, and compression preference values for
 	this key.  This expects the same type of string as "setpref"

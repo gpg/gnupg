@@ -1,5 +1,5 @@
 /* gettime.c - Wrapper for time functions
- *	Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2002, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,6 +20,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
@@ -64,9 +65,9 @@ gnupg_get_isotime (gnupg_isotime_t timebuf)
 #else
       tp = gmtime (&atime);
 #endif
-      sprintf (timebuf,"%04d%02d%02dT%02d%02d%02d",
-               1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-               tp->tm_hour, tp->tm_min, tp->tm_sec);
+      snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
+                1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                tp->tm_hour, tp->tm_min, tp->tm_sec);
     }
 }
 
@@ -163,6 +164,78 @@ scan_isodatestr( const char *string )
 	return 0;
     return stamp;
 }
+
+/* Scan am ISO timestamp and return a epoch based timestamp.  The only
+   supported format is "yyyymmddThhmmss" delimited by white space, nul, a
+   colon or a comma.  Returns (time_t)(-1) for an invalid string.  */
+time_t
+isotime2epoch (const char *string)
+{
+  const char *s;
+  int year, month, day, hour, minu, sec;
+  struct tm tmbuf;
+  int i;
+
+  if (!*string)
+    return (time_t)(-1);
+  for (s=string, i=0; i < 8; i++, s++)
+    if (!digitp (s))
+      return (time_t)(-1);
+  if (*s != 'T')
+      return (time_t)(-1);
+  for (s++, i=9; i < 15; i++, s++)
+    if (!digitp (s))
+      return (time_t)(-1);
+  if ( !(!*s || (isascii (*s) && isspace(*s)) || *s == ':' || *s == ','))
+    return (time_t)(-1);  /* Wrong delimiter.  */
+
+  year  = atoi_4 (string);
+  month = atoi_2 (string + 4);
+  day   = atoi_2 (string + 6);
+  hour  = atoi_2 (string + 9);
+  minu  = atoi_2 (string + 11);
+  sec   = atoi_2 (string + 13);
+
+  /* Basic checks.  */
+  if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31
+      || hour > 23 || minu > 59 || sec > 61 )
+    return (time_t)(-1);
+
+  memset (&tmbuf, 0, sizeof tmbuf);
+  tmbuf.tm_sec  = sec;
+  tmbuf.tm_min  = minu;
+  tmbuf.tm_hour = hour;
+  tmbuf.tm_mday = day;
+  tmbuf.tm_mon  = month-1;
+  tmbuf.tm_year = year - 1900;
+  tmbuf.tm_isdst = -1;
+  return timegm (&tmbuf);
+}
+
+
+/* Convert an Epoch time to an iso time stamp. */
+void
+epoch2isotime (gnupg_isotime_t timebuf, time_t atime)
+{
+  if (atime < 0)
+    *timebuf = 0;
+  else 
+    {
+      struct tm *tp;
+#ifdef HAVE_GMTIME_R
+      struct tm tmbuf;
+      
+      tp = gmtime_r (&atime, &tmbuf);
+#else
+      tp = gmtime (&atime);
+#endif
+      snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
+                1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                tp->tm_hour, tp->tm_min, tp->tm_sec);
+    }
+}
+
+
 
 
 u32

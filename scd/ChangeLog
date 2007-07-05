@@ -1,3 +1,14 @@
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	* command.c (has_option_name, skip_options): New.
+	(cmd_genkey): Add option --timestamp.
+	(cmd_writekey): Enter confidential mode while inquiring the key data.
+
+	* app.c (app_genkey): Add arg CREATETIME.
+	* app-common.h (app_ctx_s): Likewise
+	* app-openpgp.c (do_genkey): Ditto.  Use it.
+
+
 2007-07-04  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): New subcommand "version".

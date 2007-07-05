@@ -198,7 +198,8 @@ int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
 int keygen_add_notations(PKT_signature *sig,void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int make_backsig(PKT_signature *sig,PKT_public_key *pk,
-		 PKT_public_key *sub_pk,PKT_secret_key *sub_sk);
+		 PKT_public_key *sub_pk,PKT_secret_key *sub_sk,
+                 u32 timestamp);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 #ifdef ENABLE_CARD_SUPPORT
 int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,

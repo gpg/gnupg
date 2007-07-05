@@ -176,10 +176,10 @@ or other purposes and don't have a corresponding certificate.
 
 
 @menu
-* gpg 1.4 vs. 1.9::   Relationship between the two branches.
+* GnuPG-1 and GnuPG-2::   Relationship between the two branches.
 @end menu
 
-@node gpg 1.4 vs. 1.9
+@node GnuPG-1 and GnuPG-2
 @subsection  Relationship between the two branches.
 
 Here is a little picture showing how the components work together:

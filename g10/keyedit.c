@@ -3652,6 +3652,7 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
   PKT_public_key *main_pk;
   PKT_secret_key *main_sk,*sub_sk=NULL;
   KBNODE node;
+  u32 timestamp;
 
   assert(pub_keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
   assert(sec_keyblock->pkt->pkttype==PKT_SECRET_KEY);
@@ -3660,6 +3661,10 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
   main_pk=pub_keyblock->pkt->pkt.public_key;
   main_sk=copy_secret_key(NULL,sec_keyblock->pkt->pkt.secret_key);
   keyid_from_pk(main_pk,NULL);
+
+  /* We use the same timestamp for all backsigs so that we don't
+     reveal information about the used machine.  */
+  timestamp = make_timestamp ();
 
   for(node=pub_keyblock;node;node=node->next)
     {
@@ -3748,7 +3753,8 @@ menu_backsign(KBNODE pub_keyblock,KBNODE sec_keyblock)
       set_next_passphrase(passphrase);
       xfree(passphrase);
 
-      rc=make_backsig(sig_pk->pkt->pkt.signature,main_pk,sub_pk,sub_sk);
+      rc = make_backsig (sig_pk->pkt->pkt.signature, main_pk, sub_pk, sub_sk,
+                         timestamp);
       if(rc==0)
 	{
 	  PKT_signature *newsig;

@@ -1,5 +1,6 @@
 /* command.c - SCdaemon command handler
- * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -177,6 +178,41 @@ has_option (const char *line, const char *name)
   s = strstr (line, name);
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
+
+/* Same as has_option but does only test for the name of the option
+   and ignores an argument, i.e. with NAME being "--hash" it would
+   return a pointer for "--hash" as well as for "--hash=foo".  If
+   thhere is no such option NULL is returned.  The pointer returned
+   points right behind the option name, this may be an equal sign, Nul
+   or a space.  */
+static const char *
+has_option_name (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  return (s && (s == line || spacep (s-1))
+          && (!s[n] || spacep (s+n) || s[n] == '=')) ? (s+n) : NULL;
+}
+
+
+/* Skip over options.  It is assumed that leading spaces have been
+   removed (this is the case for lines passed to a handler from
+   assuan).  Blanks after the options are also removed. */
+static char *
+skip_options (char *line)
+{
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return line;
+}
+
 
 
 /* Convert the STRING into a newly allocated buffer while translating
@@ -1099,7 +1135,9 @@ cmd_writekey (assuan_context_t ctx, char *line)
     return out_of_core ();
 
   /* Now get the actual keydata. */
+  assuan_begin_confidential (ctx);
   rc = assuan_inquire (ctx, "KEYDATA", &keydata, &keydatalen, MAXLEN_KEYDATA);
+  assuan_end_confidential (ctx);
   if (rc)
     {
       xfree (keyid);
@@ -1118,7 +1156,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
 
 
 
-/* GENKEY [--force] <no>
+/* GENKEY [--force] [--timestamp=<isodate>] <no>
 
    Generate a key on-card identified by NO, which is application
    specific.  Return values are application specific.  For OpenPGP
@@ -1128,10 +1166,13 @@ cmd_writekey (assuan_context_t ctx, char *line)
      S KEY-CREATED-AT <seconds_since_epoch>
      S KEY-DATA [p|n] <hexdata>
      
-
    --force is required to overwrite an already existing key.  The
    KEY-CREATED-AT is required for further processing because it is
    part of the hashed key material for the fingerprint.
+
+   If --timestamp is given an OpenPGP key will be created using this
+   value.  The value needs to be in ISO Format; e.g.
+   "--timestamp=20030316T120000" and after 1970-01-01 00:00:00.
 
    The public part of the key can also later be retrieved using the
    READKEY command.
@@ -1143,19 +1184,28 @@ cmd_genkey (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyno;
-  int force = has_option (line, "--force");
+  int force;
+  const char *s;
+  time_t timestamp;
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
-  /* Skip over options. */
-  while ( *line == '-' && line[1] == '-' )
+  force = has_option (line, "--force");
+
+  if ((s=has_option_name (line, "--timestamp")))
     {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
+      if (*s != '=')
+        return set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
+      timestamp = isotime2epoch (s+1);
+      if (timestamp < 1)
+        return set_error (GPG_ERR_ASS_PARAMETER, "invalid time value");
     }
+  else
+    timestamp = 0;
+
+
+  line = skip_options (line);
   if (!*line)
     return set_error (GPG_ERR_ASS_PARAMETER, "no key number given");
   keyno = line;
@@ -1172,7 +1222,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   keyno = xtrystrdup (keyno);
   if (!keyno)
     return out_of_core ();
-  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0, pin_cb, ctx);
+  rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0,
+                   timestamp, pin_cb, ctx);
   xfree (keyno);
 
   TEST_CARD_REMOVAL (ctrl, rc);
