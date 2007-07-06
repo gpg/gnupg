@@ -1,3 +1,8 @@
+2007-07-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* encode.c (encode_crypt): Missed one call to
+	setup_plaintext_name().  This is bug#809.
+
 2007-06-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (mk_notation_policy_etc): expect all sigs that this is

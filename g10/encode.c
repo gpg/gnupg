@@ -557,22 +557,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
     if(use_symkey && (rc=write_symkey_enc(symkey_s2k,symkey_dek,cfx.dek,out)))
       goto leave;
 
-    if (!opt.no_literal) {
-	/* setup the inner packet */
-	if( filename || opt.set_filename ) {
-	    char *s = make_basename( opt.set_filename ? opt.set_filename
-						      : filename,
-				     iobuf_get_real_fname( inp ) );
-	    pt = xmalloc( sizeof *pt + strlen(s) - 1 );
-	    pt->namelen = strlen(s);
-	    memcpy(pt->name, s, pt->namelen );
-	    xfree(s);
-	}
-	else { /* no filename */
-	    pt = xmalloc( sizeof *pt - 1 );
-	    pt->namelen = 0;
-	}
-    }
+    if (!opt.no_literal)
+      pt=setup_plaintext_name(filename,inp);
 
     if (!iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
       {
