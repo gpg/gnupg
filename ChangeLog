@@ -1,3 +1,9 @@
+2007-07-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: AM_PROG_CC_C_O is desired by automake 1.10 to do
+	per-target builds (like we do in the keyserver dir), but exists in
+	the currently-used 1.9.3 as well.
+
 2007-06-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add --enable-camellia.  Disabled by default.  Do

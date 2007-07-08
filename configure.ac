@@ -508,6 +508,7 @@ AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
 AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, :)
