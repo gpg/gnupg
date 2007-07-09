@@ -1,3 +1,8 @@
+2007-07-09  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Better print an extra warning if Camellia has been
+	configured.
+
 2007-07-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* encode.c (encode_crypt): Missed one call to
@@ -11,6 +16,16 @@
 	>=v4 sigs.  This allows --force-v3-sigs and --force-v4-certs to
 	enable or disable notations, policies, and keyserver URLs.  This
 	is bug#800.
+
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (overwrite_filep, open_outfile) [W32]: Need to use
+	just "nul".  Though, I am pretty sure that some MSDOS versions
+	grok the extra /dev/.
+
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (open_outfile, overwrite_filep) [W32]: Use "/dev/nul".
 
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 

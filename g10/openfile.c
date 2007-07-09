@@ -76,6 +76,10 @@ overwrite_filep( const char *fname )
     if ( !strcmp ( fname, "/dev/null" ) )
         return 1; /* does not do any harm */
 #endif
+#ifdef HAVE_W32_SYSTEM
+    if ( !strcmp ( fname, "nul" ) )
+        return 1;
+#endif
 
     /* fixme: add some backup stuff in case of overwrite */
     if( opt.answer_yes )
@@ -193,8 +197,14 @@ open_outfile( const char *iname, int mode, IOBUF *a )
     char *buf = NULL;
     const char *name;
     
-    if( opt.dry_run )
-      name = "/dev/null";
+    if ( opt.dry_run )
+      {
+#ifdef HAVE_W32_SYSTEM
+        name = "nul";
+#else
+        name = "/dev/null";
+#endif
+      }
     else if( opt.outfile )
       name = opt.outfile;
     else {

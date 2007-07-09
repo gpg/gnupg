@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-03-05 10:25+0100\n"
+"POT-Creation-Date: 2007-04-03 13:28+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -42,7 +42,7 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 #: g10/dearmor.c:61 g10/dearmor.c:110 g10/encode.c:184 g10/encode.c:474
 #: g10/gpg.c:1012 g10/gpg.c:3513 g10/import.c:195 g10/keygen.c:2392
 #: g10/keyring.c:1525 g10/openfile.c:186 g10/openfile.c:348
-#: g10/plaintext.c:481 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1115
+#: g10/plaintext.c:492 g10/sign.c:808 g10/sign.c:1001 g10/sign.c:1115
 #: g10/sign.c:1266 g10/tdbdump.c:141 g10/tdbdump.c:149 g10/tdbio.c:540
 #: g10/tdbio.c:605
 #, c-format
@@ -668,7 +668,7 @@ msgstr ""
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1457 g10/keyedit.c:1617
+#: g10/card-util.c:1457 g10/keyedit.c:1621
 msgid "Command> "
 msgstr "Käsklus> "
 
@@ -687,7 +687,7 @@ msgstr "vastuolulised käsud\n"
 msgid "Admin commands are not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
-#: g10/card-util.c:1602 g10/keyedit.c:2238
+#: g10/card-util.c:1602 g10/keyedit.c:2242
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Vigane käsklus (proovige \"help\")\n"
 
@@ -752,7 +752,7 @@ msgstr "`%s' ei õnnestu avada\n"
 msgid "--output doesn't work for this command\n"
 msgstr "võti --output ei tööta selle käsuga\n"
 
-#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3386 g10/keyserver.c:1705
+#: g10/delkey.c:75 g10/export.c:311 g10/keyedit.c:3390 g10/keyserver.c:1705
 #: g10/revoke.c:228
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1262,7 +1262,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Avalik võti: "
 
-#: g10/gpg.c:806 g10/keyedit.c:2304
+#: g10/gpg.c:806 g10/keyedit.c:2308
 msgid "Cipher: "
 msgstr "¦iffer: "
 
@@ -1270,7 +1270,7 @@ msgstr "¦iffer: "
 msgid "Hash: "
 msgstr "Räsi: "
 
-#: g10/gpg.c:818 g10/keyedit.c:2350
+#: g10/gpg.c:818 g10/keyedit.c:2354
 msgid "Compression: "
 msgstr "Pakkimine: "
 
@@ -1442,7 +1442,7 @@ msgstr "%s ei ole lubatud kooditabel\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s ei ole lubatud kooditabel\n"
 
-#: g10/gpg.c:2518 g10/gpg.c:2707 g10/keyedit.c:4074
+#: g10/gpg.c:2518 g10/gpg.c:2707 g10/keyedit.c:4078
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "ei saa parsida võtmeserveri URI\n"
@@ -1852,24 +1852,24 @@ msgstr "[Kasutaja id puudub]"
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
-#: g10/getkey.c:1826
+#: g10/getkey.c:1831
 #, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Vigane võti %08lX muudeti kehtivaks võtme --allow-non-selfsigned-uid "
 "kasutamisega\n"
 
-#: g10/getkey.c:2383 g10/keyedit.c:3717
+#: g10/getkey.c:2388 g10/keyedit.c:3721
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "avalikul alamvõtmel %08lX puudub salajane alamvõti - ignoreerin\n"
 
-#: g10/getkey.c:2614
+#: g10/getkey.c:2619
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
 
-#: g10/getkey.c:2661
+#: g10/getkey.c:2666
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
@@ -2779,12 +2779,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "Kasutaja ID \"%s\" on tühistatud."
 
 #: g10/keyedit.c:609 g10/keyedit.c:637 g10/keyedit.c:664 g10/keyedit.c:830
-#: g10/keyedit.c:890 g10/keyedit.c:1736
+#: g10/keyedit.c:890 g10/keyedit.c:1740
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Olete kindel, et soovite seda ikka allkirjastada? (j/e) "
 
 #: g10/keyedit.c:623 g10/keyedit.c:651 g10/keyedit.c:678 g10/keyedit.c:836
-#: g10/keyedit.c:1742
+#: g10/keyedit.c:1746
 msgid "  Unable to sign.\n"
 msgstr "  Ei saa allkirjastada.\n"
 
@@ -2995,8 +2995,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Allkirjastan tõesti? "
 
-#: g10/keyedit.c:1061 g10/keyedit.c:4793 g10/keyedit.c:4884 g10/keyedit.c:4948
-#: g10/keyedit.c:5009 g10/sign.c:351
+#: g10/keyedit.c:1061 g10/keyedit.c:4797 g10/keyedit.c:4888 g10/keyedit.c:4952
+#: g10/keyedit.c:5013 g10/sign.c:351
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "allkirjastamine ebaõnnestus: %s\n"
@@ -3229,24 +3229,24 @@ msgstr ""
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#: g10/keyedit.c:1564
+#: g10/keyedit.c:1568
 #, fuzzy, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "viga salajase võtmebloki `%s' lugemisel: %s\n"
 
-#: g10/keyedit.c:1582
+#: g10/keyedit.c:1586
 msgid "Secret key is available.\n"
 msgstr "Salajane võti on kasutatav.\n"
 
-#: g10/keyedit.c:1663
+#: g10/keyedit.c:1667
 msgid "Need the secret key to do this.\n"
 msgstr "Selle tegamiseks on vaja salajast võtit.\n"
 
-#: g10/keyedit.c:1671
+#: g10/keyedit.c:1675
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Palun kasutage kõigepealt käsku \"toggle\".\n"
 
-#: g10/keyedit.c:1690
+#: g10/keyedit.c:1694
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3254,241 +3254,241 @@ msgid ""
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
-#: g10/keyedit.c:1730
+#: g10/keyedit.c:1734
 msgid "Key is revoked."
 msgstr "Võti on tühistatud."
 
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1753
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Kas allkirjastan tõesti kõik kasutaja IDd? "
 
-#: g10/keyedit.c:1756
+#: g10/keyedit.c:1760
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Vihje: Valige allkirjastamiseks kasutaja\n"
 
-#: g10/keyedit.c:1765
+#: g10/keyedit.c:1769
 #, fuzzy, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "tundmatu allkirja klass"
 
-#: g10/keyedit.c:1788
+#: g10/keyedit.c:1792
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "See käsklus ei ole %s moodis lubatud.\n"
 
-#: g10/keyedit.c:1810 g10/keyedit.c:1830 g10/keyedit.c:1996
+#: g10/keyedit.c:1814 g10/keyedit.c:1834 g10/keyedit.c:2000
 msgid "You must select at least one user ID.\n"
 msgstr "Te peate valima vähemalt ühe kasutaja ID.\n"
 
-#: g10/keyedit.c:1812
+#: g10/keyedit.c:1816
 msgid "You can't delete the last user ID!\n"
 msgstr "Viimast kasutaja ID ei saa kustutada!\n"
 
-#: g10/keyedit.c:1814
+#: g10/keyedit.c:1818
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Kas kustutan tõesti kõik kasutaja IDd? "
 
-#: g10/keyedit.c:1815
+#: g10/keyedit.c:1819
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Kas eemaldan tõesti selle kasutaja ID? "
 
-#: g10/keyedit.c:1865
+#: g10/keyedit.c:1869
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Kas eemaldan tõesti selle kasutaja ID? "
 
-#: g10/keyedit.c:1877
+#: g10/keyedit.c:1881
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Te peata valima vähemalt ühe võtme.\n"
 
-#: g10/keyedit.c:1905
+#: g10/keyedit.c:1909
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1919
+#: g10/keyedit.c:1923
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "`%s' ei õnnestu avada: %s\n"
 
-#: g10/keyedit.c:1936
+#: g10/keyedit.c:1940
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
-#: g10/keyedit.c:1960
+#: g10/keyedit.c:1964
 msgid "You must select at least one key.\n"
 msgstr "Te peata valima vähemalt ühe võtme.\n"
 
-#: g10/keyedit.c:1963
+#: g10/keyedit.c:1967
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Kas te tõesti soovite valitud võtmeid kustutada? "
 
-#: g10/keyedit.c:1964
+#: g10/keyedit.c:1968
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Kas te tõesti soovite seda võtit kustutada? "
 
-#: g10/keyedit.c:1999
+#: g10/keyedit.c:2003
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Kas tühistan tõesti kõik valitud kasutaja IDd? "
 
-#: g10/keyedit.c:2000
+#: g10/keyedit.c:2004
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Kas tühistan tõesti selle kasutaja ID? "
 
-#: g10/keyedit.c:2018
+#: g10/keyedit.c:2022
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Kas te tõesti soovite seda võtit tühistada? "
 
-#: g10/keyedit.c:2029
+#: g10/keyedit.c:2033
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Kas te tõesti soovite valitud võtmeid tühistada? "
 
-#: g10/keyedit.c:2031
+#: g10/keyedit.c:2035
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Kas te tõesti soovite seda võtit tühistada? "
 
-#: g10/keyedit.c:2081
+#: g10/keyedit.c:2085
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2123
+#: g10/keyedit.c:2127
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "sea eelistuste nimekiri"
 
-#: g10/keyedit.c:2129
+#: g10/keyedit.c:2133
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Kas uuendan tõesti kõik kasutaja ID-de seaded? "
 
-#: g10/keyedit.c:2131
+#: g10/keyedit.c:2135
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Kas tõesti uuendan seaded? "
 
-#: g10/keyedit.c:2199
+#: g10/keyedit.c:2203
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Salvestan muutused? "
 
-#: g10/keyedit.c:2202
+#: g10/keyedit.c:2206
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Väljun salvestamata? "
 
-#: g10/keyedit.c:2212
+#: g10/keyedit.c:2216
 #, c-format
 msgid "update failed: %s\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
 
-#: g10/keyedit.c:2219
+#: g10/keyedit.c:2223
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "salajase võtme uuendamine ebaõnnestus: %s\n"
 
-#: g10/keyedit.c:2226
+#: g10/keyedit.c:2230
 msgid "Key not changed so no update needed.\n"
 msgstr "Võtit ei muudetud, seega pole uuendamist vaja.\n"
 
-#: g10/keyedit.c:2327
+#: g10/keyedit.c:2331
 msgid "Digest: "
 msgstr "Teatelühend: "
 
-#: g10/keyedit.c:2379
+#: g10/keyedit.c:2383
 msgid "Features: "
 msgstr "Omadused: "
 
-#: g10/keyedit.c:2390
+#: g10/keyedit.c:2394
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2405 g10/keylist.c:308
+#: g10/keyedit.c:2409 g10/keylist.c:308
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2413 g10/keyedit.c:2414
+#: g10/keyedit.c:2417 g10/keyedit.c:2418
 #, fuzzy
 msgid "Notations: "
 msgstr "Noteering: "
 
-#: g10/keyedit.c:2624
+#: g10/keyedit.c:2628
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x stiilis kasutaja ID ei oma seadeid.\n"
 
-#: g10/keyedit.c:2683
+#: g10/keyedit.c:2687
 #, fuzzy, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Selle võtme võib olla tühistanud %s võti "
 
-#: g10/keyedit.c:2704
+#: g10/keyedit.c:2708
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Selle võtme võib olla tühistanud %s võti "
 
-#: g10/keyedit.c:2710
+#: g10/keyedit.c:2714
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (tundlik)"
 
-#: g10/keyedit.c:2726 g10/keyedit.c:2782 g10/keyedit.c:2843 g10/keyedit.c:2858
+#: g10/keyedit.c:2730 g10/keyedit.c:2786 g10/keyedit.c:2847 g10/keyedit.c:2862
 #: g10/keylist.c:194 g10/keyserver.c:511
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "%s ei õnnestu luua: %s\n"
 
-#: g10/keyedit.c:2729 g10/keylist.c:771 g10/keylist.c:865 g10/mainproc.c:986
+#: g10/keyedit.c:2733 g10/keylist.c:771 g10/keylist.c:865 g10/mainproc.c:986
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[tühistatud] "
 
-#: g10/keyedit.c:2731 g10/keylist.c:742 g10/keylist.c:777 g10/keylist.c:871
+#: g10/keyedit.c:2735 g10/keylist.c:742 g10/keylist.c:777 g10/keylist.c:871
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [aegub: %s]"
 
-#: g10/keyedit.c:2733 g10/keyedit.c:2784 g10/keyedit.c:2845 g10/keyedit.c:2860
+#: g10/keyedit.c:2737 g10/keyedit.c:2788 g10/keyedit.c:2849 g10/keyedit.c:2864
 #: g10/keylist.c:196 g10/keylist.c:748 g10/keylist.c:783 g10/keylist.c:877
 #: g10/keylist.c:898 g10/keyserver.c:517 g10/mainproc.c:992
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [aegub: %s]"
 
-#: g10/keyedit.c:2735
+#: g10/keyedit.c:2739
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " usaldus: %c/%c"
 
-#: g10/keyedit.c:2750
+#: g10/keyedit.c:2754
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " usaldus: %c/%c"
 
-#: g10/keyedit.c:2754
+#: g10/keyedit.c:2758
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2761
+#: g10/keyedit.c:2765
 msgid "This key has been disabled"
 msgstr "See võti on blokeeritud"
 
-#: g10/keyedit.c:2789 g10/keylist.c:200
+#: g10/keyedit.c:2793 g10/keylist.c:200
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2813
+#: g10/keyedit.c:2817
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3496,19 +3496,19 @@ msgstr ""
 "Tuleb tähele panna et kuni te pole programmi uuesti käivitanud, ei pruugi\n"
 "näidatud võtme kehtivus olla tingimata korrektne.\n"
 
-#: g10/keyedit.c:2877 g10/keyedit.c:3223 g10/keyserver.c:521
+#: g10/keyedit.c:2881 g10/keyedit.c:3227 g10/keyserver.c:521
 #: g10/mainproc.c:1804 g10/trustdb.c:1179 g10/trustdb.c:1699
 #, fuzzy
 msgid "revoked"
 msgstr "[tühistatud] "
 
-#: g10/keyedit.c:2879 g10/keyedit.c:3225 g10/keyserver.c:525
+#: g10/keyedit.c:2883 g10/keyedit.c:3229 g10/keyserver.c:525
 #: g10/mainproc.c:1806 g10/trustdb.c:532 g10/trustdb.c:1701
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2944
+#: g10/keyedit.c:2948
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3516,7 +3516,7 @@ msgstr ""
 "HOIATUS: ühtegi kasutaja ID pole märgitud primaarseks.  See käsklus võib\n"
 "              põhjustada muu kasutaja ID primaarseks määramist.\n"
 
-#: g10/keyedit.c:3005
+#: g10/keyedit.c:3009
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3525,75 +3525,75 @@ msgstr ""
 "HOIATUS: See on PGP2-stiilis võti. Foto ID lisamine võib sundida mõningaid\n"
 "         PGP versioone seda võtit tagasi lükkama.\n"
 
-#: g10/keyedit.c:3010 g10/keyedit.c:3345
+#: g10/keyedit.c:3014 g10/keyedit.c:3349
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Olete kindel, et soovite seda ikka lisada? (j/E) "
 
-#: g10/keyedit.c:3016
+#: g10/keyedit.c:3020
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Foto IDd ei saa PGP2 võtmele lisada.\n"
 
-#: g10/keyedit.c:3156
+#: g10/keyedit.c:3160
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Kustutan selle korrektse allkirja? (j/E/v)"
 
-#: g10/keyedit.c:3166
+#: g10/keyedit.c:3170
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Kustutan selle vigase allkirja? (j/E/v)"
 
-#: g10/keyedit.c:3170
+#: g10/keyedit.c:3174
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Kustutan selle tundmatu allkirja? (j/E/v)"
 
-#: g10/keyedit.c:3176
+#: g10/keyedit.c:3180
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Kas tõesti kustutan selle iseenda allkirja? (j/E)"
 
-#: g10/keyedit.c:3190
+#: g10/keyedit.c:3194
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Kustutatud %d allkiri.\n"
 
-#: g10/keyedit.c:3191
+#: g10/keyedit.c:3195
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Kustutatud %d allkirja.\n"
 
-#: g10/keyedit.c:3194
+#: g10/keyedit.c:3198
 msgid "Nothing deleted.\n"
 msgstr "Midagi ei kustutatud.\n"
 
-#: g10/keyedit.c:3227 g10/trustdb.c:1703
+#: g10/keyedit.c:3231 g10/trustdb.c:1703
 #, fuzzy
 msgid "invalid"
 msgstr "vigane pakend"
 
-#: g10/keyedit.c:3229
+#: g10/keyedit.c:3233
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "Kasutaja ID \"%s\" on tühistatud."
 
-#: g10/keyedit.c:3236
+#: g10/keyedit.c:3240
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "Kasutaja ID \"%s\" on tühistatud."
 
-#: g10/keyedit.c:3237
+#: g10/keyedit.c:3241
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "Kasutaja ID \"%s\" on tühistatud."
 
-#: g10/keyedit.c:3245
+#: g10/keyedit.c:3249
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 
-#: g10/keyedit.c:3246
+#: g10/keyedit.c:3250
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 
-#: g10/keyedit.c:3340
+#: g10/keyedit.c:3344
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3602,197 +3602,197 @@ msgstr ""
 "HOIATUS: See on PGP2-stiilis võti. Määratud tühistaja lisamine võib\n"
 "         põhjustada mõningaid PGP versioone seda võtit tagasi lükkama.\n"
 
-#: g10/keyedit.c:3351
+#: g10/keyedit.c:3355
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "PGP 2.x-stiili võtmele ei saa määratud tühistajat lisada.\n"
 
-#: g10/keyedit.c:3371
+#: g10/keyedit.c:3375
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Sisestage määratud tühistaja kasutaja ID: "
 
-#: g10/keyedit.c:3396
+#: g10/keyedit.c:3400
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "PGP 2.x stiilis võtit ei saa nimetada määratud tühistajaks\n"
 
-#: g10/keyedit.c:3411
+#: g10/keyedit.c:3415
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "te ei saa nimetada võtit iseenda määratud tühistajaks\n"
 
-#: g10/keyedit.c:3433
+#: g10/keyedit.c:3437
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "HOIATUS: See võti on määratud tühistaja poolt tühistatud!\n"
 
-#: g10/keyedit.c:3452
+#: g10/keyedit.c:3456
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "HOIATUS: võtme seadmist määratud tühistajaks ei saa tagasi võtta!\n"
 
-#: g10/keyedit.c:3458
+#: g10/keyedit.c:3462
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Olete kindel, et soovite seda võtit seada määratud tühistajaks? (j/E): "
 
-#: g10/keyedit.c:3520
+#: g10/keyedit.c:3524
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Palun eemaldage salajastelt võtmetelt valikud.\n"
 
-#: g10/keyedit.c:3526
+#: g10/keyedit.c:3530
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "palun valige ülimalt üks sekundaarne võti.\n"
 
-#: g10/keyedit.c:3530
+#: g10/keyedit.c:3534
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Muudan sekundaarse võtme aegumise aega.\n"
 
-#: g10/keyedit.c:3533
+#: g10/keyedit.c:3537
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Muudan primaarse võtme aegumise aega.\n"
 
-#: g10/keyedit.c:3582
+#: g10/keyedit.c:3586
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "v3 võtme aegumise aega ei saa muuta.\n"
 
-#: g10/keyedit.c:3598
+#: g10/keyedit.c:3602
 msgid "No corresponding signature in secret ring\n"
 msgstr "Vastavat allkirja salajaste võtmete hoidlas pole\n"
 
-#: g10/keyedit.c:3678
+#: g10/keyedit.c:3682
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "HOIATUS: allkirjastamise alamvõti %08lX ei ole rist-sertifitseeritud\n"
 
-#: g10/keyedit.c:3684
+#: g10/keyedit.c:3688
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3846
+#: g10/keyedit.c:3850
 msgid "Please select exactly one user ID.\n"
 msgstr "Palun valige täpselt üks kasutaja ID.\n"
 
-#: g10/keyedit.c:3885 g10/keyedit.c:3995 g10/keyedit.c:4115 g10/keyedit.c:4256
+#: g10/keyedit.c:3889 g10/keyedit.c:3999 g10/keyedit.c:4119 g10/keyedit.c:4260
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "jätan kasutaja \"%s\" v3 iseenda allkirja vahele\n"
 
-#: g10/keyedit.c:4056
+#: g10/keyedit.c:4060
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4136
+#: g10/keyedit.c:4140
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Olete kindel, et soovite seda kasutada (j/E)? "
 
-#: g10/keyedit.c:4137
+#: g10/keyedit.c:4141
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Olete kindel, et soovite seda kasutada (j/E)? "
 
-#: g10/keyedit.c:4199
+#: g10/keyedit.c:4203
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Allkirja noteerimine: "
 
-#: g10/keyedit.c:4348
+#: g10/keyedit.c:4352
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Kirjutan üle (j/E)? "
 
-#: g10/keyedit.c:4412
+#: g10/keyedit.c:4416
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Kasutaja ID numbriga %d puudub\n"
 
-#: g10/keyedit.c:4470
+#: g10/keyedit.c:4474
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Kasutaja ID numbriga %d puudub\n"
 
-#: g10/keyedit.c:4497
+#: g10/keyedit.c:4501
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Kasutaja ID numbriga %d puudub\n"
 
-#: g10/keyedit.c:4632
+#: g10/keyedit.c:4636
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "kasutaja ID: \""
 
-#: g10/keyedit.c:4635 g10/keyedit.c:4699 g10/keyedit.c:4742
+#: g10/keyedit.c:4639 g10/keyedit.c:4703 g10/keyedit.c:4746
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   allkirjastanud %08lX %s%s%s\n"
 
-#: g10/keyedit.c:4637 g10/keyedit.c:4701 g10/keyedit.c:4744
+#: g10/keyedit.c:4641 g10/keyedit.c:4705 g10/keyedit.c:4748
 msgid " (non-exportable)"
 msgstr " (mitte-eksporditav)"
 
-#: g10/keyedit.c:4641
+#: g10/keyedit.c:4645
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "See allkiri aegub %s.\n"
 
-#: g10/keyedit.c:4645
+#: g10/keyedit.c:4649
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Olete kindel, et soovite seda ikka tühistada? (j/E) "
 
-#: g10/keyedit.c:4649
+#: g10/keyedit.c:4653
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Loon sellele allkirjale tühistamise sertifikaadi? (j/E) "
 
-#: g10/keyedit.c:4676
+#: g10/keyedit.c:4680
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Te olete allkirjastanud järgnevad kasutaja IDd:\n"
 
-#: g10/keyedit.c:4702
+#: g10/keyedit.c:4706
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (mitte-eksporditav)"
 
-#: g10/keyedit.c:4709
+#: g10/keyedit.c:4713
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   tühistanud %08lX %s\n"
 
-#: g10/keyedit.c:4731
+#: g10/keyedit.c:4735
 msgid "You are about to revoke these signatures:\n"
 msgstr "Te asute tühistama järgmisi allkirju:\n"
 
-#: g10/keyedit.c:4751
+#: g10/keyedit.c:4755
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Kas tõesti loon tühistamise sertifikaadid? (j/E) "
 
-#: g10/keyedit.c:4781
+#: g10/keyedit.c:4785
 msgid "no secret key\n"
 msgstr "salajast võtit pole\n"
 
-#: g10/keyedit.c:4851
+#: g10/keyedit.c:4855
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 
-#: g10/keyedit.c:4868
+#: g10/keyedit.c:4872
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "HOIATUS: kasutaja ID allkirja ajatempel on %d sekundit tulevikus\n"
 
-#: g10/keyedit.c:4932
+#: g10/keyedit.c:4936
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 
-#: g10/keyedit.c:4994
+#: g10/keyedit.c:4998
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 
-#: g10/keyedit.c:5089
+#: g10/keyedit.c:5093
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Näitan %s foto IDd suurusega %ld, võti 0x%08lX (uid %d)\n"
@@ -5309,32 +5309,32 @@ msgstr "%s: jätsin vahele: avalik võti on blokeeritud\n"
 msgid "no valid addressees\n"
 msgstr "kehtivaid aadresse pole\n"
 
-#: g10/plaintext.c:91
+#: g10/plaintext.c:97
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "andmeid ei salvestatud; salvestamiseks kasutage võtit \"--output\"\n"
 
-#: g10/plaintext.c:135 g10/plaintext.c:140 g10/plaintext.c:158
+#: g10/plaintext.c:141 g10/plaintext.c:146 g10/plaintext.c:164
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "viga `%s' loomisel: %s\n"
 
-#: g10/plaintext.c:452
+#: g10/plaintext.c:463
 msgid "Detached signature.\n"
 msgstr "Eraldiseisev allkiri.\n"
 
-#: g10/plaintext.c:458
+#: g10/plaintext.c:469
 msgid "Please enter name of data file: "
 msgstr "Palun sisestage andmefaili nimi: "
 
-#: g10/plaintext.c:490
+#: g10/plaintext.c:501
 msgid "reading stdin ...\n"
 msgstr "loen standardsisendit ...\n"
 
-#: g10/plaintext.c:524
+#: g10/plaintext.c:535
 msgid "no signed data\n"
 msgstr "allkirjastatud andmeid pole\n"
 
-#: g10/plaintext.c:538
+#: g10/plaintext.c:549
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "allkirjastatud andmete avamine ebaõnnestus `%s'\n"
