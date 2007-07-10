@@ -868,13 +868,18 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 
 
 #
+# Checking for iconv
+#
+AM_ICONV
+
+
+#
 # Check for gettext
 #
 AC_MSG_NOTICE([checking for gettext])
 AM_PO_SUBDIRS
 AM_GNU_GETTEXT_VERSION([0.16.1])
 if test "$try_gettext" = yes; then
-  AM_ICONV
   AM_GNU_GETTEXT([external],[need-ngettext])
 
   # gettext requires some extra checks.  These really should be part of

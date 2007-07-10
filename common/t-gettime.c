@@ -57,7 +57,7 @@ test_isotime2epoch (void)
     { NULL, 0 }
   };
   int idx;
-  u32 val;
+  time_t val;
   gnupg_isotime_t tbuf;
 
   for (idx=0; array[idx].string; idx++)
