@@ -20,13 +20,28 @@
 #ifndef GNUPG_COMMON_SYSUTILS_H
 #define GNUPG_COMMON_SYSUTILS_H
 
+/* Because we use system handles and not libc low level file
+   descriptors on W32, we need to declare them as HANDLE (which
+   actually is a plain pointer).  This is required to eventually
+   support 64 bits Windows systems.  */
+#ifdef HAVE_W32_SYSTEM
+typedef void *gnupg_fd_t;
+#define GNUPG_INVALID_FD ((void*)(-1))
+#else
+typedef int gnupg_fd_t;
+#define GNUPG_INVALID_FD (-1)
+#endif
+
+
 void trap_unaligned (void);
 int  disable_core_dumps (void);
 int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
 void gnupg_sleep (unsigned int seconds);
-int translate_sys2libc_fd (int fd, int for_write);
+int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
+int translate_sys2libc_fd_int (int fd, int for_write);
+
 
 #ifdef HAVE_W32_SYSTEM
 

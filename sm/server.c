@@ -29,6 +29,7 @@
 #include <assuan.h>
 
 #include "gpgsm.h"
+#include "sysutils.h"
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -409,14 +410,14 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = fdopen ( dup(out_fd), "w");
+  out_fp = fdopen (dup (out_fd), "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
   
@@ -460,14 +461,14 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = fdopen ( dup(out_fd), "w");
+  out_fp = fdopen (dup(out_fd), "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
   rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
@@ -496,8 +497,8 @@ cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int fd = assuan_get_input_fd (ctx);
-  int out_fd = assuan_get_output_fd (ctx);
+  int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
+  int out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   FILE *out_fp = NULL;
 
   if (fd == -1)
@@ -538,10 +539,10 @@ cmd_sign (assuan_context_t ctx, char *line)
   int detached;
   int rc;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
@@ -575,7 +576,7 @@ cmd_import (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  int fd = assuan_get_input_fd (ctx);
+  int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
 
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
@@ -653,7 +654,7 @@ cmd_export (assuan_context_t ctx, char *line)
     }
   else
     {
-      int fd = assuan_get_output_fd (ctx);
+      int fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
       FILE *out_fp;
 
       if (fd == -1)
@@ -733,12 +734,14 @@ static int
 cmd_message (assuan_context_t ctx, char *line)
 {
   int rc;
+  assuan_fd_t sysfd;
   int fd;
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
-  rc = assuan_command_parse_fd (ctx, line, &fd);
+  rc = assuan_command_parse_fd (ctx, line, &sysfd);
   if (rc)
     return rc;
+  fd = translate_sys2libc_fd (sysfd, 0);
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
   ctrl->server_local->message_fd = fd;
@@ -785,7 +788,7 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
 
   if (ctrl->server_local->list_to_output)
     {
-      int outfd = assuan_get_output_fd (ctx);
+      int outfd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
 
       if ( outfd == -1 )
         return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
@@ -853,10 +856,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
 
-  inp_fd = assuan_get_input_fd (ctx);
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
-  out_fd = assuan_get_output_fd (ctx);
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 

@@ -1,3 +1,9 @@
+2007-07-12  Werner Koch  <wk@g10code.com>
+
+	* sysutils.h (gnupg_fd_t): New.
+	* sysutils.c (translate_sys2libc_fd): Use that type instead of int.
+	(translate_sys2libc_fd_int): New.
+
 2007-07-09  Werner Koch  <wk@g10code.com>
 
 	* t-gettime.c (test_isotime2epoch): Use time_t and not u32.

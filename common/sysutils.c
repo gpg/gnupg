@@ -278,24 +278,36 @@ gnupg_sleep (unsigned int seconds)
    translates system file handles to libc file handles.  FOR_WRITE
    gives the direction of the handle.  */
 int
-translate_sys2libc_fd (int fd, int for_write)
+translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 {
 #ifdef HAVE_W32_SYSTEM
   int x;
-  
-  if (fd <= 2)
-    return fd;	/* Do not do this for error, stdin, stdout, stderr.
-                   (This also ignores an fd of -1.) */
 
-  x = _open_osfhandle (fd, for_write ? 1 : 0);
+  if (fd == GNUPG_INVALID_FD)
+    return -1;
+  
+  /* Note that _open_osfhandle is currently defined to take and return
+     a long.  */
+  x = _open_osfhandle ((long)fd, for_write ? 1 : 0);
   if (x == -1)
     log_error ("failed to translate osfhandle %p\n", (void *) fd);
-  else
-    {
-/*       log_info ("_open_osfhandle %p yields %d%s\n", */
-/*                 (void*)fd, x, for_write? " for writing":"" ); */
-      fd = x;
-    }
-#endif /* HAVE_W32_SYSTEM */
+  return x;
+#else /*!HAVE_W32_SYSTEM */
   return fd;
+#endif
+}
+
+/* This is the same as translate_sys2libc_fd but takes an integer
+   which is assumet to be such an system handle.  */
+int
+translate_sys2libc_fd_int (int fd, int for_write)
+{
+#ifdef HAVE_W32_SYSTEM
+  if (fd <= 2)
+    return fd;	/* Do not do this for error, stdin, stdout, stderr. */
+
+  return translate_sys2libc_fd ((void*)fd, for_write);
+#else
+  return fd;
+#endif
 }

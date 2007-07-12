@@ -1741,7 +1741,7 @@ check_special_filename (const char *fname, int for_write)
     for (i=0; isdigit (fname[i]); i++ )
       ;
     if ( !fname[i] ) 
-      return translate_sys2libc_fd (atoi (fname), for_write);
+      return translate_sys2libc_fd_int (atoi (fname), for_write);
   }
   return -1;
 }
