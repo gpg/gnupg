@@ -358,10 +358,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     if (x == -1)
       log_error ("failed to translate osfhandle %p\n", (void*)rp[0] );
     else 
-      {
-        log_debug ("_open_osfhandle %p yields %d\n", (void*)fd, x );
-        *statusfile = fdopen (x, "r");
-      }
+      *statusfile = fdopen (x, "r");
   }
   if (!*statusfile)
     {

@@ -1,5 +1,5 @@
 /* pksign.c - Generate a keypair
- *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -102,6 +102,20 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
         return err;
     }
 
+  if (!*pw)
+    {
+      const char *desc = _("You have not entered a passphrase - "
+                           "this is in general a bad idea!%0A"
+                           "Please confirm that you do not want to "
+                           "have any protection on your key.");
+      
+      err = agent_get_confirmation (ctrl, desc,
+                                    _("Yes, protection is not needed"),
+                                    _("Enter new passphrase"));
+      if (err)
+        return err;
+    }
+
   return 0;
 }
 
@@ -166,12 +180,15 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
             pi2->failed_tries = 0;
             goto next_try;
           }
-        rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
-        if (rc == -1)
-          { /* The re-entered one did not match and the user did not
-               hit cancel. */
-            initial_errtext = _("does not match - try again");
-            goto next_try;
+        if (pi->pin && *pi->pin)
+          {
+            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+            if (rc == -1)
+              { /* The re-entered one did not match and the user did not
+                   hit cancel. */
+                initial_errtext = _("does not match - try again");
+                goto next_try;
+              }
           }
       }
     if (rc)
@@ -284,12 +301,16 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
             pi2->failed_tries = 0;
             goto next_try;
           }
-        rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
-        if (rc == -1)
-          { /* The re-entered one did not match and the user did not
-               hit cancel. */
-            initial_errtext = _("does not match - try again");
-            goto next_try;
+        /* Unless the passphrase is empty, ask to confirm it.  */
+        if (pi->pin && *pi->pin)
+          {
+            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+            if (rc == -1)
+              { /* The re-entered one did not match and the user did not
+                   hit cancel. */
+                initial_errtext = _("does not match - try again");
+                goto next_try;
+              }
           }
       }
     if (rc)

@@ -861,6 +861,7 @@ es_func_file_create (void **cookie, int *filedes,
 #endif
 
   file_cookie->fd = fd;
+  file_cookie->no_close = 0;
   *cookie = file_cookie;
   *filedes = fd;
 

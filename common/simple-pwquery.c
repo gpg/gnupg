@@ -327,9 +327,6 @@ agent_open (int *rfd)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
-      log_debug ( "a='%s'\n", infostr);
-      log_debug ( "a='%s'\n", strchr ( infostr, PATHSEP_C));
-      log_debug ( "a=%td\n", (p-infostr));
 #endif
       return SPWQ_NO_AGENT;
     }

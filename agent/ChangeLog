@@ -1,3 +1,10 @@
+2007-07-13  Werner Koch  <wk@g10code.com>
+
+	* genkey.c (check_passphrase_constraints): Require a confirmation
+	for an empty passphrase.
+	(agent_genkey, agent_protect_and_store): No need to repeat an
+	empty passphrase.
+
 2007-07-05  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (struct inq_needpin_s): New.
@@ -89,7 +96,7 @@
 
 	* protect-tool.c (main) [W32]: Call pth_init.
 
-	* preset-passphrase.c (main) [W32]: Repalce the explicit Winsocket
+	* preset-passphrase.c (main) [W32]: Replace the explicit Winsocket
 	init by a call to pth_init.
 
 	* trustlist.c (initialize_module_trustlist): New.

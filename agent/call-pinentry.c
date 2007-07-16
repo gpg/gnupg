@@ -206,12 +206,22 @@ start_pinentry (ctrl_t ctrl)
 
   if (opt.verbose)
     log_info ("starting a new PIN Entry\n");
-      
+
+#ifdef HAVE_W32_SYSTEM      
+  fflush (stdout);
+  fflush (stderr);
+#endif
   if (fflush (NULL))
     {
       gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("error flushing pending output: %s\n", strerror (errno));
+      /* At least Windows XP fails here with EBADF.  According to docs
+         and Wine an fflush(NULL) is the same as _flushall.  However
+         the Wime implementaion does not flush stdin,stdout and stderr
+         - see above.  Lets try to ignore the error. */
+#ifndef HAVE_W32_SYSTEM
       return unlock_pinentry (tmperr);
+#endif
     }
 
   if (!opt.pinentry_program || !*opt.pinentry_program)

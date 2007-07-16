@@ -734,7 +734,7 @@ static int
 cmd_message (assuan_context_t ctx, char *line)
 {
   int rc;
-  assuan_fd_t sysfd;
+  gnupg_fd_t sysfd;
   int fd;
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
