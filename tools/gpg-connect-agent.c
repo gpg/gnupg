@@ -258,7 +258,6 @@ do_recvfd (assuan_context_t ctx, char *line)
 }
 
 
-
 /* gpg-connect-agent's entry point. */
 int
 main (int argc, char **argv)
@@ -464,7 +463,7 @@ main (int argc, char **argv)
       if (rc)
         {
           log_info (_("sending line failed: %s\n"), gpg_strerror (rc) );
-          continue;
+	  break;
         }
       if (*line == '#' || !*line)
         continue; /* Don't expect a response for a comment line. */
@@ -472,6 +471,12 @@ main (int argc, char **argv)
       rc = read_and_print_response (ctx);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
+
+      /* FIXME: If the last command was BYE or the server died for
+	 some other reason, we won't notice until we get the next
+	 input command.  Probing the connection with a non-blocking
+	 read could help to notice termination or other problems
+	 early.  */
     }
 
   if (opt.verbose)
