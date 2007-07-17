@@ -153,12 +153,15 @@ get_manufacturer (unsigned int no)
   /* Note:  Make sure that there is no colon or linefeed in the string. */
   switch (no)
     {
-    case 0:
-    case 0xffff: return "test card";
     case 0x0001: return "PPC Card Systems";
     case 0x0002: return "Prism";
     case 0x0003: return "OpenFortress";
-    default: return "unknown";
+      /* 0x00000 and 0xFFFF are defined as test cards per spec,
+         0xFFF00 to 0xFFFE are assigned for use with randomly created
+         serial numbers.  */
+    case 0x0000:
+    case 0xffff: return "test card";
+    default: return (no & 0xff00) == 0xff00? "unmanaged S/N range":"unknown";
     }
 }
 

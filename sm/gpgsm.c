@@ -1101,8 +1101,11 @@ main ( int argc, char **argv)
         case oNoGreeting: nogreeting = 1; break;
 
         case oDefaultKey:
-          /* fixme:opt.def_secret_key = pargs.r.ret_str;*/
-          log_info ("WARNING: --default-key has not yet been implemented\n");
+          if (*pargs.r.ret_str)
+            {
+              xfree (opt.local_user);
+              opt.local_user = xstrdup (pargs.r.ret_str);
+            }
           break;
         case oDefRecipient:
           if (*pargs.r.ret_str)
@@ -1139,9 +1142,9 @@ main ( int argc, char **argv)
         case oTextmodeShort: /*fixme:opt.textmode = 2;*/ break;
         case oTextmode: /*fixme:opt.textmode=1;*/  break;
 
-        case oUser: /* store the local users, the first one is the default */
+        case oUser: /* Store the local users, the first one is the default */
           if (!opt.local_user)
-            opt.local_user = pargs.r.ret_str;
+            opt.local_user = xstrdup (pargs.r.ret_str);
           add_to_strlist (&locusr, pargs.r.ret_str);
           break;
 
@@ -1423,6 +1426,10 @@ main ( int argc, char **argv)
         printf ("cipher-algo:%lu:\"3DES:\n",
                 GC_OPT_FLAG_DEFAULT );
         printf ("p12-charset:%lu:\n",
+                GC_OPT_FLAG_DEFAULT );
+        printf ("default-key:%lu:\n",
+                GC_OPT_FLAG_DEFAULT );
+        printf ("encrypt-to:%lu:\n",
                 GC_OPT_FLAG_DEFAULT );
 
       }

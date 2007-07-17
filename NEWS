@@ -1,6 +1,10 @@
 Noteworthy changes in version 2.0.6
 ------------------------------------------------
 
+ * gpgsm does now grok --default-key.
+ 
+ * gpgconf is now aware of --default-key and --encrypt-to. 
+
 
 Noteworthy changes in version 2.0.5 (2007-07-05)
 ------------------------------------------------

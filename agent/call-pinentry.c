@@ -1,4 +1,4 @@
-/* call-pinnetry.c - fork of the pinentry to query stuff from the user
+/* call-pinentry.c - fork of the pinentry to query stuff from the user
  * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

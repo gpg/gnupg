@@ -122,8 +122,9 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
 }
 
 
-/* Get the default certificate which is defined as the first cabable
-   of signing our keyDB returns and has a secret key available. */
+/* Get the default certificate which is defined as the first
+   certificate capable of signing returned by the keyDB and has a
+   secret key available. */
 int
 gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
 {
@@ -364,7 +365,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
-  /* If no list of signers is given, use a default one. */
+  /* If no list of signers is given, use the default certificate. */
   if (!signerlist)
     {
       ksba_cert_t cert = get_default_signer (ctrl);
@@ -376,8 +377,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
 
       /* Although we don't check for ambigious specification we will
-         check that the signer's certificate is is usable and
-         valid. */
+         check that the signer's certificate is usable and valid.  */
       rc = gpgsm_cert_use_sign_p (cert);
       if (!rc)
         rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);

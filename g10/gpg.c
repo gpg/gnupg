@@ -1467,6 +1467,8 @@ gpgconf_list (const char *configfile)
   printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
   printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
 
   xfree (configfile_esc);
 }

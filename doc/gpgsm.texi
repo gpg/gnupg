@@ -457,6 +457,14 @@ that @command{gpgsm} itself automagically imports any file with a
 passphrase encoded to the most commonly used encodings.
 
 
+@item --default-key @var{user_id}
+@opindex default-key
+Use @var{user_id} as the standard key for signing.  This key is used if
+no other key has been defined as a signing key.  Note, that the first
+@option{--local-users} option also sets this key if it has not yet been
+set; however @option{--default-key} always overrides this.
+
+
 @item --local-user @var{user_id}
 @item -u @var{user_id}
 @opindex local-user
