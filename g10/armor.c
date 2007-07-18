@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -314,7 +314,19 @@ parse_hash_header( const char *line )
     return found;
 }
 
+/* Returns true if this is a valid armor tag as per RFC-2440bis-21. */
+static int
+is_armor_tag(const char *line)
+{
+  if(strncmp(line,"Version",7)==0
+     || strncmp(line,"Comment",7)==0
+     || strncmp(line,"MessageID",9)==0
+     || strncmp(line,"Hash",4)==0
+     || strncmp(line,"Charset",7)==0)
+    return 1;
 
+  return 0;
+}
 
 /****************
  * Check whether this is a armor line.
@@ -423,6 +435,18 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 	print_string( stderr, line, len, 0 );
 	putc('\n', stderr);
     }
+
+    /* Section 6.2: OpenPGP should consider improperly formatted Armor
+       Headers to be corruption of the ASCII Armor. Unknown keys
+       should be reported to the user, but OpenPGP should continue to
+       process the message. */
+
+    if(!is_armor_tag(line))
+      {
+	log_info(_("unknown armor header: "));
+	print_string( stderr, line, len, 0 );
+	putc('\n', stderr);
+      }
 
     if( afx->in_cleartext ) {
 	if( (hashes=parse_hash_header( line )) )

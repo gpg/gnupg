@@ -1,3 +1,11 @@
+2007-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (is_armor_tag): New.  Detect if an armor header matches
+	2440bis-21.
+	(parse_header_line): Call it here, as bis-21 requires warning the
+	user (but continuing to process the message) when seeing an
+	unknown header.
+
 2007-07-09  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: Better print an extra warning if Camellia has been
