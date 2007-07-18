@@ -1,3 +1,10 @@
+2007-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* defs.inc (all_hash_algos): See "all_cipher_algos", below.
+
+	* sigs.test: Use it here, and also test with >=160 bit hashes for
+	DSA2.
+
 2007-05-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* defs.inc (all_cipher_algos): New function to return all ciphers

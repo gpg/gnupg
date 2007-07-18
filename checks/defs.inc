@@ -134,6 +134,10 @@ all_cipher_algos () {
   ../g10/gpg --homedir . --version | grep "Cipher" | sed 's/^Cipher: //; s/,//g'
 }
 
+all_hash_algos () {
+  ../g10/gpg --homedir . --version | grep "Hash" | sed 's/^Hash: //; s/,//g'
+}
+
 set -e
 pgmname=`basename $0`
 #trap cleanup SIGHUP SIGINT SIGQUIT
