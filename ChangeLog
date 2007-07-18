@@ -1,3 +1,9 @@
+2007-07-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: It seems that AM_GNU_GETTEXT doesn't like being
+	run conditionally and it confuses the includes when doing later
+	type checks.  This is bug#810.
+
 2007-07-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: AM_PROG_CC_C_O is desired by automake 1.10 to do

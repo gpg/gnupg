@@ -827,17 +827,14 @@ AC_SUBST(MPI_OPT_FLAGS)
 
 dnl Checks for libraries.
 
-AM_GNU_GETTEXT_VERSION(0.14.1)
 if test "$try_gettext" = yes; then
-  AM_GNU_GETTEXT(,[need-ngettext])
-
   # gettext requires some extra checks.  These really should be part of
   # the basic AM_GNU_GETTEXT macro.  TODO: move other gettext-specific
   # function checks to here.
 
   AC_CHECK_FUNCS(strchr)
 else
-  USE_NLS=no
+  enable_nls=no
   USE_INCLUDED_LIBINTL=no
   BUILD_INCLUDED_LIBINTL=no
   AC_SUBST(USE_NLS)
@@ -845,6 +842,9 @@ else
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
   AM_PO_SUBDIRS
 fi
+
+AM_GNU_GETTEXT_VERSION(0.14.1)
+AM_GNU_GETTEXT(,[need-ngettext])
 
 if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
   if test "$need_dlopen" = yes; then
