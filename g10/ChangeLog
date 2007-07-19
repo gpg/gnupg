@@ -1,5 +1,7 @@
 2007-07-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.c (main): Fix typo.  Noted by John Clizbe.
+
 	* armor.c (parse_header_line): Improve test so that the header
 	test only allows "Hash" in the signed data section.
 

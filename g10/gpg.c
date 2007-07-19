@@ -2850,7 +2850,7 @@ main (int argc, char **argv )
 #ifdef USE_CAMELLIA    
     /* We better also print a runtime warning if people build it with
        support for Camellia (which is not yet defiend by OpenPGP). */
-    log_info ("WARNING: This version has been build with support for the "
+    log_info ("WARNING: This version has been built with support for the "
               "Camellia cipher.\n");
     log_info ("         It is for testing only and is NOT for production "
               "use!\n");
