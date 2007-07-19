@@ -436,28 +436,32 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 	putc('\n', stderr);
     }
 
-    /* Section 6.2: OpenPGP should consider improperly formatted Armor
-       Headers to be corruption of the ASCII Armor. Unknown keys
-       should be reported to the user, but OpenPGP should continue to
-       process the message. */
-
-    if(!is_armor_tag(line))
+    if( afx->in_cleartext )
       {
+	if( (hashes=parse_hash_header( line )) )
+	  afx->hashes |= hashes;
+	else if( strlen(line) > 15 && !memcmp( line, "NotDashEscaped:", 15 ) )
+	  afx->not_dash_escaped = 1;
+	else
+	  {
+	    log_error(_("invalid clearsig header\n"));
+	    return -1;
+	  }
+      }
+    else if(!is_armor_tag(line))
+      {
+	/* Section 6.2: "Unknown keys should be reported to the user,
+	   but OpenPGP should continue to process the message."  Note
+	   that in a clearsigned message this applies to the signature
+	   part (i.e. "BEGIN PGP SIGNATURE") and not the signed data
+	   ("BEGIN PGP SIGNED MESSAGE").  The only key allowed in the
+	   signed data section is "Hash". */
+
 	log_info(_("unknown armor header: "));
 	print_string( stderr, line, len, 0 );
 	putc('\n', stderr);
       }
 
-    if( afx->in_cleartext ) {
-	if( (hashes=parse_hash_header( line )) )
-	    afx->hashes |= hashes;
-	else if( strlen(line) > 15 && !memcmp( line, "NotDashEscaped:", 15 ) )
-	    afx->not_dash_escaped = 1;
-	else {
-	    log_error(_("invalid clearsig header\n"));
-	    return -1;
-	}
-    }
     return 1;
 }
 

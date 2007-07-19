@@ -1,3 +1,8 @@
+2007-07-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (parse_header_line): Improve test so that the header
+	test only allows "Hash" in the signed data section.
+
 2007-07-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (is_armor_tag): New.  Detect if an armor header matches
