@@ -55,6 +55,11 @@
 #include <ldap.h>
 #endif
 
+/* For mozldap */
+#ifdef HAVE_LDAP_SSL_H
+#include <ldap_ssl.h>
+#endif
+
 #include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
