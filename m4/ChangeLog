@@ -1,3 +1,7 @@
+2007-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* ldap.m4: If we don't find ldap or winldap, try for mozldap.
+
 2007-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Check for curl_easy_escape() and
