@@ -1291,17 +1291,24 @@ printquoted(FILE *stream,char *string,char delim)
 static int
 search_key(const char *searchkey)
 {
-  char **vals;
+  char **vals,*search;
   LDAPMessage *res,*each;
   int err,count=0;
   struct keylist *dupelist=NULL;
   /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
-  char search[2+1+9+1+3+(MAX_LINE*3)+3+1+15+14+1+1+20];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
 		 "pgpkeycreatetime","pgpkeyexpiretime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
   enum ks_search_type search_type;
+
+  search=malloc(2+1+9+1+3+strlen(searchkey)+3+1+15+14+1+1+20);
+  if(!search)
+    {
+      fprintf(console,"gpgkeys: out of memory when building search list\n");
+      fprintf(output,"SEARCH %s FAILED %d\n",searchkey,KEYSERVER_NO_MEMORY);
+      return KEYSERVER_NO_MEMORY;
+    }
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
@@ -1357,7 +1364,7 @@ search_key(const char *searchkey)
       break;
     }
 
-  ldap_quote(search,searchkey);
+  strcat(search,searchkey);
 
   switch(search_type)
     {
@@ -1395,6 +1402,7 @@ search_key(const char *searchkey)
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
+  free(search);
   if(err!=LDAP_SUCCESS && err!=LDAP_SIZELIMIT_EXCEEDED)
     {
       int errtag=ldap_err_to_gpg_err(err);
@@ -2311,7 +2319,7 @@ main(int argc,char *argv[])
 	  keyptr=keyptr->next;
 	}
 
-      searchkey=malloc(len+1);
+      searchkey=malloc((len*3)+1);
       if(searchkey==NULL)
 	{
 	  ret=KEYSERVER_NO_MEMORY;
@@ -2324,7 +2332,7 @@ main(int argc,char *argv[])
       keyptr=keylist;
       while(keyptr!=NULL)
 	{
-	  strcat(searchkey,keyptr->str);
+	  ldap_quote(searchkey,keyptr->str);
 	  strcat(searchkey,"*");
 	  keyptr=keyptr->next;
 	}
