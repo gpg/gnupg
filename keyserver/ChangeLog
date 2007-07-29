@@ -1,3 +1,9 @@
+2007-07-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Fix bug in setting up whether to verify
+	peer SSL cert.  This used to work with older OpenLDAP, but is now
+	more strictly handled.
+
 2007-07-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c: Fix build warning with mozldap.

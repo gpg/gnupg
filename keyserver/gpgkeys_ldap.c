@@ -2188,7 +2188,7 @@ main(int argc,char *argv[])
 	      else
 		ver=LDAP_OPT_X_TLS_NEVER;
 
-	      err=ldap_set_option(ldap,LDAP_OPT_X_TLS_REQUIRE_CERT,&ver);
+	      err=ldap_set_option(NULL,LDAP_OPT_X_TLS_REQUIRE_CERT,&ver);
 	    }
 #endif
 
