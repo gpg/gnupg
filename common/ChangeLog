@@ -1,3 +1,9 @@
+2007-08-01  Werner Koch  <wk@g10code.com>
+
+	* estream-printf.c (read_dummy_value): Removed as it is useless now.
+	(read_values): Remove check on !vaargs which is not anymore needed
+	and anyway not portable.  Reported by Peter O'Gorman.
+
 2007-07-16  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_func_file_create): Clear NO_CLOSE flag.

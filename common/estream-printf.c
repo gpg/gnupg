@@ -644,56 +644,6 @@ parse_format (const char *format,
   return -1;
 }
 
-/* This function is used for testing to provide default arguments.  */
-static int
-read_dummy_value (value_t *value, valtype_t vt)
-{
-  switch (vt)
-    {
-    case VALTYPE_CHAR: value->a_char = 'a'; break;
-    case VALTYPE_CHAR_PTR: value->a_char_ptr = NULL; break;
-    case VALTYPE_SCHAR: value->a_schar = 'a'; break;
-    case VALTYPE_SCHAR_PTR: value->a_schar_ptr = NULL; break;
-    case VALTYPE_UCHAR: value->a_uchar = 'a'; break;
-    case VALTYPE_SHORT: value->a_short = -4711; break;
-    case VALTYPE_USHORT: value->a_ushort = 4711; break;
-    case VALTYPE_SHORT_PTR: value->a_short_ptr = NULL; break;
-    case VALTYPE_INT: value->a_int = 42; break;
-    case VALTYPE_INT_PTR: value->a_int_ptr = NULL; break;
-    case VALTYPE_UINT: value->a_uint = 65535; break;
-    case VALTYPE_LONG: value->a_long = 11071961; break;
-    case VALTYPE_ULONG: value->a_ulong = 19610711; break;
-    case VALTYPE_LONG_PTR: value->a_long_ptr = NULL; break;
-#ifdef HAVE_LONG_LONG_INT
-    case VALTYPE_LONGLONG: value->a_longlong = 11223344; break;
-    case VALTYPE_ULONGLONG: value->a_ulonglong = 2233445566u; break;
-    case VALTYPE_LONGLONG_PTR: value->a_longlong_ptr = NULL; break;
-#endif
-    case VALTYPE_DOUBLE: value->a_double = 3.1415926535; break;
-#ifdef HAVE_LONG_DOUBLE
-    case VALTYPE_LONGDOUBLE: value->a_longdouble = 2.7; break;
-#endif
-    case VALTYPE_STRING: value->a_string = "heart of gold"; break;
-    case VALTYPE_POINTER: value->a_void_ptr = (void*)0xdeadbeef; break;
-#ifdef HAVE_INTMAX_T
-    case VALTYPE_INTMAX: value->a_intmax = 100; break;
-    case VALTYPE_INTMAX_PTR: value->a_intmax_ptr = NULL; break;
-#endif
-#ifdef HAVE_UINTMAX_T
-    case VALTYPE_UINTMAX: value->a_uintmax = 200; break;
-#endif
-    case VALTYPE_SIZE: value->a_size = 65537; break;
-    case VALTYPE_SIZE_PTR: value->a_size_ptr = NULL; break;
-#ifdef HAVE_PTRDIFF_T
-    case VALTYPE_PTRDIFF: value->a_ptrdiff = 2; break;
-    case VALTYPE_PTRDIFF_PTR: value->a_ptrdiff_ptr = NULL; break;
-#endif
-    default: /* Unsupported type.  */
-      return -1;
-    }
-  return 0;
-}
-
 
 /* This function reads all the values as specified by VALUETABLE into
    VALUETABLE.  The values are expected in VAARGS.  The function
@@ -708,102 +658,94 @@ read_values (valueitem_t valuetable, size_t valuetable_len, va_list vaargs)
       value_t *value = &valuetable[validx].value;
       valtype_t vt = valuetable[validx].vt;
 
-      if (!vaargs)
+      switch (vt)
         {
-          if (read_dummy_value (value, vt))
-            return -1;
-        }
-      else
-        {
-          switch (vt)
-            {
-            case VALTYPE_CHAR: value->a_char = va_arg (vaargs, int); break;
-            case VALTYPE_CHAR_PTR:
-              value->a_char_ptr = va_arg (vaargs, char *);
-              break;
-            case VALTYPE_SCHAR: value->a_schar = va_arg (vaargs, int); break;
-            case VALTYPE_SCHAR_PTR: 
-              value->a_schar_ptr = va_arg (vaargs, signed char *); 
-              break;
-            case VALTYPE_UCHAR: value->a_uchar = va_arg (vaargs, int); break;
-            case VALTYPE_SHORT: value->a_short = va_arg (vaargs, int); break;
-            case VALTYPE_USHORT: value->a_ushort = va_arg (vaargs, int); break;
-            case VALTYPE_SHORT_PTR: 
-              value->a_short_ptr = va_arg (vaargs, short *); 
-              break;
-            case VALTYPE_INT:
-              value->a_int = va_arg (vaargs, int);
-              break;
-            case VALTYPE_INT_PTR:
-              value->a_int_ptr = va_arg (vaargs, int *);
-              break;
-            case VALTYPE_UINT:
-              value->a_uint = va_arg (vaargs, unsigned int);
-              break;
-            case VALTYPE_LONG:
-              value->a_long = va_arg (vaargs, long);
-              break;
-            case VALTYPE_ULONG: 
-              value->a_ulong = va_arg (vaargs, unsigned long);
-              break;
-            case VALTYPE_LONG_PTR: 
-              value->a_long_ptr = va_arg (vaargs, long *); 
-              break;
+        case VALTYPE_CHAR: value->a_char = va_arg (vaargs, int); break;
+        case VALTYPE_CHAR_PTR:
+          value->a_char_ptr = va_arg (vaargs, char *);
+          break;
+        case VALTYPE_SCHAR: value->a_schar = va_arg (vaargs, int); break;
+        case VALTYPE_SCHAR_PTR: 
+          value->a_schar_ptr = va_arg (vaargs, signed char *); 
+          break;
+        case VALTYPE_UCHAR: value->a_uchar = va_arg (vaargs, int); break;
+        case VALTYPE_SHORT: value->a_short = va_arg (vaargs, int); break;
+        case VALTYPE_USHORT: value->a_ushort = va_arg (vaargs, int); break;
+        case VALTYPE_SHORT_PTR: 
+          value->a_short_ptr = va_arg (vaargs, short *); 
+          break;
+        case VALTYPE_INT:
+          value->a_int = va_arg (vaargs, int);
+          break;
+        case VALTYPE_INT_PTR:
+          value->a_int_ptr = va_arg (vaargs, int *);
+          break;
+        case VALTYPE_UINT:
+          value->a_uint = va_arg (vaargs, unsigned int);
+          break;
+        case VALTYPE_LONG:
+          value->a_long = va_arg (vaargs, long);
+          break;
+        case VALTYPE_ULONG: 
+          value->a_ulong = va_arg (vaargs, unsigned long);
+          break;
+        case VALTYPE_LONG_PTR: 
+          value->a_long_ptr = va_arg (vaargs, long *); 
+          break;
 #ifdef HAVE_LONG_LONG_INT
-            case VALTYPE_LONGLONG:
-              value->a_longlong = va_arg (vaargs, long long int);
-              break;
-            case VALTYPE_ULONGLONG: 
-              value->a_ulonglong = va_arg (vaargs, unsigned long long int); 
-              break;
-            case VALTYPE_LONGLONG_PTR: 
-              value->a_longlong_ptr = va_arg (vaargs, long long *);
-              break;
+        case VALTYPE_LONGLONG:
+          value->a_longlong = va_arg (vaargs, long long int);
+          break;
+        case VALTYPE_ULONGLONG: 
+          value->a_ulonglong = va_arg (vaargs, unsigned long long int); 
+          break;
+        case VALTYPE_LONGLONG_PTR: 
+          value->a_longlong_ptr = va_arg (vaargs, long long *);
+          break;
 #endif
-            case VALTYPE_DOUBLE:
-              value->a_double = va_arg (vaargs, double);
-              break;
+        case VALTYPE_DOUBLE:
+          value->a_double = va_arg (vaargs, double);
+          break;
 #ifdef HAVE_LONG_DOUBLE
-            case VALTYPE_LONGDOUBLE:
-              value->a_longdouble = va_arg (vaargs, long double);
-              break;
+        case VALTYPE_LONGDOUBLE:
+          value->a_longdouble = va_arg (vaargs, long double);
+          break;
 #endif
-            case VALTYPE_STRING:
-              value->a_string = va_arg (vaargs, const char *);
-              break;
-            case VALTYPE_POINTER: 
-              value->a_void_ptr = va_arg (vaargs, void *);
-              break;
+        case VALTYPE_STRING:
+          value->a_string = va_arg (vaargs, const char *);
+          break;
+        case VALTYPE_POINTER: 
+          value->a_void_ptr = va_arg (vaargs, void *);
+          break;
 #ifdef HAVE_INTMAX_T
-            case VALTYPE_INTMAX:
-              value->a_intmax = va_arg (vaargs, intmax_t);
-              break;
-            case VALTYPE_INTMAX_PTR: 
-              value->a_intmax_ptr = va_arg (vaargs, intmax_t *); 
-              break;
+        case VALTYPE_INTMAX:
+          value->a_intmax = va_arg (vaargs, intmax_t);
+          break;
+        case VALTYPE_INTMAX_PTR: 
+          value->a_intmax_ptr = va_arg (vaargs, intmax_t *); 
+          break;
 #endif
 #ifdef HAVE_UINTMAX_T
-            case VALTYPE_UINTMAX: 
-              value->a_uintmax = va_arg (vaargs, uintmax_t); 
-              break;
+        case VALTYPE_UINTMAX: 
+          value->a_uintmax = va_arg (vaargs, uintmax_t); 
+          break;
 #endif
-            case VALTYPE_SIZE:
-              value->a_size = va_arg (vaargs, size_t);
-              break;
-            case VALTYPE_SIZE_PTR: 
-              value->a_size_ptr = va_arg (vaargs, size_t *); 
-              break;
+        case VALTYPE_SIZE:
+          value->a_size = va_arg (vaargs, size_t);
+          break;
+        case VALTYPE_SIZE_PTR: 
+          value->a_size_ptr = va_arg (vaargs, size_t *); 
+          break;
 #ifdef HAVE_PTRDIFF_T
-            case VALTYPE_PTRDIFF:
-              value->a_ptrdiff = va_arg (vaargs, ptrdiff_t); 
-              break;
-            case VALTYPE_PTRDIFF_PTR:
-              value->a_ptrdiff_ptr = va_arg (vaargs, ptrdiff_t *);
-              break;
+        case VALTYPE_PTRDIFF:
+          value->a_ptrdiff = va_arg (vaargs, ptrdiff_t); 
+          break;
+        case VALTYPE_PTRDIFF_PTR:
+          value->a_ptrdiff_ptr = va_arg (vaargs, ptrdiff_t *);
+          break;
 #endif
-            default: /* Unsupported type.  */
-              return -1;
-            }
+        default: /* Unsupported type.  */
+          return -1;
         }
     }
   return 0;
