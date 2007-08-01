@@ -2609,7 +2609,8 @@ send_le (int slot, int class, int ins, int p0, int p1,
   unsigned char apdu[5+256+1];
   size_t apdulen;
   int sw;
-  long rc; /* we need a long here due to PC/SC. */
+  long rc; /* We need a long here due to PC/SC. */
+  int did_exact_length_hack = 0;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -2648,6 +2649,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
   assert (sizeof (apdu) >= apdulen);
   /* As safeguard don't pass any garbage from the stack to the driver. */
   memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+ exact_length_hack:
   resultlen = RESULTLEN;
   rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
   if (rc || resultlen < 2)
@@ -2658,7 +2660,14 @@ send_le (int slot, int class, int ins, int p0, int p1,
       return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
-  /* store away the returned data but strip the statusword. */
+  if (!did_exact_length_hack && SW_EXACT_LENGTH_P (sw))
+    {
+      apdu[apdulen-1] = (sw & 0x00ff);
+      did_exact_length_hack = 1;
+      goto exact_length_hack;
+    }
+
+  /* Store away the returned data but strip the statusword. */
   resultlen -= 2;
   if (DBG_CARD_IO)
     {
