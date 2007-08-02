@@ -1,3 +1,11 @@
+2007-08-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* ldap.m4: Revert the mozldap change: mozldap has some significant
+	differences around TLS compared to OpenLDAP, and will segfault (!)
+	if the NSS library is not initialized first.  Nothing impossible
+	to do, but I think I'll wait until someone actually asks us for
+	mozldap support.
+
 2007-07-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* ldap.m4: If we don't find ldap or winldap, try for mozldap.

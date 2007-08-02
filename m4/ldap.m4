@@ -1,5 +1,5 @@
 dnl Check for LDAP
-dnl Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+dnl Copyright (C) 2005 Free Software Foundation, Inc.
 dnl
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
@@ -33,11 +33,10 @@ if test x$_ldap_with != xno ; then
   CPPFLAGS="${LDAP_CPPFLAGS} ${CPPFLAGS}"
   _ldap_save_ldflags=$LDFLAGS
   LDFLAGS="${LDAP_LDFLAGS} ${LDFLAGS}"
-  _ldap_save_libs=$LIBS
 
   for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lwldap32"; do
-
-    LIBS="$MY_LDAPLIBS $1 $_ldap_save_libs"
+    _ldap_save_libs=$LIBS
+    LIBS="$MY_LDAPLIBS $1 $LIBS"
 
     AC_MSG_CHECKING([whether LDAP via \"$MY_LDAPLIBS\" is present and sane])
     AC_TRY_LINK([
@@ -60,62 +59,39 @@ if test x$_ldap_with != xno ; then
     fi
 
     if test "$gnupg_cv_func_ldaplber_init" = yes ; then
-       AC_DEFINE(NEED_LBER_H,1,
-          [Define if the LDAP library requires including lber.h before ldap.h])
+       AC_DEFINE(NEED_LBER_H,1,[Define if the LDAP library requires including lber.h before ldap.h])
     fi
 
     if test "$gnupg_cv_func_ldap_init" = yes || \
         test "$gnupg_cv_func_ldaplber_init" = yes ; then
        LDAPLIBS="$LDAP_LDFLAGS $MY_LDAPLIBS"
        GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
-       break
+
+       AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
+
+       if test "$ac_cv_func_ldap_get_option" != yes ; then
+          AC_MSG_CHECKING([whether LDAP supports ld_errno])
+	  AC_TRY_LINK([#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
+	     [gnupg_cv_func_ldap_ld_errno=yes],
+	     [gnupg_cv_func_ldap_ld_errno=no])
+          AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])
+
+	  if test "$gnupg_cv_func_ldap_ld_errno" = yes ; then
+	     AC_DEFINE(HAVE_LDAP_LD_ERRNO,1,[Define if the LDAP library supports ld_errno])
+          fi
+       fi
     fi
+
+    LIBS=$_ldap_save_libs
+
+    if test "$GPGKEYS_LDAP" != "" ; then break; fi
   done
-
-  if test "$GPGKEYS_LDAP" = "" ; then
-     # It didn't work, so try for mozldap.  We only do this via
-     # pkg-config due to a really impressive dependency list.
-     AC_PATH_PROG([_pkg_config],[pkg-config])
-     if test x$_pkg_config != x ; then
-        AC_MSG_CHECKING([for mozldap])
-	LDAPLIBS=`$_pkg_config --libs mozldap 2>/dev/null`
-        LDAP_CPPFLAGS=`$_pkg_config --cflags mozldap 2>/dev/null`
-        if test x"$LDAPLIBS" = x && test x"$LDAP_CPPFLAGS" = x; then
-           AC_MSG_RESULT([no])
-        else
-           AC_MSG_RESULT([yes])
-	   LIBS="$LDAPLIBS"
-	   GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
-	   CPPFLAGS="${LDAP_CPPFLAGS} ${CPPFLAGS}"
-	   AC_CHECK_HEADERS([ldap_ssl.h],,,[#include <ldap.h>])
-        fi
-     fi
-  fi
-
-  if test "$GPGKEYS_LDAP" != "" ; then
-     # Whichever library we ended up with, check for some features...
-     AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
-
-     if test "$ac_cv_func_ldap_get_option" != yes ; then
-        AC_MSG_CHECKING([whether LDAP supports ld_errno])
-        AC_TRY_LINK([#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
-           [gnupg_cv_func_ldap_ld_errno=yes],
-           [gnupg_cv_func_ldap_ld_errno=no])
-        AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])
-
-        if test "$gnupg_cv_func_ldap_ld_errno" = yes ; then
-	   AC_DEFINE(HAVE_LDAP_LD_ERRNO,1,
-                     [Define if the LDAP library supports ld_errno])
-        fi
-     fi
-  fi
-
-  LIBS=$_ldap_save_libs
-  CPPFLAGS=$_ldap_save_cppflags
-  LDFLAGS=$_ldap_save_ldflags
 
   AC_SUBST(GPGKEYS_LDAP)
   AC_SUBST(LDAPLIBS)
   AC_SUBST(LDAP_CPPFLAGS)
+
+  CPPFLAGS=$_ldap_save_cppflags
+  LDFLAGS=$_ldap_save_ldflags
 fi
 ])dnl
