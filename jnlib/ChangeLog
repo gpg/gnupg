@@ -1,3 +1,11 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* t-stringhelp.c (test_compare_filenames): New.
+
+	* stringhelp.c (compare_filenames) [HAVE_DRIVE_LETTERS]: Fixed
+	comparison to take slash and backslash in account.
+	(make_filename): Avoid mixing / and \.
+
 2007-07-04  Werner Koch  <wk@g10code.com>
 
 	* utf8conv.c (load_libiconv): Remove URL from translatble string.

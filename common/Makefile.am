@@ -33,6 +33,7 @@ common_sources = \
 	util.h i18n.c i18n.h \
 	errors.h \
 	openpgpdefs.h \
+	gc-opt-flags.h \
 	keyserver.h \
 	sexp-parse.h \
 	init.c init.h \

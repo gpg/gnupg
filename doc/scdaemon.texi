@@ -93,11 +93,6 @@ may be used to get the name of that extra socket.
 Run the program in the background.  This option is required to prevent
 it from being accidently running in the background.
 
-@item --print-atr
-@opindex print-atr
-This is mainly a debugging command, used to print the ATR
-(Answer-To-Reset) of a card and exit immediately. 
-
 @end table
 
 

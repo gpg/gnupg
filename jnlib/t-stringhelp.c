@@ -80,12 +80,49 @@ test_percent_escape (void)
 }
 
 
+static void
+test_compare_filenames (void)
+{
+  struct {
+    const char *a;
+    const char *b;
+    int result;
+  } tests[] = {
+    { "", "", 0 },
+    { "", "a", -1 },
+    { "a", "", 1 },
+    { "a", "a", 0 },
+    { "a", "aa", -1 },
+    { "aa", "a", 1 },
+    { "a",  "b", -1  },
+
+#ifdef HAVE_W32_SYSTEM
+    { "a", "A", 0 },
+    { "A", "a", 0 },
+    { "foo/bar", "foo\\bar", 0 },
+    { "foo\\bar", "foo/bar", 0 },
+    { "foo\\", "foo/", 0 },
+    { "foo/", "foo\\", 0 },
+#endif /*HAVE_W32_SYSTEM*/
+    { NULL, NULL, 0}
+  };
+  int testno, result;
+
+  for (testno=0; tests[testno].a; testno++)
+    {
+      result = compare_filenames (tests[testno].a, tests[testno].b);
+      result = result < 0? -1 : result > 0? 1 : 0;
+      if (result != tests[testno].result)
+        fail (testno);
+    }
+}
 
 
 int
 main (int argc, char **argv)
 {
   test_percent_escape ();
+  test_compare_filenames ();
 
   return 0;
 }

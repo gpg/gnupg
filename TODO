@@ -125,3 +125,10 @@
 ** Migrate OpenPGP keys to another system
 
 
+* do_add_recipient 
+ Prints wrong error message even when decrypting.
+ *Decrypt* does even not work in this case.
+
+* Duplicate certifciates
+  This may happen and lead to an Ambiguous Name error.  Solution is to
+  check the certs for identity beforethorwin this error.

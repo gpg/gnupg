@@ -271,10 +271,10 @@ make_dirname(const char *filepath)
     char *p;
 
     if ( !(p=strrchr(filepath, '/')) )
-      #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
-      #endif
+#endif
 	      {
 		return jnlib_xstrdup(".");
 	      }
@@ -296,42 +296,67 @@ make_dirname(const char *filepath)
 char *
 make_filename( const char *first_part, ... )
 {
-    va_list arg_ptr ;
-    size_t n;
-    const char *s;
-    char *name, *home, *p;
+  va_list arg_ptr ;
+  size_t n;
+  const char *s;
+  char *name, *home, *p;
+  
+  va_start (arg_ptr, first_part);
+  n = strlen (first_part) + 1;
+  while ( (s = va_arg (arg_ptr, const char *)) )
+    n += strlen(s) + 1;
+  va_end(arg_ptr);
+  
+  home = NULL;
+  if ( *first_part == '~' && first_part[1] == '/'
+       && (home = getenv("HOME")) && *home )
+    n += strlen (home);
+  
+  name = jnlib_xmalloc (n);
+  p = (home 
+       ? stpcpy (stpcpy (name,home), first_part + 1)
+       : stpcpy(name, first_part));
 
-    va_start( arg_ptr, first_part ) ;
-    n = strlen(first_part)+1;
-    while( (s=va_arg(arg_ptr, const char *)) )
-	n += strlen(s) + 1;
-    va_end(arg_ptr);
+  va_start (arg_ptr, first_part) ;
+  while ( (s = va_arg(arg_ptr, const char *)) )
+    p = stpcpy (stpcpy (p,"/"), s);
+  va_end(arg_ptr);
 
-    home = NULL;
-    if( *first_part == '~' && first_part[1] == '/'
-			   && (home = getenv("HOME")) && *home )
-	n += strlen(home);
-
-    name = jnlib_xmalloc(n);
-    p = home ? stpcpy(stpcpy(name,home), first_part+1)
-	     : stpcpy(name, first_part);
-    va_start( arg_ptr, first_part ) ;
-    while( (s=va_arg(arg_ptr, const char *)) )
-	p = stpcpy(stpcpy(p,"/"), s);
-    va_end(arg_ptr);
-
-    return name;
+#ifdef HAVE_DRIVE_LETTERS
+  /* We better avoid mixing slashes and backslashes and prefer
+     backslashes.  There is usual no problem with mixing them, however
+     a very few W32 API calls can't grok plain slashes.  Printing
+     filenames with mixed slashes also looks a bit strange. */
+  if (strchr (name, '\\'))
+    {
+      for (p=name; *p; p++)
+        if (*p == '/')
+          *p = '\\';
+    }
+#endif /*HAVE_DRIVE_LETTERS*/
+  return name;
 }
 
 
 int
-compare_filenames( const char *a, const char *b )
+compare_filenames (const char *a, const char *b)
 {
-    /* ? check whether this is an absolute filename and
-     * resolve symlinks?
-     */
+  /* ? check whether this is an absolute filename and resolve
+     symlinks?  */
 #ifdef HAVE_DRIVE_LETTERS
-    return stricmp(a,b);
+  for ( ; *a && *b; a++, b++ ) 
+    {
+      if (*a != *b 
+          && (toupper (*(const unsigned char*)a)
+              != toupper (*(const unsigned char*)b) )
+          && !((*a == '/' && *b == '\\') || (*a == '\\' && *b == '/')))
+        break;
+    }
+  if ((*a == '/' && *b == '\\') || (*a == '\\' && *b == '/'))
+    return 0;
+  else
+    return (toupper (*(const unsigned char*)a) 
+            - toupper (*(const unsigned char*)b));
 #else
     return strcmp(a,b);
 #endif

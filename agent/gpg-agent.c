@@ -48,6 +48,7 @@
 # include "../jnlib/w32-afunix.h"
 #endif
 #include "setenv.h"
+#include "gc-opt-flags.h"
 
 
 enum cmd_and_opt_values 
@@ -698,24 +699,6 @@ main (int argc, char **argv )
       char *filename_esc;
 
       /* List options and default values in the GPG Conf format.  */
-
-      /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
-      /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
-         FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
-#define GC_OPT_FLAG_NONE	0UL
-      /* The RUNTIME flag for an option indicates that the option can be
-         changed at runtime.  */
-#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
-      /* The DEFAULT flag for an option indicates that the option has a
-         default value.  */
-#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
-      /* The DEF_DESC flag for an option indicates that the option has a
-         default, which is described by the value of the default field.  */
-#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
-      /* The NO_ARG_DESC flag for an option indicates that the argument has
-         a default, which is described by the value of the ARGDEF field.  */
-#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
-
       filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
       filename_esc = percent_escape (filename, NULL);
 

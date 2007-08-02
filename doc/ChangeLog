@@ -1,3 +1,7 @@
+2007-07-23  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.texi (Scdaemon Commands): Remove obsolete --print-atr.
+
 2007-07-17  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (Input and Output): Document --default-key.

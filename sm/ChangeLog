@@ -1,3 +1,7 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Factored GC_OPT_FLAGS out to gc-opt-flags.h.
+
 2007-07-17  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Implement --default-key.

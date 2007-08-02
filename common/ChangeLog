@@ -1,3 +1,7 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* gc-opt-flags.h: New.
+
 2007-08-01  Werner Koch  <wk@g10code.com>
 
 	* estream-printf.c (read_dummy_value): Removed as it is useless now.

@@ -1,3 +1,8 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Include gc-opt-flags.h and remove their definition
+	here.
+
 2007-07-13  Werner Koch  <wk@g10code.com>
 
 	* genkey.c (check_passphrase_constraints): Require a confirmation

@@ -44,6 +44,7 @@
 #include "util.h"
 #include "i18n.h"
 
+#include "gc-opt-flags.h"
 #include "gpgconf.h"
 
 
@@ -308,9 +309,12 @@ static struct
   };
 
 
-/* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
-   FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
-#define GC_OPT_FLAG_NONE	0UL
+/* Option flags.  The flags which are used by the backends are defined
+   by gc-opt-flags.h, included above.
+
+   YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING FLAGS, AS THEY ARE
+   PART OF THE EXTERNAL INTERFACE.  */
+
 /* Some entries in the option list are not options, but mark the
    beginning of a new group of options.  These entries have the GROUP
    flag set.  */
@@ -322,25 +326,12 @@ static struct
    several times.  A comma separated list of arguments is used as the
    argument value.  */
 #define GC_OPT_FLAG_LIST	(1UL << 2)
-/* The RUNTIME flag for an option indicates that the option can be
-   changed at runtime.  */
-#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
-
-/* The following flags are incorporated from the backend.  */
-/* The DEFAULT flag for an option indicates that the option has a
-   default value.  */
-#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
-/* The DEF_DESC flag for an option indicates that the option has a
-   default, which is described by the value of the default field.  */
-#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
-/* The NO_ARG_DESC flag for an option indicates that the argument has
-   a default, which is described by the value of the ARGDEF field.  */
-#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 /* The NO_CHANGE flag for an option indicates that the user should not
    be allowed to chnage this option using the standard gpgconf method.
-   Frontends using gpgconf should grey out such otions, so that only
+   Frontends using gpgconf should grey out such options, so that only
    the current value is displayed.  */
 #define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
+
 
 /* A human-readable description for each flag.  */
 static struct

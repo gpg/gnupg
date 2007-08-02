@@ -1,3 +1,8 @@
+2007-08-02  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c: Factor the public GC_OPT_FLAG constants out and
+	include gc-opt-flags.h.
+
 2007-07-17  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Add --encrypt-to and --default-key to gpg and

@@ -55,7 +55,7 @@
 #include "status.h"
 #include "keyserver-internal.h"
 #include "exec.h"
-
+#include "gc-opt-flags.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -1456,10 +1456,6 @@ static void
 gpgconf_list (const char *configfile)
 {
   char *configfile_esc = percent_escape (configfile, NULL);
-
-  /* The following definitions are taken from gnupg/tools/gpgconf-comp.c.  */
-#define GC_OPT_FLAG_NONE	0UL
-#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
 
   printf ("gpgconf-gpg.conf:%lu:\"%s\n",
           GC_OPT_FLAG_DEFAULT, configfile_esc ? configfile_esc : "/dev/null");

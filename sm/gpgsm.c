@@ -36,6 +36,7 @@
 #include "i18n.h"
 #include "keydb.h"
 #include "sysutils.h"
+#include "gc-opt-flags.h"
 
 
 #ifndef O_BINARY
@@ -1292,17 +1293,18 @@ main ( int argc, char **argv)
     gpgsm_exit(2);
   
   /* Set the random seed file. */
-  if (use_random_seed) {
-    char *p = make_filename (opt.homedir, "random_seed", NULL);
-    gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
-    xfree(p);
-  }
-
-
+  if (use_random_seed) 
+    {
+      char *p = make_filename (opt.homedir, "random_seed", NULL);
+      gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
+      xfree(p);
+    }
+  
   if (!cmd && opt.fingerprint && !with_fpr)
     set_cmd (&cmd, aListKeys);
   
-  if (!nrings && default_keyring)  /* Add default keybox. */
+  /* Add default keybox. */
+  if (!nrings && default_keyring)
     {
       int created;
 
@@ -1353,7 +1355,7 @@ main ( int argc, char **argv)
         }
       
       /* Build the recipient list.  We first add the regular ones and then
-         the encrypt-to ones because the underlying function will silenty
+         the encrypt-to ones because the underlying function will silently
          ignore duplicates and we can't allow to keep a duplicate which is
          flagged as encrypt-to as the actually encrypt function would then
          complain about no (regular) recipients. */
@@ -1369,7 +1371,7 @@ main ( int argc, char **argv)
     }
 
   if (log_get_errorcount(0))
-    gpgsm_exit(1); /* must stop for invalid recipients */
+    gpgsm_exit(1); /* Must stop for invalid recipients. */
   
   fname = argc? *argv : NULL;
   
@@ -1377,24 +1379,6 @@ main ( int argc, char **argv)
     {
     case aGPGConfList: 
       { /* List options and default values in the GPG Conf format.  */
-
-        /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
-        /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
-           FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
-#define GC_OPT_FLAG_NONE	0UL
-        /* The RUNTIME flag for an option indicates that the option can be
-           changed at runtime.  */
-#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
-        /* The DEFAULT flag for an option indicates that the option has a
-           default value.  */
-#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
-        /* The DEF_DESC flag for an option indicates that the option has a
-           default, which is described by the value of the default field.  */
-#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
-        /* The NO_ARG_DESC flag for an option indicates that the argument has
-           a default, which is described by the value of the ARGDEF field.  */
-#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
-
 	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
 
         printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
