@@ -72,10 +72,10 @@ gnupg_get_isotime (gnupg_isotime_t timebuf)
 }
 
 
-/* set the time to NEWTIME so that gnupg_get_time returns a time
+/* Set the time to NEWTIME so that gnupg_get_time returns a time
    starting with this one.  With FREEZE set to 1 the returned time
    will never change.  Just for completeness, a value of (time_t)-1
-   for NEWTIME gets you back to rality. Note that this is obviously
+   for NEWTIME gets you back to reality.  Note that this is obviously
    not thread-safe but this is not required. */
 void
 gnupg_set_time (time_t newtime, int freeze)
@@ -165,7 +165,7 @@ scan_isodatestr( const char *string )
     return stamp;
 }
 
-/* Scan am ISO timestamp and return a epoch based timestamp.  The only
+/* Scan am ISO timestamp and return an Epoch based timestamp.  The only
    supported format is "yyyymmddThhmmss" delimited by white space, nul, a
    colon or a comma.  Returns (time_t)(-1) for an invalid string.  */
 time_t

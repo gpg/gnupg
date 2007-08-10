@@ -195,6 +195,7 @@ enum cmd_and_opt_values {
   oSetFilename,
   oSetPolicyURL,
   oUseEmbeddedFilename,
+  oValidationModel,
   oComment,
   oDefaultComment,
   oThrowKeyid,
@@ -301,6 +302,8 @@ static ARGPARSE_OPTS opts[] = {
 
     { oDisableOCSP, "disable-ocsp", 0, "@" },
     { oEnableOCSP,  "enable-ocsp", 0, N_("check validity using OCSP")},
+
+    { oValidationModel, "validation-model", 2, "@"},
 
     { oIncludeCerts, "include-certs", 1,
                                  N_("|N|number of certificates to include") },
@@ -423,7 +426,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLCmessages, "lc-messages", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
     { oProtectToolProgram, "protect-tool-program", 2 , "@" },
-    { oFakedSystemTime, "faked-system-time", 4, "@" }, /* (epoch time) */
+    { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
 
 
     { oNoBatch, "no-batch", 0, "@" },
@@ -472,6 +475,8 @@ static int allow_special_filenames;
 /* Default value for include-certs. */
 static int default_include_certs = 1; /* Only include the signer's cert. */
 
+/* Whether the chain mode shall be used for validation.  */
+static int default_validation_model;
 
 
 static char *build_list (const char *text,
@@ -700,6 +705,17 @@ do_add_recipient (ctrl_t ctrl, const char *name,
 }
 
 
+static void
+parse_validation_model (const char *model)
+{
+  int i = gpgsm_parse_validation_model (model);
+  if (i == -1)
+    log_error (_("unknown validation model `%s'\n"), model);
+  else
+    default_validation_model = i;
+}
+
+
 int
 main ( int argc, char **argv)
 {
@@ -772,9 +788,6 @@ main ( int argc, char **argv)
   opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
 
   opt.homedir = default_homedir ();
-#ifdef HAVE_W32_SYSTEM
-  opt.no_crl_check = 1;
-#endif
 
   /* First check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -1095,7 +1108,12 @@ main ( int argc, char **argv)
           break;
           
         case oFakedSystemTime:
-          gnupg_set_time ( (time_t)pargs.r.ret_ulong, 0);
+          {
+            time_t faked_time = isotime2epoch (pargs.r.ret_str); 
+            if (faked_time == (time_t)(-1))
+              faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
+            gnupg_set_time (faked_time, 0);
+          }
           break;
 
         case oNoDefKeyring: default_keyring = 0; break;
@@ -1174,7 +1192,8 @@ main ( int argc, char **argv)
         case oNoRandomSeedFile: use_random_seed = 0; break;
 
         case oEnableSpecialFilenames: allow_special_filenames =1; break;
-          
+
+        case oValidationModel: parse_validation_model (pargs.r.ret_str); break;
 
         case aDummy:
           break;
@@ -1201,7 +1220,11 @@ main ( int argc, char **argv)
 
   if (log_get_errorcount(0))
     gpgsm_exit(2);
-  
+
+  /* Now that we have the optiosn parsed we need to update the default
+     control structure.  */
+  gpgsm_init_default_ctrl (&ctrl);
+
   if (nogreeting)
     greeting = 0;
   
@@ -1715,8 +1738,20 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
 {
   ctrl->include_certs = default_include_certs;
   ctrl->use_ocsp = opt.enable_ocsp;
+  ctrl->validation_model = default_validation_model;
 }
 
+
+int
+gpgsm_parse_validation_model (const char *model)
+{     
+  if (!ascii_strcasecmp (model, "shell") )
+    return 0;
+  else if ( !ascii_strcasecmp (model, "chain") )
+    return 1;
+  else
+    return -1;
+}
 
 
 /* Check whether the filename has the form "-&nnnn", where n is a

@@ -1,3 +1,7 @@
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use AC_CANONICAL_HOST and not AC_CANONICAL_TARGET.
+
 2007-07-09  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AM_ICONV): Check for it even when building without

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-07-05 18:01+0200\n"
+"POT-Creation-Date: 2007-08-10 15:49+0200\n"
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -19,54 +19,54 @@ msgstr ""
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 
-#: agent/call-pinentry.c:426
+#: agent/call-pinentry.c:436
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
 
-#: agent/call-pinentry.c:429
+#: agent/call-pinentry.c:439
 #, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
 
-#: agent/call-pinentry.c:476
+#: agent/call-pinentry.c:486
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:496 agent/call-pinentry.c:508
+#: agent/call-pinentry.c:506 agent/call-pinentry.c:518
 #, fuzzy
 msgid "PIN too long"
 msgstr "η γραμμή είναι πολύ μεγάλη\n"
 
-#: agent/call-pinentry.c:497
+#: agent/call-pinentry.c:507
 #, fuzzy
 msgid "Passphrase too long"
 msgstr "η φράση κλειδί είναι πολύ μεγάλη\n"
 
-#: agent/call-pinentry.c:505
+#: agent/call-pinentry.c:515
 #, fuzzy
 msgid "Invalid characters in PIN"
 msgstr "Μη έγκυρος χαρακτήρας στο όνομα\n"
 
-#: agent/call-pinentry.c:510
+#: agent/call-pinentry.c:520
 msgid "PIN too short"
 msgstr ""
 
-#: agent/call-pinentry.c:522
+#: agent/call-pinentry.c:532
 #, fuzzy
 msgid "Bad PIN"
 msgstr "κακό MPI"
 
-#: agent/call-pinentry.c:523
+#: agent/call-pinentry.c:533
 #, fuzzy
 msgid "Bad Passphrase"
 msgstr "κακή φράση κλειδί"
 
-#: agent/call-pinentry.c:559
+#: agent/call-pinentry.c:569
 #, fuzzy
 msgid "Passphrase"
 msgstr "κακή φράση κλειδί"
@@ -83,14 +83,14 @@ msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
 msgid "can't create `%s': %s\n"
 msgstr "αδυναμία δημιουργίας του `%s': %s\n"
 
-#: agent/command-ssh.c:700 g10/card-util.c:677 g10/card-util.c:746
+#: agent/command-ssh.c:700 g10/card-util.c:680 g10/card-util.c:749
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1010 g10/import.c:193 g10/keygen.c:2630
 #: g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:810 g10/sign.c:1005 g10/sign.c:1121
 #: g10/sign.c:1277 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:540
-#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1770
-#: sm/gpgsm.c:1807 sm/gpgsm.c:1845 sm/qualified.c:72
+#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1796
+#: sm/gpgsm.c:1833 sm/gpgsm.c:1871 sm/qualified.c:72
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
@@ -177,35 +177,46 @@ msgstr[1] ""
 msgid "Take this one anyway"
 msgstr "Χρήση οπωσδήποτε αυτού του κλειδιού; "
 
-#: agent/genkey.c:99
+#: agent/genkey.c:99 agent/genkey.c:114
 #, fuzzy
 msgid "Enter new passphrase"
 msgstr "Πληκτρολογήστε τη φράση κλειδί\n"
 
-#: agent/genkey.c:144
+#: agent/genkey.c:107
+#, c-format
+msgid ""
+"You have not entered a passphrase - this is in general a bad idea!%0APlease "
+"confirm that you do not want to have any protection on your key."
+msgstr ""
+
+#: agent/genkey.c:113
+msgid "Yes, protection is not needed"
+msgstr ""
+
+#: agent/genkey.c:158
 #, fuzzy, c-format
 msgid "Please enter the passphrase to%0Ato protect your new key"
 msgstr ""
 "Χρειάζεστε μια Φράση κλειδί για να προστατεύσετε το μυστικό κλειδί.\n"
 "\n"
 
-#: agent/genkey.c:146 agent/genkey.c:264 agent/protect-tool.c:1196
+#: agent/genkey.c:160 agent/genkey.c:281 agent/protect-tool.c:1196
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "αλλαγή της φράσης κλειδί"
 
-#: agent/genkey.c:173 agent/genkey.c:291 agent/protect-tool.c:1202
+#: agent/genkey.c:189 agent/genkey.c:311 agent/protect-tool.c:1202
 #: tools/symcryptrun.c:456
 msgid "does not match - try again"
 msgstr ""
 
-#: agent/genkey.c:263
+#: agent/genkey.c:280
 #, fuzzy
 msgid "Please enter the new passphrase"
 msgstr "αλλαγή της φράσης κλειδί"
 
-#: agent/gpg-agent.c:111 agent/preset-passphrase.c:72 agent/protect-tool.c:109
-#: scd/scdaemon.c:101
+#: agent/gpg-agent.c:112 agent/preset-passphrase.c:72 agent/protect-tool.c:109
+#: scd/scdaemon.c:104
 #, fuzzy
 msgid ""
 "@Options:\n"
@@ -215,248 +226,248 @@ msgstr ""
 "Επιλογές:\n"
 " "
 
-#: agent/gpg-agent.c:113 scd/scdaemon.c:103
+#: agent/gpg-agent.c:114 scd/scdaemon.c:106
 msgid "run in server mode (foreground)"
 msgstr ""
 
-#: agent/gpg-agent.c:114 scd/scdaemon.c:106
+#: agent/gpg-agent.c:115 scd/scdaemon.c:109
 msgid "run in daemon mode (background)"
 msgstr ""
 
-#: agent/gpg-agent.c:115 g10/gpg.c:469 g10/gpgv.c:70 kbx/kbxutil.c:80
-#: scd/scdaemon.c:107 sm/gpgsm.c:336 tools/gpg-connect-agent.c:58
+#: agent/gpg-agent.c:116 g10/gpg.c:469 g10/gpgv.c:70 kbx/kbxutil.c:80
+#: scd/scdaemon.c:110 sm/gpgsm.c:340 tools/gpg-connect-agent.c:58
 #: tools/gpgconf.c:67 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "αναλυτικά"
 
-#: agent/gpg-agent.c:116 g10/gpgv.c:71 kbx/kbxutil.c:81 scd/scdaemon.c:108
-#: sm/gpgsm.c:337
+#: agent/gpg-agent.c:117 g10/gpgv.c:71 kbx/kbxutil.c:81 scd/scdaemon.c:111
+#: sm/gpgsm.c:341
 msgid "be somewhat more quiet"
 msgstr "ήσυχη έξοδος"
 
-#: agent/gpg-agent.c:117 scd/scdaemon.c:109
+#: agent/gpg-agent.c:118 scd/scdaemon.c:112
 msgid "sh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:118 scd/scdaemon.c:110
+#: agent/gpg-agent.c:119 scd/scdaemon.c:113
 msgid "csh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:119 tools/symcryptrun.c:167
+#: agent/gpg-agent.c:120 tools/symcryptrun.c:167
 #, fuzzy
 msgid "|FILE|read options from FILE"
 msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
-#: agent/gpg-agent.c:124 scd/scdaemon.c:119
+#: agent/gpg-agent.c:125 scd/scdaemon.c:122
 msgid "do not detach from the console"
 msgstr ""
 
-#: agent/gpg-agent.c:125
+#: agent/gpg-agent.c:126
 msgid "do not grab keyboard and mouse"
 msgstr ""
 
-#: agent/gpg-agent.c:126 scd/scdaemon.c:120 sm/gpgsm.c:339
+#: agent/gpg-agent.c:127 scd/scdaemon.c:123 sm/gpgsm.c:343
 #: tools/symcryptrun.c:166
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
 
-#: agent/gpg-agent.c:128
+#: agent/gpg-agent.c:129
 #, fuzzy
 msgid "use a standard location for the socket"
 msgstr ""
 "Σίγουρα θέλετε να ανανεωθούν οι προεπιλογές για το επιλεγμένο user ID; "
 
-#: agent/gpg-agent.c:131
+#: agent/gpg-agent.c:132
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
 
-#: agent/gpg-agent.c:134
+#: agent/gpg-agent.c:135
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr ""
 
-#: agent/gpg-agent.c:135
+#: agent/gpg-agent.c:136
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
-#: agent/gpg-agent.c:142
+#: agent/gpg-agent.c:143
 msgid "ignore requests to change the TTY"
 msgstr ""
 
-#: agent/gpg-agent.c:144
+#: agent/gpg-agent.c:145
 msgid "ignore requests to change the X display"
 msgstr ""
 
-#: agent/gpg-agent.c:147
+#: agent/gpg-agent.c:148
 msgid "|N|expire cached PINs after N seconds"
 msgstr ""
 
-#: agent/gpg-agent.c:153
+#: agent/gpg-agent.c:154
 msgid "do not use the PIN cache when signing"
 msgstr ""
 
-#: agent/gpg-agent.c:155
+#: agent/gpg-agent.c:156
 msgid "allow clients to mark keys as \"trusted\""
 msgstr ""
 
-#: agent/gpg-agent.c:157
+#: agent/gpg-agent.c:158
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-#: agent/gpg-agent.c:158
+#: agent/gpg-agent.c:159
 msgid "enable ssh-agent emulation"
 msgstr ""
 
-#: agent/gpg-agent.c:160
+#: agent/gpg-agent.c:161
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:256 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:203 sm/gpgsm.c:519 tools/gpg-connect-agent.c:124
+#: agent/gpg-agent.c:257 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: scd/scdaemon.c:206 sm/gpgsm.c:525 tools/gpg-connect-agent.c:124
 #: tools/gpgconf.c:89 tools/symcryptrun.c:204
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "Αναφέρετε τα προβλήματα στο <gnupg-bugs@gnu.org>\n"
 
-#: agent/gpg-agent.c:259
+#: agent/gpg-agent.c:260
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
-#: agent/gpg-agent.c:261
+#: agent/gpg-agent.c:262
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:296 g10/gpg.c:916 scd/scdaemon.c:243 sm/gpgsm.c:633
+#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:639
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:475 agent/protect-tool.c:1043 kbx/kbxutil.c:419
-#: scd/scdaemon.c:337 sm/gpgsm.c:755 sm/gpgsm.c:758 tools/symcryptrun.c:1026
+#: agent/gpg-agent.c:476 agent/protect-tool.c:1043 kbx/kbxutil.c:419
+#: scd/scdaemon.c:340 sm/gpgsm.c:772 sm/gpgsm.c:775 tools/symcryptrun.c:1026
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:568 g10/gpg.c:2025 scd/scdaemon.c:413 sm/gpgsm.c:849
+#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:863
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
 
-#: agent/gpg-agent.c:573 agent/gpg-agent.c:1137 g10/gpg.c:2029
-#: scd/scdaemon.c:418 sm/gpgsm.c:853 tools/symcryptrun.c:959
+#: agent/gpg-agent.c:574 agent/gpg-agent.c:1120 g10/gpg.c:2027
+#: scd/scdaemon.c:421 sm/gpgsm.c:867 tools/symcryptrun.c:959
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "αρχείο επιλογών `%s': %s\n"
 
-#: agent/gpg-agent.c:581 g10/gpg.c:2036 scd/scdaemon.c:426 sm/gpgsm.c:860
+#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:874
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "ανάγνωση επιλογών από `%s'\n"
 
-#: agent/gpg-agent.c:907 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:890 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
 
-#: agent/gpg-agent.c:1207 agent/gpg-agent.c:1333 agent/gpg-agent.c:1337
-#: agent/gpg-agent.c:1378 agent/gpg-agent.c:1382 g10/exec.c:172
-#: g10/openfile.c:429 scd/scdaemon.c:921
+#: agent/gpg-agent.c:1190 agent/gpg-agent.c:1316 agent/gpg-agent.c:1320
+#: agent/gpg-agent.c:1361 agent/gpg-agent.c:1365 g10/exec.c:172
+#: g10/openfile.c:429 scd/scdaemon.c:908
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
 
-#: agent/gpg-agent.c:1221 scd/scdaemon.c:935
+#: agent/gpg-agent.c:1204 scd/scdaemon.c:922
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1247 scd/scdaemon.c:961
+#: agent/gpg-agent.c:1230 scd/scdaemon.c:948
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "αδυναμία δημιουργίας του %s: %s\n"
 
-#: agent/gpg-agent.c:1265 agent/gpg-agent.c:1281
+#: agent/gpg-agent.c:1248 agent/gpg-agent.c:1264
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
-#: agent/gpg-agent.c:1295 scd/scdaemon.c:990
+#: agent/gpg-agent.c:1278 scd/scdaemon.c:977
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
-#: agent/gpg-agent.c:1307 scd/scdaemon.c:998
+#: agent/gpg-agent.c:1290 scd/scdaemon.c:985
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "η ενημέρωση απέτυχε: %s\n"
 
-#: agent/gpg-agent.c:1313 scd/scdaemon.c:1004
+#: agent/gpg-agent.c:1296 scd/scdaemon.c:991
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
-#: agent/gpg-agent.c:1341 agent/gpg-agent.c:1388 g10/openfile.c:432
+#: agent/gpg-agent.c:1324 agent/gpg-agent.c:1371 g10/openfile.c:432
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: κατάλογος δημιουργήθηκε\n"
 
-#: agent/gpg-agent.c:1394
+#: agent/gpg-agent.c:1377
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "trustdb: read απέτυχε (n=%d): %s\n"
 
-#: agent/gpg-agent.c:1398
+#: agent/gpg-agent.c:1381
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: αδυναμία δημιουργίας καταλόγου: %s\n"
 
-#: agent/gpg-agent.c:1509
+#: agent/gpg-agent.c:1492
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1514
+#: agent/gpg-agent.c:1497
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1531
+#: agent/gpg-agent.c:1514
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1536
+#: agent/gpg-agent.c:1519
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1640 scd/scdaemon.c:1130
+#: agent/gpg-agent.c:1623 scd/scdaemon.c:1117
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
 
-#: agent/gpg-agent.c:1746 scd/scdaemon.c:1197
+#: agent/gpg-agent.c:1729 scd/scdaemon.c:1184
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: παραλείφθηκε: %s\n"
 
-#: agent/gpg-agent.c:1769
+#: agent/gpg-agent.c:1752
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
-#: agent/gpg-agent.c:1780 common/simple-pwquery.c:329
-#: tools/gpg-connect-agent.c:751
+#: agent/gpg-agent.c:1763 common/simple-pwquery.c:329
+#: tools/gpg-connect-agent.c:756
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1793 common/simple-pwquery.c:344
-#: tools/gpg-connect-agent.c:762
+#: agent/gpg-agent.c:1776 common/simple-pwquery.c:341
+#: tools/gpg-connect-agent.c:767
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
@@ -521,42 +532,42 @@ msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 msgid "cancelled\n"
 msgstr "Ακύρωση"
 
-#: agent/trustlist.c:131 agent/trustlist.c:319
+#: agent/trustlist.c:132 agent/trustlist.c:322
 #, fuzzy, c-format
 msgid "error opening `%s': %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
-#: agent/trustlist.c:146
+#: agent/trustlist.c:147
 #, fuzzy, c-format
 msgid "file `%s', line %d: %s\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
 
-#: agent/trustlist.c:166 agent/trustlist.c:174
+#: agent/trustlist.c:167 agent/trustlist.c:175
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:180
+#: agent/trustlist.c:181
 #, fuzzy, c-format
 msgid "system trustlist `%s' not available\n"
 msgstr "τμήματα του μυστικού κλειδιού δεν είναι διαθέσιμα\n"
 
-#: agent/trustlist.c:215
+#: agent/trustlist.c:216
 #, fuzzy, c-format
 msgid "bad fingerprint in `%s', line %d\n"
 msgstr "σφάλμα ανάγνωσης: %s\n"
 
-#: agent/trustlist.c:241 agent/trustlist.c:248
+#: agent/trustlist.c:242 agent/trustlist.c:249
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:280
+#: agent/trustlist.c:283
 #, fuzzy, c-format
 msgid "error reading `%s', line %d: %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
-#: agent/trustlist.c:381 agent/trustlist.c:420
+#: agent/trustlist.c:384 agent/trustlist.c:431
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -569,7 +580,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as store in the certificate.
-#: agent/trustlist.c:496
+#: agent/trustlist.c:507
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -579,7 +590,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:505
+#: agent/trustlist.c:516
 msgid "Correct"
 msgstr ""
 
@@ -591,58 +602,58 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:525
+#: agent/trustlist.c:536
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:531
+#: agent/trustlist.c:542
 #, fuzzy
 msgid "Yes"
 msgstr "ναι|ναί"
 
-#: agent/trustlist.c:531
+#: agent/trustlist.c:542
 msgid "No"
 msgstr ""
 
-#: common/exechelp.c:302 common/exechelp.c:393
+#: common/exechelp.c:302 common/exechelp.c:390
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-#: common/exechelp.c:369 common/exechelp.c:426
+#: common/exechelp.c:366 common/exechelp.c:423
 #, fuzzy, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
 
-#: common/exechelp.c:405 common/exechelp.c:635
+#: common/exechelp.c:402 common/exechelp.c:632
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
-#: common/exechelp.c:461 common/exechelp.c:504
+#: common/exechelp.c:458 common/exechelp.c:501
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
-#: common/exechelp.c:469
+#: common/exechelp.c:466
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
-#: common/exechelp.c:475 common/exechelp.c:515
+#: common/exechelp.c:472 common/exechelp.c:512
 #, fuzzy, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
-#: common/exechelp.c:510
+#: common/exechelp.c:507
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr ""
 
-#: common/exechelp.c:521
+#: common/exechelp.c:518
 #, fuzzy, c-format
 msgid "error running `%s': terminated\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
@@ -661,26 +672,26 @@ msgstr "[User id δεν βρέθηκε]"
 msgid "gpg-agent is not available in this session\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
-#: common/simple-pwquery.c:376
+#: common/simple-pwquery.c:373
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
 
-#: common/simple-pwquery.c:387
+#: common/simple-pwquery.c:384
 msgid "communication problem with gpg-agent\n"
 msgstr "πρόβλημα επικοινωνίας με το gpg-agent\n"
 
-#: common/simple-pwquery.c:397
+#: common/simple-pwquery.c:394
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
 msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
-#: common/simple-pwquery.c:560 common/simple-pwquery.c:656
+#: common/simple-pwquery.c:557 common/simple-pwquery.c:653
 #, fuzzy
 msgid "canceled by user\n"
 msgstr "ακυρώθηκε από το χρήστη\n"
 
-#: common/simple-pwquery.c:575 common/simple-pwquery.c:662
+#: common/simple-pwquery.c:572 common/simple-pwquery.c:659
 #, fuzzy
 msgid "problem with the agent\n"
 msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
@@ -862,7 +873,7 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: βρέθηκαν μη έγκυρα δεδομένα σημείωσης\n"
 msgid "not human readable"
 msgstr "μη αναγνώσιμο"
 
-#: g10/card-util.c:62 g10/card-util.c:305
+#: g10/card-util.c:62 g10/card-util.c:308
 #, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "το μυστικό κλειδί δεν είναι διαθέσιμο"
@@ -872,166 +883,166 @@ msgstr "το μυστικό κλειδί δεν είναι διαθέσιμο"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:75 g10/card-util.c:1391 g10/delkey.c:126 g10/keyedit.c:1529
+#: g10/card-util.c:75 g10/card-util.c:1394 g10/delkey.c:126 g10/keyedit.c:1529
 #: g10/keygen.c:2817 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "δεν μπορεί να γίνει αυτό σε κατάσταση δέσμης (batchmode)\n"
 
-#: g10/card-util.c:102 g10/card-util.c:1124 g10/card-util.c:1203
+#: g10/card-util.c:102 g10/card-util.c:1127 g10/card-util.c:1206
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1577
 #: g10/keygen.c:1644
 msgid "Your selection? "
 msgstr "Η επιλογή σας; "
 
-#: g10/card-util.c:215 g10/card-util.c:265
+#: g10/card-util.c:218 g10/card-util.c:268
 msgid "[not set]"
 msgstr ""
 
-#: g10/card-util.c:412
+#: g10/card-util.c:415
 #, fuzzy
 msgid "male"
 msgstr "enable"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:416
 #, fuzzy
 msgid "female"
 msgstr "enable"
 
-#: g10/card-util.c:413
+#: g10/card-util.c:416
 #, fuzzy
 msgid "unspecified"
 msgstr "Δεν έχει οριστεί αιτία"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:443
 #, fuzzy
 msgid "not forced"
 msgstr "μη επεξεργασμένο"
 
-#: g10/card-util.c:440
+#: g10/card-util.c:443
 msgid "forced"
 msgstr ""
 
-#: g10/card-util.c:518
+#: g10/card-util.c:521
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:520
+#: g10/card-util.c:523
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr ""
 
-#: g10/card-util.c:522
+#: g10/card-util.c:525
 msgid "Error: Double spaces are not allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:539
+#: g10/card-util.c:542
 msgid "Cardholder's surname: "
 msgstr ""
 
-#: g10/card-util.c:541
+#: g10/card-util.c:544
 msgid "Cardholder's given name: "
 msgstr ""
 
-#: g10/card-util.c:559
+#: g10/card-util.c:562
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:580
+#: g10/card-util.c:583
 #, fuzzy
 msgid "URL to retrieve public key: "
 msgstr "κανένα αντίστιχο δημόσιο κλειδί: %s\n"
 
-#: g10/card-util.c:588
+#: g10/card-util.c:591
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:686 g10/card-util.c:755 g10/import.c:283
+#: g10/card-util.c:689 g10/card-util.c:758 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
-#: g10/card-util.c:694
+#: g10/card-util.c:697
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:704
+#: g10/card-util.c:707
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:763
+#: g10/card-util.c:766
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:773
+#: g10/card-util.c:776
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:793
+#: g10/card-util.c:796
 #, fuzzy
 msgid "Language preferences: "
 msgstr "αναωεωμένες επιλογές"
 
-#: g10/card-util.c:801
+#: g10/card-util.c:804
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "μη έγκυρος χαρακτήρας στο \"κορδόνι\" της επιλογής\n"
 
-#: g10/card-util.c:810
+#: g10/card-util.c:813
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "μη έγκυρος χαρακτήρας στο \"κορδόνι\" της επιλογής\n"
 
-#: g10/card-util.c:831
+#: g10/card-util.c:834
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:845
+#: g10/card-util.c:848
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
-#: g10/card-util.c:866
+#: g10/card-util.c:869
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "απεικόνιση του fingerprint"
 
-#: g10/card-util.c:889
+#: g10/card-util.c:892
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
-#: g10/card-util.c:937
+#: g10/card-util.c:940
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
 
-#: g10/card-util.c:938
+#: g10/card-util.c:941
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "δε βρέθηκαν έγκυρα OpenPGP δεδομένα.\n"
 
-#: g10/card-util.c:947
+#: g10/card-util.c:950
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
-#: g10/card-util.c:1031
+#: g10/card-util.c:1034
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1051 g10/card-util.c:1060
+#: g10/card-util.c:1054 g10/card-util.c:1063
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1072
+#: g10/card-util.c:1075
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1081
+#: g10/card-util.c:1084
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1039,136 +1050,136 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1115
+#: g10/card-util.c:1118
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Παρακαλώ επιλέξτε τον τύπο του κλειδιού που θέλετε:\n"
 
-#: g10/card-util.c:1117 g10/card-util.c:1194
+#: g10/card-util.c:1120 g10/card-util.c:1197
 #, fuzzy
 msgid "   (1) Signature key\n"
 msgstr "Υπογραφή έληξε στις %s.\n"
 
-#: g10/card-util.c:1118 g10/card-util.c:1196
+#: g10/card-util.c:1121 g10/card-util.c:1199
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
-#: g10/card-util.c:1119 g10/card-util.c:1198
+#: g10/card-util.c:1122 g10/card-util.c:1201
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1135 g10/card-util.c:1214 g10/keyedit.c:945
+#: g10/card-util.c:1138 g10/card-util.c:1217 g10/keyedit.c:945
 #: g10/keygen.c:1581 g10/keygen.c:1609 g10/keygen.c:1683 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Μη έγκυρη επιλογή.\n"
 
-#: g10/card-util.c:1191
+#: g10/card-util.c:1194
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
 
-#: g10/card-util.c:1226
+#: g10/card-util.c:1229
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "άγνωστος αλγόριθμος προστασίας\n"
 
-#: g10/card-util.c:1231
+#: g10/card-util.c:1234
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
 
-#: g10/card-util.c:1236
+#: g10/card-util.c:1239
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
 
-#: g10/card-util.c:1304 g10/keyedit.c:1362
+#: g10/card-util.c:1307 g10/keyedit.c:1362
 msgid "quit this menu"
 msgstr "τερματισμός αυτού του μενού"
 
-#: g10/card-util.c:1306
+#: g10/card-util.c:1309
 #, fuzzy
 msgid "show admin commands"
 msgstr "συγκρουόμενες εντολές\n"
 
-#: g10/card-util.c:1307 g10/keyedit.c:1365
+#: g10/card-util.c:1310 g10/keyedit.c:1365
 msgid "show this help"
 msgstr "απεικόνιση αυτής της βοήθειας"
 
-#: g10/card-util.c:1309
+#: g10/card-util.c:1312
 #, fuzzy
 msgid "list all available data"
 msgstr "Κλειδί διαθέσιμο στο: "
 
-#: g10/card-util.c:1312
+#: g10/card-util.c:1315
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1313
+#: g10/card-util.c:1316
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1314
-msgid "fetch the key specified in the card URL"
-msgstr ""
-
-#: g10/card-util.c:1315
-#, fuzzy
-msgid "change the login name"
-msgstr "αλλαγή της ημερομηνίας λήξης"
-
-#: g10/card-util.c:1316
-#, fuzzy
-msgid "change the language preferences"
-msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
-
 #: g10/card-util.c:1317
-msgid "change card holder's sex"
+msgid "fetch the key specified in the card URL"
 msgstr ""
 
 #: g10/card-util.c:1318
 #, fuzzy
+msgid "change the login name"
+msgstr "αλλαγή της ημερομηνίας λήξης"
+
+#: g10/card-util.c:1319
+#, fuzzy
+msgid "change the language preferences"
+msgstr "αλλαγή της εμπιστοσύνης ιδιοκτήτη"
+
+#: g10/card-util.c:1320
+msgid "change card holder's sex"
+msgstr ""
+
+#: g10/card-util.c:1321
+#, fuzzy
 msgid "change a CA fingerprint"
 msgstr "απεικόνιση του fingerprint"
 
-#: g10/card-util.c:1319
+#: g10/card-util.c:1322
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1320
+#: g10/card-util.c:1323
 #, fuzzy
 msgid "generate new keys"
 msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
-#: g10/card-util.c:1321
+#: g10/card-util.c:1324
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1325
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1442 g10/keyedit.c:1634
+#: g10/card-util.c:1445 g10/keyedit.c:1634
 msgid "Command> "
 msgstr "Εντολή> "
 
-#: g10/card-util.c:1480
+#: g10/card-util.c:1483
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "συγκρουόμενες εντολές\n"
 
-#: g10/card-util.c:1511
+#: g10/card-util.c:1514
 #, fuzzy
 msgid "Admin commands are allowed\n"
 msgstr "συγκρουόμενες εντολές\n"
 
-#: g10/card-util.c:1513
+#: g10/card-util.c:1516
 #, fuzzy
 msgid "Admin commands are not allowed\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
-#: g10/card-util.c:1587 g10/keyedit.c:2255
+#: g10/card-util.c:1590 g10/keyedit.c:2255
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
 
@@ -1176,7 +1187,7 @@ msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output δεν λειτουργεί για αυτή την εντολή\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:3860 g10/keyring.c:376 g10/keyring.c:663
+#: g10/decrypt.c:166 g10/gpg.c:3858 g10/keyring.c:376 g10/keyring.c:663
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "αδυναμία πρόσβασης του `%s'\n"
@@ -1493,7 +1504,7 @@ msgstr "χρήση του δευτερεύοντος κλειδιού %08lX αντί του πρωτεύοντος %08lX\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
 
-#: g10/gpg.c:368 kbx/kbxutil.c:67 sm/gpgsm.c:240 tools/gpgconf.c:54
+#: g10/gpg.c:368 kbx/kbxutil.c:67 sm/gpgsm.c:242 tools/gpgconf.c:54
 msgid ""
 "@Commands:\n"
 " "
@@ -1509,27 +1520,27 @@ msgstr "|[αρχείο]|δημιουργία μιας υπογραφής"
 msgid "|[file]|make a clear text signature"
 msgstr "|[αρχείο]|δημιουργία μιας μη κρυπτογραφημένης υπογραφής"
 
-#: g10/gpg.c:372 sm/gpgsm.c:244
+#: g10/gpg.c:372 sm/gpgsm.c:246
 msgid "make a detached signature"
 msgstr "δημιουργία μιας μη προσαρτημένης υπογραφής"
 
-#: g10/gpg.c:373 sm/gpgsm.c:245
+#: g10/gpg.c:373 sm/gpgsm.c:247
 msgid "encrypt data"
 msgstr "κρυπτογράφηση δεδομένων"
 
-#: g10/gpg.c:375 sm/gpgsm.c:246
+#: g10/gpg.c:375 sm/gpgsm.c:248
 msgid "encryption only with symmetric cipher"
 msgstr "κρυπτογράφηση με χρήση μόνο συμμετρικών αλγορίθμων"
 
-#: g10/gpg.c:377 sm/gpgsm.c:247
+#: g10/gpg.c:377 sm/gpgsm.c:249
 msgid "decrypt data (default)"
 msgstr "αποκρυπτογράφηση δεδομένων (προκαθορισμένο)"
 
-#: g10/gpg.c:379 sm/gpgsm.c:248
+#: g10/gpg.c:379 sm/gpgsm.c:250
 msgid "verify a signature"
 msgstr "επαλήθευση μιας υπογραφής"
 
-#: g10/gpg.c:381 sm/gpgsm.c:250
+#: g10/gpg.c:381 sm/gpgsm.c:252
 msgid "list keys"
 msgstr "απεικόνιση της λίστας κλειδιών"
 
@@ -1542,11 +1553,11 @@ msgstr "απεικόνιση της λίστας κλειδιών και υπογραφών"
 msgid "list and check key signatures"
 msgstr "έλεγχος υπογραφής κλειδιού"
 
-#: g10/gpg.c:385 sm/gpgsm.c:254
+#: g10/gpg.c:385 sm/gpgsm.c:256
 msgid "list keys and fingerprints"
 msgstr "απεικόνιση της λίστας κλειδιών και αποτυπωμάτων (fingerprints)"
 
-#: g10/gpg.c:386 sm/gpgsm.c:252
+#: g10/gpg.c:386 sm/gpgsm.c:254
 msgid "list secret keys"
 msgstr "απεικόνιση της λίστας μυστικών κλειδιών"
 
@@ -1582,11 +1593,11 @@ msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
 msgid "export keys"
 msgstr "εξαγωγή κλειδιών"
 
-#: g10/gpg.c:397 sm/gpgsm.c:257
+#: g10/gpg.c:397 sm/gpgsm.c:259
 msgid "export keys to a key server"
 msgstr "εξαγωγή κλειδιών σε ένα διακομιστή κλειδιών"
 
-#: g10/gpg.c:398 sm/gpgsm.c:258
+#: g10/gpg.c:398 sm/gpgsm.c:260
 msgid "import keys from a key server"
 msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
 
@@ -1622,11 +1633,11 @@ msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 msgid "|algo [files]|print message digests"
 msgstr "|αλγόρ [αρχεία]| απεικόνιση περιλήψεων των μηνυμάτων"
 
-#: g10/gpg.c:430 sm/gpgsm.c:262
+#: g10/gpg.c:430 sm/gpgsm.c:264
 msgid "run in server mode"
 msgstr ""
 
-#: g10/gpg.c:432 g10/gpgv.c:68 kbx/kbxutil.c:75 sm/gpgsm.c:277
+#: g10/gpg.c:432 g10/gpgv.c:68 kbx/kbxutil.c:75 sm/gpgsm.c:279
 #: tools/gpg-connect-agent.c:56 tools/gpgconf.c:64 tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -1637,31 +1648,31 @@ msgstr ""
 "Επιλογές:\n"
 " "
 
-#: g10/gpg.c:434 sm/gpgsm.c:279
+#: g10/gpg.c:434 sm/gpgsm.c:281
 msgid "create ascii armored output"
 msgstr "δημιουργία ascii θωρακισμένης εξόδου"
 
-#: g10/gpg.c:436 sm/gpgsm.c:291
+#: g10/gpg.c:436 sm/gpgsm.c:293
 msgid "|NAME|encrypt for NAME"
 msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
 
-#: g10/gpg.c:447 sm/gpgsm.c:327
+#: g10/gpg.c:447 sm/gpgsm.c:331
 msgid "use this user-id to sign or decrypt"
 msgstr "χρήση αυτής της ταυτότητας (user id) για υπογραφή ή αποκρυπτογράφηση"
 
-#: g10/gpg.c:448 sm/gpgsm.c:330
+#: g10/gpg.c:448 sm/gpgsm.c:334
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|καθορισμός επιπέδου συμπίεσης N (0 απενεργοποιεί)"
 
-#: g10/gpg.c:453 sm/gpgsm.c:332
+#: g10/gpg.c:453 sm/gpgsm.c:336
 msgid "use canonical text mode"
 msgstr "χρήση κανονικής κατάστασης κειμένου"
 
-#: g10/gpg.c:467 sm/gpgsm.c:335 tools/gpgconf.c:66
+#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:66
 msgid "use as output file"
 msgstr "χρήση ως αρχείου εξόδου"
 
-#: g10/gpg.c:480 kbx/kbxutil.c:82 sm/gpgsm.c:345 tools/gpgconf.c:69
+#: g10/gpg.c:480 kbx/kbxutil.c:82 sm/gpgsm.c:349 tools/gpgconf.c:69
 msgid "do not make any changes"
 msgstr "να μη γίνει καμμία αλλαγή"
 
@@ -1677,7 +1688,7 @@ msgstr ""
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/gpg.c:553 sm/gpgsm.c:393
+#: g10/gpg.c:553 sm/gpgsm.c:397
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1685,7 +1696,7 @@ msgstr ""
 "@\n"
 "(δείτε τη σελίδα man για μια πλήρη λίστα εντολών και επιλογών)\n"
 
-#: g10/gpg.c:556 sm/gpgsm.c:396
+#: g10/gpg.c:556 sm/gpgsm.c:400
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1723,7 +1734,7 @@ msgstr ""
 "υπογραφή, έλεγχος, κρυπτογράφηση ή αποκρυπτογράφηση\n"
 "η προκαθορισμένη λειτουργία εξαρτάται από τα δεδομένα εισόδου\n"
 
-#: g10/gpg.c:781 sm/gpgsm.c:532
+#: g10/gpg.c:781 sm/gpgsm.c:538
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1751,7 +1762,7 @@ msgstr "Συμπίεση: "
 msgid "usage: gpg [options] "
 msgstr "χρήση: gpg [επιλογές] "
 
-#: g10/gpg.c:1045 sm/gpgsm.c:669
+#: g10/gpg.c:1045 sm/gpgsm.c:675
 msgid "conflicting commands\n"
 msgstr "συγκρουόμενες εντολές\n"
 
@@ -1830,469 +1841,469 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
 msgid "unknown configuration item `%s'\n"
 msgstr "άγνωστο αντικείμενο ρυθμίσεως \"%s\"\n"
 
-#: g10/gpg.c:1542
+#: g10/gpg.c:1540
 msgid "display photo IDs during key listings"
 msgstr ""
 
-#: g10/gpg.c:1544
+#: g10/gpg.c:1542
 msgid "show policy URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1546
+#: g10/gpg.c:1544
 #, fuzzy
 msgid "show all notations during signature listings"
 msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
-#: g10/gpg.c:1548
+#: g10/gpg.c:1546
 msgid "show IETF standard notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1552
+#: g10/gpg.c:1550
 msgid "show user-supplied notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1554
+#: g10/gpg.c:1552
 #, fuzzy
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
 
-#: g10/gpg.c:1556
+#: g10/gpg.c:1554
 msgid "show user ID validity during key listings"
 msgstr ""
 
-#: g10/gpg.c:1558
+#: g10/gpg.c:1556
 msgid "show revoked and expired user IDs in key listings"
 msgstr ""
 
-#: g10/gpg.c:1560
+#: g10/gpg.c:1558
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 
-#: g10/gpg.c:1562
+#: g10/gpg.c:1560
 #, fuzzy
 msgid "show the keyring name in key listings"
 msgstr "απεικόνιση της κλειδοθήκης στην οποία αναφέρετε το κλειδί"
 
-#: g10/gpg.c:1564
+#: g10/gpg.c:1562
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
-#: g10/gpg.c:1827
+#: g10/gpg.c:1825
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: g10/gpg.c:1983
+#: g10/gpg.c:1981
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "ΣΗΜΕΙΩΣΗ: αγνοήθηκε το παλιό αρχείο προκαθορισμένων επιλογών `%s'\n"
 
-#: g10/gpg.c:2243 g10/gpg.c:2884 g10/gpg.c:2896
+#: g10/gpg.c:2241 g10/gpg.c:2882 g10/gpg.c:2894
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το %s δεν είναι για κανονική χρήση!\n"
 
-#: g10/gpg.c:2401 g10/gpg.c:2413
+#: g10/gpg.c:2399 g10/gpg.c:2411
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
-#: g10/gpg.c:2495
+#: g10/gpg.c:2493
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
-#: g10/gpg.c:2518 g10/gpg.c:2713 g10/keyedit.c:4084
+#: g10/gpg.c:2516 g10/gpg.c:2711 g10/keyedit.c:4084
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
 
-#: g10/gpg.c:2530
+#: g10/gpg.c:2528
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2533
+#: g10/gpg.c:2531
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2540
+#: g10/gpg.c:2538
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές ειγαγωγής\n"
 
-#: g10/gpg.c:2543
+#: g10/gpg.c:2541
 msgid "invalid import options\n"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
-#: g10/gpg.c:2550
+#: g10/gpg.c:2548
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2553
+#: g10/gpg.c:2551
 msgid "invalid export options\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2560
+#: g10/gpg.c:2558
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές ειγαγωγής\n"
 
-#: g10/gpg.c:2563
+#: g10/gpg.c:2561
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
-#: g10/gpg.c:2571
+#: g10/gpg.c:2569
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2573
+#: g10/gpg.c:2571
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2575
+#: g10/gpg.c:2573
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
-#: g10/gpg.c:2577
+#: g10/gpg.c:2575
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2581
+#: g10/gpg.c:2579
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2583
+#: g10/gpg.c:2581
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
 
-#: g10/gpg.c:2585
+#: g10/gpg.c:2583
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
-#: g10/gpg.c:2587
+#: g10/gpg.c:2585
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2589
+#: g10/gpg.c:2587
 #, fuzzy
 msgid "show only the primary user ID in signature verification"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
 
-#: g10/gpg.c:2591
+#: g10/gpg.c:2589
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2593
+#: g10/gpg.c:2591
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2600
+#: g10/gpg.c:2598
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2603
+#: g10/gpg.c:2601
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2610
+#: g10/gpg.c:2608
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "αδυναμία ορισμού του exec-path σε %s\n"
 
-#: g10/gpg.c:2784
+#: g10/gpg.c:2782
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: μη έγκυρες επιλογές εξαγωγής\n"
 
-#: g10/gpg.c:2787
+#: g10/gpg.c:2785
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2873 sm/gpgsm.c:1220
+#: g10/gpg.c:2871 sm/gpgsm.c:1247
 msgid "WARNING: program may create a core file!\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το πρόγραμμα ίσως δημιουργήσει αρχείο core!\n"
 
-#: g10/gpg.c:2877
+#: g10/gpg.c:2875
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το %s παρακάμπτει το %s\n"
 
-#: g10/gpg.c:2886
+#: g10/gpg.c:2884
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "το %s δεν επιτρέπεται με το %s!\n"
 
-#: g10/gpg.c:2889
+#: g10/gpg.c:2887
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "το %s δεν έχει καμμία έννοια μαζί με το %s!\n"
 
-#: g10/gpg.c:2904
+#: g10/gpg.c:2902
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
-#: g10/gpg.c:2918
+#: g10/gpg.c:2916
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "μπορείτε να κάνετε αποκομμένες ή καθαρές υπογραφές μόνο σε --pgp2 κατάσταση\n"
 
-#: g10/gpg.c:2924
+#: g10/gpg.c:2922
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "δεν μπορείτε να υπογράφετε και να κρυπτογραφείτε ταυτόχρονα σε --pgp2 "
 "κατάσταση\n"
 
-#: g10/gpg.c:2930
+#: g10/gpg.c:2928
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "μόνο αρχεία επιτρέπονται (και όχι pipes) κατα την κατασταση --pgp2.\n"
 
-#: g10/gpg.c:2943
+#: g10/gpg.c:2941
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "η κρυπτογράφηση ενός μηνύματος σε --pgp2 κατάσταση απαιτεί τον αλγορ. IDEA\n"
 
-#: g10/gpg.c:3009 g10/gpg.c:3033 sm/gpgsm.c:1276
+#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1303
 msgid "selected cipher algorithm is invalid\n"
 msgstr "ο επιλεγμένος αλγόριθμος κρυπτογράφησης δεν είναι έγκυρος\n"
 
-#: g10/gpg.c:3015 g10/gpg.c:3039 sm/gpgsm.c:1284
+#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1311
 msgid "selected digest algorithm is invalid\n"
 msgstr "ο επιλεγμένος αλγόριθμος περίληψης δεν είναι έγκυρος\n"
 
-#: g10/gpg.c:3021
+#: g10/gpg.c:3019
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "ο επιλεγμένος αλγόριθμος κρυπτογράφησης δεν είναι έγκυρος\n"
 
-#: g10/gpg.c:3027
+#: g10/gpg.c:3025
 msgid "selected certification digest algorithm is invalid\n"
 msgstr ""
 "ο επιλεγμένος αλγόριθμος περίληψης για πιστοποίηση\n"
 "δεν είναι έγκυρος\n"
 
-#: g10/gpg.c:3042
+#: g10/gpg.c:3040
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed πρέπει να είναι μεγαλύτερα από 0\n"
 
-#: g10/gpg.c:3044
+#: g10/gpg.c:3042
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed πρέπει να είναι μεγαλύτερα από 1\n"
 
-#: g10/gpg.c:3046
+#: g10/gpg.c:3044
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth πρέπει να είναι μεταξύ 1 και 255\n"
 
-#: g10/gpg.c:3048
+#: g10/gpg.c:3046
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "μη έγκυρο default-cert-level· πρέπει να είναι 0, 1, 2, ή 3\n"
 
-#: g10/gpg.c:3050
+#: g10/gpg.c:3048
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "μη έγκυρο min-cert-level· πρέπει να είναι 0, 1, 2, ή 3\n"
 
-#: g10/gpg.c:3053
+#: g10/gpg.c:3051
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "ΣΗΜΕΙΩΣΗ: η απλή S2K κατάσταση (0) πρέπει να αποφεύγεται\n"
 
-#: g10/gpg.c:3057
+#: g10/gpg.c:3055
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "μη έγκυρη κατάσταση S2K; πρέπει να είναι 0, 1 ή 3\n"
 
-#: g10/gpg.c:3064
+#: g10/gpg.c:3062
 msgid "invalid default preferences\n"
 msgstr "μη έγκυρες προεπιλογές\n"
 
-#: g10/gpg.c:3073
+#: g10/gpg.c:3071
 msgid "invalid personal cipher preferences\n"
 msgstr "μη έγκυρες προεπιλογές προσωπικού κρυπταλγόριθμου\n"
 
-#: g10/gpg.c:3077
+#: g10/gpg.c:3075
 msgid "invalid personal digest preferences\n"
 msgstr "μη έγκυρες προεπιλογές προσωπικού αλγόριθμου περίληψης\n"
 
-#: g10/gpg.c:3081
+#: g10/gpg.c:3079
 msgid "invalid personal compress preferences\n"
 msgstr "μη έγκυρες προεπιλογές προσωπικού αλγόριθμου συμπίεσης\n"
 
-#: g10/gpg.c:3114
+#: g10/gpg.c:3112
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "το %s ακόμα δε λειτουργεί μαζί με το %s\n"
 
-#: g10/gpg.c:3161
+#: g10/gpg.c:3159
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "απαγορεύετε η χρήση του κρυπταλγόριθμου \"%s\" στην κατάσταση %s\n"
 
-#: g10/gpg.c:3166
+#: g10/gpg.c:3164
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr ""
 "απαγορεύετε η χρήση του αλγόριθμου περίληψης \"%s\" στην κατάσταση %s\n"
 
-#: g10/gpg.c:3171
+#: g10/gpg.c:3169
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr ""
 "απαγορεύετε η χρήση του αλγόριθμου συμπίεσης \"%s\" στην κατάσταση %s\n"
 
-#: g10/gpg.c:3263
+#: g10/gpg.c:3261
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 
-#: g10/gpg.c:3274
+#: g10/gpg.c:3272
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δώθηκαν παραλήπτες (-r) χώρις χρήση κρυπτογράφησης\n"
 "δημοσίου κλειδιού\n"
 
-#: g10/gpg.c:3295
+#: g10/gpg.c:3293
 msgid "--store [filename]"
 msgstr "--store [όνομα αρχείου]"
 
-#: g10/gpg.c:3302
+#: g10/gpg.c:3300
 msgid "--symmetric [filename]"
 msgstr "--symmetric [όνομα αρχείου]"
 
-#: g10/gpg.c:3304
+#: g10/gpg.c:3302
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "αποκρυπτογράφηση απέτυχε: %s\n"
 
-#: g10/gpg.c:3314
+#: g10/gpg.c:3312
 msgid "--encrypt [filename]"
 msgstr "--encrypt [όνομα αρχείου]"
 
-#: g10/gpg.c:3327
+#: g10/gpg.c:3325
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [όνομα αρχείου]"
 
-#: g10/gpg.c:3329
+#: g10/gpg.c:3327
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3332
+#: g10/gpg.c:3330
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "απαγορεύετε η χρήση του %s στην κατάσταση %s.\n"
 
-#: g10/gpg.c:3350
+#: g10/gpg.c:3348
 msgid "--sign [filename]"
 msgstr "--sign [όνομα αρχείου]"
 
-#: g10/gpg.c:3363
+#: g10/gpg.c:3361
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [όνομα αρχείου]"
 
-#: g10/gpg.c:3378
+#: g10/gpg.c:3376
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [όνομα αρχείου]"
 
-#: g10/gpg.c:3380
+#: g10/gpg.c:3378
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3383
+#: g10/gpg.c:3381
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "απαγορεύετε η χρήση του %s στην κατάσταση %s.\n"
 
-#: g10/gpg.c:3403
+#: g10/gpg.c:3401
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [όνομα αρχείου]"
 
-#: g10/gpg.c:3412
+#: g10/gpg.c:3410
 msgid "--clearsign [filename]"
 msgstr "--clearsign [όνομα αρχείου]"
 
-#: g10/gpg.c:3437
+#: g10/gpg.c:3435
 msgid "--decrypt [filename]"
 msgstr "--decrypt [όνομα αρχείου]"
 
-#: g10/gpg.c:3445
+#: g10/gpg.c:3443
 msgid "--sign-key user-id"
 msgstr "--sign-key user-id"
 
-#: g10/gpg.c:3449
+#: g10/gpg.c:3447
 msgid "--lsign-key user-id"
 msgstr "--lsign-key user-id"
 
-#: g10/gpg.c:3470
+#: g10/gpg.c:3468
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [εντολές]"
 
-#: g10/gpg.c:3555
+#: g10/gpg.c:3553
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "keyserver αποστολή απέτυχε: %s\n"
 
-#: g10/gpg.c:3557
+#: g10/gpg.c:3555
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "keyserver λήψη απέτυχε: %s\n"
 
-#: g10/gpg.c:3559
+#: g10/gpg.c:3557
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "εξαγωγή κλειδιού απέτυχε: %s\n"
 
-#: g10/gpg.c:3570
+#: g10/gpg.c:3568
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "keyserver αναζήτηση απέτυχε: %s\n"
 
-#: g10/gpg.c:3580
+#: g10/gpg.c:3578
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "keyserver ανανέωση απέτυχε: %s\n"
 
-#: g10/gpg.c:3631
+#: g10/gpg.c:3629
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "αποθωράκιση απέτυχε: %s\n"
 
-#: g10/gpg.c:3639
+#: g10/gpg.c:3637
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "θωράκιση απέτυχε: %s\n"
 
-#: g10/gpg.c:3729
+#: g10/gpg.c:3727
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
-#: g10/gpg.c:3846
+#: g10/gpg.c:3844
 msgid "[filename]"
 msgstr "[όνομα αρχείου]"
 
-#: g10/gpg.c:3850
+#: g10/gpg.c:3848
 msgid "Go ahead and type your message ...\n"
 msgstr "Μπορείτε τώρα να εισαγάγετε το μήνυμα σας ...\n"
 
-#: g10/gpg.c:4162
+#: g10/gpg.c:4160
 msgid "the given certification policy URL is invalid\n"
 msgstr "το URL πολιτικής πιστοποιητικού που δόθηκε δεν είναι έγκυρο\n"
 
-#: g10/gpg.c:4164
+#: g10/gpg.c:4162
 msgid "the given signature policy URL is invalid\n"
 msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
 
-#: g10/gpg.c:4197
+#: g10/gpg.c:4195
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
@@ -2305,7 +2316,7 @@ msgstr "εξαγωγή των κλειδιών από αυτή τη κλειδοθήκη"
 msgid "make timestamp conflicts only a warning"
 msgstr "ορισμός των συγκρούσεων ώρας (timestamp) μόνο σαν προειδοποίηση"
 
-#: g10/gpgv.c:75 sm/gpgsm.c:368
+#: g10/gpgv.c:75 sm/gpgsm.c:372
 msgid "|FD|write status info to this FD"
 msgstr "|FD|εγγραφή των πληροφοριών κατάστασης στο FD"
 
@@ -6794,64 +6805,64 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "δε βρέθηκαν έγκυρα OpenPGP δεδομένα.\n"
 
-#: scd/scdaemon.c:105
+#: scd/scdaemon.c:108
 msgid "run in multi server mode (foreground)"
 msgstr ""
 
-#: scd/scdaemon.c:111 sm/gpgsm.c:357
+#: scd/scdaemon.c:114 sm/gpgsm.c:361
 #, fuzzy
 msgid "read options from file"
 msgstr "ανάγνωση επιλογών από `%s'\n"
 
-#: scd/scdaemon.c:121
+#: scd/scdaemon.c:124
 msgid "|N|connect to reader at port N"
 msgstr ""
 
-#: scd/scdaemon.c:122
+#: scd/scdaemon.c:125
 #, fuzzy
 msgid "|NAME|use NAME as ct-API driver"
 msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
 
-#: scd/scdaemon.c:123
+#: scd/scdaemon.c:126
 #, fuzzy
 msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
 
-#: scd/scdaemon.c:126
+#: scd/scdaemon.c:129
 #, fuzzy
 msgid "do not use the internal CCID driver"
 msgstr "μη χρήση τερματικού"
 
-#: scd/scdaemon.c:131
+#: scd/scdaemon.c:134
 msgid "do not use a reader's keypad"
 msgstr ""
 
-#: scd/scdaemon.c:132
+#: scd/scdaemon.c:135
 #, fuzzy
 msgid "allow the use of admin card commands"
 msgstr "συγκρουόμενες εντολές\n"
 
-#: scd/scdaemon.c:206
+#: scd/scdaemon.c:209
 #, fuzzy
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
-#: scd/scdaemon.c:208
+#: scd/scdaemon.c:211
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:671
+#: scd/scdaemon.c:658
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1019
+#: scd/scdaemon.c:1006
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1024
+#: scd/scdaemon.c:1011
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
@@ -6880,141 +6891,255 @@ msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
-#: sm/certchain.c:174
+#: sm/certchain.c:194
+#, c-format
+msgid "validation model requested by certificate: %s"
+msgstr ""
+
+#: sm/certchain.c:195
+msgid "chain"
+msgstr ""
+
+#: sm/certchain.c:196
+#, fuzzy
+msgid "shell"
+msgstr "help"
+
+#: sm/certchain.c:241
 #, fuzzy, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
 
-#: sm/certchain.c:212
+#: sm/certchain.c:279
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
-#: sm/certchain.c:250
+#: sm/certchain.c:317
 msgid "critical marked policy without configured policies"
 msgstr ""
 
-#: sm/certchain.c:260
+#: sm/certchain.c:327
 #, fuzzy, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
-#: sm/certchain.c:267 sm/certchain.c:296
+#: sm/certchain.c:334 sm/certchain.c:363
 msgid "note: non-critical certificate policy not allowed"
 msgstr ""
 
-#: sm/certchain.c:271 sm/certchain.c:300
+#: sm/certchain.c:338 sm/certchain.c:367
 #, fuzzy
 msgid "certificate policy not allowed"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
-#: sm/certchain.c:411
+#: sm/certchain.c:478
 msgid "looking up issuer at external location\n"
 msgstr ""
 
-#: sm/certchain.c:431
+#: sm/certchain.c:498
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
-#: sm/certchain.c:584 sm/certchain.c:750 sm/certchain.c:1331 sm/decrypt.c:259
-#: sm/encrypt.c:341 sm/sign.c:326 sm/verify.c:105
+#: sm/certchain.c:651 sm/certchain.c:1069 sm/certchain.c:1659 sm/decrypt.c:259
+#: sm/encrypt.c:341 sm/sign.c:327 sm/verify.c:105
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 
-#: sm/certchain.c:675
+#: sm/certchain.c:742
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 
-#: sm/certchain.c:684
+#: sm/certchain.c:752
 #, fuzzy
 msgid "no CRL found for certificate"
 msgstr "κακό πιστοποιητικό"
 
-#: sm/certchain.c:688
+#: sm/certchain.c:757
+msgid "the status of the certificate is unknown"
+msgstr ""
+
+#: sm/certchain.c:762
 #, fuzzy
 msgid "the available CRL is too old"
 msgstr "Κλειδί διαθέσιμο στο: "
 
-#: sm/certchain.c:690
+#: sm/certchain.c:764
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
-#: sm/certchain.c:695
+#: sm/certchain.c:770
 #, fuzzy, c-format
 msgid "checking the CRL failed: %s"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
-#: sm/certchain.c:791
-#, fuzzy
-msgid "no issuer found in certificate"
-msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
-
-#: sm/certchain.c:820
+#: sm/certchain.c:799 sm/certchain.c:867
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr ""
 
-#: sm/certchain.c:836
+#: sm/certchain.c:814 sm/certchain.c:899
 msgid "certificate not yet valid"
 msgstr ""
 
-#: sm/certchain.c:849
+#: sm/certchain.c:815 sm/certchain.c:900
+#, fuzzy
+msgid "root certificate not yet valid"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#: sm/certchain.c:816 sm/certchain.c:901
+msgid "intermediate certificate not yet valid"
+msgstr ""
+
+#: sm/certchain.c:829
 #, fuzzy
 msgid "certificate has expired"
 msgstr "Αυτό το κλειδί έχει λήξει!"
 
-#: sm/certchain.c:892
-msgid "self-signed certificate has a BAD signature"
+#: sm/certchain.c:830
+#, fuzzy
+msgid "root certificate has expired"
+msgstr "Αυτό το κλειδί έχει λήξει!"
+
+#: sm/certchain.c:831
+#, fuzzy
+msgid "intermediate certificate has expired"
+msgstr "Αυτό το κλειδί έχει λήξει!"
+
+#: sm/certchain.c:873
+#, c-format
+msgid "required certificate attributes missing: %s%s%s"
 msgstr ""
 
-#: sm/certchain.c:960
-msgid "root certificate is not marked trusted"
+#: sm/certchain.c:882
+#, fuzzy
+msgid "certificate with invalid validity"
+msgstr "Αυτό το κλειδί έχει λήξει!"
+
+#: sm/certchain.c:919
+msgid "signature not created during lifetime of certificate"
 msgstr ""
 
-#: sm/certchain.c:975
+#: sm/certchain.c:921
+msgid "certificate not created during lifetime of issuer"
+msgstr ""
+
+#: sm/certchain.c:922
+msgid "intermediate certificate not created during lifetime of issuer"
+msgstr ""
+
+#: sm/certchain.c:926
+#, fuzzy
+msgid "  (  signature created at "
+msgstr "        νέες υπογραφές: %lu\n"
+
+#: sm/certchain.c:927
+#, fuzzy
+msgid "  (certificate created at "
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#: sm/certchain.c:930
+#, fuzzy
+msgid "  (certificate valid from "
+msgstr "κακό πιστοποιητικό"
+
+#: sm/certchain.c:931
+msgid "  (     issuer valid from "
+msgstr ""
+
+#: sm/certchain.c:961
 #, fuzzy, c-format
 msgid "fingerprint=%s\n"
 msgstr "απεικόνιση του fingerprint"
 
-#: sm/certchain.c:983
+#: sm/certchain.c:970
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 
-#: sm/certchain.c:998
+#: sm/certchain.c:983
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
-#: sm/certchain.c:1004
+#: sm/certchain.c:989
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
-#: sm/certchain.c:1014
+#: sm/certchain.c:1046
+msgid "WARNING: creation time of signature not known - assuming current time"
+msgstr ""
+
+#: sm/certchain.c:1110
+#, fuzzy
+msgid "no issuer found in certificate"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
+#: sm/certchain.c:1184
+msgid "self-signed certificate has a BAD signature"
+msgstr ""
+
+#: sm/certchain.c:1253
+msgid "root certificate is not marked trusted"
+msgstr ""
+
+#: sm/certchain.c:1266
 #, fuzzy, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
-#: sm/certchain.c:1041 sm/import.c:157
+#: sm/certchain.c:1295 sm/import.c:157
 msgid "certificate chain too long\n"
 msgstr ""
 
-#: sm/certchain.c:1053
+#: sm/certchain.c:1307
 msgid "issuer certificate not found"
 msgstr ""
 
-#: sm/certchain.c:1086
+#: sm/certchain.c:1340
 #, fuzzy
 msgid "certificate has a BAD signature"
 msgstr "επαλήθευση μιας υπογραφής"
 
-#: sm/certchain.c:1116
+#: sm/certchain.c:1371
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 
-#: sm/certchain.c:1167
+#: sm/certchain.c:1422
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
+msgstr ""
+
+#: sm/certchain.c:1462 sm/certchain.c:1730
+#, fuzzy
+msgid "certificate is good\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+#: sm/certchain.c:1463
+#, fuzzy
+msgid "intermediate certificate is good\n"
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#: sm/certchain.c:1464
+#, fuzzy
+msgid "root certificate is good\n"
+msgstr "κακό πιστοποιητικό"
+
+#: sm/certchain.c:1620
+msgid "switching to chain model"
+msgstr ""
+
+#: sm/certchain.c:1629
+#, c-format
+msgid "validation model used: %s"
+msgstr ""
+
+#: sm/certchain.c:1631
+msgid "chain model"
+msgstr ""
+
+#: sm/certchain.c:1631
+msgid "shell model"
 msgstr ""
 
 #: sm/certcheck.c:101
@@ -7064,7 +7189,7 @@ msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
 "\"%s\"\n"
-"S/N %s, ID %08lX, created %s"
+"S/N %s, ID 0x%08lX, created %s"
 msgstr ""
 "Χρειάζεστε μια φράση κλειδί για να ξεκλειδώσετε το μυστικό κλειδί για το "
 "χρήστη:\n"
@@ -7075,7 +7200,7 @@ msgstr ""
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
-#: sm/certlist.c:131 sm/keylist.c:255
+#: sm/certlist.c:131 sm/keylist.c:258
 #, fuzzy, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
@@ -7197,181 +7322,181 @@ msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 msgid "error writing to temporary file: %s\n"
 msgstr "εγγραφή στο  `%s'\n"
 
-#: sm/gpgsm.c:242
+#: sm/gpgsm.c:244
 #, fuzzy
 msgid "|[FILE]|make a signature"
 msgstr "|[αρχείο]|δημιουργία μιας υπογραφής"
 
-#: sm/gpgsm.c:243
+#: sm/gpgsm.c:245
 #, fuzzy
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[αρχείο]|δημιουργία μιας μη κρυπτογραφημένης υπογραφής"
 
-#: sm/gpgsm.c:251
+#: sm/gpgsm.c:253
 #, fuzzy
 msgid "list external keys"
 msgstr "απεικόνιση της λίστας μυστικών κλειδιών"
 
-#: sm/gpgsm.c:253
+#: sm/gpgsm.c:255
 #, fuzzy
 msgid "list certificate chain"
 msgstr "κακό πιστοποιητικό"
 
-#: sm/gpgsm.c:256
+#: sm/gpgsm.c:258
 #, fuzzy
 msgid "remove key from the public keyring"
 msgstr "αφαίρεση των κλειδιών από τη δημόσια κλειδοθήκη"
 
-#: sm/gpgsm.c:259
+#: sm/gpgsm.c:261
 #, fuzzy
 msgid "import certificates"
 msgstr "κακό πιστοποιητικό"
 
-#: sm/gpgsm.c:260
+#: sm/gpgsm.c:262
 #, fuzzy
 msgid "export certificates"
 msgstr "κακό πιστοποιητικό"
 
-#: sm/gpgsm.c:261
+#: sm/gpgsm.c:263
 msgid "register a smartcard"
 msgstr ""
 
-#: sm/gpgsm.c:263
+#: sm/gpgsm.c:265
 msgid "pass a command to the dirmngr"
 msgstr ""
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:267
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:268
 #, fuzzy
 msgid "change a passphrase"
 msgstr "αλλαγή της φράσης κλειδί"
 
-#: sm/gpgsm.c:281
+#: sm/gpgsm.c:283
 #, fuzzy
 msgid "create base-64 encoded output"
 msgstr "δημιουργία ascii θωρακισμένης εξόδου"
 
-#: sm/gpgsm.c:285
+#: sm/gpgsm.c:287
 msgid "assume input is in PEM format"
 msgstr ""
 
-#: sm/gpgsm.c:287
+#: sm/gpgsm.c:289
 msgid "assume input is in base-64 format"
 msgstr ""
 
-#: sm/gpgsm.c:289
+#: sm/gpgsm.c:291
 msgid "assume input is in binary format"
 msgstr ""
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:296
 msgid "use system's dirmngr if available"
 msgstr ""
 
-#: sm/gpgsm.c:295
+#: sm/gpgsm.c:297
 msgid "never consult a CRL"
 msgstr ""
 
-#: sm/gpgsm.c:302
+#: sm/gpgsm.c:304
 msgid "check validity using OCSP"
 msgstr ""
 
-#: sm/gpgsm.c:305
+#: sm/gpgsm.c:309
 msgid "|N|number of certificates to include"
 msgstr ""
 
-#: sm/gpgsm.c:308
+#: sm/gpgsm.c:312
 msgid "|FILE|take policy information from FILE"
 msgstr ""
 
-#: sm/gpgsm.c:311
+#: sm/gpgsm.c:315
 msgid "do not check certificate policies"
 msgstr ""
 
-#: sm/gpgsm.c:315
+#: sm/gpgsm.c:319
 msgid "fetch missing issuer certificates"
 msgstr ""
 
-#: sm/gpgsm.c:319
+#: sm/gpgsm.c:323
 msgid "|NAME|use NAME as default recipient"
 msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
 
-#: sm/gpgsm.c:321
+#: sm/gpgsm.c:325
 msgid "use the default key as default recipient"
 msgstr "χρήση του προκαθορισμένου κλειδιού ως προκαθορισμένου παραλήπτη"
 
-#: sm/gpgsm.c:338
+#: sm/gpgsm.c:342
 msgid "don't use the terminal at all"
 msgstr "μη χρήση τερματικού"
 
-#: sm/gpgsm.c:342
+#: sm/gpgsm.c:346
 msgid "force v3 signatures"
 msgstr "εξαναγκασμός χρήσης v3 υπογραφών"
 
-#: sm/gpgsm.c:343
+#: sm/gpgsm.c:347
 msgid "always use a MDC for encryption"
 msgstr "χρήση πάντοτε MDC για κρυπτογράφηση"
 
-#: sm/gpgsm.c:348
+#: sm/gpgsm.c:352
 msgid "batch mode: never ask"
 msgstr "κατάσταση batch: να μη γίνονται ερωτήσεις"
 
-#: sm/gpgsm.c:349
+#: sm/gpgsm.c:353
 msgid "assume yes on most questions"
 msgstr "απάντηση ναι στις περισσότερες ερωτήσεις"
 
-#: sm/gpgsm.c:350
+#: sm/gpgsm.c:354
 msgid "assume no on most questions"
 msgstr "απάντηση όχι στις περισσότερες ερωτήσεις"
 
-#: sm/gpgsm.c:352
+#: sm/gpgsm.c:356
 msgid "add this keyring to the list of keyrings"
 msgstr "προσθήκη αυτού του κλειδιού στη λίστα των κλειδοθηκών"
 
-#: sm/gpgsm.c:353
+#: sm/gpgsm.c:357
 msgid "add this secret keyring to the list"
 msgstr "προσθήκη αυτής της μυστικής κλειδοθήκης στη λίστα"
 
-#: sm/gpgsm.c:354
+#: sm/gpgsm.c:358 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:673
 msgid "|NAME|use NAME as default secret key"
 msgstr "|ΟΝΟΜΑ|χρήση ΟΝΟΜΑτος σαν προκαθορισμένο μυστικό κλειδί"
 
-#: sm/gpgsm.c:355
+#: sm/gpgsm.c:359
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|ΔΙΑΚΟΜΙΣΤΗΣ|χρήση αυτού του διακομιστή κλειδιών για αναζήτηση"
 
-#: sm/gpgsm.c:356
+#: sm/gpgsm.c:360
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
 
-#: sm/gpgsm.c:360
+#: sm/gpgsm.c:364
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr ""
 
-#: sm/gpgsm.c:375
+#: sm/gpgsm.c:379
 msgid "|FILE|load extension module FILE"
 msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
 
-#: sm/gpgsm.c:381
+#: sm/gpgsm.c:385
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ"
 
-#: sm/gpgsm.c:383
+#: sm/gpgsm.c:387
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ "
 
-#: sm/gpgsm.c:385
+#: sm/gpgsm.c:389
 msgid "|N|use compress algorithm N"
 msgstr "|N|χρήση αλγορίθμου συμπίεσης N"
 
-#: sm/gpgsm.c:522
+#: sm/gpgsm.c:528
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
-#: sm/gpgsm.c:525
+#: sm/gpgsm.c:531
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7382,31 +7507,36 @@ msgstr ""
 "υπογραφή, έλεγχος, κρυπτογράφηση ή αποκρυπτογράφηση\n"
 "η προκαθορισμένη λειτουργία εξαρτάται από τα δεδομένα εισόδου\n"
 
-#: sm/gpgsm.c:604
+#: sm/gpgsm.c:610
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "χρήση: gpg [επιλογές] "
 
-#: sm/gpgsm.c:685
+#: sm/gpgsm.c:691
 #, fuzzy, c-format
 msgid "can't encrypt to `%s': %s\n"
 msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
 
-#: sm/gpgsm.c:1237
+#: sm/gpgsm.c:713
+#, fuzzy, c-format
+msgid "unknown validation model `%s'\n"
+msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
+
+#: sm/gpgsm.c:1264
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1316
+#: sm/gpgsm.c:1344
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "εγγραφή στο  `%s'\n"
 
-#: sm/gpgsm.c:1334
+#: sm/gpgsm.c:1362
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 
-#: sm/gpgsm.c:1529
+#: sm/gpgsm.c:1543
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
@@ -7429,7 +7559,7 @@ msgstr ""
 msgid "error importing certificate: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-#: sm/import.c:541 tools/gpg-connect-agent.c:375
+#: sm/import.c:541 tools/gpg-connect-agent.c:374
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
@@ -7513,7 +7643,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 
-#: sm/qualified.c:234
+#: sm/qualified.c:234 sm/verify.c:536
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7532,29 +7662,36 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
-#: sm/verify.c:386
+#: sm/verify.c:388
 #, fuzzy
 msgid "Signature made "
 msgstr "Υπογραφή έληξε στις %s.\n"
 
-#: sm/verify.c:390
+#: sm/verify.c:392
 msgid "[date not given]"
 msgstr ""
 
-#: sm/verify.c:391
-#, c-format
-msgid " using certificate ID %08lX\n"
-msgstr ""
+#: sm/verify.c:393
+#, fuzzy, c-format
+msgid " using certificate ID 0x%08lX\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-#: sm/verify.c:507
+#: sm/verify.c:514
 #, fuzzy
 msgid "Good signature from"
 msgstr "Καλή υπογραφή από \""
 
-#: sm/verify.c:508
+#: sm/verify.c:515
 #, fuzzy
 msgid "                aka"
 msgstr "                γνωστό σαν \""
+
+#: sm/verify.c:533
+#, fuzzy
+msgid "This is a qualified signature\n"
+msgstr ""
+"\n"
+"Αυτή θα είναι μια ιδιο-υπογραφή.\n"
 
 #: tools/gpg-connect-agent.c:59 tools/gpgconf.c:68 tools/symcryptrun.c:165
 #, fuzzy
@@ -7592,132 +7729,137 @@ msgid ""
 "Connect to a running agent and send commands\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:315
+#: tools/gpg-connect-agent.c:314
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:324
+#: tools/gpg-connect-agent.c:323
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:382
+#: tools/gpg-connect-agent.c:381
 #, fuzzy
 msgid "line too long - skipped\n"
 msgstr "η γραμμή είναι πολύ μεγάλη\n"
 
-#: tools/gpg-connect-agent.c:386
+#: tools/gpg-connect-agent.c:385
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:458
+#: tools/gpg-connect-agent.c:457
 #, fuzzy, c-format
 msgid "unknown command `%s'\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
-#: tools/gpg-connect-agent.c:466
+#: tools/gpg-connect-agent.c:465
 #, fuzzy, c-format
 msgid "sending line failed: %s\n"
 msgstr "η υπογραφή απέτυχε: %s\n"
 
-#: tools/gpg-connect-agent.c:474
+#: tools/gpg-connect-agent.c:473
 #, fuzzy, c-format
 msgid "receiving line failed: %s\n"
 msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 
-#: tools/gpg-connect-agent.c:784
+#: tools/gpg-connect-agent.c:789
 #, fuzzy, c-format
 msgid "error sending %s command: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
-#: tools/gpg-connect-agent.c:793
+#: tools/gpg-connect-agent.c:798
 #, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
-#: tools/gpgconf-comp.c:458 tools/gpgconf-comp.c:538 tools/gpgconf-comp.c:605
-#: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:736
+#: tools/gpgconf-comp.c:449 tools/gpgconf-comp.c:529 tools/gpgconf-comp.c:596
+#: tools/gpgconf-comp.c:658 tools/gpgconf-comp.c:739
 msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:471 tools/gpgconf-comp.c:551 tools/gpgconf-comp.c:618
-#: tools/gpgconf-comp.c:674 tools/gpgconf-comp.c:759
+#: tools/gpgconf-comp.c:462 tools/gpgconf-comp.c:542 tools/gpgconf-comp.c:609
+#: tools/gpgconf-comp.c:671 tools/gpgconf-comp.c:762
 msgid "Options controlling the configuration"
 msgstr ""
 
-#: tools/gpgconf-comp.c:481 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:625
-#: tools/gpgconf-comp.c:687 tools/gpgconf-comp.c:766
+#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:567 tools/gpgconf-comp.c:622
+#: tools/gpgconf-comp.c:690 tools/gpgconf-comp.c:769
 msgid "Options useful for debugging"
 msgstr ""
 
-#: tools/gpgconf-comp.c:486 tools/gpgconf-comp.c:581 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:774
+#: tools/gpgconf-comp.c:477 tools/gpgconf-comp.c:572 tools/gpgconf-comp.c:627
+#: tools/gpgconf-comp.c:695 tools/gpgconf-comp.c:777
 msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:494 tools/gpgconf-comp.c:586 tools/gpgconf-comp.c:700
+#: tools/gpgconf-comp.c:485 tools/gpgconf-comp.c:577 tools/gpgconf-comp.c:703
 msgid "Options controlling the security"
 msgstr ""
 
-#: tools/gpgconf-comp.c:501
+#: tools/gpgconf-comp.c:492
 msgid "|N|expire SSH keys after N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:505
+#: tools/gpgconf-comp.c:496
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:509
+#: tools/gpgconf-comp.c:500
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:519
+#: tools/gpgconf-comp.c:510
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr ""
 
-#: tools/gpgconf-comp.c:638
+#: tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:676
+#, fuzzy
+msgid "|NAME|encrypt to user ID NAME as well"
+msgstr "|ΟΝΟΜΑ|κρυπτογράφηση για ΟΝΟΜΑ"
+
+#: tools/gpgconf-comp.c:635
 msgid "Configuration for Keyservers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:643
+#: tools/gpgconf-comp.c:640
 msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
-#: tools/gpgconf-comp.c:682
+#: tools/gpgconf-comp.c:685
 #, fuzzy
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου κρυπτογράφησης ΟΝΟΜΑ για φράσεις κλειδιά"
 
-#: tools/gpgconf-comp.c:705
+#: tools/gpgconf-comp.c:708
 msgid "do not check CRLs for root certificates"
 msgstr ""
 
-#: tools/gpgconf-comp.c:749
+#: tools/gpgconf-comp.c:752
 msgid "Options controlling the format of the output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:785
+#: tools/gpgconf-comp.c:788
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:795
+#: tools/gpgconf-comp.c:798
 msgid "Configuration for HTTP servers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:806
+#: tools/gpgconf-comp.c:809
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-#: tools/gpgconf-comp.c:811
+#: tools/gpgconf-comp.c:814
 msgid "Configuration of LDAP servers to use"
 msgstr ""
 
-#: tools/gpgconf-comp.c:848
+#: tools/gpgconf-comp.c:851
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2681
+#: tools/gpgconf-comp.c:2684
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
@@ -8338,9 +8480,6 @@ msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
 
 #~ msgid "q"
 #~ msgstr "q"
-
-#~ msgid "help"
-#~ msgstr "help"
 
 #~ msgid "list"
 #~ msgstr "list"

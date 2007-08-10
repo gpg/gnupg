@@ -1,3 +1,7 @@
+2007-08-09  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (Certificate Options): Describe --validation-model.
+
 2007-07-23  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.texi (Scdaemon Commands): Remove obsolete --print-atr.

@@ -164,6 +164,7 @@ struct server_control_s
                          certificates up the chain (0 = none, 1 = only
                          signer) */
   int use_ocsp;       /* Set to true if OCSP should be used. */
+  int validation_model; /* Set to 1 for the chain model.  */
 };
 
 
@@ -185,8 +186,10 @@ typedef struct certlist_s *certlist_t;
 /* A structure carrying information about trusted root certificates. */
 struct rootca_flags_s
 {
+  unsigned int valid:1;  /* The rest of the structure has valid
+                            information.  */
   unsigned int relax:1;  /* Relax checking of root certificates.  */
-
+  unsigned int chain_model:1; /* Root requires the use of the chain model.  */
 };
 
 
@@ -194,6 +197,7 @@ struct rootca_flags_s
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
 void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
+int  gpgsm_parse_validation_model (const char *model);
 
 /*-- server.c --*/
 void gpgsm_server (certlist_t default_recplist);
@@ -253,7 +257,7 @@ char *gpgsm_format_keydesc (ksba_cert_t cert);
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert);
 int gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
-                               gcry_md_hd_t md, int hash_algo);
+                               gcry_md_hd_t md, int hash_algo, int *r_pkalgo);
 /* fixme: move create functions to another file */
 int gpgsm_create_cms_signature (ctrl_t ctrl,
                                 ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
@@ -261,12 +265,19 @@ int gpgsm_create_cms_signature (ctrl_t ctrl,
 
 
 /*-- certchain.c --*/
+
+/* Flags used with  gpgsm_validate_chain.  */
+#define VALIDATE_FLAG_NO_DIRMNGR  1
+#define VALIDATE_FLAG_CHAIN_MODEL 2
+
+
 int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
+                          ksba_isotime_t checktime,
                           ksba_isotime_t r_exptime,
                           int listmode, estream_t listfp,
-                          unsigned int flags);
+                          unsigned int flags, unsigned int *retflags);
 int gpgsm_basic_cert_check (ksba_cert_t cert);
 
 /*-- certlist.c --*/

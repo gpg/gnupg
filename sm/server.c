@@ -244,6 +244,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->with_validation = i;
     }
+  else if (!strcmp (key, "validation-model"))
+    {
+      int i = gpgsm_parse_validation_model (value);
+      if ( i >= 0 && i <= 1 )
+        ctrl->validation_model = i;
+      else
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+    }
   else if (!strcmp (key, "with-key-data"))
     {
       opt.with_key_data = 1;

@@ -1,11 +1,14 @@
 Noteworthy changes in version 2.0.6
 ------------------------------------------------
 
- * gpgsm does now grok --default-key.
+ * GPGSM does now grok --default-key.
+
+ * GPGCONF is now aware of --default-key and --encrypt-to. 
+
+ * GPGSM does again correctly print the serial number as well the the
+   various keyids.  This was broken since 2.0.4.
+
  
- * gpgconf is now aware of --default-key and --encrypt-to. 
-
-
 Noteworthy changes in version 2.0.5 (2007-07-05)
 ------------------------------------------------
 

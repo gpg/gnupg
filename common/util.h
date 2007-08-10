@@ -112,7 +112,7 @@ const char *isotimestamp (u32 stamp); /* GMT */
 const char *asctimestamp (u32 stamp); /* localized */
 
 
-/* Copy one iso ddate to another, this is inline so that we can do a
+/* Copy one ISO date to another, this is inline so that we can do a
    sanity check. */
 static inline void
 gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)

@@ -1,3 +1,8 @@
+2007-08-09  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (show_help): Expand the @EMAIL@ macro in the package
+	bug reporting address.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* t-stringhelp.c (test_compare_filenames): New.

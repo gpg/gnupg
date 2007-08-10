@@ -1,3 +1,8 @@
+2007-08-06  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (read_one_trustfile): Add flag "cm".
+	(agent_istrusted): Ditto.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: Include gc-opt-flags.h and remove their definition

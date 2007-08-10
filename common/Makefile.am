@@ -36,6 +36,7 @@ common_sources = \
 	gc-opt-flags.h \
 	keyserver.h \
 	sexp-parse.h \
+	tlv.c tlv.h \
 	init.c init.h \
 	sexputil.c \
 	sysutils.c sysutils.h \

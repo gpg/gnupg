@@ -176,6 +176,9 @@ static struct
   /* GnuPG extensions */
   { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
 
+  /* Extensions used by the Bundesnetzagentur.  */
+  { "1.3.6.1.4.1.8301.3.5", "validityModel" },
+
   { NULL }
 };
 
@@ -345,9 +348,10 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   const char *chain_id;
   char *chain_id_buffer = NULL;
   int is_root = 0;
+  char *kludge_uid;
 
   if (ctrl->with_validation)
-    valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL, 0);
+    valerr = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, NULL, 0, NULL);
   else
     valerr = 0;
 
@@ -484,8 +488,15 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       print_key_data (cert, fp);
     }
 
+  kludge_uid = NULL;
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
+      /* In the case that the same email address is in the subecj DN
+         as weel as in an alternate subject name we avoid printing it
+         a second time. */
+      if (kludge_uid && !strcmp (kludge_uid, p))
+        continue;
+
       es_fprintf (fp, "uid:%s::::::::", truststring);
       es_write_sanitized (fp, p, strlen (p), ":", NULL);
       es_putc (':', fp);
@@ -497,19 +508,20 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
              the keydb.  But as long as we don't have a way to pass
              the meta data back, we just check it the same way as the
              code used to create the keybox meta data does */
-          char *pp = email_kludge (p);
-          if (pp)
+          kludge_uid = email_kludge (p);
+          if (kludge_uid)
             {
               es_fprintf (fp, "uid:%s::::::::", truststring);
-              es_write_sanitized (fp, pp, strlen (pp), ":", NULL);
+              es_write_sanitized (fp, kludge_uid, strlen (kludge_uid),
+                                  ":", NULL);
               es_putc (':', fp);
               es_putc (':', fp);
               es_putc ('\n', fp);
-              xfree (pp);
             }
         }
       xfree (p);
     }
+  xfree (kludge_uid);
 }
 
 
@@ -570,8 +582,11 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   ksba_name_t name, name2;
   unsigned int reason;
 
+  es_fprintf (fp, "           ID: 0x%08lX\n",
+              gpgsm_get_short_fingerprint (cert));
+
   sexp = ksba_cert_get_serial (cert);
-  es_fputs ("Serial number: ", fp);
+  es_fputs ("          S/N: ", fp);
   gpgsm_print_serial (fp, sexp);
   ksba_free (sexp);
   es_putc ('\n', fp);
@@ -887,7 +902,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
 
   if (with_validation)
     {
-      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
+      err = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, fp, 0, NULL);
       if (!err)
         es_fprintf (fp, "  [certificate is good]\n");
       else
@@ -924,8 +939,11 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   unsigned int kusage;
   char *string, *p, *pend;
 
+  es_fprintf (fp, "           ID: 0x%08lX\n",
+              gpgsm_get_short_fingerprint (cert));
+
   sexp = ksba_cert_get_serial (cert);
-  es_fputs ("Serial number: ", fp);
+  es_fputs ("          S/N: ", fp);
   gpgsm_print_serial (fp, sexp);
   ksba_free (sexp);
   es_putc ('\n', fp);
@@ -1088,7 +1106,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
       size_t buflen;
       char buffer[1];
       
-      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp, 0);
+      err = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, fp, 0, NULL);
       tmperr = ksba_cert_get_user_data (cert, "is_qualified", 
                                         &buffer, sizeof (buffer), &buflen);
       if (!tmperr && buflen)

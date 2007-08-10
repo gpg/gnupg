@@ -394,8 +394,10 @@ isvalid_status_cb (void *opaque, const char *line)
   GPG_ERR_NO_CRL_KNOWN
   GPG_ERR_CRL_TOO_OLD
 
-  With USE_OCSP set to true, the dirmngr is asked to do an OCSP
-  request first.
+  Values for USE_OCSP:
+     0 = Do CRL check.
+     1 = Do an OCSP check.
+     2 = Do an OCSP check using only the default responder.
  */
 int
 gpgsm_dirmngr_isvalid (ctrl_t ctrl,
@@ -445,7 +447,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
 
   /* FIXME: If --disable-crl-checks has been set, we should pass an
      option to dirmngr, so that no fallback CRL check is done after an
-     ocsp check. */
+     ocsp check.  It is not a problem right now as dirmngr does not
+     fallback to CRL checking.  */
 
   /* It is sufficient to send the options only once because we have
      one connection per process only. */
@@ -456,7 +459,9 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line)-1, "ISVALID %s", certid);
+  snprintf (line, DIM(line)-1, "ISVALID%s %s", 
+            use_ocsp == 2? " --only-ocsp --force-default-responder":"",
+            certid);
   line[DIM(line)-1] = 0;
   xfree (certid);
 
@@ -504,9 +509,10 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                 rc = gpg_error (GPG_ERR_INV_CRL);
               else
                 {
-                  /* Note, the flag = 1: This avoids checking this
-                     certificate over and over again. */
-                  rc = gpgsm_validate_chain (ctrl, rspcert, NULL, 0, NULL, 1);
+                  /* Note the no_dirmngr flag: This avoids checking
+                     this certificate over and over again. */
+                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL, 
+                                             VALIDATE_FLAG_NO_DIRMNGR, NULL);
                   if (rc)
                     {
                       log_error ("invalid certificate used for CRL/OCSP: %s\n",

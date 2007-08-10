@@ -1,5 +1,5 @@
 /* trustlist.c - Maintain the list of trusted keys
- *	Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,6 +42,7 @@ struct trustitem_s
     int for_smime:1;      /* Set by '*' or 'S' as first flag. */
     int relax:1;          /* Relax checking of root certificate
                              constraints. */
+    int cm:1;             /* Use chain model for validation. */
   } flags;
   unsigned char fpr[20];  /* The binary fingerprint. */
 };
@@ -267,6 +268,8 @@ read_one_trustfile (const char *fname, int allow_include,
             }
           else if (n == 5 && !memcmp (p, "relax", 5))
             ti->flags.relax = 1;
+          else if (n == 2 && !memcmp (p, "cm", 2))
+            ti->flags.cm = 1;
           else
             log_error ("flag `%.*s' in `%s', line %d ignored\n",
                        n, p, fname, lnr);
@@ -392,6 +395,14 @@ agent_istrusted (ctrl_t ctrl, const char *fpr)
               {
                 err = agent_write_status (ctrl,
                                           "TRUSTLISTFLAG", "relax", 
+                                          NULL);
+                if (err)
+                  return err;
+              }
+            else if (ti->flags.cm)
+              {
+                err = agent_write_status (ctrl,
+                                          "TRUSTLISTFLAG", "cm", 
                                           NULL);
                 if (err)
                   return err;

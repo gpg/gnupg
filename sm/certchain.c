@@ -1,6 +1,6 @@
 /* certchain.c - certificate chain validation
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +37,7 @@
 #include "keydb.h"
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "i18n.h"
+#include "tlv.h"
 
 
 /* Object to keep track of certain root certificates. */
@@ -141,6 +142,71 @@ compare_certs (ksba_cert_t a, ksba_cert_t b)
 }
 
 
+/* Return true if CERT has the validityModel extensions and defines
+   the use of the chain model.  */
+static int
+has_validation_model_chain (ksba_cert_t cert, int listmode, estream_t listfp)
+{
+  gpg_error_t err;
+  int idx, yes;
+  const char *oid;
+  size_t off, derlen, objlen, hdrlen;
+  const unsigned char *der;
+  int class, tag, constructed, ndef;
+  char *oidbuf;
+
+  for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
+                                             &oid, NULL, &off, &derlen));idx++)
+    if (!strcmp (oid, "1.3.6.1.4.1.8301.3.5") )
+      break;
+  if (err)
+    return 0; /* Not found.  */
+  der = ksba_cert_get_image (cert, NULL);
+  if (!der)
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ); /* Oops  */
+      goto leave;
+    }
+  der += off;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_SEQUENCE))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+  derlen = objlen;
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_OBJECT_ID))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    goto leave;
+  oidbuf = ksba_oid_to_str (der, objlen);
+  if (!oidbuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (opt.verbose)
+    do_list (0, listmode, listfp,
+             _("validation model requested by certificate: %s"), 
+              !strcmp (oidbuf, "1.3.6.1.4.1.8301.3.5.1")? _("chain") :
+              !strcmp (oidbuf, "1.3.6.1.4.1.8301.3.5.2")? _("shell") :
+              /* */                                       oidbuf);
+  yes = !strcmp (oidbuf, "1.3.6.1.4.1.8301.3.5.1");
+  ksba_free (oidbuf);
+  return yes;
+
+
+ leave:
+  log_error ("error parsing validityModel: %s\n", gpg_strerror (err));
+  return 0;
+}
+
+
+
 static int
 unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
 {
@@ -155,6 +221,7 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
     "2.5.29.19", /* basic Constraints */
     "2.5.29.32", /* certificatePolicies */
     "2.5.29.37", /* extendedKeyUsage - handled by certlist.c */
+    "1.3.6.1.4.1.8301.3.5", /* validityModel - handled here. */
     NULL
   };
   int rc = 0, i, idx, crit;
@@ -653,73 +720,310 @@ gpgsm_is_root_cert (ksba_cert_t cert)
 
 /* This is a helper for gpgsm_validate_chain. */
 static gpg_error_t 
-is_cert_still_valid (ctrl_t ctrl, int lm, estream_t fp,
+is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
                      ksba_cert_t subject_cert, ksba_cert_t issuer_cert,
                      int *any_revoked, int *any_no_crl, int *any_crl_too_old)
 {
-  if (!opt.no_crl_check || ctrl->use_ocsp)
-    {
-      gpg_error_t err;
+  gpg_error_t err;
 
-      err = gpgsm_dirmngr_isvalid (ctrl,
-                                   subject_cert, issuer_cert, ctrl->use_ocsp);
-      if (err)
+  if (opt.no_crl_check && !ctrl->use_ocsp)
+    return 0;
+
+  err = gpgsm_dirmngr_isvalid (ctrl,
+                               subject_cert, issuer_cert, 
+                               force_ocsp? 2 : !!ctrl->use_ocsp);
+  if (err)
+    {
+      if (!lm)
+        gpgsm_cert_log_name (NULL, subject_cert);
+      switch (gpg_err_code (err))
         {
-          /* Fixme: We should change the wording because we may
-             have used OCSP. */
+        case GPG_ERR_CERT_REVOKED:
+          do_list (1, lm, fp, _("certificate has been revoked"));
+          *any_revoked = 1;
+          /* Store that in the keybox so that key listings are able to
+             return the revoked flag.  We don't care about error,
+             though. */
+          keydb_set_cert_flags (subject_cert, 1, KEYBOX_FLAG_VALIDITY, 0,
+                                ~0, VALIDITY_REVOKED);
+          break;
+
+        case GPG_ERR_NO_CRL_KNOWN:
+          do_list (1, lm, fp, _("no CRL found for certificate"));
+          *any_no_crl = 1;
+          break;
+
+        case GPG_ERR_NO_DATA:
+          do_list (1, lm, fp, _("the status of the certificate is unknown"));
+          *any_no_crl = 1;
+          break;
+
+        case GPG_ERR_CRL_TOO_OLD:
+          do_list (1, lm, fp, _("the available CRL is too old"));
           if (!lm)
-            gpgsm_cert_log_name (NULL, subject_cert);
-          switch (gpg_err_code (err))
-            {
-            case GPG_ERR_CERT_REVOKED:
-              do_list (1, lm, fp, _("certificate has been revoked"));
-              *any_revoked = 1;
-              /* Store that in the keybox so that key listings are
-                 able to return the revoked flag.  We don't care
-                 about error, though. */
-              keydb_set_cert_flags (subject_cert, 1, KEYBOX_FLAG_VALIDITY, 0,
-                                    ~0, VALIDITY_REVOKED);
-              break;
-            case GPG_ERR_NO_CRL_KNOWN:
-              do_list (1, lm, fp, _("no CRL found for certificate"));
-              *any_no_crl = 1;
-              break;
-            case GPG_ERR_CRL_TOO_OLD:
-              do_list (1, lm, fp, _("the available CRL is too old"));
-              if (!lm)
-                log_info (_("please make sure that the "
-                            "\"dirmngr\" is properly installed\n"));
-              *any_crl_too_old = 1;
-              break;
-            default:
-              do_list (1, lm, fp, _("checking the CRL failed: %s"),
-                       gpg_strerror (err));
-              return err;
-            }
+            log_info (_("please make sure that the "
+                        "\"dirmngr\" is properly installed\n"));
+          *any_crl_too_old = 1;
+          break;
+          
+        default:
+          do_list (1, lm, fp, _("checking the CRL failed: %s"),
+                   gpg_strerror (err));
+          return err;
         }
     }
   return 0;
 }
 
 
+/* Helper for gpgsm_validate_chain to check the validity period of
+   SUBJECT_CERT.  The caller needs to pass EXPTIME which will be
+   updated to the nearest expiration time seen.  A DEPTH of 0 indicates
+   the target certifciate, -1 the final root certificate and other
+   values intermediate certificates. */ 
+static gpg_error_t
+check_validity_period (ksba_isotime_t current_time,
+                       ksba_cert_t subject_cert,
+                       ksba_isotime_t exptime,
+                       int listmode, estream_t listfp, int depth)
+{
+  gpg_error_t err;
+  ksba_isotime_t not_before, not_after;
+
+  err = ksba_cert_get_validity (subject_cert, 0, not_before);
+  if (!err)
+    err = ksba_cert_get_validity (subject_cert, 1, not_after);
+  if (err)
+    {
+      do_list (1, listmode, listfp,
+               _("certificate with invalid validity: %s"), gpg_strerror (err));
+      return gpg_error (GPG_ERR_BAD_CERT);
+    }
+
+  if (*not_after)
+    {
+      if (!*exptime)
+        gnupg_copy_time (exptime, not_after);
+      else if (strcmp (not_after, exptime) < 0 )
+        gnupg_copy_time (exptime, not_after);
+    }
+
+  if (*not_before && strcmp (current_time, not_before) < 0 )
+    {
+      do_list (1, listmode, listfp, 
+               depth ==  0 ? _("certificate not yet valid") :
+               depth == -1 ? _("root certificate not yet valid") :
+               /* other */   _("intermediate certificate not yet valid"));
+      if (!listmode)
+        {
+          log_info ("  (valid from ");
+          gpgsm_dump_time (not_before);
+          log_printf (")\n");
+        }
+      return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
+    } 
+           
+  if (*not_after && strcmp (current_time, not_after) > 0 )
+    {
+      do_list (opt.ignore_expiration?0:1, listmode, listfp,
+               depth == 0  ? _("certificate has expired") :
+               depth == -1 ? _("root certificate has expired") :
+               /* other  */  _("intermediate certificate has expired"));
+      if (!listmode)
+        {
+          log_info ("  (expired at ");
+          gpgsm_dump_time (not_after);
+          log_printf (")\n");
+        }
+      if (opt.ignore_expiration)
+        log_info ("WARNING: ignoring expiration\n");
+      else
+        return gpg_error (GPG_ERR_CERT_EXPIRED);
+    }      
+      
+  return 0;
+}
+
+/* This is a variant of check_validity_period used with the chain
+   model.  The dextra contraint here is that notBefore and notAfter
+   must exists and if the additional argument CHECK_TIME is given this
+   time is used to check the validity period of SUBJECT_CERT.  */
+static gpg_error_t
+check_validity_period_cm (ksba_isotime_t current_time,
+                          ksba_isotime_t check_time,
+                          ksba_cert_t subject_cert,
+                          ksba_isotime_t exptime,
+                          int listmode, estream_t listfp, int depth)
+{
+  gpg_error_t err;
+  ksba_isotime_t not_before, not_after;
+
+  err = ksba_cert_get_validity (subject_cert, 0, not_before);
+  if (!err)
+    err = ksba_cert_get_validity (subject_cert, 1, not_after);
+  if (err)
+    {
+      do_list (1, listmode, listfp,
+               _("certificate with invalid validity: %s"), gpg_strerror (err));
+      return gpg_error (GPG_ERR_BAD_CERT);
+    }
+  if (!*not_before || !*not_after)
+    {
+      do_list (1, listmode, listfp,
+               _("required certificate attributes missing: %s%s%s"),
+               !*not_before? "notBefore":"",
+               (!*not_before && !*not_after)? ", ":"",
+               !*not_before? "notAfter":"");
+      return gpg_error (GPG_ERR_BAD_CERT);
+    }
+  if (strcmp (not_before, not_after) > 0 )
+    {
+      do_list (1, listmode, listfp,
+               _("certificate with invalid validity"));
+      log_info ("  (valid from ");
+      gpgsm_dump_time (not_before);
+      log_printf (" expired at ");
+      gpgsm_dump_time (not_after);
+      log_printf (")\n");
+      return gpg_error (GPG_ERR_BAD_CERT);
+    }
+  
+  if (!*exptime)
+    gnupg_copy_time (exptime, not_after);
+  else if (strcmp (not_after, exptime) < 0 )
+    gnupg_copy_time (exptime, not_after);
+
+  if (strcmp (current_time, not_before) < 0 )
+    {
+      do_list (1, listmode, listfp, 
+               depth ==  0 ? _("certificate not yet valid") :
+               depth == -1 ? _("root certificate not yet valid") :
+               /* other */   _("intermediate certificate not yet valid"));
+      if (!listmode)
+        {
+          log_info ("  (valid from ");
+          gpgsm_dump_time (not_before);
+          log_printf (")\n");
+        }
+      return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
+    } 
+
+  if (*check_time
+      && (strcmp (check_time, not_before) < 0 
+          || strcmp (check_time, not_after) > 0))
+    {
+      /* Note that we don't need a case for the root certificate
+         because its own consitency has already been checked.  */
+      do_list(opt.ignore_expiration?0:1, listmode, listfp,
+              depth == 0 ? 
+              _("signature not created during lifetime of certificate") :
+              depth == 1 ?
+              _("certificate not created during lifetime of issuer") :
+              _("intermediate certificate not created during lifetime "
+                "of issuer"));
+      if (!listmode)
+        {
+          log_info (depth== 0? _("  (  signature created at ") :
+                    /* */      _("  (certificate created at ") );
+          gpgsm_dump_time (check_time);
+          log_printf (")\n");
+          log_info (depth==0? _("  (certificate valid from ") :
+                    /* */     _("  (     issuer valid from ") );
+          gpgsm_dump_time (not_before);
+          log_info (" to ");
+          gpgsm_dump_time (not_after);
+          log_printf (")\n");
+        }
+      if (opt.ignore_expiration)
+        log_info ("WARNING: ignoring expiration\n");
+      else
+        return gpg_error (GPG_ERR_CERT_EXPIRED);
+    }
+
+  return 0;
+}
+
+
+
+/* Ask the user whether he wants to mark the certificate CERT trusted.
+   Returns true if the CERT is the trusted.  We also check whether the
+   agent is at all enabled to allow marktrusted and don't call it in
+   this session again if it is not.  */
+static int
+ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
+{
+  static int no_more_questions; 
+  int rc;
+  char *fpr;
+  int success = 0;
+
+  fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
+  log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
+  xfree (fpr);
+  
+  if (no_more_questions)
+    rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+  else
+    rc = gpgsm_agent_marktrusted (ctrl, cert);
+  if (!rc)
+    {
+      log_info (_("root certificate has now been marked as trusted\n"));
+      success = 1;
+    }
+  else if (!listmode)
+    {
+      gpgsm_dump_cert ("issuer", cert);
+      log_info ("after checking the fingerprint, you may want "
+                "to add it manually to the list of trusted certificates.\n");
+    }
+
+  if (gpg_err_code (rc) == GPG_ERR_NOT_SUPPORTED)
+    {
+      if (!no_more_questions)
+        log_info (_("interactive marking as trusted "
+                    "not enabled in gpg-agent\n"));
+      no_more_questions = 1;
+    }
+  else if (gpg_err_code (rc) == GPG_ERR_CANCELED)
+    {
+      log_info (_("interactive marking as trusted "
+                  "disabled for this session\n"));
+      no_more_questions = 1;
+    }
+  else
+    set_already_asked_marktrusted (cert);
+
+  return success;
+}
+
+
+
 
 /* Validate a chain and optionally return the nearest expiration time
    in R_EXPTIME. With LISTMODE set to 1 a special listmode is
    activated where only information about the certificate is printed
-   to FP and no output is send to the usual log stream. 
+   to LISTFP and no output is send to the usual log stream.  If
+   CHECKTIME_ARG is set, it is used only in the chain model instead of the
+   current time.
 
-   Defined flag bits: 0 - do not do any dirmngr isvalid checks.
+   Defined flag bits
+
+   VALIDATE_FLAG_NO_DIRMNGR  - Do not do any dirmngr isvalid checks.
+   VALIDATE_FLAG_CHAIN_MODEL - Check according to chain model.
 */
-int
-gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
-                      int listmode, estream_t fp, unsigned int flags)
+static int
+do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
+                   ksba_isotime_t r_exptime,
+                   int listmode, estream_t listfp, unsigned int flags,
+                   struct rootca_flags_s *rootca_flags)
 {
-  int rc = 0, depth = 0, maxdepth;
+  int rc = 0, depth, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = NULL;
   ksba_cert_t subject_cert = NULL, issuer_cert = NULL;
   ksba_isotime_t current_time;
+  ksba_isotime_t check_time;
   ksba_isotime_t exptime;
   int any_expired = 0;
   int any_revoked = 0;
@@ -729,11 +1033,26 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   int is_qualified = -1; /* Indicates whether the certificate stems
                             from a qualified root certificate.
                             -1 = unknown, 0 = no, 1 = yes. */
-  int lm = listmode;
   chain_item_t chain = NULL; /* A list of all certificates in the chain.  */
 
 
   gnupg_get_isotime (current_time);
+
+  if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
+    {
+      if (!strcmp (checktime_arg, "19700101T000000"))
+        {
+          do_list (1, listmode, listfp, 
+                   _("WARNING: creation time of signature not known - "
+                     "assuming current time"));
+          gnupg_copy_time (check_time, current_time);
+        }
+      else
+        gnupg_copy_time (check_time, checktime_arg);
+    }
+  else
+    *check_time = 0;
+
   if (r_exptime)
     *r_exptime = 0;
   *exptime = 0;
@@ -758,12 +1077,12 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   subject_cert = cert;
   ksba_cert_ref (subject_cert);
   maxdepth = 50;
+  depth = 0;
 
   for (;;)
     {
       int is_root;
       gpg_error_t istrusted_rc = -1;
-      struct rootca_flags_s rootca_flags;
 
       /* Put the certificate on our list.  */
       {
@@ -788,13 +1107,16 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
       if (!issuer)
         {
-          do_list (1, lm, fp,  _("no issuer found in certificate"));
+          do_list (1, listmode, listfp,  _("no issuer found in certificate"));
           rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }
 
 
-      /* Is this a self-issued certificate (i.e. the root certificate)? */
+      /* Is this a self-issued certificate (i.e. the root
+         certificate)?  This is actually the same test as done by
+         gpgsm_is_root_cert but here we want to keep the issuer and
+         subject for later use.  */
       is_root = (subject && !strcmp (issuer, subject));
       if (is_root)
         {
@@ -804,71 +1126,41 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
              check right here so that we can access special flags
              associated with that specific root certificate.  */
           istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
-                                                &rootca_flags);
+                                                rootca_flags);
+          /* If the chain model extended attribute is used, make sure
+             that our chain model flag is set. */
+          if (has_validation_model_chain (subject_cert, listmode, listfp))
+            rootca_flags->chain_model = 1;
         }
       
 
       /* Check the validity period. */
-      {
-        ksba_isotime_t not_before, not_after;
-
-        rc = ksba_cert_get_validity (subject_cert, 0, not_before);
-        if (!rc)
-          rc = ksba_cert_get_validity (subject_cert, 1, not_after);
-        if (rc)
-          {
-            do_list (1, lm, fp, _("certificate with invalid validity: %s"),
-                     gpg_strerror (rc));
-            rc = gpg_error (GPG_ERR_BAD_CERT);
-            goto leave;
-          }
-
-        if (*not_after)
-          {
-            if (!*exptime)
-              gnupg_copy_time (exptime, not_after);
-            else if (strcmp (not_after, exptime) < 0 )
-              gnupg_copy_time (exptime, not_after);
-          }
-
-        if (*not_before && strcmp (current_time, not_before) < 0 )
-          {
-            do_list (1, lm, fp, _("certificate not yet valid"));
-            if (!lm)
-              {
-                log_info ("(valid from ");
-                gpgsm_dump_time (not_before);
-                log_printf (")\n");
-              }
-            rc = gpg_error (GPG_ERR_CERT_TOO_YOUNG);
-            goto leave;
-          }            
-        if (*not_after && strcmp (current_time, not_after) > 0 )
-          {
-            do_list (opt.ignore_expiration?0:1, lm, fp,
-                     _("certificate has expired"));
-            if (!lm)
-              {
-                log_info ("(expired at ");
-                gpgsm_dump_time (not_after);
-                log_printf (")\n");
-              }
-            if (opt.ignore_expiration)
-                log_info ("WARNING: ignoring expiration\n");
-            else
-              any_expired = 1;
-          }            
-      }
+      if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
+        rc = check_validity_period_cm (current_time, check_time, subject_cert,
+                                       exptime, listmode, listfp,
+                                       (depth && is_root)? -1: depth);
+      else
+        rc = check_validity_period (current_time, subject_cert,
+                                    exptime, listmode, listfp,
+                                    (depth && is_root)? -1: depth);
+      if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
+        {
+          any_expired = 1;
+          rc = 0;
+        }
+      else if (rc)
+        goto leave;
+        
 
       /* Assert that we understand all critical extensions. */
-      rc = unknown_criticals (subject_cert, listmode, fp);
+      rc = unknown_criticals (subject_cert, listmode, listfp);
       if (rc)
         goto leave;
 
       /* Do a policy check. */
       if (!opt.no_policy_check)
         {
-          rc = check_cert_policy (subject_cert, listmode, fp);
+          rc = check_cert_policy (subject_cert, listmode, listfp);
           if (gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH)
             {
               any_no_policy_match = 1;
@@ -879,7 +1171,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         }
 
 
-      /* Is this a self-issued certificate? */
+      /* If this is the root certificate we are at the end of the chain.  */
       if (is_root)
         { 
           if (!istrusted_rc)
@@ -888,7 +1180,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             {
               /* We only check the signature if the certificate is not
                  trusted for better diagnostics. */
-              do_list (1, lm, fp,
+              do_list (1, listmode, listfp,
                        _("self-signed certificate has a BAD signature"));
               if (DBG_X509)
                 {
@@ -898,9 +1190,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                                    : GPG_ERR_BAD_CERT);
               goto leave;
             }
-          if (!rootca_flags.relax)
+          if (!rootca_flags->relax)
             {
-              rc = allowed_ca (subject_cert, NULL, listmode, fp);
+              rc = allowed_ca (subject_cert, NULL, listmode, listfp);
               if (rc)
                 goto leave;
             }
@@ -957,57 +1249,17 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             ;
           else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
             {
-              do_list (0, lm, fp, _("root certificate is not marked trusted"));
+              do_list (0, listmode, listfp, 
+                       _("root certificate is not marked trusted"));
               /* If we already figured out that the certificate is
                  expired it does not make much sense to ask the user
-                 whether we wants to trust the root certificate.  He
+                 whether we wants to trust the root certificate.  We
                  should do this only if the certificate under question
-                 will then be usable.  We also check whether the agent
-                 is at all enabled to allo marktrusted and don't call
-                 it in this session again if it is not. */
+                 will then be usable.  */
               if ( !any_expired
-                   && (!lm || !already_asked_marktrusted (subject_cert)))
-                {
-                  static int no_more_questions; /* during this session. */
-                  int rc2;
-                  char *fpr = gpgsm_get_fingerprint_string (subject_cert,
-                                                            GCRY_MD_SHA1);
-                  log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
-                  xfree (fpr);
-                  if (no_more_questions)
-                    rc2 = gpg_error (GPG_ERR_NOT_SUPPORTED);
-                  else
-                    rc2 = gpgsm_agent_marktrusted (ctrl, subject_cert);
-                  if (!rc2)
-                    {
-                      log_info (_("root certificate has now"
-                                  " been marked as trusted\n"));
-                      rc = 0;
-                    }
-                  else if (!lm)
-                    {
-                      gpgsm_dump_cert ("issuer", subject_cert);
-                      log_info ("after checking the fingerprint, you may want "
-                                "to add it manually to the list of trusted "
-                                "certificates.\n");
-                    }
-
-                  if (gpg_err_code (rc2) == GPG_ERR_NOT_SUPPORTED)
-                    {
-                      if (!no_more_questions)
-                        log_info (_("interactive marking as trusted "
-                                    "not enabled in gpg-agent\n"));
-                      no_more_questions = 1;
-                    }
-                  else if (gpg_err_code (rc2) == GPG_ERR_CANCELED)
-                    {
-                      log_info (_("interactive marking as trusted "
-                                  "disabled for this session\n"));
-                      no_more_questions = 1;
-                    }
-                  else
-                    set_already_asked_marktrusted (subject_cert);
-                }
+                   && (!listmode || !already_asked_marktrusted (subject_cert))
+                   && ask_marktrusted (ctrl, subject_cert, listmode) )
+                rc = 0;
             }
           else 
             {
@@ -1019,12 +1271,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             goto leave;
 
           /* Check for revocations etc. */
-          if ((flags & 1))
+          if ((flags & VALIDATE_FLAG_NO_DIRMNGR))
             ;
-          else if (opt.no_trusted_cert_crl_check || rootca_flags.relax)
+          else if (opt.no_trusted_cert_crl_check || rootca_flags->relax)
             ; 
           else
-            rc = is_cert_still_valid (ctrl, lm, fp,
+            rc = is_cert_still_valid (ctrl, 
+                                      (flags & VALIDATE_FLAG_CHAIN_MODEL),
+                                      listmode, listfp,
                                       subject_cert, subject_cert,
                                       &any_revoked, &any_no_crl,
                                       &any_crl_too_old);
@@ -1032,13 +1286,13 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             goto leave;
 
           break;  /* Okay: a self-signed certicate is an end-point. */
-        }
+        } /* End is_root.  */
+
       
       /* Take care that the chain does not get too long. */
-      depth++;
-      if (depth > maxdepth)
+      if ((depth+1) > maxdepth)
         {
-          do_list (1, lm, fp, _("certificate chain too long\n"));
+          do_list (1, listmode, listfp, _("certificate chain too long\n"));
           rc = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
           goto leave;
         }
@@ -1050,8 +1304,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         {
           if (rc == -1)
             {
-              do_list (0, lm, fp, _("issuer certificate not found"));
-              if (!lm)
+              do_list (0, listmode, listfp, _("issuer certificate not found"));
+              if (!listmode)
                 {
                   log_info ("issuer certificate: #/");
                   gpgsm_dump_string (issuer);
@@ -1083,7 +1337,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       rc = gpgsm_check_cert_sig (issuer_cert, subject_cert);
       if (rc)
         {
-          do_list (0, lm, fp, _("certificate has a BAD signature"));
+          do_list (0, listmode, listfp, _("certificate has a BAD signature"));
           if (DBG_X509)
             {
               gpgsm_dump_cert ("signing issuer", issuer_cert);
@@ -1113,8 +1367,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                     }
                   else
                     {
-                      do_list (0, lm, fp, _("found another possible matching "
-                                            "CA certificate - trying again"));
+                      do_list (0, listmode, listfp,
+                               _("found another possible matching "
+                                 "CA certificate - trying again"));
                       ksba_cert_release (issuer_cert); 
                       issuer_cert = tmp_cert;
                       goto try_another_cert;
@@ -1128,14 +1383,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
-      is_root = 0;
+      is_root = gpgsm_is_root_cert (issuer_cert);
       istrusted_rc = -1;
+
 
       /* Check that a CA is allowed to issue certificates. */
       {
         int chainlen;
 
-        rc = allowed_ca (issuer_cert, &chainlen, listmode, fp);
+        rc = allowed_ca (issuer_cert, &chainlen, listmode, listfp);
         if (rc)
           {
             /* Not allowed.  Check whether this is a trusted root
@@ -1146,12 +1402,11 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                certificates carry proper BasicContraints our way of
                overriding an error in the way is justified for
                performance reasons. */
-            if (gpgsm_is_root_cert (issuer_cert))
+            if (is_root)
               {
-                is_root = 1;
                 istrusted_rc = gpgsm_agent_istrusted (ctrl, issuer_cert,
-                                                      &rootca_flags);
-                if (!istrusted_rc && rootca_flags.relax)
+                                                      rootca_flags);
+                if (!istrusted_rc && rootca_flags->relax)
                   {
                     /* Ignore the error due to the relax flag.  */
                     rc = 0;
@@ -1161,9 +1416,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           }
         if (rc)
           goto leave;
-        if (chainlen >= 0 && (depth - 1) > chainlen)
+        if (chainlen >= 0 && depth > chainlen)
           {
-            do_list (1, lm, fp,
+            do_list (1, listmode, listfp,
                      _("certificate chain longer than allowed by CA (%d)"),
                      chainlen);
             rc = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
@@ -1188,13 +1443,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       /* Check for revocations etc.  Note that for a root certificate
          this test is done a second time later. This should eventually
          be fixed. */
-      if ((flags & 1))
+      if ((flags & VALIDATE_FLAG_NO_DIRMNGR))
         rc = 0;
       else if (is_root && (opt.no_trusted_cert_crl_check
-                           || (!istrusted_rc && rootca_flags.relax)))
-        ; 
+                           || (!istrusted_rc && rootca_flags->relax)))
+        rc = 0; 
       else
-        rc = is_cert_still_valid (ctrl, lm, fp,
+        rc = is_cert_still_valid (ctrl, 
+                                  (flags & VALIDATE_FLAG_CHAIN_MODEL),
+                                  listmode, listfp,
                                   subject_cert, issuer_cert,
                                   &any_revoked, &any_no_crl, &any_crl_too_old);
       if (rc)
@@ -1202,13 +1459,29 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
 
       if (opt.verbose && !listmode)
-        log_info ("certificate is good\n");
+        log_info (depth == 0 ? _("certificate is good\n") :
+                  !is_root   ? _("intermediate certificate is good\n") :
+                  /* other */  _("root certificate is good\n"));
+
+      /* Under the chain model the next check time is the creation
+         time of the subject certificate.  */
+      if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
+        {
+          rc = ksba_cert_get_validity (subject_cert, 0, check_time);
+          if (rc)
+            {
+              /* That will never happen as we have already checked
+                 this above.  */
+              BUG ();
+            }
+        }
 
       /* For the next round the current issuer becomes the new subject.  */
       keydb_search_reset (kh);
       ksba_cert_release (subject_cert);
       subject_cert = issuer_cert;
       issuer_cert = NULL;
+      depth++;
     } /* End chain traversal. */
 
   if (!listmode)
@@ -1238,7 +1511,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   
  leave:
   /* If we have traversed a complete chain up to the root we will
-     reset the ephemeral flag for all these certificates.  his is done
+     reset the ephemeral flag for all these certificates.  This is done
      regardless of any error because those errors may only be
      transient. */
   if (chain && chain->is_root)
@@ -1302,6 +1575,61 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     }
   ksba_cert_release (issuer_cert);
   ksba_cert_release (subject_cert);
+  return rc;
+}
+
+
+/* Validate a certifcate chain.  For a description see the
+   do_validate_chain.  This function is a wrapper to handle a root
+   certificate with the chain_model flag set.  If RETFLAGS is not
+   NULL, flags indicating now the verification was done are stored
+   there.  The only defined flag for RETFLAGS is
+   VALIDATE_FLAG_CHAIN_MODEL.
+
+   If you are verifying a signature you should set CHECKTIME to the
+   creation time of the signature.  If your are verifying a
+   certificate, set it nil (i.e. the empty string).  If the creation
+   date of the signature is not known use the special date
+   "19700101T000000" which is treated in a special way here. */
+int
+gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
+                      ksba_isotime_t r_exptime,
+                      int listmode, estream_t listfp, unsigned int flags,
+                      unsigned int *retflags)
+{
+  int rc;
+  struct rootca_flags_s rootca_flags;
+  unsigned int dummy_retflags;
+
+  if (!retflags)
+    retflags = &dummy_retflags;
+
+  if (ctrl->validation_model == 1)
+    flags |= VALIDATE_FLAG_CHAIN_MODEL;
+
+  *retflags = (flags & VALIDATE_FLAG_CHAIN_MODEL);
+  memset (&rootca_flags, 0, sizeof rootca_flags);
+
+  rc = do_validate_chain (ctrl, cert, checktime, 
+                          r_exptime, listmode, listfp, flags,
+                          &rootca_flags);
+  if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
+      && !(flags & VALIDATE_FLAG_CHAIN_MODEL)
+      && (rootca_flags.valid && rootca_flags.chain_model))
+    {
+      do_list (0, listmode, listfp, _("switching to chain model"));
+      rc = do_validate_chain (ctrl, cert, checktime,
+                              r_exptime, listmode, listfp, 
+                              (flags |= VALIDATE_FLAG_CHAIN_MODEL),
+                              &rootca_flags);
+      *retflags |= VALIDATE_FLAG_CHAIN_MODEL;
+    }
+
+  if (opt.verbose)
+    do_list (0, listmode, listfp, _("validation model used: %s"), 
+             (*retflags & VALIDATE_FLAG_CHAIN_MODEL)?
+             _("chain model"):_("shell model"));
+  
   return rc;
 }
 
@@ -1399,7 +1727,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
           goto leave;
         }
       if (opt.verbose)
-        log_info ("certificate is good\n");
+        log_info (_("certificate is good\n"));
     }
 
  leave:

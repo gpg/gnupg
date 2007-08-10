@@ -71,10 +71,10 @@ gpgsm_print_serial (estream_t fp, ksba_const_sexp_t sn)
       p++;
       n = strtoul (p, &endp, 10);
       p = endp;
-      if (*p!=':')
+      if (*p++ != ':')
         es_fputs ("[Internal Error - invalid S-expression]", fp);
       else
-        es_write_hexstring (fp, p, strlen (p), 0, NULL);
+        es_write_hexstring (fp, p, n, 0, NULL);
     }
 }
 
@@ -936,7 +936,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
                  _("Please enter the passphrase to unlock the"
                    " secret key for:\n"
                    "\"%s\"\n"
-                   "S/N %s, ID %08lX, created %s" ),
+                   "S/N %s, ID 0x%08lX, created %s" ),
                  subject? subject:"?",
                  sn? sn: "?",
                  gpgsm_get_short_fingerprint (cert),

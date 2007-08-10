@@ -832,8 +832,21 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	    puts("\n(A single dash may be used instead of the double ones)");
     }
     if( (s=strusage(19)) ) {  /* bug reports to ... */
+        char *s2;
+
 	putchar('\n');
-	fputs(s, stdout);
+        s2 = strstr (s, "@EMAIL@");
+        if (s2)
+          {
+            if (s2-s)
+              fwrite (s, s2-s, 1, stdout);
+            fputs (PACKAGE_BUGREPORT, stdout);
+            s2 += 7;
+            if (*s2)
+              fputs (s2, stdout);
+          }
+        else
+          fputs(s, stdout);
     }
     fflush(stdout);
     exit(0);

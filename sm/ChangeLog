@@ -1,3 +1,65 @@
+2007-08-09  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main) [W32]: Enable CRL check by default.
+	(main): Update the default control structure after reading the
+	options.
+	(gpgsm_parse_validation_model, parse_validation_model): New.
+	(main): New option --validation-model.
+	* certchain.c (gpgsm_validate_chain): Implement this option.
+	* server.c (option_handler): Ditto.
+
+	* certchain.c (is_cert_still_valid): Reformatted.  Add arg
+	FORCE_OCSP.  Changed callers to set this flag when using the chain
+	model.
+
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_print_serial): Fixed brown paper bag style bugs
+	which prefixed the output with a 3A and cut it off at a 00.
+
+	* keylist.c (list_cert_raw): Print the certificate ID first and
+	rename "Serial number" to "S/N".
+	(list_cert_std): Ditto.
+
+2007-08-07  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Allow a string for --faked-system-time.
+
+2007-08-06  Werner Koch  <wk@g10code.com>
+
+	Implementation of the chain model.
+	
+	* gpgsm.h (struct rootca_flags_s): Define new members VALID and
+	CHAIN_MODEL.
+	* call-agent.c (gpgsm_agent_istrusted): Mark ROOTCA_FLAGS valid.
+	(istrusted_status_cb): Set CHAIN_MODEL.
+	* certchain.c (gpgsm_validate_chain): Replace LM alias by LISTMODE
+	and FP by LISTFP.
+	(gpgsm_validate_chain): Factor some code out to ...
+	(check_validity_period, ask_marktrusted): .. new.
+	(check_validity_cm_basic, check_validity_cm_main): New.
+	(do_validate_chain): New with all code from gpgsm_validate_chain.
+	New arg ROOTCA_FLAGS.
+	(gpgsm_validate_chain): Provide ROOTCA_FLAGS and fallback to chain
+	model.  Add RETFLAGS arg and changed all callers to pass NULL. Add
+	CHECKTIME arg and changed all callers to pass a nil value.
+	(has_validity_model_chain): New.
+	* verify.c (gpgsm_verify): Check for chain model and return as
+	part of the trust status.
+
+	* gpgsm.h (VALIDATE_FLAG_NO_DIRMNGR): New.
+	(VALIDATE_FLAG_NO_DIRMNGR): New.
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): Use constant here.
+
+2007-08-03  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_colon): Avoid duplicate listing of kludge
+	uids.
+
+	* verify.c (gpgsm_verify): Make STATUS_VERIFY return the hash and
+	pk algo.
+	* certcheck.c (gpgsm_check_cms_signature): Add arg R_PKALGO.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Factored GC_OPT_FLAGS out to gc-opt-flags.h.

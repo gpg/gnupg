@@ -1,5 +1,5 @@
 /* verify.c - Verify a messages signature
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -246,6 +246,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       char *msgdigest = NULL;
       size_t msgdigestlen;
       char *ctattr;
+      int info_pkalgo;
+      unsigned int verifyflags;
 
       rc = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (!signer && gpg_err_code (rc) == GPG_ERR_NO_DATA
@@ -388,7 +390,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
         gpgsm_dump_time (sigtime);
       else
         log_printf (_("[date not given]"));
-      log_printf (_(" using certificate ID %08lX\n"),
+      log_printf (_(" using certificate ID 0x%08lX\n"),
                   gpgsm_get_short_fingerprint (cert));
 
 
@@ -432,12 +434,14 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               gcry_md_close (md);
               goto next_signer;
             }
-          rc = gpgsm_check_cms_signature (cert, sigval, md, algo);
+          rc = gpgsm_check_cms_signature (cert, sigval, md, algo, 
+                                          &info_pkalgo);
           gcry_md_close (md);
         }
       else
         {
-          rc = gpgsm_check_cms_signature (cert, sigval, data_md, algo);
+          rc = gpgsm_check_cms_signature (cert, sigval, data_md, algo, 
+                                          &info_pkalgo);
         }
 
       if (rc)
@@ -460,7 +464,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
-      rc = gpgsm_validate_chain (ctrl, cert, keyexptime, 0, NULL, 0);
+      rc = gpgsm_validate_chain (ctrl, cert,
+                                 *sigtime? sigtime : "19700101T000000",
+                                 keyexptime, 0, 
+                                 NULL, 0, &verifyflags);
       {
         char *fpr, *buf, *tstr;
 
@@ -477,10 +484,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp_r (sigtime);
-        buf = xmalloc ( strlen(fpr) + strlen (tstr) + 120);
-        sprintf (buf, "%s %s %s %s", fpr, tstr,
-                 *sigtime? sigtime : "0",
-                 *keyexptime? keyexptime : "0" );
+        buf = xasprintf ("%s %s %s %s 0 0 %d %d 00", fpr, tstr,
+                         *sigtime? sigtime : "0",
+                         *keyexptime? keyexptime : "0",
+                         info_pkalgo, algo);
         xfree (tstr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);
@@ -512,7 +519,32 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           ksba_free (p);
         }
 
-      gpgsm_status (ctrl, STATUS_TRUST_FULLY, NULL);
+      /* Print a note if this is a qualified signature.  */
+      {
+        size_t qualbuflen;
+        char qualbuffer[1];
+        
+        rc = ksba_cert_get_user_data (cert, "is_qualified", &qualbuffer,
+                                      sizeof (qualbuffer), &qualbuflen);
+        if (!rc && qualbuflen)
+          {
+            if (*qualbuffer)
+              {
+                log_info (_("This is a qualified signature\n"));
+                if (!opt.qualsig_approval)
+                  log_info 
+                    (_("Note, that this software is not officially approved "
+                       "to create or verify such signatures.\n"));
+              }
+          }    
+        else if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
+          log_error ("get_user_data(is_qualified) failed: %s\n",
+                     gpg_strerror (rc)); 
+      }
+
+      gpgsm_status (ctrl, STATUS_TRUST_FULLY, 
+                    (verifyflags & VALIDATE_FLAG_CHAIN_MODEL)?
+                    "0 chain": "0 shell");
           
 
     next_signer:

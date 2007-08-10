@@ -122,7 +122,7 @@ This should return the Root cert of the issuer.  See note above.
 
 @item By exact match on serial number and issuer's DN.
 This is indicated by a hash mark, followed by the hexadecmal
-representation of the serial number, the followed by a slash and the
+representation of the serial number, then followed by a slash and the
 RFC-2253 encoded DN of the issuer. See note above.
 
 @cartouche

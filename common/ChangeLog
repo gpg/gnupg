@@ -1,3 +1,10 @@
+2007-08-07  Werner Koch  <wk@g10code.com>
+
+	* tlv.c, tlv.h: Move from ../scd/.
+	* tlv.c (parse_sexp, parse_ber_header): Add ERRSOURCE arg and prefix
+	name with a _.
+	* tlv.h: Use macro to convey ERRSOURCE.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* gc-opt-flags.h: New.
@@ -29,7 +36,7 @@
 
 2007-07-04  Werner Koch  <wk@g10code.com>
 
-	* estream.c (es_init_do): Do not throw an error if pth as already
+	* estream.c (es_init_do): Do not throw an error if pth has already
 	been initialized.
 
 2007-06-26  Werner Koch  <wk@g10code.com>

@@ -486,6 +486,8 @@ istrusted_status_cb (void *opaque, const char *line)
         ;
       if (!strncmp (line, "relax", 5) && (line[5] == ' ' || !line[5]))
         flags->relax = 1;
+      else if (!strncmp (line, "cm", 2) && (line[2] == ' ' || !line[2]))
+        flags->chain_model = 1;
     }
   return 0;
 }
@@ -521,6 +523,8 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert,
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                         istrusted_status_cb, rootca_flags);
+  if (!rc)
+    rootca_flags->valid = 1;
   return rc;
 }
 

@@ -380,7 +380,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
          check that the signer's certificate is usable and valid.  */
       rc = gpgsm_cert_use_sign_p (cert);
       if (!rc)
-        rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
+        rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
       if (rc)
         goto leave;
 

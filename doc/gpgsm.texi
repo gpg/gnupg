@@ -412,6 +412,17 @@ requests in Dirmngr's configuration too (option
 @option{--allow-ocsp} and configure dirmngr properly.  If you don't do
 so you will get the error code @samp{Not supported}.
 
+
+@item --validation-model @var{name}
+@opindex validation-model
+This option changes the default validation model.  The only possible
+values are "shell" (which is the default) and "chain" which forces the
+use of the chain model.  The chain model is also used if an option in
+the @file{trustlist.txt} or an attribute of the certificate requests it.
+However the standard model (shell) is in that case always tried first.
+
+
+
 @end table
 
 @c *******************************************
@@ -550,7 +561,8 @@ encryption.  For convenience the strings @code{3DES}, @code{AES} and
 @opindex faked-system-time
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
-1970.
+1970.  Alternativly @var{epoch} may be given as a full ISO time string
+(e.g. "20070924T154812").
 
 @item --with-ephemeral-keys
 @opindex with-ephemeral-keys

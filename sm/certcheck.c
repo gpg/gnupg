@@ -343,13 +343,17 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
 int
 gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
-                           gcry_md_hd_t md, int algo)
+                           gcry_md_hd_t md, int mdalgo, int *r_pkalgo)
 {
   int rc;
   ksba_sexp_t p;
   gcry_mpi_t frame;
   gcry_sexp_t s_sig, s_hash, s_pkey;
   size_t n;
+  int pkalgo;
+
+  if (r_pkalgo)
+    *r_pkalgo = 0;
 
   n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
   if (!n)
@@ -385,8 +389,10 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
       return rc;
     }
 
-
-  rc = do_encode_md (md, algo, pk_algo_from_sexp (s_pkey),
+  pkalgo = pk_algo_from_sexp (s_pkey);
+  if (r_pkalgo)
+    *r_pkalgo = pkalgo;
+  rc = do_encode_md (md, mdalgo, pkalgo,
                      gcry_pk_get_nbits (s_pkey), s_pkey, &frame);
   if (rc)
     {

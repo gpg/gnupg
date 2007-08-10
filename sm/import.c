@@ -173,7 +173,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
   */
   rc = gpgsm_basic_cert_check (cert);
   if (!rc && ctrl->with_validation)
-    rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL, 0);
+    rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
   if (!rc || (!ctrl->with_validation
               && gpg_err_code (rc) == GPG_ERR_MISSING_CERT) )
     {

@@ -38,7 +38,6 @@ scdaemon_SOURCES = \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
-	tlv.c tlv.h \
 	app.c app-common.h app-help.c $(card_apps)
 
 
@@ -55,7 +54,6 @@ scdaemon_LDADD = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a \
 #	apdu.c apdu.h \
 #	ccid-driver.c ccid-driver.h \
 #	iso7816.c iso7816.h \
-#	tlv.c tlv.h \
 #	atr.c atr.h \
 #	app.c app-common.h app-help.c $(card_apps)
 #
