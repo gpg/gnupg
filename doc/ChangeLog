@@ -1,3 +1,15 @@
+2007-08-14  Werner Koch  <wk@g10code.com>
+
+	* glossary.texi (Glossary): Add a more items.
+
+2007-08-13  Werner Koch  <wk@g10code.com>
+
+	* yat2m.c (proc_texi_cmd): Do not put @samp content between two
+	newlines.
+
+	* gpg-agent.texi (Agent Configuration): Explain the CM flag for
+	trustlist.txt.
+
 2007-08-09  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (Certificate Options): Describe --validation-model.

@@ -1,3 +1,19 @@
+2007-08-14  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Use dirmngr_socket_name.  change
+	the way infostr is xstrdupped.
+
+	* gpgsm.c (main) [W32]: Make --prefer-system-dirmngr a dummy under
+	Windows.
+
+2007-08-13  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (do_add_recipient): Add RECP_REQUIRED and make error
+	message depend on that.
+	(main): Add avriable RECP_REQUIRED, set ift for encryption
+	commands and pass it to do_add_recipient.
+	(our_pk_test_algo, our_cipher_test_algo, our_md_test_algo): Implement.
+
 2007-08-09  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main) [W32]: Enable CRL check by default.

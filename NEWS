@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.6
+Noteworthy changes in version 2.0.6 (2007-08-14)
 ------------------------------------------------
 
  * GPGSM does now grok --default-key.
@@ -7,6 +7,10 @@ Noteworthy changes in version 2.0.6
 
  * GPGSM does again correctly print the serial number as well the the
    various keyids.  This was broken since 2.0.4.
+
+ * New option --validation-model and support for the chain-model.
+
+ * Imporved Windows support.
 
  
 Noteworthy changes in version 2.0.5 (2007-07-05)

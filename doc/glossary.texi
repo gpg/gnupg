@@ -12,6 +12,21 @@
 @acronym{CRL} but used for @acronym{CA}s and not for end user
 certificates.
 
+@item Chain model
+     Verification model for X.509 which uses the creation date of a
+signature as the date the validation starts and in turn checks that each
+certificate has been issued within the time frame, the issuing
+certificate was valid.  This allows the verification of signatures after
+the the CA's certificate expired.  The validation test also required an
+online check of the certificate status.  The chain model is required by
+the German signature law.  See also @emph{Shell model}.
+
+@item CMS
+     The @emph{Cryptographic Message Standard} describes a message
+format for encryption and digital signing.  It is closely related to the
+X.509 certificate format.  @acronym{CMS} was formerly known under the
+name @code{PKCS#7} and is described by @code{RFC3369}.
+
 @item CRL
      The @emph{Certificate Revocation List} is a list containing
 certificates revoked by the issuer.
@@ -20,6 +35,12 @@ certificates revoked by the issuer.
      The @emph{Certificate Signing Request} is a message send to a CA to
 ask them to issue a new certificate.  The data format of such a signing
 request is called PCKS#10.
+
+@item OpenPGP
+      A data format used to build a PKI and to exchange encrypted or
+signed messages.  In contrast to X.509, OpenPGP also includes the
+message format but does not explicilty demand a specific PKI.  However
+any kind of PKI may be build upon the OpenPGP protocol.
 
 @item Keygrip
       This term is used by GnuPG to describe a 20 byte hash value used
@@ -35,6 +56,17 @@ alternative to a @acronym{CRL}.  It is described in @code{RFC 2560}.
       The @emph{Personal Security Environment} describes a database to
 store private keys.  This is either a smartcard or a collection of files
 on a disk; the latter is often called a Soft-PSE.
+
+
+@item Shell model
+The standard model for validation of certificates under X.509.  At the
+time of the verification all certifciates must be valid and not expired.
+See also @emph{Chain mode}.
+
+
+@item X.509
+Description of a PKI used with CMS.  It is for example
+defined by @code{RFC3280}.
 
 
 @end table

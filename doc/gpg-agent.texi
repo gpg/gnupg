@@ -493,31 +493,40 @@ This is however not as secure as maintaining this file manually.  It is
 even advisable to change the permissions to read-only so that this file
 can't be changed inadvertently.
 
-It is possible to add further flags after the @code{S} for use by the
-caller.  The only flag currently defined is @code{relax} to relax
-checking of some root certificate requirements.
-
 As a special feature a line @code{include-default} will include a global
 list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
 This global list is also used if the local list is not available.
 
+It is possible to add further flags after the @code{S} for use by the
+caller:
+
+@table @code
+@item relax
+Relax checking of some root certificate requirements.
+
+@item cm
+If validation of a certificate finally issued by a CA with this flag set
+fails, try again using the chain validation model.
+
+@end table
+
   
 @item sshcontrol
 
-  This file is used when support for the secure shell agent protocol has
-  been enabled (@pxref{option --enable-ssh-support}). Only keys present in
-  this file are used in the SSH protocol.  The @command{ssh-add} tool y be
-  used to add new entries to this file; you may also add them manually.
-  Comment lines, indicated by a leading hash mark, as well as empty lines
-  are ignored.  An entry starts with optional white spaces, followed by
-  the keygrip of the key given as 40 hex digits, optionally followed by
-  the caching TTL in seconds and another optional field for arbitrary
-  flags.  A @code{!} may be prepended to the keygrip to disable this
-  entry.
+This file is used when support for the secure shell agent protocol has
+been enabled (@pxref{option --enable-ssh-support}). Only keys present
+in this file are used in the SSH protocol.  The @command{ssh-add} tool
+y be used to add new entries to this file; you may also add them
+manually.  Comment lines, indicated by a leading hash mark, as well as
+empty lines are ignored.  An entry starts with optional white spaces,
+followed by the keygrip of the key given as 40 hex digits, optionally
+followed by the caching TTL in seconds and another optional field for
+arbitrary flags.  A @code{!} may be prepended to the keygrip to
+disable this entry.
     
-  The follwoing example lists exactly one key.  Note that keys available
-  through a OpenPGP smartcard in the active smartcard reader are implictly
-  added to this list; i.e. there is no need to list them.
+The follwoing example lists exactly one key.  Note that keys available
+through a OpenPGP smartcard in the active smartcard reader are
+implictly added to this list; i.e. there is no need to list them.
   
   @example
   # Key added on 2005-02-25 15:08:29

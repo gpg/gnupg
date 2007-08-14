@@ -491,24 +491,64 @@ static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
 
+/* Remove this if libgcrypt 1.3.0 is required. */
+#define MY_GCRY_PK_ECDSA  301
+
 
 static int
 our_pk_test_algo (int algo)
 {
-  return 1;
+  switch (algo)
+    {
+    case GCRY_PK_RSA:
+    case MY_GCRY_PK_ECDSA:
+      return gcry_pk_test_algo (algo);
+    default:
+      return 1;
+    }
 }
 
 static int
 our_cipher_test_algo (int algo)
 {
-  return 1;
+  switch (algo)
+    {
+    case GCRY_CIPHER_3DES:
+    case GCRY_CIPHER_AES128:
+    case GCRY_CIPHER_AES192:
+    case GCRY_CIPHER_AES256:
+    case GCRY_CIPHER_SERPENT128:
+    case GCRY_CIPHER_SERPENT192:
+    case GCRY_CIPHER_SERPENT256:
+    case 309 /*GCRY_CIPHER_SEED*/:
+    case 310 /*GCRY_CIPHER_CAMELLIA128*/:
+    case 311 /*GCRY_CIPHER_CAMELLIA192*/:
+    case 312 /*GCRY_CIPHER_CAMELLIA256*/:
+      return gcry_cipher_test_algo (algo);
+    default:
+      return 1;
+    }
 }
+
 
 static int
 our_md_test_algo (int algo)
 {
-  return 1;
+  switch (algo)
+    {
+    case GCRY_MD_MD5:
+    case GCRY_MD_SHA1:
+    case GCRY_MD_RMD160:
+    case GCRY_MD_SHA256:
+    case GCRY_MD_SHA384:
+    case GCRY_MD_SHA512:
+    case 305 /*GCRY_MD_WHIRLPOOL*/:
+      return gcry_md_test_algo (algo);
+    default:
+      return 1;
+    }
 }
+
 
 static const char *
 my_strusage( int level )
@@ -571,12 +611,12 @@ build_list (const char *text, const char * (*mapf)(int), int (*chkf)(int))
     gcry_control (GCRYCTL_DROP_PRIVS); /* drop setuid */
   }
 
-  for (i=1; i < 110; i++ )
+  for (i=1; i < 400; i++ )
     if (!chkf(i))
       n += strlen(mapf(i)) + 2;
   list = xmalloc (21 + n);
   *list = 0;
-  for (p=NULL, i=1; i < 110; i++)
+  for (p=NULL, i=1; i < 400; i++)
     {
       if (!chkf(i))
         {
@@ -683,13 +723,15 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
 /* Helper to add recipients to a list. */
 static void
 do_add_recipient (ctrl_t ctrl, const char *name,
-                  certlist_t *recplist, int is_encrypt_to)
+                  certlist_t *recplist, int is_encrypt_to, int recp_required)
 {
   int rc = gpgsm_add_to_certlist (ctrl, name, 0, recplist, is_encrypt_to);
   if (rc)
     {
-      log_error (_("can't encrypt to `%s': %s\n"), name, gpg_strerror (rc));
-      gpgsm_status2 (ctrl, STATUS_INV_RECP,
+      if (recp_required)
+        {
+          log_error ("can't encrypt to `%s': %s\n", name, gpg_strerror (rc));
+          gpgsm_status2 (ctrl, STATUS_INV_RECP,
                      gpg_err_code (rc) == -1?                         "1":
                      gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":
                      gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?     "2":
@@ -701,6 +743,10 @@ do_add_recipient (ctrl_t ctrl, const char *name,
                      gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH?    "8":
                      "0",
                      name, NULL);
+        }
+      else
+        log_info (_("NOTE: won't be able to encrypt to `%s': %s\n"),
+                  name, gpg_strerror (rc));
     }
 }
 
@@ -747,6 +793,7 @@ main ( int argc, char **argv)
   certlist_t recplist = NULL;
   certlist_t signerlist = NULL;
   int do_not_setup_keys = 0;
+  int recp_required = 0;
 
   /*mtrace();*/
 
@@ -943,9 +990,13 @@ main ( int argc, char **argv)
           set_cmd (&cmd, pargs.r_opt);
           break;
 
+        case aEncr: 
+          recp_required = 1;
+          set_cmd (&cmd, pargs.r_opt);
+          break;
+
         case aSym:
         case aDecrypt: 
-        case aEncr: 
         case aSign: 
         case aClearsign: 
         case aVerify: 
@@ -1295,6 +1346,22 @@ main ( int argc, char **argv)
     opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.2";
   else if (!strcmp (opt.def_cipher_algoid, "AES256") )
     opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.42";
+  else if (!strcmp (opt.def_cipher_algoid, "SERPENT")
+           || !strcmp (opt.def_cipher_algoid, "SERPENT128") )
+    opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.2";
+  else if (!strcmp (opt.def_cipher_algoid, "SERPENT192") )
+    opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.22";
+  else if (!strcmp (opt.def_cipher_algoid, "SERPENT192") )
+    opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.42";
+  else if (!strcmp (opt.def_cipher_algoid, "SEED") )
+    opt.def_cipher_algoid = "1.2.410.200004.1.4";
+  else if (!strcmp (opt.def_cipher_algoid, "CAMELLIA") 
+           || !strcmp (opt.def_cipher_algoid, "CAMELLIA128") )
+    opt.def_cipher_algoid = "1.2.392.200011.61.1.1.1.2";
+  else if (!strcmp (opt.def_cipher_algoid, "CAMELLIA192") )
+    opt.def_cipher_algoid = "1.2.392.200011.61.1.1.1.3";
+  else if (!strcmp (opt.def_cipher_algoid, "CAMELLIA256") )
+    opt.def_cipher_algoid = "1.2.392.200011.61.1.1.1.4";
 
   if (cmd != aGPGConfList)
     {
@@ -1384,12 +1451,12 @@ main ( int argc, char **argv)
          complain about no (regular) recipients. */
       for (sl = remusr; sl; sl = sl->next)
         if (!(sl->flags & 1))
-          do_add_recipient (&ctrl, sl->d, &recplist, 0);
+          do_add_recipient (&ctrl, sl->d, &recplist, 0, recp_required);
       if (!opt.no_encrypt_to)
         {
           for (sl = remusr; sl; sl = sl->next)
             if ((sl->flags & 1))
-              do_add_recipient (&ctrl, sl->d, &recplist, 1);
+              do_add_recipient (&ctrl, sl->d, &recplist, 1, recp_required);
         }
     }
 
@@ -1428,8 +1495,10 @@ main ( int argc, char **argv)
                 GC_OPT_FLAG_NONE );
         printf ("auto-issuer-key-retrieve:%lu:\n",
                 GC_OPT_FLAG_NONE );
+#ifndef HAVE_W32_SYSTEM
         printf ("prefer-system-dirmngr:%lu:\n",
                 GC_OPT_FLAG_NONE );
+#endif
         printf ("cipher-algo:%lu:\"3DES:\n",
                 GC_OPT_FLAG_DEFAULT );
         printf ("p12-charset:%lu:\n",

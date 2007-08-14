@@ -1,3 +1,7 @@
+2007-08-14  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (dirmngr_socket_name): New.
+
 2007-08-07  Werner Koch  <wk@g10code.com>
 
 	* tlv.c, tlv.h: Move from ../scd/.

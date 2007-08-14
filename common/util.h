@@ -178,6 +178,7 @@ const char *gnupg_bindir (void);
 const char *gnupg_libexecdir (void);
 const char *gnupg_libdir (void);
 const char *gnupg_datadir (void);
+const char *dirmngr_socket_name (void);
 
 #define GNUPG_MODULE_NAME_AGENT        1
 #define GNUPG_MODULE_NAME_PINENTRY     2

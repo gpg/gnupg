@@ -339,7 +339,8 @@ a running dirmngr can't be connected.
 @opindex prefer-system-dirmngr
 If a system wide @command{dirmngr} is running in daemon mode, first try
 to connect to this one.  Fallback to a pipe based server if this does
-not work.
+not work.  Under Windows this option is ignored because the system dirmngr is
+always used.
 
 @item --no-secmem-warning
 @opindex no-secmem-warning

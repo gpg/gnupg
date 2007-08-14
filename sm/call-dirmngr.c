@@ -34,8 +34,6 @@
 #include "i18n.h"
 #include "keydb.h"
 
-/* The name of the socket for a system daemon.  */
-#define DEFAULT_SOCKET_NAME "/var/run/dirmngr/socket"
 
 struct membuf {
   size_t len;
@@ -155,14 +153,23 @@ start_dirmngr (void)
   /* Note: if you change this to multiple connections, you also need
      to take care of the implicit option sending caching. */
 
+#ifdef HAVE_W32_SYSTEM
+  infostr = NULL;
+  opt.prefer_system_dirmngr = 1;
+#else
   infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
-  if (opt.prefer_system_dirmngr && !force_pipe_server
-      &&(!infostr || !*infostr))
+#endif /*HAVE_W32_SYSTEM*/
+  if (infostr && !*infostr)
+    infostr = NULL;
+  else if (infostr)
+    infostr = xstrdup (infostr);
+
+  if (opt.prefer_system_dirmngr && !force_pipe_server && !infostr)
     {
-      infostr = DEFAULT_SOCKET_NAME;
+      infostr = xstrdup (dirmngr_socket_name ());
       try_default = 1;
     }
-  if (!infostr || !*infostr)
+  if (!infostr)
     {
       const char *pgmname;
       const char *argv[3];
@@ -206,8 +213,7 @@ start_dirmngr (void)
       int prot;
       int pid;
 
-      infostr = xstrdup (infostr);
-      if (!try_default && *infostr)
+      if (!try_default)
         {
           if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
             {
@@ -234,13 +240,20 @@ start_dirmngr (void)
         pid = -1;
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
+#ifdef HAVE_W32_SYSTEM
+      if (rc)
+        log_debug ("connecting dirmngr at `%s' failed\n", infostr);
+#endif
+
       xfree (infostr);
+#ifndef HAVE_W32_SYSTEM
       if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
           log_error (_("can't connect to the dirmngr - trying fall back\n"));
           force_pipe_server = 1;
           return start_dirmngr ();
         }
+#endif /*!HAVE_W32_SYSTEM*/
     }
 
   if (rc)
