@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-10 15:49+0200\n"
+"POT-Creation-Date: 2007-08-16 11:04+0200\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -105,8 +105,8 @@ msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
 #: g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:810 g10/sign.c:1005 g10/sign.c:1121
 #: g10/sign.c:1277 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:540
-#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1796
-#: sm/gpgsm.c:1833 sm/gpgsm.c:1871 sm/qualified.c:72
+#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1865
+#: sm/gpgsm.c:1902 sm/gpgsm.c:1940 sm/qualified.c:72
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "tiedostoa \"%s\" ei voi avata: %s\n"
@@ -340,7 +340,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
 #: agent/gpg-agent.c:257 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:206 sm/gpgsm.c:525 tools/gpg-connect-agent.c:124
+#: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
 #: tools/gpgconf.c:89 tools/symcryptrun.c:204
 #, fuzzy
 msgid "Please report bugs to <"
@@ -358,29 +358,29 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:639
+#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:679
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
 #: agent/gpg-agent.c:476 agent/protect-tool.c:1043 kbx/kbxutil.c:419
-#: scd/scdaemon.c:340 sm/gpgsm.c:772 sm/gpgsm.c:775 tools/symcryptrun.c:1026
+#: scd/scdaemon.c:340 sm/gpgsm.c:819 sm/gpgsm.c:822 tools/symcryptrun.c:1026
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:863
+#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:910
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
 
 #: agent/gpg-agent.c:574 agent/gpg-agent.c:1120 g10/gpg.c:2027
-#: scd/scdaemon.c:421 sm/gpgsm.c:867 tools/symcryptrun.c:959
+#: scd/scdaemon.c:421 sm/gpgsm.c:914 tools/symcryptrun.c:959
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "asetustiedosto \"%s\": %s\n"
 
-#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:874
+#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:921
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "luetaan asetukset tiedostosta \"%s\"\n"
@@ -1745,7 +1745,7 @@ msgstr ""
 "allekirjoita, tarkista, salaa tai avaa\n"
 "oletustoiminto riippuu syötteestä\n"
 
-#: g10/gpg.c:781 sm/gpgsm.c:538
+#: g10/gpg.c:781 sm/gpgsm.c:578
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1773,7 +1773,7 @@ msgstr "Pakkaus: "
 msgid "usage: gpg [options] "
 msgstr "käyttö: gpg [valitsimet] "
 
-#: g10/gpg.c:1045 sm/gpgsm.c:675
+#: g10/gpg.c:1045 sm/gpgsm.c:715
 msgid "conflicting commands\n"
 msgstr "ristiriitainen komento\n"
 
@@ -2037,7 +2037,7 @@ msgstr "%s:%d: virheelliset vientivalitsimet\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2871 sm/gpgsm.c:1247
+#: g10/gpg.c:2871 sm/gpgsm.c:1298
 msgid "WARNING: program may create a core file!\n"
 msgstr "VAROITUS: ohjelma voi luoda core-tiedoston!\n"
 
@@ -2078,11 +2078,11 @@ msgstr ""
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "viestin salaaaminen --pgp2-tilassa vaatii IDEA-salaimen\n"
 
-#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1303
+#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1370
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
-#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1311
+#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1378
 msgid "selected digest algorithm is invalid\n"
 msgstr "valittu tiivistealgoritmi ei kelpaa\n"
 
@@ -6857,22 +6857,22 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "epäkelpo radix64-merkki %02x ohitettu\n"
 
-#: sm/call-dirmngr.c:180
+#: sm/call-dirmngr.c:187
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:214
+#: sm/call-dirmngr.c:220
 #, fuzzy
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO-ympäristömuuttuja on väärin muotoiltu\n"
 
-#: sm/call-dirmngr.c:226
+#: sm/call-dirmngr.c:232
 #, fuzzy, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "gpg-agent-protokollaversio %d ei ole tuettu\n"
 
-#: sm/call-dirmngr.c:240
+#: sm/call-dirmngr.c:252
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
@@ -6881,11 +6881,11 @@ msgstr ""
 msgid "validation model requested by certificate: %s"
 msgstr ""
 
-#: sm/certchain.c:195
+#: sm/certchain.c:195 sm/certchain.c:1631
 msgid "chain"
 msgstr ""
 
-#: sm/certchain.c:196
+#: sm/certchain.c:196 sm/certchain.c:1631
 #, fuzzy
 msgid "shell"
 msgstr "apua"
@@ -7117,14 +7117,6 @@ msgstr ""
 #: sm/certchain.c:1629
 #, c-format
 msgid "validation model used: %s"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "chain model"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "shell model"
 msgstr ""
 
 #: sm/certcheck.c:101
@@ -7475,12 +7467,12 @@ msgstr "|NIMI|käytä viestintiivistealgoritmia NIMI"
 msgid "|N|use compress algorithm N"
 msgstr "|N|käytä pakkausalgoritmia N"
 
-#: sm/gpgsm.c:528
+#: sm/gpgsm.c:568
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Käyttö: gpg [valitsimet] [tiedostot] (-h näyttää ohjeen)"
 
-#: sm/gpgsm.c:531
+#: sm/gpgsm.c:571
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7491,36 +7483,36 @@ msgstr ""
 "allekirjoita, tarkista, salaa tai avaa\n"
 "oletustoiminto riippuu syötteestä\n"
 
-#: sm/gpgsm.c:610
+#: sm/gpgsm.c:650
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "käyttö: gpg [valitsimet] "
 
-#: sm/gpgsm.c:691
+#: sm/gpgsm.c:748
 #, fuzzy, c-format
-msgid "can't encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "yhteys kohteeseen \"%s\" ei onnistu: %s\n"
 
-#: sm/gpgsm.c:713
+#: sm/gpgsm.c:759
 #, fuzzy, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
 
-#: sm/gpgsm.c:1264
+#: sm/gpgsm.c:1315
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1344
+#: sm/gpgsm.c:1411
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "kirjoitetaan kohteeseen \"%s\"\n"
 
-#: sm/gpgsm.c:1362
+#: sm/gpgsm.c:1429
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 
-#: sm/gpgsm.c:1543
+#: sm/gpgsm.c:1612
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
@@ -8076,6 +8068,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "suojausalgoritmi %d%s ei ole käytettävissä\n"
+
+#, fuzzy
+#~ msgid "shelll"
+#~ msgstr "apua"
 
 #, fuzzy
 #~ msgid ""

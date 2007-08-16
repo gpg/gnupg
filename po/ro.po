@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-10 15:49+0200\n"
+"POT-Creation-Date: 2007-08-16 11:04+0200\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -94,8 +94,8 @@ msgstr "nu pot crea `%s': %s\n"
 #: g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:810 g10/sign.c:1005 g10/sign.c:1121
 #: g10/sign.c:1277 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:540
-#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1796
-#: sm/gpgsm.c:1833 sm/gpgsm.c:1871 sm/qualified.c:72
+#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1865
+#: sm/gpgsm.c:1902 sm/gpgsm.c:1940 sm/qualified.c:72
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "nu pot deschide `%s': %s\n"
@@ -330,7 +330,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
 #: agent/gpg-agent.c:257 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:206 sm/gpgsm.c:525 tools/gpg-connect-agent.c:124
+#: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
 #: tools/gpgconf.c:89 tools/symcryptrun.c:204
 #, fuzzy
 msgid "Please report bugs to <"
@@ -347,29 +347,29 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:639
+#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:679
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
 #: agent/gpg-agent.c:476 agent/protect-tool.c:1043 kbx/kbxutil.c:419
-#: scd/scdaemon.c:340 sm/gpgsm.c:772 sm/gpgsm.c:775 tools/symcryptrun.c:1026
+#: scd/scdaemon.c:340 sm/gpgsm.c:819 sm/gpgsm.c:822 tools/symcryptrun.c:1026
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:863
+#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:910
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTÃ: nici un fiºier opþiuni implicit `%s'\n"
 
 #: agent/gpg-agent.c:574 agent/gpg-agent.c:1120 g10/gpg.c:2027
-#: scd/scdaemon.c:421 sm/gpgsm.c:867 tools/symcryptrun.c:959
+#: scd/scdaemon.c:421 sm/gpgsm.c:914 tools/symcryptrun.c:959
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fiºier opþiuni `%s': %s\n"
 
-#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:874
+#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:921
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "citesc opþiuni din `%s'\n"
@@ -1698,7 +1698,7 @@ msgstr ""
 "sign, check, encrypt sau decrypt\n"
 "operaþiunea implicitã depinde de datele de intrare\n"
 
-#: g10/gpg.c:781 sm/gpgsm.c:538
+#: g10/gpg.c:781 sm/gpgsm.c:578
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1726,7 +1726,7 @@ msgstr "Compresie: "
 msgid "usage: gpg [options] "
 msgstr "folosire: gpg [opþiuni] "
 
-#: g10/gpg.c:1045 sm/gpgsm.c:675
+#: g10/gpg.c:1045 sm/gpgsm.c:715
 msgid "conflicting commands\n"
 msgstr "comenzi în conflict\n"
 
@@ -2003,7 +2003,7 @@ msgstr "%s:%d: opþiuni verificare invalide\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2871 sm/gpgsm.c:1247
+#: g10/gpg.c:2871 sm/gpgsm.c:1298
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTISMENT: programul ar putea crea un fiºier core!\n"
 
@@ -2048,11 +2048,11 @@ msgstr ""
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "cifrarea unui mesaj în modul --pgp2 necesitã un cifru IDEA\n"
 
-#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1303
+#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1370
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1311
+#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1378
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritm rezumat selectat este invalid\n"
 
@@ -6727,22 +6727,22 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caracter radix64 invalid %02X sãrit\n"
 
-#: sm/call-dirmngr.c:180
+#: sm/call-dirmngr.c:187
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:214
+#: sm/call-dirmngr.c:220
 #, fuzzy
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "variabila de mediu GPG_AGENT_INFO anormalã\n"
 
-#: sm/call-dirmngr.c:226
+#: sm/call-dirmngr.c:232
 #, fuzzy, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "gpg-agent versiune protocol %d nu este suportat\n"
 
-#: sm/call-dirmngr.c:240
+#: sm/call-dirmngr.c:252
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
@@ -6751,11 +6751,11 @@ msgstr ""
 msgid "validation model requested by certificate: %s"
 msgstr ""
 
-#: sm/certchain.c:195
+#: sm/certchain.c:195 sm/certchain.c:1631
 msgid "chain"
 msgstr ""
 
-#: sm/certchain.c:196
+#: sm/certchain.c:196 sm/certchain.c:1631
 #, fuzzy
 msgid "shell"
 msgstr "ajutor"
@@ -6988,14 +6988,6 @@ msgstr ""
 #: sm/certchain.c:1629
 #, c-format
 msgid "validation model used: %s"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "chain model"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "shell model"
 msgstr ""
 
 #: sm/certcheck.c:101
@@ -7348,12 +7340,12 @@ msgstr "|NUME|foloseºte algoritm rezumat mesaj NUME"
 msgid "|N|use compress algorithm N"
 msgstr "|N|foloseºte algoritm compresie N"
 
-#: sm/gpgsm.c:528
+#: sm/gpgsm.c:568
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Folosire: gpg [opþiuni] [fiºiere] (-h pentru ajutor)"
 
-#: sm/gpgsm.c:531
+#: sm/gpgsm.c:571
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7364,36 +7356,36 @@ msgstr ""
 "sign, check, encrypt sau decrypt\n"
 "operaþiunea implicitã depinde de datele de intrare\n"
 
-#: sm/gpgsm.c:610
+#: sm/gpgsm.c:650
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "folosire: gpg [opþiuni] "
 
-#: sm/gpgsm.c:691
+#: sm/gpgsm.c:748
 #, fuzzy, c-format
-msgid "can't encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "nu mã pot conecta la `%s': %s\n"
 
-#: sm/gpgsm.c:713
+#: sm/gpgsm.c:759
 #, fuzzy, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "opþiune necunoscutã `%s'\n"
 
-#: sm/gpgsm.c:1264
+#: sm/gpgsm.c:1315
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1344
+#: sm/gpgsm.c:1411
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr ""
 
-#: sm/gpgsm.c:1362
+#: sm/gpgsm.c:1429
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "nu pot accesa `%s': %s\n"
 
-#: sm/gpgsm.c:1543
+#: sm/gpgsm.c:1612
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
@@ -7947,6 +7939,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "class %s is not supported\n"
 msgstr "algoritm rezumat %d nu este suportat\n"
+
+#, fuzzy
+#~ msgid "shelll"
+#~ msgstr "ajutor"
 
 #, fuzzy
 #~ msgid ""

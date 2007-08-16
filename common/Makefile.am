@@ -85,14 +85,10 @@ libgpgrl_a_SOURCES = \
 #
 module_tests = t-convert t-gettime
 
-t_common_ldadd = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a \
+t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
-t_convert_DEPENDENCIES = convert.c libcommon.a
 t_convert_LDADD = $(t_common_ldadd)
-t_gettime_DEPENDENCIES = gettime.c libcommon.a
 t_gettime_LDADD = $(t_common_ldadd)
 
-
-$(PROGRAMS): ../jnlib/libjnlib.a $(libcommon) ../gl/libgnu.a
 

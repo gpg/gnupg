@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.6 (2007-08-14)
+Noteworthy changes in version 2.0.6 (2007-08-16)
 ------------------------------------------------
 
  * GPGSM does now grok --default-key.
@@ -10,7 +10,7 @@ Noteworthy changes in version 2.0.6 (2007-08-14)
 
  * New option --validation-model and support for the chain-model.
 
- * Imporved Windows support.
+ * Improved Windows support.
 
  
 Noteworthy changes in version 2.0.5 (2007-07-05)

@@ -1628,7 +1628,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
   if (opt.verbose)
     do_list (0, listmode, listfp, _("validation model used: %s"), 
              (*retflags & VALIDATE_FLAG_CHAIN_MODEL)?
-             _("chain model"):_("shell model"));
+             _("chain"):_("shell"));
   
   return rc;
 }

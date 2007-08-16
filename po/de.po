@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-1.9.90\n"
+"Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-10 15:49+0200\n"
-"PO-Revision-Date: 2007-07-04 21:44+0200\n"
+"POT-Creation-Date: 2007-08-16 11:04+0200\n"
+"PO-Revision-Date: 2007-08-16 09:53+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -90,8 +90,8 @@ msgstr "'%s' kann nicht erzeugt werden: %s\n"
 #: g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:810 g10/sign.c:1005 g10/sign.c:1121
 #: g10/sign.c:1277 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:540
-#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1796
-#: sm/gpgsm.c:1833 sm/gpgsm.c:1871 sm/qualified.c:72
+#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1865
+#: sm/gpgsm.c:1902 sm/gpgsm.c:1940 sm/qualified.c:72
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
@@ -191,10 +191,13 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
+"Sie möchten keine Passphrase - Dies ist *nicht* zu empfehlen!%0ABitte\n"
+"bestätigen Sie, daß sie auf jeden Schutz Ihres privaten Schlüssels\n"
+"verzichten."
 
 #: agent/genkey.c:113
 msgid "Yes, protection is not needed"
-msgstr ""
+msgstr "Ja, ein Schutz ist nicht notwendig"
 
 #: agent/genkey.c:158
 #, c-format
@@ -316,7 +319,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr "|DATEI|Schreibe die Umgebungsvariabeln auf DATEI"
 
 #: agent/gpg-agent.c:257 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:206 sm/gpgsm.c:525 tools/gpg-connect-agent.c:124
+#: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
 #: tools/gpgconf.c:89 tools/symcryptrun.c:204
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
@@ -333,29 +336,29 @@ msgstr ""
 "Syntax: gpg-agent [Optionen] [Befehl [Argumente]]\n"
 "Verwaltung von geheimen Schlüsseln für GnuPG\n"
 
-#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:639
+#: agent/gpg-agent.c:297 g10/gpg.c:916 scd/scdaemon.c:246 sm/gpgsm.c:679
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:476 agent/protect-tool.c:1043 kbx/kbxutil.c:419
-#: scd/scdaemon.c:340 sm/gpgsm.c:772 sm/gpgsm.c:775 tools/symcryptrun.c:1026
+#: scd/scdaemon.c:340 sm/gpgsm.c:819 sm/gpgsm.c:822 tools/symcryptrun.c:1026
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
-#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:863
+#: agent/gpg-agent.c:569 g10/gpg.c:2023 scd/scdaemon.c:416 sm/gpgsm.c:910
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
 #: agent/gpg-agent.c:574 agent/gpg-agent.c:1120 g10/gpg.c:2027
-#: scd/scdaemon.c:421 sm/gpgsm.c:867 tools/symcryptrun.c:959
+#: scd/scdaemon.c:421 sm/gpgsm.c:914 tools/symcryptrun.c:959
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Optionendatei '%s': %s\n"
 
-#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:874
+#: agent/gpg-agent.c:582 g10/gpg.c:2034 scd/scdaemon.c:429 sm/gpgsm.c:921
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus '%s' gelesen\n"
@@ -1696,7 +1699,7 @@ msgstr ""
 "Signieren, prüfen, verschlüsseln, entschlüsseln.\n"
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 
-#: g10/gpg.c:781 sm/gpgsm.c:538
+#: g10/gpg.c:781 sm/gpgsm.c:578
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1724,7 +1727,7 @@ msgstr "Komprimierung: "
 msgid "usage: gpg [options] "
 msgstr "Aufruf: gpg [Optionen] "
 
-#: g10/gpg.c:1045 sm/gpgsm.c:675
+#: g10/gpg.c:1045 sm/gpgsm.c:715
 msgid "conflicting commands\n"
 msgstr "Widersprüchliche Befehle\n"
 
@@ -1991,7 +1994,7 @@ msgstr "%s:%d: ungültige \"auto-key-locate\"-Liste\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "ungültige \"auto-key-locate\"-Liste\n"
 
-#: g10/gpg.c:2871 sm/gpgsm.c:1247
+#: g10/gpg.c:2871 sm/gpgsm.c:1298
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
@@ -2039,11 +2042,11 @@ msgstr ""
 "Verschlüssen einer Botschaft benötigt im --pgp2-Modus die IDEA-"
 "Verschlüsselung\n"
 
-#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1303
+#: g10/gpg.c:3007 g10/gpg.c:3031 sm/gpgsm.c:1370
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1311
+#: g10/gpg.c:3013 g10/gpg.c:3037 sm/gpgsm.c:1378
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
@@ -6798,21 +6801,21 @@ msgstr "Handhabungsroutine für den fd %d beendet\n"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
 
-#: sm/call-dirmngr.c:180
+#: sm/call-dirmngr.c:187
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr "Kein aktiver Dirmngr - `%s' wird einer gestartet\n"
 
-#: sm/call-dirmngr.c:214
+#: sm/call-dirmngr.c:220
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "Die Variable DIRMNGR_INFO ist fehlerhaft\n"
 
-#: sm/call-dirmngr.c:226
+#: sm/call-dirmngr.c:232
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "Die Dirmngr Protokollversion %d wird nicht unterstützt\n"
 
-#: sm/call-dirmngr.c:240
+#: sm/call-dirmngr.c:252
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 "Verbindung zum Dirmngr kann nicht aufgebaut werden - Ersatzmethode wird "
@@ -6821,15 +6824,15 @@ msgstr ""
 #: sm/certchain.c:194
 #, c-format
 msgid "validation model requested by certificate: %s"
-msgstr ""
+msgstr "Durch Zertifikat angefordertes Gültigkeitsmodell: %s"
 
-#: sm/certchain.c:195
+#: sm/certchain.c:195 sm/certchain.c:1631
 msgid "chain"
-msgstr ""
+msgstr "Kette"
 
-#: sm/certchain.c:196
+#: sm/certchain.c:196 sm/certchain.c:1631
 msgid "shell"
-msgstr ""
+msgstr "Schale"
 
 #: sm/certchain.c:241
 #, c-format
@@ -6881,7 +6884,7 @@ msgstr "Keine CRL für das Zertifikat gefunden"
 
 #: sm/certchain.c:757
 msgid "the status of the certificate is unknown"
-msgstr ""
+msgstr "Der Status des Zertifikats ist nicht bekannt"
 
 #: sm/certchain.c:762
 msgid "the available CRL is too old"
@@ -6907,71 +6910,66 @@ msgid "certificate not yet valid"
 msgstr "Das Zertifikat ist noch nicht gültig"
 
 #: sm/certchain.c:815 sm/certchain.c:900
-#, fuzzy
 msgid "root certificate not yet valid"
-msgstr "Das Zertifikat ist noch nicht gültig"
+msgstr "Das Wurzelzertifikat ist noch nicht gültig"
 
 #: sm/certchain.c:816 sm/certchain.c:901
-#, fuzzy
 msgid "intermediate certificate not yet valid"
-msgstr "Das Zertifikat ist noch nicht gültig"
+msgstr "Das Zwischenzertifikat ist noch nicht gültig"
 
 #: sm/certchain.c:829
 msgid "certificate has expired"
 msgstr "Das Zertifikat ist abgelaufen"
 
 #: sm/certchain.c:830
-#, fuzzy
 msgid "root certificate has expired"
-msgstr "Das Zertifikat ist abgelaufen"
+msgstr "Das Wurzelzertifikat ist abgelaufen"
 
 #: sm/certchain.c:831
-#, fuzzy
 msgid "intermediate certificate has expired"
-msgstr "Das Zertifikat ist abgelaufen"
+msgstr "Das Zwischenzertifikat ist abgelaufen"
 
 #: sm/certchain.c:873
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
-msgstr ""
+msgstr "Notwendige Zertifikatattribute fehlen: %s%s%s"
 
 #: sm/certchain.c:882
-#, fuzzy
 msgid "certificate with invalid validity"
-msgstr "Zertifikat mit unzulässiger Gültigkeit: %s"
+msgstr "Zertifikat mit unzulässiger Gültigkeit"
 
 #: sm/certchain.c:919
-#, fuzzy
 msgid "signature not created during lifetime of certificate"
-msgstr "Fehler beim Lesen der Liste vertrauenswürdiger root-Zertifikate\n"
+msgstr ""
+"Die Unterschrift wurde nicht in der Gültigkeitszeit des Zertifikat erzeugt"
 
 #: sm/certchain.c:921
 msgid "certificate not created during lifetime of issuer"
 msgstr ""
+"Das Zertifikat wurde nicht während der Gültigkeitszeit des Herausgebers "
+"erzeugt"
 
 #: sm/certchain.c:922
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
+"Das Zwischenzertifikat wurde nicht während der Gültigkeitszeit des "
+"Herausgebers erzeugt"
 
 #: sm/certchain.c:926
-#, fuzzy
 msgid "  (  signature created at "
-msgstr "    Signaturen bereinigt: %lu\n"
+msgstr "  (Unterschrift erzeugt am "
 
 #: sm/certchain.c:927
-#, fuzzy
 msgid "  (certificate created at "
-msgstr "Widerrufzertifikat erzeugt.\n"
+msgstr "  (  Zertifikat erzeugt am "
 
 #: sm/certchain.c:930
-#, fuzzy
 msgid "  (certificate valid from "
-msgstr "Das Zertifikat ist noch nicht gültig"
+msgstr "  (  Zertifikat gültig von "
 
 #: sm/certchain.c:931
-#, fuzzy
 msgid "  (     issuer valid from "
-msgstr "      Kartenseriennr. ="
+msgstr "  ( Herausgeber gültig von "
 
 #: sm/certchain.c:961
 #, c-format
@@ -6995,6 +6993,8 @@ msgstr ""
 #: sm/certchain.c:1046
 msgid "WARNING: creation time of signature not known - assuming current time"
 msgstr ""
+"WARNUNG: Der Erzeugungszeitpunkt der Unterschrift ist nicht bekannt - Nehme "
+"die aktuelle Zeit an"
 
 #: sm/certchain.c:1110
 msgid "no issuer found in certificate"
@@ -7037,36 +7037,25 @@ msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "Die Zertifikatkette ist länger als von der CA erlaubt (%d)"
 
 #: sm/certchain.c:1462 sm/certchain.c:1730
-#, fuzzy
 msgid "certificate is good\n"
-msgstr "Der Zertifikatkette ist zu lang\n"
+msgstr "Das Zertifikat ist korrekt\n"
 
 #: sm/certchain.c:1463
-#, fuzzy
 msgid "intermediate certificate is good\n"
-msgstr "Doppeltes Zertifikat `%s' gelöscht\n"
+msgstr "Das Zwischenzertifikat ist korrekt\n"
 
 #: sm/certchain.c:1464
-#, fuzzy
 msgid "root certificate is good\n"
-msgstr "Das Wurzelzertifikat ist nicht als vertrauenswürdig markiert"
+msgstr "Das Wurzelzertifikat ist korrekt\n"
 
 #: sm/certchain.c:1620
 msgid "switching to chain model"
-msgstr ""
+msgstr "Umgeschaltet auf das Kettenmodell"
 
 #: sm/certchain.c:1629
 #, c-format
 msgid "validation model used: %s"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "chain model"
-msgstr ""
-
-#: sm/certchain.c:1631
-msgid "shell model"
-msgstr ""
+msgstr "Benutztes Gültigkeitsmodell: %s"
 
 #: sm/certcheck.c:101
 #, c-format
@@ -7108,7 +7097,7 @@ msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
 #: sm/certdump.c:936
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
 "\"%s\"\n"
@@ -7117,7 +7106,7 @@ msgstr ""
 "Bitte geben Sie die Passphrase an, um den \n"
 "geheimen Schlüssel von\n"
 "\"%s\"\n"
-"S/N %s, ID %08lX, erzeugt %s\n"
+"S/N %s, ID 0x%08lX, erzeugt %s\n"
 "zu entsperren"
 
 #: sm/certlist.c:121
@@ -7410,11 +7399,11 @@ msgstr "|NAME|Hashverfahren NAME benutzen"
 msgid "|N|use compress algorithm N"
 msgstr "|N|Komprimierverfahren N benutzen"
 
-#: sm/gpgsm.c:528
+#: sm/gpgsm.c:568
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Aufruf: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
 
-#: sm/gpgsm.c:531
+#: sm/gpgsm.c:571
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -7423,35 +7412,35 @@ msgstr ""
 "Syntax: gpgsm [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME protocol\n"
 
-#: sm/gpgsm.c:610
+#: sm/gpgsm.c:650
 msgid "usage: gpgsm [options] "
 msgstr "Aufruf: gpgsm [Optionen] "
 
-#: sm/gpgsm.c:691
+#: sm/gpgsm.c:748
 #, c-format
-msgid "can't encrypt to `%s': %s\n"
-msgstr "Verschlüsseln für `%s' nicht möglich: %s\n"
+msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgstr "Hinweis: Verschlüsselung für `%s' wird nicht möglich sein: %s\n"
 
-#: sm/gpgsm.c:713
-#, fuzzy, c-format
+#: sm/gpgsm.c:759
+#, c-format
 msgid "unknown validation model `%s'\n"
-msgstr "Unbekannte Option '%s'\n"
+msgstr "Unbekanntes Gültigkeitsmodell '%s'\n"
 
-#: sm/gpgsm.c:1264
+#: sm/gpgsm.c:1315
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
-#: sm/gpgsm.c:1344
+#: sm/gpgsm.c:1411
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "Importiere allgemeine Zertifikate: %s\n"
 
-#: sm/gpgsm.c:1362
+#: sm/gpgsm.c:1429
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:1543
+#: sm/gpgsm.c:1612
 msgid "this command has not yet been implemented\n"
 msgstr "Dieser Befehl wurde noch nicht implementiert\n"
 
@@ -7597,9 +7586,9 @@ msgid "[date not given]"
 msgstr "[Datum nicht vorhanden]"
 
 #: sm/verify.c:393
-#, fuzzy, c-format
+#, c-format
 msgid " using certificate ID 0x%08lX\n"
-msgstr "mittels Zertifikat ID %08lX\n"
+msgstr "mittels Zertifikat ID 0x%08lX\n"
 
 #: sm/verify.c:514
 msgid "Good signature from"
@@ -7610,9 +7599,8 @@ msgid "                aka"
 msgstr "                alias"
 
 #: sm/verify.c:533
-#, fuzzy
 msgid "This is a qualified signature\n"
-msgstr "Dies wird eine Eigenbeglaubigung sein.\n"
+msgstr "Dies ist eine qualifizierte Unterschrift.\n"
 
 #: tools/gpg-connect-agent.c:59 tools/gpgconf.c:68 tools/symcryptrun.c:165
 msgid "quiet"
@@ -7734,9 +7722,8 @@ msgid "|N|set minimal required length for new passphrases to N"
 msgstr "|N|setze die kleinste erlaubte Länge von Passphrasen auf N"
 
 #: tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:676
-#, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|Verschlüsseln für NAME"
+msgstr "|NAME|Auf an NAME verschlüsseln"
 
 #: tools/gpgconf-comp.c:635
 msgid "Configuration for Keyservers"
@@ -8006,6 +7993,10 @@ msgstr "keine Klasse angegeben\n"
 #, c-format
 msgid "class %s is not supported\n"
 msgstr "Klasse %s wird nicht unterstützt\n"
+
+#, fuzzy
+#~ msgid "shelll"
+#~ msgstr "Schale"
 
 #~ msgid "no running gpg-agent - starting one\n"
 #~ msgstr "Kein aktiver gpg-agent - es wird einer gestarted\n"

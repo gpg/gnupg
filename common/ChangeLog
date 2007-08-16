@@ -1,3 +1,9 @@
+2007-08-16  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (t_convert_DEPENDENCIES): Remove
+	($(PROGRAMS)): Remove.
+	(t_common_ldadd): Use libcommon.a and not the macro.
+
 2007-08-14  Werner Koch  <wk@g10code.com>
 
 	* homedir.c (dirmngr_socket_name): New.

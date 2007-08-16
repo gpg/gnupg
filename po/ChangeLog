@@ -1,3 +1,16 @@
+2007-08-16  Werner Koch  <wk@g10code.com>
+
+	* pt_BR.po, es.po: Remove the "GNU" from the project ID.  That
+	stupid msginit uses a script project-id to retrieve a new project
+	id.  Instead of using what it founds out, it tries to put "GNU"
+	before the id if _any_ file in the current directory has a string
+	"GNU <package_name>".  As en@bold.po is build automagically this
+	package name mangling breaks make distcheck as it tries to rebuild
+	the po file with the "correct" name.  The upshot is never to use
+	GNU in you po directory.
+ 
+	* de.po: Fix a few fuzzy entries and translate new strings.
+
 2007-07-04  Werner Koch  <wk@g10code.com>
 
 	* de.po: Update a few strings.
