@@ -1,0 +1,36 @@
+Description of the statusfd mechanism:
+
+Applications can now ask scdaemon to be notified about certain events
+(card inserted/removed) on a specified file descriptor.
+
+This is how it works:
+
+Run gpg-agent in daemon mode.
+Figure out scdaemons socket:
+
+
+moritz@pink:~/g10/hacks/gnupg-mo/build/scd$ gpg-connect-agent 
+SCD GETINFO socket_name
+D /tmp/gpg-QZRVNr/S.scdaemon
+OK
+
+Connect to scdaemon and register a status file descriptor:
+
+moritz@pink:~/g10/hacks/gnupg-mo/build/scd$ gpg-connect-agent -S /tmp/gpg-QZRVNr/S.scdaemon
+/sendfd /tmp/scd-events w
+STATUSFD
+OK
+moritz@pink:~/g10/hacks/gnupg-mo/build/scd$ 
+
+
+Watch the log file as you remove/insert the smartcard:
+
+moritz@pink:~/g10/hacks/gnupg-mo/build/scd$ tail -f /tmp/scd-events 
+CARD REMOVED
+CARD INSERTED
+CARD REMOVED
+CARD INSERTED
+^C
+moritz@pink:~/g10/hacks/gnupg-mo/build/scd$ 
+
+That's it for now.

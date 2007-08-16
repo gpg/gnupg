@@ -40,6 +40,7 @@
 #ifdef HAVE_LIBUSB
 #include "ccid-driver.h"
 #endif
+#include "statusfd.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -1649,6 +1650,34 @@ cmd_apdu (assuan_context_t ctx, char *line)
   return rc;
 }
 
+/* STATUSFD
+ */
+static int
+cmd_statusfd (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc;
+  int fd;
+
+  /* FIXME, moritz, locking?  */
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_LOCKED);
+
+  rc = assuan_receivefd (ctx, &fd);
+  if (rc)
+    /* FIXME, moritz, proper error message for client?  */
+    goto leave;
+
+  rc = statusfd_register (fd);
+
+ leave:
+
+  if (rc)
+    close (fd);
+
+  return rc;
+}
+
 
 
 
@@ -1683,6 +1712,7 @@ register_commands (assuan_context_t ctx)
     { "GETINFO",      cmd_getinfo },
     { "RESTART",      cmd_restart },
     { "APDU",         cmd_apdu },
+    { "STATUSFD",     cmd_statusfd },
     { NULL }
   };
   int i, rc;
@@ -1719,7 +1749,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
     }
   else
     {
-      rc = assuan_init_socket_server_ext (&ctx, fd, 2);
+      rc = assuan_init_socket_server_ext (&ctx, fd, 3);
     }
   if (rc)
     {
@@ -1879,6 +1909,15 @@ update_reader_status_file (void)
 
           log_info ("updating status of slot %d to 0x%04X\n",
                     ss->slot, status);
+
+	  {
+	    /* Broadcast on statusfds.  */
+
+	    if ((! (ss->status & 2)) && (status & 2))
+	      statusfd_event_card_inserted (0);
+	    if ((ss->status & 2) && (! (status & 2)))
+	      statusfd_event_card_removed (0);
+	  }
 
 	  /* FIXME: Should this be IDX instead of ss->slot?  This
 	     depends on how client sessions will associate the reader

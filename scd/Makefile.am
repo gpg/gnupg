@@ -38,6 +38,7 @@ scdaemon_SOURCES = \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
+	statusfd.c statusfd.h \
 	app.c app-common.h app-help.c $(card_apps)
 
 

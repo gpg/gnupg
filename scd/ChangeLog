@@ -1,3 +1,16 @@
+2007-08-16  Moritz Schulte  <moritz@g10code.com>
+
+	* command.c: Include "statusfd.h".
+	(cmd_statusfd): New function.
+	(register_commands): New entry for STATUSFD command.
+	(update_reader_status_file): Call statusfd_event_card_inserted and
+	statusfd_event_card_removed on events.
+	(scd_command_handler): Pass flags=3 to
+	assuan_init_socket_server_ext (enabling fd passing).
+	* statusfd.c, statusfd.h: New files.
+	* Makefile.am (scdaemon_SOURCES): Added statusfd.c, statusfd.h.
+	* NOTES-STATUSFD: New file.
+
 2007-08-07  Werner Koch  <wk@g10code.com>
 
 	* tlv.c, tlv.h:  Move to ../common/.
