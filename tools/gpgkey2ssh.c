@@ -184,7 +184,7 @@ key_to_blob (unsigned char **blob, size_t *blob_n, const char *identifier, ...)
   int ret;
   pkdbuf_t *pkd;
 
-  stream = tmpfile ();
+  stream = gnupg_tmpfile ();
   assert (stream);
 
   identifier_n = strlen (identifier);

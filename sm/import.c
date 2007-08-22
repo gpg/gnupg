@@ -33,6 +33,7 @@
 #include "keydb.h"
 #include "exechelp.h"
 #include "i18n.h"
+#include "sysutils.h"
 
 struct stats_s {
   unsigned long count;
@@ -517,7 +518,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
      gpg-protect-tool will anyway parse the entire pkcs#12 message in
      memory, we simply use tempfiles here and pass them to
      the gpg-protect-tool. */
-  tmpfp = tmpfile ();
+  tmpfp = gnupg_tmpfile ();
   if (!tmpfp)
     {
       err = gpg_error_from_syserror ();
@@ -542,7 +543,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
       goto cleanup;
     }
 
-  certfp = tmpfile ();
+  certfp = gnupg_tmpfile ();
   if (!certfp)
     {
       err = gpg_error_from_syserror ();

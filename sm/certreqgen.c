@@ -247,7 +247,7 @@ get_parameter_uint (struct para_data_s *para, enum para_name key)
 /* Read the certificate generation parameters from FP and generate
    (all) certificate requests.  */
 static int
-read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
+read_parameters (ctrl_t ctrl, estream_t fp, ksba_writer_t writer)
 {
   static struct {
     const char *name;
@@ -275,7 +275,7 @@ read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
 
   err = NULL;
   para = NULL;
-  while (fgets (line, DIM(line)-1, fp) )
+  while (es_fgets (line, DIM(line)-1, fp) )
     {
       char *keyword, *value;
 
@@ -391,7 +391,7 @@ read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
       log_error ("line %d: %s\n", outctrl.lnr, err);
       rc = gpg_error (GPG_ERR_GENERAL);
     }
-  else if (ferror(fp))
+  else if (es_ferror(fp))
     {
       log_error ("line %d: read error: %s\n", outctrl.lnr, strerror(errno) );
       rc = gpg_error (GPG_ERR_GENERAL);
@@ -829,26 +829,14 @@ create_request (ctrl_t ctrl,
 
 
 
-/* Create a new key by reading the parameters from in_fd or in_stream.
-   Multiple keys may be created */
+/* Create a new key by reading the parameters from IN_FP.  Multiple
+   keys may be created */
 int
-gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp)
+gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, FILE *out_fp)
 {
   int rc;
-  FILE *in_fp;
   Base64Context b64writer = NULL;
   ksba_writer_t writer;
-
-  if (in_stream)
-    in_fp = in_stream;
-  else
-    in_fp = fdopen (dup (in_fd), "rb");
-  if (!in_fp)
-    {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("fdopen() failed: %s\n", strerror (errno));
-      return tmperr;
-    }
 
   ctrl->pem_name = "CERTIFICATE REQUEST";
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
@@ -858,7 +846,7 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp)
       goto leave;
     }
 
-  rc = read_parameters (ctrl, in_fp, writer);
+  rc = read_parameters (ctrl, in_stream, writer);
   if (rc)
     {
       log_error ("error creating certificate request: %s <%s>\n",
@@ -878,8 +866,6 @@ gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp)
 
  leave:
   gpgsm_destroy_writer (b64writer);
-  if (!in_stream)
-    fclose (in_fp);
   return rc;
 }
 

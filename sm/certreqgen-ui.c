@@ -97,7 +97,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   gpg_error_t err;
   char *answer;
   int selection;
-  FILE *fp = NULL;
+  estream_t fp = NULL;
   int method;
   char *keytype;
   char *keygrip = NULL;
@@ -278,20 +278,20 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
      goto leave;
 
   /* Now create a parameter file and generate the key.  */
-  fp = tmpfile ();
+  fp = es_fopenmem (0, "w+");
   if (!fp)
     {
       log_error (_("error creating temporary file: %s\n"), strerror (errno));
       goto leave;
     }
-  fputs (result, fp);
-  rewind (fp);
+  es_fputs (result, fp);
+  es_rewind (fp);
   tty_printf (_("Now creating certificate request.  "
                 "This may take a while ...\n"));
   {
     int save_pem = ctrl->create_pem;
     ctrl->create_pem = 1; /* Force creation of PEM. */
-    err = gpgsm_genkey (ctrl, -1, fp, output_fp);
+    err = gpgsm_genkey (ctrl, fp, output_fp);
     ctrl->create_pem = save_pem;
   }
   if (!err)
@@ -302,8 +302,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
  mem_error:
   log_error (_("resource problem: out or core\n"));
  leave:
-  if (fp)
-    fclose (fp);
+  es_fclose (fp);
   xfree (keytype);         
   xfree (subject_name);
   xfree (keygrip);

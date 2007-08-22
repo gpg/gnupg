@@ -1,11 +1,11 @@
-/* estream.h - Extended stream I/O/ Library
+/* estream.h - Extended stream I/O Library
  * Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
  * Libestream is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 3 of the License,
+ * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
  *
  * Libestream is distributed in the hope that it will be useful, but
@@ -41,7 +41,7 @@
 #endif /*_ESTREAM_PREFIX*/
 #define es_fopen              _ESTREAM_PREFIX(es_fopen)
 #define es_mopen              _ESTREAM_PREFIX(es_mopen)
-#define es_open_memstream     _ESTREAM_PREFIX(es_open_memstream)
+#define es_fopenmem           _ESTREAM_PREFIX(es_fopenmem)
 #define es_fdopen             _ESTREAM_PREFIX(es_fdopen)
 #define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
 #define es_fpopen             _ESTREAM_PREFIX(es_fpopen)
@@ -198,7 +198,7 @@ estream_t es_mopen (unsigned char *ES__RESTRICT data,
 		    void *(*func_realloc) (void *mem, size_t size),
 		    void (*func_free) (void *mem),
 		    const char *ES__RESTRICT mode);
-estream_t es_open_memstream (char **ptr, size_t *size);
+estream_t es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode);
 estream_t es_fdopen (int filedes, const char *mode);
 estream_t es_fdopen_nc (int filedes, const char *mode);
 estream_t es_fpopen (FILE *fp, const char *mode);

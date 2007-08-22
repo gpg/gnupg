@@ -1,3 +1,7 @@
+2007-08-21  Werner Koch  <wk@g10code.com>
+
+	* gpgkey2ssh.c (key_to_blob): Use gnupg_tmpfile().
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Factor the public GC_OPT_FLAG constants out and

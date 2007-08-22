@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006 Free Software Foundation, Inc.
+ *               2005, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -331,7 +331,8 @@ print_digest_algo_note( int algo )
 int
 openpgp_cipher_test_algo( int algo )
 {
-  if ( algo < 0 || algo > 110 )
+  /* 5 and 6 are marked reserved by rfc2440bis.  */
+  if ( algo < 0 || algo > 110 || algo == 5 || algo == 6 )
     return gpg_error (GPG_ERR_CIPHER_ALGO);
   return gcry_cipher_test_algo (algo);
 }
@@ -396,8 +397,9 @@ openpgp_md_test_algo( int algo )
   /* Note: If the list of actual supported OpenPGP algorithms changes,
      make sure that our hard coded values at
      print_status_begin_signing() gets updated. */
-
-  if (algo < 0 || algo > 110)
+  /* 4, 5, 6, 7 are defined by rfc2440 but will be removed from the
+     next revision of the standard.  */
+  if (algo < 0 || algo > 110 || (algo >= 4 && algo <= 7))
     return gpg_error (GPG_ERR_DIGEST_ALGO);
   return gcry_md_test_algo (algo);
 }

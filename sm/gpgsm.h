@@ -325,7 +325,7 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int in_fd, FILE *out_fp);
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- certreqgen.c --*/
-int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *in_stream, FILE *out_fp);
+int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, FILE *out_fp);
 
 /*-- certreqgen-ui.c --*/
 void gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *out_fp);

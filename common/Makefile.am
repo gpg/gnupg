@@ -83,12 +83,12 @@ libgpgrl_a_SOURCES = \
 #
 # Module tests
 #
-module_tests = t-convert t-gettime
+module_tests = t-convert t-gettime t-sysutils
 
 t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 t_convert_LDADD = $(t_common_ldadd)
 t_gettime_LDADD = $(t_common_ldadd)
-
+t_sysutils_LDADD = $(t_common_ldadd)
 

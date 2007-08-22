@@ -33,7 +33,7 @@ Release process:
   * Run configure as usual.
   * Run "make distcheck"
   * Build and test the new tarball (best on a different machine).
-  * [1.4 only] Build and test the W32 version.
+  * Build and test the W32 version.
   * Using the final test build run a "make -C doc online".
   * Sign the tarball
   * Get the previous tarball and run "mkdiff gnupg".  

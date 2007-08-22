@@ -1,5 +1,6 @@
 /* sysutils.c -  system helpers
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,6 +53,9 @@
 #include "i18n.h"
 
 #include "sysutils.h"
+
+#define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 #warning using trap_unaligned
@@ -298,7 +302,7 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 }
 
 /* This is the same as translate_sys2libc_fd but takes an integer
-   which is assumet to be such an system handle.  */
+   which is assumed to be such an system handle.  */
 int
 translate_sys2libc_fd_int (int fd, int for_write)
 {
@@ -310,4 +314,86 @@ translate_sys2libc_fd_int (int fd, int for_write)
 #else
   return fd;
 #endif
+}
+
+
+
+/* Replacement for tmpfile().  This is required because the tmpfile
+   function of Windows' runtime library is broken, insecure, ignores
+   TMPDIR and so on.  In addition we create a file with an inheritable
+   handle.  */
+FILE *
+gnupg_tmpfile (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  int attempts, n;
+  char buffer[MAX_PATH+7+12+1];
+  char *name, *p;
+  HANDLE file;
+  int pid = GetCurrentProcessId ();
+  unsigned int value;
+  int i;
+  SECURITY_ATTRIBUTES sec_attr;
+
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = TRUE;
+
+  n = GetTempPath (MAX_PATH+1, buffer);
+  if (!n || n > MAX_PATH || strlen (buffer) > MAX_PATH)
+    {
+      errno = ENOENT;
+      return NULL;
+    }
+  p = buffer + strlen (buffer);
+  p = stpcpy (p, "_gnupg");
+  /* We try to create the directory but don't care about an error as
+     it may already exist and the CreateFile would throw an error
+     anyway.  */
+  CreateDirectory (buffer, NULL);
+  *p++ = '\\';
+  name = p;
+  for (attempts=0; attempts < 10; attempts++)
+    {
+      p = name;
+      value = (GetTickCount () ^ ((pid<<16) & 0xffff0000));
+      for (i=0; i < 8; i++)
+        {
+          *p++ = tohex (((value >> 28) & 0x0f));
+          value <<= 4;
+        }
+      strcpy (p, ".tmp");
+      file = CreateFile (buffer,
+                         GENERIC_READ | GENERIC_WRITE,
+                         0,
+                         &sec_attr,
+                         CREATE_NEW,
+                         FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                         NULL);
+      if (file != INVALID_HANDLE_VALUE)
+        {
+          FILE *fp;
+          int fd = _open_osfhandle ((long)file, 0);
+          if (fd == -1)
+            {
+              CloseHandle (file);
+              return NULL;
+            }
+          fp = fdopen (fd, "w+b");
+          if (!fp)
+            {
+              int save = errno;
+              close (fd);
+              errno = save;
+              return NULL;
+            }
+          return fp;
+        }
+      Sleep (1); /* One ms as this is the granularity of GetTickCount.  */
+    }
+  errno = ENOENT;
+  return NULL;
+#else /*!HAVE_W32_SYSTEM*/
+  return tmpfile ();
+#endif /*!HAVE_W32_SYSTEM*/
 }

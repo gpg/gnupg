@@ -5,7 +5,7 @@
  *
  * Libestream is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 3 of the License,
+ * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
  *
  * Libestream is distributed in the hope that it will be useful, but
@@ -25,6 +25,10 @@
 # include <config.h>
 #endif
 
+#if defined(_WIN32) && !defined(HAVE_W32_SYSTEM)
+# define HAVE_W32_SYSTEM 1
+#endif
+
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -37,10 +41,13 @@
 #include <errno.h>
 #include <stddef.h>
 #include <assert.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#endif
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-#undef HAVE_PTH
-#undef USE_GNU_PTH
+# undef HAVE_PTH
+# undef USE_GNU_PTH
 #endif
 
 #ifdef HAVE_PTH
@@ -49,7 +56,7 @@
 
 /* This is for the special hack to use estream.c in GnuPG.  */
 #ifdef GNUPG_MAJOR_VERSION
-#include "../common/util.h"
+# include "../common/util.h"
 #endif
 
 #ifndef HAVE_MKSTEMP
@@ -74,12 +81,6 @@ void *memrchr (const void *block, int c, size_t size);
 typedef void *(*func_realloc_t) (void *mem, size_t size);
 typedef void (*func_free_t) (void *mem);
 
-#ifdef HAVE_FOPENCOOKIE
-typedef ssize_t my_funopen_hook_ret_t;
-#else
-typedef int     my_funopen_hook_ret_t;
-#endif
-
 
 
 
@@ -93,7 +94,6 @@ typedef int     my_funopen_hook_ret_t;
 /* Macros.  */
 
 #define BUFFER_ROUND_TO_BLOCK(size, block_size) \
-  (((size) + (block_size - 1)) / block_size)
 
 
 
@@ -120,12 +120,6 @@ typedef void *estream_mutex_t;
 # define ESTREAM_MUTEX_TRYLOCK(mutex) 0
 # define ESTREAM_MUTEX_INITIALIZE(mutex) (void) 0
 #endif
-
-/* Memory allocator functions.  */
-
-#define ES_MEM_ALLOC   malloc
-#define ES_MEM_REALLOC realloc
-#define ES_MEM_FREE    free
 
 /* Primitive system I/O.  */
 
@@ -212,6 +206,9 @@ static estream_mutex_t estream_list_lock;
 #define DIM(array) (sizeof (array) / sizeof (*array))
 #endif
 
+#define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+
 /* Evaluate EXPRESSION, setting VARIABLE to the return code, if
    VARIABLE is zero.  */
 #define SET_UNLESS_NONZERO(variable, tmp_variable, expression) \
@@ -222,6 +219,33 @@ static estream_mutex_t estream_list_lock;
         variable = tmp_variable;                               \
     }                                                          \
   while (0)
+
+
+/* Malloc wrappers to overcvome problems on some older OSes.  */
+static void *
+mem_alloc (size_t n)
+{
+  if (!n)
+    n++;
+  return malloc (n);
+}
+
+static void *
+mem_realloc (void *p, size_t n)
+{
+  if (!p)
+    return mem_alloc (n);
+  return realloc (p, n);
+}
+
+static void
+mem_free (void *p)
+{
+  if (p)
+    free (p);
+}
+
+
 
 /*
  * List manipulation.
@@ -234,7 +258,7 @@ es_list_add (estream_t stream)
   estream_list_t list_obj;
   int ret;
 
-  list_obj = ES_MEM_ALLOC (sizeof (*list_obj));
+  list_obj = mem_alloc (sizeof (*list_obj));
   if (! list_obj)
     ret = -1;
   else
@@ -266,7 +290,7 @@ es_list_remove (estream_t stream)
 	*list_obj->prev_cdr = list_obj->cdr;
 	if (list_obj->cdr)
 	  list_obj->cdr->prev_cdr = list_obj->prev_cdr;
-	ES_MEM_FREE (list_obj);
+	mem_free (list_obj);
 	break;
       }
   ESTREAM_LIST_UNLOCK;
@@ -326,19 +350,20 @@ es_init_do (void)
 typedef struct estream_cookie_mem
 {
   unsigned int modeflags;	/* Open flags.  */
-  unsigned char *memory;	/* Data.  */
-  size_t memory_size;		/* Size of MEMORY.  */
+  unsigned char *memory;	/* Allocated data buffer.  */
+  size_t memory_size;		/* Allocated size of memory.  */
+  size_t memory_limit;          /* Maximum allowed allocation size or
+                                   0 for no limit.  */
   size_t offset;		/* Current offset in MEMORY.  */
   size_t data_len;		/* Length of data in MEMORY.  */
   size_t block_size;		/* Block size.  */
-  unsigned int grow: 1;		/* MEMORY is allowed to grow.  */
-  unsigned int append_zero: 1;	/* Append zero after data.  */
-  unsigned int dont_free: 1;	/* Append zero after data.  */
-  char **ptr;
-  size_t *size;
+  struct {
+    unsigned int grow: 1;	/* MEMORY is allowed to grow.  */
+  } flags;
   func_realloc_t func_realloc;
   func_free_t func_free;
 } *estream_cookie_mem_t;
+
 
 /* Create function for memory objects.  */
 static int
@@ -346,39 +371,35 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 		    unsigned char *ES__RESTRICT data, size_t data_n,
 		    size_t data_len,
 		    size_t block_size, unsigned int grow,
-		    unsigned int append_zero, unsigned int dont_free,
-		    char **ptr, size_t *size,
 		    func_realloc_t func_realloc, func_free_t func_free,
-		    unsigned int modeflags)
+		    unsigned int modeflags,
+                    size_t memory_limit)
 {
   estream_cookie_mem_t mem_cookie;
   int err;
 
-  mem_cookie = ES_MEM_ALLOC (sizeof (*mem_cookie));
-  if (! mem_cookie)
+  mem_cookie = mem_alloc (sizeof (*mem_cookie));
+  if (!mem_cookie)
     err = -1;
   else
     {
       mem_cookie->modeflags = modeflags;
       mem_cookie->memory = data;
       mem_cookie->memory_size = data_n;
+      mem_cookie->memory_limit = memory_limit;
       mem_cookie->offset = 0;
       mem_cookie->data_len = data_len;
       mem_cookie->block_size = block_size;
-      mem_cookie->grow = grow ? 1 : 0;
-      mem_cookie->append_zero = append_zero ? 1 : 0;
-      mem_cookie->dont_free = dont_free ? 1 : 0;
-      mem_cookie->ptr = ptr;
-      mem_cookie->size = size;
-      mem_cookie->func_realloc = func_realloc ? func_realloc : ES_MEM_REALLOC;
-      mem_cookie->func_free = func_free ? func_free : ES_MEM_FREE;
-      mem_cookie->offset = 0;
+      mem_cookie->flags.grow = !!grow;
+      mem_cookie->func_realloc = func_realloc ? func_realloc : mem_realloc;
+      mem_cookie->func_free = func_free ? func_free : mem_free;
       *cookie = mem_cookie;
       err = 0;
     }
 
   return err;
 }
+
 
 /* Read function for memory objects.  */
 static ssize_t
@@ -397,107 +418,82 @@ es_func_mem_read (void *cookie, void *buffer, size_t size)
     }
   
   ret = size;
-
   return ret;
 }
+
 
 /* Write function for memory objects.  */
 static ssize_t
 es_func_mem_write (void *cookie, const void *buffer, size_t size)
 {
   estream_cookie_mem_t mem_cookie = cookie;
-  func_realloc_t func_realloc = mem_cookie->func_realloc;
-  unsigned char *memory_new;
-  size_t newsize;
   ssize_t ret;
-  int err;
 
-  if (size)
+  if (!size)
+    return 0;  /* A flush is a NOP for memory objects.  */
+
+  if (mem_cookie->modeflags & O_APPEND)
     {
-      /* Regular write.  */
-
-      if (mem_cookie->modeflags & O_APPEND)
-	/* Append to data.  */
-	mem_cookie->offset = mem_cookie->data_len;
-	  
-      if (! mem_cookie->grow)
-	if (size > mem_cookie->memory_size - mem_cookie->offset)
-	  size = mem_cookie->memory_size - mem_cookie->offset;
-
-      err = 0;
-
-      while (size > (mem_cookie->memory_size - mem_cookie->offset))
-	{
-	  memory_new = (*func_realloc) (mem_cookie->memory,
-					mem_cookie->memory_size
-					+ mem_cookie->block_size);
-	  if (! memory_new)
-	    {
-	      err = -1;
-	      break;
-	    }
-	  else
-	    {
-	      if (mem_cookie->memory != memory_new)
-		mem_cookie->memory = memory_new;
-	      mem_cookie->memory_size += mem_cookie->block_size;
-	    }
-	}
-      if (err)
-	goto out;
-
-      if (size)
-	{
-	  memcpy (mem_cookie->memory + mem_cookie->offset, buffer, size);
-	  if (mem_cookie->offset + size > mem_cookie->data_len)
-	    mem_cookie->data_len = mem_cookie->offset + size;
-	  mem_cookie->offset += size;
-	}
+      /* Append to data.  */
+      mem_cookie->offset = mem_cookie->data_len;
     }
-  else
-    {
-      /* Flush.  */
-
-      err = 0;
-      if (mem_cookie->append_zero)
-	{
-	  if (mem_cookie->data_len >= mem_cookie->memory_size)
-	    {
-	      newsize = BUFFER_ROUND_TO_BLOCK (mem_cookie->data_len + 1,
-					       mem_cookie->block_size)
-		* mem_cookie->block_size;
 	  
-	      memory_new = (*func_realloc) (mem_cookie->memory, newsize);
-	      if (! memory_new)
-		{
-		  err = -1;
-		  goto out;
-		}
-
-	      if (mem_cookie->memory != memory_new)
-		mem_cookie->memory = memory_new;
-	      mem_cookie->memory_size = newsize;
-	    }
-
-	  mem_cookie->memory[mem_cookie->data_len + 1] = 0;
-	}
-
-      /* Return information to user if necessary.  */
-      if (mem_cookie->ptr)
-	*mem_cookie->ptr = (char *) mem_cookie->memory;
-      if (mem_cookie->size)
-	*mem_cookie->size = mem_cookie->data_len;
+  if (!mem_cookie->flags.grow)
+    {
+      /* We are not alloew to grow, thus limit the size to the left
+         space.  FIXME: Does the grow flag an its semtics make sense
+         at all? */
+      if (size > mem_cookie->memory_size - mem_cookie->offset)
+        size = mem_cookie->memory_size - mem_cookie->offset;
     }
 
- out:
+  if (size > (mem_cookie->memory_size - mem_cookie->offset))
+    {
+      unsigned char *newbuf;
+      size_t newsize;
+      
+      newsize = mem_cookie->memory_size + mem_cookie->block_size;
+      
+      newsize = mem_cookie->offset + size;
+      if (newsize < mem_cookie->offset)
+        {
+          errno = EINVAL;
+          return -1;
+        }
+      newsize += mem_cookie->block_size - 1;
+      if (newsize < mem_cookie->offset)
+        {
+          errno = EINVAL;
+          return -1;
+        }
+      newsize /= mem_cookie->block_size;
+      newsize *= mem_cookie->block_size;
+      
+      if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
+        {
+          errno = ENOSPC;
+          return -1;
+        }
+      
+      newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
+      if (!newbuf)
+        return -1;
+      
+      mem_cookie->memory = newbuf;
+      mem_cookie->memory_size = newsize;
+      
+      assert (!(size > (mem_cookie->memory_size - mem_cookie->offset)));
+    }
+      
+  memcpy (mem_cookie->memory + mem_cookie->offset, buffer, size);
+  if (mem_cookie->offset + size > mem_cookie->data_len)
+    mem_cookie->data_len = mem_cookie->offset + size;
+  mem_cookie->offset += size;
 
-  if (err)
-    ret = -1;
-  else
-    ret = size;
-
+  ret = size;
   return ret;
 }
+
 
 /* Seek function for memory objects.  */
 static int
@@ -505,7 +501,6 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
 {
   estream_cookie_mem_t mem_cookie = cookie;
   off_t pos_new;
-  int err = 0;
 
   switch (whence)
     {
@@ -522,68 +517,73 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
       break;
 
     default:
-      /* Never reached.  */
-      pos_new = 0;
+      errno = EINVAL;
+      return -1;
     }
 
   if (pos_new > mem_cookie->memory_size)
     {
-      /* Grow buffer if possible.  */
+      size_t newsize;
+      void *newbuf;
 
-      if (mem_cookie->grow)
+      if (!mem_cookie->flags.grow)
 	{
-	  func_realloc_t func_realloc = mem_cookie->func_realloc;
-	  size_t newsize;
-	  void *p;
+	  errno = ENOSPC;
+	  return -1;
 
-	  newsize = BUFFER_ROUND_TO_BLOCK (pos_new, mem_cookie->block_size);
-	  p = (*func_realloc) (mem_cookie->memory, newsize);
-	  if (! p)
-	    {
-	      err = -1;
-	      goto out;
-	    }
-	  else
-	    {
-	      if (mem_cookie->memory != p)
-		mem_cookie->memory = p;
-	      mem_cookie->memory_size = newsize;
-	    }
-	}
-      else
-	{
-	  errno = EINVAL;
-	  err = -1;
-	  goto out;
-	}
+        }
+
+      newsize = pos_new + mem_cookie->block_size - 1;
+      if (newsize < pos_new)
+        {
+          errno = EINVAL;
+          return -1;
+        }
+      newsize /= mem_cookie->block_size;
+      newsize *= mem_cookie->block_size;
+      if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
+        {
+          errno = ENOSPC;
+          return -1;
+        }
+      
+      newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
+      if (!newbuf)
+        return -1;
+
+      mem_cookie->memory = newbuf;
+      mem_cookie->memory_size = newsize;
     }
 
   if (pos_new > mem_cookie->data_len)
-    /* Fill spare space with zeroes.  */
-    memset (mem_cookie->memory + mem_cookie->data_len,
-	    0, pos_new - mem_cookie->data_len);
+    {
+      /* Fill spare space with zeroes.  */
+      memset (mem_cookie->memory + mem_cookie->data_len,
+              0, pos_new - mem_cookie->data_len);
+      mem_cookie->data_len = pos_new;
+    }
 
   mem_cookie->offset = pos_new;
   *offset = pos_new;
 
- out:
-
-  return err;
+  return 0;
 }
+
 
 /* Destroy function for memory objects.  */
 static int
 es_func_mem_destroy (void *cookie)
 {
   estream_cookie_mem_t mem_cookie = cookie;
-  func_free_t func_free = mem_cookie->func_free;
 
-  if (! mem_cookie->dont_free)
-    (*func_free) (mem_cookie->memory);
-  ES_MEM_FREE (mem_cookie);
-
+  if (cookie)
+    {
+      mem_cookie->func_free (mem_cookie->memory);
+      mem_free (mem_cookie);
+    }
   return 0;
 }
+
 
 static es_cookie_io_functions_t estream_functions_mem =
   {
@@ -611,7 +611,7 @@ es_func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
   estream_cookie_fd_t fd_cookie;
   int err;
 
-  fd_cookie = ES_MEM_ALLOC (sizeof (*fd_cookie));
+  fd_cookie = mem_alloc (sizeof (*fd_cookie));
   if (! fd_cookie)
     err = -1;
   else
@@ -690,7 +690,7 @@ es_func_fd_destroy (void *cookie)
   if (fd_cookie)
     {
       err = fd_cookie->no_close? 0 : close (fd_cookie->fd);
-      ES_MEM_FREE (fd_cookie);
+      mem_free (fd_cookie);
     }
   else
     err = 0;
@@ -726,7 +726,7 @@ es_func_fp_create (void **cookie, FILE *fp, unsigned int modeflags, int no_close
   estream_cookie_fp_t fp_cookie;
   int err;
 
-  fp_cookie = ES_MEM_ALLOC (sizeof *fp_cookie);
+  fp_cookie = mem_alloc (sizeof *fp_cookie);
   if (!fp_cookie)
     err = -1;
   else
@@ -807,7 +807,7 @@ es_func_fp_destroy (void *cookie)
     {
       fflush (fp_cookie->fp);
       err = fp_cookie->no_close? 0 : fclose (fp_cookie->fp);
-      ES_MEM_FREE (fp_cookie);
+      mem_free (fp_cookie);
     }
   else
     err = 0;
@@ -841,7 +841,7 @@ es_func_file_create (void **cookie, int *filedes,
   err = 0;
   fd = -1;
 
-  file_cookie = ES_MEM_ALLOC (sizeof (*file_cookie));
+  file_cookie = mem_alloc (sizeof (*file_cookie));
   if (! file_cookie)
     {
       err = -1;
@@ -868,7 +868,7 @@ es_func_file_create (void **cookie, int *filedes,
  out:
 
   if (err)
-    ES_MEM_FREE (file_cookie);
+    mem_free (file_cookie);
 
   return err;
 }
@@ -1149,14 +1149,14 @@ es_create (estream_t *stream, void *cookie, int fd,
   stream_new = NULL;
   stream_internal_new = NULL;
 
-  stream_new = ES_MEM_ALLOC (sizeof (*stream_new));
+  stream_new = mem_alloc (sizeof (*stream_new));
   if (! stream_new)
     {
       err = -1;
       goto out;
     }
 
-  stream_internal_new = ES_MEM_ALLOC (sizeof (*stream_internal_new));
+  stream_internal_new = mem_alloc (sizeof (*stream_internal_new));
   if (! stream_internal_new)
     {
       err = -1;
@@ -1185,7 +1185,7 @@ es_create (estream_t *stream, void *cookie, int fd,
       if (stream_new)
 	{
 	  es_deinitialize (stream_new);
-	  ES_MEM_FREE (stream_new);
+	  mem_free (stream_new);
 	}
     }
 
@@ -1202,8 +1202,8 @@ es_destroy (estream_t stream)
     {
       es_list_remove (stream);
       err = es_deinitialize (stream);
-      ES_MEM_FREE (stream->intern);
-      ES_MEM_FREE (stream);
+      mem_free (stream->intern);
+      mem_free (stream);
     }
 
   return err;
@@ -1694,8 +1694,8 @@ es_skip (estream_t stream, size_t size)
 
 static int
 doreadline (estream_t ES__RESTRICT stream, size_t max_length,
-             char *ES__RESTRICT *ES__RESTRICT line,
-             size_t *ES__RESTRICT line_length)
+            char *ES__RESTRICT *ES__RESTRICT line,
+            size_t *ES__RESTRICT line_length)
 {
   size_t space_left;
   size_t line_size;
@@ -1711,9 +1711,11 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   line_stream = NULL;
   line_stream_cookie = NULL;
 
-  err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0, BUFFER_BLOCK_SIZE,
-			    1, 0, 0, NULL, 0, ES_MEM_REALLOC, ES_MEM_FREE,
-                            O_RDWR);
+  err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0,
+                            BUFFER_BLOCK_SIZE, 1,
+                            mem_realloc, mem_free, 
+                            O_RDWR,
+                            0);
   if (err)
     goto out;
 
@@ -1779,7 +1781,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 
   if (! *line)
     {
-      line_new = ES_MEM_ALLOC (line_size + 1);
+      line_new = mem_alloc (line_size + 1);
       if (! line_new)
 	{
 	  err = -1;
@@ -1810,7 +1812,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   if (err)
     {
       if (! *line)
-	ES_MEM_FREE (line_new);
+	mem_free (line_new);
       stream->intern->indicators.err = 1;
     }
 
@@ -1894,7 +1896,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
   if (stream->intern->deallocate_buffer)
     {
       stream->intern->deallocate_buffer = 0;
-      ES_MEM_FREE (stream->buffer);
+      mem_free (stream->buffer);
       stream->buffer = NULL;
     }
 
@@ -1908,7 +1910,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
 	buffer_new = buffer;
       else
 	{
-	  buffer_new = ES_MEM_ALLOC (size);
+	  buffer_new = mem_alloc (size);
 	  if (! buffer_new)
 	    {
 	      err = -1;
@@ -2034,8 +2036,8 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
     goto out;
 
   err = es_func_mem_create (&cookie, data, data_n, data_len,
-			    BUFFER_BLOCK_SIZE, grow, 0, 0,
-			    NULL, 0, func_realloc, func_free, modeflags);
+			    BUFFER_BLOCK_SIZE, grow, 
+			    func_realloc, func_free, modeflags, 0);
   if (err)
     goto out;
   
@@ -2052,35 +2054,31 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 
 
 estream_t
-es_open_memstream (char **ptr, size_t *size)
+es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
 {
   unsigned int modeflags;
-  int create_called;
-  estream_t stream;
-  void *cookie;
-  int err;
+  estream_t stream = NULL;
+  void *cookie = NULL;
 
-  modeflags = O_RDWR;
-  create_called = 0;
-  stream = NULL;
-  cookie = 0;
+  /* Memory streams are always read/write.  We use MODE only to get
+     the append flag.  */
+  if (es_convert_mode (mode, &modeflags))
+    return NULL;
+  modeflags |= O_RDWR;
+
   
-  err = es_func_mem_create (&cookie, NULL, 0, 0,
-			    BUFFER_BLOCK_SIZE, 1, 1, 1,
-			    ptr, size, ES_MEM_REALLOC, ES_MEM_FREE, modeflags);
-  if (err)
-    goto out;
+  if (es_func_mem_create (&cookie, NULL, 0, 0,
+                          BUFFER_BLOCK_SIZE, 1,
+                          mem_realloc, mem_free, modeflags,
+                          memlimit))
+    return NULL;
   
-  create_called = 1;
-  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags);
-
- out:
-
-  if (err && create_called)
+  if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags))
     (*estream_functions_mem.func_close) (cookie);
 
   return stream;
 }
+
 
 
 estream_t
@@ -2613,22 +2611,31 @@ es_fwrite (const void *ES__RESTRICT ptr, size_t size, size_t nitems,
 
 
 char *
-es_fgets (char *ES__RESTRICT s, int n, estream_t ES__RESTRICT stream)
+es_fgets (char *ES__RESTRICT buffer, int length, estream_t ES__RESTRICT stream)
 {
-  char *ret = NULL;
-  
-  if (n)
+  unsigned char *s = (unsigned char*)buffer;
+  int c;
+   
+  if (!length)
+    return NULL;
+     
+  c = EOF;
+  ESTREAM_LOCK (stream);
+  while (length > 1 && (c = es_getc_unlocked (stream)) != EOF && c != '\n')
     {
-      int err;
-      
-      ESTREAM_LOCK (stream);
-      err = doreadline (stream, n, &s, NULL);
-      ESTREAM_UNLOCK (stream);
-      if (! err)
-	ret = s;
+      *s++ = c;
+      length--;
     }
-  
-  return ret;
+  ESTREAM_UNLOCK (stream);
+
+  if (c == EOF && s == (unsigned char*)buffer)
+    return NULL; /* Nothing read.  */
+
+  if (c != EOF && length > 1)
+    *s++ = c;
+
+  *s = 0;
+  return buffer;
 }
 
 
@@ -2671,7 +2678,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
 
 	  void *p;
 
-	  p = ES_MEM_REALLOC (*lineptr, line_n + 1);
+	  p = mem_realloc (*lineptr, line_n + 1);
 	  if (! p)
 	    err = -1;
 	  else
@@ -2687,7 +2694,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
 	  if (*n != line_n)
 	    *n = line_n;
 	}
-      ES_MEM_FREE (line);
+      mem_free (line);
     }
   else
     {
@@ -2747,7 +2754,7 @@ es_read_line (estream_t stream,
     { 
       /* No buffer given - allocate a new one. */
       length = 256;
-      buffer = ES_MEM_ALLOC (length);
+      buffer = mem_alloc (length);
       *addr_of_buffer = buffer;
       if (!buffer)
         {
@@ -2761,7 +2768,7 @@ es_read_line (estream_t stream,
 
   if (length < 4)
     {
-      /* This should never happen. If it does, the fucntion has been
+      /* This should never happen. If it does, the function has been
          called with wrong arguments. */
       errno = EINVAL;
       return -1;
@@ -2788,11 +2795,11 @@ es_read_line (estream_t stream,
             }
           length += 3; /* Adjust for the reserved bytes. */
           length += length < 1024? 256 : 1024;
-          *addr_of_buffer = ES_MEM_REALLOC (buffer, length);
+          *addr_of_buffer = mem_realloc (buffer, length);
           if (!*addr_of_buffer)
             {
               int save_errno = errno;
-              ES_MEM_FREE (buffer); 
+              mem_free (buffer); 
               *length_of_buffer = *max_length = 0;
               ESTREAM_UNLOCK (stream);
               errno = save_errno;
@@ -2820,8 +2827,7 @@ es_read_line (estream_t stream,
 void
 es_free (void *a)
 {
-  if (a)
-    ES_MEM_FREE (a);
+  mem_free (a);
 }
 
 
@@ -2870,9 +2876,66 @@ es_fprintf (estream_t ES__RESTRICT stream,
   return ret;
 }
 
+
 static int
 tmpfd (void)
 {
+#ifdef HAVE_W32_SYSTEM
+  int attempts, n;
+  char buffer[MAX_PATH+9+12+1];
+  char *name, *p;
+  HANDLE file;
+  int pid = GetCurrentProcessId ();
+  unsigned int value;
+  int i;
+  
+  n = GetTempPath (MAX_PATH+1, buffer);
+  if (!n || n > MAX_PATH || strlen (buffer) > MAX_PATH)
+    {
+      errno = ENOENT;
+      return -1;
+    }
+  p = buffer + strlen (buffer);
+  strcpy (p, "_estream");
+  p += 8;
+  /* We try to create the directory but don't care about an error as
+     it may already exist and the CreateFile would throw an error
+     anyway.  */
+  CreateDirectory (buffer, NULL);
+  *p++ = '\\';
+  name = p;
+  for (attempts=0; attempts < 10; attempts++)
+    {
+      p = name;
+      value = (GetTickCount () ^ ((pid<<16) & 0xffff0000));
+      for (i=0; i < 8; i++)
+        {
+          *p++ = tohex (((value >> 28) & 0x0f));
+          value <<= 4;
+        }
+      strcpy (p, ".tmp");
+      file = CreateFile (buffer,
+                         GENERIC_READ | GENERIC_WRITE,
+                         0,
+                         NULL,
+                         CREATE_NEW,
+                         FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                         NULL);
+      if (file != INVALID_HANDLE_VALUE)
+        {
+          int fd = _open_osfhandle ((long)file, 0);
+          if (fd == -1)
+            {
+              CloseHandle (file);
+              return -1;
+            }
+          return fd;
+        }
+      Sleep (1); /* One ms as this is the granularity of GetTickCount.  */
+    }
+  errno = ENOENT;
+  return -1;
+#else /*!HAVE_W32_SYSTEM*/
   FILE *fp;
   int fp_fd;
   int fd;
@@ -2893,6 +2956,7 @@ tmpfd (void)
     fclose (fp);
 
   return fd;
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 estream_t

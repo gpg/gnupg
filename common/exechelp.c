@@ -64,6 +64,14 @@
 #pragma weak pth_waitpid
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+/* It seems Vista doesn't grok X_OK and so fails access() tests.
+   Previous versions interpreted X_OK as F_OK anyway, so we'll just
+   use F_OK directly. */
+#undef X_OK
+#define X_OK F_OK
+#endif /* HAVE_W32_SYSTEM */
+
 
 #ifdef HAVE_W32_SYSTEM
 /* We assume that a HANDLE can be represented by an int which should

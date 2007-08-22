@@ -1,3 +1,32 @@
+2007-08-22  Werner Koch  <wk@g10code.com>
+
+	Updated estream from libestream.
+	
+	* estream.c (mem_malloc, mem_realloc, mem_free): New.  Use them
+	instead of the ES_MEM_foo.
+	* estream.c (estream_cookie_mem): Remove members DONT_FREE,
+	APPEND_ZERO, PTR and SIZE.  Add MEMORY_LIMIT.  Put GROW into a new
+	FLAGS struct.
+	(es_func_mem_create): Remove APPEND_ZERO, DONT_FREE, PTR and
+	SIZE.  Add MEMORY_LIMIT.
+	(es_func_mem_write, es_func_mem_seek, es_func_mem_destroy): Revamp.
+	(es_open_memstream): Change API to just take a memory limit and a
+	mode argument.  Rename to ..
+	(es_fopenmem): .. this.
+	(HAVE_W32_SYSTEM) [_WIN32]: Define if not defined.
+	(tmpfd) [W32]: Implement directly using the W32 API.
+	(es_fgets): Rewrite without using doreadline.
+
+2007-08-21  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (gnupg_tmpfile): New.
+	* t-sysutils.c: New.
+	* Makefile.am (module_tests): Add t-sysutils.
+
+2007-08-20  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c [W32]: Redefine X_OK to F_OK.
+
 2007-08-16  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (t_convert_DEPENDENCIES): Remove

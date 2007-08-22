@@ -638,7 +638,7 @@ import_p12_file (const char *fname)
 {
   char *buf;
   unsigned char *result;
-  size_t buflen, resultlen;
+  size_t buflen, resultlen, buf_off;
   int i;
   int rc;
   gcry_mpi_t *kparms;
@@ -654,7 +654,22 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse ((unsigned char*)buf, buflen, (pw=get_passphrase (2, 0)),
+  /* GnuPG 2.0.4 accidently created binary P12 files with the string
+     "The passphrase is %s encoded.\n\n" prepended to the ASN.1 data.
+     We fix that here.  */
+  if (buflen > 29 && !memcmp (buf, "The passphrase is ", 18))
+    {
+      for (buf_off=18; buf_off < buflen && buf[buf_off] != '\n'; buf_off++)
+        ;
+      buf_off++;
+      if (buf_off < buflen && buf[buf_off] == '\n')
+        buf_off++;
+    }
+  else
+    buf_off = 0;
+
+  kparms = p12_parse ((unsigned char*)buf+buf_off, buflen-buf_off,
+                      (pw=get_passphrase (2, 0)),
                       import_p12_cert_cb, NULL);
   release_passphrase (pw);
   xfree (buf);

@@ -32,6 +32,7 @@
 #include "keydb.h"
 #include "exechelp.h"
 #include "i18n.h"
+#include "sysutils.h"
 
 
 
@@ -606,7 +607,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   else
     pgmname = opt.protect_tool_program;
 
-  infp = tmpfile ();
+  infp = gnupg_tmpfile ();
   if (!infp)
     {
       err = gpg_error_from_syserror ();
@@ -622,7 +623,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       goto cleanup;
     }
 
-  outfp = tmpfile ();
+  outfp = gnupg_tmpfile ();
   if (!outfp)
     {
       err = gpg_error_from_syserror ();

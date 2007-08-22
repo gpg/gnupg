@@ -1,3 +1,8 @@
+2007-08-21  Werner Koch  <wk@g10code.com>
+
+	* misc.c (openpgp_md_test_algo): Remove rfc2440bis hash algorithms.
+	(openpgp_cipher_test_algo): Likewise for algos 5 and 6.
+
 2007-08-02  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: Include gc-opt-flags.h and remove their definition here.

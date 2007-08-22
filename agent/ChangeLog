@@ -1,3 +1,8 @@
+2007-08-22  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (import_p12_file): Add hack to allow importing of
+	gnupg 2.0.4 generated files.
+
 2007-08-06  Werner Koch  <wk@g10code.com>
 
 	* trustlist.c (read_one_trustfile): Add flag "cm".

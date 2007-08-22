@@ -863,6 +863,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   int inp_fd, out_fd;
   FILE *out_fp;
   int rc;
+  estream_t in_stream;
 
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
@@ -871,10 +872,17 @@ cmd_genkey (assuan_context_t ctx, char *line)
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
+  in_stream = es_fdopen_nc (inp_fd, "r");
+  if (!in_stream)
+    return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen failed");
+
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
-    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
-  rc = gpgsm_genkey (ctrl, inp_fd, NULL, out_fp);
+    {
+      es_fclose (in_stream);
+      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+    }
+  rc = gpgsm_genkey (ctrl, in_stream, out_fp);
   fclose (out_fp);
 
   /* close and reset the fds */
