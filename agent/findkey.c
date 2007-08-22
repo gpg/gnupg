@@ -32,6 +32,10 @@
 
 #include "agent.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 /* Helper to pass data to the check callback of the unprotect function. */
 struct try_unprotect_arg_s {
   const unsigned char *protected_key;
@@ -70,8 +74,8 @@ agent_write_private_key (const unsigned char *grip,
      POSIX (GNU provides the "x" opentype for fopen, however, this is
      not portable).  Thus, we use the more flexible open function and
      then use fdopen to obtain a stream. */
-  fd = open (fname, force? (O_CREAT | O_TRUNC | O_WRONLY)
-                         : (O_CREAT | O_EXCL | O_WRONLY),
+  fd = open (fname, force? (O_CREAT | O_TRUNC | O_WRONLY | O_BINARY)
+                         : (O_CREAT | O_EXCL | O_WRONLY | O_BINARY),
              S_IRUSR | S_IWUSR 
 #ifndef HAVE_W32_SYSTEM
                  | S_IRGRP 

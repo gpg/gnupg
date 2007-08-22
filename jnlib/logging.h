@@ -71,6 +71,11 @@ void log_error( const char *fmt, ... )	JNLIB_GCC_A_PRINTF(1,2);
 void log_info( const char *fmt, ... )	JNLIB_GCC_A_PRINTF(1,2);
 void log_debug( const char *fmt, ... )	JNLIB_GCC_A_PRINTF(1,2);
 void log_printf( const char *fmt, ... ) JNLIB_GCC_A_PRINTF(1,2);
+
+/* Print a hexdump of BUFFER.  With TEXT passes as NULL print just the
+   raw dump, with TEXT being an empty string, print a trailing
+   linefeed, otherwise print an entire debug line with TEXT followed
+   by the hexdump and a final LF.  */
 void log_printhex (const char *text, const void *buffer, size_t length);
 
 

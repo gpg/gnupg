@@ -1,5 +1,5 @@
 /* certreqgen.c - Generate a key and a certification request
- *	Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -786,8 +786,7 @@ create_request (ctrl_t ctrl,
               goto leave;
             }
           gcry_sexp_release (s_pkey);
-          for (n=0; n < 20; n++)
-            sprintf (hexgrip+n*2, "%02X", grip[n]);
+          bin2hex (grip, 20, hexgrip);
 
           if (carddirect)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,

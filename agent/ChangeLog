@@ -1,5 +1,8 @@
 2007-08-22  Werner Koch  <wk@g10code.com>
 
+	* findkey.c (O_BINARY): Make sure it is defined.
+	(agent_write_private_key): Use O_BINARY
+
 	* protect-tool.c (import_p12_file): Add hack to allow importing of
 	gnupg 2.0.4 generated files.
 
