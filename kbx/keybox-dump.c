@@ -24,6 +24,11 @@
 #include <errno.h>
 
 #include "keybox-defs.h"
+#include <gcrypt.h>
+
+/* Argg, we can't include ../common/util.h */
+char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
+
 
 static ulong
 get32 (const byte *buffer)
@@ -183,6 +188,9 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 
   fprintf( fp, "Data-Offset: %lu\n", rawdata_off );
   fprintf( fp, "Data-Length: %lu\n", rawdata_len );
+  if (rawdata_off > length || rawdata_len > length 
+      || rawdata_off+rawdata_off > length)
+    fprintf (fp, "[Error: raw data larger than blob]\n");
 
   nkeys = get16 (buffer + 16);
   fprintf (fp, "Key-Count: %lu\n", nkeys );
@@ -322,6 +330,53 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 }
 
 
+/* Compute the SHA_1 checksum of teh rawdata in BLOB and aput it into
+   DIGEST. */
+static int
+hash_blob_rawdata (KEYBOXBLOB blob, unsigned char *digest)
+{
+  const unsigned char *buffer;
+  size_t n, length;
+  int type;
+  ulong rawdata_off, rawdata_len;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  
+  if (length < 32)
+    return -1;
+  n = get32 (buffer);
+  if (n < length) 
+    length = n;  /* Blob larger than length in header - ignore the rest. */
+
+  type = buffer[4];
+  switch (type)
+    {
+    case BLOBTYPE_PGP:
+    case BLOBTYPE_X509:
+      break;
+
+    case BLOBTYPE_EMPTY:
+    case BLOBTYPE_HEADER:
+    default:
+      memset (digest, 0, 20);
+      return 0;
+    }
+
+  if (length < 40)
+    return -1;
+  
+  rawdata_off = get32 (buffer + 8);
+  rawdata_len = get32 (buffer + 12);
+
+  if (rawdata_off > length || rawdata_len > length 
+      || rawdata_off+rawdata_off > length)
+    return -1; /* Out of bounds.  */
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, digest, buffer+rawdata_off, rawdata_len);
+  return 0;
+}
+
+
 struct file_stats_s
 {
   unsigned long too_short_blobs;
@@ -401,6 +456,29 @@ update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
 
 
 
+static FILE *
+open_file (const char **filename, FILE *outfp)
+{
+  FILE *fp;
+
+  if (!*filename)
+    {
+      *filename = "-";
+      fp = stdin;
+    }
+  else
+    fp = fopen (*filename, "rb");
+  if (!fp)
+    {
+      int save_errno = errno;
+      fprintf (outfp, "can't open `%s': %s\n", *filename, strerror(errno));
+      errno = save_errno;
+    }
+  return fp;
+}
+
+
+
 int
 _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 {
@@ -412,19 +490,8 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 
   memset (&stats, 0, sizeof stats);
 
-  if (!filename)
-    {
-      filename = "-";
-      fp = stdin;
-    }
-  else
-    fp = fopen (filename, "rb");
-  if (!fp)
-    {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      fprintf (outfp, "can't open `%s': %s\n", filename, strerror(errno));
-      return tmperr;
-    }
+  if (!(fp = open_file (&filename, outfp)))
+    return gpg_error_from_syserror ();
 
   while ( !(rc = _keybox_read_blob (&blob, fp)) )
     {
@@ -479,5 +546,152 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
                    stats.too_large_blobs);
     }
 
+  return rc;
+}
+
+
+
+struct dupitem_s 
+{
+  unsigned long recno; 
+  unsigned char digest[20];
+};
+
+
+static int
+cmp_dupitems (const void *arg_a, const void *arg_b)
+{
+  struct dupitem_s *a = (struct dupitem_s *)arg_a;
+  struct dupitem_s *b = (struct dupitem_s *)arg_b;
+  
+  return memcmp (a->digest, b->digest, 20);
+}
+
+
+int
+_keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
+{
+  FILE *fp;
+  KEYBOXBLOB blob;
+  int rc;
+  unsigned long recno = 0;
+  unsigned char zerodigest[20];
+  struct dupitem_s *dupitems;
+  size_t dupitems_size, dupitems_count, lastn, n;
+  char fprbuf[3*20+1];
+  
+  memset (zerodigest, 0, sizeof zerodigest);
+
+  if (!(fp = open_file (&filename, outfp)))
+    return gpg_error_from_syserror ();
+
+  dupitems_size = 1000;
+  dupitems = malloc (dupitems_size * sizeof *dupitems);
+  if (!dupitems)
+    {
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+      fprintf (outfp, "error allocating array for `%s': %s\n",
+               filename, strerror(errno));
+      return tmperr;
+    }
+  dupitems_count = 0;
+
+  while ( !(rc = _keybox_read_blob (&blob, fp)) )
+    {
+      unsigned char digest[20];
+      
+      if (hash_blob_rawdata (blob, digest))
+        fprintf (outfp, "error in blob %ld of `%s'\n", recno, filename);
+      else if (memcmp (digest, zerodigest, 20))
+        {
+          if (dupitems_count >= dupitems_size)
+            {
+              struct dupitem_s *tmp;
+
+              dupitems_size += 1000;
+              tmp = realloc (dupitems, dupitems_size * sizeof *dupitems);
+              if (!tmp)
+                {
+                  gpg_error_t tmperr = gpg_error_from_syserror ();
+                  fprintf (outfp, "error reallocating array for `%s': %s\n",
+                           filename, strerror(errno));
+                  free (dupitems);
+                  return tmperr;
+                }
+              dupitems = tmp;
+            }
+          dupitems[dupitems_count].recno = recno;
+          memcpy (dupitems[dupitems_count].digest, digest, 20);
+          dupitems_count++;
+        }
+      _keybox_release_blob (blob);
+      recno++;
+    }
+  if (rc == -1)
+    rc = 0;
+  if (rc)
+    fprintf (outfp, "error reading `%s': %s\n", filename, gpg_strerror (rc));
+  if (fp != stdin)
+    fclose (fp);
+
+  qsort (dupitems, dupitems_count, sizeof *dupitems, cmp_dupitems);
+
+  for (lastn=0, n=1; n < dupitems_count; lastn=n, n++)
+    {
+      if (!memcmp (dupitems[lastn].digest, dupitems[n].digest, 20))
+        {
+          bin2hexcolon (dupitems[lastn].digest, 20, fprbuf);
+          fprintf (outfp, "fpr=%s recno=%lu", fprbuf, dupitems[lastn].recno);
+          do
+            fprintf (outfp, " %lu", dupitems[n].recno);
+          while (++n < dupitems_count
+                 && !memcmp (dupitems[lastn].digest, dupitems[n].digest, 20));
+          putc ('\n', outfp);
+          n--;
+        }
+    }
+
+  free (dupitems);
+
+  return rc;
+}
+
+
+/* Print records with record numbers FROM to TO to OUTFP.  */
+int
+_keybox_dump_cut_records (const char *filename, unsigned long from,
+                          unsigned long to, FILE *outfp)
+{
+  FILE *fp;
+  KEYBOXBLOB blob;
+  int rc;
+  unsigned long recno = 0;
+  
+  if (!(fp = open_file (&filename, stderr)))
+    return gpg_error_from_syserror ();
+
+  while ( !(rc = _keybox_read_blob (&blob, fp)) )
+    {
+      if (recno > to)
+        break; /* Ready.  */
+      if (recno >= from)
+        {
+          if ((rc = _keybox_write_blob (blob, outfp)))
+            {
+              fprintf (stderr, "error writing output: %s\n",
+                       gpg_strerror (rc));
+              goto leave;
+            }
+        }
+      _keybox_release_blob (blob);
+      recno++;
+    }
+  if (rc == -1)
+    rc = 0;
+  if (rc)
+    fprintf (stderr, "error reading `%s': %s\n", filename, gpg_strerror (rc));
+ leave:
+  if (fp != stdin)
+    fclose (fp);
   return rc;
 }

@@ -1,5 +1,5 @@
-/* export.c
- * Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* export.c - Export certificates and private keys.
+ * Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -379,10 +379,24 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
-      
+
+    next_ambiguous:      
       rc = keydb_search (hd, desc, 1);
       if (!rc)
-        rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+        {
+          ksba_cert_t cert2 = NULL;
+
+          if (!keydb_get_cert (hd, &cert2))
+            {
+              if (gpgsm_certs_identical_p (cert, cert2))
+                {
+                  ksba_cert_release (cert2);
+                  goto next_ambiguous;
+                }
+              ksba_cert_release (cert2);
+            }
+          rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+        }
       else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
         rc = 0;
       if (rc)

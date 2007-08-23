@@ -1,5 +1,5 @@
 /* gpgsm.h - Global definitions for GpgSM
- *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -287,6 +287,7 @@ int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_cert_p (ksba_cert_t cert);
 int gpgsm_cert_use_ocsp_p (ksba_cert_t cert);
+int gpgsm_certs_identical_p (ksba_cert_t cert_a, ksba_cert_t cert_b);
 int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
                                 certlist_t *listaddr, int is_encrypt_to);
 int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,

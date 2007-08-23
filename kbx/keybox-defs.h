@@ -169,6 +169,9 @@ gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);
 int _keybox_dump_file (const char *filename, int stats_only, FILE *outfp);
+int _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp);
+int _keybox_dump_cut_records (const char *filename, unsigned long from,
+                              unsigned long to, FILE *outfp);
 
 
 /*-- keybox-util.c --*/
@@ -186,7 +189,7 @@ void  _keybox_free (void *p);
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 #define DIMof(type,member)   DIM(((type *)0)->member)
 #ifndef STR
-  #define STR(v) #v
+#  define STR(v) #v
 #endif
 #define STR2(v) STR(v)
 

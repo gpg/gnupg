@@ -1,3 +1,11 @@
+2007-08-23  Werner Koch  <wk@g10code.com>
+
+	* certlist.c (gpgsm_certs_identical_p): New.
+	(gpgsm_add_to_certlist): Ignore duplicate certificates in
+	ambigious name detection.
+	(gpgsm_find_cert): Ditto.
+	* export.c (gpgsm_p12_export): Ditto.
+
 2007-08-22  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (create_request): Replace open coding by bin2hex.

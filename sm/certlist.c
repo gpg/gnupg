@@ -1,5 +1,5 @@
 /* certlist.c - build list of certificates
- *	Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -225,6 +225,25 @@ same_subject_issuer (const char *subject, const char *issuer, ksba_cert_t cert)
   return tmp;
 }
 
+
+/* Return true if CERT_A is the same as CERT_B.  */
+int
+gpgsm_certs_identical_p (ksba_cert_t cert_a, ksba_cert_t cert_b)
+{
+  const unsigned char *img_a, *img_b;
+  size_t len_a, len_b;
+
+  img_a = ksba_cert_get_image (cert_a, &len_a);
+  if (img_a)
+    {
+      img_b = ksba_cert_get_image (cert_b, &len_b);
+      if (img_b && len_a == len_b && !memcmp (img_a, img_b, len_a))
+        return 1; /* Identical. */
+    }
+  return 0;
+}
+
+
 /* Return true if CERT is already contained in CERTLIST. */
 static int
 is_cert_in_certlist (ksba_cert_t cert, certlist_t certlist)
@@ -330,6 +349,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
           
           if (!rc)
             {
+              certlist_t dup_certs = NULL;
+
             next_ambigious:
               rc = keydb_search (kh, &desc, 1);
               if (rc == -1)
@@ -337,23 +358,45 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
               else if (!rc)
                 {
                   ksba_cert_t cert2 = NULL;
+                  
+                  /* If this is the first possible duplicate, add thye orginal 
+                     certificate to our list of duplicates.  */
+                  if (!dup_certs)
+                    gpgsm_add_cert_to_certlist (ctrl, cert, &dup_certs, 0);
 
                   /* We have to ignore ambigious names as long as
-                     there only fault is a bad key usage */
+                     there only fault is a bad key usage.  This is
+                     required to support encryption and signing
+                     certifciates of the same subject.
+
+                     Further we ignore them if they are due to an
+                     identical certificate (which may happen if a
+                     certificate is accidential duplicated in the
+                     keybox).  */
                   if (!keydb_get_cert (kh, &cert2))
                     {
                       int tmp = (same_subject_issuer (subject, issuer, cert2)
                                  && ((gpg_err_code (
                                       secret? gpgsm_cert_use_sign_p (cert2)
-                                            : gpgsm_cert_use_encrypt_p (cert2)
+                                      : gpgsm_cert_use_encrypt_p (cert2)
                                       )
                                      )  == GPG_ERR_WRONG_KEY_USAGE));
+                      if (tmp)
+                        gpgsm_add_cert_to_certlist (ctrl, cert2,
+                                                    &dup_certs, 0);
+                      else
+                        {
+                          if (is_cert_in_certlist (cert2, dup_certs))
+                            tmp = 1;
+                        }
+                      
                       ksba_cert_release (cert2);
                       if (tmp)
                         goto next_ambigious;
                     }
                   rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
                 }
+              gpgsm_release_certlist (dup_certs);
             }
           xfree (subject);
           xfree (issuer);
@@ -464,13 +507,27 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
              won't lead to ambiguous names. */
           if (!rc && !keyid)
             {
+            next_ambiguous:
               rc = keydb_search (kh, &desc, 1);
               if (rc == -1)
                 rc = 0;
               else 
                 {
                   if (!rc)
-                    rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+                    {
+                      ksba_cert_t cert2 = NULL;
+
+                      if (!keydb_get_cert (kh, &cert2))
+                        {
+                          if (gpgsm_certs_identical_p (*r_cert, cert2))
+                            {
+                              ksba_cert_release (cert2);
+                              goto next_ambiguous;
+                            }
+                          ksba_cert_release (cert2);
+                        }
+                      rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+                    }
                   ksba_cert_release (*r_cert);
                   *r_cert = NULL;
                 }

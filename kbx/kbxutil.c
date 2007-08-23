@@ -1,5 +1,5 @@
 /* kbxutil.c - The Keybox utility
- *	Copyright (C) 2000, 2001, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2000, 2001, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 #include <assert.h>
 
 #define JNLIB_NEED_LOG_LOGV
@@ -52,12 +53,15 @@ enum cmd_and_opt_values {
   aFindByUid,
   aStats,
   aImportOpenPGP,
+  aFindDups,
+  aCut,
 
   oDebug,
   oDebugAll,
 
   oNoArmor,
-  
+  oFrom,
+  oTo,
 
   aTest
 };
@@ -71,9 +75,13 @@ static ARGPARSE_OPTS opts[] = {
 /*   { aFindByUid,  "find-by-uid", 0, "|NAME| find key by user name" }, */
   { aStats,      "stats",       0, "show key statistics" }, 
   { aImportOpenPGP, "import-openpgp", 0, "import OpenPGP keyblocks"},
+  { aFindDups,    "find-dups",   0, "find duplicates" },
+  { aCut,         "cut",         0, "export records" },
   
   { 301, NULL, 0, N_("@\nOptions:\n ") },
   
+  { oFrom, "from", 4, "|N|first record to export" },
+  { oTo,   "to",   4, "|N|last record to export" },
 /*   { oArmor, "armor",     0, N_("create ascii armored output")}, */
 /*   { oArmor, "armour",     0, "@" }, */
 /*   { oOutput, "output",    2, N_("use as output file")}, */
@@ -402,6 +410,7 @@ main( int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   enum cmd_and_opt_values cmd = 0;
+  unsigned long from = 0, to = ULONG_MAX;
   
   set_strusage( my_strusage );
   gcry_control (GCRYCTL_DISABLE_SECMEM);
@@ -452,14 +461,24 @@ main( int argc, char **argv )
         case aFindByUid:
         case aStats:
         case aImportOpenPGP:
+        case aFindDups:
+        case aCut:
           cmd = pargs.r_opt;
           break;
+
+        case oFrom: from = pargs.r.ret_ulong; break;
+        case oTo: to = pargs.r.ret_ulong; break;
 
         default:
           pargs.err = 2;
           break;
 	}
     }
+  
+  if (to < from)
+    log_error ("record number of \"--to\" is lower than \"--from\" one\n");
+
+
   if (log_get_errorcount(0) )
     myexit(2);
   
@@ -481,6 +500,26 @@ main( int argc, char **argv )
         {
           for (; argc; argc--, argv++) 
             _keybox_dump_file (*argv, 1, stdout);
+        }
+    }
+  else if (cmd == aFindDups )
+    {
+      if (!argc) 
+        _keybox_dump_find_dups (NULL, 0, stdout);
+      else
+        {
+          for (; argc; argc--, argv++) 
+            _keybox_dump_find_dups (*argv, 0, stdout);
+        }
+    }
+  else if (cmd == aCut )
+    {
+      if (!argc) 
+        _keybox_dump_cut_records (NULL, from, to, stdout);
+      else
+        {
+          for (; argc; argc--, argv++) 
+            _keybox_dump_cut_records (*argv, from, to, stdout);
         }
     }
   else if (cmd == aImportOpenPGP)
