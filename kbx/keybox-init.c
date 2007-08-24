@@ -24,9 +24,8 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "../jnlib/mischelp.h"
 #include "keybox-defs.h"
-
-#define compare_filenames strcmp
 
 static KB_NAME kb_names;
 
@@ -42,8 +41,8 @@ keybox_register_file (const char *fname, int secret)
 
   for (kr=kb_names; kr; kr = kr->next)
     {
-      if ( !compare_filenames (kr->fname, fname) )
-        return NULL; /* already registered */
+      if (same_file_p (kr->fname, fname) )
+        return NULL; /* Already registered. */
     }
 
   kr = xtrymalloc (sizeof *kr + strlen (fname));

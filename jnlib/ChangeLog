@@ -1,3 +1,9 @@
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	* mischelp.c (same_file_p): New.
+	(libjnlib_dummy_mischelp_func): Remove as we now always have one
+	function.
+
 2007-08-09  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (show_help): Expand the @EMAIL@ macro in the package

@@ -1,6 +1,6 @@
 /* mischelp.h - Miscellaneous helper macros and functions
  * Copyright (C) 1999, 2000, 2001, 2002, 2003,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2007  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -20,6 +20,11 @@
 
 #ifndef LIBJNLIB_MISCHELP_H
 #define LIBJNLIB_MISCHHELP_H
+
+
+/* Check whether the files NAME1 and NAME2 are identical.  This is for
+   example achieved by comparing the inode numbers of the files.  */
+int same_file_p (const char *name1, const char *name2);
 
 
 #ifndef HAVE_TIMEGM

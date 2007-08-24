@@ -1,5 +1,5 @@
 /* mischelp.c - Miscellaneous helper functions
- * Copyright (C) 1998, 2000, 2001, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 2000, 2001, 2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -21,16 +21,63 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#else /*!HAVE_W32_SYSTEM*/
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <unistd.h>
+#endif /*!HAVE_W32_SYSTEM*/
 
 #include "libjnlib-config.h"
+#include "stringhelp.h"
 #include "mischelp.h"
 
-/* A dummy function to prevent an empty compilation unit.  Some
-   compilers bail out in this case. */
-time_t
-libjnlib_dummy_mischelp_func (void)
+
+/* Check whether the files NAME1 and NAME2 are identical.  This is for
+   example achieved by comparing the inode numbers of the files.  */
+int
+same_file_p (const char *name1, const char *name2)
 {
-  return time (NULL);
+  int yes;
+      
+  /* First try a shortcut.  */
+  if (!compare_filenames (name1, name2))
+    yes = 1;
+  else
+    {
+#ifdef HAVE_W32_SYSTEM  
+      HANDLE file1, file2;
+      BY_HANDLE_FILE_INFORMATION info1, info2;
+      
+      file1 = CreateFile (name1, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+      if (file1 == INVALID_HANDLE_VALUE)
+        yes = 0; /* If we can't open the file, it is not the same.  */
+      else
+        {
+          file2 = CreateFile (name2, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+          if (file1 == INVALID_HANDLE_VALUE)
+            yes = 0; /* If we can't open the file, it is not the same.  */
+          else
+            {
+              yes = (GetFileInformationByHandle (file1, &info1)
+                     && GetFileInformationByHandle (file2, &info2)
+                     && info1.dwVolumeSerialNumber==info2.dwVolumeSerialNumber
+                     && info1.nFileIndexHigh == info2.nFileIndexHigh
+                     && info1.nFileIndexLow == info2.nFileIndexLow);
+              CloseHandle (file2);
+            }
+          CloseHandle (file1);
+        }
+#else /*!HAVE_W32_SYSTEM*/
+      struct stat info1, info2;
+      
+      yes = (!stat (name1, &info1) && !stat (name2, &info2)
+             && info1.st_dev == info2.st_dev && info1.st_ino == info2.st_ino);
+#endif /*!HAVE_W32_SYSTEM*/
+    }
+  return yes;
 }
 
 

@@ -77,6 +77,13 @@ are flagges as ephemeral, meaning that they are only temporary stored
 provided by @command{gpgsm} or @command{gpg}. 81 certifcates are stored
 in a standard way and directly available from @command{gpgsm}.
 
+@noindent
+To find duplicated certificates and keyblocks in a keybox file (this
+should not occur but sometimes things go wrong), run it using
+
+@samp{kbxutil --find-dups ~/.gnupg/pubring.kbx}
+
+
 
 
 
@@ -163,6 +170,18 @@ protect the imported private key at its new location.
 Note that there is no easy way to match existing certificates with
 stored private keys because some private keys are used for Secure Shell
 or other purposes and don't have a corresponding certificate.
+
+
+@item A root certificate does not verify
+
+A common problem is that the root certificate misses the required
+basicConstrains attribute and thus @command{gpgsm} rejects this
+certificate.  An error message indicating ``no value'' is a sign for
+such a certificate.  You may use the @code{relax} flag in
+@file{trustlist.txt} to accept the certificate anyway.  Note that the
+fingerprint and this flag may only be added manually to
+@file{trustlist.txt}.
+
 
 
 @end itemize

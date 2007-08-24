@@ -502,7 +502,9 @@ caller:
 
 @table @code
 @item relax
-Relax checking of some root certificate requirements.
+Relax checking of some root certificate requirements.  This is for
+example required if the certificate is missing the basicConstraints
+attribute (despite that it is a MUST for CA certificates).
 
 @item cm
 If validation of a certificate finally issued by a CA with this flag set

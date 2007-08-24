@@ -1,6 +1,11 @@
 Noteworthy changes in version 2.0.7
 ------------------------------------------------
 
+ * Fixed encryption problem if duplicate certificates are in the
+   keybox.
+
+ * Made it work on Windows Vista.
+
 
 Noteworthy changes in version 2.0.6 (2007-08-16)
 ------------------------------------------------

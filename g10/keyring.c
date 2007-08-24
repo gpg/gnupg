@@ -206,10 +206,10 @@ keyring_register_filename (const char *fname, int secret, void **ptr)
 
     for (kr=kr_names; kr; kr = kr->next)
       {
-        if ( !compare_filenames (kr->fname, fname) )
+        if (same_file_p (kr->fname, fname))
 	  {
             *ptr=kr;
-	    return 0; /* already registered */
+	    return 0; /* Already registered.  */
 	  }
       }
 
