@@ -143,7 +143,7 @@ ownertrust  		\"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
 packet			Paket
 packet type		Pakettyp
 parse 			-zerlegen
-passphrase		Mantra
+passphrase		Passphrase  -# Mantra
 permission [file]       Zugriffsrechte
 Photo-ID                Foto-ID
 policy			Richtlinie

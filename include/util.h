@@ -143,6 +143,7 @@ char * make_basename(const char *filepath, const char *inputpath);
 char * make_dirname(const char *filepath);
 char *make_filename( const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
+int same_file_p (const char *name1, const char *name2);
 const char *print_fname_stdin( const char *s );
 const char *print_fname_stdout( const char *s );
 int is_file_compressed(const char *s, int *r_status);

@@ -1,3 +1,8 @@
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	* keyring.c (keyring_register_filename): Use same_file_p.
+	Suggested by Kurt Fitzner.
+
 2007-07-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main): Fix typo.  Noted by John Clizbe.

@@ -1,3 +1,7 @@
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	* util.h (same_file_p): Add prototype.
+
 2007-06-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h (CIPHER_ALGO_CAMELLIA): Add Camellia define.

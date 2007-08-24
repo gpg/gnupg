@@ -1,3 +1,9 @@
+2007-08-24  Werner Koch  <wk@g10code.com>
+
+	* fileutil.c (same_file_p): New.  Taken from SVN trunk.
+	(compare_filenames) [HAVE_DRIVE_LETTERS]: Take drive letters and
+	backslashes in account.
+
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* strgutil.c (ascii_toupper, ascii_tolower, ascii_strcasecmp,
