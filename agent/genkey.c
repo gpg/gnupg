@@ -27,6 +27,8 @@
 
 #include "agent.h"
 #include "i18n.h"
+#include "exechelp.h"
+#include "sysutils.h"
 
 static int
 store_key (gcry_sexp_t private, const char *passphrase, int force)
@@ -70,6 +72,100 @@ store_key (gcry_sexp_t private, const char *passphrase, int force)
 }
 
 
+/* Count the number of non-alpha characters in S.  Control characters
+   and non-ascii characters are not considered.  */
+static size_t
+nonalpha_count (const char *s)
+{
+  size_t n;
+
+  for (n=0; *s; s++)
+    if (isascii (*s) && ( isdigit (*s) || ispunct (*s) ))
+      n++;
+
+  return n;
+}
+
+
+/* Check PW against a list of pattern.  Return 0 if PW does not match
+   these pattern.  */
+static int
+check_passphrase_pattern (ctrl_t ctrl, const char *pw)
+{
+  gpg_error_t err = 0;
+  const char *pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CHECK_PATTERN);
+  FILE *infp;
+  const char *argv[10];
+  pid_t pid;
+  int result, i;
+
+  infp = gnupg_tmpfile ();
+  if (!infp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      return 1; /* Error - assume password should not be used.  */
+    }
+
+  if (fwrite (pw, strlen (pw), 1, infp) != 1)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error writing to temporary file: %s\n"),
+                 strerror (errno));
+      fclose (infp);
+      return 1; /* Error - assume password should not be used.  */
+    }
+  rewind (infp);
+
+  i = 0;
+  argv[i++] = "--null";
+  argv[i++] = "--",
+  argv[i++] = opt.check_passphrase_pattern,
+  argv[i] = NULL;
+  assert (i < sizeof argv);
+
+  if (gnupg_spawn_process_fd (pgmname, argv, fileno (infp), -1, -1, &pid))
+    result = 1; /* Execute error - assume password should no be used.  */
+  else if (gnupg_wait_process (pgmname, pid))
+    result = 1; /* Helper returned an error - probably a match.  */
+  else
+    result = 0; /* Success; i.e. no match.  */
+
+  /* Overwrite our temporary file. */
+  rewind (infp);
+  for (i=((strlen (pw)+99)/100)*100; i > 0; i--)
+    putc ('\xff', infp);
+  fflush (infp);
+  fclose (infp);
+  return result;
+}
+
+
+static int 
+take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
+{
+  gpg_error_t err;
+
+  if (opt.enforce_passphrase_constraints)
+    {
+      err = agent_show_message (ctrl, desc, _("Enter new passphrase"));
+      if (!err)
+        err = gpg_error (GPG_ERR_CANCELED);
+    }
+  else
+    err = agent_get_confirmation (ctrl, desc,
+                                  anyway_btn, _("Enter new passphrase"));
+  return err;
+}
+
+
+static int 
+take_this_one_anyway (ctrl_t ctrl, const char *desc)
+{
+  return take_this_one_anyway2 (ctrl, desc, _("Take this one anyway"));
+}
+
+
 /* Check whether the passphrase PW is suitable. Returns 0 if the
    passphrase is suitable and true if it is not and the user should be
    asked to provide a different one. */
@@ -78,7 +174,8 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
 {
   gpg_error_t err;
   unsigned int minlen = opt.min_passphrase_len;
-  
+  unsigned int minnonalpha = opt.min_passphrase_nonalpha;
+
   if (!pw)
     pw = "";
 
@@ -93,25 +190,60 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
                     "be at least %u characters long.", minlen), minlen );
       if (!desc)
         return gpg_error_from_syserror ();
-      
-      err = agent_get_confirmation (ctrl, desc,
-                                    _("Take this one anyway"),
-                                    _("Enter new passphrase"));
+      err = take_this_one_anyway (ctrl, desc);
       xfree (desc);
       if (err)
         return err;
     }
 
+  if (nonalpha_count (pw) < minnonalpha ) 
+    {
+      char *desc = xtryasprintf 
+        ( ngettext ("Warning:  You have entered a passphrase that%%0A"
+                    "is obviously not secure.  A passphrase should%%0A"
+                    "contain at least %u digit or special character.", 
+                    "Warning:  You have entered a passphrase that%%0A"
+                    "is obviously not secure.  A passphrase should%%0A"
+                    "contain at least %u digits or special characters.",
+                    minnonalpha), minnonalpha );
+      if (!desc)
+        return gpg_error_from_syserror ();
+      err = take_this_one_anyway (ctrl, desc);
+      xfree (desc);
+      if (err)
+        return err;
+    }
+
+  /* If configured check the passphrase against a list of know words
+     and pattern.  The actual test is done by an external program.
+     The warning message is generic to give the user no hint on how to
+     circumvent this list.  */
+  if (*pw && opt.check_passphrase_pattern &&
+      check_passphrase_pattern (ctrl, pw))
+    {
+      const char *desc =
+        /* */     _("Warning:  You have entered a passphrase that%0A"
+                    "is obviously not secure.  A passphrase may not%0A"
+                    "be a known term or match certain pattern.");
+
+      err = take_this_one_anyway (ctrl, desc);
+      if (err)
+        return err;
+    }
+
+  /* The final check is to warn about an empty passphrase. */
   if (!*pw)
     {
-      const char *desc = _("You have not entered a passphrase - "
-                           "this is in general a bad idea!%0A"
-                           "Please confirm that you do not want to "
-                           "have any protection on your key.");
+      const char *desc = (opt.enforce_passphrase_constraints?
+                          _("You have not entered a passphrase!%0A"
+                            "An empty passphrase is not allowed.") :
+                          _("You have not entered a passphrase - "
+                            "this is in general a bad idea!%0A"
+                            "Please confirm that you do not want to "
+                            "have any protection on your key."));
       
-      err = agent_get_confirmation (ctrl, desc,
-                                    _("Yes, protection is not needed"),
-                                    _("Enter new passphrase"));
+      err = take_this_one_anyway2 (ctrl, desc,
+                                   _("Yes, protection is not needed"));
       if (err)
         return err;
     }

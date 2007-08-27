@@ -91,9 +91,9 @@ if test "$1" = "--build-w32"; then
 	     --with-libgcrypt-prefix=${w32root} \
 	     --with-libassuan-prefix=${w32root} \
 	     --with-zlib=${w32root} \
+	     --with-regex=${w32root} \
              --with-pth-prefix=${w32root} \
-             --without-included-gettext \
-             --disable-regex "$@"
+             --without-included-gettext "$@"
     rc=$?
     exit $rc
 fi

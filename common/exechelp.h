@@ -28,16 +28,31 @@
    arguments for the process are expected in the NULL terminated array
    ARGV.  The program name itself should not be included there.  if
    PREEXEC is not NULL, that function will be called right before the
-   exec.  Returns 0 on success or an error code. */
+   exec.  Calling gnupg_wait_process is required.  Returns 0 on
+   success or an error code. */
 gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
                                  FILE *infile, FILE *outfile,
                                  void (*preexec)(void),
                                  FILE **statusfile, pid_t *pid);
 
+
+/* Simplified version of gnupg_spawn_process.  This function forks and
+   then execs PGMNAME, while connecting INFD to stdin, OUTFD to stdout
+   and ERRFD to stderr (any of them may be -1 to connect them to
+   /dev/null).  The arguments for the process are expected in the NULL
+   terminated array ARGV.  The program name itself should not be
+   included there.  Calling gnupg_wait_process is required.  Returns 0
+   on success or an error code. */
+gpg_error_t gnupg_spawn_process_fd (const char *pgmname, 
+                                    const char *argv[],
+                                    int infd, int outfd, int errfd,
+                                    pid_t *pid);
+
+
 /* Wait for the process identified by PID to terminate. PGMNAME should
-   be the same as suplieed to the spawn fucntion and is only used for
-   diagnostics. Returns 0 if the process succeded, GPG_ERR_GENERAL for
-   any failures of the spawned program or other error codes.*/
+   be the same as supplied to the spawn fucntion and is only used for
+   diagnostics.  Returns 0 if the process succeded, GPG_ERR_GENERAL
+   for any failures of the spawned program or other error codes.*/
 gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid);
 
 

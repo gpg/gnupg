@@ -88,7 +88,10 @@ enum cmd_and_opt_values
   oDefCacheTTLSSH,
   oMaxCacheTTL,
   oMaxCacheTTLSSH,
+  oEnforcePassphraseConstraints,
   oMinPassphraseLen,
+  oMinPassphraseNonalpha,
+  oCheckPassphrasePattern,
   oUseStandardSocket,
   oNoUseStandardSocket,
 
@@ -149,7 +152,12 @@ static ARGPARSE_OPTS opts[] = {
   { oDefCacheTTLSSH, "default-cache-ttl-ssh", 4, "@" },
   { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
   { oMaxCacheTTLSSH, "max-cache-ttl-ssh", 4, "@" },
+
+  { oEnforcePassphraseConstraints, "enforce-passphrase-constraints", 0, "@"},
   { oMinPassphraseLen, "min-passphrase-len", 4, "@" },
+  { oMinPassphraseNonalpha, "min-passphrase-nonalpha", 4, "@" },
+  { oCheckPassphrasePattern, "check-passphrase-pattern", 2, "@" },
+
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
@@ -168,6 +176,7 @@ static ARGPARSE_OPTS opts[] = {
 #define MAX_CACHE_TTL         (120*60) /* 2 hours */
 #define MAX_CACHE_TTL_SSH     (120*60) /* 2 hours */
 #define MIN_PASSPHRASE_LEN    (8)      
+#define MIN_PASSPHRASE_NONALPHA (1)      
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
    longer period as the SetWaitableTimer seems to signal earlier than
@@ -362,7 +371,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
       opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.max_cache_ttl_ssh = MAX_CACHE_TTL_SSH;
+      opt.enforce_passphrase_constraints = 0;
       opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
+      opt.min_passphrase_nonalpha = MIN_PASSPHRASE_NONALPHA;
+      opt.check_passphrase_pattern = NULL;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       opt.disable_scdaemon = 0;
@@ -402,7 +414,16 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
     case oMaxCacheTTLSSH: opt.max_cache_ttl_ssh = pargs->r.ret_ulong; break;
       
+    case oEnforcePassphraseConstraints: 
+      opt.enforce_passphrase_constraints=1;
+      break;
     case oMinPassphraseLen: opt.min_passphrase_len = pargs->r.ret_ulong; break;
+    case oMinPassphraseNonalpha: 
+      opt.min_passphrase_nonalpha = pargs->r.ret_ulong;
+      break;
+    case oCheckPassphrasePattern:
+      opt.check_passphrase_pattern = pargs->r.ret_str;
+      break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
@@ -723,8 +744,15 @@ main (int argc, char **argv )
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL );
       printf ("max-cache-ttl-ssh:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL_SSH );
+      printf ("enforce-passphrase-constraints:%lu:\n", 
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("min-passphrase-len:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MIN_PASSPHRASE_LEN );
+      printf ("min-passphrase-nonalpha:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
+              MIN_PASSPHRASE_NONALPHA);
+      printf ("check-passphrase-pattern:%lu:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
       printf ("no-grab:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("ignore-cache-for-signing:%lu:\n",

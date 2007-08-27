@@ -505,13 +505,29 @@ static gc_option_t gc_options_gpg_agent[] =
    { "allow-mark-trusted", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_ADVANCED, "gnupg", "allow clients to mark keys as \"trusted\"",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
-   { "min-passphrase-len", GC_OPT_FLAG_RUNTIME,
-     GC_LEVEL_EXPERT, "gnupg", 
-     N_("|N|set minimal required length for new passphrases to N"),
-     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
    { "no-grab", GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
      "gnupg", "do not grab keyboard and mouse",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+
+   { "Passphrase policy",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     "gnupg", N_("Options enforcing a passphrase policy") },
+   { "enforce-passphrases-constraints", GC_OPT_FLAG_RUNTIME, 
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("do not allow to bypass the passphrase policy"),
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "min-passphrase-len", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_ADVANCED, "gnupg", 
+     N_("|N|set minimal required length for new passphrases to N"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "min-passphrase-nonalpha", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("|N|require at least N non-alpha characters for a new passphrase"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "check-passphrase-pattern", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT,
+     "gnupg", N_("|FILE|check new passphrases against pattern in FILE"),
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
 
    GC_OPTION_NULL
  };
@@ -915,9 +931,7 @@ static struct
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
-#ifndef HAVE_W32_SYSTEM
     { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr }
-#endif
   };
 
 

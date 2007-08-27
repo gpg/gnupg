@@ -339,7 +339,7 @@ make_filename( const char *first_part, ... )
 
 
 /* Compare whether the filenames are identical.  This is a
-   specialversion of strcmp() taking the semantics of filenames in
+   special version of strcmp() taking the semantics of filenames in
    account.  Note that this function works only on the supplied names
    without considereing any context like the current directory.  See
    also same_file_p(). */

@@ -185,6 +185,7 @@ const char *dirmngr_socket_name (void);
 #define GNUPG_MODULE_NAME_SCDAEMON     3 
 #define GNUPG_MODULE_NAME_DIRMNGR      4
 #define GNUPG_MODULE_NAME_PROTECT_TOOL 5
+#define GNUPG_MODULE_NAME_CHECK_PATTERN 6
 const char *gnupg_module_name (int which);
 
 

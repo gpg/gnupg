@@ -1,3 +1,7 @@
+2007-08-27  Werner Koch  <wk@g10code.com>
+
+	* trustdb.c (USE_INTERNAL_REGEX): Remove support.
+
 2007-08-24  Werner Koch  <wk@g10code.com>
 
 	* keyring.c (keyring_register_filename): Use same_file_p().

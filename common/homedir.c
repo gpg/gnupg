@@ -369,6 +369,9 @@ gnupg_module_name (int which)
       X(libexecdir, "gpg-protect-tool");
 #endif
 
+    case GNUPG_MODULE_NAME_CHECK_PATTERN:
+      X(libexecdir, "gpg-check-pattern");
+
     default: 
       BUG ();
     }

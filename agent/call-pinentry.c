@@ -213,7 +213,9 @@ start_pinentry (ctrl_t ctrl)
 #endif
   if (fflush (NULL))
     {
+#ifndef HAVE_W32_SYSTEM
       gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+#endif
       log_error ("error flushing pending output: %s\n", strerror (errno));
       /* At least Windows XP fails here with EBADF.  According to docs
          and Wine an fflush(NULL) is the same as _flushall.  However
@@ -476,6 +478,7 @@ agent_askpin (ctrl_t ctrl,
     {
       memset (&parm, 0, sizeof parm);
       parm.size = pininfo->max_length;
+      *pininfo->pin = 0; /* Reset the PIN. */
       parm.buffer = (unsigned char*)pininfo->pin;
 
       if (errtext)
@@ -664,6 +667,55 @@ agent_get_confirmation (ctrl_t ctrl,
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
+  return unlock_pinentry (rc);
+}
+
+
+
+/* Pop up the PINentry, display the text DESC and a button with the
+   text OK_BTN (which may be NULL to use the default of "OK") and waut
+   for the user to hit this button.  The return value is not
+   relevant.  */
+int 
+agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_pinentry (ctrl);
+  if (rc)
+    return rc;
+
+  if (desc)
+    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+  else
+    snprintf (line, DIM(line)-1, "RESET");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  /* Most pinentries out in the wild return the old Assuan error code
+     for canceled which gets translated to an assuan Cancel error and
+     not to the code for a user cancel.  Fix this here. */
+  if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
+  if (rc)
+    return unlock_pinentry (rc);
+
+  if (ok_btn)
+    {
+      snprintf (line, DIM(line)-1, "SETOK %s", ok_btn);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL,
+                            NULL, NULL, NULL);
+      if (rc)
+        return unlock_pinentry (rc);
+    }
+  
+  rc = assuan_transact (entry_ctx, "CONFIRM --one-button", NULL, NULL, NULL,
+                        NULL, NULL, NULL);
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 

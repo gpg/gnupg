@@ -455,13 +455,40 @@ agent_listtrusted (void *assuan_context)
 }
 
 
+/* Create a copy of string with colons inserted after each two bytes.
+   Caller needs to release the string.  In case of a memory failure,
+   NULL is returned.  */
+static char *
+insert_colons (const char *string)
+{
+  char *buffer, *p;
+  size_t n = strlen (string);
+
+  p = buffer = xtrymalloc ( n + (n+2)/3 + 1 );
+  if (!buffer)
+    return NULL;
+  while (*string)
+    {
+      *p++ = *string++;
+      if (*string)
+        {
+          *p++ = *string++;
+          if (*string)
+            *p++ = ':';
+        }
+    }
+  *p = 0;
+
+  return buffer;
+}
+
+
 /* Insert the given fpr into our trustdb.  We expect FPR to be an all
    uppercase hexstring of 40 characters. FLAG is either 'P' or 'C'.
-   This function does first check whether that key has alreay been put
+   This function does first check whether that key has already been put
    into the trustdb and returns success in this case.  Before a FPR
-   actually gets inserted, the user is asked by means of the pin-entry
-   whether this is actual wants he want to do.
-*/
+   actually gets inserted, the user is asked by means of the Pinentry
+   whether this is actual wants he want to do.  */
 gpg_error_t
 agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
@@ -469,6 +496,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   char *desc;
   char *fname;
   FILE *fp;
+  char *fprformatted;
+
 
   /* Check whether we are at all allowed to modify the trustlist.
      This is useful so that the trustlist may be a symlink to a global
@@ -494,6 +523,9 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* Insert a new one. */
+  fprformatted = insert_colons (fpr);
+  if (!fprformatted)
+    return out_of_core ();
   if (asprintf (&desc,
                 /* TRANSLATORS: This prompt is shown by the Pinentry
                    and has one special property: A "%%0A" is used by
@@ -503,12 +535,15 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                    plain % sign, you need to encode it as "%%25".  The
                    second "%s" gets replaced by a hexdecimal
                    fingerprint string whereas the first one receives
-                   the name as store in the certificate. */
+                   the name as stored in the certificate. */
                 _("Please verify that the certificate identified as:%%0A"
                   "  \"%s\"%%0A"
                   "has the fingerprint:%%0A"
-                  "  %s"), name, fpr) < 0 )
-    return out_of_core ();
+                  "  %s"), name, fprformatted) < 0 )
+    {
+      xfree (fprformatted);
+      return out_of_core ();
+    }
 
   /* TRANSLATORS: "Correct" is the label of a button and intended to
      be hit if the fingerprint matches the one of the CA.  The other
@@ -519,8 +554,11 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      gpgsm may stop asking further questions.  We won't do this for
      the second question of course. */
   if (err)
-    return (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED ? 
-            gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED) : err);
+    {
+      xfree (fprformatted);
+      return (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED ? 
+              gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED) : err);
+    }
 
 
 
@@ -537,12 +575,18 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                   "  \"%s\"%%0A"
                   "to correctly certify user certificates?"),
                 name) < 0 )
-    return out_of_core ();
+    {
+      xfree (fprformatted);
+      return out_of_core ();
+    }
 
   err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
   free (desc);
   if (err)
-    return err;
+    {
+      xfree (fprformatted);
+      return err;
+    }
 
   /* Now check again to avoid duplicates.  We take the lock to make
      sure that nobody else plays with our file.  Frankly we don't work
@@ -552,6 +596,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (!agent_istrusted (ctrl, fpr))
     {
       unlock_trusttable ();
+      xfree (fprformatted);
       return 0; 
     }
 
@@ -566,6 +611,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
           log_error ("can't create `%s': %s\n", fname, gpg_strerror (err));
           xfree (fname);
           unlock_trusttable ();
+          xfree (fprformatted);
           return err;
         }
       fputs (headerblurb, fp);
@@ -578,13 +624,14 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       log_error ("can't open `%s': %s\n", fname, gpg_strerror (err));
       xfree (fname);
       unlock_trusttable ();
+      xfree (fprformatted);
       return err;
     }
 
   /* Append the key. */
   fputs ("\n# ", fp);
   print_sanitized_string (fp, name, 0);
-  fprintf (fp, "\n%s %c\n", fpr, flag);
+  fprintf (fp, "\n%s %c\n", fprformatted, flag);
   if (ferror (fp))
     err = gpg_error_from_syserror ();
   
@@ -595,6 +642,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     agent_reload_trustlist ();
   xfree (fname);
   unlock_trusttable ();
+  xfree (fprformatted);
   return err;
 }
 

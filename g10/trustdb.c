@@ -26,11 +26,7 @@
 
 #ifndef DISABLE_REGEX
 #include <sys/types.h>
-#ifdef USE_INTERNAL_REGEX
-#include "_regex.h"
-#else
 #include <regex.h>
-#endif
 #endif /* !DISABLE_REGEX */
 
 #include "gpg.h"

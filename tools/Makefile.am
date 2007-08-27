@@ -46,6 +46,10 @@ if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
 endif
 
+if !DISABLE_REGEX
+libexec_PROGRAMS = gpg-check-pattern
+endif
+
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 
 common_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
@@ -85,6 +89,13 @@ gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpgkey2ssh_LDADD = $(common_libs) \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
+
+if !DISABLE_REGEX
+gpg_check_pattern_SOURCES = gpg-check-pattern.c
+gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+                          $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
+endif
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

@@ -1,0 +1,48 @@
+# pwpattern.list                                   -*- default-generic -*-
+#
+# This is an example for a pattern file as used by gpg-check-pattern.
+# The file is line based with comment lines beginning on the *first*
+# position with a '#'.  Empty lines and lines with just spaces are
+# ignored.  The other lines may be verbatim patterns and match as they
+# are (trailing spaces are ignored) or extended regular expressions
+# indicated by a / in the first column and terminated by another / or
+# end of line.  All comparisons are case insensitive.
+ 
+# Reject the usual metavariables.  Usual not required because
+# gpg-agent can be used to reject all passphrases shorter than 8
+# charactes.
+foo
+bar
+baz
+
+# As well as very common passwords.  Note that gpg-agent can be used
+# to reject them due to missing non-alpha characters.
+password
+passwort
+passphrase
+mantra
+test
+abc
+egal
+
+# German number plates.
+/^[A-Z]{1,3}[ ]*-[ ]*[A-Z]{1,2}[ ]*[0-9]+/
+
+# Dates (very limited, only ISO dates). */
+/^[012][0-9][0-9][0-9]-[012][0-9]-[0123][0-9]$/
+
+# Arbitrary strings
+the quick brown fox jumps over the lazy dogs back
+no-password
+no password
+
+12345678
+123456789
+1234567890
+87654321
+987654321
+0987654321
+qwertyuiop
+qwertzuiop
+asdfghjkl
+zxcvbnm

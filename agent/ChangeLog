@@ -1,3 +1,22 @@
+2007-08-27  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Add options --min-passphrase-nonalpha,
+	--check-passphrase-pattern and --enforce-passphrase-constraints.
+	(MIN_PASSPHRASE_NONALPHA): Init nonalpha option to 1.
+	(main): Declare options for gpgconf.
+	* agent.h (struct): Add members MIN_PASSPHRASE_NONALPHA,
+	ENFORCE_PASSPHRASE_CONSTRAINTS and CHECK_PASSPHRASE_PATTERN.
+	* genkey.c (nonalpha_charcount): New.
+	(check_passphrase_pattern): New.
+	(check_passphrase_constraints): Implement.  Factor some code out...
+	(take_this_one_anyway, take_this_one_anyway2): .. New.
+
+	* call-pinentry.c (agent_show_message): New.
+	(agent_askpin): We better reset the pin buffer before asking.
+
+	* trustlist.c (insert_colons): New.
+	(agent_marktrusted): Pretty print the fpr.
+
 2007-08-22  Werner Koch  <wk@g10code.com>
 
 	* findkey.c (O_BINARY): Make sure it is defined.

@@ -1,3 +1,7 @@
+2007-08-27  Werner Koch  <wk@g10code.com>
+
+	* examples/pwpattern.list: New.
+
 2007-08-24  Werner Koch  <wk@g10code.com>
 
 	* debugging.texi (Common Problems): Add "A root certifciate does

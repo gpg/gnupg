@@ -334,10 +334,37 @@ Set the maximum time a cache entry used for SSH keys is valid to @var{n}
 seconds.  After this time a cache entry will get expired even if it has
 been accessed recently.  The default are 2 hours (7200 seconds).
 
+@item --enforce-passphrase-constraints
+@opindex enforce-passphrase-constraints
+Enforce the passphrase constraints by not allowing the user to bypass
+them using the ``Take it anyway'' button.
+
 @item --min-passphrase-len @var{n}
 @opindex min-passphrase-len
 Set the minimal length of a passphrase.  When entering a new passphrase
 shorter than this value a warning will be displayed.  Defaults to 8.
+
+@item --min-passphrase-nonalpha @var{n}
+@opindex min-passphrase-nonalpha
+Set the minimal number of digits or special characters required in a
+passphrase.  When entering a new passphrase with less than this number
+of digits or special characters a warning will be displayed.  Defaults
+to 1.
+
+@item --check-passphrase-pattern @var{file}
+@opindex check-passphrase-pattern
+Check the passphrase against the pattern given in @var{file}.  When
+entering a new passphrase matching one of these pattern a warning will
+be displayed. @var{file} should be an absolute filename.  The default is
+not to use any pattern file. 
+
+Security note: It is known that checking a passphrase against a list of
+pattern or even against a complete dictionary is not very effective to
+enforce good passphrases.  Users will soon figure up ways to bypass such
+a policy.  A better policy is to educate users on good security
+behavior and optional to run a passphrase cracker regularly on all
+users passphrases t catch the very simple ones.
+
 
 @item --pinentry-program @var{filename}
 @opindex pinentry-program

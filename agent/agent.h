@@ -80,8 +80,15 @@ struct
   unsigned long max_cache_ttl;     /* Default. */
   unsigned long max_cache_ttl_ssh; /* for SSH. */
 
+  /* Flag disallowin bypassing of the warning.  */
+  int enforce_passphrase_constraints;
   /* The require minmum length of a passphrase. */
   unsigned int min_passphrase_len;
+  /* The minimum number of non-alpha characters in a passphrase.  */
+  unsigned int min_passphrase_nonalpha;
+  /* File name with a patternfile or NULL if not enabled.  */
+  const char *check_passphrase_pattern;
+
 
   int running_detached; /* We are running detached from the tty. */
 
@@ -227,6 +234,7 @@ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *errtext);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *cancel);
+int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
 int agent_popup_message_start (ctrl_t ctrl,
                                const char *desc, const char *ok_btn);
 void agent_popup_message_stop (ctrl_t ctrl);

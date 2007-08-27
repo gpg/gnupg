@@ -1025,7 +1025,6 @@ GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
 #
 # Sanity check regex.  Tests adapted from mutt.
-# FIXME: We should use the the regex from gnulib
 #
 AC_MSG_CHECKING([whether regular expression support is requested])
 AC_ARG_ENABLE(regex,
@@ -1035,20 +1034,28 @@ AC_ARG_ENABLE(regex,
 AC_MSG_RESULT($use_regex)
 
 if test "$use_regex" = yes ; then
-  AC_MSG_CHECKING([whether the included regex lib is requested])
-  AC_ARG_WITH(included-regex,
-      [  --with-included-regex   use the included GNU regex library],
-      [gnupg_cv_included_regex="$withval"],[gnupg_cv_included_regex=no])
-  AC_MSG_RESULT($gnupg_cv_included_regex)
+  _cppflags="${CPPFLAGS}"
+  _ldflags="${LDFLAGS}"
+  AC_ARG_WITH(regex,
+     AC_HELP_STRING([--with-regex=DIR],[look for regex in DIR]),
+      [
+      if test -d "$withval" ; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+      fi
+      ],withval="")     
 
-  if test $gnupg_cv_included_regex = no ; then
-     # Does the system have regex functions at all?
-     AC_CHECK_FUNC(regcomp,gnupg_cv_included_regex=no,
-			   gnupg_cv_included_regex=yes)
-  fi
+  # Does the system have regex functions at all?
+  AC_SEARCH_LIBS([regcomp], [regex])
+  AC_CHECK_FUNC(regcomp, gnupg_cv_have_regex=yes, gnupg_cv_have_regex=no)
 
-  if test $gnupg_cv_included_regex = no ; then
-     AC_CACHE_CHECK([whether your system's regexp library is broken],
+  if test $gnupg_cv_have_regex = no; then
+    use_regex=no
+  else
+    if test x"$cross_compiling" = xyes; then
+      AC_MSG_WARN([cross compiling; assuming regexp libray is not broken])
+    else
+      AC_CACHE_CHECK([whether your system's regexp library is broken],
        [gnupg_cv_regex_broken],
        AC_TRY_RUN([
 #include <unistd.h>
@@ -1056,20 +1063,20 @@ if test "$use_regex" = yes ; then
 main() { regex_t blah ; regmatch_t p; p.rm_eo = p.rm_eo; return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec (&blah, "foobar", 0, NULL, 0); }],
        gnupg_cv_regex_broken=no, gnupg_cv_regex_broken=yes, gnupg_cv_regex_broken=yes))
 
-     if test $gnupg_cv_regex_broken = yes ; then
-      AC_MSG_WARN(your regex is broken - using the included GNU regex instead.)
-      gnupg_cv_included_regex=yes
-     fi
+      if test $gnupg_cv_regex_broken = yes; then
+        AC_MSG_WARN([your regex is broken - disabling regex use])
+        use_regex=no
+      fi
+    fi
   fi
-
-  if test $gnupg_cv_included_regex = yes; then
-     AC_DEFINE(USE_INTERNAL_REGEX,1,[ Define if you want to use the included regex lib ])
-  fi
-else
-  AC_DEFINE(DISABLE_REGEX,1,[ Define to disable regular expression support ])
+  CPPFLAGS="${_cppflags}"
+  LDFLAGS="${_ldflags}"
 fi
 
-AM_CONDITIONAL(USE_INTERNAL_REGEX, test x"$gnupg_cv_included_regex" = xyes)
+if test "$use_regex" != yes ; then
+  AC_DEFINE(DISABLE_REGEX,1, [Define to disable regular expression support])
+fi
+AM_CONDITIONAL(DISABLE_REGEX, test x"$use_regex" != xyes)
 
 
 
@@ -1397,6 +1404,12 @@ echo "
         Default scdaemon:  $show_gnupg_scdaemon_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
-        PKITS based tests: $run_pkits_tests
+        PKITS based tests: $run_pkits_tests"
+if test x"$use_regex" != xyes ; then
+echo "
+        Warning: No regular expression support available.
+                 OpenPGP trust signatures won't work.
+                 gpg-check-pattern will not be build.
 "
+fi
 

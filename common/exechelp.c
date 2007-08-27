@@ -1,5 +1,5 @@
 /* exechelp.c - fork and exec helpers
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -191,6 +191,23 @@ create_inheritable_pipe (int filedes[2])
 #endif /*HAVE_W32_SYSTEM*/
 
 
+#ifdef HAVE_W32_SYSTEM
+static HANDLE
+w32_open_null (int for_write)
+{
+  HANDLE hfile;
+
+  hfile = CreateFile ("nul",
+                      for_write? GENERIC_WRITE : GENERIC_READ,
+                      FILE_SHARE_READ | FILE_SHARE_WRITE,
+                      NULL, OPEN_EXISTING, 0, NULL);
+  if (hfile == INVALID_HANDLE_VALUE)
+    log_debug ("can't open `nul': %s\n", w32_strerror (-1));
+  return hfile;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 #ifndef HAVE_W32_SYSTEM
 /* The exec core used right after the fork. This will never return. */
 static void
@@ -257,9 +274,9 @@ do_exec (const char *pgmname, const char *argv[],
    stdin, write the output to OUTFILE, return a new stream in
    STATUSFILE for stderr and the pid of the process in PID. The
    arguments for the process are expected in the NULL terminated array
-   ARGV.  The program name itself should not be included there.  if
+   ARGV.  The program name itself should not be included there.  If
    PREEXEC is not NULL, that function will be called right before the
-   exec.
+   exec.  Calling gnupg_wait_process is required.
 
    Returns 0 on success or an error code. */
 gpg_error_t
@@ -439,6 +456,119 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 }
 
 
+
+/* Simplified version of gnupg_spawn_process.  This function forks and
+   then execs PGMNAME, while connecting INFD to stdin, OUTFD to stdout
+   and ERRFD to stderr (any of them may be -1 to connect them to
+   /dev/null).  The arguments for the process are expected in the NULL
+   terminated array ARGV.  The program name itself should not be
+   included there.  Calling gnupg_wait_process is required.
+
+   Returns 0 on success or an error code. */
+gpg_error_t
+gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
+                        int infd, int outfd, int errfd, pid_t *pid)
+{
+#ifdef HAVE_W32_SYSTEM
+  gpg_error_t err;
+  SECURITY_ATTRIBUTES sec_attr;
+  PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
+  STARTUPINFO si;
+  char *cmdline;
+  int i;
+  HANDLE stdhd[3];
+
+  /* Setup return values.  */
+  *pid = (pid_t)(-1);
+
+  /* Prepare security attributes.  */
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+  
+  /* Build the command line.  */
+  err = build_w32_commandline (pgmname, argv, &cmdline);
+  if (err)
+    return err; 
+
+  memset (&si, 0, sizeof si);
+  si.cb = sizeof (si);
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
+  stdhd[0] = infd  == -1? w32_open_null (0) : INVALID_HANDLE_VALUE;
+  stdhd[1] = outfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
+  stdhd[2] = errfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
+  si.hStdInput  = infd  == -1? stdhd[0] : (void*)_get_osfhandle (infd);
+  si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd);
+  si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd);
+
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  if (!CreateProcess (pgmname,       /* Program to start.  */
+                      cmdline,       /* Command line arguments.  */
+                      &sec_attr,     /* Process security attributes.  */
+                      &sec_attr,     /* Thread security attributes.  */
+                      TRUE,          /* Inherit handles.  */
+                      (CREATE_DEFAULT_ERROR_MODE
+                       | GetPriorityClass (GetCurrentProcess ())
+                       | CREATE_SUSPENDED),
+                      NULL,          /* Environment.  */
+                      NULL,          /* Use current drive/directory.  */
+                      &si,           /* Startup information. */
+                      &pi            /* Returns process information.  */
+                      ))
+    {
+      log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
+      err = gpg_error (GPG_ERR_GENERAL);
+    }
+  else
+    err = 0;
+  xfree (cmdline);
+  for (i=0; i < 3; i++)
+    if (stdhd[i] != INVALID_HANDLE_VALUE)
+      CloseHandle (stdhd[i]);
+  if (err)
+    return err;
+
+  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+
+  /* Process has been created suspended; resume it now. */
+  ResumeThread (pi.hThread);
+  CloseHandle (pi.hThread); 
+
+  *pid = handle_to_pid (pi.hProcess);
+  return 0;
+
+#else /* !HAVE_W32_SYSTEM */
+  gpg_error_t err;
+
+#ifdef USE_GNU_PTH      
+  *pid = pth_fork? pth_fork () : fork ();
+#else
+  *pid = fork ();
+#endif
+  if (*pid == (pid_t)(-1))
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error forking process: %s\n"), strerror (errno));
+      return err;
+    }
+
+  if (!*pid)
+    { 
+      gcry_control (GCRYCTL_TERM_SECMEM);
+      /* Run child. */
+      do_exec (pgmname, argv, infd, outfd, errfd, NULL);
+      /*NOTREACHED*/
+    }
+
+  return 0;
+#endif /* !HAVE_W32_SYSTEM */
+}
+
+
 /* Wait for the process identified by PID to terminate. PGMNAME should
    be the same as suplieed to the spawn fucntion and is only used for
    diagnostics. Returns 0 if the process succeded, GPG_ERR_GENERAL for
@@ -483,6 +613,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
           }
         else
           ec = 0;
+        CloseHandle (proc);
         break;
 
       default:

@@ -1,3 +1,12 @@
+2007-08-27  Werner Koch  <wk@g10code.com>
+
+	* util.h (GNUPG_MODULE_NAME_CHECK_PATTERN): New.
+	* homedir.c (gnupg_module_name): Add it.
+	* exechelp.c (w32_fd_or_null) [W32]: New.
+	(gnupg_spawn_process_fd): New.
+	(gnupg_wait_process) [W32]: Close the handle after if the process has
+	returned.
+
 2007-08-22  Werner Koch  <wk@g10code.com>
 
 	Updated estream from libestream.
