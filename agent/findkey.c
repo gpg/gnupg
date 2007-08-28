@@ -1,5 +1,6 @@
-/* findkey.c - locate the secret key
- * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* findkey.c - Locate the secret key
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,15 +32,20 @@
 #include <pth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
+#include "i18n.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
 
 /* Helper to pass data to the check callback of the unprotect function. */
-struct try_unprotect_arg_s {
+struct try_unprotect_arg_s 
+{
+  ctrl_t ctrl;
   const unsigned char *protected_key;
   unsigned char *unprotected_key;
+  int change_required; /* Set by the callback to indicate that the
+                          user should chnage the passphrase.  */
 };
 
 
@@ -132,10 +138,71 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 {
   struct try_unprotect_arg_s *arg = pi->check_cb_arg;
   size_t dummy;
+  gpg_error_t err;
+  gnupg_isotime_t now, protected_at, tmptime;
+  char *desc = NULL;
 
   assert (!arg->unprotected_key);
-  return agent_unprotect (arg->protected_key, pi->pin,
-                          &arg->unprotected_key, &dummy);
+
+  arg->change_required = 0;
+  err = agent_unprotect (arg->protected_key, pi->pin, protected_at,
+                         &arg->unprotected_key, &dummy);
+  if (err)
+    return err;
+  if (!opt.max_passphrase_days || arg->ctrl->in_passwd)
+    return 0;  /* No regular passphrase change required.  */
+
+  if (!*protected_at)
+    {
+      /* No protection date known - must force passphrase change.  */
+      desc = xtrystrdup (_("Note: This passphrase has never been changed.%0A"
+                           "Please change it now."));
+      if (!desc)
+        return gpg_error_from_syserror ();
+    }
+  else
+    {
+      gnupg_get_isotime (now);
+      gnupg_copy_time (tmptime, protected_at);
+      err = add_days_to_isotime (tmptime, opt.max_passphrase_days);
+      if (err)
+        return err;
+      if (strcmp (now, tmptime) > 0 )
+        {
+          /* Passphrase "expired".  */
+          desc = xtryasprintf 
+            (_("This passphrase has not been changed%%0A"
+               "since %.4s-%.2s-%.2s.  Please change it now."),
+             protected_at, protected_at+4, protected_at+6);
+          if (!desc)
+            return gpg_error_from_syserror ();
+        }
+    }
+
+  if (desc)
+    {
+      /* Change required.  */
+      if (opt.enforce_passphrase_constraints)
+        {
+          err = agent_get_confirmation (arg->ctrl, desc,
+                                        _("Change passphrase"), NULL);
+          if (!err)
+            arg->change_required = 1;
+        }
+      else
+        {
+          err = agent_get_confirmation (arg->ctrl, desc,
+                                        _("Change passphrase"),
+                                        _("I'll change it later"));
+          if (!err)
+            arg->change_required = 1;
+          else if (gpg_err_code (err) == GPG_ERR_CANCELED)
+            err = 0;
+        }
+      xfree (desc);
+    }
+
+  return 0;
 }
 
 
@@ -260,7 +327,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
       pw = agent_get_cache (hexgrip, cache_mode, &cache_marker);
       if (pw)
         {
-          rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
+          rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
           agent_unlock_cache_entry (&cache_marker);
           if (!rc)
             {
@@ -272,7 +339,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
         }
 
       /* If the pinentry is currently in use, we wait up to 60 seconds
-         for it close and check the cache again.  This solves a common
+         for it to close and check the cache again.  This solves a common
          situation where several requests for unprotecting a key have
          been made but the user is still entering the passphrase for
          the first request.  Because all requests to agent_askpin are
@@ -294,7 +361,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
           /* Timeout - better call pinentry now the plain way. */
         }
     }
-  
+
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   if (!pi)
     return gpg_error_from_syserror ();
@@ -303,14 +370,46 @@ unprotect (ctrl_t ctrl, const char *desc_text,
   pi->max_digits = 8;
   pi->max_tries = 3;
   pi->check_cb = try_unprotect_cb;
+  arg.ctrl = ctrl;
   arg.protected_key = *keybuf;
   arg.unprotected_key = NULL;
+  arg.change_required = 0;
   pi->check_cb_arg = &arg;
 
   rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi);
   if (!rc)
     {
       assert (arg.unprotected_key);
+      if (arg.change_required)
+        {
+          size_t canlen, erroff;
+          gcry_sexp_t s_skey;
+          
+          assert (arg.unprotected_key);
+          canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
+          rc = gcry_sexp_sscan (&s_skey, &erroff,
+                                (char*)arg.unprotected_key, canlen);
+          if (rc)
+            {
+              log_error ("failed to build S-Exp (off=%u): %s\n",
+                         (unsigned int)erroff, gpg_strerror (rc));
+              wipememory (arg.unprotected_key, canlen);
+              xfree (arg.unprotected_key);
+              xfree (pi);
+              return rc;
+            }
+          rc = agent_protect_and_store (ctrl, s_skey);
+          gcry_sexp_release (s_skey);
+          if (rc)
+            {
+              log_error ("changing the passphrase failed: %s\n", 
+                         gpg_strerror (rc));
+              wipememory (arg.unprotected_key, canlen);
+              xfree (arg.unprotected_key);
+              xfree (pi);
+              return rc;
+            }
+        }
       agent_put_cache (hexgrip, cache_mode, pi->pin, 0);
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;

@@ -1,3 +1,11 @@
+2007-08-28  Werner Koch  <wk@g10code.com>
+
+	* gettime.c (check_isotime, add_isotime): New.  Orginally written
+	for DirMngr by me.
+	(add_days_to_isotime): New.
+	(date2jd, jd2date, days_per_month, days_per_year): New. Taken from
+	my ancient (1988) code used in Wedit (time2.c).
+
 2007-08-27  Werner Koch  <wk@g10code.com>
 
 	* util.h (GNUPG_MODULE_NAME_CHECK_PATTERN): New.

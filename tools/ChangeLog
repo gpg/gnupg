@@ -1,3 +1,8 @@
+2007-08-28  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <gpg-agent>: Add options --max-passphrase-days
+	and --enable-passphrase-history.
+
 2007-08-27  Werner Koch  <wk@g10code.com>
 
 	* gpg-check-pattern.c: New

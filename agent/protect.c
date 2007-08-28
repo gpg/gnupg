@@ -163,7 +163,7 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
      ((<parameter_list>)(4:hash4:sha120:<hashvalue>)) + padding
 
      We always append a full block of random bytes as padding but
-     encrypt only what is needed for a full blocksize */
+     encrypt only what is needed for a full blocksize.  */
   blklen = gcry_cipher_get_algo_blklen (PROT_CIPHER);
   outlen = 2 + protlen + 2 + 6 + 6 + 23 + 2 + blklen;
   enclen = outlen/blklen * blklen;
@@ -229,21 +229,13 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
        encrypted_octet_string)
        
      in canoncical format of course.  We use asprintf and %n modifier
-     and spaces as palceholders.  */
-  asprintf (&p,
-            "(9:protected%d:%s((4:sha18:%n_8bytes_2:96)%d:%n%*s)%d:%n%*s)",
-            (int)strlen (modestr), modestr,
-            &saltpos, 
-            blklen, &ivpos, blklen, "",
-            enclen, &encpos, enclen, "");
-  if (p)
-    { /* asprintf does not use our malloc system */
-      char *psave = p;
-      p = xtrymalloc (strlen (psave)+1);
-      if (p)
-        strcpy (p, psave);
-      free (psave);
-    }
+     and dummy values as placeholders.  */
+  p = xtryasprintf
+    ("(9:protected%d:%s((4:sha18:%n_8bytes_2:96)%d:%n%*s)%d:%n%*s)",
+     (int)strlen (modestr), modestr,
+     &saltpos, 
+     blklen, &ivpos, blklen, "",
+     enclen, &encpos, enclen, "");
   if (!p)
     {
       gpg_error_t tmperr = out_of_core ();
@@ -276,11 +268,19 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   size_t n;
   int c, infidx, i;
   unsigned char hashvalue[20];
+  char timestamp_exp[35];
   unsigned char *protected;
   size_t protectedlen;
   int depth = 0;
   unsigned char *p;
+  gcry_md_hd_t md;
 
+  /* Create an S-expression with the procted-at timestamp.  */
+  memcpy (timestamp_exp, "(12:protected-at15:", 19);
+  gnupg_get_isotime (timestamp_exp+19);
+  timestamp_exp[19+15] = ')';
+
+  /* Parse original key.  */
   s = plainkey;
   if (*s != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
@@ -345,8 +345,18 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   assert (!depth);
   real_end = s-1;
 
-  gcry_md_hash_buffer (GCRY_MD_SHA1, hashvalue,
-                       hash_begin, hash_end - hash_begin + 1);
+  
+  /* Hash the stuff.  Because the timestamp_exp won't get protected,
+     we can't simply hash a continuous buffer but need to use several
+     md_writes.  */ 
+  rc = gcry_md_open (&md, GCRY_MD_SHA1, 0 );
+  if (rc)
+    return rc;
+  gcry_md_write (md, hash_begin, hash_end - hash_begin);
+  gcry_md_write (md, timestamp_exp, 35);
+  gcry_md_write (md, ")", 1);
+  memcpy (hashvalue, gcry_md_read (md, GCRY_MD_SHA1), 20);
+  gcry_md_close (md);
 
   rc = do_encryption (prot_begin, prot_end - prot_begin + 1,
                       passphrase,  hashvalue,
@@ -356,10 +366,12 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
   /* Now create the protected version of the key.  Note that the 10
      extra bytes are for for the inserted "protected-" string (the
-     beginning of the plaintext reads: "((11:private-key(" ). */
+     beginning of the plaintext reads: "((11:private-key(" ).  The 35
+     term is the space for (12:protected-at15:<timestamp>).  */
   *resultlen = (10
                 + (prot_begin-plainkey)
                 + protectedlen
+                + 35
                 + (real_end-prot_end));
   *result = p = xtrymalloc (*resultlen);
   if (!p)
@@ -374,10 +386,15 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   p += prot_begin - plainkey - 4;
   memcpy (p, protected, protectedlen);
   p += protectedlen;
+
+  memcpy (p, timestamp_exp, 35);
+  p += 35;
+
   memcpy (p, prot_end+1, real_end - prot_end);
   p += real_end - prot_end;
   assert ( p - *result == *resultlen);
   xfree (protected);
+
   return 0;
 }
 
@@ -457,13 +474,16 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
 /* Merge the parameter list contained in CLEARTEXT with the original
    protect lists PROTECTEDKEY by replacing the list at REPLACEPOS.
    Return the new list in RESULT and the MIC value in the 20 byte
-   buffer SHA1HASH. */
+   buffer SHA1HASH.  CUTOFF and CUTLEN will receive the offset and the
+   length of the resulting list which should go into the MIC
+   calculation but then be removed.  */
 static int
 merge_lists (const unsigned char *protectedkey,
              size_t replacepos, 
              const unsigned char *cleartext,
              unsigned char *sha1hash,
-             unsigned char **result, size_t *resultlen)
+             unsigned char **result, size_t *resultlen,
+             size_t *cutoff, size_t *cutlen)
 {
   size_t n, newlistlen;
   unsigned char *newlist, *p;
@@ -473,6 +493,8 @@ merge_lists (const unsigned char *protectedkey,
   
   *result = NULL;
   *resultlen = 0;
+  *cutoff = 0;
+  *cutlen = 0;
 
   if (replacepos < 26)
     return gpg_error (GPG_ERR_BUG);
@@ -522,7 +544,7 @@ merge_lists (const unsigned char *protectedkey,
     goto invalid_sexp;
   endpos = s;
   s++;
-  /* short intermezzo: Get the MIC */
+  /* Intermezzo: Get the MIC */
   if (*s != '(')
     goto invalid_sexp;
   s++;
@@ -539,13 +561,13 @@ merge_lists (const unsigned char *protectedkey,
   s += n;
   if (*s != ')')
     goto invalid_sexp;
-  /* end intermezzo */
+  /* End intermezzo */
 
   /* append the parameter list */
   memcpy (p, startpos, endpos - startpos);
   p += endpos - startpos;
   
-  /* skip overt the protected list element in the original list */
+  /* Skip over the protected list element in the original list.  */
   s = protectedkey + replacepos;
   assert (*s == '(');
   s++;
@@ -553,6 +575,22 @@ merge_lists (const unsigned char *protectedkey,
   rc = sskip (&s, &i);
   if (rc)
     goto failure;
+  /* Record the position of the optional protected-at expression.  */
+  if (*s == '(')
+    {
+      const unsigned char *save_s = s;
+      s++;
+      n = snext (&s);
+      if (smatch (&s, n, "protected-at"))
+        {
+          i = 1;
+          rc = sskip (&s, &i);
+          if (rc)
+            goto failure;
+          *cutlen = s - save_s;
+        }
+      s = save_s;
+    }
   startpos = s;
   i = 2; /* we are inside this level */
   rc = sskip (&s, &i);
@@ -561,9 +599,12 @@ merge_lists (const unsigned char *protectedkey,
   assert (s[-1] == ')');
   endpos = s; /* one behind the end of the list */
 
-  /* append the rest */
+  /* Append the rest. */
+  if (*cutlen)
+    *cutoff = p - newlist;
   memcpy (p, startpos, endpos - startpos);
   p += endpos - startpos;
+  
 
   /* ready */
   *result = newlist;
@@ -584,13 +625,16 @@ merge_lists (const unsigned char *protectedkey,
 
 
 /* Unprotect the key encoded in canonical format.  We assume a valid
-   S-Exp here. */
+   S-Exp here.  If a protected-at item is available, its value will
+   be stored at protocted_at unless this is NULL.  */
 int 
 agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
+                 gnupg_isotime_t protected_at, 
                  unsigned char **result, size_t *resultlen)
 {
   int rc;
   const unsigned char *s;
+  const unsigned char *protect_list; 
   size_t n;
   int infidx, i;
   unsigned char sha1hash[20], sha1hash2[20];
@@ -601,6 +645,10 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   unsigned char *cleartext;
   unsigned char *final;
   size_t finallen;
+  size_t cutoff, cutlen;
+
+  if (protected_at)
+    *protected_at = 0;
 
   s = protectedkey;
   if (*s != '(')
@@ -624,12 +672,44 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
 
+
+  /* See wether we have a protected-at timestamp.  */
+  protect_list = s;  /* Save for later.  */
+  if (protected_at)
+    {
+      while (*s == '(')
+        {
+          prot_begin = s;
+          s++;
+          n = snext (&s);
+          if (!n)
+            return gpg_error (GPG_ERR_INV_SEXP);
+          if (smatch (&s, n, "protected-at"))
+            {
+              n = snext (&s);
+              if (!n)
+                return gpg_error (GPG_ERR_INV_SEXP);
+              if (n != 15)
+                return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+              memcpy (protected_at, s, 15);
+              protected_at[15] = 0;
+              break;
+            }
+          s += n;
+          i = 1;
+          rc = sskip (&s, &i);
+          if (rc)
+            return rc;
+        }
+    }
+
   /* Now find the list with the protected information.  Here is an
      example for such a list:
      (protected openpgp-s2k3-sha1-aes-cbc 
         ((sha1 <salt> <count>) <Initialization_Vector>)
         <encrypted_data>)
    */
+  s = protect_list;
   for (;;)
     {
       if (*s != '(')
@@ -700,7 +780,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
     return rc;
 
   rc = merge_lists (protectedkey, prot_begin-protectedkey, cleartext,
-                    sha1hash, &final, &finallen);
+                    sha1hash, &final, &finallen, &cutoff, &cutlen);
   /* Albeit cleartext has been allocated in secure memory and thus
      xfree will wipe it out, we do an extra wipe just in case
      somethings goes badly wrong. */
@@ -717,6 +797,13 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
       wipememory (final, finallen);
       xfree (final);
       return rc;
+    }
+  /* Now remove tha part which is included in the MIC but should not
+     go into the final thing.  */
+  if (cutlen)
+    {
+      memmove (final+cutoff, final+cutoff+cutlen, finallen-cutoff-cutlen);
+      finallen -= cutlen;
     }
 
   *result = final;

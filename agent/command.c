@@ -1039,6 +1039,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   if (rc)
     goto leave;
 
+  ctrl->in_passwd++;
   rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
                             grip, &shadow_info, CACHE_MODE_IGNORE, &s_skey);
   if (rc)
@@ -1050,6 +1051,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
     }
   else
     rc = agent_protect_and_store (ctrl, s_skey);
+  ctrl->in_passwd--;
 
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;

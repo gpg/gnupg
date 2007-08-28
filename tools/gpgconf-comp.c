@@ -528,6 +528,14 @@ static gc_option_t gc_options_gpg_agent[] =
      GC_LEVEL_EXPERT,
      "gnupg", N_("|FILE|check new passphrases against pattern in FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+   { "max-passphrase-days", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("|N|expire the passphrase after N days"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "enable-passphrases-history", GC_OPT_FLAG_RUNTIME, 
+     GC_LEVEL_EXPERT, "gnupg", 
+     N_("do not allow the reuse of old passphrases"),
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
 
    GC_OPTION_NULL
  };

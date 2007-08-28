@@ -88,7 +88,12 @@ struct
   unsigned int min_passphrase_nonalpha;
   /* File name with a patternfile or NULL if not enabled.  */
   const char *check_passphrase_pattern;
-
+  /* If not 0 the user is asked to change his passphrase after these
+     number of days.  */
+  unsigned int max_passphrase_days;
+  /* If set, a passphrase history will be written and checked at each
+     passphrase change.  */
+  int enable_passhrase_history;
 
   int running_detached; /* We are running detached from the tty. */
 
@@ -153,6 +158,8 @@ struct server_control_s
 
   int use_auth_call; /* Hack to send the PKAUTH command instead of the
                         PKSIGN command to the scdaemon.  */
+  int in_passwd;     /* Hack to inhibit enforced passphrase change
+                        during an explicit passwd command.  */
 };
 
 
@@ -182,7 +189,7 @@ enum
 /* Values for the cache_mode arguments. */
 typedef enum 
   {
-    CACHE_MODE_IGNORE = 0, /* Special mode to by pass the cache. */
+    CACHE_MODE_IGNORE = 0, /* Special mode to bypass the cache. */
     CACHE_MODE_ANY,        /* Any mode except ignore matches. */
     CACHE_MODE_NORMAL,     /* Normal cache (gpg-agent). */
     CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
@@ -271,6 +278,7 @@ int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen);
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
+                     gnupg_isotime_t protected_at, 
                      unsigned char **result, size_t *resultlen);
 int agent_private_key_type (const unsigned char *privatekey);
 unsigned char *make_shadow_info (const char *serialno, const char *idstring);

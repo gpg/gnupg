@@ -1,4 +1,4 @@
-/* pksign.c - Generate a keypair
+/* genkey.c - Generate a keypair
  *	Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

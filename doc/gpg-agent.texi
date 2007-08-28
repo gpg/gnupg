@@ -365,6 +365,15 @@ a policy.  A better policy is to educate users on good security
 behavior and optional to run a passphrase cracker regularly on all
 users passphrases t catch the very simple ones.
 
+@item --max-passphrase-days @var{n}
+@opindex max-passphrase-days 
+Ask the user to change the passphrase if @var{n} days have passed since
+the last change.  With @option{--enforce-passphrase-constraints} set the
+user may not bypass this check.
+
+@item --enable-passphrase-history
+@opindex enable-passphrase-history
+This option does nothing yet.
 
 @item --pinentry-program @var{filename}
 @opindex pinentry-program

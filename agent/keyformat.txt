@@ -69,6 +69,7 @@ A protected key is like this:
     (n #00e0ce9..[some bytes not shown]..51#)
     (e #010001#)
     (protected mode (parms) encrypted_octet_string)
+    (protected-at <isotimestamp>)
    )
    (uri http://foo.bar x-foo:whatever_you_want)
    (comment whatever)
@@ -79,7 +80,8 @@ In this scheme the encrypted_octet_string is encrypted according to
 the algorithm described after the keyword protected; most protection
 algorithms need some parameters, which are given in a list before the
 encrypted_octet_string.  The result of the decryption process is a
-list of the secret key parameters.
+list of the secret key parameters.  The protected-at expression is
+optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").
 
 The only available protection mode for now is
 
@@ -110,12 +112,13 @@ representation) after decryption:
 )
 
 For padding reasons, random bytes are appended to this list - they can
-easily be stripped by looking for the end of the list.
+easily be stripped by looking for the end of the list. 
 
 The hash is calculated on the concatenation of the public key and
 secret key parameter lists: i.e it is required to hash the
 concatenation of these 6 canonical encoded lists for RSA, including
-the parenthesis and the algorithm keyword.
+the parenthesis, the algorithm keyword and (if used) the protected-at
+list.
 
 (rsa
  (n #00e0ce9..[some bytes not shown]..51#)
@@ -124,6 +127,7 @@ the parenthesis and the algorithm keyword.
  (p #00e861b..[some bytes not shown]..f1#)
  (q #00f7a7c..[some bytes not shown]..61#)
  (u #304559a..[some bytes not shown]..9b#)
+ (protected-at "18950523T000000")
 )
 
 After decryption the hash must be recalculated and compared against

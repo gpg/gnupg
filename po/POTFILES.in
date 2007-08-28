@@ -8,6 +8,7 @@ agent/gpg-agent.c
 agent/preset-passphrase.c
 agent/protect-tool.c
 agent/trustlist.c
+agent/findkey.c
 
 common/exechelp.c
 common/http.c

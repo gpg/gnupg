@@ -366,12 +366,14 @@ read_and_unprotect (const char *fname)
   unsigned char *result;
   size_t resultlen;
   char *pw;
-  
+  gnupg_isotime_t protected_at;
+
   key = read_key (fname);
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), &result, &resultlen);
+  rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), 
+                        protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -381,7 +383,12 @@ read_and_unprotect (const char *fname)
       log_error ("unprotecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
-  
+  if (opt.verbose)
+    log_info ("key protection done at %.4s-%.2s-%.2s %.2s:%.2s:%s\n",
+              protected_at, protected_at+4, protected_at+6,
+              protected_at+9, protected_at+11, protected_at+13);
+
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -883,7 +890,8 @@ export_p12_file (const char *fname)
       unsigned char *tmpkey;
       size_t tmplen;
 
-      rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), &tmpkey, &tmplen);
+      rc = agent_unprotect (key, (pw=get_passphrase (1, 0)),
+                            NULL, &tmpkey, &tmplen);
       release_passphrase (pw);
       if (rc)
         {

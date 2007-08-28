@@ -7,8 +7,9 @@ Noteworthy changes in version 2.0.7
  * Made it work on Windows Vista.  Note that the entire Windows port
    is still considered Beta.
 
- * Add new options min-passphrase-nonalpha, check-passphrase-pattern
-   and enforce-passphrase-constraints to gpg-agent.
+ * Add new options min-passphrase-nonalpha, check-passphrase-pattern,
+   enforce-passphrase-constraints and max-passphrase-days to
+   gpg-agent.
 
 
 Noteworthy changes in version 2.0.6 (2007-08-16)

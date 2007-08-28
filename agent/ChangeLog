@@ -1,3 +1,21 @@
+2007-08-28  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Add option --faked-system-time.
+
+	* protect-tool.c (read_and_unprotect): Print the protected-at date.
+
+	* agent.h (struct server_control_s): Add member IN_PASSWD.
+	* command.c (cmd_passwd): Set it.
+	* findkey.c (try_unprotect_cb): Use it.
+
+	* protect.c (do_encryption): Replace asprintf by xtryasprint.
+	(agent_protect): Create the protected-at item.
+	(agent_unprotect): Add optional arg PROTECTED_AT.
+	(merge_lists): Add args CUTOFF and CUTLEN.
+	(agent_unprotect): Use them.
+	* findkey.c (try_unprotect_cb): Add code to test for expired keys.
+	(unprotect): Allow changing the passphrase.
+
 2007-08-27  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: Add options --min-passphrase-nonalpha,

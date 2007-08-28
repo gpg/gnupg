@@ -92,8 +92,11 @@ enum cmd_and_opt_values
   oMinPassphraseLen,
   oMinPassphraseNonalpha,
   oCheckPassphrasePattern,
+  oMaxPassphraseDays,
+  oEnablePassphraseHistory,
   oUseStandardSocket,
   oNoUseStandardSocket,
+  oFakedSystemTime,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
@@ -137,6 +140,7 @@ static ARGPARSE_OPTS opts[] = {
   { oScdaemonProgram, "scdaemon-program", 2 ,
                                N_("|PGM|use PGM as the SCdaemon program") },
   { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
+  { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
 
   { oDisplay,    "display",     2, "@" },
   { oTTYname,    "ttyname",     2, "@" },
@@ -157,6 +161,8 @@ static ARGPARSE_OPTS opts[] = {
   { oMinPassphraseLen, "min-passphrase-len", 4, "@" },
   { oMinPassphraseNonalpha, "min-passphrase-nonalpha", 4, "@" },
   { oCheckPassphrasePattern, "check-passphrase-pattern", 2, "@" },
+  { oMaxPassphraseDays, "max-passphrase-days", 4, "@" },
+  { oEnablePassphraseHistory, "enable-passphrase-history", 0, "@" },
 
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
@@ -177,6 +183,7 @@ static ARGPARSE_OPTS opts[] = {
 #define MAX_CACHE_TTL_SSH     (120*60) /* 2 hours */
 #define MIN_PASSPHRASE_LEN    (8)      
 #define MIN_PASSPHRASE_NONALPHA (1)      
+#define MAX_PASSPHRASE_DAYS   (0)
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
    longer period as the SetWaitableTimer seems to signal earlier than
@@ -375,6 +382,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.min_passphrase_len = MIN_PASSPHRASE_LEN;
       opt.min_passphrase_nonalpha = MIN_PASSPHRASE_NONALPHA;
       opt.check_passphrase_pattern = NULL;
+      opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
+      opt.enable_passhrase_history = 0;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       opt.disable_scdaemon = 0;
@@ -423,6 +432,12 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
     case oCheckPassphrasePattern:
       opt.check_passphrase_pattern = pargs->r.ret_str;
+      break;
+    case oMaxPassphraseDays:
+      opt.max_passphrase_days = pargs->r.ret_ulong; 
+      break;
+    case oEnablePassphraseHistory:
+      opt.enable_passhrase_history = 1;
       break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
@@ -646,6 +661,15 @@ main (int argc, char **argv )
         case oUseStandardSocket: standard_socket = 1; break;
         case oNoUseStandardSocket: standard_socket = 0; break;
 
+        case oFakedSystemTime:
+          {
+            time_t faked_time = isotime2epoch (pargs.r.ret_str); 
+            if (faked_time == (time_t)(-1))
+              faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
+            gnupg_set_time (faked_time, 0);
+          }
+          break;
+
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
@@ -753,6 +777,11 @@ main (int argc, char **argv )
               MIN_PASSPHRASE_NONALPHA);
       printf ("check-passphrase-pattern:%lu:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
+      printf ("max-passphrase-days:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
+              MAX_PASSPHRASE_DAYS);
+      printf ("enable-passphrase-history:%lu:\n", 
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("no-grab:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("ignore-cache-for-signing:%lu:\n",
