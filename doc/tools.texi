@@ -461,13 +461,15 @@ of the program.
 The command argument @code{--check-programs} lists all available
 programs, one per line.  The format of each line is:
 
-@code{@var{name}:@var{description}:@var{program name}:@var{available}:@var{config okay}:}
+@code{@var{name}:@var{description}:@var{pgmname}:@var{avail}:@var{okay}:@var{cfgfile}:@var{line}:@var{error}:}
 
 @table @var
 @item name
 This field contains a name tag of the program which is identical to the
 name of the component.  The name tag is to be used @emph{verbatim}.  It
-is thus not in any escaped format.
+is thus not in any escaped format.  This field may be empty to indicate
+a continuation of error descriptions for the last name.  The description
+and pgmname fields are then also empty.
 
 @item description
 The @emph{string} in this field contains a human-readable description
@@ -475,18 +477,33 @@ of the component.  It can be displayed to the user of the GUI for
 informational purposes.  It is @emph{percent-escaped} and
 @emph{localized}.
 
-@item program name
+@item pgmname
 The @emph{string} in this field contains the absolute name of the
 program's file.  It can be used to unambiguously invoke that program.
 It is @emph{percent-escaped}.
 
-@item available
+@item avail
 The @emph{boolean value} in this field indicates whether the program is
 installed and runnable.
 
-@item config okay
+@item okay
 The @emph{boolean value} in this field indicates whether the program's
 config file is syntactically okay.
+
+@item cfgfile
+If an error occured in the configuraion file (as indicated by a false
+value in the field @code{okay}), this field has the name of the failing
+configuration file.  It is @emph{percent-escaped}.
+
+@item line
+If an error occured in the configuration file, this field has the line
+number of the failing statement in the configuration file.  
+It is an @emph{unsigned number}.
+
+@item error
+If an error occured in the configuration file, this field has the error
+text of the failing statement in the configuration file.  It is
+@emph{percent-escaped} and @emph{localized}.
 
 @end table
 

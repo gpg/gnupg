@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-28 19:28+0200\n"
-"PO-Revision-Date: 2007-08-28 19:41+0200\n"
+"POT-Creation-Date: 2007-08-29 18:43+0200\n"
+"PO-Revision-Date: 2007-08-29 18:51+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -204,21 +204,32 @@ msgid ""
 msgid_plural ""
 "Warning:  You have entered a passphrase that%%0Ais obviously not secure.  A "
 "passphrase should%%0Acontain at least %u digits or special characters."
-msgstr[0] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder eine Ziffer enthalten."
-msgstr[1] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0A mindestens %u Sonderzeichen oder Ziffern enthalten."
+msgstr[0] ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
+"Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder eine Ziffer "
+"enthalten."
+msgstr[1] ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
+"Eine Passphrase sollte%%0A mindestens %u Sonderzeichen oder Ziffern "
+"enthalten."
 
 #: agent/genkey.c:225
 #, c-format
 msgid ""
 "Warning:  You have entered a passphrase that%0Ais obviously not secure.  A "
 "passphrase may not%0Abe a known term or match certain pattern."
-msgstr "WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben.  Eine Passphrase sollte kein%0Abekanntes Wort sein oder nach bekannten Regeln aufgebaut sein."
+msgstr ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben.  "
+"Eine Passphrase sollte kein%0Abekanntes Wort sein oder nach bekannten Regeln "
+"aufgebaut sein."
 
 #: agent/genkey.c:238
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
-msgstr "Sie haben keine Passphrase eingegeben!%0AEine leere Passphrase ist nicht erlaubt."
+msgstr ""
+"Sie haben keine Passphrase eingegeben!%0AEine leere Passphrase ist nicht "
+"erlaubt."
 
 #: agent/genkey.c:240
 #, c-format
@@ -271,7 +282,7 @@ msgstr "Im Daemon Modus ausführen"
 
 #: agent/gpg-agent.c:122 g10/gpg.c:469 g10/gpgv.c:70 kbx/kbxutil.c:88
 #: scd/scdaemon.c:110 sm/gpgsm.c:340 tools/gpg-connect-agent.c:58
-#: tools/gpgconf.c:67 tools/symcryptrun.c:164
+#: tools/gpgconf.c:69 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "Detaillierte Informationen"
 
@@ -355,7 +366,7 @@ msgstr "|DATEI|Schreibe die Umgebungsvariabeln auf DATEI"
 
 #: agent/gpg-agent.c:273 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
-#: tools/gpgconf.c:89 tools/symcryptrun.c:204
+#: tools/gpgconf.c:91 tools/symcryptrun.c:204
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
 
@@ -656,7 +667,9 @@ msgstr "Nein"
 #: agent/findkey.c:158
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
-msgstr "Hinweis: Diese Passphrase wurde noch nie geändert/%0ABitte ändern Sie sie jetzt."
+msgstr ""
+"Hinweis: Diese Passphrase wurde noch nie geändert/%0ABitte ändern Sie sie "
+"jetzt."
 
 #: agent/findkey.c:174
 #, c-format
@@ -675,42 +688,42 @@ msgstr "Die Passphrase ändern"
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
 
-#: common/exechelp.c:327 common/exechelp.c:415
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
 
-#: common/exechelp.c:391 common/exechelp.c:448
+#: common/exechelp.c:435 common/exechelp.c:492
 #, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "Pipe kann nicht zum Lesen \"fdopen\"t werden: %s\n"
 
-#: common/exechelp.c:427 common/exechelp.c:555 common/exechelp.c:771
+#: common/exechelp.c:471 common/exechelp.c:599 common/exechelp.c:834
 #, c-format
 msgid "error forking process: %s\n"
 msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
 
-#: common/exechelp.c:596 common/exechelp.c:640
+#: common/exechelp.c:645 common/exechelp.c:698
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
 
-#: common/exechelp.c:604
+#: common/exechelp.c:653
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
 
-#: common/exechelp.c:610 common/exechelp.c:651
+#: common/exechelp.c:659 common/exechelp.c:709
 #, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
 
-#: common/exechelp.c:646
+#: common/exechelp.c:704
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr "Feler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
 
-#: common/exechelp.c:657
+#: common/exechelp.c:717
 #, c-format
 msgid "error running `%s': terminated\n"
 msgstr "Fehler bei Ausführung von `%s': beendet\n"
@@ -1524,7 +1537,7 @@ msgid "key %s: secret key without public key - skipped\n"
 msgstr ""
 "Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
 
-#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:54
+#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:55
 msgid ""
 "@Commands:\n"
 " "
@@ -1657,7 +1670,7 @@ msgid "run in server mode"
 msgstr "Im Server Modus ausführen"
 
 #: g10/gpg.c:432 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:279
-#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:64 tools/symcryptrun.c:157
+#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:66 tools/symcryptrun.c:157
 msgid ""
 "@\n"
 "Options:\n"
@@ -1687,11 +1700,11 @@ msgstr "Kompressionsstufe auf N setzen (0=keine)"
 msgid "use canonical text mode"
 msgstr "Textmodus benutzen"
 
-#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:66
+#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:68
 msgid "use as output file"
 msgstr "Als Ausgabedatei benutzen"
 
-#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:69
+#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:71
 msgid "do not make any changes"
 msgstr "Keine wirklichen Änderungen durchführen"
 
@@ -6553,6 +6566,64 @@ msgstr "Eingabezeile %u ist zu lang oder es fehlt ein LF\n"
 msgid "can't open fd %d: %s\n"
 msgstr "fd=%d kann nicht geöffnet werden: %s\n"
 
+#: jnlib/argparse.c:176
+msgid "argument not expected"
+msgstr "Argument nicht erwartet"
+
+#: jnlib/argparse.c:178
+msgid "read error"
+msgstr "Lesefehler"
+
+#: jnlib/argparse.c:180
+msgid "keyword too long"
+msgstr "Schlüsselwort ist zu lang"
+
+#: jnlib/argparse.c:182
+msgid "missing argument"
+msgstr "Fehlendes Argument"
+
+#: jnlib/argparse.c:184
+msgid "invalid command"
+msgstr "Ungültige Befehl"
+
+#: jnlib/argparse.c:186
+msgid "invalid alias definition"
+msgstr "Ungültige Alias-Definition"
+
+#: jnlib/argparse.c:188
+msgid "invalid option"
+msgstr "Ungültige Option"
+
+#: jnlib/argparse.c:196
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "Fehlendes Argument für Option \"%.50s\"\n"
+
+#: jnlib/argparse.c:198
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "Option \"%.50s\" erwartet kein Argument\n"
+
+#: jnlib/argparse.c:201
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Ungültiger Befehl \"%.50s\"\n"
+
+#: jnlib/argparse.c:203
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "Option \"%.50s\" ist mehrdeutig\n"
+
+#: jnlib/argparse.c:205
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
+
+#: jnlib/argparse.c:207
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "Ungültige Option \"%.50s\"\n"
+
 #: jnlib/logging.c:624
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
@@ -7414,7 +7485,7 @@ msgstr "Als öffentlichen Schlüsselbund mitbenutzen"
 msgid "add this secret keyring to the list"
 msgstr "Als geheimen Schlüsselbund mitbenutzen"
 
-#: sm/gpgsm.c:358 tools/gpgconf-comp.c:635 tools/gpgconf-comp.c:697
+#: sm/gpgsm.c:358 tools/gpgconf-comp.c:647 tools/gpgconf-comp.c:709
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
 
@@ -7649,7 +7720,7 @@ msgstr "                alias"
 msgid "This is a qualified signature\n"
 msgstr "Dies ist eine qualifizierte Unterschrift.\n"
 
-#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:68 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:70 tools/symcryptrun.c:165
 msgid "quiet"
 msgstr "Weniger Ausgaben"
 
@@ -7693,7 +7764,7 @@ msgstr "Option \"%s\" erfordert ein Programm und evtl. Argumente\n"
 #: tools/gpg-connect-agent.c:323
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
-msgstr "Optuin \"%s\" wird wegen \"%s\" nicht beachtet\n"
+msgstr "Option \"%s\" wird wegen \"%s\" nicht beachtet\n"
 
 #: tools/gpg-connect-agent.c:381
 msgid "line too long - skipped\n"
@@ -7728,147 +7799,151 @@ msgstr "Fehler beim Senden des %s-Befehls: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "Fehler beim Senden der Standardoptionen: %s\n"
 
-#: tools/gpgconf-comp.c:449 tools/gpgconf-comp.c:553 tools/gpgconf-comp.c:620
-#: tools/gpgconf-comp.c:682 tools/gpgconf-comp.c:763
+#: tools/gpgconf-comp.c:461 tools/gpgconf-comp.c:565 tools/gpgconf-comp.c:632
+#: tools/gpgconf-comp.c:694 tools/gpgconf-comp.c:775
 msgid "Options controlling the diagnostic output"
 msgstr "Optionen zur Einstellung Diagnoseausgaben"
 
-#: tools/gpgconf-comp.c:462 tools/gpgconf-comp.c:566 tools/gpgconf-comp.c:633
-#: tools/gpgconf-comp.c:695 tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:474 tools/gpgconf-comp.c:578 tools/gpgconf-comp.c:645
+#: tools/gpgconf-comp.c:707 tools/gpgconf-comp.c:798
 msgid "Options controlling the configuration"
 msgstr "Optionen zur Einstellung der Konfiguration"
 
-#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:591 tools/gpgconf-comp.c:646
-#: tools/gpgconf-comp.c:714 tools/gpgconf-comp.c:793
+#: tools/gpgconf-comp.c:484 tools/gpgconf-comp.c:603 tools/gpgconf-comp.c:658
+#: tools/gpgconf-comp.c:726 tools/gpgconf-comp.c:805
 msgid "Options useful for debugging"
 msgstr "Nützliche Optionen zum Debuggen"
 
-#: tools/gpgconf-comp.c:477 tools/gpgconf-comp.c:596 tools/gpgconf-comp.c:651
-#: tools/gpgconf-comp.c:719 tools/gpgconf-comp.c:801
+#: tools/gpgconf-comp.c:489 tools/gpgconf-comp.c:608 tools/gpgconf-comp.c:663
+#: tools/gpgconf-comp.c:731 tools/gpgconf-comp.c:813
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
 
-#: tools/gpgconf-comp.c:485 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:727
+#: tools/gpgconf-comp.c:497 tools/gpgconf-comp.c:613 tools/gpgconf-comp.c:739
 msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
 
-#: tools/gpgconf-comp.c:492
+#: tools/gpgconf-comp.c:504
 msgid "|N|expire SSH keys after N seconds"
 msgstr "|N|lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
 
-#: tools/gpgconf-comp.c:496
+#: tools/gpgconf-comp.c:508
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr "|N|setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
 
-#: tools/gpgconf-comp.c:500
+#: tools/gpgconf-comp.c:512
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
 
-#: tools/gpgconf-comp.c:514
+#: tools/gpgconf-comp.c:526
 msgid "Options enforcing a passphrase policy"
 msgstr "Optionen für eien Passphrase-Policy"
 
-#: tools/gpgconf-comp.c:517
+#: tools/gpgconf-comp.c:529
 msgid "do not allow to bypass the passphrase policy"
 msgstr "Einhaltung der Passphrase-Policy erzwingen"
 
-#: tools/gpgconf-comp.c:521
+#: tools/gpgconf-comp.c:533
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr "|N|setze die kleinste erlaubte Länge von Passphrasen auf N"
 
-#: tools/gpgconf-comp.c:525
+#: tools/gpgconf-comp.c:537
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr "|N|Verlange mindestens N Nicht-Buchstaben für eine neue Passphrase"
 
-#: tools/gpgconf-comp.c:529
+#: tools/gpgconf-comp.c:541
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr "|DATEI|Prüfe neue Passphrases gegen die Regelen in DATEI"
 
-#: tools/gpgconf-comp.c:533
+#: tools/gpgconf-comp.c:545
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|Lasse die Passphrase nach N Tagen verfallen"
 
-#: tools/gpgconf-comp.c:537
+#: tools/gpgconf-comp.c:549
 msgid "do not allow the reuse of old passphrases"
 msgstr "Verbiete die Wiedernutzung alter Passphrases."
 
-#: tools/gpgconf-comp.c:638 tools/gpgconf-comp.c:700
+#: tools/gpgconf-comp.c:650 tools/gpgconf-comp.c:712
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAME|Auf an NAME verschlüsseln"
 
-#: tools/gpgconf-comp.c:659
+#: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr "Konfiguration der Schlüsselserver"
 
-#: tools/gpgconf-comp.c:664
+#: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"
 msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
 
-#: tools/gpgconf-comp.c:709
+#: tools/gpgconf-comp.c:721
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passphrasen"
 
-#: tools/gpgconf-comp.c:732
+#: tools/gpgconf-comp.c:744
 msgid "do not check CRLs for root certificates"
 msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
 
-#: tools/gpgconf-comp.c:776
+#: tools/gpgconf-comp.c:788
 msgid "Options controlling the format of the output"
 msgstr "Optionen zum Einstellen der Ausgabeformate"
 
-#: tools/gpgconf-comp.c:812
+#: tools/gpgconf-comp.c:824
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:834
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration für HTTP Server"
 
-#: tools/gpgconf-comp.c:833
+#: tools/gpgconf-comp.c:845
 msgid "use system's HTTP proxy setting"
 msgstr "Einstellungen des System HTTP-Proxy benutzen"
 
-#: tools/gpgconf-comp.c:838
+#: tools/gpgconf-comp.c:850
 msgid "Configuration of LDAP servers to use"
 msgstr "Konfiguration der zu nutzenden LDAP-Server"
 
-#: tools/gpgconf-comp.c:875
+#: tools/gpgconf-comp.c:887
 msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 
-#: tools/gpgconf-comp.c:2706
+#: tools/gpgconf-comp.c:2955
 msgid "Note that group specifications are ignored\n"
 msgstr "Beachten Sie, daß Gruppenspezifiaktionen ignoriert werden\n"
 
-#: tools/gpgconf.c:56
+#: tools/gpgconf.c:57
 msgid "list all components"
 msgstr "Liste aller Komponenten"
 
-#: tools/gpgconf.c:57
+#: tools/gpgconf.c:58
+msgid "check all programs"
+msgstr "Prüfe alle Programme"
+
+#: tools/gpgconf.c:59
 msgid "|COMPONENT|list options"
 msgstr "|KOMPONENTE|Zeige die Optionen an"
 
-#: tools/gpgconf.c:58
+#: tools/gpgconf.c:60
 msgid "|COMPONENT|change options"
 msgstr "|KOMPONENTE|Ändere die Optionen"
 
-#: tools/gpgconf.c:60
+#: tools/gpgconf.c:62
 msgid "apply global default values"
 msgstr "Wende die gobalen Voreinstellungen an"
 
-#: tools/gpgconf.c:62
+#: tools/gpgconf.c:64
 msgid "check global configuration file"
 msgstr "Prüfe die globale Konfigurationsdatei"
 
-#: tools/gpgconf.c:70
+#: tools/gpgconf.c:72
 msgid "activate changes at runtime, if possible"
 msgstr "Aktiviere Änderungen zur Laufzeit; falls möglich"
 
-#: tools/gpgconf.c:92
+#: tools/gpgconf.c:94
 msgid "Usage: gpgconf [options] (-h for help)"
 msgstr "Aufruf: gpgconf [Optionen] (-h für Hilfe)"
 
-#: tools/gpgconf.c:95
+#: tools/gpgconf.c:97
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
@@ -7876,19 +7951,19 @@ msgstr ""
 "Syntax: gpgconf {Optionen]\n"
 "Verwalte Konfigurationsoptionen für Programme des GnuPG Systems\n"
 
-#: tools/gpgconf.c:168 tools/gpgconf.c:201
+#: tools/gpgconf.c:176 tools/gpgconf.c:209
 msgid "usage: gpgconf [options] "
 msgstr "Aufruf: gpgconf [Optionen] "
 
-#: tools/gpgconf.c:170
+#: tools/gpgconf.c:178
 msgid "Need one component argument"
 msgstr "Benötige ein Komponentenargument"
 
-#: tools/gpgconf.c:179
+#: tools/gpgconf.c:187
 msgid "Component not found"
 msgstr "Komponente nicht gefunden"
 
-#: tools/gpgconf.c:203
+#: tools/gpgconf.c:211
 msgid "No argument allowed"
 msgstr "Argumente sind nicht erlaubt"
 

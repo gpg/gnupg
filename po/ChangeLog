@@ -1,3 +1,7 @@
+2007-08-29  Werner Koch  <wk@g10code.com>
+
+	* de.po: Translated the argparse.c strings.
+
 2007-08-28  Werner Koch  <wk@g10code.com>
 
 	* de.po: Updated.

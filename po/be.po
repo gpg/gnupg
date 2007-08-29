@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-28 19:28+0200\n"
+"POT-Creation-Date: 2007-08-29 18:43+0200\n"
 "PO-Revision-Date: 2003-10-30 16:35+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -270,7 +270,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:122 g10/gpg.c:469 g10/gpgv.c:70 kbx/kbxutil.c:88
 #: scd/scdaemon.c:110 sm/gpgsm.c:340 tools/gpg-connect-agent.c:58
-#: tools/gpgconf.c:67 tools/symcryptrun.c:164
+#: tools/gpgconf.c:69 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "шматслоўнасьць"
 
@@ -356,7 +356,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:273 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
-#: tools/gpgconf.c:89 tools/symcryptrun.c:204
+#: tools/gpgconf.c:91 tools/symcryptrun.c:204
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "Калі ласка, паведамляйце пра памылкі на <gnupg-bugs@gnu.org>.\n"
@@ -664,42 +664,42 @@ msgstr "дрэнны пароль"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:327 common/exechelp.c:415
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-#: common/exechelp.c:391 common/exechelp.c:448
+#: common/exechelp.c:435 common/exechelp.c:492
 #, fuzzy, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "немагчыма адкрыць %s: %s\n"
 
-#: common/exechelp.c:427 common/exechelp.c:555 common/exechelp.c:771
+#: common/exechelp.c:471 common/exechelp.c:599 common/exechelp.c:834
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-#: common/exechelp.c:596 common/exechelp.c:640
+#: common/exechelp.c:645 common/exechelp.c:698
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
-#: common/exechelp.c:604
+#: common/exechelp.c:653
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-#: common/exechelp.c:610 common/exechelp.c:651
+#: common/exechelp.c:659 common/exechelp.c:709
 #, fuzzy, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-#: common/exechelp.c:646
+#: common/exechelp.c:704
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr ""
 
-#: common/exechelp.c:657
+#: common/exechelp.c:717
 #, fuzzy, c-format
 msgid "error running `%s': terminated\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
@@ -1507,7 +1507,7 @@ msgstr "%s: немагчыма стварыць тэчку: %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr ""
 
-#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:54
+#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:55
 msgid ""
 "@Commands:\n"
 " "
@@ -1641,7 +1641,7 @@ msgid "run in server mode"
 msgstr ""
 
 #: g10/gpg.c:432 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:279
-#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:64 tools/symcryptrun.c:157
+#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:66 tools/symcryptrun.c:157
 msgid ""
 "@\n"
 "Options:\n"
@@ -1671,11 +1671,11 @@ msgstr ""
 msgid "use canonical text mode"
 msgstr ""
 
-#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:66
+#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:68
 msgid "use as output file"
 msgstr "выкарыстоўваць у якасьці файла вываду"
 
-#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:69
+#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:71
 msgid "do not make any changes"
 msgstr "не рабіць ніякіх зьменаў"
 
@@ -6184,6 +6184,70 @@ msgstr ""
 msgid "can't open fd %d: %s\n"
 msgstr "немагчыма адкрыць %s: %s\n"
 
+#: jnlib/argparse.c:176
+#, fuzzy
+msgid "argument not expected"
+msgstr "сакрэтны ключ недаступны"
+
+#: jnlib/argparse.c:178
+#, fuzzy
+msgid "read error"
+msgstr "памылка чытаньня файла"
+
+#: jnlib/argparse.c:180
+#, fuzzy
+msgid "keyword too long"
+msgstr "пароль занадта доўгі\n"
+
+#: jnlib/argparse.c:182
+msgid "missing argument"
+msgstr ""
+
+#: jnlib/argparse.c:184
+#, fuzzy
+msgid "invalid command"
+msgstr "несумяшчальныя загады\n"
+
+#: jnlib/argparse.c:186
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "недапушчальныя выбары імпартаваньня\n"
+
+#: jnlib/argparse.c:188
+#, fuzzy
+msgid "invalid option"
+msgstr "недапушчальныя выбары імпартаваньня\n"
+
+#: jnlib/argparse.c:196
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#: jnlib/argparse.c:198
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr ""
+
+#: jnlib/argparse.c:201
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Нерэчаісны загад (паспрабуйце \"help\")\n"
+
+#: jnlib/argparse.c:203
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#: jnlib/argparse.c:205
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#: jnlib/argparse.c:207
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "недапушчальныя выбары імпартаваньня\n"
+
 #: jnlib/logging.c:624
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
@@ -7055,7 +7119,7 @@ msgstr "выдаліць ключы са зьвязку грамадскіх к�
 msgid "add this secret keyring to the list"
 msgstr ""
 
-#: sm/gpgsm.c:358 tools/gpgconf-comp.c:635 tools/gpgconf-comp.c:697
+#: sm/gpgsm.c:358 tools/gpgconf-comp.c:647 tools/gpgconf-comp.c:709
 msgid "|NAME|use NAME as default secret key"
 msgstr "|НАЗВА|     задаць назву дапомнага сакрэтнага ключа"
 
@@ -7288,7 +7352,7 @@ msgstr ""
 msgid "This is a qualified signature\n"
 msgstr "паказаць сьпіс ключоў і подпісаў"
 
-#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:68 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:70 tools/symcryptrun.c:165
 #, fuzzy
 msgid "quiet"
 msgstr "quit [выйсьці]"
@@ -7368,174 +7432,178 @@ msgstr "памылка стварэньня \"%s\": %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-#: tools/gpgconf-comp.c:449 tools/gpgconf-comp.c:553 tools/gpgconf-comp.c:620
-#: tools/gpgconf-comp.c:682 tools/gpgconf-comp.c:763
+#: tools/gpgconf-comp.c:461 tools/gpgconf-comp.c:565 tools/gpgconf-comp.c:632
+#: tools/gpgconf-comp.c:694 tools/gpgconf-comp.c:775
 msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:462 tools/gpgconf-comp.c:566 tools/gpgconf-comp.c:633
-#: tools/gpgconf-comp.c:695 tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:474 tools/gpgconf-comp.c:578 tools/gpgconf-comp.c:645
+#: tools/gpgconf-comp.c:707 tools/gpgconf-comp.c:798
 msgid "Options controlling the configuration"
 msgstr ""
 
-#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:591 tools/gpgconf-comp.c:646
-#: tools/gpgconf-comp.c:714 tools/gpgconf-comp.c:793
+#: tools/gpgconf-comp.c:484 tools/gpgconf-comp.c:603 tools/gpgconf-comp.c:658
+#: tools/gpgconf-comp.c:726 tools/gpgconf-comp.c:805
 msgid "Options useful for debugging"
 msgstr ""
 
-#: tools/gpgconf-comp.c:477 tools/gpgconf-comp.c:596 tools/gpgconf-comp.c:651
-#: tools/gpgconf-comp.c:719 tools/gpgconf-comp.c:801
+#: tools/gpgconf-comp.c:489 tools/gpgconf-comp.c:608 tools/gpgconf-comp.c:663
+#: tools/gpgconf-comp.c:731 tools/gpgconf-comp.c:813
 msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:485 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:727
+#: tools/gpgconf-comp.c:497 tools/gpgconf-comp.c:613 tools/gpgconf-comp.c:739
 msgid "Options controlling the security"
 msgstr ""
 
-#: tools/gpgconf-comp.c:492
+#: tools/gpgconf-comp.c:504
 msgid "|N|expire SSH keys after N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:496
+#: tools/gpgconf-comp.c:508
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:500
+#: tools/gpgconf-comp.c:512
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:514
+#: tools/gpgconf-comp.c:526
 msgid "Options enforcing a passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:517
+#: tools/gpgconf-comp.c:529
 msgid "do not allow to bypass the passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:521
+#: tools/gpgconf-comp.c:533
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr ""
 
-#: tools/gpgconf-comp.c:525
+#: tools/gpgconf-comp.c:537
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr ""
 
-#: tools/gpgconf-comp.c:529
+#: tools/gpgconf-comp.c:541
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:533
+#: tools/gpgconf-comp.c:545
 #, fuzzy
 msgid "|N|expire the passphrase after N days"
 msgstr ""
 "Увядзіце новы пароль для гэтага сакрэтнага ключа.\n"
 "\n"
 
-#: tools/gpgconf-comp.c:537
+#: tools/gpgconf-comp.c:549
 #, fuzzy
 msgid "do not allow the reuse of old passphrases"
 msgstr "Паўтарыце пароль\n"
 
-#: tools/gpgconf-comp.c:638 tools/gpgconf-comp.c:700
+#: tools/gpgconf-comp.c:650 tools/gpgconf-comp.c:712
 #, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|ІМЯ|   зашыфраваць для вылучанай асобы"
 
-#: tools/gpgconf-comp.c:659
+#: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:664
+#: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
-#: tools/gpgconf-comp.c:709
+#: tools/gpgconf-comp.c:721
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr ""
 
-#: tools/gpgconf-comp.c:732
+#: tools/gpgconf-comp.c:744
 msgid "do not check CRLs for root certificates"
 msgstr ""
 
-#: tools/gpgconf-comp.c:776
+#: tools/gpgconf-comp.c:788
 msgid "Options controlling the format of the output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:812
+#: tools/gpgconf-comp.c:824
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:834
 msgid "Configuration for HTTP servers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:833
+#: tools/gpgconf-comp.c:845
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-#: tools/gpgconf-comp.c:838
+#: tools/gpgconf-comp.c:850
 msgid "Configuration of LDAP servers to use"
 msgstr ""
 
-#: tools/gpgconf-comp.c:875
+#: tools/gpgconf-comp.c:887
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2706
+#: tools/gpgconf-comp.c:2955
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
-#: tools/gpgconf.c:56
+#: tools/gpgconf.c:57
 msgid "list all components"
 msgstr ""
 
-#: tools/gpgconf.c:57
+#: tools/gpgconf.c:58
+msgid "check all programs"
+msgstr ""
+
+#: tools/gpgconf.c:59
 msgid "|COMPONENT|list options"
 msgstr ""
 
-#: tools/gpgconf.c:58
+#: tools/gpgconf.c:60
 msgid "|COMPONENT|change options"
 msgstr ""
 
-#: tools/gpgconf.c:60
+#: tools/gpgconf.c:62
 msgid "apply global default values"
 msgstr ""
 
-#: tools/gpgconf.c:62
+#: tools/gpgconf.c:64
 #, fuzzy
 msgid "check global configuration file"
 msgstr "невядомая вэрсыя"
 
-#: tools/gpgconf.c:70
+#: tools/gpgconf.c:72
 msgid "activate changes at runtime, if possible"
 msgstr ""
 
-#: tools/gpgconf.c:92
+#: tools/gpgconf.c:94
 #, fuzzy
 msgid "Usage: gpgconf [options] (-h for help)"
 msgstr "Выкарыстаньне: gpg [выбары] [файлы] (-h для даведкі)"
 
-#: tools/gpgconf.c:95
+#: tools/gpgconf.c:97
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
 msgstr ""
 
-#: tools/gpgconf.c:168 tools/gpgconf.c:201
+#: tools/gpgconf.c:176 tools/gpgconf.c:209
 #, fuzzy
 msgid "usage: gpgconf [options] "
 msgstr "Выкарыстаньне: gpg [выбары] "
 
-#: tools/gpgconf.c:170
+#: tools/gpgconf.c:178
 msgid "Need one component argument"
 msgstr ""
 
-#: tools/gpgconf.c:179
+#: tools/gpgconf.c:187
 #, fuzzy
 msgid "Component not found"
 msgstr "грамадскі ключ ня знойдзены"
 
-#: tools/gpgconf.c:203
+#: tools/gpgconf.c:211
 #, fuzzy
 msgid "No argument allowed"
 msgstr "сакрэтны ключ недаступны"
@@ -7767,9 +7835,6 @@ msgstr "непадтрымліваецца"
 
 #~ msgid "bad key"
 #~ msgstr "дрэнны ключ"
-
-#~ msgid "file read error"
-#~ msgstr "памылка чытаньня файла"
 
 #~ msgid "file write error"
 #~ msgstr "памылка запісу файла"

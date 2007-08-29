@@ -2,7 +2,7 @@
 
 	* exechelp.c (gnupg_wait_process): Add arg EXITCODE.  Changed all
 	callers.
-
+	(gnupg_create_inbound_pipe): New.
 	* util.h (GNUPG_MODULE_NAME_GPGSM, GNUPG_MODULE_NAME_GPG): New.
 	* homedir.c (gnupg_module_name): Add them
 	

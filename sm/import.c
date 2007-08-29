@@ -622,7 +622,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     }
 
 
-  /* If we found no error in the output of the cild, setup a suitable
+  /* If we found no error in the output of the child, setup a suitable
      error code, which will later be reset if the exit status of the
      child is 0. */
   if (!child_err)

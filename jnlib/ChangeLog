@@ -1,3 +1,8 @@
+2007-08-29  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (initialize): Make strings translatable and remove
+	extra LF.
+
 2007-08-24  Werner Koch  <wk@g10code.com>
 
 	* mischelp.c (same_file_p): New.

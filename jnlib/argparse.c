@@ -149,65 +149,71 @@ static void show_version(void);
 static void
 initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 {
-    if( !(arg->flags & (1<<15)) ) { /* initialize this instance */
-	arg->internal.idx = 0;
-	arg->internal.last = NULL;
-	arg->internal.inarg = 0;
-	arg->internal.stopped = 0;
-	arg->internal.aliases = NULL;
-	arg->internal.cur_alias = NULL;
-	arg->err = 0;
-	arg->flags |= 1<<15; /* mark initialized */
-	if( *arg->argc < 0 )
-	    jnlib_log_bug("Invalid argument for ArgParse\n");
+  if( !(arg->flags & (1<<15)) ) 
+    { 
+      /* Initialize this instance. */
+      arg->internal.idx = 0;
+      arg->internal.last = NULL;
+      arg->internal.inarg = 0;
+      arg->internal.stopped = 0;
+      arg->internal.aliases = NULL;
+      arg->internal.cur_alias = NULL;
+      arg->err = 0;
+      arg->flags |= 1<<15; /* Mark as initialized.  */
+      if ( *arg->argc < 0 )
+        jnlib_log_bug ("invalid argument for arg_parsee\n");
     }
-
-
-    if( arg->err ) { /* last option was erroneous */
-	const char *s;
-
-	if( filename ) {
-	    if( arg->r_opt == -6 )
-		s = "argument not expected\n";
-	    else if( arg->r_opt == -5 )
-		s = "read error\n";
-	    else if( arg->r_opt == -4 )
-		s = "keyword too long\n";
-	    else if( arg->r_opt == -3 )
-		s = "missing argument\n";
-	    else if( arg->r_opt == -7 )
-		s = "invalid command\n";
-	    else if( arg->r_opt == -10 )
-		s = "invalid alias definition\n";
-	    else
-		s = "invalid option\n";
-	    jnlib_log_error("%s:%u: %s\n", filename, *lineno, s);
+  
+  
+  if (arg->err)
+    {
+      /* Last option was erroneous.  */
+      const char *s;
+      
+      if (filename)
+        {
+          if ( arg->r_opt == -6 )
+            s = _("argument not expected");
+          else if ( arg->r_opt == -5 )
+            s = _("read error");
+          else if ( arg->r_opt == -4 )
+            s = _("keyword too long");
+          else if ( arg->r_opt == -3 )
+            s = _("missing argument");
+          else if ( arg->r_opt == -7 )
+            s = _("invalid command");
+          else if ( arg->r_opt == -10 )
+            s = _("invalid alias definition");
+          else
+            s = _("invalid option");
+          jnlib_log_error ("%s:%u: %s\n", filename, *lineno, s);
 	}
-	else {
-            s = arg->internal.last? arg->internal.last:"[??]";
+      else 
+        {
+          s = arg->internal.last? arg->internal.last:"[??]";
             
-	    if( arg->r_opt == -3 )
-              jnlib_log_error ("Missing argument for option \"%.50s\"\n", s);
-	    else if( arg->r_opt == -6 )
-              jnlib_log_error ("Option \"%.50s\" does not expect an argument\n",
-                               s );
-	    else if( arg->r_opt == -7 )
-              jnlib_log_error ("Invalid command \"%.50s\"\n", s);
-	    else if( arg->r_opt == -8 )
-              jnlib_log_error ("Option \"%.50s\" is ambiguous\n", s);
-	    else if( arg->r_opt == -9 )
-              jnlib_log_error ("Command \"%.50s\" is ambiguous\n",s );
-	    else
-              jnlib_log_error ("Invalid option \"%.50s\"\n", s);
+          if ( arg->r_opt == -3 )
+            jnlib_log_error (_("missing argument for option \"%.50s\"\n"), s);
+          else if ( arg->r_opt == -6 )
+            jnlib_log_error (_("option \"%.50s\" does not expect an "
+                               "argument\n"), s );
+          else if ( arg->r_opt == -7 )
+            jnlib_log_error (_("invalid command \"%.50s\"\n"), s);
+          else if ( arg->r_opt == -8 )
+            jnlib_log_error (_("option \"%.50s\" is ambiguous\n"), s);
+          else if ( arg->r_opt == -9 )
+            jnlib_log_error (_("command \"%.50s\" is ambiguous\n"),s );
+          else
+            jnlib_log_error (_("invalid option \"%.50s\"\n"), s);
 	}
-	if( arg->err != 1 )
-	    exit(2);
-	arg->err = 0;
+      if ( arg->err != 1 )
+        exit (2);
+      arg->err = 0;
     }
 
-    /* clearout the return value union */
-    arg->r.ret_str = NULL;
-    arg->r.ret_long= 0;
+  /* Zero out the return value union.  */
+  arg->r.ret_str = NULL;
+  arg->r.ret_long = 0;
 }
 
 

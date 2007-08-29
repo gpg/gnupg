@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-28 19:28+0200\n"
+"POT-Creation-Date: 2007-08-29 18:43+0200\n"
 "PO-Revision-Date: 2007-02-17 13:13+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -293,7 +293,7 @@ msgstr "kör i demonläge (bakgrund)"
 
 #: agent/gpg-agent.c:122 g10/gpg.c:469 g10/gpgv.c:70 kbx/kbxutil.c:88
 #: scd/scdaemon.c:110 sm/gpgsm.c:340 tools/gpg-connect-agent.c:58
-#: tools/gpgconf.c:67 tools/symcryptrun.c:164
+#: tools/gpgconf.c:69 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "utförlig"
 
@@ -378,7 +378,7 @@ msgstr "|FIL|skriv miljöinställningar även till FIL"
 
 #: agent/gpg-agent.c:273 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:206 sm/gpgsm.c:565 tools/gpg-connect-agent.c:124
-#: tools/gpgconf.c:89 tools/symcryptrun.c:204
+#: tools/gpgconf.c:91 tools/symcryptrun.c:204
 msgid "Please report bugs to <"
 msgstr "Rapportera fel till <"
 
@@ -695,43 +695,43 @@ msgstr "ändra en lösenfras"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:327 common/exechelp.c:415
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
 
 # se förra kommentaren
-#: common/exechelp.c:391 common/exechelp.c:448
+#: common/exechelp.c:435 common/exechelp.c:492
 #, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "kan inte fdopen rör för läsning: %s\n"
 
-#: common/exechelp.c:427 common/exechelp.c:555 common/exechelp.c:771
+#: common/exechelp.c:471 common/exechelp.c:599 common/exechelp.c:834
 #, c-format
 msgid "error forking process: %s\n"
 msgstr "fel vid grening av process: %s\n"
 
-#: common/exechelp.c:596 common/exechelp.c:640
+#: common/exechelp.c:645 common/exechelp.c:698
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
 
-#: common/exechelp.c:604
+#: common/exechelp.c:653
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
 
-#: common/exechelp.c:610 common/exechelp.c:651
+#: common/exechelp.c:659 common/exechelp.c:709
 #, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
 
-#: common/exechelp.c:646
+#: common/exechelp.c:704
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr "fel vid körning av \"%s\": antagligen inte installerat\n"
 
-#: common/exechelp.c:657
+#: common/exechelp.c:717
 #, c-format
 msgid "error running `%s': terminated\n"
 msgstr "fel vid körning av \"%s\": avslutades\n"
@@ -1540,7 +1540,7 @@ msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
-#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:54
+#: g10/gpg.c:368 kbx/kbxutil.c:71 sm/gpgsm.c:242 tools/gpgconf.c:55
 msgid ""
 "@Commands:\n"
 " "
@@ -1675,7 +1675,7 @@ msgstr "kör i serverläge"
 
 # Här bruksanvisning för kommandoraden. Resultatet har jag översatt med "inställningar", eftersom flaggorna även kan förekomma i en inställningsfil.
 #: g10/gpg.c:432 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:279
-#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:64 tools/symcryptrun.c:157
+#: tools/gpg-connect-agent.c:56 tools/gpgconf.c:66 tools/symcryptrun.c:157
 msgid ""
 "@\n"
 "Options:\n"
@@ -1705,11 +1705,11 @@ msgstr "|N|ställ in komprimeringsnivån till N (0 för att inaktivera)"
 msgid "use canonical text mode"
 msgstr "använd \"ursprunglig text\"-läget"
 
-#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:66
+#: g10/gpg.c:467 sm/gpgsm.c:339 tools/gpgconf.c:68
 msgid "use as output file"
 msgstr "använd som fil för utdata"
 
-#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:69
+#: g10/gpg.c:480 kbx/kbxutil.c:90 sm/gpgsm.c:349 tools/gpgconf.c:71
 msgid "do not make any changes"
 msgstr "gör inga ändringar"
 
@@ -6572,6 +6572,70 @@ msgstr "raden %u är för lång, eller saknar nyradstecken\n"
 msgid "can't open fd %d: %s\n"
 msgstr "kan inte öppna fd %d: %s\n"
 
+#: jnlib/argparse.c:176
+#, fuzzy
+msgid "argument not expected"
+msgstr "Administrationskommandon tillåts inte\n"
+
+#: jnlib/argparse.c:178
+#, fuzzy
+msgid "read error"
+msgstr "läsfel i \"%s\":  %s\n"
+
+#: jnlib/argparse.c:180
+#, fuzzy
+msgid "keyword too long"
+msgstr "raden är för lång"
+
+#: jnlib/argparse.c:182
+msgid "missing argument"
+msgstr ""
+
+#: jnlib/argparse.c:184
+#, fuzzy
+msgid "invalid command"
+msgstr "Kommandon endast för administratör\n"
+
+#: jnlib/argparse.c:186
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "ogiltiga listflaggor\n"
+
+#: jnlib/argparse.c:188
+#, fuzzy
+msgid "invalid option"
+msgstr "ogiltiga listflaggor\n"
+
+#: jnlib/argparse.c:196
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#: jnlib/argparse.c:198
+#, fuzzy, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "flaggan \"%s\" kräver ett program och valfria argument\n"
+
+#: jnlib/argparse.c:201
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Ogiltigt kommando (försök med \"help\")\n"
+
+#: jnlib/argparse.c:203
+#, fuzzy, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "flaggan \"%s\" ignoreras på grund av \"%s\"\n"
+
+#: jnlib/argparse.c:205
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#: jnlib/argparse.c:207
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "ogiltiga listflaggor\n"
+
 #: jnlib/logging.c:624
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
@@ -7423,7 +7487,7 @@ msgstr "lägg till denna nyckelring till listan över nyckelringar"
 msgid "add this secret keyring to the list"
 msgstr "lägg till denna hemliga nyckelring till listan"
 
-#: sm/gpgsm.c:358 tools/gpgconf-comp.c:635 tools/gpgconf-comp.c:697
+#: sm/gpgsm.c:358 tools/gpgconf-comp.c:647 tools/gpgconf-comp.c:709
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAMN|använd NAMN som förvald hemlig nyckel"
 
@@ -7660,7 +7724,7 @@ msgstr "      även känd som"
 msgid "This is a qualified signature\n"
 msgstr "Detta kommer att bli en självsignatur.\n"
 
-#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:68 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:59 tools/gpgconf.c:70 tools/symcryptrun.c:165
 msgid "quiet"
 msgstr "tyst"
 
@@ -7739,153 +7803,157 @@ msgstr "fel vid sändning av %s-kommando: %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "fel vid sändning av standardflaggor: %s\n"
 
-#: tools/gpgconf-comp.c:449 tools/gpgconf-comp.c:553 tools/gpgconf-comp.c:620
-#: tools/gpgconf-comp.c:682 tools/gpgconf-comp.c:763
+#: tools/gpgconf-comp.c:461 tools/gpgconf-comp.c:565 tools/gpgconf-comp.c:632
+#: tools/gpgconf-comp.c:694 tools/gpgconf-comp.c:775
 msgid "Options controlling the diagnostic output"
 msgstr "Flaggor som kontrollerar diagnosutdata"
 
-#: tools/gpgconf-comp.c:462 tools/gpgconf-comp.c:566 tools/gpgconf-comp.c:633
-#: tools/gpgconf-comp.c:695 tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:474 tools/gpgconf-comp.c:578 tools/gpgconf-comp.c:645
+#: tools/gpgconf-comp.c:707 tools/gpgconf-comp.c:798
 msgid "Options controlling the configuration"
 msgstr "Flaggor som kontrollerar konfigurationen"
 
-#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:591 tools/gpgconf-comp.c:646
-#: tools/gpgconf-comp.c:714 tools/gpgconf-comp.c:793
+#: tools/gpgconf-comp.c:484 tools/gpgconf-comp.c:603 tools/gpgconf-comp.c:658
+#: tools/gpgconf-comp.c:726 tools/gpgconf-comp.c:805
 msgid "Options useful for debugging"
 msgstr "Flaggor användbara för felsökning"
 
-#: tools/gpgconf-comp.c:477 tools/gpgconf-comp.c:596 tools/gpgconf-comp.c:651
-#: tools/gpgconf-comp.c:719 tools/gpgconf-comp.c:801
+#: tools/gpgconf-comp.c:489 tools/gpgconf-comp.c:608 tools/gpgconf-comp.c:663
+#: tools/gpgconf-comp.c:731 tools/gpgconf-comp.c:813
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|FIL|skriv serverlägesloggar till FIL"
 
-#: tools/gpgconf-comp.c:485 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:727
+#: tools/gpgconf-comp.c:497 tools/gpgconf-comp.c:613 tools/gpgconf-comp.c:739
 msgid "Options controlling the security"
 msgstr "Flaggor som kontrollerar säkerheten"
 
-#: tools/gpgconf-comp.c:492
+#: tools/gpgconf-comp.c:504
 #, fuzzy
 msgid "|N|expire SSH keys after N seconds"
 msgstr "|N|låt mellanlagrad PIN-koder gå ut efter N sekunder"
 
-#: tools/gpgconf-comp.c:496
+#: tools/gpgconf-comp.c:508
 #, fuzzy
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr "|N|låt mellanlagrad PIN-koder gå ut efter N sekunder"
 
-#: tools/gpgconf-comp.c:500
+#: tools/gpgconf-comp.c:512
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:514
+#: tools/gpgconf-comp.c:526
 msgid "Options enforcing a passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:517
+#: tools/gpgconf-comp.c:529
 msgid "do not allow to bypass the passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:521
+#: tools/gpgconf-comp.c:533
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr ""
 
-#: tools/gpgconf-comp.c:525
+#: tools/gpgconf-comp.c:537
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr ""
 
-#: tools/gpgconf-comp.c:529
+#: tools/gpgconf-comp.c:541
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:533
+#: tools/gpgconf-comp.c:545
 #, fuzzy
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|låt mellanlagrad PIN-koder gå ut efter N sekunder"
 
-#: tools/gpgconf-comp.c:537
+#: tools/gpgconf-comp.c:549
 #, fuzzy
 msgid "do not allow the reuse of old passphrases"
 msgstr "tillåt förinställning av lösenfras"
 
-#: tools/gpgconf-comp.c:638 tools/gpgconf-comp.c:700
+#: tools/gpgconf-comp.c:650 tools/gpgconf-comp.c:712
 #, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAMN|kryptera för NAMN"
 
-#: tools/gpgconf-comp.c:659
+#: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr "Konfiguration för nyckelservrar"
 
-#: tools/gpgconf-comp.c:664
+#: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"
 msgstr "tillåt PKA-uppslag (DNS-förfrågningar)"
 
-#: tools/gpgconf-comp.c:709
+#: tools/gpgconf-comp.c:721
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr ""
 
-#: tools/gpgconf-comp.c:732
+#: tools/gpgconf-comp.c:744
 msgid "do not check CRLs for root certificates"
 msgstr "kontrollera inte spärrlistor för rotcertifikat"
 
-#: tools/gpgconf-comp.c:776
+#: tools/gpgconf-comp.c:788
 msgid "Options controlling the format of the output"
 msgstr "Flaggor som kontrollerar formatet på utdata"
 
-#: tools/gpgconf-comp.c:812
+#: tools/gpgconf-comp.c:824
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Flaggor som kontrollerar interaktivitet och framtvingande"
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:834
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration för HTTP-servrar"
 
-#: tools/gpgconf-comp.c:833
+#: tools/gpgconf-comp.c:845
 msgid "use system's HTTP proxy setting"
 msgstr "använd systemets HTTP-proxyinställningar"
 
-#: tools/gpgconf-comp.c:838
+#: tools/gpgconf-comp.c:850
 msgid "Configuration of LDAP servers to use"
 msgstr "Konfiguration av LDAP-servrar som ska användas"
 
-#: tools/gpgconf-comp.c:875
+#: tools/gpgconf-comp.c:887
 msgid "Configuration for OCSP"
 msgstr "Konfiguration för OCSP"
 
-#: tools/gpgconf-comp.c:2706
+#: tools/gpgconf-comp.c:2955
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
-#: tools/gpgconf.c:56
+#: tools/gpgconf.c:57
 msgid "list all components"
 msgstr "lista alla komponenter"
 
-#: tools/gpgconf.c:57
+#: tools/gpgconf.c:58
+msgid "check all programs"
+msgstr ""
+
+#: tools/gpgconf.c:59
 msgid "|COMPONENT|list options"
 msgstr "|KOMPONENT|lista flaggor"
 
-#: tools/gpgconf.c:58
+#: tools/gpgconf.c:60
 msgid "|COMPONENT|change options"
 msgstr "|KOMPONENT|ändra flaggor"
 
-#: tools/gpgconf.c:60
+#: tools/gpgconf.c:62
 msgid "apply global default values"
 msgstr ""
 
-#: tools/gpgconf.c:62
+#: tools/gpgconf.c:64
 #, fuzzy
 msgid "check global configuration file"
 msgstr "okänd konfigurationspost \"%s\"\n"
 
-#: tools/gpgconf.c:70
+#: tools/gpgconf.c:72
 msgid "activate changes at runtime, if possible"
 msgstr "aktivera ändringar vid körtid, om möjligt"
 
-#: tools/gpgconf.c:92
+#: tools/gpgconf.c:94
 msgid "Usage: gpgconf [options] (-h for help)"
 msgstr "Användning: gpgconf [flaggor] (-h för hjälp)"
 
-#: tools/gpgconf.c:95
+#: tools/gpgconf.c:97
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
@@ -7893,19 +7961,19 @@ msgstr ""
 "Syntax: gpgconf [flaggor]\n"
 "Hantera konfigurationsinställningar för verktygen i GnuPG-systemet\n"
 
-#: tools/gpgconf.c:168 tools/gpgconf.c:201
+#: tools/gpgconf.c:176 tools/gpgconf.c:209
 msgid "usage: gpgconf [options] "
 msgstr "användning: gpgconf [flaggor] "
 
-#: tools/gpgconf.c:170
+#: tools/gpgconf.c:178
 msgid "Need one component argument"
 msgstr "Behöver ett komponentargument"
 
-#: tools/gpgconf.c:179
+#: tools/gpgconf.c:187
 msgid "Component not found"
 msgstr "Komponenten hittades inte"
 
-#: tools/gpgconf.c:203
+#: tools/gpgconf.c:211
 #, fuzzy
 msgid "No argument allowed"
 msgstr "Administrationskommandon tillåts inte\n"

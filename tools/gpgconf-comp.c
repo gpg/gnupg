@@ -31,6 +31,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <ctype.h>
 #ifdef HAVE_W32_SYSTEM
 # define WIN32_LEAN_AND_MEAN 1
 # include <windows.h>
@@ -953,6 +954,21 @@ static struct
     { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr }
   };
 
+
+
+/* Structure used to collect error output of the backend programs.  */
+struct error_line_s;
+typedef struct error_line_s *error_line_t;
+struct error_line_s
+{
+  error_line_t next;   /* Link to next item.  */
+  const char *fname;   /* Name of the config file (points into BUFFER).  */
+  unsigned int lineno; /* Line number of the config file.  */
+  const char *errtext; /* Text of the error message (points into BUFFER).  */
+  char buffer[1];  /* Helper buffer.  */
+};
+
+
 
 /* Engine specific support.  */
 void
@@ -1142,10 +1158,112 @@ gc_component_list_components (FILE *out)
 
 
 
+static int
+all_digits_p (const char *p, size_t len)
+{
+  if (!len)
+    return 0; /* No. */
+  for (; len; len--, p++)
+    if (!isascii (*p) || !isdigit (*p))
+      return 0; /* No.  */
+  return 1; /* Yes.  */
+}
+
+
+/* Collect all error lines from file descriptor FD. Only lines
+   prefixed with TAG are considered.  Close that file descriptor
+   then.  Returns a list of error line items (which may be empty).
+   There is no error return.  */
+static error_line_t
+collect_error_output (int fd, const char *tag)
+{
+  FILE *fp;
+  char buffer[1024];
+  char *p, *p2, *p3;
+  int c, cont_line;
+  unsigned int pos;
+  error_line_t eitem, errlines, *errlines_tail;
+  size_t taglen = strlen (tag);
+
+  fp = fdopen (fd, "r");
+  if (!fp)
+    gc_error (1, errno, "can't fdopen pipe for reading");
+
+  errlines = NULL;
+  errlines_tail = &errlines;
+  pos = 0;
+  cont_line = 0;
+  while ((c=getc (fp)) != EOF)
+    {
+      buffer[pos++] = c;
+      if (pos >= sizeof buffer - 5 || c == '\n')
+        {
+          buffer[pos - (c == '\n')] = 0;
+          if (cont_line)
+            ; /*Ignore continuations of previous line. */
+          else if (!strncmp (buffer, tag, taglen) && buffer[taglen] == ':') 
+            {
+              /* "gpgsm: foo:4: bla" */
+              /* Yep, we are interested in this line.  */
+              p = buffer + taglen + 1;
+              while (*p == ' ' || *p == '\t')
+                p++;
+              if (!*p)
+                ; /* Empty lines are ignored.  */
+              else if ( (p2 = strchr (p, ':')) && (p3 = strchr (p2+1, ':'))
+                        && all_digits_p (p2+1, p3 - (p2+1)))
+                {
+                  /* Line in standard compiler format.  */
+                  p3++;
+                  while (*p3 == ' ' || *p3 == '\t')
+                    p3++;
+                  eitem = xmalloc (sizeof *eitem + strlen (p));
+                  eitem->next = NULL;
+                  strcpy (eitem->buffer, p);
+                  eitem->fname = eitem->buffer;
+                  eitem->buffer[p2-p] = 0;
+                  eitem->errtext = eitem->buffer + (p3 - p);
+                  /* (we already checked that there are only ascii
+                     digits followed by a colon) */
+                  eitem->lineno = 0;
+                  for (p2++; isdigit (*p2); p2++)
+                    eitem->lineno = eitem->lineno*10 + (*p2 - '0');
+                  *errlines_tail = eitem;
+                  errlines_tail = &eitem->next;
+                }
+              else
+                {
+                  /* Other error output.  */
+                  eitem = xmalloc (sizeof *eitem + strlen (p));
+                  eitem->next = NULL;
+                  strcpy (eitem->buffer, p);
+                  eitem->fname = NULL;
+                  eitem->errtext = eitem->buffer;
+                  eitem->lineno = 0;
+                  *errlines_tail = eitem;
+                  errlines_tail = &eitem->next;
+                }
+            }
+          pos = 0;
+          /* If this was not a complete line mark that we are in a
+             continuation.  */
+          cont_line = (c != '\n');
+        }
+    }
+  
+  /* We ignore error lines not terminated by a LF.  */
+
+  fclose (fp);
+  return errlines;
+}
+
+
+
 /* Check all components that are available.  */
 void
 gc_component_check_programs (FILE *out)
 {
+  gpg_error_t err;
   gc_component_t component;
   unsigned int result;
   int backend_seen[GC_BACKEND_NR];
@@ -1156,7 +1274,13 @@ gc_component_check_programs (FILE *out)
   const char *argv[2];
   pid_t pid;
   int exitcode;
+  int filedes[2];
+  error_line_t errlines, errptr;
 
+  /* We use a temporary file to collect the error output.  It would be
+     better to use a pipe here but as of now we have no suitable
+     fucntion to create a portable pipe outside of exechelp.  Thus it
+     is easier to use the tempfile approach.  */
   for (component = 0; component < GC_COMPONENT_NR; component++)
     {
       if (!gc_component[component].options)
@@ -1184,18 +1308,31 @@ gc_component_check_programs (FILE *out)
           argv[0] = "--gpgconf-test";
           argv[1] = NULL;
 
-          /* Note that under Windows the spawn fucntion returns an
-             error if the progrom could not be executed whereas under
-             Unix the wait function returns an error.  */
+          err = gnupg_create_inbound_pipe (filedes);
+          if (err)
+            gc_error (1, 0, _("error creating a pipe: %s\n"), 
+                      gpg_strerror (err));
+
           result = 0;
-          if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid))
-            result |= 1; /* Program could not be run.  */
-          else if (gnupg_wait_process (pgmname, pid, &exitcode))
+          errlines = NULL;
+          if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, filedes[1], &pid))
             {
-              if (exitcode == -1)
-                result |= 1; /* Program could not be run or it
-                                terminated abnormally.  */
-              result |= 2; /* Program returned an error.  */
+              close (filedes[0]);
+              close (filedes[1]);
+              result |= 1; /* Program could not be run.  */
+            }
+          else 
+            {
+              close (filedes[1]);
+              errlines = collect_error_output (filedes[0], 
+                                               gc_component[component].name);
+              if (gnupg_wait_process (pgmname, pid, &exitcode))
+                {
+                  if (exitcode == -1)
+                    result |= 1; /* Program could not be run or it
+                                    terminated abnormally.  */
+                  result |= 2; /* Program returned an error.  */
+                }
             }
           
           /* If the program could not be run, we can't tell whether
@@ -1208,7 +1345,28 @@ gc_component_check_programs (FILE *out)
           fprintf (out, "%s:%s:",
                    gc_component[component].name, my_percent_escape (desc));
           fputs (my_percent_escape (pgmname), out);
-          fprintf (out, ":%d:%d:\n", !(result & 1), !(result & 2));
+          fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
+          for (errptr = errlines; errptr; errptr = errptr->next)
+            {
+              if (errptr != errlines)
+                fputs ("\n:::::", out); /* Continuation line.  */
+              if (errptr->fname)
+                fputs (my_percent_escape (errptr->fname), out);
+              putc (':', out);
+              if (errptr->fname)
+                fprintf (out, "%u", errptr->lineno);
+              putc (':', out);
+              fputs (my_percent_escape (errptr->errtext), out);
+              putc (':', out);
+            }
+          putc ('\n', out);
+          
+          while (errlines)
+            {
+              error_line_t tmp = errlines->next;
+              xfree (errlines);
+              errlines = tmp;
+            }
           break; /* Loop over options of this component  */
         }
     } 

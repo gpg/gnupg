@@ -21,6 +21,10 @@
 #define GNUPG_COMMON_EXECHELP_H
 
 
+/* Portable function to create a pipe.  Under Windows the write end is
+   inheritable.  */
+gpg_error_t gnupg_create_inbound_pipe (int filedes[2]);
+
 
 /* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
    stdin, write the output to OUTFILE, return a new stream in

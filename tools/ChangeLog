@@ -1,10 +1,11 @@
 2007-08-29  Werner Koch  <wk@g10code.com>
 
-	* gpgconf.c: New comamnd --check-programs.
+	* gpgconf.c: New command --check-programs.
 	* gpgconf-comp.c (gc_component_check_programs): New.
 	(gc_backend): Add member MODULE_NAME and add these module names.
 	(retrieve_options_from_program): Use module name so that we use an
 	absolute file name and don't rely on $PATH.
+	(collect_error_output): New.
 	* no-libgcrypt.c (gcry_control): New.
 
 2007-08-28  Werner Koch  <wk@g10code.com>
