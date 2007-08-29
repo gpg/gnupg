@@ -40,6 +40,9 @@ struct
 /* List all components that are available.  */
 void gc_component_list_components (FILE *out);
 
+/* List all programs along with their status.  */
+void gc_component_check_programs (FILE *out);
+
 /* Find the component with the name NAME.  Returns -1 if not
    found.  */
 int gc_component_find (const char *name);

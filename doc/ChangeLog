@@ -1,3 +1,7 @@
+2007-08-29  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (Checking programs): New.
+
 2007-08-27  Werner Koch  <wk@g10code.com>
 
 	* examples/pwpattern.list: New.

@@ -52,8 +52,10 @@ gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
 /* Wait for the process identified by PID to terminate. PGMNAME should
    be the same as supplied to the spawn fucntion and is only used for
    diagnostics.  Returns 0 if the process succeded, GPG_ERR_GENERAL
-   for any failures of the spawned program or other error codes.*/
-gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid);
+   for any failures of the spawned program or other error codes.  If
+   EXITCODE is not NULL the exit code of the process is stored at this
+   address or -1 if it could not be retrieved.  */
+gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode);
 
 
 /* Spawn a new process and immediatley detach from it.  The name of

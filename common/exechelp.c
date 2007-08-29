@@ -570,11 +570,13 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 
 
 /* Wait for the process identified by PID to terminate. PGMNAME should
-   be the same as suplieed to the spawn fucntion and is only used for
-   diagnostics. Returns 0 if the process succeded, GPG_ERR_GENERAL for
-   any failures of the spawned program or other error codes.*/
+   be the same as supplied to the spawn function and is only used for
+   diagnostics. Returns 0 if the process succeeded, GPG_ERR_GENERAL
+   for any failures of the spawned program or other error codes.  If
+   EXITCODE is not NULL the exit code of the process is stored at this
+   address or -1 if it could not be retrieved. */
 gpg_error_t
-gnupg_wait_process (const char *pgmname, pid_t pid)
+gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
 {
   gpg_err_code_t ec;
 
@@ -582,6 +584,9 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
   HANDLE proc = fd_to_handle (pid);
   int code;
   DWORD exc;
+
+  if (exitcode)
+    *exitcode = -1;
 
   if (pid == (pid_t)(-1))
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -609,10 +614,16 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
           {
             log_error (_("error running `%s': exit status %d\n"),
                        pgmname, (int)exc );
+            if (exitcode)
+              *exitcode = (int)exc;
             ec = GPG_ERR_GENERAL;
           }
         else
-          ec = 0;
+          {
+            if (exitcode)
+              *exitcode = 0;
+            ec = 0;
+          }
         CloseHandle (proc);
         break;
 
@@ -625,6 +636,9 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
 
 #else /* !HAVE_W32_SYSTEM */
   int i, status;
+
+  if (exitcode)
+    *exitcode = -1;
 
   if (pid == (pid_t)(-1))
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -650,6 +664,8 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
     {
       log_error (_("error running `%s': exit status %d\n"), pgmname,
                  WEXITSTATUS (status));
+      if (exitcode)
+        *exitcode = WEXITSTATUS (status);
       ec = GPG_ERR_GENERAL;
     }
   else if (!WIFEXITED (status))
@@ -658,11 +674,14 @@ gnupg_wait_process (const char *pgmname, pid_t pid)
       ec = GPG_ERR_GENERAL;
     }
   else 
-    ec = 0;
+    {
+      if (exitcode)
+        *exitcode = 0;
+      ec = 0;
+    }
 #endif /* !HAVE_W32_SYSTEM */
 
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
-
 }
 
 

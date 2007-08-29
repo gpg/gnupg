@@ -182,12 +182,16 @@ const char *gnupg_libdir (void);
 const char *gnupg_datadir (void);
 const char *dirmngr_socket_name (void);
 
+/* All module names.  We also include gpg and gpgsm for the sake for
+   gpgconf. */
 #define GNUPG_MODULE_NAME_AGENT        1
 #define GNUPG_MODULE_NAME_PINENTRY     2
 #define GNUPG_MODULE_NAME_SCDAEMON     3 
 #define GNUPG_MODULE_NAME_DIRMNGR      4
 #define GNUPG_MODULE_NAME_PROTECT_TOOL 5
 #define GNUPG_MODULE_NAME_CHECK_PATTERN 6
+#define GNUPG_MODULE_NAME_GPGSM         7
+#define GNUPG_MODULE_NAME_GPG           8
 const char *gnupg_module_name (int which);
 
 

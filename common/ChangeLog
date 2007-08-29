@@ -1,3 +1,11 @@
+2007-08-29  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_wait_process): Add arg EXITCODE.  Changed all
+	callers.
+
+	* util.h (GNUPG_MODULE_NAME_GPGSM, GNUPG_MODULE_NAME_GPG): New.
+	* homedir.c (gnupg_module_name): Add them
+	
 2007-08-28  Werner Koch  <wk@g10code.com>
 
 	* gettime.c (check_isotime, add_isotime): New.  Orginally written

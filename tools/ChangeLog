@@ -1,3 +1,12 @@
+2007-08-29  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c: New comamnd --check-programs.
+	* gpgconf-comp.c (gc_component_check_programs): New.
+	(gc_backend): Add member MODULE_NAME and add these module names.
+	(retrieve_options_from_program): Use module name so that we use an
+	absolute file name and don't rely on $PATH.
+	* no-libgcrypt.c (gcry_control): New.
+
 2007-08-28  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c <gpg-agent>: Add options --max-passphrase-days
@@ -713,7 +722,7 @@
 	* watchgnupg.c: New.
 
 
- Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

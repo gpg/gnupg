@@ -713,7 +713,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     fclose (fp);
   if (pid != -1)
     {
-      if (!gnupg_wait_process (pgmname, pid))
+      if (!gnupg_wait_process (pgmname, pid, NULL))
         child_err = 0;
     }
   if (!err)

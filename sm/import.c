@@ -635,7 +635,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     fclose (fp);
   if (pid != -1)
     {
-      if (!gnupg_wait_process (pgmname, pid))
+      if (!gnupg_wait_process (pgmname, pid, NULL))
         child_err = 0;
     }
   if (!err)

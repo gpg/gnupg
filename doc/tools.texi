@@ -200,6 +200,7 @@ throughout this section.
 * Invoking gpgconf::      List of all commands and options.
 * Format conventions::    Formatting conventions relevant for all commands.
 * Listing components::    List all gpgconf components.
+* Checking programs::     Check all programs know to gpgconf.
 * Listing options::       List all options of a component.
 * Changing options::      Changing options of a component.
 * Files used by gpgconf:: What files are used by gpgconf.
@@ -217,6 +218,9 @@ One of the following commands must be given:
 @item --list-components
 List all components.  This is the default command used if none is
 specified.
+
+@item --check-programs
+List all available backend programs and test whether they are runnable.
 
 @item --list-options @var{component}
 List all options of the component @var{component}.
@@ -335,6 +339,14 @@ by a space, followed by a human readable description of that value (if
 the verbose option is used).  You should ignore everything in the
 field that follows the number.
 
+@item @w{boolean value}
+Some fields contain a @emph{boolean value}.  This is a number with
+either the value 0 or 1.  The number may be followed by a space,
+followed by a human readable description of that value (if the verbose
+option is used).  You should ignore everything in the field that follows
+the number; checking just the first character is sufficient in this
+case.
+
 @item option
 Some fields contain an @emph{option} argument.  The format of an
 option argument depends on the type of the option and on some flags:
@@ -433,6 +445,62 @@ gpg-agent:GPG Agent
 scdaemon:Smartcard Daemon
 gpgsm:GPG for S/MIME
 dirmngr:Directory Manager
+@end example
+
+
+
+@node Checking programs
+@subsection Checking programs
+
+The command @code{--check-programs} is similar to
+@code{--list-components} but works on backend programs and not on
+components.  It runs each program to test wether it is installed and
+runnable.  This also includes a syntax check of all config file options
+of the program.
+
+The command argument @code{--check-programs} lists all available
+programs, one per line.  The format of each line is:
+
+@code{@var{name}:@var{description}:@var{program name}:@var{available}:@var{config okay}:}
+
+@table @var
+@item name
+This field contains a name tag of the program which is identical to the
+name of the component.  The name tag is to be used @emph{verbatim}.  It
+is thus not in any escaped format.
+
+@item description
+The @emph{string} in this field contains a human-readable description
+of the component.  It can be displayed to the user of the GUI for
+informational purposes.  It is @emph{percent-escaped} and
+@emph{localized}.
+
+@item program name
+The @emph{string} in this field contains the absolute name of the
+program's file.  It can be used to unambiguously invoke that program.
+It is @emph{percent-escaped}.
+
+@item available
+The @emph{boolean value} in this field indicates whether the program is
+installed and runnable.
+
+@item config okay
+The @emph{boolean value} in this field indicates whether the program's
+config file is syntactically okay.
+
+@end table
+
+@noindent
+In the following example the @command{dirmngr} is not runnable and the
+configuration file of @command{scdaemon} is not okay.
+
+@example
+$ gpgconf --check-programs
+gpg:GPG for OpenPGP:/usr/local/bin/gpg2:1:1:
+gpg-agent:GPG Agent:/usr/local/bin/gpg-agent:1:1:
+scdaemon:Smartcard Daemon:/usr/local/bin/scdaemon:1:0:
+gpgsm:GPG for S/MIME:/usr/local/bin/gpgsm:1:1:
+dirmngr:Directory Manager:/usr/local/bin/dirmngr:0:0:
 @end example
 
 

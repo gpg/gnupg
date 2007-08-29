@@ -43,6 +43,7 @@
 #define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 #include "i18n.h"
+#include "exechelp.h"
 
 #include "gc-opt-flags.h"
 #include "gpgconf.h"
@@ -153,6 +154,12 @@ static struct
      GPGConf.  In this case, PROGRAM is NULL.  */
   char *program;
 
+  /* The module name (GNUPG_MODULE_NAME_foo) as defined by
+     ../common/util.h.  This value is used to get the actual installed
+     path of the program.  0 is used if no backedn program is
+     available. */
+  char module_name;
+
   /* The runtime change callback.  */
   void (*runtime_change) (void);
 
@@ -168,14 +175,18 @@ static struct
 } gc_backend[GC_BACKEND_NR] =
   {
     { NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { "GnuPG", GPGNAME, NULL, "gpgconf-gpg.conf" },
-    { "GPGSM", "gpgsm", NULL, "gpgconf-gpgsm.conf" },
-    { "GPG Agent", "gpg-agent", gpg_agent_runtime_change,
-      "gpgconf-gpg-agent.conf" },
-    { "SCDaemon", "scdaemon", NULL, "gpgconf-scdaemon.conf" },
-    { "DirMngr", "dirmngr", NULL, "gpgconf-dirmngr.conf" },
-    { "DirMngr LDAP Server List", NULL, NULL, "ldapserverlist-file",
-      "LDAP Server" },
+    { "GnuPG", GPGNAME, GNUPG_MODULE_NAME_GPG,
+      NULL, "gpgconf-gpg.conf" },
+    { "GPGSM", "gpgsm", GNUPG_MODULE_NAME_GPGSM,
+      NULL, "gpgconf-gpgsm.conf" },
+    { "GPG Agent", "gpg-agent", GNUPG_MODULE_NAME_AGENT, 
+      gpg_agent_runtime_change, "gpgconf-gpg-agent.conf" },
+    { "SCDaemon", "scdaemon", GNUPG_MODULE_NAME_SCDAEMON,
+      NULL, "gpgconf-scdaemon.conf" },
+    { "DirMngr", "dirmngr", GNUPG_MODULE_NAME_DIRMNGR,
+      NULL, "gpgconf-dirmngr.conf" },
+    { "DirMngr LDAP Server List", NULL, 0, 
+      NULL, "ldapserverlist-file", "LDAP Server" },
   };
 
 
@@ -1129,6 +1140,81 @@ gc_component_list_components (FILE *out)
     }
 }
 
+
+
+/* Check all components that are available.  */
+void
+gc_component_check_programs (FILE *out)
+{
+  gc_component_t component;
+  unsigned int result;
+  int backend_seen[GC_BACKEND_NR];
+  gc_backend_t backend;
+  gc_option_t *option;
+  const char *desc;
+  const char *pgmname;
+  const char *argv[2];
+  pid_t pid;
+  int exitcode;
+
+  for (component = 0; component < GC_COMPONENT_NR; component++)
+    {
+      if (!gc_component[component].options)
+        continue;
+
+      for (backend = 0; backend < GC_BACKEND_NR; backend++)
+        backend_seen[backend] = 0;
+
+      option = gc_component[component].options;
+      for (; option && option->name; option++)
+        {
+          if ((option->flags & GC_OPT_FLAG_GROUP))
+            continue;
+          backend = option->backend;
+          if (backend_seen[backend])
+            continue;
+          backend_seen[backend] = 1;
+          assert (backend != GC_BACKEND_ANY);
+          if (!gc_backend[backend].program)
+            continue;
+          if (!gc_backend[backend].module_name)
+            continue;
+
+          pgmname = gnupg_module_name (gc_backend[backend].module_name);
+          argv[0] = "--gpgconf-test";
+          argv[1] = NULL;
+
+          /* Note that under Windows the spawn fucntion returns an
+             error if the progrom could not be executed whereas under
+             Unix the wait function returns an error.  */
+          result = 0;
+          if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid))
+            result |= 1; /* Program could not be run.  */
+          else if (gnupg_wait_process (pgmname, pid, &exitcode))
+            {
+              if (exitcode == -1)
+                result |= 1; /* Program could not be run or it
+                                terminated abnormally.  */
+              result |= 2; /* Program returned an error.  */
+            }
+          
+          /* If the program could not be run, we can't tell whether
+             the config file is good.  */
+          if ((result&1))
+            result |= 2;  
+          
+          desc = gc_component[component].desc;
+          desc = my_dgettext (gc_component[component].desc_domain, desc);
+          fprintf (out, "%s:%s:",
+                   gc_component[component].name, my_percent_escape (desc));
+          fputs (my_percent_escape (pgmname), out);
+          fprintf (out, ":%d:%d:\n", !(result & 1), !(result & 2));
+          break; /* Loop over options of this component  */
+        }
+    } 
+}
+
+
 
 /* Find the component with the name NAME.  Returns -1 if not
    found.  */
@@ -1362,7 +1448,10 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   FILE *config;
   char *config_pathname;
 
-  cmd_line = xasprintf ("%s --gpgconf-list", gc_backend[backend].program);
+  cmd_line = xasprintf ("%s --gpgconf-list", 
+                        gc_backend[backend].module_name ?
+                        gnupg_module_name (gc_backend[backend].module_name) :
+                        gc_backend[backend].program );
 
   config = popen (cmd_line, "r");
   if (!config)
@@ -1663,6 +1752,8 @@ gc_component_retrieve_options (int component)
   while (process_all && ++component < GC_COMPONENT_NR);
 
 }
+
+
 
 /* Perform a simple validity check based on the type.  Return in
    NEW_VALUE_NR the value of the number in NEW_VALUE if OPTION is of

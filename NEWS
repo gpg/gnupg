@@ -11,6 +11,10 @@ Noteworthy changes in version 2.0.7
    enforce-passphrase-constraints and max-passphrase-days to
    gpg-agent.
 
+ * Add command --check-components to gpgconf.  Gpgconf now uses the
+   installed versions of the programs and does not anymore search via
+   PATH for them.
+
 
 Noteworthy changes in version 2.0.6 (2007-08-16)
 ------------------------------------------------

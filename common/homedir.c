@@ -372,6 +372,12 @@ gnupg_module_name (int which)
     case GNUPG_MODULE_NAME_CHECK_PATTERN:
       X(libexecdir, "gpg-check-pattern");
 
+    case GNUPG_MODULE_NAME_GPGSM:
+      X(bindir, "gpgsm");
+
+    case GNUPG_MODULE_NAME_GPG:
+      X(bindir, "gpg2");
+
     default: 
       BUG ();
     }

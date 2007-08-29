@@ -1,5 +1,5 @@
 /* gpgconf.c - Configuration utility for GnuPG
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,7 @@ enum cmd_and_opt_values
     oHomedir,
 
     aListComponents,
+    aCheckPrograms,
     aListOptions,
     aChangeOptions,
     aApplyDefaults,
@@ -54,6 +55,7 @@ static ARGPARSE_OPTS opts[] =
     { 300, NULL, 0, N_("@Commands:\n ") },
     
     { aListComponents, "list-components", 256, N_("list all components") },
+    { aCheckPrograms, "check-programs", 256, N_("check all programs") },
     { aListOptions, "list-options", 256, N_("|COMPONENT|list options") },
     { aChangeOptions, "change-options", 256, N_("|COMPONENT|change options") },
     { aApplyDefaults, "apply-defaults", 256,
@@ -137,6 +139,7 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
 
         case aListComponents:
+        case aCheckPrograms:
         case aListOptions:
         case aChangeOptions:
         case aApplyDefaults:
@@ -159,6 +162,11 @@ main (int argc, char **argv)
     default:
       /* List all components. */
       gc_component_list_components (stdout);
+      break;
+
+    case aCheckPrograms:
+      /* Check all programs. */
+      gc_component_check_programs (stdout);
       break;
 
     case aListOptions:
