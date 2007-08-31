@@ -1142,16 +1142,43 @@ percent_deescape (const char *src)
 void
 gc_component_list_components (FILE *out)
 {
-  gc_component_t idx;
+  gc_component_t component;
+  gc_option_t *option;
+  gc_backend_t backend;
+  int backend_seen[GC_BACKEND_NR];
+  const char *desc;
+  const char *pgmname;
 
-  for (idx = 0; idx < GC_COMPONENT_NR; idx++)
+  for (component = 0; component < GC_COMPONENT_NR; component++)
     {
-      if (gc_component[idx].options)
+      option = gc_component[component].options;
+      if (option)
         {
-          const char *desc = gc_component[idx].desc;
-          desc = my_dgettext (gc_component[idx].desc_domain, desc);
-          fprintf (out, "%s:%s\n",
-                   gc_component[idx].name,  my_percent_escape (desc));
+          for (backend = 0; backend < GC_BACKEND_NR; backend++)
+            backend_seen[backend] = 0;
+
+          pgmname = "";
+          for (; option && option->name; option++)
+            {
+              if ((option->flags & GC_OPT_FLAG_GROUP))
+                continue;
+              backend = option->backend;
+              if (backend_seen[backend])
+                continue;
+              backend_seen[backend] = 1;
+              assert (backend != GC_BACKEND_ANY);
+              if (gc_backend[backend].program
+                  && !gc_backend[backend].module_name)
+                continue;
+              pgmname = gnupg_module_name (gc_backend[backend].module_name);
+              break;
+            }
+
+          desc = gc_component[component].desc;
+          desc = my_dgettext (gc_component[component].desc_domain, desc);
+          fprintf (out, "%s:%s:",
+                   gc_component[component].name,  my_percent_escape (desc));
+          fprintf (out, "%s:\n",  my_percent_escape (pgmname));
         }
     }
 }

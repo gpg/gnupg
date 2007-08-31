@@ -421,7 +421,7 @@ tabulator sheet per component.
 The command argument @code{--list-components} lists all available
 components, one per line.  The format of each line is:
 
-@code{@var{name}:@var{description}}
+@code{@var{name}:@var{description}:@var{pgmname}:}
 
 @table @var
 @item name
@@ -435,16 +435,21 @@ The @emph{string} in this field contains a human-readable description
 of the component.  It can be displayed to the user of the GUI for
 informational purposes.  It is @emph{percent-escaped} and
 @emph{localized}.
+
+@item pgmname
+The @emph{string} in this field contains the absolute name of the
+program's file.  It can be used to unambiguously invoke that program.
+It is @emph{percent-escaped}.
 @end table
 
 Example:
 @example
 $ gpgconf --list-components
-gpg:GPG for OpenPGP
-gpg-agent:GPG Agent
-scdaemon:Smartcard Daemon
-gpgsm:GPG for S/MIME
-dirmngr:Directory Manager
+gpg:GPG for OpenPGP:/usr/local/bin/gpg2:
+gpg-agent:GPG Agent:/usr/local/bin/gpg-agent:
+scdaemon:Smartcard Daemon:/usr/local/bin/scdaemon:
+gpgsm:GPG for S/MIME:/usr/local/bin/gpgsm:
+dirmngr:Directory Manager:/usr/local/bin/dirmngr:
 @end example
 
 
