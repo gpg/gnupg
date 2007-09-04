@@ -27,7 +27,7 @@ ASSUAN_COMMANDS="\
 INPUT FD=$ASSUAN_FP_IN\n\
 OUTPUT FD=$ASSUAN_FP_OUT --armor\n\
 GENKEY\n\
-BYE"
+BYE\n"
 
 ANSWER=""
 
@@ -191,7 +191,7 @@ query_user_menu "Really create such a CSR?" "yes" "no"
 [ "$ANSWER" != "yes" ] && exit 1
     
 
-echo -e "$ASSUAN_COMMANDS" | \
+printf "$ASSUAN_COMMANDS" | \
      gpgsm --no-log-file --debug-level none --debug-none \
            --server 4< "$file_parameter" 5>"$outfile" >/dev/null
 

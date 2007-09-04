@@ -1,5 +1,9 @@
 2007-09-04  Moritz Schulte  <moritz@g10code.com>
 
+	* gpgsm-gencert.sh: Use printf instead of echo.
+
+2007-09-04  Moritz Schulte  <moritz@g10code.com>
+
 	* gpgkey2ssh.c: Include sysutils.h so that gnupg_tmpfile() is
 	declared.
 
