@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-29 18:43+0200\n"
+"POT-Creation-Date: 2007-09-10 17:28+0200\n"
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -674,7 +674,7 @@ msgstr "þanøi la pasfrazon"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1340
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
@@ -7934,7 +7934,7 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2955
+#: tools/gpgconf-comp.c:2982
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

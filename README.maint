@@ -30,8 +30,8 @@ Release process:
   * Run "./autogen.sh --force"
     (--force is required for the svn magic in configure.ac and a good
     idea in any case)
-  * Run configure as usual.
-  * Run "make distcheck"
+  * Run "configure --enable-maintainer-mode".
+  * Run "make distcheck".
   * Build and test the new tarball (best on a different machine).
   * Build and test the W32 version.
   * Using the final test build run a "make -C doc online".

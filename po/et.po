@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-29 18:43+0200\n"
+"POT-Creation-Date: 2007-09-10 17:28+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -673,7 +673,7 @@ msgstr "muuda parooli"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1340
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "viga parooli loomisel: %s\n"
@@ -7893,7 +7893,7 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2955
+#: tools/gpgconf-comp.c:2982
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

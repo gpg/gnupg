@@ -1,3 +1,7 @@
+2007-09-10  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.7.
+
 2007-08-27  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Remove remaining support for internal regex.

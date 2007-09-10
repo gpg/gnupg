@@ -9,6 +9,8 @@
 
 2007-08-31  Werner Koch  <wk@g10code.com>
 
+	* gpgparsemail.c: Support PGP/MIME signed messages.
+
 	* gpgconf-comp.c (gc_component_list_components): List the programs
 	names.
 

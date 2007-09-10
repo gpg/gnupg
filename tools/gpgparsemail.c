@@ -1,5 +1,5 @@
 /* gpgparsemail.c - Standalone crypto mail parser
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -64,7 +64,9 @@ struct parse_info_s {
 
   int is_pkcs7;                /* Old style S/MIME message. */
 
-  int gpgsm_mime;              /* gpgsm shall be used from S/MIME. */
+  int moss_state;              /* State of PGP/MIME or S/MIME parsing.  */
+  int is_smime;                /* This is S/MIME and not PGP/MIME. */
+
   char *signing_protocol;
   int hashing_level;           /* The nesting level we are hashing. */
   int hashing;                 
@@ -167,7 +169,6 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
   int i, c, is_status;
   unsigned int pos;
   char status_buf[10];
-  const char *cmd = smime? "gpgsm":"gpg";
   FILE *fp;
 
   if (pipe (rp) == -1)
@@ -218,15 +219,25 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
           close (fd);
       errno = 0;
 
-      execlp (cmd, cmd,
-              "--enable-special-filenames",
-              "--status-fd", "2",
-              "--assume-base64",
-              "--verify",
-              "--",
-              "-", data_fd == -1? NULL : data_fd_buf,
-              NULL);
-
+      if (smime)
+        execlp ("gpgsm", "gpgsm",
+                "--enable-special-filenames",
+                "--status-fd", "2",
+                "--assume-base64",
+                "--verify",
+                "--",
+                "-", data_fd == -1? NULL : data_fd_buf,
+                NULL);
+      else
+        execlp ("gpg", "gpg",
+                "--enable-special-filenames",
+                "--status-fd", "2",
+                "--verify",
+                "--debug=512",
+                "--",
+                "-", data_fd == -1? NULL : data_fd_buf,
+                NULL);
+      
       die ("failed to exec the crypto command: %s", strerror (errno));
     }
 
@@ -323,7 +334,7 @@ verify_signature (struct parse_info_s *info)
 /*   rewind (info->sig_file); */
 
   close_list[0] = -1;
-  run_gnupg (1, fileno (info->sig_file),
+  run_gnupg (info->is_smime, fileno (info->sig_file),
              info->hash_file ? fileno (info->hash_file) : -1, close_list);
 }
 
@@ -342,14 +353,27 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
   if (s)
     {
       printf ("h signed.protocol: %s\n", s);
-      if (!strcmp (s, "application/pkcs7-signature")
-          || !strcmp (s, "application/x-pkcs7-signature"))
+      if (!strcmp (s, "application/pgp-signature"))
         {
-          if (info->gpgsm_mime)
-            err ("note: ignoring nested pkcs7-signature");
+          if (info->moss_state)
+            err ("note: ignoring nested PGP/MIME or S/MIME signature");
           else
             {
-              info->gpgsm_mime = 1;
+              info->moss_state = 1;
+              info->is_smime = 0;
+              free (info->signing_protocol);
+              info->signing_protocol = xstrdup (s);
+            }
+        }
+      else if (!strcmp (s, "application/pkcs7-signature")
+               || !strcmp (s, "application/x-pkcs7-signature"))
+        {
+          if (info->moss_state)
+            err ("note: ignoring nested PGP/MIME or S/MIME signature");
+          else
+            {
+              info->moss_state = 1;
+              info->is_smime = 1;
               free (info->signing_protocol);
               info->signing_protocol = xstrdup (s);
             }
@@ -435,6 +459,30 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
 
   if (debug)
     show_event (event);
+
+  if (event == RFC822PARSE_BEGIN_HEADER || event == RFC822PARSE_T2BODY)
+    {
+      /* We need to check here whether to start collecting signed data
+         because attachments might come without header lines and thus
+         we won't see the BEGIN_HEADER event.  */
+      if (info->moss_state == 1)
+        {
+          printf ("c begin_hash\n");
+          info->hashing = 1;
+          info->hashing_level = info->nesting_level;
+          info->moss_state++;
+
+          if (opt_crypto)
+            {
+              assert (!info->hash_file);
+              info->hash_file = tmpfile ();
+              if (!info->hash_file)
+                die ("failed to create temporary file: %s", strerror (errno));
+            }
+        }
+    }
+
+
   if (event == RFC822PARSE_OPEN)
     {
       /* Initialize for a new message. */
@@ -453,18 +501,19 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
             {
               printf ("h media: %*s%s %s\n", 
                       info->nesting_level*2, "", s1, s2);
-              if (info->gpgsm_mime == 3)
+              if (info->moss_state == 3)
                 {
                   char *buf = xmalloc (strlen (s1) + strlen (s2) + 2);
                   strcpy (stpcpy (stpcpy (buf, s1), "/"), s2);
                   assert (info->signing_protocol);
                   if (strcmp (buf, info->signing_protocol))
-                    err ("invalid S/MIME structure; expected `%s', found `%s'",
+                    err ("invalid %s structure; expected `%s', found `%s'",
+                         info->is_smime? "S/MIME":"PGP/MIME",
                          info->signing_protocol, buf);
                   else
                     {
                       printf ("c begin_signature\n");
-                      info->gpgsm_mime++;
+                      info->moss_state++;
                       if (opt_crypto)
                         {
                           assert (!info->sig_file);
@@ -490,12 +539,14 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
             }
           else
             printf ("h media: %*s none\n", info->nesting_level*2, "");
-
+              
           rfc822parse_release_field (ctx);
         }
       else
         printf ("h media: %*stext plain [assumed]\n",
                 info->nesting_level*2, "");
+
+
       info->show_header = 0;
       info->show_data = 1;
       info->skip_show = 1;
@@ -528,34 +579,16 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
       else 
         printf ("b last\n");
 
-      if (info->gpgsm_mime == 2 && info->nesting_level == info->hashing_level)
+      if (info->moss_state == 2 && info->nesting_level == info->hashing_level)
         {
           printf ("c end_hash\n");
-          info->gpgsm_mime++;
+          info->moss_state++;
           info->hashing = 0;
         }
-      else if (info->gpgsm_mime == 4)
+      else if (info->moss_state == 4)
         {
           printf ("c end_signature\n");
           info->verify_now = 1;
-        }
-    }
-  else if (event == RFC822PARSE_BEGIN_HEADER)
-    {
-      if (info->gpgsm_mime == 1)
-        {
-          printf ("c begin_hash\n");
-          info->hashing = 1;
-          info->hashing_level = info->nesting_level;
-          info->gpgsm_mime++;
-
-          if (opt_crypto)
-            {
-              assert (!info->hash_file);
-              info->hash_file = tmpfile ();
-              if (!info->hash_file)
-                die ("failed to create temporary file: %s", strerror (errno));
-            }
         }
     }
 
@@ -634,7 +667,8 @@ parse_message (FILE *fp)
               info.hash_file = NULL;
               fclose (info.sig_file);
               info.sig_file = NULL;
-              info.gpgsm_mime = 0;
+              info.moss_state = 0;
+              info.is_smime = 0;
               info.is_pkcs7 = 0;
             }
           else
@@ -760,6 +794,6 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "gcc -Wall -g -o gpgparsemail rfc822parse.c gpgparsemail.c"
+compile-command: "gcc -Wall -Wno-pointer-sign -g -o gpgparsemail rfc822parse.c gpgparsemail.c"
 End:
 */

@@ -1251,6 +1251,6 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "gcc -Wall -g -DTESTING -o rfc822parse rfc822parse.c"
+compile-command: "gcc -Wall -Wno-pointer-sign -g -DTESTING -o rfc822parse rfc822parse.c"
 End:
 */

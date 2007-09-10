@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-29 18:43+0200\n"
+"POT-Creation-Date: 2007-09-10 17:28+0200\n"
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -674,7 +674,7 @@ msgstr "αλλαγή της φράσης κλειδί"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1340
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
@@ -7988,7 +7988,7 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2955
+#: tools/gpgconf-comp.c:2982
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

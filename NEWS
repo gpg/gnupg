@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.7
+Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------
 
  * Fixed encryption problem if duplicate certificates are in the

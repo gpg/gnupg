@@ -125,7 +125,7 @@
 * Howtos
 ** Migrate OpenPGP keys to another system
 
-* Duplicate certifciates
+* Duplicate certificates
   This may happen and lead to an Ambiguous Name error.  Solution is to
   check the certs for identity before throwing this error.
 

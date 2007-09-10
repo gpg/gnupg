@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-08-29 18:43+0200\n"
+"POT-Creation-Date: 2007-09-10 17:28+0200\n"
 "PO-Revision-Date: 2007-02-17 13:13+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -695,7 +695,7 @@ msgstr "ändra en lösenfras"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1313
+#: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1340
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
@@ -7916,7 +7916,7 @@ msgstr "Konfiguration av LDAP-servrar som ska användas"
 msgid "Configuration for OCSP"
 msgstr "Konfiguration för OCSP"
 
-#: tools/gpgconf-comp.c:2955
+#: tools/gpgconf-comp.c:2982
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
