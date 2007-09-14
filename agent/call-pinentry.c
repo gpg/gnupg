@@ -812,7 +812,16 @@ agent_popup_message_stop (ctrl_t ctrl)
   else if (popup_finished)
     ; /* Already finished and ready for joining. */
 #ifdef HAVE_W32_SYSTEM
-#  warning need to implement a kill mechanism for pinentry  
+  /* Older versions of assuan set PID to 0 on Windows to indicate an
+     invalid value.  */
+  else if (pid != (pid_t) INVALID_HANDLE_VALUE
+	   && pid != 0)
+    {
+      HANDLE process = (HANDLE) pid;
+      
+      /* Arbitrary error code.  */
+      TerminateProcess (process, 1);
+    }
 #else
   else if (pid && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
     { /* The daemon already died.  No need to send a kill.  However
