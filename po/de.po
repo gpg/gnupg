@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
-"PO-Revision-Date: 2007-08-29 18:51+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
+"PO-Revision-Date: 2007-09-14 13:31+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -7507,7 +7507,7 @@ msgstr "|DATEI|Erweiterungsmodul DATEI laden"
 
 #: sm/gpgsm.c:385
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|Verschl.verfahren NAME benutzen"
+msgstr "|NAME|Verschlüsselungsverfahren NAME benutzen"
 
 #: sm/gpgsm.c:387
 msgid "|NAME|use message digest algorithm NAME"
@@ -7871,6 +7871,10 @@ msgstr "|NAME|Auf an NAME verschlüsseln"
 msgid "Configuration for Keyservers"
 msgstr "Konfiguration der Schlüsselserver"
 
+#: tools/gpgconf-comp.c:673
+msgid "|URL|use keyserver at URL"
+msgstr "Benutze Schlüsselserver unter der URL"
+
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"
 msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
@@ -7897,7 +7901,7 @@ msgstr "Konfiguration für HTTP Server"
 
 #: tools/gpgconf-comp.c:845
 msgid "use system's HTTP proxy setting"
-msgstr "Einstellungen des System HTTP-Proxy benutzen"
+msgstr "Benutze die HTTP Proxy Einstellung des Systems"
 
 #: tools/gpgconf-comp.c:850
 msgid "Configuration of LDAP servers to use"

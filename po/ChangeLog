@@ -1,3 +1,7 @@
+2007-09-14  Werner Koch  <wk@g10code.com>
+
+	* de.po: Chnaged translation of --honor-http-proxy.
+
 2007-08-29  Werner Koch  <wk@g10code.com>
 
 	* de.po: Translated the argparse.c strings.

@@ -670,7 +670,7 @@ static gc_option_t gc_options_gpg[] =
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Configuration for Keyservers") },
    { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
-     "gnupg", "|URL|use keyserver at URL",
+     "gnupg", N_("|URL|use keyserver at URL"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "allow-pka-lookup", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", N_("allow PKA lookups (DNS requests)"),
