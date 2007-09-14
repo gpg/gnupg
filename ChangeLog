@@ -1,3 +1,7 @@
+2007-09-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (GNUPG_LIBASSUAN_VERSION): New.
+
 2007-09-10  Werner Koch  <wk@g10code.com>
 
 	Released 2.0.7.

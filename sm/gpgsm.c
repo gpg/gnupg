@@ -481,6 +481,7 @@ static int default_validation_model;
 
 static char *build_list (const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int));
+static char *build_lib_list (const char *text);
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
@@ -553,7 +554,7 @@ our_md_test_algo (int algo)
 static const char *
 my_strusage( int level )
 {
-  static char *digests, *pubkeys, *ciphers;
+  static char *digests, *pubkeys, *ciphers, *libs;
   const char *p;
 
   switch (level)
@@ -593,7 +594,12 @@ my_strusage( int level )
         digests = build_list("Hash: ", gcry_md_algo_name, our_md_test_algo );
       p = digests;
       break;
-      
+    case 38:
+      if (!libs)
+        libs = build_lib_list(_("Used libraries:"));
+      p = libs;
+      break;
+     
     default: p = NULL; break;
     }
   return p;
@@ -629,6 +635,49 @@ build_list (const char *text, const char * (*mapf)(int), int (*chkf)(int))
     }
   if (p)
     p = stpcpy(p, "\n" );
+  return list;
+}
+
+static char *
+build_lib_list (const char *text)
+{
+  struct { const char *name; const char *version; } array[5];
+  int idx;
+  size_t n;
+  char *list, *p;
+
+  if (maybe_setuid)
+    gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
+
+  idx = 0;
+  array[idx].name = "gcrypt";
+  array[idx++].version = gcry_check_version (NULL);
+  array[idx].name = "ksba";
+  array[idx++].version = ksba_check_version (NULL);
+  array[idx].name = "assuan";
+  array[idx++].version = GNUPG_LIBASSUAN_VERSION;
+  array[idx].name = NULL;
+  array[idx++].version = NULL;
+
+  n = strlen (text) + 1;
+  for (idx=0; array[idx].name; idx++)
+    {
+      n += 2 + strlen (array[idx].name);
+      if (array[idx].version)
+        n += 1 + strlen (array[idx].version) + 1;
+    }
+  n++;
+  list = xmalloc (n+1);
+  p = stpcpy (stpcpy (list, text), " ");
+  for (idx=0; array[idx].name; idx++)
+    {
+      if (idx)
+        p = stpcpy (p, ", ");
+      p = stpcpy (p, array[idx].name);
+      if (array[idx].version)
+        p = stpcpy (stpcpy (stpcpy (p, "("), array[idx].version), ")");
+    }
+  strcpy (p, "\n");
   return list;
 }
 

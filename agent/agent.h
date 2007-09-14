@@ -80,7 +80,7 @@ struct
   unsigned long max_cache_ttl;     /* Default. */
   unsigned long max_cache_ttl_ssh; /* for SSH. */
 
-  /* Flag disallowin bypassing of the warning.  */
+  /* Flag disallowing bypassing of the warning.  */
   int enforce_passphrase_constraints;
   /* The require minmum length of a passphrase. */
   unsigned int min_passphrase_len;

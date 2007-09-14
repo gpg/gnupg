@@ -727,6 +727,7 @@ static int maybe_setuid = 1;
 
 static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
+static char *build_lib_list (const char *text);
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_mds( const char *fname, int algo );
@@ -739,7 +740,7 @@ static void emergency_cleanup (void);
 static const char *
 my_strusage( int level )
 {
-  static char *digests, *pubkeys, *ciphers, *zips;
+  static char *digests, *pubkeys, *ciphers, *zips, *libs;
     const char *p;
     switch( level ) {
       case 11: p = "gpg (GnuPG)";
@@ -807,6 +808,11 @@ my_strusage( int level )
                               check_compress_algo);
 	p = zips;
 	break;
+      case 38:
+	if (!libs)
+          libs = build_lib_list(_("Used libraries:"));
+	p = libs;
+	break;
 
       default:	p = NULL;
     }
@@ -866,6 +872,46 @@ build_list( const char *text, char letter,
     if( p )
 	p = stpcpy(p, "\n" );
     return list;
+}
+
+
+static char *
+build_lib_list (const char *text)
+{
+  struct { const char *name; const char *version; } array[3];
+  int idx;
+  size_t n;
+  char *list, *p;
+
+  if (maybe_setuid)
+    gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
+
+  idx = 0;
+  array[idx].name = "gcrypt";
+  array[idx++].version = gcry_check_version (NULL);
+  array[idx].name = NULL;
+  array[idx++].version = NULL;
+
+  n = strlen (text) + 1;
+  for (idx=0; array[idx].name; idx++)
+    {
+      n += 2 + strlen (array[idx].name);
+      if (array[idx].version)
+        n += 1 + strlen (array[idx].version) + 1;
+    }
+  n++;
+  list = xmalloc (n+1);
+  p = stpcpy (stpcpy (list, text), " ");
+  for (idx=0; array[idx].name; idx++)
+    {
+      if (idx)
+        p = stpcpy (p, ", ");
+      p = stpcpy (p, array[idx].name);
+      if (array[idx].version)
+        p = stpcpy (stpcpy (stpcpy (p, "("), array[idx].version), ")");
+    }
+  strcpy (p, "\n");
+  return list;
 }
 
 

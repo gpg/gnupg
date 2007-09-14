@@ -8,7 +8,7 @@
 	
 2007-08-28  Werner Koch  <wk@g10code.com>
 
-	* gettime.c (check_isotime, add_isotime): New.  Orginally written
+	* gettime.c (check_isotime, add_isotime): New.  Originally written
 	for DirMngr by me.
 	(add_days_to_isotime): New.
 	(date2jd, jd2date, days_per_month, days_per_year): New. Taken from

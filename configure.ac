@@ -608,6 +608,8 @@ if test "$have_libassuan" = "yes"; then
   AM_CHECK_LIBASSUAN("$NEED_LIBASSUAN_API:1.0.1",
        [AC_DEFINE(HAVE_ASSUAN_SET_IO_MONITOR, 1,
          [Define to 1 if you have the `assuan_set_io_monitor' function.])],)  
+  AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
+            [version of the libbassuan library])
 fi
 
 
