@@ -310,6 +310,7 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   const char *config_filename = NULL;
   int allow_coredump = 0;
+  int standard_socket = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -355,6 +356,11 @@ main (int argc, char **argv )
 
   /* Set default options. */
   opt.pcsc_driver = DEFAULT_PCSC_DRIVER; 
+
+#ifdef HAVE_W32_SYSTEM
+  standard_socket = 1;  /* Under Windows we always use a standard
+                           socket.  */
+#endif
 
 
   shell = getenv ("SHELL");
@@ -621,7 +627,7 @@ main (int argc, char **argv )
          back the name of that socket. */
       if (multi_server)
         {
-          socket_name = create_socket_name (0,
+          socket_name = create_socket_name (standard_socket,
                                             "S.scdaemon",
                                             "/tmp/gpg-XXXXXX/S.scdaemon");
           
@@ -665,7 +671,7 @@ main (int argc, char **argv )
       int i;
 
       /* Create the socket.  */
-      socket_name = create_socket_name (0,
+      socket_name = create_socket_name (standard_socket,
                                         "S.scdaemon",
                                         "/tmp/gpg-XXXXXX/S.scdaemon");
 
