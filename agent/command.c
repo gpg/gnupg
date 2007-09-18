@@ -912,7 +912,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
         }
       while (!rc
              && opt_check
-             && check_passphrase_constraints (ctrl, response));
+             && check_passphrase_constraints (ctrl, response, 0));
 
       if (!rc)
         {

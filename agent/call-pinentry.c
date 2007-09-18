@@ -413,6 +413,106 @@ all_digitsp( const char *s)
 }  
 
 
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary Nul will
+   silently be replaced by a 0xFF.  Function returns NULL to indicate
+   an out of memory status.  PArsing stops at the end of the string or
+   a white space character. */
+static char *
+unescape_passphrase_string (const unsigned char *s)
+{
+  char *buffer, *d;
+
+  buffer = d = xtrymalloc_secure (strlen ((const char*)s)+1);
+  if (!buffer)
+    return NULL;
+  while (*s && !spacep (s))
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d = xtoi_2 (s);
+          if (!*d)
+            *d = '\xff';
+          d++;
+          s += 2;
+        }
+      else if (*s == '+')
+        {
+          *d++ = ' ';
+          s++;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+  return buffer;
+}
+
+
+/* Estimate the quality of the passphrase PW and return a value in the
+   range 0..100.  */
+static int
+estimate_passphrase_quality (const char *pw)
+{
+  int goodlength = opt.min_passphrase_len + opt.min_passphrase_len/3;
+  int length;
+  const char *s;
+
+  if (goodlength < 1)
+    return 0;
+
+  for (length = 0, s = pw; *s; s++)
+    if (!spacep (s))
+      length ++;
+
+  if (length > goodlength)
+    return 100;
+  return ((length*10) / goodlength)*10;
+}
+
+
+/* Handle the QUALITY inquiry. */
+static int
+inq_quality (void *opaque, const char *line)
+{
+  assuan_context_t ctx = opaque;
+  char *pin;
+  int rc;
+  int percent;
+  char numbuf[20];
+
+  if (!strncmp (line, "QUALITY", 7) && (line[7] == ' ' || !line[7]))
+    {
+      line += 7;
+      while (*line == ' ')
+        line++;
+      
+      pin = unescape_passphrase_string (line);
+      if (!pin)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          percent = estimate_passphrase_quality (pin);
+          if (check_passphrase_constraints (NULL, pin, 1))
+            percent = -percent;
+          snprintf (numbuf, sizeof numbuf, "%d", percent);
+          rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+          xfree (pin);
+        }
+    }
+  else
+    {
+      log_error ("unsupported inquiry `%s' from pinentry\n", line);
+      rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+    }
+
+  return rc;
+}
+
+
+
+
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
@@ -463,6 +563,16 @@ agent_askpin (ctrl_t ctrl,
   if (rc)
     return unlock_pinentry (rc);
 
+  /* If a passphrase quality indicator has been requested and a
+     minimum passphrase length has not been disabled, send the command
+     to the pinentry.  */
+  if (pininfo->with_qualitybar && opt.min_passphrase_len )
+    {
+      rc = assuan_transact (entry_ctx, "SETQUALITYBAR",
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return unlock_pinentry (rc);
+    }
 
   if (initial_errtext)
     { 
@@ -497,7 +607,7 @@ agent_askpin (ctrl_t ctrl,
         }
       
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                            NULL, NULL, NULL, NULL);
+                            inq_quality, entry_ctx, NULL, NULL);
       /* Most pinentries out in the wild return the old Assuan error code
          for canceled which gets translated to an assuan Cancel error and
          not to the code for a user cancel.  Fix this here. */

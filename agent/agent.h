@@ -169,6 +169,7 @@ struct pin_entry_info_s
   int max_digits; /* max. number of allowed digits allowed*/
   int max_tries;
   int failed_tries;
+  int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
   const char *cb_errtext; /* used by the cb to displaye a specific error */
@@ -269,7 +270,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      membuf_t *outbuf);
 
 /*-- genkey.c --*/
-int check_passphrase_constraints (ctrl_t ctrl, const char *pw);
+int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
 int agent_genkey (ctrl_t ctrl, 
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);

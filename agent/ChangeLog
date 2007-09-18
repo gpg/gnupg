@@ -1,3 +1,14 @@
+2007-09-18  Werner Koch  <wk@g10code.com>
+
+	* agent.h (struct pin_entry_info_s): Add element WITH_QUALITYBAR.
+	* genkey.c (check_passphrase_constraints): New arg SILENT.
+	Changed all callers.
+	(agent_protect_and_store, agent_genkey): Enable qualitybar.
+	* call-pinentry.c (agent_askpin): Send that option.
+	(unescape_passphrase_string): New.
+	(inq_quality): New.
+	(estimate_passphrase_quality): New.
+
 2007-09-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* call-pinentry.c (agent_popup_message_stop): Implement kill for

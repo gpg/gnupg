@@ -168,9 +168,10 @@ take_this_one_anyway (ctrl_t ctrl, const char *desc)
 
 /* Check whether the passphrase PW is suitable. Returns 0 if the
    passphrase is suitable and true if it is not and the user should be
-   asked to provide a different one. */
+   asked to provide a different one.  If SILENT is set, no message are
+   displayed.  */
 int
-check_passphrase_constraints (ctrl_t ctrl, const char *pw)
+check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
 {
   gpg_error_t err;
   unsigned int minlen = opt.min_passphrase_len;
@@ -181,7 +182,12 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
 
   if (utf8_charcount (pw) < minlen ) 
     {
-      char *desc = xtryasprintf 
+      char *desc;
+      
+      if (silent)
+        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+
+      desc = xtryasprintf 
         ( ngettext ("Warning:  You have entered a passphrase that%%0A"
                     "is obviously not secure.  A passphrase should%%0A"
                     "be at least %u character long.", 
@@ -198,7 +204,12 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
 
   if (nonalpha_count (pw) < minnonalpha ) 
     {
-      char *desc = xtryasprintf 
+      char *desc;
+
+      if (silent)
+        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+
+      desc = xtryasprintf 
         ( ngettext ("Warning:  You have entered a passphrase that%%0A"
                     "is obviously not secure.  A passphrase should%%0A"
                     "contain at least %u digit or special character.", 
@@ -226,6 +237,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
                     "is obviously not secure.  A passphrase may not%0A"
                     "be a known term or match certain pattern.");
 
+      if (silent)
+        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+
       err = take_this_one_anyway (ctrl, desc);
       if (err)
         return err;
@@ -242,6 +256,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw)
                             "Please confirm that you do not want to "
                             "have any protection on your key."));
       
+      if (silent)
+        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+
       err = take_this_one_anyway2 (ctrl, desc,
                                    _("Yes, protection is not needed"));
       if (err)
@@ -296,6 +313,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     pi2 = pi + (sizeof *pi + 100);
     pi->max_length = 100;
     pi->max_tries = 3;
+    pi->with_qualitybar = 1;
     pi2->max_length = 100;
     pi2->max_tries = 3;
     pi2->check_cb = reenter_compare_cb;
@@ -306,7 +324,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     initial_errtext = NULL;
     if (!rc)
       {
-        if (check_passphrase_constraints (ctrl, pi->pin))
+        if (check_passphrase_constraints (ctrl, pi->pin, 0))
           {
             pi->failed_tries = 0;
             pi2->failed_tries = 0;
@@ -417,6 +435,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
     pi2 = pi + (sizeof *pi + 100);
     pi->max_length = 100;
     pi->max_tries = 3;
+    pi->with_qualitybar = 1;
     pi2->max_length = 100;
     pi2->max_tries = 3;
     pi2->check_cb = reenter_compare_cb;
@@ -427,7 +446,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
     initial_errtext = NULL;
     if (!rc)
       {
-        if (check_passphrase_constraints (ctrl, pi->pin))
+        if (check_passphrase_constraints (ctrl, pi->pin, 0))
           {
             pi->failed_tries = 0;
             pi2->failed_tries = 0;
