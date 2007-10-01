@@ -32,7 +32,8 @@
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
-#include "membuf.h"
+#include "../common/membuf.h"
+#include "../common/sysutils.h" /* (gnupg_fd_t) */
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -131,7 +132,7 @@ struct server_control_s
   /* Private data used to fire up the connection thread.  We use this
      structure do avoid an extra allocation for just a few bytes. */
   struct {
-    int fd;
+    gnupg_fd_t fd;
   } thread_startup;
   
   /* Private data of the server (command.c). */
@@ -139,8 +140,6 @@ struct server_control_s
 
   /* Private data of the SCdaemon (call-scd.c). */
   struct scd_local_s *scd_local;
-
-  int   connection_fd; /* -1 or an identifier for the current connection. */
 
   char *display;
   char *ttyname;
@@ -209,10 +208,10 @@ void agent_sighup_action (void);
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
-void start_command_handler (ctrl_t, int, int);
+void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
 
 /*-- command-ssh.c --*/
-void start_command_handler_ssh (ctrl_t, int);
+void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,

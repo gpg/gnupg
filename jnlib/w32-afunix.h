@@ -39,10 +39,11 @@ struct sockaddr_un
   char           sun_path[108-2-4]; /* Path name.  */
 };
 
+
 int _w32_close (int fd);
 int _w32_sock_new (int domain, int type, int proto);
-int _w32_sock_bind (int sockfd, struct sockaddr *addr, int addrlen);
 int _w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen);
+
 
 #endif /*W32AFUNIX_DEFS_H*/
 #endif /*_WIN32*/

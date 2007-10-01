@@ -1544,12 +1544,12 @@ register_commands (assuan_context_t ctx)
    control structure for this connection; it has only the basic
    intialization. */
 void
-start_command_handler (ctrl_t ctrl, int listen_fd, int fd)
+start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 {
   int rc;
   assuan_context_t ctx;
 
-  if (listen_fd == -1 && fd == -1)
+  if (listen_fd == GNUPG_INVALID_FD && fd == GNUPG_INVALID_FD)
     {
       int filedes[2];
 
@@ -1557,14 +1557,13 @@ start_command_handler (ctrl_t ctrl, int listen_fd, int fd)
       filedes[1] = 1;
       rc = assuan_init_pipe_server (&ctx, filedes);
     }
-  else if (listen_fd != -1)
+  else if (listen_fd != GNUPG_INVALID_FD)
     {
       rc = assuan_init_socket_server_ext (&ctx, listen_fd, 0);
     }
   else 
     {
       rc = assuan_init_socket_server_ext (&ctx, fd, 2);
-      ctrl->connection_fd = fd;
     }
   if (rc)
     {

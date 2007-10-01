@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2004-06-17 11:04+0300\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -7855,6 +7855,11 @@ msgstr "|NIMI|krüpti NIMEle"
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr ""
+
+#: tools/gpgconf-comp.c:673
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "ei saa parsida võtmeserveri URI\n"
 
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"

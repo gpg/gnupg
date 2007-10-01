@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2006-11-07 19:31+0300\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -7666,6 +7666,11 @@ msgstr "|NAME|зашифровать для получателя NAME"
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr "Конфигурация серверов ключей"
+
+#: tools/gpgconf-comp.c:673
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "не могу проанализировать URL сервера ключей\n"
 
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"

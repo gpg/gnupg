@@ -2818,14 +2818,11 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
 /* Start serving client on SOCK_CLIENT.  */
 void
-start_command_handler_ssh (ctrl_t ctrl, int sock_client)
+start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 {
   estream_t stream_sock;
   gpg_error_t err;
   int ret;
-
-  /* Setup control structure.  */
-  ctrl->connection_fd = sock_client;
 
   /* Because the ssh protocol does not send us information about the
      the current TTY setting, we resort here to use those from startup
@@ -2843,7 +2840,7 @@ start_command_handler_ssh (ctrl_t ctrl, int sock_client)
 
 
   /* Create stream from socket.  */
-  stream_sock = es_fdopen (sock_client, "r+");
+  stream_sock = es_fdopen (FD2INT(sock_client), "r+");
   if (!stream_sock)
     {
       err = gpg_error_from_syserror ();

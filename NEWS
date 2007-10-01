@@ -1,6 +1,10 @@
 Noteworthy changes in version 2.0.8
 ------------------------------------------------
 
+ * Make sure that under Windows the file permissions of the socket are
+   taken into account.  This required a change of our the socket
+   emulation code; thus old GnuPG modules can't be used anymore.
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------

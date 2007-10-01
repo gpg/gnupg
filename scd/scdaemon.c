@@ -47,9 +47,6 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
-#ifdef HAVE_W32_SYSTEM
-#include "../jnlib/w32-afunix.h"
-#endif
 #include "ccid-driver.h"
 #include "mkdtemp.h"
 #include "gc-opt-flags.h"
@@ -170,6 +167,9 @@ static int maybe_setuid = 1;
 /* Name of the communication socket */
 static char *socket_name;
 
+/* We need to keep track of the server's nonces (these are dummies for
+   POSIX systems). */
+static assuan_sock_nonce_t socket_nonce;
 
 /* Debug flag to disable the ticker.  The ticker is in fact not
    disabled but it won't perform any ticker specific actions. */
@@ -179,7 +179,8 @@ static int ticker_disabled;
 
 static char *create_socket_name (int use_standard_socket,
                                  char *standard_name, char *template);
-static int create_server_socket (int is_standard_name, const char *name);
+static gnupg_fd_t create_server_socket (int is_standard_name, const char *name,
+                                        assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
 static void handle_connections (int listen_fd);
@@ -631,7 +632,7 @@ main (int argc, char **argv )
                                             "S.scdaemon",
                                             "/tmp/gpg-XXXXXX/S.scdaemon");
           
-          fd = create_server_socket (0, socket_name);
+          fd = FD2INT(create_server_socket (0, socket_name, &socket_nonce));
         }
 
       tattr = pth_attr_new();
@@ -646,7 +647,7 @@ main (int argc, char **argv )
                      strerror (errno) );
           scd_exit (2);
         }
-      ctrl->thread_startup.fd = -1;
+      ctrl->thread_startup.fd = GNUPG_INVALID_FD;
       if ( !pth_spawn (tattr, start_connection_thread, ctrl) )
         {
           log_error ("error spawning pipe connection handler: %s\n",
@@ -667,15 +668,17 @@ main (int argc, char **argv )
   else
     { /* Regular server mode */
       int fd;
+#ifndef HAVE_W32_SYSTEM
       pid_t pid;
       int i;
+#endif
 
       /* Create the socket.  */
       socket_name = create_socket_name (standard_socket,
                                         "S.scdaemon",
                                         "/tmp/gpg-XXXXXX/S.scdaemon");
 
-      fd = create_server_socket (0, socket_name);
+      fd = FD2INT (create_server_socket (0, socket_name, &socket_nonce));
 
 
       fflush (NULL);
@@ -936,20 +939,17 @@ create_socket_name (int use_standard_socket,
 /* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
    whether a non-random socket is used.  Returns the file descriptor
    or terminates the process in case of an error. */
-static int
-create_server_socket (int is_standard_name, const char *name)
+static gnupg_fd_t
+create_server_socket (int is_standard_name, const char *name,
+                      assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
-  int fd;
+  gnupg_fd_t fd;
   int rc;
 
-#ifdef HAVE_W32_SYSTEM
-  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
-#else
-  fd = socket (AF_UNIX, SOCK_STREAM, 0);
-#endif
-  if (fd == -1)
+  fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
+  if (fd == GNUPG_INVALID_FD)
     {
       log_error (_("can't create socket: %s\n"), strerror (errno));
       scd_exit (2);
@@ -963,33 +963,27 @@ create_server_socket (int is_standard_name, const char *name)
   len = (offsetof (struct sockaddr_un, sun_path)
 	 + strlen (serv_addr->sun_path) + 1);
 
-#ifdef HAVE_W32_SYSTEM
-  rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 )
-    {
-      remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
-    }
-#else
-  rc = bind (fd, (struct sockaddr*) serv_addr, len);
+  rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
   if (is_standard_name && rc == -1 && errno == EADDRINUSE)
     {
       remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+      rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
-#endif
-  if (rc == -1)
+  if (rc != -1 
+      && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
+    log_error (_("error getting nonce for the socket\n"));
+ if (rc == -1)
     {
       log_error (_("error binding socket to `%s': %s\n"),
 		 serv_addr->sun_path, strerror (errno));
-      close (fd);
+      assuan_sock_close (fd);
       scd_exit (2);
     }
 
-  if (listen (fd, 5 ) == -1)
+  if (listen (FD2INT(fd), 5 ) == -1)
     {
       log_error (_("listen() failed: %s\n"), strerror (errno));
-      close (fd);
+      assuan_sock_close (fd);
       scd_exit (2);
     }
           
@@ -1007,20 +1001,31 @@ start_connection_thread (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (assuan_sock_check_nonce (ctrl->thread_startup.fd, &socket_nonce))
+    {
+      log_info (_("error reading nonce on fd %d: %s\n"), 
+                FD2INT(ctrl->thread_startup.fd), strerror (errno));
+      assuan_sock_close (ctrl->thread_startup.fd);
+      xfree (ctrl);
+      return NULL;
+    }
+
   scd_init_default_ctrl (ctrl);
   if (opt.verbose)
-    log_info (_("handler for fd %d started\n"), ctrl->thread_startup.fd);
+    log_info (_("handler for fd %d started\n"),
+              FD2INT(ctrl->thread_startup.fd));
 
-  scd_command_handler (ctrl, ctrl->thread_startup.fd);
+  scd_command_handler (ctrl, FD2INT(ctrl->thread_startup.fd));
 
   if (opt.verbose)
-    log_info (_("handler for fd %d terminated\n"), ctrl->thread_startup.fd);
+    log_info (_("handler for fd %d terminated\n"),
+              FD2INT (ctrl->thread_startup.fd));
 
   /* If this thread is the pipe connection thread, flag that a
      shutdown is required.  With the next ticker event and given that
      no other connections are running the shutdown will then
      happen. */
-  if (ctrl->thread_startup.fd == -1)
+  if (ctrl->thread_startup.fd == GNUPG_INVALID_FD)
     shutdown_pending = 1;
   
   scd_deinit_default_ctrl (ctrl);
@@ -1166,7 +1171,7 @@ handle_connections (int listen_fd)
               snprintf (threadname, sizeof threadname-1, "conn fd=%d", fd);
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
-              ctrl->thread_startup.fd = fd;
+              ctrl->thread_startup.fd = INT2FD (fd);
               if (!pth_spawn (tattr, start_connection_thread, ctrl))
                 {
                   log_error ("error spawning connection handler: %s\n",

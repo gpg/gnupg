@@ -29,7 +29,7 @@
 #include "i18n.h"
 #include "../common/util.h"
 #include "../common/asshelp.h"
-
+#include "../common/sysutils.h"
 
 
 /* Constants to identify the commands and options. */
@@ -244,7 +244,7 @@ do_sendfd (assuan_context_t ctx, char *line)
     log_error ("file `%s' opened in \"%s\" mode, fd=%d\n",
                name, mode, fd);
 
-  rc = assuan_sendfd (ctx, fd);
+  rc = assuan_sendfd (ctx, INT2FD (fd) );
   if (rc)
     log_error ("sednig  descriptor %d failed: %s\n", fd, gpg_strerror (rc));
   fclose (fp);
@@ -360,6 +360,16 @@ main (int argc, char **argv)
     }
   else
     ctx = start_agent ();
+
+  /* See whether there is a line pending from the server (in case
+     assuan did not run the initial handshaking).  */
+  if (assuan_pending_line (ctx))
+    {
+      rc = read_and_print_response (ctx);
+      if (rc)
+        log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
+    }
+
   line = NULL;
   linesize = 0;
   for (;;)

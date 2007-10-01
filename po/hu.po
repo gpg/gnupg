@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -7896,6 +7896,11 @@ msgstr "|NÉV|titkosítás NÉV részére"
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr ""
+
+#: tools/gpgconf-comp.c:673
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
 
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"

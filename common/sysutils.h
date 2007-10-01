@@ -27,9 +27,13 @@
 #ifdef HAVE_W32_SYSTEM
 typedef void *gnupg_fd_t;
 #define GNUPG_INVALID_FD ((void*)(-1))
+#define INT2FD(s) ((void *)(s))
+#define FD2INT(h) ((unsigned int)(h))
 #else
 typedef int gnupg_fd_t;
 #define GNUPG_INVALID_FD (-1)
+#define INT2FD(s) (s)
+#define FD2INT(h) (h)
 #endif
 
 

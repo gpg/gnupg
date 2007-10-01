@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -7614,6 +7614,11 @@ msgstr "|某甲|为收件者“某甲”加密"
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr ""
+
+#: tools/gpgconf-comp.c:673
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "无法解析公钥服务器 URL\n"
 
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"

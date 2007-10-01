@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -7712,6 +7712,11 @@ msgstr "|名前|「名前」用に暗号化"
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
 msgstr ""
+
+#: tools/gpgconf-comp.c:673
+#, fuzzy
+msgid "|URL|use keyserver at URL"
+msgstr "鍵サーバーのURLを解析不能\n"
 
 #: tools/gpgconf-comp.c:676
 msgid "allow PKA lookups (DNS requests)"

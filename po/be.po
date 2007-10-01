@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-09-10 17:28+0200\n"
+"POT-Creation-Date: 2007-09-14 13:27+0200\n"
 "PO-Revision-Date: 2003-10-30 16:35+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -7507,6 +7507,10 @@ msgstr "|ІМЯ|   зашыфраваць для вылучанай асобы"
 
 #: tools/gpgconf-comp.c:671
 msgid "Configuration for Keyservers"
+msgstr ""
+
+#: tools/gpgconf-comp.c:673
+msgid "|URL|use keyserver at URL"
 msgstr ""
 
 #: tools/gpgconf-comp.c:676

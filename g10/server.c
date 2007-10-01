@@ -32,7 +32,7 @@
 #include "util.h"
 #include "i18n.h"
 #include "options.h"
-
+#include "../common/sysutils.h"
 
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
@@ -44,7 +44,7 @@ struct server_local_s
   /* Our current Assuan context. */
   assuan_context_t assuan_ctx;  
   /* File descriptor as set by the MESSAGE command. */
-  int message_fd;               
+  gnupg_fd_t message_fd;               
 };
 
 
@@ -53,10 +53,10 @@ struct server_local_s
 static void 
 close_message_fd (ctrl_t ctrl)
 {
-  if (ctrl->server_local->message_fd != -1)
+  if (ctrl->server_local->message_fd != GNUPG_INVALID_FD)
     {
-      close (ctrl->server_local->message_fd);
-      ctrl->server_local->message_fd = -1;
+      assuan_sock_close (ctrl->server_local->message_fd);
+      ctrl->server_local->message_fd = GNUPG_INVALID_FD;
     } 
 }
 
@@ -229,27 +229,28 @@ cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int fd = assuan_get_input_fd (ctx);
-  int out_fd = assuan_get_output_fd (ctx);
+  gnupg_fd_t fd = assuan_get_input_fd (ctx);
+  gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
   FILE *out_fp = NULL;
 
-  if (fd == -1)
+  if (fd == GNUPG_INVALID_FD)
     return gpg_error (GPG_ERR_ASS_NO_INPUT);
 
-  if (out_fd != -1)
+  if (out_fd != GNUPG_INVALID_FD)
     {
-      out_fp = fdopen ( dup(out_fd), "w");
+      out_fp = fdopen ( dup (FD2INT (out_fd)), "w");
       if (!out_fp)
         return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
     }
 
-  log_debug ("WARNING: The server mode work in progress and not ready for use\n");
+  log_debug ("WARNING: The server mode work "
+             "in progress and not ready for use\n");
 
   /* Need to dup it because it might get closed and libassuan won't
      know about it then. */
   rc = gpg_verify (ctrl,
-                   dup (fd), 
-                   dup (ctrl->server_local->message_fd),
+                   dup ( FD2INT (fd)), 
+                   dup ( FD2INT (ctrl->server_local->message_fd)),
                    out_fp);
 
   if (out_fp)
@@ -326,13 +327,13 @@ static int
 cmd_message (assuan_context_t ctx, char *line)
 {
   int rc;
-  int fd;
+  gnupg_fd_t fd;
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   rc = assuan_command_parse_fd (ctx, line, &fd);
   if (rc)
     return rc;
-  if (fd == -1)
+  if (fd == GNUPG_INVALID_FD)
     return gpg_error (GPG_ERR_ASS_NO_INPUT);
   ctrl->server_local->message_fd = fd;
   return 0;
@@ -488,7 +489,7 @@ gpg_server (ctrl_t ctrl)
       goto leave;
     }
   ctrl->server_local->assuan_ctx = ctx;
-  ctrl->server_local->message_fd = -1;
+  ctrl->server_local->message_fd = GNUPG_INVALID_FD;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());

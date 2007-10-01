@@ -1,4 +1,4 @@
-/* w32-afunix.c - AF_UNIX emulation for Windows.
+/* w32-afunix.c - AF_UNIX emulation for Windows (Client only).
  * Copyright (C) 2004, 2006 g10 Code GmbH
  *
  * This file is part of JNLIB.
@@ -17,8 +17,13 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Use of this code is preprecated - you better use the sockt wrappers
+   from libassuan. */
+
 #ifdef _WIN32
 #include <stdio.h>
+#include <stdlib.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -27,10 +32,48 @@
 
 #include "w32-afunix.h"
 
-#ifndef S_IRGRP
-# define S_IRGRP 0
-# define S_IWGRP 0
-#endif
+
+
+/* The buffer for NONCE needs to be at least 16 bytes.  Returns 0 on
+   success. */
+static int
+read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
+{
+  FILE *fp;
+  char buffer[50], *p;
+  size_t nread;
+  int aval;
+
+  fp = fopen (fname, "rb");
+  if (!fp)
+    return -1;
+  nread = fread (buffer, 1, sizeof buffer - 1, fp);
+  fclose (fp);
+  if (!nread)
+    {
+      errno = ENOFILE;
+      return -1;
+    }
+  buffer[nread] = 0;
+  aval = atoi (buffer);
+  if (aval < 1 || aval > 65535)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+  *port = (unsigned int)aval;
+  for (p=buffer; nread && *p != '\n'; p++, nread--)
+    ;
+  if (*p != '\n' || nread != 17)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+  p++; nread--;
+  memcpy (nonce, p, 16);
+  return 0;
+}
+
 
 
 int
@@ -53,97 +96,40 @@ _w32_sock_new (int domain, int type, int proto)
 
 
 int
-_w32_sock_connect (int sockfd, struct sockaddr * addr, int addrlen)
+_w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen)
 {
   struct sockaddr_in myaddr;
-  struct sockaddr_un * unaddr;
-  FILE * fp;
-  int port;
-  
+  struct sockaddr_un *unaddr;
+  unsigned short port;
+  char nonce[16];
+  int ret;
+      
   unaddr = (struct sockaddr_un *)addr;
-  fp = fopen (unaddr->sun_path, "rb");
-  if (!fp)
+  if (read_port_and_nonce (unaddr->sun_path, &port, nonce))
     return -1;
-  fscanf (fp, "%d", &port);
-  fclose (fp);
-
-  if (port < 0 || port > 65535)
-    {
-      errno = EINVAL;
-      return -1;
-    }
-  
+      
   myaddr.sin_family = AF_INET;
-  myaddr.sin_port = port; 
+  myaddr.sin_port = htons (port); 
   myaddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-
-  /* we need this later. */
+  
+  /* Set return values.  */
   unaddr->sun_family = myaddr.sin_family;
   unaddr->sun_port = myaddr.sin_port;
   unaddr->sun_addr.s_addr = myaddr.sin_addr.s_addr;
   
-  return connect (sockfd, (struct sockaddr *)&myaddr, sizeof myaddr);
-}
-
-
-int
-_w32_sock_bind (int sockfd, struct sockaddr *addr, int addrlen)
-{
-  if (addr->sa_family == AF_LOCAL || addr->sa_family == AF_UNIX)
+  ret = connect (sockfd, (struct sockaddr *)&myaddr, sizeof myaddr);
+  if (!ret)
     {
-      struct sockaddr_in myaddr;
-      struct sockaddr_un *unaddr;
-      int filefd;
-      FILE *fp;
-      int len = sizeof myaddr;
-      int rc;
-
-      unaddr = (struct sockaddr_un *)addr;
-
-      myaddr.sin_port = 0;
-      myaddr.sin_family = AF_INET;
-      myaddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-
-      filefd = open (unaddr->sun_path, 
-                     (O_WRONLY|O_CREAT|O_EXCL|O_BINARY), 
-                     (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP));
-      if (filefd == -1)
+      /* Send the nonce. */
+      ret = send (sockfd, nonce, 16, 0);
+      if (ret >= 0 && ret != 16)
         {
-          if (errno == EEXIST)
-            errno = WSAEADDRINUSE;
-          return -1;
+          errno = EIO;
+          ret = -1;
         }
-      fp = fdopen (filefd, "wb");
-      if (!fp)
-        { 
-          int save_e = errno;
-          close (filefd);
-          errno = save_e;
-          return -1;
-        }
-
-      rc = bind (sockfd, (struct sockaddr *)&myaddr, len);
-      if (!rc)
-        rc = getsockname (sockfd, (struct sockaddr *)&myaddr, &len);
-      if (rc)
-        {
-          int save_e = errno;
-          fclose (fp);
-          remove (unaddr->sun_path);
-          errno = save_e;
-          return rc;
-        }
-      fprintf (fp, "%d", myaddr.sin_port);
-      fclose (fp);
-
-      /* The caller expects these values. */
-      unaddr->sun_family = myaddr.sin_family;
-      unaddr->sun_port = myaddr.sin_port;
-      unaddr->sun_addr.s_addr = myaddr.sin_addr.s_addr;
-      
-      return 0;
     }
-  return bind (sockfd, addr, addrlen);
+  return ret;
 }
+
 
 #endif /*_WIN32*/

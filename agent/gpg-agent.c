@@ -40,13 +40,11 @@
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
-#include <assuan.h> /* Malloc hooks */
+#include <assuan.h> /* Malloc hooks  and socket wrappers. */
 
 #include "i18n.h"
+#include "mkdtemp.h" /* Gnulib replacement. */
 #include "sysutils.h"
-#ifdef HAVE_W32_SYSTEM
-# include "../jnlib/w32-afunix.h"
-#endif
 #include "setenv.h"
 #include "gc-opt-flags.h"
 
@@ -207,6 +205,12 @@ static char *socket_name;
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
 
+/* We need to keep track of the server's nonces (these are dummies for
+   POSIX systems). */
+static assuan_sock_nonce_t socket_nonce;
+static assuan_sock_nonce_t socket_nonce_ssh;
+
+
 /* Default values for options passed to the pinentry. */
 static char *default_display;
 static char *default_ttyname;
@@ -236,13 +240,15 @@ static pid_t parent_pid = (pid_t)(-1);
 
 static char *create_socket_name (int use_standard_socket,
                                  char *standard_name, char *template);
-static int create_server_socket (int is_standard_name, char *name);
+static gnupg_fd_t create_server_socket (int is_standard_name, char *name, 
+                                        assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
 static void agent_init_default_ctrl (ctrl_t ctrl);
 static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
-static void handle_connections (int listen_fd, int listen_fd_ssh);
+static void handle_connections (gnupg_fd_t listen_fd,
+                                gnupg_fd_t listen_fd_ssh);
 static int check_for_running_agent (int silent, int mode);
 
 /* Pth wrapper function definitions. */
@@ -845,7 +851,7 @@ main (int argc, char **argv )
           agent_exit (1);
         }
       agent_init_default_ctrl (ctrl);
-      start_command_handler (ctrl, -1, -1);
+      start_command_handler (ctrl, GNUPG_INVALID_FD, GNUPG_INVALID_FD);
       agent_deinit_default_ctrl (ctrl);
       xfree (ctrl);
     }
@@ -853,8 +859,8 @@ main (int argc, char **argv )
     ; /* NOTREACHED */
   else
     { /* Regular server mode */
-      int fd;
-      int fd_ssh;
+      gnupg_fd_t fd;
+      gnupg_fd_t fd_ssh;
       pid_t pid;
 
       /* Remove the DISPLAY variable so that a pinentry does not
@@ -878,11 +884,13 @@ main (int argc, char **argv )
                                             "S.gpg-agent.ssh",
                                             "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
-      fd = create_server_socket (standard_socket, socket_name);
+      fd = create_server_socket (standard_socket, socket_name,
+                                 &socket_nonce);
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (standard_socket, socket_name_ssh);
+	fd_ssh = create_server_socket (standard_socket, socket_name_ssh,
+                                       &socket_nonce_ssh);
       else
-	fd_ssh = -1;
+	fd_ssh = GNUPG_INVALID_FD;
 
       /* If we are going to exec a program in the parent, we record
          the PID, so that the child may check whether the program is
@@ -1079,8 +1087,8 @@ main (int argc, char **argv )
       }
 #endif /*!HAVE_W32_SYSTEM*/
 
-      handle_connections (fd, opt.ssh_support ? fd_ssh : -1);
-      close (fd);
+      handle_connections (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD);
+      assuan_sock_close (fd);
     }
   
   return 0;
@@ -1109,8 +1117,6 @@ agent_exit (int rc)
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
-  ctrl->connection_fd = -1;
-
   /* Note we ignore malloc errors because we can't do much about it
      and the request will fail anyway shortly after this
      initialization. */
@@ -1269,20 +1275,17 @@ create_socket_name (int use_standard_socket,
 /* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
    whether a non-random socket is used.  Returns the file descriptor or
    terminates the process in case of an error. */
-static int
-create_server_socket (int is_standard_name, char *name)
+static gnupg_fd_t
+create_server_socket (int is_standard_name, char *name,
+                      assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
-  int fd;
+  gnupg_fd_t fd;
   int rc;
 
-#ifdef HAVE_W32_SYSTEM
-  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
-#else
-  fd = socket (AF_UNIX, SOCK_STREAM, 0);
-#endif
-  if (fd == -1)
+  fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
+  if (fd == ASSUAN_INVALID_FD)
     {
       log_error (_("can't create socket: %s\n"), strerror (errno));
       agent_exit (2);
@@ -1291,43 +1294,32 @@ create_server_socket (int is_standard_name, char *name)
   serv_addr = xmalloc (sizeof (*serv_addr)); 
   memset (serv_addr, 0, sizeof *serv_addr);
   serv_addr->sun_family = AF_UNIX;
-  assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
+  if (strlen (name) + 1 >= sizeof (serv_addr->sun_path))
+    {
+      log_error (_("socket name `%s' is too long\n"), name);
+      agent_exit (2);
+    }
   strcpy (serv_addr->sun_path, name);
   len = (offsetof (struct sockaddr_un, sun_path)
 	 + strlen (serv_addr->sun_path) + 1);
 
-#ifdef HAVE_W32_SYSTEM
-  rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == WSAEADDRINUSE)
-    {
-      if (!check_for_running_agent (1, 1))
-        {
-          log_error (_("a gpg-agent is already running - "
-                      "not starting a new one\n"));
-          *name = 0; /* Inhibit removal of the socket by cleanup(). */
-          close (fd);
-          agent_exit (2);
-        }
-
-      remove (name);
-      rc = _w32_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-    }
-#else
-  rc = bind (fd, (struct sockaddr*) serv_addr, len);
+  rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
   if (is_standard_name && rc == -1 && errno == EADDRINUSE)
     {
       if (!check_for_running_agent (1, 1))
         {
           log_error (_("a gpg-agent is already running - "
-                      "not starting a new one\n"));
+                       "not starting a new one\n"));
           *name = 0; /* Inhibit removal of the socket by cleanup(). */
-          close (fd);
+          assuan_sock_close (fd);
           agent_exit (2);
         }
       remove (name);
-      rc = bind (fd, (struct sockaddr*) serv_addr, len);
+      rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
-#endif
+  if (rc != -1 
+      && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
+    log_error (_("error getting nonce for the socket\n"));
   if (rc == -1)
     {
       /* We use gpg_strerror here because it allows us to get strings
@@ -1336,16 +1328,16 @@ create_server_socket (int is_standard_name, char *name)
 		 serv_addr->sun_path, 
                  gpg_strerror (gpg_error_from_errno (errno)));
       
-      close (fd);
+      assuan_sock_close (fd);
       if (is_standard_name)
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
 
-  if (listen (fd, 5 ) == -1)
+  if (listen (FD2INT(fd), 5 ) == -1)
     {
       log_error (_("listen() failed: %s\n"), strerror (errno));
-      close (fd);
+      assuan_sock_close (fd);
       agent_exit (2);
     }
           
@@ -1538,21 +1530,42 @@ handle_signal (int signo)
 }
 
 
+/* Check the nonce on a new connection.  This is a NOP unless we we
+   are using our Unix domain socket emulation under Windows.  */
+static int 
+check_nonce (ctrl_t ctrl, assuan_sock_nonce_t *nonce)
+{
+  if (assuan_sock_check_nonce (ctrl->thread_startup.fd, nonce))
+    {
+      log_info (_("error reading nonce on fd %d: %s\n"), 
+                FD2INT(ctrl->thread_startup.fd), strerror (errno));
+      assuan_sock_close (ctrl->thread_startup.fd);
+      xfree (ctrl);
+      return -1;
+    }
+  else
+    return 0;
+}
+
+
 /* This is the standard connection thread's main function.  */
 static void *
 start_connection_thread (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (check_nonce (ctrl, &socket_nonce))
+    return NULL;
+
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"), 
-              (long)pth_self (), ctrl->thread_startup.fd);
+              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
 
-  start_command_handler (ctrl, -1, ctrl->thread_startup.fd);
+  start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"), 
-              (long)pth_self (), ctrl->thread_startup.fd);
+              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
   
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1566,15 +1579,18 @@ start_connection_thread_ssh (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (check_nonce (ctrl, &socket_nonce_ssh))
+    return NULL;
+
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              (long)pth_self (), ctrl->thread_startup.fd);
+              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              (long)pth_self (), ctrl->thread_startup.fd);
+              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
   
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1585,7 +1601,7 @@ start_connection_thread_ssh (void *arg)
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
-handle_connections (int listen_fd, int listen_fd_ssh)
+handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 {
   pth_attr_t tattr;
   pth_event_t ev, time_ev;
@@ -1595,7 +1611,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   socklen_t plen;
   fd_set fdset, read_fdset;
   int ret;
-  int fd;
+  gnupg_fd_t fd;
   int nfd;
 
   tattr = pth_attr_new();
@@ -1620,13 +1636,13 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   time_ev = NULL;
 
   FD_ZERO (&fdset);
-  FD_SET (listen_fd, &fdset);
-  nfd = listen_fd;
-  if (listen_fd_ssh != -1)
+  FD_SET (FD2INT (listen_fd), &fdset);
+  nfd = FD2INT (listen_fd);
+  if (listen_fd_ssh != GNUPG_INVALID_FD)
     {
-      FD_SET (listen_fd_ssh, &fdset);
-      if (listen_fd_ssh > nfd)
-        nfd = listen_fd_ssh;
+      FD_SET ( FD2INT(listen_fd_ssh), &fdset);
+      if (FD2INT (listen_fd_ssh) > nfd)
+        nfd = FD2INT (listen_fd_ssh);
     }
 
   for (;;)
@@ -1701,13 +1717,14 @@ handle_connections (int listen_fd, int listen_fd_ssh)
          new thread.  Thus we need to block those signals. */
       pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
 
-      if (FD_ISSET (listen_fd, &read_fdset))
+      if (FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
           ctrl_t ctrl;
 
           plen = sizeof paddr;
-	  fd = pth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
-	  if (fd == -1)
+	  fd = INT2FD (pth_accept (FD2INT(listen_fd),
+                                   (struct sockaddr *)&paddr, &plen));
+	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
 	    }
@@ -1715,14 +1732,14 @@ handle_connections (int listen_fd, int listen_fd_ssh)
             {
               log_error ("error allocating connection control data: %s\n",
                          strerror (errno) );
-              close (fd);
+              assuan_sock_close (fd);
             }
           else 
             {
               char threadname[50];
 
               snprintf (threadname, sizeof threadname-1,
-                        "conn fd=%d (gpg)", fd);
+                        "conn fd=%d (gpg)", FD2INT(fd));
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
               ctrl->thread_startup.fd = fd;
@@ -1730,20 +1747,22 @@ handle_connections (int listen_fd, int listen_fd_ssh)
                 {
                   log_error ("error spawning connection handler: %s\n",
                              strerror (errno) );
-                  close (fd);
+                  assuan_sock_close (fd);
                   xfree (ctrl);
                 }
             }
-          fd = -1;
+          fd = GNUPG_INVALID_FD;
 	}
 
-      if (listen_fd_ssh != -1 && FD_ISSET (listen_fd_ssh, &read_fdset))
+      if (listen_fd_ssh != GNUPG_INVALID_FD 
+          && FD_ISSET ( FD2INT (listen_fd_ssh), &read_fdset))
 	{
           ctrl_t ctrl;
 
           plen = sizeof paddr;
-	  fd = pth_accept (listen_fd_ssh, (struct sockaddr *)&paddr, &plen);
-	  if (fd == -1)
+	  fd = INT2FD(pth_accept (FD2INT(listen_fd_ssh),
+                                  (struct sockaddr *)&paddr, &plen));
+	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed for ssh: %s\n", strerror (errno));
 	    }
@@ -1751,7 +1770,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
             {
               log_error ("error allocating connection control data: %s\n",
                          strerror (errno) );
-              close (fd);
+              assuan_sock_close (fd);
             }
           else
             {
@@ -1759,7 +1778,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
               agent_init_default_ctrl (ctrl);
               snprintf (threadname, sizeof threadname-1,
-                        "conn fd=%d (ssh)", fd);
+                        "conn fd=%d (ssh)", FD2INT(fd));
               threadname[sizeof threadname -1] = 0;
               pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
               ctrl->thread_startup.fd = fd;
@@ -1767,11 +1786,11 @@ handle_connections (int listen_fd, int listen_fd_ssh)
                 {
                   log_error ("error spawning ssh connection handler: %s\n",
                              strerror (errno) );
-                  close (fd);
+                  assuan_sock_close (fd);
                   xfree (ctrl);
                 }
             }
-          fd = -1;
+          fd = GNUPG_INVALID_FD;
 	}
 
       /* Restore the signal mask. */

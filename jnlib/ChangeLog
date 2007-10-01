@@ -1,3 +1,9 @@
+2007-10-01  Werner Koch  <wk@g10code.com>
+
+	* w32-afunix.c: Only keep the client related code.
+	(read_port_and_nonce): New.  Taken from Assuan.
+	(_w32_sock_connect): Rewritten.
+
 2007-08-29  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (initialize): Make strings translatable and remove

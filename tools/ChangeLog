@@ -1,3 +1,12 @@
+2007-10-01  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (do_sendfd): Use INT2FD for assuan_sendfd.
+
+2007-09-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (main): Print the first response from the
+	server.
+
 2007-09-14  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Make a string translatable.

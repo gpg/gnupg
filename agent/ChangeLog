@@ -1,3 +1,17 @@
+2007-10-01  Werner Koch  <wk@g10code.com>
+
+	* agent.h (struct server_control_s): Remove unused CONNECTION_FD.
+
+	* gpg-agent.c: Remove w32-afunix.h.  Include mkdtemp.h.
+	(socket_nonce, socket_nonce_ssh): New.
+	(create_server_socket): Use assuan socket wrappers.  Remove W32
+	specific stuff.  Save the server nonce.
+	(check_nonce): New.
+	(start_connection_thread, start_connection_thread_ssh): Call it.
+	(handle_connections): Change args to gnupg_fd_t.
+	* command.c (start_command_handler): Change LISTEN_FD to gnupg_fd_t.
+	* command-ssh.c (start_command_handler_ssh): Ditto.
+
 2007-09-18  Werner Koch  <wk@g10code.com>
 
 	* agent.h (struct pin_entry_info_s): Add element WITH_QUALITYBAR.

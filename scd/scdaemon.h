@@ -30,7 +30,7 @@
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
-
+#include "../common/sysutils.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -91,7 +91,7 @@ struct server_control_s
   /* Private data used to fire up the connection thread.  We use this
      structure do avoid an extra allocation for just a few bytes. */
   struct {
-    int fd;
+    gnupg_fd_t fd;
   } thread_startup;
   
   /* Local data of the server; used only in command.c. */
