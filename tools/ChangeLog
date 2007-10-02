@@ -1,3 +1,13 @@
+2007-10-02  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_malloc_secure): New.
+
+	* gpg-connect-agent.c (set_var, set_int_var, get_var)
+	(substitute_line, show_variables, assign_variable)
+	(do_open, do_close, do_showopen): New.
+	(main): Add new commands /nosubst, /subst, /let, /showvar, /open,
+	/close and /showopen.
+
 2007-10-01  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (do_sendfd): Use INT2FD for assuan_sendfd.

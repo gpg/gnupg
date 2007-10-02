@@ -1452,6 +1452,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
    Supported values of WHAT are:
 
    version     - Return the version of the program.
+   pid         - Return the process id of the server.
 
    socket_name - Return the name of the socket.
 
@@ -1475,6 +1476,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       const char *s = VERSION;
       rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else if (!strcmp (line, "socket_name"))
     {

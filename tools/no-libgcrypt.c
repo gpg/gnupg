@@ -38,6 +38,12 @@ gcry_malloc (size_t n)
 }
 
 void *
+gcry_malloc_secure (size_t n)
+{
+  return malloc (n);
+}
+
+void *
 gcry_xmalloc (size_t n)
 {
   void *p = malloc (n);

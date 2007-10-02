@@ -1,3 +1,7 @@
+2007-10-02  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_getinfo): Add "pid" subcommand.
+
 2007-10-01  Werner Koch  <wk@g10code.com>
 
 	* agent.h (struct server_control_s): Remove unused CONNECTION_FD.

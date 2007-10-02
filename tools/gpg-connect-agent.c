@@ -30,7 +30,7 @@
 #include "../common/util.h"
 #include "../common/asshelp.h"
 #include "../common/sysutils.h"
-
+#include "../common/membuf.h"
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values
@@ -82,6 +82,7 @@ struct
   const char *raw_socket; /* Name of socket to connect in raw mode. */
   int exec;             /* Run the pgm given on the command line. */
   unsigned int connect_flags;    /* Flags used for connecting. */
+  int enable_varsubst;  /* Set if variable substitution is enabled.  */
 } opt;
 
 
@@ -100,6 +101,30 @@ typedef struct definq_s *definq_t;
 static definq_t definq_list;
 static definq_t *definq_list_tail = &definq_list;
 
+
+/* Variable definitions and glovbal table.  */
+struct variable_s
+{
+  struct variable_s *next;
+  char *value;  /* Malloced value - always a string.  */
+  char name[1]; /* Name of the variable.  */
+};
+typedef struct variable_s *variable_t;
+
+static variable_t variable_table;
+
+/* This is used to store the pid of the server.  */
+static pid_t server_pid = (pid_t)(-1);
+
+
+/* A list of open file descriptors. */
+static struct
+{
+  int inuse;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE handle;
+#endif
+} open_fd_table[256];
 
 
 /*-- local prototypes --*/
@@ -137,6 +162,162 @@ my_strusage( int level )
     default: p = NULL; break;
     }
   return p;
+}
+
+
+static void
+set_var (const char *name, const char *value)
+{
+  variable_t var;
+
+  for (var = variable_table; var; var = var->next)
+    if (!strcmp (var->name, name))
+      break;
+  if (!var)
+    {
+      var = xmalloc (sizeof *var + strlen (name));
+      var->value = NULL;
+      strcpy (var->name, name);
+      var->next = variable_table;
+      variable_table = var;
+    }
+  xfree (var->value);
+  var->value = value? xstrdup (value) : NULL;
+}    
+
+
+static void
+set_int_var (const char *name, int value)
+{
+  char numbuf[35];
+
+  snprintf (numbuf, sizeof numbuf, "%d", value);
+  set_var (name, numbuf);
+}
+
+/* Return the value of a variable.  That value is valid until a
+   variable of the name is changed.  Return NULL if not found.  */
+static const char *
+get_var (const char *name)
+{
+  variable_t var;
+
+  for (var = variable_table; var; var = var->next)
+    if (!strcmp (var->name, name))
+      break;
+  if (!var || !var->value)
+    return NULL;
+  return var->value;
+}
+
+
+
+/* Substitute variables in LINE and return a new allocated buffer if
+   required.  The function might modify LINE if the expanded version
+   fits into it.  */
+static char *
+substitute_line (char *buffer)
+{
+  char *line = buffer;
+  char *p, *pend;
+  const char *value;
+  size_t valuelen, n;
+  char *result = NULL;
+
+  while (*line)
+    {
+      p = strchr (line, '$');
+      if (!p)
+        return result; /* No more variables.  */
+      
+      if (p[1] == '$') /* Escaped dollar sign. */
+        {
+          memmove (p, p+1, strlen (p+1)+1);
+          line = p + 1;
+          continue;
+        }
+      for (pend=p+1; *pend && !spacep (pend) && *pend != '$' ; pend++)
+        ;
+      if (*pend)
+        {
+          int save = *pend;
+          *pend = 0;
+          value = get_var (p+1);
+          *pend = save;
+        }
+      else
+        value = get_var (p+1);
+      if (!value)
+        value = "";
+      valuelen = strlen (value);
+      if (valuelen <= pend - p)
+        {
+          memcpy (p, value, valuelen);
+          p += valuelen;
+          n = pend - p;
+          if (n)
+            memmove (p, p+n, strlen (p+n)+1);
+          line = p;
+        }
+      else
+        {
+          char *src = result? result : buffer;
+          char *dst;
+
+          dst = xmalloc (strlen (src) + valuelen + 1);
+          n = p - src;
+          memcpy (dst, src, n);
+          memcpy (dst + n, value, valuelen);
+          n += valuelen;
+          strcpy (dst + n, pend);
+          line = dst + n;
+          free (result);
+          result = dst;
+        }
+    }
+  return result;
+}
+
+
+
+static void
+assign_variable (char *line)
+{
+  char *name, *p, *tmp;
+
+  /* Get the  name. */
+  name = line;
+  for (p=name; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    *p++ = 0;
+  while (spacep (p))
+    p++;
+
+  if (!*p)
+    set_var (name, NULL); /* Remove variable.  */ 
+  else 
+    {
+      tmp = opt.enable_varsubst? substitute_line (p) : NULL;
+      if (tmp)
+        {
+          set_var (name, tmp);
+          xfree (tmp);
+        }
+      else
+        set_var (name, p);
+    }
+}
+
+
+static void
+show_variables (void)
+{
+  variable_t var;
+
+  for (var = variable_table; var; var = var->next)
+    if (var->value)
+      printf ("%-20s %s\n", var->name, var->value);
 }
 
 
@@ -246,7 +427,7 @@ do_sendfd (assuan_context_t ctx, char *line)
 
   rc = assuan_sendfd (ctx, INT2FD (fd) );
   if (rc)
-    log_error ("sednig  descriptor %d failed: %s\n", fd, gpg_strerror (rc));
+    log_error ("sending descriptor %d failed: %s\n", fd, gpg_strerror (rc));
   fclose (fp);
 }
 
@@ -258,6 +439,200 @@ do_recvfd (assuan_context_t ctx, char *line)
 }
 
 
+static void
+do_open (char *line)
+{
+  FILE *fp;
+  char *varname, *name, *mode, *p;
+  int fd;
+
+#ifdef HAVE_W32_SYSTEM
+  if (server_pid == (pid_t)(-1))
+    {
+      log_error ("the pid of the server is unknown\n");
+      log_info ("use command \"/serverpid\" first\n");
+      return;
+    }
+#endif
+
+  /* Get variable name. */
+  varname = line;
+  for (p=varname; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    *p++ = 0;
+  while (spacep (p))
+    p++;
+
+  /* Get file name. */
+  name = p;
+  for (p=name; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    *p++ = 0;
+  while (spacep (p))
+    p++;
+
+  /* Get mode.  */
+  mode = p;
+  if (!*mode)
+    mode = "r";
+  else
+    {
+      for (p=mode; *p && !spacep (p); p++)
+        ;
+      if (*p)
+        *p++ = 0;
+    }
+
+  /* Open and send. */
+  fp = fopen (name, mode);
+  if (!fp)
+    {
+      log_error ("can't open `%s' in \"%s\" mode: %s\n",
+                 name, mode, strerror (errno));
+      return;
+    }
+  fd = fileno (fp);
+  if (fd >= 0 && fd < DIM (open_fd_table))
+    {
+      open_fd_table[fd].inuse = 1;
+#ifdef HAVE_W32_SYSTEM
+      {
+        HANDLE prochandle, handle, newhandle;
+
+        handle = (void*)_get_osfhandle (fd);
+     
+        prochandle = OpenProcess (PROCESS_DUP_HANDLE, FALSE, server_pid);
+        if (!prochandle)
+          {
+            log_error ("failed to open the server process\n");
+            close (fd);
+            return;
+          }
+
+        if (!DuplicateHandle (GetCurrentProcess(), handle,
+                              prochandle, &newhandle, 0,
+                              TRUE, DUPLICATE_SAME_ACCESS ))
+          {
+            log_error ("failed to duplicate the handle\n");
+            close (fd);
+            CloseHandle (prochandle);
+            return;
+          }
+        CloseHandle (prochandle);
+        open_fd_table[fd].handle = newhandle;
+      }
+      if (opt.verbose)
+        log_info ("file `%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
+                   name, mode, (int)open_fd_table[fd].handle, fd);
+      set_int_var (varname, (int)open_fd_table[fd].handle);
+#else  
+      if (opt.verbose)
+        log_info ("file `%s' opened in \"%s\" mode, fd=%d\n",
+                   name, mode, fd);
+      set_int_var (varname, fd);
+#endif
+    }
+  else
+    {
+      log_error ("can't put fd %d into table\n", fd);
+      close (fd);
+    }
+}
+
+
+static void
+do_close (char *line)
+{
+  int fd = atoi (line);
+
+#ifdef HAVE_W32_SYSTEM
+  int i;
+
+  for (i=0; i < DIM (open_fd_table); i++)
+    if ( open_fd_table[i].inuse && open_fd_table[i].handle == (void*)fd)
+      break;
+  if (i < DIM (open_fd_table))
+    fd = i;
+  else
+    {
+      log_error ("given fd (system handle) has not been opened\n");
+      return;
+    }
+#endif
+
+  if (fd < 0 || fd >= DIM (open_fd_table))
+    {
+      log_error ("invalid fd\n");
+      return;
+    }
+
+  if (!open_fd_table[fd].inuse)
+    {
+      log_error ("given fd has not been opened\n");
+      return;
+    }
+#ifdef HAVE_W32_SYSTEM
+  CloseHandle (open_fd_table[fd].handle); /* Close duped handle.  */
+#endif
+  close (fd);
+  open_fd_table[fd].inuse = 0;
+}
+
+
+static void
+do_showopen (void)
+{
+  int i;
+
+  for (i=0; i < DIM (open_fd_table); i++)
+    if (open_fd_table[i].inuse)
+      {
+#ifdef HAVE_W32_SYSTEM
+        printf ("%-15d (libc=%d)\n", (int)open_fd_table[i].handle, i);
+#else
+        printf ("%-15d\n", i);
+#endif
+      }
+}
+
+
+
+static int
+getinfo_pin_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *mb = opaque;
+  put_membuf (mb, buffer, length);
+  return 0;
+}
+
+/* Get the pid of the server and store it locally.  */
+static void
+do_serverpid (assuan_context_t ctx)
+{
+  int rc;
+  membuf_t mb;
+  char *buffer;
+  
+  init_membuf (&mb, 100);
+  rc = assuan_transact (ctx, "GETINFO pid", getinfo_pin_cb, &mb,
+                        NULL, NULL, NULL, NULL);
+  put_membuf (&mb, "", 1);
+  buffer = get_membuf (&mb, NULL);
+  if (rc || !buffer)
+    log_error ("command \"%s\" failed: %s\n", 
+               "GETINFO pid", gpg_strerror (rc));
+  else
+    {
+      server_pid = (pid_t)strtoul (buffer, NULL, 10);
+      if (opt.verbose)
+        log_info ("server's PID is %lu\n", (unsigned long)server_pid);
+    }
+  xfree (buffer);
+}
+
+
 /* gpg-connect-agent's entry point. */
 int
 main (int argc, char **argv)
@@ -266,6 +641,7 @@ main (int argc, char **argv)
   int no_more_options = 0;
   assuan_context_t ctx;
   char *line, *p;
+  char *tmpline;
   size_t linesize;
   int rc;
 
@@ -406,7 +782,15 @@ main (int argc, char **argv)
             *p++ = 0;
           while (spacep (p))
             p++;
-          if (!strcmp (cmd, "definqfile"))
+          if (!strcmp (cmd, "let"))
+            {
+              assign_variable (p);
+            }
+          else if (!strcmp (cmd, "showvar"))
+            {
+              show_variables ();
+            }
+          else if (!strcmp (cmd, "definqfile"))
             {
               add_definq (p, 0);
             }
@@ -424,7 +808,14 @@ main (int argc, char **argv)
             }
           else if (!strcmp (cmd, "echo"))
             {
-              puts (p);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  puts (tmpline);
+                  xfree (tmpline);
+                }
+              else
+                puts (p);
             }
           else if (!strcmp (cmd, "sendfd"))
             {
@@ -436,6 +827,22 @@ main (int argc, char **argv)
               do_recvfd (ctx, p);
               continue;
             }
+          else if (!strcmp (cmd, "open"))
+            {
+              do_open (p);
+            }
+          else if (!strcmp (cmd, "close"))
+            {
+              do_close (p);
+            }
+          else if (!strcmp (cmd, "showopen"))
+            {
+              do_showopen ();
+            }
+          else if (!strcmp (cmd, "serverpid"))
+            {
+              do_serverpid (ctx);
+            }
           else if (!strcmp (cmd, "hex"))
             opt.hex = 1;
           else if (!strcmp (cmd, "nohex"))
@@ -444,11 +851,17 @@ main (int argc, char **argv)
             opt.decode = 1;
           else if (!strcmp (cmd, "nodecode"))
             opt.decode = 0;
+          else if (!strcmp (cmd, "subst"))
+            opt.enable_varsubst = 1;
+          else if (!strcmp (cmd, "nosubst"))
+            opt.enable_varsubst = 0;
           else if (!strcmp (cmd, "help"))
             {
               puts (
 "Available commands:\n"
 "/echo ARGS             Echo ARGS.\n"
+"/let  NAME VALUE       Set variable NAME to VALUE.\n"
+"/showvar               Show all variables.\n"
 "/definqfile NAME FILE\n"
 "    Use content of FILE for inquiries with NAME.\n"
 "    NAME may be \"*\" to match any inquiry.\n"
@@ -458,9 +871,14 @@ main (int argc, char **argv)
 "/showdef               Print all definitions.\n"
 "/cleardef              Delete all definitions.\n"
 "/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
-"/recvfd                Receive FD from server and print. \n"
+"/recvfd                Receive FD from server and print.\n"
+"/open VAR FILE MODE    Open FILE and assign the descrptor to VAR.\n" 
+"/close FD              Close file with descriptor FD.\n"
+"/showopen              Show descriptors of all open files.\n"
+"/serverpid             Retrieve the pid of the server.\n"
 "/[no]hex               Enable hex dumping of received data lines.\n"
 "/[no]decode            Enable decoding of received data lines.\n"
+"/[no]subst             Enable varibale substitution.\n"
 "/help                  Print this help.");
             }
           else
@@ -468,8 +886,15 @@ main (int argc, char **argv)
       
           continue;
         }
-      
-      rc = assuan_write_line (ctx, line);
+
+      tmpline = opt.enable_varsubst? substitute_line (line) : NULL;
+      if (tmpline)
+        {
+          rc = assuan_write_line (ctx, tmpline);
+          xfree (tmpline);
+        }
+      else
+        rc = assuan_write_line (ctx, line);
       if (rc)
         {
           log_info (_("sending line failed: %s\n"), gpg_strerror (rc) );
