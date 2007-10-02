@@ -40,6 +40,7 @@ enum cmd_and_opt_values
     oVerbose	= 'v',
     oRawSocket  = 'S',
     oExec       = 'E',
+    oRun        = 'r',
 
     oNoVerbose	= 500,
     oHomedir,
@@ -63,7 +64,7 @@ static ARGPARSE_OPTS opts[] =
     { oExec, "exec", 0, N_("run the Assuan server given on the command line")},
     { oNoExtConnect, "no-ext-connect",
                             0, N_("do not use extended connect mode")},
-
+    { oRun,  "run", 2,         N_("|FILE|run commands from FILE on startup")},
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
     { oHomedir, "homedir", 2, "@" },   
@@ -128,7 +129,7 @@ static struct
 
 
 /*-- local prototypes --*/
-static int read_and_print_response (assuan_context_t ctx);
+static int read_and_print_response (assuan_context_t ctx, int *r_goterr);
 static assuan_context_t start_agent (void);
 
 
@@ -644,6 +645,9 @@ main (int argc, char **argv)
   char *tmpline;
   size_t linesize;
   int rc;
+  int cmderr;
+  const char *opt_run = NULL;
+  FILE *script_fp = NULL;
 
   set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", 1);
@@ -675,6 +679,7 @@ main (int argc, char **argv)
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
+        case oRun:       opt_run = pargs.r.ret_str; break;
 
         default: pargs.err = 2; break;
 	}
@@ -698,6 +703,14 @@ main (int argc, char **argv)
   if (opt.exec && opt.raw_socket)
     log_info (_("option \"%s\" ignored due to \"%s\"\n"),
               "--raw-socket", "--exec");
+
+  if (opt_run && !(script_fp = fopen (opt_run, "r")))
+    {
+      log_error ("cannot open run file `%s': %s\n",
+                 opt_run, strerror (errno));
+      exit (1);
+    }
+
 
   if (opt.exec)
     {
@@ -741,11 +754,12 @@ main (int argc, char **argv)
      assuan did not run the initial handshaking).  */
   if (assuan_pending_line (ctx))
     {
-      rc = read_and_print_response (ctx);
+      rc = read_and_print_response (ctx, &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
 
+ 
   line = NULL;
   linesize = 0;
   for (;;)
@@ -754,14 +768,32 @@ main (int argc, char **argv)
       size_t maxlength;
 
       maxlength = 2048;
-      n = read_line (stdin, &line, &linesize, &maxlength);
+      n = read_line (script_fp? script_fp:stdin, &line, &linesize, &maxlength);
       if (n < 0)
         {
           log_error (_("error reading input: %s\n"), strerror (errno));
+          if (script_fp)
+            {
+              fclose (script_fp);
+              script_fp = NULL;
+              log_error ("stopping script execution\n");
+              continue;
+            }
           exit (1);
         }
       if (!n)
-        break; /* EOF */
+        {
+          /* EOF */
+          if (script_fp)
+            {
+              fclose (script_fp);
+              script_fp = NULL;
+              if (opt.verbose)
+                log_info ("end of script\n");
+              continue;
+            }
+          break; 
+        }
       if (!maxlength)
         {
           log_error (_("line too long - skipped\n"));
@@ -855,6 +887,42 @@ main (int argc, char **argv)
             opt.enable_varsubst = 1;
           else if (!strcmp (cmd, "nosubst"))
             opt.enable_varsubst = 0;
+          else if (!strcmp (cmd, "run"))
+            {
+              char *p2;
+              for (p2=p; *p2 && !spacep (p2); p2++)
+                ;
+              if (*p2)
+                *p2++ = 0;
+              while (spacep (p2))
+                p++;
+              if (*p2)
+                {
+                  log_error ("syntax error in run command\n");
+                  if (script_fp)
+                    {
+                      fclose (script_fp);
+                      script_fp = NULL;
+                    }
+                }
+              else if (script_fp)
+                {
+                  log_error ("cannot nest run commands - stop\n");
+                  fclose (script_fp);
+                  script_fp = NULL;
+                }
+              else if (!(script_fp = fopen (p, "r")))
+                {
+                  log_error ("cannot open run file `%s': %s\n",
+                             p, strerror (errno));
+                }
+              else if (opt.verbose)
+                log_info ("running commands from `%s'\n", p);
+            }
+          else if (!strcmp (cmd, "bye"))
+            {
+              break;
+            }
           else if (!strcmp (cmd, "help"))
             {
               puts (
@@ -879,6 +947,8 @@ main (int argc, char **argv)
 "/[no]hex               Enable hex dumping of received data lines.\n"
 "/[no]decode            Enable decoding of received data lines.\n"
 "/[no]subst             Enable varibale substitution.\n"
+"/run FILE              Run commands from FILE.\n"
+"/bye                   Terminate gpg-connect-agent.\n"
 "/help                  Print this help.");
             }
           else
@@ -886,6 +956,9 @@ main (int argc, char **argv)
       
           continue;
         }
+
+      if (opt.verbose && script_fp)
+        puts (line);
 
       tmpline = opt.enable_varsubst? substitute_line (line) : NULL;
       if (tmpline)
@@ -903,9 +976,16 @@ main (int argc, char **argv)
       if (*line == '#' || !*line)
         continue; /* Don't expect a response for a comment line. */
 
-      rc = read_and_print_response (ctx);
+      rc = read_and_print_response (ctx, &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
+      if ((rc || cmderr) && script_fp)
+        {
+          log_error ("stopping script execution\n");
+          fclose (script_fp);
+          script_fp = NULL;
+        }
+          
 
       /* FIXME: If the last command was BYE or the server died for
 	 some other reason, we won't notice until we get the next
@@ -1010,9 +1090,10 @@ handle_inquire (assuan_context_t ctx, char *line)
 
 
 /* Read all response lines from server and print them.  Returns 0 on
-   success or an assuan error code. */
+   success or an assuan error code.  Set R_GOTERR to true if the
+   command did not returned OK.  */
 static int
-read_and_print_response (assuan_context_t ctx)
+read_and_print_response (assuan_context_t ctx, int *r_goterr)
 {
   char *line;
   size_t linelen;
@@ -1020,6 +1101,7 @@ read_and_print_response (assuan_context_t ctx)
   int i, j;
   int need_lf = 0;
 
+  *r_goterr = 0;
   for (;;)
     {
       do 
@@ -1132,6 +1214,7 @@ read_and_print_response (assuan_context_t ctx)
             {
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
+              *r_goterr = 1;
               return 0;
             }  
           else if (linelen >= 7

@@ -7,6 +7,7 @@
 	(do_open, do_close, do_showopen): New.
 	(main): Add new commands /nosubst, /subst, /let, /showvar, /open,
 	/close and /showopen.
+	(main): New commands /run and /bye.
 
 2007-10-01  Werner Koch  <wk@g10code.com>
 
