@@ -1,3 +1,11 @@
+2007-10-11  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (get_var): Expand environment variables.
+	Suggested by Marc Mutz.
+	(set_var): Return the value.
+	(assign_variable): Add arg syslet.
+	(main): New command /slet.
+
 2007-10-02  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c (gcry_malloc_secure): New.

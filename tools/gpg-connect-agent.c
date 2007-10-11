@@ -166,7 +166,7 @@ my_strusage( int level )
 }
 
 
-static void
+static const char *
 set_var (const char *name, const char *value)
 {
   variable_t var;
@@ -184,6 +184,7 @@ set_var (const char *name, const char *value)
     }
   xfree (var->value);
   var->value = value? xstrdup (value) : NULL;
+  return var->value;
 }    
 
 
@@ -196,16 +197,22 @@ set_int_var (const char *name, int value)
   set_var (name, numbuf);
 }
 
+
 /* Return the value of a variable.  That value is valid until a
-   variable of the name is changed.  Return NULL if not found.  */
+   variable of the name is changed.  Return NULL if not found.  Note
+   that envvars are copied to our variable list at the first access
+   and not at oprogram start.  */
 static const char *
 get_var (const char *name)
 {
   variable_t var;
+  const char *s;
 
   for (var = variable_table; var; var = var->next)
     if (!strcmp (var->name, name))
       break;
+  if (!var && (s = getenv (name)))
+    return set_var (name, s);
   if (!var || !var->value)
     return NULL;
   return var->value;
@@ -282,7 +289,7 @@ substitute_line (char *buffer)
 
 
 static void
-assign_variable (char *line)
+assign_variable (char *line, int syslet)
 {
   char *name, *p, *tmp;
 
@@ -297,6 +304,20 @@ assign_variable (char *line)
 
   if (!*p)
     set_var (name, NULL); /* Remove variable.  */ 
+  else if (syslet)
+    {
+      tmp = opt.enable_varsubst? substitute_line (p) : NULL;
+      if (tmp)
+        p = tmp;
+      if (!strcmp (p, "homedir"))
+        set_var (name, opt.homedir);
+      else
+        {
+          log_error ("undefined tag `%s'\n", p);
+          log_info  ("valid tags are: homedir\n");
+        }
+      xfree (tmp);
+    }
   else 
     {
       tmp = opt.enable_varsubst? substitute_line (p) : NULL;
@@ -601,7 +622,7 @@ do_showopen (void)
 
 
 static int
-getinfo_pin_cb (void *opaque, const void *buffer, size_t length)
+getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *mb = opaque;
   put_membuf (mb, buffer, length);
@@ -617,7 +638,7 @@ do_serverpid (assuan_context_t ctx)
   char *buffer;
   
   init_membuf (&mb, 100);
-  rc = assuan_transact (ctx, "GETINFO pid", getinfo_pin_cb, &mb,
+  rc = assuan_transact (ctx, "GETINFO pid", getinfo_pid_cb, &mb,
                         NULL, NULL, NULL, NULL);
   put_membuf (&mb, "", 1);
   buffer = get_membuf (&mb, NULL);
@@ -816,7 +837,11 @@ main (int argc, char **argv)
             p++;
           if (!strcmp (cmd, "let"))
             {
-              assign_variable (p);
+              assign_variable (p, 0);
+            }
+          else if (!strcmp (cmd, "slet"))
+            {
+              assign_variable (p, 1);
             }
           else if (!strcmp (cmd, "showvar"))
             {
@@ -929,6 +954,7 @@ main (int argc, char **argv)
 "Available commands:\n"
 "/echo ARGS             Echo ARGS.\n"
 "/let  NAME VALUE       Set variable NAME to VALUE.\n"
+"/slet NAME TAG         Set variable NAME to the value described by TAG.\n" 
 "/showvar               Show all variables.\n"
 "/definqfile NAME FILE\n"
 "    Use content of FILE for inquiries with NAME.\n"
