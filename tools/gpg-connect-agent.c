@@ -165,6 +165,26 @@ my_strusage( int level )
   return p;
 }
 
+
+static char *
+gnu_getcwd (void)
+{
+  char *buffer;
+  size_t size = 100;
+
+  for (;;)
+    {
+      buffer = xmalloc (size+1);
+      if (getcwd (buffer, size) == buffer)
+        return buffer;
+      xfree (buffer);
+      if (errno != ERANGE)
+        return NULL;
+      size *= 2;
+    }
+}
+
+
 
 static const char *
 set_var (const char *name, const char *value)
@@ -291,7 +311,7 @@ substitute_line (char *buffer)
 static void
 assign_variable (char *line, int syslet)
 {
-  char *name, *p, *tmp;
+  char *name, *p, *tmp, *free_me;
 
   /* Get the  name. */
   name = line;
@@ -306,17 +326,38 @@ assign_variable (char *line, int syslet)
     set_var (name, NULL); /* Remove variable.  */ 
   else if (syslet)
     {
-      tmp = opt.enable_varsubst? substitute_line (p) : NULL;
-      if (tmp)
-        p = tmp;
-      if (!strcmp (p, "homedir"))
+      free_me = opt.enable_varsubst? substitute_line (p) : NULL;
+      if (free_me)
+        p = free_me;
+      if (!strcmp (p, "cwd"))
+        {
+          tmp = gnu_getcwd ();
+          if (!tmp)
+            log_error ("getcwd failed: %s\n", strerror (errno));
+          set_var (name, tmp);
+          xfree (tmp);
+        }
+      else if (!strcmp (p, "homedir"))
         set_var (name, opt.homedir);
+      else if (!strcmp (p, "sysconfdir"))
+        set_var (name, gnupg_sysconfdir ());
+      else if (!strcmp (p, "bindir"))
+        set_var (name, gnupg_bindir ());
+      else if (!strcmp (p, "libdir"))
+        set_var (name, gnupg_libdir ());
+      else if (!strcmp (p, "libexecdir"))
+        set_var (name, gnupg_libexecdir ());
+      else if (!strcmp (p, "datadir"))
+        set_var (name, gnupg_datadir ());
+      else if (!strcmp (p, "serverpid"))
+        set_int_var (name, (int)server_pid);
       else
         {
           log_error ("undefined tag `%s'\n", p);
-          log_info  ("valid tags are: homedir\n");
+          log_info  ("valid tags are: cwd, {home,bin,lib,libexec,data}dir, "
+                     "serverpid\n");
         }
-      xfree (tmp);
+      xfree (free_me);
     }
   else 
     {

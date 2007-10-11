@@ -5,6 +5,8 @@
 	(set_var): Return the value.
 	(assign_variable): Add arg syslet.
 	(main): New command /slet.
+	(gnu_getcwd): New.
+	(assign_variable): Add tag cwd, and *dir.
 
 2007-10-02  Werner Koch  <wk@g10code.com>
 
