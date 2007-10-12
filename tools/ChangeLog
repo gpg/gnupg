@@ -1,3 +1,7 @@
+2007-10-12  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (substitute_line): Allow ${foo} syntax.
+
 2007-10-11  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (get_var): Expand environment variables.

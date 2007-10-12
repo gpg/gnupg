@@ -228,6 +228,8 @@ get_var (const char *name)
   variable_t var;
   const char *s;
 
+  if (!*name)
+    return "";
   for (var = variable_table; var; var = var->next)
     if (!strcmp (var->name, name))
       break;
@@ -264,9 +266,24 @@ substitute_line (char *buffer)
           line = p + 1;
           continue;
         }
-      for (pend=p+1; *pend && !spacep (pend) && *pend != '$' ; pend++)
-        ;
-      if (*pend)
+      if (p[1] == '{')
+        {
+          for (pend=p+2; *pend && *pend != '}' ; pend++)
+            ;
+          if (!*pend)
+            return result; /* Unclosed - don't substitute.  */
+        }
+      else
+        {
+          for (pend=p+1; *pend && !spacep (pend) && *pend != '$' ; pend++)
+            ;
+        }
+      if (p[1] == '{' && *pend == '}')
+        {
+          *pend++ = 0;
+          value = get_var (p+2);
+        }
+      else if (*pend)
         {
           int save = *pend;
           *pend = 0;
