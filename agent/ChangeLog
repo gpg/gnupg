@@ -1,3 +1,9 @@
+2007-10-15  Daiki Ueno  <ueno@unixuser.org>  (wk)
+
+	* command-ssh.c (reenter_compare_cb): New function; imported from
+	genkey.c.
+	(ssh_identity_register): Ask initial passphrase twice.
+
 2007-10-02  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): Add "pid" subcommand.

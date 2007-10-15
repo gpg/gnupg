@@ -2313,6 +2313,18 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
 
 
 
+/* Callback function to compare the first entered PIN with the one
+   currently being entered. */
+static int
+reenter_compare_cb (struct pin_entry_info_s *pi)
+{
+  const char *pin1 = pi->check_cb_arg;
+
+  if (!strcmp (pin1, pi->pin))
+    return 0; /* okay */
+  return -1;
+}
+
 /* Store the ssh KEY into our local key storage and protect it after
    asking for a passphrase.  Cache that passphrase.  TTL is the
    maximum caching time for that key.  If the key already exists in
@@ -2327,9 +2339,11 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   unsigned char *buffer = NULL;
   size_t buffer_n;
   char *description = NULL;
+  const char *description2 = _("Please re-enter this passphrase");
   char *comment = NULL;
+  const char *initial_errtext = NULL;
   unsigned int i;
-  struct pin_entry_info_s *pi = NULL;
+  struct pin_entry_info_s *pi = NULL, *pi2;
 
   err = ssh_key_grip (key, key_grip_raw);
   if (err)
@@ -2357,17 +2371,37 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
     }
 
 
-  pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+  pi = gcry_calloc_secure (2, sizeof (*pi) + 100 + 1);
   if (!pi)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
+  pi2 = pi + (sizeof *pi + 100 + 1);
   pi->max_length = 100;
   pi->max_tries = 1;
-  err = agent_askpin (ctrl, description, NULL, NULL, pi);
+  pi2->max_length = 100;
+  pi2->max_tries = 1;
+  pi2->check_cb = reenter_compare_cb;
+  pi2->check_cb_arg = pi->pin;
+
+ next_try:
+  err = agent_askpin (ctrl, description, NULL, initial_errtext, pi);
+  initial_errtext = NULL;
   if (err)
     goto out;
+
+  /* Unless the passphrase is empty, ask to confirm it.  */
+  if (pi->pin && *pi->pin)
+    {
+      err = agent_askpin (ctrl, description2, NULL, NULL, pi2);
+      if (err == -1)
+	{ /* The re-entered one did not match and the user did not
+	     hit cancel. */
+	  initial_errtext = _("does not match - try again");
+	  goto next_try;
+	}
+    }
 
   err = ssh_key_to_protected_buffer (key, pi->pin, &buffer, &buffer_n);
   if (err)
