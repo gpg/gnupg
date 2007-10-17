@@ -53,8 +53,9 @@ dnl  Check for random module options
 dnl
 AC_MSG_CHECKING([which random module to use])
 AC_ARG_ENABLE(static-rnd,
-    [  --enable-static-rnd=[egd|unix|linux|auto]  ],
-[use_static_rnd=$enableval], [use_static_rnd=default] )
+    AC_HELP_STRING([[--enable-static-rnd=[egd|unix|linux|auto]]],
+                   [specify a random number source]),
+    [use_static_rnd=$enableval], [use_static_rnd=default])
 
 if test "$use_static_rnd" = no; then
     use_static_rnd=default
@@ -74,7 +75,7 @@ case "$use_static_rnd" in
 esac
 
 AC_ARG_WITH(egd-socket,
-    [  --with-egd-socket=NAME  use NAME for the EGD socket],
+    AC_HELP_STRING([--with-egd-socket=NAME],[use NAME for the EGD socket]),
             egd_socket_name="$withval", egd_socket_name="" )
 AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name",
                    [Define if you don't want the default EGD socket name.
@@ -86,8 +87,8 @@ dnl See whether the user wants to disable checking for /dev/random
 
 AC_MSG_CHECKING([whether use of /dev/random is requested])
 AC_ARG_ENABLE(dev-random,
-[  --disable-dev-random    disable the use of dev random],
-    try_dev_random=$enableval, try_dev_random=yes)
+   AC_HELP_STRING([--disable-dev-random],[disable the use of dev random]),
+   try_dev_random=$enableval, try_dev_random=yes)
 AC_MSG_RESULT($try_dev_random)
 
 
@@ -97,7 +98,7 @@ dnl
 
 AC_MSG_CHECKING([whether assembler modules are requested])
 AC_ARG_ENABLE(asm,
-[  --disable-asm           do not use assembler modules],
+   AC_HELP_STRING([--disable-asm],[do not use assembler modules]),
      try_asm_modules=$enableval, try_asm_modules=yes)
 AC_MSG_RESULT($try_asm_modules)
 
@@ -305,7 +306,7 @@ fi
 if test "$use_exec" = yes ; then
   AC_MSG_CHECKING([whether to enable photo ID viewing])
   AC_ARG_ENABLE(photo-viewers,
-      [  --disable-photo-viewers disable photo ID viewers],
+      AC_HELP_STRING([--disable-photo-viewers],[disable photo ID viewers]),
       [if test "$enableval" = no ; then
          AC_DEFINE(DISABLE_PHOTO_VIEWER,1,[define to disable photo viewing])
       fi],enableval=yes)
@@ -315,7 +316,8 @@ if test "$use_exec" = yes ; then
   if test "$gnupg_cv_enable_photo_viewers" = yes ; then
     AC_MSG_CHECKING([whether to use a fixed photo ID viewer])
     AC_ARG_WITH(photo-viewer,
-        [  --with-photo-viewer=FIXED_VIEWER  set a fixed photo ID viewer],
+        AC_HELP_STRING([--with-photo-viewer=FIXED_VIEWER],
+                       [set a fixed photo ID viewer]),
         [if test "$withval" = yes ; then
            withval=no
         elif test "$withval" != no ; then
@@ -327,7 +329,8 @@ if test "$use_exec" = yes ; then
 
   AC_MSG_CHECKING([whether to enable external keyserver helpers])
   AC_ARG_ENABLE(keyserver-helpers,
-      [  --disable-keyserver-helpers  disable all external keyserver support],
+      AC_HELP_STRING([--disable-keyserver-helpers],
+                     [disable all external keyserver support]),
       [if test "$enableval" = no ; then
          AC_DEFINE(DISABLE_KEYSERVER_HELPERS,1,
                   [define to disable keyserver helpers])
@@ -383,7 +386,7 @@ fi
 
 AC_MSG_CHECKING([whether the included zlib is requested])
 AC_ARG_WITH(included-zlib,
-    [  --with-included-zlib    use the zlib code included here],
+    AC_HELP_STRING([--with-included-zlib],[use the zlib code included here]),
 [g10_force_zlib="$withval"], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
@@ -417,7 +420,8 @@ dnl Check whether we want to use Linux capabilities
 dnl
 AC_MSG_CHECKING([whether use of capabilities is requested])
 AC_ARG_WITH(capabilities,
-    [  --with-capabilities     use linux capabilities [default=no]],
+    AC_HELP_STRING([--with-capabilities],
+                   [use linux capabilities [default=no]]),
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
@@ -765,7 +769,9 @@ dnl sendmail-ish interface to the outside world.  That includes qmail,
 dnl postfix, etc.  Basically, anything that can handle "sendmail -t".
 
 if test "$try_mailto" = yes ; then
-  AC_ARG_WITH(mailprog,[  --with-mailprog=NAME    use "NAME -t" for mail transport],,with_mailprog=yes)
+  AC_ARG_WITH(mailprog,
+     AC_HELP_STRING([--with-mailprog=NAME],
+                    [use "NAME -t" for mail transport]),,with_mailprog=yes)
 
   if test "$with_mailprog" = yes ; then
     AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
@@ -1196,7 +1202,8 @@ AC_MSG_RESULT($use_regex)
 if test "$use_regex" = yes ; then
   AC_MSG_CHECKING([whether the included regex lib is requested])
   AC_ARG_WITH(included-regex,
-      [  --with-included-regex   use the included GNU regex library],
+      AC_HELP_STRING([--with-included-regex],
+                     [use the included GNU regex library]),
       [gnupg_cv_included_regex="$withval"],[gnupg_cv_included_regex=no])
   AC_MSG_RESULT($gnupg_cv_included_regex)
 
@@ -1240,7 +1247,7 @@ else
   _ldflags="${LDFLAGS}"
 
   AC_ARG_WITH(zlib,
-  [  --with-zlib=DIR         use libz in DIR],[
+     AC_HELP_STRING([--with-zlib=DIR],[use libz in DIR]),[
     if test -d "$withval"; then
       CPPFLAGS="${CPPFLAGS} -I$withval/include"
       LDFLAGS="${LDFLAGS} -L$withval/lib"
