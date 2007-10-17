@@ -801,8 +801,12 @@ compliance_option_string(void)
 {
   switch(opt.compliance)
     {
-    case CO_RFC2440:
+    case CO_RFC4880:
       return "--openpgp";
+    case CO_RFC2440:
+      return "--rfc2440";
+    case CO_RFC1991:
+      return "--rfc1991";
     case CO_PGP2:
       return "--pgp2";
     case CO_PGP6:

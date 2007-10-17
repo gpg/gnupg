@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1790,7 +1790,7 @@ keyedit_menu( const char *username, STRLIST locusr,
               {
                 tty_printf(
                    _("This command is not allowed while in %s mode.\n"),
-		   RFC2440?"OpenPGP":PGP2?"PGP2":"RFC-1991");
+		   compliance_option_string());
                 break;
               }
 	    photo=1;

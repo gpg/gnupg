@@ -204,6 +204,7 @@ enum cmd_and_opt_values
     oGnuPG,
     oRFC1991,
     oRFC2440,
+    oRFC4880,
     oOpenPGP,
     oPGP2,
     oPGP6,
@@ -532,6 +533,7 @@ static ARGPARSE_OPTS opts[] = {
     { oGnuPG, "no-pgp8", 0, "@"},
     { oRFC1991, "rfc1991",   0, "@"},
     { oRFC2440, "rfc2440", 0, "@" },
+    { oRFC4880, "rfc4880", 0, "@" },
     { oOpenPGP, "openpgp", 0, N_("use strict OpenPGP behavior")},
     { oPGP2, "pgp2", 0, N_("generate PGP 2.x compatible messages")},
     { oPGP6, "pgp6", 0, "@"},
@@ -2255,11 +2257,32 @@ main (int argc, char **argv )
 	    opt.escape_from = 1;
 	    break;
 	  case oOpenPGP:
+	  case oRFC4880:
+	    /* Note these are the same defaults as CO_RFC2440.  Update
+	       this. */
+	    opt.compliance = CO_RFC4880;
+	    opt.rfc2440_text=1;
+	    opt.allow_non_selfsigned_uid = 1;
+	    opt.allow_freeform_uid = 1;
+	    opt.pgp2_workarounds = 0;
+	    opt.escape_from = 0;
+	    opt.force_v3_sigs = 0;
+	    opt.compress_keys = 0;	    /* not mandated, but we do it */
+	    opt.compress_sigs = 0;	    /* ditto. */
+	    opt.not_dash_escaped = 0;
+	    opt.def_cipher_algo = 0;
+	    opt.def_digest_algo = 0;
+	    opt.cert_digest_algo = 0;
+	    opt.compress_algo = -1;
+            opt.s2k_mode = 3; /* iterated+salted */
+	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+	    break;
 	  case oRFC2440:
 	    /* TODO: When 2440bis becomes a RFC, set new values for
 	       oOpenPGP. */
-	    opt.rfc2440_text=1;
 	    opt.compliance = CO_RFC2440;
+	    opt.rfc2440_text=1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;

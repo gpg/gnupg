@@ -1,3 +1,12 @@
+2007-10-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, gpg.c (main), misc.c (compliance_option_string): Add
+	--rfc4880, and make --openpgp an alias to it.  --rfc2440 now
+	stands alone.  For now, use the old 2440 defaults for 4880.
+
+	* keyedit.c (keyedit_menu): Use compliance_option_string() instead
+	of printing the compliance modes here.
+
 2007-09-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (collapse_uids): Significant speedup for de-duping user
