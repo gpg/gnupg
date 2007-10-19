@@ -25,12 +25,17 @@
 #include <errno.h>
 #include <ctype.h>
 #include <assuan.h>
+#include <unistd.h>
 
 #include "i18n.h"
 #include "../common/util.h"
 #include "../common/asshelp.h"
 #include "../common/sysutils.h"
 #include "../common/membuf.h"
+#include "../common/ttyio.h"
+
+#define CONTROL_D ('D' - 'A' + 1)
+#define octdigitp(p) (*(p) >= '0' && *(p) <= '7')
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values
@@ -41,6 +46,7 @@ enum cmd_and_opt_values
     oRawSocket  = 'S',
     oExec       = 'E',
     oRun        = 'r',
+    oSubst      = 's',
 
     oNoVerbose	= 500,
     oHomedir,
@@ -65,6 +71,7 @@ static ARGPARSE_OPTS opts[] =
     { oNoExtConnect, "no-ext-connect",
                             0, N_("do not use extended connect mode")},
     { oRun,  "run", 2,         N_("|FILE|run commands from FILE on startup")},
+    { oSubst, "subst", 0,      N_("run /subst on startup")}, 
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
     { oHomedir, "homedir", 2, "@" },   
@@ -94,7 +101,8 @@ struct definq_s
 {
   struct definq_s *next;
   char *name;     /* Name of inquiry or NULL for any name. */
-  int is_prog;     /* True if this is a program to run. */
+  int is_var;     /* True if FILE is a variable name. */
+  int is_prog;    /* True if FILE is a program to run. */
   char file[1];   /* Name of file or program. */
 };
 typedef struct definq_s *definq_t;
@@ -129,6 +137,7 @@ static struct
 
 
 /*-- local prototypes --*/
+static char *substitute_line_copy (const char *buffer);
 static int read_and_print_response (assuan_context_t ctx, int *r_goterr);
 static assuan_context_t start_agent (void);
 
@@ -183,6 +192,145 @@ gnu_getcwd (void)
       size *= 2;
     }
 }
+
+
+/* Unescale STRING and returned the malloced result.  The surrounding
+   quotes must already be removed from STRING.  */
+static char *
+unescape_string (const char *string)
+{
+  const unsigned char *s;
+  int esc;
+  size_t n;
+  char *buffer;
+  unsigned char *d;
+
+  n = 0;
+  for (s = (const unsigned char*)string, esc=0; *s; s++)
+    {
+      if (esc)
+        {
+          switch (*s)
+            {
+            case 'b':  
+            case 't':  
+            case 'v':  
+            case 'n':  
+            case 'f':  
+            case 'r':  
+            case '"':  
+            case '\'': 
+            case '\\': n++; break;
+            case 'x': 
+              if (s[1] && s[2] && hexdigitp (s+1) && hexdigitp (s+2))
+                n++;
+              break;
+
+            default:
+              if (s[1] && s[2] 
+                  && octdigitp (s) && octdigitp (s+1) && octdigitp (s+2))
+                n++;
+              break;
+	    }
+          esc = 0;
+        }
+      else if (*s == '\\')
+        esc = 1;
+      else
+        n++;
+    } 
+
+  buffer = xmalloc (n+1);
+  d = (unsigned char*)buffer;
+  for (s = (const unsigned char*)string, esc=0; *s; s++)
+    {
+      if (esc)
+        {
+          switch (*s)
+            {
+            case 'b':  *d++ = '\b'; break;
+            case 't':  *d++ = '\t'; break;
+            case 'v':  *d++ = '\v'; break;
+            case 'n':  *d++ = '\n'; break;
+            case 'f':  *d++ = '\f'; break;
+            case 'r':  *d++ = '\r'; break;
+            case '"':  *d++ = '\"'; break;
+            case '\'': *d++ = '\''; break;
+            case '\\': *d++ = '\\'; break;
+            case 'x': 
+              if (s[1] && s[2] && hexdigitp (s+1) && hexdigitp (s+2))
+                {
+                  s++;
+                  *d++ = xtoi_2 (s);
+                  s++;
+                }
+              break;
+
+            default:
+              if (s[1] && s[2] 
+                  && octdigitp (s) && octdigitp (s+1) && octdigitp (s+2))
+                {
+                  *d++ = (atoi_1 (s)*64) + (atoi_1 (s+1)*8) + atoi_1 (s+2);
+                  s += 2;
+                }
+              break;
+	    }
+          esc = 0;
+        }
+      else if (*s == '\\')
+        esc = 1;
+      else
+        *d++ = *s;
+    } 
+  *d = 0;
+  return buffer;
+}
+
+
+/* Do the percent unescaping and return a newly malloced string.
+   If WITH_PLUS is set '+' characters will be changed to space. */
+static char *
+unpercent_string (const char *string, int with_plus)
+{
+  const unsigned char *s;
+  unsigned char *buffer, *p;
+  size_t n;
+
+  n = 0;
+  for (s=(const unsigned char *)string; *s; s++)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          n++;
+          s++;
+        }
+      else if (with_plus && *s == '+')
+        n++;
+      else
+        n++;
+    }
+
+  buffer = xmalloc (n+1);
+  p = buffer;
+  for (s=(const unsigned char *)string; *s; s++)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *p++ = xtoi_2 (s);
+          s++;
+        }
+      else if (with_plus && *s == '+')
+        *p++ = ' ';
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+  return (char*)buffer;
+}
+
+
 
 
 
@@ -241,6 +389,145 @@ get_var (const char *name)
 }
 
 
+/* Extended version of get_var.  This returns a malloced string and
+   understand the fucntion syntax: "func args". 
+
+   Defined functions are
+   
+     get - Return a value described by the next argument:
+           cwd        - The current working directory.
+           homedir    - The gnupg homedir.
+           sysconfdir - GnuPG's system configuration directory.
+           bindir     - GnuPG's binary directory.
+           libdir     - GnuPG's library directory.
+           libexecdir - GnuPG's library directory for executable files.
+           datadir    - GnuPG's data directory.
+           serverpid  - The PID of the current server.
+
+     unescape ARGS
+           Remove C-style escapes from string.  Note that "\0" and
+           "\x00" terminate the string implictly.  Use "\x7d" to
+           represent the closing brace.  The args start right after
+           the first space after the function name.
+
+     unpercent ARGS
+     unpercent+ ARGS
+           Remove percent style ecaping from string.  NOte that "%00
+           terminates the string implicitly.  Use "%7d" to represetn
+           the closing brace.  The args start right after the first
+           space after the function name.  "unpercent+" also maps '+'
+           to space.
+
+     percent ARGS
+     percent+ ARGS
+           Escape the args using the percent style.  Tabs, formfeeds,
+           linefeeds and carriage returns are also escaped.
+           "percent+" also maps spaces to plus characters.
+
+   Example: get_var_ext ("get sysconfdir") -> "/etc/gnupg"
+    
+  */
+static char *
+get_var_ext (const char *name)
+{
+  static int recursion_count;
+  const char *s;
+  char *result;
+  char *p;
+  char *free_me = NULL;
+
+  if (recursion_count > 50)
+    {
+      log_error ("variables nested too deeply\n");
+      return NULL;
+    }
+
+  recursion_count++;
+  free_me = opt.enable_varsubst? substitute_line_copy (name) : NULL;
+  if (free_me)
+    name = free_me;
+  for (s=name; *s && !spacep (s); s++)
+    ;
+  if (!*s)
+    {
+      s = get_var (name);
+      result = s? xstrdup (s): NULL;
+    }
+  else if ( (s - name) == 3 && !strncmp (name, "get", 3))
+    {
+      while ( spacep (s) )
+        s++;
+      if (!strcmp (s, "cwd"))
+        {
+          result = gnu_getcwd ();
+          if (!result)
+            log_error ("getcwd failed: %s\n", strerror (errno));
+        }
+      else if (!strcmp (s, "homedir"))
+        result = make_filename (opt.homedir, NULL);
+      else if (!strcmp (s, "sysconfdir"))
+        result = xstrdup (gnupg_sysconfdir ());
+      else if (!strcmp (s, "bindir"))
+        result = xstrdup (gnupg_bindir ());
+      else if (!strcmp (s, "libdir"))
+        result = xstrdup (gnupg_libdir ());
+      else if (!strcmp (s, "libexecdir"))
+        result = xstrdup (gnupg_libexecdir ());
+      else if (!strcmp (s, "datadir"))
+        result = xstrdup (gnupg_datadir ());
+      else if (!strcmp (s, "serverpid"))
+        {
+          char numbuf[30];
+          snprintf (numbuf, sizeof numbuf, "%d", (int)server_pid);
+          result = xstrdup (numbuf);
+        }
+      else
+        {
+          log_error ("invalid argument `%s' for variable function `get'\n", s);
+          log_info  ("valid are: cwd, "
+                     "{home,bin,lib,libexec,data}dir, serverpid\n");
+          result = NULL;
+        }
+    }
+  else if ( (s - name) == 8 && !strncmp (name, "unescape", 8))
+    {
+      s++;
+      result = unescape_string (s);
+    }
+  else if ( (s - name) == 9 && !strncmp (name, "unpercent", 9))
+    {
+      s++;
+      result = unpercent_string (s, 0);
+    }
+  else if ( (s - name) == 10 && !strncmp (name, "unpercent+", 10))
+    {
+      s++;
+      result = unpercent_string (s, 1);
+    }
+  else if ( (s - name) == 7 && !strncmp (name, "percent", 7))
+    {
+      s++;
+      result = percent_escape (s, "\t\r\n\f\v");
+    }
+  else if ( (s - name) == 8 && !strncmp (name, "percent+", 8))
+    {
+      s++;
+      result = percent_escape (s, "\t\r\n\f\v");
+      for (p=result; *p; p++)
+        if (*p == ' ')
+          *p = '+';
+    }
+  else
+    {
+      log_error ("unknown variable function `%.*s'\n", (int)(s-name), name);
+      result = NULL;
+    }
+    
+  xfree (free_me);
+  recursion_count--;
+  return result;
+}
+
 
 /* Substitute variables in LINE and return a new allocated buffer if
    required.  The function might modify LINE if the expanded version
@@ -253,6 +540,7 @@ substitute_line (char *buffer)
   const char *value;
   size_t valuelen, n;
   char *result = NULL;
+  char *freeme = NULL;
 
   while (*line)
     {
@@ -268,8 +556,18 @@ substitute_line (char *buffer)
         }
       if (p[1] == '{')
         {
-          for (pend=p+2; *pend && *pend != '}' ; pend++)
-            ;
+          int count = 0;
+
+          for (pend=p+2; *pend; pend++)
+            {
+              if (*pend == '{')
+                count++;
+              else if (*pend == '}')
+                {
+                  if (--count < 0)
+                    break;
+                }
+            }
           if (!*pend)
             return result; /* Unclosed - don't substitute.  */
         }
@@ -281,7 +579,8 @@ substitute_line (char *buffer)
       if (p[1] == '{' && *pend == '}')
         {
           *pend++ = 0;
-          value = get_var (p+2);
+          freeme = get_var_ext (p+2);
+          value = freeme;
         }
       else if (*pend)
         {
@@ -319,16 +618,32 @@ substitute_line (char *buffer)
           free (result);
           result = dst;
         }
+      xfree (freeme);
+      freeme = NULL;
     }
   return result;
 }
 
+/* Same as substitute_line but do not modify BUFFER.  */
+static char *
+substitute_line_copy (const char *buffer)
+{
+  char *result, *p;
+  
+  p = xstrdup (buffer?buffer:"");
+  result = substitute_line (p);
+  if (!result)
+    result = p;
+  else
+    xfree (p);
+  return result;
+}
 
 
 static void
 assign_variable (char *line, int syslet)
 {
-  char *name, *p, *tmp, *free_me;
+  char *name, *p, *tmp, *free_me, *buffer;
 
   /* Get the  name. */
   name = line;
@@ -343,42 +658,20 @@ assign_variable (char *line, int syslet)
     set_var (name, NULL); /* Remove variable.  */ 
   else if (syslet)
     {
-      free_me = opt.enable_varsubst? substitute_line (p) : NULL;
+      free_me = opt.enable_varsubst? substitute_line_copy (p) : NULL;
       if (free_me)
         p = free_me;
-      if (!strcmp (p, "cwd"))
-        {
-          tmp = gnu_getcwd ();
-          if (!tmp)
-            log_error ("getcwd failed: %s\n", strerror (errno));
-          set_var (name, tmp);
-          xfree (tmp);
-        }
-      else if (!strcmp (p, "homedir"))
-        set_var (name, opt.homedir);
-      else if (!strcmp (p, "sysconfdir"))
-        set_var (name, gnupg_sysconfdir ());
-      else if (!strcmp (p, "bindir"))
-        set_var (name, gnupg_bindir ());
-      else if (!strcmp (p, "libdir"))
-        set_var (name, gnupg_libdir ());
-      else if (!strcmp (p, "libexecdir"))
-        set_var (name, gnupg_libexecdir ());
-      else if (!strcmp (p, "datadir"))
-        set_var (name, gnupg_datadir ());
-      else if (!strcmp (p, "serverpid"))
-        set_int_var (name, (int)server_pid);
-      else
-        {
-          log_error ("undefined tag `%s'\n", p);
-          log_info  ("valid tags are: cwd, {home,bin,lib,libexec,data}dir, "
-                     "serverpid\n");
-        }
+      buffer = xmalloc (4 + strlen (p) + 1);
+      strcpy (stpcpy (buffer, "get "), p);
+      tmp = get_var_ext (buffer);
+      xfree (buffer);
+      set_var (name, tmp);
+      xfree (tmp);
       xfree (free_me);
     }
   else 
     {
-      tmp = opt.enable_varsubst? substitute_line (p) : NULL;
+      tmp = opt.enable_varsubst? substitute_line_copy (p) : NULL;
       if (tmp)
         {
           set_var (name, tmp);
@@ -405,7 +698,7 @@ show_variables (void)
    change the content of LINE.  We assume that leading white spaces
    are already removed. */
 static void
-add_definq (char *line, int is_prog)
+add_definq (char *line, int is_var, int is_prog)
 {
   definq_t d;
   char *name, *p;
@@ -421,6 +714,7 @@ add_definq (char *line, int is_prog)
 
   d = xmalloc (sizeof *d + strlen (p) );
   strcpy (d->file, p);
+  d->is_var  = is_var;
   d->is_prog = is_prog;
   if ( !strcmp (name, "*"))
     d->name = NULL;
@@ -441,10 +735,12 @@ show_definq (void)
 
   for (d=definq_list; d; d = d->next)
     if (d->name)
-      printf ("%-20s %c %s\n", d->name, d->is_prog? 'p':'f', d->file);
+      printf ("%-20s %c %s\n", 
+              d->name, d->is_var? 'v' : d->is_prog? 'p':'f', d->file);
   for (d=definq_list; d; d = d->next)
     if (!d->name)
-      printf ("%-20s %c %s\n", "*", d->is_prog? 'p':'f', d->file);
+      printf ("%-20s %c %s\n", "*", 
+              d->is_var? 'v': d->is_prog? 'p':'f', d->file);
 }
 
 
@@ -727,7 +1023,10 @@ main (int argc, char **argv)
   int cmderr;
   const char *opt_run = NULL;
   FILE *script_fp = NULL;
+  int use_tty, last_was_tty;
 
+
+  gnupg_rl_initialize ();
   set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", 1);
 
@@ -759,6 +1058,7 @@ main (int argc, char **argv)
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
         case oRun:       opt_run = pargs.r.ret_str; break;
+        case oSubst:     opt.enable_varsubst = 1; break;
 
         default: pargs.err = 2; break;
 	}
@@ -766,6 +1066,8 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
+
+  use_tty = (isatty ( fileno (stdin)) && isatty (fileno (stdout)));
 
   if (opt.exec)
     {
@@ -841,13 +1143,35 @@ main (int argc, char **argv)
  
   line = NULL;
   linesize = 0;
+  last_was_tty = 0;
   for (;;)
     {
       int n;
       size_t maxlength;
 
       maxlength = 2048;
-      n = read_line (script_fp? script_fp:stdin, &line, &linesize, &maxlength);
+      if (use_tty && !script_fp)
+        {
+          last_was_tty = 1;
+          line = tty_get ("> ");
+          n = strlen (line);
+          if (n==1 && *line == CONTROL_D)
+            n = 0;
+          if (n >= maxlength)
+            maxlength = 0;
+        }
+      else
+        {
+          if (last_was_tty)
+            {
+              xfree (line);
+              line = NULL;
+              linesize = 0;
+              last_was_tty = 0;
+            }
+          n = read_line (script_fp? script_fp:stdin, 
+                         &line, &linesize, &maxlength);
+        }
       if (n < 0)
         {
           log_error (_("error reading input: %s\n"), strerror (errno));
@@ -899,19 +1223,45 @@ main (int argc, char **argv)
             }
           else if (!strcmp (cmd, "slet"))
             {
+              /* Deprecated - never used in a released version.  */
               assign_variable (p, 1);
             }
           else if (!strcmp (cmd, "showvar"))
             {
               show_variables ();
             }
+          else if (!strcmp (cmd, "definq"))
+            {
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  add_definq (tmpline, 1, 0);
+                  xfree (tmpline);
+                }
+              else
+                add_definq (p, 1, 0);
+            }
           else if (!strcmp (cmd, "definqfile"))
             {
-              add_definq (p, 0);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  add_definq (tmpline, 0, 0);
+                  xfree (tmpline);
+                }
+              else
+                add_definq (p, 0, 0);
             }
           else if (!strcmp (cmd, "definqprog"))
             {
-              add_definq (p, 1);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  add_definq (tmpline, 0, 1);
+                  xfree (tmpline);
+                }
+              else
+                add_definq (p, 0, 1);
             }
           else if (!strcmp (cmd, "showdef"))
             {
@@ -934,21 +1284,49 @@ main (int argc, char **argv)
             }
           else if (!strcmp (cmd, "sendfd"))
             {
-              do_sendfd (ctx, p);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  do_sendfd (ctx, tmpline);
+                  xfree (tmpline);
+                }
+              else
+                do_sendfd (ctx, p);
               continue;
             }
           else if (!strcmp (cmd, "recvfd"))
             {
-              do_recvfd (ctx, p);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  do_recvfd (ctx, tmpline);
+                  xfree (tmpline);
+                }
+              else
+                do_recvfd (ctx, p);
               continue;
             }
           else if (!strcmp (cmd, "open"))
             {
-              do_open (p);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  do_open (tmpline);
+                  xfree (tmpline);
+                }
+              else
+                do_open (p);
             }
           else if (!strcmp (cmd, "close"))
             {
-              do_close (p);
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              if (tmpline)
+                {
+                  do_close (tmpline);
+                  xfree (tmpline);
+                }
+              else
+                do_close (p);
             }
           else if (!strcmp (cmd, "showopen"))
             {
@@ -1012,19 +1390,15 @@ main (int argc, char **argv)
 "Available commands:\n"
 "/echo ARGS             Echo ARGS.\n"
 "/let  NAME VALUE       Set variable NAME to VALUE.\n"
-"/slet NAME TAG         Set variable NAME to the value described by TAG.\n" 
 "/showvar               Show all variables.\n"
-"/definqfile NAME FILE\n"
-"    Use content of FILE for inquiries with NAME.\n"
-"    NAME may be \"*\" to match any inquiry.\n"
-"/definqprog NAME PGM\n"
-"    Run PGM for inquiries matching NAME and pass the\n"
-"    entire line to it as arguments.\n"
+"/definq NAME VAR       Use content of VAR for inquiries with NAME.\n"
+"/definqfile NAME FILE  Use content of FILE for inquiries with NAME.\n"
+"/definqprog NAME PGM   Run PGM for inquiries with NAME.\n"
 "/showdef               Print all definitions.\n"
 "/cleardef              Delete all definitions.\n"
 "/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
 "/recvfd                Receive FD from server and print.\n"
-"/open VAR FILE MODE    Open FILE and assign the descrptor to VAR.\n" 
+"/open VAR FILE MODE    Open FILE and assign the file descriptor to VAR.\n" 
 "/close FD              Close file with descriptor FD.\n"
 "/showopen              Show descriptors of all open files.\n"
 "/serverpid             Retrieve the pid of the server.\n"
@@ -1094,7 +1468,7 @@ handle_inquire (assuan_context_t ctx, char *line)
 {
   const char *name;
   definq_t d;
-  FILE *fp;
+  FILE *fp = NULL;
   char buffer[1024];
   int rc, n;
 
@@ -1126,43 +1500,58 @@ handle_inquire (assuan_context_t ctx, char *line)
       return 0;
     }
 
-  if (d->is_prog)
+  if (d->is_var)
     {
-      fp = popen (d->file, "r");
-      if (!fp)
-        log_error ("error executing `%s': %s\n", d->file, strerror (errno));
-      else if (opt.verbose)
-        log_error ("handling inquiry `%s' by running `%s'\n", name, d->file);
+      char *tmpvalue = get_var_ext (d->file);
+      rc = assuan_send_data (ctx, tmpvalue, strlen (tmpvalue));
+      xfree (tmpvalue);
+      if (rc)
+        log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
     }
   else
     {
-      fp = fopen (d->file, "rb");
-      if (!fp)
-        log_error ("error opening `%s': %s\n", d->file, strerror (errno));
-      else if (opt.verbose)
-        log_error ("handling inquiry `%s' by returning content of `%s'\n",
-                   name, d->file);
-    }
-  if (!fp)
-    return 0;
-
-  while ( (n = fread (buffer, 1, sizeof buffer, fp)) )
-    {
-      rc = assuan_send_data (ctx, buffer, n);
-      if (rc)
+      if (d->is_prog)
         {
-          log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
-          break;
+          fp = popen (d->file, "r");
+          if (!fp)
+            log_error ("error executing `%s': %s\n",
+                       d->file, strerror (errno));
+          else if (opt.verbose)
+            log_error ("handling inquiry `%s' by running `%s'\n", 
+                       name, d->file);
         }
+      else
+        {
+          fp = fopen (d->file, "rb");
+          if (!fp)
+            log_error ("error opening `%s': %s\n", d->file, strerror (errno));
+          else if (opt.verbose)
+            log_error ("handling inquiry `%s' by returning content of `%s'\n",
+                       name, d->file);
+        }
+      if (!fp)
+        return 0;
+
+      while ( (n = fread (buffer, 1, sizeof buffer, fp)) )
+        {
+          rc = assuan_send_data (ctx, buffer, n);
+          if (rc)
+            {
+              log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
+              break;
+            }
+        }
+      if (ferror (fp))
+        log_error ("error reading from `%s': %s\n", d->file, strerror (errno));
     }
-  if (ferror (fp))
-    log_error ("error reading from `%s': %s\n", d->file, strerror (errno));
 
   rc = assuan_send_data (ctx, NULL, 0);
   if (rc)
     log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
 
-  if (d->is_prog)
+  if (d->is_var)
+    ;
+  else if (d->is_prog)
     {
       if (pclose (fp))
         log_error ("error running `%s': %s\n", d->file, strerror (errno));

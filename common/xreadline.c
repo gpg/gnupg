@@ -33,7 +33,7 @@
    maximum allowed allocation.  
 
    Returns the length of the line. EOF is indicated by a line of
-   length zero. A truncated line is indicated my setting the value at
+   length zero. A truncated line is indicated by setting the value at
    MAX_LENGTH to 0.  If the returned value is less then 0 not enough
    memory was enable and ERRNO is set accordingly.
 

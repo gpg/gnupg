@@ -1045,6 +1045,16 @@ When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
 connects to the assuan server in extended mode to allow descriptor
 passing.  This option makes it use the old mode.
 
+@item --run @var{file}
+@opindex run 
+Run the commands from @var{file} at startup and then continue with the
+regular input method.
+
+@item -s
+@itemx --subst
+@opindex subst
+Run the command @code{/subst} at startup.
+
 @item --hex
 @opindex hex
 Print data lines in a hex format and the ASCII representation of
@@ -1065,20 +1075,85 @@ While reading Assuan commands, gpg-agent also allows a few special
 commands to control its operation.  These control commands all start
 with a slash (@code{/}).
 
-
 @table @code
 
 @item /echo @var{args}
 Just print @var{args}.
 
-@item /definqfile @var{name} @var{file}
+@item /let @var{name} @var{value}
+Set the variable @var{name} to @var{value}.  Variables are only
+substituted on the input if the @command{/subst} has been used.
+Variables are referenced by prefixing the name with a dollr sign and
+optionally include the name in curly braces.  The rules for a valid name
+are idnetically to those of the standard bourne shell.  This is not yet
+enforced but may be in the future.  When used with curly braces no
+leading or trailing white space is allowed. 
 
+If a variable is not found, it is searched in the environment and if
+found copied to the table of variables.
+
+Variable functions are available: The name of the function must be
+followed by at least one space and the at least one argument.  The
+following functions are available:
+
+@table @code
+@item get
+Return a value described by the argument.  Available arguments are:
+
+@table @code    
+@item cwd
+The current working directory.
+@item homedir
+The gnupg homedir.
+@item sysconfdir
+GnuPG's system configuration directory.
+@item bindir
+GnuPG's binary directory.
+@item libdir
+GnuPG's library directory.
+@item libexecdir
+GnuPG's library directory for executable files.
+@item datadir
+GnuPG's data directory.
+@item serverpid
+The PID of the current server. Command @command{/serverpid} must
+have been given to return a useful value.
+@end table
+
+@item unescape @var{args}
+Remove C-style escapes from @var{args}.  Note that @code{\0} and
+@code{\x00} terminate the returned string implictly.  The string to be
+converted are the entire arguments right behind the delimiting space of
+the function name.
+
+@item unpercent @var{args}
+@itemx unpercent+ @var{args}
+Remove percent style ecaping from @var{args}.  Note that @code{%00}
+terminates the string implicitly.  The string to be converted are the
+entire arguments right behind the delimiting space of the function
+name. @code{unpercent+} also maps plus signs to a spaces.
+
+@item percent @var{args}
+@item percent+ @var{args}
+Escape the @var{args} using percent style ecaping.  Tabs, formfeeds,
+linefeeds, carriage returns and colons are escaped. @code{percent+} also
+maps spaces to plus signs.
+
+@end table
+
+
+@item /definq @var{name} @var{var}
+Use content of the variable @var{var} for inquiries with @var{name}.
+@var{name} may be an asterisk (@code{*}) to match any inquiry.
+
+
+@item /definqfile @var{name} @var{file}
 Use content of @var{file} for inquiries with @var{name}.
-@var{name} may be an asterisk (@code{*} to match any inquiry.
+@var{name} may be an asterisk (@code{*}) to match any inquiry.
 
 @item /definqprog @var{name} @var{prog}
 Run @var{prog} for inquiries matching @var{name} and pass the
-entire line to it as command line arguments
+entire line to it as command line arguments.
 
 @item /showdef
 Print all definitions
@@ -1095,6 +1170,21 @@ input source for other commands.
 @item /recvfd
 Not yet implemented.
 
+@item /open @var{var} @var{file} [@var{mode}]
+Open @var{file} and assign the file descriptor to @var{var}.  Warning:
+This command is experimental and might change in future versions.
+
+@item /close @var{fd}
+Close the file descriptor @var{fd}.  Warning: This command is
+experimental and might change in future versions.
+
+@item /showopen
+Show a listy of open files.
+
+@item /serverpid
+Send the Assuan command @command{GETINFO pid} to the server and store
+the returned PID for internal purposes.
+
 @item /hex
 @itemx /nohex
 Same as the command line option @option{--hex}.
@@ -1102,6 +1192,17 @@ Same as the command line option @option{--hex}.
 @item /decode
 @itemx /nodecode
 Same as the command line option @option{--decode}.
+
+@item /subst
+@itemx /nosubst
+Enable and disable variable substitution.  It defaults to disabled
+unless the command line option @option{--subst} has been used.
+
+@item /run @var{file}
+Run commands from @var{file}.
+
+@item /bye
+Terminate the connection and the program
 
 @item /help
 Print a list of available control commands.

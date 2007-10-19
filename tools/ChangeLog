@@ -1,5 +1,18 @@
 2007-10-19  Werner Koch  <wk@g10code.com>
 
+	* gpg-connect-agent.c (get_var_ext): New.
+	(substitute_line): Use it.
+	(assign_variable): Implement /slet in terms of get_var_ext.
+	(main): New option -s/--subst.
+	(add_definq): Add arg IS_VAR.  Change all callers.
+	(main): Add command /definq.
+	(handle_inquire): Implement new command.
+	(substitute_line_copy): New.
+	(unescape_string, unpercent_string): New.
+	* no-libgcrypt.c (gcry_set_outofcore_handler) 
+	(gcry_set_fatalerror_handler, gcry_set_log_handler): New.
+	* Makefile.am (gpg_connect_agent_LDADD): Link to libreadline.
+
 	* gpgconf-comp.c (retrieve_options_from_file): Don't call fclose
 	with NULL.  Fixes bug 842.
 

@@ -117,3 +117,24 @@ gcry_control (enum gcry_ctl_cmds CMD, ...)
 {
   return 0;
 }
+
+void 
+gcry_set_outofcore_handler (gcry_handler_no_mem_t h, void *opaque)
+{
+  (void)h;
+  (void)opaque;
+}
+
+void 
+gcry_set_fatalerror_handler (gcry_handler_error_t fnc, void *opaque)
+{
+  (void)fnc;
+  (void)opaque;
+}
+
+void 
+gcry_set_log_handler (gcry_handler_log_t f, void *opaque)
+{
+  (void)f;
+  (void)opaque;
+}
