@@ -24,12 +24,6 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <errno.h>
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif
-#ifdef HAVE_LANGINFO_CODESET
-#include <langinfo.h>
-#endif
 
 #include "gpgsm.h"
 #include "i18n.h"
@@ -200,26 +194,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
   subject = gpgsm_format_name2 (name, 0);
   ksba_free (name); name = NULL;
 
-#ifdef ENABLE_NLS
-  /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
-  if (!orig_codeset)
-    orig_codeset = nl_langinfo (CODESET);
-#endif
-  if (orig_codeset)
-    { /* We only switch when we are able to restore the codeset later.
-         Note that bind_textdomain_codeset does only return on memory
-         errors but not if a codeset is not available.  Thus we don't
-         bother printing a diagnostic here. */
-      orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        {
-	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
-	}
-    }
-#endif
+  orig_codeset = i18n_switchto_utf8 ();
 
   if (asprintf (&name,
                 _("You are about to create a signature using your "
@@ -239,10 +214,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
   else
     err = 0;
 
-#ifdef ENABLE_NLS
-  if (orig_codeset)
-    bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
-#endif
+  i18n_switchback (orig_codeset);
   xfree (orig_codeset);
   xfree (subject);
 
@@ -288,9 +260,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
   gpg_error_t err;
   char *name, *subject, *buffer, *p;
   const char *s;
-#ifdef ENABLE_NLS
-  char *orig_codeset = NULL;
-#endif
+  char *orig_codeset;
 
   if (!opt.qualsig_approval)
     return 0;
@@ -301,27 +271,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
   subject = gpgsm_format_name2 (name, 0);
   ksba_free (name); name = NULL;
 
-
-#ifdef ENABLE_NLS
-  /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
-  if (!orig_codeset)
-    orig_codeset = nl_langinfo (CODESET);
-#endif
-  if (orig_codeset)
-    { /* We only switch when we are able to restore the codeset later.
-         Note that bind_textdomain_codeset does only return on memory
-         errors but not if a codeset is not available.  Thus we don't
-         bother printing a diagnostic here. */
-      orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        {
-	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
-	}
-    }
-#endif
+  orig_codeset = i18n_switchto_utf8 ();
 
   if (asprintf (&name,
                 _("You are about to create a signature using your "
@@ -334,13 +284,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
   else
     err = 0;
 
-#ifdef ENABLE_NLS
-  if (orig_codeset)
-    {
-      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
-      xfree (orig_codeset);
-    }
-#endif
+  i18n_switchback (orig_codeset);
   xfree (subject);
 
   if (err)

@@ -424,46 +424,17 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
 {
   int err;
   char *pw;
-#ifdef ENABLE_NLS
-  char *orig_codeset = NULL;
-#endif
+  char *orig_codeset;
 
   if (canceled)
     *canceled = 0;
   
-#ifdef ENABLE_NLS
-  /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
-  if (!orig_codeset)
-    orig_codeset = nl_langinfo (CODESET);
-#endif
-  if (orig_codeset && !strcmp (orig_codeset, "UTF-8"))
-    orig_codeset = NULL;
-  if (orig_codeset)
-    {
-      /* We only switch when we are able to restore the codeset later. */
-      orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        {
-	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
-	}
-    }
-#endif
-
+  orig_codeset = i18n_switchto_utf8 ();
   pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
                        _("Passphrase:"), NULL, 0, &err);
   err = map_spwq_error (err);
-
-#ifdef ENABLE_NLS
-  if (orig_codeset)
-    {
-      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
-      xfree (orig_codeset);
-    }
-#endif
+  i18n_switchback (orig_codeset);
 
   if (!pw)
     {

@@ -257,9 +257,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
   PKT_public_key *pk = xmalloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
-#ifdef ENABLE_NLS
-  char *orig_codeset = NULL;
-#endif
+  char *orig_codeset;
   char *my_prompt;
   char hexfprbuf[20*2+1];
   const char *my_cacheid;
@@ -279,23 +277,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
       pk = NULL; /* oops: no key for some reason */
     }
   
-#ifdef ENABLE_NLS
-  /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
-  if (!orig_codeset)
-    orig_codeset = nl_langinfo (CODESET);
-#endif
-  if (orig_codeset)
-    { /* We only switch when we are able to restore the codeset later. */
-      orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        {
-	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
-	}
-    }
-#endif
+  orig_codeset = i18n_switchto_utf8 ();
 
   if (custom_description)
     atext = native_to_utf8 (custom_description);
@@ -371,6 +353,9 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
   xfree (my_prompt);
   xfree (atext); atext = NULL;
 
+  i18n_switchback (orig_codeset);
+
+
   if (!rc)
     ;
   else if ( gpg_err_code (rc) == GPG_ERR_CANCELED )
@@ -392,14 +377,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
       if (canceled)
         *canceled = 1;
     }
-      
-#ifdef ENABLE_NLS
-  if (orig_codeset)
-    {
-      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
-      xfree (orig_codeset);
-    }
-#endif
+
   if (pk)
     free_public_key( pk );
   if (rc)

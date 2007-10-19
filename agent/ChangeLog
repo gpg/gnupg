@@ -1,3 +1,7 @@
+2007-10-19  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (get_passphrase): Use new utf8 switch fucntions.
+
 2007-10-15  Daiki Ueno  <ueno@unixuser.org>  (wk)
 
 	* command-ssh.c (reenter_compare_cb): New function; imported from

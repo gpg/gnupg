@@ -891,9 +891,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   char created[20];
   char *sn;
   ksba_sexp_t sexp;
-#ifdef ENABLE_NLS
-  char *orig_codeset = NULL;
-#endif
+  char *orig_codeset;
 
   name = ksba_cert_get_subject (cert, 0);
   subject = name? gpgsm_format_name2 (name, 0) : NULL;
@@ -909,28 +907,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   else
     *created = 0;
 
-
-#ifdef ENABLE_NLS
-  /* The Assuan agent protocol requires us to transmit utf-8 strings */
-  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
-  if (!orig_codeset)
-    orig_codeset = nl_langinfo (CODESET);
-#endif
-  if (orig_codeset)
-    { /* We only switch when we are able to restore the codeset later.
-         Note that bind_textdomain_codeset does only return on memory
-         errors but not if a codeset is not available.  Thus we don't
-         bother printing a diagnostic here. */
-      orig_codeset = xstrdup (orig_codeset);
-      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
-        {
-	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
-	}
-    }
-#endif
-
+  orig_codeset = i18n_switchto_utf8 ();
 
   rc = asprintf (&name,
                  _("Please enter the passphrase to unlock the"
@@ -942,13 +919,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
                  gpgsm_get_short_fingerprint (cert),
                  created);
 
-#ifdef ENABLE_NLS
-  if (orig_codeset)
-    {
-      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
-      xfree (orig_codeset);
-    }
-#endif
+  i18n_switchback (orig_codeset);
 
   if (rc < 0)
     {

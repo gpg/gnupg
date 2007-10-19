@@ -39,6 +39,9 @@
 #endif /*!USE_SIMPLE_GETTEXT*/
 
 void i18n_init (void);
+char *i18n_switchto_utf8 (void);
+void i18n_switchback (char *saved_codeset);
+const char *i18n_utf8 (const char *string);
 
 
 #endif /*GNUPG_COMMON_I18N_H*/

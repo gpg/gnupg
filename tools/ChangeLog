@@ -1,5 +1,7 @@
 2007-10-19  Werner Koch  <wk@g10code.com>
 
+	* symcryptrun.c (confucius_get_pass): Use utf8 switching functions.
+
 	* gpg-connect-agent.c (get_var_ext): New.
 	(substitute_line): Use it.
 	(assign_variable): Implement /slet in terms of get_var_ext.
