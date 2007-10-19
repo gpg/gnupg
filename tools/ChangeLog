@@ -1,3 +1,8 @@
+2007-10-19  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (retrieve_options_from_file): Don't call fclose
+	with NULL.  Fixes bug 842.
+
 2007-10-12  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (substitute_line): Allow ${foo} syntax.

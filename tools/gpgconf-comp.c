@@ -1880,7 +1880,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   list_option->active = 1;
   list_option->value = list;
 
-  if (fclose (list_file) && ferror (list_file))
+  if (list_file && fclose (list_file) && ferror (list_file))
     gc_error (1, errno, "error closing %s", list_pathname);
   xfree (line);
 }
