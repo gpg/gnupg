@@ -356,7 +356,8 @@ is_armor_header( byte *line, unsigned len )
        --rfc2440 is set since 2440 reads "The header lines, therefore,
        MUST start at the beginning of a line, and MUST NOT have text
        following them on the same line."  It is unclear whether "text"
-       refers to all text or just non-whitespace text. */
+       refers to all text or just non-whitespace text.  4880 clarified
+       this was only non-whitespace text. */
 
     if(RFC2440)
       {

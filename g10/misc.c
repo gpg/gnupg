@@ -799,51 +799,64 @@ default_compress_algo(void)
 const char *
 compliance_option_string(void)
 {
-  switch(opt.compliance)
-    {
-    case CO_RFC4880:
-      return "--openpgp";
-    case CO_RFC2440:
-      return "--rfc2440";
-    case CO_RFC1991:
-      return "--rfc1991";
-    case CO_PGP2:
-      return "--pgp2";
-    case CO_PGP6:
-      return "--pgp6";
-    case CO_PGP7:
-      return "--pgp7";
-    case CO_PGP8:
-      return "--pgp8";
-    default:
-      return "???";
-    }
-}
+  char *ver="???";
 
-static const char *
-compliance_string(void)
-{
   switch(opt.compliance)
     {
-    case CO_RFC2440:
-      return "OpenPGP";
-    case CO_PGP2:
-      return "PGP 2.x";
-    case CO_PGP6:
-      return "PGP 6.x";
-    case CO_PGP7:
-      return "PGP 7.x";
-    case CO_PGP8:
-      return "PGP 8.x";
-    default:
-      return "???";
+    case CO_GNUPG:   return "--gnupg";
+    case CO_RFC4880: return "--openpgp";
+    case CO_RFC2440: return "--rfc2440";
+    case CO_RFC1991: return "--rfc1991";
+    case CO_PGP2:    return "--pgp2";
+    case CO_PGP6:    return "--pgp6";
+    case CO_PGP7:    return "--pgp7";
+    case CO_PGP8:    return "--pgp8";
     }
+
+  return ver;
 }
 
 void
 compliance_failure(void)
 {
-  log_info(_("this message may not be usable by %s\n"),compliance_string());
+  char *ver="???";
+
+  switch(opt.compliance)
+    {
+    case CO_GNUPG:
+      ver="GnuPG";
+      break;
+
+    case CO_RFC4880:
+      ver="OpenPGP";
+      break;
+
+    case CO_RFC2440:
+      ver="OpenPGP (older)";
+      break;
+
+    case CO_RFC1991:
+      ver="old PGP";
+      break;
+
+    case CO_PGP2:
+      ver="PGP 2.x";
+      break;
+
+    case CO_PGP6:
+      ver="PGP 6.x";
+      break;
+
+    case CO_PGP7:
+      ver="PGP 7.x";
+      break;
+
+    case CO_PGP8:
+      ver="PGP 8.x";
+      break;
+    }
+
+  log_info(_("this message may not be usable by %s\n"),ver);
   opt.compliance=CO_GNUPG;
 }
 

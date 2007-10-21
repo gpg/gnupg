@@ -1,3 +1,10 @@
+2007-10-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (compliance_option_string, compliance_failure): Minor
+	cleanup.
+
+	* armor.c (is_armor_header): Comment about 4880.
+
 2007-10-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, gpg.c (main), misc.c (compliance_option_string): Add
