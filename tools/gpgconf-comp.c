@@ -64,8 +64,6 @@
 /* TODO:
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
-   Don't use popen, as this will not tell us if the program had a
-   non-zero exit code.
    Add options to change backend binary path.
    Extract binary path for some backends from gpgsm/gpg config.
 */
@@ -1626,21 +1624,40 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
 static void
 retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 {
-  char *cmd_line;
+  gpg_error_t err;
+  int filedes[2];
+  const char *pgmname;
+  const char *argv[2];
+  int exitcode;
+  pid_t pid;
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
   FILE *config;
   char *config_pathname;
 
-  cmd_line = xasprintf ("%s --gpgconf-list", 
-                        gc_backend[backend].module_name ?
-                        gnupg_module_name (gc_backend[backend].module_name) :
-                        gc_backend[backend].program );
+  err = gnupg_create_inbound_pipe (filedes);
+  if (err)
+    gc_error (1, 0, _("error creating a pipe: %s\n"), gpg_strerror (err));
 
-  config = popen (cmd_line, "r");
+  pgmname = (gc_backend[backend].module_name 
+             ? gnupg_module_name (gc_backend[backend].module_name) 
+             : gc_backend[backend].program );
+  argv[0] = "--gpgconf-list";
+  argv[1] = NULL;
+
+  err = gnupg_spawn_process_fd (pgmname, argv, -1, filedes[1], -1, &pid);
+  if (err)
+    {
+      close (filedes[0]);
+      close (filedes[1]);
+      gc_error (1, 0, "could not gather active options from `%s': %s",
+                pgmname, gpg_strerror (err));
+    }
+  close (filedes[1]);
+  config = fdopen (filedes[0], "r");
   if (!config)
-    gc_error (1, errno, "could not gather active options from %s", cmd_line);
+    gc_error (1, errno, "can't fdopen pipe for reading");
 
   while ((length = read_line (config, &line, &line_len, NULL)) > 0)
     {
@@ -1671,9 +1688,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	  errno = 0;
 	  flags = strtoul (linep, &tail, 0);
 	  if (errno)
-	    gc_error (1, errno, "malformed flags in option %s from %s", line, cmd_line);
+	    gc_error (1, errno, "malformed flags in option %s from %s",
+                      line, pgmname);
 	  if (!(*tail == '\0' || *tail == ':' || *tail == ' '))
-	    gc_error (1, 0, "garbage after flags in option %s from %s", line, cmd_line);
+	    gc_error (1, 0, "garbage after flags in option %s from %s",
+                      line, pgmname);
 
 	  linep = end;
 	}
@@ -1701,7 +1720,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	{
 	  if (option->active)
 	    gc_error (1, errno, "option %s returned twice from %s",
-		      line, cmd_line);
+		      line, pgmname);
 	  option->active = 1;
 
 	  option->flags |= flags;
@@ -1710,10 +1729,15 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	}
     }
   if (length < 0 || ferror (config))
-    gc_error (1, errno, "error reading from %s", cmd_line);
+    gc_error (1, errno, "error reading from %s",pgmname);
   if (fclose (config) && ferror (config))
-    gc_error (1, errno, "error closing %s", cmd_line);
-  xfree (cmd_line);
+    gc_error (1, errno, "error closing %s", pgmname);
+
+  err = gnupg_wait_process (pgmname, pid, &exitcode);
+  if (err)
+    gc_error (1, 0, "running %s failed (exitcode=%d): %s",
+              pgmname, exitcode, gpg_strerror (err));
+
 
   /* At this point, we can parse the configuration file.  */
   config_pathname = get_config_pathname (component, backend);
