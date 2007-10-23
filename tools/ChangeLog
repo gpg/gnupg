@@ -1,3 +1,9 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_gpg_agent): Repalce accidently used
+	GC_BACKEND_SCDAEMON.  We should consider to create these tables
+	from plain files.
+
 2007-10-22  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (retrieve_options_from_program): Replace use of

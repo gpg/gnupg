@@ -537,7 +537,7 @@ static gc_option_t gc_options_gpg_agent[] =
    { "check-passphrase-pattern", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_EXPERT,
      "gnupg", N_("|FILE|check new passphrases against pattern in FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
    { "max-passphrase-days", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_EXPERT, "gnupg", 
      N_("|N|expire the passphrase after N days"),
