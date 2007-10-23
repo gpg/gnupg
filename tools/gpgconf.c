@@ -44,6 +44,7 @@ enum cmd_and_opt_values
     aListOptions,
     aChangeOptions,
     aApplyDefaults,
+    aListConfig,
     aCheckConfig
 
   };
@@ -60,6 +61,8 @@ static ARGPARSE_OPTS opts[] =
     { aChangeOptions, "change-options", 256, N_("|COMPONENT|change options") },
     { aApplyDefaults, "apply-defaults", 256,
       N_("apply global default values") },
+    { aListConfig,   "list-config", 256,
+      N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
 
@@ -104,6 +107,27 @@ my_strusage( int level )
 }
 
 
+/* Return the fp for the output.  This is usually stdout unless
+   --output has been used.  In the latter case this function opens
+   that file.  */
+static FILE *
+get_outfp (FILE **fp)
+{
+  if (!*fp)
+    {
+      if (opt.outfile)
+        {
+          *fp = fopen (opt.outfile, "w");
+          if (!*fp)
+            gc_error (1, errno, "can not open `%s'", opt.outfile);
+        }
+      else
+        *fp = stdout;
+    }
+  return *fp;
+}
+
+
 /* gpgconf main. */
 int
 main (int argc, char **argv)
@@ -112,6 +136,7 @@ main (int argc, char **argv)
   const char *fname;
   int no_more_options = 0;
   enum cmd_and_opt_values cmd = 0;
+  FILE *outfp = NULL;
 
   set_strusage (my_strusage);
   log_set_prefix ("gpgconf", 1);
@@ -143,6 +168,7 @@ main (int argc, char **argv)
         case aListOptions:
         case aChangeOptions:
         case aApplyDefaults:
+        case aListConfig:
         case aCheckConfig:
 	  cmd = pargs.r_opt;
 	  break;
@@ -161,12 +187,12 @@ main (int argc, char **argv)
     case aListComponents:
     default:
       /* List all components. */
-      gc_component_list_components (stdout);
+      gc_component_list_components (get_outfp (&outfp));
       break;
 
     case aCheckPrograms:
       /* Check all programs. */
-      gc_component_check_programs (stdout);
+      gc_component_check_programs (get_outfp (&outfp));
       break;
 
     case aListOptions:
@@ -189,17 +215,22 @@ main (int argc, char **argv)
 	      exit (1);
 	    }
 	  gc_component_retrieve_options (idx);
-          if (gc_process_gpgconf_conf (NULL, 1, 0))
+          if (gc_process_gpgconf_conf (NULL, 1, 0, NULL))
             exit (1);
 	  if (cmd == aListOptions)
-	    gc_component_list_options (idx, stdout);
+	    gc_component_list_options (idx, get_outfp (&outfp));
 	  else
             gc_component_change_options (idx, stdin);
 	}
       break;
 
+    case aListConfig:
+      if (gc_process_gpgconf_conf (fname, 0, 0, get_outfp (&outfp)))
+        exit (1);
+      break;
+
     case aCheckConfig:
-      if (gc_process_gpgconf_conf (fname, 0, 0))
+      if (gc_process_gpgconf_conf (fname, 0, 0, NULL))
         exit (1);
       break;
 
@@ -213,14 +244,15 @@ main (int argc, char **argv)
 	  exit (2);
 	}
       gc_component_retrieve_options (-1);
-      if (gc_process_gpgconf_conf (NULL, 1, 1))
+      if (gc_process_gpgconf_conf (NULL, 1, 1, NULL))
         exit (1);
       break;
-
     }
-  
+
+  if (outfp && outfp != stdout)
+    if (fclose (outfp))
+      gc_error (1, errno, "error closing `%s'", opt.outfile);
+
   return 0; 
 }
-
-
 

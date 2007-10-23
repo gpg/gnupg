@@ -714,7 +714,7 @@ agent_clear_pin_cache (const char *sn)
 
 
 
-/* Note: All strings shall be UTF-8. On success the caler needs to
+/* Note: All strings shall be UTF-8. On success the caller needs to
    free the string stored at R_PASSPHRASE. On error NULL will be
    stored at R_PASSPHRASE and an appropriate fpf error code
    returned. */

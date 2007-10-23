@@ -1,3 +1,7 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (Listing global options): New.
+
 2007-10-19  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (Controlling gpg-connect-agent): Updated.

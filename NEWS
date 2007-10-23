@@ -9,6 +9,8 @@ Noteworthy changes in version 2.0.8
 
  * Enhanced gpg-connect-agent with a small scripting language.
 
+ * New option --list-config for gpgconf.
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------

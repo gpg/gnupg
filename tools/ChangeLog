@@ -1,6 +1,13 @@
 2007-10-23  Werner Koch  <wk@g10code.com>
 
-	* gpgconf-comp.c (gc_options_gpg_agent): Repalce accidently used
+	* gpgconf-comp.c (gc_process_gpgconf_conf): Add arg
+	LISTFP.  Changed all callers.
+	* gpgconf.h: Add gc_error.
+	* gpgconf.c: Add command --list-config.
+	(get_outfp): New.
+	(main): Make --output work.
+
+	* gpgconf-comp.c (gc_options_gpg_agent): Replace accidently used
 	GC_BACKEND_SCDAEMON.  We should consider to create these tables
 	from plain files.
 

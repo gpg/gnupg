@@ -197,13 +197,14 @@ program that uses @command{gpgconf} in this way will be called GUI
 throughout this section.
 
 @menu
-* Invoking gpgconf::      List of all commands and options.
-* Format conventions::    Formatting conventions relevant for all commands.
-* Listing components::    List all gpgconf components.
-* Checking programs::     Check all programs know to gpgconf.
-* Listing options::       List all options of a component.
-* Changing options::      Changing options of a component.
-* Files used by gpgconf:: What files are used by gpgconf.
+* Invoking gpgconf::       List of all commands and options.
+* Format conventions::     Formatting conventions relevant for all commands.
+* Listing components::     List all gpgconf components.
+* Checking programs::      Check all programs know to gpgconf.
+* Listing options::        List all options of a component.
+* Changing options::       Changing options of a component.
+* Listing global options:: List all global options.
+* Files used by gpgconf::  What files are used by gpgconf.
 @end menu
 
 @manpause
@@ -231,6 +232,10 @@ Change the options of the component @var{component}.
 @item --apply-defaults
 Update all configuration files with values taken from the global
 configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
+
+@item --list-config [@var{filename}]
+List the global configuration file in a colon separated format.  If
+@var{filename} is given, check that file instead.
 
 @item --check-config [@var{filename}]
 Run a syntax check on the global configuration file.  If @var{filename}
@@ -766,6 +771,64 @@ $ echo 'force:16:' | gpgconf --change-options dirmngr
 
 The @code{--runtime} option can influence when the changes take
 effect.
+
+
+@node Listing global options
+@subsection Listing global options
+
+Sometimes it is useful for applications to look at the global options
+file @file{gpgconf.conf}. 
+The colon separated listing format is record oriented and uses the first
+field to identify the record type:
+
+@table @code
+@item k
+This describes a key record to start the definition of a new ruleset for
+a user/group.  The format of a key record is:
+
+  @code{k:@var{user}:@var{group}:}
+
+@table @var
+@item user
+This is the user field of the key.  It is percent escaped.  See the
+definition of the gpgconf.conf format for details.
+
+@item group
+This is the group field of the key.  It is percent escaped.
+@end table
+
+@item r
+This describes a rule record. All rule records up to the next key record
+make up a rule set for that key.  The format of a rule record is:
+
+  @code{r:::@var{component}:@var{option}:@var{flags}:@var{value}:}
+
+@table @var
+@item component
+This is the component part of a rule.  It is a plain string.
+
+@item option
+This is the option part of a rule.  It is a plain string.
+
+@item flag
+This is the flags part of a rule.  There may be only one flag per rule
+but by using the same component and option, several flags may be
+assigned to an option.  It is a plain string.
+
+@item value
+This is the optional value for the option.  It is a percent escaped
+string with a single quotation mark to indicate a string.  The quotation
+mark is only required to distinguish between no value specified and an
+empty string.
+@end table
+
+@end table
+
+@noindent
+Unknown record typs should be ignored.  Note that there is intentionally
+no feature to change the global option file through @command{gpgconf}.
+
+
 
 @mansect files
 @node Files used by gpgconf

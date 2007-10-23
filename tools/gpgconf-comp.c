@@ -337,7 +337,7 @@ static struct
    argument value.  */
 #define GC_OPT_FLAG_LIST	(1UL << 2)
 /* The NO_CHANGE flag for an option indicates that the user should not
-   be allowed to chnage this option using the standard gpgconf method.
+   be allowed to change this option using the standard gpgconf method.
    Frontends using gpgconf should grey out such options, so that only
    the current value is displayed.  */
 #define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
@@ -522,7 +522,7 @@ static gc_option_t gc_options_gpg_agent[] =
    { "Passphrase policy",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
      "gnupg", N_("Options enforcing a passphrase policy") },
-   { "enforce-passphrases-constraints", GC_OPT_FLAG_RUNTIME, 
+   { "enforce-passphrase-constraints", GC_OPT_FLAG_RUNTIME, 
      GC_LEVEL_EXPERT, "gnupg", 
      N_("do not allow to bypass the passphrase policy"),
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
@@ -542,7 +542,7 @@ static gc_option_t gc_options_gpg_agent[] =
      GC_LEVEL_EXPERT, "gnupg", 
      N_("|N|expire the passphrase after N days"),
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
-   { "enable-passphrases-history", GC_OPT_FLAG_RUNTIME, 
+   { "enable-passphrase-history", GC_OPT_FLAG_RUNTIME, 
      GC_LEVEL_EXPERT, "gnupg", 
      N_("do not allow the reuse of old passphrases"),
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
@@ -3094,12 +3094,14 @@ key_matches_user_or_group (char *user)
    default name will be used.  With UPDATE set to true the internal
    tables are actually updated; if not set, only a syntax check is
    done.  If DEFAULTS is true the global options are written to the
-   configuration files.
+   configuration files.  If LISTFP is set, no changes are done but the
+   configuration file is printed to LISTFP in a colon separated format.
 
    Returns 0 on success or if the config file is not present; -1 is
    returned on error. */
 int
-gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
+gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
+                         FILE *listfp)
 {
   int result = 0;
   char *line = NULL;
@@ -3112,9 +3114,11 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
   int runtime[GC_BACKEND_NR];
   int used_components[GC_COMPONENT_NR];
   int backend_id, component_id;
-  char *fname = (char *) fname_arg;
+  char *fname;
 
-  if (!fname)
+  if (fname_arg)
+    fname = xstrdup (fname_arg);
+  else
     fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
 
   for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
@@ -3126,7 +3130,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
   if (!config)
     {
       /* Do not print an error if the file is not available, except
-         when runnign in syntax check mode.  */
+         when running in syntax check mode.  */
       if (errno != ENOENT || !update)
         {
           gc_error (0, errno, "can not open global config file `%s'", fname);
@@ -3295,12 +3299,41 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
                     fname, lineno);
           result = -1;
         }
-      
+
+      /* In list mode we print out all records.  */
+      if (listfp && !result)
+        {
+          /* If this is a new ruleset, print a key record.  */
+          if (!is_continuation)
+            {
+              char *group = strchr (key, ':');
+              if (group)
+                {
+                  *group++ = 0;
+                  if ((p = strchr (group, ':')))
+                    *p = 0; /* We better strip any extra stuff. */
+                }                    
+              
+              fprintf (listfp, "k:%s:", my_percent_escape (key));
+              fprintf (listfp, "%s:\n", group? my_percent_escape (group):"");
+            }
+
+          /* All other lines are rule records.  */
+          fprintf (listfp, "r:::%s:%s:%s:",
+                   gc_component[component_id].name,                     
+                   option_info->name? option_info->name : "",
+                   flags? flags : "");
+          if (value != empty)
+            fprintf (listfp, "\"%s", my_percent_escape (value));
           
+          putc (':', listfp);
+          putc ('\n', listfp);
+        }
+
       /* Check whether the key matches but do this only if we are not
          running in syntax check mode. */
       if ( update 
-           && !result
+           && !result && !listfp
            && (got_match || (key && key_matches_user_or_group (key))) )
         {
           int newflags = 0;
@@ -3348,7 +3381,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults)
   xfree (line);
 
   /* If it all worked, process the options. */
-  if (!result && update && defaults)
+  if (!result && update && defaults && !listfp)
     {
       /* We need to switch off the runtime update, so that we can do
          it later all at once. */

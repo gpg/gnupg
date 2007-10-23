@@ -37,6 +37,8 @@ struct
 
 
 /*-- gpgconf-comp.c --*/
+void gc_error (int status, int errnum, const char *fmt, ...);
+
 /* List all components that are available.  */
 void gc_component_list_components (FILE *out);
 
@@ -58,7 +60,8 @@ void gc_component_list_options (int component, FILE *out);
 void gc_component_change_options (int component, FILE *in);
 
 /* Process global configuration file.  */
-int gc_process_gpgconf_conf (const char *fname, int update, int defaults);
+int gc_process_gpgconf_conf (const char *fname, int update, int defaults,
+                             FILE *listfp);
 
 
 #endif /*GPGCONF_H*/
