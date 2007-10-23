@@ -1,3 +1,7 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	Switched entire package to GPLv3+.
+
 2007-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am (noinst_PROGRAMS): Don't build shmtest unless we
@@ -225,7 +229,7 @@ Tue Apr  7 19:50:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

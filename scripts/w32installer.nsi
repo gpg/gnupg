@@ -43,12 +43,11 @@ VIAddVersionKey "Comments" \
    "GnuPG is Free Software; you can redistribute it and/or modify  \
     it under the terms of the GNU General Public License. You should  \
     have received a copy of the GNU General Public License along with  \
-    this software; if not, write to the Free Software Foundation, Inc.,  \
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA"
+    this software; if not, see <http://www.gnu.org/licenses/>."
 VIAddVersionKey "CompanyName" "Free Software Foundation"
 VIAddVersionKey "LegalTrademarks" ""
 VIAddVersionKey "LegalCopyright" \
-    "Copyright (C) 2005 Free Software Foundation, Inc."
+    "Copyright (C) 2007 Free Software Foundation, Inc."
 VIAddVersionKey "FileDescription" \
     "GnuPG: Encryption and digital signature tool"
 VIAddVersionKey "FileVersion" "${PROD_VERSION}"

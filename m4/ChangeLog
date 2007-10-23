@@ -1,3 +1,37 @@
+2007-10-23  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* gettext.m4: Upgrade to gettext-0.16.1.
+	* iconv.m4: Upgrade to gettext-0.16.1.
+	* lib-ld.m4: Upgrade to gettext-0.16.1.
+	* lib-link.m4: Upgrade to gettext-0.16.1.
+	* lib-prefix.m4: Upgrade to gettext-0.16.1.
+	* nls.m4: Upgrade to gettext-0.16.1.
+	* po.m4: Upgrade to gettext-0.16.1.
+	* progtest.m4: Upgrade to gettext-0.16.1.
+	* codeset.m4: Upgrade to gettext-0.16.1.
+	* glibc2.m4: New file, from gettext-0.16.1.
+	* glibc21.m4: Upgrade to gettext-0.16.1.
+	* intdiv0.m4: Upgrade to gettext-0.16.1.
+	* intl.m4: New file, from gettext-0.16.1.
+	* intldir.m4: New file, from gettext-0.16.1.
+	* intmax.m4: Upgrade to gettext-0.16.1.
+	* inttypes_h.m4: Upgrade to gettext-0.16.1.
+	* inttypes-pri.m4: Upgrade to gettext-0.16.1.
+	* lcmessage.m4: Upgrade to gettext-0.16.1.
+	* lock.m4: New file, from gettext-0.16.1.
+	* longdouble.m4: Upgrade to gettext-0.16.1.
+	* longlong.m4: Upgrade to gettext-0.16.1.
+	* printf-posix.m4: Upgrade to gettext-0.16.1.
+	* size_max.m4: Upgrade to gettext-0.16.1.
+	* stdint_h.m4: Upgrade to gettext-0.16.1.
+	* uintmax_t.m4: Upgrade to gettext-0.16.1.
+	* ulonglong.m4: Upgrade to gettext-0.16.1.
+	* visibility.m4: New file, from gettext-0.16.1.
+	* wchar_t.m4: Upgrade to gettext-0.16.1.
+	* wint_t.m4: Upgrade to gettext-0.16.1.
+	* xsize.m4: Upgrade to gettext-0.16.1.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
 2007-08-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* ldap.m4: Revert the mozldap change: mozldap has some significant

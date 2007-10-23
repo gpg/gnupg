@@ -1,25 +1,21 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- *  Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
- *                2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
- *  This file is part of GnuPG.
+ * This file is part of GnuPG.
  *
- *  GnuPG is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * GnuPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  GnuPG is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * GnuPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
- *
- *
- * Note: This is an independent version of the one in WkLib
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -857,6 +853,9 @@ show_version()
     /* copyright string */
     if( (s=strusage(14)) )
 	printf("%s\n", s );
+    /* Licence string.  */
+    if( (s=strusage (10)) )
+        printf("%s\n", s );
     /* copying conditions */
     if( (s=strusage(15)) )
 	fputs(s, stdout);
@@ -893,6 +892,7 @@ usage( int level )
  *     0: Copyright String auf stderr ausgeben
  *     1: Kurzusage auf stderr ausgeben und beenden
  *     2: Langusage auf stdout ausgeben und beenden
+ *    10: Return license info string
  *    11: name of program
  *    12: optional name of package which includes this program.
  *    13: version  string
@@ -912,25 +912,27 @@ default_strusage( int level )
 {
     const char *p = NULL;
     switch( level ) {
+      case 10: p = ("License GPLv3+: GNU GPL version 3 or later "
+                    "<http://gnu.org/licenses/gpl.html>");
+        break;
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
       case 14: p = "Copyright (C) 2007 Free Software Foundation, Inc."; break;
       case 15: p =
-"This program comes with ABSOLUTELY NO WARRANTY.\n"
-"This is free software, and you are welcome to redistribute it\n"
-"under certain conditions. See the file COPYING for details.\n"; break;
+"This is free software: you are free to change and redistribute it.\n"
+"There is NO WARRANTY, to the extent permitted by law.\n"; 
+        break;
       case 16:	p =
 "This is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
+"the Free Software Foundation; either version 3 of the License, or\n"
 "(at your option) any later version.\n\n"
 "It is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 "GNU General Public License for more details.\n\n"
 "You should have received a copy of the GNU General Public License\n"
-"along with this program; if not, write to the Free Software\n"
-"Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n";
+"along with this software.  If not, see <http://www.gnu.org/licenses/>.\n";
 	break;
       case 40: /* short and long usage */
       case 41: p = ""; break;

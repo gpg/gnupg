@@ -1,3 +1,8 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	Switched entire package to GPLv3+.
+	* assuan.h, _regex.h: Just change the address notice.
+
 2007-08-24  Werner Koch  <wk@g10code.com>
 
 	* util.h (same_file_p): Add prototype.

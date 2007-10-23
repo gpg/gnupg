@@ -1,3 +1,15 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	Switched entire package to GPLv3+.
+
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Enable Camellia and mailto.
+
+	* configure.ac (MPI_OPT_FLAGS): Always use AM_PO_SUBDIRS.
+
+2007-10-23  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.16.1.
+
 2007-10-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Change various help messages to use

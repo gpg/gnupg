@@ -1,3 +1,12 @@
+2007-10-23  Werner Koch  <wk@g10code.com>
+
+	Switched entire package to GPLv3+.  The parts taken from libassuan
+	and glibc are kept at LGPLv2+; only the address as been chnaged.
+
+	* argparse.c (strusage): Use id 10 for the license string;
+	defaults to GPL3+.  Change long note to version 3 or later.
+	(show_version): Print the license info.
+
 2007-08-24  Werner Koch  <wk@g10code.com>
 
 	* fileutil.c (same_file_p): New.  Taken from SVN trunk.

@@ -1,25 +1,23 @@
-dnl configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-dnl               2007 Free Software Foundation, Inc.
-dnl
-dnl This file is part of GnuPG.
-dnl
-dnl GnuPG is free software; you can redistribute it and/or modify
-dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2 of the License, or
-dnl (at your option) any later version.
-dnl 
-dnl GnuPG is distributed in the hope that it will be useful,g
-dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-dnl GNU General Public License for more details.
-dnl 
-dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
-dnl MA 02110-1301, USA
-dnl
-dnl (Process this file with autoconf to produce a configure script.)
+# configure.ac script for GnuPG
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+#               2007 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+# 
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#
+# (Process this file with autoconf to produce a configure script.)
 
 AC_PREREQ(2.59)
 min_automake_version="1.9.3"
@@ -833,24 +831,26 @@ AC_SUBST(MPI_OPT_FLAGS)
 
 dnl Checks for libraries.
 
+AM_PO_SUBDIRS
+AM_GNU_GETTEXT_VERSION([0.16.1])
 if test "$try_gettext" = yes; then
+  AM_GNU_GETTEXT(,[need-ngettext])
   # gettext requires some extra checks.  These really should be part of
   # the basic AM_GNU_GETTEXT macro.  TODO: move other gettext-specific
   # function checks to here.
-
   AC_CHECK_FUNCS(strchr)
 else
   enable_nls=no
+  USE_NLS=no
   USE_INCLUDED_LIBINTL=no
   BUILD_INCLUDED_LIBINTL=no
+  POSUB=po
   AC_SUBST(USE_NLS)
   AC_SUBST(USE_INCLUDED_LIBINTL)
   AC_SUBST(BUILD_INCLUDED_LIBINTL)
-  AM_PO_SUBDIRS
+  AC_SUBST(POSUB)
 fi
 
-AM_GNU_GETTEXT_VERSION(0.14.1)
-AM_GNU_GETTEXT(,[need-ngettext])
 
 if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
   if test "$need_dlopen" = yes; then
