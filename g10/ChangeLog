@@ -1,5 +1,8 @@
 2007-10-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.c (main): Add --require-cross-certification to
+	--openpgp/--rfc4880 mode.
+
 	* gpg.c (main): Disable --rfc2440-text and --force-v3-sigs by
 	default.  Enable --require-cross-certification by default.
 	--openpgp (--rfc4880) is the same as --rfc2440 except with

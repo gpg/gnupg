@@ -2258,10 +2258,11 @@ main (int argc, char **argv )
 	  case oOpenPGP:
 	  case oRFC4880:
 	    /* This is effectively the same as RFC2440, but with
-	       "--enable-dsa2 --no-rfc2440-text
-	       --escape-from-lines". */
+	       "--enable-dsa2 --no-rfc2440-text --escape-from-lines
+	       --require-cross-certification". */
 	    opt.compliance = CO_RFC4880;
 	    opt.flags.dsa2 = 1;
+	    opt.flags.require_cross_cert = 1;
 	    opt.rfc2440_text = 0;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
