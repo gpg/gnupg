@@ -1810,8 +1810,8 @@ main (int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
-    opt.force_v3_sigs = 1;
     opt.escape_from = 1;
+    opt.flags.require_cross_cert = 1;
     opt.import_options=IMPORT_SK2PK;
     opt.export_options=EXPORT_ATTRIBUTES;
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
@@ -1825,7 +1825,6 @@ main (int argc, char **argv )
     opt.min_cert_level=2;
     set_screen_dimensions();
     opt.keyid_format=KF_SHORT;
-    opt.rfc2440_text=1;
     opt.def_sig_expire="0";
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
@@ -2258,14 +2257,16 @@ main (int argc, char **argv )
 	    break;
 	  case oOpenPGP:
 	  case oRFC4880:
-	    /* Note these are the same defaults as CO_RFC2440.  Update
-	       this. */
+	    /* This is effectively the same as RFC2440, but with
+	       "--enable-dsa2 --no-rfc2440-text
+	       --escape-from-lines". */
 	    opt.compliance = CO_RFC4880;
-	    opt.rfc2440_text=1;
+	    opt.flags.dsa2 = 1;
+	    opt.rfc2440_text = 0;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
-	    opt.escape_from = 0;
+	    opt.escape_from = 1;
 	    opt.force_v3_sigs = 0;
 	    opt.compress_keys = 0;	    /* not mandated, but we do it */
 	    opt.compress_sigs = 0;	    /* ditto. */
@@ -2279,10 +2280,9 @@ main (int argc, char **argv )
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
 	    break;
 	  case oRFC2440:
-	    /* TODO: When 2440bis becomes a RFC, set new values for
-	       oOpenPGP. */
 	    opt.compliance = CO_RFC2440;
-	    opt.rfc2440_text=1;
+	    opt.flags.dsa2 = 0;
+	    opt.rfc2440_text = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
