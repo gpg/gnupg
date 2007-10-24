@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <assuan.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "i18n.h"
 #include "../common/util.h"
@@ -91,6 +92,7 @@ struct
   int exec;             /* Run the pgm given on the command line. */
   unsigned int connect_flags;    /* Flags used for connecting. */
   int enable_varsubst;  /* Set if variable substitution is enabled.  */
+  int trim_leading_spaces;
 } opt;
 
 
@@ -121,6 +123,16 @@ struct variable_s
 typedef struct variable_s *variable_t;
 
 static variable_t variable_table;
+
+
+/* To implement loops we store entire lines in a linked list.  */
+struct loopline_s
+{
+  struct loopline_s *next;
+  char line[1];
+};
+typedef struct loopline_s *loopline_t;
+
 
 /* This is used to store the pid of the server.  */
 static pid_t server_pid = (pid_t)(-1);
@@ -389,6 +401,56 @@ get_var (const char *name)
 }
 
 
+/* Perform some simple arithmentic operations.  Caller must release
+   the return value.  On error the return value is NULL.  */
+static char *
+arithmetic_op (int operator, const char *operands)
+{
+  long result, value;
+  char numbuf[35];
+
+  while ( spacep (operands) )
+    operands++;
+  if (!*operands)
+    return NULL;
+  result = strtol (operands, NULL, 0);
+  while (*operands && !spacep (operands) )
+    operands++;
+  while (*operands)
+    {
+      while ( spacep (operands) )
+        operands++;
+      if (!*operands)
+        break;
+      value = strtol (operands, NULL, 0);
+      while (*operands && !spacep (operands) )
+        operands++;
+      switch (operator)
+        {
+        case '+': result += value; break;
+        case '-': result -= value; break;
+        case '*': result *= value; break;
+        case '/': 
+          if (!value)
+            return NULL;
+          result /= value;
+          break;
+        case '%': 
+          if (!value)
+            return NULL;
+          result %= value;
+          break;
+        default:
+          log_error ("unknown arithmetic operator `%c'\n", operator);
+          return NULL;
+        }
+    }
+  snprintf (numbuf, sizeof numbuf, "%ld", result);
+  return xstrdup (numbuf);
+}
+
+
+
 /* Extended version of get_var.  This returns a malloced string and
    understand the fucntion syntax: "func args". 
 
@@ -412,7 +474,7 @@ get_var (const char *name)
 
      unpercent ARGS
      unpercent+ ARGS
-           Remove percent style ecaping from string.  NOte that "%00
+           Remove percent style ecaping from string.  Note that "%00
            terminates the string implicitly.  Use "%7d" to represetn
            the closing brace.  The args start right after the first
            space after the function name.  "unpercent+" also maps '+'
@@ -516,6 +578,10 @@ get_var_ext (const char *name)
       for (p=result; *p; p++)
         if (*p == ' ')
           *p = '+';
+    }
+  else if ( (s - name) == 1 && strchr ("+-*/%", *name))
+    {
+      result = arithmetic_op (*name, s+1);
     }
   else
     {
@@ -1025,8 +1091,16 @@ main (int argc, char **argv)
   int cmderr;
   const char *opt_run = NULL;
   FILE *script_fp = NULL;
-  int use_tty, last_was_tty;
-
+  int use_tty, keep_line;
+  struct {
+    int collecting;
+    loopline_t head;
+    loopline_t *tail;
+    loopline_t current;
+    unsigned int nestlevel; 
+    char *condition;
+  } loopstack[20];
+  int        loopidx;
 
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
@@ -1060,7 +1134,10 @@ main (int argc, char **argv)
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
         case oRun:       opt_run = pargs.r.ret_str; break;
-        case oSubst:     opt.enable_varsubst = 1; break;
+        case oSubst: 
+          opt.enable_varsubst = 1;
+          opt.trim_leading_spaces = 1;
+          break;
 
         default: pargs.err = 2; break;
 	}
@@ -1143,18 +1220,36 @@ main (int argc, char **argv)
     }
 
  
+  for (loopidx=0; loopidx < DIM (loopstack); loopidx++)
+    loopstack[loopidx].collecting = 0;
+  loopidx = -1;
   line = NULL;
   linesize = 0;
-  last_was_tty = 0;
+  keep_line = 1;
   for (;;)
     {
       int n;
-      size_t maxlength;
+      size_t maxlength = 2048;
 
-      maxlength = 2048;
-      if (use_tty && !script_fp)
+      assert (loopidx < (int)DIM (loopstack));
+      if (loopidx >= 0 && loopstack[loopidx].current)
         {
-          last_was_tty = 1;
+          keep_line = 0;
+          xfree (line);
+          line = xstrdup (loopstack[loopidx].current->line);
+          n = strlen (line);
+          /* Never go beyond of the final /end.  */
+          if (loopstack[loopidx].current->next)
+            loopstack[loopidx].current = loopstack[loopidx].current->next;
+          else if (!strncmp (line, "/end", 4) && (!line[4]||spacep(line+4)))
+            ;
+          else
+            log_fatal ("/end command vanished\n");
+        }
+      else if (use_tty && !script_fp)
+        {
+          keep_line = 0;
+          xfree (line);
           line = tty_get ("> ");
           n = strlen (line);
           if (n==1 && *line == CONTROL_D)
@@ -1164,12 +1259,12 @@ main (int argc, char **argv)
         }
       else
         {
-          if (last_was_tty)
+          if (!keep_line)
             {
               xfree (line);
               line = NULL;
               linesize = 0;
-              last_was_tty = 0;
+              keep_line = 1;
             }
           n = read_line (script_fp? script_fp:stdin, 
                          &line, &linesize, &maxlength);
@@ -1208,6 +1303,44 @@ main (int argc, char **argv)
         log_info (_("line shortened due to embedded Nul character\n"));
       if (line[n-1] == '\n')
         line[n-1] = 0;
+      
+      if (opt.trim_leading_spaces)
+        {
+          const char *s = line;
+          
+          while (spacep (s))
+            s++;
+          if (s != line)
+            {
+              for (p=line; *s;)
+                *p++ = *s++;
+              *p = 0;
+              n = p - line;
+            }
+        }
+
+      if (loopidx+1 >= 0 && loopstack[loopidx+1].collecting)
+        {
+          loopline_t ll;
+
+          ll = xmalloc (sizeof *ll + strlen (line));
+          ll->next = NULL;
+          strcpy (ll->line, line);
+          *loopstack[loopidx+1].tail = ll;
+          loopstack[loopidx+1].tail = &ll->next;
+
+          if (!strncmp (line, "/end", 4) && (!line[4]||spacep(line+4)))
+            loopstack[loopidx+1].nestlevel--;
+          else if (!strncmp (line, "/while", 6) && (!line[6]||spacep(line+6)))
+            loopstack[loopidx+1].nestlevel++;
+          
+          if (loopstack[loopidx+1].nestlevel)
+            continue;
+          /* We reached the corresponding /end.  */
+          loopstack[loopidx+1].collecting = 0;
+          loopidx++;
+        }
+
       if (*line == '/')
         {
           /* Handle control commands. */
@@ -1347,12 +1480,16 @@ main (int argc, char **argv)
           else if (!strcmp (cmd, "nodecode"))
             opt.decode = 0;
           else if (!strcmp (cmd, "subst"))
-            opt.enable_varsubst = 1;
+            {
+              opt.enable_varsubst = 1;
+              opt.trim_leading_spaces = 1;
+            }
           else if (!strcmp (cmd, "nosubst"))
             opt.enable_varsubst = 0;
           else if (!strcmp (cmd, "run"))
             {
               char *p2;
+
               for (p2=p; *p2 && !spacep (p2); p2++)
                 ;
               if (*p2)
@@ -1382,9 +1519,74 @@ main (int argc, char **argv)
               else if (opt.verbose)
                 log_info ("running commands from `%s'\n", p);
             }
+          else if (!strcmp (cmd, "while"))
+            {
+              if (loopidx+2 >= (int)DIM(loopstack))
+                {
+                  log_error ("loops are nested too deep\n");
+                  /* We should better die or break all loop in this
+                     case as recovering from this error won't be
+                     easy.  */
+                }
+              else
+                {
+                  loopstack[loopidx+1].head = NULL;
+                  loopstack[loopidx+1].tail = &loopstack[loopidx+1].head;
+                  loopstack[loopidx+1].current = NULL;
+                  loopstack[loopidx+1].nestlevel = 1;
+                  loopstack[loopidx+1].condition = xstrdup (p);
+                  loopstack[loopidx+1].collecting = 1;
+                }
+            }
+          else if (!strcmp (cmd, "end"))
+            {
+              if (loopidx < 0)
+                log_error ("stray /end command encountered - ignored\n");
+              else
+                {
+                  char *tmpcond;
+                  const char *value;
+                  long condition;
+
+                  /* Evaluate the condition.  */
+                  tmpcond = xstrdup (loopstack[loopidx].condition);
+                  tmpline = substitute_line (tmpcond);
+                  value = tmpline? tmpline : tmpcond;
+                  condition = strtol (value, NULL, 0);
+                  xfree (tmpline);
+                  xfree (tmpcond);
+
+                  if (condition)
+                    {
+                      /* Run loop.  */
+                      loopstack[loopidx].current = loopstack[loopidx].head;
+                    }
+                  else
+                    {
+                      /* Cleanup.  */
+                      while (loopstack[loopidx].head)
+                        {
+                          loopline_t tmp = loopstack[loopidx].head->next;
+                          xfree (loopstack[loopidx].head);
+                          loopstack[loopidx].head = tmp;
+                        }
+                      loopstack[loopidx].tail = NULL;
+                      loopstack[loopidx].current = NULL;
+                      loopstack[loopidx].nestlevel = 0;
+                      loopstack[loopidx].collecting = 0;
+                      xfree (loopstack[loopidx].condition);
+                      loopstack[loopidx].condition = NULL;
+                      loopidx--;
+                    }
+                }
+            }
           else if (!strcmp (cmd, "bye"))
             {
               break;
+            }
+          else if (!strcmp (cmd, "sleep"))
+            {
+              gnupg_sleep (1);
             }
           else if (!strcmp (cmd, "help"))
             {
@@ -1408,6 +1610,8 @@ main (int argc, char **argv)
 "/[no]decode            Enable decoding of received data lines.\n"
 "/[no]subst             Enable varibale substitution.\n"
 "/run FILE              Run commands from FILE.\n"
+"/while VAR             Begin loop controlled by VAR.\n"
+"/end                   End loop.\n"
 "/bye                   Terminate gpg-connect-agent.\n"
 "/help                  Print this help.");
             }

@@ -79,10 +79,9 @@ watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
 # FIXME: remove PTH_LIBS (why do we need them at all?)
-gpg_connect_agent_LDADD = $(common_libs) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
-	                  $(GPG_ERROR_LIBS) \
-	                   ../common/libgpgrl.a $(LIBREADLINE) \
-                          $(LIBINTL) $(NETLIBS) $(LIBICONV)	
+gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
+	                  $(LIBASSUAN_LIBS) $(PTH_LIBS) $(GPG_ERROR_LIBS) \
+                          $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)

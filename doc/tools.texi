@@ -1197,10 +1197,19 @@ entire arguments right behind the delimiting space of the function
 name. @code{unpercent+} also maps plus signs to a spaces.
 
 @item percent @var{args}
-@item percent+ @var{args}
+@itemx percent+ @var{args}
 Escape the @var{args} using percent style ecaping.  Tabs, formfeeds,
 linefeeds, carriage returns and colons are escaped. @code{percent+} also
 maps spaces to plus signs.
+
+@item +
+@itemx -
+@item *
+@item /
+@item %
+Evaluate all arguments as long integers using @code{strtol} and apply
+this operator.  A division by zero yields an empty string.
+
 
 @end table
 
@@ -1248,6 +1257,9 @@ Show a listy of open files.
 Send the Assuan command @command{GETINFO pid} to the server and store
 the returned PID for internal purposes.
 
+@item /sleep
+Sleep for a second.
+
 @item /hex
 @itemx /nohex
 Same as the command line option @option{--hex}.
@@ -1260,6 +1272,26 @@ Same as the command line option @option{--decode}.
 @itemx /nosubst
 Enable and disable variable substitution.  It defaults to disabled
 unless the command line option @option{--subst} has been used.
+If /subst as been enabled once, leading white spaces are removed from
+input lines which makes scripts easier to read.
+
+@item /while @var{condition}
+@itemx /end
+These commands provide a way for executing loops.  All lines between the
+@code{while} and the corresponding @code{end} are executed as long as
+the evaluation of @var{condition} yields a non-zero value.  The
+evaluation is done by passing @var{condition} to the @code{strtol}
+function.  Example:
+
+@smallexample
+  /subst
+  /let i 3
+  /while $i
+    /echo loop couter is $i
+    /let i $@{- $i 1@}
+  /end
+@end smallexample
+
 
 @item /run @var{file}
 Run commands from @var{file}.
