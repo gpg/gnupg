@@ -1,3 +1,8 @@
+2007-10-24  Werner Koch  <wk@g10code.com>
+
+	* genkey.c (check_passphrase_constraints): Changed the wording of
+	the warning messages.
+
 2007-10-19  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c (get_passphrase): Use new utf8 switch fucntions.

@@ -1,3 +1,8 @@
+2007-10-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (substitute_line): Restore temporary nul
+	marker.
+
 2007-10-23  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_process_gpgconf_conf): Add arg

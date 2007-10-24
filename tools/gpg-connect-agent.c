@@ -578,9 +578,11 @@ substitute_line (char *buffer)
         }
       if (p[1] == '{' && *pend == '}')
         {
-          *pend++ = 0;
+          int save = *pend;
+          *pend = 0;
           freeme = get_var_ext (p+2);
           value = freeme;
+          *pend++ = save;
         }
       else if (*pend)
         {
@@ -615,7 +617,7 @@ substitute_line (char *buffer)
           n += valuelen;
           strcpy (dst + n, pend);
           line = dst + n;
-          free (result);
+          xfree (result);
           result = dst;
         }
       xfree (freeme);

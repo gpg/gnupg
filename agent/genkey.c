@@ -188,12 +188,11 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
       desc = xtryasprintf 
-        ( ngettext ("Warning:  You have entered a passphrase that%%0A"
-                    "is obviously not secure.  A passphrase should%%0A"
-                    "be at least %u character long.", 
-                    "Warning:  You have entered a passphrase that%%0A"
-                    "is obviously not secure.  A passphrase should%%0A"
-                    "be at least %u characters long.", minlen), minlen );
+        ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
+                    "A passphrase should be at least %u character long.", 
+                    "Warning: You have entered an insecure passphrase.%%0A"
+                    "A passphrase should be at least %u characters long.", 
+                    minlen), minlen );
       if (!desc)
         return gpg_error_from_syserror ();
       err = take_this_one_anyway (ctrl, desc);
@@ -210,12 +209,12 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
       desc = xtryasprintf 
-        ( ngettext ("Warning:  You have entered a passphrase that%%0A"
-                    "is obviously not secure.  A passphrase should%%0A"
-                    "contain at least %u digit or special character.", 
-                    "Warning:  You have entered a passphrase that%%0A"
-                    "is obviously not secure.  A passphrase should%%0A"
-                    "contain at least %u digits or special characters.",
+        ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
+                    "A passphrase should contain at least %u digit or%%0A"
+                    "special character.", 
+                    "Warning: You have entered an insecure passphrase.%%0A"
+                    "A passphrase should contain at least %u digits or%%0A"
+                    "special characters.",
                     minnonalpha), minnonalpha );
       if (!desc)
         return gpg_error_from_syserror ();
@@ -233,9 +232,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
       check_passphrase_pattern (ctrl, pw))
     {
       const char *desc =
-        /* */     _("Warning:  You have entered a passphrase that%0A"
-                    "is obviously not secure.  A passphrase may not%0A"
-                    "be a known term or match certain pattern.");
+        /* */     _("Warning: You have entered an insecure passphrase.%0A"
+                    "A passphrase may not be a known term or match%%0A"
+                    "certain pattern.");
 
       if (silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
