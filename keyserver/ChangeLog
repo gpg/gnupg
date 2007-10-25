@@ -1,3 +1,15 @@
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	From 1.4 (July):
+	
+	* gpgkeys_ldap.c (main): Fix bug in setting up whether to verify
+	peer SSL cert.  This used to work with older OpenLDAP, but is now
+	more strictly handled.
+
+	* gpgkeys_ldap.c (search_key, main): Fix bug where searching for
+	foo bar (no quotes) on the command line resulted in searching for
+	"foo\2Abar" due to LDAP quoting.  The proper search is "foo*bar".
+
 2007-06-11  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_hkp.c (send_key): Rename eof to r_eof as some Windows
@@ -1208,8 +1220,8 @@
 	gpgkeys_mailto (email keyserver helper)
 
 
- Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+	   2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

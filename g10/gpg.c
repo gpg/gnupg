@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -194,6 +194,7 @@ enum cmd_and_opt_values
     oGnuPG,
     oRFC1991,
     oRFC2440,
+    oRFC4880,
     oOpenPGP,
     oPGP2,
     oPGP6,
@@ -520,6 +521,7 @@ static ARGPARSE_OPTS opts[] = {
     { oGnuPG, "no-pgp8", 0, "@"},
     { oRFC1991, "rfc1991",   0, "@"},
     { oRFC2440, "rfc2440", 0, "@" },
+    { oRFC4880, "rfc4880", 0, "@" },
     { oOpenPGP, "openpgp", 0, N_("use strict OpenPGP behavior")},
     { oPGP2, "pgp2", 0, N_("generate PGP 2.x compatible messages")},
     { oPGP6, "pgp6", 0, "@"},
@@ -1902,8 +1904,8 @@ main (int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
-    opt.force_v3_sigs = 1;
     opt.escape_from = 1;
+    opt.flags.require_cross_cert = 1;
     opt.import_options=IMPORT_SK2PK;
     opt.export_options=EXPORT_ATTRIBUTES;
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
@@ -1917,7 +1919,6 @@ main (int argc, char **argv )
     opt.min_cert_level=2;
     set_screen_dimensions();
     opt.keyid_format=KF_SHORT;
-    opt.rfc2440_text=1;
     opt.def_sig_expire="0";
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
@@ -2303,11 +2304,34 @@ main (int argc, char **argv )
 	    opt.escape_from = 1;
 	    break;
 	  case oOpenPGP:
+	  case oRFC4880:
+	    /* This is effectively the same as RFC2440, but with
+	       "--enable-dsa2 --no-rfc2440-text --escape-from-lines
+	       --require-cross-certification". */
+	    opt.compliance = CO_RFC4880;
+	    opt.flags.dsa2 = 1;
+	    opt.flags.require_cross_cert = 1;
+	    opt.rfc2440_text = 0;
+	    opt.allow_non_selfsigned_uid = 1;
+	    opt.allow_freeform_uid = 1;
+	    opt.pgp2_workarounds = 0;
+	    opt.escape_from = 1;
+	    opt.force_v3_sigs = 0;
+	    opt.compress_keys = 0;	    /* not mandated, but we do it */
+	    opt.compress_sigs = 0;	    /* ditto. */
+	    opt.not_dash_escaped = 0;
+	    opt.def_cipher_algo = 0;
+	    opt.def_digest_algo = 0;
+	    opt.cert_digest_algo = 0;
+	    opt.compress_algo = -1;
+            opt.s2k_mode = 3; /* iterated+salted */
+	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+	    break;
 	  case oRFC2440:
-	    /* TODO: When 2440bis becomes a RFC, set new values for
-	       oOpenPGP. */
-	    opt.rfc2440_text=1;
 	    opt.compliance = CO_RFC2440;
+	    opt.flags.dsa2 = 0;
+	    opt.rfc2440_text = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;

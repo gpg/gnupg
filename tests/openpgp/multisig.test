@@ -1,4 +1,13 @@
 #!/bin/sh
+# Copyright 2001,2002,2003,2004,2005,2006,
+#           2007 Free Software Foundation, Inc.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 # Check that gpg verifies only signatures where there is no ambiguity
 # in the order of packets.  Needs the Demo Keys Lima and Mike.
 

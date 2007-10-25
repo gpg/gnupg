@@ -1,32 +1,19 @@
 #!/bin/sh
+# Copyright 2000,2001,2002,2003,2004,2005,2006,
+#           2007 Free Software Foundation, Inc.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 . $srcdir/defs.inc || exit 3
 
-algos="3des"
-
-if have_cipher_algo "IDEA"; then
-   algos="$algos idea"
-fi
-
-if have_cipher_algo "CAST5"; then
-   algos="$algos cast5"
-fi
-
-if have_cipher_algo "BLOWFISH"; then
-   algos="$algos blowfish"
-fi
-
-if have_cipher_algo "AES"; then
-   algos="$algos aes aes192 aes256"
-fi
-
-if have_cipher_algo "TWOFISH"; then
-   algos="$algos twofish"
-fi
-
 #info Checking conventional encryption
-for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
-  for ciph in $algos; do
+for ciph in `all_cipher_algos`; do
+  echo_n "$ciph "
+  for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
     # *BSD's dd can't cope with a count of 0
     if test "$i" = "0"; then
         : >z
@@ -40,3 +27,4 @@ for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
     cmp z y || error "$ciph/$i: mismatch"
   done
 done
+echo_n "| "

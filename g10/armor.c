@@ -1,6 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -308,7 +308,19 @@ parse_hash_header( const char *line )
     return found;
 }
 
+/* Returns true if this is a valid armor tag as per RFC-2440bis-21. */
+static int
+is_armor_tag(const char *line)
+{
+  if(strncmp(line,"Version",7)==0
+     || strncmp(line,"Comment",7)==0
+     || strncmp(line,"MessageID",9)==0
+     || strncmp(line,"Hash",4)==0
+     || strncmp(line,"Charset",7)==0)
+    return 1;
 
+  return 0;
+}
 
 /****************
  * Check whether this is a armor line.
@@ -338,7 +350,8 @@ is_armor_header( byte *line, unsigned len )
        --rfc2440 is set since 2440 reads "The header lines, therefore,
        MUST start at the beginning of a line, and MUST NOT have text
        following them on the same line."  It is unclear whether "text"
-       refers to all text or just non-whitespace text. */
+       refers to all text or just non-whitespace text.  4880 clarified
+       this was only non-whitespace text. */
 
     if(RFC2440)
       {
@@ -418,16 +431,32 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 	putc('\n', stderr);
     }
 
-    if( afx->in_cleartext ) {
+    if( afx->in_cleartext )
+      {
 	if( (hashes=parse_hash_header( line )) )
-	    afx->hashes |= hashes;
+	  afx->hashes |= hashes;
 	else if( strlen(line) > 15 && !memcmp( line, "NotDashEscaped:", 15 ) )
-	    afx->not_dash_escaped = 1;
-	else {
+	  afx->not_dash_escaped = 1;
+	else
+	  {
 	    log_error(_("invalid clearsig header\n"));
 	    return -1;
-	}
-    }
+	  }
+      }
+    else if(!is_armor_tag(line))
+      {
+	/* Section 6.2: "Unknown keys should be reported to the user,
+	   but OpenPGP should continue to process the message."  Note
+	   that in a clearsigned message this applies to the signature
+	   part (i.e. "BEGIN PGP SIGNATURE") and not the signed data
+	   ("BEGIN PGP SIGNED MESSAGE").  The only key allowed in the
+	   signed data section is "Hash". */
+
+	log_info(_("unknown armor header: "));
+	print_string( stderr, line, len, 0 );
+	putc('\n', stderr);
+      }
+
     return 1;
 }
 

@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1649,90 +1649,102 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
  * It may happen that the imported keyblock has duplicated user IDs.
  * We check this here and collapse those user IDs together with their
  * sigs into one.
- * Returns: True if the keyblock hash changed.
+ * Returns: True if the keyblock has changed.
  */
 int
 collapse_uids( KBNODE *keyblock )
 {
-    KBNODE n, n2;
-    int in_uid;
-    int any=0;
+  KBNODE uid1;
+  int any=0;
 
-  restart:
-    for( n = *keyblock; n; n = n->next ) {
-	if( n->pkt->pkttype != PKT_USER_ID )
+  for(uid1=*keyblock;uid1;uid1=uid1->next)
+    {
+      KBNODE uid2;
+
+      if(uid1->pkt->pkttype!=PKT_USER_ID)
+	continue;
+
+      for(uid2=uid1->next;uid2;uid2=uid2->next)
+	{
+	  if(uid2->pkt->pkttype!=PKT_USER_ID)
 	    continue;
-	for( n2 = n->next; n2; n2 = n2->next ) {
-	    if( n2->pkt->pkttype == PKT_USER_ID
-		&& !cmp_user_ids( n->pkt->pkt.user_id,
-				  n2->pkt->pkt.user_id ) ) {
-		/* found a duplicate */
-		any = 1;
-		if( !n2->next
-		    || n2->next->pkt->pkttype == PKT_USER_ID
-		    || n2->next->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		    || n2->next->pkt->pkttype == PKT_SECRET_SUBKEY  ) {
-		    /* no more signatures: delete the user ID
-		     * and start over */
-		    remove_kbnode( keyblock, n2 );
+
+	  if(cmp_user_ids(uid1->pkt->pkt.user_id,
+			  uid2->pkt->pkt.user_id)==0)
+	    {
+	      /* We have a duplicated uid */
+	      KBNODE sig1,last;
+
+	      any=1;
+
+	      /* Now take uid2's signatures, and attach them to
+		 uid1 */
+	      for(last=uid2;last->next;last=last->next)
+		{
+		  if(last->next->pkt->pkttype==PKT_USER_ID
+		     || last->next->pkt->pkttype==PKT_PUBLIC_SUBKEY
+		     || last->next->pkt->pkttype==PKT_SECRET_SUBKEY)
+		    break;
 		}
-		else {
-		    /* The simple approach: Move one signature and
-		     * then start over to delete the next one :-( */
-		    move_kbnode( keyblock, n2->next, n->next );
+
+	      /* Snip out uid2 */
+	      (find_prev_kbnode(*keyblock,uid2,0))->next=last->next;
+
+	      /* Now put uid2 in place as part of uid1 */
+	      last->next=uid1->next;
+	      uid1->next=uid2;
+	      remove_kbnode(keyblock,uid2);
+
+	      /* Now dedupe uid1 */
+	      for(sig1=uid1->next;sig1;sig1=sig1->next)
+		{
+		  KBNODE sig2;
+
+		  if(sig1->pkt->pkttype==PKT_USER_ID
+		     || sig1->pkt->pkttype==PKT_PUBLIC_SUBKEY
+		     || sig1->pkt->pkttype==PKT_SECRET_SUBKEY)
+		    break;
+
+		  if(sig1->pkt->pkttype!=PKT_SIGNATURE)
+		    continue;
+
+		  for(sig2=sig1->next,last=sig1;sig2;last=sig2,sig2=sig2->next)
+		    {
+		      if(sig2->pkt->pkttype==PKT_USER_ID
+			 || sig2->pkt->pkttype==PKT_PUBLIC_SUBKEY
+			 || sig2->pkt->pkttype==PKT_SECRET_SUBKEY)
+			break;
+
+		      if(sig2->pkt->pkttype!=PKT_SIGNATURE)
+			continue;
+
+		      if(cmp_signatures(sig1->pkt->pkt.signature,
+					sig2->pkt->pkt.signature)==0)
+			{
+			  /* We have a match, so delete the second
+			     signature */
+			  remove_kbnode(&uid1,sig2);
+			  sig2=last;
+			}
+		    }
 		}
-		goto restart;
 	    }
 	}
     }
-    if( !any )
-	return 0;
 
-  restart_sig:
-    /* now we may have duplicate signatures on one user ID: fix this */
-    for( in_uid = 0, n = *keyblock; n; n = n->next ) {
-	if( n->pkt->pkttype == PKT_USER_ID )
-	    in_uid = 1;
-	else if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		 || n->pkt->pkttype == PKT_SECRET_SUBKEY )
-	    in_uid = 0;
-	else if( in_uid ) {
-	    n2 = n;
-	    do {
-		KBNODE ncmp = NULL;
-		for( ; n2; n2 = n2->next ) {
-		    if(    n2->pkt->pkttype == PKT_USER_ID
-			|| n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
-			|| n2->pkt->pkttype == PKT_SECRET_SUBKEY )
-			break;
-		    if( n2->pkt->pkttype != PKT_SIGNATURE )
-			;
-		    else if( !ncmp )
-			ncmp = n2;
-		    else if( !cmp_signatures( ncmp->pkt->pkt.signature,
-						n2->pkt->pkt.signature )) {
-			remove_kbnode( keyblock, n2 );
-			goto restart_sig;
-		    }
-		}
-		n2 = ncmp? ncmp->next : NULL;
-	    } while( n2 );
-	}
+  if(any && !opt.quiet)
+    {
+      const char *key="???";
+
+      if( (uid1=find_kbnode( *keyblock, PKT_PUBLIC_KEY )) )
+	key=keystr_from_pk(uid1->pkt->pkt.public_key);
+      else if( (uid1 = find_kbnode( *keyblock, PKT_SECRET_KEY )) )
+	key=keystr_from_sk(uid1->pkt->pkt.secret_key);
+
+      log_info(_("key %s: duplicated user ID detected - merged\n"),key);
     }
 
-    if(!opt.quiet)
-      {
-	const char *key="???";
-
-	if( (n = find_kbnode( *keyblock, PKT_PUBLIC_KEY )) )
-	  key=keystr_from_pk(n->pkt->pkt.public_key);
-	else if( (n = find_kbnode( *keyblock, PKT_SECRET_KEY )) )
-	  key=keystr_from_sk(n->pkt->pkt.secret_key);
-
-	log_info(_("key %s: duplicated user ID detected - merged\n"),key);
-      }
-
-    return 1;
+  return any;
 }
 
 /* Check for a 0x20 revocation from a revocation key that is not

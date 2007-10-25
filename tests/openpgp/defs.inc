@@ -1,4 +1,12 @@
-# definitions for the check scripts
+# Definitions for the OpenPGP test scripts                     -*- sh -*-
+# Copyright 1998,1999,2000,2001,2002,2003,2004,2005,2006,
+#           2007 Free Software Foundation, Inc.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 #--------------------------------
 #------ constants ---------------
@@ -138,6 +146,15 @@ have_hash_algo () {
 	false
   fi
 }
+
+all_cipher_algos () {
+  ../../g10/gpg2 --homedir . --version | grep "Cipher" | sed 's/^Cipher: //; s/,//g'
+}
+
+all_hash_algos () {
+  ../../g10/gpg2 --homedir . --version | grep "Hash" | sed 's/^Hash: //; s/,//g'
+}
+
 
 set -e
 pgmname=`basename $0`

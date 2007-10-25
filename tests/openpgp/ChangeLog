@@ -1,3 +1,22 @@
+2007-10-25  Werner Koch  <wk@g10code.com>
+
+	Add missing copyright notices to *.test.
+
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	From 1.4 (July):
+
+	* defs.inc (all_cipher_algos): New function to return all ciphers.
+	* defs.inc (all_cipher_algos): New function to return all ciphers
+	we support.  This is safer than the previous setup which could
+	hide that some ciphers weren't being tested.  Plus, this
+	automatically tests any new ciphers libgcrypt supports.
+	(all_hash_algos): New. 
+	* sigs.test: Use it here, and also test with >=160 bit hashes for
+	DSA2.
+	* conventional.test, encrypt.test, encrypt-dsa.test,
+	* conventional-mdc.test: Use it here.
+
 2007-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* conventional.test, encrypt.test, encrypt-dsa.test,
@@ -289,7 +308,7 @@ Mon May 18 15:40:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* ChangeLog: New.
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

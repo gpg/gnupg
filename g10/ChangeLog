@@ -1,3 +1,58 @@
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	From 1.4 (October):
+
+	* gpg.c (main): Add --require-cross-certification to
+	--openpgp/--rfc4880 mode.
+
+	* gpg.c (main): Disable --rfc2440-text and --force-v3-sigs by
+	default.  Enable --require-cross-certification by default.
+	--openpgp (--rfc4880) is the same as --rfc2440 except with
+	"--enable-dsa2 --no-rfc2440-text --escape-from-lines".
+
+	* misc.c (compliance_option_string, compliance_failure): Minor
+	cleanup.
+
+	* armor.c (is_armor_header): Comment about 4880.
+
+	* options.h, gpg.c (main): Add --rfc4880, and make --openpgp an
+	alias to it.  --rfc2440 now stands alone.  For now, use the old
+	2440 defaults for 4880.
+	* misc.c (compliance_option_string): Ditto.
+	
+	* keyedit.c (keyedit_menu): Use compliance_option_string() instead
+	of printing the compliance modes here.
+
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	From 1.4 (September):
+
+	* import.c (collapse_uids): Significant speedup for de-duping user
+	IDs.
+
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	From 1.4 (July):
+	
+	* armor.c (parse_header_line): Improve test so that the header
+	test only allows "Hash" in the signed data section.
+
+	* armor.c (is_armor_tag): New.  Detect if an armor header matches
+	2440bis-21.
+	(parse_header_line): Call it here, as bis-21 requires warning the
+	user (but continuing to process the message) when seeing an
+	unknown header.
+
+	* encode.c (encode_crypt): Missed one call to
+	setup_plaintext_name().  This is bug#809.
+
+	* sign.c (mk_notation_policy_etc): Expect all sigs that this is
+	called for are >=v4.
+	(write_signature_packets, make_keysig_packet): Only call it for
+	>=v4 sigs.  This allows --force-v3-sigs and --force-v4-certs to
+	enable or disable notations, policies, and keyserver URLs.  This
+	is bug#800.
+
 2007-10-19  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (passphrase_get): Use new utf8 switching fucntions.

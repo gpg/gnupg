@@ -1803,7 +1803,7 @@ keyedit_menu( const char *username, strlist_t locusr,
               {
                 tty_printf(
                    _("This command is not allowed while in %s mode.\n"),
-		   RFC2440?"OpenPGP":PGP2?"PGP2":"RFC-1991");
+		   compliance_option_string());
                 break;
               }
 	    photo=1;
