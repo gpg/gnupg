@@ -1,3 +1,7 @@
+2007-10-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.texi: Clarify --force-v3-sigs, --pgp2, and --pgp6 a bit.
+
 2007-10-23  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (Listing global options): New.

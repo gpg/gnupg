@@ -1845,16 +1845,15 @@ normally you would use @option{--sign} or @option{--clearsign} to select
 the type of the signature.
 @end ifset
 
-
-
 @item --force-v3-sigs
 @itemx --no-force-v3-sigs
 OpenPGP states that an implementation should generate v4 signatures
 but PGP versions 5 through 7 only recognize v4 signatures on key
 material. This option forces v3 signatures for signatures on data.
-Note that this option overrides @option{--ask-sig-expire}, as v3 signatures
-cannot have expiration dates. @option{--no-force-v3-sigs} disables this
-option.
+Note that this option overrides @option{--ask-sig-expire},
+@option{--sig-policy-url}, @option{--sig-notation}, and
+@option{--sig-keyserver-url}, as these features cannot be used with v3
+signatures.  @option{--no-force-v3-sigs} disables this option.
 
 @item --force-v4-certs
 @itemx --no-force-v4-certs
@@ -1975,11 +1974,10 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 
-This option implies @option{--rfc1991 --disable-mdc --no-force-v4-certs
---no-sk-comment --escape-from-lines --force-v3-sigs --no-ask-sig-expire
---no-ask-cert-expire --cipher-algo IDEA --digest-algo MD5
---compress-algo 1}. It also disables @option{--textmode} when
-encrypting.
+This option implies @option{--rfc1991 --disable-mdc
+--no-force-v4-certs --no-sk-comment --escape-from-lines
+--force-v3-sigs --cipher-algo IDEA --digest-algo MD5 --compress-algo
+ZIP}. It also disables @option{--textmode} when encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -1991,7 +1989,7 @@ compression algorithms none and ZIP. This also disables
 does not understand signatures made by signing subkeys.
 
 This option implies @option{--disable-mdc --no-sk-comment
---escape-from-lines --force-v3-sigs --no-ask-sig-expire}.
+--escape-from-lines --force-v3-sigs}.
 
 @item --pgp7
 @opindex pgp7
@@ -2709,10 +2707,11 @@ standard. In particular, GnuPG implements many of the optional parts
 of the standard, such as the SHA-512 hash, and the ZLIB and BZIP2
 compression algorithms. It is important to be aware that not all
 OpenPGP programs implement these optional algorithms and that by
-forcing their use via the @option{--cipher-algo}, @option{--digest-algo},
-@option{--cert-digest-algo}, or @option{--compress-algo} options in GnuPG, it is
-possible to create a perfectly valid OpenPGP message, but one that
-cannot be read by the intended recipient.
+forcing their use via the @option{--cipher-algo},
+@option{--digest-algo}, @option{--cert-digest-algo}, or
+@option{--compress-algo} options in GnuPG, it is possible to create a
+perfectly valid OpenPGP message, but one that cannot be read by the
+intended recipient.
 
 There are dozens of variations of OpenPGP programs available, and each
 supports a slightly different subset of these optional algorithms.
