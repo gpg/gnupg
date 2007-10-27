@@ -4,7 +4,7 @@
 			    Version 1.4.8
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-           2005, 2006, 2007 Free Software Foundation, Inc.
+	   2005, 2006, 2007 Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -750,10 +750,13 @@
 
     If you are doing the build on a OS X 10.4 (Tiger) PPC machine you
     may need to add "-isysroot /Developer/SDKs/MacOSX10.4u.sdk" to
-    those CFLAGS.  Note that any third-party libraries you may link
-    with need to be universal as well.  All Apple-supplied libraries
-    (even libraries not originally written by Apple like curl, zip,
-    and BZ2) are universal.
+    those CFLAGS.  This additional isysroot is not necessary on Intel
+    Tiger boxes, or any OS X 10.5 (Leopard) or later boxes.
+
+    Note that when building a universal binary, any third-party
+    libraries you may link with need to be universal as well.  All
+    Apple-supplied libraries (even libraries not originally written by
+    Apple like curl, zip, and BZ2) are universal.
 
 
     GnuPG 1.4 and GnuPG 2.0
