@@ -1850,7 +1850,7 @@ the type of the signature.
 OpenPGP states that an implementation should generate v4 signatures
 but PGP versions 5 through 7 only recognize v4 signatures on key
 material. This option forces v3 signatures for signatures on data.
-Note that this option overrides @option{--ask-sig-expire},
+Note that this option implies @option{--ask-sig-expire},
 @option{--sig-policy-url}, @option{--sig-notation}, and
 @option{--sig-keyserver-url}, as these features cannot be used with v3
 signatures.  @option{--no-force-v3-sigs} disables this option.
@@ -1952,15 +1952,20 @@ override a different compliance option in the gpg.conf file.
 @opindex openpgp
 Reset all packet, cipher and digest options to strict OpenPGP
 behavior. Use this option to reset all previous options like
-@option{--rfc1991}, @option{--force-v3-sigs}, @option{--s2k-*},
-@option{--cipher-algo}, @option{--digest-algo} and
+@option{--s2k-*}, @option{--cipher-algo}, @option{--digest-algo} and
 @option{--compress-algo} to OpenPGP compliant values. All PGP
 workarounds are disabled.
+
+@item --rfc4880
+@opindex rfc4880
+Reset all packet, cipher and digest options to strict RFC-4880
+behavior. Note that this is currently the same thing as
+@option{--openpgp}.
 
 @item --rfc2440
 @opindex rfc2440
 Reset all packet, cipher and digest options to strict RFC-2440
-behavior. Note that this is currently the same thing as @option{--openpgp}.
+behavior.
 
 @item --rfc1991
 @opindex rfc1991

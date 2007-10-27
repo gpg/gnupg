@@ -1,3 +1,7 @@
+2007-10-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.texi: Document --rfc4880 (the new --openpgp).
+
 2007-10-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi: Clarify --force-v3-sigs, --pgp2, and --pgp6 a bit.
