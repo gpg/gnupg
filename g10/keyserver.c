@@ -1418,7 +1418,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       plen=strlen(ptr);
       while(plen>0 && ascii_isspace(ptr[plen-1]))
 	plen--;
-      plen[ptr]='\0';
+      ptr[plen]='\0';
 
       if(*ptr=='\0')
 	break;
