@@ -1539,7 +1539,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
     ops->last = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
 	fprintf (listfp, ":onepass_sig packet: keyid %08lX%08lX\n"
-	       "\tversion %d, sigclass %02x, digest %d, pubkey %d, last=%d\n",
+	      "\tversion %d, sigclass 0x%02x, digest %d, pubkey %d, last=%d\n",
 		(ulong)ops->keyid[0], (ulong)ops->keyid[1],
 		version, ops->sig_class,
 		ops->digest_algo, ops->pubkey_algo, ops->last );
