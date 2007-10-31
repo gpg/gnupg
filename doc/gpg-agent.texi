@@ -94,10 +94,10 @@ required.
 
 Please make sure that a proper pinentry program has been installed
 under the default filename (which is system dependant) or use the
-option @code{pinentry-pgm} to specify the full name of that program.
-It is often useful to install a symbolic link from the actual used
-pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
-one (e.g. @file{/usr/bin/pinentry}).
+option @code{pinentry-program} to specify the full name of that
+program.  It is often useful to install a symbolic link from the
+actual used pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the
+expected one (e.g. @file{/usr/bin/pinentry}).
 
 @manpause
 @noindent
@@ -292,7 +292,7 @@ eval `cut -d= -f 1 < @var{file} | xargs echo export`
 @item --no-grab
 @opindex no-grab
 Tell the pinentryo not to grab the keyboard and mouse.  This option
-should in general not be used to avaoid X-sniffing attacks.
+should in general not be used to avoid X-sniffing attacks.
 
 @item --log-file @var{file}
 @opindex log-file
