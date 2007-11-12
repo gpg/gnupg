@@ -468,10 +468,10 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 
 /****************
  * Request a string from client
- * If bool, returns static string on true (do not free) or NULL for false
+ * If GETBOOL, returns static string on true (do not free) or NULL for false
  */
 static char *
-do_shm_get( const char *keyword, int hidden, int bool )
+do_shm_get( const char *keyword, int hidden, int getbool )
 {
     size_t n;
     byte *p;
@@ -485,7 +485,7 @@ do_shm_get( const char *keyword, int hidden, int bool )
     shm_area[2] = 1;  /* indicate that we are waiting on a reply */
     shm_area[3] = 0;  /* clear data available flag */
 
-    write_status_text( bool? STATUS_SHM_GET_BOOL :
+    write_status_text( getbool? STATUS_SHM_GET_BOOL :
 		       hidden? STATUS_SHM_GET_HIDDEN : STATUS_SHM_GET, keyword );
 
     do {
@@ -500,7 +500,7 @@ do_shm_get( const char *keyword, int hidden, int bool )
     if( n+32+2+1 > 4095 )
 	log_fatal("client returns too large data (%u bytes)\n", (unsigned)n );
 
-    if( bool )
+    if( getbool )
 	return p[0]? "" : NULL;
 
     string = hidden? xmalloc_secure( n+1 ) : xmalloc( n+1 );
@@ -543,10 +543,10 @@ myread(int fd, void *buf, size_t count)
 
 /****************
  * Request a string from the client over the command-fd
- * If bool, returns static string on true (do not free) or NULL for false
+ * If getbool, returns static string on true (do not free) or NULL for false
  */
 static char *
-do_get_from_fd( const char *keyword, int hidden, int bool )
+do_get_from_fd( const char *keyword, int hidden, int getbool )
 {
     int i, len;
     char *string;
@@ -554,7 +554,7 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
     if(statusfp!=stdout)
       fflush(stdout);
 
-    write_status_text( bool? STATUS_GET_BOOL :
+    write_status_text( getbool? STATUS_GET_BOOL :
 		       hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword );
 
     for( string = NULL, i = len = 200; ; i++ ) {
@@ -581,7 +581,7 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
 
     write_status( STATUS_GOT_IT );
 
-    if( bool )	 /* Fixme: is this correct??? */
+    if( getbool )	 /* Fixme: is this correct??? */
 	return (string[0] == 'Y' || string[0] == 'y') ? "" : NULL;
 
     return string;

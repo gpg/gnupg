@@ -1,3 +1,9 @@
+2007-11-12  Werner Koch  <wk@g10code.com>
+
+	* status.c (do_get_from_fd, do_shm_get): s/bool/getbool/ to
+	overcome problems with Mac OS 10.5 which seems to include
+	stdbool.h silently.
+
 2007-10-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_onepass_sig): Sigclass is hex, so include
