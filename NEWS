@@ -5,7 +5,11 @@ Noteworthy changes in version 1.4.8 (unreleased)
 
     * Improved detection of keyrings specified multiple times.
 
+    * Changes to better cope with broken keyservers.
+
     * Minor bug fixes.
+
+    * New option --rfc4880 which is currently identical to --openpgp.
 
 
 Noteworthy changes in version 1.4.7 (2007-03-05)

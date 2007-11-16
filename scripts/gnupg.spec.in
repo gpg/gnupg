@@ -1,4 +1,4 @@
-#
+#                                                       -*- coding: utf-8 -*-
 # gnupg -- gnu privacy guard
 # This is a template.  The dist target uses it to create the real file.
 #
@@ -6,16 +6,16 @@
 %define name gnupg
 Summary: GNU Utility for data encryption and digital signatures
 Summary(it): Utility GNU per la sicurezza nelle comunicazioni e nell'archiviazione dei dati.
-Summary(cs): GNU nástroj pro ¹ifrovanou komunikaci a bezpeèné ukládání dat
-Summary(fr): Utilitaire GNU de chiffrement et d'authentification des communications et des données
-Summary(pl): Narzedzie GNU do szyfrowania i podpisywania danych
+Summary(cs): GNU nÃ¡stroj pro Â¹ifrovanou komunikaci a bezpeÃ¨nÃ© uklÃ¡dÃ¡nÃ­ dat
+Summary(fr): Utilitaire GNU de chiffrement et d'authentification des communications et des donnÃ©es
+Summary(pl): NarzÃªdzie GNU do szyfrowania i podpisywania danych
 Vendor: GNU Privacy Guard Project
 Name: %{name}
 Version: %{version}
 Release: 1
 Copyright: GPL
 Group: Applications/Cryptography
-Group(cs): Aplikace/©ifrování
+Group(cs): Aplikace/Â©ifrovÃ¡nÃ­
 Group(fr): Applications/Cryptographie
 Group(it): Applicazioni/Crittografia
 Source: ftp://ftp.gnupg.org/gcrypt/gnupg/%{name}-%{version}.tar.gz
@@ -69,13 +69,13 @@ BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 - Added a * to catch all formats for man pages (plain, gz, bz2...)    
 
 * Mon May 01 2000 Fabio Coatti <cova@ferrara.linux.it>
-- Some corrections in French description, thanks to Gaël Quéri
+- Some corrections in French description, thanks to GaÃ«l QuÃ©ri
   <gqueri@mail.dotcom.fr>; Some corrections to Italian descriptions.
 
 * Tue Apr 25 2000 Fabio Coatti <cova@ferrara.linux.it>
 - Removed the no longer needed patch for man page by Keith Owens
 
-* Wed Mar 1 2000 Petr Kri¹tof <Petr@Kristof.CZ> 
+* Wed Mar 1 2000 Petr KriÂ¹tof <Petr@Kristof.CZ> 
 - Czech descriptions added; some fixes and updates.
 
 * Sat Jan 15 2000 Keith Owens <kaos@ocs.com.au>
@@ -85,7 +85,7 @@ BuildRoot: %{_tmppath}/rpmbuild_%{name}-%{version}
 - Upgraded for 1.0.1 (added missing gpg.1 man page)
 
 * Sat May 29 1999 Fabio Coatti <cova@ferrara.linux.it>
-- Some corrections in French description, thanks to Gaël Quéri <gqueri@mail.dotcom.fr>  
+- Some corrections in French description, thanks to GaÃ«l QuÃ©ri <gqueri@mail.dotcom.fr>  
 
 * Mon May 17 1999 Fabio Coatti <cova@felix.unife.it>
 - Added French description, provided by 
@@ -121,43 +121,43 @@ if the patent does not apply to you and you need to be compatible with
 these versions of PGP 2.
 
 %description -l it
-GnuPG (GNU Privacy Guard) è una utility GNU per la cifratura di dati e
+GnuPG (GNU Privacy Guard) Ã¨ una utility GNU per la cifratura di dati e
 la creazione di firme digitali. Possiede una gestione avanzata delle
-chiavi ed è conforme allo standard Internet OpenPGP, descritto nella
-RFC 2440. Non utilizzando algoritmi brevettati, non è compatibile con
+chiavi ed Ã¨ conforme allo standard Internet OpenPGP, descritto nella
+RFC 2440. Non utilizzando algoritmi brevettati, non Ã¨ compatibile con
 PGP2 (PGP2.x usa solo IDEA, coperto da brevetto mondiale, ed RSA,
 brevettato negli USA con scadenza 20/09/2000). Questi algoritmi sono
 utilizzabili da GnuPG tramite moduli esterni.
 
 %description -l fr
-GnuPG est un utilitaire GNU destiné à chiffrer des données et à créer
-des signatures électroniques. Il a des capacités avancées de gestion de
-clés et il est conforme à la norme proposée OpenPGP décrite dans la
-RFC2440. Comme GnuPG n'utilise pas d'algorithme breveté, il n'est
+GnuPG est un utilitaire GNU destinÃ© Ã  chiffrer des donnÃ©es et Ã  crÃ©er
+des signatures Ã©lectroniques. Il a des capacitÃ©s avancÃ©es de gestion de
+clÃ©s et il est conforme Ã  la norme proposÃ©e OpenPGP dÃ©crite dans la
+RFC2440. Comme GnuPG n'utilise pas d'algorithme brevetÃ©, il n'est
 compatible avec aucune version de PGP2 (PGP2.x ne sait utiliser que
-l'IDEA breveté dans le monde entier et RSA, breveté aux États-Unis
+l'IDEA brevetÃ© dans le monde entier et RSA, brevetÃ© aux Ã‰tats-Unis
 jusqu'au 20 septembre 2000). 
 
 %description -l cs
-GnuPG je GNU nástroj pro bezpeènou komunikaci a ukládání dat. Mù¾e bıt
-pou¾it na ¹ifrování dat a vytváøení digitálních podpisù. Obsahuje
-funkce pro pokroèilou správu klíèù a vyhovuje navrhovanému OpenPGP
-Internet standardu podle RFC2440. Byl vytvoøen jako kompletní
-náhrada za PGP. Proto¾e neobsahuje ¹ifrovací algoritmy IDEA nebo RSA,
-mù¾e bıt pou¾íván bez omezení.
-Proto¾e GnuPG nepou¾ívá ¾ádnı patentovanı algoritmus, nemù¾e bıt úplnì
-kompatibilní s PGP verze 2. PGP 2.x pou¾ívá algoritmy IDEA (patentováno
-celosvìtovì) a RSA (patentováno ve Spojenıch státech do 20. záøí
-2000). Tyto algoritmy lze zavést do GnuPG pomocí externích modulù.
+GnuPG je GNU nÃ¡stroj pro bezpeÃ¨nou komunikaci a uklÃ¡dÃ¡nÃ­ dat. MÃ¹Â¾e bÃ½t
+pouÂ¾it na Â¹ifrovÃ¡nÃ­ dat a vytvÃ¡Ã¸enÃ­ digitÃ¡lnÃ­ch podpisÃ¹. Obsahuje
+funkce pro pokroÃ¨ilou sprÃ¡vu klÃ­Ã¨Ã¹ a vyhovuje navrhovanÃ©mu OpenPGP
+Internet standardu podle RFC2440. Byl vytvoÃ¸en jako kompletnÃ­
+nÃ¡hrada za PGP. ProtoÂ¾e neobsahuje Â¹ifrovacÃ­ algoritmy IDEA nebo RSA,
+mÃ¹Â¾e bÃ½t pouÂ¾Ã­vÃ¡n bez omezenÃ­.
+ProtoÂ¾e GnuPG nepouÂ¾Ã­vÃ¡ Â¾Ã¡dnÃ½ patentovanÃ½ algoritmus, nemÃ¹Â¾e bÃ½t ÃºplnÃ¬
+kompatibilnÃ­ s PGP verze 2. PGP 2.x pouÂ¾Ã­vÃ¡ algoritmy IDEA (patentovÃ¡no
+celosvÃ¬tovÃ¬) a RSA (patentovÃ¡no ve SpojenÃ½ch stÃ¡tech do 20. zÃ¡Ã¸Ã­
+2000). Tyto algoritmy lze zavÃ©st do GnuPG pomocÃ­ externÃ­ch modulÃ¹.
 
 %description -l pl
-GnuPG (GNU Privacy Guard) jest nazedziem do szfrowania danych i tworzenia
-cyfrowych podpisów. GnuPG posiada zaawansowane mozliwosci obslugi kluczy
-i jest zgodne z OpenPGP, proponowanym standardem internetowym opisanym
-w RFC2440. Poniewaz GnuPG nie uzywa zadnych opatentowanych algorytmów
-nie jest wiec zgodne z jaka kolwiek wersja PGP2 (PGP2.x kozysta jedynie
-z algorytmów: IDEA, opatentowanego na calym swiecie, oraz RSA, którego
-patent na terenie Stanów Zjednoczonych wygasa 20 wrzesnia 2000).         
+GnuPG (GNU Privacy Guard) jest narzÄ™dziem do szyfrowania danych i tworzenia
+cyfrowych podpisÃ³w. GnuPG posiada zaawansowane moÅ¼liwoÅ›ci obsÅ‚ugi kluczy
+i jest zgodne z proponowanym standardem internetowym OpenPGP, opisanym
+w RFC2440. PoniewaÅ¼ GnuPG nie uÅ¼ywa Å¼adnych opatentowanych algorytmÃ³w,
+nie jest zgodne z jakÄ…kolwiek wersjÄ… PGP2 (PGP2.x korzysta jedynie
+z algorytmÃ³w: IDEA, opatentowanego na calym Å›wiecie oraz RSA, ktÃ³rego
+patent na terenie StanÃ³w Zjednoczonych wygasa 20. wrzeÅ›nia 2000).         
 
 %prep
 rm -rf $RPM_BUILD_ROOT

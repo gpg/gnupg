@@ -1,3 +1,8 @@
+2007-11-15  Werner Koch  <wk@g10code.com>
+
+	* gnupg.spec.in: Converted to utf-8. Changed polish description.
+	This is bug#676.
+
 2007-06-22  Werner Koch  <wk@g10code.com>
 
 	* mk-w32-dist: Remove underline markup from man pages.  Reported
