@@ -1,6 +1,6 @@
 Noteworthy changes in version 1.4.8 (unreleased)
 ------------------------------------------------
-    
+
     * Changed the license to GPLv3.
 
     * Improved detection of keyrings specified multiple times.
@@ -9,8 +9,17 @@ Noteworthy changes in version 1.4.8 (unreleased)
 
     * Minor bug fixes.
 
-    * New option --rfc4880 which is currently identical to --openpgp.
+    * The new OpenPGP standard is now complete, and has been published
+      as RFC-4880.  The GnuPG --openpgp mode (note this is not the
+      default) has been updated to match the new standard.  The
+      --rfc2440 option can be used to return to the older RFC-2440
+      behavior.  The main differences between the two are
+      "--enable-dsa2 --no-rfc2440-text --escape-from-lines
+      --require-cross-certification".
 
+    * By default (i.e. --gnupg mode), --require-cross-certification is
+      now on.  --rfc2440-text and --force-v3-sigs are now off.
+    
 
 Noteworthy changes in version 1.4.7 (2007-03-05)
 ------------------------------------------------
