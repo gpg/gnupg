@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.3\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-10-23 12:03+0200\n"
+"POT-Creation-Date: 2007-11-19 10:56+0100\n"
 "PO-Revision-Date: 2006-06-13 20:31+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -3184,8 +3184,7 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Vil du virkelig oppheve denne undernøkkelen? (j/N) "
 
 #: g10/keyedit.c:2083
-msgid ""
-"Owner trust may not be set while using an user provided trust database\n"
+msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 
 #: g10/keyedit.c:2125

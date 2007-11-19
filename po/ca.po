@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-10-23 12:03+0200\n"
+"POT-Creation-Date: 2007-11-19 10:56+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -3472,8 +3472,7 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Realment voleu revocar aquesta clau? "
 
 #: g10/keyedit.c:2083
-msgid ""
-"Owner trust may not be set while using an user provided trust database\n"
+msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 
 #: g10/keyedit.c:2125

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-10-23 12:03+0200\n"
+"POT-Creation-Date: 2007-11-19 10:56+0100\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -3212,8 +3212,7 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "您真的要吊销这把子钥吗？(y/N)"
 
 #: g10/keyedit.c:2083
-msgid ""
-"Owner trust may not be set while using an user provided trust database\n"
+msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr "使用用户提供的信任度数据库时信任度可能并未被设定\n"
 
 #: g10/keyedit.c:2125

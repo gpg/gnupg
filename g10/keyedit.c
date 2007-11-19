@@ -2081,7 +2081,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    if(opt.trust_model==TM_EXTERNAL)
 	      {
 		tty_printf(_("Owner trust may not be set while "
-			     "using an user provided trust database\n"));
+			     "using a user provided trust database\n"));
 		break;
 	      }
 
