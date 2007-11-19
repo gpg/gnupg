@@ -380,6 +380,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
                    r == GPG_ERR_NO_CRL_KNOWN?    "6":
                    r == GPG_ERR_CRL_TOO_OLD?     "7":
                    r == GPG_ERR_NO_POLICY_MATCH? "8":
+                   r == GPG_ERR_MISSING_CERT?   "11":
                    "0",
                    line, NULL);
     }
@@ -425,6 +426,7 @@ cmd_signer (assuan_context_t ctx, char *line)
                    r == GPG_ERR_CRL_TOO_OLD?         "7":
                    r == GPG_ERR_NO_POLICY_MATCH?     "8":
                    r == GPG_ERR_NO_SECKEY?           "9":
+                   r == GPG_ERR_MISSING_CERT?       "11":
                    "0",
                   line, NULL);
     }

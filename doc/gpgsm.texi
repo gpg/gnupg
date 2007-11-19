@@ -405,13 +405,24 @@ command.  This option should not be used in a configuration file.
 @itemx --disable-ocsp
 @opindex enable-ocsp
 @opindex disable-ocsp
-Be default @acronym{OCSP} checks are disabled.  The enable opton may
+Be default @acronym{OCSP} checks are disabled.  The enable option may
 be used to enable OCSP checks via Dirmngr.  If @acronym{CRL} checks
 are also enabled, CRLs will be used as a fallback if for some reason an
 OCSP request won't succeed.  Note, that you have to allow OCSP
 requests in Dirmngr's configuration too (option 
 @option{--allow-ocsp} and configure dirmngr properly.  If you don't do
 so you will get the error code @samp{Not supported}.
+
+@item --auto-issuer-key-retrieve
+@opindex auto-issuer-key-retrieve
+If a required certificate is missing while validating the chain of
+certificates, try to load that certificate from an external location.
+This usually means that Dirmngr is employed t search for the
+certificate.  Note that this option makes a "web bug" like behavior
+possible.  LDAP server operators can see which keys you request, so by
+sending you a message signed by a brand new key (which you naturally
+will not have on your local keybox), the operator can tell both your IP
+address and the time when you verified the signature.
 
 
 @item --validation-model @var{name}

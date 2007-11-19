@@ -554,6 +554,7 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
+         11 := "Missing certifciate"  (e.g. intermediate or root cert.)
 
         Note that this status is also used for gpgsm's SIGNER command
         where it relates to signer's of course.

@@ -359,7 +359,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 {
                   ksba_cert_t cert2 = NULL;
                   
-                  /* If this is the first possible duplicate, add thye orginal 
+                  /* If this is the first possible duplicate, add the original 
                      certificate to our list of duplicates.  */
                   if (!dup_certs)
                     gpgsm_add_cert_to_certlist (ctrl, cert, &dup_certs, 0);

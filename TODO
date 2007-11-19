@@ -129,3 +129,12 @@
   This may happen and lead to an Ambiguous Name error.  Solution is to
   check the certs for identity before throwing this error.
 
+* Gpg-Agent Locale
+  Although we pass LC_MESSAGE from gpgsm et al. to Pinentry, this has
+  only an effect on the stock GTK strings (e.g. "OK") and not on any
+  strings gpg-agent generates and passes to Pinentry.  This defeats
+  our design goal to allow changing the locale without changing
+  gpg-agent's default locale (e.g. by the command updatestartuptty).
+
+
+
