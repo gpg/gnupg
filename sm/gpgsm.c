@@ -108,6 +108,7 @@ enum cmd_and_opt_values {
   oFixedPassphrase,
   oLogFile,
   oNoLogFile,
+  oAuditLog,
 
   oEnableSpecialFilenames,
 
@@ -117,6 +118,7 @@ enum cmd_and_opt_values {
   oTTYtype,
   oLCctype,
   oLCmessages,
+  oXauthority,
 
   oPreferSystemDirmngr,
   oDirmngrProgram,
@@ -336,12 +338,13 @@ static ARGPARSE_OPTS opts[] = {
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
 #endif
 
-    { oOutput, "output",    2, N_("use as output file")},
+    { oOutput, "output",    2, N_("|FILE|write output to FILE")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
-    { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
+    { oLogFile, "log-file"   ,2, N_("|FILE|write a server mode log to FILE")},
     { oNoLogFile, "no-log-file" ,0, "@"},
+    { oAuditLog, "audit-log", 2, N_("|FILE|write an audit log to FILE")},
 #if 0
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
@@ -424,6 +427,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTTYtype,    "ttytype",     2, "@" },
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
+    { oXauthority, "xauthority", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
     { oProtectToolProgram, "protect-tool-program", 2 , "@" },
     { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
@@ -831,6 +835,7 @@ main ( int argc, char **argv)
   int default_config =1;
   int default_keyring = 1;
   char *logfile = NULL;
+  char *auditlog = NULL;
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
@@ -1151,6 +1156,8 @@ main ( int argc, char **argv)
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oNoLogFile: logfile = NULL; break;          
 
+        case oAuditLog: auditlog = pargs.r.ret_str; break;
+
         case oBatch: 
           opt.batch = 1;
           greeting = 0;
@@ -1201,6 +1208,7 @@ main ( int argc, char **argv)
         case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
+        case oXauthority: opt.xauthority = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oPreferSystemDirmngr: opt.prefer_system_dirmngr = 1; break;
         case oProtectToolProgram:
@@ -1342,6 +1350,11 @@ main ( int argc, char **argv)
       log_info ("used in a production environment or with production keys!\n");
     }
 #  endif
+
+  if (auditlog)
+    log_info ("NOTE: The audit log feature (--audit-log) is "
+              "WORK IN PRORESS and not ready for use!\n");
+
 
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
@@ -1636,12 +1649,20 @@ main ( int argc, char **argv)
     case aVerify:
       {
         FILE *fp = NULL;
+        FILE *auditfp = NULL;
 
         set_binary (stdin);
         if (argc == 2 && opt.outfile)
           log_info ("option --output ignored for a detached signature\n");
         else if (opt.outfile)
           fp = open_fwrite (opt.outfile);
+
+        if (auditlog)
+          {
+            audit_release (ctrl.audit);
+            ctrl.audit = audit_new ();
+            auditfp = open_fwrite (auditlog);
+          }
 
         if (!argc)
           gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
@@ -1652,8 +1673,17 @@ main ( int argc, char **argv)
         else
           wrong_args ("--verify [signature [detached_data]]");
 
+        if (auditlog)
+          {
+            audit_print_result (ctrl.audit, auditfp);
+            audit_release (ctrl.audit);
+            ctrl.audit = NULL;
+          }
+
         if (fp && fp != stdout)
           fclose (fp);
+        if (auditfp && auditfp != stdout)
+          fclose (auditfp);
       }
       break;
 

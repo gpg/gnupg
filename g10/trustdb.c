@@ -30,7 +30,7 @@
 #endif /* !DISABLE_REGEX */
 
 #include "gpg.h"
-#include "errors.h"
+#include "status.h"
 #include "iobuf.h"
 #include "keydb.h"
 #include "util.h"

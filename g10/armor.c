@@ -27,7 +27,7 @@
 #include <ctype.h>
 
 #include "gpg.h"
-#include "errors.h"
+#include "status.h"
 #include "iobuf.h"
 #include "util.h"
 #include "filter.h"

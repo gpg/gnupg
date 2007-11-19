@@ -29,8 +29,9 @@
 
 #include <ksba.h>
 #include "../common/util.h"
-#include "../common/errors.h"
+#include "../common/status.h"
 #include "../common/estream.h"
+#include "../common/audit.h"
 
 #define MAX_DIGEST_LEN 24 
 
@@ -53,6 +54,8 @@ struct
   char *ttytype;
   char *lc_ctype;
   char *lc_messages;
+  char *xauthority;
+  char *pinentry_user_data;
 
   const char *dirmngr_program;
   int prefer_system_dirmngr;  /* Prefer using a system wide drimngr.  */
@@ -147,6 +150,9 @@ struct server_control_s
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
+  
+  audit_ctx_t audit;  /* NULL or a context for the audit subsystem.  */
+  
   int with_colons;    /* Use column delimited output format */
   int with_chain;     /* Include the certifying certs in a listing */
   int with_validation;/* Validate each key while listing. */
@@ -248,6 +254,7 @@ void gpgsm_dump_string (const char *string);
 char *gpgsm_format_serial (ksba_const_sexp_t p);
 char *gpgsm_format_name2 (const char *name, int translate);
 char *gpgsm_format_name (const char *name);
+char *gpgsm_format_sn_issuer (ksba_sexp_t sn, const char *issuer);
 
 char *gpgsm_fpr_and_name_for_status (ksba_cert_t cert);
 

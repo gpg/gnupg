@@ -94,10 +94,10 @@ required.
 
 Please make sure that a proper pinentry program has been installed
 under the default filename (which is system dependant) or use the
-option @code{pinentry-program} to specify the full name of that
-program.  It is often useful to install a symbolic link from the
-actual used pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the
-expected one (e.g. @file{/usr/bin/pinentry}).
+option @option{pinentry-program} to specify the full name of that program.
+It is often useful to install a symbolic link from the actual used
+pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
+one (e.g. @file{/usr/bin/pinentry}).
 
 @manpause
 @noindent
@@ -291,7 +291,7 @@ eval `cut -d= -f 1 < @var{file} | xargs echo export`
 
 @item --no-grab
 @opindex no-grab
-Tell the pinentryo not to grab the keyboard and mouse.  This option
+Tell the pinentry not to grab the keyboard and mouse.  This option
 should in general not be used to avoid X-sniffing attacks.
 
 @item --log-file @var{file}
@@ -422,11 +422,13 @@ default on Windows systems.
 @itemx --ttytype @var{string}
 @itemx --lc-type @var{string}
 @itemx --lc-messages @var{string}
+@itemx --xauthority @var{string}
 @opindex display 
 @opindex ttyname 
 @opindex ttytype 
 @opindex lc-type 
 @opindex lc-messages
+@opindex xauthority
 These options are used with the server mode to pass localization
 information.
 

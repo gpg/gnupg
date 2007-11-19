@@ -1561,6 +1561,21 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
         }
     }
 
+  /* If auditing has been enabled, record what is in the chain.  */
+  if (ctrl->audit)
+    {
+      chain_item_t ci;
+
+      audit_log (ctrl->audit, AUDIT_CHAIN_BEGIN);
+      for (ci = chain; ci; ci = ci->next)
+        {
+          audit_log_cert (ctrl->audit,
+                          ci->is_root? AUDIT_CHAIN_ROOTCERT : AUDIT_CHAIN_CERT,
+                          ci->cert, 0);
+        }
+      audit_log (ctrl->audit, AUDIT_CHAIN_END);
+    }
+
   if (r_exptime)
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
@@ -1579,7 +1594,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
 }
 
 
-/* Validate a certifcate chain.  For a description see the
+/* Validate a certificate chain.  For a description see
    do_validate_chain.  This function is a wrapper to handle a root
    certificate with the chain_model flag set.  If RETFLAGS is not
    NULL, flags indicating now the verification was done are stored

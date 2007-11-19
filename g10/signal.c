@@ -29,7 +29,7 @@
 
 #include "gpg.h"
 #include "options.h"
-#include "errors.h"
+#include "status.h"
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"

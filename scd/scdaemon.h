@@ -29,7 +29,6 @@
 #include <time.h>
 #include <gcrypt.h>
 #include "../common/util.h"
-#include "../common/errors.h"
 #include "../common/sysutils.h"
 
 /* To convey some special hash algorithms we use algorithm numbers

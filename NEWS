@@ -11,6 +11,9 @@ Noteworthy changes in version 2.0.8
 
  * New option --list-config for gpgconf.
 
+ * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
+   pinentry.
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------

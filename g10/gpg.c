@@ -338,6 +338,7 @@ enum cmd_and_opt_values
     oTTYtype,
     oLCctype,
     oLCmessages,
+    oXauthority,
     oGroup,
     oUnGroup,
     oNoGroups,
@@ -465,7 +466,7 @@ static ARGPARSE_OPTS opts[] = {
     { oMinCertLevel, "min-cert-level", 1, "@"},
     { oAskCertLevel, "ask-cert-level",   0, "@"},
     { oNoAskCertLevel, "no-ask-cert-level",   0, "@"},
-    { oOutput, "output",    2, N_("use as output file")},
+    { oOutput, "output",    2, N_("|FILE|write output to FILE")},
     { oMaxOutput, "max-output", 16|4, "@" },
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, "@"},
@@ -679,6 +680,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTTYtype,    "ttytype",     2, "@" },
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
+    { oXauthority, "xauthority",  2, "@" },
     { oGroup,      "group",       2, "@" },
     { oUnGroup,    "ungroup",     2, "@" },
     { oNoGroups,   "no-groups",    0, "@" },
@@ -2800,6 +2802,7 @@ main (int argc, char **argv )
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
+          case oXauthority: opt.xauthority = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;
 	  case oUnGroup: rm_group(pargs.r.ret_str); break;
 	  case oNoGroups:

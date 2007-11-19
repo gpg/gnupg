@@ -90,6 +90,8 @@ struct
   char *ttytype;
   char *lc_ctype;
   char *lc_messages;
+  char *xauthority;
+  char *pinentry_user_data;
 
   int skip_verify;
   int compress_keys;

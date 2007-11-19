@@ -242,6 +242,37 @@ gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 }
 
 
+/* Return a new string holding the format serial number and issuer
+   ("#SN/issuer").  No filtering on invalid characters is done.
+   Caller must release the string.  On memory failure NULL is
+   returned.  */
+char *
+gpgsm_format_sn_issuer (ksba_sexp_t sn, const char *issuer)
+{
+  char *p, *p1;
+
+  if (sn && issuer)
+    {
+      p1 = gpgsm_format_serial (sn);
+      if (!p1)
+        p = xtrystrdup ("[invalid SN]");
+      else
+        {
+          p = xtrymalloc (strlen (p1) + strlen (issuer) + 2 + 1);
+          if (p)
+            {
+              *p = '#';
+              strcpy (stpcpy (stpcpy (p+1, p1),"/"), issuer);
+            }
+          xfree (p1);
+        }
+    }
+  else
+    p = xtrystrdup ("[invalid SN/issuer]");
+  return p;
+}
+
+
 /* Log the certificate's name in "#SN/ISSUERDN" format along with
    TEXT. */
 void 
@@ -269,6 +300,8 @@ gpgsm_cert_log_name (const char *text, ksba_cert_t cert)
     }
   log_printf ("\n");
 }
+
+
 
 
 

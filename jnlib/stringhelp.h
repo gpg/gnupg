@@ -116,8 +116,11 @@ isascii (int c)
 #define STR2(v) STR(v)
 
 /* Percent-escape the string STR by replacing colons with '%3a'.  If
-   EXTRA is not NULL, also replace all characters given in EXTRA. */
+   EXTRA is not NULL, also replace all characters given in EXTRA.  The
+   "try_" variant fails with NULL if not enough memory can be
+   allocated.  */
 char *percent_escape (const char *str, const char *extra);
+char *try_percent_escape (const char *str, const char *extra);
 
 
 #endif /*LIBJNLIB_STRINGHELP_H*/

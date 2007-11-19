@@ -232,7 +232,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
       check_passphrase_pattern (ctrl, pw))
     {
       const char *desc =
-        /* */     _("Warning: You have entered an insecure passphrase.%0A"
+        /* */     _("Warning: You have entered an insecure passphrase.%%0A"
                     "A passphrase may not be a known term or match%%0A"
                     "certain pattern.");
 

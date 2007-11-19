@@ -1989,7 +1989,7 @@ start_agent (void)
     }
 
   rc = send_pinentry_environment (ctx, GPG_ERR_SOURCE_DEFAULT,
-                                  NULL, NULL, NULL, NULL, NULL);
+                                  NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     {
       log_error (_("error sending standard options: %s\n"), gpg_strerror (rc));

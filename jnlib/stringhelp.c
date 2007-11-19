@@ -856,9 +856,9 @@ memrchr (const void *buffer, int c, size_t n)
 
 
 /* Percent-escape the string STR by replacing colons with '%3a'.  If
-   EXTRA is not NULL all characters in it are also escaped. */
-char *
-percent_escape (const char *str, const char *extra)
+   EXTRA is not NULL all characters in EXTRA are also escaped.  */
+static char *
+do_percent_escape (const char *str, const char *extra, int die)
 {
   int i, j;
   char *ptr;
@@ -869,7 +869,14 @@ percent_escape (const char *str, const char *extra)
   for (i=j=0; str[i]; i++)
     if (str[i] == ':' || str[i] == '%' || (extra && strchr (extra, str[i])))
       j++;
-  ptr = jnlib_xmalloc (i + 2 * j + 1);
+  if (die)
+    ptr = jnlib_xmalloc (i + 2 * j + 1);
+  else
+    {
+      ptr = jnlib_malloc (i + 2 * j + 1);
+      if (!ptr)
+        return NULL;
+    }
   i = 0;
   while (*str)
     {
@@ -898,4 +905,20 @@ percent_escape (const char *str, const char *extra)
   ptr[i] = '\0';
 
   return ptr;
+}
+
+/* Percent-escape the string STR by replacing colons with '%3a'.  If
+   EXTRA is not NULL all characters in EXTRA are also escaped.  */
+char *
+percent_escape (const char *str, const char *extra)
+{
+  return do_percent_escape (str, extra, 1);
+}
+
+/* Same as percent_escape but return NULL instead of exiting on memory
+   error. */
+char *
+try_percent_escape (const char *str, const char *extra)
+{
+  return do_percent_escape (str, extra, 0);
 }

@@ -81,6 +81,7 @@ enum cmd_and_opt_values
   oTTYtype,
   oLCctype,
   oLCmessages,
+  oXauthority,
   oScdaemonProgram,
   oDefCacheTTL,
   oDefCacheTTLSSH,
@@ -145,7 +146,8 @@ static ARGPARSE_OPTS opts[] = {
   { oTTYtype,    "ttytype",     2, "@" },
   { oLCctype,    "lc-ctype",    2, "@" },
   { oLCmessages, "lc-messages", 2, "@" },
-  { oKeepTTY, "keep-tty", 0,  N_("ignore requests to change the TTY")},
+  { oXauthority, "xauthority",  2, "@" },
+  { oKeepTTY,    "keep-tty",    0,  N_("ignore requests to change the TTY")},
   { oKeepDISPLAY, "keep-display",
                           0, N_("ignore requests to change the X display")},
 
@@ -217,6 +219,7 @@ static char *default_ttyname;
 static char *default_ttytype;
 static char *default_lc_ctype;
 static char *default_lc_messages;
+static char *default_xauthority;
 
 /* Name of a config file, which will be reread on a HUP if it is not NULL. */
 static char *config_filename;
@@ -559,6 +562,12 @@ main (int argc, char **argv )
   opt.startup_lc_messages = getenv ("LC_MESSAGES");
   if (opt.startup_lc_messages)
     opt.startup_lc_messages = xstrdup (opt.startup_lc_messages);
+  opt.startup_xauthority = getenv ("XAUTHORITY");
+  if (opt.startup_xauthority)
+    opt.startup_xauthority = xstrdup (opt.startup_xauthority);
+  opt.startup_pinentry_user_data = getenv ("PINENTRY_USER_DATA");
+  if (opt.startup_pinentry_user_data)
+    opt.startup_pinentry_user_data = xstrdup (opt.startup_pinentry_user_data);
 
   /* Check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -662,6 +671,7 @@ main (int argc, char **argv )
         case oTTYtype: default_ttytype = xstrdup (pargs.r.ret_str); break;
         case oLCctype: default_lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str);
+        case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
         case oUseStandardSocket: standard_socket = 1; break;
@@ -1139,6 +1149,14 @@ agent_init_default_ctrl (ctrl_t ctrl)
   if (ctrl->lc_messages)
     free (ctrl->lc_messages);
   ctrl->lc_messages = default_lc_messages? strdup (default_lc_messages) : NULL;
+
+  if (ctrl->xauthority)
+    free (ctrl->xauthority);
+  ctrl->xauthority = default_xauthority? strdup (default_xauthority) : NULL;
+
+  if (ctrl->pinentry_user_data)
+    free (ctrl->pinentry_user_data);
+  ctrl->pinentry_user_data = NULL;
 }
 
 
@@ -1155,6 +1173,10 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
     free (ctrl->lc_ctype);
   if (ctrl->lc_messages)
     free (ctrl->lc_messages);
+  if (ctrl->xauthority)
+    free (ctrl->xauthority);
+  if (ctrl->pinentry_user_data)
+    free (ctrl->pinentry_user_data);
 }
 
 /* Reread parts of the configuration.  Note, that this function is

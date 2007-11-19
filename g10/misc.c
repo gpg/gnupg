@@ -55,7 +55,7 @@
 
 #include "gpg.h"
 #ifdef HAVE_W32_SYSTEM
-# include "errors.h"
+# include "status.h"
 #endif /*HAVE_W32_SYSTEM*/
 #include "util.h"
 #include "main.h"

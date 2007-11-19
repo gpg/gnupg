@@ -2871,6 +2871,10 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
     ctrl->lc_ctype = strdup (opt.startup_lc_ctype);
   if (!ctrl->lc_messages && opt.startup_lc_messages)
     ctrl->lc_messages = strdup (opt.startup_lc_messages);
+  if (!ctrl->xauthority && opt.startup_xauthority)
+    ctrl->xauthority = strdup (opt.startup_xauthority);
+  if (!ctrl->pinentry_user_data && opt.startup_pinentry_user_data)
+    ctrl->pinentry_user_data = strdup (opt.startup_pinentry_user_data);
 
 
   /* Create stream from socket.  */

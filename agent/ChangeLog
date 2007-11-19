@@ -1,3 +1,28 @@
+2007-11-19  Werner Koch  <wk@g10code.com>
+
+	* call-pinentry.c (agent_askpin): Set the tooltip for the quality
+	bar.
+
+2007-11-15  Werner Koch  <wk@g10code.com>
+
+	* agent.h (struct server_control_s): Add XAUTHORITY and
+	PINENTRY_USER_DATA.
+	* gpg-agent.c: New option --xauthority.
+	(main, agent_init_default_ctrl) 
+	(agent_deinit_default_ctrl): Implemented
+	* command.c (cmd_updatestartuptty): Ditto.
+	* command-ssh.c (start_command_handler_ssh): Ditto.
+	* call-pinentry.c (atfork_cb): Set the environment.
+	(start_pinentry): Pass CTRL as arg to atfork_cb.
+
+2007-11-14  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (start_scd) [W32]: Take care of fflush peculiarities.
+
+2007-11-07  Werner Koch  <wk@g10code.com>
+
+	* agent.h: Remove errors.h.
+
 2007-10-24  Werner Koch  <wk@g10code.com>
 
 	* genkey.c (check_passphrase_constraints): Changed the wording of

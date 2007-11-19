@@ -27,7 +27,7 @@
 
 #include "gpg.h"
 #include "packet.h"
-#include "errors.h"
+#include "status.h"
 #include "iobuf.h"
 #include "util.h"
 #include "cipher.h"

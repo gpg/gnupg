@@ -47,10 +47,11 @@ strtimestamp_r (ksba_isotime_t atime)
 
 
 
-/* Hash the data for a detached signature */
-static void
+/* Hash the data for a detached signature.  Returns 0 on success.  */
+static gpg_error_t
 hash_data (int fd, gcry_md_hd_t md)
 {
+  gpg_error_t err = 0;
   FILE *fp;
   char buffer[4096];
   int nread;
@@ -58,8 +59,9 @@ hash_data (int fd, gcry_md_hd_t md)
   fp = fdopen ( dup (fd), "rb");
   if (!fp)
     {
-      log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-      return;
+      err = gpg_error_from_syserror ();
+      log_error ("fdopen(%d) failed: %s\n", fd, gpg_strerror (err));
+      return err;
     }
 
   do 
@@ -69,8 +71,12 @@ hash_data (int fd, gcry_md_hd_t md)
     }
   while (nread);
   if (ferror (fp))
-      log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("read error on fd %d: %s\n", fd, gpg_strerror (err));
+    }
   fclose (fp);
+  return err;
 }
 
 
@@ -98,6 +104,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
   int is_detached;
   FILE *fp = NULL;
   char *p;
+
+  audit_set_type (ctrl->audit, AUDIT_TYPE_VERIFY);
 
   kh = keydb_new (0);
   if (!kh)
@@ -154,6 +162,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
   if (DBG_HASHING)
     gcry_md_start_debug (data_md, "vrfy.data");
 
+  audit_log (ctrl->audit, AUDIT_SETUP_READY);
+
   is_detached = 0;
   do 
     {
@@ -167,6 +177,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (stopreason == KSBA_SR_NEED_HASH)
         {
           is_detached = 1;
+          audit_log (ctrl->audit, AUDIT_DETACHED_SIGNATURE);
           if (opt.verbose)
             log_info ("detached signature\n");
         }
@@ -185,17 +196,25 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                       && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
                           ||!strcmp (algoid, "1.2.840.113549.2.2")))
                     log_info (_("(this is the MD2 algorithm)\n"));
+                  audit_log_s (ctrl->audit, AUDIT_BAD_DATA_HASH_ALGO, algoid);
                 }
               else
-                gcry_md_enable (data_md, algo);
+                {
+                  gcry_md_enable (data_md, algo);
+                  audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
+                }
             }
           if (is_detached)
             {
               if (data_fd == -1)
-                log_info ("detached signature w/o data "
-                          "- assuming certs-only\n");
+                {
+                  log_info ("detached signature w/o data "
+                            "- assuming certs-only\n");
+                  audit_log (ctrl->audit, AUDIT_CERT_ONLY_SIG);
+                }
               else
-                hash_data (data_fd, data_md);  
+                audit_log_ok (ctrl->audit, AUDIT_DATA_HASHING,
+                              hash_data (data_fd, data_md));
             }
           else
             {
@@ -215,6 +234,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (rc) 
         {
           log_error ("write failed: %s\n", gpg_strerror (rc));
+          audit_log_ok (ctrl->audit, AUDIT_WRITE_ERROR, rc);
           goto leave;
         }
     }
@@ -223,6 +243,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
     {
       log_error ("data given for a non-detached signature\n");
       rc = gpg_error (GPG_ERR_CONFLICT);
+      audit_log (ctrl->audit, AUDIT_USAGE_ERROR);
       goto leave;
     }
 
@@ -232,7 +253,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
          certificate first before entering it into the DB.  This way
          we would avoid cluttering the DB with invalid
          certificates. */
-      keydb_store_cert (cert, 0, NULL);
+      audit_log_cert (ctrl->audit, AUDIT_SAVE_CERT, cert, 
+                      keydb_store_cert (cert, 0, NULL));
       ksba_cert_release (cert);
     }
 
@@ -265,6 +287,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
 
       gpgsm_status (ctrl, STATUS_NEWSIG, NULL);
+      audit_log_i (ctrl->audit, AUDIT_NEW_SIG, signer);
 
       if (DBG_X509)
         {
@@ -273,6 +296,12 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_debug ("signer %d - serial: ", signer);
           gpgsm_dump_serial (serial);
           log_printf ("\n");
+        }
+      if (ctrl->audit)
+        {
+          char *tmpstr = gpgsm_format_sn_issuer (serial, issuer);
+          audit_log_s (ctrl->audit, AUDIT_SIG_NAME, tmpstr);
+          xfree (tmpstr);
         }
 
       rc = ksba_cms_get_signing_time (cms, signer, sigtime);
@@ -300,6 +329,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                || !is_enabled)
             {
               log_error ("digest algo %d has not been enabled\n", algo);
+              audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "unsupported");
               goto next_signer;
             }
         }
@@ -311,7 +341,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           algo = 0; 
         }
       else /* real error */
-        break;
+        {
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
+          break;
+        }
 
       rc = ksba_cms_get_sigattr_oids (cms, signer,
                                       "1.2.840.113549.1.9.3", &ctattr);
@@ -330,6 +363,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                          "actual content-type\n");
               ksba_free (ctattr);
               ctattr = NULL;
+              audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
               goto next_signer;
             }
           ksba_free (ctattr);
@@ -339,6 +373,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
         {
           log_error ("error getting content-type attribute: %s\n",
                      gpg_strerror (rc));
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
       rc = 0;
@@ -348,6 +383,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (!sigval)
         {
           log_error ("no signature value available\n");
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
       if (DBG_X509)
@@ -373,8 +409,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
             gpgsm_status2 (ctrl, STATUS_ERROR, "verify.findkey",
                            numbuf, NULL);
           }
-          /* fixme: we might want to append the issuer and serial
-             using our standard notation */
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "no-cert");
           goto next_signer;
         }
 
@@ -382,6 +417,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (rc)
         {
           log_error ("failed to get cert: %s\n", gpg_strerror (rc));
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
           goto next_signer;
         }
 
@@ -413,6 +449,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               fpr = gpgsm_fpr_and_name_for_status (cert);
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);
               xfree (fpr);
+              audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
               goto next_signer; 
             }
             
@@ -420,6 +457,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           if (rc)
             {
               log_error ("md_open failed: %s\n", gpg_strerror (rc));
+              audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
               goto next_signer;
             }
           if (DBG_HASHING)
@@ -432,6 +470,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               log_error ("hashing signed attrs failed: %s\n",
                          gpg_strerror (rc));
               gcry_md_close (md);
+              audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
               goto next_signer;
             }
           rc = gpgsm_check_cms_signature (cert, sigval, md, algo, 
@@ -452,6 +491,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           fpr = gpgsm_fpr_and_name_for_status (cert);
           gpgsm_status (ctrl, STATUS_BADSIG, fpr);
           xfree (fpr);
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
       rc = gpgsm_cert_use_verify_p (cert); /*(this displays an info message)*/
@@ -464,6 +504,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
+      audit_log (ctrl->audit, AUDIT_VALIDATE_CHAIN);
       rc = gpgsm_validate_chain (ctrl, cert,
                                  *sigtime? sigtime : "19700101T000000",
                                  keyexptime, 0, 
@@ -506,8 +547,11 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           else
             gpgsm_status_with_err_code (ctrl, STATUS_TRUST_UNDEFINED, NULL, 
                                         gpg_err_code (rc));
+          audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
+
+      audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "good");
 
       for (i=0; (p = ksba_cert_get_subject (cert, i)); i++)
         {

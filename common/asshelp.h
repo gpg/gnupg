@@ -1,5 +1,5 @@
 /* asshelp.h - Helper functions for Assuan
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +30,9 @@ send_pinentry_environment (assuan_context_t ctx,
                            const char *opt_ttyname,
                            const char *opt_ttytype,
                            const char *opt_lc_ctype,
-                           const char *opt_lc_messages);
+                           const char *opt_lc_messages,
+                           const char *opt_xauthority,
+                           const char *opt_pinentry_user_data);
 
 /* This fucntion is used by the call-agent.c modules to fire up a new
    agent.  What a parameter list ;-).  */
@@ -44,6 +46,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_ttytype,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
+                     const char *opt_xauthority,
+                     const char *opt_pinentry_user_data,
                      int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg);

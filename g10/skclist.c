@@ -27,7 +27,7 @@
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
-#include "errors.h"
+#include "status.h"
 #include "keydb.h"
 #include "util.h"
 #include "i18n.h"

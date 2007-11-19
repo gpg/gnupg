@@ -294,9 +294,17 @@ start_scd (ctrl_t ctrl)
       
   if (fflush (NULL))
     {
-      err = gpg_error (gpg_err_code_from_errno (errno));
+#ifndef HAVE_W32_SYSTEM
+      err = gpg_error_from_syserror ();
+#endif
       log_error ("error flushing pending output: %s\n", strerror (errno));
+      /* At least Windows XP fails here with EBADF.  According to docs
+         and Wine an fflush(NULL) is the same as _flushall.  However
+         the Wime implementaion does not flush stdin,stdout and stderr
+         - see above.  Lets try to ignore the error. */
+#ifndef HAVE_W32_SYSTEM
       goto leave;
+#endif
     }
 
   if (!opt.scdaemon_program || !*opt.scdaemon_program)
@@ -319,9 +327,11 @@ start_scd (ctrl_t ctrl)
     }
   no_close_list[i] = -1;
 
-  /* Connect to the pinentry and perform initial handshaking */
+  /* Connect to the pinentry and perform initial handshaking.  Use
+     detached flag (128) so that under W32 SCDAEMON does not show up a
+     new window.  */
   rc = assuan_pipe_connect_ext (&ctx, opt.scdaemon_program, argv,
-                                no_close_list, atfork_cb, NULL, 0);
+                                no_close_list, atfork_cb, NULL, 128);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",

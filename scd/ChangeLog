@@ -1,3 +1,17 @@
+2007-11-14  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): Pass STANDARD_SOCKET flag to
+	create_server_socket.
+	
+2007-11-13  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (start_connection_thread): Do not call
+	assuan_sock_check_nonce if we are running in --server mode.
+
+2007-11-07  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.h: Remove errors.h.
+
 2007-10-02  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): Add "pid" subcommand.

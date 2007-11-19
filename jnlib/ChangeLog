@@ -1,3 +1,9 @@
+2007-11-19  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (percent_escape): Factor code out to
+	(do_percent_escape): .. new.
+	(try_percent_escape): New.
+
 2007-10-01  Werner Koch  <wk@g10code.com>
 
 	* w32-afunix.c: Only keep the client related code.

@@ -1,5 +1,6 @@
 /* server.c - Server mode and main entry point 
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -44,6 +45,7 @@ struct server_local_s {
   int list_internal;
   int list_external;
   int list_to_output;           /* Write keylistings to the output fd. */
+  int enable_audit_log;         /* Use an audit log.  */
   certlist_t recplist;
   certlist_t signerlist;
   certlist_t default_recplist; /* As set by main() - don't release. */
@@ -161,6 +163,19 @@ close_message_fd (ctrl_t ctrl)
 }
 
 
+/* Start a new audit session if this has been enabled.  */
+static gpg_error_t
+start_audit_session (ctrl_t ctrl)
+{
+  audit_release (ctrl->audit);
+  ctrl->audit = NULL;
+  if (ctrl->server_local->enable_audit_log && !(ctrl->audit = audit_new ()) )
+    return gpg_error_from_syserror ();
+  
+  return 0;
+}
+
+
 static int
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
@@ -213,6 +228,22 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (!opt.lc_messages)
         return out_of_core ();
     }
+  else if (!strcmp (key, "xauthority"))
+    {
+      if (opt.xauthority)
+        free (opt.xauthority);
+      opt.xauthority = strdup (value);
+      if (!opt.xauthority)
+        return out_of_core ();
+    }
+  else if (!strcmp (key, "pinentry-user-data"))
+    {
+      if (opt.pinentry_user_data)
+        free (opt.pinentry_user_data);
+      opt.pinentry_user_data = strdup (value);
+      if (!opt.pinentry_user_data)
+        return out_of_core ();
+    }
   else if (!strcmp (key, "list-mode"))
     {
       int i = *value? atoi (value) : 0;
@@ -255,6 +286,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "with-key-data"))
     {
       opt.with_key_data = 1;
+    }
+  else if (!strcmp (key, "enable-audit-log"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->server_local->enable_audit_log = i;
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
@@ -519,8 +555,10 @@ cmd_verify (assuan_context_t ctx, char *line)
         return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
     }
 
-  rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
-                     ctrl->server_local->message_fd, out_fp);
+  rc = start_audit_session (ctrl);
+  if (!rc)
+    rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
+                       ctrl->server_local->message_fd, out_fp);
   if (out_fp)
     fclose (out_fp);
 
@@ -1037,90 +1075,12 @@ gpgsm_server (certlist_t default_recplist)
   ctrl.server_local->signerlist = NULL;
   xfree (ctrl.server_local);
 
+  audit_release (ctrl.audit);
+  ctrl.audit = NULL;
+
   assuan_deinit_server (ctx);
 }
 
-
-static const char *
-get_status_string ( int no ) 
-{
-  const char *s;
-
-  switch (no)
-    {
-    case STATUS_ENTER  : s = "ENTER"; break;
-    case STATUS_LEAVE  : s = "LEAVE"; break;
-    case STATUS_ABORT  : s = "ABORT"; break;
-    case STATUS_NEWSIG : s = "NEWSIG"; break;
-    case STATUS_GOODSIG: s = "GOODSIG"; break;
-    case STATUS_SIGEXPIRED: s = "SIGEXPIRED"; break;
-    case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;
-    case STATUS_BADSIG : s = "BADSIG"; break;
-    case STATUS_ERRSIG : s = "ERRSIG"; break;
-    case STATUS_BADARMOR : s = "BADARMOR"; break;
-    case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA"; break;
-    case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED"; break;
-    case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER"; break;
-    case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL"; break;
-    case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY"; break;
-    case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE"; break;
-    case STATUS_GET_BOOL	 : s = "GET_BOOL"; break;
-    case STATUS_GET_LINE	 : s = "GET_LINE"; break;
-    case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN"; break;
-    case STATUS_GOT_IT	 : s = "GOT_IT"; break;
-    case STATUS_SHM_INFO	 : s = "SHM_INFO"; break;
-    case STATUS_SHM_GET	 : s = "SHM_GET"; break;
-    case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL"; break;
-    case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN"; break;
-    case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE"; break;
-    case STATUS_VALIDSIG	 : s = "VALIDSIG"; break;
-    case STATUS_SIG_ID	 : s = "SIG_ID"; break;
-    case STATUS_ENC_TO	 : s = "ENC_TO"; break;
-    case STATUS_NODATA	 : s = "NODATA"; break;
-    case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE"; break;
-    case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY"; break;
-    case STATUS_NO_SECKEY	 : s = "NO_SECKEY"; break;
-    case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM"; break;
-    case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED"; break;
-    case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY"; break;
-    case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE"; break;
-    case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE"; break;
-    case STATUS_GOODMDC	 : s = "GOODMDC"; break;
-    case STATUS_BADMDC	 : s = "BADMDC"; break;
-    case STATUS_ERRMDC	 : s = "ERRMDC"; break;
-    case STATUS_IMPORTED	 : s = "IMPORTED"; break;
-    case STATUS_IMPORT_OK        : s = "IMPORT_OK"; break;
-    case STATUS_IMPORT_RES	 : s = "IMPORT_RES"; break;
-    case STATUS_FILE_START	 : s = "FILE_START"; break;
-    case STATUS_FILE_DONE	 : s = "FILE_DONE"; break;
-    case STATUS_FILE_ERROR	 : s = "FILE_ERROR"; break;
-    case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION"; break;
-    case STATUS_END_DECRYPTION : s = "END_DECRYPTION"; break;
-    case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION"; break;
-    case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION"; break;
-    case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM"; break;
-    case STATUS_PROGRESS	 : s = "PROGRESS"; break;
-    case STATUS_SIG_CREATED	 : s = "SIG_CREATED"; break;
-    case STATUS_SESSION_KEY	 : s = "SESSION_KEY"; break;
-    case STATUS_NOTATION_NAME  : s = "NOTATION_NAME" ; break;
-    case STATUS_NOTATION_DATA  : s = "NOTATION_DATA" ; break;
-    case STATUS_POLICY_URL     : s = "POLICY_URL" ; break;
-    case STATUS_BEGIN_STREAM   : s = "BEGIN_STREAM"; break;
-    case STATUS_END_STREAM     : s = "END_STREAM"; break;
-    case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
-    case STATUS_UNEXPECTED     : s = "UNEXPECTED"; break;
-    case STATUS_INV_RECP       : s = "INV_RECP"; break;
-    case STATUS_NO_RECP        : s = "NO_RECP"; break;
-    case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
-    case STATUS_EXPSIG         : s = "EXPSIG"; break;
-    case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
-    case STATUS_TRUNCATED      : s = "TRUNCATED"; break;
-    case STATUS_ERROR          : s = "ERROR"; break;
-    case STATUS_IMPORT_PROBLEM : s = "IMPORT_PROBLEM"; break;
-    default: s = "?"; break;
-    }
-  return s;
-}
 
 
 gpg_error_t

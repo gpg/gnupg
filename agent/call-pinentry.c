@@ -1,5 +1,5 @@
 /* call-pinentry.c - fork of the pinentry to query stuff from the user
- * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +33,7 @@
 #include <assuan.h>
 
 #include "agent.h"
+#include "setenv.h"
 #include "i18n.h"
 
 #ifdef _POSIX_OPEN_MAX
@@ -164,8 +165,16 @@ unlock_pinentry (int rc)
 static void
 atfork_cb (void *opaque, int where)
 {
+  ctrl_t ctrl = opaque;
+
   if (!where)
-    gcry_control (GCRYCTL_TERM_SECMEM);
+    {
+      gcry_control (GCRYCTL_TERM_SECMEM);
+      if (ctrl->xauthority)
+        setenv ("XAUTHORITY", ctrl->xauthority, 1);
+      if (ctrl->pinentry_user_data)
+        setenv ("PINENTRY_USER_DATA", ctrl->pinentry_user_data, 1 );
+    }
 }
 
 
@@ -261,9 +270,10 @@ start_pinentry (ctrl_t ctrl)
     }
   no_close_list[i] = -1;
 
-  /* Connect to the pinentry and perform initial handshaking */
+  /* Connect to the pinentry and perform initial handshaking.  Note
+     that atfork is used to change the environment for pinentry. */
   rc = assuan_pipe_connect_ext (&ctx, opt.pinentry_program, argv,
-                                no_close_list, atfork_cb, NULL, 0);
+                                no_close_list, atfork_cb, ctrl, 0);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
@@ -568,9 +578,47 @@ agent_askpin (ctrl_t ctrl,
      to the pinentry.  */
   if (pininfo->with_qualitybar && opt.min_passphrase_len )
     {
-      rc = assuan_transact (entry_ctx, "SETQUALITYBAR",
+      char *tmpstr;
+      const char *tooltip;
+
+      /* TRANSLATORS: This string is displayed by pinentry as the
+         label for the quality bar.  */
+      tmpstr = try_percent_escape (_("Quality:"), "\t\r\n\f\v");
+      snprintf (line, DIM(line)-1, "SETQUALITYBAR %s", tmpstr? tmpstr:"");
+      line[DIM(line)-1] = 0;
+      xfree (tmpstr);
+      rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
-      if (rc)
+      if (rc == 103 /*(Old assuan error code)*/
+          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+        ; /* Ignore Unknown Command from old pinentry versions.  */
+      else if (rc)
+        return unlock_pinentry (rc);
+
+      /* TRANSLATORS: This string is a tooltip, shown by pinentry when
+         hovering over the quality bar.  Please use an appropriate
+         string to describe what this is about.  The length of the
+         tooltip is limited to about 900 characters.  If you do not
+         translate this entry, a default english text (see source)
+         will be used. */
+      tooltip =  _("pinentry.qualitybar.tooltip");
+      if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
+        tooltip = ("The quality of the text entered above.\n"
+                   "Please ask your administrator for "
+                   "details about the criteria.");
+      /* Fixme: As soon as we have the extended error reporting
+         facility (audit log), we can use a user specified helptext if
+         that has been configured. */
+      tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
+      snprintf (line, DIM(line)-1, "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
+      line[DIM(line)-1] = 0;
+      xfree (tmpstr);
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc == 103 /*(Old assuan error code)*/
+          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+        ; /* Ignore Unknown Command from old pinentry versions.  */
+      else if (rc)
         return unlock_pinentry (rc);
     }
 

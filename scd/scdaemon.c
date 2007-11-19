@@ -632,7 +632,8 @@ main (int argc, char **argv )
                                             "S.scdaemon",
                                             "/tmp/gpg-XXXXXX/S.scdaemon");
           
-          fd = FD2INT(create_server_socket (0, socket_name, &socket_nonce));
+          fd = FD2INT(create_server_socket (standard_socket,
+                                            socket_name, &socket_nonce));
         }
 
       tattr = pth_attr_new();
@@ -656,6 +657,8 @@ main (int argc, char **argv )
           scd_exit (2);
         }
 
+      /* We run handle_connection to wait for the shutdown signal and
+         to run the ticker stuff.  */
       handle_connections (fd);
       if (fd != -1)
         close (fd);
@@ -678,7 +681,8 @@ main (int argc, char **argv )
                                         "S.scdaemon",
                                         "/tmp/gpg-XXXXXX/S.scdaemon");
 
-      fd = FD2INT (create_server_socket (0, socket_name, &socket_nonce));
+      fd = FD2INT (create_server_socket (standard_socket,
+                                         socket_name, &socket_nonce));
 
 
       fflush (NULL);
@@ -975,14 +979,16 @@ create_server_socket (int is_standard_name, const char *name,
  if (rc == -1)
     {
       log_error (_("error binding socket to `%s': %s\n"),
-		 serv_addr->sun_path, strerror (errno));
+		 serv_addr->sun_path,
+                 gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
       scd_exit (2);
     }
 
   if (listen (FD2INT(fd), 5 ) == -1)
     {
-      log_error (_("listen() failed: %s\n"), strerror (errno));
+      log_error (_("listen() failed: %s\n"),
+                 gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
       scd_exit (2);
     }
@@ -1001,7 +1007,8 @@ start_connection_thread (void *arg)
 {
   ctrl_t ctrl = arg;
 
-  if (assuan_sock_check_nonce (ctrl->thread_startup.fd, &socket_nonce))
+  if (ctrl->thread_startup.fd != GNUPG_INVALID_FD
+      && assuan_sock_check_nonce (ctrl->thread_startup.fd, &socket_nonce))
     {
       log_info (_("error reading nonce on fd %d: %s\n"), 
                 FD2INT(ctrl->thread_startup.fd), strerror (errno));

@@ -1,5 +1,5 @@
 # Makefile for common gnupg modules
-# Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -18,9 +18,14 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk \
+             audit-events.h status-codes.h
+
 noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
+
+BUILT_SOURCES = audit-events.h status-codes.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
@@ -31,7 +36,7 @@ include $(top_srcdir)/am/cmacros.am
 common_sources = \
 	common-defs.h \
 	util.h i18n.c i18n.h \
-	errors.h \
+	status.c status.h\
 	openpgpdefs.h \
 	gc-opt-flags.h \
 	keyserver.h \
@@ -55,10 +60,12 @@ common_sources = \
 	exechelp.c exechelp.h \
 	signal.c \
 	estream.c estream.h estream-printf.c estream-printf.h \
+	audit.c audit.h \
 	srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
 	http.c http.h 
+
 
 
 libcommon_a_SOURCES = $(common_sources)
@@ -80,6 +87,19 @@ libsimple_pwquery_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 libgpgrl_a_SOURCES = \
         gpgrlhelp.c
 
+# Create the audit-events.h include file from audit.h
+audit-events.h: Makefile mkstrtable.awk exaudit.awk audit.h
+	$(AWK) -f $(srcdir)/exaudit.awk $(srcdir)/audit.h \
+	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
+		   -v namespace=eventstr_  >$@
+
+# Create the status-codes.h include file from status.h
+status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
+	$(AWK) -f $(srcdir)/exstatus.awk $(srcdir)/status.h \
+	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
+		   -v namespace=statusstr_  >$@
+
+
 #
 # Module tests
 #
@@ -91,4 +111,6 @@ t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
 t_convert_LDADD = $(t_common_ldadd)
 t_gettime_LDADD = $(t_common_ldadd)
 t_sysutils_LDADD = $(t_common_ldadd)
+
+
 

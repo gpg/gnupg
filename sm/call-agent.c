@@ -81,6 +81,7 @@ start_agent (ctrl_t ctrl)
                               opt.agent_program,
                               opt.display, opt.ttyname, opt.ttytype,
                               opt.lc_ctype, opt.lc_messages,
+                              opt.xauthority, opt.pinentry_user_data,
                               opt.verbose, DBG_ASSUAN,
                               gpgsm_status2, ctrl);
 

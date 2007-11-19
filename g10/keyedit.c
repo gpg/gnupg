@@ -33,7 +33,7 @@
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
-#include "errors.h"
+#include "status.h"
 #include "iobuf.h"
 #include "keydb.h"
 #include "photoid.h"
@@ -2095,8 +2095,8 @@ keyedit_menu( const char *username, strlist_t locusr,
 	  case cmdTRUST:
 	    if(opt.trust_model==TM_EXTERNAL)
 	      {
-		tty_printf(_("Owner trust may not be set while "
-			     "using an user provided trust database\n"));
+		tty_printf (_("Owner trust may not be set while "
+			      "using a user provided trust database\n"));
 		break;
 	      }
 

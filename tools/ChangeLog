@@ -1,3 +1,8 @@
+2007-11-15  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (start_agent): Adjust changed
+	send_pinentry_environment.
+
 2007-10-24  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (substitute_line): Restore temporary nul

@@ -2617,6 +2617,10 @@ protocol version which should be set to 1. When starting the gpg-agent
 as described in its documentation, this variable is set to the correct
 value. The option @option{--gpg-agent-info} can be used to override it.
 
+@item PINENTRY_USER_DATA
+This value is passed via gpg-agent to pinentry.  It is useful to convey
+extra information to a custom pinentry
+
 @item COLUMNS
 @itemx LINES
 Used to size some displays to the full size of the screen.

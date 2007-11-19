@@ -1,6 +1,14 @@
+2007-11-15  Werner Koch  <wk@g10code.com>
+
+	* de.po: Type fix.
+
+2007-11-12  Daniel Nylander <po@danielnylander.se>  (wk)
+
+	* sv.po: Updated.
+
 2007-09-14  Werner Koch  <wk@g10code.com>
 
-	* de.po: Chnaged translation of --honor-http-proxy.
+	* de.po: Changed translation of --honor-http-proxy.
 
 2007-08-29  Werner Koch  <wk@g10code.com>
 

@@ -1294,6 +1294,7 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
   xfree (opt.startup_ttytype); opt.startup_ttytype = NULL;
   xfree (opt.startup_lc_ctype); opt.startup_lc_ctype = NULL;
   xfree (opt.startup_lc_messages); opt.startup_lc_messages = NULL;
+  xfree (opt.startup_xauthority); opt.startup_xauthority = NULL;
 
   if (ctrl->display)
     opt.startup_display = xtrystrdup (ctrl->display);
@@ -1305,6 +1306,10 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
     opt.startup_lc_ctype = xtrystrdup (ctrl->lc_ctype);
   if (ctrl->lc_messages)
     opt.startup_lc_messages = xtrystrdup (ctrl->lc_messages);
+  if (ctrl->xauthority)
+    opt.startup_xauthority = xtrystrdup (ctrl->xauthority);
+  if (ctrl->pinentry_user_data)
+    opt.startup_pinentry_user_data = xtrystrdup (ctrl->pinentry_user_data);
 
   return 0;
 }
@@ -1440,6 +1445,22 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         free (ctrl->lc_messages);
       ctrl->lc_messages = strdup (value);
       if (!ctrl->lc_messages)
+        return out_of_core ();
+    }
+  else if (!strcmp (key, "xauthority"))
+    {
+      if (ctrl->xauthority)
+        free (ctrl->xauthority);
+      ctrl->xauthority = strdup (value);
+      if (!ctrl->xauthority)
+        return out_of_core ();
+    }
+  else if (!strcmp (key, "pinentry-user-data"))
+    {
+      if (ctrl->pinentry_user_data)
+        free (ctrl->pinentry_user_data);
+      ctrl->pinentry_user_data = strdup (value);
+      if (!ctrl->pinentry_user_data)
         return out_of_core ();
     }
   else if (!strcmp (key, "use-cache-for-signing"))

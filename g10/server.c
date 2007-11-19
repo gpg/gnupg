@@ -85,6 +85,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "lc-messages"))
     {
     }
+  else if (!strcmp (key, "xauthority"))
+    {
+    }
+  else if (!strcmp (key, "pinentry_user_data"))
+    {
+    }
   else if (!strcmp (key, "list-mode"))
     {
       /* This is for now a dummy option. */

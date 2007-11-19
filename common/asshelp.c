@@ -1,5 +1,5 @@
 /* asshelp.c - Helper functions for Assuan
- * Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,7 +31,7 @@
 #include "util.h"
 #include "exechelp.h"
 #include "sysutils.h"
-#include "errors.h"  /* FIXME: This one conatisn only status code - rename it*/
+#include "status.h" 
 #include "asshelp.h"
 
 
@@ -56,7 +56,7 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
 }
 
 
-/* Send the assuan commands pertaining to the pinenry environment.  The
+/* Send the assuan commands pertaining to the pinentry environment.  The
    OPT_* arguments are optional and may be used to override the
    defaults taken from the current locale. */
 gpg_error_t
@@ -66,7 +66,9 @@ send_pinentry_environment (assuan_context_t ctx,
                            const char *opt_ttyname,
                            const char *opt_ttytype,
                            const char *opt_lc_ctype,
-                           const char *opt_lc_messages)
+                           const char *opt_lc_messages,
+                           const char *opt_xauthority,
+                           const char *opt_pinentry_user_data)
 {
   gpg_error_t err = 0;
   char *dft_display = NULL;
@@ -74,6 +76,8 @@ send_pinentry_environment (assuan_context_t ctx,
   char *dft_ttytype = NULL;
   char *old_lc = NULL; 
   char *dft_lc = NULL;
+  char *dft_xauthority = NULL;
+  char *dft_pinentry_user_data = NULL;
 
   /* Send the DISPLAY variable.  */
   dft_display = getenv ("DISPLAY");
@@ -162,6 +166,27 @@ send_pinentry_environment (assuan_context_t ctx,
   if (err)
     return err;
 
+  /* Send the XAUTHORITY variable.  */
+  dft_xauthority = getenv ("XAUTHORITY");
+  if (opt_xauthority || dft_xauthority)
+    {
+      err = send_one_option (ctx, errsource, "xauthority", 
+                             opt_xauthority ? opt_xauthority : dft_xauthority);
+      if (err)
+        return err;
+    }
+
+  /* Send the PINENTRY_USER_DATA variable.  */
+  dft_pinentry_user_data = getenv ("PINENTRY_USER_DATA");
+  if (opt_pinentry_user_data || dft_pinentry_user_data)
+    {
+      err = send_one_option (ctx, errsource, "pinentry-user-data", 
+                             opt_pinentry_user_data ?
+                             opt_pinentry_user_data : dft_pinentry_user_data);
+      if (err)
+        return err;
+    }
+
   return 0;
 }
 
@@ -179,6 +204,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_ttytype,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
+                     const char *opt_xauthority,
+                     const char *opt_pinentry_user_data,
                      int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg)
@@ -333,7 +360,9 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   if (!rc)
     rc = send_pinentry_environment (ctx, errsource,
                                     opt_display, opt_ttyname, opt_ttytype,
-                                    opt_lc_ctype, opt_lc_messages);
+                                    opt_lc_ctype, opt_lc_messages,
+                                    opt_xauthority,
+                                    opt_pinentry_user_data);
   if (rc)
     {
       assuan_disconnect (ctx);

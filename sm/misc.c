@@ -76,6 +76,13 @@ setup_pinentry_env (void)
   else if ( (lc = setlocale (LC_MESSAGES, "")) )
     setenv ("LC_MESSAGES", lc, 1);
 #endif
+
+  if (opt.xauthority)
+    setenv ("XAUTHORITY", opt.xauthority, 1);
+
+  if (opt.pinentry_user_data)
+    setenv ("PINENTRY_USER_DATA", opt.pinentry_user_data, 1);
+
 #endif /*!HAVE_W32_SYSTEM*/
 }
 

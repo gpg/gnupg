@@ -145,6 +145,30 @@ int pubkey_get_nenc( int algo );
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print( FILE *fp, gcry_mpi_t a, int mode );
 
+/*-- status.c --*/
+void set_status_fd ( int fd );
+int  is_status_enabled ( void );
+void write_status ( int no );
+void write_status_text ( int no, const char *text );
+void write_status_buffer ( int no,
+                           const char *buffer, size_t len, int wrap );
+void write_status_text_and_buffer ( int no, const char *text,
+                                    const char *buffer, size_t len, int wrap );
+
+void write_status_begin_signing (gcry_md_hd_t md);
+
+
+int cpr_enabled(void);
+char *cpr_get( const char *keyword, const char *prompt );
+char *cpr_get_no_help( const char *keyword, const char *prompt );
+char *cpr_get_utf8( const char *keyword, const char *prompt );
+char *cpr_get_hidden( const char *keyword, const char *prompt );
+void cpr_kill_prompt(void);
+int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
+int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
+int  cpr_get_answer_okay_cancel (const char *keyword,
+                                 const char *prompt,
+                                 int def_answer);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

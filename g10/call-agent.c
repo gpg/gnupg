@@ -82,6 +82,7 @@ start_agent (void)
                               opt.agent_program,
                               opt.display, opt.ttyname, opt.ttytype,
                               opt.lc_ctype, opt.lc_messages,
+                              opt.xauthority, opt.pinentry_user_data,
                               opt.verbose, DBG_ASSUAN,
                               NULL, NULL);
 }

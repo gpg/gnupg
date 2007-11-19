@@ -31,7 +31,6 @@
 
 #include <gcrypt.h>
 #include "../common/util.h"
-#include "../common/errors.h"
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 
@@ -62,6 +61,8 @@ struct
   char *startup_ttytype;
   char *startup_lc_ctype;
   char *startup_lc_messages;
+  char *startup_xauthority;   
+  char *startup_pinentry_user_data; 
 
 
   const char *pinentry_program; /* Filename of the program to start as
@@ -146,6 +147,8 @@ struct server_control_s
   char *ttytype;
   char *lc_ctype;
   char *lc_messages;
+  char *xauthority;   
+  char *pinentry_user_data; 
   struct {
     int algo;
     unsigned char value[MAX_DIGEST_LEN];

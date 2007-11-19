@@ -62,8 +62,7 @@ common_source =  \
 	      keyid.c		\
 	      packet.h		\
 	      parse-packet.c	\
-	      status.c		\
-	      status.h		\
+	      cpr.c		\
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
