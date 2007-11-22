@@ -933,6 +933,41 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
+
+/* GETAUDITLOG
+
+   !!!WORK in PROGRESS!!!
+ */
+static int 
+cmd_getauditlog (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int  out_fd;
+  FILE *out_fp;
+  int rc;
+
+  if (!ctrl->audit)
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+  if (out_fd == -1)
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+
+  out_fp = fdopen ( dup(out_fd), "w");
+  if (!out_fp)
+    {
+      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+    }
+  audit_print_result (ctrl->audit, out_fp);
+  rc = 0;
+  fclose (out_fp);
+
+  /* Close and reset the fd. */
+  assuan_close_output_fd (ctx);
+  return rc;
+}
+
+
 
 
 
@@ -961,6 +996,7 @@ register_commands (assuan_context_t ctx)
     { "DUMPSECRETKEYS",cmd_dumpsecretkeys },
     { "GENKEY",        cmd_genkey },
     { "DELKEYS",       cmd_delkeys },
+    { "GETAUDITLOG",   cmd_getauditlog },
     { NULL }
   };
   int i, rc;
