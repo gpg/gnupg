@@ -297,18 +297,20 @@ audit_log_cert (audit_ctx_t ctx, audit_event_t event,
 
 /* Print the formatted audit result.    THIS IS WORK IN PROGRESS.  */
 void
-audit_print_result (audit_ctx_t ctx, FILE *fp)
+audit_print_result (audit_ctx_t ctx, estream_t out)
 {
   int idx;
   int maxlen;
   size_t n;
 
+  es_fputs ("<div class=\"GnuPGAuditLog\">\n", out);
+
   if (!ctx)
-    return;
+    goto leave;
   if (!ctx->log || !ctx->logused)
     {
-      fprintf (fp, "AUDIT-LOG: No entries\n");
-      return;
+      es_fprintf (out, "<p>AUDIT-LOG: No entries</p>\n");
+      goto leave;
     }
 
   for (idx=0,maxlen=0; idx < DIM (eventstr_msgidx); idx++)
@@ -318,19 +320,24 @@ audit_print_result (audit_ctx_t ctx, FILE *fp)
         maxlen = n;
     }
 
+  es_fputs ("<ul>\n", out);
   for (idx=0; idx < ctx->logused; idx++)
     {
-      fprintf (fp, "AUDIT-LOG[%d]: %-*s", 
-               idx, maxlen, event2str (ctx->log[idx].event));
+      es_fprintf (out, " <li>%-*s", 
+                  maxlen, event2str (ctx->log[idx].event));
       if (ctx->log[idx].have_intvalue)
-        fprintf (fp, " i=%d", ctx->log[idx].intvalue); 
+        es_fprintf (out, " i=%d", ctx->log[idx].intvalue); 
       if (ctx->log[idx].string)
-        fprintf (fp, " s=`%s'", ctx->log[idx].string); 
+        es_fprintf (out, " s=`%s'", ctx->log[idx].string); 
       if (ctx->log[idx].cert)
-        fprintf (fp, " has_cert"); 
+        es_fprintf (out, " has_cert"); 
       if (ctx->log[idx].have_err)
-        fprintf (fp, " err=\"%s\"", gpg_strerror (ctx->log[idx].err)); 
-      putc ('\n', fp);
+        es_fprintf (out, " err=\"%s\"", gpg_strerror (ctx->log[idx].err)); 
+      es_fputs ("</li>\n", out);
     }
+  es_fputs ("</ul>\n", out);
+
+ leave:
+  es_fputs ("</div>\n", out);
 }
 

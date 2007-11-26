@@ -934,36 +934,56 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 
-/* GETAUDITLOG
+/* GETAUDITLOG [--data]
 
    !!!WORK in PROGRESS!!!
+
+   If --data is used, the output is send using D-lines and not to the
+   source given by an OUTPUT command.
  */
 static int 
 cmd_getauditlog (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int  out_fd;
-  FILE *out_fp;
+  estream_t out_stream;
+  int opt_data;
   int rc;
+
+  opt_data = has_option (line, "--data"); 
+  line = skip_options (line);
 
   if (!ctrl->audit)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  if (out_fd == -1)
-    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
-
-  out_fp = fdopen ( dup(out_fd), "w");
-  if (!out_fp)
+  if (opt_data)
     {
-      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+      out_stream = es_fopencookie (ctx, "w", data_line_cookie_functions);
+      if (!out_stream)
+        return set_error (GPG_ERR_ASS_GENERAL, 
+                          "error setting up a data stream");
     }
-  audit_print_result (ctrl->audit, out_fp);
+  else
+    {
+      out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+      if (out_fd == -1)
+        return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+      
+      out_stream = es_fdopen_nc ( dup (out_fd), "w");
+      if (!out_stream)
+        {
+          return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen() failed");
+        }
+    }
+
+  audit_print_result (ctrl->audit, out_stream);
   rc = 0;
-  fclose (out_fp);
+
+  es_fclose (out_stream);
 
   /* Close and reset the fd. */
-  assuan_close_output_fd (ctx);
+  if (!opt_data)
+    assuan_close_output_fd (ctx);
   return rc;
 }
 

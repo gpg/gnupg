@@ -1649,7 +1649,7 @@ main ( int argc, char **argv)
     case aVerify:
       {
         FILE *fp = NULL;
-        FILE *auditfp = NULL;
+        estream_t auditfp = NULL;
 
         set_binary (stdin);
         if (argc == 2 && opt.outfile)
@@ -1661,7 +1661,7 @@ main ( int argc, char **argv)
           {
             audit_release (ctrl.audit);
             ctrl.audit = audit_new ();
-            auditfp = open_fwrite (auditlog);
+            auditfp = open_es_fwrite (auditlog);
           }
 
         if (!argc)
@@ -1682,8 +1682,7 @@ main ( int argc, char **argv)
 
         if (fp && fp != stdout)
           fclose (fp);
-        if (auditfp && auditfp != stdout)
-          fclose (auditfp);
+        es_fclose (auditfp);
       }
       break;
 

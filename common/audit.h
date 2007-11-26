@@ -22,6 +22,7 @@
 
 #include <ksba.h>
 
+#include "estream.h"
 
 struct audit_ctx_s;
 typedef struct audit_ctx_s *audit_ctx_t;
@@ -132,7 +133,7 @@ void audit_log_s (audit_ctx_t ctx, audit_event_t event, const char *value);
 void audit_log_cert (audit_ctx_t ctx, audit_event_t event, 
                      ksba_cert_t cert, gpg_error_t err);
 
-void audit_print_result (audit_ctx_t ctx, FILE *fp);
+void audit_print_result (audit_ctx_t ctx, estream_t stream);
 
 
 
