@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-11-19 16:02+0100\n"
+"POT-Creation-Date: 2007-11-27 09:11+0100\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
-#. TRANSLATORS: This string is displayed pinentry as the label
-#. for the quality bar.
+#. TRANSLATORS: This string is displayed by pinentry as the
+#. label for the quality bar.
 #: agent/call-pinentry.c:586
 #, fuzzy
 msgid "Quality:"
@@ -46,10 +46,10 @@ msgstr "validitate: %s"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the quality bar.  Please use an appropriate
-#. sting to describe what this is about.  The length of the
+#. string to describe what this is about.  The length of the
 #. tooltip is limited to about 900 characters.  If you do not
-#. translate this a default english string (see source) will be
-#. used.
+#. translate this entry, a default english text (see source)
+#. will be used.
 #: agent/call-pinentry.c:604
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
@@ -111,8 +111,8 @@ msgstr "nu pot crea `%s': %s\n"
 #: g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:540
-#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1939
-#: sm/gpgsm.c:1976 sm/gpgsm.c:2014 sm/qualified.c:66
+#: g10/tdbio.c:603 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1943
+#: sm/gpgsm.c:1980 sm/gpgsm.c:2018 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "nu pot deschide `%s': %s\n"
@@ -241,7 +241,7 @@ msgstr[1] ""
 #: agent/genkey.c:235
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%0AA passphrase may not be "
+"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
 "a known term or match%%0Acertain pattern."
 msgstr ""
 
@@ -432,113 +432,113 @@ msgstr "citesc opþiuni din `%s'\n"
 msgid "error creating `%s': %s\n"
 msgstr "eroare la creearea `%s': %s\n"
 
-#: agent/gpg-agent.c:1275 agent/gpg-agent.c:1387 agent/gpg-agent.c:1391
-#: agent/gpg-agent.c:1432 agent/gpg-agent.c:1436 g10/exec.c:172
+#: agent/gpg-agent.c:1297 agent/gpg-agent.c:1409 agent/gpg-agent.c:1413
+#: agent/gpg-agent.c:1454 agent/gpg-agent.c:1458 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:921
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "nu pot crea directorul `%s': %s\n"
 
-#: agent/gpg-agent.c:1289 scd/scdaemon.c:935
+#: agent/gpg-agent.c:1311 scd/scdaemon.c:935
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1312 scd/scdaemon.c:958
+#: agent/gpg-agent.c:1334 scd/scdaemon.c:958
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "nu pot crea `%s': %s\n"
 
-#: agent/gpg-agent.c:1321
+#: agent/gpg-agent.c:1343
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1333
+#: agent/gpg-agent.c:1355
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
 
-#: agent/gpg-agent.c:1344 scd/scdaemon.c:978
+#: agent/gpg-agent.c:1366 scd/scdaemon.c:978
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "eroare la obþinere noului PIN: %s\n"
 
-#: agent/gpg-agent.c:1349 scd/scdaemon.c:981
+#: agent/gpg-agent.c:1371 scd/scdaemon.c:981
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
-#: agent/gpg-agent.c:1361 scd/scdaemon.c:990
+#: agent/gpg-agent.c:1383 scd/scdaemon.c:990
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: agent/gpg-agent.c:1367 scd/scdaemon.c:997
+#: agent/gpg-agent.c:1389 scd/scdaemon.c:997
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "scriu cheia secretã în `%s'\n"
 
-#: agent/gpg-agent.c:1395 agent/gpg-agent.c:1442 g10/openfile.c:432
+#: agent/gpg-agent.c:1417 agent/gpg-agent.c:1464 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "director `%s' creat\n"
 
-#: agent/gpg-agent.c:1448
+#: agent/gpg-agent.c:1470
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "fstat(%d) a eºuat în %s: %s\n"
 
-#: agent/gpg-agent.c:1452
+#: agent/gpg-agent.c:1474
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: nu pot crea director: %s\n"
 
-#: agent/gpg-agent.c:1562 scd/scdaemon.c:1013
+#: agent/gpg-agent.c:1591 scd/scdaemon.c:1013
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#: agent/gpg-agent.c:1584
+#: agent/gpg-agent.c:1613
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1589
+#: agent/gpg-agent.c:1618
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1609
+#: agent/gpg-agent.c:1638
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1614
+#: agent/gpg-agent.c:1643
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1718 scd/scdaemon.c:1135
+#: agent/gpg-agent.c:1760 scd/scdaemon.c:1135
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "actualizarea secretului a eºuat: %s\n"
 
-#: agent/gpg-agent.c:1827 scd/scdaemon.c:1202
+#: agent/gpg-agent.c:1873 scd/scdaemon.c:1202
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: sãritã: %s\n"
 
-#: agent/gpg-agent.c:1850
+#: agent/gpg-agent.c:1896
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
 
-#: agent/gpg-agent.c:1861 common/simple-pwquery.c:329
+#: agent/gpg-agent.c:1907 common/simple-pwquery.c:329
 #: tools/gpg-connect-agent.c:1953
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "variabila de mediu GPG_AGENT_INFO anormalã\n"
 
-#: agent/gpg-agent.c:1874 common/simple-pwquery.c:341
+#: agent/gpg-agent.c:1920 common/simple-pwquery.c:341
 #: tools/gpg-connect-agent.c:1964
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -2102,7 +2102,7 @@ msgstr "%s:%d: opþiuni verificare invalide\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2944 sm/gpgsm.c:1355
+#: g10/gpg.c:2944 sm/gpgsm.c:1360
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVERTISMENT: programul ar putea crea un fiºier core!\n"
 
@@ -2147,11 +2147,11 @@ msgstr ""
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "cifrarea unui mesaj în modul --pgp2 necesitã un cifru IDEA\n"
 
-#: g10/gpg.c:3080 g10/gpg.c:3104 sm/gpgsm.c:1427
+#: g10/gpg.c:3080 g10/gpg.c:3104 sm/gpgsm.c:1432
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-#: g10/gpg.c:3086 g10/gpg.c:3110 sm/gpgsm.c:1435
+#: g10/gpg.c:3086 g10/gpg.c:3110 sm/gpgsm.c:1440
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritm rezumat selectat este invalid\n"
 
@@ -7516,21 +7516,21 @@ msgstr "nu mã pot conecta la `%s': %s\n"
 msgid "unknown validation model `%s'\n"
 msgstr "opþiune necunoscutã `%s'\n"
 
-#: sm/gpgsm.c:1372
+#: sm/gpgsm.c:1377
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1468
+#: sm/gpgsm.c:1473
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr ""
 
-#: sm/gpgsm.c:1486
+#: sm/gpgsm.c:1491
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "nu pot accesa `%s': %s\n"
 
-#: sm/gpgsm.c:1686
+#: sm/gpgsm.c:1690
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
