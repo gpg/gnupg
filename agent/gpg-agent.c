@@ -1246,6 +1246,28 @@ get_agent_ssh_socket_name (void)
 }
 
 
+/* Under W32, this function returns the handle of the scdaemon
+   notification event.  Calling it the first time creates that
+   event.  */
+#ifdef HAVE_W32_SYSTEM
+void *
+get_agent_scd_notify_event (void)
+{
+  static HANDLE the_event;
+
+  if (!the_event)
+    {
+      SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
+
+      the_event = CreateEvent ( &sa, FALSE, FALSE, NULL);
+      if (!the_event)
+        log_error ("can't create scd notify event: %s\n", w32_strerror (-1) );
+    }
+  return the_event;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 
 /* Create a name for the socket.  With USE_STANDARD_SOCKET given as
    true using STANDARD_NAME in the home directory or if given as
@@ -1486,14 +1508,26 @@ handle_tick (void)
 }
 
 
-/* A global fucntion which allows us to call the reload stuff from
-   other palces too.  This is only used when build for W32.  */
+/* A global function which allows us to call the reload stuff from
+   other places too.  This is only used when build for W32.  */
 void
 agent_sighup_action (void)
 {
+  log_info ("SIGHUP received - "
+            "re-reading configuration and flushing cache\n");
   agent_flush_cache ();
   reread_configuration ();
   agent_reload_trustlist ();
+}
+
+
+static void
+agent_sigusr2_action (void)
+{
+  if (opt.verbose)
+    log_info ("SIGUSR2 received - checking smartcard status\n");
+  /* Nothing to check right now.  We only increment a counter.  */
+  bump_card_eventcounter ();
 }
 
 
@@ -1504,8 +1538,6 @@ handle_signal (int signo)
     {
 #ifndef HAVE_W32_SYSTEM
     case SIGHUP:
-      log_info ("SIGHUP received - "
-                "re-reading configuration and flushing cache\n");
       agent_sighup_action ();
       break;
       
@@ -1517,10 +1549,7 @@ handle_signal (int signo)
       break;
       
     case SIGUSR2:
-      if (opt.verbose)
-        log_info ("SIGUSR2 received - checking smartcard status\n");
-      /* Nothing to check right now.  We only increment a counter.  */
-      bump_card_eventcounter ();
+      agent_sigusr2_action ();
       break;
 
     case SIGTERM:
@@ -1652,8 +1681,15 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
+# ifdef PTH_EVENT_HANDLE
+  sigs = 0;
+  ev = pth_event (PTH_EVENT_HANDLE, get_agent_scd_notify_event ());
+  signo = 0;
+# else
+  /* Use a dummy event. */
   sigs = 0;
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+# endif
 #endif
   time_ev = NULL;
 
@@ -1706,7 +1742,13 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
               || (time_ev && pth_event_occurred (time_ev)))
             {
               if (pth_event_occurred (ev))
-                handle_signal (signo);
+                {
+#if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
+                  agent_sigusr2_action ();
+#else
+                  handle_signal (signo);
+#endif
+                }
               if (time_ev && pth_event_occurred (time_ev))
                 {
                   pth_event_free (time_ev, PTH_FREE_ALL);
@@ -1723,7 +1765,11 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
       if (pth_event_occurred (ev))
         {
+#if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
+          agent_sigusr2_action ();
+#else
           handle_signal (signo);
+#endif
         }
 
       if (time_ev && pth_event_occurred (time_ev))

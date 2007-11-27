@@ -205,6 +205,9 @@ cache_mode_t;
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
 const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);
+#ifdef HAVE_W32_SYSTEM
+void *get_agent_scd_notify_event (void);
+#endif
 void agent_sighup_action (void);
 
 /*-- command.c --*/

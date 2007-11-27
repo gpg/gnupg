@@ -1,3 +1,15 @@
+2007-11-20  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (get_agent_scd_notify_event): New.
+	(handle_signal): Factor SIGUSR2 code out to:
+	(agent_sigusr2_action): .. New.
+	(agent_sighup_action): Print info message here and not in
+	handle_signal.
+	(handle_connections) [PTH_EVENT_HANDLE]: Call agent_sigusr2_action.
+
+	* call-scd.c (agent_scd_check_aliveness) [W32]: Implemented.
+	(start_scd) [W32]: Send event-signal option.
+
 2007-11-19  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_askpin): Set the tooltip for the quality

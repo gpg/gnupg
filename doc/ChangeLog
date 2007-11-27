@@ -1,5 +1,8 @@
 2007-11-19  Werner Koch  <wk@g10code.com>
 
+	* gpg.texi (GPG Configuration Options): English Grammar fix.
+	Thanks to Gerg Troxel.
+
 	* gpgsm.texi (Certificate Options): Document
 	--auto-issuer-key-retrieve.
 

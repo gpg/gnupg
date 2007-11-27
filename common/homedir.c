@@ -299,8 +299,13 @@ dirmngr_socket_name (void)
 
   if (!name)
     {
-      const char *s1, *s2;
-      s1 = w32_rootdir (); 
+      char s1[MAX_PATH];
+      const char *s2;
+
+      /* We need something akin CSIDL_COMMON_PROGRAMS, but local
+	 (non-roaming).  */
+      if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1) < 0)
+	strcpy (s1, "C:\\WINDOWS");
       s2 = DIRSEP_S "S.dirmngr";
       name = xmalloc (strlen (s1) + strlen (s2) + 1);
       strcpy (stpcpy (name, s1), s2);

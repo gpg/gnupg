@@ -374,14 +374,17 @@ start_scd (ctrl_t ctrl)
   }
 
   /* Tell the scdaemon we want him to send us an event signal. */
-#ifndef HAVE_W32_SYSTEM
   {
     char buf[100];
 
-    sprintf (buf, "OPTION event-signal=%d", SIGUSR2);
+#ifdef HAVE_W32_SYSTEM
+    snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
+              (unsigned long)get_agent_scd_notify_event ());
+#else
+    snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
+#endif
     assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
   }
-#endif
 
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;
@@ -408,6 +411,9 @@ agent_scd_check_aliveness (void)
   pth_event_t evt;
   pid_t pid;
   int rc;
+#ifdef HAVE_W32_SYSTEM
+  DWORD dummyec;
+#endif
 
   if (!primary_scd_ctx)
     return; /* No scdaemon running. */
@@ -435,10 +441,12 @@ agent_scd_check_aliveness (void)
     {
       pid = assuan_get_pid (primary_scd_ctx);
 #ifdef HAVE_W32_SYSTEM
-#warning Need to implement an alive test for scdaemon
+      if (pid != (pid_t)(void*)(-1) && pid
+          && !GetExitCodeProcess ((HANDLE)pid, &dummyec))
 #else
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )
+#endif
         {
           /* Okay, scdaemon died.  Disconnect the primary connection
              now but take care that it won't do another wait. Also
@@ -467,7 +475,6 @@ agent_scd_check_aliveness (void)
           xfree (socket_name);
           socket_name = NULL;
         }
-#endif
     }
 
   if (!pth_mutex_release (&start_scd_lock))

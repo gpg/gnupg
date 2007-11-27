@@ -1,3 +1,7 @@
+2007-11-27  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (dirmngr_socket_name): Use CSIDL_WINDOWS.
+
 2007-11-15  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (send_pinentry_environment): Add args XAUTHORITY and

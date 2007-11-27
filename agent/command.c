@@ -353,7 +353,7 @@ cmd_geteventcounter (assuan_context_t ctx, char *line)
 
 
 /* This function should be called once for all key removals or
-   additions.  Thus function is assured not to do any context
+   additions.  This function is assured not to do any context
    switches. */
 void
 bump_key_eventcounter (void)
@@ -363,7 +363,7 @@ bump_key_eventcounter (void)
 }
 
 /* This function should be called for all card reader status
-   changes. Thus function is assured not to do any context
+   changes.  This function is assured not to do any context
    switches. */
 void
 bump_card_eventcounter (void)

@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2007-11-19 16:02+0100\n"
-"PO-Revision-Date: 2007-11-19 16:41+0100\n"
+"PO-Revision-Date: 2007-11-20 14:43+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -7009,7 +7009,7 @@ msgstr "Der Herausgeber wird von einer externen Stelle gesucht\n"
 #: sm/certchain.c:498
 #, c-format
 msgid "number of issuers matching: %d\n"
-msgstr "Anzahl der übereinstimmenden Heruasgeber: %d\n"
+msgstr "Anzahl der übereinstimmenden Herausgeber: %d\n"
 
 #: sm/certchain.c:651 sm/certchain.c:1069 sm/certchain.c:1674 sm/decrypt.c:259
 #: sm/encrypt.c:341 sm/sign.c:327 sm/verify.c:113

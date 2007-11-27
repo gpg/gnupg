@@ -61,7 +61,7 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 
 ./gpg_dearmor:
 	echo '#!/bin/sh' >./gpg_dearmor
-	echo "../../g10/gpg2 --no-options --no-greeting \
+	echo "../../g10/gpg2 --no-options --no-greeting --homedir . \
              --no-secmem-warning --batch --dearmor" >>./gpg_dearmor
 	chmod 755 ./gpg_dearmor
 
