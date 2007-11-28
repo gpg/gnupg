@@ -131,11 +131,11 @@ have_hash_algo () {
 }
 
 all_cipher_algos () {
-  ../g10/gpg --homedir . --version | grep "Cipher" | sed 's/^Cipher: //; s/,//g'
+  ../g10/gpg --homedir . --with-colons --list-config ciphername | sed 's/^cfg:ciphername://; s/;/ /g'
 }
 
 all_hash_algos () {
-  ../g10/gpg --homedir . --version | grep "Hash" | sed 's/^Hash: //; s/,//g'
+  ../g10/gpg --homedir . --with-colons --list-config digestname | sed 's/^cfg:digestname://; s/;/ /g'
 }
 
 set -e
