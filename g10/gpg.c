@@ -1324,7 +1324,6 @@ check_permissions(const char *path,int item)
   return 0;
 }
 
-
 static void
 print_algo_numbers(int (*checker)(int))
 {
@@ -1343,6 +1342,23 @@ print_algo_numbers(int (*checker)(int))
     }
 }
 
+static void
+print_algo_names(int (*checker)(int),const char *(*mapper)(int))
+{
+  int i,first=1;
+
+  for(i=0;i<=110;i++)
+    {
+      if(!checker(i))
+	{
+	  if(first)
+	    first=0;
+	  else
+	    printf(";");
+	  printf("%s",mapper(i));
+	}
+    }
+}
 
 /* In the future, we can do all sorts of interesting configuration
    output here.  For now, just give "group" as the Enigmail folks need
@@ -1410,12 +1426,30 @@ list_config(char *items)
 	  any=1;
 	}
 
+      if(show_all || ascii_strcasecmp(name,"ciphername")==0)
+	{
+	  printf("cfg:ciphername:");
+	  print_algo_names(check_cipher_algo,cipher_algo_to_string);
+	  printf("\n");
+	  any=1;
+	}
+
       if(show_all
 	 || ascii_strcasecmp(name,"digest")==0
 	 || ascii_strcasecmp(name,"hash")==0)
 	{
 	  printf("cfg:digest:");
 	  print_algo_numbers(check_digest_algo);
+	  printf("\n");
+	  any=1;
+	}
+
+      if(show_all
+	 || ascii_strcasecmp(name,"digestname")==0
+	 || ascii_strcasecmp(name,"hashname")==0)
+	{
+	  printf("cfg:digestname:");
+	  print_algo_names(check_digest_algo,digest_algo_to_string);
 	  printf("\n");
 	  any=1;
 	}
