@@ -1,6 +1,6 @@
 /* sig-check.c -  Check a signature
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -279,6 +279,32 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     mpi_free( result );
+
+    if(rc==G10ERR_BAD_SIGN && is_RSA(pk->pubkey_algo)
+       && sig->digest_algo==DIGEST_ALGO_SHA224)
+      {
+	/* This code is to work around a SHA-224 problem.  RFC-4880
+	   and the drafts leading up to it were published with the
+	   wrong DER prefix for SHA-224.  Unfortunately, GPG pre-1.4.8
+	   used this wrong prefix.  What this code does is take all
+	   bad RSA signatures that use SHA-224, and re-checks them
+	   using the old, incorrect, DER prefix.  Someday we should
+	   remove this code, and when we do remove it, pkcs1_encode_md
+	   can be made into a static function again.  Note that GPG2
+	   does not have this issue as it uses libgcrypt, which is
+	   being fixed while it is still a development version. */
+
+	/* The incorrect SHA-224 DER prefix used in pre-1.4.8 */
+	static byte asn[]={0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+			   0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05,
+			   0x00, 0x04, 0x20};
+
+	result=pkcs1_encode_md(digest,DIGEST_ALGO_SHA224,28,
+			       mpi_get_nbits(pk->pkey[0]),asn,DIM(asn));
+
+	rc=pubkey_verify(pk->pubkey_algo,result,sig->data,pk->pkey);
+	mpi_free(result);
+      }
 
     if( !rc && sig->flags.unknown_critical )
       {

@@ -1,5 +1,12 @@
 2007-11-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* sig-check.c (do_check): Code to try both the incorrect and
+	correct SHA-224 DER prefixes when verifying a signature.  See the
+	change itself for more discussion.
+
+	* main.h, seskey.c (do_encode_md): Rename to pkcs1_encode_md and
+	make non-static.
+
 	* gpg.c (print_algo_names): New.
 	(list_config): Use it here for the "ciphername" and "digestname"
 	config items so we can get a script-parseable list of the names.
@@ -13210,8 +13217,8 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004, 2005, 2006 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+	   2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

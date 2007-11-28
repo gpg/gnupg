@@ -1,6 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -200,6 +200,8 @@ void try_make_homedir( const char *fname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
+MPI pkcs1_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
+		     const byte *asn, size_t asnlen );
 MPI encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
 		     MD_HANDLE md, int hash_algo );
 

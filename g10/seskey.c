@@ -1,6 +1,6 @@
 /* seskey.c -  make sesssion keys etc.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,7 +28,6 @@
 #include "mpi.h"
 #include "main.h"
 #include "i18n.h"
-
 
 /****************
  * Make a session key and put it into DEK
@@ -142,10 +141,9 @@ encode_session_key( DEK *dek, unsigned nbits )
     return a;
 }
 
-
-static MPI
-do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
-	      const byte *asn, size_t asnlen )
+MPI
+pkcs1_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
+		 const byte *asn, size_t asnlen )
 {
     int nframe = (nbits+7) / 8;
     byte *frame;
@@ -260,9 +258,9 @@ encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
       size_t asnlen,mdlen;
 
       asn = md_asn_oid( hash_algo, &asnlen, &mdlen );
-      frame = do_encode_md( md, hash_algo, mdlen,
-			    mpi_get_nbits(pk?pk->pkey[0]:sk->skey[0]),
-			    asn, asnlen );
+      frame = pkcs1_encode_md( md, hash_algo, mdlen,
+			       mpi_get_nbits(pk?pk->pkey[0]:sk->skey[0]),
+			       asn, asnlen );
     }
 
   return frame;
