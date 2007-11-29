@@ -36,7 +36,8 @@
 #define CIPHER_ALGO_AES192       8
 #define CIPHER_ALGO_AES256       9
 #define CIPHER_ALGO_TWOFISH 	10  /* twofish 256 bit */
-#define CIPHER_ALGO_CAMELLIA    11  /* camellia 256 bit */
+#define CIPHER_ALGO_CAMELLIA128 11
+#define CIPHER_ALGO_CAMELLIA256 12
 
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */
 

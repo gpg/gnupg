@@ -178,7 +178,18 @@ setup_cipher_table(void)
     i++;
 
 #ifdef USE_CAMELLIA
-    cipher_table[i].algo = CIPHER_ALGO_CAMELLIA;
+    cipher_table[i].algo = CIPHER_ALGO_CAMELLIA128;
+    cipher_table[i].name = camellia_get_info( cipher_table[i].algo,
+					      &cipher_table[i].keylen,
+					      &cipher_table[i].blocksize,
+					      &cipher_table[i].contextsize,
+					      &cipher_table[i].setkey,
+					      &cipher_table[i].encrypt,
+					      &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_CAMELLIA256;
     cipher_table[i].name = camellia_get_info( cipher_table[i].algo,
 					      &cipher_table[i].keylen,
 					      &cipher_table[i].blocksize,

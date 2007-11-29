@@ -58,7 +58,7 @@ camellia_setkey(void *c, const byte *key, unsigned keylen)
   static int initialized=0;
   static const char *selftest_failed=NULL;
 
-  if(keylen!=32)
+  if(keylen!=16 && keylen!=32)
     return G10ERR_WRONG_KEYLEN;
 
   if(!initialized)
@@ -117,13 +117,21 @@ static const char *
 selftest(void)
 {
   CAMELLIA_context ctx;
-  byte scratch[16];
-
   /* These test vectors are from RFC-3713 */
   const byte plaintext[]=
     {
       0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
       0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10
+    };
+  const byte key_128[]=
+    {
+      0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
+      0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10
+    };
+  const byte ciphertext_128[]=
+    {
+      0x67,0x67,0x31,0x38,0x54,0x96,0x69,0x73,
+      0x08,0x57,0x06,0x56,0x48,0xea,0xbe,0x43
     };
   const byte key_256[]=
     {
@@ -136,14 +144,23 @@ selftest(void)
       0x9a,0xcc,0x23,0x7d,0xff,0x16,0xd7,0x6c,
       0x20,0xef,0x7c,0x91,0x9e,0x3a,0x75,0x09
     };
+  byte scratch[sizeof(plaintext)];
+
+  camellia_setkey(&ctx,key_128,sizeof(key_128));
+  camellia_encrypt(&ctx,scratch,plaintext);
+  if(memcmp(scratch,ciphertext_128,sizeof(scratch))!=0)
+    return "CAMELLIA128 test encryption failed.";
+  camellia_decrypt(&ctx,scratch,scratch);
+  if(memcmp(scratch,plaintext,sizeof(scratch))!=0)
+    return "CAMELLIA128 test decryption failed.";
 
   camellia_setkey(&ctx,key_256,sizeof(key_256));
   camellia_encrypt(&ctx,scratch,plaintext);
-  if(memcmp(scratch,ciphertext_256,sizeof(ciphertext_256))!=0)
-    return "CAMELLIA-256 test encryption failed.";
+  if(memcmp(scratch,ciphertext_256,sizeof(scratch))!=0)
+    return "CAMELLIA256 test encryption failed.";
   camellia_decrypt(&ctx,scratch,scratch);
-  if(memcmp(scratch,plaintext,sizeof(plaintext))!=0)
-    return "CAMELLIA-256 test decryption failed.";
+  if(memcmp(scratch,plaintext,sizeof(scratch))!=0)
+    return "CAMELLIA256 test decryption failed.";
 
   return NULL;
 }
@@ -156,7 +173,6 @@ camellia_get_info(int algo, size_t *keylen,
 		  void (**r_decrypt)(void *c, byte *outbuf, const byte *inbuf)
 		  )
 {
-  *keylen = 256;
   *blocksize = CAMELLIA_BLOCK_SIZE;
   *contextsize = sizeof (CAMELLIA_context);
 
@@ -164,8 +180,16 @@ camellia_get_info(int algo, size_t *keylen,
   *r_encrypt = camellia_encrypt;
   *r_decrypt = camellia_decrypt;
 
-  if(algo==CIPHER_ALGO_CAMELLIA)
-    return "CAMELLIA";
-
-  return NULL;
+  if(algo==CIPHER_ALGO_CAMELLIA128)
+    {
+      *keylen = 128;
+      return "CAMELLIA128";
+    }
+  else if(algo==CIPHER_ALGO_CAMELLIA256)
+    {
+      *keylen = 256;
+      return "CAMELLIA256";
+    }
+  else
+    return NULL;
 }

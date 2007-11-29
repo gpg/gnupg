@@ -1,3 +1,8 @@
+2007-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* camellia-glue.c (camellia_get_info), cipher.c
+	(setup_cipher_table): Add 128-bit variant of Camellia.
+
 2007-11-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* sha256.c (sha224_get_info): 4880 has an error in the SHA-224 OID
