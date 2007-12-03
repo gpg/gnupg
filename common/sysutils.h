@@ -46,6 +46,7 @@ void gnupg_sleep (unsigned int seconds);
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
 FILE *gnupg_tmpfile (void);
+void gnupg_reopen_std (const char *pgmname);
 
 
 #ifdef HAVE_W32_SYSTEM

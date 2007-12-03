@@ -26,9 +26,6 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <assert.h>
-#ifdef HAVE_DOSISH_SYSTEM
-#include <fcntl.h> /* for setmode() */
-#endif
 #ifdef HAVE_STAT
 #include <sys/stat.h> /* for stat() */
 #endif
@@ -1687,76 +1684,6 @@ parse_trust_model(const char *model)
 }
 
 
-
-/* Make sure that the standard file descriptors are opened. Obviously
-   some folks close them before an exec and the next file we open will
-   get one of them assigned and thus any output (i.e. diagnostics) end
-   up in that file (e.g. the trustdb).  Not actually a gpg problem as
-   this will hapenn with almost all utilities when called in a wrong
-   way.  However we try to minimize the damage here and raise
-   awareness of the problem.
-
-   Must be called before we open any files! */
-static void
-reopen_std(void)
-{  
-#if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
-  struct stat statbuf;
-  int did_stdin=0,did_stdout=0,did_stderr=0;
-  FILE *complain;
-
-  if(fstat(STDIN_FILENO,&statbuf)==-1 && errno==EBADF)
-    {
-      if(open("/dev/null",O_RDONLY)==STDIN_FILENO)
-	did_stdin=1;
-      else
-	did_stdin=2;
-    }
-
-  if(fstat(STDOUT_FILENO,&statbuf)==-1 && errno==EBADF)
-    {
-      if(open("/dev/null",O_WRONLY)==STDOUT_FILENO)
-	did_stdout=1;
-      else
-	did_stdout=2;
-    }
-
-  if(fstat(STDERR_FILENO,&statbuf)==-1 && errno==EBADF)
-    {
-      if(open("/dev/null",O_WRONLY)==STDERR_FILENO)
-	did_stderr=1;
-      else
-	did_stderr=2;
-    }
-
-  /* It's hard to log this sort of thing since the filehandle we would
-     complain to may be closed... */
-  if(did_stderr==0)
-    complain=stderr;
-  else if(did_stdout==0)
-    complain=stdout;
-  else
-    complain=NULL;
-
-  if(complain)
-    {
-      if(did_stdin==1)
-	fprintf(complain,"gpg: WARNING: standard input reopened\n");
-      if(did_stdout==1)
-	fprintf(complain,"gpg: WARNING: standard output reopened\n");
-      if(did_stderr==1)
-	fprintf(complain,"gpg: WARNING: standard error reopened\n");
-
-      if(did_stdin==2 || did_stdout==2 || did_stderr==2)
-	fprintf(complain,"gpg: fatal: unable to reopen standard input,"
-		" output, or error\n");
-    }
-
-  if(did_stdin==2 || did_stdout==2 || did_stderr==2)
-    exit(3);
-#endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
-}
-
 /* Pack an s2k iteration count into the form specified in 2440.  If
    we're in between valid values, round up. */
 static unsigned char
@@ -1855,7 +1782,7 @@ main (int argc, char **argv )
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
        when adding any stuff between here and the call to
        secmem_init() somewhere after the option parsing. */
-    reopen_std ();
+    gnupg_reopen_std ("gpg");
     trap_unaligned ();
     gnupg_rl_initialize ();
     set_strusage (my_strusage);

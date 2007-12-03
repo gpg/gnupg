@@ -48,6 +48,7 @@
 #ifdef HAVE_PTH      
 # include <pth.h>
 #endif
+#include <fcntl.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -119,7 +120,7 @@ enable_core_dumps (void)
       return 1;
     limit.rlim_cur = limit.rlim_max;
     setrlimit (RLIMIT_CORE, &limit);
-    return 1; /* We always return true because trhis function is
+    return 1; /* We always return true because this function is
                  merely a debugging aid. */
 # endif
     return 1;
@@ -397,3 +398,76 @@ gnupg_tmpfile (void)
   return tmpfile ();
 #endif /*!HAVE_W32_SYSTEM*/
 }
+
+
+/* Make sure that the standard file descriptors are opened. Obviously
+   some folks close them before an exec and the next file we open will
+   get one of them assigned and thus any output (i.e. diagnostics) end
+   up in that file (e.g. the trustdb).  Not actually a gpg problem as
+   this will hapen with almost all utilities when called in a wrong
+   way.  However we try to minimize the damage here and raise
+   awareness of the problem.
+
+   Must be called before we open any files! */
+void
+gnupg_reopen_std (const char *pgmname)
+{  
+#if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
+  struct stat statbuf;
+  int did_stdin = 0;
+  int did_stdout = 0;
+  int did_stderr = 0;
+  FILE *complain;
+
+  if (fstat (STDIN_FILENO, &statbuf) == -1 && errno ==EBADF)
+    {
+      if (open ("/dev/null",O_RDONLY) == STDIN_FILENO)
+	did_stdin = 1;
+      else
+	did_stdin = 2;
+    }
+  
+  if (fstat (STDOUT_FILENO, &statbuf) == -1 && errno == EBADF)
+    {
+      if (open ("/dev/null",O_WRONLY) == STDOUT_FILENO)
+	did_stdout = 1;
+      else
+	did_stdout = 2;
+    }
+
+  if (fstat (STDERR_FILENO, &statbuf)==-1 && errno==EBADF)
+    {
+      if (open ("/dev/null", O_WRONLY) == STDERR_FILENO)
+	did_stderr = 1;
+      else
+	did_stderr = 2;
+    }
+
+  /* It's hard to log this sort of thing since the filehandle we would
+     complain to may be closed... */
+  if (!did_stderr)
+    complain = stderr;
+  else if (!did_stdout)
+    complain = stdout;
+  else
+    complain = NULL;
+
+  if (complain)
+    {
+      if (did_stdin == 1)
+	fprintf (complain, "%s: WARNING: standard input reopened\n", pgmname);
+      if (did_stdout == 1)
+	fprintf (complain, "%s: WARNING: standard output reopened\n", pgmname);
+      if (did_stderr == 1)
+	fprintf (complain, "%s: WARNING: standard error reopened\n", pgmname);
+
+      if (did_stdin == 2 || did_stdout == 2 || did_stderr == 2)
+	fprintf(complain,"%s: fatal: unable to reopen standard input,"
+		" output, or error\n", pgmname);
+    }
+
+  if (did_stdin == 2 || did_stdout == 2 || did_stderr == 2)
+    exit (3);
+#endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
+}
+

@@ -1,3 +1,7 @@
+2007-12-03  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): All gnupg_reopen_std.
+
 h2007-11-22  Werner Koch  <wk@g10code.com>
 
 	* server.c (cmd_getauditlog): New.

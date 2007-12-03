@@ -851,6 +851,7 @@ main ( int argc, char **argv)
 
   /*mtrace();*/
 
+  gnupg_reopen_std ("gpgsm");
   /* trap_unaligned ();*/
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
