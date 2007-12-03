@@ -244,6 +244,7 @@ static pid_t parent_pid = (pid_t)(-1);
 static char *create_socket_name (int use_standard_socket,
                                  char *standard_name, char *template);
 static gnupg_fd_t create_server_socket (int is_standard_name, char *name, 
+                                        int is_ssh, 
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
@@ -486,7 +487,7 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int gpgconf_list = 0;
-  int standard_socket = 0;
+  int use_standard_socket = 0;
   gpg_error_t err;
   const char *env_file_name = NULL;
 
@@ -535,8 +536,8 @@ main (int argc, char **argv )
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
 #ifdef HAVE_W32_SYSTEM
-  standard_socket = 1;  /* Under Windows we always use a standard
-                           socket.  */
+  use_standard_socket = 1;  /* Under Windows we always use a standard
+                               socket.  */
 #endif
   
   shell = getenv ("SHELL");
@@ -674,8 +675,8 @@ main (int argc, char **argv )
         case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
-        case oUseStandardSocket: standard_socket = 1; break;
-        case oNoUseStandardSocket: standard_socket = 0; break;
+        case oUseStandardSocket: use_standard_socket = 1; break;
+        case oNoUseStandardSocket: use_standard_socket = 0; break;
 
         case oFakedSystemTime:
           {
@@ -886,18 +887,18 @@ main (int argc, char **argv )
 
 
       /* Create the sockets.  */
-      socket_name = create_socket_name (standard_socket,
+      socket_name = create_socket_name (use_standard_socket,
                                         "S.gpg-agent",
                                         "/tmp/gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
-	socket_name_ssh = create_socket_name (standard_socket, 
+	socket_name_ssh = create_socket_name (use_standard_socket, 
                                             "S.gpg-agent.ssh",
                                             "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
-      fd = create_server_socket (standard_socket, socket_name,
+      fd = create_server_socket (use_standard_socket, socket_name, 0,
                                  &socket_nonce);
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (standard_socket, socket_name_ssh,
+	fd_ssh = create_server_socket (use_standard_socket, socket_name_ssh, 1,
                                        &socket_nonce_ssh);
       else
 	fd_ssh = GNUPG_INVALID_FD;
@@ -1317,10 +1318,12 @@ create_socket_name (int use_standard_socket,
 
 
 /* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
-   whether a non-random socket is used.  Returns the file descriptor or
-   terminates the process in case of an error. */
+   whether a non-random socket is used.  Returns the file descriptor
+   or terminates the process in case of an error.  Not that this
+   function needs to be used for the regular socket first and only then
+   for the ssh socket.  */
 static gnupg_fd_t
-create_server_socket (int is_standard_name, char *name,
+create_server_socket (int is_standard_name, char *name, int is_ssh,
                       assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
@@ -1350,7 +1353,15 @@ create_server_socket (int is_standard_name, char *name,
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
   if (is_standard_name && rc == -1 && errno == EADDRINUSE)
     {
-      if (!check_for_running_agent (1, 1))
+      /* Check whether a gpg-agent is already running on the standard
+         socket.  We do this test only if this is not the ssh socket.
+         For ssh we assume that a test for gpg-agent has already been
+         done and reuse the requested ssh socket.  Testing the
+         ssh-socket is not possible because at this point, though we
+         know the new Assuan socket, the Assuan server and thus the
+         ssh-agent server is not yet operational.  This would lead to
+         a hang.  */
+      if (!is_ssh && !check_for_running_agent (1, 1))
         {
           log_error (_("a gpg-agent is already running - "
                        "not starting a new one\n"));
@@ -1875,7 +1886,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
 
 /* Figure out whether an agent is available and running. Prints an
-   error if not.  If SILENT is true, no mesdsages are printed.  Usually
+   error if not.  If SILENT is true, no messages are printed.  Usually
    started with MODE 0.  Returns 0 if the agent is running. */
 static int
 check_for_running_agent (int silent, int mode)
