@@ -1176,7 +1176,7 @@ gc_component_list_components (FILE *out)
           desc = my_dgettext (gc_component[component].desc_domain, desc);
           fprintf (out, "%s:%s:",
                    gc_component[component].name,  my_percent_escape (desc));
-          fprintf (out, "%s:\n",  my_percent_escape (pgmname));
+          fprintf (out, "%s\n",  my_percent_escape (pgmname));
         }
     }
 }
