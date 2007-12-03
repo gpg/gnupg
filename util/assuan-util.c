@@ -112,7 +112,7 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
     }
 }
 
-/* Log a user supplied string.  Escapes non-printable before
+/* Log a user-supplied string.  Escapes non-printable before
    printing.  */
 void
 _assuan_log_sanitized_string (const char *string)

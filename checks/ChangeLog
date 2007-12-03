@@ -3,6 +3,11 @@
 	* defs.inc: Use new --list-config method to get cipher and digest
 	names.
 
+2007-11-22  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (./gpg_dearmor): Add --homedir so that we don't
+	auto create a ~/.gnupg/.  From Gentoo.
+
 2007-07-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* defs.inc (all_hash_algos): See "all_cipher_algos", below.
