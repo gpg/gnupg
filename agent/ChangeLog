@@ -1,3 +1,7 @@
+2007-12-04  Werner Koch  <wk@g10code.com>
+
+	* call-pinentry.c (agent_askpin): Use gnupg_get_help_string.
+
 2007-12-03  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): s/standard_socket/use_standard_socket/ for

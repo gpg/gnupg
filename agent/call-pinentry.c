@@ -578,7 +578,7 @@ agent_askpin (ctrl_t ctrl,
      to the pinentry.  */
   if (pininfo->with_qualitybar && opt.min_passphrase_len )
     {
-      char *tmpstr;
+      char *tmpstr, *tmpstr2;
       const char *tooltip;
 
       /* TRANSLATORS: This string is displayed by pinentry as the
@@ -595,21 +595,25 @@ agent_askpin (ctrl_t ctrl,
       else if (rc)
         return unlock_pinentry (rc);
 
-      /* TRANSLATORS: This string is a tooltip, shown by pinentry when
-         hovering over the quality bar.  Please use an appropriate
-         string to describe what this is about.  The length of the
-         tooltip is limited to about 900 characters.  If you do not
-         translate this entry, a default english text (see source)
-         will be used. */
-      tooltip =  _("pinentry.qualitybar.tooltip");
-      if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
-        tooltip = ("The quality of the text entered above.\n"
-                   "Please ask your administrator for "
-                   "details about the criteria.");
-      /* Fixme: As soon as we have the extended error reporting
-         facility (audit log), we can use a user specified helptext if
-         that has been configured. */
+      tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip");
+      if (tmpstr2)
+        tooltip = tmpstr2;
+      else
+        {
+          /* TRANSLATORS: This string is a tooltip, shown by pinentry
+             when hovering over the quality bar.  Please use an
+             appropriate string to describe what this is about.  The
+             length of the tooltip is limited to about 900 characters.
+             If you do not translate this entry, a default english
+             text (see source) will be used. */
+          tooltip =  _("pinentry.qualitybar.tooltip");
+          if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
+            tooltip = ("The quality of the text entered above.\n"
+                       "Please ask your administrator for "
+                       "details about the criteria.");
+        }
       tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
+      xfree (tmpstr2);
       snprintf (line, DIM(line)-1, "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
       line[DIM(line)-1] = 0;
       xfree (tmpstr);

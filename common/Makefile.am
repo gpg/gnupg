@@ -22,7 +22,7 @@ EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk \
              audit-events.h status-codes.h
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
-noinst_PROGRAMS = $(module_tests)
+noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
 TESTS = $(module_tests)
 
 BUILT_SOURCES = audit-events.h status-codes.h
@@ -66,7 +66,9 @@ common_sources = \
 	srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
-	http.c http.h 
+	http.c http.h \
+	localename.c \
+	helpfile.c
 
 
 
@@ -105,7 +107,8 @@ status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
 #
 # Module tests
 #
-module_tests = t-convert t-gettime t-sysutils
+module_tests = t-convert t-gettime t-sysutils 
+module_maint_tests = t-helpfile
 
 t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
@@ -113,6 +116,6 @@ t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
 t_convert_LDADD = $(t_common_ldadd)
 t_gettime_LDADD = $(t_common_ldadd)
 t_sysutils_LDADD = $(t_common_ldadd)
-
+t_helpfile_LDADD = $(t_common_ldadd)
 
 

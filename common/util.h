@@ -199,6 +199,12 @@ const char *gnupg_module_name (int which);
 /*-- gpgrlhelp.c --*/
 void gnupg_rl_initialize (void);
 
+/*-- helpfile.c --*/
+char *gnupg_get_help_string (const char *key);
+
+/*-- localename.c --*/
+const char *gnupg_messages_locale_name (void);
+
 /*-- miscellaneous.c --*/
 
 /* This function is called at startup to tell libgcrypt to use our own

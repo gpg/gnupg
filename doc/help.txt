@@ -1,0 +1,68 @@
+# help.txt - English GnuPG online help
+# Copyright (C) 2007 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+# Note that this help file needs to be UTF-8 encoded.  When looking
+# for a help item, GnuPG scans the help files in the following order
+# (assuming a GNU or Unix system):
+#
+#    /etc/gnupg/help.LL_TT.txt
+#    /etc/gnupg/help.LL.txt
+#    /etc/gnupg/help.txt
+#    /usr/share/gnupg/help.LL_TT.txt
+#    /usr/share/gnupg/help.LL.txt
+#    /usr/share/gnupg/help.txt
+#    
+# Here LL_TT denotes the full name of the current locale with the
+# territory (.e.g. "de_DE"), LL denotes just the locale name
+# (e.g. "de").  The first matching item is returned.  To put a dot or
+# a hash mark at the beginning of a help text line, it needs to be
+# prefixed with ". ".  A single dot may be used to terminated ahelp
+# entry.
+
+.#pinentry.qualitybar.tooltip
+# [remove the hash mark from the key to enable this text]
+# This entry is just an example on how to customize the tooltip shown
+# when hovering over the quality bar of the pinentry.  We don't
+# install this text so that the hardcoded translation takes
+# precedence.  An administrator should write up a short help to tell
+# the users about the configured passphrase constraints and save that
+# to /etc/gnupg/help.txt.
+This bar indicates the quality of the passphrase entered above.  
+
+As long as the bar is shown in red, GnuPG considers the passphrase too
+weak to accept.  Please ask your administrator for details about the
+configured passphrase constraints.
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Local variables:
+# mode: fundamental
+# coding: utf-8
+# End:

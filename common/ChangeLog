@@ -1,4 +1,12 @@
-2007-12-03  Werner Koch  <wk@g10code.com>
+2007-12-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (t_helpfile_LDADD, module_maint_tests): New.
+	* t-helpfile.c: New.
+	* helpfile.c: New.
+	* membuf.h (is_membuf_ready, MEMBUF_ZERO): New.
+	* localename.c: New.  Taken from gettext with modifications as done
+	for GpgOL.  Export one new function.
+	* util.h (gnupg_messages_locale_name, gnupg_get_help_string): Added.
 
 	* sysutils.c (gnupg_reopen_std): New.  Taken from ../g10/gpg.c.
 

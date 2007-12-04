@@ -1,5 +1,8 @@
 2007-12-03  Werner Koch  <wk@g10code.com>
 
+	* keygen.c (ask_key_flags): Add a translation remark and implement
+	a workaround.
+
 	* gpg.c (reopen_std): Moved to ../common and renamed to
 	gnupg_reopen_std.
 	

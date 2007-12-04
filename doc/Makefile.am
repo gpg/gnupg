@@ -33,7 +33,8 @@ BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
 
 info_TEXINFOS = gnupg.texi
 
-dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem
+dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem \
+                    help.txt help.de.txt
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \

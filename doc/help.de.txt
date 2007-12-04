@@ -1,0 +1,41 @@
+# help.de.txt - German GnuPG online help
+# Copyright (C) 2007 Free Software Foundation, Inc.
+#
+# This file is part of GnuPG.
+#
+# GnuPG is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# GnuPG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+# Die Datei help.txt beschreibt das verwendete Format.
+# Diese Datei muß UTF-8 kodiert sein.
+
+
+.#pinentry.qualitybar.tooltip
+# Dies ist lediglich eine kommentiertes Beispiel.  Es ist am sinnvolssten
+# einen individuellen Text in /etc/gnupg/help.de.txt zu erstellen.
+Die Qualität der Passphrase, die Sie oben eingegeben haben.  Bitte
+fragen sie Ihren Systembeauftragten nach den Kriterien für die Messung
+der Qualität.
+.
+
+
+
+
+
+
+
+# Local variables:
+# mode: fundamental
+# coding: utf-8
+# End:

@@ -903,6 +903,10 @@ fi
 # We use HAVE_LANGINFO_CODESET in a couple of places.
 AM_LANGINFO_CODESET
 
+# Checks required for our use locales
+gt_LC_MESSAGES
+
+
 #
 # SELinux support
 #
@@ -1023,7 +1027,6 @@ gl_INIT
 # W32 specific test
 #
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
-
 
 #
 # Sanity check regex.  Tests adapted from mutt.

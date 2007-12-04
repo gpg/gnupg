@@ -1,3 +1,7 @@
+2007-12-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add test gt_LC_MESSAGES..
+
 2007-10-01  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require assuan 1.0.4.

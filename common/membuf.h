@@ -33,7 +33,9 @@ struct private_membuf_s
 typedef struct private_membuf_s membuf_t;
 
 /* Return the current length of the membuf.  */
-#define get_membuf_len(a) ((a)->len)
+#define get_membuf_len(a)  ((a)->len)
+#define is_membuf_ready(a) ((a)->buf || (a)->out_of_core)
+#define MEMBUF_ZERO        { 0, 0, NULL, 0}
 
 void init_membuf (membuf_t *mb, int initiallen);
 void init_membuf_secure (membuf_t *mb, int initiallen);

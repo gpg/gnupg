@@ -1533,13 +1533,27 @@ print_key_flags(int flags)
 static unsigned int
 ask_key_flags(int algo,int subkey)
 {
+  /* TRANSLATORS: Please use only plain ASCII characters for the
+     translation.  If this is not possible use single digits.  The
+     string needs to 8 bytes long. Here is a description of the
+     functions:
+
+       s = Toggle signing capability
+       e = Toggle encryption capability
+       a = Toggle authentication capability
+       q = Finish
+  */
   const char *togglers=_("SsEeAaQq");
   char *answer=NULL;
   unsigned int current=0;
   unsigned int possible=openpgp_pk_algo_usage(algo);
 
-  if(strlen(togglers)!=8)
-    BUG();
+  if ( strlen(togglers) != 7 )
+    {
+      tty_printf ("NOTE: Bad translation at %s:%d. "
+                  "Please report.\n", __FILE__, __LINE__);
+      togglers = "11223300";
+    }
 
   /* Only primary keys may certify. */
   if(subkey)
