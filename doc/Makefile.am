@@ -20,6 +20,14 @@
 examples = examples/README examples/scd-event examples/trustlist.txt \
 	   examples/gpgconf.conf examples/pwpattern.list
 
+helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
+            help.da.txt help.de.txt help.el.txt help.eo.txt		\
+            help.es.txt help.et.txt help.fi.txt help.fr.txt		\
+            help.gl.txt help.hu.txt help.id.txt help.it.txt		\
+            help.ja.txt help.nb.txt help.pl.txt help.pt.txt		\
+            help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
+            help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
+
 EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
@@ -34,7 +42,7 @@ BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
 info_TEXINFOS = gnupg.texi
 
 dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem \
-                    help.txt help.de.txt
+                    $(helpfiles)
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \

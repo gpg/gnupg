@@ -200,7 +200,7 @@ const char *gnupg_module_name (int which);
 void gnupg_rl_initialize (void);
 
 /*-- helpfile.c --*/
-char *gnupg_get_help_string (const char *key);
+char *gnupg_get_help_string (const char *key, int only_current_locale);
 
 /*-- localename.c --*/
 const char *gnupg_messages_locale_name (void);

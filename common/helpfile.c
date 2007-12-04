@@ -149,7 +149,8 @@ findkey_fname (const char *key, const char *fname)
 
 /* Try the help files depending on the locale.  */
 static char *
-findkey_locale (const char *key, const char *locname, const char *dirname)
+findkey_locale (const char *key, const char *locname,
+                int only_current_locale, const char *dirname)
 {
   const char *s;
   char *fname, *ext, *p;
@@ -182,9 +183,9 @@ findkey_locale (const char *key, const char *locname, const char *dirname)
         result = NULL;
     }
   
-  if (!result)
+  if (!result && (!only_current_locale || !*locname) )
     {
-      /* Last try: Search in file without any local info.  ("help.txt") */
+      /* Last try: Search in file without any locale info.  ("help.txt") */
       strcpy (ext, "txt");
       result = findkey_fname (key, fname);
     }
@@ -205,6 +206,8 @@ findkey_locale (const char *key, const char *locname, const char *dirname)
      /usr/share/gnupg/help.txt
      
    Here LL denotes the two digit language code of the current locale.
+   If ONLY_CURRENT_LOCALE is set, the fucntion won;t fallback to the
+   english valiant ("help.txt") unless that locale has been requested.
    
    The help file needs to be encoded in UTF-8, lines with a '#' in the
    first column are comment lines and entirely ignored.  Help keys are
@@ -216,7 +219,7 @@ findkey_locale (const char *key, const char *locname, const char *dirname)
 */
 
 char *
-gnupg_get_help_string (const char *key)
+gnupg_get_help_string (const char *key, int only_current_locale)
 {
   static const char *locname;
   char *result;
@@ -237,7 +240,7 @@ gnupg_get_help_string (const char *key)
             else if (*p == '_')
               {
                 if (count++)
-                  *p = 0;  /* Altho cut at a underscore in the territory.  */
+                  *p = 0;  /* Also cut at a underscore in the territory.  */
               }
           locname = buffer;
         }
@@ -246,9 +249,11 @@ gnupg_get_help_string (const char *key)
   if (!key || !*key)
     return NULL;
 
-  result = findkey_locale (key, locname, gnupg_sysconfdir ());
+  result = findkey_locale (key, locname, only_current_locale, 
+                           gnupg_sysconfdir ());
   if (!result)
-    result = findkey_locale (key, locname, gnupg_datadir ());
+    result = findkey_locale (key, locname, only_current_locale,
+                             gnupg_datadir ());
     
   return result;
 }

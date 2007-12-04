@@ -1,6 +1,13 @@
 2007-12-04  Werner Koch  <wk@g10code.com>
 
-	* help.txt, help.de.txt: New online help files.
+	* help.txt: New online help file.
+	* help.be.txt, help.ca.txt, help.cs.txt, help.da.txt, help.de.txt
+	* help.el.txt, help.eo.txt, help.es.txt, help.et.txt, help.fi.txt
+	* help.fr.txt, help.gl.txt, help.hu.txt, help.id.txt, help.it.txt
+	* help.ja.txt, help.nb.txt, help.pl.txt, help.pt.txt
+	* help.pt_BR.txt, help.ro.txt, help.ru.txt, help.sk.txt
+	* help.sv.txt, help.tr.txt, help.zh_CN.txt, help.zh_TW.txt: New
+	online file, generated from teh current po files.
 	* Makefile.am (dist_pkgdata_DATA): Add them.
 
 2007-11-19  Werner Koch  <wk@g10code.com>

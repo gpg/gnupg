@@ -595,7 +595,7 @@ agent_askpin (ctrl_t ctrl,
       else if (rc)
         return unlock_pinentry (rc);
 
-      tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip");
+      tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip", 0);
       if (tmpstr2)
         tooltip = tmpstr2;
       else

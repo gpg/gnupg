@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "util.h"
+#include "i18n.h"
 
 /* #define pass()  do { ; } while(0) */
 /* #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\ */
@@ -48,7 +49,7 @@ main (int argc, char **argv)
       argc--; argv++;
     }
 
-  result = gnupg_get_help_string (argc? argv[0]:NULL);
+  result = gnupg_get_help_string (argc? argv[0]:NULL, 0);
   if (!result)
     {
       fprintf (stderr, 

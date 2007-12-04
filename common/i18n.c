@@ -45,7 +45,7 @@ i18n_init (void)
 
 
 /* The Assuan agent protocol requires us to transmit utf-8 strings
-   thus we need a fucntion to temporary switch gettext from native to
+   thus we need a fuctnion to temporary switch gettext from native to
    utf8.  */
 char *
 i18n_switchto_utf8 (void)

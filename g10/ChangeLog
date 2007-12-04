@@ -1,3 +1,9 @@
+2007-12-04  Werner Koch  <wk@g10code.com>
+
+	* helptext.c (get_help_from_file): New.
+	(display_online_help): Use it to geting the help through a file.
+	(helptexts): Remove.
+
 2007-12-03  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_key_flags): Add a translation remark and implement

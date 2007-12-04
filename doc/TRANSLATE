@@ -18,6 +18,35 @@ The strings that can be handled in this way are of the form "yes|yes",
 directing you to this file.
 
 
+Help files
+----------
+
+GnuPG provides a little help feature (entering a ? on a prompt).  This
+help used to be translated the usual way with gettext but it turned
+out that this is too inflexible and does for example not allow to
+correct little mistakes in the English text.  For some newer features
+we require editable help files anyway and thus the existing help
+strings have neen moved to plain text files names "help.LL.txt".  We
+distribute these files and allow overriding them by files of that name
+in /etc/gnupg.  The syntax of these files is documented in
+doc/help.txt.  This is also the original we use to describe new
+possible online help keys.  The source files are located in doc/ and
+need to be in encoded in UTF-8.  Strings which require a translation
+are disabled like this
+
+   .#gpgsm.some.help-item
+   This string is not translated.
+
+After translation you should remove the the hash mark so that the
+entry looks like.
+
+   .gpgsm.some.help-item
+   This string has been translated.
+
+The percent sign is not a special character and if tehre is something
+to watch out there will be a remark.
+
+
 
 Sending new or updated translations
 -----------------------------------
