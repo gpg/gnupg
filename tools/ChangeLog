@@ -3,6 +3,7 @@
 	* gpgconf-comp.c (gc_component_list_components): Do not print a
 	trailing semi-colon to ensure forward compatibility, as this would
 	indicate another empty field.
+	(gc_process_gpgconf_conf): Likewise.
 
 2007-11-15  Werner Koch  <wk@g10code.com>
 

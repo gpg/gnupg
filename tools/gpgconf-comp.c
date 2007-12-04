@@ -3315,7 +3315,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
                 }                    
               
               fprintf (listfp, "k:%s:", my_percent_escape (key));
-              fprintf (listfp, "%s:\n", group? my_percent_escape (group):"");
+              fprintf (listfp, "%s\n", group? my_percent_escape (group):"");
             }
 
           /* All other lines are rule records.  */
@@ -3326,7 +3326,6 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
           if (value != empty)
             fprintf (listfp, "\"%s", my_percent_escape (value));
           
-          putc (':', listfp);
           putc ('\n', listfp);
         }
 
