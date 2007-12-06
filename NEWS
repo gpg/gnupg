@@ -2,8 +2,8 @@ Noteworthy changes in version 2.0.8
 ------------------------------------------------
 
  * Make sure that under Windows the file permissions of the socket are
-   taken into account.  This required a change of our the socket
-   emulation code; thus old GnuPG modules can't be used anymore.
+   taken into account.  This required a change of our socket emulation
+   code; thus old GnuPG modules can't be used anymore.
 
  * Fixed a crash in gpgconf.
 

@@ -1676,7 +1676,7 @@ main ( int argc, char **argv)
 
         if (auditlog)
           {
-            audit_print_result (ctrl.audit, auditfp);
+            audit_print_result (ctrl.audit, auditfp, 0);
             audit_release (ctrl.audit);
             ctrl.audit = NULL;
           }

@@ -934,12 +934,15 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 
-/* GETAUDITLOG [--data]
+/* GETAUDITLOG [--data] [--html]
 
    !!!WORK in PROGRESS!!!
 
    If --data is used, the output is send using D-lines and not to the
    source given by an OUTPUT command.
+
+   If --html is used the output is formated as an XHTML block. This is
+   designed to be incorporated into a HTML document.
  */
 static int 
 cmd_getauditlog (assuan_context_t ctx, char *line)
@@ -947,10 +950,11 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int  out_fd;
   estream_t out_stream;
-  int opt_data;
+  int opt_data, opt_html;
   int rc;
 
   opt_data = has_option (line, "--data"); 
+  opt_html = has_option (line, "--html"); 
   line = skip_options (line);
 
   if (!ctrl->audit)
@@ -976,7 +980,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
         }
     }
 
-  audit_print_result (ctrl->audit, out_stream);
+  audit_print_result (ctrl->audit, out_stream, opt_html);
   rc = 0;
 
   es_fclose (out_stream);

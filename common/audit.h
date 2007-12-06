@@ -49,6 +49,9 @@ typedef enum
        now.  This indicates that all parameters are okay and we can
        start to process the actual data.  */
 
+    AUDIT_GOT_DATA,
+    /* Data to be processed has been seen.  */
+
     AUDIT_DETACHED_SIGNATURE,
     /* The signature is a detached one. */
 
@@ -91,7 +94,7 @@ typedef enum
     /* The name of a signer.  This is the name or other identification
        data as known from the signature and not the name from the
        certificate used for verification.  An example for STRING when
-       using CMS is:b "#1234/CN=Prostetnic Vogon Jeltz".  */
+       using CMS is: "#1234/CN=Prostetnic Vogon Jeltz".  */
 
     AUDIT_SIG_STATUS,     /* string */
     /* The signature status of the current signer.  This is the last
@@ -116,6 +119,8 @@ typedef enum
        certificate chain.  ROOTCERT is used for the trustanchor and
        CERT for all other certificates.  */ 
 
+    AUDIT_CHAIN_STATUS,  /* err */
+    /* Tells the final status of the chain validation.  */
 
 
     AUDIT_LAST_EVENT  /* Marker for parsing this list.  */
@@ -133,7 +138,7 @@ void audit_log_s (audit_ctx_t ctx, audit_event_t event, const char *value);
 void audit_log_cert (audit_ctx_t ctx, audit_event_t event, 
                      ksba_cert_t cert, gpg_error_t err);
 
-void audit_print_result (audit_ctx_t ctx, estream_t stream);
+void audit_print_result (audit_ctx_t ctx, estream_t stream, int use_html);
 
 
 

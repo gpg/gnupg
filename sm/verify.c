@@ -184,7 +184,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       if (stopreason == KSBA_SR_NEED_HASH
           || stopreason == KSBA_SR_BEGIN_DATA)
-        { /* We are now able to enable the hash algorithms */
+        { 
+          audit_log (ctrl->audit, AUDIT_GOT_DATA);
+
+          /* We are now able to enable the hash algorithms */
           for (i=0; (algoid=ksba_cms_get_digest_algo_list (cms, i)); i++)
             {
               algo = gcry_md_map_name (algoid);
@@ -535,6 +538,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
         xfree (buf);
       }
 
+      audit_log_ok (ctrl->audit, AUDIT_CHAIN_STATUS, rc);
       if (rc) /* of validate_chain */
         {
           log_error ("invalid certification chain: %s\n", gpg_strerror (rc));
