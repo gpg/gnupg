@@ -28,6 +28,15 @@
 #include "audit.h"
 #include "audit-events.h"
 
+/* A list to maintain a list of helptags.  */
+struct helptag_s
+{
+  struct helptag_s *next;
+  const char *name;
+};
+typedef struct helptag_s *helptag_t;
+
+
 /* One log entry.  */
 struct log_item_s
 {
@@ -56,15 +65,50 @@ struct audit_ctx_s
   estream_t outstream;  /* The current output stream.  */
   int use_html;         /* The output shall be HTML formatted.  */
   int indentlevel;      /* Current level of indentation.  */
+  helptag_t helptags;   /* List of help keys.  */
 };
 
 
 
 
+static void writeout_para (audit_ctx_t ctx, 
+                           const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 static void writeout_li (audit_ctx_t ctx, const char *oktext,
                          const char *format, ...) JNLIB_GCC_A_PRINTF(3,4);
 static void writeout_rem (audit_ctx_t ctx, 
                           const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
+
+
+/* Add NAME to the list of help tags.  NAME needs to be a const string
+   an this function merly stores this pointer.  */
+static void 
+add_helptag (audit_ctx_t ctx, const char *name)
+{
+  helptag_t item;
+
+  for (item=ctx->helptags; item; item = item->next)
+    if (!strcmp (item->name, name))
+      return;  /* Already in the list.  */
+  item = xtrycalloc (1, sizeof *item);
+  if (!item)
+    return;  /* Don't care about memory problems.  */
+  item->name = name;
+  item->next = ctx->helptags;
+  ctx->helptags = item;
+}
+
+
+/* Remove all help tags from the context.  */
+static void
+clear_helptags (audit_ctx_t ctx)
+{
+  while (ctx->helptags)
+    {
+      helptag_t tmp = ctx->helptags->next;
+      xfree (ctx->helptags);
+      ctx->helptags = tmp;
+    }
+}
 
 
 
@@ -112,6 +156,7 @@ audit_release (audit_ctx_t ctx)
         }
       xfree (ctx->log);
     }
+  clear_helptags (ctx);
   xfree (ctx);
 }
 
@@ -347,11 +392,15 @@ writeout_v (audit_ctx_t ctx, const char *format, va_list arg_ptr)
 
 /* Write TEXT as a paragraph.  */
 static void
-writeout_para (audit_ctx_t ctx, const char *text)
+writeout_para (audit_ctx_t ctx, const char *format, ...)
 {
+  va_list arg_ptr;
+
   if (ctx->use_html)
     es_fputs ("<p>", ctx->outstream);
-  writeout (ctx, text);
+  va_start (arg_ptr, format) ;
+  writeout_v (ctx, format, arg_ptr);
+  va_end (arg_ptr);
   if (ctx->use_html)
     es_fputs ("</p>\n", ctx->outstream);
   else
@@ -720,9 +769,11 @@ proc_type_verify (audit_ctx_t ctx)
       
       /* Show whether the root certificate is fine.  */
       writeout_li (ctx, "No", "%s", _("Root certificate trustworthy"));
+      add_helptag (ctx, "gpgsm.root-cert-not-trusted");
 
       /* Show result of the CRL/OCSP check.  */
       writeout_li (ctx, "-", "%s", _("CRL/OCSP check of certificates"));
+      add_helptag (ctx, "gpgsm.ocsp-problem");
 
 
       leave_li (ctx);
@@ -769,6 +820,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   int idx;
   int maxlen;
   size_t n;
+  helptag_t helptag;
 
   if (getenv ("use_html"))
     use_html = 1;
@@ -780,6 +832,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   ctx->outstream = out;
   ctx->use_html = use_html;
   ctx->indentlevel = 0;
+  clear_helptags (ctx);
 
   if (use_html)
     es_fputs ("<div class=\"GnuPGAuditLog\">\n", ctx->outstream);
@@ -836,10 +889,47 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
       break;
     }
 
+
+  /* Show the help from the collected help tags.  */
+  if (ctx->helptags)
+    {
+      if (use_html)
+        {
+          es_fputs ("<hr/>\n", ctx->outstream);
+          if (ctx->helptags->next)
+            es_fputs ("<ul>\n", ctx->outstream);
+        }
+      else
+        es_fputs ("\n\n", ctx->outstream);
+    }
+  for (helptag = ctx->helptags; helptag; helptag = helptag->next)
+    {
+      char *text;
+
+      if (use_html && ctx->helptags->next)
+        es_fputs ("<li>\n", ctx->outstream);
+
+      text = gnupg_get_help_string (helptag->name, 0);
+      if (text)
+        {
+          writeout_para (ctx, "%s", text);
+          xfree (text);
+        }
+      else
+        writeout_para (ctx, _("No help available for `%s'."), helptag->name);
+      if (use_html && ctx->helptags->next)
+        es_fputs ("</li>\n", ctx->outstream);
+      if (helptag->next)
+        es_fputs ("\n", ctx->outstream);
+    }
+  if (use_html && ctx->helptags && ctx->helptags->next)
+    es_fputs ("</ul>\n", ctx->outstream);
+
  leave:
   if (use_html)
     es_fputs ("</div>\n", ctx->outstream);
   ctx->outstream = NULL;
   ctx->use_html = 0;
+  clear_helptags (ctx);
 }
 

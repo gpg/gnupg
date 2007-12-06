@@ -297,9 +297,15 @@ An empty line ends the text.
 
 
 
-
-
-
+.gpgsm.root-cert-not-trusted
+# This text gets displayed by the audit log if
+# a root certificates was not trusted.
+The root certificate (the trust-anchor) is not trusted.  Depending on
+the configuration you may have been prompted to mark that root
+certificate as trusted or you need to manually tell GnuPG to trust that
+certificate.  Trusted certificates are configured in the file
+trustlist.txt in GnuPG's home directory.  If you are in doubt, ask
+your system administrator whether you should trust this certificate.
 
 
 

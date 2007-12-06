@@ -731,7 +731,7 @@ by a white space is current ignored but might late be used for other
 purposes.
 
 Note that even if a certificate is listed in this file, this does not
-mean that thecertificate is trusted; in general the certificates listed
+mean that the certificate is trusted; in general the certificates listed
 in this file need to be listed also in @file{trustlist.txt}.
 
 This is a global file an installed in the data directory
@@ -752,6 +752,20 @@ confirm that such a legally binding signature shall really be created.
 
 Because this software has not yet been approved for use with such
 certificates, appropriate notices will be shown to indicate this fact.
+
+@item help.txt
+@cindex help.txt
+This is plain text file with a few help entries used with 
+@command{pinentry} as well as a large list of help items for
+@command{gpg} and @command{gpgsm}.  The standard file has English help
+texts; to install localized versions use filenames like @file{help.LL.txt}
+with LL denoting the locale.  GnuPG comes with a set of predefined help
+files in the data directory (e.g. @file{/usr/share/gnupg/help.de.txt})
+and allows overriding of any help item by help files stored in the
+system configuration directory (e.g. @file{/etc/gnupg/help.de.txt}).
+For a reference of the help file's syntax, please see the installed
+@file{help.txt} file.
+
 
 @end table
 

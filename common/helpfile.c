@@ -254,6 +254,9 @@ gnupg_get_help_string (const char *key, int only_current_locale)
   if (!result)
     result = findkey_locale (key, locname, only_current_locale,
                              gnupg_datadir ());
-    
+
+  if (result)
+    trim_trailing_spaces (result);
+
   return result;
 }
