@@ -1531,7 +1531,6 @@ void
 gc_component_list_options (int component, FILE *out)
 {  
   const gc_option_t *option = gc_component[component].options;
-  const gc_option_t *group_option = NULL;
 
   while (option && option->name)
     {
@@ -1544,17 +1543,38 @@ gc_component_list_options (int component, FILE *out)
 	}
 
       if (option->flags & GC_OPT_FLAG_GROUP)
-	group_option = option;
-      else
 	{
-	  if (group_option)
+	  const gc_option_t *group_option = option + 1;
+	  gc_expert_level_t level = GC_LEVEL_NR;
+
+	  /* The manual states that the group level is always the
+	     minimum of the levels of all contained options.  Due to
+	     different active options, and because it is hard to
+	     maintain manually, we calculate it here.  The value in
+	     the global static table is ignored.  */
+	  
+	  while (group_option->name)
 	    {
-	      list_one_option (group_option, out);
-	      group_option = NULL;
+	      if (group_option->flags & GC_OPT_FLAG_GROUP)
+		break;
+	      if (group_option->level < level)
+		level = group_option->level;
+	      group_option++;
 	    }
 
-	  list_one_option (option, out);
+	  /* Check if group is empty.  */
+	  if (level != GC_LEVEL_NR)
+	    {
+	      gc_option_t opt_copy;
+
+	      /* Fix up the group level.  */
+	      memcpy (&opt_copy, option, sizeof (opt));
+	      opt_copy.level = level;
+	      list_one_option (&opt_copy, out);
+	    }
 	}
+      else
+	list_one_option (option, out);
 
       option++;
     }

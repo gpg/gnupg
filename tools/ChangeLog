@@ -1,3 +1,8 @@
+2007-12-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (gc_component_list_options): Fix up expert level
+	of group.
+
 2007-12-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_component_list_components): Do not print a
