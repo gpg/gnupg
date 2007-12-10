@@ -413,6 +413,7 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_RSA_S:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
+      case PUBKEY_ALGO_ELGAMAL:
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;

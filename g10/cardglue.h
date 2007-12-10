@@ -127,6 +127,7 @@ typedef int gpg_err_code_t;
 #define gpg_strerror(n) g10_errstr ((n))
 #define gpg_error_from_errno(n) (G10ERR_GENERAL) /*FIXME*/
 #define gpg_err_code_from_errno(n) (G10ERR_GENERAL)
+#define gpg_error_from_syserror()  (G10ERR_GENERAL) /*FIXME*/
 
 /* We are not using it in a library, so we even let xtrymalloc
    abort. Because we won't never return from these malloc functions,
