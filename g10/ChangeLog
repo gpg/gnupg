@@ -1,3 +1,15 @@
+2007-12-10  Werner Koch  <wk@g10code.com>
+
+	* import.c (auto_create_card_key_stub): Do not clear the entire
+	fingerprint.  This finally makes the stub creation work.  My past
+	tests seemed to work because there was a key with a all zero
+	fingerprint available (Elgamal signing keys).
+
+2007-12-08  Werner Koch  <wk@g10code.com>
+
+	* misc.c (openpgp_pk_algo_usage): Allow Elgamal type 20 for
+	encryption.
+
 2007-12-04  Werner Koch  <wk@g10code.com>
 
 	* helptext.c (get_help_from_file): New.

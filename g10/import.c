@@ -2355,7 +2355,8 @@ auto_create_card_key_stub ( const char *serialnostr,
     size_t an;
 
     fingerprint_from_pk (pk, afp, &an);
-    memset (afp, 0, MAX_FINGERPRINT_LEN);
+    if (an < MAX_FINGERPRINT_LEN)
+      memset (afp+an, 0, MAX_FINGERPRINT_LEN-an);
     rc = keydb_search_fpr (hd, afp);
   }
 
@@ -2410,4 +2411,3 @@ auto_create_card_key_stub ( const char *serialnostr,
   keydb_release (hd);
   return rc;
 }
-

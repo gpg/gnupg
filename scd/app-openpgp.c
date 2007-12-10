@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2456,8 +2456,49 @@ do_decipher (app_t app, const char *keyidstr,
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_decipher (app->slot, indata, indatalen, 0,
-                           outdata, outdatalen);
+    {
+      size_t fixuplen;
+
+      /* We might encounter a couple of leading zeroes in the
+         cryptogram.  Due to internal use of MPIs thease leading
+         zeroes are stripped.  However the OpenPGp card expects
+         exactly 128 bytes for the cryptogram (for a 1k key).  Thus we
+         need to fix it up.  We do this for up to 16 leading zero
+         bytes; a cryptogram with more than this is with a very high
+         probability anyway broken.  */
+      if (indatalen >= (128-16) && indatalen < 128)      /* 1024 bit key.  */
+        fixuplen = 128 - indatalen;
+      else if (indatalen >= (256-16) && indatalen < 256) /* 2048 bit key.  */
+        fixuplen = 256 - indatalen;
+      else if (indatalen >= (192-16) && indatalen < 192) /* 1536 bit key.  */
+        fixuplen = 192 - indatalen;
+      else
+        fixuplen = 0;
+      if (fixuplen)
+        {
+          unsigned char *fixbuf;
+
+          /* While we have to prepend stuff anyway, we can also
+             include the padding byte here so that iso1816_decipher
+             does not need to do yet another data mangling.  */
+          fixuplen++;
+          fixbuf = xtrymalloc (fixuplen + indatalen);
+          if (!fixbuf)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              memset (fixbuf, 0, fixuplen);
+              memcpy (fixbuf+fixuplen, indata, indatalen);
+              rc = iso7816_decipher (app->slot, fixbuf, fixuplen+indatalen, -1,
+                                     outdata, outdatalen);
+              xfree (fixbuf);
+            }
+
+        }
+      else
+        rc = iso7816_decipher (app->slot, indata, indatalen, 0,
+                               outdata, outdatalen);
+    }
   return rc;
 }
 
