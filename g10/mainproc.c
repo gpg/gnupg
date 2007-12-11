@@ -377,10 +377,16 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	}
     }
     else if( is_ELGAMAL(enc->pubkey_algo)
-	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
-	|| is_RSA(enc->pubkey_algo)  ) {
-      /* FIXME:  strore this all in a list and process it later */
+             || enc->pubkey_algo == PUBKEY_ALGO_DSA
+             || is_RSA(enc->pubkey_algo)
+             || enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL) {
+      /* Note that we also allow type 20 Elgamal keys for decryption.
+         There are still a couple of those keys in active use as a
+         subkey.  */
 
+      /* FIXME: Store this all in a list and process it later so that
+         we can prioritize what key to use.  This gives a better user
+         experience if wildcard keyids are used.  */
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
                           || opt.try_all_secrets
 			  || !seckey_available( enc->keyid )) ) {

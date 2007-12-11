@@ -1,3 +1,8 @@
+2007-12-11  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (proc_pubkey_enc): Allo type 20 Elgamal key for
+	decryption.
+
 2007-12-10  Werner Koch  <wk@g10code.com>
 
 	* import.c (auto_create_card_key_stub): Do not clear the entire
