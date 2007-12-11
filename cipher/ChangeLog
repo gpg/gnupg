@@ -1,3 +1,8 @@
+2007-12-11  Werner Koch  <wk@g10code.com>
+
+	* pubkey.c (check_pubkey_algo2): Hack to allow decryption using an
+	type 20 Elgamal key.
+
 2007-11-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* camellia-glue.c (camellia_get_info), cipher.c
