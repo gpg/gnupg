@@ -449,7 +449,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "code",    0, "\\fB", "\\fR" },
     { "sc",      0, "\\fB", "\\fR" },
     { "var",     0, "\\fI", "\\fR" },
-    { "samp",    0, "\n'",  "'\n"  },
+    { "samp",    0, "'",  "'"  },
     { "file",    0, "`\\fI","\\fR'" }, 
     { "env",     0, "`\\fI","\\fR'" }, 
     { "acronym", 0 },
@@ -753,7 +753,7 @@ static void
 finish_page (void)
 {
   FILE *fp;
-  section_buffer_t sect;
+  section_buffer_t sect = NULL;
   int idx;
   const char *s;
   int i;

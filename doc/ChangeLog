@@ -1,3 +1,8 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi, specify-user-id.texi: Update from gnupg-2.
+	* yat2m.c: Update from gnupg-2.
+
 2007-10-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi: Update from gnupg-2.
