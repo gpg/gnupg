@@ -1,3 +1,11 @@
+2007-12-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (sanitize_regexp): New.  Protect against dangerous
+	regexps (malloc bombs) by force-commenting any characters aside
+	from the ones we explicitly want.
+	(check_regexp): Use it here before passing the regexp to
+	regcomp().
+
 2007-12-11  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (proc_pubkey_enc): Allow type 20 Elgamal key for
