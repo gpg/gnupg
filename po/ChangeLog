@@ -1,3 +1,7 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* POTFILES.in: Add a couple of missing files.
+
 2007-12-03  Jakub Bogusz  <qboosh@pld-linux.org>  (wk)
 
 	* pl.po: Updated.  Received through entry bug#856.

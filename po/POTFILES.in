@@ -16,6 +16,9 @@ common/simple-pwquery.c
 common/sysutils.c
 common/yesno.c
 common/miscellaneous.c
+common/asshelp.c
+common/audit.c
+common/helpfile.c
 
 g10/armor.c
 g10/build-packet.c
@@ -69,6 +72,7 @@ kbx/kbxutil.c
 
 scd/app-nks.c
 scd/app-openpgp.c
+scd/app-dinsig.c
 scd/scdaemon.c
 
 sm/base64.c
@@ -79,6 +83,7 @@ sm/certcheck.c
 sm/certdump.c
 sm/certlist.c
 sm/certreqgen.c
+sm/certreqgen-ui.c
 sm/decrypt.c
 sm/delete.c
 sm/encrypt.c
@@ -97,3 +102,5 @@ tools/gpgconf-comp.c
 tools/gpgconf.c
 tools/no-libgcrypt.c
 tools/symcryptrun.c
+tools/gpg-check-pattern.c
+

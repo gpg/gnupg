@@ -1,6 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1745,6 +1745,71 @@ clean_key(KBNODE keyblock,int noisy,int self_only,
 		    uids_cleaned,sigs_cleaned);
 }
 
+/* Returns a sanitized copy of the regexp (which might be "", but not
+   NULL). */
+#ifndef DISABLE_REGEX
+static char *
+sanitize_regexp(const char *old)
+{
+  size_t start=0,len=strlen(old),idx=0;
+  int escaped=0,standard_bracket=0;
+  char *new=xmalloc((len*2)+1); /* enough to \-escape everything if we
+				   have to */
+
+  /* There are basically two commonly-used regexps here.  GPG and most
+     versions of PGP use "<[^>]+[@.]example\.com>$" and PGP (9)
+     command line uses "example.com" (i.e. whatever the user specfies,
+     and we can't expect users know to use "\." instead of ".").  So
+     here are the rules: we're allowed to start with "<[^>]+[@.]" and
+     end with ">$" or start and end with nothing.  In between, the
+     only legal regex character is ".", and everything else gets
+     escaped.  Part of the gotcha here is that some regex packages
+     allow more than RFC-4880 requires.  For example, 4880 has no "{}"
+     operator, but GNU regex does.  Commenting removes these operators
+     from consideration.  A possible future enhancement is to use
+     commenting to effectively back off a given regex to the Henry
+     Spencer syntax in 4880. -dshaw */
+
+  /* Are we bracketed between "<[^>]+[@.]" and ">$" ? */
+  if(len>=12 && strncmp(old,"<[^>]+[@.]",10)==0
+     && old[len-2]=='>' && old[len-1]=='$')
+    {
+      strcpy(new,"<[^>]+[@.]");
+      idx=strlen(new);
+      standard_bracket=1;
+      start+=10;
+      len-=2;
+    }
+
+  /* Walk the remaining characters and ensure that everything that is
+     left is not an operational regex character. */
+  for(;start<len;start++)
+    {
+      if(!escaped && old[start]=='\\')
+	escaped=1;
+      else if(!escaped && old[start]!='.')
+	new[idx++]='\\';
+      else
+	escaped=0;
+
+      new[idx++]=old[start];
+    }
+
+  new[idx]='\0';
+
+  /* Note that the (sub)string we look at might end with a bare "\".
+     If it does, leave it that way.  If the regexp actually ended with
+     ">$", then it was escaping the ">" and is fine.  If the regexp
+     actually ended with the bare "\", then it's an illegal regexp and
+     regcomp should kick it out. */
+
+  if(standard_bracket)
+    strcat(new,">$");
+
+  return new;
+}
+#endif /*!DISABLE_REGEX*/
+
 /* Used by validate_one_keyblock to confirm a regexp within a trust
    signature.  Returns 1 for match, and 0 for no match or regex
    error. */
@@ -1755,23 +1820,35 @@ check_regexp(const char *expr,const char *string)
   /* When DISABLE_REGEX is defined, assume all regexps do not
      match. */
   return 0;
-#elif defined(__riscos__)
-  return riscos_check_regexp(expr, string, DBG_TRUST);
 #else
   int ret;
-  regex_t pat;
+  char *regexp;
 
-  if(regcomp(&pat,expr,REG_ICASE|REG_NOSUB|REG_EXTENDED)!=0)
-    return 0;
+  regexp=sanitize_regexp(expr);
 
-  ret=regexec(&pat,string,0,NULL,0);
+#ifdef __riscos__
+  ret=riscos_check_regexp(expr, string, DBG_TRUST);
+#else
+  {
+    regex_t pat;
 
-  regfree(&pat);
+    ret=regcomp(&pat,regexp,REG_ICASE|REG_NOSUB|REG_EXTENDED);
+    if(ret==0)
+      {
+	ret=regexec(&pat,string,0,NULL,0);
+	regfree(&pat);
+	ret=(ret==0);
+      }
+  }
+#endif
 
   if(DBG_TRUST)
-    log_debug("regexp `%s' on `%s': %s\n",expr,string,ret==0?"YES":"NO");
+    log_debug("regexp `%s' (`%s') on `%s': %s\n",
+	      regexp,expr,string,ret==0?"YES":"NO");
 
-  return (ret==0);
+  xfree(regexp);
+
+  return ret;
 #endif
 }
 

@@ -1690,8 +1690,8 @@ handle_inquire (assuan_context_t ctx, char *line)
   if (*line)
     *line++ = 0;
 
-  /* Now match it against our list. he second loop is todetect the
-     match all entry. **/
+  /* Now match it against our list.  The second loop is there to
+     detect the match-all entry. */
   for (d=definq_list; d; d = d->next)
     if (d->name && !strcmp (d->name, name))
         break;
