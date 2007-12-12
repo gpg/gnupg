@@ -1,3 +1,8 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* pubkey.c (pubkey_encrypt, pubkey_decrypt): Allow type 20 keys.
+	(pubkey_algo_to_string): Ditto.
+
 2007-12-11  Werner Koch  <wk@g10code.com>
 
 	* pubkey.c (check_pubkey_algo2): Hack to allow decryption using an

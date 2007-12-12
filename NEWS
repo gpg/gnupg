@@ -1,6 +1,6 @@
 Noteworthy changes in version 1.4.8 (unreleased)
 ------------------------------------------------
-
+        
     * Changed the license to GPLv3.
 
     * Improved detection of keyrings specified multiple times.
@@ -20,6 +20,13 @@ Noteworthy changes in version 1.4.8 (unreleased)
     * By default (i.e. --gnupg mode), --require-cross-certification is
       now on.  --rfc2440-text and --force-v3-sigs are now off.
     
+    * Allow encryption using legacy Elgamal sign+encrypt keys if
+      option --rfc2440 is used.
+
+    * Fixed the auto creation of the key stub for smartcards.  
+
+    * Fixed a rare bug in decryption using the OpenPGP card.
+
 
 Noteworthy changes in version 1.4.7 (2007-03-05)
 ------------------------------------------------

@@ -2137,8 +2137,11 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->has_expired = key_expire >= curtime? 0 : key_expire;
     subpk->expiredate = key_expire;
 
-    /* algo doesn't exist */
-    if(check_pubkey_algo(subpk->pubkey_algo))
+    /* Check that algo exists.  Elgamal sign+encrypt are only allowed
+       with option --rfc2440. */
+    if (RFC2440 && subpk->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
+      ;
+    else if(check_pubkey_algo(subpk->pubkey_algo))
       return;
 
     subpk->is_valid = 1;

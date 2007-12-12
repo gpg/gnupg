@@ -315,6 +315,10 @@ print_pubkey_algo_note( int algo )
 		   pubkey_algo_to_string(algo));
 	}
     }
+  else if (algo == 20)
+    {
+      log_info (_("WARNING: Elgamal sign+encrypt keys are deprecated\n"));
+    }
 }
 
 void
@@ -392,6 +396,9 @@ openpgp_cipher_test_algo( int algo )
 int
 openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 {
+    /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+    if (!RFC2440 && algo == 20)
+        return G10ERR_PUBKEY_ALGO;
     if( algo < 0 || algo > 110 )
 	return G10ERR_PUBKEY_ALGO;
     return check_pubkey_algo2( algo, usage_flags );
@@ -414,6 +421,12 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
+          /* Allow encryption with type 20 keys if RFC-2440 compliance
+             has been selected.  Signing is broken thus we won't allow
+             this.  */  
+          if (RFC2440)
+            use = PUBKEY_USAGE_ENC;
+          break;
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;

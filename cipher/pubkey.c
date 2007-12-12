@@ -234,6 +234,9 @@ pubkey_algo_to_string( int algo )
 {
     int i;
 
+    if (algo == PUBKEY_ALGO_ELGAMAL)
+      return "ELG";
+    
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo )
@@ -470,6 +473,9 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 	log_mpidump("  data:", data );
     }
 
+    if (algo == PUBKEY_ALGO_ELGAMAL)
+      algo = PUBKEY_ALGO_ELGAMAL_E;
+
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
@@ -508,6 +514,9 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 	for(i=0; i < pubkey_get_nenc(algo); i++ )
 	    log_mpidump("  data:", data[i] );
     }
+
+    if (algo == PUBKEY_ALGO_ELGAMAL)
+      algo = PUBKEY_ALGO_ELGAMAL_E;
 
     do {
 	for(i=0; pubkey_table[i].name; i++ )
