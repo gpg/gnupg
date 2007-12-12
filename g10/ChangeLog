@@ -1,3 +1,10 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* misc.c (print_pubkey_algo_note): Print a warning if a type 20
+	key is used.
+	(openpgp_pk_test_algo, openpgp_pk_test_algo2) 
+	(openpgp_pk_algo_usage): Allow type 20 keys only in rfc2440 mode.
+
 2007-12-12  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	* trustdb.c (sanitize_regexp): New.  Protect against dangerous

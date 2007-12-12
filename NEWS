@@ -14,7 +14,8 @@ Noteworthy changes in version 2.0.8
  * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
    pinentry.
 
- * Allow encryption using Elgamal keys with the algorithm id 20.
+ * Allow encryption with legacy Elgamal sign+encrypt keys with option
+   --rfc2440.
 
  * Fixed the auto creation of the key stub for smartcards.  
 

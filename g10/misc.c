@@ -289,6 +289,10 @@ print_pubkey_algo_note( int algo )
 		    gcry_pk_algo_name (algo));
 	}
     }
+  else if (algo == 20)
+    {
+      log_info (_("WARNING: Elgamal sign+encrypt keys are deprecated\n"));
+    }
 }
 
 void
@@ -387,6 +391,10 @@ openpgp_cipher_algo_name (int algo)
 int
 openpgp_pk_test_algo( int algo )
 {
+  /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+  if (!RFC2440 && algo == 20)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+    
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
 
@@ -399,6 +407,10 @@ int
 openpgp_pk_test_algo2( int algo, unsigned int use )
 {
   size_t use_buf = use;
+
+  /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+  if (!RFC2440 && algo == 20)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
@@ -427,6 +439,9 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
+          if (RFC2440)
+             use = PUBKEY_USAGE_ENC;
+          break;
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;
