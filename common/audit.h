@@ -31,6 +31,9 @@ typedef struct audit_ctx_s *audit_ctx_t;
 typedef enum
   {
     AUDIT_TYPE_NONE  = 0,  /* No type set.  */
+    AUDIT_TYPE_ENCRYPT,    /* Data encryption.  */
+    AUDIT_TYPE_SIGN,       /* Signature creation.  */
+    AUDIT_TYPE_DECRYPT,    /* Data decryption.  */
     AUDIT_TYPE_VERIFY      /* Signature verification.  */
   }
 audit_type_t;
@@ -48,6 +51,16 @@ typedef enum
     /* All preparations done so that the actual processing can start
        now.  This indicates that all parameters are okay and we can
        start to process the actual data.  */
+
+    AUDIT_AGENT_READY,   /* err */
+    /* Indicates whether the gpg-agent is available.  For some
+       operations the agent is not required and thus no such event
+       will be logged.  */
+    
+    AUDIT_DIRMNGR_READY,   /* err */
+    /* Indicates whether the Dirmngr is available.  For some
+       operations the Dirmngr is not required and thus no such event
+       will be logged.  */
 
     AUDIT_GOT_DATA,
     /* Data to be processed has been seen.  */
@@ -121,6 +134,28 @@ typedef enum
 
     AUDIT_CHAIN_STATUS,  /* err */
     /* Tells the final status of the chain validation.  */
+
+    AUDIT_ROOT_TRUSTED,  /* cert, err */
+    /* Tells whether the root certificate is trusted.  This event is
+       emmited durcing chain validation.  */
+
+    AUDIT_GOT_RECIPIENTS,  /* int */
+    /* Records the number of recipients to be used for encryption.
+       This includes the recipients set by --encrypt-to but records 0
+       if no real recipient has been given.  */
+
+    AUDIT_SESSION_KEY,     /* string */
+    /* Mark the creation or availibility of the session key.  The
+       parameter is the algorithm ID.  */
+
+    AUDIT_ENCRYPTED_TO,   /* cert, err */
+    /* Records the certificate used for encryption and whether the
+       session key could be encrypted to it (err==0).  */
+
+    AUDIT_ENCRYPTION_DONE,
+    /* Encryption succeeded.  */
+
+    
 
 
     AUDIT_LAST_EVENT  /* Marker for parsing this list.  */

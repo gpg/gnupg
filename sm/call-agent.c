@@ -1,5 +1,6 @@
 /* call-agent.c - divert operations to the agent
- *	Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2005,
+ *               2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -69,13 +70,14 @@ struct learn_parm_s
 static int
 start_agent (ctrl_t ctrl)
 {
+  int rc;
+
   if (agent_ctx)
-    return 0; /* fixme: We need a context for each thread or serialize
-                 the access to the agent (which is suitable given that
-                 the agent is not MT. */
-
-
-  return start_new_gpg_agent (&agent_ctx,
+    rc = 0;      /* fixme: We need a context for each thread or
+                    serialize the access to the agent (which is
+                    suitable given that the agent is not MT. */
+  else
+    rc = start_new_gpg_agent (&agent_ctx,
                               GPG_ERR_SOURCE_DEFAULT,
                               opt.homedir,
                               opt.agent_program,
@@ -84,7 +86,13 @@ start_agent (ctrl_t ctrl)
                               opt.xauthority, opt.pinentry_user_data,
                               opt.verbose, DBG_ASSUAN,
                               gpgsm_status2, ctrl);
+  if (!ctrl->agent_seen)
+    {
+      ctrl->agent_seen = 1;
+      audit_log_ok (ctrl->audit, AUDIT_AGENT_READY, rc);
+    }
 
+  return rc;
 }
 
 

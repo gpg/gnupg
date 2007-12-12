@@ -1,6 +1,30 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* misc.c (map_cipher_openpgp_to_gcry): New.  Used to map Camellia
+	algorithms to Gcrypt.
+	(openpgp_cipher_test_algo): Call new map function.  Replace
+	all remaining calls to gcry_cipher_test_algo by a call to this.
+	(openpgp_cipher_algo_name): New.  Replace all remaining calls to
+	gcry_cipher_algo_name by a call to this.
+	(map_cipher_gcry_to_openpgp): New.
+	(string_to_cipher_algo): Use it.
+	* gpg.c	(main): Print a warning if Camellia support is build in.
+	
+	* gpg.c (print_algo_names): New.  From the 1.4 branch by David.
+	(list_config): Use it here for the "ciphername" and "digestname"
+	config items so we can get a script-parseable list of the names.
+
+	* parse-packet.c (parse_onepass_sig): Sigclass is hex, so include
+	the 0x.
+
+	* sign.c (match_dsa_hash): Remove conditional builds dending on
+	USE_SHAxxx.  We don't need this becuase it can be expected that
+	libgcrypt provides it.  However we need to runtime test for SHA244
+	becuase that is only available with libgcrypt 2.4.
+
 2007-12-11  Werner Koch  <wk@g10code.com>
 
-	* mainproc.c (proc_pubkey_enc): Allo type 20 Elgamal key for
+	* mainproc.c (proc_pubkey_enc): Allow type 20 Elgamal key for
 	decryption.
 
 2007-12-10  Werner Koch  <wk@g10code.com>

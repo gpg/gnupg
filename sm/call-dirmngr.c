@@ -1,5 +1,5 @@
 /* call-dirmngr.c - communication with the dromngr 
- *	Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -134,13 +134,32 @@ get_membuf (struct membuf *mb, size_t *len)
 }
 
 
+/* This fucntion prepares the dirmngr for a new session.  The
+   audit-events option is used so that other dirmngr clients won't get
+   disturbed by such events.  */
+static void
+prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
+{
+  if (!ctrl->dirmngr_seen)
+    {
+      ctrl->dirmngr_seen = 1;
+      if (!err)
+        {
+          err = assuan_transact (ctx, "OPTION audit-events=1",
+                                 NULL, NULL, NULL, NULL, NULL, NULL);
+          if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+            err = 0;  /* Allow the use of old dirmngr versions.  */
+        }
+      audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err);
+    }
+}
 
 
 
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
-start_dirmngr (void)
+start_dirmngr (ctrl_t ctrl)
 {
   int rc;
   char *infostr, *p;
@@ -148,8 +167,11 @@ start_dirmngr (void)
   int try_default = 0;
 
   if (dirmngr_ctx)
-    return 0; /* fixme: We need a context for each thread or serialize
-                 the access to the dirmngr */
+    {
+      prepare_dirmngr (ctrl, dirmngr_ctx, 0);
+      return 0; /* fixme: We need a context for each thread or serialize
+                   the access to the dirmngr */
+    }
   /* Note: if you change this to multiple connections, you also need
      to take care of the implicit option sending caching. */
 
@@ -220,7 +242,7 @@ start_dirmngr (void)
               log_error (_("malformed DIRMNGR_INFO environment variable\n"));
               xfree (infostr);
               force_pipe_server = 1;
-              return start_dirmngr ();
+              return start_dirmngr (ctrl);
             }
           *p++ = 0;
           pid = atoi (p);
@@ -233,7 +255,7 @@ start_dirmngr (void)
                          prot);
               xfree (infostr);
               force_pipe_server = 1;
-              return start_dirmngr ();
+              return start_dirmngr (ctrl);
             }
         }
       else
@@ -251,10 +273,12 @@ start_dirmngr (void)
         {
           log_error (_("can't connect to the dirmngr - trying fall back\n"));
           force_pipe_server = 1;
-          return start_dirmngr ();
+          return start_dirmngr (ctrl);
         }
 #endif /*!HAVE_W32_SYSTEM*/
     }
+
+  prepare_dirmngr (ctrl, ctx, rc);
 
   if (rc)
     {
@@ -424,7 +448,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   struct isvalid_status_parm_s stparm;
 
 
-  rc = start_dirmngr ();
+  rc = start_dirmngr (ctrl);
   if (rc)
     return rc;
 
@@ -691,7 +715,7 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
   struct lookup_parm_s parm;
   size_t len;
 
-  rc = start_dirmngr ();
+  rc = start_dirmngr (ctrl);
   if (rc)
     return rc;
 
@@ -821,7 +845,7 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
   size_t len;
   struct run_command_parm_s parm;
 
-  rc = start_dirmngr ();
+  rc = start_dirmngr (ctrl);
   if (rc)
     return rc;
 

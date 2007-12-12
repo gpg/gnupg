@@ -1,5 +1,5 @@
 /* encrypt.c - Encrypt a message
- *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -318,8 +318,11 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
   int recpno;
   FILE *data_fp = NULL;
   certlist_t cl;
+  int count;
 
   memset (&encparm, 0, sizeof encparm);
+
+  audit_set_type (ctrl->audit, AUDIT_TYPE_ENCRYPT);
 
   /* Check that the certificate list is not empty and that at least
      one certificate is not flagged as encrypt_to; i.e. is a real
@@ -331,9 +334,14 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
     {
       log_error(_("no valid recipients given\n"));
       gpgsm_status (ctrl, STATUS_NO_RECP, "0");
+      audit_log_i (ctrl->audit, AUDIT_GOT_RECIPIENTS, 0);
       rc = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
+
+  for (count = 0, cl = recplist; cl; cl = cl->next)
+    count++;
+  audit_log_i (ctrl->audit, AUDIT_GOT_RECIPIENTS, count);
 
   kh = keydb_new (0);
   if (!kh)
@@ -385,6 +393,8 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
+  audit_log (ctrl->audit, AUDIT_GOT_DATA);
+
   /* We are going to create enveloped data with uninterpreted data as
      inner content */
   err = ksba_cms_set_content_type (cms, 0, KSBA_CT_ENVELOPED_DATA);
@@ -432,6 +442,8 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       rc = out_of_core ();
       goto leave;
     }
+  
+  audit_log_s (ctrl->audit, AUDIT_SESSION_KEY, dek->algoid);
 
   /* Gather certificates of recipients, encrypt the session key for
      each and store them in the CMS object */
@@ -442,6 +454,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       rc = encrypt_dek (dek, cl->cert, &encval);
       if (rc)
         {
+          audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, rc);
           log_error ("encryption failed for recipient no. %d: %s\n",
                      recpno, gpg_strerror (rc));
           goto leave;
@@ -450,6 +463,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       err = ksba_cms_add_recipient (cms, cl->cert);
       if (err)
         {
+          audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, err);
           log_error ("ksba_cms_add_recipient failed: %s\n",
                      gpg_strerror (err));
           rc = err;
@@ -459,6 +473,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       
       err = ksba_cms_set_enc_val (cms, recpno, encval);
       xfree (encval);
+      audit_log_cert (ctrl->audit, AUDIT_ENCRYPTED_TO, cl->cert, err);
       if (err)
         {
           log_error ("ksba_cms_set_enc_val failed: %s\n",
@@ -466,7 +481,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
           rc = err;
           goto leave;
         }
-  }
+    }
 
   /* Main control loop for encryption. */
   recpno = 0;
@@ -496,6 +511,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
+  audit_log (ctrl->audit, AUDIT_ENCRYPTION_DONE);
   log_info ("encrypted data created\n");
 
  leave:

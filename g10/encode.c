@@ -244,7 +244,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 
 	if(opt.verbose)
 	  log_info(_("using cipher %s\n"),
-		   gcry_cipher_algo_name (cfx.dek->algo));
+		   openpgp_cipher_algo_name (cfx.dek->algo));
 
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
@@ -558,7 +558,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
 				opt.def_cipher_algo,NULL)!=opt.def_cipher_algo)
 	log_info(_("WARNING: forcing symmetric cipher %s (%d)"
 		   " violates recipient preferences\n"),
-		 gcry_cipher_algo_name (opt.def_cipher_algo),
+		 openpgp_cipher_algo_name (opt.def_cipher_algo),
 		 opt.def_cipher_algo);
 
       cfx.dek->algo = opt.def_cipher_algo;
@@ -750,7 +750,7 @@ encrypt_filter( void *opaque, int control,
 					NULL)!=opt.def_cipher_algo)
 		log_info(_("forcing symmetric cipher %s (%d) "
 			   "violates recipient preferences\n"),
-			 gcry_cipher_algo_name (opt.def_cipher_algo),
+			 openpgp_cipher_algo_name (opt.def_cipher_algo),
 			 opt.def_cipher_algo);
 
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
@@ -847,7 +847,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 		char *ustr = get_user_id_string_native (enc->keyid);
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
                          gcry_pk_algo_name (enc->pubkey_algo),
-                         gcry_cipher_algo_name (dek->algo),
+                         openpgp_cipher_algo_name (dek->algo),
                          ustr );
 		xfree(ustr);
 	    }

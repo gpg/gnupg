@@ -1,5 +1,6 @@
 /* cipher.h - Definitions for OpenPGP 
- * Copyright (C) 1998, 1999, 2000, 2001, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2006,
+ *               2007  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -44,6 +45,9 @@
 #define CIPHER_ALGO_RIJNDAEL192  CIPHER_ALGO_AES192
 #define CIPHER_ALGO_RIJNDAEL256  CIPHER_ALGO_AES256
 #define CIPHER_ALGO_TWOFISH	 /* 10 */  GCRY_CIPHER_TWOFISH  /* 256 bit */
+/* Note: Camellia ids don't match those used by libgcrypt. */
+#define CIPHER_ALGO_CAMELLIA128     11
+#define CIPHER_ALGO_CAMELLIA256     12
 #define CIPHER_ALGO_DUMMY          110    /* No encryption at all. */
 
 #define PUBKEY_ALGO_RSA          /*  1 */ GCRY_PK_RSA  
@@ -66,8 +70,8 @@
 #define DIGEST_ALGO_SHA256    /*  8 */ GCRY_MD_SHA256
 #define DIGEST_ALGO_SHA384    /*  9 */ GCRY_MD_SHA384
 #define DIGEST_ALGO_SHA512    /* 10 */ GCRY_MD_SHA512
-/* SHA224 is as of now only defined in the libgcrypt SVN; thus we
-   can't use that macro.  */
+/* SHA224 is only available in libgcrypt 1.4.0; thus we
+   can't use the GCRY macro here.  */
 #define DIGEST_ALGO_SHA224    /* 11 */ 11 /* GCRY_MD_SHA224 */
 
 #define COMPRESS_ALGO_NONE 0

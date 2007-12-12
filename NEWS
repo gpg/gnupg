@@ -14,6 +14,14 @@ Noteworthy changes in version 2.0.8
  * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
    pinentry.
 
+ * Allow encryption using Elgamal keys with the algorithm id 20.
+
+ * Fixed the auto creation of the key stub for smartcards.  
+
+ * Fixed a rare bug in decryption using the OpenPGP card.
+
+ * Creating DSA2 keys is now possible.
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------

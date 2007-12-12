@@ -791,7 +791,7 @@ my_strusage( int level )
       case 35:
 	if( !ciphers )
 	    ciphers = build_list(_("Cipher: "), 'S', 
-                                 gcry_cipher_algo_name,
+                                 openpgp_cipher_algo_name,
                                  openpgp_cipher_test_algo );
 	p = ciphers;
 	break;
@@ -1384,6 +1384,24 @@ print_algo_numbers(int (*checker)(int))
 }
 
 
+static void
+print_algo_names(int (*checker)(int),const char *(*mapper)(int))
+{
+  int i,first=1;
+
+  for(i=0;i<=110;i++)
+    {
+      if(!checker(i))
+	{
+	  if(first)
+	    first=0;
+	  else
+	    printf(";");
+	  printf("%s",mapper(i));
+	}
+    }
+}
+
 /* In the future, we can do all sorts of interesting configuration
    output here.  For now, just give "group" as the Enigmail folks need
    it, and pubkey, cipher, hash, and compress as they may be useful
@@ -1450,6 +1468,14 @@ list_config(char *items)
 	  any=1;
 	}
 
+      if (show_all || !ascii_strcasecmp (name,"ciphername"))
+	{
+	  printf ("cfg:ciphername:");
+	  print_algo_names (openpgp_cipher_test_algo,openpgp_cipher_algo_name);
+	  printf ("\n");
+	  any = 1;
+	}
+
       if(show_all
 	 || ascii_strcasecmp(name,"digest")==0
 	 || ascii_strcasecmp(name,"hash")==0)
@@ -1460,6 +1486,16 @@ list_config(char *items)
 	  any=1;
 	}
 
+      if (show_all
+          || !ascii_strcasecmp(name,"digestname")
+          || !ascii_strcasecmp(name,"hashname"))
+	{
+	  printf ("cfg:digestname:");
+	  print_algo_names (openpgp_md_test_algo, gcry_md_algo_name);
+	  printf("\n");
+	  any=1;
+	}
+      
       if(show_all || ascii_strcasecmp(name,"compress")==0)
 	{
 	  printf("cfg:compress:");
@@ -2864,6 +2900,15 @@ main (int argc, char **argv )
         log_set_prefix (NULL, 1|2|4);
       }
 
+#ifdef USE_CAMELLIA    
+    /* We better also print a runtime warning if people build it with
+       support for Camellia (which is not yet defined by OpenPGP). */
+    log_info ("WARNING: This version has been built with support for the "
+              "Camellia cipher.\n");
+    log_info ("         It is for testing only and is NOT for production "
+              "use!\n");
+#endif
+
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());
 
@@ -3129,7 +3174,7 @@ main (int argc, char **argv )
 	if(opt.def_cipher_algo
 	   && !algo_available(PREFTYPE_SYM,opt.def_cipher_algo,NULL))
 	  {
-	    badalg = gcry_cipher_algo_name (opt.def_cipher_algo);
+	    badalg = openpgp_cipher_algo_name (opt.def_cipher_algo);
 	    badtype = PREFTYPE_SYM;
 	  }
 	else if(opt.def_digest_algo

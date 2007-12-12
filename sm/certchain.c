@@ -1127,6 +1127,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
              associated with that specific root certificate.  */
           istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
                                                 rootca_flags);
+          audit_log_cert (ctrl->audit, AUDIT_ROOT_TRUSTED,
+                          subject_cert, istrusted_rc);
           /* If the chain model extended attribute is used, make sure
              that our chain model flag is set. */
           if (has_validation_model_chain (subject_cert, listmode, listfp))

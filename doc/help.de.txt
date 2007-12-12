@@ -272,6 +272,6 @@ Eine Leerzeile beendet die Eingabe.
 
 
 # Local variables:
-# mode: fundamental
+# mode: default-generic
 # coding: utf-8
 # End:

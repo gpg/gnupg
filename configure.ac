@@ -73,6 +73,7 @@ have_libusb=no
 use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
+use_camellia=no
 
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
@@ -171,6 +172,21 @@ AC_ARG_ENABLE(bzip2,
    AC_HELP_STRING([--disable-bzip2],[disable the BZIP2 compression algorithm]),
    use_bzip2=$enableval)
 AC_MSG_RESULT($use_bzip2)
+
+# Check whether testing support for Camellia has been requested
+AC_MSG_CHECKING([whether to enable the CAMELLIA cipher for gpg])
+AC_ARG_ENABLE(camellia,
+   AC_HELP_STRING([--enable-camellia],[enable the CAMELLIA cipher for gpg]),
+   use_camellia=$enableval)
+AC_MSG_RESULT($use_camellia)
+if test x"$use_camellia" = xyes ; then
+   AC_DEFINE(USE_CAMELLIA,1,[Define to include the CAMELLIA cipher into gpg])
+   AC_MSG_WARN([[
+***
+*** The Camellia cipher for gpg is for testing only and 
+*** is NOT for production use!
+***]])
+fi
 
 
 # Configure option to allow or disallow execution of external
@@ -1416,5 +1432,11 @@ echo "
                  OpenPGP trust signatures won't work.
                  gpg-check-pattern will not be build.
 "
+fi
+if test  x"$use_camellia" = xyes ; then
+  echo
+  echo "WARNING: The Camellia cipher for gpg is for testing only"
+  echo "         and is NOT for production use!"
+  echo
 fi
 

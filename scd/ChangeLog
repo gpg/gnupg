@@ -1,6 +1,6 @@
 2007-12-10  Werner Koch  <wk@g10code.com>
 
-	* app-openpgp.c (do_decipher): Take care of cryptograms shiorther
+	* app-openpgp.c (do_decipher): Take care of cryptograms shorter
 	that 128 bytes.  Fixes bug#851.
 
 2007-11-14  Werner Koch  <wk@g10code.com>

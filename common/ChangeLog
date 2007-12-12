@@ -1,3 +1,9 @@
+2007-12-11  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment): Allow using of old
+	gpg-agents not capabale of the xauthority and pinentry_user_data
+	options.
+
 2007-12-04  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (t_helpfile_LDADD, module_maint_tests): New.

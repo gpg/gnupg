@@ -366,7 +366,14 @@ cmd_recipient (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = gpgsm_add_to_certlist (ctrl, line, 0, &ctrl->server_local->recplist, 0);
+  if (!ctrl->audit)
+    rc = start_audit_session (ctrl);
+  else
+    rc = 0;
+
+  if (!rc)
+    rc = gpgsm_add_to_certlist (ctrl, line, 0,
+                                &ctrl->server_local->recplist, 0);
   if (rc)
     {
       gpg_err_code_t r = gpg_err_code (rc);
@@ -478,6 +485,8 @@ cmd_encrypt (assuan_context_t ctx, char *line)
                                            &ctrl->server_local->recplist, 1);
     }
   if (!rc)
+    rc = ctrl->audit? 0 : start_audit_session (ctrl);
+  if (!rc)
     rc = gpgsm_encrypt (assuan_get_pointer (ctx),
                         ctrl->server_local->recplist,
                         inp_fd, out_fp);
@@ -491,6 +500,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   assuan_close_output_fd (ctx);
   return rc;
 }
+
 
 /* DECRYPT
 
@@ -517,7 +527,10 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   out_fp = fdopen (dup(out_fd), "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
-  rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
+
+  rc = start_audit_session (ctrl);
+  if (!rc)
+    rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
   fclose (out_fp);
 
   /* close and reset the fd */
@@ -600,8 +613,10 @@ cmd_sign (assuan_context_t ctx, char *line)
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
 
-  rc = gpgsm_sign (assuan_get_pointer (ctx), ctrl->server_local->signerlist,
-                   inp_fd, detached, out_fp);
+  rc = start_audit_session (ctrl);
+  if (!rc)
+    rc = gpgsm_sign (assuan_get_pointer (ctx), ctrl->server_local->signerlist,
+                     inp_fd, detached, out_fp);
   fclose (out_fp);
 
   /* close and reset the fd */

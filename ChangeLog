@@ -1,3 +1,7 @@
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (USE_CAMELLIA): Define by new option --enable-camellia.
+
 2007-12-03  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add test gt_LC_MESSAGES..

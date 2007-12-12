@@ -2461,7 +2461,7 @@ do_decipher (app_t app, const char *keyidstr,
 
       /* We might encounter a couple of leading zeroes in the
          cryptogram.  Due to internal use of MPIs thease leading
-         zeroes are stripped.  However the OpenPGp card expects
+         zeroes are stripped.  However the OpenPGP card expects
          exactly 128 bytes for the cryptogram (for a 1k key).  Thus we
          need to fix it up.  We do this for up to 16 leading zero
          bytes; a cryptogram with more than this is with a very high

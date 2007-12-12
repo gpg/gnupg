@@ -2325,9 +2325,10 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
                     tty_printf (", ");
                 any = 1;
                 /* We don't want to display strings for experimental algos */
-                if (!gcry_cipher_test_algo (prefs[i].value)
+                if (!openpgp_cipher_test_algo (prefs[i].value)
                     && prefs[i].value < 100 )
-                    tty_printf ("%s", gcry_cipher_algo_name (prefs[i].value));
+                    tty_printf ("%s",
+                                openpgp_cipher_algo_name (prefs[i].value));
                 else
                     tty_printf ("[%d]", prefs[i].value);
                 if (prefs[i].value == CIPHER_ALGO_3DES )
@@ -2337,7 +2338,7 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
         if (!des_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("%s", gcry_cipher_algo_name (CIPHER_ALGO_3DES));
+            tty_printf ("%s", openpgp_cipher_algo_name (CIPHER_ALGO_3DES));
         }
         tty_printf ("\n     ");
 	tty_printf (_("Digest: "));

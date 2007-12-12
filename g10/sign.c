@@ -345,22 +345,24 @@ match_dsa_hash (unsigned int qbytes)
 {
   if (qbytes <= 20)
     return DIGEST_ALGO_SHA1;
-#ifdef USE_SHA256
-  if (qbytes <= 28)
+
+  /* SHA244 is only available with libgcrypt 1.4 - thus do a runtime
+     test.  */
+  if (qbytes <= 28 && !gcry_md_test_algo (DIGEST_ALGO_SHA224))
     return DIGEST_ALGO_SHA224;
+
   if (qbytes <= 32)
     return DIGEST_ALGO_SHA256;
-#endif
 
-#ifdef USE_SHA512
   if (qbytes <= 48)
     return DIGEST_ALGO_SHA384;
+
   if (qbytes <= 64)
     return DIGEST_ALGO_SHA512;
-#endif
+
   return DEFAULT_DIGEST_ALGO;
   /* DEFAULT_DIGEST_ALGO will certainly fail, but it's the best wrong
-     answer we have if the larger SHAs aren't there. */
+     answer we have if a digest larger than 512 bits is requested.  */
 }
 
 
@@ -1258,7 +1260,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     algo = default_cipher_algo();
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
-                  gcry_cipher_algo_name (algo) );
+                  openpgp_cipher_algo_name (algo) );
     cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, &canceled);
 
     if (!cfx.dek || !cfx.dek->keylen) {

@@ -848,6 +848,7 @@ main ( int argc, char **argv)
   certlist_t signerlist = NULL;
   int do_not_setup_keys = 0;
   int recp_required = 0;
+  estream_t auditfp = NULL;
 
   /*mtrace();*/
 
@@ -1482,6 +1483,26 @@ main ( int argc, char **argv)
     keydb_add_resource (sl->d, 0, 0, NULL);
   FREE_STRLIST(nrings);
 
+
+  /* Prepare the audit log feature for certain commands.  */
+  if (auditlog)
+    {
+      switch (cmd)
+        {
+        case aEncr: 
+        case aSign:
+        case aDecrypt:
+        case aVerify:
+          audit_release (ctrl.audit);
+          ctrl.audit = audit_new ();
+          auditfp = open_es_fwrite (auditlog);
+          break;
+        default:
+          break;
+        }
+    }
+
+
   if (!do_not_setup_keys)
     {
       for (sl = locusr; sl ; sl = sl->next)
@@ -1528,6 +1549,7 @@ main ( int argc, char **argv)
   
   fname = argc? *argv : NULL;
   
+  /* Dispatch command.  */
   switch (cmd)
     {
     case aGPGConfList: 
@@ -1650,20 +1672,12 @@ main ( int argc, char **argv)
     case aVerify:
       {
         FILE *fp = NULL;
-        estream_t auditfp = NULL;
 
         set_binary (stdin);
         if (argc == 2 && opt.outfile)
           log_info ("option --output ignored for a detached signature\n");
         else if (opt.outfile)
           fp = open_fwrite (opt.outfile);
-
-        if (auditlog)
-          {
-            audit_release (ctrl.audit);
-            ctrl.audit = audit_new ();
-            auditfp = open_es_fwrite (auditlog);
-          }
 
         if (!argc)
           gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
@@ -1674,16 +1688,8 @@ main ( int argc, char **argv)
         else
           wrong_args ("--verify [signature [detached_data]]");
 
-        if (auditlog)
-          {
-            audit_print_result (ctrl.audit, auditfp, 0);
-            audit_release (ctrl.audit);
-            ctrl.audit = NULL;
-          }
-
         if (fp && fp != stdout)
           fclose (fp);
-        es_fclose (auditfp);
       }
       break;
 
@@ -1845,6 +1851,15 @@ main ( int argc, char **argv)
     default:
         log_error ("invalid command (there is no implicit command)\n");
 	break;
+    }
+
+  /* Print the audit result if needed.  */
+  if (auditlog && auditfp)
+    {
+      audit_print_result (ctrl.audit, auditfp, 0);
+      audit_release (ctrl.audit);
+      ctrl.audit = NULL;
+      es_fclose (auditfp);
     }
   
   /* cleanup */

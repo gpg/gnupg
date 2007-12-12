@@ -274,9 +274,9 @@ proc_symkey_enc( CTX c, PACKET *pkt )
     else if(!c->dek)
       {
         int algo = enc->cipher_algo;
-	const char *s = gcry_cipher_algo_name (algo);
+	const char *s = openpgp_cipher_algo_name (algo);
 
-	if (!gcry_cipher_test_algo (algo))
+	if (!openpgp_cipher_test_algo (algo))
 	  {
 	    if(!opt.quiet)
 	      {
@@ -524,8 +524,8 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    algo = opt.def_cipher_algo;
 	    if ( algo )
 	      log_info (_("assuming %s encrypted data\n"),
-                        gcry_cipher_algo_name (algo));
-	    else if ( gcry_cipher_test_algo (CIPHER_ALGO_IDEA) )
+                        openpgp_cipher_algo_name (algo));
+	    else if ( openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
 	      {
 		algo = opt.def_cipher_algo;
 		if (!algo)
@@ -533,7 +533,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 		idea_cipher_warn(1);
 		log_info (_("IDEA cipher unavailable, "
 			    "optimistically attempting to use %s instead\n"),
-			  gcry_cipher_algo_name (algo));
+			  openpgp_cipher_algo_name (algo));
 	      }
 	    else
 	      {

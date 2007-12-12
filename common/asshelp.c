@@ -172,6 +172,8 @@ send_pinentry_environment (assuan_context_t ctx,
     {
       err = send_one_option (ctx, errsource, "xauthority", 
                              opt_xauthority ? opt_xauthority : dft_xauthority);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+        err = 0;
       if (err)
         return err;
     }
@@ -183,6 +185,8 @@ send_pinentry_environment (assuan_context_t ctx,
       err = send_one_option (ctx, errsource, "pinentry-user-data", 
                              opt_pinentry_user_data ?
                              opt_pinentry_user_data : dft_pinentry_user_data);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+        err = 0;
       if (err)
         return err;
     }

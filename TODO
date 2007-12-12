@@ -91,7 +91,7 @@
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 
 
-* When switching to libgcrypt 1.3
+* When switching to libgcrypt 1.4
 ** scd#encode_md_for_card, g10#encode_md_value, sm@do_encode_md
    Remove the extra test for a valid algorithm as libgcrypt will do it
    then in gcry_md_algo_info.

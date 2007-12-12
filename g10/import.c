@@ -602,9 +602,9 @@ check_prefs(KBNODE keyblock)
 		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
 		      const char *algo = 
-                        (gcry_cipher_test_algo (prefs->value)
+                        (openpgp_cipher_test_algo (prefs->value)
                          ? num 
-                         : gcry_cipher_algo_name (prefs->value));
+                         : openpgp_cipher_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
 		      log_info(_("         \"%s\": preference for cipher"

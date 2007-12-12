@@ -301,7 +301,7 @@ print_cipher_algo_note( int algo )
 	{
 	  warn=1;
 	  log_info (_("WARNING: using experimental cipher algorithm %s\n"),
-                    gcry_cipher_algo_name (algo));
+                    openpgp_cipher_algo_name (algo));
 	}
     }
 }
@@ -324,6 +324,33 @@ print_digest_algo_note( int algo )
               gcry_md_algo_name (algo));
 }
 
+
+/* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
+   this for algorithms we implemented in Libgcrypt after they become
+   part of OpenPGP.  */
+static int
+map_cipher_openpgp_to_gcry (int algo)
+{
+  switch (algo)
+    {
+    case CIPHER_ALGO_CAMELLIA128: return 310; 
+    case CIPHER_ALGO_CAMELLIA256: return 312; 
+    default: return algo;
+    }
+}
+
+/* The inverse fucntion of above.  */
+static int
+map_cipher_gcry_to_openpgp (int algo)
+{
+  switch (algo)
+    {
+    case 310: return CIPHER_ALGO_CAMELLIA128;
+    case 312: return CIPHER_ALGO_CAMELLIA256;
+    default: return algo;
+    }
+}
+
 /****************
  * Wrapper around the libgcrypt function with additonal checks on
  * the OpenPGP contraints for the algo ID.
@@ -331,11 +358,31 @@ print_digest_algo_note( int algo )
 int
 openpgp_cipher_test_algo( int algo )
 {
-  /* 5 and 6 are marked reserved by rfc2440bis.  */
+  /* (5 and 6 are marked reserved by rfc4880.)  */
   if ( algo < 0 || algo > 110 || algo == 5 || algo == 6 )
     return gpg_error (GPG_ERR_CIPHER_ALGO);
-  return gcry_cipher_test_algo (algo);
+
+  /* Camellia is not yet defined for OpenPGP thus only allow it if
+     requested.  */
+#ifndef USE_CAMELLIA
+  if (algo == CIPHER_ALGO_CAMELLIA128 
+       || algo == CIPHER_ALGO_CAMELLIA256)
+    return gpg_error (GPG_ERR_CIPHER_ALGO);
+#endif
+
+  return gcry_cipher_test_algo (map_cipher_openpgp_to_gcry (algo));
 }
+
+/* Map the OpenPGP cipher algorithm whose ID is contained in ALGORITHM to a
+   string representation of the algorithm name.  For unknown algorithm
+   IDs this function returns "?".  */
+const char *
+openpgp_cipher_algo_name (int algo) 
+{
+  return gcry_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
+}
+
+
 
 int
 openpgp_pk_test_algo( int algo )
@@ -690,7 +737,7 @@ string_to_cipher_algo (const char *string)
 { 
   int val;
 
-  val = gcry_cipher_map_name (string);
+  val = map_cipher_gcry_to_openpgp (gcry_cipher_map_name (string));
   if (!val && string && (string[0]=='S' || string[0]=='s'))
     {
       char *endptr;

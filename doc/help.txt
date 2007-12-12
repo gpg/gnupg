@@ -52,6 +52,44 @@ configured passphrase constraints.
 .
 
 
+.gnupg.agent-problem
+# There was a problem accessing or starting the agent.
+It was either not possible to connect to a running Gpg-Agent or a
+communication problem with a running agent occurred.  
+
+The system uses a background process, called Gpg-Agent, for processing
+private keys and to ask for passphrases.  The agent is usually started
+when the user logs in and runs as long the user is logged in. In case
+that no agent is available, the system tries to start one on the fly
+but that version of the agent is somewhat limited in functionality and
+thus may lead to little problems.
+
+You probably need to ask your administrator on how to solve the
+problem.  As a workaround you might try to log out and in to your
+session and see whether this helps.  If this helps please tell the
+administrator anyway because this indicates a bug in the software.
+.
+
+
+.gnupg.dirmngr-problem
+# There was a problen accessing the dirmngr.
+It was either not possible to connect to a running Dirmngr or a
+communication problem with a running Dirmngr occurred.  
+
+To lookup certificate revocation lists (CRLs), performing OCSP
+validation and to lookup keys through LDAP servers, the system uses an
+external service program named Dirmngr.  The Dirmngr is usually running
+as a system service (daemon) and does not need any attention by the
+user.  In case of problems the system might start its own copy of the
+Dirmngr on a per request base; this is a workaround and yields limited
+performance.
+
+If you encounter this problem, you should ask your system
+administrator how to proceed.  As an interim solution you may try to
+disable CRL checking in gpgsm's configuration.
+.
+
+
 .gpg.edit_ownertrust.value
 # The help identies prefixed with "gpg." used to be hard coded in gpg
 # but may now be overridden by help texts from this file.
@@ -312,6 +350,6 @@ your system administrator whether you should trust this certificate.
 
 
 # Local variables:
-# mode: fundamental
+# mode: default-generic
 # coding: utf-8
 # End:

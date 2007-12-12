@@ -282,7 +282,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 		&& !opt.quiet
 		&& !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ))
 	  log_info (_("WARNING: cipher algorithm %s not found in recipient"
-                      " preferences\n"), gcry_cipher_algo_name (dek->algo));
+                      " preferences\n"), openpgp_cipher_algo_name (dek->algo));
         if (!rc) {
             KBNODE k;
             

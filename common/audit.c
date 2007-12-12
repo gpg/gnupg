@@ -449,9 +449,9 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
 
   if (ctx->use_html && format && oktext)
     {
-      if (!strcmp (oktext, "OK") || !strcmp (oktext, "Yes"))
+      if (!strcmp (oktext, "Yes"))
         color = "green";
-      else if (!strcmp (oktext, "FAIL") || !strcmp (oktext, "No"))
+      else if (!strcmp (oktext, "No"))
         color = "red";
     }
 
@@ -648,42 +648,20 @@ get_cert_subject (ksba_cert_t cert, int idx)
 }
 
 
-/* List the chain of certificates from STARTITEM up to STOPEVENT.  The
-   certifcates are written out as comments.  */
+/* List the given certificiate.  If CERT is NULL, this is a NOP.  */
 static void
-list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
+list_cert (audit_ctx_t ctx, ksba_cert_t cert, int with_subj)
 {
-  log_item_t item;
   char *name;
   int idx;
 
-  startitem = find_next_log_item (ctx, startitem, AUDIT_CHAIN_BEGIN,stopevent);
-  if (!startitem)
+  name = get_cert_name (cert);
+  writeout_rem (ctx, "%s", name);
+  xfree (name);
+  if (with_subj)
     {
-      writeout_li (ctx, gpg_strerror (GPG_ERR_MISSING_CERT)
-                   , _("Certificate chain"));
-      return; 
-    }
-  writeout_li (ctx, "OK", _("Certificate chain"));
-  item = find_next_log_item (ctx, startitem, 
-                             AUDIT_CHAIN_ROOTCERT, AUDIT_CHAIN_END);
-  if (!item)
-    writeout_rem (ctx, "%s", _("root certificate missing"));
-  else
-    {
-      name = get_cert_name (item->cert);
-      writeout_rem (ctx, "%s", name);
-      xfree (name);
-    }
-  item = startitem;
-  while ( ((item = find_next_log_item (ctx, item, 
-                                       AUDIT_CHAIN_CERT, AUDIT_CHAIN_END))))
-    {
-      name = get_cert_name (item->cert);
-      writeout_rem (ctx, "%s", name);
-      xfree (name);
       enter_li (ctx);
-      for (idx=0; (name = get_cert_subject (item->cert, idx)); idx++)
+      for (idx=0; (name = get_cert_subject (cert, idx)); idx++)
         {
           writeout_rem (ctx, "%s", name);
           xfree (name);
@@ -693,8 +671,142 @@ list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
 }
 
 
+/* List the chain of certificates from STARTITEM up to STOPEVENT.  The
+   certifcates are written out as comments.  */
+static void
+list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
+{
+  log_item_t item;
+
+  startitem = find_next_log_item (ctx, startitem, AUDIT_CHAIN_BEGIN,stopevent);
+  writeout_li (ctx, startitem? "Yes":"No", _("Certificate chain available"));
+  if (!startitem)
+    return; 
+
+  item = find_next_log_item (ctx, startitem, 
+                             AUDIT_CHAIN_ROOTCERT, AUDIT_CHAIN_END);
+  if (!item)
+    writeout_rem (ctx, "%s", _("root certificate missing"));
+  else
+    {
+      list_cert (ctx, item->cert, 0);
+    }
+  item = startitem;
+  while ( ((item = find_next_log_item (ctx, item, 
+                                       AUDIT_CHAIN_CERT, AUDIT_CHAIN_END))))
+    {
+      list_cert (ctx, item->cert, 1);
+    }
+}
+
+
 
-/* Process a verification operation.  */
+/* Process an encrypt operation's log.  */
+static void
+proc_type_encrypt (audit_ctx_t ctx)
+{
+  log_item_t loopitem, item;
+  int recp_no, idx;
+  char numbuf[35];
+  int algo;
+  char *name;
+
+  item = find_log_item (ctx, AUDIT_ENCRYPTION_DONE, 0);
+  writeout_li (ctx, item?"Yes":"No", "%s", _("Data encryption succeeded"));
+
+  enter_li (ctx);
+
+  item = find_log_item (ctx, AUDIT_GOT_DATA, 0);
+  writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
+
+  item = find_log_item (ctx, AUDIT_SESSION_KEY, 0);
+  writeout_li (ctx, item? "Yes":"No", "%s", _("Session key created"));
+  if (item)
+    {
+      algo = gcry_cipher_map_name (item->string);
+      if (algo)
+        writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+      else if (item->string && !strcmp (item->string, "1.2.840.113549.3.2"))
+        writeout_rem (ctx, _("unsupported algorithm: %s"), "RC2");
+      else if (item->string)
+        writeout_rem (ctx, _("unsupported algorithm: %s"), item->string);
+      else
+        writeout_rem (ctx, _("seems to be not encrypted"));
+    }
+
+  item = find_log_item (ctx, AUDIT_GOT_RECIPIENTS, 0);
+  snprintf (numbuf, sizeof numbuf, "%d", 
+            item && item->have_intvalue? item->intvalue : 0);
+  writeout_li (ctx, numbuf, "%s", _("Number of recipients"));
+
+  /* Loop over all recipients.  */
+  loopitem = NULL;
+  recp_no = 0;
+  while ((loopitem=find_next_log_item (ctx, loopitem, AUDIT_ENCRYPTED_TO, 0)))
+    {
+      recp_no++;
+      writeout_li (ctx, NULL, _("Recipient %d"), recp_no);
+      if (loopitem->cert)
+        {
+          name = get_cert_name (loopitem->cert);
+          writeout_rem (ctx, "%s", name);
+          xfree (name);
+          enter_li (ctx);
+          for (idx=0; (name = get_cert_subject (loopitem->cert, idx)); idx++)
+            {
+              writeout_rem (ctx, "%s", name);
+              xfree (name);
+            }
+          leave_li (ctx);
+        }
+    }
+
+  leave_li (ctx);
+}
+
+
+
+/* Process a sign operation's log.  */
+static void
+proc_type_sign (audit_ctx_t ctx)
+{
+  log_item_t item;
+
+  item = NULL;
+  writeout_li (ctx, item?"Yes":"No", "%s", _("Data signing succeeded"));
+
+  enter_li (ctx);
+
+  item = find_log_item (ctx, AUDIT_GOT_DATA, 0);
+  writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
+
+
+  leave_li (ctx);
+}
+
+
+
+/* Process a decrypt operation's log.  */
+static void
+proc_type_decrypt (audit_ctx_t ctx)
+{
+  log_item_t item;
+
+  item = NULL;
+  writeout_li (ctx, item?"Yes":"No", "%s", _("Data decryption succeeded"));
+
+  enter_li (ctx);
+
+  item = find_log_item (ctx, AUDIT_GOT_DATA, 0);
+  writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
+
+
+  leave_li (ctx);
+}
+
+
+
+/* Process a verification operation's log.  */
 static void
 proc_type_verify (audit_ctx_t ctx)
 {
@@ -702,13 +814,12 @@ proc_type_verify (audit_ctx_t ctx)
   int signo, count, idx;
   char numbuf[35];
 
+  /* If there is at least one signature status we claim that the
+     verifciation succeeded.  This does not mean that the data has
+     verified okay.  */
+  item = find_log_item (ctx, AUDIT_SIG_STATUS, 0);
+  writeout_li (ctx, item?"Yes":"No", "%s", _("Data verification succeeded"));
   enter_li (ctx);
-  
-  writeout_li (ctx, "fixme", "%s", _("Signature verification"));
-  enter_li (ctx);
-
-  writeout_li (ctx, "fixme", "%s", _("Gpg-Agent ready"));
-  writeout_li (ctx, "fixme", "%s", _("Dirmngr ready"));
 
   item = find_log_item (ctx, AUDIT_GOT_DATA, AUDIT_NEW_SIG);
   writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
@@ -721,19 +832,14 @@ proc_type_verify (audit_ctx_t ctx)
     goto leave;
 
   item = find_log_item (ctx, AUDIT_DATA_HASH_ALGO, AUDIT_NEW_SIG);
-  if (item)
-    writeout_li (ctx, "OK", "%s", _("Parsing signature"));
-  else 
+  writeout_li (ctx, item?"Yes":"No", "%s", _("Parsing signature succeeded"));
+  if (!item)
     {
       item = find_log_item (ctx, AUDIT_BAD_DATA_HASH_ALGO, AUDIT_NEW_SIG);
       if (item)
-        {
-          writeout_li (ctx,"FAIL", "%s",  _("Parsing signature"));
-          writeout_rem (ctx, _("Bad hash algorithm: %s"), 
-                        item->string? item->string:"?");
-        }
-      else
-        writeout_li (ctx, "FAIL", "%s", _("Parsing signature") );
+        writeout_rem (ctx, _("Bad hash algorithm: %s"), 
+                      item->string? item->string:"?");
+
       goto leave;
     }
 
@@ -761,19 +867,30 @@ proc_type_verify (audit_ctx_t ctx)
                                  AUDIT_CHAIN_STATUS, AUDIT_NEW_SIG);
       if (item && item->have_err)
         {
-          writeout_li (ctx, item->err? "FAIL":"OK", 
-                       _("Validation of certificate chain"));
+          writeout_li (ctx, item->err? "No":"Yes", 
+                       _("Certificate chain valid"));
           if (item->err)
             writeout_rem (ctx, "%s", gpg_strerror (item->err));
         }
       
       /* Show whether the root certificate is fine.  */
-      writeout_li (ctx, "No", "%s", _("Root certificate trustworthy"));
-      add_helptag (ctx, "gpgsm.root-cert-not-trusted");
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_ROOT_TRUSTED, AUDIT_CHAIN_STATUS);
+      if (item)
+        {
+          writeout_li (ctx, item->err?"No":"Yes", "%s",
+                       _("Root certificate trustworthy"));
+          if (item->err)
+            {
+              add_helptag (ctx, "gpgsm.root-cert-not-trusted");
+              writeout_rem (ctx, "%s", gpg_strerror (item->err));
+              list_cert (ctx, item->cert, 0);
+            }
+        }
 
       /* Show result of the CRL/OCSP check.  */
       writeout_li (ctx, "-", "%s", _("CRL/OCSP check of certificates"));
-      add_helptag (ctx, "gpgsm.ocsp-problem");
+ /*      add_helptag (ctx, "gpgsm.ocsp-problem"); */
 
 
       leave_li (ctx);
@@ -805,8 +922,6 @@ proc_type_verify (audit_ctx_t ctx)
         }
       leave_li (ctx);
     }
-
-  leave_li (ctx);
   leave_li (ctx);
 }
 
@@ -818,15 +933,23 @@ void
 audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
 {
   int idx;
-  int maxlen;
   size_t n;
+  log_item_t item;
   helptag_t helptag;
-
-  if (getenv ("use_html"))
-    use_html = 1;
-
+  const char *s;
+  int show_raw = 0;
+  
   if (!ctx)
     return;
+
+  /* We use an environment variable to include some debug info in the
+     log.  */
+  if ((s = getenv ("gnupg_debug_audit")))
+    {
+      show_raw = 1;
+      if (!strcmp (s, "html"))
+        use_html = 1;
+    }
 
   assert (!ctx->outstream);
   ctx->outstream = out;
@@ -843,51 +966,87 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
       goto leave;
     }
 
-  for (idx=0,maxlen=0; idx < DIM (eventstr_msgidx); idx++)
+  if (show_raw)
     {
-      n = strlen (eventstr_msgstr + eventstr_msgidx[idx]);    
-      if (n > maxlen)
-        maxlen = n;
+      int maxlen;
+
+      for (idx=0,maxlen=0; idx < DIM (eventstr_msgidx); idx++)
+        {
+          n = strlen (eventstr_msgstr + eventstr_msgidx[idx]);    
+          if (n > maxlen)
+            maxlen = n;
+        }
+      
+      if (use_html)
+        es_fputs ("<pre>\n", out);
+      for (idx=0; idx < ctx->logused; idx++)
+        {
+          es_fprintf (out, "log: %-*s", 
+                      maxlen, event2str (ctx->log[idx].event));
+          if (ctx->log[idx].have_intvalue)
+            es_fprintf (out, " i=%d", ctx->log[idx].intvalue); 
+          if (ctx->log[idx].string)
+            {
+              es_fputs (" s=`", out); 
+              writeout (ctx, ctx->log[idx].string); 
+              es_fputs ("'", out); 
+            }
+          if (ctx->log[idx].cert)
+            es_fprintf (out, " has_cert"); 
+          if (ctx->log[idx].have_err)
+            {
+              es_fputs (" err=`", out);
+              writeout (ctx, gpg_strerror (ctx->log[idx].err)); 
+              es_fputs ("'", out);
+            }
+          es_fputs ("\n", out);
+        }
+      if (use_html)
+        es_fputs ("</pre>\n", out);
+      else
+        es_fputs ("\n", out);
     }
 
-  if (use_html)
-    es_fputs ("<pre>\n", out);
-  for (idx=0; idx < ctx->logused; idx++)
-    {
-      es_fprintf (out, "log: %-*s", 
-                  maxlen, event2str (ctx->log[idx].event));
-      if (ctx->log[idx].have_intvalue)
-        es_fprintf (out, " i=%d", ctx->log[idx].intvalue); 
-      if (ctx->log[idx].string)
-        {
-          es_fputs (" s=`", out); 
-          writeout (ctx, ctx->log[idx].string); 
-          es_fputs ("'", out); 
-        }
-      if (ctx->log[idx].cert)
-        es_fprintf (out, " has_cert"); 
-      if (ctx->log[idx].have_err)
-        {
-          es_fputs (" err=`", out);
-          writeout (ctx, gpg_strerror (ctx->log[idx].err)); 
-          es_fputs ("'", out);
-        }
-      es_fputs ("\n", out);
-    }
-  if (use_html)
-    es_fputs ("</pre>\n", out);
-  else
-    es_fputs ("\n", out);
-
+  enter_li (ctx);
   switch (ctx->type)
     {
     case AUDIT_TYPE_NONE:
-      writeout_para (ctx, _("Audit of this operation is not supported."));
+      writeout_li (ctx, NULL, _("Unknown operation"));
+      break;
+    case AUDIT_TYPE_ENCRYPT:
+      proc_type_encrypt (ctx);
+      break;
+    case AUDIT_TYPE_SIGN:
+      proc_type_sign (ctx);
+      break;
+    case AUDIT_TYPE_DECRYPT:
+      proc_type_decrypt (ctx);
       break;
     case AUDIT_TYPE_VERIFY:
       proc_type_verify (ctx);
       break;
     }
+  item = find_log_item (ctx, AUDIT_AGENT_READY, 0);
+  if (item && item->have_err)
+    {
+      writeout_li (ctx, item->err? "No":"Yes", "%s", _("Gpg-Agent usable"));
+      if (item->err)
+        {
+          writeout_rem (ctx, "%s", gpg_strerror (item->err));
+          add_helptag (ctx, "gnupg.agent-problem");
+        }
+    }
+  item = find_log_item (ctx, AUDIT_DIRMNGR_READY, 0);
+  if (item && item->have_err)
+    {
+      writeout_li (ctx, item->err? "No":"Yes", "%s", _("Dirmngr usable"));
+      if (item->err)
+        {
+          writeout_rem (ctx, "%s", gpg_strerror (item->err));
+          add_helptag (ctx, "gnupg.dirmngr-problem");
+        }
+    }
+  leave_li (ctx);
 
 
   /* Show the help from the collected help tags.  */

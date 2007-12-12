@@ -88,8 +88,9 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
   if ( opt.verbose && !dek->algo_info_printed )
     {
-      if (!gcry_cipher_test_algo (dek->algo))
-        log_info (_("%s encrypted data\n"), gcry_cipher_algo_name (dek->algo));
+      if (!openpgp_cipher_test_algo (dek->algo))
+        log_info (_("%s encrypted data\n"), 
+                  openpgp_cipher_algo_name (dek->algo));
       else
         log_info (_("encrypted with unknown algorithm %d\n"), dek->algo );
       dek->algo_info_printed = 1;
