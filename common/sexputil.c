@@ -1,5 +1,5 @@
 /* sexputil.c - Utility functions for S-expressions.
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,8 +40,8 @@
    KEY is expected to be an canonical encoded S-expression with a
    public or private key. KEYLEN is the length of that buffer.
 
-   GRIP must be at least 20 bytes long On success 0 is return, on
-   error an aerror code. */
+   GRIP must be at least 20 bytes long.  On success 0 is returned, on
+   error an error code. */
 gpg_error_t
 keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
                          unsigned char *grip)
@@ -143,3 +143,49 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
 
   return buf;
 }
+
+
+/* Return the hash algorithm from a KSBA sig-val. SIGVAL is a
+   canonical encoded S-expression.  Return 0 if the hash algorithm is
+   not encoded in SIG-VAL or it is not supported by libgcrypt.  */
+int
+hash_algo_from_sigval (const unsigned char *sigval)
+{
+  const unsigned char *s = sigval;
+  size_t n;
+  int depth;
+  char buffer[50];
+
+  if (!s || *s != '(')
+    return 0; /* Invalid S-expression.  */
+  s++;
+  n = snext (&s);
+  if (!n)
+    return 0; /* Invalid S-expression.  */
+  if (!smatch (&s, n, "sig-val"))
+    return 0; /* Not a sig-val.  */
+  if (*s != '(')
+    return 0; /* Invalid S-expression.  */
+  s++;
+  /* Skip over the algo+parameter list.  */
+  depth = 1;
+  if (sskip (&s, &depth) || depth)
+    return 0; /* Invalid S-expression.  */
+  if (*s != '(')
+    return 0; /* No futher list.  */
+  /* Check whether this is (hash ALGO).  */
+  s++;
+  n = snext (&s);
+  if (!n)
+    return 0; /* Invalid S-expression.  */
+  if (!smatch (&s, n, "hash"))
+    return 0; /* Not a "hash" keyword.  */
+  n = snext (&s);
+  if (!n || n+1 >= sizeof (buffer))
+    return 0; /* Algorithm string is missing or too long.  */
+  memcpy (buffer, s, n);
+  buffer[n] = 0;
+  
+  return gcry_md_map_name (buffer);
+}
+

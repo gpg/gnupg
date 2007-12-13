@@ -1,3 +1,10 @@
+2007-12-13  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Add option --extra-digest-algo.
+	* gpgsm.h (struct): Add EXTRA_DIGEST_ALGO.
+	* verify.c (gpgsm_verify): Use it.  Use the hash algorithm from
+	the signature value.
+
 2007-12-11  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (do_validate_chain): Log AUDIT_ROOT_TRUSTED.

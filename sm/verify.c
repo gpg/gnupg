@@ -203,9 +203,19 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                 }
               else
                 {
+                  if (DBG_X509)
+                    log_debug ("enabling hash algorithm %d (%s)\n",
+                               algo, algoid? algoid:"");
                   gcry_md_enable (data_md, algo);
                   audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
                 }
+            }
+          if (opt.extra_digest_algo)
+            {
+              if (DBG_X509)
+                log_debug ("enabling extra hash algorithm %d\n", 
+                           opt.extra_digest_algo);
+              gcry_md_enable (data_md, opt.extra_digest_algo);
             }
           if (is_detached)
             {
@@ -271,6 +281,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       char *msgdigest = NULL;
       size_t msgdigestlen;
       char *ctattr;
+      int sigval_hash_algo;
       int info_pkalgo;
       unsigned int verifyflags;
 
@@ -331,7 +342,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                              &algo, &is_enabled)
                || !is_enabled)
             {
-              log_error ("digest algo %d has not been enabled\n", algo);
+              log_error ("digest algo %d (%s) has not been enabled\n", 
+                         algo, algoid?algoid:"");
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "unsupported");
               goto next_signer;
             }
@@ -389,8 +401,16 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
         }
+      sigval_hash_algo = hash_algo_from_sigval (sigval);
       if (DBG_X509)
-        log_debug ("signer %d - signature available", signer);
+        {
+          log_debug ("signer %d - signature available (sigval hash=%d)",
+                     signer, sigval_hash_algo);
+/*           log_printhex ("sigval    ", sigval, */
+/*                         gcry_sexp_canon_len (sigval, 0, NULL, NULL)); */
+        }
+      if (!sigval_hash_algo)
+        sigval_hash_algo = algo; /* Fallback used e.g. with old libksba. */
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);
@@ -438,8 +458,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
           gcry_md_hd_t md;
           unsigned char *s;
 
-          /* check that the message digest in the signed attributes
-             matches the one we calculated on the data */
+          /* Check that the message digest in the signed attributes
+             matches the one we calculated on the data.  */
           s = gcry_md_read (data_md, algo);
           if ( !s || !msgdigestlen
                || gcry_md_get_algo_dlen (algo) != msgdigestlen
@@ -456,7 +476,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               goto next_signer; 
             }
             
-          rc = gcry_md_open (&md, algo, 0);
+          rc = gcry_md_open (&md, sigval_hash_algo, 0);
           if (rc)
             {
               log_error ("md_open failed: %s\n", gpg_strerror (rc));
@@ -476,14 +496,14 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
               goto next_signer;
             }
-          rc = gpgsm_check_cms_signature (cert, sigval, md, algo, 
-                                          &info_pkalgo);
+          rc = gpgsm_check_cms_signature (cert, sigval, md, 
+                                          sigval_hash_algo, &info_pkalgo);
           gcry_md_close (md);
         }
       else
         {
-          rc = gpgsm_check_cms_signature (cert, sigval, data_md, algo, 
-                                          &info_pkalgo);
+          rc = gpgsm_check_cms_signature (cert, sigval, data_md, 
+                                          algo, &info_pkalgo);
         }
 
       if (rc)

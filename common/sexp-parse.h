@@ -44,7 +44,7 @@ snext (unsigned char const **buf)
    lists and may be passed as a positive number to skip over the
    remainder of an S-Expression if the current position is somewhere
    in an S-Expression.  The function may return an error code if it
-   encounters an impossible conditions */
+   encounters an impossible condition.  */
 static inline gpg_error_t
 sskip (unsigned char const **buf, int *depth)
 {

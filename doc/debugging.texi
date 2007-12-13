@@ -182,7 +182,12 @@ such a certificate.  You may use the @code{relax} flag in
 fingerprint and this flag may only be added manually to
 @file{trustlist.txt}.
 
+@item Error message: ``digest algorithm N has not been enabled''
 
+The signature is broken.  You may try the option
+@option{--extra-digest-algo SHA256} to workaround the problem.  The
+number N is the internal algorighm indentifier; for example 8 refers to
+SHA-256.
 
 @end itemize
 

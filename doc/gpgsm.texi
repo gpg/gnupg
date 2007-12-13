@@ -569,6 +569,19 @@ encryption.  For convenience the strings @code{3DES}, @code{AES} and
 
 @table @gnupgtabopt
 
+@item --extra-digest-algo @var{name}
+@opindex extra-digest-algo
+Sometimes signatures are broken in that they announce a different digest
+algorithm than actually used.  @command{gpgsm} uses a one-pass data
+processing model and thus needs to rely on the announcde digest
+algorithms to properly hash the data.  As a workaround this option may
+be used to tell gpg to also hash the data using the algorithm
+@var{name}; this slows processing down a little bit but allows to verify
+such broken signatures.  If @command{gpgsm} prints an error like
+``digest algo 8 has not been enabled'' you may want to try this option,
+with @samp{SHA256} for @var{name}.
+
+
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
 This option is only useful for testing; it sets the system time back or

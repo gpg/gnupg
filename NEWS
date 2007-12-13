@@ -23,6 +23,9 @@ Noteworthy changes in version 2.0.8
 
  * Creating DSA2 keys is now possible.
 
+ * New option --extra-digest-algo for gpgsm to allow verification of
+   broken signatures.
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------

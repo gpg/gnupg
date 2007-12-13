@@ -174,6 +174,7 @@ enum cmd_and_opt_values {
   oOpenPGP,
   oCipherAlgo,
   oDigestAlgo,
+  oExtraDigestAlgo,
   oCompressAlgo,
   oCommandFD,
   oNoVerbose,
@@ -388,6 +389,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 ,
       N_("|NAME|use message digest algorithm NAME")},
+    { oExtraDigestAlgo, "extra-digest-algo", 2 , "@" },
 #if 0
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
 #endif
@@ -842,6 +844,7 @@ main ( int argc, char **argv)
   int use_random_seed = 1;
   int with_fpr = 0;
   char *def_digest_string = NULL;
+  char *extra_digest_algo = NULL;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
   certlist_t recplist = NULL;
@@ -1298,6 +1301,10 @@ main ( int argc, char **argv)
           }
           break;
 
+        case oExtraDigestAlgo: 
+          extra_digest_algo = pargs.r.ret_str;
+          break;
+
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
         case oNoRandomSeedFile: use_random_seed = 0; break;
 
@@ -1439,6 +1446,12 @@ main ( int argc, char **argv)
           xfree (def_digest_string);
           def_digest_string = NULL;
           if (our_md_test_algo(opt.def_digest_algo) )
+            log_error (_("selected digest algorithm is invalid\n"));
+        }
+      if (extra_digest_algo)
+        {
+          opt.extra_digest_algo = gcry_md_map_name (extra_digest_algo);
+          if (our_md_test_algo (opt.extra_digest_algo) )
             log_error (_("selected digest algorithm is invalid\n"));
         }
     }

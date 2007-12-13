@@ -92,6 +92,9 @@ struct
 
   char *local_user;       /* NULL or argument to -u */
 
+  int extra_digest_algo;  /* A digest algorithm also used for
+                             verification of signatures.  */
+
   int always_trust;       /* Trust the given keys even if there is no
                              valid certification chain */
   int skip_verify;        /* do not check signatures on data */

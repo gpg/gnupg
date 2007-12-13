@@ -113,7 +113,7 @@ Developer information:
 @node GPG Commands
 @section Commands
 
-Commands are not distinguished from options execpt for the fact that
+Commands are not distinguished from options except for the fact that
 only one command is allowed.
 
 @command{@gpgname} may be run with no commands, in which case it will
@@ -876,7 +876,7 @@ encountered, you can explicitly stop parsing by using the special option
 @node GPG Configuration Options
 @subsection How to change the configuration
 
-These options are used to change the configuraton and are usually found
+These options are used to change the configuration and are usually found
 in the option file.
 
 @table @gnupgtabopt
@@ -2456,13 +2456,13 @@ listed. @option{--list-config} is only usable with
 
 @item --gpgconf-list
 @opindex gpgconf-list
-This command is simliar to @option{--list-config} but in general only
+This command is similar to @option{--list-config} but in general only
 internally used by the @command{gpgconf} tool.
 
 @item --gpgconf-test
 @opindex gpgconf-test
 This is more or less dummy action.  However it parses the configuration
-file and returns with failure if the configuraion file would prevent
+file and returns with failure if the configuration file would prevent
 @command{gpg} from startup.  Thus it may be used to run a syntax check
 on the configuration file.
 
@@ -2560,7 +2560,7 @@ For existing users the a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 @end ifclear
 
-For internal purposes @command{@gpgname} creates and maintaines a few other
+For internal purposes @command{@gpgname} creates and maintains a few other
 files; They all live in in the current home directory (@pxref{option
 --homedir}).  Only the @command{@gpgname} may modify these files.
 
@@ -2686,7 +2686,7 @@ user for the filename.
 @include specify-user-id.texi
 @end ifset
 
-@mansect return vaue
+@mansect return value
 @chapheading RETURN VALUE
 
 The program returns 0 if everything was fine, 1 if at least

@@ -1,3 +1,14 @@
+2007-12-13  Werner Koch  <wk@g10code.com>
+
+	* qualified.txt: Add 2 root certs from S-Trust for 2008-2012.
+	* examples/trustlist.txt: Ditto.
+
+	* gpgsm.texi (Esoteric Options): Document --extra-digest-algo.
+
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi: Typo fixes.  From Christer Andersson.
+
 2007-12-04  Werner Koch  <wk@g10code.com>
 
 	* help.txt: New online help file.

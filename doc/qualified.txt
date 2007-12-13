@@ -180,6 +180,35 @@ E0:BF:1B:91:91:6B:88:E4:F1:15:92:22:CE:37:23:96:B1:4A:2E:5C  de
 7A:3C:1B:60:2E:BD:A4:A1:E0:EB:AD:7A:BA:4F:D1:43:69:A9:39:FC  de
 
 
+#           ID: 0xA8FEA3CA
+#          S/N: 00B3963E0E6C2D65125853E970665402E5
+#       Issuer: /CN=S-TRUST Qualified Root CA 2008-001:PN
+#               /O=Deutscher Sparkassen Verlag GmbH/L=Stuttgart/C=DE
+#      Subject: /CN=S-TRUST Qualified Root CA 2008-001:PN
+#               /O=Deutscher Sparkassen Verlag GmbH/L=Stuttgart/C=DE
+#     validity: 2008-01-01 00:00:00 through 2012-12-30 23:59:59
+#     key type: 2048 bit RSA
+#    key usage: certSign crlSign
+# chain length: 1
+#[checked: 2007-12-13 via received ZIP file with qualified signature from 
+#         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
+#         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg]
+C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA
+
+#           ID: 0x3A7D979B
+#          S/N: 00C4216083F35C54F67B09A80C3C55FE7D
+#       Issuer: /CN=S-TRUST Qualified Root CA 2008-002:PN
+#               /O=Deutscher Sparkassen Verlag GmbH/L=Stuttgart/C=DE
+#      Subject: /CN=S-TRUST Qualified Root CA 2008-002:PN
+#               /O=Deutscher Sparkassen Verlag GmbH/L=Stuttgart/C=DE
+#     validity: 2008-01-01 00:00:00 through 2012-12-30 23:59:59
+#     key type: 2048 bit RSA
+#    key usage: certSign crlSign
+# chain length: 1
+#[checked: 2007-12-13 via received ZIP file with qualified signature from 
+#         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
+#         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg"]
+D5:C7:50:F2:FE:4E:EE:D7:C7:B1:E4:13:7B:FB:54:84:3A:7D:97:9B
 
 
 #*******************************************

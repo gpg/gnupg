@@ -491,7 +491,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       unsigned char *digest;
       size_t digest_len;
       /* Fixme do this for all signers and get the algo to use from
-         the signer's certificate - does not make mich sense, but we
+         the signer's certificate - does not make much sense, but we
          should do this consistent as we have already done it above. */
       algo = GCRY_MD_SHA1; 
       hash_data (data_fd, data_md);
@@ -530,7 +530,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
 
   /* We need to write at least a minimal list of our capabilities to
-     try to convince some MUAs to use 3DEs and not the crippled
+     try to convince some MUAs to use 3DES and not the crippled
      RC2. Our list is:
 
         aes128-CBC

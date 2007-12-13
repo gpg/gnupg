@@ -1,3 +1,9 @@
+2007-12-13  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c (hash_algo_from_sigval): New.
+	* t-sexputil.c: New.
+	* Makefile.am (module_tests): Add it.
+
 2007-12-11  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (send_pinentry_environment): Allow using of old
@@ -1126,7 +1132,8 @@
 	(atoi_1,atoi_2,atoi_4,xtoi_1,xtoi_2): New.
 	
 	
- Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 
+	   2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
