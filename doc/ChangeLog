@@ -1,7 +1,9 @@
 2007-12-13  Werner Koch  <wk@g10code.com>
 
+
 	* qualified.txt: Add 2 root certs from S-Trust for 2008-2012.
 	* examples/trustlist.txt: Ditto.
+	* com-certs.pem: Ditto.
 
 	* gpgsm.texi (Esoteric Options): Document --extra-digest-algo.
 
