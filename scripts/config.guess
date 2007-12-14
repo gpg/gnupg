@@ -4,11 +4,11 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2007-05-17'
+timestamp='2007-11-19'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
+# the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful, but
@@ -17,7 +17,9 @@ timestamp='2007-05-17'
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>.
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
+# 02110-1301, USA.
 #
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -328,7 +330,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     sun4*:SunOS:5.*:* | tadpole*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit ;;
-    i86pc:SunOS:5.*:* | ix86xen:SunOS:5.*:*)
+    i86pc:SunOS:5.*:* | i86xen:SunOS:5.*:*)
 	echo i386-pc-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit ;;
     sun4*:SunOS:6*:*)
@@ -791,7 +793,7 @@ EOF
 	exit ;;
     *:Interix*:[3456]*)
     	case ${UNAME_MACHINE} in
-	    x86) 
+	    x86)
 		echo i586-pc-interix${UNAME_RELEASE}
 		exit ;;
 	    EM64T | authenticamd)
@@ -952,8 +954,8 @@ EOF
     x86_64:Linux:*:*)
 	echo x86_64-unknown-linux-gnu
 	exit ;;
-    xtensa:Linux:*:*)
-    	echo xtensa-unknown-linux-gnu
+    xtensa*:Linux:*:*)
+    	echo ${UNAME_MACHINE}-unknown-linux-gnu
 	exit ;;
     i*86:Linux:*:*)
 	# The BFD linker knows what the default object file format is, so

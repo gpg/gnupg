@@ -1,3 +1,8 @@
+2007-12-14  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (./gpg_dearmor): Reverted last change because the
+	real fix is to --no-options.
+
 2007-11-22  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (./gpg_dearmor): Add --homedir so that we don't
