@@ -1890,7 +1890,10 @@ main (int argc, char **argv )
 	    default_config = 0;
 	}
 	else if( pargs.r_opt == oNoOptions )
+          {
 	    default_config = 0; /* --no-options */
+            opt.no_homedir_creation = 1;
+          }
 	else if( pargs.r_opt == oHomedir )
 	    set_homedir ( pargs.r.ret_str );
 	else if( pargs.r_opt == oNoPermissionWarn )

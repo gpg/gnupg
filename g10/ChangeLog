@@ -1,3 +1,9 @@
+2007-12-14  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Set opt.no_homedir_creation already on the first
+	option parsing pass.  This is required so that the gpg_dearmor
+	tool won't create a ~/.gnupg.
+
 2007-12-12  Werner Koch  <wk@g10code.com>
 
 	* misc.c (print_pubkey_algo_note): Print a warning for type 20 keys.
