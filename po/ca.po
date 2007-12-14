@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-11-19 10:56+0100\n"
+"POT-Creation-Date: 2007-12-12 19:19+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -61,7 +61,7 @@ msgstr "s'està escrivint la clau secreta a «%s»\n"
 
 #: cipher/random.c:446 g10/card-util.c:676 g10/card-util.c:745
 #: g10/dearmor.c:59 g10/dearmor.c:108 g10/encode.c:182 g10/encode.c:472
-#: g10/gpg.c:1015 g10/gpg.c:3546 g10/import.c:193 g10/keygen.c:2390
+#: g10/gpg.c:1015 g10/gpg.c:3580 g10/import.c:193 g10/keygen.c:2403
 #: g10/keyring.c:1523 g10/openfile.c:188 g10/openfile.c:356
 #: g10/plaintext.c:490 g10/sign.c:776 g10/sign.c:969 g10/sign.c:1083
 #: g10/sign.c:1234 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:538
@@ -98,8 +98,8 @@ msgstr "no s'ha pogut llegir «%s»: %s\n"
 msgid "note: random_seed file not updated\n"
 msgstr "nota: el fitxer random_seed no s'ha actualitzat\n"
 
-#: cipher/random.c:542 g10/exec.c:479 g10/gpg.c:1014 g10/keygen.c:2876
-#: g10/keygen.c:2906 g10/keyring.c:1199 g10/keyring.c:1499 g10/openfile.c:277
+#: cipher/random.c:542 g10/exec.c:479 g10/gpg.c:1014 g10/keygen.c:2889
+#: g10/keygen.c:2919 g10/keyring.c:1199 g10/keyring.c:1499 g10/openfile.c:277
 #: g10/openfile.c:371 g10/sign.c:794 g10/sign.c:1099 g10/tdbio.c:534
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -201,11 +201,11 @@ msgstr "l'enviament al servidor de claus ha fallat: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1323 g10/app-openpgp.c:2387
+#: g10/app-openpgp.c:1323 g10/app-openpgp.c:2428
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1329 g10/app-openpgp.c:2396
+#: g10/app-openpgp.c:1329 g10/app-openpgp.c:2437
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -318,12 +318,12 @@ msgstr ""
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: g10/app-openpgp.c:2401
+#: g10/app-openpgp.c:2442
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: g10/app-openpgp.c:2472 g10/app-openpgp.c:2482
+#: g10/app-openpgp.c:2513 g10/app-openpgp.c:2523
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr ""
@@ -426,14 +426,14 @@ msgstr ""
 # Destès? ivb
 # Desatès, sí. jm
 #: g10/card-util.c:74 g10/card-util.c:1404 g10/delkey.c:126 g10/keyedit.c:1516
-#: g10/keygen.c:2574 g10/revoke.c:216 g10/revoke.c:454
+#: g10/keygen.c:2587 g10/revoke.c:216 g10/revoke.c:454
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "no es pot fet això en mode desatès\n"
 
 #: g10/card-util.c:101 g10/card-util.c:1130 g10/card-util.c:1213
-#: g10/keyedit.c:423 g10/keyedit.c:444 g10/keyedit.c:458 g10/keygen.c:1387
-#: g10/keygen.c:1454
+#: g10/keyedit.c:423 g10/keyedit.c:444 g10/keyedit.c:458 g10/keygen.c:1400
+#: g10/keygen.c:1467
 msgid "Your selection? "
 msgstr "La vostra selecció? "
 
@@ -611,7 +611,7 @@ msgid "   (3) Authentication key\n"
 msgstr ""
 
 #: g10/card-util.c:1141 g10/card-util.c:1224 g10/keyedit.c:938
-#: g10/keygen.c:1391 g10/keygen.c:1419 g10/keygen.c:1493 g10/revoke.c:683
+#: g10/keygen.c:1404 g10/keygen.c:1432 g10/keygen.c:1506 g10/revoke.c:683
 msgid "Invalid selection.\n"
 msgstr "La selecció és invàlida.\n"
 
@@ -778,7 +778,7 @@ msgstr "Repetiu la contrasenya: "
 msgid "PIN not correctly repeated; try again"
 msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
 
-#: g10/decrypt.c:67 g10/decrypt.c:158 g10/gpg.c:3911 g10/keyring.c:375
+#: g10/decrypt.c:67 g10/decrypt.c:158 g10/gpg.c:3945 g10/keyring.c:375
 #: g10/keyring.c:661 g10/verify.c:101 g10/verify.c:156
 #, c-format
 msgid "can't open `%s'\n"
@@ -794,7 +794,7 @@ msgstr "--output no funciona per a aquesta ordre\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "no s'ha trobat la clau «%s»: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:339 g10/import.c:2360 g10/keyserver.c:1725
+#: g10/delkey.c:81 g10/export.c:339 g10/import.c:2361 g10/keyserver.c:1725
 #: g10/revoke.c:232 g10/revoke.c:476
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1409,497 +1409,497 @@ msgstr "AVÍS: els permissos del directori envoltant són insegurs en %s «%s»\
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "AVÍS: els permissos del directori envoltant són insegurs en %s «%s»\n"
 
-#: g10/gpg.c:1450
+#: g10/gpg.c:1484
 #, fuzzy, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "s'ha creat el nou fitxer d'opcions «%s»\n"
 
-#: g10/gpg.c:1543
+#: g10/gpg.c:1577
 msgid "display photo IDs during key listings"
 msgstr ""
 
-#: g10/gpg.c:1545
+#: g10/gpg.c:1579
 msgid "show policy URLs during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1547
+#: g10/gpg.c:1581
 #, fuzzy
 msgid "show all notations during signature listings"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
-#: g10/gpg.c:1549
+#: g10/gpg.c:1583
 msgid "show IETF standard notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1553
+#: g10/gpg.c:1587
 msgid "show user-supplied notations during signature listings"
 msgstr ""
 
-#: g10/gpg.c:1555
+#: g10/gpg.c:1589
 #, fuzzy
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "la URL de política de signatura donada no és vàlida\n"
 
-#: g10/gpg.c:1557
+#: g10/gpg.c:1591
 msgid "show user ID validity during key listings"
 msgstr ""
 
-#: g10/gpg.c:1559
+#: g10/gpg.c:1593
 msgid "show revoked and expired user IDs in key listings"
 msgstr ""
 
-#: g10/gpg.c:1561
+#: g10/gpg.c:1595
 msgid "show revoked and expired subkeys in key listings"
 msgstr ""
 
-#: g10/gpg.c:1563
+#: g10/gpg.c:1597
 #, fuzzy
 msgid "show the keyring name in key listings"
 msgstr "mostra en quin anell de claus està una clau llistada"
 
-#: g10/gpg.c:1565
+#: g10/gpg.c:1599
 #, fuzzy
 msgid "show expiration dates during signature listings"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
-#: g10/gpg.c:1959
+#: g10/gpg.c:1993
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "NOTA: es descarta el fitxer d'opcions predeterminades antic «%s»\n"
 
-#: g10/gpg.c:2001
+#: g10/gpg.c:2035
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
 
-#: g10/gpg.c:2005
+#: g10/gpg.c:2039
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fitxer d'opcions «%s»: %s\n"
 
-#: g10/gpg.c:2012
+#: g10/gpg.c:2046
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "s'estan llegint opcions de «%s»\n"
 
-#: g10/gpg.c:2228 g10/gpg.c:2896 g10/gpg.c:2915
+#: g10/gpg.c:2262 g10/gpg.c:2930 g10/gpg.c:2949
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s no és per a ús normal!\n"
 
-#: g10/gpg.c:2241
+#: g10/gpg.c:2275
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "la extensió de xifrat «%s» no s'ha carregat per tindre permissos insegurs\n"
 
-#: g10/gpg.c:2430 g10/gpg.c:2442
+#: g10/gpg.c:2464 g10/gpg.c:2476
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2519
+#: g10/gpg.c:2553
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2543 g10/gpg.c:2732 g10/keyedit.c:4076
+#: g10/gpg.c:2577 g10/gpg.c:2766 g10/keyedit.c:4076
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "no s'ha pogut analitzar sintàcticament la URI del servidor de claus\n"
 
-#: g10/gpg.c:2555
+#: g10/gpg.c:2589
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2558
+#: g10/gpg.c:2592
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2565
+#: g10/gpg.c:2599
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opcions d'importanció no vàlides\n"
 
-#: g10/gpg.c:2568
+#: g10/gpg.c:2602
 msgid "invalid import options\n"
 msgstr "opcions d'importació no vàlides\n"
 
-#: g10/gpg.c:2575
+#: g10/gpg.c:2609
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2578
+#: g10/gpg.c:2612
 msgid "invalid export options\n"
 msgstr "opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2585
+#: g10/gpg.c:2619
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opcions d'importanció no vàlides\n"
 
-#: g10/gpg.c:2588
+#: g10/gpg.c:2622
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "opcions d'importació no vàlides\n"
 
-#: g10/gpg.c:2596
+#: g10/gpg.c:2630
 msgid "display photo IDs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2598
+#: g10/gpg.c:2632
 msgid "show policy URLs during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2600
+#: g10/gpg.c:2634
 #, fuzzy
 msgid "show all notations during signature verification"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2602
+#: g10/gpg.c:2636
 msgid "show IETF standard notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2606
+#: g10/gpg.c:2640
 msgid "show user-supplied notations during signature verification"
 msgstr ""
 
-#: g10/gpg.c:2608
+#: g10/gpg.c:2642
 #, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "la URL de política de signatura donada no és vàlida\n"
 
-#: g10/gpg.c:2610
+#: g10/gpg.c:2644
 #, fuzzy
 msgid "show user ID validity during signature verification"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2612
+#: g10/gpg.c:2646
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 
-#: g10/gpg.c:2614
+#: g10/gpg.c:2648
 #, fuzzy
 msgid "show only the primary user ID in signature verification"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2616
+#: g10/gpg.c:2650
 msgid "validate signatures with PKA data"
 msgstr ""
 
-#: g10/gpg.c:2618
+#: g10/gpg.c:2652
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 
-#: g10/gpg.c:2625
+#: g10/gpg.c:2659
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2628
+#: g10/gpg.c:2662
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2635
+#: g10/gpg.c:2669
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "no s'ha pogut fixar l'exec-path a %s\n"
 
-#: g10/gpg.c:2798
+#: g10/gpg.c:2832
 #, fuzzy, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
 
-#: g10/gpg.c:2801
+#: g10/gpg.c:2835
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2885
+#: g10/gpg.c:2919
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVÍS: el programa podria crear un fitxer core!\n"
 
 # FIXME: preferència? jm
 # Ho discutírem en la llista, segur.  Deu ser als arxius.  ivb
-#: g10/gpg.c:2889
+#: g10/gpg.c:2923
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "AVÍS: %s té preferència sobre %s\n"
 
-#: g10/gpg.c:2898
+#: g10/gpg.c:2932
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s no és permés amb %s!\n"
 
-#: g10/gpg.c:2901
+#: g10/gpg.c:2935
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s no té sentit amb %s!\n"
 
-#: g10/gpg.c:2908
+#: g10/gpg.c:2942
 #, fuzzy, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "gpg-agent no està disponible en aquesta sessió\n"
 
-#: g10/gpg.c:2923
+#: g10/gpg.c:2957
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
 # clares -> en clar?  ivb
-#: g10/gpg.c:2937
+#: g10/gpg.c:2971
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "només podeu fer signatures separades o en clar en el mode --pgp2\n"
 
-#: g10/gpg.c:2943
+#: g10/gpg.c:2977
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "no podeu signar i xifrar al mateix temps en el mode --pgp2\n"
 
-#: g10/gpg.c:2949
+#: g10/gpg.c:2983
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "heu d'utilitzar fitxers (i no un conducte) mentre treballeu amb --pgp2 "
 "habilitat.\n"
 
-#: g10/gpg.c:2962
+#: g10/gpg.c:2996
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "xifrar un missatge en mode --pgp2 requereix el xifratge IDEA\n"
 
-#: g10/gpg.c:3029 g10/gpg.c:3053
+#: g10/gpg.c:3063 g10/gpg.c:3087
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no és vàlid\n"
 
-#: g10/gpg.c:3035 g10/gpg.c:3059
+#: g10/gpg.c:3069 g10/gpg.c:3093
 msgid "selected digest algorithm is invalid\n"
 msgstr "l'algorisme de resum seleccionat no és vàlid\n"
 
-#: g10/gpg.c:3041
+#: g10/gpg.c:3075
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "l'algorisme de xifratge triat no és vàlid\n"
 
-#: g10/gpg.c:3047
+#: g10/gpg.c:3081
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "l'algorisme de resum de certificació seleccionat no és vàlid\n"
 
-#: g10/gpg.c:3062
+#: g10/gpg.c:3096
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed ha de ser major que 0\n"
 
-#: g10/gpg.c:3064
+#: g10/gpg.c:3098
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed ha de ser major que 1\n"
 
-#: g10/gpg.c:3066
+#: g10/gpg.c:3100
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth ha d'estar en el rang 1 a 255\n"
 
-#: g10/gpg.c:3068
+#: g10/gpg.c:3102
 #, fuzzy
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "default-check-level és invàlid; ha de ser 0, 1, 2 o 3\n"
 
-#: g10/gpg.c:3070
+#: g10/gpg.c:3104
 #, fuzzy
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "default-check-level és invàlid; ha de ser 0, 1, 2 o 3\n"
 
-#: g10/gpg.c:3073
+#: g10/gpg.c:3107
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: el mode S2K simple (0) no és gens recomanable\n"
 
-#: g10/gpg.c:3077
+#: g10/gpg.c:3111
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "el mode S2K és invàlid; ha de ser 0, 1 o 3\n"
 
-#: g10/gpg.c:3084
+#: g10/gpg.c:3118
 msgid "invalid default preferences\n"
 msgstr "les preferències per defecte són invàlides\n"
 
-#: g10/gpg.c:3093
+#: g10/gpg.c:3127
 msgid "invalid personal cipher preferences\n"
 msgstr "les preferències personals de xifrat són invàlides\n"
 
-#: g10/gpg.c:3097
+#: g10/gpg.c:3131
 msgid "invalid personal digest preferences\n"
 msgstr "les preferències personals de digest són invàlides\n"
 
-#: g10/gpg.c:3101
+#: g10/gpg.c:3135
 msgid "invalid personal compress preferences\n"
 msgstr "les preferències personals de compressió són invàlides\n"
 
-#: g10/gpg.c:3134
+#: g10/gpg.c:3168
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s encara no funciona amb %s\n"
 
-#: g10/gpg.c:3181
+#: g10/gpg.c:3215
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "no podeu usar l'algorisme de xifratge «%s» mentre esteu en mode %s\n"
 
-#: g10/gpg.c:3186
+#: g10/gpg.c:3220
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "no podeu usar l'algorisme de resum %s mentre esteu en mode %s\n"
 
-#: g10/gpg.c:3191
+#: g10/gpg.c:3225
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "no podeu usar l'algorisme de compressió %s mentre esteu en mode %s\n"
 
-#: g10/gpg.c:3293
+#: g10/gpg.c:3327
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "no s'ha pogut inicialitzar la base de dades de confiança: %s\n"
 
-#: g10/gpg.c:3304
+#: g10/gpg.c:3338
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVÍS: s'han donat destinataris (-r) sense usar xifratge de clau pública\n"
 
-#: g10/gpg.c:3315
+#: g10/gpg.c:3349
 msgid "--store [filename]"
 msgstr "--store [nom_del_fitxer]"
 
-#: g10/gpg.c:3322
+#: g10/gpg.c:3356
 msgid "--symmetric [filename]"
 msgstr "--symmetric [nom_del_fitxer]"
 
-#: g10/gpg.c:3324
+#: g10/gpg.c:3358
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
 
-#: g10/gpg.c:3334
+#: g10/gpg.c:3368
 msgid "--encrypt [filename]"
 msgstr "--encrypt [nom_del_fitxer]"
 
-#: g10/gpg.c:3347
+#: g10/gpg.c:3381
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/gpg.c:3349
+#: g10/gpg.c:3383
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3352
+#: g10/gpg.c:3386
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "no podeu usar %s mentre esteu en mode %s\n"
 
-#: g10/gpg.c:3370
+#: g10/gpg.c:3404
 msgid "--sign [filename]"
 msgstr "--sign [nom_del_fitxer]"
 
-#: g10/gpg.c:3383
+#: g10/gpg.c:3417
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/gpg.c:3398
+#: g10/gpg.c:3432
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [nom_del_fitxer]"
 
-#: g10/gpg.c:3400
+#: g10/gpg.c:3434
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/gpg.c:3403
+#: g10/gpg.c:3437
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "no podeu usar %s mentre esteu en mode %s\n"
 
-#: g10/gpg.c:3423
+#: g10/gpg.c:3457
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [nom_del_fitxer]"
 
-#: g10/gpg.c:3432
+#: g10/gpg.c:3466
 msgid "--clearsign [filename]"
 msgstr "--clearsign [nom_del_fitxer]"
 
-#: g10/gpg.c:3457
+#: g10/gpg.c:3491
 msgid "--decrypt [filename]"
 msgstr "--decrypt [nom_del_fitxer]"
 
-#: g10/gpg.c:3465
+#: g10/gpg.c:3499
 msgid "--sign-key user-id"
 msgstr "--sign-key user-id"
 
-#: g10/gpg.c:3469
+#: g10/gpg.c:3503
 msgid "--lsign-key user-id"
 msgstr "--lsign-key user-id"
 
-#: g10/gpg.c:3490
+#: g10/gpg.c:3524
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [ordres]"
 
-#: g10/gpg.c:3561
+#: g10/gpg.c:3595
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [user-id] [anell]"
 
-#: g10/gpg.c:3603
+#: g10/gpg.c:3637
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "l'enviament al servidor de claus ha fallat: %s\n"
 
-#: g10/gpg.c:3605
+#: g10/gpg.c:3639
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "la recepció des del servidor de claus ha fallat: %s\n"
 
-#: g10/gpg.c:3607
+#: g10/gpg.c:3641
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "l'exportació de la clau ha fallat: %s\n"
 
-#: g10/gpg.c:3618
+#: g10/gpg.c:3652
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "ha fallat la cerca al servidor de claus: %s\n"
 
-#: g10/gpg.c:3628
+#: g10/gpg.c:3662
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "ha fallat el refresc des del servidor de claus: %s\n"
 
-#: g10/gpg.c:3679
+#: g10/gpg.c:3713
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "no s'ha pogut llevar l'armadura: %s\n"
 
-#: g10/gpg.c:3687
+#: g10/gpg.c:3721
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "no s'ha pogut crear l'armadura: %s\n"
 
-#: g10/gpg.c:3774
+#: g10/gpg.c:3808
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "l'algoritme de dispersió és invàlid «%s»\n"
 
-#: g10/gpg.c:3897
+#: g10/gpg.c:3931
 msgid "[filename]"
 msgstr "[nom_del_fitxer]"
 
-#: g10/gpg.c:3901
+#: g10/gpg.c:3935
 msgid "Go ahead and type your message ...\n"
 msgstr "Endavant, escriviu el missatge...\n"
 
-#: g10/gpg.c:4205
+#: g10/gpg.c:4239
 msgid "the given certification policy URL is invalid\n"
 msgstr "la URL de política de certificació donada no és vàlida\n"
 
-#: g10/gpg.c:4207
+#: g10/gpg.c:4241
 msgid "the given signature policy URL is invalid\n"
 msgstr "la URL de política de signatura donada no és vàlida\n"
 
-#: g10/gpg.c:4240
+#: g10/gpg.c:4274
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "la URL de política de signatura donada no és vàlida\n"
@@ -1926,18 +1926,18 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clau invàlida %08lX s'ha fet vàlida amb --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2386 g10/keyedit.c:3719
+#: g10/getkey.c:2389 g10/keyedit.c:3719
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
 "no hi ha una clau secreta per a la subclau pública %08lX - es descarta\n"
 
-#: g10/getkey.c:2617
+#: g10/getkey.c:2620
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "s'usarà la clau secundària %08lX en lloc de la primària %08lX\n"
 
-#: g10/getkey.c:2664
+#: g10/getkey.c:2667
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
@@ -2506,7 +2506,7 @@ msgid "writing to `%s'\n"
 msgstr "s'està escrivint en «%s»\n"
 
 #: g10/import.c:805 g10/import.c:900 g10/import.c:1157 g10/import.c:1300
-#: g10/import.c:2374 g10/import.c:2396
+#: g10/import.c:2375 g10/import.c:2397
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "error mentre s'escrivia l'anell «%s»: %s\n"
@@ -2596,7 +2596,7 @@ msgstr "clau %08lX: clau secreta amb xifrat %d no vàlid - es descarta\n"
 msgid "importing secret keys not allowed\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: g10/import.c:1151 g10/import.c:2389
+#: g10/import.c:1151 g10/import.c:2390
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "no hi ha anell secret predeterminat: %s\n"
@@ -3104,20 +3104,20 @@ msgstr "Ha fallat el procés de signatura: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1135 g10/keygen.c:3213
+#: g10/keyedit.c:1135 g10/keygen.c:3226
 msgid "This key is not protected.\n"
 msgstr "Aquesta clau no està protegida.\n"
 
-#: g10/keyedit.c:1139 g10/keygen.c:3201 g10/revoke.c:537
+#: g10/keyedit.c:1139 g10/keygen.c:3214 g10/revoke.c:537
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 
-#: g10/keyedit.c:1143 g10/keygen.c:3216
+#: g10/keyedit.c:1143 g10/keygen.c:3229
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 
-#: g10/keyedit.c:1147 g10/keygen.c:3220
+#: g10/keyedit.c:1147 g10/keygen.c:3233
 msgid "Key is protected.\n"
 msgstr "La clau està protegida.\n"
 
@@ -3134,7 +3134,7 @@ msgstr ""
 "Introduïu la nova contrasenya per a la clau secreta.\n"
 "\n"
 
-#: g10/keyedit.c:1186 g10/keygen.c:1893
+#: g10/keyedit.c:1186 g10/keygen.c:1906
 msgid "passphrase not correctly repeated; try again"
 msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
 
@@ -3565,7 +3565,7 @@ msgstr " (sensible)"
 msgid "created: %s"
 msgstr "no s'ha pogut creat %s: %s\n"
 
-#: g10/keyedit.c:2731 g10/keylist.c:769 g10/keylist.c:863 g10/mainproc.c:990
+#: g10/keyedit.c:2731 g10/keylist.c:769 g10/keylist.c:863 g10/mainproc.c:997
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[revocada]"
@@ -3577,7 +3577,7 @@ msgstr " [caduca: %s]"
 
 #: g10/keyedit.c:2735 g10/keyedit.c:2786 g10/keyedit.c:2847 g10/keyedit.c:2862
 #: g10/keylist.c:194 g10/keylist.c:746 g10/keylist.c:781 g10/keylist.c:875
-#: g10/keylist.c:896 g10/keyserver.c:523 g10/mainproc.c:996
+#: g10/keylist.c:896 g10/keyserver.c:523 g10/mainproc.c:1003
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [caduca: %s]"
@@ -3614,13 +3614,13 @@ msgstr ""
 "correcta a no ser que torneu a executar el programa.\n"
 
 #: g10/keyedit.c:2879 g10/keyedit.c:3225 g10/keyserver.c:527
-#: g10/mainproc.c:1808 g10/trustdb.c:1177 g10/trustdb.c:1697
+#: g10/mainproc.c:1815 g10/trustdb.c:1177 g10/trustdb.c:1697
 #, fuzzy
 msgid "revoked"
 msgstr "[revocada]"
 
 #: g10/keyedit.c:2881 g10/keyedit.c:3227 g10/keyserver.c:531
-#: g10/mainproc.c:1810 g10/trustdb.c:530 g10/trustdb.c:1699
+#: g10/mainproc.c:1817 g10/trustdb.c:530 g10/trustdb.c:1699
 #, fuzzy
 msgid "expired"
 msgstr "expire"
@@ -3966,12 +3966,12 @@ msgid "writing key binding signature\n"
 msgstr "s'està escrivint la signatura de comprovació de la clau\n"
 
 #: g10/keygen.c:1026 g10/keygen.c:1109 g10/keygen.c:1114 g10/keygen.c:1231
-#: g10/keygen.c:2774
+#: g10/keygen.c:2787
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "la mida de la clau és invàlida; s'hi usaran %u bits\n"
 
-#: g10/keygen.c:1031 g10/keygen.c:1120 g10/keygen.c:1236 g10/keygen.c:2780
+#: g10/keygen.c:1031 g10/keygen.c:1120 g10/keygen.c:1236 g10/keygen.c:2793
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "la mida de la clau ha estat arrodonida fins a %u bits\n"
@@ -3994,109 +3994,118 @@ msgstr "xifra dades"
 msgid "Authenticate"
 msgstr ""
 
-#: g10/keygen.c:1346
+#. TRANSLATORS: Please use only plain ASCII characters for the
+#. translation.  If this is not possible use single digits.  Here is
+#. a description of the fucntions:
+#.
+#. s = Toggle signing capability
+#. e = Toggle encryption capability
+#. a = Toggle authentication capability
+#. q = Finish
+#.
+#: g10/keygen.c:1355
 msgid "SsEeAaQq"
 msgstr ""
 
-#: g10/keygen.c:1365
+#: g10/keygen.c:1378
 #, c-format
 msgid "Possible actions for a %s key: "
 msgstr ""
 
-#: g10/keygen.c:1369
+#: g10/keygen.c:1382
 msgid "Current allowed actions: "
 msgstr ""
 
-#: g10/keygen.c:1374
+#: g10/keygen.c:1387
 #, c-format
 msgid "   (%c) Toggle the sign capability\n"
 msgstr ""
 
-#: g10/keygen.c:1377
+#: g10/keygen.c:1390
 #, c-format
 msgid "   (%c) Toggle the encrypt capability\n"
 msgstr ""
 
-#: g10/keygen.c:1380
+#: g10/keygen.c:1393
 #, c-format
 msgid "   (%c) Toggle the authenticate capability\n"
 msgstr ""
 
-#: g10/keygen.c:1383
+#: g10/keygen.c:1396
 #, c-format
 msgid "   (%c) Finished\n"
 msgstr ""
 
-#: g10/keygen.c:1439
+#: g10/keygen.c:1452
 msgid "Please select what kind of key you want:\n"
 msgstr "Seleccioneu quin tipus de clau voleu:\n"
 
-#: g10/keygen.c:1441
+#: g10/keygen.c:1454
 #, fuzzy, c-format
 msgid "   (%d) DSA and Elgamal (default)\n"
 msgstr "   (%d) DSA i ElGamal (predeterminat)\n"
 
-#: g10/keygen.c:1442
+#: g10/keygen.c:1455
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (només signar)\n"
 
-#: g10/keygen.c:1444
+#: g10/keygen.c:1457
 #, fuzzy, c-format
 msgid "   (%d) DSA (set your own capabilities)\n"
 msgstr "   (%d) DSA (només signar)\n"
 
-#: g10/keygen.c:1446
+#: g10/keygen.c:1459
 #, fuzzy, c-format
 msgid "   (%d) Elgamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (només xifrar)\n"
 
-#: g10/keygen.c:1447
+#: g10/keygen.c:1460
 #, c-format
 msgid "   (%d) RSA (sign only)\n"
 msgstr "   (%d) RSA (només signar)\n"
 
-#: g10/keygen.c:1449
+#: g10/keygen.c:1462
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
 msgstr "   (%d) RSA (només xifrar)\n"
 
-#: g10/keygen.c:1451
+#: g10/keygen.c:1464
 #, fuzzy, c-format
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (només xifrar)\n"
 
-#: g10/keygen.c:1520
+#: g10/keygen.c:1533
 #, fuzzy, c-format
 msgid "DSA keypair will have %u bits.\n"
 msgstr "La parella de claus DSA ha de tenir 1024 bits.\n"
 
-#: g10/keygen.c:1530
+#: g10/keygen.c:1543
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
 
-#: g10/keygen.c:1537
+#: g10/keygen.c:1550
 #, fuzzy, c-format
 msgid "What keysize do you want? (%u) "
 msgstr "Quina grandària voleu? (1024) "
 
-#: g10/keygen.c:1551
+#: g10/keygen.c:1564
 #, c-format
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr ""
 
-#: g10/keygen.c:1557
+#: g10/keygen.c:1570
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "La grandària sol·licitada és %u bits\n"
 
-#: g10/keygen.c:1562 g10/keygen.c:1567
+#: g10/keygen.c:1575 g10/keygen.c:1580
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "arrodonida fins a %u bits\n"
 
-#: g10/keygen.c:1616
+#: g10/keygen.c:1629
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -4112,7 +4121,7 @@ msgstr ""
 "      <n>m = la clau caduca als n mesos\n"
 "      <n>y = la clau caduca als n anys\n"
 
-#: g10/keygen.c:1627
+#: g10/keygen.c:1640
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -4128,42 +4137,42 @@ msgstr ""
 "      <n>m = la signatura caduca als n mesos\n"
 "      <n>y = la signatura caduca als n anys\n"
 
-#: g10/keygen.c:1648
+#: g10/keygen.c:1661
 msgid "Key is valid for? (0) "
 msgstr "Indiqueu la validesa de la clau (0) "
 
-#: g10/keygen.c:1653
+#: g10/keygen.c:1666
 #, fuzzy, c-format
 msgid "Signature is valid for? (%s) "
 msgstr "Indiqueu la validesa de la signatura (0) "
 
-#: g10/keygen.c:1671
+#: g10/keygen.c:1684
 msgid "invalid value\n"
 msgstr "el valor no és vàlid\n"
 
-#: g10/keygen.c:1678
+#: g10/keygen.c:1691
 #, fuzzy
 msgid "Key does not expire at all\n"
 msgstr "%s no caduca en absolut\n"
 
-#: g10/keygen.c:1679
+#: g10/keygen.c:1692
 #, fuzzy
 msgid "Signature does not expire at all\n"
 msgstr "%s no caduca en absolut\n"
 
-#: g10/keygen.c:1684
+#: g10/keygen.c:1697
 #, fuzzy, c-format
 msgid "Key expires at %s\n"
 msgstr "%s caduca el %s\n"
 
-#: g10/keygen.c:1685
+#: g10/keygen.c:1698
 #, fuzzy, c-format
 msgid "Signature expires at %s\n"
 msgstr "Aquesta signatura caduca el %s\n"
 
 # Amb «it» es refereix a les dates?  ivb
 # Això vaig entendre jo. jm
-#: g10/keygen.c:1691
+#: g10/keygen.c:1704
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4171,12 +4180,12 @@ msgstr ""
 "El vostre sistema no pot representar dates posteriors a l'any 2038.\n"
 "Tanmateix, les tractarà bé fins l'any 2106.\n"
 
-#: g10/keygen.c:1696
+#: g10/keygen.c:1709
 #, fuzzy
 msgid "Is this correct? (y/N) "
 msgstr "És correcte? (s/n)"
 
-#: g10/keygen.c:1711
+#: g10/keygen.c:1724
 #, fuzzy
 msgid ""
 "\n"
@@ -4193,44 +4202,44 @@ msgstr ""
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-#: g10/keygen.c:1724
+#: g10/keygen.c:1737
 msgid "Real name: "
 msgstr "Nom i cognoms: "
 
-#: g10/keygen.c:1732
+#: g10/keygen.c:1745
 msgid "Invalid character in name\n"
 msgstr "Hi ha un caràcter invàlid en el camp *nom*\n"
 
-#: g10/keygen.c:1734
+#: g10/keygen.c:1747
 msgid "Name may not start with a digit\n"
 msgstr "El nom no pot començar amb un dígit\n"
 
-#: g10/keygen.c:1736
+#: g10/keygen.c:1749
 msgid "Name must be at least 5 characters long\n"
 msgstr "El nom ha de tenir, si més no, 5 caràcters\n"
 
-#: g10/keygen.c:1744
+#: g10/keygen.c:1757
 msgid "Email address: "
 msgstr "Adreça electrònica: "
 
-#: g10/keygen.c:1750
+#: g10/keygen.c:1763
 msgid "Not a valid email address\n"
 msgstr "No és una adreça vàlida\n"
 
-#: g10/keygen.c:1758
+#: g10/keygen.c:1771
 msgid "Comment: "
 msgstr "Comentari: "
 
-#: g10/keygen.c:1764
+#: g10/keygen.c:1777
 msgid "Invalid character in comment\n"
 msgstr "Hi ha un caràcter invàlid en el camp *comentari*\n"
 
-#: g10/keygen.c:1787
+#: g10/keygen.c:1800
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Esteu usant el joc de caràcters `%s'.\n"
 
-#: g10/keygen.c:1793
+#: g10/keygen.c:1806
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4241,7 +4250,7 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:1798
+#: g10/keygen.c:1811
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "No inclogueu l'adreça ni en el camp *nom* ni en el camp *comentari*\n"
 
@@ -4258,23 +4267,23 @@ msgstr "No inclogueu l'adreça ni en el camp *nom* ni en el camp *comentari*\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:1814
+#: g10/keygen.c:1827
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoXx"
 
-#: g10/keygen.c:1824
+#: g10/keygen.c:1837
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Canvia (N)om, (C)omentari, (E)mail o (X) ix "
 
-#: g10/keygen.c:1825
+#: g10/keygen.c:1838
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Canvia (N)om, (C)omentari, (E)mail o (O) d'acord / (X) ix"
 
-#: g10/keygen.c:1844
+#: g10/keygen.c:1857
 msgid "Please correct the error first\n"
 msgstr "Corregiu l'error primer\n"
 
-#: g10/keygen.c:1884
+#: g10/keygen.c:1897
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4282,12 +4291,12 @@ msgstr ""
 "Cal una contrasenya per a protegir la clau secreta.\n"
 "\n"
 
-#: g10/keygen.c:1894 g10/passphrase.c:808
+#: g10/keygen.c:1907 g10/passphrase.c:808
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:1900
+#: g10/keygen.c:1913
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4299,7 +4308,7 @@ msgstr ""
 "useu aquest programa amb l'opció \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:1922
+#: g10/keygen.c:1935
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4311,53 +4320,53 @@ msgstr ""
 "nombres primers; açò dóna oportunitat al generador de nombres aleatoris\n"
 "d'aconseguir prou entropia.\n"
 
-#: g10/keygen.c:2720
+#: g10/keygen.c:2733
 msgid "Key generation canceled.\n"
 msgstr "La generació de claus ha estat cancel·lada.\n"
 
-#: g10/keygen.c:2919 g10/keygen.c:3066
+#: g10/keygen.c:2932 g10/keygen.c:3079
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "s'està escrivint la clau pública a «%s»\n"
 
-#: g10/keygen.c:2921 g10/keygen.c:3069
+#: g10/keygen.c:2934 g10/keygen.c:3082
 #, fuzzy, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
-#: g10/keygen.c:2924 g10/keygen.c:3072
+#: g10/keygen.c:2937 g10/keygen.c:3085
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
 # Potser no hi haja cap anell! ivb
-#: g10/keygen.c:3055
+#: g10/keygen.c:3068
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "no s'ha trobat cap anell públic escrivible: %s\n"
 
-#: g10/keygen.c:3061
+#: g10/keygen.c:3074
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr ""
 "no s'ha trobat cap anell secret de escrivible: %s\n"
 "\n"
 
-#: g10/keygen.c:3079
+#: g10/keygen.c:3092
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell públic «%s»: %s\n"
 
-#: g10/keygen.c:3086
+#: g10/keygen.c:3099
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
 
-#: g10/keygen.c:3109
+#: g10/keygen.c:3122
 msgid "public and secret key created and signed.\n"
 msgstr "s'han creat i signat les claus pública i secreta.\n"
 
-#: g10/keygen.c:3120
+#: g10/keygen.c:3133
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -4366,13 +4375,13 @@ msgstr ""
 "Noteu que aquesta clau no serveix per a xifrar. Potser vulgueu usar l'ordre\n"
 "\"--edit-key\" per a generar una clau secundària per a tal propòsit.\n"
 
-#: g10/keygen.c:3132 g10/keygen.c:3261 g10/keygen.c:3376
+#: g10/keygen.c:3145 g10/keygen.c:3274 g10/keygen.c:3389
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
 # Werner FIXME: Use ngettext. jm
-#: g10/keygen.c:3184 g10/keygen.c:3311 g10/sign.c:242
+#: g10/keygen.c:3197 g10/keygen.c:3324 g10/sign.c:242
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4381,7 +4390,7 @@ msgstr ""
 "amb el rellotge)\n"
 
 # Werner FIXME: use ngettext. jm
-#: g10/keygen.c:3186 g10/keygen.c:3313 g10/sign.c:244
+#: g10/keygen.c:3199 g10/keygen.c:3326 g10/sign.c:244
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4389,26 +4398,26 @@ msgstr ""
 "la clau s'ha creat %lu segons en el futur (salt en el temps o problemes\n"
 "amb el rellotge)\n"
 
-#: g10/keygen.c:3195 g10/keygen.c:3324
+#: g10/keygen.c:3208 g10/keygen.c:3337
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTA: crear subclaus per a claus v3 no és conforme amb OpenPGP\n"
 
-#: g10/keygen.c:3234 g10/keygen.c:3357
+#: g10/keygen.c:3247 g10/keygen.c:3370
 #, fuzzy
 msgid "Really create? (y/N) "
 msgstr "Crear realment? "
 
-#: g10/keygen.c:3522
+#: g10/keygen.c:3535
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
 
-#: g10/keygen.c:3569
+#: g10/keygen.c:3582
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
 
-#: g10/keygen.c:3595
+#: g10/keygen.c:3608
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr ""
@@ -4717,199 +4726,199 @@ msgstr "xifrat amb l'algoritme %d (desconegut)\n"
 msgid "public key is %s\n"
 msgstr "la clau pública és %08lX\n"
 
-#: g10/mainproc.c:442
+#: g10/mainproc.c:449
 msgid "public key encrypted data: good DEK\n"
 msgstr "dades xifrades amb clau pública: bona clau de xifratge (DEK)\n"
 
-#: g10/mainproc.c:475
+#: g10/mainproc.c:482
 #, fuzzy, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr "xifrat amb una clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s\n"
 
-#: g10/mainproc.c:479 g10/pkclist.c:220
+#: g10/mainproc.c:486 g10/pkclist.c:220
 #, c-format
 msgid "      \"%s\"\n"
 msgstr ""
 
-#: g10/mainproc.c:483
+#: g10/mainproc.c:490
 #, fuzzy, c-format
 msgid "encrypted with %s key, ID %s\n"
 msgstr "xifrat amb una clau %s, ID %08lX\n"
 
-#: g10/mainproc.c:497
+#: g10/mainproc.c:504
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "ha fallat el desxifratge amb la clau pública: %s\n"
 
-#: g10/mainproc.c:511
+#: g10/mainproc.c:518
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "xifrat amb %lu contrasenyes\n"
 
 # FIXME WK: Use ngettext
-#: g10/mainproc.c:513
+#: g10/mainproc.c:520
 msgid "encrypted with 1 passphrase\n"
 msgstr "xifrat amb 1 contrasenya\n"
 
 # I no serà «dades xifrades amb %s»?  ivb
 # Sembla que sí, ho marque per a mirar-ho més endavant. jm
-#: g10/mainproc.c:544 g10/mainproc.c:566
+#: g10/mainproc.c:551 g10/mainproc.c:573
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "s'assumeixen dades xifrades amb %s\n"
 
 # L'optimístic és aquell que té una Fe Cega en que Tot Anirà Bé!  ivb
-#: g10/mainproc.c:552
+#: g10/mainproc.c:559
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "El xifratge IDEA no està disponible, s'intentarà utilitzar optimistament %s "
 "en el seu lloc\n"
 
-#: g10/mainproc.c:584
+#: g10/mainproc.c:591
 msgid "decryption okay\n"
 msgstr "desxifratge correcte\n"
 
-#: g10/mainproc.c:588
+#: g10/mainproc.c:595
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVÍS: el missatge no tenia protecció d'integritat\n"
 
-#: g10/mainproc.c:601
+#: g10/mainproc.c:608
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVÍS: el missatge xifrat ha estat manipulat!\n"
 
-#: g10/mainproc.c:607
+#: g10/mainproc.c:614
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
 
-#: g10/mainproc.c:628
+#: g10/mainproc.c:635
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: el remitent ha sol·licitat \"alt secret\"\n"
 
-#: g10/mainproc.c:630
+#: g10/mainproc.c:637
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nom del fitxer original='%.*s'\n"
 
-#: g10/mainproc.c:715
+#: g10/mainproc.c:722
 msgid "WARNING: multiple plaintexts seen\n"
 msgstr ""
 
-#: g10/mainproc.c:843
+#: g10/mainproc.c:850
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocació autònoma: useu \"gpg --import\" per a aplicar-la\n"
 
-#: g10/mainproc.c:1191
+#: g10/mainproc.c:1198
 #, fuzzy
 msgid "no signature found\n"
 msgstr "Signatura correcta de \""
 
-#: g10/mainproc.c:1434
+#: g10/mainproc.c:1441
 msgid "signature verification suppressed\n"
 msgstr "s'ha eliminat la verificació de signatura\n"
 
-#: g10/mainproc.c:1543
+#: g10/mainproc.c:1550
 #, fuzzy
 msgid "can't handle this ambiguous signature data\n"
 msgstr "no es poden tractar aquestes signatures múltiples\n"
 
-#: g10/mainproc.c:1554
+#: g10/mainproc.c:1561
 #, fuzzy, c-format
 msgid "Signature made %s\n"
 msgstr "Aquesta signatura va caducar el %s\n"
 
-#: g10/mainproc.c:1555
+#: g10/mainproc.c:1562
 #, fuzzy, c-format
 msgid "               using %s key %s\n"
 msgstr "              alias \""
 
 # «%.*s» no serà una data?  Caldrà «el» al davant.  ivb
-#: g10/mainproc.c:1559
+#: g10/mainproc.c:1566
 #, fuzzy, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Signatura creada el %.*s usant una clau %s ID %08lX\n"
 
-#: g10/mainproc.c:1579
+#: g10/mainproc.c:1586
 msgid "Key available at: "
 msgstr "La clau és disponible en: "
 
-#: g10/mainproc.c:1712 g10/mainproc.c:1760
+#: g10/mainproc.c:1719 g10/mainproc.c:1767
 #, fuzzy, c-format
 msgid "BAD signature from \"%s\""
 msgstr "Signatura INCORRECTA de \""
 
-#: g10/mainproc.c:1714 g10/mainproc.c:1762
+#: g10/mainproc.c:1721 g10/mainproc.c:1769
 #, fuzzy, c-format
 msgid "Expired signature from \"%s\""
 msgstr "Signatura caducada de \""
 
-#: g10/mainproc.c:1716 g10/mainproc.c:1764
+#: g10/mainproc.c:1723 g10/mainproc.c:1771
 #, fuzzy, c-format
 msgid "Good signature from \"%s\""
 msgstr "Signatura correcta de \""
 
-#: g10/mainproc.c:1768
+#: g10/mainproc.c:1775
 msgid "[uncertain]"
 msgstr "[incert]"
 
-#: g10/mainproc.c:1801
+#: g10/mainproc.c:1808
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "              alias \""
 
-#: g10/mainproc.c:1899
+#: g10/mainproc.c:1906
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Aquesta signatura va caducar el %s\n"
 
-#: g10/mainproc.c:1904
+#: g10/mainproc.c:1911
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Aquesta signatura caduca el %s\n"
 
-#: g10/mainproc.c:1907
+#: g10/mainproc.c:1914
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "signatura %s, algorisme de resum %s\n"
 
-#: g10/mainproc.c:1908
+#: g10/mainproc.c:1915
 msgid "binary"
 msgstr "binari"
 
-#: g10/mainproc.c:1909
+#: g10/mainproc.c:1916
 msgid "textmode"
 msgstr "mode text"
 
-#: g10/mainproc.c:1909 g10/trustdb.c:529
+#: g10/mainproc.c:1916 g10/trustdb.c:529
 msgid "unknown"
 msgstr "desconeguda"
 
-#: g10/mainproc.c:1929
+#: g10/mainproc.c:1936
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "No s'ha pogut comprovar la signatura: %s\n"
 
-#: g10/mainproc.c:1998 g10/mainproc.c:2014 g10/mainproc.c:2100
+#: g10/mainproc.c:2005 g10/mainproc.c:2021 g10/mainproc.c:2107
 msgid "not a detached signature\n"
 msgstr "no és una signatura separada\n"
 
-#: g10/mainproc.c:2041
+#: g10/mainproc.c:2048
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
 "AVÍS: s'han detectat múltiples signatures. Només es comprovarà la primera.\n"
 
-#: g10/mainproc.c:2049
+#: g10/mainproc.c:2056
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "signatura autònoma de classe 0x%02x\n"
 
-#: g10/mainproc.c:2106
+#: g10/mainproc.c:2113
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signatura de l'estil antic (PGP 2.x)\n"
 
-#: g10/mainproc.c:2116
+#: g10/mainproc.c:2123
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "s'ha detectat un paquet arrel invàlid en proc_tree()\n"
 
@@ -4934,46 +4943,51 @@ msgstr "base de dades de confiança: ha fallat la lectura (n=%d): %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "no es pot treballar amb l'algoritme de clau pública %d\n"
 
-#: g10/misc.c:329
+#: g10/misc.c:320
+#, fuzzy
+msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
+msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
+#: g10/misc.c:333
 #, fuzzy, c-format
 msgid "WARNING: using experimental cipher algorithm %s\n"
 msgstr "l'algoritme de xifratge no és implementat"
 
-#: g10/misc.c:344
+#: g10/misc.c:348
 #, fuzzy, c-format
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "signatura %s, algorisme de resum %s\n"
 
-#: g10/misc.c:349
+#: g10/misc.c:353
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
-#: g10/misc.c:445
+#: g10/misc.c:459
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "el mòdul de xifratge IDEA no està present\n"
 
-#: g10/misc.c:446 g10/sig-check.c:101
+#: g10/misc.c:460 g10/sig-check.c:101
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr " i = mostra més informació\n"
 
-#: g10/misc.c:679
+#: g10/misc.c:693
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: l'opció «%s» està desaconsellada.\n"
 
-#: g10/misc.c:683
+#: g10/misc.c:697
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
-#: g10/misc.c:685
+#: g10/misc.c:699
 #, c-format
 msgid "please use \"%s%s\" instead\n"
 msgstr "si us plau, utilitzeu «%s%s» en el seu lloc\n"
 
-#: g10/misc.c:692
+#: g10/misc.c:706
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
@@ -4981,29 +4995,29 @@ msgstr "AVÍS: %s és una opció desaconsellada.\n"
 # Gènere?  Nombre?  Passat, futur?  ivb
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
-#: g10/misc.c:705
+#: g10/misc.c:719
 msgid "Uncompressed"
 msgstr "No comprimit"
 
 # Gènere?  Nombre?  Passat, futur?  ivb
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
-#: g10/misc.c:730
+#: g10/misc.c:744
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "No comprimit"
 
-#: g10/misc.c:857
+#: g10/misc.c:871
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "aquest missatge pot no ser usable per %s\n"
 
-#: g10/misc.c:1032
+#: g10/misc.c:1046
 #, fuzzy, c-format
 msgid "ambiguous option `%s'\n"
 msgstr "s'estan llegint opcions de «%s»\n"
 
-#: g10/misc.c:1057
+#: g10/misc.c:1071
 #, fuzzy, c-format
 msgid "unknown option `%s'\n"
 msgstr "el destinatari predeterminat és desconegut «%s»\n"
@@ -5710,28 +5724,28 @@ msgstr ""
 "s'està generant la suma de comprovació desaconsellada de 16-bits per a la "
 "protecció de la clau secreta\n"
 
-#: g10/seskey.c:52
+#: g10/seskey.c:51
 msgid "weak key created - retrying\n"
 msgstr "s'hi ha creat una clau feble - reintent\n"
 
 # És no-wrap?  ivb
-#: g10/seskey.c:57
+#: g10/seskey.c:56
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "no s'ha pogut evitar una clau feble per a xifratge simètric;\n"
 "hi ha hagut %d intents!\n"
 
-#: g10/seskey.c:220
+#: g10/seskey.c:218
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
-#: g10/seskey.c:234
+#: g10/seskey.c:232
 #, c-format
 msgid "DSA key %s uses an unsafe (%u bit) hash\n"
 msgstr ""
 
-#: g10/seskey.c:246
+#: g10/seskey.c:244
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
 msgstr ""
@@ -5784,20 +5798,20 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTA: la clau de signatura %08lX va caducar el %s\n"
 
-#: g10/sig-check.c:285
+#: g10/sig-check.c:311
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "es supossa una signatura incorrecta de la clau %08lX a causa d'un bit crític "
 "desconegut\n"
 
-#: g10/sig-check.c:542
+#: g10/sig-check.c:568
 #, fuzzy, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
 msgstr ""
 "clau %08lX: no hi ha una subclau per al paquet de la subclau de revocació\n"
 
-#: g10/sig-check.c:568
+#: g10/sig-check.c:594
 #, fuzzy, c-format
 msgid "key %s: no subkey for subkey binding signature\n"
 msgstr ""
@@ -6197,7 +6211,7 @@ msgstr ""
 "no és necessària una comprovació de la base de dades de confiança\n"
 "\n"
 
-#: g10/trustdb.c:581 g10/trustdb.c:2350
+#: g10/trustdb.c:581 g10/trustdb.c:2425
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr "la pròxima comprovació de la base de dades de confiança serà el %s\n"
@@ -6229,33 +6243,33 @@ msgstr "si us plau, feu un --check-trustdb\n"
 msgid "checking the trustdb\n"
 msgstr "s'està comprovant la base de dades de confiança\n"
 
-#: g10/trustdb.c:2093
+#: g10/trustdb.c:2168
 #, c-format
 msgid "%d keys processed (%d validity counts cleared)\n"
 msgstr "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
-#: g10/trustdb.c:2158
+#: g10/trustdb.c:2233
 msgid "no ultimately trusted keys found\n"
 msgstr "no s'han trobat claus amb confiança absoluta\n"
 
-#: g10/trustdb.c:2172
+#: g10/trustdb.c:2247
 #, fuzzy, c-format
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr ""
 "no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
 
-#: g10/trustdb.c:2195
+#: g10/trustdb.c:2270
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
 msgstr ""
 
-#: g10/trustdb.c:2281
+#: g10/trustdb.c:2356
 #, c-format
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
 
-#: g10/trustdb.c:2356
+#: g10/trustdb.c:2431
 #, fuzzy, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "registre de confiança %lu, tipus %d: no s'ha pogut escriure: %s\n"
