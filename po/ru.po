@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-12-14 16:16+0100\n"
+"POT-Creation-Date: 2007-12-14 17:00+0100\n"
 "PO-Revision-Date: 2006-11-07 19:31+0300\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -694,7 +694,7 @@ msgid "I'll change it later"
 msgstr ""
 
 #: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1641
+#: tools/gpgconf-comp.c:1661
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr ""
@@ -7690,7 +7690,7 @@ msgstr "Настройки LDAP серверов"
 msgid "Configuration for OCSP"
 msgstr "Настройки OCSP"
 
-#: tools/gpgconf-comp.c:3006
+#: tools/gpgconf-comp.c:3026
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

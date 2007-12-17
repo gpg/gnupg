@@ -24,8 +24,8 @@ min_automake_version="1.10"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.0.8rc1])
-m4_define([my_issvn], [no])
+m4_define([my_version], [2.0.8])
+m4_define([my_issvn], [yes])
 
 
 m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
@@ -402,6 +402,17 @@ AH_BOTTOM([
 #else
 #error "No endianness found"
 #endif
+#endif
+
+
+/* Hack used for W32: ldap.m4 also tests for the ASCII version of
+   ldap_start_tls_s because that is the actual symbol used in the
+   library.  winldap.h redefines it to our commonly used value,
+   thus we define our usual macro here.  */
+#ifdef HAVE_LDAP_START_TLS_SA
+# ifndef HAVE_LDAP_START_TLS_S
+#  define HAVE_LDAP_START_TLS_S 1
+# endif
 #endif
 
 

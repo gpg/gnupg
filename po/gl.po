@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-12-14 16:16+0100\n"
+"POT-Creation-Date: 2007-12-14 17:00+0100\n"
 "PO-Revision-Date: 2003-12-04 11:39+0100\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
@@ -711,7 +711,7 @@ msgid "I'll change it later"
 msgstr ""
 
 #: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1641
+#: tools/gpgconf-comp.c:1661
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
@@ -7980,7 +7980,7 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:3006
+#: tools/gpgconf-comp.c:3026
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

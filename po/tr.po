@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.9.94\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-12-14 16:16+0100\n"
+"POT-Creation-Date: 2007-12-14 17:00+0100\n"
 "PO-Revision-Date: 2006-11-04 03:45+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -699,7 +699,7 @@ msgid "I'll change it later"
 msgstr ""
 
 #: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1641
+#: tools/gpgconf-comp.c:1661
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "boru oluşturulurken hata: %s\n"
@@ -7789,7 +7789,7 @@ msgstr "Kullanılacak LDAP sunucularının yapılandırması"
 msgid "Configuration for OCSP"
 msgstr "OCSP için yapılandırma"
 
-#: tools/gpgconf-comp.c:3006
+#: tools/gpgconf-comp.c:3026
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

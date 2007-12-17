@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2007-12-14 16:16+0100\n"
+"POT-Creation-Date: 2007-12-14 17:00+0100\n"
 "PO-Revision-Date: 2007-11-26 19:01+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -713,7 +713,7 @@ msgid "I'll change it later"
 msgstr "Zmieniê je pó¼niej"
 
 #: common/exechelp.c:371 common/exechelp.c:459 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1641
+#: tools/gpgconf-comp.c:1661
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "b³±d tworzenia potoku: %s\n"
@@ -7772,7 +7772,7 @@ msgstr "Konfiguracja u¿ywanych serwerów LDAP"
 msgid "Configuration for OCSP"
 msgstr "Konfiguracja dla OCSP"
 
-#: tools/gpgconf-comp.c:3006
+#: tools/gpgconf-comp.c:3026
 msgid "Note that group specifications are ignored\n"
 msgstr "Uwaga, okre¶lenia grup s± ignorowane\n"
 
