@@ -67,7 +67,10 @@ if test x$_ldap_with != xno ; then
        LDAPLIBS="$LDAP_LDFLAGS $MY_LDAPLIBS"
        GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
 
-       AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
+       AC_CHECK_FUNCS(ldap_get_option ldap_set_option)
+       # The extra test for ldap_start_tls_sA is for W32 because 
+       # that is the actual function in the library.
+       AC_CHECK_FUNCS(ldap_start_tls_s ldap_start_tls_sA)
 
        if test "$ac_cv_func_ldap_get_option" != yes ; then
           AC_MSG_CHECKING([whether LDAP supports ld_errno])

@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.4.8 (unreleased)
 ------------------------------------------------
         
+             *******************************************
+             * A decade of GnuPG: g10-0.0.0.tar.gz was *
+             *      released exactly 10 years ago.     *
+             *******************************************
+
     * Changed the license to GPLv3.
 
     * Improved detection of keyrings specified multiple times.
@@ -1971,7 +1976,7 @@ Noteworthy changes in version 0.2.3
 
 
 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-          2005, 2006 Free Software Foundation, Inc.
+          2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
