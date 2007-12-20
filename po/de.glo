@@ -1,10 +1,13 @@
 # Glossary for GnuPG german translation
 # Zusammenstellung der Liste:
-# Copyright (C) 1998 Free Software Foundation, Inc.
-# Walter Koch <koch@hsp.de>, 1998.
+# Copyright (C) 1998, 2003,2004,2005 Free Software Foundation, Inc.
+# Walter Koch <koch@hsp.de>, 1998 - 2005
 #
 # This is just a textfile for your information.
 # It will _not_ be read or processed automatically by any program 
+#
+# Hier sind sowohl die Begriffe aus dem Programm gnupg als auch 
+# aus den deutschen GnuPG-Webseiten (http://www.gnupg.org/(de)/)
 #
 # 1. Die Begriffe ohne ein  "<"  oder  ">"  vor dem deutschen Wort 
 #    stammen aus der Wortliste von Walter Koch (Programmübersetzung).
@@ -20,219 +23,335 @@
 # 7. Die erste genannte Übersetzung ist die in de.po verwendete
 # 8. # - Wurde in früherere de.po-Version verwendet
 
+about to                
+access                  Zugriff, zugreifen
+account                 Konto
+action                  Vorgang
+admin                   Admin-
+agent                   Agent 
+aka                     alias          
+algorithm               Verfahren          
+anonymous               ungenannter
+aplication data         Anwendungsdaten
+argument                Argument
+armor                   ASCII-Hülle
+assigned                zugewiesen
+associate with a person einer Person zuordnen
+assurance               Hinweis
+authentication          Authentisierung
+auto-key-locate         \"auto-key-locate\"
+available               vorhanden [besser?: verfügbar, greifbar?]
 
-agent			Agent 
-aka			alias
-algorithm		Verfahren          
-anonymous		ungenannter
-argument    		> Argument
-armor			ASCII-Hülle
-assigned		zugewiesen
-associate with a person <einer Person zuordnen
-authentication  	Authentisierung
-available		vorhanden [besser?: verfügbar, greifbar?]
-bad [MPI]		fehlerhafte MPI 
-bad [signature]		falsch[e] Unterschrift 
-break (the encryption)  <(Die Verschlüsselung) aufbrechen
-bug			"Bug (Programmfehler)"
-cache   		Cache, -#Lager  *Zwischenspeicher
-can't read		nicht lesbar
-cancelled		Abbruch, abgebrochen
-casual  		>zufällig, >gelegentlich >unregelmäßig
-certificate		Zertifikat
-, (Urkunde)
-character set		Zeichensatz
-check (verb)		prüfen, geprüft
-checking [sth.]		[sth-]-Überprüfung
-checksum		Prüfsumme
-cipher algorithm	Verschlüsselungsverfahren
+backup key              Sicherungskopie des Schlüssels 
+bad [MPI]               fehlerhafte MPI 
+bad [signature]         falsch[e] Unterschrift 
+break (the encryption)  (Die Verschlüsselung) brechen
+bug                     "Bug (Programmfehler)"
+BTS                     Fehlerverfolgungssystem
+
+CA              
+cache                   Cache, -#Lager  *Zwischenspeicher
+caching                 puffern
+callback                Callback-
+can't read              nicht lesbar
+cancelled               Abbruch, abgebrochen
+casual                  >zufällig, >gelegentlich >unregelmäßig
+card                    Karte
+cardholder              Kartenbesitzer
+card key                Kartenschlüssel
+certificate             Zertifikat , (Urkunde)
+character set           Zeichensatz
+check (verb)            prüfen, geprüft
+checking [sth.]         [sth.-]-Überprüfung
+checksum                Prüfsumme
+CHV                     CHV[?]
+cipher algorithm        Verschlüsselungsverfahren
+clean                   bereinigen
 clearsign 
-clearsig header		Klartextsignatur-Einleitung
-created			erzeugt
-command			Befehl
-comment			Bemerkung
+clearsig header         Klartextsignatur-Einleitung
+configure               einrichten
+cross-certification     Rücksignatur
+created                 erzeugt
+command                 Befehl
+comment                 Bemerkung
+completed               abgeschlossen, fertig
 compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
-compressed		komprimiert
+compressed              komprimiert
+compression             Komprimierung
 compromised             nicht mehr sicher
-core dump		core-dump-Datei
+core dump               core-dump-Datei
 , (Speicherauszug?)
-core function    	<wesentliche Funktion
-correct			beseitigen (please correct the error first)
-corrupted		beschädigter
-cover   		>behandeln, <erläutern
-created			erstellt
-creation    		<Erzeugung
-critical bit   		???
+core function           <wesentliche Funktion
+correct                 beseitigen (please correct the error first)
+corrupted               beschädigter
+cover                   >behandeln, <erläutern
+created                 erstellt
+creation                <Erzeugung
+creation date           Erzeugungsdatum
+critical bit            ???
+currently               derzeit
+
 dash escaped            mit Bindestrich \"escapte\", *m.Bindestrichen maskiert?
-decryption		Entschlüsselung
-default option  	<Standardoption
-default option file 	--voreingestellte Optionendatei
-DEK 			???
-delete  		entfernen, *>löschen 
-depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
-deprecated              mißbilligte
-detached [sign]		abgetrennte [Unterschrift]
-determined attacker 	>zielbewusster,>entschlossener Angreifer
-digest algorithm	Hashmethode
+decryption              Entschlüsselung
+default                 Standard, voreingestellt
+default option          <Standardoption
+default option file     --voreingestellte Optionendatei
+DEK                     ???
+delete                  entfernen, *>löschen 
+depend on               >sich verlassen auf,>angewiesen sein auf,>abhängen von
+deprecated              - mißbilligte, nicht mehr ratsam
+designated revoker      vorgesehener Widerrufer
+detached [sign]         abgetrennte [Unterschrift]
+Desktop, (GNOME-)       (GNOME-)Desktop
+detected                (vor)gefunden 
+determined attacker     >zielbewusster,>entschlossener Angreifer
+digest algorithm        Hashmethode
 direct [key sig]        -"direct key"
-disabled		abgeschaltet
-duplicated (adj.)	doppelt
-encrypted		verschlüsselte
-enviorement variable  	Umgebungsvariable
-eventually  		>schließlich, endlich  Nicht: eventuell
-expand
-expiration date 	<Verfalldatum
-expire  		<verfallen
-expires			verfällt
-expire date		Verfallsdatum
-failed			fehlgeschlagen
+disabled                abgeschaltet
+DO data                 DO-Daten
+duplicated (adj.)       doppelt
+
+enclosing dir           - umgebendes Verzeichnis
+encrypted               verschlüsselte
+enviorement variable    Umgebungsvariable
+eventually              >schließlich, endlich  Nicht: eventuell
+existing                vorhandenen
+expand                  ???
+expiration               
+expiration date         <Verfalldatum
+expire                  <verfallen
+expires                 verfällt
+expire date             Verfallsdatum
+extension               Erweiterung (Modul)
+
+failed                  fehlgeschlagen, schlug fehl
 faked [RNG]             - *manipulierter Zufallszahlengenerator
 faked [certificate]     gefälscht
-fingerprint  		Fingerabdruck
-flag [verb]  		-kennzeichnen
+features                Eigenschaften
+fingerprint             Fingerabdruck
+flag [verb]             -kennzeichnen
 found [xyz found]       entdeckt [xyz entdeckt]
-for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
-, Verschlußsache
-generated		erzeugter
-good certificate	Korrektes Zertifikat
-handle [verb]		benutzen, behandeln, mit ... umgehen
-hint			Tip
-human readable          -nicht als Klartext darstellbar 
-ignored			unbeachtet
-include 		<enthalten
-init    		*initialisieren
-invalid ...		falsche ...
-is adequate 		>ist angemessen, manchmal: <reicht völlig aus
-issue
-key-ID                  Schlüssel-ID, *Schlüsselkennung ?
+for-your-eyes-only      Vertraulichkeit (\"for-your-eyes-only\"), Verschlußsache
+forced                  zwingend
+formatted               formatierter, geformter?
+frontend                Oberfläche
+FULL                    vollständig (Trust)
 
-key binding		Schlüsselanbindung
-keyblock		Schlüsselblock
-keyserver   		Schlüsselserver, Schlü.server, -*Schlüssel-Server 
-keysize			
-keyring 		Schlüsselbund
-lifetime    		>Gültigkeitsdauer, >Geltungsdauer
-listed 
+generated               erzeugter
+good certificate        Korrektes Zertifikat
+
+handle [verb]           benutzen, behandeln, mit ... umgehen, bearbeiten
+handler                 Handhabungsroutine
+hint                    Tip
+homedir                 Home-Verzeichnis
+human readable          -nicht als Klartext darstellbar 
+
+ignored                 unbeachtet
+include                 <enthalten
+init                    *initialisieren
+invalid ...             falsche ..., ungültige ...
+is adequate             >ist angemessen, manchmal: <reicht völlig aus
+issue                   ???
+item                    Begriff; Element
+
+key-ID                  Schlüssel-ID, *Schlüsselkennung ?
+key binding             Schlüsselanbindung
+keyblock                Schlüsselblock
+keyserver               Schlüsselserver, Schlü.server, -*Schlüssel-Server 
+keysize                 ???
+keyring                 Schlüsselbund
+
+languge preference      Spracheinstellung
+latest news             neueste Nachrichten
+lifetime                >Gültigkeitsdauer, >Geltungsdauer
+listed                  ???
+xxx-listings            xxxlisten
 locally                 (nur) für diesen Rechner, #(nur) auf diesem Rechner
-lookup			- Suche
-machine 		häufig: Computer, Rechner
-main key		Hauptschlüssel
-maintenance utility	-Wartungs-Hilfsprogramm
+local-only              nicht exportfähig
+locked                  gesperrt
+login data              Logindaten- , Anmeldedaten?
+lookup                  - Suche
+
+machine                 häufig: Computer, Rechner
+main key                Hauptschlüssel
+maintenance utility     -Wartungs-Hilfsprogramm
 making signatures       >Unterschreiben <Unterzeichnen, <Leisten von 
-malformed   		ungünstig aufgebaute,  *fehlerhaft aufgebaute
-master key  		>Universalschlüssel
-, Generalschlüssel
-match			Treffer
-MDC			Manipulation detection code (Siegel ?)
-merge  (to) 		>zusammenführen, >vermischen ??
-message 		Botschaft
-mode			Modus, Methode   *
-move    		schieben, *verschieben
-multiple signature	Mehrfachunterschriften
-NAI
-network error		Netzwerkfehler
+malformed               ungünstig aufgebaute,  *fehlerhaft aufgebaute
+marginally              einigermaßen (bis 1.3.4:gering)    (Trust)
+master key              >Universalschlüssel, Generalschlüssel
+match                   Treffer
+may not
+MDC                     Manipulation detection code (Siegel ?)
+merge  (to)             >zusammenführen, >vermischen ??
+message                 Botschaft
+mode                    Modus, Methode   *
+modulus                 (RSA-)Modulus
+move                    schieben, *verschieben
+MUA                     E-Mailprogramm
+MTA                     E-Mailübertragungsprogramm
+multiple signature      Mehrfachunterschriften
+
+NAI                     (NAI ist ein Eigenname)
+network error           Netzwerkfehler
+NEVER                   NIEMALS (Trust)
+news                    Neuigkeiten
 non-revocably           nicht-widerrufbar, unwiderruflich??
-note			Hinweis
-okay			in Ordnung
-Ooops			Huch
-OpenPGP 		
+notations               ???????????  -n  Notation 
+note                    Hinweis
+(please) note           (Bitte) beachten
+
+okay                    in Ordnung
+on-card
+Ooops                   Huch
+OpenPGP                 OpenPGP
 option                  Option
-original		ursprünglicher
-overrides		-ersetzt
-ownertrust  		\"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
-packet			Paket
-packet type		Pakettyp
-parse 			-zerlegen
-passphrase		Passphrase  -# Mantra
+original                ursprünglicher
+overrides               -ersetzt
+ownertrust              \"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
+
+packet                  Paket
+packet type             Pakettyp
+parse                   -zerlegen, analysiert 
+passphrase              Passphrase (bis zum 1.4.03 war das Mantra)
+permanently             dauerhaft
 permission [file]       Zugriffsrechte
-Photo-ID                Foto-ID
-policy			Richtlinie
-policy URL		Richtlinien-URL
-preference items	????
-preferences 		Einstellungen    *(die gesamten) Einstellungen
-preferred		bevorzugt
-primary keys		Hauptschlüssel
+personal                privat
+photo ID                Foto-ID
+photo viewer            Bildbetrachter
+PKA                     ????????? PKA
+pleased, We are ~       Wir freuen uns ...
+plain ASCII             reines ASCII
+plugin                  Plug-In
+policy                  Richtlinie
+policy URL              Richtlinien-URL
+preference items        ???
+preferences             Einstellungen    *(die gesamten) Einstellungen
+preference string       Einstellungs-Zeichenfolge
+preferred               bevorzugt
+primary keys            Hauptschlüssel
+probably                wahrscheinlich
 problem [to do sth.]    -Schwierigkeit
-prompt (to) 		auch: >abfragen, >anfordern, >verlangen
+prompt (to)             auch: >abfragen, >anfordern, >verlangen
+proprietary     
 protected
-protection algorithm	Schutzverfahren
-pubkey algorithm	Public-Key-Verfahren	 
-public key		öffentlicher Schüssel
+protection algorithm    Schutzverfahren
+pubkey algorithm        Public-Key-Verfahren     
+public key              öffentlicher Schüssel
 public key algorithm    Public-Key-Verfahren 
-quit    		*(Programm) verlassen, beenden
-radix64			radix64
-random 			Zufall
-random bytes		Zufallswerte
-reason			Grund (für revocation)
+public key data         öffentliche Schüssel-Daten
+
+quit                    *(Programm) verlassen, beenden
+
+radix64                 radix64
+random                  Zufall
+random bytes            Zufallswerte
+reason                  Grund (für revocation)
 [xyz] rebuild           [xyz]-Neuaufbau, neu erzeugt
-regular file		normale Datei
-response		Antwort (Reaktion?)
-retry			???? (Wiederholung?, Wiederaufnahme?)
-returns			gibt zurück / antwortet
-reveal  		auch: <jemandem zeigen, >anderen zeigen 
-revocation  		Widerruf <*>Rückruf
+recipients              Empfänger
+regular file            normale Datei
+-related                -verwandte
+released                freigegeben
+response                Antwort (Reaktion?)
+retrieve                holen-, ermitteln
+retry                   ??? (Wiederholung?, Wiederaufnahme?)
+returns                 gibt zurück / antwortet
+reveal                  auch: <jemandem zeigen, >anderen zeigen 
+revocation              Widerruf <*>Rückruf
 revocation certificate  *<Rückrufurkunde *Rückruf-Zertifikat
-revoke			widerrufen
+revoke                  widerrufen
 revocably               widerrufbar
-RNG			Zufallsgenerator
-secondary key		Zweitschlüssel
-secret key		geheimer Schlüssel
+RNG                     Zufallsgenerator
+root certificate
+
+secondary key           Zweitschlüssel
+secret key              geheimer Schlüssel
 secret keyring          geheimer Schlüsselbund, geh. Schlüsselbund
-secret parts		geheime Teile
-security need(s)	>Sicherheitsbedüfnis(se), >Sicherheitsbedarf
-self-signature		Eigenbeglaubigung     
-sender			Absender
-sensitive		- empfindlich
+secret parts            geheime Teile
+security need(s)        >Sicherheitsbedüfnis(se), >Sicherheitsbedarf
+self-signature          Eigenbeglaubigung     
+sender                  Absender
+sensitive               - empfindlich
 set [sth.]              einstellen, festlegen
-session			Sitzung
-show			[an]zeigen, zeigen
-sign user id		User-ID beglaubigen   *
-signed			unterschriebene
-signature (files)	Unterschrift          *
-signature (keys)	Beglaubigung          *
-simple S2K mode		????
-skipped			übergangen, übersprungen, ignoriert
-so far 			bislang
-specify 		>spezifizieren, <angeben, ?festlegen
-stdin   		- stdin, *die Standardeingabe 
-string			Zeichenkette
+session                 Sitzung
+show                    [an]zeigen, zeigen
+sign, to                unterschreiben
+sign user id            User-ID beglaubigen   *
+signed                  unterschriebene
+signature (files)       Unterschrift          *
+signature (keys)        Beglaubigung          *
+signature policy URL    Unterschriften-Richtlinien-URL 
+signature preferred keyserver   
+                        bevorzugter Schlüsselserver für Unterschriften 
+signature preferred keyserver-URL 
+                        Bevorzugter-Schlüsselserver-für-Unterschriften-URL
+signature verification  Unterschriftenprüfung
+simple S2K mode         ???
+site map                Übersichtsseite
+skipped                 übergangen, übersprungen, ignoriert
+smartcard               Smartcard
+socket                  Socket
+so far                  bislang
+specify                 >spezifizieren, <angeben, ?festlegen
+stdin                   - stdin, *die Standardeingabe 
+strongly suggested      extrem empfehlenswert
+store                   speichern
+string                  Zeichenfolge (bis 1.4.0: Zeichenkette)
 [PGP2-]style[ key]      [PGP2-] artiger [Schlüssel]
-subkey			Unterschlüssel
-superseeded		überholt, veraltet
+subkey                  Unterschlüssel
+subject name            Subject-Name [irgendwas mit x509] 
+superseeded             überholt, veraltet
+support sth             Hilfs-
+
 terminal charset        - Terminalzeichensatz *Terminal-Zeichensatz(s.o.)
-throw			verwerfe
-Timestamp conflict	Zeitangaben differieren
-trust			Vertrauen
-Trust-DB    		'Trust'-Datenbank, *Vertrauensdatenbank ?
-trusted			- vertrauenswürdig
-trustvalues		- trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
-trying			Versuch
-type [message]		[Botschaft] eintippen
-ulimately [trust]	uneingeschränkt [vertrauen]
+this is probably a *bad* idea            
+                        Dies ist *nicht* zu empfehlen
+throw                   verwerfe
+Timestamp conflict      Zeitangaben differieren
+toggle                  Umschalten 
+trust                   Vertrauen
+trust DB                'Trust'-Datenbank, *Vertrauensdatenbank ?
+trust level             'Trust'-Ebene
+trust model             Vertrauensmodell
+trust record            'Trust'-Record 
+trust signature         'Trust'-Unterschrift
+trusted                 - vertrauenswürdig (zuverlässiger)
+trustvalues             - trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
+trying                  Versuch
+type [message]          [Botschaft] eintippen
+
+ulimately [trust]       uneingeschränkt [vertrauen]
 ultimate trust          uneingeschränktes Vertrauen
-unable
+unable                  kann nicht ..., ... nicht möglich
 unattended              unbeaufsichtigt
-unavailble
+unavailble              ???
+unblock                 entsperren
+undefined               unbestimmt
 untrusted               - nichtvertrauenswürdig, *nicht vertrauenswürdig
-unusable		unbrauchbar
+unusable                unbrauchbar
 update                  Ändern, Änderung >Aktualisieren, >Aktualisierung *auf den 
 URL                     (die) URL 
+usage                   Aufruf
+usage                   - Verwendungszweck
 [the] use [of]           
-User    		- User, *<Benutzer, *Teilnehmer
-user ID 		User-ID
-user IDs		User-IDs
-user interface  	>Benutzer-Schnittstelle
-username    		Username, *<Benutzername,  
-used			benutzt (no loger used)
-using xyz		verwende xyz
-valid 			gültig
-validate    		-- authentifizieren (>besser authentisieren ?? So im 
-Wörterbuch der neuen Rechtschreibung)
-validation  		-- >Authentisierung 
-verbose			ausführlich
-verify  		< überprüfen
-warning			Warnung
-weak key		unsicherer Schlüssel
-writeable		schreibbarer 
+User                    - User, *<Benutzer, *Teilnehmer
+user ID                 User-ID
+user IDs                User-IDs
+user interface          >Benutzer-Schnittstelle
+username                Username, *<Benutzername,  
+used                    benutzt (no loger used)
+using xyz               verwende xyz
+
+valid                   gültig
+validate                -- authentifizieren (>besser authentisieren ?? So im Wörterbuch der neuen Rechtschreibung)
+validation              -- >Authentisierung 
+verbose                 ausführlich
+verify                  < überprüfen
+via                     
+
+warning                 Warnung
+weak key                unsicherer Schlüssel
+web site                Webseiten
 wisely                  >klug, vernünftig(erweise), >gescheit; möglichst sinnvoll
+write failed            ???
+writeable               schreibbarer 
 
