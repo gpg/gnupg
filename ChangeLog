@@ -1,3 +1,7 @@
+2007-12-20  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.8.
+
 2007-12-17  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add treatment for HAVE_LDAP_START_TLS_SA.
@@ -1018,7 +1022,8 @@
 	* configure.ac (HAVE_JNLIB_LOGGING): always define it.
 
 	
- Copyright 2001, 2002, 2004 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006,
+	   2007 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

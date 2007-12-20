@@ -1,21 +1,17 @@
-Noteworthy changes in version 2.0.8
+Noteworthy changes in version 2.0.8 (2007-12-20)
 ------------------------------------------------
-
- * Make sure that under Windows the file permissions of the socket are
-   taken into account.  This required a change of our socket emulation
-   code; thus old GnuPG modules can't be used anymore.
-
- * Fixed a crash in gpgconf.
 
  * Enhanced gpg-connect-agent with a small scripting language.
 
  * New option --list-config for gpgconf.
 
- * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
-   pinentry.
+ * Fixed a crash in gpgconf.
 
- * Allow encryption with legacy Elgamal sign+encrypt keys with option
-   --rfc2440.
+ * Gpg-agent now supports the passphrase quality bar of the latest
+   Pinentry.
+
+ * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
+   Pinentry.
 
  * Fixed the auto creation of the key stub for smartcards.  
 
@@ -25,6 +21,15 @@ Noteworthy changes in version 2.0.8
 
  * New option --extra-digest-algo for gpgsm to allow verification of
    broken signatures.
+
+ * Allow encryption with legacy Elgamal sign+encrypt keys with option
+   --rfc2440.
+
+ * Windows is now a supported platform.
+
+ * Made sure that under Windows the file permissions of the socket are
+   taken into account.  This required a change of our socket emulation
+   code and changed the IPC protocol under Windows.
 
 
 Noteworthy changes in version 2.0.7 (2007-09-10)

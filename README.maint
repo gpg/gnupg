@@ -7,7 +7,7 @@ Release Planning:
 =================
 
 If you are planning a new release and strings have changed you should
-send a notification to all tyranslators, so that they have time to
+send a notification to all translators, so that they have time to
 update their translations.  scripts/mail-to-translators is useful for
 this.  It might need some tweaking and it needs to be armored for
 actual sending.  Running it as is to see what will happen is a good
@@ -34,7 +34,7 @@ Release process:
   * Run "make distcheck".
   * Build and test the new tarball (best on a different machine).
   * Build and test the W32 version.
-  * Using the final test build run a "make -C doc online".
+  * [2.x only] Using the final test build run a "make -C doc online".
   * Sign the tarball
   * Get the previous tarball and run "mkdiff gnupg".  
     You might need to set a different signature key than mine.  mkdiff
