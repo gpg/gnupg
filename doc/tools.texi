@@ -1,4 +1,4 @@
-@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c Copyright (C) 2004, 2008 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file GnuPG.texi.
 
@@ -691,23 +691,24 @@ name for the argument.  The field may also be empty, though, in which
 case a short name is not known.
 
 @item default
-This field is defined only for options.  Its format is that of an
-@emph{option argument} (@xref{Format conventions}, for details).  If
-the default value is empty, then no default is known.  Otherwise, the
-value specifies the default value for this option.  Note that this
-field is also meaningful if the option itself does not take a real
-argument.
+This field is defined only for options for which the @code{default} or
+@code{default desc} flag is set.  If the @code{default} flag is set,
+its format is that of an @emph{option argument} (@xref{Format
+conventions}, for details).  If the default value is empty, then no
+default is known.  Otherwise, the value specifies the default value
+for this option.  If the @code{default desc} flag is set, the field is
+either empty or contains a description of the effect if the option is
+not given.
 
 @item argdef
 This field is defined only for options for which the @code{optional
 arg} flag is set.  If the @code{no arg desc} flag is not set, its
 format is that of an @emph{option argument} (@xref{Format
 conventions}, for details).  If the default value is empty, then no
-default is known.  Otherwise, the value specifies the default value
+default is known.  Otherwise, the value specifies the default argument
 for this option.  If the @code{no arg desc} flag is set, the field is
 either empty or contains a description of the effect of this option if
-no argument is given.  Note that this field is also meaningful if the
-option itself does not take a real argument.
+no argument is given.
 
 @item value
 This field is defined only for options.  Its format is that of an
@@ -715,7 +716,8 @@ This field is defined only for options.  Its format is that of an
 explicitely set in the current configuration, and the default applies
 (if any).  Otherwise, it contains the current value of the option.
 Note that this field is also meaningful if the option itself does not
-take a real argument.
+take a real argument (in this case, it contains the number of times
+the option appears).
 @end table
 
 
