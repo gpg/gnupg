@@ -15,7 +15,7 @@ test version but nevertheless included most of the features of the
 current GnuPG.  The data format however was not compatible with
 OpenPGP but oriented towards the PGP 2 format with a few extensions
 (e.g. to allow streaming of data).  The OpenPGP working group was
-founded back in fall 1997 and I learned a bit to late about it to
+founded back in fall 1997 and I learned a bit too late about it to
 build "g10" according to the then existing draft.  For copyright
 reasons it was practically not possible to reverse engineer the format
 used by PGP-5, so the establishment of the OpenPGP WG was the right
@@ -85,7 +85,7 @@ fun project, I soon found my self hacking on PGP-2 parsing code based
 on the description in RFC-1991 and the pgformat.txt file.  As this
 turned out to be easy I continued and finally came up with code to
 decrypt and create PGP-2 data.  After I told the GNU towers that I
-will take up the PGP replacement implementation I spend the rest of
+will take up the PGP replacement implementation I spent the rest of
 the year replacing IDEA by Blowfish, RSA by Elgamal, implementing
 streaming encryption, adding some key management and getting the code
 into a reasonable shape.
@@ -144,7 +144,7 @@ GnuPG development.  In 2001 David Shaw joined the project and since
 then he is one of the most active GnuPG hackers and the co-maintainer.
 
 It's now a long time since GnuPG could be managed as a fun project and
-thus I spend most of my professional life maintaining and extending
+thus I now spend most of my professional life maintaining and extending
 GnuPG.  In 2001 I founded g10 Code, a Free Software company for the
 development and support of GnuPG and related software.  The most known
 project is probably GnuPG-2 which started under the name NewPG as part

@@ -193,7 +193,7 @@ E0:BF:1B:91:91:6B:88:E4:F1:15:92:22:CE:37:23:96:B1:4A:2E:5C  de
 #[checked: 2007-12-13 via received ZIP file with qualified signature from 
 #         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
 #         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg]
-C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA
+C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA  de
 
 #           ID: 0x3A7D979B
 #          S/N: 00C4216083F35C54F67B09A80C3C55FE7D
@@ -208,7 +208,7 @@ C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA
 #[checked: 2007-12-13 via received ZIP file with qualified signature from 
 #         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
 #         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg"]
-D5:C7:50:F2:FE:4E:EE:D7:C7:B1:E4:13:7B:FB:54:84:3A:7D:97:9B
+D5:C7:50:F2:FE:4E:EE:D7:C7:B1:E4:13:7B:FB:54:84:3A:7D:97:9B  de
 
 
 #*******************************************

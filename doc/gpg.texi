@@ -2068,9 +2068,11 @@ Same as @option{--status-fd}, except the status data is written to file
 @item --logger-fd @code{n}
 Write log output to file descriptor @code{n} and not to stderr.
 
-@item --logger-file @code{file}
+@item --log-file @code{file}
+@itemx --logger-file @code{file}
 Same as @option{--logger-fd}, except the logger data is written to file
-@code{file}.
+@code{file}.  Note that @option{--log-file} is only implemented for
+GnuPG-2.
 
 @item --attribute-fd @code{n}
 Write attribute subpackets to the file descriptor @code{n}. This is most
