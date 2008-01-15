@@ -271,9 +271,11 @@ start_pinentry (ctrl_t ctrl)
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking.  Note
-     that atfork is used to change the environment for pinentry. */
+     that atfork is used to change the environment for pinentry.  We
+     start the server in detached mode to suppress the console window
+     under Windows.  */
   rc = assuan_pipe_connect_ext (&ctx, opt.pinentry_program, argv,
-                                no_close_list, atfork_cb, ctrl, 0);
+                                no_close_list, atfork_cb, ctrl, 128);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",

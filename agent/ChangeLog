@@ -1,3 +1,8 @@
+2008-01-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-pinentry.c (start_pinentry): Start pinentry in detached
+	mode.
+
 2007-12-04  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_askpin): Use gnupg_get_help_string.
