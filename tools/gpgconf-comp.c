@@ -2467,6 +2467,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   char *src_filename;
   char *dest_filename;
   char *orig_filename;
+  /* Special hack for gpg, see below.  */
+  int utf8strings_seen = 0;
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   dest_filename = xstrdup (get_config_pathname (component, backend));
@@ -2525,6 +2527,15 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 		in_marker = 1;
 	      else
 		break;
+	    }
+	  else if (backend == GC_BACKEND_GPG && in_marker
+		   && ! strcmp ("utf8-strings\n", line))
+	    {
+	      /* Strip duplicated entries.  */
+	      if (utf8strings_seen)
+		disable = 1;
+	      else
+		utf8strings_seen = 1;
 	    }
 
 	  start = line;
@@ -2591,7 +2602,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
      followed by the rest of the original file.  */
 
   /* We have to turn on UTF8 strings for GnuPG.  */
-  if (backend == GC_BACKEND_GPG)
+  if (backend == GC_BACKEND_GPG && ! utf8strings_seen)
     fprintf (src_file, "utf8-strings\n");
 
   option = gc_component[component].options;
