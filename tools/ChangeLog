@@ -1,3 +1,8 @@
+2008-01-22  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c: Use gnupg domain for honor-http-proxy.  Make
+	"LDAP server list" group title translatable.
+
 2008-01-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (change_options_program): Strip duplicated
@@ -844,7 +849,7 @@
 	* watchgnupg.c: New.
 
 
- Copyright 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+ Copyright 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

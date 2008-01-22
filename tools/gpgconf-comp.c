@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
- * Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -840,7 +840,7 @@ static gc_option_t gc_options_dirmngr[] =
      "dirmngr", "|URL|redirect all HTTP requests to URL",
      GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
    { "honor-http-proxy", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "dirmngr", N_("use system's HTTP proxy setting"),
+     "gnupg", N_("use system's HTTP proxy setting"),
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
 
    { "LDAP",
@@ -874,7 +874,7 @@ static gc_option_t gc_options_dirmngr[] =
       GC_BACKEND_DIRMNGR in this component, so that the entry for
       "ldapserverlist-file will be initialized before this one.  */
    { "LDAP Server", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
-     NULL, "LDAP server list",
+     "gnupg", N_("LDAP server list"),
      GC_ARG_TYPE_LDAP_SERVER, GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST },
    { "max-replies", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "|N|do not return more than N items in one query",
