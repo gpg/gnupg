@@ -623,6 +623,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
     { oLoggerFile, "log-file",2, "@" },
+    { oLoggerFile, "logger-file",2, "@" },  /* For 1.4 compatibility.  */
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oNoUseEmbeddedFilename, "no-use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
