@@ -308,7 +308,7 @@ read_assuan (int fd)
 	{
 	  int i;
 
-	  printf ("%s: read \"", __FUNCTION__);
+	  printf ("%s: read \"", __func__);
 	  for (i = 0; i < n; i ++)
 	    putc (buf[i], stdout);
 	  printf ("\"\n");

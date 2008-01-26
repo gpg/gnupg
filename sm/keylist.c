@@ -491,8 +491,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   kludge_uid = NULL;
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
-      /* In the case that the same email address is in the subecj DN
-         as weel as in an alternate subject name we avoid printing it
+      /* In the case that the same email address is in the subject DN
+         as well as in an alternate subject name we avoid printing it
          a second time. */
       if (kludge_uid && !strcmp (kludge_uid, p))
         continue;
