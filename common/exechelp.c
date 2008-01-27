@@ -1,5 +1,5 @@
 /* exechelp.c - fork and exec helpers
- *	Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -322,11 +322,18 @@ gnupg_create_inbound_pipe (int filedes[2])
    PREEXEC is not NULL, that function will be called right before the
    exec.  Calling gnupg_wait_process is required.
 
+   FLAGS is a bit vector with just one bit defined for now:
+
+   Bit 7: If set the process will be started as a background process.
+          This flag is only useful under W32 systems, so that no new
+          console is created and pops up a console window when
+          starting the server
+
    Returns 0 on success or an error code. */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
                      FILE *infile, FILE *outfile,
-                     void (*preexec)(void),
+                     void (*preexec)(void), unsigned int flags,
                      FILE **statusfile, pid_t *pid)
 {
 #ifdef HAVE_W32_SYSTEM
@@ -384,6 +391,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   si.hStdError  = fd_to_handle (rp[1]);
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
+              | ((flags & 128)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED); 
   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);

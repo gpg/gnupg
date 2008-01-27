@@ -597,7 +597,7 @@ popen_protect_tool (const char *pgmname,
   assert (i < sizeof argv);
 
   return gnupg_spawn_process (pgmname, argv, infile, outfile,
-                              setup_pinentry_env,
+                              setup_pinentry_env, 128,
                               statusfile, pid);
 }
 

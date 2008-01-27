@@ -1,3 +1,8 @@
+2008-01-27  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_spawn_process): Add arg FLAGS and changed all
+	callers to pass 0 for it.
+
 2007-12-13  Werner Koch  <wk@g10code.com>
 
 	* sexputil.c (hash_algo_from_sigval): New.

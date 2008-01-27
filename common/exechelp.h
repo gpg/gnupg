@@ -30,13 +30,14 @@ gpg_error_t gnupg_create_inbound_pipe (int filedes[2]);
    stdin, write the output to OUTFILE, return a new stream in
    STATUSFILE for stderr and the pid of the process in PID. The
    arguments for the process are expected in the NULL terminated array
-   ARGV.  The program name itself should not be included there.  if
+   ARGV.  The program name itself should not be included there.  If
    PREEXEC is not NULL, that function will be called right before the
-   exec.  Calling gnupg_wait_process is required.  Returns 0 on
+   exec.  FLAGS is currently only useful for W32, see the source for
+   details.  Calling gnupg_wait_process is required.  Returns 0 on
    success or an error code. */
 gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
                                  FILE *infile, FILE *outfile,
-                                 void (*preexec)(void),
+                                 void (*preexec)(void), unsigned int flags,
                                  FILE **statusfile, pid_t *pid);
 
 
