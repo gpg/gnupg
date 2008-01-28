@@ -58,7 +58,7 @@ Developer information:
 @node GPGSM Commands
 @section Commands
 
-Commands are not distinguished from options execpt for the fact that
+Commands are not distinguished from options except for the fact that
 only one command is allowed.
 
 @menu
@@ -612,7 +612,7 @@ all of the debug messages you can get
 @end table
 
 How these messages are mapped to the actual debugging flags is not
-specified and may change with newer releaes of this program. They are
+specified and may change with newer releases of this program. They are
 however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
@@ -738,7 +738,7 @@ signatures in the same way as handwritten signatures are.  Comments
 start with a hash mark and empty lines are ignored.  Lines do have a
 length limit but this is not a serious limitation as the format of the
 entries is fixed and checked by gpgsm: A non-comment line starts with
-optional white spaces, followed by exactly 40 hex character, white space
+optional whitespace, followed by exactly 40 hex character, white space
 and a lowercased 2 letter country code.  Additional data delimited with
 by a white space is current ignored but might late be used for other
 purposes.

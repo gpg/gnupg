@@ -1187,7 +1187,7 @@ have been given to return a useful value.
 
 @item unescape @var{args}
 Remove C-style escapes from @var{args}.  Note that @code{\0} and
-@code{\x00} terminate the returned string implictly.  The string to be
+@code{\x00} terminate the returned string implicitly.  The string to be
 converted are the entire arguments right behind the delimiting space of
 the function name.
 
@@ -1274,7 +1274,7 @@ Same as the command line option @option{--decode}.
 @itemx /nosubst
 Enable and disable variable substitution.  It defaults to disabled
 unless the command line option @option{--subst} has been used.
-If /subst as been enabled once, leading white spaces are removed from
+If /subst as been enabled once, leading whitespace is removed from
 input lines which makes scripts easier to read.
 
 @item /while @var{condition}

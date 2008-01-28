@@ -58,8 +58,8 @@ options.
 @node Scdaemon Commands
 @section Commands
 
-Commands are not distinguished from options execpt for the fact that
-only one one command is allowed.
+Commands are not distinguished from options except for the fact that
+only one command is allowed.
 
 @table @gnupgtabopt
 @item --version
@@ -140,7 +140,7 @@ all of the debug messages you can get
 @end table
 
 How these messages are mapped to the actual debugging flags is not
-specified and may change with newer releaes of this program. They are
+specified and may change with newer releases of this program. They are
 however carefully selected to best aid in debugging.
 
 @quotation Note
@@ -208,7 +208,7 @@ dump.  This options enables it and also changes the working directory to
 
 @item --no-detach
 @opindex no-detach
-Don't detach the process from the console.  This is manly usefule for
+Don't detach the process from the console.  This is mainly useful for
 debugging.
 
 @item --log-file @var{file}
@@ -646,7 +646,7 @@ Send an APDU to the current reader.  This command bypasses the high
 level functions and sends the data directly to the card.
 @var{hexstring} is expected to be a proper APDU.  If @var{hexstring} is
 not given no commands are send to the card; However the command will
-implictly check whether the card is ready for use.
+implicitly check whether the card is ready for use.
 
 Using the option @code{--atr} returns the ATR of the card as a status
 message before any data like this:

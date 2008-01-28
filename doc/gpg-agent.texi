@@ -117,8 +117,8 @@ one (e.g. @file{/usr/bin/pinentry}).
 @node Agent Commands
 @section Commands
 
-Commands are not distinguished from options execpt for the fact that
-only one one command is allowed.
+Commands are not distinguished from options except for the fact that
+only one command is allowed.
 
 @table @gnupgtabopt
 @item --version
@@ -214,7 +214,7 @@ one of:
    @end table
 
 How these messages are mapped to the actual debugging flags is not
-specified and may change with newer releaes of this program. They are
+specified and may change with newer releases of this program. They are
 however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
@@ -256,7 +256,7 @@ debugger.
 
 @item --no-detach
 @opindex no-detach
-Don't detach the process from the console.  This is manly usefule for
+Don't detach the process from the console.  This is mainly useful for
 debugging.
 
 @item -s
@@ -268,9 +268,9 @@ debugging.
 @opindex c
 @opindex csh
 Format the info output in daemon mode for use with the standard Bourne
-shell respective the C-shell . The default is to guess it based on the
+shell respective the C-shell. The default is to guess it based on the
 environment variable @code{SHELL} which is in almost all cases
-sufficient.
+correct.
 
 @item --write-env-file @var{file}
 @opindex write-env-file
@@ -304,7 +304,7 @@ seeing what the agent actually does.
 @opindex allow-mark-trusted
 Allow clients to mark keys as trusted, i.e. put them into the
 @file{trustlist.txt} file.  This is by default not allowed to make it
-harder for users to inadvertly accept Root-CA keys.
+harder for users to inadvertently accept Root-CA keys.
 
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
@@ -314,25 +314,25 @@ control this behaviour but this command line option takes precedence.
 
 @item --default-cache-ttl @var{n}
 @opindex default-cache-ttl
-Set the time a cache entry is valid to @var{n} seconds.  The default are
+Set the time a cache entry is valid to @var{n} seconds.  The default is
 600 seconds.
 
 @item --default-cache-ttl-ssh @var{n}
 @opindex default-cache-ttl
 Set the time a cache entry used for SSH keys is valid to @var{n}
-seconds.  The default are 1800 seconds.
+seconds.  The default is 1800 seconds.
 
 @item --max-cache-ttl @var{n}
 @opindex max-cache-ttl
 Set the maximum time a cache entry is valid to @var{n} seconds.  After
-this time a cache entry will get expired even if it has been accessed
-recently.  The default are 2 hours (7200 seconds).
+this time a cache entry will be expired even if it has been accessed
+recently.  The default is 2 hours (7200 seconds).
 
 @item --max-cache-ttl-ssh @var{n}
 @opindex max-cache-ttl-ssh
 Set the maximum time a cache entry used for SSH keys is valid to @var{n}
-seconds.  After this time a cache entry will get expired even if it has
-been accessed recently.  The default are 2 hours (7200 seconds).
+seconds.  After this time a cache entry will be expired even if it has
+been accessed recently.  The default is 2 hours (7200 seconds).
 
 @item --enforce-passphrase-constraints
 @opindex enforce-passphrase-constraints
@@ -362,8 +362,8 @@ Security note: It is known that checking a passphrase against a list of
 pattern or even against a complete dictionary is not very effective to
 enforce good passphrases.  Users will soon figure up ways to bypass such
 a policy.  A better policy is to educate users on good security
-behavior and optional to run a passphrase cracker regularly on all
-users passphrases t catch the very simple ones.
+behavior and optionally to run a passphrase cracker regularly on all
+users passphrases to catch the very simple ones.
 
 @item --max-passphrase-days @var{n}
 @opindex max-passphrase-days 
@@ -378,11 +378,11 @@ This option does nothing yet.
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is installation
-dependend and can be shown with the @code{--version} command.
+dependent and can be shown with the @code{--version} command.
 
 @item --pinentry-touch-file @var{filename}
 @opindex pinentry-touch-file
-By default the file name of the socket gpg-agent is listening for
+By default the filename of the socket gpg-agent is listening for
 requests is passed to Pinentry, so that it can touch that file before
 exiting (it does this only in curses mode).  This option changes the
 file passed to Pinentry to @var{filename}.  The special name
@@ -394,7 +394,7 @@ modification and access time.
 @item --scdaemon-program @var{filename}
 @opindex scdaemon-program
 Use program @var{filename} as the Smartcard daemon.  The default is
-installation dependend and can be shown with the @code{--version}
+installation dependent and can be shown with the @code{--version}
 command.
 
 @item --disable-scdaemon
@@ -411,7 +411,7 @@ By enabling this option @command{gpg-agent} will listen on the socket
 named @file{S.gpg-agent}, located in the home directory, and not create
 a random socket below a temporary directory.  Tools connecting to
 @command{gpg-agent} should first try to connect to the socket given in
-environment variable @var{GPG_AGENT_INFO} and the fall back to this
+environment variable @var{GPG_AGENT_INFO} and then fall back to this
 socket.  This option may not be used if the home directory is mounted as
 a remote file system.  Note, that @option{--use-standard-socket} is the
 default on Windows systems.
@@ -436,7 +436,7 @@ information.
 @itemx --keep-display
 @opindex keep-tty
 @opindex keep-display
-Ignore requests to change change the current @code{tty} respective the X
+Ignore requests to change the current @code{tty} respective the X
 window system's @code{DISPLAY} variable.  This is useful to lock the
 pinentry to pop up at the @code{tty} or display you started the agent.
 
@@ -448,7 +448,7 @@ Enable emulation of the OpenSSH Agent protocol.
 
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH
-(through a seperate socket).  Consequently, it should possible to use
+(through a separate socket).  Consequently, it should be possible to use
 the gpg-agent as a drop-in replacement for the well known ssh-agent.
 
 SSH Keys, which are to be used through the agent, need to be added to
@@ -459,7 +459,7 @@ gpg-agent to ask for a passphrase, which is to be used for encrypting
 the newly received key and storing it in a gpg-agent specific
 directory.
 
-Once, a key has been added to the gpg-agent this way, the gpg-agent
+Once a key has been added to the gpg-agent this way, the gpg-agent
 will be ready to use the key.
 
 Note: in case the gpg-agent receives a signature request, the user might
@@ -468,7 +468,7 @@ the stored key.  Since the ssh-agent protocol does not contain a
 mechanism for telling the agent on which display/terminal it is running,
 gpg-agent's ssh-support will use the TTY or X display where gpg-agent
 has been started.  To switch this display to the current one, the
-follwing command may be used:
+following command may be used:
 
 @smallexample
 echo UPDATESTARTUPTTY | gpg-connect-agent
@@ -556,17 +556,17 @@ fails, try again using the chain validation model.
 This file is used when support for the secure shell agent protocol has
 been enabled (@pxref{option --enable-ssh-support}). Only keys present
 in this file are used in the SSH protocol.  The @command{ssh-add} tool
-y be used to add new entries to this file; you may also add them
+may be used to add new entries to this file; you may also add them
 manually.  Comment lines, indicated by a leading hash mark, as well as
-empty lines are ignored.  An entry starts with optional white spaces,
+empty lines are ignored.  An entry starts with optional whitespace,
 followed by the keygrip of the key given as 40 hex digits, optionally
 followed by the caching TTL in seconds and another optional field for
-arbitrary flags.  A @code{!} may be prepended to the keygrip to
+arbitrary flags.  The keygrip may be prefixed with a @code{!} to
 disable this entry.
     
-The follwoing example lists exactly one key.  Note that keys available
+The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
-implictly added to this list; i.e. there is no need to list them.
+implicitly added to this list; i.e. there is no need to list them.
   
   @example
   # Key added on 2005-02-25 15:08:29
@@ -585,7 +585,7 @@ implictly added to this list; i.e. there is no need to list them.
 Note that on larger installations, it is useful to put predefined
 files into the directory @file{/etc/skel/.gnupg/} so that newly created
 users start up with a working configuration.  For existing users the
-a small helper script is provied to create these files (@pxref{addgnupghome}).
+a small helper script is provided to create these files (@pxref{addgnupghome}).
 
 
 
@@ -604,7 +604,7 @@ Here is a list of supported signals:
 
 @item SIGHUP
 @cpindex SIGHUP
-This signal flushes all chached passphrases and if the program has been
+This signal flushes all cached passphrases and if the program has been
 started with a configuration file, the configuration file is read again.
 Only certain options are honored: @code{quiet}, @code{verbose},
 @code{debug}, @code{debug-all}, @code{debug-level}, @code{no-grab},
@@ -650,7 +650,7 @@ $ eval `gpg-agent --daemon`
 
 An alternative way is by replacing @command{ssh-agent} with
 @command{gpg-agent}.  If for example @command{ssh-agent} is started as
-part of the Xsession intialization you may simply replace
+part of the Xsession initialization, you may simply replace
 @command{ssh-agent} by a script like:
 
 @cartouche

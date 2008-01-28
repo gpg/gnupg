@@ -1,3 +1,8 @@
+2008-01-28  Justin Pryzby  <jpryzby+d@quoininc.com>  (wk)
+
+	* gpg-agent.texi, yat2m.c, scdaemon.texi, qualified.txt
+	* tools.texi, gpgsm.texi: Typo fixes and minor grammer fixes.
+
 2008-01-10  Werner Koch  <wk@g10code.com>
 
 	* qualified.txt: Add missing country tag to the last entries.
