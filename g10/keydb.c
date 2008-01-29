@@ -1,5 +1,6 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -82,6 +83,7 @@ maybe_create_keyring (char *filename, int force)
   int rc;
   mode_t oldmask;
   char *last_slash_in_filename;
+  int save_slash;
 
   /* A quick test whether the filename already exists. */
   if (!access (filename, F_OK))
@@ -98,6 +100,18 @@ maybe_create_keyring (char *filename, int force)
      tricky auto-creation which is anyway only done for some home
      directory name patterns. */
   last_slash_in_filename = strrchr (filename, DIRSEP_C);
+#if HAVE_W32_SYSTEM
+  {
+    /* Windows may either have a slash or a backslash.  Take care of it.  */
+    char *p = strrchr (filename, '/');
+    if (!last_slash_in_filename || p > last_slash_in_filename)
+      last_slash_in_filename = p;
+  }
+#endif /*HAVE_W32_SYSTEM*/
+  if (!last_slash_in_filename)
+    return gpg_error (GPG_ERR_ENOENT);  /* No slash at all - should
+                                           not happen though.  */
+  save_slash = *last_slash_in_filename;
   *last_slash_in_filename = 0;
   if (access(filename, F_OK))
     { 
@@ -115,8 +129,7 @@ maybe_create_keyring (char *filename, int force)
           goto leave;
         }
     }
-  *last_slash_in_filename = DIRSEP_C;
-
+  *last_slash_in_filename = save_slash;
 
   /* To avoid races with other instances of gpg trying to create or
      update the keyring (it is removed during an update for a short

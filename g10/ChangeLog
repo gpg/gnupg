@@ -1,3 +1,8 @@
+2008-01-29  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (maybe_create_keyring): Take care of a missing slash.
+	(maybe_create_keyring) [W32]: Also test for forward slash.
+
 2008-01-26  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (get_manufacturer): Add vendor 0004.

@@ -103,7 +103,7 @@ X.509 specific are noted like [X.509: xxx]
 
  b16	MD5 checksum  (useful for KS syncronisation), we might also want to use
     a mac here.
- b4    resevered
+ b4    reserved
 
 */
 

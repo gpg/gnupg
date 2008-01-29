@@ -367,7 +367,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   /* We have to ignore ambigious names as long as
                      there only fault is a bad key usage.  This is
                      required to support encryption and signing
-                     certifciates of the same subject.
+                     certificates of the same subject.
 
                      Further we ignore them if they are due to an
                      identical certificate (which may happen if a
