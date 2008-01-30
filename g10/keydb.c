@@ -125,7 +125,7 @@ maybe_create_keyring (char *filename, int force)
       if (access (filename, F_OK))
         {
           rc = gpg_error_from_syserror ();
-          *last_slash_in_filename = DIRSEP_C;
+          *last_slash_in_filename = save_slash;
           goto leave;
         }
     }
