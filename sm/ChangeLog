@@ -1,3 +1,8 @@
+2008-01-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keylist.c (list_internal_keys): New variable lastcert.  Use it
+	to suppress duplicates which immediately follow each other.
+
 2008-01-27  Werner Koch  <wk@g10code.com>
 
 	* import.c (popen_protect_tool): Set bit 7 in the flags for

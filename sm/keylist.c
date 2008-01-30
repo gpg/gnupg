@@ -1171,6 +1171,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   strlist_t sl;
   int ndesc;
   ksba_cert_t cert = NULL;
+  ksba_cert_t lastcert = NULL;
   gpg_error_t rc = 0;
   const char *lastresname, *resname;
   int have_secret;
@@ -1228,6 +1229,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
      currently we stop at the first match.  To do this we need an
      extra flag to enable this feature so */
 
+  /* Suppress duplicates at least when they follow each other.  */
   lastresname = NULL;
   while (!(rc = keydb_search (hd, desc, ndesc)))
     {
@@ -1248,7 +1250,15 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
-      
+      /* Skip duplicated certificates, at least if they follow each
+	 others.  This works best if a single key is searched for and
+	 expected.  FIXME: Non-sequential duplicates remain.  */
+      if (gpgsm_certs_identical_p (cert, lastcert))
+	{
+	  ksba_cert_release (cert);
+	  continue;
+	}
+
       resname = keydb_get_resource_name (hd);
       
       if (lastresname != resname ) 
@@ -1301,7 +1311,9 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
               es_putc ('\n', fp);
             }
         }
-      ksba_cert_release (cert); 
+
+      ksba_cert_release (lastcert); 
+      lastcert = cert;
       cert = NULL;
     }
   if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1 )
@@ -1311,6 +1323,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   
  leave:
   ksba_cert_release (cert);
+  ksba_cert_release (lastcert); 
   xfree (desc);
   keydb_release (hd);
   return rc;
