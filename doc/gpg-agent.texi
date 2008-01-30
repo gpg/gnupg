@@ -268,9 +268,9 @@ debugging.
 @opindex c
 @opindex csh
 Format the info output in daemon mode for use with the standard Bourne
-shell respective the C-shell. The default is to guess it based on the
-environment variable @code{SHELL} which is in almost all cases
-correct.
+shell or the C-shell respectively.  The default is to guess it based on
+the environment variable @code{SHELL} which is correct in almost all
+cases.
 
 @item --write-env-file @var{file}
 @opindex write-env-file
@@ -436,8 +436,8 @@ information.
 @itemx --keep-display
 @opindex keep-tty
 @opindex keep-display
-Ignore requests to change the current @code{tty} respective the X
-window system's @code{DISPLAY} variable.  This is useful to lock the
+Ignore requests to change the current @code{tty} or X window system's
+@code{DISPLAY} variable respectively.  This is useful to lock the
 pinentry to pop up at the @code{tty} or display you started the agent.
 
 @anchor{option --enable-ssh-support}

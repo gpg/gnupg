@@ -505,14 +505,25 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    int rc;
 	    char *p = strrchr( fname, DIRSEP_C );
 	    mode_t oldmask;
+            int save_slash;
 
-	    assert(p);
+#if HAVE_W32_SYSTEM
+            {
+              /* Windows may either have a slash or a backslash.  Take
+                 care of it.  */
+              char *pp = strrchr (fname, '/');
+              if (!p || pp > p)
+                p = pp;
+            }
+#endif /*HAVE_W32_SYSTEM*/
+	    assert (p);
+            save_slash = *p;
 	    *p = 0;
 	    if( access( fname, F_OK ) ) {
 		try_make_homedir( fname );
 		log_fatal( _("%s: directory does not exist!\n"), fname );
 	    }
-	    *p = DIRSEP_C;
+	    *p = save_slash;
 
 	    xfree(db_name);
 	    db_name = fname;

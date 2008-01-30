@@ -1,3 +1,9 @@
+2008-01-29  Justin Pryzby  <jpryzby+d@quoininc.com>  (wk)
+
+	* gpg-agent.texi (Agent Options): Grammar fixes
+
+	* qualified.txt: Spelling fixes.
+
 2008-01-28  Justin Pryzby  <jpryzby+d@quoininc.com>  (wk)
 
 	* gpg-agent.texi, yat2m.c, scdaemon.texi, qualified.txt
@@ -559,7 +565,7 @@
 
 	* Makefile.am, gpgsm.texi: New.
 	
- Copyright 2002, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2002, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

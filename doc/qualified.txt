@@ -4,9 +4,9 @@
 # signatures are.  Comments like this one and empty lines are allowed
 # Lines do have a length limit but this is not a serious limitation as
 # the format of the entries is fixed and checked by gpgsm: A
-# non-comment line starts with optional white spaces, followed by
-# exactly 40 hex character, white space and a lowercased 2 letter
-# country code.  Additional data delimited with by a white space is
+# non-comment line starts with optional whitespaces, followed by
+# exactly 40 hex character, whitespace and a lowercased 2 letter
+# country code.  Additional data delimited with by a whitespace is
 # current ignored but might late be used for other purposes.
 #
 # Note: The subversion copy of this file carries a gpg:signature

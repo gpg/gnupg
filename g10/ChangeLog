@@ -1,3 +1,7 @@
+2008-01-30  Werner Koch  <wk@g10code.com>
+
+	* tdbio.c (tdbio_set_dbname): Also test for forward slash.
+
 2008-01-29  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (maybe_create_keyring): Take care of a missing slash.

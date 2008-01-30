@@ -319,8 +319,8 @@ more arguments in future versions.
 	indicate how trustworthy the signature is.  The error token
 	values are currently only emitted by gpgsm.  VALIDATION_MODEL
 	describes the algorithm used to check the validity of the key.
-	The default is the standard gpg Web of Trust model respective
-	the standard X.509 model.  The defined values are
+	The defaults are the standard Web of Trust model for gpg and the 
+	the standard X.509 model for gpgsm.  The defined values are
 
            "pgp"   for the standard PGP WoT.
 	   "shell" for the standard X.509 model.
