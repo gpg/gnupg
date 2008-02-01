@@ -1568,7 +1568,7 @@ gc_component_list_options (int component, FILE *out)
 	      gc_option_t opt_copy;
 
 	      /* Fix up the group level.  */
-	      memcpy (&opt_copy, option, sizeof (opt));
+	      memcpy (&opt_copy, option, sizeof (opt_copy));
 	      opt_copy.level = level;
 	      list_one_option (&opt_copy, out);
 	    }

@@ -1,3 +1,8 @@
+2008-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (gc_component_list_options): Fix memcpy.
+	Reported by Marc Mutz.
+
 2008-01-22  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Use gnupg domain for honor-http-proxy.  Make
