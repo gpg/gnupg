@@ -1,3 +1,8 @@
+2008-02-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.texi (GPG Esoteric Options): Tweak mention of Tempest font
+	to add a "claimed" in there.
+
 2008-01-29  Justin Pryzby  <jpryzby+d@quoininc.com>  (wk)
 
 	* gpg-agent.texi (Agent Options): Grammar fixes

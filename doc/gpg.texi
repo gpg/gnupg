@@ -2154,10 +2154,10 @@ file being encrypted.
 
 @item --for-your-eyes-only
 @itemx --no-for-your-eyes-only
-Set the `for your eyes only' flag in the message. This causes GnuPG
-to refuse to save the file unless the @option{--output} option is given, and
-PGP to use the "secure viewer" with a Tempest-resistant font to
-display the message. This option overrides @option{--set-filename}.
+Set the `for your eyes only' flag in the message. This causes GnuPG to
+refuse to save the file unless the @option{--output} option is given,
+and PGP to use a "secure viewer" with a claimed Tempest-resistant font
+to display the message. This option overrides @option{--set-filename}.
 @option{--no-for-your-eyes-only} disables this option.
 
 @item --use-embedded-filename
