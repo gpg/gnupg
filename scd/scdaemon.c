@@ -555,8 +555,10 @@ main (int argc, char **argv )
       char *filename = NULL;
       char *filename_esc;
 
-      if (!config_filename)
-        filename = make_filename (opt.homedir, "scdaemon.conf", NULL );
+      if (config_filename)
+	filename = xstrdup (config_filename);
+      else
+        filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
       filename_esc = percent_escape (filename, NULL);
 
       printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",

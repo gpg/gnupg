@@ -1,3 +1,8 @@
+2008-02-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* scdaemon.c (main): Use CONFIG_FILENAME as filename if it is set
+	in gpgconf-list output.
+
 2007-12-10  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_decipher): Take care of cryptograms shorter
