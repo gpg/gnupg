@@ -1765,9 +1765,65 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
 }
 
 
+char *
+get_default_configname (void)
+{
+  char *configname = NULL;
+  char *name = xstrdup ("gpg" EXTSEP_S "conf-" SAFE_VERSION);
+  char *ver = &name[strlen ("gpg" EXTSEP_S "conf-")];
+
+  do
+    {
+      if (configname)
+	{
+	  char *tok;
+	  
+	  xfree (configname);
+	  configname = NULL;
+
+	  if ((tok = strrchr (ver, SAFE_VERSION_DASH)))
+	    *tok='\0';
+	  else if ((tok = strrchr (ver, SAFE_VERSION_DOT)))
+	    *tok='\0';
+	  else
+	    break;
+	}
+      
+      configname = make_filename (opt.homedir, name, NULL);
+    }
+  while (access (configname, R_OK));
+
+  xfree(name);
+  
+  if (! configname)
+    configname = make_filename (opt.homedir, "gpg" EXTSEP_S "conf", NULL);
+  if (! access (configname, R_OK))
+    {
+      /* Print a warning when both config files are present.  */
+      char *p = make_filename (opt.homedir, "options", NULL);
+      if (! access (p, R_OK))
+	log_info (_("NOTE: old default options file `%s' ignored\n"), p);
+      xfree (p);
+    }
+  else
+    {
+      /* Use the old default only if it exists.  */
+      char *p = make_filename (opt.homedir, "options", NULL);
+      if (!access (p, R_OK))
+	{
+	  xfree (configname);
+	  configname = p;
+	}
+      else
+	xfree (p);
+    }
+
+  return configname;
+}
+
 
 int
-main (int argc, char **argv )
+main (int argc, char **argv)
 {
     ARGPARSE_ARGS pargs;
     IOBUF a;
@@ -1784,6 +1840,7 @@ main (int argc, char **argv )
     FILE *configfp = NULL;
     char *configname = NULL;
     char *save_configname = NULL;
+    char *default_configname = NULL;
     unsigned configlineno;
     int parse_debug = 0;
     int default_config = 1;
@@ -1960,49 +2017,10 @@ main (int argc, char **argv )
  
 
     /* Try for a version specific config file first */
-    if( default_config )
-      {
-	char *name=xstrdup("gpg" EXTSEP_S "conf-" SAFE_VERSION);
-	char *ver=&name[strlen("gpg" EXTSEP_S "conf-")];
+    default_configname = get_default_configname ();
+    if (default_config)
+      configname = xstrdup (default_configname);
 
-	do
-	  {
-	    if(configname)
-	      {
-		char *tok;
-
-		xfree(configname);
-		configname=NULL;
-
-		if((tok=strrchr(ver,SAFE_VERSION_DASH)))
-		  *tok='\0';
-		else if((tok=strrchr(ver,SAFE_VERSION_DOT)))
-		  *tok='\0';
-		else
-		  break;
-	      }
-
-	    configname = make_filename(opt.homedir,name,NULL);
-	  }
-	while(access(configname,R_OK));
-
-	xfree(name);
-
-	if(!configname)
-	  configname=make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
-        if (!access (configname, R_OK))
-          { /* Print a warning when both config files are present. */
-            char *p = make_filename(opt.homedir, "options", NULL );
-            if (!access (p, R_OK))
-              log_info (_("NOTE: old default options file `%s' ignored\n"), p);
-            xfree (p);
-          }
-        else
-          { /* Keep on using the old default one. */
-            xfree (configname);
-            configname = make_filename(opt.homedir, "options", NULL );
-          }
-      }
     argc = orig_argc;
     argv = orig_argv;
     pargs.argc = &argc;
@@ -2867,10 +2885,11 @@ main (int argc, char **argv )
        directly after the option parsing. */
     if (cmd == aGPGConfList)
       {
-        gpgconf_list (save_configname);
+        gpgconf_list (save_configname ? save_configname : default_configname);
         g10_exit (0);
       }
     xfree (save_configname);
+    xfree (default_configname);
 
     if( nogreeting )
 	greeting = 0;
