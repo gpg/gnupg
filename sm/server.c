@@ -1,6 +1,6 @@
 /* server.c - Server mode and main entry point 
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1007,6 +1007,36 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
 }
 
 
+/* GETINFO <what>
+
+   Multipurpose function to return a variety of information.
+   Supported values for WHAT are:
+
+     version     - Return the version of the program.
+     pid         - Return the process id of the server.
+
+ */
+static int
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc;
+
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+  return rc;
+}
 
 
 
@@ -1036,6 +1066,7 @@ register_commands (assuan_context_t ctx)
     { "GENKEY",        cmd_genkey },
     { "DELKEYS",       cmd_delkeys },
     { "GETAUDITLOG",   cmd_getauditlog },
+    { "GETINFO",       cmd_getinfo },
     { NULL }
   };
   int i, rc;

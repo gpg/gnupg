@@ -361,7 +361,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   {
     ksba_cert_t next;
 
-    rc = gpgsm_walk_cert_chain (cert, &next);
+    rc = gpgsm_walk_cert_chain (ctrl, cert, &next);
     if (!rc) /* We known the issuer's certificate. */
       {
         p = gpgsm_get_fingerprint_hexstring (next, GCRY_MD_SHA1);
@@ -1141,7 +1141,7 @@ list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
   else
     list_cert_std (ctrl, cert, fp, 0, with_validation);
   ksba_cert_ref (cert);
-  while (!gpgsm_walk_cert_chain (cert, &next))
+  while (!gpgsm_walk_cert_chain (ctrl, cert, &next))
     {
       ksba_cert_release (cert);
       es_fputs ("Certified by\n", fp);
@@ -1382,7 +1382,7 @@ list_external_keys (ctrl_t ctrl, strlist_t names, estream_t fp, int raw_mode)
   parm.with_chain = ctrl->with_chain;
   parm.raw_mode  = raw_mode;
 
-  rc = gpgsm_dirmngr_lookup (ctrl, names, list_external_cb, &parm);
+  rc = gpgsm_dirmngr_lookup (ctrl, names, 0, list_external_cb, &parm);
   if (rc)
     log_error ("listing external keys failed: %s\n", gpg_strerror (rc));
   return rc;

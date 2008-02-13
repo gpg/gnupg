@@ -285,14 +285,15 @@ int gpgsm_create_cms_signature (ctrl_t ctrl,
 #define VALIDATE_FLAG_CHAIN_MODEL 2
 
 
-int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
+int gpgsm_walk_cert_chain (ctrl_t ctrl,
+                           ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
                           ksba_isotime_t checktime,
                           ksba_isotime_t r_exptime,
                           int listmode, estream_t listfp,
                           unsigned int flags, unsigned int *retflags);
-int gpgsm_basic_cert_check (ksba_cert_t cert);
+int gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert);
 
 /*-- certlist.c --*/
 int gpgsm_cert_use_sign_p (ksba_cert_t cert);
@@ -380,7 +381,7 @@ gpg_error_t gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc);
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                            ksba_cert_t cert, ksba_cert_t issuer_cert,
                            int use_ocsp);
-int gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
+int gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);
 int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                                int argc, char **argv);

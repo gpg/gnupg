@@ -1,3 +1,8 @@
+2008-02-11  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_getinfo): New. 
+	(register_commands): Register GETINFO.
+
 2008-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg.c (main): New variable default_configname.  Use it if

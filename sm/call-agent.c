@@ -59,6 +59,7 @@ struct genkey_parm_s
 struct learn_parm_s
 {
   int error;
+  ctrl_t ctrl;
   assuan_context_t ctx;
   membuf_t *data;
 };
@@ -638,7 +639,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
       return 0;
     }
 
-  rc = gpgsm_basic_cert_check (cert);
+  rc = gpgsm_basic_cert_check (parm->ctrl, cert);
   if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT)
     { /* For later use we store it in the ephemeral database. */
       log_info ("issuer certificate missing - storing as ephemeral\n");
@@ -679,6 +680,7 @@ gpgsm_agent_learn (ctrl_t ctrl)
 
   init_membuf (&data, 4096);
   learn_parm.error = 0;
+  learn_parm.ctrl = ctrl;
   learn_parm.ctx = agent_ctx;
   learn_parm.data = &data;
   rc = assuan_transact (agent_ctx, "LEARN --send",

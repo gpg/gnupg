@@ -1,3 +1,20 @@
+2008-02-13  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (gpgsm_dirmngr_lookup): Add arg CACHE_ONLY.
+	* keylist.c (list_external_keys): Pass false for new arg.
+	* certchain.c (find_up_dirmngr): New.
+	(find_up): Also try to read from the dirmngr cache.
+	(find_up, find_up_external, gpgsm_walk_cert_chain)
+	(gpgsm_basic_cert_check, allowed_ca): Add arg CTRL and changed all
+	callers.
+	* call-agent.c (struct learn_parm_s): Add field CTRL.
+	(gpgsm_agent_learn): Set it.
+
+2008-02-11  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_getinfo): New.
+	(gpgsm_server): Register GETINFO.
+
 2008-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* keylist.c (list_internal_keys): New variable lastcert.  Use it
@@ -35,7 +52,7 @@
 
 2007-12-03  Werner Koch  <wk@g10code.com>
 
-	* gpgsm.c (main): All gnupg_reopen_std.
+	* gpgsm.c (main): Call gnupg_reopen_std.
 
 h2007-11-22  Werner Koch  <wk@g10code.com>
 

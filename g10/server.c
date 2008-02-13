@@ -1,5 +1,5 @@
 /* server.c - server mode for gpg
- * Copyright (C) 2006  Free Software Foundation, Inc.
+ * Copyright (C) 2006, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -386,7 +386,36 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
+/* GETINFO <what>
 
+   Multipurpose function to return a variety of information.
+   Supported values for WHAT are:
+
+     version     - Return the version of the program.
+     pid         - Return the process id of the server.
+
+ */
+static int
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc;
+
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else
+    rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+  return rc;
+}
 
 
 
@@ -414,6 +443,7 @@ register_commands (assuan_context_t ctx)
     { "LISTSECRETKEYS",cmd_listsecretkeys },
     { "GENKEY",        cmd_genkey    },
     { "DELKEYS",       cmd_delkeys   },
+    { "GETINFO",       cmd_getinfo   },
     { NULL }
   };
   int i, rc;

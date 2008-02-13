@@ -938,9 +938,12 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   helptag_t helptag;
   const char *s;
   int show_raw = 0;
+  char *orig_codeset;
   
   if (!ctx)
     return;
+
+  orig_codeset = i18n_switchto_utf8 ();
 
   /* We use an environment variable to include some debug info in the
      log.  */
@@ -1090,5 +1093,6 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   ctx->outstream = NULL;
   ctx->use_html = 0;
   clear_helptags (ctx);
+  i18n_switchback (orig_codeset);
 }
 

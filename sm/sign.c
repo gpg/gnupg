@@ -272,7 +272,7 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
   /* Walk the chain to include all other certificates.  Note that a -1
      used for N makes sure that there is no limit and all certs get
      included. */
-  while ( n-- && !(rc = gpgsm_walk_cert_chain (cert, &next)) )
+  while ( n-- && !(rc = gpgsm_walk_cert_chain (ctrl, cert, &next)) )
     {
       if (not_root && gpgsm_is_root_cert (next))
         err = 0;

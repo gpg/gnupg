@@ -1182,6 +1182,8 @@ The value of @var{what} specifies the kind of information returned:
 @table @code
 @item version
 Return the version of the program.
+@item pid
+Return the process id of the process.
 @item socket_name
 Return the name of the socket used to connect the agent.
 @item ssh_socket_name

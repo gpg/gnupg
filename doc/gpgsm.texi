@@ -928,6 +928,7 @@ Assuan manual for details.
 * GPGSM EXPORT::          Export certificates.
 * GPGSM IMPORT::          Import certificates.
 * GPGSM DELETE::          Delete certificates.
+* GPGSM GETINFO::         Information about the process
 @end menu
 
 
@@ -1197,7 +1198,7 @@ import private keys; a helper program is used for that.
 @node GPGSM DELETE
 @subsection Delete certificates
 
-To delete certificate the command
+To delete a certificate the command
 
 @example
   DELKEYS @var{pattern}
@@ -1210,6 +1211,22 @@ this requires that the usual escape quoting rules are done.
 The certificates must be specified unambiguously otherwise an error is
 returned.
 
+@node GPGSM GETINFO
+@subsection  Return information about the process
+
+This is a multipurpose function to return a variety of information.
+
+@example
+GETINFO @var{what}
+@end example
+
+The value of @var{what} specifies the kind of information returned:
+@table @code
+@item version
+Return the version of the program.
+@item pid
+Return the process id of the process.
+@end table
 
 @mansect see also
 @ifset isman

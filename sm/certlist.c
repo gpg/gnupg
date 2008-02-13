@@ -455,7 +455,7 @@ gpgsm_release_certlist (certlist_t list)
 
 
 /* Like gpgsm_add_to_certlist, but look only for one certificate.  No
-   chain validation is done. If KEYID is not NULL it is take as an
+   chain validation is done.  If KEYID is not NULL it is taken as an
    additional filter value which must match the
    subjectKeyIdentifier. */
 int

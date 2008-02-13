@@ -1,5 +1,5 @@
 /* call-dirmngr.c - communication with the dromngr 
- *	Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -704,9 +704,10 @@ lookup_status_cb (void *opaque, const char *line)
 /* Run the Directroy Managers lookup command using the pattern
    compiled from the strings given in NAMES.  The caller must provide
    the callback CB which will be passed cert by cert.  Note that CTRL
-   is optional. */
+   is optional.  With CACHE_ONLY the dirmngr will search only its own
+   key cache. */
 int 
-gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
+gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
                       void (*cb)(void*, ksba_cert_t), void *cb_value)
 { 
   int rc;
@@ -722,7 +723,8 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names,
   pattern = pattern_from_strlist (names);
   if (!pattern)
     return out_of_core ();
-  snprintf (line, DIM(line)-1, "LOOKUP %s", pattern);
+  snprintf (line, DIM(line)-1, "LOOKUP%s %s", 
+            cache_only? " --cache-only":"", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
 

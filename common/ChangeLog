@@ -1,3 +1,8 @@
+2008-01-31  Werner Koch  <wk@g10code.com>
+
+	* audit.c (audit_print_result): Make sure that the output is
+	always UTF8.
+
 2008-01-27  Werner Koch  <wk@g10code.com>
 
 	* exechelp.c (gnupg_spawn_process): Add arg FLAGS and changed all

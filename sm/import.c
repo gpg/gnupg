@@ -172,7 +172,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
      
      Optionally we do a full validation in addition to the basic test.
   */
-  rc = gpgsm_basic_cert_check (cert);
+  rc = gpgsm_basic_cert_check (ctrl, cert);
   if (!rc && ctrl->with_validation)
     rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
   if (!rc || (!ctrl->with_validation
@@ -216,7 +216,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
              the chain.  This is required in case we already stored
              parent certificates in the ephemeral keybox.  Do not
              update the statistics, though. */
-          if (!gpgsm_walk_cert_chain (cert, &next))
+          if (!gpgsm_walk_cert_chain (ctrl, cert, &next))
             {
               check_and_store (ctrl, NULL, next, depth+1);
               ksba_cert_release (next);

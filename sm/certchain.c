@@ -60,7 +60,7 @@ struct chain_item_s
 typedef struct chain_item_s *chain_item_t;
 
 
-static int get_regtp_ca_info (ksba_cert_t cert, int *chainlen);
+static int get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen);
 
 
 /* This function returns true if we already asked during this session
@@ -259,7 +259,8 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
    BasicConstraints extension.  The function returns 0 on success and
    the awlloed length of the chain at CHAINLEN. */
 static int
-allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)
+allowed_ca (ctrl_t ctrl, 
+            ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)
 {
   gpg_error_t err;
   int flag;
@@ -269,7 +270,7 @@ allowed_ca (ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)
     return err;
   if (!flag)
     {
-      if (get_regtp_ca_info (cert, chainlen))
+      if (get_regtp_ca_info (ctrl, cert, chainlen))
         {
           /* Note that dirmngr takes a different way to cope with such
              certs. */
@@ -417,7 +418,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
 
 /* Helper function for find_up.  This resets the key handle and search
    for an issuer ISSUER with a subjectKeyIdentifier of KEYID.  Returns
-   0 obn success or -1 when not found. */
+   0 on success or -1 when not found. */
 static int
 find_up_search_by_keyid (KEYDB_HANDLE kh,
                          const char *issuer, ksba_sexp_t keyid)
@@ -464,9 +465,10 @@ find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
    external lookup.  KH is the keydb context we are currently using.
    On success 0 is returned and the certificate may be retrieved from
    the keydb using keydb_get_cert().  KEYID is the keyIdentifier from
-   the AKI or NULL. */
+   the AKI or NULL.  */
 static int
-find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
+find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
+                  const char *issuer, ksba_sexp_t keyid)
 {
   int rc;
   strlist_t names = NULL;
@@ -476,14 +478,13 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
       
   if (opt.verbose)
     log_info (_("looking up issuer at external location\n"));
-  /* The DIRMNGR process is confused about unknown attributes.  As a
+  /* The Dirmngr process is confused about unknown attributes.  As a
      quick and ugly hack we locate the CN and use the issuer string
      starting at this attribite.  Fixme: we should have far better
-     parsing in the dirmngr. */
+     parsing for external lookups in the Dirmngr. */
   s = strstr (issuer, "CN=");
   if (!s || s == issuer || s[-1] != ',')
     s = issuer;
-
   pattern = xtrymalloc (strlen (s)+2);
   if (!pattern)
     return gpg_error_from_syserror ();
@@ -491,7 +492,7 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
   add_to_strlist (&names, pattern);
   xfree (pattern);
 
-  rc = gpgsm_dirmngr_lookup (NULL, names, find_up_store_certs_cb, &count);
+  rc = gpgsm_dirmngr_lookup (ctrl, names, 0, find_up_store_certs_cb, &count);
   free_strlist (names);
 
   if (opt.verbose)
@@ -522,6 +523,54 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
 }
 
 
+/* Helper for find_up().  Ask the dirmngr for the certificate for
+   ISSUER with optional SERIALNO.  KH is the keydb context we are
+   currently using.  With SUBJECT_MODE set, ISSUER is searched as the
+   subject.  On success 0 is returned and the certificate is available
+   in the ephemeral DB.  */
+static int
+find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
+                 ksba_sexp_t serialno, const char *issuer, int subject_mode)
+{
+  int rc;
+  strlist_t names = NULL;
+  int count = 0;
+  char *pattern;
+      
+  if (opt.verbose)
+    log_info (_("looking up issuer from the Dirmngr cache\n"));
+  if (subject_mode)
+    {
+      pattern = xtrymalloc (strlen (issuer)+2);
+      if (pattern)
+        strcpy (stpcpy (pattern, "/"), issuer);
+    }
+  else if (serialno)
+    pattern = gpgsm_format_sn_issuer (serialno, issuer);
+  else
+    {
+      pattern = xtrymalloc (strlen (issuer)+3);
+      if (pattern)
+        strcpy (stpcpy (pattern, "#/"), issuer);
+    }
+  if (!pattern)
+    return gpg_error_from_syserror ();
+  add_to_strlist (&names, pattern);
+  xfree (pattern);
+
+  rc = gpgsm_dirmngr_lookup (ctrl, names, 1, find_up_store_certs_cb, &count);
+  free_strlist (names);
+
+  if (opt.verbose)
+    log_info (_("number of matching certificates: %d\n"), count);
+  if (rc) 
+    log_info (_("dirmngr cache-only key lookup failed: %s\n"),
+              gpg_strerror (rc));
+  return (!rc && count)? 0 : -1;
+}
+
+
+
 /* Locate issuing certificate for CERT. ISSUER is the name of the
    issuer used as a fallback if the other methods don't work.  If
    FIND_NEXT is true, the function shall return the next possible
@@ -529,7 +578,8 @@ find_up_external (KEYDB_HANDLE kh, const char *issuer, ksba_sexp_t keyid)
    keydb_get_cert on the keyDb context KH will return it.  Returns 0
    on success, -1 if not found or an error code.  */
 static int
-find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
+find_up (ctrl_t ctrl, KEYDB_HANDLE kh, 
+         ksba_cert_t cert, const char *issuer, int find_next)
 {
   ksba_name_t authid;
   ksba_sexp_t authidno;
@@ -545,6 +595,14 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
           if (rc)
               keydb_search_reset (kh);
           
+          /* In case of an error, try to get the certifcate from the
+             dirmngr.  That is done by trying to put that certifcate
+             into the ephemeral DB and let the code below do the
+             actual retrieve.  Thus there is no error checking.
+             Skipped in find_next mode as usual. */
+          if (rc == -1 && !find_next)
+            find_up_dirmngr (ctrl, kh, authidno, s, 0);
+
           /* In case of an error try the ephemeral DB.  We can't do
              that in find_next mode because we can't keep the search
              state then. */
@@ -559,7 +617,8 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
                 }
               keydb_set_ephemeral (kh, old);
             }
-
+          if (rc) 
+            rc = -1; /* Need to make sure to have this error code. */
         }
 
       if (rc == -1 && keyid && !find_next)
@@ -568,6 +627,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
              instead. Loop over all certificates with that issuer as
              subject and stop for the one with a matching
              subjectKeyIdentifier. */
+          /* Fixme: Should we also search in the dirmngr?  */
           rc = find_up_search_by_keyid (kh, issuer, keyid);
           if (rc)
             {
@@ -580,9 +640,29 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
             rc = -1; /* Need to make sure to have this error code. */
         }
 
+      /* If we still didn't found it, try to find it via the subject
+         from the dirmngr-cache.  */
+      if (rc == -1 && !find_next)
+        {
+          if (!find_up_dirmngr (ctrl, kh, NULL, issuer, 1))
+            {
+              int old = keydb_set_ephemeral (kh, 1);
+              if (keyid)
+                rc = find_up_search_by_keyid (kh, issuer, keyid);
+              else
+                {
+                  keydb_search_reset (kh);
+                  rc = keydb_search_subject (kh, issuer);
+                }
+              keydb_set_ephemeral (kh, old);
+            }
+          if (rc) 
+            rc = -1; /* Need to make sure to have this error code. */
+        }
+
       /* If we still didn't found it, try an external lookup.  */
       if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-        rc = find_up_external (kh, issuer, keyid);
+        rc = find_up_external (ctrl, kh, issuer, keyid);
 
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
@@ -617,6 +697,10 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
     rc = keydb_search_subject (kh, issuer);
   if (rc == -1 && !find_next)
     {
+      /* Also try to get it from the Dirmngr cache.  The function
+         merely puts it into the ephemeral database.  */
+      find_up_dirmngr (ctrl, kh, NULL, issuer, 0);
+
       /* Not found, let us see whether we have one in the ephemeral key DB. */
       int old = keydb_set_ephemeral (kh, 1);
       if (!old)
@@ -629,7 +713,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 
   /* Still not found.  If enabled, try an external lookup.  */
   if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-    rc = find_up_external (kh, issuer, NULL);
+    rc = find_up_external (ctrl, kh, issuer, NULL);
 
   return rc;
 }
@@ -638,7 +722,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 /* Return the next certificate up in the chain starting at START.
    Returns -1 when there are no more certificates. */
 int
-gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next)
+gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
 {
   int rc = 0; 
   char *issuer = NULL;
@@ -674,7 +758,7 @@ gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next)
       goto leave; 
     }
 
-  rc = find_up (kh, start, issuer, 0);
+  rc = find_up (ctrl, kh, start, issuer, 0);
   if (rc)
     {
       /* It is quite common not to have a certificate, so better don't
@@ -1194,7 +1278,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
             }
           if (!rootca_flags->relax)
             {
-              rc = allowed_ca (subject_cert, NULL, listmode, listfp);
+              rc = allowed_ca (ctrl, subject_cert, NULL, listmode, listfp);
               if (rc)
                 goto leave;
             }
@@ -1301,7 +1385,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
 
       /* Find the next cert up the tree. */
       keydb_search_reset (kh);
-      rc = find_up (kh, subject_cert, issuer, 0);
+      rc = find_up (ctrl, kh, subject_cert, issuer, 0);
       if (rc)
         {
           if (rc == -1)
@@ -1353,7 +1437,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                  root certificates. */
               /* FIXME: Do this only if we don't have an
                  AKI.keyIdentifier */
-              rc = find_up (kh, subject_cert, issuer, 1);
+              rc = find_up (ctrl, kh, subject_cert, issuer, 1);
               if (!rc)
                 {
                   ksba_cert_t tmp_cert;
@@ -1393,7 +1477,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       {
         int chainlen;
 
-        rc = allowed_ca (issuer_cert, &chainlen, listmode, listfp);
+        rc = allowed_ca (ctrl, issuer_cert, &chainlen, listmode, listfp);
         if (rc)
           {
             /* Not allowed.  Check whether this is a trusted root
@@ -1656,7 +1740,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
    the DB and that this one is valid; which it should be because it
    has been checked using this function. */
 int
-gpgsm_basic_cert_check (ksba_cert_t cert)
+gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
 {
   int rc = 0;
   char *issuer = NULL;
@@ -1706,7 +1790,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
     {
       /* Find the next cert up the tree. */
       keydb_search_reset (kh);
-      rc = find_up (kh, cert, issuer, 0);
+      rc = find_up (ctrl, kh, cert, issuer, 0);
       if (rc)
         {
           if (rc == -1)
@@ -1771,7 +1855,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
    receive the length of the chain which is either 0 or 1.
 */
 static int
-get_regtp_ca_info (ksba_cert_t cert, int *chainlen)
+get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
 {
   gpg_error_t err;
   ksba_cert_t next;
@@ -1816,7 +1900,7 @@ get_regtp_ca_info (ksba_cert_t cert, int *chainlen)
   ksba_cert_ref (cert);
   array[depth++] = cert;
   ksba_cert_ref (cert);
-  while (depth < DIM(array) && !(rc=gpgsm_walk_cert_chain (cert, &next)))
+  while (depth < DIM(array) && !(rc=gpgsm_walk_cert_chain (ctrl, cert, &next)))
     {
       ksba_cert_release (cert);
       ksba_cert_ref (next);

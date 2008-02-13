@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.0.9 (unreleased)
 ------------------------------------------------
 
+ * Gpgsm always tries to locate missing certificates from a running
+   Dirmngr's cache.
+
 
 Noteworthy changes in version 2.0.8 (2007-12-20)
 ------------------------------------------------
