@@ -1,6 +1,6 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,6 +60,8 @@ struct server_local_s
   int stopme;    /* If set to true the agent will be terminated after
                     the end of this session.  */
 #endif
+  int allow_pinentry_notify; /* Set if pinentry notifications should
+                                be done. */
 };
 
 
@@ -315,6 +317,22 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 
   va_end (arg_ptr);
   return err;
+}
+
+
+/* Helper to notify the client about a lauchned Pinentry.  Because
+   that might disturb some older clients, this is only done when
+   enabled via an option.  Returns an gpg error code. */
+gpg_error_t
+agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
+{
+  char line[100];
+
+  if (!ctrl || !ctrl->server_local 
+      || !ctrl->server_local->allow_pinentry_notify)
+    return 0;
+  snprintf (line, DIM(line)-1, "PINENTRY_LAUNCHED %lu", pid);
+  return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
 
 
@@ -697,7 +715,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
    part.  Here is an example transaction:
 
    C: GENKEY
-   S: INQUIRE KEYPARM
+   S: INQUIRE KEYPARAM
    C: D (genkey (rsa (nbits  1024)))
    C: END
    S: D (public-key
@@ -1465,6 +1483,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "use-cache-for-signing"))
     ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
+  else if (!strcmp (key, "allow-pinentry-notify"))
+    ctrl->server_local->allow_pinentry_notify = 1;
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 

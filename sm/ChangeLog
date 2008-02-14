@@ -1,3 +1,16 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* server.c (option_handler): Add option allow-pinentry-notify.
+	(gpgsm_proxy_pinentry_notify): New.
+	* call-agent.c (default_inq_cb): New.
+	(gpgsm_agent_pksign, gpgsm_scd_pksign, gpgsm_agent_readkey) 
+	(gpgsm_agent_istrusted, gpgsm_agent_marktrusted) 
+	(gpgsm_agent_passwd, gpgsm_agent_get_confirmation): Call it.
+	(struct cipher_parm_s, struct genkey_parm_s): Add field CTRL.
+	(inq_ciphertext_cb): Test keyword and fallback to default_inq_cb.
+	(inq_genkey_parms): Ditto.
+	(start_agent): Tell agent to send us the pinentry notifications.
+
 2008-02-13  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (gpgsm_dirmngr_lookup): Add arg CACHE_ONLY.

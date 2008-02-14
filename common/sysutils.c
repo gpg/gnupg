@@ -1,6 +1,6 @@
 /* sysutils.c -  system helpers
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
- *               2007  Free Software Foundation, Inc.
+ *               2007, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -43,6 +43,7 @@
 # include <sys/resource.h>
 #endif
 #ifdef HAVE_W32_SYSTEM
+# define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
 # include <windows.h>
 #endif
 #ifdef HAVE_PTH      
@@ -471,3 +472,17 @@ gnupg_reopen_std (const char *pgmname)
 #endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
 }
 
+
+/* Hack required for Windows.  */
+void 
+gnupg_allow_set_foregound_window (pid_t pid)
+{
+  if (!pid || pid == (pid_t)(-1))
+    log_info ("%s called with invalid pid %lu\n",
+              "gnupg_allow_set_foregound_window", (unsigned long)pid);
+#ifdef HAVE_W32_SYSTEM  
+  else if (!AllowSetForegroundWindow (pid))
+    log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
+               (unsigned long)pid, w32_strerror (-1));
+#endif
+}

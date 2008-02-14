@@ -1,5 +1,5 @@
 /* call-pinentry.c - fork of the pinentry to query stuff from the user
- * Copyright (C) 2001, 2002, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -177,6 +177,23 @@ atfork_cb (void *opaque, int where)
     }
 }
 
+static int
+getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
+{
+  unsigned long *pid = opaque;
+  char pidbuf[50];
+
+  /* There is only the pid in the server's response.  */
+  if (length >= sizeof pidbuf)
+    length = sizeof pidbuf -1;
+  if (length)
+    {
+      strncpy (pidbuf, buffer, length);
+      pidbuf[length] = 0;
+      *pid = strtoul (pidbuf, NULL, 10);
+    }
+  return 0;
+}
 
 /* Fork off the pin entry if this has not already been done.  Note,
    that this function must always be used to aquire the lock for the
@@ -193,6 +210,7 @@ start_pinentry (ctrl_t ctrl)
   int i;
   pth_event_t evt;
   const char *tmpstr;
+  unsigned long pinentry_pid;
 
   evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
   if (!pth_mutex_acquire (&entry_lock, 0, evt))
@@ -357,8 +375,32 @@ start_pinentry (ctrl_t ctrl)
         }
     }
 
+
+  /* Now ask the Pinentry for its PID.  If the Pinentry is new enough
+     it will send the pid back and we will use an inquire to notify
+     our client.  The client may answer the inquiry either with END or
+     with CAN to cancel the pinentry. */
+  rc = assuan_transact (entry_ctx, "GETINFO pid", 
+                        getinfo_pid_cb, &pinentry_pid,
+                        NULL, NULL, NULL, NULL);
+  if (rc)
+    {
+      log_info ("You may want to update to a newer pinentry\n");
+      rc = 0;
+    }
+  else if (!rc && (pid_t)pinentry_pid == (pid_t)(-1))
+    log_error ("pinentry did not return a PID\n");
+  else
+    {
+      rc = agent_inq_pinentry_launched (ctrl, pinentry_pid);
+      if (gpg_err_code (rc) == GPG_ERR_CANCELED)
+        return unlock_pinentry (gpg_error (GPG_ERR_CANCELED));
+      rc = 0;
+    }
+
   return 0;
 }
+
 
 /* Returns True is the pinentry is currently active. If WAITSECONDS is
    greater than zero the function will wait for this many seconds

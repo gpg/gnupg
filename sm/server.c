@@ -49,6 +49,8 @@ struct server_local_s {
   certlist_t recplist;
   certlist_t signerlist;
   certlist_t default_recplist; /* As set by main() - don't release. */
+  int allow_pinentry_notify;   /* Set if pinentry notifications should
+                                  be passed back to the client. */
 };
 
 
@@ -292,13 +294,13 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->server_local->enable_audit_log = i;
     }
+  else if (!strcmp (key, "allow-pinentry-notify"))
+    ctrl->server_local->allow_pinentry_notify = 1;
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
   return 0;
 }
-
-
 
 
 static void
@@ -1283,4 +1285,19 @@ gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
   else
     return gpgsm_status2 (ctrl, no, buf, NULL);
 }
+
+
+/* Helper to notify the client about Pinentry events.  Because that
+   might disturb some older clients, this is only done when enabled
+   via an option.  Returns an gpg error code. */
+gpg_error_t
+gpgsm_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
+{
+  if (!ctrl || !ctrl->server_local 
+      || !ctrl->server_local->allow_pinentry_notify)
+    return 0;
+  return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
+}
+
+
 

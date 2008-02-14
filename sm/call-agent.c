@@ -1,6 +1,6 @@
-/* call-agent.c - divert operations to the agent
- * Copyright (C) 2001, 2002, 2003, 2005,
- *               2007 Free Software Foundation, Inc.
+/* call-agent.c - Divert GPGSM operations to the agent
+ * Copyright (C) 2001, 2002, 2003, 2005, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -44,6 +44,7 @@ static assuan_context_t agent_ctx = NULL;
 
 struct cipher_parm_s
 {
+  ctrl_t ctrl;
   assuan_context_t ctx;
   const unsigned char *ciphertext;
   size_t ciphertextlen;
@@ -51,6 +52,7 @@ struct cipher_parm_s
 
 struct genkey_parm_s
 {
+  ctrl_t ctrl;
   assuan_context_t ctx;
   const unsigned char *sexp;
   size_t sexplen;
@@ -78,15 +80,27 @@ start_agent (ctrl_t ctrl)
                     serialize the access to the agent (which is
                     suitable given that the agent is not MT. */
   else
-    rc = start_new_gpg_agent (&agent_ctx,
-                              GPG_ERR_SOURCE_DEFAULT,
-                              opt.homedir,
-                              opt.agent_program,
-                              opt.display, opt.ttyname, opt.ttytype,
-                              opt.lc_ctype, opt.lc_messages,
-                              opt.xauthority, opt.pinentry_user_data,
-                              opt.verbose, DBG_ASSUAN,
-                              gpgsm_status2, ctrl);
+    {
+      rc = start_new_gpg_agent (&agent_ctx,
+                                GPG_ERR_SOURCE_DEFAULT,
+                                opt.homedir,
+                                opt.agent_program,
+                                opt.display, opt.ttyname, opt.ttytype,
+                                opt.lc_ctype, opt.lc_messages,
+                                opt.xauthority, opt.pinentry_user_data,
+                                opt.verbose, DBG_ASSUAN,
+                                gpgsm_status2, ctrl);
+      
+      if (!rc)
+        {
+          /* Tell the agent that we support Pinentry notifications.  No
+             error checking so that it will work also with older
+             agents.  */
+          assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+        }
+    }
+
   if (!ctrl->agent_seen)
     {
       ctrl->agent_seen = 1;
@@ -108,6 +122,29 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
   return 0;
 }
   
+
+/* This is the default inquiry callback.  It mainly handles the
+   Pinentry notifications.  */
+static int
+default_inq_cb (void *opaque, const char *line)
+{
+  gpg_error_t err;
+  ctrl_t ctrl = opaque;
+
+  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+    {
+      err = gpgsm_proxy_pinentry_notify (ctrl, line);
+      if (err)
+        log_error (_("failed to proxy %s inquiry to client\n"), 
+                   "PINENTRY_LAUNCHED");
+      /* We do not pass errors to avoid breaking other code.  */
+    }
+  else
+    log_error ("ignoring gpg-agent inquiry `%s'\n", line);
+
+  return 0;
+}
+
 
 
 
@@ -161,7 +198,8 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, "PKSIGN",
-                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+                        membuf_data_cb, &data, default_inq_cb, ctrl,
+                        NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -225,7 +263,8 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s", hashopt, keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line,
-                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+                        membuf_data_cb, &data, default_inq_cb, ctrl,
+                        NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -262,14 +301,20 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 /* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
    assuan_transact talkes care of flushing and writing the end */
 static int
-inq_ciphertext_cb (void *opaque, const char *keyword)
+inq_ciphertext_cb (void *opaque, const char *line)
 {
   struct cipher_parm_s *parm = opaque; 
   int rc;
 
-  assuan_begin_confidential (parm->ctx);
-  rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
-  assuan_end_confidential (parm->ctx);
+  if (!strncmp (line, "CIPHERTEXT", 10) && (line[10]==' '||!line[10]))
+    {
+      assuan_begin_confidential (parm->ctx);
+      rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
+      assuan_end_confidential (parm->ctx);
+    }
+  else
+    rc = default_inq_cb (parm->ctrl, line);
+
   return rc; 
 }
 
@@ -323,6 +368,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     }
 
   init_membuf (&data, 1024);
+  cipher_parm.ctrl = ctrl;
   cipher_parm.ctx = agent_ctx;
   cipher_parm.ciphertext = ciphertext;
   cipher_parm.ciphertextlen = ciphertextlen;
@@ -377,12 +423,18 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 /* Handle a KEYPARMS inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
 static int
-inq_genkey_parms (void *opaque, const char *keyword)
+inq_genkey_parms (void *opaque, const char *line)
 {
   struct genkey_parm_s *parm = opaque; 
   int rc;
 
-  rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
+  if (!strncmp (line, "KEYPARAM", 8) && (line[8]==' '||!line[8]))
+    {
+      rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
+    }
+  else
+    rc = default_inq_cb (parm->ctrl, line);
+
   return rc; 
 }
 
@@ -409,6 +461,7 @@ gpgsm_agent_genkey (ctrl_t ctrl,
     return rc;
 
   init_membuf (&data, 1024);
+  gk_parm.ctrl = ctrl;
   gk_parm.ctx = agent_ctx;
   gk_parm.sexp = keyparms;
   gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
@@ -465,7 +518,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, line,
                         membuf_data_cb, &data, 
-                        NULL, NULL, NULL, NULL);
+                        default_inq_cb, ctrl, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -568,7 +621,8 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   ksba_free (dn);
   xfree (fpr);
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        default_inq_cb, ctrl, NULL, NULL);
   return rc;
 }
 
@@ -722,7 +776,8 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
   snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
   line[DIM(line)-1] = 0;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        default_inq_cb, ctrl, NULL, NULL);
   return rc;
 }
 
@@ -743,6 +798,7 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
   snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", desc);
   line[DIM(line)-1] = 0;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        default_inq_cb, ctrl, NULL, NULL);
   return rc;
 }

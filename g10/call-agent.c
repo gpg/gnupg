@@ -1,5 +1,6 @@
-/* call-agent.c - divert operations to the agent
- * Copyright (C) 2001, 2002, 2003, 2006, 2007 Free Software Foundation, Inc.
+/* call-agent.c - Divert GPG operations to the agent.
+ * Copyright (C) 2001, 2002, 2003, 2006, 2007, 
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,6 +37,7 @@
 #include "options.h"
 #include "i18n.h"
 #include "asshelp.h"
+#include "sysutils.h"
 #include "call-agent.h"
 
 #ifndef DBG_ASSUAN
@@ -72,19 +74,31 @@ struct genkey_parm_s
 static int
 start_agent (void)
 {
+  int rc;
+
   if (agent_ctx)
     return 0; /* Fixme: We need a context for each thread or serialize
                  the access to the agent. */
 
-  return start_new_gpg_agent (&agent_ctx,
-                              GPG_ERR_SOURCE_DEFAULT,
-                              opt.homedir,
-                              opt.agent_program,
-                              opt.display, opt.ttyname, opt.ttytype,
-                              opt.lc_ctype, opt.lc_messages,
-                              opt.xauthority, opt.pinentry_user_data,
-                              opt.verbose, DBG_ASSUAN,
-                              NULL, NULL);
+  rc = start_new_gpg_agent (&agent_ctx,
+                            GPG_ERR_SOURCE_DEFAULT,
+                            opt.homedir,
+                            opt.agent_program,
+                            opt.display, opt.ttyname, opt.ttytype,
+                            opt.lc_ctype, opt.lc_messages,
+                            opt.xauthority, opt.pinentry_user_data,
+                            opt.verbose, DBG_ASSUAN,
+                            NULL, NULL);
+  if (!rc)
+    {
+      /* Tell the agent that we support Pinentry notifications.  No
+         error checking so that it will work also with older
+         agents.  */
+      assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
+                       NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+
+  return rc;
 }
 
 
@@ -187,6 +201,29 @@ store_serialno (const char *line)
 
 
 
+/* This is the default inquiry callback.  It mainly handles the
+   Pinentry notifications.  */
+static int
+default_inq_cb (void *opaque, const char *line)
+{
+  (void)opaque;
+
+  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+    {
+      /* There is no working server mode yet thus we use
+         AllowSetForegroundWindow window right here.  We might want to
+         do this anyway in case gpg is called on the console. */
+      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+      /* We do not pass errors to avoid breaking other code.  */
+    }
+  else
+    log_debug ("ignoring gpg-agent inquiry `%s'\n", line);
+
+  return 0;
+}
+
+
+
 /* Release the card info structure INFO. */
 void
 agent_release_card_info (struct agent_card_info_s *info)
@@ -326,7 +363,7 @@ agent_learn (struct agent_card_info_s *info)
 
   memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, "LEARN --send",
-                        NULL, NULL, NULL, NULL,
+                        NULL, NULL, default_inq_cb, NULL,
                         learn_status_cb, info);
   
   return rc;
@@ -353,7 +390,7 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, NULL,
                         learn_status_cb, info);
   
   return rc;
@@ -401,7 +438,8 @@ agent_scd_setattr (const char *name,
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, 
+                        default_inq_cb, NULL, NULL, NULL);
   return rc;
 }
 
@@ -409,12 +447,20 @@ agent_scd_setattr (const char *name,
 
 /* Handle a KEYDATA inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
-static assuan_error_t
-inq_writekey_parms (void *opaque, const char *keyword)
+static int
+inq_writekey_parms (void *opaque, const char *line)
 {
+  int rc;
   struct writekey_parm_s *parm = opaque; 
 
-  return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
+  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+    {
+      rc = assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
+    }
+  else
+    rc = default_inq_cb (opaque, line);
+
+  return rc;
 }
 
 
@@ -529,7 +575,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
 
   memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, line,
-                        NULL, NULL, NULL, NULL,
+                        NULL, NULL, default_inq_cb, NULL,
                         scd_genkey_cb, info);
   
   return rc;
@@ -589,7 +635,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
               serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
-                        NULL, NULL, NULL, NULL);
+                        default_inq_cb, NULL, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -639,7 +685,7 @@ agent_scd_pkdecrypt (const char *serialno,
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line,
                         membuf_data_cb, &data,
-                        NULL, NULL, NULL, NULL);
+                        default_inq_cb, NULL, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -679,7 +725,7 @@ agent_scd_change_pin (int chvno, const char *serialno)
   snprintf (line, DIM(line)-1, "SCD PASSWD %s %d", reset, chvno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
-                        NULL, NULL, NULL, NULL);
+                        default_inq_cb, NULL, NULL, NULL);
   return rc;
 }
 
@@ -701,7 +747,7 @@ agent_scd_checkpin  (const char *serialno)
   line[DIM(line)-1] = 0;
   return assuan_transact (agent_ctx, line,
                           NULL, NULL,
-                          NULL, NULL, NULL, NULL);
+                          default_inq_cb, NULL, NULL, NULL);
 }
 
 
@@ -775,7 +821,8 @@ agent_get_passphrase (const char *cache_id,
 
   init_membuf_secure (&data, 64);
   rc = assuan_transact (agent_ctx, line, 
-                        membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+                        membuf_data_cb, &data,
+                        default_inq_cb, NULL, NULL, NULL);
 
   if (rc)
     xfree (get_membuf (&data, NULL));
@@ -806,5 +853,6 @@ agent_clear_passphrase (const char *cache_id)
 
   snprintf (line, DIM(line)-1, "CLEAR_PASSPHRASE %s", cache_id);
   line[DIM(line)-1] = 0;
-  return assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  return assuan_transact (agent_ctx, line, NULL, NULL,
+                          default_inq_cb, NULL, NULL, NULL);
 }

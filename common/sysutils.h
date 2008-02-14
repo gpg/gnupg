@@ -47,6 +47,7 @@ int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
 FILE *gnupg_tmpfile (void);
 void gnupg_reopen_std (const char *pgmname);
+void gnupg_allow_set_foregound_window (pid_t pid);
 
 
 #ifdef HAVE_W32_SYSTEM

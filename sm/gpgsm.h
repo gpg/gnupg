@@ -218,6 +218,8 @@ gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
 gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...);
 gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
+gpg_error_t gpgsm_proxy_pinentry_notify (ctrl_t ctrl,
+                                         const unsigned char *line);
 
 /*-- fingerprint --*/
 unsigned char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,

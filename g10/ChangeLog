@@ -1,3 +1,13 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (default_inq_cb): New.
+	(agent_learn, agent_scd_getattr, agent_scd_pksign) 
+	(agent_scd_pkdecrypt, agent_scd_change_pin, agent_scd_checkpin) 
+	(agent_get_passphrase, agent_clear_passphrase): Use new callback.
+	(inq_writekey_parms): Fall back to the new callback for other
+	inquiries. 
+	(start_agent): Tell agent that we accept pinentry notifications.
+
 2008-02-11  Werner Koch  <wk@g10code.com>
 
 	* server.c (cmd_getinfo): New. 

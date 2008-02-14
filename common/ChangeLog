@@ -1,3 +1,8 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (gnupg_allow_set_foregound_window): New.
+	(WINVER) [W32]: Define.
+
 2008-01-31  Werner Koch  <wk@g10code.com>
 
 	* audit.c (audit_print_result): Make sure that the output is
