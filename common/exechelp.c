@@ -562,7 +562,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
                       TRUE,          /* Inherit handles.  */
                       (CREATE_DEFAULT_ERROR_MODE
                        | GetPriorityClass (GetCurrentProcess ())
-                       | CREATE_SUSPENDED),
+                       | CREATE_SUSPENDED | DETACHED_PROCESS),
                       NULL,          /* Environment.  */
                       NULL,          /* Use current drive/directory.  */
                       &si,           /* Startup information. */
