@@ -1,3 +1,12 @@
+2008-02-15  Werner Koch  <wk@g10code.com>
+
+	* gl/allocsa.h, gl/m4/allocsa.m4: Replace HAVE_LONG_LONG by
+	HAVE_LONG_LONG_INT.
+
+2008-02-15  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.17.
+
 2007-12-20  Werner Koch  <wk@g10code.com>
 
 	Released 2.0.8.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-14 17:27+0100\n"
+"POT-Creation-Date: 2008-02-15 10:28+0100\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -6671,7 +6671,7 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "neplatný radix64 znak %02X byl pøeskoèen\n"
 
-#: sm/call-agent.c:136
+#: sm/call-agent.c:138
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""

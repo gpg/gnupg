@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-14 17:27+0100\n"
+"POT-Creation-Date: 2008-02-15 10:28+0100\n"
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -6849,7 +6849,7 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
-#: sm/call-agent.c:136
+#: sm/call-agent.c:138
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""

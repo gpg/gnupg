@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-14 17:27+0100\n"
+"POT-Creation-Date: 2008-02-15 10:28+0100\n"
 "PO-Revision-Date: 2006-06-13 20:31+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -1985,16 +1985,15 @@ msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr ""
-"ADVARSEL: utrygt eierskap på katalogene på nivåene over hjemmekatalogen «%"
-"s»\n"
+"ADVARSEL: utrygt eierskap på katalogene på nivåene over hjemmekatalogen «%s»\n"
 
 #: g10/gpg.c:1335
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"ADVARSEL: utrygt eierskap på katalogene på nivåene over konfigurasjonsfilen "
-"«%s»\n"
+"ADVARSEL: utrygt eierskap på katalogene på nivåene over konfigurasjonsfilen «%"
+"s»\n"
 
 #: g10/gpg.c:1338
 #, c-format
@@ -2006,8 +2005,8 @@ msgstr ""
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
-"ADVARSEL: utrygge rettigheter på katalogene på nivåene over hjemmekatalogen "
-"«%s»\n"
+"ADVARSEL: utrygge rettigheter på katalogene på nivåene over hjemmekatalogen «%"
+"s»\n"
 
 #: g10/gpg.c:1347
 #, c-format
@@ -6550,7 +6549,7 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "hoppet over ugyldig radix64-tegn %02x\n"
 
-#: sm/call-agent.c:136
+#: sm/call-agent.c:138
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""

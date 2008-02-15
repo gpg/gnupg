@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-14 17:27+0100\n"
+"POT-Creation-Date: 2008-02-15 10:28+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -6213,8 +6213,8 @@ msgstr "es descarta: la clau secreta ja és present\n"
 #, fuzzy
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
 msgstr ""
-"es descarta «%s»: és una clau ElGamal generada per PGP que no és segura per "
-"a signatures!\n"
+"es descarta «%s»: és una clau ElGamal generada per PGP que no és segura per a "
+"signatures!\n"
 
 #: g10/tdbdump.c:58 g10/trustdb.c:360
 #, c-format
@@ -6399,8 +6399,8 @@ msgstr "%s: no s'ha pogut afegir un registre: %s\n"
 #: g10/tdbio.c:1506
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
-"la base de dades de confiança està corrompuda; per favor, executeu «gpg --"
-"fix-trustdb».\n"
+"la base de dades de confiança està corrompuda; per favor, executeu «gpg --fix-"
+"trustdb».\n"
 
 #: g10/textfilter.c:147
 #, c-format
@@ -6977,7 +6977,7 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "el caràcter radix64 %02x invàlid s'ha omés\n"
 
-#: sm/call-agent.c:136
+#: sm/call-agent.c:138
 #, fuzzy, c-format
 msgid "failed to proxy %s inquiry to client\n"
 msgstr "no s'ha pogut posar «%s» en la base de dades de confiança - %s\n"
@@ -8428,8 +8428,7 @@ msgstr ""
 #~ "claus\n"
 #~ "tenen confiança absoluta - aquestes són normalment les claus per a les "
 #~ "que\n"
-#~ "teniu accés a la clau secreta.  Contesteu «sí» per a donar a aquesta "
-#~ "clau\n"
+#~ "teniu accés a la clau secreta.  Contesteu «sí» per a donar a aquesta clau\n"
 #~ "confiança absoluta\n"
 
 # "clau no confiable"? jm
@@ -8551,8 +8550,7 @@ msgstr ""
 #~ "«1» significa que creieu que la clau és de la persona que diu que és la\n"
 #~ "    propietària, però no heu pogut, o no heu verificat la clau de cap "
 #~ "manera.\n"
-#~ "    Açò és útil per a la verificació d'un «rol», quan signeu la clau "
-#~ "d'un\n"
+#~ "    Açò és útil per a la verificació d'un «rol», quan signeu la clau d'un\n"
 #~ "    usuari amb pseudònim.\n"
 #~ "\n"
 #~ "«2» significa que heu fet algunes comprovacions de la clau. Per exemple, "
@@ -8746,8 +8744,7 @@ msgstr ""
 #, fuzzy
 #~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 #~ msgstr ""
-#~ "la extensió de xifrat «%s» no s'ha carregat per tindre permissos "
-#~ "insegurs\n"
+#~ "la extensió de xifrat «%s» no s'ha carregat per tindre permissos insegurs\n"
 
 #~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
 #~ msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"

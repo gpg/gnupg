@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-14 17:27+0100\n"
-"PO-Revision-Date: 2008-01-22 12:46+0100\n"
+"POT-Creation-Date: 2008-02-15 10:28+0100\n"
+"PO-Revision-Date: 2008-02-15 10:36+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -6741,10 +6741,10 @@ msgstr "Handhabungsroutine für den fd %d beendet\n"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
 
-#: sm/call-agent.c:136
+#: sm/call-agent.c:138
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
-msgstr ""
+msgstr "Die %s \"inquiry\" konnte nicht an den Client weitergeleitet werden\n"
 
 #: sm/call-dirmngr.c:209
 #, c-format
@@ -6815,19 +6815,18 @@ msgid "number of issuers matching: %d\n"
 msgstr "Anzahl der übereinstimmenden Herausgeber: %d\n"
 
 #: sm/certchain.c:541
-#, fuzzy
 msgid "looking up issuer from the Dirmngr cache\n"
-msgstr "Der Herausgeber wird von einer externen Stelle gesucht\n"
+msgstr "Der Herausgeber wird im Cache des Dirmngr gesucht\n"
 
 #: sm/certchain.c:565
-#, fuzzy, c-format
+#, c-format
 msgid "number of matching certificates: %d\n"
-msgstr "Fehler beim Importieren des Zertifikats: %s\n"
+msgstr "Anzahl der übereinstimmenden Zertifikate: %d\n"
 
 #: sm/certchain.c:567
-#, fuzzy, c-format
+#, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
-msgstr "\"Shadowing\" des Schlüssels schlug fehl: %s\n"
+msgstr "Schlüsselsuche im Cache des Dirmngr schlug fehl: %s\n"
 
 #: sm/certchain.c:735 sm/certchain.c:1153 sm/certchain.c:1760 sm/decrypt.c:259
 #: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113

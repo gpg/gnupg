@@ -1,3 +1,15 @@
+2008-02-15  Werner Koch  <wk@g10code.com>
+
+	* de.po: Translate 3 new strings.
+
+2008-02-15  Jedi Lin  <Jedi@Jedi.org>  (wk)
+
+	* zh_TW.po: Update.
+
+2008-02-15  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.in.in: Upgrade to gettext-0.17.
+
 2008-01-22  Werner Koch  <wk@g10code.com>
 
 	* de.po: Small typo fixes.  Reported by Ludwig Reiter.

@@ -71,7 +71,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/allocsa.m4
   m4/eealloc.m4
   m4/longdouble.m4
-  m4/longlong.m4
   m4/mkdtemp.m4
   m4/setenv.m4
   m4/size_max.m4
