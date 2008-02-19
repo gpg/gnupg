@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-15 10:39+0100\n"
+"POT-Creation-Date: 2008-02-19 11:52+0100\n"
 "PO-Revision-Date: 2004-06-16 17:01+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -105,8 +105,8 @@ msgstr "impossibile creare `%s': %s\n"
 #: g10/keygen.c:2644 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:782 g10/sign.c:977 g10/sign.c:1093
 #: g10/sign.c:1249 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:551
-#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1972
-#: sm/gpgsm.c:2009 sm/gpgsm.c:2047 sm/qualified.c:66
+#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
+#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "impossibile aprire `%s': %s\n"
@@ -287,13 +287,13 @@ msgid "run in daemon mode (background)"
 msgstr ""
 
 #: agent/gpg-agent.c:121 g10/gpg.c:468 g10/gpgv.c:70 kbx/kbxutil.c:88
-#: scd/scdaemon.c:107 sm/gpgsm.c:343 tools/gpg-connect-agent.c:66
+#: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
 #: tools/gpgconf.c:72 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "prolisso"
 
 #: agent/gpg-agent.c:122 g10/gpgv.c:71 kbx/kbxutil.c:89 scd/scdaemon.c:108
-#: sm/gpgsm.c:344
+#: sm/gpgsm.c:345
 msgid "be somewhat more quiet"
 msgstr "meno prolisso"
 
@@ -375,7 +375,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
 #: agent/gpg-agent.c:283 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:207 sm/gpgsm.c:572 tools/gpg-connect-agent.c:171
+#: scd/scdaemon.c:207 sm/gpgsm.c:574 tools/gpg-connect-agent.c:171
 #: tools/gpgconf.c:94 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
 msgid "Please report bugs to <"
@@ -392,30 +392,30 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:734
+#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:736
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
 #: agent/gpg-agent.c:522 agent/protect-tool.c:1066 kbx/kbxutil.c:428
-#: scd/scdaemon.c:342 sm/gpgsm.c:878 sm/gpgsm.c:881 tools/symcryptrun.c:997
+#: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:969
+#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:972
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: manca il file `%s' con le opzioni predefinite\n"
 
 #: agent/gpg-agent.c:626 agent/gpg-agent.c:1206 g10/gpg.c:2061
-#: scd/scdaemon.c:428 sm/gpgsm.c:973 tools/symcryptrun.c:930
+#: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "file con le opzioni `%s': %s\n"
 
-#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:980
+#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:983
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "lettura delle opzioni da `%s'\n"
@@ -705,8 +705,8 @@ msgstr "cambia la passphrase"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1661
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1341
+#: tools/gpgconf-comp.c:1664
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "errore nella creazione della passhprase: %s\n"
@@ -1735,7 +1735,7 @@ msgstr "uso la chiave secondaria %08lX invece della chiave primaria %08lX\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "chiave %08lX: chiave segreta senza chiave pubblica - saltata\n"
 
-#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:245 tools/gpgconf.c:56
+#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:56
 msgid ""
 "@Commands:\n"
 " "
@@ -1751,27 +1751,27 @@ msgstr "|[file]|fai una firma"
 msgid "|[file]|make a clear text signature"
 msgstr "|[file]|fai una firma mantenendo il testo in chiaro"
 
-#: g10/gpg.c:371 sm/gpgsm.c:249
+#: g10/gpg.c:371 sm/gpgsm.c:250
 msgid "make a detached signature"
 msgstr "fai una firma separata"
 
-#: g10/gpg.c:372 sm/gpgsm.c:250
+#: g10/gpg.c:372 sm/gpgsm.c:251
 msgid "encrypt data"
 msgstr "cifra dati"
 
-#: g10/gpg.c:374 sm/gpgsm.c:251
+#: g10/gpg.c:374 sm/gpgsm.c:252
 msgid "encryption only with symmetric cipher"
 msgstr "cifra solo con un cifrario simmetrico"
 
-#: g10/gpg.c:376 sm/gpgsm.c:252
+#: g10/gpg.c:376 sm/gpgsm.c:253
 msgid "decrypt data (default)"
 msgstr "decifra dati (predefinito)"
 
-#: g10/gpg.c:378 sm/gpgsm.c:253
+#: g10/gpg.c:378 sm/gpgsm.c:254
 msgid "verify a signature"
 msgstr "verifica una firma"
 
-#: g10/gpg.c:380 sm/gpgsm.c:255
+#: g10/gpg.c:380 sm/gpgsm.c:256
 msgid "list keys"
 msgstr "elenca le chiavi"
 
@@ -1784,11 +1784,11 @@ msgstr "elenca le chiavi e le firme"
 msgid "list and check key signatures"
 msgstr "controlla le firme delle chiavi"
 
-#: g10/gpg.c:384 sm/gpgsm.c:259
+#: g10/gpg.c:384 sm/gpgsm.c:260
 msgid "list keys and fingerprints"
 msgstr "elenca le chiavi e le impronte digitali"
 
-#: g10/gpg.c:385 sm/gpgsm.c:257
+#: g10/gpg.c:385 sm/gpgsm.c:258
 msgid "list secret keys"
 msgstr "elenca le chiavi segrete"
 
@@ -1824,11 +1824,11 @@ msgstr "genera un certificato di revoca"
 msgid "export keys"
 msgstr "esporta delle chiavi"
 
-#: g10/gpg.c:396 sm/gpgsm.c:262
+#: g10/gpg.c:396 sm/gpgsm.c:263
 msgid "export keys to a key server"
 msgstr "esporta le chiavi a un key server"
 
-#: g10/gpg.c:397 sm/gpgsm.c:263
+#: g10/gpg.c:397 sm/gpgsm.c:264
 msgid "import keys from a key server"
 msgstr "importa le chiavi da un key server"
 
@@ -1864,11 +1864,11 @@ msgstr "aggiorna il database della fiducia"
 msgid "|algo [files]|print message digests"
 msgstr "|algo [files]|stampa tutti i message digests"
 
-#: g10/gpg.c:429 sm/gpgsm.c:267
+#: g10/gpg.c:429 sm/gpgsm.c:268
 msgid "run in server mode"
 msgstr ""
 
-#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:282
+#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
 #: tools/gpg-connect-agent.c:64 tools/gpgconf.c:69 tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -1879,32 +1879,32 @@ msgstr ""
 "Opzioni:\n"
 " "
 
-#: g10/gpg.c:433 sm/gpgsm.c:284
+#: g10/gpg.c:433 sm/gpgsm.c:285
 msgid "create ascii armored output"
 msgstr "crea un output ascii con armatura"
 
-#: g10/gpg.c:435 sm/gpgsm.c:296
+#: g10/gpg.c:435 sm/gpgsm.c:297
 msgid "|NAME|encrypt for NAME"
 msgstr "|NOME|cifra per NOME"
 
-#: g10/gpg.c:446 sm/gpgsm.c:334
+#: g10/gpg.c:446 sm/gpgsm.c:335
 msgid "use this user-id to sign or decrypt"
 msgstr "usa questo user-id per firmare o decifrare"
 
-#: g10/gpg.c:447 sm/gpgsm.c:337
+#: g10/gpg.c:447 sm/gpgsm.c:338
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|imposta il livello di compressione (0 disab.)"
 
-#: g10/gpg.c:452 sm/gpgsm.c:339
+#: g10/gpg.c:452 sm/gpgsm.c:340
 msgid "use canonical text mode"
 msgstr "usa il modo testo canonico"
 
-#: g10/gpg.c:466 sm/gpgsm.c:342
+#: g10/gpg.c:466 sm/gpgsm.c:343
 #, fuzzy
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|carica il modulo di estensione FILE"
 
-#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:353 tools/gpgconf.c:74
+#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:74
 msgid "do not make any changes"
 msgstr "non fa cambiamenti"
 
@@ -1920,7 +1920,7 @@ msgstr ""
 msgid "generate PGP 2.x compatible messages"
 msgstr ""
 
-#: g10/gpg.c:553 sm/gpgsm.c:402
+#: g10/gpg.c:553 sm/gpgsm.c:403
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1928,7 +1928,7 @@ msgstr ""
 "@\n"
 "(Vedi la man page per una lista completa di tutti i comandi e opzioni)\n"
 
-#: g10/gpg.c:556 sm/gpgsm.c:405
+#: g10/gpg.c:556 sm/gpgsm.c:406
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1966,7 +1966,7 @@ msgstr ""
 "firma, controlla, cifra o decifra\n"
 "l'operazione predefinita dipende dai dati di input\n"
 
-#: g10/gpg.c:784 sm/gpgsm.c:585
+#: g10/gpg.c:784 sm/gpgsm.c:587
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1990,7 +1990,7 @@ msgstr "Hash: "
 msgid "Compression: "
 msgstr "Compressione: "
 
-#: g10/gpg.c:815 sm/gpgsm.c:605
+#: g10/gpg.c:815 sm/gpgsm.c:607
 msgid "Used libraries:"
 msgstr ""
 
@@ -1998,7 +1998,7 @@ msgstr ""
 msgid "usage: gpg [options] "
 msgstr "uso: gpg [opzioni] "
 
-#: g10/gpg.c:1093 sm/gpgsm.c:770
+#: g10/gpg.c:1093 sm/gpgsm.c:772
 msgid "conflicting commands\n"
 msgstr "comandi in conflitto\n"
 
@@ -2263,7 +2263,7 @@ msgstr "%s:%d: opzioni di esportazione non valide\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2939 sm/gpgsm.c:1369
+#: g10/gpg.c:2939 sm/gpgsm.c:1374
 msgid "WARNING: program may create a core file!\n"
 msgstr "ATTENZIONE: il programma potrebbe creare un file core!\n"
 
@@ -2305,11 +2305,11 @@ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "nella modalità --pgp2 è richiesto il cifrario IDEA per cifrare un messaggio\n"
 
-#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1441
+#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1446
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algoritmo di cifratura selezionato non è valido\n"
 
-#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1449 sm/gpgsm.c:1455
+#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1454 sm/gpgsm.c:1460
 msgid "selected digest algorithm is invalid\n"
 msgstr "l'algoritmo di digest selezionato non è valido\n"
 
@@ -2545,7 +2545,7 @@ msgstr "prende le chiavi da questo portachiavi"
 msgid "make timestamp conflicts only a warning"
 msgstr "segnala i conflitti di data solo con un avvertimento"
 
-#: g10/gpgv.c:75 sm/gpgsm.c:376
+#: g10/gpgv.c:75 sm/gpgsm.c:377
 msgid "|FD|write status info to this FD"
 msgstr "|FD|scrivi le informazioni di stato sul FD"
 
@@ -6777,7 +6777,7 @@ msgstr "Non sono stati trovati dati OpenPGP validi.\n"
 msgid "run in multi server mode (foreground)"
 msgstr ""
 
-#: scd/scdaemon.c:111 sm/gpgsm.c:365
+#: scd/scdaemon.c:111 sm/gpgsm.c:366
 #, fuzzy
 msgid "read options from file"
 msgstr "lettura delle opzioni da `%s'\n"
@@ -6845,278 +6845,278 @@ msgstr "Carattere radix64 non valido %02x saltato\n"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:209
+#: sm/call-dirmngr.c:212
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:242
+#: sm/call-dirmngr.c:245
 #, fuzzy
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "variabile di ambiente GPG_AGENT_INFO malformata\n"
 
-#: sm/call-dirmngr.c:254
+#: sm/call-dirmngr.c:257
 #, fuzzy, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "la versione %d del protocollo di gpg-agent non è gestita\n"
 
-#: sm/call-dirmngr.c:274
+#: sm/call-dirmngr.c:277
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
-#: sm/certchain.c:194
+#: sm/certchain.c:196
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr ""
 
-#: sm/certchain.c:195 sm/certchain.c:1732
+#: sm/certchain.c:197 sm/certchain.c:1803
 msgid "chain"
 msgstr ""
 
-#: sm/certchain.c:196 sm/certchain.c:1732
+#: sm/certchain.c:198 sm/certchain.c:1803
 #, fuzzy
 msgid "shell"
 msgstr "help"
 
-#: sm/certchain.c:241
+#: sm/certchain.c:243
 #, fuzzy, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "la versione %d del protocollo di gpg-agent non è gestita\n"
 
-#: sm/certchain.c:280
+#: sm/certchain.c:282
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
-#: sm/certchain.c:318
+#: sm/certchain.c:320
 msgid "critical marked policy without configured policies"
 msgstr ""
 
-#: sm/certchain.c:328
+#: sm/certchain.c:330
 #, fuzzy, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "impossibile aprire `%s': %s\n"
 
-#: sm/certchain.c:335 sm/certchain.c:364
+#: sm/certchain.c:338 sm/certchain.c:367
 msgid "note: non-critical certificate policy not allowed"
 msgstr ""
 
-#: sm/certchain.c:339 sm/certchain.c:368
+#: sm/certchain.c:342 sm/certchain.c:371
 #, fuzzy
 msgid "certificate policy not allowed"
 msgstr "scrittura della chiave segreta in `%s'\n"
 
-#: sm/certchain.c:480
+#: sm/certchain.c:483
 msgid "looking up issuer at external location\n"
 msgstr ""
 
-#: sm/certchain.c:499
+#: sm/certchain.c:502
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
-#: sm/certchain.c:541
+#: sm/certchain.c:544
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
-#: sm/certchain.c:565
+#: sm/certchain.c:568
 #, fuzzy, c-format
 msgid "number of matching certificates: %d\n"
 msgstr "errore nella creazione della passhprase: %s\n"
 
-#: sm/certchain.c:567
+#: sm/certchain.c:570
 #, fuzzy, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "cancellazione del keyblock fallita: %s\n"
 
-#: sm/certchain.c:735 sm/certchain.c:1153 sm/certchain.c:1760 sm/decrypt.c:259
+#: sm/certchain.c:740 sm/certchain.c:1227 sm/certchain.c:1831 sm/decrypt.c:259
 #: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "inizializzazione del trustdb fallita: %s\n"
 
-#: sm/certchain.c:826
+#: sm/certchain.c:900
 #, fuzzy
 msgid "certificate has been revoked"
 msgstr "NOTA: la chiave è stata revocata"
 
-#: sm/certchain.c:836
+#: sm/certchain.c:910
 #, fuzzy
 msgid "no CRL found for certificate"
 msgstr "certificato danneggiato"
 
-#: sm/certchain.c:841
+#: sm/certchain.c:915
 msgid "the status of the certificate is unknown"
 msgstr ""
 
-#: sm/certchain.c:846
+#: sm/certchain.c:920
 #, fuzzy
 msgid "the available CRL is too old"
 msgstr "Chiave disponibile presso: "
 
-#: sm/certchain.c:848
+#: sm/certchain.c:922
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
-#: sm/certchain.c:854
+#: sm/certchain.c:928
 #, fuzzy, c-format
 msgid "checking the CRL failed: %s"
 msgstr "controllo della firma creata fallito: %s\n"
 
-#: sm/certchain.c:883 sm/certchain.c:951
+#: sm/certchain.c:957 sm/certchain.c:1025
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr ""
 
-#: sm/certchain.c:898 sm/certchain.c:983
+#: sm/certchain.c:972 sm/certchain.c:1057
 msgid "certificate not yet valid"
 msgstr ""
 
-#: sm/certchain.c:899 sm/certchain.c:984
+#: sm/certchain.c:973 sm/certchain.c:1058
 #, fuzzy
 msgid "root certificate not yet valid"
 msgstr "scrittura della chiave segreta in `%s'\n"
 
-#: sm/certchain.c:900 sm/certchain.c:985
+#: sm/certchain.c:974 sm/certchain.c:1059
 msgid "intermediate certificate not yet valid"
 msgstr ""
 
-#: sm/certchain.c:913
+#: sm/certchain.c:987
 #, fuzzy
 msgid "certificate has expired"
 msgstr "Questa chiave è scaduta!"
 
-#: sm/certchain.c:914
+#: sm/certchain.c:988
 #, fuzzy
 msgid "root certificate has expired"
 msgstr "Questa chiave è scaduta!"
 
-#: sm/certchain.c:915
+#: sm/certchain.c:989
 #, fuzzy
 msgid "intermediate certificate has expired"
 msgstr "Questa chiave è scaduta!"
 
-#: sm/certchain.c:957
+#: sm/certchain.c:1031
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
 msgstr ""
 
-#: sm/certchain.c:966
+#: sm/certchain.c:1040
 #, fuzzy
 msgid "certificate with invalid validity"
 msgstr "Questa chiave è scaduta!"
 
-#: sm/certchain.c:1003
+#: sm/certchain.c:1077
 msgid "signature not created during lifetime of certificate"
 msgstr ""
 
-#: sm/certchain.c:1005
+#: sm/certchain.c:1079
 msgid "certificate not created during lifetime of issuer"
 msgstr ""
 
-#: sm/certchain.c:1006
+#: sm/certchain.c:1080
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 
-#: sm/certchain.c:1010
+#: sm/certchain.c:1084
 #, fuzzy
 msgid "  (  signature created at "
 msgstr "           nuove firme: %lu\n"
 
-#: sm/certchain.c:1011
+#: sm/certchain.c:1085
 #, fuzzy
 msgid "  (certificate created at "
 msgstr "Certificato di revoca creato.\n"
 
-#: sm/certchain.c:1014
+#: sm/certchain.c:1088
 #, fuzzy
 msgid "  (certificate valid from "
 msgstr "certificato danneggiato"
 
-#: sm/certchain.c:1015
+#: sm/certchain.c:1089
 msgid "  (     issuer valid from "
 msgstr ""
 
-#: sm/certchain.c:1045
+#: sm/certchain.c:1119
 #, fuzzy, c-format
 msgid "fingerprint=%s\n"
 msgstr "mostra le impronte digitali"
 
-#: sm/certchain.c:1054
+#: sm/certchain.c:1128
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 
-#: sm/certchain.c:1067
+#: sm/certchain.c:1141
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
-#: sm/certchain.c:1073
+#: sm/certchain.c:1147
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
-#: sm/certchain.c:1130
+#: sm/certchain.c:1204
 msgid "WARNING: creation time of signature not known - assuming current time"
 msgstr ""
 
-#: sm/certchain.c:1194
+#: sm/certchain.c:1268
 #, fuzzy
 msgid "no issuer found in certificate"
 msgstr "genera un certificato di revoca"
 
-#: sm/certchain.c:1270
+#: sm/certchain.c:1341
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
-#: sm/certchain.c:1339
+#: sm/certchain.c:1410
 msgid "root certificate is not marked trusted"
 msgstr ""
 
-#: sm/certchain.c:1352
+#: sm/certchain.c:1423
 #, fuzzy, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "controllo della firma creata fallito: %s\n"
 
-#: sm/certchain.c:1381 sm/import.c:158
+#: sm/certchain.c:1452 sm/import.c:158
 msgid "certificate chain too long\n"
 msgstr ""
 
-#: sm/certchain.c:1393
+#: sm/certchain.c:1464
 msgid "issuer certificate not found"
 msgstr ""
 
-#: sm/certchain.c:1426
+#: sm/certchain.c:1497
 #, fuzzy
 msgid "certificate has a BAD signature"
 msgstr "verifica una firma"
 
-#: sm/certchain.c:1457
+#: sm/certchain.c:1528
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 
-#: sm/certchain.c:1508
+#: sm/certchain.c:1579
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#: sm/certchain.c:1548 sm/certchain.c:1831
+#: sm/certchain.c:1619 sm/certchain.c:1902
 #, fuzzy
 msgid "certificate is good\n"
 msgstr "la preferenza %c%lu è doppia\n"
 
-#: sm/certchain.c:1549
+#: sm/certchain.c:1620
 #, fuzzy
 msgid "intermediate certificate is good\n"
 msgstr "Certificato di revoca creato.\n"
 
-#: sm/certchain.c:1550
+#: sm/certchain.c:1621
 #, fuzzy
 msgid "root certificate is good\n"
 msgstr "certificato danneggiato"
 
-#: sm/certchain.c:1721
+#: sm/certchain.c:1792
 msgid "switching to chain model"
 msgstr ""
 
-#: sm/certchain.c:1730
+#: sm/certchain.c:1801
 #, c-format
 msgid "validation model used: %s"
 msgstr ""
@@ -7395,190 +7395,190 @@ msgstr "cancellazione del keyblock fallita: %s\n"
 msgid "no valid recipients given\n"
 msgstr "(Non è stata data una descrizione)\n"
 
-#: sm/gpgsm.c:247
+#: sm/gpgsm.c:248
 #, fuzzy
 msgid "|[FILE]|make a signature"
 msgstr "|[file]|fai una firma"
 
-#: sm/gpgsm.c:248
+#: sm/gpgsm.c:249
 #, fuzzy
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[file]|fai una firma mantenendo il testo in chiaro"
 
-#: sm/gpgsm.c:256
+#: sm/gpgsm.c:257
 #, fuzzy
 msgid "list external keys"
 msgstr "elenca le chiavi segrete"
 
-#: sm/gpgsm.c:258
+#: sm/gpgsm.c:259
 #, fuzzy
 msgid "list certificate chain"
 msgstr "certificato danneggiato"
 
-#: sm/gpgsm.c:261
+#: sm/gpgsm.c:262
 #, fuzzy
 msgid "remove key from the public keyring"
 msgstr "rimuove le chiavi dal portachiavi pubblico"
 
-#: sm/gpgsm.c:264
+#: sm/gpgsm.c:265
 #, fuzzy
 msgid "import certificates"
 msgstr "certificato danneggiato"
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:266
 #, fuzzy
 msgid "export certificates"
 msgstr "certificato danneggiato"
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:267
 msgid "register a smartcard"
 msgstr ""
 
-#: sm/gpgsm.c:268
+#: sm/gpgsm.c:269
 msgid "pass a command to the dirmngr"
 msgstr ""
 
-#: sm/gpgsm.c:270
+#: sm/gpgsm.c:271
 msgid "invoke gpg-protect-tool"
 msgstr ""
 
-#: sm/gpgsm.c:271
+#: sm/gpgsm.c:272
 #, fuzzy
 msgid "change a passphrase"
 msgstr "cambia la passphrase"
 
-#: sm/gpgsm.c:286
+#: sm/gpgsm.c:287
 #, fuzzy
 msgid "create base-64 encoded output"
 msgstr "crea un output ascii con armatura"
 
-#: sm/gpgsm.c:290
+#: sm/gpgsm.c:291
 msgid "assume input is in PEM format"
 msgstr ""
 
-#: sm/gpgsm.c:292
+#: sm/gpgsm.c:293
 msgid "assume input is in base-64 format"
 msgstr ""
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:295
 msgid "assume input is in binary format"
 msgstr ""
 
-#: sm/gpgsm.c:299
+#: sm/gpgsm.c:300
 msgid "use system's dirmngr if available"
 msgstr ""
 
-#: sm/gpgsm.c:300
+#: sm/gpgsm.c:301
 msgid "never consult a CRL"
 msgstr ""
 
-#: sm/gpgsm.c:307
+#: sm/gpgsm.c:308
 msgid "check validity using OCSP"
 msgstr ""
 
-#: sm/gpgsm.c:312
+#: sm/gpgsm.c:313
 msgid "|N|number of certificates to include"
 msgstr ""
 
-#: sm/gpgsm.c:315
+#: sm/gpgsm.c:316
 msgid "|FILE|take policy information from FILE"
 msgstr ""
 
-#: sm/gpgsm.c:318
+#: sm/gpgsm.c:319
 msgid "do not check certificate policies"
 msgstr ""
 
-#: sm/gpgsm.c:322
+#: sm/gpgsm.c:323
 msgid "fetch missing issuer certificates"
 msgstr ""
 
-#: sm/gpgsm.c:326
+#: sm/gpgsm.c:327
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NOME|usa NOME come destinatario predefinito"
 
-#: sm/gpgsm.c:328
+#: sm/gpgsm.c:329
 msgid "use the default key as default recipient"
 msgstr "usa la chiave predefinita come destinatario predefinito"
 
-#: sm/gpgsm.c:345
+#: sm/gpgsm.c:346
 msgid "don't use the terminal at all"
 msgstr "non usa per niente il terminale"
 
-#: sm/gpgsm.c:346
+#: sm/gpgsm.c:347
 msgid "|FILE|write a server mode log to FILE"
 msgstr ""
 
-#: sm/gpgsm.c:348
+#: sm/gpgsm.c:349
 #, fuzzy
 msgid "|FILE|write an audit log to FILE"
 msgstr "|FILE|carica il modulo di estensione FILE"
 
-#: sm/gpgsm.c:350
+#: sm/gpgsm.c:351
 msgid "force v3 signatures"
 msgstr "forza l'uso di firme v3"
 
-#: sm/gpgsm.c:351
+#: sm/gpgsm.c:352
 msgid "always use a MDC for encryption"
 msgstr "usa sempre un MDC per cifrare"
 
-#: sm/gpgsm.c:356
+#: sm/gpgsm.c:357
 msgid "batch mode: never ask"
 msgstr "modo batch: non fa domande"
 
-#: sm/gpgsm.c:357
+#: sm/gpgsm.c:358
 msgid "assume yes on most questions"
 msgstr "risponde \"sì\" a quasi tutte le domande"
 
-#: sm/gpgsm.c:358
+#: sm/gpgsm.c:359
 msgid "assume no on most questions"
 msgstr "risponde \"no\" a quasi tutte le domande"
 
-#: sm/gpgsm.c:360
+#: sm/gpgsm.c:361
 msgid "add this keyring to the list of keyrings"
 msgstr "aggiungi questo portachiavi alla lista"
 
-#: sm/gpgsm.c:361
+#: sm/gpgsm.c:362
 msgid "add this secret keyring to the list"
 msgstr "aggiungi questo portachiavi segreto alla lista"
 
-#: sm/gpgsm.c:362 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NOME|usa NOME come chiave segreta predefinita"
 
-#: sm/gpgsm.c:363
+#: sm/gpgsm.c:364
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|cerca le chiavi in questo keyserver"
 
-#: sm/gpgsm.c:364
+#: sm/gpgsm.c:365
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NOME|imposta NOME come set di caratteri del terminale"
 
-#: sm/gpgsm.c:368
+#: sm/gpgsm.c:369
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr ""
 
-#: sm/gpgsm.c:383
+#: sm/gpgsm.c:384
 msgid "|FILE|load extension module FILE"
 msgstr "|FILE|carica il modulo di estensione FILE"
 
-#: sm/gpgsm.c:389
+#: sm/gpgsm.c:390
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NOME|usa l'algoritmo di cifratura NOME"
 
-#: sm/gpgsm.c:391
+#: sm/gpgsm.c:392
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOME|usa l'algoritmo di message digest NOME"
 
-#: sm/gpgsm.c:394
+#: sm/gpgsm.c:395
 msgid "|N|use compress algorithm N"
 msgstr "|N|usa l'algoritmo di compressione N"
 
-#: sm/gpgsm.c:575
+#: sm/gpgsm.c:577
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Uso: gpg [opzioni] [files] (-h per l'aiuto)"
 
-#: sm/gpgsm.c:578
+#: sm/gpgsm.c:580
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7589,36 +7589,36 @@ msgstr ""
 "firma, controlla, cifra o decifra\n"
 "l'operazione predefinita dipende dai dati di input\n"
 
-#: sm/gpgsm.c:705
+#: sm/gpgsm.c:707
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "uso: gpg [opzioni] "
 
-#: sm/gpgsm.c:803
+#: sm/gpgsm.c:805
 #, fuzzy, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "impossibile connettersi a `%s': %s\n"
 
-#: sm/gpgsm.c:814
+#: sm/gpgsm.c:816
 #, fuzzy, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "destinatario predefinito `%s' sconosciuto\n"
 
-#: sm/gpgsm.c:1386
+#: sm/gpgsm.c:1391
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1488
+#: sm/gpgsm.c:1493
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "scrittura in `%s'\n"
 
-#: sm/gpgsm.c:1526
+#: sm/gpgsm.c:1531
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "impossibile chiudere `%s': %s\n"
 
-#: sm/gpgsm.c:1710
+#: sm/gpgsm.c:1717
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
@@ -7865,26 +7865,26 @@ msgid "error sending standard options: %s\n"
 msgstr "errore leggendo `%s': %s\n"
 
 #: tools/gpgconf-comp.c:459 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:773
+#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:776
 msgid "Options controlling the diagnostic output"
 msgstr ""
 
 #: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
-#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:796
+#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:799
 msgid "Options controlling the configuration"
 msgstr ""
 
 #: tools/gpgconf-comp.c:482 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:656
-#: tools/gpgconf-comp.c:724 tools/gpgconf-comp.c:803
+#: tools/gpgconf-comp.c:727 tools/gpgconf-comp.c:806
 msgid "Options useful for debugging"
 msgstr ""
 
 #: tools/gpgconf-comp.c:487 tools/gpgconf-comp.c:606 tools/gpgconf-comp.c:661
-#: tools/gpgconf-comp.c:729 tools/gpgconf-comp.c:811
+#: tools/gpgconf-comp.c:732 tools/gpgconf-comp.c:814
 msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:737
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:740
 msgid "Options controlling the security"
 msgstr ""
 
@@ -7949,43 +7949,47 @@ msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
 #: tools/gpgconf-comp.c:719
+msgid "disable all access to the dirmngr"
+msgstr ""
+
+#: tools/gpgconf-comp.c:722
 #, fuzzy
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NOME|usa l'alg. di cifratura NOME per le passphrase"
 
-#: tools/gpgconf-comp.c:742
+#: tools/gpgconf-comp.c:745
 msgid "do not check CRLs for root certificates"
 msgstr ""
 
-#: tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:789
 msgid "Options controlling the format of the output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:825
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:832
+#: tools/gpgconf-comp.c:835
 msgid "Configuration for HTTP servers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:843
+#: tools/gpgconf-comp.c:846
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-#: tools/gpgconf-comp.c:848
+#: tools/gpgconf-comp.c:851
 msgid "Configuration of LDAP servers to use"
 msgstr ""
 
-#: tools/gpgconf-comp.c:877
+#: tools/gpgconf-comp.c:880
 msgid "LDAP server list"
 msgstr ""
 
-#: tools/gpgconf-comp.c:885
+#: tools/gpgconf-comp.c:888
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:3037
+#: tools/gpgconf-comp.c:3040
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

@@ -43,7 +43,7 @@ testscripts = import-all-certs validate-all-certs \
 	private-certificate-extensions
 
 
-EXTRA_DIST = PKITS_data.tar.bz2 inittests runtest $(testscripts) 
+EXTRA_DIST = inittests runtest common.sh $(testscripts) 
 	     import-all-certs.data 
 
 TESTS = $(testscripts)
@@ -69,3 +69,4 @@ run-all-tests:
          for test in $(testscripts); do \
            ./$${test} && true; \
          done
+

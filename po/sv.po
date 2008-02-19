@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg trunk\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-15 10:39+0100\n"
+"POT-Creation-Date: 2008-02-19 11:52+0100\n"
 "PO-Revision-Date: 2007-11-12 16:08+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -124,8 +124,8 @@ msgstr "kan inte skapa \"%s\": %s\n"
 #: g10/keygen.c:2644 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:782 g10/sign.c:977 g10/sign.c:1093
 #: g10/sign.c:1249 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:551
-#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1972
-#: sm/gpgsm.c:2009 sm/gpgsm.c:2047 sm/qualified.c:66
+#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
+#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
@@ -312,13 +312,13 @@ msgid "run in daemon mode (background)"
 msgstr "kör i demonläge (bakgrund)"
 
 #: agent/gpg-agent.c:121 g10/gpg.c:468 g10/gpgv.c:70 kbx/kbxutil.c:88
-#: scd/scdaemon.c:107 sm/gpgsm.c:343 tools/gpg-connect-agent.c:66
+#: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
 #: tools/gpgconf.c:72 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "utförlig"
 
 #: agent/gpg-agent.c:122 g10/gpgv.c:71 kbx/kbxutil.c:89 scd/scdaemon.c:108
-#: sm/gpgsm.c:344
+#: sm/gpgsm.c:345
 msgid "be somewhat more quiet"
 msgstr "var något tystare"
 
@@ -396,7 +396,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv miljöinställningar även till FIL"
 
 #: agent/gpg-agent.c:283 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:207 sm/gpgsm.c:572 tools/gpg-connect-agent.c:171
+#: scd/scdaemon.c:207 sm/gpgsm.c:574 tools/gpg-connect-agent.c:171
 #: tools/gpgconf.c:94 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
 msgstr "Rapportera fel till <"
@@ -413,30 +413,30 @@ msgstr ""
 "Syntax: gpg-agent [flaggor] [kommando [argument]]\n"
 "Hantering av hemliga nycklar för GnuPG\n"
 
-#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:734
+#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:736
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ogiltig debug-level \"%s\" angiven\n"
 
 #: agent/gpg-agent.c:522 agent/protect-tool.c:1066 kbx/kbxutil.c:428
-#: scd/scdaemon.c:342 sm/gpgsm.c:878 sm/gpgsm.c:881 tools/symcryptrun.c:997
+#: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s är för gammal (behöver %s, har %s)\n"
 
-#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:969
+#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:972
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "OBS: inställningsfilen \"%s\" saknas\n"
 
 #: agent/gpg-agent.c:626 agent/gpg-agent.c:1206 g10/gpg.c:2061
-#: scd/scdaemon.c:428 sm/gpgsm.c:973 tools/symcryptrun.c:930
+#: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
-#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:980
+#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:983
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "läser inställningar från \"%s\"\n"
@@ -732,8 +732,8 @@ msgstr "ändra lösenfras"
 msgid "I'll change it later"
 msgstr "Jag ändrar den senare"
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1661
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1341
+#: tools/gpgconf-comp.c:1664
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
@@ -1723,7 +1723,7 @@ msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
-#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:245 tools/gpgconf.c:56
+#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:56
 msgid ""
 "@Commands:\n"
 " "
@@ -1739,28 +1739,28 @@ msgstr "|[fil]|skapa en signatur"
 msgid "|[file]|make a clear text signature"
 msgstr "|[fil]|skapa en klartextsignatur"
 
-#: g10/gpg.c:371 sm/gpgsm.c:249
+#: g10/gpg.c:371 sm/gpgsm.c:250
 msgid "make a detached signature"
 msgstr "skapa signatur i en separat fil"
 
-#: g10/gpg.c:372 sm/gpgsm.c:250
+#: g10/gpg.c:372 sm/gpgsm.c:251
 msgid "encrypt data"
 msgstr "kryptera data"
 
-#: g10/gpg.c:374 sm/gpgsm.c:251
+#: g10/gpg.c:374 sm/gpgsm.c:252
 msgid "encryption only with symmetric cipher"
 msgstr "kryptering endast med symmetriskt chiffer"
 
 # gnupg dekrypterar data om inget kommando anges dvs. kommandot "decrypt" behöver inte användas.
-#: g10/gpg.c:376 sm/gpgsm.c:252
+#: g10/gpg.c:376 sm/gpgsm.c:253
 msgid "decrypt data (default)"
 msgstr "dekryptera data (standard)"
 
-#: g10/gpg.c:378 sm/gpgsm.c:253
+#: g10/gpg.c:378 sm/gpgsm.c:254
 msgid "verify a signature"
 msgstr "validera en signatur"
 
-#: g10/gpg.c:380 sm/gpgsm.c:255
+#: g10/gpg.c:380 sm/gpgsm.c:256
 msgid "list keys"
 msgstr "lista nycklar"
 
@@ -1772,11 +1772,11 @@ msgstr "lista nycklar och signaturer"
 msgid "list and check key signatures"
 msgstr "lista och kontrollera nyckelsignaturer"
 
-#: g10/gpg.c:384 sm/gpgsm.c:259
+#: g10/gpg.c:384 sm/gpgsm.c:260
 msgid "list keys and fingerprints"
 msgstr "lista nycklar och fingeravtryck"
 
-#: g10/gpg.c:385 sm/gpgsm.c:257
+#: g10/gpg.c:385 sm/gpgsm.c:258
 msgid "list secret keys"
 msgstr "lista hemliga nycklar"
 
@@ -1812,11 +1812,11 @@ msgstr "generera ett spärrcertifikat"
 msgid "export keys"
 msgstr "exportera nycklar"
 
-#: g10/gpg.c:396 sm/gpgsm.c:262
+#: g10/gpg.c:396 sm/gpgsm.c:263
 msgid "export keys to a key server"
 msgstr "exportera nycklar till en nyckelserver"
 
-#: g10/gpg.c:397 sm/gpgsm.c:263
+#: g10/gpg.c:397 sm/gpgsm.c:264
 msgid "import keys from a key server"
 msgstr "importera nycklar från en nyckelserver"
 
@@ -1852,12 +1852,12 @@ msgstr "uppdatera tillitsdatabasen"
 msgid "|algo [files]|print message digests"
 msgstr "|algo [filer]|skriv ut kontrollsummor"
 
-#: g10/gpg.c:429 sm/gpgsm.c:267
+#: g10/gpg.c:429 sm/gpgsm.c:268
 msgid "run in server mode"
 msgstr "kör i serverläge"
 
 # Här bruksanvisning för kommandoraden. Resultatet har jag översatt med "inställningar", eftersom flaggorna även kan förekomma i en inställningsfil.
-#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:282
+#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
 #: tools/gpg-connect-agent.c:64 tools/gpgconf.c:69 tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -1868,32 +1868,32 @@ msgstr ""
 "Flaggor:\n"
 " "
 
-#: g10/gpg.c:433 sm/gpgsm.c:284
+#: g10/gpg.c:433 sm/gpgsm.c:285
 msgid "create ascii armored output"
 msgstr "skapa utdata med ett ascii-skal"
 
-#: g10/gpg.c:435 sm/gpgsm.c:296
+#: g10/gpg.c:435 sm/gpgsm.c:297
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAMN|kryptera för NAMN"
 
-#: g10/gpg.c:446 sm/gpgsm.c:334
+#: g10/gpg.c:446 sm/gpgsm.c:335
 msgid "use this user-id to sign or decrypt"
 msgstr "använd denna användaridentitet för att signera eller dekryptera"
 
-#: g10/gpg.c:447 sm/gpgsm.c:337
+#: g10/gpg.c:447 sm/gpgsm.c:338
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|ställ in komprimeringsnivån till N (0 för att inaktivera)"
 
-#: g10/gpg.c:452 sm/gpgsm.c:339
+#: g10/gpg.c:452 sm/gpgsm.c:340
 msgid "use canonical text mode"
 msgstr "använd \"ursprunglig text\"-läget"
 
-#: g10/gpg.c:466 sm/gpgsm.c:342
+#: g10/gpg.c:466 sm/gpgsm.c:343
 #, fuzzy
 msgid "|FILE|write output to FILE"
 msgstr "|FIL|läs inställningar från FIL"
 
-#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:353 tools/gpgconf.c:74
+#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:74
 msgid "do not make any changes"
 msgstr "gör inga ändringar"
 
@@ -1911,7 +1911,7 @@ msgstr "generera PGP 2.x-kompatibla meddelanden"
 
 # inställningar istället för flaggor?
 # Nej, här är det bruksanvisningen för kommandoraden.
-#: g10/gpg.c:553 sm/gpgsm.c:402
+#: g10/gpg.c:553 sm/gpgsm.c:403
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1919,7 +1919,7 @@ msgstr ""
 "@\n"
 "(Se manualsidan för en fullständig lista över alla kommandon och flaggor)\n"
 
-#: g10/gpg.c:556 sm/gpgsm.c:405
+#: g10/gpg.c:556 sm/gpgsm.c:406
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1960,7 +1960,7 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera\n"
 "standardåtgärden beror på inmatningsdata\n"
 
-#: g10/gpg.c:784 sm/gpgsm.c:585
+#: g10/gpg.c:784 sm/gpgsm.c:587
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1984,7 +1984,7 @@ msgstr "Kontrollsumma: "
 msgid "Compression: "
 msgstr "Komprimering: "
 
-#: g10/gpg.c:815 sm/gpgsm.c:605
+#: g10/gpg.c:815 sm/gpgsm.c:607
 msgid "Used libraries:"
 msgstr "Använda bibliotek:"
 
@@ -1992,7 +1992,7 @@ msgstr "Använda bibliotek:"
 msgid "usage: gpg [options] "
 msgstr "användning: gpg [flaggor] "
 
-#: g10/gpg.c:1093 sm/gpgsm.c:770
+#: g10/gpg.c:1093 sm/gpgsm.c:772
 msgid "conflicting commands\n"
 msgstr "motstridiga kommandon\n"
 
@@ -2255,7 +2255,7 @@ msgid "invalid auto-key-locate list\n"
 msgstr "ogiltig auto-key-locate-lista\n"
 
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
-#: g10/gpg.c:2939 sm/gpgsm.c:1369
+#: g10/gpg.c:2939 sm/gpgsm.c:1374
 msgid "WARNING: program may create a core file!\n"
 msgstr "VARNING: programmet kan komma att skapa en minnesavbild!\n"
 
@@ -2298,11 +2298,11 @@ msgstr "du måste använda filer (och inte rör) i --pgp2-läge\n"
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "kryptering av meddelanden i --pgp2-läge kräver IDEA-chiffret\n"
 
-#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1441
+#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1446
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda chifferalgoritmen är ogiltig\n"
 
-#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1449 sm/gpgsm.c:1455
+#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1454 sm/gpgsm.c:1460
 msgid "selected digest algorithm is invalid\n"
 msgstr "vald sammandragsalgoritm är ogiltig\n"
 
@@ -2545,7 +2545,7 @@ msgstr "ta nycklarna från denna nyckelring "
 msgid "make timestamp conflicts only a warning"
 msgstr "utfärda enbart en varning när tidsstämpeln är orimlig"
 
-#: g10/gpgv.c:75 sm/gpgsm.c:376
+#: g10/gpgv.c:75 sm/gpgsm.c:377
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinformation till denna FD"
 
@@ -6708,7 +6708,7 @@ msgstr "kan inte komma åt %s - ogiltigt OpenPGP-kort?\n"
 msgid "run in multi server mode (foreground)"
 msgstr "kör i multiserverläge (förgrund)"
 
-#: scd/scdaemon.c:111 sm/gpgsm.c:365
+#: scd/scdaemon.c:111 sm/gpgsm.c:366
 msgid "read options from file"
 msgstr "läs inställningar från fil"
 
@@ -6773,260 +6773,260 @@ msgstr "ogiltigt radix64-tecken %02x hoppades över\n"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:209
+#: sm/call-dirmngr.c:212
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr "ingen körande dirmngr - startar \"%s\"\n"
 
-#: sm/call-dirmngr.c:242
+#: sm/call-dirmngr.c:245
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "miljövariabeln DIRMNGR_INFO är felformaterad\n"
 
-#: sm/call-dirmngr.c:254
+#: sm/call-dirmngr.c:257
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "dirmngr-protokoll version %d stöds inte\n"
 
-#: sm/call-dirmngr.c:274
+#: sm/call-dirmngr.c:277
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr "kan inte ansluta till dirmngr - försöker falla tillbaka\n"
 
-#: sm/certchain.c:194
+#: sm/certchain.c:196
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "valideringsmodellen begärd av certifikat: %s"
 
-#: sm/certchain.c:195 sm/certchain.c:1732
+#: sm/certchain.c:197 sm/certchain.c:1803
 msgid "chain"
 msgstr "kedja"
 
-#: sm/certchain.c:196 sm/certchain.c:1732
+#: sm/certchain.c:198 sm/certchain.c:1803
 msgid "shell"
 msgstr "skal"
 
-#: sm/certchain.c:241
+#: sm/certchain.c:243
 #, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "kritiska certifikattillägget %s stöds inte"
 
-#: sm/certchain.c:280
+#: sm/certchain.c:282
 msgid "issuer certificate is not marked as a CA"
 msgstr "utfärdarens certifikat är inte markerat som en CA"
 
-#: sm/certchain.c:318
+#: sm/certchain.c:320
 msgid "critical marked policy without configured policies"
 msgstr "kritisk markerad policy utan konfigurerade policier"
 
-#: sm/certchain.c:328
+#: sm/certchain.c:330
 #, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "misslyckades med att öppna \"%s\": %s\n"
 
-#: sm/certchain.c:335 sm/certchain.c:364
+#: sm/certchain.c:338 sm/certchain.c:367
 msgid "note: non-critical certificate policy not allowed"
 msgstr "observera: icke-kritisk certifikatpolicy tillåts inte"
 
-#: sm/certchain.c:339 sm/certchain.c:368
+#: sm/certchain.c:342 sm/certchain.c:371
 msgid "certificate policy not allowed"
 msgstr "certifikatpolicy tillåts inte"
 
-#: sm/certchain.c:480
+#: sm/certchain.c:483
 msgid "looking up issuer at external location\n"
 msgstr "slår upp utfärdare på extern plats\n"
 
-#: sm/certchain.c:499
+#: sm/certchain.c:502
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "antal utfärdare som matchar: %d\n"
 
-#: sm/certchain.c:541
+#: sm/certchain.c:544
 #, fuzzy
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr "slår upp utfärdare på extern plats\n"
 
-#: sm/certchain.c:565
+#: sm/certchain.c:568
 #, fuzzy, c-format
 msgid "number of matching certificates: %d\n"
 msgstr "fel vid import av certifikat: %s\n"
 
-#: sm/certchain.c:567
+#: sm/certchain.c:570
 #, fuzzy, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "skuggning av nyckeln misslyckades: %s\n"
 
-#: sm/certchain.c:735 sm/certchain.c:1153 sm/certchain.c:1760 sm/decrypt.c:259
+#: sm/certchain.c:740 sm/certchain.c:1227 sm/certchain.c:1831 sm/decrypt.c:259
 #: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113
 msgid "failed to allocated keyDB handle\n"
 msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
-#: sm/certchain.c:826
+#: sm/certchain.c:900
 msgid "certificate has been revoked"
 msgstr "certifikatet har spärrats"
 
-#: sm/certchain.c:836
+#: sm/certchain.c:910
 msgid "no CRL found for certificate"
 msgstr "ingen spärrlista hittades för certifikatet"
 
-#: sm/certchain.c:841
+#: sm/certchain.c:915
 msgid "the status of the certificate is unknown"
 msgstr "status för certifikatet är okänt"
 
-#: sm/certchain.c:846
+#: sm/certchain.c:920
 msgid "the available CRL is too old"
 msgstr "den tillgängliga spärrlistan är för gammal"
 
-#: sm/certchain.c:848
+#: sm/certchain.c:922
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr "se till att \"dirmngr\" är korrekt installerat\n"
 
-#: sm/certchain.c:854
+#: sm/certchain.c:928
 #, c-format
 msgid "checking the CRL failed: %s"
 msgstr "kontroll mot spärrlistan misslyckades: %s"
 
-#: sm/certchain.c:883 sm/certchain.c:951
+#: sm/certchain.c:957 sm/certchain.c:1025
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "certifikat med felaktig giltighetstid: %s"
 
-#: sm/certchain.c:898 sm/certchain.c:983
+#: sm/certchain.c:972 sm/certchain.c:1057
 msgid "certificate not yet valid"
 msgstr "certifikatet är ännu inte giltigt"
 
-#: sm/certchain.c:899 sm/certchain.c:984
+#: sm/certchain.c:973 sm/certchain.c:1058
 msgid "root certificate not yet valid"
 msgstr "rotcertifikatet är ännu inte giltigt"
 
-#: sm/certchain.c:900 sm/certchain.c:985
+#: sm/certchain.c:974 sm/certchain.c:1059
 msgid "intermediate certificate not yet valid"
 msgstr "tillfälligt certifikat är ännu inte giltigt"
 
-#: sm/certchain.c:913
+#: sm/certchain.c:987
 msgid "certificate has expired"
 msgstr "certifikatet har gått ut"
 
-#: sm/certchain.c:914
+#: sm/certchain.c:988
 msgid "root certificate has expired"
 msgstr "rotcertifikatet har gått ut"
 
-#: sm/certchain.c:915
+#: sm/certchain.c:989
 msgid "intermediate certificate has expired"
 msgstr "tillfälligt certifikat har gått ut"
 
-#: sm/certchain.c:957
+#: sm/certchain.c:1031
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
 msgstr "nödvändiga certifikattillägg saknas: %s%s%s"
 
-#: sm/certchain.c:966
+#: sm/certchain.c:1040
 msgid "certificate with invalid validity"
 msgstr "certifikat med felaktig giltighetstid"
 
-#: sm/certchain.c:1003
+#: sm/certchain.c:1077
 msgid "signature not created during lifetime of certificate"
 msgstr "signaturen inte skapad under certifikatets livstid"
 
-#: sm/certchain.c:1005
+#: sm/certchain.c:1079
 msgid "certificate not created during lifetime of issuer"
 msgstr "certifikatet skapades inte under utfärdarens livstid"
 
-#: sm/certchain.c:1006
+#: sm/certchain.c:1080
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr "tillfälligt certifikat är inte skapat under utfärdarens livstid"
 
-#: sm/certchain.c:1010
+#: sm/certchain.c:1084
 msgid "  (  signature created at "
 msgstr "  (  signatur skapad "
 
-#: sm/certchain.c:1011
+#: sm/certchain.c:1085
 msgid "  (certificate created at "
 msgstr "  (certifikat skapat "
 
-#: sm/certchain.c:1014
+#: sm/certchain.c:1088
 msgid "  (certificate valid from "
 msgstr "  (certifikat giltigt från "
 
-#: sm/certchain.c:1015
+#: sm/certchain.c:1089
 msgid "  (     issuer valid from "
 msgstr "  (     utfärdare giltig från "
 
-#: sm/certchain.c:1045
+#: sm/certchain.c:1119
 #, c-format
 msgid "fingerprint=%s\n"
 msgstr "fingeravtryck=%s\n"
 
-#: sm/certchain.c:1054
+#: sm/certchain.c:1128
 msgid "root certificate has now been marked as trusted\n"
 msgstr "rotcertifikatet har nu markerats som betrott\n"
 
-#: sm/certchain.c:1067
+#: sm/certchain.c:1141
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr "interaktiv markering som betrodd inte aktiverad i gpg-agent\n"
 
-#: sm/certchain.c:1073
+#: sm/certchain.c:1147
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr "interaktiv markering som betrodd inaktiverad för den här sessionen\n"
 
-#: sm/certchain.c:1130
+#: sm/certchain.c:1204
 msgid "WARNING: creation time of signature not known - assuming current time"
 msgstr ""
 "VARNING: tid för skapandet av signaturen är inte känd - antar aktuell tid"
 
-#: sm/certchain.c:1194
+#: sm/certchain.c:1268
 msgid "no issuer found in certificate"
 msgstr "ingen utfärdare hittades i certifikatet"
 
-#: sm/certchain.c:1270
+#: sm/certchain.c:1341
 msgid "self-signed certificate has a BAD signature"
 msgstr "självsignerat certifikat har en FELAKTIG signatur"
 
-#: sm/certchain.c:1339
+#: sm/certchain.c:1410
 msgid "root certificate is not marked trusted"
 msgstr "rotcertifikatet har inte markerats som betrott"
 
-#: sm/certchain.c:1352
+#: sm/certchain.c:1423
 #, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "kontroll mot tillitslistan misslyckades: %s\n"
 
-#: sm/certchain.c:1381 sm/import.c:158
+#: sm/certchain.c:1452 sm/import.c:158
 msgid "certificate chain too long\n"
 msgstr "certifikatkedjan är för lång\n"
 
-#: sm/certchain.c:1393
+#: sm/certchain.c:1464
 msgid "issuer certificate not found"
 msgstr "utfärdarens certifikat hittades inte"
 
-#: sm/certchain.c:1426
+#: sm/certchain.c:1497
 msgid "certificate has a BAD signature"
 msgstr "certifikatet har en FELAKTIG signatur"
 
-#: sm/certchain.c:1457
+#: sm/certchain.c:1528
 msgid "found another possible matching CA certificate - trying again"
 msgstr "hittade ett annat möjligen matchande CA-certifikat - försöker igen"
 
-#: sm/certchain.c:1508
+#: sm/certchain.c:1579
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "certifikatkedjan längre än vad som tillåts av CA (%d)"
 
-#: sm/certchain.c:1548 sm/certchain.c:1831
+#: sm/certchain.c:1619 sm/certchain.c:1902
 msgid "certificate is good\n"
 msgstr "certifikatet är korrekt\n"
 
-#: sm/certchain.c:1549
+#: sm/certchain.c:1620
 msgid "intermediate certificate is good\n"
 msgstr "tillfälligt certifikat är korrekt\n"
 
-#: sm/certchain.c:1550
+#: sm/certchain.c:1621
 msgid "root certificate is good\n"
 msgstr "rotcertifikatet är korrekt\n"
 
-#: sm/certchain.c:1721
+#: sm/certchain.c:1792
 msgid "switching to chain model"
 msgstr "växlar till kedjemodell"
 
-#: sm/certchain.c:1730
+#: sm/certchain.c:1801
 #, c-format
 msgid "validation model used: %s"
 msgstr "valideringsmodell använd: %s"
@@ -7302,182 +7302,182 @@ msgstr "borttagning av certifikatet \"%s\" misslyckades: %s\n"
 msgid "no valid recipients given\n"
 msgstr "inga giltiga mottagare angavs\n"
 
-#: sm/gpgsm.c:247
+#: sm/gpgsm.c:248
 msgid "|[FILE]|make a signature"
 msgstr "|[FIL]|skapa en signatur"
 
-#: sm/gpgsm.c:248
+#: sm/gpgsm.c:249
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[FIL]|skapa en klartext-signatur"
 
-#: sm/gpgsm.c:256
+#: sm/gpgsm.c:257
 msgid "list external keys"
 msgstr "lista externa nycklar"
 
-#: sm/gpgsm.c:258
+#: sm/gpgsm.c:259
 msgid "list certificate chain"
 msgstr "lista certifikatkedja"
 
-#: sm/gpgsm.c:261
+#: sm/gpgsm.c:262
 msgid "remove key from the public keyring"
 msgstr "ta bort nyckel från den publika nyckelringen"
 
-#: sm/gpgsm.c:264
+#: sm/gpgsm.c:265
 msgid "import certificates"
 msgstr "importera certifikat"
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:266
 msgid "export certificates"
 msgstr "exportera certifikat"
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:267
 msgid "register a smartcard"
 msgstr "registrera ett smartkort"
 
-#: sm/gpgsm.c:268
+#: sm/gpgsm.c:269
 msgid "pass a command to the dirmngr"
 msgstr "skicka ett kommando till dirmngr"
 
-#: sm/gpgsm.c:270
+#: sm/gpgsm.c:271
 msgid "invoke gpg-protect-tool"
 msgstr "starta gpg-protect-tool"
 
-#: sm/gpgsm.c:271
+#: sm/gpgsm.c:272
 msgid "change a passphrase"
 msgstr "ändra en lösenfras"
 
-#: sm/gpgsm.c:286
+#: sm/gpgsm.c:287
 msgid "create base-64 encoded output"
 msgstr "skapa base-64-kodat utdata"
 
-#: sm/gpgsm.c:290
+#: sm/gpgsm.c:291
 msgid "assume input is in PEM format"
 msgstr "anta att inmatning är i PEM-format"
 
-#: sm/gpgsm.c:292
+#: sm/gpgsm.c:293
 msgid "assume input is in base-64 format"
 msgstr "anta att inmatning är i base-64-format"
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:295
 msgid "assume input is in binary format"
 msgstr "anta att inmatning är i binärformat"
 
-#: sm/gpgsm.c:299
+#: sm/gpgsm.c:300
 msgid "use system's dirmngr if available"
 msgstr "använd systemets dirmngr om tillgängligt"
 
-#: sm/gpgsm.c:300
+#: sm/gpgsm.c:301
 msgid "never consult a CRL"
 msgstr "kontrollera aldrig mot spärrlista"
 
-#: sm/gpgsm.c:307
+#: sm/gpgsm.c:308
 msgid "check validity using OCSP"
 msgstr "kontrollera giltigheten med OCSP"
 
-#: sm/gpgsm.c:312
+#: sm/gpgsm.c:313
 msgid "|N|number of certificates to include"
 msgstr "|N|antal certifikat att inkludera"
 
-#: sm/gpgsm.c:315
+#: sm/gpgsm.c:316
 msgid "|FILE|take policy information from FILE"
 msgstr "|FIL|hämta policyinformation från FIL"
 
-#: sm/gpgsm.c:318
+#: sm/gpgsm.c:319
 msgid "do not check certificate policies"
 msgstr "kontrollera inte certifikatpolicier"
 
-#: sm/gpgsm.c:322
+#: sm/gpgsm.c:323
 msgid "fetch missing issuer certificates"
 msgstr "hämta saknade utfärdarcertifikat"
 
-#: sm/gpgsm.c:326
+#: sm/gpgsm.c:327
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAMN|använd NAMN som standardmottagare"
 
-#: sm/gpgsm.c:328
+#: sm/gpgsm.c:329
 msgid "use the default key as default recipient"
 msgstr "använd standardnyckeln som standardmottagare"
 
-#: sm/gpgsm.c:345
+#: sm/gpgsm.c:346
 msgid "don't use the terminal at all"
 msgstr "använd inte terminalen alls"
 
-#: sm/gpgsm.c:346
+#: sm/gpgsm.c:347
 #, fuzzy
 msgid "|FILE|write a server mode log to FILE"
 msgstr "|FIL|skriv serverlägesloggar till FIL"
 
-#: sm/gpgsm.c:348
+#: sm/gpgsm.c:349
 #, fuzzy
 msgid "|FILE|write an audit log to FILE"
 msgstr "|FIL|skriv serverlägesloggar till FIL"
 
-#: sm/gpgsm.c:350
+#: sm/gpgsm.c:351
 msgid "force v3 signatures"
 msgstr "tvinga v3-signaturer"
 
-#: sm/gpgsm.c:351
+#: sm/gpgsm.c:352
 msgid "always use a MDC for encryption"
 msgstr "använd alltid en MDC för kryptering"
 
-#: sm/gpgsm.c:356
+#: sm/gpgsm.c:357
 msgid "batch mode: never ask"
 msgstr "satsläge: fråga aldrig"
 
-#: sm/gpgsm.c:357
+#: sm/gpgsm.c:358
 msgid "assume yes on most questions"
 msgstr "anta ja på de flesta frågorna"
 
-#: sm/gpgsm.c:358
+#: sm/gpgsm.c:359
 msgid "assume no on most questions"
 msgstr "anta nej på de flesta frågorna"
 
-#: sm/gpgsm.c:360
+#: sm/gpgsm.c:361
 msgid "add this keyring to the list of keyrings"
 msgstr "lägg till denna nyckelring till listan över nyckelringar"
 
-#: sm/gpgsm.c:361
+#: sm/gpgsm.c:362
 msgid "add this secret keyring to the list"
 msgstr "lägg till denna hemliga nyckelring till listan"
 
-#: sm/gpgsm.c:362 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAMN|använd NAMN som förvald hemlig nyckel"
 
-#: sm/gpgsm.c:363
+#: sm/gpgsm.c:364
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|VÄRD|använd den här nyckelservern för att slå upp nycklar"
 
-#: sm/gpgsm.c:364
+#: sm/gpgsm.c:365
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAMN|ställ in terminalteckentabell till NAMN"
 
-#: sm/gpgsm.c:368
+#: sm/gpgsm.c:369
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|NIVÅ|ställ in felsökningsnivån till NIVÅ"
 
-#: sm/gpgsm.c:383
+#: sm/gpgsm.c:384
 msgid "|FILE|load extension module FILE"
 msgstr "|FIL|läs in tilläggsmodulen FIL"
 
-#: sm/gpgsm.c:389
+#: sm/gpgsm.c:390
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAMN|använd chifferalgoritmen NAMN"
 
-#: sm/gpgsm.c:391
+#: sm/gpgsm.c:392
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAMN|använd sammandragsalgoritmen NAMN"
 
-#: sm/gpgsm.c:394
+#: sm/gpgsm.c:395
 msgid "|N|use compress algorithm N"
 msgstr "|N|använd komprimeringsalgoritmen N"
 
-#: sm/gpgsm.c:575
+#: sm/gpgsm.c:577
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Användning: gpgsm [flaggor] [filer] (-h för hjälp)"
 
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
-#: sm/gpgsm.c:578
+#: sm/gpgsm.c:580
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -7487,35 +7487,35 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera med S/MIME-protokollet\n"
 "standardåtgärden beror på inmatningsdata\n"
 
-#: sm/gpgsm.c:705
+#: sm/gpgsm.c:707
 msgid "usage: gpgsm [options] "
 msgstr "användning: gpgsm [flaggor] "
 
-#: sm/gpgsm.c:803
+#: sm/gpgsm.c:805
 #, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "OBSERVERA: kommer inte att kunna kryptera till \"%s\": %s\n"
 
-#: sm/gpgsm.c:814
+#: sm/gpgsm.c:816
 #, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "okänd valideringsmodell \"%s\"\n"
 
-#: sm/gpgsm.c:1386
+#: sm/gpgsm.c:1391
 msgid "WARNING: running with faked system time: "
 msgstr "VARNING: kör med falsk systemtid: "
 
-#: sm/gpgsm.c:1488
+#: sm/gpgsm.c:1493
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "importerar vanliga certifikat \"%s\"\n"
 
-#: sm/gpgsm.c:1526
+#: sm/gpgsm.c:1531
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "kan inte signera med \"%s\": %s\n"
 
-#: sm/gpgsm.c:1710
+#: sm/gpgsm.c:1717
 msgid "this command has not yet been implemented\n"
 msgstr "det här kommandot har ännu inte implementerats\n"
 
@@ -7764,26 +7764,26 @@ msgid "error sending standard options: %s\n"
 msgstr "fel vid sändning av standardflaggor: %s\n"
 
 #: tools/gpgconf-comp.c:459 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:773
+#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:776
 msgid "Options controlling the diagnostic output"
 msgstr "Flaggor som kontrollerar diagnosutdata"
 
 #: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
-#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:796
+#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:799
 msgid "Options controlling the configuration"
 msgstr "Flaggor som kontrollerar konfigurationen"
 
 #: tools/gpgconf-comp.c:482 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:656
-#: tools/gpgconf-comp.c:724 tools/gpgconf-comp.c:803
+#: tools/gpgconf-comp.c:727 tools/gpgconf-comp.c:806
 msgid "Options useful for debugging"
 msgstr "Flaggor användbara för felsökning"
 
 #: tools/gpgconf-comp.c:487 tools/gpgconf-comp.c:606 tools/gpgconf-comp.c:661
-#: tools/gpgconf-comp.c:729 tools/gpgconf-comp.c:811
+#: tools/gpgconf-comp.c:732 tools/gpgconf-comp.c:814
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|FIL|skriv serverlägesloggar till FIL"
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:737
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:740
 msgid "Options controlling the security"
 msgstr "Flaggor som kontrollerar säkerheten"
 
@@ -7844,42 +7844,47 @@ msgid "allow PKA lookups (DNS requests)"
 msgstr "tillåt PKA-uppslag (DNS-förfrågningar)"
 
 #: tools/gpgconf-comp.c:719
+#, fuzzy
+msgid "disable all access to the dirmngr"
+msgstr "skicka ett kommando till dirmngr"
+
+#: tools/gpgconf-comp.c:722
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NAMN|använd kodningen NAMN för PKCS#12-lösenfraser"
 
-#: tools/gpgconf-comp.c:742
+#: tools/gpgconf-comp.c:745
 msgid "do not check CRLs for root certificates"
 msgstr "kontrollera inte spärrlistor för rotcertifikat"
 
-#: tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:789
 msgid "Options controlling the format of the output"
 msgstr "Flaggor som kontrollerar formatet på utdata"
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:825
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Flaggor som kontrollerar interaktivitet och framtvingande"
 
-#: tools/gpgconf-comp.c:832
+#: tools/gpgconf-comp.c:835
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration för HTTP-servrar"
 
-#: tools/gpgconf-comp.c:843
+#: tools/gpgconf-comp.c:846
 msgid "use system's HTTP proxy setting"
 msgstr "använd systemets HTTP-proxyinställningar"
 
-#: tools/gpgconf-comp.c:848
+#: tools/gpgconf-comp.c:851
 msgid "Configuration of LDAP servers to use"
 msgstr "Konfiguration av LDAP-servrar som ska användas"
 
-#: tools/gpgconf-comp.c:877
+#: tools/gpgconf-comp.c:880
 msgid "LDAP server list"
 msgstr ""
 
-#: tools/gpgconf-comp.c:885
+#: tools/gpgconf-comp.c:888
 msgid "Configuration for OCSP"
 msgstr "Konfiguration för OCSP"
 
-#: tools/gpgconf-comp.c:3037
+#: tools/gpgconf-comp.c:3040
 msgid "Note that group specifications are ignored\n"
 msgstr "Observera att gruppspecifikationer ignoreras\n"
 

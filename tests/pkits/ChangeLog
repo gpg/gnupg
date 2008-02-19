@@ -1,5 +1,10 @@
 2008-02-19  Werner Koch  <wk@g10code.com>
 
+	* inittests: Unpack test data onlyu if available. 
+	* common.sh: Skip tests if PKITS test data is not available.
+	* Makefile.am: Do not distribute test data.  This allows to
+	include the test suite in the distribution.
+	
 	* signature-verification: New.
 	* validity-periods: New.
 	* verifying-name-chaining: New.
@@ -29,15 +34,15 @@
 
 2006-05-02  Werner Koch  <wk@g10code.com>
 
-	* PKITS_data.tar.bz2: Repackaged new copy becuase the old one got
-	corrupted by the conversion fromCVS to SVN.
+	* PKITS_data.tar.bz2: Repackaged new copy because the old one got
+	corrupted by the conversion from CVS to SVN.
 
 2004-08-16  Werner Koch  <wk@g10code.de>
 
 	Started implementing PKITS based tests.
 
 
- Copyright 2004 Free Software Foundation, Inc.
+ Copyright 2004, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

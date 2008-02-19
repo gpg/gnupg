@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-15 10:39+0100\n"
+"POT-Creation-Date: 2008-02-19 11:52+0100\n"
 "PO-Revision-Date: 2008-01-31 23:09+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -107,8 +107,8 @@ msgstr "無法建立 `%s': %s\n"
 #: g10/keygen.c:2644 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:782 g10/sign.c:977 g10/sign.c:1093
 #: g10/sign.c:1249 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:551
-#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1972
-#: sm/gpgsm.c:2009 sm/gpgsm.c:2047 sm/qualified.c:66
+#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
+#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "無法開啟 `%s': %s\n"
@@ -282,13 +282,13 @@ msgid "run in daemon mode (background)"
 msgstr "以服務模式執行 (背景)"
 
 #: agent/gpg-agent.c:121 g10/gpg.c:468 g10/gpgv.c:70 kbx/kbxutil.c:88
-#: scd/scdaemon.c:107 sm/gpgsm.c:343 tools/gpg-connect-agent.c:66
+#: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
 #: tools/gpgconf.c:72 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "囉唆模式"
 
 #: agent/gpg-agent.c:122 g10/gpgv.c:71 kbx/kbxutil.c:89 scd/scdaemon.c:108
-#: sm/gpgsm.c:344
+#: sm/gpgsm.c:345
 msgid "be somewhat more quiet"
 msgstr "盡量安靜些"
 
@@ -365,7 +365,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr "|檔案|將環境設定也寫至「檔案」"
 
 #: agent/gpg-agent.c:283 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:207 sm/gpgsm.c:572 tools/gpg-connect-agent.c:171
+#: scd/scdaemon.c:207 sm/gpgsm.c:574 tools/gpg-connect-agent.c:171
 #: tools/gpgconf.c:94 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
 msgstr "翻譯瑕疵請回報給 <Jedi@Jedi.org>, 程式瑕疵則請回報給 <"
@@ -382,30 +382,30 @@ msgstr ""
 "語法: gpg-agent [選項] [指令 [引數]]\n"
 "GnuPG 私鑰管理\n"
 
-#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:734
+#: agent/gpg-agent.c:323 g10/gpg.c:964 scd/scdaemon.c:247 sm/gpgsm.c:736
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "給定的除錯等級 `%s' 無效\n"
 
 #: agent/gpg-agent.c:522 agent/protect-tool.c:1066 kbx/kbxutil.c:428
-#: scd/scdaemon.c:342 sm/gpgsm.c:878 sm/gpgsm.c:881 tools/symcryptrun.c:997
+#: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
 
-#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:969
+#: agent/gpg-agent.c:621 g10/gpg.c:2057 scd/scdaemon.c:423 sm/gpgsm.c:972
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "請注意: 沒有預設選項檔 `%s'\n"
 
 #: agent/gpg-agent.c:626 agent/gpg-agent.c:1206 g10/gpg.c:2061
-#: scd/scdaemon.c:428 sm/gpgsm.c:973 tools/symcryptrun.c:930
+#: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "選項檔 `%s': %s\n"
 
-#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:980
+#: agent/gpg-agent.c:634 g10/gpg.c:2068 scd/scdaemon.c:436 sm/gpgsm.c:983
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "從 `%s' 讀取選項中\n"
@@ -689,8 +689,8 @@ msgstr "更改密語"
 msgid "I'll change it later"
 msgstr "我稍後再變更"
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1338
-#: tools/gpgconf-comp.c:1661
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1341
+#: tools/gpgconf-comp.c:1664
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "建立管道時出錯: %s\n"
@@ -1634,7 +1634,7 @@ msgstr "使用子鑰 %s 來替換主鑰 %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
 
-#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:245 tools/gpgconf.c:56
+#: g10/gpg.c:367 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:56
 msgid ""
 "@Commands:\n"
 " "
@@ -1650,27 +1650,27 @@ msgstr "|[檔案]|建立簽章"
 msgid "|[file]|make a clear text signature"
 msgstr "|[檔案]|建立明文簽章"
 
-#: g10/gpg.c:371 sm/gpgsm.c:249
+#: g10/gpg.c:371 sm/gpgsm.c:250
 msgid "make a detached signature"
 msgstr "建立分離式簽章"
 
-#: g10/gpg.c:372 sm/gpgsm.c:250
+#: g10/gpg.c:372 sm/gpgsm.c:251
 msgid "encrypt data"
 msgstr "加密資料"
 
-#: g10/gpg.c:374 sm/gpgsm.c:251
+#: g10/gpg.c:374 sm/gpgsm.c:252
 msgid "encryption only with symmetric cipher"
 msgstr "僅使用對稱式編密法來加密"
 
-#: g10/gpg.c:376 sm/gpgsm.c:252
+#: g10/gpg.c:376 sm/gpgsm.c:253
 msgid "decrypt data (default)"
 msgstr "資料解密 (預設)"
 
-#: g10/gpg.c:378 sm/gpgsm.c:253
+#: g10/gpg.c:378 sm/gpgsm.c:254
 msgid "verify a signature"
 msgstr "驗證簽章"
 
-#: g10/gpg.c:380 sm/gpgsm.c:255
+#: g10/gpg.c:380 sm/gpgsm.c:256
 msgid "list keys"
 msgstr "列出金鑰"
 
@@ -1682,11 +1682,11 @@ msgstr "列出金鑰和簽章"
 msgid "list and check key signatures"
 msgstr "列出並檢查金鑰簽章"
 
-#: g10/gpg.c:384 sm/gpgsm.c:259
+#: g10/gpg.c:384 sm/gpgsm.c:260
 msgid "list keys and fingerprints"
 msgstr "列出金鑰和指紋"
 
-#: g10/gpg.c:385 sm/gpgsm.c:257
+#: g10/gpg.c:385 sm/gpgsm.c:258
 msgid "list secret keys"
 msgstr "列出私鑰"
 
@@ -1722,11 +1722,11 @@ msgstr "產生撤銷憑證"
 msgid "export keys"
 msgstr "匯出金鑰"
 
-#: g10/gpg.c:396 sm/gpgsm.c:262
+#: g10/gpg.c:396 sm/gpgsm.c:263
 msgid "export keys to a key server"
 msgstr "把金鑰匯出至金鑰伺服器"
 
-#: g10/gpg.c:397 sm/gpgsm.c:263
+#: g10/gpg.c:397 sm/gpgsm.c:264
 msgid "import keys from a key server"
 msgstr "從金鑰伺服器匯入金鑰"
 
@@ -1762,11 +1762,11 @@ msgstr "更新信任資料庫"
 msgid "|algo [files]|print message digests"
 msgstr "|演算法 [檔案]|印出訊息摘要"
 
-#: g10/gpg.c:429 sm/gpgsm.c:267
+#: g10/gpg.c:429 sm/gpgsm.c:268
 msgid "run in server mode"
 msgstr "以伺服器模式執行"
 
-#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:282
+#: g10/gpg.c:431 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
 #: tools/gpg-connect-agent.c:64 tools/gpgconf.c:69 tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -1777,31 +1777,31 @@ msgstr ""
 "選項:\n"
 " "
 
-#: g10/gpg.c:433 sm/gpgsm.c:284
+#: g10/gpg.c:433 sm/gpgsm.c:285
 msgid "create ascii armored output"
 msgstr "建立以 ASCII 封裝過的輸出"
 
-#: g10/gpg.c:435 sm/gpgsm.c:296
+#: g10/gpg.c:435 sm/gpgsm.c:297
 msgid "|NAME|encrypt for NAME"
 msgstr "|名字|以「名字」作為加密對象"
 
-#: g10/gpg.c:446 sm/gpgsm.c:334
+#: g10/gpg.c:446 sm/gpgsm.c:335
 msgid "use this user-id to sign or decrypt"
 msgstr "拿這個使用者 ID 來簽署或解密"
 
-#: g10/gpg.c:447 sm/gpgsm.c:337
+#: g10/gpg.c:447 sm/gpgsm.c:338
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|設定壓縮等級為 N (0 表示不壓縮)"
 
-#: g10/gpg.c:452 sm/gpgsm.c:339
+#: g10/gpg.c:452 sm/gpgsm.c:340
 msgid "use canonical text mode"
 msgstr "使用標準的文字模式"
 
-#: g10/gpg.c:466 sm/gpgsm.c:342
+#: g10/gpg.c:466 sm/gpgsm.c:343
 msgid "|FILE|write output to FILE"
 msgstr "|檔案|將輸出寫入至「檔案」"
 
-#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:353 tools/gpgconf.c:74
+#: g10/gpg.c:479 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:74
 msgid "do not make any changes"
 msgstr "不要做任何改變"
 
@@ -1817,7 +1817,7 @@ msgstr "使用嚴謹的 OpenPGP 行為"
 msgid "generate PGP 2.x compatible messages"
 msgstr "產生 PGP 2.x 相容性訊息"
 
-#: g10/gpg.c:553 sm/gpgsm.c:402
+#: g10/gpg.c:553 sm/gpgsm.c:403
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1825,7 +1825,7 @@ msgstr ""
 "@\n"
 "(請參照線上說明頁面來取得所有命令和選項的完整清單)\n"
 
-#: g10/gpg.c:556 sm/gpgsm.c:405
+#: g10/gpg.c:556 sm/gpgsm.c:406
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1864,7 +1864,7 @@ msgstr ""
 "簽署, 檢查, 加密或解密\n"
 "預設的操作會依輸入資料而定\n"
 
-#: g10/gpg.c:784 sm/gpgsm.c:585
+#: g10/gpg.c:784 sm/gpgsm.c:587
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1888,7 +1888,7 @@ msgstr "雜湊: "
 msgid "Compression: "
 msgstr "壓縮: "
 
-#: g10/gpg.c:815 sm/gpgsm.c:605
+#: g10/gpg.c:815 sm/gpgsm.c:607
 msgid "Used libraries:"
 msgstr "已使用的函示庫:"
 
@@ -1896,7 +1896,7 @@ msgstr "已使用的函示庫:"
 msgid "usage: gpg [options] "
 msgstr "用法: gpg [選項] "
 
-#: g10/gpg.c:1093 sm/gpgsm.c:770
+#: g10/gpg.c:1093 sm/gpgsm.c:772
 msgid "conflicting commands\n"
 msgstr "指令彼此矛盾\n"
 
@@ -2148,7 +2148,7 @@ msgstr "%s:%d: 無效的自動金鑰定址清單\n"
 msgid "invalid auto-key-locate list\n"
 msgstr "無效的自動金鑰定址清單\n"
 
-#: g10/gpg.c:2939 sm/gpgsm.c:1369
+#: g10/gpg.c:2939 sm/gpgsm.c:1374
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告: 程式可能會傾印出核心檔!\n"
 
@@ -2188,11 +2188,11 @@ msgstr "啟用 --pgp2 時你祇應該使用檔案, 而非管道\n"
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "在 --pgp2 模式下加密訊息需要 IDEA 編密法\n"
 
-#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1441
+#: g10/gpg.c:3075 g10/gpg.c:3099 sm/gpgsm.c:1446
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所選的編密演算法無效\n"
 
-#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1449 sm/gpgsm.c:1455
+#: g10/gpg.c:3081 g10/gpg.c:3105 sm/gpgsm.c:1454 sm/gpgsm.c:1460
 msgid "selected digest algorithm is invalid\n"
 msgstr "所選的摘要演算法無效\n"
 
@@ -2420,7 +2420,7 @@ msgstr "從這個鑰匙圈裡取用金鑰"
 msgid "make timestamp conflicts only a warning"
 msgstr "僅把時間戳印矛盾視為警告"
 
-#: g10/gpgv.c:75 sm/gpgsm.c:376
+#: g10/gpgv.c:75 sm/gpgsm.c:377
 msgid "|FD|write status info to this FD"
 msgstr "|檔案描述|把狀態資訊寫入此「檔案描述」"
 
@@ -6425,7 +6425,7 @@ msgstr "無法存取 %s - 無效的 OpenPGP 卡片?\n"
 msgid "run in multi server mode (foreground)"
 msgstr "以多重伺服器模式執行 (前景)"
 
-#: scd/scdaemon.c:111 sm/gpgsm.c:365
+#: scd/scdaemon.c:111 sm/gpgsm.c:366
 msgid "read options from file"
 msgstr "從檔案中讀取選項"
 
@@ -6489,259 +6489,259 @@ msgstr "已跳過無效的 radix64 字符 %02x\n"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:209
+#: sm/call-dirmngr.c:212
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr "沒有執行中的 dirmngr - 正在啟動 `%s'\n"
 
-#: sm/call-dirmngr.c:242
+#: sm/call-dirmngr.c:245
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "被變造的 DIRMNGR_INFO 環境變數\n"
 
-#: sm/call-dirmngr.c:254
+#: sm/call-dirmngr.c:257
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "未支援 dirmngr 協定版本 %d\n"
 
-#: sm/call-dirmngr.c:274
+#: sm/call-dirmngr.c:277
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr "無法連線至 dirmngr - 正試著退回\n"
 
-#: sm/certchain.c:194
+#: sm/certchain.c:196
 #, c-format
 msgid "validation model requested by certificate: %s"
 msgstr "憑證所要求的驗證模型: %s"
 
-#: sm/certchain.c:195 sm/certchain.c:1732
+#: sm/certchain.c:197 sm/certchain.c:1803
 msgid "chain"
 msgstr "chain"
 
-#: sm/certchain.c:196 sm/certchain.c:1732
+#: sm/certchain.c:198 sm/certchain.c:1803
 msgid "shell"
 msgstr "shell"
 
-#: sm/certchain.c:241
+#: sm/certchain.c:243
 #, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "未支援關鍵憑證延伸 %s"
 
-#: sm/certchain.c:280
+#: sm/certchain.c:282
 msgid "issuer certificate is not marked as a CA"
 msgstr "發行者憑證並未標記為 CA"
 
-#: sm/certchain.c:318
+#: sm/certchain.c:320
 msgid "critical marked policy without configured policies"
 msgstr "關鍵已標記原則沒有已組態的原則"
 
-#: sm/certchain.c:328
+#: sm/certchain.c:330
 #, c-format
 msgid "failed to open `%s': %s\n"
 msgstr "開啟 `%s' 失敗: %s\n"
 
-#: sm/certchain.c:335 sm/certchain.c:364
+#: sm/certchain.c:338 sm/certchain.c:367
 msgid "note: non-critical certificate policy not allowed"
 msgstr "請注意: 不允許非關鍵的憑證原則"
 
-#: sm/certchain.c:339 sm/certchain.c:368
+#: sm/certchain.c:342 sm/certchain.c:371
 msgid "certificate policy not allowed"
 msgstr "未允許憑證原則"
 
-#: sm/certchain.c:480
+#: sm/certchain.c:483
 msgid "looking up issuer at external location\n"
 msgstr "從外部位置尋找發行者\n"
 
-#: sm/certchain.c:499
+#: sm/certchain.c:502
 #, c-format
 msgid "number of issuers matching: %d\n"
 msgstr "吻合的發行者數量: %d\n"
 
-#: sm/certchain.c:541
+#: sm/certchain.c:544
 #, fuzzy
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr "從外部位置尋找發行者\n"
 
-#: sm/certchain.c:565
+#: sm/certchain.c:568
 #, fuzzy, c-format
 msgid "number of matching certificates: %d\n"
 msgstr "匯入憑證時出錯: %s\n"
 
-#: sm/certchain.c:567
+#: sm/certchain.c:570
 #, fuzzy, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "遮蔽金鑰時失敗: %s\n"
 
-#: sm/certchain.c:735 sm/certchain.c:1153 sm/certchain.c:1760 sm/decrypt.c:259
+#: sm/certchain.c:740 sm/certchain.c:1227 sm/certchain.c:1831 sm/decrypt.c:259
 #: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113
 msgid "failed to allocated keyDB handle\n"
 msgstr "配置 keyDB handle 失敗\n"
 
-#: sm/certchain.c:826
+#: sm/certchain.c:900
 msgid "certificate has been revoked"
 msgstr "憑證已撤銷"
 
-#: sm/certchain.c:836
+#: sm/certchain.c:910
 msgid "no CRL found for certificate"
 msgstr "找不到用於憑證的 CRL"
 
-#: sm/certchain.c:841
+#: sm/certchain.c:915
 msgid "the status of the certificate is unknown"
 msgstr "憑證的狀態未知"
 
-#: sm/certchain.c:846
+#: sm/certchain.c:920
 msgid "the available CRL is too old"
 msgstr "可用的 CRL 太舊了"
 
-#: sm/certchain.c:848
+#: sm/certchain.c:922
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr "請確認 \"dirmngr\" 已安裝妥善\n"
 
-#: sm/certchain.c:854
+#: sm/certchain.c:928
 #, c-format
 msgid "checking the CRL failed: %s"
 msgstr "檢查 CRL 時失敗: %s"
 
-#: sm/certchain.c:883 sm/certchain.c:951
+#: sm/certchain.c:957 sm/certchain.c:1025
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "有效性無效的憑證: %s"
 
-#: sm/certchain.c:898 sm/certchain.c:983
+#: sm/certchain.c:972 sm/certchain.c:1057
 msgid "certificate not yet valid"
 msgstr "憑證尚未生效"
 
-#: sm/certchain.c:899 sm/certchain.c:984
+#: sm/certchain.c:973 sm/certchain.c:1058
 msgid "root certificate not yet valid"
 msgstr "根憑證尚未生效"
 
-#: sm/certchain.c:900 sm/certchain.c:985
+#: sm/certchain.c:974 sm/certchain.c:1059
 msgid "intermediate certificate not yet valid"
 msgstr "媒介憑證尚未生效"
 
-#: sm/certchain.c:913
+#: sm/certchain.c:987
 msgid "certificate has expired"
 msgstr "憑證已過期"
 
-#: sm/certchain.c:914
+#: sm/certchain.c:988
 msgid "root certificate has expired"
 msgstr "根憑證已過期"
 
-#: sm/certchain.c:915
+#: sm/certchain.c:989
 msgid "intermediate certificate has expired"
 msgstr "媒介憑證已過期"
 
-#: sm/certchain.c:957
+#: sm/certchain.c:1031
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
 msgstr "遺失所需的憑證屬性: %s%s%s"
 
-#: sm/certchain.c:966
+#: sm/certchain.c:1040
 msgid "certificate with invalid validity"
 msgstr "有效性無效的憑證"
 
-#: sm/certchain.c:1003
+#: sm/certchain.c:1077
 msgid "signature not created during lifetime of certificate"
 msgstr "簽章並非在憑證生存時間內所造"
 
-#: sm/certchain.c:1005
+#: sm/certchain.c:1079
 msgid "certificate not created during lifetime of issuer"
 msgstr "憑證並非在發行者生存時間內所造"
 
-#: sm/certchain.c:1006
+#: sm/certchain.c:1080
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr "媒介憑證並非在發行者生存時間內所造"
 
-#: sm/certchain.c:1010
+#: sm/certchain.c:1084
 msgid "  (  signature created at "
 msgstr "  (            簽章建立於 "
 
-#: sm/certchain.c:1011
+#: sm/certchain.c:1085
 msgid "  (certificate created at "
 msgstr "  (            憑證建立於 "
 
-#: sm/certchain.c:1014
+#: sm/certchain.c:1088
 msgid "  (certificate valid from "
 msgstr "  (憑證有效自 "
 
-#: sm/certchain.c:1015
+#: sm/certchain.c:1089
 msgid "  (     issuer valid from "
 msgstr "  (        發行者有效自 "
 
-#: sm/certchain.c:1045
+#: sm/certchain.c:1119
 #, c-format
 msgid "fingerprint=%s\n"
 msgstr "指紋=%s\n"
 
-#: sm/certchain.c:1054
+#: sm/certchain.c:1128
 msgid "root certificate has now been marked as trusted\n"
 msgstr "根憑證現在已標記為已信任\n"
 
-#: sm/certchain.c:1067
+#: sm/certchain.c:1141
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr "在 gpg-agent 中未啟用互動式標記為已信任\n"
 
-#: sm/certchain.c:1073
+#: sm/certchain.c:1147
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr "互動式標記為已信任在此作業階段中已停用\n"
 
-#: sm/certchain.c:1130
+#: sm/certchain.c:1204
 msgid "WARNING: creation time of signature not known - assuming current time"
 msgstr "警告: 簽章創造時間未知 - 假設為此刻"
 
-#: sm/certchain.c:1194
+#: sm/certchain.c:1268
 msgid "no issuer found in certificate"
 msgstr "憑證中找不到發行者"
 
-#: sm/certchain.c:1270
+#: sm/certchain.c:1341
 msgid "self-signed certificate has a BAD signature"
 msgstr "自簽憑證有 不良 簽章"
 
-#: sm/certchain.c:1339
+#: sm/certchain.c:1410
 msgid "root certificate is not marked trusted"
 msgstr "根憑證未標記為已信任"
 
-#: sm/certchain.c:1352
+#: sm/certchain.c:1423
 #, c-format
 msgid "checking the trust list failed: %s\n"
 msgstr "檢查信任清單時失敗: %s\n"
 
-#: sm/certchain.c:1381 sm/import.c:158
+#: sm/certchain.c:1452 sm/import.c:158
 msgid "certificate chain too long\n"
 msgstr "憑證鏈太長\n"
 
-#: sm/certchain.c:1393
+#: sm/certchain.c:1464
 msgid "issuer certificate not found"
 msgstr "找不到發行者憑證"
 
-#: sm/certchain.c:1426
+#: sm/certchain.c:1497
 msgid "certificate has a BAD signature"
 msgstr "憑證有 不良 簽章"
 
-#: sm/certchain.c:1457
+#: sm/certchain.c:1528
 msgid "found another possible matching CA certificate - trying again"
 msgstr "找到了另一個可能吻合的 CA 憑證 - 正再試一次"
 
-#: sm/certchain.c:1508
+#: sm/certchain.c:1579
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "憑證鏈比 CA 所允許的 (%d) 還長"
 
-#: sm/certchain.c:1548 sm/certchain.c:1831
+#: sm/certchain.c:1619 sm/certchain.c:1902
 msgid "certificate is good\n"
 msgstr "憑證完好\n"
 
-#: sm/certchain.c:1549
+#: sm/certchain.c:1620
 msgid "intermediate certificate is good\n"
 msgstr "媒介憑證良好\n"
 
-#: sm/certchain.c:1550
+#: sm/certchain.c:1621
 msgid "root certificate is good\n"
 msgstr "根憑證完好\n"
 
-#: sm/certchain.c:1721
+#: sm/certchain.c:1792
 msgid "switching to chain model"
 msgstr "切換至鏈模型"
 
-#: sm/certchain.c:1730
+#: sm/certchain.c:1801
 #, c-format
 msgid "validation model used: %s"
 msgstr "已使用的驗證模型: %s"
@@ -7008,179 +7008,179 @@ msgstr "刪除憑證 \"%s\" 時失敗: %s\n"
 msgid "no valid recipients given\n"
 msgstr "沒有給定有效的收件者\n"
 
-#: sm/gpgsm.c:247
+#: sm/gpgsm.c:248
 msgid "|[FILE]|make a signature"
 msgstr "|[檔案]|做出簽章"
 
-#: sm/gpgsm.c:248
+#: sm/gpgsm.c:249
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[檔案]|做出明文簽章"
 
-#: sm/gpgsm.c:256
+#: sm/gpgsm.c:257
 msgid "list external keys"
 msgstr "列出外部金鑰"
 
-#: sm/gpgsm.c:258
+#: sm/gpgsm.c:259
 msgid "list certificate chain"
 msgstr "列出憑證鏈"
 
-#: sm/gpgsm.c:261
+#: sm/gpgsm.c:262
 msgid "remove key from the public keyring"
 msgstr "從公鑰鑰匙圈裡移除金鑰"
 
-#: sm/gpgsm.c:264
+#: sm/gpgsm.c:265
 msgid "import certificates"
 msgstr "匯入憑證"
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:266
 msgid "export certificates"
 msgstr "匯出憑證"
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:267
 msgid "register a smartcard"
 msgstr "註冊智慧卡"
 
-#: sm/gpgsm.c:268
+#: sm/gpgsm.c:269
 msgid "pass a command to the dirmngr"
 msgstr "將指令遞送給 dirmngr"
 
-#: sm/gpgsm.c:270
+#: sm/gpgsm.c:271
 msgid "invoke gpg-protect-tool"
 msgstr "叫用 gpg-protect-tool"
 
-#: sm/gpgsm.c:271
+#: sm/gpgsm.c:272
 msgid "change a passphrase"
 msgstr "更改密語"
 
-#: sm/gpgsm.c:286
+#: sm/gpgsm.c:287
 msgid "create base-64 encoded output"
 msgstr "建立以 base-64 編碼過的輸出"
 
-#: sm/gpgsm.c:290
+#: sm/gpgsm.c:291
 msgid "assume input is in PEM format"
 msgstr "假設輸入的是 PEM 格式"
 
-#: sm/gpgsm.c:292
+#: sm/gpgsm.c:293
 msgid "assume input is in base-64 format"
 msgstr "假設輸入的是 base-64 格式"
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:295
 msgid "assume input is in binary format"
 msgstr "假設輸入的是二進制格式"
 
-#: sm/gpgsm.c:299
+#: sm/gpgsm.c:300
 msgid "use system's dirmngr if available"
 msgstr "如果系統有 dirmngr 的話就拿來用"
 
-#: sm/gpgsm.c:300
+#: sm/gpgsm.c:301
 msgid "never consult a CRL"
 msgstr "永遠不要查閱 CRL"
 
-#: sm/gpgsm.c:307
+#: sm/gpgsm.c:308
 msgid "check validity using OCSP"
 msgstr "用 OCSP 檢查有效性"
 
-#: sm/gpgsm.c:312
+#: sm/gpgsm.c:313
 msgid "|N|number of certificates to include"
 msgstr "|N|要包含的憑證數量"
 
-#: sm/gpgsm.c:315
+#: sm/gpgsm.c:316
 msgid "|FILE|take policy information from FILE"
 msgstr "|檔案|從「檔案」中取得原則資訊"
 
-#: sm/gpgsm.c:318
+#: sm/gpgsm.c:319
 msgid "do not check certificate policies"
 msgstr "不要檢查憑證原則"
 
-#: sm/gpgsm.c:322
+#: sm/gpgsm.c:323
 msgid "fetch missing issuer certificates"
 msgstr "取回遺失的發行者憑證"
 
-#: sm/gpgsm.c:326
+#: sm/gpgsm.c:327
 msgid "|NAME|use NAME as default recipient"
 msgstr "|名字|使用「名字」做為預設收件者"
 
-#: sm/gpgsm.c:328
+#: sm/gpgsm.c:329
 msgid "use the default key as default recipient"
 msgstr "使用預設的金鑰做為預設的收件者"
 
-#: sm/gpgsm.c:345
+#: sm/gpgsm.c:346
 msgid "don't use the terminal at all"
 msgstr "完全不要使用終端機"
 
-#: sm/gpgsm.c:346
+#: sm/gpgsm.c:347
 msgid "|FILE|write a server mode log to FILE"
 msgstr "|檔案|將伺服器模式日誌寫入至「檔案」"
 
-#: sm/gpgsm.c:348
+#: sm/gpgsm.c:349
 msgid "|FILE|write an audit log to FILE"
 msgstr "|檔案|將稽核日誌寫入至「檔案」"
 
-#: sm/gpgsm.c:350
+#: sm/gpgsm.c:351
 msgid "force v3 signatures"
 msgstr "強迫使用第三版簽章"
 
-#: sm/gpgsm.c:351
+#: sm/gpgsm.c:352
 msgid "always use a MDC for encryption"
 msgstr "總是使用 MDC 來加密"
 
-#: sm/gpgsm.c:356
+#: sm/gpgsm.c:357
 msgid "batch mode: never ask"
 msgstr "批次模式: 永遠不詢問"
 
-#: sm/gpgsm.c:357
+#: sm/gpgsm.c:358
 msgid "assume yes on most questions"
 msgstr "假設大部分的問題都回答是"
 
-#: sm/gpgsm.c:358
+#: sm/gpgsm.c:359
 msgid "assume no on most questions"
 msgstr "假設大部分的問題都回答否"
 
-#: sm/gpgsm.c:360
+#: sm/gpgsm.c:361
 msgid "add this keyring to the list of keyrings"
 msgstr "將此金鑰鑰匙圈加到金鑰鑰匙圈清單中"
 
-#: sm/gpgsm.c:361
+#: sm/gpgsm.c:362
 msgid "add this secret keyring to the list"
 msgstr "將此私鑰鑰匙圈加到清單中"
 
-#: sm/gpgsm.c:362 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
 msgid "|NAME|use NAME as default secret key"
 msgstr "|名字|使用「名字」做為預設私鑰"
 
-#: sm/gpgsm.c:363
+#: sm/gpgsm.c:364
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|主機|使用此金鑰伺服器來查找金鑰"
 
-#: sm/gpgsm.c:364
+#: sm/gpgsm.c:365
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|名稱|將終端機字元集設為「名稱」"
 
-#: sm/gpgsm.c:368
+#: sm/gpgsm.c:369
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|等級|設定除錯等級為「等級」"
 
-#: sm/gpgsm.c:383
+#: sm/gpgsm.c:384
 msgid "|FILE|load extension module FILE"
 msgstr "|檔案|載入延伸模組「檔案」"
 
-#: sm/gpgsm.c:389
+#: sm/gpgsm.c:390
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|名稱|使用「名稱」編密演算法"
 
-#: sm/gpgsm.c:391
+#: sm/gpgsm.c:392
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|名稱|使用「名稱」訊息摘要演算法"
 
-#: sm/gpgsm.c:394
+#: sm/gpgsm.c:395
 msgid "|N|use compress algorithm N"
 msgstr "|N|使用壓縮演算法 N"
 
-#: sm/gpgsm.c:575
+#: sm/gpgsm.c:577
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "用法: gpgsm [選項] [檔案] (或用 -h 求助)"
 
-#: sm/gpgsm.c:578
+#: sm/gpgsm.c:580
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -7190,35 +7190,35 @@ msgstr ""
 "用 S/MIME 協定來簽署, 檢查, 加密或解密\n"
 "預設的操作會依輸入資料而定\n"
 
-#: sm/gpgsm.c:705
+#: sm/gpgsm.c:707
 msgid "usage: gpgsm [options] "
 msgstr "用法: gpgsm [選項] "
 
-#: sm/gpgsm.c:803
+#: sm/gpgsm.c:805
 #, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "請注意: 將無法加密為 `%s': %s\n"
 
-#: sm/gpgsm.c:814
+#: sm/gpgsm.c:816
 #, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "未知的驗證模型 `%s'\n"
 
-#: sm/gpgsm.c:1386
+#: sm/gpgsm.c:1391
 msgid "WARNING: running with faked system time: "
 msgstr "警告: 正在偽造的系統時間中執行: "
 
-#: sm/gpgsm.c:1488
+#: sm/gpgsm.c:1493
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "正在匯入通用憑證 `%s'\n"
 
-#: sm/gpgsm.c:1526
+#: sm/gpgsm.c:1531
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "無法用 `%s' 來簽署: %s\n"
 
-#: sm/gpgsm.c:1710
+#: sm/gpgsm.c:1717
 msgid "this command has not yet been implemented\n"
 msgstr "這個指令尚未實做完成\n"
 
@@ -7462,26 +7462,26 @@ msgid "error sending standard options: %s\n"
 msgstr "送出標準選項時出錯: %s\n"
 
 #: tools/gpgconf-comp.c:459 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:773
+#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:776
 msgid "Options controlling the diagnostic output"
 msgstr "控制著診斷性輸出的選項"
 
 #: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
-#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:796
+#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:799
 msgid "Options controlling the configuration"
 msgstr "控制著組態的選項"
 
 #: tools/gpgconf-comp.c:482 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:656
-#: tools/gpgconf-comp.c:724 tools/gpgconf-comp.c:803
+#: tools/gpgconf-comp.c:727 tools/gpgconf-comp.c:806
 msgid "Options useful for debugging"
 msgstr "對除錯有幫助的選項"
 
 #: tools/gpgconf-comp.c:487 tools/gpgconf-comp.c:606 tools/gpgconf-comp.c:661
-#: tools/gpgconf-comp.c:729 tools/gpgconf-comp.c:811
+#: tools/gpgconf-comp.c:732 tools/gpgconf-comp.c:814
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|檔案|將伺服器模式日誌寫入至「檔案」"
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:737
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:740
 msgid "Options controlling the security"
 msgstr "控制著安全性的選項"
 
@@ -7542,42 +7542,47 @@ msgid "allow PKA lookups (DNS requests)"
 msgstr "允許 PKA 查找 (DNS 請求)"
 
 #: tools/gpgconf-comp.c:719
+#, fuzzy
+msgid "disable all access to the dirmngr"
+msgstr "將指令遞送給 dirmngr"
+
+#: tools/gpgconf-comp.c:722
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|名稱|將「名稱」編碼用於 PKCS#12 密語"
 
-#: tools/gpgconf-comp.c:742
+#: tools/gpgconf-comp.c:745
 msgid "do not check CRLs for root certificates"
 msgstr "不要為根憑證檢查 CRL"
 
-#: tools/gpgconf-comp.c:786
+#: tools/gpgconf-comp.c:789
 msgid "Options controlling the format of the output"
 msgstr "控制著輸出格式的選項"
 
-#: tools/gpgconf-comp.c:822
+#: tools/gpgconf-comp.c:825
 msgid "Options controlling the interactivity and enforcement"
 msgstr "控制著互動及強制執行的選項"
 
-#: tools/gpgconf-comp.c:832
+#: tools/gpgconf-comp.c:835
 msgid "Configuration for HTTP servers"
 msgstr "HTTP 伺服器組態"
 
-#: tools/gpgconf-comp.c:843
+#: tools/gpgconf-comp.c:846
 msgid "use system's HTTP proxy setting"
 msgstr "使用系統的 HTTP 代理伺服器設定"
 
-#: tools/gpgconf-comp.c:848
+#: tools/gpgconf-comp.c:851
 msgid "Configuration of LDAP servers to use"
 msgstr "要用的 LDAP 伺服器組態"
 
-#: tools/gpgconf-comp.c:877
+#: tools/gpgconf-comp.c:880
 msgid "LDAP server list"
 msgstr ""
 
-#: tools/gpgconf-comp.c:885
+#: tools/gpgconf-comp.c:888
 msgid "Configuration for OCSP"
 msgstr "OCSP 組態"
 
-#: tools/gpgconf-comp.c:3037
+#: tools/gpgconf-comp.c:3040
 msgid "Note that group specifications are ignored\n"
 msgstr "請注意群組規格已忽略\n"
 

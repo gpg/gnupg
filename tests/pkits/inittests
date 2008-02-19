@@ -21,17 +21,17 @@ msg msg.sig msg.unsig
 [ -z "$srcdir" ] && srcdir=.
 [ -z "$GPGSM" ] && GPGSM=../../sm/gpgsm
 
-if [ -f $srcdir/README ] \
-   && grep tests/pkits/README README >/dev/null 2>&1; then
- :
-else
-   # During make distclean the Makefile has already been removed,
-   # so we need this extra test.
-   if ! grep gnupg-test-pkits-directory testdir.stamp >/dev/null 2>&1; then
-      echo "inittests: please cd to the tests/pkits directory first" >&2
-      exit 1
-   fi
-fi
+#if [ -f $srcdir/README ] \
+#   && grep tests/pkits/README README >/dev/null 2>&1; then
+# :
+#else
+#   # During make distclean the Makefile has already been removed,
+#   # so we need this extra test.
+#   if ! grep gnupg-test-pkits-directory testdir.stamp >/dev/null 2>&1; then
+#      echo "inittests: please cd to the tests/pkits directory first" >&2
+#      exit 1
+#   fi
+#fi
 
 if [ "$1" = "--clean" ]; then
     if [ -d private-keys-v1.d ]; then
@@ -58,11 +58,12 @@ if [ -n "$GPG_AGENT_INFO" ]; then
     exit 1
 fi
 
-if ! bunzip2 -c PKITS_data.tar.bz2 | tar xf - ; then
+if test -f PKITS_data.tar.bz2; then
+  if ! bunzip2 -c PKITS_data.tar.bz2 | tar xf - ; then
     echo "inittests: failed to untar the test data" >&2
     exit 1
-fi    
-
+  fi    
+fi
 
 # A stamp file used with --clean
 echo gnupg-test-pkits-directory > testdir.stamp

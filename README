@@ -2,8 +2,8 @@
                       =========================
                              Version 2.0
 
-         Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-           2005, 2006, 2007 Free Software Foundation, Inc.
+      Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+           2006, 2007, 2008 Free Software Foundation, Inc.
 
 
 INTRODUCTION
@@ -64,6 +64,8 @@ behaves just like gpg.
 In case of problem please ask on gnupg-users@gnupg.org for advise.  Note
 that this release is only expected to build on GNU and *BSD systems.
 
+Note that the PKITS tests are always skipped unless you copy the PKITS
+test data file into the tests/pkits directory.
 
 
 DOCUMENTATION
@@ -78,7 +80,6 @@ provided as well.  An online version of the manual is available at
 http://www.gnupg.org/documentation/manuals/gnupg/ .  A version of the
 manual pertaining to the current development snapshot is at
 http://www.gnupg.org/documentation/manuals/gnupg-devel/ .
-
 
 
 GNUPG 1.4 AND GNUPG 2.0

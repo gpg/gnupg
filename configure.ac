@@ -1171,12 +1171,6 @@ AC_SUBST(ZLIBS)
 # Check for readline support
 GNUPG_CHECK_READLINE
 
-# See wether we want to run the long test suite.
-AC_ARG_WITH(pkits-tests,
-    AC_HELP_STRING([--with-pkits-tests],[run the PKITS based tests]),
-    [run_pkits_tests=$withval], [run_pkits_tests=no])
-AM_CONDITIONAL(RUN_PKITS_TESTS, test "$run_pkits_tests" = "yes")
-
 #
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is
@@ -1417,9 +1411,6 @@ tests/pkits/Makefile
 AC_OUTPUT
 
 
-
-
-
 echo "
         GnuPG v${VERSION} has been configured as follows:
         
@@ -1435,8 +1426,7 @@ echo "
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
-
-        PKITS based tests: $run_pkits_tests"
+"
 if test x"$use_regex" != xyes ; then
 echo "
         Warning: No regular expression support available.

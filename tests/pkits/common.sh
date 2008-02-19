@@ -1,4 +1,3 @@
-#!/bin/sh
 # common.sh - common defs for all tests         -*- sh -*-
 # Copyright (C) 2004, 2008 Free Software Foundation, Inc.
 #
@@ -39,6 +38,12 @@ if [ -n "$GPG_AGENT_INFO" ]; then
     exit 1
 fi
 
+if [ -f PKITS_data.tar.bz2 ]; then
+  :
+else
+    # Exit code 77 is used by the makefile for skipping a tests.
+    exit 77
+fi
 
 #--------------------------------
 #------ utility functions -------
