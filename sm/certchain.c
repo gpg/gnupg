@@ -1,6 +1,6 @@
 /* certchain.c - certificate chain validation
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007 Free Software Foundation, Inc.
+ *               2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,6 +60,8 @@ struct chain_item_s
 typedef struct chain_item_s *chain_item_t;
 
 
+static int is_root_cert (ksba_cert_t cert,
+                         const char *issuerdn, const char *subjectdn);
 static int get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen);
 
 
@@ -331,8 +333,9 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       /* With no critical policies this is only a warning */
       if (!any_critical)
         {
-          do_list (0, listmode, fplist,
-                   _("note: non-critical certificate policy not allowed"));
+          if (!opt.quiet)
+            do_list (0, listmode, fplist,
+                     _("note: non-critical certificate policy not allowed"));
           return 0;
         }
       do_list (1, listmode, fplist,
@@ -563,7 +566,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
 
   if (opt.verbose)
     log_info (_("number of matching certificates: %d\n"), count);
-  if (rc) 
+  if (rc && !opt.quiet) 
     log_info (_("dirmngr cache-only key lookup failed: %s\n"),
               gpg_strerror (rc));
   return (!rc && count)? 0 : -1;
@@ -667,7 +670,9 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
          signature because it is not the correct one. */
-      if (rc == -1)
+      if (rc == -1 && opt.quiet)
+        ;
+      else if (rc == -1)
         {
           log_info ("%sissuer certificate ", find_next?"next ":"");
           if (keyid)
@@ -752,7 +757,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
       goto leave;
     }
 
-  if (!strcmp (issuer, subject))
+  if (is_root_cert (start, issuer, subject))
     {
       rc = -1; /* we are at the root */
       goto leave; 
@@ -784,6 +789,75 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
 }
 
 
+/* Helper for gpgsm_is_root_cert.  This one is used if the subject and
+   issuer DNs are already known.  */
+static int
+is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
+{
+  gpg_error_t err;
+  int result = 0;
+  ksba_sexp_t serialno;
+  ksba_sexp_t ak_keyid;
+  ksba_name_t ak_name;
+  ksba_sexp_t ak_sn;
+  const char *ak_name_str;
+  ksba_sexp_t subj_keyid = NULL;
+
+  if (!issuerdn || !subjectdn)
+    return 0;  /* No.  */
+
+  if (strcmp (issuerdn, subjectdn))
+    return 0;  /* No.  */
+
+  err = ksba_cert_get_auth_key_id (cert, &ak_keyid, &ak_name, &ak_sn);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        return 1; /* Yes. Without a authorityKeyIdentifier this needs
+                     to be the Root certifcate (our trust anchor).  */
+      log_error ("error getting authorityKeyIdentifier: %s\n",
+                 gpg_strerror (err));
+      return 0; /* Well, it is broken anyway.  Return No. */
+    }
+
+  serialno = ksba_cert_get_serial (cert);
+  if (!serialno)
+    {
+      log_error ("error getting serialno: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Check whether the auth name's matches the issuer name+sn.  If
+     that is the case this is a root certificate.  */
+  ak_name_str = ksba_name_enum (ak_name, 0);
+  if (ak_name_str
+      && !strcmp (ak_name_str, issuerdn) 
+      && !cmp_simple_canon_sexp (ak_sn, serialno))
+    {
+      result = 1;  /* Right, CERT is self-signed.  */
+      goto leave;
+    } 
+   
+  /* Similar for the ak_keyid. */
+  if (ak_keyid && !ksba_cert_get_subj_key_id (cert, NULL, &subj_keyid)
+      && !cmp_simple_canon_sexp (ak_keyid, subj_keyid))
+    {
+      result = 1;  /* Right, CERT is self-signed.  */
+      goto leave;
+    } 
+
+
+ leave:
+  ksba_free (subj_keyid);
+  ksba_free (ak_keyid);
+  ksba_name_release (ak_name);
+  ksba_free (ak_sn);
+  ksba_free (serialno);
+  return result; 
+}
+
+
+
 /* Check whether the CERT is a root certificate.  Returns True if this
    is the case. */
 int
@@ -795,7 +869,7 @@ gpgsm_is_root_cert (ksba_cert_t cert)
 
   issuer = ksba_cert_get_issuer (cert, 0);
   subject = ksba_cert_get_subject (cert, 0);
-  yes = (issuer && subject && !strcmp (issuer, subject));
+  yes = is_root_cert (cert, issuer, subject);
   xfree (issuer);
   xfree (subject);
   return yes;
@@ -1197,11 +1271,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
         }
 
 
-      /* Is this a self-issued certificate (i.e. the root
-         certificate)?  This is actually the same test as done by
-         gpgsm_is_root_cert but here we want to keep the issuer and
-         subject for later use.  */
-      is_root = (subject && !strcmp (issuer, subject));
+      /* Is this a self-issued certificate (i.e. the root certificate)?  */
+      is_root = is_root_cert (subject_cert, issuer, subject);
       if (is_root)
         {
           chain->is_root = 1;
@@ -1570,7 +1641,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       depth++;
     } /* End chain traversal. */
 
-  if (!listmode)
+  if (!listmode && !opt.quiet)
     {
       if (opt.no_policy_check)
         log_info ("policies not checked due to %s option\n",
@@ -1771,7 +1842,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
       goto leave;
     }
 
-  if (subject && !strcmp (issuer, subject))
+  if (is_root_cert (cert, issuer, subject))
     {
       rc = gpgsm_check_cert_sig (cert, cert);
       if (rc)

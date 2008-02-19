@@ -1412,10 +1412,10 @@ tools/Makefile
 doc/Makefile
 tests/Makefile
 tests/openpgp/Makefile
+tests/pkits/Makefile
 ])
 AC_OUTPUT
 
-#tests/pkits/Makefile
 
 
 

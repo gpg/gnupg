@@ -166,6 +166,9 @@ start_dirmngr (ctrl_t ctrl)
   assuan_context_t ctx;
   int try_default = 0;
 
+  if (opt.disable_dirmngr)
+    return gpg_error (GPG_ERR_NO_DIRMNGR);
+
   if (dirmngr_ctx)
     {
       prepare_dirmngr (ctrl, dirmngr_ctx, 0);
@@ -446,7 +449,6 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   char line[ASSUAN_LINELENGTH];
   struct inq_certificate_parm_s parm;
   struct isvalid_status_parm_s stparm;
-
 
   rc = start_dirmngr (ctrl);
   if (rc)

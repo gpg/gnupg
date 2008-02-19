@@ -342,6 +342,9 @@ to connect to this one.  Fallback to a pipe based server if this does
 not work.  Under Windows this option is ignored because the system dirmngr is
 always used.
 
+@item --disable-dirmngr
+Entirely disable the use of the Dirmngr.
+
 @item --no-secmem-warning
 @opindex no-secmem-warning
 Don't print a warning when the so called "secure memory" can't be used.
@@ -672,6 +675,10 @@ tests.
 Supply the passphrase @var{string} to the gpg-protect-tool.  This
 option is only useful for the regression tests included with this
 package and may be revised or removed at any time without notice.
+
+@item --no-common-certs-import
+@opindex no-common-certs-import
+Suppress the import of common certificates on keybox creation.
 
 @end table
 

@@ -1,3 +1,20 @@
+2008-02-18  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (gpgsm_is_root_cert): Factor code out to ...
+	(is_root_cert): New.  Extend test for self-issued certificates
+	signed by other CAs.
+	(do_validate_chain, gpgsm_basic_cert_check)
+	(gpgsm_walk_cert_chain): Use it here.
+
+	* gpgsm.c: Add option --no-common-certs-import.
+	
+	* certchain.c (find_up_dirmngr, find_up, do_validate_chain)
+	(check_cert_policy): Be more silent with --quiet.
+
+	* gpgsm.c: Add option --disable-dirmngr.
+	* gpgsm.h (opt): Add field DISABLE_DIRMNGR.
+	* call-dirmngr.c (start_dirmngr): Implement option.
+
 2008-02-14  Werner Koch  <wk@g10code.com>
 
 	* server.c (option_handler): Add option allow-pinentry-notify.

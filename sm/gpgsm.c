@@ -1,6 +1,6 @@
 /* gpgsm.c - GnuPG for S/MIME 
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007  Free Software Foundation, Inc.
+ *               2006, 2007, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -122,6 +122,7 @@ enum cmd_and_opt_values {
 
   oPreferSystemDirmngr,
   oDirmngrProgram,
+  oDisableDirmngr,
   oProtectToolProgram,
   oFakedSystemTime,
 
@@ -149,7 +150,6 @@ enum cmd_and_opt_values {
   oEnablePolicyChecks,
   oAutoIssuerKeyRetrieve,
   
-
   oTextmode,
   oFingerprint,
   oWithFingerprint,
@@ -231,6 +231,7 @@ enum cmd_and_opt_values {
   oIgnoreTimeConflict,
   oNoRandomSeedFile,
   oNoAutoKeyRetrieve,
+  oNoCommonCertsImport,
   oUseAgent,
   oMergeOnly,
   oTryAllSecrets,
@@ -431,9 +432,9 @@ static ARGPARSE_OPTS opts[] = {
     { oLCmessages, "lc-messages", 2, "@" },
     { oXauthority, "xauthority", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
+    { oDisableDirmngr, "disable-dirmngr", 0 , "@" },
     { oProtectToolProgram, "protect-tool-program", 2 , "@" },
     { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
-
 
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
@@ -462,6 +463,7 @@ static ARGPARSE_OPTS opts[] = {
     { oListOnly, "list-only", 0, "@"},
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
+    { oNoCommonCertsImport, "no-common-certs-import", 0, "@" },
 {0} };
 
 
@@ -842,6 +844,7 @@ main ( int argc, char **argv)
   int nogreeting = 0;
   int debug_wait = 0;
   int use_random_seed = 1;
+  int no_common_certs_import = 0;
   int with_fpr = 0;
   char *def_digest_string = NULL;
   char *extra_digest_algo = NULL;
@@ -1215,6 +1218,7 @@ main ( int argc, char **argv)
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oXauthority: opt.xauthority = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
+        case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
         case oPreferSystemDirmngr: opt.prefer_system_dirmngr = 1; break;
         case oProtectToolProgram:
           opt.protect_tool_program = pargs.r.ret_str; 
@@ -1307,6 +1311,7 @@ main ( int argc, char **argv)
 
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
         case oNoRandomSeedFile: use_random_seed = 0; break;
+        case oNoCommonCertsImport: no_common_certs_import = 1; break;
 
         case oEnableSpecialFilenames: allow_special_filenames =1; break;
 
@@ -1476,7 +1481,7 @@ main ( int argc, char **argv)
       int created;
 
       keydb_add_resource ("pubring.kbx", 0, 0, &created);
-      if (created)
+      if (created && !no_common_certs_import)
         {
           /* Import the standard certificates for a new default keybox. */
           char *filelist[2];
@@ -1592,6 +1597,8 @@ main ( int argc, char **argv)
         printf ("disable-policy-checks:%lu:\n",
                 GC_OPT_FLAG_NONE );
         printf ("auto-issuer-key-retrieve:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("disable-dirmngr:%lu:\n",
                 GC_OPT_FLAG_NONE );
 #ifndef HAVE_W32_SYSTEM
         printf ("prefer-system-dirmngr:%lu:\n",

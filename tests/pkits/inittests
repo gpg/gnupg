@@ -74,7 +74,9 @@ no-secmem-warning
 no-greeting
 batch
 disable-crl-checks
+disable-dirmngr
 agent-program ../../agent/gpg-agent
+no-common-certs-import
 EOF
 
 # Fixme: we need to write a dummy pinentry program

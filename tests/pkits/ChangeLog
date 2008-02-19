@@ -1,3 +1,32 @@
+2008-02-19  Werner Koch  <wk@g10code.com>
+
+	* signature-verification: New.
+	* validity-periods: New.
+	* verifying-name-chaining: New.
+	* basic-certificate-revocation: New.
+	* verifying-paths-self-issued: New.
+	* verifying-basic-constraints: New.
+	* key-usage: New.
+	* certificate-policies: New.
+	* require-explicit-policy: New.
+	* policy-mappings: New.
+	* inhibit-policy-mapping: New.
+	* inhibit-any-policy: New.
+	* name-constraints: New.
+	* distribution-points: New.
+	* delta-crls: New.
+	* private-certificate-extensions: New.
+	* Makefile.am (testscripts): Add them.
+
+	* import-all-certs.data: Add section numbers.
+
+2008-02-18  Werner Koch  <wk@g10code.com>
+
+	* import-all-certs.data: Adjust import tests results.  Almost all
+	certificates should now be importable due to relaxed basic checks.
+
+	* inittests (clean_files): Disable all dirmngr access.
+
 2006-05-02  Werner Koch  <wk@g10code.com>
 
 	* PKITS_data.tar.bz2: Repackaged new copy becuase the old one got
@@ -7,7 +36,7 @@
 
 	Started implementing PKITS based tests.
 
-	
+
  Copyright 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
@@ -17,7 +46,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	
-
-	
-

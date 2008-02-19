@@ -4,9 +4,13 @@ Noteworthy changes in version 2.0.9 (unreleased)
  * Gpgsm always tries to locate missing certificates from a running
    Dirmngr's cache.
 
- * Minor bug fixes.
+ * Tweaks for Windows.
 
- * Tweaks for Windows
+ * Improved certificate chain construction.
+
+ * Extended the PKITS framework.
+
+ * Minor bug fixes.
 
 
 Noteworthy changes in version 2.0.8 (2007-12-20)

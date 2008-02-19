@@ -7,6 +7,31 @@ http://csrc.nist.gov/pki/testing/x509paths.html .
 README             - this file.
 PKITS_data.tar.bz2 - the orginal ZIP file, repackaged as a tarball.
 Makefile.am        - Part of our build system.
+import-all-certs   - Run a simple import test on all certifcates
+validate-all-certs - Run an import and validate test on all certificates
+signature-verification         - PKITS test 4.1  
+validity-periods               - PKITS test 4.2  
+verifying-name-chaining        - PKITS test 4.3  
+basic-certificate-revocation   - PKITS test 4.4  
+verifying-paths-self-issued    - PKITS test 4.5  
+verifying-basic-constraints    - PKITS test 4.6  
+key-usage                      - PKITS test 4.7  
+certificate-policies           - PKITS test 4.8  
+require-explicit-policy        - PKITS test 4.9  
+policy-mappings                - PKITS test 4.10 
+inhibit-policy-mapping         - PKITS test 4.11 
+inhibit-any-policy             - PKITS test 4.12 
+name-constraints               - PKITS test 4.13 
+distribution-points            - PKITS test 4.14 
+delta-crls                     - PKITS test 4.15 
+private-certificate-extensions - PKITS test 4.16 
 
 
 The password for the p12 files is "password".
+
+You may run the tests as usual with "make check" or after a plain make
+in this directory you may run the tests individually.  When run in
+this way they will print easy to parse output to stdout.  To run all
+tests in this mode, use "make run-all-tests".  All test scripts create
+a log file with the suffix ".log" appended to the test script's name.
+
