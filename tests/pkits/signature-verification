@@ -24,7 +24,143 @@ description="Signature Verification"
 info "Running $description tests"
 
 
+start_test 4.1.1 "Valid Signatures Test1"
+# The purpose of this test is to verify an application's ability to
+# name chain, signature chain, and check validity dates, on
+# certificates in a certification path. It also tests processing of
+# the basic constraints and key usage extensions in intermediate
+# certificates.
+clean_homedir
+need_cert TrustAnchorRootCertificate
+need_crl  TrustAnchorRootCRL
+need_cert GoodCACert
+need_crl  GoodCACRL
+need_cert ValidCertificatePathTest1EE
+if $GPGSM --with-colons --with-validation --list-key 0x126B7002 >$SCRATCH; then
+    tmp=$($AWK -F: '$1 == "crt" {any=1; print $2};
+                    END {if(!any) print "error"}' $SCRATCH)
+    [ -n "$tmp" ] && set_status fail
+else
+    set_status fail
+fi
+if [ "$test_status" = "none" ]; then
+    if sed  '1,/^.$/d'  smime/SignedValidSignaturesTest1.eml \
+        | $GPGSM --verify --assume-base64 --status-fd 1 \
+        | grep TRUST_FULLY >/dev/null; then
+        set_status pass
+    else
+        set_status fail
+    fi
+fi
+end_test
 
+
+
+start_test 4.1.2 "Invalid CA Signatures Test2"
+# The purpose of this test is to verify an application's ability to
+# recognize an invalid signature on an intermediate certificate in a
+# certification path.
+clean_homedir
+need_cert TrustAnchorRootCertificate
+need_crl  TrustAnchorRootCRL
+need_cert BadSignedCACert --import-anyway
+need_crl  BadSignedCACRL
+need_cert InvalidCASignatureTest2EE  --import-anyway
+if $GPGSM --with-colons --with-validation --list-key 0xD667FE3C >$SCRATCH; then
+    tmp=$($AWK -F: '$1 == "crt" {any=1; print $2};
+                    END {if(!any) print "error"}' $SCRATCH)
+    [ "$tmp" = "i" ] || set_status fail
+else
+    set_status fail
+fi
+if [ "$test_status" = "none" ]; then
+    if sed  '1,/^.$/d' smime/SignedInvalidCASignatureTest2.eml \
+        | $GPGSM --verify --assume-base64 --status-fd 1 \
+        | grep TRUST_NEVER >/dev/null; then
+        set_status pass
+    else
+        set_status fail
+    fi
+fi
+end_test
+
+
+
+start_test 4.1.3 "Invalid EE Signature Test3"
+# The purpose of this test is to verify an application's ability to
+# recognize an invalid signature on an end entity certificate in a
+# certification path.
+clean_homedir
+need_cert TrustAnchorRootCertificate
+need_crl  TrustAnchorRootCRL
+need_cert GoodCACert
+need_crl  GoodCACRL
+need_cert InvalidEESignatureTest3EE  --import-anyway
+if $GPGSM --with-colons --with-validation --list-key 0x42E1AEE3 >$SCRATCH; then
+    tmp=$($AWK -F: '$1 == "crt" {any=1; print $2};
+                    END {if(!any) print "error"}' $SCRATCH)
+    [ "$tmp" = "i" ] || set_status fail
+else
+    set_status fail
+fi
+if [ "$test_status" = "none" ]; then
+    if sed  '1,/^.$/d' smime/SignedInvalidEESignatureTest3.eml \
+        | $GPGSM --verify --assume-base64 --status-fd 1 \
+        | grep TRUST_NEVER >/dev/null; then
+        set_status pass
+    else
+        set_status fail
+    fi
+fi
+end_test
+
+
+start_test 4.1.4 "Valid DSA Signatures Test4"
+# The purpose of this test is to verify an application's ability to
+# validate certificate in which DSA signatures are used. The
+# intermediate CA and the end entity have DSA key pairs.
+clean_homedir
+need_cert TrustAnchorRootCertificate
+need_crl  TrustAnchorRootCRL
+need_cert DSACACert
+need_crl  DSACACRL
+need_cert ValidDSASignaturesTest4EE
+if $GPGSM --with-colons --with-validation --list-key  0x820A72B8 >$SCRATCH; then
+    tmp=$($AWK -F: '$1 == "crt" {any=1; print $2};
+                    END {if(!any) print "error"}' $SCRATCH)
+    [ -n "$tmp" ] && set_status fail
+else
+    set_status fail
+fi
+if [ "$test_status" = "none" ]; then
+    # Note: This S/MIME file uses LF and not CR,LF.  */
+    if sed  '1,/^$/d' smime/SignedValidDSASignaturesTest4.eml \
+        | $GPGSM --verify --assume-base64 --status-fd 1 \
+        | grep TRUST_FULLY >/dev/null; then
+        set_status pass
+    else
+        set_status fail
+    fi
+fi
+end_test
+
+
+start_test 4.1.5 "Valid DSA Parameter Inheritance Test5"
+# The purpose of this test is to verify an application's ability to
+# validate DSA signatures when the DSA parameters are not included in
+# a certificate and need to be inherited from a previous certificate
+# in the path. The intermediate CAs and the end entity have DSA key
+# pairs.
+set_status nys
+end_test
+
+
+start_test 4.1.6 "Invalid DSA Signature Test6"
+# The purpose of this test is to verify an application's ability to
+# determine when a DSA signature is invalid. The intermediate CA and
+# the end entity have DSA key pairs.
+set_status nys
+end_test
 
 
 

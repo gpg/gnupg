@@ -28,7 +28,7 @@ p p 6.1.5.83 BasicSelfIssuedOldKeyNewWithOldCACert.crt
    
 p p 6.1.5.218 CPSPointerQualifierTest20EE.crt
    
-u u 6.1.5.572 DSACACert.crt
+p u 6.1.5.572 DSACACert.crt
 u u 6.1.5.575 DSAParametersInheritedCACert.crt
    
 p p 6.1.5.210 DifferentPoliciesTest12EE.crt
@@ -81,9 +81,9 @@ p f 6.1.5.392 InvalidDNnameConstraintsTest7EE.crt
 p f 6.1.5.395 InvalidDNnameConstraintsTest8EE.crt
 p f 6.1.5.396 InvalidDNnameConstraintsTest9EE.crt
    
-u u 6.1.5.578 InvalidDSASignatureTest6EE.crt
+p u 6.1.5.578 InvalidDSASignatureTest6EE.crt
    
-f f 6.1.5.9 InvalidEESignatureTest3EE.crt
+p f 6.1.5.9 InvalidEESignatureTest3EE.crt
    
 p f 6.1.5.19 InvalidEEnotAfterDateTest6EE.crt
 p f 6.1.5.13 InvalidEEnotBeforeDateTest2EE.crt

@@ -36,7 +36,7 @@ while read flag dummy section name; do
         elif [ "$flag" = '?' ]; then
             unresolved "importing certificate \`$name' succeeded"
         elif [ "$flag" = 'u' ]; then
-            unsupported "importing certificate \`$name' succeeded"
+            skip "importing certificate \`$name' succeeded"
         else
             info "importing certificate \`$name' succeeded - (flag=$flag)"
         fi
@@ -48,7 +48,7 @@ while read flag dummy section name; do
         elif [ "$flag" = '?' ]; then
             unresolved "importing certificate \`$name' failed"
         elif [ "$flag" = 'u' ]; then
-            unsupported "importing certificate \`$name' failed"
+            skip "importing certificate \`$name' failed"
         else
             info "importing certificate \`$name' failed - (flag=$flag)"
         fi

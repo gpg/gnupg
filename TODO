@@ -23,7 +23,6 @@
 ** mark all unimplemented commands and options.
 ** Implement --default-key
 ** support the anyPolicy semantic
-** Check that we are really following the verification procedures in rfc3280.
 
 
 * sm/keydb.c
@@ -75,7 +74,7 @@
 ** No card status notifications.
 ** Regex support is disabled
   We need to adjust the test to find the regex we have anyway in 
-  gpg4in.  Is that regex compatible to the OpenPGP requirement?
+  gpg4win.  Is that regex compatible to the OpenPGP requirement?
 
 
 * sm/
@@ -135,6 +134,5 @@
   strings gpg-agent generates and passes to Pinentry.  This defeats
   our design goal to allow changing the locale without changing
   gpg-agent's default locale (e.g. by the command updatestartuptty).
-
 
 

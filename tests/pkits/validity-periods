@@ -23,7 +23,194 @@ section=4.2
 description="Validity Periods"
 info "Running $description tests"
 
+start_test 4.2.1 "Invalid CA notBefore Date Test1"
+# In this test, the intermediate certificate's notBefore date is after
+# the current date.
+clean_homedir
+need_cert TrustAnchorRootCertificate
+need_crl  TrustAnchorRootCRL
+need_cert BadnotBeforeDateCACert
+need_crl  BadnotBeforeDateCACRL
+need_cert InvalidCAnotBeforeDateTest1EE
+if $GPGSM --faked-system-time $MYTIME \
+          --with-colons --with-validation --list-key 0x459ADD33 >$SCRATCH; then
+    tmp=$($AWK -F: '$1 == "crt" {any=1; print $2};
+                    END {if(!any) print "error"}' $SCRATCH)
+    [ "$tmp" = "i" ] || set_status fail
+else
+    set_status fail
+fi
+if [ "$test_status" = "none" ]; then
+    if sed  '1,/^.$/d' smime/SignedInvalidCAnotBeforeDateTest1.eml \
+        | $GPGSM --faked-system-time $MYTIME \
+                 --verify --assume-base64 --status-fd 1 --logger-fd 1 \
+        | tee $SCRATCH \
+        | grep TRUST_UNDEFINED >/dev/null; then
+        if grep 'intermediate certificate not yet valid' $SCRATCH >/dev/null \
+            && grep 'invalid certification chain: Certificate too young' \
+                    $SCRATCH >/dev/null
+          then
+            set_status pass
+        fi
+    fi
+    set_status fail
+fi
+end_test
 
+
+start_test 4.2.2 "Invalid EE notBefore Date Test2"
+# In this test, the end entity certificate's notBefore date is after
+# the current date.
+
+#    Procedure: Validate Invalid EE notBefore Date Test2 EE using the
+#    default settings or open and verify Signed Test Message 6.2.2.5
+#    using the default settings.
+
+#    Expected Result: The path should not validate successfully as the
+#    notBefore date in the end entity certificate is after the current
+#    date.
+
+#    Certification Path: The certification path is composed of the
+#    following objects: Trust Anchor Root Certificate, Trust Anchor
+#    Root CRL Good CA Cert, Good CA CRL Invalid EE notBefore Date
+#    Test2 EE
+
+end_test
+
+
+
+start_test 4.2.3 "Valid pre2000 UTC notBefore Date Test3"
+# In this test, the end entity certificate's notBefore date is set to
+# 1950 and is encoded in UTCTime.
+#
+#    Procedure: Validate Valid pre2000 UTC notBefore Date Test3 EE
+#                             using the default settings or open and
+#                             verify Signed Test Message 6.2.2.6 using
+#                             the default settings.
+#
+#    Expected Result: The path should validate successfully as the
+#                             notBefore date in the end entity
+#                             certificate is before the current date.
+#
+#    Certification Path: The certification path is composed of the
+#                 following objects: Trust Anchor Root Certificate,
+#                 Trust Anchor Root CRL Good CA Cert, Good CA CRL Valid
+#                 pre2000 UTC notBefore Date Test3 EE
+#
+end_test 
+
+
+
+start_test 4.2.4 "Valid GeneralizedTime notBefore Date Test4"
+# In this test, the end entity certificate's notBefore date is
+# specified in GeneralizedTime.
+#
+#    Procedure: Validate Valid GeneralizedTime notBefore Date Test4 EE
+#                             using the default settings or open and
+#                             verify Signed Test Message 6.2.2.7 using
+#                             the default settings.
+#
+#    Expected Result:         The path should validate successfully.
+#
+#    Certification Path: 
+#     The certification path is composed of the following objects:
+#                 Trust Anchor Root Certificate, Trust Anchor Root CRL
+#                 Good CA Cert, Good CA CRL
+#                 Valid GeneralizedTime notBefore Date Test4 EE
+#
+end_test
+
+
+                
+start_test 4.2.5 "Invalid CA notAfter Date Test5"
+# In this test, the intermediate certificate's notAfter date is before
+# the current date.
+
+#    Procedure: Validate Invalid CA notAfter Date Test5 EE using the
+#                             default settings or open and verify
+#                             Signed Test Message 6.2.2.8 using the
+#                             default settings.
+#
+#    Expected Result: The path should not validate successfully as the
+#                             notAfter date in the intermediate
+#                             certificate is before the current date.
+#
+#    Certification Path: The certification path is composed of the
+#    following objects:
+#
+#                 Trust Anchor Root Certificate, Trust Anchor Root CRL
+#                 Bad notAfter Date CA Cert, Bad notAfter Date CA CRL
+#                 Invalid CA notAfter Date Test5 EE
+#
+end_test
+
+                
+start_test 4.2.6 "Invalid EE notAfter Date Test6"
+# In this test, the end entity certificate's notAfter date is before
+# the current date.
+
+#    Procedure: Validate Invalid EE notAfter Date Test6 EE using the
+#                             default settings or open and verify
+#                             Signed Test Message 6.2.2.9 using the
+#                             default settings.
+#
+#    Expected Result: The path should not validate successfully as the
+#                             notAfter date in the end certificate is
+#                             before the current date.
+#
+#    Certification Path: The certification path is composed of the
+#    following objects:
+#                 Trust Anchor Root Certificate, Trust Anchor Root CRL
+#                 Good CA Cert, Good CA CRL
+#                 Invalid EE notAfter Date Test6 EE
+
+end_test
+
+    
+start_test 4.2.7 "Invalid pre2000 UTC EE notAfter Date Test7"
+# In this test, the end entity certificate's notAfter date is 1999 and
+# is encoded in UTCTime.
+
+#    Procedure: Validate Invalid pre2000 UTC EE notAfter Date Test7 EE
+#                             using the default settings or open and
+#                             verify Signed Test Message 6.2.2.10 using
+#                             the default settings.
+#
+#    Expected Result: The path should not validate successfully as the
+#                             notAfter date in the end certificate is
+#                             before the current date.
+#
+#
+#    Certification Path: The certification path is composed of the
+#    following objects:
+#
+#                 Trust Anchor Root Certificate, Trust Anchor Root CRL
+#                 Good CA Cert, Good CA CRL
+#                 Invalid pre2000 UTC EE notAfter Date Test7 EE
+
+end_test
+
+                
+
+start_test 4.2.8 "Valid GeneralizedTime notAfter Date Test8"
+# In this test, the end entity certificate's notAfter date is 2050 and
+# is encoded in GeneralizedTime.
+
+#    Procedure: Validate Valid GeneralizedTime notAfter Date Test8 EE
+#                             using the default settings or open and
+#                             verify Signed Test Message 6.2.2.11 using
+#                             the default settings.
+#
+#    Expected Result: The path should validate successfully as the
+#                             notAfter date in the end certificate is
+#                             after the current date.
+#
+#
+#                 Trust Anchor Root Certificate, Trust Anchor Root CRL
+#                 Good CA Cert, Good CA CRL
+#                 Valid GeneralizedTime notAfter Date Test8 EE
+
+end_test
 
 
 

@@ -80,6 +80,17 @@ agent-program ../../agent/gpg-agent
 no-common-certs-import
 EOF
 
+# The set of NIST test policies which should be used if anyPolicy is
+# not supported.
+cat > policies.txt <<EOF
+2.16.840.1.101.3.2.1.48.1
+2.16.840.1.101.3.2.1.48.2
+2.16.840.1.101.3.2.1.48.3
+2.16.840.1.101.3.2.1.48.4
+2.16.840.1.101.3.2.1.48.5
+2.16.840.1.101.3.2.1.48.6
+EOF
+
 # Fixme: we need to write a dummy pinentry program
 cat > gpg-agent.conf <<EOF
 no-grab

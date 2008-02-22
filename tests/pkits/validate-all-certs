@@ -37,7 +37,7 @@ while read dummy flag section name; do
         elif [ "$flag" = '?' ]; then
             unresolved "validating certificate \`$name' succeeded"
         elif [ "$flag" = 'u' ]; then
-            unsupported "validating certificate \`$name' succeeded"
+            skip "validating certificate \`$name' succeeded"
         else
             info "validating certificate \`$name' succeeded - (flag=$flag)"
         fi
@@ -49,7 +49,7 @@ while read dummy flag section name; do
         elif [ "$flag" = '?' ]; then
             unresolved "validating certificate \`$name' failed"
         elif [ "$flag" = 'u' ]; then
-            unsupported "validating certificate \`$name' failed"
+            skip "validating certificate \`$name' failed"
         else
             info "validating certificate \`$name' failed - (flag=$flag)"
         fi

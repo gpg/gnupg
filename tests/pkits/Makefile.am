@@ -48,7 +48,7 @@ EXTRA_DIST = inittests runtest common.sh $(testscripts)
 
 TESTS = $(testscripts)
 
-CLEANFILES = inittests.stamp x y y z out err  *.lock .\#lk* *.log
+CLEANFILES = inittests.stamp scratch.*.tmp x y z out err  *.lock .\#lk* *.log
 
 DISTCLEANFILES = pubring.kbx~ random_seed
 
@@ -62,11 +62,14 @@ inittests.stamp: inittests
 	echo timestamp >./inittests.stamp
 
 
-run-all-tests:
+run-all-tests: inittests.stamp
 	@set -e; \
          GNUPGHOME=`pwd`; export GNUPGHOME;\
          unset GPG_AGENT_INFO; \
-         for test in $(testscripts); do \
-           ./$${test} && true; \
+         for tst in $(testscripts); do \
+           if ./$${tst}; then : ; \
+           elif test $$? -eq 77; then echo "- SKIP $$tst"; \
+	   fi; \
          done
+
 
