@@ -1,3 +1,7 @@
+2008-02-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* tools.texi (Listing options): Document new types.
+
 2008-02-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (GPG Esoteric Options): Tweak mention of Tempest font

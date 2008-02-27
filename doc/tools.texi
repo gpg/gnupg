@@ -667,6 +667,17 @@ not necessarily need to exist.
 A @emph{string} that describes an LDAP server in the format:
 
 @code{@var{hostname}:@var{port}:@var{username}:@var{password}:@var{base_dn}}
+
+@item key fingerprint (34)
+A @emph{string} with a 40 digit fingerprint specifying a certificate.
+
+@item pub key (35)
+A @emph{string} that describes a certificate by user ID, key ID or
+fingerprint.
+
+@item sec key (36)
+A @emph{string} that describes a certificate with a key by user ID,
+key ID or fingerprint.
 @end table
 
 More types will be added in the future.  Please see the @var{alt-type}
