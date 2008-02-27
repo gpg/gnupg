@@ -228,6 +228,12 @@ typedef enum
     /* A 40 character fingerprint.  */
     GC_ARG_TYPE_KEY_FPR = 34,
 
+    /* A user ID or key ID or fingerprint for a certificate.  */
+    GC_ARG_TYPE_PUB_KEY = 35,
+
+    /* A user ID or key ID or fingerprint for a certificate with a key.  */
+    GC_ARG_TYPE_SEC_KEY = 36,
+
     /* ADD NEW COMPLEX TYPE ENTRIES HERE.  */
 
     /* The number of the above entries.  */
@@ -273,6 +279,8 @@ static struct
     { GC_ARG_TYPE_STRING, "pathname" },
     { GC_ARG_TYPE_STRING, "ldap server" },
     { GC_ARG_TYPE_STRING, "key fpr" },
+    { GC_ARG_TYPE_STRING, "pub key" },
+    { GC_ARG_TYPE_STRING, "sec key" },
   };
 
 
@@ -2059,6 +2067,15 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	  if (*arg != '"')
 	    gc_error (1, 0, "string argument for option %s must begin "
 		      "with a quote (\") character", option->name);
+
+	  /* FIXME: We do not allow empty string arguments for now, as
+	     we do not quote arguments in configuration files, and
+	     thus no argument is indistinguishable from the empty
+	     string.  */
+	  if (arg[1] == '\0' || arg[1] == ',')
+	    gc_error (1, 0, "empty string argument for option %s is "
+		      "currently not allowed.  Please report this!",
+		      option->name);
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
 	{
