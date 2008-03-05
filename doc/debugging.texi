@@ -16,7 +16,8 @@ solve the problem at hand.
 
 
 @menu
-* Debugging Tools::       Description of some useful tools
+* Debugging Tools::       Description of some useful tools.
+* Debugging Hints::       Various hints on debugging.
 * Common Problems::       Commonly seen problems.
 * Architecture Details::  How the whole thing works internally.
 @end menu
@@ -84,8 +85,26 @@ should not occur but sometimes things go wrong), run it using
 @samp{kbxutil --find-dups ~/.gnupg/pubring.kbx}
 
 
+@node Debugging Hints
+@section Various hints on debugging.
+
+@itemize @bullet
+
+@item How to find the IP address of a keyserver
+
+If a round robin URL of is used for a keyserver
+(e.g. subkeys.gnupg.org); it is not easy to see what server is actually
+used.  Using the keyserver debug option as in
+
+@smallexample
+ gpg --keyserver-options debug=1 -v --refresh-key 1E42B367
+@end smallexample
+
+is thus often helpful.  Note that the actual output depends on the
+backend and may change from release to release.
 
 
+@end itemize
 
 
 @node Common Problems

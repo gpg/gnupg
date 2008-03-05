@@ -1311,8 +1311,7 @@ arguments, in the order they are to be tried:
 @table @asis
 
 @item cert
-locate a key using DNS CERT, as specified in 2538bis (currently in
-draft): http://www.josefsson.org/rfc2538bis/
+locate a key using DNS CERT, as specified in rfc4398.
 
 @item pka
 locate a key using DNS PKA.

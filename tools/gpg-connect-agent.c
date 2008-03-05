@@ -1,5 +1,5 @@
 /* gpg-connect-agent.c - Tool to connect to the agent.
- *	Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+ *	Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -416,6 +416,9 @@ arithmetic_op (int operator, const char *operands)
   result = strtol (operands, NULL, 0);
   while (*operands && !spacep (operands) )
     operands++;
+  if (operator == '!')
+    result = !result;
+
   while (*operands)
     {
       while ( spacep (operands) )
@@ -440,6 +443,9 @@ arithmetic_op (int operator, const char *operands)
             return NULL;
           result %= value;
           break;
+        case '!': result = !value; break;
+        case '|': result = result || value; break;
+        case '&': result = result && value; break;
         default:
           log_error ("unknown arithmetic operator `%c'\n", operator);
           return NULL;
@@ -452,7 +458,7 @@ arithmetic_op (int operator, const char *operands)
 
 
 /* Extended version of get_var.  This returns a malloced string and
-   understand the fucntion syntax: "func args". 
+   understand the function syntax: "func args". 
 
    Defined functions are
    
@@ -486,6 +492,16 @@ arithmetic_op (int operator, const char *operands)
            linefeeds and carriage returns are also escaped.
            "percent+" also maps spaces to plus characters.
 
+     errcode ARG
+           Assuming ARG is an integer, return the gpg-error code.
+
+     errsource ARG
+           Assuming ARG is an integer, return the gpg-error source.
+
+     errstring ARG
+           Assuming ARG is an integer return a formatted fpf error string.
+
+
    Example: get_var_ext ("get sysconfdir") -> "/etc/gnupg"
     
   */
@@ -497,6 +513,7 @@ get_var_ext (const char *name)
   char *result;
   char *p;
   char *free_me = NULL;
+  int intvalue;
 
   if (recursion_count > 50)
     {
@@ -538,11 +555,7 @@ get_var_ext (const char *name)
       else if (!strcmp (s, "datadir"))
         result = xstrdup (gnupg_datadir ());
       else if (!strcmp (s, "serverpid"))
-        {
-          char numbuf[30];
-          snprintf (numbuf, sizeof numbuf, "%d", (int)server_pid);
-          result = xstrdup (numbuf);
-        }
+        result = xasprintf ("%d", (int)server_pid);
       else
         {
           log_error ("invalid argument `%s' for variable function `get'\n", s);
@@ -579,7 +592,26 @@ get_var_ext (const char *name)
         if (*p == ' ')
           *p = '+';
     }
-  else if ( (s - name) == 1 && strchr ("+-*/%", *name))
+  else if ( (s - name) == 7 && !strncmp (name, "errcode", 7))
+    {
+      s++;
+      intvalue = (int)strtol (s, NULL, 0);
+      result = xasprintf ("%d", gpg_err_code (intvalue));
+    }
+  else if ( (s - name) == 9 && !strncmp (name, "errsource", 9))
+    {
+      s++;
+      intvalue = (int)strtol (s, NULL, 0);
+      result = xasprintf ("%d", gpg_err_source (intvalue));
+    }
+  else if ( (s - name) == 9 && !strncmp (name, "errstring", 9))
+    {
+      s++;
+      intvalue = (int)strtol (s, NULL, 0);
+      result = xasprintf ("%s <%s>", 
+                          gpg_strerror (intvalue), gpg_strsource (intvalue));
+    }
+  else if ( (s - name) == 1 && strchr ("+-*/%!|&", *name))
     {
       result = arithmetic_op (*name, s+1);
     }
@@ -1098,6 +1130,7 @@ main (int argc, char **argv)
     loopline_t *tail;
     loopline_t current;
     unsigned int nestlevel; 
+    int oneshot;
     char *condition;
   } loopstack[20];
   int        loopidx;
@@ -1523,7 +1556,7 @@ main (int argc, char **argv)
             {
               if (loopidx+2 >= (int)DIM(loopstack))
                 {
-                  log_error ("loops are nested too deep\n");
+                  log_error ("blocks are nested too deep\n");
                   /* We should better die or break all loop in this
                      case as recovering from this error won't be
                      easy.  */
@@ -1534,7 +1567,28 @@ main (int argc, char **argv)
                   loopstack[loopidx+1].tail = &loopstack[loopidx+1].head;
                   loopstack[loopidx+1].current = NULL;
                   loopstack[loopidx+1].nestlevel = 1;
+                  loopstack[loopidx+1].oneshot = 0;
                   loopstack[loopidx+1].condition = xstrdup (p);
+                  loopstack[loopidx+1].collecting = 1;
+                }
+            }
+          else if (!strcmp (cmd, "if"))
+            {
+              if (loopidx+2 >= (int)DIM(loopstack))
+                {
+                  log_error ("blocks are nested too deep\n");
+                }
+              else
+                {
+                  /* Note that we need to evaluate the condition right
+                     away and not just at the end of the block as we
+                     do with a WHILE. */
+                  loopstack[loopidx+1].head = NULL;
+                  loopstack[loopidx+1].tail = &loopstack[loopidx+1].head;
+                  loopstack[loopidx+1].current = NULL;
+                  loopstack[loopidx+1].nestlevel = 1;
+                  loopstack[loopidx+1].oneshot = 1;
+                  loopstack[loopidx+1].condition = substitute_line_copy (p);
                   loopstack[loopidx+1].collecting = 1;
                 }
             }
@@ -1550,6 +1604,11 @@ main (int argc, char **argv)
 
                   /* Evaluate the condition.  */
                   tmpcond = xstrdup (loopstack[loopidx].condition);
+                  if (loopstack[loopidx].oneshot)
+                    {
+                      xfree (loopstack[loopidx].condition);
+                      loopstack[loopidx].condition = xstrdup ("0");
+                    }
                   tmpline = substitute_line (tmpcond);
                   value = tmpline? tmpline : tmpcond;
                   condition = strtol (value, NULL, 0);
@@ -1574,6 +1633,7 @@ main (int argc, char **argv)
                       loopstack[loopidx].current = NULL;
                       loopstack[loopidx].nestlevel = 0;
                       loopstack[loopidx].collecting = 0;
+                      loopstack[loopidx].oneshot = 0;
                       xfree (loopstack[loopidx].condition);
                       loopstack[loopidx].condition = NULL;
                       loopidx--;
@@ -1610,8 +1670,9 @@ main (int argc, char **argv)
 "/[no]decode            Enable decoding of received data lines.\n"
 "/[no]subst             Enable varibale substitution.\n"
 "/run FILE              Run commands from FILE.\n"
+"/if VAR                Begin conditional block controlled by VAR.\n"
 "/while VAR             Begin loop controlled by VAR.\n"
-"/end                   End loop.\n"
+"/end                   End loop or condition\n"
 "/bye                   Terminate gpg-connect-agent.\n"
 "/help                  Print this help.");
             }
@@ -1885,12 +1946,19 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
             {
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
+              set_int_var ("?", 0);
               return 0;
             }
           else if (linelen >= 3
                    && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
                    && (line[3] == '\0' || line[3] == ' '))
             {
+              int errval;
+
+              errval = strtol (line+3, NULL, 10);
+              if (!errval)
+                errval = -1;
+              set_int_var ("?", errval);
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
               *r_goterr = 1;

@@ -1215,13 +1215,28 @@ Escape the @var{args} using percent style ecaping.  Tabs, formfeeds,
 linefeeds, carriage returns and colons are escaped. @code{percent+} also
 maps spaces to plus signs.
 
+@item errcode @var{arg}
+@itemx errsource @var{arg}
+@itemx errstring @var{arg}
+Assume @var{arg} is an integer and evaluate it using @code{strtol}.  Return
+the gpg-error error code, error source or a formatted string with the
+error code and error source.
+
+
 @item +
 @itemx -
-@item *
-@item /
-@item %
+@itemx *
+@itemx /
+@itemx %
 Evaluate all arguments as long integers using @code{strtol} and apply
 this operator.  A division by zero yields an empty string.
+
+@item !
+@itemx |
+@itemx &
+Evaluate all arguments as long integers using @code{strtol} and apply
+the logical oeprators NOT, OR or AND.  The NOT operator works on the
+last argument only.
 
 
 @end table
