@@ -1,3 +1,7 @@
+2008-03-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (default_strusage): Update copyright date.
+
 2007-10-23  Werner Koch  <wk@g10code.com>
 
 	Switched entire package to GPLv3+.  The parts taken from libassuan
