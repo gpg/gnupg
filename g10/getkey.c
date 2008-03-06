@@ -912,9 +912,9 @@ key_byname( GETKEY_CTX *retctx, strlist_t namelist,
 /* Find a public key from NAME and return the keyblock or the key.  If
    ret_kdb is not NULL, the KEYDB handle used to locate this keyblock
    is returned and the caller is responsible for closing it.  If a key
-   was not found and NAME is a valid RFC822 mailbox and PKA retrieval
-   has been enabled, we try to import the pkea via the PKA
-   mechanism. */
+   was not found and NAME is a valid RFC822 mailbox and --auto-key-locate
+   has been enabled, we try to import the key via the online mechanisms
+   defined by --auto-key-locate.  */
 int
 get_pubkey_byname (PKT_public_key *pk,
 		   const char *name, KBNODE *ret_keyblock,

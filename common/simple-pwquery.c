@@ -207,6 +207,8 @@ agent_send_all_options (int fd)
   char *dft_display = NULL;
   char *dft_ttyname = NULL;
   char *dft_ttytype = NULL;
+  char *dft_xauthority = NULL;
+  char *dft_pinentry_user_data = NULL;
   int rc = 0;
 
   dft_display = getenv ("DISPLAY");
@@ -284,6 +286,25 @@ agent_send_all_options (int fd)
 #endif
   }
 #endif /*HAVE_SETLOCALE*/
+
+  /* Send the XAUTHORITY variable.  */
+  dft_xauthority = getenv ("XAUTHORITY");
+  if (dft_xauthority)
+    {
+      /* We ignore errors here because older gpg-agents don't support
+         this option.  */
+      send_one_option (ctx, errsource, "xauthority", dft_xauthority);
+    }
+
+  /* Send the PINENTRY_USER_DATA variable.  */
+  dft_pinentry_user_data = getenv ("PINENTRY_USER_DATA");
+  if (dft_pinentry_user_data)
+    {
+      /* We ignore errors here because older gpg-agents don't support
+         this option.  */
+      send_one_option (ctx, errsource, "pinentry-user-data", 
+                       opt_pinentry_user_data);
+    }
 
   return 0;
 }

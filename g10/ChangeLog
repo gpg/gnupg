@@ -1,3 +1,7 @@
+2008-02-26  Werner Koch  <wk@g10code.com>
+
+	* getkey.c (get_pubkey_byname): Fix comment.
+
 2008-02-14  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (default_inq_cb): New.

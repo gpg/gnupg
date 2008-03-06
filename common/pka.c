@@ -98,7 +98,7 @@ parse_txt_record (char *buffer, unsigned char *fpr)
 
    On success the 20 byte SHA-1 fingerprint is stored at FPR and the
    URI will be returned in an allocated buffer.  Note that the URI
-   might be an zero length string as this information is optiobnal.
+   might be an zero length string as this information is optional.
    Caller must xfree the returned string.
 
    On error NULL is returned and the 20 bytes at FPR are not
