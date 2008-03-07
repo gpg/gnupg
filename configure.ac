@@ -1,6 +1,6 @@
 # configure.ac script for GnuPG
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-#               2007 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+#               2008 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 # 
@@ -28,8 +28,9 @@ min_automake_version="1.9.3"
 m4_define([my_version], [1.4.9rc1])
 m4_define([my_issvn], [yes])
 
-m4_define([svn_revision], m4_esyscmd([echo -n $((svn info 2>/dev/null \
-          || echo 'Revision: 0')|sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
+m4_define([svn_revision], m4_esyscmd([echo $((svn info 2>/dev/null \
+          || echo 'Revision: 0')|sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)| \
+          tr -d '\n']))
 AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
         [bug-gnupg@gnu.org])
 # Set development_version to yes if the minor number is odd or you

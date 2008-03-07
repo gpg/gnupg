@@ -1,3 +1,8 @@
+2008-03-07  David Shaw  <dshaw@david-shaws-mac-pro.local>
+
+	* configure.ac: Darwin's /bin/sh has a builtin echo that doesn't
+	understand '-n'.  Use tr to trim the carriage return instead.
+
 2008-03-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Post-release update.
