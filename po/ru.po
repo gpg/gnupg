@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-19 11:52+0100\n"
+"POT-Creation-Date: 2008-03-13 01:05+0100\n"
 "PO-Revision-Date: 2006-11-07 19:31+0300\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -511,13 +511,13 @@ msgstr "%s %s: остановлен\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "нет gpg-agent доступого для данной сессии\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:329 common/asshelp.c:324
-#: tools/gpg-connect-agent.c:1953
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "неправильная переменная окружения GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:341 common/asshelp.c:336
-#: tools/gpg-connect-agent.c:1964
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "протокол gpg-agent версии %d не поддерживается\n"
@@ -693,8 +693,8 @@ msgstr "сменить фразу-пароль"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1341
-#: tools/gpgconf-comp.c:1664
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1349
+#: tools/gpgconf-comp.c:1672
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr ""
@@ -743,28 +743,28 @@ msgstr ""
 msgid "host not found"
 msgstr "хост не найден"
 
-#: common/simple-pwquery.c:315
+#: common/simple-pwquery.c:336
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent недоступен в данной сессии\n"
 
-#: common/simple-pwquery.c:373
+#: common/simple-pwquery.c:394
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "не могу подключиться к `%s': %s\n"
 
-#: common/simple-pwquery.c:384
+#: common/simple-pwquery.c:405
 msgid "communication problem with gpg-agent\n"
 msgstr "проблема связи с gpg-agent\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:415
 msgid "problem setting the gpg-agent options\n"
 msgstr "проблема задания параметров gpg-agent\n"
 
-#: common/simple-pwquery.c:557 common/simple-pwquery.c:653
+#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
 msgid "canceled by user\n"
 msgstr "прервано пользователем\n"
 
-#: common/simple-pwquery.c:572 common/simple-pwquery.c:659
+#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
 msgid "problem with the agent\n"
 msgstr "проблема с агентом\n"
 
@@ -5104,40 +5104,42 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "подпакет типа %d имеет выставленный критический бит\n"
 
-#: g10/passphrase.c:295 g10/passphrase.c:581
+#: g10/passphrase.c:295 g10/passphrase.c:583
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (главный ключ ID %s)"
 
 #: g10/passphrase.c:309
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"You need a passphrase to unlock the secret key for user:\n"
+"Please enter the passphrase to unlock the secret key for the OpenPGP "
+"certificate:\n"
 "\"%.*s\"\n"
-"%u-bit %s key, ID %s, created %s%s\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
 msgstr ""
 "Необходима фраза-пароль для доступа к секретному ключу пользователя:\n"
 "\"%.*s\"\n"
 "%u-бит %s ключ, ID %s, создан %s%s\n"
 
-#: g10/passphrase.c:334
+#: g10/passphrase.c:335
 msgid "Repeat passphrase\n"
 msgstr "Повторите ввод фразы-пароля\n"
 
-#: g10/passphrase.c:336
+#: g10/passphrase.c:337
 msgid "Enter passphrase\n"
 msgstr "Введите фразу-пароль\n"
 
-#: g10/passphrase.c:363
+#: g10/passphrase.c:364
 msgid "cancelled by user\n"
 msgstr "прервано пользователем\n"
 
-#: g10/passphrase.c:369 g10/passphrase.c:428
+#: g10/passphrase.c:370 g10/passphrase.c:429
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "проблема с агентом: %s\n"
 
-#: g10/passphrase.c:560
+#: g10/passphrase.c:562
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5145,12 +5147,12 @@ msgid ""
 msgstr ""
 "Необходима фраза-пароль для доступа к секретному ключу пользователя: \"%s\"\n"
 
-#: g10/passphrase.c:568
+#: g10/passphrase.c:570
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-бит %s ключ, ID %s, создан %s"
 
-#: g10/passphrase.c:577
+#: g10/passphrase.c:579
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (подключ на главном ключе %s)"
@@ -6907,12 +6909,14 @@ msgstr "[Ошибка - Нет имени]"
 msgid "[Error - invalid DN]"
 msgstr "[Ошибка - недопустимый DN]"
 
-#: sm/certdump.c:946
+#: sm/certdump.c:952
 #, fuzzy, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for:\n"
+"Please enter the passphrase to unlock the secret key for the X.509 "
+"certificate:\n"
 "\"%s\"\n"
-"S/N %s, ID 0x%08lX, created %s"
+"S/N %s, ID 0x%08lX,\n"
+"created %s, expires %s.\n"
 msgstr ""
 "Введите фразу-пароль для доступа к секретному ключу:\n"
 "\"%s\"\n"
@@ -7276,7 +7280,7 @@ msgstr "добавить данную таблицу ключей в списо�
 msgid "add this secret keyring to the list"
 msgstr "добавить данную таблицу секретных ключей в список"
 
-#: sm/gpgsm.c:363 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:653 tools/gpgconf-comp.c:715
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|использовать NAME как секретный ключ по умолчанию"
 
@@ -7373,7 +7377,7 @@ msgstr "ошибка базовой проверки сертификата - н
 msgid "error importing certificate: %s\n"
 msgstr "ошибка импортирования сертификата: %s\n"
 
-#: sm/import.c:542 tools/gpg-connect-agent.c:1274
+#: sm/import.c:542 tools/gpg-connect-agent.c:1307
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "ошибка чтения ввода: %s\n"
@@ -7548,177 +7552,177 @@ msgstr ""
 "Синтаксис: gpg-connect-agent: [параметры]\n"
 "Связывается с запущенным агентом и отcылает команды\n"
 
-#: tools/gpg-connect-agent.c:1155
+#: tools/gpg-connect-agent.c:1188
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr "параметр \"%s\" требует программы и опциональных аргументов\n"
 
-#: tools/gpg-connect-agent.c:1164
+#: tools/gpg-connect-agent.c:1197
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr "параметр \"%s\" игнорирован по причине \"%s\"\n"
 
-#: tools/gpg-connect-agent.c:1219 tools/gpg-connect-agent.c:1645
+#: tools/gpg-connect-agent.c:1252 tools/gpg-connect-agent.c:1706
 #, c-format
 msgid "receiving line failed: %s\n"
 msgstr "сбой получения строки: %s\n"
 
-#: tools/gpg-connect-agent.c:1299
+#: tools/gpg-connect-agent.c:1332
 msgid "line too long - skipped\n"
 msgstr "строка слишком длинная - пропущено\n"
 
-#: tools/gpg-connect-agent.c:1303
+#: tools/gpg-connect-agent.c:1336
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:1619
+#: tools/gpg-connect-agent.c:1680
 #, c-format
 msgid "unknown command `%s'\n"
 msgstr "неизвестная команда `%s'\n"
 
-#: tools/gpg-connect-agent.c:1637
+#: tools/gpg-connect-agent.c:1698
 #, c-format
 msgid "sending line failed: %s\n"
 msgstr "сбой отправки строки: %s\n"
 
-#: tools/gpg-connect-agent.c:1986
+#: tools/gpg-connect-agent.c:2054
 #, c-format
 msgid "error sending %s command: %s\n"
 msgstr "ошибка отправки %s команды: %s\n"
 
-#: tools/gpg-connect-agent.c:1995
+#: tools/gpg-connect-agent.c:2063
 #, c-format
 msgid "error sending standard options: %s\n"
 msgstr "ошибка отправки стандартных параметров: %s\n"
 
-#: tools/gpgconf-comp.c:459 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:776
+#: tools/gpgconf-comp.c:467 tools/gpgconf-comp.c:571 tools/gpgconf-comp.c:638
+#: tools/gpgconf-comp.c:700 tools/gpgconf-comp.c:784
 msgid "Options controlling the diagnostic output"
 msgstr "Параметры контролирующие вывод диагностики"
 
-#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
-#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:799
+#: tools/gpgconf-comp.c:480 tools/gpgconf-comp.c:584 tools/gpgconf-comp.c:651
+#: tools/gpgconf-comp.c:713 tools/gpgconf-comp.c:807
 msgid "Options controlling the configuration"
 msgstr "Параметры контролирующие конфигурацию"
 
-#: tools/gpgconf-comp.c:482 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:656
-#: tools/gpgconf-comp.c:727 tools/gpgconf-comp.c:806
+#: tools/gpgconf-comp.c:490 tools/gpgconf-comp.c:609 tools/gpgconf-comp.c:664
+#: tools/gpgconf-comp.c:735 tools/gpgconf-comp.c:814
 msgid "Options useful for debugging"
 msgstr "Параметры полезные для отладки"
 
-#: tools/gpgconf-comp.c:487 tools/gpgconf-comp.c:606 tools/gpgconf-comp.c:661
-#: tools/gpgconf-comp.c:732 tools/gpgconf-comp.c:814
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:669
+#: tools/gpgconf-comp.c:740 tools/gpgconf-comp.c:822
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|FILE|сохранять журнал режима сервера в FILE"
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:740
+#: tools/gpgconf-comp.c:503 tools/gpgconf-comp.c:619 tools/gpgconf-comp.c:748
 msgid "Options controlling the security"
 msgstr "Параметры контролирующие безопасность"
 
-#: tools/gpgconf-comp.c:502
+#: tools/gpgconf-comp.c:510
 #, fuzzy
 msgid "|N|expire SSH keys after N seconds"
 msgstr "|N|кеш PIN просрочен после N секунд"
 
-#: tools/gpgconf-comp.c:506
+#: tools/gpgconf-comp.c:514
 #, fuzzy
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr "|N|кеш PIN просрочен после N секунд"
 
-#: tools/gpgconf-comp.c:510
+#: tools/gpgconf-comp.c:518
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:524
+#: tools/gpgconf-comp.c:532
 msgid "Options enforcing a passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:527
+#: tools/gpgconf-comp.c:535
 msgid "do not allow to bypass the passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:531
+#: tools/gpgconf-comp.c:539
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr ""
 
-#: tools/gpgconf-comp.c:535
+#: tools/gpgconf-comp.c:543
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr ""
 
-#: tools/gpgconf-comp.c:539
+#: tools/gpgconf-comp.c:547
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:543
+#: tools/gpgconf-comp.c:551
 #, fuzzy
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|кеш PIN просрочен после N секунд"
 
-#: tools/gpgconf-comp.c:547
+#: tools/gpgconf-comp.c:555
 #, fuzzy
 msgid "do not allow the reuse of old passphrases"
 msgstr "разрешить предустановленную фразу-пароль"
 
-#: tools/gpgconf-comp.c:648 tools/gpgconf-comp.c:710
+#: tools/gpgconf-comp.c:656 tools/gpgconf-comp.c:718
 #, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAME|зашифровать для получателя NAME"
 
-#: tools/gpgconf-comp.c:669
+#: tools/gpgconf-comp.c:677
 msgid "Configuration for Keyservers"
 msgstr "Конфигурация серверов ключей"
 
-#: tools/gpgconf-comp.c:671
+#: tools/gpgconf-comp.c:679
 #, fuzzy
 msgid "|URL|use keyserver at URL"
 msgstr "не могу проанализировать URL сервера ключей\n"
 
-#: tools/gpgconf-comp.c:674
+#: tools/gpgconf-comp.c:682
 msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
-#: tools/gpgconf-comp.c:719
+#: tools/gpgconf-comp.c:727
 #, fuzzy
 msgid "disable all access to the dirmngr"
 msgstr "передать команду dirmngr"
 
-#: tools/gpgconf-comp.c:722
+#: tools/gpgconf-comp.c:730
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr ""
 
-#: tools/gpgconf-comp.c:745
+#: tools/gpgconf-comp.c:753
 msgid "do not check CRLs for root certificates"
 msgstr "не проверять CRLd для корневых сертификатов"
 
-#: tools/gpgconf-comp.c:789
+#: tools/gpgconf-comp.c:797
 msgid "Options controlling the format of the output"
 msgstr "Параметры контрролирующие формат вывода"
 
-#: tools/gpgconf-comp.c:825
+#: tools/gpgconf-comp.c:833
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:835
+#: tools/gpgconf-comp.c:843
 msgid "Configuration for HTTP servers"
 msgstr "Настройки HTTP серверов"
 
-#: tools/gpgconf-comp.c:846
+#: tools/gpgconf-comp.c:854
 msgid "use system's HTTP proxy setting"
 msgstr "использовать системные настройки HTTP проки"
 
-#: tools/gpgconf-comp.c:851
+#: tools/gpgconf-comp.c:859
 msgid "Configuration of LDAP servers to use"
 msgstr "Настройки LDAP серверов"
 
-#: tools/gpgconf-comp.c:880
+#: tools/gpgconf-comp.c:888
 msgid "LDAP server list"
 msgstr ""
 
-#: tools/gpgconf-comp.c:888
+#: tools/gpgconf-comp.c:896
 msgid "Configuration for OCSP"
 msgstr "Настройки OCSP"
 
-#: tools/gpgconf-comp.c:3040
+#: tools/gpgconf-comp.c:3057
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 

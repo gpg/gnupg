@@ -306,10 +306,11 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
 
 #undef KEYIDSTRING
 
-#define PROMPTSTRING _("You need a passphrase to unlock the secret" \
-		       " key for user:\n" \
+#define PROMPTSTRING _("Please enter the passphrase to unlock the" \
+		       " secret key for the OpenPGP certificate:\n" \
 		       "\"%.*s\"\n" \
-		       "%u-bit %s key, ID %s, created %s%s\n" )
+		       "%u-bit %s key, ID %s,\n" \
+                       "created %s%s.\n" )
 
       atext = xmalloc ( 100 + strlen (PROMPTSTRING)  
                         + uidlen + 15 + strlen(algo_name) + keystrlen()
@@ -448,7 +449,8 @@ ask_passphrase (const char *description,
     {
       if (strchr (description, '%'))
         {
-          char *tmp = unescape_percent_string (description);
+          char *tmp = unescape_percent_string
+            ((const unsigned char*)description);
           tty_printf ("\n%s\n", tmp);
           xfree (tmp);
         }

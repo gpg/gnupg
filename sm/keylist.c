@@ -286,7 +286,7 @@ print_time (gnupg_isotime_t t, estream_t fp)
 
 
 /* Return an allocated string with the email address extracted from a
-   DN */
+   DN.  Note hat we use this code also in ../kbx/keybox-blob.c.  */
 static char *
 email_kludge (const char *name)
 {
@@ -311,7 +311,7 @@ email_kludge (const char *name)
 
   /* This looks pretty much like an email address in the subject's DN
      we use this to add an additional user ID entry.  This way,
-     openSSL generated keys get a nicer and usable listing */
+     OpenSSL generated keys get a nicer and usable listing.  */
   for (n=0, p=name; hexdigitp (p) && hexdigitp (p+1); p +=2, n++)
     ;
   if (!n)

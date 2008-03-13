@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-02-19 11:52+0100\n"
-"PO-Revision-Date: 2008-02-15 10:36+0100\n"
+"POT-Creation-Date: 2008-03-13 01:05+0100\n"
+"PO-Revision-Date: 2008-03-13 01:10+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -533,13 +533,13 @@ msgstr "%s %s angehalten\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "Der gpg-agent läuft nicht für diese Session\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:329 common/asshelp.c:324
-#: tools/gpg-connect-agent.c:1953
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:341 common/asshelp.c:336
-#: tools/gpg-connect-agent.c:1964
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "GPG-Agent-Protokoll-Version %d wird nicht unterstützt\n"
@@ -722,8 +722,8 @@ msgstr "Die Passphrase ändern"
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1341
-#: tools/gpgconf-comp.c:1664
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1349
+#: tools/gpgconf-comp.c:1672
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
@@ -772,28 +772,28 @@ msgstr "Fehler beim Erstellen des Sockets: %s\n"
 msgid "host not found"
 msgstr "Host nicht gefunden"
 
-#: common/simple-pwquery.c:315
+#: common/simple-pwquery.c:336
 msgid "gpg-agent is not available in this session\n"
 msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
 
-#: common/simple-pwquery.c:373
+#: common/simple-pwquery.c:394
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
 
-#: common/simple-pwquery.c:384
+#: common/simple-pwquery.c:405
 msgid "communication problem with gpg-agent\n"
 msgstr "Kommunikationsproblem mit GPG-Agent\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:415
 msgid "problem setting the gpg-agent options\n"
 msgstr "Beim setzen der gpg-agent Optionen ist ein problem aufgetreten\n"
 
-#: common/simple-pwquery.c:557 common/simple-pwquery.c:653
+#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
 msgid "canceled by user\n"
 msgstr "Vom Benutzer abgebrochen\n"
 
-#: common/simple-pwquery.c:572 common/simple-pwquery.c:659
+#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
 msgid "problem with the agent\n"
 msgstr "Problem mit dem Agenten\n"
 
@@ -5212,7 +5212,7 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
 
-#: g10/passphrase.c:295 g10/passphrase.c:581
+#: g10/passphrase.c:295 g10/passphrase.c:583
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (Hauptschlüssel-ID %s)"
@@ -5220,32 +5220,34 @@ msgstr " (Hauptschlüssel-ID %s)"
 #: g10/passphrase.c:309
 #, c-format
 msgid ""
-"You need a passphrase to unlock the secret key for user:\n"
+"Please enter the passphrase to unlock the secret key for the OpenPGP "
+"certificate:\n"
 "\"%.*s\"\n"
-"%u-bit %s key, ID %s, created %s%s\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen Schlüssel zu entsperren.\n"
+"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu entsperren.\n"
 "Benutzer: \"%.*s\"\n"
 "%u-bit %s Schlüssel, ID %s, erzeugt %s%s\n"
 
-#: g10/passphrase.c:334
+#: g10/passphrase.c:335
 msgid "Repeat passphrase\n"
 msgstr "Geben Sie die Passphrase nochmal ein\n"
 
-#: g10/passphrase.c:336
+#: g10/passphrase.c:337
 msgid "Enter passphrase\n"
 msgstr "Geben Sie die Passphrase ein\n"
 
-#: g10/passphrase.c:363
+#: g10/passphrase.c:364
 msgid "cancelled by user\n"
 msgstr "Abbruch durch Benutzer\n"
 
-#: g10/passphrase.c:369 g10/passphrase.c:428
+#: g10/passphrase.c:370 g10/passphrase.c:429
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "Problem mit dem Agenten: %s\n"
 
-#: g10/passphrase.c:560
+#: g10/passphrase.c:562
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5254,12 +5256,12 @@ msgstr ""
 "Sie benötigen eine Passphrase, um den geheimen Schlüssel zu entsperren.\n"
 "Benutzer: \"%s\"\n"
 
-#: g10/passphrase.c:568
+#: g10/passphrase.c:570
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-Bit %s Schlüssel, ID %s, erzeugt %s"
 
-#: g10/passphrase.c:577
+#: g10/passphrase.c:579
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (Unterschlüssel aus Hauptschlüssel-ID %s)"
@@ -7055,18 +7057,21 @@ msgstr "[Fehler - Kein Name]"
 msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
-#: sm/certdump.c:946
+#: sm/certdump.c:952
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for:\n"
+"Please enter the passphrase to unlock the secret key for the X.509 "
+"certificate:\n"
 "\"%s\"\n"
-"S/N %s, ID 0x%08lX, created %s"
+"S/N %s, ID 0x%08lX,\n"
+"created %s, expires %s.\n"
 msgstr ""
-"Bitte geben Sie die Passphrase an, um den \n"
-"geheimen Schlüssel von\n"
+"Bitte geben Sie die Passphrase an, um den geheimen Schlüssel\n"
+"des X.509 Zertifikats:\n"
 "\"%s\"\n"
-"S/N %s, ID 0x%08lX, erzeugt %s\n"
-"zu entsperren"
+"S/N %s, ID 0x%08lX,\n"
+"gültig von %s bis %s\\n \n"
+"zu entsperren.\n"
 
 #: sm/certlist.c:121
 msgid "no key usage specified - assuming all usages\n"
@@ -7423,7 +7428,7 @@ msgstr "Als öffentlichen Schlüsselbund mitbenutzen"
 msgid "add this secret keyring to the list"
 msgstr "Als geheimen Schlüsselbund mitbenutzen"
 
-#: sm/gpgsm.c:363 tools/gpgconf-comp.c:645 tools/gpgconf-comp.c:707
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:653 tools/gpgconf-comp.c:715
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
 
@@ -7518,7 +7523,7 @@ msgstr "Grundlegende Zertifikatprüfungen fehlgeschlagen - nicht importiert\n"
 msgid "error importing certificate: %s\n"
 msgstr "Fehler beim Importieren des Zertifikats: %s\n"
 
-#: sm/import.c:542 tools/gpg-connect-agent.c:1274
+#: sm/import.c:542 tools/gpg-connect-agent.c:1307
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "Fehler beim Lesen der Eingabe: %s\n"
@@ -7702,171 +7707,170 @@ msgstr ""
 "Syntax: gpg-connect-agent [Optionen]\n"
 "Mit einem laufenden Agenten verbinden und Befehle senden\n"
 
-#: tools/gpg-connect-agent.c:1155
+#: tools/gpg-connect-agent.c:1188
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr "Option \"%s\" erfordert ein Programm und evtl. Argumente\n"
 
-#: tools/gpg-connect-agent.c:1164
+#: tools/gpg-connect-agent.c:1197
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr "Option \"%s\" wird wegen \"%s\" nicht beachtet\n"
 
-#: tools/gpg-connect-agent.c:1219 tools/gpg-connect-agent.c:1645
+#: tools/gpg-connect-agent.c:1252 tools/gpg-connect-agent.c:1706
 #, c-format
 msgid "receiving line failed: %s\n"
 msgstr "Empfangen der Zeile schlug fehl: %s\n"
 
-#: tools/gpg-connect-agent.c:1299
+#: tools/gpg-connect-agent.c:1332
 msgid "line too long - skipped\n"
 msgstr "Zeile zu lang - übersprungen\n"
 
-#: tools/gpg-connect-agent.c:1303
+#: tools/gpg-connect-agent.c:1336
 msgid "line shortened due to embedded Nul character\n"
 msgstr "Zeile wegen enthaltenem Nul-Zeichen gekürzt\n"
 
-#: tools/gpg-connect-agent.c:1619
+#: tools/gpg-connect-agent.c:1680
 #, c-format
 msgid "unknown command `%s'\n"
 msgstr "unbekannter Befehl `%s'\n"
 
-#: tools/gpg-connect-agent.c:1637
+#: tools/gpg-connect-agent.c:1698
 #, c-format
 msgid "sending line failed: %s\n"
 msgstr "Senden der Zeile schlug fehl: %s\n"
 
-#: tools/gpg-connect-agent.c:1986
+#: tools/gpg-connect-agent.c:2054
 #, c-format
 msgid "error sending %s command: %s\n"
 msgstr "Fehler beim Senden des %s-Befehls: %s\n"
 
-#: tools/gpg-connect-agent.c:1995
+#: tools/gpg-connect-agent.c:2063
 #, c-format
 msgid "error sending standard options: %s\n"
 msgstr "Fehler beim Senden der Standardoptionen: %s\n"
 
-#: tools/gpgconf-comp.c:459 tools/gpgconf-comp.c:563 tools/gpgconf-comp.c:630
-#: tools/gpgconf-comp.c:692 tools/gpgconf-comp.c:776
+#: tools/gpgconf-comp.c:467 tools/gpgconf-comp.c:571 tools/gpgconf-comp.c:638
+#: tools/gpgconf-comp.c:700 tools/gpgconf-comp.c:784
 msgid "Options controlling the diagnostic output"
 msgstr "Optionen zur Einstellung der Diagnoseausgaben"
 
-#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
-#: tools/gpgconf-comp.c:705 tools/gpgconf-comp.c:799
+#: tools/gpgconf-comp.c:480 tools/gpgconf-comp.c:584 tools/gpgconf-comp.c:651
+#: tools/gpgconf-comp.c:713 tools/gpgconf-comp.c:807
 msgid "Options controlling the configuration"
 msgstr "Optionen zur Einstellung der Konfiguration"
 
-#: tools/gpgconf-comp.c:482 tools/gpgconf-comp.c:601 tools/gpgconf-comp.c:656
-#: tools/gpgconf-comp.c:727 tools/gpgconf-comp.c:806
+#: tools/gpgconf-comp.c:490 tools/gpgconf-comp.c:609 tools/gpgconf-comp.c:664
+#: tools/gpgconf-comp.c:735 tools/gpgconf-comp.c:814
 msgid "Options useful for debugging"
 msgstr "Nützliche Optionen zur Fehlersuche"
 
-#: tools/gpgconf-comp.c:487 tools/gpgconf-comp.c:606 tools/gpgconf-comp.c:661
-#: tools/gpgconf-comp.c:732 tools/gpgconf-comp.c:814
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:669
+#: tools/gpgconf-comp.c:740 tools/gpgconf-comp.c:822
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:740
+#: tools/gpgconf-comp.c:503 tools/gpgconf-comp.c:619 tools/gpgconf-comp.c:748
 msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
 
-#: tools/gpgconf-comp.c:502
+#: tools/gpgconf-comp.c:510
 msgid "|N|expire SSH keys after N seconds"
 msgstr "|N|lasse SSH Schlüssel im Cache nach N Sekunden verfallen"
 
-#: tools/gpgconf-comp.c:506
+#: tools/gpgconf-comp.c:514
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr "|N|setze die maximale Lebensdauer von PINs im Cache auf N Sekunden"
 
-#: tools/gpgconf-comp.c:510
+#: tools/gpgconf-comp.c:518
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
 
-#: tools/gpgconf-comp.c:524
+#: tools/gpgconf-comp.c:532
 msgid "Options enforcing a passphrase policy"
 msgstr "Optionen für eine Passphrase-Policy"
 
-#: tools/gpgconf-comp.c:527
+#: tools/gpgconf-comp.c:535
 msgid "do not allow to bypass the passphrase policy"
 msgstr "Einhaltung der Passphrase-Policy erzwingen"
 
-#: tools/gpgconf-comp.c:531
+#: tools/gpgconf-comp.c:539
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr "|N|setze die kleinste erlaubte Länge von Passphrasen auf N"
 
-#: tools/gpgconf-comp.c:535
+#: tools/gpgconf-comp.c:543
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr "|N|Verlange mindestens N Nicht-Buchstaben für eine neue Passphrase"
 
-#: tools/gpgconf-comp.c:539
+#: tools/gpgconf-comp.c:547
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr "|DATEI|Prüfe neue Passphrases gegen die Regelen in DATEI"
 
-#: tools/gpgconf-comp.c:543
+#: tools/gpgconf-comp.c:551
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|Lasse die Passphrase nach N Tagen verfallen"
 
-#: tools/gpgconf-comp.c:547
+#: tools/gpgconf-comp.c:555
 msgid "do not allow the reuse of old passphrases"
 msgstr "Verbiete die Wiedernutzung alter Passphrases."
 
-#: tools/gpgconf-comp.c:648 tools/gpgconf-comp.c:710
+#: tools/gpgconf-comp.c:656 tools/gpgconf-comp.c:718
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAME|Auch an NAME verschlüsseln"
 
-#: tools/gpgconf-comp.c:669
+#: tools/gpgconf-comp.c:677
 msgid "Configuration for Keyservers"
 msgstr "Konfiguration der Schlüsselserver"
 
-#: tools/gpgconf-comp.c:671
+#: tools/gpgconf-comp.c:679
 msgid "|URL|use keyserver at URL"
 msgstr "Benutze Schlüsselserver unter der URL"
 
-#: tools/gpgconf-comp.c:674
+#: tools/gpgconf-comp.c:682
 msgid "allow PKA lookups (DNS requests)"
 msgstr "Erlaube PKA Zugriffe (DNS Anfragen)"
 
-#: tools/gpgconf-comp.c:719
-#, fuzzy
+#: tools/gpgconf-comp.c:727
 msgid "disable all access to the dirmngr"
-msgstr "Das Kommand an den Dirmngr durchreichen"
+msgstr "Jeglichen Zugriff auf den Dirmngr verhindern"
 
-#: tools/gpgconf-comp.c:722
+#: tools/gpgconf-comp.c:730
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NAME|Benutze die Kodierung NAME für PKCS#12 Passphrasen"
 
-#: tools/gpgconf-comp.c:745
+#: tools/gpgconf-comp.c:753
 msgid "do not check CRLs for root certificates"
 msgstr "CRL bei Wurzelzertifikaten nicht überprüfen"
 
-#: tools/gpgconf-comp.c:789
+#: tools/gpgconf-comp.c:797
 msgid "Options controlling the format of the output"
 msgstr "Optionen zum Einstellen der Ausgabeformate"
 
-#: tools/gpgconf-comp.c:825
+#: tools/gpgconf-comp.c:833
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
 
-#: tools/gpgconf-comp.c:835
+#: tools/gpgconf-comp.c:843
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration für HTTP Server"
 
-#: tools/gpgconf-comp.c:846
+#: tools/gpgconf-comp.c:854
 msgid "use system's HTTP proxy setting"
 msgstr "Benutze die HTTP Proxy Einstellung des Systems"
 
-#: tools/gpgconf-comp.c:851
+#: tools/gpgconf-comp.c:859
 msgid "Configuration of LDAP servers to use"
 msgstr "Konfiguration der zu nutzenden LDAP-Server"
 
-#: tools/gpgconf-comp.c:880
+#: tools/gpgconf-comp.c:888
 msgid "LDAP server list"
 msgstr "Liste der LDAP Server"
 
-#: tools/gpgconf-comp.c:888
+#: tools/gpgconf-comp.c:896
 msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 
-#: tools/gpgconf-comp.c:3040
+#: tools/gpgconf-comp.c:3057
 msgid "Note that group specifications are ignored\n"
 msgstr "Beachten Sie, daß Gruppenspezifiaktionen ignoriert werden\n"
 

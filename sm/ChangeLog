@@ -1,3 +1,10 @@
+2008-03-13  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_fpr_and_name_for_status): Fix signed/unsigned
+	char issue.
+	(gpgsm_format_keydesc): Remove superfluous test.  Add expire date
+	to the prompt.
+
 2008-02-18  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (gpgsm_is_root_cert): Factor code out to ...

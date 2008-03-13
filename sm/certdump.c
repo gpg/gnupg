@@ -890,14 +890,14 @@ gpgsm_fpr_and_name_for_status (ksba_cert_t cert)
   buffer = xtrymalloc (strlen (fpr) + 1 + 3*strlen (name) + 1);
   if (buffer)
     {
-      const unsigned char *s;
+      const char *s;
 
       p = stpcpy (stpcpy (buffer, fpr), " ");
       for (s = name; *s; s++)
         {
           if (*s < ' ')
             {
-              sprintf (p, "%%%02X", *s);
+              sprintf (p, "%%%02X", *(const unsigned char*)s);
               p += 3;
             }
           else
@@ -922,6 +922,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   const char *s;
   ksba_isotime_t t;
   char created[20];
+  char expires[20];
   char *sn;
   ksba_sexp_t sexp;
   char *orig_codeset;
@@ -935,22 +936,28 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   ksba_free (sexp);
 
   ksba_cert_get_validity (cert, 0, t);
-  if (t && *t)
+  if (*t)
     sprintf (created, "%.4s-%.2s-%.2s", t, t+4, t+6);
   else
     *created = 0;
+  ksba_cert_get_validity (cert, 1, t);
+  if (*t)
+    sprintf (expires, "%.4s-%.2s-%.2s", t, t+4, t+6);
+  else
+    *expires = 0;
 
   orig_codeset = i18n_switchto_utf8 ();
 
   rc = asprintf (&name,
                  _("Please enter the passphrase to unlock the"
-                   " secret key for:\n"
+                   " secret key for the X.509 certificate:\n"
                    "\"%s\"\n"
-                   "S/N %s, ID 0x%08lX, created %s" ),
+                   "S/N %s, ID 0x%08lX,\n"
+                   "created %s, expires %s.\n" ),
                  subject? subject:"?",
                  sn? sn: "?",
                  gpgsm_get_short_fingerprint (cert),
-                 created);
+                 created, expires);
 
   i18n_switchback (orig_codeset);
 
