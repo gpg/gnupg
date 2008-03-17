@@ -1,3 +1,8 @@
+2008-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_key): Parse a secret key encrypted with
+	Camellia.
+
 2008-02-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg.c (main): New variable default_configname.  Use it if

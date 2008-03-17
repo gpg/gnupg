@@ -1854,8 +1854,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * enlarge temp.
 	     */
 	    switch( sk->protect.algo ) {
-	      case 7: case 8: case 9: /* reserved for AES */
+	      case 7: case 8: case 9: /* AES */
 	      case 10: /* Twofish */
+	      case 11: case 12: /* Camellia */
 		sk->protect.ivlen = 16;
 		break;
 	      default:
