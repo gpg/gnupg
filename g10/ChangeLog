@@ -1,3 +1,8 @@
+2008-03-18  Werner Koch  <wk@g10code.com>
+
+	* seckey-cert.c (do_check): Use GCRYMPI_FMT_PGP for v3 keys.
+	Reported by Petr Cerny.
+
 2008-03-13  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (PROMPTSTRING): Change string to me more similar to

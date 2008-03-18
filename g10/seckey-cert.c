@@ -209,7 +209,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 csum += checksum (buffer, ndata);
                 gcry_mpi_release (sk->skey[i]);
 
-		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
+		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
 				     buffer, ndata, &ndata );
 		xfree (buffer);
                 if (err)
