@@ -293,7 +293,7 @@ agent_send_all_options (int fd)
     {
       /* We ignore errors here because older gpg-agents don't support
          this option.  */
-      send_one_option (ctx, errsource, "xauthority", dft_xauthority);
+      agent_send_option (fd, "xauthority", dft_xauthority);
     }
 
   /* Send the PINENTRY_USER_DATA variable.  */
@@ -302,8 +302,7 @@ agent_send_all_options (int fd)
     {
       /* We ignore errors here because older gpg-agents don't support
          this option.  */
-      send_one_option (ctx, errsource, "pinentry-user-data", 
-                       opt_pinentry_user_data);
+      agent_send_option (fd, "pinentry-user-data", dft_pinentry_user_data);
     }
 
   return 0;

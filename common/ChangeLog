@@ -1,3 +1,9 @@
+2008-03-17  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (IOBUF_BUFFER_SIZE): Actually use this macro.
+
+	* simple-pwquery.c (agent_send_all_options): Fix last change.
+
 2008-03-06  Werner Koch  <wk@g10code.com>
 
 	* simple-pwquery.c (agent_send_all_options): Add support for

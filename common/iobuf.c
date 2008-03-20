@@ -1139,7 +1139,7 @@ iobuf_temp ()
 {
   iobuf_t a;
 
-  a = iobuf_alloc (3, 8192);
+  a = iobuf_alloc (3, IOBUF_BUFFER_SIZE);
 
   return a;
 }
@@ -1220,7 +1220,7 @@ iobuf_open (const char *fname)
     return iobuf_fdopen (translate_file_handle (fd, 0), "rb");
   else if ((fp = my_fopen_ro (fname, "rb")) == INVALID_FP)
     return NULL;
-  a = iobuf_alloc (1, 8192);
+  a = iobuf_alloc (1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   fcx->print_only_name = print_only;
@@ -1256,7 +1256,7 @@ iobuf_fdopen (int fd, const char *mode)
 #else
   fp = (fp_or_fd_t) fd;
 #endif
-  a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, 8192);
+  a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + 20);
   fcx->fp = fp;
   fcx->print_only_name = 1;
@@ -1280,7 +1280,7 @@ iobuf_sockopen (int fd, const char *mode)
   sock_filter_ctx_t *scx;
   size_t len;
 
-  a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, 8192);
+  a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
   scx = xmalloc (sizeof *scx + 25);
   scx->sock = fd;
   scx->print_only_name = 1;
@@ -1324,7 +1324,7 @@ iobuf_create (const char *fname)
     return iobuf_fdopen (translate_file_handle (fd, 1), "wb");
   else if ((fp = my_fopen (fname, "wb")) == INVALID_FP)
     return NULL;
-  a = iobuf_alloc (2, 8192);
+  a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   fcx->print_only_name = print_only;
@@ -1359,7 +1359,7 @@ iobuf_append (const char *fname)
     return NULL;
   else if (!(fp = my_fopen (fname, "ab")))
     return NULL;
-  a = iobuf_alloc (2, 8192);
+  a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = m_alloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   strcpy (fcx->fname, fname);
@@ -1387,7 +1387,7 @@ iobuf_openrw (const char *fname)
     return NULL;
   else if ((fp = my_fopen (fname, "r+b")) == INVALID_FP)
     return NULL;
-  a = iobuf_alloc (2, 8192);
+  a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   strcpy (fcx->fname, fname);
@@ -1777,7 +1777,7 @@ iobuf_flush (iobuf_t a)
   if (a->use == 3)
     {				/* increase the temp buffer */
       unsigned char *newbuf;
-      size_t newsize = a->d.size + 8192;
+      size_t newsize = a->d.size + IOBUF_BUFFER_SIZE;
 
       if (DBG_IOBUF)
 	log_debug ("increasing temp iobuf from %lu to %lu\n",

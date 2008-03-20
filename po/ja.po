@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-13 01:05+0100\n"
+"POT-Creation-Date: 2008-03-17 10:57+0100\n"
 "PO-Revision-Date: 2004-11-23 11:14+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -17,18 +17,18 @@ msgstr ""
 "Content-Type: text/plain; charset=EUC-JP\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/call-pinentry.c:223
+#: agent/call-pinentry.c:225
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "指紋の保管に失敗しました: %s\n"
 
-#: agent/call-pinentry.c:592
+#: agent/call-pinentry.c:594
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
 
-#: agent/call-pinentry.c:595
+#: agent/call-pinentry.c:597
 #, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
@@ -37,7 +37,7 @@ msgstr "パスフレーズを入力してください。これは秘密の文章のことです \n"
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
-#: agent/call-pinentry.c:630
+#: agent/call-pinentry.c:632
 #, fuzzy
 msgid "Quality:"
 msgstr "有効性: %s"
@@ -48,45 +48,45 @@ msgstr "有効性: %s"
 #. length of the tooltip is limited to about 900 characters.
 #. If you do not translate this entry, a default english
 #. text (see source) will be used.
-#: agent/call-pinentry.c:653
+#: agent/call-pinentry.c:655
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:695
+#: agent/call-pinentry.c:697
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:715 agent/call-pinentry.c:727
+#: agent/call-pinentry.c:717 agent/call-pinentry.c:729
 #, fuzzy
 msgid "PIN too long"
 msgstr "行が長すぎます"
 
-#: agent/call-pinentry.c:716
+#: agent/call-pinentry.c:718
 #, fuzzy
 msgid "Passphrase too long"
 msgstr "パスフレーズが長すぎます\n"
 
-#: agent/call-pinentry.c:724
+#: agent/call-pinentry.c:726
 #, fuzzy
 msgid "Invalid characters in PIN"
 msgstr "名前に無効な文字があります\n"
 
-#: agent/call-pinentry.c:729
+#: agent/call-pinentry.c:731
 msgid "PIN too short"
 msgstr ""
 
-#: agent/call-pinentry.c:741
+#: agent/call-pinentry.c:743
 #, fuzzy
 msgid "Bad PIN"
 msgstr "不正なMPIです"
 
-#: agent/call-pinentry.c:742
+#: agent/call-pinentry.c:744
 #, fuzzy
 msgid "Bad Passphrase"
 msgstr "パスフレーズが不正です"
 
-#: agent/call-pinentry.c:778
+#: agent/call-pinentry.c:780
 #, fuzzy
 msgid "Passphrase"
 msgstr "パスフレーズが不正です"
@@ -531,12 +531,12 @@ msgstr "%s: スキップ: %s\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "このセッションでgpg-agentは無効です\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
 #: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO環境変数の書式が正しくありません\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
 #: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -760,30 +760,30 @@ msgstr "「%s」の作成エラー: %s\n"
 msgid "host not found"
 msgstr "[ユーザーIDが見つかりません]"
 
-#: common/simple-pwquery.c:336
+#: common/simple-pwquery.c:335
 msgid "gpg-agent is not available in this session\n"
 msgstr "このセッションでgpg-agentは無効です\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:393
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "「%s」へ接続できません: %s\n"
 
-#: common/simple-pwquery.c:405
+#: common/simple-pwquery.c:404
 msgid "communication problem with gpg-agent\n"
 msgstr "gpg-agentとの通信障害\n"
 
-#: common/simple-pwquery.c:415
+#: common/simple-pwquery.c:414
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
 msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
 
-#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
+#: common/simple-pwquery.c:577 common/simple-pwquery.c:673
 #, fuzzy
 msgid "canceled by user\n"
 msgstr "ユーザーによる取消し\n"
 
-#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
+#: common/simple-pwquery.c:592 common/simple-pwquery.c:679
 #, fuzzy
 msgid "problem with the agent\n"
 msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
@@ -6313,7 +6313,7 @@ msgstr ""
 msgid "invalid option \"%.50s\"\n"
 msgstr "無効な一覧オプションです\n"
 
-#: jnlib/logging.c:624
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "バグを発見 ... (%s:%d)\n"
@@ -6912,35 +6912,35 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:66 sm/certdump.c:149
+#: sm/certdump.c:68 sm/certdump.c:151
 #, fuzzy
 msgid "none"
 msgstr "no"
 
-#: sm/certdump.c:160
+#: sm/certdump.c:162
 #, fuzzy
 msgid "[none]"
 msgstr "[未設定]"
 
-#: sm/certdump.c:583 sm/certdump.c:628 sm/certdump.c:693 sm/certdump.c:746
+#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "エラー: 無効な応答。\n"
 
-#: sm/certdump.c:591 sm/certdump.c:636
+#: sm/certdump.c:593 sm/certdump.c:638
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:673 sm/certdump.c:729
+#: sm/certdump.c:675 sm/certdump.c:731
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:698 sm/certdump.c:752
+#: sm/certdump.c:700 sm/certdump.c:754
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "エラー: 無効な応答。\n"
 
-#: sm/certdump.c:952
+#: sm/certdump.c:955
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

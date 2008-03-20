@@ -320,9 +320,9 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
-/* Helper to notify the client about a lauchned Pinentry.  Because
-   that might disturb some older clients, this is only done when
-   enabled via an option.  Returns an gpg error code. */
+/* Helper to notify the client about a launched Pinentry.  Because
+   that might disturb some older clients, this is only done if enabled
+   via an option.  Returns an gpg error code. */
 gpg_error_t
 agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
 {

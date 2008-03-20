@@ -454,7 +454,8 @@ read_lockfile (DOTLOCK h, int *same_node )
 #else
   char buffer_space[10+1+70+1]; /* 70 is just an estimated value; node
                                    name are usually shorter. */
-  int fd, pid;
+  int fd;
+  int pid = -1;
   char *buffer, *p;
   size_t expected_len;
   int res, nread;

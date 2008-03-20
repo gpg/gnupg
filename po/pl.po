@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-13 01:05+0100\n"
+"POT-Creation-Date: 2008-03-17 10:57+0100\n"
 "PO-Revision-Date: 2007-11-26 19:01+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -19,18 +19,18 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
 
-#: agent/call-pinentry.c:223
+#: agent/call-pinentry.c:225
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "nie uda³o siê uzyskaæ blokady pinentry: %s\n"
 
-#: agent/call-pinentry.c:592
+#: agent/call-pinentry.c:594
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr "Proszê wprowadziæ swój PIN, ¿eby odblokowaæ klucz tajny dla tej sesji"
 
-#: agent/call-pinentry.c:595
+#: agent/call-pinentry.c:597
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
@@ -39,7 +39,7 @@ msgstr ""
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
-#: agent/call-pinentry.c:630
+#: agent/call-pinentry.c:632
 #, fuzzy
 msgid "Quality:"
 msgstr "poprawno¶æ: %s"
@@ -50,40 +50,40 @@ msgstr "poprawno¶æ: %s"
 #. length of the tooltip is limited to about 900 characters.
 #. If you do not translate this entry, a default english
 #. text (see source) will be used.
-#: agent/call-pinentry.c:653
+#: agent/call-pinentry.c:655
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:695
+#: agent/call-pinentry.c:697
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (próba %d z %d)"
 
-#: agent/call-pinentry.c:715 agent/call-pinentry.c:727
+#: agent/call-pinentry.c:717 agent/call-pinentry.c:729
 msgid "PIN too long"
 msgstr "PIN zbyt d³ugi"
 
-#: agent/call-pinentry.c:716
+#: agent/call-pinentry.c:718
 msgid "Passphrase too long"
 msgstr "Has³o zbyt d³ugie"
 
-#: agent/call-pinentry.c:724
+#: agent/call-pinentry.c:726
 msgid "Invalid characters in PIN"
 msgstr "Niew³a¶ciwy znak w PIN-ie"
 
-#: agent/call-pinentry.c:729
+#: agent/call-pinentry.c:731
 msgid "PIN too short"
 msgstr "PIN zbyt krótki"
 
-#: agent/call-pinentry.c:741
+#: agent/call-pinentry.c:743
 msgid "Bad PIN"
 msgstr "Niepoprawny PIN"
 
-#: agent/call-pinentry.c:742
+#: agent/call-pinentry.c:744
 msgid "Bad Passphrase"
 msgstr "Niepoprawne has³o"
 
-#: agent/call-pinentry.c:778
+#: agent/call-pinentry.c:780
 msgid "Passphrase"
 msgstr "Has³o"
 
@@ -530,12 +530,12 @@ msgstr "%s %s zatrzymany\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "brak dzia³aj±cego gpg-agenta w tej sesji\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
 #: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "z³y format zmiennej ¶rodowiskowej GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
 #: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -762,28 +762,28 @@ msgstr "b³±d tworzenia gniazda: %s\n"
 msgid "host not found"
 msgstr "nie znaleziono hosta"
 
-#: common/simple-pwquery.c:336
+#: common/simple-pwquery.c:335
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent nie jest dostêpny w tej sesji\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:393
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "nie mo¿na siê po³±czyæ z ,,%s'': %s\n"
 
-#: common/simple-pwquery.c:405
+#: common/simple-pwquery.c:404
 msgid "communication problem with gpg-agent\n"
 msgstr "problem z komunikacj± z gpg-agentem\n"
 
-#: common/simple-pwquery.c:415
+#: common/simple-pwquery.c:414
 msgid "problem setting the gpg-agent options\n"
 msgstr "problem z ustawieniem opcji gpg-agenta\n"
 
-#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
+#: common/simple-pwquery.c:577 common/simple-pwquery.c:673
 msgid "canceled by user\n"
 msgstr "anulowano przez u¿ytkownika\n"
 
-#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
+#: common/simple-pwquery.c:592 common/simple-pwquery.c:679
 msgid "problem with the agent\n"
 msgstr "problem z agentem\n"
 
@@ -6386,7 +6386,7 @@ msgstr "polecenie ,,%.50s'' jest niejednoznaczne\n"
 msgid "invalid option \"%.50s\"\n"
 msgstr "b³êdna opcja ,,%.50s''\n"
 
-#: jnlib/logging.c:624
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"
@@ -6963,31 +6963,31 @@ msgstr "skrót %u-bitowy nie jest poprawny dla %u-bitowego klucza %s\n"
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(to jest algorytm MD2)\n"
 
-#: sm/certdump.c:66 sm/certdump.c:149
+#: sm/certdump.c:68 sm/certdump.c:151
 msgid "none"
 msgstr "brak"
 
-#: sm/certdump.c:160
+#: sm/certdump.c:162
 msgid "[none]"
 msgstr "[brak]"
 
-#: sm/certdump.c:583 sm/certdump.c:628 sm/certdump.c:693 sm/certdump.c:746
+#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
 msgid "[Error - invalid encoding]"
 msgstr "[B³±d - niew³a¶ciwe kodowanie]"
 
-#: sm/certdump.c:591 sm/certdump.c:636
+#: sm/certdump.c:593 sm/certdump.c:638
 msgid "[Error - out of core]"
 msgstr "[B³±d - brak pamiêci]"
 
-#: sm/certdump.c:673 sm/certdump.c:729
+#: sm/certdump.c:675 sm/certdump.c:731
 msgid "[Error - No name]"
 msgstr "[B³±d - Brak nazwy]"
 
-#: sm/certdump.c:698 sm/certdump.c:752
+#: sm/certdump.c:700 sm/certdump.c:754
 msgid "[Error - invalid DN]"
 msgstr "[B³±d - niew³a¶ciwe DN]"
 
-#: sm/certdump.c:952
+#: sm/certdump.c:955
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

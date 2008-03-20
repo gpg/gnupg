@@ -27,7 +27,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #ifndef HAVE_W32_SYSTEM
-#include <sys/wait.h>
+# include <sys/wait.h>
+# include <sys/types.h>
+# include <signal.h>
 #endif
 #include <pth.h>
 #include <assuan.h>

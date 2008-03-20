@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-13 01:05+0100\n"
+"POT-Creation-Date: 2008-03-17 10:57+0100\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -15,18 +15,18 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/call-pinentry.c:223
+#: agent/call-pinentry.c:225
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "ulo¾ení fingerprintu se nezdaøilo: %s\n"
 
-#: agent/call-pinentry.c:592
+#: agent/call-pinentry.c:594
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
 
-#: agent/call-pinentry.c:595
+#: agent/call-pinentry.c:597
 #, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
@@ -35,7 +35,7 @@ msgstr "Prosím, vlo¾te heslo; toto je tajná vìta \n"
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
-#: agent/call-pinentry.c:630
+#: agent/call-pinentry.c:632
 #, fuzzy
 msgid "Quality:"
 msgstr "platnost: %s"
@@ -46,45 +46,45 @@ msgstr "platnost: %s"
 #. length of the tooltip is limited to about 900 characters.
 #. If you do not translate this entry, a default english
 #. text (see source) will be used.
-#: agent/call-pinentry.c:653
+#: agent/call-pinentry.c:655
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:695
+#: agent/call-pinentry.c:697
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:715 agent/call-pinentry.c:727
+#: agent/call-pinentry.c:717 agent/call-pinentry.c:729
 #, fuzzy
 msgid "PIN too long"
 msgstr "øádek je pøíli¹ dlouhý"
 
-#: agent/call-pinentry.c:716
+#: agent/call-pinentry.c:718
 #, fuzzy
 msgid "Passphrase too long"
 msgstr "øádek je pøíli¹ dlouhý"
 
-#: agent/call-pinentry.c:724
+#: agent/call-pinentry.c:726
 #, fuzzy
 msgid "Invalid characters in PIN"
 msgstr "Neplatný znak ve jménì\n"
 
-#: agent/call-pinentry.c:729
+#: agent/call-pinentry.c:731
 msgid "PIN too short"
 msgstr ""
 
-#: agent/call-pinentry.c:741
+#: agent/call-pinentry.c:743
 #, fuzzy
 msgid "Bad PIN"
 msgstr "¹patné MPI"
 
-#: agent/call-pinentry.c:742
+#: agent/call-pinentry.c:744
 #, fuzzy
 msgid "Bad Passphrase"
 msgstr "¹patné heslo"
 
-#: agent/call-pinentry.c:778
+#: agent/call-pinentry.c:780
 #, fuzzy
 msgid "Passphrase"
 msgstr "¹patné heslo"
@@ -531,12 +531,12 @@ msgstr "%s: pøeskoèeno: %s\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent není v tomto sezení dostupný\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
 #: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "¹patný formát promìnné prostøedí GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
 #: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -760,29 +760,29 @@ msgstr "chyba pøi vytváøení `%s': %s\n"
 msgid "host not found"
 msgstr "[ID u¾ivatele nenalezeno]"
 
-#: common/simple-pwquery.c:336
+#: common/simple-pwquery.c:335
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent není v tomto sezení dostupný\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:393
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "nemohu se pøipojit k `%s': %s\n"
 
-#: common/simple-pwquery.c:405
+#: common/simple-pwquery.c:404
 msgid "communication problem with gpg-agent\n"
 msgstr ""
 
-#: common/simple-pwquery.c:415
+#: common/simple-pwquery.c:414
 msgid "problem setting the gpg-agent options\n"
 msgstr ""
 
-#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
+#: common/simple-pwquery.c:577 common/simple-pwquery.c:673
 #, fuzzy
 msgid "canceled by user\n"
 msgstr "zru¹eno u¾ivatelem\n"
 
-#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
+#: common/simple-pwquery.c:592 common/simple-pwquery.c:679
 #, fuzzy
 msgid "problem with the agent\n"
 msgstr "problém s agentem - pou¾ívání agenta vypnuto\n"
@@ -6368,7 +6368,7 @@ msgstr ""
 msgid "invalid option \"%.50s\"\n"
 msgstr "neplatný parametr pro výpis\n"
 
-#: jnlib/logging.c:624
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "nalezena chyba v programu ... (%s:%d)\n"
@@ -6968,35 +6968,35 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:66 sm/certdump.c:149
+#: sm/certdump.c:68 sm/certdump.c:151
 #, fuzzy
 msgid "none"
 msgstr "ne"
 
-#: sm/certdump.c:160
+#: sm/certdump.c:162
 #, fuzzy
 msgid "[none]"
 msgstr "[není nastaven]"
 
-#: sm/certdump.c:583 sm/certdump.c:628 sm/certdump.c:693 sm/certdump.c:746
+#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "Chyba: neplatná odpovìï.\n"
 
-#: sm/certdump.c:591 sm/certdump.c:636
+#: sm/certdump.c:593 sm/certdump.c:638
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:673 sm/certdump.c:729
+#: sm/certdump.c:675 sm/certdump.c:731
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:698 sm/certdump.c:752
+#: sm/certdump.c:700 sm/certdump.c:754
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "Chyba: neplatná odpovìï.\n"
 
-#: sm/certdump.c:952
+#: sm/certdump.c:955
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

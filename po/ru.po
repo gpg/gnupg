@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-13 01:05+0100\n"
+"POT-Creation-Date: 2008-03-17 10:57+0100\n"
 "PO-Revision-Date: 2006-11-07 19:31+0300\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -16,18 +16,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/call-pinentry.c:223
+#: agent/call-pinentry.c:225
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr ""
 
-#: agent/call-pinentry.c:592
+#: agent/call-pinentry.c:594
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr "Введите PIN-код для получения доступа к закрытому ключу"
 
-#: agent/call-pinentry.c:595
+#: agent/call-pinentry.c:597
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
@@ -35,7 +35,7 @@ msgstr "Введите фразу-пароль для доступа к закр
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
-#: agent/call-pinentry.c:630
+#: agent/call-pinentry.c:632
 #, fuzzy
 msgid "Quality:"
 msgstr "достоверность: %s"
@@ -46,40 +46,40 @@ msgstr "достоверность: %s"
 #. length of the tooltip is limited to about 900 characters.
 #. If you do not translate this entry, a default english
 #. text (see source) will be used.
-#: agent/call-pinentry.c:653
+#: agent/call-pinentry.c:655
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:695
+#: agent/call-pinentry.c:697
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:715 agent/call-pinentry.c:727
+#: agent/call-pinentry.c:717 agent/call-pinentry.c:729
 msgid "PIN too long"
 msgstr "PIN слишком длинен"
 
-#: agent/call-pinentry.c:716
+#: agent/call-pinentry.c:718
 msgid "Passphrase too long"
 msgstr "фраза-пароль слишком длинная"
 
-#: agent/call-pinentry.c:724
+#: agent/call-pinentry.c:726
 msgid "Invalid characters in PIN"
 msgstr "Недопустимый символ в PIN-коде"
 
-#: agent/call-pinentry.c:729
+#: agent/call-pinentry.c:731
 msgid "PIN too short"
 msgstr "PIN-код слишком короткий"
 
-#: agent/call-pinentry.c:741
+#: agent/call-pinentry.c:743
 msgid "Bad PIN"
 msgstr "плохой PIN"
 
-#: agent/call-pinentry.c:742
+#: agent/call-pinentry.c:744
 msgid "Bad Passphrase"
 msgstr "Неверная фраза-пароль"
 
-#: agent/call-pinentry.c:778
+#: agent/call-pinentry.c:780
 msgid "Passphrase"
 msgstr "Фраза-пароль"
 
@@ -511,12 +511,12 @@ msgstr "%s %s: остановлен\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "нет gpg-agent доступого для данной сессии\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:350 common/asshelp.c:324
+#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
 #: tools/gpg-connect-agent.c:2021
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "неправильная переменная окружения GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:362 common/asshelp.c:336
+#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
 #: tools/gpg-connect-agent.c:2032
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -743,28 +743,28 @@ msgstr ""
 msgid "host not found"
 msgstr "хост не найден"
 
-#: common/simple-pwquery.c:336
+#: common/simple-pwquery.c:335
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent недоступен в данной сессии\n"
 
-#: common/simple-pwquery.c:394
+#: common/simple-pwquery.c:393
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "не могу подключиться к `%s': %s\n"
 
-#: common/simple-pwquery.c:405
+#: common/simple-pwquery.c:404
 msgid "communication problem with gpg-agent\n"
 msgstr "проблема связи с gpg-agent\n"
 
-#: common/simple-pwquery.c:415
+#: common/simple-pwquery.c:414
 msgid "problem setting the gpg-agent options\n"
 msgstr "проблема задания параметров gpg-agent\n"
 
-#: common/simple-pwquery.c:578 common/simple-pwquery.c:674
+#: common/simple-pwquery.c:577 common/simple-pwquery.c:673
 msgid "canceled by user\n"
 msgstr "прервано пользователем\n"
 
-#: common/simple-pwquery.c:593 common/simple-pwquery.c:680
+#: common/simple-pwquery.c:592 common/simple-pwquery.c:679
 msgid "problem with the agent\n"
 msgstr "проблема с агентом\n"
 
@@ -6295,7 +6295,7 @@ msgstr ""
 msgid "invalid option \"%.50s\"\n"
 msgstr "недопустимый список параметров\n"
 
-#: jnlib/logging.c:624
+#: jnlib/logging.c:626
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку ... (%s:%d)\n"
@@ -6885,31 +6885,31 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(это MD2 алгоритм)\n"
 
-#: sm/certdump.c:66 sm/certdump.c:149
+#: sm/certdump.c:68 sm/certdump.c:151
 msgid "none"
 msgstr "нет"
 
-#: sm/certdump.c:160
+#: sm/certdump.c:162
 msgid "[none]"
 msgstr "[нет]"
 
-#: sm/certdump.c:583 sm/certdump.c:628 sm/certdump.c:693 sm/certdump.c:746
+#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
 msgid "[Error - invalid encoding]"
 msgstr "[Ошибка - недопустимая кодировка]"
 
-#: sm/certdump.c:591 sm/certdump.c:636
+#: sm/certdump.c:593 sm/certdump.c:638
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:673 sm/certdump.c:729
+#: sm/certdump.c:675 sm/certdump.c:731
 msgid "[Error - No name]"
 msgstr "[Ошибка - Нет имени]"
 
-#: sm/certdump.c:698 sm/certdump.c:752
+#: sm/certdump.c:700 sm/certdump.c:754
 msgid "[Error - invalid DN]"
 msgstr "[Ошибка - недопустимый DN]"
 
-#: sm/certdump.c:952
+#: sm/certdump.c:955
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

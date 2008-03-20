@@ -1,3 +1,15 @@
+2008-03-20  Werner Koch  <wk@g10code.com>
+
+	* certlist.c (gpgsm_add_to_certlist): Always save the first
+	subject and issuer.  Initialize issuer with issuer and not with
+	subject.
+	(same_subject_issuer): Set issuer2 to issuer and not to subject.
+
+2008-03-17  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (my_funopen_hook_size_t): New.
+	(format_name_writer): Use it.
+
 2008-03-13  Werner Koch  <wk@g10code.com>
 
 	* certdump.c (gpgsm_fpr_and_name_for_status): Fix signed/unsigned

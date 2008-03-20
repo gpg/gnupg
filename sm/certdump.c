@@ -41,8 +41,10 @@
 
 #ifdef HAVE_FOPENCOOKIE
 typedef ssize_t my_funopen_hook_ret_t;
+typedef size_t  my_funopen_hook_size_t;
 #else
 typedef int     my_funopen_hook_ret_t;
+typedef int     my_funopen_hook_size_t;
 #endif
 
 
@@ -778,7 +780,8 @@ struct format_name_cookie
 
 /* The writer function for the memory stream. */
 static my_funopen_hook_ret_t
-format_name_writer (void *cookie, const char *buffer, size_t size)
+format_name_writer (void *cookie, const char *buffer,
+                    my_funopen_hook_size_t size)
 {
   struct format_name_cookie *c = cookie;
   char *p;
@@ -792,14 +795,14 @@ format_name_writer (void *cookie, const char *buffer, size_t size)
       c->error = errno;
       xfree (c->buffer);
       errno = c->error;
-      return -1;
+      return (my_funopen_hook_ret_t)(-1);
     }
   c->buffer = p;
   memcpy (p + c->len, buffer, size);
   c->len += size;
   p[c->len] = 0; /* Terminate string. */ 
 
-  return size;
+  return (my_funopen_hook_ret_t)size;
 }
 #endif /*HAVE_FOPENCOOKIE || HAVE_FUNOPEN*/
 

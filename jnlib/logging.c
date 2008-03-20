@@ -48,8 +48,10 @@
 
 #ifdef HAVE_FOPENCOOKIE
 typedef ssize_t my_funopen_hook_ret_t;
+typedef size_t  my_funopen_hook_size_t;
 #else
 typedef int     my_funopen_hook_ret_t;
+typedef int     my_funopen_hook_size_t;
 #endif
 
 
@@ -117,7 +119,7 @@ writen (int fd, const void *buffer, size_t nbytes)
 
 
 static my_funopen_hook_ret_t 
-fun_writer (void *cookie_arg, const char *buffer, size_t size)
+fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
 
@@ -188,7 +190,7 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
 
   log_socket = cookie->fd;
   if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
-    return size; /* Okay. */ 
+    return (my_funopen_hook_ret_t)size; /* Okay. */ 
 
   if (!running_detached && cookie->fd != -1
       && isatty (fileno (stderr)))
@@ -207,7 +209,7 @@ fun_writer (void *cookie_arg, const char *buffer, size_t size)
       log_socket = -1;
     }
 
-  return size;
+  return (my_funopen_hook_ret_t)size;
 }
 
 static int

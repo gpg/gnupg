@@ -1,3 +1,10 @@
+2008-03-17  Werner Koch  <wk@g10code.com>
+
+	* logging.c (my_funopen_hook_size_t): New.
+	(fun_writer): Use it to cope with fopencookie/funopen differences.
+	* dotlock.c (read_lockfile): Initialize PID.  Reported by Stéphane
+	Corthésy.
+
 2008-02-22  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (strusage): Set copyright year to 2008.

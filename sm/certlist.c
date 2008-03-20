@@ -1,5 +1,6 @@
 /* certlist.c - build list of certificates
- * Copyright (C) 2001, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2005, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -213,7 +214,7 @@ static int
 same_subject_issuer (const char *subject, const char *issuer, ksba_cert_t cert)
 {
   char *subject2 = ksba_cert_get_subject (cert, 0);
-  char *issuer2 = ksba_cert_get_subject (cert, 0);
+  char *issuer2 = ksba_cert_get_issuer (cert, 0);
   int tmp;
   
   tmp = (subject && subject2
@@ -307,8 +308,8 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
       else
         {
           int wrong_usage = 0;
-          char *subject = NULL;
-          char *issuer = NULL;
+          char *first_subject = NULL;
+          char *first_issuer = NULL;
 
         get_next:
           rc = keydb_search (kh, &desc, 1);
@@ -316,6 +317,13 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
             rc = keydb_get_cert (kh, &cert);
           if (!rc)
             {
+              if (!first_subject)
+                {
+                  /* Save the the subject and the issuer for key usage
+                     and ambiguous name tests. */
+                  first_subject = ksba_cert_get_subject (cert, 0);
+                  first_issuer = ksba_cert_get_issuer (cert, 0);
+                }
               rc = secret? gpgsm_cert_use_sign_p (cert)
                          : gpgsm_cert_use_encrypt_p (cert);
               if (gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE)
@@ -325,13 +333,12 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   if (!wrong_usage)
                     { /* save the first match */
                       wrong_usage = rc;
-                      subject = ksba_cert_get_subject (cert, 0);
-                      issuer = ksba_cert_get_subject (cert, 0);
                       ksba_cert_release (cert);
                       cert = NULL;
                       goto get_next;
                     }
-                  else if (same_subject_issuer (subject, issuer, cert))
+                  else if (same_subject_issuer (first_subject, first_issuer,
+                                                cert))
                     {
                       wrong_usage = rc;
                       ksba_cert_release (cert);
@@ -375,7 +382,9 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                      keybox).  */
                   if (!keydb_get_cert (kh, &cert2))
                     {
-                      int tmp = (same_subject_issuer (subject, issuer, cert2)
+                      int tmp = (same_subject_issuer (first_subject, 
+                                                      first_issuer, 
+                                                      cert2)
                                  && ((gpg_err_code (
                                       secret? gpgsm_cert_use_sign_p (cert2)
                                       : gpgsm_cert_use_encrypt_p (cert2)
@@ -398,8 +407,10 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                 }
               gpgsm_release_certlist (dup_certs);
             }
-          xfree (subject);
-          xfree (issuer);
+          xfree (first_subject);
+          xfree (first_issuer);
+          first_subject = NULL;
+          first_issuer = NULL;
 
           if (!rc && !is_cert_in_certlist (cert, *listaddr))
             {
@@ -440,6 +451,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
   ksba_cert_release (cert);
   return rc == -1? gpg_error (GPG_ERR_NO_PUBKEY): rc;
 }
+
 
 void
 gpgsm_release_certlist (certlist_t list)

@@ -1,3 +1,9 @@
+2008-03-17  Werner Koch  <wk@g10code.com>
+
+	* agent.h (agent_inq_pinentry_launched): New prototype.
+
+	* call-pinentry.c: Include sys/types.h and signal.h.
+
 2008-02-14  Werner Koch  <wk@g10code.com>
 
 	* command.c (agent_inq_pinentry_launched): New.

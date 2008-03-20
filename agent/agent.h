@@ -211,6 +211,7 @@ void *get_agent_scd_notify_event (void);
 void agent_sighup_action (void);
 
 /*-- command.c --*/
+gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid);
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...);
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
