@@ -1,7 +1,8 @@
 README.W32                                                -*- text -*-
 
-This is a binary package with GnuPG for MS-Windows 95, 98, WNT, W2000
-and XP. See the file README for generic instructions and usage hints.
+This is a binary package with GnuPG for MS-Windows NT-4, W2000, XP and
+Vista.  A native version for 64 bit is not available.  See the file
+README for generic instructions and usage hints.
 
 A FAQ comes with this package and a probably more recent one can be
 found online at http://www.gnupg.org/faq.html.  See

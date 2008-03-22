@@ -1,5 +1,5 @@
 /* Rijndael (AES) for GnuPG
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1866,85 +1866,118 @@ prepare_decryption( RIJNDAEL_context *ctx )
 
 
 
-/* Encrypt one block.  A and B may be the same. */
+/* Encrypt one block.  A and B need to be aligned on a 4 byte
+   boundary.  A and B may be the same. */
 static void
-do_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
+do_encrypt_aligned (const RIJNDAEL_context *ctx, 
+                    unsigned char *b, const unsigned char *a)
 {
-    int r;
-    byte temp[4][4];
-    int ROUNDS = ctx->ROUNDS;
 #define rk (ctx->keySched)
+  int ROUNDS = ctx->ROUNDS;
+  int r;
+  union
+  {
+    u32  tempu32[4];  /* Force correct alignment. */
+    byte temp[4][4];
+  } u;
 
-    *((u32*)temp[0]) = *((u32*)(a   )) ^ *((u32*)rk[0][0]);
-    *((u32*)temp[1]) = *((u32*)(a+ 4)) ^ *((u32*)rk[0][1]);
-    *((u32*)temp[2]) = *((u32*)(a+ 8)) ^ *((u32*)rk[0][2]);
-    *((u32*)temp[3]) = *((u32*)(a+12)) ^ *((u32*)rk[0][3]);
-    *((u32*)(b    )) = *((u32*)T1[temp[0][0]])
-        ^ *((u32*)T2[temp[1][1]])
-        ^ *((u32*)T3[temp[2][2]]) 
-        ^ *((u32*)T4[temp[3][3]]);
-    *((u32*)(b + 4)) = *((u32*)T1[temp[1][0]])
-        ^ *((u32*)T2[temp[2][1]])
-        ^ *((u32*)T3[temp[3][2]]) 
-        ^ *((u32*)T4[temp[0][3]]);
-    *((u32*)(b + 8)) = *((u32*)T1[temp[2][0]])
-        ^ *((u32*)T2[temp[3][1]])
-        ^ *((u32*)T3[temp[0][2]]) 
-        ^ *((u32*)T4[temp[1][3]]);
-    *((u32*)(b +12)) = *((u32*)T1[temp[3][0]])
-        ^ *((u32*)T2[temp[0][1]])
-        ^ *((u32*)T3[temp[1][2]]) 
-        ^ *((u32*)T4[temp[2][3]]);
-    for (r = 1; r < ROUNDS-1; r++) {
-        *((u32*)temp[0]) = *((u32*)(b   )) ^ *((u32*)rk[r][0]);
-        *((u32*)temp[1]) = *((u32*)(b+ 4)) ^ *((u32*)rk[r][1]);
-        *((u32*)temp[2]) = *((u32*)(b+ 8)) ^ *((u32*)rk[r][2]);
-        *((u32*)temp[3]) = *((u32*)(b+12)) ^ *((u32*)rk[r][3]);
+  *((u32*)u.temp[0]) = *((u32*)(a   )) ^ *((u32*)rk[0][0]);
+  *((u32*)u.temp[1]) = *((u32*)(a+ 4)) ^ *((u32*)rk[0][1]);
+  *((u32*)u.temp[2]) = *((u32*)(a+ 8)) ^ *((u32*)rk[0][2]);
+  *((u32*)u.temp[3]) = *((u32*)(a+12)) ^ *((u32*)rk[0][3]);
+  *((u32*)(b    ))   = (*((u32*)T1[u.temp[0][0]])
+                        ^ *((u32*)T2[u.temp[1][1]])
+                        ^ *((u32*)T3[u.temp[2][2]]) 
+                        ^ *((u32*)T4[u.temp[3][3]]));
+  *((u32*)(b + 4))   = (*((u32*)T1[u.temp[1][0]])
+                        ^ *((u32*)T2[u.temp[2][1]])
+                        ^ *((u32*)T3[u.temp[3][2]]) 
+                        ^ *((u32*)T4[u.temp[0][3]]));
+  *((u32*)(b + 8))   = (*((u32*)T1[u.temp[2][0]])
+                        ^ *((u32*)T2[u.temp[3][1]])
+                        ^ *((u32*)T3[u.temp[0][2]]) 
+                        ^ *((u32*)T4[u.temp[1][3]]));
+  *((u32*)(b +12))   = (*((u32*)T1[u.temp[3][0]])
+                        ^ *((u32*)T2[u.temp[0][1]])
+                        ^ *((u32*)T3[u.temp[1][2]]) 
+                        ^ *((u32*)T4[u.temp[2][3]]));
 
-        *((u32*)(b    )) = *((u32*)T1[temp[0][0]])
-            ^ *((u32*)T2[temp[1][1]])
-            ^ *((u32*)T3[temp[2][2]]) 
-            ^ *((u32*)T4[temp[3][3]]);
-        *((u32*)(b + 4)) = *((u32*)T1[temp[1][0]])
-            ^ *((u32*)T2[temp[2][1]])
-            ^ *((u32*)T3[temp[3][2]]) 
-            ^ *((u32*)T4[temp[0][3]]);
-        *((u32*)(b + 8)) = *((u32*)T1[temp[2][0]])
-            ^ *((u32*)T2[temp[3][1]])
-            ^ *((u32*)T3[temp[0][2]]) 
-            ^ *((u32*)T4[temp[1][3]]);
-        *((u32*)(b +12)) = *((u32*)T1[temp[3][0]])
-            ^ *((u32*)T2[temp[0][1]])
-            ^ *((u32*)T3[temp[1][2]]) 
-            ^ *((u32*)T4[temp[2][3]]);
+  for (r = 1; r < ROUNDS-1; r++)
+    {
+      *((u32*)u.temp[0]) = *((u32*)(b   )) ^ *((u32*)rk[r][0]);
+      *((u32*)u.temp[1]) = *((u32*)(b+ 4)) ^ *((u32*)rk[r][1]);
+      *((u32*)u.temp[2]) = *((u32*)(b+ 8)) ^ *((u32*)rk[r][2]);
+      *((u32*)u.temp[3]) = *((u32*)(b+12)) ^ *((u32*)rk[r][3]);
+
+      *((u32*)(b    ))   = (*((u32*)T1[u.temp[0][0]])
+                            ^ *((u32*)T2[u.temp[1][1]])
+                            ^ *((u32*)T3[u.temp[2][2]]) 
+                            ^ *((u32*)T4[u.temp[3][3]]));
+      *((u32*)(b + 4))   = (*((u32*)T1[u.temp[1][0]])
+                            ^ *((u32*)T2[u.temp[2][1]])
+                            ^ *((u32*)T3[u.temp[3][2]]) 
+                            ^ *((u32*)T4[u.temp[0][3]]));
+      *((u32*)(b + 8))   = (*((u32*)T1[u.temp[2][0]])
+                            ^ *((u32*)T2[u.temp[3][1]])
+                            ^ *((u32*)T3[u.temp[0][2]]) 
+                            ^ *((u32*)T4[u.temp[1][3]]));
+      *((u32*)(b +12))   = (*((u32*)T1[u.temp[3][0]])
+                            ^ *((u32*)T2[u.temp[0][1]])
+                            ^ *((u32*)T3[u.temp[1][2]]) 
+                            ^ *((u32*)T4[u.temp[2][3]]));
     }
-    /* last round is special */   
-    *((u32*)temp[0]) = *((u32*)(b   )) ^ *((u32*)rk[ROUNDS-1][0]);
-    *((u32*)temp[1]) = *((u32*)(b+ 4)) ^ *((u32*)rk[ROUNDS-1][1]);
-    *((u32*)temp[2]) = *((u32*)(b+ 8)) ^ *((u32*)rk[ROUNDS-1][2]);
-    *((u32*)temp[3]) = *((u32*)(b+12)) ^ *((u32*)rk[ROUNDS-1][3]);
-    b[ 0] = T1[temp[0][0]][1];
-    b[ 1] = T1[temp[1][1]][1];
-    b[ 2] = T1[temp[2][2]][1];
-    b[ 3] = T1[temp[3][3]][1];
-    b[ 4] = T1[temp[1][0]][1];
-    b[ 5] = T1[temp[2][1]][1];
-    b[ 6] = T1[temp[3][2]][1];
-    b[ 7] = T1[temp[0][3]][1];
-    b[ 8] = T1[temp[2][0]][1];
-    b[ 9] = T1[temp[3][1]][1];
-    b[10] = T1[temp[0][2]][1];
-    b[11] = T1[temp[1][3]][1];
-    b[12] = T1[temp[3][0]][1];
-    b[13] = T1[temp[0][1]][1];
-    b[14] = T1[temp[1][2]][1];
-    b[15] = T1[temp[2][3]][1];
-    *((u32*)(b   )) ^= *((u32*)rk[ROUNDS][0]);
-    *((u32*)(b+ 4)) ^= *((u32*)rk[ROUNDS][1]);
-    *((u32*)(b+ 8)) ^= *((u32*)rk[ROUNDS][2]);
-    *((u32*)(b+12)) ^= *((u32*)rk[ROUNDS][3]);
+
+  /* Last round is special. */   
+  *((u32*)u.temp[0]) = *((u32*)(b   )) ^ *((u32*)rk[ROUNDS-1][0]);
+  *((u32*)u.temp[1]) = *((u32*)(b+ 4)) ^ *((u32*)rk[ROUNDS-1][1]);
+  *((u32*)u.temp[2]) = *((u32*)(b+ 8)) ^ *((u32*)rk[ROUNDS-1][2]);
+  *((u32*)u.temp[3]) = *((u32*)(b+12)) ^ *((u32*)rk[ROUNDS-1][3]);
+  b[ 0] = T1[u.temp[0][0]][1];
+  b[ 1] = T1[u.temp[1][1]][1];
+  b[ 2] = T1[u.temp[2][2]][1];
+  b[ 3] = T1[u.temp[3][3]][1];
+  b[ 4] = T1[u.temp[1][0]][1];
+  b[ 5] = T1[u.temp[2][1]][1];
+  b[ 6] = T1[u.temp[3][2]][1];
+  b[ 7] = T1[u.temp[0][3]][1];
+  b[ 8] = T1[u.temp[2][0]][1];
+  b[ 9] = T1[u.temp[3][1]][1];
+  b[10] = T1[u.temp[0][2]][1];
+  b[11] = T1[u.temp[1][3]][1];
+  b[12] = T1[u.temp[3][0]][1];
+  b[13] = T1[u.temp[0][1]][1];
+  b[14] = T1[u.temp[1][2]][1];
+  b[15] = T1[u.temp[2][3]][1];
+  *((u32*)(b   )) ^= *((u32*)rk[ROUNDS][0]);
+  *((u32*)(b+ 4)) ^= *((u32*)rk[ROUNDS][1]);
+  *((u32*)(b+ 8)) ^= *((u32*)rk[ROUNDS][2]);
+  *((u32*)(b+12)) ^= *((u32*)rk[ROUNDS][3]);
 #undef rk
 }
+
+
+static void
+do_encrypt (const RIJNDAEL_context *ctx,
+            unsigned char *bx, const unsigned char *ax)
+{
+  /* BX and AX are not necessary correctly aligned.  Thus we need to
+     copy them here. */
+  union
+  {
+    u32  dummy[4]; 
+    byte a[16];
+  } a;
+  union
+  {
+    u32  dummy[4]; 
+    byte b[16];
+  } b;
+
+  memcpy (a.a, ax, 16);
+  do_encrypt_aligned (ctx, b.b, a.a);
+  memcpy (bx, b.b, 16);
+}
+
 
 static void
 rijndael_encrypt (void *ctx, byte *b, const byte *a)
@@ -1952,56 +1985,6 @@ rijndael_encrypt (void *ctx, byte *b, const byte *a)
     do_encrypt (ctx, b, a);
     burn_stack (16 + 2*sizeof(int));
 }
-
-#if 0
-/* Experimental code.  Needs to be generalized and we might want to
-   have variants for all possible sizes of the largest scalar type.
-   Also need to make sure that INBUF and OUTBUF are properlu
-   aligned. */
-void
-rijndael_cfb_encrypt (void *ctx, byte *iv,
-                      byte *outbuf, const byte *inbuf, size_t nbytes)
-{
-/*   if ( ((unsigned long)inbuf & 3) || ((unsigned long)outbuf & 3) ) */
-/*     {  */
-      /* Not properly aligned, use the slow version.  Actually the
-         compiler might even optimize it this pretty well if the
-         target CPU has relaxed alignment requirements. Thus it is
-         questionable whether we should at all go into the hassles of
-         doing alignment wise optimizations by ourself.  A quick test
-         with gcc 4.0 on ia32 did showed any advantages. */
-      byte *ivp;
-      int i;
-
-      while (nbytes >= 16)
-        {
-          do_encrypt (ctx, iv, iv);
-          for (i=0, ivp = iv; i < 16; i++)
-            *outbuf++ = (*ivp++ ^= *inbuf++);
-          nbytes -= 16;
-        }
-/*     } */
-/*   else */
-/*     { */
-/*       u32 *ivp; */
-/*       u32 *ob = (u32*)outbuf; */
-/*       const u32 *ib = (const u32*)inbuf; */
-
-/*       while (nbytes >= 16) */
-/*         { */
-/*           do_encrypt (ctx, iv, iv); */
-/*           ivp = iv; */
-/*           *ob++ = (*ivp++ ^= *ib++); */
-/*           *ob++ = (*ivp++ ^= *ib++); */
-/*           *ob++ = (*ivp++ ^= *ib++); */
-/*           *ob++ = (*ivp   ^= *ib++); */
-/*           nbytes -= 16; */
-/*         } */
-/*     } */
-  burn_stack (16 + 2*sizeof(int));
-}
-#endif
-
 
 
 
@@ -2097,6 +2080,67 @@ rijndael_decrypt (void *ctx, byte *b, const byte *a)
     do_decrypt (ctx, b, a);
     burn_stack (16+2*sizeof(int));
 }
+
+
+
+/* Bulk encryption of complete blocks in CFB mode.  Caller needs to
+   make sure that IV is aligned on an unsigned long boundary.  This
+   function is only intended for the bulk encryption feature of
+   cipher.c. */
+void
+rijndael_cfb_enc (void *context, unsigned char *iv, 
+                  void *outbuf_arg, const void *inbuf_arg,
+                  unsigned int nblocks)
+{
+  RIJNDAEL_context *ctx = context;
+  unsigned char *outbuf = outbuf_arg;
+  const unsigned char *inbuf = inbuf_arg;
+  unsigned char *ivp;
+  int i;
+
+  for ( ;nblocks; nblocks-- )
+    {
+      /* Encrypt the IV. */
+      do_encrypt_aligned (ctx, iv, iv);
+      /* XOR the input with the IV and store input into IV.  */
+      for (ivp=iv,i=0; i < 16; i++ )
+        *outbuf++ = (*ivp++ ^= *inbuf++);
+    }
+
+  burn_stack (16 + 2*sizeof(int));
+}
+
+/* Bulk decryption of complete blocks in CFB mode.  Caller needs to
+   make sure that IV is aligned on an unisgned lonhg boundary.  This
+   function is only intended for the bulk encryption feature of
+   cipher.c. */
+void
+rijndael_cfb_dec (void *context, unsigned char *iv, 
+                  void *outbuf_arg, const void *inbuf_arg,
+                  unsigned int nblocks)
+{
+  RIJNDAEL_context *ctx = context;
+  unsigned char *outbuf = outbuf_arg;
+  const unsigned char *inbuf = inbuf_arg;
+  unsigned char *ivp;
+  unsigned char temp;
+  int i;
+
+  for ( ;nblocks; nblocks-- )
+    {
+      do_encrypt_aligned (ctx, iv, iv);
+      for (ivp=iv,i=0; i < 16; i++ )
+        {
+          temp = *inbuf++;
+          *outbuf++ = *ivp ^ temp;
+          *ivp++ = temp;
+        }
+    }
+
+  burn_stack (16 + 2*sizeof(int));
+}
+
+
 
 /* Test a single encryption and decryption with each key size. */
 

@@ -1,3 +1,13 @@
+2008-03-22  Werner Koch  <wk@g10code.com>
+
+	* cipher.c (struct cipher_handle_s): Make sure IV is u32
+	aligned.  Change all users of IV.
+	(do_cfb_encrypt): Optimize and use bulk code for AES.
+	(do_cfb_decrypt): Ditto.
+	* rijndael.c (do_encrypt): Remove.
+	(do_encrypt_aligned, do_encrypt): New.  Taken from libgcrypt.
+	(rijndael_cfb_enc, rijndael_cfb_dec): New.
+
 2007-12-12  Werner Koch  <wk@g10code.com>
 
 	* pubkey.c (pubkey_encrypt, pubkey_decrypt): Allow type 20 keys.

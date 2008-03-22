@@ -1,6 +1,6 @@
 /* cipher.c  -	cipher dispatcher
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,17 +52,26 @@ static struct cipher_table_s cipher_table[TABLE_SIZE];
 static int disabled_algos[TABLE_SIZE];
 
 
-struct cipher_handle_s {
-    int  algo;
-    int  mode;
-    size_t blocksize;
-    byte iv[MAX_BLOCKSIZE];	/* (this should be ulong aligned) */
-    byte lastiv[MAX_BLOCKSIZE];
-    int  unused;  /* in IV */
-    int  (*setkey)( void *c, const byte *key, unsigned keylen );
-    void (*encrypt)( void *c, byte *outbuf, const byte *inbuf );
-    void (*decrypt)( void *c, byte *outbuf, const byte *inbuf );
-    PROPERLY_ALIGNED_TYPE context;
+struct cipher_handle_s 
+{
+  int  algo;
+  int  mode;
+  size_t blocksize;
+  
+  /* The initialization vector.  To help code optimization we make
+     sure that it is aligned on an unsigned long and u32 boundary.  */
+  union {
+    unsigned long dummy_ul_iv;         
+    u32 dummy_u32_iv;
+    unsigned char iv[MAX_BLOCKSIZE];	
+  } u_iv;
+  
+  byte lastiv[MAX_BLOCKSIZE];
+  int  unused;  /* in IV */
+  int  (*setkey)( void *c, const byte *key, unsigned keylen );
+  void (*encrypt)( void *c, byte *outbuf, const byte *inbuf );
+  void (*decrypt)( void *c, byte *outbuf, const byte *inbuf );
+  PROPERLY_ALIGNED_TYPE context;
 };
 
 
@@ -459,14 +468,14 @@ cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 void
 cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen )
 {
-    memset( c->iv, 0, c->blocksize );
+    memset( c->u_iv.iv, 0, c->blocksize );
     if( iv ) {
 	if( ivlen != c->blocksize )
 	    log_info("WARNING: cipher_setiv: ivlen=%u blklen=%u\n",
 					     ivlen, (unsigned)c->blocksize );
 	if( ivlen > c->blocksize )
 	    ivlen = c->blocksize;
-	memcpy( c->iv, iv, ivlen );
+	memcpy( c->u_iv.iv, iv, ivlen );
     }
     c->unused = 0;
 }
@@ -507,10 +516,10 @@ do_cbc_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 	/* fixme: the xor should works on words and not on
 	 * bytes.  Maybe it is a good idea to enhance the cipher backend
 	 * API to allow for CBC handling in the backend */
-	for(ivp=c->iv,i=0; i < blocksize; i++ )
+	for(ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
 	    outbuf[i] = inbuf[i] ^ *ivp++;
 	(*c->encrypt)( &c->context.c, outbuf, outbuf );
-	memcpy(c->iv, outbuf, blocksize );
+	memcpy(c->u_iv.iv, outbuf, blocksize );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -530,9 +539,9 @@ do_cbc_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 	 * for this here because it is not used otherwise */
 	memcpy(c->lastiv, inbuf, blocksize );
 	(*c->decrypt)( &c->context.c, outbuf, inbuf );
-	for(ivp=c->iv,i=0; i < blocksize; i++ )
+	for(ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
 	    outbuf[i] ^= *ivp++;
-	memcpy(c->iv, c->lastiv, blocksize );
+	memcpy(c->u_iv.iv, c->lastiv, blocksize );
 	inbuf  += c->blocksize;
 	outbuf += c->blocksize;
     }
@@ -542,119 +551,181 @@ do_cbc_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
 static void
 do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
-    byte *ivp;
-    size_t blocksize = c->blocksize;
+  byte *ivp;
+  size_t blocksize = c->blocksize;
+  size_t blocksize_x_2 = blocksize + blocksize;
 
-    if( nbytes <= c->unused ) {
-	/* short enough to be encoded by the remaining XOR mask */
-	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv+c->blocksize - c->unused; nbytes; nbytes--, c->unused-- )
+  if ( nbytes <= c->unused )
+    {
+      /* Short enough to be encoded by the remaining XOR mask.  XOR
+	 the input with the IV and store input into IV.  */
+      for (ivp=c->u_iv.iv+c->blocksize - c->unused; nbytes; 
+            nbytes--, c->unused-- )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
 	return;
     }
-
-    if( c->unused ) {
-	/* XOR the input with the IV and store input into IV */
-	nbytes -= c->unused;
-	for(ivp=c->iv+blocksize - c->unused; c->unused; c->unused-- )
-	    *outbuf++ = (*ivp++ ^= *inbuf++);
+  
+  if ( c->unused )
+    {
+      /* XOR the input with the IV and store input into IV.  */
+      nbytes -= c->unused;
+      for (ivp=c->u_iv.iv+blocksize - c->unused; c->unused; c->unused-- )
+        *outbuf++ = (*ivp++ ^= *inbuf++);
     }
 
-    /* Now we can process complete blocks. */
-#if 0 
-    /* Experimental code.  We may only use this for standard CFB
-       because for Phil's mode we need to save the IV of before the
-       last encryption - we don't want to do this in tghe fasf CFB
-       encryption routine.  */
-    if (c->algo == CIPHER_ALGO_AES
-        && nbytes >= blocksize 
-        && c->mode != CIPHER_MODE_PHILS_CFB) {
-        size_t n;
+  /* Now we can process complete blocks.  We use a loop as long as we
+     have at least 2 blocks and use conditions for the rest.  This
+     also allows to use a bulk encryption function if available.  */
+#ifdef USE_AES
+  if (nbytes >= blocksize_x_2 
+      && (c->algo == CIPHER_ALGO_AES
+          || c->algo == CIPHER_ALGO_AES256
+          || c->algo == CIPHER_ALGO_AES192))
+    {
+      unsigned int nblocks = nbytes / blocksize;
+      rijndael_cfb_enc (&c->context.c, c->u_iv.iv, outbuf, inbuf, nblocks); 
+      outbuf += nblocks * blocksize;
+      inbuf  += nblocks * blocksize;
+      nbytes -= nblocks * blocksize;
+    }
+  else
+#endif /*USE_AES*/
+    {
+      while ( nbytes >= blocksize_x_2 )
+        {
+          int i;
+          /* Encrypt the IV. */
+          c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+          /* XOR the input with the IV and store input into IV.  */
+          for(ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
+            *outbuf++ = (*ivp++ ^= *inbuf++);
+          nbytes -= blocksize;
+        }
+    }
 
-	memcpy( c->lastiv, c->iv, blocksize );
-        n = (nbytes / blocksize) * blocksize;
-        rijndael_cfb_encrypt (&c->context.c, c->iv, outbuf, inbuf, n);
-        inbuf  += n;
-        outbuf += n;
-	nbytes -= n;
+  if ( nbytes >= blocksize )
+    {
+      int i;
+      /* Save the current IV and then encrypt the IV. */
+      memcpy( c->lastiv, c->u_iv.iv, blocksize );
+      c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+      /* XOR the input with the IV and store input into IV */
+      for(ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
+        *outbuf++ = (*ivp++ ^= *inbuf++);
+      nbytes -= blocksize;
     }
-#endif
-    while( nbytes >= blocksize ) {
-	int i;
-	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context.c, c->iv, c->iv );
-	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv,i=0; i < blocksize; i++ )
-	    *outbuf++ = (*ivp++ ^= *inbuf++);
-	nbytes -= blocksize;
-    }
-    if( nbytes ) { /* process the remaining bytes */
-	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context.c, c->iv, c->iv );
-	c->unused = blocksize;
-	/* and apply the xor */
-	c->unused -= nbytes;
-	for(ivp=c->iv; nbytes; nbytes-- )
-	    *outbuf++ = (*ivp++ ^= *inbuf++);
+  if ( nbytes ) 
+    {
+      /* Save the current IV and then encrypt the IV. */
+      memcpy (c->lastiv, c->u_iv.iv, blocksize );
+      c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+      c->unused = blocksize;
+      /* Apply the XOR. */
+      c->unused -= nbytes;
+      for(ivp=c->u_iv.iv; nbytes; nbytes-- )
+        *outbuf++ = (*ivp++ ^= *inbuf++);
     }
 }
+
 
 static void
 do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 {
-    byte *ivp;
-    ulong temp;
-    size_t blocksize = c->blocksize;
-
-    if( nbytes <= c->unused ) {
-	/* short enough to be encoded by the remaining XOR mask */
-	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv+blocksize - c->unused; nbytes; nbytes--,c->unused--){
-	    temp = *inbuf++;
-	    *outbuf++ = *ivp ^ temp;
-	    *ivp++ = temp;
-	}
-	return;
+  unsigned char *ivp;
+  unsigned long temp;
+  int i;
+  size_t blocksize = c->blocksize;
+  size_t blocksize_x_2 = blocksize + blocksize;
+  
+  if (nbytes <= c->unused)
+    {
+      /* Short enough to be encoded by the remaining XOR mask. */
+      /* XOR the input with the IV and store input into IV. */
+      for (ivp=c->u_iv.iv+blocksize - c->unused;
+           nbytes; 
+           nbytes--, c->unused--)
+        {
+          temp = *inbuf++;
+          *outbuf++ = *ivp ^ temp;
+          *ivp++ = temp;
+        }
+      return;
+    }
+  
+  if (c->unused)
+    {
+      /* XOR the input with the IV and store input into IV. */
+      nbytes -= c->unused;
+      for (ivp=c->u_iv.iv+blocksize - c->unused; c->unused; c->unused-- )
+        {
+          temp = *inbuf++;
+          *outbuf++ = *ivp ^ temp;
+          *ivp++ = temp;
+        }
+    }
+  
+  /* Now we can process complete blocks.  We use a loop as long as we
+     have at least 2 blocks and use conditions for the rest.  This
+     also allows to use a bulk encryption function if available.  */
+#ifdef USE_AES
+  if (nbytes >= blocksize_x_2 
+      && (c->algo == CIPHER_ALGO_AES
+          || c->algo == CIPHER_ALGO_AES256
+          || c->algo == CIPHER_ALGO_AES192))
+    {
+      unsigned int nblocks = nbytes / blocksize;
+      rijndael_cfb_dec (&c->context.c, c->u_iv.iv, outbuf, inbuf, nblocks); 
+      outbuf += nblocks * blocksize;
+      inbuf  += nblocks * blocksize;
+      nbytes -= nblocks * blocksize;
+    }
+  else
+#endif /*USE_AES*/
+    {
+      while (nbytes >= blocksize_x_2 )
+        {
+          /* Encrypt the IV. */
+          c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+          /* XOR the input with the IV and store input into IV. */
+          for (ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
+            {
+              temp = *inbuf++;
+              *outbuf++ = *ivp ^ temp;
+              *ivp++ = temp;
+            }
+          nbytes -= blocksize;
+        }
     }
 
-    if( c->unused ) {
-	/* XOR the input with the IV and store input into IV */
-	nbytes -= c->unused;
-	for(ivp=c->iv+blocksize - c->unused; c->unused; c->unused-- ) {
-	    temp = *inbuf++;
-	    *outbuf++ = *ivp ^ temp;
-	    *ivp++ = temp;
-	}
+  if (nbytes >= blocksize )
+    {
+      /* Save the current IV and then encrypt the IV. */
+      memcpy ( c->lastiv, c->u_iv.iv, blocksize);
+      c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+      /* XOR the input with the IV and store input into IV */
+      for (ivp=c->u_iv.iv,i=0; i < blocksize; i++ )
+        {
+          temp = *inbuf++;
+          *outbuf++ = *ivp ^ temp;
+          *ivp++ = temp;
+        }
+      nbytes -= blocksize;
     }
 
-    /* now we can process complete blocks */
-    while( nbytes >= blocksize ) {
-	int i;
-	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context.c, c->iv, c->iv );
-	/* XOR the input with the IV and store input into IV */
-	for(ivp=c->iv,i=0; i < blocksize; i++ ) {
-	    temp = *inbuf++;
-	    *outbuf++ = *ivp ^ temp;
-	    *ivp++ = temp;
-	}
-	nbytes -= blocksize;
-    }
-    if( nbytes ) { /* process the remaining bytes */
-	/* encrypt the IV (and save the current one) */
-	memcpy( c->lastiv, c->iv, blocksize );
-	(*c->encrypt)( &c->context.c, c->iv, c->iv );
-	c->unused = blocksize;
-	/* and apply the xor */
-	c->unused -= nbytes;
-	for(ivp=c->iv; nbytes; nbytes-- ) {
-	    temp = *inbuf++;
-	    *outbuf++ = *ivp ^ temp;
-	    *ivp++ = temp;
-	}
+  if (nbytes)
+    { 
+      /* Save the current IV and then encrypt the IV. */
+      memcpy ( c->lastiv, c->u_iv.iv, blocksize );
+      c->encrypt ( &c->context.c, c->u_iv.iv, c->u_iv.iv );
+      c->unused = blocksize;
+      /* Apply the XOR. */
+      c->unused -= nbytes;
+      for (ivp=c->u_iv.iv; nbytes; nbytes-- )
+        {
+          temp = *inbuf++;
+          *outbuf++ = *ivp ^ temp;
+          *ivp++ = temp;
+        }
     }
 }
 
@@ -732,8 +803,8 @@ void
 cipher_sync( CIPHER_HANDLE c )
 {
     if( c->mode == CIPHER_MODE_PHILS_CFB && c->unused ) {
-	memmove(c->iv + c->unused, c->iv, c->blocksize - c->unused );
-	memcpy(c->iv, c->lastiv + c->blocksize - c->unused, c->unused);
+	memmove(c->u_iv.iv + c->unused, c->u_iv.iv, c->blocksize - c->unused );
+	memcpy(c->u_iv.iv, c->lastiv + c->blocksize - c->unused, c->unused);
 	c->unused = 0;
     }
 }

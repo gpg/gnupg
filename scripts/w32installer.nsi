@@ -351,6 +351,8 @@ Section "-Finish"
   WriteRegStr HKCU "Software\GNU\GnuPG" "Lang" $R3
   ;;
 
+  # Set the Outpath pack so that the README file can be displayed.
+  SetOutPath "$INSTDIR"
 
 SectionEnd ; "-Finish"
 

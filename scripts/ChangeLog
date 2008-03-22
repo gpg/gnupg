@@ -1,3 +1,7 @@
+2008-01-30  Werner Koch  <wk@g10code.com>
+
+	* w32installer.nsi: Set the OutPath back.
+
 2007-12-12  Werner Koch  <wk@g10code.com>
 
 	* config.sub, config.guess: Update to version 2007-11-19.

@@ -118,8 +118,6 @@ twofish_get_info( int algo, size_t *keylen,
 		  void (**decryptf)( void *c, byte *outbuf, const byte *inbuf )
 		  );
 
-/* this is just a kludge for the time we have not yet changed the cipher
- * stuff to the scheme we use for random and digests */
 const char *
 rijndael_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
@@ -127,6 +125,12 @@ rijndael_get_info( int algo, size_t *keylen,
 		   void (**encryptf)(void *c, byte *outbuf, const byte *inbuf),
 		   void (**decryptf)(void *c, byte *outbuf, const byte *inbuf)
 		   );
+void rijndael_cfb_enc (void *context, unsigned char *iv, 
+                       void *outbuf_arg, const void *inbuf_arg,
+                       unsigned int nblocks);
+void rijndael_cfb_dec (void *context, unsigned char *iv, 
+                       void *outbuf_arg, const void *inbuf_arg,
+                       unsigned int nblocks);
 
 const char *
 idea_get_info( int algo, size_t *keylen,

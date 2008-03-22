@@ -1,3 +1,9 @@
+2007-12-21  Werner Koch  <wk@g10code.com>
+
+	* README.W32: Tell that Vista is supported and that at least NT-4
+	is required.  It might still work on older systems, but I don't
+	know for sure.
+
 2007-12-12  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi, specify-user-id.texi: Update from gnupg-2.
