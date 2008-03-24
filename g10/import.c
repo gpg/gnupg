@@ -1654,11 +1654,17 @@ collapse_uids( KBNODE *keyblock )
     {
       KBNODE uid2;
 
+      if(is_deleted_kbnode(uid1))
+	continue;
+
       if(uid1->pkt->pkttype!=PKT_USER_ID)
 	continue;
 
       for(uid2=uid1->next;uid2;uid2=uid2->next)
 	{
+	  if(is_deleted_kbnode(uid2))
+	    continue;
+
 	  if(uid2->pkt->pkttype!=PKT_USER_ID)
 	    continue;
 
@@ -1674,6 +1680,9 @@ collapse_uids( KBNODE *keyblock )
 		 uid1 */
 	      for(last=uid2;last->next;last=last->next)
 		{
+		  if(is_deleted_kbnode(last))
+		    continue;
+
 		  if(last->next->pkt->pkttype==PKT_USER_ID
 		     || last->next->pkt->pkttype==PKT_PUBLIC_SUBKEY
 		     || last->next->pkt->pkttype==PKT_SECRET_SUBKEY)
@@ -1686,12 +1695,15 @@ collapse_uids( KBNODE *keyblock )
 	      /* Now put uid2 in place as part of uid1 */
 	      last->next=uid1->next;
 	      uid1->next=uid2;
-	      remove_kbnode(keyblock,uid2);
+	      delete_kbnode(uid2);
 
 	      /* Now dedupe uid1 */
 	      for(sig1=uid1->next;sig1;sig1=sig1->next)
 		{
 		  KBNODE sig2;
+
+		  if(is_deleted_kbnode(sig1))
+		    continue;
 
 		  if(sig1->pkt->pkttype==PKT_USER_ID
 		     || sig1->pkt->pkttype==PKT_PUBLIC_SUBKEY
@@ -1703,6 +1715,9 @@ collapse_uids( KBNODE *keyblock )
 
 		  for(sig2=sig1->next,last=sig1;sig2;last=sig2,sig2=sig2->next)
 		    {
+		      if(is_deleted_kbnode(sig2))
+			continue;
+
 		      if(sig2->pkt->pkttype==PKT_USER_ID
 			 || sig2->pkt->pkttype==PKT_PUBLIC_SUBKEY
 			 || sig2->pkt->pkttype==PKT_SECRET_SUBKEY)
@@ -1716,7 +1731,7 @@ collapse_uids( KBNODE *keyblock )
 			{
 			  /* We have a match, so delete the second
 			     signature */
-			  remove_kbnode(&uid1,sig2);
+			  delete_kbnode(sig2);
 			  sig2=last;
 			}
 		    }
@@ -1724,6 +1739,8 @@ collapse_uids( KBNODE *keyblock )
 	    }
 	}
     }
+
+  commit_kbnode(keyblock);
 
   if(any && !opt.quiet)
     {
