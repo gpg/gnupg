@@ -683,9 +683,9 @@ parse_keyrec(char *keystring)
       while(*tok)
 	if(tok[0]=='%' && tok[1] && tok[2])
 	  {
-	    if((userid[i]=hextobyte(&tok[1]))==-1)
-	      userid[i]='?';
+            int c;
 
+	    userid[i] = (c=hextobyte(&tok[1])) == -1 ? '?' : c;
 	    i++;
 	    tok+=3;
 	  }

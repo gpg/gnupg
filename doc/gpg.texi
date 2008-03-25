@@ -2634,7 +2634,8 @@ valid and available language name (@var{langid}), the file with the
 translation is loaded from
 @code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
 directory out of which the gpg binary has been laoded.  If it can't be
-loaded the Registry is tried as a fallback.
+loaded the Registry is tried and as last resort the native Windows
+locale system is used.  
 
 @end table
 

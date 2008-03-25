@@ -1,3 +1,10 @@
+2008-03-25  Werner Koch  <wk@g10code.com>
+
+	* w32-gettext.c (_nl_locale_name): New.  Taken from
+	../common/localename and GNU gettext's localename.c.
+	(set_gettext_file): Rewritten.
+	(gettext_localename): New.
+
 2008-03-17  Werner Koch  <wk@g10code.com>
 
 	* logging.c (my_funopen_hook_size_t): New.

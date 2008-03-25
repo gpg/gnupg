@@ -1,3 +1,8 @@
+2008-03-25  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_ldap.c (build_attrs): Take care of char defaulting to
+	unsigned when using hextobyte.
+
 2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	From 1.4 (July):

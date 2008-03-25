@@ -1,3 +1,8 @@
+2008-03-25  Werner Koch  <wk@g10code.com>
+
+	* localename.c: Strip all W32 code.  Include w32help.h.
+	(gnupg_messages_locale_name) [W32]: Use the gettext_localename.
+
 2008-03-17  Werner Koch  <wk@g10code.com>
 
 	* iobuf.c (IOBUF_BUFFER_SIZE): Actually use this macro.
