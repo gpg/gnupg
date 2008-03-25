@@ -115,7 +115,7 @@
 # servers.  To see the IP address of the server actually used, you may use
 # the "--keyserver-options debug".
 
-keyserver hkp://keys.pgp.net
+keyserver hkp://keys.gnupg.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://keyserver.pgp.com
 
