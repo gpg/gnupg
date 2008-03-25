@@ -98,7 +98,8 @@ require-cross-certification
 # servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
 # support).
 #
-# Example HKP keyserver:
+# Example HKP keyservers:
+#      hkp://keys.gnupg.net
 #      hkp://subkeys.pgp.net
 #
 # Example email keyserver:
@@ -121,11 +122,12 @@ require-cross-certification
 # Note that most servers (with the notable exception of
 # ldap://keyserver.pgp.com) synchronize changes with each other.  Note
 # also that a single server name may actually point to multiple
-# servers via DNS round-robin.  hkp://subkeys.pgp.net is an example of
+# servers via DNS round-robin.  hkp://keys.gnupg.net is an example of
 # such a "server", which spreads the load over a number of physical
-# servers.
+# servers.  To see the IP address of the server actually used, you may use
+# the "--keyserver-options debug".
 
-keyserver hkp://subkeys.pgp.net
+keyserver hkp://keys.gnupg.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
 #keyserver ldap://keyserver.pgp.com

@@ -1,3 +1,15 @@
+2008-03-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	* import.c (collapse_uids): Fix bug 894: possible memory
+	corruption around deduplication of user IDs.
+
+2008-03-25  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_key): Parse a secret key encrypted with
+	Camellia.
+
+	* options.skel: Make the default keyserver keys.gnupg.net.
+
 2008-03-18  Werner Koch  <wk@g10code.com>
 
 	* seckey-cert.c (do_check): Use GCRYMPI_FMT_PGP for v3 keys.
