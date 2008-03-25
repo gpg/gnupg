@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.6\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2007-12-14 11:58+0100\n"
+"POT-Creation-Date: 2008-03-25 09:52+0100\n"
 "PO-Revision-Date: 2007-03-05 10:27+0100\n"
 "Last-Translator: Ivar Snaaijer\n"
 "Language-Team: none\n"
@@ -62,9 +62,9 @@ msgstr "‘%s’ is in gebruik: %s\n"
 msgid "waiting for lock on `%s'...\n"
 msgstr "wacht op vrijkomen van ‘%s’...\n"
 
-#: cipher/random.c:446 g10/card-util.c:676 g10/card-util.c:745
+#: cipher/random.c:446 g10/card-util.c:681 g10/card-util.c:750
 #: g10/dearmor.c:59 g10/dearmor.c:108 g10/encode.c:182 g10/encode.c:472
-#: g10/gpg.c:1015 g10/gpg.c:3583 g10/import.c:193 g10/keygen.c:2403
+#: g10/gpg.c:1015 g10/gpg.c:3605 g10/import.c:193 g10/keygen.c:2403
 #: g10/keyring.c:1523 g10/openfile.c:188 g10/openfile.c:356
 #: g10/plaintext.c:490 g10/sign.c:776 g10/sign.c:969 g10/sign.c:1083
 #: g10/sign.c:1234 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:538
@@ -411,7 +411,7 @@ msgstr ""
 "’quoted printable’ teken gevonden in versleutelings gegevens - \n"
 "mogelijk heeft de verzender een slecht gemaakt email programma gebruikt\n"
 
-#: g10/card-util.c:61 g10/card-util.c:304
+#: g10/card-util.c:61 g10/card-util.c:309
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP kaart is niet beschikbaar: %s\n"
@@ -421,158 +421,158 @@ msgstr "OpenPGP kaart is niet beschikbaar: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "OpenPGP kaart nummer %s gevonden\n"
 
-#: g10/card-util.c:74 g10/card-util.c:1404 g10/delkey.c:126 g10/keyedit.c:1516
+#: g10/card-util.c:74 g10/card-util.c:1409 g10/delkey.c:126 g10/keyedit.c:1516
 #: g10/keygen.c:2587 g10/revoke.c:216 g10/revoke.c:454
 msgid "can't do this in batch mode\n"
 msgstr "dit is niet mogelijk in automatische modus\n"
 
-#: g10/card-util.c:101 g10/card-util.c:1130 g10/card-util.c:1213
+#: g10/card-util.c:101 g10/card-util.c:1135 g10/card-util.c:1218
 #: g10/keyedit.c:423 g10/keyedit.c:444 g10/keyedit.c:458 g10/keygen.c:1400
 #: g10/keygen.c:1467
 msgid "Your selection? "
 msgstr "Uw keuze? "
 
-#: g10/card-util.c:214 g10/card-util.c:264
+#: g10/card-util.c:219 g10/card-util.c:269
 msgid "[not set]"
 msgstr "[niet ingesteld]"
 
-#: g10/card-util.c:411
+#: g10/card-util.c:416
 msgid "male"
 msgstr "man"
 
-#: g10/card-util.c:412
+#: g10/card-util.c:417
 msgid "female"
 msgstr "vrouw"
 
-#: g10/card-util.c:412
+#: g10/card-util.c:417
 msgid "unspecified"
 msgstr "niet gespecifiseerd"
 
-#: g10/card-util.c:439
+#: g10/card-util.c:444
 msgid "not forced"
 msgstr "niet geforceerd"
 
-#: g10/card-util.c:439
+#: g10/card-util.c:444
 msgid "forced"
 msgstr "geforceerd"
 
-#: g10/card-util.c:517
+#: g10/card-util.c:522
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fout: Alleen platte ASCII is hier toegestaan.\n"
 
-#: g10/card-util.c:519
+#: g10/card-util.c:524
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Fout: U mag het “<” teken hier niet gebruiken.\n"
 
-#: g10/card-util.c:521
+#: g10/card-util.c:526
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Fout: U mag geen dubbele spatie gebruiken.\n"
 
-#: g10/card-util.c:538
+#: g10/card-util.c:543
 msgid "Cardholder's surname: "
 msgstr "Achternaam van de kaarthouder: "
 
-#: g10/card-util.c:540
+#: g10/card-util.c:545
 msgid "Cardholder's given name: "
 msgstr "Voornaam van de kaarthouder: "
 
-#: g10/card-util.c:558
+#: g10/card-util.c:563
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Fout: Gecombineerde naam is te lang (de limiet is %d tekens).\n"
 
-#: g10/card-util.c:579
+#: g10/card-util.c:584
 msgid "URL to retrieve public key: "
 msgstr "URL om de publieke sleutel op te halen: "
 
-#: g10/card-util.c:587
+#: g10/card-util.c:592
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fout: URL is te lang (de limiet is %d tekens).\n"
 
-#: g10/card-util.c:685 g10/card-util.c:754 g10/import.c:279
+#: g10/card-util.c:690 g10/card-util.c:759 g10/import.c:279
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "fout tijdens het lezen van ‘%s’: %s\n"
 
-#: g10/card-util.c:693
+#: g10/card-util.c:698
 msgid "Login data (account name): "
 msgstr "Aanlog gegevens (Login naam): "
 
-#: g10/card-util.c:703
+#: g10/card-util.c:708
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Fout: Aanlog gegevens zijn te lang (de limiet is %d tekens).\n"
 
-#: g10/card-util.c:762
+#: g10/card-util.c:767
 msgid "Private DO data: "
 msgstr "Geheime DO-gegevens: "
 
-#: g10/card-util.c:772
+#: g10/card-util.c:777
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Fout: Geheime DO is te lang (de limiet is %d tekens).\n"
 
-#: g10/card-util.c:792
+#: g10/card-util.c:797
 msgid "Language preferences: "
 msgstr "Taal voorkeur: "
 
-#: g10/card-util.c:800
+#: g10/card-util.c:805
 msgid "Error: invalid length of preference string.\n"
 msgstr "Fout: verkeerde lengte van de voorkeursgegevens.\n"
 
-#: g10/card-util.c:809
+#: g10/card-util.c:814
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fout: ongeldige tekens in voorkeursgegevens.\n"
 
-#: g10/card-util.c:830
+#: g10/card-util.c:835
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Geslacht ((M)Man, (F)Vrouw of spatie): "
 
-#: g10/card-util.c:844
+#: g10/card-util.c:849
 msgid "Error: invalid response.\n"
 msgstr "Fout: Ongeldige invoer.\n"
 
-#: g10/card-util.c:865
+#: g10/card-util.c:870
 msgid "CA fingerprint: "
 msgstr "CA vingerafdruk: "
 
-#: g10/card-util.c:888
+#: g10/card-util.c:893
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Fout: ongeldig vormgegeven vingerafdruk.\n"
 
-#: g10/card-util.c:936
+#: g10/card-util.c:941
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "sleutel actie is niet mogelijk: %s\n"
 
-#: g10/card-util.c:937
+#: g10/card-util.c:942
 msgid "not an OpenPGP card"
 msgstr "geen OpenPGP kaart"
 
-#: g10/card-util.c:946
+#: g10/card-util.c:951
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "fout bij het ophalen van sleutel gegevens: %s\n"
 
-#: g10/card-util.c:1031
+#: g10/card-util.c:1036
 #, fuzzy
 msgid "Replace existing key? (y/N) "
 msgstr "Vervangen bestaande sleutel? (j/N) "
 
-#: g10/card-util.c:1052 g10/card-util.c:1061
+#: g10/card-util.c:1057 g10/card-util.c:1066
 #, fuzzy
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "Moet er een externe reservekopie van de versleutel gegevens gemaakt worden? "
 "(J/n) "
 
-#: g10/card-util.c:1073
+#: g10/card-util.c:1078
 #, fuzzy
 msgid "Replace existing keys? (y/N) "
 msgstr "Vervangen bestaande sleutels? (j/N) "
 
-#: g10/card-util.c:1082
+#: g10/card-util.c:1087
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -583,120 +583,120 @@ msgstr ""
 "   PIN = ‘%s’     Beherder PIN = ‘%s’\n"
 "U wordt aangeraden deze te wijzigen met het commando --change-pin\n"
 
-#: g10/card-util.c:1121
+#: g10/card-util.c:1126
 msgid "Please select the type of key to generate:\n"
 msgstr "Selecteer het sleutel type:\n"
 
-#: g10/card-util.c:1123 g10/card-util.c:1204
+#: g10/card-util.c:1128 g10/card-util.c:1209
 msgid "   (1) Signature key\n"
 msgstr "   (1) Handtekening sleutel\n"
 
-#: g10/card-util.c:1124 g10/card-util.c:1206
+#: g10/card-util.c:1129 g10/card-util.c:1211
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Codeer sleutel\n"
 
-#: g10/card-util.c:1125 g10/card-util.c:1208
+#: g10/card-util.c:1130 g10/card-util.c:1213
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Authorisatie sleutel\n"
 
-#: g10/card-util.c:1141 g10/card-util.c:1224 g10/keyedit.c:938
+#: g10/card-util.c:1146 g10/card-util.c:1229 g10/keyedit.c:938
 #: g10/keygen.c:1404 g10/keygen.c:1432 g10/keygen.c:1506 g10/revoke.c:683
 msgid "Invalid selection.\n"
 msgstr "Ongeldige selectie.\n"
 
-#: g10/card-util.c:1201
+#: g10/card-util.c:1206
 msgid "Please select where to store the key:\n"
 msgstr "Selcteer waar de sleutel moet worden opgeslagen:\n"
 
-#: g10/card-util.c:1236
+#: g10/card-util.c:1241
 msgid "unknown key protection algorithm\n"
 msgstr "onbekend beveiligings algoritme\n"
 
-#: g10/card-util.c:1241
+#: g10/card-util.c:1246
 msgid "secret parts of key are not available\n"
 msgstr "geheime delen van de sleutel zijn niet beschikbaar\n"
 
-#: g10/card-util.c:1246
+#: g10/card-util.c:1251
 msgid "secret key already stored on a card\n"
 msgstr "geheime sleutel staat reeds op de kaart\n"
 
-#: g10/card-util.c:1317 g10/keyedit.c:1349
+#: g10/card-util.c:1322 g10/keyedit.c:1349
 msgid "quit this menu"
 msgstr "afsluiten van dit menu"
 
-#: g10/card-util.c:1319
+#: g10/card-util.c:1324
 msgid "show admin commands"
 msgstr "tonen beheerder commando's"
 
-#: g10/card-util.c:1320 g10/keyedit.c:1352
+#: g10/card-util.c:1325 g10/keyedit.c:1352
 msgid "show this help"
 msgstr "toon deze hulp"
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1327
 msgid "list all available data"
 msgstr "toon alle beschikbare gegevens"
 
-#: g10/card-util.c:1325
+#: g10/card-util.c:1330
 msgid "change card holder's name"
 msgstr "verander de naam van de kaarthouder"
 
-#: g10/card-util.c:1326
+#: g10/card-util.c:1331
 msgid "change URL to retrieve key"
 msgstr "verander de URL van de sleutel"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1332
 msgid "fetch the key specified in the card URL"
 msgstr "download de sleutel van de kaart URL"
 
-#: g10/card-util.c:1328
+#: g10/card-util.c:1333
 msgid "change the login name"
 msgstr "verander de aanlog naam"
 
-#: g10/card-util.c:1329
+#: g10/card-util.c:1334
 msgid "change the language preferences"
 msgstr "verander de taal voorkeur"
 
-#: g10/card-util.c:1330
+#: g10/card-util.c:1335
 msgid "change card holder's sex"
 msgstr "verander de sexe van de kaarthouder"
 
-#: g10/card-util.c:1331
+#: g10/card-util.c:1336
 msgid "change a CA fingerprint"
 msgstr "verander een CA vingerafdruk"
 
-#: g10/card-util.c:1332
+#: g10/card-util.c:1337
 msgid "toggle the signature force PIN flag"
 msgstr "wissel de ondertekening forceer PIN vlag"
 
-#: g10/card-util.c:1333
+#: g10/card-util.c:1338
 msgid "generate new keys"
 msgstr "genereer nieuwe sleutels"
 
-#: g10/card-util.c:1334
+#: g10/card-util.c:1339
 msgid "menu to change or unblock the PIN"
 msgstr "keuzelijst voor het deblokkeren of veranderen van de PIN"
 
-#: g10/card-util.c:1335
+#: g10/card-util.c:1340
 msgid "verify the PIN and list all data"
 msgstr "controleer de PIN en toon alle gegevens"
 
-#: g10/card-util.c:1455 g10/keyedit.c:1619
+#: g10/card-util.c:1460 g10/keyedit.c:1619
 msgid "Command> "
 msgstr "Commando> "
 
-#: g10/card-util.c:1493
+#: g10/card-util.c:1498
 msgid "Admin-only command\n"
 msgstr "Beheerder commando\n"
 
-#: g10/card-util.c:1524
+#: g10/card-util.c:1529
 msgid "Admin commands are allowed\n"
 msgstr "Beheerder commando's zijn toegestaan\n"
 
-#: g10/card-util.c:1526
+#: g10/card-util.c:1531
 msgid "Admin commands are not allowed\n"
 msgstr "Beheerder commando's zijn niet toegestaan\n"
 
-#: g10/card-util.c:1600 g10/keyedit.c:2240
+#: g10/card-util.c:1605 g10/keyedit.c:2240
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ongeldig commando  (probeer “help”)\n"
 
@@ -750,7 +750,7 @@ msgstr "Herhaal de PIN: "
 msgid "PIN not correctly repeated; try again"
 msgstr "de tweede PIN is niet gelijk, probeer opnieuw"
 
-#: g10/decrypt.c:67 g10/decrypt.c:158 g10/gpg.c:3948 g10/keyring.c:375
+#: g10/decrypt.c:67 g10/decrypt.c:158 g10/gpg.c:3970 g10/keyring.c:375
 #: g10/keyring.c:661 g10/verify.c:101 g10/verify.c:156
 #, c-format
 msgid "can't open `%s'\n"
@@ -766,7 +766,7 @@ msgstr "--output werkt niet voor dit commando\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "sleutel ‘%s‘ niet gevonden: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:339 g10/import.c:2361 g10/keyserver.c:1725
+#: g10/delkey.c:81 g10/export.c:339 g10/import.c:2378 g10/keyserver.c:1725
 #: g10/revoke.c:232 g10/revoke.c:476
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1418,439 +1418,439 @@ msgstr "tonen van de sleutelring naam bij sleutel lijsten"
 msgid "show expiration dates during signature listings"
 msgstr "tonen van verval datum bij sleutel lijsten"
 
-#: g10/gpg.c:1996
+#: g10/gpg.c:1801
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "Noot: oude standaard optie ‘%s‘ genegeerd\n"
 
-#: g10/gpg.c:2038
+#: g10/gpg.c:2059
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Noot: geen standaard optie bestand ‘%s’\n"
 
-#: g10/gpg.c:2042
+#: g10/gpg.c:2063
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "optie bestand ‘%s’: %s\n"
 
-#: g10/gpg.c:2049
+#: g10/gpg.c:2070
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "lezen van opties uit ‘%s’\n"
 
-#: g10/gpg.c:2265 g10/gpg.c:2933 g10/gpg.c:2952
+#: g10/gpg.c:2286 g10/gpg.c:2955 g10/gpg.c:2974
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "Noot: %s is niet voor normaal gebruik!\n"
 
-#: g10/gpg.c:2278
+#: g10/gpg.c:2299
 #, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr ""
 "versleutelalgoritme uitbreiding ‘%s’ is niet geladen door onveilige\n"
 "instellingen\n"
 
-#: g10/gpg.c:2467 g10/gpg.c:2479
+#: g10/gpg.c:2488 g10/gpg.c:2500
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "‘%s’ is geen geldige ondertekening vervaldatum\n"
 
-#: g10/gpg.c:2556
+#: g10/gpg.c:2577
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "‘%s’ is geen geldige tekenset\n"
 
-#: g10/gpg.c:2580 g10/gpg.c:2769 g10/keyedit.c:4076
+#: g10/gpg.c:2601 g10/gpg.c:2790 g10/keyedit.c:4076
 msgid "could not parse keyserver URL\n"
 msgstr "het was niet mogelijk de sleutel server URL te lezen\n"
 
-#: g10/gpg.c:2592
+#: g10/gpg.c:2613
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: ongeldige sleutel server opties\n"
 
-#: g10/gpg.c:2595
+#: g10/gpg.c:2616
 msgid "invalid keyserver options\n"
 msgstr "ongeldige sleutel server opties\n"
 
-#: g10/gpg.c:2602
+#: g10/gpg.c:2623
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: ongeldige importeer opties\n"
 
-#: g10/gpg.c:2605
+#: g10/gpg.c:2626
 msgid "invalid import options\n"
 msgstr "ongeldige importeer opties\n"
 
-#: g10/gpg.c:2612
+#: g10/gpg.c:2633
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ongeldige exporteer opties\n"
 
-#: g10/gpg.c:2615
+#: g10/gpg.c:2636
 msgid "invalid export options\n"
 msgstr "ongeldige exporteer opties\n"
 
-#: g10/gpg.c:2622
+#: g10/gpg.c:2643
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: ongeldige lijst opties\n"
 
-#: g10/gpg.c:2625
+#: g10/gpg.c:2646
 msgid "invalid list options\n"
 msgstr "ongeldige lijst opties\n"
 
-#: g10/gpg.c:2633
+#: g10/gpg.c:2654
 msgid "display photo IDs during signature verification"
 msgstr "tonen foto ID tijdens ondertekening controle"
 
-#: g10/gpg.c:2635
+#: g10/gpg.c:2656
 msgid "show policy URLs during signature verification"
 msgstr "toon procedure URL tijdens ondertekening controle"
 
-#: g10/gpg.c:2637
+#: g10/gpg.c:2658
 msgid "show all notations during signature verification"
 msgstr "toon alle opmerkingen tijdens ondertekening controle"
 
-#: g10/gpg.c:2639
+#: g10/gpg.c:2660
 msgid "show IETF standard notations during signature verification"
 msgstr "toon IETF opmerkingen tijdens ondertekening controle"
 
-#: g10/gpg.c:2643
+#: g10/gpg.c:2664
 msgid "show user-supplied notations during signature verification"
 msgstr "toon gebruiker opmerkingen tijdens ondertekening controle"
 
-#: g10/gpg.c:2645
+#: g10/gpg.c:2666
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "toon voorkeurs sleutel server tijdens ondertekening controle"
 
-#: g10/gpg.c:2647
+#: g10/gpg.c:2668
 msgid "show user ID validity during signature verification"
 msgstr "toon gebruiker ID geldigheid tijdens ondertekening controle"
 
-#: g10/gpg.c:2649
+#: g10/gpg.c:2670
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 "toon ingetrokken en verlopen gebruiker ID's tijdens ondertekening controle"
 
-#: g10/gpg.c:2651
+#: g10/gpg.c:2672
 #, fuzzy
 msgid "show only the primary user ID in signature verification"
 msgstr ""
 "toon ingetrokken en verlopen gebruiker ID's tijdens ondertekening controle"
 
-#: g10/gpg.c:2653
+#: g10/gpg.c:2674
 msgid "validate signatures with PKA data"
 msgstr "Controleer ondertekeningen met PKA gegevens"
 
-#: g10/gpg.c:2655
+#: g10/gpg.c:2676
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr ""
 "Verhoog het vertrouwen van ondertekeningen met goedgekeurde PKA gegevens"
 
-#: g10/gpg.c:2662
+#: g10/gpg.c:2683
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: ongeldige controle opties\n"
 
-#: g10/gpg.c:2665
+#: g10/gpg.c:2686
 msgid "invalid verify options\n"
 msgstr "ongeldige controle opties\n"
 
-#: g10/gpg.c:2672
+#: g10/gpg.c:2693
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "het is onmogelijk het programma start pad aan te passen naar %s\n"
 
-#: g10/gpg.c:2835
+#: g10/gpg.c:2856
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: ongeldige auto-key-locate lijst\n"
 
-#: g10/gpg.c:2838
+#: g10/gpg.c:2859
 msgid "invalid auto-key-locate list\n"
 msgstr "ongeldige auto-key-locate lijst\n"
 
-#: g10/gpg.c:2922
+#: g10/gpg.c:2944
 msgid "WARNING: program may create a core file!\n"
 msgstr "Waarschuwing: het programma kan een core bestand genereren!\n"
 
-#: g10/gpg.c:2926
+#: g10/gpg.c:2948
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "Waarschuwing: %s overschrijft %s\n"
 
-#: g10/gpg.c:2935
+#: g10/gpg.c:2957
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s mag niet gebruikt worden met %s!\n"
 
-#: g10/gpg.c:2938
+#: g10/gpg.c:2960
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s klopt niet samen met %s!\n"
 
-#: g10/gpg.c:2945
+#: g10/gpg.c:2967
 #, c-format
 msgid "NOTE: %s is not available in this version\n"
 msgstr "Noot: %s is niet beschikbaar in deze versie\n"
 
-#: g10/gpg.c:2960
+#: g10/gpg.c:2982
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "werkt niet met onveilig geheugen door %s\n"
 
-#: g10/gpg.c:2974
+#: g10/gpg.c:2996
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "allen ontkoppelde of platte tekst ondertekeningen zijn mogelijk in --pgp2 "
 "modus\n"
 
-#: g10/gpg.c:2980
+#: g10/gpg.c:3002
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "het is niet mogelijk tegelijk te ondertekenen en versleutelen in --pgp2 "
 "modus\n"
 
-#: g10/gpg.c:2986
+#: g10/gpg.c:3008
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "U moet bestanden (en geen pipe) gebruiken in --pgp2 modus.\n"
 
-#: g10/gpg.c:2999
+#: g10/gpg.c:3021
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "versleutelen in --pgp2 modus heeft het IDEA versleutelalgoritme nodig\n"
 
-#: g10/gpg.c:3066 g10/gpg.c:3090
+#: g10/gpg.c:3088 g10/gpg.c:3112
 msgid "selected cipher algorithm is invalid\n"
 msgstr "ongeldig versleutelalgoritme gekozen\n"
 
-#: g10/gpg.c:3072 g10/gpg.c:3096
+#: g10/gpg.c:3094 g10/gpg.c:3118
 msgid "selected digest algorithm is invalid\n"
 msgstr "ongeldig samenvatting algoritme gekozen\n"
 
-#: g10/gpg.c:3078
+#: g10/gpg.c:3100
 msgid "selected compression algorithm is invalid\n"
 msgstr "ongeldige compressie gekozen\n"
 
-#: g10/gpg.c:3084
+#: g10/gpg.c:3106
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "ongeldig certificaat samenvatting algoritme gekozen\n"
 
-#: g10/gpg.c:3099
+#: g10/gpg.c:3121
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed moet groter zijn dan 0\n"
 
-#: g10/gpg.c:3101
+#: g10/gpg.c:3123
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed moet groter zijn dan 1\n"
 
-#: g10/gpg.c:3103
+#: g10/gpg.c:3125
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth moet vallen tussen dan 1 en 255\n"
 
-#: g10/gpg.c:3105
+#: g10/gpg.c:3127
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "ongeldige default-cert-level; moet 0, 1, 2, of 3 zijn\n"
 
-#: g10/gpg.c:3107
+#: g10/gpg.c:3129
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ongeldige min-cert-level; moet 1, 2, of 3 zijn\n"
 
-#: g10/gpg.c:3110
+#: g10/gpg.c:3132
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "Noot: eenvoudige S2K modus (0) wordt sterk afgeraden\n"
 
-#: g10/gpg.c:3114
+#: g10/gpg.c:3136
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ongeldige S2K modus; moet 0, 1 of 3\n"
 
-#: g10/gpg.c:3121
+#: g10/gpg.c:3143
 msgid "invalid default preferences\n"
 msgstr "ongeldige standaard voorkeuren\n"
 
-#: g10/gpg.c:3130
+#: g10/gpg.c:3152
 msgid "invalid personal cipher preferences\n"
 msgstr "ongeldig persoonlijk versleutelalgoritme voorkeur\n"
 
-#: g10/gpg.c:3134
+#: g10/gpg.c:3156
 msgid "invalid personal digest preferences\n"
 msgstr "ongeldig persoonlijk samenvattings algoritme voorkeur\n"
 
-#: g10/gpg.c:3138
+#: g10/gpg.c:3160
 msgid "invalid personal compress preferences\n"
 msgstr "ongeldig persoonlijk compressie algoritme voorkeur\n"
 
-#: g10/gpg.c:3171
+#: g10/gpg.c:3193
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s werkt nog niet met %s\n"
 
-#: g10/gpg.c:3218
+#: g10/gpg.c:3240
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "U mag versleutelalgoritme ‘%s’ niet gebruiken in %s modus\n"
 
-#: g10/gpg.c:3223
+#: g10/gpg.c:3245
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "U mag samenvattings algoritme ‘%s’ niet gebruiken in %s modus\n"
 
-#: g10/gpg.c:3228
+#: g10/gpg.c:3250
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "U mag compressie algoritme ‘%s’ niet gebruiken in %s modus\n"
 
-#: g10/gpg.c:3330
+#: g10/gpg.c:3352
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "initialiseren van TrustDB is mislukt: %s\n"
 
-#: g10/gpg.c:3341
+#: g10/gpg.c:3363
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "Waarschuwing: er zijn ontvangers (-r) opgegeven zonder publieke sleutel "
 "versleuteling\n"
 
-#: g10/gpg.c:3352
+#: g10/gpg.c:3374
 msgid "--store [filename]"
 msgstr "--store [bestandsnaam]"
 
-#: g10/gpg.c:3359
+#: g10/gpg.c:3381
 msgid "--symmetric [filename]"
 msgstr "--symmetric [bestandsnaam]"
 
-#: g10/gpg.c:3361
+#: g10/gpg.c:3383
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "symetrische versleuteling van ‘%s’ is mislukt: %s\n"
 
-#: g10/gpg.c:3371
+#: g10/gpg.c:3393
 msgid "--encrypt [filename]"
 msgstr "--encrypt [bestandsnaam]"
 
-#: g10/gpg.c:3384
+#: g10/gpg.c:3406
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [bestandsnaam]"
 
-#: g10/gpg.c:3386
+#: g10/gpg.c:3408
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 "U kunt --symmetric --encrypt niet gebruiken met --s2k-mode 0 instelling\n"
 
-#: g10/gpg.c:3389
+#: g10/gpg.c:3411
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "U kunt --symmetric --encrypt niet in %s modus gebruiken\n"
 
-#: g10/gpg.c:3407
+#: g10/gpg.c:3429
 msgid "--sign [filename]"
 msgstr "--sign [bestandsnaam]"
 
-#: g10/gpg.c:3420
+#: g10/gpg.c:3442
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [bestandsnaam]"
 
-#: g10/gpg.c:3435
+#: g10/gpg.c:3457
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [bestandsnaam]"
 
-#: g10/gpg.c:3437
+#: g10/gpg.c:3459
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "U kunt --symmetric --sign --encrypt niet gebruiken met --s2k-mode 0 "
 "instelling\n"
 
-#: g10/gpg.c:3440
+#: g10/gpg.c:3462
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "U kunt --symmetric --sign --encrypt niet in %s modus gebruiken\n"
 
-#: g10/gpg.c:3460
+#: g10/gpg.c:3482
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [bestandsnaam]"
 
-#: g10/gpg.c:3469
+#: g10/gpg.c:3491
 msgid "--clearsign [filename]"
 msgstr "--clearsign [bestandsnaam]"
 
-#: g10/gpg.c:3494
+#: g10/gpg.c:3516
 msgid "--decrypt [filename]"
 msgstr "--decrypt [bestandsnaam]"
 
-#: g10/gpg.c:3502
+#: g10/gpg.c:3524
 msgid "--sign-key user-id"
 msgstr "--sign-key gebruiker-id"
 
-#: g10/gpg.c:3506
+#: g10/gpg.c:3528
 msgid "--lsign-key user-id"
 msgstr "--lsign-key gebruiker-id"
 
-#: g10/gpg.c:3527
+#: g10/gpg.c:3549
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key gebruiker-id [commando's]"
 
-#: g10/gpg.c:3598
+#: g10/gpg.c:3620
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [gebruiker-id] [sleutelringbestand]"
 
-#: g10/gpg.c:3640
+#: g10/gpg.c:3662
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "sleutelserver verzending is mislukt: %s\n"
 
-#: g10/gpg.c:3642
+#: g10/gpg.c:3664
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "sleutelserver opvraging is mislukt: %s\n"
 
-#: g10/gpg.c:3644
+#: g10/gpg.c:3666
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "sleutel exporteren is mislukt: %s\n"
 
-#: g10/gpg.c:3655
+#: g10/gpg.c:3677
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "sleutelserver zoekvraag is mislukt: %s\n"
 
-#: g10/gpg.c:3665
+#: g10/gpg.c:3687
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "sleutelserver verversing is mislukt: %s\n"
 
-#: g10/gpg.c:3716
+#: g10/gpg.c:3738
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "verwijderen van versleuteling is mislukt: %s\n"
 
-#: g10/gpg.c:3724
+#: g10/gpg.c:3746
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "plaatsen van versleuteling is mislukt: %s\n"
 
-#: g10/gpg.c:3811
+#: g10/gpg.c:3833
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ongeldig berichtsamenvattings algoritme ‘%s’\n"
 
-#: g10/gpg.c:3934
+#: g10/gpg.c:3956
 msgid "[filename]"
 msgstr "[bestandsnaam]"
 
-#: g10/gpg.c:3938
+#: g10/gpg.c:3960
 msgid "Go ahead and type your message ...\n"
 msgstr "Begin uw bericht te typen ...\n"
 
-#: g10/gpg.c:4242
+#: g10/gpg.c:4264
 msgid "the given certification policy URL is invalid\n"
 msgstr "de opgegeven certificaat procedure URL is ongeldig\n"
 
-#: g10/gpg.c:4244
+#: g10/gpg.c:4266
 msgid "the given signature policy URL is invalid\n"
 msgstr "de opgegeven ondertekening procedure URL is ongeldig\n"
 
-#: g10/gpg.c:4277
+#: g10/gpg.c:4299
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "de opgegeven sleutelserver URL is ongeldig\n"
 
@@ -2459,7 +2459,7 @@ msgid "writing to `%s'\n"
 msgstr "schrijven naar ‘%s’\n"
 
 #: g10/import.c:805 g10/import.c:900 g10/import.c:1157 g10/import.c:1300
-#: g10/import.c:2375 g10/import.c:2397
+#: g10/import.c:2392 g10/import.c:2414
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "fout bij het schrijven naar sleutelring ‘%s’: %s\n"
@@ -2550,7 +2550,7 @@ msgstr ""
 msgid "importing secret keys not allowed\n"
 msgstr "importeren van geheime sleutels is niet toegestaan\n"
 
-#: g10/import.c:1151 g10/import.c:2390
+#: g10/import.c:1151 g10/import.c:2407
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "geen standaard geheim sleutelringbestand: %s\n"
@@ -2676,44 +2676,44 @@ msgstr ""
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "sleutel %s: onverwachte ondertekening klasse (0x%02X) - overgeslagen\n"
 
-#: g10/import.c:1737
+#: g10/import.c:1754
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "sleutel %s: dubbele Gebruikers ID gevonden - samengevoegd\n"
 
-#: g10/import.c:1799
+#: g10/import.c:1816
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "Waarschuwing: sleutel %s kan ingetrokken zijn: ophalen intrekkingssleutel %"
 "s\n"
 
-#: g10/import.c:1813
+#: g10/import.c:1830
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "Waarschuwing: sleutel %s kan ingetrokken zijn: intrekkingssleutel %s niet "
 "aanwezig.\n"
 
-#: g10/import.c:1872
+#: g10/import.c:1889
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "sleutel %s: “%s” intrekkingscertificaat toegevoegd\n"
 
-#: g10/import.c:1906
+#: g10/import.c:1923
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "sleutel %s: directe sleutel ondertekening toegevoegd\n"
 
-#: g10/import.c:2295
+#: g10/import.c:2312
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "Noot: een serienummer van een sleutel klopt niet met de kaart\n"
 
-#: g10/import.c:2303
+#: g10/import.c:2320
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "Noot: primaire sleutel is online en opgeslagen op de kaart\n"
 
-#: g10/import.c:2305
+#: g10/import.c:2322
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "Noot: secondaire sleutel is online en opgeslagen op de kaart\n"
 

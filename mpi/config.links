@@ -214,6 +214,12 @@ case "${host}" in
 	path="m68k/mc68020 m68k"
 	;;
 
+    ppc620-*-*	    | \
+    powerpc64*-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="powerpc64"
+	;;
+
     powerpc*-*-linux*)
 	echo '/* configured for powerpc/ELF */' >>./mpi/asm-syntax.h
 	echo '#define ELF_SYNTAX'               >>./mpi/asm-syntax.h
@@ -252,11 +258,6 @@ case "${host}" in
     ppc601-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="power powerpc32"
-	;;
-    ppc620-*-*	    | \
-    powerpc64*-*-*)
-	mpi_sflags="-Wa,-mppc"
-	path="powerpc64"
 	;;
     ppc60[234]*-*-* | \
     powerpc*-*-*)
