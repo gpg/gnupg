@@ -1,3 +1,7 @@
+2008-03-26  Werner Koch  <wk@g10code.com>
+
+	Release 1.4.9.
+
 2008-03-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Darwin's /bin/sh has a builtin echo that doesn't

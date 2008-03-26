@@ -1,10 +1,11 @@
-Noteworthy changes in version 1.4.9 (unreleased)
+Noteworthy changes in version 1.4.9 (2008-03-26)
 ------------------------------------------------
 
     * Improved AES encryption performance by more than 20% (on ia32).
       Decryption is also a bit faster.
 
-    * Fixed possible memory corruption while importing OpenPGP keys.
+    * Fixed possible memory corruption bug in 1.4.8 while importing
+      OpenPGP keys.
 
 
 Noteworthy changes in version 1.4.8 (2007-12-20)
