@@ -1,5 +1,5 @@
 /* make-dns-cert.c - An OpenPGP-to-DNS CERT conversion tool
- * Copyright (C) 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,7 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <unistd.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -26,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -72,7 +76,9 @@ cert_key(const char *name,const char *keyfile)
     {
       unsigned char buffer[1024];
 
-      err=read(fd,buffer,1024);
+      do 
+        err = read (fd,buffer,1024);
+      while (err == -1 && errno == EINTR);
       if(err==-1)
 	{
 	  fprintf(stderr,"Unable to read key file %s: %s\n",
@@ -181,7 +187,11 @@ main(int argc,char *argv[])
     }
   else if(argc>1 && strcmp(argv[1],"--version")==0)
     {
-      printf("make-dns-cert (GnuPG) " VERSION "\n");
+#if defined(HAVE_CONFIG_H) && defined(VERSION)
+      printf ("make-dns-cert (GnuPG) " VERSION "\n");
+#else
+      printf ("make-dns-cert gnupg-svn%s\n", "$Revision$");
+#endif
       return 0;
     }
   else if(argc>1 && strcmp(argv[1],"--help")==0)

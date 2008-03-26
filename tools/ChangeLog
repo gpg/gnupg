@@ -1,3 +1,9 @@
+2008-03-26  Werner Koch  <wk@g10code.com>
+
+	* make-dns-cert.c: Include unistd.h.  Use config.h if requested.
+	(cert_key): Protect read against EINTR.
+	(main): Print SVN revision for standalone version.
+
 2008-03-05  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (arithmetic_op): Add logical not, or and and.
