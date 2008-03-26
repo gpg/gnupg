@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-17 10:57+0100\n"
+"POT-Creation-Date: 2008-03-26 09:52+0100\n"
 "PO-Revision-Date: 2007-11-26 19:01+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -1405,7 +1405,7 @@ msgstr "nie mo¿na otworzyæ ,,%s''\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "klucz ,,%s'' nie zosta³ odnaleziony: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2368 g10/keyserver.c:1733
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2385 g10/keyserver.c:1733
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -2726,7 +2726,7 @@ msgid "writing to `%s'\n"
 msgstr "zapis do ,,%s''\n"
 
 #: g10/import.c:812 g10/import.c:907 g10/import.c:1164 g10/import.c:1307
-#: g10/import.c:2382 g10/import.c:2404
+#: g10/import.c:2399 g10/import.c:2421
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "b³±d zapisu zbioru kluczy ,,%s'': %s\n"
@@ -2815,7 +2815,7 @@ msgstr "klucz %s: klucz tajny z b³êdnym szyfrem %d - pominiêty\n"
 msgid "importing secret keys not allowed\n"
 msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
 
-#: g10/import.c:1158 g10/import.c:2397
+#: g10/import.c:1158 g10/import.c:2414
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "brak domy¶lnego zbioru kluczy tajnych: %s\n"
@@ -2939,44 +2939,44 @@ msgstr "klucz %s: pominiêto - podpis na podkluczu w niew³a¶ciwym miejscu\n"
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "klucz %s: pominiêto - nieoczekiwana klasa podpisu (0x%02X)\n"
 
-#: g10/import.c:1744
+#: g10/import.c:1761
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "key %s: do³±czono powtórzony identyfikator u¿ytkownika\n"
 
-#: g10/import.c:1806
+#: g10/import.c:1823
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "OSTRZE¯ENIE: klucz %s móg³ zostaæ uniewa¿niony:\n"
 "             zapytanie o uniewa¿niaj±cy klucz %s w serwerze kluczy\n"
 
-#: g10/import.c:1820
+#: g10/import.c:1837
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "OSTRZE¯ENIE: klucz %s móg³ zostaæ uniewa¿niony:\n"
 "             brak uniewa¿niaj±cego klucza %s.\n"
 
-#: g10/import.c:1879
+#: g10/import.c:1896
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "klucz %s: ,,%s'' dodany certyfikat uniewa¿nienia\n"
 
-#: g10/import.c:1913
+#: g10/import.c:1930
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "klucz %s: dodano bezpo¶redni podpis\n"
 
-#: g10/import.c:2302
+#: g10/import.c:2319
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "UWAGA: numer seryjny klucza nie zgadza siê z numerem karty\n"
 
-#: g10/import.c:2310
+#: g10/import.c:2327
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "UWAGA: klucz g³ówny jest aktywny i zapisany na karcie\n"
 
-#: g10/import.c:2312
+#: g10/import.c:2329
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "UWAGA: klucz dodatkowy jest aktywny i zapisany na karcie\n"
 
@@ -6440,7 +6440,7 @@ msgid "||Please enter your PIN at the reader's keypad"
 msgstr "||Proszê wprowadziæ PIN na klawiaturze czytnika"
 
 #: scd/app-nks.c:330 scd/app-openpgp.c:1332 scd/app-openpgp.c:1364
-#: scd/app-openpgp.c:1483 scd/app-dinsig.c:301
+#: scd/app-openpgp.c:1511 scd/app-openpgp.c:1529 scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "Zapytanie zwrotne o PIN zwróci³o b³±d: %s\n"
@@ -6464,15 +6464,15 @@ msgstr "nie powiód³ siê zapis daty utworzenia: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "odczyt klucza publicznego nie powiód³ siê: %s\n"
 
-#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2047
+#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2095
 msgid "response does not contain the public key data\n"
 msgstr "odpowied¼ nie zawiera danych klucza publicznego\n"
 
-#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2055
+#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2103
 msgid "response does not contain the RSA modulus\n"
 msgstr "odpowied¼ nie zawiera wspó³czynnika RSA\n"
 
-#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2065
+#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2113
 msgid "response does not contain the RSA public exponent\n"
 msgstr "odpowied¼ nie zawiera publicznego wyk³adnika RSA\n"
 
@@ -6487,13 +6487,13 @@ msgstr ""
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Proszê wpisaæ PIN%%0A[podpisów wykonanych: %lu]"
 
-#: scd/app-openpgp.c:1371 scd/app-openpgp.c:1489
+#: scd/app-openpgp.c:1371 scd/app-openpgp.c:1536
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "PIN dla CHV%d jest zbyt krótki; minimalna d³ugo¶æ to %d\n"
 
-#: scd/app-openpgp.c:1384 scd/app-openpgp.c:1424 scd/app-openpgp.c:1499
-#: scd/app-openpgp.c:2318
+#: scd/app-openpgp.c:1384 scd/app-openpgp.c:1424 scd/app-openpgp.c:1548
+#: scd/app-openpgp.c:2366
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "weryfikacja CHV%d nie powiod³a siê: %s\n"
@@ -6502,124 +6502,137 @@ msgstr "weryfikacja CHV%d nie powiod³a siê: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr "dostêp do poleceñ administratora nie zosta³ skonfigurowany\n"
 
-#: scd/app-openpgp.c:1462 scd/app-openpgp.c:2569
+#: scd/app-openpgp.c:1468 scd/app-openpgp.c:2617
 msgid "error retrieving CHV status from card\n"
 msgstr "b³±d podczas odczytu stanu CHV z karty\n"
 
-#: scd/app-openpgp.c:1468 scd/app-openpgp.c:2578
+#: scd/app-openpgp.c:1474 scd/app-openpgp.c:2626
 msgid "card is permanently locked!\n"
 msgstr "karta zosta³a trwale zablokowana!\n"
 
-#: scd/app-openpgp.c:1473
+#: scd/app-openpgp.c:1481
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "Zosta³o %d prób PIN-u administratora do trwa³ego zablokowania karty\n"
 
-#. TRANSLATORS: Do not translate the "|A|" prefix but
-#. keep it at the start of the string.  We need this elsewhere
-#. to get some infos on the string.
-#: scd/app-openpgp.c:1480
+#: scd/app-openpgp.c:1491
+#, fuzzy, c-format
+msgid ""
+"|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
+"%d]"
+msgstr ""
+"||Proszê wprowadziæ PIN na klawiaturze czytnika%%0A[podpisów wykonanych: %lu]"
+
+#: scd/app-openpgp.c:1506
+#, fuzzy
+msgid "|A|Please enter the Admin PIN at the reader's keypad"
+msgstr "||Proszê wprowadziæ PIN na klawiaturze czytnika"
+
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep
+#. it at the start of the string.  We need this elsewhere to
+#. get some infos on the string.
+#: scd/app-openpgp.c:1526
 msgid "|A|Admin PIN"
 msgstr "|A|PIN administratora"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1629
+#: scd/app-openpgp.c:1677
 msgid "|AN|New Admin PIN"
 msgstr "|AN|Nowy PIN administratora"
 
-#: scd/app-openpgp.c:1629
+#: scd/app-openpgp.c:1677
 msgid "|N|New PIN"
 msgstr "|N|Nowy PIN"
 
-#: scd/app-openpgp.c:1633
+#: scd/app-openpgp.c:1681
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "b³±d podczas odczytu nowego PIN-u: %s\n"
 
-#: scd/app-openpgp.c:1683 scd/app-openpgp.c:2133
+#: scd/app-openpgp.c:1731 scd/app-openpgp.c:2181
 msgid "error reading application data\n"
 msgstr "b³±d podczas odczytu danych aplikacji\n"
 
-#: scd/app-openpgp.c:1689 scd/app-openpgp.c:2140
+#: scd/app-openpgp.c:1737 scd/app-openpgp.c:2188
 msgid "error reading fingerprint DO\n"
 msgstr "b³±d podczas odczytu odcisku DO\n"
 
-#: scd/app-openpgp.c:1699
+#: scd/app-openpgp.c:1747
 msgid "key already exists\n"
 msgstr "klucz ju¿ istnieje\n"
 
-#: scd/app-openpgp.c:1703
+#: scd/app-openpgp.c:1751
 msgid "existing key will be replaced\n"
 msgstr "istniej±cy klucz zostanie zast±piony\n"
 
-#: scd/app-openpgp.c:1705
+#: scd/app-openpgp.c:1753
 msgid "generating new key\n"
 msgstr "generowanie nowego klucza\n"
 
-#: scd/app-openpgp.c:1872
+#: scd/app-openpgp.c:1920
 msgid "creation timestamp missing\n"
 msgstr "brak datownika utworzenia\n"
 
-#: scd/app-openpgp.c:1879
+#: scd/app-openpgp.c:1927
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "reszta RSA brakuj±ca lub o rozmiarze innym ni¿ %d bity\n"
 
-#: scd/app-openpgp.c:1886
+#: scd/app-openpgp.c:1934
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "publiczny wyk³adnik RSA brakuj±cy lub wiêkszy ni¿ %d bity\n"
 
-#: scd/app-openpgp.c:1894 scd/app-openpgp.c:1901
+#: scd/app-openpgp.c:1942 scd/app-openpgp.c:1949
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "liczba pierwsza %s RSA brakuj±ca lub o rozmiarze innym ni¿ %d bitów\n"
 
-#: scd/app-openpgp.c:1964
+#: scd/app-openpgp.c:2012
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "nie powiód³ siê zapis klucza: %s\n"
 
-#: scd/app-openpgp.c:2024
+#: scd/app-openpgp.c:2072
 msgid "please wait while key is being generated ...\n"
 msgstr "proszê czekaæ na wygenerowanie klucza...\n"
 
-#: scd/app-openpgp.c:2038
+#: scd/app-openpgp.c:2086
 msgid "generating key failed\n"
 msgstr "generowanie klucza nie powiod³o siê\n"
 
-#: scd/app-openpgp.c:2041
+#: scd/app-openpgp.c:2089
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "generowanie klucza zakoñczone (%d sekund)\n"
 
-#: scd/app-openpgp.c:2098
+#: scd/app-openpgp.c:2146
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "niepoprawna struktura karty OpenPGP (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2148
+#: scd/app-openpgp.c:2196
 msgid "fingerprint on card does not match requested one\n"
 msgstr "odcisk na karcie nie zgadza siê z ¿±danym\n"
 
-#: scd/app-openpgp.c:2236
+#: scd/app-openpgp.c:2284
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "karta nie obs³uguje algorytmu skrótu %s\n"
 
-#: scd/app-openpgp.c:2297
+#: scd/app-openpgp.c:2345
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "dotychczas stworzono podpisów: %lu\n"
 
-#: scd/app-openpgp.c:2583
+#: scd/app-openpgp.c:2631
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "weryfikacja PIN-u administratora tym poleceniem jest aktualnie zabroniona\n"
 
-#: scd/app-openpgp.c:2656 scd/app-openpgp.c:2666
+#: scd/app-openpgp.c:2704 scd/app-openpgp.c:2714
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nie mo¿na dostaæ siê do %s - niepoprawna karta OpenPGP?\n"
@@ -7000,37 +7013,37 @@ msgstr ""
 ",,%s''\n"
 "S/N %s, ID 0x%08lX, stworzony %s"
 
-#: sm/certlist.c:121
+#: sm/certlist.c:122
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 "nie okre¶lono sposobu wykorzystania klucza - przyjêto wszystkie sposoby\n"
 
-#: sm/certlist.c:131 sm/keylist.c:258
+#: sm/certlist.c:132 sm/keylist.c:258
 #, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "b³±d podczas pobierania informacji o wykorzystaniu klucza: %s\n"
 
-#: sm/certlist.c:141
+#: sm/certlist.c:142
 msgid "certificate should have not been used for certification\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do po¶wiadczania\n"
 
-#: sm/certlist.c:153
+#: sm/certlist.c:154
 msgid "certificate should have not been used for OCSP response signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania odpowiedzi OCSP\n"
 
-#: sm/certlist.c:164
+#: sm/certlist.c:165
 msgid "certificate should have not been used for encryption\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do szyfrowania\n"
 
-#: sm/certlist.c:165
+#: sm/certlist.c:166
 msgid "certificate should have not been used for signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania\n"
 
-#: sm/certlist.c:166
+#: sm/certlist.c:167
 msgid "certificate is not usable for encryption\n"
 msgstr "certyfikat nie nadaje siê do szyfrowania\n"
 
-#: sm/certlist.c:167
+#: sm/certlist.c:168
 msgid "certificate is not usable for signing\n"
 msgstr "certyfikat nie nadaje siê do podpisywania\n"
 

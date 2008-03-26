@@ -1,10 +1,12 @@
-Noteworthy changes in version 2.0.9 (unreleased)
+Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------
 
  * Gpgsm always tries to locate missing certificates from a running
    Dirmngr's cache.
 
  * Tweaks for Windows.
+
+ * The Admin PIN for OpenPGP cards may now be entered with the pinpad.
 
  * Improved certificate chain construction.
 

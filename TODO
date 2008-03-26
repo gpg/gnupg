@@ -68,7 +68,7 @@
   not a real problem because application will get a card removed
   status and should the send a reset to try solving the problem.
 
-** Add a test to check the extkeyusage.
+** Add a regression test to check the extkeyusage.
 
 * Windows port (W32)
 ** No card status notifications.
@@ -123,10 +123,6 @@
 
 * Howtos
 ** Migrate OpenPGP keys to another system
-
-* Duplicate certificates
-  This may happen and lead to an Ambiguous Name error.  Solution is to
-  check the certs for identity before throwing this error.
 
 * Gpg-Agent Locale
   Although we pass LC_MESSAGE from gpgsm et al. to Pinentry, this has

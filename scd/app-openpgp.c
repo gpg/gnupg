@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- * Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1278,7 +1278,7 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 /* Verify a CHV either using using the pinentry or if possibile by
    using a keypad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
-   ised with CHV1.  PINVALUE is the address of a pointer which will
+   used with CHV1.  PINVALUE is the address of a pointer which will
    receive a newly allocated block with the actual PIN (this is useful
    in case that PIN shall be used for another verifiy operation).  The
    caller needs to free this value.  If the function returns with
@@ -1451,10 +1451,16 @@ verify_chv3 (app_t app,
       
   if (!app->did_chv3) 
     {
-      char *pinvalue;
       void *relptr;
       unsigned char *value;
       size_t valuelen;
+      iso7816_pininfo_t pininfo;
+      int minlen = 8;
+      int remaining;
+
+      memset (&pininfo, 0, sizeof pininfo);
+      pininfo.mode = 1;
+      pininfo.minlen = minlen;
 
       relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
       if (!relptr || valuelen < 7)
@@ -1469,38 +1475,80 @@ verify_chv3 (app_t app,
           xfree (relptr);
           return gpg_error (GPG_ERR_BAD_PIN);
         }
-
-      log_info(_("%d Admin PIN attempts remaining before card"
-                 " is permanently locked\n"), value[6]);
+      remaining = value[6];
       xfree (relptr);
 
-      /* TRANSLATORS: Do not translate the "|A|" prefix but
-         keep it at the start of the string.  We need this elsewhere
-         to get some infos on the string. */
-      rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
-      if (rc)
-        {
-          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
-          return rc;
-        }
+      log_info(_("%d Admin PIN attempts remaining before card"
+                 " is permanently locked\n"), remaining);
 
-      if (strlen (pinvalue) < 8)
+      if (!opt.disable_keypad
+          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
         {
-          log_error (_("PIN for CHV%d is too short;"
-                       " minimum length is %d\n"), 3, 8);
+          /* The reader supports the verify command through the keypad. */
+          
+          if (remaining < 3)
+            {
+#define PROMPTSTRING  _("|A|Please enter the Admin PIN" \
+                        " at the reader's keypad%%0A"   \
+                        "[remaining attempts: %d]")
+              size_t promptsize = strlen (PROMPTSTRING) + 50;
+              char *prompt;
+              
+              prompt = xmalloc (promptsize);
+              if (!prompt)
+                return gpg_error_from_syserror ();
+              snprintf (prompt, promptsize-1, PROMPTSTRING, remaining);
+              rc = pincb (pincb_arg, prompt, NULL); 
+              xfree (prompt);
+#undef PROMPTSTRING
+            }
+          else
+            rc = pincb (pincb_arg, _("|A|Please enter the Admin PIN"
+                                     " at the reader's keypad"),   NULL);
+
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              return rc;
+            }
+          rc = iso7816_verify_kp (app->slot, 0x83, "", 0, &pininfo); 
+          /* Dismiss the prompt. */
+          pincb (pincb_arg, NULL, NULL);
+        }
+      else
+        {
+          char *pinvalue;
+
+          /* TRANSLATORS: Do not translate the "|A|" prefix but keep
+             it at the start of the string.  We need this elsewhere to
+             get some infos on the string. */
+          rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              return rc;
+            }
+          
+          if (strlen (pinvalue) < minlen)
+            {
+              log_error (_("PIN for CHV%d is too short;"
+                           " minimum length is %d\n"), 3, minlen);
+              xfree (pinvalue);
+              return gpg_error (GPG_ERR_BAD_PIN);
+            }
+          
+          rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
           xfree (pinvalue);
-          return gpg_error (GPG_ERR_BAD_PIN);
         }
-
-      rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
-      xfree (pinvalue);
+      
       if (rc)
         {
           log_error (_("verify CHV%d failed: %s\n"), 3, gpg_strerror (rc));
           flush_cache_after_error (app);
           return rc;
         }
-      app->did_chv3 = 1;
     }
   return rc;
 }

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-03-17 10:57+0100\n"
+"POT-Creation-Date: 2008-03-26 09:52+0100\n"
 "PO-Revision-Date: 2008-01-31 23:09+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -1358,7 +1358,7 @@ msgstr "無法開啟 `%s'\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "找不到金鑰 \"%s\": %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2368 g10/keyserver.c:1733
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2385 g10/keyserver.c:1733
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -2638,7 +2638,7 @@ msgid "writing to `%s'\n"
 msgstr "寫入 `%s' 中\n"
 
 #: g10/import.c:812 g10/import.c:907 g10/import.c:1164 g10/import.c:1307
-#: g10/import.c:2382 g10/import.c:2404
+#: g10/import.c:2399 g10/import.c:2421
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "寫入鑰匙圈 `%s' 時出錯: %s\n"
@@ -2727,7 +2727,7 @@ msgstr "金鑰 %s: 私鑰使用了無效的 %d 編密法 - 已跳過\n"
 msgid "importing secret keys not allowed\n"
 msgstr "未允許匯入私鑰\n"
 
-#: g10/import.c:1158 g10/import.c:2397
+#: g10/import.c:1158 g10/import.c:2414
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "沒有預設的私鑰鑰匙圈: %s\n"
@@ -2851,40 +2851,40 @@ msgstr "金鑰 %s: 子鑰簽章在錯誤的地方 - 已跳過\n"
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "金鑰 %s: 非預期的簽章等級 (0x%02X) - 已跳過\n"
 
-#: g10/import.c:1744
+#: g10/import.c:1761
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "金鑰 %s: 偵測到重複的使用者 ID - 已合併\n"
 
-#: g10/import.c:1806
+#: g10/import.c:1823
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr "警告: 金鑰 %s 可能被撤銷了: 正在取回撤銷金鑰 %s\n"
 
-#: g10/import.c:1820
+#: g10/import.c:1837
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr "警告: 金鑰 %s 可能被撤銷了: 撤銷金鑰 %s 未出現.\n"
 
-#: g10/import.c:1879
+#: g10/import.c:1896
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "金鑰 %s: 已新增 \"%s\" 撤銷憑證\n"
 
-#: g10/import.c:1913
+#: g10/import.c:1930
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "金鑰 %s: 已新增直接金鑰簽章\n"
 
-#: g10/import.c:2302
+#: g10/import.c:2319
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "請注意: 金鑰的序號 (S/N) 與卡片上的並不一致\n"
 
-#: g10/import.c:2310
+#: g10/import.c:2327
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "請注意: 主鑰在線上且已存放於卡片上了\n"
 
-#: g10/import.c:2312
+#: g10/import.c:2329
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "請注意: 子鑰在線上且已存放於卡片上了\n"
 
@@ -6241,7 +6241,7 @@ msgid "||Please enter your PIN at the reader's keypad"
 msgstr "||請在讀卡機鍵盤上輸入你的 PIN"
 
 #: scd/app-nks.c:330 scd/app-openpgp.c:1332 scd/app-openpgp.c:1364
-#: scd/app-openpgp.c:1483 scd/app-dinsig.c:301
+#: scd/app-openpgp.c:1511 scd/app-openpgp.c:1529 scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "收回 PIN 時傳回錯誤: %s\n"
@@ -6265,15 +6265,15 @@ msgstr "存放創生日期失敗: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "讀取公鑰時失敗: %s\n"
 
-#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2047
+#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2095
 msgid "response does not contain the public key data\n"
 msgstr "回應中未包含公鑰資料\n"
 
-#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2055
+#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2103
 msgid "response does not contain the RSA modulus\n"
 msgstr "回應中未包含 RSA 系數\n"
 
-#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2065
+#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2113
 msgid "response does not contain the RSA public exponent\n"
 msgstr "回應中未包含 RSA 公用指數\n"
 
@@ -6287,13 +6287,13 @@ msgstr "||請在讀卡機鍵盤上輸入你的 PIN%%0A[簽署完成: %lu]"
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||請輸入 PIN%%0A[簽署完成: %lu]"
 
-#: scd/app-openpgp.c:1371 scd/app-openpgp.c:1489
+#: scd/app-openpgp.c:1371 scd/app-openpgp.c:1536
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "用於 CHV%d 的 PIN 太短; 長度最少要有 %d\n"
 
-#: scd/app-openpgp.c:1384 scd/app-openpgp.c:1424 scd/app-openpgp.c:1499
-#: scd/app-openpgp.c:2318
+#: scd/app-openpgp.c:1384 scd/app-openpgp.c:1424 scd/app-openpgp.c:1548
+#: scd/app-openpgp.c:2366
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "驗證 CHV%d 失敗: %s\n"
@@ -6302,123 +6302,135 @@ msgstr "驗證 CHV%d 失敗: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr "管理者指令存取權限尚未組態\n"
 
-#: scd/app-openpgp.c:1462 scd/app-openpgp.c:2569
+#: scd/app-openpgp.c:1468 scd/app-openpgp.c:2617
 msgid "error retrieving CHV status from card\n"
 msgstr "從卡片取回 CHV 狀態時出錯\n"
 
-#: scd/app-openpgp.c:1468 scd/app-openpgp.c:2578
+#: scd/app-openpgp.c:1474 scd/app-openpgp.c:2626
 msgid "card is permanently locked!\n"
 msgstr "卡片永久鎖定了!!\n"
 
-#: scd/app-openpgp.c:1473
+#: scd/app-openpgp.c:1481
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "%d 管理者 PIN 試圖在卡片永久鎖定前遺留下來\n"
 
-#. TRANSLATORS: Do not translate the "|A|" prefix but
-#. keep it at the start of the string.  We need this elsewhere
-#. to get some infos on the string.
-#: scd/app-openpgp.c:1480
+#: scd/app-openpgp.c:1491
+#, fuzzy, c-format
+msgid ""
+"|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
+"%d]"
+msgstr "||請在讀卡機鍵盤上輸入你的 PIN%%0A[簽署完成: %lu]"
+
+#: scd/app-openpgp.c:1506
+#, fuzzy
+msgid "|A|Please enter the Admin PIN at the reader's keypad"
+msgstr "||請在讀卡機鍵盤上輸入你的 PIN"
+
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep
+#. it at the start of the string.  We need this elsewhere to
+#. get some infos on the string.
+#: scd/app-openpgp.c:1526
 msgid "|A|Admin PIN"
 msgstr "|A|管理者 PIN"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1629
+#: scd/app-openpgp.c:1677
 msgid "|AN|New Admin PIN"
 msgstr "|AN|新增管理者 PIN"
 
-#: scd/app-openpgp.c:1629
+#: scd/app-openpgp.c:1677
 msgid "|N|New PIN"
 msgstr "|N|新增 PIN"
 
-#: scd/app-openpgp.c:1633
+#: scd/app-openpgp.c:1681
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "取得新的 PIN 時出錯: %s\n"
 
-#: scd/app-openpgp.c:1683 scd/app-openpgp.c:2133
+#: scd/app-openpgp.c:1731 scd/app-openpgp.c:2181
 msgid "error reading application data\n"
 msgstr "讀取應用程式資料時出錯\n"
 
-#: scd/app-openpgp.c:1689 scd/app-openpgp.c:2140
+#: scd/app-openpgp.c:1737 scd/app-openpgp.c:2188
 msgid "error reading fingerprint DO\n"
 msgstr "讀取指紋 DO 時出錯\n"
 
-#: scd/app-openpgp.c:1699
+#: scd/app-openpgp.c:1747
 msgid "key already exists\n"
 msgstr "金鑰已存在\n"
 
-#: scd/app-openpgp.c:1703
+#: scd/app-openpgp.c:1751
 msgid "existing key will be replaced\n"
 msgstr "既有的金鑰將被取代\n"
 
-#: scd/app-openpgp.c:1705
+#: scd/app-openpgp.c:1753
 msgid "generating new key\n"
 msgstr "正在產生新的金鑰\n"
 
-#: scd/app-openpgp.c:1872
+#: scd/app-openpgp.c:1920
 msgid "creation timestamp missing\n"
 msgstr "缺漏創生時間戳印\n"
 
-#: scd/app-openpgp.c:1879
+#: scd/app-openpgp.c:1927
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA 模組缺漏或者並非 %d 位元大\n"
 
-#: scd/app-openpgp.c:1886
+#: scd/app-openpgp.c:1934
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA 公用指數缺漏或者大於 %d 位元\n"
 
-#: scd/app-openpgp.c:1894 scd/app-openpgp.c:1901
+#: scd/app-openpgp.c:1942 scd/app-openpgp.c:1949
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "RSA 質數 %s 缺漏或者並非 %d 位元大\n"
 
-#: scd/app-openpgp.c:1964
+#: scd/app-openpgp.c:2012
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "存放金鑰失敗: %s\n"
 
-#: scd/app-openpgp.c:2024
+#: scd/app-openpgp.c:2072
 msgid "please wait while key is being generated ...\n"
 msgstr "正在產生金鑰中, 請稍候 ...\n"
 
-#: scd/app-openpgp.c:2038
+#: scd/app-openpgp.c:2086
 msgid "generating key failed\n"
 msgstr "產生金鑰時失敗\n"
 
-#: scd/app-openpgp.c:2041
+#: scd/app-openpgp.c:2089
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "金鑰產生完畢 (%d 秒)\n"
 
-#: scd/app-openpgp.c:2098
+#: scd/app-openpgp.c:2146
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "無效的 OpenPGP 卡片結構 (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2148
+#: scd/app-openpgp.c:2196
 msgid "fingerprint on card does not match requested one\n"
 msgstr "卡片上的指紋與所要求的那個並不吻合\n"
 
-#: scd/app-openpgp.c:2236
+#: scd/app-openpgp.c:2284
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "卡片不支援 %s 摘要演算法\n"
 
-#: scd/app-openpgp.c:2297
+#: scd/app-openpgp.c:2345
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "目前建立的簽章: %lu\n"
 
-#: scd/app-openpgp.c:2583
+#: scd/app-openpgp.c:2631
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr "目前在此指令中的管理者 PIN 驗證被禁止了\n"
 
-#: scd/app-openpgp.c:2656 scd/app-openpgp.c:2666
+#: scd/app-openpgp.c:2704 scd/app-openpgp.c:2714
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "無法存取 %s - 無效的 OpenPGP 卡片?\n"
@@ -6799,36 +6811,36 @@ msgstr ""
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX, 建立於 %s"
 
-#: sm/certlist.c:121
+#: sm/certlist.c:122
 msgid "no key usage specified - assuming all usages\n"
 msgstr "沒有指定的金鑰用途 - 假設為所有的用途\n"
 
-#: sm/certlist.c:131 sm/keylist.c:258
+#: sm/certlist.c:132 sm/keylist.c:258
 #, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "取得金鑰用途資訊時出錯: %s\n"
 
-#: sm/certlist.c:141
+#: sm/certlist.c:142
 msgid "certificate should have not been used for certification\n"
 msgstr "憑證應該還未被用於憑證\n"
 
-#: sm/certlist.c:153
+#: sm/certlist.c:154
 msgid "certificate should have not been used for OCSP response signing\n"
 msgstr "憑證應該還未被用於 OCSP 回應簽署\n"
 
-#: sm/certlist.c:164
+#: sm/certlist.c:165
 msgid "certificate should have not been used for encryption\n"
 msgstr "憑證應該還未被用於加密\n"
 
-#: sm/certlist.c:165
+#: sm/certlist.c:166
 msgid "certificate should have not been used for signing\n"
 msgstr "憑證應該還未被用於簽署\n"
 
-#: sm/certlist.c:166
+#: sm/certlist.c:167
 msgid "certificate is not usable for encryption\n"
 msgstr "憑證無法用於加密\n"
 
-#: sm/certlist.c:167
+#: sm/certlist.c:168
 msgid "certificate is not usable for signing\n"
 msgstr "憑證無法用於簽署\n"
 
