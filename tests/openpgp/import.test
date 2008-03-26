@@ -9,13 +9,13 @@
 
 . $srcdir/defs.inc || exit 3
 
-#i=$srcdir/bug894-test.asc
-#info "Checking bug 894: segv importing certain keys."
-#if $GPG --import $i; then
-#  :
-#else
-#  error "$i: import failed (bug 894)"
-#fi
+i=$srcdir/bug894-test.asc
+info "Checking bug 894: segv importing certain keys."
+if $GPG --import $i; then
+  :
+else
+  error "$i: import failed (bug 894)"
+fi
 
 
 

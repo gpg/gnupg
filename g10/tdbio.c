@@ -1008,8 +1008,8 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
  */
 static int
 lookup_hashtable( ulong table, const byte *key, size_t keylen,
-		  int (*cmpfnc)(void*, const TRUSTREC *), void *cmpdata,
-						TRUSTREC *rec )
+		  int (*cmpfnc)(const void*, const TRUSTREC *), 
+                  const void *cmpdata, TRUSTREC *rec )
 {
     int rc;
     ulong hashrec, item;
@@ -1467,10 +1467,10 @@ tdbio_new_recnum()
 
 
 static int
-cmp_trec_fpr ( void *fpr, const TRUSTREC *rec )
+cmp_trec_fpr ( const void *fpr, const TRUSTREC *rec )
 {
-    return rec->rectype == RECTYPE_TRUST
-	   && !memcmp( rec->r.trust.fingerprint, fpr, 20);
+  return (rec->rectype == RECTYPE_TRUST
+          && !memcmp (rec->r.trust.fingerprint, fpr, 20));
 }
 
 
@@ -1481,7 +1481,7 @@ tdbio_search_trust_byfpr( const byte *fingerprint, TRUSTREC *rec )
 
     /* locate the trust record using the hash table */
     rc = lookup_hashtable( get_trusthashrec(), fingerprint, 20,
-			   cmp_trec_fpr, (void*)fingerprint, rec );
+			   cmp_trec_fpr, fingerprint, rec );
     return rc;
 }
 
