@@ -1,3 +1,7 @@
+2008-03-26  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.9.
+
 2008-02-19  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Remove --with-pkits-tests.
