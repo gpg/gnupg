@@ -74,6 +74,9 @@ endif
 SUBDIRS = m4 gl include jnlib common ${kbx} \
  ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${tools} po ${doc} ${tests}
 
+dist_doc_DATA = README
+
+
 dist-hook:
 	echo "$(VERSION)" > $(distdir)/VERSION
 

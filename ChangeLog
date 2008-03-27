@@ -1,3 +1,7 @@
+2008-03-27  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dist_doc_DATA): New. Install README.
+
 2008-03-26  Werner Koch  <wk@g10code.com>
 
 	Release 2.0.9.

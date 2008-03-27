@@ -28,21 +28,26 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
             help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
 
-EXTRA_DIST = DETAILS HACKING TRANSLATE OpenPGP KEYSERVER samplekeys.asc \
+EXTRA_DIST = samplekeys.asc \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
              faq.raw FAQ faq.html gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi texi.css $(examples) yat2m.c
+	     gpgv.texi texi.css  yat2m.c
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf FAQ faq.html
 
 info_TEXINFOS = gnupg.texi
 
-dist_pkgdata_DATA = qualified.txt FAQ faq.html com-certs.pem \
-                    $(helpfiles)
+dist_pkgdata_DATA = qualified.txt com-certs.pem $(helpfiles)
+
+nobase_dist_doc_DATA = FAQ DETAILS HACKING TRANSLATE OpenPGP KEYSERVER \
+                       $(examples)	
+
+dist_html_DATA = faq.html 
+
 
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \
@@ -139,9 +144,6 @@ $(myman_pages) gnupg.7 : yat2m-stamp
 # updates the release date.
 gnupg.texi : $(gnupg_TEXINFOS)
 	touch $(srcdir)/gnupg.texi
-
-install-html-local:
-	cp $(srcdir)/gnupg-logo.png gnupg.html/
 
 online: gnupg.html gnupg.pdf
 	set -e; \

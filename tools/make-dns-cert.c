@@ -190,7 +190,7 @@ main(int argc,char *argv[])
 #if defined(HAVE_CONFIG_H) && defined(VERSION)
       printf ("make-dns-cert (GnuPG) " VERSION "\n");
 #else
-      printf ("make-dns-cert gnupg-svn%s\n", "$Revision$");
+      printf ("make-dns-cert gnupg-svn%d\n", atoi (10+"$Revision$"));
 #endif
       return 0;
     }
