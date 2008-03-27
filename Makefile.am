@@ -31,6 +31,11 @@ SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
 EXTRA_DIST = scripts/config.rpath  PROJECTS BUGS config.h.in autogen.sh
 DISTCLEANFILES = 
 
+# We do not install README into the doc directory because that would
+# conflict with GnuPG-2.
+# dist_doc_DATA = README
+
+
 # Add all the files listed in "distfiles" files to the distribution,
 # apply version numbers to some files and create a VERSION file which
 # we need for the Prereq: patch file trick.
