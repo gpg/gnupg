@@ -1,3 +1,8 @@
+2008-03-31  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr): Use log_info instead of
+	log_error when falling back to start dirmngr.
+
 2008-03-20  Werner Koch  <wk@g10code.com>
 
 	* certlist.c (gpgsm_add_to_certlist): Always save the first
