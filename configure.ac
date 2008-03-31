@@ -762,8 +762,9 @@ if test "$try_ldap" = yes ; then
 fi
 
 # Check for curl.  We fake the curl API if libcurl isn't installed.
+# We require 7.10 or better as we use curl_version_info().
 
-LIBCURL_CHECK_CONFIG([yes],,,[fake_curl=yes])
+LIBCURL_CHECK_CONFIG([yes],[7.10],,[fake_curl=yes])
 AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
 
 # Generic, for us, means curl
