@@ -1,3 +1,8 @@
+2008-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require curl 7.10 (Oct 1 2002) or later as we use
+	curl_version_info().
+
 2008-03-27  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dist_doc_DATA): New. Install README.

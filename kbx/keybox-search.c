@@ -458,7 +458,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 #ifdef KEYBOX_WITH_X509
 /* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
    We don't have the keygrips as meta data, thus wen need to parse the
-   certificate. Fixme: We might wat to return proper error codes
+   certificate. Fixme: We might want to return proper error codes
    instead of failing a search for invalid certificates etc.  */
 static int
 blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
@@ -750,10 +750,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         }
     }
 
-  /* kludge: we need to convert an SN given as hexstring to it's
-     binary representation - in some cases we are not able to store it
-     in the search descriptor, because due to its usage it is not
-     possible to free allocated memory */
+  /* Kludge: We need to convert an SN given as hexstring to its binary
+     representation - in some cases we are not able to store it in the
+     search descriptor, because due to the way we use it, it is not
+     possible to free allocated memory. */
   if (sn_array)
     {
       const unsigned char *s;

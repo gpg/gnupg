@@ -136,7 +136,7 @@ create_tmp_file (const char *template,
       xfree (bakfname);
       return tmperr;
     }
-  
+
   *r_bakfname = bakfname;
   *r_tmpfname = tmpfname;
   return 0;
@@ -167,7 +167,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 /*    iobuf_ioctl (NULL, 2, 0, (char*)bakfname ); */
 /*    iobuf_ioctl (NULL, 2, 0, (char*)fname ); */
 
-  /* first make a backup file except for secret keyboxs */
+  /* First make a backup file except for secret keyboxes. */
   if (!secret)
     { 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
@@ -179,7 +179,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 	}
     }
   
-  /* then rename the file */
+  /* Then rename the file. */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
   remove (fname);
 #endif
@@ -386,12 +386,8 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 
   /* Close this one otherwise we will mess up the position for a next
      search.  Fixme: it would be better to adjust the position after
-     the write opertions.  */
-  if (hd->fp)
-    {
-      fclose (hd->fp);
-      hd->fp = NULL;
-    }
+     the write operation.  */
+  _keybox_close_file (hd);
 
   rc = _keybox_create_x509_blob (&blob, cert, sha1_digest, hd->ephemeral);
   if (!rc)
@@ -453,11 +449,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   
   off += flag_pos;
 
-  if (hd->fp)
-    {
-      fclose (hd->fp);
-      hd->fp = NULL;
-    }
+  _keybox_close_file (hd);
   fp = fopen (hd->kb->fname, "r+b");
   if (!fp)
     return gpg_error (gpg_err_code_from_errno (errno));
@@ -522,12 +514,7 @@ keybox_delete (KEYBOX_HANDLE hd)
     return gpg_error (GPG_ERR_GENERAL);
   off += 4;
 
-  if (hd->fp)
-    {
-      fclose (hd->fp);
-      hd->fp = NULL;
-    }
-  
+  _keybox_close_file (hd);
   fp = fopen (hd->kb->fname, "r+b");
   if (!fp)
     return gpg_error (gpg_err_code_from_errno (errno));
@@ -575,11 +562,7 @@ keybox_compress (KEYBOX_HANDLE hd)
   if (!fname)
     return gpg_error (GPG_ERR_INV_HANDLE); 
 
-  if (hd->fp)
-    {
-      fclose (hd->fp);
-      hd->fp = NULL;
-    }
+  _keybox_close_file (hd);
 
   /* Open the source file. Because we do a rename, we have to check the 
      permissions of the file */

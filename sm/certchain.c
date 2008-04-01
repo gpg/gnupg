@@ -596,9 +596,9 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
         {
           rc = keydb_search_issuer_sn (kh, s, authidno);
           if (rc)
-              keydb_search_reset (kh);
+            keydb_search_reset (kh);
           
-          /* In case of an error, try to get the certifcate from the
+          /* In case of an error, try to get the certificate from the
              dirmngr.  That is done by trying to put that certifcate
              into the ephemeral DB and let the code below do the
              actual retrieve.  Thus there is no error checking.

@@ -53,13 +53,31 @@ typedef struct keyboxblob *KEYBOXBLOB;
 
 
 typedef struct keybox_name *KB_NAME;
-typedef struct keybox_name const * CONST_KB_NAME;
-struct keybox_name {
-  struct keybox_name *next;
+typedef struct keybox_name const *CONST_KB_NAME;
+struct keybox_name 
+{
+  /* Link to the next resources, so that we can walk all
+     resources.  */
+  KB_NAME next;
+
+  /* True if this is a keybox with secret keys.  */
   int secret;
+
   /*DOTLOCK lockhd;*/
+
+  /* A table with all the handles accessing this resources.
+     HANDLE_TABLE_SIZE gives the allocated length of this table unused
+     entrues are set to NULL.  HANDLE_TABLE may be NULL. */
+  KEYBOX_HANDLE *handle_table;
+  size_t handle_table_size;
+  
+  /* Not yet used.  */
   int is_locked;
+
+  /* Not yet used.  */
   int did_full_scan;
+
+  /* The name of the resource file. */
   char fname[1];
 };
 
@@ -128,6 +146,9 @@ typedef struct _keybox_openpgp_info *keybox_openpgp_info_t;
 /*    int verbose; */
 /*    int preserve_permissions; */
 /*  } keybox_opt; */
+
+/*-- keybox-init.c --*/
+void _keybox_close_file (KEYBOX_HANDLE hd);
 
 
 /*-- keybox-blob.c --*/

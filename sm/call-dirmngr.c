@@ -703,7 +703,7 @@ lookup_status_cb (void *opaque, const char *line)
 }
 
 
-/* Run the Directroy Managers lookup command using the pattern
+/* Run the Directory Manager's lookup command using the pattern
    compiled from the strings given in NAMES.  The caller must provide
    the callback CB which will be passed cert by cert.  Note that CTRL
    is optional.  With CACHE_ONLY the dirmngr will search only its own

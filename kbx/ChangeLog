@@ -1,3 +1,10 @@
+2008-04-01  Werner Koch  <wk@g10code.com>
+
+	* keybox-init.c (keybox_new, keybox_release): Track used handles.
+	(_keybox_close_file): New.
+	* keybox-update.c (keybox_insert_cert, keybox_set_flags) 
+	(keybox_delete, keybox_compress): Use the new close function.
+
 2008-03-13  Werner Koch  <wk@g10code.com>
 
 	* keybox-blob.c (x509_email_kludge): Use the same code as in
@@ -280,7 +287,8 @@
 	names.
 
 
- Copyright 2001 g10 Code GmbH
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006,
+	   2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -289,4 +297,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	

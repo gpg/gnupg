@@ -30,10 +30,9 @@
 static KB_NAME kb_names;
 
 
-/* 
-  Register a filename for plain keybox files.  Returns a pointer to be
-  used to create a handles etc or NULL to indicate that it has already
-  been registered */
+/* Register a filename for plain keybox files.  Returns a pointer to
+   be used to create a handles and so on.  Returns NULL to indicate
+   that FNAME has already been registered.  */
 void *
 keybox_register_file (const char *fname, int secret)
 {
@@ -50,6 +49,10 @@ keybox_register_file (const char *fname, int secret)
     return NULL;
   strcpy (kr->fname, fname);
   kr->secret = !!secret;
+
+  kr->handle_table = NULL;
+  kr->handle_table_size = 0;
+
   /* kr->lockhd = NULL;*/
   kr->is_locked = 0;
   kr->did_full_scan = 0;
@@ -83,6 +86,7 @@ keybox_new (void *token, int secret)
 {
   KEYBOX_HANDLE hd;
   KB_NAME resource = token;
+  int idx;
 
   assert (resource && !resource->secret == !secret);
   hd = xtrycalloc (1, sizeof *hd);
@@ -90,6 +94,43 @@ keybox_new (void *token, int secret)
     {
       hd->kb = resource;
       hd->secret = !!secret;
+      if (!resource->handle_table)
+        {
+          resource->handle_table_size = 3;
+          resource->handle_table = xtrycalloc (resource->handle_table_size,
+                                               sizeof *resource->handle_table);
+          if (!resource->handle_table)
+            {
+              resource->handle_table_size = 0;
+              xfree (hd);
+              return NULL;
+            }
+        }
+      for (idx=0; idx < resource->handle_table_size; idx++)
+        if (!resource->handle_table[idx])
+          {
+            resource->handle_table[idx] = hd;
+            break;
+          }
+      if (!(idx < resource->handle_table_size))
+        {
+          KEYBOX_HANDLE *tmptbl;
+          size_t newsize;
+
+          newsize = resource->handle_table_size + 5;
+          tmptbl = xtryrealloc (resource->handle_table, 
+                                newsize * sizeof (*tmptbl));
+          if (!tmptbl)
+            {
+              xfree (hd);
+              return NULL;
+            }
+          resource->handle_table = tmptbl;
+          resource->handle_table_size = newsize;
+          resource->handle_table[idx] = hd;
+          for (idx++; idx < resource->handle_table_size; idx++)
+            resource->handle_table[idx] = NULL;
+        }
     }
   return hd;
 }
@@ -99,6 +140,13 @@ keybox_release (KEYBOX_HANDLE hd)
 {
   if (!hd)
     return;
+  if (hd->kb->handle_table)
+    {
+      int idx;
+      for (idx=0; idx < hd->kb->handle_table_size; idx++)
+        if (hd->kb->handle_table[idx] == hd)
+          hd->kb->handle_table[idx] = NULL;
+    }
   _keybox_release_blob (hd->found.blob);
   if (hd->fp)
     {
@@ -128,3 +176,27 @@ keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
   return 0;
 }
 
+
+/* Close the file of the resource identified by HD.  For consistent
+   results this fucntion closes the files of all handles pointing to
+   the resource identified by HD.  */
+void 
+_keybox_close_file (KEYBOX_HANDLE hd)
+{
+  int idx;
+  KEYBOX_HANDLE roverhd;
+
+  if (!hd || !hd->kb || !hd->kb->handle_table)
+    return;
+
+  for (idx=0; idx < hd->kb->handle_table_size; idx++)
+    if ((roverhd = hd->kb->handle_table[idx]))
+      {
+        if (roverhd->fp)
+          {
+            fclose (roverhd->fp);
+            roverhd->fp = NULL;
+          }
+      }
+  assert (!hd->fp);
+}

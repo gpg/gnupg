@@ -392,7 +392,7 @@ keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 
 
 /* If the keyring has not yet been locked, lock it now.  This
-   operation is required before any update opeations; it is optionaly
+   operation is required before any update operation; it is optional
    for an insert operation.  The lock is released with
    keydb_released. */
 gpg_error_t
