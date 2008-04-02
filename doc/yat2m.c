@@ -42,7 +42,7 @@
     the next input line if that line begins with @section, @subsection or
     @chapheading.
 
-    To insert verbatim troff markup, the follwing texinfo code may be
+    To insert verbatim troff markup, the following texinfo code may be
     used:
 
       @ifset manverb
@@ -675,6 +675,8 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
             }
           *eol_action = 0;
         }
+      else if (*s == '\\')
+        fputs ("\\\\", fp);
       else
         putc (*s, fp);
     }
@@ -842,7 +844,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
 {
   char *line;
   int lnr = 0;
-  /* Fixme: The follwing state variables don't carry over to include
+  /* Fixme: The following state variables don't carry over to include
      files. */
   int in_verbatim = 0;
   int skip_to_end = 0;        /* Used to skip over menu entries. */
