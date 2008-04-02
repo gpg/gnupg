@@ -1,3 +1,8 @@
+2008-04-02  Werner Koch  <wk@g10code.com>
+
+	* yat2m.c (proc_texi_cmd): Use the \(aq glyph for @samp.  This is
+	bug#898.
+
 2007-12-21  Werner Koch  <wk@g10code.com>
 
 	* README.W32: Tell that Vista is supported and that at least NT-4
