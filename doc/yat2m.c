@@ -449,9 +449,9 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "code",    0, "\\fB", "\\fR" },
     { "sc",      0, "\\fB", "\\fR" },
     { "var",     0, "\\fI", "\\fR" },
-    { "samp",    0, "'",  "'"  },
-    { "file",    0, "`\\fI","\\fR'" }, 
-    { "env",     0, "`\\fI","\\fR'" }, 
+    { "samp",    0, "\\(aq", "\\(aq"  },
+    { "file",    0, "\\(oq\\fI","\\fR\\(cq" }, 
+    { "env",     0, "\\(oq\\fI","\\fR\\(cq" }, 
     { "acronym", 0 },
     { "dfn",     0 },
     { "option",  0, "\\fB", "\\fR"   },
@@ -675,6 +675,8 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
             }
           *eol_action = 0;
         }
+      else if (*s == '\\')
+        fputs ("\\\\", fp);
       else
         putc (*s, fp);
     }
