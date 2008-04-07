@@ -1,3 +1,10 @@
+2008-04-07  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_kdns.c: New.
+	* Makefile.am: Support kdns. 
+
+	* no-libgcrypt.c (gcry_strdup): Fix.  It was not used.
+
 2008-03-25  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_ldap.c (build_attrs): Take care of char defaulting to

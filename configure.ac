@@ -1,6 +1,6 @@
 # configure.ac - for GnuPG 2.0
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-#               2006, 2007 Free Software Foundation, Inc.
+#               2006, 2007, 2008 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -30,7 +30,8 @@ m4_define([my_issvn], [yes])
 
 m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
             || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
-AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
+AC_INIT([gnupg], 
+        [my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision])],
         [bug-gnupg@gnupg.org])
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
@@ -69,6 +70,7 @@ have_libassuan=no
 have_ksba=no
 have_pth=no
 have_libusb=no
+have_adns=no
 
 use_bzip2=yes
 use_exec=yes
@@ -759,6 +761,7 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
     # Make sure that the BIND 4 resolver interface is workable before
     # enabling any code that calls it.  At some point I'll rewrite the
     # code to use the BIND 8 resolver API.
+    # We might also want to use adns instead.
 
     AC_MSG_CHECKING([whether the resolver is usable])
     AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
@@ -821,6 +824,30 @@ fi
 AC_SUBST(DNSLIBS)
 
 AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
+
+
+#
+# Check for ADNS.
+#
+_cppflags="${CPPFLAGS}"
+_ldflags="${LDFLAGS}"
+AC_ARG_WITH(adns,
+            AC_HELP_STRING([--with-adns=DIR],
+                           [look for the adns library in DIR]),
+            [if test -d "$withval"; then
+               CPPFLAGS="${CPPFLAGS} -I$withval/include"
+               LDFLAGS="${LDFLAGS} -L$withval/lib"
+             fi])
+AC_CHECK_HEADERS(adns.h,
+                AC_CHECK_LIB(adns, adns_init,
+                             [have_adns=yes],
+                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
+                [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
+if test "$have_adns" = "yes"; then
+  ADNSLIBS="-ladns" 
+fi
+AC_SUBST(ADNSLIBS)
+
 
 #
 # Check for LDAP
@@ -1264,6 +1291,11 @@ estream_INIT
 #
 # Decide what to build
 #
+if test "$have_adns" = "yes"; then
+  AC_SUBST(GPGKEYS_KDNS, "gpg2keys_kdns$EXEEXT")
+fi
+
+
 missing_pth=no
 if test $have_ksba = no; then
   build_gpgsm=no

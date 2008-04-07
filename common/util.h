@@ -152,6 +152,7 @@ struct b64state
   FILE *fp;
   char *title;
   unsigned char radbuf[4];
+  u32 crc;
 };
 gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);
 gpg_error_t b64enc_write (struct b64state *state,

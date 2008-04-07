@@ -774,7 +774,6 @@ expand_group(strlist_t input)
      Bit 1: This is a hidden recipient.
 
    USE is the desired use for the key - usually PUBKEY_USAGE_ENC.
-   RET_PK_LIST.
 
    On success a list of keys is stored at the address RET_PK_LIST; the
    caller must free this list.  On error the value at this address is

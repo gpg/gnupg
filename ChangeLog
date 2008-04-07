@@ -1,7 +1,13 @@
+2008-04-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (ADNSLIBS): Test for adns.
+	(GPGKEYS_KDNS): New.
+
 2008-04-01  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require curl 7.10 (Oct 1 2002) or later as we use
 	curl_version_info().
+	(AC_INIT): Fix quoting.
 
 2008-03-27  Werner Koch  <wk@g10code.com>
 

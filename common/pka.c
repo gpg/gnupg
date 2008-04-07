@@ -119,7 +119,9 @@ get_pka_info (const char *address, unsigned char *fpr)
   if (!domain || domain == address || !domain[1])
     return NULL; /* invalid mail address given. */
 
-  name = malloc (strlen (address) + 5 + 1);
+  name = xtrymalloc (strlen (address) + 5 + 1);
+  if (!name)
+    return NULL;
   memcpy (name, address, domain - address);
   strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
 

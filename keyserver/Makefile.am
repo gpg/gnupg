@@ -20,7 +20,8 @@
 # to gpg2keys_foo to allow for a non-conflicting installation of
 # gnupg1 and gnupg2.  Having the same names for the helpers would
 # otherwise lead to trouble when to uninstall one of them.
-EXTRA_PROGRAMS = gpg2keys_ldap gpg2keys_hkp gpg2keys_finger gpg2keys_curl
+EXTRA_PROGRAMS = gpg2keys_ldap gpg2keys_hkp gpg2keys_finger gpg2keys_curl \
+		 gpg2keys_kdns
 EXTRA_SCRIPTS = gpg2keys_mailto
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl 
@@ -30,7 +31,7 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 include $(top_srcdir)/am/cmacros.am
 
 libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
-                   $(GPGKEYS_CURL)
+                   $(GPGKEYS_CURL) $(GPGKEYS_KDNS)
 libexec_SCRIPTS = $(GPGKEYS_MAILTO)
 noinst_SCRIPTS = gpg2keys_test
 
@@ -46,6 +47,11 @@ gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c
 gpg2keys_finger_CPPFLAGS = $(AM_CPPFLAGS)
 gpg2keys_finger_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
                         $(NETLIBS) $(other_libs)
+
+gpg2keys_kdns_SOURCES = gpgkeys_kdns.c ksutil.c ksutil.h no-libgcrypt.c
+gpg2keys_kdns_CPPFLAGS = $(AM_CPPFLAGS)
+gpg2keys_kdns_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
+                      $(ADNSLIBS) $(NETLIBS) $(other_libs)
 
 
 gpg2keys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h no-libgcrypt.c

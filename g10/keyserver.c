@@ -330,7 +330,15 @@ parse_keyserver_uri(const char *string,int require_scheme,
       keyserver->scheme=xstrdup("hkp");
     }
 
-  if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
+  if (uri[0]=='/' && uri[1]=='/' && uri[2] == '/')
+    {
+      /* Three slashes means network path with a default host name.
+         This is a hack because it does not crok all possible
+         combiantions.  We should better repalce all code bythe parser
+         from http.c.  */
+      keyserver->path = xstrdup (uri+2);
+    }
+  else if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
     {
       /* Two slashes means network path. */
 

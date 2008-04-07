@@ -108,7 +108,7 @@ status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
 # Module tests
 #
 module_tests = t-convert t-gettime t-sysutils t-sexputil
-module_maint_tests = t-helpfile
+module_maint_tests = t-helpfile t-b64
 
 t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
@@ -118,4 +118,7 @@ t_gettime_LDADD = $(t_common_ldadd)
 t_sysutils_LDADD = $(t_common_ldadd)
 t_helpfile_LDADD = $(t_common_ldadd)
 t_sexputil_LDADD = $(t_common_ldadd)
+t_b64_LDADD = $(t_common_ldadd)
+
+
 

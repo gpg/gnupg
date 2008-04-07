@@ -1012,9 +1012,8 @@ get_pubkey_byname (PKT_public_key *pk,
 	     requirement as the URL might point to a key put in by an
 	     attacker.  By forcing the use of the fingerprint, we
 	     won't use the attacker's key here. */
-	  if(rc==0 && fpr)
+	  if (!rc && fpr)
 	    {
-	      int i;
 	      char fpr_string[MAX_FINGERPRINT_LEN*2+1];
 
 	      assert(fpr_len<=MAX_FINGERPRINT_LEN);
@@ -1022,9 +1021,8 @@ get_pubkey_byname (PKT_public_key *pk,
 	      free_strlist(namelist);
 	      namelist=NULL;
 
-	      for(i=0;i<fpr_len;i++)
-		sprintf(fpr_string+2*i,"%02X",fpr[i]);
-
+              bin2hex (fpr, fpr_len, fpr_string);
+              
 	      if(opt.verbose)
 		log_info("auto-key-locate found fingerprint %s\n",fpr_string);
 
