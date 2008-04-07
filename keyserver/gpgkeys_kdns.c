@@ -63,7 +63,8 @@ static const char *kdns_root;
 /* The replacement string for the at sign.  */
 static const char *kdns_at_repl;
 
-
+/* Flag indicating that a TCP conenction should be used.  */
+static int kdns_usevc;
 
 
 
@@ -103,9 +104,8 @@ get_key (adns_state adns_ctx, char *address)
   if (opt->verbose > 2)
     fprintf(console, PGM": looking up `%s'\n", name);
 
-
   if ( adns_synchronous (adns_ctx, name, (adns_r_unknown | my_adns_r_cert),
-                         adns_qf_quoteok_query,
+                         adns_qf_quoteok_query|(kdns_usevc?adns_qf_usevc:0),
                          &answer) )
     {
       fprintf (console, PGM": DNS query failed: %s\n", strerror (errno));
@@ -191,14 +191,15 @@ show_help (FILE *fp)
          " -o\toutput to this file\n"
          "\n", fp);
   fputs ("This keyserver helper accepts URLs of the form:\n"
-         "  kdns://[NAMESERVER]/[ROOT][?at=[STRING]]\n"
+         "  kdns://[NAMESERVER]/[ROOT][?at=STRING]\n"
          "with\n"
          "  NAMESERVER  used for queries (default: system standard)\n"
          "  ROOT        a DNS name appended to the query (default: none)\n"
-         "  STRING      A string to replace the '@' (default: \".\")\n"
+         "  STRING      a string to replace the '@' (default: \".\")\n"
+         "If a long answer is expected add the parameter \"usevc=1\".\n"
          "\n", fp);
   fputs ("Example:  A query for \"hacker@gnupg.org\" with\n"
-         "  kdns://10.0.0.1/example.net?at=_key?\n"
+         "  kdns://10.0.0.1/example.net?at=_key&usevc=1\n"
          "setup as --auto-key-lookup does a CERT record query\n"
          "with type PGP on the nameserver 10.0.0.1 for\n"
          "  hacker._key_.gnupg.org.example.net\n"
@@ -308,8 +309,11 @@ main (int argc, char *argv[])
       return KEYSERVER_INTERNAL_ERROR;
     }
 
-  fprintf (console, PGM": HOST=%s\n", opt->host? opt->host:"(none)");
-  fprintf (console, PGM": PATH=%s\n", opt->path? opt->path:"(none)");
+  if (opt->verbose)
+    {
+      fprintf (console, PGM": HOST=%s\n", opt->host? opt->host:"(none)");
+      fprintf (console, PGM": PATH=%s\n", opt->path? opt->path:"(none)");
+    }
   if (opt->path && *opt->path == '/')
     {
       char *p, *pend;
@@ -325,11 +329,9 @@ main (int argc, char *argv[])
               if (pend)
                 *pend++ = 0;
               if (!strncmp (p, "at=", 3))
-                {
-                  /* Found.  */
-                  kdns_at_repl = p+3;
-                  break;
-                }
+                kdns_at_repl = p+3;
+              else if (!strncmp (p, "usevc=", 6))
+                kdns_usevc = !!atoi (p+6);
             }
           while ((p = pend));
         }
@@ -341,9 +343,13 @@ main (int argc, char *argv[])
     }
   if (!strcmp (kdns_at_repl, "."))
     kdns_at_repl = "";
-  fprintf (console, PGM": kdns_root=%s\n", kdns_root);
-  fprintf (console, PGM": kdns_at=%s\n", kdns_at_repl);
 
+  if (opt->verbose)
+    {
+      fprintf (console, PGM": kdns_root=%s\n", kdns_root);
+      fprintf (console, PGM": kdns_at=%s\n", kdns_at_repl);
+      fprintf (console, PGM": kdns_usevc=%d\n", kdns_usevc);
+    }
 
   if (opt->debug)
     my_adns_initflags |= adns_if_debug;
