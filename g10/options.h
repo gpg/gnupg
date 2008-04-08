@@ -235,7 +235,15 @@ struct
      keyring. */
   struct akl
   {
-    enum {AKL_CERT, AKL_PKA, AKL_LDAP, AKL_KEYSERVER, AKL_SPEC} type;
+    enum {
+      AKL_NODEFAULT,
+      AKL_LOCAL,
+      AKL_CERT, 
+      AKL_PKA, 
+      AKL_LDAP,
+      AKL_KEYSERVER,
+      AKL_SPEC
+    } type;
     struct keyserver_spec *spec;
     struct akl *next;
   } *auto_key_locate;

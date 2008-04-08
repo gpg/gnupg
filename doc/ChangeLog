@@ -1,3 +1,9 @@
+2008-04-08  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Configuration Options): Change subkeys.pgp.net to
+	keys.gnupg.net.  Describe --auto-key-locate mechanisms local and
+	nodefault.
+
 2008-04-03  Werner Koch  <wk@g10code.com>
 
 	* yat2m.c (proc_texi_cmd): Remove extra apostrophe from @samp and

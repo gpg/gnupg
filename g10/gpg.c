@@ -704,6 +704,7 @@ static ARGPARSE_OPTS opts[] = {
        I'm returning the favor. */
     { oLocalUser, "sign-with", 2, "@" },
     { oRecipient, "user", 2, "@" },
+
     { oRequireCrossCert, "require-backsigs", 0, "@"},
     { oRequireCrossCert, "require-cross-certification", 0, "@"},
     { oNoRequireCrossCert, "no-require-backsigs", 0, "@"},
@@ -1549,6 +1550,8 @@ gpgconf_list (const char *configfile)
   printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("allow-pka-lookup:%lu:\n", GC_OPT_FLAG_NONE);
 
   xfree (configfile_esc);
 }

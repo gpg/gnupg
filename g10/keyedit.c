@@ -1544,7 +1544,7 @@ keyedit_menu( const char *username, strlist_t locusr,
 #endif
 
     /* Get the public key */
-    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
+    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1, 1);
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
@@ -3396,7 +3396,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	 GnuPG both can handle a designated revokation from a
 	 subkey. */
       revoker_pk->req_usage=PUBKEY_USAGE_CERT;
-      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
+      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1, 1);
       if(rc)
 	{
 	  log_error (_("key \"%s\" not found: %s\n"),answer,g10_errstr(rc));

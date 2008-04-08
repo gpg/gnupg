@@ -682,7 +682,7 @@ check_prefs(KBNODE keyblock)
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
  * internal errorcount, so that invalid input can be detected by programs
- * which called g10.
+ * which called gpg.
  */
 static int
 import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
@@ -697,6 +697,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
     int rc = 0;
     int new_key = 0;
     int mod_key = 0;
+    int same_key = 0;
     int non_self = 0;
 
     /* get the key and print some info about it */
@@ -715,11 +716,13 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 		  nbits_from_pk( pk ),
 		  pubkey_letter( pk->pubkey_algo ),
 		  keystr_from_pk(pk), datestr_from_pk(pk) );
-	if( uidnode )
-	  print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+	if (uidnode)
+	  print_utf8_string (log_get_stream (),
+                             uidnode->pkt->pkt.user_id->name,
 			     uidnode->pkt->pkt.user_id->len );
 	log_printf ("\n");
       }
+
 
     if( !uidnode )
       {
@@ -958,7 +961,8 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	}
 	else
 	  {
-	    if (is_status_enabled ()) 
+            same_key = 1;
+            if (is_status_enabled ()) 
 	      print_import_ok (pk, NULL, 0);
 
 	    if( !opt.quiet )
@@ -975,6 +979,33 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
     }
 
   leave:
+    if (mod_key || new_key || same_key)
+      {
+	/* A little explanation for this: we fill in the fingerprint
+	   when importing keys as it can be useful to know the
+	   fingerprint in certain keyserver-related cases (a keyserver
+	   asked for a particular name, but the key doesn't have that
+	   name).  However, in cases where we're importing more than
+	   one key at a time, we cannot know which key to fingerprint.
+	   In these cases, rather than guessing, we do not
+	   fingerprinting at all, and we must hope the user ID on the
+	   keys are useful.  Note that we need to do this for new
+	   keys, merged keys and even for unchanged keys.  This is
+	   required because for example the --auto-key-locate feature
+	   may import an already imported key and needs to know the
+	   fingerprint of the key in all cases.  */
+	if (fpr)
+	  {
+	    xfree (*fpr);
+            /* Note that we need to compare against 0 here because
+               COUNT gets only incremented after returning form this
+               function.  */
+	    if (stats->count == 0)
+	      *fpr = fingerprint_from_pk (pk, NULL, fpr_len);
+	    else
+	      *fpr = NULL;
+	  }
+      }
 
     /* Now that the key is definitely incorporated into the keydb, we
        need to check if a designated revocation is present or if the
@@ -988,24 +1019,6 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
       }
     else if(new_key)
       {
-	/* A little explanation for this: we fill in the fingerprint
-	   when importing keys as it can be useful to know the
-	   fingerprint in certain keyserver-related cases (a keyserver
-	   asked for a particular name, but the key doesn't have that
-	   name).  However, in cases where we're importing more than
-	   one key at a time, we cannot know which key to fingerprint.
-	   In these cases, rather than guessing, we do not fingerpring
-	   at all, and we must hope the user ID on the keys are
-	   useful. */
-	if(fpr)
-	  {
-	    xfree(*fpr);
-	    if(stats->imported==1)
-	      *fpr=fingerprint_from_pk(pk,NULL,fpr_len);
-	    else
-	      *fpr=NULL;
-	  }
-
 	revocation_present(keyblock);
 	if(!from_sk && seckey_available(keyid)==0)
 	  check_prefs(keyblock);

@@ -1305,28 +1305,41 @@ exists.
 GnuPG can automatically locate and retrieve keys as needed using this
 option. This happens when encrypting to an email address (in the
 "user@@example.com" form), and there are no user@@example.com keys on
-the local keyring. This option takes any number of the following
-arguments, in the order they are to be tried:
+the local keyring.  This option takes any number of the following
+mechanisms, in the order they are to be tried:
 
 @table @asis
 
 @item cert
-locate a key using DNS CERT, as specified in rfc4398.
+Locate a key using DNS CERT, as specified in rfc4398.
 
 @item pka
-locate a key using DNS PKA.
+Locate a key using DNS PKA.
 
 @item ldap
-locate a key using the PGP Universal method of checking
-"ldap://keys.(thedomain)".
+Locate a key using the PGP Universal method of checking
+@samp{ldap://keys.(thedomain)}.
 
 @item keyserver
-locate a key using whatever keyserver is defined using the
+Locate a key using whatever keyserver is defined using the
 @option{--keyserver} option.
 
-@item (keyserver URL)
-In addition, a keyserver URL as used in the @option{--keyserver} option may be
-used here to query that particular keyserver.
+@item keyserver-URL
+In addition, a keyserver URL as used in the @option{--keyserver} option
+may be used here to query that particular keyserver.
+
+@item local
+Locate the key using the local keyrings.  This mechanism allows to
+select the order a local key lookup is done.  Thus using
+@samp{--auto-key-locate local} is identical to
+@option{--no-auto-key-locate}.
+
+@item nodefault
+This flag disables the standard local key lookup, done before any of the
+mechanisms defined by the @option{--auto-key-locate} are tried.  The
+position of this mechanism in the list does not matter.  It is not
+required if @code{local} is also used.
+
 @end table
 
 @item --keyid-format @code{short|0xshort|long|0xlong}
@@ -1351,7 +1364,7 @@ from below, but apply only to this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
-@code{hkp://subkeys.pgp.net} uses round robin DNS to give a different
+@code{hkp://keys.gnupg.net} uses round robin DNS to give a different
 keyserver each time you use it.
 
 @item --keyserver-options @code{name=value1 }

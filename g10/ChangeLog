@@ -1,3 +1,20 @@
+2008-04-08  Werner Koch  <wk@g10code.com>
+
+	* options.h (opt): Add AKL_NODEFAULT and AKL_LOCAL.
+	* getkey.c (parse_auto_key_locate): Parse them.
+	(get_pubkey_byname): Implement them.  Add arg NO_AKL and use that
+	in all cases where a local key is expected.
+	* import.c (import_one): Fill in the fingerprint in all cases.
+	Use log_get_stream.
+	* keyserver.c (keyserver_import_pka): Set FPR to NULL on error.
+	Return G10ERR_NO_PUBKEY if no PKA info is available or no key URI
+	is given in the PKA record..
+	(keyserver_import_cert): Return G10ERR_NO_PUBKEY if a CERT record
+	was not found.
+
+	* getkey.c (get_pubkey_byname): Release FPR in the error case.
+	Continue with next mechanism on error.  Better diagnostics.
+
 2008-04-07  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c (parse_keyserver_uri): Allow a default host name.
@@ -10121,7 +10138,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
-	   2006,2007 Free Software Foundation, Inc.
+	   2006,2007,2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

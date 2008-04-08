@@ -1,6 +1,11 @@
 Noteworthy changes in version 2.0.10 (unreleased)
 -------------------------------------------------
 
+ * New keyserver helper gpg2keys_kdns as generic DNS CERT lookup.  Run
+   with --help for a short description.  Requires the ADNS library.
+
+ * New mechanisms "local" and "nodefault" for --auto-key-locate [gpg].
+   Fixed a few problems with this option.
 
 
 Noteworthy changes in version 2.0.9 (2008-03-26)

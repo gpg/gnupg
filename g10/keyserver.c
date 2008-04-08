@@ -1,6 +1,6 @@
 /* keyserver.c - generic keyserver code
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2008,7 +2008,14 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
     *domain='.';
 
   type=get_dns_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
-  if(type==1)
+  if (!type || type == -1)
+    {
+      /* There might be an error in res_query which leads to an error
+         return (-1) in the case that nothing was found.  Thus we take
+         all errors as key not found.  */
+      rc = G10ERR_NO_PUBKEY;
+    }
+  else if (type==1)
     {
       int armor_status=opt.no_armor;
 
@@ -2072,26 +2079,30 @@ int
 keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *uri;
-  int rc=-1;
+  int rc = G10ERR_NO_PUBKEY;
 
-  *fpr=xmalloc(20);
-  *fpr_len=20;
+  *fpr = xmalloc (20);
+  *fpr_len = 20;
 
   uri = get_pka_info (name, *fpr);
-  if (uri)
+  if (uri && *uri)
     {
+      /* An URI is available.  Lookup the key. */
       struct keyserver_spec *spec;
       spec = parse_keyserver_uri (uri, 1, NULL, 0);
       if (spec)
 	{
-	  rc=keyserver_import_fprint (*fpr, 20, spec);
+	  rc = keyserver_import_fprint (*fpr, 20, spec);
 	  free_keyserver_spec (spec);
 	}
       xfree (uri);
     }
 
-  if(rc!=0)
-    xfree(*fpr);
+  if (rc)
+    {
+      xfree(*fpr);
+      *fpr = NULL;
+    }
 
   return rc;
 }

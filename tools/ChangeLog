@@ -1,3 +1,7 @@
+2008-04-08  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_gpg): Add --auto-key-locate.
+
 2008-03-26  Werner Koch  <wk@g10code.com>
 
 	* make-dns-cert.c: Include unistd.h.  Use config.h if requested.

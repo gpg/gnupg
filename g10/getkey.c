@@ -1,6 +1,6 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007 Free Software Foundation, Inc.
+ *               2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -912,64 +912,91 @@ key_byname( GETKEY_CTX *retctx, strlist_t namelist,
 /* Find a public key from NAME and return the keyblock or the key.  If
    ret_kdb is not NULL, the KEYDB handle used to locate this keyblock
    is returned and the caller is responsible for closing it.  If a key
-   was not found and NAME is a valid RFC822 mailbox and --auto-key-locate
-   has been enabled, we try to import the key via the online mechanisms
-   defined by --auto-key-locate.  */
+   was not found (or if local search has been disabled) and NAME is a
+   valid RFC822 mailbox and --auto-key-locate has been enabled, we try
+   to import the key via the online mechanisms defined by
+   --auto-key-locate.  */
 int
 get_pubkey_byname (PKT_public_key *pk,
 		   const char *name, KBNODE *ret_keyblock,
-                   KEYDB_HANDLE *ret_kdbhd, int include_unusable )
+                   KEYDB_HANDLE *ret_kdbhd, int include_unusable, 
+                   int no_akl)
 {
   int rc;
   strlist_t namelist = NULL;
+  struct akl *akl;
+  int nodefault = 0;
 
-  add_to_strlist( &namelist, name );
+  /* Check whether we the default local search has been disabled.
+     This is the case if either the "nodefault" or the "local" keyword
+     are in the list of auto key locate mechanisms.  */
+  if (!no_akl)
+    {
+      for (akl=opt.auto_key_locate; akl; akl=akl->next)
+        if (akl->type == AKL_NODEFAULT || akl->type == AKL_LOCAL)
+          {
+            nodefault = 1;
+            break;
+          }
+    }
 
-  rc = key_byname( NULL, namelist, pk, NULL, 0,
-                   include_unusable, ret_keyblock, ret_kdbhd);
+  if (nodefault)
+    rc = G10ERR_NO_PUBKEY;
+  else
+    {
+      add_to_strlist (&namelist, name);
+      rc = key_byname (NULL, namelist, pk, NULL, 0,
+                       include_unusable, ret_keyblock, ret_kdbhd);
+    }
 
   /* If the requested name resembles a valid mailbox and automatic
      retrieval has been enabled, we try to import the key. */
 
-  if (rc == G10ERR_NO_PUBKEY && is_valid_mailbox(name))
+  if (rc == G10ERR_NO_PUBKEY && !no_akl && is_valid_mailbox(name))
     {
-      struct akl *akl;
-
-      for(akl=opt.auto_key_locate;akl;akl=akl->next)
+      for (akl=opt.auto_key_locate; akl; akl=akl->next)
 	{
-	  unsigned char *fpr=NULL;
+	  unsigned char *fpr = NULL;
 	  size_t fpr_len;
-
+          int did_key_byname = 0;
+          int no_fingerprint = 0;
+          const char *mechanism = "?";
+          
 	  switch(akl->type)
 	    {
+            case AKL_NODEFAULT:
+              /* This is a dummy mechanism.  */
+              mechanism = "None";
+              rc = G10ERR_NO_PUBKEY;
+              break;
+
+            case AKL_LOCAL:
+              mechanism = "Local";
+              did_key_byname = 1;
+              add_to_strlist (&namelist, name);
+              rc = key_byname (NULL, namelist, pk, NULL, 0,
+                               include_unusable, ret_keyblock, ret_kdbhd);
+              break;
+
 	    case AKL_CERT:
+              mechanism = "DNS CERT";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc=keyserver_import_cert(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
-
-	      if(rc==0)
-		log_info(_("automatically retrieved `%s' via %s\n"),
-			 name,"DNS CERT");
 	      break;
 
 	    case AKL_PKA:
+              mechanism = "PKA";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc=keyserver_import_pka(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
-
-	      if(rc==0)
-		log_info(_("automatically retrieved `%s' via %s\n"),
-			 name,"PKA");
 	      break;
 
 	    case AKL_LDAP:
+              mechanism = "LDAP";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc=keyserver_import_ldap(name,&fpr,&fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
-
-	      if(rc==0)
-		log_info(_("automatically retrieved `%s' via %s\n"),
-			 name,"LDAP");
 	      break;
 
 	    case AKL_KEYSERVER:
@@ -979,32 +1006,31 @@ get_pubkey_byname (PKT_public_key *pk,
 		 and getting a whole lot of keys back. */
 	      if(opt.keyserver)
 		{
+                  mechanism = opt.keyserver->uri;
 		  glo_ctrl.in_auto_key_retrieve++;
 		  rc=keyserver_import_name(name,&fpr,&fpr_len,opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
-
-		  if(rc==0)
-		    log_info(_("automatically retrieved `%s' via %s\n"),
-			     name,opt.keyserver->uri);
 		}
+              else
+                {
+                  mechanism = "Unconfigured keyserver";
+                  rc = G10ERR_NO_PUBKEY;
+                }
 	      break;
 
 	    case AKL_SPEC:
 	      {
 		struct keyserver_spec *keyserver;
 
+                mechanism = akl->spec->uri;
 		keyserver=keyserver_match(akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
 		rc=keyserver_import_name(name,&fpr,&fpr_len,keyserver);
 		glo_ctrl.in_auto_key_retrieve--;
-
-		if(rc==0)
-		  log_info(_("automatically retrieved `%s' via %s\n"),
-			   name,akl->spec->uri);
 	      }
 	      break;
 	    }
-
+          
 	  /* Use the fingerprint of the key that we actually fetched.
 	     This helps prevent problems where the key that we fetched
 	     doesn't have the same name that we used to fetch it.  In
@@ -1027,14 +1053,29 @@ get_pubkey_byname (PKT_public_key *pk,
 		log_info("auto-key-locate found fingerprint %s\n",fpr_string);
 
 	      add_to_strlist( &namelist, fpr_string );
-
-	      xfree(fpr);
 	    }
+          else if (!rc && !fpr && !did_key_byname)
+            {
+              no_fingerprint = 1;
+              rc = G10ERR_NO_PUBKEY;
+            }
+          xfree (fpr);
+          fpr = NULL;
 
-	  rc = key_byname( NULL, namelist, pk, NULL, 0,
-			   include_unusable, ret_keyblock, ret_kdbhd);
-	  if(rc!=G10ERR_NO_PUBKEY)
-	    break;
+          if (!rc && !did_key_byname)
+            rc = key_byname (NULL, namelist, pk, NULL, 0,
+                             include_unusable, ret_keyblock, ret_kdbhd);
+	  if (!rc)
+            {
+              /* Key found.  */
+              log_info (_("automatically retrieved `%s' via %s\n"),
+                        name, mechanism);
+              break;  
+            }
+          if (rc != G10ERR_NO_PUBKEY || opt.verbose || no_fingerprint)
+            log_info (_("error retrieving `%s' via %s: %s\n"),
+                      name, mechanism, 
+                      no_fingerprint? _("No fingerprint"):g10_errstr(rc));
 	}
     }
 
@@ -2638,7 +2679,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
     rc = 0;
     while (!(rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems))) {
         /* If we are searching for the first key we have to make sure
-           that the next interation does not no an implicit reset.
+           that the next iteration does not do an implicit reset.
            This can be triggered by an empty key ring. */
         if (ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
             ctx->items->mode = KEYDB_SEARCH_MODE_NEXT;
@@ -2949,6 +2990,7 @@ release_akl(void)
     }
 }
 
+/* Returns false on error. */
 int
 parse_auto_key_locate(char *options)
 {
@@ -2964,7 +3006,11 @@ parse_auto_key_locate(char *options)
 
       akl=xmalloc_clear(sizeof(*akl));
 
-      if(ascii_strcasecmp(tok,"ldap")==0)
+      if(ascii_strcasecmp(tok,"nodefault")==0)
+	akl->type=AKL_NODEFAULT;
+      else if(ascii_strcasecmp(tok,"local")==0)
+	akl->type=AKL_LOCAL;
+      else if(ascii_strcasecmp(tok,"ldap")==0)
 	akl->type=AKL_LDAP;
       else if(ascii_strcasecmp(tok,"keyserver")==0)
 	akl->type=AKL_KEYSERVER;
