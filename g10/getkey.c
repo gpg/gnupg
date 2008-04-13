@@ -2037,6 +2037,26 @@ merge_selfsigs_main(KBNODE keyblock, int *r_revoked, struct revoke_info *rinfo)
       }
 }
 
+/* Convert a buffer to a signature.  Useful for 0x19 embedded sigs.
+   Caller must free the signature when they are done. */
+static PKT_signature *
+buf_to_sig(const byte *buf,size_t len)
+{
+  PKT_signature *sig=xmalloc_clear(sizeof(PKT_signature));
+  IOBUF iobuf=iobuf_temp_with_content(buf,len);
+  int save_mode=set_packet_list_mode(0);
+
+  if(parse_signature(iobuf,PKT_SIGNATURE,len,sig)!=0)
+    {
+      xfree(sig);
+      sig=NULL;
+    }
+
+  set_packet_list_mode(save_mode);
+  iobuf_close(iobuf);
+
+  return sig;
+}
 
 static void
 merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
@@ -2146,48 +2166,74 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
 
     subpk->is_valid = 1;
 
-    /* Find the first 0x19 embedded signature on our self-sig. */
+    /* Find the most recent 0x19 embedded signature on our self-sig. */
     if(subpk->backsig==0)
       {
 	int seq=0;
 	size_t n;
+	PKT_signature *backsig=NULL;
+
+	sigdate=0;
 
 	/* We do this while() since there may be other embedded
 	   signatures in the future.  We only want 0x19 here. */
+
 	while((p=enum_sig_subpkt(sig->hashed,
 				 SIGSUBPKT_SIGNATURE,&n,&seq,NULL)))
 	  if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
-	    break;
+	    {
+	      PKT_signature *tempsig=buf_to_sig(p,n);
+	      if(tempsig)
+		{
+		  if(tempsig->timestamp>sigdate)
+		    {
+		      if(backsig)
+			free_seckey_enc(backsig);
 
-	if(p==NULL)
+		      backsig=tempsig;
+		      sigdate=backsig->timestamp;
+		    }
+		  else
+		    free_seckey_enc(tempsig);
+		}
+	    }
+
+	seq=0;
+
+	/* It is safe to have this in the unhashed area since the 0x19
+	   is located on the selfsig for convenience, not security. */
+
+	while((p=enum_sig_subpkt(sig->unhashed,SIGSUBPKT_SIGNATURE,
+				 &n,&seq,NULL)))
+	  if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
+	    {
+	      PKT_signature *tempsig=buf_to_sig(p,n);
+	      if(tempsig)
+		{
+		  if(tempsig->timestamp>sigdate)
+		    {
+		      if(backsig)
+			free_seckey_enc(backsig);
+
+		      backsig=tempsig;
+		      sigdate=backsig->timestamp;
+		    }
+		  else
+		    free_seckey_enc(tempsig);
+		}
+	    }
+
+	if(backsig)
 	  {
-	    seq=0;
-	    /* It is safe to have this in the unhashed area since the
-	       0x19 is located on the selfsig for convenience, not
-	       security. */
-	    while((p=enum_sig_subpkt(sig->unhashed,SIGSUBPKT_SIGNATURE,
-				     &n,&seq,NULL)))
-	      if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
-		break;
-	  }
+	    /* At ths point, backsig contains the most recent 0x19 sig.
+	       Let's see if it is good. */
 
-	if(p)
-	  {
-	    PKT_signature *backsig=xmalloc_clear(sizeof(PKT_signature));
-	    IOBUF backsig_buf=iobuf_temp_with_content(p,n);
-	    int save_mode=set_packet_list_mode(0);
+	    /* 2==valid, 1==invalid, 0==didn't check */
+	    if(check_backsig(mainpk,subpk,backsig)==0)
+	      subpk->backsig=2;
+	    else
+	      subpk->backsig=1;
 
-	    if(parse_signature(backsig_buf,PKT_SIGNATURE,n,backsig)==0)
-	      {
-		if(check_backsig(mainpk,subpk,backsig)==0)
-		  subpk->backsig=2;
-		else
-		  subpk->backsig=1;
-	      }
-
-	    set_packet_list_mode(save_mode);
-
-	    iobuf_close(backsig_buf);
 	    free_seckey_enc(backsig);
 	  }
       }
