@@ -129,16 +129,16 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
       curl->proxy=va_arg(ap,char *);
       break;
     case CURLOPT_POST:
-      curl->flags.post=va_arg(ap,unsigned int);
+      curl->flags.post=va_arg(ap,long)?1:0;
       break;
     case CURLOPT_POSTFIELDS:
       curl->postfields=va_arg(ap,char *);
       break;
     case CURLOPT_FAILONERROR:
-      curl->flags.failonerror=va_arg(ap,unsigned int);
+      curl->flags.failonerror=va_arg(ap,long)?1:0;
       break;
     case CURLOPT_VERBOSE:
-      curl->flags.verbose=va_arg(ap,unsigned int);
+      curl->flags.verbose=va_arg(ap,long)?1:0;
       break;
     case CURLOPT_STDERR:
       curl->errors=va_arg(ap,FILE *);

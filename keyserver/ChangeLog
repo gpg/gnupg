@@ -1,3 +1,8 @@
+2008-04-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.c (curl_easy_setopt): Minor tweak to match the real
+	curl better - libcurl uses 'long', not 'unsigned int'.
+
 2008-03-25  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_ldap.c (build_attrs): Take care of char defaulting to
