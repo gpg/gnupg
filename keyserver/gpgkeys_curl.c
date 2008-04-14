@@ -1,5 +1,5 @@
 /* gpgkeys_curl.c - fetch a key via libcurl
- * Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -285,7 +285,7 @@ main(int argc,char *argv[])
 
   if(follow_redirects)
     {
-      curl_easy_setopt(curl,CURLOPT_FOLLOWLOCATION,1);
+      curl_easy_setopt(curl,CURLOPT_FOLLOWLOCATION,1L);
       if(follow_redirects>0)
 	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
     }
@@ -297,10 +297,10 @@ main(int argc,char *argv[])
     {
       fprintf(console,"gpgkeys: curl version = %s\n",curl_version());
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
-      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1L);
     }
 
-  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,opt->flags.check_cert);
+  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
   curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
 
   if(proxy)
