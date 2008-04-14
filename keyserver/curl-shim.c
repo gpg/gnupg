@@ -1,7 +1,7 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

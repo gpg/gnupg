@@ -1,5 +1,8 @@
 2008-04-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_curl.c (main), gpgkeys_hkp.c (main): Make sure all
+	libcurl number options are passed as long.
+
 	* curl-shim.c (curl_easy_setopt): Minor tweak to match the real
 	curl better - libcurl uses 'long', not 'unsigned int'.
 

@@ -1,6 +1,6 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -202,9 +202,9 @@ send_key(int *eof)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
-  curl_easy_setopt(curl,CURLOPT_POST,1);
+  curl_easy_setopt(curl,CURLOPT_POST,1L);
   curl_easy_setopt(curl,CURLOPT_POSTFIELDS,key);
-  curl_easy_setopt(curl,CURLOPT_FAILONERROR,1);
+  curl_easy_setopt(curl,CURLOPT_FAILONERROR,1L);
 
   res=curl_easy_perform(curl);
   if(res!=0)
@@ -661,7 +661,7 @@ main(int argc,char *argv[])
     {
       fprintf(console,"gpgkeys: curl version = %s\n",curl_version());
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
-      curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1L);
     }
 
   if(proxy)
