@@ -1,3 +1,8 @@
+2008-04-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_subkey): If there are multiple 0x19
+	backsigs, take the most recent one.
+
 2008-04-08  Werner Koch  <wk@g10code.com>
 
 	* options.h (opt): Add AKL_NODEFAULT and AKL_LOCAL.
