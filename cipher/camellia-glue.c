@@ -1,5 +1,5 @@
 /* camellia-glue.c - Glue for the Camellia cipher
- * Copyright (C) 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -58,7 +58,7 @@ camellia_setkey(void *c, const byte *key, unsigned keylen)
   static int initialized=0;
   static const char *selftest_failed=NULL;
 
-  if(keylen!=16 && keylen!=32)
+  if(keylen!=16 && keylen!=24 && keylen!=32)
     return G10ERR_WRONG_KEYLEN;
 
   if(!initialized)
@@ -133,6 +133,16 @@ selftest(void)
       0x67,0x67,0x31,0x38,0x54,0x96,0x69,0x73,
       0x08,0x57,0x06,0x56,0x48,0xea,0xbe,0x43
     };
+  const byte key_192[]=
+    {
+      0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,
+      0x76,0x54,0x32,0x10,0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77
+    };
+  const byte ciphertext_192[]=
+    {
+      0xb4,0x99,0x34,0x01,0xb3,0xe9,0x96,0xf8,
+      0x4e,0xe5,0xce,0xe7,0xd7,0x9b,0x09,0xb9
+    };
   const byte key_256[]=
     {
       0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,
@@ -153,6 +163,14 @@ selftest(void)
   camellia_decrypt(&ctx,scratch,scratch);
   if(memcmp(scratch,plaintext,sizeof(scratch))!=0)
     return "CAMELLIA128 test decryption failed.";
+
+  camellia_setkey(&ctx,key_192,sizeof(key_192));
+  camellia_encrypt(&ctx,scratch,plaintext);
+  if(memcmp(scratch,ciphertext_192,sizeof(scratch))!=0)
+    return "CAMELLIA192 test encryption failed.";
+  camellia_decrypt(&ctx,scratch,scratch);
+  if(memcmp(scratch,plaintext,sizeof(scratch))!=0)
+    return "CAMELLIA192 test decryption failed.";
 
   camellia_setkey(&ctx,key_256,sizeof(key_256));
   camellia_encrypt(&ctx,scratch,plaintext);
@@ -184,6 +202,11 @@ camellia_get_info(int algo, size_t *keylen,
     {
       *keylen = 128;
       return "CAMELLIA128";
+    }
+  else if(algo==CIPHER_ALGO_CAMELLIA192)
+    {
+      *keylen = 192;
+      return "CAMELLIA192";
     }
   else if(algo==CIPHER_ALGO_CAMELLIA256)
     {

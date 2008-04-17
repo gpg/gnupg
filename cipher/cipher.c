@@ -1,6 +1,6 @@
 /* cipher.c  -	cipher dispatcher
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
- *               2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -188,6 +188,17 @@ setup_cipher_table(void)
 
 #ifdef USE_CAMELLIA
     cipher_table[i].algo = CIPHER_ALGO_CAMELLIA128;
+    cipher_table[i].name = camellia_get_info( cipher_table[i].algo,
+					      &cipher_table[i].keylen,
+					      &cipher_table[i].blocksize,
+					      &cipher_table[i].contextsize,
+					      &cipher_table[i].setkey,
+					      &cipher_table[i].encrypt,
+					      &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_CAMELLIA192;
     cipher_table[i].name = camellia_get_info( cipher_table[i].algo,
 					      &cipher_table[i].keylen,
 					      &cipher_table[i].blocksize,

@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1856,7 +1856,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    switch( sk->protect.algo ) {
 	      case 7: case 8: case 9: /* AES */
 	      case 10: /* Twofish */
-	      case 11: case 12: /* Camellia */
+	      case 11: case 12: case 13: /* Camellia */
 		sk->protect.ivlen = 16;
 		break;
 	      default:
