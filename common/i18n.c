@@ -45,17 +45,19 @@ i18n_init (void)
 
 
 /* The Assuan agent protocol requires us to transmit utf-8 strings
-   thus we need a fuctnion to temporary switch gettext from native to
+   thus we need a way to temporary switch gettext from native to
    utf8.  */
 char *
 i18n_switchto_utf8 (void)
 {
-#ifdef ENABLE_NLS
+#ifdef USE_SIMPLE_GETTEXT
+  gettext_select_utf8 (1);
+#elif define(ENABLE_NLS)
   char *orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
-#ifdef HAVE_LANGINFO_CODESET
+# ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
     orig_codeset = nl_langinfo (CODESET);
-#endif
+# endif
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later.
          Note that bind_textdomain_codeset does only return on memory
@@ -78,7 +80,9 @@ i18n_switchto_utf8 (void)
 void
 i18n_switchback (char *saved_codeset)
 {
-#ifdef ENABLE_NLS
+#ifdef USE_SIMPLE_GETTEXT
+  gettext_select_utf8 (0);
+#elif defined(ENABLE_NLS)
   if (saved_codeset)
     {
       bind_textdomain_codeset (PACKAGE_GT, saved_codeset);

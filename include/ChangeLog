@@ -1,3 +1,8 @@
+2008-04-18  Werner Koch  <wk@g10code.com>
+
+	* cipher.h (CIPHER_ALGO_CAMELLIA256): Change ID to 13.
+	(CIPHER_ALGO_CAMELLIA192): New.
+
 2007-12-12  Werner Koch  <wk@g10code.com>
 
 	* cipher.h (CIPHER_ALGO_CAMELLIA128, CIPHER_ALGO_CAMELLIA256): New.

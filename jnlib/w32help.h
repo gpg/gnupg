@@ -33,6 +33,7 @@ const char *gettext (const char *msgid );
 const char *ngettext (const char *msgid1, const char *msgid2,
                       unsigned long int n);
 const char *gettext_localename (void);
+void gettext_select_utf8 (int value);
 #endif /*USE_SIMPLE_GETTEXT*/
 
 

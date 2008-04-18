@@ -1,3 +1,9 @@
+2008-04-08  Werner Koch  <wk@g10code.com>
+
+	* w32-gettext.c (gettext_select_utf8): New.
+	(get_string): Support switching encodings.
+	(load_domain): Allocate space for DATA_NATIVE.
+
 2008-03-25  Werner Koch  <wk@g10code.com>
 
 	* w32-gettext.c (_nl_locale_name): New.  Taken from
@@ -555,7 +561,7 @@ Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
      ***********************************************************	
 	
  Copyright 2000, 2001, 2002, 2003, 2004,
-	   2005, 2006, 2007 Free Software Foundation, Inc.
+	   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -1901,19 +1901,13 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * of the IV here in cases we are not aware of the algorithm.
 	     * so a
 	     *	 sk->protect.ivlen = cipher_get_blocksize(sk->protect.algo);
-	     * won't work.  The only solution I see is to hardwire it here.
+	     * won't work.  The only solution I see is to hardwire it.
 	     * NOTE: if you change the ivlen above 16, don't forget to
 	     * enlarge temp.
 	     */
-	    switch( sk->protect.algo ) {
-	      case 7: case 8: case 9: /* AES */
-	      case 10: /* Twofish */
-              case 11: case 12: /* Camellia */
-		sk->protect.ivlen = 16;
-		break;
-	      default:
-		sk->protect.ivlen = 8;
-	    }
+            sk->protect.ivlen = openpgp_cipher_blocklen (sk->protect.algo);
+            assert (sk->protect.ivlen <= sizeof (temp));
+
 	    if( sk->protect.s2k.mode == 1001 )
 		sk->protect.ivlen = 0;
 	    else if( sk->protect.s2k.mode == 1002 )

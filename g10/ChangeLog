@@ -1,3 +1,10 @@
+2008-04-18  Werner Koch  <wk@g10code.com>
+
+	* misc.c (map_cipher_openpgp_to_gcry, map_cipher_gcry_to_openpgp) 
+	(openpgp_cipher_test_algo): Add camellia-192.
+	(openpgp_cipher_blocklen): New.
+	* parse-packet.c (parse_key): Use new function here.
+
 2008-04-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_subkey): If there are multiple 0x19

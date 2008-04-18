@@ -1,6 +1,6 @@
 /* w32-gettext.c  - A simplified version of gettext for use under W32.
  * Copyright (C) 1995, 1996, 1997, 1999, 2000, 2003,
- *               2005, 2007, 2088 Free Software Foundation, Inc.
+ *               2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -96,11 +96,13 @@ struct overflow_space_s
 struct loaded_domain
 {
   char *data;
+  char *data_native; /* Data mapped to the native version of the
+                        string.  (Allocated along with DATA). */
   int must_swap;
   u32 nstrings;
-  char *mapped;  /* 0 = not yet mapped, 1 = mapped,
-                    2 = mapped to
-                    overflow space */
+  char *mapped;  /* 0 = not mapped (original utf8), 
+                    1 = mapped to native encoding,
+                    2 = mapped to native encoding in overflow space.   */
   struct overflow_space_s *overflow_space;
   struct string_desc *orig_tab;
   struct string_desc *trans_tab;
@@ -111,6 +113,8 @@ struct loaded_domain
 
 static struct loaded_domain *the_domain;
 static char *the_langid;
+static int want_utf8;  /* True if the user want's utf-8 strings.  */
+
 
 static __inline__ u32
 do_swap_u32( u32 i )
@@ -1236,7 +1240,7 @@ load_domain (const char *filename)
       return NULL;
     }
 
-  data = jnlib_malloc (size);
+  data = (2*size <= size)? NULL : jnlib_malloc (2*size);
   if (!data)
     {
       fclose (fp);
@@ -1278,38 +1282,39 @@ load_domain (const char *filename)
       return NULL;
     }
   domain->data = (char *) data;
+  domain->data_native = (char *) data + size;
   domain->must_swap = data->magic != MAGIC;
 
   /* Fill in the information about the available tables.  */
-    switch (SWAPIT(domain->must_swap, data->revision))
-      {
-      case 0:
-	domain->nstrings = SWAPIT(domain->must_swap, data->nstrings);
-	domain->orig_tab = (struct string_desc *)
+  switch (SWAPIT(domain->must_swap, data->revision))
+    {
+    case 0:
+      domain->nstrings = SWAPIT(domain->must_swap, data->nstrings);
+      domain->orig_tab = (struct string_desc *)
 	  ((char *) data + SWAPIT(domain->must_swap, data->orig_tab_offset));
-	domain->trans_tab = (struct string_desc *)
-	  ((char *) data + SWAPIT(domain->must_swap, data->trans_tab_offset));
-	domain->hash_size = SWAPIT(domain->must_swap, data->hash_tab_size);
-	domain->hash_tab = (u32 *)
-	  ((char *) data + SWAPIT(domain->must_swap, data->hash_tab_offset));
-        break;
+      domain->trans_tab = (struct string_desc *)
+        ((char *) data + SWAPIT(domain->must_swap, data->trans_tab_offset));
+      domain->hash_size = SWAPIT(domain->must_swap, data->hash_tab_size);
+      domain->hash_tab = (u32 *)
+        ((char *) data + SWAPIT(domain->must_swap, data->hash_tab_offset));
+      break;
         
-      default: /* This is an invalid revision.	*/
-	jnlib_free( data );
-	jnlib_free( domain );
-	return NULL;
+    default: /* This is an invalid revision.	*/
+      jnlib_free( data );
+      jnlib_free( domain );
+      return NULL;
     }
-
-    /* Allocate an array to keep track of code page mappings. */
-    domain->mapped = jnlib_calloc (1, domain->nstrings);
-    if (!domain->mapped)
-      {
-        jnlib_free (data);
-        jnlib_free (domain);
-        return NULL;
-      }
-
-    return domain;
+  
+  /* Allocate an array to keep track of code page mappings. */
+  domain->mapped = jnlib_calloc (1, domain->nstrings);
+  if (!domain->mapped)
+    {
+      jnlib_free (data);
+      jnlib_free (domain);
+      return NULL;
+    }
+  
+  return domain;
 }
 
 
@@ -1510,30 +1515,45 @@ set_gettext_file ( const char *filename, const char *regkey )
 
 
 static const char*
-get_string( struct loaded_domain *domain, u32 idx )
+get_string (struct loaded_domain *domain, u32 idx)
 {
   struct overflow_space_s *os;
   char *p;
 
-  p = domain->data + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset);
-  if (!domain->mapped[idx]) 
+  if (want_utf8)
     {
+      p = (domain->data 
+           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+    }
+  else if (!domain->mapped[idx]) 
+    {
+      /* Not yet mapped - map utf-8 to native encoding.  */
+      const char *p_orig;
       size_t plen, buflen;
       char *buf;
 
-      domain->mapped[idx] = 1;
+      p_orig = (domain->data 
+                + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+      p = (domain->data_native 
+           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
 
-      plen = strlen (p);
-      buf = utf8_to_native (p, plen, -1);
+      plen = strlen (p_orig);
+      buf = utf8_to_native (p_orig, plen, -1);
       buflen = strlen (buf);
       if (buflen <= plen)
-        strcpy (p, buf);
+        {
+          /* Copy into the DATA_NATIVE area. */
+          strcpy (p, buf);
+          domain->mapped[idx] = 1;
+        }
       else
         {
           /* There is not enough space for the translation - store it
-             in the overflow_space else and mark that in the mapped
-             array.  Because we expect that this won't happen too
-             often, we use a simple linked list.  */
+             in the overflow_space and mark that in the mapped array.
+             Because UTF-8 strings are in general longer than the
+             Windows 2 byte encodings, we expect that this won't
+             happen too often (if at all) and thus we use a linked
+             list to manage this space. */
           os = jnlib_malloc (sizeof *os + buflen);
           if (os)
             {
@@ -1545,8 +1565,15 @@ get_string( struct loaded_domain *domain, u32 idx )
             }
           else
             p = "ERROR in GETTEXT MALLOC";
+          domain->mapped[idx] = 2;
         }
       jnlib_free (buf);
+    }
+  else if (domain->mapped[idx] == 1) 
+    {
+      p = (domain->data_native
+           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+
     }
   else if (domain->mapped[idx] == 2) 
     { /* We need to get the string from the overflow_space. */
@@ -1555,6 +1582,9 @@ get_string( struct loaded_domain *domain, u32 idx )
           return (const char*)os->d;
       p = "ERROR in GETTEXT\n";
     }
+  else
+    p = "ERROR in GETEXT mapping";
+
   return (const char*)p;
 }
 
@@ -1657,6 +1687,13 @@ gettext_localename (void)
   else
     s = _nl_locale_name ("LC_MESSAGES");
   return s? s:"";
+}
+
+
+void
+gettext_select_utf8 (int value)
+{
+  want_utf8 = value;
 }
 
 

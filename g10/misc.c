@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 
+ *               2005, 2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -338,6 +338,7 @@ map_cipher_openpgp_to_gcry (int algo)
   switch (algo)
     {
     case CIPHER_ALGO_CAMELLIA128: return 310; 
+    case CIPHER_ALGO_CAMELLIA192: return 311; 
     case CIPHER_ALGO_CAMELLIA256: return 312; 
     default: return algo;
     }
@@ -350,8 +351,33 @@ map_cipher_gcry_to_openpgp (int algo)
   switch (algo)
     {
     case 310: return CIPHER_ALGO_CAMELLIA128;
+    case 311: return CIPHER_ALGO_CAMELLIA192;
     case 312: return CIPHER_ALGO_CAMELLIA256;
     default: return algo;
+    }
+}
+
+
+/* Return the block length of an OpenPGP cipher algorithm.  */
+int 
+openpgp_cipher_blocklen (int algo)
+{
+  /* We use the numbers from OpenPGP to be sure that we get the right
+     block length.  This is so that the packet parsing code works even
+     for unknown algorithms (for which we assume 8 due to tradition).
+
+     NOTE: If you change the the returned blocklen above 16, check
+     the callers because they may use a fixed size buffer of that
+     size. */
+  switch (algo)
+    {
+    case 7: case 8: case 9: /* AES */
+    case 10: /* Twofish */
+    case 11: case 12: case 13: /* Camellia */
+      return 16;
+
+    default:
+      return 8;
     }
 }
 
@@ -370,7 +396,8 @@ openpgp_cipher_test_algo( int algo )
      requested.  */
 #ifndef USE_CAMELLIA
   if (algo == CIPHER_ALGO_CAMELLIA128 
-       || algo == CIPHER_ALGO_CAMELLIA256)
+      || algo == CIPHER_ALGO_CAMELLIA192
+      || algo == CIPHER_ALGO_CAMELLIA256)
     return gpg_error (GPG_ERR_CIPHER_ALGO);
 #endif
 
@@ -385,8 +412,6 @@ openpgp_cipher_algo_name (int algo)
 {
   return gcry_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
 }
-
-
 
 int
 openpgp_pk_test_algo( int algo )

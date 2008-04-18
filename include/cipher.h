@@ -47,7 +47,8 @@
 #define CIPHER_ALGO_TWOFISH	 /* 10 */  GCRY_CIPHER_TWOFISH  /* 256 bit */
 /* Note: Camellia ids don't match those used by libgcrypt. */
 #define CIPHER_ALGO_CAMELLIA128     11
-#define CIPHER_ALGO_CAMELLIA256     12
+#define CIPHER_ALGO_CAMELLIA192     12
+#define CIPHER_ALGO_CAMELLIA256     13
 #define CIPHER_ALGO_DUMMY          110    /* No encryption at all. */
 
 #define PUBKEY_ALGO_RSA          /*  1 */ GCRY_PK_RSA  

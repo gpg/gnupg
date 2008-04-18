@@ -1,3 +1,8 @@
+2008-04-08  Werner Koch  <wk@g10code.com>
+
+	* i18n.c (i18n_switchto_utf8, i18n_switchback)
+	[USE_SIMPLE_GETTEXT]: Implement.
+
 2008-04-07  Werner Koch  <wk@g10code.com>
 
 	* b64enc.c (b64enc_start): Detect PGP mode.

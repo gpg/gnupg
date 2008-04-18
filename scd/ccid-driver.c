@@ -282,7 +282,7 @@ set_msg_len (unsigned char *msg, unsigned int length)
 
 
 /* Pint an error message for a failed CCID command including a textual
-   error code.  MSG is shall be the CCID message of at least 10 bytes. */
+   error code.  MSG shall be the CCID message at a minimum of 10 bytes. */
 static void
 print_command_failed (const unsigned char *msg)
 {

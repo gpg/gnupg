@@ -467,8 +467,16 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
             {
               char *fpr;
 
-              log_error ("invalid signature: message digest attribute "
-                         "does not match calculated one\n");
+              log_error (_("invalid signature: message digest attribute "
+                           "does not match computed one\n"));
+              if (DBG_X509)
+                {
+                  if (msgdigest)
+                    log_printhex ("message:  ", msgdigest, msgdigestlen);
+                  if (s)
+                    log_printhex ("computed: ",
+                                  s, gcry_md_get_algo_dlen (algo));
+                }
               fpr = gpgsm_fpr_and_name_for_status (cert);
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);
               xfree (fpr);
