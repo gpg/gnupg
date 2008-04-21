@@ -27,7 +27,7 @@
 #include <getopt.h>
 #endif
 
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -46,7 +46,7 @@
 #include "ksutil.h"
 #include "iobuf.h"
 
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
 #define sock_close(a)  closesocket(a)
 #else
 #define sock_close(a)  close(a)
@@ -58,40 +58,6 @@ extern int optind;
 static FILE *input,*output,*console;
 static struct ks_options *opt;
 
-#ifdef _WIN32
-static void
-deinit_sockets (void)
-{
-  WSACleanup();
-}
-
-static void
-init_sockets (void)
-{
-  static int initialized;
-  static WSADATA wsdata;
-
-  if (initialized)
-    return;
-
-  if (WSAStartup (0x0101, &wsdata) )
-    {
-      fprintf (console, "error initializing socket library: ec=%d\n", 
-               (int)WSAGetLastError () );
-      return;
-    }
-  if (wsdata.wVersion < 0x0001)
-    {
-      fprintf (console, "socket library version is %x.%x - but 1.1 needed\n",
-               LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion));
-      WSACleanup();
-      return;
-    }
-  atexit  (deinit_sockets);
-  initialized = 1;
-}
-#endif /*_WIN32*/
-
 
 /* Connect to SERVER at PORT and return a file descriptor or -1 on
    error. */
@@ -100,12 +66,12 @@ connect_server (const char *server, unsigned short port)
 {
   int sock = -1;
 
-#ifdef _WIN32
+#ifdef HAVE_W32_SYSTEM
   struct hostent *hp;
   struct sockaddr_in addr;
   unsigned long l;
 
-  init_sockets ();
+  w32_init_sockets ();
 
   memset (&addr, 0, sizeof addr);
   addr.sin_family = AF_INET;
@@ -201,7 +167,7 @@ write_server (int sock, const char *data, size_t length)
     {
       int nwritten;
       
-#ifdef _WIN32  
+#ifdef HAVE_W32_SYSTEM  
       nwritten = send (sock, data, nleft, 0);
       if ( nwritten == SOCKET_ERROR )
         {

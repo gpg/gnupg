@@ -35,6 +35,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef HAVE_W32_SYSTEM
+#include <windows.h>
+#endif
+
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
 #else
@@ -82,6 +86,22 @@ register_timeout(void)
 }
 
 #endif /* !HAVE_DOSISH_SYSTEM */
+
+#ifdef HAVE_W32_SYSTEM
+void
+w32_init_sockets (void)
+{
+  static int initialized;
+  static WSADATA wsdata;
+
+  if (!initialized)
+    {
+      WSAStartup (0x0202, &wsdata);
+      initialized = 1;
+    }
+}
+#endif /*HAVE_W32_SYSTEM*/
+
 
 struct ks_options *
 init_ks_options(void)

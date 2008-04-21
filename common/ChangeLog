@@ -1,3 +1,9 @@
+2008-04-21  Werner Koch  <wk@g10code.com>
+
+	* http.c (http_wait_response) [W32]: Use DuplicateHandle because
+	it is a socket.
+	(cookie_read) [W32]: Use recv in place of read.
+
 2008-04-08  Werner Koch  <wk@g10code.com>
 
 	* i18n.c (i18n_switchto_utf8, i18n_switchback)

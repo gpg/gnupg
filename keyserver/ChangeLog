@@ -1,3 +1,11 @@
+2008-04-21  Werner Koch  <wk@g10code.com>
+
+	* ksutil.c (w32_init_sockets) [HAVE_W32_SYSTEM]: New.
+	* curl-shim.c (curl_easy_init) [HAVE_W32_SYSTEM]: Call it.
+	* gpgkeys_finger.c: s/_WIN32/HAVE_W32_SYSTEM/.
+	(init_sockets): Remove.
+	(connect_server) [HAVE_W32_SYSTEM]: Call new function.  
+
 2008-04-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main), gpgkeys_hkp.c (main): Make sure all

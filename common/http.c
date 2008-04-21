@@ -396,7 +396,16 @@ http_wait_response (http_t hd)
   else
 #endif /*HTTP_USE_ESTREAM*/
     {
+#ifdef HAVE_W32_SYSTEM
+      HANDLE handle = (HANDLE)hd->sock;
+      if (!DuplicateHandle (GetCurrentProcess(), handle,
+			    GetCurrentProcess(), &handle, 0,
+			    TRUE, DUPLICATE_SAME_ACCESS ))
+	return gpg_error_from_syserror ();
+      hd->sock = (int)handle;
+#else
       hd->sock = dup (hd->sock);
+#endif
       if (hd->sock == -1)
         return gpg_error_from_syserror ();
     }
@@ -1490,7 +1499,7 @@ start_server ()
 }
 #endif
 
-/* Actually connect to a server.  Returns the file descripto or -1 on
+/* Actually connect to a server.  Returns the file descriptor or -1 on
    error.  ERRNO is set on error. */
 static int
 connect_server (const char *server, unsigned short port,
@@ -1765,7 +1774,12 @@ cookie_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
+#ifdef HAVE_W32_SYSTEM
+          /* Under Windows we need to use recv for a socket.  */
+          nread = recv (c->fd, buffer, size, 0);
+#else          
           nread = read (c->fd, buffer, size);
+#endif
         }
       while (nread == -1 && errno == EINTR);
     }

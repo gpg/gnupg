@@ -89,6 +89,10 @@ curl_easy_init(void)
 {
   CURL *handle;
 
+#ifdef HAVE_W32_SYSTEM
+  w32_init_sockets ();
+#endif
+
   handle=calloc(1,sizeof(CURL));
   if(handle)
     handle->errors=stderr;

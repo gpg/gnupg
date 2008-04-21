@@ -79,6 +79,11 @@ struct keylist
 unsigned int set_timeout(unsigned int seconds);
 int register_timeout(void);
 
+#ifdef HAVE_W32_SYSTEM
+void w32_init_sockets (void);
+#endif
+
+
 enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
 enum ks_search_type {KS_SEARCH_SUBSTR,KS_SEARCH_EXACT,
