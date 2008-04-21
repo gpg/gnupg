@@ -481,7 +481,7 @@ count_bits (const unsigned char *a, size_t len)
   return n;
 }
 
-/* GnuPG makes special use of the login-data DO, this fucntion parses
+/* GnuPG makes special use of the login-data DO, this function parses
    the login data to store the flags for later use.  It may be called
    at any time and should be called after changing the login-data DO.
 
@@ -1299,6 +1299,25 @@ verify_a_chv (app_t app,
   assert (chvno == 1 || chvno == 2);
 
   *pinvalue = NULL;
+
+  if (chvno == 2 && app->app_local->flags.def_chv2)
+    {
+      /* Special case for def_chv2 mechanism. */
+      if (opt.verbose)
+        log_info (_("using default PIN as %s\n"), "CHV2");
+      rc = iso7816_verify (app->slot, 0x82, "123456", 6);
+      if (rc)
+        {
+          /* Verification of CHV2 with the default PIN failed,
+             although the card pretends to have the default PIN set as
+             CHV2.  We better disable the def_chv2 flag now. */
+          log_info (_("failed to use default PIN as %s: %s"
+                      " - disabling further default use\n"),
+                    "CHV2", gpg_strerror (rc));
+          app->app_local->flags.def_chv2 = 0;
+        }
+      return rc;
+    }
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.mode = 1;

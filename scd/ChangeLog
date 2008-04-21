@@ -1,3 +1,7 @@
+2008-04-21  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_a_chv): Make use of the default CHV flag.
+
 2008-03-26  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_chv3): Support the keypad.
