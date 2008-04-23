@@ -702,12 +702,14 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
     rc = keydb_search_subject (kh, issuer);
   if (rc == -1 && !find_next)
     {
+      int old;
+
       /* Also try to get it from the Dirmngr cache.  The function
          merely puts it into the ephemeral database.  */
       find_up_dirmngr (ctrl, kh, NULL, issuer, 0);
 
       /* Not found, let us see whether we have one in the ephemeral key DB. */
-      int old = keydb_set_ephemeral (kh, 1);
+      old = keydb_set_ephemeral (kh, 1);
       if (!old)
         {
           keydb_search_reset (kh);

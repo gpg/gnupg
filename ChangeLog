@@ -1,3 +1,7 @@
+2008-04-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Call gl_HEADER_SYS_SOCKET and gl_TYPE_SOCKLEN_T.
+
 2008-04-07  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (ADNSLIBS): Test for adns.

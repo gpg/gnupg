@@ -992,6 +992,9 @@ AC_TYPE_MODE_T
 AC_TYPE_SIGNAL
 AC_DECL_SYS_SIGLIST
 
+gl_HEADER_SYS_SOCKET
+gl_TYPE_SOCKLEN_T
+
 AC_ARG_ENABLE(endian-check,
               AC_HELP_STRING([--disable-endian-check],
 	      [disable the endian check and trust the OS provided macros]),

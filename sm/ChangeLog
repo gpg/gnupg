@@ -1,3 +1,8 @@
+2008-04-23  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (find_up): Make correct C89 code.  Declare variable
+	at the top of the block.  Reported by Alain Guibert.
+
 2008-04-09  Werner Koch  <wk@g10code.com>
 
 	* verify.c (gpgsm_verify): Print the message hash values on error.
