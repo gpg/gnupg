@@ -570,7 +570,7 @@ LangString T_About ${LANG_ENGLISH} \
   "GnuPG is GNU's tool for secure communication and data storage. \
   It can be used to encrypt data and to create digital signatures. \
   It includes an advanced key management facility and is compliant \
-  with the proposed OpenPGP Internet standard as described in RFC2440. \
+  with the proposed OpenPGP Internet standard as described in RFC4880. \
   \r\n\r\n$_CLICK \
   \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}\r\n\
   built on $%BUILDINFO%\r\n\

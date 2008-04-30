@@ -31,7 +31,8 @@ m4_define([my_issvn], [yes])
 m4_define([svn_revision], m4_esyscmd([echo $((svn info 2>/dev/null \
           || echo 'Revision: 0')|sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)| \
           tr -d '\n']))
-AC_INIT([gnupg], my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision]),
+AC_INIT([gnupg], 
+        [my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision])],
         [bug-gnupg@gnu.org])
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not

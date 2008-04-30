@@ -3008,6 +3008,12 @@ parse_auto_key_locate(char *options)
       if(tok[0]=='\0')
 	continue;
 
+      /* For now we silently ignore the new methods introduced with
+         2.0.10. */ 
+      if (!ascii_strcasecmp (tok,"nodefault")
+          || !ascii_strcasecmp (tok,"local"))
+        continue;
+
       akl=xmalloc_clear(sizeof(*akl));
 
       if(ascii_strcasecmp(tok,"ldap")==0)

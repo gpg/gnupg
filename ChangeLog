@@ -1,3 +1,7 @@
+2008-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_INIT): Fix quoting.
+
 2008-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Require curl 7.10 (Oct 1 2002) or later as we use

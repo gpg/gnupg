@@ -1,3 +1,8 @@
+2008-04-30  Werner Koch  <wk@g10code.com>
+
+	* getkey.c (parse_auto_key_locate): Ignore nodefault and local
+	methods.
+
 2008-04-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_key): Add constant for Camellia-192.

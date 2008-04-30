@@ -10,7 +10,7 @@ Noteworthy changes in version 1.4.9 (2008-03-26)
       Decryption is also a bit faster.
 
     * Fixed possible memory corruption bug in 1.4.8 while importing
-      OpenPGP keys.
+      OpenPGP keys. [CVE-2008-1530]
 
 
 Noteworthy changes in version 1.4.8 (2007-12-20)
