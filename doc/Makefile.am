@@ -20,14 +20,14 @@ EXTRA_DIST = DETAILS faq.raw FAQ faq.html \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
              TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt \
              gpg.texi gpgv.texi specify-user-id.texi see-also-note.texi \
-	     opt-homedir.texi texi.css yat2m.c gpl.texi
+	     opt-homedir.texi texi.css yat2m.c gpl.texi gpg-zip.1
 
 myman_sources = gpg.texi gpgv.texi
 myman_pages   = gpg.1 gpgv.1
 
 info_TEXINFOS = gnupg1.texi
 
-man_MANS = $(myman_pages) gnupg.7 gpg.ru.1
+man_MANS = $(myman_pages) gnupg.7 gpg.ru.1 gpg-zip.1
 
 gnupg1_TEXINFOS = gnupg1.texi
 

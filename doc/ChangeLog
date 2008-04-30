@@ -1,3 +1,8 @@
+2008-04-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg-zip.1: Add man page thanks to Colin Tuckley and Daniel
+	Leidert.
+
 2008-04-02  Werner Koch  <wk@g10code.com>
 
 	* opt-homedir.texi: Remove special case for Registry key.

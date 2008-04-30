@@ -1,0 +1,102 @@
+.TH "gpg-zip" 1 "November 2006" 
+
+.SH NAME
+gpg\-zip \- encrypt or sign files into an archive
+
+.SH SYNOPSIS
+.B gpg\-zip
+.RB [ OPTIONS ]
+.IR filename1 " [" "filename2, ..." ]
+.IR directory1 " [" "directory2, ..." ]
+
+.SH DESCRIPTION
+This manual page documents briefly the 
+.B gpg\-zip
+command.
+.PP
+.B gpg\-zip
+encrypts or signs files into an archive. It is an gpg-ized tar using the
+same format as PGP's PGP Zip.
+
+.SH OPTIONS
+.TP
+.BR \-e ", " \-\-encrypt
+Encrypt data. This option may be combined with 
+.B \-\-symmetric
+(for output that may be decrypted via a secret key or a passphrase).
+.TP
+.BR \-d ", " \-\-decrypt
+Decrypt data.
+.TP
+.BR \-c ", " \-\-symmetric
+Encrypt with a symmetric cipher using a passphrase.  The default
+symmetric cipher used is CAST5, but may be chosen with the
+.B \-\-cipher\-algo
+option to
+.BR gpg (1).
+.TP
+.BR \-s ", " \-\-sign
+Make a signature. See
+.BR gpg (1).
+.TP
+.BR \-r ", " \-\-recipient " \fIUSER\fR"
+Encrypt for user id \fIUSER\fR. See
+.BR gpg (1).
+.TP
+.BR \-u ", " \-\-local\-user " \fIUSER\fR"
+Use \fIUSER\fR as the key to sign with. See
+.BR gpg (1).
+.TP
+.B \-\-list\-archive
+List the contents of the specified archive.
+.TP
+.BR \-o ", " \-\-output " " \fIFILE\fR
+Write output to specified file
+.IR FILE .
+.TP
+.BI \-\-gpg " GPG"
+Use the specified command instead of
+.BR gpg .
+.TP
+.BI \-\-gpg\-args " ARGS"
+Pass the specified options to
+.BR gpg (1).
+.TP
+.BI \-\-tar " TAR"
+Use the specified command instead of
+.BR tar .
+.TP
+.BI \-\-tar\-args " ARGS"
+Pass the specified options to 
+.BR tar (1).
+.TP
+.BR \-h ", " \-\-help
+Output a short usage information.
+.TP
+.B \-\-version
+Output the program version.
+
+.SH DIAGNOSTICS
+The program returns \fB0\fR if everything was fine, \fB1\fR otherwise.
+
+.SH EXAMPLES
+Encrypt the contents of directory \fImydocs\fR for user Bob to file \fItest1\fR:
+.IP
+.B gpg\-zip \-\-encrypt \-\-output test1 \-\-gpg-args ""\-r Bob"" mydocs
+.PP
+List the contents of archive \fItest1\fR:
+.IP
+.B gpg\-zip \-\-list\-archive test1
+
+.SH SEE ALSO
+.BR gpg (1),
+.BR tar (1)
+
+.SH AUTHOR
+Copyright (C) 2005 Free Software Foundation, Inc. Please report bugs to
+<\&bug-gnupg@gnu.org\&>.
+
+This manpage was written by \fBColin Tuckley\fR <\&colin@tuckley.org\&>
+and \fBDaniel Leidert\fR <\&daniel.leidert@wgdd.de\&> for the Debian
+distribution (but may be used by others).
+
