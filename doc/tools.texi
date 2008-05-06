@@ -18,6 +18,7 @@ GnuPG comes with a couple of smaller tools:
 * gpg-connect-agent::     Communicate with a running agent.
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
+* gpg-zip::               Encrypt or sign files into an archive.
 @end menu
 
 @c
@@ -74,11 +75,11 @@ Enable extra informational output.
 
 @item --version
 @opindex version
-print version of the program and exit
+Print version of the program and exit.
 
 @item --help
 @opindex help
-Display a brief help page and exit
+Display a brief help page and exit.
 
 @end table
 
@@ -1482,6 +1483,148 @@ The possible exit status codes of @command{symcryptrun} are:
 @command{gpg}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
+@end ifset
+@include see-also-note.texi
+
+
+@c
+@c  GPG-ZIP
+@c
+@c The original manpage on which this section is based was written 
+@c by Colin Tuckley  <colin@tuckley.org> and Daniel Leidert 
+@c <daniel.leidert@wgdd.de> for the Debian distribution (but may be used by
+@c others).
+@manpage gpg-zip.1
+@node gpg-zip
+@section Encrypt or sign files into an archive
+@ifset manverb
+.B gpg-zip \- Encrypt or sign files into an archive
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg-zip
+.RI [ options ]
+.I filename1
+.I [ filename2, ... ]
+.I directory1
+.I [ directory2, ... ]
+@end ifset
+
+@mansect description
+@command{gpg-zip} encrypts or signs files into an archive.  It is an
+gpg-ized tar using the same format as used by PGP's PGP Zip.
+
+@manpause
+@noindent
+@command{gpg-zip} is invoked this way:
+
+@example
+gpg-zip [options] @var{filename1} [@var{filename2}, ...] @var{directory} [@var{directory2}, ...]
+@end example
+
+@mansect options
+@noindent
+@command{gpg-zip} understands these options:
+
+@table @gnupgtabopt
+
+@item --encrypt
+@itemx -e
+@opindex encrypt
+Encrypt data.  This option may be combined with @option{--symmetric} (for  output that may be decrypted via a secret key or a passphrase).
+
+@item --decrypt
+@itemx -d
+@opindex decrypt
+Decrypt data.
+
+@item --symmetric
+@itemx -c
+Encrypt with a symmetric cipher using a passphrase.  The default
+symmetric cipher used is CAST5, but may be chosen with the
+@option{--cipher-algo} option to @command{gpg}.
+
+@item --sign
+@itemx -s
+Make a signature.  See @command{gpg}.
+
+@item --recipient @var{user}
+@itemx -r @var{user}
+@opindex recipient
+Encrypt for user id @var{user}. See @command{gpg}.
+
+@item --local-user @var{user}
+@itemx -u @var{user}
+@opindex local-user
+Use @var{user} as the key to sign with.  See @command{gpg}.
+
+@item --list-archive
+@opindex list-archive
+List the contents of the specified archive.
+
+@item --output @var{file}
+@itemx -o @var{file}
+@opindex output
+Write output to specified file @var{file}.
+
+@item --gpg @var{gpgcmd}
+@opindex gpg
+Use the specified command @var{gpgcmd} instead of @command{gpg}.
+
+@item --gpg-args @var{args}
+@opindex gpg-args
+Pass the specified options to @command{gpg}.
+
+@item --tar @var{tarcmd}
+@opindex tar
+Use the specified command @var{tarcmd} instead of @command{tar}.
+
+@item --tar-args @var{args}
+@opindex tar-args
+Pass the specified options to @command{tar}.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+@mansect diagnostics
+@noindent
+The program returns 0 if everything was fine, 1 otherwise.
+
+
+@mansect examples
+@ifclear isman
+@noindent
+Some examples:
+
+@end ifclear
+@noindent
+Encrypt the contents of directory @file{mydocs} for user Bob to file
+@file{test1}:
+
+@example
+gpg-zip --encrypt --output test1 --gpg-args  -r Bob mydocs
+@end example
+
+@noindent
+List the contents of archive @file{test1}:
+
+@example
+gpg-zip --list-archive test1
+@end example
+
+
+@mansect see also
+@ifset isman
+@command{gpg}(1), 
+@command{tar}(1), 
 @end ifset
 @include see-also-note.texi
 

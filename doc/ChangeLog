@@ -1,3 +1,9 @@
+2008-05-06  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (myman_pages): Add gpg-zip.1.
+
+	* tools.texi (gpg-zip): Add new section.
+
 2008-04-08  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (GPG Configuration Options): Change subkeys.pgp.net to
