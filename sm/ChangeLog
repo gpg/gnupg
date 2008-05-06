@@ -1,3 +1,8 @@
+2008-05-06  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_external_keys): Ignore NOT FOUND error code.
+	This is bug#907.
+
 2008-04-23  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (find_up): Make correct C89 code.  Declare variable

@@ -685,7 +685,7 @@ create_blob_finish (KEYBOXBLOB blob)
 
   pp = xtrymalloc (n);
   if ( !pp )
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
   memcpy (pp , p, n);
   blob->blob = pp;
   blob->bloblen = n;
@@ -706,7 +706,7 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   /* fixme: Do some sanity checks on the keyblock */
 
@@ -838,7 +838,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
   if( !blob )
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   sn = ksba_cert_get_serial (cert);
   if (sn)
@@ -873,7 +873,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
   names = xtrymalloc (max_names * sizeof *names);
   if (!names)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
   
@@ -894,7 +894,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
           tmp = xtryrealloc (names, max_names * sizeof *names);
           if (!tmp)
             {
-              rc = gpg_error (gpg_err_code_from_errno (errno));
+              rc = gpg_error_from_syserror ();
               goto leave;
             }
         }
@@ -985,7 +985,7 @@ _keybox_new_blob (KEYBOXBLOB *r_blob,
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   blob->blob = image;
   blob->bloblen = imagelen;

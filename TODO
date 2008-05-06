@@ -131,4 +131,6 @@
   our design goal to allow changing the locale without changing
   gpg-agent's default locale (e.g. by the command updatestartuptty).
 
+* RFC 4387: Operational Protocols: Certificate Store Access via HTTP
+  Do we support this?
 

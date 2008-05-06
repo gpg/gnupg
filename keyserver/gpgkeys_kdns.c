@@ -29,6 +29,9 @@
 #include <assert.h>
 #ifdef HAVE_ADNS_H
 # include <adns.h>
+# ifndef HAVE_ADNS_FREE
+#  define adns_free free
+# endif
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
@@ -175,7 +178,7 @@ get_key (adns_state adns_ctx, char *address)
     fprintf (output, "\nNAME %s FAILED %d\n", address, ret);
   else
     fprintf (output, "\nNAME %s END\n", address);
-  free (answer);  /* (Right, this is free and not xfree.) */
+  adns_free (answer); 
   xfree (name);
   return ret;
 }

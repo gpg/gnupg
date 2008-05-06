@@ -1383,6 +1383,9 @@ list_external_keys (ctrl_t ctrl, strlist_t names, estream_t fp, int raw_mode)
   parm.raw_mode  = raw_mode;
 
   rc = gpgsm_dirmngr_lookup (ctrl, names, 0, list_external_cb, &parm);
+  if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1 
+      || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+    rc = 0; /* "Not found" is not an error here. */
   if (rc)
     log_error ("listing external keys failed: %s\n", gpg_strerror (rc));
   return rc;

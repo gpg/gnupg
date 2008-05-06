@@ -58,7 +58,7 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
   *r_blob = NULL;
   off = ftello (fp);
   if (off == (off_t)-1)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   if ((c1 = getc (fp)) == EOF
       || (c2 = getc (fp)) == EOF
@@ -68,7 +68,9 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     {
       if ( c1 == EOF && !ferror (fp) )
         return -1; /* eof */
-      return gpg_error (gpg_err_code_from_errno (errno));
+      if (!ferror (fp))
+        return gpg_error (GPG_ERR_TOO_SHORT);
+      return gpg_error_from_syserror ();
     }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
@@ -82,26 +84,26 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     {
       /* Special treatment for empty blobs. */
       if (fseek (fp, imagelen-5, SEEK_CUR))
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
       *skipped_deleted = 1;
       goto again;
     }
 
   image = xtrymalloc (imagelen);
   if (!image) 
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4; image[4] = type;
   if (fread (image+5, imagelen-5, 1, fp) != 1)
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+      gpg_error_t tmperr = gpg_error_from_syserror ();
       xfree (image);
       return tmperr;
     }
   
   rc = r_blob? _keybox_new_blob (r_blob, image, imagelen, off) : 0;
   if (rc || !r_blob)
-        xfree (image);
+    xfree (image);
   return rc;
 }
 
@@ -122,7 +124,7 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 
   image = _keybox_get_blob_image (blob, &length);
   if (fwrite (image, length, 1, fp) != 1)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
   return 0;
 }
 
@@ -154,7 +156,7 @@ _keybox_write_header_blob (FILE *fp)
   image[20+3] = (val      );
 
   if (fwrite (image, 32, 1, fp) != 1)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
   return 0;
 }
 

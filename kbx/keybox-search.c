@@ -735,7 +735,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         {
           sn_array = xtrycalloc (ndesc, sizeof *sn_array);
           if (!sn_array)
-            return (hd->error = gpg_error (gpg_err_code_from_errno (errno)));
+            return (hd->error = gpg_error_from_syserror ());
         }
     }
 
@@ -744,7 +744,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       hd->fp = fopen (hd->kb->fname, "rb");
       if (!hd->fp)
         {
-          hd->error = gpg_error (gpg_err_code_from_errno (errno));
+          hd->error = gpg_error_from_syserror ();
           xfree (sn_array);
           return hd->error;
         }
@@ -776,7 +776,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               sn_array[n].sn = xtrymalloc (snlen);
               if (!sn_array[n].sn)
                 {
-                  hd->error = gpg_error (gpg_err_code_from_errno (errno));
+                  hd->error = gpg_error_from_syserror ();
                   release_sn_array (sn_array, n);
                   return hd->error;
                 }
@@ -800,7 +800,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               sn_array[n].sn = xtrymalloc (snlen);
               if (!sn_array[n].sn)
                 {
-                  hd->error = gpg_error (gpg_err_code_from_errno (errno));
+                  hd->error = gpg_error_from_syserror ();
                   release_sn_array (sn_array, n);
                   return hd->error;
                 }

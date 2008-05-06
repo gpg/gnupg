@@ -82,14 +82,14 @@ create_tmp_file (const char *template,
     {
       bakfname = xtrymalloc (strlen (template) + 1);
       if (!bakfname)
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
       strcpy (bakfname, template);
       strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
       
       tmpfname = xtrymalloc (strlen (template) + 1);
       if (!tmpfname)
         {
-          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+          gpg_error_t tmperr = gpg_error_from_syserror ();
           xfree (bakfname);
           return tmperr;
         }
@@ -100,13 +100,13 @@ create_tmp_file (const char *template,
     { /* File does not end with kbx; hmmm. */
       bakfname = xtrymalloc ( strlen (template) + 5);
       if (!bakfname)
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
       strcpy (stpcpy (bakfname, template), EXTSEP_S "bak");
       
       tmpfname = xtrymalloc ( strlen (template) + 5);
       if (!tmpfname)
         {
-          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+          gpg_error_t tmperr = gpg_error_from_syserror ();
           xfree (bakfname);
           return tmperr;
         }
@@ -115,13 +115,13 @@ create_tmp_file (const char *template,
 # else /* Posix file names */
   bakfname = xtrymalloc (strlen (template) + 2);
   if (!bakfname)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
   strcpy (stpcpy (bakfname,template),"~");
   
   tmpfname = xtrymalloc ( strlen (template) + 5);
   if (!tmpfname)
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+      gpg_error_t tmperr = gpg_error_from_syserror ();
       xfree (bakfname);
       return tmperr;
     }
@@ -131,7 +131,7 @@ create_tmp_file (const char *template,
   *r_fp = fopen (tmpfname, "wb");
   if (!*r_fp)
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+      gpg_error_t tmperr = gpg_error_from_syserror ();
       xfree (tmpfname);
       xfree (bakfname);
       return tmperr;
@@ -175,7 +175,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
       if (rename (fname, bakfname) )
         {
-          return gpg_error (gpg_err_code_from_errno (errno));
+          return gpg_error_from_syserror ();
 	}
     }
   
@@ -185,7 +185,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
   if (rename (tmpfname, fname) )
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       if (secret)
         {
 /*            log_info ("WARNING: 2 files with confidential" */
@@ -221,7 +221,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   /* Open the source file. Because we do a rename, we have to check the 
      permissions of the file */
   if (access (fname, W_OK))
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   fp = fopen (fname, "rb");
   if (mode == 1 && !fp && errno == ENOENT)
@@ -230,7 +230,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
          Create a new keybox file. */
       newfp = fopen (fname, "wb");
       if (!newfp )
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
 
       rc = _keybox_write_header_blob (newfp);
       if (rc)
@@ -241,7 +241,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         return rc;
 
       if ( fclose (newfp) )
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
 
 /*        if (chmod( fname, S_IRUSR | S_IWUSR )) */
 /*          { */
@@ -253,7 +253,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
   if (!fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
 
@@ -273,13 +273,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = gpg_error (gpg_err_code_from_errno (errno));
+              rc = gpg_error_from_syserror ();
               goto leave;
             }
         }
       if (ferror (fp))
         {
-          rc = gpg_error (gpg_err_code_from_errno (errno));
+          rc = gpg_error_from_syserror ();
           goto leave;
         }
     }
@@ -302,13 +302,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = gpg_error (gpg_err_code_from_errno (errno));
+              rc = gpg_error_from_syserror ();
               goto leave;
             }
         }
       if (ferror (fp))
         {
-          rc = gpg_error (gpg_err_code_from_errno (errno));
+          rc = gpg_error_from_syserror ();
           goto leave;
         }
       
@@ -333,13 +333,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         {
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
-              rc = gpg_error (gpg_err_code_from_errno (errno));
+              rc = gpg_error_from_syserror ();
               goto leave;
             }
         }
       if (ferror (fp))
         {
-          rc = gpg_error (gpg_err_code_from_errno (errno));
+          rc = gpg_error_from_syserror ();
           goto leave;
         }
     }
@@ -347,13 +347,13 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   /* Close both files. */
   if (fclose(fp))
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       fclose (newfp);
       goto leave;
     }
   if (fclose(newfp))
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       goto leave;
     }
 
@@ -452,11 +452,11 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   _keybox_close_file (hd);
   fp = fopen (hd->kb->fname, "r+b");
   if (!fp)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   ec = 0;
   if (fseeko (fp, off, SEEK_SET))
-    ec = gpg_error (gpg_err_code_from_errno (errno));
+    ec = gpg_error_from_syserror ();
   else
     {
       unsigned char tmp[4];
@@ -472,7 +472,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
         case 2:
         case 4:
           if (fwrite (tmp+4-flag_size, flag_size, 1, fp) != 1)
-            ec = gpg_err_code_from_errno (errno);
+            ec = gpg_err_code_from_syserror ();
           break;
         default:
           ec = GPG_ERR_BUG;
@@ -483,7 +483,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   if (fclose (fp))
     {
       if (!ec)
-        ec = gpg_err_code_from_errno (errno);
+        ec = gpg_err_code_from_syserror ();
     }
 
   return gpg_error (ec);
@@ -517,19 +517,19 @@ keybox_delete (KEYBOX_HANDLE hd)
   _keybox_close_file (hd);
   fp = fopen (hd->kb->fname, "r+b");
   if (!fp)
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   if (fseeko (fp, off, SEEK_SET))
-    rc = gpg_error (gpg_err_code_from_errno (errno));
+    rc = gpg_error_from_syserror ();
   else if (putc (0, fp) == EOF)
-    rc = gpg_error (gpg_err_code_from_errno (errno));
+    rc = gpg_error_from_syserror ();
   else
     rc = 0;
 
   if (fclose (fp))
     {
       if (!rc)
-        rc = gpg_error (gpg_err_code_from_errno (errno));
+        rc = gpg_error_from_syserror ();
     }
 
   return rc;
@@ -567,14 +567,14 @@ keybox_compress (KEYBOX_HANDLE hd)
   /* Open the source file. Because we do a rename, we have to check the 
      permissions of the file */
   if (access (fname, W_OK))
-    return gpg_error (gpg_err_code_from_errno (errno));
+    return gpg_error_from_syserror ();
 
   fp = fopen (fname, "rb");
   if (!fp && errno == ENOENT)
     return 0; /* Ready. File has been deleted right after the access above. */
   if (!fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       return rc;
     }
 
@@ -695,9 +695,9 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   /* Close both files. */
   if (fclose(fp) && !rc)
-    rc = gpg_error (gpg_err_code_from_errno (errno));
+    rc = gpg_error_from_syserror ();
   if (fclose(newfp) && !rc)
-    rc = gpg_error (gpg_err_code_from_errno (errno));
+    rc = gpg_error_from_syserror ();
 
   /* Rename or remove the temporary file. */
   if (rc || !any_changes)

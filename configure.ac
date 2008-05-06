@@ -847,6 +847,8 @@ if test "$have_adns" = "yes"; then
   ADNSLIBS="-ladns" 
 fi
 AC_SUBST(ADNSLIBS)
+# Newer adns versions feature a free function to be used under W32.
+AC_CHECK_FUNCS(adns_free)
 
 
 #

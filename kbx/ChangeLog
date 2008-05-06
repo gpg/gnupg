@@ -1,3 +1,12 @@
+2008-05-06  Werner Koch  <wk@g10code.com>
+
+	* keybox-file.c (_keybox_read_blob2): Return GPG_ERR_TOO_SHORT if
+	we get an EOF for 2nd to 5th byte as a better error message.
+
+	Always use gpg_error_from_syserror and gpg_err_code_from_syserror.
+	This is to avoid cases where we expect an error but due to an
+	errno set to 0 we get back a success status.
+
 2008-04-01  Werner Koch  <wk@g10code.com>
 
 	* keybox-init.c (keybox_new, keybox_release): Track used handles.
