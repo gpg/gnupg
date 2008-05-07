@@ -9,6 +9,10 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * [W32] Initialize the socket subsystem for all keyserver helpers.
 
+ * New gpg2 command --locate-keys.
+
+ * New gpg2 options --with-sig-list and --with-sig-check.
+
 
 Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------

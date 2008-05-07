@@ -1,3 +1,12 @@
+2008-05-07  Werner Koch  <wk@g10code.com>
+
+	* getkey.c (get_pubkey_byname): Fix nodefault case.
+
+	* gpg.c: New command --locate-keys.  New options --with-sig-list
+	and --with-sig-check.
+	* keylist.c (locate_one): New.
+	(public_key_list): Add arg LOCATE_MODE and use locate_one.
+
 2008-04-18  Werner Koch  <wk@g10code.com>
 
 	* misc.c (map_cipher_openpgp_to_gcry, map_cipher_gcry_to_openpgp) 

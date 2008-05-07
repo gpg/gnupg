@@ -286,7 +286,7 @@ struct revocation_reason_info *
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
-void public_key_list( strlist_t list );
+void public_key_list( strlist_t list, int locate_mode );
 void secret_key_list( strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);

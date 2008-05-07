@@ -40,6 +40,7 @@
 
 static void list_all(int);
 static void list_one( strlist_t names, int secret);
+static void locate_one (strlist_t names);
 static void print_card_serialno (PKT_secret_key *sk);
 
 struct sig_stats
@@ -56,9 +57,9 @@ static FILE *attrib_fp=NULL;
  * If list is NULL, all available keys are listed
  */
 void
-public_key_list( strlist_t list )
+public_key_list( strlist_t list, int locate_mode )
 {
-  if(opt.with_colons)
+  if (opt.with_colons)
     {
       byte trust_model,marginals,completes,cert_depth;
       ulong created,nextcheck;
@@ -101,11 +102,14 @@ public_key_list( strlist_t list )
      which is associated with the inode of a deleted file.  */
   check_trustdb_stale ();
 
-  if( !list )
-    list_all(0);
+  if (locate_mode)
+    locate_one (list);
+  else if (!list)
+    list_all (0);
   else
-    list_one( list, 0 );
+    list_one (list, 0);
 }
+
 
 void
 secret_key_list( strlist_t list )
@@ -526,6 +530,38 @@ list_one( strlist_t names, int secret )
     if(opt.check_sigs && !opt.with_colons)
       print_signature_stats(&stats);
 }
+
+
+static void
+locate_one (strlist_t names)
+{
+  int rc = 0;
+  strlist_t sl;
+  KBNODE keyblock = NULL;
+  struct sig_stats stats;
+
+  memset(&stats,0,sizeof(stats));
+    
+  for (sl=names; sl; sl = sl->next)
+    {
+      rc = get_pubkey_byname (NULL, sl->d, &keyblock, NULL, 1, 0);
+      if (rc)
+        {
+          if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)
+            log_error ("error reading key: %s\n", g10_errstr(rc) );
+	}
+      else
+        {
+          list_keyblock (keyblock, 0, opt.fingerprint,
+                         opt.check_sigs? &stats : NULL );
+          release_kbnode (keyblock);
+	} 
+    }
+  
+  if (opt.check_sigs && !opt.with_colons)
+    print_signature_stats (&stats);
+}
+
 
 static void
 print_key_data( PKT_public_key *pk )

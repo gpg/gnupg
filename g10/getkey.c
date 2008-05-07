@@ -925,7 +925,10 @@ get_pubkey_byname (PKT_public_key *pk,
   int rc;
   strlist_t namelist = NULL;
   struct akl *akl;
+  int is_mbox;
   int nodefault = 0;
+
+  is_mbox = is_valid_mailbox (name);
 
   /* Check whether we the default local search has been disabled.
      This is the case if either the "nodefault" or the "local" keyword
@@ -940,8 +943,11 @@ get_pubkey_byname (PKT_public_key *pk,
           }
     }
 
-  if (nodefault)
-    rc = G10ERR_NO_PUBKEY;
+  if (nodefault && is_mbox)
+    {
+      /* Nodefault but a mailbox - let the AKL locate the key.  */
+      rc = G10ERR_NO_PUBKEY;
+    }
   else
     {
       add_to_strlist (&namelist, name);
@@ -951,8 +957,7 @@ get_pubkey_byname (PKT_public_key *pk,
 
   /* If the requested name resembles a valid mailbox and automatic
      retrieval has been enabled, we try to import the key. */
-
-  if (rc == G10ERR_NO_PUBKEY && !no_akl && is_valid_mailbox(name))
+  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY && !no_akl && is_mbox)
     {
       for (akl=opt.auto_key_locate; akl; akl=akl->next)
 	{

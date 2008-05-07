@@ -119,6 +119,7 @@ enum cmd_and_opt_values
     aListSigs,
     aSendKeys,
     aRecvKeys,
+    aLocateKeys,
     aSearchKeys,
     aRefreshKeys,
     aFetchKeys,
@@ -229,6 +230,8 @@ enum cmd_and_opt_values
     oHomedir,
     oWithColons,
     oWithKeyData,
+    oWithSigList,
+    oWithSigCheck,
     oSkipVerify,
     oCompressKeys,
     oCompressSigs,
@@ -399,6 +402,7 @@ static ARGPARSE_OPTS opts[] = {
                                     N_("search for keys on a key server") },
     { aRefreshKeys, "refresh-keys", 256,
                                     N_("update all keys from a keyserver")},
+    { aLocateKeys, "locate-keys", 256, "@"},
     { aFetchKeys, "fetch-keys" , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
@@ -588,6 +592,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
     { oWithKeyData,"with-key-data", 0, "@"},
+    { oWithSigList,"with-sig-list", 0, "@"},
+    { oWithSigCheck,"with-sig-check", 0, "@"},
     { aListKeys, "list-key", 0, "@" }, /* alias */
     { aListSigs, "list-sig", 0, "@" }, /* alias */
     { aCheckKeys, "check-sig",0, "@" }, /* alias */
@@ -2099,6 +2105,7 @@ main (int argc, char **argv)
           case aChangePIN:
 #endif /* ENABLE_CARD_SUPPORT*/
 	  case aListKeys: 
+	  case aLocateKeys:
 	  case aListSigs: 
 	  case aExportSecret: 
 	  case aExportSecretSub: 
@@ -2264,8 +2271,12 @@ main (int argc, char **argv)
 	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
 	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
-	  case oWithKeyData: opt.with_key_data=1; /* fall thru */
+
+	  case oWithKeyData: opt.with_key_data=1; /*FALLTHRU*/
 	  case oWithColons: opt.with_colons=':'; break;
+
+          case oWithSigCheck: opt.check_sigs = 1; /*FALLTHRU*/
+          case oWithSigList: opt.list_sigs = 1; break;  
 
 	  case oSkipVerify: opt.skip_verify=1; break;
 	  case oCompressKeys: opt.compress_keys = 1; break;
@@ -3300,7 +3311,7 @@ main (int argc, char **argv)
       {
         if (ALWAYS_ADD_KEYRINGS
             || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
-                && cmd != aVerify && cmd != aSym))
+                && cmd != aVerify && cmd != aSym && cmd != aLocateKeys))
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
               keydb_add_resource ("secring" EXTSEP_S "gpg", 4, 1);
@@ -3583,7 +3594,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	public_key_list( sl );
+	public_key_list( sl, 0 );
 	free_strlist(sl);
 	break;
       case aListSecretKeys:
@@ -3592,6 +3603,13 @@ main (int argc, char **argv)
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	secret_key_list( sl );
 	free_strlist(sl);
+	break;
+      case aLocateKeys:
+	sl = NULL;
+	for (; argc; argc--, argv++)
+          add_to_strlist2( &sl, *argv, utf8_strings );
+	public_key_list (sl, 1);
+	free_strlist (sl);
 	break;
 
       case aKeygen: /* generate a key */
