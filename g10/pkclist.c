@@ -826,7 +826,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
           /* We explicitly allow encrypt-to to an disabled key; thus
              we pass 1for the second last argument and 1 as the last
              argument to disable AKL. */
-          if ( (rc = get_pubkey_byname (pk, rov->d, NULL, NULL, 1, 1)) ) 
+          if ( (rc = get_pubkey_byname (NULL, pk, rov->d, NULL, NULL, 1, 1)) ) 
             {
               free_public_key ( pk ); pk = NULL;
               log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
@@ -965,7 +965,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
             free_public_key (pk);
           pk = xmalloc_clear( sizeof *pk );
           pk->req_usage = use;
-          rc = get_pubkey_byname( pk, answer, NULL, NULL, 0, 0 );
+          rc = get_pubkey_byname (NULL, pk, answer, NULL, NULL, 0, 0 );
           if (rc)
             tty_printf(_("No such user ID.\n"));
           else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
@@ -1039,7 +1039,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
 
       /* The default recipient is allowed to be disabled; thus pass 1
          as second last argument.  We also don't want an AKL. */
-      rc = get_pubkey_byname (pk, def_rec, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (NULL, pk, def_rec, NULL, NULL, 1, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
       else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use)) ) 
@@ -1079,7 +1079,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
 
           pk = xmalloc_clear( sizeof *pk );
           pk->req_usage = use;
-          if ( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0, 0 )) ) 
+          if ((rc = get_pubkey_byname (NULL, pk, remusr->d, NULL, NULL, 0, 0)))
             {
               /* Key not found or other error. */
               free_public_key( pk ); pk = NULL;

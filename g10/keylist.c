@@ -537,14 +537,15 @@ locate_one (strlist_t names)
 {
   int rc = 0;
   strlist_t sl;
+  GETKEY_CTX ctx = NULL;
   KBNODE keyblock = NULL;
   struct sig_stats stats;
 
-  memset(&stats,0,sizeof(stats));
+  memset (&stats,0,sizeof(stats));
     
   for (sl=names; sl; sl = sl->next)
     {
-      rc = get_pubkey_byname (NULL, sl->d, &keyblock, NULL, 1, 0);
+      rc = get_pubkey_byname (&ctx, NULL, sl->d, &keyblock, NULL, 1, 0);
       if (rc)
         {
           if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)
@@ -552,9 +553,15 @@ locate_one (strlist_t names)
 	}
       else
         {
-          list_keyblock (keyblock, 0, opt.fingerprint,
-                         opt.check_sigs? &stats : NULL );
-          release_kbnode (keyblock);
+          do 
+            {
+              list_keyblock (keyblock, 0, opt.fingerprint,
+                             opt.check_sigs? &stats : NULL );
+              release_kbnode (keyblock);
+            } 
+          while ( ctx && !get_pubkey_next (ctx, NULL, &keyblock));
+          get_pubkey_end (ctx);
+          ctx = NULL;
 	} 
     }
   

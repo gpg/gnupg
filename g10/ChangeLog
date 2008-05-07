@@ -1,11 +1,13 @@
 2008-05-07  Werner Koch  <wk@g10code.com>
 
-	* getkey.c (get_pubkey_byname): Fix nodefault case.
-
 	* gpg.c: New command --locate-keys.  New options --with-sig-list
 	and --with-sig-check.
 	* keylist.c (locate_one): New.
 	(public_key_list): Add arg LOCATE_MODE and use locate_one.
+	* getkey.c (get_pubkey_byname): Fix nodefault case.  Add option
+	RETCTX, change all callers.
+	(struct getkey_ctx_s): Add field extra_ptr;
+	(get_pubkey_end): Free it.
 
 2008-04-18  Werner Koch  <wk@g10code.com>
 

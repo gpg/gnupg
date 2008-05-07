@@ -47,7 +47,8 @@ struct getkey_ctx_s {
     int exact;
     KBNODE keyblock;
     KBPOS  kbpos;
-    KBNODE found_key; /* pointer into some keyblock */
+    KBNODE found_key; /* Pointer into some keyblock. */
+    strlist_t *extra_list;  /* Will be freed when releasing the context.  */
     int last_rc;
     int req_usage;
     int req_algo;
@@ -917,7 +918,7 @@ key_byname( GETKEY_CTX *retctx, strlist_t namelist,
    to import the key via the online mechanisms defined by
    --auto-key-locate.  */
 int
-get_pubkey_byname (PKT_public_key *pk,
+get_pubkey_byname (GETKEY_CTX *retctx, PKT_public_key *pk,
 		   const char *name, KBNODE *ret_keyblock,
                    KEYDB_HANDLE *ret_kdbhd, int include_unusable, 
                    int no_akl)
@@ -927,12 +928,22 @@ get_pubkey_byname (PKT_public_key *pk,
   struct akl *akl;
   int is_mbox;
   int nodefault = 0;
+  int anylocalfirst = 0;
+
+  if (retctx)
+    *retctx = NULL;
 
   is_mbox = is_valid_mailbox (name);
 
   /* Check whether we the default local search has been disabled.
      This is the case if either the "nodefault" or the "local" keyword
-     are in the list of auto key locate mechanisms.  */
+     are in the list of auto key locate mechanisms. 
+
+     ANYLOCALFIRST is set if the search order has the local method
+     before any other or if "local" is used first by default.  This
+     makes sure that if a RETCTX is used it gets only set if a local
+     search has precedence over the other search methods and only then
+     a followup call to get_pubkey_next shall succeed.  */
   if (!no_akl)
     {
       for (akl=opt.auto_key_locate; akl; akl=akl->next)
@@ -941,7 +952,17 @@ get_pubkey_byname (PKT_public_key *pk,
             nodefault = 1;
             break;
           }
+      for (akl=opt.auto_key_locate; akl; akl=akl->next)
+        if (akl->type != AKL_NODEFAULT)
+          {
+            if (akl->type == AKL_LOCAL)
+              anylocalfirst = 1;
+            break;
+          }
     }
+
+  if (!nodefault)
+    anylocalfirst = 1;
 
   if (nodefault && is_mbox)
     {
@@ -951,7 +972,7 @@ get_pubkey_byname (PKT_public_key *pk,
   else
     {
       add_to_strlist (&namelist, name);
-      rc = key_byname (NULL, namelist, pk, NULL, 0,
+      rc = key_byname (retctx, namelist, pk, NULL, 0,
                        include_unusable, ret_keyblock, ret_kdbhd);
     }
 
@@ -967,7 +988,7 @@ get_pubkey_byname (PKT_public_key *pk,
           int no_fingerprint = 0;
           const char *mechanism = "?";
           
-	  switch(akl->type)
+          switch(akl->type)
 	    {
             case AKL_NODEFAULT:
               /* This is a dummy mechanism.  */
@@ -978,8 +999,14 @@ get_pubkey_byname (PKT_public_key *pk,
             case AKL_LOCAL:
               mechanism = "Local";
               did_key_byname = 1;
+              if (retctx)
+                {
+                  get_pubkey_end (*retctx);
+                  *retctx = NULL;
+                }
               add_to_strlist (&namelist, name);
-              rc = key_byname (NULL, namelist, pk, NULL, 0,
+              rc = key_byname (anylocalfirst? retctx:NULL,
+                               namelist, pk, NULL, 0,
                                include_unusable, ret_keyblock, ret_kdbhd);
               break;
 
@@ -1068,8 +1095,16 @@ get_pubkey_byname (PKT_public_key *pk,
           fpr = NULL;
 
           if (!rc && !did_key_byname)
-            rc = key_byname (NULL, namelist, pk, NULL, 0,
-                             include_unusable, ret_keyblock, ret_kdbhd);
+            {
+              if (retctx)
+                {
+                  get_pubkey_end (*retctx);
+                  *retctx = NULL;
+                }
+              rc = key_byname (anylocalfirst?retctx:NULL,
+                               namelist, pk, NULL, 0,
+                               include_unusable, ret_keyblock, ret_kdbhd);
+            }
 	  if (!rc)
             {
               /* Key found.  */
@@ -1084,9 +1119,23 @@ get_pubkey_byname (PKT_public_key *pk,
 	}
     }
 
-  free_strlist( namelist );
+  
+  if (rc && retctx)
+    {
+      get_pubkey_end (*retctx);
+      *retctx = NULL;
+    }
+
+  if (retctx && *retctx)
+    {
+      assert (!(*retctx)->extra_list);
+      (*retctx)->extra_list = namelist;
+    }
+  else
+    free_strlist (namelist);
   return rc;
 }
+
 
 int
 get_pubkey_bynames( GETKEY_CTX *retctx, PKT_public_key *pk,
@@ -1113,6 +1162,7 @@ get_pubkey_end( GETKEY_CTX ctx )
     if( ctx ) {
         memset (&ctx->kbpos, 0, sizeof ctx->kbpos);
         keydb_release (ctx->kr_handle);
+        free_strlist (ctx->extra_list);
 	if( !ctx->not_allocated )
 	    xfree( ctx );
     }
