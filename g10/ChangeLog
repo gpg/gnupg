@@ -1,3 +1,8 @@
+2008-05-08  Werner Koch  <wk@g10code.com>
+
+	* sig-check.c (do_check_messages): Print a revocation diagnostic
+	in verbose mode.
+
 2008-05-07  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: New command --locate-keys.  New options --with-sig-list

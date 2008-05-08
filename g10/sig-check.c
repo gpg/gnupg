@@ -220,8 +220,14 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 	  *r_expired = 1;
     }
 
-    if(pk->is_revoked && r_revoked)
-      *r_revoked=1;
+    if (pk->is_revoked)
+      {
+        if (opt.verbose)
+	  log_info (_("NOTE: signature key %s has been revoked\n"),
+                    keystr_from_pk(pk));
+        if (r_revoked)
+          *r_revoked=1;
+      }
 
     return 0;
 }
