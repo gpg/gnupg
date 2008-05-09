@@ -48,7 +48,7 @@ struct getkey_ctx_s {
     KBNODE keyblock;
     KBPOS  kbpos;
     KBNODE found_key; /* Pointer into some keyblock. */
-    strlist_t *extra_list;  /* Will be freed when releasing the context.  */
+    strlist_t extra_list;  /* Will be freed when releasing the context.  */
     int last_rc;
     int req_usage;
     int req_algo;
