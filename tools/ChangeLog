@@ -1,3 +1,8 @@
+2008-05-09  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (my_dgettext) [USE_SIMPLE_GETTEXT]:  Hack to
+	parly support translations.
+
 2008-04-08  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_gpg): Add --auto-key-locate.

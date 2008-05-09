@@ -1027,7 +1027,27 @@ gpg_agent_runtime_change (void)
 static const char *
 my_dgettext (const char *domain, const char *msgid)
 {
-#ifdef ENABLE_NLS
+#ifdef USE_SIMPLE_GETTEXT
+  if (domain)
+    {
+      static int switched_codeset;
+      char *text;
+      
+      if (!switched_codeset)
+        {
+          switched_codeset = 1;
+          gettext_select_utf8 (1);
+        }
+
+      if (!strcmp (domain, "gnupg"))
+        domain = PACKAGE_GT;
+
+      /* FIXME: we have no dgettext, thus we can't switch.  */
+
+      text = gettext (msgid);
+      return text ? text : msgid;
+    }
+#elif defined(ENABLE_NLS)
   if (domain)
     {
       static int switched_codeset;

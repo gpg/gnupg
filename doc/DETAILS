@@ -70,7 +70,7 @@ record.
  5. Field:  KeyID
 
  6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
-            self-signature date.  Note that the dae is usally printed
+            self-signature date.  Note that the date is usally printed
             in seconds since epoch, however, we are migrating to an ISO
             8601 format (e.g. "19660205T091500").  This is currently
             only relevant for X.509, A simple way to detect the format

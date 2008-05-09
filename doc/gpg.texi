@@ -311,7 +311,9 @@ command "tsign").
 
 @item --check-sigs
 @opindex check-sigs
-Same as @option{--list-sigs}, but the signatures are verified.
+Same as @option{--list-sigs}, but the signatures are verified.  Note
+that for performance reasons the revocation status of a signing key is
+not shown.
 @ifclear gpgone
 This command has the same effect as 
 using @option{--list-keys} with @option{--with-sig-check}.

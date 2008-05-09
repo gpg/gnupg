@@ -1869,7 +1869,7 @@ main ( int argc, char **argv)
 
 
     default:
-        log_error ("invalid command (there is no implicit command)\n");
+        log_error (_("invalid command (there is no implicit command)\n"));
 	break;
     }
 

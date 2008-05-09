@@ -1333,6 +1333,11 @@ set_gettext_file ( const char *filename, const char *regkey )
 {
   struct loaded_domain *domain = NULL;
 
+  /* FIXME: To support dgettext we need to make struct loaded_doman a
+     linked list and search that list for loaded domains before adding
+     a new one.  If it is loaded just switch the current doman but do
+     not free anything.  */
+
   if ( filename && *filename )
     {
       if ( filename[0] == '/'
