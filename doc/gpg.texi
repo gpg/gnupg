@@ -175,18 +175,23 @@ abbreviate this command.
 @itemx -s
 @opindex sign
 Make a signature. This command may be combined with @option{--encrypt}
-(for a signed and encrypted message), @option{--symmetric} (for a signed
-and symmetrically encrypted message), or @option{--encrypt} and
+(for a signed and encrypted message), @option{--symmetric} (for a
+signed and symmetrically encrypted message), or @option{--encrypt} and
 @option{--symmetric} together (for a signed message that may be
-decrypted via a secret key or a passphrase).
+decrypted via a secret key or a passphrase).  The key to be used for
+signing is chosen by default or can be set with the
+@option{--local-user} and @option{--default-key} options.
 
 @item --clearsign
 @opindex clearsign
-Make a clear text signature. The content in a clear text signature is
-readable without any special software. OpenPGP software is only
-needed to verify the signature. Clear text signatures may modify
-end-of-line whitespace for platform independence and are not intended
-to be reversible.
+Make a clear text signature.  The content in a clear text signature is
+readable without any special software. OpenPGP software is only needed
+to verify the signature.  Clear text signatures may modify end-of-line
+whitespace for platform independence and are not intended to be
+reversible.  The key to be used for signing is chosen by default or
+can be set with the @option{--local-user} and @option{--default-key}
+options.
+
 
 @item --detach-sign
 @itemx -b

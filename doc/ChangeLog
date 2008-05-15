@@ -1,3 +1,8 @@
+2008-05-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg.texi (Operational GPG Commands): Mention the way to change
+	the default signing key.
+
 2008-05-06  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (myman_pages): Add gpg-zip.1.
