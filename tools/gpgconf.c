@@ -43,6 +43,7 @@ enum cmd_and_opt_values
     aCheckPrograms,
     aListOptions,
     aChangeOptions,
+    aCheckOptions,
     aApplyDefaults,
     aListConfig,
     aCheckConfig
@@ -59,6 +60,7 @@ static ARGPARSE_OPTS opts[] =
     { aCheckPrograms, "check-programs", 256, N_("check all programs") },
     { aListOptions, "list-options", 256, N_("|COMPONENT|list options") },
     { aChangeOptions, "change-options", 256, N_("|COMPONENT|change options") },
+    { aCheckOptions, "check-options", 256, N_("|COMPONENT|check options") },
     { aApplyDefaults, "apply-defaults", 256,
       N_("apply global default values") },
     { aListConfig,   "list-config", 256,
@@ -167,6 +169,7 @@ main (int argc, char **argv)
         case aCheckPrograms:
         case aListOptions:
         case aChangeOptions:
+        case aCheckOptions:
         case aApplyDefaults:
         case aListConfig:
         case aCheckConfig:
@@ -192,11 +195,12 @@ main (int argc, char **argv)
 
     case aCheckPrograms:
       /* Check all programs. */
-      gc_component_check_programs (get_outfp (&outfp));
+      gc_check_programs (get_outfp (&outfp));
       break;
 
     case aListOptions:
     case aChangeOptions:
+    case aCheckOptions:
       if (!fname)
 	{
 	  fputs (_("usage: gpgconf [options] "), stderr);
@@ -219,8 +223,10 @@ main (int argc, char **argv)
             exit (1);
 	  if (cmd == aListOptions)
 	    gc_component_list_options (idx, get_outfp (&outfp));
+	  else if (cmd == aChangeOptions)
+            gc_component_change_options (idx, stdin, get_outfp (&outfp));
 	  else
-            gc_component_change_options (idx, stdin);
+	    gc_component_check_options (idx, get_outfp (&outfp), NULL);
 	}
       break;
 

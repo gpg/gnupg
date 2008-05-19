@@ -43,7 +43,7 @@ void gc_error (int status, int errnum, const char *fmt, ...);
 void gc_component_list_components (FILE *out);
 
 /* List all programs along with their status.  */
-void gc_component_check_programs (FILE *out);
+void gc_check_programs (FILE *out);
 
 /* Find the component with the name NAME.  Returns -1 if not
    found.  */
@@ -57,7 +57,12 @@ void gc_component_retrieve_options (int component);
 void gc_component_list_options (int component, FILE *out);
 
 /* Read the modifications from IN and apply them.  */
-void gc_component_change_options (int component, FILE *in);
+void gc_component_change_options (int component, FILE *in, FILE *out);
+
+/* Check the options of a single component.  Returns 0 if everything
+   is OK.  */
+int gc_component_check_options (int component, FILE *out,
+				const char *conf_file);
 
 /* Process global configuration file.  */
 int gc_process_gpgconf_conf (const char *fname, int update, int defaults,

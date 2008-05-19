@@ -1317,118 +1317,140 @@ collect_error_output (int fd, const char *tag)
 }
 
 
-
-/* Check all components that are available.  */
-void
-gc_component_check_programs (FILE *out)
+/* Check the options of a single component.  Returns 0 if everything
+   is OK.  */
+int
+gc_component_check_options (int component, FILE *out, const char *conf_file)
 {
   gpg_error_t err;
-  gc_component_t component;
   unsigned int result;
   int backend_seen[GC_BACKEND_NR];
   gc_backend_t backend;
   gc_option_t *option;
-  const char *desc;
   const char *pgmname;
-  const char *argv[2];
+  const char *argv[4];
+  int i;
   pid_t pid;
   int exitcode;
   int filedes[2];
-  error_line_t errlines, errptr;
+  error_line_t errlines;
 
   /* We use a temporary file to collect the error output.  It would be
      better to use a pipe here but as of now we have no suitable
      fucntion to create a portable pipe outside of exechelp.  Thus it
      is easier to use the tempfile approach.  */
-  for (component = 0; component < GC_COMPONENT_NR; component++)
+
+  for (backend = 0; backend < GC_BACKEND_NR; backend++)
+    backend_seen[backend] = 0;
+
+  option = gc_component[component].options;
+  for (; option && option->name; option++)
     {
-      if (!gc_component[component].options)
-        continue;
+      if ((option->flags & GC_OPT_FLAG_GROUP))
+	continue;
+      backend = option->backend;
+      if (backend_seen[backend])
+	continue;
+      backend_seen[backend] = 1;
+      assert (backend != GC_BACKEND_ANY);
+      if (!gc_backend[backend].program)
+	continue;
+      if (!gc_backend[backend].module_name)
+	continue;
 
-      for (backend = 0; backend < GC_BACKEND_NR; backend++)
-        backend_seen[backend] = 0;
+      break;
+    }
+  if (! option || ! option->name)
+    return 0;
 
-      option = gc_component[component].options;
-      for (; option && option->name; option++)
-        {
-          if ((option->flags & GC_OPT_FLAG_GROUP))
-            continue;
-          backend = option->backend;
-          if (backend_seen[backend])
-            continue;
-          backend_seen[backend] = 1;
-          assert (backend != GC_BACKEND_ANY);
-          if (!gc_backend[backend].program)
-            continue;
-          if (!gc_backend[backend].module_name)
-            continue;
+  pgmname = gnupg_module_name (gc_backend[backend].module_name);
+  i = 0;
+  if (conf_file)
+    {
+      argv[i++] = "--options";
+      argv[i++] = conf_file;
+    }
+  argv[i++] = "--gpgconf-test";
+  argv[i++] = NULL;
+  
+  err = gnupg_create_inbound_pipe (filedes);
+  if (err)
+    gc_error (1, 0, _("error creating a pipe: %s\n"), 
+	      gpg_strerror (err));
+  
+  result = 0;
+  errlines = NULL;
+  if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, filedes[1], &pid))
+    {
+      close (filedes[0]);
+      close (filedes[1]);
+      result |= 1; /* Program could not be run.  */
+    }
+  else 
+    {
+      close (filedes[1]);
+      errlines = collect_error_output (filedes[0], 
+				       gc_component[component].name);
+      if (gnupg_wait_process (pgmname, pid, &exitcode))
+	{
+	  if (exitcode == -1)
+	    result |= 1; /* Program could not be run or it
+			    terminated abnormally.  */
+	  result |= 2; /* Program returned an error.  */
+	}
+    }
+  
+  /* If the program could not be run, we can't tell whether
+     the config file is good.  */
+  if (result & 1)
+    result |= 2;  
+  
+  if (out)
+    {
+      const char *desc;
+      error_line_t errptr;
 
-          pgmname = gnupg_module_name (gc_backend[backend].module_name);
-          argv[0] = "--gpgconf-test";
-          argv[1] = NULL;
+      desc = gc_component[component].desc;
+      desc = my_dgettext (gc_component[component].desc_domain, desc);
+      fprintf (out, "%s:%s:",
+	       gc_component[component].name, my_percent_escape (desc));
+      fputs (my_percent_escape (pgmname), out);
+      fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
+      for (errptr = errlines; errptr; errptr = errptr->next)
+	{
+	  if (errptr != errlines)
+	    fputs ("\n:::::", out); /* Continuation line.  */
+	  if (errptr->fname)
+	    fputs (my_percent_escape (errptr->fname), out);
+	  putc (':', out);
+	  if (errptr->fname)
+	    fprintf (out, "%u", errptr->lineno);
+	  putc (':', out);
+	  fputs (my_percent_escape (errptr->errtext), out);
+	  putc (':', out);
+	}
+      putc ('\n', out);
+    }
 
-          err = gnupg_create_inbound_pipe (filedes);
-          if (err)
-            gc_error (1, 0, _("error creating a pipe: %s\n"), 
-                      gpg_strerror (err));
+  while (errlines)
+    {
+      error_line_t tmp = errlines->next;
+      xfree (errlines);
+      errlines = tmp;
+    }
 
-          result = 0;
-          errlines = NULL;
-          if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, filedes[1], &pid))
-            {
-              close (filedes[0]);
-              close (filedes[1]);
-              result |= 1; /* Program could not be run.  */
-            }
-          else 
-            {
-              close (filedes[1]);
-              errlines = collect_error_output (filedes[0], 
-                                               gc_component[component].name);
-              if (gnupg_wait_process (pgmname, pid, &exitcode))
-                {
-                  if (exitcode == -1)
-                    result |= 1; /* Program could not be run or it
-                                    terminated abnormally.  */
-                  result |= 2; /* Program returned an error.  */
-                }
-            }
-          
-          /* If the program could not be run, we can't tell whether
-             the config file is good.  */
-          if ((result&1))
-            result |= 2;  
-          
-          desc = gc_component[component].desc;
-          desc = my_dgettext (gc_component[component].desc_domain, desc);
-          fprintf (out, "%s:%s:",
-                   gc_component[component].name, my_percent_escape (desc));
-          fputs (my_percent_escape (pgmname), out);
-          fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
-          for (errptr = errlines; errptr; errptr = errptr->next)
-            {
-              if (errptr != errlines)
-                fputs ("\n:::::", out); /* Continuation line.  */
-              if (errptr->fname)
-                fputs (my_percent_escape (errptr->fname), out);
-              putc (':', out);
-              if (errptr->fname)
-                fprintf (out, "%u", errptr->lineno);
-              putc (':', out);
-              fputs (my_percent_escape (errptr->errtext), out);
-              putc (':', out);
-            }
-          putc ('\n', out);
-          
-          while (errlines)
-            {
-              error_line_t tmp = errlines->next;
-              xfree (errlines);
-              errlines = tmp;
-            }
-          break; /* Loop over options of this component  */
-        }
-    } 
+  return result;
+}
+
+
+/* Check all components that are available.  */
+void
+gc_check_programs (FILE *out)
+{
+  gc_component_t component;
+
+  for (component = 0; component < GC_COMPONENT_NR; component++)
+    gc_component_check_options (component, out, NULL);
 }
 
 
@@ -2831,7 +2853,7 @@ change_one_value (gc_option_t *option, int *runtime,
    modifications are expected to already have been set to the global
    table. */
 void
-gc_component_change_options (int component, FILE *in)
+gc_component_change_options (int component, FILE *in, FILE *out)
 {
   int err = 0;
   int runtime[GC_BACKEND_NR];
@@ -2935,10 +2957,26 @@ gc_component_change_options (int component, FILE *in)
 	}
 
       if (gc_backend[option->backend].program)
-	err = change_options_program (component, option->backend,
-				      &src_pathname[option->backend],
-				      &dest_pathname[option->backend],
-				      &orig_pathname[option->backend]);
+	{
+	  err = change_options_program (component, option->backend,
+					&src_pathname[option->backend],
+					&dest_pathname[option->backend],
+					&orig_pathname[option->backend]);
+	  if (! err)
+	    {
+	      /* External verification.  */
+	      err = gc_component_check_options (component, out,
+						src_pathname[option->backend]);
+	      if (err)
+		{
+		  gc_error (0, 0,
+			    _("External verification of component %s failed"),
+			    gc_component[component].name);
+		  errno = EINVAL;
+		}
+	    }
+
+	}
       else
 	err = change_options_file (component, option->backend,
 				   &src_pathname[option->backend],
@@ -2951,7 +2989,7 @@ gc_component_change_options (int component, FILE *in)
       option++;
     }
 
-  if (!err)
+  if (! err && ! opt.dry_run)
     {
       int i;
 
@@ -2994,12 +3032,12 @@ gc_component_change_options (int component, FILE *in)
 	}
     }
 
-  if (err)
+  if (err || opt.dry_run)
     {
       int i;
       int saved_errno = errno;
 
-      /* An error occured.  */
+      /* An error occured or a dry-run is requested.  */
       for (i = 0; i < GC_BACKEND_NR; i++)
 	{
 	  if (src_pathname[i])
@@ -3027,7 +3065,11 @@ gc_component_change_options (int component, FILE *in)
 		unlink (dest_pathname[i]);
 	    }
 	}
-      gc_error (1, saved_errno, "could not commit changes");
+      if (err)
+	gc_error (1, saved_errno, "could not commit changes");
+
+      /* Fall-through for dry run.  */
+      goto leave;
     }
 
   /* If it all worked, notify the daemons of the changes.  */
@@ -3055,6 +3097,7 @@ gc_component_change_options (int component, FILE *in)
 	rename (orig_pathname[backend], backup_pathname);
       }
 
+ leave:
   xfree (line);
 }
 
@@ -3463,7 +3506,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
       for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
         {
-          gc_component_change_options (component_id, NULL);
+          gc_component_change_options (component_id, NULL, NULL);
         }
       opt.runtime = save_opt_runtime;
 

@@ -230,6 +230,9 @@ List all options of the component @var{component}.
 @item --change-options @var{component}
 Change the options of the component @var{component}.
 
+@item --check-options @var{component}
+Check the options for the component @var{component}.
+
 @item --apply-defaults
 Update all configuration files with values taken from the global
 configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
@@ -260,11 +263,10 @@ The following options may be used:
 Outputs additional information while running.  Specifically, this
 extends numerical field values by human-readable descriptions.
 
-@c FIXME: Not yet supported.
-@c @item -n
-@c @itemx --dry-run
-@c Do not actually change anything.  Useful together with
-@c @code{--change-options} for testing purposes.
+@item -n
+@itemx --dry-run
+Do not actually change anything.  This is currently only implemented
+for @code{--change-options} and can be used for testing purposes.
 
 @item -r
 @itemx --runtime
@@ -531,6 +533,11 @@ gpgsm:GPG for S/MIME:/usr/local/bin/gpgsm:1:1:
 dirmngr:Directory Manager:/usr/local/bin/dirmngr:0:0:
 @end example
 
+@noindent
+The command @w{@code{--check-options @var{component}}} will verify the
+configuration file in the same manner as @code{--check-programs}, but
+only for the component @var{component}.
+
 
 @node Listing options
 @subsection Listing options
@@ -768,6 +775,10 @@ argument}.  If it is empty (or the field is omitted), the default
 argument is used (only allowed if the argument is optional for this
 option).  Otherwise, the option will be set to the specified value.
 @end table
+
+@noindent
+The output of the command is the same as that of
+@code{--check-options} for the modified configuration file.
 
 Examples:
 
