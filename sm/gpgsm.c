@@ -1808,7 +1808,7 @@ main ( int argc, char **argv)
         FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
 
         if (argc == 1)
-          gpgsm_p12_export (&ctrl, *argv, stdout);
+          gpgsm_p12_export (&ctrl, *argv, fp);
         else
           wrong_args ("--export-secret-key-p12 KEY-ID");
         if (fp != stdout)

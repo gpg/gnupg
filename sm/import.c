@@ -652,7 +652,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     {
       /* We only write a plain error code and not direct
          BAD_PASSPHRASE because the pkcs12 parser might issue this
-         message multiple times, BAd_PASSPHRASE in general requires a
+         message multiple times, BAD_PASSPHRASE in general requires a
          keyID and parts of the import might actually succeed so that
          IMPORT_PROBLEM is also not appropriate. */
       gpgsm_status_with_err_code (ctrl, STATUS_ERROR,

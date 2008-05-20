@@ -369,7 +369,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
       goto leave;
     }
 
-  /* Lookup the certificate an make sure that it is unique. */
+  /* Lookup the certificate and make sure that it is unique. */
   rc = keydb_search (hd, desc, 1);
   if (!rc)
     {
