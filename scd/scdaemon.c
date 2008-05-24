@@ -1,6 +1,6 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
  * Copyright (C) 2001, 2002, 2004, 2005, 
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -88,7 +88,9 @@ enum cmd_and_opt_values
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
-  oDebugDisableTicker
+  oDebugDisableTicker,
+  oSystemDaemon,
+  oSystemSocket
 };
 
 
@@ -132,6 +134,8 @@ static ARGPARSE_OPTS opts[] = {
   { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
   { oDenyAdmin,  "deny-admin",  0, "@" },  
   { oDisableApplication, "disable-application", 2, "@"},
+  { oSystemDaemon, "system-daemon", 0, N_("run in system daemon-mode") },
+  { oSystemSocket, "system-socket", 2, N_("|SOCKET|specify socket to use in system-daemon mode") },
 
   {0}
 };
@@ -304,6 +308,8 @@ main (int argc, char **argv )
   int pipe_server = 0;
   int multi_server = 0;
   int is_daemon = 0;
+  int is_system_daemon = 0;
+  char *system_socket = NULL;
   int nodetach = 0;
   int csh_style = 0;
   char *logfile = NULL;
@@ -390,6 +396,8 @@ main (int argc, char **argv )
           default_config = 0; /* --no-options */
 	else if (pargs.r_opt == oHomedir)
           opt.homedir = pargs.r.ret_str;
+	else if (pargs.r_opt == oSystemDaemon)
+	  default_config = 0;
     }
 
   /* initialize the secure memory. */
@@ -482,6 +490,8 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
         case oMultiServer: pipe_server = 1; multi_server = 1; break;
         case oDaemon: is_daemon = 1; break;
+        case oSystemDaemon: is_daemon = is_system_daemon = 1; break;
+        case oSystemSocket: system_socket = pargs.r.ret_str; break;
 
         case oReaderPort: opt.reader_port = pargs.r.ret_str; break;
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
@@ -679,11 +689,19 @@ main (int argc, char **argv )
 #endif
 
       /* Create the socket.  */
-      socket_name = create_socket_name (standard_socket,
-                                        "S.scdaemon",
-                                        "/tmp/gpg-XXXXXX/S.scdaemon");
+      if (is_system_daemon)
+	{
+	  if (system_socket)
+	    socket_name = system_socket;
+	  else
+	    socket_name = NULL; /* FIXME! */
+	}
+      else
+	socket_name = create_socket_name (standard_socket,
+					  "S.scdaemon",
+					  "/tmp/gpg-XXXXXX/S.scdaemon");
 
-      fd = FD2INT (create_server_socket (standard_socket,
+      fd = FD2INT (create_server_socket (system_socket ? 1 : standard_socket,
                                          socket_name, &socket_nonce));
 
 
@@ -700,47 +718,56 @@ main (int argc, char **argv )
           char *infostr;
           
           close (fd);
-          
-          /* create the info string: <name>:<pid>:<protocol_version> */
-          if (asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
-                        socket_name, (ulong)pid ) < 0)
-            {
-              log_error ("out of core\n");
-              kill (pid, SIGTERM);
-              exit (1);
-            }
-          *socket_name = 0; /* don't let cleanup() remove the socket -
-                               the child should do this from now on */
-          if (argc) 
-            { /* run the program given on the commandline */
-              if (putenv (infostr))
-                {
-                  log_error ("failed to set environment: %s\n",
-                             strerror (errno) );
-                  kill (pid, SIGTERM );
-                  exit (1);
-                }
-              execvp (argv[0], argv);
-              log_error ("failed to run the command: %s\n", strerror (errno));
-              kill (pid, SIGTERM);
-              exit (1);
-            }
-          else
-            {
-              /* Print the environment string, so that the caller can use
-                 shell's eval to set it */
-              if (csh_style)
-                {
-                  *strchr (infostr, '=') = ' ';
-                  printf ( "setenv %s\n", infostr);
-                }
-              else
-                {
-                  printf ( "%s; export SCDAEMON_INFO;\n", infostr);
-                }
-              free (infostr);
-              exit (0); 
-            }
+
+	  if (is_system_daemon)
+	    {
+	      *socket_name = 0; /* don't let cleanup() remove the socket -
+				   the child should do this from now on */
+	      exit (0);
+	    }
+	  else
+	    {
+	      /* create the info string: <name>:<pid>:<protocol_version> */
+	      if (asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
+			    socket_name, (ulong)pid ) < 0)
+		{
+		  log_error ("out of core\n");
+		  kill (pid, SIGTERM);
+		  exit (1);
+		}
+	      *socket_name = 0; /* don't let cleanup() remove the socket -
+				   the child should do this from now on */
+	      if (argc) 
+		{ /* run the program given on the commandline */
+		  if (putenv (infostr))
+		    {
+		      log_error ("failed to set environment: %s\n",
+				 strerror (errno) );
+		      kill (pid, SIGTERM );
+		      exit (1);
+		    }
+		  execvp (argv[0], argv);
+		  log_error ("failed to run the command: %s\n", strerror (errno));
+		  kill (pid, SIGTERM);
+		  exit (1);
+		}
+	      else
+		{
+		  /* Print the environment string, so that the caller can use
+		     shell's eval to set it */
+		  if (csh_style)
+		    {
+		      *strchr (infostr, '=') = ' ';
+		      printf ( "setenv %s\n", infostr);
+		    }
+		  else
+		    {
+		      printf ( "%s; export SCDAEMON_INFO;\n", infostr);
+		    }
+		  free (infostr);
+		  exit (0); 
+		}
+	    }
           /* NOTREACHED */
         } /* end parent */
       

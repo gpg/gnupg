@@ -1,3 +1,11 @@
+2008-05-25  Moritz  <moritz@gnu.org>
+
+	* scdaemon.c: New options: oSystemDaemon, oSystemSocket.
+	(main): New local variables: is_system_daemon, system_socket, set
+	variables during parsing.
+	(main): Don't parse default config if oSystemDaemon is given on the commandline.
+	Implemented basic "system-daemon" logic.
+
 2008-04-21  Moritz Schulte  <mo@g10code.com>  (wk)
 
 	* app-openpgp.c (verify_a_chv): Make use of the default CHV flag.
