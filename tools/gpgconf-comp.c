@@ -163,7 +163,7 @@ static struct
   void (*runtime_change) (void);
 
   /* The option name for the configuration filename of this backend.
-     This must be an absolute pathname.  It can be an option from a
+     This must be an absolute filename.  It can be an option from a
      different backend (but then ordering of the options might
      matter).  */
   const char *option_config_filename;
@@ -218,8 +218,8 @@ typedef enum
 
     /* Complex argument types.  */
 
-    /* A complete pathname.  */
-    GC_ARG_TYPE_PATHNAME = 32,
+    /* A complete filename.  */
+    GC_ARG_TYPE_FILENAME = 32,
 
     /* An LDAP server in the format
        HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN.  */
@@ -276,7 +276,7 @@ static struct
     { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
 
     /* The complex argument types have a basic type as fallback.  */
-    { GC_ARG_TYPE_STRING, "pathname" },
+    { GC_ARG_TYPE_STRING, "filename" },
     { GC_ARG_TYPE_STRING, "ldap server" },
     { GC_ARG_TYPE_STRING, "key fpr" },
     { GC_ARG_TYPE_STRING, "pub key" },
@@ -460,7 +460,7 @@ static gc_option_t gc_options_gpg_agent[] =
  {
    /* The configuration file to which we write the changes.  */
    { "gpgconf-gpg-agent.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
-     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG_AGENT },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -480,7 +480,7 @@ static gc_option_t gc_options_gpg_agent[] =
      "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG_AGENT },
    { "disable-scdaemon", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", "do not use the SCdaemon",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
@@ -493,7 +493,7 @@ static gc_option_t gc_options_gpg_agent[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG_AGENT },
    { "log-file", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", N_("|FILE|write server mode logs to FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG_AGENT },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
@@ -545,7 +545,7 @@ static gc_option_t gc_options_gpg_agent[] =
    { "check-passphrase-pattern", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_EXPERT,
      "gnupg", N_("|FILE|check new passphrases against pattern in FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG_AGENT },
    { "max-passphrase-days", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_EXPERT, "gnupg", 
      N_("|N|expire the passphrase after N days"),
@@ -564,7 +564,7 @@ static gc_option_t gc_options_scdaemon[] =
  {
    /* The configuration file to which we write the changes.  */
    { "gpgconf-scdaemon.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
-     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -584,7 +584,7 @@ static gc_option_t gc_options_scdaemon[] =
      "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
    { "reader-port", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "|N|connect to reader at port N",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
@@ -612,7 +612,7 @@ static gc_option_t gc_options_scdaemon[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|FILE|write server mode logs to FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
 
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -631,7 +631,7 @@ static gc_option_t gc_options_gpg[] =
  {
    /* The configuration file to which we write the changes.  */
    { "gpgconf-gpg.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
-     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -657,7 +657,7 @@ static gc_option_t gc_options_gpg[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
@@ -667,7 +667,7 @@ static gc_option_t gc_options_gpg[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|FILE|write server mode logs to FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
 /*    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE, */
 /*      NULL, NULL, */
 /*      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG }, */
@@ -696,7 +696,7 @@ static gc_option_t gc_options_gpgsm[] =
  {
    /* The configuration file to which we write the changes.  */
    { "gpgconf-gpgsm.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
-     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPGSM },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -722,7 +722,7 @@ static gc_option_t gc_options_gpgsm[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPGSM },
    { "prefer-system-dirmngr", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", "use system's dirmngr if available",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
@@ -741,7 +741,7 @@ static gc_option_t gc_options_gpgsm[] =
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|FILE|write server mode logs to FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_GPGSM },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPGSM },
@@ -780,7 +780,7 @@ static gc_option_t gc_options_dirmngr[] =
  {
    /* The configuration file to which we write the changes.  */
    { "gpgconf-dirmngr.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
-     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
@@ -810,7 +810,7 @@ static gc_option_t gc_options_dirmngr[] =
      "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "dirmngr", "|FILE|read options from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
@@ -823,7 +823,7 @@ static gc_option_t gc_options_dirmngr[] =
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", N_("|FILE|write server mode logs to FILE"),
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
    { "debug-wait", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_UINT32, GC_BACKEND_DIRMNGR },
@@ -883,7 +883,7 @@ static gc_option_t gc_options_dirmngr[] =
    { "ldapserverlist-file",
      GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      "dirmngr", "|FILE|read LDAP server list from FILE",
-     GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
+     GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
    /* This entry must come after at least one entry for
       GC_BACKEND_DIRMNGR in this component, so that the entry for
       "ldapserverlist-file will be initialized before this one.  */
@@ -1673,16 +1673,16 @@ find_option (gc_component_t component, const char *name,
 }
 
 
-/* Determine the configuration pathname for the component COMPONENT
+/* Determine the configuration filename for the component COMPONENT
    and backend BACKEND.  */
 static char *
-get_config_pathname (gc_component_t component, gc_backend_t backend)
+get_config_filename (gc_component_t component, gc_backend_t backend)
 {
-  char *pathname = NULL;
+  char *filename = NULL;
   gc_option_t *option = find_option
     (component, gc_backend[backend].option_config_filename, GC_BACKEND_ANY);
   assert (option);
-  assert (option->arg_type == GC_ARG_TYPE_PATHNAME);
+  assert (option->arg_type == GC_ARG_TYPE_FILENAME);
   assert (!(option->flags & GC_OPT_FLAG_LIST));
 
   if (!option->active || !option->default_value)
@@ -1691,24 +1691,24 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
 	      gc_backend[backend].name);
 
   if (option->value && *option->value)
-    pathname = percent_deescape (&option->value[1]);
+    filename = percent_deescape (&option->value[1]);
   else if (option->default_value && *option->default_value)
-    pathname = percent_deescape (&option->default_value[1]);
+    filename = percent_deescape (&option->default_value[1]);
   else
-    pathname = "";
+    filename = "";
 
 #ifdef HAVE_DOSISH_SYSTEM
-  if (!(pathname[0] 
-        && pathname[1] == ':'
-        && (pathname[2] == '/' || pathname[2] == '\\')))
+  if (!(filename[0] 
+        && filename[1] == ':'
+        && (filename[2] == '/' || filename[2] == '\\')))
 #else
-  if (pathname[0] != '/')
+  if (filename[0] != '/')
 #endif
     gc_error (1, 0, "Option %s, needed by backend %s, is not absolute",
 	      gc_backend[backend].option_config_filename,
 	      gc_backend[backend].name);
 
-  return pathname;
+  return filename;
 }
 
 
@@ -1727,7 +1727,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   size_t line_len = 0;
   ssize_t length;
   FILE *config;
-  char *config_pathname;
+  char *config_filename;
 
   err = gnupg_create_inbound_pipe (filedes);
   if (err)
@@ -1833,12 +1833,12 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
 
   /* At this point, we can parse the configuration file.  */
-  config_pathname = get_config_pathname (component, backend);
+  config_filename = get_config_filename (component, backend);
 
-  config = fopen (config_pathname, "r");
+  config = fopen (config_filename, "r");
   if (!config)
     gc_error (0, errno, "warning: can not open config file %s",
-	      config_pathname);
+	      config_filename);
   else
     {
       while ((length = read_line (config, &line, &line_len, NULL)) > 0)
@@ -1923,9 +1923,9 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	}
 
       if (length < 0 || ferror (config))
-	gc_error (1, errno, "error reading from %s", config_pathname);
+	gc_error (1, errno, "error reading from %s", config_filename);
       if (fclose (config) && ferror (config))
-	gc_error (1, errno, "error closing %s", config_pathname);
+	gc_error (1, errno, "error closing %s", config_filename);
     }
 
   xfree (line);
@@ -1938,7 +1938,7 @@ static void
 retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 {
   gc_option_t *list_option;
-  char *list_pathname;
+  char *list_filename;
   FILE *list_file;
   char *line = NULL;
   size_t line_len = 0;
@@ -1950,10 +1950,10 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   assert (list_option);
   assert (!list_option->active);
 
-  list_pathname = get_config_pathname (component, backend);
-  list_file = fopen (list_pathname, "r");
+  list_filename = get_config_filename (component, backend);
+  list_file = fopen (list_filename, "r");
   if (!list_file)
-    gc_error (0, errno, "warning: can not open list file %s", list_pathname);
+    gc_error (0, errno, "warning: can not open list file %s", list_filename);
   else
     {
 
@@ -1991,14 +1991,14 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	    list = xasprintf ("\"%s", gc_percent_escape (start));
 	}
       if (length < 0 || ferror (list_file))
-	gc_error (1, errno, "can not read list file %s", list_pathname);
+	gc_error (1, errno, "can not read list file %s", list_filename);
     }
 
   list_option->active = 1;
   list_option->value = list;
 
   if (list_file && fclose (list_file) && ferror (list_file))
-    gc_error (1, errno, "error closing %s", list_pathname);
+    gc_error (1, errno, "error closing %s", list_filename);
   xfree (line);
 }
 
@@ -2259,9 +2259,9 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   assert (gc_arg_type[option->arg_type].fallback != GC_ARG_TYPE_NONE);
 
   /* FIXME.  Throughout the function, do better error reporting.  */
-  /* Note that get_config_pathname() calls percent_deescape(), so we
+  /* Note that get_config_filename() calls percent_deescape(), so we
      call this before processing the arguments.  */
-  dest_filename = xstrdup (get_config_pathname (component, backend));
+  dest_filename = xstrdup (get_config_filename (component, backend));
   src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
   orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
@@ -2553,7 +2553,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   int utf8strings_seen = 0;
 
   /* FIXME.  Throughout the function, do better error reporting.  */
-  dest_filename = xstrdup (get_config_pathname (component, backend));
+  dest_filename = xstrdup (get_config_filename (component, backend));
   src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
   orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
@@ -2874,9 +2874,9 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 {
   int err = 0;
   int runtime[GC_BACKEND_NR];
-  char *src_pathname[GC_BACKEND_NR];
-  char *dest_pathname[GC_BACKEND_NR];
-  char *orig_pathname[GC_BACKEND_NR];
+  char *src_filename[GC_BACKEND_NR];
+  char *dest_filename[GC_BACKEND_NR];
+  char *orig_filename[GC_BACKEND_NR];
   gc_backend_t backend;
   gc_option_t *option;
   char *line = NULL;
@@ -2886,9 +2886,9 @@ gc_component_change_options (int component, FILE *in, FILE *out)
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     {
       runtime[backend] = 0;
-      src_pathname[backend] = NULL;
-      dest_pathname[backend] = NULL;
-      orig_pathname[backend] = NULL;
+      src_filename[backend] = NULL;
+      dest_filename[backend] = NULL;
+      orig_filename[backend] = NULL;
     }
 
   if (in)
@@ -2966,7 +2966,7 @@ gc_component_change_options (int component, FILE *in, FILE *out)
     {
       /* Go on if we have already seen this backend, or if there is
 	 nothing to do.  */
-      if (src_pathname[option->backend]
+      if (src_filename[option->backend]
 	  || !(option->new_flags || option->new_value))
 	{
 	  option++;
@@ -2976,14 +2976,14 @@ gc_component_change_options (int component, FILE *in, FILE *out)
       if (gc_backend[option->backend].program)
 	{
 	  err = change_options_program (component, option->backend,
-					&src_pathname[option->backend],
-					&dest_pathname[option->backend],
-					&orig_pathname[option->backend]);
+					&src_filename[option->backend],
+					&dest_filename[option->backend],
+					&orig_filename[option->backend]);
 	  if (! err)
 	    {
 	      /* External verification.  */
 	      err = gc_component_check_options (component, out,
-						src_pathname[option->backend]);
+						src_filename[option->backend]);
 	      if (err)
 		{
 		  gc_error (0, 0,
@@ -2996,9 +2996,9 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 	}
       else
 	err = change_options_file (component, option->backend,
-				   &src_pathname[option->backend],
-				   &dest_pathname[option->backend],
-				   &orig_pathname[option->backend]);
+				   &src_filename[option->backend],
+				   &dest_filename[option->backend],
+				   &orig_filename[option->backend]);
 	
       if (err)
 	break;
@@ -3012,39 +3012,39 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 
       for (i = 0; i < GC_BACKEND_NR; i++)
 	{
-	  if (src_pathname[i])
+	  if (src_filename[i])
 	    {
 	      /* FIXME: Make a verification here.  */
 
-	      assert (dest_pathname[i]);
+	      assert (dest_filename[i]);
 
-	      if (orig_pathname[i])
+	      if (orig_filename[i])
 		{
 #ifdef HAVE_W32_SYSTEM
 		  /* There is no atomic update on W32.  */
-		  err = unlink (dest_pathname[i]);
+		  err = unlink (dest_filename[i]);
 #endif /* HAVE_W32_SYSTEM */
 		  if (!err)
-		    err = rename (src_pathname[i], dest_pathname[i]);
+		    err = rename (src_filename[i], dest_filename[i]);
 		}
 	      else
 		{
 #ifdef HAVE_W32_SYSTEM
 		  /* We skip the unlink if we expect the file not to
 		     be there.  */
-                  err = rename (src_pathname[i], dest_pathname[i]);
+                  err = rename (src_filename[i], dest_filename[i]);
 #else /* HAVE_W32_SYSTEM */
 		  /* This is a bit safer than rename() because we
-		     expect DEST_PATHNAME not to be there.  If it
+		     expect DEST_FILENAME not to be there.  If it
 		     happens to be there, this will fail.  */
-		  err = link (src_pathname[i], dest_pathname[i]);
+		  err = link (src_filename[i], dest_filename[i]);
 		  if (!err)
-		    err = unlink (src_pathname[i]);
+		    err = unlink (src_filename[i]);
 #endif /* !HAVE_W32_SYSTEM */
 		}
 	      if (err)
 		break;
-	      src_pathname[i] = NULL;
+	      src_filename[i] = NULL;
 	    }
 	}
     }
@@ -3057,12 +3057,12 @@ gc_component_change_options (int component, FILE *in, FILE *out)
       /* An error occured or a dry-run is requested.  */
       for (i = 0; i < GC_BACKEND_NR; i++)
 	{
-	  if (src_pathname[i])
+	  if (src_filename[i])
 	    {
 	      /* The change was not yet committed.  */
-	      unlink (src_pathname[i]);
-	      if (orig_pathname[i])
-		unlink (orig_pathname[i]);
+	      unlink (src_filename[i]);
+	      if (orig_filename[i])
+		unlink (orig_filename[i]);
 	    }
 	  else
 	    {
@@ -3070,16 +3070,16 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 		 tad dangerous, as we don't know if we don't overwrite
 		 a version of the file that is even newer than the one
 		 we just installed.  */
-	      if (orig_pathname[i])
+	      if (orig_filename[i])
 		{
 #ifdef HAVE_W32_SYSTEM
 		  /* There is no atomic update on W32.  */
-		  unlink (dest_pathname[i]);
+		  unlink (dest_filename[i]);
 #endif /* HAVE_W32_SYSTEM */
-		  rename (orig_pathname[i], dest_pathname[i]);
+		  rename (orig_filename[i], dest_filename[i]);
 		}
 	      else
-		unlink (dest_pathname[i]);
+		unlink (dest_filename[i]);
 	    }
 	}
       if (err)
@@ -3099,19 +3099,19 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 
   /* Move the per-process backup file into its place.  */
   for (backend = 0; backend < GC_BACKEND_NR; backend++)  
-    if (orig_pathname[backend])
+    if (orig_filename[backend])
       {
-	char *backup_pathname;
+	char *backup_filename;
 
-	assert (dest_pathname[backend]);
+	assert (dest_filename[backend]);
 
-	backup_pathname = xasprintf ("%s.gpgconf.bak", dest_pathname[backend]);
+	backup_filename = xasprintf ("%s.gpgconf.bak", dest_filename[backend]);
 
 #ifdef HAVE_W32_SYSTEM
 	/* There is no atomic update on W32.  */
-	unlink (backup_pathname);
+	unlink (backup_filename);
 #endif /* HAVE_W32_SYSTEM */
-	rename (orig_pathname[backend], backup_pathname);
+	rename (orig_filename[backend], backup_filename);
       }
 
  leave:

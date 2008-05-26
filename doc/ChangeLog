@@ -1,4 +1,4 @@
-2008-05-26  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+2008-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* tools.texi (Invoking gpgconf): Document --list-dirs.
 
