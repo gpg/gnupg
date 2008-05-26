@@ -1,3 +1,13 @@
+2008-05-26  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* gpgconf.c (enum cmd_and_opt_values): Add aListDirs.
+	(opts): Add aListDirs option.
+	(main): Handle aListDirs.
+	* gpgconf.h (gc_percent_escape): New declaration.
+	* gpgconf-comp.c (my_percent_escape): Make non-static and rename
+	to ...
+	(gc_percent_escape): ... this.  Change all callers.
+
 2008-05-26  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gpg_agent_runtime_change) [W32]: Issue

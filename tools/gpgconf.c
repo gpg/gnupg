@@ -46,7 +46,8 @@ enum cmd_and_opt_values
     aCheckOptions,
     aApplyDefaults,
     aListConfig,
-    aCheckConfig
+    aCheckConfig,
+    aListDirs
 
   };
 
@@ -63,6 +64,8 @@ static ARGPARSE_OPTS opts[] =
     { aCheckOptions, "check-options", 256, N_("|COMPONENT|check options") },
     { aApplyDefaults, "apply-defaults", 256,
       N_("apply global default values") },
+    { aListDirs, "list-dirs", 256,
+      N_("get the configuration directories for gpgconf") },
     { aListConfig,   "list-config", 256,
       N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
@@ -165,6 +168,7 @@ main (int argc, char **argv)
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
 
+	case aListDirs:
         case aListComponents:
         case aCheckPrograms:
         case aListOptions:
@@ -252,6 +256,13 @@ main (int argc, char **argv)
       gc_component_retrieve_options (-1);
       if (gc_process_gpgconf_conf (NULL, 1, 1, NULL))
         exit (1);
+      break;
+      
+    case aListDirs:
+      /* Show the system configuration directory for gpgconf.  */
+      get_outfp (&outfp);
+      fprintf (outfp, "sysconfdir:%s\n",
+	       gc_percent_escape (gnupg_sysconfdir ()));
       break;
     }
 

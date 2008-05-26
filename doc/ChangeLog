@@ -1,3 +1,7 @@
+2008-05-26  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* tools.texi (Invoking gpgconf): Document --list-dirs.
+
 2008-05-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* tools.texi (Invoking gpgconf): Add --dry-run and --check-options.

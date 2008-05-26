@@ -1097,8 +1097,8 @@ my_dgettext (const char *domain, const char *msgid)
 
 /* Percent-Escape special characters.  The string is valid until the
    next invocation of the function.  */
-static char *
-my_percent_escape (const char *src)
+char *
+gc_percent_escape (const char *src)
 {
   static char *esc_str;
   static int esc_str_len;
@@ -1226,8 +1226,8 @@ gc_component_list_components (FILE *out)
           desc = gc_component[component].desc;
           desc = my_dgettext (gc_component[component].desc_domain, desc);
           fprintf (out, "%s:%s:",
-                   gc_component[component].name,  my_percent_escape (desc));
-          fprintf (out, "%s\n",  my_percent_escape (pgmname));
+                   gc_component[component].name,  gc_percent_escape (desc));
+          fprintf (out, "%s\n",  gc_percent_escape (pgmname));
         }
     }
 }
@@ -1430,20 +1430,20 @@ gc_component_check_options (int component, FILE *out, const char *conf_file)
       desc = gc_component[component].desc;
       desc = my_dgettext (gc_component[component].desc_domain, desc);
       fprintf (out, "%s:%s:",
-	       gc_component[component].name, my_percent_escape (desc));
-      fputs (my_percent_escape (pgmname), out);
+	       gc_component[component].name, gc_percent_escape (desc));
+      fputs (gc_percent_escape (pgmname), out);
       fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
       for (errptr = errlines; errptr; errptr = errptr->next)
 	{
 	  if (errptr != errlines)
 	    fputs ("\n:::::", out); /* Continuation line.  */
 	  if (errptr->fname)
-	    fputs (my_percent_escape (errptr->fname), out);
+	    fputs (gc_percent_escape (errptr->fname), out);
 	  putc (':', out);
 	  if (errptr->fname)
 	    fprintf (out, "%u", errptr->lineno);
 	  putc (':', out);
-	  fputs (my_percent_escape (errptr->errtext), out);
+	  fputs (gc_percent_escape (errptr->errtext), out);
 	  putc (':', out);
 	}
       putc ('\n', out);
@@ -1559,7 +1559,7 @@ list_one_option (const gc_option_t *option, FILE *out)
     fprintf (out, " %s", gc_level[option->level].name);
 
   /* The description field.  */
-  fprintf (out, ":%s", desc ? my_percent_escape (desc) : "");
+  fprintf (out, ":%s", desc ? gc_percent_escape (desc) : "");
   
   /* The type field.  */
   fprintf (out, ":%u", option->arg_type);
@@ -1573,7 +1573,7 @@ list_one_option (const gc_option_t *option, FILE *out)
 	     gc_arg_type[gc_arg_type[option->arg_type].fallback].name);
 
   /* The argument name field.  */
-  fprintf (out, ":%s", arg_name ? my_percent_escape (arg_name) : "");
+  fprintf (out, ":%s", arg_name ? gc_percent_escape (arg_name) : "");
   if (arg_name)
     xfree (arg_name);
 
@@ -1892,7 +1892,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 		}
 	      else if (gc_arg_type[option->arg_type].fallback
 		       == GC_ARG_TYPE_STRING)
-		opt_value = xasprintf ("\"%s", my_percent_escape (value));
+		opt_value = xasprintf ("\"%s", gc_percent_escape (value));
 	      else
 		{
 		  /* FIXME: Verify that the number is sane.  */
@@ -1983,12 +1983,12 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	     really append.  */
 	  if (list)
 	    {
-	      new_list = xasprintf ("%s,\"%s", list, my_percent_escape (start));
+	      new_list = xasprintf ("%s,\"%s", list, gc_percent_escape (start));
 	      xfree (list);
 	      list = new_list;
 	    }
 	  else
-	    list = xasprintf ("\"%s", my_percent_escape (start));
+	    list = xasprintf ("\"%s", gc_percent_escape (start));
 	}
       if (length < 0 || ferror (list_file))
 	gc_error (1, errno, "can not read list file %s", list_pathname);
@@ -3448,8 +3448,8 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
                     *p = 0; /* We better strip any extra stuff. */
                 }                    
               
-              fprintf (listfp, "k:%s:", my_percent_escape (key));
-              fprintf (listfp, "%s\n", group? my_percent_escape (group):"");
+              fprintf (listfp, "k:%s:", gc_percent_escape (key));
+              fprintf (listfp, "%s\n", group? gc_percent_escape (group):"");
             }
 
           /* All other lines are rule records.  */
@@ -3458,7 +3458,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
                    option_info->name? option_info->name : "",
                    flags? flags : "");
           if (value != empty)
-            fprintf (listfp, "\"%s", my_percent_escape (value));
+            fprintf (listfp, "\"%s", gc_percent_escape (value));
           
           putc ('\n', listfp);
         }

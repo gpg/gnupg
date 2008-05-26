@@ -37,6 +37,11 @@ struct
 
 
 /*-- gpgconf-comp.c --*/
+/* Percent-Escape special characters.  The string is valid until the
+   next invocation of the function.  */
+char *gc_percent_escape (const char *src);
+
+
 void gc_error (int status, int errnum, const char *fmt, ...);
 
 /* List all components that are available.  */
