@@ -1014,8 +1014,25 @@ gpg_agent_runtime_change (void)
 
   /* Ignore any errors here.  */
   kill (pid, SIGHUP);
+#else
+  gpg_error_t err;
+  const char *pgmname;
+  const char *argv[2];
+  pid_t pid;
+  
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
+  argv[0] = "reloadagent";
+  argv[1] = NULL;
+  
+  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  if (!err)
+    err = gnupg_wait_process (pgmname, pid, NULL);
+  if (err)
+    gc_error (0, 0, "error running `%s%s': %s",
+              pgmname, " reloadagent", gpg_strerror (err));
 #endif /*!HAVE_W32_SYSTEM*/
 }
+
 
 
 /* More or less Robust version of dgettext.  It has the side effect of

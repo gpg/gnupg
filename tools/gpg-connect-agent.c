@@ -1134,6 +1134,7 @@ main (int argc, char **argv)
     char *condition;
   } loopstack[20];
   int        loopidx;
+  char **cmdline_commands = NULL;
 
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
@@ -1191,7 +1192,7 @@ main (int argc, char **argv)
         }
     }
   else if (argc)
-    usage (1);
+    cmdline_commands = argv;
 
   if (opt.exec && opt.raw_socket)
     log_info (_("option \"%s\" ignored due to \"%s\"\n"),
@@ -1278,6 +1279,16 @@ main (int argc, char **argv)
             ;
           else
             log_fatal ("/end command vanished\n");
+        }
+      else if (cmdline_commands && *cmdline_commands && !script_fp)
+        {
+          keep_line = 0;
+          xfree (line);
+          line = xstrdup (*cmdline_commands);
+          cmdline_commands++;
+          n = strlen (line);
+          if (n >= maxlength)
+            maxlength = 0;
         }
       else if (use_tty && !script_fp)
         {
