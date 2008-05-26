@@ -1069,7 +1069,7 @@ for other users.
 @mansect synopsis
 @ifset manverb
 .B  gpg-connect-agent
-.RI [ options ]
+.RI [ options ] [commands]
 @end ifset
 
 @mansect description
@@ -1095,7 +1095,7 @@ here we connect to a running instance.
 @command{gpg-connect-agent} is invoked this way:
 
 @example
-gpg-connect-agent [options]
+gpg-connect-agent [options] [commands]
 @end example
 @mancont
 
@@ -1132,7 +1132,7 @@ execute it as an assuan server. Here is how you would run @command{gpgsm}:
 @smallexample
  gpg-connect-agent --exec gpgsm --server
 @end smallexample
-
+Note that you may not use options on the command line in this case.
 
 @item --no-ext-connect
 @opindex no-ext-connect
@@ -1143,7 +1143,8 @@ passing.  This option makes it use the old mode.
 @item --run @var{file}
 @opindex run 
 Run the commands from @var{file} at startup and then continue with the
-regular input method.
+regular input method.  Note, that commands given on the command line are
+executed after this file.
 
 @item -s
 @itemx --subst
@@ -1180,7 +1181,7 @@ Set the variable @var{name} to @var{value}.  Variables are only
 substituted on the input if the @command{/subst} has been used.
 Variables are referenced by prefixing the name with a dollr sign and
 optionally include the name in curly braces.  The rules for a valid name
-are idnetically to those of the standard bourne shell.  This is not yet
+are identically to those of the standard bourne shell.  This is not yet
 enforced but may be in the future.  When used with curly braces no
 leading or trailing white space is allowed. 
 

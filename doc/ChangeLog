@@ -1,3 +1,9 @@
+2008-05-26  Werner Koch  <wk@g10code.com>
+
+	* gpgv.texi: Minor fixes.  Fixes bug#918.
+
+	* opt-homedir.texi: Typo fixes.  Fixes bug#917.
+
 2008-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* tools.texi (Invoking gpgconf): Document --list-dirs.
