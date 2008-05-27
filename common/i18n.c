@@ -52,6 +52,7 @@ i18n_switchto_utf8 (void)
 {
 #ifdef USE_SIMPLE_GETTEXT
   gettext_select_utf8 (1);
+  return NULL;
 #elif defined(ENABLE_NLS)
   char *orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
 # ifdef HAVE_LANGINFO_CODESET
@@ -81,6 +82,7 @@ void
 i18n_switchback (char *saved_codeset)
 {
 #ifdef USE_SIMPLE_GETTEXT
+  (void)saved_codeset;
   gettext_select_utf8 (0);
 #elif defined(ENABLE_NLS)
   if (saved_codeset)

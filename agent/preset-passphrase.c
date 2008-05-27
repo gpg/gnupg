@@ -205,7 +205,7 @@ preset_passphrase (const char *keygrip)
     }
 
   wipememory (line, strlen (line));
-  free (line);
+  xfree (line);
 }
 
 
@@ -222,7 +222,7 @@ forget_passphrase (const char *keygrip)
 		 gpg_strerror (gpg_error_from_syserror ()));
       return;
     }
-  free (line);
+  xfree (line);
 }
 
 

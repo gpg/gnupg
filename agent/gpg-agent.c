@@ -263,6 +263,13 @@ static int fixed_gcry_pth_init (void)
 }
 
 
+#ifndef PTH_HAVE_PTH_THREAD_ID
+static unsigned long pth_thread_id (void)
+{
+  return (unsigned long)pth_self ();
+}
+#endif
+
 
 
 /*
@@ -840,6 +847,7 @@ main (int argc, char **argv )
                              |JNLIB_LOG_WITH_TIME
                              |JNLIB_LOG_WITH_PID));
       current_logfile = xstrdup (logfile);
+      assuan_set_assuan_log_stream (log_get_stream ());
     }
 
   /* Make sure that we have a default ttyname. */
@@ -1034,11 +1042,11 @@ main (int argc, char **argv )
 		      printf ("%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
 		    }
                 }
-              free (infostr); /* (Note that a vanilla free is here correct.) */
+              xfree (infostr); 
 	      if (opt.ssh_support)
 		{
-		  free (infostr_ssh_sock);
-		  free (infostr_ssh_pid);
+		  xfree (infostr_ssh_sock);
+		  xfree (infostr_ssh_pid);
 		}
               exit (0); 
             }
@@ -1132,31 +1140,33 @@ agent_init_default_ctrl (ctrl_t ctrl)
      and the request will fail anyway shortly after this
      initialization. */
   if (ctrl->display)
-    free (ctrl->display);
-  ctrl->display = default_display? strdup (default_display) : NULL;
+    xfree (ctrl->display);
+  ctrl->display = default_display? xtrystrdup (default_display) : NULL;
 
   if (ctrl->ttyname)
-    free (ctrl->ttyname);
-  ctrl->ttyname = default_ttyname? strdup (default_ttyname) : NULL;
+    xfree (ctrl->ttyname);
+  ctrl->ttyname = default_ttyname? xtrystrdup (default_ttyname) : NULL;
 
   if (ctrl->ttytype)
-    free (ctrl->ttytype);
-  ctrl->ttytype = default_ttytype? strdup (default_ttytype) : NULL;
+    xfree (ctrl->ttytype);
+  ctrl->ttytype = default_ttytype? xtrystrdup (default_ttytype) : NULL;
 
   if (ctrl->lc_ctype)
-    free (ctrl->lc_ctype);
-  ctrl->lc_ctype = default_lc_ctype? strdup (default_lc_ctype) : NULL;
+    xfree (ctrl->lc_ctype);
+  ctrl->lc_ctype = default_lc_ctype? xtrystrdup (default_lc_ctype) : NULL;
 
   if (ctrl->lc_messages)
-    free (ctrl->lc_messages);
-  ctrl->lc_messages = default_lc_messages? strdup (default_lc_messages) : NULL;
+    xfree (ctrl->lc_messages);
+  ctrl->lc_messages = default_lc_messages? xtrystrdup (default_lc_messages)
+                                    /**/ : NULL;
 
   if (ctrl->xauthority)
-    free (ctrl->xauthority);
-  ctrl->xauthority = default_xauthority? strdup (default_xauthority) : NULL;
+    xfree (ctrl->xauthority);
+  ctrl->xauthority = default_xauthority? xtrystrdup (default_xauthority)
+                                   /**/: NULL;
 
   if (ctrl->pinentry_user_data)
-    free (ctrl->pinentry_user_data);
+    xfree (ctrl->pinentry_user_data);
   ctrl->pinentry_user_data = NULL;
 }
 
@@ -1165,19 +1175,19 @@ static void
 agent_deinit_default_ctrl (ctrl_t ctrl)
 {
   if (ctrl->display)
-    free (ctrl->display);
+    xfree (ctrl->display);
   if (ctrl->ttyname)
-    free (ctrl->ttyname);
+    xfree (ctrl->ttyname);
   if (ctrl->ttytype)
-    free (ctrl->ttytype);
+    xfree (ctrl->ttytype);
   if (ctrl->lc_ctype)
-    free (ctrl->lc_ctype);
+    xfree (ctrl->lc_ctype);
   if (ctrl->lc_messages)
-    free (ctrl->lc_messages);
+    xfree (ctrl->lc_messages);
   if (ctrl->xauthority)
-    free (ctrl->xauthority);
+    xfree (ctrl->xauthority);
   if (ctrl->pinentry_user_data)
-    free (ctrl->pinentry_user_data);
+    xfree (ctrl->pinentry_user_data);
 }
 
 /* Reread parts of the configuration.  Note, that this function is
@@ -1622,12 +1632,12 @@ start_connection_thread (void *arg)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"), 
-              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
+              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"), 
-              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
+              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
   
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1647,12 +1657,12 @@ start_connection_thread_ssh (void *arg)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
+              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              (long)pth_self (), FD2INT(ctrl->thread_startup.fd));
+              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
   
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);

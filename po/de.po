@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-05-09 11:28+0200\n"
+"POT-Creation-Date: 2008-05-09 11:38+0200\n"
 "PO-Revision-Date: 2008-05-09 11:21+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -1948,7 +1948,7 @@ msgstr ""
 
 #: g10/gpg.c:794
 msgid "Pubkey: "
-msgstr "Öff.Schlüssel: "
+msgstr "Öff. Schlüssel: "
 
 #: g10/gpg.c:801 g10/keyedit.c:2321
 msgid "Cipher: "
@@ -2645,7 +2645,7 @@ msgstr "           geheime Schlüssel importiert: %lu\n"
 #: g10/import.c:322 sm/import.c:122
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "                 unveränderte geh.Schl.: %lu\n"
+msgstr "                unveränderte geh. Schl.: %lu\n"
 
 #: g10/import.c:324 sm/import.c:124
 #, c-format
@@ -2693,7 +2693,7 @@ msgstr "es ist extrem empfehlenswert Ihre Einstellungen zu ändern und\n"
 #: g10/import.c:652
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
-"diesen Schüssel wieder zu verteilen, um mögliche Probleme durch unpassende "
+"diesen Schlüssel wieder zu verteilen, um mögliche Probleme durch unpassende "
 "Verfahrenskombinationen zu vermeiden\n"
 
 #: g10/import.c:676
@@ -3322,7 +3322,7 @@ msgstr "Beglaubigung fehlgeschlagen: %s\n"
 #: g10/keyedit.c:1131
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
-"Der Schlüssel enthält nur \"stub\"- oder \"on-card\"-Schüsselelemente- keine "
+"Der Schlüssel enthält nur \"stub\"- oder \"on-card\"-Schlüsselelemente- keine "
 "Passphrase ist zu ändern.\n"
 
 #: g10/keyedit.c:1142 g10/keygen.c:3530
@@ -3568,7 +3568,7 @@ msgstr "Schlüssel wurde widerrufen."
 
 #: g10/keyedit.c:1766
 msgid "Really sign all user IDs? (y/N) "
-msgstr "Wirklich alle User-IDs beglaubigen? "
+msgstr "Wirklich alle User-IDs beglaubigen? (j/N) "
 
 #: g10/keyedit.c:1773
 msgid "Hint: Select the user IDs to sign\n"
@@ -3644,15 +3644,15 @@ msgstr "Diese User-ID wirklich widerrufen? (j/N) "
 
 #: g10/keyedit.c:2035
 msgid "Do you really want to revoke the entire key? (y/N) "
-msgstr "Möchten Sie diesen Schlüssel wirklich vollständig widerrufen? "
+msgstr "Möchten Sie diesen Schlüssel wirklich vollständig widerrufen? (j/N) "
 
 #: g10/keyedit.c:2046
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
-msgstr "Möchten Sie die ausgewählten Unterschlüssel wirklich widerrufen? "
+msgstr "Möchten Sie die ausgewählten Unterschlüssel wirklich widerrufen? (j/N) "
 
 #: g10/keyedit.c:2048
 msgid "Do you really want to revoke this subkey? (y/N) "
-msgstr "Möchten Sie diesen Schlüssel wirklich widerrufen? "
+msgstr "Möchten Sie diesen Schlüssel wirklich widerrufen? (j/N) "
 
 #: g10/keyedit.c:2098
 msgid "Owner trust may not be set while using a user provided trust database\n"
@@ -3676,11 +3676,11 @@ msgstr "Die Voreinstellungen wirklich ändern? (j/N) "
 
 #: g10/keyedit.c:2216
 msgid "Save changes? (y/N) "
-msgstr "Änderungen speichern? "
+msgstr "Änderungen speichern? (j/N) "
 
 #: g10/keyedit.c:2219
 msgid "Quit without saving? (y/N) "
-msgstr "Beenden ohne zu speichern? "
+msgstr "Beenden ohne zu speichern? (j/N) "
 
 #: g10/keyedit.c:2229
 #, c-format
@@ -3824,7 +3824,7 @@ msgstr "Wollen Sie ihn immer noch hinzufügen? (j/N) "
 
 #: g10/keyedit.c:3032
 msgid "You may not add a photo ID to a PGP2-style key.\n"
-msgstr "Sie können einem PGP2-artigen SchlüÂüsel keine Foto-ID hinzufügen.\n"
+msgstr "Sie können einem PGP2-artigen Schlüssel keine Foto-ID hinzufügen.\n"
 
 #: g10/keyedit.c:3172
 msgid "Delete this good signature? (y/N/q)"
@@ -3898,7 +3898,7 @@ msgstr ""
 #: g10/keyedit.c:3367
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr ""
-"Sie können einem PGP2-artigen SchlüÂüsel keine vorgesehenen Widerrufer "
+"Sie können einem PGP2-artigen Schlüssel keine vorgesehenen Widerrufer "
 "hinzufügen.\n"
 
 #: g10/keyedit.c:3387
@@ -5288,7 +5288,7 @@ msgstr ""
 "Wählen Sie ein Bild für Ihre Foto-ID aus. Das Bild muß eine JPEG-Datei\n"
 "sein.  Bitte beachten Sie, daß das Bild in Ihrem öffentlichen\n"
 "Schlüssel gespeichert wird.  Wenn Sie ein sehr großes Bild benutzen,\n"
-"wir Ihr Schlüssel leider auch sehr groß werden.  Ein Bild der GröÂße\n"
+"wir Ihr Schlüssel leider auch sehr groß werden.  Ein Bild der Größe\n"
 "240x288 Pixel ist eine gute Wahl.\n"
 
 #: g10/photoid.c:94
@@ -5655,7 +5655,7 @@ msgstr "alte Kodierung des DEK wird nicht unterstützt\n"
 #: g10/pubkey-enc.c:246
 #, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
-msgstr "Verschüsselungsverfahren %d%s ist unbekannt oder abgeschaltet\n"
+msgstr "Verschlüsselungsverfahren %d%s ist unbekannt oder abgeschaltet\n"
 
 #: g10/pubkey-enc.c:284
 #, c-format
@@ -5754,7 +5754,7 @@ msgid ""
 msgstr ""
 "Widerrufszertifikat wurde erzeugt.\n"
 "\n"
-"Bitte speichern Sie es auf einem Medium welches sie wegschliessen\n"
+"Bitte speichern Sie es auf einem Medium welches sie wegschließen\n"
 "können; falls Mallory (ein Angreifer) Zugang zu diesem Zertifikat\n"
 "erhält, kann erIhren Schlüssel unbrauchbar machen.  Es wäre klug,\n"
 "dieses Widerrufszertifikat auch auszudrucken und sicher aufzubewahren,\n"
@@ -5837,7 +5837,7 @@ msgstr "Unsicherer Schlüssel erzeugt - neuer Versuch\n"
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "Trotz %d-fachen Versuch konnte die Erzeugung eines unsicheren Schlüssels für "
-"sym.Verschlüsselung nicht vermieden werden!\n"
+"sym. Verschlüsselung nicht vermieden werden!\n"
 
 #: g10/seskey.c:227 sm/certcheck.c:89
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
@@ -6352,7 +6352,7 @@ msgstr "keine uneingeschränkt vertrauenswürdige Schlüssel gefunden\n"
 #, c-format
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr ""
-"öff.Schlüssel des uneingeschränkt vertrautem Schlüssel %s nicht gefunden\n"
+"öff. Schlüssel des uneingeschränkt vertrautem Schlüssel %s nicht gefunden\n"
 
 #: g10/trustdb.c:2268
 #, c-format
@@ -8080,7 +8080,7 @@ msgstr "Fehler beim Lesen von %s: %s\n"
 #: tools/symcryptrun.c:394 tools/symcryptrun.c:401
 #, c-format
 msgid "error closing %s: %s\n"
-msgstr "Fehler beim Schliessen von %s: %s\n"
+msgstr "Fehler beim Schließen von %s: %s\n"
 
 #: tools/symcryptrun.c:486
 msgid "no --program option provided\n"

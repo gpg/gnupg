@@ -120,7 +120,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
           else
             {
               rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
-              free (desc);
+              xfree (desc);
             }
         }
       if (rc)
@@ -293,7 +293,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                      info? "')":"") < 0)
         desc = NULL;
       rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi);
-      free (desc);
+      xfree (desc);
     }
 
   if (!rc)

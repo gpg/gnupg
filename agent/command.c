@@ -1422,8 +1422,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   if (!strcmp (key, "display"))
     {
       if (ctrl->display)
-        free (ctrl->display);
-      ctrl->display = strdup (value);
+        xfree (ctrl->display);
+      ctrl->display = xtrystrdup (value);
       if (!ctrl->display)
         return out_of_core ();
     }
@@ -1432,8 +1432,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (!opt.keep_tty)
         {
           if (ctrl->ttyname)
-            free (ctrl->ttyname);
-          ctrl->ttyname = strdup (value);
+            xfree (ctrl->ttyname);
+          ctrl->ttyname = xtrystrdup (value);
           if (!ctrl->ttyname)
             return out_of_core ();
         }
@@ -1443,8 +1443,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (!opt.keep_tty)
         {
           if (ctrl->ttytype)
-            free (ctrl->ttytype);
-          ctrl->ttytype = strdup (value);
+            xfree (ctrl->ttytype);
+          ctrl->ttytype = xtrystrdup (value);
           if (!ctrl->ttytype)
             return out_of_core ();
         }
@@ -1452,32 +1452,32 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "lc-ctype"))
     {
       if (ctrl->lc_ctype)
-        free (ctrl->lc_ctype);
-      ctrl->lc_ctype = strdup (value);
+        xfree (ctrl->lc_ctype);
+      ctrl->lc_ctype = xtrystrdup (value);
       if (!ctrl->lc_ctype)
         return out_of_core ();
     }
   else if (!strcmp (key, "lc-messages"))
     {
       if (ctrl->lc_messages)
-        free (ctrl->lc_messages);
-      ctrl->lc_messages = strdup (value);
+        xfree (ctrl->lc_messages);
+      ctrl->lc_messages = xtrystrdup (value);
       if (!ctrl->lc_messages)
         return out_of_core ();
     }
   else if (!strcmp (key, "xauthority"))
     {
       if (ctrl->xauthority)
-        free (ctrl->xauthority);
-      ctrl->xauthority = strdup (value);
+        xfree (ctrl->xauthority);
+      ctrl->xauthority = xtrystrdup (value);
       if (!ctrl->xauthority)
         return out_of_core ();
     }
   else if (!strcmp (key, "pinentry-user-data"))
     {
       if (ctrl->pinentry_user_data)
-        free (ctrl->pinentry_user_data);
-      ctrl->pinentry_user_data = strdup (value);
+        xfree (ctrl->pinentry_user_data);
+      ctrl->pinentry_user_data = xtrystrdup (value);
       if (!ctrl->pinentry_user_data)
         return out_of_core ();
     }
@@ -1515,7 +1515,7 @@ io_monitor (assuan_context_t ctx, int direction,
             const char *line, size_t linelen)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-
+  
   /* Note that we only check for the uppercase name.  This allows to
      see the logging for debugging if using a non-upercase command
      name. */

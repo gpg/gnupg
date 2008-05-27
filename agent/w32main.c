@@ -92,10 +92,10 @@ build_argv (char *cmdline_arg, int reserved)
         }
     }
 
-  argv = malloc (argc * sizeof *argv);
+  argv = xtrymalloc (argc * sizeof *argv);
   if (!argv)
     {
-      free (cmdline);
+      xfree (cmdline);
       return NULL;
     }
 

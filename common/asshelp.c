@@ -49,7 +49,7 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
   else
     {
       err = assuan_transact (ctx, optstr, NULL, NULL, NULL, NULL, NULL, NULL);
-      free (optstr);
+      xfree (optstr);
     }
 
   return err;
@@ -119,7 +119,7 @@ send_pinentry_environment (assuan_context_t ctx,
   old_lc = setlocale (LC_CTYPE, NULL);
   if (old_lc)
     {
-      old_lc = strdup (old_lc);
+      old_lc = xtrystrdup (old_lc);
       if (!old_lc)
         return gpg_error_from_syserror ();
     }
@@ -134,7 +134,7 @@ send_pinentry_environment (assuan_context_t ctx,
   if (old_lc)
     {
       setlocale (LC_CTYPE, old_lc);
-      free (old_lc);
+      xfree (old_lc);
     }
 #endif
   if (err)
@@ -145,7 +145,7 @@ send_pinentry_environment (assuan_context_t ctx,
   old_lc = setlocale (LC_MESSAGES, NULL);
   if (old_lc)
     {
-      old_lc = strdup (old_lc);
+      old_lc = xtrystrdup (old_lc);
       if (!old_lc)
         return gpg_error_from_syserror ();
     }
@@ -160,7 +160,7 @@ send_pinentry_environment (assuan_context_t ctx,
   if (old_lc)
     {
       setlocale (LC_MESSAGES, old_lc);
-      free (old_lc);
+      xfree (old_lc);
     }
 #endif
   if (err)

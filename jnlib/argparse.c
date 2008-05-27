@@ -896,6 +896,8 @@ show_version()
 void
 usage (int level)
 {
+  const char *p;
+
   if (!level)
     {
       fprintf(stderr,"%s %s; %s\n", strusage(11), strusage(13), strusage (14));
@@ -903,7 +905,10 @@ usage (int level)
     }
   else if (level == 1)
     {
-      fputs (strusage (40), stderr);
+      p = strusage (40);
+      fputs (p, stderr);
+      if (*p && p[strlen(p)] != '\n')
+        putc ('\n', stderr);
       exit (2);
     }
   else if (level == 2) 

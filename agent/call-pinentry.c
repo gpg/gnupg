@@ -319,7 +319,7 @@ start_pinentry (ctrl_t ctrl)
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
-      free (optstr);
+      xfree (optstr);
       if (rc)
 	return unlock_pinentry (rc);
     }
@@ -373,7 +373,7 @@ start_pinentry (ctrl_t ctrl)
         {
           assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
                            NULL);
-          free (optstr);
+          xfree (optstr);
         }
     }
 

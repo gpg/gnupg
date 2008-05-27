@@ -1960,7 +1960,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (ctrl_fp)
     fclose (ctrl_fp);
 
-  free (key_directory);
+  xfree (key_directory);
   xfree (key_path);
   xfree (buffer);
   xfree (key_type);
@@ -2430,7 +2430,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   xfree (pi);
   xfree (buffer);
   xfree (comment);
-  free (description); /* (asprintf allocated, thus regular free.)  */
+  xfree (description); 
 
   return err;
 }

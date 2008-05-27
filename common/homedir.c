@@ -383,6 +383,12 @@ gnupg_module_name (int which)
     case GNUPG_MODULE_NAME_GPG:
       X(bindir, "gpg2");
 
+    case GNUPG_MODULE_NAME_CONNECT_AGENT:
+      X(bindir, "gpg-connect-agent");
+
+    case GNUPG_MODULE_NAME_GPGCONF:
+      X(bindir, "gpgconf");
+
     default: 
       BUG ();
     }

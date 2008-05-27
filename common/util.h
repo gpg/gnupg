@@ -194,6 +194,8 @@ const char *dirmngr_socket_name (void);
 #define GNUPG_MODULE_NAME_CHECK_PATTERN 6
 #define GNUPG_MODULE_NAME_GPGSM         7
 #define GNUPG_MODULE_NAME_GPG           8
+#define GNUPG_MODULE_NAME_CONNECT_AGENT 9
+#define GNUPG_MODULE_NAME_GPGCONF       10
 const char *gnupg_module_name (int which);
 
 

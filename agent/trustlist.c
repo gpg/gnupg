@@ -463,8 +463,9 @@ insert_colons (const char *string)
 {
   char *buffer, *p;
   size_t n = strlen (string);
+  size_t nnew = n + (n+1)/2;
 
-  p = buffer = xtrymalloc ( n + (n+2)/3 + 1 );
+  p = buffer = xtrymalloc ( nnew + 1 );
   if (!buffer)
     return NULL;
   while (*string)
@@ -478,6 +479,7 @@ insert_colons (const char *string)
         }
     }
   *p = 0;
+  assert (strlen (buffer) <= nnew);
 
   return buffer;
 }
@@ -526,7 +528,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   fprformatted = insert_colons (fpr);
   if (!fprformatted)
     return out_of_core ();
-  if (asprintf (&desc,
+  desc = xtryasprintf (
                 /* TRANSLATORS: This prompt is shown by the Pinentry
                    and has one special property: A "%%0A" is used by
                    Pinentry to insert a line break.  The double
@@ -539,7 +541,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                 _("Please verify that the certificate identified as:%%0A"
                   "  \"%s\"%%0A"
                   "has the fingerprint:%%0A"
-                  "  %s"), name, fprformatted) < 0 )
+                  "  %s"), name, fprformatted);
+  if (!desc)
     {
       xfree (fprformatted);
       return out_of_core ();
@@ -549,7 +552,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      be hit if the fingerprint matches the one of the CA.  The other
      button is "the default "Cancel" of the Pinentry. */
   err = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
-  free (desc);
+  xfree (desc);
   /* If the user did not confirmed this, we return cancel here so that
      gpgsm may stop asking further questions.  We won't do this for
      the second question of course. */
@@ -562,7 +565,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 
 
 
-  if (asprintf (&desc,
+  desc = xtryasprintf (
                 /* TRANSLATORS: This prompt is shown by the Pinentry
                    and has one special property: A "%%0A" is used by
                    Pinentry to insert a line break.  The double
@@ -574,14 +577,15 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                 _("Do you ultimately trust%%0A"
                   "  \"%s\"%%0A"
                   "to correctly certify user certificates?"),
-                name) < 0 )
+                name);
+  if (!desc)
     {
       xfree (fprformatted);
       return out_of_core ();
     }
 
   err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
-  free (desc);
+  xfree (desc);
   if (err)
     {
       xfree (fprformatted);

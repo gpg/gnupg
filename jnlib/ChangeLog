@@ -1,3 +1,7 @@
+2008-05-26  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (usage): Make sure to print a trailing LF for usage(1).
+
 2008-04-08  Werner Koch  <wk@g10code.com>
 
 	* w32-gettext.c (gettext_select_utf8): New.

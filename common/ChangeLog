@@ -1,3 +1,13 @@
+2008-05-26  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_one_option, send_pinentry_environment): use
+	xfree and xtrystrdup.
+
+	* i18n.c (i18n_switchto_utf8) [USE_SIMPLE_GETTEXT]: Return NULL.
+
+	* homedir.c (gnupg_module_name): Add
+	GNUPG_MODULE_NAME_CONNECT_AGENT and GNUPG_MODULE_NAME_GPGCONF.
+
 2008-04-21  Werner Koch  <wk@g10code.com>
 
 	* http.c (http_wait_response) [W32]: Use DuplicateHandle because
