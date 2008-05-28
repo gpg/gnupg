@@ -4,44 +4,46 @@
 #  I've tried to mantain the terminology used by Armando Ramos
 #  <armando@clerval.org> in his PGP 2.3.6i translation.
 #  I also got inspiration from it.po by Marco d'Itri <md@linux.it>
-# Jaime Suárez <jsuarez@ono.com>, 2001-2004.
+# Jaime Suárez <jsuarez@ono.com>, 2001-2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.4.1\n"
+"Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-05-09 11:38+0200\n"
-"PO-Revision-Date: 2007-08-16 11:35+0200\n"
-"Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
+"POT-Creation-Date: 2008-05-27 13:38+0200\n"
+"PO-Revision-Date: 2008-05-27 22:38+0100\n"
+"Last-Translator: Jaime Suárez <jaime@mundocripto.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
+"plural: Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: agent/call-pinentry.c:225
-#, fuzzy, c-format
+#, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
-msgstr "fallo al almacenar la huella digital: %s\n"
+msgstr "no pude conseguir el bloqueo de entrada de pin: %s\n"
 
 #: agent/call-pinentry.c:594
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
+"Por favor introduzca su PIN para desbloquear la clave secreta de esta sesión"
 
 #: agent/call-pinentry.c:597
-#, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
-msgstr "Por favor introduzca la contraseña: una frase secreta \n"
+msgstr ""
+"Por favor introduzca la frase contraseña para desbloquear la clave secreta "
+"de esta sesión"
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
 #: agent/call-pinentry.c:632
-#, fuzzy
 msgid "Quality:"
-msgstr "validez: %s"
+msgstr "Calidad:"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry
 #. when hovering over the quality bar.  Please use an
@@ -51,36 +53,32 @@ msgstr "validez: %s"
 #. text (see source) will be used.
 #: agent/call-pinentry.c:655
 msgid "pinentry.qualitybar.tooltip"
-msgstr ""
+msgstr "barra de calidad, entrada de pin"
 
 #: agent/call-pinentry.c:697
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
-msgstr ""
+msgstr "SETERROR %s (intento %d de %d)"
 
 #: agent/call-pinentry.c:717 agent/call-pinentry.c:729
-#, fuzzy
 msgid "PIN too long"
-msgstr "línea demasiado larga"
+msgstr "PIN demasiado largo"
 
 #: agent/call-pinentry.c:718
-#, fuzzy
 msgid "Passphrase too long"
-msgstr "frase contraseña demasiado larga\n"
+msgstr "Frase contraseña demasiado larga"
 
 #: agent/call-pinentry.c:726
-#, fuzzy
 msgid "Invalid characters in PIN"
-msgstr "Caracter inválido en el nombre\n"
+msgstr "Caracteres inválidos en el PIN"
 
 #: agent/call-pinentry.c:731
 msgid "PIN too short"
-msgstr ""
+msgstr "PIN demasiado corto"
 
 #: agent/call-pinentry.c:743
-#, fuzzy
 msgid "Bad PIN"
-msgstr "MPI incorrecto"
+msgstr "PIN incorrecto"
 
 # ¿Por qué no frase de paso?
 # Porque todo el mundo sabe lo que es una contraseña
@@ -92,9 +90,8 @@ msgstr "MPI incorrecto"
 # ¿Es que son más listos? :-)
 #
 #: agent/call-pinentry.c:744
-#, fuzzy
 msgid "Bad Passphrase"
-msgstr "Frase contraseña incorrecta"
+msgstr "Frase contraseña errónea"
 
 # ¿Por qué no frase de paso?
 # Porque todo el mundo sabe lo que es una contraseña
@@ -106,14 +103,13 @@ msgstr "Frase contraseña incorrecta"
 # ¿Es que son más listos? :-)
 #
 #: agent/call-pinentry.c:780
-#, fuzzy
 msgid "Passphrase"
-msgstr "Frase contraseña incorrecta"
+msgstr "Frase contraseña"
 
 #: agent/command-ssh.c:529
-#, fuzzy, c-format
+#, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
-msgstr "el resumen protector %d no puede ser utilizado\n"
+msgstr "no pueden usarse claves ssh de más de %d bits\n"
 
 #: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3155
 #: g10/keygen.c:3188 g10/keyring.c:1202 g10/keyring.c:1506 g10/openfile.c:275
@@ -135,45 +131,46 @@ msgid "can't open `%s': %s\n"
 msgstr "no se puede abrir `%s': %s\n"
 
 #: agent/command-ssh.c:1615 agent/command-ssh.c:1633
-#, fuzzy, c-format
+#, c-format
 msgid "error getting serial number of card: %s\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "error obteniendo el número de serie de la tarjeta: %s\n"
 
 #: agent/command-ssh.c:1619
 #, c-format
 msgid "detected card with S/N: %s\n"
-msgstr ""
+msgstr "detectada tarjeta con S/N: %s\n"
 
 #: agent/command-ssh.c:1624
-#, fuzzy, c-format
+#, c-format
 msgid "error getting default authentication keyID of card: %s\n"
-msgstr "error obteniendo la información actual de la clave: %s\n"
+msgstr ""
+"error obteniendo ID de la clave por defecto para autenticaren la tarjeta: %"
+"s\n"
 
 #: agent/command-ssh.c:1644
-#, fuzzy, c-format
+#, c-format
 msgid "no suitable card key found: %s\n"
-msgstr "anillo privado de claves no escribible encontrado: %s\n"
+msgstr "no se encuentra una clave de tarjeta adecuada: %s\n"
 
 #: agent/command-ssh.c:1694
-#, fuzzy, c-format
+#, c-format
 msgid "shadowing the key failed: %s\n"
-msgstr "fallo leyendo la clave\n"
+msgstr "el sombreado de la clave falló: %s\n"
 
 #: agent/command-ssh.c:1709
-#, fuzzy, c-format
+#, c-format
 msgid "error writing key: %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "error escribiendo clave: %s\n"
 
 #: agent/command-ssh.c:2014
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase for the ssh key%0A  %c"
-msgstr "Por favor introduzca la contraseña: una frase secreta \n"
+msgstr "Por favor introduzca la frase contraseña para la clave ssh%0A %c"
 
 #: agent/command-ssh.c:2342 agent/genkey.c:308 agent/genkey.c:430
 #: agent/protect-tool.c:1197
-#, fuzzy
 msgid "Please re-enter this passphrase"
-msgstr "cambia la frase contraseña"
+msgstr "Por favor vuelva a introducir frase contraseña"
 
 #: agent/command-ssh.c:2363
 #, c-format
@@ -181,56 +178,54 @@ msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%"
 "0Awithin gpg-agent's key storage"
 msgstr ""
+"Por favor introduzca una frase contraseña para proteger la clave "
+"secretarecibida%%0A  %s%%0Aen el almacen de claves del agente gpg"
 
 #: agent/command-ssh.c:2401 agent/genkey.c:338 agent/genkey.c:461
 #: agent/protect-tool.c:1203 tools/symcryptrun.c:434
 msgid "does not match - try again"
-msgstr ""
+msgstr "no coincide - reinténtelo"
 
 #: agent/command-ssh.c:2885
-#, fuzzy, c-format
+#, c-format
 msgid "failed to create stream from socket: %s\n"
-msgstr "%s: fallo en la creación de la tabla hash: %s\n"
+msgstr "fallo al crear un flujo desde el socket: %s\n"
 
 #: agent/divert-scd.c:217
-#, fuzzy
 msgid "Admin PIN"
-msgstr "|A|PIN Administrador"
+msgstr "PIN del Administrador"
 
 #: agent/divert-scd.c:275
-#, fuzzy
 msgid "Repeat this PIN"
-msgstr "Repita este PIN: "
+msgstr "Repita este PIN"
 
 #: agent/divert-scd.c:278
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN repetido incorrectamente; inténtelo de nuevo"
 
 #: agent/divert-scd.c:290
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
-msgstr "PIN [firmas hechas: %lu]"
+msgstr "Por favor introduzca el PIN%s%s%s para desbloquear la tarjeta"
 
 #: agent/genkey.c:106 sm/certreqgen-ui.c:284 sm/export.c:628 sm/export.c:644
 #: sm/import.c:525 sm/import.c:550
-#, fuzzy, c-format
+#, c-format
 msgid "error creating temporary file: %s\n"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "error creando fichero temporal: %s\n"
 
 #: agent/genkey.c:113 sm/export.c:635 sm/import.c:533
-#, fuzzy, c-format
+#, c-format
 msgid "error writing to temporary file: %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "error escribiendo en el fichero temporal: %s\n"
 
 #: agent/genkey.c:151 agent/genkey.c:157
-#, fuzzy
 msgid "Enter new passphrase"
-msgstr "Introduzca frase contraseña\n"
+msgstr "Introduzca nueva frase contraseña"
 
 #: agent/genkey.c:165
-#, fuzzy
 msgid "Take this one anyway"
-msgstr "¿Usar esta clave de todas formas? (s/N) "
+msgstr "Tomar esta de todas formas"
 
 #: agent/genkey.c:191
 #, c-format
@@ -241,7 +236,11 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
 "at least %u characters long."
 msgstr[0] ""
+"Aviso: ha introducido una frase contraseña insegura.%%0AUna frase contraseña "
+"debe tener al menos %u carácter."
 msgstr[1] ""
+"Aviso: ha introducido una frase contraseña insegura.%%0AUna frase contraseña "
+"debe tener al menos %u caracteres."
 
 #: agent/genkey.c:212
 #, c-format
@@ -252,7 +251,11 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
 "contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
+"Aviso: Ha introducido una frase contraseña insegura.%%0AUna frasecontraseña "
+"debe tener al menos %u digito o%%0Acarácter especial."
 msgstr[1] ""
+"Aviso: Ha introducido una frase contraseña insegura.%%0AUna frasecontraseña "
+"debe tener al menos %u digitos o%%0Acaracteres especiales."
 
 #: agent/genkey.c:235
 #, c-format
@@ -260,12 +263,16 @@ msgid ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
 "a known term or match%%0Acertain pattern."
 msgstr ""
+"Aviso: ha introducido una frase contraseña insegura.%%0AUna frase contraseña "
+"no puede ser un término conocido%%0Ao ajustarse a cierto patrón."
 
 #: agent/genkey.c:251
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
+"¡No ha introducido una frase contraseña!%0AnNo se permiten frases contraseña "
+"en blanco."
 
 #: agent/genkey.c:253
 #, c-format
@@ -273,45 +280,42 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
+"No ha introducido una frase contraseña -¡esto es en general una mala idea!%"
+"0Apor favor confirme que no quiere ninguna protección para su clave."
 
 #: agent/genkey.c:262
 msgid "Yes, protection is not needed"
-msgstr ""
+msgstr "Sí, no se necesita protección"
 
 #: agent/genkey.c:306
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase to%0Ato protect your new key"
-msgstr ""
-"Necesita una frase contraseña para proteger su clave secreta.\n"
-"\n"
+msgstr "Por favor introduzca frase contraseña para%0Aproteger su nueva clave"
 
 #: agent/genkey.c:429
-#, fuzzy
 msgid "Please enter the new passphrase"
-msgstr "cambia la frase contraseña"
+msgstr "Por favor escriba la nueva frase contraseña"
 
 #: agent/gpg-agent.c:117 agent/preset-passphrase.c:72 agent/protect-tool.c:109
 #: scd/scdaemon.c:101 tools/gpg-check-pattern.c:70
-#, fuzzy
 msgid ""
 "@Options:\n"
 " "
 msgstr ""
-"@\n"
-"Opciones:\n"
+"@Opciones:\n"
 " "
 
 #: agent/gpg-agent.c:119 scd/scdaemon.c:103
 msgid "run in server mode (foreground)"
-msgstr ""
+msgstr "ejecutar en modo servidor (primer plano)"
 
 #: agent/gpg-agent.c:120 scd/scdaemon.c:106
 msgid "run in daemon mode (background)"
-msgstr ""
+msgstr "ejecutar en modo demonio (segundo plano)"
 
 #: agent/gpg-agent.c:121 g10/gpg.c:472 g10/gpgv.c:70 kbx/kbxutil.c:88
 #: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
-#: tools/gpgconf.c:72 tools/symcryptrun.c:164
+#: tools/gpgconf.c:77 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "prolijo"
 
@@ -322,290 +326,284 @@ msgstr "algo más discreto"
 
 #: agent/gpg-agent.c:123 scd/scdaemon.c:109
 msgid "sh-style command output"
-msgstr ""
+msgstr "salida de datos estilo sh"
 
 #: agent/gpg-agent.c:124 scd/scdaemon.c:110
 msgid "csh-style command output"
-msgstr ""
+msgstr "salida de datos estilo csh"
 
 #: agent/gpg-agent.c:125 tools/symcryptrun.c:167
-#, fuzzy
 msgid "|FILE|read options from FILE"
-msgstr "|FICHERO|carga módulo de extensiones FICHERO"
+msgstr "|FICHERO|lee opciones desde FICHERO"
 
 #: agent/gpg-agent.c:130 scd/scdaemon.c:119
 msgid "do not detach from the console"
-msgstr ""
+msgstr "no independizarse de la consola"
 
 #: agent/gpg-agent.c:131
 msgid "do not grab keyboard and mouse"
-msgstr ""
+msgstr "no acaparar teclado y ratón"
 
 #: agent/gpg-agent.c:132 scd/scdaemon.c:120 tools/symcryptrun.c:166
-#, fuzzy
 msgid "use a log file for the server"
-msgstr "busca claves en un servidor de claves"
+msgstr "usar un fichero log para el servidor"
 
 #: agent/gpg-agent.c:134
-#, fuzzy
 msgid "use a standard location for the socket"
-msgstr "establecer preferencias para todos los ID seleccionados"
+msgstr "usar una localización estándar para el socket"
 
 #: agent/gpg-agent.c:137
 msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr ""
+msgstr "|PGM|usar PGM como el programa para entrada de PIN"
 
 #: agent/gpg-agent.c:140
 msgid "|PGM|use PGM as the SCdaemon program"
-msgstr ""
+msgstr "|PGM|usar PCM como programa SCdaemon"
 
 #: agent/gpg-agent.c:141
-#, fuzzy
 msgid "do not use the SCdaemon"
-msgstr "actualiza la base de datos de confianza"
+msgstr "no usar SCdaemon"
 
 #: agent/gpg-agent.c:150
 msgid "ignore requests to change the TTY"
-msgstr ""
+msgstr "ignorar peticiones de cambiar el TTY"
 
 #: agent/gpg-agent.c:152
 msgid "ignore requests to change the X display"
-msgstr ""
+msgstr "ignorar peticiones de cambiar el display X"
 
 #: agent/gpg-agent.c:155
 msgid "|N|expire cached PINs after N seconds"
-msgstr ""
+msgstr "|N|los PINs en la caché expiran en N segundos"
 
 #: agent/gpg-agent.c:168
 msgid "do not use the PIN cache when signing"
-msgstr ""
+msgstr "no usar el caché de PINs al firmar"
 
 #: agent/gpg-agent.c:170
 msgid "allow clients to mark keys as \"trusted\""
-msgstr ""
+msgstr "permitir que los clientes marquen claves como \"fiables\""
 
 #: agent/gpg-agent.c:172
-#, fuzzy
 msgid "allow presetting passphrase"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "permitir preestablecer frase contraseña"
 
 #: agent/gpg-agent.c:173
 msgid "enable ssh-agent emulation"
-msgstr ""
+msgstr "permitir emulación de ssh-agent"
 
 #: agent/gpg-agent.c:175
 msgid "|FILE|write environment settings also to FILE"
-msgstr ""
+msgstr "|FICHERO|escribir variables de entorno también en FICHERO"
 
-#: agent/gpg-agent.c:283 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:290 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:207 sm/gpgsm.c:574 tools/gpg-connect-agent.c:171
-#: tools/gpgconf.c:94 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
-#, fuzzy
+#: tools/gpgconf.c:99 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
-msgstr "Por favor, informe de posibles \"bugs\" a <gnupg-bugs@gnu.org>.\n"
+msgstr "Por favor, informe de posibles \"bugs\" a <"
 
-#: agent/gpg-agent.c:286
-#, fuzzy
+#: agent/gpg-agent.c:293
 msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpg-agent [opciones] (-h para ayuda)"
 
-#: agent/gpg-agent.c:288
+#: agent/gpg-agent.c:295
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
+"Sintaxis: gpg-agent [opciones] [orden [argumentos]]\n"
+"Manejo de claves privadas por GnuPG\n"
 
-#: agent/gpg-agent.c:323 g10/gpg.c:971 scd/scdaemon.c:247 sm/gpgsm.c:736
+#: agent/gpg-agent.c:330 g10/gpg.c:971 scd/scdaemon.c:247 sm/gpgsm.c:736
 #, c-format
 msgid "invalid debug-level `%s' given\n"
-msgstr ""
+msgstr "el nivel de depuración `%s` no es válido\n"
 
-#: agent/gpg-agent.c:522 agent/protect-tool.c:1066 kbx/kbxutil.c:428
+#: agent/gpg-agent.c:529 agent/protect-tool.c:1066 kbx/kbxutil.c:428
 #: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
+msgstr "%s es demasiado antiguo (necesita %s, tiene %s)\n"
 
-#: agent/gpg-agent.c:621 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:972
+#: agent/gpg-agent.c:628 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:972
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existe el fichero de opciones predefinido `%s'\n"
 
-#: agent/gpg-agent.c:626 agent/gpg-agent.c:1206 g10/gpg.c:2073
+#: agent/gpg-agent.c:633 agent/gpg-agent.c:1216 g10/gpg.c:2073
 #: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fichero de opciones `%s': %s\n"
 
-#: agent/gpg-agent.c:634 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:983
+#: agent/gpg-agent.c:641 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:983
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "leyendo opciones desde `%s'\n"
 
-#: agent/gpg-agent.c:966 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:974 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "error creando `%s': %s\n"
 
-#: agent/gpg-agent.c:1298 agent/gpg-agent.c:1420 agent/gpg-agent.c:1424
-#: agent/gpg-agent.c:1465 agent/gpg-agent.c:1469 g10/exec.c:172
+#: agent/gpg-agent.c:1308 agent/gpg-agent.c:1430 agent/gpg-agent.c:1434
+#: agent/gpg-agent.c:1475 agent/gpg-agent.c:1479 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:923
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "no se puede crear el directorio `%s': %s\n"
 
-#: agent/gpg-agent.c:1312 scd/scdaemon.c:937
+#: agent/gpg-agent.c:1322 scd/scdaemon.c:937
 msgid "name of socket too long\n"
-msgstr ""
+msgstr "nombre de socket demasiado largo\n"
 
-#: agent/gpg-agent.c:1337 scd/scdaemon.c:960
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1347 scd/scdaemon.c:960
+#, c-format
 msgid "can't create socket: %s\n"
-msgstr "no se puede crear %s: %s\n"
+msgstr "no se puede crear el socket: %s\n"
 
-#: agent/gpg-agent.c:1346
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1356
+#, c-format
 msgid "socket name `%s' is too long\n"
-msgstr "Revocación de certificado válida"
+msgstr "el nombre de socket `%s' es demasiado largo\n"
 
-#: agent/gpg-agent.c:1366
-#, fuzzy
+#: agent/gpg-agent.c:1376
 msgid "a gpg-agent is already running - not starting a new one\n"
-msgstr "el agente gpg no esta disponible en esta sesión\n"
+msgstr "ya hay un agente gpg ejecutándose - no se inicia otro\n"
 
-#: agent/gpg-agent.c:1377 scd/scdaemon.c:980
-#, fuzzy
+#: agent/gpg-agent.c:1387 scd/scdaemon.c:980
 msgid "error getting nonce for the socket\n"
-msgstr "error obteniendo nuevo PIN: %s\n"
+msgstr "error obteniendo valor único para el socket\n"
 
-#: agent/gpg-agent.c:1382 scd/scdaemon.c:983
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1392 scd/scdaemon.c:983
+#, c-format
 msgid "error binding socket to `%s': %s\n"
-msgstr "error enviando a `%s': %s\n"
+msgstr "error enlazando el socket con `%s': %s\n"
 
-#: agent/gpg-agent.c:1394 scd/scdaemon.c:992
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1404 scd/scdaemon.c:992
+#, c-format
 msgid "listen() failed: %s\n"
-msgstr "actualización fallida: %s\n"
+msgstr "listen() falló: %s\n"
 
-#: agent/gpg-agent.c:1400 scd/scdaemon.c:999
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1410 scd/scdaemon.c:999
+#, c-format
 msgid "listening on socket `%s'\n"
-msgstr "escribiendo clave privada en `%s'\n"
+msgstr "escuchando el socket `%s'\n"
 
-#: agent/gpg-agent.c:1428 agent/gpg-agent.c:1475 g10/openfile.c:432
+#: agent/gpg-agent.c:1438 agent/gpg-agent.c:1485 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "directorio `%s' creado\n"
 
-#: agent/gpg-agent.c:1481
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1491
+#, c-format
 msgid "stat() failed for `%s': %s\n"
-msgstr "fstat(%d) falló en %s: %s\n"
+msgstr "stat() falló para `%s': %s\n"
 
-#: agent/gpg-agent.c:1485
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1495
+#, c-format
 msgid "can't use `%s' as home directory\n"
-msgstr "%s: no se puede crear el directorio: %s\n"
+msgstr "no puede usar `%s' como directorio personal\n"
 
-#: agent/gpg-agent.c:1602 scd/scdaemon.c:1015
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1612 scd/scdaemon.c:1015
+#, c-format
 msgid "error reading nonce on fd %d: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error leyendo valor único en el descriptor %d: %s\n"
 
-#: agent/gpg-agent.c:1624
+#: agent/gpg-agent.c:1634
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
-msgstr ""
+msgstr "manejador 0x%lx para descriptor %d iniciado\n"
 
-#: agent/gpg-agent.c:1629
+#: agent/gpg-agent.c:1639
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
-msgstr ""
+msgstr "manejador 0x%lx pada descriptor %d finalizado\n"
 
-#: agent/gpg-agent.c:1649
+#: agent/gpg-agent.c:1659
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
-msgstr ""
+msgstr "manejador ssh 0x%lx para el descriptor %d iniciado\n"
 
-#: agent/gpg-agent.c:1654
+#: agent/gpg-agent.c:1664
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
-msgstr ""
+msgstr "manejador ssh 0x%lx para el descriptor %d finalizado\n"
 
-#: agent/gpg-agent.c:1771 scd/scdaemon.c:1137
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1781 scd/scdaemon.c:1137
+#, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
-msgstr "actualización de la clave secreta fallida: %s\n"
+msgstr "pth_select falló: %s - espero 1s\n"
 
 # msgstr "clave %08lX: %d nuevas subclaves\n"
-#: agent/gpg-agent.c:1884 scd/scdaemon.c:1204
-#, fuzzy, c-format
+#: agent/gpg-agent.c:1894 scd/scdaemon.c:1204
+#, c-format
 msgid "%s %s stopped\n"
-msgstr "\t%lu claves omitidas\n"
+msgstr "%s %s detenido\n"
 
-#: agent/gpg-agent.c:1907
-#, fuzzy
+#: agent/gpg-agent.c:1917
 msgid "no gpg-agent running in this session\n"
-msgstr "el agente gpg no esta disponible en esta sesión\n"
+msgstr "no hay un agente gpg ejecutándose en esta sesión\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
-#: tools/gpg-connect-agent.c:2021
+#: agent/gpg-agent.c:1928 common/simple-pwquery.c:349 common/asshelp.c:324
+#: tools/gpg-connect-agent.c:2032
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "variable de entorno GPG_AGENT_INFO malformada\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
-#: tools/gpg-connect-agent.c:2032
+#: agent/gpg-agent.c:1941 common/simple-pwquery.c:361 common/asshelp.c:336
+#: tools/gpg-connect-agent.c:2043
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "el programa no permite usar el protocolo agente gpg versión %d\n"
 
 #: agent/preset-passphrase.c:98
-#, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpg-preset-passphrase [opciones] KEYGRIP (-h para ayuda)\n"
 
 #: agent/preset-passphrase.c:101
 msgid ""
 "Syntax: gpg-preset-passphrase [options] KEYGRIP\n"
 "Password cache maintenance\n"
 msgstr ""
+"Sintaxis: gpg-preset-passphrase [opciones] KEYGRIP\n"
+"Mantenimiento de la caché de contraseñas\n"
 
 #: agent/protect-tool.c:149
-#, fuzzy
 msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpg-protect-tool [opciones] (-h para ayuda)\n"
 
 #: agent/protect-tool.c:151
 msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
+"Sintaxis: gpg-protect-tool [opciones] [args]\n"
+"Herramienta para el mantenimiento de claves secretas\n"
 
 #: agent/protect-tool.c:1188
-#, fuzzy
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
-msgstr "Por favor introduzca la contraseña: una frase secreta \n"
+msgstr "Introduzca frase contraseña para desproteger el objeto PKCS#12."
 
 #: agent/protect-tool.c:1191
-#, fuzzy
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
-msgstr "Por favor introduzca la contraseña: una frase secreta \n"
+msgstr "Introduzca frase contraseña para proteger el nuevo objeto PKCS#12."
 
 #: agent/protect-tool.c:1194
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
 msgstr ""
+"Introduzca la frase contraseña para proteger el objeto importado en GnuPG"
 
 #: agent/protect-tool.c:1199
-#, fuzzy
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
-msgstr "Por favor introduzca la contraseña: una frase secreta \n"
+msgstr ""
+"Por favor introduzca la frase contraseña o PIN\n"
+"necesarios para completar esta operación."
 
 # ¿Por qué no frase de paso?
 # Porque todo el mundo sabe lo que es una contraseña
@@ -617,58 +615,56 @@ msgstr "Por favor introduzca la contraseña: una frase secreta \n"
 # ¿Es que son más listos? :-)
 #
 #: agent/protect-tool.c:1204 tools/symcryptrun.c:435
-#, fuzzy
 msgid "Passphrase:"
-msgstr "Frase contraseña incorrecta"
+msgstr "Frase contraseña:"
 
 #: agent/protect-tool.c:1212 tools/symcryptrun.c:442
-#, fuzzy, c-format
+#, c-format
 msgid "error while asking for the passphrase: %s\n"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "error pidiendo la frase contraseña: %s\n"
 
 #: agent/protect-tool.c:1215 tools/symcryptrun.c:446
-#, fuzzy
 msgid "cancelled\n"
-msgstr "cancelado"
+msgstr "cancelado\n"
 
 #: agent/trustlist.c:132 agent/trustlist.c:322
-#, fuzzy, c-format
+#, c-format
 msgid "error opening `%s': %s\n"
-msgstr "error en `%s': %s\n"
+msgstr "error abriendo `%s': %s\n"
 
 #: agent/trustlist.c:147 common/helpfile.c:63 common/helpfile.c:79
-#, fuzzy, c-format
+#, c-format
 msgid "file `%s', line %d: %s\n"
-msgstr "fichero de opciones `%s': %s\n"
+msgstr "fichero `%s', línea %d: %s\n"
 
 #: agent/trustlist.c:167 agent/trustlist.c:175
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
-msgstr ""
+msgstr "declaración \"%s\" ignorada en `%s', línea %d\n"
 
 #: agent/trustlist.c:181
-#, fuzzy, c-format
+#, c-format
 msgid "system trustlist `%s' not available\n"
-msgstr "las partes de la clave privada no están disponibles\n"
+msgstr "la lista de confianza `%s' del sistema no está disponible\n"
 
 #: agent/trustlist.c:216
-#, fuzzy, c-format
+#, c-format
 msgid "bad fingerprint in `%s', line %d\n"
-msgstr "error de lectura `%s': %s\n"
+msgstr "huella digital incorrecta en `%s', línea %d\n"
 
 #: agent/trustlist.c:242 agent/trustlist.c:249
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
-msgstr ""
+msgstr "opción de clave inválida en `%s', línea %d\n"
 
 #: agent/trustlist.c:283 common/helpfile.c:126
-#, fuzzy, c-format
+#, c-format
 msgid "error reading `%s', line %d: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error leyendo `%s', línea %d: %s\n"
 
 #: agent/trustlist.c:384 agent/trustlist.c:431
 msgid "error reading list of trusted root certificates\n"
-msgstr ""
+msgstr "error leyendo la lista de certificados raíz fiables\n"
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
 #. and has one special property: A "%%0A" is used by
@@ -679,19 +675,21 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as stored in the certificate.
-#: agent/trustlist.c:539
+#: agent/trustlist.c:541
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
+"Por favor verifique que el certificado identificado como:%%0A \"%s\"%%"
+"0Atiene la huella digital:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:551
+#: agent/trustlist.c:554
 msgid "Correct"
-msgstr ""
+msgstr "Correcto"
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
 #. and has one special property: A "%%0A" is used by
@@ -701,26 +699,28 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:574
+#: agent/trustlist.c:577
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
+"¿Confía absolutamente en%%0A  \"%s\"%%0A para certificar correctamentelos "
+"certificados de otros usuarios?"
 
-#: agent/trustlist.c:583
-#, fuzzy
+#: agent/trustlist.c:587
 msgid "Yes"
-msgstr "sí"
+msgstr "Sí"
 
-#: agent/trustlist.c:583
+#: agent/trustlist.c:587
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: agent/findkey.c:158
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
+"Nota: Esta frase contraseña nunca ha sido cambiada.%0APor favor hágalo ahora."
 
 #: agent/findkey.c:174
 #, c-format
@@ -728,66 +728,66 @@ msgid ""
 "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
 "it now."
 msgstr ""
+"Esta frase contraseña no se ha cambiado%%0Adesde %.4s-%.2s-%.2s.Por favor "
+"cámbiela ahora."
 
 #: agent/findkey.c:188 agent/findkey.c:195
-#, fuzzy
 msgid "Change passphrase"
-msgstr "cambia la frase contraseña"
+msgstr "Cambia la frase contraseña"
 
 #: agent/findkey.c:196
 msgid "I'll change it later"
-msgstr ""
+msgstr "La cambiaré más tarde"
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1372
-#: tools/gpgconf-comp.c:1695
-#, fuzzy, c-format
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1395
+#: tools/gpgconf-comp.c:1734
+#, c-format
 msgid "error creating a pipe: %s\n"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "error creando tubería: %s\n"
 
 #: common/exechelp.c:443 common/exechelp.c:500
-#, fuzzy, c-format
+#, c-format
 msgid "can't fdopen pipe for reading: %s\n"
-msgstr "no puede abrirse el fichero: %s\n"
+msgstr "no puede abrirse tubería para leer: %s\n"
 
 #: common/exechelp.c:479 common/exechelp.c:607 common/exechelp.c:842
-#, fuzzy, c-format
+#, c-format
 msgid "error forking process: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error bifurcando procesos: %s\n"
 
 #: common/exechelp.c:653 common/exechelp.c:706
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
+msgstr "fallo esperando que el proceso %d terminara: %s\n"
 
 #: common/exechelp.c:661
-#, fuzzy, c-format
+#, c-format
 msgid "error getting exit code of process %d: %s\n"
-msgstr "error obteniendo la información actual de la clave: %s\n"
+msgstr "error obteniendo código de finalización del proceso: %d %s\n"
 
 #: common/exechelp.c:667 common/exechelp.c:717
-#, fuzzy, c-format
+#, c-format
 msgid "error running `%s': exit status %d\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error ejecutando `%s': código de finalización %d\n"
 
 #: common/exechelp.c:712
 #, c-format
 msgid "error running `%s': probably not installed\n"
-msgstr ""
+msgstr "error ejecutando `%s': probablemente no está instalado\n"
 
 #: common/exechelp.c:725
-#, fuzzy, c-format
+#, c-format
 msgid "error running `%s': terminated\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error ejecutando `%s': terminado\n"
 
 #: common/http.c:1634
-#, fuzzy, c-format
+#, c-format
 msgid "error creating socket: %s\n"
-msgstr "error creando `%s': %s\n"
+msgstr "error creando socket: %s\n"
 
 #: common/http.c:1678
-#, fuzzy
 msgid "host not found"
-msgstr "%s: usuario no encontrado\n"
+msgstr "host no encontrado"
 
 #: common/simple-pwquery.c:335
 msgid "gpg-agent is not available in this session\n"
@@ -803,19 +803,16 @@ msgid "communication problem with gpg-agent\n"
 msgstr "problema de comunicación con el agente gpg\n"
 
 #: common/simple-pwquery.c:414
-#, fuzzy
 msgid "problem setting the gpg-agent options\n"
-msgstr "problema con el agente: el agente devuelve 0x%lx\n"
+msgstr "problema estableciendo opciones de gpg-agent\n"
 
 #: common/simple-pwquery.c:577 common/simple-pwquery.c:673
-#, fuzzy
 msgid "canceled by user\n"
 msgstr "cancelado por el usuario\n"
 
 #: common/simple-pwquery.c:592 common/simple-pwquery.c:679
-#, fuzzy
 msgid "problem with the agent\n"
-msgstr "problema con el agente: el agente devuelve 0x%lx\n"
+msgstr "problema con el agente\n"
 
 #: common/sysutils.c:105
 #, c-format
@@ -823,19 +820,19 @@ msgid "can't disable core dumps: %s\n"
 msgstr "no se pueden desactivar los volcados de core: %s\n"
 
 #: common/sysutils.c:200
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr "AVISO: propiedad insegura de la extensión `%s'\n"
+msgstr "Aviso: propiedad insegura de %s \"%s\"\n"
 
 #: common/sysutils.c:232
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr "AVISO: permisos inseguros de la extensión `%s'\n"
+msgstr "Aviso: permisos inseguros en %s \"%s\"\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 #: common/yesno.c:31 common/yesno.c:68
 msgid "yes"
-msgstr "sí"
+msgstr "sí|si"
 
 #: common/yesno.c:32 common/yesno.c:73
 msgid "yY"
@@ -880,155 +877,134 @@ msgstr "cC"
 #: common/miscellaneous.c:71
 #, c-format
 msgid "out of core in secure memory while allocating %lu bytes"
-msgstr ""
+msgstr "agotado nucleo de memoria segura reservando %lu bytes"
 
 #: common/miscellaneous.c:74
 #, c-format
 msgid "out of core while allocating %lu bytes"
-msgstr ""
+msgstr "error de memoria reservando %lu bytes"
 
 #: common/asshelp.c:242
 msgid "no running gpg-agent - starting one\n"
-msgstr ""
+msgstr "no hay gpg-agent en ejecución - inicando uno\n"
 
 #: common/asshelp.c:347
 msgid "can't connect to the agent - trying fall back\n"
-msgstr ""
+msgstr "no puedo conectar con el agente - intentando retirada\n"
 
 #: common/audit.c:682
-#, fuzzy
 msgid "Certificate chain available"
-msgstr "Revocación de certificado válida"
+msgstr "Cadena de certificados disponible"
 
 #: common/audit.c:689
-#, fuzzy
 msgid "root certificate missing"
-msgstr ""
-"No se ha encontrado ningún certificado sin valor de confianza.\n"
-"\n"
+msgstr "falta el certificado raíz"
 
 #: common/audit.c:715
 msgid "Data encryption succeeded"
-msgstr ""
+msgstr "Datos cifrados correctamente"
 
 #: common/audit.c:720 common/audit.c:781 common/audit.c:801 common/audit.c:825
-#, fuzzy
 msgid "Data available"
-msgstr "listar todos los datos disponibles"
+msgstr "Hay datos disponibles"
 
 #: common/audit.c:723
-#, fuzzy
 msgid "Session key created"
-msgstr "%s: anillo creado\n"
+msgstr "Creada clave de sesión"
 
 #: common/audit.c:728
-#, fuzzy, c-format
+#, c-format
 msgid "algorithm: %s"
-msgstr "validez: %s"
+msgstr "algoritmo: %s"
 
 #: common/audit.c:730 common/audit.c:732
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported algorithm: %s"
-msgstr ""
-"\n"
-"Algoritmos disponibles:\n"
+msgstr "algoritmo no disponible: %s"
 
 #: common/audit.c:734
-#, fuzzy
 msgid "seems to be not encrypted"
-msgstr "no cifrado"
+msgstr "no parece que esté cifrado"
 
 #: common/audit.c:740
-#, fuzzy
 msgid "Number of recipients"
-msgstr "Destinatarios actuales:\n"
+msgstr "Número de destinatarios"
 
 #: common/audit.c:748
 #, c-format
 msgid "Recipient %d"
-msgstr ""
+msgstr "Destinatario %d"
 
 #: common/audit.c:776
 msgid "Data signing succeeded"
-msgstr ""
+msgstr "Datos firmados correctamente"
 
 #: common/audit.c:796
 msgid "Data decryption succeeded"
-msgstr ""
+msgstr "Datos descifrados correctamente"
 
 #: common/audit.c:821
-#, fuzzy
 msgid "Data verification succeeded"
-msgstr "suprimida la verificación de la firma\n"
+msgstr "Datos verificados correctamente"
 
 #: common/audit.c:830
-#, fuzzy
 msgid "Signature available"
-msgstr "Firmado el %s\n"
+msgstr "Firma disponible"
 
 #: common/audit.c:835
-#, fuzzy
 msgid "Parsing signature succeeded"
-msgstr "Firma correcta de \"%s\""
+msgstr "Firma interpretada correctamente"
 
 #: common/audit.c:840
-#, fuzzy, c-format
+#, c-format
 msgid "Bad hash algorithm: %s"
-msgstr "algoritmo de distribución inválido `%s'\n"
+msgstr "Algoritmmo de resumen erróneo: %s"
 
 #: common/audit.c:855
-#, fuzzy, c-format
+#, c-format
 msgid "Signature %d"
-msgstr "Firmado el %s\n"
+msgstr "Firma %d"
 
 #: common/audit.c:871
-#, fuzzy
 msgid "Certificate chain valid"
-msgstr "Revocación de certificado válida"
+msgstr "Cadena de certificados válida"
 
 #: common/audit.c:882
-#, fuzzy
 msgid "Root certificate trustworthy"
-msgstr ""
-"No se ha encontrado ningún certificado sin valor de confianza.\n"
-"\n"
+msgstr "Certificado raíz fiable"
 
 #: common/audit.c:892
-#, fuzzy
 msgid "CRL/OCSP check of certificates"
-msgstr "Certificado correcto"
+msgstr "Comprobación CRL/OCSP de certificados"
 
 #: common/audit.c:909
-#, fuzzy
 msgid "Included certificates"
-msgstr "Certificado incorrecto"
+msgstr "Certificados incluidos"
 
 #: common/audit.c:968
 msgid "No audit log entries."
-msgstr ""
+msgstr "No auditar entradas de los logs"
 
 #: common/audit.c:1017
-#, fuzzy
 msgid "Unknown operation"
-msgstr "Versión desconocida"
+msgstr "Operación desconocida"
 
 #: common/audit.c:1035
 msgid "Gpg-Agent usable"
-msgstr ""
+msgstr "Gpg-Agent utilizable"
 
 #: common/audit.c:1045
 msgid "Dirmngr usable"
-msgstr ""
+msgstr "Dirmngr utilizable"
 
 #: common/audit.c:1081
-#, fuzzy, c-format
+#, c-format
 msgid "No help available for `%s'."
-msgstr "No hay ayuda disponible para `%s'"
+msgstr "No hay ayuda disponible para `%s'."
 
 #: common/helpfile.c:80
-#, fuzzy
 msgid "ignoring garbage line"
-msgstr "error en la línea de cierre\n"
+msgstr "ignorando línea con basura"
 
 #: g10/armor.c:379
 #, c-format
@@ -1048,9 +1024,8 @@ msgid "invalid clearsig header\n"
 msgstr "cabecera de firma clara inválida\n"
 
 #: g10/armor.c:455
-#, fuzzy
 msgid "unknown armor header: "
-msgstr "cabecera de armadura: "
+msgstr "cabecera de armadura desconocida: "
 
 #: g10/armor.c:508
 msgid "nested clear text signatures\n"
@@ -1123,9 +1098,8 @@ msgid "a user notation name must contain the '@' character\n"
 msgstr "un nombre de notación de usuario debe contener el caracter '@'\n"
 
 #: g10/build-packet.c:994
-#, fuzzy
 msgid "a notation name must not contain more than one '@' character\n"
-msgstr "un nombre de notación de usuario debe contener el caracter '@'\n"
+msgstr "un nombre de notación no debe contener más de un caracter '@'\n"
 
 #: g10/build-packet.c:1012
 msgid "a notation value must not use any control characters\n"
@@ -1403,7 +1377,7 @@ msgstr "menú para cambiar o desbloquear el PIN"
 
 #: g10/card-util.c:1327
 msgid "verify the PIN and list all data"
-msgstr ""
+msgstr "verificar PIN y listar todos los datos"
 
 #: g10/card-util.c:1447 g10/keyedit.c:1634
 msgid "Command> "
@@ -1629,36 +1603,32 @@ msgid "WARNING: unable to remove temp directory `%s': %s\n"
 msgstr "AVISO: no se puede borrar el fichero temporal `%s': %s\n"
 
 #: g10/export.c:61
-#, fuzzy
 msgid "export signatures that are marked as local-only"
-msgstr "La firma se marcará como no revocable.\n"
+msgstr "exportar firmas marcadas como sólo locales"
 
 #: g10/export.c:63
 msgid "export attribute user IDs (generally photo IDs)"
-msgstr ""
+msgstr "exportar el atributo ID de usuario (generalmente fotográfico)"
 
 #: g10/export.c:65
-#, fuzzy
 msgid "export revocation keys marked as \"sensitive\""
-msgstr "no se encuetran claves de revocación para \"%s\"\n"
+msgstr "exportar claves de revocación marcadas como \"confidenciales\""
 
 #: g10/export.c:67
-#, fuzzy
 msgid "remove the passphrase from exported subkeys"
-msgstr "revoca clave o subclaves seleccionadas"
+msgstr "borrar frase contraseña de las subclaves exportadas"
 
 #: g10/export.c:69
-#, fuzzy
 msgid "remove unusable parts from key during export"
-msgstr "clave secreta inutilizable"
+msgstr "borrar partes inutilizables de la clave al exportar"
 
 #: g10/export.c:71
 msgid "remove as much as possible from key during export"
-msgstr ""
+msgstr "borrar tanto como sea posible de la clave al exportar"
 
 #: g10/export.c:73
 msgid "export keys in an S-expression based format"
-msgstr ""
+msgstr "exportar claves en formato basado en una expresión S"
 
 #: g10/export.c:338
 msgid "exporting secret keys not allowed\n"
@@ -1675,18 +1645,18 @@ msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "clave %s: clave estilo PGP 2.x - omitida\n"
 
 #: g10/export.c:386
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: key material on-card - skipped\n"
-msgstr "clave %s: firma de subclave en lugar equivocado - omitida\n"
+msgstr "clave %s: material de la clave en la tarjeta - omitida\n"
 
 #: g10/export.c:537
 msgid "about to export an unprotected subkey\n"
-msgstr ""
+msgstr "a punto de exportar una subclave protegida\n"
 
 #: g10/export.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "failed to unprotect the subkey: %s\n"
-msgstr "fallo al almacenar la clave: %s\n"
+msgstr "fallo al desproteger la subclave: %s\n"
 
 #: g10/export.c:584
 #, c-format
@@ -1708,7 +1678,7 @@ msgstr "[ID de usuario no encontrado]"
 #: g10/getkey.c:1111
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
-msgstr ""
+msgstr "recuperado automáticamente `%s' vía %s\n"
 
 #: g10/getkey.c:1116
 #, fuzzy, c-format
@@ -1744,7 +1714,7 @@ msgstr "clave %s: clave secreta sin clave pública - omitida\n"
 # Sí, este no he podido ser yo :-) Por cierto, ¿por qué la O no se
 # puede acentuar? ¿demasiado alta?
 # ¿Quién dice que no se puede? :-)
-#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:56
+#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:58
 msgid ""
 "@Commands:\n"
 " "
@@ -1874,10 +1844,10 @@ msgstr "|algo [ficheros]|imprime resúmenes de mensaje"
 
 #: g10/gpg.c:433 sm/gpgsm.c:268
 msgid "run in server mode"
-msgstr ""
+msgstr "ejecutar en modo servidor"
 
 #: g10/gpg.c:435 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
-#: tools/gpg-connect-agent.c:64 tools/gpgconf.c:69 tools/symcryptrun.c:157
+#: tools/gpg-connect-agent.c:64 tools/gpgconf.c:74 tools/symcryptrun.c:157
 msgid ""
 "@\n"
 "Options:\n"
@@ -1908,11 +1878,10 @@ msgid "use canonical text mode"
 msgstr "usa modo de texto canónico"
 
 #: g10/gpg.c:470 sm/gpgsm.c:343
-#, fuzzy
 msgid "|FILE|write output to FILE"
-msgstr "|FICHERO|carga módulo de extensiones FICHERO"
+msgstr "|FICHERO|volcar salida en FICHERO"
 
-#: g10/gpg.c:483 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:74
+#: g10/gpg.c:483 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:79
 msgid "do not make any changes"
 msgstr "no hace ningún cambio"
 
@@ -2004,7 +1973,7 @@ msgstr "Compresión: "
 
 #: g10/gpg.c:822 sm/gpgsm.c:607
 msgid "Used libraries:"
-msgstr ""
+msgstr "Bibliotecas utilizadas:"
 
 #: g10/gpg.c:930
 msgid "usage: gpg [options] "
@@ -2094,51 +2063,47 @@ msgstr "artículo de configuración desconocido `%s'\n"
 
 #: g10/gpg.c:1636
 msgid "display photo IDs during key listings"
-msgstr ""
+msgstr "mostrar foto IDs al listar claves"
 
 #: g10/gpg.c:1638
 msgid "show policy URLs during signature listings"
-msgstr ""
+msgstr "mostrar URLS de política al listar firmas"
 
 #: g10/gpg.c:1640
-#, fuzzy
 msgid "show all notations during signature listings"
-msgstr "No existe la firma correspondiente en el anillo secreto\n"
+msgstr "mostrar todas las notaciones al listar firmas"
 
 #: g10/gpg.c:1642
 msgid "show IETF standard notations during signature listings"
-msgstr ""
+msgstr "mostrar notaciones estándar IETF al listar firmas"
 
 #: g10/gpg.c:1646
 msgid "show user-supplied notations during signature listings"
-msgstr ""
+msgstr "mostrar notaciones personalizadas al listar firmas"
 
 #: g10/gpg.c:1648
-#, fuzzy
 msgid "show preferred keyserver URLs during signature listings"
-msgstr "la URL del servidor de claves preferido no es válida\n"
+msgstr "mostrar URL del servidor de claves preferido al listar firmas"
 
 #: g10/gpg.c:1650
 msgid "show user ID validity during key listings"
-msgstr ""
+msgstr "mostrar validez de la ID de usuario al listar claves"
 
 #: g10/gpg.c:1652
 msgid "show revoked and expired user IDs in key listings"
-msgstr ""
+msgstr "mostar IDs de usuario revocados y caducados al listar firmas"
 
 #: g10/gpg.c:1654
 msgid "show revoked and expired subkeys in key listings"
-msgstr ""
+msgstr "mostrar subclaves revocadas y expiradas al listar claves"
 
 #: g10/gpg.c:1656
-#, fuzzy
 msgid "show the keyring name in key listings"
-msgstr "muestra en qué anillos está una clave"
+msgstr "mostrar nombre de los anillos de claves al listar claves"
 
 #: g10/gpg.c:1658
-#, fuzzy
 msgid "show expiration dates during signature listings"
-msgstr "No existe la firma correspondiente en el anillo secreto\n"
+msgstr "mostrar fechas de caducidad al listar firmas"
 
 #: g10/gpg.c:1817
 #, c-format
@@ -2148,7 +2113,7 @@ msgstr "NOTA: se ignora el antiguo fichero de opciones predefinidas `%s'\n"
 #: g10/gpg.c:1908
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
+msgstr "libgcrypt demasiado antigua (necesito %s, tengo %s)\n"
 
 #: g10/gpg.c:2292 g10/gpg.c:2976 g10/gpg.c:2988
 #, c-format
@@ -2156,9 +2121,9 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s no es para uso normal!\n"
 
 #: g10/gpg.c:2473 g10/gpg.c:2485
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid signature expiration\n"
-msgstr "`%s' no es un juego de caracteres válido\n"
+msgstr "`%s' no es una fecha de caducidad válida\n"
 
 #: g10/gpg.c:2567
 #, c-format
@@ -2207,51 +2172,47 @@ msgstr "lista de opciones inválida\n"
 
 #: g10/gpg.c:2643
 msgid "display photo IDs during signature verification"
-msgstr ""
+msgstr "mostrar foto IDs al verificar firmas"
 
 #: g10/gpg.c:2645
 msgid "show policy URLs during signature verification"
-msgstr ""
+msgstr "mostrar URLs de política al verificar firmas"
 
 #: g10/gpg.c:2647
-#, fuzzy
 msgid "show all notations during signature verification"
-msgstr "`%s' no es un juego de caracteres válido\n"
+msgstr "mostrar todas las notaciones al verificar firmas"
 
 #: g10/gpg.c:2649
 msgid "show IETF standard notations during signature verification"
-msgstr ""
+msgstr "mostrar notaciones estándar IETF al verificar firmas"
 
 #: g10/gpg.c:2653
 msgid "show user-supplied notations during signature verification"
-msgstr ""
+msgstr "mostrar notaciones personalizadas al verificar firmas"
 
 #: g10/gpg.c:2655
-#, fuzzy
 msgid "show preferred keyserver URLs during signature verification"
-msgstr "la URL del servidor de claves preferido no es válida\n"
+msgstr "mostrar URLs del servidor de claves preferido al verificar firmas"
 
 #: g10/gpg.c:2657
-#, fuzzy
 msgid "show user ID validity during signature verification"
-msgstr "`%s' no es un juego de caracteres válido\n"
+msgstr "mostrar validez del ID de usuario al verificar firmas"
 
 #: g10/gpg.c:2659
 msgid "show revoked and expired user IDs in signature verification"
-msgstr ""
+msgstr "mostrar IDs de usuario revocados y caducados al verificar firmas"
 
 #: g10/gpg.c:2661
-#, fuzzy
 msgid "show only the primary user ID in signature verification"
-msgstr "`%s' no es un juego de caracteres válido\n"
+msgstr "mostrar solo ID primario de usuario al verificar firmas"
 
 #: g10/gpg.c:2663
 msgid "validate signatures with PKA data"
-msgstr ""
+msgstr "validar firmas con datos PKA"
 
 #: g10/gpg.c:2665
 msgid "elevate the trust of signatures with valid PKA data"
-msgstr ""
+msgstr "aumentar confianza en las firmas con datos válidos PKA"
 
 #: g10/gpg.c:2672
 #, c-format
@@ -2268,13 +2229,13 @@ msgid "unable to set exec-path to %s\n"
 msgstr "imposible establecer camino de ejecutables %s\n"
 
 #: g10/gpg.c:2857
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
-msgstr "%s:%d: opciones de verificación inválidas\n"
+msgstr "%s:%d: lista de auto-localización de claves inválida\n"
 
 #: g10/gpg.c:2860
 msgid "invalid auto-key-locate list\n"
-msgstr ""
+msgstr "lista de auto-localización de claves inválida\n"
 
 #: g10/gpg.c:2965 sm/gpgsm.c:1374
 msgid "WARNING: program may create a core file!\n"
@@ -2583,34 +2544,31 @@ msgstr "No hay ayuda disponible para `%s'"
 
 #: g10/import.c:94
 msgid "import signatures that are marked as local-only"
-msgstr ""
+msgstr "importar firmas marcadas como sólo locales"
 
 #: g10/import.c:96
 msgid "repair damage from the pks keyserver during import"
-msgstr ""
+msgstr "reparar daño del servidor de claves públicas al importar"
 
 #: g10/import.c:98
-#, fuzzy
 msgid "do not update the trustdb after import"
-msgstr "actualiza la base de datos de confianza"
+msgstr "no actualiza la base de datos de confianza después de importar"
 
 #: g10/import.c:100
-#, fuzzy
 msgid "create a public key when importing a secret key"
-msgstr "¡la clave pública y la privada no se corresponden!\n"
+msgstr "crear una clave pública al importar una clave secreta"
 
 #: g10/import.c:102
 msgid "only accept updates to existing keys"
-msgstr ""
+msgstr "sólo aceptar actualizaciones de claves ya existentes"
 
 #: g10/import.c:104
-#, fuzzy
 msgid "remove unusable parts from key after import"
-msgstr "clave secreta inutilizable"
+msgstr "borrar partes inútiles de la clave después de importar"
 
 #: g10/import.c:106
 msgid "remove as much as possible from key after import"
-msgstr ""
+msgstr "borrar tanto como sea posible de la clave tras importar"
 
 #: g10/import.c:269
 #, c-format
@@ -2688,21 +2646,23 @@ msgid "          not imported: %lu\n"
 msgstr "          no importadas: %lu\n"
 
 #: g10/import.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "    signatures cleaned: %lu\n"
-msgstr "firmas creadas hasta ahora: %lu\n"
+msgstr "    firmas limpiadas: %lu\n"
 
 #: g10/import.c:328
-#, fuzzy, c-format
+#, c-format
 msgid "      user IDs cleaned: %lu\n"
-msgstr "     claves secretas leídas: %lu\n"
+msgstr "      IDs de usuario limpiados: %lu\n"
 
 #: g10/import.c:569
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "WARNING: key %s contains preferences for unavailable\n"
 "algorithms on these user IDs:\n"
-msgstr "AVISO: la clave %s contiene preferencias para no disponible\n"
+msgstr ""
+"AVISO: la clave %s contiene preferencias para algoritmos\n"
+"no disponibles en estos IDs de usuario:\n"
 
 #: g10/import.c:610
 #, c-format
@@ -2836,24 +2796,24 @@ msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "clave %s: \"%s\" %d subclaves nuevas\n"
 
 #: g10/import.c:938
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
-msgstr "clave %s: \"%s\" %d firmas nuevas\n"
+msgstr "clave %s: \"%s\" %d firmas limpiadas\n"
 
 #: g10/import.c:941
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
-msgstr "clave %s: \"%s\" %d firmas nuevas\n"
+msgstr "clave %s: \"%s\" %d firmas limpiadas\n"
 
 #: g10/import.c:944
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
-msgstr "clave %s: \"%s\" %d nuevos identificadores de usuario\n"
+msgstr "clave %s: \"%s\" %d identificador de usuario limpiado\n"
 
 #: g10/import.c:947
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
-msgstr "clave %s: \"%s\" %d nuevos identificadores de usuario\n"
+msgstr "clave %s: \"%s\" %d identificadores de usuario limpiados\n"
 
 #: g10/import.c:971
 #, c-format
@@ -3041,9 +3001,9 @@ msgid "keyring `%s' created\n"
 msgstr "anillo `%s' creado\n"
 
 #: g10/keydb.c:328 g10/keydb.c:331
-#, fuzzy, c-format
+#, c-format
 msgid "keyblock resource `%s': %s\n"
-msgstr "%s: problema lectura del bloque de clave: %s\n"
+msgstr "recurso de bloque de claves: `%s': %s\n"
 
 #: g10/keydb.c:710
 #, c-format
@@ -3156,14 +3116,13 @@ msgid "User ID \"%s\" is not self-signed."
 msgstr "ID de usuario \"%s\" no tiene autofirma."
 
 #: g10/keyedit.c:682
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" is signable.  "
-msgstr "ID de usuario \"%s\" no tiene autofirma."
+msgstr "ID de usuario \"%s\" puede firmarse."
 
 #: g10/keyedit.c:684
-#, fuzzy
 msgid "Sign it? (y/N) "
-msgstr "¿Firmar de verdad? (s/N) "
+msgstr "¿Firmarlo? (s/N) "
 
 #: g10/keyedit.c:706
 #, c-format
@@ -3493,15 +3452,12 @@ msgid "set preference list for the selected user IDs"
 msgstr "establecer preferencias para todos los ID seleccionados"
 
 #: g10/keyedit.c:1433
-#, fuzzy
 msgid "set the preferred keyserver URL for the selected user IDs"
-msgstr ""
-"establecer URL del servidor de claves preferido por los IDs seleccionados"
+msgstr "establecer URL del servidor de claves preferido por los IDs elegidos"
 
 #: g10/keyedit.c:1435
-#, fuzzy
 msgid "set a notation for the selected user IDs"
-msgstr "establecer preferencias para todos los ID seleccionados"
+msgstr "establecer notación para los IDs de usuario seleccionados"
 
 #: g10/keyedit.c:1437
 msgid "change the passphrase"
@@ -3537,11 +3493,11 @@ msgstr "mostrar fotos de los ID seleccionados"
 
 #: g10/keyedit.c:1455
 msgid "compact unusable user IDs and remove unusable signatures from key"
-msgstr ""
+msgstr "compactar IDs inutilizables y borrar firmas inutilizables de la clave"
 
 #: g10/keyedit.c:1457
 msgid "compact unusable user IDs and remove all signatures from key"
-msgstr ""
+msgstr "compactar IDs inutilizables y borrar todas las firmas de la clave"
 
 #: g10/keyedit.c:1579
 #, c-format
@@ -3721,9 +3677,8 @@ msgid "Preferred keyserver: "
 msgstr "Servidor de claves preferido: "
 
 #: g10/keyedit.c:2429 g10/keyedit.c:2430
-#, fuzzy
 msgid "Notations: "
-msgstr "Notación: "
+msgstr "Notaciones: "
 
 #: g10/keyedit.c:2640
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
@@ -3863,34 +3818,33 @@ msgid "Nothing deleted.\n"
 msgstr "No se borró nada\n"
 
 #: g10/keyedit.c:3243 g10/trustdb.c:1697
-#, fuzzy
 msgid "invalid"
-msgstr "Armadura no válida"
+msgstr "inválida"
 
 #: g10/keyedit.c:3245
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" compacted: %s\n"
-msgstr "ID de usuario \"%s\" revocado."
+msgstr "ID de usuario \"%s\" compactado: %s\n"
 
 #: g10/keyedit.c:3252
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": %d signature removed\n"
-msgstr "ID de usuario \"%s\" revocado."
+msgstr "ID de usuario \"%s\": %d firma borrada\n"
 
 #: g10/keyedit.c:3253
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
-msgstr "ID de usuario \"%s\" revocado."
+msgstr "ID de usuario \"%s\": %d firmas borradas\n"
 
 #: g10/keyedit.c:3261
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": already minimized\n"
-msgstr "ID de usuario \"%s\" ya ha sido revocado\n"
+msgstr "ID de usuario \"%s\": ya minimizado\n"
 
 #: g10/keyedit.c:3262
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": already clean\n"
-msgstr "ID de usuario \"%s\" ya ha sido revocado\n"
+msgstr "ID de usuario \"%s\" ya limpiado\n"
 
 #: g10/keyedit.c:3356
 msgid ""
@@ -3957,14 +3911,14 @@ msgid "No corresponding signature in secret ring\n"
 msgstr "No existe la firma correspondiente en el anillo secreto\n"
 
 #: g10/keyedit.c:3688
-#, fuzzy, c-format
+#, c-format
 msgid "signing subkey %s is already cross-certified\n"
-msgstr "AVISO: la subclave de firmado %s no tiene certificado cruzado\n"
+msgstr "la subclave de firmado %s ya está certificada en cruz\n"
 
 #: g10/keyedit.c:3694
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
-msgstr ""
+msgstr "la subclave %s no firma y así no necesita ser certificada en cruz\n"
 
 #: g10/keyedit.c:3857
 msgid "Please select exactly one user ID.\n"
@@ -3988,14 +3942,12 @@ msgid "Are you sure you want to delete it? (y/N) "
 msgstr "¿Seguro que quiere borrarlo? (s/N) "
 
 #: g10/keyedit.c:4210
-#, fuzzy
 msgid "Enter the notation: "
-msgstr "Notación de firma: "
+msgstr "Introduzca la notación: "
 
 #: g10/keyedit.c:4359
-#, fuzzy
 msgid "Proceed? (y/N) "
-msgstr "¿Sobreescribir? (s/N) "
+msgstr "¿Continuar? (s/N) "
 
 #: g10/keyedit.c:4423
 #, c-format
@@ -4003,9 +3955,9 @@ msgid "No user ID with index %d\n"
 msgstr "No hay ningún identificador de usuario con el índice %d\n"
 
 #: g10/keyedit.c:4481
-#, fuzzy, c-format
+#, c-format
 msgid "No user ID with hash %s\n"
-msgstr "No hay ningún identificador de usuario con el índice %d\n"
+msgstr "No hay ID de usuario con hash %s\n"
 
 #: g10/keyedit.c:4508
 #, c-format
@@ -4139,6 +4091,8 @@ msgstr "tamaño de clave redondeado a %u bits\n"
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
+"AVISO: ciertos programas OpenPGP no usan claves DSAcon resúmenes de este "
+"tamaño\n"
 
 #: g10/keygen.c:1519
 msgid "Sign"
@@ -4146,7 +4100,7 @@ msgstr "Firma"
 
 #: g10/keygen.c:1522
 msgid "Certify"
-msgstr ""
+msgstr "Certificar"
 
 #: g10/keygen.c:1525
 msgid "Encrypt"
@@ -4305,9 +4259,9 @@ msgid "Key is valid for? (0) "
 msgstr "¿Validez de la clave (0)? "
 
 #: g10/keygen.c:1879
-#, fuzzy, c-format
+#, c-format
 msgid "Signature is valid for? (%s) "
-msgstr "Clave válida ¿durante (0)? "
+msgstr "Clave válida ¿durante? (%s) "
 
 #: g10/keygen.c:1897
 msgid "invalid value\n"
@@ -4672,32 +4626,33 @@ msgstr "%s: anillo creado\n"
 
 #: g10/keyserver.c:71
 msgid "include revoked keys in search results"
-msgstr ""
+msgstr "incluir claves revocadas en resultados de la búsqueda"
 
 #: g10/keyserver.c:72
 msgid "include subkeys when searching by key ID"
-msgstr ""
+msgstr "incluir subclaves al buscar por ID de clave"
 
 #: g10/keyserver.c:74
 msgid "use temporary files to pass data to keyserver helpers"
 msgstr ""
+"usar ficheros temporales para pasar datos a los ayudantes delservidor de "
+"claves"
 
 #: g10/keyserver.c:76
 msgid "do not delete temporary files after using them"
-msgstr ""
+msgstr "no borrar ficheros temporales tras usarlos"
 
 #: g10/keyserver.c:80
 msgid "automatically retrieve keys when verifying signatures"
-msgstr ""
+msgstr "recuperar automáticamente claves al verificar firmas"
 
 #: g10/keyserver.c:82
-#, fuzzy
 msgid "honor the preferred keyserver URL set on the key"
-msgstr "Introduzca la URL de su servidor de claves preferido: "
+msgstr "usar la URL de servidor de claves preferido presente en la clave"
 
 #: g10/keyserver.c:84
 msgid "honor the PKA record set on a key when retrieving keys"
-msgstr ""
+msgstr "usar el registro PKA presente en una clave al recuperar claves"
 
 #: g10/keyserver.c:150
 #, c-format
@@ -4739,14 +4694,14 @@ msgid "requesting key %s from %s\n"
 msgstr "solicitando clave %s de %s\n"
 
 #: g10/keyserver.c:1195
-#, fuzzy, c-format
+#, c-format
 msgid "searching for names from %s server %s\n"
-msgstr "buscando \"%s\" de %s servidor %s\n"
+msgstr "buscando nombres desde %s servidor %s\n"
 
 #: g10/keyserver.c:1198
-#, fuzzy, c-format
+#, c-format
 msgid "searching for names from %s\n"
-msgstr "buscando \"%s\" de %s\n"
+msgstr "buscando nombres de %s\n"
 
 #: g10/keyserver.c:1351
 #, c-format
@@ -4804,9 +4759,9 @@ msgstr ""
 "la acción `%s' no es posible con este esquema de servidor de claves `%s'\n"
 
 #: g10/keyserver.c:1558
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not support handler version %d\n"
-msgstr "gpgkeys_%s no permite usar la versión %d del manejador\n"
+msgstr "%s no permite usar la versión %d del manejador\n"
 
 #: g10/keyserver.c:1565
 msgid "keyserver timed out\n"
@@ -4842,14 +4797,14 @@ msgid "refreshing %d keys from %s\n"
 msgstr "renovando %d claves desde %s\n"
 
 #: g10/keyserver.c:1977
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
-msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
+msgstr "AVISO: imposible recuperar URI %s: %s\n"
 
 #: g10/keyserver.c:1983
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: unable to parse URI %s\n"
-msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
+msgstr "AVISO: imposible interpretar URI %s\n"
 
 #: g10/mainproc.c:231
 #, c-format
@@ -4943,25 +4898,23 @@ msgstr "nombre fichero original='%.*s'\n"
 
 #: g10/mainproc.c:701
 msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
+msgstr "AVISO: se observan varios textos en claro\n"
 
 #: g10/mainproc.c:842
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocación independiente - use \"gpg --import\" para aplicarla\n"
 
 #: g10/mainproc.c:1195 g10/mainproc.c:1232
-#, fuzzy
 msgid "no signature found\n"
-msgstr "Firma correcta de \"%s\""
+msgstr "no se encontró firma\n"
 
 #: g10/mainproc.c:1470
 msgid "signature verification suppressed\n"
 msgstr "suprimida la verificación de la firma\n"
 
 #: g10/mainproc.c:1579
-#, fuzzy
 msgid "can't handle this ambiguous signature data\n"
-msgstr "no se puede trabajar con firmas múltiples\n"
+msgstr "no puedo manejar estos datos ambiguos en la firma\n"
 
 #: g10/mainproc.c:1590
 #, c-format
@@ -5076,9 +5029,8 @@ msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "AVISO: usando un algoritmo de clave pública experimental %s\n"
 
 #: g10/misc.c:294
-#, fuzzy
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
-msgstr "AVISO: el algoritmo de resumen %s es una opción desaconsejada\n"
+msgstr "AVISO: las firmas Elgamal para firmar y cifrar están obsoletas\n"
 
 #: g10/misc.c:307
 #, c-format
@@ -5093,26 +5045,26 @@ msgstr "AVISO: usando algoritmo de resumen experimental %s\n"
 #: g10/misc.c:327
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "AVISO: el algoritmo de resumen %s es una opción desaconsejada\n"
+msgstr "AVISO: el algoritmo de resumen %s está obsoleto\n"
 
 #: g10/misc.c:504
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "el plugin para el cifrado IDEA no está presente\n"
 
 #: g10/misc.c:505 g10/sig-check.c:107 jnlib/utf8conv.c:88
-#, fuzzy, c-format
+#, c-format
 msgid "please see %s for more information\n"
-msgstr " i = por favor muéstreme más información\n"
+msgstr "por favor vea %s para más información\n"
 
 #: g10/misc.c:740
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
-msgstr "%s:%d: opción desaconsejada \"%s\"\n"
+msgstr "%s:%d: opción obsoleta \"%s\"\n"
 
 #: g10/misc.c:744
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated option\n"
-msgstr "ATENCIÓN: \"%s\" es una opción desaconsejada\n"
+msgstr "ATENCIÓN: \"%s\" es una opción obsoleta\n"
 
 #: g10/misc.c:746
 #, c-format
@@ -5120,19 +5072,19 @@ msgid "please use \"%s%s\" instead\n"
 msgstr "por favor use \"%s%s\" en su lugar\n"
 
 #: g10/misc.c:753
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
-msgstr "ATENCIÓN: \"%s\" es una opción desaconsejada\n"
+msgstr "ATENCIÓN: \"%s\" es una orden obsoleta - no la use\n"
 
 #: g10/misc.c:763
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr ""
+msgstr "%s:%u: opción obsoleta \"%s\" - no tiene efecto\n"
 
 #: g10/misc.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgstr "ATENCIÓN: \"%s\" es una opción desaconsejada\n"
+msgstr "ATENCIÓN: \"%s\" es una opción obsoleta - no tiene efecto\n"
 
 #: g10/misc.c:827
 msgid "Uncompressed"
@@ -5216,7 +5168,7 @@ msgid " (main key ID %s)"
 msgstr "(ID de clave primaria %s)"
 
 #: g10/passphrase.c:309
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the OpenPGP "
 "certificate:\n"
@@ -5224,9 +5176,11 @@ msgid ""
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
 msgstr ""
-"Necesita una frase contraseña para desbloquear la clave secreta\n"
-"del usuario: \"%.*s\"\n"
-"%u bits, clave %s, ID %s, creada el %s%s\n"
+"Introduzca frase contraseña para desbloquear la clave secreta del "
+"certificado OpenPGP:\n"
+"\"%.*s\"\n"
+"con %u bits clave %s, ID %s,\n"
+"creada el %s%s.\n"
 
 #: g10/passphrase.c:335
 msgid "Repeat passphrase\n"
@@ -5241,9 +5195,9 @@ msgid "cancelled by user\n"
 msgstr "cancelado por el usuario\n"
 
 #: g10/passphrase.c:370 g10/passphrase.c:429
-#, fuzzy, c-format
+#, c-format
 msgid "problem with the agent: %s\n"
-msgstr "problema con el agente: el agente devuelve 0x%lx\n"
+msgstr "problema con el agente: %s\n"
 
 #: g10/passphrase.c:562
 #, c-format
@@ -5474,20 +5428,20 @@ msgstr "Nota: Esta clave está deshabilitada.\n"
 #: g10/pkclist.c:563
 #, c-format
 msgid "Note: Verified signer's address is `%s'\n"
-msgstr ""
+msgstr "Nota: la dirección del firmante verificado es `%s'\n"
 
 #: g10/pkclist.c:570
 #, c-format
 msgid "Note: Signer's address `%s' does not match DNS entry\n"
-msgstr ""
+msgstr "Nota: la dirección del firmante `%s' no coincide con la entrada DNS\n"
 
 #: g10/pkclist.c:582
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
-msgstr ""
+msgstr "nivel de confianza puesto a TOTAL (información PKA válida)\n"
 
 #: g10/pkclist.c:590
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
-msgstr ""
+msgstr "nivel de confianza puesto a NUNCA (información PKA inválida)\n"
 
 #: g10/pkclist.c:601
 msgid "Note: This key has expired!\n"
@@ -5579,14 +5533,14 @@ msgid "no valid addressees\n"
 msgstr "no hay direcciones válidas\n"
 
 #: g10/pkclist.c:1478
-#, fuzzy, c-format
+#, c-format
 msgid "Note: key %s has no %s feature\n"
-msgstr "clave %s: sin identificador de usuario\n"
+msgstr "Nota: la clave %s no usa %s\n"
 
 #: g10/pkclist.c:1503
-#, fuzzy, c-format
+#, c-format
 msgid "Note: key %s has no preference for %s\n"
-msgstr "clave %s: sin identificador de usuario\n"
+msgstr "Nota: clave %s no tiene preferencias para %s\n"
 
 #: g10/plaintext.c:95
 msgid "data not saved; use option \"--output\" to save it\n"
@@ -5614,9 +5568,9 @@ msgid "can't open signed data `%s'\n"
 msgstr "imposible abrir datos firmados `%s'\n"
 
 #: g10/plaintext.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "can't open signed data fd=%d: %s\n"
-msgstr "imposible abrir datos firmados `%s'\n"
+msgstr "imposible abrir datos firmados fd=%d: %s\n"
 
 #: g10/pubkey-enc.c:105
 #, c-format
@@ -5797,7 +5751,7 @@ msgstr ""
 #: g10/seckey-cert.c:404
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
 msgstr ""
-"generando la suma de comprobación de 16 bits (desaconsejada) para \n"
+"generando la suma de comprobación de 16 bits (obsoleta) para \n"
 "proteger la clave secreta.\n"
 
 #: g10/seskey.c:61 sm/encrypt.c:119
@@ -5813,17 +5767,17 @@ msgstr ""
 
 #: g10/seskey.c:227 sm/certcheck.c:89
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
-msgstr ""
+msgstr "DSA necesita un resumen cuya longitud sea múltiplo de 8 bits\n"
 
 #: g10/seskey.c:240
 #, c-format
 msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-msgstr ""
+msgstr "la clave DSA %s usa un resumen inseguro (%u bits)\n"
 
 #: g10/seskey.c:252
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
-msgstr ""
+msgstr "la clave DSA %s requiere un resumen de %u bits al menos\n"
 
 #: g10/sig-check.c:80
 msgid "WARNING: signature digest conflict in message\n"
@@ -6351,74 +6305,67 @@ msgid "input line %u too long or missing LF\n"
 msgstr "la línea %u es demasiado larga o no tiene avance de línea (LF)\n"
 
 #: g10/verify.c:250
-#, fuzzy, c-format
+#, c-format
 msgid "can't open fd %d: %s\n"
-msgstr "no se puede abrir `%s': %s\n"
+msgstr "no se puede abrir fd %d: %s\n"
 
 #: jnlib/argparse.c:176
-#, fuzzy
 msgid "argument not expected"
-msgstr "No se permiten órdenes de administrador\n"
+msgstr "parámetro inesperado"
 
 #: jnlib/argparse.c:178
-#, fuzzy
 msgid "read error"
 msgstr "error de lectura"
 
 #: jnlib/argparse.c:180
-#, fuzzy
 msgid "keyword too long"
-msgstr "línea demasiado larga"
+msgstr "palabra clave demasiado larga"
 
 #: jnlib/argparse.c:182
-#, fuzzy
 msgid "missing argument"
-msgstr "argumento inválido"
+msgstr "falta el parámetro"
 
 #: jnlib/argparse.c:184
-#, fuzzy
 msgid "invalid command"
-msgstr "Órdenes sólo de administrador\n"
+msgstr "orden inválida"
 
 #: jnlib/argparse.c:186
-#, fuzzy
 msgid "invalid alias definition"
-msgstr "lista de opciones inválida\n"
+msgstr "definición de alias inválida"
 
 #: jnlib/argparse.c:188
-#, fuzzy
 msgid "invalid option"
-msgstr "lista de opciones inválida\n"
+msgstr "opción inválida"
 
 #: jnlib/argparse.c:196
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
+msgstr "falta parámetro para la opción \"%.50s\"\n"
 
 #: jnlib/argparse.c:198
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
+msgstr "la opción \"%.50s\" no necesita parámetros\n"
 
 #: jnlib/argparse.c:201
-#, fuzzy, c-format
+#, c-format
 msgid "invalid command \"%.50s\"\n"
-msgstr "Orden inválida (pruebe \"help\")\n"
+msgstr "orden inválida \"%.50s\"\n"
 
 #: jnlib/argparse.c:203
 #, c-format
 msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
+msgstr "la opción \"%.50s\" es ambigua\n"
 
 #: jnlib/argparse.c:205
 #, c-format
 msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
+msgstr "la orden \"%.50s\" es ambigua\n"
 
 #: jnlib/argparse.c:207
-#, fuzzy, c-format
+#, c-format
 msgid "invalid option \"%.50s\"\n"
-msgstr "lista de opciones inválida\n"
+msgstr "opción inválida \"%.50s\"\n"
 
 #: jnlib/logging.c:626
 #, c-format
@@ -6426,24 +6373,24 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "ha encontrado un error... (%s:%d)\n"
 
 #: jnlib/utf8conv.c:86
-#, fuzzy, c-format
+#, c-format
 msgid "error loading `%s': %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error cargando `%s': %s\n"
 
 #: jnlib/utf8conv.c:124
 #, c-format
 msgid "conversion from `%s' to `%s' not available\n"
-msgstr ""
+msgstr "la conversión de `%s' en `%s' no está disponible\n"
 
 #: jnlib/utf8conv.c:132
-#, fuzzy, c-format
+#, c-format
 msgid "iconv_open failed: %s\n"
-msgstr "no puede abrirse el fichero: %s\n"
+msgstr "iconv_open falló: %s\n"
 
 #: jnlib/utf8conv.c:392 jnlib/utf8conv.c:658
-#, fuzzy, c-format
+#, c-format
 msgid "conversion from `%s' to `%s' failed: %s\n"
-msgstr "renombrando `%s' en `%s' fallo: %s\n"
+msgstr "la conversión de `%s' en `%s' falló: %s\n"
 
 #: kbx/kbxutil.c:92
 msgid "set debugging flags"
@@ -6454,24 +6401,24 @@ msgid "enable full debugging"
 msgstr "habilita depuración completa"
 
 #: kbx/kbxutil.c:114
-#, fuzzy
 msgid "Please report bugs to "
-msgstr "Por favor, informe de posibles \"bugs\" a <gnupg-bugs@gnu.org>.\n"
+msgstr "Por favor, informe de \"bugs\" a "
 
 #: kbx/kbxutil.c:118
-#, fuzzy
 msgid "Usage: kbxutil [options] [files] (-h for help)"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: kbxutil [opciones] [ficheros] (-h para ayuda)"
 
 #: kbx/kbxutil.c:121
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "list, export, import Keybox data\n"
 msgstr ""
+"Sintaxis: kbxutil [opciones] [ficheros]\n"
+"listar, exportar, importar datos Keybox\n"
 
 #: scd/app-nks.c:326 scd/app-openpgp.c:1347 scd/app-dinsig.c:297
 msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+msgstr "||Por favor inntroduzca su PIN en el teclado del lector"
 
 #: scd/app-nks.c:330 scd/app-openpgp.c:1351 scd/app-openpgp.c:1383
 #: scd/app-openpgp.c:1530 scd/app-openpgp.c:1548 scd/app-dinsig.c:301
@@ -6481,7 +6428,7 @@ msgstr "la función de manejo del PIN devolvió un error: %s\n"
 
 #: scd/app-nks.c:378
 msgid "the NullPIN has not yet been changed\n"
-msgstr ""
+msgstr "el PIN-Nulo no ha sido cambiado\n"
 
 #: scd/app-openpgp.c:599
 #, c-format
@@ -6494,9 +6441,9 @@ msgid "failed to store the creation date: %s\n"
 msgstr "fallo guardando la fecha de creación: %s\n"
 
 #: scd/app-openpgp.c:1007
-#, fuzzy, c-format
+#, c-format
 msgid "reading public key failed: %s\n"
-msgstr "fallo leyendo la clave\n"
+msgstr "fallo leyendo clave pública: %s\n"
 
 #: scd/app-openpgp.c:1015 scd/app-openpgp.c:2114
 msgid "response does not contain the public key data\n"
@@ -6521,14 +6468,14 @@ msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
 #: scd/app-openpgp.c:1333
-#, fuzzy, c-format
+#, c-format
 msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
-msgstr "PIN [firmas hechas: %lu]"
+msgstr "||Introduzca su PIN en el teclado del lector%%OA[firmas hechas: %lu]"
 
 #: scd/app-openpgp.c:1367
-#, fuzzy, c-format
+#, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "PIN [firmas hechas: %lu]"
+msgstr "||Por favor introduzca PIN%%0A[firmas hechas: %lu]"
 
 #: scd/app-openpgp.c:1390 scd/app-openpgp.c:1555
 #, c-format
@@ -6561,16 +6508,17 @@ msgstr ""
 "bloquearpermanentemente la clave\n"
 
 #: scd/app-openpgp.c:1510
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
 "%d]"
-msgstr "PIN [firmas hechas: %lu]"
+msgstr ""
+"|A|Introduzca PIN de Administrador en el teclado del lector%%0A[intentos "
+"restantes %d]"
 
 #: scd/app-openpgp.c:1525
-#, fuzzy
 msgid "|A|Please enter the Admin PIN at the reader's keypad"
-msgstr "PIN [firmas hechas: %lu]"
+msgstr "|A|Introduzca PIN de Administrador en el teclado del lector"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep
 #. it at the start of the string.  We need this elsewhere to
@@ -6617,22 +6565,22 @@ msgstr "generando nueva clave\n"
 
 #: scd/app-openpgp.c:1939
 msgid "creation timestamp missing\n"
-msgstr ""
+msgstr "falta fecha de creación\n"
 
 #: scd/app-openpgp.c:1946
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
-msgstr ""
+msgstr "falta el módulo RSA o no es de %d bits\n"
 
 #: scd/app-openpgp.c:1953
-#, fuzzy, c-format
+#, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
-msgstr "exponente público demasiado grande (más de 32 bits)\n"
+msgstr "falta el exponente público RSA o es mayor de %d bits\n"
 
 #: scd/app-openpgp.c:1961 scd/app-openpgp.c:1968
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
-msgstr ""
+msgstr "el primo RSA %s falta o no es de %d bits\n"
 
 #: scd/app-openpgp.c:2031
 #, c-format
@@ -6658,12 +6606,12 @@ msgstr "estructura de la tarjeta OpenPGP inválida (DO 0x93)\n"
 
 #: scd/app-openpgp.c:2215
 msgid "fingerprint on card does not match requested one\n"
-msgstr ""
+msgstr "la huella digital en la tarjeta no coincide con la solicitada\n"
 
 #: scd/app-openpgp.c:2303
-#, fuzzy, c-format
+#, c-format
 msgid "card does not support digest algorithm %s\n"
-msgstr "firma %s, algoritmo de resumen %s\n"
+msgstr "la tarjeta no permite usar el algoritmo de resumen %s\n"
 
 #: scd/app-openpgp.c:2364
 #, c-format
@@ -6674,6 +6622,7 @@ msgstr "firmas creadas hasta ahora: %lu\n"
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
+"actualmente se prohibe verificar el PIN del Administrador con esta orden\n"
 
 #: scd/app-openpgp.c:2723 scd/app-openpgp.c:2733
 #, c-format
@@ -6682,409 +6631,369 @@ msgstr "no se puede acceder a %s - ¿tarjeta OpenPGP inválida?\n"
 
 #: scd/scdaemon.c:105
 msgid "run in multi server mode (foreground)"
-msgstr ""
+msgstr "ejecutar en modo multi servidor (primer plano)"
 
 #: scd/scdaemon.c:111 sm/gpgsm.c:366
-#, fuzzy
 msgid "read options from file"
-msgstr "leyendo opciones desde `%s'\n"
+msgstr "leyendo opciones desde fichero"
 
 #: scd/scdaemon.c:121
 msgid "|N|connect to reader at port N"
-msgstr ""
+msgstr "|N|conectar el lector al puerto N"
 
 #: scd/scdaemon.c:122
-#, fuzzy
 msgid "|NAME|use NAME as ct-API driver"
-msgstr "|NOMBRE|usa NOMBRE como destinatario por defecto"
+msgstr "|NOMBRE|usa NOMBRE como driver ct-API"
 
 #: scd/scdaemon.c:123
-#, fuzzy
 msgid "|NAME|use NAME as PC/SC driver"
-msgstr "|NOMBRE|usa NOMBRE como destinatario por defecto"
+msgstr "|NOMBRE|usa NOMBRE como driver PC/SC"
 
 #: scd/scdaemon.c:126
-#, fuzzy
 msgid "do not use the internal CCID driver"
-msgstr "no usa la terminal en absoluto"
+msgstr "no usa el driverd del CCID interno"
 
 #: scd/scdaemon.c:131
 msgid "do not use a reader's keypad"
-msgstr ""
+msgstr "no usa el teclado del lector"
 
 #: scd/scdaemon.c:132
-#, fuzzy
 msgid "allow the use of admin card commands"
-msgstr "ver órdenes de administrador"
+msgstr "permitir órdenes de administrador en la tarjeta"
 
 #: scd/scdaemon.c:210
-#, fuzzy
 msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "Uso: gpgm [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: scdaemon [opciones] [ficheros] (-h para ayuda)"
 
 #: scd/scdaemon.c:212
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
 msgstr ""
+"Sintaxis: scdaemon [opciones] [orden [args]]\n"
+"Demonio de la tarjeta inteligente para GnuPG\n"
 
 #: scd/scdaemon.c:670
 msgid "please use the option `--daemon' to run the program in the background\n"
-msgstr ""
+msgstr "use la opción `--daemon' para ejectuar el programa en segundo plano\n"
 
 #: scd/scdaemon.c:1024
 #, c-format
 msgid "handler for fd %d started\n"
-msgstr ""
+msgstr "manejador del descriptor %d iniciado\n"
 
 #: scd/scdaemon.c:1030
 #, c-format
 msgid "handler for fd %d terminated\n"
-msgstr ""
+msgstr "manejador del descriptor %d terminado\n"
 
 #: sm/base64.c:325
-#, fuzzy, c-format
+#, c-format
 msgid "invalid radix64 character %02x skipped\n"
-msgstr "caracter inválido radix64 %02X omitido\n"
+msgstr "caracter inválido radix64 %02x omitido\n"
 
 #: sm/call-agent.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "failed to proxy %s inquiry to client\n"
-msgstr "fallo al poner '%s' en la tabla de confianza: %s\n"
+msgstr "fallo al hacer la petición proxy %s al cliente\n"
 
 #: sm/call-dirmngr.c:212
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
-msgstr ""
+msgstr "no hay dirmngr en ejecución - iniciando `%s'\n"
 
 #: sm/call-dirmngr.c:245
-#, fuzzy
 msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "variable de entorno GPG_AGENT_INFO malformada\n"
+msgstr "variable de entorno DIRMNGR_INFO malformada\n"
 
 #: sm/call-dirmngr.c:257
-#, fuzzy, c-format
+#, c-format
 msgid "dirmngr protocol version %d is not supported\n"
-msgstr "el programa no permite usar el protocolo agente gpg versión %d\n"
+msgstr "la versión del protocolo dirmngr %d no puede usarse\n"
 
 #: sm/call-dirmngr.c:277
 msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
+msgstr "no puedo conectar con el dirmngr - intentando retirada\n"
 
 #: sm/certchain.c:196
 #, c-format
 msgid "validation model requested by certificate: %s"
-msgstr ""
+msgstr "el certificado: %s requiere un modelo de validación"
 
 #: sm/certchain.c:197 sm/certchain.c:1805
 msgid "chain"
-msgstr ""
+msgstr "cadena"
 
 #: sm/certchain.c:198 sm/certchain.c:1805
-#, fuzzy
 msgid "shell"
-msgstr "ayuda"
+msgstr "shell"
 
 #: sm/certchain.c:243
-#, fuzzy, c-format
+#, c-format
 msgid "critical certificate extension %s is not supported"
-msgstr "el programa no permite usar el protocolo agente gpg versión %d\n"
+msgstr "la extensión crítica de certificado %s no puede usarse"
 
 #: sm/certchain.c:282
 msgid "issuer certificate is not marked as a CA"
-msgstr ""
+msgstr "el certificado del emisor no está marcado como CA"
 
 #: sm/certchain.c:320
 msgid "critical marked policy without configured policies"
-msgstr ""
+msgstr "política marcada como crítica sin políticas configuradas"
 
 #: sm/certchain.c:330
-#, fuzzy, c-format
+#, c-format
 msgid "failed to open `%s': %s\n"
-msgstr "No se puede abrir `%s': %s\n"
+msgstr "fallo abriendo `%s': %s\n"
 
 #: sm/certchain.c:338 sm/certchain.c:367
 msgid "note: non-critical certificate policy not allowed"
-msgstr ""
+msgstr "nota: no se permiten políticas no críticas de certificados"
 
 #: sm/certchain.c:342 sm/certchain.c:371
-#, fuzzy
 msgid "certificate policy not allowed"
-msgstr "no se permite exportar claves secretas\n"
+msgstr "no se permite política de certificado"
 
 #: sm/certchain.c:483
 msgid "looking up issuer at external location\n"
-msgstr ""
+msgstr "buscando al emisor en una localización externa\n"
 
 #: sm/certchain.c:502
 #, c-format
 msgid "number of issuers matching: %d\n"
-msgstr ""
+msgstr "numero de emisores coincidentes: %d\n"
 
 #: sm/certchain.c:544
 msgid "looking up issuer from the Dirmngr cache\n"
-msgstr ""
+msgstr "buscando emisor en el caché de Dirmngr\n"
 
 #: sm/certchain.c:568
-#, fuzzy, c-format
+#, c-format
 msgid "number of matching certificates: %d\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "número de certificados coincidentes: %d\n"
 
 #: sm/certchain.c:570
-#, fuzzy, c-format
+#, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
-msgstr "fallo leyendo la clave\n"
+msgstr "fallo buscando la clave sólo caché de dirmngr: %s\n"
 
 #: sm/certchain.c:742 sm/certchain.c:1229 sm/certchain.c:1833 sm/decrypt.c:259
 #: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113
-#, fuzzy
 msgid "failed to allocated keyDB handle\n"
-msgstr "fallo al almacenar la clave: %s\n"
+msgstr "fallo al colocar handle de keyDB\n"
 
 #: sm/certchain.c:902
-#, fuzzy
 msgid "certificate has been revoked"
-msgstr "NOTA: la clave ha sido revocada"
+msgstr "el certificado ha sido revocado"
 
 #: sm/certchain.c:912
-#, fuzzy
 msgid "no CRL found for certificate"
-msgstr "Certificado correcto"
+msgstr "no se encuentra CRL para el certificado"
 
 #: sm/certchain.c:917
 msgid "the status of the certificate is unknown"
-msgstr ""
+msgstr "el estado del certificado es desconocido"
 
 #: sm/certchain.c:922
-#, fuzzy
 msgid "the available CRL is too old"
-msgstr "Clave disponible en: "
+msgstr "el CRL disponible es demasiado antiguo"
 
 #: sm/certchain.c:924
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
-msgstr ""
+msgstr "por favor asegúrese de que \"dirmngr\" está bien instalado\n"
 
 #: sm/certchain.c:930
-#, fuzzy, c-format
+#, c-format
 msgid "checking the CRL failed: %s"
-msgstr "la comprobación de la firma creada falló: %s\n"
+msgstr "la comprobación de CRL falló: %s"
 
 #: sm/certchain.c:959 sm/certchain.c:1027
-#, fuzzy, c-format
+#, c-format
 msgid "certificate with invalid validity: %s"
-msgstr "problema en la lectura del certificado: %s\n"
+msgstr "validez del certificado incorrecta: %s"
 
 #: sm/certchain.c:974 sm/certchain.c:1059
-#, fuzzy
 msgid "certificate not yet valid"
-msgstr "Revocación de certificado válida"
+msgstr "el certificado aún no es válido"
 
 #: sm/certchain.c:975 sm/certchain.c:1060
-#, fuzzy
 msgid "root certificate not yet valid"
-msgstr "Revocación de certificado válida"
+msgstr "el certificado raíz no es válido aún"
 
 #: sm/certchain.c:976 sm/certchain.c:1061
-#, fuzzy
 msgid "intermediate certificate not yet valid"
-msgstr "Revocación de certificado válida"
+msgstr "el certificado intermedio aún no es válido"
 
 #: sm/certchain.c:989
-#, fuzzy
 msgid "certificate has expired"
-msgstr "problema en la lectura del certificado: %s\n"
+msgstr "certificado caducado"
 
 #: sm/certchain.c:990
-#, fuzzy
 msgid "root certificate has expired"
-msgstr "problema en la lectura del certificado: %s\n"
+msgstr "el certificado raíz ha caducado"
 
 #: sm/certchain.c:991
-#, fuzzy
 msgid "intermediate certificate has expired"
-msgstr "problema en la lectura del certificado: %s\n"
+msgstr "el certificado intermedio ha caducado"
 
 #: sm/certchain.c:1033
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
-msgstr ""
+msgstr "faltan los atributos requeridos del certificado: %s%s%s"
 
 #: sm/certchain.c:1042
-#, fuzzy
 msgid "certificate with invalid validity"
-msgstr "problema en la lectura del certificado: %s\n"
+msgstr "el certificado tiene una validez incorrecta"
 
 #: sm/certchain.c:1079
 msgid "signature not created during lifetime of certificate"
-msgstr ""
+msgstr "la firma no se creo durante el tiempo de validez del certificado"
 
 #: sm/certchain.c:1081
 msgid "certificate not created during lifetime of issuer"
-msgstr ""
+msgstr "el certificado no se creo durante el tiempo de validez el emisor"
 
 #: sm/certchain.c:1082
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
+"certificado intermedio no creado durante el tiempo de validezdel emisor"
 
 #: sm/certchain.c:1086
-#, fuzzy
 msgid "  (  signature created at "
-msgstr "firmas creadas hasta ahora: %lu\n"
+msgstr "  ( firmas creadas en "
 
 #: sm/certchain.c:1087
-#, fuzzy
 msgid "  (certificate created at "
-msgstr "Certificado de revocación creado.\n"
+msgstr "  (certificado creado en "
 
 #: sm/certchain.c:1090
-#, fuzzy
 msgid "  (certificate valid from "
-msgstr "Revocación de certificado válida"
+msgstr "  (certificado válido desde "
 
 #: sm/certchain.c:1091
-#, fuzzy
 msgid "  (     issuer valid from "
-msgstr "      Número de serie de la tarjeta ="
+msgstr "  (     emisor válido desde "
 
 #: sm/certchain.c:1121
-#, fuzzy, c-format
+#, c-format
 msgid "fingerprint=%s\n"
-msgstr "Huella dactilar CA:"
+msgstr "huella dactilar=%s\n"
 
 #: sm/certchain.c:1130
-#, fuzzy
 msgid "root certificate has now been marked as trusted\n"
-msgstr ""
-"No se ha encontrado ningún certificado sin valor de confianza.\n"
-"\n"
+msgstr "certificado raíz marcado ahora como fiable\n"
 
 #: sm/certchain.c:1143
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
-msgstr ""
+msgstr "marcar interactivamente como fiable no está activado en gpg-agent\n"
 
 #: sm/certchain.c:1149
 msgid "interactive marking as trusted disabled for this session\n"
-msgstr ""
+msgstr "marcar interactivamente como fíable desactivado en esta sesión\n"
 
 #: sm/certchain.c:1206
 msgid "WARNING: creation time of signature not known - assuming current time"
-msgstr ""
+msgstr "AVISO: fecha de creación de firma desconocida - asumo momento actual"
 
 #: sm/certchain.c:1270
-#, fuzzy
 msgid "no issuer found in certificate"
-msgstr "Certificado correcto"
+msgstr "no se encuentra el emisor de este certificado"
 
 #: sm/certchain.c:1343
 msgid "self-signed certificate has a BAD signature"
-msgstr ""
+msgstr "certificado auto firmado con firma INCORRECTA"
 
 #: sm/certchain.c:1412
-#, fuzzy
 msgid "root certificate is not marked trusted"
-msgstr ""
-"No se ha encontrado ningún certificado sin valor de confianza.\n"
-"\n"
+msgstr "el certificado raíz no está marcado como fiable"
 
 #: sm/certchain.c:1425
-#, fuzzy, c-format
+#, c-format
 msgid "checking the trust list failed: %s\n"
-msgstr "la comprobación de la firma creada falló: %s\n"
+msgstr "la comprobación de la lista de confianza falló: %s\n"
 
 #: sm/certchain.c:1454 sm/import.c:158
-#, fuzzy
 msgid "certificate chain too long\n"
-msgstr "Revocación de certificado válida"
+msgstr "cadena de certificados demasiado larga\n"
 
 #: sm/certchain.c:1466
-#, fuzzy
 msgid "issuer certificate not found"
-msgstr "Revocación de certificado válida"
+msgstr "no se encuentra emisor del certificado"
 
 #: sm/certchain.c:1499
-#, fuzzy
 msgid "certificate has a BAD signature"
-msgstr "verifica una firma"
+msgstr "el certificado tiene una firma INCORRECTA"
 
 #: sm/certchain.c:1530
 msgid "found another possible matching CA certificate - trying again"
-msgstr ""
+msgstr "encontrado otro posible certificado de CA coincidente - reintentando"
 
 #: sm/certchain.c:1581
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
-msgstr ""
+msgstr "cadena de certificados más larga de lo que permite la CA (%d)"
 
 #: sm/certchain.c:1621 sm/certchain.c:1904
-#, fuzzy
 msgid "certificate is good\n"
-msgstr "Revocación de certificado válida"
+msgstr "certificado correcto\n"
 
 #: sm/certchain.c:1622
-#, fuzzy
 msgid "intermediate certificate is good\n"
-msgstr "certificado duplicado - eliminado"
+msgstr "certificado intermedio correcto\n"
 
 #: sm/certchain.c:1623
-#, fuzzy
 msgid "root certificate is good\n"
-msgstr ""
-"No se ha encontrado ningún certificado sin valor de confianza.\n"
-"\n"
+msgstr "certificado raíz correcto\n"
 
 #: sm/certchain.c:1794
 msgid "switching to chain model"
-msgstr ""
+msgstr "cambiando al modelo en cadena"
 
 #: sm/certchain.c:1803
 #, c-format
 msgid "validation model used: %s"
-msgstr ""
+msgstr "modelo de validación usado: %s"
 
 #: sm/certcheck.c:101
 #, c-format
 msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr ""
+msgstr "la clave %s usa un hash inseguro (de %u bits)\n"
 
 #: sm/certcheck.c:111
 #, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
-msgstr ""
+msgstr "un hash de %u bits no vale para %u bits de la clave %s\n"
 
 #: sm/certcheck.c:248 sm/sign.c:480 sm/verify.c:201
 msgid "(this is the MD2 algorithm)\n"
-msgstr ""
+msgstr "(es el algoritmo MD2)\n"
 
 #: sm/certdump.c:68 sm/certdump.c:151
-#, fuzzy
 msgid "none"
-msgstr "no"
+msgstr "ninguno"
 
 #: sm/certdump.c:162
-#, fuzzy
 msgid "[none]"
-msgstr "[no establecido]"
+msgstr "[ninguno]"
 
 #: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
-#, fuzzy
 msgid "[Error - invalid encoding]"
-msgstr "Error: respuesta no válida.\n"
+msgstr "[Error - codificación inválida]"
 
 #: sm/certdump.c:593 sm/certdump.c:638
 msgid "[Error - out of core]"
-msgstr ""
+msgstr "[Error - core]"
 
 #: sm/certdump.c:675 sm/certdump.c:731
 msgid "[Error - No name]"
-msgstr ""
+msgstr "[Error - Sin nombre]"
 
 #: sm/certdump.c:700 sm/certdump.c:754
-#, fuzzy
 msgid "[Error - invalid DN]"
-msgstr "Error: respuesta no válida.\n"
+msgstr "[Error - DN inválido]"
 
 #: sm/certdump.c:955
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "
 "certificate:\n"
@@ -7092,136 +7001,137 @@ msgid ""
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Necesita una frase contraseña para desbloquear la clave secreta\n"
-"del usuario: \"%.*s\"\n"
-"%u bits, clave %s, ID %s, creada el %s%s\n"
+"Por favor introduzca la frase de paso para desbloquear la clave secretadel "
+"certificado X.509\n"
+"\"%s\"\n"
+"S/N %s, ID 0x%08lX,\n"
+"created %s, expires %s.\n"
 
 #: sm/certlist.c:122
 msgid "no key usage specified - assuming all usages\n"
-msgstr ""
+msgstr "no se especifica uso de la clave - asumiendo todos los usos\n"
 
 #: sm/certlist.c:132 sm/keylist.c:258
-#, fuzzy, c-format
+#, c-format
 msgid "error getting key usage information: %s\n"
-msgstr "error obteniendo la información actual de la clave: %s\n"
+msgstr "error obteniendo información sobre uso de la clave: %s\n"
 
 #: sm/certlist.c:142
 msgid "certificate should have not been used for certification\n"
-msgstr ""
+msgstr "el certificado no debería haberse usado para certificar\n"
 
 #: sm/certlist.c:154
 msgid "certificate should have not been used for OCSP response signing\n"
-msgstr ""
+msgstr "el certificado no debería haberse usado para firma en respuesta OCSP\n"
 
 #: sm/certlist.c:165
 msgid "certificate should have not been used for encryption\n"
-msgstr ""
+msgstr "el certificado no debería haberse usado para cifrar\n"
 
 #: sm/certlist.c:166
 msgid "certificate should have not been used for signing\n"
-msgstr ""
+msgstr "el certificado no debería haberse usado para firmar\n"
 
 #: sm/certlist.c:167
 msgid "certificate is not usable for encryption\n"
-msgstr ""
+msgstr "el certificado no es utilizable para cifrar\n"
 
 #: sm/certlist.c:168
 msgid "certificate is not usable for signing\n"
-msgstr ""
+msgstr "el certificado no es utilizable para firmar\n"
 
 #: sm/certreqgen.c:474
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: invalid algorithm\n"
-msgstr "algoritmo de distribución inválido `%s'\n"
+msgstr "línea %d: algoritmo inválido\n"
 
 #: sm/certreqgen.c:487
 #, c-format
 msgid "line %d: invalid key length %u (valid are %d to %d)\n"
-msgstr ""
+msgstr "línea %d: longitud de clave inválida %u (válidas de %d a %d)\n"
 
 #: sm/certreqgen.c:505
 #, c-format
 msgid "line %d: no subject name given\n"
-msgstr ""
+msgstr "línea %d: falta nombre de entidad\n"
 
 #: sm/certreqgen.c:514
 #, c-format
 msgid "line %d: invalid subject name label `%.*s'\n"
-msgstr ""
+msgstr "línea %d: etiqueta con nombre de entidad inválida `%.*s'\n"
 
 #: sm/certreqgen.c:517
 #, c-format
 msgid "line %d: invalid subject name `%s' at pos %d\n"
-msgstr ""
+msgstr "línea %d: nombre de entidad inválida `%s' posición %d\n"
 
 #: sm/certreqgen.c:534
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: not a valid email address\n"
-msgstr "Dirección inválida\n"
+msgstr "línea %d: no es una dirección de email válida\n"
 
 #: sm/certreqgen.c:546
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: error reading key `%s' from card: %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "línea %d: error leyendo clave `%s' de la tarjeta: %s\n"
 
 #: sm/certreqgen.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: error getting key by keygrip `%s': %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "línea %d: error obteniendo clave con keygrip `%s': %s\n"
 
 #: sm/certreqgen.c:574
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: key generation failed: %s <%s>\n"
-msgstr "Creación de la clave fallida: %s\n"
+msgstr "línea %d: generación de clave fallida: %s <%s>\n"
 
 #: sm/certreqgen-ui.c:122
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA (sólo firmar)\n"
+msgstr "   (%d) RSA\n"
 
 #: sm/certreqgen-ui.c:123
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) Existing key\n"
-msgstr "   (2) Clave de cifrado\n"
+msgstr "   (%d) Clave existente\n"
 
 #: sm/certreqgen-ui.c:124
 #, c-format
 msgid "   (%d) Existing key from card\n"
-msgstr ""
+msgstr "   (%d) Clave existente de la tarjeta\n"
 
 #: sm/certreqgen-ui.c:176
-#, fuzzy, c-format
+#, c-format
 msgid "Possible actions for a %s key:\n"
-msgstr "Posibles accriones para una %s clave: "
+msgstr "Posibles acciones para una clave %s:\n"
 
 #: sm/certreqgen-ui.c:177
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) sign, encrypt\n"
-msgstr "   (%d) RSA (firmar y cifrar)\n"
+msgstr "   (%d) firmar, cifrar\n"
 
 #: sm/certreqgen-ui.c:178
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) sign\n"
-msgstr "   (%d) DSA (sólo firmar)\n"
+msgstr "   (%d) firmar\n"
 
 #: sm/certreqgen-ui.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) encrypt\n"
-msgstr "   (%d) RSA (sólo cifrar)\n"
+msgstr "   (%d) cifrar\n"
 
 #: sm/certreqgen-ui.c:203
 msgid "Enter the X.509 subject name: "
-msgstr ""
+msgstr "Introduzca nombre de entidad para X.509"
 
 #: sm/certreqgen-ui.c:207
-#, fuzzy
 msgid "No subject name given\n"
-msgstr "(No se dió descripción)\n"
+msgstr "No se dió nombre de entidad\n"
 
 #: sm/certreqgen-ui.c:211
 #, c-format
 msgid "Invalid subject name label `%.*s'\n"
-msgstr ""
+msgstr "Etiqueta de nombre de entidad inválida `%.*s'\n"
 
 #. TRANSLATORS: The 22 in the second string is the
 #. length of the first string up to the "%s".  Please
@@ -7229,192 +7139,174 @@ msgstr ""
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #: sm/certreqgen-ui.c:220
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid subject name `%s'\n"
-msgstr "algoritmo de distribución inválido `%s'\n"
+msgstr "Nombre de entidad inválido `%s'\n"
 
 #: sm/certreqgen-ui.c:222
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
-msgstr ""
+msgstr "28 visto por el traductor hasta la comilla inclusive"
 
 #: sm/certreqgen-ui.c:234
-#, fuzzy
 msgid "Enter email addresses"
 msgstr "Dirección de correo electrónico: "
 
 #: sm/certreqgen-ui.c:235
-#, fuzzy
 msgid " (end with an empty line):\n"
-msgstr ""
-"\n"
-"Introduzca ID de usuario. Acabe con una línea vacía: "
+msgstr " (termine con una línea en blanco):\n"
 
 #: sm/certreqgen-ui.c:239
-#, fuzzy
 msgid "Enter DNS names"
-msgstr "Introduzca nuevo nombre de fichero"
+msgstr "Introduzca nombres de DNS"
 
 #: sm/certreqgen-ui.c:240 sm/certreqgen-ui.c:245
-#, fuzzy
 msgid " (optional; end with an empty line):\n"
-msgstr "Introduzca una descripción opcional; acábela con una línea vacía:\n"
+msgstr " (opcional; acabe con una línea en blanco):\n"
 
 #: sm/certreqgen-ui.c:244
-#, fuzzy
 msgid "Enter URIs"
-msgstr "Introduzca PIN: "
+msgstr "Introduzca URIs"
 
 #: sm/certreqgen-ui.c:271
 msgid "Parameters to be used for the certificate request:\n"
-msgstr ""
+msgstr "Parámetros que se usarán para pedir certificados:\n"
 
 #: sm/certreqgen-ui.c:289
 msgid "Now creating certificate request.  This may take a while ...\n"
-msgstr ""
+msgstr "Creando una petición de certificado.  Puede llevar un rato ...\n"
 
 #: sm/certreqgen-ui.c:298
 msgid "Ready.  You should now send this request to your CA.\n"
-msgstr ""
+msgstr "Acabado. Debería mandar esta petición a su CA.\n"
 
 #: sm/certreqgen-ui.c:303
 msgid "resource problem: out or core\n"
-msgstr ""
+msgstr "problema de recursos: core agotado\n"
 
 #: sm/decrypt.c:324
 msgid "(this is the RC2 algorithm)\n"
-msgstr ""
+msgstr "(el algoritmo RC2)\n"
 
 #: sm/decrypt.c:326
 msgid "(this does not seem to be an encrypted message)\n"
-msgstr ""
+msgstr "(no parece un mensaje cifrado)\n"
 
 #: sm/delete.c:50 sm/delete.c:101
-#, fuzzy, c-format
+#, c-format
 msgid "certificate `%s' not found: %s\n"
-msgstr "clave secreta \"%s\" no encontrada: %s\n"
+msgstr "certificado `%s' no encontrado: %s\n"
 
 #: sm/delete.c:111 sm/keydb.c:1395 sm/keydb.c:1495
-#, fuzzy, c-format
+#, c-format
 msgid "error locking keybox: %s\n"
-msgstr "error leyendo bloque de claves: %s\n"
+msgstr "error bloqueando keybox: %s\n"
 
 #: sm/delete.c:132
-#, fuzzy, c-format
+#, c-format
 msgid "duplicated certificate `%s' deleted\n"
-msgstr "certificado duplicado - eliminado"
+msgstr "certificado duplicado `%s' borrado\n"
 
 #: sm/delete.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "certificate `%s' deleted\n"
-msgstr "certificado duplicado - eliminado"
+msgstr "certificado `%s' borrado\n"
 
 #: sm/delete.c:164
-#, fuzzy, c-format
+#, c-format
 msgid "deleting certificate \"%s\" failed: %s\n"
-msgstr "borrado de bloque de anillo de claves fallido: %s\n"
+msgstr "borrado del certificado \"%s\" fallido: %s\n"
 
 #: sm/encrypt.c:335
-#, fuzzy
 msgid "no valid recipients given\n"
-msgstr "(No se dió descripción)\n"
+msgstr "no se dieron receptores válidos\n"
 
 #: sm/gpgsm.c:248
-#, fuzzy
 msgid "|[FILE]|make a signature"
-msgstr "|[file]|crea una firma"
+msgstr "|[FILE]|crea una firma"
 
 #: sm/gpgsm.c:249
-#, fuzzy
 msgid "|[FILE]|make a clear text signature"
-msgstr "|[file]|crea una firma en texto claro"
+msgstr "|[FICHERO]|crea una firma en texto claro"
 
 #: sm/gpgsm.c:257
-#, fuzzy
 msgid "list external keys"
-msgstr "lista claves secretas"
+msgstr "lista claves externas"
 
 #: sm/gpgsm.c:259
-#, fuzzy
 msgid "list certificate chain"
-msgstr "Revocación de certificado válida"
+msgstr "lista de cadenas de certificados"
 
 #: sm/gpgsm.c:262
-#, fuzzy
 msgid "remove key from the public keyring"
-msgstr "elimina claves del anillo público"
+msgstr "elimina clave del anillo público"
 
 #: sm/gpgsm.c:265
-#, fuzzy
 msgid "import certificates"
-msgstr "Certificado correcto"
+msgstr "importa certificado"
 
 #: sm/gpgsm.c:266
-#, fuzzy
 msgid "export certificates"
-msgstr "Certificado correcto"
+msgstr "exporta certificado"
 
 #: sm/gpgsm.c:267
-#, fuzzy
 msgid "register a smartcard"
-msgstr "añadir clave a tarjeta"
+msgstr "registrar tarjeta inteligente"
 
 #: sm/gpgsm.c:269
 msgid "pass a command to the dirmngr"
-msgstr ""
+msgstr "pasar una orden a dirmngr"
 
 #: sm/gpgsm.c:271
 msgid "invoke gpg-protect-tool"
-msgstr ""
+msgstr "invocar gpg-protect-tool"
 
 #: sm/gpgsm.c:272
-#, fuzzy
 msgid "change a passphrase"
-msgstr "cambia la frase contraseña"
+msgstr "cambia una frase contraseña"
 
 #: sm/gpgsm.c:287
-#, fuzzy
 msgid "create base-64 encoded output"
-msgstr "crea una salida ascii con armadura"
+msgstr "crea una salida en base-64"
 
 #: sm/gpgsm.c:291
 msgid "assume input is in PEM format"
-msgstr ""
+msgstr "asumir entrada en formato PEM"
 
 #: sm/gpgsm.c:293
 msgid "assume input is in base-64 format"
-msgstr ""
+msgstr "asumir entrada en formato base-64"
 
 #: sm/gpgsm.c:295
 msgid "assume input is in binary format"
-msgstr ""
+msgstr "asumir entrada en formato binario"
 
 #: sm/gpgsm.c:300
 msgid "use system's dirmngr if available"
-msgstr ""
+msgstr "usar el dirmngr del sistema si está disponible"
 
 #: sm/gpgsm.c:301
 msgid "never consult a CRL"
-msgstr ""
+msgstr "nunca consultar una CRL"
 
 #: sm/gpgsm.c:308
 msgid "check validity using OCSP"
-msgstr ""
+msgstr "comprabar validez usando OCSP"
 
 #: sm/gpgsm.c:313
 msgid "|N|number of certificates to include"
-msgstr ""
+msgstr "|N|número de certificados que incluir"
 
 #: sm/gpgsm.c:316
 msgid "|FILE|take policy information from FILE"
-msgstr ""
+msgstr "|FICHERO|tomar política de información de FICHERO"
 
 #: sm/gpgsm.c:319
 msgid "do not check certificate policies"
-msgstr ""
+msgstr "no comprobar políticas de certificados"
 
 #: sm/gpgsm.c:323
 msgid "fetch missing issuer certificates"
-msgstr ""
+msgstr "recuperar certificados de emisor perdidos"
 
 #: sm/gpgsm.c:327
 msgid "|NAME|use NAME as default recipient"
@@ -7430,12 +7322,11 @@ msgstr "no usa la terminal en absoluto"
 
 #: sm/gpgsm.c:347
 msgid "|FILE|write a server mode log to FILE"
-msgstr ""
+msgstr "|FICHERO|escribir un log en modo servidor en FICHERO"
 
 #: sm/gpgsm.c:349
-#, fuzzy
 msgid "|FILE|write an audit log to FILE"
-msgstr "|FICHERO|carga módulo de extensiones FICHERO"
+msgstr "|FICHERO|escribir inform de auditoría a FICHERO"
 
 #: sm/gpgsm.c:351
 msgid "force v3 signatures"
@@ -7485,7 +7376,7 @@ msgstr "|NOMBRE|usa el juego de caracteres NOMBRE"
 
 #: sm/gpgsm.c:369
 msgid "|LEVEL|set the debugging level to LEVEL"
-msgstr ""
+msgstr "|NIVEL|poner el nivel de depurado a NIVEL"
 
 #: sm/gpgsm.c:384
 msgid "|FILE|load extension module FILE"
@@ -7504,149 +7395,143 @@ msgid "|N|use compress algorithm N"
 msgstr "|N|usa el algoritmo de compresión N"
 
 #: sm/gpgsm.c:577
-#, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "Uso: gpgm [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpgsm [opciones] [ficheros] (-h para ayuda)"
 
 #: sm/gpgsm.c:580
-#, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "default operation depends on the input data\n"
 msgstr ""
-"Sintaxis: gpg [opciones] [ficheros]\n"
-"firma, comprueba, cifra o descifra\n"
+"Sintaxis: gpgsm [opciones] [ficheros]\n"
+"firma, comprueba, cifra o descifra usando protocolo S/MIME\n"
 "la operación por defecto depende de los datos de entrada\n"
 
 #: sm/gpgsm.c:707
-#, fuzzy
 msgid "usage: gpgsm [options] "
-msgstr "uso: gpgm [opciones] "
+msgstr "uso: gpgsm [opciones] "
 
 #: sm/gpgsm.c:805
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
-msgstr "no se puede conectar con `%s': %s\n"
+msgstr "NOTA: no se podrá cifrar a `%s': %s\n"
 
 #: sm/gpgsm.c:816
-#, fuzzy, c-format
+#, c-format
 msgid "unknown validation model `%s'\n"
-msgstr "opción desconocida `%s'\n"
+msgstr "modelo de validación desconocido `%s'\n"
 
 #: sm/gpgsm.c:1391
 msgid "WARNING: running with faked system time: "
-msgstr ""
+msgstr "AVISO: ejecutándose con hora del sistema falsificada"
 
 #: sm/gpgsm.c:1493
 #, c-format
 msgid "importing common certificates `%s'\n"
-msgstr ""
+msgstr "importando certificados comunes `%s'\n"
 
 #: sm/gpgsm.c:1531
-#, fuzzy, c-format
+#, c-format
 msgid "can't sign using `%s': %s\n"
-msgstr "no se puede acceder a `%s': %s\n"
+msgstr "no puedo firmar usando `%s': %s\n"
 
 #: sm/gpgsm.c:1717
 msgid "this command has not yet been implemented\n"
-msgstr ""
+msgstr "esta orden no está aún implementada\n"
 
 #: sm/gpgsm.c:1872
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
 #: sm/import.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "total number processed: %lu\n"
-msgstr "Cantidad total procesada: %lu\n"
+msgstr "cantidad total procesada: %lu\n"
 
 #: sm/import.c:227
-#, fuzzy
 msgid "error storing certificate\n"
-msgstr "Certificado correcto"
+msgstr "error almacenando certificado\n"
 
 #: sm/import.c:235
 msgid "basic certificate checks failed - not imported\n"
-msgstr ""
+msgstr "fallaron comprobaciones básicas sobre el certificado - no importado\n"
 
 #: sm/import.c:421 sm/import.c:453
-#, fuzzy, c-format
+#, c-format
 msgid "error importing certificate: %s\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "error importando el certificado: %s\n"
 
-#: sm/import.c:542 tools/gpg-connect-agent.c:1307
-#, fuzzy, c-format
+#: sm/import.c:542 tools/gpg-connect-agent.c:1318
+#, c-format
 msgid "error reading input: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error leyendo entrada: %s\n"
 
 #: sm/keydb.c:188
-#, fuzzy, c-format
+#, c-format
 msgid "error creating keybox `%s': %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "error creando caja de claves `%s': %s\n"
 
 #: sm/keydb.c:191
 msgid "you may want to start the gpg-agent first\n"
-msgstr ""
+msgstr "puede que quiera ejecutar gpg-agent antes\n"
 
 #: sm/keydb.c:196
-#, fuzzy, c-format
+#, c-format
 msgid "keybox `%s' created\n"
-msgstr "anillo `%s' creado\n"
+msgstr "caja de claves `%s' creada\n"
 
 #: sm/keydb.c:1310 sm/keydb.c:1378
-#, fuzzy
 msgid "failed to get the fingerprint\n"
-msgstr "fallo al almacenar la huella digital: %s\n"
+msgstr "fallo obteniendo huella digital\n"
 
 #: sm/keydb.c:1317 sm/keydb.c:1385
-#, fuzzy
 msgid "failed to allocate keyDB handle\n"
-msgstr "fallo al almacenar la clave: %s\n"
+msgstr "fallo al reservar handle de keyDB\n"
 
 #: sm/keydb.c:1338
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
-msgstr ""
+msgstr "problema buscando el certificado existente: %s\n"
 
 #: sm/keydb.c:1346
-#, fuzzy, c-format
+#, c-format
 msgid "error finding writable keyDB: %s\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "error obteniendo keyDB para escribir: %s\n"
 
 #: sm/keydb.c:1354
-#, fuzzy, c-format
+#, c-format
 msgid "error storing certificate: %s\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "error almacenando certificado: %s\n"
 
 #: sm/keydb.c:1406
-#, fuzzy, c-format
+#, c-format
 msgid "problem re-searching certificate: %s\n"
-msgstr "rev? problema comprobando la revocación: %s\n"
+msgstr "problema re-buscando el certificado: %s\n"
 
 #: sm/keydb.c:1415 sm/keydb.c:1507
-#, fuzzy, c-format
+#, c-format
 msgid "error getting stored flags: %s\n"
-msgstr "error obteniendo nuevo PIN: %s\n"
+msgstr "error obteniendo parámetros almacenados: %s\n"
 
 #: sm/keydb.c:1427 sm/keydb.c:1518
-#, fuzzy, c-format
+#, c-format
 msgid "error storing flags: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error almacenando parámetros: %s\n"
 
 #: sm/misc.c:55
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
+msgstr "GPG_TTY no tiene valor - usando valor por defecto quizá absurdo\n"
 
 #: sm/qualified.c:105
-#, fuzzy, c-format
+#, c-format
 msgid "invalid formatted fingerprint in `%s', line %d\n"
-msgstr "Error: formato inválido de huella dactilar.\n"
+msgstr "formato inválido de huella dactilar en `%s', línea %d\n"
 
 #: sm/qualified.c:123
 #, c-format
 msgid "invalid country code in `%s', line %d\n"
-msgstr ""
+msgstr "código de país inválido en `%s', línea %d\n"
 
 #: sm/qualified.c:200
 #, c-format
@@ -7658,12 +7543,19 @@ msgid ""
 "\n"
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
+"Está a punto de crear una firma usando su certificado:\n"
+"\"%s\"\n"
+"Esto creará una firma válida ante la ley e igual a una firma manuscrita\n"
+"\n"
+"%s%sEstá realmente seguro de querer hacer esto?"
 
 #: sm/qualified.c:209 sm/verify.c:612
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
 msgstr ""
+"Observe que este programa no está oficialmente aprobado para crear "
+"overificar tales firmas.\n"
 
 #: sm/qualified.c:277
 #, c-format
@@ -7672,25 +7564,27 @@ msgid ""
 "\"%s\"\n"
 "Note, that this certificate will NOT create a qualified signature!"
 msgstr ""
+"Está a punto de crear una firma usando su certificado:\n"
+"\"%s\"\n"
+"¡Observe que este certificado NO creará una firma cualificada!"
 
 #: sm/sign.c:445
-#, fuzzy, c-format
+#, c-format
 msgid "checking for qualified certificate failed: %s\n"
-msgstr "la comprobación de la firma creada falló: %s\n"
+msgstr "la comprobación de la firma cualificada falló: %s\n"
 
 #: sm/verify.c:447
-#, fuzzy
 msgid "Signature made "
-msgstr "Firmado el %s\n"
+msgstr "Firmado el "
 
 #: sm/verify.c:451
 msgid "[date not given]"
-msgstr ""
+msgstr "[no hay fecha]"
 
 #: sm/verify.c:452
-#, fuzzy, c-format
+#, c-format
 msgid " using certificate ID 0x%08lX\n"
-msgstr "error obteniendo el número de serie: %s\n"
+msgstr "usando el certificado ID 0x%08lX\n"
 
 #: sm/verify.c:470
 msgid ""
@@ -7698,193 +7592,183 @@ msgid ""
 msgstr ""
 
 #: sm/verify.c:590
-#, fuzzy
 msgid "Good signature from"
-msgstr "Firma correcta de \"%s\""
+msgstr "Firma correcta de"
 
 #: sm/verify.c:591
-#, fuzzy
 msgid "                aka"
-msgstr "                alias \"%s\""
+msgstr "                alias"
 
 #: sm/verify.c:609
-#, fuzzy
 msgid "This is a qualified signature\n"
-msgstr "Esto será una autofirma.\n"
+msgstr "Es una firma cualificada\n"
 
-#: tools/gpg-connect-agent.c:67 tools/gpgconf.c:73 tools/symcryptrun.c:165
-#, fuzzy
+#: tools/gpg-connect-agent.c:67 tools/gpgconf.c:78 tools/symcryptrun.c:165
 msgid "quiet"
-msgstr "fin"
+msgstr "silencioso"
 
 #: tools/gpg-connect-agent.c:68
 msgid "print data out hex encoded"
-msgstr ""
+msgstr "escribir datos de salida en hexadecimal"
 
 #: tools/gpg-connect-agent.c:69
 msgid "decode received data lines"
-msgstr ""
+msgstr "decodificar líneas de datos recibidos"
 
 #: tools/gpg-connect-agent.c:70
 msgid "|NAME|connect to Assuan socket NAME"
-msgstr ""
+msgstr "|NOMBRE|conectar al socket Assuan NOMBRE"
 
 #: tools/gpg-connect-agent.c:71
 msgid "run the Assuan server given on the command line"
-msgstr ""
+msgstr "ejecutar el servidor Assuan indicando en línea de órdenes"
 
 #: tools/gpg-connect-agent.c:73
 msgid "do not use extended connect mode"
-msgstr ""
+msgstr "no usar el modo de conexión extendido"
 
 #: tools/gpg-connect-agent.c:74
-#, fuzzy
 msgid "|FILE|run commands from FILE on startup"
-msgstr "|FICHERO|carga módulo de extensiones FICHERO"
+msgstr "|FICHERO|ejecuta órdenes de FICHERO al empezar"
 
 #: tools/gpg-connect-agent.c:75
 msgid "run /subst on startup"
-msgstr ""
+msgstr "ejecutar /subst al empezar"
 
 #: tools/gpg-connect-agent.c:174
-#, fuzzy
 msgid "Usage: gpg-connect-agent [options] (-h for help)"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpg-connect-agent [opciones] (-h para ayuda)"
 
 #: tools/gpg-connect-agent.c:177
 msgid ""
 "Syntax: gpg-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
+"Sintaxis: gpg-connect-agent [opciones]\n"
+"Conectar a un agente que se está ejecutando y mandar órdenes\n"
 
-#: tools/gpg-connect-agent.c:1188
+#: tools/gpg-connect-agent.c:1189
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
-msgstr ""
+msgstr "la opción \"%s\" necesita un programa y parámetros opcionales\n"
 
-#: tools/gpg-connect-agent.c:1197
+#: tools/gpg-connect-agent.c:1198
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
-msgstr ""
+msgstr "la opción \"%s\" se ignora por \"%s\"\n"
 
-#: tools/gpg-connect-agent.c:1252 tools/gpg-connect-agent.c:1706
-#, fuzzy, c-format
+#: tools/gpg-connect-agent.c:1253 tools/gpg-connect-agent.c:1717
+#, c-format
 msgid "receiving line failed: %s\n"
-msgstr "fallo leyendo la clave\n"
+msgstr "fallo recibiendo la línea: %s\n"
 
-#: tools/gpg-connect-agent.c:1332
-#, fuzzy
+#: tools/gpg-connect-agent.c:1343
 msgid "line too long - skipped\n"
-msgstr "línea demasiado larga"
+msgstr "línea demasiado larga -omitida\n"
 
-#: tools/gpg-connect-agent.c:1336
+#: tools/gpg-connect-agent.c:1347
 msgid "line shortened due to embedded Nul character\n"
-msgstr ""
+msgstr "línea acortada por culpa del caracter Nul incluído\n"
 
-#: tools/gpg-connect-agent.c:1680
-#, fuzzy, c-format
+#: tools/gpg-connect-agent.c:1691
+#, c-format
 msgid "unknown command `%s'\n"
-msgstr "opción desconocida `%s'\n"
+msgstr "orden desconocida `%s'\n"
 
-#: tools/gpg-connect-agent.c:1698
-#, fuzzy, c-format
+#: tools/gpg-connect-agent.c:1709
+#, c-format
 msgid "sending line failed: %s\n"
-msgstr "firma fallida: %s\n"
+msgstr "fallo mandando la línea: %s\n"
 
-#: tools/gpg-connect-agent.c:2054
-#, fuzzy, c-format
+#: tools/gpg-connect-agent.c:2065
+#, c-format
 msgid "error sending %s command: %s\n"
-msgstr "error enviando a `%s': %s\n"
+msgstr "error enviando orden %s: %s\n"
 
-#: tools/gpg-connect-agent.c:2063
-#, fuzzy, c-format
+#: tools/gpg-connect-agent.c:2074
+#, c-format
 msgid "error sending standard options: %s\n"
-msgstr "error enviando a `%s': %s\n"
+msgstr "error enviando opciones estándar: %s\n"
 
 #: tools/gpgconf-comp.c:467 tools/gpgconf-comp.c:571 tools/gpgconf-comp.c:638
 #: tools/gpgconf-comp.c:703 tools/gpgconf-comp.c:787
 msgid "Options controlling the diagnostic output"
-msgstr ""
+msgstr "Opciones que controlan la salida de diagnósticos"
 
 #: tools/gpgconf-comp.c:480 tools/gpgconf-comp.c:584 tools/gpgconf-comp.c:651
 #: tools/gpgconf-comp.c:716 tools/gpgconf-comp.c:810
 msgid "Options controlling the configuration"
-msgstr ""
+msgstr "Opciones que controlan la configuración"
 
 #: tools/gpgconf-comp.c:490 tools/gpgconf-comp.c:609 tools/gpgconf-comp.c:664
 #: tools/gpgconf-comp.c:738 tools/gpgconf-comp.c:817
-#, fuzzy
 msgid "Options useful for debugging"
-msgstr "habilita depuración completa"
+msgstr "Opciones útiles para el depurado"
 
 #: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:669
 #: tools/gpgconf-comp.c:743 tools/gpgconf-comp.c:825
 msgid "|FILE|write server mode logs to FILE"
-msgstr ""
+msgstr "|FICHERO|escribir logs en modo servidor en FICHERO"
 
 #: tools/gpgconf-comp.c:503 tools/gpgconf-comp.c:619 tools/gpgconf-comp.c:751
 msgid "Options controlling the security"
-msgstr ""
+msgstr "Opciones que controlan la seguridad"
 
 #: tools/gpgconf-comp.c:510
 msgid "|N|expire SSH keys after N seconds"
-msgstr ""
+msgstr "|N|las claves SSH caducan en N segundos"
 
 #: tools/gpgconf-comp.c:514
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
+msgstr "|N|establecer vida máxima del caché de PIN en N segundos"
 
 #: tools/gpgconf-comp.c:518
 msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
+msgstr "|N|establecer vida máxima de la clave SSH en N segundos"
 
 #: tools/gpgconf-comp.c:532
 msgid "Options enforcing a passphrase policy"
-msgstr ""
+msgstr "Opciones que fuerzan una política de frases contraseña"
 
 #: tools/gpgconf-comp.c:535
 msgid "do not allow to bypass the passphrase policy"
-msgstr ""
+msgstr "no permitir evitar la política de frases contraseña"
 
 #: tools/gpgconf-comp.c:539
 msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
+msgstr "|N|establecer longitud mínima para nuevas frases contraseña en N"
 
 #: tools/gpgconf-comp.c:543
 msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
+msgstr "|N|pedir al menos N caracteres no alfabéticos para nuevas contraseñas"
 
 #: tools/gpgconf-comp.c:547
 msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
+msgstr "|FICHERO|comprobar nuevas frases contraseña con el patrón en FICHERO"
 
 #: tools/gpgconf-comp.c:551
-#, fuzzy
 msgid "|N|expire the passphrase after N days"
-msgstr "|N|usa modo de contraseña N"
+msgstr "|N|frase contraseña caduca tras N días"
 
 #: tools/gpgconf-comp.c:555
-#, fuzzy
 msgid "do not allow the reuse of old passphrases"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "no permite reusar antiguas frases contraseña"
 
 #: tools/gpgconf-comp.c:656 tools/gpgconf-comp.c:721
-#, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NOMBRE|cifra para NOMBRE"
+msgstr "|NOMBRE|cifra para el ususario NOMBRE también"
 
 #: tools/gpgconf-comp.c:677
 msgid "Configuration for Keyservers"
-msgstr ""
+msgstr "Configuración para servidores de claves"
 
 #: tools/gpgconf-comp.c:679
-#, fuzzy
 msgid "|URL|use keyserver at URL"
-msgstr "no se puede interpretar la URL del servidor de claves\n"
+msgstr "|URL|usar servidor de claves en URL"
 
 #: tools/gpgconf-comp.c:682
 msgid "allow PKA lookups (DNS requests)"
-msgstr ""
+msgstr "permitir búsquedas PKA (peticiones DNS)"
 
 #: tools/gpgconf-comp.c:685
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
@@ -7892,167 +7776,172 @@ msgstr ""
 
 #: tools/gpgconf-comp.c:730
 msgid "disable all access to the dirmngr"
-msgstr ""
+msgstr "prohibir todo acceso al dirmngr"
 
 #: tools/gpgconf-comp.c:733
-#, fuzzy
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NOMBRE|usa el algoritmo de cifrado NOMBRE para las contraseñas"
+msgstr "|NOMBRE|usa la codificación NOMBRE para frases contraseña PKCS#12"
 
 #: tools/gpgconf-comp.c:756
 msgid "do not check CRLs for root certificates"
-msgstr ""
+msgstr "no comprobar CRLs para certificados raíz"
 
 #: tools/gpgconf-comp.c:800
 msgid "Options controlling the format of the output"
-msgstr ""
+msgstr "Opciones que controlan el formato de la salida"
 
 #: tools/gpgconf-comp.c:836
 msgid "Options controlling the interactivity and enforcement"
-msgstr ""
+msgstr "Opciones que controlan la interactividad y obligación"
 
 #: tools/gpgconf-comp.c:846
 msgid "Configuration for HTTP servers"
-msgstr ""
+msgstr "Configuración de servidores HTTP"
 
 #: tools/gpgconf-comp.c:857
 msgid "use system's HTTP proxy setting"
-msgstr ""
+msgstr "usar configuración del proxy HTTP del sistema"
 
 #: tools/gpgconf-comp.c:862
 msgid "Configuration of LDAP servers to use"
-msgstr ""
+msgstr "Configuración de servidores LDAP que se usará"
 
 #: tools/gpgconf-comp.c:891
 msgid "LDAP server list"
-msgstr ""
+msgstr "lista de servidores LDAP"
 
 #: tools/gpgconf-comp.c:899
 msgid "Configuration for OCSP"
+msgstr "Configuración de OCSP"
+
+#: tools/gpgconf-comp.c:2990
+#, c-format
+msgid "External verification of component %s failed"
 msgstr ""
 
-#: tools/gpgconf-comp.c:3080
+#: tools/gpgconf-comp.c:3140
 msgid "Note that group specifications are ignored\n"
-msgstr ""
-
-#: tools/gpgconf.c:58
-msgid "list all components"
-msgstr ""
-
-#: tools/gpgconf.c:59
-msgid "check all programs"
-msgstr ""
+msgstr "Note que las especificación de grupo se ignoran\n"
 
 #: tools/gpgconf.c:60
-msgid "|COMPONENT|list options"
-msgstr ""
+msgid "list all components"
+msgstr "listar todos los componentes"
 
 #: tools/gpgconf.c:61
-msgid "|COMPONENT|change options"
-msgstr ""
+msgid "check all programs"
+msgstr "comprobar todos los programas"
+
+#: tools/gpgconf.c:62
+msgid "|COMPONENT|list options"
+msgstr "|COMPONENTE|lista de opciones"
 
 #: tools/gpgconf.c:63
+msgid "|COMPONENT|change options"
+msgstr "|COMPONENTE|cambiar opciones"
+
+#: tools/gpgconf.c:64
+#, fuzzy
+msgid "|COMPONENT|check options"
+msgstr "|COMPONENTE|cambiar opciones"
+
+#: tools/gpgconf.c:66
 msgid "apply global default values"
+msgstr "aplicar valores globales por defecto"
+
+#: tools/gpgconf.c:68
+msgid "get the configuration directories for gpgconf"
 msgstr ""
 
-#: tools/gpgconf.c:65
-#, fuzzy
+#: tools/gpgconf.c:70
 msgid "list global configuration file"
-msgstr "artículo de configuración desconocido `%s'\n"
+msgstr "listar fichero de configuración global"
 
-#: tools/gpgconf.c:67
-#, fuzzy
+#: tools/gpgconf.c:72
 msgid "check global configuration file"
-msgstr "artículo de configuración desconocido `%s'\n"
+msgstr "comprobar fichero global de configuración"
 
-#: tools/gpgconf.c:71
+#: tools/gpgconf.c:76
 msgid "use as output file"
 msgstr "usa como fichero de salida"
 
-#: tools/gpgconf.c:75
+#: tools/gpgconf.c:80
 msgid "activate changes at runtime, if possible"
-msgstr ""
+msgstr "activar cambios en tiempo de ejecución, si es posible"
 
-#: tools/gpgconf.c:97
-#, fuzzy
+#: tools/gpgconf.c:102
 msgid "Usage: gpgconf [options] (-h for help)"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: gpgconf [opciones] (-h para ayuda)"
 
-#: tools/gpgconf.c:100
+#: tools/gpgconf.c:105
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
 msgstr ""
+"Sintaxis: gpgconf [opciones]\n"
+"Administrar opciones de configuración de las herramientas GnuPG\n"
 
-#: tools/gpgconf.c:202 tools/gpgconf.c:240
-#, fuzzy
+#: tools/gpgconf.c:210 tools/gpgconf.c:250
 msgid "usage: gpgconf [options] "
-msgstr "uso: gpg [opciones] "
+msgstr "uso: gpgconf [opciones] "
 
-#: tools/gpgconf.c:204
+#: tools/gpgconf.c:212
 msgid "Need one component argument"
-msgstr ""
+msgstr "Necesita un argumento de un componente"
 
-#: tools/gpgconf.c:213
-#, fuzzy
+#: tools/gpgconf.c:221
 msgid "Component not found"
-msgstr "Clave pública no encontrada"
+msgstr "Componente no encontrado"
 
-#: tools/gpgconf.c:242
-#, fuzzy
+#: tools/gpgconf.c:252
 msgid "No argument allowed"
-msgstr "No se permiten órdenes de administrador\n"
+msgstr "No se permiten parámetros"
 
 #: tools/no-libgcrypt.c:30
-#, fuzzy, c-format
+#, c-format
 msgid "error allocating enough memory: %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "error reservando memoria: %s\n"
 
 # Órdenes, please...
 # Sí, este no he podido ser yo :-) Por cierto, ¿por qué la O no se
 # puede acentuar? ¿demasiado alta?
 # ¿Quién dice que no se puede? :-)
 #: tools/symcryptrun.c:152
-#, fuzzy
 msgid ""
 "@\n"
 "Commands:\n"
 " "
 msgstr ""
-"@Órdenes:\n"
+"@\n"
+"Órdenes:\n"
 " "
 
 #: tools/symcryptrun.c:154
-#, fuzzy
 msgid "decryption modus"
-msgstr "descifrado correcto\n"
+msgstr "modo de descifrado"
 
 #: tools/symcryptrun.c:155
-#, fuzzy
 msgid "encryption modus"
-msgstr "descifrado correcto\n"
+msgstr "modo de cifrado"
 
 #: tools/symcryptrun.c:159
 msgid "tool class (confucius)"
-msgstr ""
+msgstr "clase de herramienta (confucius)"
 
 #: tools/symcryptrun.c:160
-#, fuzzy
 msgid "program filename"
-msgstr "--store [nombre_fichero]"
+msgstr "nombre del programa"
 
 #: tools/symcryptrun.c:162
 msgid "secret key file (required)"
-msgstr ""
+msgstr "fichero de clave secreta (requerido)"
 
 #: tools/symcryptrun.c:163
 msgid "input file name (default stdin)"
-msgstr ""
+msgstr "nombre del fichero de entrada (por defecto stdin)"
 
 #: tools/symcryptrun.c:207
-#, fuzzy
 msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr "Uso: symcryptrun [opciones] (-h para ayuda)"
 
 #: tools/symcryptrun.c:210
 msgid ""
@@ -8060,138 +7949,143 @@ msgid ""
 "[options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
+"Sintaxis: symcryptrun --class CLASE --program PROGRAMA --keyfile FICHERO "
+"[opciones...] ORDEN [fichero entrada]\n"
+"Invocar una herramienta simple de cifrado simétrico\n"
 
 #: tools/symcryptrun.c:279
-#, fuzzy, c-format
+#, c-format
 msgid "%s on %s aborted with status %i\n"
-msgstr "¡%s no permitido con %s!\n"
+msgstr "%s en %s abortó con estado %i\n"
 
 #: tools/symcryptrun.c:286
-#, fuzzy, c-format
+#, c-format
 msgid "%s on %s failed with status %i\n"
-msgstr "fstat de `%s' falló en %s: %s\n"
+msgstr "%s en %s falló con estado %i\n"
 
 #: tools/symcryptrun.c:312
-#, fuzzy, c-format
+#, c-format
 msgid "can't create temporary directory `%s': %s\n"
-msgstr "no se puede crear el directorio `%s': %s\n"
+msgstr "no se puede crear el directorio temporal `%s': %s\n"
 
 #: tools/symcryptrun.c:352 tools/symcryptrun.c:369
-#, fuzzy, c-format
+#, c-format
 msgid "could not open %s for writing: %s\n"
-msgstr "no se puede abrir `%s': %s\n"
+msgstr "no se puede abrir %s para escribir: %s\n"
 
 #: tools/symcryptrun.c:380
-#, fuzzy, c-format
+#, c-format
 msgid "error writing to %s: %s\n"
-msgstr "error escribiendo anillo `%s': %s\n"
+msgstr "error escribiendo en %s: %s\n"
 
 #: tools/symcryptrun.c:387
-#, fuzzy, c-format
+#, c-format
 msgid "error reading from %s: %s\n"
-msgstr "error leyendo `%s': %s\n"
+msgstr "error leyendo de %s: %s\n"
 
 #: tools/symcryptrun.c:394 tools/symcryptrun.c:401
-#, fuzzy, c-format
+#, c-format
 msgid "error closing %s: %s\n"
-msgstr "error en `%s': %s\n"
+msgstr "error cerrando %s: %s\n"
 
 #: tools/symcryptrun.c:486
-#, fuzzy
 msgid "no --program option provided\n"
-msgstr "no es posible ejecutar programas remotos\n"
+msgstr "falta la opción --program\n"
 
 #: tools/symcryptrun.c:492
 msgid "only --decrypt and --encrypt are supported\n"
-msgstr ""
+msgstr "sólo pueden usarse --decrypt y --encrypt\n"
 
 #: tools/symcryptrun.c:498
 msgid "no --keyfile option provided\n"
-msgstr ""
+msgstr "falta la opción --keyfile\n"
 
 #: tools/symcryptrun.c:509
 msgid "cannot allocate args vector\n"
-msgstr ""
+msgstr "no puedo reservar espacio para el vector de parámetros\n"
 
 #: tools/symcryptrun.c:527
-#, fuzzy, c-format
+#, c-format
 msgid "could not create pipe: %s\n"
-msgstr "no se puede crear %s: %s\n"
+msgstr "no se pudo crear la tubería: %s\n"
 
 #: tools/symcryptrun.c:534
-#, fuzzy, c-format
+#, c-format
 msgid "could not create pty: %s\n"
-msgstr "no se puede crear %s: %s\n"
+msgstr "no se pudo crear pty: %s\n"
 
 #: tools/symcryptrun.c:550
-#, fuzzy, c-format
+#, c-format
 msgid "could not fork: %s\n"
-msgstr "%s: usuario no encontrado: %s\n"
+msgstr "no se puede bifurcar: %s\n"
 
 #: tools/symcryptrun.c:578
-#, fuzzy, c-format
+#, c-format
 msgid "execv failed: %s\n"
-msgstr "actualización fallida: %s\n"
+msgstr "execv fallido: %s\n"
 
 #: tools/symcryptrun.c:607
-#, fuzzy, c-format
+#, c-format
 msgid "select failed: %s\n"
-msgstr "borrado de bloque de anillo de claves fallido: %s\n"
+msgstr "select fallido: %s\n"
 
 #: tools/symcryptrun.c:624
-#, fuzzy, c-format
+#, c-format
 msgid "read failed: %s\n"
-msgstr "actualización fallida: %s\n"
+msgstr "lectura fallida: %s\n"
 
 #: tools/symcryptrun.c:676
-#, fuzzy, c-format
+#, c-format
 msgid "pty read failed: %s\n"
-msgstr "actualización fallida: %s\n"
+msgstr "lectura de pty fallida: %s\n"
 
 #: tools/symcryptrun.c:728
-#, fuzzy, c-format
+#, c-format
 msgid "waitpid failed: %s\n"
-msgstr "actualización fallida: %s\n"
+msgstr "waitpid fallido: %s\n"
 
 #: tools/symcryptrun.c:742
 #, c-format
 msgid "child aborted with status %i\n"
-msgstr ""
+msgstr "proceso hijo abortado con estado %i\n"
 
 #: tools/symcryptrun.c:797
-#, fuzzy, c-format
+#, c-format
 msgid "cannot allocate infile string: %s\n"
-msgstr "%s: no se puede crear el anillo: %s\n"
+msgstr "no puedo reservar espacio para la cadena de entrada: %s\n"
 
 #: tools/symcryptrun.c:810
-#, fuzzy, c-format
+#, c-format
 msgid "cannot allocate outfile string: %s\n"
-msgstr "no se puede crear fichero de respaldo `%s': %s\n"
+msgstr "no puedo reservar espacio para la cadena de salida: %s\n"
 
 #: tools/symcryptrun.c:985
 #, c-format
 msgid "either %s or %s must be given\n"
-msgstr ""
+msgstr "debe darse %s o bien %s\n"
 
 #: tools/symcryptrun.c:1012
 msgid "no class provided\n"
-msgstr ""
+msgstr "se necesita una clase\n"
 
 #: tools/symcryptrun.c:1021
-#, fuzzy, c-format
+#, c-format
 msgid "class %s is not supported\n"
-msgstr "el resumen protector %d no puede ser utilizado\n"
+msgstr "la clase %s no puede usarse\n"
 
 #: tools/gpg-check-pattern.c:145
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
-msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
+msgstr ""
+"Uso: gpg-check-pattern [opciones] [fichero_de_patrones] (-h para ayuda)\n"
 
 #: tools/gpg-check-pattern.c:148
 msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+"Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
+"Compara frase contraseña dada en entrada estándar con un fichero de "
+"patrones\n"
 
 #~ msgid ""
 #~ "It's up to you to assign a value here; this value will never be exported\n"
