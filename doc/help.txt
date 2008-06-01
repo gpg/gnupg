@@ -161,16 +161,19 @@ Answer "yes" or "no".
 
 
 .gpg.keygen.name
-Enter the name of the key holder.
+Enter the name of the key holder. 
+Example: Heinrich Heine
 .
 
 
 .gpg.keygen.email
 Please enter an optional but highly suggested email address.
+Example: heinrichh@duesseldorf.de
 .
 
 .gpg.keygen.comment
 Please enter an optional comment.
+In general there is no need for a comment.
 .
 
 

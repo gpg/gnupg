@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-05-09 11:38+0200\n"
+"POT-Creation-Date: 2008-05-31 13:02+0200\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -98,8 +98,8 @@ msgstr "错误的密码"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "不支持保护散列 %d\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3155
-#: g10/keygen.c:3188 g10/keyring.c:1202 g10/keyring.c:1506 g10/openfile.c:275
+#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3174
+#: g10/keygen.c:3207 g10/keyring.c:1202 g10/keyring.c:1506 g10/openfile.c:275
 #: g10/openfile.c:368 g10/sign.c:800 g10/sign.c:1109 g10/tdbio.c:547
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -108,7 +108,7 @@ msgstr "无法建立‘%s’：%s\n"
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:682
 #: g10/card-util.c:751 g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70
 #: g10/encode.c:194 g10/encode.c:504 g10/gpg.c:1065 g10/import.c:193
-#: g10/keygen.c:2644 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
+#: g10/keygen.c:2663 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:782 g10/sign.c:977 g10/sign.c:1093
 #: g10/sign.c:1249 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:551
 #: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
@@ -294,7 +294,7 @@ msgstr ""
 
 #: agent/gpg-agent.c:121 g10/gpg.c:472 g10/gpgv.c:70 kbx/kbxutil.c:88
 #: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
-#: tools/gpgconf.c:72 tools/symcryptrun.c:164
+#: tools/gpgconf.c:77 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "详细模式"
 
@@ -380,168 +380,168 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:283 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:290 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:207 sm/gpgsm.c:574 tools/gpg-connect-agent.c:171
-#: tools/gpgconf.c:94 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
+#: tools/gpgconf.c:99 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr ""
 "请向 <gnupg-bugs@gnu.org> 报告程序缺陷。\n"
 "请向 <zuxyhere@eastday.com> 反映简体中文翻译的问题。\n"
 
-#: agent/gpg-agent.c:286
+#: agent/gpg-agent.c:293
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
-#: agent/gpg-agent.c:288
+#: agent/gpg-agent.c:295
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:323 g10/gpg.c:971 scd/scdaemon.c:247 sm/gpgsm.c:736
+#: agent/gpg-agent.c:330 g10/gpg.c:971 scd/scdaemon.c:247 sm/gpgsm.c:736
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:522 agent/protect-tool.c:1066 kbx/kbxutil.c:428
+#: agent/gpg-agent.c:529 agent/protect-tool.c:1066 kbx/kbxutil.c:428
 #: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:621 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:972
+#: agent/gpg-agent.c:628 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:972
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意：没有默认配置文件‘%s’\n"
 
-#: agent/gpg-agent.c:626 agent/gpg-agent.c:1206 g10/gpg.c:2073
+#: agent/gpg-agent.c:633 agent/gpg-agent.c:1216 g10/gpg.c:2073
 #: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "配置文件‘%s’：%s\n"
 
-#: agent/gpg-agent.c:634 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:983
+#: agent/gpg-agent.c:641 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:983
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "从‘%s’读取选项\n"
 
-#: agent/gpg-agent.c:966 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:974 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "建立‘%s’时发生错误：%s\n"
 
-#: agent/gpg-agent.c:1298 agent/gpg-agent.c:1420 agent/gpg-agent.c:1424
-#: agent/gpg-agent.c:1465 agent/gpg-agent.c:1469 g10/exec.c:172
+#: agent/gpg-agent.c:1308 agent/gpg-agent.c:1430 agent/gpg-agent.c:1434
+#: agent/gpg-agent.c:1475 agent/gpg-agent.c:1479 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:923
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "无法建立目录‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1312 scd/scdaemon.c:937
+#: agent/gpg-agent.c:1322 scd/scdaemon.c:937
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1337 scd/scdaemon.c:960
+#: agent/gpg-agent.c:1347 scd/scdaemon.c:960
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "无法建立‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1346
+#: agent/gpg-agent.c:1356
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1366
+#: agent/gpg-agent.c:1376
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent 在此次舍话中无法使用\n"
 
-#: agent/gpg-agent.c:1377 scd/scdaemon.c:980
+#: agent/gpg-agent.c:1387 scd/scdaemon.c:980
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "获取新 PIN 时出错：%s\n"
 
-#: agent/gpg-agent.c:1382 scd/scdaemon.c:983
+#: agent/gpg-agent.c:1392 scd/scdaemon.c:983
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
 
-#: agent/gpg-agent.c:1394 scd/scdaemon.c:992
+#: agent/gpg-agent.c:1404 scd/scdaemon.c:992
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "更新失败：%s\n"
 
-#: agent/gpg-agent.c:1400 scd/scdaemon.c:999
+#: agent/gpg-agent.c:1410 scd/scdaemon.c:999
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "正在将私钥写至`%s'\n"
 
-#: agent/gpg-agent.c:1428 agent/gpg-agent.c:1475 g10/openfile.c:432
+#: agent/gpg-agent.c:1438 agent/gpg-agent.c:1485 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "已创建目录‘%s’\n"
 
-#: agent/gpg-agent.c:1481
+#: agent/gpg-agent.c:1491
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "fstat(%d) 在 %s 中出错：%s\n"
 
-#: agent/gpg-agent.c:1485
+#: agent/gpg-agent.c:1495
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "无法建立目录‘%s’：%s\n"
 
-#: agent/gpg-agent.c:1602 scd/scdaemon.c:1015
+#: agent/gpg-agent.c:1612 scd/scdaemon.c:1015
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
-#: agent/gpg-agent.c:1624
+#: agent/gpg-agent.c:1634
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1629
+#: agent/gpg-agent.c:1639
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1649
+#: agent/gpg-agent.c:1659
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1654
+#: agent/gpg-agent.c:1664
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1771 scd/scdaemon.c:1137
+#: agent/gpg-agent.c:1781 scd/scdaemon.c:1137
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "更新私钥失败：%s\n"
 
-#: agent/gpg-agent.c:1884 scd/scdaemon.c:1204
+#: agent/gpg-agent.c:1894 scd/scdaemon.c:1204
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s：已跳过：%s\n"
 
-#: agent/gpg-agent.c:1907
+#: agent/gpg-agent.c:1917
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent 在此次舍话中无法使用\n"
 
-#: agent/gpg-agent.c:1918 common/simple-pwquery.c:349 common/asshelp.c:324
-#: tools/gpg-connect-agent.c:2021
+#: agent/gpg-agent.c:1928 common/simple-pwquery.c:349 common/asshelp.c:324
+#: tools/gpg-connect-agent.c:2032
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
 
-#: agent/gpg-agent.c:1931 common/simple-pwquery.c:361 common/asshelp.c:336
-#: tools/gpg-connect-agent.c:2032
+#: agent/gpg-agent.c:1941 common/simple-pwquery.c:361 common/asshelp.c:336
+#: tools/gpg-connect-agent.c:2043
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "不支持 gpg-agent 协议版本 %d\n"
@@ -654,7 +654,7 @@ msgstr ""
 #. second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives
 #. the name as stored in the certificate.
-#: agent/trustlist.c:539
+#: agent/trustlist.c:541
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -664,7 +664,7 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
 #. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:551
+#: agent/trustlist.c:554
 msgid "Correct"
 msgstr ""
 
@@ -676,19 +676,19 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:574
+#: agent/trustlist.c:577
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:583
+#: agent/trustlist.c:587
 #, fuzzy
 msgid "Yes"
 msgstr "yes"
 
-#: agent/trustlist.c:583
+#: agent/trustlist.c:587
 msgid "No"
 msgstr ""
 
@@ -713,8 +713,8 @@ msgstr "更改密码"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1372
-#: tools/gpgconf-comp.c:1695
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1395
+#: tools/gpgconf-comp.c:1734
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
@@ -1116,7 +1116,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "检测到 OpenPGP 卡号 %s\n"
 
 #: g10/card-util.c:75 g10/card-util.c:1396 g10/delkey.c:126 g10/keyedit.c:1529
-#: g10/keygen.c:2831 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:2850 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "在批处理模式中无法完成此操作\n"
 
@@ -1689,7 +1689,7 @@ msgstr "使用子钥 %s 而非主钥 %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "密钥 %s：无相应公钥的私钥――已跳过\n"
 
-#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:56
+#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:58
 msgid ""
 "@Commands:\n"
 " "
@@ -1822,7 +1822,7 @@ msgid "run in server mode"
 msgstr ""
 
 #: g10/gpg.c:435 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
-#: tools/gpg-connect-agent.c:64 tools/gpgconf.c:69 tools/symcryptrun.c:157
+#: tools/gpg-connect-agent.c:64 tools/gpgconf.c:74 tools/symcryptrun.c:157
 msgid ""
 "@\n"
 "Options:\n"
@@ -1857,7 +1857,7 @@ msgstr "使用标准的文本模式"
 msgid "|FILE|write output to FILE"
 msgstr "从‘%s’读取选项\n"
 
-#: g10/gpg.c:483 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:74
+#: g10/gpg.c:483 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:79
 msgid "do not make any changes"
 msgstr "不做任何改变"
 
@@ -3243,19 +3243,19 @@ msgstr "签名时失败： %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr "只有占位密钥，或者密钥存储在卡上——没有密码可以更改。\n"
 
-#: g10/keyedit.c:1142 g10/keygen.c:3530
+#: g10/keyedit.c:1142 g10/keygen.c:3549
 msgid "This key is not protected.\n"
 msgstr "这把密钥没有被保护。\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3517 g10/revoke.c:538
+#: g10/keyedit.c:1146 g10/keygen.c:3536 g10/revoke.c:538
 msgid "Secret parts of primary key are not available.\n"
 msgstr "主钥的私钥部分无法取用。\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3533
+#: g10/keyedit.c:1150 g10/keygen.c:3552
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "主钥的私钥部分存储在卡上。\n"
 
-#: g10/keyedit.c:1154 g10/keygen.c:3537
+#: g10/keyedit.c:1154 g10/keygen.c:3556
 msgid "Key is protected.\n"
 msgstr "密钥受保护。\n"
 
@@ -3272,7 +3272,7 @@ msgstr ""
 "输入要给这把私钥用的新密码。\n"
 "\n"
 
-#: g10/keyedit.c:1199 g10/keygen.c:2130
+#: g10/keyedit.c:1199 g10/keygen.c:2149
 msgid "passphrase not correctly repeated; try again"
 msgstr "密码再次输入时与首次输入不符；请再试一次"
 
@@ -4020,12 +4020,12 @@ msgid "writing key binding signature\n"
 msgstr "正在写入密钥绑定签名\n"
 
 #: g10/keygen.c:1151 g10/keygen.c:1262 g10/keygen.c:1267 g10/keygen.c:1402
-#: g10/keygen.c:3030
+#: g10/keygen.c:3049
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "密钥尺寸无效：改用 %u 位\n"
 
-#: g10/keygen.c:1157 g10/keygen.c:1273 g10/keygen.c:1408 g10/keygen.c:3036
+#: g10/keygen.c:1157 g10/keygen.c:1273 g10/keygen.c:1408 g10/keygen.c:3055
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "密钥尺寸舍入到 %u 位\n"
@@ -4238,7 +4238,14 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "以上正确吗？(y/n)"
 
-#: g10/keygen.c:1945
+#: g10/keygen.c:1947
+msgid ""
+"\n"
+"GnuPG needs to construct a user ID to identify your key.\n"
+"\n"
+msgstr ""
+
+#: g10/keygen.c:1958
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4254,44 +4261,44 @@ msgstr ""
 "    “Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>”\n"
 "\n"
 
-#: g10/keygen.c:1958
+#: g10/keygen.c:1977
 msgid "Real name: "
 msgstr "真实姓名："
 
-#: g10/keygen.c:1966
+#: g10/keygen.c:1985
 msgid "Invalid character in name\n"
 msgstr "姓名含有无效的字符\n"
 
-#: g10/keygen.c:1968
+#: g10/keygen.c:1987
 msgid "Name may not start with a digit\n"
 msgstr "姓名不可以用数字开头\n"
 
-#: g10/keygen.c:1970
+#: g10/keygen.c:1989
 msgid "Name must be at least 5 characters long\n"
 msgstr "姓名至少要有五个字符长\n"
 
-#: g10/keygen.c:1978
+#: g10/keygen.c:1997
 msgid "Email address: "
 msgstr "电子邮件地址："
 
-#: g10/keygen.c:1984
+#: g10/keygen.c:2003
 msgid "Not a valid email address\n"
 msgstr "电子邮件地址无效\n"
 
-#: g10/keygen.c:1992
+#: g10/keygen.c:2011
 msgid "Comment: "
 msgstr "注释："
 
-#: g10/keygen.c:1998
+#: g10/keygen.c:2017
 msgid "Invalid character in comment\n"
 msgstr "注释含有无效的字符\n"
 
-#: g10/keygen.c:2020
+#: g10/keygen.c:2039
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "您正在使用‘%s’字符集。\n"
 
-#: g10/keygen.c:2026
+#: g10/keygen.c:2045
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4302,7 +4309,7 @@ msgstr ""
 "    “%s”\n"
 "\n"
 
-#: g10/keygen.c:2031
+#: g10/keygen.c:2050
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "请不要把电子邮件地址放进您的真实姓名或注释里\n"
 
@@ -4317,23 +4324,23 @@ msgstr "请不要把电子邮件地址放进您的真实姓名或注释里\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2047
+#: g10/keygen.c:2066
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoQq"
 
-#: g10/keygen.c:2057
+#: g10/keygen.c:2076
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "更改姓名(N)、注释(C)、电子邮件地址(E)或退出(Q)？"
 
-#: g10/keygen.c:2058
+#: g10/keygen.c:2077
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "更改姓名(N)、注释(C)、电子邮件地址(E)或确定(O)/退出(Q)？"
 
-#: g10/keygen.c:2077
+#: g10/keygen.c:2096
 msgid "Please correct the error first\n"
 msgstr "请先改正错误\n"
 
-#: g10/keygen.c:2116
+#: g10/keygen.c:2135
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4341,12 +4348,12 @@ msgstr ""
 "您需要一个密码来保护您的私钥。\n"
 "\n"
 
-#: g10/keygen.c:2131
+#: g10/keygen.c:2150
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2137
+#: g10/keygen.c:2156
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4358,7 +4365,7 @@ msgstr ""
 "再次执行这个程序，并且使用“--edit-key”选项即可。\n"
 "\n"
 
-#: g10/keygen.c:2161
+#: g10/keygen.c:2180
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4368,50 +4375,50 @@ msgstr ""
 "我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动\n"
 "鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。\n"
 
-#: g10/keygen.c:2970 g10/keygen.c:2997
+#: g10/keygen.c:2989 g10/keygen.c:3016
 msgid "Key generation canceled.\n"
 msgstr "密钥生成已取消。\n"
 
-#: g10/keygen.c:3202 g10/keygen.c:3369
+#: g10/keygen.c:3221 g10/keygen.c:3388
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "正在将公钥写至`%s'\n"
 
-#: g10/keygen.c:3204 g10/keygen.c:3372
+#: g10/keygen.c:3223 g10/keygen.c:3391
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "向‘%s’写入私钥占位符\n"
 
-#: g10/keygen.c:3207 g10/keygen.c:3375
+#: g10/keygen.c:3226 g10/keygen.c:3394
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "正在将私钥写至`%s'\n"
 
-#: g10/keygen.c:3356
+#: g10/keygen.c:3375
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "找不到可写的公钥钥匙环：%s\n"
 
-#: g10/keygen.c:3363
+#: g10/keygen.c:3382
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "找不到可写的私钥钥匙环：%s\n"
 
-#: g10/keygen.c:3383
+#: g10/keygen.c:3402
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "写入公钥钥匙环‘%s’时发生错误： %s\n"
 
-#: g10/keygen.c:3391
+#: g10/keygen.c:3410
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "写入私钥钥匙环‘%s’时发生错误： %s\n"
 
-#: g10/keygen.c:3418
+#: g10/keygen.c:3437
 msgid "public and secret key created and signed.\n"
 msgstr "公钥和私钥已经生成并经签名。\n"
 
-#: g10/keygen.c:3429
+#: g10/keygen.c:3448
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4419,42 +4426,42 @@ msgstr ""
 "请注意这把密钥还不能用来加密，您必须先用“--edit-key”指令\n"
 "生成用于加密的子钥。\n"
 
-#: g10/keygen.c:3442 g10/keygen.c:3587 g10/keygen.c:3708
+#: g10/keygen.c:3461 g10/keygen.c:3606 g10/keygen.c:3727
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "生成密钥失败：%s\n"
 
-#: g10/keygen.c:3497 g10/keygen.c:3638 g10/sign.c:241
+#: g10/keygen.c:3516 g10/keygen.c:3657 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3499 g10/keygen.c:3640 g10/sign.c:243
+#: g10/keygen.c:3518 g10/keygen.c:3659 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "密钥是在 %lu 秒后的未来生成的(可能是因为时空扭曲或时钟的问题)\n"
 
-#: g10/keygen.c:3510 g10/keygen.c:3651
+#: g10/keygen.c:3529 g10/keygen.c:3670
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "注意：为 v3 密钥生成子钥会失去 OpenPGP 兼容性\n"
 
-#: g10/keygen.c:3551 g10/keygen.c:3684
+#: g10/keygen.c:3570 g10/keygen.c:3703
 msgid "Really create? (y/N) "
 msgstr "真的要建立吗？(y/N)"
 
-#: g10/keygen.c:3857
+#: g10/keygen.c:3876
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "向卡上存储密钥时失败：%s\n"
 
-#: g10/keygen.c:3905
+#: g10/keygen.c:3924
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "不能创建备份文件‘%s’：%s\n"
 
-#: g10/keygen.c:3931
+#: g10/keygen.c:3950
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "注意：卡密钥的备份已保存到‘%s’\n"
@@ -7389,7 +7396,7 @@ msgstr ""
 msgid "error importing certificate: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
 
-#: sm/import.c:542 tools/gpg-connect-agent.c:1307
+#: sm/import.c:542 tools/gpg-connect-agent.c:1318
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
@@ -7526,7 +7533,7 @@ msgstr "              亦即“%s”"
 msgid "This is a qualified signature\n"
 msgstr "这将是一个自身签名。\n"
 
-#: tools/gpg-connect-agent.c:67 tools/gpgconf.c:73 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:67 tools/gpgconf.c:78 tools/symcryptrun.c:165
 #, fuzzy
 msgid "quiet"
 msgstr "quit"
@@ -7571,46 +7578,46 @@ msgid ""
 "Connect to a running agent and send commands\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:1188
+#: tools/gpg-connect-agent.c:1189
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:1197
+#: tools/gpg-connect-agent.c:1198
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:1252 tools/gpg-connect-agent.c:1706
+#: tools/gpg-connect-agent.c:1253 tools/gpg-connect-agent.c:1717
 #, fuzzy, c-format
 msgid "receiving line failed: %s\n"
 msgstr "无法读出公钥：%s\n"
 
-#: tools/gpg-connect-agent.c:1332
+#: tools/gpg-connect-agent.c:1343
 #, fuzzy
 msgid "line too long - skipped\n"
 msgstr "列太长"
 
-#: tools/gpg-connect-agent.c:1336
+#: tools/gpg-connect-agent.c:1347
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
-#: tools/gpg-connect-agent.c:1680
+#: tools/gpg-connect-agent.c:1691
 #, fuzzy, c-format
 msgid "unknown command `%s'\n"
 msgstr "未知的选项 '%s'\n"
 
-#: tools/gpg-connect-agent.c:1698
+#: tools/gpg-connect-agent.c:1709
 #, fuzzy, c-format
 msgid "sending line failed: %s\n"
 msgstr "签名时失败： %s\n"
 
-#: tools/gpg-connect-agent.c:2054
+#: tools/gpg-connect-agent.c:2065
 #, fuzzy, c-format
 msgid "error sending %s command: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
-#: tools/gpg-connect-agent.c:2063
+#: tools/gpg-connect-agent.c:2074
 #, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
@@ -7743,74 +7750,87 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:3080
+#: tools/gpgconf-comp.c:2990
+#, c-format
+msgid "External verification of component %s failed"
+msgstr ""
+
+#: tools/gpgconf-comp.c:3140
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
-#: tools/gpgconf.c:58
+#: tools/gpgconf.c:60
 msgid "list all components"
 msgstr ""
 
-#: tools/gpgconf.c:59
+#: tools/gpgconf.c:61
 msgid "check all programs"
 msgstr ""
 
-#: tools/gpgconf.c:60
+#: tools/gpgconf.c:62
 msgid "|COMPONENT|list options"
 msgstr ""
 
-#: tools/gpgconf.c:61
+#: tools/gpgconf.c:63
 msgid "|COMPONENT|change options"
 msgstr ""
 
-#: tools/gpgconf.c:63
+#: tools/gpgconf.c:64
+msgid "|COMPONENT|check options"
+msgstr ""
+
+#: tools/gpgconf.c:66
 msgid "apply global default values"
 msgstr ""
 
-#: tools/gpgconf.c:65
+#: tools/gpgconf.c:68
+msgid "get the configuration directories for gpgconf"
+msgstr ""
+
+#: tools/gpgconf.c:70
 #, fuzzy
 msgid "list global configuration file"
 msgstr "未知的配置项‘%s’\n"
 
-#: tools/gpgconf.c:67
+#: tools/gpgconf.c:72
 #, fuzzy
 msgid "check global configuration file"
 msgstr "未知的配置项‘%s’\n"
 
-#: tools/gpgconf.c:71
+#: tools/gpgconf.c:76
 msgid "use as output file"
 msgstr "指定输出文件"
 
-#: tools/gpgconf.c:75
+#: tools/gpgconf.c:80
 msgid "activate changes at runtime, if possible"
 msgstr ""
 
-#: tools/gpgconf.c:97
+#: tools/gpgconf.c:102
 #, fuzzy
 msgid "Usage: gpgconf [options] (-h for help)"
 msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
-#: tools/gpgconf.c:100
+#: tools/gpgconf.c:105
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
 msgstr ""
 
-#: tools/gpgconf.c:202 tools/gpgconf.c:240
+#: tools/gpgconf.c:210 tools/gpgconf.c:250
 #, fuzzy
 msgid "usage: gpgconf [options] "
 msgstr "用法：gpg [选项] "
 
-#: tools/gpgconf.c:204
+#: tools/gpgconf.c:212
 msgid "Need one component argument"
 msgstr ""
 
-#: tools/gpgconf.c:213
+#: tools/gpgconf.c:221
 #, fuzzy
 msgid "Component not found"
 msgstr "找不到公钥"
 
-#: tools/gpgconf.c:242
+#: tools/gpgconf.c:252
 #, fuzzy
 msgid "No argument allowed"
 msgstr "不允许使用管理员命令\n"

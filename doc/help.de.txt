@@ -102,16 +102,18 @@ Geben Sie "ja" oder "nein" ein
 .
 
 .gpg.keygen.name
-Geben Sie den Namen des Schlüsselinhabers ein
+Geben Sie den Namen des Schlüsselinhabers ein.
+Beispiel: Heinrich Heine.
 .
 
 .gpg.keygen.email
 Geben Sie eine Email-Adresse ein. Dies ist zwar nicht unbedingt notwendig,
 aber sehr empfehlenswert.
+Beispiel: heinrichh@duesseldorf.de
 .
 
 .gpg.keygen.comment
-Geben Sie - bei Bedarf - einen Kommentar ein
+Geben Sie - bei Bedarf - einen Kommentar ein.
 .
 
 .gpg.keygen.userid.cmd

@@ -1,7 +1,7 @@
 2008-05-27  Werner Koch  <wk@g10code.com>
 
-	* trustlist.c (insert_colons): Fix stupidly wrong allocation
-	computation. 
+	* trustlist.c (insert_colons): Fix stupidly wrong allocation size
+	computation.
 
 2008-05-26  Werner Koch  <wk@g10code.com>
 

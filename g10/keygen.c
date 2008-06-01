@@ -1941,12 +1941,31 @@ ask_user_id( int mode )
     char *answer;
     char *aname, *acomment, *amail, *uid;
 
-    if( !mode )
-	tty_printf( _("\n"
+    if ( !mode )
+      {
+	const char *s1 =
+          N_("\n"
+             "GnuPG needs to construct a user ID to identify your key.\n"
+             "\n");
+        const char *s2 = _(s1);
+
+        if (!strcmp (s1, s2))
+          {
+            /* There is no translation for the string thus we to use
+               the old info text.  gettext has no way to tell whether
+               a translation is actually available, thus we need to
+               to compare again. */
+            const char *s3 = N_("\n"
 "You need a user ID to identify your key; "
                                         "the software constructs the user ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
-"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n") );
+"    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n\n");
+            const char *s4 = _(s3);
+            if (strcmp (s3, s4))
+              s2 = s3; /* A translation exists - use it. */
+          }
+        tty_printf ("%s", s2) ;
+      }
     uid = aname = acomment = amail = NULL;
     for(;;) {
 	char *p;

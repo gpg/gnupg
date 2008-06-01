@@ -196,3 +196,23 @@ Happy Hacking,
 [8] http://partners.nytimes.com/library/tech/99/11/cyber/articles/19encrypt.html
 [9] http://www.heise.de/tp/r4/artikel/5/5124/1.html
 
+=== Remarks ===
+
+In a reply to this mail Alan Olsen remakrked on the ML:
+
+  MIT was forced to use the RSAREF library which had a non free
+  license.  At first they used the RSAREF2 library, but then they were
+  told to use the RSAREF1 library.  (I diffed the two libraries and
+  determined that the only difference was that RSAREF2 had fixed a
+  number of buffer overflows and other security flaws.  There were no
+  added features.)
+  
+  If I remember correctly, 2.5 had RSAREF2 and 2.6 had RSAREF1.  One
+  of the main reasons for the creation of the "International version"
+  was the use of RSAREF.  (Besides the security issues, it was pretty
+  damn slow.  In the days of the i386 people cared about speed.)
+
+Jaime Suarez translated the text in his blog, see
+
+  http://wordpress.mundocripto.com
+

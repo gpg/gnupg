@@ -1,3 +1,9 @@
+2008-05-31  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_user_id): Change the string printed as header of
+	the user ID generation.  Use code to not break existing
+	translations.  Suggested by Eric Tetz.
+
 2008-05-08  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (do_check_messages): Print a revocation diagnostic
