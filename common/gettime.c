@@ -402,7 +402,7 @@ days_per_month (int y, int m)
 
 
 /* Convert YEAR, MONTH and DAY into the Julian date.  We assume that
-   it is already noon; we dont; support dates before 1582-10-15. */
+   it is already noon.  We do not support dates before 1582-10-15. */
 static unsigned long
 date2jd (int year, int month, int day)
 {

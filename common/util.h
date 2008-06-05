@@ -115,13 +115,19 @@ gpg_error_t add_days_to_isotime (gnupg_isotime_t atime, int ndays);
 gpg_error_t check_isotime (const gnupg_isotime_t atime);
 
 /* Copy one ISO date to another, this is inline so that we can do a
-   sanity check. */
+   minimal sanity check.  A null date (empty string) is allowed.  */
 static inline void
 gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
 {
-  if (*s && (strlen (s) != 15 || s[8] != 'T'))
-    BUG();
-  strcpy (d, s);
+  if (*s)
+    {
+      if ((strlen (s) != 15 || s[8] != 'T'))
+        BUG();
+      memcpy (d, s, 15);
+      d[15] = 0;
+    }
+  else
+    *d = 0;
 }
 
 
