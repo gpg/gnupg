@@ -65,13 +65,92 @@ test_b64enc_pgp (const char *string)
 }
 
 
+static void
+test_b64enc_file (const char *fname)
+{
+  gpg_error_t err;
+  struct b64state state;
+  FILE *fp;
+  char buffer[50];
+  size_t nread;
 
+  fp = fname ? fopen (fname, "r") : stdin;
+  if (!fp)
+    {
+      fprintf (stderr, "%s:%d: can't open `%s': %s\n",
+               __FILE__, __LINE__, fname? fname:"[stdin]", strerror (errno));
+      fail (0);
+    }
+
+  err = b64enc_start (&state, stdout, "DATA");
+  if (err)
+    fail (1);
+
+  while ( (nread = fread (buffer, 1, sizeof buffer, fp)) )
+    {
+      err = b64enc_write (&state, buffer, nread);
+      if (err)
+        fail (2);
+    }
+
+  err = b64enc_finish (&state);
+  if (err)
+    fail (3);
+
+  fclose (fp);
+  pass ();
+}
+
+static void
+test_b64dec_file (const char *fname)
+{
+  gpg_error_t err;
+  struct b64state state;
+  FILE *fp;
+  char buffer[50];
+  size_t nread, nbytes;
+
+  fp = fname ? fopen (fname, "r") : stdin;
+  if (!fp)
+    {
+      fprintf (stderr, "%s:%d: can't open `%s': %s\n",
+               __FILE__, __LINE__, fname? fname:"[stdin]", strerror (errno));
+      fail (0);
+    }
+
+  err = b64dec_start (&state, "");
+  if (err)
+    fail (1);
+
+  while ( (nread = fread (buffer, 1, sizeof buffer, fp)) )
+    {
+      err = b64dec_proc (&state, buffer, nread, &nbytes);
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            break;
+          fail (2);
+        }
+      else if (nbytes)
+        fwrite (buffer, 1, nbytes, stdout);
+    }
+
+  err = b64dec_finish (&state);
+  if (err)
+    fail (3);
+
+  fclose (fp);
+  pass ();
+}
 
 
 
 int
 main (int argc, char **argv)
 {
+  int do_encode = 0;
+  int do_decode = 0;
+
   if (argc)
     { argc--; argv++; }
   if (argc && !strcmp (argv[0], "--verbose"))
@@ -80,7 +159,23 @@ main (int argc, char **argv)
       argc--; argv++;
     }
 
-  test_b64enc_pgp (argc? *argv: NULL);
+  if (argc && !strcmp (argv[0], "--encode"))
+    {
+      do_encode = 1;
+      argc--; argv++;
+    }
+  else if (argc && !strcmp (argv[0], "--decode"))
+    {
+      do_decode = 1;
+      argc--; argv++;
+    }
+
+  if (do_encode)
+    test_b64enc_file (argc? *argv: NULL);
+  else if (do_decode)
+    test_b64dec_file (argc? *argv: NULL);
+  else
+    test_b64enc_pgp (argc? *argv: NULL);
 
   return !!errcount;
 }

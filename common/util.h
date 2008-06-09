@@ -149,7 +149,7 @@ ssize_t read_line (FILE *fp,
                    size_t *max_length);
 
 
-/*-- b64enc.c --*/
+/*-- b64enc.c and b64dec.c --*/
 struct b64state 
 { 
   unsigned int flags;
@@ -159,11 +159,22 @@ struct b64state
   char *title;
   unsigned char radbuf[4];
   u32 crc;
+  int stop_seen:1;
+  int invalid_encoding:1;
 };
+
 gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);
 gpg_error_t b64enc_write (struct b64state *state,
                           const void *buffer, size_t nbytes);
 gpg_error_t b64enc_finish (struct b64state *state);
+
+gpg_error_t b64dec_start (struct b64state *state, const char *title);
+gpg_error_t b64dec_proc (struct b64state *state, void *buffer, size_t length,
+                         size_t *r_nbytes);
+gpg_error_t b64dec_finish (struct b64state *state);
+
+
+
 
 /*-- sexputil.c */
 gpg_error_t keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,

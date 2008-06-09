@@ -1,3 +1,7 @@
+2008-06-09  Werner Koch  <wk@g10code.com>
+
+	* b64dec.c: New.
+
 2008-06-05  Werner Koch  <wk@g10code.com>
 
 	* util.h (gnupg_copy_time): Replace strcpy by memcpy.

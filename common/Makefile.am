@@ -50,7 +50,7 @@ common_sources = \
 	homedir.c \
 	gettime.c \
 	yesno.c \
-	b64enc.c \
+	b64enc.c b64dec.c \
 	convert.c \
 	miscellaneous.c \
 	xasprintf.c \
