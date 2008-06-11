@@ -607,60 +607,51 @@ usagestr_from_pk( PKT_public_key *pk )
 const char *
 colon_strtime (u32 t)
 {
-    if (!t)
-        return "";
-    if (opt.fixed_list_mode) {
-        static char buf[15];
-        sprintf (buf, "%lu", (ulong)t);
-        return buf;
-    }
-    return strtimestamp(t);
+  static char buf[20];
+
+  if (!t)
+    return "";
+  snprintf (buf, sizeof buf, "%lu", (ulong)t);
+  return buf;
 }
 
 const char *
 colon_datestr_from_pk (PKT_public_key *pk)
 {
-    if (opt.fixed_list_mode) {
-        static char buf[15];
-        sprintf (buf, "%lu", (ulong)pk->timestamp);
-        return buf;
-    }
-    return datestr_from_pk (pk);
+  static char buf[20];
+
+  snprintf (buf, sizeof buf, "%lu", (ulong)pk->timestamp);
+  return buf;
 }
 
 const char *
 colon_datestr_from_sk (PKT_secret_key *sk)
 {
-    if (opt.fixed_list_mode) {
-        static char buf[15];
-        sprintf (buf, "%lu", (ulong)sk->timestamp);
-        return buf;
-    }
-    return datestr_from_sk (sk);
+  static char buf[20];
+
+  snprintf (buf, sizeof buf, "%lu", (ulong)sk->timestamp);
+  return buf;
 }
 
 const char *
 colon_datestr_from_sig (PKT_signature *sig)
 {
-    if (opt.fixed_list_mode) {
-        static char buf[15];
-        sprintf (buf, "%lu", (ulong)sig->timestamp);
-        return buf;
-    }
-    return datestr_from_sig (sig);
+  static char buf[20];
+  
+  snprintf (buf, sizeof buf, "%lu", (ulong)sig->timestamp);
+  return buf;
 }
 
 const char *
 colon_expirestr_from_sig (PKT_signature *sig)
 {
-    if(!sig->expiredate)
-        return "";
-    if (opt.fixed_list_mode) {
-        static char buf[15];
-        sprintf (buf, "%lu", (ulong)sig->expiredate);
-        return buf;
-    }
-    return expirestr_from_sig (sig);
+  static char buf[20];
+
+  if (!sig->expiredate)
+    return "";
+
+  snprintf (buf, sizeof buf,"%lu", (ulong)sig->expiredate);
+  return buf;
 }
 
 

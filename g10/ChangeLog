@@ -1,3 +1,13 @@
+2008-06-11  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Make --fixed-list-mode a dummy.
+	* options.h (struct): Removed FIXED_LIST_MODE.
+	* keyid.c (colon_strtime, colon_datestr_from_pk) 
+	(colon_datestr_from_sk, colon_datestr_from_sig) 
+	(colon_expirestr_from_sig): Remove fixed_list_mode case.
+	* keylist.c (list_keyblock_colon): Ditto.  Remove all now unsed
+	code and reindent.
+
 2008-05-31  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_user_id): Change the string printed as header of

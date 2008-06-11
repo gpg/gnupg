@@ -16,9 +16,9 @@ sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
 fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
 
 The double --with-fingerprint prints the fingerprint for the subkeys
-too, --fixed-list-mode is themodern listing way printing dates in
+too. --fixed-list-mode is the modern listing way printing dates in
 seconds since Epoch and does not merge the first userID with the pub
-record.
+record; gpg2 does this by default and the option is a dummy.
 
 
  1. Field:  Type of record

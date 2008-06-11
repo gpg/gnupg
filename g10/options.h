@@ -179,7 +179,6 @@ struct
   int no_literal;
   ulong set_filesize;
   int fast_list_mode;
-  int fixed_list_mode;
   int ignore_time_conflict;
   int ignore_valid_from;
   int ignore_crc_error;

@@ -1846,6 +1846,10 @@ source distribution.
 @opindex fixed-list-mode
 Do not merge primary user ID and primary key in @option{--with-colon}
 listing mode and print all timestamps as seconds since 1970-01-01.
+@ifclear gpgone
+Since GnuPG 2.0.10, this mode is always used and thus this option is
+obsolete; it does not harm to use it though.
+@end ifclear
 
 @item --with-fingerprint
 @opindex with-fingerprint

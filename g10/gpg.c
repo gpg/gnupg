@@ -2734,7 +2734,7 @@ main (int argc, char **argv)
 				   "--keyserver-options ","http-proxy");
 		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
-	  case oFixedListMode: opt.fixed_list_mode = 1; break;
+	  case oFixedListMode: /* Dummy */ break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;

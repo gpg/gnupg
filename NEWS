@@ -17,6 +17,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * gpg-connect-agent accepts commands given as command line arguments.
 
+ * The gpg2 option --fixed-list-mode is now implicitly used and obsolete.
+
 
 Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------
