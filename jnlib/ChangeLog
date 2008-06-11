@@ -1,3 +1,8 @@
+2008-06-11  Werner Koch  <wk@g10code.com>
+
+	* utf8conv.c: Remove useless variable ACTIVE_CHARSET.  Suggested
+	by Petr Uzel.
+
 2008-05-26  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (usage): Make sure to print a trailing LF for usage(1).

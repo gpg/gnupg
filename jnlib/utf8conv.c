@@ -1,6 +1,6 @@
 /* utf8conf.c -  UTF8 character set conversion
  * Copyright (C) 1994, 1998, 1999, 2000, 2001,
- *               2003, 2006  Free Software Foundation, Inc.
+ *               2003, 2006, 2008  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -41,7 +41,6 @@
 #endif
 
 static const char *active_charset_name = "iso-8859-1";
-static unsigned short *active_charset;
 static int no_translation;     /* Set to true if we let simply pass through. */
 static int use_iconv;          /* iconv comversion fucntions required. */
 
@@ -142,7 +141,6 @@ handle_iconv_error (const char *to, const char *from, int use_fallback)
          default.  */
       active_charset_name = "iso-8859-1";
       no_translation = 0;
-      active_charset = NULL;
       use_iconv = 0;
     }
 }
@@ -262,7 +260,6 @@ set_native_charset (const char *newset)
     {
       active_charset_name = "iso-8859-1";
       no_translation = 0;
-      active_charset = NULL;
       use_iconv = 0;
     }
   else if ( !ascii_strcasecmp (newset, "utf8" )
@@ -270,7 +267,6 @@ set_native_charset (const char *newset)
     {
       active_charset_name = "utf-8";
       no_translation = 1;
-      active_charset = NULL;
       use_iconv = 0;
     }
   else
@@ -298,7 +294,6 @@ set_native_charset (const char *newset)
       iconv_close (cd);
       active_charset_name = full_newset;
       no_translation = 0;
-      active_charset = NULL; 
       use_iconv = 1;
     }
   return 0;
@@ -334,7 +329,7 @@ native_to_utf8 (const char *orig_string)
       /* Already utf-8 encoded. */
       buffer = jnlib_xstrdup (orig_string);
     }
-  else if (!active_charset && !use_iconv)
+  else if (!use_iconv)
     {
       /* For Latin-1 we can avoid the iconv overhead. */
       for (s = string; *s; s++)
