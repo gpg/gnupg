@@ -732,6 +732,9 @@ static gc_option_t gc_options_gpgsm[] =
    { "p12-charset", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|NAME|use encoding NAME for PKCS#12 passphrases"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
+   { "keyserver", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+     "gnupg", N_("|SPEC|use this keyserver to lookup keys"),
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

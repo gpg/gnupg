@@ -35,6 +35,18 @@
 
 #define MAX_DIGEST_LEN 24 
 
+struct keyserver_spec
+{
+  struct keyserver_spec *next;
+
+  char *host;
+  int port;
+  char *user;
+  char *pass;
+  char *base;
+};
+
+
 /* A large struct named "opt" to keep global flags. */
 struct 
 {
@@ -123,6 +135,8 @@ struct
                                runtime option in case we want to check
                                the integrity of the software at
                                runtime. */
+
+  struct keyserver_spec *keyserver;
 } opt;
 
 

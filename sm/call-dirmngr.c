@@ -140,6 +140,8 @@ get_membuf (struct membuf *mb, size_t *len)
 static void
 prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 {
+  struct keyserver_spec *server;
+
   if (!ctrl->dirmngr_seen)
     {
       ctrl->dirmngr_seen = 1;
@@ -151,6 +153,25 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
             err = 0;  /* Allow the use of old dirmngr versions.  */
         }
       audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err);
+    }
+
+  server = opt.keyserver;
+  while (server)
+    {
+      char line[ASSUAN_LINELENGTH];
+      char *user = server->user ? server->user : "";
+      char *pass = server->pass ? server->pass : "";
+      char *base = server->base ? server->base : "";
+
+      snprintf (line, DIM (line) - 1, "LDAPSERVER %s:%i:%s:%s:%s",
+		server->host, server->port, user, pass, base);
+      line[DIM (line) - 1] = 0;
+
+      err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+	err = 0;  /* Allow the use of old dirmngr versions.  */
+
+      server = server->next;
     }
 }
 

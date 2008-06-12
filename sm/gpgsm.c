@@ -361,7 +361,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
-    { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
+    { oKeyServer, "keyserver",2, N_("|SPEC|use this keyserver to lookup keys")},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
@@ -816,6 +816,99 @@ parse_validation_model (const char *model)
     log_error (_("unknown validation model `%s'\n"), model);
   else
     default_validation_model = i;
+}
+
+
+/* Release the list of SERVERS.  As usual it is okay to call this
+   function with SERVERS passed as NULL.  */
+void
+keyserver_list_free (struct keyserver_spec *servers)
+{
+  while (servers)
+    {
+      struct keyserver_spec *tmp = servers->next;
+      xfree (servers->host);
+      xfree (servers->user);
+      if (servers->pass)
+        memset (servers->pass, 0, strlen (servers->pass));
+      xfree (servers->pass);
+      xfree (servers->base);
+      xfree (servers);
+      servers = tmp;
+    }
+}
+
+/* See also dirmngr ldapserver_parse_one().  */
+struct keyserver_spec *
+parse_keyserver_line (char *line,
+		      const char *filename, unsigned int lineno)
+{
+  char *p;
+  char *endp;
+  struct keyserver_spec *server;
+  int fieldno;
+  int fail = 0;
+
+  /* Parse the colon separated fields.  */
+  server = xcalloc (1, sizeof *server);
+  for (fieldno = 1, p = line; p; p = endp, fieldno++ )
+    {
+      endp = strchr (p, ':');
+      if (endp)
+	*endp++ = '\0';
+      trim_spaces (p);
+      switch (fieldno)
+	{
+	case 1:
+	  if (*p)
+	    server->host = xstrdup (p);
+	  else
+	    {
+	      log_error (_("%s:%u: no hostname given\n"),
+			 filename, lineno);
+	      fail = 1;
+	    }
+	  break;
+          
+	case 2:
+	  if (*p)
+	    server->port = atoi (p);
+	  break;
+	  
+	case 3:
+	  if (*p)
+	    server->user = xstrdup (p);
+	  break;
+	  
+	case 4:
+	  if (*p && !server->user)
+	    {
+	      log_error (_("%s:%u: password given without user\n"), 
+			 filename, lineno);
+	      fail = 1;
+	    }
+	  else if (*p)
+	    server->pass = xstrdup (p);
+	  break;
+	  
+	case 5:
+	  if (*p)
+	    server->base = xstrdup (p);
+	  break;
+	  
+	default:
+	  /* (We silently ignore extra fields.) */
+	  break;
+	}
+    }
+  
+  if (fail)
+    {
+      log_info (_("%s:%u: skipping this line\n"), filename, lineno);
+      keyserver_list_free (server);
+    }
+
+  return server;
 }
 
 
@@ -1317,6 +1410,24 @@ main ( int argc, char **argv)
 
         case oValidationModel: parse_validation_model (pargs.r.ret_str); break;
 
+	case oKeyServer:
+	  {
+	    struct keyserver_spec *keyserver;
+	    keyserver = parse_keyserver_line (pargs.r.ret_str,
+					      configname, configlineno);
+	    if (! keyserver)
+	      log_error (_("could not parse keyserver\n"));
+	    else
+	      {
+		/* FIXME: Keep last next pointer.  */
+		struct keyserver_spec **next_p = &opt.keyserver;
+		while (*next_p)
+		  next_p = &(*next_p)->next;
+		*next_p = keyserver;
+	      }
+	  }
+	  break;
+
         case aDummy:
           break;
         default: 
@@ -1578,40 +1689,25 @@ main ( int argc, char **argv)
                 GC_OPT_FLAG_DEFAULT, config_filename_esc);
         xfree (config_filename_esc);
 
-        printf ("verbose:%lu:\n"
-                "quiet:%lu:\n"
-                "debug-level:%lu:\"none:\n"
-                "log-file:%lu:\n",
-                GC_OPT_FLAG_NONE,
-                GC_OPT_FLAG_NONE,
-                GC_OPT_FLAG_DEFAULT,
-                GC_OPT_FLAG_NONE );
-        printf ("disable-crl-checks:%lu:\n",
-                GC_OPT_FLAG_NONE );
-        printf ("disable-trusted-cert-crl-check:%lu:\n",
-                GC_OPT_FLAG_NONE );
-        printf ("enable-ocsp:%lu:\n",
-                GC_OPT_FLAG_NONE );
-        printf ("include-certs:%lu:1:\n",
-                GC_OPT_FLAG_DEFAULT );
-        printf ("disable-policy-checks:%lu:\n",
-                GC_OPT_FLAG_NONE );
-        printf ("auto-issuer-key-retrieve:%lu:\n",
-                GC_OPT_FLAG_NONE );
-        printf ("disable-dirmngr:%lu:\n",
-                GC_OPT_FLAG_NONE );
+        printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
+	printf ("quiet:%lu:\n", GC_OPT_FLAG_NONE);
+	printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
+	printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("include-certs:%lu:1:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
+        printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #ifndef HAVE_W32_SYSTEM
-        printf ("prefer-system-dirmngr:%lu:\n",
-                GC_OPT_FLAG_NONE );
+        printf ("prefer-system-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
-        printf ("cipher-algo:%lu:\"3DES:\n",
-                GC_OPT_FLAG_DEFAULT );
-        printf ("p12-charset:%lu:\n",
-                GC_OPT_FLAG_DEFAULT );
-        printf ("default-key:%lu:\n",
-                GC_OPT_FLAG_DEFAULT );
-        printf ("encrypt-to:%lu:\n",
-                GC_OPT_FLAG_DEFAULT );
+        printf ("cipher-algo:%lu:\"3DES:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
+	printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
 
       }
       break;
@@ -1883,6 +1979,8 @@ main ( int argc, char **argv)
     }
   
   /* cleanup */
+  keyserver_list_free (opt.keyserver);
+  opt.keyserver = NULL;
   gpgsm_release_certlist (recplist);
   gpgsm_release_certlist (signerlist);
   FREE_STRLIST (remusr);
