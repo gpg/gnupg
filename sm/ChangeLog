@@ -1,3 +1,7 @@
+2008-06-13  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* call-dirmngr.c (prepare_dirmngr): Fix error code to ignore.
+
 2008-06-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm.h (struct keyserver_spec): New struct.

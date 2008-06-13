@@ -168,7 +168,7 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       line[DIM (line) - 1] = 0;
 
       err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+      if (gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
 	err = 0;  /* Allow the use of old dirmngr versions.  */
 
       server = server->next;
