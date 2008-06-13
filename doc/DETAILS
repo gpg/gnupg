@@ -92,7 +92,7 @@ record; gpg2 does this by default and the option is a dummy.
 
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
-            This is not used with --fixed-list-mode in gpg.
+            For a "pub" record this field is not used on --fixed-list-mode.
             A UAT record puts the attribute subpacket count here, a
 	    space, and then the total attribute subpacket size.
             In gpgsm the issuer name comes here
