@@ -1,6 +1,6 @@
 /* dotlock.c - dotfile locking
  * Copyright (C) 1998, 2000, 2001, 2003, 2004, 
- *               2005, 2006 Free Software Foundation, Inc.
+ *               2005, 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -25,8 +25,11 @@
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
-#ifndef  HAVE_DOSISH_SYSTEM
-#include <sys/utsname.h>
+#ifdef  HAVE_DOSISH_SYSTEM
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#else
+# include <sys/utsname.h>
 #endif
 #include <sys/types.h>
 #include <sys/time.h>
@@ -54,69 +57,97 @@
 #endif
 
 
+/* The object describing a lock.  */
 struct dotlock_handle 
 {
   struct dotlock_handle *next;
-  char *tname;    /* Name of lockfile template.  */
+  char *lockname;      /* Name of the actual lockfile.          */
+  int locked;          /* Lock status.                          */
+  int disable;         /* If true, locking is disabled.         */
+
+#ifdef HAVE_DOSISH_SYSTEM
+  HANDLE lockhd;       /* The W32 handle of the lock file.      */
+#else
+  char *tname;         /* Name of the lockfile template.        */
   size_t nodename_off; /* Offset in TNAME of the nodename part. */
-  size_t nodename_len; /* Length of the nodename part. */
-  char *lockname; /* Name of the real lockfile.  */
-  int locked;     /* Lock status.  */
-  int disable;    /* When true, locking is disabled.  */
+  size_t nodename_len; /* Length of the nodename part.          */
+#endif /* HAVE_DOSISH_SYSTEM */
 };
 
 
+/* A list of of all lock handles. */
 static volatile DOTLOCK all_lockfiles;
+
+/* If this has the value true all locking is disabled.  */
 static int never_lock;
 
-static int read_lockfile (DOTLOCK h, int *same_node);
 
+/* Local protototypes.  */
+#ifndef HAVE_DOSISH_SYSTEM
+static int read_lockfile (DOTLOCK h, int *same_node);
+#endif /*!HAVE_DOSISH_SYSTEM*/
+
+
+
+
+/* Entirely disable all locking.  This function should be called
+   before any locking is done.  It may be called right at startup of
+   the process as it only sets a global value.  */
 void
 disable_dotlock(void)
 {
   never_lock = 1;
 }
 
-/****************
- * Create a lockfile with the given name and return an object of
- * type DOTLOCK which may be used later to actually do the lock.
- * A cleanup routine gets installed to cleanup left over locks
- * or other files used together with the lock mechanism.
- * Although the function is called dotlock, this does not necessarily
- * mean that real lockfiles are used - the function may decide to
- * use fcntl locking.  Calling the function with NULL only install
- * the atexit handler and maybe used to assure that the cleanup
- * is called after all other atexit handlers.
- *
- * Notes: This function creates a lock file in the same directory
- *	  as file_to_lock with the name "file_to_lock.lock"
- *	  A temporary file ".#lk.<hostname>.pid[.threadid] is used.
- *	  This function does nothing for Windoze.
+
+
+/* Create a lockfile for a file name FILE_TO_LOCK and returns an
+   object of type DOTLOCK which may be used later to actually acquire
+   the lock.  A cleanup routine gets installed to cleanup left over
+   locks or other files used internally by the lock mechanism.
+
+   Calling this function with NULL does only install the atexit
+   handler and may thus be used to assure that the cleanup is called
+   after all other atexit handlers.
+  
+   This function creates a lock file in the same directory as
+   FILE_TO_LOCK using that name and a suffix of ".lock".  Note that on
+   POSIX systems a temporary file ".#lk.<hostname>.pid[.threadid] is
+   used.
+
+   The function returns an new handle which needs to be released using
+   destroy_dotlock but gets also released at the termination of the
+   process.  On error NULL is returned.
  */
 DOTLOCK
-create_dotlock( const char *file_to_lock )
+create_dotlock (const char *file_to_lock)
 {
   static int initialized;
   DOTLOCK h;
+#ifndef  HAVE_DOSISH_SYSTEM
   int  fd = -1;
   char pidstr[16];
   const char *nodename;
   const char *dirpart;
   int dirpartlen;
-#ifndef  HAVE_DOSISH_SYSTEM
   struct utsname utsbuf;
+  size_t tnamelen;
 #endif
 
   if ( !initialized )
     {
-      atexit( dotlock_remove_lockfiles );
+      atexit (dotlock_remove_lockfiles);
       initialized = 1;
     }
+
   if ( !file_to_lock )
     return NULL;  /* Only initialization was requested.  */
 
-  h = jnlib_xcalloc ( 1, sizeof *h );
-  if( never_lock )
+  h = jnlib_calloc (1, sizeof *h);
+  if (!h)
+    return NULL;
+
+  if (never_lock)
     {
       h->disable = 1;
 #ifdef _REENTRANT
@@ -128,7 +159,12 @@ create_dotlock( const char *file_to_lock )
     }
 
 #ifndef HAVE_DOSISH_SYSTEM
-  sprintf (pidstr, "%10d\n", (int)getpid() );
+  /*
+     This is the POSIX version which uses a temporary file and the
+     link system call to make locking an atomic operation.
+   */
+
+  snprintf (pidstr, sizeof pidstr, "%10d\n", (int)getpid() );
   /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
   /* Create a temporary file. */
@@ -146,7 +182,7 @@ create_dotlock( const char *file_to_lock )
   }
 #endif /* __riscos__ */
 
-  if ( !(dirpart = strrchr ( file_to_lock, DIRSEP_C )) )
+  if ( !(dirpart = strrchr (file_to_lock, DIRSEP_C)) )
     {
       dirpart = EXTSEP_S;
       dirpartlen = 1;
@@ -163,16 +199,26 @@ create_dotlock( const char *file_to_lock )
   h->next = all_lockfiles;
   all_lockfiles = h;
 
-  h->tname = jnlib_xmalloc ( dirpartlen + 6+30+ strlen(nodename) + 11 );
+  tnamelen = dirpartlen + 6 + 30 + strlen(nodename) + 10;
+  h->tname = jnlib_malloc (tnamelen + 1);
+  if (!h->tname)
+    {
+      all_lockfiles = h->next;
+      jnlib_free (h);
+      return NULL;
+    }
   h->nodename_len = strlen (nodename);
+
 #ifndef __riscos__
-  sprintf (h->tname, "%.*s/.#lk%p.", dirpartlen, dirpart, h );
+  snprintf (h->tname, tnamelen, "%.*s/.#lk%p.", dirpartlen, dirpart, h );
   h->nodename_off = strlen (h->tname);
-  sprintf (h->tname+h->nodename_off, "%s.%d", nodename, (int)getpid ());
+  snprintf (h->tname+h->nodename_off, tnamelen - h->nodename_off,
+           "%s.%d", nodename, (int)getpid ());
 #else /* __riscos__ */
-  sprintf (h->tname, "%.*s.lk%p/", dirpartlen, dirpart, h );
+  snprintf (h->tname, tnamelen, "%.*s.lk%p/", dirpartlen, dirpart, h );
   h->nodename_off = strlen (h->tname);
-  sprintf (h->tname+h->nodename_off, "%s/%d", nodename, (int)getpid () );
+  snprintf (h->tname+h->nodename_off, tnamelen - h->modename_off,
+            "%s/%d", nodename, (int)getpid () );
 #endif /* __riscos__ */
 
   do 
@@ -186,10 +232,10 @@ create_dotlock( const char *file_to_lock )
   if ( fd == -1 ) 
     {
       all_lockfiles = h->next;
-      log_error ( "failed to create temporary file `%s': %s\n",
+      log_error (_("failed to create temporary file `%s': %s\n"),
                   h->tname, strerror(errno));
-      jnlib_free(h->tname);
-      jnlib_free(h);
+      jnlib_free (h->tname);
+      jnlib_free (h);
       return NULL;
     }
   if ( write (fd, pidstr, 11 ) != 11 )
@@ -204,61 +250,120 @@ create_dotlock( const char *file_to_lock )
 # ifdef _REENTRANT
   /* release mutex */
 # endif
-#endif /* !HAVE_DOSISH_SYSTEM */
-  h->lockname = jnlib_xmalloc ( strlen (file_to_lock) + 6 );
-  strcpy (stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
+  h->lockname = jnlib_malloc ( strlen (file_to_lock) + 6 );
+  if (!h->lockname)
+    {
+      all_lockfiles = h->next;
+      unlink (h->tname);
+      jnlib_free (h->tname);
+      jnlib_free (h);
+      return NULL;
+    }
+  strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
   return h;
+
  write_failed:
   all_lockfiles = h->next;
 # ifdef _REENTRANT
   /* fixme: release mutex */
 # endif
-  log_error ( "error writing to `%s': %s\n", h->tname, strerror(errno) );
-  close(fd);
-  unlink(h->tname);
-  jnlib_free(h->tname);
-  jnlib_free(h);
+  log_error ( _("error writing to `%s': %s\n"), h->tname, strerror(errno) );
+  close (fd);
+  unlink (h->tname);
+  jnlib_free (h->tname);
+  jnlib_free (h);
   return NULL;
+
+#else /* HAVE_DOSISH_SYSTEM */
+
+  /* The Windows version does not need a temporary file but uses the
+     plain lock file along with record locking.  We create this file
+     here so that we later do only need to do the file locking.  For
+     error reporting it is useful to keep the name of the file in the
+     handle.  */
+  h->next = all_lockfiles;
+  all_lockfiles = h;
+
+  h->lockname = jnlib_malloc ( strlen (file_to_lock) + 6 );
+  if (!h->lockname)
+    {
+      all_lockfiles = h->next;
+      jnlib_free (h);
+      return NULL;
+    }
+  strcpy (stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
+
+  /* If would be nice if we would use the FILE_FLAG_DELETE_ON_CLOSE
+     along with FILE_SHARE_DELETE but that does not work due to a race
+     condition: Despite the OPEN_ALWAYS flag CreateFile may return an
+     error and we can't reliable create/open the lock file unless we
+     would wait here until it works - however there are other valid
+     reasons why a lock file can't be created and thus the process
+     would not stop as expected but spin til until Windows crashes.
+     Our solution is to keep the lock file open; that does not
+     harm. */ 
+  h->lockhd = CreateFile (h->lockname,
+                          GENERIC_READ|GENERIC_WRITE,
+                          FILE_SHARE_READ|FILE_SHARE_WRITE,
+                          NULL, OPEN_ALWAYS, 0, NULL);
+  if (h->lockhd == INVALID_HANDLE_VALUE)
+    {
+      log_error (_("can't create `%s': %s\n"), h->lockname, w32_strerror (-1));
+      all_lockfiles = h->next;
+      jnlib_free (h->lockname);
+      jnlib_free (h);
+      return NULL;
+    }
+  return h;
+
+#endif /* HAVE_DOSISH_SYSTEM */
 }
 
 
+/* Destroy the local handle H and release the lock. */
 void
 destroy_dotlock ( DOTLOCK h )
 {
-#ifndef HAVE_DOSISH_SYSTEM
-  if ( h )
+  DOTLOCK hprev, htmp;
+
+  if ( !h )
+    return;
+
+  /* First remove the handle from our global list of all locks. */
+  for (hprev=NULL, htmp=all_lockfiles; htmp; hprev=htmp, htmp=htmp->next)
+    if (htmp == h)
+      {
+        if (hprev)
+          hprev->next = htmp->next;
+        else
+          all_lockfiles = htmp->next;
+        h->next = NULL;
+        break;
+      }
+  
+  /* Then destroy the lock. */
+  if (!h->disable)
     {
-      DOTLOCK hprev, htmp;
-      
-      /* First remove the handle from our global list of all locks. */
-      for (hprev=NULL, htmp=all_lockfiles; htmp; hprev=htmp, htmp=htmp->next)
-        if (htmp == h)
-          {
-            if (hprev)
-              hprev->next = htmp->next;
-            else
-              all_lockfiles = htmp->next;
-            h->next = NULL;
-            break;
-          }
-      
-      /* Second destroy the lock. */
-      if (!h->disable)
+#ifdef HAVE_DOSISH_SYSTEM
+      if (h->locked)
         {
-          if (h->locked && h->lockname)
-            unlink (h->lockname);
-          if (h->tname)
-              unlink (h->tname);
-          jnlib_free (h->tname);
-          jnlib_free (h->lockname);
+          UnlockFile (h->lockhd, 0, 0, 1, 0);
         }
-      jnlib_free(h);
+      CloseHandle (h->lockhd);
+#else /* !HAVE_DOSISH_SYSTEM */
+      if (h->locked && h->lockname)
+        unlink (h->lockname);
+      if (h->tname)
+        unlink (h->tname);
+      jnlib_free (h->tname);
+#endif /* HAVE_DOSISH_SYSTEM */
+      jnlib_free (h->lockname);
     }
-#endif /*!HAVE_DOSISH_SYSTEM*/
+  jnlib_free(h);
 }
 
 
-
+#ifndef HAVE_DOSISH_SYSTEM
 static int
 maybe_deadlock( DOTLOCK h )
 {
@@ -271,22 +376,22 @@ maybe_deadlock( DOTLOCK h )
     }
   return 0;
 }
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
-/****************
- * Do a lock on H. A TIMEOUT of 0 returns immediately, -1 waits
- * forever (hopefully not), other values are reserved (should then be
- * timeouts in milliseconds).  Returns: 0 on success
- */
+
+
+/* Do a lock on H. A TIMEOUT of 0 returns immediately, -1 waits
+   forever (hopefully not), other values are reserved (should then be
+   timeouts in milliseconds).  Returns: 0 on success  */
 int
-make_dotlock( DOTLOCK h, long timeout )
+make_dotlock ( DOTLOCK h, long timeout )
 {
-#ifdef HAVE_DOSISH_SYSTEM
-  return 0;
-#else
+  int backoff = 0;
+#ifndef HAVE_DOSISH_SYSTEM
   int  pid;
   const char *maybe_dead="";
-  int backoff=0;
   int same_node;
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
   if ( h->disable )
     return 0; /* Locks are completely disabled.  Return success. */
@@ -294,14 +399,15 @@ make_dotlock( DOTLOCK h, long timeout )
   if ( h->locked ) 
     {
 #ifndef __riscos__
-      log_debug("oops, `%s' is already locked\n", h->lockname );
+      log_debug ("Oops, `%s' is already locked\n", h->lockname);
 #endif /* !__riscos__ */
       return 0;
     }
 
-  for(;;)
+  for (;;)
     {
-#ifndef __riscos__
+#ifndef HAVE_DOSISH_SYSTEM
+# ifndef __riscos__
       if ( !link(h->tname, h->lockname) )
         {
           /* fixme: better use stat to check the link count */
@@ -310,10 +416,10 @@ make_dotlock( DOTLOCK h, long timeout )
 	}
       if ( errno != EEXIST )
         {
-          log_error( "lock not made: link() failed: %s\n", strerror(errno) );
+          log_error ( "lock not made: link() failed: %s\n", strerror(errno) );
           return -1;
 	}
-#else /* __riscos__ */
+# else /* __riscos__ */
       if ( !renamefile(h->tname, h->lockname) ) 
         {
           h->locked = 1;
@@ -324,7 +430,7 @@ make_dotlock( DOTLOCK h, long timeout )
           log_error( "lock not made: rename() failed: %s\n", strerror(errno) );
           return -1;
         }
-#endif /* __riscos__ */
+# endif /* __riscos__ */
 
       if ( (pid = read_lockfile (h, &same_node)) == -1 ) 
         {
@@ -344,16 +450,16 @@ make_dotlock( DOTLOCK h, long timeout )
 	}
       else if ( same_node && kill (pid, 0) && errno == ESRCH )
         {
-#ifndef __riscos__
-          log_info ("removing stale lockfile (created by %d)", pid );
+# ifndef __riscos__
+          log_info (_("removing stale lockfile (created by %d)\n"), pid );
           unlink (h->lockname);
           continue;
-#else /* __riscos__ */
+# else /* __riscos__ */
           /* Under RISCOS we are *pretty* sure that the other task
              is dead and therefore we remove the stale lock file. */
-          maybe_dead = " - probably dead - removing lock";
+          maybe_dead = _(" - probably dead - removing lock");
           unlink(h->lockname);
-#endif /* __riscos__ */
+# endif /* __riscos__ */
 	}
 
       if ( timeout == -1 ) 
@@ -361,8 +467,8 @@ make_dotlock( DOTLOCK h, long timeout )
           /* Wait until lock has been released. */
           struct timeval tv;
           
-          log_info ("waiting for lock (held by %d%s) %s...\n",
-                    pid, maybe_dead, maybe_deadlock(h)? "(deadlock?) ":"");
+          log_info (_("waiting for lock (held by %d%s) %s...\n"),
+                    pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
 
 
           /* We can't use sleep, cause signals may be blocked. */
@@ -374,24 +480,42 @@ make_dotlock( DOTLOCK h, long timeout )
 	}
       else
         return -1;
+#else /*HAVE_DOSISH_SYSTEM*/
+      int w32err;
+
+      if (LockFile (h->lockhd, 0, 0, 1, 0))
+        {
+          h->locked = 1;
+          return 0; /* okay */
+        }
+      w32err = GetLastError ();
+      if (w32err != ERROR_LOCK_VIOLATION)
+        {
+          log_error (_("lock `%s' not made: %s\n"),
+                     h->lockname, w32_strerror (w32err));
+          return -1;
+        }
+
+      if ( timeout == -1 ) 
+        {
+          /* Wait until lock has been released. */
+          log_info (_("waiting for lock %s...\n"), h->lockname);
+          Sleep ((1 + backoff)*1000);
+          if ( backoff < 10 )
+            backoff++ ;
+	}
+      else
+        return -1;
+#endif /*HAVE_DOSISH_SYSTEM*/
     }
-    /*NOTREACHED*/
-#endif /* !HAVE_DOSISH_SYSTEM */
+  /*NOTREACHED*/
 }
 
 
-/****************
- * release a lock
- * Returns: 0 := success
- */
+/* Release a lock.  Returns 0 on success.  */
 int
 release_dotlock( DOTLOCK h )
 {
-#ifdef HAVE_DOSISH_SYSTEM
-  return 0;
-#else
-  int pid, same_node;
-
   /* To avoid atexit race conditions we first check whether there are
      any locks left.  It might happen that another atexit handler
      tries to release the lock while the atexit handler of this module
@@ -404,9 +528,19 @@ release_dotlock( DOTLOCK h )
 
   if ( !h->locked )
     {
-      log_debug("oops, `%s' is not locked\n", h->lockname );
+      log_debug("Oops, `%s' is not locked\n", h->lockname);
       return 0;
     }
+
+#ifdef HAVE_DOSISH_SYSTEM
+  if (!UnlockFile (h->lockhd, 0, 0, 1, 0))
+    {
+      log_error ("release_dotlock: error removing lockfile `%s': %s\n",
+                 h->lockname, w32_strerror (-1));
+      return -1;
+    }
+#else
+  int pid, same_node;
 
   pid = read_lockfile (h, &same_node);
   if ( pid == -1 ) 
@@ -419,39 +553,38 @@ release_dotlock( DOTLOCK h )
       log_error( "release_dotlock: not our lock (pid=%d)\n", pid);
       return -1;
     }
+
 #ifndef __riscos__
   if ( unlink( h->lockname ) )
     {
-      log_error( "release_dotlock: error removing lockfile `%s'",
+      log_error ("release_dotlock: error removing lockfile `%s'\n",
                  h->lockname);
       return -1;
     }
+  /* Fixme: As an extra check we could check whether the link count is
+     now really at 1. */
 #else /* __riscos__ */
-  if ( renamefile(h->lockname, h->tname) ) 
+  if ( renamefile (h->lockname, h->tname) ) 
     {
-      log_error( "release_dotlock: error renaming lockfile `%s' to `%s'",
+      log_error ("release_dotlock: error renaming lockfile `%s' to `%s'\n",
                  h->lockname, h->tname);
       return -1;
     }
 #endif /* __riscos__ */
-  /* fixme: check that the link count is now 1 */
+
+#endif /* !HAVE_DOSISH_SYSTEM */
   h->locked = 0;
   return 0;
-#endif /* !HAVE_DOSISH_SYSTEM */
 }
 
 
-/*
-   Read the lock file and return the pid, returns -1 on error.  True
-   will be stored at SAME_NODE if the lock file has been created on
-   the same node.
- */
+/* Read the lock file and return the pid, returns -1 on error.  True
+   will be stored in the integer at address SAME_NODE if the lock file
+   has been created on the same node. */
+#ifndef HAVE_DOSISH_SYSTEM
 static int
 read_lockfile (DOTLOCK h, int *same_node )
 {
-#ifdef HAVE_DOSISH_SYSTEM
-  return 0;
-#else
   char buffer_space[10+1+70+1]; /* 70 is just an estimated value; node
                                    name are usually shorter. */
   int fd;
@@ -505,7 +638,7 @@ read_lockfile (DOTLOCK h, int *same_node )
       log_info ("invalid size of lockfile `%s'", h->lockname );
       if (buffer != buffer_space)
         jnlib_free (buffer);
-      errno = 0; /* Do not return an inappropriate ERRNO. */
+      errno = 0; /* Better don't return an inappropriate ERRNO. */
       return -1;
     }
 
@@ -533,14 +666,16 @@ read_lockfile (DOTLOCK h, int *same_node )
   if (buffer != buffer_space)
     jnlib_free (buffer);
   return pid;
-#endif
 }
+#endif /* !HAVE_DOSISH_SYSTEM */
 
 
+/* Remove all lockfiles.  This is usually called by the atexit handler
+   installed by this module but may also be called by other
+   termination handlers.  */
 void
 dotlock_remove_lockfiles()
 {
-#ifndef HAVE_DOSISH_SYSTEM
   DOTLOCK h, h2;
   
   h = all_lockfiles;
@@ -552,6 +687,5 @@ dotlock_remove_lockfiles()
       destroy_dotlock (h);
       h = h2;
     }
-#endif
 }
 

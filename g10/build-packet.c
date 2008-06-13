@@ -589,7 +589,7 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
     int rc = 0;
 
-    /* We must use the old convention and don't use blockmode for tyhe
+    /* We must use the old convention and don't use blockmode for the
        sake of PGP 2 compatibility.  However if the new_ctb flag was
        set, CTB is already formatted as new style and write_header2
        does create a partial length encoding using new the new

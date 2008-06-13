@@ -1,3 +1,8 @@
+2008-06-13  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c: Reformat code and implement locking for W32.
+	(create_dotlock): Use snprintf.
+
 2008-06-11  Werner Koch  <wk@g10code.com>
 
 	* utf8conv.c: Remove useless variable ACTIVE_CHARSET.  Suggested

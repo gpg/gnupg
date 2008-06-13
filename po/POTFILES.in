@@ -67,6 +67,7 @@ g10/verify.c
 jnlib/argparse.c
 jnlib/logging.c
 jnlib/utf8conv.c
+jnlib/dotlock.c
 
 kbx/kbxutil.c
 
