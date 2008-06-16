@@ -9,6 +9,9 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * [W32] Initialized the socket subsystem for all keyserver helpers.
 
+ * [W32] The sysconf directory has been moved from a subdirectory of
+   the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
+
  * New gpg2 command --locate-keys.
 
  * New gpg2 options --with-sig-list and --with-sig-check.

@@ -197,6 +197,35 @@ w32_rootdir (void)
   /* Fallback to the hardwired value. */
   return GNUPG_LIBEXECDIR;
 }
+
+static const char *
+w32_commondir (void)
+{
+  static char *dir;
+
+  if (!dir)
+    {
+      char path[MAX_PATH];
+
+      if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA, 
+                               NULL, 0, path) >= 0) 
+        {
+          char *tmp = xmalloc (strlen (path) + 4 +1);
+          strcpy (stpcpy (tmp, path), "\\GNU");
+          dir = tmp;
+          /* No auto create of the directory.  Either the installer or
+             the admin has to create these directories.  */
+        }
+      else
+        {
+          /* Ooops: Not defined - probably an old Windows version.
+             Use the installation directory instead.  */
+          dir = xstrdup (w32_rootdir ());
+        }
+    }
+  
+  return dir;
+}
 #endif /*HAVE_W32_SYSTEM*/
 
 
@@ -214,7 +243,7 @@ gnupg_sysconfdir (void)
   if (!name)
     {
       const char *s1, *s2;
-      s1 = w32_rootdir ();
+      s1 = w32_commondir ();
       s2 = DIRSEP_S "etc" DIRSEP_S "gnupg";
       name = xmalloc (strlen (s1) + strlen (s2) + 1);
       strcpy (stpcpy (name, s1), s2);
