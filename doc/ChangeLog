@@ -1,3 +1,7 @@
+2008-06-16  Werner Koch  <wk@g10code.com>
+
+	* DETAILS (group): Document %ask-passphrase.
+
 2008-05-26  Werner Koch  <wk@g10code.com>
 
 	* gpgv.texi: Minor fixes.  Fixes bug#918.

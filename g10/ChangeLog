@@ -1,3 +1,9 @@
+2008-06-16  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (output_control_s): Add ASK_PASSPHRASE.
+	(read_parameter_file): Add commands %ask-passphrase and
+	%no-ask-passphrase.
+
 2008-06-11  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: Make --fixed-list-mode a dummy.

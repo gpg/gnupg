@@ -92,6 +92,7 @@ struct para_data_s {
 struct output_control_s {
     int lnr;
     int dryrun;
+    int ask_passphrase;
     int use_files;
     struct {
 	char  *fname;
@@ -2527,36 +2528,70 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
 
-  /* make DEK and S2K from the Passphrase */
-  r = get_parameter( para, pPASSPHRASE );
-  if( r && *r->u.value ) {
-    /* We have a plain text passphrase - create a DEK from it.
-     * It is a little bit ridiculous to keep it ih secure memory
-     * but because we do this always, why not here */
-    STRING2KEY *s2k;
-    DEK *dek;
+  /* Make DEK and S2K from the Passphrase. */
+  if (outctrl->ask_passphrase)
+    {
+      /* %ask-passphrase is active - ignore pPASSPRASE and ask.  This
+         feature is required so that GUIs are able to do a key
+         creation but have gpg-agent ask for the passphrase.  */
+      int canceled = 0;
+      STRING2KEY *s2k;
+      DEK *dek;
 
-    s2k = xmalloc_secure( sizeof *s2k );
-    s2k->mode = opt.s2k_mode;
-    s2k->hash_algo = S2K_DIGEST_ALGO;
-    set_next_passphrase( r->u.value );
-    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2,
-			     NULL, NULL);
-    set_next_passphrase( NULL );
-    assert( dek );
-    memset( r->u.value, 0, strlen(r->u.value) );
+      dek = do_ask_passphrase ( &s2k, &canceled );
+      if (dek)
+        {
+          r = xmalloc_clear( sizeof *r );
+          r->key = pPASSPHRASE_DEK;
+          r->u.dek = dek;
+          r->next = para;
+          para = r;
+          r = xmalloc_clear( sizeof *r );
+          r->key = pPASSPHRASE_S2K;
+          r->u.s2k = s2k;
+          r->next = para;
+          para = r;
+        }
 
-    r = xmalloc_clear( sizeof *r );
-    r->key = pPASSPHRASE_S2K;
-    r->u.s2k = s2k;
-    r->next = para;
-    para = r;
-    r = xmalloc_clear( sizeof *r );
-    r->key = pPASSPHRASE_DEK;
-    r->u.dek = dek;
-    r->next = para;
-    para = r;
-  }
+      if (canceled) 
+        {
+	  log_error ("%s:%d: key generation canceled\n", fname, r->lnr );
+          return -1;
+        }
+    }
+  else
+    {
+      r = get_parameter( para, pPASSPHRASE );
+      if ( r && *r->u.value )
+        {
+          /* We have a plain text passphrase - create a DEK from it.
+           * It is a little bit ridiculous to keep it in secure memory
+           * but because we do this always, why not here.  */
+          STRING2KEY *s2k;
+          DEK *dek;
+          
+          s2k = xmalloc_secure ( sizeof *s2k );
+          s2k->mode = opt.s2k_mode;
+          s2k->hash_algo = S2K_DIGEST_ALGO;
+          set_next_passphrase ( r->u.value );
+          dek = passphrase_to_dek (NULL, 0, opt.s2k_cipher_algo, s2k, 2,
+                                   NULL, NULL);
+          set_next_passphrase (NULL );
+          assert (dek);
+          memset (r->u.value, 0, strlen(r->u.value));
+          
+          r = xmalloc_clear (sizeof *r);
+          r->key = pPASSPHRASE_S2K;
+          r->u.s2k = s2k;
+          r->next = para;
+          para = r;
+          r = xmalloc_clear (sizeof *r);
+          r->key = pPASSPHRASE_DEK;
+          r->u.dek = dek;
+          r->next = para;
+          para = r;
+        }
+    }
 
   /* Make KEYCREATIONDATE from Creation-Date.  */
   r = get_parameter (para, pCREATIONDATE);
@@ -2696,6 +2731,10 @@ read_parameter_file( const char *fname )
 		log_info("%s\n", value );
 	    else if( !ascii_strcasecmp( keyword, "%dry-run" ) )
 		outctrl.dryrun = 1;
+	    else if( !ascii_strcasecmp( keyword, "%ask-passphrase" ) )
+		outctrl.ask_passphrase = 1;
+	    else if( !ascii_strcasecmp( keyword, "%no-ask-passphrase" ) )
+		outctrl.ask_passphrase = 0;
 	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
 		if (proc_parameter_file( para, fname, &outctrl, 0 ))
