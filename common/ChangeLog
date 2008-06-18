@@ -1,5 +1,7 @@
 2008-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
+	* sysutils.c (TRANS_MAX): Bump up to 350 to be on the safe side.
+
 	* sysutils.h (translate_table_init, translate_table_lookup): New
 	prototypes.
 	* sysutils.c: Include <ctype.h>.

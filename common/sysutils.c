@@ -314,7 +314,10 @@ static int fd_translate_len;
 void
 translate_table_init (void)
 {
-#define TRANS_MAX 100
+  /* Hold roughly 8 pairs of 64 bit numbers in hex notation:
+     "0xFEDCBA9876543210 0xFEDCBA9876543210".  8*19*2 - 1 = 303.  This
+     plans ahead for a time where a HANDLE is 64 bit.  */
+#define TRANS_MAX 350
   char line[TRANS_MAX + 1];
   char *linep;
   int idx;
