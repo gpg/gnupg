@@ -50,6 +50,7 @@
 # include <pth.h>
 #endif
 #include <fcntl.h>
+#include <ctype.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -278,6 +279,116 @@ gnupg_sleep (unsigned int seconds)
 }
 
 
+
+/* Handle translation.  On W32, we provide handle values on the
+   command line directly and using special file names such as
+   "-&HANDLE".  However, in GPGME we can not directly inherit the
+   handles as this may interfere with other components in a
+   multithreaded application.  Thus, we inject the handles after
+   creating the GPG process.  The problem is that the handle numbers
+   change at injection, but it is too late to change the command line.
+   Hence this hack, which allows us to translate the handle values
+   in the command line to their new values after injection.
+
+   Handles that must be translated are those occuring in special file
+   names (see iobuf.c::check_special_filename) as well as those given
+   directly to options (see translate_sys2libc_fd_int).  */
+
+/* For W32, we may have to translate handle values given on the
+   command line.  */
+#define FD_TRANSLATE_MAX 8
+static struct
+{
+  int from;
+  int to;
+} fd_translate[8];
+
+/* Number of entries used in fd_translate.  */
+static int fd_translate_len;
+
+
+/* Initialize the fd translation table.  This reads one line from
+   stdin which is expected to be in the format "FROM TO [...]" where
+   each "FROM TO" pair are two handle numbers.  Handle number FROM on
+   the command line is translated to handle number TO.  */
+void
+translate_table_init (void)
+{
+#define TRANS_MAX 100
+  char line[TRANS_MAX + 1];
+  char *linep;
+  int idx;
+  int res;
+  int newl = 0;
+
+  /* We always read one line from stdin.  */
+  for (idx = 0; idx < TRANS_MAX; idx++)
+    {
+      res = read (0, &line[idx], 1);
+      if (res != 1)
+	break;
+      if (line[idx] == '\n')
+	{
+	  newl = 1;
+	  break;
+	}
+    }
+  if (!newl)
+    {
+      char buf[1];
+      do
+	res = read (0, buf, 1);
+      while (res == 1 && *buf != '\n');
+    }
+
+  line[idx] = '\0';
+  linep = line;
+
+  /* Now start to read mapping pairs.  */
+  for (idx = 0; idx < FD_TRANSLATE_MAX; idx++)
+    {
+      unsigned long from;
+      unsigned long to;
+      char *tail;
+
+      while (isspace (*linep))
+	linep++;
+      if (*linep == '\0')
+	break;
+      from = strtoul (linep, &tail, 0);
+      if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
+	break;
+      linep = tail;
+
+      while (isspace (*linep))
+	linep++;
+      if (*linep == '\0')
+	break;
+      to = strtoul (linep, &tail, 0);
+      if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
+	break;
+      linep = tail;
+
+      fd_translate[idx].from = from;
+      fd_translate[idx].to = to;
+      fd_translate_len++;
+    }
+}
+
+
+/* Translate a handle number.  */
+int
+translate_table_lookup (int fd)
+{
+  int idx;
+
+  for (idx = 0; idx < fd_translate_len; idx++)
+    if (fd_translate[idx].from == fd)
+      return fd_translate[idx].to;
+  return fd;
+}
+
+
 /* This function is a NOP for POSIX systems but required under Windows
    as the file handles as returned by OS calls (like CreateFile) are
    different from the libc file descriptors (like open). This function
@@ -303,6 +414,7 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 #endif
 }
 
+
 /* This is the same as translate_sys2libc_fd but takes an integer
    which is assumed to be such an system handle.  */
 int
@@ -312,8 +424,14 @@ translate_sys2libc_fd_int (int fd, int for_write)
   if (fd <= 2)
     return fd;	/* Do not do this for error, stdin, stdout, stderr. */
 
+  /* Note: If this function is ever used in a different context than
+     option parsing in the main function, a variant that does not do
+     translation probable needs to be used.  */
+  fd = translate_table_lookup (fd);
+
   return translate_sys2libc_fd ((void*)fd, for_write);
 #else
+  fd = translate_table_lookup (fd);
   return fd;
 #endif
 }

@@ -1,3 +1,15 @@
+2008-06-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* sysutils.h (translate_table_init, translate_table_lookup): New
+	prototypes.
+	* sysutils.c: Include <ctype.h>.
+	(FD_TRANSLATE_MAX): New macro.
+	(fd_translate, fd_translate_len): New static variables.
+	(translate_table_init, translate_table_lookup): New functions.
+	(translate_sys2libc_fd_int): Translate file descriptor.
+	* iobuf.c (check_special_filename): Translate handle values from
+	special filenames.
+
 2008-06-16  Werner Koch  <wk@g10code.com>
 
 	* homedir.c (w32_commondir): New.
