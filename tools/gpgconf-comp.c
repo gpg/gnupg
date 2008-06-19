@@ -234,6 +234,10 @@ typedef enum
     /* A user ID or key ID or fingerprint for a certificate with a key.  */
     GC_ARG_TYPE_SEC_KEY = 36,
 
+    /* A alias list made up of a key, an equal sign and a space
+       separated list of values.  */
+    GC_ARG_TYPE_ALIAS_LIST = 37,
+
     /* ADD NEW COMPLEX TYPE ENTRIES HERE.  */
 
     /* The number of the above entries.  */
@@ -281,6 +285,7 @@ static struct
     { GC_ARG_TYPE_STRING, "key fpr" },
     { GC_ARG_TYPE_STRING, "pub key" },
     { GC_ARG_TYPE_STRING, "sec key" },
+    { GC_ARG_TYPE_STRING, "alias list" },
   };
 
 
@@ -655,6 +660,9 @@ static gc_option_t gc_options_gpg[] =
    { "encrypt-to", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", N_("|NAME|encrypt to user ID NAME as well"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   { "group", GC_OPT_FLAG_LIST, GC_LEVEL_ADVANCED,
+     "gnupg", N_("|SPEC|set up email aliases"),
+     GC_ARG_TYPE_ALIAS_LIST, GC_BACKEND_GPG },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },

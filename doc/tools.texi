@@ -693,6 +693,11 @@ fingerprint.
 @item sec key (36)
 A @emph{string} that describes a certificate with a key by user ID,
 key ID or fingerprint.
+
+@item alias list (37)
+A @emph{string} that describes an alias list, like the one used with
+gpg's group option.  The list consists of a key, an equal sign and space
+separated values.
 @end table
 
 More types will be added in the future.  Please see the @var{alt-type}
