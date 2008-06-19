@@ -50,7 +50,6 @@
 # include <pth.h>
 #endif
 #include <fcntl.h>
-#include <ctype.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -301,7 +300,7 @@ static struct
 {
   int from;
   int to;
-} fd_translate[8];
+} fd_translate[FD_TRANSLATE_MAX];
 
 /* Number of entries used in fd_translate.  */
 static int fd_translate_len;
@@ -310,7 +309,9 @@ static int fd_translate_len;
 /* Initialize the fd translation table.  This reads one line from
    stdin which is expected to be in the format "FROM TO [...]" where
    each "FROM TO" pair are two handle numbers.  Handle number FROM on
-   the command line is translated to handle number TO.  */
+   the command line is translated to handle number TO.  
+
+   Note that this function may be called while still being setuid.  */
 void
 translate_table_init (void)
 {
@@ -327,7 +328,9 @@ translate_table_init (void)
   /* We always read one line from stdin.  */
   for (idx = 0; idx < TRANS_MAX; idx++)
     {
-      res = read (0, &line[idx], 1);
+      do
+        res = read (0, &line[idx], 1);
+      while (res == -1 && errno == EINTR);
       if (res != 1)
 	break;
       if (line[idx] == '\n')
@@ -340,7 +343,11 @@ translate_table_init (void)
     {
       char buf[1];
       do
-	res = read (0, buf, 1);
+        {
+          do
+            res = read (0, buf, 1);
+          while (res == -1 && errno == EINTR);
+        }
       while (res == 1 && *buf != '\n');
     }
 
@@ -354,21 +361,21 @@ translate_table_init (void)
       unsigned long to;
       char *tail;
 
-      while (isspace (*linep))
+      while (spacep (linep))
 	linep++;
       if (*linep == '\0')
 	break;
       from = strtoul (linep, &tail, 0);
-      if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
+      if (tail == NULL || ! (*tail == '\0' || spacep (tail)))
 	break;
       linep = tail;
 
-      while (isspace (*linep))
+      while (spacep (linep))
 	linep++;
       if (*linep == '\0')
 	break;
       to = strtoul (linep, &tail, 0);
-      if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
+      if (tail == NULL || ! (*tail == '\0' || spacep (tail)))
 	break;
       linep = tail;
 

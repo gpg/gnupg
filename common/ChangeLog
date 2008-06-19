@@ -1,3 +1,10 @@
+2008-06-19  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c: Remove <ctype.h>.
+	(fd_translate_max): Use macro for the size.
+	(translate_table_init): Protect read against EINTR and replace
+	isspace by spacep.
+
 2008-06-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* sysutils.c (TRANS_MAX): Bump up to 350 to be on the safe side.
