@@ -3139,15 +3139,15 @@ msgstr "einen Unterschlüssel hinzufügen"
 
 #: g10/keyedit.c:1390
 msgid "add a key to a smartcard"
-msgstr "der Smartcard einen Schlssel hinzufgen"
+msgstr "der Smartcard einen Schlüssel hinzufügen"
 
 #: g10/keyedit.c:1392
 msgid "move a key to a smartcard"
-msgstr "einen Schlssel auf die Smartcard schieben"
+msgstr "einen Schlüssel auf die Smartcard schieben"
 
 #: g10/keyedit.c:1394
 msgid "move a backup key to a smartcard"
-msgstr "eine Sicherungskopie des Schlssels auf die Smartcard schieben"
+msgstr "eine Sicherungskopie des Schlüssels auf die Smartcard schieben"
 
 #: g10/keyedit.c:1398
 msgid "delete selected subkeys"
