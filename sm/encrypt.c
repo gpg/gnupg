@@ -1,5 +1,5 @@
 /* encrypt.c - Encrypt a message
- *	Copyright (C) 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -144,17 +144,14 @@ static int
 encode_session_key (DEK dek, gcry_sexp_t * r_data)
 {
   gcry_sexp_t data;
-  char * p, tmp[3];
-  int i;
+  char *p;
   int rc;
 
-  p = xmalloc (64 + 2 * dek->keylen);
+  p = xtrymalloc (64 + 2 * dek->keylen);
+  if (!p)
+    return gpg_error_from_syserror ();
   strcpy (p, "(data\n (flags pkcs1)\n (value #");
-  for (i=0; i < dek->keylen; i++)
-    {
-      sprintf (tmp, "%02x", (unsigned char) dek->key[i]);
-      strcat (p, tmp);   
-    }
+  bin2hex (dek->key, dek->keylen, p + strlen (p));
   strcat (p, "#))\n");
   rc = gcry_sexp_sscan (&data, NULL, p, strlen (p));
   xfree (p);
@@ -196,13 +193,14 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
       return rc;
     }
 
-  /* put the encoded cleartext into a simple list */
+  /* Put the encoded cleartext into a simple list. */
+  s_data = NULL; /* (avoid compiler warning) */
   rc = encode_session_key (dek, &s_data);
   if (rc)
-  {
-    log_error ("encode_session_key failed: %s\n", gpg_strerror (rc));
-    return rc;
-  }
+    {
+      log_error ("encode_session_key failed: %s\n", gpg_strerror (rc));
+      return rc;
+    }
 
   /* pass it to libgcrypt */
   rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);

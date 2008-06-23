@@ -1,3 +1,9 @@
+2008-06-23  Werner Koch  <wk@g10code.com>
+
+	* encrypt.c (encode_session_key): Replace xmalloc by xtrymalloc.
+	Use bin2hex instead of open coding the conversion.
+	(encrypt_dek): Init S_DATA.
+
 2008-06-13  Marcus Brinkmann  <marcus@ulysses.g10code.com>
 
 	* call-dirmngr.c (prepare_dirmngr): Fix error code to ignore.
