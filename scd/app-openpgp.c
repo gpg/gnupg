@@ -1644,13 +1644,15 @@ do_setattr (app_t app, const char *name,
 
 /* Handle the PASSWD command. */
 static gpg_error_t 
-do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
+do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
+               unsigned int flags,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   int rc = 0;
   int chvno = atoi (chvnostr);
   char *pinvalue;
+  int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
 
   if (reset_mode && chvno == 3)
     {

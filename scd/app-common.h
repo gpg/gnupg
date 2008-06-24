@@ -31,6 +31,10 @@
 #endif
 
 
+#define APP_CHANGE_FLAG_RESET    1
+#define APP_CHANGE_FLAG_NULLPIN  2
+
+
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 struct app_ctx_s {
@@ -101,7 +105,7 @@ struct app_ctx_s {
                            gpg_error_t (*pincb)(void*, const char *, char **),
                            void *pincb_arg);
     gpg_error_t (*change_pin) (app_t app, ctrl_t ctrl,
-                       const char *chvnostr, int reset_mode,
+                       const char *chvnostr, unsigned int flags,
                        gpg_error_t (*pincb)(void*, const char *, char **),
                        void *pincb_arg);
     gpg_error_t (*check_pin) (app_t app, const char *keyidstr,

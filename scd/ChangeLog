@@ -1,3 +1,14 @@
+2008-06-24  Werner Koch  <wk@g10code.com>
+
+	* app-common.h (app_ctx_s): Renamed reset_mode parameter of
+	change_pin to mode_Flags and make it an unsigned int.
+	(APP_CHANGE_FLAG_RESET, APP_CHANGE_FLAG_NULLPIN): New.
+	* app-openpgp.c (do_change_pin): Adjust for that.
+
+	* command.c (cmd_passwd): Add option --nullpin.
+	* app-nks.c (do_check_pin, do_change_pin): New.
+	(app_select_nks): Register new functions.
+
 2008-04-21  Moritz Schulte  <mo@g10code.com>  (wk)
 
 	* app-openpgp.c (verify_a_chv): Make use of the default CHV flag.

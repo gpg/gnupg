@@ -580,11 +580,12 @@ TO BE WRITTEN.
 @subsection Change PINs.
 
 @example
-   PASSWD [--reset] @var{chvno}
+   PASSWD [--reset] [--nullpin] @var{chvno}
 @end example
   
 Change the PIN or reset the retry counter of the card holder
-verification vector number @var{chvno}.
+verification vector number @var{chvno}.  The option @option{--nullpin}
+is used to initialize the PIN of TCOS cards (6 byte NullPIN only).
 
 
 @node Scdaemon CHECKPIN

@@ -1,5 +1,5 @@
 /* app-nks.c - The Telesec NKS 2.0 card application.
- * Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -414,7 +414,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (indatalen != 20 && indatalen != 16 && indatalen != 35)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  /* Check that the provided ID is vaid.  This is not really needed
+  /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
   if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
     return gpg_error (GPG_ERR_INV_ID);
@@ -517,6 +517,65 @@ do_decipher (app_t app, const char *keyidstr,
 }
 
 
+/* Handle the PASSWD command.  CHVNOSTR is currently ignored; we
+   always use VHV0.  RESET_MODE is not yet implemented.  */
+static gpg_error_t 
+do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
+               unsigned int flags,
+               gpg_error_t (*pincb)(void*, const char *, char **),
+               void *pincb_arg)
+{
+  gpg_error_t err;
+  char *pinvalue;
+  const char *oldpin;
+  size_t oldpinlen;
+
+  if ((flags & APP_CHANGE_FLAG_RESET))
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  if ((flags & APP_CHANGE_FLAG_NULLPIN))
+    {
+      /* With the nullpin flag, we do not verify the PIN - it would fail
+         if the Nullpin is still set.  */
+      oldpin = "\0\0\0\0\0";
+      oldpinlen = 6;
+    }
+  else
+    {
+      err = verify_pin (app, pincb, pincb_arg);
+      if (err)
+        return err;
+      oldpin = NULL;
+      oldpinlen = 0;
+    }
+
+  /* TRANSLATORS: Do not translate the "|*|" prefixes but
+     keep it at the start of the string.  We need this elsewhere
+     to get some infos on the string. */
+  err = pincb (pincb_arg, _("|N|New PIN"), &pinvalue); 
+  if (err)
+    {
+      log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  err = iso7816_change_reference_data (app->slot, 0x00, 
+                                       oldpin, oldpinlen,
+                                       pinvalue, strlen (pinvalue));
+  xfree (pinvalue);
+  return err;
+}
+
+
+/* Perform a simple verify operation.  KEYIDSTR should be NULL or empty.  */
+static gpg_error_t 
+do_check_pin (app_t app, const char *keyidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg)
+{
+  return verify_pin (app, pincb, pincb_arg);
+}
+
 
 /* Select the NKS 2.0 application.  */
 gpg_error_t
@@ -539,8 +598,8 @@ app_select_nks (app_t app)
       app->fnc.sign = do_sign;
       app->fnc.auth = NULL;
       app->fnc.decipher = do_decipher;
-      app->fnc.change_pin = NULL;
-      app->fnc.check_pin = NULL;
+      app->fnc.change_pin = do_change_pin;
+      app->fnc.check_pin = do_check_pin;
    }
 
   return rc;

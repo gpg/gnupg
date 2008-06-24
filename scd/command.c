@@ -1273,17 +1273,23 @@ cmd_random (assuan_context_t ctx, char *line)
 }
 
 
-/* PASSWD [--reset] <chvno>
+/* PASSWD [--reset] [--nullpin] <chvno>
   
    Change the PIN or reset the retry counter of the card holder
-   verfication vector CHVNO. */
+   verfication vector CHVNO.  The option --nullpin is used for TCOS
+   cards to set the initial PIN. */
 static int
 cmd_passwd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *chvnostr;
-  int reset_mode = has_option (line, "--reset");
+  unsigned int flags = 0;
+
+  if (has_option (line, "--reset"))
+    flags |= APP_CHANGE_FLAG_RESET;
+  if (has_option (line, "--nullpin"))
+    flags |= APP_CHANGE_FLAG_NULLPIN;
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -1312,7 +1318,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   chvnostr = xtrystrdup (chvnostr);
   if (!chvnostr)
     return out_of_core ();
-  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, reset_mode, pin_cb, ctx);
+  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, flags, pin_cb, ctx);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
   xfree (chvnostr);
