@@ -38,6 +38,15 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  S
 #       Issuer: /CN=11R-CA 1:PN/O=Bundesnetzagentur/C=DE
 A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  S
 
+#          S/N: 0139
+#       Issuer: /CN=12R-CA 1:PN/O=Bundesnetzagentur/C=DE
+44:7E:D4:E3:9A:D7:92:E2:07:FA:53:1A:2E:F5:B8:02:5B:47:57:B0  de
+
+#          S/N: 013C
+#       Issuer: /CN=13R-CA 1:PN/O=Bundesnetzagentur/C=DE
+AC:A7:BE:45:1F:A6:BF:09:F2:D1:3F:08:7B:BC:EB:7F:46:A2:CC:8A  de
+
+
 #          S/N: 00B3963E0E6C2D65125853E970665402E5
 #       Issuer: /CN=S-TRUST Qualified Root CA 2008-001:PN
 #               /O=Deutscher Sparkassen Verlag GmbH/L=Stuttgart/C=DE
