@@ -300,7 +300,6 @@ enum cmd_and_opt_values
     oNoAllowFreeformUID,
     oAllowSecretKeyImport,                      
     oEnableSpecialFilenames,
-    oEnableW32HandleTranslation,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
@@ -665,7 +664,6 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
     { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
-    { oEnableW32HandleTranslation, "enable-w32-handle-translation", 0, "@" },
     { oNoExpensiveTrustChecks, "no-expensive-trust-checks", 0, "@" },
     { aDeleteSecretAndPublicKeys, "delete-secret-and-public-keys",256, "@" },
     { aRebuildKeydbCaches, "rebuild-keydb-caches", 256, "@"},
@@ -1878,7 +1876,6 @@ main (int argc, char **argv)
     int eyes_only=0;
     int multifile=0;
     int pwfd = -1;
-    int w32_handle_translation = 0;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
@@ -1993,15 +1990,6 @@ main (int argc, char **argv)
 	else if (pargs.r_opt == oNoStrict )
 	  {
 	    /* Not used */
-	  }
-	else if (pargs.r_opt == oEnableW32HandleTranslation )
-	  {
-	    /* We must initialize handle translation before parsing
-	       the options.  */
-	    if (! w32_handle_translation)
-	      translate_table_init ();
-            w32_handle_translation = 1;
-            break;
 	  }
     }
 
@@ -2781,7 +2769,6 @@ main (int argc, char **argv)
           case oEnableSpecialFilenames:
             iobuf_enable_special_filenames (1);
             break;
-          case oEnableW32HandleTranslation: break;
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
           case oAutoCheckTrustDB: opt.no_auto_check_trustdb=0; break;
           case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;
@@ -3345,7 +3332,6 @@ main (int argc, char **argv)
 
     if( pwfd != -1 )  /* Read the passphrase now. */
 	read_passphrase_from_fd( pwfd );
-
 
     fname = argc? *argv : NULL;
 

@@ -43,16 +43,6 @@ int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
 void gnupg_sleep (unsigned int seconds);
-
-/* Initialize the fd translation table.  This reads one line from
-   stdin which is expected to be in the format "FROM TO [...]" where
-   each "FROM TO" pair are two handle numbers.  Handle number FROM on
-   the command line is translated to handle number TO.  */
-void translate_table_init (void);
-
-/* Translate a handle number.  */
-int translate_table_lookup (int fd);
-
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
 FILE *gnupg_tmpfile (void);

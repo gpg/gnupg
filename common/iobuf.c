@@ -1177,7 +1177,7 @@ check_special_filename (const char *fname)
       for (i = 0; digitp (fname+i); i++)
 	;
       if (!fname[i])
-	return translate_table_lookup (atoi (fname));
+	return atoi (fname);
     }
   return -1;
 }
