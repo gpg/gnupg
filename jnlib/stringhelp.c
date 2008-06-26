@@ -406,9 +406,8 @@ print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
 
   for (; length; length--, p++, count++)
     {
-      /* Fixme: Check whether *p < 0xa0 is correct for utf8 encoding. */
       if (*p < 0x20 
-          || (*p >= 0x7f && *p < 0xa0)
+          || *p == 0x7f
           || *p == delim 
           || *p == delim2
           || ((delim || delim2) && *p=='\\'))

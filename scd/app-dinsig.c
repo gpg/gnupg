@@ -1,5 +1,5 @@
 /* app-dinsig.c - The DINSIG (DIN V 66291-1) card application.
- * Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -397,14 +397,20 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+  static unsigned char sha256_prefix[19] = /* OID is 2.16.840.1.101.3.4.2.1 */
+    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+      0x00, 0x04, 0x20 };
   int rc;
   int fid;
-  unsigned char data[35];   /* Must be large enough for a SHA-1 digest
-                               + the largest OID _prefix above. */
+  unsigned char data[19+32]; /* Must be large enough for a SHA-256 digest
+                                + the largest OID _prefix above. */
+  int datalen;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20 && indatalen != 16 && indatalen != 35)
+  if (indatalen != 20 && indatalen != 16 && indatalen != 32
+      && indatalen != (15+20) && indatalen != (19+32))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check that the provided ID is vaid.  This is not really needed
@@ -421,7 +427,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_NOT_FOUND);
 
   /* Prepare the DER object from INDATA. */
-  if (indatalen == 35)
+  datalen = 35;
+  if (indatalen == 15+20)
     {
       /* Alright, the caller was so kind to send us an already
          prepared DER object.  Check that it is what we want and that
@@ -434,21 +441,100 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
     }
-  else
+  else if (indatalen == 19+32)
     {
-      if (hashalgo == GCRY_MD_SHA1)
-        memcpy (data, sha1_prefix, 15);
-      else if (hashalgo == GCRY_MD_RMD160)
-        memcpy (data, rmd160_prefix, 15);
+      /* Alright, the caller was so kind to send us an already
+         prepared DER object.  Check that it is what we want and that
+         it matches the hash algorithm. */
+      datalen = indatalen;
+      if (hashalgo == GCRY_MD_SHA256 && !memcmp (indata, sha256_prefix, 19))
+        ;
+      else if (hashalgo == GCRY_MD_SHA1 && !memcmp (indata, sha256_prefix, 19))
+        {
+          /* Fixme: This is a kludge.  A better solution is not to use
+             SHA1 as default but use an autodetection.  However this
+             needs changes in all app-*.c */
+          hashalgo = GCRY_MD_SHA256;
+          datalen  = indatalen;
+        }
       else 
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-      memcpy (data+15, indata, indatalen);
+      memcpy (data, indata, indatalen);
+    }
+  else
+    {
+      int len = 15;
+      if (hashalgo == GCRY_MD_SHA1)
+        memcpy (data, sha1_prefix, len);
+      else if (hashalgo == GCRY_MD_RMD160)
+        memcpy (data, rmd160_prefix, len);
+      else if (hashalgo == GCRY_MD_SHA256)
+        {
+          len = 19;
+          datalen = len + indatalen;
+          memcpy (data, sha256_prefix, len);
+        }
+      else 
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+      memcpy (data+len, indata, indatalen);
     }
 
   rc = verify_pin (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+    rc = iso7816_compute_ds (app->slot, data, datalen, outdata, outdatalen);
   return rc;
+}
+
+
+#if 0
+#warning test function - works but may brick your card
+/* Handle the PASSWD command.  CHVNOSTR is currently ignored; we
+   always use VHV0.  RESET_MODE is not yet implemented.  */
+static gpg_error_t 
+do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
+               unsigned int flags,
+               gpg_error_t (*pincb)(void*, const char *, char **),
+               void *pincb_arg)
+{
+  gpg_error_t err;
+  char *pinvalue;
+  const char *oldpin;
+  size_t oldpinlen;
+
+  if ((flags & APP_CHANGE_FLAG_RESET))
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  if ((flags & APP_CHANGE_FLAG_NULLPIN))
+    {
+      /* With the nullpin flag, we do not verify the PIN - it would fail
+         if the Nullpin is still set.  */
+      oldpin = "\0\0\0\0\0";
+      oldpinlen = 6;
+    }
+  else
+    {
+      err = verify_pin (app, pincb, pincb_arg);
+      if (err)
+        return err;
+      oldpin = NULL;
+      oldpinlen = 0;
+    }
+
+  /* TRANSLATORS: Do not translate the "|*|" prefixes but
+     keep it at the start of the string.  We need this elsewhere
+     to get some infos on the string. */
+  err = pincb (pincb_arg, _("|N|Initial New PIN"), &pinvalue); 
+  if (err)
+    {
+      log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  err = iso7816_change_reference_data (app->slot, 0x81, 
+                                       oldpin, oldpinlen,
+                                       pinvalue, strlen (pinvalue));
+  xfree (pinvalue);
+  return err;
 }
 
 
@@ -475,7 +561,7 @@ app_select_dinsig (app_t app)
       app->fnc.sign = do_sign;
       app->fnc.auth = NULL;
       app->fnc.decipher = NULL;
-      app->fnc.change_pin = NULL;
+      app->fnc.change_pin = NULL /*do_change_pin*/;
       app->fnc.check_pin = NULL;
 
       app->force_chv1 = 1;

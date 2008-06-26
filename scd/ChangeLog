@@ -1,3 +1,7 @@
+2008-06-25  Werner Koch  <wk@g10code.com>
+
+	* app-dinsig.c (do_sign): Allow for SHA256.
+
 2008-06-24  Werner Koch  <wk@g10code.com>
 
 	* app-common.h (app_ctx_s): Renamed reset_mode parameter of

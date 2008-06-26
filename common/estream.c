@@ -3074,7 +3074,7 @@ es_write_sanitized (estream_t ES__RESTRICT stream,
   for (; length; length--, p++, count++)
     {
       if (*p < 0x20 
-          || (*p >= 0x7f && *p < 0xa0)
+          || *p == 0x7f
           || (delimiters 
               && (strchr (delimiters, *p) || *p == '\\')))
         {

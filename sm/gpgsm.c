@@ -987,7 +987,7 @@ main ( int argc, char **argv)
   create_dotlock (NULL); /* register locking cleanup */
   i18n_init();
 
-  opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
+  opt.def_cipher_algoid = "AES";  /*des-EDE3-CBC*/
 
   opt.homedir = default_homedir ();
 

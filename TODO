@@ -66,7 +66,8 @@
   We should check the card status in open-card to make this smoother.
   Needs to be integrated with the status file update, though.  It is
   not a real problem because application will get a card removed
-  status and should the send a reset to try solving the problem.
+  status and should then send a reset to try solving the problem.
+** Resolve fixme in do_sign of app-dinsig.
 
 ** Add a regression test to check the extkeyusage.
 

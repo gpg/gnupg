@@ -215,7 +215,6 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
     err = 0;
 
   i18n_switchback (orig_codeset);
-  xfree (orig_codeset);
   xfree (subject);
 
   if (err)

@@ -1,3 +1,9 @@
+2008-06-26  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (print_sanitized_buffer2): Loose check for control
+	characters to better cope with utf-8.  The range 0x80..0x9f is
+	nowadays not anymore accidently used for control charaters.
+
 2008-06-13  Werner Koch  <wk@g10code.com>
 
 	* dotlock.c: Reformat code and implement locking for W32.

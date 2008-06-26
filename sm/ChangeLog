@@ -1,3 +1,16 @@
+2008-06-25  Werner Koch  <wk@g10code.com>
+
+	* sign.c (gpgsm_sign): Revamp the hash algorithm selection.
+	* gpgsm.h (struct certlist_s): Add field HASH_ALGO and HASH_ALGO_OID.
+
+	* qualified.c (gpgsm_qualified_consent): Fix double free.
+
+	* gpgsm.c (main): Change default cipher algo to AES.
+
+	* keylist.c (print_utf8_extn_raw, print_utf8_extn): New.
+	(list_cert_raw, list_cert_std): Print the TeleSec restriction
+	extension.
+
 2008-06-23  Werner Koch  <wk@g10code.com>
 
 	* encrypt.c (encode_session_key): Replace xmalloc by xtrymalloc.

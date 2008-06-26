@@ -1,5 +1,5 @@
 /* sign.c - Sign a message
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -396,6 +396,44 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       release_signerlist = 1;
     }
 
+  /* Figure out the hash algorithm to use. We do not want to use the
+     one for the certificate but if possible an OID for the plain
+     algorithm.  */
+  for (i=0, cl=signerlist; cl; cl = cl->next, i++)
+    {
+      const char *oid = ksba_cert_get_digest_algo (cl->cert);
+
+      cl->hash_algo = oid ? gcry_md_map_name (oid) : 0;
+      switch (cl->hash_algo)
+        {
+        case GCRY_MD_SHA1:   oid = "1.3.14.3.2.26"; break;
+        case GCRY_MD_RMD160: oid = "1.3.36.3.2.1"; break;
+        case GCRY_MD_SHA224: oid = "2.16.840.1.101.3.4.2.4"; break;
+        case GCRY_MD_SHA256: oid = "2.16.840.1.101.3.4.2.1"; break;
+        case GCRY_MD_SHA384: oid = "2.16.840.1.101.3.4.2.2"; break;
+        case GCRY_MD_SHA512: oid = "2.16.840.1.101.3.4.2.3"; break;
+/*         case GCRY_MD_WHIRLPOOL: oid = "No OID yet"; break; */
+              
+        case GCRY_MD_MD5:  /* We don't want to use MD5.  */
+        case 0:            /* No algorithm found in cert.  */
+        default:           /* Other algorithms.  */
+          log_info (_("hash algorithm %d (%s) for signer %d not supported;"
+                      " using %s\n"),
+                    cl->hash_algo, oid? oid: "?", i, 
+                    gcry_md_algo_name (GCRY_MD_SHA1));
+          cl->hash_algo = GCRY_MD_SHA1;
+          oid = "1.3.14.3.2.26";
+          break;
+        }
+      cl->hash_algo_oid = oid;
+    }
+  if (opt.verbose)
+    {
+      for (i=0, cl=signerlist; cl; cl = cl->next, i++)
+        log_info (_("hash algorithm used for signer %d: %s (%s)\n"), 
+                  i, gcry_md_algo_name (cl->hash_algo), cl->hash_algo_oid);
+    }
+
 
   /* Gather certificates of signers and store them in the CMS object. */
   for (cl=signerlist; cl; cl = cl->next)
@@ -419,7 +457,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
       /* Set the hash algorithm we are going to use */
-      err = ksba_cms_add_digest_algo (cms, "1.3.14.3.2.26" /*SHA-1*/);
+      err = ksba_cms_add_digest_algo (cms, cl->hash_algo_oid);
       if (err)
         {
           log_debug ("ksba_cms_add_digest_algo failed: %s\n",
@@ -458,7 +496,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
     }
   
-  /* Prepare hashing (actually we are figuring out what we have set above)*/
+  /* Prepare hashing (actually we are figuring out what we have set
+     above). */
   rc = gcry_md_open (&data_md, 0, 0);
   if (rc)
     {
@@ -474,10 +513,6 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (!algo)
         {
           log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-          if (algoid
-              && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
-                    ||!strcmp (algoid, "1.2.840.113549.2.2")))
-            log_info (_("(this is the MD2 algorithm)\n"));
           rc = gpg_error (GPG_ERR_BUG);
           goto leave;
         }
@@ -485,26 +520,23 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
 
   if (detached)
-    { /* we hash the data right now so that we can store the message
+    { /* We hash the data right now so that we can store the message
          digest.  ksba_cms_build() takes this as an flag that detached
          data is expected. */
       unsigned char *digest;
       size_t digest_len;
-      /* Fixme do this for all signers and get the algo to use from
-         the signer's certificate - does not make much sense, but we
-         should do this consistent as we have already done it above. */
-      algo = GCRY_MD_SHA1; 
+
       hash_data (data_fd, data_md);
-      digest = gcry_md_read (data_md, algo);
-      digest_len = gcry_md_get_algo_dlen (algo);
-      if ( !digest || !digest_len)
-        {
-          log_error ("problem getting the hash of the data\n");
-          rc = gpg_error (GPG_ERR_BUG);
-          goto leave;
-        }
       for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
         {
+          digest = gcry_md_read (data_md, cl->hash_algo);
+          digest_len = gcry_md_get_algo_dlen (cl->hash_algo);
+          if ( !digest || !digest_len )
+            {
+              log_error ("problem getting the hash of the data\n");
+              rc = gpg_error (GPG_ERR_BUG);
+              goto leave;
+            }
           err = ksba_cms_set_message_digest (cms, signer, digest, digest_len);
           if (err)
             {
@@ -559,30 +591,26 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
 
       if (stopreason == KSBA_SR_BEGIN_DATA)
-        { /* hash the data and store the message digest */
+        { 
+          /* Hash the data and store the message digest. */
           unsigned char *digest;
           size_t digest_len;
 
           assert (!detached);
-          /* Fixme: get the algo to use from the signer's certificate
-             - does not make much sense, but we should do this
-             consistent as we have already done it above.  Code is
-             mostly duplicated above. */
 
-          algo = GCRY_MD_SHA1; 
           rc = hash_and_copy_data (data_fd, data_md, writer);
           if (rc)
             goto leave;
-          digest = gcry_md_read (data_md, algo);
-          digest_len = gcry_md_get_algo_dlen (algo);
-          if ( !digest || !digest_len)
-            {
-              log_error ("problem getting the hash of the data\n");
-              rc = gpg_error (GPG_ERR_BUG);
-              goto leave;
-            }
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
             {
+              digest = gcry_md_read (data_md, cl->hash_algo);
+              digest_len = gcry_md_get_algo_dlen (cl->hash_algo);
+              if ( !digest || !digest_len )
+                {
+                  log_error ("problem getting the hash of the data\n");
+                  rc = gpg_error (GPG_ERR_BUG);
+                  goto leave;
+                }
               err = ksba_cms_set_message_digest (cms, signer,
                                                  digest, digest_len);
               if (err)
@@ -595,11 +623,11 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             }
         }
       else if (stopreason == KSBA_SR_NEED_SIG)
-        { /* calculate the signature for all signers */
+        { 
+          /* Compute the signature for all signers.  */
           gcry_md_hd_t md;
 
-          algo = GCRY_MD_SHA1;
-          rc = gcry_md_open (&md, algo, 0);
+          rc = gcry_md_open (&md, 0, 0);
           if (rc)
             {
               log_error ("md_open failed: %s\n", gpg_strerror (rc));
@@ -615,6 +643,13 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
               if (signer)
                 gcry_md_reset (md);
+              {
+                certlist_t cl_tmp;
+
+                for (cl_tmp=signerlist; cl_tmp; cl_tmp = cl_tmp->next)
+                  gcry_md_enable (md, cl_tmp->hash_algo);
+              }
+
               rc = ksba_cms_hash_signed_attrs (cms, signer);
               if (rc)
                 {
@@ -625,7 +660,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 }
             
               rc = gpgsm_create_cms_signature (ctrl, cl->cert,
-                                               md, algo, &sigval);
+                                               md, cl->hash_algo, &sigval);
               if (rc)
                 {
                   gcry_md_close (md);
@@ -656,7 +691,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 rc = asprintf (&buf, "%c %d %d 00 %s %s",
                                detached? 'D':'S',
                                pkalgo, 
-                               algo, 
+                               cl->hash_algo, 
                                signed_at,
                                fpr);
               }

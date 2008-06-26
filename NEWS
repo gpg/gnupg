@@ -25,6 +25,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * New control statement %ask-passphrase for the unattended key
    generation of gpg2.
 
+ * gpgsm now uses AES by default.
+
 
 Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------

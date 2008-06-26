@@ -1,6 +1,6 @@
 /* keylist.c - Print certificates in various formats.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005 Free Software Foundation, Inc.
+ *               2004, 2005, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,7 @@
 #include "keydb.h"
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "i18n.h"
+#include "tlv.h"
 
 struct list_external_parm_s 
 {
@@ -77,12 +78,18 @@ struct
 };
 
 
+/* Do not print this extension in the list of extensions.  This is set
+   for oids which are already available via ksba fucntions. */
+#define OID_FLAG_SKIP 1
+/* The extension is a simple UTF8String and should be printed.  */
+#define OID_FLAG_UTF8 2 
+
 /* A table mapping OIDs to a descriptive string. */
 static struct 
 {
   char *oid;
   char *name;
-  unsigned int flag;
+  unsigned int flag; /* A flag as described above.  */
 } oidtranstbl[] = {
 
   /* Algorithms. */
@@ -115,6 +122,10 @@ static struct
   { "0.2.262.1.10.12.4", "telesecCRLFilteredExt" },
   { "0.2.262.1.10.12.5", "telesecCRLFilterExt"},
   { "0.2.262.1.10.12.6", "telesecNamingAuthorityExt" },
+#define OIDSTR_restriction \
+    "1.3.36.8.3.8"
+  { OIDSTR_restriction,      "restriction", OID_FLAG_UTF8 },
+
 
   /* PKIX private extensions. */
   { "1.3.6.1.5.5.7.1.1", "authorityInfoAccess" },
@@ -135,12 +146,12 @@ static struct
   { "1.3.6.1.5.5.7.48.5", "caRepository" },
 
   /* X.509 id-ce */
-  { "2.5.29.14", "subjectKeyIdentifier", 1},
-  { "2.5.29.15", "keyUsage", 1 },
+  { "2.5.29.14", "subjectKeyIdentifier", OID_FLAG_SKIP},
+  { "2.5.29.15", "keyUsage", OID_FLAG_SKIP},
   { "2.5.29.16", "privateKeyUsagePeriod" },
-  { "2.5.29.17", "subjectAltName", 1 },
-  { "2.5.29.18", "issuerAltName", 1 },
-  { "2.5.29.19", "basicConstraints", 1},
+  { "2.5.29.17", "subjectAltName", OID_FLAG_SKIP},
+  { "2.5.29.18", "issuerAltName", OID_FLAG_SKIP},
+  { "2.5.29.19", "basicConstraints", OID_FLAG_SKIP},
   { "2.5.29.20", "cRLNumber" },
   { "2.5.29.21", "cRLReason" },
   { "2.5.29.22", "expirationDate" },
@@ -150,13 +161,13 @@ static struct
   { "2.5.29.28", "issuingDistributionPoint" },
   { "2.5.29.29", "certificateIssuer" },
   { "2.5.29.30", "nameConstraints" },
-  { "2.5.29.31", "cRLDistributionPoints", 1 },
-  { "2.5.29.32", "certificatePolicies", 1 },
+  { "2.5.29.31", "cRLDistributionPoints", OID_FLAG_SKIP},
+  { "2.5.29.32", "certificatePolicies", OID_FLAG_SKIP},
   { "2.5.29.32.0", "anyPolicy" },
   { "2.5.29.33", "policyMappings" },
-  { "2.5.29.35", "authorityKeyIdentifier", 1 },
+  { "2.5.29.35", "authorityKeyIdentifier", OID_FLAG_SKIP},
   { "2.5.29.36", "policyConstraints" },
-  { "2.5.29.37", "extKeyUsage", 1 },
+  { "2.5.29.37", "extKeyUsage", OID_FLAG_SKIP},
   { "2.5.29.46", "freshestCRL" },
   { "2.5.29.54", "inhibitAnyPolicy" },
 
@@ -561,6 +572,59 @@ print_names_raw (estream_t fp, int indent, ksba_name_t name)
 }
 
 
+static void
+print_utf8_extn_raw (estream_t fp, int indent, 
+                     const unsigned char *der, size_t derlen)
+{
+  gpg_error_t err;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen;
+
+  if (indent < 0)
+    indent = - indent;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_UTF8_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    {
+      es_fprintf (fp, "%*s[%s]\n", indent, "", gpg_strerror (err));
+      return;
+    }
+  es_fprintf (fp, "%*s(%.*s)\n", indent, "", objlen, der);
+}
+
+
+static void
+print_utf8_extn (estream_t fp, int indent, 
+                 const unsigned char *der, size_t derlen)
+{
+  gpg_error_t err;
+  int class, tag, constructed, ndef;
+  size_t objlen, hdrlen;
+  int indent_all;
+
+  if ((indent_all = (indent < 0)))
+    indent = - indent;
+
+  err = parse_ber_header (&der, &derlen, &class, &tag, &constructed,
+                          &ndef, &objlen, &hdrlen);
+  if (!err && (objlen > derlen || tag != TAG_UTF8_STRING))
+    err = gpg_error (GPG_ERR_INV_OBJ);
+  if (err)
+    {
+      es_fprintf (fp, "%*s[Error - %s]\n",
+                  indent_all? indent:0, "", gpg_strerror (err));
+      return;
+    }
+  es_fprintf (fp, "%*s\"", indent_all? indent:0, "");
+  /* Fixme: we should implement word wrapping */
+  es_write_sanitized (fp, der, objlen, "\"", NULL);
+  es_fputs ("\"\n", fp);
+}
+
+
 /* List one certificate in raw mode useful to have a closer look at
    the certificate.  This one does no beautification and only minimal
    output sanitation.  It is mainly useful for debugging. */
@@ -581,6 +645,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   const char *oid, *s;
   ksba_name_t name, name2;
   unsigned int reason;
+  const unsigned char *cert_der = NULL;
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
               gpgsm_get_short_fingerprint (cert));
@@ -892,11 +957,19 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
       unsigned int flag;
 
       s = get_oid_desc (oid, &flag);
+      if ((flag & OID_FLAG_SKIP))
+        continue;
 
-      if (!(flag & 1))
-        es_fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
-                 i? "critExtn":"    extn",
-                 oid, s?" (":"", s?s:"", s?")":"", (int)len);
+      es_fprintf (fp, "     %s: %s%s%s%s  [%d octets]\n",
+                  i? "critExtn":"    extn",
+                  oid, s?" (":"", s?s:"", s?")":"", (int)len);
+      if ((flag & OID_FLAG_UTF8))
+        {
+          if (!cert_der)
+            cert_der = ksba_cert_get_image (cert, NULL);
+          assert (cert_der);
+          print_utf8_extn_raw (fp, -15, cert_der+off, len);
+        }
     }
 
 
@@ -938,6 +1011,10 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   int is_ca, chainlen;
   unsigned int kusage;
   char *string, *p, *pend;
+  size_t off, len;
+  const char *oid;
+  const unsigned char *cert_der = NULL;
+
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
               gpgsm_get_short_fingerprint (cert));
@@ -1053,6 +1130,21 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
       es_putc ('\n', fp);
     }
 
+  /* Print restrictions.  */
+  for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
+                                             &oid, NULL, &off, &len));idx++)
+    {
+      if (!strcmp (oid, OIDSTR_restriction) )
+        {
+          if (!cert_der)
+            cert_der = ksba_cert_get_image (cert, NULL);
+          assert (cert_der);
+          es_fputs ("  restriction: ", fp);
+          print_utf8_extn (fp, 15, cert_der+off, len);
+        }
+    }
+
+  /* Print policies.  */
   err = ksba_cert_get_cert_policies (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
