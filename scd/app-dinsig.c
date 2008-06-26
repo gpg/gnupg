@@ -536,7 +536,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   xfree (pinvalue);
   return err;
 }
-
+#endif /*0*/
 
 
 /* Select the DINSIG application on the card in SLOT.  This function

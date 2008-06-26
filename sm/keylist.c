@@ -614,8 +614,8 @@ print_utf8_extn (estream_t fp, int indent,
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     {
-      es_fprintf (fp, "%*s[Error - %s]\n",
-                  indent_all? indent:0, "", gpg_strerror (err));
+      es_fprintf (fp, "%*s[%s%s]\n",
+                  indent_all? indent:0, "", _("Error - "), gpg_strerror (err));
       return;
     }
   es_fprintf (fp, "%*s\"", indent_all? indent:0, "");
