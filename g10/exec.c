@@ -321,7 +321,7 @@ int exec_write(struct exec_info **info,const char *program,
 #if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
   /* There should be no way to get to this spot while still carrying
      setuid privs.  Just in case, bomb out if we are. */
-  if(getuid()!=geteuid())
+  if ( getuid () != geteuid () )
     BUG();
 #endif
 

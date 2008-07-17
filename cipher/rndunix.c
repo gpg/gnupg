@@ -804,7 +804,7 @@ rndunix_gather_random( void (*add)(const void*, size_t, int), int requester,
 
     if( !gatherer_pid ) {
 	/* make sure we are not setuid */
-	if( getuid() != geteuid() )
+	if ( getuid () != geteuid () )
 	    BUG();
 	/* time to start the gatherer process */
 	if( pipe( pipedes ) ) {

@@ -119,7 +119,7 @@ load_module (const char *name)
 
 #ifndef _WIN32
   /* Make sure we are not setuid. */
-  if (getuid() != geteuid())
+  if (getuid () != geteuid ())
     log_bug("trying to load an extension while still setuid\n");
 #endif
 
