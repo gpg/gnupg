@@ -470,11 +470,12 @@ returned in @var{hexstring_with_keygrip}.
 @subsection Return a certificate
 
 @example
- READCERT @var{hexified_certid}
+ READCERT @var{hexified_certid}|@var{keyid}
 @end example
 
 This function is used to read a certificate identified by
-@var{hexified_certid} from the card.
+@var{hexified_certid} from the card.  With OpenPGP cards the keyid
+@code{OpenPGP.3} may be used to rad the certticate of version 2 cards.
 
 
 @node Scdaemon READKEY

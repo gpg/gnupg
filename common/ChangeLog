@@ -1,3 +1,8 @@
+2008-07-17  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_spawn_process_detached): Do not run the setuid
+	test for root.
+
 2008-06-26  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_write_sanitized): Loose check for control

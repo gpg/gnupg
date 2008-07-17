@@ -611,7 +611,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 
-/* READCERT <hexified_certid>
+/* READCERT <hexified_certid>|<keyid>
 
    Note, that this function may even be used on a locked card.
  */

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-id\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-05-31 13:02+0200\n"
+"POT-Creation-Date: 2008-06-26 20:51+0200\n"
 "PO-Revision-Date: 2004-06-17 16:32+0700\n"
 "Last-Translator: Tedi Heriyanto <tedi_h@gmx.net>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -94,9 +94,10 @@ msgstr "passphrase yang buruk"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "algoritma proteksi %d%s tidak didukung\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3174
-#: g10/keygen.c:3207 g10/keyring.c:1202 g10/keyring.c:1506 g10/openfile.c:275
+#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3213
+#: g10/keygen.c:3246 g10/keyring.c:1202 g10/keyring.c:1506 g10/openfile.c:275
 #: g10/openfile.c:368 g10/sign.c:800 g10/sign.c:1109 g10/tdbio.c:547
+#: jnlib/dotlock.c:311
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "tidak dapat membuat %s: %s\n"
@@ -104,11 +105,11 @@ msgstr "tidak dapat membuat %s: %s\n"
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:682
 #: g10/card-util.c:751 g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70
 #: g10/encode.c:194 g10/encode.c:504 g10/gpg.c:1065 g10/import.c:193
-#: g10/keygen.c:2663 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
+#: g10/keygen.c:2698 g10/keyring.c:1532 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:782 g10/sign.c:977 g10/sign.c:1093
 #: g10/sign.c:1249 g10/tdbdump.c:139 g10/tdbdump.c:147 g10/tdbio.c:551
-#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
-#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
+#: g10/tdbio.c:614 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2077
+#: sm/gpgsm.c:2114 sm/gpgsm.c:2152 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "tidak dapat membuka `%s': %s\n"
@@ -400,24 +401,24 @@ msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
 #: agent/gpg-agent.c:529 agent/protect-tool.c:1066 kbx/kbxutil.c:428
-#: scd/scdaemon.c:342 sm/gpgsm.c:881 sm/gpgsm.c:884 tools/symcryptrun.c:997
+#: scd/scdaemon.c:342 sm/gpgsm.c:974 sm/gpgsm.c:977 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:628 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:972
+#: agent/gpg-agent.c:628 g10/gpg.c:2069 scd/scdaemon.c:423 sm/gpgsm.c:1065
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "CATATAN: tidak ada file pilihan baku `%s'\n"
 
 #: agent/gpg-agent.c:633 agent/gpg-agent.c:1216 g10/gpg.c:2073
-#: scd/scdaemon.c:428 sm/gpgsm.c:976 tools/symcryptrun.c:930
+#: scd/scdaemon.c:428 sm/gpgsm.c:1069 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "file pilihan `%s': %s\n"
 
-#: agent/gpg-agent.c:641 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:983
+#: agent/gpg-agent.c:641 g10/gpg.c:2080 scd/scdaemon.c:436 sm/gpgsm.c:1076
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "membaca pilihan dari `%s'\n"
@@ -707,8 +708,8 @@ msgstr "ubah passphrase"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1395
-#: tools/gpgconf-comp.c:1734
+#: common/exechelp.c:378 common/exechelp.c:467 tools/gpgconf-comp.c:1406
+#: tools/gpgconf-comp.c:1745
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
@@ -1117,14 +1118,14 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
 #: g10/card-util.c:75 g10/card-util.c:1396 g10/delkey.c:126 g10/keyedit.c:1529
-#: g10/keygen.c:2850 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:2889 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
 
 #: g10/card-util.c:102 g10/card-util.c:1129 g10/card-util.c:1208
-#: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1591
-#: g10/keygen.c:1658 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
+#: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1592
+#: g10/keygen.c:1659 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
 msgstr "Pilihan anda? "
 
@@ -1303,7 +1304,7 @@ msgid "   (3) Authentication key\n"
 msgstr ""
 
 #: g10/card-util.c:1140 g10/card-util.c:1219 g10/keyedit.c:945
-#: g10/keygen.c:1595 g10/keygen.c:1623 g10/keygen.c:1697 g10/revoke.c:685
+#: g10/keygen.c:1596 g10/keygen.c:1624 g10/keygen.c:1698 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Pilihan tidak valid.\n"
 
@@ -2262,7 +2263,7 @@ msgstr "%s:%d: opsi ekspor tidak valid\n"
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
-#: g10/gpg.c:2965 sm/gpgsm.c:1374
+#: g10/gpg.c:2965 sm/gpgsm.c:1485
 msgid "WARNING: program may create a core file!\n"
 msgstr "PERINGATAN: program mungkin membuat file core!\n"
 
@@ -2308,11 +2309,11 @@ msgstr ""
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "mengenkripsi pesan dalam mode --pgp2 membutuhkan cipher IDEA\n"
 
-#: g10/gpg.c:3101 g10/gpg.c:3125 sm/gpgsm.c:1446
+#: g10/gpg.c:3101 g10/gpg.c:3125 sm/gpgsm.c:1557
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritma cipher yang dipilih tidak valid\n"
 
-#: g10/gpg.c:3107 g10/gpg.c:3131 sm/gpgsm.c:1454 sm/gpgsm.c:1460
+#: g10/gpg.c:3107 g10/gpg.c:3131 sm/gpgsm.c:1565 sm/gpgsm.c:1571
 msgid "selected digest algorithm is invalid\n"
 msgstr "algoritma digest yang dipilih tidak valid\n"
 
@@ -3358,20 +3359,20 @@ msgstr "gagal menandai: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1142 g10/keygen.c:3549
+#: g10/keyedit.c:1142 g10/keygen.c:3588
 msgid "This key is not protected.\n"
 msgstr "Kunci ini tidak diproteksi.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3536 g10/revoke.c:538
+#: g10/keyedit.c:1146 g10/keygen.c:3575 g10/revoke.c:538
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3552
+#: g10/keyedit.c:1150 g10/keygen.c:3591
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Bagian rahasia kunci primer tidak tersedia.\n"
 
-#: g10/keyedit.c:1154 g10/keygen.c:3556
+#: g10/keyedit.c:1154 g10/keygen.c:3595
 msgid "Key is protected.\n"
 msgstr "Kunci diproteksi.\n"
 
@@ -3388,7 +3389,7 @@ msgstr ""
 "Masukkan passphrase baru untuk kunci rahasia ini.\n"
 "\n"
 
-#: g10/keyedit.c:1199 g10/keygen.c:2149
+#: g10/keyedit.c:1199 g10/keygen.c:2150
 msgid "passphrase not correctly repeated; try again"
 msgstr "passphrase tidak diulang dengan benar; coba lagi"
 
@@ -4156,74 +4157,74 @@ msgstr "User ID \"%s\" telah dibatalkan\n"
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Menampilkan photo ID %s berukuran %ld untuk kunci 0x%08lX (uid %d)\n"
 
-#: g10/keygen.c:268
+#: g10/keygen.c:269
 #, fuzzy, c-format
 msgid "preference `%s' duplicated\n"
 msgstr "preferensi %c%lu ganda \n"
 
-#: g10/keygen.c:275
+#: g10/keygen.c:276
 #, fuzzy
 msgid "too many cipher preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
-#: g10/keygen.c:277
+#: g10/keygen.c:278
 #, fuzzy
 msgid "too many digest preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
-#: g10/keygen.c:279
+#: g10/keygen.c:280
 #, fuzzy
 msgid "too many compression preferences\n"
 msgstr "terlalu banyak preferensi `%c'\n"
 
-#: g10/keygen.c:404
+#: g10/keygen.c:405
 #, fuzzy, c-format
 msgid "invalid item `%s' in preference string\n"
 msgstr "Karakter tidak valid dalam string preferensi\n"
 
-#: g10/keygen.c:884
+#: g10/keygen.c:885
 msgid "writing direct signature\n"
 msgstr "menulis signature direct\n"
 
-#: g10/keygen.c:926
+#: g10/keygen.c:927
 msgid "writing self signature\n"
 msgstr "menulis self signature\n"
 
-#: g10/keygen.c:983
+#: g10/keygen.c:984
 msgid "writing key binding signature\n"
 msgstr "menulis key binding signature\n"
 
-#: g10/keygen.c:1151 g10/keygen.c:1262 g10/keygen.c:1267 g10/keygen.c:1402
-#: g10/keygen.c:3049
+#: g10/keygen.c:1152 g10/keygen.c:1263 g10/keygen.c:1268 g10/keygen.c:1403
+#: g10/keygen.c:3088
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "keysize tidak valid; menggunakan %u bit\n"
 
-#: g10/keygen.c:1157 g10/keygen.c:1273 g10/keygen.c:1408 g10/keygen.c:3055
+#: g10/keygen.c:1158 g10/keygen.c:1274 g10/keygen.c:1409 g10/keygen.c:3094
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "keysize dibulatkan hingga %u bit\n"
 
-#: g10/keygen.c:1299
+#: g10/keygen.c:1300
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
 
-#: g10/keygen.c:1519
+#: g10/keygen.c:1520
 #, fuzzy
 msgid "Sign"
 msgstr "tandai"
 
-#: g10/keygen.c:1522
+#: g10/keygen.c:1523
 msgid "Certify"
 msgstr ""
 
-#: g10/keygen.c:1525
+#: g10/keygen.c:1526
 #, fuzzy
 msgid "Encrypt"
 msgstr "enkripsi data"
 
-#: g10/keygen.c:1528
+#: g10/keygen.c:1529
 msgid "Authenticate"
 msgstr ""
 
@@ -4237,109 +4238,109 @@ msgstr ""
 #. a = Toggle authentication capability
 #. q = Finish
 #.
-#: g10/keygen.c:1546
+#: g10/keygen.c:1547
 msgid "SsEeAaQq"
 msgstr ""
 
-#: g10/keygen.c:1569
+#: g10/keygen.c:1570
 #, c-format
 msgid "Possible actions for a %s key: "
 msgstr ""
 
-#: g10/keygen.c:1573
+#: g10/keygen.c:1574
 msgid "Current allowed actions: "
 msgstr ""
 
-#: g10/keygen.c:1578
+#: g10/keygen.c:1579
 #, c-format
 msgid "   (%c) Toggle the sign capability\n"
 msgstr ""
 
-#: g10/keygen.c:1581
+#: g10/keygen.c:1582
 #, fuzzy, c-format
 msgid "   (%c) Toggle the encrypt capability\n"
 msgstr "  (%d) ElGamal (hanya enkripsi)\n"
 
-#: g10/keygen.c:1584
+#: g10/keygen.c:1585
 #, c-format
 msgid "   (%c) Toggle the authenticate capability\n"
 msgstr ""
 
-#: g10/keygen.c:1587
+#: g10/keygen.c:1588
 #, c-format
 msgid "   (%c) Finished\n"
 msgstr ""
 
-#: g10/keygen.c:1643 sm/certreqgen-ui.c:121
+#: g10/keygen.c:1644 sm/certreqgen-ui.c:121
 msgid "Please select what kind of key you want:\n"
 msgstr "Silakan pilih kunci yang anda inginkan:\n"
 
-#: g10/keygen.c:1645
+#: g10/keygen.c:1646
 #, fuzzy, c-format
 msgid "   (%d) DSA and Elgamal (default)\n"
 msgstr "  (%d) DSA dan ElGamal (baku)\n"
 
-#: g10/keygen.c:1646
+#: g10/keygen.c:1647
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "  (%d) DSA (hanya menandai)\n"
 
-#: g10/keygen.c:1648
+#: g10/keygen.c:1649
 #, fuzzy, c-format
 msgid "   (%d) DSA (set your own capabilities)\n"
 msgstr "  (%d) RSA (hanya enkripsi)\n"
 
-#: g10/keygen.c:1650
+#: g10/keygen.c:1651
 #, fuzzy, c-format
 msgid "   (%d) Elgamal (encrypt only)\n"
 msgstr "  (%d) ElGamal (hanya enkripsi)\n"
 
-#: g10/keygen.c:1651
+#: g10/keygen.c:1652
 #, c-format
 msgid "   (%d) RSA (sign only)\n"
 msgstr "  (%d) RSA (hanya menandai)\n"
 
-#: g10/keygen.c:1653
+#: g10/keygen.c:1654
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
 msgstr "  (%d) RSA (hanya enkripsi)\n"
 
-#: g10/keygen.c:1655
+#: g10/keygen.c:1656
 #, fuzzy, c-format
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "  (%d) RSA (hanya enkripsi)\n"
 
-#: g10/keygen.c:1724
+#: g10/keygen.c:1725
 #, fuzzy, c-format
 msgid "DSA keypair will have %u bits.\n"
 msgstr "Keypair DSA akan memiliki 1024 bit.\n"
 
-#: g10/keygen.c:1734
+#: g10/keygen.c:1735
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
 
-#: g10/keygen.c:1741 sm/certreqgen-ui.c:142
+#: g10/keygen.c:1742 sm/certreqgen-ui.c:142
 #, fuzzy, c-format
 msgid "What keysize do you want? (%u) "
 msgstr "Keysize yang anda inginkan? (1024) "
 
-#: g10/keygen.c:1755 sm/certreqgen-ui.c:147
+#: g10/keygen.c:1756 sm/certreqgen-ui.c:147
 #, c-format
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr ""
 
-#: g10/keygen.c:1761 sm/certreqgen-ui.c:152
+#: g10/keygen.c:1762 sm/certreqgen-ui.c:152
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Keysize yang diminta adalah %u bit\n"
 
-#: g10/keygen.c:1766 g10/keygen.c:1771 sm/certreqgen-ui.c:157
+#: g10/keygen.c:1767 g10/keygen.c:1772 sm/certreqgen-ui.c:157
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "dibulatkan hingga %u bit\n"
 
-#: g10/keygen.c:1840
+#: g10/keygen.c:1841
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -4355,7 +4356,7 @@ msgstr ""
 "     <n>m = kunci berakhir dalam n bulan\n"
 "     <n>y = kunci berakhir dalam n tahun\n"
 
-#: g10/keygen.c:1851
+#: g10/keygen.c:1852
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -4371,40 +4372,40 @@ msgstr ""
 "     <n>m = signature berakhir dalam n bulan\n"
 "     <n>y = signature berakhir dalam n tahun\n"
 
-#: g10/keygen.c:1874
+#: g10/keygen.c:1875
 msgid "Key is valid for? (0) "
 msgstr "Kunci valid untuk? (0) "
 
-#: g10/keygen.c:1879
+#: g10/keygen.c:1880
 #, fuzzy, c-format
 msgid "Signature is valid for? (%s) "
 msgstr "Signature valid untuk? (0) "
 
-#: g10/keygen.c:1897
+#: g10/keygen.c:1898
 msgid "invalid value\n"
 msgstr "nilai yang tidak valid\n"
 
-#: g10/keygen.c:1904
+#: g10/keygen.c:1905
 #, fuzzy
 msgid "Key does not expire at all\n"
 msgstr "%s tidak pernah berakhir\n"
 
-#: g10/keygen.c:1905
+#: g10/keygen.c:1906
 #, fuzzy
 msgid "Signature does not expire at all\n"
 msgstr "%s tidak pernah berakhir\n"
 
-#: g10/keygen.c:1910
+#: g10/keygen.c:1911
 #, fuzzy, c-format
 msgid "Key expires at %s\n"
 msgstr "%s berakhir pada %s\n"
 
-#: g10/keygen.c:1911
+#: g10/keygen.c:1912
 #, fuzzy, c-format
 msgid "Signature expires at %s\n"
 msgstr "Signature kadaluarsa pada %s \n"
 
-#: g10/keygen.c:1915
+#: g10/keygen.c:1916
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4412,19 +4413,19 @@ msgstr ""
 "Sistem anda tidak dapat menampilkan tanggal melebihi 2038.\n"
 "Namun, ia dapat menanganinya secara benar hingga 2106.\n"
 
-#: g10/keygen.c:1922
+#: g10/keygen.c:1923
 #, fuzzy
 msgid "Is this correct? (y/N) "
 msgstr "Benar (y/t)? "
 
-#: g10/keygen.c:1947
+#: g10/keygen.c:1948
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
 "\n"
 msgstr ""
 
-#: g10/keygen.c:1958
+#: g10/keygen.c:1959
 #, fuzzy
 msgid ""
 "\n"
@@ -4440,44 +4441,44 @@ msgstr ""
 "user-id dari Nama sebenarnya, Komentar dan Alamat email dalam bentuk:\n"
 "  \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 
-#: g10/keygen.c:1977
+#: g10/keygen.c:1978
 msgid "Real name: "
 msgstr "Nama sebenarnya: "
 
-#: g10/keygen.c:1985
+#: g10/keygen.c:1986
 msgid "Invalid character in name\n"
 msgstr "Karakter tidak valid dalam nama\n"
 
-#: g10/keygen.c:1987
+#: g10/keygen.c:1988
 msgid "Name may not start with a digit\n"
 msgstr "Nama tidak boleh dimulai dengan digit\n"
 
-#: g10/keygen.c:1989
+#: g10/keygen.c:1990
 msgid "Name must be at least 5 characters long\n"
 msgstr "Nama harus berukuran minimum 5 karakter\n"
 
-#: g10/keygen.c:1997
+#: g10/keygen.c:1998
 msgid "Email address: "
 msgstr "Alamat email: "
 
-#: g10/keygen.c:2003
+#: g10/keygen.c:2004
 msgid "Not a valid email address\n"
 msgstr "Bukan alamat email yang valid\n"
 
-#: g10/keygen.c:2011
+#: g10/keygen.c:2012
 msgid "Comment: "
 msgstr "Komentar: "
 
-#: g10/keygen.c:2017
+#: g10/keygen.c:2018
 msgid "Invalid character in comment\n"
 msgstr "Karakter tidak valid dalam komentar\n"
 
-#: g10/keygen.c:2039
+#: g10/keygen.c:2040
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Anda menggunakan set karakter `%s'.\n"
 
-#: g10/keygen.c:2045
+#: g10/keygen.c:2046
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4487,7 +4488,7 @@ msgstr ""
 "Anda memilih USER-ID ini:\n"
 "   \"%s\"\n"
 
-#: g10/keygen.c:2050
+#: g10/keygen.c:2051
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Jangan menaruh alamat email ke dalam nama sebenarnya atau komentar\n"
 
@@ -4502,23 +4503,23 @@ msgstr "Jangan menaruh alamat email ke dalam nama sebenarnya atau komentar\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2066
+#: g10/keygen.c:2067
 msgid "NnCcEeOoQq"
 msgstr "NnKkEeOoQq"
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2077
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Ganti (N)ama, (K)omentar, (E)mail atau (Q)uit? "
 
-#: g10/keygen.c:2077
+#: g10/keygen.c:2078
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Ganti (N)ama, (K)omentar, (E)mail atau (O)ke/(Q)uit? "
 
-#: g10/keygen.c:2096
+#: g10/keygen.c:2097
 msgid "Please correct the error first\n"
 msgstr "Silakan perbaiki kesalahan ini dulu\n"
 
-#: g10/keygen.c:2135
+#: g10/keygen.c:2136
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4526,12 +4527,12 @@ msgstr ""
 "Anda perlu sebuah passphrase untuk melindungi kunci rahasia anda.\n"
 "\n"
 
-#: g10/keygen.c:2150
+#: g10/keygen.c:2151
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2156
+#: g10/keygen.c:2157
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4544,7 +4545,7 @@ msgstr ""
 "menggunakan program ini dengan pilihan \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2180
+#: g10/keygen.c:2181
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4556,50 +4557,50 @@ msgstr ""
 "selama pembuatan prima; ini akan memberi random number generator kesempatan\n"
 "yang baik untuk memperoleh entropi.\n"
 
-#: g10/keygen.c:2989 g10/keygen.c:3016
+#: g10/keygen.c:3028 g10/keygen.c:3055
 msgid "Key generation canceled.\n"
 msgstr "Pembuatan kunci dibatalkan.\n"
 
-#: g10/keygen.c:3221 g10/keygen.c:3388
+#: g10/keygen.c:3260 g10/keygen.c:3427
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "menulis kunci publik ke `%s'\n"
 
-#: g10/keygen.c:3223 g10/keygen.c:3391
+#: g10/keygen.c:3262 g10/keygen.c:3430
 #, fuzzy, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
-#: g10/keygen.c:3226 g10/keygen.c:3394
+#: g10/keygen.c:3265 g10/keygen.c:3433
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
-#: g10/keygen.c:3375
+#: g10/keygen.c:3414
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "tidak ditemukan keyring publik yang dapat ditulisi: %s\n"
 
-#: g10/keygen.c:3382
+#: g10/keygen.c:3421
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "tidak ditemukan keyring rahasia yang dapat ditulisi: %s\n"
 
-#: g10/keygen.c:3402
+#: g10/keygen.c:3441
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "kesalahan menulis keyring publik `%s': %s\n"
 
-#: g10/keygen.c:3410
+#: g10/keygen.c:3449
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
-#: g10/keygen.c:3437
+#: g10/keygen.c:3476
 msgid "public and secret key created and signed.\n"
 msgstr "kunci publik dan rahasia dibuat dan ditandai.\n"
 
-#: g10/keygen.c:3448
+#: g10/keygen.c:3487
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -4609,45 +4610,45 @@ msgstr ""
 "mungkin ingin menggunakan perintah \"--edit-key\" untuk membuat kunci kedua "
 "untuk tujuan ini.\n"
 
-#: g10/keygen.c:3461 g10/keygen.c:3606 g10/keygen.c:3727
+#: g10/keygen.c:3500 g10/keygen.c:3645 g10/keygen.c:3766
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Pembuatan kunci gagal: %s\n"
 
-#: g10/keygen.c:3516 g10/keygen.c:3657 g10/sign.c:241
+#: g10/keygen.c:3555 g10/keygen.c:3696 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
-#: g10/keygen.c:3518 g10/keygen.c:3659 g10/sign.c:243
+#: g10/keygen.c:3557 g10/keygen.c:3698 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
 "kunci telah diciptakan dalam %lu detik mendatang (masalah waktu atau jam)\n"
 
-#: g10/keygen.c:3529 g10/keygen.c:3670
+#: g10/keygen.c:3568 g10/keygen.c:3709
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "CATATAN: membuat subkey bagi kunci-kunci v3 tidak OpenPGP compliant\n"
 
-#: g10/keygen.c:3570 g10/keygen.c:3703
+#: g10/keygen.c:3609 g10/keygen.c:3742
 #, fuzzy
 msgid "Really create? (y/N) "
 msgstr "Ingin diciptakan? "
 
-#: g10/keygen.c:3876
+#: g10/keygen.c:3915
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#: g10/keygen.c:3924
+#: g10/keygen.c:3963
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "tidak dapat membuat %s: %s\n"
 
-#: g10/keygen.c:3950
+#: g10/keygen.c:3989
 #, fuzzy, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "CATATAN: kunci pribadi %08lX berakhir pada %s\n"
@@ -4680,30 +4681,30 @@ msgstr "Notasi signature: "
 msgid "Keyring"
 msgstr "Keyring"
 
-#: g10/keylist.c:1547
+#: g10/keylist.c:1504
 msgid "Primary key fingerprint:"
 msgstr "Fingerprint kunci primer:"
 
-#: g10/keylist.c:1549
+#: g10/keylist.c:1506
 msgid "     Subkey fingerprint:"
 msgstr "     Fingerprint subkunci ="
 
 #. TRANSLATORS: this should fit into 24 bytes to that the
 #. * fingerprint data is properly aligned with the user ID
-#: g10/keylist.c:1556
+#: g10/keylist.c:1513
 msgid " Primary key fingerprint:"
 msgstr "     Fingerprint kunci primer ="
 
-#: g10/keylist.c:1558
+#: g10/keylist.c:1515
 msgid "      Subkey fingerprint:"
 msgstr "     Fingerprint subkunci ="
 
-#: g10/keylist.c:1562 g10/keylist.c:1566
+#: g10/keylist.c:1519 g10/keylist.c:1523
 #, fuzzy
 msgid "      Key fingerprint ="
 msgstr "     Fingerprint kunci ="
 
-#: g10/keylist.c:1633
+#: g10/keylist.c:1590
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5180,7 +5181,7 @@ msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "plugin cipher IDEA tidak tersedia\n"
 
-#: g10/misc.c:505 g10/sig-check.c:107 jnlib/utf8conv.c:88
+#: g10/misc.c:505 g10/sig-check.c:107 jnlib/utf8conv.c:87
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr " i = beri saya informasi lebih banyak lagi\n"
@@ -6516,25 +6517,63 @@ msgstr "opsi impor tidak valid\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "anda menemukan kesalahan ...(%s:%d)\n"
 
-#: jnlib/utf8conv.c:86
+#: jnlib/utf8conv.c:85
 #, fuzzy, c-format
 msgid "error loading `%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#: jnlib/utf8conv.c:124
+#: jnlib/utf8conv.c:123
 #, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr ""
 
-#: jnlib/utf8conv.c:132
+#: jnlib/utf8conv.c:131
 #, fuzzy, c-format
 msgid "iconv_open failed: %s\n"
 msgstr "tidak dapat membuka file: %s\n"
 
-#: jnlib/utf8conv.c:392 jnlib/utf8conv.c:658
+#: jnlib/utf8conv.c:387 jnlib/utf8conv.c:653
 #, fuzzy, c-format
 msgid "conversion from `%s' to `%s' failed: %s\n"
 msgstr "gagal enarmoring: %s\n"
+
+#: jnlib/dotlock.c:235
+#, fuzzy, c-format
+msgid "failed to create temporary file `%s': %s\n"
+msgstr "tidak dapat membuat direktori `%s': %s\n"
+
+#: jnlib/dotlock.c:270
+#, fuzzy, c-format
+msgid "error writing to `%s': %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
+
+#: jnlib/dotlock.c:454
+#, c-format
+msgid "removing stale lockfile (created by %d)\n"
+msgstr ""
+
+#: jnlib/dotlock.c:460
+msgid " - probably dead - removing lock"
+msgstr ""
+
+#: jnlib/dotlock.c:470
+#, fuzzy, c-format
+msgid "waiting for lock (held by %d%s) %s...\n"
+msgstr "menulis kunci rahasia ke `%s'\n"
+
+#: jnlib/dotlock.c:471
+msgid "(deadlock?) "
+msgstr ""
+
+#: jnlib/dotlock.c:494
+#, fuzzy, c-format
+msgid "lock `%s' not made: %s\n"
+msgstr "kunci publik %08lX tidak ditemukan: %s\n"
+
+#: jnlib/dotlock.c:502
+#, fuzzy, c-format
+msgid "waiting for lock %s...\n"
+msgstr "menulis kunci rahasia ke `%s'\n"
 
 #: kbx/kbxutil.c:92
 msgid "set debugging flags"
@@ -6574,6 +6613,18 @@ msgstr ""
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
+#: scd/app-nks.c:555 scd/app-openpgp.c:1698
+msgid "|N|New PIN"
+msgstr ""
+
+#: scd/app-nks.c:558 scd/app-openpgp.c:1702 scd/app-dinsig.c:529
+#, fuzzy, c-format
+msgid "error getting new PIN: %s\n"
+msgstr "kesalahan penciptaan passphrase: %s\n"
+
 #: scd/app-openpgp.c:599
 #, fuzzy, c-format
 msgid "failed to store the fingerprint: %s\n"
@@ -6589,15 +6640,15 @@ msgstr "gagal membuat kembali cache keyring: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2114
+#: scd/app-openpgp.c:1015 scd/app-openpgp.c:2116
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2122
+#: scd/app-openpgp.c:1023 scd/app-openpgp.c:2124
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2132
+#: scd/app-openpgp.c:1032 scd/app-openpgp.c:2134
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
@@ -6627,7 +6678,7 @@ msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
 #: scd/app-openpgp.c:1403 scd/app-openpgp.c:1443 scd/app-openpgp.c:1567
-#: scd/app-openpgp.c:2385
+#: scd/app-openpgp.c:2387
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Pengiriman keyserver gagal: %s\n"
@@ -6636,11 +6687,11 @@ msgstr "Pengiriman keyserver gagal: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1487 scd/app-openpgp.c:2636
+#: scd/app-openpgp.c:1487 scd/app-openpgp.c:2638
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1493 scd/app-openpgp.c:2645
+#: scd/app-openpgp.c:1493 scd/app-openpgp.c:2647
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6671,108 +6722,106 @@ msgstr ""
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-openpgp.c:1696
+#: scd/app-openpgp.c:1698
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:1696
-msgid "|N|New PIN"
-msgstr ""
-
-#: scd/app-openpgp.c:1700
-#, fuzzy, c-format
-msgid "error getting new PIN: %s\n"
-msgstr "kesalahan penciptaan passphrase: %s\n"
-
-#: scd/app-openpgp.c:1750 scd/app-openpgp.c:2200
+#: scd/app-openpgp.c:1752 scd/app-openpgp.c:2202
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "gagal membaca keyblock: %s\n"
 
-#: scd/app-openpgp.c:1756 scd/app-openpgp.c:2207
+#: scd/app-openpgp.c:1758 scd/app-openpgp.c:2209
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "%s: kesalahan membaca record bebas: %s\n"
 
-#: scd/app-openpgp.c:1766
+#: scd/app-openpgp.c:1768
 #, fuzzy
 msgid "key already exists\n"
 msgstr "`%s' sudah dikompresi\n"
 
-#: scd/app-openpgp.c:1770
+#: scd/app-openpgp.c:1772
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1772
+#: scd/app-openpgp.c:1774
 #, fuzzy
 msgid "generating new key\n"
 msgstr "buat sepasang kunci baru"
 
-#: scd/app-openpgp.c:1939
+#: scd/app-openpgp.c:1941
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1946
+#: scd/app-openpgp.c:1948
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1953
+#: scd/app-openpgp.c:1955
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1961 scd/app-openpgp.c:1968
+#: scd/app-openpgp.c:1963 scd/app-openpgp.c:1970
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2031
+#: scd/app-openpgp.c:2033
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
-#: scd/app-openpgp.c:2091
+#: scd/app-openpgp.c:2093
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2105
+#: scd/app-openpgp.c:2107
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#: scd/app-openpgp.c:2108
+#: scd/app-openpgp.c:2110
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Pembuatan kunci gagal: %s\n"
 
-#: scd/app-openpgp.c:2165
+#: scd/app-openpgp.c:2167
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2215
+#: scd/app-openpgp.c:2217
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2303
+#: scd/app-openpgp.c:2305
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s signature, algoritma digest %s\n"
 
-#: scd/app-openpgp.c:2364
+#: scd/app-openpgp.c:2366
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2650
+#: scd/app-openpgp.c:2652
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2723 scd/app-openpgp.c:2733
+#: scd/app-openpgp.c:2725 scd/app-openpgp.c:2735
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "tidak ditemukan data OpenPGP yang valid.\n"
+
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
+#: scd/app-dinsig.c:526
+msgid "|N|Initial New PIN"
+msgstr ""
 
 #: scd/scdaemon.c:105
 msgid "run in multi server mode (foreground)"
@@ -6846,22 +6895,22 @@ msgstr "karakter radix64 tidak valid %02x dilewati\n"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:212
+#: sm/call-dirmngr.c:233
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr ""
 
-#: sm/call-dirmngr.c:245
+#: sm/call-dirmngr.c:266
 #, fuzzy
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "variabel lingkungan GPG_AGENT_INFO salah bentuk\n"
 
-#: sm/call-dirmngr.c:257
+#: sm/call-dirmngr.c:278
 #, fuzzy, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "protokol gpg-agent versi %d tidak didukung\n"
 
-#: sm/call-dirmngr.c:277
+#: sm/call-dirmngr.c:298
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 
@@ -6930,7 +6979,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
 #: sm/certchain.c:742 sm/certchain.c:1229 sm/certchain.c:1833 sm/decrypt.c:259
-#: sm/encrypt.c:349 sm/sign.c:327 sm/verify.c:113
+#: sm/encrypt.c:347 sm/sign.c:327 sm/verify.c:113
 #, fuzzy
 msgid "failed to allocated keyDB handle\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
@@ -7132,7 +7181,7 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
-#: sm/certcheck.c:248 sm/sign.c:480 sm/verify.c:201
+#: sm/certcheck.c:248 sm/verify.c:201
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
@@ -7181,7 +7230,7 @@ msgstr ""
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
-#: sm/certlist.c:132 sm/keylist.c:258
+#: sm/certlist.c:132 sm/keylist.c:269
 #, fuzzy, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
@@ -7394,7 +7443,7 @@ msgstr "preferensi %c%lu ganda \n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
-#: sm/encrypt.c:335
+#: sm/encrypt.c:333
 #, fuzzy
 msgid "no valid recipients given\n"
 msgstr "(Tidak diberikan deskripsi)\n"
@@ -7545,12 +7594,13 @@ msgstr "tambah keyring ini ke daftar keyring"
 msgid "add this secret keyring to the list"
 msgstr "tambah keyring rahasia ini ke daftar"
 
-#: sm/gpgsm.c:363 tools/gpgconf-comp.c:653 tools/gpgconf-comp.c:718
+#: sm/gpgsm.c:363 tools/gpgconf-comp.c:658 tools/gpgconf-comp.c:726
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAMA|gunakan NAMA sebagai kunci rahasia baku"
 
-#: sm/gpgsm.c:364
-msgid "|HOST|use this keyserver to lookup keys"
+#: sm/gpgsm.c:364 tools/gpgconf-comp.c:744
+#, fuzzy
+msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|HOST|gunakan keyserver ini utk lihat kunci"
 
 #: sm/gpgsm.c:365
@@ -7608,25 +7658,45 @@ msgstr "tidak dapat terkoneksi ke `%s': %s\n"
 msgid "unknown validation model `%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
-#: sm/gpgsm.c:1391
+#: sm/gpgsm.c:867
+#, fuzzy, c-format
+msgid "%s:%u: no hostname given\n"
+msgstr "(Tidak diberikan deskripsi)\n"
+
+#: sm/gpgsm.c:886
+#, c-format
+msgid "%s:%u: password given without user\n"
+msgstr ""
+
+#: sm/gpgsm.c:907
+#, fuzzy, c-format
+msgid "%s:%u: skipping this line\n"
+msgstr " s = lewati kunci ini\n"
+
+#: sm/gpgsm.c:1419
+#, fuzzy
+msgid "could not parse keyserver\n"
+msgstr "tidak dapat memparsing URI keyserver\n"
+
+#: sm/gpgsm.c:1502
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1493
+#: sm/gpgsm.c:1604
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "menulis ke `%s'\n"
 
-#: sm/gpgsm.c:1531
+#: sm/gpgsm.c:1642
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "tidak dapat menutup `%s': %s\n"
 
-#: sm/gpgsm.c:1717
+#: sm/gpgsm.c:1813
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
-#: sm/gpgsm.c:1872
+#: sm/gpgsm.c:1968
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7708,6 +7778,10 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "error storing flags: %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#: sm/keylist.c:618
+msgid "Error - "
+msgstr ""
+
 #: sm/misc.c:55
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr ""
@@ -7739,7 +7813,7 @@ msgid ""
 "signatures.\n"
 msgstr ""
 
-#: sm/qualified.c:277
+#: sm/qualified.c:276
 #, c-format
 msgid ""
 "You are about to create a signature using your certificate:\n"
@@ -7747,7 +7821,17 @@ msgid ""
 "Note, that this certificate will NOT create a qualified signature!"
 msgstr ""
 
-#: sm/sign.c:445
+#: sm/sign.c:420
+#, fuzzy, c-format
+msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
+msgstr "algoritma proteksi %d%s tidak didukung\n"
+
+#: sm/sign.c:433
+#, c-format
+msgid "hash algorithm used for signer %d: %s (%s)\n"
+msgstr ""
+
+#: sm/sign.c:483
 #, fuzzy, c-format
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "Gagal memeriksa signature yang dibuat: %s\n"
@@ -7877,141 +7961,145 @@ msgstr "kesalahan mengirim ke `%s': %s\n"
 msgid "error sending standard options: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
-#: tools/gpgconf-comp.c:467 tools/gpgconf-comp.c:571 tools/gpgconf-comp.c:638
-#: tools/gpgconf-comp.c:703 tools/gpgconf-comp.c:787
+#: tools/gpgconf-comp.c:472 tools/gpgconf-comp.c:576 tools/gpgconf-comp.c:643
+#: tools/gpgconf-comp.c:711 tools/gpgconf-comp.c:798
 msgid "Options controlling the diagnostic output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:480 tools/gpgconf-comp.c:584 tools/gpgconf-comp.c:651
-#: tools/gpgconf-comp.c:716 tools/gpgconf-comp.c:810
+#: tools/gpgconf-comp.c:485 tools/gpgconf-comp.c:589 tools/gpgconf-comp.c:656
+#: tools/gpgconf-comp.c:724 tools/gpgconf-comp.c:821
 msgid "Options controlling the configuration"
 msgstr ""
 
-#: tools/gpgconf-comp.c:490 tools/gpgconf-comp.c:609 tools/gpgconf-comp.c:664
-#: tools/gpgconf-comp.c:738 tools/gpgconf-comp.c:817
+#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:672
+#: tools/gpgconf-comp.c:749 tools/gpgconf-comp.c:828
 msgid "Options useful for debugging"
 msgstr ""
 
-#: tools/gpgconf-comp.c:495 tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:669
-#: tools/gpgconf-comp.c:743 tools/gpgconf-comp.c:825
+#: tools/gpgconf-comp.c:500 tools/gpgconf-comp.c:619 tools/gpgconf-comp.c:677
+#: tools/gpgconf-comp.c:754 tools/gpgconf-comp.c:836
 msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:503 tools/gpgconf-comp.c:619 tools/gpgconf-comp.c:751
+#: tools/gpgconf-comp.c:508 tools/gpgconf-comp.c:624 tools/gpgconf-comp.c:762
 msgid "Options controlling the security"
 msgstr ""
 
-#: tools/gpgconf-comp.c:510
+#: tools/gpgconf-comp.c:515
 msgid "|N|expire SSH keys after N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:514
+#: tools/gpgconf-comp.c:519
 msgid "|N|set maximum PIN cache lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:518
+#: tools/gpgconf-comp.c:523
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr ""
 
-#: tools/gpgconf-comp.c:532
+#: tools/gpgconf-comp.c:537
 msgid "Options enforcing a passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:535
+#: tools/gpgconf-comp.c:540
 msgid "do not allow to bypass the passphrase policy"
 msgstr ""
 
-#: tools/gpgconf-comp.c:539
+#: tools/gpgconf-comp.c:544
 msgid "|N|set minimal required length for new passphrases to N"
 msgstr ""
 
-#: tools/gpgconf-comp.c:543
+#: tools/gpgconf-comp.c:548
 msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr ""
 
-#: tools/gpgconf-comp.c:547
+#: tools/gpgconf-comp.c:552
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr ""
 
-#: tools/gpgconf-comp.c:551
+#: tools/gpgconf-comp.c:556
 #, fuzzy
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|gunakan passphrase mode N"
 
-#: tools/gpgconf-comp.c:555
+#: tools/gpgconf-comp.c:560
 #, fuzzy
 msgid "do not allow the reuse of old passphrases"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-#: tools/gpgconf-comp.c:656 tools/gpgconf-comp.c:721
+#: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:729
 #, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAMA|enkripsi untuk NAMA"
 
-#: tools/gpgconf-comp.c:677
+#: tools/gpgconf-comp.c:664
+msgid "|SPEC|set up email aliases"
+msgstr ""
+
+#: tools/gpgconf-comp.c:685
 msgid "Configuration for Keyservers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:679
+#: tools/gpgconf-comp.c:687
 #, fuzzy
 msgid "|URL|use keyserver at URL"
 msgstr "tidak dapat memparsing URI keyserver\n"
 
-#: tools/gpgconf-comp.c:682
+#: tools/gpgconf-comp.c:690
 msgid "allow PKA lookups (DNS requests)"
 msgstr ""
 
-#: tools/gpgconf-comp.c:685
+#: tools/gpgconf-comp.c:693
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
-#: tools/gpgconf-comp.c:730
+#: tools/gpgconf-comp.c:738
 msgid "disable all access to the dirmngr"
 msgstr ""
 
-#: tools/gpgconf-comp.c:733
+#: tools/gpgconf-comp.c:741
 #, fuzzy
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
 msgstr "|NAMA|gunakan algoritma cipher NAMA untuk passphrase"
 
-#: tools/gpgconf-comp.c:756
+#: tools/gpgconf-comp.c:767
 msgid "do not check CRLs for root certificates"
 msgstr ""
 
-#: tools/gpgconf-comp.c:800
+#: tools/gpgconf-comp.c:811
 msgid "Options controlling the format of the output"
 msgstr ""
 
-#: tools/gpgconf-comp.c:836
+#: tools/gpgconf-comp.c:847
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-#: tools/gpgconf-comp.c:846
+#: tools/gpgconf-comp.c:857
 msgid "Configuration for HTTP servers"
 msgstr ""
 
-#: tools/gpgconf-comp.c:857
+#: tools/gpgconf-comp.c:868
 msgid "use system's HTTP proxy setting"
 msgstr ""
 
-#: tools/gpgconf-comp.c:862
+#: tools/gpgconf-comp.c:873
 msgid "Configuration of LDAP servers to use"
 msgstr ""
 
-#: tools/gpgconf-comp.c:891
+#: tools/gpgconf-comp.c:902
 msgid "LDAP server list"
 msgstr ""
 
-#: tools/gpgconf-comp.c:899
+#: tools/gpgconf-comp.c:910
 msgid "Configuration for OCSP"
 msgstr ""
 
-#: tools/gpgconf-comp.c:2990
+#: tools/gpgconf-comp.c:3001
 #, c-format
 msgid "External verification of component %s failed"
 msgstr ""
 
-#: tools/gpgconf-comp.c:3140
+#: tools/gpgconf-comp.c:3151
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
@@ -8643,10 +8731,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "can't lock `%s': %s\n"
 #~ msgstr "tidak dapat membuka `%s'\n"
-
-#, fuzzy
-#~ msgid "waiting for lock on `%s'...\n"
-#~ msgstr "menulis kunci rahasia ke `%s'\n"
 
 #~ msgid "can't stat `%s': %s\n"
 #~ msgstr "tidak dapat melakukan statistik `%s': %s\n"

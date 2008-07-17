@@ -1,3 +1,10 @@
+2008-07-03  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_readcert): New.
+	(app_local_s): Add fields IS_V2 and MAX_CERTLEN_3.
+	(app_select_openpgp): Set them and register do_readcert.
+	(do_setattr): Allow storing of the certificate.
+
 2008-06-25  Werner Koch  <wk@g10code.com>
 
 	* app-dinsig.c (do_sign): Allow for SHA256.

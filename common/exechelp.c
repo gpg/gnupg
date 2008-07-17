@@ -826,7 +826,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   pid_t pid;
   int i;
 
-  if (getuid() != geteuid())
+  if (getuid() && getuid() != geteuid())
     return gpg_error (GPG_ERR_BUG);
 
   if (access (pgmname, X_OK))

@@ -1,3 +1,8 @@
+2008-07-17  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Do not run the setuid test for root.
+	* exec.c (exec_write): Ditto.
+
 2008-06-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg.c (enum cmd_and_opt_values): Remove option

@@ -338,7 +338,11 @@ more arguments in future versions.
 
     KEYEXPIRED <expire-timestamp>
 	The key has expired.  expire-timestamp is the expiration time
-	in seconds after the epoch.
+	in seconds sice Epoch.  This status line is not very useful
+	because it will also be emitted for expired subkeys even if
+	this subkey is not used.  To check whether a key used to sign
+	a message has expired, the EXPKEYSIG status line is to be
+	used.
 
         Note, that TIMESTAMP may either be a number with seconds since
         epoch or an ISO 8601 string which can be detected by the

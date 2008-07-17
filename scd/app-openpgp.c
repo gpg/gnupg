@@ -85,6 +85,7 @@ static struct {
   { 0x0102, 0,    0, 0, 0, 0, 0, "Private DO 2"},
   { 0x0103, 0,    0, 0, 0, 0, 0, "Private DO 3"},
   { 0x0104, 0,    0, 0, 0, 0, 0, "Private DO 4"},
+  { 0x7F21, 1,    0, 1, 0, 0, 0, "Cardholder certificate"},
   { 0 }
 };
 
@@ -120,10 +121,12 @@ struct app_local_s {
   /* Keep track of card capabilities.  */
   struct 
   {
+    unsigned int is_v2:1;  /* This is a v2.0 compatible card.  */
     unsigned int get_challenge:1;
     unsigned int key_import:1;
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
+    unsigned int max_certlen_3:16;
   } extcap;
 
   /* Flags used to control the application.  */
@@ -740,11 +743,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     {
       char tmp[50];
 
-      sprintf (tmp, "gc=%d ki=%d fc=%d pd=%d", 
+      sprintf (tmp, "gc=%d ki=%d fc=%d pd=%d mcl3=%u", 
                app->app_local->extcap.get_challenge,
                app->app_local->extcap.key_import,
                app->app_local->extcap.change_force_chv,
-               app->app_local->extcap.private_dos);
+               app->app_local->extcap.private_dos,
+               app->app_local->extcap.max_certlen_3);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
@@ -1274,6 +1278,47 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 #endif
 }
 
+/* Read the statdard certificate of an OpenPGP v2 card.  It is
+   returned in a freshly allocated buffer with that address stored at
+   CERT and the length of the certificate stored at CERTLEN.  CERTID
+   needs to be set to "OpenPGP.3".  */
+static gpg_error_t
+do_readcert (app_t app, const char *certid,
+             unsigned char **cert, size_t *certlen)
+{
+#if GNUPG_MAJOR_VERSION > 1
+  gpg_error_t err;
+  unsigned char *buffer;
+  size_t buflen;
+  void *relptr;
+
+  *cert = NULL;
+  *certlen = 0;
+  if (strcmp (certid, "OPENPGP.3"))
+    return gpg_error (GPG_ERR_INV_ID);
+  if (app->app_local->extcap.is_v2)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
+  if (!relptr)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  *cert = xtrymalloc (buflen);
+  if (!*cert)
+    err = gpg_error_from_syserror ();
+  else
+    {
+      memcpy (*cert, buffer, buflen);
+      *certlen = buflen;
+      err  = 0;
+    }
+  xfree (relptr);
+  return err;
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
+}
+
 
 /* Verify a CHV either using using the pinentry or if possibile by
    using a keypad.  PINCB and PINCB_ARG describe the usual callback
@@ -1588,6 +1633,7 @@ do_setattr (app_t app, const char *name,
     int tag;
     int need_chv;
     int special;
+    unsigned int need_v2:1;
   } table[] = {
     { "DISP-NAME",    0x005B, 3 },
     { "LOGIN-DATA",   0x005E, 3, 2 },
@@ -1602,6 +1648,7 @@ do_setattr (app_t app, const char *name,
     { "PRIVATE-DO-2", 0x0102, 3 },
     { "PRIVATE-DO-3", 0x0103, 2 },
     { "PRIVATE-DO-4", 0x0104, 3 },
+    { "CERT-3",       0x7F21, 3, 0, 1 },
     { NULL, 0 }
   };
 
@@ -1610,6 +1657,8 @@ do_setattr (app_t app, const char *name,
     ;
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
+  if (!table[idx].need_v2)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED); 
 
   switch (table[idx].need_chv)
     {
@@ -2719,6 +2768,9 @@ app_select_openpgp (app_t app)
           goto leave;
         }
 
+      if (app->card_version >= 0x0200)
+        app->app_local->extcap.is_v2 = 1;
+
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
       if (!relptr)
         {
@@ -2743,6 +2795,11 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
           app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
         }
+      if (buflen >= 10)
+        {
+          /* Available with v2 cards.  */
+          app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
+        }
       xfree (relptr);
       
       /* Some of the first cards accidently don't set the
@@ -2757,6 +2814,7 @@ app_select_openpgp (app_t app)
 
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
+      app->fnc.readcert = do_readcert;
       app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;

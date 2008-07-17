@@ -2015,9 +2015,9 @@ main (int argc, char **argv)
       got_secmem = 1; 
 #if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
     /* There should be no way to get to this spot while still carrying
-       setuid privs.  Just in case, bomb out if we are. */
-    if(getuid()!=geteuid())
-      BUG();
+       setuid privs.  Just in case, bomb out if we are (and are not root). */
+    if (getuid () && getuid () != geteuid ())
+      BUG ();
 #endif
     maybe_setuid = 0;
 
