@@ -1,3 +1,11 @@
+2008-07-21  Werner Koch  <wk@g10code.com>
+
+	* sv.po: Adjust special size entry.
+
+2008-07-21  Daniel Nylander <info@danielnylander.se>  (wk)
+
+	* sv.po: Update.
+
 2008-05-28  Jaime Suárez <jaime@mundocripto.com>  (wk)
 
 	* es.po: Update.  All strings for 2.0.9 are no translated.
