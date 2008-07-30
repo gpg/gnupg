@@ -1412,7 +1412,7 @@ verify_a_chv (app_t app,
 #define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
           size_t promptsize = strlen (PROMPTSTRING) + 50;
 
-          prompt = xmalloc (promptsize);
+          prompt = xtrymalloc (promptsize);
           if (!prompt)
             return gpg_error_from_syserror ();
           snprintf (prompt, promptsize-1, PROMPTSTRING, sigcount);
@@ -1421,7 +1421,7 @@ verify_a_chv (app_t app,
 #undef PROMPTSTRING
         }
       else
-        rc = pincb (pincb_arg, "PIN", pinvalue); 
+        rc = pincb (pincb_arg, _("||Please enter the PIN"), pinvalue); 
 
       if (rc)
         {
