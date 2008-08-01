@@ -208,6 +208,26 @@ The signature is broken.  You may try the option
 number N is the internal algorighm indentifier; for example 8 refers to
 SHA-256.
 
+
+@item The Windows version does not work under Wine
+
+When running the W32 version of @command{gpg} under Wine you may get
+an error messages like:
+
+@smallexample
+gpg: fatal: WriteConsole failed: Access denied
+@end smallexample
+
+@noindent
+The solution is to use the command @command{wineconsole}. 
+
+Some operations like gen-key really want to talk to the console directly
+for increased security (for example to prevent the passphrase from
+appearing on the screen).  So, you should use @command{wineconsole}
+instead of @command{wine}, which will launch a windows console that
+implements those additional features.
+
+
 @end itemize
 
 

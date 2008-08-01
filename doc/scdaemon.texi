@@ -266,7 +266,7 @@ This enables the use of Admin class commands for card applications
 where this is supported.  Currently we support it for the OpenPGP
 card.  Deny is the default.  This commands is useful to inhibit
 accidental access to admin class command which could ultimately lock
-the card through worng PIN numbers.
+the card through wrong PIN numbers.
 
 @item --disable-application @var{name}
 @opindex disable-application

@@ -1,3 +1,7 @@
+2008-07-30  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (GPGSM Configuration): Mention com-cert.pem.
+
 2008-06-25  Werner Koch  <wk@g10code.com>
 
 	* qualified.txt: Add new BnetzA certs 12R and 13R.

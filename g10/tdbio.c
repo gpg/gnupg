@@ -603,8 +603,9 @@ open_db()
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
-                      || errno == EROFS)
+                      || errno == EROFS
 #endif
+                      )
       ) {
       db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
       if (db_fd != -1)

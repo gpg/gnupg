@@ -787,6 +787,14 @@ For a reference of the help file's syntax, please see the installed
 @file{help.txt} file.
 
 
+@item com-certs.pem
+@cindex com-certs.pem
+This file is a collection of common certificates used to populated a
+newly created @file{pubring.kbx}.  An administrator may replace this
+file with a custom one.  The format is a concatenation of PEM encoded
+X.509 certificates.  This global file is installed in the data directory
+(e.g. @file{/usr/share/gnupg/qualified.txt}).
+
 @end table
 
 @c man:.RE
@@ -796,7 +804,7 @@ start up with a working configuration.  For existing users the a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
 For internal purposes gpgsm creates and maintaines a few other files;
-They all live in in the current home directory (@pxref{option
+they all live in in the current home directory (@pxref{option
 --homedir}).  Only @command{gpgsm} may modify these files.
 
 
@@ -806,7 +814,7 @@ They all live in in the current home directory (@pxref{option
 This a database file storing the certificates as well as meta
 information.  For debugging purposes the tool @command{kbxutil} may be
 used to show the internal structure of this file.
-      
+
 @item random_seed
 @cindex random_seed
 This content of this file is used to maintain the internal state of the
