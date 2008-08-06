@@ -165,7 +165,7 @@ static struct
   /* The option name for the configuration filename of this backend.
      This must be an absolute filename.  It can be an option from a
      different backend (but then ordering of the options might
-     matter).  */
+     matter).  Note: This must be unique among all components.  */
   const char *option_config_filename;
 
   /* If this is a file backend rather than a program backend, then
@@ -1949,6 +1949,7 @@ static void
 retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 {
   gc_option_t *list_option;
+  gc_option_t *config_option;
   char *list_filename;
   FILE *list_file;
   char *line = NULL;
@@ -2007,6 +2008,12 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
   list_option->active = 1;
   list_option->value = list;
+
+  /* Fix up the read-only flag.  */
+  config_option = find_option
+    (component, gc_backend[backend].option_config_filename, GC_BACKEND_ANY);
+  if (config_option->flags & GC_OPT_FLAG_NO_CHANGE)
+    list_option->flags |= GC_OPT_FLAG_NO_CHANGE;
 
   if (list_file && fclose (list_file) && ferror (list_file))
     gc_error (1, errno, "error closing %s", list_filename);
