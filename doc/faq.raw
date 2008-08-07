@@ -509,7 +509,7 @@ you could search in the mailing list archive.
        Mulberry          Y      Y      P
        Mutt              Y      Y      N
        Sylpheed          Y      Y      N
-       Sylpheed-claws    Y      Y      N
+       Claws-mail        Y      Y      N
        TkRat             Y      Y      N
        XEmacs/Gnus       Y      Y      T (Mailcrypt)
        XEmacs/Mew        Y      Y      N
