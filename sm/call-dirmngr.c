@@ -44,7 +44,14 @@ struct membuf {
 
 
 
+/* fixme: We need a context for each thread or serialize the access to
+   the dirmngr.  */
 static assuan_context_t dirmngr_ctx = NULL;
+static assuan_context_t dirmngr2_ctx = NULL;
+
+static int dirmngr_ctx_locked;
+static int dirmngr2_ctx_locked;
+
 static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
@@ -142,18 +149,14 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 {
   struct keyserver_spec *server;
 
-  if (!ctrl->dirmngr_seen)
+  if (!err)
     {
-      ctrl->dirmngr_seen = 1;
-      if (!err)
-        {
-          err = assuan_transact (ctx, "OPTION audit-events=1",
-                                 NULL, NULL, NULL, NULL, NULL, NULL);
-          if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
-            err = 0;  /* Allow the use of old dirmngr versions.  */
-        }
-      audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err);
+      err = assuan_transact (ctx, "OPTION audit-events=1",
+			     NULL, NULL, NULL, NULL, NULL, NULL);
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+	err = 0;  /* Allow the use of old dirmngr versions.  */
     }
+  audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err);
 
   server = opt.keyserver;
   while (server)
@@ -162,7 +165,7 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       char *user = server->user ? server->user : "";
       char *pass = server->pass ? server->pass : "";
       char *base = server->base ? server->base : "";
-
+      
       snprintf (line, DIM (line) - 1, "LDAPSERVER %s:%i:%s:%s:%s",
 		server->host, server->port, user, pass, base);
       line[DIM (line) - 1] = 0;
@@ -180,7 +183,7 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
-start_dirmngr (ctrl_t ctrl)
+start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 {
   int rc;
   char *infostr, *p;
@@ -190,12 +193,9 @@ start_dirmngr (ctrl_t ctrl)
   if (opt.disable_dirmngr)
     return gpg_error (GPG_ERR_NO_DIRMNGR);
 
-  if (dirmngr_ctx)
-    {
-      prepare_dirmngr (ctrl, dirmngr_ctx, 0);
-      return 0; /* fixme: We need a context for each thread or serialize
-                   the access to the dirmngr */
-    }
+  if (*ctx_r)
+    return 0;
+
   /* Note: if you change this to multiple connections, you also need
      to take care of the implicit option sending caching. */
 
@@ -266,7 +266,7 @@ start_dirmngr (ctrl_t ctrl)
               log_error (_("malformed DIRMNGR_INFO environment variable\n"));
               xfree (infostr);
               force_pipe_server = 1;
-              return start_dirmngr (ctrl);
+              return start_dirmngr_ext (ctrl, ctx_r);
             }
           *p++ = 0;
           pid = atoi (p);
@@ -279,7 +279,7 @@ start_dirmngr (ctrl_t ctrl)
                          prot);
               xfree (infostr);
               force_pipe_server = 1;
-              return start_dirmngr (ctrl);
+              return start_dirmngr_ext (ctrl, ctx_r);
             }
         }
       else
@@ -297,7 +297,7 @@ start_dirmngr (ctrl_t ctrl)
         {
           log_info (_("can't connect to the dirmngr - trying fall back\n"));
           force_pipe_server = 1;
-          return start_dirmngr (ctrl);
+          return start_dirmngr_ext (ctrl, ctx_r);
         }
 #endif /*!HAVE_W32_SYSTEM*/
     }
@@ -309,11 +309,47 @@ start_dirmngr (ctrl_t ctrl)
       log_error ("can't connect to the dirmngr: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_NO_DIRMNGR);
     }
-  dirmngr_ctx = ctx;
+  *ctx_r = ctx;
 
   if (DBG_ASSUAN)
     log_debug ("connection to dirmngr established\n");
   return 0;
+}
+
+
+static int
+start_dirmngr (ctrl_t ctrl)
+{
+  assert (! dirmngr_ctx_locked);
+  dirmngr_ctx_locked = 1;
+
+  return start_dirmngr_ext (ctrl, &dirmngr_ctx);
+}
+
+
+static void
+release_dirmngr (ctrl_t ctrl)
+{
+  assert (dirmngr_ctx_locked);
+  dirmngr_ctx_locked = 0;
+}
+
+
+static int
+start_dirmngr2 (ctrl_t ctrl)
+{
+  assert (! dirmngr2_ctx_locked);
+  dirmngr2_ctx_locked = 1;
+
+  return start_dirmngr_ext (ctrl, &dirmngr2_ctx);
+}
+
+
+static void
+release_dirmngr2 (ctrl_t ctrl)
+{
+  assert (dirmngr2_ctx_locked);
+  dirmngr2_ctx_locked = 0;
 }
 
 
@@ -485,6 +521,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
       if (!certid)
         {
           log_error ("error getting the certificate ID\n");
+	  release_dirmngr (ctrl);
           return gpg_error (GPG_ERR_GENERAL);
         }
     }
@@ -584,6 +621,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
           ksba_cert_release (rspcert);
         }
     }
+  release_dirmngr (ctrl);
   return rc;
 }
 
@@ -738,31 +776,59 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
   char line[ASSUAN_LINELENGTH];
   struct lookup_parm_s parm;
   size_t len;
+  assuan_context_t ctx;
 
-  rc = start_dirmngr (ctrl);
-  if (rc)
-    return rc;
+  /* The lookup function can be invoked from the callback of a lookup
+     function, for example to walk the chain.  */
+  assert (!dirmngr_ctx_locked || !dirmngr2_ctx_locked);
+  if (! dirmngr_ctx_locked)
+    {
+      rc = start_dirmngr (ctrl);
+      if (rc)
+	return rc;
+      ctx = dirmngr_ctx;
+    }
+  else
+    {
+      rc = start_dirmngr2 (ctrl);
+      if (rc)
+	return rc;
+      ctx = dirmngr2_ctx;
+    }
 
   pattern = pattern_from_strlist (names);
   if (!pattern)
-    return out_of_core ();
+    {
+      if (ctx == dirmngr_ctx)
+	release_dirmngr (ctrl);
+      else
+	release_dirmngr2 (ctrl);
+
+      return out_of_core ();
+    }
   snprintf (line, DIM(line)-1, "LOOKUP%s %s", 
             cache_only? " --cache-only":"", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
 
   parm.ctrl = ctrl;
-  parm.ctx = dirmngr_ctx;
+  parm.ctx = ctx;
   parm.cb = cb;
   parm.cb_value = cb_value;
   parm.error = 0;
   init_membuf (&parm.data, 4096);
 
-  rc = assuan_transact (dirmngr_ctx, line, lookup_cb, &parm,
+  rc = assuan_transact (ctx, line, lookup_cb, &parm,
                         NULL, NULL, lookup_status_cb, &parm);
   xfree (get_membuf (&parm.data, &len));
+
+  if (ctx == dirmngr_ctx)
+    release_dirmngr (ctrl);
+  else
+    release_dirmngr2 (ctrl);
+
   if (rc)
-    return rc;
+      return rc;
   return parm.error;
 }
 
@@ -881,7 +947,10 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
     len += 1 + 3*strlen (argv[i]); /* enough space for percent escaping */
   line = xtrymalloc (len);
   if (!line)
-    return out_of_core ();
+    {
+      release_dirmngr (ctrl);
+      return out_of_core ();
+    }
 
   p = stpcpy (line, command);
   for (i=0; i < argc; i++)
@@ -910,5 +979,6 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                         run_command_status_cb, ctrl);
   xfree (line);
   log_info ("response of dirmngr: %s\n", rc? gpg_strerror (rc): "okay");
+  release_dirmngr (ctrl);
   return rc;
 }

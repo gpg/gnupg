@@ -1,3 +1,18 @@
+2008-08-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm.h (struct server_control_s): Remove member dirmngr_seen.
+	* call-dirmngr.c (dirmngr2_ctx, dirmngr_ctx_locked)
+	(dirmngr2_ctx_locked): New global variables.
+	(prepare_dirmngr): Don't check dirmngr_seen anymore.
+	(start_dirmngr): Move bunch of code to ...
+	(start_dirmngr_ext): ... this new function.
+	(release_dirmngr, start_dirmngr2, release_dirmngr2): New
+	functions.
+	(gpgsm_dirmngr_isvalid): Call release_dirmngr.
+	(gpgsm_dirmngr_lookup): Call release_dirmngr.  If dirmngr_ctx is
+	locked, use dirmngr2_locked.
+	(gpgsm_dirmngr_run_command): Call release_dirmngr.
+
 2008-06-25  Werner Koch  <wk@g10code.com>
 
 	* sign.c (gpgsm_sign): Revamp the hash algorithm selection.

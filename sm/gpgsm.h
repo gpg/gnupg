@@ -172,8 +172,6 @@ struct server_control_s
   audit_ctx_t audit;  /* NULL or a context for the audit subsystem.  */
   int agent_seen;     /* Flag indicating that the gpg-agent has been
                          accessed.  */
-  int dirmngr_seen;   /* Flag indicating that the dirmngr has been
-                         accessed.  */
   
   int with_colons;    /* Use column delimited output format */
   int with_chain;     /* Include the certifying certs in a listing */
