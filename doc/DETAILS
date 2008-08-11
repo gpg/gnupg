@@ -839,10 +839,16 @@ The format of this file is as follows:
 	The 3 parts of a key. Remember to use UTF-8 here.
 	If you don't give any of them, no user ID is created.
      Expire-Date: <iso-date>|(<number>[d|w|m|y])
-	Set the expiration date for the key (and the subkey).  It
-	may either be entered in ISO date format (2000-08-15) or as
-	number of days, weeks, month or years. Without a letter days
-	are assumed.
+	Set the expiration date for the key (and the subkey).  It may
+	either be entered in ISO date format (2000-08-15) or as number
+	of days, weeks, month or years.  The special notation
+	"seconds=N" is also allowed to directly give an Epoch
+	value. Without a letter days are assumed.  Note that there is
+	no check done on the overflow of the type used by OpenPGP for
+	timestamps.  Thus you better make sure that the given value
+	make sense.  Although OpenPGP works with time intervals, GnuPG
+	uses an absolute value internally and thus the last year we
+	can represent is 2105.
      Creation-Date: <iso-date>
         Set the creation date of the key as stored in the key
         information and which is also part of the fingerprint

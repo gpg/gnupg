@@ -1789,21 +1789,23 @@ ask_keysize( int algo )
 u32
 parse_expire_string( const char *string )
 {
-    int mult;
-    u32 seconds,abs_date=0,curtime = make_timestamp();
-
-    if( !*string )
-      seconds = 0;
-    else if ( !strncmp (string, "seconds=", 8) )
-      seconds = atoi (string+8);
-    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime )
-      seconds = abs_date - curtime;
-    else if( (mult=check_valid_days(string)) )
-      seconds = atoi(string) * 86400L * mult;
-    else
-      seconds=(u32)-1;
-
-    return seconds;
+  int mult;
+  u32 seconds;
+  u32 abs_date = 0;
+  u32 curtime = make_timestamp ();
+  
+  if (!*string)
+    seconds = 0;
+  else if (!strncmp (string, "seconds=", 8))
+    seconds = atoi (string+8);
+  else if ((abs_date = scan_isodatestr(string)) && abs_date > curtime)
+    seconds = abs_date - curtime;
+  else if ((mult = check_valid_days (string)))
+    seconds = atoi (string) * 86400L * mult;
+  else
+    seconds = (u32)(-1);
+  
+  return seconds;
 }
 
 /* Parsean Creation-Date string which is either "1986-04-26" or
@@ -1916,7 +1918,13 @@ ask_expire_interval(int object,const char *def_expire)
 	      tty_printf (_("Your system can't display dates beyond 2038.\n"
                             "However, it will be correctly handled up to"
                             " 2106.\n"));
+            else
 #endif /*SIZEOF_TIME_T*/
+              if ( (time_t)((unsigned long)(curtime+interval)) < curtime )
+                {
+                  tty_printf (_("invalid value\n"));
+                  continue;
+                }
 	  }
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
