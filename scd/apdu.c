@@ -912,7 +912,7 @@ reset_pcsc_reader (int slot)
     }
 
 
-  atrlen = 33;
+  atrlen = DIM(reader_table[0].atr);
   nreader = sizeof reader - 1;
   err = pcsc_status (reader_table[slot].pcsc.card,
                      reader, &nreader,
@@ -925,7 +925,7 @@ reset_pcsc_reader (int slot)
       reader_table[slot].atrlen = 0;
       return pcsc_error_to_sw (err);
     }
-  if (atrlen >= DIM (reader_table[0].atr))
+  if (atrlen > DIM (reader_table[0].atr))
     log_bug ("ATR returned by pcsc_status is too large\n");
   reader_table[slot].atrlen = atrlen;
   reader_table[slot].is_t0 = !!(card_protocol & PCSC_PROTOCOL_T0);
@@ -1632,7 +1632,7 @@ open_pcsc_reader (const char *portstr)
       char reader[250];
       unsigned long readerlen;
 
-      atrlen = 32;
+      atrlen = DIM (reader_table[0].atr);
       readerlen = sizeof reader -1 ;
       err = pcsc_status (reader_table[slot].pcsc.card,
                          reader, &readerlen,
@@ -1643,7 +1643,7 @@ open_pcsc_reader (const char *portstr)
                    pcsc_error_string (err), err, readerlen);
       else
         {
-          if (atrlen >= DIM (reader_table[0].atr))
+          if (atrlen > DIM (reader_table[0].atr))
             log_bug ("ATR returned by pcsc_status is too large\n");
           reader_table[slot].atrlen = atrlen;
           /* If we got to here we know that a card is present
@@ -1933,7 +1933,7 @@ reset_rapdu_reader (int slot)
       rapdu_msg_release (msg);
       return sw;
     }
-  if (msg->datalen >= DIM (slotp->atr))
+  if (msg->datalen > DIM (slotp->atr))
     {
       log_error ("ATR returned by the RAPDU layer is too large\n");
       rapdu_msg_release (msg);
@@ -2114,7 +2114,7 @@ open_rapdu_reader (int portno,
                  rapdu_strerror (msg->cmd));
       goto failure;
     }
-  if (msg->datalen >= DIM (slotp->atr))
+  if (msg->datalen > DIM (slotp->atr))
     {
       log_error ("ATR returned by the RAPDU layer is too large\n");
       goto failure;

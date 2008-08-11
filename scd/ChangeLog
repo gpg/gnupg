@@ -1,3 +1,11 @@
+2008-08-11  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (reset_pcsc_reader, open_pcsc_reader)
+	(reset_rapdu_reader, open_rapdu_reader): Allow ATRs of up to 33
+	bytes.  Provide maximum size of ATR buffer using DIM.  Such long
+	ATR are never seen in reality but the PC/SC library of MAC OS X is
+	just too buggy. Reported by Ludovic Rousseau.  Fixes bug #948.
+
 2008-07-30  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_a_chv): Use xtrymalloc and make the prompt
