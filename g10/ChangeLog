@@ -1,3 +1,8 @@
+2008-08-11  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_expire_interval): Check for time overflow of an
+	u32.  Fixes bug #947.
+
 2008-08-01  Werner Koch  <wk@g10code.com>
 
 	* tdbio.c (open_db) [!EROFS]: Move closing parens out of the

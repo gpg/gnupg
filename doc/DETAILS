@@ -57,7 +57,11 @@ record; gpg2 does this by default and the option is a dummy.
 		f = The key is fully trusted
 		u = The key is ultimately trusted.  This often means
 		    that the secret key is available, but any key may
-		    be marked as ultimately trusted.
+		    be marked as ultimately trusted. 
+
+            For X.509 certificates an 'u' is used for a trusted root
+            certificates (i.e. for the truct anchor) and and 'f' for
+            all other validated certificates.
 
  3. Field:  length of key in bits.
 

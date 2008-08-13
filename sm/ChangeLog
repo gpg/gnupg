@@ -1,3 +1,7 @@
+2008-08-13  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_cert_colon): Print 'f' for validated certs.
+
 2008-08-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm.h (struct server_control_s): Remove member dirmngr_seen.

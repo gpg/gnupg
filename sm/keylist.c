@@ -415,6 +415,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
         *truststring = 'e';
       else if (valerr)
         *truststring = 'i';
+      else if (ctrl->with_validation && !is_root)
+        *truststring = 'f';
     }
 
   /* If we have no truststring yet (i.e. the certificate might be
