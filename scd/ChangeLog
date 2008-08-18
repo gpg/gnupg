@@ -1,3 +1,7 @@
+2008-08-18  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_setattr): Fix test for v2 cards.
+
 2008-08-11  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (reset_pcsc_reader, open_pcsc_reader)

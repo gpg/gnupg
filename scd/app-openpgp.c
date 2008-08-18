@@ -1657,8 +1657,8 @@ do_setattr (app_t app, const char *name,
     ;
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
-  if (!table[idx].need_v2)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED); 
+  if (table[idx].need_v2)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
 
   switch (table[idx].need_chv)
     {
