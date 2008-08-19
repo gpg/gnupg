@@ -1,6 +1,6 @@
 /* iobuf.c  -  File Handling for OpenPGP.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006,
- *               2007  Free Software Foundation, Inc.
+ *               2007, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -78,7 +78,7 @@
      we are using the low-evel backend.
 
    fp_or_fd_t
-     Is the type we use for the backend stream or fiel descriptor.
+     Is the type we use for the backend stream or file descriptor.
 
    INVALID_FP, FILEP_OR_FD_FOR_STDIN, FILEP_OR_FD_FOR_STDOUT
      Are macros defined depending on the used backend.
@@ -1012,7 +1012,7 @@ print_chain (iobuf_t a)
 		   (byte *) & desc, &dummy_len);
 
       log_debug ("iobuf chain: %d.%d `%s' filter_eof=%d start=%d len=%d\n",
-		 a->no, a->subno, desc, a->filter_eof,
+		 a->no, a->subno, desc?desc:"?", a->filter_eof,
 		 (int) a->d.start, (int) a->d.len);
     }
 }
@@ -1069,7 +1069,8 @@ iobuf_close (iobuf_t a)
 	log_error ("iobuf_flush failed on close: %s\n", gpg_strerror (rc));
 
       if (DBG_IOBUF)
-	log_debug ("iobuf-%d.%d: close `%s'\n", a->no, a->subno, a->desc);
+	log_debug ("iobuf-%d.%d: close `%s'\n", a->no, a->subno,
+                   a->desc?a->desc:"?");
       if (a->filter && (rc = a->filter (a->filter_ov, IOBUFCTRL_FREE,
 					a->chain, NULL, &dummy_len)))
 	log_error ("IOBUFCTRL_FREE failed on close: %s\n", gpg_strerror (rc));
@@ -1336,7 +1337,8 @@ iobuf_create (const char *fname)
   file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: create `%s'\n", a->no, a->subno, a->desc);
+    log_debug ("iobuf-%d.%d: create `%s'\n", a->no, a->subno,
+               a->desc?a->desc:"?");
 
   return a;
 }
@@ -1369,7 +1371,8 @@ iobuf_append (const char *fname)
   file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: append `%s'\n", a->no, a->subno, a->desc);
+    log_debug ("iobuf-%d.%d: append `%s'\n", a->no, a->subno,
+               a->desc?a->desc:"?");
 
   return a;
 }
@@ -1397,7 +1400,8 @@ iobuf_openrw (const char *fname)
   file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno, a->desc);
+    log_debug ("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno,
+               a->desc?a->desc:"?");
 
   return a;
 }
@@ -1410,7 +1414,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
     {				/* keep system filepointer/descriptor open */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl `%s' keep=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, a ? a->desc : "?",
+		   a ? a->no : -1, a ? a->subno : -1, 
+                   a && a->desc ? a->desc : "?",
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1445,7 +1450,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
     {				/* disallow/allow caching */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, a ? a->desc : "?",
+		   a ? a->no : -1, a ? a->subno : -1, 
+                   a && a->desc? a->desc : "?",
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1546,7 +1552,8 @@ iobuf_push_filter2 (iobuf_t a,
 
   if (DBG_IOBUF)
     {
-      log_debug ("iobuf-%d.%d: push `%s'\n", a->no, a->subno, a->desc);
+      log_debug ("iobuf-%d.%d: push `%s'\n", a->no, a->subno, 
+                 a->desc?a->desc:"?");
       print_chain (a);
     }
 
@@ -1573,7 +1580,8 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
     BUG ();
 
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: pop `%s'\n", a->no, a->subno, a->desc);
+    log_debug ("iobuf-%d.%d: pop `%s'\n", a->no, a->subno,
+               a->desc?a->desc:"?");
   if (!a->filter)
     {				/* this is simple */
       b = a->chain;
@@ -1660,7 +1668,7 @@ underflow (iobuf_t a)
 	  iobuf_t b = a->chain;
 	  if (DBG_IOBUF)
 	    log_debug ("iobuf-%d.%d: pop `%s' in underflow\n",
-		       a->no, a->subno, a->desc);
+		       a->no, a->subno, a->desc?a->desc:"?");
 	  xfree (a->d.buf);
 	  xfree (a->real_fname);
 	  memcpy (a, b, sizeof *a);
@@ -1733,8 +1741,8 @@ underflow (iobuf_t a)
 	    {
 	      iobuf_t b = a->chain;
 	      if (DBG_IOBUF)
-		log_debug ("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
-			   a->no, a->subno, a->desc);
+		log_debug ("iobuf-%d.%d: pop in underflow (!len)\n",
+			   a->no, a->subno);
 	      xfree (a->d.buf);
 	      xfree (a->real_fname);
 	      memcpy (a, b, sizeof *a);
