@@ -1,3 +1,9 @@
+2008-08-19  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c: Avoid passing a NULL (iobuf_t)->desc to the log
+	function.  Should in general never be NULL, but well.  Reported by
+	M. Heneka.
+
 2008-03-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (default_strusage): Update copyright date.
