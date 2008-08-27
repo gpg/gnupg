@@ -1,5 +1,8 @@
 2008-08-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: Use printf for the most portable SVN version
+	detection.
+
 	* configure.ac: Darwin's /bin/sh has a builtin echo that doesn't
 	understand '-n'.  Use tr to trim the carriage return instead.
 
