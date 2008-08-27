@@ -1,3 +1,8 @@
+2008-08-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Darwin's /bin/sh has a builtin echo that doesn't
+	understand '-n'.  Use tr to trim the carriage return instead.
+
 2008-04-23  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Call gl_HEADER_SYS_SOCKET and gl_TYPE_SOCKLEN_T.
