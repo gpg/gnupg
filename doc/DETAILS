@@ -60,8 +60,8 @@ record; gpg2 does this by default and the option is a dummy.
 		    be marked as ultimately trusted. 
 
             For X.509 certificates an 'u' is used for a trusted root
-            certificates (i.e. for the truct anchor) and and 'f' for
-            all other validated certificates.
+            certificate (i.e. for the trust anchor) and an 'f' for all
+            other valid certificates.
 
  3. Field:  length of key in bits.
 

@@ -2264,12 +2264,15 @@ will still get disabled.
 
 @item --throw-keyids
 @itemx --no-throw-keyids
-Do not put the recipient key IDs into encrypted messages. This helps
-to hide the receivers of the message and is a limited countermeasure
-against traffic analysis. On the receiving side, it may slow down the
-decryption process because all available secret keys must be tried.
-@option{--no-throw-keyids} disables this option. This option is essentially
-the same as using @option{--hidden-recipient} for all recipients.
+Do not put the recipient key IDs into encrypted messages. This helps to
+hide the receivers of the message and is a limited countermeasure
+against traffic analysis.@footnote{Using a little social engineering
+anyone who is able to decrypt the message can check whether one of the
+other recipients is the one he suspects.}  On the receiving side, it may
+slow down the decryption process because all available secret keys must
+be tried.  @option{--no-throw-keyids} disables this option. This option
+is essentially the same as using @option{--hidden-recipient} for all
+recipients.
 
 @item --not-dash-escaped
 This option changes the behavior of cleartext signatures
