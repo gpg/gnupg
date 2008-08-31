@@ -702,8 +702,8 @@ main (int argc, char **argv )
           close (fd);
           
           /* create the info string: <name>:<pid>:<protocol_version> */
-          if (asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
-                        socket_name, (ulong)pid ) < 0)
+          if (estream_asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
+				socket_name, (ulong) pid) < 0)
             {
               log_error ("out of core\n");
               kill (pid, SIGTERM);
@@ -738,7 +738,7 @@ main (int argc, char **argv )
                 {
                   printf ( "%s; export SCDAEMON_INFO;\n", infostr);
                 }
-              free (infostr);
+              xfree (infostr);
               exit (0); 
             }
           /* NOTREACHED */

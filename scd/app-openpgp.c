@@ -1093,9 +1093,9 @@ get_public_key (app_t app, int keyno)
 	}
       hexkeyid = fpr + 24;
 
-      ret = asprintf (&command,
-		      "gpg --list-keys --with-colons --with-key-data '%s'",
-		      fpr);
+      ret = estream_asprintf (&command,
+			      "gpg --list-keys --with-colons --with-key-data '%s'",
+			      fpr);
       if (ret < 0)
 	{
 	  err = gpg_error_from_syserror ();
@@ -1103,7 +1103,7 @@ get_public_key (app_t app, int keyno)
 	}
 
       fp = popen (command, "r");
-      free (command);
+      xfree (command);
       if (!fp)
 	{
 	  err = gpg_error_from_syserror ();

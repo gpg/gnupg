@@ -471,13 +471,13 @@ cmd_serialno (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
 
-  rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
+  rc = estream_asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
   xfree (serial);
   if (rc < 0)
     return out_of_core ();
   rc = 0;
   assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
-  free (serial_and_stamp);
+  xfree (serial_and_stamp);
   return 0;
 }
 
@@ -567,7 +567,7 @@ cmd_learn (assuan_context_t ctx, char *line)
     rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
     if (rc)
       return rc;
-    rc = asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
+    rc = estream_asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
     xfree (serial);
     if (rc < 0)
       return out_of_core ();
@@ -578,26 +578,26 @@ cmd_learn (assuan_context_t ctx, char *line)
       {
         char *command;
 
-        rc = asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
+        rc = estream_asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
         if (rc < 0)
           {
-            free (serial_and_stamp);
+            xfree (serial_and_stamp);
             return out_of_core ();
           }
         rc = 0;
         rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
-        free (command);  /* (must use standard free here) */
+        xfree (command);
         if (rc)
           {
             if (gpg_err_code (rc) != GPG_ERR_ASS_CANCELED)
               log_error ("inquire KNOWNCARDP failed: %s\n",
                          gpg_strerror (rc));
-            free (serial_and_stamp);
+            xfree (serial_and_stamp);
             return rc; 
           }
         /* not canceled, so we have to proceeed */
       }
-    free (serial_and_stamp);
+    xfree (serial_and_stamp);
   }
 
   /* Let the application print out its collection of useful status
@@ -784,11 +784,11 @@ pin_cb (void *opaque, const char *info, char **retstr)
       if (info)
         {
           log_debug ("prompting for keypad entry '%s'\n", info);
-          rc = asprintf (&command, "POPUPKEYPADPROMPT %s", info);
+          rc = estream_asprintf (&command, "POPUPKEYPADPROMPT %s", info);
           if (rc < 0)
             return gpg_error (gpg_err_code_from_errno (errno));
           rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
-          free (command);  
+          xfree (command);  
         }
       else
         {
@@ -804,14 +804,14 @@ pin_cb (void *opaque, const char *info, char **retstr)
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
-  rc = asprintf (&command, "NEEDPIN %s", info);
+  rc = estream_asprintf (&command, "NEEDPIN %s", info);
   if (rc < 0)
     return gpg_error (gpg_err_code_from_errno (errno));
 
   /* Fixme: Write an inquire function which returns the result in
      secure memory and check all further handling of the PIN. */
   rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
-  free (command);  
+  xfree (command);  
   if (rc)
     return rc;
 
@@ -1918,7 +1918,7 @@ update_reader_status_file (void)
             gpg_error_t err;
             
             homestr = make_filename (opt.homedir, NULL);
-            if (asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
+            if (estream_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
               log_error ("out of core while building environment\n");
             else
               {
@@ -1946,7 +1946,7 @@ update_reader_status_file (void)
                   log_error ("failed to run event handler `%s': %s\n",
                              fname, gpg_strerror (err));
                 xfree (fname);
-                free (envstr);
+                xfree (envstr);
               }
             xfree (homestr);
           }
