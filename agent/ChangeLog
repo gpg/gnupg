@@ -1,3 +1,11 @@
+2008-09-03  Werner Koch  <wk@g10code.com>
+
+	* command.c (parse_keygrip): Use hex2bin.
+	(cmd_preset_passphrase): Decode the passphrase.  Reported by Kiss
+	Gabor.  Fixes #679 again.
+	* preset-passphrase.c (make_hexstring): Remove.
+	(preset_passphrase): Use bin2hex.
+
 2008-05-27  Werner Koch  <wk@g10code.com>
 
 	* trustlist.c (insert_colons): Fix stupidly wrong allocation size
@@ -12,7 +20,7 @@
 
 	* gpg-agent.c (main, agent_deinit_default_ctrl): Always use xfree
 	because our asprintf is mapped to an xmalloc style function in
-	util.h. Replace xtrdup by xtrystrdup.
+	util.h. Replace xstrdup by xtrystrdup.
 	* w32main.c (build_argv): Ditto.
 	* preset-passphrase.c (preset_passphrase): Ditto.
 	* divert-scd.c (ask_for_card): Ditto.

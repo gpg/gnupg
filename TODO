@@ -104,6 +104,9 @@
    Remove these definitions.
 ** MY_GCRY_PK_ECDSA
    Remove this.
+** MY_GCRY_MD_SHA224
+   Remove this.
+
 
 * Extend selinux support to other modules
 

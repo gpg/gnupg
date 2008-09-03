@@ -271,7 +271,6 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 {
   int rc;
   size_t n;
-  const unsigned char *p;
 
   rc = parse_hexstring (ctx, string, &n);
   if (rc)
@@ -280,8 +279,8 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
   if (n != 20)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of keygrip");
 
-  for (p=(const unsigned char*)string, n=0; n < 20; p += 2, n++)
-    buf[n] = xtoi_2 (p);
+  if (hex2bin (string, buf, 20) < 0)
+    return set_error (GPG_ERR_BUG, "hex2bin");
 
   return 0;
 }
@@ -1100,7 +1099,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   size_t len;
 
   if (!opt.allow_preset_passphrase)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    return set_error (GPG_ERR_NOT_SUPPORTED, "no --allow-preset-passphrase");
 
   rc = parse_keygrip (ctx, line, grip);
   if (rc)
@@ -1135,11 +1134,17 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   /* If there is a passphrase, use it.  Currently, a passphrase is
      required.  */
   if (*line)
-    passphrase = line;
+    {
+      /* Do in-place conversion.  */
+      passphrase = line;
+      if (!hex2str (passphrase, passphrase, strlen (passphrase)+1, NULL))
+        rc = set_error (GPG_ERR_ASS_PARAMETER, "invalid hexstring");
+    }
   else
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    rc = set_error (GPG_ERR_NOT_IMPLEMENTED, "passphrase is required");
 
-  rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
+  if (!rc)
+    rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
 
   if (rc)
     log_error ("command preset_passwd failed: %s\n", gpg_strerror (rc));

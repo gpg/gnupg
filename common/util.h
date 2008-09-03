@@ -189,6 +189,9 @@ int hex2bin (const char *string, void *buffer, size_t length);
 int hexcolon2bin (const char *string, void *buffer, size_t length);
 char *bin2hex (const void *buffer, size_t length, char *stringbuf);
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
+const char *hex2str (const char *hexstring,
+                     char *buffer, size_t bufsize, size_t *buflen);
+char *hex2str_alloc (const char *hexstring, size_t *r_count);
 
 
 /*-- homedir.c --*/

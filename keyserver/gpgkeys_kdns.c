@@ -1,5 +1,5 @@
 /* gpgkeys_kdns.c - Fetch a key via the GnuPG specific KDNS scheme.
- * Copyright (C) 2008 g10 Code GmbH
+ * Copyright (C) 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

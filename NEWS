@@ -27,6 +27,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * gpgsm now uses AES by default.
 
+ * gpg-preset-passphrase works again.
+
 
 Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------

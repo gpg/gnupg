@@ -1,3 +1,8 @@
+2008-09-03  Werner Koch  <wk@g10code.com>
+
+	* sign.c (MY_GCRY_MD_SHA224): New, so that we don't need libgcrypt
+	1.2. 
+
 2008-08-13  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (list_cert_colon): Print 'f' for validated certs.

@@ -1,3 +1,8 @@
+2008-08-30  Werner Koch  <wk@g10code.com>
+
+	* yat2m.c (write_th): Print a not ethat this is generated source.
+	(VERSION): Bump up to 1.0.
+
 2008-07-30  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (GPGSM Configuration): Mention com-cert.pem.

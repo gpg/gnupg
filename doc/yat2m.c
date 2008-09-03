@@ -1,6 +1,6 @@
 /* yat2m.c - Yet Another Texi 2 Man converter
  *	Copyright (C) 2005 g10 Code GmbH
- *      Copyright (C) 2006 2006 Free Software Foundation, Inc.
+ *      Copyright (C) 2006, 2008 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@
 
 
 #define PGM "yat2m"
-#define VERSION "0.5"
+#define VERSION "1.0"
 
 /* The maximum length of a line including the linefeed and one extra
    character. */
@@ -413,6 +413,8 @@ static int
 write_th (FILE *fp)
 {
   char *name, *p;
+
+  fputs (".\\\" Created from Texinfo source by yat2m " VERSION "\n", fp);
 
   name = ascii_strupr (xstrdup (thepage.name));
   p = strrchr (name, '.');

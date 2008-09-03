@@ -113,37 +113,6 @@ my_strusage (int level)
 /* Include the implementation of map_spwq_error.  */
 MAP_SPWQ_ERROR_IMPL
       
-/* Convert the string SRC into HEX encoding.  Caller needs to xfree
-   the returned string.  */
-static char *
-make_hexstring (const char *src)
-{
-  int len = 2 * strlen (src) + 1;
-  char *dst;
-  char *res;
-
-  res = dst = xtrymalloc (len);
-  if (!dst)
-    {
-      log_error ("can not escape string: %s\n",
-		 gpg_strerror (gpg_error_from_syserror ()));
-      return NULL;
-    }
-
-#define _tohex(nr)	((nr) < 10 ? ((nr) + '0') : (((nr) - 10) + 'A'))
-#define tohex1(p)  _tohex (*((unsigned char *) p) & 15)
-#define tohex2(p)  _tohex ((*((unsigned char *) p) >> 4) & 15)
-
-  while (*src)
-    {
-      *(dst++) = tohex2 (src);
-      *(dst++) = tohex1 (src);
-      src++;
-    }
-  *dst = '\0';
-  return res;
-}
-
 
 static void
 preset_passphrase (const char *keygrip)
@@ -175,11 +144,14 @@ preset_passphrase (const char *keygrip)
       /* FIXME: How to handle empty passwords?  */
     }
 
-  passphrase_esc = make_hexstring (opt_passphrase
-				   ? opt_passphrase : passphrase);
+  {
+    const char *s = opt_passphrase ? opt_passphrase : passphrase;
+    passphrase_esc = bin2hex (s, strlen (s), NULL);
+  }
   if (!passphrase_esc)
     {
-      /* Error message printed by callee.  */
+      log_error ("can not escape string: %s\n",
+		 gpg_strerror (gpg_error_from_syserror ()));
       return;
     }
 

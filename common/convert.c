@@ -1,5 +1,5 @@
 /* convert.c - Hex conversion functions.
- *	Copyright (C) 2006 Free Software Foundation, Inc.
+ *	Copyright (C) 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +30,7 @@
 
 /* Convert STRING consisting of hex characters into its binary
    representation and store that at BUFFER.  BUFFER needs to be of
-   LENGTH bytes.  The function check that the STRING will convert
+   LENGTH bytes.  The function checks that the STRING will convert
    exactly to LENGTH bytes. The string is delimited by either end of
    string or a white space character.  The function returns -1 on
    error or the length of the parsed string.  */
@@ -100,6 +100,7 @@ hexcolon2bin (const char *string, void *buffer, size_t length)
 }
 
 
+
 static char *
 do_bin2hex (const void *buffer, size_t length, char *stringbuf, int with_colon)
 {
@@ -158,5 +159,89 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
 {
   return do_bin2hex (buffer, length, stringbuf, 1);
 }
+
+
+
+/* Convert HEXSTRING consisting of hex characters into string and
+   store that at BUFFER.  HEXSTRING is either delimited by end of
+   string or a white space character.  The function makes sure that
+   the resulting string in BUFFER is terminated by a Nul character.
+   BUFSIZE is the availabe length of BUFFER; if the converted result
+   plus a possible required Nul character does not fit into this
+   buffer, the function returns NULL and won't change the existing
+   conent of buffer.  In-place conversion is possible as long as
+   BUFFER points to HEXSTRING.
+   
+   If BUFFER is NULL and bufsize is 0 the function scans HEXSTRING but
+   does not store anything.  This may be used to find the end of
+   hexstring.
+
+   On sucess the function returns a pointer to the next character
+   after HEXSTRING (which is either end-of-string or a the next white
+   space).  If BUFLEN is not NULL the strlen of buffer is stored
+   there; this will even be done if BUFFER has been passed as NULL. */
+const char *
+hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
+{
+  const char *s = hexstring;
+  int idx, count;
+  int need_nul = 0;
+
+  if (buflen)
+    *buflen = 0;
+
+  for (s=hexstring, count=0; hexdigitp (s) && hexdigitp (s+1); s += 2, count++)
+    ;
+  if (*s && (!isascii (*s) || !isspace (*s)) )
+    return NULL;   /* Not followed by Nul or white space.  */
+  need_nul = !(s[-2] == '0' && s[-1] == '0');
+  if (need_nul)
+    count++;
+
+  if (buffer)
+    {
+      if (count > bufsize)
+        return NULL; /* Too long.  */
+      
+      for (s=hexstring, idx=0; hexdigitp (s) && hexdigitp (s+1); s += 2)
+        ((unsigned char*)buffer)[idx++] = xtoi_2 (s);
+      if (need_nul)
+        buffer[idx] = 0;
+    }
+
+  if (buflen)
+    *buflen = count - 1;
+  return s;
+}
+
+
+/* Same as hex2str but this function allocated a new string.  Returns
+   NULL on error.  If R_COUNT is not NULL, the number of scanned bytes
+   will be stored there.  ERRNO is set on error. */
+char *
+hex2str_alloc (const char *hexstring, size_t *r_count)
+{
+  const char *tail;
+  size_t nbytes;
+  char *result;
+
+  tail = hex2str (hexstring, NULL, 0, &nbytes);
+  if (!tail)
+    {
+      if (r_count)
+        *r_count = 0;
+      errno = EINVAL;
+      return NULL;
+    }
+  if (r_count)
+    *r_count = tail - hexstring;
+  result = xtrymalloc (nbytes+1);
+  if (!result)
+    return NULL;
+  if (!hex2str (hexstring, result, nbytes+1, NULL))
+    BUG ();
+  return result;
+}
+
 
 

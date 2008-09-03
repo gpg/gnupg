@@ -1,3 +1,7 @@
+2008-08-29  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_kdns.c: Changed copyright notice to the FSF.
+
 2008-04-21  Werner Koch  <wk@g10code.com>
 
 	* ksutil.c (w32_init_sockets) [HAVE_W32_SYSTEM]: New.

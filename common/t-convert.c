@@ -1,5 +1,5 @@
 /* t-convert.c - Module test for convert.c
- *	Copyright (C) 2006 Free Software Foundation, Inc.
+ *	Copyright (C) 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,6 +20,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "util.h"
 
@@ -275,6 +276,173 @@ test_bin2hexcolon (void)
 
 
 
+static void
+test_hex2str (void)
+{
+  static struct {
+    const char *hex;
+    const char *str;
+    int off;
+    int no_alloc_test;
+  } tests[] = {
+    /* Simple tests.  */
+    { "112233445566778899aabbccddeeff1122",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      34 },
+    { "112233445566778899aabbccddeeff1122 blah",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      34 },
+    { "112233445566778899aabbccddeeff1122\tblah",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      34 },
+    { "112233445566778899aabbccddeeff1122\nblah",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      34 },
+    /* Valid tests yielding an empty string.  */
+    { "00",
+      "",
+      2 },
+    { "00 x",
+      "",
+      2 },
+    { "",
+      "",
+      0 },
+    { " ",
+      "",
+      0 },
+    /* Test trailing Nul feature.  */
+    { "112233445566778899aabbccddeeff112200",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      36 },
+    { "112233445566778899aabbccddeeff112200 ",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
+      36 },
+    /* Test buffer size. (buffer is of length 20)  */
+    { "6162636465666768696A6b6c6D6e6f70717273",
+      "abcdefghijklmnopqrs",
+      38 },
+    { "6162636465666768696A6b6c6D6e6f7071727300",
+      "abcdefghijklmnopqrs",
+      40 },
+    { "6162636465666768696A6b6c6D6e6f7071727374",
+      NULL,
+      0, 1 },
+    { "6162636465666768696A6b6c6D6e6f707172737400",
+      NULL,
+      0, 1 },
+    { "6162636465666768696A6b6c6D6e6f707172737475",
+      NULL,
+      0, 1 },
+
+    /* Invalid tests. */
+    { "112233445566778899aabbccddeeff1122334",      NULL, 0 },
+    { "112233445566778899AABBCCDDEEFF1122334",      NULL, 0 },
+    { "112233445566778899AABBCCDDEEFG11223344",     NULL, 0 },
+    { "0:0112233445566778899aabbccddeeff11223344",  NULL, 0 },
+    { "112233445566778899aabbccddeeff11223344:",    NULL, 0 },
+    { "112233445566778899aabbccddeeff112233445",    NULL, 0 },
+    { "112233445566778899aabbccddeeff1122334455",   NULL, 0, 1 },
+    { "112233445566778899aabbccddeeff11223344blah", NULL, 0 },
+    { "0",    NULL, 0 },
+    { "00:",  NULL, 0 },
+    { "00x",  NULL, 0 },
+
+    { NULL, NULL, 0 }
+  };
+
+  int idx;
+  char buffer[20];
+  const char *tail;
+  size_t count;
+  char *result;
+
+  for (idx=0; tests[idx].hex; idx++)
+    {
+      tail = hex2str (tests[idx].hex, buffer, sizeof buffer, &count);
+      if (tests[idx].str)
+        {
+          /* Good case test.  */
+          if (!tail)
+            fail (idx);
+          else if (strcmp (tests[idx].str, buffer))
+            fail (idx);
+          else if (tail - tests[idx].hex != tests[idx].off)
+            fail (idx);
+          else if (strlen (buffer) != count)
+            fail (idx);
+        }
+      else
+        {
+          /* Bad case test.  */
+          if (tail)
+            fail (idx);
+        }
+    }
+
+  /* Same tests again using in-place conversion.  */
+  for (idx=0; tests[idx].hex; idx++)
+    {
+      char tmpbuf[100];
+      
+      assert (strlen (tests[idx].hex)+1 < sizeof tmpbuf);
+      strcpy (tmpbuf, tests[idx].hex);
+      
+      /* Note: we still need to use 20 as buffer length because our
+         tests assume that. */
+      tail = hex2str (tmpbuf, tmpbuf, 20, &count);
+      if (tests[idx].str)
+        {
+          /* Good case test.  */
+          if (!tail)
+            fail (idx);
+          else if (strcmp (tests[idx].str, tmpbuf))
+            fail (idx);
+          else if (tail - tmpbuf != tests[idx].off)
+            fail (idx);
+          else if (strlen (tmpbuf) != count)
+            fail (idx);
+        }
+      else
+        {
+          /* Bad case test.  */
+          if (tail)
+            fail (idx);
+          if (strcmp (tmpbuf, tests[idx].hex))
+            fail (idx); /* Buffer was modified.  */
+        }
+    }
+
+  /* Test the allocation variant.  */
+  for (idx=0; tests[idx].hex; idx++)
+    {
+      if (tests[idx].no_alloc_test)
+        continue;
+
+      result = hex2str_alloc (tests[idx].hex, &count);
+      if (tests[idx].str)
+        {
+          /* Good case test.  */
+          if (!result)
+            fail (idx);
+          else if (strcmp (tests[idx].str, result))
+            fail (idx);
+          else if (count != tests[idx].off)
+            fail (idx);
+        }
+      else
+        {
+          /* Bad case test.  */
+          if (result)
+            fail (idx);
+        }
+      xfree (result);
+    }
+}
+
+
+
+
 
 int
 main (int argc, char **argv)
@@ -284,6 +452,7 @@ main (int argc, char **argv)
   test_hexcolon2bin ();
   test_bin2hex ();
   test_bin2hexcolon ();
+  test_hex2str ();
 
   return 0;
 }
