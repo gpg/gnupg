@@ -1,3 +1,8 @@
+2008-09-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_import_cert): Allow keyserver URLs in
+	addition to full URLs in CERT records.
+
 2008-08-11  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_expire_interval): Check for time overflow of an
