@@ -2041,13 +2041,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  spec=parse_keyserver_uri(url,1,NULL,0);
 	  if(spec)
 	    {
-	      strlist_t list=NULL;
-
-	      add_to_strlist(&list,url);
-
-	      rc=keyserver_fetch(list);
-
-	      free_strlist(list);
+	      rc=keyserver_import_fprint(*fpr,*fpr_len,spec);
 	      free_keyserver_spec(spec);
 	    }
 	}
