@@ -979,7 +979,13 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   buffer = p = xtrymalloc (strlen (name) * 3 + 1);
   for (s=name; *s; s++)
     {
-      if (*s < ' ' || *s == '+')
+      /* We also escape the quote character to work around a bug in
+         the mingw32 runtime which does not correcty handle command
+         line quoting.  We correctly double the quote mark when
+         calling a program (i.e. gpg-protec-tool), but the pre-main
+         code does not notice the double quote as an escaped
+         quote.  */
+      if (*s < ' ' || *s == '+' || *s == '\"')
         {
           sprintf (p, "%%%02X", *(unsigned char *)s);
           p += 3;

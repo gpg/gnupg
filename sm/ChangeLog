@@ -1,3 +1,7 @@
+2008-09-04  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_format_keydesc): Work around a mingw32 bug.
+
 2008-09-03  Werner Koch  <wk@g10code.com>
 
 	* sign.c (MY_GCRY_MD_SHA224): New, so that we don't need libgcrypt

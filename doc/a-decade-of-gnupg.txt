@@ -198,7 +198,7 @@ Happy Hacking,
 
 === Remarks ===
 
-In a reply to this mail Alan Olsen remakrked on the ML:
+In a reply to this mail Alan Olsen remarked on the ML:
 
   MIT was forced to use the RSAREF library which had a non free
   license.  At first they used the RSAREF2 library, but then they were
