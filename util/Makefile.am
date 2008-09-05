@@ -64,17 +64,17 @@ libcompat_a_DEPENDENCIES = @LIBOBJS@
 libcompat_a_LIBADD = @LIBOBJS@
 
 http-test:  http.c
-	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	$(CC) -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	    -DTEST -o http-test http.c libutil.a @LIBINTL@ @DNSLIBS@ @CAPLIBS@
 
 srv-test:  srv.c
-	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	$(CC) -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	    -DTEST -o srv-test srv.c libutil.a @LIBINTL@ @DNSLIBS@ @CAPLIBS@
 
 pka-test:  pka.c
-	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	$(CC) -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	   -DTEST -o pka-test pka.c libutil.a @LIBINTL@ @DNSLIBS@ @CAPLIBS@
 
 cert-test:  cert.c
-	cc -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
+	$(CC) -DHAVE_CONFIG_H -I. -I. -I.. $(INCLUDES) $(LDFLAGS) -g -Wall \
 	   -DTEST -o cert-test cert.c libutil.a @LIBINTL@ @DNSLIBS@ @CAPLIBS@
