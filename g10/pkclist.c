@@ -1,6 +1,6 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1254,8 +1254,6 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint )
     return 0;
 }
 
-
-
 /****************
  * Return -1 if we could not find an algorithm.
  */
@@ -1263,164 +1261,177 @@ int
 select_algo_from_prefs(PK_LIST pk_list, int preftype,
 		       int request, const union pref_hint *hint)
 {
-    PK_LIST pkr;
-    u32 bits[8];
-    const prefitem_t *prefs;
-    int i, j;
-    int compr_hack=0;
-    int any;
+  PK_LIST pkr;
+  u32 bits[8];
+  const prefitem_t *prefs;
+  int result=-1,i;
+  unsigned int best=-1;    
+  byte scores[256];
+    
+  if( !pk_list )
+    return -1;
 
-    if( !pk_list )
-	return -1;
+  memset(bits,0xFF,sizeof(bits));
+  memset(scores,0,sizeof(scores));
 
-    memset( bits, ~0, 8 * sizeof *bits );
-    for( pkr = pk_list; pkr; pkr = pkr->next ) {
-	u32 mask[8];
+  for( pkr = pk_list; pkr; pkr = pkr->next )
+    {
+      u32 mask[8];
+      int rank=1,implicit=-1;
 
-	memset( mask, 0, 8 * sizeof *mask );
-	if( preftype == PREFTYPE_SYM ) {
-	  if( PGP2 &&
-	      pkr->pk->version < 4 &&
-	      pkr->pk->selfsigversion < 4 )
-	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
-				  with v3 selfsigs (rfc2440:12.1) if
-				  --pgp2 mode is on.  This doesn't
-				  mean it's actually available, of
-				  course. */
+      memset(mask,0,sizeof(mask));
+
+      switch(preftype)
+	{
+	case PREFTYPE_SYM:
+	  /* IDEA is implicitly there for v3 keys with v3 selfsigs if
+	     --pgp2 mode is on.  This was a 2440 thing that was
+	     dropped from 4880 but is still relevant to GPG's 1991
+	     support.  All this doesn't mean IDEA is actually
+	     available, of course. */
+	  if(PGP2 && pkr->pk->version<4 && pkr->pk->selfsigversion<4)
+	    implicit=CIPHER_ALGO_IDEA;
 	  else
-	    mask[0] |= (1<<2); /* 3DES is implicitly there for everyone else */
-	}
-	else if( preftype == PREFTYPE_HASH ) {
+	    implicit=CIPHER_ALGO_3DES;
+
+	  break;
+
+	case PREFTYPE_HASH:
 	  /* While I am including this code for completeness, note
 	     that currently --pgp2 mode locks the hash at MD5, so this
-	     function will never even be called.  Even if the hash
-	     wasn't locked at MD5, we don't support sign+encrypt in
-	     --pgp2 mode, and that's the only time PREFTYPE_HASH is
-	     used anyway. -dms */
-	  if( PGP2 &&
-	      pkr->pk->version < 4 &&
-	      pkr->pk->selfsigversion < 4 )
-	    mask[0] |= (1<<1); /* MD5 is there for v3 keys with v3
-				  selfsigs when --pgp2 is on. */
+	     code will never even be called.  Even if the hash wasn't
+	     locked at MD5, we don't support sign+encrypt in --pgp2
+	     mode, and that's the only time PREFTYPE_HASH is used
+	     anyway. -dms */
+
+	  /* MD5 is there for v3 keys with v3 selfsigs when --pgp2 is
+	     on. */
+	  if(PGP2 && pkr->pk->version<4 && pkr->pk->selfsigversion<4)
+	    implicit=DIGEST_ALGO_MD5;
 	  else
-	    mask[0] |= (1<<2); /* SHA1 is there for everyone else */
+	    implicit=DIGEST_ALGO_SHA1;
+
+	  break;
+
+	case PREFTYPE_ZIP:
+	  /* Uncompressed is always an option. */
+	  implicit=COMPRESS_ALGO_NONE;
 	}
-	else if( preftype == PREFTYPE_ZIP )
-	  mask[0] |= (1<<0); /* Uncompressed is implicit */
 
-        if (pkr->pk->user_id) /* selected by user ID */
-            prefs = pkr->pk->user_id->prefs;
-        else
-            prefs = pkr->pk->prefs;
+      if (pkr->pk->user_id) /* selected by user ID */
+	prefs = pkr->pk->user_id->prefs;
+      else
+	prefs = pkr->pk->prefs;
 
-	any = 0;
-	if( prefs ) {
-	    for (i=0; prefs[i].type; i++ ) {
-		if( prefs[i].type == preftype ) {
-		    mask[prefs[i].value/32] |= 1 << (prefs[i].value%32);
-		    any = 1;
+      if( prefs )
+	{
+	  for (i=0; prefs[i].type; i++ )
+	    {
+	      if( prefs[i].type == preftype )
+		{
+		  scores[prefs[i].value]+=rank;
+		  mask[prefs[i].value/32] |= 1<<(prefs[i].value%32);
+
+		  rank++;
+
+		  /* We saw the implicit algorithm, so we don't need
+		     tack it on the end ourselves. */
+		  if(implicit==prefs[i].value)
+		    implicit=-1;
 		}
 	    }
 	}
 
-	if( (!prefs || !any) && preftype == PREFTYPE_ZIP ) {
-	    mask[0] |= 3; /* asume no_compression and old pgp */
-	    compr_hack = 1;
+      if(rank==1 && preftype==PREFTYPE_ZIP)
+	{
+	  /* If the compression preferences are not present, they are
+	     assumed to be ZIP, Uncompressed (RFC4880:13.3.1) */
+	  scores[1]=1; /* ZIP is first choice */
+	  scores[0]=2; /* Uncompressed is second choice */
+	  mask[0]|=3;
 	}
 
-#if 0
-	log_debug("pref mask=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
-	       (ulong)mask[7], (ulong)mask[6], (ulong)mask[5], (ulong)mask[4],
-	     (ulong)mask[3], (ulong)mask[2], (ulong)mask[1], (ulong)mask[0]);
-#endif
-	for(i=0; i < 8; i++ )
-	    bits[i] &= mask[i];
-#if 0
-	log_debug("pref bits=%08lX%08lX%08lX%08lX%08lX%08lX%08lX%08lX\n",
-	       (ulong)bits[7], (ulong)bits[6], (ulong)bits[5], (ulong)bits[4],
-	     (ulong)bits[3], (ulong)bits[2], (ulong)bits[1], (ulong)bits[0]);
-#endif
-    }
-    /* usable algorithms are now in bits
-     * We now use the last key from pk_list to select
-     * the algorithm we want to use. there are no
-     * preferences for the last key, we select the one
-     * corresponding to first set bit.
-     */
-    i = -1;
-    any = 0;
-
-    /* Can we use the requested algorithm? */
-    if(request>-1 && (bits[request/32] & (1<<(request%32))) &&
-       algo_available(preftype,request,hint))
-      return request;
-
-    /* If we have personal prefs set, use them instead of the last key */
-    if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
-      prefs=opt.personal_cipher_prefs;
-    else if(preftype==PREFTYPE_HASH && opt.personal_digest_prefs)
-      prefs=opt.personal_digest_prefs;
-    else if(preftype==PREFTYPE_ZIP && opt.personal_compress_prefs)
-      prefs=opt.personal_compress_prefs;
-
-    if( prefs ) {
-	for(j=0; prefs[j].type; j++ ) {
-	    if( prefs[j].type == preftype ) {
-                if( (bits[prefs[j].value/32] & (1<<(prefs[j].value%32))) ) {
-		    if( algo_available( preftype, prefs[j].value, hint ) ) {
-			any = 1;
-			i = prefs[j].value;
-			break;
-		    }
-		}
-	    }
+      /* If the key didn't have the implicit algorithm listed
+	 explicitly, add it here at the tail of the list. */
+      if(implicit>-1)
+	{
+	  scores[implicit]+=rank;
+	  mask[implicit/32] |= 1<<(implicit%32);
 	}
-    }
-    if( !prefs || !any ) {
-	for(j=0; j < 256; j++ )
-	    if( (bits[j/32] & (1<<(j%32))) ) {
-		if( algo_available( preftype, j, hint ) ) {
-		    i = j;
-		    break;
-		}
-	    }
+
+      for(i=0;i<8;i++)
+	bits[i]&=mask[i];
     }
 
-#if 0
-    log_debug("prefs of type %d: selected %d\n", preftype, i );
-#endif
-    if( compr_hack && !i ) {
-	/* selected no compression, but we should check whether
-	 * algorithm 1 is also available (the ordering is not relevant
-	 * in this case). */
-	if( bits[0] & (1<<1) )
-	    i = 1; /* yep; we can use compression algo 1 */
-    }
+  /* We've now scored all of the algorithms, and the usable ones have
+     bits set.  Let's pick the winner. */
 
-    /* "If you are building an authentication system, the recipient
-       may specify a preferred signing algorithm. However, the signer
-       would be foolish to use a weak algorithm simply because the
-       recipient requests it." RFC2440:13.  If we settle on MD5, and
-       SHA1 is also available, use SHA1 instead.  Of course, if the
-       user intentionally chose MD5 (by putting it in their personal
-       prefs), then we should do what they say. */
+  /* The caller passed us a request.  Can we use it? */
+  if(request>-1 && (bits[request/32] & (1<<(request%32))) &&
+     algo_available(preftype,request,hint))
+    result=request;
 
-    if(preftype==PREFTYPE_HASH &&
-       i==DIGEST_ALGO_MD5 && (bits[0] & (1<<DIGEST_ALGO_SHA1)))
-      {
-	i=DIGEST_ALGO_SHA1;
+  if(result==-1)
+    {
+      /* If we have personal prefs set, use them. */
+      prefs=NULL;
+      if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
+	prefs=opt.personal_cipher_prefs;
+      else if(preftype==PREFTYPE_HASH && opt.personal_digest_prefs)
+	prefs=opt.personal_digest_prefs;
+      else if(preftype==PREFTYPE_ZIP && opt.personal_compress_prefs)
+	prefs=opt.personal_compress_prefs;
 
-	if(opt.personal_digest_prefs)
-	  for(j=0; prefs[j].type; j++ )
-	    if(opt.personal_digest_prefs[j].type==PREFTYPE_HASH &&
-	       opt.personal_digest_prefs[j].value==DIGEST_ALGO_MD5)
+      if( prefs )
+	for(i=0; prefs[i].type; i++ )
+	  {
+	    if(bits[prefs[i].value/32] & (1<<(prefs[i].value%32))
+	       && algo_available( preftype, prefs[i].value, hint))
 	      {
-		i=DIGEST_ALGO_MD5;
+		result = prefs[i].value;
 		break;
 	      }
-      }
+	  }
+    }
 
-    return i;
+  if(result==-1)
+    {
+      /* At this point, we have not selected an algorithm due to a
+	 special request or via personal prefs.  Pick the highest
+	 ranked algorithm (i.e. the one with the lowest score). */
+
+      for(i=0;i<256;i++)
+	{
+	  /* Note the '<' here.  This means in case of a tie, we will
+	     favor the lower algorithm number.  We have a choice
+	     between the lower number (probably an older algorithm
+	     with more time in use), or the higher number (probably a
+	     newer algorithm with less time in use).  Older is
+	     probably safer here, even though the newer algorithms
+	     tend to be "stronger". */
+	  if(scores[i] && scores[i]<best
+	     && (bits[i/32] & (1<<(i%32)))
+	     && algo_available(preftype,i,hint))
+	    {
+	      best=scores[i];
+	      result=i;
+	    }
+	}
+
+      /* "If you are building an authentication system, the recipient
+	 may specify a preferred signing algorithm. However, the
+	 signer would be foolish to use a weak algorithm simply
+	 because the recipient requests it." (RFC4880:14).  If we
+	 settle on MD5, and SHA1 is also available, use SHA1 instead.
+	 Note that if the user intentionally chose MD5 by putting it
+	 in their personal prefs, then we do what the user said (as we
+	 never reach this code). */
+      if(preftype==PREFTYPE_HASH && result==DIGEST_ALGO_MD5
+	 && (bits[0] & (1<<DIGEST_ALGO_SHA1)))
+	result=DIGEST_ALGO_SHA1;
+    }
+
+  return result;
 }
 
 /*
