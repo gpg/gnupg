@@ -1082,12 +1082,19 @@ pcsc_get_status (int slot, unsigned int *status)
     *status |= 2;
   if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
     *status |= 4;
+#ifndef HAVE_W32_SYSTEM
   /* We indicate a useful card if it is not in use by another
      application.  This is because we only use exclusive access
      mode.  */
   if ( (*status & 6) == 6
        && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
     *status |= 1;
+#else
+  /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
+     time when we are the only user (SCM SCR335) under Windows.  */
+  if ((status & 6) == 6)
+    status |= 1;
+#endif
 
   return 0;
 #endif /*!NEED_PCSC_WRAPPER*/
