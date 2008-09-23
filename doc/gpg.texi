@@ -754,12 +754,23 @@ preferred keyserver and signature notations (if any) are shown.
 Set the list of user ID preferences to @code{string} for all (or just
 the selected) user IDs. Calling setpref with no arguments sets the
 preference list to the default (either built-in or set via
-@option{--default-preference-list}), and calling setpref with "none" as
-the argument sets an empty preference list. Use @command{@gpgname
+@option{--default-preference-list}), and calling setpref with "none"
+as the argument sets an empty preference list. Use @command{@gpgname
 --version} to get a list of available algorithms. Note that while you
 can change the preferences on an attribute user ID (aka "photo ID"),
 GnuPG does not select keys via attribute user IDs so these preferences
 will not be used by GnuPG.
+
+When setting preferences, you should list the algorithms in the order
+which you'd like to see them used by someone else when encrypting a
+message to your key.  If you don't include 3DES, it will be
+automatically added at the end.  Note that there are many factors that
+go into choosing an algorithm (for example, your key may not be the
+only recipient), and so the remote OpenPGP application being used to
+send to you may or may not follow your exact chosen order for a given
+message.  It will, however, only choose an algorithm that is present
+on the preference list of every recipient key.  See also the
+INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS section below.
 
 @item keyserver
 @opindex keyedit:keyserver
