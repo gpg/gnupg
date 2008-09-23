@@ -288,6 +288,18 @@ fpr_is_zero (const char *fpr)
 }
 
 
+/* Return true if the SHA1 fingerprint FPR consists only of 0xFF. */
+static int
+fpr_is_ff (const char *fpr)
+{
+  int i;
+
+  for (i=0; i < 20 && fpr[i] == '\xff'; i++)
+    ;
+  return (i == 20);
+}
+
+
 /* Print all available information about the current card. */
 void
 card_status (FILE *fp, char *serialno, size_t serialnobuflen)
@@ -467,7 +479,10 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
 
       thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 : 
                 info.fpr3valid? info.fpr3 : NULL);
-      if ( thefpr && !get_pubkey_byfprint (pk, thefpr, 20))
+      /* If the fingerprint is all 0xff, the key has no asssociated
+         OpenPGP certificate.  */
+      if ( thefpr && !fpr_is_ff (thefpr) 
+           && !get_pubkey_byfprint (pk, thefpr, 20))
         {
           KBNODE keyblock = NULL;
 
@@ -655,6 +670,58 @@ fetch_url(void)
 }
 
 
+/* Read data from file FNAME up to MAXLEN characters.  On error return
+   -1 and store NULl at R_BUFFER; on success return the number of
+   bytes read and store the address of a newly allocated buffer at
+   R_BUFFER. */
+static int
+get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
+{
+  FILE *fp;
+  char *data;
+  int n;
+  
+  *r_buffer = NULL;
+
+  fp = fopen (fname, "rb");
+#if GNUPG_MAJOR_VERSION == 1
+  if (fp && is_secured_file (fileno (fp)))
+    {
+      fclose (fp);
+      fp = NULL;
+      errno = EPERM;
+    }
+#endif
+  if (!fp)
+    {
+      tty_printf (_("can't open `%s': %s\n"), fname, strerror (errno));
+      return -1;
+    }
+          
+  data = xtrymalloc (maxlen? maxlen:1);
+  if (!data)
+    {
+      tty_printf (_("error allocating enough memory: %s\n"), strerror (errno));
+      fclose (fp);
+      return -1;
+    }
+
+  if (maxlen)
+    n = fread (data, 1, maxlen, fp);
+  else
+    n = 0;
+  fclose (fp);
+  if (n < 0)
+    {
+      tty_printf (_("error reading `%s': %s\n"), fname, strerror (errno));
+      xfree (data);
+      return -1;
+    }
+  *r_buffer = data;
+  return n;
+}
+
+
 static int
 change_login (const char *args)
 {
@@ -664,34 +731,11 @@ change_login (const char *args)
 
   if (args && *args == '<')  /* Read it from a file */
     {
-      FILE *fp;
-
       for (args++; spacep (args); args++)
         ;
-      fp = fopen (args, "rb");
-#if GNUPG_MAJOR_VERSION == 1
-      if (fp && is_secured_file (fileno (fp)))
-        {
-          fclose (fp);
-          fp = NULL;
-          errno = EPERM;
-        }
-#endif
-      if (!fp)
-        {
-          tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
-          return -1;
-        }
-          
-      data = xmalloc (254);
-      n = fread (data, 1, 254, fp);
-      fclose (fp);
+      n = get_data_from_file (args, 254, &data);
       if (n < 0)
-        {
-          tty_printf (_("error reading `%s': %s\n"), args, strerror (errno));
-          xfree (data);
-          return -1;
-        }
+        return -1;
     }
   else
     {
@@ -732,35 +776,11 @@ change_private_do (const char *args, int nr)
 
   if (args && (args = strchr (args, '<')))  /* Read it from a file */
     {
-      FILE *fp;
-
-      /* Fixme: Factor this duplicated code out. */
       for (args++; spacep (args); args++)
         ;
-      fp = fopen (args, "rb");
-#if GNUPG_MAJOR_VERSION == 1
-      if (fp && is_secured_file (fileno (fp)))
-        {
-          fclose (fp);
-          fp = NULL;
-          errno = EPERM;
-        }
-#endif
-      if (!fp)
-        {
-          tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
-          return -1;
-        }
-          
-      data = xmalloc (254);
-      n = fread (data, 1, 254, fp);
-      fclose (fp);
+      n = get_data_from_file (args, 254, &data);
       if (n < 0)
-        {
-          tty_printf (_("error reading `%s': %s\n"), args, strerror (errno));
-          xfree (data);
-          return -1;
-        }
+        return -1;
     }
   else
     {
@@ -787,6 +807,36 @@ change_private_do (const char *args, int nr)
   xfree (data);
   return rc;
 }
+
+
+static int
+change_cert (const char *args)
+{
+  char *data;
+  int n;
+  int rc;
+
+  if (args && *args == '<')  /* Read it from a file */
+    {
+      for (args++; spacep (args); args++)
+        ;
+      n = get_data_from_file (args, 16384, &data);
+      if (n < 0)
+        return -1;
+    }
+  else
+    {
+      tty_printf ("usage error: redirectrion to file required\n");
+      return -1;
+    }
+
+  rc = agent_scd_writecert ("OPENPGP.3", data, n);
+  if (rc)
+    log_error ("error writing certificate to card: %s\n", gpg_strerror (rc));
+  xfree (data);
+  return rc;
+}
+
 
 static int
 change_lang (void)
@@ -1294,7 +1344,7 @@ enum cmdids
     cmdNOP = 0,
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
-    cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO,
+    cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdINVCMD
   };
 
@@ -1325,8 +1375,9 @@ static struct
     { "generate", cmdGENERATE, 1, N_("generate new keys")},
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
-    /* Note, that we do not announce this command yet. */
+    /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
+    { "writecert", cmdWRITECERT, 1, NULL },
     { NULL, cmdINVCMD, 0, NULL } 
   };
 
@@ -1401,6 +1452,7 @@ card_edit (strlist_t commands)
     {
       int arg_number;
       const char *arg_string = "";
+      const char *arg_rest = "";
       char *p;
       int i;
       int cmd_admin_only;
@@ -1469,6 +1521,11 @@ card_edit (strlist_t commands)
               trim_spaces (p);
               arg_number = atoi(p);
               arg_string = p;
+              arg_rest = p;
+              while (digitp (arg_rest))
+                arg_rest++;
+              while (spacep (arg_rest))
+                arg_rest++;
             }
           
           for (i=0; cmds[i].name; i++ )
@@ -1565,6 +1622,13 @@ card_edit (strlist_t commands)
                         "       1 <= N <= 4\n");
           else
             change_private_do (arg_string, arg_number);
+          break;
+
+        case cmdWRITECERT:
+          if ( arg_number != 3 )
+            tty_printf ("usage: writecert 3 < FILE\n");
+          else
+            change_cert (arg_rest);
           break;
 
         case cmdFORCESIG:

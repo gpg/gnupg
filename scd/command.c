@@ -47,6 +47,9 @@
 /* Maximum allowed size of key data as used in inquiries. */
 #define MAXLEN_KEYDATA 4096
 
+/* Maximum allowed size of certificate data as used in inquiries. */
+#define MAXLEN_CERTDATA 16384
+
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -851,14 +854,8 @@ cmd_pksign (assuan_context_t ctx, char *line)
     hash_algo = GCRY_MD_SHA1; 
   else
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
-  /* Skip over options. */
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
+
+  line = skip_options (line);
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -1036,8 +1033,8 @@ cmd_getattr (assuan_context_t ctx, char *line)
    names and values are depend on the currently selected smartcard
    application.  NAME and VALUE must be percent and '+' escaped.
 
-   However, the curent implementation assumes that Name is not escaped;
-   this works as long as noone uses arbitrary escaping. 
+   However, the current implementation assumes that NAME is not
+   escaped; this works as long as noone uses arbitrary escaping.
  
    A PIN will be requested for most NAMEs.  See the corresponding
    setattr function of the actually used application (app-*.c) for
@@ -1083,12 +1080,74 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
 
 
 
+/* WRITECERT <hexified_certid>
+
+   This command is used to store a certifciate on a smartcard.  The
+   allowed certids depend on the currently selected smartcard
+   application. The actual certifciate is requested using the inquiry
+   "CERTDATA" and needs to be provided in its raw (e.g. DER) form.
+
+   In almost all cases a a PIN will be requested.  See the related
+   writecert function of the actually used application (app-*.c) for
+   details.  */
+static int
+cmd_writecert (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *certid;
+  unsigned char *certdata;
+  size_t certdatalen;
+
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_LOCKED);
+
+  line = skip_options (line);
+
+  if (!*line)
+    return set_error (GPG_ERR_ASS_PARAMETER, "no certid given");
+  certid = line;
+  while (*line && !spacep (line))
+    line++;
+  *line = 0;
+
+  if ((rc = open_card (ctrl, NULL)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  certid = xtrystrdup (certid);
+  if (!certid)
+    return out_of_core ();
+
+  /* Now get the actual keydata. */
+  rc = assuan_inquire (ctx, "CERTDATA",
+                       &certdata, &certdatalen, MAXLEN_CERTDATA);
+  if (rc)
+    {
+      xfree (certid);
+      return rc;
+    }
+
+  /* Write the certificate to the card. */
+  rc = app_writecert (ctrl->app_ctx, ctrl, certid, 
+                      pin_cb, ctx, certdata, certdatalen);
+  xfree (certid);
+  xfree (certdata);
+
+  TEST_CARD_REMOVAL (ctrl, rc);
+  return rc;
+}
+
+
+
 /* WRITEKEY [--force] <keyid> 
 
    This command is used to store a secret key on a a smartcard.  The
    allowed keyids depend on the currently selected smartcard
    application. The actual keydata is requested using the inquiry
-   "KETDATA" and need to be provided without any protection.  With
+   "KEYDATA" and need to be provided without any protection.  With
    --force set an existing key under this KEYID will get overwritten.
    The keydata is expected to be the usual canonical encoded
    S-expression.
@@ -1109,14 +1168,8 @@ cmd_writekey (assuan_context_t ctx, char *line)
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
-  /* Skip over options. */
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
+  line = skip_options (line);
+
   if (!*line)
     return set_error (GPG_ERR_ASS_PARAMETER, "no keyid given");
   keyid = line;
@@ -1294,14 +1347,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
-  /* Skip over options. */
-  while (*line == '-' && line[1] == '-')
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
+  line = skip_options (line);
+
   if (!*line)
     return set_error (GPG_ERR_ASS_PARAMETER, "no CHV number given");
   chvnostr = line;
@@ -1601,14 +1648,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
   with_atr = has_option (line, "--atr");
   handle_more = has_option (line, "--more");
 
-  /* Skip over options. */
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
+  line = skip_options (line);
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -1687,6 +1727,7 @@ register_commands (assuan_context_t ctx)
     { "OUTPUT",       NULL }, 
     { "GETATTR",      cmd_getattr },
     { "SETATTR",      cmd_setattr },
+    { "WRITECERT",    cmd_writecert },
     { "WRITEKEY",     cmd_writekey },
     { "GENKEY",       cmd_genkey },
     { "RANDOM",       cmd_random },

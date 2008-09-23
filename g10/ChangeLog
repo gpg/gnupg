@@ -1,3 +1,14 @@
+2008-09-16  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (fpr_is_ff): New.
+	(card_status): Do not print general key info for an all-ff fpr.
+	(change_login, change_private_do): Factor common code out to ...
+	(get_data_from_file): .. new.
+	(change_cert): New.
+	(card_edit): Add command "writecert".
+	* call-agent.c (writecert_parm_s): New.
+	(inq_writecert_parms, agent_scd_writecert): New.
+
 2008-09-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_import_cert): Allow keyserver URLs in

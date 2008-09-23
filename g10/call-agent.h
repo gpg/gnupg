@@ -76,6 +76,10 @@ int agent_scd_setattr (const char *name,
                        const unsigned char *value, size_t valuelen,
                        const char *serialno);
 
+/* Send a WRITECERT command to the SCdaemon. */
+int agent_scd_writecert (const char *certidstr,
+                          const unsigned char *certdata, size_t certdatalen);
+
 /* Send a WRITEKEY command to the SCdaemon. */
 int agent_scd_writekey (int keyno, const char *serialno,
                         const unsigned char *keydata, size_t keydatalen);

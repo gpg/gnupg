@@ -2709,6 +2709,9 @@ make a clear text signature
 @item gpg -sb @code{file}
 make a detached signature
 
+@item gpg -u 0x12345678 -sb @code{file}
+make a detached signature with the key 0x12345678
+
 @item gpg --list-keys @code{user_ID}
 show keys
 

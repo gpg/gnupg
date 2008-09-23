@@ -1957,7 +1957,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
                             size_t *nresp)
 {
   int rc;
-  unsigned char send_buffer[10+259], recv_buffer[10+259];
+  unsigned char send_buffer[10+261], recv_buffer[10+261];
   const unsigned char *apdu;
   size_t apdulen;
   unsigned char *msg;
@@ -1971,7 +1971,9 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   apdulen = apdu_buflen;
   assert (apdulen);
 
-  if (apdulen > 254)
+  /* The maximum length for a short APDU T=1 block is 261, for an
+     extra APDU T=1 block is 65544.  */
+  if (apdulen > 261)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
   msg[0] = PC_to_RDR_XfrBlock;
@@ -2117,6 +2119,7 @@ ccid_transceive (ccid_driver_t handle,
           assert (apdulen);
 
           /* Construct an I-Block. */
+#warning fixme: APDULEN may be larger
           if (apdulen > 254)
             return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 

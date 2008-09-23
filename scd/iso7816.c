@@ -66,7 +66,10 @@ map_sw (int sw)
   switch (sw)
     {
     case SW_EEPROM_FAILURE: ec = GPG_ERR_HARDWARE; break;
+    case SW_TERM_STATE:     ec = GPG_ERR_CARD; break;
     case SW_WRONG_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
+    case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
     case SW_CHV_BLOCKED:    ec = GPG_ERR_PIN_BLOCKED; break;
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;
@@ -130,7 +133,7 @@ iso7816_select_application (int slot, const char *aid, size_t aidlen,
                             unsigned int flags)
 {
   int sw;
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4,
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE, 4,
                          (flags&1)? 0 :0x0c, aidlen, aid);
   return map_sw (sw);
 }
@@ -156,7 +159,7 @@ iso7816_select_file (int slot, int tag, int is_dir,
     {
       p0 = (tag == 0x3F00)? 0: is_dir? 1:2;
       p1 = 0x0c; /* No FC return. */
-      sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+      sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                              p0, p1, 2, (char*)tagbuf );
       return map_sw (sw);
     }
@@ -192,7 +195,7 @@ iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
 
   p0 = 0x08;
   p1 = 0x0c; /* No FC return. */
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                          p0, p1, buflen, (char*)buffer );
   return map_sw (sw);
 }
@@ -253,7 +256,7 @@ iso7816_verify_kp (int slot, int chvno, const char *chv, size_t chvlen,
                               pininfo->maxlen,
                               pininfo->padlen);
   else
-    sw = apdu_send_simple (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
   return map_sw (sw);
 }
 
@@ -300,7 +303,7 @@ iso7816_change_reference_data_kp (int slot, int chvno,
                            pininfo->maxlen,
                            pininfo->padlen);
   else
-    sw = apdu_send_simple (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
                            oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
   xfree (buf);
   return map_sw (sw);
@@ -340,7 +343,7 @@ iso7816_reset_retry_counter_kp (int slot, int chvno,
                            pininfo->maxlen,
                            pininfo->padlen);
   else
-    sw = apdu_send_simple (slot, 0x00, CMD_RESET_RETRY_COUNTER,
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
                            2, chvno, newchvlen, newchv);
   return map_sw (sw);
 }
@@ -386,14 +389,16 @@ iso7816_get_data (int slot, int tag,
 
 
 /* Perform a PUT DATA command on card in SLOT.  Write DATA of length
-   DATALEN to TAG. */
+   DATALEN to TAG.  EXTENDED_MODE controls whether extended length
+   headers or command chaining is used instead of single length
+   bytes. */
 gpg_error_t
-iso7816_put_data (int slot, int tag,
+iso7816_put_data (int slot, int extended_mode, int tag,
                   const unsigned char *data, size_t datalen)
 {
   int sw;
 
-  sw = apdu_send_simple (slot, 0x00, CMD_PUT_DATA,
+  sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_PUT_DATA,
                          ((tag >> 8) & 0xff), (tag & 0xff),
                          datalen, (const char*)data);
   return map_sw (sw);
@@ -412,7 +417,7 @@ iso7816_manage_security_env (int slot, int p1, int p2,
   if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_MSE, p1, p2, 
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_MSE, p1, p2, 
                          data? datalen : -1, (const char*)data);
   return map_sw (sw);
 }

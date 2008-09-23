@@ -1,5 +1,5 @@
 /* apdu.h - ISO 7816 APDU functions and low level I/O
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,8 +29,11 @@ enum {
   SW_MORE_DATA      = 0x6100, /* Note: that the low byte must be
                                  masked of.*/
   SW_EOF_REACHED    = 0x6282,
+  SW_TERM_STATE     = 0x6285, /* Selected file is in termination state.  */
   SW_EEPROM_FAILURE = 0x6581,
   SW_WRONG_LENGTH   = 0x6700,
+  SW_SM_NOT_SUP     = 0x6882, /* Secure Messaging is not supported.  */
+  SW_CC_NOT_SUP     = 0x6884, /* Command Chaining is not supported.  */
   SW_CHV_WRONG      = 0x6982,
   SW_CHV_BLOCKED    = 0x6983,
   SW_USE_CONDITIONS = 0x6985,
@@ -97,7 +100,8 @@ int apdu_get_status (int slot, int hang,
                      unsigned int *status, unsigned int *changed);
 int apdu_check_keypad (int slot, int command, int pin_mode,
                        int pinlen_min, int pinlen_max, int pin_padlen);
-int apdu_send_simple (int slot, int class, int ins, int p0, int p1,
+int apdu_send_simple (int slot, int extended_mode,
+                      int class, int ins, int p0, int p1,
                       int lc, const char *data);
 int apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
                          int lc, const char *data,  

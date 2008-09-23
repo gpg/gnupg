@@ -1,5 +1,5 @@
 /* app-common.h - Common declarations for all card applications
- *	Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2005, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -94,8 +94,13 @@ struct app_ctx_s {
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
                      unsigned char **outdata, size_t *outdatalen);
+    gpg_error_t (*writecert) (app_t app, ctrl_t ctrl,
+                              const char *certid,
+                              gpg_error_t (*pincb)(void*,const char *,char **),
+                              void *pincb_arg,
+                              const unsigned char *data, size_t datalen);
     gpg_error_t (*writekey) (app_t app, ctrl_t ctrl,
-                             const char *certid, unsigned int flags,
+                             const char *keyid, unsigned int flags,
                              gpg_error_t (*pincb)(void*,const char *,char **),
                              void *pincb_arg,
                              const unsigned char *pk, size_t pklen);
@@ -165,6 +170,11 @@ gpg_error_t app_decipher (app_t app, const char *keyidstr,
                   void *pincb_arg,
                   const void *indata, size_t indatalen,
                   unsigned char **outdata, size_t *outdatalen );
+gpg_error_t app_writecert (app_t app, ctrl_t ctrl,
+                           const char *certidstr,
+                           gpg_error_t (*pincb)(void*, const char *, char **),
+                           void *pincb_arg,
+                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
                           const char *keyidstr, unsigned int flags,
                           gpg_error_t (*pincb)(void*, const char *, char **),

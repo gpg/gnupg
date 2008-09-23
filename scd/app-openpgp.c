@@ -63,6 +63,7 @@ static struct {
 } data_objects[] = {
   { 0x005E, 0,    0, 1, 0, 0, 0, "Login Data" },
   { 0x5F50, 0,    0, 0, 0, 0, 0, "URL" },
+  { 0x5F52, 0,    0, 1, 0, 0, 0, "Historical Bytes" },
   { 0x0065, 1,    0, 1, 0, 0, 0, "Cardholder Related Data"},
   { 0x005B, 0, 0x65, 0, 0, 0, 0, "Name" },
   { 0x5F2D, 0, 0x65, 0, 0, 0, 0, "Language preferences" },
@@ -118,7 +119,16 @@ struct app_local_s {
                            implicitly available.  */
   } pk[3];
 
-  /* Keep track of card capabilities.  */
+  unsigned char status_indicator; /* The card status indicator.  */
+
+  /* Keep track of the ISO card capabilities.  */
+  struct
+  {
+    unsigned int cmd_chaining:1;  /* Command chaining is supported.  */
+    unsigned int ext_lc_le:1;     /* Extended Lc and Le are supported.  */
+  } cardcap;
+
+  /* Keep track of extended card capabilities.  */
   struct 
   {
     unsigned int is_v2:1;  /* This is a v2.0 compatible card.  */
@@ -126,7 +136,12 @@ struct app_local_s {
     unsigned int key_import:1;
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
+    unsigned int sm_supported:1;  /* Secure Messaging is supported.  */
+    unsigned int sm_aes128:1;     /* Use AES-128 for SM.  */
     unsigned int max_certlen_3:16;
+    unsigned int max_get_challenge:16; /* Maximum size for get_challenge.  */
+    unsigned int max_cmd_data:16;      /* Maximum data size for a command.  */
+    unsigned int max_rsp_data:16;      /* Maximum size of a response.  */
   } extcap;
 
   /* Flags used to control the application.  */
@@ -451,7 +466,10 @@ dump_all_do (int slot)
                       if (data_objects[j].binary)
                         {
                           log_info ("DO `%s': ", data_objects[j].desc);
-                          log_printhex ("", value, valuelen);
+                          if (valuelen > 200)
+                            log_info ("[%u]\n", (unsigned int)valuelen);
+                          else
+                            log_printhex ("", value, valuelen);
                         }
                       else
                         log_info ("DO `%s': `%.*s'\n",
@@ -596,8 +614,9 @@ store_fpr (int slot, int keynumber, u32 timestamp,
 
   xfree (buffer);
 
-  rc = iso7816_put_data (slot, (card_version > 0x0007? 0xC7 : 0xC6)
-                               + keynumber, fpr, 20);
+  rc = iso7816_put_data (slot, 0, 
+                         (card_version > 0x0007? 0xC7 : 0xC6)
+                         + keynumber, fpr, 20);
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
@@ -610,7 +629,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
       buf[2] = timestamp >>  8;
       buf[3] = timestamp;
 
-      rc = iso7816_put_data (slot, 0xCE + keynumber, buf, 4);
+      rc = iso7816_put_data (slot, 0, 0xCE + keynumber, buf, 4);
       if (rc)
         log_error (_("failed to store the creation date: %s\n"),
                    gpg_strerror (rc));
@@ -1278,10 +1297,10 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 #endif
 }
 
-/* Read the statdard certificate of an OpenPGP v2 card.  It is
+/* Read the standard certificate of an OpenPGP v2 card.  It is
    returned in a freshly allocated buffer with that address stored at
    CERT and the length of the certificate stored at CERTLEN.  CERTID
-   needs to be set to "OpenPGP.3".  */
+   needs to be set to "OPENPGP.3".  */
 static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **cert, size_t *certlen)
@@ -1296,10 +1315,10 @@ do_readcert (app_t app, const char *certid,
   *certlen = 0;
   if (strcmp (certid, "OPENPGP.3"))
     return gpg_error (GPG_ERR_INV_ID);
-  if (app->app_local->extcap.is_v2)
+  if (!app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
-  relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
+  relptr = get_one_do (app, 0x7F21, &buffer, &buflen, NULL);
   if (!relptr)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
@@ -1649,15 +1668,18 @@ do_setattr (app_t app, const char *name,
     { "PRIVATE-DO-3", 0x0103, 2 },
     { "PRIVATE-DO-4", 0x0104, 3 },
     { "CERT-3",       0x7F21, 3, 0, 1 },
+    { "SM-KEY-ENC",   0x00D1, 3, 0, 1 },
+    { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
+    { "PW-RESET-CODE",0x00D3, 3, 0, 1 },
     { NULL, 0 }
   };
-
+  int exmode;
 
   for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
     ;
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
-  if (table[idx].need_v2)
+  if (table[idx].need_v2 && !app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
 
   switch (table[idx].need_chv)
@@ -1678,7 +1700,12 @@ do_setattr (app_t app, const char *name,
      will reread the data from the card and thus get synced in case of
      errors (e.g. data truncated by the card). */
   flush_cache_item (app, table[idx].tag);
-  rc = iso7816_put_data (app->slot, table[idx].tag, value, valuelen);
+  /* For command chaining we use a value of 254 for this card.  */
+  if (app->app_local->cardcap.cmd_chaining && valuelen > 254)
+    exmode = -254;
+  else
+    exmode = 0;
+  rc = iso7816_put_data (app->slot, exmode, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
 
@@ -1689,6 +1716,34 @@ do_setattr (app_t app, const char *name,
 
   return rc;
 }
+
+
+/* Handle the WRITECERT command for OpenPGP.  This rites the standard
+   certifciate to the card; CERTID needs to be set to "OPENPGP.3".
+   PINCB and PINCB_ARG are the usual arguments for the pinentry
+   callback.  */
+static gpg_error_t
+do_writecert (app_t app, ctrl_t ctrl,
+              const char *certidstr, 
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              const unsigned char *certdata, size_t certdatalen)
+{
+#if GNUPG_MAJOR_VERSION > 1
+  if (strcmp (certidstr, "OPENPGP.3"))
+    return gpg_error (GPG_ERR_INV_ID);
+  if (!certdata || !certdatalen)
+    return gpg_error (GPG_ERR_INV_ARG);
+  if (!app->app_local->extcap.is_v2)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  if (certdatalen > app->app_local->extcap.max_certlen_3)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+  return do_setattr (app, "CERT-3", pincb, pincb_arg, certdata, certdatalen);
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
+}
+
 
 
 /* Handle the PASSWD command. */
@@ -2074,7 +2129,7 @@ do_writekey (app_t app, ctrl_t ctrl,
     goto leave;
 
   /* Store the key. */
-  err = iso7816_put_data (app->slot,
+  err = iso7816_put_data (app->slot, 0,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,
                          template, template_len);
   if (err)
@@ -2711,6 +2766,80 @@ do_check_pin (app_t app, const char *keyidstr,
 }
 
 
+/* Show information about card capabilities.  */
+static void
+show_caps (struct app_local_s *s)
+{
+  log_info ("Version-2 ......: %s\n", s->extcap.is_v2? "yes":"no");
+  log_info ("Get-Challenge ..: %s", s->extcap.get_challenge? "yes":"no");
+  if (s->extcap.get_challenge)
+    log_printf (" (%u bytes max)", s->extcap.max_get_challenge);
+  log_info ("Key-Import .....: %s\n", s->extcap.key_import? "yes":"no");
+  log_info ("Change-Force-PW1: %s\n", s->extcap.change_force_chv? "yes":"no");
+  log_info ("Private-DOs ....: %s\n", s->extcap.private_dos? "yes":"no");
+  log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
+  if (s->extcap.sm_supported)
+    log_printf (" (%s)", s->extcap.sm_aes128? "AES-128":"3DES");
+  log_info ("Max-Cert3-Len ..: %u\n", s->extcap.max_certlen_3);
+  log_info ("Max-Cmd-Data ...: %u\n", s->extcap.max_cmd_data);
+  log_info ("Max-Rsp-Data ...: %u\n", s->extcap.max_rsp_data);
+  log_info ("Cmd-Chaining ...: %s\n", s->cardcap.cmd_chaining?"yes":"no");
+  log_info ("Ext-Lc-Le ......: %s\n", s->cardcap.ext_lc_le?"yes":"no");
+  log_info ("Status Indicator: %02X\n", s->status_indicator);
+
+  log_info ("GnuPG-No-Sync ..: %s\n",  s->flags.no_sync? "yes":"no");
+  log_info ("GnuPG-Def-PW2 ..: %s\n",  s->flags.def_chv2? "yes":"no");
+}
+
+
+/* Parse the historical bytes in BUFFER of BUFLEN and store them in
+   APPLOC.  */
+static void
+parse_historical (struct app_local_s *apploc, 
+                  const unsigned char * buffer, size_t buflen)
+{
+  /* Example buffer: 00 31 C5 73 C0 01 80 00 90 00  */
+  if (buflen < 4)
+    {
+      log_error ("warning: historical bytes are too short\n");
+      return; /* Too short.  */
+    }
+  if (*buffer)
+    {
+      log_error ("warning: bad category indicator in historical bytes\n");
+      return; 
+    }
+  
+  /* Skip category indicator.  */
+  buffer++;
+  buflen--;
+
+  /* Get the status indicator.  */
+  apploc->status_indicator = buffer[buflen-3];
+  buflen -= 3;
+
+  /* Parse the compact TLV.  */
+  while (buflen)
+    {
+      unsigned int tag = (*buffer & 0xf0) >> 4;
+      unsigned int len = (*buffer & 0x0f);
+      if (len+1 > buflen)
+        {
+          log_error ("warning: bad Compact-TLV in historical bytes\n");
+          return; /* Error.  */
+        }
+      buffer++;
+      buflen--;
+      if (tag == 7 && len == 3)
+        {
+          /* Card capabilities.  */
+          apploc->cardcap.cmd_chaining = !!(buffer[2] & 0x80);
+          apploc->cardcap.ext_lc_le    = !!(buffer[2] & 0x40);
+        }
+      buffer += len;
+      buflen -= len;
+    }
+}
 
 
 /* Select the OpenPGP application on the card in SLOT.  This function
@@ -2771,6 +2900,22 @@ app_select_openpgp (app_t app)
       if (app->card_version >= 0x0200)
         app->app_local->extcap.is_v2 = 1;
 
+
+      /* Read the historical bytes.  */
+      relptr = get_one_do (app, 0x5f52, &buffer, &buflen, NULL);
+      if (relptr)
+        {
+          if (opt.verbose)
+            {
+              log_info ("Historical Bytes: ");
+              log_printhex ("", buffer, buflen);
+            }
+          parse_historical (app->app_local, buffer, buflen);
+          xfree (relptr);
+        }
+
+
+      /* Read the force-chv1 flag.  */
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
       if (!relptr)
         {
@@ -2781,6 +2926,7 @@ app_select_openpgp (app_t app)
       app->force_chv1 = (buflen && *buffer == 0);
       xfree (relptr);
 
+      /* Read the extended capabilities.  */
       relptr = get_one_do (app, 0x00C0, &buffer, &buflen, NULL);
       if (!relptr)
         {
@@ -2790,6 +2936,7 @@ app_select_openpgp (app_t app)
         }
       if (buflen)
         {
+          app->app_local->extcap.sm_supported     = !!(*buffer & 0x80);
           app->app_local->extcap.get_challenge    = !!(*buffer & 0x40);
           app->app_local->extcap.key_import       = !!(*buffer & 0x20);
           app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
@@ -2798,7 +2945,12 @@ app_select_openpgp (app_t app)
       if (buflen >= 10)
         {
           /* Available with v2 cards.  */
+          app->app_local->extcap.sm_aes128     = (buffer[1] == 1);
+          app->app_local->extcap.max_get_challenge 
+                                               = (buffer[2] << 8 | buffer[3]);
           app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
+          app->app_local->extcap.max_cmd_data  = (buffer[6] << 8 | buffer[7]);
+          app->app_local->extcap.max_rsp_data  = (buffer[8] << 8 | buffer[9]);
         }
       xfree (relptr);
       
@@ -2809,6 +2961,9 @@ app_select_openpgp (app_t app)
 
       parse_login_data (app);
 
+      if (opt.verbose)
+        show_caps (app->app_local);
+
       if (opt.verbose > 1)
         dump_all_do (slot);
 
@@ -2818,6 +2973,7 @@ app_select_openpgp (app_t app)
       app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
+      app->fnc.writecert = do_writecert;
       app->fnc.writekey = do_writekey;
       app->fnc.genkey = do_genkey;
       app->fnc.sign = do_sign;

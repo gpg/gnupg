@@ -277,10 +277,121 @@ atr_dump (int slot, FILE *fp)
 }
 
 
+/* Note: This code has not yet been tested!  It shall return -1 on
+   error or the nu,ber of hiostroical bytes and store them at
+   HISTORICAL.  */
+int
+atr_get_historical (int slot, unsigned char historical[])
+{
+  int result = -1;
+  unsigned char *atrbuffer = NULL;
+  unsigned char *atr;
+  size_t atrlen;
+  int have_ta, have_tb, have_tc, have_td;
+  int n_historical;
+  int idx;
+  unsigned char chksum;
 
+  atr = atrbuffer = apdu_get_atr (slot, &atrlen);
+  if (!atr || atrlen < 2)
+    goto leave;
+  atrlen--;
+  atr++;
 
+  chksum = *atr;
+  for (idx=1; idx < atrlen-1; idx++)
+    chksum ^= atr[idx];
 
+  have_ta = !!(*atr & 0x10);
+  have_tb = !!(*atr & 0x20);
+  have_tc = !!(*atr & 0x40);
+  have_td = !!(*atr & 0x80);
+  n_historical = (*atr & 0x0f);
 
+  if (have_ta + have_tb + have_tc + have_td + n_historical >= atrlen)
+    goto leave; /* ATR shorter than indicated by format character.  */
+  atrlen--;
+  atr++;
 
+  if (have_ta + have_tb + have_tc >= atrlen)
+    goto leave;
+  atrlen -= have_ta + have_tb + have_tc;
+  atr    += have_ta + have_tb + have_tc;
 
+  if (have_td)
+    {
+      have_ta = !!(*atr & 0x10);
+      have_tb = !!(*atr & 0x20);
+      have_tc = !!(*atr & 0x40);
+      have_td = !!(*atr & 0x80);
+      if (have_ta + have_tb + have_tc + have_td + n_historical >= atrlen)
+        goto leave; /* ATR shorter than indicated by format character.  */
+      atrlen--;
+      atr++;
+    }
+  else
+    have_ta = have_tb = have_tc = have_td = 0;
+
+  if (have_ta + have_tb + have_tc >= atrlen)
+    goto leave;
+  atrlen -= have_ta + have_tb + have_tc;
+  atr    += have_ta + have_tb + have_tc;
+
+  if (have_td)
+    {
+      have_ta = !!(*atr & 0x10);
+      have_tb = !!(*atr & 0x20);
+      have_tc = !!(*atr & 0x40);
+      have_td = !!(*atr & 0x80);
+      if (have_ta + have_tb + have_tc + have_td + n_historical >= atrlen)
+        goto leave; /* ATR shorter than indicated by format character.  */
+      atrlen--;
+      atr++;
+    }
+  else
+    have_ta = have_tb = have_tc = have_td = 0;
+
+  for (idx = 3; have_ta || have_tb || have_tc || have_td; idx++)
+    {
+      if (have_ta + have_tb + have_tc >= atrlen)
+        goto leave;
+      atrlen -= have_ta + have_tb + have_tc;
+      atr    += have_ta + have_tb + have_tc;
+
+      if (have_td)
+        {
+          have_ta = !!(*atr & 0x10);
+          have_tb = !!(*atr & 0x20);
+          have_tc = !!(*atr & 0x40);
+          have_td = !!(*atr & 0x80);
+          if (have_ta + have_tb + have_tc + have_td + n_historical >= atrlen)
+            goto leave; /* ATR shorter than indicated by format character.  */
+          atrlen--;
+          atr++;
+        }
+      else
+        have_ta = have_tb = have_tc = have_td = 0;
+    }
+
+  if (n_historical >= atrlen)
+    goto leave; /* ATR shorter than required for historical bytes. */
+  
+  if (n_historical)
+    {
+      for (idx=0; n_historical && atrlen; n_historical--, atrlen--, atr++)
+        historical[idx] = *atr;
+    }
+
+  if (!atrlen || *atr != chksum)
+    goto leave;
+
+  /* Don't care about garbage at the end of the ATR.  */
+
+  result = n_historical;
+
+ leave:
+  xfree (atrbuffer);
+
+  return result;
+}
 

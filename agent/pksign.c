@@ -75,7 +75,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
 }
 
 
-/* Special version of do_encode_md to take care of pckcs#1 padding.
+/* Special version of do_encode_md to take care of pkcs#1 padding.
    For TLS-MD5SHA1 we need to do the padding ourself as Libgrypt does
    not know about this special scheme.  Fixme: We should have a
    pkcs1-only-padding flag for Libgcrypt. */

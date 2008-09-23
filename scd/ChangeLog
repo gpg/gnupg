@@ -1,3 +1,29 @@
+2008-09-23  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_setattr): Use command chaining for long
+	values.
+	* iso7816.c (iso7816_put_data): Add arg EXTENDED_MODE. Change all
+	callers.
+	* apdu.c (apdu_send_simple): Add arg EXTENDED_MODE. Change all
+	callers.
+	(send_le): Implement command chaining.
+	* ccid-driver.c (ccid_transceive_apdu_level): Increase allowed
+	APDU size.
+	* apdu.h: Add new SW_ codes.
+
+2008-09-16  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_writecert): New.
+	(register_commands): Register it.
+	* app-common.h (app_ctx_s): Add member WRITECERT.
+	* app.c (app_writecert): New.
+	* app-openpgp.c (do_writecert): New.
+	(parse_historical): New.
+	(show_extcap): New.
+	(dump_all_do): Print only the length of longs DOs.
+	* command.c (cmd_writekey, cmd_apdu, cmd_pksign)
+	(cmd_passwd): Replace open coding by skip_options.
+
 2008-08-30  Moritz  <moritz@gnu.org>
 
 	* scdaemon.c (main): Use estream_asprintf instead of asprintf.

@@ -982,7 +982,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
       /* We also escape the quote character to work around a bug in
          the mingw32 runtime which does not correcty handle command
          line quoting.  We correctly double the quote mark when
-         calling a program (i.e. gpg-protec-tool), but the pre-main
+         calling a program (i.e. gpg-protect-tool), but the pre-main
          code does not notice the double quote as an escaped
          quote.  */
       if (*s < ' ' || *s == '+' || *s == '\"')

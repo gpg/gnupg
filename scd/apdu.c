@@ -1,5 +1,5 @@
 /* apdu.c - ISO 7816 APDU functions and low level I/O
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1182,7 +1182,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
        err = SW_HOST_INV_VALUE;
      }
    /* We need to read any rest of the response, to keep the
-      protocol runnng. */
+      protocol running.  */
    while (full_len)
      {
        unsigned char dummybuf[128];
@@ -2587,20 +2587,29 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   if (reader_table[slot].send_apdu_reader)
     return reader_table[slot].send_apdu_reader (slot,
                                                 apdu, apdulen,
-                                                buffer, buflen, pininfo);
+                                                buffer, buflen, 
+                                                pininfo);
   else
     return SW_HOST_NOT_SUPPORTED;
 }
 
 
-/* Core APDU trabceiver function. Parameters are described at
+/* Core APDU tranceiver function. Parameters are described at
    apdu_send_le with the exception of PININFO which indicates keypad
-   related operations if not NULL. */
+   related operations if not NULL.  If EXTENDED_MODE is not NULL
+   command chaining or extended length will be used according to these
+   values:
+       n < 0 := Use command chaining without the data part limited to -n
+                in each chunk.  If -1 is used a default value is used.
+      n == 1 := Use extended length for input and output with out a
+                length limit.
+       n > 1 := Use extended length with up to N bytes.
+*/
 static int
 send_le (int slot, int class, int ins, int p0, int p1,
          int lc, const char *data, int le,
          unsigned char **retbuf, size_t *retbuflen,
-         struct pininfo_s *pininfo)
+         struct pininfo_s *pininfo, int extended_mode)
 {
 #define RESULTLEN 258
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
@@ -2611,16 +2620,37 @@ send_le (int slot, int class, int ins, int p0, int p1,
   int sw;
   long rc; /* We need a long here due to PC/SC. */
   int did_exact_length_hack = 0;
+  int use_chaining = 0;
+  int lc_chunk;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
 
   if (DBG_CARD_IO)
-    log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d\n",
-               class, ins, p0, p1, lc, le);
+    log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d em=%d\n",
+               class, ins, p0, p1, lc, le, extended_mode);
 
   if (lc != -1 && (lc > 255 || lc < 0))
-    return SW_WRONG_LENGTH;
+    {
+      /* Data does not fit into an APDU.  What we do now dependes on
+         the EXTENDED_MODE parameter.  */
+      if (!extended_mode)
+        return SW_WRONG_LENGTH; /* No way. to send such an APDU. */
+      else if (extended_mode > 0)
+        return SW_HOST_NOT_SUPPORTED; /* FIXME.  */
+      else if (extended_mode < 0)
+        {
+          /* Send APDU using chaining mode.  */
+          if (lc > 16384)
+            return SW_WRONG_LENGTH;   /* Sanity check.  */
+          if ((class&0xf0) != 0)
+            return SW_HOST_INV_VALUE; /* Upper 4 bits need to be 0.  */ 
+          use_chaining = extended_mode == -1? 255 : -extended_mode;  
+          use_chaining &= 0xff;
+        }
+      else 
+        return SW_HOST_INV_VALUE;
+    }
   if (le != -1 && (le > 256 || le < 0))
     return SW_WRONG_LENGTH;
   if ((!data && lc != -1) || (data && lc == -1))
@@ -2629,43 +2659,61 @@ send_le (int slot, int class, int ins, int p0, int p1,
   if ((sw = lock_slot (slot)))
     return sw;
 
-  apdulen = 0;
-  apdu[apdulen++] = class;
-  apdu[apdulen++] = ins;
-  apdu[apdulen++] = p0;
-  apdu[apdulen++] = p1;
-  if (lc != -1)
+  do
     {
-      apdu[apdulen++] = lc;
-      memcpy (apdu+apdulen, data, lc);
-      apdulen += lc;
-      /* T=0 does not allow the use of Lc together with Le; thus
-         disable Le in this case. */
-      if (reader_table[slot].is_t0)
-        le = -1;
+      apdulen = 0;
+      apdu[apdulen] = class;
+      if (use_chaining && lc > 255)
+        {
+          apdu[apdulen] |= 0x10;
+          assert (use_chaining < 256);
+          lc_chunk = use_chaining;
+          lc -= use_chaining;
+        }
+      else
+        {
+          use_chaining = 0;
+          lc_chunk = lc;
+        }
+      apdulen++;
+      apdu[apdulen++] = ins;
+      apdu[apdulen++] = p0;
+      apdu[apdulen++] = p1;
+      if (lc_chunk != -1)
+        {
+          apdu[apdulen++] = lc_chunk;
+          memcpy (apdu+apdulen, data, lc_chunk);
+          data += lc_chunk;
+          apdulen += lc_chunk;
+          /* T=0 does not allow the use of Lc together with Le; thus
+             disable Le in this case.  */
+          if (reader_table[slot].is_t0)
+            le = -1;
+        }
+      if (le != -1)
+        apdu[apdulen++] = le; /* Truncation is okay because 0 means 256. */
+      /* As safeguard don't pass any garbage from the stack to the driver. */
+      assert (sizeof (apdu) >= apdulen);
+      memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+    exact_length_hack:
+      resultlen = RESULTLEN;
+      rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
+      if (rc || resultlen < 2)
+        {
+          log_error ("apdu_send_simple(%d) failed: %s\n",
+                     slot, apdu_strerror (rc));
+          unlock_slot (slot);
+          return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+        }
+      sw = (result[resultlen-2] << 8) | result[resultlen-1];
+      if (!did_exact_length_hack && SW_EXACT_LENGTH_P (sw))
+        {
+          apdu[apdulen-1] = (sw & 0x00ff);
+          did_exact_length_hack = 1;
+          goto exact_length_hack;
+        }
     }
-  if (le != -1)
-    apdu[apdulen++] = le; /* Truncation is okay because 0 means 256. */
-  assert (sizeof (apdu) >= apdulen);
-  /* As safeguard don't pass any garbage from the stack to the driver. */
-  memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
- exact_length_hack:
-  resultlen = RESULTLEN;
-  rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
-  if (rc || resultlen < 2)
-    {
-      log_error ("apdu_send_simple(%d) failed: %s\n",
-                 slot, apdu_strerror (rc));
-      unlock_slot (slot);
-      return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
-    }
-  sw = (result[resultlen-2] << 8) | result[resultlen-1];
-  if (!did_exact_length_hack && SW_EXACT_LENGTH_P (sw))
-    {
-      apdu[apdulen-1] = (sw & 0x00ff);
-      did_exact_length_hack = 1;
-      goto exact_length_hack;
-    }
+  while (use_chaining && sw == SW_SUCCESS);
 
   /* Store away the returned data but strip the statusword. */
   resultlen -= 2;
@@ -2808,7 +2856,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   return send_le (slot, class, ins, p0, p1,
                   lc, data, le,
                   retbuf, retbuflen,
-                  NULL);
+                  NULL, 0);
 }
 
 
@@ -2826,7 +2874,7 @@ apdu_send (int slot, int class, int ins, int p0, int p1,
            int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
 {
   return send_le (slot, class, ins, p0, p1, lc, data, 256,
-                  retbuf, retbuflen, NULL);
+                  retbuf, retbuflen, NULL, 0);
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
@@ -2836,10 +2884,12 @@ apdu_send (int slot, int class, int ins, int p0, int p1,
    for an invalid SLOT or other non card related error.  No data will be
    returned. */
 int
-apdu_send_simple (int slot, int class, int ins, int p0, int p1,
+apdu_send_simple (int slot, int extended_mode,
+                  int class, int ins, int p0, int p1,
                   int lc, const char *data)
 {
-  return send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL, NULL);
+  return send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL, NULL, 
+                  extended_mode);
 }
 
 
@@ -2857,13 +2907,13 @@ apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
   pininfo.maxlen = pinlen_max;
   pininfo.padlen = pin_padlen;
   return send_le (slot, class, ins, p0, p1, lc, data, -1,
-                  NULL, NULL, &pininfo);
+                  NULL, NULL, &pininfo, 0);
 }
 
 
 /* This is a more generic version of the apdu sending routine.  It
    takes an already formatted APDU in APDUDATA or length APDUDATALEN
-   and returns the with the APDU including the status word.  With
+   and returns the with an APDU including the status word.  With
    HANDLE_MORE set to true this function will handle the MORE DATA
    status and return all APDUs concatenated with one status word at
    the end.  The function does not return a regular status word but 0

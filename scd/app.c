@@ -240,8 +240,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
 
   /* If we don't have an app, check whether we have a saved
      application for that slot.  This is useful so that a card does
-     not get reset even if only one session is using the card - so the
-     PIN cache and other cached data are preserved. */
+     not get reset even if only one session is using the card - this
+     way the PIN cache and other cached data are preserved.  */
   if (!app && lock_table[slot].initialized && lock_table[slot].last_app)
     {
       app = lock_table[slot].last_app;
@@ -734,6 +734,34 @@ app_decipher (app_t app, const char *keyidstr,
 }
 
 
+/* Perform the WRITECERT operation.  */
+gpg_error_t
+app_writecert (app_t app, ctrl_t ctrl,
+              const char *certidstr,
+              gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg,
+              const unsigned char *data, size_t datalen)
+{
+  gpg_error_t err;
+
+  if (!app || !certidstr || !*certidstr || !pincb)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.writecert)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+  err = lock_reader (app->slot);
+  if (err)
+    return err;
+  err = app->fnc.writecert (app, ctrl, certidstr,
+                            pincb, pincb_arg, data, datalen);
+  unlock_reader (app->slot);
+  if (opt.verbose)
+    log_info ("operation writecert result: %s\n", gpg_strerror (err));
+  return err;
+}
+
+
 /* Perform the WRITEKEY operation.  */
 gpg_error_t
 app_writekey (app_t app, ctrl_t ctrl,
@@ -759,7 +787,6 @@ app_writekey (app_t app, ctrl_t ctrl,
   if (opt.verbose)
     log_info ("operation writekey result: %s\n", gpg_strerror (err));
   return err;
-
 }
 
 

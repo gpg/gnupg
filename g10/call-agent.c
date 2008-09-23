@@ -53,6 +53,13 @@ struct cipher_parm_s
   size_t ciphertextlen;
 };
 
+struct writecert_parm_s
+{
+  assuan_context_t ctx;
+  const unsigned char *certdata;
+  size_t certdatalen;
+};
+
 struct writekey_parm_s
 {
   assuan_context_t ctx;
@@ -442,6 +449,56 @@ agent_scd_setattr (const char *name,
                         default_inq_cb, NULL, NULL, NULL);
   return rc;
 }
+
+
+
+/* Handle a CERTDATA inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the END
+   command. */
+static int
+inq_writecert_parms (void *opaque, const char *line)
+{
+  int rc;
+  struct writecert_parm_s *parm = opaque; 
+
+  if (!strncmp (line, "CERTDATA", 8) && (line[8]==' '||!line[8]))
+    {
+      rc = assuan_send_data (parm->ctx, parm->certdata, parm->certdatalen);
+    }
+  else
+    rc = default_inq_cb (opaque, line);
+
+  return rc;
+}
+
+
+/* Send a WRITECERT command to the SCdaemon. */
+int 
+agent_scd_writecert (const char *certidstr,
+                     const unsigned char *certdata, size_t certdatalen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct writecert_parm_s parms;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  memset (&parms, 0, sizeof parms);
+
+  snprintf (line, DIM(line)-1, "SCD WRITECERT %s", certidstr);
+  line[DIM(line)-1] = 0;
+  parms.ctx = agent_ctx;
+  parms.certdata = certdata;
+  parms.certdatalen = certdatalen;
+  
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        inq_writecert_parms, &parms, NULL, NULL);
+
+  return rc;
+}
+
 
 
 
