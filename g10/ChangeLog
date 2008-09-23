@@ -1,3 +1,8 @@
+2008-09-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (select_algo_from_prefs): Redo function to rank prefs
+	and pick a consensus winner across all keys.
+
 2008-09-16  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (fpr_is_ff): New.
