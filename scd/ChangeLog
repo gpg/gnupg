@@ -1,3 +1,10 @@
+2008-09-23  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_sign): Support SHA-2 digests.
+	(verify_chv2): No CHV auto-sync for v2 cards.
+	(do_auth): Allow 2048 bit keys.
+	(parse_algorithm_attribute): New.
+
 2008-09-23  Marcus Brinkmann  <marcus@g10code.com>
 
 	* apdu.c (pcsc_get_status): Be more relaxed with the usable flag

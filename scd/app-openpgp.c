@@ -887,7 +887,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
   size_t e_new_n = 0;
 
   /* Loop over all records until we have found the subkey
-     corresponsing to the fingerprint. Inm general the first record
+     corresponding to the fingerprint. Inm general the first record
      should be the pub record, but we don't rely on that.  Given that
      we only need to look at one key, it is sufficient to compare the
      keyid so that we don't need to look at "fpr" records. */
@@ -1249,6 +1249,8 @@ do_learn_status (app_t app, ctrl_t ctrl)
   send_keypair_info (app, ctrl, 1);
   send_keypair_info (app, ctrl, 2);
   send_keypair_info (app, ctrl, 3);
+  /* Note: We do not send the Cardholder Certificate, because that is
+     relativly long and for OpenPGP applications not really needed.  */
   return 0;
 }
 
@@ -1493,7 +1495,8 @@ verify_chv2 (app_t app,
 
   app->did_chv2 = 1;
   
-  if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+  if (!app->did_chv1 && !app->force_chv1 && pinvalue 
+      && !app->app_local->extcap.is_v2)
     {
       /* For convenience we verify CHV1 here too.  We do this only if
          the card is not configured to require a verification before
@@ -2373,15 +2376,32 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
          const void *indata, size_t indatalen,
          unsigned char **outdata, size_t *outdatalen )
 {
-  static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
-  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-    0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
   static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
-  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+      0x02, 0x01, 0x05, 0x00, 0x04, 0x14  };
+  static unsigned char sha1_prefix[15] =   /* (1.3.14.3.2.26) */
+    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14  };
+  static unsigned char sha224_prefix[19] = /* (2.16.840.1.101.3.4.2.4) */
+    { 0x30, 0x2D, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48,
+      0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05, 0x00, 0x04,
+      0x1C  };
+  static unsigned char sha256_prefix[19] = /* (2.16.840.1.101.3.4.2.1) */
+    { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+      0x00, 0x04, 0x20  };
+  static unsigned char sha384_prefix[19] = /* (2.16.840.1.101.3.4.2.2) */
+    { 0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05,
+      0x00, 0x04, 0x30  };
+  static unsigned char sha512_prefix[19] = /* (2.16.840.1.101.3.4.2.3) */
+    { 0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+      0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05,
+      0x00, 0x04, 0x40  };
   int rc;
-  unsigned char data[35];
-  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
+  unsigned char data[19+64];
+  size_t datalen;
+  unsigned char tmp_sn[20]; /* Actually 16 bytes but also for the fpr. */
   const char *s;
   int n;
   const char *fpr = NULL;
@@ -2390,26 +2410,38 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Strip off known prefixes.  */
+#define X(a,b,c,d) \
+  if (hashalgo == GCRY_MD_ ## a                               \
+      && (d)                                                  \
+      && indatalen == sizeof b ## _prefix + (c)               \
+      && !memcmp (indata, b ## _prefix, sizeof b ## _prefix)) \
+    {                                                         \
+      indata = (const char*)indata + sizeof b ## _prefix;     \
+      indatalen -= sizeof b ## _prefix;                       \
+    }                                                         
+
   if (indatalen == 20)
-    ;
-  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_SHA1
-           && !memcmp (indata, sha1_prefix, 15))
-    {
-      indata = (const char*)indata + 15;
-      indatalen -= 15;
-    }
-  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_RMD160
-           && !memcmp (indata, rmd160_prefix, 15))
-    {
-      indata = (const char*)indata + 15;
-      indatalen -= 15;
-    }
+    ;  /* Assume a plain SHA-1 or RMD160 digest has been given.  */
+  else X(SHA1,   sha1,   20, 1)
+  else X(RMD160, rmd160, 20, 1)
+  else X(SHA224, sha224, 28, app->app_local->extcap.is_v2)
+  else X(SHA256, sha256, 32, app->app_local->extcap.is_v2)
+  else X(SHA384, sha384, 48, app->app_local->extcap.is_v2)
+  else X(SHA512, sha512, 64, app->app_local->extcap.is_v2)
+  else if ((indatalen == 28 || indatalen == 32 
+            || indatalen == 48 || indatalen ==64)
+           && app->app_local->extcap.is_v2)
+    ;  /* Assume a plain SHA-3 digest has been given.  */
   else
     {
       log_error (_("card does not support digest algorithm %s\n"),
                  gcry_md_algo_name (hashalgo));
+      /* Or the supplied digest length does not match an algorithm.  */
       return gpg_error (GPG_ERR_INV_VALUE);
     }
+#undef X
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.1"))
@@ -2450,25 +2482,39 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (rc)
     return rc;
 
-  if (hashalgo == GCRY_MD_SHA1)
-    memcpy (data, sha1_prefix, 15);
-  else if (hashalgo == GCRY_MD_RMD160)
-    memcpy (data, rmd160_prefix, 15);
+  /* Concatenate prefix and digest.  */
+#define X(a,b,d) \
+  if (hashalgo == GCRY_MD_ ## a && (d) )                      \
+    {                                                         \
+      datalen = sizeof b ## _prefix + indatalen;              \
+      assert (datalen <= sizeof data);                        \
+      memcpy (data, b ## _prefix, sizeof b ## _prefix);       \
+      memcpy (data + sizeof b ## _prefix, indata, indatalen); \
+    }                                                         
+
+  X(SHA1,   sha1,   1)
+  else X(RMD160, rmd160, 1)
+  else X(SHA224, sha224, app->app_local->extcap.is_v2)
+  else X(SHA256, sha256, app->app_local->extcap.is_v2)
+  else X(SHA384, sha384, app->app_local->extcap.is_v2)
+  else X(SHA512, sha512, app->app_local->extcap.is_v2)
   else 
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-  memcpy (data+15, indata, indatalen);
+#undef X
 
+  /* Redirect to the AUTH command if asked to. */
   if (use_auth)
     {
-      /* This is a hack to redirect to the internal authenticate command.  */
       return do_auth (app, "OPENPGP.3", pincb, pincb_arg,
-                      data, 35,
+                      data, datalen,
                       outdata, outdatalen);
     }
 
+  /* Show the number of signature done using this key.  */
   sigcount = get_sig_counter (app);
   log_info (_("signatures created so far: %lu\n"), sigcount);
 
+  /* Check CHV if needed.  */
   if (!app->did_chv1 || app->force_chv1 ) 
     {
       char *pinvalue;
@@ -2479,10 +2525,13 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
       app->did_chv1 = 1;
 
-      if (!app->did_chv2 && pinvalue)
+      /* For cards with versions < 2 we want to keep CHV1 and CHV2 in
+         sync, thus we verify CHV2 here using the given PIN.  Cards
+         with version2 to not have the need for a separate CHV2 and
+         internally use just one.  Obviously we can't do that if the
+         keypad has been used. */
+      if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
         {
-          /* We should also verify CHV2.  Note, that we can't do that
-             if the keypad has been used. */
           rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
           if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
             rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
@@ -2498,7 +2547,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       xfree (pinvalue);
     }
 
-  rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+  rc = iso7816_compute_ds (app->slot, data, datalen, outdata, outdatalen);
   return rc;
 }
 
@@ -2520,14 +2569,14 @@ do_auth (app_t app, const char *keyidstr,
          unsigned char **outdata, size_t *outdatalen )
 {
   int rc;
-  unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
+  unsigned char tmp_sn[20]; /* Actually 16 but we use it also for the fpr. */
   const char *s;
   int n;
   const char *fpr = NULL;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen > 50) /* For a 1024 bit key. */
+  if (indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
@@ -2842,6 +2891,51 @@ parse_historical (struct app_local_s *apploc,
 }
 
 
+/* Read and parse the algorithm attributes for KEYNO.  KEYNO must be
+   in the range 0..2.  */
+static void 
+parse_algorithm_attribute (app_t app, int keyno)
+{ 
+  unsigned char *buffer;
+  size_t buflen;
+  void *relptr;
+  const char const desc[3][5] = {"sign", "encr", "auth"};
+
+  assert (keyno >=0 && keyno <= 2);
+
+  relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
+  if (!relptr)
+    {
+      log_error ("error reading DO 0x%02X\n", 0xc1+keyno);
+      return;
+    }
+  if (buflen < 1)
+    {
+      log_error ("error reading DO 0x%02X\n", 0xc1+keyno);
+      xfree (relptr);
+      return;
+    }
+
+  log_info ("Key-Attr-%s ..: ", desc[keyno]);
+  if (*buffer == 1 && (buflen == 5 || buflen == 6))
+    {
+      log_printf ("RSA, n=%d, e=%d",
+                  (buffer[1]<<8 | buffer[2]),
+                  (buffer[3]<<8 | buffer[4]));
+      if (buflen == 6)
+        log_printf (", format=%s",
+                    buffer[5] == 0? "std" :
+                    buffer[5] == 1? "std+n" :
+                    buffer[5] == 2? "crt" :
+                    buffer[5] == 2? "crt+n" : "?");
+      log_printf ("\n");
+    }
+  else
+    log_printhex ("", buffer, buflen);
+
+  xfree (relptr);
+}
+
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 gpg_error_t
@@ -2914,7 +3008,6 @@ app_select_openpgp (app_t app)
           xfree (relptr);
         }
 
-
       /* Read the force-chv1 flag.  */
       relptr = get_one_do (app, 0x00C4, &buffer, &buflen, NULL);
       if (!relptr)
@@ -2953,7 +3046,7 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.max_rsp_data  = (buffer[8] << 8 | buffer[9]);
         }
       xfree (relptr);
-      
+
       /* Some of the first cards accidently don't set the
          CHANGE_FORCE_CHV bit but allow it anyway. */
       if (app->card_version <= 0x0100 && manufacturer == 1)
@@ -2964,6 +3057,13 @@ app_select_openpgp (app_t app)
       if (opt.verbose)
         show_caps (app->app_local);
 
+      if (opt.verbose)
+        {
+          parse_algorithm_attribute (app, 0);
+          parse_algorithm_attribute (app, 1);
+          parse_algorithm_attribute (app, 2);
+        }
+      
       if (opt.verbose > 1)
         dump_all_do (slot);
 
