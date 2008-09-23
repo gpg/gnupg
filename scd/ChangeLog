@@ -9,6 +9,7 @@
 	(send_le): Implement command chaining.
 	* ccid-driver.c (ccid_transceive_apdu_level): Increase allowed
 	APDU size.
+	(ccid_transceive): Alow for APDUS of up to 259 bytes.
 	* apdu.h: Add new SW_ codes.
 
 2008-09-16  Werner Koch  <wk@g10code.com>

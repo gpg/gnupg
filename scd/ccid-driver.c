@@ -1971,8 +1971,9 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   apdulen = apdu_buflen;
   assert (apdulen);
 
-  /* The maximum length for a short APDU T=1 block is 261, for an
-     extra APDU T=1 block is 65544.  */
+  /* The maximum length for a short APDU T=1 block is 261.  For an
+     extended APDU T=1 block the maximum length 65544; however
+     extended APDU exchange levele is not yet supported.  */
   if (apdulen > 261)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
@@ -2119,8 +2120,11 @@ ccid_transceive (ccid_driver_t handle,
           assert (apdulen);
 
           /* Construct an I-Block. */
-#warning fixme: APDULEN may be larger
-          if (apdulen > 254)
+          /* Fixme: I am not sure whether limiting the length to 259
+             as per CCID spec is required.  The code blow chops the
+             APDU anyway into 128 byte blocks.  Needs to be addressed
+             when supporting extended length APDUs. */
+          if (apdulen > 259)
             return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
           tpdu = msg+10;
