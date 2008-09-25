@@ -2185,11 +2185,13 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdCLEAN:
-	    redisplay=modified=menu_clean(keyblock,0);
+	    if(menu_clean(keyblock,0))
+	      redisplay=modified=1;
 	    break;
 
 	  case cmdMINIMIZE:
-	    redisplay=modified=menu_clean(keyblock,1);
+	    if(menu_clean(keyblock,1))
+	      redisplay=modified=1;
 	    break;
 
 	  case cmdQUIT:
