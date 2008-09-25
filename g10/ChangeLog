@@ -1,5 +1,8 @@
 2008-09-25  Werner Koch  <wk@g10code.com>
 
+	* parse-packet.c (parse): Remove special treatment for compressed
+	new style packets.  Fixes bug#931.
+	
 	* card-util.c (change_pin): Support setting of the reset code.
 
 2008-09-24  Werner Koch  <wk@g10code.com>

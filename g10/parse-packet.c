@@ -395,12 +395,20 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	    rc = gpg_error (GPG_ERR_INV_PACKET);
 	    goto leave;
 	}
-        if (pkttype == PKT_COMPRESSED) {
-             iobuf_set_partial_block_mode(inp, c & 0xff);
-             pktlen = 0;/* to indicate partial length */
-	     partial=1;
-        }
-        else {
+
+/* The follwing code has been here for ages (2002-08-30) but it is
+   clearly wrong: For example passing a 0 as second argument to
+   iobuf_set_partial_block_mode stops the partial block mode which we
+   definitely do not want.  Also all values < 224 or 255 are not
+   valid.  Let's disable it and put PKT_COMPRESSED into the list of
+   allowed packets with partial header until someone complains. */
+/*         if (pkttype == PKT_COMPRESSED) { */
+/*              iobuf_set_partial_block_mode(inp, c & 0xff); */
+/*              pktlen = 0;  /\* to indicate partial length *\/ */
+/* 	     partial=1; */
+/*         } */
+/*         else  */
+        {
              hdr[hdrlen++] = c;
              if( c < 192 )
 	       pktlen = c;
@@ -433,19 +441,21 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	       }
              else
 	       {
-		 /* Partial body length.  Note that we handled
-		    PKT_COMPRESSED earlier. */
-		 if(pkttype==PKT_PLAINTEXT || pkttype==PKT_ENCRYPTED
-		    || pkttype==PKT_ENCRYPTED_MDC)
-		   {
+		 /* Partial body length.  */
+                 switch (pkttype)
+                   {
+                   case PKT_PLAINTEXT:
+                   case PKT_ENCRYPTED:
+		   case PKT_ENCRYPTED_MDC:
+                   case PKT_COMPRESSED:
 		     iobuf_set_partial_block_mode(inp, c & 0xff);
-		     pktlen = 0;/* to indicate partial length */
+		     pktlen = 0;/* To indicate partial length.  */
 		     partial=1;
-		   }
-		 else
-		   {
+                     break;
+
+		   default:
 		     log_error("%s: partial length for invalid"
-			       " packet type %d\n",iobuf_where(inp),pkttype);
+			       " packet type %d\n", iobuf_where(inp),pkttype);
                      rc = gpg_error (GPG_ERR_INV_PACKET);
 		     goto leave;
 		   }
