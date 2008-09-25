@@ -264,6 +264,8 @@ learn_status_cb (void *opaque, const char *line)
     {
       xfree (parm->serialno);
       parm->serialno = store_serialno (line);
+      parm->is_v2 = (strlen (parm->serialno) >= 16 
+                     && xtoi_2 (parm->serialno+12) >= 2 );
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
@@ -758,10 +760,12 @@ agent_scd_pkdecrypt (const char *serialno,
 
 /* Change the PIN of an OpenPGP card or reset the retry counter.
    CHVNO 1: Change the PIN
-         2: Same as 1
+         2: For v1 cards: Same as 1.
+            For v2 cards: Reset the PIN using the Reset Code.
          3: Change the admin PIN
        101: Set a new PIN and reset the retry counter
-       102: Same as 101
+       102: For v1 cars: Same as 101.
+            For v2 cards: Set a new Reset Code.
    SERIALNO is not used.
  */
 int

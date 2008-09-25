@@ -49,6 +49,7 @@ struct agent_card_info_s
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache
                         it anyway. */
+  int is_v2;         /* True if this is a v2 card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
 };

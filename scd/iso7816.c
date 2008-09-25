@@ -1,5 +1,5 @@
 /* iso7816.c - ISO 7816 commands
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -335,6 +335,7 @@ iso7816_reset_retry_counter_kp (int slot, int chvno,
   if (!newchv || !newchvlen )
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* FIXME:  The keypad mode has not yet been tested.  */
   if (pininfo && pininfo->mode)
     sw = apdu_send_simple_kp (slot, 0x00, CMD_RESET_RETRY_COUNTER,
                            2, chvno, newchvlen, newchv,
@@ -345,6 +346,21 @@ iso7816_reset_retry_counter_kp (int slot, int chvno,
   else
     sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
                            2, chvno, newchvlen, newchv);
+  return map_sw (sw);
+}
+
+
+gpg_error_t
+iso7816_reset_retry_counter_with_rc (int slot, int chvno,
+                                     const char *data, size_t datalen)
+{
+  int sw;
+
+  if (!data || !datalen )
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
+                         0, chvno, datalen, data);
   return map_sw (sw);
 }
 
@@ -399,6 +415,19 @@ iso7816_put_data (int slot, int extended_mode, int tag,
   int sw;
 
   sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_PUT_DATA,
+                         ((tag >> 8) & 0xff), (tag & 0xff),
+                         datalen, (const char*)data);
+  return map_sw (sw);
+}
+
+/* Same as iso7816_put_data but uses an odd instrcution byte.  */
+gpg_error_t
+iso7816_put_data_odd (int slot, int extended_mode, int tag,
+                      const unsigned char *data, size_t datalen)
+{
+  int sw;
+
+  sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_PUT_DATA+1,
                          ((tag >> 8) & 0xff), (tag & 0xff),
                          datalen, (const char*)data);
   return map_sw (sw);

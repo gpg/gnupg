@@ -51,7 +51,7 @@
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
 void
-change_pin (int chvno, int allow_admin)
+change_pin (int unblock_v2, int allow_admin)
 {
   struct agent_card_info_s info;
   int rc;
@@ -76,7 +76,26 @@ change_pin (int chvno, int allow_admin)
       return;
     }
 
-  if(!allow_admin)
+
+  if (unblock_v2)
+    {
+      if (!info.is_v2)
+        log_error (_("This command is only available for version 2 cards\n"));
+      else if (!info.chvretry[1])
+        log_error (_("Reset Code not or not anymore available\n"));
+      else
+        {
+          rc = agent_scd_change_pin (2, info.serialno);
+          if (rc)
+            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+          else
+            {
+              write_status (STATUS_SC_OP_SUCCESS);
+              tty_printf ("PIN changed.\n");
+            }
+        }
+    }
+  else if (!allow_admin)
     {
       rc = agent_scd_change_pin (1, info.serialno);
       if (rc)
@@ -96,6 +115,7 @@ change_pin (int chvno, int allow_admin)
 	tty_printf ("1 - change PIN\n"
 		    "2 - unblock PIN\n"
 		    "3 - change Admin PIN\n"
+                    "4 - set the Reset Code\n"
 		    "Q - quit\n");
 	tty_printf ("\n");
 
@@ -107,6 +127,7 @@ change_pin (int chvno, int allow_admin)
 	rc = 0;
 	if (*answer == '1')
 	  {
+            /* Change PIN.  */
 	    rc = agent_scd_change_pin (1, info.serialno);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
@@ -118,6 +139,7 @@ change_pin (int chvno, int allow_admin)
 	  }
 	else if (*answer == '2')
 	  {
+            /* Unblock PIN.  */
 	    rc = agent_scd_change_pin (101, info.serialno);
 	    if (rc)
 	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
@@ -129,6 +151,7 @@ change_pin (int chvno, int allow_admin)
           }
 	else if (*answer == '3')
 	  {
+            /* Change Admin PIN.  */
 	    rc = agent_scd_change_pin (3, info.serialno);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
@@ -136,6 +159,19 @@ change_pin (int chvno, int allow_admin)
               {
                 write_status (STATUS_SC_OP_SUCCESS);
                 tty_printf ("PIN changed.\n");
+              }
+	  }
+	else if (*answer == '4')
+	  {
+            /* Set a new Reset Code.  */
+	    rc = agent_scd_change_pin (102, info.serialno);
+	    if (rc)
+	      tty_printf ("Error setting the Reset Code: %s\n", 
+                          gpg_strerror (rc));
+	    else
+              {
+                write_status (STATUS_SC_OP_SUCCESS);
+                tty_printf ("Reset Code set.\n");
               }
 	  }
 	else if (*answer == 'q' || *answer == 'Q')
@@ -1345,6 +1381,7 @@ enum cmdids
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
+    cmdUNBLOCK,
     cmdINVCMD
   };
 
@@ -1375,6 +1412,7 @@ static struct
     { "generate", cmdGENERATE, 1, N_("generate new keys")},
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
+    { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "writecert", cmdWRITECERT, 1, NULL },
@@ -1641,6 +1679,11 @@ card_edit (strlist_t commands)
 
         case cmdPASSWD:
           change_pin (0, allow_admin);
+          did_checkpin = 0; /* Need to reset it of course. */
+          break;
+
+        case cmdUNBLOCK:
+          change_pin (1, allow_admin);
           did_checkpin = 0; /* Need to reset it of course. */
           break;
 

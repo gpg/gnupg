@@ -4,30 +4,34 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * New keyserver helper gpg2keys_kdns as generic DNS CERT lookup.  Run
    with --help for a short description.  Requires the ADNS library.
 
- * New mechanisms "local" and "nodefault" for --auto-key-locate [gpg].
+ * [gpg] New mechanisms "local" and "nodefault" for --auto-key-locate.
    Fixed a few problems with this option.
 
- * [W32] Initialized the socket subsystem for all keyserver helpers.
+ * [w32] Initialized the socket subsystem for all keyserver helpers.
 
- * [W32] The sysconf directory has been moved from a subdirectory of
+ * [w32] The sysconf directory has been moved from a subdirectory of
    the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
 
- * New gpg2 command --locate-keys.
+ * [gpg] New command --locate-keys.
 
- * New gpg2 options --with-sig-list and --with-sig-check.
+ * [gpg] New options --with-sig-list and --with-sig-check.
 
- * Made gpgsm's --output option work with --export-secret-key-p12.
+ * [gpgsm] Made --output option work with --export-secret-key-p12.
 
  * gpg-connect-agent accepts commands given as command line arguments.
 
- * The gpg2 option --fixed-list-mode is now implicitly used and obsolete.
+ * [gpg] The option --fixed-list-mode is now implicitly used and obsolete.
 
- * New control statement %ask-passphrase for the unattended key
-   generation of gpg2.
+ * [gpg] New control statement %ask-passphrase for the unattended key
+   generation.
 
  * gpgsm now uses AES by default.
 
  * gpg-preset-passphrase works again.
+
+ * Admin PINs are cached again (bug in 2.0.9).
+
+ * Support for version 2 OpenPGP cards.
 
 
 Noteworthy changes in version 2.0.9 (2008-03-26)

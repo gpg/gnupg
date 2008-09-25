@@ -1,9 +1,30 @@
+2008-09-25  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_setattr): Do not allow setting of the reset
+	code.
+	(do_change_pin): Allow setting of the reset code.
+
+2008-09-24  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv3): Set the did_chv3 flag which was
+	accidently removed on 2008-03-26.
+	(verify_chv2): Revert last change.
+	(do_change_pin): Do not change CHV2. Add reset code logic for v2
+	cards.
+	* iso7816.c (iso7816_reset_retry_counter_with_rc): New.
+	
+	* app-openpgp.c (add_tlv, build_privkey_template): New.
+	(do_writekey): Support v2 keys and other key lengths than 1024.
+	* iso7816.c (iso7816_put_data_odd): New.
+
 2008-09-23  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_sign): Support SHA-2 digests.
 	(verify_chv2): No CHV auto-sync for v2 cards.
 	(do_auth): Allow 2048 bit keys.
 	(parse_algorithm_attribute): New.
+	(rsa_key_format_t): New.
+	(struct app_local_s): Add struct KEYATTR.
 
 2008-09-23  Marcus Brinkmann  <marcus@g10code.com>
 
@@ -1815,7 +1836,7 @@
 	the gpg-agent.
 
 	
- Copyright 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

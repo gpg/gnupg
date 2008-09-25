@@ -1,3 +1,7 @@
+2008-09-25  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (getpin_cb): Support a Reset Code style PINs..
+
 2008-09-03  Werner Koch  <wk@g10code.com>
 
 	* command.c (parse_keygrip): Use hex2bin.

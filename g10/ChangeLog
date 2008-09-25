@@ -1,3 +1,16 @@
+2008-09-25  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (change_pin): Support setting of the reset code.
+
+2008-09-24  Werner Koch  <wk@g10code.com>
+
+	* call-agent.h (struct agent_card_info_s): Add field IS_V2.
+	* call-agent.c (learn_status_cb): That that field.
+
+	* card-util.c (change_pin): Rename first arg to UNBLOCK_v2 and use
+	it this way.
+	(card_edit): Add new command UNBLOCK.
+
 2008-09-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (select_algo_from_prefs): Redo function to rank prefs

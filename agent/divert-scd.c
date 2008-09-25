@@ -185,6 +185,7 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
             PIN.  If the PIN is not correctly repeated it starts from
             all over.
       'A' = The PIN is an Admin PIN, SO-PIN, PUK or alike.
+      'R' = The PIN is a Reset Code.
 
    Example:
 
@@ -202,6 +203,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   const char *ends, *s;
   int any_flags = 0;
   int newpin = 0;
+  int resetcode = 0;
   const char *again_text = NULL;
   const char *prompt = "PIN";
 
@@ -217,6 +219,11 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
             prompt = _("Admin PIN");
           else if (*s == 'N')
             newpin = 1;
+          else if (*s == 'R')
+            {
+              prompt = _("Reset Code");
+              resetcode = 1;
+            }
         }
       info = ends+1;
       any_flags = 1;
@@ -272,10 +279,16 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
           pi2->min_digits = 0;
           pi2->max_digits = 8;
           pi2->max_tries = 1;
-          rc = agent_askpin (ctrl, _("Repeat this PIN"), prompt, NULL, pi2);
+          rc = agent_askpin (ctrl,
+                             (resetcode?
+                              _("Repeat this Reset Code"):
+                              _("Repeat this PIN")),
+                             prompt, NULL, pi2);
           if (!rc && strcmp (pi->pin, pi2->pin))
             {
-              again_text = N_("PIN not correctly repeated; try again");
+              again_text = (resetcode? 
+                            N_("Reset Code not correctly repeated; try again"):
+                            N_("PIN not correctly repeated; try again"));
               xfree (pi2);
               xfree (pi);
               goto again;
