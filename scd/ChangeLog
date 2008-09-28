@@ -1,3 +1,7 @@
+2008-09-28  Marcus Brinkmann  <marcus@g10code.com>
+
+	* apdu.c (pcsc_get_status): Fix last change.
+
 2008-09-25  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_setattr): Do not allow setting of the reset

@@ -1092,8 +1092,8 @@ pcsc_get_status (int slot, unsigned int *status)
 #else
   /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
      time when we are the only user (SCM SCR335) under Windows.  */
-  if ((status & 6) == 6)
-    status |= 1;
+  if ((*status & 6) == 6)
+    *status |= 1;
 #endif
 
   return 0;
