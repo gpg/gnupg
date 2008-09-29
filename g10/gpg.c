@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007 Free Software Foundation, Inc.
+ *               2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -3285,15 +3285,6 @@ main (int argc, char **argv)
 	set_cmd( &cmd, aListKeys);
     }
 
-    /* kludge to let -sat generate a clear text signature */
-    if( opt.textmode == 2 && !detached_sig && opt.armor && cmd == aSign )
-      {
-        log_info ("compatibility note:\n");
-        log_info ("\"-sat\" won't generate clear signed messages in "
-                  "future versions\n");
-        log_info ("Use \"--clearsign\" instead of \"-sat\"\n");
-	cmd = aClearsign;
-      }
 
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
@@ -4155,8 +4146,8 @@ print_mds( const char *fname, int algo )
 	gcry_md_enable (md, GCRY_MD_MD5);
 	gcry_md_enable (md, GCRY_MD_SHA1);
 	gcry_md_enable (md, GCRY_MD_RMD160);
-        if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
-          gcry_md_enable (md, DIGEST_ALGO_SHA224);
+        if (!openpgp_md_test_algo (GCRY_MD_SHA224))
+          gcry_md_enable (md, GCRY_MD_SHA224);
         if (!openpgp_md_test_algo (GCRY_MD_SHA256))
           gcry_md_enable (md, GCRY_MD_SHA256);
         if (!openpgp_md_test_algo (GCRY_MD_SHA384))
@@ -4178,8 +4169,8 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, GCRY_MD_MD5, fname );
                 print_hashline( md, GCRY_MD_SHA1, fname );
                 print_hashline( md, GCRY_MD_RMD160, fname );
-                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224))
-                    print_hashline (md, DIGEST_ALGO_SHA224, fname);
+                if (!gcry_md_test_algo (GCRY_MD_SHA224))
+                    print_hashline (md, GCRY_MD_SHA224, fname);
                 if (!gcry_md_test_algo (GCRY_MD_SHA256))
                     print_hashline( md, GCRY_MD_SHA256, fname );
                 if (!gcry_md_test_algo (GCRY_MD_SHA384))
@@ -4195,8 +4186,8 @@ print_mds( const char *fname, int algo )
                 print_hex( md, GCRY_MD_MD5, fname );
                 print_hex( md, GCRY_MD_SHA1, fname );
                 print_hex( md, GCRY_MD_RMD160, fname );
-                if (!gcry_md_test_algo (DIGEST_ALGO_SHA224))
-                    print_hex (md, DIGEST_ALGO_SHA224, fname);
+                if (!gcry_md_test_algo (GCRY_MD_SHA224))
+                    print_hex (md, GCRY_MD_SHA224, fname);
                 if (!gcry_md_test_algo (GCRY_MD_SHA256))
                     print_hex( md, GCRY_MD_SHA256, fname );
                 if (!gcry_md_test_algo (GCRY_MD_SHA384))

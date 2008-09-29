@@ -265,11 +265,9 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
       byte *asn;
       size_t asnlen;
 
-      rc = gcry_md_test_algo (hash_algo);
-      if (!rc)
-        rc = gcry_md_algo_info (hash_algo, GCRYCTL_GET_ASNOID, NULL, &asnlen);
+      rc = gcry_md_algo_info (hash_algo, GCRYCTL_GET_ASNOID, NULL, &asnlen);
       if (rc)
-        log_fatal ("can't get OID of algo %d: %s\n",
+        log_fatal ("can't get OID of digest algorithm %d: %s\n",
                    hash_algo, gpg_strerror (rc));
       asn = xmalloc (asnlen);
       if ( gcry_md_algo_info (hash_algo, GCRYCTL_GET_ASNOID, asn, &asnlen) )

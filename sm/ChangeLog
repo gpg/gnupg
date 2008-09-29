@@ -1,3 +1,10 @@
+2008-09-29  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c (MY_GCRY_PK_ECDSA): Remove.  Change users to
+	GCRY_PK_ECDSA.
+	* gpgsm.c (MY_GCRY_PK_ECDSA): Ditto.
+	* sign.c (MY_GCRY_MD_SHA224): Remove change users to GCRY_MD_SHA224.
+
 2008-09-04  Werner Koch  <wk@g10code.com>
 
 	* certdump.c (gpgsm_format_keydesc): Work around a mingw32 bug.

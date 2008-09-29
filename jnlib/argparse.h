@@ -55,6 +55,19 @@ typedef struct {
 } ARGPARSE_OPTS;
 
 
+/* Error values.  */
+#define ARGPARSE_IS_ARG            (-1)
+#define ARGPARSE_INVALID_OPTION    (-2)
+#define ARGPARSE_MISSING_ARG       (-3)
+#define ARGPARSE_KEYWORD_TOO_LONG  (-4)
+#define ARGPARSE_READ_ERROR        (-5)
+#define ARGPARSE_UNEXPECTED_ARG    (-6)
+#define ARGPARSE_INVALID_COMMAND   (-7)
+#define ARGPARSE_AMBIGUOUS_OPTION  (-8)
+#define ARGPARSE_AMBIGUOUS_COMMAND (-9)
+#define ARGPARSE_INVALID_ALIAS     (-10)
+#define ARGPARSE_OUT_OF_CORE       (-11)
+
 
 int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
 int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,

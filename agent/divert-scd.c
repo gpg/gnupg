@@ -335,7 +335,7 @@ divert_pksign (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  if (algo == GCRY_MD_USER_TLS_MD5SHA1)
+  if (algo == MD_USER_TLS_MD5SHA1)
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;

@@ -51,7 +51,7 @@
 * sm/export.c
 ** Return an error code or a status info per user ID.
 
-* scd/tlv.c
+* common/tlv.c
   The parse_sexp function should not go into this file.  Check whether
   we can change all S-expression handling code to make use of this
   function.
@@ -85,32 +85,12 @@
    Replace by an estream based implementation.
 
 * jnlib/
-** provide jnlib_malloc and try to remove all jnlib_xmalloc.
+** Try to remove all jnlib_xmalloc.
 
 * g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 
-
-* When switching to libgcrypt 1.4
-** scd#encode_md_for_card, g10#encode_md_value, sm@do_encode_md
-   Remove the extra test for a valid algorithm as libgcrypt will do it
-   then in gcry_md_algo_info.
-** skclist.c
-   Remove the hard coded constant in random_is_faked.
-** g10/ Replace DIGEST_ALGO_SHA224
-   We can't do that right now because it is only defined by newer
-   versions of libgcrypt. 
-** GCRY_MD_USER
-   Remove these definitions.
-** MY_GCRY_PK_ECDSA
-   Remove this.
-** MY_GCRY_MD_SHA224
-   Remove this.
-
-
 * Extend selinux support to other modules
-
-* Remove -sat PGP2 compatibility hack
 
 * UTF-8 specific TODOs
   None.

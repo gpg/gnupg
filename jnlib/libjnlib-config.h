@@ -65,13 +65,15 @@
 /* Malloc functions to be used by jnlib.  */
 #define jnlib_malloc(a)     gcry_malloc( (a) )
 #define jnlib_calloc(a,b)   gcry_calloc( (a), (b) )
+#define jnlib_realloc(a,b)  gcry_realloc( (a), (b) )
+#define jnlib_strdup(a)     gcry_strdup( (a) )
 #define jnlib_xmalloc(a)    gcry_xmalloc( (a) )
 #define jnlib_xcalloc(a,b)  gcry_xcalloc( (a), (b) )
 #define jnlib_xrealloc(a,n) gcry_xrealloc( (a), (n) )
 #define jnlib_xstrdup(a)    gcry_xstrdup( (a) )
 #define jnlib_free(a)	    gcry_free( (a) )
 
-/* Logging functions to be jused by jnlib.  */
+/* Logging functions to be used by jnlib.  */
 #define jnlib_log_debug    log_debug
 #define jnlib_log_info	   log_info
 #define jnlib_log_error    log_error

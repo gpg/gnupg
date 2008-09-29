@@ -346,9 +346,7 @@ match_dsa_hash (unsigned int qbytes)
   if (qbytes <= 20)
     return DIGEST_ALGO_SHA1;
 
-  /* SHA244 is only available with libgcrypt 1.4 - thus do a runtime
-     test.  */
-  if (qbytes <= 28 && !gcry_md_test_algo (DIGEST_ALGO_SHA224))
+  if (qbytes <= 28)
     return DIGEST_ALGO_SHA224;
 
   if (qbytes <= 32)

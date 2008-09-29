@@ -33,10 +33,10 @@
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
-#ifndef GCRY_MD_USER
-#define GCRY_MD_USER 1024
+#ifndef GCRY_MODULE_ID_USER
+#define GCRY_MODULE_ID_USER 1024
 #endif
-#define GCRY_MD_USER_TLS_MD5SHA1 (GCRY_MD_USER+1)
+#define MD_USER_TLS_MD5SHA1 (GCRY_MODULE_ID_USER+1)
 
 /* Maximum length of a digest.  */
 #define MAX_DIGEST_LEN 36

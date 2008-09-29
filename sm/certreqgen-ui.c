@@ -300,7 +300,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
 
   goto leave;
  mem_error:
-  log_error (_("resource problem: out or core\n"));
+  log_error (_("resource problem: out of core\n"));
  leave:
   es_fclose (fp);
   xfree (keytype);         

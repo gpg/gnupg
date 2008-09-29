@@ -16,6 +16,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * [gpg] New options --with-sig-list and --with-sig-check.
 
+ * [gpg] The option "-sat" is no longer an alias for --clearsign.
+
  * [gpgsm] Made --output option work with --export-secret-key-p12.
 
  * gpg-connect-agent accepts commands given as command line arguments.
@@ -32,6 +34,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * Admin PINs are cached again (bug in 2.0.9).
 
  * Support for version 2 OpenPGP cards.
+
+ * Libgcrypt 1.4 is now required.
 
 
 Noteworthy changes in version 2.0.9 (2008-03-26)

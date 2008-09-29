@@ -33,9 +33,6 @@
 #include "keydb.h"
 #include "i18n.h"
 
-/* Remove this if libgcrypt 1.4 is required. */
-#define MY_GCRY_MD_SHA224  11
-
 
 static void
 hash_data (int fd, gcry_md_hd_t md)
@@ -411,7 +408,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         {
         case GCRY_MD_SHA1:   oid = "1.3.14.3.2.26"; break;
         case GCRY_MD_RMD160: oid = "1.3.36.3.2.1"; break;
-        case MY_GCRY_MD_SHA224: oid = "2.16.840.1.101.3.4.2.4"; break;
+        case GCRY_MD_SHA224: oid = "2.16.840.1.101.3.4.2.4"; break;
         case GCRY_MD_SHA256: oid = "2.16.840.1.101.3.4.2.1"; break;
         case GCRY_MD_SHA384: oid = "2.16.840.1.101.3.4.2.2"; break;
         case GCRY_MD_SHA512: oid = "2.16.840.1.101.3.4.2.3"; break;

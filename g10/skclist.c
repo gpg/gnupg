@@ -41,18 +41,7 @@
 int
 random_is_faked (void)
 {
-  /* We use a runtime check to allow for slow migrattion of libgcrypt.
-     We can't use the constant becuase that one is actually an enum
-     value.  */
-  gpg_error_t err = gcry_control ( 51 /*GCRYCTL_FAKED_RANDOM_P*/, 0);
-
-  if (!err)
-    return 0;
-  if (gpg_err_code (err) != GPG_ERR_INV_OP)
-    return 1;
-  log_info ("WARNING: libgcrypt too old.\n");
-  log_info ("         can't check whether we are in faked RNG mode\n");
-  return 0; /* Need to return false.  */
+  return !!gcry_control ( GCRYCTL_FAKED_RANDOM_P, 0);
 }
 
 

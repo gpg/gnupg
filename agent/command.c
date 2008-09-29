@@ -597,7 +597,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
       else if (has_option (line, "--hash=md5"))
         algo = GCRY_MD_MD5;
       else if (has_option (line, "--hash=tls-md5sha1"))
-        algo = GCRY_MD_USER_TLS_MD5SHA1;
+        algo = MD_USER_TLS_MD5SHA1;
       else
         return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
     }
@@ -622,7 +622,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
   n /= 2;
-  if (algo == GCRY_MD_USER_TLS_MD5SHA1 && n == 36)
+  if (algo == MD_USER_TLS_MD5SHA1 && n == 36)
     ;
   else if (n != 16 && n != 20 && n != 24 && n != 32)
     return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");

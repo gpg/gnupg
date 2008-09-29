@@ -2948,7 +2948,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       
       mse[0] = 4;    /* Length of the template. */
       mse[1] = 0x80; /* Algorithm reference tag. */
-      if (hashalgo == GCRY_MD_USER_TLS_MD5SHA1)
+      if (hashalgo == MD_USER_TLS_MD5SHA1)
         mse[2] = 0x01; /* Let card do pkcs#1 0xFF padding. */
       else
         mse[2] = 0x02; /* RSASSA-PKCS1-v1.5 using SHA1. */
@@ -3124,7 +3124,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (indatalen == 36)
     {
       /* No ASN.1 container used. */
-      if (hashalgo != GCRY_MD_USER_TLS_MD5SHA1)
+      if (hashalgo != MD_USER_TLS_MD5SHA1)
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
     }
@@ -3187,7 +3187,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       return err;
     }
 
-  if (hashalgo == GCRY_MD_USER_TLS_MD5SHA1)
+  if (hashalgo == MD_USER_TLS_MD5SHA1)
     err = iso7816_compute_ds (app->slot, data, 36, outdata, outdatalen);
   else if (no_data_padding)
     err = iso7816_compute_ds (app->slot, data+15, 20, outdata, outdatalen);
@@ -3226,7 +3226,7 @@ do_auth (app_t app, const char *keyidstr,
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
-  algo = indatalen == 36? GCRY_MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
+  algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
   return do_sign (app, keyidstr, algo, pincb, pincb_arg, 
                   indata, indatalen, outdata, outdatalen);
 }

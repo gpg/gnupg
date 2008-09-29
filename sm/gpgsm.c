@@ -500,17 +500,13 @@ static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
 
-/* Remove this if libgcrypt 1.3.0 is required. */
-#define MY_GCRY_PK_ECDSA  301
-
-
 static int
 our_pk_test_algo (int algo)
 {
   switch (algo)
     {
     case GCRY_PK_RSA:
-    case MY_GCRY_PK_ECDSA:
+    case GCRY_PK_ECDSA:
       return gcry_pk_test_algo (algo);
     default:
       return 1;

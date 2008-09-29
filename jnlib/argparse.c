@@ -34,6 +34,7 @@
 #include "argparse.h"
 
 
+
 /*********************************
  * @Summary arg_parse
  *  #include <wk/lib.h>
@@ -172,18 +173,20 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
       
       if (filename)
         {
-          if ( arg->r_opt == -6 )
+          if ( arg->r_opt == ARGPARSE_UNEXPECTED_ARG )
             s = _("argument not expected");
-          else if ( arg->r_opt == -5 )
+          else if ( arg->r_opt == ARGPARSE_READ_ERROR )
             s = _("read error");
-          else if ( arg->r_opt == -4 )
+          else if ( arg->r_opt == ARGPARSE_KEYWORD_TOO_LONG )
             s = _("keyword too long");
-          else if ( arg->r_opt == -3 )
+          else if ( arg->r_opt == ARGPARSE_MISSING_ARG )
             s = _("missing argument");
-          else if ( arg->r_opt == -7 )
+          else if ( arg->r_opt == ARGPARSE_INVALID_COMMAND )
             s = _("invalid command");
-          else if ( arg->r_opt == -10 )
+          else if ( arg->r_opt == ARGPARSE_INVALID_ALIAS )
             s = _("invalid alias definition");
+          else if ( arg->r_opt == ARGPARSE_OUT_OF_CORE )
+            s = _("out of core");
           else
             s = _("invalid option");
           jnlib_log_error ("%s:%u: %s\n", filename, *lineno, s);
@@ -192,17 +195,19 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
         {
           s = arg->internal.last? arg->internal.last:"[??]";
             
-          if ( arg->r_opt == -3 )
+          if ( arg->r_opt == ARGPARSE_MISSING_ARG )
             jnlib_log_error (_("missing argument for option \"%.50s\"\n"), s);
-          else if ( arg->r_opt == -6 )
+          else if ( arg->r_opt == ARGPARSE_UNEXPECTED_ARG )
             jnlib_log_error (_("option \"%.50s\" does not expect an "
                                "argument\n"), s );
-          else if ( arg->r_opt == -7 )
+          else if ( arg->r_opt == ARGPARSE_INVALID_COMMAND )
             jnlib_log_error (_("invalid command \"%.50s\"\n"), s);
-          else if ( arg->r_opt == -8 )
+          else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_OPTION )
             jnlib_log_error (_("option \"%.50s\" is ambiguous\n"), s);
-          else if ( arg->r_opt == -9 )
+          else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_OPTION )
             jnlib_log_error (_("command \"%.50s\" is ambiguous\n"),s );
+          else if ( arg->r_opt == ARGPARSE_OUT_OF_CORE )
+            jnlib_log_error ("%s\n", _("out of core\n"));
           else
             jnlib_log_error (_("invalid option \"%.50s\"\n"), s);
 	}
@@ -251,181 +256,246 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
  * Note: Abbreviation of options is here not allowed.
  */
 int
-optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
+optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
 	       ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
-    int state, i, c;
-    int idx=0;
-    char keyword[100];
-    char *buffer = NULL;
-    size_t buflen = 0;
-    int inverse=0;
-    int in_alias=0;
+  int state, i, c;
+  int idx=0;
+  char keyword[100];
+  char *buffer = NULL;
+  size_t buflen = 0;
+  int in_alias=0;
+  
+  if (!fp) /* Divert to to arg_parse() in this case.  */
+    return arg_parse (arg, opts);
+  
+  initialize (arg, filename, lineno);
 
-    if( !fp ) /* same as arg_parse() in this case */
-	return arg_parse( arg, opts );
+  /* Find the next keyword.  */
+  state = i = 0;
+  for (;;)
+    {
+      c = getc (fp);
+      if (c == '\n' || c== EOF )
+        {
+          if ( c != EOF )
+            ++*lineno;
+          if (state == -1)
+            break;
+          else if (state == 2)
+            {
+              keyword[i] = 0;
+              for (i=0; opts[i].short_opt; i++ )
+                {
+                  if (opts[i].long_opt && !strcmp (opts[i].long_opt, keyword))
+                    break;
+                }
+              idx = i;
+              arg->r_opt = opts[idx].short_opt;
+              if (!opts[idx].short_opt )
+                arg->r_opt = ((opts[idx].flags & 256)
+                              ? ARGPARSE_INVALID_COMMAND
+                              : ARGPARSE_INVALID_OPTION);
+              else if (!(opts[idx].flags & 7)) 
+                arg->r_type = 0; /* Does not take an arg. */
+              else if ((opts[idx].flags & 8) )  
+                arg->r_type = 0; /* Arg is optional.  */
+              else
+                arg->r_opt = ARGPARSE_MISSING_ARG;
 
-    initialize( arg, filename, lineno );
-
-    /* find the next keyword */
-    state = i = 0;
-    for(;;) {
-	c=getc(fp);
-	if( c == '\n' || c== EOF ) {
-	    if( c != EOF )
-		++*lineno;
-	    if( state == -1 )
-		break;
-	    else if( state == 2 ) {
-		keyword[i] = 0;
-		for(i=0; opts[i].short_opt; i++ )
-		    if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
-			break;
-		idx = i;
-		arg->r_opt = opts[idx].short_opt;
-		if( inverse ) /* this does not have an effect, hmmm */
-		    arg->r_opt = -arg->r_opt;
-		if( !opts[idx].short_opt )   /* unknown command/option */
-		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
-		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
-		    arg->r_type = 0;	       /* okay */
-		else if( (opts[idx].flags & 8) )  /* argument is optional */
-                    arg->r_type = 0;	       /* okay */
-		else			       /* required argument */
-		    arg->r_opt = -3;	       /* error */
-		break;
+              break;
 	    }
-	    else if( state == 3 ) {	       /* no argument found */
-		if( in_alias )
-		    arg->r_opt = -3;	       /* error */
-		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
-		    arg->r_type = 0;	       /* okay */
-		else if( (opts[idx].flags & 8) )  /* no optional argument */
-		    arg->r_type = 0;	       /* okay */
-		else			       /* no required argument */
-		    arg->r_opt = -3;	       /* error */
-		break;
-	    }
-	    else if( state == 4 ) {	/* have an argument */
-		if( in_alias ) {
-		    if( !buffer )
-			arg->r_opt = -6;
-		    else {
-			char *p;
+          else if (state == 3)
+            {	
+              /* No argument found.  */
+              if (in_alias)
+                arg->r_opt = ARGPARSE_MISSING_ARG;
+              else if (!(opts[idx].flags & 7)) 
+                arg->r_type = 0; /* Does not take an arg. */
+              else if ((opts[idx].flags & 8))  
+                arg->r_type = 0; /* No optional argument. */
+              else
+                arg->r_opt = ARGPARSE_MISSING_ARG;
 
-			buffer[i] = 0;
-			p = strpbrk( buffer, " \t" );
-			if( p ) {
-			    *p++ = 0;
-			    trim_spaces( p );
+              break;
+	    }
+          else if (state == 4)
+            {
+              /* Has an argument. */
+              if (in_alias) 
+                {
+                  if (!buffer)
+                    arg->r_opt = ARGPARSE_UNEXPECTED_ARG;
+                  else 
+                    {
+                      char *p;
+                      
+                      buffer[i] = 0;
+                      p = strpbrk (buffer, " \t");
+                      if (p)
+                        {
+                          *p++ = 0;
+                          trim_spaces (p);
 			}
-			if( !p || !*p ) {
-			    jnlib_free( buffer );
-			    arg->r_opt = -10;
-			}
-			else {
-			    store_alias( arg, buffer, p );
-			}
+                      if (!p || !*p)
+                        {
+                          jnlib_free (buffer);
+                          arg->r_opt = ARGPARSE_INVALID_ALIAS;
+                        }
+                      else
+                        {
+                          store_alias (arg, buffer, p);
+                        }
 		    }
 		}
-		else if( !(opts[idx].flags & 7) )  /* does not take an arg */
-		    arg->r_opt = -6;	    /* error */
-		else {
-		    char *p;
-		    if( !buffer ) {
-			keyword[i] = 0;
-			buffer = jnlib_xstrdup(keyword);
-		    }
-		    else
-			buffer[i] = 0;
+              else if (!(opts[idx].flags & 7))
+                arg->r_opt = ARGPARSE_UNEXPECTED_ARG;
+              else
+                {
+                  char *p;
 
-		    trim_spaces( buffer );
-		    p = buffer;
-		    if( *p == '"' ) { /* remove quotes */
-			p++;
-			if( *p && p[strlen(p)-1] == '"' )
-			    p[strlen(p)-1] = 0;
+                  if (!buffer)
+                    {
+                      keyword[i] = 0;
+                      buffer = jnlib_strdup (keyword);
+                      if (!buffer)
+                        arg->r_opt = ARGPARSE_OUT_OF_CORE;
 		    }
-		    if( !set_opt_arg(arg, opts[idx].flags, p) )
+                  else
+                    buffer[i] = 0;
+                  
+                  if (buffer)
+                    {
+                      trim_spaces (buffer);
+                      p = buffer;
+                      if (*p == '"')
+                        { 
+                          /* Remove quotes. */
+                          p++;
+                          if (*p && p[strlen(p)-1] == '\"' )
+                            p[strlen(p)-1] = 0;
+                        }
+                      if (!set_opt_arg (arg, opts[idx].flags, p))
 			jnlib_free(buffer);
-		}
-		break;
-	    }
-	    else if( c == EOF ) {
-		if( ferror(fp) )
-		    arg->r_opt = -5;   /* read error */
-		else
-		    arg->r_opt = 0;    /* eof */
-		break;
-	    }
-	    state = 0;
-	    i = 0;
-	}
-	else if( state == -1 )
-	    ; /* skip */
-	else if( !state && isspace(c) )
-	    ; /* skip leading white space */
-	else if( !state && c == '#' )
-	    state = 1;	/* start of a comment */
-	else if( state == 1 )
-	    ; /* skip comments */
-	else if( state == 2 && isspace(c) ) {
-	    keyword[i] = 0;
-	    for(i=0; opts[i].short_opt; i++ )
-		if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
-		    break;
-	    idx = i;
-	    arg->r_opt = opts[idx].short_opt;
-	    if( !opts[idx].short_opt ) {
-		if( !strcmp( keyword, "alias" ) ) {
-		    in_alias = 1;
-		    state = 3;
-		}
-		else {
-		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
-		    state = -1;        /* skip rest of line and leave */
-		}
-	    }
-	    else
-		state = 3;
-	}
-	else if( state == 3 ) { /* skip leading spaces of the argument */
-	    if( !isspace(c) ) {
-		i = 0;
-		keyword[i++] = c;
-		state = 4;
-	    }
-	}
-	else if( state == 4 ) { /* collect the argument */
-	    if( buffer ) {
-		if( i < buflen-1 )
-		    buffer[i++] = c;
-		else {
-		    buflen += 50;
-		    buffer = jnlib_xrealloc(buffer, buflen);
-		    buffer[i++] = c;
-		}
-	    }
-	    else if( i < DIM(keyword)-1 )
-		keyword[i++] = c;
-	    else {
-		buflen = DIM(keyword)+50;
-		buffer = jnlib_xmalloc(buflen);
-		memcpy(buffer, keyword, i);
-		buffer[i++] = c;
-	    }
-	}
-	else if( i >= DIM(keyword)-1 ) {
-	    arg->r_opt = -4;   /* keyword to long */
-	    state = -1;        /* skip rest of line and leave */
-	}
-	else {
-	    keyword[i++] = c;
-	    state = 2;
-	}
-    }
+                    }
+                }
+              break;
+            }
+          else if (c == EOF)
+            {
+              if (ferror (fp))
+                arg->r_opt = ARGPARSE_READ_ERROR;
+              else
+                arg->r_opt = 0; /* EOF. */
+              break;
+            }
+          state = 0;
+          i = 0;
+        }
+      else if (state == -1)
+        ; /* Skip. */
+      else if (state == 0 && isascii (c) && isspace(c))
+        ; /* Skip leading white space.  */
+      else if (state == 0 && c == '#' )
+        state = 1;	/* Start of a comment.  */
+      else if (state == 1)
+        ; /* Skip comments. */
+      else if (state == 2 && isascii (c) && isspace(c))
+        {
+          /* Check keyword.  */
+          keyword[i] = 0;
+          for (i=0; opts[i].short_opt; i++ )
+            if (opts[i].long_opt && !strcmp (opts[i].long_opt, keyword))
+              break;
+          idx = i;
+          arg->r_opt = opts[idx].short_opt;
+          if (!opts[idx].short_opt)
+            {
+              if (!strcmp (keyword, "alias"))
+                {
+                  in_alias = 1;
+                  state = 3;
+                }
+              else 
+                {
+                  arg->r_opt = ((opts[idx].flags & 256)
+                                ? ARGPARSE_INVALID_COMMAND
+                                : ARGPARSE_INVALID_OPTION);
+                  state = -1; /* Skip rest of line and leave.  */
+                }
+            }
+          else
+            state = 3;
+        }
+      else if (state == 3)
+        {
+          /* Skip leading spaces of the argument.  */
+          if (!isascii (c) || !isspace(c))
+            {
+              i = 0;
+              keyword[i++] = c;
+              state = 4;
+            }
+        }
+      else if (state == 4)
+        { 
+          /* Collect the argument. */
+          if (buffer)
+            {
+              if (i < buflen-1)
+                buffer[i++] = c;
+              else 
+                {
+                  char *tmp;
+                  size_t tmplen = buflen + 50;
 
-    return arg->r_opt;
+                  tmp = jnlib_realloc (buffer, tmplen);
+                  if (tmp)
+                    {
+                      buflen = tmplen;
+                      buffer = tmp;
+                      buffer[i++] = c;
+                    }
+                  else
+                    {
+                      jnlib_free (buffer);
+                      arg->r_opt = ARGPARSE_OUT_OF_CORE;
+                      break;
+                    }
+                }
+            }
+          else if (i < DIM(keyword)-1)
+            keyword[i++] = c;
+          else 
+            {
+              size_t tmplen = DIM(keyword) + 50;
+              buffer = jnlib_malloc (tmplen);
+              if (buffer)
+                {
+                  buflen = tmplen;
+                  memcpy(buffer, keyword, i);
+                  buffer[i++] = c;
+                }
+              else
+                {
+                  arg->r_opt = ARGPARSE_OUT_OF_CORE;
+                  break;
+                }
+            }
+        }
+      else if (i >= DIM(keyword)-1)
+        {
+          arg->r_opt = ARGPARSE_KEYWORD_TOO_LONG;
+          state = -1; /* Skip rest of line and leave.  */
+        }
+      else 
+        {
+          keyword[i++] = c;
+          state = 2;
+        }
+    }
+  
+  return arg->r_opt;
 }
 
 
@@ -504,7 +574,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
     arg->internal.last = s;
 
     if( arg->internal.stopped && (arg->flags & (1<<1)) ) {
-	arg->r_opt = -1;  /* not an option but a argument */
+	arg->r_opt = ARGPARSE_IS_ARG;  /* Not an option but an argument.  */
 	arg->r_type = 2;
 	arg->r.ret_str = s;
 	argc--; argv++; idx++; /* set to next one */
@@ -551,10 +621,10 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    exit(0);
 	}
 
-	if( i == -2 ) /* ambiguous option */
-	    arg->r_opt = -8;
+	if( i == -2 )
+	    arg->r_opt = ARGPARSE_AMBIGUOUS_OPTION;
 	else if( i == -1 ) {
-	    arg->r_opt = -2;
+	    arg->r_opt = ARGPARSE_INVALID_OPTION;
 	    arg->r.ret_str = s+2;
 	}
 	else
@@ -573,7 +643,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		arg->r_type = 0;	       /* because it is optional */
 	    }
 	    else if( !s2 ) {
-		arg->r_opt = -3; /* missing argument */
+		arg->r_opt = ARGPARSE_MISSING_ARG;
 	    }
 	    else if( !argpos && *s2 == '-' && (opts[i].flags & 8) ) {
 		/* the argument is optional and the next seems to be
@@ -622,7 +692,8 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 
 	arg->r_opt = opts[i].short_opt;
 	if( !opts[i].short_opt ) {
-	    arg->r_opt = (opts[i].flags & 256)? -7:-2;
+	    arg->r_opt = (opts[i].flags & 256)?
+              ARGPARSE_INVALID_COMMAND:ARGPARSE_INVALID_OPTION;
 	    arg->internal.inarg++; /* point to the next arg */
 	    arg->r.ret_str = s;
 	}
@@ -637,7 +708,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		    arg->r_type = 0;		   /* because it is optional */
 		}
 		else if( !s2 ) {
-		    arg->r_opt = -3; /* missing argument */
+		    arg->r_opt = ARGPARSE_MISSING_ARG;
 		}
 		else if( *s2 == '-' && s2[1] && (opts[i].flags & 8) ) {
 		    /* the argument is optional and the next seems to be
@@ -662,7 +733,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	}
     }
     else if( arg->flags & (1<<2) ) {
-	arg->r_opt = -1;  /* not an option but a argument */
+	arg->r_opt = ARGPARSE_IS_ARG;
 	arg->r_type = 2;
 	arg->r.ret_str = s;
 	argc--; argv++; idx++; /* set to next one */

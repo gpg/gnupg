@@ -181,7 +181,7 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
       gcry_sexp_t s_hash = NULL;
 
       /* Put the hash into a sexp */
-      if (ctrl->digest.algo == GCRY_MD_USER_TLS_MD5SHA1)
+      if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
         rc = do_encode_raw_pkcs1 (ctrl->digest.value,
                                   ctrl->digest.valuelen,
                                   gcry_pk_get_nbits (s_skey),

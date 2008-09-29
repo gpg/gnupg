@@ -1,3 +1,10 @@
+2008-09-29  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (ARGERR_): Use constants for error values.
+	(optfile_parse): Prettify.  Replace xmalloc and xrealloc by malloc
+	and realloc.
+	* libjnlib-config.h (jnlib_strdup, jnlib_realloc): New.
+
 2008-06-26  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (print_sanitized_buffer2): Loose check for control
