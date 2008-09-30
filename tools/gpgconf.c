@@ -263,6 +263,8 @@ main (int argc, char **argv)
       get_outfp (&outfp);
       fprintf (outfp, "sysconfdir:%s\n",
 	       gc_percent_escape (gnupg_sysconfdir ()));
+      fprintf (outfp, "bindir:%s\n",
+	       gc_percent_escape (gnupg_bindir ()));
       break;
     }
 
