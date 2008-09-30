@@ -1,3 +1,7 @@
+2008-09-30  David Ammouial  <da-debian-br@weeno.net>  (wk)
+
+	* fr.po: Fix bug #922.
+
 2008-07-21  Werner Koch  <wk@g10code.com>
 
 	* sv.po: Adjust special size entry.
