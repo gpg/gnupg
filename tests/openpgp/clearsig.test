@@ -18,7 +18,7 @@
 # it is clear text and not binary text.
 # ======================================
 for i in $plain_files plain-large ; do
-    echo "$usrpass1" | $GPG --passphrase-fd 0 -sat -o x --yes $i
+    echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes $i
     $GPG --verify x
 done
 
@@ -29,7 +29,7 @@ done
 
 if have_pubkey_algo "RSA"; then
   for i in $plain_files plain-large ; do
-      $GPG -u $usrname3 --rfc1991 --digest-algo md5 -sat -o x --yes $i
+      $GPG -u $usrname3 --rfc1991 --digest-algo md5 --clearsign -o x --yes $i
       $GPG --verify x
   done
 fi

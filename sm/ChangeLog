@@ -1,3 +1,8 @@
+2008-09-30  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_getinfo): New subcommand agent-check.
+	* call-agent.c (gpgsm_agent_send_nop): New.
+
 2008-09-29  Werner Koch  <wk@g10code.com>
 
 	* certcheck.c (MY_GCRY_PK_ECDSA): Remove.  Change users to

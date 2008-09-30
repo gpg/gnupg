@@ -1016,6 +1016,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
 
      version     - Return the version of the program.
      pid         - Return the process id of the server.
+     agent-check - Return success if the agent is running.
 
  */
 static int
@@ -1034,6 +1035,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
       snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "agent-check"))
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+      rc = gpgsm_agent_send_nop (ctrl);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

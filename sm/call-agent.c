@@ -328,7 +328,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  membuf_t data;
+   membuf_t data;
   struct cipher_parm_s cipher_parm;
   size_t n, len;
   char *p, *buf, *endp;
@@ -802,3 +802,21 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
                         default_inq_cb, ctrl, NULL, NULL);
   return rc;
 }
+
+
+
+/* Return 0 if the agent is alive.  This is useful to make sure that
+   an agent has been started. */
+gpg_error_t
+gpgsm_agent_send_nop (ctrl_t ctrl)
+{
+  int rc;
+
+  rc = start_agent (ctrl);
+  if (!rc)
+    rc = assuan_transact (agent_ctx, "NOP",
+                          NULL, NULL, NULL, NULL, NULL, NULL);
+  return rc;
+}
+
+
