@@ -1,3 +1,7 @@
+2008-10-01  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (Controlling gpg-connect-agent): Describe /datafile.
+
 2008-09-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (OpenPGP Key Management): Clarify setpref a bit.

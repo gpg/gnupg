@@ -1,3 +1,8 @@
+2008-10-01  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (main): New command datafile.
+	(read_and_print_response): Print to the defined datafile.
+
 2008-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpgconf.c (main) <aListDirs>: Print the bindir.

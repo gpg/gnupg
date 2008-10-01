@@ -1280,6 +1280,14 @@ Use content of @var{file} for inquiries with @var{name}.
 Run @var{prog} for inquiries matching @var{name} and pass the
 entire line to it as command line arguments.
 
+@item /datafile @var{name}
+Write all data lines from the server to the file @var{name}.  The file
+is opened for writing and created if it does not exists.  An existsing
+file is first truncated to 0.  The data written to the file fully
+decoded.  Using a singel dash for @var{name} writes to stdout.  The
+file is kept open until a new file is set using this command or this
+command is used without an argument.
+
 @item /showdef
 Print all definitions
 

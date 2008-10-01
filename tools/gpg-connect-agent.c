@@ -137,6 +137,8 @@ typedef struct loopline_s *loopline_t;
 /* This is used to store the pid of the server.  */
 static pid_t server_pid = (pid_t)(-1);
 
+/* The current datasink file or NULL.  */
+static FILE *current_datasink;
 
 /* A list of open file descriptors. */
 static struct
@@ -1442,6 +1444,29 @@ main (int argc, char **argv)
               else
                 add_definq (p, 0, 1);
             }
+          else if (!strcmp (cmd, "datafile"))
+            {
+              const char *fname;
+
+              if (current_datasink)
+                {
+                  if (current_datasink != stdout)
+                    fclose (current_datasink);
+                  current_datasink = NULL;
+                }
+              tmpline = opt.enable_varsubst? substitute_line (p) : NULL;
+              fname = tmpline? tmpline : p;
+              if (fname && !strcmp (fname, "-"))
+                current_datasink = stdout;
+              else if (fname && *fname)
+                {
+                  current_datasink = fopen (fname, "wb");
+                  if (!current_datasink)
+                    log_error ("can't open `%s': %s\n", 
+                               fname, strerror (errno));
+                }
+              xfree (tmpline);
+            }
           else if (!strcmp (cmd, "showdef"))
             {
               show_definq ();
@@ -1669,6 +1694,7 @@ main (int argc, char **argv)
 "/definq NAME VAR       Use content of VAR for inquiries with NAME.\n"
 "/definqfile NAME FILE  Use content of FILE for inquiries with NAME.\n"
 "/definqprog NAME PGM   Run PGM for inquiries with NAME.\n"
+"/datafile [NAME]       Write all D line content to file NAME.\n"
 "/showdef               Print all definitions.\n"
 "/cleardef              Delete all definitions.\n"
 "/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
@@ -1679,7 +1705,7 @@ main (int argc, char **argv)
 "/serverpid             Retrieve the pid of the server.\n"
 "/[no]hex               Enable hex dumping of received data lines.\n"
 "/[no]decode            Enable decoding of received data lines.\n"
-"/[no]subst             Enable varibale substitution.\n"
+"/[no]subst             Enable variable substitution.\n"
 "/run FILE              Run commands from FILE.\n"
 "/if VAR                Begin conditional block controlled by VAR.\n"
 "/while VAR             Begin loop controlled by VAR.\n"
@@ -1872,7 +1898,25 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
       if (linelen >= 1
           && line[0] == 'D' && line[1] == ' ')
         {
-          if (opt.hex)
+          if (current_datasink)
+            {
+              const unsigned char *s;
+              int c = 0;
+
+              for (j=2, s=(unsigned char*)line+2; j < linelen; j++, s++ )
+                {
+                  if (*s == '%' && j+2 < linelen)
+                    { 
+                      s++; j++;
+                      c = xtoi_2 ( s );
+                      s++; j++;
+                    }
+                  else
+                    c = *s;
+                  putc (c, current_datasink);
+                }
+            }
+          else if (opt.hex)
             {
               for (i=2; i < linelen; )
                 {
@@ -1940,7 +1984,8 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
         {
           if (need_lf)
             {
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                putchar ('\n');
               need_lf = 0;
             }
 
@@ -1948,15 +1993,21 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
               && line[0] == 'S' 
               && (line[1] == '\0' || line[1] == ' '))
             {
-              fwrite (line, linelen, 1, stdout);
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                {
+                  fwrite (line, linelen, 1, stdout);
+                  putchar ('\n');
+                }
             }  
           else if (linelen >= 2
                    && line[0] == 'O' && line[1] == 'K'
                    && (line[2] == '\0' || line[2] == ' '))
             {
-              fwrite (line, linelen, 1, stdout);
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                {
+                  fwrite (line, linelen, 1, stdout);
+                  putchar ('\n');
+                }
               set_int_var ("?", 0);
               return 0;
             }
@@ -1970,8 +2021,11 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
               if (!errval)
                 errval = -1;
               set_int_var ("?", errval);
-              fwrite (line, linelen, 1, stdout);
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                {
+                  fwrite (line, linelen, 1, stdout);
+                  putchar ('\n');
+                }
               *r_goterr = 1;
               return 0;
             }  
@@ -1981,8 +2035,11 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
                    && line[6] == 'E' 
                    && (line[7] == '\0' || line[7] == ' '))
             {
-              fwrite (line, linelen, 1, stdout);
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                {
+                  fwrite (line, linelen, 1, stdout);
+                  putchar ('\n');
+                }
               if (!handle_inquire (ctx, line))
                 assuan_write_line (ctx, "CANCEL");
             }
@@ -1990,8 +2047,11 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
                    && line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
                    && (line[3] == '\0' || line[3] == ' '))
             {
-              fwrite (line, linelen, 1, stdout);
-              putchar ('\n');
+              if (!current_datasink || current_datasink != stdout)
+                {
+                  fwrite (line, linelen, 1, stdout);
+                  putchar ('\n');
+                }
               /* Received from server, thus more responses are expected.  */
             }
           else
