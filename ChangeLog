@@ -1,3 +1,8 @@
+2008-10-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac, acinclude.m4: Remove GNUPG_CHECK_DOCBOOK_TO_TEXI
+	as we no longer use it.  Noted by John Clizbe.
+
 2008-08-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Use printf for the most portable SVN version

@@ -1,5 +1,6 @@
 # macros to configure gnupg
-# Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006, 2007,
+#               2008 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -88,23 +89,6 @@ dnl *** No need to worry about this warning.
 dnl ***]])
 dnl     fi
    ])       
-
-dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
-dnl
-AC_DEFUN([GNUPG_CHECK_DOCBOOK_TO_TEXI],
-  [
-    AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
-    AC_MSG_CHECKING(for sgml to texi tools)
-    working_sgmltotexi=no
-    if test "$ac_cv_prog_DOCBOOK_TO_TEXI" = yes; then
-      if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
-            working_sgmltotexi=yes
-      fi
-    fi
-    AC_MSG_RESULT($working_sgmltotexi)
-    AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
-   ])       
-
 
 dnl GNUPG_CHECK_ENDIAN
 dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
