@@ -1,6 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -101,6 +101,8 @@ struct expando_args
   PKT_public_key *pk;
   PKT_secret_key *sk;
   byte imagetype;
+  int validity_info;
+  const char *validity_string;
 };
 
 char *pct_expando(const char *string,struct expando_args *args);

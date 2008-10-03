@@ -1,6 +1,6 @@
 /* keylist.c - print keys
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -882,7 +882,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    putchar('\n');
 
 	    if((opt.list_options&LIST_SHOW_PHOTOS) && uid->attribs!=NULL)
-	      show_photos(uid->attribs,uid->numattribs,pk,sk);
+	      show_photos(uid->attribs,uid->numattribs,pk,sk,uid);
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
 	  {

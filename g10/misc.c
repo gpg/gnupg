@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 
- *               2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -550,8 +550,6 @@ pct_expando(const char *string,struct expando_args *args)
 
   while(*ch!='\0')
     {
-      char *str=NULL;
-
       if(!done)
 	{
 	  /* 8192 is way bigger than we'll need here */
@@ -660,20 +658,44 @@ pct_expando(const char *string,struct expando_args *args)
 	      }
 	      break;
 
-	    case 't': /* e.g. "jpg" */
-	      str=image_type_to_string(args->imagetype,0);
-	      /* fall through */
-
-	    case 'T': /* e.g. "image/jpeg" */
-	      if(str==NULL)
-		str=image_type_to_string(args->imagetype,2);
-
-	      if(idx+strlen(str)<maxlen)
+	    case 'v': /* validity letters */
+	      if(args->validity_info && idx+1<maxlen)
 		{
-		  strcpy(&ret[idx],str);
-		  idx+=strlen(str);
+		  ret[idx++]=args->validity_info;
+		  ret[idx]='\0';
 		  done=1;
 		}
+	      break;
+
+	      /* The text string types */
+	    case 't':
+	    case 'T':
+	    case 'V':
+	      {
+		const char *str=NULL;
+
+		switch(*(ch+1))
+		  {
+		  case 't': /* e.g. "jpg" */
+		    str=image_type_to_string(args->imagetype,0);
+		    break;
+		  
+		  case 'T': /* e.g. "image/jpeg" */
+		    str=image_type_to_string(args->imagetype,2);
+		    break;
+
+		  case 'V': /* e.g. "full", "expired", etc. */
+		    str=args->validity_string;
+		    break;
+		  }
+
+		if(str && idx+strlen(str)<maxlen)
+		  {
+		    strcpy(&ret[idx],str);
+		    idx+=strlen(str);
+		    done=1;
+		  }
+	      }
 	      break;
 
 	    case '%':
