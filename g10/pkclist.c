@@ -239,7 +239,8 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		if((opt.verify_options&VERIFY_SHOW_PHOTOS)
 		   && un->pkt->pkt.user_id->attrib_data)
 		  show_photos(un->pkt->pkt.user_id->attribs,
-			      un->pkt->pkt.user_id->numattribs,pk,NULL);
+			      un->pkt->pkt.user_id->numattribs,pk,NULL,
+			      un->pkt->pkt.user_id);
 
 		p=utf8_to_native(un->pkt->pkt.user_id->name,
 				 un->pkt->pkt.user_id->len,0);

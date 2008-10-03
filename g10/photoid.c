@@ -1,5 +1,5 @@
 /* photoid.c - photo ID handling code
- * Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005, 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,6 +39,7 @@
 #include "main.h"
 #include "photoid.h"
 #include "ttyio.h"
+#include "trustdb.h"
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *
@@ -158,7 +159,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
          "user" may not be able to dismiss a viewer window! */
       if(opt.command_fd==-1)
 	{
-	  show_photos(uid->attribs,uid->numattribs,pk,NULL);
+	  show_photos(uid->attribs,uid->numattribs,pk,NULL,uid);
 	  switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
 					 _("Is this photo correct (y/N/q)? ")))
 	    {
@@ -289,8 +290,10 @@ get_default_photo_command(void)
 }
 #endif
 
-void show_photos(const struct user_attribute *attrs,
-		 int count,PKT_public_key *pk,PKT_secret_key *sk)
+void
+show_photos(const struct user_attribute *attrs,
+	    int count,PKT_public_key *pk,PKT_secret_key *sk,
+	    PKT_user_id *uid)
 {
 #ifndef DISABLE_PHOTO_VIEWER
   int i;
@@ -301,6 +304,8 @@ void show_photos(const struct user_attribute *attrs,
   memset(&args,0,sizeof(args));
   args.pk=pk;
   args.sk=sk;
+  args.validity_info=get_validity_info(pk,uid);
+  args.validity_string=get_validity_string(pk,uid);
 
   if(pk)
     keyid_from_pk(pk,kid);

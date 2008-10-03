@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1800,7 +1800,8 @@ check_sig_and_print( CTX c, KBNODE node )
 
 		    if(opt.verify_options&VERIFY_SHOW_PHOTOS)
 		      show_photos(un->pkt->pkt.user_id->attribs,
-				  un->pkt->pkt.user_id->numattribs,pk,NULL);
+				  un->pkt->pkt.user_id->numattribs,
+				  pk,NULL,un->pkt->pkt.user_id);
 		  }
 
 		p=utf8_to_native(un->pkt->pkt.user_id->name,

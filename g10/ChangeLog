@@ -1,3 +1,12 @@
+2008-10-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, mainproc.c (check_sig_and_print),
+	 keylist.c (list_keyblock_print), pkclist.c (do_edit_ownertrust),
+	 keyedit.c (menu_showphoto), photoid.c (generate_photo_id,
+	 show_photos), misc.c (pct_expando): Add %v and %V expandos so
+	 that displaying photo IDs can show the attribute validity
+	 tag (%v) and string (%V).  Originally by Daniel Gillmor.
+
 2008-09-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu): Fix bug where a modified keyring loses
