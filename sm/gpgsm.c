@@ -259,7 +259,7 @@ static ARGPARSE_OPTS opts[] = {
     { aListChain,   "list-chain",  256, N_("list certificate chain")}, 
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aKeygen,	   "gen-key",  256, "@" },
-    { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
+    { aDeleteKey, "delete-keys",256,N_("remove keys from the public keyring")},
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
     { aImport, "import",      256     , N_("import certificates")},
@@ -447,6 +447,7 @@ static ARGPARSE_OPTS opts[] = {
     { aListChain, "list-sigs",256, "@" }, /* alias */
     { aListChain, "check-sig",256, "@" }, /* alias */
     { aListChain, "check-sigs",256, "@"}, /* alias */
+    { aDeleteKey, "delete-key",256,"@"}, /* alias */
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},

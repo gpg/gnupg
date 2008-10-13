@@ -1,3 +1,7 @@
+2008-10-13  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: Add alias --delete-keys.
+
 2008-09-30  Werner Koch  <wk@g10code.com>
 
 	* server.c (cmd_getinfo): New subcommand agent-check.
