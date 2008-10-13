@@ -1,3 +1,8 @@
+2008-10-13  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (Certificate Management): Explain hot to delete the
+	secret key.
+
 2008-10-01  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (Controlling gpg-connect-agent): Describe /datafile.

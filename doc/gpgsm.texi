@@ -224,7 +224,13 @@ checked right before it is used.
 
 @item --delete-keys @var{pattern}
 @opindex delete-keys
-Delete the keys matching @var{pattern}.
+Delete the keys matching @var{pattern}.  Note that there is no command
+to delete the secret part of the key directly.  In case you need to do
+this, you should run the command @code{gpg --dump-secret-keys KEYID}
+before you delete the key, copy the string of hex-digits in the
+``keygrip'' line and delete the file consisting of these hex-digits
+and the suffix @code{.key} from the @file{private-keys-v1.d} directory
+below our GnuPG home directory (usually @file{~/.gnupg}).
 
 @item --export [@var{pattern}]
 @opindex export

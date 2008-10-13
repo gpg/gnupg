@@ -1312,7 +1312,7 @@ Close the file descriptor @var{fd}.  Warning: This command is
 experimental and might change in future versions.
 
 @item /showopen
-Show a listy of open files.
+Show a list of open files.
 
 @item /serverpid
 Send the Assuan command @command{GETINFO pid} to the server and store
