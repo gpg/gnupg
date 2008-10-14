@@ -102,8 +102,12 @@ struct server_local_s
   /* The Assuan context used by this session/server. */
   assuan_context_t assuan_ctx;
 
-  int event_signal;        /* Or 0 if not used. */
-
+#ifdef HAVE_W32_SYSTEM
+  unsigned long event_signal;   /* Or 0 if not used. */
+#else
+  int event_signal;             /* Or 0 if not used. */
+#endif
+  
   /* True if the card has been removed and a reset is required to
      continue operation. */
   int card_removed;        
@@ -165,6 +169,7 @@ update_card_removed (int slot, int value)
       {
         sl->card_removed = value;
       }
+  /* Let the card application layer know about the removal.  */
   if (value)
     application_notify_card_removed (slot);
 }
@@ -319,10 +324,16 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   if (!strcmp (key, "event-signal"))
     {
       /* A value of 0 is allowed to reset the event signal. */
+#ifdef HAVE_W32_SYSTEM
+      if (!*value)
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+      ctrl->server_local->event_signal = strtoul (value, NULL, 16);
+#else
       int i = *value? atoi (value) : -1;
       if (i < 0)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
       ctrl->server_local->event_signal = i;
+#endif
     }
 
  return 0;
@@ -389,7 +400,15 @@ open_card (ctrl_t ctrl, const char *apptype)
   if (slot == -1)
     err = gpg_error (GPG_ERR_CARD);
   else
-    err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
+    {
+      /* Fixme: We should move the apdu_connect call to
+         select_application.  */
+      int sw = apdu_connect (slot);
+      if (sw && sw != SW_HOST_ALREADY_CONNECTED)
+        err = gpg_error (GPG_ERR_CARD);
+      else
+        err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
+    }
 
   TEST_CARD_REMOVAL (ctrl, err);
   return err;
@@ -1774,7 +1793,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
     }
   else
     {
-      rc = assuan_init_socket_server_ext (&ctx, fd, 2);
+      rc = assuan_init_socket_server_ext (&ctx, INT2FD(fd), 2);
     }
   if (rc)
     {
@@ -1911,6 +1930,11 @@ update_reader_status_file (void)
   int idx;
   unsigned int status, changed;
 
+  /* Make sure that the reader has been opened.  Like get_reader_slot,
+     this part of the code assumes that there is only one reader.  */
+  if (!slot_table[0].valid)
+    (void)get_reader_slot ();
+
   /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
      busy working with a card, delays in the status file update should
@@ -2007,11 +2031,20 @@ update_reader_status_file (void)
             if (sl->event_signal && sl->assuan_ctx)
               {
                 pid_t pid = assuan_get_pid (sl->assuan_ctx);
+
+#ifdef HAVE_W32_SYSTEM
+                HANDLE handle = (void *)sl->event_signal;
+                
+                log_info ("client pid is %d, triggering event %lx (%p)\n",
+                          pid, sl->event_signal, handle);
+                if (!SetEvent (handle))
+                  log_error ("SetEvent(%lx) failed: %s\n",
+                             sl->event_signal, w32_strerror (-1));
+#else
                 int signo = sl->event_signal;
                 
                 log_info ("client pid is %d, sending signal %d\n",
                           pid, signo);
-#ifndef HAVE_W32_SYSTEM
                 if (pid != (pid_t)(-1) && pid && signo > 0)
                   kill (pid, signo);
 #endif

@@ -378,8 +378,10 @@ start_scd (ctrl_t ctrl)
     char buf[100];
 
 #ifdef HAVE_W32_SYSTEM
-    snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
-              (unsigned long)get_agent_scd_notify_event ());
+    /* Use estream snprintf due to a bug in mingw32 related to the l
+       modifier.  */
+    estream_snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
+                      (unsigned long)get_agent_scd_notify_event ());
 #else
     snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
 #endif

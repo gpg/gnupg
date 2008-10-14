@@ -65,11 +65,18 @@ enum {
   SW_HOST_GENERAL_ERROR = 0x1000b,
   SW_HOST_NO_READER     = 0x1000c,
   SW_HOST_ABORTED       = 0x1000d,
-  SW_HOST_NO_KEYPAD     = 0x1000e
+  SW_HOST_NO_KEYPAD     = 0x1000e,
+  SW_HOST_ALREADY_CONNECTED = 0x1000f
 };
 
 
 #define SW_EXACT_LENGTH_P(a) (((a)&~0xff) == SW_EXACT_LENGTH)
+
+
+/* Bit flags for the card status.  */
+#define APDU_CARD_USABLE   (1)    /* Card is present and ready for use.  */
+#define APDU_CARD_PRESENT  (2)    /* Card is just present.  */
+#define APDU_CARD_ACTIVE   (4)    /* Card is active.  */
 
 
 /* Note , that apdu_open_reader returns no status word but -1 on error. */
@@ -92,7 +99,10 @@ unsigned char *apdu_get_atr (int slot, size_t *atrlen);
 const char *apdu_strerror (int rc);
 
 
-/* These apdu functions do return status words. */
+/* These APDU functions return status words. */
+
+int apdu_connect (int slot);
+int apdu_disconnect (int slot);
 
 int apdu_activate (int slot);
 int apdu_reset (int slot);

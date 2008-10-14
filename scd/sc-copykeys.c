@@ -142,6 +142,8 @@ main (int argc, char **argv )
   slot = apdu_open_reader (reader_port);
   if (slot == -1)
     exit (1);
+  if (apdu_connect (slot))
+    exit (1);
 
   /* FIXME: Use select_application. */
   appbuf.slot = slot;

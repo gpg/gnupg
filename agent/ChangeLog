@@ -1,3 +1,8 @@
+2008-10-14  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (get_agent_scd_notify_event): Need to use a manual
+	reset event.
+
 2008-09-29  Werner Koch  <wk@g10code.com>
 
 	* agent.h (GCRY_MD_USER): Rename to GCRY_MODULE_ID_USER.

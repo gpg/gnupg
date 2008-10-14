@@ -148,15 +148,18 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
 #endif
 
-/* The timer tick used for housekeeping stuff.  For Windows we use a
-   longer period as the SetWaitableTimer seems to signal earlier than
-   the 2 seconds.  */
-#ifdef HAVE_W32_SYSTEM
-#define TIMERTICK_INTERVAL    (4)
-#else
-#define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
-#endif
+/* The timer tick used for housekeeping stuff.  We poll every 250ms to
+   let the user immediately know a status change.
 
+   This is not too good for power saving but given that there is no
+   easy way to block on card status changes it is the best we can do.
+   For PC/SC we could in theory use an extra thread to wait for status
+   changes but that requires a native thread because there is no way
+   to make the underlying PC/SC card change function block using a Pth
+   mechanism.  Given that a native thread could only be used under W32
+   we don't do that at all.  */
+#define TIMERTICK_INTERVAL_SEC     (0)
+#define TIMERTICK_INTERVAL_USEC    (250000)
 
 /* Flag to indicate that a shutdown was requested. */
 static int shutdown_pending;
@@ -1107,7 +1110,8 @@ handle_connections (int listen_fd)
       /* Create a timeout event if needed. */
       if (!time_ev)
         time_ev = pth_event (PTH_EVENT_TIME,
-                             pth_timeout (TIMERTICK_INTERVAL, 0));
+                             pth_timeout (TIMERTICK_INTERVAL_SEC,
+                                          TIMERTICK_INTERVAL_USEC));
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */

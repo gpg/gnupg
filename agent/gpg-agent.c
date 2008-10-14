@@ -1268,12 +1268,34 @@ get_agent_scd_notify_event (void)
 
   if (!the_event)
     {
+      HANDLE h, h2;
       SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
 
-      the_event = CreateEvent ( &sa, FALSE, FALSE, NULL);
-      if (!the_event)
+      /* We need to use manual reset evet object due to the way our
+         w32-pth wait function works: If we would use an automatic
+         reset event we are not able to figure out which handle has
+         been signaled because at the time we single out the signaled
+         handles using WFSO the event has already been reset due to
+         the WFMO.  */
+      h = CreateEvent (&sa, TRUE, FALSE, NULL);
+      if (!h)
         log_error ("can't create scd notify event: %s\n", w32_strerror (-1) );
+      else if (!DuplicateHandle (GetCurrentProcess(), h,
+                                 GetCurrentProcess(), &h2,
+                                 EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0)) 
+        {
+          log_error ("setting syncronize for scd notify event failed: %s\n",
+                     w32_strerror (-1) );
+          CloseHandle (h);
+        }
+      else
+        {
+          CloseHandle (h);
+          the_event = h2;
+        }
     }
+
+  log_debug  ("returning notify handle %p\n", the_event);
   return the_event;
 }
 #endif /*HAVE_W32_SYSTEM*/

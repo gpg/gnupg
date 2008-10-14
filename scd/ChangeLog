@@ -1,3 +1,45 @@
+2008-10-14  Werner Koch  <wk@g10code.com>
+
+
+	* apdu.c (reader_table_s): Add fields connect_card and
+	disconnect_card.
+	(new_reader_slot): Set them to NULL.
+	(apdu_connect, apdu_disconnect): New.
+	(apdu_close_reader, apdu_shutdown_reader): Call apdu_disconnect.
+	(connect_pcsc_card, disconnect_pcsc_card): new.
+	(reset_pcsc_reader_direct): Implement in terms of
+	disconnect_pcsc_card and connect_pcsc_card.
+	(apdu_get_atr): Return NULL if there is no ATR.
+	* sc-copykeys.c (main): Add call to apdu_connect.
+	* command.c (open_card): Ditto.
+
+	* apdu.h (SW_HOST_ALREADY_CONNECTED): New.
+	(APDU_CARD_USABLE, APDU_CARD_PRESENT, APDU_CARD_ACTIVE): New.
+	* apdu.c: Replace constants by the new macros.
+	(open_pcsc_reader): Factor  code out to ...
+	(open_pcsc_reader_direct, open_pcsc_reader_wrapped): New.
+	(reset_pcsc_reader): Factor code out to ...
+	(reset_pcsc_reader_direct, reset_pcsc_reader_wrapped): New.
+	(pcsc_get_status): Factor code out to ...
+	(pcsc_get_status_direct, pcsc_get_status_wrapped): New.
+	(pcsc_send_apdu): Factor code out to ...
+	(pcsc_send_apdu_direct, pcsc_send_apdu_wrapped): New.
+	(close_pcsc_reader): Factor code out to ...
+	(close_pcsc_reader_direct, close_pcsc_reader_wrapped): New.
+
+	* command.c (update_reader_status_file): Open the reader if not
+	yet done.
+
+	* scdaemon.c (TIMERTICK_INTERVAL_SEC, TIMERTICK_INTERVAL_USEC):
+	New to replace TIMERTICK_INTERVAL.  Chnage from 2s (4 under W32)
+	to 250ms.
+
+2008-10-13  Werner Koch  <wk@g10code.com>
+
+	* command.c (option_handler) [W32]: Use strtoul with base 16.
+	(update_reader_status_file) [W32]: Set Event.
+	(scd_command_handler): Use INT2FD to silent warning.
+
 2008-09-29  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.h (GCRY_MD_USER): Rename to GCRY_MODULE_ID_USER.
