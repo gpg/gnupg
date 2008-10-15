@@ -1,3 +1,12 @@
+2008-10-15  Werner Koch  <wk@g10code.com>
+
+	* command.c (scd_command_handler): Return true if there is no more
+	active session.
+	* scdaemon.c (start_connection_thread): Set shutdown flag if
+	requested by command handler.
+	(main): Make PIPE_SERVER module global.
+	(handle_connections): Disable listen_fd if a shutdown is pending.
+
 2008-10-14  Werner Koch  <wk@g10code.com>
 
 

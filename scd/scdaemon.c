@@ -1,6 +1,6 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
  * Copyright (C) 2001, 2002, 2004, 2005, 
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -167,6 +167,9 @@ static int shutdown_pending;
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
+/* Flag telling whether we are running as a pipe server.  */
+static int pipe_server;
+
 /* Name of the communication socket */
 static char *socket_name;
 
@@ -304,7 +307,6 @@ main (int argc, char **argv )
   int default_config =1;
   int greeting = 0;
   int nogreeting = 0;
-  int pipe_server = 0;
   int multi_server = 0;
   int is_daemon = 0;
   int nodetach = 0;
@@ -1027,19 +1029,18 @@ start_connection_thread (void *arg)
     log_info (_("handler for fd %d started\n"),
               FD2INT(ctrl->thread_startup.fd));
 
-  scd_command_handler (ctrl, FD2INT(ctrl->thread_startup.fd));
+  /* If this is a pipe server, we request a shutdown if the command
+     hanlder asked for it.  With the next ticker event and given that
+     no other connections are running the shutdown will then
+     happen.  */
+  if (scd_command_handler (ctrl, FD2INT(ctrl->thread_startup.fd))
+      && pipe_server)
+    shutdown_pending = 1;
 
   if (opt.verbose)
     log_info (_("handler for fd %d terminated\n"),
               FD2INT (ctrl->thread_startup.fd));
 
-  /* If this thread is the pipe connection thread, flag that a
-     shutdown is required.  With the next ticker event and given that
-     no other connections are running the shutdown will then
-     happen. */
-  if (ctrl->thread_startup.fd == GNUPG_INVALID_FD)
-    shutdown_pending = 1;
-  
   scd_deinit_default_ctrl (ctrl);
   xfree (ctrl);
   return NULL;
@@ -1105,6 +1106,7 @@ handle_connections (int listen_fd)
              file descriptors to wait for, so that the select will be
              used to just wait on a signal or timeout event. */
           FD_ZERO (&fdset);
+          listen_fd = -1;
 	}
 
       /* Create a timeout event if needed. */

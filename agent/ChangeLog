@@ -1,3 +1,8 @@
+2008-10-15  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (start_scd): Enable assuan loggging if requested.
+	(agent_scd_check_aliveness) [W32]: Fix use of GetExitCodeProcess.
+
 2008-10-14  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (get_agent_scd_notify_event): Need to use a manual

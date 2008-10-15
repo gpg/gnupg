@@ -20,7 +20,7 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * [gpgsm] Made --output option work with --export-secret-key-p12.
 
- * gpg-connect-agent accepts commands given as command line arguments.
+ * [gpg-connect-agent] Accept commands given as command line arguments.
 
  * [gpg] The option --fixed-list-mode is now implicitly used and obsolete.
 
@@ -34,6 +34,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * Admin PINs are cached again (bug in 2.0.9).
 
  * Support for version 2 OpenPGP cards.
+
+ * [scdaemon] Made it more robust on W32.
 
  * Libgcrypt 1.4 is now required.
 

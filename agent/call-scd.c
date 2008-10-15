@@ -343,6 +343,9 @@ start_scd (ctrl_t ctrl)
   if (opt.verbose)
     log_debug ("first connection to SCdaemon established\n");
 
+  if (DBG_ASSUAN)
+    assuan_set_log_stream (ctx, log_get_stream ());
+
   /* Get the name of the additional socket opened by scdaemon. */
   {
     membuf_t data;
@@ -412,9 +415,10 @@ agent_scd_check_aliveness (void)
 {
   pth_event_t evt;
   pid_t pid;
-  int rc;
 #ifdef HAVE_W32_SYSTEM
-  DWORD dummyec;
+  DWORD rc;
+#else
+  int rc;
 #endif
 
   if (!primary_scd_ctx)
@@ -443,8 +447,11 @@ agent_scd_check_aliveness (void)
     {
       pid = assuan_get_pid (primary_scd_ctx);
 #ifdef HAVE_W32_SYSTEM
+      /* If we have a PID we disconnect if either GetExitProcessCode
+         fails or if ir returns the exit code of the scdaemon.  259 is
+         the error code for STILL_ALIVE.  */
       if (pid != (pid_t)(void*)(-1) && pid
-          && !GetExitCodeProcess ((HANDLE)pid, &dummyec))
+          && (!GetExitCodeProcess ((HANDLE)pid, &rc) || rc != 259))
 #else
       if (pid != (pid_t)(-1) && pid
           && ((rc=waitpid (pid, NULL, WNOHANG))==-1 || (rc == pid)) )

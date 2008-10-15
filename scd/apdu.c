@@ -2442,11 +2442,7 @@ apdu_open_reader (const char *portstr)
       pcsc_api_loaded = 1;
     }
 
-#ifdef NEED_PCSC_WRAPPER
-  return open_pcsc_reader_wrapped (portstr);
-#else
   return open_pcsc_reader (portstr);
-#endif
 }
 
 

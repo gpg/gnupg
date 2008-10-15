@@ -1,3 +1,7 @@
+2008-10-15  Werner Koch  <wk@g10code.com>
+
+	* logging.c (do_logv) [W32]: Flush the log stream.
+
 2008-09-29  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (ARGERR_): Use constants for error values.

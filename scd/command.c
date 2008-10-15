@@ -1,6 +1,6 @@
 /* command.c - SCdaemon command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2007  Free Software Foundation, Inc.
+ *               2007, 2008  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1776,8 +1776,9 @@ register_commands (assuan_context_t ctx)
 
 
 /* Startup the server.  If FD is given as -1 this is simple pipe
-   server, otherwise it is a regular server. */
-void
+   server, otherwise it is a regular server.  Returns true if there
+   are no more active asessions.  */
+int
 scd_command_handler (ctrl_t ctrl, int fd)
 {
   int rc;
@@ -1872,6 +1873,9 @@ scd_command_handler (ctrl_t ctrl, int fd)
 
   /* Release the Assuan context.  */
   assuan_deinit_server (ctx);
+
+  /* If there are no more sessions return true.  */
+  return !session_list;
 }
 
 

@@ -490,6 +490,10 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
       vfprintf(logstream,fmt,arg_ptr) ;
       if (*fmt && fmt[strlen(fmt)-1] != '\n')
         missing_lf = 1;
+#ifdef HAVE_W32_SYSTEM
+      else
+        fflush (logstream);
+#endif
     }
 
   if (level == JNLIB_LOG_FATAL)
