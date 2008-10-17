@@ -141,7 +141,7 @@ get_membuf (struct membuf *mb, size_t *len)
 }
 
 
-/* This fucntion prepares the dirmngr for a new session.  The
+/* This function prepares the dirmngr for a new session.  The
    audit-events option is used so that other dirmngr clients won't get
    disturbed by such events.  */
 static void
@@ -320,17 +320,27 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 static int
 start_dirmngr (ctrl_t ctrl)
 {
+  gpg_error_t err;
+
   assert (! dirmngr_ctx_locked);
   dirmngr_ctx_locked = 1;
 
-  return start_dirmngr_ext (ctrl, &dirmngr_ctx);
+  err = start_dirmngr_ext (ctrl, &dirmngr_ctx);
+  /* We do not check ERR but the existance of a context because the
+     error might come from a failed command send to the dirmngr.
+     Fixme: Why don't we close the drimngr context if we encountered
+     an error in prepare_dirmngr?  */
+  if (!dirmngr_ctx)
+    dirmngr_ctx_locked = 0;
+  return err;  
 }
 
 
 static void
 release_dirmngr (ctrl_t ctrl)
 {
-  assert (dirmngr_ctx_locked);
+  if (!dirmngr_ctx_locked)
+    log_error ("WARNING: trying to release a non-locked dirmngr ctx\n");
   dirmngr_ctx_locked = 0;
 }
 
@@ -338,17 +348,23 @@ release_dirmngr (ctrl_t ctrl)
 static int
 start_dirmngr2 (ctrl_t ctrl)
 {
+  gpg_error_t err;
+
   assert (! dirmngr2_ctx_locked);
   dirmngr2_ctx_locked = 1;
 
-  return start_dirmngr_ext (ctrl, &dirmngr2_ctx);
+  err = start_dirmngr_ext (ctrl, &dirmngr2_ctx);
+  if (!dirmngr2_ctx)
+    dirmngr2_ctx_locked = 0;
+  return err;
 }
 
 
 static void
 release_dirmngr2 (ctrl_t ctrl)
 {
-  assert (dirmngr2_ctx_locked);
+  if (!dirmngr2_ctx_locked)
+    log_error ("WARNING: trying to release a non-locked dirmngr2 ctx\n");
   dirmngr2_ctx_locked = 0;
 }
 
@@ -780,20 +796,23 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 
   /* The lookup function can be invoked from the callback of a lookup
      function, for example to walk the chain.  */
-  assert (!dirmngr_ctx_locked || !dirmngr2_ctx_locked);
-  if (! dirmngr_ctx_locked)
+  if (!dirmngr_ctx_locked)
     {
       rc = start_dirmngr (ctrl);
       if (rc)
 	return rc;
       ctx = dirmngr_ctx;
     }
-  else
+  else if (!dirmngr2_ctx_locked)
     {
       rc = start_dirmngr2 (ctrl);
       if (rc)
 	return rc;
       ctx = dirmngr2_ctx;
+    }
+  else
+    {
+      log_fatal ("both dirmngr contexts are in use\n");
     }
 
   pattern = pattern_from_strlist (names);
