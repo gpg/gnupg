@@ -246,7 +246,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	    log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
                      dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
 	    if(dek->algo==CIPHER_ALGO_IDEA)
-	      idea_cipher_warn(0);
+	      idea_cipher_warn (0);
 	}
 	dek->algo = 0;
 	goto leave;

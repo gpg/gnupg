@@ -1638,6 +1638,19 @@ cmd_restart (assuan_context_t ctx, char *line)
 }
 
 
+/* DISCONNECT
+
+   TBD
+
+*/
+static int
+cmd_disconnect (assuan_context_t ctx, char *line)
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+
 /* APDU [--atr] [--more] [hexstring]
 
    Send an APDU to the current reader.  This command bypasses the high
@@ -1756,6 +1769,7 @@ register_commands (assuan_context_t ctx)
     { "UNLOCK",       cmd_unlock },
     { "GETINFO",      cmd_getinfo },
     { "RESTART",      cmd_restart },
+    { "DISCONNECT",   cmd_disconnect },
     { "APDU",         cmd_apdu },
     { NULL }
   };

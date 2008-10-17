@@ -46,6 +46,12 @@
 #define asprintf estream_asprintf
 #define vasprintf estream_vasprintf
 
+/* Due to a bug in mingw32's snprintf related to the 'l' modifier we
+   better use our snprintf.  */
+#ifdef HAVE_W32_SYSTEM
+#define snprintf estream_snprintf
+#endif
+
 
 /* GCC attributes.  */
 #if __GNUC__ >= 4 
@@ -260,6 +266,7 @@ int match_multistr (const char *multistr,const char *match);
 static inline char *
 ttyname (int fd) 
 {
+  (void)fd;
   return NULL;
 }
 #endif /* !HAVE_TTYNAME */

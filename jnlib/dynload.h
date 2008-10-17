@@ -31,6 +31,7 @@ static inline void *
 dlopen (const char * name, int flag)
 {
   void * hd = LoadLibrary (name);
+  (void)flag;
   return hd;
 }
 

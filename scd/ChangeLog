@@ -1,3 +1,8 @@
+2008-10-16  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_disconnect): New dummy command.
+	(register_commands): Register command.
+
 2008-10-15  Werner Koch  <wk@g10code.com>
 
 	* command.c (scd_command_handler): Return true if there is no more

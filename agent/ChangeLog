@@ -1,3 +1,8 @@
+2008-10-17  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (start_scd) [W32]: Use snprintf again because we now
+	always use the estream variant.
+
 2008-10-15  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (start_scd): Enable assuan loggging if requested.

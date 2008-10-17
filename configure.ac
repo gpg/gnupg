@@ -1248,6 +1248,24 @@ if test "$GCC" = yes; then
     if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
         CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
+        AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+        _gcc_cflags_save=$CFLAGS
+        CFLAGS="-Wno-missing-field-initializers"
+        AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        CFLAGS=$_gcc_cflags_save;
+        if test x"$_gcc_wopt" = xyes ; then
+          CFLAGS="$CFLAGS -W -Wno-sign-compare -Wno-missing-field-initializers"
+        fi
+        AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
+        _gcc_cflags_save=$CFLAGS
+        CFLAGS="-Wdeclaration-after-statement"
+        AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        CFLAGS=$_gcc_cflags_save;
+        if test x"$_gcc_wopt" = xyes ; then
+          CFLAGS="$CFLAGS -Wdeclaration-after-statement"
+        fi
     else
         CFLAGS="$CFLAGS -Wall"
     fi

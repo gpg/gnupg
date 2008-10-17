@@ -31,6 +31,8 @@
 static void
 my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 {
+  (void)dummy;
+  
   /* Map the log levels.  */
   switch (level)
     {
@@ -51,6 +53,8 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 static void
 my_gcry_fatalerror_handler (void *opaque, int rc, const char *text)
 {
+  (void)opaque;
+
   log_fatal ("libgcrypt problem: %s\n", text ? text : gpg_strerror (rc));
   abort ();
 }
@@ -63,6 +67,8 @@ static int
 my_gcry_outofcore_handler (void *opaque, size_t req_n, unsigned int flags)
 {
   static int been_here;  /* Used to protect against recursive calls. */
+
+  (void)opaque;
 
   if (!been_here)
     {
@@ -139,6 +145,8 @@ print_hexstring (FILE *fp, const void *buffer, size_t length, int reserved)
 {
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
   const unsigned char *s;
+
+  (void)reserved;
 
   for (s = buffer; length; s++, length--)
     {

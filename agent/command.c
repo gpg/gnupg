@@ -80,7 +80,7 @@ static struct putval_item_s *putval_list;
 
 
 
-/* To help polling clients, we keep tarck of the number of certain
+/* To help polling clients, we keep track of the number of certain
    events.  This structure keeps those counters.  The counters are
    integers and there should be no problem if they are overflowing as
    callers need to check only whether a counter changed.  The actual
