@@ -75,7 +75,12 @@ test_isotime2epoch (void)
         {
           epoch2isotime (tbuf, val);
           if (strlen (tbuf) != 15)
-            fail (idx);
+            {
+              if (verbose)
+                fprintf (stderr, "string `%s', time-t %ld, revert: `%s'\n",
+                         array[idx].string, (long)val, tbuf);
+              fail (idx);
+            }
           if (strncmp (array[idx].string, tbuf, 15))
             fail (idx);
         }

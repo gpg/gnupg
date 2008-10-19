@@ -1,5 +1,5 @@
 /* estream-printf.c - Versatile C-99 compliant printf formatting
- * Copyright (C) 2007 g10 Code GmbH
+ * Copyright (C) 2007, 2008 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -1224,6 +1224,9 @@ static int
 pr_bytes_so_far (estream_printf_out_t outfnc, void *outfncarg,
                  argspec_t arg, value_t value, size_t *nbytes)
 {
+  (void)outfnc;
+  (void)outfncarg;
+
   switch (arg->vt)
     {
     case VALTYPE_SCHAR_PTR: 
@@ -1647,7 +1650,7 @@ estream_vsnprintf (char *buf, size_t bufsize,
   struct fixed_buffer_parm_s parm;
   int rc;
 
-  parm.size = bufsize? bufsize-1:0;
+  parm.size = bufsize;
   parm.count = 0;
   parm.used = 0;
   parm.buffer = bufsize?buf:NULL;
@@ -1656,9 +1659,10 @@ estream_vsnprintf (char *buf, size_t bufsize,
     rc = fixed_buffer_out (&parm, "", 1); /* Print terminating Nul.  */
   if (rc == -1)
     return -1;
-  if (bufsize && buf && parm.count >= parm.size)
+  if (bufsize && buf && parm.size && parm.count >= parm.size)
     buf[parm.size-1] = 0;
 
+  parm.count--; /* Do not count the trailing nul.  */
   return (int)parm.count; /* Return number of bytes which would have
                              been written.  */
 }
@@ -1788,6 +1792,18 @@ estream_asprintf (char **bufp, const char *format, ...)
 static int
 one_test (const char *format, ...)
 {
+#ifdef _WIN32
+  {
+    static int show;
+
+    if (!show)
+      {
+        /* We do not have a system vasprintf.  */
+        printf ("one-test: disabled under W32\n");
+        show = 1;
+      }
+  }
+#else    
   int rc1, rc2;
   va_list arg_ptr;
   char *buf1, *buf2;
@@ -1824,7 +1840,7 @@ one_test (const char *format, ...)
 
   free (buf2);
   free (buf1);
-
+#endif
   return 0;
 }
 
@@ -2021,23 +2037,37 @@ static void
 check_snprintf (void)
 {
   char buffer[20];
-  int rc;
+  int rc, rc2;
+  size_t tmplen, blen, blen2;
 
   rc = estream_snprintf (buffer, 0, "%*s", 18, "");
-  if (rc != 19)
+  if (rc != 18)
     printf ("rc=%d\n", rc );
   rc = estream_snprintf (buffer, sizeof buffer, "%*s", 18, "");
-  if (rc != 19)
+  if (rc != 18)
     printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
   rc = estream_snprintf (buffer, sizeof buffer, "%*s", 19, "");
-  if (rc != 20)
+  if (rc != 19)
     printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
   rc = estream_snprintf (buffer, sizeof buffer, "%*s", 20, "");
-  if (rc != 21)
+  if (rc != 20)
     printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
   rc = estream_snprintf (buffer, sizeof buffer, "%*s", 21, "");
-  if (rc != 22)
+  if (rc != 21)
     printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
+
+  for (tmplen = 0; tmplen <= sizeof buffer; tmplen++)
+    {
+      rc = estream_snprintf (buffer, tmplen, "%04d%02d%02dT%02d%02d%02d",
+                             1998, 9, 7, 16, 56, 05);
+      blen = strlen (buffer);
+      rc2 = snprintf (buffer, tmplen, "%04d%02d%02dT%02d%02d%02d",
+                     1998, 9, 7, 16, 56, 05);
+      blen2 = strlen (buffer);
+      if (rc != rc2 || blen != blen2)
+        printf ("snprintf test with len %u gives %d instead of %d (%d,%d)\n",
+                (unsigned int)tmplen, rc, rc2, blen, blen2);
+    }
 }
 
 
