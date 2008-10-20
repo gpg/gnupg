@@ -1238,6 +1238,8 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     u32 keyid[2];
     int rc = 0;
 
+    (void)fname;
+
     assert( !node->next );
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( node->pkt->pkt.signature->sig_class == 0x20 );
@@ -1364,6 +1366,9 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
     int rc;
     u32 bsdate=0,rsdate=0;
     KBNODE bsnode=NULL,rsnode=NULL;
+
+    (void)fname;
+    (void)pk;
 
     for( n=keyblock; (n = find_next_kbnode(n, 0)); ) {
       if(n->pkt->pkttype==PKT_PUBLIC_SUBKEY)
@@ -1536,6 +1541,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 {
     KBNODE node;
     int nvalid=0, uid_seen=0, subkey_seen=0;
+
+    (void)fname;
 
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -2047,10 +2054,13 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
  * append the userid starting with NODE and all signatures to KEYBLOCK.
  */
 static int
-append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
-					  const char *fname, u32 *keyid )
+append_uid (KBNODE keyblock, KBNODE node, int *n_sigs,
+            const char *fname, u32 *keyid )
 {
     KBNODE n, n_where=NULL;
+
+    (void)fname;
+    (void)keyid;
 
     assert(node->pkt->pkttype == PKT_USER_ID );
 
@@ -2099,6 +2109,9 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
     KBNODE n, n2;
     int found=0;
 
+    (void)fname;
+    (void)keyid;
+
     assert(dst->pkt->pkttype == PKT_USER_ID );
     assert(src->pkt->pkttype == PKT_USER_ID );
 
@@ -2134,11 +2147,14 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  * Merge the sigs from SRC onto DST. SRC and DST are both a PKT_xxx_SUBKEY.
  */
 static int
-merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
-				    const char *fname, u32 *keyid )
+merge_keysigs (KBNODE dst, KBNODE src, int *n_sigs,
+               const char *fname, u32 *keyid)
 {
     KBNODE n, n2;
     int found=0;
+
+    (void)fname;
+    (void)keyid;
 
     assert(   dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
 	   || dst->pkt->pkttype == PKT_SECRET_SUBKEY );
@@ -2187,10 +2203,13 @@ merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
  * Mark all new and copied packets by setting flag bit 0.
  */
 static int
-append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
-					  const char *fname, u32 *keyid )
+append_key (KBNODE keyblock, KBNODE node, int *n_sigs,
+            const char *fname, u32 *keyid)
 {
     KBNODE n;
+
+    (void)fname;
+    (void)keyid;
 
     assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 	   || node->pkt->pkttype == PKT_SECRET_SUBKEY );

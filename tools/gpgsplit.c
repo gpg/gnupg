@@ -526,8 +526,8 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 
 /* hdr must point to a buffer large enough to hold all header bytes */
 static int
-write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
-             int pkttype, int partial, unsigned char *hdr, size_t hdrlen)
+write_part (FILE *fpin, unsigned long pktlen,
+            int pkttype, int partial, unsigned char *hdr, size_t hdrlen)
 {
   FILE *fpout;
   int c, first;
@@ -770,7 +770,7 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
 
 
 static int
-do_split (const char *fname, FILE *fp)
+do_split (FILE *fp)
 {
   int c, ctb, pkttype;
   unsigned long pktlen = 0;
@@ -848,8 +848,7 @@ do_split (const char *fname, FILE *fp)
 	}
     }
 
-  return write_part (fname, fp, pktlen, pkttype, partial,
-                     header, header_idx);
+  return write_part (fp, pktlen, pkttype, partial, header, header_idx);
 }
 
 
@@ -870,7 +869,7 @@ split_packets (const char *fname)
       return;
     }
   
-  while ( !(rc = do_split (fname, fp)) )
+  while ( !(rc = do_split (fp)) )
     ;
   if ( rc > 0 )
     ; /* error already handled */

@@ -99,6 +99,8 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
   pid_t pid;
   int result, i;
 
+  (void)ctrl;
+
   infp = gnupg_tmpfile ();
   if (!infp)
     {

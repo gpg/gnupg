@@ -412,14 +412,20 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   size_t nbytes = 0;
   int rc = 0;
 
+  (void)chain; /* Not used.  */
+
 #ifdef FILE_FILTER_USES_STDIO
   if (control == IOBUFCTRL_UNDERFLOW)
     {
-      assert (size);		/* need a buffer */
+      assert (size);  /* We need a buffer. */
       if (feof (f))
-	{			/* On terminals you could easiely read as many EOFs as you call         */
-	  rc = -1;		/* fread() or fgetc() repeatly. Every call will block until you press   */
-	  *ret_len = 0;		/* CTRL-D. So we catch this case before we call fread() again.          */
+	{ 
+          /* On terminals you could easily read as many EOFs as you
+             call fread() or fgetc() repeatly.  Every call will block
+             until you press CTRL-D. So we catch this case before we
+             call fread() again.  */
+	  rc = -1;		
+	  *ret_len = 0;		
 	}
       else
 	{
@@ -427,7 +433,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	  nbytes = fread (buf, 1, size, f);
 	  if (feof (f) && !nbytes)
 	    {
-	      rc = -1;		/* okay: we can return EOF now. */
+	      rc = -1;	/* Okay: we can return EOF now. */
 	    }
 	  else if (ferror (f) && errno != EPIPE)
 	    {
@@ -469,13 +475,13 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    fclose (f);
 	}
       f = NULL;
-      xfree (a);		/* we can free our context now */
+      xfree (a); /* We can free our context now. */
     }
 #else /* !stdio implementation */
 
   if (control == IOBUFCTRL_UNDERFLOW)
     {
-      assert (size);		/* need a buffer */
+      assert (size); /* We need a buffer.  */
       if (a->eof_seen)
 	{
 	  rc = -1;
@@ -620,9 +626,9 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	}
       f = INVALID_FP;
 #endif
-      xfree (a);		/* we can free our context now */
+      xfree (a); /* We can free our context now. */
     }
-#endif /* !stdio implementation */
+#endif /* !stdio implementation. */
   return rc;
 }
 
@@ -638,6 +644,8 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   size_t size = *ret_len;
   size_t nbytes = 0;
   int rc = 0;
+
+  (void)chain;
 
   if (control == IOBUFCTRL_UNDERFLOW)
     {
@@ -2408,6 +2416,8 @@ translate_file_handle (int fd, int for_write)
 # else
   {
     int x;
+    
+    (void)for_write;
 
     if (fd == 0)
       x = (int) GetStdHandle (STD_INPUT_HANDLE);
@@ -2425,6 +2435,8 @@ translate_file_handle (int fd, int for_write)
     fd = x;
   }
 # endif
+#else
+  (void)for_write;
 #endif
   return fd;
 }

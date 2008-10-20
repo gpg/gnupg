@@ -465,6 +465,8 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
 
+  (void)line;
+
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
@@ -519,6 +521,8 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
 
+  (void)line;
+
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
@@ -561,6 +565,8 @@ cmd_verify (assuan_context_t ctx, char *line)
   int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   int out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
   FILE *out_fp = NULL;
+
+  (void)line;
 
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
@@ -642,6 +648,8 @@ cmd_import (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
+
+  (void)line;
 
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
@@ -921,6 +929,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   FILE *out_fp;
   int rc;
   estream_t in_stream;
+
+  (void)line;
 
   inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   if (inp_fd == -1)

@@ -209,7 +209,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 */
 static int
 blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob, 
-               int secret, off_t start_offset, unsigned int n_packets )
+               int secret, off_t start_offset)
 {
   FILE *fp, *newfp;
   int rc=0;
@@ -392,7 +392,7 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
   rc = _keybox_create_x509_blob (&blob, cert, sha1_digest, hd->ephemeral);
   if (!rc)
     {
-      rc = blob_filecopy (1, fname, blob, hd->secret, 0, 0 );
+      rc = blob_filecopy (1, fname, blob, hd->secret, 0);
       _keybox_release_blob (blob);
       /*    if (!rc && !hd->secret && kb_offtbl) */
       /*      { */
@@ -406,6 +406,9 @@ int
 keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                     unsigned char *sha1_digest)
 {
+  (void)hd;
+  (void)cert;
+  (void)sha1_digest;
   return -1;
 }
 
@@ -425,6 +428,8 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   size_t flag_pos, flag_size;
   const unsigned char *buffer;
   size_t length;
+
+  (void)idx;  /* Not yet used.  */
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);

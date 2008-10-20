@@ -74,7 +74,9 @@ test_hash_algo_from_sigval (void)
 int
 main (int argc, char **argv)
 {
-  
+  (void)argc;
+  (void)argv;
+
   test_hash_algo_from_sigval ();
 
   return 0;

@@ -299,6 +299,7 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
     log_error ("failed to translate osfhandle %p\n", (void *) fd);
   return x;
 #else /*!HAVE_W32_SYSTEM */
+  (void)for_write;
   return fd;
 #endif
 }
@@ -314,6 +315,7 @@ translate_sys2libc_fd_int (int fd, int for_write)
 
   return translate_sys2libc_fd ((void*)fd, for_write);
 #else
+  (void)for_write;
   return fd;
 #endif
 }

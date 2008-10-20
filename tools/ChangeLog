@@ -1,3 +1,13 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* gpgsplit.c (write_part): Remove unused arg FNAME.  Change caller.
+	(do_split): Ditto.
+
+	* no-libgcrypt.c (gcry_control): Mark unused arg.
+	* gpg-connect-agent.c (do_recvfd): Ditto.
+	* gpgparsemail.c (mime_signed_begin, mime_encrypted_begin): Ditto.
+	(pkcs7_begin): Ditto.
+
 2008-10-01  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (main): New command datafile.

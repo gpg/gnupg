@@ -1353,7 +1353,7 @@ ccid_close_reader (ccid_driver_t handle)
 int
 ccid_check_card_presence (ccid_driver_t handle)
 {
-
+  (void)handle;  /* Not yet implemented.  */
   return -1;
 }
 

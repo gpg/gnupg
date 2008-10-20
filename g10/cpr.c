@@ -48,6 +48,8 @@ progress_cb (void *ctx, const char *what, int printchar,
 {
   char buf[50];
 
+  (void)ctx;
+
   if ( printchar == '\n' && !strcmp (what, "primegen") )
     snprintf (buf, sizeof buf -1, "%.20s X 100 100", what );
   else

@@ -1,3 +1,13 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* w32-afunix.c (_w32_sock_connect): Mark ADDRLEN as unused.
+
+	* dotlock.c (release_dotlock): Do not mix declaration and code.
+
+	* stringhelp.c (make_basename): Silent gcc warning about unused arg.
+	* argparse.c (store_alias): Ditto.
+	(find_long_option): 
+
 2008-10-15  Werner Koch  <wk@g10code.com>
 
 	* logging.c (do_logv) [W32]: Flush the log stream.

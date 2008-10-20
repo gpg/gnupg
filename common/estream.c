@@ -114,11 +114,25 @@ typedef pth_mutex_t estream_mutex_t;
 #else
 
 typedef void *estream_mutex_t;
+
+static inline void
+dummy_mutex_call_void (estream_mutex_t mutex)
+{
+  (void)mutex;
+}
+
+static inline int
+dummy_mutex_call_int (estream_mutex_t mutex)
+{
+  (void)mutex;
+  return 0;
+}
+
 # define ESTREAM_MUTEX_INITIALIZER NULL
-# define ESTREAM_MUTEX_LOCK(mutex) (void) 0
-# define ESTREAM_MUTEX_UNLOCK(mutex) (void) 0
-# define ESTREAM_MUTEX_TRYLOCK(mutex) 0
-# define ESTREAM_MUTEX_INITIALIZE(mutex) (void) 0
+# define ESTREAM_MUTEX_LOCK(mutex) dummy_mutex_call_void ((mutex))
+# define ESTREAM_MUTEX_UNLOCK(mutex) dummy_mutex_call_void ((mutex))
+# define ESTREAM_MUTEX_TRYLOCK(mutex) dummy_mutex_call_int ((mutex))
+# define ESTREAM_MUTEX_INITIALIZE(mutex) dummy_mutex_call_void ((mutex))
 #endif
 
 /* Primitive system I/O.  */
@@ -183,11 +197,7 @@ struct estream_list
 };
 
 static estream_list_t estream_list;
-#ifdef HAVE_PTH
-/* Note that we can't use a static initialization with W32Pth, thus we
-   do it in es_init. */
 static estream_mutex_t estream_list_lock;
-#endif
 
 #define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
 #define ESTREAM_LIST_UNLOCK ESTREAM_MUTEX_UNLOCK (estream_list_lock)
@@ -620,6 +630,8 @@ es_func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
       /* Make sure it is in binary mode if requested.  */
       if ( (modeflags & O_BINARY) )
         setmode (fd, O_BINARY);
+#else
+      (void)modeflags;
 #endif
       fd_cookie->fd = fd;
       fd_cookie->no_close = no_close;
@@ -721,7 +733,8 @@ typedef struct estream_cookie_fp
 
 /* Create function for fd objects.  */
 static int
-es_func_fp_create (void **cookie, FILE *fp, unsigned int modeflags, int no_close)
+es_func_fp_create (void **cookie, FILE *fp, 
+                   unsigned int modeflags, int no_close)
 {
   estream_cookie_fp_t fp_cookie;
   int err;
@@ -735,6 +748,8 @@ es_func_fp_create (void **cookie, FILE *fp, unsigned int modeflags, int no_close
       /* Make sure it is in binary mode if requested.  */
       if ( (modeflags & O_BINARY) )
         setmode (fileno (fp), O_BINARY);
+#else
+      (void)modeflags;
 #endif
       fp_cookie->fp = fp;
       fp_cookie->no_close = no_close;
@@ -3144,6 +3159,8 @@ es_write_hexstring (estream_t ES__RESTRICT stream,
   int ret;
   const unsigned char *s;
   size_t count = 0;
+
+  (void)reserved;
 
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
 

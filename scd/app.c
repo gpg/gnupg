@@ -220,6 +220,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   unsigned char *result = NULL;
   size_t resultlen;
 
+  (void)ctrl;
+
   *r_app = NULL;
 
   err = lock_reader (slot);

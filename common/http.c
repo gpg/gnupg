@@ -304,6 +304,8 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 {
 #ifdef HTTP_USE_GNUTLS
   tls_callback = (gpg_error_t (*) (http_t, gnutls_session_t, int))cb;
+#else
+  (void)cb;
 #endif  
 }
 

@@ -1127,7 +1127,7 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
 
 
 static void
-generate_card_keys (const char *serialno)
+generate_card_keys (void)
 {
   struct agent_card_info_s info;
   int forced_chv1;
@@ -1674,7 +1674,7 @@ card_edit (strlist_t commands)
           break;
 
         case cmdGENERATE:
-          generate_card_keys (serialnobuf);
+          generate_card_keys ();
           break;
 
         case cmdPASSWD:

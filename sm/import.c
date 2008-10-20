@@ -597,7 +597,9 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
                       stats->secret_dups++;
                     }
                   else if ( !strcmp (p, "bad-passphrase"))
-                    ;
+                    {
+
+                    }
                 }
               else 
                 {

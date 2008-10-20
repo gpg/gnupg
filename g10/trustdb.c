@@ -1213,6 +1213,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
 void
 list_trust_path( const char *username )
 {
+  (void)username;
 }
 
 /****************
@@ -1237,7 +1238,11 @@ int
 enum_cert_paths( void **context, ulong *lid,
 		 unsigned *ownertrust, unsigned *validity )
 {
-    return -1;
+  (void)context;
+  (void)lid;
+  (void)ownertrust;
+  (void)validity;
+  return -1;
 }
 
 
@@ -1245,10 +1250,13 @@ enum_cert_paths( void **context, ulong *lid,
  * Print the current path
  */
 void
-enum_cert_paths_print( void **context, FILE *fp,
-				       int refresh, ulong selected_lid )
+enum_cert_paths_print (void **context, FILE *fp,
+                       int refresh, ulong selected_lid)
 {
-    return;
+  (void)context;
+  (void)fp;
+  (void)refresh;
+  (void)selected_lid;
 }
 
 
@@ -2006,6 +2014,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 static int
 search_skipfnc (void *opaque, u32 *kid, PKT_user_id *dummy)
 {
+  (void)dummy;
   return test_key_hash_table ((KeyHashTable)opaque, kid);
 }
 

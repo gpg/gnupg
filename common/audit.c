@@ -115,7 +115,9 @@ clear_helptags (audit_ctx_t ctx)
 static const char *
 event2str (audit_event_t event)
 {
-  int idx = eventstr_msgidxof (event);
+  /* We need the cast so that compiler does not complain about an
+     always true comparison (>= 0) for an unsigned value.  */
+  int idx = eventstr_msgidxof ((int)event);
   if (idx == -1)
     return "Unknown event";
   else

@@ -339,6 +339,8 @@ start_dirmngr (ctrl_t ctrl)
 static void
 release_dirmngr (ctrl_t ctrl)
 {
+  (void)ctrl;
+
   if (!dirmngr_ctx_locked)
     log_error ("WARNING: trying to release a non-locked dirmngr ctx\n");
   dirmngr_ctx_locked = 0;
@@ -363,6 +365,8 @@ start_dirmngr2 (ctrl_t ctrl)
 static void
 release_dirmngr2 (ctrl_t ctrl)
 {
+  (void)ctrl;
+
   if (!dirmngr2_ctx_locked)
     log_error ("WARNING: trying to release a non-locked dirmngr2 ctx\n");
   dirmngr2_ctx_locked = 0;
@@ -859,6 +863,8 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 static int
 run_command_cb (void *opaque, const void *buffer, size_t length)
 {
+  (void)opaque;
+
   if (buffer)
     {
       if ( fwrite (buffer, length, 1, stdout) != 1 )

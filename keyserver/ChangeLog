@@ -1,3 +1,8 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* curl-shim.c (curl_global_init): Mark usused arg.
+	(curl_version_info): Ditto.
+
 2008-08-29  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_kdns.c: Changed copyright notice to the FSF.

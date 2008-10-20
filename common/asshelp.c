@@ -42,6 +42,8 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
   gpg_error_t err;
   char *optstr;
 
+  (void)errsource;
+
   if (!value || !*value)
     err = 0;  /* Avoid sending empty strings.  */
   else if (asprintf (&optstr, "OPTION %s=%s", name, value ) < 0)

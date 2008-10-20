@@ -121,7 +121,9 @@ register_secured_file (const char *fname)
   sf->dev = buf.st_dev;
   sf->next = secured_files;
   secured_files = sf;
-#endif /*ENABLE_SELINUX_HACKS*/
+#else /*!ENABLE_SELINUX_HACKS*/
+  (void)fname;
+#endif /*!ENABLE_SELINUX_HACKS*/
 }
 
 /* Remove a file registered as secure. */
@@ -152,7 +154,9 @@ unregister_secured_file (const char *fname)
           return;
         }
     }
-#endif /*ENABLE_SELINUX_HACKS*/
+#else /*!ENABLE_SELINUX_HACKS*/
+  (void)fname;
+#endif /*!ENABLE_SELINUX_HACKS*/
 }
 
 /* Return true if FD is corresponds to a secured file.  Using -1 for
@@ -182,7 +186,9 @@ is_secured_file (int fd)
       if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
         return 1; /* Yes.  */
     }
-#endif /*ENABLE_SELINUX_HACKS*/
+#else /*!ENABLE_SELINUX_HACKS*/
+  (void)fd;
+#endif /*!ENABLE_SELINUX_HACKS*/
   return 0; /* No. */
 }
 
@@ -217,7 +223,9 @@ is_secured_filename (const char *fname)
       if (sf->ino == buf.st_ino && sf->dev == buf.st_dev)
         return 1; /* Yes.  */
     }
-#endif /*ENABLE_SELINUX_HACKS*/
+#else /*!ENABLE_SELINUX_HACKS*/
+  (void)fname;
+#endif /*!ENABLE_SELINUX_HACKS*/
   return 0; /* No. */
 }
 

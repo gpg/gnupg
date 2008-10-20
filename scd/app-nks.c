@@ -530,6 +530,9 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   const char *oldpin;
   size_t oldpinlen;
 
+  (void)ctrl;
+  (void)chvnostr;
+
   if ((flags & APP_CHANGE_FLAG_RESET))
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
@@ -573,6 +576,7 @@ do_check_pin (app_t app, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
+  (void)keyidstr;
   return verify_pin (app, pincb, pincb_arg);
 }
 

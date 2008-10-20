@@ -200,12 +200,21 @@ g10_exit( int rc )
 int
 check_signatures_trust( PKT_signature *sig )
 {
-    return 0;
+  (void)sig;
+  return 0;
 }
 
 void
-read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
-		   byte *marginals,byte *completes,byte *cert_depth) {}
+read_trust_options(byte *trust_model, ulong *created, ulong *nextcheck,
+		   byte *marginals, byte *completes, byte *cert_depth) 
+{
+  (void)trust_model;
+  (void)created;
+  (void)nextcheck;
+  (void)marginals;
+  (void)completes;
+  (void)cert_depth;
+}
 
 /* Stub: 
  * We don't have the trustdb , so we have to provide some stub functions
@@ -215,46 +224,58 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 int
 cache_disabled_value(PKT_public_key *pk)
 {
+  (void)pk;
   return 0;
 }
 
 void
-check_trustdb_stale(void) {}
+check_trustdb_stale(void) 
+{
+}
 
 int
 get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
-    return '?';
+  (void)pk;
+  (void)uid;
+  return '?';
 }
 
 unsigned int
 get_validity (PKT_public_key *pk, PKT_user_id *uid)
 {
+  (void)pk;
+  (void)uid;
   return 0;
 }
 
 const char *
 trust_value_to_string (unsigned int value)
 {
+  (void)value;
   return "err";
 }
 
 const char *
-uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
+uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid)
 {
+  (void)key;
+  (void)uid;
   return "err";
 }
 
 int
 get_ownertrust_info (PKT_public_key *pk)
 {
-    return '?';
+  (void)pk;
+  return '?';
 }
 
 unsigned int
 get_ownertrust (PKT_public_key *pk)
 {
-    return TRUST_UNKNOWN;
+  (void)pk;
+  return TRUST_UNKNOWN;
 }
 
 
@@ -264,122 +285,217 @@ get_ownertrust (PKT_public_key *pk)
  */
 
 struct keyserver_spec *
-keyserver_match(struct keyserver_spec *spec) { return NULL; }
-
-int
-keyserver_import_keyid( u32 *keyid, void *dummy )
+keyserver_match (struct keyserver_spec *spec)
 {
-    return -1;
+  (void)spec;
+  return NULL; 
 }
 
 int
-keyserver_import_cert(const char *name) { return -1; }
-
-int
-keyserver_import_pka(const char *name,unsigned char *fpr) { return -1; }
-
-int
-keyserver_import_name(const char *name,struct keyserver_spec *spec)
+keyserver_import_keyid (u32 *keyid, void *dummy)
 {
+  (void)keyid;
+  (void)dummy;
   return -1;
 }
 
 int
-keyserver_import_ldap(const char *name) { return -1; }
+keyserver_import_cert (const char *name)
+{
+  (void)name;
+  return -1; 
+}
+
+int
+keyserver_import_pka (const char *name,unsigned char *fpr)
+{
+  (void)name;
+  (void)fpr;
+  return -1;
+}
+
+int
+keyserver_import_name (const char *name,struct keyserver_spec *spec)
+{
+  (void)name;
+  (void)spec;
+  return -1;
+}
+
+int
+keyserver_import_ldap (const char *name)
+{
+  (void)name;
+  return -1;
+}
 
 /* Stub:
  * No encryption here but mainproc links to these functions.
  */
 int
-get_session_key( PKT_pubkey_enc *k, DEK *dek )
+get_session_key (PKT_pubkey_enc *k, DEK *dek)
 {
-    return G10ERR_GENERAL;
+  (void)k;
+  (void)dek;
+  return G10ERR_GENERAL;
 }
+
 /* Stub: */
 int
-get_override_session_key( DEK *dek, const char *string )
+get_override_session_key (DEK *dek, const char *string)
 {
-    return G10ERR_GENERAL;
+  (void)dek;
+  (void)string;
+  return G10ERR_GENERAL;
 }
+
 /* Stub: */
 int
-decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
+decrypt_data (void *procctx, PKT_encrypted *ed, DEK *dek)
 {
-    return G10ERR_GENERAL;
+  (void)procctx;
+  (void)ed;
+  (void)dek;
+  return G10ERR_GENERAL;
 }
 
 
 /* Stub:
- * No interactive commnds, so we don't need the helptexts
+ * No interactive commands, so we don't need the helptexts
  */
 void
-display_online_help( const char *keyword )
+display_online_help (const char *keyword)
 {
+  (void)keyword;
 }
 
 /* Stub:
  * We don't use secret keys, but getkey.c links to this
  */
 int
-check_secret_key( PKT_secret_key *sk, int n )
+check_secret_key (PKT_secret_key *sk, int n)
 {
-    return G10ERR_GENERAL;
+  (void)sk;
+  (void)n;
+  return G10ERR_GENERAL;
 }
 
 /* Stub:
  * No secret key, so no passphrase needed 
  */
 DEK *
-passphrase_to_dek( u32 *keyid, int pubkey_algo,
-		   int cipher_algo, STRING2KEY *s2k, int mode,
+passphrase_to_dek (u32 *keyid, int pubkey_algo,
+                   int cipher_algo, STRING2KEY *s2k, int mode,
                    const char *tmp, int *canceled)
 {
+  (void)keyid;
+  (void)pubkey_algo;
+  (void)cipher_algo;
+  (void)s2k;
+  (void)mode;
+  (void)tmp;
+
   if (canceled)
     *canceled = 0;
   return NULL;
 }
 
-struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig) {return NULL;}
-struct keyserver_spec *parse_keyserver_uri(const char *uri,int require_scheme,
-                                           const char *configname,
-                                           unsigned int configlineno)
+struct keyserver_spec *
+parse_preferred_keyserver(PKT_signature *sig) 
 {
+  (void)sig;
   return NULL;
 }
 
-void free_keyserver_spec(struct keyserver_spec *keyserver) {}
+struct keyserver_spec *
+parse_keyserver_uri (const char *uri, int require_scheme,
+                     const char *configname, unsigned int configlineno)
+{
+  (void)uri;
+  (void)require_scheme;
+  (void)configname;
+  (void)configlineno;
+  return NULL;
+}
+
+void 
+free_keyserver_spec (struct keyserver_spec *keyserver)
+{
+  (void)keyserver;
+}
 
 /* Stubs to avoid linking to photoid.c */
-void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk) {}
-int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}
-char *image_type_to_string(byte type,int string) {return NULL;}
+void 
+show_photos (const struct user_attribute *attrs, int count, PKT_public_key *pk)
+{
+  (void)attrs;
+  (void)count;
+  (void)pk;
+}
+
+int 
+parse_image_header (const struct user_attribute *attr, byte *type, u32 *len)
+{
+  (void)attr;
+  (void)type;
+  (void)len;
+  return 0;
+}
+
+char *
+image_type_to_string (byte type, int string)
+{
+  (void)type;
+  (void)string;
+  return NULL;
+}
 
 #ifdef ENABLE_CARD_SUPPORT
-int agent_scd_getattr (const char *name, struct agent_card_info_s *info) {return 0;}
+int 
+agent_scd_getattr (const char *name, struct agent_card_info_s *info)
+{
+  (void)name;
+  (void)info;
+  return 0;
+}
 #endif /* ENABLE_CARD_SUPPORT */
 
-/* Stubs to void linking to ../cipher/cipher.c */
-const char *cipher_algo_to_string( int algo ) { return "?";}
-void disable_cipher_algo( int algo ) {}
-int check_cipher_algo( int algo ) { return -1;}
-unsigned int cipher_get_keylen( int algo ) { return 0; }
-unsigned int cipher_get_blocksize( int algo ) {return 0;}
-gcry_cipher_hd_t cipher_open( int algo, int mode, int secure ) { return NULL;}
-void cipher_close( gcry_cipher_hd_t c ) {}
-int cipher_setkey( gcry_cipher_hd_t c, byte *key, unsigned keylen ) { return -1;}
-void cipher_setiv( gcry_cipher_hd_t c, const byte *iv, unsigned ivlen ){}
-void cipher_encrypt( gcry_cipher_hd_t c, byte *outbuf,
-                     byte *inbuf, unsigned nbytes ) {}
-void cipher_decrypt( gcry_cipher_hd_t c, byte *outbuf,
-                     byte *inbuf, unsigned nbytes ) {}
-void cipher_sync( gcry_cipher_hd_t c ) {}
-
-
-
 /* We do not do any locking, so use these stubs here */
-void disable_dotlock(void) {}
-DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
-void destroy_dotlock (DOTLOCK h) {}
-int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
-int release_dotlock( DOTLOCK h ) {return 0;}
-void remove_lockfiles(void) {}
+void 
+disable_dotlock (void)
+{
+}
+
+DOTLOCK 
+create_dotlock (const char *file_to_lock)
+{
+  (void)file_to_lock;
+  return NULL;
+}
+
+void 
+destroy_dotlock (DOTLOCK h)
+{
+  (void)h;
+}
+
+int
+make_dotlock (DOTLOCK h, long timeout)
+{
+  (void)h;
+  (void)timeout;
+  return 0;
+}
+
+int
+release_dotlock (DOTLOCK h)
+{
+  (void)h;
+  return 0;
+}
+
+void 
+remove_lockfiles (void)
+{
+}
+

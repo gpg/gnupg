@@ -542,6 +542,7 @@ reset_ct_reader (int slot)
 static int
 ct_get_status (int slot, unsigned int *status)
 {
+  (void)slot;
   /* The status we returned is wrong but we don't care becuase ctAPI
      is not anymore required.  */
   *status = APDU_CARD_USABLE|APDU_CARD_PRESENT|APDU_CARD_ACTIVE;
@@ -558,6 +559,8 @@ ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   int rc;
   unsigned char dad[1], sad[1];
   unsigned short ctbuflen;
+
+  (void)pininfo;
 
   /* If we don't have an ATR, we need to reset the reader first. */
   if (!reader_table[slot].atrlen
@@ -1019,6 +1022,8 @@ pcsc_send_apdu_wrapped (int slot, unsigned char *apdu, size_t apdulen,
   int i, n;
   unsigned char msgbuf[9];
   int sw = SW_HOST_CARD_IO_ERROR;
+
+  (void)pininfo;
 
   if (!reader_table[slot].atrlen
       && (err = reset_pcsc_reader (slot)))
@@ -2472,6 +2477,15 @@ apdu_open_remote_reader (const char *portstr,
                             writefnc, writefnc_value,
                             closefnc, closefnc_value);
 #else
+  (void)portstr;
+  (void)cookie;
+  (void)length;
+  (void)readfnc;
+  (void)readfnc_value;
+  (void)writefnc;
+  (void)writefnc_value;
+  (void)closefnc;
+  (void)closefnc_value;
 #ifdef _WIN32
   errno = ENOENT;
 #else

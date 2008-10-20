@@ -1,3 +1,47 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c: Mark all args of the stub fucntions as unused.
+
+	* card-util.c (generate_card_keys): Remove unused arg SERIALNO and
+	adjust caller.
+	
+	* build-packet.c (write_sign_packet_header): Mark unused arg.
+	* gpg.c (gpg_init_default_ctrl, gpg_deinit_default_ctrl): Ditto.
+	* getkey.c (skip_unusable): Ditto.
+	(write_version): Ditto.
+	* keydb.c (keydb_locate_writable): Ditto.
+	* keyring.c (update_offset_hash_table): Ditto.
+	(keyring_lock): Ditto.
+	* misc.c (register_secured_file): Ditto.
+	(unregister_secured_file): Ditto.
+	(is_secured_file): Ditto.
+	(is_secured_filename): Ditto.
+	* parse-packet.c (parse_marker): Ditto.
+	(parse_key, parse_attribute): Ditto.
+	(parse_trust, parse_compressed, parse_mdc, parse_gpg_control): Ditto.
+	* cpr.c (progress_cb): Ditto.
+	* passphrase.c (passphrase_clear_cache): Ditto.
+	(ask_passphrase): Ditto.
+	* keyedit.c (keyedit_completion): Ditto.
+	* import.c (import_revoke_cert): Ditto.
+	(chk_self_sigs, delete_inv_parts, append_uid): Ditto.
+	(merge_sigs, merge_keysigs, append_key): Ditto.
+	* trustdb.c (list_trust_path): Ditto.
+	(enum_cert_paths, enum_cert_paths_print): Ditto.
+	* tdbdump.c (list_trustdb): Ditto.
+	* keygen.c (keygen_upd_std_prefs): Ditto.
+	(genhelp_factors): Ditto.
+	* call-agent.c (agent_scd_setattr): Ditto.
+	(agent_scd_writekey, agent_scd_change_pin, agent_scd_genkey): Ditto.
+	(agent_clear_pin_cache): Ditto.
+
+	* server.c (option_handler): Mark non yet used arg.
+	(input_notify, output_notify): Ditto.
+	(cmd_recipient, cmd_signer, cmd_encrypt, cmd_decrypt, cmd_verify) 
+	(cmd_sign, cmd_import, cmd_export, cmd_delkeys, do_listkeys) 
+	(cmd_genkey): Ditto.
+	* verify.c (gpg_verify): Ditto.
+
 2008-10-17  Werner Koch  <wk@g10code.com>
 
 	* main.h (idea_cipher_warn): Use do while construct in place of an

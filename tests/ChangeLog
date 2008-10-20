@@ -1,3 +1,9 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* asschk.c (cmd_echo): Mark unused arg.
+	(cmd_send, cmd_expect_ok, cmd_expect_err, cmd_pipeserver) 
+	(cmd_quit_if, cmd_fail_if): Ditto.
+
 2008-09-29  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (TESTS): Remove tests.

@@ -1,3 +1,24 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+
+	* http.c (http_register_tls_callback) [!HTTP_USE_GNUTLS]: Mark
+	unused arg.
+	* localename.c (do_nl_locale_name): Ditto.
+	* audit.c (event2str): Silent gcc warning.
+	* sysutils.c (translate_sys2libc_fd): Mark unused arg.
+	(translate_sys2libc_fd_int): Ditto.
+	* iobuf.c (translate_file_handle): Ditto.
+	* asshelp.c (send_one_option): Ditto.
+	* exechelp.c (gnupg_spawn_process): Ditto.
+	* signal.c (got_usr_signal): Ditto
+	* estream.c (es_func_fd_create) [!W32]: Ditto.
+	(es_func_fp_create) [!W32]: Ditto.
+	(es_write_hexstring): Ditto.
+	(dummy_mutex_call_void, dummy_mutex_call_int) [HAVE_PTH]: New.
+	(ESTREAM_MUTEX_LOCK, ESTREAM_MUTEX_UNLOCK, ESTREAM_MUTEX_TRYLOCK)
+	(ESTREAM_MUTEX_INITIALIZE) [HAVE_PTH]: Use dummy calls so to mark
+	unused arg.
+
 2008-10-19  Werner Koch  <wk@g10code.com>
 
 	* estream-printf.c (estream_vsnprintf): Fix return value.

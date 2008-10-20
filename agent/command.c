@@ -357,6 +357,8 @@ cmd_geteventcounter (assuan_context_t ctx, char *line)
   char key_counter[25];
   char card_counter[25];
 
+  (void)line;
+
   snprintf (any_counter, sizeof any_counter, "%u", eventcounter.any);
   snprintf (key_counter, sizeof key_counter, "%u", eventcounter.key);
   snprintf (card_counter, sizeof card_counter, "%u", eventcounter.card);
@@ -436,7 +438,11 @@ cmd_istrusted (assuan_context_t ctx, char *line)
 static int
 cmd_listtrusted (assuan_context_t ctx, char *line)
 {
-  int rc = agent_listtrusted (ctx);
+  int rc;
+  
+  (void)line;
+
+  rc = agent_listtrusted (ctx);
   if (rc)
     log_error ("command listtrusted failed: %s\n", gpg_strerror (rc));
   return rc;
@@ -652,6 +658,8 @@ cmd_pksign (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   membuf_t outbuf;
   
+  (void)line;
+  
   if (opt.ignore_cache_for_signing)
     cache_mode = CACHE_MODE_IGNORE;
   else if (!ctrl->server_local->use_cache_for_signing)
@@ -684,6 +692,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
+
+  (void)line;
 
   /* First inquire the data to decrypt */
   rc = assuan_inquire (ctx, "CIPHERTEXT",
@@ -730,6 +740,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
+
+  (void)line;
 
   /* First inquire the parameters */
   rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
@@ -1312,6 +1324,8 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
+  (void)line;
+
   xfree (opt.startup_display); opt.startup_display = NULL;
   xfree (opt.startup_ttyname); opt.startup_ttyname = NULL;
   xfree (opt.startup_ttytype); opt.startup_ttytype = NULL;
@@ -1505,6 +1519,8 @@ static void
 post_cmd_notify (assuan_context_t ctx, int err)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  
+  (void)err;
 
   /* Switch off any I/O monitor controlled logging pausing. */
   ctrl->server_local->pause_io_logging = 0;

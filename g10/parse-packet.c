@@ -702,6 +702,8 @@ read_rest( IOBUF inp, size_t pktlen, int partial )
 static int
 parse_marker( IOBUF inp, int pkttype, unsigned long pktlen )
 {
+  (void)pkttype;
+
   if(pktlen!=3)
     goto fail;
 
@@ -1661,8 +1663,8 @@ read_protected_v3_mpi (IOBUF inp, unsigned long *length)
 
 
 static int
-parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
-			      byte *hdr, int hdrlen, PACKET *pkt )
+parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
+           byte *hdr, int hdrlen, PACKET *pkt)
 {
     int i, version, algorithm;
     unsigned n;
@@ -1670,6 +1672,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
+
+    (void)hdr;
 
     version = iobuf_get_noeof(inp); pktlen--;
     if( pkttype == PKT_PUBLIC_SUBKEY && version == '#' ) {
@@ -2170,6 +2174,8 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
+    (void)pkttype;
+
 #define EXTRA_UID_NAME_SPACE 71
     packet->pkt.user_id = xmalloc_clear(sizeof *packet->pkt.user_id
 					+ EXTRA_UID_NAME_SPACE);
@@ -2236,6 +2242,8 @@ static void
 parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
   int c;
+
+  (void)pkttype;
 
   if (pktlen)
     {
@@ -2332,20 +2340,22 @@ static int
 parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 		  PACKET *pkt, int new_ctb )
 {
-    PKT_compressed *zd;
+  PKT_compressed *zd;
+  
+  /* PKTLEN is here 0, but data follows (this should be the last
+     object in a file or the compress algorithm should know the
+     length).  */
+  (void)pkttype;
+  (void)pktlen;
 
-    /* pktlen is here 0, but data follows
-     * (this should be the last object in a file or
-     *	the compress algorithm should know the length)
-     */
-    zd = pkt->pkt.compressed =	xmalloc(sizeof *pkt->pkt.compressed );
-    zd->algorithm = iobuf_get_noeof(inp);
-    zd->len = 0; /* not used */ 
-    zd->new_ctb = new_ctb;
-    zd->buf = inp;
-    if( list_mode )
-	fprintf (listfp, ":compressed packet: algo=%d\n", zd->algorithm);
-    return 0;
+  zd = pkt->pkt.compressed = xmalloc (sizeof *pkt->pkt.compressed);
+  zd->algorithm = iobuf_get_noeof(inp);
+  zd->len = 0; /* not used */ 
+  zd->new_ctb = new_ctb;
+  zd->buf = inp;
+  if (list_mode)
+    fprintf (listfp, ":compressed packet: algo=%d\n", zd->algorithm);
+  return 0;
 }
 
 
@@ -2412,27 +2422,30 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
    the MDC checking is done right after the encryption in
    decrypt_data. */
 static int
-parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
-				   PACKET *pkt, int new_ctb )
+parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
+           PACKET *pkt, int new_ctb)
 {
-    int rc = 0;
-    PKT_mdc *mdc;
-    byte *p;
+  int rc = 0;
+  PKT_mdc *mdc;
+  byte *p;
 
-    mdc = pkt->pkt.mdc = xmalloc(sizeof *pkt->pkt.mdc );
-    if( list_mode )
-	fprintf (listfp, ":mdc packet: length=%lu\n", pktlen);
-    if( !new_ctb || pktlen != 20 ) {
-	log_error("mdc_packet with invalid encoding\n");
-        rc = gpg_error (GPG_ERR_INV_PACKET);
-	goto leave;
+  (void)pkttype;
+
+  mdc = pkt->pkt.mdc = xmalloc(sizeof *pkt->pkt.mdc );
+  if (list_mode)
+    fprintf (listfp, ":mdc packet: length=%lu\n", pktlen);
+  if (!new_ctb || pktlen != 20)
+    {
+      log_error("mdc_packet with invalid encoding\n");
+      rc = gpg_error (GPG_ERR_INV_PACKET);
+      goto leave;
     }
-    p = mdc->hash;
-    for( ; pktlen; pktlen--, p++ )
-	*p = iobuf_get_noeof(inp);
-
-  leave:
-    return rc;
+  p = mdc->hash;
+  for (; pktlen; pktlen--, p++)
+    *p = iobuf_get_noeof(inp);
+  
+ leave:
+  return rc;
 }
 
 
@@ -2448,13 +2461,15 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
  */
 
 static int
-parse_gpg_control( IOBUF inp, int pkttype,
-		   unsigned long pktlen, PACKET *packet, int partial )
+parse_gpg_control (IOBUF inp, int pkttype, unsigned long pktlen,
+                   PACKET *packet, int partial)
 {
     byte *p;
     const byte *sesmark;
     size_t sesmarklen;
     int i;
+
+    (void)pkttype;
 
     if ( list_mode )
         fprintf (listfp, ":packet 63: length %lu ",  pktlen);

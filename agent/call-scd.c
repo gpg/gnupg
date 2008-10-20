@@ -191,6 +191,8 @@ unlock_scd (ctrl_t ctrl, int rc)
 static void
 atfork_cb (void *opaque, int where)
 {
+  (void)opaque;
+
   if (!where)
     gcry_control (GCRYCTL_TERM_SECMEM);
 }

@@ -693,6 +693,8 @@ set_binary (FILE *fp)
 {
 #ifdef HAVE_DOSISH_SYSTEM
   setmode (fileno (fp), O_BINARY);
+#else
+  (void)fp;
 #endif
 }
 

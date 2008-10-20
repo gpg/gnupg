@@ -1241,14 +1241,16 @@ write_header( IOBUF out, int ctb, u32 len )
 
 
 static int
-write_sign_packet_header( IOBUF out, int ctb, u32 len )
+write_sign_packet_header (IOBUF out, int ctb, u32 len)
 {
-    /* work around a bug in the pgp read function for signature packets,
-     * which are not correctly coded and silently assume at some
-     * point 2 byte length headers.*/
-    iobuf_put(out, 0x89 );
-    iobuf_put(out, len >> 8 );
-    return iobuf_put(out, len ) == -1 ? -1:0;
+  (void)ctb;
+
+  /* Work around a bug in the pgp read function for signature packets,
+     which are not correctly coded and silently assume at some point 2
+     byte length headers.*/
+  iobuf_put (out, 0x89 );
+  iobuf_put (out, len >> 8 );
+  return iobuf_put (out, len) == -1 ? -1:0;
 }
 
 /****************
@@ -1350,9 +1352,11 @@ write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
 }
 
 static int
-write_version( IOBUF out, int ctb )
+write_version (IOBUF out, int ctb)
 {
-    if( iobuf_put( out, 3 ) )
-	return -1;
-    return 0;
+  (void)ctb;
+
+  if (iobuf_put (out, 3))
+    return -1;
+  return 0;
 }

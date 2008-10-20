@@ -243,10 +243,10 @@ read_32 (FILE *fp)
 {
   int c1, c2, c3, c4;
 
-  c1 = getc (stdin);
-  c2 = getc (stdin);
-  c3 = getc (stdin);
-  c4 = getc (stdin);
+  c1 = getc (fp);
+  c2 = getc (fp);
+  c3 = getc (fp);
+  c4 = getc (fp);
   if (c1 == EOF || c2 == EOF || c3 == EOF || c4 == EOF)
     {
       fprintf (stderr, PGM ": premature EOF while parsing request\n");
@@ -518,6 +518,9 @@ handle_open (unsigned char *argbuf, size_t arglen)
 static void
 handle_close (unsigned char *argbuf, size_t arglen)
 {
+  (void)argbuf;
+  (void)arglen;
+
   if (!driver_is_open)
     {
       fprintf (stderr, PGM ": PC/SC has not yet been opened\n");
@@ -545,6 +548,9 @@ handle_status (unsigned char *argbuf, size_t arglen)
   struct pcsc_readerstate_s rdrstates[1];
   int status;
   unsigned char buf[20];
+
+  (void)argbuf;
+  (void)arglen;
 
   if (!driver_is_open)
     {
@@ -613,6 +619,9 @@ handle_reset (unsigned char *argbuf, size_t arglen)
   char reader[250];
   unsigned long nreader, atrlen;
   unsigned long card_state, card_protocol;
+
+  (void)argbuf;
+  (void)arglen;
 
   if (!driver_is_open)
     {

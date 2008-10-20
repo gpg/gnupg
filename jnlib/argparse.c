@@ -229,6 +229,9 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
      * and fix the probelms IRIX has with (ALIAS_DEV)arg..
      * used as lvalue
      */
+  (void)arg;
+  (void)name;
+  (void)value;
 #if 0
     ALIAS_DEF a = jnlib_xmalloc( sizeof *a );
     a->name = name;
@@ -506,6 +509,8 @@ find_long_option( ARGPARSE_ARGS *arg,
 {
     int i;
     size_t n;
+
+    (void)arg;
 
     /* Would be better if we can do a binary search, but it is not
        possible to reorder our option table because we would mess

@@ -410,6 +410,8 @@ start_pinentry (ctrl_t ctrl)
 int
 pinentry_active_p (ctrl_t ctrl, int waitseconds)
 {
+  (void)ctrl;
+
   if (waitseconds > 0)
     {
       pth_event_t evt;
@@ -935,6 +937,8 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
 static void *
 popup_message_thread (void *arg)
 {
+  (void)arg;
+
   /* We use the --one-button hack instead of the MESSAGE command to
      allow the use of old Pinentries.  Those old Pinentries will then
      show an additional Cancel button but that is mostly a visual
@@ -1007,6 +1011,8 @@ agent_popup_message_stop (ctrl_t ctrl)
 {
   int rc;
   pid_t pid;
+
+  (void)ctrl;
 
   if (!popup_tid || !entry_ctx)
     {

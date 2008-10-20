@@ -579,6 +579,8 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
   struct dupitem_s *dupitems;
   size_t dupitems_size, dupitems_count, lastn, n;
   char fprbuf[3*20+1];
+
+  (void)print_them;
   
   memset (zerodigest, 0, sizeof zerodigest);
 

@@ -294,6 +294,9 @@ test_agent_get_shadow_info (void)
 int
 main (int argc, char **argv)
 {
+  (void)argc;
+  (void)argv;
+
   gcry_control (GCRYCTL_DISABLE_SECMEM);
   
   test_agent_protect ();

@@ -539,6 +539,8 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
   strlist_t names = NULL;
   int count = 0;
   char *pattern;
+
+  (void)kh;
       
   if (opt.verbose)
     log_info (_("looking up issuer from the Dirmngr cache\n"));

@@ -630,6 +630,8 @@ import_p12_cert_cb (void *opaque, const unsigned char *cert, size_t certlen)
   struct b64state state;
   gpg_error_t err, err2;
 
+  (void)opaque;
+
   err = b64enc_start (&state, stdout, "CERTIFICATE");
   if (!err)
     err = b64enc_write (&state, cert, certlen);

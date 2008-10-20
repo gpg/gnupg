@@ -351,6 +351,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   char *cmdline;
   int fd, fdout, rp[2];
 
+  (void)preexec;
+
   /* Setup return values.  */
   *statusfile = NULL;
   *pid = (pid_t)(-1);
@@ -451,6 +453,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 #else /* !HAVE_W32_SYSTEM */
   gpg_error_t err;
   int fd, fdout, rp[2];
+
+  (void)flags; /* Currently not used.  */
 
   *statusfile = NULL;
   *pid = (pid_t)(-1);
@@ -767,7 +771,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
      to pass the GPG_AGENT_INFO variable to gpg-agent.  As the default
      on windows is to use a standard socket, this does not really
      matter.  */
-
+  (void)envp;
 
   if (access (pgmname, X_OK))
     return gpg_error_from_syserror ();

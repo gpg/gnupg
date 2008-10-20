@@ -146,6 +146,7 @@ got_fatal_signal (int sig)
 static RETSIGTYPE
 got_usr_signal (int sig)
 {
+  (void)sig;
   caught_sigusr1 = 1;
 }
 #endif /*!HAVE_DOSISH_SYSTEM*/

@@ -418,6 +418,8 @@ agent_scd_setattr (const char *name,
   char line[ASSUAN_LINELENGTH];
   char *p;
 
+  (void)serialno;
+
   if (!*name || !valuelen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
@@ -532,6 +534,8 @@ agent_scd_writekey (int keyno, const char *serialno,
   char line[ASSUAN_LINELENGTH];
   struct writekey_parm_s parms;
 
+  (void)serialno;
+
   rc = start_agent ();
   if (rc)
     return rc;
@@ -615,6 +619,8 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
   int rc;
   char line[ASSUAN_LINELENGTH];
   gnupg_isotime_t tbuf;
+
+  (void)serialno;
 
   rc = start_agent ();
   if (rc)
@@ -775,6 +781,8 @@ agent_scd_change_pin (int chvno, const char *serialno)
   char line[ASSUAN_LINELENGTH];
   const char *reset = "";
 
+  (void)serialno;
+
   if (chvno >= 100)
     reset = "--reset";
   chvno %= 100;
@@ -816,7 +824,7 @@ agent_scd_checkpin  (const char *serialno)
 void
 agent_clear_pin_cache (const char *sn)
 {
-
+  (void)sn;
 }
 
 

@@ -103,6 +103,8 @@ _w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen)
   unsigned short port;
   char nonce[16];
   int ret;
+
+  (void)addrlen;
       
   unaddr = (struct sockaddr_un *)addr;
   if (read_port_and_nonce (unaddr->sun_path, &port, nonce))

@@ -760,10 +760,12 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
 
 
 static int
-skip_unusable(void *dummy,u32 *keyid,PKT_user_id *uid)
+skip_unusable (void *dummy, u32 *keyid, PKT_user_id *uid)
 {
   int unusable=0;
   KBNODE keyblock;
+  
+  (void)dummy;
 
   keyblock=get_pubkeyblock(keyid);
   if(!keyblock)

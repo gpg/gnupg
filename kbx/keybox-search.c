@@ -1015,6 +1015,8 @@ keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)
   size_t length;
   gpg_err_code_t ec;
 
+  (void)idx; /* Not yet used.  */
+
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!hd->found.blob)

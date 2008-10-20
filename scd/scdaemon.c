@@ -825,7 +825,7 @@ scd_init_default_ctrl (ctrl_t ctrl)
 static void
 scd_deinit_default_ctrl (ctrl_t ctrl)
 {
-
+  (void)ctrl;
 }
 
 

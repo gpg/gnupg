@@ -631,42 +631,45 @@ add_keyserver_modify (PKT_signature *sig,int enabled)
   xfree (buf);
 }
 
+
 int
-keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
+keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
 {
-    if (!prefs_initialized)
-        keygen_set_std_prefs (NULL, 0);
+  (void)opaque;
+  
+  if (!prefs_initialized)
+    keygen_set_std_prefs (NULL, 0);
+  
+  if (nsym_prefs) 
+    build_sig_subpkt (sig, SIGSUBPKT_PREF_SYM, sym_prefs, nsym_prefs);
+  else
+    {
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM);
+      delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_SYM);
+    }
+  
+  if (nhash_prefs)
+    build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
+  else
+    {
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH);
+      delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_HASH);
+    }
 
-    if (nsym_prefs) 
-        build_sig_subpkt (sig, SIGSUBPKT_PREF_SYM, sym_prefs, nsym_prefs);
-    else
-      {
-        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM);
-        delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_SYM);
-      }
+  if (nzip_prefs)
+    build_sig_subpkt (sig, SIGSUBPKT_PREF_COMPR, zip_prefs, nzip_prefs);
+  else
+    {
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR);
+      delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_COMPR);
+    }
+  
+  /* Make sure that the MDC feature flag is set if needed.  */
+  add_feature_mdc (sig,mdc_available);
+  add_keyserver_modify (sig,ks_modify);
+  keygen_add_keyserver_url(sig,NULL);
 
-    if (nhash_prefs)
-        build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
-    else
-      {
-	delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH);
-	delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_HASH);
-      }
-
-    if (nzip_prefs)
-        build_sig_subpkt (sig, SIGSUBPKT_PREF_COMPR, zip_prefs, nzip_prefs);
-    else
-      {
-        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR);
-        delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_COMPR);
-      }
-
-    /* Make sure that the MDC feature flag is set if needed */
-    add_feature_mdc (sig,mdc_available);
-    add_keyserver_modify (sig,ks_modify);
-    keygen_add_keyserver_url(sig,NULL);
-
-    return 0;
+  return 0;
 }
 
 
@@ -1102,6 +1105,8 @@ genhelp_protect (DEK *dek, STRING2KEY *s2k, PKT_secret_key *sk)
 static void
 genhelp_factors (gcry_sexp_t misc_key_info, KBNODE sec_root)
 {
+  (void)misc_key_info;
+  (void)sec_root;
 #if 0 /* Not used anymore */
   size_t n;
   char *buf;

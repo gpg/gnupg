@@ -69,6 +69,9 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
 
+  (void)ctx;
+  (void)value;
+
   /* Fixme: Implement the tty and locale args. */
   if (!strcmp (key, "display"))
     {
@@ -120,6 +123,8 @@ input_notify (assuan_context_t ctx, const char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
 
+  (void)ctx;
+
   if (strstr (line, "--armor"))
     ; /* FIXME */
   else if (strstr (line, "--base64"))
@@ -127,7 +132,9 @@ input_notify (assuan_context_t ctx, const char *line)
   else if (strstr (line, "--binary"))
     ;
   else
-    ; /* FIXME (autodetect encoding) */
+    {
+      /* FIXME (autodetect encoding) */
+    }
 }
 
 
@@ -136,11 +143,15 @@ static void
 output_notify (assuan_context_t ctx, const char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
+  
+  (void)ctx;
 
   if (strstr (line, "--armor"))
     ; /* FIXME */
   else if (strstr (line, "--base64"))
-    ; /* FIXME */
+    {
+      /* FIXME */
+    }
 }
 
 
@@ -160,6 +171,8 @@ output_notify (assuan_context_t ctx, const char *line)
 static int 
 cmd_recipient (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -183,6 +196,8 @@ cmd_recipient (assuan_context_t ctx, char *line)
 static int 
 cmd_signer (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -204,6 +219,8 @@ cmd_signer (assuan_context_t ctx, char *line)
 static int 
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -216,6 +233,8 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 static int 
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -238,6 +257,8 @@ cmd_verify (assuan_context_t ctx, char *line)
   gnupg_fd_t fd = assuan_get_input_fd (ctx);
   gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
   FILE *out_fp = NULL;
+
+  (void)line;
 
   if (fd == GNUPG_INVALID_FD)
     return gpg_error (GPG_ERR_ASS_NO_INPUT);
@@ -278,6 +299,8 @@ cmd_verify (assuan_context_t ctx, char *line)
 static int 
 cmd_sign (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -290,6 +313,8 @@ cmd_sign (assuan_context_t ctx, char *line)
 static int 
 cmd_import (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -308,6 +333,8 @@ cmd_import (assuan_context_t ctx, char *line)
 static int 
 cmd_export (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -320,6 +347,8 @@ cmd_export (assuan_context_t ctx, char *line)
 static int 
 cmd_delkeys (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -355,6 +384,10 @@ cmd_message (assuan_context_t ctx, char *line)
 static int 
 do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
+  (void)ctx;
+  (void)line;
+  (void)mode;
+
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 
@@ -382,6 +415,8 @@ cmd_listsecretkeys (assuan_context_t ctx, char *line)
 static int 
 cmd_genkey (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 }
 

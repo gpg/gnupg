@@ -447,6 +447,8 @@ test_hex2str (void)
 int
 main (int argc, char **argv)
 {
+  (void)argc;
+  (void)argv;
   
   test_hex2bin ();
   test_hexcolon2bin ();

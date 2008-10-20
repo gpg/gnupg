@@ -1502,6 +1502,8 @@ cmd_unlock (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
 
+  (void)line;
+
   if (locked_session)
     {
       if (locked_session != ctrl->server_local)
@@ -1624,6 +1626,8 @@ cmd_restart (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
+  (void)line;
+
   if (ctrl->app_ctx)
     {
       release_application (ctrl->app_ctx);
@@ -1646,6 +1650,8 @@ cmd_restart (assuan_context_t ctx, char *line)
 static int
 cmd_disconnect (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 

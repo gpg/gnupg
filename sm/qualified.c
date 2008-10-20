@@ -151,6 +151,8 @@ gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert, char *country)
   char mycountry[3];
   int lnr = 0;
 
+  (void)ctrl;
+
   if (country)
     *country = 0;
 

@@ -229,6 +229,9 @@ print_key_data (ksba_cert_t cert, estream_t fp)
       putchar(':');
       putchar('\n');
     }
+#else
+  (void)cert;
+  (void)fp;
 #endif
 }
 
@@ -649,6 +652,8 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   unsigned int reason;
   const unsigned char *cert_der = NULL;
 
+  (void)have_secret;
+
   es_fprintf (fp, "           ID: 0x%08lX\n",
               gpgsm_get_short_fingerprint (cert));
 
@@ -1017,6 +1022,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   const char *oid;
   const unsigned char *cert_der = NULL;
 
+  (void)have_secret;
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
               gpgsm_get_short_fingerprint (cert));

@@ -1494,6 +1494,8 @@ keyedit_completion(const char *text, int start, int end)
   /* If we are at the start of a line, we try and command-complete.
      If not, just do nothing for now. */
 
+  (void)end;
+
   if(start==0)
     return rl_completion_matches(text,command_generator);
 

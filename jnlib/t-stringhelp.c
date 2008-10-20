@@ -121,6 +121,9 @@ test_compare_filenames (void)
 int
 main (int argc, char **argv)
 {
+  (void)argc;
+  (void)argv;
+
   test_percent_escape ();
   test_compare_filenames ();
 

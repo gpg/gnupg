@@ -913,6 +913,8 @@ do_sendfd (assuan_context_t ctx, char *line)
 static void
 do_recvfd (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   log_info ("This command has not yet been implemented\n");
 }
 

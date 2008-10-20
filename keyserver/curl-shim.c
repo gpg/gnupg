@@ -78,6 +78,7 @@ handle_error(CURL *curl,CURLcode err,const char *str)
 CURLcode
 curl_global_init(long flags)
 {
+  (void)flags;
   return CURLE_OK;
 }
 
@@ -339,6 +340,8 @@ curl_version_info(int type)
 {
   static curl_version_info_data data;
   static const char *protocols[]={"http",NULL};
+
+  (void)type;
 
   data.protocols=protocols;
 

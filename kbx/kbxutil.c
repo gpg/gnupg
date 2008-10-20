@@ -133,6 +133,8 @@ my_strusage( int level )
 static void
 my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 {
+  (void)dummy;
+
   /* Map the log levels.  */
   switch (level)
     {

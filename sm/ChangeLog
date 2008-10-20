@@ -1,3 +1,21 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (keydb_locate_writable): Mark unused arg.
+	(keydb_search_kid): Ditto.
+	(keydb_clear_some_cert_flags): Ditto.
+	* server.c (cmd_encrypt): Ditto.
+	(cmd_decrypt, cmd_verify, cmd_import, cmd_genkey): Ditto.
+	* call-agent.c (gpgsm_scd_pksign): Ditto.
+	* call-dirmngr.c (release_dirmngr, release_dirmngr2) 
+	(run_command_cb): Ditto.
+	* certlist.c (gpgsm_add_cert_to_certlist): Ditto.
+	* certchain.c (find_up_dirmngr): Ditto.
+	* keylist.c (print_key_data): Ditto.
+	(list_cert_raw, list_cert_std): Ditto.
+	* qualified.c (gpgsm_is_in_qualified_list): Ditto.
+
+	* gpgsm.c (set_binary) [!W32]: Mark unused arg.
+
 2008-10-17  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (start_dirmngr, start_dirmngr2): Reset the lock

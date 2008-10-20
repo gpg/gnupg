@@ -669,6 +669,8 @@ agent_public_key_from_file (ctrl_t ctrl,
   const char *elems;
   gcry_mpi_t *array;
 
+  (void)ctrl;
+
   *result = NULL;
 
   rc = read_key_file (grip, &s_skey);

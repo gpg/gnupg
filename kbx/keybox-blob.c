@@ -637,7 +637,8 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
 static int
 create_blob_trailer (KEYBOXBLOB blob)
 {
-    return 0;
+  (void)blob;
+  return 0;
 }
 
 

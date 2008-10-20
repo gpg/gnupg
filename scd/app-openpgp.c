@@ -1777,6 +1777,7 @@ do_writecert (app_t app, ctrl_t ctrl,
               void *pincb_arg,
               const unsigned char *certdata, size_t certdatalen)
 {
+  (void)ctrl;
 #if GNUPG_MAJOR_VERSION > 1
   if (strcmp (certidstr, "OPENPGP.3"))
     return gpg_error (GPG_ERR_INV_ID);
@@ -1807,6 +1808,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   char *pinvalue;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
+
+  (void)ctrl;
 
   if (reset_mode && chvno == 3)
     {
@@ -2200,6 +2203,8 @@ do_writekey (app_t app, ctrl_t ctrl,
   size_t template_len;
   unsigned char fprbuf[20];
   u32 created_at = 0;
+
+  (void)ctrl;
 
   if (!strcmp (keyid, "OPENPGP.1"))
     keyno = 0;

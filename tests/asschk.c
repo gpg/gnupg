@@ -673,6 +673,7 @@ cmd_let (const char *assign_to, char *arg)
 static void
 cmd_echo (const char *assign_to, char *arg)
 {
+  (void)assign_to;
   if (!opt_no_echo)
     printf ("%s\n", arg);
 }
@@ -680,6 +681,7 @@ cmd_echo (const char *assign_to, char *arg)
 static void
 cmd_send (const char *assign_to, char *arg)
 {
+  (void)assign_to;
   if (opt_verbose)
     fprintf (stderr, "sending `%s'\n", arg);
   write_assuan (server_send_fd, arg); 
@@ -706,6 +708,9 @@ handle_status_line (char *arg)
 static void
 cmd_expect_ok (const char *assign_to, char *arg)
 {
+  (void)assign_to;
+  (void)arg;
+
   if (opt_verbose)
     fprintf (stderr, "expecting OK\n");
   do
@@ -724,6 +729,9 @@ cmd_expect_ok (const char *assign_to, char *arg)
 static void
 cmd_expect_err (const char *assign_to, char *arg)
 {
+  (void)assign_to;
+  (void)arg;
+
   if (opt_verbose)
     fprintf (stderr, "expecting ERR\n");
   do
@@ -795,6 +803,8 @@ cmd_createfile (const char *assign_to, char *arg)
 static void
 cmd_pipeserver (const char *assign_to, char *arg)
 {
+  (void)assign_to;
+
   if (!*arg)
     die ("syntax error: servername missing");
 
@@ -805,6 +815,8 @@ cmd_pipeserver (const char *assign_to, char *arg)
 static void
 cmd_quit_if(const char *assign_to, char *arg)
 {
+  (void)assign_to;
+
   if (eval_boolean (arg))
     exit (0);
 }
@@ -812,6 +824,8 @@ cmd_quit_if(const char *assign_to, char *arg)
 static void
 cmd_fail_if(const char *assign_to, char *arg)
 {
+  (void)assign_to;
+
   if (eval_boolean (arg))
     exit (1);
 }

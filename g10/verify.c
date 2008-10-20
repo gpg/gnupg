@@ -238,6 +238,9 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp)
   armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx = new_progress_context ();
 
+  (void)ctrl;
+  (void)out_fp;
+
   fp = iobuf_fdopen (sig_fd, "rb");
   if (fp && is_secured_file (sig_fd))
     {

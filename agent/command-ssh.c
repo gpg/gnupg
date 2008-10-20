@@ -782,6 +782,8 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
   FILE *fp;
   int disabled;
 
+  (void)ctrl;
+
   err = open_control_file (&fp, 1);
   if (err)
     return err;
@@ -1782,6 +1784,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
   char *cardsn;
   gpg_error_t ret_err;
 
+  (void)request;
+
   /* Prepare buffer stream.  */
 
   key_directory = NULL;
@@ -2541,6 +2545,8 @@ ssh_handler_remove_identity (ctrl_t ctrl,
   gpg_error_t ret_err;
   gpg_error_t err;
 
+  (void)ctrl;
+
   /* Receive key.  */
 
   key_blob = NULL;
@@ -2590,6 +2596,9 @@ ssh_handler_remove_all_identities (ctrl_t ctrl,
 {
   gpg_error_t ret_err;
   gpg_error_t err;
+
+  (void)ctrl;
+  (void)request;
   
   err = ssh_identities_remove_all ();
 
@@ -2632,6 +2641,9 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
 {
   gpg_error_t ret_err;
   gpg_error_t err;
+
+  (void)ctrl;
+  (void)request;
   
   err = ssh_lock ();
 
@@ -2650,6 +2662,9 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
   gpg_error_t ret_err;
   gpg_error_t err;
   
+  (void)ctrl;
+  (void)request;
+
   err = ssh_unlock ();
 
   if (! err)

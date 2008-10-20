@@ -158,6 +158,8 @@ update_offset_hash_table (OffsetHashTable tbl, u32 *kid, off_t off)
 {
   struct off_item *k;
 
+  (void)off;
+
   for (k = tbl[(kid[1] & 0x07ff)]; k; k = k->next)
     {
       if (k->kid[0] == kid[0] && k->kid[1] == kid[1]) 
@@ -288,7 +290,7 @@ keyring_get_resource_name (KEYRING_HANDLE hd)
 
 
 /*
- * Lock the keyring with the given handle, or unlok if yes is false.
+ * Lock the keyring with the given handle, or unlock if YES is false.
  * We ignore the handle and lock all registered files.
  */
 int 
@@ -296,6 +298,8 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
 {
     KR_NAME kr;
     int rc = 0;
+
+    (void)hd;
 
     if (yes) {
         /* first make sure the lock handles are created */

@@ -1,3 +1,20 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_geteventcounter): Mark unused arg.
+	(cmd_listtrusted, cmd_pksign, cmd_pkdecrypt, cmd_genkey): Ditto.
+	(cmd_updatestartuptty, post_cmd_notify): Ditto.
+	* command-ssh.c (add_control_entry) 
+	(ssh_handler_request_identities, ssh_handler_remove_identity) 
+	(ssh_handler_remove_all_identities, ssh_handler_lock) 
+	(ssh_handler_unlock): Ditto.
+	* call-pinentry.c (pinentry_active_p, popup_message_thread) 
+	(agent_popup_message_stop): Ditto.
+	* findkey.c (agent_public_key_from_file): Ditto.
+	* genkey.c (check_passphrase_pattern): Ditto.
+	* call-scd.c (atfork_cb): Ditto.
+	* protect-tool.c (import_p12_cert_cb): Ditto.
+	* t-protect.c (main): Ditto.
+
 2008-10-17  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (start_scd) [W32]: Use snprintf again because we now

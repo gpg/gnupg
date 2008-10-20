@@ -349,6 +349,9 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
                    rfc822parse_field_t field_ctx)
 {
   const char *s;
+
+  (void)msg;
+
   s = rfc822parse_query_parameter (field_ctx, "protocol", 1);
   if (s)
     {
@@ -391,6 +394,10 @@ mime_encrypted_begin (struct parse_info_s *info, rfc822parse_t msg,
                       rfc822parse_field_t field_ctx)
 {
   const char *s;
+
+  (void)info;
+  (void)msg;
+
   s = rfc822parse_query_parameter (field_ctx, "protocol", 0);
   if (s)
     printf ("h encrypted.protocol: %s\n", s);
@@ -403,6 +410,9 @@ pkcs7_begin (struct parse_info_s *info, rfc822parse_t msg,
              rfc822parse_field_t field_ctx)
 {
   const char *s;
+  
+  (void)msg;
+
   s = rfc822parse_query_parameter (field_ctx, "name", 0);
   if (s)
     printf ("h pkcs7.name: %s\n", s);

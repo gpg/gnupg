@@ -272,6 +272,8 @@ int
 gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
                             certlist_t *listaddr, int is_encrypt_to)
 {
+  (void)ctrl;
+
   if (!is_cert_in_certlist (cert, *listaddr))
     {
       certlist_t cl = xtrycalloc (1, sizeof *cl);

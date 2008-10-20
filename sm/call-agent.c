@@ -232,6 +232,8 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   unsigned char *sigbuf;
   size_t sigbuflen;
 
+  (void)desc;
+
   *r_buf = NULL;
 
   switch(digestalgo)

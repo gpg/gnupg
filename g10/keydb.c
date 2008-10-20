@@ -644,7 +644,9 @@ int
 keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 {
   int rc;
-  
+
+  (void)reserved;
+
   if (!hd)
     return G10ERR_INV_ARG;
   

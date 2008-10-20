@@ -516,6 +516,10 @@ make_dotlock ( DOTLOCK h, long timeout )
 int
 release_dotlock( DOTLOCK h )
 {
+#ifndef HAVE_DOSISH_SYSTEM
+  int pid, same_node;
+#endif
+
   /* To avoid atexit race conditions we first check whether there are
      any locks left.  It might happen that another atexit handler
      tries to release the lock while the atexit handler of this module
@@ -540,7 +544,6 @@ release_dotlock( DOTLOCK h )
       return -1;
     }
 #else
-  int pid, same_node;
 
   pid = read_lockfile (h, &same_node);
   if ( pid == -1 ) 

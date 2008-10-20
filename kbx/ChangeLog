@@ -1,3 +1,14 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* keybox-update.c (blob_filecopy): Remove unused arg n_packets.
+	(keybox_insert_cert): Adjust for that.
+	(keybox_update_cert): Mark unused args.
+	(keybox_set_flags): Ditto.
+	* keybox-blob.c (create_blob_trailer): Ditto.
+	* keybox-search.c (keybox_get_flags): Ditto.
+	* keybox-dump.c (_keybox_dump_find_dups): Ditto.
+	* kbxutil.c (my_gcry_logger): Ditto.
+
 2008-05-06  Werner Koch  <wk@g10code.com>
 
 	* keybox-file.c (_keybox_read_blob2): Return GPG_ERR_TOO_SHORT if

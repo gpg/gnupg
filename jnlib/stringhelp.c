@@ -237,11 +237,12 @@ length_sans_trailing_ws (const unsigned char *line, size_t len)
 char *
 make_basename(const char *filepath, const char *inputpath)
 {
-    char *p;
-
 #ifdef __riscos__
     return riscos_make_basename(filepath, inputpath);
-#endif
+#else
+    char *p;
+
+    (void)inputpath; /* Only required for riscos.  */
 
     if ( !(p=strrchr(filepath, '/')) )
 #ifdef HAVE_DRIVE_LETTERS
@@ -253,6 +254,7 @@ make_basename(const char *filepath, const char *inputpath)
 	      }
 
     return jnlib_xstrdup(p+1);
+#endif
 }
 
 

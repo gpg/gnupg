@@ -1,3 +1,21 @@
+2008-10-20  Werner Koch  <wk@g10code.com>
+
+	* pcsc-wrapper.c (read_32): Use provided arg and not stdin.  Is
+	called with stdin, though.
+	(handle_close): Mark unused arg.
+	(handle_status, handle_reset): Ditto.
+
+	* ccid-driver.c (ccid_check_card_presence): Mark not yet used arg.
+
+	* scdaemon.c (scd_deinit_default_ctrl): Mark unused arg.
+	* command.c (cmd_unlock, cmd_restart, cmd_disconnect): Ditto.
+	* apdu.c (ct_get_status): Ditto.
+	(ct_send_apdu, pcsc_send_apdu_wrapped)
+	(apdu_open_remote_reader): Ditto.
+	* app.c (select_application): Ditto.
+	* app-openpgp.c (do_writecert, do_change_pin, do_writekey): Ditto.
+	* app-nks.c (do_change_pin, do_check_pin): Ditto.
+
 2008-10-16  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_disconnect): New dummy command.

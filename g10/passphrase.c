@@ -398,6 +398,8 @@ void
 passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 {
   int rc;
+
+  (void)algo;
     
   if (!cacheid)
     {
@@ -441,6 +443,8 @@ ask_passphrase (const char *description,
                 const char *cacheid, int *canceled)
 {
   char *pw = NULL;
+
+  (void)promptid;
   
   if (canceled)
     *canceled = 0;

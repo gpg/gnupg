@@ -803,6 +803,8 @@ int
 keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 {
   int rc;
+
+  (void)reserved;
   
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -942,6 +944,8 @@ int
 keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
 {
   KEYDB_SEARCH_DESC desc;
+
+  (void)kid;
   
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
@@ -1447,6 +1451,8 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
   strlist_t sl;
   int rc=0;
   unsigned int old_value, value;
+
+  (void)ctrl;
   
   hd = keydb_new (0);
   if (!hd)
