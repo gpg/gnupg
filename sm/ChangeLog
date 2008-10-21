@@ -1,3 +1,12 @@
+2008-10-21  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (inq_certificate_parm_s): Add field CTRL.
+	(gpgsm_dirmngr_isvalid): Supply a value for that field.
+	(inq_certificate): Add inquiry ISTRUSTED.
+
+	* call-agent.c (gpgsm_agent_istrusted): Add new optional arg
+	HEXFPR.  Changed all callers.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (keydb_locate_writable): Mark unused arg.

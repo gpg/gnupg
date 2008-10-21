@@ -560,31 +560,45 @@ istrusted_status_cb (void *opaque, const char *line)
 
 
 /* Ask the agent whether the certificate is in the list of trusted
-   keys.  ROOTCA_FLAGS is guaranteed to be cleared on error. */
+   keys.  The certificate is either specified by the CERT object or by
+   the fingerprint HEXFPR.  ROOTCA_FLAGS is guaranteed to be cleared
+   on error. */
 int
-gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert,
+gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
                        struct rootca_flags_s *rootca_flags)
 {
   int rc;
-  char *fpr;
   char line[ASSUAN_LINELENGTH];
 
   memset (rootca_flags, 0, sizeof *rootca_flags);
+
+  if (cert && hexfpr)
+    return gpg_error (GPG_ERR_INV_ARG);
 
   rc = start_agent (ctrl);
   if (rc)
     return rc;
 
-  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  if (!fpr)
+  if (hexfpr)
     {
-      log_error ("error getting the fingerprint\n");
-      return gpg_error (GPG_ERR_GENERAL);
+      snprintf (line, DIM(line)-1, "ISTRUSTED %s", hexfpr);
+      line[DIM(line)-1] = 0;
     }
+  else
+    {
+      char *fpr;
 
-  snprintf (line, DIM(line)-1, "ISTRUSTED %s", fpr);
-  line[DIM(line)-1] = 0;
-  xfree (fpr);
+      fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+      if (!fpr)
+        {
+          log_error ("error getting the fingerprint\n");
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+      
+      snprintf (line, DIM(line)-1, "ISTRUSTED %s", fpr);
+      line[DIM(line)-1] = 0;
+      xfree (fpr);
+    }
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                         istrusted_status_cb, rootca_flags);

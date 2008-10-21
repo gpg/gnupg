@@ -429,7 +429,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     {
       struct rootca_flags_s dummy_flags;
 
-      rc = gpgsm_agent_istrusted (ctrl, cert, &dummy_flags);
+      rc = gpgsm_agent_istrusted (ctrl, cert, NULL, &dummy_flags);
       if (!rc)
         *truststring = 'u';  /* Yes, we trust this one (ultimately). */
       else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)

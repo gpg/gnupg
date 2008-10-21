@@ -1284,7 +1284,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
              We used to do this only later but changed it to call the
              check right here so that we can access special flags
              associated with that specific root certificate.  */
-          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert,
+          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert, NULL,
                                                 rootca_flags);
           audit_log_cert (ctrl->audit, AUDIT_ROOT_TRUSTED,
                           subject_cert, istrusted_rc);
@@ -1565,7 +1565,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                performance reasons. */
             if (is_root)
               {
-                istrusted_rc = gpgsm_agent_istrusted (ctrl, issuer_cert,
+                istrusted_rc = gpgsm_agent_istrusted (ctrl, issuer_cert, NULL,
                                                       rootca_flags);
                 if (!istrusted_rc && rootca_flags->relax)
                   {

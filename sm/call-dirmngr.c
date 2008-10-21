@@ -55,6 +55,7 @@ static int dirmngr2_ctx_locked;
 static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
+  ctrl_t ctrl;
   assuan_context_t ctx;
   ksba_cert_t cert;
   ksba_cert_t issuer_cert;
@@ -408,6 +409,33 @@ inq_certificate (void *opaque, const char *line)
       line += 14;
       issuer_mode = 1;
     }
+  else if (!strncmp (line, "ISTRUSTED", 9) && (line[9]==' ' || !line[9]))
+    {
+      /* The server is asking us whether the certificate is a trusted
+         root certificate.  */
+      const char *s;
+      size_t n;
+      char fpr[41];
+      struct rootca_flags_s rootca_flags;
+
+      line += 9;
+      while (*line == ' ')
+        line++;
+
+      for (s=line,n=0; hexdigitp (s); s++, n++)
+        ;
+      if (*s || n != 40)
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+      for (s=line, n=0; n < 40; s++, n++)
+        fpr[n] = (*s >= 'a')? (*s & 0xdf): *s;
+      fpr[n] = 0;
+      
+      if (!gpgsm_agent_istrusted (parm->ctrl, NULL, fpr, &rootca_flags))
+        rc = assuan_send_data (parm->ctx, "1", 1);
+      else
+        rc = 0;
+      return rc;
+    }
   else
     {
       log_error ("unsupported inquiry `%s'\n", line);
@@ -555,6 +583,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
     }
 
   parm.ctx = dirmngr_ctx;
+  parm.ctrl = ctrl;
   parm.cert = cert;
   parm.issuer_cert = issuer_cert;
 
