@@ -405,7 +405,12 @@ open_card (ctrl_t ctrl, const char *apptype)
          select_application.  */
       int sw = apdu_connect (slot);
       if (sw && sw != SW_HOST_ALREADY_CONNECTED)
-        err = gpg_error (GPG_ERR_CARD);
+        {
+          if (sw == SW_HOST_NO_CARD)
+            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+          else
+            err = gpg_error (GPG_ERR_CARD);
+	}
       else
         err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
     }

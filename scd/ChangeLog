@@ -1,3 +1,8 @@
+2008-10-21  Marcus Brinkmann  <marcus@g10code.com>
+
+	* command.c (open_card): If connect error is SW_HOST_NO_CARD,
+	return a more descriptive error.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* pcsc-wrapper.c (read_32): Use provided arg and not stdin.  Is
