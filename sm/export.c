@@ -571,13 +571,19 @@ print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
 
 
 static gpg_error_t
-popen_protect_tool (const char *pgmname,
+popen_protect_tool (ctrl_t ctrl, const char *pgmname,
                     FILE *infile, FILE *outfile, FILE **statusfile, 
                     const char *prompt, const char *keygrip,
                     pid_t *pid)
 {
   const char *argv[20];
   int i=0;
+
+  /* Make sure that the agent is running so that the protect tool is
+     able to ask for a passphrase.  This has only an effect under W32
+     where the agent is started on demand; sending a NOP does not harm
+     on other platforms. */
+  gpgsm_agent_send_nop (ctrl);
 
   argv[i++] = "--homedir";
   argv[i++] = opt.homedir;
@@ -645,7 +651,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       goto cleanup;
     }
 
-  err = popen_protect_tool (pgmname, infp, outfp, &fp, prompt, keygrip, &pid);
+  err = popen_protect_tool (ctrl, 
+                            pgmname, infp, outfp, &fp, prompt, keygrip, &pid);
   if (err)
     {
       pid = -1;

@@ -460,11 +460,17 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
    output to OUTFILE and the pid of the process in PID.  Returns 0 on
    success or an error code. */
 static gpg_error_t
-popen_protect_tool (const char *pgmname,
+popen_protect_tool (ctrl_t ctrl, const char *pgmname,
                     FILE *infile, FILE *outfile, FILE **statusfile, pid_t *pid)
 {
   const char *argv[20];
   int i=0;
+
+  /* Make sure that the agent is running so that the protect tool is
+     able to ask for a passphrase.  This has only an effect under W32
+     where the agent is started on demand; sending a NOP does not harm
+     on other platforms. */
+  gpgsm_agent_send_nop (ctrl);
 
   argv[i++] = "--homedir";
   argv[i++] = opt.homedir;
@@ -551,7 +557,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
       goto cleanup;
     }
 
-  err = popen_protect_tool (pgmname, tmpfp, certfp, &fp, &pid);
+  err = popen_protect_tool (ctrl, pgmname, tmpfp, certfp, &fp, &pid);
   if (err)
     {
       pid = -1;
