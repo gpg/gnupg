@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-23 21:20+0200\n"
+"POT-Creation-Date: 2008-10-28 12:00+0100\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -1137,7 +1137,7 @@ msgstr "cardul OpenPGP nu e disponibil: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "cardul OpenPGP nr. %s detectat\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1531
+#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2902 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "nu pot face acest lucru în modul batch\n"
@@ -1346,7 +1346,7 @@ msgstr "pãrþi secrete ale cheii nu sunt disponibile\n"
 msgid "secret key already stored on a card\n"
 msgstr "cheia secretã deja stocatã pe un card\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1362
+#: g10/card-util.c:1396 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "ieºi din acest meniu"
 
@@ -1354,7 +1354,7 @@ msgstr "ieºi din acest meniu"
 msgid "show admin commands"
 msgstr "aratã comenzi administrare"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1365
+#: g10/card-util.c:1399 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "afiºeazã acest mesaj"
 
@@ -1410,7 +1410,7 @@ msgstr "verificã PIN-ul ºi listeazã toate datele"
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1537 g10/keyedit.c:1636
+#: g10/card-util.c:1537 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Comandã> "
 
@@ -1426,7 +1426,7 @@ msgstr "Sunt permise comenzi administrare\n"
 msgid "Admin commands are not allowed\n"
 msgstr "Nu sunt permise comenzi administrare\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2259
+#: g10/card-util.c:1699 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comandã invalidã  (încercaþi \"ajutor\")\n"
 
@@ -1439,7 +1439,7 @@ msgstr "--output nu merge pentru aceastã comandã\n"
 msgid "can't open `%s'\n"
 msgstr "nu pot deschide `%s'\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3406 g10/keyserver.c:1727
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3424 g10/keyserver.c:1727
 #: g10/revoke.c:226
 #, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1731,7 +1731,7 @@ msgstr "Amprenta CA: "
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Cheia invalidã %s fãcutã validã de --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3731
+#: g10/getkey.c:2533 g10/keyedit.c:3749
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "nici o subcheie secretã pentru subcheia publicã %s - ignoratã\n"
@@ -1988,7 +1988,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Pubkey: "
 
-#: g10/gpg.c:801 g10/keyedit.c:2325
+#: g10/gpg.c:801 g10/keyedit.c:2343
 msgid "Cipher: "
 msgstr "Cifru: "
 
@@ -1996,7 +1996,7 @@ msgstr "Cifru: "
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/gpg.c:815 g10/keyedit.c:2370
+#: g10/gpg.c:815 g10/keyedit.c:2388
 msgid "Compression: "
 msgstr "Compresie: "
 
@@ -2174,7 +2174,7 @@ msgid "`%s' is not a valid character set\n"
 msgstr "`%s' nu este un set de carectere valid\n"
 
 #
-#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4089
+#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4107
 msgid "could not parse keyserver URL\n"
 msgstr "nu am putut interpreta URL-ul serverului de chei\n"
 
@@ -3146,12 +3146,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "ID utilizator \"%s\" a fost revocat."
 
 #: g10/keyedit.c:607 g10/keyedit.c:635 g10/keyedit.c:662 g10/keyedit.c:830
-#: g10/keyedit.c:895 g10/keyedit.c:1755
+#: g10/keyedit.c:895 g10/keyedit.c:1773
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã ºtergeþi permanent \"%s\"? (d/N)"
 
 #: g10/keyedit.c:621 g10/keyedit.c:649 g10/keyedit.c:676 g10/keyedit.c:836
-#: g10/keyedit.c:1761
+#: g10/keyedit.c:1779
 msgid "  Unable to sign.\n"
 msgstr "  Nu pot semna.\n"
 
@@ -3338,8 +3338,8 @@ msgstr "Am verificat aceastã cheie foarte atent.\n"
 msgid "Really sign? (y/N) "
 msgstr "Doriþi cu adevãrat sã semnaþi? (d/N) "
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4808 g10/keyedit.c:4899 g10/keyedit.c:4963
-#: g10/keyedit.c:5024 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4826 g10/keyedit.c:4917 g10/keyedit.c:4981
+#: g10/keyedit.c:5042 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "semnarea a eºuat: %s\n"
@@ -3362,16 +3362,16 @@ msgstr "Pãrþile secrete ale cheii primare nu sunt disponibile.\n"
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Pãrþi secrete ale cheii primare sunt stacate pe card.\n"
 
-#: g10/keyedit.c:1154 g10/keygen.c:3608
+#: g10/keyedit.c:1156 g10/keygen.c:3608
 msgid "Key is protected.\n"
 msgstr "Cheia este protejatã.\n"
 
-#: g10/keyedit.c:1178
+#: g10/keyedit.c:1186
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Nu pot edita aceastã cheie: %s\n"
 
-#: g10/keyedit.c:1184
+#: g10/keyedit.c:1192
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -3379,11 +3379,11 @@ msgstr ""
 "Introduceþi noua frazã-parolã pentru acestã cheie secretã.\n"
 "\n"
 
-#: g10/keyedit.c:1199 g10/keygen.c:2163
+#: g10/keyedit.c:1207 g10/keygen.c:2163
 msgid "passphrase not correctly repeated; try again"
 msgstr "fraza-parolã nu a fost repetatã corect; mai încercaþi o datã"
 
-#: g10/keyedit.c:1204
+#: g10/keyedit.c:1212
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -3391,190 +3391,190 @@ msgstr ""
 "Nu doriþi o frazã-parolã - aceasta este probabil o idee *proastã*!\n"
 "\n"
 
-#: g10/keyedit.c:1207
+#: g10/keyedit.c:1215
 msgid "Do you really want to do this? (y/N) "
 msgstr "Doriþi într-adevãr sã faceþi acest lucru? (d/N) "
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1296
 msgid "moving a key signature to the correct place\n"
 msgstr "mut o semnãturã de cheie în locul corect\n"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1382
 msgid "save and quit"
 msgstr "salveazã ºi terminã"
 
-#: g10/keyedit.c:1367
+#: g10/keyedit.c:1385
 msgid "show key fingerprint"
 msgstr "afiºeazã amprenta cheii"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1386
 msgid "list key and user IDs"
 msgstr "enumerã chei ºi ID-uri utilizator"
 
-#: g10/keyedit.c:1370
+#: g10/keyedit.c:1388
 msgid "select user ID N"
 msgstr "selecteazã ID utilizator N"
 
-#: g10/keyedit.c:1371
+#: g10/keyedit.c:1389
 msgid "select subkey N"
 msgstr "selecteazã subcheia N"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1390
 msgid "check signatures"
 msgstr "verificã semnãturi"
 
-#: g10/keyedit.c:1377
+#: g10/keyedit.c:1395
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr ""
 "semneazã ID-urile utilizator selectate [* vezi mai jos pentru comenzi "
 "relevante]"
 
-#: g10/keyedit.c:1382
+#: g10/keyedit.c:1400
 msgid "sign selected user IDs locally"
 msgstr "semneazã ID-urile utilizatorilor selectaþi local"
 
-#: g10/keyedit.c:1384
+#: g10/keyedit.c:1402
 msgid "sign selected user IDs with a trust signature"
 msgstr "semneazã ID-urile utilizatorilor selectaþi cu o semnãturã de încredere"
 
-#: g10/keyedit.c:1386
+#: g10/keyedit.c:1404
 msgid "sign selected user IDs with a non-revocable signature"
 msgstr "semneazã ID-urile utilizatorilor selectaþi cu o semnãturã irevocabilã"
 
-#: g10/keyedit.c:1390
+#: g10/keyedit.c:1408
 msgid "add a user ID"
 msgstr "adaugã un ID utilizator"
 
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1410
 msgid "add a photo ID"
 msgstr "adaugã o pozã ID"
 
-#: g10/keyedit.c:1394
+#: g10/keyedit.c:1412
 msgid "delete selected user IDs"
 msgstr "ºterge ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1399
+#: g10/keyedit.c:1417
 msgid "add a subkey"
 msgstr "adaugã o subcheie"
 
-#: g10/keyedit.c:1403
+#: g10/keyedit.c:1421
 msgid "add a key to a smartcard"
 msgstr "adaugã o cheie la un smartcard"
 
-#: g10/keyedit.c:1405
+#: g10/keyedit.c:1423
 msgid "move a key to a smartcard"
 msgstr "mutã o cheie pe un smartcard"
 
-#: g10/keyedit.c:1407
+#: g10/keyedit.c:1425
 msgid "move a backup key to a smartcard"
 msgstr "mutã o cheie de rezervã pe un smartcard"
 
-#: g10/keyedit.c:1411
+#: g10/keyedit.c:1429
 msgid "delete selected subkeys"
 msgstr "ºterge subcheile selectate"
 
-#: g10/keyedit.c:1413
+#: g10/keyedit.c:1431
 msgid "add a revocation key"
 msgstr "adaugã o cheie de revocare"
 
-#: g10/keyedit.c:1415
+#: g10/keyedit.c:1433
 msgid "delete signatures from the selected user IDs"
 msgstr "ºterge semnãturile de pe ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1417
+#: g10/keyedit.c:1435
 msgid "change the expiration date for the key or selected subkeys"
 msgstr "schimbã data de expirare pentru cheia sau subcheile selectate"
 
-#: g10/keyedit.c:1419
+#: g10/keyedit.c:1437
 msgid "flag the selected user ID as primary"
 msgstr "marcheazã ID-ul utilizator selectat ca primar"
 
-#: g10/keyedit.c:1421
+#: g10/keyedit.c:1439
 msgid "toggle between the secret and public key listings"
 msgstr "comutã între listele de chei secrete ºi publice"
 
-#: g10/keyedit.c:1424
+#: g10/keyedit.c:1442
 msgid "list preferences (expert)"
 msgstr "enumerã preferinþele (expert)"
 
-#: g10/keyedit.c:1426
+#: g10/keyedit.c:1444
 msgid "list preferences (verbose)"
 msgstr "afiºeazã preferinþele (detaliat)"
 
-#: g10/keyedit.c:1428
+#: g10/keyedit.c:1446
 msgid "set preference list for the selected user IDs"
 msgstr "seteazã lista de preferinþe pentru ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1433
+#: g10/keyedit.c:1451
 #, fuzzy
 msgid "set the preferred keyserver URL for the selected user IDs"
 msgstr ""
 "seteazã URL-ul serverului de chei preferat pentru ID-urile utilizator "
 "selectate"
 
-#: g10/keyedit.c:1435
+#: g10/keyedit.c:1453
 #, fuzzy
 msgid "set a notation for the selected user IDs"
 msgstr "seteazã lista de preferinþe pentru ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1455
 msgid "change the passphrase"
 msgstr "schimbã fraza-parolã"
 
-#: g10/keyedit.c:1441
+#: g10/keyedit.c:1459
 msgid "change the ownertrust"
 msgstr "schimbã încrederea pentru proprietar"
 
-#: g10/keyedit.c:1443
+#: g10/keyedit.c:1461
 msgid "revoke signatures on the selected user IDs"
 msgstr "revocã semnãturile pentru ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1445
+#: g10/keyedit.c:1463
 msgid "revoke selected user IDs"
 msgstr "revocã ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1450
+#: g10/keyedit.c:1468
 msgid "revoke key or selected subkeys"
 msgstr "revocã cheia sau subcheile selectate"
 
-#: g10/keyedit.c:1451
+#: g10/keyedit.c:1469
 msgid "enable key"
 msgstr "activeazã cheia"
 
-#: g10/keyedit.c:1452
+#: g10/keyedit.c:1470
 msgid "disable key"
 msgstr "deactiveazã cheia"
 
-#: g10/keyedit.c:1453
+#: g10/keyedit.c:1471
 msgid "show selected photo IDs"
 msgstr "aratã pozele pentru ID-urile utilizator selectate"
 
-#: g10/keyedit.c:1455
+#: g10/keyedit.c:1473
 msgid "compact unusable user IDs and remove unusable signatures from key"
 msgstr ""
 
-#: g10/keyedit.c:1457
+#: g10/keyedit.c:1475
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#: g10/keyedit.c:1581
+#: g10/keyedit.c:1599
 #, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "eroare la citire keyblock secret \"%s\": %s\n"
 
-#: g10/keyedit.c:1599
+#: g10/keyedit.c:1617
 msgid "Secret key is available.\n"
 msgstr "Cheia secretã este disponibilã.\n"
 
-#: g10/keyedit.c:1682
+#: g10/keyedit.c:1700
 msgid "Need the secret key to do this.\n"
 msgstr "Aveþi nevoie de cheia secretã pentru a face aceasta.\n"
 
-#: g10/keyedit.c:1690
+#: g10/keyedit.c:1708
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Vã rugãm folosiþi mai întâi comanda \"toggle\".\n"
 
-#: g10/keyedit.c:1709
+#: g10/keyedit.c:1727
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3586,227 +3586,227 @@ msgstr ""
 "  pentru semnãturi irevocabile (nrsign), sau orice combinaþie a acestora\n"
 "  (ltsign, tnrsign, etc.).\n"
 
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1767
 msgid "Key is revoked."
 msgstr "Cheia este revocatã."
 
-#: g10/keyedit.c:1768
+#: g10/keyedit.c:1786
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Semnaþi într-adevãr toate ID-urile utilizator? (d/N) "
 
-#: g10/keyedit.c:1775
+#: g10/keyedit.c:1793
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Sugestie: Selectaþi ID-ul utilizator de semnat\n"
 
-#: g10/keyedit.c:1784
+#: g10/keyedit.c:1802
 #, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "Tip de semnãturã necunoscut `%s'\n"
 
-#: g10/keyedit.c:1807
+#: g10/keyedit.c:1825
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Aceastã comandã nu este permisã în modul %s.\n"
 
-#: g10/keyedit.c:1829 g10/keyedit.c:1849 g10/keyedit.c:2015
+#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2033
 msgid "You must select at least one user ID.\n"
 msgstr "Trebuie mai întâi sã selectaþi cel puþin un ID utilizator.\n"
 
-#: g10/keyedit.c:1831
+#: g10/keyedit.c:1849
 msgid "You can't delete the last user ID!\n"
 msgstr "Nu puteþi ºterge ultimul ID utilizator!\n"
 
-#: g10/keyedit.c:1833
+#: g10/keyedit.c:1851
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "ªtergeþi într-adevãr toate ID-urile utilizator selectate? (d/N) "
 
-#: g10/keyedit.c:1834
+#: g10/keyedit.c:1852
 msgid "Really remove this user ID? (y/N) "
 msgstr "ªtergeþi într-adevãr acest ID utilizator? (d/N) "
 
-#: g10/keyedit.c:1884
+#: g10/keyedit.c:1902
 msgid "Really move the primary key? (y/N) "
 msgstr "Mutaþi într-adevãr cheia primarã? (d/N) "
 
-#: g10/keyedit.c:1896
+#: g10/keyedit.c:1914
 msgid "You must select exactly one key.\n"
 msgstr "Trebuie sã selectaþi exact o cheie.\n"
 
-#: g10/keyedit.c:1924
+#: g10/keyedit.c:1942
 msgid "Command expects a filename argument\n"
 msgstr "Comanda aºteaptã un nume de fiºier ca argument\n"
 
-#: g10/keyedit.c:1938
+#: g10/keyedit.c:1956
 #, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "Nu pot deschide `%s': %s\n"
 
-#: g10/keyedit.c:1955
+#: g10/keyedit.c:1973
 #, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "Eroare citind cheia de rezervã de pe `%s': %s\n"
 
-#: g10/keyedit.c:1979
+#: g10/keyedit.c:1997
 msgid "You must select at least one key.\n"
 msgstr "Trebuie sã selectaþi cel puþin o cheie.\n"
 
-#: g10/keyedit.c:1982
+#: g10/keyedit.c:2000
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Doriþi într-adevãr sã ºtergeþi cheile selectate? (d/N) "
 
-#: g10/keyedit.c:1983
+#: g10/keyedit.c:2001
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Doriþi într-adevãr sã ºtergeþi aceastã cheie? (d/N) "
 
-#: g10/keyedit.c:2018
+#: g10/keyedit.c:2036
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr ""
 "Doriþi într-adevãr sã revocaþi toate ID-urile utilizator selectate? (d/N) "
 
-#: g10/keyedit.c:2019
+#: g10/keyedit.c:2037
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Doriþi într-adevãr sã revocaþi acest ID utilizator? (d/N) "
 
-#: g10/keyedit.c:2037
+#: g10/keyedit.c:2055
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Doriþi într-adevãr sã revocaþi toatã cheia? (d/N) "
 
-#: g10/keyedit.c:2048
+#: g10/keyedit.c:2066
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Doriþi într-adevãr sã revocaþi subcheile selectate? (d/N) "
 
-#: g10/keyedit.c:2050
+#: g10/keyedit.c:2068
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Doriþi într-adevãr sã revocaþi aceastã subcheie? (d/N) "
 
-#: g10/keyedit.c:2100
+#: g10/keyedit.c:2118
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 "Încrederea proprietar nu poate fi setatã când este folositã o bazã de date "
 "de încredere furnizatã de utilizator\n"
 
-#: g10/keyedit.c:2142
+#: g10/keyedit.c:2160
 msgid "Set preference list to:\n"
 msgstr "Seteazã lista de preferinþe ca:\n"
 
-#: g10/keyedit.c:2148
+#: g10/keyedit.c:2166
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr ""
 "Doriþi într-adevãr sã actualizaþi preferinþele pentru ID-urile utilizator "
 "selectate? (d/N) "
 
-#: g10/keyedit.c:2150
+#: g10/keyedit.c:2168
 msgid "Really update the preferences? (y/N) "
 msgstr "Doriþi într-adevãr sã actualizaþi preferinþele? (d/N) "
 
-#: g10/keyedit.c:2220
+#: g10/keyedit.c:2238
 msgid "Save changes? (y/N) "
 msgstr "Salvaþi schimbãrile?  (d/N) "
 
-#: g10/keyedit.c:2223
+#: g10/keyedit.c:2241
 msgid "Quit without saving? (y/N) "
 msgstr "Terminaþi fãrã a salva?  (d/N) "
 
-#: g10/keyedit.c:2233
+#: g10/keyedit.c:2251
 #, c-format
 msgid "update failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
-#: g10/keyedit.c:2240
+#: g10/keyedit.c:2258
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "actualizarea secretului a eºuat: %s\n"
 
-#: g10/keyedit.c:2247
+#: g10/keyedit.c:2265
 msgid "Key not changed so no update needed.\n"
 msgstr "Cheia nu a fost schimbatã aºa cã nici o actualizare a fost necesarã.\n"
 
-#: g10/keyedit.c:2348
+#: g10/keyedit.c:2366
 msgid "Digest: "
 msgstr "Rezumat: "
 
-#: g10/keyedit.c:2399
+#: g10/keyedit.c:2417
 msgid "Features: "
 msgstr "Capabilitãþi: "
 
-#: g10/keyedit.c:2410
+#: g10/keyedit.c:2428
 msgid "Keyserver no-modify"
 msgstr "Server de chei no-modify"
 
-#: g10/keyedit.c:2425 g10/keylist.c:310
+#: g10/keyedit.c:2443 g10/keylist.c:310
 msgid "Preferred keyserver: "
 msgstr "Server de chei preferat: "
 
-#: g10/keyedit.c:2433 g10/keyedit.c:2434
+#: g10/keyedit.c:2451 g10/keyedit.c:2452
 #, fuzzy
 msgid "Notations: "
 msgstr "Notaþie:"
 
-#: g10/keyedit.c:2644
+#: g10/keyedit.c:2662
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Nu existã nici o preferinþã pentru un ID utilizator stil PGP 2.x.\n"
 
-#: g10/keyedit.c:2703
+#: g10/keyedit.c:2721
 #, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Aceastã cheie a fost revocatã pe %s de %s cheia %s\n"
 
-#: g10/keyedit.c:2724
+#: g10/keyedit.c:2742
 #, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Aceastã cheie poate fi revocatã de %s cheia %s"
 
-#: g10/keyedit.c:2730
+#: g10/keyedit.c:2748
 msgid "(sensitive)"
 msgstr " (senzitiv)"
 
-#: g10/keyedit.c:2746 g10/keyedit.c:2802 g10/keyedit.c:2863 g10/keyedit.c:2878
+#: g10/keyedit.c:2764 g10/keyedit.c:2820 g10/keyedit.c:2881 g10/keyedit.c:2896
 #: g10/keylist.c:196 g10/keyserver.c:529
 #, c-format
 msgid "created: %s"
 msgstr "creatã: %s"
 
-#: g10/keyedit.c:2749 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
+#: g10/keyedit.c:2767 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
 #, c-format
 msgid "revoked: %s"
 msgstr "revocatã: %s"
 
-#: g10/keyedit.c:2751 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
+#: g10/keyedit.c:2769 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
 #, c-format
 msgid "expired: %s"
 msgstr "expiratã: %s"
 
-#: g10/keyedit.c:2753 g10/keyedit.c:2804 g10/keyedit.c:2865 g10/keyedit.c:2880
+#: g10/keyedit.c:2771 g10/keyedit.c:2822 g10/keyedit.c:2883 g10/keyedit.c:2898
 #: g10/keylist.c:198 g10/keylist.c:789 g10/keylist.c:824 g10/keylist.c:918
 #: g10/keylist.c:939 g10/keyserver.c:535 g10/mainproc.c:995
 #, c-format
 msgid "expires: %s"
 msgstr "expirã: %s"
 
-#: g10/keyedit.c:2755
+#: g10/keyedit.c:2773
 #, c-format
 msgid "usage: %s"
 msgstr "folosire: %s"
 
-#: g10/keyedit.c:2770
+#: g10/keyedit.c:2788
 #, c-format
 msgid "trust: %s"
 msgstr "încredere: %s"
 
-#: g10/keyedit.c:2774
+#: g10/keyedit.c:2792
 #, c-format
 msgid "validity: %s"
 msgstr "validitate: %s"
 
-#: g10/keyedit.c:2781
+#: g10/keyedit.c:2799
 msgid "This key has been disabled"
 msgstr "Aceastã cheie a fost deactivatã"
 
-#: g10/keyedit.c:2809 g10/keylist.c:202
+#: g10/keyedit.c:2827 g10/keylist.c:202
 msgid "card-no: "
 msgstr "nr-card: "
 
-#: g10/keyedit.c:2833
+#: g10/keyedit.c:2851
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3815,17 +3815,17 @@ msgstr ""
 "corectã dacã nu reporniþi programul.\n"
 
 #
-#: g10/keyedit.c:2897 g10/keyedit.c:3243 g10/keyserver.c:539
+#: g10/keyedit.c:2915 g10/keyedit.c:3261 g10/keyserver.c:539
 #: g10/mainproc.c:1842 g10/trustdb.c:1173 g10/trustdb.c:1701
 msgid "revoked"
 msgstr "revocatã"
 
-#: g10/keyedit.c:2899 g10/keyedit.c:3245 g10/keyserver.c:543
+#: g10/keyedit.c:2917 g10/keyedit.c:3263 g10/keyserver.c:543
 #: g10/mainproc.c:1844 g10/trustdb.c:526 g10/trustdb.c:1703
 msgid "expired"
 msgstr "expiratã"
 
-#: g10/keyedit.c:2964
+#: g10/keyedit.c:2982
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3834,7 +3834,7 @@ msgstr ""
 "              Aceastã comandã poate cauza ca un alt ID utilizator\n"
 "              sã devinã ID-ul utilizator primar presupus.\n"
 
-#: g10/keyedit.c:3025
+#: g10/keyedit.c:3043
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3843,74 +3843,74 @@ msgstr ""
 "AVERTISMENT: Aceasta este o cheie stil PGP2.  Adãugarea unei poze ID poate\n"
 "         cauza unele versiuni de PGP sã respingã aceastã cheie.\n"
 
-#: g10/keyedit.c:3030 g10/keyedit.c:3365
+#: g10/keyedit.c:3048 g10/keyedit.c:3383
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Sunteþi încã sigur(ã) cã doriþi sã o adãugaþi? (d/N) "
 
-#: g10/keyedit.c:3036
+#: g10/keyedit.c:3054
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nu puteþi adãuga o pozã ID la o cheie stil PGP2.\n"
 
-#: g10/keyedit.c:3176
+#: g10/keyedit.c:3194
 msgid "Delete this good signature? (y/N/q)"
 msgstr "ªtergeþi aceastã semnãturã bunã? (d/N/t)"
 
-#: g10/keyedit.c:3186
+#: g10/keyedit.c:3204
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "ªtergeþi aceastã semnãturã invalidã? (d/N/t)"
 
-#: g10/keyedit.c:3190
+#: g10/keyedit.c:3208
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "ªtergeþi aceastã semnãturã necunoscutã? (d/N/t)"
 
-#: g10/keyedit.c:3196
+#: g10/keyedit.c:3214
 msgid "Really delete this self-signature? (y/N)"
 msgstr "ªtergeþi într-adevãr aceastã auto-semnãturã? (d/N)"
 
-#: g10/keyedit.c:3210
+#: g10/keyedit.c:3228
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Am ºters %d semnãturi.\n"
 
-#: g10/keyedit.c:3211
+#: g10/keyedit.c:3229
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Am ºters %d semnãturi.\n"
 
-#: g10/keyedit.c:3214
+#: g10/keyedit.c:3232
 msgid "Nothing deleted.\n"
 msgstr "Nu am ºters nimic.\n"
 
-#: g10/keyedit.c:3247 g10/trustdb.c:1705
+#: g10/keyedit.c:3265 g10/trustdb.c:1705
 msgid "invalid"
 msgstr "invalid(ã)"
 
-#: g10/keyedit.c:3249
+#: g10/keyedit.c:3267
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "ID utilizator \"%s\" a fost revocat."
 
-#: g10/keyedit.c:3256
+#: g10/keyedit.c:3274
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "ID utilizator \"%s\" a fost revocat."
 
-#: g10/keyedit.c:3257
+#: g10/keyedit.c:3275
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "ID utilizator \"%s\" a fost revocat."
 
-#: g10/keyedit.c:3265
+#: g10/keyedit.c:3283
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "ID-ul utilizator \"%s\": este deja curat.\n"
 
-#: g10/keyedit.c:3266
+#: g10/keyedit.c:3284
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "ID-ul utilizator \"%s\": este deja curat.\n"
 
-#: g10/keyedit.c:3360
+#: g10/keyedit.c:3378
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3920,196 +3920,196 @@ msgstr ""
 "             desemnat poate face ca unele versiuni de PGP sã respingã "
 "cheia.\n"
 
-#: g10/keyedit.c:3371
+#: g10/keyedit.c:3389
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Nu puteþi adãuga un revocator desemnat la o cheie stil PGP 2.x.\n"
 
-#: g10/keyedit.c:3391
+#: g10/keyedit.c:3409
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Introduceþi ID-ul utilizator al revocatorului desemnat: "
 
-#: g10/keyedit.c:3416
+#: g10/keyedit.c:3434
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "nu pot desemna o cheie stil PGP 2.x ca un revocator desemnat\n"
 
-#: g10/keyedit.c:3431
+#: g10/keyedit.c:3449
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "nu puteþi desemna o cheie ca propriul sãu revocator desemnat\n"
 
-#: g10/keyedit.c:3453
+#: g10/keyedit.c:3471
 msgid "this key has already been designated as a revoker\n"
 msgstr "aceastã cheie a fost deja desemnatã ca un revocator\n"
 
-#: g10/keyedit.c:3472
+#: g10/keyedit.c:3490
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "AVERTISMENT: desemnarea unei chei ca un revocator desemnat nu poate fi "
 "anulatã!\n"
 
-#: g10/keyedit.c:3478
+#: g10/keyedit.c:3496
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Sunteþi sigur(ã) cã doriþi sã desemnaþi aceastã cheie ca ºi un revocator "
 "desemnat? (d/N) "
 
-#: g10/keyedit.c:3539
+#: g10/keyedit.c:3557
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Vã rugãm ºtergeþi selecþiile din cheile secrete.\n"
 
-#: g10/keyedit.c:3545
+#: g10/keyedit.c:3563
 msgid "Please select at most one subkey.\n"
 msgstr "Vã rugãm selectaþi cel mult o subcheie.\n"
 
-#: g10/keyedit.c:3549
+#: g10/keyedit.c:3567
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Schimb timpul de expirare pentru o subcheie.\n"
 
-#: g10/keyedit.c:3552
+#: g10/keyedit.c:3570
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Schimb timpul de expirare pentru cheia primarã.\n"
 
-#: g10/keyedit.c:3598
+#: g10/keyedit.c:3616
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nu puteþi schimba data de expirare a unei chei v3\n"
 
-#: g10/keyedit.c:3614
+#: g10/keyedit.c:3632
 msgid "No corresponding signature in secret ring\n"
 msgstr "Nici o semnãturã corespunzãtoare în inelul secret\n"
 
-#: g10/keyedit.c:3692
+#: g10/keyedit.c:3710
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr ""
 "AVERTISMENT: subcheia de semnare %s nu este certificatã reciproc (cross-"
 "certified)\n"
 
-#: g10/keyedit.c:3698
+#: g10/keyedit.c:3716
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3861
+#: g10/keyedit.c:3879
 msgid "Please select exactly one user ID.\n"
 msgstr "Vã rugãm selectaþi exact un ID utilizator.\n"
 
-#: g10/keyedit.c:3900 g10/keyedit.c:4010 g10/keyedit.c:4130 g10/keyedit.c:4271
+#: g10/keyedit.c:3918 g10/keyedit.c:4028 g10/keyedit.c:4148 g10/keyedit.c:4289
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "auto-semnãturã v3 sãritã pentru ID-ul utilizator \"%s\"\n"
 
-#: g10/keyedit.c:4071
+#: g10/keyedit.c:4089
 msgid "Enter your preferred keyserver URL: "
 msgstr "Introduceþi URL-ul serverului de chei preferat: "
 
-#: g10/keyedit.c:4151
+#: g10/keyedit.c:4169
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã o folosiþi? (d/N) "
 
-#: g10/keyedit.c:4152
+#: g10/keyedit.c:4170
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã o folosiþi? (d/N) "
 
-#: g10/keyedit.c:4214
+#: g10/keyedit.c:4232
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Notare semnãturã: "
 
-#: g10/keyedit.c:4363
+#: g10/keyedit.c:4381
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Suprascriu? (d/N) "
 
-#: g10/keyedit.c:4427
+#: g10/keyedit.c:4445
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Nici un ID utilizator cu indicele %d\n"
 
-#: g10/keyedit.c:4485
+#: g10/keyedit.c:4503
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Nici un ID utilizator cu hash-ul %s\n"
 
-#: g10/keyedit.c:4512
+#: g10/keyedit.c:4530
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "Nici o subcheie cu indicele %d\n"
 
-#: g10/keyedit.c:4647
+#: g10/keyedit.c:4665
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "ID utilizator: \"%s\"\n"
 
-#: g10/keyedit.c:4650 g10/keyedit.c:4714 g10/keyedit.c:4757
+#: g10/keyedit.c:4668 g10/keyedit.c:4732 g10/keyedit.c:4775
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "semnatã de cheia d-voastrã %s la %s%s%s\n"
 
-#: g10/keyedit.c:4652 g10/keyedit.c:4716 g10/keyedit.c:4759
+#: g10/keyedit.c:4670 g10/keyedit.c:4734 g10/keyedit.c:4777
 msgid " (non-exportable)"
 msgstr " (non-exportabilã)"
 
-#: g10/keyedit.c:4656
+#: g10/keyedit.c:4674
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Aceastã semnãturã a expirat pe %s.\n"
 
-#: g10/keyedit.c:4660
+#: g10/keyedit.c:4678
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Sunteþi încã sigur(ã) cã doriþi sã o revocaþi? (d/N) "
 
-#: g10/keyedit.c:4664
+#: g10/keyedit.c:4682
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creaþi un certificat de revocare pentru aceastã semnãturã? (d/N) "
 
-#: g10/keyedit.c:4691
+#: g10/keyedit.c:4709
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Aþi semnat aceste ID-uri utilizator pe cheia %s:\n"
 
-#: g10/keyedit.c:4717
+#: g10/keyedit.c:4735
 msgid " (non-revocable)"
 msgstr " (non-revocabilã)"
 
-#: g10/keyedit.c:4724
+#: g10/keyedit.c:4742
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "revocatã de cheia d-voastrã %s pe %s\n"
 
-#: g10/keyedit.c:4746
+#: g10/keyedit.c:4764
 msgid "You are about to revoke these signatures:\n"
 msgstr "Sunteþi pe cale sã revocaþi aceste semnãturi:\n"
 
-#: g10/keyedit.c:4766
+#: g10/keyedit.c:4784
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Doriþi într-adevãr sã creaþi certificatele de revocare? (d/N) "
 
-#: g10/keyedit.c:4796
+#: g10/keyedit.c:4814
 msgid "no secret key\n"
 msgstr "nici o cheie secretã\n"
 
-#: g10/keyedit.c:4866
+#: g10/keyedit.c:4884
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "ID-ul utilizator \"%s\" este deja revocat\n"
 
-#: g10/keyedit.c:4883
+#: g10/keyedit.c:4901
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVERTISMENT: o semnãturã ID utilizator este datatã %d secunde în viitor\n"
 
-#: g10/keyedit.c:4947
+#: g10/keyedit.c:4965
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Cheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:5009
+#: g10/keyedit.c:5027
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Subcheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:5104
+#: g10/keyedit.c:5122
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Afiºez poza ID %s de dimensiune %ld pentru cheia %s (uid %d)\n"
@@ -7148,35 +7148,35 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:68 sm/certdump.c:151
+#: sm/certdump.c:60 sm/certdump.c:143
 #, fuzzy
 msgid "none"
 msgstr "nu"
 
-#: sm/certdump.c:162
+#: sm/certdump.c:154
 #, fuzzy
 msgid "[none]"
 msgstr "[nesetat(ã)]"
 
-#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
+#: sm/certdump.c:577 sm/certdump.c:622 sm/certdump.c:687 sm/certdump.c:745
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "Eroare: rãspuns invalid.\n"
 
-#: sm/certdump.c:593 sm/certdump.c:638
+#: sm/certdump.c:585 sm/certdump.c:630
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:675 sm/certdump.c:731
+#: sm/certdump.c:667 sm/certdump.c:723
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:700 sm/certdump.c:754
+#: sm/certdump.c:692 sm/certdump.c:751
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "Eroare: rãspuns invalid.\n"
 
-#: sm/certdump.c:955
+#: sm/certdump.c:967
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

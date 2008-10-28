@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-23 21:20+0200\n"
+"POT-Creation-Date: 2008-10-28 12:00+0100\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -1128,7 +1128,7 @@ msgstr "titkos kulcs nem áll rendelkezésre"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1531
+#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2902 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
@@ -1354,7 +1354,7 @@ msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
 msgid "secret key already stored on a card\n"
 msgstr "Kihagytam: titkos kulcs már jelen van.\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1362
+#: g10/card-util.c:1396 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "kilépés ebbõl a menübõl"
 
@@ -1363,7 +1363,7 @@ msgstr "kilépés ebbõl a menübõl"
 msgid "show admin commands"
 msgstr "Egymásnak ellentmondó parancsok!\n"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1365
+#: g10/card-util.c:1399 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "megmutatja ezt a súgót"
 
@@ -1424,7 +1424,7 @@ msgstr ""
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1537 g10/keyedit.c:1636
+#: g10/card-util.c:1537 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Parancs> "
 
@@ -1443,7 +1443,7 @@ msgstr "Egymásnak ellentmondó parancsok!\n"
 msgid "Admin commands are not allowed\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2259
+#: g10/card-util.c:1699 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
 
@@ -1456,7 +1456,7 @@ msgstr "Az --output opció nem mûködik ehhez a parancshoz.\n"
 msgid "can't open `%s'\n"
 msgstr "Nem tudom megnyitni %s-t!\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3406 g10/keyserver.c:1727
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3424 g10/keyserver.c:1727
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1751,7 +1751,7 @@ msgstr ""
 "%08lX érvénytelen kulcsot érvényesítettük az\n"
 "--allow-non-selfsigned-uid opcióval.\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3731
+#: g10/getkey.c:2533 g10/keyedit.c:3749
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
@@ -2010,7 +2010,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Nyilvános kulcsú (pubkey): "
 
-#: g10/gpg.c:801 g10/keyedit.c:2325
+#: g10/gpg.c:801 g10/keyedit.c:2343
 msgid "Cipher: "
 msgstr "Rejtjelezõ (cipher): "
 
@@ -2018,7 +2018,7 @@ msgstr "Rejtjelezõ (cipher): "
 msgid "Hash: "
 msgstr "Kivonatoló (hash): "
 
-#: g10/gpg.c:815 g10/keyedit.c:2370
+#: g10/gpg.c:815 g10/keyedit.c:2388
 msgid "Compression: "
 msgstr "Tömörítõ (compression): "
 
@@ -2179,7 +2179,7 @@ msgstr "%s nem érvényes karakterkiosztás!\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s nem érvényes karakterkiosztás!\n"
 
-#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4089
+#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4107
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
@@ -3156,12 +3156,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "\"%s\" felhasználói azonosítót visszavonták."
 
 #: g10/keyedit.c:607 g10/keyedit.c:635 g10/keyedit.c:662 g10/keyedit.c:830
-#: g10/keyedit.c:895 g10/keyedit.c:1755
+#: g10/keyedit.c:895 g10/keyedit.c:1773
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Biztos abban, hogy továbbra is alá akarja írni? (i/N) "
 
 #: g10/keyedit.c:621 g10/keyedit.c:649 g10/keyedit.c:676 g10/keyedit.c:836
-#: g10/keyedit.c:1761
+#: g10/keyedit.c:1779
 msgid "  Unable to sign.\n"
 msgstr "  Nem tudom aláírni.\n"
 
@@ -3371,8 +3371,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Valóban aláírja? "
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4808 g10/keyedit.c:4899 g10/keyedit.c:4963
-#: g10/keyedit.c:5024 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4826 g10/keyedit.c:4917 g10/keyedit.c:4981
+#: g10/keyedit.c:5042 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Aláírás sikertelen: %s\n"
@@ -3394,16 +3394,16 @@ msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
 
-#: g10/keyedit.c:1154 g10/keygen.c:3608
+#: g10/keyedit.c:1156 g10/keygen.c:3608
 msgid "Key is protected.\n"
 msgstr "A kulcs védett.\n"
 
-#: g10/keyedit.c:1178
+#: g10/keyedit.c:1186
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Nem tudom szerkeszteni ezt a kulcsot: %s\n"
 
-#: g10/keyedit.c:1184
+#: g10/keyedit.c:1192
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -3411,11 +3411,11 @@ msgstr ""
 "Írja be az új jelszót ehhez a titkos kulcshoz!\n"
 "\n"
 
-#: g10/keyedit.c:1199 g10/keygen.c:2163
+#: g10/keyedit.c:1207 g10/keygen.c:2163
 msgid "passphrase not correctly repeated; try again"
 msgstr "Nem ismételte meg helyesen a jelszót! Próbálja újra!"
 
-#: g10/keyedit.c:1204
+#: g10/keyedit.c:1212
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -3423,206 +3423,206 @@ msgstr ""
 "Ön nem akar jelszót. Ez valószínûleg *rossz* ötlet!\n"
 "\n"
 
-#: g10/keyedit.c:1207
+#: g10/keyedit.c:1215
 #, fuzzy
 msgid "Do you really want to do this? (y/N) "
 msgstr "Valóban ezt akarja? "
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1296
 msgid "moving a key signature to the correct place\n"
 msgstr "Átrakom a kulcsaláírást a megfelelõ helyre.\n"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1382
 msgid "save and quit"
 msgstr "mentés és kilépés"
 
-#: g10/keyedit.c:1367
+#: g10/keyedit.c:1385
 #, fuzzy
 msgid "show key fingerprint"
 msgstr "megmutatja az ujjlenyomatot"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1386
 msgid "list key and user IDs"
 msgstr "kilistázza a kulcs- és felhasználóazonosítókat"
 
-#: g10/keyedit.c:1370
+#: g10/keyedit.c:1388
 msgid "select user ID N"
 msgstr "N. felhasználói azonosító kiválasztása"
 
-#: g10/keyedit.c:1371
+#: g10/keyedit.c:1389
 #, fuzzy
 msgid "select subkey N"
 msgstr "N. felhasználói azonosító kiválasztása"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1390
 #, fuzzy
 msgid "check signatures"
 msgstr "aláírások visszavonása"
 
-#: g10/keyedit.c:1377
+#: g10/keyedit.c:1395
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr ""
 
-#: g10/keyedit.c:1382
+#: g10/keyedit.c:1400
 #, fuzzy
 msgid "sign selected user IDs locally"
 msgstr "kulcs helyi aláírása"
 
-#: g10/keyedit.c:1384
+#: g10/keyedit.c:1402
 #, fuzzy
 msgid "sign selected user IDs with a trust signature"
 msgstr "Javaslat: Válassza ki az aláírni kívánt felhasználóazonosítókat!\n"
 
-#: g10/keyedit.c:1386
+#: g10/keyedit.c:1404
 msgid "sign selected user IDs with a non-revocable signature"
 msgstr ""
 
-#: g10/keyedit.c:1390
+#: g10/keyedit.c:1408
 msgid "add a user ID"
 msgstr "felhasználói azonosító hozzáadása"
 
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1410
 msgid "add a photo ID"
 msgstr "fotóazonosító hozzáadása"
 
-#: g10/keyedit.c:1394
+#: g10/keyedit.c:1412
 #, fuzzy
 msgid "delete selected user IDs"
 msgstr "felhasználói azonosító törlése"
 
-#: g10/keyedit.c:1399
+#: g10/keyedit.c:1417
 #, fuzzy
 msgid "add a subkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:1403
+#: g10/keyedit.c:1421
 msgid "add a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1405
+#: g10/keyedit.c:1423
 msgid "move a key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1407
+#: g10/keyedit.c:1425
 msgid "move a backup key to a smartcard"
 msgstr ""
 
-#: g10/keyedit.c:1411
+#: g10/keyedit.c:1429
 #, fuzzy
 msgid "delete selected subkeys"
 msgstr "másodlagos kulcs törlése"
 
-#: g10/keyedit.c:1413
+#: g10/keyedit.c:1431
 msgid "add a revocation key"
 msgstr "visszavonó kulcs hozzáadása"
 
-#: g10/keyedit.c:1415
+#: g10/keyedit.c:1433
 #, fuzzy
 msgid "delete signatures from the selected user IDs"
 msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
 
-#: g10/keyedit.c:1417
+#: g10/keyedit.c:1435
 #, fuzzy
 msgid "change the expiration date for the key or selected subkeys"
 msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
 
-#: g10/keyedit.c:1419
+#: g10/keyedit.c:1437
 #, fuzzy
 msgid "flag the selected user ID as primary"
 msgstr "felhasználóazonosító megjelölése elsõdlegesként"
 
-#: g10/keyedit.c:1421
+#: g10/keyedit.c:1439
 #, fuzzy
 msgid "toggle between the secret and public key listings"
 msgstr "váltás a titkos és a nyilvános kulcs listázása között"
 
-#: g10/keyedit.c:1424
+#: g10/keyedit.c:1442
 msgid "list preferences (expert)"
 msgstr "preferenciák listázása (szakértõ)"
 
-#: g10/keyedit.c:1426
+#: g10/keyedit.c:1444
 msgid "list preferences (verbose)"
 msgstr "preferenciák listázása (részletes)"
 
-#: g10/keyedit.c:1428
+#: g10/keyedit.c:1446
 #, fuzzy
 msgid "set preference list for the selected user IDs"
 msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
 
-#: g10/keyedit.c:1433
+#: g10/keyedit.c:1451
 #, fuzzy
 msgid "set the preferred keyserver URL for the selected user IDs"
 msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
 
-#: g10/keyedit.c:1435
+#: g10/keyedit.c:1453
 #, fuzzy
 msgid "set a notation for the selected user IDs"
 msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1455
 msgid "change the passphrase"
 msgstr "jelszóváltoztatás"
 
-#: g10/keyedit.c:1441
+#: g10/keyedit.c:1459
 msgid "change the ownertrust"
 msgstr "kulcstulajdonos megbízhatóságának beállítása"
 
-#: g10/keyedit.c:1443
+#: g10/keyedit.c:1461
 #, fuzzy
 msgid "revoke signatures on the selected user IDs"
 msgstr "Valóban visszavonja az összes kijelölt felhasználóazonosítót? "
 
-#: g10/keyedit.c:1445
+#: g10/keyedit.c:1463
 #, fuzzy
 msgid "revoke selected user IDs"
 msgstr "felhasználói azonosító visszavonása"
 
-#: g10/keyedit.c:1450
+#: g10/keyedit.c:1468
 #, fuzzy
 msgid "revoke key or selected subkeys"
 msgstr "másodlagos kulcs visszavonása"
 
-#: g10/keyedit.c:1451
+#: g10/keyedit.c:1469
 #, fuzzy
 msgid "enable key"
 msgstr "kulcs engedélyezése"
 
-#: g10/keyedit.c:1452
+#: g10/keyedit.c:1470
 #, fuzzy
 msgid "disable key"
 msgstr "kulcs tiltása"
 
-#: g10/keyedit.c:1453
+#: g10/keyedit.c:1471
 #, fuzzy
 msgid "show selected photo IDs"
 msgstr "fotóazonosító megmutatása"
 
-#: g10/keyedit.c:1455
+#: g10/keyedit.c:1473
 msgid "compact unusable user IDs and remove unusable signatures from key"
 msgstr ""
 
-#: g10/keyedit.c:1457
+#: g10/keyedit.c:1475
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#: g10/keyedit.c:1581
+#: g10/keyedit.c:1599
 #, fuzzy, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "Hiba \"%s\" titkoskulcs-blokk olvasásakor: %s.\n"
 
-#: g10/keyedit.c:1599
+#: g10/keyedit.c:1617
 msgid "Secret key is available.\n"
 msgstr "Titkos kulcs rendelkezésre áll.\n"
 
-#: g10/keyedit.c:1682
+#: g10/keyedit.c:1700
 msgid "Need the secret key to do this.\n"
 msgstr "Ehhez szükség van a titkos kulcsra.\n"
 
-#: g10/keyedit.c:1690
+#: g10/keyedit.c:1708
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Kérem, használja elõbb a \"toggle\" parancsot!\n"
 
-#: g10/keyedit.c:1709
+#: g10/keyedit.c:1727
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3630,240 +3630,240 @@ msgid ""
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1767
 msgid "Key is revoked."
 msgstr "A kulcsot visszavonták."
 
-#: g10/keyedit.c:1768
+#: g10/keyedit.c:1786
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Valóban aláírja az összes felhasználóazonosítót? "
 
-#: g10/keyedit.c:1775
+#: g10/keyedit.c:1793
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Javaslat: Válassza ki az aláírni kívánt felhasználóazonosítókat!\n"
 
-#: g10/keyedit.c:1784
+#: g10/keyedit.c:1802
 #, fuzzy, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "ismeretlen aláírásosztály"
 
-#: g10/keyedit.c:1807
+#: g10/keyedit.c:1825
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Ez a parancs %s módban nem engedélyezett.\n"
 
-#: g10/keyedit.c:1829 g10/keyedit.c:1849 g10/keyedit.c:2015
+#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2033
 msgid "You must select at least one user ID.\n"
 msgstr "Legalább egy felhasználóazonosítót ki kell választania!\n"
 
-#: g10/keyedit.c:1831
+#: g10/keyedit.c:1849
 msgid "You can't delete the last user ID!\n"
 msgstr "Nem törölheti az utolsó felhasználóazonosítót!\n"
 
-#: g10/keyedit.c:1833
+#: g10/keyedit.c:1851
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Valóban eltávolítja az összes kijelölt felhasználóazonosítót? "
 
-#: g10/keyedit.c:1834
+#: g10/keyedit.c:1852
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Valóban eltávolítja ezt a felhasználóazonosítót? "
 
-#: g10/keyedit.c:1884
+#: g10/keyedit.c:1902
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Valóban eltávolítja ezt a felhasználóazonosítót? "
 
-#: g10/keyedit.c:1896
+#: g10/keyedit.c:1914
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Legalább egy kulcsot ki kell választania!\n"
 
-#: g10/keyedit.c:1924
+#: g10/keyedit.c:1942
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1938
+#: g10/keyedit.c:1956
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" állományt: %s.\n"
 
-#: g10/keyedit.c:1955
+#: g10/keyedit.c:1973
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-#: g10/keyedit.c:1979
+#: g10/keyedit.c:1997
 msgid "You must select at least one key.\n"
 msgstr "Legalább egy kulcsot ki kell választania!\n"
 
-#: g10/keyedit.c:1982
+#: g10/keyedit.c:2000
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Valóban törli a kiválasztott kulcsokat? "
 
-#: g10/keyedit.c:1983
+#: g10/keyedit.c:2001
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Valóban törli ezt a kulcsot? "
 
-#: g10/keyedit.c:2018
+#: g10/keyedit.c:2036
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Valóban visszavonja az összes kijelölt felhasználóazonosítót? "
 
-#: g10/keyedit.c:2019
+#: g10/keyedit.c:2037
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Valóban visszavonja ezt a felhasználóazonosítót? "
 
-#: g10/keyedit.c:2037
+#: g10/keyedit.c:2055
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Valóban visszavonja ezt a kulcsot? "
 
-#: g10/keyedit.c:2048
+#: g10/keyedit.c:2066
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Valóban visszavonja a kijelölt kulcsokat? "
 
-#: g10/keyedit.c:2050
+#: g10/keyedit.c:2068
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Valóban visszavonja ezt a kulcsot? "
 
-#: g10/keyedit.c:2100
+#: g10/keyedit.c:2118
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2142
+#: g10/keyedit.c:2160
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "preferencialista beállítása"
 
-#: g10/keyedit.c:2148
+#: g10/keyedit.c:2166
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
 
-#: g10/keyedit.c:2150
+#: g10/keyedit.c:2168
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Valóban frissítsem a preferenciákat? "
 
-#: g10/keyedit.c:2220
+#: g10/keyedit.c:2238
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Mentsem a változtatásokat? "
 
-#: g10/keyedit.c:2223
+#: g10/keyedit.c:2241
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Kilépjek mentés nélkül? "
 
-#: g10/keyedit.c:2233
+#: g10/keyedit.c:2251
 #, c-format
 msgid "update failed: %s\n"
 msgstr "Frissítés sikertelen: %s.\n"
 
-#: g10/keyedit.c:2240
+#: g10/keyedit.c:2258
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
 
-#: g10/keyedit.c:2247
+#: g10/keyedit.c:2265
 msgid "Key not changed so no update needed.\n"
 msgstr "A kulcs nem változott, nincs szükség frissítésre.\n"
 
-#: g10/keyedit.c:2348
+#: g10/keyedit.c:2366
 msgid "Digest: "
 msgstr "Kivonat: "
 
-#: g10/keyedit.c:2399
+#: g10/keyedit.c:2417
 msgid "Features: "
 msgstr "Jellemzõk: "
 
-#: g10/keyedit.c:2410
+#: g10/keyedit.c:2428
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2425 g10/keylist.c:310
+#: g10/keyedit.c:2443 g10/keylist.c:310
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2433 g10/keyedit.c:2434
+#: g10/keyedit.c:2451 g10/keyedit.c:2452
 #, fuzzy
 msgid "Notations: "
 msgstr "Jelölés: "
 
-#: g10/keyedit.c:2644
+#: g10/keyedit.c:2662
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Nincsenek preferenciák egy PGP 2.x felhasználóazonosítón!\n"
 
-#: g10/keyedit.c:2703
+#: g10/keyedit.c:2721
 #, fuzzy, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Ezt a kulcsot a következõ %s kulcs visszavonhatja: "
 
-#: g10/keyedit.c:2724
+#: g10/keyedit.c:2742
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Ezt a kulcsot a következõ %s kulcs visszavonhatja: "
 
-#: g10/keyedit.c:2730
+#: g10/keyedit.c:2748
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (érzékeny)"
 
-#: g10/keyedit.c:2746 g10/keyedit.c:2802 g10/keyedit.c:2863 g10/keyedit.c:2878
+#: g10/keyedit.c:2764 g10/keyedit.c:2820 g10/keyedit.c:2881 g10/keyedit.c:2896
 #: g10/keylist.c:196 g10/keyserver.c:529
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "%s nem hozható létre: %s\n"
 
-#: g10/keyedit.c:2749 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
+#: g10/keyedit.c:2767 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[visszavont] "
 
-#: g10/keyedit.c:2751 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
+#: g10/keyedit.c:2769 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [lejár: %s]"
 
-#: g10/keyedit.c:2753 g10/keyedit.c:2804 g10/keyedit.c:2865 g10/keyedit.c:2880
+#: g10/keyedit.c:2771 g10/keyedit.c:2822 g10/keyedit.c:2883 g10/keyedit.c:2898
 #: g10/keylist.c:198 g10/keylist.c:789 g10/keylist.c:824 g10/keylist.c:918
 #: g10/keylist.c:939 g10/keyserver.c:535 g10/mainproc.c:995
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [lejár: %s]"
 
-#: g10/keyedit.c:2755
+#: g10/keyedit.c:2773
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " bizalom: %c/%c"
 
-#: g10/keyedit.c:2770
+#: g10/keyedit.c:2788
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " bizalom: %c/%c"
 
-#: g10/keyedit.c:2774
+#: g10/keyedit.c:2792
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2781
+#: g10/keyedit.c:2799
 msgid "This key has been disabled"
 msgstr "Ez a kulcs tiltott."
 
-#: g10/keyedit.c:2809 g10/keylist.c:202
+#: g10/keyedit.c:2827 g10/keylist.c:202
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2833
+#: g10/keyedit.c:2851
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3871,19 +3871,19 @@ msgstr ""
 "Kérem, vegye figyelembe, hogy az itt látható kulcs érvényessége nem\n"
 "feltétlenül helyes, amíg újra nem indítja a programot!\n"
 
-#: g10/keyedit.c:2897 g10/keyedit.c:3243 g10/keyserver.c:539
+#: g10/keyedit.c:2915 g10/keyedit.c:3261 g10/keyserver.c:539
 #: g10/mainproc.c:1842 g10/trustdb.c:1173 g10/trustdb.c:1701
 #, fuzzy
 msgid "revoked"
 msgstr "[visszavont] "
 
-#: g10/keyedit.c:2899 g10/keyedit.c:3245 g10/keyserver.c:543
+#: g10/keyedit.c:2917 g10/keyedit.c:3263 g10/keyserver.c:543
 #: g10/mainproc.c:1844 g10/trustdb.c:526 g10/trustdb.c:1703
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2964
+#: g10/keyedit.c:2982
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3891,7 +3891,7 @@ msgstr ""
 "FIGYELEM: Nincs kijelölt elsõdleges felhasználóazonosító. Ez a parancs\n"
 " azt okozhatja, hogy egy másik azonosító lesz elsõdlegesként használva.\n"
 
-#: g10/keyedit.c:3025
+#: g10/keyedit.c:3043
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3901,75 +3901,75 @@ msgstr ""
 "okozhatja,\n"
 "          hogy a PGP egyes verziói visszautasítják ezt a kulcsot.\n"
 
-#: g10/keyedit.c:3030 g10/keyedit.c:3365
+#: g10/keyedit.c:3048 g10/keyedit.c:3383
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Továbbra is hozzá akarja adni? (i/N) "
 
-#: g10/keyedit.c:3036
+#: g10/keyedit.c:3054
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Lehet, hogy nem adhat fotóazonosítót egy PGP2 stílusú kulcshoz!\n"
 
-#: g10/keyedit.c:3176
+#: g10/keyedit.c:3194
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Törli ezt a jó aláírást? (i/N/k)"
 
-#: g10/keyedit.c:3186
+#: g10/keyedit.c:3204
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Törli ezt az érvénytelen aláírást? (i/N/k)"
 
-#: g10/keyedit.c:3190
+#: g10/keyedit.c:3208
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Törli ezt az ismeretlen aláírást? (i/N/k)"
 
-#: g10/keyedit.c:3196
+#: g10/keyedit.c:3214
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Valóban törli ezt az önaláírást? (i/N)"
 
-#: g10/keyedit.c:3210
+#: g10/keyedit.c:3228
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Töröltem %d aláírást.\n"
 
-#: g10/keyedit.c:3211
+#: g10/keyedit.c:3229
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Töröltem %d aláírást.\n"
 
-#: g10/keyedit.c:3214
+#: g10/keyedit.c:3232
 msgid "Nothing deleted.\n"
 msgstr "Nem töröltem semmit.\n"
 
-#: g10/keyedit.c:3247 g10/trustdb.c:1705
+#: g10/keyedit.c:3265 g10/trustdb.c:1705
 #, fuzzy
 msgid "invalid"
 msgstr "érvénytelen páncél"
 
-#: g10/keyedit.c:3249
+#: g10/keyedit.c:3267
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "\"%s\" felhasználói azonosítót visszavonták."
 
-#: g10/keyedit.c:3256
+#: g10/keyedit.c:3274
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "\"%s\" felhasználói azonosítót visszavonták."
 
-#: g10/keyedit.c:3257
+#: g10/keyedit.c:3275
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "\"%s\" felhasználói azonosítót visszavonták."
 
-#: g10/keyedit.c:3265
+#: g10/keyedit.c:3283
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:3266
+#: g10/keyedit.c:3284
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:3360
+#: g10/keyedit.c:3378
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3979,199 +3979,199 @@ msgstr ""
 "          azt okozhatja, hogy egyes PGP verziók visszautasítják ezt a "
 "kulcsot!\n"
 
-#: g10/keyedit.c:3371
+#: g10/keyedit.c:3389
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr ""
 "Lehet, hogy nem adhat kijelölt visszavonót egy PGP 2.x-stílusú kulcshoz.\n"
 
-#: g10/keyedit.c:3391
+#: g10/keyedit.c:3409
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Írja be a kijelölt visszavonó felhasználóazonosítóját: "
 
-#: g10/keyedit.c:3416
+#: g10/keyedit.c:3434
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "Nem adhat meg PGP 2.x stílusú kulcsot kijelölt visszavonónak!\n"
 
-#: g10/keyedit.c:3431
+#: g10/keyedit.c:3449
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "Nem adhat meg egy kulcsot saját kijelölt visszavonójának!\n"
 
-#: g10/keyedit.c:3453
+#: g10/keyedit.c:3471
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "FIGYELEM: Ezt a kulcsot a kijelölt visszavonó visszavonta!\n"
 
-#: g10/keyedit.c:3472
+#: g10/keyedit.c:3490
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "FIGYELEM: A kijelölt visszavonó kulcs megadása nem csinálható vissza!\n"
 
-#: g10/keyedit.c:3478
+#: g10/keyedit.c:3496
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Biztosan ez a kulcs legyen a kijelölt visszavonó? (i/N): "
 
-#: g10/keyedit.c:3539
+#: g10/keyedit.c:3557
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Kérem, távolítsa el a kijelöléseket a titkos kulcsokról!\n"
 
-#: g10/keyedit.c:3545
+#: g10/keyedit.c:3563
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Maximum egy másodlagos kulcsot jelöljön ki, kérem!\n"
 
-#: g10/keyedit.c:3549
+#: g10/keyedit.c:3567
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Másodlagos kulcs lejárati idejének változtatása.\n"
 
-#: g10/keyedit.c:3552
+#: g10/keyedit.c:3570
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Elsõdleges kulcs lejárati idejének változtatása.\n"
 
-#: g10/keyedit.c:3598
+#: g10/keyedit.c:3616
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
 
-#: g10/keyedit.c:3614
+#: g10/keyedit.c:3632
 msgid "No corresponding signature in secret ring\n"
 msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
-#: g10/keyedit.c:3692
+#: g10/keyedit.c:3710
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "FIGYELEM: %08lX aláíró alkulcs nem kereszthitelesített.\n"
 
-#: g10/keyedit.c:3698
+#: g10/keyedit.c:3716
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3861
+#: g10/keyedit.c:3879
 msgid "Please select exactly one user ID.\n"
 msgstr "Kérem, válasszon ki pontosan egy felhasználóazonosítót!\n"
 
-#: g10/keyedit.c:3900 g10/keyedit.c:4010 g10/keyedit.c:4130 g10/keyedit.c:4271
+#: g10/keyedit.c:3918 g10/keyedit.c:4028 g10/keyedit.c:4148 g10/keyedit.c:4289
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "Kihagyom a v3 önaláírást a \"%s\" felhasználóazonosítón.\n"
 
-#: g10/keyedit.c:4071
+#: g10/keyedit.c:4089
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4151
+#: g10/keyedit.c:4169
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Biztos abban, hogy használni akarja (i/N)? "
 
-#: g10/keyedit.c:4152
+#: g10/keyedit.c:4170
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Biztos abban, hogy használni akarja (i/N)? "
 
-#: g10/keyedit.c:4214
+#: g10/keyedit.c:4232
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Aláírás-jelölés: "
 
-#: g10/keyedit.c:4363
+#: g10/keyedit.c:4381
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Felülírjam (i/N)? "
 
-#: g10/keyedit.c:4427
+#: g10/keyedit.c:4445
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Nincs %d indexû felhasználóazonosító!\n"
 
-#: g10/keyedit.c:4485
+#: g10/keyedit.c:4503
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Nincs %d indexû felhasználóazonosító!\n"
 
-#: g10/keyedit.c:4512
+#: g10/keyedit.c:4530
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Nincs %d indexû felhasználóazonosító!\n"
 
-#: g10/keyedit.c:4647
+#: g10/keyedit.c:4665
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "Felhasználóazonosító: \""
 
-#: g10/keyedit.c:4650 g10/keyedit.c:4714 g10/keyedit.c:4757
+#: g10/keyedit.c:4668 g10/keyedit.c:4732 g10/keyedit.c:4775
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   aláírva %08lX által %s%s%s idõpontban.\n"
 
-#: g10/keyedit.c:4652 g10/keyedit.c:4716 g10/keyedit.c:4759
+#: g10/keyedit.c:4670 g10/keyedit.c:4734 g10/keyedit.c:4777
 msgid " (non-exportable)"
 msgstr " (nem exportálható)"
 
-#: g10/keyedit.c:4656
+#: g10/keyedit.c:4674
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Ez az aláírás lejárt %s idõpontban.\n"
 
-#: g10/keyedit.c:4660
+#: g10/keyedit.c:4678
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Biztos benne, hogy mégis visszavonja? (i/N) "
 
-#: g10/keyedit.c:4664
+#: g10/keyedit.c:4682
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Csináljunk egy visszavonó igazolást ehhez az aláíráshoz? (i/N) "
 
-#: g10/keyedit.c:4691
+#: g10/keyedit.c:4709
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Ön aláírta a következõ felhasználóazonosítókat:\n"
 
-#: g10/keyedit.c:4717
+#: g10/keyedit.c:4735
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (nem exportálható)"
 
-#: g10/keyedit.c:4724
+#: g10/keyedit.c:4742
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   visszavonva %08lX által %s idõpontban.\n"
 
-#: g10/keyedit.c:4746
+#: g10/keyedit.c:4764
 msgid "You are about to revoke these signatures:\n"
 msgstr "A következõ aláírásokat fogja visszavonni:\n"
 
-#: g10/keyedit.c:4766
+#: g10/keyedit.c:4784
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Valóban létrehozzam a visszavonó igazolást? (i/N) "
 
-#: g10/keyedit.c:4796
+#: g10/keyedit.c:4814
 msgid "no secret key\n"
 msgstr "Nincs titkos kulcs.\n"
 
-#: g10/keyedit.c:4866
+#: g10/keyedit.c:4884
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:4883
+#: g10/keyedit.c:4901
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "FIGYELEM: A felhasználóazonosítót %d másodperccel a jövõben írták alá.\n"
 
-#: g10/keyedit.c:4947
+#: g10/keyedit.c:4965
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:5009
+#: g10/keyedit.c:5027
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:5104
+#: g10/keyedit.c:5122
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "%s fotóazonosító (méret: %ld, kulcs: 0x%08lX, felh: %d) mutatása.\n"
@@ -7251,35 +7251,35 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:68 sm/certdump.c:151
+#: sm/certdump.c:60 sm/certdump.c:143
 #, fuzzy
 msgid "none"
 msgstr "nem"
 
-#: sm/certdump.c:162
+#: sm/certdump.c:154
 #, fuzzy
 msgid "[none]"
 msgstr "Ismeretlen módú"
 
-#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
+#: sm/certdump.c:577 sm/certdump.c:622 sm/certdump.c:687 sm/certdump.c:745
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
-#: sm/certdump.c:593 sm/certdump.c:638
+#: sm/certdump.c:585 sm/certdump.c:630
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:675 sm/certdump.c:731
+#: sm/certdump.c:667 sm/certdump.c:723
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:700 sm/certdump.c:754
+#: sm/certdump.c:692 sm/certdump.c:751
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
-#: sm/certdump.c:955
+#: sm/certdump.c:967
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

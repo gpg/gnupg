@@ -786,9 +786,6 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
   struct format_name_cookie *c = cookie;
   char *p;
 
-  log_debug    ("buffer: size=%d len=%d error=%d: adding %d bytes\n", 
-                (int)c->size, (int)c->len, c->error, (int)size);
-  log_printhex ("Adding:", buffer, size);
   if (!c->buffer)
     {
       p = xtrymalloc (size + 1 + 1);

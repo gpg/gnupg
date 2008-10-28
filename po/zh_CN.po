@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-23 21:20+0200\n"
+"POT-Creation-Date: 2008-10-28 12:00+0100\n"
 "PO-Revision-Date: 2006-07-02 10:58+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -1130,7 +1130,7 @@ msgstr "OpenPGP 卡不可用：%s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "检测到 OpenPGP 卡号 %s\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1531
+#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2902 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "在批处理模式中无法完成此操作\n"
@@ -1339,7 +1339,7 @@ msgstr "私钥部分不可用\n"
 msgid "secret key already stored on a card\n"
 msgstr "私钥已存储在卡上\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1362
+#: g10/card-util.c:1396 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "离开这个菜单"
 
@@ -1347,7 +1347,7 @@ msgstr "离开这个菜单"
 msgid "show admin commands"
 msgstr "显示管理员命令"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1365
+#: g10/card-util.c:1399 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "显示这份在线说明"
 
@@ -1403,7 +1403,7 @@ msgstr "验证 PIN 并列出所有数据"
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1537 g10/keyedit.c:1636
+#: g10/card-util.c:1537 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "命令> "
 
@@ -1419,7 +1419,7 @@ msgstr "允许使用管理员命令\n"
 msgid "Admin commands are not allowed\n"
 msgstr "不允许使用管理员命令\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2259
+#: g10/card-util.c:1699 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "无效的指令(尝试“help”)\n"
 
@@ -1432,7 +1432,7 @@ msgstr "--output 在这个命令中不起作用\n"
 msgid "can't open `%s'\n"
 msgstr "无法打开‘%s’\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3406 g10/keyserver.c:1727
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3424 g10/keyserver.c:1727
 #: g10/revoke.c:226
 #, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1708,7 +1708,7 @@ msgstr "CA 指纹："
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "--allow-non-selfsigned-uid 使无效密钥 %s 生效\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3731
+#: g10/getkey.c:2533 g10/keyedit.c:3749
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "公钥 %s 没有相对应的私钥――忽略\n"
@@ -1967,7 +1967,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "公钥："
 
-#: g10/gpg.c:801 g10/keyedit.c:2325
+#: g10/gpg.c:801 g10/keyedit.c:2343
 msgid "Cipher: "
 msgstr "对称加密："
 
@@ -1975,7 +1975,7 @@ msgstr "对称加密："
 msgid "Hash: "
 msgstr "散列："
 
-#: g10/gpg.c:815 g10/keyedit.c:2370
+#: g10/gpg.c:815 g10/keyedit.c:2388
 msgid "Compression: "
 msgstr "压缩："
 
@@ -2132,7 +2132,7 @@ msgstr "‘%s’不是一个有效的签名过期日期\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "‘%s’不是一个有效的字符集\n"
 
-#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4089
+#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4107
 msgid "could not parse keyserver URL\n"
 msgstr "无法解析公钥服务器 URL\n"
 
@@ -3084,12 +3084,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "用户标识“%s”已被吊销。"
 
 #: g10/keyedit.c:607 g10/keyedit.c:635 g10/keyedit.c:662 g10/keyedit.c:830
-#: g10/keyedit.c:895 g10/keyedit.c:1755
+#: g10/keyedit.c:895 g10/keyedit.c:1773
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "您仍然想要为它签名吗？(y/N)"
 
 #: g10/keyedit.c:621 g10/keyedit.c:649 g10/keyedit.c:676 g10/keyedit.c:836
-#: g10/keyedit.c:1761
+#: g10/keyedit.c:1779
 msgid "  Unable to sign.\n"
 msgstr "  无法添加签名。\n"
 
@@ -3267,8 +3267,8 @@ msgstr "我非常小心地检查过这把密钥。\n"
 msgid "Really sign? (y/N) "
 msgstr "真的要签名吗？(y/N)"
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4808 g10/keyedit.c:4899 g10/keyedit.c:4963
-#: g10/keyedit.c:5024 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4826 g10/keyedit.c:4917 g10/keyedit.c:4981
+#: g10/keyedit.c:5042 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "签名时失败： %s\n"
@@ -3289,16 +3289,16 @@ msgstr "主钥的私钥部分无法取用。\n"
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "主钥的私钥部分存储在卡上。\n"
 
-#: g10/keyedit.c:1154 g10/keygen.c:3608
+#: g10/keyedit.c:1156 g10/keygen.c:3608
 msgid "Key is protected.\n"
 msgstr "密钥受保护。\n"
 
-#: g10/keyedit.c:1178
+#: g10/keyedit.c:1186
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "无法编辑这把密钥： %s\n"
 
-#: g10/keyedit.c:1184
+#: g10/keyedit.c:1192
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -3306,11 +3306,11 @@ msgstr ""
 "输入要给这把私钥用的新密码。\n"
 "\n"
 
-#: g10/keyedit.c:1199 g10/keygen.c:2163
+#: g10/keyedit.c:1207 g10/keygen.c:2163
 msgid "passphrase not correctly repeated; try again"
 msgstr "密码再次输入时与首次输入不符；请再试一次"
 
-#: g10/keyedit.c:1204
+#: g10/keyedit.c:1212
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -3318,184 +3318,184 @@ msgstr ""
 "您不想要用密码――这大概是个坏主意！\n"
 "\n"
 
-#: g10/keyedit.c:1207
+#: g10/keyedit.c:1215
 msgid "Do you really want to do this? (y/N) "
 msgstr "您真的想要这么做吗？(y/N)"
 
-#: g10/keyedit.c:1278
+#: g10/keyedit.c:1296
 msgid "moving a key signature to the correct place\n"
 msgstr "正在把密钥的签名移动到正确的位置去\n"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1382
 msgid "save and quit"
 msgstr "保存并离开"
 
-#: g10/keyedit.c:1367
+#: g10/keyedit.c:1385
 msgid "show key fingerprint"
 msgstr "显示密钥指纹"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1386
 msgid "list key and user IDs"
 msgstr "列出密钥和用户标识"
 
-#: g10/keyedit.c:1370
+#: g10/keyedit.c:1388
 msgid "select user ID N"
 msgstr "选择用户标识 N"
 
-#: g10/keyedit.c:1371
+#: g10/keyedit.c:1389
 msgid "select subkey N"
 msgstr "选择子钥 N"
 
-#: g10/keyedit.c:1372
+#: g10/keyedit.c:1390
 msgid "check signatures"
 msgstr "检查签名"
 
-#: g10/keyedit.c:1377
+#: g10/keyedit.c:1395
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr "为所选用户标识添加签名[* 参见下面的相关命令]"
 
-#: g10/keyedit.c:1382
+#: g10/keyedit.c:1400
 msgid "sign selected user IDs locally"
 msgstr "为所选用户标识添加本地签名"
 
-#: g10/keyedit.c:1384
+#: g10/keyedit.c:1402
 msgid "sign selected user IDs with a trust signature"
 msgstr "为所选用户标识添加信任签名"
 
-#: g10/keyedit.c:1386
+#: g10/keyedit.c:1404
 msgid "sign selected user IDs with a non-revocable signature"
 msgstr "为所选用户标识添加不可吊销签名"
 
-#: g10/keyedit.c:1390
+#: g10/keyedit.c:1408
 msgid "add a user ID"
 msgstr "增加一个用户标识"
 
-#: g10/keyedit.c:1392
+#: g10/keyedit.c:1410
 msgid "add a photo ID"
 msgstr "增加一个照片标识"
 
-#: g10/keyedit.c:1394
+#: g10/keyedit.c:1412
 msgid "delete selected user IDs"
 msgstr "删除选定的用户标识"
 
-#: g10/keyedit.c:1399
+#: g10/keyedit.c:1417
 msgid "add a subkey"
 msgstr "添加一个子钥"
 
-#: g10/keyedit.c:1403
+#: g10/keyedit.c:1421
 msgid "add a key to a smartcard"
 msgstr "在智能卡上添加一把密钥"
 
-#: g10/keyedit.c:1405
+#: g10/keyedit.c:1423
 msgid "move a key to a smartcard"
 msgstr "将一把密钥移动到智能卡上"
 
-#: g10/keyedit.c:1407
+#: g10/keyedit.c:1425
 msgid "move a backup key to a smartcard"
 msgstr "将备份密钥转移到卡上"
 
-#: g10/keyedit.c:1411
+#: g10/keyedit.c:1429
 msgid "delete selected subkeys"
 msgstr "删除选定的子钥"
 
-#: g10/keyedit.c:1413
+#: g10/keyedit.c:1431
 msgid "add a revocation key"
 msgstr "增加一把吊销密钥"
 
-#: g10/keyedit.c:1415
+#: g10/keyedit.c:1433
 msgid "delete signatures from the selected user IDs"
 msgstr "删除所选用户标识上的签名"
 
-#: g10/keyedit.c:1417
+#: g10/keyedit.c:1435
 msgid "change the expiration date for the key or selected subkeys"
 msgstr "变更密钥或所选子钥的使用期限"
 
-#: g10/keyedit.c:1419
+#: g10/keyedit.c:1437
 msgid "flag the selected user ID as primary"
 msgstr "将所选的用户标识设为首选用户标识"
 
-#: g10/keyedit.c:1421
+#: g10/keyedit.c:1439
 msgid "toggle between the secret and public key listings"
 msgstr "在私钥和公钥清单间切换"
 
-#: g10/keyedit.c:1424
+#: g10/keyedit.c:1442
 msgid "list preferences (expert)"
 msgstr "列出首选项(专家模式)"
 
-#: g10/keyedit.c:1426
+#: g10/keyedit.c:1444
 msgid "list preferences (verbose)"
 msgstr "列出首选项(详细模式)"
 
-#: g10/keyedit.c:1428
+#: g10/keyedit.c:1446
 msgid "set preference list for the selected user IDs"
 msgstr "设定所选用户标识的首选项"
 
-#: g10/keyedit.c:1433
+#: g10/keyedit.c:1451
 msgid "set the preferred keyserver URL for the selected user IDs"
 msgstr "设定所选用户标识的首选公钥服务器的 URL"
 
-#: g10/keyedit.c:1435
+#: g10/keyedit.c:1453
 msgid "set a notation for the selected user IDs"
 msgstr "为所选用户标识的设定注记"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1455
 msgid "change the passphrase"
 msgstr "更改密码"
 
-#: g10/keyedit.c:1441
+#: g10/keyedit.c:1459
 msgid "change the ownertrust"
 msgstr "更改信任度"
 
-#: g10/keyedit.c:1443
+#: g10/keyedit.c:1461
 msgid "revoke signatures on the selected user IDs"
 msgstr "吊销所选用户标识上的签名"
 
-#: g10/keyedit.c:1445
+#: g10/keyedit.c:1463
 msgid "revoke selected user IDs"
 msgstr "吊销选定的用户标识"
 
-#: g10/keyedit.c:1450
+#: g10/keyedit.c:1468
 msgid "revoke key or selected subkeys"
 msgstr "吊销密钥或选定的子钥"
 
-#: g10/keyedit.c:1451
+#: g10/keyedit.c:1469
 msgid "enable key"
 msgstr "启用密钥"
 
-#: g10/keyedit.c:1452
+#: g10/keyedit.c:1470
 msgid "disable key"
 msgstr "禁用密钥"
 
-#: g10/keyedit.c:1453
+#: g10/keyedit.c:1471
 msgid "show selected photo IDs"
 msgstr "显示选定的照片标识"
 
-#: g10/keyedit.c:1455
+#: g10/keyedit.c:1473
 msgid "compact unusable user IDs and remove unusable signatures from key"
 msgstr "压缩不可用的用户标识并删除不可用的签名"
 
-#: g10/keyedit.c:1457
+#: g10/keyedit.c:1475
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "压缩不可用的用户标识并删除所有签名"
 
-#: g10/keyedit.c:1581
+#: g10/keyedit.c:1599
 #, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "读取私钥区块“%s”时出错：%s\n"
 
-#: g10/keyedit.c:1599
+#: g10/keyedit.c:1617
 msgid "Secret key is available.\n"
 msgstr "私钥可用。\n"
 
-#: g10/keyedit.c:1682
+#: g10/keyedit.c:1700
 msgid "Need the secret key to do this.\n"
 msgstr "要有私钥才能这么做。\n"
 
-#: g10/keyedit.c:1690
+#: g10/keyedit.c:1708
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "请先使用“toggle”指令。\n"
 
-#: g10/keyedit.c:1709
+#: g10/keyedit.c:1727
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3506,244 +3506,244 @@ msgstr ""
 "  信任签名，或‘nr’前缀(nrsign)以添加不可吊销签名，或者以上三种前缀的任何组\n"
 "  合(ltsign、tnrsign 等)。\n"
 
-#: g10/keyedit.c:1749
+#: g10/keyedit.c:1767
 msgid "Key is revoked."
 msgstr "密钥已被吊销。"
 
-#: g10/keyedit.c:1768
+#: g10/keyedit.c:1786
 msgid "Really sign all user IDs? (y/N) "
 msgstr "真的为所有的用户标识签名吗？(y/N)"
 
-#: g10/keyedit.c:1775
+#: g10/keyedit.c:1793
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "提示：选择要添加签名的用户标识\n"
 
-#: g10/keyedit.c:1784
+#: g10/keyedit.c:1802
 #, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "未知的签名类型‘%s’\n"
 
-#: g10/keyedit.c:1807
+#: g10/keyedit.c:1825
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "在 %s 模式中不允许使用这个指令。\n"
 
-#: g10/keyedit.c:1829 g10/keyedit.c:1849 g10/keyedit.c:2015
+#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2033
 msgid "You must select at least one user ID.\n"
 msgstr "您至少得选择一个用户标识。\n"
 
-#: g10/keyedit.c:1831
+#: g10/keyedit.c:1849
 msgid "You can't delete the last user ID!\n"
 msgstr "您不能删除最后一个用户标识！\n"
 
-#: g10/keyedit.c:1833
+#: g10/keyedit.c:1851
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "真的要删除所有选定的用户标识吗？(y/N)"
 
-#: g10/keyedit.c:1834
+#: g10/keyedit.c:1852
 msgid "Really remove this user ID? (y/N) "
 msgstr "真的要删除这个用户标识吗？(y/N)"
 
-#: g10/keyedit.c:1884
+#: g10/keyedit.c:1902
 msgid "Really move the primary key? (y/N) "
 msgstr "真的要删除主钥吗？(y/N)"
 
-#: g10/keyedit.c:1896
+#: g10/keyedit.c:1914
 msgid "You must select exactly one key.\n"
 msgstr "您必须指定一把密钥。\n"
 
-#: g10/keyedit.c:1924
+#: g10/keyedit.c:1942
 msgid "Command expects a filename argument\n"
 msgstr "命令需要一个文件名作为参数\n"
 
-#: g10/keyedit.c:1938
+#: g10/keyedit.c:1956
 #, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "无法打开‘%s’：%s\n"
 
-#: g10/keyedit.c:1955
+#: g10/keyedit.c:1973
 #, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "从‘%s’读取备份密钥时出错：%s\n"
 
-#: g10/keyedit.c:1979
+#: g10/keyedit.c:1997
 msgid "You must select at least one key.\n"
 msgstr "您必须选择至少一把密钥。\n"
 
-#: g10/keyedit.c:1982
+#: g10/keyedit.c:2000
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "您真的想要删除选定的密钥吗？(y/N)"
 
-#: g10/keyedit.c:1983
+#: g10/keyedit.c:2001
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "您真的要删除这把密钥吗？(y/N)"
 
-#: g10/keyedit.c:2018
+#: g10/keyedit.c:2036
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "真的要吊销所有选定的用户标识吗？(y/N)"
 
-#: g10/keyedit.c:2019
+#: g10/keyedit.c:2037
 msgid "Really revoke this user ID? (y/N) "
 msgstr "真的要吊销这个用户标识吗？(y/N)"
 
-#: g10/keyedit.c:2037
+#: g10/keyedit.c:2055
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "您真的要吊销整把密钥吗？(y/N)"
 
-#: g10/keyedit.c:2048
+#: g10/keyedit.c:2066
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "您真的要吊销选定的子钥吗？(y/N)"
 
-#: g10/keyedit.c:2050
+#: g10/keyedit.c:2068
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "您真的要吊销这把子钥吗？(y/N)"
 
-#: g10/keyedit.c:2100
+#: g10/keyedit.c:2118
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr "使用用户提供的信任度数据库时信任度可能并未被设定\n"
 
-#: g10/keyedit.c:2142
+#: g10/keyedit.c:2160
 msgid "Set preference list to:\n"
 msgstr "设为首选项列表为：\n"
 
-#: g10/keyedit.c:2148
+#: g10/keyedit.c:2166
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "真的要更新所选用户标识的首选项吗？(y/N)"
 
-#: g10/keyedit.c:2150
+#: g10/keyedit.c:2168
 msgid "Really update the preferences? (y/N) "
 msgstr "真的要更新首选项吗？(y/N)"
 
-#: g10/keyedit.c:2220
+#: g10/keyedit.c:2238
 msgid "Save changes? (y/N) "
 msgstr "要保存变动吗？(y/N)"
 
-#: g10/keyedit.c:2223
+#: g10/keyedit.c:2241
 msgid "Quit without saving? (y/N) "
 msgstr "要不保存而离开吗？(y/N)"
 
-#: g10/keyedit.c:2233
+#: g10/keyedit.c:2251
 #, c-format
 msgid "update failed: %s\n"
 msgstr "更新失败：%s\n"
 
-#: g10/keyedit.c:2240
+#: g10/keyedit.c:2258
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "更新私钥失败：%s\n"
 
-#: g10/keyedit.c:2247
+#: g10/keyedit.c:2265
 msgid "Key not changed so no update needed.\n"
 msgstr "密钥没有变动所以不需要更新。\n"
 
-#: g10/keyedit.c:2348
+#: g10/keyedit.c:2366
 msgid "Digest: "
 msgstr "散列："
 
-#: g10/keyedit.c:2399
+#: g10/keyedit.c:2417
 msgid "Features: "
 msgstr "特点："
 
-#: g10/keyedit.c:2410
+#: g10/keyedit.c:2428
 msgid "Keyserver no-modify"
 msgstr "公钥服务器不可变造"
 
-#: g10/keyedit.c:2425 g10/keylist.c:310
+#: g10/keyedit.c:2443 g10/keylist.c:310
 msgid "Preferred keyserver: "
 msgstr "首选公钥服务器："
 
-#: g10/keyedit.c:2433 g10/keyedit.c:2434
+#: g10/keyedit.c:2451 g10/keyedit.c:2452
 msgid "Notations: "
 msgstr "注记："
 
-#: g10/keyedit.c:2644
+#: g10/keyedit.c:2662
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x 样式的用户标识没有首选项。\n"
 
-#: g10/keyedit.c:2703
+#: g10/keyedit.c:2721
 #, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "此密钥已于 %s 被 %s 密钥 %s 所吊销\n"
 
-#: g10/keyedit.c:2724
+#: g10/keyedit.c:2742
 #, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "这把密钥可被 %s 密钥 %s 吊销"
 
-#: g10/keyedit.c:2730
+#: g10/keyedit.c:2748
 msgid "(sensitive)"
 msgstr " (敏感的)"
 
-#: g10/keyedit.c:2746 g10/keyedit.c:2802 g10/keyedit.c:2863 g10/keyedit.c:2878
+#: g10/keyedit.c:2764 g10/keyedit.c:2820 g10/keyedit.c:2881 g10/keyedit.c:2896
 #: g10/keylist.c:196 g10/keyserver.c:529
 #, c-format
 msgid "created: %s"
 msgstr "创建于：%s"
 
-#: g10/keyedit.c:2749 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
+#: g10/keyedit.c:2767 g10/keylist.c:812 g10/keylist.c:906 g10/mainproc.c:989
 #, c-format
 msgid "revoked: %s"
 msgstr "已吊销：%s"
 
-#: g10/keyedit.c:2751 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
+#: g10/keyedit.c:2769 g10/keylist.c:783 g10/keylist.c:818 g10/keylist.c:912
 #, c-format
 msgid "expired: %s"
 msgstr "已过期：%s"
 
-#: g10/keyedit.c:2753 g10/keyedit.c:2804 g10/keyedit.c:2865 g10/keyedit.c:2880
+#: g10/keyedit.c:2771 g10/keyedit.c:2822 g10/keyedit.c:2883 g10/keyedit.c:2898
 #: g10/keylist.c:198 g10/keylist.c:789 g10/keylist.c:824 g10/keylist.c:918
 #: g10/keylist.c:939 g10/keyserver.c:535 g10/mainproc.c:995
 #, c-format
 msgid "expires: %s"
 msgstr "有效至：%s"
 
-#: g10/keyedit.c:2755
+#: g10/keyedit.c:2773
 #, c-format
 msgid "usage: %s"
 msgstr "可用于：%s"
 
-#: g10/keyedit.c:2770
+#: g10/keyedit.c:2788
 #, c-format
 msgid "trust: %s"
 msgstr "信任度：%s"
 
-#: g10/keyedit.c:2774
+#: g10/keyedit.c:2792
 #, c-format
 msgid "validity: %s"
 msgstr "有效性：%s"
 
-#: g10/keyedit.c:2781
+#: g10/keyedit.c:2799
 msgid "This key has been disabled"
 msgstr "这把密钥已经被禁用"
 
-#: g10/keyedit.c:2809 g10/keylist.c:202
+#: g10/keyedit.c:2827 g10/keylist.c:202
 msgid "card-no: "
 msgstr "卡号："
 
-#: g10/keyedit.c:2833
+#: g10/keyedit.c:2851
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
 msgstr "请注意，在您重启程序之前，显示的密钥有效性未必正确，\n"
 
-#: g10/keyedit.c:2897 g10/keyedit.c:3243 g10/keyserver.c:539
+#: g10/keyedit.c:2915 g10/keyedit.c:3261 g10/keyserver.c:539
 #: g10/mainproc.c:1842 g10/trustdb.c:1173 g10/trustdb.c:1701
 msgid "revoked"
 msgstr "已吊销"
 
-#: g10/keyedit.c:2899 g10/keyedit.c:3245 g10/keyserver.c:543
+#: g10/keyedit.c:2917 g10/keyedit.c:3263 g10/keyserver.c:543
 #: g10/mainproc.c:1844 g10/trustdb.c:526 g10/trustdb.c:1703
 msgid "expired"
 msgstr "已过期"
 
-#: g10/keyedit.c:2964
+#: g10/keyedit.c:2982
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
 "警告：没有首选用户标识。此指令可能假定一个不同的用户标识为首选用户标识。\n"
 
-#: g10/keyedit.c:3025
+#: g10/keyedit.c:3043
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3752,74 +3752,74 @@ msgstr ""
 "警告：这是一把 PGP2 样式的密钥。\n"
 "      增加照片标识可能会导致某些版本的 PGP 不能识别这把密钥。\n"
 
-#: g10/keyedit.c:3030 g10/keyedit.c:3365
+#: g10/keyedit.c:3048 g10/keyedit.c:3383
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "您确定仍然想要增加吗？(y/N)"
 
-#: g10/keyedit.c:3036
+#: g10/keyedit.c:3054
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "您不可以把照片标识增加到 PGP2 样式的密钥里。\n"
 
-#: g10/keyedit.c:3176
+#: g10/keyedit.c:3194
 msgid "Delete this good signature? (y/N/q)"
 msgstr "删除这个完好的签名吗？(y/N/q)"
 
-#: g10/keyedit.c:3186
+#: g10/keyedit.c:3204
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "删除这个无效的签名吗？(y/N/q)"
 
-#: g10/keyedit.c:3190
+#: g10/keyedit.c:3208
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "删除这个未知的签名吗？(y/N/q)"
 
-#: g10/keyedit.c:3196
+#: g10/keyedit.c:3214
 msgid "Really delete this self-signature? (y/N)"
 msgstr "真的要删除这个自身签名吗？(y/N)"
 
-#: g10/keyedit.c:3210
+#: g10/keyedit.c:3228
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "已经删除了 %d 个签名。\n"
 
-#: g10/keyedit.c:3211
+#: g10/keyedit.c:3229
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "已经删除了 %d 个签名。\n"
 
-#: g10/keyedit.c:3214
+#: g10/keyedit.c:3232
 msgid "Nothing deleted.\n"
 msgstr "没有东西被删除。\n"
 
-#: g10/keyedit.c:3247 g10/trustdb.c:1705
+#: g10/keyedit.c:3265 g10/trustdb.c:1705
 msgid "invalid"
 msgstr "无效"
 
-#: g10/keyedit.c:3249
+#: g10/keyedit.c:3267
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "用户标识“%s”：无用部分已清除\n"
 
-#: g10/keyedit.c:3256
+#: g10/keyedit.c:3274
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "密钥 %s：“%s”%d 个签名被清除\n"
 
-#: g10/keyedit.c:3257
+#: g10/keyedit.c:3275
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "密钥 %s：“%s”%d 个签名被清除\n"
 
-#: g10/keyedit.c:3265
+#: g10/keyedit.c:3283
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "用户标识“%s”：无用部分已清除\n"
 
-#: g10/keyedit.c:3266
+#: g10/keyedit.c:3284
 #, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "用户标识“%s”：无用部分已清除\n"
 
-#: g10/keyedit.c:3360
+#: g10/keyedit.c:3378
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3828,193 +3828,193 @@ msgstr ""
 "警告：这是一把 PGP2 样式的密钥。\n"
 "      增加指定吊销者可能会导致某些版本的 PGP 无法识别这把密钥。\n"
 
-#: g10/keyedit.c:3371
+#: g10/keyedit.c:3389
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "您不可以为 PGP 2.x 样式的密钥添加指定吊销者。\n"
 
-#: g10/keyedit.c:3391
+#: g10/keyedit.c:3409
 msgid "Enter the user ID of the designated revoker: "
 msgstr "输入指定吊销者的用户标识："
 
-#: g10/keyedit.c:3416
+#: g10/keyedit.c:3434
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "无法将 PGP 2.x 样式的密钥设为指定吊销者\n"
 
 #  This actually causes no harm (after all, a key that
 #  designates itself as a revoker is the same as a
 #  regular key), but it's easy enough to check.
-#: g10/keyedit.c:3431
+#: g10/keyedit.c:3449
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "您不能将某把密钥设为它自己的指定吊销者\n"
 
 #  This actually causes no harm (after all, a key that
 #  designates itself as a revoker is the same as a
 #  regular key), but it's easy enough to check.
-#: g10/keyedit.c:3453
+#: g10/keyedit.c:3471
 msgid "this key has already been designated as a revoker\n"
 msgstr "这把密钥已被指定为一个吊销者\n"
 
-#: g10/keyedit.c:3472
+#: g10/keyedit.c:3490
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "警告：将某把密钥指派为指定吊销者的操作无法撤销！\n"
 
-#: g10/keyedit.c:3478
+#: g10/keyedit.c:3496
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "您确定要将这把密钥设为指定吊销者吗？(y/N)："
 
-#: g10/keyedit.c:3539
+#: g10/keyedit.c:3557
 msgid "Please remove selections from the secret keys.\n"
 msgstr "请从私钥中删除选择。\n"
 
-#: g10/keyedit.c:3545
+#: g10/keyedit.c:3563
 msgid "Please select at most one subkey.\n"
 msgstr "请至多选择一个子钥。\n"
 
-#: g10/keyedit.c:3549
+#: g10/keyedit.c:3567
 msgid "Changing expiration time for a subkey.\n"
 msgstr "将要变更子钥的使用期限。\n"
 
-#: g10/keyedit.c:3552
+#: g10/keyedit.c:3570
 msgid "Changing expiration time for the primary key.\n"
 msgstr "将要变更主钥的使用期限。\n"
 
-#: g10/keyedit.c:3598
+#: g10/keyedit.c:3616
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "您不能变更 v3 密钥的使用期限\n"
 
-#: g10/keyedit.c:3614
+#: g10/keyedit.c:3632
 msgid "No corresponding signature in secret ring\n"
 msgstr "在私钥环里没有相应的签名\n"
 
-#: g10/keyedit.c:3692
+#: g10/keyedit.c:3710
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "签名的子钥 %s 已经交叉验证\n"
 
-#: g10/keyedit.c:3698
+#: g10/keyedit.c:3716
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr "子钥 %s 不签名，因此不需要交叉验证\n"
 
-#: g10/keyedit.c:3861
+#: g10/keyedit.c:3879
 msgid "Please select exactly one user ID.\n"
 msgstr "请精确地选择一个用户标识。\n"
 
-#: g10/keyedit.c:3900 g10/keyedit.c:4010 g10/keyedit.c:4130 g10/keyedit.c:4271
+#: g10/keyedit.c:3918 g10/keyedit.c:4028 g10/keyedit.c:4148 g10/keyedit.c:4289
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "跳过用户标识“%s”的 v3 自身签名\n"
 
-#: g10/keyedit.c:4071
+#: g10/keyedit.c:4089
 msgid "Enter your preferred keyserver URL: "
 msgstr "输入您首选的公钥服务器的 URL："
 
-#: g10/keyedit.c:4151
+#: g10/keyedit.c:4169
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "您确定要替换它吗？(y/N)"
 
-#: g10/keyedit.c:4152
+#: g10/keyedit.c:4170
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "您确定要删除它吗？(y/N)"
 
-#: g10/keyedit.c:4214
+#: g10/keyedit.c:4232
 msgid "Enter the notation: "
 msgstr "输入注记："
 
-#: g10/keyedit.c:4363
+#: g10/keyedit.c:4381
 msgid "Proceed? (y/N) "
 msgstr "继续？(y/N)"
 
-#: g10/keyedit.c:4427
+#: g10/keyedit.c:4445
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "没有索引为 %d 的用户标识\n"
 
-#: g10/keyedit.c:4485
+#: g10/keyedit.c:4503
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "没有散列值为 %s 的用户标识\n"
 
-#: g10/keyedit.c:4512
+#: g10/keyedit.c:4530
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "没有索引为 %d 的子钥\n"
 
-#: g10/keyedit.c:4647
+#: g10/keyedit.c:4665
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "用户标识：“%s”\n"
 
-#: g10/keyedit.c:4650 g10/keyedit.c:4714 g10/keyedit.c:4757
+#: g10/keyedit.c:4668 g10/keyedit.c:4732 g10/keyedit.c:4775
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "由您的密钥 %s 于 %s%s%s 签名\n"
 
-#: g10/keyedit.c:4652 g10/keyedit.c:4716 g10/keyedit.c:4759
+#: g10/keyedit.c:4670 g10/keyedit.c:4734 g10/keyedit.c:4777
 msgid " (non-exportable)"
 msgstr " (不可导出)"
 
-#: g10/keyedit.c:4656
+#: g10/keyedit.c:4674
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "这份签名已在 %s 过期。\n"
 
-#: g10/keyedit.c:4660
+#: g10/keyedit.c:4678
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "您确定您仍然想要吊销它吗？(y/N)"
 
-#: g10/keyedit.c:4664
+#: g10/keyedit.c:4682
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "要为这份签名生成一份吊销证书吗？(y/N)"
 
-#: g10/keyedit.c:4691
+#: g10/keyedit.c:4709
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "您已经为这些密钥 %s 上的这些用户标识添加签名：\n"
 
-#: g10/keyedit.c:4717
+#: g10/keyedit.c:4735
 msgid " (non-revocable)"
 msgstr " (不可吊销)"
 
-#: g10/keyedit.c:4724
+#: g10/keyedit.c:4742
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "由您的密钥 %s 于 %s 吊销\n"
 
-#: g10/keyedit.c:4746
+#: g10/keyedit.c:4764
 msgid "You are about to revoke these signatures:\n"
 msgstr "您正在吊销这些签名：\n"
 
-#: g10/keyedit.c:4766
+#: g10/keyedit.c:4784
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "真的要生成吊销证书吗？(y/N)"
 
-#: g10/keyedit.c:4796
+#: g10/keyedit.c:4814
 msgid "no secret key\n"
 msgstr "没有私钥\n"
 
-#: g10/keyedit.c:4866
+#: g10/keyedit.c:4884
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "用户标识“%s”已经被吊销。\n"
 
-#: g10/keyedit.c:4883
+#: g10/keyedit.c:4901
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "警告：有一份用户标识签名的日期标记为 %d 秒后的未来\n"
 
-#: g10/keyedit.c:4947
+#: g10/keyedit.c:4965
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "密钥 %s 已被吊销。\n"
 
-#: g10/keyedit.c:5009
+#: g10/keyedit.c:5027
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "子钥 %s 已被吊销。\n"
 
-#: g10/keyedit.c:5104
+#: g10/keyedit.c:5122
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "正在显示 %s 照片标识(大小为 %ld，属于密钥 %s，用户标识 %d)\n"
@@ -6984,35 +6984,35 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
-#: sm/certdump.c:68 sm/certdump.c:151
+#: sm/certdump.c:60 sm/certdump.c:143
 #, fuzzy
 msgid "none"
 msgstr "no"
 
-#: sm/certdump.c:162
+#: sm/certdump.c:154
 #, fuzzy
 msgid "[none]"
 msgstr "[未设定]"
 
-#: sm/certdump.c:585 sm/certdump.c:630 sm/certdump.c:695 sm/certdump.c:748
+#: sm/certdump.c:577 sm/certdump.c:622 sm/certdump.c:687 sm/certdump.c:745
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "错误：无效的响应。\n"
 
-#: sm/certdump.c:593 sm/certdump.c:638
+#: sm/certdump.c:585 sm/certdump.c:630
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:675 sm/certdump.c:731
+#: sm/certdump.c:667 sm/certdump.c:723
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:700 sm/certdump.c:754
+#: sm/certdump.c:692 sm/certdump.c:751
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "错误：无效的响应。\n"
 
-#: sm/certdump.c:955
+#: sm/certdump.c:967
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "
