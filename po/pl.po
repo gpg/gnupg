@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2007-11-26 19:01+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -7141,7 +7141,7 @@ msgstr "[B³±d - Brak nazwy]"
 msgid "[Error - invalid DN]"
 msgstr "[B³±d - niew³a¶ciwe DN]"
 
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

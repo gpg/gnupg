@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -7135,7 +7135,7 @@ msgstr ""
 msgid "[Error - invalid DN]"
 msgstr "fejl i trailerlinie\n"
 
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

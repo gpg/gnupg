@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -7487,7 +7487,7 @@ msgstr "error: l'empremta digital és invàlida\n"
 # Se't passava l'argument «*».  printf(3), hieroglyph(7).  ivb
 # Ah!  Prova-ho, no casque alguna cosa :P  ivb
 # Ah, ja veig! Moltes gràcies! Aquest msgstr ha quedat curiós :) jm
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

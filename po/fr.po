@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2008-09-30 19:38+0200\n"
 "Last-Translator: Gaël Quéri <gael@lautre.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -7337,7 +7337,7 @@ msgstr ""
 msgid "[Error - invalid DN]"
 msgstr "Erreur: réponse invalide.\n"
 
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

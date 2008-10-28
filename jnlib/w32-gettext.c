@@ -1647,6 +1647,7 @@ gettext( const char *msgid )
       /*NOTREACHED*/
     }
 
+ not_found:
   /* Now we try the default method: binary search in the sorted array
      of messages.  */
   bottom = 0;
@@ -1667,7 +1668,6 @@ gettext( const char *msgid )
         return get_string (domain, act);
     }
   
- not_found:
   return msgid;
 }
 

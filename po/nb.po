@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2006-06-13 20:31+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -7024,7 +7024,7 @@ msgstr ""
 msgid "[Error - invalid DN]"
 msgstr "Feil: ugyldig respons.\n"
 
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

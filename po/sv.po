@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg trunk\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-28 12:00+0100\n"
+"POT-Creation-Date: 2008-10-28 12:32+0100\n"
 "PO-Revision-Date: 2008-07-21 09:04+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -7213,7 +7213,7 @@ msgstr "[Fel - Inget namn]"
 msgid "[Error - invalid DN]"
 msgstr "[Fel - ogiltigt DN]"
 
-#: sm/certdump.c:967
+#: sm/certdump.c:964
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "

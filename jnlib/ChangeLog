@@ -1,3 +1,8 @@
+2008-10-28  Werner Koch  <wk@g10code.com>
+
+	* w32-gettext.c (gettext): Try the binary search if the string was
+	not found in the hash table.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* w32-afunix.c (_w32_sock_connect): Mark ADDRLEN as unused.
