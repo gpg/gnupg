@@ -1,3 +1,7 @@
+2008-10-24  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (change_passphrase): Clear passphrase cache.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c: Mark all args of the stub fucntions as unused.

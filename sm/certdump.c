@@ -39,14 +39,6 @@
 #include "keydb.h"
 #include "i18n.h"
 
-#ifdef HAVE_FOPENCOOKIE
-typedef ssize_t my_funopen_hook_ret_t;
-typedef size_t  my_funopen_hook_size_t;
-#else
-typedef int     my_funopen_hook_ret_t;
-typedef int     my_funopen_hook_size_t;
-#endif
-
 
 struct dn_array_s {
   char *key;
@@ -719,9 +711,9 @@ gpgsm_print_name (FILE *fp, const char *name)
 }
 
 
-/* This is avariant of gpgsm_print_name sending it output to an estream. */
+/* This is a variant of gpgsm_print_name sending it output to an estream. */
 void
-gpgsm_es_print_name (estream_t fp, const char *name)
+gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
 {
   const unsigned char *s = (const unsigned char *)name;
   int i;
@@ -735,8 +727,13 @@ gpgsm_es_print_name (estream_t fp, const char *name)
       const char *s2 = strchr ( (char*)s+1, '>');
 
       if (s2)
-        es_write_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1,
-                                        NULL, NULL);
+        {
+          if (translate)
+            es_write_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1,
+                                            NULL, NULL);
+          else
+            es_write_sanitized (fp, s + 1, s2 - (char*)s - 1, NULL, NULL);
+        }
     }
   else if (*s == '(')
     {
@@ -754,7 +751,7 @@ gpgsm_es_print_name (estream_t fp, const char *name)
         es_fputs (_("[Error - invalid DN]"), fp);
       else 
         {
-          print_dn_parts (NULL, fp, dn, 1);          
+          print_dn_parts (NULL, fp, dn, translate);          
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);
@@ -766,9 +763,13 @@ gpgsm_es_print_name (estream_t fp, const char *name)
 }
 
 
+void
+gpgsm_es_print_name (estream_t fp, const char *name)
+{
+  gpgsm_es_print_name2 (fp, name, 1);
+}
 
 
-#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
 /* A cookie structure used for the memory stream. */
 struct format_name_cookie 
 {
@@ -779,32 +780,55 @@ struct format_name_cookie
 };
 
 /* The writer function for the memory stream. */
-static my_funopen_hook_ret_t
-format_name_writer (void *cookie, const char *buffer,
-                    my_funopen_hook_size_t size)
+static ssize_t
+format_name_writer (void *cookie, const void *buffer, size_t size)
 {
   struct format_name_cookie *c = cookie;
   char *p;
 
-  if (c->buffer)
-    p = xtryrealloc (c->buffer, c->size + size + 1);
+  log_debug    ("buffer: size=%d len=%d error=%d: adding %d bytes\n", 
+                (int)c->size, (int)c->len, c->error, (int)size);
+  log_printhex ("Adding:", buffer, size);
+  if (!c->buffer)
+    {
+      p = xtrymalloc (size + 1 + 1);
+      if (p)
+        {
+          c->size = size + 1;
+          c->buffer = p;
+          c->len = 0;
+        }
+    }
+  else if (c->len + size < c->len)
+    {
+      p = NULL;
+      errno = ENOMEM;
+    }
+  else if (c->size < c->len + size)
+    {
+      p = xtryrealloc (c->buffer, c->len + size + 1);
+      if (p)
+        {
+          c->size = c->len + size;
+          c->buffer = p;
+        }
+    }
   else
-    p = xtrymalloc (size + 1);
+    p = c->buffer;
   if (!p)
     {
       c->error = errno;
       xfree (c->buffer);
+      c->buffer = NULL;
       errno = c->error;
-      return (my_funopen_hook_ret_t)(-1);
+      return -1;
     }
-  c->buffer = p;
   memcpy (p + c->len, buffer, size);
   c->len += size;
   p[c->len] = 0; /* Terminate string. */ 
 
-  return (my_funopen_hook_ret_t)size;
+  return (ssize_t)size;
 }
-#endif /*HAVE_FOPENCOOKIE || HAVE_FUNOPEN*/
 
 
 /* Format NAME which is expected to be in rfc2253 format into a better
@@ -815,24 +839,14 @@ format_name_writer (void *cookie, const char *buffer,
 char *
 gpgsm_format_name2 (const char *name, int translate)
 {
-#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
-  FILE *fp;
+  estream_t fp;
   struct format_name_cookie cookie;
+  es_cookie_io_functions_t io = { NULL };
 
   memset (&cookie, 0, sizeof cookie);
 
-#ifdef HAVE_FOPENCOOKIE
-  {
-    cookie_io_functions_t io = { NULL };
-    io.write = format_name_writer;
-    
-    fp = fopencookie (&cookie, "w", io);
-  }
-#else /*!HAVE_FOPENCOOKIE*/
-  {
-    fp = funopen (&cookie, NULL, format_name_writer, NULL, NULL);
-  }
-#endif /*!HAVE_FOPENCOOKIE*/
+  io.func_write = format_name_writer;
+  fp = es_fopencookie (&cookie, "w", io);
   if (!fp)
     {
       int save_errno = errno;
@@ -840,8 +854,8 @@ gpgsm_format_name2 (const char *name, int translate)
       errno = save_errno;
       return NULL;
     }
-  gpgsm_print_name2 (fp, name, translate);
-  fclose (fp);
+  gpgsm_es_print_name2 (fp, name, translate);
+  es_fclose (fp);
   if (cookie.error || !cookie.buffer)
     {
       xfree (cookie.buffer);
@@ -849,10 +863,8 @@ gpgsm_format_name2 (const char *name, int translate)
       return NULL;
     }
   return cookie.buffer;
-#else /* No fun - use the name verbatim. */
-  return xtrystrdup (name);
-#endif /* No fun. */
 }
+
 
 char *
 gpgsm_format_name (const char *name)
@@ -920,7 +932,6 @@ gpgsm_fpr_and_name_for_status (ksba_cert_t cert)
 char *
 gpgsm_format_keydesc (ksba_cert_t cert)
 {
-  int rc;
   char *name, *subject, *buffer, *p;
   const char *s;
   ksba_isotime_t t;
@@ -931,8 +942,10 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   char *orig_codeset;
 
   name = ksba_cert_get_subject (cert, 0);
+  log_printhex ("XXXX NAME: ", name, strlen (name));
   subject = name? gpgsm_format_name2 (name, 0) : NULL;
   ksba_free (name); name = NULL;
+  log_printhex ("YYYY NAME: ", subject, strlen (subject));
 
   sexp = ksba_cert_get_serial (cert);
   sn = sexp? gpgsm_format_serial (sexp) : NULL;
@@ -951,20 +964,19 @@ gpgsm_format_keydesc (ksba_cert_t cert)
 
   orig_codeset = i18n_switchto_utf8 ();
 
-  rc = asprintf (&name,
-                 _("Please enter the passphrase to unlock the"
-                   " secret key for the X.509 certificate:\n"
-                   "\"%s\"\n"
-                   "S/N %s, ID 0x%08lX,\n"
-                   "created %s, expires %s.\n" ),
-                 subject? subject:"?",
-                 sn? sn: "?",
-                 gpgsm_get_short_fingerprint (cert),
-                 created, expires);
-
+  name = xtryasprintf (_("Please enter the passphrase to unlock the"
+                         " secret key for the X.509 certificate:\n"
+                         "\"%s\"\n"
+                         "S/N %s, ID 0x%08lX,\n"
+                         "created %s, expires %s.\n" ),
+                       subject? subject:"?",
+                       sn? sn: "?",
+                       gpgsm_get_short_fingerprint (cert),
+                       created, expires);
+  
   i18n_switchback (orig_codeset);
-
-  if (rc < 0)
+  
+  if (!name)
     {
       int save_errno = errno;
       xfree (subject);
@@ -996,7 +1008,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
         *p++ = *s;
     }
   *p = 0;
-  free (name); 
+  xfree (name); 
 
   return buffer;
 }

@@ -1,3 +1,12 @@
+2008-10-28  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_format_keydesc): Use xtryasprintf and xfree.
+	(gpgsm_es_print_name): Factor code out to ...
+	(gpgsm_es_print_name2): New function.
+	(gpgsm_format_name2, format_name_writer): Use estream so that it
+	works on all platforms.
+	(format_name_writer): Fix reallocation bug.
+
 2008-10-23  Werner Koch  <wk@g10code.com>
 
 	* import.c (popen_protect_tool): Add arg CTRL and assure that the

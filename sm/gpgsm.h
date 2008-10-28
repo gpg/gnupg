@@ -267,6 +267,7 @@ void gpgsm_print_time (estream_t fp, ksba_isotime_t t);
 void gpgsm_print_name2 (FILE *fp, const char *string, int translate);
 void gpgsm_print_name (FILE *fp, const char *string);
 void gpgsm_es_print_name (estream_t fp, const char *string);
+void gpgsm_es_print_name2 (estream_t fp, const char *string, int translate);
 
 void gpgsm_cert_log_name (const char *text, ksba_cert_t cert);
 

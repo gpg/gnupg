@@ -1151,7 +1151,15 @@ change_passphrase( KBNODE keyblock )
 	    no_primary_secrets = 1;
 	}
 	else {
+            u32 keyid[2];
+
 	    tty_printf(_("Key is protected.\n"));
+            
+            /* Clear the passphrase cache so that the user is required
+               to enter the old passphrase.  */
+            keyid_from_sk (sk, keyid);
+            passphrase_clear_cache (keyid, NULL, 0);
+
 	    rc = check_secret_key( sk, 0 );
 	    if( !rc )
 		passphrase = get_last_passphrase();
@@ -1233,7 +1241,17 @@ change_passphrase( KBNODE keyblock )
 		    log_error("protect_secret_key failed: %s\n",
                               g10_errstr(rc) );
 		else
+                  {
+                    u32 keyid[2];
+                    
+                    /* Clear the cahce again so that the user is
+                       required to enter the new passphrase at the
+                       next operation.  */
+                    keyid_from_sk (sk, keyid);
+                    passphrase_clear_cache (keyid, NULL, 0);
+
 		    changed++;
+                  }
 		break;
 	    }
 	}
