@@ -498,7 +498,8 @@ cmd_serialno (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
 
-  rc = estream_asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
+  rc = estream_asprintf (&serial_and_stamp, "%s %lu",
+                         serial, (unsigned long)stamp);
   xfree (serial);
   if (rc < 0)
     return out_of_core ();
