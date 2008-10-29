@@ -1,3 +1,16 @@
+2008-10-29  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Move USE_STANDARD_SOCKET to the outer scope.
+	(create_socket_name): Remove arg USE_STANDARD_SOCKET.  Change all
+	callers.
+	(create_server_socket): Remove IS_STANDARD_NAME and replace it by
+	USE_STANDARD_SOCKET.  Change all callers.
+	(check_own_socket_running): New.
+	(check_own_socket, check_own_socket_thread): New.
+	(handle_tick): Check server socket once a minute.
+	(handle_connections): Remove the extra pth_wait in the shutdown
+	case.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_geteventcounter): Mark unused arg.

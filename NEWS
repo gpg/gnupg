@@ -1,16 +1,12 @@
 Noteworthy changes in version 2.0.10 (unreleased)
 -------------------------------------------------
 
- * New keyserver helper gpg2keys_kdns as generic DNS CERT lookup.  Run
-   with --help for a short description.  Requires the ADNS library.
+ * [gpg] New keyserver helper gpg2keys_kdns as generic DNS CERT
+   lookup.  Run with --help for a short description.  Requires the
+   ADNS library.
 
  * [gpg] New mechanisms "local" and "nodefault" for --auto-key-locate.
    Fixed a few problems with this option.
-
- * [w32] Initialized the socket subsystem for all keyserver helpers.
-
- * [w32] The sysconf directory has been moved from a subdirectory of
-   the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
 
  * [gpg] New command --locate-keys.
 
@@ -18,24 +14,32 @@ Noteworthy changes in version 2.0.10 (unreleased)
 
  * [gpg] The option "-sat" is no longer an alias for --clearsign.
 
- * [gpgsm] Made --output option work with --export-secret-key-p12.
-
- * [gpg-connect-agent] Accept commands given as command line arguments.
-
  * [gpg] The option --fixed-list-mode is now implicitly used and obsolete.
 
  * [gpg] New control statement %ask-passphrase for the unattended key
    generation.
 
- * gpgsm now uses AES by default.
+ * [gpgsm] Now uses AES by default.
 
- * gpg-preset-passphrase works again.
+ * [gpgsm] Made --output option work with --export-secret-key-p12.
+
+ * [gpg-agent] Terminate process if the own listening socket is not
+   anymore served by ourself.
+
+ * [scdaemon] Made it more robust on W32.
+
+ * [gpg-connect-agent] Accept commands given as command line arguments.
+
+ * [w32] Initialized the socket subsystem for all keyserver helpers.
+
+ * [w32] The sysconf directory has been moved from a subdirectory of
+   the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
+
+ * The gpg-preset-passphrase mechanism works again.
 
  * Admin PINs are cached again (bug in 2.0.9).
 
  * Support for version 2 OpenPGP cards.
-
- * [scdaemon] Made it more robust on W32.
 
  * Libgcrypt 1.4 is now required.
 
@@ -635,7 +639,8 @@ Noteworthy changes in version 1.9.0 (2003-08-05)
    development branch.
 
 
- Copyright 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2006, 2007,
+           2008  Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

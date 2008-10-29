@@ -194,9 +194,14 @@ static ARGPARSE_OPTS opts[] = {
 #define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
 #endif
 
-/* flag to indicate that a shutdown was requested */
+/* Flag to indicate that a shutdown was requested.  */
 static int shutdown_pending;
 
+/* Counter for the currently running own socket checks.  */
+static int check_own_socket_running;
+
+/* True if we are listening on the standard socket.  */
+static int use_standard_socket;
 
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
@@ -241,10 +246,8 @@ static pid_t parent_pid = (pid_t)(-1);
    Local prototypes. 
  */
 
-static char *create_socket_name (int use_standard_socket,
-                                 char *standard_name, char *template);
-static gnupg_fd_t create_server_socket (int is_standard_name, char *name, 
-                                        int is_ssh, 
+static char *create_socket_name (char *standard_name, char *template);
+static gnupg_fd_t create_server_socket (char *name, int is_ssh, 
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
@@ -253,6 +256,7 @@ static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
 static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_ssh);
+static void check_own_socket (void);
 static int check_for_running_agent (int silent, int mode);
 
 /* Pth wrapper function definitions. */
@@ -494,7 +498,6 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int gpgconf_list = 0;
-  int use_standard_socket = 0;
   gpg_error_t err;
   const char *env_file_name = NULL;
 
@@ -895,19 +898,15 @@ main (int argc, char **argv )
 
 
       /* Create the sockets.  */
-      socket_name = create_socket_name (use_standard_socket,
-                                        "S.gpg-agent",
-                                        "/tmp/gpg-XXXXXX/S.gpg-agent");
+      socket_name = create_socket_name 
+        ("S.gpg-agent", "/tmp/gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
-	socket_name_ssh = create_socket_name (use_standard_socket, 
-                                            "S.gpg-agent.ssh",
-                                            "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
+	socket_name_ssh = create_socket_name 
+          ("S.gpg-agent.ssh", "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
-      fd = create_server_socket (use_standard_socket, socket_name, 0,
-                                 &socket_nonce);
+      fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (use_standard_socket, socket_name_ssh, 1,
-                                       &socket_nonce_ssh);
+	fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
       else
 	fd_ssh = GNUPG_INVALID_FD;
 
@@ -1311,8 +1310,7 @@ get_agent_scd_notify_event (void)
    terminates the process in case of an error.  Returns: Pointer to an
    allocated string with the absolute name of the socket used.  */
 static char *
-create_socket_name (int use_standard_socket,
-		    char *standard_name, char *template)
+create_socket_name (char *standard_name, char *template)
 {
   char *name, *p;
 
@@ -1349,14 +1347,12 @@ create_socket_name (int use_standard_socket,
 
 
 
-/* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
-   whether a non-random socket is used.  Returns the file descriptor
+/* Create a Unix domain socket with NAME.  Returns the file descriptor
    or terminates the process in case of an error.  Not that this
-   function needs to be used for the regular socket first and only then
-   for the ssh socket.  */
+   function needs to be used for the regular socket first and only
+   then for the ssh socket.  */
 static gnupg_fd_t
-create_server_socket (int is_standard_name, char *name, int is_ssh,
-                      assuan_sock_nonce_t *nonce)
+create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
@@ -1383,7 +1379,7 @@ create_server_socket (int is_standard_name, char *name, int is_ssh,
 	 + strlen (serv_addr->sun_path) + 1);
 
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
+  if (use_standard_socket && rc == -1 && errno == EADDRINUSE)
     {
       /* Check whether a gpg-agent is already running on the standard
          socket.  We do this test only if this is not the ssh socket.
@@ -1416,7 +1412,7 @@ create_server_socket (int is_standard_name, char *name, int is_ssh,
                  gpg_strerror (gpg_error_from_errno (errno)));
       
       assuan_sock_close (fd);
-      if (is_standard_name)
+      if (use_standard_socket)
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
@@ -1530,6 +1526,11 @@ create_directories (void)
 static void
 handle_tick (void)
 {
+  static time_t last_minute;
+
+  if (!last_minute)
+    last_minute = time (NULL);
+
   /* Check whether the scdaemon has died and cleanup in this case. */
   agent_scd_check_aliveness ();
 
@@ -1548,6 +1549,14 @@ handle_tick (void)
         }
     }
 #endif /*HAVE_W32_SYSTEM*/
+  
+  /* Code to be run every minute.  */
+  if (last_minute + 60 <= time (NULL))
+    {
+      check_own_socket ();
+      last_minute = time (NULL);
+    }
+
 }
 
 
@@ -1755,13 +1764,9 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
             break; /* ready */
 
-          /* Do not accept anymore connections and wait for existing
-             connections to terminate */
-          signo = 0;
-          pth_wait (ev);
-          if (pth_event_occurred (ev) && signo)
-            handle_signal (signo);
-          continue;
+          /* Do not accept new connections but keep on running the
+             loop to cope with the timer events.  */
+          FD_ZERO (&fdset);
 	}
 
       /* Create a timeout event if needed. */
@@ -1828,7 +1833,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
          new thread.  Thus we need to block those signals. */
       pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
 
-      if (FD_ISSET (FD2INT (listen_fd), &read_fdset))
+      if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
           ctrl_t ctrl;
 
@@ -1865,7 +1870,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           fd = GNUPG_INVALID_FD;
 	}
 
-      if (listen_fd_ssh != GNUPG_INVALID_FD 
+      if (!shutdown_pending && listen_fd_ssh != GNUPG_INVALID_FD 
           && FD_ISSET ( FD2INT (listen_fd_ssh), &read_fdset))
 	{
           ctrl_t ctrl;
@@ -1915,6 +1920,111 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
 }
+
+
+
+/* Helper for check_own_socket.  */
+static int
+check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *mb = opaque;
+  put_membuf (mb, buffer, length);
+  return 0;
+}
+
+
+/* The thread running the actual check.  We need to run this in a
+   separate thread so that check_own_thread can be called from the
+   timer tick.  */
+static void *
+check_own_socket_thread (void *arg)
+{
+  int rc;
+  char *sockname = arg;
+  assuan_context_t ctx;
+  membuf_t mb;
+  char *buffer;
+
+  check_own_socket_running++;
+
+  rc = assuan_socket_connect (&ctx, sockname, (pid_t)(-1));
+  xfree (sockname);
+  if (rc)
+    {
+      log_error ("can't connect my own socket: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+ 
+  init_membuf (&mb, 100);
+  rc = assuan_transact (ctx, "GETINFO pid", check_own_socket_pid_cb, &mb,
+                        NULL, NULL, NULL, NULL);
+  put_membuf (&mb, "", 1);
+  buffer = get_membuf (&mb, NULL);
+  if (rc || !buffer)
+    {
+      log_error ("sending command \"%s\" to my own socket failed: %s\n", 
+                 "GETINFO pid", gpg_strerror (rc));
+      rc = 1;
+    }
+  else if ( (pid_t)strtoul (buffer, NULL, 10) != getpid ())
+    {
+      log_error ("socket is now serviced by another server\n");
+      rc = 1;
+    }
+  else if (opt.verbose)
+    log_error ("socket is still served by this server\n");
+    
+  xfree (buffer);
+  assuan_disconnect (ctx);
+
+ leave:
+  if (rc)
+    {
+      /* We may not remove the socket as it is now in use by another
+         server.  Setting the name to empty does this.  */
+      if (socket_name)
+        *socket_name = 0;
+      if (socket_name_ssh)
+        *socket_name_ssh = 0;
+      shutdown_pending = 2;
+      log_info ("this process is useless - shutting down\n");
+    }
+  check_own_socket_running--;
+  return NULL;
+}
+
+
+/* Check whether we are still listening on our own socket.  In case
+   another gpg-agent process started after us has taken ownership of
+   our socket, we woul linger around without any real taks.  Thus we
+   better check once in a while whether we are really needed.  */
+static void
+check_own_socket (void)
+{
+  char *sockname;
+  pth_attr_t tattr;
+
+  if (!use_standard_socket)
+    return; /* This check makes only sense in standard socket mode.  */
+
+  if (check_own_socket_running || shutdown_pending)
+    return;  /* Still running or already shutting down.  */
+
+  sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
+  if (!sockname)
+    return; /* Out of memory.  */
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "check-owb-socket");
+
+  if (!pth_spawn (tattr, check_own_socket_thread, sockname))
+      log_error ("error spawning check_own_socket_thread: %s\n",
+                 strerror (errno) );
+  pth_attr_destroy (tattr);
+}
+
 
 
 /* Figure out whether an agent is available and running. Prints an

@@ -1,5 +1,10 @@
 2008-10-29  Werner Koch  <wk@g10code.com>
 
+	* stringhelp.c (make_filename): Implement using macros. Factor some
+	code out to ..
+	(change_slashes): New.
+	(make_filename_try): New.
+
 	* w32-gettext.c (gettext): Return if no domain is loaded.
 	Reported by Tom Pegios.
 

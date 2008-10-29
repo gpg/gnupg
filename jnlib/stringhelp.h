@@ -38,6 +38,7 @@ size_t length_sans_trailing_ws (const unsigned char *line, size_t len);
 char *make_basename(const char *filepath, const char *inputpath);
 char *make_dirname(const char *filepath);
 char *make_filename( const char *first_part, ... );
+char *make_filename_try (const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
 
 int hextobyte (const char *s);

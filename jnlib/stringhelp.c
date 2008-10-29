@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
- *               2006, 2007  Free Software Foundation, Inc.
+ *               2006, 2007, 2008  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -33,6 +33,28 @@
 
 
 #define tohex_lower(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'a'))
+
+/* Sometimes we want to avoid mixing slashes and backslashes on W32
+   and prefer backslashes.  There is usual no problem with mixing
+   them, however a very few W32 API calls can't grok plain slashes.
+   Printing filenames with mixed slashes also looks a bit strange.
+   This function has no effext on POSIX. */
+static inline char *
+change_slashes (char *name)
+{
+  char *p;
+
+#ifdef HAVE_DRIVE_LETTERS
+  if (strchr (name, '\\'))
+    {
+      for (p=name; *p; p++)
+        if (*p == '/')
+          *p = '\\';
+    }
+#endif /*HAVE_DRIVE_LETTERS*/
+  return name;
+}
+
 
 /*
  * Look for the substring SUB in buffer and return a pointer to that
@@ -290,56 +312,65 @@ make_dirname(const char *filepath)
 }
 
 
+
+/* Implementation of make_filename and make_filename_try.  We need to
+   use macros here toa void the use of the soemtimes problematic
+   va_copy fucntion which is not available on all systems.  */
+#define MAKE_FILENAME_PART1                        \
+  va_list arg_ptr;                                 \
+  size_t n;                                        \
+  const char *s;                                   \
+  char *name, *home, *p;                           \
+                                                   \
+  va_start (arg_ptr, first_part);                  \
+  n = strlen (first_part) + 1;                     \
+  while ( (s = va_arg (arg_ptr, const char *)) )   \
+    n += strlen(s) + 1;                            \
+  va_end(arg_ptr);                                 \
+                                                   \
+  home = NULL;                                     \
+  if ( *first_part == '~' && first_part[1] == '/'  \
+       && (home = getenv("HOME")) && *home )       \
+    n += strlen (home);                            
+  
+#define MAKE_FILENAME_PART2                         \
+  p = (home                                         \
+       ? stpcpy (stpcpy (name,home), first_part + 1)\
+       : stpcpy(name, first_part));                 \
+                                                    \
+  va_start (arg_ptr, first_part);                   \
+  while ( (s = va_arg(arg_ptr, const char *)) )     \
+    p = stpcpy (stpcpy (p,"/"), s);                 \
+  va_end(arg_ptr);                                  \
+  return change_slashes (name);
 
-/****************
- * Construct a filename from the NULL terminated list of parts.
- * Tilde expansion is done here.
- */
+
+/* Construct a filename from the NULL terminated list of parts.  Tilde
+   expansion is done here.  This function will never fail. */
 char *
-make_filename( const char *first_part, ... )
+make_filename (const char *first_part, ... )
 {
-  va_list arg_ptr ;
-  size_t n;
-  const char *s;
-  char *name, *home, *p;
-  
-  va_start (arg_ptr, first_part);
-  n = strlen (first_part) + 1;
-  while ( (s = va_arg (arg_ptr, const char *)) )
-    n += strlen(s) + 1;
-  va_end(arg_ptr);
-  
-  home = NULL;
-  if ( *first_part == '~' && first_part[1] == '/'
-       && (home = getenv("HOME")) && *home )
-    n += strlen (home);
-  
+  MAKE_FILENAME_PART1
   name = jnlib_xmalloc (n);
-  p = (home 
-       ? stpcpy (stpcpy (name,home), first_part + 1)
-       : stpcpy(name, first_part));
-
-  va_start (arg_ptr, first_part) ;
-  while ( (s = va_arg(arg_ptr, const char *)) )
-    p = stpcpy (stpcpy (p,"/"), s);
-  va_end(arg_ptr);
-
-#ifdef HAVE_DRIVE_LETTERS
-  /* We better avoid mixing slashes and backslashes and prefer
-     backslashes.  There is usual no problem with mixing them, however
-     a very few W32 API calls can't grok plain slashes.  Printing
-     filenames with mixed slashes also looks a bit strange. */
-  if (strchr (name, '\\'))
-    {
-      for (p=name; *p; p++)
-        if (*p == '/')
-          *p = '\\';
-    }
-#endif /*HAVE_DRIVE_LETTERS*/
-  return name;
+  MAKE_FILENAME_PART2
 }
 
+/* Construct a filename from the NULL terminated list of parts.  Tilde
+   expansion is done here.  This function may return NULL on error. */
+char *
+make_filename_try (const char *first_part, ... )
+{
+  MAKE_FILENAME_PART1
+  name = jnlib_xmalloc (n);
+  if (!name)
+    return NULL;
+  MAKE_FILENAME_PART2
+}
+#undef MAKE_FILENAME_PART1
+#undef MAKE_FILENAME_PART2
 
+
+
 /* Compare whether the filenames are identical.  This is a
    special version of strcmp() taking the semantics of filenames in
    account.  Note that this function works only on the supplied names
