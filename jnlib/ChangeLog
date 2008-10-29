@@ -1,3 +1,8 @@
+2008-10-29  Werner Koch  <wk@g10code.com>
+
+	* w32-gettext.c (gettext): Return if no domain is loaded.
+	Reported by Tom Pegios.
+
 2008-10-28  Werner Koch  <wk@g10code.com>
 
 	* w32-gettext.c (gettext): Try the binary search if the string was

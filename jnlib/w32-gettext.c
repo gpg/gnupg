@@ -1603,7 +1603,7 @@ gettext( const char *msgid )
   size_t top, bottom;
   
   if (!(domain = the_domain))
-    goto not_found;
+    return msgid;
   
   /* Locate the MSGID and its translation.  */
   if (domain->hash_size > 2 && domain->hash_tab)
