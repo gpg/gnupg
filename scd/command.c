@@ -81,7 +81,7 @@ struct slot_status_s
                  done.  This is set once to indicate that the status
                  tracking for the slot has been initialized.  */
   unsigned int status;  /* Last status of the slot. */
-  unsigned int changed; /* Last change counter of teh slot. */
+  unsigned int changed; /* Last change counter of the slot. */
 };
 
 
@@ -134,7 +134,7 @@ static pth_mutex_t status_file_update_lock;
 
 
 /*-- Local prototypes --*/
-static void update_reader_status_file (void);
+static void update_reader_status_file (int set_card_removed_flag);
 
 
 
@@ -171,7 +171,7 @@ update_card_removed (int slot, int value)
       }
   /* Let the card application layer know about the removal.  */
   if (value)
-    application_notify_card_removed (slot);
+    application_notify_card_reset (slot);
 }
 
 
@@ -256,7 +256,8 @@ hex_to_buffer (const char *string, size_t *r_length)
 
 
 /* Reset the card and free the application context.  With SEND_RESET
-   set to true actually send a RESET to the reader. */
+   set to true actually send a RESET to the reader; this is the normal
+   way of calling the function.  */
 static void
 do_reset (ctrl_t ctrl, int send_reset)
 {
@@ -265,18 +266,22 @@ do_reset (ctrl_t ctrl, int send_reset)
   if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
     BUG ();
 
+  /* If there is an active application, release it. */
   if (ctrl->app_ctx)
     {
       release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
     }
 
+  /* If we want a real reset for the card, send the reset APDU and
+     tell the application layer about it.  */
   if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
       if (apdu_reset (slot)) 
         {
           slot_table[slot].reset_failed = 1;
         }
+      application_notify_card_reset (slot);
     }
 
   /* If we hold a lock, unlock now. */
@@ -286,23 +291,23 @@ do_reset (ctrl_t ctrl, int send_reset)
       log_info ("implicitly unlocking due to RESET\n");
     }
 
-  /* Reset card removed flag for the current reader.  We need to take
-     the lock here so that the ticker thread won't concurrently try to
-     update the file.  Note that the update function will set the card
-     removed flag and we will later reset it - not a particualar nice
-     way of implementing it but it works. */
+  /* Reset the card removed flag for the current reader.  We need to
+     take the lock here so that the ticker thread won't concurrently
+     try to update the file.  Calling update_reader_status_file is
+     required to get hold of the new status of the card in the slot
+     table.  */
   if (!pth_mutex_acquire (&status_file_update_lock, 0, NULL))
     {
       log_error ("failed to acquire status_fle_update lock\n");
       ctrl->reader_slot = -1;
       return;
     }
-  update_reader_status_file ();
-  update_card_removed (slot, 0);
+  update_reader_status_file (0);  /* Update slot status table.  */
+  update_card_removed (slot, 0);  /* Clear card_removed flag.  */
   if (!pth_mutex_release (&status_file_update_lock))
     log_error ("failed to release status_file_update lock\n");
 
-  /* Do this last, so that update_card_removed does its job.  */
+  /* Do this last, so that the update_card_removed above does its job.  */
   ctrl->reader_slot = -1;
 }
 
@@ -1875,7 +1880,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
         }
     }
 
-  /* Cleanup.  */
+  /* Cleanup.  We don't send an explicit reset to the card.  */
   do_reset (ctrl, 0); 
 
   /* Release the server object.  */
@@ -1951,9 +1956,9 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
 
 
 /* This is the core of scd_update_reader_status_file but the caller
-   needs to take care of the locking. */
+   needs to take care of the locking.  */
 static void
-update_reader_status_file (void)
+update_reader_status_file (int set_card_removed_flag)
 {
   int idx;
   unsigned int status, changed;
@@ -1990,7 +1995,7 @@ update_reader_status_file (void)
 	  /* FIXME: Should this be IDX instead of ss->slot?  This
 	     depends on how client sessions will associate the reader
 	     status with their session.  */
-          sprintf (templ, "reader_%d.status", ss->slot);
+          snprintf (templ, sizeof templ, "reader_%d.status", ss->slot);
           fname = make_filename (opt.homedir, templ, NULL );
           fp = fopen (fname, "w");
           if (fp)
@@ -2047,7 +2052,7 @@ update_reader_status_file (void)
           /* Set the card removed flag for all current sessions.  We
              will set this on any card change because a reset or
              SERIALNO request must be done in any case.  */
-          if (ss->any)
+          if (ss->any && set_card_removed_flag)
             update_card_removed (idx, 1);
           
           ss->any = 1;
@@ -2090,7 +2095,7 @@ scd_update_reader_status_file (void)
 {
   if (!pth_mutex_acquire (&status_file_update_lock, 1, NULL))
     return; /* locked - give up. */
-  update_reader_status_file ();
+  update_reader_status_file (1);
   if (!pth_mutex_release (&status_file_update_lock))
     log_error ("failed to release status_file_update lock\n");
 }

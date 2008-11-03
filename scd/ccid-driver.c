@@ -1707,6 +1707,8 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
 }
 
 
+/* Return the ATR of the card.  This is not a cached value and thus an
+   actual reset is done.  */
 int 
 ccid_get_atr (ccid_driver_t handle,
               unsigned char *atr, size_t maxatrlen, size_t *atrlen)
@@ -1730,7 +1732,6 @@ ccid_get_atr (ccid_driver_t handle,
   if (statusbits == 2)
     return CCID_DRIVER_ERR_NO_CARD;
 
-    
   /* For an inactive and also for an active card, issue the PowerOn
      command to get the ATR.  */
  again:

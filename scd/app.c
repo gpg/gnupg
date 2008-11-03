@@ -161,9 +161,9 @@ is_app_allowed (const char *name)
 }
 
 
-/* This may be called to tell this module about a removed card. */
+/* This may be called to tell this module about a removed or resetted card. */
 void
-application_notify_card_removed (int slot)
+application_notify_card_reset (int slot)
 {
   app_t app;
 
@@ -369,8 +369,8 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       return err;
     }
 
-  app->initialized = 1;
   app->ref_count = 1;
+  log_debug ("USING application context (refcount=%u) (new)\n", app->ref_count);
   lock_table[slot].app = app;
   *r_app = app;
   unlock_reader (slot);
@@ -405,7 +405,7 @@ release_application (app_t app)
   if (!app)
     return;
 
-  if (app->ref_count < 1)
+  if (!app->ref_count)
     log_bug ("trying to release an already released context\n");
   if (--app->ref_count)
     return;
@@ -500,7 +500,7 @@ app_write_learn_status (app_t app, ctrl_t ctrl)
 
   if (!app)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -529,7 +529,7 @@ app_readcert (app_t app, const char *certid,
 
   if (!app)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readcert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -561,7 +561,7 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 
   if (!app || !keyid || !pk || !pklen)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -582,7 +582,7 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (!app || !name || !*name)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
 
   if (app->apptype && name && !strcmp (name, "APPTYPE"))
@@ -626,7 +626,7 @@ app_setattr (app_t app, const char *name,
 
   if (!app || !name || !*name || !value)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.setattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -652,7 +652,7 @@ app_sign (app_t app, const char *keyidstr, int hashalgo,
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.sign)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -684,7 +684,7 @@ app_auth (app_t app, const char *keyidstr,
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.auth)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -716,7 +716,7 @@ app_decipher (app_t app, const char *keyidstr,
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.decipher)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -746,7 +746,7 @@ app_writecert (app_t app, ctrl_t ctrl,
 
   if (!app || !certidstr || !*certidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.writecert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -774,7 +774,7 @@ app_writekey (app_t app, ctrl_t ctrl,
 
   if (!app || !keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.writekey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -801,7 +801,7 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
 
   if (!app || !keynostr || !*keynostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.genkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -827,7 +827,7 @@ app_get_challenge (app_t app, size_t nbytes, unsigned char *buffer)
 
   if (!app || !nbytes || !buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   err = lock_reader (app->slot);
   if (err)
@@ -849,7 +849,7 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
 
   if (!app || !chvnostr || !*chvnostr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.change_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
@@ -877,7 +877,7 @@ app_check_pin (app_t app, const char *keyidstr,
 
   if (!app || !keyidstr || !*keyidstr || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->initialized)
+  if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.check_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);

@@ -1,5 +1,20 @@
 2008-11-03  Werner Koch  <wk@g10code.com>
 
+	* app-common.h (app_ctx_s): Remove INITIALIZED.  Make REF_COUNT
+	unsigned. 
+	* app.c (select_application): Remove INITIALIZED.
+	(app_write_learn_status, app_readcert, app_readkey, app_getattr)
+	(app_setattr, app_sign, app_decipher, app_writecert)
+	(app_writekey, app_get_challenge, app_change_pin, app_check_pin):
+	Replace INITIALIZED by REF_COUNT check.
+	(application_notify_card_removed): Rename to ..
+	(application_notify_card_reset): .. this.  Change all callers.
+	* command.c (do_reset): Call application_notify_card_reset after
+	sending a reset.
+	(update_reader_status_file): Add arg SET_CARD_REMOVED.
+	(scd_update_reader_status_file): Pass true for new flag.
+	(do_reset): Pass false for new flag.
+
 	* app.c (app_get_serial_and_stamp): Use bin2hex.
 	* app-help.c (app_help_get_keygrip_string): Ditto.
 	* app-p15.c (send_certinfo, send_keypairinfo, do_getattr): Ditto.

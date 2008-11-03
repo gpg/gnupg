@@ -38,14 +38,13 @@
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 struct app_ctx_s {
-  int initialized;  /* The application has been initialied and the
-                       function pointers may be used.  Note that for
-                       unsupported operations the particular
-                       function pointer is set to NULL */
-
-  int ref_count;    /* Number of connections currently using this
-                       application context.  fixme: We might want to
-                       merg this witghn INITIALIZED above. */
+  unsigned int ref_count;  /* Number of connections currently using
+                              this application context.  If this is
+                              not 0 the application has been
+                              initialized and the function pointers
+                              may be used.  Note that for unsupported
+                              operations the particular function
+                              pointer is set to NULL */
 
   int slot;         /* Used reader. */
 
@@ -138,7 +137,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 /*-- app.c --*/
 void app_dump_state (void);
-void application_notify_card_removed (int slot);
+void application_notify_card_reset (int slot);
 gpg_error_t check_application_conflict (ctrl_t ctrl, const char *name);
 gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
                                 app_t *r_app);
