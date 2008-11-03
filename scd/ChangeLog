@@ -1,3 +1,13 @@
+2008-11-03  Werner Koch  <wk@g10code.com>
+
+	* app.c (app_get_serial_and_stamp): Use bin2hex.
+	* app-help.c (app_help_get_keygrip_string): Ditto.
+	* app-p15.c (send_certinfo, send_keypairinfo, do_getattr): Ditto.
+	* app-openpgp.c (send_fpr_if_not_null, send_key_data) 
+	(retrieve_fpr_from_card, send_keypair_info): Ditto.
+	* app-nks.c (keygripstr_from_pk_file): Ditto.
+	* command.c (cmd_apdu): Ditto.
+
 2008-10-21  Marcus Brinkmann  <marcus@g10code.com>
 
 	* command.c (open_card): If connect error is SW_HOST_NO_CARD,

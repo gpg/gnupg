@@ -2363,7 +2363,6 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
   for (; certinfo; certinfo = certinfo->next)
     {
       char *buf, *p;
-      int i;
 
       buf = xtrymalloc (9 + certinfo->objidlen*2 + 1);
       if (!buf)
@@ -2375,11 +2374,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
           p += 5;
         }
       p = stpcpy (p, ".");
-      for (i=0; i < certinfo->objidlen; i++)
-        {
-          sprintf (p, "%02X", certinfo->objid[i]);
-          p += 2;
-        }
+      bin2hex (certinfo->objid, certinfo->objidlen, p);
 
       send_status_info (ctrl, "CERTINFO",
                         certtype, strlen (certtype),
@@ -2458,7 +2453,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
     {
       char gripstr[40+1];
       char *buf, *p;
-      int i, j;
+      int j;
 
       buf = xtrymalloc (9 + keyinfo->objidlen*2 + 1);
       if (!buf)
@@ -2470,11 +2465,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
           p += 5;
         }
       p = stpcpy (p, ".");
-      for (i=0; i < keyinfo->objidlen; i++)
-        {
-          sprintf (p, "%02X", keyinfo->objid[i]);
-          p += 2;
-        }
+      bin2hex (keyinfo->objid, keyinfo->objidlen, p);
 
       err = keygripstr_from_prkdf (app, keyinfo, gripstr);
       if (err)
@@ -2669,7 +2660,6 @@ static gpg_error_t
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
-  int i;
 
   if (!strcmp (name, "$AUTHKEYID"))
     {
@@ -2694,11 +2684,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
               p += 5;
             }
           p = stpcpy (p, ".");
-          for (i=0; i < prkdf->objidlen; i++)
-            {
-              sprintf (p, "%02X", prkdf->objid[i]);
-              p += 2;
-            }
+          bin2hex (prkdf->objid, prkdf->objidlen, p);
 
           send_status_info (ctrl, name, buf, strlen (buf), NULL, 0);
           xfree (buf);

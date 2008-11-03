@@ -1704,7 +1704,6 @@ cmd_apdu (assuan_context_t ctx, char *line)
     {
       unsigned char *atr;
       size_t atrlen;
-      int i;
       char hexbuf[400];
       
       atr = apdu_get_atr (ctrl->reader_slot, &atrlen);
@@ -1713,8 +1712,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
           rc = gpg_error (GPG_ERR_INV_CARD);
           goto leave;
         }
-      for (i=0; i < atrlen; i++)
-        sprintf (hexbuf+2*i, "%02X", atr[i]);
+      bin2hex (atr, atrlen, hexbuf);
       xfree (atr);
       send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
     }

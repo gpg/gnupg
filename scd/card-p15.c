@@ -174,15 +174,12 @@ p15_enum_keypairs (CARD card, int idx,
   if (keyid)
     {
       char *p;
-      int i;
 
       *keyid = p = xtrymalloc (9+pinfo->id.len*2+1);
       if (!*keyid)
         return gpg_error (gpg_err_code_from_errno (errno));
       p = stpcpy (p, "P15-5015.");
-      for (i=0; i < pinfo->id.len; i++, p += 2)
-        sprintf (p, "%02X", pinfo->id.value[i]);
-      *p = 0;
+      bin2hex (pinfo->id.value, pinfo->id.len, p);
     }
   
   return rc;
@@ -218,9 +215,7 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
       if (!*certid)
         return gpg_error (gpg_err_code_from_errno (errno));
       p = stpcpy (p, "P15-5015.");
-      for (i=0; i < cinfo->id.len; i++, p += 2)
-        sprintf (p, "%02X", cinfo->id.value[i]);
-      *p = 0;
+      bin2hex (cinfo->id.value, cinfo->id.len, p);
     }
   if (type)
     {

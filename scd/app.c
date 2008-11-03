@@ -106,6 +106,7 @@ static void
 dump_mutex_state (pth_mutex_t *m)
 {
 #ifdef _W32_PTH_H
+  (void)m;
   log_printf ("unknown under W32");
 #else
   if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
@@ -186,7 +187,7 @@ application_notify_card_removed (int slot)
 }
 
  
-/* This fucntion is used by the serialno command to check for an
+/* This function is used by the serialno command to check for an
    application conflict which may appear if the serialno command is
    used to request a specific application and the connection has
    already done a select_application. */
@@ -472,8 +473,7 @@ app_munge_serialno (app_t app)
 gpg_error_t 
 app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
-  char *buf, *p;
-  int i;
+  char *buf;
 
   if (!app || !serial)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -482,12 +482,10 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
   if (stamp)
     *stamp = 0; /* not available */
 
-  buf = xtrymalloc (app->serialnolen * 2 + 1);
+  buf = bin2hex (app->serialno, app->serialnolen, NULL);
   if (!buf)
     return gpg_error_from_syserror ();
-  for (p=buf, i=0; i < app->serialnolen; p +=2, i++)
-    sprintf (p, "%02X", app->serialno[i]);
-  *p = 0;
+
   *serial = buf;
   return 0;
 }

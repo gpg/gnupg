@@ -39,7 +39,6 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
   ksba_sexp_t p;
   size_t n;
   unsigned char array[20];
-  int i;
 
   p = ksba_cert_get_public_key (cert);
   if (!p)
@@ -58,8 +57,7 @@ app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip)
     }
   gcry_sexp_release (s_pkey);
 
-  for (i=0; i < 20; i++)
-    sprintf (hexkeygrip+i*2, "%02X", array[i]);
+  bin2hex (array, 20, hexkeygrip);
 
   return 0;
 }

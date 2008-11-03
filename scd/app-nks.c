@@ -108,8 +108,7 @@ keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
     }
   else
     {
-      for (i=0; i < 20; i++)
-        sprintf (r_gripstr+i*2, "%02X", grip[i]);
+      bin2hex (grip, 20, r_gripstr);
     }
   gcry_sexp_release (sexp);
   return err;

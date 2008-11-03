@@ -697,8 +697,7 @@ send_fpr_if_not_null (ctrl_t ctrl, const char *keyword,
     ;
   if (i==20)
     return; /* All zero. */
-  for (i=0; i< 20; i++)
-    sprintf (buf+2*i, "%02X", fpr[i]);
+  bin2hex (fpr, 20, buf);
   if (number == -1)
     *numbuf = 0; /* Don't print the key number */
   else
@@ -729,10 +728,14 @@ static void
 send_key_data (ctrl_t ctrl, const char *name, 
                const unsigned char *a, size_t alen)
 {
-  char *p, *buf = xmalloc (alen*2+1);
+  char *buf;
   
-  for (p=buf; alen; a++, alen--, p += 2)
-    sprintf (p, "%02X", *a);
+  buf = bin2hex (a, alen, NULL);
+  if (!buf)
+    {
+      log_error ("memory allocation error in send_key_data\n");
+      return;
+    }
 
   send_status_info (ctrl, "KEY-DATA",
                     name, (size_t)strlen(name), 
@@ -893,16 +896,12 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
   void *relptr;
   unsigned char *value;
   size_t valuelen;
-  int i;
 
   assert (keyno >=0 && keyno <= 2);
 
   relptr = get_one_do (app, 0x00C5, &value, &valuelen, NULL);
   if (relptr && valuelen >= 60)
-    {
-      for (i = 0; i < 20; i++)
-        sprintf (fpr + (i * 2), "%02X", value[(keyno*20)+i]);
-    }
+    bin2hex (value+keyno*20, 20, fpr);
   else
     err = gpg_error (GPG_ERR_NOT_FOUND);
   xfree (relptr);
@@ -1235,7 +1234,6 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
   unsigned char grip[20];
   char gripstr[41];
   char idbuf[50];
-  int i;
 
   err = get_public_key (app, keyno);
   if (err)
@@ -1251,8 +1249,7 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
   if (err)
     goto leave;
   
-  for (i=0; i < 20; i++)
-    sprintf (gripstr+i*2, "%02X", grip[i]);
+  bin2hex (grip, 20, gripstr);
 
   sprintf (idbuf, "OPENPGP.%d", keyno);
   send_status_info (ctrl, "KEYPAIRINFO", 
