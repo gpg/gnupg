@@ -33,7 +33,7 @@ void
 i18n_init (void)
 {
 #ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE_GT, "Software\\GNU\\GnuPG");
+  bindtextdomain (PACKAGE_GT, gnupg_localedir ());
 #else
 # ifdef ENABLE_NLS
   setlocale (LC_ALL, "" );

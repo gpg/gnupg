@@ -1,789 +1,609 @@
-/* w32-gettext.c  - A simplified version of gettext for use under W32.
- * Copyright (C) 1995, 1996, 1997, 1999, 2000, 2003,
- *               2005, 2007, 2008 Free Software Foundation, Inc.
- *
- * This file is part of JNLIB.
- *
- * JNLIB is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * JNLIB is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <http://www.gnu.org/licenses/>.
+/* w32-gettext.h - A simple gettext implementation for Windows targets.
+   Copyright (C) 1995, 1996, 1997, 1999, 2005, 2007,
+                 2008 Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation; either version 2.1 of
+   the License, or (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+ 
+   You should have received a copy of the GNU Lesser General Public
+   License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
-   This is a simplified version of gettext written by Ulrich Drepper.
-   It is used for the Win32 version of GnuPG becaise all the overhead
-   of gettext is not needed and we have to do some special Win32
-   stuff.  I decided that this is far easier than to tweak gettext for
-   the special cases (I tried it but it is a lot of code). wk 15.09.99
- */
-
+#if HAVE_CONFIG_H
 #include <config.h>
-#ifdef USE_SIMPLE_GETTEXT
-# if !defined (_WIN32) && !defined (__CYGWIN32__)
+#endif
+#if !defined (_WIN32) && !defined (__CYGWIN32__)
 #  error This module may only be build for Windows or Cygwin32
-# endif
+#endif
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
-# include <ctype.h>
-# include <errno.h>
-# include <sys/types.h>
-# include <sys/stat.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <locale.h>
+#include <windows.h>
 
-# include "libjnlib-config.h"
-# include "types.h"
-# include "stringhelp.h"
-# include "utf8conv.h"
-# include "w32help.h"
+#ifdef JNLIB_IN_JNLIB
+#include "libjnlib-config.h"
+#endif
 
-# include "windows.h" /* For GetModuleFileName.  */
-
-
-
-/* The magic number of the GNU message catalog format.	*/
-#define MAGIC	      0x950412de
-#define MAGIC_SWAPPED 0xde120495
-
-/* Revision number of the currently used .mo (binary) file format.  */
-#define MO_REVISION_NUMBER 0
+#ifndef jnlib_malloc
+# define jnlib_malloc(a)    malloc ((a))
+# define jnlib_calloc(a,b)  calloc ((a), (b))
+# define jnlib_free(a)      free ((a))
+# define jnlib_xstrdup(a)   my_xstrdup(a)
+#endif /*!jnlib_malloc*/
 
 
-/* Header for binary .mo file format.  */
-struct mo_file_header
-{
-  /* The magic number.	*/
-  u32 magic;
-  /* The revision number of the file format.  */
-  u32 revision;
-  /* The number of strings pairs.  */
-  u32 nstrings;
-  /* Offset of table with start offsets of original strings.  */
-  u32 orig_tab_offset;
-  /* Offset of table with start offsets of translation strings.  */
-  u32 trans_tab_offset;
-  /* Size of hashing table.  */
-  u32 hash_tab_size;
-  /* Offset of first hashing entry.  */
-  u32 hash_tab_offset;
-};
+
+/* localname.c from gettext BEGIN.  */
 
-struct string_desc
-{
-  /* Length of addressed string.  */
-  u32 length;
-  /* Offset of string in file.	*/
-  u32 offset;
-};
+/* Determine the current selected locale.
+   Copyright (C) 1995-1999, 2000-2003 Free Software Foundation, Inc.
 
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU Library General Public License as published
+   by the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-struct overflow_space_s
-{
-  struct overflow_space_s *next;
-  u32 idx;
-  char d[1];
-};
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
 
-struct loaded_domain
-{
-  char *data;
-  char *data_native; /* Data mapped to the native version of the
-                        string.  (Allocated along with DATA). */
-  int must_swap;
-  u32 nstrings;
-  char *mapped;  /* 0 = not mapped (original utf8), 
-                    1 = mapped to native encoding,
-                    2 = mapped to native encoding in overflow space.   */
-  struct overflow_space_s *overflow_space;
-  struct string_desc *orig_tab;
-  struct string_desc *trans_tab;
-  u32 hash_size;
-  u32 *hash_tab;
-};
-
-
-static struct loaded_domain *the_domain;
-static char *the_langid;
-static int want_utf8;  /* True if the user want's utf-8 strings.  */
-
-
-static __inline__ u32
-do_swap_u32( u32 i )
-{
-  return (i << 24) | ((i & 0xff00) << 8) | ((i >> 8) & 0xff00) | (i >> 24);
-}
-
-#define SWAPIT(flag, data) ((flag) ? do_swap_u32(data) : (data) )
-
-
-/* We assume to have `unsigned long int' value with at least 32 bits.  */
-#define HASHWORDBITS 32
-
-
-
-/* BEGIN parts of localname.c from gettext.  */
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 /* Written by Ulrich Drepper <drepper@gnu.org>, 1995.  */
 /* Win32 code written by Tor Lillqvist <tml@iki.fi>.  */
+/* Renamed _nl_locale_name, removed unsed carg, removed include files,
+   non-W32 code and changed comments <wk@gnupg.org>.  */
 
-/* List of language codes, sorted by value:
-   0x01 LANG_ARABIC
-   0x02 LANG_BULGARIAN
-   0x03 LANG_CATALAN
-   0x04 LANG_CHINESE
-   0x05 LANG_CZECH
-   0x06 LANG_DANISH
-   0x07 LANG_GERMAN
-   0x08 LANG_GREEK
-   0x09 LANG_ENGLISH
-   0x0a LANG_SPANISH
-   0x0b LANG_FINNISH
-   0x0c LANG_FRENCH
-   0x0d LANG_HEBREW
-   0x0e LANG_HUNGARIAN
-   0x0f LANG_ICELANDIC
-   0x10 LANG_ITALIAN
-   0x11 LANG_JAPANESE
-   0x12 LANG_KOREAN
-   0x13 LANG_DUTCH
-   0x14 LANG_NORWEGIAN
-   0x15 LANG_POLISH
-   0x16 LANG_PORTUGUESE
-   0x17 LANG_RHAETO_ROMANCE
-   0x18 LANG_ROMANIAN
-   0x19 LANG_RUSSIAN
-   0x1a LANG_CROATIAN == LANG_SERBIAN
-   0x1b LANG_SLOVAK
-   0x1c LANG_ALBANIAN
-   0x1d LANG_SWEDISH
-   0x1e LANG_THAI
-   0x1f LANG_TURKISH
-   0x20 LANG_URDU
-   0x21 LANG_INDONESIAN
-   0x22 LANG_UKRAINIAN
-   0x23 LANG_BELARUSIAN
-   0x24 LANG_SLOVENIAN
-   0x25 LANG_ESTONIAN
-   0x26 LANG_LATVIAN
-   0x27 LANG_LITHUANIAN
-   0x28 LANG_TAJIK
-   0x29 LANG_FARSI
-   0x2a LANG_VIETNAMESE
-   0x2b LANG_ARMENIAN
-   0x2c LANG_AZERI
-   0x2d LANG_BASQUE
-   0x2e LANG_SORBIAN
-   0x2f LANG_MACEDONIAN
-   0x30 LANG_SUTU
-   0x31 LANG_TSONGA
-   0x32 LANG_TSWANA
-   0x33 LANG_VENDA
-   0x34 LANG_XHOSA
-   0x35 LANG_ZULU
-   0x36 LANG_AFRIKAANS
-   0x37 LANG_GEORGIAN
-   0x38 LANG_FAEROESE
-   0x39 LANG_HINDI
-   0x3a LANG_MALTESE
-   0x3b LANG_SAAMI
-   0x3c LANG_GAELIC
-   0x3d LANG_YIDDISH
-   0x3e LANG_MALAY
-   0x3f LANG_KAZAK
-   0x40 LANG_KYRGYZ
-   0x41 LANG_SWAHILI
-   0x42 LANG_TURKMEN
-   0x43 LANG_UZBEK
-   0x44 LANG_TATAR
-   0x45 LANG_BENGALI
-   0x46 LANG_PUNJABI
-   0x47 LANG_GUJARATI
-   0x48 LANG_ORIYA
-   0x49 LANG_TAMIL
-   0x4a LANG_TELUGU
-   0x4b LANG_KANNADA
-   0x4c LANG_MALAYALAM
-   0x4d LANG_ASSAMESE
-   0x4e LANG_MARATHI
-   0x4f LANG_SANSKRIT
-   0x50 LANG_MONGOLIAN
-   0x51 LANG_TIBETAN
-   0x52 LANG_WELSH
-   0x53 LANG_CAMBODIAN
-   0x54 LANG_LAO
-   0x55 LANG_BURMESE
-   0x56 LANG_GALICIAN
-   0x57 LANG_KONKANI
-   0x58 LANG_MANIPURI
-   0x59 LANG_SINDHI
-   0x5a LANG_SYRIAC
-   0x5b LANG_SINHALESE
-   0x5c LANG_CHEROKEE
-   0x5d LANG_INUKTITUT
-   0x5e LANG_AMHARIC
-   0x5f LANG_TAMAZIGHT
-   0x60 LANG_KASHMIRI
-   0x61 LANG_NEPALI
-   0x62 LANG_FRISIAN
-   0x63 LANG_PASHTO
-   0x64 LANG_TAGALOG
-   0x65 LANG_DIVEHI
-   0x66 LANG_EDO
-   0x67 LANG_FULFULDE
-   0x68 LANG_HAUSA
-   0x69 LANG_IBIBIO
-   0x6a LANG_YORUBA
-   0x70 LANG_IGBO
-   0x71 LANG_KANURI
-   0x72 LANG_OROMO
-   0x73 LANG_TIGRINYA
-   0x74 LANG_GUARANI
-   0x75 LANG_HAWAIIAN
-   0x76 LANG_LATIN
-   0x77 LANG_SOMALI
-   0x78 LANG_YI
-   0x79 LANG_PAPIAMENTU
-*/
 /* Mingw headers don't have latest language and sublanguage codes.  */
-# ifndef LANG_AFRIKAANS
-# define LANG_AFRIKAANS 0x36
-# endif
-# ifndef LANG_ALBANIAN
-# define LANG_ALBANIAN 0x1c
-# endif
-# ifndef LANG_AMHARIC
-# define LANG_AMHARIC 0x5e
-# endif
-# ifndef LANG_ARABIC
-# define LANG_ARABIC 0x01
-# endif
-# ifndef LANG_ARMENIAN
-# define LANG_ARMENIAN 0x2b
-# endif
-# ifndef LANG_ASSAMESE
-# define LANG_ASSAMESE 0x4d
-# endif
-# ifndef LANG_AZERI
-# define LANG_AZERI 0x2c
-# endif
-# ifndef LANG_BASQUE
-# define LANG_BASQUE 0x2d
-# endif
-# ifndef LANG_BELARUSIAN
-# define LANG_BELARUSIAN 0x23
-# endif
-# ifndef LANG_BENGALI
-# define LANG_BENGALI 0x45
-# endif
-# ifndef LANG_BURMESE
-# define LANG_BURMESE 0x55
-# endif
-# ifndef LANG_CAMBODIAN
-# define LANG_CAMBODIAN 0x53
-# endif
-# ifndef LANG_CATALAN
-# define LANG_CATALAN 0x03
-# endif
-# ifndef LANG_CHEROKEE
-# define LANG_CHEROKEE 0x5c
-# endif
-# ifndef LANG_DIVEHI
-# define LANG_DIVEHI 0x65
-# endif
-# ifndef LANG_EDO
-# define LANG_EDO 0x66
-# endif
-# ifndef LANG_ESTONIAN
-# define LANG_ESTONIAN 0x25
-# endif
-# ifndef LANG_FAEROESE
-# define LANG_FAEROESE 0x38
-# endif
-# ifndef LANG_FARSI
-# define LANG_FARSI 0x29
-# endif
-# ifndef LANG_FRISIAN
-# define LANG_FRISIAN 0x62
-# endif
-# ifndef LANG_FULFULDE
-# define LANG_FULFULDE 0x67
-# endif
-# ifndef LANG_GAELIC
-# define LANG_GAELIC 0x3c
-# endif
-# ifndef LANG_GALICIAN
-# define LANG_GALICIAN 0x56
-# endif
-# ifndef LANG_GEORGIAN
-# define LANG_GEORGIAN 0x37
-# endif
-# ifndef LANG_GUARANI
-# define LANG_GUARANI 0x74
-# endif
-# ifndef LANG_GUJARATI
-# define LANG_GUJARATI 0x47
-# endif
-# ifndef LANG_HAUSA
-# define LANG_HAUSA 0x68
-# endif
-# ifndef LANG_HAWAIIAN
-# define LANG_HAWAIIAN 0x75
-# endif
-# ifndef LANG_HEBREW
-# define LANG_HEBREW 0x0d
-# endif
-# ifndef LANG_HINDI
-# define LANG_HINDI 0x39
-# endif
-# ifndef LANG_IBIBIO
-# define LANG_IBIBIO 0x69
-# endif
-# ifndef LANG_IGBO
-# define LANG_IGBO 0x70
-# endif
-# ifndef LANG_INDONESIAN
-# define LANG_INDONESIAN 0x21
-# endif
-# ifndef LANG_INUKTITUT
-# define LANG_INUKTITUT 0x5d
-# endif
-# ifndef LANG_KANNADA
-# define LANG_KANNADA 0x4b
-# endif
-# ifndef LANG_KANURI
-# define LANG_KANURI 0x71
-# endif
-# ifndef LANG_KASHMIRI
-# define LANG_KASHMIRI 0x60
-# endif
-# ifndef LANG_KAZAK
-# define LANG_KAZAK 0x3f
-# endif
-# ifndef LANG_KONKANI
-# define LANG_KONKANI 0x57
-# endif
-# ifndef LANG_KYRGYZ
-# define LANG_KYRGYZ 0x40
-# endif
-# ifndef LANG_LAO
-# define LANG_LAO 0x54
-# endif
-# ifndef LANG_LATIN
-# define LANG_LATIN 0x76
-# endif
-# ifndef LANG_LATVIAN
-# define LANG_LATVIAN 0x26
-# endif
-# ifndef LANG_LITHUANIAN
-# define LANG_LITHUANIAN 0x27
-# endif
-# ifndef LANG_MACEDONIAN
-# define LANG_MACEDONIAN 0x2f
-# endif
-# ifndef LANG_MALAY
-# define LANG_MALAY 0x3e
-# endif
-# ifndef LANG_MALAYALAM
-# define LANG_MALAYALAM 0x4c
-# endif
-# ifndef LANG_MALTESE
-# define LANG_MALTESE 0x3a
-# endif
-# ifndef LANG_MANIPURI
-# define LANG_MANIPURI 0x58
-# endif
-# ifndef LANG_MARATHI
-# define LANG_MARATHI 0x4e
-# endif
-# ifndef LANG_MONGOLIAN
-# define LANG_MONGOLIAN 0x50
-# endif
-# ifndef LANG_NEPALI
-# define LANG_NEPALI 0x61
-# endif
-# ifndef LANG_ORIYA
-# define LANG_ORIYA 0x48
-# endif
-# ifndef LANG_OROMO
-# define LANG_OROMO 0x72
-# endif
-# ifndef LANG_PAPIAMENTU
-# define LANG_PAPIAMENTU 0x79
-# endif
-# ifndef LANG_PASHTO
-# define LANG_PASHTO 0x63
-# endif
-# ifndef LANG_PUNJABI
-# define LANG_PUNJABI 0x46
-# endif
-# ifndef LANG_RHAETO_ROMANCE
-# define LANG_RHAETO_ROMANCE 0x17
-# endif
-# ifndef LANG_SAAMI
-# define LANG_SAAMI 0x3b
-# endif
-# ifndef LANG_SANSKRIT
-# define LANG_SANSKRIT 0x4f
-# endif
-# ifndef LANG_SERBIAN
-# define LANG_SERBIAN 0x1a
-# endif
-# ifndef LANG_SINDHI
-# define LANG_SINDHI 0x59
-# endif
-# ifndef LANG_SINHALESE
-# define LANG_SINHALESE 0x5b
-# endif
-# ifndef LANG_SLOVAK
-# define LANG_SLOVAK 0x1b
-# endif
-# ifndef LANG_SOMALI
-# define LANG_SOMALI 0x77
-# endif
-# ifndef LANG_SORBIAN
-# define LANG_SORBIAN 0x2e
-# endif
-# ifndef LANG_SUTU
-# define LANG_SUTU 0x30
-# endif
-# ifndef LANG_SWAHILI
-# define LANG_SWAHILI 0x41
-# endif
-# ifndef LANG_SYRIAC
-# define LANG_SYRIAC 0x5a
-# endif
-# ifndef LANG_TAGALOG
-# define LANG_TAGALOG 0x64
-# endif
-# ifndef LANG_TAJIK
-# define LANG_TAJIK 0x28
-# endif
-# ifndef LANG_TAMAZIGHT
-# define LANG_TAMAZIGHT 0x5f
-# endif
-# ifndef LANG_TAMIL
-# define LANG_TAMIL 0x49
-# endif
-# ifndef LANG_TATAR
-# define LANG_TATAR 0x44
-# endif
-# ifndef LANG_TELUGU
-# define LANG_TELUGU 0x4a
-# endif
-# ifndef LANG_THAI
-# define LANG_THAI 0x1e
-# endif
-# ifndef LANG_TIBETAN
-# define LANG_TIBETAN 0x51
-# endif
-# ifndef LANG_TIGRINYA
-# define LANG_TIGRINYA 0x73
-# endif
-# ifndef LANG_TSONGA
-# define LANG_TSONGA 0x31
-# endif
-# ifndef LANG_TSWANA
-# define LANG_TSWANA 0x32
-# endif
-# ifndef LANG_TURKMEN
-# define LANG_TURKMEN 0x42
-# endif
-# ifndef LANG_UKRAINIAN
-# define LANG_UKRAINIAN 0x22
-# endif
-# ifndef LANG_URDU
-# define LANG_URDU 0x20
-# endif
-# ifndef LANG_UZBEK
-# define LANG_UZBEK 0x43
-# endif
-# ifndef LANG_VENDA
-# define LANG_VENDA 0x33
-# endif
-# ifndef LANG_VIETNAMESE
-# define LANG_VIETNAMESE 0x2a
-# endif
-# ifndef LANG_WELSH
-# define LANG_WELSH 0x52
-# endif
-# ifndef LANG_XHOSA
-# define LANG_XHOSA 0x34
-# endif
-# ifndef LANG_YI
-# define LANG_YI 0x78
-# endif
-# ifndef LANG_YIDDISH
-# define LANG_YIDDISH 0x3d
-# endif
-# ifndef LANG_YORUBA
-# define LANG_YORUBA 0x6a
-# endif
-# ifndef LANG_ZULU
-# define LANG_ZULU 0x35
-# endif
-# ifndef SUBLANG_ARABIC_SAUDI_ARABIA
-# define SUBLANG_ARABIC_SAUDI_ARABIA 0x01
-# endif
-# ifndef SUBLANG_ARABIC_IRAQ
-# define SUBLANG_ARABIC_IRAQ 0x02
-# endif
-# ifndef SUBLANG_ARABIC_EGYPT
-# define SUBLANG_ARABIC_EGYPT 0x03
-# endif
-# ifndef SUBLANG_ARABIC_LIBYA
-# define SUBLANG_ARABIC_LIBYA 0x04
-# endif
-# ifndef SUBLANG_ARABIC_ALGERIA
-# define SUBLANG_ARABIC_ALGERIA 0x05
-# endif
-# ifndef SUBLANG_ARABIC_MOROCCO
-# define SUBLANG_ARABIC_MOROCCO 0x06
-# endif
-# ifndef SUBLANG_ARABIC_TUNISIA
-# define SUBLANG_ARABIC_TUNISIA 0x07
-# endif
-# ifndef SUBLANG_ARABIC_OMAN
-# define SUBLANG_ARABIC_OMAN 0x08
-# endif
-# ifndef SUBLANG_ARABIC_YEMEN
-# define SUBLANG_ARABIC_YEMEN 0x09
-# endif
-# ifndef SUBLANG_ARABIC_SYRIA
-# define SUBLANG_ARABIC_SYRIA 0x0a
-# endif
-# ifndef SUBLANG_ARABIC_JORDAN
-# define SUBLANG_ARABIC_JORDAN 0x0b
-# endif
-# ifndef SUBLANG_ARABIC_LEBANON
-# define SUBLANG_ARABIC_LEBANON 0x0c
-# endif
-# ifndef SUBLANG_ARABIC_KUWAIT
-# define SUBLANG_ARABIC_KUWAIT 0x0d
-# endif
-# ifndef SUBLANG_ARABIC_UAE
-# define SUBLANG_ARABIC_UAE 0x0e
-# endif
-# ifndef SUBLANG_ARABIC_BAHRAIN
-# define SUBLANG_ARABIC_BAHRAIN 0x0f
-# endif
-# ifndef SUBLANG_ARABIC_QATAR
-# define SUBLANG_ARABIC_QATAR 0x10
-# endif
-# ifndef SUBLANG_AZERI_LATIN
-# define SUBLANG_AZERI_LATIN 0x01
-# endif
-# ifndef SUBLANG_AZERI_CYRILLIC
-# define SUBLANG_AZERI_CYRILLIC 0x02
-# endif
-# ifndef SUBLANG_BENGALI_INDIA
-# define SUBLANG_BENGALI_INDIA 0x01
-# endif
-# ifndef SUBLANG_BENGALI_BANGLADESH
-# define SUBLANG_BENGALI_BANGLADESH 0x02
-# endif
-# ifndef SUBLANG_CHINESE_MACAU
-# define SUBLANG_CHINESE_MACAU 0x05
-# endif
-# ifndef SUBLANG_ENGLISH_SOUTH_AFRICA
-# define SUBLANG_ENGLISH_SOUTH_AFRICA 0x07
-# endif
-# ifndef SUBLANG_ENGLISH_JAMAICA
-# define SUBLANG_ENGLISH_JAMAICA 0x08
-# endif
-# ifndef SUBLANG_ENGLISH_CARIBBEAN
-# define SUBLANG_ENGLISH_CARIBBEAN 0x09
-# endif
-# ifndef SUBLANG_ENGLISH_BELIZE
-# define SUBLANG_ENGLISH_BELIZE 0x0a
-# endif
-# ifndef SUBLANG_ENGLISH_TRINIDAD
-# define SUBLANG_ENGLISH_TRINIDAD 0x0b
-# endif
-# ifndef SUBLANG_ENGLISH_ZIMBABWE
-# define SUBLANG_ENGLISH_ZIMBABWE 0x0c
-# endif
-# ifndef SUBLANG_ENGLISH_PHILIPPINES
-# define SUBLANG_ENGLISH_PHILIPPINES 0x0d
-# endif
-# ifndef SUBLANG_ENGLISH_INDONESIA
-# define SUBLANG_ENGLISH_INDONESIA 0x0e
-# endif
-# ifndef SUBLANG_ENGLISH_HONGKONG
-# define SUBLANG_ENGLISH_HONGKONG 0x0f
-# endif
-# ifndef SUBLANG_ENGLISH_INDIA
-# define SUBLANG_ENGLISH_INDIA 0x10
-# endif
-# ifndef SUBLANG_ENGLISH_MALAYSIA
-# define SUBLANG_ENGLISH_MALAYSIA 0x11
-# endif
-# ifndef SUBLANG_ENGLISH_SINGAPORE
-# define SUBLANG_ENGLISH_SINGAPORE 0x12
-# endif
-# ifndef SUBLANG_FRENCH_LUXEMBOURG
-# define SUBLANG_FRENCH_LUXEMBOURG 0x05
-# endif
-# ifndef SUBLANG_FRENCH_MONACO
-# define SUBLANG_FRENCH_MONACO 0x06
-# endif
-# ifndef SUBLANG_FRENCH_WESTINDIES
-# define SUBLANG_FRENCH_WESTINDIES 0x07
-# endif
-# ifndef SUBLANG_FRENCH_REUNION
-# define SUBLANG_FRENCH_REUNION 0x08
-# endif
-# ifndef SUBLANG_FRENCH_CONGO
-# define SUBLANG_FRENCH_CONGO 0x09
-# endif
-# ifndef SUBLANG_FRENCH_SENEGAL
-# define SUBLANG_FRENCH_SENEGAL 0x0a
-# endif
-# ifndef SUBLANG_FRENCH_CAMEROON
-# define SUBLANG_FRENCH_CAMEROON 0x0b
-# endif
-# ifndef SUBLANG_FRENCH_COTEDIVOIRE
-# define SUBLANG_FRENCH_COTEDIVOIRE 0x0c
-# endif
-# ifndef SUBLANG_FRENCH_MALI
-# define SUBLANG_FRENCH_MALI 0x0d
-# endif
-# ifndef SUBLANG_FRENCH_MOROCCO
-# define SUBLANG_FRENCH_MOROCCO 0x0e
-# endif
-# ifndef SUBLANG_FRENCH_HAITI
-# define SUBLANG_FRENCH_HAITI 0x0f
-# endif
-# ifndef SUBLANG_GERMAN_LUXEMBOURG
-# define SUBLANG_GERMAN_LUXEMBOURG 0x04
-# endif
-# ifndef SUBLANG_GERMAN_LIECHTENSTEIN
-# define SUBLANG_GERMAN_LIECHTENSTEIN 0x05
-# endif
-# ifndef SUBLANG_KASHMIRI_INDIA
-# define SUBLANG_KASHMIRI_INDIA 0x02
-# endif
-# ifndef SUBLANG_MALAY_MALAYSIA
-# define SUBLANG_MALAY_MALAYSIA 0x01
-# endif
-# ifndef SUBLANG_MALAY_BRUNEI_DARUSSALAM
-# define SUBLANG_MALAY_BRUNEI_DARUSSALAM 0x02
-# endif
-# ifndef SUBLANG_NEPALI_INDIA
-# define SUBLANG_NEPALI_INDIA 0x02
-# endif
-# ifndef SUBLANG_PUNJABI_INDIA
-# define SUBLANG_PUNJABI_INDIA 0x01
-# endif
-# ifndef SUBLANG_ROMANIAN_ROMANIA
-# define SUBLANG_ROMANIAN_ROMANIA 0x01
-# endif
-# ifndef SUBLANG_SERBIAN_LATIN
-# define SUBLANG_SERBIAN_LATIN 0x02
-# endif
-# ifndef SUBLANG_SERBIAN_CYRILLIC
-# define SUBLANG_SERBIAN_CYRILLIC 0x03
-# endif
-# ifndef SUBLANG_SINDHI_INDIA
-# define SUBLANG_SINDHI_INDIA 0x00
-# endif
-# ifndef SUBLANG_SINDHI_PAKISTAN
-# define SUBLANG_SINDHI_PAKISTAN 0x01
-# endif
-# ifndef SUBLANG_SPANISH_GUATEMALA
-# define SUBLANG_SPANISH_GUATEMALA 0x04
-# endif
-# ifndef SUBLANG_SPANISH_COSTA_RICA
-# define SUBLANG_SPANISH_COSTA_RICA 0x05
-# endif
-# ifndef SUBLANG_SPANISH_PANAMA
-# define SUBLANG_SPANISH_PANAMA 0x06
-# endif
-# ifndef SUBLANG_SPANISH_DOMINICAN_REPUBLIC
-# define SUBLANG_SPANISH_DOMINICAN_REPUBLIC 0x07
-# endif
-# ifndef SUBLANG_SPANISH_VENEZUELA
-# define SUBLANG_SPANISH_VENEZUELA 0x08
-# endif
-# ifndef SUBLANG_SPANISH_COLOMBIA
-# define SUBLANG_SPANISH_COLOMBIA 0x09
-# endif
-# ifndef SUBLANG_SPANISH_PERU
-# define SUBLANG_SPANISH_PERU 0x0a
-# endif
-# ifndef SUBLANG_SPANISH_ARGENTINA
-# define SUBLANG_SPANISH_ARGENTINA 0x0b
-# endif
-# ifndef SUBLANG_SPANISH_ECUADOR
-# define SUBLANG_SPANISH_ECUADOR 0x0c
-# endif
-# ifndef SUBLANG_SPANISH_CHILE
-# define SUBLANG_SPANISH_CHILE 0x0d
-# endif
-# ifndef SUBLANG_SPANISH_URUGUAY
-# define SUBLANG_SPANISH_URUGUAY 0x0e
-# endif
-# ifndef SUBLANG_SPANISH_PARAGUAY
-# define SUBLANG_SPANISH_PARAGUAY 0x0f
-# endif
-# ifndef SUBLANG_SPANISH_BOLIVIA
-# define SUBLANG_SPANISH_BOLIVIA 0x10
-# endif
-# ifndef SUBLANG_SPANISH_EL_SALVADOR
-# define SUBLANG_SPANISH_EL_SALVADOR 0x11
-# endif
-# ifndef SUBLANG_SPANISH_HONDURAS
-# define SUBLANG_SPANISH_HONDURAS 0x12
-# endif
-# ifndef SUBLANG_SPANISH_NICARAGUA
-# define SUBLANG_SPANISH_NICARAGUA 0x13
-# endif
-# ifndef SUBLANG_SPANISH_PUERTO_RICO
-# define SUBLANG_SPANISH_PUERTO_RICO 0x14
-# endif
-# ifndef SUBLANG_SWEDISH_FINLAND
-# define SUBLANG_SWEDISH_FINLAND 0x02
-# endif
-# ifndef SUBLANG_TAMAZIGHT_ARABIC
-# define SUBLANG_TAMAZIGHT_ARABIC 0x01
-# endif
-# ifndef SUBLANG_TAMAZIGHT_LATIN
-# define SUBLANG_TAMAZIGHT_LATIN 0x02
-# endif
-# ifndef SUBLANG_TIGRINYA_ETHIOPIA
-# define SUBLANG_TIGRINYA_ETHIOPIA 0x00
-# endif
-# ifndef SUBLANG_TIGRINYA_ERITREA
-# define SUBLANG_TIGRINYA_ERITREA 0x01
-# endif
-# ifndef SUBLANG_URDU_PAKISTAN
-# define SUBLANG_URDU_PAKISTAN 0x01
-# endif
-# ifndef SUBLANG_URDU_INDIA
-# define SUBLANG_URDU_INDIA 0x02
-# endif
-# ifndef SUBLANG_UZBEK_LATIN
-# define SUBLANG_UZBEK_LATIN 0x01
-# endif
-# ifndef SUBLANG_UZBEK_CYRILLIC
-# define SUBLANG_UZBEK_CYRILLIC 0x02
-# endif
-
-
-/* Return an XPG style locale name language[_territory][@modifier].
+#ifndef LANG_AFRIKAANS
+#define LANG_AFRIKAANS 0x36
+#endif
+#ifndef LANG_ALBANIAN
+#define LANG_ALBANIAN 0x1c
+#endif
+#ifndef LANG_AMHARIC
+#define LANG_AMHARIC 0x5e
+#endif
+#ifndef LANG_ARABIC
+#define LANG_ARABIC 0x01
+#endif
+#ifndef LANG_ARMENIAN
+#define LANG_ARMENIAN 0x2b
+#endif
+#ifndef LANG_ASSAMESE
+#define LANG_ASSAMESE 0x4d
+#endif
+#ifndef LANG_AZERI
+#define LANG_AZERI 0x2c
+#endif
+#ifndef LANG_BASQUE
+#define LANG_BASQUE 0x2d
+#endif
+#ifndef LANG_BELARUSIAN
+#define LANG_BELARUSIAN 0x23
+#endif
+#ifndef LANG_BENGALI
+#define LANG_BENGALI 0x45
+#endif
+#ifndef LANG_BURMESE
+#define LANG_BURMESE 0x55
+#endif
+#ifndef LANG_CAMBODIAN
+#define LANG_CAMBODIAN 0x53
+#endif
+#ifndef LANG_CATALAN
+#define LANG_CATALAN 0x03
+#endif
+#ifndef LANG_CHEROKEE
+#define LANG_CHEROKEE 0x5c
+#endif
+#ifndef LANG_DIVEHI
+#define LANG_DIVEHI 0x65
+#endif
+#ifndef LANG_EDO
+#define LANG_EDO 0x66
+#endif
+#ifndef LANG_ESTONIAN
+#define LANG_ESTONIAN 0x25
+#endif
+#ifndef LANG_FAEROESE
+#define LANG_FAEROESE 0x38
+#endif
+#ifndef LANG_FARSI
+#define LANG_FARSI 0x29
+#endif
+#ifndef LANG_FRISIAN
+#define LANG_FRISIAN 0x62
+#endif
+#ifndef LANG_FULFULDE
+#define LANG_FULFULDE 0x67
+#endif
+#ifndef LANG_GAELIC
+#define LANG_GAELIC 0x3c
+#endif
+#ifndef LANG_GALICIAN
+#define LANG_GALICIAN 0x56
+#endif
+#ifndef LANG_GEORGIAN
+#define LANG_GEORGIAN 0x37
+#endif
+#ifndef LANG_GUARANI
+#define LANG_GUARANI 0x74
+#endif
+#ifndef LANG_GUJARATI
+#define LANG_GUJARATI 0x47
+#endif
+#ifndef LANG_HAUSA
+#define LANG_HAUSA 0x68
+#endif
+#ifndef LANG_HAWAIIAN
+#define LANG_HAWAIIAN 0x75
+#endif
+#ifndef LANG_HEBREW
+#define LANG_HEBREW 0x0d
+#endif
+#ifndef LANG_HINDI
+#define LANG_HINDI 0x39
+#endif
+#ifndef LANG_IBIBIO
+#define LANG_IBIBIO 0x69
+#endif
+#ifndef LANG_IGBO
+#define LANG_IGBO 0x70
+#endif
+#ifndef LANG_INDONESIAN
+#define LANG_INDONESIAN 0x21
+#endif
+#ifndef LANG_INUKTITUT
+#define LANG_INUKTITUT 0x5d
+#endif
+#ifndef LANG_KANNADA
+#define LANG_KANNADA 0x4b
+#endif
+#ifndef LANG_KANURI
+#define LANG_KANURI 0x71
+#endif
+#ifndef LANG_KASHMIRI
+#define LANG_KASHMIRI 0x60
+#endif
+#ifndef LANG_KAZAK
+#define LANG_KAZAK 0x3f
+#endif
+#ifndef LANG_KONKANI
+#define LANG_KONKANI 0x57
+#endif
+#ifndef LANG_KYRGYZ
+#define LANG_KYRGYZ 0x40
+#endif
+#ifndef LANG_LAO
+#define LANG_LAO 0x54
+#endif
+#ifndef LANG_LATIN
+#define LANG_LATIN 0x76
+#endif
+#ifndef LANG_LATVIAN
+#define LANG_LATVIAN 0x26
+#endif
+#ifndef LANG_LITHUANIAN
+#define LANG_LITHUANIAN 0x27
+#endif
+#ifndef LANG_MACEDONIAN
+#define LANG_MACEDONIAN 0x2f
+#endif
+#ifndef LANG_MALAY
+#define LANG_MALAY 0x3e
+#endif
+#ifndef LANG_MALAYALAM
+#define LANG_MALAYALAM 0x4c
+#endif
+#ifndef LANG_MALTESE
+#define LANG_MALTESE 0x3a
+#endif
+#ifndef LANG_MANIPURI
+#define LANG_MANIPURI 0x58
+#endif
+#ifndef LANG_MARATHI
+#define LANG_MARATHI 0x4e
+#endif
+#ifndef LANG_MONGOLIAN
+#define LANG_MONGOLIAN 0x50
+#endif
+#ifndef LANG_NEPALI
+#define LANG_NEPALI 0x61
+#endif
+#ifndef LANG_ORIYA
+#define LANG_ORIYA 0x48
+#endif
+#ifndef LANG_OROMO
+#define LANG_OROMO 0x72
+#endif
+#ifndef LANG_PAPIAMENTU
+#define LANG_PAPIAMENTU 0x79
+#endif
+#ifndef LANG_PASHTO
+#define LANG_PASHTO 0x63
+#endif
+#ifndef LANG_PUNJABI
+#define LANG_PUNJABI 0x46
+#endif
+#ifndef LANG_RHAETO_ROMANCE
+#define LANG_RHAETO_ROMANCE 0x17
+#endif
+#ifndef LANG_SAAMI
+#define LANG_SAAMI 0x3b
+#endif
+#ifndef LANG_SANSKRIT
+#define LANG_SANSKRIT 0x4f
+#endif
+#ifndef LANG_SERBIAN
+#define LANG_SERBIAN 0x1a
+#endif
+#ifndef LANG_SINDHI
+#define LANG_SINDHI 0x59
+#endif
+#ifndef LANG_SINHALESE
+#define LANG_SINHALESE 0x5b
+#endif
+#ifndef LANG_SLOVAK
+#define LANG_SLOVAK 0x1b
+#endif
+#ifndef LANG_SOMALI
+#define LANG_SOMALI 0x77
+#endif
+#ifndef LANG_SORBIAN
+#define LANG_SORBIAN 0x2e
+#endif
+#ifndef LANG_SUTU
+#define LANG_SUTU 0x30
+#endif
+#ifndef LANG_SWAHILI
+#define LANG_SWAHILI 0x41
+#endif
+#ifndef LANG_SYRIAC
+#define LANG_SYRIAC 0x5a
+#endif
+#ifndef LANG_TAGALOG
+#define LANG_TAGALOG 0x64
+#endif
+#ifndef LANG_TAJIK
+#define LANG_TAJIK 0x28
+#endif
+#ifndef LANG_TAMAZIGHT
+#define LANG_TAMAZIGHT 0x5f
+#endif
+#ifndef LANG_TAMIL
+#define LANG_TAMIL 0x49
+#endif
+#ifndef LANG_TATAR
+#define LANG_TATAR 0x44
+#endif
+#ifndef LANG_TELUGU
+#define LANG_TELUGU 0x4a
+#endif
+#ifndef LANG_THAI
+#define LANG_THAI 0x1e
+#endif
+#ifndef LANG_TIBETAN
+#define LANG_TIBETAN 0x51
+#endif
+#ifndef LANG_TIGRINYA
+#define LANG_TIGRINYA 0x73
+#endif
+#ifndef LANG_TSONGA
+#define LANG_TSONGA 0x31
+#endif
+#ifndef LANG_TSWANA
+#define LANG_TSWANA 0x32
+#endif
+#ifndef LANG_TURKMEN
+#define LANG_TURKMEN 0x42
+#endif
+#ifndef LANG_UKRAINIAN
+#define LANG_UKRAINIAN 0x22
+#endif
+#ifndef LANG_URDU
+#define LANG_URDU 0x20
+#endif
+#ifndef LANG_UZBEK
+#define LANG_UZBEK 0x43
+#endif
+#ifndef LANG_VENDA
+#define LANG_VENDA 0x33
+#endif
+#ifndef LANG_VIETNAMESE
+#define LANG_VIETNAMESE 0x2a
+#endif
+#ifndef LANG_WELSH
+#define LANG_WELSH 0x52
+#endif
+#ifndef LANG_XHOSA
+#define LANG_XHOSA 0x34
+#endif
+#ifndef LANG_YI
+#define LANG_YI 0x78
+#endif
+#ifndef LANG_YIDDISH
+#define LANG_YIDDISH 0x3d
+#endif
+#ifndef LANG_YORUBA
+#define LANG_YORUBA 0x6a
+#endif
+#ifndef LANG_ZULU
+#define LANG_ZULU 0x35
+#endif
+#ifndef SUBLANG_ARABIC_SAUDI_ARABIA
+#define SUBLANG_ARABIC_SAUDI_ARABIA 0x01
+#endif
+#ifndef SUBLANG_ARABIC_IRAQ
+#define SUBLANG_ARABIC_IRAQ 0x02
+#endif
+#ifndef SUBLANG_ARABIC_EGYPT
+#define SUBLANG_ARABIC_EGYPT 0x03
+#endif
+#ifndef SUBLANG_ARABIC_LIBYA
+#define SUBLANG_ARABIC_LIBYA 0x04
+#endif
+#ifndef SUBLANG_ARABIC_ALGERIA
+#define SUBLANG_ARABIC_ALGERIA 0x05
+#endif
+#ifndef SUBLANG_ARABIC_MOROCCO
+#define SUBLANG_ARABIC_MOROCCO 0x06
+#endif
+#ifndef SUBLANG_ARABIC_TUNISIA
+#define SUBLANG_ARABIC_TUNISIA 0x07
+#endif
+#ifndef SUBLANG_ARABIC_OMAN
+#define SUBLANG_ARABIC_OMAN 0x08
+#endif
+#ifndef SUBLANG_ARABIC_YEMEN
+#define SUBLANG_ARABIC_YEMEN 0x09
+#endif
+#ifndef SUBLANG_ARABIC_SYRIA
+#define SUBLANG_ARABIC_SYRIA 0x0a
+#endif
+#ifndef SUBLANG_ARABIC_JORDAN
+#define SUBLANG_ARABIC_JORDAN 0x0b
+#endif
+#ifndef SUBLANG_ARABIC_LEBANON
+#define SUBLANG_ARABIC_LEBANON 0x0c
+#endif
+#ifndef SUBLANG_ARABIC_KUWAIT
+#define SUBLANG_ARABIC_KUWAIT 0x0d
+#endif
+#ifndef SUBLANG_ARABIC_UAE
+#define SUBLANG_ARABIC_UAE 0x0e
+#endif
+#ifndef SUBLANG_ARABIC_BAHRAIN
+#define SUBLANG_ARABIC_BAHRAIN 0x0f
+#endif
+#ifndef SUBLANG_ARABIC_QATAR
+#define SUBLANG_ARABIC_QATAR 0x10
+#endif
+#ifndef SUBLANG_AZERI_LATIN
+#define SUBLANG_AZERI_LATIN 0x01
+#endif
+#ifndef SUBLANG_AZERI_CYRILLIC
+#define SUBLANG_AZERI_CYRILLIC 0x02
+#endif
+#ifndef SUBLANG_BENGALI_INDIA
+#define SUBLANG_BENGALI_INDIA 0x01
+#endif
+#ifndef SUBLANG_BENGALI_BANGLADESH
+#define SUBLANG_BENGALI_BANGLADESH 0x02
+#endif
+#ifndef SUBLANG_CHINESE_MACAU
+#define SUBLANG_CHINESE_MACAU 0x05
+#endif
+#ifndef SUBLANG_ENGLISH_SOUTH_AFRICA
+#define SUBLANG_ENGLISH_SOUTH_AFRICA 0x07
+#endif
+#ifndef SUBLANG_ENGLISH_JAMAICA
+#define SUBLANG_ENGLISH_JAMAICA 0x08
+#endif
+#ifndef SUBLANG_ENGLISH_CARIBBEAN
+#define SUBLANG_ENGLISH_CARIBBEAN 0x09
+#endif
+#ifndef SUBLANG_ENGLISH_BELIZE
+#define SUBLANG_ENGLISH_BELIZE 0x0a
+#endif
+#ifndef SUBLANG_ENGLISH_TRINIDAD
+#define SUBLANG_ENGLISH_TRINIDAD 0x0b
+#endif
+#ifndef SUBLANG_ENGLISH_ZIMBABWE
+#define SUBLANG_ENGLISH_ZIMBABWE 0x0c
+#endif
+#ifndef SUBLANG_ENGLISH_PHILIPPINES
+#define SUBLANG_ENGLISH_PHILIPPINES 0x0d
+#endif
+#ifndef SUBLANG_ENGLISH_INDONESIA
+#define SUBLANG_ENGLISH_INDONESIA 0x0e
+#endif
+#ifndef SUBLANG_ENGLISH_HONGKONG
+#define SUBLANG_ENGLISH_HONGKONG 0x0f
+#endif
+#ifndef SUBLANG_ENGLISH_INDIA
+#define SUBLANG_ENGLISH_INDIA 0x10
+#endif
+#ifndef SUBLANG_ENGLISH_MALAYSIA
+#define SUBLANG_ENGLISH_MALAYSIA 0x11
+#endif
+#ifndef SUBLANG_ENGLISH_SINGAPORE
+#define SUBLANG_ENGLISH_SINGAPORE 0x12
+#endif
+#ifndef SUBLANG_FRENCH_LUXEMBOURG
+#define SUBLANG_FRENCH_LUXEMBOURG 0x05
+#endif
+#ifndef SUBLANG_FRENCH_MONACO
+#define SUBLANG_FRENCH_MONACO 0x06
+#endif
+#ifndef SUBLANG_FRENCH_WESTINDIES
+#define SUBLANG_FRENCH_WESTINDIES 0x07
+#endif
+#ifndef SUBLANG_FRENCH_REUNION
+#define SUBLANG_FRENCH_REUNION 0x08
+#endif
+#ifndef SUBLANG_FRENCH_CONGO
+#define SUBLANG_FRENCH_CONGO 0x09
+#endif
+#ifndef SUBLANG_FRENCH_SENEGAL
+#define SUBLANG_FRENCH_SENEGAL 0x0a
+#endif
+#ifndef SUBLANG_FRENCH_CAMEROON
+#define SUBLANG_FRENCH_CAMEROON 0x0b
+#endif
+#ifndef SUBLANG_FRENCH_COTEDIVOIRE
+#define SUBLANG_FRENCH_COTEDIVOIRE 0x0c
+#endif
+#ifndef SUBLANG_FRENCH_MALI
+#define SUBLANG_FRENCH_MALI 0x0d
+#endif
+#ifndef SUBLANG_FRENCH_MOROCCO
+#define SUBLANG_FRENCH_MOROCCO 0x0e
+#endif
+#ifndef SUBLANG_FRENCH_HAITI
+#define SUBLANG_FRENCH_HAITI 0x0f
+#endif
+#ifndef SUBLANG_GERMAN_LUXEMBOURG
+#define SUBLANG_GERMAN_LUXEMBOURG 0x04
+#endif
+#ifndef SUBLANG_GERMAN_LIECHTENSTEIN
+#define SUBLANG_GERMAN_LIECHTENSTEIN 0x05
+#endif
+#ifndef SUBLANG_KASHMIRI_INDIA
+#define SUBLANG_KASHMIRI_INDIA 0x02
+#endif
+#ifndef SUBLANG_MALAY_MALAYSIA
+#define SUBLANG_MALAY_MALAYSIA 0x01
+#endif
+#ifndef SUBLANG_MALAY_BRUNEI_DARUSSALAM
+#define SUBLANG_MALAY_BRUNEI_DARUSSALAM 0x02
+#endif
+#ifndef SUBLANG_NEPALI_INDIA
+#define SUBLANG_NEPALI_INDIA 0x02
+#endif
+#ifndef SUBLANG_PUNJABI_INDIA
+#define SUBLANG_PUNJABI_INDIA 0x01
+#endif
+#ifndef SUBLANG_ROMANIAN_ROMANIA
+#define SUBLANG_ROMANIAN_ROMANIA 0x01
+#endif
+#ifndef SUBLANG_SERBIAN_LATIN
+#define SUBLANG_SERBIAN_LATIN 0x02
+#endif
+#ifndef SUBLANG_SERBIAN_CYRILLIC
+#define SUBLANG_SERBIAN_CYRILLIC 0x03
+#endif
+#ifndef SUBLANG_SINDHI_INDIA
+#define SUBLANG_SINDHI_INDIA 0x00
+#endif
+#ifndef SUBLANG_SINDHI_PAKISTAN
+#define SUBLANG_SINDHI_PAKISTAN 0x01
+#endif
+#ifndef SUBLANG_SPANISH_GUATEMALA
+#define SUBLANG_SPANISH_GUATEMALA 0x04
+#endif
+#ifndef SUBLANG_SPANISH_COSTA_RICA
+#define SUBLANG_SPANISH_COSTA_RICA 0x05
+#endif
+#ifndef SUBLANG_SPANISH_PANAMA
+#define SUBLANG_SPANISH_PANAMA 0x06
+#endif
+#ifndef SUBLANG_SPANISH_DOMINICAN_REPUBLIC
+#define SUBLANG_SPANISH_DOMINICAN_REPUBLIC 0x07
+#endif
+#ifndef SUBLANG_SPANISH_VENEZUELA
+#define SUBLANG_SPANISH_VENEZUELA 0x08
+#endif
+#ifndef SUBLANG_SPANISH_COLOMBIA
+#define SUBLANG_SPANISH_COLOMBIA 0x09
+#endif
+#ifndef SUBLANG_SPANISH_PERU
+#define SUBLANG_SPANISH_PERU 0x0a
+#endif
+#ifndef SUBLANG_SPANISH_ARGENTINA
+#define SUBLANG_SPANISH_ARGENTINA 0x0b
+#endif
+#ifndef SUBLANG_SPANISH_ECUADOR
+#define SUBLANG_SPANISH_ECUADOR 0x0c
+#endif
+#ifndef SUBLANG_SPANISH_CHILE
+#define SUBLANG_SPANISH_CHILE 0x0d
+#endif
+#ifndef SUBLANG_SPANISH_URUGUAY
+#define SUBLANG_SPANISH_URUGUAY 0x0e
+#endif
+#ifndef SUBLANG_SPANISH_PARAGUAY
+#define SUBLANG_SPANISH_PARAGUAY 0x0f
+#endif
+#ifndef SUBLANG_SPANISH_BOLIVIA
+#define SUBLANG_SPANISH_BOLIVIA 0x10
+#endif
+#ifndef SUBLANG_SPANISH_EL_SALVADOR
+#define SUBLANG_SPANISH_EL_SALVADOR 0x11
+#endif
+#ifndef SUBLANG_SPANISH_HONDURAS
+#define SUBLANG_SPANISH_HONDURAS 0x12
+#endif
+#ifndef SUBLANG_SPANISH_NICARAGUA
+#define SUBLANG_SPANISH_NICARAGUA 0x13
+#endif
+#ifndef SUBLANG_SPANISH_PUERTO_RICO
+#define SUBLANG_SPANISH_PUERTO_RICO 0x14
+#endif
+#ifndef SUBLANG_SWEDISH_FINLAND
+#define SUBLANG_SWEDISH_FINLAND 0x02
+#endif
+#ifndef SUBLANG_TAMAZIGHT_ARABIC
+#define SUBLANG_TAMAZIGHT_ARABIC 0x01
+#endif
+#ifndef SUBLANG_TAMAZIGHT_LATIN
+#define SUBLANG_TAMAZIGHT_LATIN 0x02
+#endif
+#ifndef SUBLANG_TIGRINYA_ETHIOPIA
+#define SUBLANG_TIGRINYA_ETHIOPIA 0x00
+#endif
+#ifndef SUBLANG_TIGRINYA_ERITREA
+#define SUBLANG_TIGRINYA_ERITREA 0x01
+#endif
+#ifndef SUBLANG_URDU_PAKISTAN
+#define SUBLANG_URDU_PAKISTAN 0x01
+#endif
+#ifndef SUBLANG_URDU_INDIA
+#define SUBLANG_URDU_INDIA 0x02
+#endif
+#ifndef SUBLANG_UZBEK_LATIN
+#define SUBLANG_UZBEK_LATIN 0x01
+#endif
+#ifndef SUBLANG_UZBEK_CYRILLIC
+#define SUBLANG_UZBEK_CYRILLIC 0x02
+#endif
+ 
+/* Return an XPG style locale name 
+     language[_territory[.codeset]][@modifier].
    Don't even bother determining the codeset; it's not useful in this
    context, because message catalogs are not specific to a single
-   codeset.  */
+   codeset.  The result must not be freed; it is statically
+   allocated.  */
 static const char *
-_nl_locale_name (const char *categoryname)
+my_nl_locale_name (const char *categoryname)
 {
   const char *retval;
   LCID lcid;
@@ -1187,16 +1007,30 @@ _nl_locale_name (const char *categoryname)
     default: return "C";
     }
 }
-/* END parts of localname.c from gettext.  */
+
+/* localname.c from gettext END.  */
 
 
+
+/* Support functions.  */
+
+static __inline__ uint32_t
+do_swap_u32 (uint32_t i)
+{
+  return (i << 24) | ((i & 0xff00) << 8) | ((i >> 8) & 0xff00) | (i >> 24);
+}
+
+#define SWAPIT(flag, data) ((flag) ? do_swap_u32(data) : (data))
+
+
+/* We assume to have `unsigned long int' value with at least 32 bits.  */
+#define HASHWORDBITS 32
 
 /* The so called `hashpjw' function by P.J. Weinberger
    [see Aho/Sethi/Ullman, COMPILERS: Principles, Techniques and Tools,
    1986, 1987 Bell Telephone Laboratories, Inc.]  */
-
-static __inline__ ulong
-hash_string (const char *str_param)
+static __inline__ unsigned long
+hash_string( const char *str_param )
 {
   unsigned long int hval, g;
   const char *str = str_param;
@@ -1216,7 +1050,115 @@ hash_string (const char *str_param)
   return hval;
 }
 
+/* static char * */
+/* my_xstrdup (const char *s) */
+/* { */
+/*   size_t n = strlen (s) + 1; */
+/*   char *p = jnlib_malloc (n); */
+/*   if (!p) */
+/*     abort (); */
+/*   strcpy (p, s); */
+/*   return p; */
+/* } */
 
+
+
+/* Generic message catalog and gettext stuff.  */
+
+/* The magic number of the GNU message catalog format.	*/
+#define MAGIC	      0x950412de
+#define MAGIC_SWAPPED 0xde120495
+
+/* Revision number of the currently used .mo (binary) file format.  */
+#define MO_REVISION_NUMBER 0
+
+
+/* Header for binary .mo file format.  */
+struct mo_file_header
+{
+  /* The magic number.	*/
+  uint32_t magic;
+  /* The revision number of the file format.  */
+  uint32_t revision;
+  /* The number of strings pairs.  */
+  uint32_t nstrings;
+  /* Offset of table with start offsets of original strings.  */
+  uint32_t orig_tab_offset;
+  /* Offset of table with start offsets of translation strings.  */
+  uint32_t trans_tab_offset;
+  /* Size of hashing table.  */
+  uint32_t hash_tab_size;
+  /* Offset of first hashing entry.  */
+  uint32_t hash_tab_offset;
+};
+
+
+struct string_desc
+{
+  /* Length of addressed string.  */
+  uint32_t length;
+  /* Offset of string in file.	*/
+  uint32_t offset;
+};
+
+
+struct overflow_space_s
+{
+  struct overflow_space_s *next;
+  uint32_t idx;
+  uint32_t length;
+  char d[1];
+};
+
+struct loaded_domain
+{
+  char *data;
+  char *data_native; /* Data mapped to the native version of the
+                        string.  (Allocated along with DATA). */
+  int must_swap;
+  uint32_t nstrings;
+  uint32_t *mapped;  /* 0   := Not mapped (original utf8).
+                        1   := Mapped to native encoding in overflow space.
+                        >=2 := Mapped to native encoding. The values
+                               gives the length of the mapped string.
+                               becuase the 0 is included and an empty
+                               string is not allowed we will enver get
+                               values 0 and 1.  */
+  struct overflow_space_s *overflow_space;
+  struct string_desc *orig_tab;
+  struct string_desc *trans_tab;
+  uint32_t hash_size;
+  uint32_t *hash_tab;
+};
+
+
+/* The domain we use.  We only support one domain at this point.  This
+   is why this implementation can not be shared.  Bindtextdomain and
+   dgettext will simply cheat and always use this one domain.  */
+static struct loaded_domain *the_domain;
+
+/* Global flag to switch gettext into an utf8 mode.  */
+static int want_utf8;
+
+
+
+/* Free the domain data.  */
+static void
+free_domain (struct loaded_domain *domain)
+{
+  struct overflow_space_s *os, *os2;
+
+  jnlib_free (domain->data);
+  jnlib_free (domain->mapped);
+  for (os = domain->overflow_space; os; os = os2)
+    {
+      os2 = os->next;
+      jnlib_free (os);
+    }
+  jnlib_free (domain);
+}
+
+  
 static struct loaded_domain *
 load_domain (const char *filename)
 {
@@ -1228,13 +1170,14 @@ load_domain (const char *filename)
   size_t to_read;
   char *read_ptr;
   
-  fp = fopen( filename, "rb" );
+  fp = fopen (filename, "rb");
   if (!fp)
-    return NULL; /* Can't open the file.  */
-  /* We need to know the size of the file.  */
-  if (fstat( fileno(fp ), &st )
-      || (size = (size_t)st.st_size) != st.st_size
-      || size < sizeof (struct mo_file_header) ) 
+    return NULL;
+
+  /* Determine the file size.  */
+  if (fstat (fileno (fp), &st)
+      || (size = (size_t) st.st_size) != st.st_size
+      || size < sizeof (struct mo_file_header))
     {
       fclose (fp);
       return NULL;
@@ -1244,29 +1187,27 @@ load_domain (const char *filename)
   if (!data)
     {
       fclose (fp);
-      return NULL; /* Out of memory. */
+      return NULL;
     }
 
   to_read = size;
   read_ptr = (char *) data;
   do
     {
-      long int nb;
-
-      nb = fread (read_ptr, 1, to_read, fp);
-      if (nb < to_read ) 
-        {
-          fclose (fp);
-          jnlib_free (data);
-          return NULL; /* Read error. */
+      long int nb = fread (read_ptr, 1, to_read, fp);
+      if (nb < to_read)
+	{
+	  fclose (fp);
+	  jnlib_free (data);
+	  return NULL;
 	}
       read_ptr += nb;
       to_read -= nb;
-    } 
+    }
   while (to_read > 0);
   fclose (fp);
 
-  /* Using the magic number we test whether it is really a message
+  /* Using the magic number we can test whether it really is a message
      catalog file.  */
   if (data->magic != MAGIC && data->magic != MAGIC_SWAPPED)
     {
@@ -1276,7 +1217,7 @@ load_domain (const char *filename)
     }
 
   domain = jnlib_calloc (1, sizeof *domain);
-  if (!domain) 
+  if (!domain)
     {
       jnlib_free (data);
       return NULL;
@@ -1284,277 +1225,280 @@ load_domain (const char *filename)
   domain->data = (char *) data;
   domain->data_native = (char *) data + size;
   domain->must_swap = data->magic != MAGIC;
-
+  
   /* Fill in the information about the available tables.  */
-  switch (SWAPIT(domain->must_swap, data->revision))
+  switch (SWAPIT (domain->must_swap, data->revision))
     {
-    case 0:
-      domain->nstrings = SWAPIT(domain->must_swap, data->nstrings);
+    case MO_REVISION_NUMBER:
+      domain->nstrings = SWAPIT (domain->must_swap, data->nstrings);
       domain->orig_tab = (struct string_desc *)
-	  ((char *) data + SWAPIT(domain->must_swap, data->orig_tab_offset));
+	((char *) data + SWAPIT (domain->must_swap, data->orig_tab_offset));
       domain->trans_tab = (struct string_desc *)
-        ((char *) data + SWAPIT(domain->must_swap, data->trans_tab_offset));
-      domain->hash_size = SWAPIT(domain->must_swap, data->hash_tab_size);
-      domain->hash_tab = (u32 *)
-        ((char *) data + SWAPIT(domain->must_swap, data->hash_tab_offset));
+	((char *) data + SWAPIT (domain->must_swap, data->trans_tab_offset));
+      domain->hash_size = SWAPIT (domain->must_swap, data->hash_tab_size);
+      domain->hash_tab = (uint32_t *)
+	((char *) data + SWAPIT (domain->must_swap, data->hash_tab_offset));
       break;
-        
-    default: /* This is an invalid revision.	*/
-      jnlib_free( data );
-      jnlib_free( domain );
+
+    default:
+      /* This is an invalid revision.	*/
+      jnlib_free (data);
+      jnlib_free (domain);
       return NULL;
     }
-  
-  /* Allocate an array to keep track of code page mappings. */
-  domain->mapped = jnlib_calloc (1, domain->nstrings);
+
+  /* Allocate an array to keep track of code page mappings.  */
+  domain->mapped = jnlib_calloc (domain->nstrings, sizeof *domain->mapped);
   if (!domain->mapped)
     {
       jnlib_free (data);
       jnlib_free (domain);
       return NULL;
     }
-  
+
   return domain;
 }
 
 
-/* Set the file used for translations.  Pass a NULL to disable
-   translation.  A new filename may be set at anytime.  WARNING: After
-   changing the filename you should not access any data retrieved by
-   gettext().
+/* Return a malloced wide char string from an UTF-8 encoded input
+   string STRING.  Caller must free this value. On failure returns
+   NULL.  The result of calling this function with STRING set to NULL
+   is not defined. */
+static wchar_t *
+utf8_to_wchar (const char *string, size_t length, size_t *retlen)
+{
+  int n;
+  wchar_t *result;
+  size_t nbytes;
 
-   If REGKEY is not NULL, the function tries to selected the language
-   the registry key "Lang" below that key.  If in addition the
-   environment variable LANGUAGE has been set, that value will
-   override a value set by the registry key.
- */
-int
-set_gettext_file ( const char *filename, const char *regkey )
+  n = MultiByteToWideChar (CP_UTF8, 0, string, length, NULL, 0);
+  if (n < 0 || (n+1) <= 0)
+    return NULL;
+
+  nbytes = (size_t)(n+1) * sizeof(*result);
+  if (nbytes / sizeof(*result) != (n+1)) 
+    {
+      errno = ENOMEM;
+      return NULL;
+    }
+  result = jnlib_malloc (nbytes);
+  if (!result)
+    return NULL;
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, length, result, n);
+  if (n < 0)
+    {
+      jnlib_free (result);
+      return NULL;
+    }
+  *retlen = n;
+  return result;
+}
+
+
+/* Return a malloced string encoded in UTF-8 from the wide char input
+   string STRING.  Caller must free this value. On failure returns
+   NULL.  The result of calling this function with STRING set to NULL
+   is not defined. */
+static char *
+wchar_to_native (const wchar_t *string, size_t length, size_t *retlen)
+{
+  int n;
+  char *result;
+
+  n = WideCharToMultiByte (CP_ACP, 0, string, length, NULL, 0, NULL, NULL);
+  if (n < 0 || (n+1) <= 0)
+    return NULL;
+
+  result = jnlib_malloc (n+1);
+  if (!result)
+    return NULL;
+
+  n = WideCharToMultiByte (CP_ACP, 0, string, length, result, n, NULL, NULL);
+  if (n < 0)
+    {
+      jnlib_free (result);
+      return NULL;
+    }
+  *retlen = n;
+  return result;
+}
+
+
+/* Convert UTF8 to the native codepage.  Caller must free the return value. */
+static char *
+utf8_to_native (const char *string, size_t length, size_t *retlen)
+{
+  wchar_t *wstring;
+  char *result;
+  size_t newlen;
+
+  wstring = utf8_to_wchar (string, length, &newlen);
+  if (wstring)
+    {
+      result = wchar_to_native (wstring, newlen, &newlen);
+      jnlib_free (wstring);
+    }
+  else
+    result = NULL;
+  *retlen = result? newlen : 0;
+  return result;
+}
+
+
+
+
+/* Specify that the DOMAINNAME message catalog will be found
+   in DIRNAME rather than in the system locale data base.  */
+char *
+bindtextdomain (const char *domainname, const char *dirname)
 {
   struct loaded_domain *domain = NULL;
+  const char *catval_full;
+  char *catval;
+  char *fname;
 
-  /* FIXME: To support dgettext we need to make struct loaded_doman a
-     linked list and search that list for loaded domains before adding
-     a new one.  If it is loaded just switch the current doman but do
-     not free anything.  */
+  /* DOMAINNAME is ignored.  We only support one domain.  */
 
-  if ( filename && *filename )
+  /* DIRNAME is "$INSTALLDIR\share\locale".  */
+
+  /* First find out the category value.  */
+  catval = NULL;
+  catval_full = my_nl_locale_name ("LC_MESSAGES");
+
+  /* Normally, we would have to loop over all returned locales, and
+     search for the right file.  See gettext intl/dcigettext.c for all
+     the gory details.  Here, we only support the basic category, and
+     ignore everything else.  */
+  if (catval_full)
     {
-      if ( filename[0] == '/'
-#ifdef HAVE_DRIVE_LETTERS
-           || ( isalpha(filename[0])
-                && filename[1] == ':'
-                && (filename[2] == '/' || filename[2] == '\\') )
-#endif
-	   )
-        {
-          /* Absolute path - use it as is.  */
-          domain = load_domain( filename );
+      char *p;
+
+      catval = jnlib_malloc (strlen (catval_full) + 1);
+      if (catval)
+	{
+	  strcpy (catval, catval_full);
+	  p = strchr (catval, '_');
+	  if (p)
+	    *p = '\0';
 	}
-      else  /* Standard.  */
-        {
-          char *pgmdir, *instdir, *langid, *fname;
-          char *p;
-          int pass = 0;
-          const char *catval;
-          
-          /* In the $LANGUAGE and native locale case we do not use the
-             registered installation directory but the one where the
-             gpg binary has been found.  */
-          pgmdir = jnlib_malloc (MAX_PATH+5);
-          if ( !pgmdir || !GetModuleFileName (NULL, pgmdir, MAX_PATH) )
-            {
-              jnlib_free (pgmdir);
-              return -1; /* Error getting the process' file name.  */
-            }
-          p = strrchr (pgmdir, DIRSEP_C);
-          if (!p)
-            {
-              jnlib_free (pgmdir);
-              return -1; /* Invalid file name returned.  */
-            }
-          *p = 0;
-          instdir = NULL;
-          langid = NULL;
-          fname = NULL;
-
-          for (pass=0; pass < 3 && !domain; pass++)
-            {
-              jnlib_free (instdir);
-              instdir = NULL;
-              jnlib_free (langid);
-              langid = NULL;
-              jnlib_free (fname);
-              fname = NULL;
-              switch (pass)
-                {
-                case 0: /* Pass 0: Try LANGUAGE.  */
-                  if ((p = getenv ("LANGUAGE")) && *p)
-                    {
-                      langid = jnlib_malloc (strlen (p)+1);
-                      if (langid)
-                        {
-                          strcpy (langid, p);
-                          /* We only make use of the first language
-                             given.  Strip the rest.  */
-                          p = strchr (langid, ':');
-                          if (p)
-                            *p = 0;
-                        }
-                    }
-                  break;
-                  
-                case 1: /* Pass 1: Try registry. */
-                  if (regkey)
-                    {
-                      instdir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-                                                          regkey,
-                                                          "Install Directory");
-                      if (instdir)
-                        /* Try HKCU then HKLM. */
-                        langid = read_w32_registry_string (NULL, 
-                                                           regkey, "Lang");
-                    }
-                  break;
-
-                case 2: /* Pass 2: Try native local.  */
-                  catval = _nl_locale_name ("LC_MESSAGES");
-                  if (!catval ||
-                      !strcmp (catval, "C") || !strcmp (catval, "POSIX"))
-                    ;
-                  else
-                    {
-                      langid = jnlib_malloc (strlen (catval)+1);
-                      strcpy (langid, catval);
-                    }
-                  break;
-
-                default:
-                  break;
-                }
-
-              if (!langid)
-                continue; /* Next pass.  */
-
-              /* Strip stuff after a dot in case the user tried to
-                 enter the entire locale syntacs as usual for
-                 POSIX.  */
-              p = strchr (langid, '.');
-              if (p)
-                *p = 0;
-                  
-              /* Build the key: "<instdir>/<domain>.nls/<langid>.mo".
-                 We use a directory below the installation directory
-                 with the domain included in case the software has
-                 been installed with other software altogether at the
-                 same place.  */
-              fname = jnlib_malloc (strlen (instdir? instdir:pgmdir) + 1
-                                    + strlen (filename) + 5
-                                    + strlen (langid) + 3 + 1);
-              if (fname)
-                {
-                next_fname:
-                  strcpy (stpcpy 
-                          (stpcpy
-                           (stpcpy 
-                            (stpcpy 
-                             (stpcpy (fname,
-                                      instdir?instdir:pgmdir),"\\"),
-                             filename), ".nls\\"), 
-                           langid), ".mo");
-                      
-                  /* Better make sure that we don't mix forward and
-                     backward slashes.  It seems that some Windoze
-                     versions don't accept this. */
-                  for (p=fname; *p; p++) 
-                    {
-                      if (*p == '/')
-                        *p = '\\';
-                    }
-                  domain = load_domain (fname);
-                  /* In case we did not found it, we try again with
-                     just the first part.  E.g. "pt_BR" -> "pt". */
-                  if (!domain && (p = strchr (langid, '_')))
-                    {
-                      *p = 0;
-                      goto next_fname;
-                    }
-                  if (domain && !the_langid)
-                    {
-                      /* We save the langid we found when setting up
-                         the first domain.  This yields more
-                         consistent results from gettext_localename(). */
-                      the_langid = langid;
-                      langid = NULL;
-                    }
-                }  
-            } /* End passes.  */
- 
-          jnlib_free (pgmdir);
-          jnlib_free (instdir);
-          jnlib_free (langid);
-          jnlib_free (fname);
-        } 
-      
-      if (!domain)
-        return -1;
     }
-  
-  if ( the_domain )
-    {
-      struct overflow_space_s *os, *os2;
+  if (!catval)
+    return NULL;
 
-      jnlib_free ( the_domain->data );
-      jnlib_free ( the_domain->mapped );
-      for (os=the_domain->overflow_space; os; os = os2)
-        {
-          os2 = os->next;
-          jnlib_free (os);
-        }
-      jnlib_free ( the_domain );
-      the_domain = NULL;
-    }
+  /* Now build the filename string.  The complete filename is this:
+     DIRNAME + \ + CATVAL + \LC_MESSAGES\ + DOMAINNAME + .mo  */
+  {
+    int len = strlen (dirname) + 1 + strlen (catval) + 13
+      + strlen (domainname) + 3 + 1;
+    char *p;
+
+    fname = jnlib_malloc (len);
+    if (!fname)
+      {
+	jnlib_free (catval);
+	return NULL;
+      }
+
+    p = fname;
+    strcpy (p, dirname);
+    p += strlen (dirname);
+    *(p++) = '\\';
+    strcpy (p, catval);
+    p += strlen (catval);
+    strcpy (p, "\\LC_MESSAGES\\");
+    p += 13;
+    strcpy (p, domainname);
+    p += strlen (domainname);
+    strcpy (p, ".mo");
+  }
+
+  domain = load_domain (fname);
+  jnlib_free (catval);
+  jnlib_free (fname);
+
+  /* We should not be invoked twice, but this is how you would do
+     it if it happened.  */
+  if (the_domain)
+    free_domain (the_domain);
   the_domain = domain;
-  return 0;
+
+  /* For historic reasons we are not allowed to return a const char*. */
+  return (char*)dirname;
+}
+
+
+
+
+static const char *
+get_plural (const char *data, size_t datalen, unsigned long nplural)
+{
+  const char *p;
+  int idx;
+
+  /* We only support the Germanic rule.  */
+  idx = (nplural == 1? 0 : 1);
+
+  for (; idx; idx--)
+    {
+      p = strchr (data, 0) + 1;
+      if (p >= data+datalen)
+        return "ERROR in GETTEXT (bad plural entry)";
+      datalen -= (p-data);
+      data = p;
+    }
+  return data;
 }
 
 
 static const char*
-get_string (struct loaded_domain *domain, u32 idx)
+get_string (struct loaded_domain *domain, uint32_t idx,
+            int use_plural, unsigned long nplural)
 {
   struct overflow_space_s *os;
-  char *p;
+  const char *trans;  /* Pointer to the translated entry.  */
+  size_t translen;    /* Length of that entry.  */
 
   if (want_utf8)
     {
-      p = (domain->data 
-           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+      trans = (domain->data
+               + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+      translen = SWAPIT(domain->must_swap, domain->trans_tab[idx].length);
     }
   else if (!domain->mapped[idx]) 
     {
-      /* Not yet mapped - map utf-8 to native encoding.  */
-      const char *p_orig;
-      size_t plen, buflen;
+      /* Not yet mapped.  Map from utf-8 to native encoding now.  */
+      const char *p_utf8;
+      size_t plen_utf8, buflen;
       char *buf;
 
-      p_orig = (domain->data 
+      p_utf8 = (domain->data 
                 + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
-      p = (domain->data_native 
-           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
-
-      plen = strlen (p_orig);
-      buf = utf8_to_native (p_orig, plen, -1);
-      buflen = strlen (buf);
-      if (buflen <= plen)
+      plen_utf8 = SWAPIT(domain->must_swap, domain->trans_tab[idx].length);
+      
+      buf = utf8_to_native (p_utf8, plen_utf8, &buflen);
+      if (!buf)
+        {
+          trans = "ERROR in GETTEXT MALLOC";
+          translen = 0;
+        }
+      else if (buflen <= plen_utf8 && buflen > 1)
         {
           /* Copy into the DATA_NATIVE area. */
-          strcpy (p, buf);
-          domain->mapped[idx] = 1;
+          char *p_tmp;
+
+          p_tmp = (domain->data_native 
+                   + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+          memcpy (p_tmp, buf, buflen);
+          domain->mapped[idx] = buflen;
+          trans = p_tmp;
+          translen = buflen;
         }
       else
         {
-          /* There is not enough space for the translation - store it
-             in the overflow_space and mark that in the mapped array.
+          /* There is not enough space for the translation (or for
+             whatever reason an empry string is used): Store it in the
+             overflow_space and mark that in the mapped array.
              Because UTF-8 strings are in general longer than the
              Windows 2 byte encodings, we expect that this won't
              happen too often (if at all) and thus we use a linked
@@ -1563,91 +1507,91 @@ get_string (struct loaded_domain *domain, u32 idx)
           if (os)
             {
               os->idx = idx;
-              strcpy (os->d, buf);
+              memcpy (os->d, buf, buflen);
+              os->length = buflen;
               os->next = domain->overflow_space;
               domain->overflow_space = os;
-              p = os->d;
+              domain->mapped[idx] = 1;
+              trans = os->d;
+              translen = os->length;
             }
           else
-            p = "ERROR in GETTEXT MALLOC";
-          domain->mapped[idx] = 2;
+            {
+              trans = "ERROR in GETTEXT MALLOC";
+              translen = 0;
+            }
         }
       jnlib_free (buf);
     }
   else if (domain->mapped[idx] == 1) 
     {
-      p = (domain->data_native
-           + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
-
-    }
-  else if (domain->mapped[idx] == 2) 
-    { /* We need to get the string from the overflow_space. */
+      /* The translated string is in the overflow_space. */
       for (os=domain->overflow_space; os; os = os->next)
         if (os->idx == idx)
-          return (const char*)os->d;
-      p = "ERROR in GETTEXT\n";
+          break;
+      if (os)
+        {
+          trans = os->d;
+          translen = os->length;
+        }
+      else
+        {
+          trans = "ERROR in GETTEXT (overflow space)\n";
+          translen = 0;
+        }
     }
-  else
-    p = "ERROR in GETEXT mapping";
+  else 
+    { 
+      trans = (domain->data_native
+               + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
+      translen = domain->mapped[idx];
+    }
 
-  return (const char*)p;
+  if (use_plural && translen)
+    return get_plural (trans, translen, nplural);
+  else
+    return trans;
 }
 
 
-
-const char *
-gettext( const char *msgid )
+static const char *
+do_gettext (const char *msgid, const char *msgid2, unsigned long nplural)
 {
   struct loaded_domain *domain;
-  size_t act = 0;
-  size_t top, bottom;
+  uint32_t top, bottom, nstr;
   
   if (!(domain = the_domain))
-    return msgid;
-  
-  /* Locate the MSGID and its translation.  */
+    goto not_found;
+
+  /* First try to use the hash table.  */
   if (domain->hash_size > 2 && domain->hash_tab)
     {
       /* Use the hashing table.  */
-      u32 len = strlen (msgid);
-      u32 hash_val = hash_string (msgid);
-      u32 idx = hash_val % domain->hash_size;
-      u32 incr = 1 + (hash_val % (domain->hash_size - 2));
-      u32 nstr = SWAPIT (domain->must_swap, domain->hash_tab[idx]);
+      uint32_t len = strlen (msgid);
+      uint32_t hash_val = hash_string (msgid);
+      uint32_t idx = hash_val % domain->hash_size;
+      uint32_t incr = 1 + (hash_val % (domain->hash_size - 2));
 
-      if ( !nstr ) /* Hash table entry is empty.  */
-        goto not_found;
-      
-      if (SWAPIT(domain->must_swap,
-                 domain->orig_tab[nstr - 1].length) == len
-          && !strcmp (msgid,
-                      domain->data + SWAPIT(domain->must_swap,
-                                            domain->orig_tab[nstr-1].offset)))
-        return get_string( domain, nstr - 1 );
-
-      for (;;) 
+      while ( (nstr = SWAPIT (domain->must_swap, domain->hash_tab[idx])) )
         {
+          nstr--;
+          if (nstr < domain->nstrings
+              && SWAPIT(domain->must_swap, 
+                        domain->orig_tab[nstr].length) >= len
+              && !strcmp (msgid, (domain->data
+                                  + SWAPIT(domain->must_swap,
+                                           domain->orig_tab[nstr].offset))))
+            {
+              return get_string (domain, nstr, !!msgid2, nplural);
+            }
+
           if (idx >= domain->hash_size - incr)
             idx -= domain->hash_size - incr;
           else
             idx += incr;
-          
-          nstr = SWAPIT (domain->must_swap, domain->hash_tab[idx]);
-          if (!nstr)
-            goto not_found; /* Hash table entry is empty.  */
-
-          if ( SWAPIT(domain->must_swap,
-                      domain->orig_tab[nstr - 1].length) == len
-               && !strcmp (msgid,
-                           domain->data 
-                           + SWAPIT(domain->must_swap,
-                                    domain->orig_tab[nstr-1].offset)))
-            return get_string( domain, nstr-1 );
 	}
-      /*NOTREACHED*/
     }
 
- not_found:
   /* Now we try the default method: binary search in the sorted array
      of messages.  */
   bottom = 0;
@@ -1656,27 +1600,52 @@ gettext( const char *msgid )
     {
       int cmp_val;
       
-      act = (bottom + top) / 2;
-      cmp_val = strcmp(msgid, domain->data
-                       + SWAPIT(domain->must_swap,
-                                domain->orig_tab[act].offset));
+      nstr = (bottom + top) / 2;
+      cmp_val = strcmp (msgid, (domain->data
+                                + SWAPIT(domain->must_swap,
+                                         domain->orig_tab[nstr].offset)));
       if (cmp_val < 0)
-        top = act;
+        top = nstr;
       else if (cmp_val > 0)
-        bottom = act + 1;
+        bottom = nstr + 1;
       else
-        return get_string (domain, act);
+        return get_string (domain, nstr, !!msgid2, nplural);
     }
-  
-  return msgid;
+
+ not_found:
+  /* We use the standard Germanic rule if plural has been requested.  */
+  return msgid2? (nplural == 1? msgid : msgid2) : msgid;
+}
+
+
+char *
+textdomain (const char *domainname)
+{
+  /* For now, support only one domain.  */
+  return (char*)domainname;
 }
 
 
 const char *
+gettext (const char *msgid)
+{
+  return do_gettext (msgid, NULL, 0);
+}
+
+char *
+dgettext (const char *domainname, const char *msgid)
+{
+  (void)domainname;
+
+  /* For now, support only one domain.  */
+  return (char*)do_gettext (msgid, NULL, 0);
+}
+
+const char *
 ngettext (const char *msgid1, const char *msgid2, unsigned long int n)
 {
-  /* We use the simple Germanic plural rule. */
-  return gettext (n==1? msgid1 : msgid2);
+  /* We use the simple Germanic plural rule.  */
+  return do_gettext (msgid1, msgid2, n);
 }
 
 
@@ -1687,13 +1656,9 @@ gettext_localename (void)
 {
   const char *s;
 
-  if (the_langid)
-    s = the_langid;
-  else
-    s = _nl_locale_name ("LC_MESSAGES");
+  s = my_nl_locale_name ("LC_MESSAGES");
   return s? s:"";
 }
-
 
 void
 gettext_select_utf8 (int value)
@@ -1702,4 +1667,37 @@ gettext_select_utf8 (int value)
 }
 
 
-#endif /* USE_SIMPLE_GETTEXT */
+#ifdef TEST
+int
+main (int argc, char **argv)
+{
+  const char atext1[] = 
+    "Warning: You have entered an insecure passphrase.%%0A"
+    "A passphrase should be at least %u character long.";
+  const char atext2[] = 
+    "Warning: You have entered an insecure passphrase.%%0A"
+    "A passphrase should be at least %u characters long.";
+
+  if (argc)
+    {
+      argc--;
+      argv++;
+    }
+  
+  bindtextdomain ("gnupg2", "c:/programme/gnu/gnupg/share/locale");
+
+  printf ("locale is `%s'\n", gettext_localename ());
+  fputs ("text with N=1:\n", stdout);
+  fputs (ngettext (atext1, atext2, 1), stdout);
+  fputs ("\n\ntext with N=2:\n", stdout);
+  fputs (ngettext (atext1, atext2, 2), stdout);
+  fputs ("\nready\n", stdout);
+
+  return 0;
+}
+/*
+ * Local Variables:
+ *  compile-command: "i586-mingw32msvc-gcc -DTEST -Wall -g w32-gettext.c"
+ * End:
+ */
+#endif /*TEST*/

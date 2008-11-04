@@ -1,3 +1,10 @@
+2008-11-04  Werner Koch  <wk@g10code.com>
+
+	* w32-gettext.c: Merged with code from libgpg-error and rewrote
+	most parts.
+
+	* Makefile.am (AM_CFLAGS): Add -DJNLIB_IN_JNLIB.
+
 2008-10-29  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (make_filename): Implement using macros. Factor some

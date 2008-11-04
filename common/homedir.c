@@ -322,6 +322,27 @@ gnupg_datadir (void)
 }
 
 
+const char *
+gnupg_localedir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static char *name;
+
+  if (!name)
+    {
+      const char *s1, *s2;
+      s1 = w32_rootdir ();
+      s2 = DIRSEP_S "share" DIRSEP_S "locale";
+      name = xmalloc (strlen (s1) + strlen (s2) + 1);
+      strcpy (stpcpy (name, s1), s2);
+    }
+  return name;
+#else /*!HAVE_W32_SYSTEM*/
+  return LOCALEDIR;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
 /* Return the default socket name used by DirMngr. */
 const char *
 dirmngr_socket_name (void)

@@ -27,7 +27,7 @@ TESTS = $(module_tests)
 AM_CPPFLAGS = -I$(top_srcdir)/intl
 
 # We need libgcrypt because libjnlib-config includes gcrypt.h
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
+AM_CFLAGS = -DJNLIB_IN_JNLIB $(LIBGCRYPT_CFLAGS)
 
 noinst_LIBRARIES = libjnlib.a
 
