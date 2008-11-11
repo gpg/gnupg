@@ -1,3 +1,8 @@
+2008-11-11  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (kbxutil_LDADD): Change order of libs.
+	($(PROGRAMS)): Ditto for documentation.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* keybox-update.c (blob_filecopy): Remove unused arg n_packets.

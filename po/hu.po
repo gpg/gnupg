@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-29 09:04+0100\n"
+"POT-Creation-Date: 2008-11-11 08:40+0100\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -389,165 +389,165 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:290 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:294 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:213 sm/gpgsm.c:571 tools/gpg-connect-agent.c:173
 #: tools/gpgconf.c:99 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "A hibákat (angolul) a <gnupg-bugs@gnu.org> címre írja meg!\n"
 
-#: agent/gpg-agent.c:293
+#: agent/gpg-agent.c:297
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
-#: agent/gpg-agent.c:295
+#: agent/gpg-agent.c:299
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:330 g10/gpg.c:971 scd/scdaemon.c:253 sm/gpgsm.c:735
+#: agent/gpg-agent.c:334 g10/gpg.c:971 scd/scdaemon.c:253 sm/gpgsm.c:735
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:529 agent/protect-tool.c:1068 kbx/kbxutil.c:430
+#: agent/gpg-agent.c:532 agent/protect-tool.c:1068 kbx/kbxutil.c:430
 #: scd/scdaemon.c:347 sm/gpgsm.c:973 sm/gpgsm.c:976 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:628 g10/gpg.c:2071 scd/scdaemon.c:428 sm/gpgsm.c:1064
+#: agent/gpg-agent.c:631 g10/gpg.c:2071 scd/scdaemon.c:428 sm/gpgsm.c:1064
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "MEGJEGYZÉS: Nincs alapértelmezett opciós fájl (%s).\n"
 
-#: agent/gpg-agent.c:633 agent/gpg-agent.c:1216 g10/gpg.c:2075
+#: agent/gpg-agent.c:636 agent/gpg-agent.c:1215 g10/gpg.c:2075
 #: scd/scdaemon.c:433 sm/gpgsm.c:1068 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "\"%s\" opciós fájl: %s\n"
 
-#: agent/gpg-agent.c:641 g10/gpg.c:2082 scd/scdaemon.c:441 sm/gpgsm.c:1075
+#: agent/gpg-agent.c:644 g10/gpg.c:2082 scd/scdaemon.c:441 sm/gpgsm.c:1075
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 
-#: agent/gpg-agent.c:974 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:973 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "Hiba \"%s\" létrehozásakor: %s\n"
 
-#: agent/gpg-agent.c:1330 agent/gpg-agent.c:1452 agent/gpg-agent.c:1456
-#: agent/gpg-agent.c:1497 agent/gpg-agent.c:1501 g10/exec.c:172
+#: agent/gpg-agent.c:1328 agent/gpg-agent.c:1448 agent/gpg-agent.c:1452
+#: agent/gpg-agent.c:1493 agent/gpg-agent.c:1497 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:928
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
 
-#: agent/gpg-agent.c:1344 scd/scdaemon.c:942
+#: agent/gpg-agent.c:1342 scd/scdaemon.c:942
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1369 scd/scdaemon.c:965
+#: agent/gpg-agent.c:1365 scd/scdaemon.c:965
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "%s nem hozható létre: %s\n"
 
-#: agent/gpg-agent.c:1378
+#: agent/gpg-agent.c:1374
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1398
+#: agent/gpg-agent.c:1394
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "GPG ügynök nem elérhetõ ebben a munkafolyamatban.\n"
 
-#: agent/gpg-agent.c:1409 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1405 scd/scdaemon.c:985
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-#: agent/gpg-agent.c:1414 scd/scdaemon.c:988
+#: agent/gpg-agent.c:1410 scd/scdaemon.c:988
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
-#: agent/gpg-agent.c:1426 scd/scdaemon.c:997
+#: agent/gpg-agent.c:1422 scd/scdaemon.c:997
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "Frissítés sikertelen: %s.\n"
 
-#: agent/gpg-agent.c:1432 scd/scdaemon.c:1004
+#: agent/gpg-agent.c:1428 scd/scdaemon.c:1004
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
-#: agent/gpg-agent.c:1460 agent/gpg-agent.c:1507 g10/openfile.c:432
+#: agent/gpg-agent.c:1456 agent/gpg-agent.c:1503 g10/openfile.c:432
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: Könyvtárat létrehoztam.\n"
 
-#: agent/gpg-agent.c:1513
+#: agent/gpg-agent.c:1509
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "Bizalmi adatbázis: olvasás sikertelen (n=%d): %s.\n"
 
-#: agent/gpg-agent.c:1517
+#: agent/gpg-agent.c:1513
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: Nem tudom a könyvtárat létrehozni: %s.\n"
 
-#: agent/gpg-agent.c:1634 scd/scdaemon.c:1020
+#: agent/gpg-agent.c:1643 scd/scdaemon.c:1020
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
-#: agent/gpg-agent.c:1656
+#: agent/gpg-agent.c:1665
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1661
+#: agent/gpg-agent.c:1670
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1681
+#: agent/gpg-agent.c:1690
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1686
+#: agent/gpg-agent.c:1695
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1803 scd/scdaemon.c:1143
+#: agent/gpg-agent.c:1808 scd/scdaemon.c:1143
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
 
-#: agent/gpg-agent.c:1916 scd/scdaemon.c:1210
+#: agent/gpg-agent.c:1921 scd/scdaemon.c:1210
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: kihagyva: %s\n"
 
-#: agent/gpg-agent.c:1939
+#: agent/gpg-agent.c:2049
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "GPG ügynök nem elérhetõ ebben a munkafolyamatban.\n"
 
-#: agent/gpg-agent.c:1950 common/simple-pwquery.c:349 common/asshelp.c:326
+#: agent/gpg-agent.c:2060 common/simple-pwquery.c:349 common/asshelp.c:326
 #: tools/gpg-connect-agent.c:2094
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "Nem megfelelõ formájú GPG_AGENT_INFO környezeti változó!\n"
 
-#: agent/gpg-agent.c:1963 common/simple-pwquery.c:361 common/asshelp.c:338
+#: agent/gpg-agent.c:2073 common/simple-pwquery.c:361 common/asshelp.c:338
 #: tools/gpg-connect-agent.c:2105
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -1139,7 +1139,7 @@ msgstr "Nem tudom ezt megcsinálni kötegelt módban!\n"
 msgid "This command is only available for version 2 cards\n"
 msgstr "Ez a parancs %s módban nem engedélyezett.\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1851
+#: g10/card-util.c:85 scd/app-openpgp.c:1848
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "Titkos kulcsrészek nem állnak rendelkezésre.\n"
@@ -6648,29 +6648,29 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:326 scd/app-openpgp.c:1459 scd/app-dinsig.c:297
+#: scd/app-nks.c:325 scd/app-openpgp.c:1456 scd/app-dinsig.c:297
 msgid "||Please enter your PIN at the reader's keypad"
 msgstr ""
 
-#: scd/app-nks.c:330 scd/app-openpgp.c:1463 scd/app-openpgp.c:1495
-#: scd/app-openpgp.c:1642 scd/app-openpgp.c:1660 scd/app-openpgp.c:1860
+#: scd/app-nks.c:329 scd/app-openpgp.c:1460 scd/app-openpgp.c:1492
+#: scd/app-openpgp.c:1639 scd/app-openpgp.c:1657 scd/app-openpgp.c:1857
 #: scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-nks.c:378
+#: scd/app-nks.c:377
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-nks.c:558 scd/app-openpgp.c:1900
+#: scd/app-nks.c:557 scd/app-openpgp.c:1897
 msgid "|N|New PIN"
 msgstr ""
 
-#: scd/app-nks.c:561 scd/app-openpgp.c:1904 scd/app-dinsig.c:529
+#: scd/app-nks.c:560 scd/app-openpgp.c:1901 scd/app-dinsig.c:529
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
@@ -6685,84 +6685,84 @@ msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "Nem tudtam újraépíteni a kulcskarika cache-ét: %s\n"
 
-#: scd/app-openpgp.c:1076
+#: scd/app-openpgp.c:1075
 #, fuzzy, c-format
 msgid "reading public key failed: %s\n"
 msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 
-#: scd/app-openpgp.c:1084 scd/app-openpgp.c:2554
+#: scd/app-openpgp.c:1083 scd/app-openpgp.c:2551
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1092 scd/app-openpgp.c:2562
+#: scd/app-openpgp.c:1091 scd/app-openpgp.c:2559
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1101 scd/app-openpgp.c:2572
+#: scd/app-openpgp.c:1100 scd/app-openpgp.c:2569
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1419
+#: scd/app-openpgp.c:1416
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1426
+#: scd/app-openpgp.c:1423
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1445
+#: scd/app-openpgp.c:1442
 #, c-format
 msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:1479
+#: scd/app-openpgp.c:1476
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:1491
+#: scd/app-openpgp.c:1488
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "jelszóváltoztatás"
 
-#: scd/app-openpgp.c:1502 scd/app-openpgp.c:1667
+#: scd/app-openpgp.c:1499 scd/app-openpgp.c:1664
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1515 scd/app-openpgp.c:1555 scd/app-openpgp.c:1679
-#: scd/app-openpgp.c:2871
+#: scd/app-openpgp.c:1512 scd/app-openpgp.c:1552 scd/app-openpgp.c:1676
+#: scd/app-openpgp.c:2868
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Küldés a kulcsszerverre sikertelen: %s\n"
 
-#: scd/app-openpgp.c:1578
+#: scd/app-openpgp.c:1575
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1599 scd/app-openpgp.c:1842 scd/app-openpgp.c:3122
+#: scd/app-openpgp.c:1596 scd/app-openpgp.c:1839 scd/app-openpgp.c:3119
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1605 scd/app-openpgp.c:3131
+#: scd/app-openpgp.c:1602 scd/app-openpgp.c:3128
 msgid "card is permanently locked!\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1612
+#: scd/app-openpgp.c:1609
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1622
+#: scd/app-openpgp.c:1619
 #, c-format
 msgid ""
 "|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
 "%d]"
 msgstr ""
 
-#: scd/app-openpgp.c:1637
+#: scd/app-openpgp.c:1634
 #, fuzzy
 msgid "|A|Please enter the Admin PIN at the reader's keypad"
 msgstr "jelszóváltoztatás"
@@ -6770,114 +6770,114 @@ msgstr "jelszóváltoztatás"
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep
 #. it at the start of the string.  We need this elsewhere to
 #. get some infos on the string.
-#: scd/app-openpgp.c:1657
+#: scd/app-openpgp.c:1654
 msgid "|A|Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:1856
+#: scd/app-openpgp.c:1853
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Kérem, válassza ki a visszavonás okát:\n"
 
-#: scd/app-openpgp.c:1865 scd/app-openpgp.c:1928
+#: scd/app-openpgp.c:1862 scd/app-openpgp.c:1925
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1899
+#: scd/app-openpgp.c:1896
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:1900
+#: scd/app-openpgp.c:1897
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:1990 scd/app-openpgp.c:2640
+#: scd/app-openpgp.c:1987 scd/app-openpgp.c:2637
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "Hiba a kulcsblokk olvasásakor: %s\n"
 
-#: scd/app-openpgp.c:1996 scd/app-openpgp.c:2647
+#: scd/app-openpgp.c:1993 scd/app-openpgp.c:2644
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "%s: Hiba szabad rekord olvasásakor: %s.\n"
 
-#: scd/app-openpgp.c:2006
+#: scd/app-openpgp.c:2003
 #, fuzzy
 msgid "key already exists\n"
 msgstr "\"%s\" már tömörített.\n"
 
-#: scd/app-openpgp.c:2010
+#: scd/app-openpgp.c:2007
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2012
+#: scd/app-openpgp.c:2009
 #, fuzzy
 msgid "generating new key\n"
 msgstr "új kulcspár létrehozása"
 
-#: scd/app-openpgp.c:2338
+#: scd/app-openpgp.c:2335
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2347
+#: scd/app-openpgp.c:2344
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2359
+#: scd/app-openpgp.c:2356
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2369 scd/app-openpgp.c:2377
+#: scd/app-openpgp.c:2366 scd/app-openpgp.c:2374
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2471
+#: scd/app-openpgp.c:2468
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
 
-#: scd/app-openpgp.c:2531
+#: scd/app-openpgp.c:2528
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2545
+#: scd/app-openpgp.c:2542
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 
-#: scd/app-openpgp.c:2548
+#: scd/app-openpgp.c:2545
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Kulcsgenerálás sikertelen: %s\n"
 
-#: scd/app-openpgp.c:2605
+#: scd/app-openpgp.c:2602
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2655
+#: scd/app-openpgp.c:2652
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2770
+#: scd/app-openpgp.c:2767
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
-#: scd/app-openpgp.c:2846
+#: scd/app-openpgp.c:2843
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3136
+#: scd/app-openpgp.c:3133
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3360 scd/app-openpgp.c:3371
+#: scd/app-openpgp.c:3357 scd/app-openpgp.c:3368
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Nem találtam érvényes OpenPGP adatot.\n"

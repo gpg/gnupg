@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-10-29 09:04+0100\n"
+"POT-Creation-Date: 2008-11-11 08:40+0100\n"
 "PO-Revision-Date: 2006-11-07 19:31+0300\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -374,17 +374,17 @@ msgstr "разрешить эмуляцию ssh-агента"
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|сохранить состояние в файл"
 
-#: agent/gpg-agent.c:290 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:294 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:213 sm/gpgsm.c:571 tools/gpg-connect-agent.c:173
 #: tools/gpgconf.c:99 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
 msgstr "О найденных ошибках сообщайте <"
 
-#: agent/gpg-agent.c:293
+#: agent/gpg-agent.c:297
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Использование: gpg-agent [параметры] (-h для подсказки)"
 
-#: agent/gpg-agent.c:295
+#: agent/gpg-agent.c:299
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
@@ -392,146 +392,146 @@ msgstr ""
 "Синтаксис: gpg-agent [параметры] [команда [аргументы]]\n"
 "Управление закрытыми ключами для GnuPG\n"
 
-#: agent/gpg-agent.c:330 g10/gpg.c:971 scd/scdaemon.c:253 sm/gpgsm.c:735
+#: agent/gpg-agent.c:334 g10/gpg.c:971 scd/scdaemon.c:253 sm/gpgsm.c:735
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "запрошен недупустимый уровень отладки `%s'\n"
 
-#: agent/gpg-agent.c:529 agent/protect-tool.c:1068 kbx/kbxutil.c:430
+#: agent/gpg-agent.c:532 agent/protect-tool.c:1068 kbx/kbxutil.c:430
 #: scd/scdaemon.c:347 sm/gpgsm.c:973 sm/gpgsm.c:976 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, fuzzy, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "libksba слишком устаревшая (требуется %s, имеется %s)\n"
 
-#: agent/gpg-agent.c:628 g10/gpg.c:2071 scd/scdaemon.c:428 sm/gpgsm.c:1064
+#: agent/gpg-agent.c:631 g10/gpg.c:2071 scd/scdaemon.c:428 sm/gpgsm.c:1064
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "ЗАМЕЧАНИЕ: файл конфигурации `%s' не обнаружен\n"
 
-#: agent/gpg-agent.c:633 agent/gpg-agent.c:1216 g10/gpg.c:2075
+#: agent/gpg-agent.c:636 agent/gpg-agent.c:1215 g10/gpg.c:2075
 #: scd/scdaemon.c:433 sm/gpgsm.c:1068 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "файл конфигурации `%s': %s\n"
 
-#: agent/gpg-agent.c:641 g10/gpg.c:2082 scd/scdaemon.c:441 sm/gpgsm.c:1075
+#: agent/gpg-agent.c:644 g10/gpg.c:2082 scd/scdaemon.c:441 sm/gpgsm.c:1075
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "параметры конфигурации из файла `%s'\n"
 
-#: agent/gpg-agent.c:974 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:973 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "ошибка создания `%s': %s\n"
 
-#: agent/gpg-agent.c:1330 agent/gpg-agent.c:1452 agent/gpg-agent.c:1456
-#: agent/gpg-agent.c:1497 agent/gpg-agent.c:1501 g10/exec.c:172
+#: agent/gpg-agent.c:1328 agent/gpg-agent.c:1448 agent/gpg-agent.c:1452
+#: agent/gpg-agent.c:1493 agent/gpg-agent.c:1497 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:928
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "не могу создать каталог `%s': %s\n"
 
-#: agent/gpg-agent.c:1344 scd/scdaemon.c:942
+#: agent/gpg-agent.c:1342 scd/scdaemon.c:942
 msgid "name of socket too long\n"
 msgstr "имя сокета слишком длинное\n"
 
-#: agent/gpg-agent.c:1369 scd/scdaemon.c:965
+#: agent/gpg-agent.c:1365 scd/scdaemon.c:965
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "не могу создать сокет: %s\n"
 
-#: agent/gpg-agent.c:1378
+#: agent/gpg-agent.c:1374
 #, fuzzy, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "имя сокета слишком длинное\n"
 
-#: agent/gpg-agent.c:1398
+#: agent/gpg-agent.c:1394
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "нет gpg-agent доступого для данной сессии\n"
 
-#: agent/gpg-agent.c:1409 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1405 scd/scdaemon.c:985
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "ошибка при получении нового PIN: %s\n"
 
-#: agent/gpg-agent.c:1414 scd/scdaemon.c:988
+#: agent/gpg-agent.c:1410 scd/scdaemon.c:988
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "ошибка связывния сокета с `%s': %s\n"
 
-#: agent/gpg-agent.c:1426 scd/scdaemon.c:997
+#: agent/gpg-agent.c:1422 scd/scdaemon.c:997
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1432 scd/scdaemon.c:1004
+#: agent/gpg-agent.c:1428 scd/scdaemon.c:1004
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "слушаем сокет `%s'\n"
 
-#: agent/gpg-agent.c:1460 agent/gpg-agent.c:1507 g10/openfile.c:432
+#: agent/gpg-agent.c:1456 agent/gpg-agent.c:1503 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "создан каталог `%s'\n"
 
-#: agent/gpg-agent.c:1513
+#: agent/gpg-agent.c:1509
 #, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1517
+#: agent/gpg-agent.c:1513
 #, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "невозможно использовать `%s' как домашний каталог\n"
 
-#: agent/gpg-agent.c:1634 scd/scdaemon.c:1020
+#: agent/gpg-agent.c:1643 scd/scdaemon.c:1020
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "ошибка чтения из %s: %s\n"
 
-#: agent/gpg-agent.c:1656
+#: agent/gpg-agent.c:1665
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1661
+#: agent/gpg-agent.c:1670
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1681
+#: agent/gpg-agent.c:1690
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1686
+#: agent/gpg-agent.c:1695
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1803 scd/scdaemon.c:1143
+#: agent/gpg-agent.c:1808 scd/scdaemon.c:1143
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1916 scd/scdaemon.c:1210
+#: agent/gpg-agent.c:1921 scd/scdaemon.c:1210
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s: остановлен\n"
 
-#: agent/gpg-agent.c:1939
+#: agent/gpg-agent.c:2049
 msgid "no gpg-agent running in this session\n"
 msgstr "нет gpg-agent доступого для данной сессии\n"
 
-#: agent/gpg-agent.c:1950 common/simple-pwquery.c:349 common/asshelp.c:326
+#: agent/gpg-agent.c:2060 common/simple-pwquery.c:349 common/asshelp.c:326
 #: tools/gpg-connect-agent.c:2094
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "неправильная переменная окружения GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:1963 common/simple-pwquery.c:361 common/asshelp.c:338
+#: agent/gpg-agent.c:2073 common/simple-pwquery.c:361 common/asshelp.c:338
 #: tools/gpg-connect-agent.c:2105
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -1120,7 +1120,7 @@ msgstr "невозможно сделать это в пакетном режи�
 msgid "This command is only available for version 2 cards\n"
 msgstr "Данная команда не допустима в режиме %s.\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1851
+#: g10/card-util.c:85 scd/app-openpgp.c:1848
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "секретная часть ключ не доступна\n"
@@ -6445,29 +6445,29 @@ msgstr ""
 "Синтаксис: kbxutil [параметры] [файлы]\n"
 "просморт, экспорт, импорт данных Keybox\n"
 
-#: scd/app-nks.c:326 scd/app-openpgp.c:1459 scd/app-dinsig.c:297
+#: scd/app-nks.c:325 scd/app-openpgp.c:1456 scd/app-dinsig.c:297
 msgid "||Please enter your PIN at the reader's keypad"
 msgstr ""
 
-#: scd/app-nks.c:330 scd/app-openpgp.c:1463 scd/app-openpgp.c:1495
-#: scd/app-openpgp.c:1642 scd/app-openpgp.c:1660 scd/app-openpgp.c:1860
+#: scd/app-nks.c:329 scd/app-openpgp.c:1460 scd/app-openpgp.c:1492
+#: scd/app-openpgp.c:1639 scd/app-openpgp.c:1657 scd/app-openpgp.c:1857
 #: scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-nks.c:378
+#: scd/app-nks.c:377
 msgid "the NullPIN has not yet been changed\n"
 msgstr "NullPIN всё еще не изменен\n"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-nks.c:558 scd/app-openpgp.c:1900
+#: scd/app-nks.c:557 scd/app-openpgp.c:1897
 msgid "|N|New PIN"
 msgstr "|N|Новый PIN"
 
-#: scd/app-nks.c:561 scd/app-openpgp.c:1904 scd/app-dinsig.c:529
+#: scd/app-nks.c:560 scd/app-openpgp.c:1901 scd/app-dinsig.c:529
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "ошибка при получении нового PIN: %s\n"
@@ -6482,85 +6482,85 @@ msgstr "сбой сохранения отпечатка: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "сбой сохранения даты создания: %s\n"
 
-#: scd/app-openpgp.c:1076
+#: scd/app-openpgp.c:1075
 #, c-format
 msgid "reading public key failed: %s\n"
 msgstr "сбой чтения открытого ключа: %s\n"
 
-#: scd/app-openpgp.c:1084 scd/app-openpgp.c:2554
+#: scd/app-openpgp.c:1083 scd/app-openpgp.c:2551
 msgid "response does not contain the public key data\n"
 msgstr "ответ не содержит данных открытого ключа\n"
 
-#: scd/app-openpgp.c:1092 scd/app-openpgp.c:2562
+#: scd/app-openpgp.c:1091 scd/app-openpgp.c:2559
 msgid "response does not contain the RSA modulus\n"
 msgstr "в ответе отсутствует модуль RSA\n"
 
-#: scd/app-openpgp.c:1101 scd/app-openpgp.c:2572
+#: scd/app-openpgp.c:1100 scd/app-openpgp.c:2569
 msgid "response does not contain the RSA public exponent\n"
 msgstr "в ответе отсутствует открытая экспонента RSA\n"
 
-#: scd/app-openpgp.c:1419
+#: scd/app-openpgp.c:1416
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1426
+#: scd/app-openpgp.c:1423
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1445
+#: scd/app-openpgp.c:1442
 #, fuzzy, c-format
 msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
 
-#: scd/app-openpgp.c:1479
+#: scd/app-openpgp.c:1476
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
 
-#: scd/app-openpgp.c:1491
+#: scd/app-openpgp.c:1488
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
 
-#: scd/app-openpgp.c:1502 scd/app-openpgp.c:1667
+#: scd/app-openpgp.c:1499 scd/app-openpgp.c:1664
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "PIN для CHV%d слишком короток, минимальная длина %d\n"
 
-#: scd/app-openpgp.c:1515 scd/app-openpgp.c:1555 scd/app-openpgp.c:1679
-#: scd/app-openpgp.c:2871
+#: scd/app-openpgp.c:1512 scd/app-openpgp.c:1552 scd/app-openpgp.c:1676
+#: scd/app-openpgp.c:2868
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "при проверке CHV%d сбой: %s\n"
 
-#: scd/app-openpgp.c:1578
+#: scd/app-openpgp.c:1575
 msgid "access to admin commands is not configured\n"
 msgstr "доступ к командам управления не настроен\n"
 
-#: scd/app-openpgp.c:1599 scd/app-openpgp.c:1842 scd/app-openpgp.c:3122
+#: scd/app-openpgp.c:1596 scd/app-openpgp.c:1839 scd/app-openpgp.c:3119
 msgid "error retrieving CHV status from card\n"
 msgstr "ошибка получения статуса CHV с карты\n"
 
-#: scd/app-openpgp.c:1605 scd/app-openpgp.c:3131
+#: scd/app-openpgp.c:1602 scd/app-openpgp.c:3128
 msgid "card is permanently locked!\n"
 msgstr "карта заблокирована!\n"
 
-#: scd/app-openpgp.c:1612
+#: scd/app-openpgp.c:1609
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 "осталось %d попыток ввода административного PIN перед блокировкой карты\n"
 
-#: scd/app-openpgp.c:1622
+#: scd/app-openpgp.c:1619
 #, fuzzy, c-format
 msgid ""
 "|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
 "%d]"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
 
-#: scd/app-openpgp.c:1637
+#: scd/app-openpgp.c:1634
 #, fuzzy
 msgid "|A|Please enter the Admin PIN at the reader's keypad"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
@@ -6568,110 +6568,110 @@ msgstr "||Введите PIN%%0A[подписей: %lu]"
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep
 #. it at the start of the string.  We need this elsewhere to
 #. get some infos on the string.
-#: scd/app-openpgp.c:1657
+#: scd/app-openpgp.c:1654
 msgid "|A|Admin PIN"
 msgstr "|A|Административный PID"
 
-#: scd/app-openpgp.c:1856
+#: scd/app-openpgp.c:1853
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Введите PIN%s%s%s для доступа к карте"
 
-#: scd/app-openpgp.c:1865 scd/app-openpgp.c:1928
+#: scd/app-openpgp.c:1862 scd/app-openpgp.c:1925
 #, fuzzy, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "PIN для CHV%d слишком короток, минимальная длина %d\n"
 
-#: scd/app-openpgp.c:1899
+#: scd/app-openpgp.c:1896
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:1900
+#: scd/app-openpgp.c:1897
 msgid "|AN|New Admin PIN"
 msgstr "|AN|Новый административный PIN"
 
-#: scd/app-openpgp.c:1990 scd/app-openpgp.c:2640
+#: scd/app-openpgp.c:1987 scd/app-openpgp.c:2637
 msgid "error reading application data\n"
 msgstr "ошибка чтения данных приложения\n"
 
-#: scd/app-openpgp.c:1996 scd/app-openpgp.c:2647
+#: scd/app-openpgp.c:1993 scd/app-openpgp.c:2644
 msgid "error reading fingerprint DO\n"
 msgstr "ошибка чтения отпечатка DO\n"
 
-#: scd/app-openpgp.c:2006
+#: scd/app-openpgp.c:2003
 msgid "key already exists\n"
 msgstr "ключ уже существует\n"
 
-#: scd/app-openpgp.c:2010
+#: scd/app-openpgp.c:2007
 msgid "existing key will be replaced\n"
 msgstr "существующий ключ будет заменен\n"
 
-#: scd/app-openpgp.c:2012
+#: scd/app-openpgp.c:2009
 msgid "generating new key\n"
 msgstr "генерация нового ключа\n"
 
-#: scd/app-openpgp.c:2338
+#: scd/app-openpgp.c:2335
 msgid "creation timestamp missing\n"
 msgstr "пропущен штамп создания создания\n"
 
-#: scd/app-openpgp.c:2347
+#: scd/app-openpgp.c:2344
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "Модули RSA пропущены или не имеют размер %d бит\n"
 
-#: scd/app-openpgp.c:2359
+#: scd/app-openpgp.c:2356
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "отсутствует открытая экспонента RSA или превышает %d бит\n"
 
-#: scd/app-openpgp.c:2369 scd/app-openpgp.c:2377
+#: scd/app-openpgp.c:2366 scd/app-openpgp.c:2374
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "Простое число RSA %s пропущено или не имеет размер %d бит\n"
 
-#: scd/app-openpgp.c:2471
+#: scd/app-openpgp.c:2468
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "сбой сохранения ключа: %s\n"
 
-#: scd/app-openpgp.c:2531
+#: scd/app-openpgp.c:2528
 msgid "please wait while key is being generated ...\n"
 msgstr "пожалуйста, подождите, пока будет генерироваться ключ ...\n"
 
-#: scd/app-openpgp.c:2545
+#: scd/app-openpgp.c:2542
 msgid "generating key failed\n"
 msgstr "сбой при генерации ключа\n"
 
-#: scd/app-openpgp.c:2548
+#: scd/app-openpgp.c:2545
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "ключ сгенерирован (%d секунд)\n"
 
-#: scd/app-openpgp.c:2605
+#: scd/app-openpgp.c:2602
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "недопутимая структура OpenPGP карты (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2655
+#: scd/app-openpgp.c:2652
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2770
+#: scd/app-openpgp.c:2767
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "карта не поддерживает функцию хеширования %s\n"
 
-#: scd/app-openpgp.c:2846
+#: scd/app-openpgp.c:2843
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "подписей создано: %lu\n"
 
-#: scd/app-openpgp.c:3136
+#: scd/app-openpgp.c:3133
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "проверка административного PIN в данный момент запрещена этой командой\n"
 
-#: scd/app-openpgp.c:3360 scd/app-openpgp.c:3371
+#: scd/app-openpgp.c:3357 scd/app-openpgp.c:3368
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "нет доступа %s - неработоспособная карта OpenPGP?\n"

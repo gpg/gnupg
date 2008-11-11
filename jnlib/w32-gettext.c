@@ -69,7 +69,7 @@
 
 /* Written by Ulrich Drepper <drepper@gnu.org>, 1995.  */
 /* Win32 code written by Tor Lillqvist <tml@iki.fi>.  */
-/* Renamed _nl_locale_name, removed unsed carg, removed include files,
+/* Renamed _nl_locale_name, removed unsed args, removed include files,
    non-W32 code and changed comments <wk@gnupg.org>.  */
 
 /* Mingw headers don't have latest language and sublanguage codes.  */
