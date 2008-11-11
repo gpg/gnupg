@@ -1,3 +1,13 @@
+2008-11-11  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (membuf_data_cb): Change return type to
+	assuan_error_t to avoid warnings with newer libassuan versions.
+
+2008-11-04  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_killagent): Stop the agent immediately.
+	(start_command_handler): Take care of GPG_ERR_EOF.
+
 2008-10-29  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main): Move USE_STANDARD_SOCKET to the outer scope.

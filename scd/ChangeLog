@@ -1,5 +1,10 @@
 2008-11-03  Werner Koch  <wk@g10code.com>
 
+	* command.c (server_local_s): Add field DISCONNECT_ALLOWED.
+	(cmd_disconnect): Implement command.
+	(open_card): Reset disconnect flag.
+	(update_reader_status_file): Disconnect if allowed.
+
 	* app-common.h (app_ctx_s): Remove INITIALIZED.  Make REF_COUNT
 	unsigned. 
 	* app.c (select_application): Remove INITIALIZED.

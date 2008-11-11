@@ -17,6 +17,8 @@ main(int argc, char **argv)
 {
     int c;
 
+    (void)argv;
+
     if( argc > 1 ) {
 	fprintf(stderr, "no arguments, please\n");
 	return 1;

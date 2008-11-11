@@ -710,7 +710,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 
-static int
+static assuan_error_t
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;

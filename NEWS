@@ -35,6 +35,9 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * [w32] The sysconf directory has been moved from a subdirectory of
    the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
 
+ * [w32] The gnupg2.nls directory is not anymore used.  The standard
+   locale directory is now used.  
+
  * The gpg-preset-passphrase mechanism works again.
 
  * Admin PINs are cached again (bug in 2.0.9).

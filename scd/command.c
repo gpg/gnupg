@@ -111,6 +111,9 @@ struct server_local_s
   /* True if the card has been removed and a reset is required to
      continue operation. */
   int card_removed;        
+
+  /* A disconnect command has been sent.  */
+  int disconnect_allowed;
 };
 
 
@@ -408,7 +411,10 @@ open_card (ctrl_t ctrl, const char *apptype)
     {
       /* Fixme: We should move the apdu_connect call to
          select_application.  */
-      int sw = apdu_connect (slot);
+      int sw;
+
+      ctrl->server_local->disconnect_allowed = 0;
+      sw = apdu_connect (slot);
       if (sw && sw != SW_HOST_ALREADY_CONNECTED)
         {
           if (sw == SW_HOST_NO_CARD)
@@ -1655,15 +1661,18 @@ cmd_restart (assuan_context_t ctx, char *line)
 
 /* DISCONNECT
 
-   TBD
-
-*/
+   Disconnect the card if it is not any longer used by other
+   connections and the backend supports a disconnect operation. 
+ */
 static int
 cmd_disconnect (assuan_context_t ctx, char *line)
 {
-  (void)ctx;
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
   (void)line;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  
+  ctrl->server_local->disconnect_allowed = 1;
+  return 0;
 }
 
 
@@ -1975,6 +1984,7 @@ update_reader_status_file (int set_card_removed_flag)
   for (idx=0; idx < DIM(slot_table); idx++)
     {
       struct slot_status_s *ss = slot_table + idx;
+      struct server_local_s *sl;
 
       if (!ss->valid || ss->slot == -1)
         continue; /* Not valid or reader not yet open. */
@@ -1987,7 +1997,6 @@ update_reader_status_file (int set_card_removed_flag)
           char *fname;
           char templ[50];
           FILE *fp;
-          struct server_local_s *sl;
 
           log_info ("updating status of slot %d to 0x%04X\n",
                     ss->slot, status);
@@ -2084,6 +2093,18 @@ update_reader_status_file (int set_card_removed_flag)
               }
 
         }
+      
+      /* Check whether a disconnect is pending.  */
+      for (sl=session_list; sl; sl = sl->next_session)
+        if (!sl->disconnect_allowed)
+          break; 
+      if (session_list && !sl)
+        {
+          /* At least one connection and all allow a disconnect.  */
+          log_debug ("disconnecting card in slot %d\n", ss->slot);
+          apdu_disconnect (ss->slot);
+        }
+      
     }
 }
 

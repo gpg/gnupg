@@ -1362,8 +1362,11 @@ static int
 cmd_killagent (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
+
   ctrl->server_local->stopme = 1;
-  return 0;
+  return gpg_error (GPG_ERR_EOF);
 }
 
 /* RELOADAGENT
@@ -1373,6 +1376,9 @@ cmd_killagent (assuan_context_t ctx, char *line)
 static int
 cmd_reloadagent (assuan_context_t ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
+
   agent_sighup_action ();
   return 0;
 }
@@ -1666,7 +1672,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   for (;;)
     {
       rc = assuan_accept (ctx);
-      if (rc == -1)
+      if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1)
         {
           break;
         }

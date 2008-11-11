@@ -59,20 +59,14 @@
 * scd
 ** Application context vs. reader slot
   We have 2 concurrent method of tracking whether a reader is in use:
-  Using the session_list in command.c and the lock_table in app.c.  IT
+  Using the session_list in command.c and the lock_table in app.c.  It
   would be better to do this just at one place. First we need to see
   how we can support cards with multiple applications.
-** Detecting a removed card works only after the ticker detected it.
-  We should check the card status in open-card to make this smoother.
-  Needs to be integrated with the status file update, though.  It is
-  not a real problem because application will get a card removed
-  status and should then send a reset to try solving the problem.
 ** Resolve fixme in do_sign of app-dinsig.
 
 ** Add a regression test to check the extkeyusage.
 
 * Windows port (W32)
-** No card status notifications.
 ** Regex support is disabled
   We need to adjust the test to find the regex we have anyway in 
   gpg4win.  Is that regex compatible to the OpenPGP requirement?
@@ -91,6 +85,7 @@
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 
 * Extend selinux support to other modules
+  See also http://etbe.coker.com.au/2008/06/06/se-linux-support-gpg/
 
 * UTF-8 specific TODOs
   None.
@@ -101,9 +96,7 @@
   some more work.
 
 * Bugs
-** After disabling scdaemon and sending a HUP
-   scdaemon stays as a zombie and gpg-agent does not perform any more
-   commands.
+
 
 * Howtos
 ** Migrate OpenPGP keys to another system

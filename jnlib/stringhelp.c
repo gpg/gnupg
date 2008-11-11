@@ -42,9 +42,9 @@
 static inline char *
 change_slashes (char *name)
 {
+#ifdef HAVE_DRIVE_LETTERS
   char *p;
 
-#ifdef HAVE_DRIVE_LETTERS
   if (strchr (name, '\\'))
     {
       for (p=name; *p; p++)
