@@ -51,7 +51,7 @@ utilities.
 The usual way to run the agent is from the @code{~/.xsession} file:
 
 @example
-eval `gpg-agent --daemon`
+eval $(gpg-agent --daemon)
 @end example
 
 @noindent
@@ -65,11 +65,11 @@ test for a running agent.  This short script may do the job:
 
 @smallexample
 if test -f $HOME/.gpg-agent-info && \
-   kill -0 `cut -d: -f 2 $HOME/.gpg-agent-info` 2>/dev/null; then
-     GPG_AGENT_INFO=`cat $HOME/.gpg-agent-info`
+   kill -0 $(cut -d: -f 2 $HOME/.gpg-agent-info) 2>/dev/null; then
+     GPG_AGENT_INFO=$(cat $HOME/.gpg-agent-info)
      export GPG_AGENT_INFO   
 else
-     eval `gpg-agent --daemon`
+     eval $(gpg-agent --daemon)
      echo $GPG_AGENT_INFO >$HOME/.gpg-agent-info
 fi
 @end smallexample
@@ -83,7 +83,7 @@ You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
 
 @smallexample
-GPG_TTY=`tty`
+GPG_TTY=$(tty)
 export GPG_TTY
 @end smallexample
 
@@ -149,7 +149,7 @@ it from being accidently running in the background.  A common way to do
 this is:
 @example
 @end example
-$ eval `gpg-agent --daemon`
+$ eval $(gpg-agent --daemon)
 @end table
 
 
@@ -283,8 +283,8 @@ other sessions, this option may be used to write the information into
 to be evaluated by a Bourne shell like in this simple example:
 
 @example
-eval `cat @var{file}`
-eval `cut -d= -f 1 < @var{file} | xargs echo export`
+eval $(cat @var{file})
+eval $(cut -d= -f 1 < @var{file} | xargs echo export)
 @end example
 
 
@@ -645,7 +645,7 @@ This signal is used for internal purposes.
 The usual way to invoke @command{gpg-agent} is
 
 @example
-$ eval `gpg-agent --daemon`
+$ eval $(gpg-agent --daemon)
 @end example
 
 An alternative way is by replacing @command{ssh-agent} with
