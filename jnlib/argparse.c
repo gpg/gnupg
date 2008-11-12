@@ -6,7 +6,7 @@
  *
  * JNLIB is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
  *
  * JNLIB is distributed in the hope that it will be useful, but
@@ -18,7 +18,10 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -296,7 +299,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
               idx = i;
               arg->r_opt = opts[idx].short_opt;
               if (!opts[idx].short_opt )
-                arg->r_opt = ((opts[idx].flags & 256)
+                arg->r_opt = ((opts[idx].flags & ARGPARSE_OPT_COMMAND)
                               ? ARGPARSE_INVALID_COMMAND
                               : ARGPARSE_INVALID_OPTION);
               else if (!(opts[idx].flags & 7)) 
@@ -421,7 +424,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                 }
               else 
                 {
-                  arg->r_opt = ((opts[idx].flags & 256)
+                  arg->r_opt = ((opts[idx].flags & ARGPARSE_OPT_COMMAND)
                                 ? ARGPARSE_INVALID_COMMAND
                                 : ARGPARSE_INVALID_OPTION);
                   state = -1; /* Skip rest of line and leave.  */
@@ -554,205 +557,253 @@ find_long_option( ARGPARSE_ARGS *arg,
 int
 arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
-    int idx;
-    int argc;
-    char **argv;
-    char *s, *s2;
-    int i;
+  int idx;
+  int argc;
+  char **argv;
+  char *s, *s2;
+  int i;
+  
+  initialize( arg, NULL, NULL );
+  argc = *arg->argc;
+  argv = *arg->argv;
+  idx = arg->internal.idx;
 
-    initialize( arg, NULL, NULL );
-    argc = *arg->argc;
-    argv = *arg->argv;
-    idx = arg->internal.idx;
-
-    if( !idx && argc && !(arg->flags & (1<<4)) ) { /* skip the first entry */
-	argc--; argv++; idx++;
+  if (!idx && argc && !(arg->flags & ARGPARSE_FLAG_ARG0))
+    {
+      /* Skip the first argument.  */
+      argc--; argv++; idx++;
+    }
+  
+ next_one:
+  if (!argc) 
+    { 
+      /* No more args.  */
+      arg->r_opt = 0;
+      goto leave; /* Ready. */
     }
 
-  next_one:
-    if( !argc ) { /* no more args */
-	arg->r_opt = 0;
-	goto leave; /* ready */
+  s = *argv;
+  arg->internal.last = s;
+
+  if (arg->internal.stopped && (arg->flags & ARGPARSE_FLAG_KEEP)) 
+    {
+      arg->r_opt = ARGPARSE_IS_ARG;  /* Not an option but an argument.  */
+      arg->r_type = 2;
+      arg->r.ret_str = s;
+      argc--; argv++; idx++; /* set to next one */
     }
-
-    s = *argv;
-    arg->internal.last = s;
-
-    if( arg->internal.stopped && (arg->flags & (1<<1)) ) {
-	arg->r_opt = ARGPARSE_IS_ARG;  /* Not an option but an argument.  */
-	arg->r_type = 2;
-	arg->r.ret_str = s;
-	argc--; argv++; idx++; /* set to next one */
+  else if( arg->internal.stopped ) 
+    {
+      arg->r_opt = 0;
+      goto leave; /* Ready.  */
     }
-    else if( arg->internal.stopped ) { /* ready */
-	arg->r_opt = 0;
-	goto leave;
-    }
-    else if( *s == '-' && s[1] == '-' ) { /* long option */
-	char *argpos;
-
-	arg->internal.inarg = 0;
-	if( !s[2] && !(arg->flags & (1<<3)) ) { /* stop option processing */
-	    arg->internal.stopped = 1;
-	    argc--; argv++; idx++;
-	    goto next_one;
+  else if ( *s == '-' && s[1] == '-' )
+    {
+      /* Long option.  */
+      char *argpos;
+      
+      arg->internal.inarg = 0;
+      if (!s[2] && !(arg->flags & ARGPARSE_FLAG_MIXED))
+        { 
+          /* Stop option processing.  */
+          arg->internal.stopped = 1;
+          argc--; argv++; idx++;
+          goto next_one;
 	}
 
-	argpos = strchr( s+2, '=' );
-	if( argpos )
-	    *argpos = 0;
-	i = find_long_option( arg, opts, s+2 );
-	if( argpos )
-	    *argpos = '=';
+      argpos = strchr( s+2, '=' );
+      if ( argpos )
+        *argpos = 0;
+      i = find_long_option ( arg, opts, s+2 );
+      if ( argpos )
+        *argpos = '=';
 
-	if( i < 0 && !strcmp( "help", s+2) )
-	    show_help(opts, arg->flags);
-	else if( i < 0 && !strcmp( "version", s+2) ) {
-	    if( !(arg->flags & (1<<6)) ) {
-		show_version();
-		exit(0);
-	    }
+      if ( i < 0 && !strcmp ( "help", s+2) )
+        show_help (opts, arg->flags);
+      else if ( i < 0 && !strcmp ( "version", s+2) )
+        {
+          if (!(arg->flags & ARGPARSE_FLAG_NOVERSION))
+            {
+              show_version ();
+              exit(0);
+            }
 	}
-	else if( i < 0 && !strcmp( "warranty", s+2) ) {
-	    puts( strusage(16) );
-	    exit(0);
+      else if ( i < 0 && !strcmp( "warranty", s+2))
+        {
+          puts ( strusage (16) );
+          exit (0);
 	}
-	else if( i < 0 && !strcmp( "dump-options", s+2) ) {
-	    for(i=0; opts[i].short_opt; i++ ) {
-		if( opts[i].long_opt )
-		    printf( "--%s\n", opts[i].long_opt );
+      else if ( i < 0 && !strcmp( "dump-options", s+2) )
+        {
+          for (i=0; opts[i].short_opt; i++ )
+            {
+              if ( opts[i].long_opt )
+                printf ("--%s\n", opts[i].long_opt);
 	    }
-	    fputs("--dump-options\n--help\n--version\n--warranty\n", stdout );
-	    exit(0);
+          fputs ("--dump-options\n--help\n--version\n--warranty\n", stdout);
+          exit (0);
 	}
-
-	if( i == -2 )
-	    arg->r_opt = ARGPARSE_AMBIGUOUS_OPTION;
-	else if( i == -1 ) {
-	    arg->r_opt = ARGPARSE_INVALID_OPTION;
-	    arg->r.ret_str = s+2;
+      
+      if ( i == -2 )
+        arg->r_opt = ARGPARSE_AMBIGUOUS_OPTION;
+      else if ( i == -1 )
+        {
+          arg->r_opt = ARGPARSE_INVALID_OPTION;
+          arg->r.ret_str = s+2;
 	}
-	else
-	    arg->r_opt = opts[i].short_opt;
-	if( i < 0 )
-	    ;
-	else if( (opts[i].flags & 7) ) {
-	    if( argpos ) {
-		s2 = argpos+1;
-		if( !*s2 )
-		    s2 = NULL;
+      else
+        arg->r_opt = opts[i].short_opt;
+      if ( i < 0 )
+        ;
+      else if ( (opts[i].flags & 0x07) )
+        {
+          if ( argpos )
+            {
+              s2 = argpos+1;
+              if ( !*s2 )
+                s2 = NULL;
 	    }
-	    else
-		s2 = argv[1];
-	    if( !s2 && (opts[i].flags & 8) ) { /* no argument but it is okay*/
-		arg->r_type = 0;	       /* because it is optional */
+          else
+            s2 = argv[1];
+          if ( !s2 && (opts[i].flags & ARGPARSE_OPT_OPTIONAL) )
+            {
+              arg->r_type = ARGPARSE_TYPE_NONE; /* Argument is optional.  */
 	    }
-	    else if( !s2 ) {
-		arg->r_opt = ARGPARSE_MISSING_ARG;
+          else if ( !s2 )
+            {
+              arg->r_opt = ARGPARSE_MISSING_ARG;
 	    }
-	    else if( !argpos && *s2 == '-' && (opts[i].flags & 8) ) {
-		/* the argument is optional and the next seems to be
-		 * an option. We do not check this possible option
-		 * but assume no argument */
-		arg->r_type = 0;
+          else if ( !argpos && *s2 == '-' 
+                    && (opts[i].flags & ARGPARSE_OPT_OPTIONAL) ) 
+            {
+              /* The argument is optional and the next seems to be an
+                 option.  We do not check this possible option but
+                 assume no argument */
+              arg->r_type = ARGPARSE_TYPE_NONE;
 	    }
-	    else {
-		set_opt_arg(arg, opts[i].flags, s2);
-		if( !argpos ) {
-		    argc--; argv++; idx++; /* skip one */
+          else 
+            {
+              set_opt_arg (arg, opts[i].flags, s2);
+              if ( !argpos ) 
+                {
+                  argc--; argv++; idx++; /* Skip one.  */
 		}
 	    }
 	}
-	else { /* does not take an argument */
-	    if( argpos )
-		arg->r_type = -6; /* argument not expected */
-	    else
-		arg->r_type = 0;
+      else
+        { 
+          /* Does not take an argument. */
+          if ( argpos )
+            arg->r_type = ARGPARSE_UNEXPECTED_ARG; 
+          else
+            arg->r_type = 0;
 	}
-	argc--; argv++; idx++; /* set to next one */
+      argc--; argv++; idx++; /* Set to next one.  */
     }
-    else if( (*s == '-' && s[1]) || arg->internal.inarg ) { /* short option */
+    else if ( (*s == '-' && s[1]) || arg->internal.inarg ) 
+      {
+        /* Short option.  */
 	int dash_kludge = 0;
+
 	i = 0;
-	if( !arg->internal.inarg ) {
+	if ( !arg->internal.inarg ) 
+          {
 	    arg->internal.inarg++;
-	    if( arg->flags & (1<<5) ) {
-		for(i=0; opts[i].short_opt; i++ )
-		    if( opts[i].long_opt && !strcmp( opts[i].long_opt, s+1)) {
-			dash_kludge=1;
-			break;
+	    if ( (arg->flags & ARGPARSE_FLAG_ONEDASH) )
+              {
+                for (i=0; opts[i].short_opt; i++ )
+                  if ( opts[i].long_opt && !strcmp (opts[i].long_opt, s+1))
+                    {
+                      dash_kludge = 1;
+                      break;
 		    }
-	    }
-	}
+              }
+          }
 	s += arg->internal.inarg;
 
-	if( !dash_kludge ) {
-	    for(i=0; opts[i].short_opt; i++ )
-		if( opts[i].short_opt == *s )
-		    break;
-	}
-
-	if( !opts[i].short_opt && ( *s == 'h' || *s == '?' ) )
-	    show_help(opts, arg->flags);
+	if (!dash_kludge )
+          {
+	    for (i=0; opts[i].short_opt; i++ )
+              if ( opts[i].short_opt == *s )
+                break;
+          }
+        
+	if ( !opts[i].short_opt && ( *s == 'h' || *s == '?' ) )
+          show_help (opts, arg->flags);
 
 	arg->r_opt = opts[i].short_opt;
-	if( !opts[i].short_opt ) {
-	    arg->r_opt = (opts[i].flags & 256)?
+	if (!opts[i].short_opt )
+          {
+	    arg->r_opt = (opts[i].flags & ARGPARSE_OPT_COMMAND)?
               ARGPARSE_INVALID_COMMAND:ARGPARSE_INVALID_OPTION;
-	    arg->internal.inarg++; /* point to the next arg */
+	    arg->internal.inarg++; /* Point to the next arg.  */
 	    arg->r.ret_str = s;
-	}
-	else if( (opts[i].flags & 7) ) {
-	    if( s[1] && !dash_kludge ) {
+          }
+	else if ( (opts[i].flags & 7) )
+          {
+	    if ( s[1] && !dash_kludge )
+              {
 		s2 = s+1;
-		set_opt_arg(arg, opts[i].flags, s2);
-	    }
-	    else {
+		set_opt_arg (arg, opts[i].flags, s2);
+              }
+	    else
+              {
 		s2 = argv[1];
-		if( !s2 && (opts[i].flags & 8) ) { /* no argument but it is okay*/
-		    arg->r_type = 0;		   /* because it is optional */
-		}
-		else if( !s2 ) {
+		if ( !s2 && (opts[i].flags & ARGPARSE_OPT_OPTIONAL) )
+                  {
+		    arg->r_type = ARGPARSE_TYPE_NONE;
+                  }
+		else if ( !s2 )
+                  {
 		    arg->r_opt = ARGPARSE_MISSING_ARG;
-		}
-		else if( *s2 == '-' && s2[1] && (opts[i].flags & 8) ) {
-		    /* the argument is optional and the next seems to be
-		     * an option. We do not check this possible option
-		     * but assume no argument */
-		    arg->r_type = 0;
-		}
-		else {
-		    set_opt_arg(arg, opts[i].flags, s2);
-		    argc--; argv++; idx++; /* skip one */
-		}
-	    }
-	    s = "x"; /* so that !s[1] yields false */
-	}
-	else { /* does not take an argument */
-	    arg->r_type = 0;
-	    arg->internal.inarg++; /* point to the next arg */
-	}
-	if( !s[1] || dash_kludge ) { /* no more concatenated short options */
+                  }
+		else if ( *s2 == '-' && s2[1]
+                          && (opts[i].flags & ARGPARSE_OPT_OPTIONAL) )
+                  {
+		    /* The argument is optional and the next seems to
+	               be an option.  We do not check this possible
+	               option but assume no argument.  */
+		    arg->r_type = ARGPARSE_TYPE_NONE;
+                  }
+		else
+                  {
+		    set_opt_arg (arg, opts[i].flags, s2);
+		    argc--; argv++; idx++; /* Skip one.  */
+                  }
+              }
+	    s = "x"; /* This is so that !s[1] yields false.  */
+          }
+	else
+          {
+            /* Does not take an argument.  */
+	    arg->r_type = ARGPARSE_TYPE_NONE;
+	    arg->internal.inarg++; /* Point to the next arg.  */
+          }
+	if ( !s[1] || dash_kludge )
+          {
+            /* No more concatenated short options.  */
 	    arg->internal.inarg = 0;
 	    argc--; argv++; idx++;
-	}
+          }
+      }
+  else if ( arg->flags & ARGPARSE_FLAG_ALL )
+    {
+      arg->r_opt = ARGPARSE_IS_ARG;
+      arg->r_type = 2;
+      arg->r.ret_str = s;
+      argc--; argv++; idx++; /* Set to next one.  */
     }
-    else if( arg->flags & (1<<2) ) {
-	arg->r_opt = ARGPARSE_IS_ARG;
-	arg->r_type = 2;
-	arg->r.ret_str = s;
-	argc--; argv++; idx++; /* set to next one */
-    }
-    else {
-	arg->internal.stopped = 1; /* stop option processing */
-	goto next_one;
+  else
+    {
+      arg->internal.stopped = 1; /* Stop option processing.  */
+      goto next_one;
     }
 
-  leave:
-    *arg->argc = argc;
-    *arg->argv = argv;
-    arg->internal.idx = idx;
-    return arg->r_opt;
+ leave:
+  *arg->argc = argc;
+  *arg->argv = argv;
+  arg->internal.idx = idx;
+  return arg->r_opt;
 }
 
 
@@ -760,22 +811,23 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 static int
 set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
 {
-    int base = (flags & 16)? 0 : 10;
+  int base = (flags & 16)? 0 : 10;
 
-    switch( arg->r_type = (flags & 7) ) {
-      case 1: /* takes int argument */
-	arg->r.ret_int = (int)strtol(s,NULL,base);
-	return 0;
-      case 3: /* takes long argument   */
-	arg->r.ret_long= strtol(s,NULL,base);
-	return 0;
-      case 4: /* takes ulong argument  */
-	arg->r.ret_ulong= strtoul(s,NULL,base);
-	return 0;
-      case 2: /* takes string argument */
-      default:
-	arg->r.ret_str = s;
-	return 1;
+  switch ( (arg->r_type = (flags & 7)) )
+    {
+    case ARGPARSE_TYPE_INT:
+      arg->r.ret_int = (int)strtol(s,NULL,base);
+      return 0;
+    case ARGPARSE_TYPE_LONG:
+      arg->r.ret_long= strtol(s,NULL,base);
+      return 0;
+    case ARGPARSE_TYPE_ULONG:
+      arg->r.ret_ulong= strtoul(s,NULL,base);
+      return 0;
+    case ARGPARSE_TYPE_STRING:
+    default:
+      arg->r.ret_str = s;
+      return 1;
     }
 }
 
@@ -807,6 +859,7 @@ long_opt_strlen( ARGPARSE_OPTS *o )
   return n;
 }
 
+
 /****************
  * Print formatted help. The description string has some special
  * meanings:
@@ -819,123 +872,149 @@ long_opt_strlen( ARGPARSE_OPTS *o )
  *    bar and the next one as arguments of the long option.
  */
 static void
-show_help( ARGPARSE_OPTS *opts, unsigned flags )
+show_help (ARGPARSE_OPTS *opts, unsigned int flags)
 {
-    const char *s;
+  const char *s;
+  
+  show_version ();
+  putchar ('\n');
+  s = strusage(41);
+  puts (s);
+  if ( opts[0].description )
+    {
+      /* Auto format the option description.  */
+      int i,j, indent;
 
-    show_version();
-    putchar('\n');
-    s = strusage(41);
-    puts(s);
-    if( opts[0].description ) { /* auto format the option description */
-	int i,j, indent;
-	/* get max. length of long options */
-	for(i=indent=0; opts[i].short_opt; i++ ) {
-	    if( opts[i].long_opt )
-		if( !opts[i].description || *opts[i].description != '@' )
-		    if( (j=long_opt_strlen(opts+i)) > indent && j < 35 )
-			 indent = j;
+      /* Get max. length of long options.  */
+      for (i=indent=0; opts[i].short_opt; i++ )
+        {
+          if ( opts[i].long_opt )
+            if ( !opts[i].description || *opts[i].description != '@' )
+              if ( (j=long_opt_strlen(opts+i)) > indent && j < 35 )
+                indent = j;
 	}
-	/* example: " -v, --verbose   Viele Sachen ausgeben" */
-	indent += 10;
-	if( *opts[0].description != '@' )
-	    puts("Options:");
-	for(i=0; opts[i].short_opt; i++ ) {
-	    s = _( opts[i].description );
-	    if( s && *s== '@' && !s[1] ) /* hide this line */
-		continue;
-	    if( s && *s == '@' ) { /* unindented comment only line */
-		for(s++; *s; s++ ) {
-		    if( *s == '\n' ) {
-			if( s[1] )
-			    putchar('\n');
+
+      /* Example: " -v, --verbose   Viele Sachen ausgeben" */
+      indent += 10;
+      if ( *opts[0].description != '@' )
+        puts ("Options:");
+      for (i=0; opts[i].short_opt; i++ )
+        {
+          s = _( opts[i].description );
+          if ( s && *s== '@' && !s[1] ) /* Hide this line.  */
+            continue;
+          if ( s && *s == '@' )  /* Unindented comment only line.  */
+            { 
+              for (s++; *s; s++ ) 
+                {
+                  if ( *s == '\n' )
+                    {
+                      if( s[1] )
+                        putchar('\n');
 		    }
-		    else
-			putchar(*s);
+                  else
+                    putchar(*s);
 		}
-		putchar('\n');
-		continue;
+              putchar('\n');
+              continue;
 	    }
 
-	    j = 3;
-	    if( opts[i].short_opt < 256 ) {
-		printf(" -%c", opts[i].short_opt );
-		if( !opts[i].long_opt ) {
-		    if(s && *s == '|' ) {
-			putchar(' '); j++;
-			for(s++ ; *s && *s != '|'; s++, j++ )
-			    putchar(*s);
-			if( *s )
-			    s++;
+          j = 3;
+          if ( opts[i].short_opt < 256 )
+            {
+              printf (" -%c", opts[i].short_opt);
+              if ( !opts[i].long_opt ) 
+                {
+                  if (s && *s == '|' ) 
+                    {
+                      putchar (' '); j++;
+                      for (s++ ; *s && *s != '|'; s++, j++ )
+                        putchar (*s);
+                      if ( *s )
+                        s++;
 		    }
 		}
 	    }
-	    else
-		fputs("   ", stdout);
-	    if( opts[i].long_opt ) {
-		j += printf("%c --%s", opts[i].short_opt < 256?',':' ',
-				       opts[i].long_opt );
-		if(s && *s == '|' ) {
-		    if( *++s != '=' ) {
-			putchar(' ');
-			j++;
+          else
+            fputs("   ", stdout);
+          if ( opts[i].long_opt ) 
+            {
+              j += printf ("%c --%s", opts[i].short_opt < 256?',':' ',
+                           opts[i].long_opt );
+              if (s && *s == '|' ) 
+                {
+                  if ( *++s != '=' )
+                    {
+                      putchar(' ');
+                      j++;
 		    }
-		    for( ; *s && *s != '|'; s++, j++ )
-			putchar(*s);
-		    if( *s )
-			s++;
+                  for ( ; *s && *s != '|'; s++, j++ )
+                    putchar(*s);
+                  if ( *s )
+                    s++;
 		}
-		fputs("   ", stdout);
-		j += 3;
+              fputs ("   ", stdout);
+              j += 3;
 	    }
-	    for(;j < indent; j++ )
-		putchar(' ');
-	    if( s ) {
-		if( *s && j > indent ) {
-		    putchar('\n');
-		    for(j=0;j < indent; j++ )
-			putchar(' ');
+          for (;j < indent; j++ )
+            putchar(' ');
+          if ( s )
+            {
+              if ( *s && j > indent )
+                {
+                  putchar('\n');
+                  for (j=0;j < indent; j++ )
+                    putchar (' ');
 		}
-		for(; *s; s++ ) {
-		    if( *s == '\n' ) {
-			if( s[1] ) {
-			    putchar('\n');
-			    for(j=0;j < indent; j++ )
-				putchar(' ');
+              for (; *s; s++ )
+                {
+                  if ( *s == '\n' )
+                    {
+                      if ( s[1] ) 
+                        {
+                          putchar ('\n');
+                          for (j=0; j < indent; j++ )
+                            putchar (' ');
 			}
 		    }
-		    else
-			putchar(*s);
+                  else
+                    putchar (*s);
 		}
 	    }
-	    putchar('\n');
+          putchar ('\n');
 	}
-	if( flags & 32 )
-	    puts("\n(A single dash may be used instead of the double ones)");
+	if ( (flags & ARGPARSE_FLAG_ONEDASH) )
+	    puts ("\n(A single dash may be used instead of the double ones)");
     }
-    if( (s=strusage(19)) ) {  /* bug reports to ... */
-        char *s2;
-
-	putchar('\n');
-        s2 = strstr (s, "@EMAIL@");
-        if (s2)
-          {
-            if (s2-s)
-              fwrite (s, s2-s, 1, stdout);
-            fputs (PACKAGE_BUGREPORT, stdout);
-            s2 += 7;
-            if (*s2)
-              fputs (s2, stdout);
-          }
-        else
-          fputs(s, stdout);
+  if ( (s=strusage(19)) )
+    { 
+      /* bug reports to ... */
+      char *s2;
+      
+      putchar('\n');
+      s2 = strstr (s, "@EMAIL@");
+      if (s2)
+        {
+          if (s2-s)
+            fwrite (s, s2-s, 1, stdout);
+#ifdef PACKAGE_BUGREPORT
+          fputs (PACKAGE_BUGREPORT, stdout);
+#else
+          fputs ("bug@example.org", stdout);
+#endif
+          s2 += 7;
+          if (*s2)
+            fputs (s2, stdout);
+        }
+      else
+        fputs(s, stdout);
     }
-    fflush(stdout);
-    exit(0);
+  fflush(stdout);
+  exit(0);
 }
 
 static void
-show_version()
+show_version ()
 {
   const char *s;
   int i;
@@ -965,7 +1044,7 @@ show_version()
   for (i=30; i < 40; i++ )
     if ( (s=strusage (i)) )
       fputs (s, stdout);
-  fflush(stdout);
+  fflush (stdout);
 }
 
 
@@ -1016,23 +1095,24 @@ usage (int level)
 const char *
 strusage( int level )
 {
-    const char *p = strusage_handler? strusage_handler(level) : NULL;
-
-    if( p )
-	return p;
-
-    switch( level ) {
-      case 10: p = ("License GPLv3+: GNU GPL version 3 or later "
-                    "<http://gnu.org/licenses/gpl.html>");
-        break;
-      case 11: p = "foo"; break;
-      case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 2008 Free Software Foundation, Inc."; break;
-      case 15: p =
+  const char *p = strusage_handler? strusage_handler(level) : NULL;
+  
+  if ( p )
+    return p;
+  
+  switch ( level )
+    {
+    case 10: p = ("License GPLv3+: GNU GPL version 3 or later "
+                  "<http://gnu.org/licenses/gpl.html>");
+      break;
+    case 11: p = "foo"; break;
+    case 13: p = "0.0"; break;
+    case 14: p = "Copyright (C) 2008 Free Software Foundation, Inc."; break;
+    case 15: p =
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n";
-        break;
-      case 16:	p =
+      break;
+    case 16: p =
 "This is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
 "the Free Software Foundation; either version 3 of the License, or\n"
@@ -1043,18 +1123,18 @@ strusage( int level )
 "GNU General Public License for more details.\n\n"
 "You should have received a copy of the GNU General Public License\n"
 "along with this software.  If not, see <http://www.gnu.org/licenses/>.\n";
-	break;
-      case 40: /* short and long usage */
-      case 41: p = ""; break;
+      break;
+    case 40: /* short and long usage */
+    case 41: p = ""; break;
     }
-
-    return p;
+  
+  return p;
 }
 
 void
-set_strusage( const char *(*f)( int ) )
+set_strusage ( const char *(*f)( int ) )
 {
-    strusage_handler = f;
+  strusage_handler = f;
 }
 
 
@@ -1072,19 +1152,20 @@ static struct {
 int
 main(int argc, char **argv)
 {
-    ARGPARSE_OPTS opts[] = {
-    { 'v', "verbose",   0 , "Laut sein"},
-    { 'e', "echo"   ,   0 , ("Zeile ausgeben, damit wir sehen, was wir ein"
-                             " gegeben haben")},
-    { 'd', "debug",     0 , "Debug\nfalls mal etwas\nschief geht"},
-    { 'o', "output",    2   },
-    { 'c', "cross-ref", 2|8, "cross-reference erzeugen\n" },
+  ARGPARSE_OPTS opts[] = {
+    ARGPARSE_x('v', "verbose", NONE, 0, "Laut sein"),
+    ARGPARSE_s_n('e', "echo"   , ("Zeile ausgeben, damit wir sehen, "
+                                  "was wir ein gegeben haben")),
+    ARGPARSE_s_n('d', "debug", "Debug\nfalls mal etwas\nschief geht"),
+    ARGPARSE_s_s('o', "output", 0 ),
+    ARGPARSE_o_s('c', "cross-ref", "cross-reference erzeugen\n" ),
     /* Note that on a non-utf8 terminal the ß might garble the output. */
-    { 's', "street",  0,     "|Straße|set the name of the street to Straße" },
-    { 'm', "my-option", 1|8 },
-    { 500, "a-long-option", 0 },
-    {0} };
-    ARGPARSE_ARGS pargs = { &argc, &argv, 2|4|32 };
+    ARGPARSE_s_n('s', "street","|Straße|set the name of the street to Straße"),
+    ARGPARSE_o_i('m', "my-option", 0),
+    ARGPARSE_s_n(500, "a-long-option", 0 ),
+    ARGPARSE_end
+  };
+  ARGPARSE_ARGS pargs = { &argc, &argv, 2|4|32 };
     int i;
 
     while( arg_parse ( &pargs, opts) ) {
@@ -1097,7 +1178,7 @@ main(int argc, char **argv)
 	  case 'c': opt.crf = pargs.r_type? pargs.r.ret_str:"a.crf"; break;
 	  case 'm': opt.myopt = pargs.r_type? pargs.r.ret_int : 1; break;
 	  case 500: opt.a_long_one++;  break;
-	  default : pargs.err = 1; break; /* force warning output */
+	  default : pargs.err = ARGPARSE_PRINT_WARNING; break; 
 	}
     }
     for(i=0; i < argc; i++ )

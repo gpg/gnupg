@@ -1,3 +1,9 @@
+2008-11-11  Werner Koch  <wk@g10code.com>
+
+	* argparse.h: Add a bunch of macros and constants.
+	* argparse.c: Use the new macros.  Re-indent the code.  Change
+	license back to LGPL 2.1.
+
 2008-11-04  Werner Koch  <wk@g10code.com>
 
 	* w32-gettext.c: Merged with code from libgpg-error and rewrote
