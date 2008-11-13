@@ -1,6 +1,6 @@
 /* gpgv.c - The GnuPG signature verify utility
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -51,61 +51,64 @@
 #include "call-agent.h"
 
 
-enum cmd_and_opt_values { aNull = 0,
-    oQuiet	  = 'q',
-    oVerbose	  = 'v',
-    oBatch	  = 500,
-    oKeyring,
-    oIgnoreTimeConflict,                      
-    oStatusFD,
-    oLoggerFD,
-    oHomedir,
-aTest };
+enum cmd_and_opt_values {
+  aNull = 0,
+  oQuiet	  = 'q',
+  oVerbose	  = 'v',
+  oBatch	  = 500,
+  oKeyring,
+  oIgnoreTimeConflict,                      
+  oStatusFD,
+  oLoggerFD,
+  oHomedir,
+  aTest
+};
 
 
 static ARGPARSE_OPTS opts[] = {
+  ARGPARSE_group (300, N_("@\nOptions:\n ")),
+  
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet,   "quiet",   N_("be somewhat more quiet")),
+  ARGPARSE_s_s (oKeyring, "keyring", 
+                N_("|FILE|take the keys from the keyring FILE")),
+  ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict",
+                N_("make timestamp conflicts only a warning")),
+  ARGPARSE_s_i (oStatusFD, "status-fd",
+                N_("|FD|write status info to this FD")),
+  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
 
-    { 301, NULL, 0, N_("@\nOptions:\n ") },
-
-    { oVerbose, "verbose",   0, N_("verbose") },
-    { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
-    { oKeyring, "keyring"   ,2, N_("take the keys from this keyring")},
-    { oIgnoreTimeConflict, "ignore-time-conflict", 0, 
-                           N_("make timestamp conflicts only a warning") },
-    { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { oLoggerFD, "logger-fd",1, "@" },
-    { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
-
-{0} };
+  ARGPARSE_end ()
+};
 
 
 
 int g10_errors_seen = 0;
 
+
 static const char *
 my_strusage( int level )
 {
-    const char *p;
-    switch( level ) {
-      case 11: p = "gpgv (GnuPG)";
+  const char *p;
+  switch (level)
+    {
+    case 11: p = "gpgv (GnuPG)";
+      break;
+    case 13: p = VERSION; break;
+    case 17: p = PRINTABLE_OS_NAME; break;
+    case 19: p =  _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
 	break;
-      case 13: p = VERSION; break;
-      case 17: p = PRINTABLE_OS_NAME; break;
-      case 19: p =
-	    _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
-	break;
-      case 1:
-      case 40:	p =
-	    _("Usage: gpgv [options] [files] (-h for help)");
-	break;
-      case 41:	p =
-	    _("Syntax: gpg [options] [files]\n"
-	      "Check signatures against known trusted keys\n");
+    case 1:
+    case 40: p = _("Usage: gpgv [options] [files] (-h for help)");
+      break;
+    case 41: p = _("Syntax: gpg [options] [files]\n"
+                   "Check signatures against known trusted keys\n");
 	break;
 
-      default:	p = NULL;
+    default: p = NULL;
     }
-    return p;
+  return p;
 }
 
 
@@ -113,83 +116,84 @@ my_strusage( int level )
 int
 main( int argc, char **argv )
 {
-    ARGPARSE_ARGS pargs;
-    int rc=0;
-    strlist_t sl;
-    strlist_t nrings=NULL;
-    unsigned configlineno;
+  ARGPARSE_ARGS pargs;
+  int rc=0;
+  strlist_t sl;
+  strlist_t nrings=NULL;
+  unsigned configlineno;
+  
+  set_strusage (my_strusage);
+  log_set_prefix ("gpgv", 1);
+  
+  /* Make sure that our subsystems are ready.  */
+  init_common_subsystems ();
+  
+  gnupg_init_signals (0, NULL);
+  i18n_init();
 
-    set_strusage (my_strusage);
-    log_set_prefix ("gpgv", 1);
+  opt.command_fd = -1; /* no command fd */
+  opt.pgp2_workarounds = 1;
+  opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
+  opt.trust_model = TM_ALWAYS;
+  opt.batch = 1;
 
-    /* Make sure that our subsystems are ready.  */
-    init_common_subsystems ();
+  opt.homedir = default_homedir ();
 
-    gnupg_init_signals (0, NULL);
-    i18n_init();
-
-    opt.command_fd = -1; /* no command fd */
-    opt.pgp2_workarounds = 1;
-    opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
-    opt.trust_model = TM_ALWAYS;
-    opt.batch = 1;
-
-    opt.homedir = default_homedir ();
-
-    tty_no_terminal(1);
-    tty_batchmode(1);
-    disable_dotlock();
-
-    pargs.argc = &argc;
-    pargs.argv = &argv;
-    pargs.flags=  1;  /* do not remove the args */
-    while( optfile_parse( NULL, NULL, &configlineno, &pargs, opts) ) {
-	switch( pargs.r_opt ) {
-	  case oQuiet: opt.quiet = 1; break;
-          case oVerbose: 
-            opt.verbose++; 
-            opt.list_sigs=1;
-            gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
-            break;
-          case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
-	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
-	  case oLoggerFD: 
-            log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
-            break;
-	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
-	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
-	  default : pargs.err = 2; break;
+  tty_no_terminal(1);
+  tty_batchmode(1);
+  disable_dotlock();
+  
+  pargs.argc = &argc;
+  pargs.argv = &argv;
+  pargs.flags=  1;  /* do not remove the args */
+  while (optfile_parse( NULL, NULL, &configlineno, &pargs, opts))
+    {
+      switch (pargs.r_opt)
+        {
+        case oQuiet: opt.quiet = 1; break;
+        case oVerbose: 
+          opt.verbose++; 
+          opt.list_sigs=1;
+          gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+          break;
+        case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
+        case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
+        case oLoggerFD: 
+          log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          break;
+        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
+        default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
+  
+  if (log_get_errorcount (0))
+    g10_exit(2);
 
-    if( log_get_errorcount(0) )
-	g10_exit(2);
-
-     if( opt.verbose > 1 )
-	set_packet_list_mode(1);
-
-    if( !nrings )  /* no keyring given: use default one */
-        keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 0, 0);
-    for(sl = nrings; sl; sl = sl->next )
-        keydb_add_resource (sl->d, 0, 0 );
+  if (opt.verbose > 1)
+    set_packet_list_mode(1);
+  
+  if (!nrings)  /* no keyring given: use default one */
+    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 0, 0);
+  for (sl = nrings; sl; sl = sl->next)
+    keydb_add_resource (sl->d, 0, 0 );
     
-    FREE_STRLIST (nrings);
+  FREE_STRLIST (nrings);
     
-    if( (rc = verify_signatures( argc, argv ) ))
-        log_error("verify signatures failed: %s\n", g10_errstr(rc) );
-
-    /* cleanup */
-    g10_exit(0);
-    return 8; /*NEVER REACHED*/
+  if ( (rc = verify_signatures( argc, argv ) ))
+    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+  
+  /* cleanup */
+  g10_exit (0);
+  return 8; /*NOTREACHED*/
 }
 
 
 void
 g10_exit( int rc )
 {
-    rc = rc? rc : log_get_errorcount(0)? 2 :
-			g10_errors_seen? 1 : 0;
-    exit(rc );
+  rc = rc? rc : log_get_errorcount(0)? 2 : g10_errors_seen? 1 : 0;
+  exit(rc );
 }
 
 

@@ -90,6 +90,10 @@
 * UTF-8 specific TODOs
   None.
 
+* Manual
+** Document all gpgsm options.
+   
+
 * Pinpad Reader
   We do not yet support P15 applications.  The trivial thing using
   ASCII characters will be easy to implement but the other cases need

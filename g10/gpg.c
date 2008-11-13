@@ -369,8 +369,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
-  ARGPARSE_c (aSign, "sign", N_("|[file]|make a signature")),
-  ARGPARSE_c (aClearsign, "clearsign", N_("|[file]|make a clear text signature")),
+  ARGPARSE_c (aSign, "sign", N_("make a signature")),
+  ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature")),
   ARGPARSE_c (aDetachedSign, "detach-sign", N_("make a detached signature")),
   ARGPARSE_c (aEncr, "encrypt",   N_("encrypt data")),
   ARGPARSE_c (aEncrFiles, "encrypt-files", "@"),
@@ -428,7 +428,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aDeArmor, "dearmour", "@"),
   ARGPARSE_c (aEnArmor, "enarmor", "@"),
   ARGPARSE_c (aEnArmor, "enarmour", "@"),
-  ARGPARSE_c (aPrintMD, "print-md", N_("|algo [files]|print message digests")),
+  ARGPARSE_c (aPrintMD, "print-md", N_("print message digests")),
   ARGPARSE_c (aPrimegen, "gen-prime", "@" ),
   ARGPARSE_c (aGenRandom,"gen-random", "@" ),
   ARGPARSE_c (aServer,   "server",  N_("run in server mode")),
@@ -438,7 +438,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oArmor, "armor", N_("create ascii armored output")),
   ARGPARSE_s_n (oArmor, "armour", "@"),
 
-  ARGPARSE_s_s (oRecipient, "recipient", N_("|NAME|encrypt for NAME")),
+  ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
   ARGPARSE_s_s (oHiddenRecipient, "hidden-recipient", "@"),
   ARGPARSE_s_s (oRecipient, "remote-user", "@"),  /* (old option name) */
   ARGPARSE_s_s (oDefRecipient, "default-recipient", "@"),
@@ -451,9 +451,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
   ARGPARSE_s_s (oHiddenEncryptTo, "hidden-encrypt-to", "@"),
   ARGPARSE_s_s (oLocalUser, "local-user",
-                N_("use this user-id to sign or decrypt")),
+                N_("|USER-ID|use USER-ID to sign or decrypt")),
 
-  ARGPARSE_s_i (oCompress, NULL, N_("|N|set compress level N (0 disables)")),
+  ARGPARSE_s_i (oCompress, NULL,
+                N_("|N|set compress level to N (0 disables)")),
   ARGPARSE_s_i (oCompressLevel, "compress-level", "@"),
   ARGPARSE_s_i (oBZ2CompressLevel, "bzip2-compress-level", "@"),
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
@@ -546,7 +547,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oRFC2440, "rfc2440", "@"),
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
-  ARGPARSE_s_n (oPGP2, "pgp2", N_("generate PGP 2.x compatible messages")),
+  ARGPARSE_s_n (oPGP2, "pgp2", "@"),
   ARGPARSE_s_n (oPGP6, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
   ARGPARSE_s_n (oPGP8, "pgp8", "@"),

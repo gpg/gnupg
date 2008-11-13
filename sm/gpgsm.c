@@ -50,7 +50,6 @@ enum cmd_and_opt_values {
   aSym	        = 'c',
   aDecrypt	= 'd',
   aEncr	        = 'e',
-  oInteractive  = 'i',
   aListKeys	= 'k',
   aListSecretKeys = 'K',
   oDryRun	= 'n',
@@ -58,20 +57,12 @@ enum cmd_and_opt_values {
   oQuiet	= 'q',
   oRecipient	= 'r',
   aSign	        = 's',
-  oTextmodeShort= 't',
   oUser	        = 'u',
   oVerbose	= 'v',
-  oCompress	= 'z',
-  oNotation	= 'N',
   oBatch	= 500,
   aClearsign,
-  aStore,
   aKeygen,
   aSignEncr,
-  aSignKey,
-  aLSignKey,
-  aListPackets,
-  aEditKey,
   aDeleteKey,
   aImport,
   aVerify,
@@ -82,7 +73,6 @@ enum cmd_and_opt_values {
   aRecvKeys,
   aExport,
   aExportSecretKeyP12,
-  aCheckKeys, /* nyi */
   aServer,                        
   aLearnCard,
   aCallDirmngr,
@@ -95,6 +85,7 @@ enum cmd_and_opt_values {
   aDumpSecretKeys,
   aDumpExternalKeys,
   aKeydbClearSomeCertFlags,
+  aFingerprint,
 
   oOptions,
   oDebug,
@@ -150,35 +141,20 @@ enum cmd_and_opt_values {
   oEnablePolicyChecks,
   oAutoIssuerKeyRetrieve,
   
-  oTextmode,
-  oFingerprint,
   oWithFingerprint,
   oWithMD5Fingerprint,
   oAnswerYes,
   oAnswerNo,
   oKeyring,
-  oSecretKeyring,
   oDefaultKey,
   oDefRecipient,
   oDefRecipientSelf,
   oNoDefRecipient,
   oStatusFD,
-  oNoComment,
-  oNoVersion,
-  oEmitVersion,
-  oCompletesNeeded,
-  oMarginalsNeeded,
-  oMaxCertDepth,
-  oLoadExtension,
-  oRFC1991,
-  oOpenPGP,
   oCipherAlgo,
   oDigestAlgo,
   oExtraDigestAlgo,
-  oCompressAlgo,
-  oCommandFD,
   oNoVerbose,
-  oTrustDBName,
   oNoSecmemWarn,
   oNoDefKeyring,
   oNoGreeting,
@@ -191,284 +167,231 @@ enum cmd_and_opt_values {
   oWithValidation,
   oWithEphemeralKeys,
   oSkipVerify,
-  oCompressKeys,
-  oCompressSigs,
-  oAlwaysTrust,
-  oRunAsShmCP,
-  oSetFilename,
-  oSetPolicyURL,
-  oUseEmbeddedFilename,
   oValidationModel,
-  oComment,
-  oDefaultComment,
-  oThrowKeyid,
-  oForceV3Sigs,
-  oForceMDC,
-  oS2KMode,
-  oS2KDigest,
-  oS2KCipher,
-  oCharset,
-  oNotDashEscaped,
-  oEscapeFrom,
-  oLockOnce,
-  oLockMultiple,
-  oLockNever,
   oKeyServer,
   oEncryptTo,
   oNoEncryptTo,
   oLoggerFD,
-  oUtf8Strings,
-  oNoUtf8Strings,
   oDisableCipherAlgo,
   oDisablePubkeyAlgo,
-  oAllowNonSelfsignedUID,
-  oAllowFreeformUID,
-  oNoLiteral,
-  oSetFilesize,
-  oHonorHttpProxy,
-  oFastListMode,
-  oListOnly,
   oIgnoreTimeConflict,
   oNoRandomSeedFile,
-  oNoAutoKeyRetrieve,
-  oNoCommonCertsImport,
-  oUseAgent,
-  oMergeOnly,
-  oTryAllSecrets,
-  oTrustedKey,
-  oEmuMDEncodeBug,
-  aDummy
+  oNoCommonCertsImport
  };
 
 
 static ARGPARSE_OPTS opts[] = {
 
-    { 300, NULL, 0, N_("@Commands:\n ") },
+  ARGPARSE_group (300, N_("@Commands:\n ")),
 
-    { aSign, "sign",      256, N_("|[FILE]|make a signature")},
-    { aClearsign, "clearsign", 256, N_("|[FILE]|make a clear text signature") },
-    { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
-    { aEncr, "encrypt",   256, N_("encrypt data")},
-    { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
-    { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
-    { aVerify, "verify"   , 256, N_("verify a signature")},
-    { aVerifyFiles, "verify-files" , 256, "@" },
-    { aListKeys, "list-keys", 256, N_("list keys")},
-    { aListExternalKeys, "list-external-keys", 256, N_("list external keys")},
-    { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
-    { aListChain,   "list-chain",  256, N_("list certificate chain")}, 
-    { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
-    { aKeygen,	   "gen-key",  256, "@" },
-    { aDeleteKey, "delete-keys",256,N_("remove keys from the public keyring")},
-    { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
-    { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
-    { aImport, "import",      256     , N_("import certificates")},
-    { aExport, "export",      256     , N_("export certificates")},
-    { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
-    { aServer, "server",      256, N_("run in server mode")},
-    { aCallDirmngr, "call-dirmngr", 256, N_("pass a command to the dirmngr")},
-    { aCallProtectTool, "call-protect-tool", 256,
-                                   N_("invoke gpg-protect-tool")},
-    { aPasswd, "passwd",      256, N_("change a passphrase")},
-    { aGPGConfList, "gpgconf-list", 256, "@" },
-    { aGPGConfTest, "gpgconf-test", 256, "@" },
+  ARGPARSE_c (aSign, "sign", N_("make a signature")),
+  ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature") ),
+  ARGPARSE_c (aDetachedSign, "detach-sign", N_("make a detached signature")),
+  ARGPARSE_c (aEncr, "encrypt", N_("encrypt data")),
+  ARGPARSE_c (aSym, "symmetric", N_("encryption only with symmetric cipher")),
+  ARGPARSE_c (aDecrypt, "decrypt", N_("decrypt data (default)")),
+  ARGPARSE_c (aVerify, "verify",  N_("verify a signature")),
+  ARGPARSE_c (aVerifyFiles, "verify-files", "@"),
+  ARGPARSE_c (aListKeys, "list-keys", N_("list keys")),
+  ARGPARSE_c (aListExternalKeys, "list-external-keys", 
+              N_("list external keys")),
+  ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
+  ARGPARSE_c (aListChain,   "list-chain",  N_("list certificate chain")), 
+  ARGPARSE_c (aFingerprint, "fingerprint", N_("list keys and fingerprints")),
+  ARGPARSE_c (aKeygen, "gen-key", "@"),
+  ARGPARSE_c (aDeleteKey, "delete-keys", 
+              N_("remove keys from the public keyring")),
+  ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a key server")),
+  ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a key server")),
+  ARGPARSE_c (aImport, "import", N_("import certificates")),
+  ARGPARSE_c (aExport, "export", N_("export certificates")),
+  ARGPARSE_c (aExportSecretKeyP12, "export-secret-key-p12", "@"), 
+  ARGPARSE_c (aLearnCard, "learn-card", N_("register a smartcard")),
+  ARGPARSE_c (aServer, "server", N_("run in server mode")),
+  ARGPARSE_c (aCallDirmngr, "call-dirmngr", 
+              N_("pass a command to the dirmngr")),
+  ARGPARSE_c (aCallProtectTool, "call-protect-tool",
+              N_("invoke gpg-protect-tool")),
+  ARGPARSE_c (aPasswd, "passwd", N_("change a passphrase")),
+  ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
+  ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
-    { aDumpKeys, "dump-cert", 256, "@"},
-    { aDumpKeys, "dump-keys", 256, "@"},
-    { aDumpChain, "dump-chain", 256, "@"},
-    { aDumpExternalKeys, "dump-external-keys", 256, "@"},
-    { aDumpSecretKeys, "dump-secret-keys", 256, "@"},
-    { aKeydbClearSomeCertFlags, "keydb-clear-some-cert-flags", 256, "@"},
+  ARGPARSE_c (aDumpKeys, "dump-cert", "@"),
+  ARGPARSE_c (aDumpKeys, "dump-keys", "@"),
+  ARGPARSE_c (aDumpChain, "dump-chain", "@"),
+  ARGPARSE_c (aDumpExternalKeys, "dump-external-keys", "@"),
+  ARGPARSE_c (aDumpSecretKeys, "dump-secret-keys", "@"),
+  ARGPARSE_c (aKeydbClearSomeCertFlags, "keydb-clear-some-cert-flags", "@"),
 
-    { 301, NULL, 0, N_("@\nOptions:\n ") },
+  ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
-    { oArmor, "armor",     0, N_("create ascii armored output")},
-    { oArmor, "armour",    0, "@" },
-    { oBase64, "base64",    0, N_("create base-64 encoded output")},
+  ARGPARSE_s_n (oArmor, "armor", N_("create ascii armored output")),
+  ARGPARSE_s_n (oArmor, "armour", "@"),
+  ARGPARSE_s_n (oBase64, "base64", N_("create base-64 encoded output")),
 
-    { oP12Charset, "p12-charset", 2, "@" },
-    
-    { oAssumeArmor,  "assume-armor", 0, N_("assume input is in PEM format")},
-    { oAssumeBase64, "assume-base64", 0,
-                                      N_("assume input is in base-64 format")},
-    { oAssumeBinary, "assume-binary", 0,
-                                      N_("assume input is in binary format")},
+  ARGPARSE_s_s (oP12Charset, "p12-charset", "@"),
 
-    { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
+  ARGPARSE_s_n (oAssumeArmor, "assume-armor", 
+                N_("assume input is in PEM format")),
+  ARGPARSE_s_n (oAssumeBase64, "assume-base64",
+                N_("assume input is in base-64 format")),
+  ARGPARSE_s_n (oAssumeBinary, "assume-binary", 
+                N_("assume input is in binary format")),
 
-    { oPreferSystemDirmngr,"prefer-system-dirmngr", 0,
-      N_("use system's dirmngr if available")},
-    { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
-    { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
-    { oDisableTrustedCertCRLCheck, "disable-trusted-cert-crl-check", 0, "@"},
-    { oEnableTrustedCertCRLCheck, "enable-trusted-cert-crl-check", 0, "@"},
-    { oForceCRLRefresh, "force-crl-refresh", 0, "@"},
+  ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
 
-    { oDisableOCSP, "disable-ocsp", 0, "@" },
-    { oEnableOCSP,  "enable-ocsp", 0, N_("check validity using OCSP")},
+  ARGPARSE_s_n (oPreferSystemDirmngr,"prefer-system-dirmngr",
+                N_("use system's dirmngr if available")),
 
-    { oValidationModel, "validation-model", 2, "@"},
+  ARGPARSE_s_n (oDisableCRLChecks, "disable-crl-checks", 
+                N_("never consult a CRL")),
+  ARGPARSE_s_n (oEnableCRLChecks, "enable-crl-checks", "@"),
+  ARGPARSE_s_n (oDisableTrustedCertCRLCheck,
+                "disable-trusted-cert-crl-check", "@"),
+  ARGPARSE_s_n (oEnableTrustedCertCRLCheck, 
+                "enable-trusted-cert-crl-check", "@"),
 
-    { oIncludeCerts, "include-certs", 1,
-                                 N_("|N|number of certificates to include") },
+  ARGPARSE_s_n (oForceCRLRefresh, "force-crl-refresh", "@"),
 
-    { oPolicyFile, "policy-file", 2,
-                    N_("|FILE|take policy information from FILE") },
+  ARGPARSE_s_n (oDisableOCSP, "disable-ocsp", "@"),
+  ARGPARSE_s_n (oEnableOCSP,  "enable-ocsp", N_("check validity using OCSP")),
 
-    { oDisablePolicyChecks, "disable-policy-checks", 0,
-                           N_("do not check certificate policies")},
-    { oEnablePolicyChecks, "enable-policy-checks", 0, "@"},
+  ARGPARSE_s_s (oValidationModel, "validation-model", "@"),
 
-    { oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve", 0, 
-      N_("fetch missing issuer certificates")},
+  ARGPARSE_s_i (oIncludeCerts, "include-certs", 
+                N_("|N|number of certificates to include") ),
 
-#if 0
-    { oDefRecipient, "default-recipient" ,2,
-				  N_("|NAME|use NAME as default recipient")},
-    { oDefRecipientSelf, "default-recipient-self" ,0,
-				N_("use the default key as default recipient")},
-    { oNoDefRecipient, "no-default-recipient", 0, "@" },
-#endif
-    { oEncryptTo, "encrypt-to", 2, "@" },
-    { oNoEncryptTo, "no-encrypt-to", 0, "@" },
+  ARGPARSE_s_s (oPolicyFile, "policy-file",
+                N_("|FILE|take policy information from FILE")),
 
-    { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
+  ARGPARSE_s_n (oDisablePolicyChecks, "disable-policy-checks",
+                N_("do not check certificate policies")),
+  ARGPARSE_s_n (oEnablePolicyChecks, "enable-policy-checks", "@"),
 
-#if 0
-    { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
-    { oTextmodeShort, NULL,   0, "@"},
-    { oTextmode, "textmode",  0, N_("use canonical text mode")},
-#endif
+  ARGPARSE_s_n (oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve",
+                N_("fetch missing issuer certificates")),
 
-    { oOutput, "output",    2, N_("|FILE|write output to FILE")},
-    { oVerbose, "verbose",   0, N_("verbose") },
-    { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
-    { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
-    { oLogFile, "log-file"   ,2, N_("|FILE|write a server mode log to FILE")},
-    { oNoLogFile, "no-log-file" ,0, "@"},
-    { oAuditLog, "audit-log", 2, N_("|FILE|write an audit log to FILE")},
-#if 0
-    { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
-    { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
-#endif
-    { oDryRun, "dry-run",   0, N_("do not make any changes") },
-  /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
-    /*{ oUseAgent, "use-agent",0, N_("use the gpg-agent")},*/
-    { oBatch, "batch",     0, N_("batch mode: never ask")},
-    { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
-    { oAnswerNo,  "no",        0, N_("assume no on most questions")},
+  ARGPARSE_s_s (oEncryptTo, "encrypt-to", "@"),
+  ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
 
-    { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
-    { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
-    { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
-    { oKeyServer, "keyserver",2, N_("|SPEC|use this keyserver to lookup keys")},
-    { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
-    { oOptions, "options"   , 2, N_("read options from file")},
+  ARGPARSE_s_s (oUser, "local-user",
+                N_("|USER-ID|use USER-ID to sign or decrypt")),
 
-    { oDebug, "debug"     ,4|16, "@"},
-    { oDebugLevel, "debug-level" ,2, N_("|LEVEL|set the debugging level to LEVEL")},
-    { oDebugAll, "debug-all" ,0, "@"},
-    { oDebugNone, "debug-none" ,0, "@"},
-    { oDebugWait, "debug-wait" ,1, "@"},
-    { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
-    { oDebugNoChainValidation, "debug-no-chain-validation", 0, "@"},
-    { oDebugIgnoreExpiration,  "debug-ignore-expiration", 0, "@"},
-    { oFixedPassphrase,        "fixed-passphrase", 2, "@"},
-    { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { aDummy, "no-comment", 0,   "@"},
-    { aDummy, "completes-needed", 1, "@"},
-    { aDummy, "marginals-needed", 1, "@"},
-    { oMaxCertDepth,	"max-cert-depth", 1, "@" },
-    { aDummy, "trusted-key", 2, "@"},
-    { oLoadExtension, "load-extension" ,2,
-      N_("|FILE|load extension module FILE")},
-    { aDummy, "rfc1991",   0, "@"},
-    { aDummy, "openpgp",   0, "@"},
-    { aDummy, "s2k-mode",  1, "@"},
-    { aDummy, "s2k-digest-algo",2, "@"},
-    { aDummy, "s2k-cipher-algo",2, "@"},
-    { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
-    { oDigestAlgo, "digest-algo", 2 ,
-      N_("|NAME|use message digest algorithm NAME")},
-    { oExtraDigestAlgo, "extra-digest-algo", 2 , "@" },
-#if 0
-    { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
-#endif
-    { aDummy, "throw-keyid", 0, "@"},
-    { aDummy, "notation-data", 2, "@"},
-    { aExportSecretKeyP12, "export-secret-key-p12", 256, "@"}, 
+  ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oNoTTY, "no-tty", N_("don't use the terminal at all")),
+  ARGPARSE_s_s (oLogFile, "log-file",
+                N_("|FILE|write a server mode log to FILE")),
+  ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
+  ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+
+  ARGPARSE_s_s (oAuditLog, "audit-log", 
+                N_("|FILE|write an audit log to FILE")),
+  ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
+  ARGPARSE_s_n (oBatch, "batch", N_("batch mode: never ask")),
+  ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),
+  ARGPARSE_s_n (oAnswerNo,  "no",  N_("assume no on most questions")),
+
+  ARGPARSE_s_s (oKeyring, "keyring",
+                N_("|FILE|add keyring to the list of keyrings")),
+
+  ARGPARSE_s_s (oDefaultKey, "default-key",
+                N_("|USER-ID|use USER-ID as default secret key")),
+
+  /* Not yet used: */
+  /*   ARGPARSE_s_s (oDefRecipient, "default-recipient", */
+  /*                  N_("|NAME|use NAME as default recipient")), */
+  /*   ARGPARSE_s_n (oDefRecipientSelf, "default-recipient-self", */
+  /*                  N_("use the default key as default recipient")), */
+  /*   ARGPARSE_s_n (oNoDefRecipient, "no-default-recipient", "@"), */
+
+  ARGPARSE_s_s (oKeyServer, "keyserver",
+                N_("|SPEC|use this keyserver to lookup keys")),
+  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+
+  ARGPARSE_p_u (oDebug, "debug", "@"),
+  ARGPARSE_s_s (oDebugLevel, "debug-level",
+                N_("|LEVEL|set the debugging level to LEVEL")),
+  ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
+  ARGPARSE_s_n (oDebugNone, "debug-none", "@"),
+  ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
+  ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
+  ARGPARSE_s_n (oDebugNoChainValidation, "debug-no-chain-validation", "@"),
+  ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
+  ARGPARSE_s_s (oFixedPassphrase, "fixed-passphrase", "@"),
+
+  ARGPARSE_s_i (oStatusFD, "status-fd",
+                N_("|FD|write status info to this FD")),
+
+  ARGPARSE_s_s (oCipherAlgo, "cipher-algo", 
+                N_("|NAME|use cipher algorithm NAME")),
+  ARGPARSE_s_s (oDigestAlgo, "digest-algo",
+                N_("|NAME|use message digest algorithm NAME")),
+  ARGPARSE_s_s (oExtraDigestAlgo, "extra-digest-algo", "@"),
     
 
-    { 302, NULL, 0, N_(
+  ARGPARSE_group (302, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
-		      )},
+  )),
 
-    { 303, NULL, 0, N_("@\nExamples:\n\n"
+  ARGPARSE_group (303, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
     " --clearsign [file]         make a clear text signature\n"
     " --detach-sign [file]       make a detached signature\n"
     " --list-keys [names]        show keys\n"
-    " --fingerprint [names]      show fingerprints\n"  ) },
+    " --fingerprint [names]      show fingerprints\n"  )),
 
-  /* hidden options */
-    { oNoVerbose, "no-verbose", 0, "@"},
+  /* Hidden options. */
+  ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
+  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"), 
+  ARGPARSE_s_n (oNoArmor, "no-armor", "@"),
+  ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
+  ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
+  ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
+  ARGPARSE_s_n (oNoOptions, "no-options", "@"),
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),   
+  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oDisplay,    "display", "@"),
+  ARGPARSE_s_s (oTTYname,    "ttyname", "@"),
+  ARGPARSE_s_s (oTTYtype,    "ttytype", "@"),
+  ARGPARSE_s_s (oLCctype,    "lc-ctype", "@"),
+  ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
+  ARGPARSE_s_s (oXauthority, "xauthority", "@"),
+  ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
+  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr", "@"),
+  ARGPARSE_s_s (oProtectToolProgram, "protect-tool-program", "@"),
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
+  ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
+  ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_n (oWithKeyData,"with-key-data", "@"),
+  ARGPARSE_s_n (oWithValidation, "with-validation", "@"),
+  ARGPARSE_s_n (oWithMD5Fingerprint, "with-md5-fingerprint", "@"),
+  ARGPARSE_s_n (oWithEphemeralKeys,  "with-ephemeral-keys", "@"),
+  ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
+  ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
+  ARGPARSE_s_s (oDisableCipherAlgo,  "disable-cipher-algo", "@"),
+  ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
+  ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
+  ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
+  ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
 
-    { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
+  /* Command aliases.  */
+  ARGPARSE_c (aListKeys, "list-key", "@"),  
+  ARGPARSE_c (aListChain, "list-sig", "@"), 
+  ARGPARSE_c (aListChain, "list-sigs", "@"), 
+  ARGPARSE_c (aListChain, "check-sig", "@"), 
+  ARGPARSE_c (aListChain, "check-sigs", "@"), 
+  ARGPARSE_c (aDeleteKey, "delete-key", "@"),
 
-
-    { oTrustDBName, "trustdb-name", 2, "@" },
-    { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, 
-    { oNoArmor, "no-armor",   0, "@"},
-    { oNoArmor, "no-armour",   0, "@"},
-    { oNoDefKeyring, "no-default-keyring", 0, "@" },
-    { oNoGreeting, "no-greeting", 0, "@" },
-    { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
-    { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
-    { oAgentProgram, "agent-program", 2 , "@" },
-    { oDisplay,    "display",     2, "@" },
-    { oTTYname,    "ttyname",     2, "@" },
-    { oTTYtype,    "ttytype",     2, "@" },
-    { oLCctype,    "lc-ctype",    2, "@" },
-    { oLCmessages, "lc-messages", 2, "@" },
-    { oXauthority, "xauthority", 2, "@" },
-    { oDirmngrProgram, "dirmngr-program", 2 , "@" },
-    { oDisableDirmngr, "disable-dirmngr", 0 , "@" },
-    { oProtectToolProgram, "protect-tool-program", 2 , "@" },
-    { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
-
-    { oNoBatch, "no-batch", 0, "@" },
-    { oWithColons, "with-colons", 0, "@"},
-    { oWithKeyData,"with-key-data", 0, "@"},
-    { oWithValidation, "with-validation", 0, "@"},
-    { oWithMD5Fingerprint, "with-md5-fingerprint", 0, "@"},
-    { oWithEphemeralKeys,  "with-ephemeral-keys", 0, "@"},
-    { aListKeys, "list-key", 256, "@" },  /* alias */
-    { aListChain, "list-sig", 256, "@" }, /* alias */
-    { aListChain, "list-sigs",256, "@" }, /* alias */
-    { aListChain, "check-sig",256, "@" }, /* alias */
-    { aListChain, "check-sigs",256, "@"}, /* alias */
-    { aDeleteKey, "delete-key",256,"@"}, /* alias */
-    { oSkipVerify, "skip-verify",0, "@" },
-    { oCompressKeys, "compress-keys",0, "@"},
-    { oCompressSigs, "compress-sigs",0, "@"},
-    { oAlwaysTrust, "always-trust", 0, "@"},
-    { oNoVersion, "no-version", 0, "@"},
-    { oLockOnce, "lock-once", 0, "@" },
-    { oLockMultiple, "lock-multiple", 0, "@" },
-    { oLockNever, "lock-never", 0, "@" },
-    { oLoggerFD, "logger-fd",1, "@" },
-    { oWithFingerprint, "with-fingerprint", 0, "@" },
-    { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
-    { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
-    { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
-    { oListOnly, "list-only", 0, "@"},
-    { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
-    { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
-    { oNoCommonCertsImport, "no-common-certs-import", 0, "@" },
-{0} };
+  ARGPARSE_end ()
+};
 
 
 
+
+/* Global variable to keep an error count. */
 int gpgsm_errors_seen = 0;
 
 /* It is possible that we are currentlu running under setuid permissions */
@@ -1123,7 +1046,6 @@ main ( int argc, char **argv)
           do_not_setup_keys = 1;
           break;
 
-        case aCheckKeys:
         case aImport: 
         case aSendKeys: 
         case aRecvKeys: 
@@ -1287,7 +1209,7 @@ main ( int argc, char **argv)
           opt.with_md5_fingerprint=1; /*fall thru*/
         case oWithFingerprint:
           with_fpr=1; /*fall thru*/
-        case oFingerprint:
+        case aFingerprint:
           opt.fingerprint++;
           break;
 
@@ -1367,9 +1289,6 @@ main ( int argc, char **argv)
           add_to_strlist ( &remusr, pargs.r.ret_str);
           break;
 
-        case oTextmodeShort: /*fixme:opt.textmode = 2;*/ break;
-        case oTextmode: /*fixme:opt.textmode=1;*/  break;
-
         case oUser: /* Store the local users, the first one is the default */
           if (!opt.local_user)
             opt.local_user = xstrdup (pargs.r.ret_str);
@@ -1395,6 +1314,10 @@ main ( int argc, char **argv)
             int algo = gcry_pk_map_name (pargs.r.ret_str);
             gcry_pk_ctl (GCRYCTL_DISABLE_ALGO,&algo, sizeof algo );
           }
+          break;
+
+        case oDigestAlgo:
+          /* Dummy for now. */
           break;
 
         case oExtraDigestAlgo: 
@@ -1427,10 +1350,8 @@ main ( int argc, char **argv)
 	  }
 	  break;
 
-        case aDummy:
-          break;
         default: 
-          pargs.err = configfp? 1:2; 
+          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR; 
           break;
 	}
     }

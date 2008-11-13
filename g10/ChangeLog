@@ -1,3 +1,7 @@
+2008-11-13  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c: Use new ARGPARSE macros and re-indent.
+
 2008-11-11  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (opts): Use new ARGPARSE macros for clarity.

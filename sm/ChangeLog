@@ -1,3 +1,7 @@
+2008-11-13  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: Remove all unused options. Use ARGPARSE macros.
+
 2008-10-28  Werner Koch  <wk@g10code.com>
 
 	* certdump.c (gpgsm_format_keydesc): Use xtryasprintf and xfree.

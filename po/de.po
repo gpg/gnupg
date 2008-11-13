@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2008-11-11 12:05+0100\n"
-"PO-Revision-Date: 2008-11-04 18:44+0100\n"
+"POT-Creation-Date: 2008-11-13 12:28+0100\n"
+"PO-Revision-Date: 2008-11-13 12:50+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -96,7 +96,7 @@ msgstr "Passphrase"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1064 g10/keygen.c:3226
+#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1094 g10/keygen.c:3226
 #: g10/keygen.c:3259 g10/keyring.c:1206 g10/keyring.c:1510 g10/openfile.c:275
 #: g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107 g10/tdbio.c:547
 #: jnlib/dotlock.c:311
@@ -106,12 +106,12 @@ msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:733
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1065 g10/import.c:193 g10/keygen.c:2711
+#: g10/encode.c:504 g10/gpg.c:1095 g10/import.c:193 g10/keygen.c:2711
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
-#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2076
-#: sm/gpgsm.c:2113 sm/gpgsm.c:2151 sm/qualified.c:66
+#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1997
+#: sm/gpgsm.c:2034 sm/gpgsm.c:2072 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
@@ -181,21 +181,19 @@ msgstr "Admin-PIN"
 
 #: agent/divert-scd.c:224
 msgid "Reset Code"
-msgstr ""
+msgstr "Rückstellcode"
 
 #: agent/divert-scd.c:284
-#, fuzzy
 msgid "Repeat this Reset Code"
-msgstr "PIN bitte wiederholen"
+msgstr "Rückstellcode bitte wiederholen"
 
 #: agent/divert-scd.c:285
 msgid "Repeat this PIN"
 msgstr "PIN bitte wiederholen"
 
 #: agent/divert-scd.c:290
-#, fuzzy
 msgid "Reset Code not correctly repeated; try again"
-msgstr "PIN wurde nicht richtig wiederholt; noch einmal versuchen"
+msgstr "Rückstellcode wurde nicht richtig wiederholt; noch einmal versuchen"
 
 #: agent/divert-scd.c:291
 msgid "PIN not correctly repeated; try again"
@@ -233,8 +231,12 @@ msgid ""
 msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
 "at least %u characters long."
-msgstr[0] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
-msgstr[1] "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
+msgstr[0] ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
+"Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
+msgstr[1] ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
+"Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
 
 #: agent/genkey.c:214
 #, c-format
@@ -250,8 +252,7 @@ msgstr[0] ""
 "enthalten."
 msgstr[1] ""
 "WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder Ziffern "
-"enthalten."
+"Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder Ziffern enthalten."
 
 #: agent/genkey.c:237
 #, c-format
@@ -311,14 +312,14 @@ msgstr "Im Server Modus ausführen"
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
 
-#: agent/gpg-agent.c:121 g10/gpg.c:472 g10/gpgv.c:70 kbx/kbxutil.c:88
-#: scd/scdaemon.c:107 sm/gpgsm.c:344 tools/gpg-connect-agent.c:66
+#: agent/gpg-agent.c:121 g10/gpg.c:483 g10/gpgv.c:71 kbx/kbxutil.c:88
+#: scd/scdaemon.c:107 sm/gpgsm.c:281 tools/gpg-connect-agent.c:66
 #: tools/gpgconf.c:77 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "Detaillierte Informationen"
 
-#: agent/gpg-agent.c:122 g10/gpgv.c:71 kbx/kbxutil.c:89 scd/scdaemon.c:108
-#: sm/gpgsm.c:345
+#: agent/gpg-agent.c:122 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:108
+#: sm/gpgsm.c:282
 msgid "be somewhat more quiet"
 msgstr "Reduzierte Informationen"
 
@@ -330,7 +331,7 @@ msgstr "Ausgabe für /bin/sh"
 msgid "csh-style command output"
 msgstr "Ausgabe für /bin/csh"
 
-#: agent/gpg-agent.c:125 tools/symcryptrun.c:167
+#: agent/gpg-agent.c:125 sm/gpgsm.c:311 tools/symcryptrun.c:167
 msgid "|FILE|read options from FILE"
 msgstr "|DATEI|Konfigurationsoptionen aus DATEI lesen"
 
@@ -395,7 +396,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr "|DATEI|Schreibe die Umgebungsvariabeln auf DATEI"
 
 #: agent/gpg-agent.c:294 agent/preset-passphrase.c:94 agent/protect-tool.c:146
-#: scd/scdaemon.c:213 sm/gpgsm.c:571 tools/gpg-connect-agent.c:173
+#: scd/scdaemon.c:213 sm/gpgsm.c:494 tools/gpg-connect-agent.c:173
 #: tools/gpgconf.c:99 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
@@ -412,30 +413,30 @@ msgstr ""
 "Syntax: gpg-agent [Optionen] [Befehl [Argumente]]\n"
 "Verwaltung von geheimen Schlüsseln für GnuPG\n"
 
-#: agent/gpg-agent.c:334 g10/gpg.c:971 scd/scdaemon.c:253 sm/gpgsm.c:735
+#: agent/gpg-agent.c:334 g10/gpg.c:1001 scd/scdaemon.c:253 sm/gpgsm.c:658
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:532 agent/protect-tool.c:1068 kbx/kbxutil.c:430
-#: scd/scdaemon.c:347 sm/gpgsm.c:973 sm/gpgsm.c:976 tools/symcryptrun.c:997
+#: scd/scdaemon.c:347 sm/gpgsm.c:896 sm/gpgsm.c:899 tools/symcryptrun.c:997
 #: tools/gpg-check-pattern.c:178
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
-#: agent/gpg-agent.c:631 g10/gpg.c:2071 scd/scdaemon.c:428 sm/gpgsm.c:1064
+#: agent/gpg-agent.c:631 g10/gpg.c:2101 scd/scdaemon.c:428 sm/gpgsm.c:987
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
-#: agent/gpg-agent.c:636 agent/gpg-agent.c:1215 g10/gpg.c:2075
-#: scd/scdaemon.c:433 sm/gpgsm.c:1068 tools/symcryptrun.c:930
+#: agent/gpg-agent.c:636 agent/gpg-agent.c:1215 g10/gpg.c:2105
+#: scd/scdaemon.c:433 sm/gpgsm.c:991 tools/symcryptrun.c:930
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Optionendatei '%s': %s\n"
 
-#: agent/gpg-agent.c:644 g10/gpg.c:2082 scd/scdaemon.c:441 sm/gpgsm.c:1075
+#: agent/gpg-agent.c:644 g10/gpg.c:2112 scd/scdaemon.c:441 sm/gpgsm.c:998
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus '%s' gelesen\n"
@@ -1124,14 +1125,12 @@ msgid "can't do this in batch mode\n"
 msgstr "Dies kann im Batchmodus nicht durchgeführt werden.\n"
 
 #: g10/card-util.c:83
-#, fuzzy
 msgid "This command is only available for version 2 cards\n"
-msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
+msgstr "Dieser Befehl ist nur für Karten ab Version 2 möglich.\n"
 
 #: g10/card-util.c:85 scd/app-openpgp.c:1848
-#, fuzzy
 msgid "Reset Code not or not anymore available\n"
-msgstr "Teile des geheimen Schlüssels sind nicht vorhanden\n"
+msgstr "Der Rückstellcode ist nicht vorhanden\n"
 
 #: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1597
@@ -1391,7 +1390,7 @@ msgstr "überprüfe die PIN und liste alle Daten auf"
 
 #: g10/card-util.c:1415
 msgid "unblock the PIN using a Reset Code"
-msgstr ""
+msgstr "die PIN mit dem Rückstellcode wieder freigeben"
 
 #: g10/card-util.c:1537 g10/keyedit.c:1654
 msgid "Command> "
@@ -1417,7 +1416,7 @@ msgstr "Ungültiger Befehl (versuchen Sie's mal mit \"help\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output funktioniert nicht bei diesem Befehl\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:3952 g10/keyring.c:380 g10/keyring.c:667
+#: g10/decrypt.c:166 g10/gpg.c:3984 g10/keyring.c:380 g10/keyring.c:667
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "'%s' kann nicht geöffnet werden\n"
@@ -1736,7 +1735,7 @@ msgid "key %s: secret key without public key - skipped\n"
 msgstr ""
 "Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
 
-#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:246 tools/gpgconf.c:58
+#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:185 tools/gpgconf.c:58
 msgid ""
 "@Commands:\n"
 " "
@@ -1744,35 +1743,35 @@ msgstr ""
 "@Befehle:\n"
 " "
 
-#: g10/gpg.c:372
-msgid "|[file]|make a signature"
-msgstr "|[Datei]|Eine Unterschrift erzeugen"
+#: g10/gpg.c:372 sm/gpgsm.c:187
+msgid "make a signature"
+msgstr "Eine Unterschrift erzeugen"
 
-#: g10/gpg.c:373
-msgid "|[file]|make a clear text signature"
-msgstr "|[Datei]|Eine Klartextunterschrift erzeugen"
+#: g10/gpg.c:373 sm/gpgsm.c:188
+msgid "make a clear text signature"
+msgstr "Eine Klartextunterschrift erzeugen"
 
-#: g10/gpg.c:374 sm/gpgsm.c:250
+#: g10/gpg.c:374 sm/gpgsm.c:189
 msgid "make a detached signature"
 msgstr "Eine abgetrennte Unterschrift erzeugen"
 
-#: g10/gpg.c:375 sm/gpgsm.c:251
+#: g10/gpg.c:375 sm/gpgsm.c:190
 msgid "encrypt data"
 msgstr "Daten verschlüsseln"
 
-#: g10/gpg.c:377 sm/gpgsm.c:252
+#: g10/gpg.c:377 sm/gpgsm.c:191
 msgid "encryption only with symmetric cipher"
 msgstr "Daten symmetrisch verschlüsseln"
 
-#: g10/gpg.c:379 sm/gpgsm.c:253
+#: g10/gpg.c:379 sm/gpgsm.c:192
 msgid "decrypt data (default)"
 msgstr "Daten entschlüsseln (Voreinstellung)"
 
-#: g10/gpg.c:381 sm/gpgsm.c:254
+#: g10/gpg.c:381 sm/gpgsm.c:193
 msgid "verify a signature"
 msgstr "Signatur prüfen"
 
-#: g10/gpg.c:383 sm/gpgsm.c:256
+#: g10/gpg.c:383 sm/gpgsm.c:195
 msgid "list keys"
 msgstr "Liste der Schlüssel"
 
@@ -1784,11 +1783,11 @@ msgstr "Liste der Schlüssel und ihrer Signaturen"
 msgid "list and check key signatures"
 msgstr "Signaturen der Schlüssel auflisten und prüfen"
 
-#: g10/gpg.c:387 sm/gpgsm.c:260
+#: g10/gpg.c:387 sm/gpgsm.c:200
 msgid "list keys and fingerprints"
 msgstr "Liste der Schlüssel und ihrer \"Fingerabdrücke\""
 
-#: g10/gpg.c:388 sm/gpgsm.c:258
+#: g10/gpg.c:388 sm/gpgsm.c:198
 msgid "list secret keys"
 msgstr "Liste der geheimen Schlüssel"
 
@@ -1796,79 +1795,79 @@ msgstr "Liste der geheimen Schlüssel"
 msgid "generate a new key pair"
 msgstr "Ein neues Schlüsselpaar erzeugen"
 
-#: g10/gpg.c:390 sm/gpgsm.c:262
+#: g10/gpg.c:391 sm/gpgsm.c:203
 msgid "remove keys from the public keyring"
 msgstr "Schlüssel aus dem öff. Schlüsselbund entfernen"
 
-#: g10/gpg.c:392
+#: g10/gpg.c:393
 msgid "remove keys from the secret keyring"
 msgstr "Schlüssel aus dem geh. Schlüsselbund entfernen"
 
-#: g10/gpg.c:393
+#: g10/gpg.c:394
 msgid "sign a key"
 msgstr "Schlüssel signieren"
 
-#: g10/gpg.c:394
+#: g10/gpg.c:395
 msgid "sign a key locally"
 msgstr "Schlüssel nur für diesen Rechner signieren"
 
-#: g10/gpg.c:395
+#: g10/gpg.c:396
 msgid "sign or edit a key"
 msgstr "Unterschreiben oder bearbeiten eines Schl."
 
-#: g10/gpg.c:396
+#: g10/gpg.c:397
 msgid "generate a revocation certificate"
 msgstr "Ein Schlüsselwiderruf-Zertifikat erzeugen"
 
-#: g10/gpg.c:398
+#: g10/gpg.c:399
 msgid "export keys"
 msgstr "Schlüssel exportieren"
 
-#: g10/gpg.c:399 sm/gpgsm.c:263
+#: g10/gpg.c:400 sm/gpgsm.c:204
 msgid "export keys to a key server"
 msgstr "Schlüssel zu einem Schlü.server exportieren"
 
-#: g10/gpg.c:400 sm/gpgsm.c:264
+#: g10/gpg.c:401 sm/gpgsm.c:205
 msgid "import keys from a key server"
 msgstr "Schlüssel von einem Schlü.server importieren"
 
-#: g10/gpg.c:402
+#: g10/gpg.c:403
 msgid "search for keys on a key server"
 msgstr "Schlüssel auf einem Schlü.server suchen"
 
-#: g10/gpg.c:404
+#: g10/gpg.c:405
 msgid "update all keys from a keyserver"
 msgstr "alle Schlüssel per Schlü.server aktualisieren"
 
-#: g10/gpg.c:409
+#: g10/gpg.c:410
 msgid "import/merge keys"
 msgstr "Schlüssel importieren/kombinieren"
 
-#: g10/gpg.c:412
+#: g10/gpg.c:413
 msgid "print the card status"
 msgstr "den Karten-Status ausgeben"
 
-#: g10/gpg.c:413
+#: g10/gpg.c:414
 msgid "change data on a card"
 msgstr "Daten auf einer Karte ändern"
 
-#: g10/gpg.c:414
+#: g10/gpg.c:415
 msgid "change a card's PIN"
 msgstr "PIN einer Karte ändern"
 
-#: g10/gpg.c:423
+#: g10/gpg.c:424
 msgid "update the trust database"
 msgstr "Ändern der \"Trust\"-Datenbank"
 
-#: g10/gpg.c:430
-msgid "|algo [files]|print message digests"
-msgstr "|algo [Dateien]|Message-Digests für die Dateien ausgeben"
+#: g10/gpg.c:431
+msgid "print message digests"
+msgstr "Hashwerte für die Dateien ausgeben"
 
-#: g10/gpg.c:433 sm/gpgsm.c:268
+#: g10/gpg.c:434 sm/gpgsm.c:210
 msgid "run in server mode"
 msgstr "Im Server Modus ausführen"
 
-#: g10/gpg.c:435 g10/gpgv.c:68 kbx/kbxutil.c:81 sm/gpgsm.c:283
+#: g10/gpg.c:436 g10/gpgv.c:69 kbx/kbxutil.c:81 sm/gpgsm.c:226
 #: tools/gpg-connect-agent.c:64 tools/gpgconf.c:74 tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -1879,47 +1878,43 @@ msgstr ""
 "Optionen:\n"
 " "
 
-#: g10/gpg.c:437 sm/gpgsm.c:285
+#: g10/gpg.c:438 sm/gpgsm.c:228
 msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII-Hülle versehen"
 
-#: g10/gpg.c:439 sm/gpgsm.c:297
-msgid "|NAME|encrypt for NAME"
-msgstr "|NAME|Verschlüsseln für NAME"
+#: g10/gpg.c:441 sm/gpgsm.c:241
+msgid "|USER-ID|encrypt for USER-ID"
+msgstr "|USER-ID|Verschlüsseln für USER-ID"
 
-#: g10/gpg.c:450 sm/gpgsm.c:335
-msgid "use this user-id to sign or decrypt"
-msgstr "Mit dieser User-ID signieren"
+#: g10/gpg.c:454 sm/gpgsm.c:278
+msgid "|USER-ID|use USER-ID to sign or decrypt"
+msgstr "|USER-ID|Mit USER-ID signieren bzw. entschlüsseln"
 
-#: g10/gpg.c:451 sm/gpgsm.c:338
-msgid "|N|set compress level N (0 disables)"
-msgstr "Kompressionsstufe auf N setzen (0=keine)"
+#: g10/gpg.c:457
+msgid "|N|set compress level to N (0 disables)"
+msgstr "|N|Kompressionsstufe auf N setzen (0=keine)"
 
-#: g10/gpg.c:456 sm/gpgsm.c:340
+#: g10/gpg.c:463
 msgid "use canonical text mode"
 msgstr "Textmodus benutzen"
 
-#: g10/gpg.c:470 sm/gpgsm.c:343
+#: g10/gpg.c:480 sm/gpgsm.c:280
 msgid "|FILE|write output to FILE"
 msgstr "|DATEI|Ausgabe auf DATEI schreiben"
 
-#: g10/gpg.c:483 kbx/kbxutil.c:90 sm/gpgsm.c:354 tools/gpgconf.c:79
+#: g10/gpg.c:496 kbx/kbxutil.c:90 sm/gpgsm.c:291 tools/gpgconf.c:79
 msgid "do not make any changes"
 msgstr "Keine wirklichen Änderungen durchführen"
 
-#: g10/gpg.c:484
+#: g10/gpg.c:497
 msgid "prompt before overwriting"
 msgstr "vor Überschreiben nachfragen"
 
-#: g10/gpg.c:527
+#: g10/gpg.c:549
 msgid "use strict OpenPGP behavior"
 msgstr "OpenPGP-Verhalten strikt beachten"
 
-#: g10/gpg.c:528
-msgid "generate PGP 2.x compatible messages"
-msgstr "PGP 2.x-kompatibele Botschaften erzeugen"
-
-#: g10/gpg.c:557 sm/gpgsm.c:403
+#: g10/gpg.c:580 sm/gpgsm.c:335
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1928,7 +1923,7 @@ msgstr ""
 "(Auf der \"man\"-Seite ist eine vollständige Liste aller Befehle und "
 "Optionen)\n"
 
-#: g10/gpg.c:560 sm/gpgsm.c:406
+#: g10/gpg.c:583 sm/gpgsm.c:338
 msgid ""
 "@\n"
 "Examples:\n"
@@ -1948,17 +1943,17 @@ msgstr ""
 " --list-keys [Namen]        Schlüssel anzeigen\n"
 " --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\n"
 
-#: g10/gpg.c:760 g10/gpgv.c:95
+#: g10/gpg.c:790 g10/gpgv.c:100
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Berichte über Programmfehler bitte in englisch an <gnupg-bugs@gnu.org>.\n"
 "Sinn- oder Schreibfehler in den deutschen Texten bitte an <de@li.org>.\n"
 
-#: g10/gpg.c:777
+#: g10/gpg.c:807
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
 
-#: g10/gpg.c:780
+#: g10/gpg.c:810
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -1968,7 +1963,7 @@ msgstr ""
 "Signieren, prüfen, verschlüsseln, entschlüsseln.\n"
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 
-#: g10/gpg.c:791 sm/gpgsm.c:584
+#: g10/gpg.c:821 sm/gpgsm.c:507
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -1976,77 +1971,77 @@ msgstr ""
 "\n"
 "Unterstützte Verfahren:\n"
 
-#: g10/gpg.c:794
+#: g10/gpg.c:824
 msgid "Pubkey: "
 msgstr "Öff. Schlüssel: "
 
-#: g10/gpg.c:801 g10/keyedit.c:2343
+#: g10/gpg.c:831 g10/keyedit.c:2343
 msgid "Cipher: "
 msgstr "Verschlü.: "
 
-#: g10/gpg.c:808
+#: g10/gpg.c:838
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/gpg.c:815 g10/keyedit.c:2388
+#: g10/gpg.c:845 g10/keyedit.c:2388
 msgid "Compression: "
 msgstr "Komprimierung: "
 
-#: g10/gpg.c:822 sm/gpgsm.c:604
+#: g10/gpg.c:852 sm/gpgsm.c:527
 msgid "Used libraries:"
 msgstr "Verwendete Bibliotheken:"
 
-#: g10/gpg.c:930
+#: g10/gpg.c:960
 msgid "usage: gpg [options] "
 msgstr "Aufruf: gpg [Optionen] "
 
-#: g10/gpg.c:1100 sm/gpgsm.c:771
+#: g10/gpg.c:1130 sm/gpgsm.c:694
 msgid "conflicting commands\n"
 msgstr "Widersprüchliche Befehle\n"
 
-#: g10/gpg.c:1118
+#: g10/gpg.c:1148
 #, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "Kein '='-Zeichen in der Gruppendefinition gefunden `%s'\n"
 
-#: g10/gpg.c:1315
+#: g10/gpg.c:1345
 #, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "WARNUNG: Unsicheres Besitzverhältnis des Home-Verzeichnis `%s'\n"
 
-#: g10/gpg.c:1318
+#: g10/gpg.c:1348
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "WARNUNG: Unsicheres Besitzverhältnis der Konfigurationsdatei `%s'\n"
 
-#: g10/gpg.c:1321
+#: g10/gpg.c:1351
 #, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "WARNUNG: Unsicheres Besitzverhältnis auf die Erweiterung `%s'\n"
 
-#: g10/gpg.c:1327
+#: g10/gpg.c:1357
 #, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte des Home-Verzeichnis `%s'\n"
 
-#: g10/gpg.c:1330
+#: g10/gpg.c:1360
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte der Konfigurationsdatei `%s'\n"
 
-#: g10/gpg.c:1333
+#: g10/gpg.c:1363
 #, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte auf die Erweiterung `%s'\n"
 
-#: g10/gpg.c:1339
+#: g10/gpg.c:1369
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr ""
 "WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses für Home-"
 "Verzeichnis `%s'\n"
 
-#: g10/gpg.c:1342
+#: g10/gpg.c:1372
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
@@ -2054,20 +2049,20 @@ msgstr ""
 "WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses der "
 "Konfigurationsdatei `%s'\n"
 
-#: g10/gpg.c:1345
+#: g10/gpg.c:1375
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr ""
 "WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses `%s'\n"
 
-#: g10/gpg.c:1351
+#: g10/gpg.c:1381
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses des Home-"
 "Verzeichnisses `%s'\n"
 
-#: g10/gpg.c:1354
+#: g10/gpg.c:1384
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
@@ -2075,495 +2070,495 @@ msgstr ""
 "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses der "
 "Konfigurationsdatei `%s'\n"
 
-#: g10/gpg.c:1357
+#: g10/gpg.c:1387
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr ""
 "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses auf "
 "Erweiterung `%s'\n"
 
-#: g10/gpg.c:1536
+#: g10/gpg.c:1566
 #, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "Unbekanntes Konfigurationselement `%s'\n"
 
-#: g10/gpg.c:1636
+#: g10/gpg.c:1666
 msgid "display photo IDs during key listings"
 msgstr "Anzeigen der Foto-ID in den Schlüssellisten"
 
-#: g10/gpg.c:1638
+#: g10/gpg.c:1668
 msgid "show policy URLs during signature listings"
 msgstr "Zeige Richtlinien-URL während der Unterschriftenlisten"
 
-#: g10/gpg.c:1640
+#: g10/gpg.c:1670
 msgid "show all notations during signature listings"
 msgstr "Alle Notationen mit den Signaturen anlisten"
 
-#: g10/gpg.c:1642
+#: g10/gpg.c:1672
 msgid "show IETF standard notations during signature listings"
 msgstr "Zeige IETF-Standard"
 
-#: g10/gpg.c:1646
+#: g10/gpg.c:1676
 msgid "show user-supplied notations during signature listings"
 msgstr "Zeige anwenderseitige Notationen in den Unterschriftenlisten"
 
-#: g10/gpg.c:1648
+#: g10/gpg.c:1678
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "Der bevorzugten Schlüsselserver mit den Signaturen anlisten"
 
-#: g10/gpg.c:1650
+#: g10/gpg.c:1680
 msgid "show user ID validity during key listings"
 msgstr "Zeige Gültigkeit der User-ID in den Schlüssellisten"
 
-#: g10/gpg.c:1652
+#: g10/gpg.c:1682
 msgid "show revoked and expired user IDs in key listings"
 msgstr "Zeige widerrufene und verfallene User-ID in den Schlüssellisten"
 
-#: g10/gpg.c:1654
+#: g10/gpg.c:1684
 msgid "show revoked and expired subkeys in key listings"
 msgstr "Zeige widerrufene und verfallene Unterschlüssel in den Schlüssellisten"
 
-#: g10/gpg.c:1656
+#: g10/gpg.c:1686
 msgid "show the keyring name in key listings"
 msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
 
-#: g10/gpg.c:1658
+#: g10/gpg.c:1688
 msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
-#: g10/gpg.c:1819
+#: g10/gpg.c:1849
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
 
-#: g10/gpg.c:1910
+#: g10/gpg.c:1940
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
 
-#: g10/gpg.c:2294 g10/gpg.c:2978 g10/gpg.c:2990
+#: g10/gpg.c:2324 g10/gpg.c:3010 g10/gpg.c:3022
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 
-#: g10/gpg.c:2475 g10/gpg.c:2487
+#: g10/gpg.c:2505 g10/gpg.c:2517
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' ist kein gültiges Unterschriftablaufdatum\n"
 
-#: g10/gpg.c:2569
+#: g10/gpg.c:2599
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' ist kein gültiger Zeichensatz\n"
 
-#: g10/gpg.c:2592 g10/gpg.c:2787 g10/keyedit.c:4107
+#: g10/gpg.c:2622 g10/gpg.c:2817 g10/keyedit.c:4107
 msgid "could not parse keyserver URL\n"
 msgstr "Schlüsselserver-URL konnte nicht analysiert werden\n"
 
-#: g10/gpg.c:2604
+#: g10/gpg.c:2634
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: ungültige Schlüsselserver-Option\n"
 
-#: g10/gpg.c:2607
+#: g10/gpg.c:2637
 msgid "invalid keyserver options\n"
 msgstr "Ungültige Schlüsselserver-Option\n"
 
-#: g10/gpg.c:2614
+#: g10/gpg.c:2644
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: ungültige Import-Option\n"
 
-#: g10/gpg.c:2617
+#: g10/gpg.c:2647
 msgid "invalid import options\n"
 msgstr "Ungültige Import-Option\n"
 
-#: g10/gpg.c:2624
+#: g10/gpg.c:2654
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ungültige Export-Option.\n"
 
-#: g10/gpg.c:2627
+#: g10/gpg.c:2657
 msgid "invalid export options\n"
 msgstr "Ungültige Export-Option\n"
 
-#: g10/gpg.c:2634
+#: g10/gpg.c:2664
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: ungültige Listen-Option.\n"
 
-#: g10/gpg.c:2637
+#: g10/gpg.c:2667
 msgid "invalid list options\n"
 msgstr "Ungültige Listen-Option\n"
 
-#: g10/gpg.c:2645
+#: g10/gpg.c:2675
 msgid "display photo IDs during signature verification"
 msgstr "Zeige die Foto-ID während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2647
+#: g10/gpg.c:2677
 msgid "show policy URLs during signature verification"
 msgstr "Zeige Richtlinien-URLs während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2649
+#: g10/gpg.c:2679
 msgid "show all notations during signature verification"
 msgstr "Alle Notationen wahrend der Signaturprüfung anzeigen"
 
-#: g10/gpg.c:2651
+#: g10/gpg.c:2681
 msgid "show IETF standard notations during signature verification"
 msgstr "Zeige IETF-Standard-Notationen während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2655
+#: g10/gpg.c:2685
 msgid "show user-supplied notations during signature verification"
 msgstr "Zeie anwenderseitige Notationen während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2657
+#: g10/gpg.c:2687
 msgid "show preferred keyserver URLs during signature verification"
 msgstr ""
 "Die URL für den bevorzugten Schlüsselserver während der "
 "Unterschriftenprüfung anzeigen"
 
-#: g10/gpg.c:2659
+#: g10/gpg.c:2689
 msgid "show user ID validity during signature verification"
 msgstr "Die Gültigkeit der User-ID während der Unterschriftenprüfung anzeigen"
 
-#: g10/gpg.c:2661
+#: g10/gpg.c:2691
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 "Zeige widerrufene und verfallene User-IDs während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2663
+#: g10/gpg.c:2693
 msgid "show only the primary user ID in signature verification"
 msgstr "Zeige nur die Hauptuser-ID während der Unterschriftenprüfung"
 
-#: g10/gpg.c:2665
+#: g10/gpg.c:2695
 msgid "validate signatures with PKA data"
 msgstr "Prüfe Unterschriftengültigkeit mittels PKA-Daten"
 
-#: g10/gpg.c:2667
+#: g10/gpg.c:2697
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr "werte das Vertrauen zu Unterschriften durch gültige PKA-Daten auf"
 
-#: g10/gpg.c:2674
+#: g10/gpg.c:2704
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: ungültige Überprüfuns-Option.\n"
 
-#: g10/gpg.c:2677
+#: g10/gpg.c:2707
 msgid "invalid verify options\n"
 msgstr "Ungültige Überprüfungs-Option\n"
 
-#: g10/gpg.c:2684
+#: g10/gpg.c:2714
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "Der Ausführungspfad konnte nicht auf %s gesetzt werden.\n"
 
-#: g10/gpg.c:2859
+#: g10/gpg.c:2889
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: ungültige \"auto-key-locate\"-Liste\n"
 
-#: g10/gpg.c:2862
+#: g10/gpg.c:2892
 msgid "invalid auto-key-locate list\n"
 msgstr "ungültige \"auto-key-locate\"-Liste\n"
 
-#: g10/gpg.c:2967 sm/gpgsm.c:1484
+#: g10/gpg.c:2999 sm/gpgsm.c:1405
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
-#: g10/gpg.c:2971
+#: g10/gpg.c:3003
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "WARNUNG: %s ersetzt %s\n"
 
-#: g10/gpg.c:2980
+#: g10/gpg.c:3012
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s kann nicht zusammen mit %s verwendet werden!\n"
 
-#: g10/gpg.c:2983
+#: g10/gpg.c:3015
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s zusammen mit %s ist nicht sinnvoll!\n"
 
-#: g10/gpg.c:2998
+#: g10/gpg.c:3030
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "Startet nicht mit unsicherem Speicher, wegen Option %s\n"
 
-#: g10/gpg.c:3012
+#: g10/gpg.c:3044
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "Im --pgp2-Modus können Sie nur abgetrennte oder Klartextunterschriften "
 "machen\n"
 
-#: g10/gpg.c:3018
+#: g10/gpg.c:3050
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "Im --pgp2-Modus können Sie nicht gleichzeitig unterschreiben und "
 "verschlüsseln\n"
 
-#: g10/gpg.c:3024
+#: g10/gpg.c:3056
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr ""
 "Im --pgp2-Modus müssen Sie Dateien benutzen und können keine Pipes "
 "verwenden.\n"
 
-#: g10/gpg.c:3037
+#: g10/gpg.c:3069
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "Verschlüssen einer Botschaft benötigt im --pgp2-Modus die IDEA-"
 "Verschlüsselung\n"
 
-#: g10/gpg.c:3103 g10/gpg.c:3127 sm/gpgsm.c:1556
+#: g10/gpg.c:3135 g10/gpg.c:3159 sm/gpgsm.c:1477
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-#: g10/gpg.c:3109 g10/gpg.c:3133 sm/gpgsm.c:1564 sm/gpgsm.c:1570
+#: g10/gpg.c:3141 g10/gpg.c:3165 sm/gpgsm.c:1485 sm/gpgsm.c:1491
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
-#: g10/gpg.c:3115
+#: g10/gpg.c:3147
 msgid "selected compression algorithm is invalid\n"
 msgstr "Das ausgewählte Komprimierungsverfahren ist ungültig\n"
 
-#: g10/gpg.c:3121
+#: g10/gpg.c:3153
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
-#: g10/gpg.c:3136
+#: g10/gpg.c:3168
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed müssen größer als 0 sein\n"
 
-#: g10/gpg.c:3138
+#: g10/gpg.c:3170
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed müssen größer als 1 sein\n"
 
-#: g10/gpg.c:3140
+#: g10/gpg.c:3172
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth muß im Bereich 1 bis 255 liegen\n"
 
-#: g10/gpg.c:3142
+#: g10/gpg.c:3174
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "ungültiger \"default-cert-level\"; Wert muß 0, 1, 2 oder 3 sein\n"
 
-#: g10/gpg.c:3144
+#: g10/gpg.c:3176
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ungültiger \"min-cert-level\"; Wert muß 0, 1, 2 oder 3 sein\n"
 
-#: g10/gpg.c:3147
+#: g10/gpg.c:3179
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "Hinweis: Vom \"simple S2K\"-Modus (0) ist strikt abzuraten\n"
 
-#: g10/gpg.c:3151
+#: g10/gpg.c:3183
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ungültiger \"simple S2K\"-Modus; Wert muß 0, 1 oder 3 sein\n"
 
-#: g10/gpg.c:3158
+#: g10/gpg.c:3190
 msgid "invalid default preferences\n"
 msgstr "ungültige Standard-Voreinstellungen\n"
 
-#: g10/gpg.c:3167
+#: g10/gpg.c:3199
 msgid "invalid personal cipher preferences\n"
 msgstr "ungültige private Verschlüsselungsvoreinstellungen\n"
 
-#: g10/gpg.c:3171
+#: g10/gpg.c:3203
 msgid "invalid personal digest preferences\n"
 msgstr "ungültige private Hashvoreinstellungen\n"
 
-#: g10/gpg.c:3175
+#: g10/gpg.c:3207
 msgid "invalid personal compress preferences\n"
 msgstr "ungültige private Komprimierungsvoreinstellungen\n"
 
-#: g10/gpg.c:3208
+#: g10/gpg.c:3240
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s arbeitet noch nicht mit %s zusammen\n"
 
-#: g10/gpg.c:3255
+#: g10/gpg.c:3287
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr ""
 "Die Benutzung des Verschlüsselungsverfahren %s ist im %s-Modus nicht "
 "erlaubt.\n"
 
-#: g10/gpg.c:3260
+#: g10/gpg.c:3292
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "Die Benutzung der Hashmethode %s ist im %s-Modus nicht erlaubt.\n"
 
-#: g10/gpg.c:3265
+#: g10/gpg.c:3297
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr ""
 "Die Benutzung des Komprimierverfahren %s ist im %s-Modus nicht erlaubt.\n"
 
-#: g10/gpg.c:3348
+#: g10/gpg.c:3380
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
 
-#: g10/gpg.c:3359
+#: g10/gpg.c:3391
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "WARNUNG: Empfänger (-r) angegeben ohne Verwendung von Public-Key-Verfahren\n"
 
-#: g10/gpg.c:3380
+#: g10/gpg.c:3412
 msgid "--store [filename]"
 msgstr "--store [Dateiname]"
 
-#: g10/gpg.c:3387
+#: g10/gpg.c:3419
 msgid "--symmetric [filename]"
 msgstr "--symmetric [Dateiname]"
 
-#: g10/gpg.c:3389
+#: g10/gpg.c:3421
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "Symmetrische Entschlüsselung von `%s' fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3399
+#: g10/gpg.c:3431
 msgid "--encrypt [filename]"
 msgstr "--encrypt [Dateiname]"
 
-#: g10/gpg.c:3412
+#: g10/gpg.c:3444
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [Dateiname]"
 
-#: g10/gpg.c:3414
+#: g10/gpg.c:3446
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 "--symmetric --encrypt kann nicht zusammen mit --s2k-mode 0 verwendet werden\n"
 
-#: g10/gpg.c:3417
+#: g10/gpg.c:3449
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "Im %s-Modus kann --symmetric --encrypt nicht verwendet werden.\n"
 
-#: g10/gpg.c:3435
+#: g10/gpg.c:3467
 msgid "--sign [filename]"
 msgstr "--sign [Dateiname]"
 
-#: g10/gpg.c:3448
+#: g10/gpg.c:3480
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [Dateiname]"
 
-#: g10/gpg.c:3463
+#: g10/gpg.c:3495
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [Dateiname]"
 
-#: g10/gpg.c:3465
+#: g10/gpg.c:3497
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "--symmetric --sign --encrypt kann nicht zusammen mit --s2k-mode 0 verwendet "
 "werden\n"
 
-#: g10/gpg.c:3468
+#: g10/gpg.c:3500
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
 "Im %s-Modus kann --symmetric --sign --encrypt nicht verwendet werden.\n"
 
-#: g10/gpg.c:3488
+#: g10/gpg.c:3520
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [Dateiname]"
 
-#: g10/gpg.c:3497
+#: g10/gpg.c:3529
 msgid "--clearsign [filename]"
 msgstr "--clearsign [Dateiname]"
 
-#: g10/gpg.c:3522
+#: g10/gpg.c:3554
 msgid "--decrypt [filename]"
 msgstr "--decrypt [Dateiname]"
 
-#: g10/gpg.c:3530
+#: g10/gpg.c:3562
 msgid "--sign-key user-id"
 msgstr "--sign-key User-ID"
 
-#: g10/gpg.c:3534
+#: g10/gpg.c:3566
 msgid "--lsign-key user-id"
 msgstr "--lsign-key User-ID"
 
-#: g10/gpg.c:3555
+#: g10/gpg.c:3587
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key User-ID [Befehle]"
 
-#: g10/gpg.c:3647
+#: g10/gpg.c:3679
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Senden an Schlüsselserver fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3649
+#: g10/gpg.c:3681
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "Empfangen vom Schlüsselserver fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3651
+#: g10/gpg.c:3683
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "Schlüsselexport fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3662
+#: g10/gpg.c:3694
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "Suche auf dem Schlüsselserver fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3672
+#: g10/gpg.c:3704
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "Refresh vom Schlüsselserver fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3723
+#: g10/gpg.c:3755
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "Entfernen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3731
+#: g10/gpg.c:3763
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "Anbringen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 
-#: g10/gpg.c:3821
+#: g10/gpg.c:3853
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "Ungültiges Hashverfahren '%s'\n"
 
-#: g10/gpg.c:3938
+#: g10/gpg.c:3970
 msgid "[filename]"
 msgstr "[Dateiname]"
 
-#: g10/gpg.c:3942
+#: g10/gpg.c:3974
 msgid "Go ahead and type your message ...\n"
 msgstr "Auf geht's - Botschaft eintippen ...\n"
 
-#: g10/gpg.c:4254
+#: g10/gpg.c:4286
 msgid "the given certification policy URL is invalid\n"
 msgstr "Die angegebene Zertifikat-Richtlinien-URL ist ungültig\n"
 
-#: g10/gpg.c:4256
+#: g10/gpg.c:4288
 msgid "the given signature policy URL is invalid\n"
 msgstr "Die angegebene Unterschriften-Richtlinien-URL ist ungültig\n"
 
-#: g10/gpg.c:4289
+#: g10/gpg.c:4321
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "Die angegebene URL des bevorzugten Schlüsselserver ist ungültig\n"
 
-#: g10/gpgv.c:72
-msgid "take the keys from this keyring"
-msgstr "Schlüssel aus diesem Schlüsselbund nehmen"
-
 #: g10/gpgv.c:74
+msgid "|FILE|take the keys from the keyring FILE"
+msgstr "|DATEI|Schlüssel aus der Schlüsselbund DATEI nehmen"
+
+#: g10/gpgv.c:76
 msgid "make timestamp conflicts only a warning"
 msgstr "differierende Zeitangaben sind kein Fehler"
 
-#: g10/gpgv.c:75 sm/gpgsm.c:377
+#: g10/gpgv.c:78 sm/gpgsm.c:325
 msgid "|FD|write status info to this FD"
 msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
 
-#: g10/gpgv.c:99
+#: g10/gpgv.c:103
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
 
-#: g10/gpgv.c:102
+#: g10/gpgv.c:105
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Check signatures against known trusted keys\n"
@@ -6435,70 +6430,68 @@ msgstr "Eingabezeile %u ist zu lang oder es fehlt ein LF\n"
 msgid "can't open fd %d: %s\n"
 msgstr "fd=%d kann nicht geöffnet werden: %s\n"
 
-#: jnlib/argparse.c:177
+#: jnlib/argparse.c:180
 msgid "argument not expected"
 msgstr "Argument nicht erwartet"
 
-#: jnlib/argparse.c:179
+#: jnlib/argparse.c:182
 msgid "read error"
 msgstr "Lesefehler"
 
-#: jnlib/argparse.c:181
+#: jnlib/argparse.c:184
 msgid "keyword too long"
 msgstr "Schlüsselwort ist zu lang"
 
-#: jnlib/argparse.c:183
+#: jnlib/argparse.c:186
 msgid "missing argument"
 msgstr "Fehlendes Argument"
 
-#: jnlib/argparse.c:185
+#: jnlib/argparse.c:188
 msgid "invalid command"
 msgstr "Ungültige Befehl"
 
-#: jnlib/argparse.c:187
+#: jnlib/argparse.c:190
 msgid "invalid alias definition"
 msgstr "Ungültige Alias-Definition"
 
-#: jnlib/argparse.c:189
-#, fuzzy
+#: jnlib/argparse.c:192
 msgid "out of core"
-msgstr "[Fehler - Nicht genügend Speicher]"
+msgstr "Nicht genügend Speicher"
 
-#: jnlib/argparse.c:191
+#: jnlib/argparse.c:194
 msgid "invalid option"
 msgstr "Ungültige Option"
 
-#: jnlib/argparse.c:199
+#: jnlib/argparse.c:202
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "Fehlendes Argument für Option \"%.50s\"\n"
 
-#: jnlib/argparse.c:201
+#: jnlib/argparse.c:204
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
 msgstr "Option \"%.50s\" erwartet kein Argument\n"
 
-#: jnlib/argparse.c:204
+#: jnlib/argparse.c:207
 #, c-format
 msgid "invalid command \"%.50s\"\n"
 msgstr "Ungültiger Befehl \"%.50s\"\n"
 
-#: jnlib/argparse.c:206
+#: jnlib/argparse.c:209
 #, c-format
 msgid "option \"%.50s\" is ambiguous\n"
 msgstr "Option \"%.50s\" ist mehrdeutig\n"
 
-#: jnlib/argparse.c:208
+#: jnlib/argparse.c:211
 #, c-format
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
 
-#: jnlib/argparse.c:210
-#, fuzzy
+#: jnlib/argparse.c:213
 msgid "out of core\n"
-msgstr "[Fehler - Nicht genügend Speicher]"
+msgstr "Nicht genügend Speicher\n"
 
-#: jnlib/argparse.c:212
+#: jnlib/argparse.c:215
 #, c-format
 msgid "invalid option \"%.50s\"\n"
 msgstr "Ungültige Option \"%.50s\"\n"
@@ -6541,20 +6534,20 @@ msgstr "Fehler beim Schreiben von %s: %s\n"
 #: jnlib/dotlock.c:454
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
-msgstr ""
+msgstr "eine übriggebliebene Sperrdatei wird entfernt (erzeugt von %d)\n"
 
 #: jnlib/dotlock.c:460
 msgid " - probably dead - removing lock"
-msgstr ""
+msgstr " - existiert wahrscheinlich nicht mehr - entferne Sperre"
 
 #: jnlib/dotlock.c:470
 #, c-format
 msgid "waiting for lock (held by %d%s) %s...\n"
-msgstr ""
+msgstr "warte auf die Freigabe der Sperre (gehalten von %d%s) %s...\n"
 
 #: jnlib/dotlock.c:471
 msgid "(deadlock?) "
-msgstr ""
+msgstr "(Deadlock?) "
 
 #: jnlib/dotlock.c:494
 #, c-format
@@ -6669,9 +6662,8 @@ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
 
 #: scd/app-openpgp.c:1488
-#, fuzzy
 msgid "||Please enter the PIN"
-msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
+msgstr "||Bitte die PIN eingeben"
 
 #: scd/app-openpgp.c:1499 scd/app-openpgp.c:1664
 #, c-format
@@ -6722,18 +6714,17 @@ msgid "|A|Admin PIN"
 msgstr "|A|Admin-PIN"
 
 #: scd/app-openpgp.c:1853
-#, fuzzy
 msgid "||Please enter the Reset Code for the card"
-msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
+msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
 
 #: scd/app-openpgp.c:1862 scd/app-openpgp.c:1925
-#, fuzzy, c-format
+#, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
-msgstr "PIN für CHV%d ist zu kurz; die Mindestlänge beträgt %d\n"
+msgstr "Der Rückstellcode ist zu kurz; die Mindestlänge beträgt %d\n"
 
 #: scd/app-openpgp.c:1896
 msgid "|RN|New Reset Code"
-msgstr ""
+msgstr "|RN|Neuer Rückstellcode"
 
 #: scd/app-openpgp.c:1897
 msgid "|AN|New Admin PIN"
@@ -6837,7 +6828,7 @@ msgstr "|N|Erstmalige neue PIN"
 msgid "run in multi server mode (foreground)"
 msgstr "Im Multiserver Modus ausführen"
 
-#: scd/scdaemon.c:111 sm/gpgsm.c:366
+#: scd/scdaemon.c:111
 msgid "read options from file"
 msgstr "Konfigurationsoptionen aus Datei lesen"
 
@@ -7405,7 +7396,6 @@ msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "Fertig.  Sie sollten nun diese Anforderung an die CA senden.\n"
 
 #: sm/certreqgen-ui.c:303
-#, fuzzy
 msgid "resource problem: out of core\n"
 msgstr "Resourcenproblem: Nicht genügend Hauptspeicher\n"
 
@@ -7446,177 +7436,135 @@ msgstr "Fehler beim Löschen des Zertifikats \"%s\": %s\n"
 msgid "no valid recipients given\n"
 msgstr "Keine gültigen Empfänger angegeben\n"
 
-#: sm/gpgsm.c:248
-msgid "|[FILE]|make a signature"
-msgstr "|[DATEI]|Erzeuge eine Signatur"
-
-#: sm/gpgsm.c:249
-msgid "|[FILE]|make a clear text signature"
-msgstr "|[DATEI]|Erzeuge eine Klartextsignatur"
-
-#: sm/gpgsm.c:257
+#: sm/gpgsm.c:197
 msgid "list external keys"
 msgstr "Externe Schlüssel anzeigen"
 
-#: sm/gpgsm.c:259
+#: sm/gpgsm.c:199
 msgid "list certificate chain"
 msgstr "Schlüssel mit Zertifikatekette anzeigen"
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:206
 msgid "import certificates"
 msgstr "Zertifikate importieren"
 
-#: sm/gpgsm.c:266
+#: sm/gpgsm.c:207
 msgid "export certificates"
 msgstr "Zertifikate exportieren"
 
-#: sm/gpgsm.c:267
+#: sm/gpgsm.c:209
 msgid "register a smartcard"
 msgstr "Smartcard registrieren"
 
-#: sm/gpgsm.c:269
+#: sm/gpgsm.c:212
 msgid "pass a command to the dirmngr"
 msgstr "Das Kommand an den Dirmngr durchreichen"
 
-#: sm/gpgsm.c:271
+#: sm/gpgsm.c:214
 msgid "invoke gpg-protect-tool"
 msgstr "Rufe das gpg-protect-tool auf"
 
-#: sm/gpgsm.c:272
+#: sm/gpgsm.c:215
 msgid "change a passphrase"
 msgstr "Die Passphrase ändern"
 
-#: sm/gpgsm.c:287
+#: sm/gpgsm.c:230
 msgid "create base-64 encoded output"
 msgstr "Ausgabe im Basis-64 format erzeugen"
 
-#: sm/gpgsm.c:291
+#: sm/gpgsm.c:235
 msgid "assume input is in PEM format"
 msgstr "Eingabedaten sind im PEM Format"
 
-#: sm/gpgsm.c:293
+#: sm/gpgsm.c:237
 msgid "assume input is in base-64 format"
 msgstr "Eingabedaten sind im Basis-64 Format"
 
-#: sm/gpgsm.c:295
+#: sm/gpgsm.c:239
 msgid "assume input is in binary format"
 msgstr "Eingabedaten sind im Binärformat"
 
-#: sm/gpgsm.c:300
+#: sm/gpgsm.c:244
 msgid "use system's dirmngr if available"
 msgstr "Benutze den System Dirmngr falls verfügbar"
 
-#: sm/gpgsm.c:301
+#: sm/gpgsm.c:247
 msgid "never consult a CRL"
 msgstr "Niemals eine CRL konsultieren"
 
-#: sm/gpgsm.c:308
+#: sm/gpgsm.c:257
 msgid "check validity using OCSP"
 msgstr "Die Gültigkeit mittels OCSP prüfen"
 
-#: sm/gpgsm.c:313
+#: sm/gpgsm.c:262
 msgid "|N|number of certificates to include"
 msgstr "|N|Sende N Zertifikate mit"
 
-#: sm/gpgsm.c:316
+#: sm/gpgsm.c:265
 msgid "|FILE|take policy information from FILE"
 msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
 
-#: sm/gpgsm.c:319
+#: sm/gpgsm.c:268
 msgid "do not check certificate policies"
 msgstr "Zertikikatrichtlinien nicht überprüfen"
 
-#: sm/gpgsm.c:323
+#: sm/gpgsm.c:272
 msgid "fetch missing issuer certificates"
 msgstr "Fehlende Zertifikate automatisch holen"
 
-#: sm/gpgsm.c:327
-msgid "|NAME|use NAME as default recipient"
-msgstr "|NAME|NAME als voreingestellten Empfänger benutzen"
-
-#: sm/gpgsm.c:329
-msgid "use the default key as default recipient"
-msgstr ""
-"Den Standardschlüssel als voreingestellten\n"
-"Empfänger benutzen"
-
-#: sm/gpgsm.c:346
+#: sm/gpgsm.c:283
 msgid "don't use the terminal at all"
 msgstr "das Terminal gar nicht benutzen"
 
-#: sm/gpgsm.c:347
+#: sm/gpgsm.c:285
 msgid "|FILE|write a server mode log to FILE"
 msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
 
-#: sm/gpgsm.c:349
+#: sm/gpgsm.c:290
 msgid "|FILE|write an audit log to FILE"
 msgstr "|DATEI|Schreibe ein Audit-Log auf DATEI"
 
-#: sm/gpgsm.c:351
-msgid "force v3 signatures"
-msgstr "v3 Signaturen erzwingen"
-
-#: sm/gpgsm.c:352
-msgid "always use a MDC for encryption"
-msgstr "Beim Verschlüsseln ein Siegel (MDC) verwenden"
-
-#: sm/gpgsm.c:357
+#: sm/gpgsm.c:292
 msgid "batch mode: never ask"
 msgstr "Stapelmodus: Keine Abfragen"
 
-#: sm/gpgsm.c:358
+#: sm/gpgsm.c:293
 msgid "assume yes on most questions"
 msgstr "\"Ja\" als Standardantwort annehmen"
 
-#: sm/gpgsm.c:359
+#: sm/gpgsm.c:294
 msgid "assume no on most questions"
 msgstr "\"Nein\" als Standardantwort annehmen"
 
-#: sm/gpgsm.c:361
-msgid "add this keyring to the list of keyrings"
-msgstr "Als öffentlichen Schlüsselbund mitbenutzen"
+#: sm/gpgsm.c:297
+msgid "|FILE|add keyring to the list of keyrings"
+msgstr "|DATEI|DATEI als öffentlichen Schlüsselbund mitbenutzen"
 
-#: sm/gpgsm.c:362
-msgid "add this secret keyring to the list"
-msgstr "Als geheimen Schlüsselbund mitbenutzen"
+#: sm/gpgsm.c:300
+msgid "|USER-ID|use USER-ID as default secret key"
+msgstr "|USER-ID|USER-ID als voreingestellten Schlüssel benutzen"
 
-#: sm/gpgsm.c:363 tools/gpgconf-comp.c:658 tools/gpgconf-comp.c:726
-msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
-
-#: sm/gpgsm.c:364 tools/gpgconf-comp.c:744
+#: sm/gpgsm.c:310 tools/gpgconf-comp.c:744
 msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|SPEC|Schlüssel bei diesem Server nachschlagen"
 
-#: sm/gpgsm.c:365
-msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAME|Terminalzeichensatz NAME benutzen"
-
-#: sm/gpgsm.c:369
+#: sm/gpgsm.c:315
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|NAME|Die Debugstufe auf NAME setzen"
 
-#: sm/gpgsm.c:384
-msgid "|FILE|load extension module FILE"
-msgstr "|DATEI|Erweiterungsmodul DATEI laden"
-
-#: sm/gpgsm.c:390
+#: sm/gpgsm.c:328
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAME|Verschlüsselungsverfahren NAME benutzen"
 
-#: sm/gpgsm.c:392
+#: sm/gpgsm.c:330
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|Hashverfahren NAME benutzen"
 
-#: sm/gpgsm.c:395
-msgid "|N|use compress algorithm N"
-msgstr "|N|Komprimierverfahren N benutzen"
-
-#: sm/gpgsm.c:574
+#: sm/gpgsm.c:497
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Aufruf: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
 
-#: sm/gpgsm.c:577
+#: sm/gpgsm.c:500
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -7625,58 +7573,58 @@ msgstr ""
 "Syntax: gpgsm [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME protocol\n"
 
-#: sm/gpgsm.c:706
+#: sm/gpgsm.c:629
 msgid "usage: gpgsm [options] "
 msgstr "Aufruf: gpgsm [Optionen] "
 
-#: sm/gpgsm.c:804
+#: sm/gpgsm.c:727
 #, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "Hinweis: Verschlüsselung für `%s' wird nicht möglich sein: %s\n"
 
-#: sm/gpgsm.c:815
+#: sm/gpgsm.c:738
 #, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "Unbekanntes Gültigkeitsmodell '%s'\n"
 
-#: sm/gpgsm.c:866
+#: sm/gpgsm.c:789
 #, c-format
 msgid "%s:%u: no hostname given\n"
 msgstr "%s:%u: Kein Server-Name angegeben\n"
 
-#: sm/gpgsm.c:885
+#: sm/gpgsm.c:808
 #, c-format
 msgid "%s:%u: password given without user\n"
-msgstr ""
+msgstr "%s:%u: Passwort ohne Benutzer\n"
 
-#: sm/gpgsm.c:906
+#: sm/gpgsm.c:829
 #, c-format
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: Zeile wird übersprungen\n"
 
-#: sm/gpgsm.c:1418
+#: sm/gpgsm.c:1341
 msgid "could not parse keyserver\n"
 msgstr "Schlüsselserver-URL konnte nicht analysiert werden\n"
 
-#: sm/gpgsm.c:1501
+#: sm/gpgsm.c:1422
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
-#: sm/gpgsm.c:1603
+#: sm/gpgsm.c:1524
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "Importiere allgemeine Zertifikate: %s\n"
 
-#: sm/gpgsm.c:1641
+#: sm/gpgsm.c:1562
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:1812
+#: sm/gpgsm.c:1733
 msgid "this command has not yet been implemented\n"
 msgstr "Dieser Befehl wurde noch nicht implementiert\n"
 
-#: sm/gpgsm.c:1967
+#: sm/gpgsm.c:1888
 msgid "invalid command (there is no implicit command)\n"
 msgstr "Ungültiger Befehl (Es gibt keinen implizierten Befehl)\n"
 
@@ -7813,14 +7761,14 @@ msgstr ""
 "Signatur erzeugen wird."
 
 #: sm/sign.c:420
-#, fuzzy, c-format
+#, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
-msgstr "Schutzverfahren %d%s wird nicht unterstützt\n"
+msgstr "Hashverfahren %d (%s) wird für Unterzeichner %d nicht unterstützt; %s wird benutzt\n"
 
 #: sm/sign.c:433
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"
-msgstr ""
+msgstr "Benutztes Hashverfahren für Unterzeichner %d: %s (%s)\n"
 
 #: sm/sign.c:483
 #, c-format
@@ -8010,13 +7958,17 @@ msgstr "|N|Lasse die Passphrase nach N Tagen verfallen"
 msgid "do not allow the reuse of old passphrases"
 msgstr "Verbiete die Wiedernutzung alter Passphrases."
 
+#: tools/gpgconf-comp.c:658 tools/gpgconf-comp.c:726
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
+
 #: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:729
 msgid "|NAME|encrypt to user ID NAME as well"
 msgstr "|NAME|Auch an NAME verschlüsseln"
 
 #: tools/gpgconf-comp.c:664
 msgid "|SPEC|set up email aliases"
-msgstr ""
+msgstr "|SPEC|Email Alias festlegen"
 
 #: tools/gpgconf-comp.c:685
 msgid "Configuration for Keyservers"
@@ -8336,6 +8288,41 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "generate PGP 2.x compatible messages"
+#~ msgstr "PGP 2.x-kompatibele Botschaften erzeugen"
+
+#~ msgid "|[FILE]|make a signature"
+#~ msgstr "|[DATEI]|Erzeuge eine Signatur"
+
+#~ msgid "|[FILE]|make a clear text signature"
+#~ msgstr "|[DATEI]|Erzeuge eine Klartextsignatur"
+
+#~ msgid "|NAME|use NAME as default recipient"
+#~ msgstr "|NAME|NAME als voreingestellten Empfänger benutzen"
+
+#~ msgid "use the default key as default recipient"
+#~ msgstr ""
+#~ "Den Standardschlüssel als voreingestellten\n"
+#~ "Empfänger benutzen"
+
+#~ msgid "force v3 signatures"
+#~ msgstr "v3 Signaturen erzwingen"
+
+#~ msgid "always use a MDC for encryption"
+#~ msgstr "Beim Verschlüsseln ein Siegel (MDC) verwenden"
+
+#~ msgid "add this secret keyring to the list"
+#~ msgstr "Als geheimen Schlüsselbund mitbenutzen"
+
+#~ msgid "|NAME|set terminal charset to NAME"
+#~ msgstr "|NAME|Terminalzeichensatz NAME benutzen"
+
+#~ msgid "|FILE|load extension module FILE"
+#~ msgstr "|DATEI|Erweiterungsmodul DATEI laden"
+
+#~ msgid "|N|use compress algorithm N"
+#~ msgstr "|N|Komprimierverfahren N benutzen"
 
 #~ msgid "remove key from the public keyring"
 #~ msgstr "Schlüssel aus dem öffentlichen Schlüsselbund löschen"
