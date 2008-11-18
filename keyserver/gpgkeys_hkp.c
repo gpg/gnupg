@@ -517,7 +517,10 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      printf("gpgkeys_hkp (GnuPG) "VERSION" (uses %s)\n",curl_version());
+      printf ("gpgkeys_hkp (GnuPG) %s\n", VERSION);
+#ifndef curl_is_gnupg_curl_shim
+      printf ("libcurl %s\n", curl_version());
+#endif /*curl_is_gnupg_curl_shim*/
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))

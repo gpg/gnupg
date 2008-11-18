@@ -1,3 +1,9 @@
+2008-11-18  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_curl.c (main): Print curl version according to GNU standards.
+	* gpgkeys_hkp.c (main): Ditto.
+	* curl-shim.h (curl_is_gnupg_curl_shim): New.
+
 2008-11-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.h (curl_version): No need to provide a version for

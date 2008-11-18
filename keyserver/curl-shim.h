@@ -83,6 +83,8 @@ typedef struct
 #define CURL_GLOBAL_DEFAULT 0
 #define CURLVERSION_NOW 0
 
+#define curl_is_gnupg_curl_shim 1
+
 CURLcode curl_global_init(long flags);
 void curl_global_cleanup(void);
 CURL *curl_easy_init(void);
