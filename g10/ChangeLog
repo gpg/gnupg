@@ -1,3 +1,10 @@
+2008-11-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (validate_one_keyblock): Fix the trust signature
+	calculations so that we lower the trust depth of signatures to fit
+	within the current chain, rather than discarding any signature
+	that does not fit within the trust depth.
+
 2008-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, mainproc.c (check_sig_and_print),
