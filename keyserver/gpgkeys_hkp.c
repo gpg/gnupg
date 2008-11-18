@@ -497,9 +497,10 @@ fail_all(struct keylist *keylist,int err)
 static void 
 show_help (FILE *fp)
 {
-  fprintf (fp,"-h\thelp\n");
-  fprintf (fp,"-V\tversion\n");
-  fprintf (fp,"-o\toutput to this file\n");
+  fprintf (fp,"-h, --help\thelp\n");
+  fprintf (fp,"-V\t\tmachine readable version\n");
+  fprintf (fp,"--version\thuman readable version\n");
+  fprintf (fp,"-o\t\toutput to this file\n");
 }
 
 int
@@ -516,7 +517,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs ("gpgkeys_hkp (GnuPG) " VERSION"\n", stdout);
+      printf("gpgkeys_hkp (GnuPG) "VERSION" (uses %s)\n",curl_version());
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))

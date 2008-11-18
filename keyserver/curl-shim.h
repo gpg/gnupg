@@ -91,7 +91,7 @@ CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
 char *curl_easy_escape(CURL *curl,char *str,int len);
 #define curl_free(x) free(x)
-#define curl_version() "GnuPG curl-shim "VERSION
+#define curl_version() "GnuPG curl-shim"
 curl_version_info_data *curl_version_info(int type);
 
 #endif /* !_CURL_SHIM_H_ */

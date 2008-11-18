@@ -1,3 +1,14 @@
+2008-11-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.h (curl_version): No need to provide a version for
+	curl-shim as it always matches the GnuPG version.
+
+	* gpgkeys_curl.c, gpgkeys_hkp.c (main): Show which version of curl
+	we're using as part of --version.
+
+	* gpgkeys_curl.c, gpgkeys_finger.c, gpgkeys_hkp.c,
+	gpgkeys_ldap.c (show_help): Document --version.
+
 2008-04-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main), gpgkeys_hkp.c (main): Make sure all
