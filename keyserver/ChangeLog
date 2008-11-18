@@ -1,3 +1,8 @@
+2008-11-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.h, gpgkeys_curl.c, gpgkeys_hkp.c (main): Always show
+	curl version (even for curl-shim).
+
 2008-11-18  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_curl.c (main): Print curl version according to GNU standards.

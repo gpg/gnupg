@@ -1,5 +1,5 @@
 /* curl-shim.h
- * Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -82,8 +82,6 @@ typedef struct
 #define CURL_ERROR_SIZE 256
 #define CURL_GLOBAL_DEFAULT 0
 #define CURLVERSION_NOW 0
-
-#define curl_is_gnupg_curl_shim 1
 
 CURLcode curl_global_init(long flags);
 void curl_global_cleanup(void);

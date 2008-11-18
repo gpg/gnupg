@@ -518,9 +518,7 @@ main(int argc,char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
       printf ("gpgkeys_hkp (GnuPG) %s\n", VERSION);
-#ifndef curl_is_gnupg_curl_shim
-      printf ("libcurl %s\n", curl_version());
-#endif /*curl_is_gnupg_curl_shim*/
+      printf ("Uses: %s\n", curl_version());
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))
