@@ -1,3 +1,9 @@
+2008-11-18  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (make_libversion): New.
+	(my_strusage): Use new fucntion.
+	(build_lib_list): Remove.
+
 2008-11-13  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: Remove all unused options. Use ARGPARSE macros.

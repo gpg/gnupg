@@ -1,3 +1,11 @@
+2008-11-18  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (build_lib_list): Remove.
+	(make_libversion): New.
+	(my_strusage): Use it.
+	* gpgv.c (make_libversion): New.
+	(my_strusage): Print libgcrypt version.
+
 2008-11-13  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c: Use new ARGPARSE macros and re-indent.

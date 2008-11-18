@@ -1,3 +1,8 @@
+2008-11-18  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (make_libversion): New.
+	(my_strusage): Print libgcrypt and libksba version.
+
 2008-11-03  Werner Koch  <wk@g10code.com>
 
 	* command.c (server_local_s): Add field DISCONNECT_ALLOWED.

@@ -280,11 +280,30 @@ static unsigned long pth_thread_id (void)
    Functions. 
  */
 
+static char *
+make_libversion (const char *libname, const char *(*getfnc)(const char*))
+{
+  const char *s;
+  char *result;
+  
+  if (maybe_setuid)
+    {
+      gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
+      maybe_setuid = 0;
+    }
+  s = getfnc (NULL);
+  result = xmalloc (strlen (libname) + 1 + strlen (s) + 1);
+  strcpy (stpcpy (stpcpy (result, libname), " "), s);
+  return result;
+}
+
 
 static const char *
 my_strusage (int level)
 {
+  static char *ver_gcry;
   const char *p;
+
   switch (level)
     {
     case 11: p = "gpg-agent (GnuPG)";
@@ -293,6 +312,12 @@ my_strusage (int level)
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <" PACKAGE_BUGREPORT ">.\n");
       break;
+    case 20:
+      if (!ver_gcry)
+        ver_gcry = make_libversion ("libgcrypt", gcry_check_version);
+      p = ver_gcry;
+      break;
+
     case 1:
     case 40: p =  _("Usage: gpg-agent [options] (-h for help)");
       break;

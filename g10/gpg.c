@@ -766,7 +766,6 @@ static int maybe_setuid = 1;
 
 static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
-static char *build_lib_list (const char *text);
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_mds( const char *fname, int algo );
@@ -776,11 +775,30 @@ static void add_keyserver_url( const char *string, int which );
 static void emergency_cleanup (void);
 
 
+static char *
+make_libversion (const char *libname, const char *(*getfnc)(const char*))
+{
+  const char *s;
+  char *result;
+  
+  if (maybe_setuid)
+    {
+      gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
+      maybe_setuid = 0;
+    }
+  s = getfnc (NULL);
+  result = xmalloc (strlen (libname) + 1 + strlen (s) + 1);
+  strcpy (stpcpy (stpcpy (result, libname), " "), s);
+  return result;
+}
+
+
 static const char *
 my_strusage( int level )
 {
-  static char *digests, *pubkeys, *ciphers, *zips, *libs;
-    const char *p;
+  static char *digests, *pubkeys, *ciphers, *zips, *ver_gcry;
+  const char *p;
+
     switch( level ) {
       case 11: p = "gpg (GnuPG)";
 	break;
@@ -790,14 +808,20 @@ my_strusage( int level )
 	    _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
 	break;
 
+    case 20:
+      if (!ver_gcry)
+        ver_gcry = make_libversion ("libgcrypt", gcry_check_version);
+      p = ver_gcry;
+      break;
+
 #ifdef IS_DEVELOPMENT_VERSION
-      case 20:
+      case 25:
 	p="NOTE: THIS IS A DEVELOPMENT VERSION!";
 	break;
-      case 21:
+      case 26:
 	p="It is only intended for test purposes and should NOT be";
 	break;
-      case 22:
+      case 27:
 	p="used in a production environment or with production keys!";
 	break;
 #endif
@@ -846,11 +870,6 @@ my_strusage( int level )
                               compress_algo_to_string,
                               check_compress_algo);
 	p = zips;
-	break;
-      case 38:
-	if (!libs)
-          libs = build_lib_list(_("Used libraries:"));
-	p = libs;
 	break;
 
       default:	p = NULL;
@@ -911,46 +930,6 @@ build_list( const char *text, char letter,
     if( p )
 	p = stpcpy(p, "\n" );
     return list;
-}
-
-
-static char *
-build_lib_list (const char *text)
-{
-  struct { const char *name; const char *version; } array[3];
-  int idx;
-  size_t n;
-  char *list, *p;
-
-  if (maybe_setuid)
-    gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
-
-  idx = 0;
-  array[idx].name = "gcrypt";
-  array[idx++].version = gcry_check_version (NULL);
-  array[idx].name = NULL;
-  array[idx++].version = NULL;
-
-  n = strlen (text) + 1;
-  for (idx=0; array[idx].name; idx++)
-    {
-      n += 2 + strlen (array[idx].name);
-      if (array[idx].version)
-        n += 1 + strlen (array[idx].version) + 1;
-    }
-  n++;
-  list = xmalloc (n+1);
-  p = stpcpy (stpcpy (list, text), " ");
-  for (idx=0; array[idx].name; idx++)
-    {
-      if (idx)
-        p = stpcpy (p, ", ");
-      p = stpcpy (p, array[idx].name);
-      if (array[idx].version)
-        p = stpcpy (stpcpy (stpcpy (p, "("), array[idx].version), ")");
-    }
-  strcpy (p, "\n");
-  return list;
 }
 
 

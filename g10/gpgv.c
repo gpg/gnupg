@@ -87,10 +87,24 @@ static ARGPARSE_OPTS opts[] = {
 int g10_errors_seen = 0;
 
 
+static char *
+make_libversion (const char *libname, const char *(*getfnc)(const char*))
+{
+  const char *s;
+  char *result;
+  
+  s = getfnc (NULL);
+  result = xmalloc (strlen (libname) + 1 + strlen (s) + 1);
+  strcpy (stpcpy (stpcpy (result, libname), " "), s);
+  return result;
+}
+
 static const char *
 my_strusage( int level )
 {
+  static char *ver_gcry;
   const char *p;
+
   switch (level)
     {
     case 11: p = "gpgv (GnuPG)";
@@ -105,6 +119,13 @@ my_strusage( int level )
     case 41: p = _("Syntax: gpg [options] [files]\n"
                    "Check signatures against known trusted keys\n");
 	break;
+
+    case 20:
+      if (!ver_gcry)
+        ver_gcry = make_libversion ("libgcrypt", gcry_check_version);
+      p = ver_gcry;
+      break;
+
 
     default: p = NULL;
     }
