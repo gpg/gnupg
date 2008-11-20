@@ -1,3 +1,7 @@
+2008-11-20  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (arg_parse): Fix last change.
+
 2008-11-11  Werner Koch  <wk@g10code.com>
 
 	* argparse.h: Add a bunch of macros and constants.

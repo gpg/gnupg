@@ -585,7 +585,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
   s = *argv;
   arg->internal.last = s;
 
-  if (arg->internal.stopped && (arg->flags & ARGPARSE_FLAG_KEEP)) 
+  if (arg->internal.stopped && (arg->flags & ARGPARSE_FLAG_ALL)) 
     {
       arg->r_opt = ARGPARSE_IS_ARG;  /* Not an option but an argument.  */
       arg->r_type = 2;
@@ -603,7 +603,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
       char *argpos;
       
       arg->internal.inarg = 0;
-      if (!s[2] && !(arg->flags & ARGPARSE_FLAG_MIXED))
+      if (!s[2] && !(arg->flags & ARGPARSE_FLAG_NOSTOP))
         { 
           /* Stop option processing.  */
           arg->internal.stopped = 1;
@@ -786,7 +786,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    argc--; argv++; idx++;
           }
       }
-  else if ( arg->flags & ARGPARSE_FLAG_ALL )
+  else if ( arg->flags & ARGPARSE_FLAG_MIXED )
     {
       arg->r_opt = ARGPARSE_IS_ARG;
       arg->r_type = 2;
