@@ -457,6 +457,14 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
         color = "red";
     }
 
+  if (format && oktext)
+    {
+      if (!strcmp (oktext, "Yes"))
+        oktext = _("Yes");
+      else if (!strcmp (oktext, "No"))
+        oktext = _("No");
+    }
+
   if (ctx->use_html)
     {
       int i;
