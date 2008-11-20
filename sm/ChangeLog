@@ -1,7 +1,7 @@
 2008-11-18  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (make_libversion): New.
-	(my_strusage): Use new fucntion.
+	(my_strusage): Use new function.
 	(build_lib_list): Remove.
 
 2008-11-13  Werner Koch  <wk@g10code.com>

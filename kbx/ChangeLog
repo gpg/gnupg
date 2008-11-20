@@ -1,3 +1,8 @@
+2008-11-20  Werner Koch  <wk@g10code.com>
+
+	* keybox-update.c (create_tmp_file) [USE_ONLY_8DOT3]: Use other
+	suffixes to avoid conflicts with gpg uses filenames.
+
 2008-11-11  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (kbxutil_LDADD): Change order of libs.

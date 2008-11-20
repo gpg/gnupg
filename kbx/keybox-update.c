@@ -75,7 +75,9 @@ create_tmp_file (const char *template,
   /* Here is another Windoze bug?:
    * you cant rename("pubring.kbx.tmp", "pubring.kbx");
    * but	rename("pubring.kbx.tmp", "pubring.aaa");
-   * works.  So we replace .kbx by .bak or .tmp
+   * works.  So we replace ".kbx" by ".kb_" or ".k__".  Note that we
+   * can't use ".bak" and ".tmp", because these suffixes are used by
+   * gpg and would lead to a sharing violation or data corruption.
    */
   if (strlen (template) > 4
       && !strcmp (template+strlen(template)-4, EXTSEP_S "kbx") )
@@ -84,7 +86,7 @@ create_tmp_file (const char *template,
       if (!bakfname)
         return gpg_error_from_syserror ();
       strcpy (bakfname, template);
-      strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
+      strcpy (bakfname+strlen(template)-4, EXTSEP_S "kb_");
       
       tmpfname = xtrymalloc (strlen (template) + 1);
       if (!tmpfname)
@@ -94,14 +96,15 @@ create_tmp_file (const char *template,
           return tmperr;
         }
       strcpy (tmpfname,template);
-      strcpy (tmpfname + strlen (template)-4, EXTSEP_S "tmp");
+      strcpy (tmpfname + strlen (template)-4, EXTSEP_S "k__");
     }
   else 
-    { /* File does not end with kbx; hmmm. */
+    { /* File does not end with kbx, thus we hope we are working on a
+         modern file system and appending a suffix works. */
       bakfname = xtrymalloc ( strlen (template) + 5);
       if (!bakfname)
         return gpg_error_from_syserror ();
-      strcpy (stpcpy (bakfname, template), EXTSEP_S "bak");
+      strcpy (stpcpy (bakfname, template), EXTSEP_S "kb_");
       
       tmpfname = xtrymalloc ( strlen (template) + 5);
       if (!tmpfname)
@@ -110,7 +113,7 @@ create_tmp_file (const char *template,
           xfree (bakfname);
           return tmperr;
         }
-      strcpy (stpcpy (tmpfname, template), EXTSEP_S "tmp");
+      strcpy (stpcpy (tmpfname, template), EXTSEP_S "k__");
     }
 # else /* Posix file names */
   bakfname = xtrymalloc (strlen (template) + 2);

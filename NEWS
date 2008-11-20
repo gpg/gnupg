@@ -38,6 +38,9 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * [w32] The gnupg2.nls directory is not anymore used.  The standard
    locale directory is now used.  
 
+ * [w32] Fixed a race condition bteween gpg and gpgsm in the use of
+   temporary file names.
+
  * The gpg-preset-passphrase mechanism works again.
 
  * Admin PINs are cached again (bug in 2.0.9).
