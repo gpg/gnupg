@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gnupg-2.0.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2008-12-03 09:59+0100\n"
-"PO-Revision-Date: 2008-12-04 18:33+0100\n"
+"PO-Revision-Date: 2008-12-05 16:53+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -6950,11 +6950,11 @@ msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
 
 #: sm/certchain.c:338 sm/certchain.c:367
 msgid "note: non-critical certificate policy not allowed"
-msgstr "Notiz: Die unkritische Zertifikatrichtlinie ist nicht erlaubt"
+msgstr "Notiz: Die unkritische Zertifikatsrichtlinie ist nicht erlaubt"
 
 #: sm/certchain.c:342 sm/certchain.c:371
 msgid "certificate policy not allowed"
-msgstr "Die Zertifikatrichtlinie ist nicht erlaubt"
+msgstr "Die Zertifikatsrichtlinie ist nicht erlaubt"
 
 #: sm/certchain.c:483
 msgid "looking up issuer at external location\n"
@@ -7509,7 +7509,7 @@ msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
 
 #: sm/gpgsm.c:268
 msgid "do not check certificate policies"
-msgstr "Zertikikatrichtlinien nicht überprüfen"
+msgstr "Zertifikatsrichtlinien nicht überprüfen"
 
 #: sm/gpgsm.c:272
 msgid "fetch missing issuer certificates"
