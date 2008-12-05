@@ -34,6 +34,10 @@
 #include "../common/sysutils.h"
 #include "../common/membuf.h"
 #include "../common/ttyio.h"
+#ifdef HAVE_W32_SYSTEM
+#  include "../common/exechelp.h"
+#endif
+
 
 #define CONTROL_D ('D' - 'A' + 1)
 #define octdigitp(p) (*(p) >= '0' && *(p) <= '7')
@@ -59,25 +63,28 @@ enum cmd_and_opt_values
 
 
 /* The list of commands and options. */
-static ARGPARSE_OPTS opts[] =
-  {
-    { 301, NULL, 0, N_("@\nOptions:\n ") },
+static ARGPARSE_OPTS opts[] = {
+  ARGPARSE_group (301, N_("@\nOptions:\n ")),
     
-    { oVerbose, "verbose",  0, N_("verbose") },
-    { oQuiet, "quiet",      0, N_("quiet") },
-    { oHex,   "hex",        0, N_("print data out hex encoded") },
-    { oDecode,"decode",     0, N_("decode received data lines") },
-    { oRawSocket, "raw-socket", 2, N_("|NAME|connect to Assuan socket NAME")},
-    { oExec, "exec", 0, N_("run the Assuan server given on the command line")},
-    { oNoExtConnect, "no-ext-connect",
-                            0, N_("do not use extended connect mode")},
-    { oRun,  "run", 2,         N_("|FILE|run commands from FILE on startup")},
-    { oSubst, "subst", 0,      N_("run /subst on startup")}, 
-    /* hidden options */
-    { oNoVerbose, "no-verbose",  0, "@"},
-    { oHomedir, "homedir", 2, "@" },   
-    {0}
-  };
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet, "quiet",     N_("quiet")),
+  ARGPARSE_s_n (oHex,   "hex",       N_("print data out hex encoded")),
+  ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
+  ARGPARSE_s_s (oRawSocket, "raw-socket", 
+                N_("|NAME|connect to Assuan socket NAME")),
+  ARGPARSE_s_n (oExec, "exec", 
+                N_("run the Assuan server given on the command line")),
+  ARGPARSE_s_n (oNoExtConnect, "no-ext-connect",
+                N_("do not use extended connect mode")),
+  ARGPARSE_s_s (oRun,  "run", 
+                N_("|FILE|run commands from FILE on startup")),
+  ARGPARSE_s_n (oSubst, "subst",     N_("run /subst on startup")), 
+
+  ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
+  ARGPARSE_s_s (oHomedir, "homedir", "@" ),   
+
+  ARGPARSE_end ()
+};
 
 
 /* We keep all global options in the structure OPT.  */
@@ -2081,6 +2088,38 @@ start_agent (void)
       /* Check whether we can connect at the standard socket.  */
       sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
       rc = assuan_socket_connect (&ctx, sockname, 0);
+
+#ifdef HAVE_W32_SYSTEM
+      /* If we failed to connect under Windows, we fire up the agent.  */
+      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
+        {
+          const char *agent_program;
+          const char *argv[3];
+          int save_rc = rc;
+          
+          if (opt.verbose)
+            log_info (_("no running gpg-agent - starting one\n"));
+          agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
+          
+          argv[0] = "--daemon";
+          argv[1] = "--use-standard-socket"; 
+          argv[2] = NULL;  
+
+          rc = gnupg_spawn_process_detached (agent_program, argv, NULL);
+          if (rc)
+            log_debug ("failed to start agent `%s': %s\n",
+                       agent_program, gpg_strerror (rc));
+          else
+            {
+              /* Give the agent some time to prepare itself. */
+              gnupg_sleep (3);
+              /* Now try again to connect the agent.  */
+              rc = assuan_socket_connect (&ctx, sockname, 0);
+            }
+          if (rc)
+            rc = save_rc;
+        }
+#endif /*HAVE_W32_SYSTEM*/
       xfree (sockname);
     }
   else

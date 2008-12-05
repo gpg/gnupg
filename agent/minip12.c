@@ -498,7 +498,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                int iter, const char *pw, int cipher_algo,
                int (*check_fnc) (const void *, size_t))
 {
-  static const char const *charsets[] = {
+  static const char * const charsets[] = {
     "",   /* No conversion - use the UTF-8 passphrase direct.  */
     "ISO-8859-1",
     "ISO-8859-15",

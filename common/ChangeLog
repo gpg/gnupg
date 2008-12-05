@@ -1,3 +1,8 @@
+2008-12-05  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_spawn_process, gnupg_spawn_process_fd) 
+	(gnupg_spawn_process_detached) [W32]: Remove debug output.
+
 2008-11-20  Werner Koch  <wk@g10code.com>
 
 	* audit.c (writeout_li): Translate OKTEXT.

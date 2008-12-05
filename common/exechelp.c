@@ -396,7 +396,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
               | ((flags & 128)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED); 
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
@@ -421,10 +421,10 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   /* Close the other end of the pipe.  */
   CloseHandle (fd_to_handle (rp[1]));
   
-  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
-             " dwProcessID=%d dwThreadId=%d\n",
-             pi.hProcess, pi.hThread,
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
+/*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
+/*              " dwProcessID=%d dwThreadId=%d\n", */
+/*              pi.hProcess, pi.hThread, */
+/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
@@ -558,7 +558,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd);
   si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd);
 
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
@@ -585,10 +585,10 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   if (err)
     return err;
 
-  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
-             " dwProcessID=%d dwThreadId=%d\n",
-             pi.hProcess, pi.hThread,
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
+/*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
+/*              " dwProcessID=%d dwThreadId=%d\n", */
+/*              pi.hProcess, pi.hThread, */
+/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
@@ -796,8 +796,8 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_NEW_PROCESS_GROUP
               | DETACHED_PROCESS); 
-  log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n",
-             pgmname, cmdline);
+/*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
+/*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
@@ -817,10 +817,10 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   xfree (cmdline);
   cmdline = NULL;
 
-  log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p"
-             " dwProcessID=%d dwThreadId=%d\n",
-             pi.hProcess, pi.hThread,
-             (int) pi.dwProcessId, (int) pi.dwThreadId);
+/*   log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p" */
+/*              " dwProcessID=%d dwThreadId=%d\n", */
+/*              pi.hProcess, pi.hThread, */
+/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   CloseHandle (pi.hThread); 
 

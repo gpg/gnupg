@@ -76,7 +76,7 @@ struct sinfo_s {
 typedef struct sinfo_s *SINFO;  
 
 struct sinfo_cb_parm_s {
-  int error;;
+  int error;
   SINFO info;
 };
 

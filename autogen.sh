@@ -209,5 +209,5 @@ echo "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 
 echo "You may now run: 
-  ./configure --sysconfdir=/etc --enable-maintainer-mode && make
+  ./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto && make
 "

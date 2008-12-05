@@ -2095,14 +2095,18 @@ update_reader_status_file (int set_card_removed_flag)
         }
       
       /* Check whether a disconnect is pending.  */
-      for (sl=session_list; sl; sl = sl->next_session)
-        if (!sl->disconnect_allowed)
-          break; 
-      if (session_list && !sl)
+      if (opt.card_timeout)
         {
-          /* At least one connection and all allow a disconnect.  */
-          log_debug ("disconnecting card in slot %d\n", ss->slot);
-          apdu_disconnect (ss->slot);
+          for (sl=session_list; sl; sl = sl->next_session)
+            if (!sl->disconnect_allowed)
+              break; 
+          if (session_list && !sl)
+            {
+              /* FIXME: Use a real timeout.  */
+              /* At least one connection and all allow a disconnect.  */
+              log_debug ("disconnecting card in slot %d\n", ss->slot);
+              apdu_disconnect (ss->slot);
+            }
         }
       
     }

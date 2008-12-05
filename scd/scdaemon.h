@@ -61,6 +61,7 @@ struct
                           cards. */
   strlist_t disabled_applications;  /* Card applications we do not
                                        want to use. */
+  unsigned long card_timeout; /* Disconnect after N seconds of inactivity.  */
 } opt;
 
 

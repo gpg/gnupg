@@ -167,13 +167,14 @@ struct app_local_s {
   /* Keep track of extended card capabilities.  */
   struct 
   {
-    unsigned int is_v2:1;  /* This is a v2.0 compatible card.  */
+    unsigned int is_v2:1;              /* This is a v2.0 compatible card.  */
     unsigned int get_challenge:1;
     unsigned int key_import:1;
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
-    unsigned int sm_supported:1;  /* Secure Messaging is supported.  */
-    unsigned int sm_aes128:1;     /* Use AES-128 for SM.  */
+    unsigned int algo_attr_change:1;   /* Algorithm attributes changeable.  */
+    unsigned int sm_supported:1;       /* Secure Messaging is supported.  */
+    unsigned int sm_aes128:1;          /* Use AES-128 for SM.  */
     unsigned int max_certlen_3:16;
     unsigned int max_get_challenge:16; /* Maximum size for get_challenge.  */
     unsigned int max_cmd_data:16;      /* Maximum data size for a command.  */
@@ -3154,6 +3155,7 @@ show_caps (struct app_local_s *s)
   log_info ("Key-Import .....: %s\n", s->extcap.key_import? "yes":"no");
   log_info ("Change-Force-PW1: %s\n", s->extcap.change_force_chv? "yes":"no");
   log_info ("Private-DOs ....: %s\n", s->extcap.private_dos? "yes":"no");
+  log_info ("Algo-Attr-Change: %s\n", s->extcap.algo_attr_change? "yes":"no");
   log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
   if (s->extcap.sm_supported)
     log_printf (" (%s)", s->extcap.sm_aes128? "AES-128":"3DES");
@@ -3376,6 +3378,7 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.key_import       = !!(*buffer & 0x20);
           app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
           app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
+          app->app_local->extcap.algo_attr_change = !!(*buffer & 0x04);
         }
       if (buflen >= 10)
         {

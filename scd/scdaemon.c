@@ -80,6 +80,7 @@ enum cmd_and_opt_values
   oDaemon,
   oBatch,
   oReaderPort,
+  oCardTimeout,
   octapiDriver,
   opcscDriver,
   oDisableCCID,
@@ -94,46 +95,53 @@ enum cmd_and_opt_values
 
 
 static ARGPARSE_OPTS opts[] = {
-
-  { aGPGConfList, "gpgconf-list", 256, "@" },
-  { aGPGConfTest, "gpgconf-test", 256, "@" },
+  ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
+  ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
   
-  { 301, NULL, 0, N_("@Options:\n ") },
+  ARGPARSE_group (301, N_("@Options:\n ")),
 
-  { oServer,   "server",     0, N_("run in server mode (foreground)") },
-  { oMultiServer, "multi-server", 0,
-                                N_("run in multi server mode (foreground)") },
-  { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
-  { oVerbose, "verbose",   0, N_("verbose") },
-  { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
-  { oSh,	"sh",        0, N_("sh-style command output") },
-  { oCsh,	"csh",       0, N_("csh-style command output") },
-  { oOptions, "options"  , 2, N_("read options from file")},
-  { oDebug,	"debug"     ,4|16, "@"},
-  { oDebugAll, "debug-all"     ,0, "@"},
-  { oDebugLevel, "debug-level" ,2, "@"},
-  { oDebugWait,"debug-wait",1, "@"},
-  { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
-  { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
-  { oDebugDisableTicker, "debug-disable-ticker", 0, "@"},
-  { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
-  { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
-  { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
-  { octapiDriver, "ctapi-driver", 2, N_("|NAME|use NAME as ct-API driver")},
-  { opcscDriver, "pcsc-driver", 2, N_("|NAME|use NAME as PC/SC driver")},
-  { oDisableCCID, "disable-ccid", 0,
+  ARGPARSE_s_n (oServer,"server", N_("run in server mode (foreground)")),
+  ARGPARSE_s_n (oMultiServer, "multi-server", 
+                N_("run in multi server mode (foreground)")),
+  ARGPARSE_s_n (oDaemon, "daemon", N_("run in daemon mode (background)")),
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet,	"quiet", N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oSh,	"sh", N_("sh-style command output")),
+  ARGPARSE_s_n (oCsh,	"csh", N_("csh-style command output")),
+  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+  ARGPARSE_p_u (oDebug,	"debug", "@"),
+  ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
+  ARGPARSE_s_s (oDebugLevel, "debug-level" ,
+                N_("|LEVEL|set the debugging level to LEVEL")),
+  ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
+  ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
+  ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
+  ARGPARSE_s_n (oDebugDisableTicker, "debug-disable-ticker", "@"),
+  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
+  ARGPARSE_s_s (oReaderPort, "reader-port", 
+                N_("|N|connect to reader at port N")),
+  ARGPARSE_s_s (octapiDriver, "ctapi-driver", 
+                N_("|NAME|use NAME as ct-API driver")),
+  ARGPARSE_s_s (opcscDriver, "pcsc-driver", 
+                N_("|NAME|use NAME as PC/SC driver")),
+  ARGPARSE_s_n (oDisableCCID, "disable-ccid",
 #ifdef HAVE_LIBUSB
                                     N_("do not use the internal CCID driver")
 #else
                                     "@"
 #endif
-                                         /* end --disable-ccid */},
-  { oDisableKeypad, "disable-keypad", 0, N_("do not use a reader's keypad")},
-  { oAllowAdmin, "allow-admin", 0, N_("allow the use of admin card commands")},
-  { oDenyAdmin,  "deny-admin",  0, "@" },  
-  { oDisableApplication, "disable-application", 2, "@"},
-
-  {0}
+                /* end --disable-ccid */),
+  ARGPARSE_s_u (oCardTimeout, "card-timeout", 
+                N_("|N|disconnect the card after N seconds of inactivity")),
+  ARGPARSE_s_n (oDisableKeypad, "disable-keypad", 
+                N_("do not use a reader's keypad")),
+  ARGPARSE_s_n (oAllowAdmin, "allow-admin", 
+                N_("allow the use of admin card commands")),
+  ARGPARSE_s_n (oDenyAdmin, "deny-admin", "@"),  
+  ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
+  
+  ARGPARSE_end ()
 };
 
 
@@ -528,12 +536,16 @@ main (int argc, char **argv )
 
         case oAllowAdmin: opt.allow_admin = 1; break;
         case oDenyAdmin: opt.allow_admin = 0; break;
+          
+        case oCardTimeout: opt.card_timeout = pargs.r.ret_ulong; break;
 
         case oDisableApplication:
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str); 
           break;
 
-        default : pargs.err = configfp? 1:2; break;
+        default: 
+          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR; 
+          break;
 	}
     }
   if (configfp)
@@ -619,6 +631,7 @@ main (int argc, char **argv )
 #endif
       printf ("allow-admin:%lu:\n", GC_OPT_FLAG_NONE );
       printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
+      printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
 
       scd_exit (0);
     }

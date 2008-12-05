@@ -1,3 +1,13 @@
+2008-12-05  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (opts): Use ARGPARSE_ macros.
+	(start_agent) [W32]: Start agent if not running.
+
+2008-12-03  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <scdaemon>: Add option --card-timeout.  Remove
+	unused option --disable-opensc.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* gpgsplit.c (write_part): Remove unused arg FNAME.  Change caller.

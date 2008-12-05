@@ -1,3 +1,15 @@
+2008-12-05  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (app_local_s): Add field ALGO_ATTR_CHANGE.
+	(app_select_openpgp): Parse new capability.
+	(show_caps): Show new capability.
+
+2008-12-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (opts): Use ARGPARSE_ macros.  Add option
+	--card-timeout.
+	* command.c (update_reader_status_file): Implement it.
+
 2008-11-18  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (make_libversion): New.

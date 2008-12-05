@@ -63,7 +63,11 @@
   would be better to do this just at one place. First we need to see
   how we can support cards with multiple applications.
 ** Resolve fixme in do_sign of app-dinsig.
+** Disconnect 
+  Card timeout is currently used as a boolean.  
+  Add disconnect support for the ccid driver.
 
+* Regression tests
 ** Add a regression test to check the extkeyusage.
 
 * Windows port (W32)
@@ -75,8 +79,6 @@
 * sm/
 ** check that we issue NO_SECKEY xxx if a -u key was not found
    We don't. The messages returned are also wrong (recipient vs. signer).
-** gpgsm_format_name2
-   Replace by an estream based implementation.
 
 * jnlib/
 ** Try to remove all jnlib_xmalloc.
