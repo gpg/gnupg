@@ -199,6 +199,9 @@ const char *hex2str (const char *hexstring,
                      char *buffer, size_t bufsize, size_t *buflen);
 char *hex2str_alloc (const char *hexstring, size_t *r_count);
 
+/*-- percent.c --*/
+char *percent_plus_escape (const char *string);
+
 
 /*-- homedir.c --*/
 const char *standard_homedir (void);

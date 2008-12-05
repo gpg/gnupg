@@ -1,3 +1,14 @@
+2008-12-05  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (create_request): Provide a custom prompt for the
+	signing.
+
+	* certdump.c (gpgsm_format_keydesc): Remove debug output.
+	(gpgsm_format_keydesc): Remove saving of errno as xfree is
+	supposed not to change it.  Use the new percent_plus_escape
+	function which also fixes the issue that we did not escaped a
+	percent in the past.
+
 2008-11-18  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (make_libversion): New.

@@ -148,15 +148,15 @@ unescape_status_string (const unsigned char *s)
    escaping.  Note that the provided buffer needs to be 3 times the
    size of ATEXT plus 1.  Returns a pointer to the leading Nul in P. */
 static char *
-percent_plus_escape (char *p, const char *atext)
+my_percent_plus_escape (char *p, const char *atext)
 {
   const unsigned char *s;
 
   for (s=atext; *s; s++)
     {
-      if (*s < ' ' || *s == '+')
+      if (*s < ' ' || *s == '+' || *s == '%')
         {
-          sprintf (p, "%%%02X", *s);
+          snprintf (p, 4, "%%%02X", *s);
           p += 3;
         }
       else if (*s == ' ')
@@ -865,25 +865,25 @@ agent_get_passphrase (const char *cache_id,
 
   p = stpcpy (line, cmd);
   if (cache_id && *cache_id)
-    p = percent_plus_escape (p, cache_id);
+    p = my_percent_plus_escape (p, cache_id);
   else
     *p++ = 'X';
   *p++ = ' ';
 
   if (err_msg && *err_msg)
-    p = percent_plus_escape (p, err_msg);
+    p = my_percent_plus_escape (p, err_msg);
   else
     *p++ = 'X';
   *p++ = ' ';
 
   if (prompt && *prompt)
-    p = percent_plus_escape (p, prompt);
+    p = my_percent_plus_escape (p, prompt);
   else
     *p++ = 'X'; 
   *p++ = ' ';
 
   if (desc_msg && *desc_msg)
-    p = percent_plus_escape (p, desc_msg);
+    p = my_percent_plus_escape (p, desc_msg);
   else
     *p++ = 'X';
   *p = 0;

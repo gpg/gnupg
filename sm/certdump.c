@@ -924,13 +924,12 @@ gpgsm_fpr_and_name_for_status (ksba_cert_t cert)
 
 
 /* Create a key description for the CERT, this may be passed to the
-   pinentry.  The caller must free the returned string. NULL may be
+   pinentry.  The caller must free the returned string.  NULL may be
    returned on error. */
 char *
 gpgsm_format_keydesc (ksba_cert_t cert)
 {
-  char *name, *subject, *buffer, *p;
-  const char *s;
+  char *name, *subject, *buffer;
   ksba_isotime_t t;
   char created[20];
   char expires[20];
@@ -939,10 +938,8 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   char *orig_codeset;
 
   name = ksba_cert_get_subject (cert, 0);
-  log_printhex ("XXXX NAME: ", name, strlen (name));
   subject = name? gpgsm_format_name2 (name, 0) : NULL;
   ksba_free (name); name = NULL;
-  log_printhex ("YYYY NAME: ", subject, strlen (subject));
 
   sexp = ksba_cert_get_serial (cert);
   sn = sexp? gpgsm_format_serial (sexp) : NULL;
@@ -975,38 +972,16 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   
   if (!name)
     {
-      int save_errno = errno;
       xfree (subject);
       xfree (sn);
-      errno = save_errno;
       return NULL;
     }
   
   xfree (subject);
   xfree (sn);
 
-  buffer = p = xtrymalloc (strlen (name) * 3 + 1);
-  for (s=name; *s; s++)
-    {
-      /* We also escape the quote character to work around a bug in
-         the mingw32 runtime which does not correcty handle command
-         line quoting.  We correctly double the quote mark when
-         calling a program (i.e. gpg-protect-tool), but the pre-main
-         code does not notice the double quote as an escaped
-         quote.  */
-      if (*s < ' ' || *s == '+' || *s == '\"')
-        {
-          sprintf (p, "%%%02X", *(unsigned char *)s);
-          p += 3;
-        }
-      else if (*s == ' ')
-        *p++ = '+';
-      else
-        *p++ = *s;
-    }
-  *p = 0;
+  buffer = percent_plus_escape (name);
   xfree (name); 
-
   return buffer;
 }
 

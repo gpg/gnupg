@@ -788,6 +788,8 @@ create_request (ctrl_t ctrl,
           gcry_sexp_release (s_pkey);
           bin2hex (grip, 20, hexgrip);
 
+          log_info ("about to sign CSR for key: &%s\n", hexgrip); 
+
           if (carddirect)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
                                      gcry_md_read(md, GCRY_MD_SHA1), 
@@ -795,11 +797,23 @@ create_request (ctrl_t ctrl,
                                      GCRY_MD_SHA1,
                                      &sigval, &siglen);
           else
-            rc = gpgsm_agent_pksign (ctrl, hexgrip, NULL,
-                                     gcry_md_read(md, GCRY_MD_SHA1), 
-                                     gcry_md_get_algo_dlen (GCRY_MD_SHA1),
-                                     GCRY_MD_SHA1,
-                                     &sigval, &siglen);
+            {
+              char *orig_codeset;
+              char *desc;
+
+              orig_codeset = i18n_switchto_utf8 ();
+              desc = percent_plus_escape 
+                (_("To complete this certificate request please enter"
+                   " the passphrase for the key you just created once"
+                   " more.\n"));
+              i18n_switchback (orig_codeset);
+              rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
+                                       gcry_md_read(md, GCRY_MD_SHA1), 
+                                       gcry_md_get_algo_dlen (GCRY_MD_SHA1),
+                                       GCRY_MD_SHA1,
+                                       &sigval, &siglen);
+              xfree (desc);
+            }
           if (rc)
             {
               log_error ("signing failed: %s\n", gpg_strerror (rc));
@@ -818,7 +832,7 @@ create_request (ctrl_t ctrl,
         }
     }
   while (stopreason != KSBA_SR_READY);   
-  
+
 
  leave:
   gcry_md_close (md);
