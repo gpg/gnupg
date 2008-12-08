@@ -1794,10 +1794,20 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           FD_ZERO (&fdset);
 	}
 
-      /* Create a timeout event if needed. */
+      /* Create a timeout event if needed.  To help with power saving
+         we syncronize the ticks to the next full second.  */
       if (!time_ev)
-        time_ev = pth_event (PTH_EVENT_TIME, 
-                             pth_timeout (TIMERTICK_INTERVAL, 0));
+        {
+          pth_time_t nexttick;
+
+          nexttick = pth_timeout (TIMERTICK_INTERVAL, 0);
+          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
+            {
+              nexttick.tv_sec++;
+              nexttick.tv_usec = 0;
+            }
+          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
+        }
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */

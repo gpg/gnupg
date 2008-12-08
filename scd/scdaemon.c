@@ -156,7 +156,7 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
 #endif
 
-/* The timer tick used for housekeeping stuff.  We poll every 250ms to
+/* The timer tick used for housekeeping stuff.  We poll every 500ms to
    let the user immediately know a status change.
 
    This is not too good for power saving but given that there is no
@@ -167,7 +167,7 @@ static ARGPARSE_OPTS opts[] = {
    mechanism.  Given that a native thread could only be used under W32
    we don't do that at all.  */
 #define TIMERTICK_INTERVAL_SEC     (0)
-#define TIMERTICK_INTERVAL_USEC    (250000)
+#define TIMERTICK_INTERVAL_USEC    (500000)
 
 /* Flag to indicate that a shutdown was requested. */
 static int shutdown_pending;
@@ -1152,11 +1152,25 @@ handle_connections (int listen_fd)
           listen_fd = -1;
 	}
 
-      /* Create a timeout event if needed. */
+      /* Create a timeout event if needed.  Round it up to the next
+         microsecond interval to help with power saving. */
       if (!time_ev)
-        time_ev = pth_event (PTH_EVENT_TIME,
-                             pth_timeout (TIMERTICK_INTERVAL_SEC,
-                                          TIMERTICK_INTERVAL_USEC));
+        {
+          pth_time_t nexttick = pth_timeout (TIMERTICK_INTERVAL_SEC,
+                                             TIMERTICK_INTERVAL_USEC/2);
+          if ((nexttick.tv_usec % (TIMERTICK_INTERVAL_USEC/2)) > 10)
+            {
+              nexttick.tv_usec = ((nexttick.tv_usec
+                                   /(TIMERTICK_INTERVAL_USEC/2))
+                                  + 1) * (TIMERTICK_INTERVAL_USEC/2);
+              if (nexttick.tv_usec >= 1000000)
+                {
+                  nexttick.tv_sec++;
+                  nexttick.tv_usec = 0;
+                }
+            }
+          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
+        }
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */

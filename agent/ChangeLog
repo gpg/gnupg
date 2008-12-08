@@ -1,3 +1,8 @@
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_connections): Sync the ticker to the next
+	full second.  This is bug#871.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (decrypt_block): Fix const modified of CHARSETS.

@@ -226,8 +226,8 @@ Store only (make a simple RFC1991 literal data packet).
 @item --decrypt
 @itemx -d
 @opindex decrypt
-Decrypt the file given on the command line (or @code{stdin} if no file
-is specified) and write it to stdout (or the file specified with
+Decrypt the file given on the command line (or STDIN if no file
+is specified) and write it to STDOUT (or the file specified with
 @option{--output}). If the decrypted file is signed, the signature is also
 verified. This command differs from the default operation, as it never
 writes to the filename which is included in the file and it rejects
@@ -237,19 +237,19 @@ files which don't begin with an encrypted message.
 @opindex verify
 Assume that the first argument is a signed file or a detached signature
 and verify it without generating any output. With no arguments, the
-signature packet is read from stdin. If only a sigfile is given, it may
+signature packet is read from STDIN. If only a sigfile is given, it may
 be a complete signature or a detached signature, in which case the
 signed stuff is expected in a file without the ".sig" or ".asc"
 extension.  With more than 1 argument, the first should be a detached
 signature and the remaining files are the signed stuff. To read the
-signed stuff from stdin, use @samp{-} as the second filename.  For
+signed stuff from STDIN, use @samp{-} as the second filename.  For
 security reasons a detached signature cannot read the signed material
-from stdin without denoting it in the above way.
+from STDIN without denoting it in the above way.
 
 @item --multifile
 @opindex multifile
 This modifies certain other commands to accept multiple files for
-processing on the command line or read from stdin with each filename on
+processing on the command line or read from STDIN with each filename on
 a separate line. This allows for many files to be processed at
 once. @option{--multifile} may currently be used along with
 @option{--verify}, @option{--encrypt}, and @option{--decrypt}. Note that
@@ -394,7 +394,7 @@ removed first. In batch mode the key must be specified by fingerprint.
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option @option{--keyring}), or if at least one name is given,
-those of the given name. The new keyring is written to stdout or to the
+those of the given name. The new keyring is written to STDOUT or to the
 file given with option @option{--output}. Use together with
 @option{--armor} to mail those keys.
 
@@ -487,14 +487,14 @@ a check is needed. To force a run even in batch mode add the option
 
 @item --export-ownertrust
 @opindex export-ownertrust
-Send the ownertrust values to stdout. This is useful for backup purposes
+Send the ownertrust values to STDOUT. This is useful for backup purposes
 as these values are the only ones which can't be re-created from a
 corrupted trust DB.
 
 @item --import-ownertrust
 @opindex import-ownertrust
 Update the trustdb with the ownertrust values stored in @code{files} (or
-stdin if not given); existing values will be overwritten.
+STDIN if not given); existing values will be overwritten.
 
 @item --rebuild-keydb-caches
 @opindex rebuild-keydb-caches
@@ -505,7 +505,7 @@ situations too.
 @item --print-md @code{algo}
 @itemx --print-mds
 @opindex print-md
-Print message digest of algorithm ALGO for all given files or stdin.
+Print message digest of algorithm ALGO for all given files or STDIN.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
@@ -957,7 +957,12 @@ Try to be as quiet as possible.
 @opindex batch
 @opindex no-batch
 Use batch mode.  Never ask, do not allow interactive commands.
-@option{--no-batch} disables this option.
+@option{--no-batch} disables this option.  Note that even with a
+filename given on the command line, gpg might still need to read from
+STDIN (in particular if gpg figures that the input is a
+detached signature and no data file has been specified).  Thus if you
+do not want to feed data via STDIN, you should connect STDIN to
+@file{/dev/null}.
 
 @item --no-tty
 @opindex no-tty
@@ -1104,7 +1109,7 @@ and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin". Note that if your image viewer program is not secure, then
+STDIN". Note that if your image viewer program is not secure, then
 executing it from GnuPG does not make it secure.
 
 @item --exec-path @code{string}
@@ -2118,7 +2123,7 @@ Same as @option{--status-fd}, except the status data is written to file
 @code{file}.
 
 @item --logger-fd @code{n}
-Write log output to file descriptor @code{n} and not to stderr.
+Write log output to file descriptor @code{n} and not to STDERR.
 
 @item --log-file @code{file}
 @itemx --logger-file @code{file}
@@ -2310,7 +2315,7 @@ passphrase.  Defaults to 1 repetition.
 @item --passphrase-fd @code{n}
 Read the passphrase from file descriptor @code{n}. Only the first line
 will be read from file descriptor @code{n}. If you use 0 for @code{n},
-the passphrase will be read from stdin. This can only be used if only
+the passphrase will be read from STDIN. This can only be used if only
 one passphrase is supplied.
 @ifclear gpgone
 Note that this passphrase is only used if the option @option{--batch}
@@ -2771,7 +2776,7 @@ is *very* easy to spy out your passphrase!
 
 If you are going to verify detached signatures, make sure that the
 program knows about it; either give both filenames on the command line
-or use @samp{-} to specify stdin.
+or use @samp{-} to specify STDIN.
 
 @mansect interoperability
 @chapheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS

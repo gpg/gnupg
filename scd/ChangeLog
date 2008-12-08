@@ -1,3 +1,9 @@
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (handle_connections): Sync ticker to the next full
+	interval.
+	(TIMERTICK_INTERVAL_USEC): Change to 500ms.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (app_local_s): Add field ALGO_ATTR_CHANGE.
