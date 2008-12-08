@@ -39,7 +39,7 @@ record; gpg2 does this by default and the option is a dummy.
             tru = trust database information
             spk = signature subpacket
 
- 2. Field:  A letter describing the calculated trust. This is a single
+ 2. Field:  A letter describing the calculated validity. This is a single
 	    letter, but be prepared that additional information may follow
 	    in some future versions. (not used for secret keys)
 		o = Unknown (this key is new to the system)
@@ -48,18 +48,23 @@ record; gpg2 does this by default and the option is a dummy.
 		    (deprecated - use the 'D' in field 12 instead)
 		r = The key has been revoked
 		e = The key has expired
-		- = Unknown trust (i.e. no value assigned)
-		q = Undefined trust
+		- = Unknown validity (i.e. no value assigned)
+		q = Undefined validity
 	            '-' and 'q' may safely be treated as the same
 		    value for most purposes
-		n = Don't trust this key at all
-		m = There is marginal trust in this key
-		f = The key is fully trusted
-		u = The key is ultimately trusted.  This often means
+		n = The key is valid
+		m = The key is marginal valid.
+		f = The key is fully valid
+		u = The key is ultimately valid.  This often means
 		    that the secret key is available, but any key may
-		    be marked as ultimately trusted. 
+		    be marked as ultimately valid. 
 
-            For X.509 certificates an 'u' is used for a trusted root
+            If the validity information is given for a UID or UAT
+            record, it describes the validity calculated based on this
+            user ID.  If given for a key record it describes the best
+            validity taken from the best rated user ID.
+
+            For X.509 certificates a 'u' is used for a trusted root
             certificate (i.e. for the trust anchor) and an 'f' for all
             other valid certificates.
 
@@ -73,12 +78,12 @@ record; gpg2 does this by default and the option is a dummy.
 
  5. Field:  KeyID
 
- 6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
-            self-signature date.  Note that the date is usally printed
-            in seconds since epoch, however, we are migrating to an ISO
-            8601 format (e.g. "19660205T091500").  This is currently
-            only relevant for X.509, A simple way to detect the format
-            is be scannning for the 'T'.
+ 6. Field:  Creation Date (in UTC).  For UID and UAT records, this is
+            the self-signature date.  Note that the date is usally
+            printed in seconds since epoch, however, we are migrating
+            to an ISO 8601 format (e.g. "19660205T091500").  This is
+            currently only relevant for X.509.  A simple way to detect
+            the new format is to scan for the 'T'.
 
  7. Field:  Key or user ID/user attribute expiration date or empty if none.
 
@@ -92,7 +97,7 @@ record; gpg2 does this by default and the option is a dummy.
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.  For trust
 	    signatures with a regular expression, this is the regular
-	    expression value, quoted as in field 10.
+	    expression value, quoted as in field 10. 
 
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
@@ -103,11 +108,12 @@ record; gpg2 does this by default and the option is a dummy.
             An FPR record stores the fingerprint here.
             The fingerprint of an revocation key is stored here.
 
-11. Field:  Signature class.  This is a 2 digit hexnumber followed by
-            either the letter 'x' for an exportable signature or the
-            letter 'l' for a local-only signature.
-            The class byte of an revocation key is also given here,
-            'x' and 'l' ist used the same way.
+11. Field:  Signature class as per RFC-4880.  This is a 2 digit
+            hexnumber followed by either the letter 'x' for an
+            exportable signature or the letter 'l' for a local-only
+            signature.  The class byte of an revocation key is also
+            given here, 'x' and 'l' is used the same way.  IT is not
+            used for X.509.
 
 12. Field:  Key capabilities:
                 e = encrypt
@@ -128,8 +134,8 @@ record; gpg2 does this by default and the option is a dummy.
             this is the same string as the fingerprint. The advantage
             of using this value is that it is guaranteed to have been
             been build by the same lookup algorithm as gpgsm uses.
-            For "uid" recods this lists the preferences n the sameway the 
-            -edit menu does.
+            For "uid" records this lists the preferences in the same 
+            way the gpg's --edit-key menu does.
 	    For "sig" records, this is the fingerprint of the key that
 	    issued the signature.  Note that this is only filled in if
 	    the signature verified correctly.  Note also that for
@@ -156,7 +162,11 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 
 
-The "tru" trust database records have the fields:
+Example for a "tru" trust base record:
+
+   tru:o:0:1166697654:1:3:1:5
+
+ The fields are:
 
  2: Reason for staleness of trust.  If this field is empty, then the
     trustdb is not stale.  This field may have multiple flags in it:
@@ -174,12 +184,18 @@ The "tru" trust database records have the fields:
     GnuPG before version 1.4 used the classic trust model by default.
     GnuPG 1.4 and later uses the PGP trust model by default.
 
- 4: Date trustdb was created in seconds since 1/1/1970.
- 5: Date trustdb will expire in seconds since 1/1/1970.
+ 4: Date trustdb was created in seconds since 1970-01-01.
+ 5: Date trustdb will expire in seconds since 1970-01-01.
+ 6: Number of marginally trusted users to introduce a new key signer
+    (gpg's option --marginals-needed)
+ 7: Number of completely trusted users to introduce a new key signer.
+    (gpg's option --completes-needed)
+ 8: Maximum depth of a certification chain.  
+    *gpg's option --max-cert-depth)
 
 The "spk" signature subpacket records have the fields:
 
- 2: Subpacket number as per RFC-2440 and later.
+ 2: Subpacket number as per RFC-4880 and later.
  3: Flags in hex.  Currently the only two bits assigned are 1, to
     indicate that the subpacket came from the hashed part of the
     signature, and 2, to indicate the subpacket was marked critical.
@@ -320,16 +336,19 @@ more arguments in future versions.
     TRUST_FULLY     [0  [<validation_model>]] 
     TRUST_ULTIMATE  [0  [<validation_model>]]
 	For good signatures one of these status lines are emitted to
-	indicate how trustworthy the signature is.  The error token
-	values are currently only emitted by gpgsm.  VALIDATION_MODEL
-	describes the algorithm used to check the validity of the key.
-	The defaults are the standard Web of Trust model for gpg and the 
-	the standard X.509 model for gpgsm.  The defined values are
+	indicate the validity of the key used to create the signature.
+	The error token values are currently only emitted by gpgsm.
+	VALIDATION_MODEL describes the algorithm used to check the
+	validity of the key.  The defaults are the standard Web of
+	Trust model for gpg and the the standard X.509 model for
+	gpgsm.  The defined values are
 
            "pgp"   for the standard PGP WoT.
 	   "shell" for the standard X.509 model.
 	   "chain" for the chain model.
 
+        Note that we use the term "TRUST_" in the status names for
+        historic reasons; we now speak of validity.
 
     PKA_TRUST_GOOD <mailbox>
     PKA_TRUST_BAD  <mailbox>
@@ -535,8 +554,8 @@ more arguments in future versions.
 
     NOTATION_NAME <name> 
     NOTATION_DATA <string>
-        name and string are %XX escaped; the data may be splitted
-        among several notation_data lines.
+        name and string are %XX escaped; the data may be split
+        among several NOTATION_DATA lines.
 
     USERID_HINT <long main keyid> <string>
         Give a hint about the user ID for a certain keyID. 
@@ -660,7 +679,7 @@ descriptor specified.  --attribute-fd is intended for use with
 --status-fd as part of the required information is carried on the
 ATTRIBUTE status tag (see above).
 
-The contents of the attribute data is specified by 2440bis, but for
+The contents of the attribute data is specified by RFC 4880.  For
 convenience, here is the Photo ID format, as it is currently the only
 attribute defined:
 
@@ -693,25 +712,25 @@ version: the third field contains the version of GnuPG.
 
 pubkey: the third field contains the public key algorithmdcaiphers
 	this version of GnuPG supports, separated by semicolons.  The
-	algorithm numbers are as specified in RFC-2440.
+	algorithm numbers are as specified in RFC-4880.
 
    cfg:pubkey:1;2;3;16;17
 
 cipher: the third field contains the symmetric ciphers this version of
 	GnuPG supports, separated by semicolons.  The cipher numbers
-	are as specified in RFC-2440.
+	are as specified in RFC-4880.
 
    cfg:cipher:2;3;4;7;8;9;10
 
 digest: the third field contains the digest (hash) algorithms this
 	version of GnuPG supports, separated by semicolons.  The
-	digest numbers are as specified in RFC-2440.
+	digest numbers are as specified in RFC-4880.
 
    cfg:digest:1;2;3;8;9;10
 
 compress: the third field contains the compression algorithms this
 	  version of GnuPG supports, separated by semicolons.  The
-	  algorithm numbers are as specified in RFC-2440.
+	  algorithm numbers are as specified in RFC-4880.
 
    cfg:compress:0;1;2;3
 
@@ -728,33 +747,7 @@ would result in:
 
 Key generation
 ==============
-    Key generation shows progress by printing different characters to
-    stderr:
-	     "."  Last 10 Miller-Rabin tests failed
-	     "+"  Miller-Rabin test succeeded
-	     "!"  Reloading the pool with fresh prime numbers
-	     "^"  Checking a new value for the generator
-	     "<"  Size of one factor decreased
-	     ">"  Size of one factor increased
-
-    The prime number for Elgamal is generated this way:
-
-    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
-    2) Select the length of the other prime factors to be at least the size
-       of q and calculate the number of prime factors needed
-    3) Make a pool of prime numbers, each of the length determined in step 2
-    4) Get a new permutation out of the pool or continue with step 3
-       if we have tested all permutations.
-    5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
-    6) Check that this prime has the correct length (this may change q if
-       it seems not to be possible to make a prime of the desired length)
-    7) Check whether this is a prime using trial divisions and the
-       Miller-Rabin test.
-    8) Continue with step 4 if we did not find a prime in step 7.
-    9) Find a generator for that prime.
-
-    This algorithm is based on Lim and Lee's suggestion from the
-    Crypto '97 proceedings p. 260.
+    See the Libcrypt manual.
 
 
 Unattended key generation
@@ -1122,59 +1115,6 @@ FIXME:  The layout changed, document it here.
 
 
 
-Packet Headers
-===============
-
-GNUPG uses PGP 2 packet headers and also understands OpenPGP packet header.
-There is one enhancement used with the old style packet headers:
-
-   CTB bits 10, the "packet-length length bits", have values listed in
-   the following table:
-
-      00 - 1-byte packet-length field
-      01 - 2-byte packet-length field
-      10 - 4-byte packet-length field
-      11 - no packet length supplied, unknown packet length
-
-   As indicated in this table, depending on the packet-length length
-   bits, the remaining 1, 2, 4, or 0 bytes of the packet structure field
-   are a "packet-length field".  The packet-length field is a whole
-   number field.  The value of the packet-length field is defined to be
-   the value of the whole number field.
-
-   A value of 11 is currently used in one place: on compressed data.
-   That is, a compressed data block currently looks like <A3 01 . .  .>,
-   where <A3>, binary 10 1000 11, is an indefinite-length packet. The
-   proper interpretation is "until the end of the enclosing structure",
-   although it should never appear outermost (where the enclosing
-   structure is a file).
-
-+  This will be changed with another version, where the new meaning of
-+  the value 11 (see below) will also take place.
-+
-+  A value of 11 for other packets enables a special length encoding,
-+  which is used in case, where the length of the following packet can
-+  not be determined prior to writing the packet; especially this will
-+  be used if large amounts of data are processed in filter mode.
-+
-+  It works like this: After the CTB (with a length field of 11) a
-+  marker field is used, which gives the length of the following datablock.
-+  This is a simple 2 byte field (MSB first) containing the amount of data
-+  following this field, not including this length field. After this datablock
-+  another length field follows, which gives the size of the next datablock.
-+  A value of 0 indicates the end of the packet. The maximum size of a
-+  data block is limited to 65534, thereby reserving a value of 0xffff for
-+  future extensions. These length markers must be inserted into the data
-+  stream just before writing the data out.
-+
-+  This 2 byte field is large enough, because the application must buffer
-+  this amount of data to prepend the length marker before writing it out.
-+  Data block sizes larger than about 32k doesn't make any sense. Note
-+  that this may also be used for compressed data streams, but we must use
-+  another packet version to tell the application that it can not assume,
-+  that this is the last packet.
-
-
 GNU extensions to the S2K algorithm
 ===================================
 S2K mode 101 is used to identify these extensions.
@@ -1183,43 +1123,6 @@ clear that these are extensions for GNU, the next bytes gives the
 GNU protection mode - 1000.  Defined modes are:
   1001 - do not store the secret part at all
   1002 - a stub to access smartcards (not used in 1.2.x)
-
-
-Pipemode
-========
-NOTE:  This is deprecated and will be removed in future versions.
-
-This mode can be used to perform multiple operations with one call to
-gpg. It comes handy in cases where you have to verify a lot of
-signatures. Currently we support only detached signatures.  This mode
-is a kludge to avoid running gpg n daemon mode and using Unix Domain
-Sockets to pass the data to it.  There is no easy portable way to do
-this under Windows, so we use plain old pipes which do work well under
-Windows.  Because there is no way to signal multiple EOFs in a pipe we
-have to embed control commands in the data stream: We distinguish
-between a data state and a control state.  Initially the system is in
-data state but it won't accept any data.  Instead it waits for
-transition to control state which is done by sending a single '@'
-character.  While in control state the control command os expected and
-this command is just a single byte after which the system falls back
-to data state (but does not necesary accept data now).  The simplest
-control command is a '@' which just inserts this character into the
-data stream.
-
-Here is the format we use for detached signatures:
-"@<"  - Begin of new stream
-"@B"  - Detached signature follows.
-        This emits a control packet (1,'B')
-<detached_signature>
-"@t"  - Signed text follows. 
-        This emits the control packet (2, 'B')
-<signed_text>
-"@."  - End of operation. The final control packet forces signature
-        verification
-"@>"  - End of stream   
-
-
-
 
 
 

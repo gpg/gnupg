@@ -1,3 +1,10 @@
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* DETAILS: Clarify the use of "trust" and "validity" as suggested
+	by Daniel Kahn Gillmor.  Fix some typos.  Remove the outdated
+	sections on packet headers and pipemode.  Point to the libgcrypt
+	manual for a description of the key generation.
+
 2008-11-12  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.texi (Agent Options): Use Posix $() instead of
