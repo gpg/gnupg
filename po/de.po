@@ -1,13 +1,13 @@
 # GnuPG german translation
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-#               2006, 2007 Free Software Foundation, Inc.
+#               2006, 2007, 2008 Free Software Foundation, Inc.
 # Walter Koch <koch@u32.de>, 1998, 1999, 2000, 2001, 2002, 
 #               2003, 2004, 2005, 2006
 # Merged with the gnupg 1.9.23 translation by Werner Koch on 2006-09-25.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.0.6\n"
+"Project-Id-Version: gnupg-2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2008-12-03 09:59+0100\n"
 "PO-Revision-Date: 2008-12-05 16:53+0100\n"
@@ -1565,7 +1565,7 @@ msgstr ""
 
 #: g10/encr-data.c:145
 msgid "problem handling encrypted packet\n"
-msgstr "Problem beim Bearbeiten des verschlüsselten Packets\n"
+msgstr "Problem beim Bearbeiten des verschlüsselten Pakets\n"
 
 #: g10/exec.c:49
 msgid "no remote program execution supported\n"
@@ -2197,7 +2197,7 @@ msgstr "Zeige Richtlinien-URLs während der Unterschriftenprüfung"
 
 #: g10/gpg.c:2658
 msgid "show all notations during signature verification"
-msgstr "Alle Notationen wahrend der Signaturprüfung anzeigen"
+msgstr "Alle Notationen während der Signaturprüfung anzeigen"
 
 #: g10/gpg.c:2660
 msgid "show IETF standard notations during signature verification"
@@ -2205,7 +2205,7 @@ msgstr "Zeige IETF-Standard-Notationen während der Unterschriftenprüfung"
 
 #: g10/gpg.c:2664
 msgid "show user-supplied notations during signature verification"
-msgstr "Zeie anwenderseitige Notationen während der Unterschriftenprüfung"
+msgstr "Zeige anwenderseitige Notationen während der Unterschriftenprüfung"
 
 #: g10/gpg.c:2666
 msgid "show preferred keyserver URLs during signature verification"
