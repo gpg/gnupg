@@ -1,3 +1,9 @@
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* gpgkey2ssh.c (main): Change order of output for RSA. Change name
+	of DSA identifier.  Reported by Daniel Kahn Gillmor.  This is
+	bug#901.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (opts): Use ARGPARSE_ macros.

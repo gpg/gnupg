@@ -1,4 +1,4 @@
-/* gpgkey2ssh.c - Converter ...
+/* gpgkey2ssh.c - Converter  (Debug helper)
  *	Copyright (C) 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -16,6 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
+
+/* 
+   FIXME:  This tool needs some cleanup:
+
+   - Do not use assert() for error output.
+   - Add proper option parsing and standard options.
+   - retrieve_key_material needs to take the ordinal at field 1 in account.
+   0 Write a man page.
+*/
 
 #include <config.h>
 
@@ -272,11 +281,11 @@ main (int argc, char **argv)
     {
       identifier = "ssh-rsa";
       ret = key_to_blob (&blob, &blob_n, identifier,
-			 &pkdbuf[0], &pkdbuf[1], NULL);
+			 &pkdbuf[1], &pkdbuf[0], NULL);
     }
   else if (algorithm_id == 17)
     {
-      identifier = "ssh-dsa";
+      identifier = "ssh-dss";
       ret = key_to_blob (&blob, &blob_n, identifier,
 			 &pkdbuf[0], &pkdbuf[1], &pkdbuf[2], &pkdbuf[3], NULL);
     }
