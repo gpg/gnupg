@@ -1630,7 +1630,7 @@ set_attrib_fd (int fd)
     return;
 
 #ifdef HAVE_DOSISH_SYSTEM
-  setmode ( fileno(fp) , O_BINARY );
+  setmode (fd, O_BINARY);
 #endif
   if( fd == 1 )
     attrib_fp = stdout;
