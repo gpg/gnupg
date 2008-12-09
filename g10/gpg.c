@@ -2936,15 +2936,15 @@ main (int argc, char **argv)
 	fprintf(stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
-    if( !opt.batch )
+    if (!opt.batch)
       {
 	const char *s;
 
-	if((s=strusage(20)))
+	if((s=strusage(25)))
 	  log_info("%s\n",s);
-	if((s=strusage(21)))
+	if((s=strusage(26)))
 	  log_info("%s\n",s);
-	if((s=strusage(22)))
+	if((s=strusage(27)))
 	  log_info("%s\n",s);
       }
 #endif
