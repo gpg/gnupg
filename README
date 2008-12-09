@@ -58,11 +58,10 @@ As with all packages, you just have to do
 
 If everything succeeds, you have a working GnuPG with support for
 S/MIME and smartcards.  Note that there is no binary gpg but a gpg2 so
-that this package won't conflict with a GnuPG 1.4 installation. gpg2
+that this package won't conflict with a GnuPG 1.4 installation.  gpg2
 behaves just like gpg.
 
-In case of problem please ask on gnupg-users@gnupg.org for advise.  Note
-that this release is only expected to build on GNU and *BSD systems.
+In case of problem please ask on gnupg-users@gnupg.org for advise.
 
 Note that the PKITS tests are always skipped unless you copy the PKITS
 test data file into the tests/pkits directory.

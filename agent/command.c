@@ -1153,7 +1153,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
 
   if (rc)
-    log_error ("command preset_passwd failed: %s\n", gpg_strerror (rc));
+    log_error ("command preset_passphrase failed: %s\n", gpg_strerror (rc));
 
   return rc;
 }
