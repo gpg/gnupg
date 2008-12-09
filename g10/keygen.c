@@ -2196,42 +2196,62 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       return -1;
     }
 
-  err=parse_parameter_usage (fname, para, pKEYUSAGE);
-  if(err==0)
+  err = parse_parameter_usage (fname, para, pKEYUSAGE);
+  if (!err)
     {
       /* Default to algo capabilities if key-usage is not provided */
-      r=xmalloc_clear(sizeof(*r));
-      r->key=pKEYUSAGE;
-      r->u.usage=openpgp_pk_algo_usage(algo);
-      r->next=para;
-      para=r;
+      r = xmalloc_clear(sizeof(*r));
+      r->key = pKEYUSAGE;
+      r->u.usage = openpgp_pk_algo_usage(algo);
+      r->next = para;
+      para = r;
     }
-  else if(err==-1)
+  else if (err == -1)
     return -1;
+  else
+    {
+      r = get_parameter (para, pKEYUSAGE);
+      if (r && (r->u.usage & ~openpgp_pk_algo_usage (algo)))
+        {
+          log_error ("%s:%d: specified Key-Usage not allowed for algo %d\n",
+                     fname, r->lnr, algo);
+          return -1;
+        }
+    }
 
   r = get_parameter( para, pSUBKEYTYPE );
   if(r)
     {
-      algo=get_parameter_algo( para, pSUBKEYTYPE);
-      if(check_pubkey_algo(algo))
+      algo = get_parameter_algo (para, pSUBKEYTYPE);
+      if (check_pubkey_algo (algo))
 	{
-	  log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
 	  return -1;
 	}
 
-      err=parse_parameter_usage (fname, para, pSUBKEYUSAGE);
-      if(err==0)
+      err = parse_parameter_usage (fname, para, pSUBKEYUSAGE);
+      if (!err)
 	{
 	  /* Default to algo capabilities if subkey-usage is not
 	     provided */
-	  r=xmalloc_clear(sizeof(*r));
-	  r->key=pSUBKEYUSAGE;
-	  r->u.usage=openpgp_pk_algo_usage(algo);
-	  r->next=para;
-	  para=r;
+	  r = xmalloc_clear (sizeof(*r));
+	  r->key = pSUBKEYUSAGE;
+	  r->u.usage = openpgp_pk_algo_usage (algo);
+	  r->next = para;
+	  para = r;
 	}
-      else if(err==-1)
+      else if (err == -1)
 	return -1;
+      else
+        {
+          r = get_parameter (para, pSUBKEYUSAGE);
+          if (r && (r->u.usage & ~openpgp_pk_algo_usage (algo)))
+            {
+              log_error ("%s:%d: specified Subkey-Usage not allowed"
+                         " for algo %d\n", fname, r->lnr, algo);
+              return -1;
+            }
+        }
     }
 
   if( get_parameter_value( para, pUSERID ) )
