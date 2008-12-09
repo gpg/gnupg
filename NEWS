@@ -41,7 +41,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * [w32] Fixed a race condition bteween gpg and gpgsm in the use of
    temporary file names.
 
- * The gpg-preset-passphrase mechanism works again.
+ * The gpg-preset-passphrase mechanism works again.  An arbitrary
+   string may now be used for a custom cache ID.
 
  * Admin PINs are cached again (bug in 2.0.9).
 

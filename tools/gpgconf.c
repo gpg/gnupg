@@ -147,9 +147,8 @@ main (int argc, char **argv)
   log_set_prefix ("gpgconf", 1);
 
   /* Make sure that our subsystems are ready.  */
-  init_common_subsystems ();
-
   i18n_init();
+  init_common_subsystems ();
 
   /* Parse the command line. */
   pargs.argc  = &argc;

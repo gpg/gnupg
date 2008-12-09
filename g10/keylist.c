@@ -24,6 +24,9 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef HAVE_DOSISH_SYSTEM
+#include <fcntl.h> /* for setmode() */
+#endif
 
 #include "gpg.h"
 #include "options.h"
@@ -50,7 +53,8 @@ struct sig_stats
   int oth_err;
 };
 
-static FILE *attrib_fp=NULL;
+/* The stream used to write attribute packets to.  */
+static FILE *attrib_fp = NULL;
 
 /****************
  * List the keys
@@ -745,6 +749,7 @@ dump_attribs(const PKT_user_id *uid,PKT_public_key *pk,PKT_secret_key *sk)
 	}
 
       fwrite(uid->attribs[i].data,uid->attribs[i].len,1,attrib_fp);
+      fflush (attrib_fp);
     }
 }
 
@@ -1609,29 +1614,35 @@ print_card_serialno (PKT_secret_key *sk)
 
 
 
-void set_attrib_fd(int fd)
+void
+set_attrib_fd (int fd)
 {
   static int last_fd=-1;
 
   if ( fd != -1 && last_fd == fd )
     return;
 
-  if ( attrib_fp && attrib_fp != stdout && attrib_fp != stderr )
+  if ( attrib_fp && attrib_fp != stdout && attrib_fp != stderr 
+       && attrib_fp != log_get_stream () )
     fclose (attrib_fp);
   attrib_fp = NULL;
   if ( fd == -1 ) 
     return;
 
+#ifdef HAVE_DOSISH_SYSTEM
+  setmode ( fileno(fp) , O_BINARY );
+#endif
   if( fd == 1 )
     attrib_fp = stdout;
   else if( fd == 2 )
     attrib_fp = stderr;
   else
-    attrib_fp = fdopen( fd, "wb" );
-  if( !attrib_fp ) {
-    log_fatal("can't open fd %d for attribute output: %s\n",
-	      fd, strerror(errno));
-  }
-
+    attrib_fp = fdopen (fd, "wb");
+  if (!attrib_fp) 
+    {
+      log_fatal("can't open fd %d for attribute output: %s\n",
+                fd, strerror(errno));
+    }
+  
   last_fd = fd;
 }

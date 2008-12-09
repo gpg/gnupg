@@ -1,3 +1,12 @@
+2008-12-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Call i18n_init before init_common_subsystems.
+	* preset-passphrase.c (main): Ditto.
+	* protect-tool.c (main): Ditto.
+
+	* command.c (cmd_preset_passphrase): Allow an arbitrary string for
+	the cache id.
+
 2008-12-08  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (handle_connections): Sync the ticker to the next

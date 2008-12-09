@@ -1036,9 +1036,9 @@ set_screen_dimensions(void)
    used with --status-file etc functions.  Not generally useful but it
    avoids the riscos specific functions and well some Windows people
    might like it too.  Prints an error message and returns -1 on
-   error. On success the file descriptor is returned.  */
+   error.  On success the file descriptor is returned.  */
 static int
-open_info_file (const char *fname, int for_write)
+open_info_file (const char *fname, int for_write, int binary)
 {
 #ifdef __riscos__
   return riscos_fdopenfile (fname, for_write);
@@ -1048,9 +1048,15 @@ open_info_file (const char *fname, int for_write)
      similar to the option file but in that case it is unlikely that
      sensitive information may be retrieved by means of error
      messages.  */
+  (void)fname;
+  (void)for_write;
+  (void)binary;
   return -1;
 #else 
   int fd;
+
+  if (binary)
+    binary = MY_O_BINARY;
 
 /*   if (is_secured_filename (fname)) */
 /*     { */
@@ -1062,10 +1068,10 @@ open_info_file (const char *fname, int for_write)
       do
         {
           if (for_write)
-            fd = open (fname, O_CREAT | O_TRUNC | O_WRONLY,
+            fd = open (fname, O_CREAT | O_TRUNC | O_WRONLY | binary,
                         S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
           else
-            fd = open (fname, O_RDONLY | MY_O_BINARY);
+            fd = open (fname, O_RDONLY | binary);
         }
       while (fd == -1 && errno == EINTR);
 /*     } */
@@ -1910,6 +1916,7 @@ main (int argc, char **argv)
     log_set_prefix ("gpg", 1);
 
     /* Make sure that our subsystems are ready.  */
+    i18n_init();
     init_common_subsystems ();
 
     /* Check that the libraries are suitable.  Do it right here because the
@@ -1929,7 +1936,6 @@ main (int argc, char **argv)
 
     create_dotlock(NULL); /* Register locking cleanup. */
 
-    i18n_init();
 
     opt.command_fd = -1; /* no command fd */
     opt.compress_level = -1; /* defaults to standard compress level */
@@ -2216,16 +2222,16 @@ main (int argc, char **argv)
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
 
 	  case oStatusFD:
-            set_status_fd( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
+            set_status_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
             break;
 	  case oStatusFile:
-            set_status_fd ( open_info_file (pargs.r.ret_str, 1) );
+            set_status_fd ( open_info_file (pargs.r.ret_str, 1, 0) );
             break;
 	  case oAttributeFD:
-            set_attrib_fd(translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+            set_attrib_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );
             break;
 	  case oAttributeFile:
-            set_attrib_fd ( open_info_file (pargs.r.ret_str, 1) );
+            set_attrib_fd ( open_info_file (pargs.r.ret_str, 1, 1) );
             break;
 	  case oLoggerFD:
             log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
@@ -2522,14 +2528,14 @@ main (int argc, char **argv)
             pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
             break;
 	  case oPasswdFile:
-            pwfd = open_info_file (pargs.r.ret_str, 0);
+            pwfd = open_info_file (pargs.r.ret_str, 0, 1);
             break;
 	  case oPasswdRepeat: opt.passwd_repeat=pargs.r.ret_int; break;
 	  case oCommandFD:
             opt.command_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
             break;
 	  case oCommandFile:
-            opt.command_fd = open_info_file (pargs.r.ret_str, 0);
+            opt.command_fd = open_info_file (pargs.r.ret_str, 0, 1);
             break;
 	  case oCipherAlgo: 
             def_cipher_string = xstrdup(pargs.r.ret_str);

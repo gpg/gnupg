@@ -364,9 +364,9 @@ main (int argc, char **argv )
   log_set_prefix ("scdaemon", 1|4); 
 
   /* Make sure that our subsystems are ready.  */
+  i18n_init ();
   init_common_subsystems ();
 
-  i18n_init ();
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */

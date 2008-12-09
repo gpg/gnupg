@@ -1093,7 +1093,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/* PRESET_PASSPHRASE <hexstring_with_keygrip> <timeout> <hexstring>
+/* PRESET_PASSPHRASE <string_or_keygrip> <timeout> <hexstring>
   
    Set the cached passphrase/PIN for the key identified by the keygrip
    to passwd for the given time, where -1 means infinite and 0 means
@@ -1104,7 +1104,6 @@ static int
 cmd_preset_passphrase (assuan_context_t ctx, char *line)
 {
   int rc;
-  unsigned char grip[20];
   char *grip_clear = NULL;
   char *passphrase = NULL;
   int ttl;
@@ -1113,11 +1112,6 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   if (!opt.allow_preset_passphrase)
     return set_error (GPG_ERR_NOT_SUPPORTED, "no --allow-preset-passphrase");
 
-  rc = parse_keygrip (ctx, line, grip);
-  if (rc)
-    return rc;
-
-  /* FIXME: parse_keygrip should return a tail pointer.  */
   grip_clear = line;
   while (*line && (*line != ' ' && *line != '\t'))
     line++;

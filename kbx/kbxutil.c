@@ -419,9 +419,8 @@ main( int argc, char **argv )
   log_set_prefix ("kbxutil", 1); 
 
   /* Make sure that our subsystems are ready.  */
-  init_common_subsystems ();
-
   i18n_init ();
+  init_common_subsystems ();
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library.  */

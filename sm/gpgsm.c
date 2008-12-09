@@ -869,6 +869,7 @@ main ( int argc, char **argv)
   log_set_prefix ("gpgsm", 1);
 
   /* Make sure that our subsystems are ready.  */
+  i18n_init();
   init_common_subsystems ();
 
   /* Check that the libraries are suitable.  Do it here because the
@@ -888,7 +889,6 @@ main ( int argc, char **argv)
   gnupg_init_signals (0, emergency_cleanup);
   
   create_dotlock (NULL); /* register locking cleanup */
-  i18n_init();
 
   opt.def_cipher_algoid = "AES";  /*des-EDE3-CBC*/
 

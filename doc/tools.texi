@@ -979,7 +979,7 @@ which will be printed to stdout.
 .B  gpg-preset-passphrase
 .RI [ options ]
 .RI [ command ]
-.I keygrip
+.I cache-id
 @end ifset
 
 @mansect description
@@ -1009,14 +1009,19 @@ starting @command{gpg-agent} with the
 @command{gpg-preset-passphrase} is invoked this way:
 
 @example
-gpg-preset-passphrase [options] [command] @var{keygrip}
+gpg-preset-passphrase [options] [command] @var{cacheid}
 @end example
 
-@var{keygrip} is a 40 character string of hexadecimal characters
-identifying the key for which the passphrase should be set or cleared.
-This keygrip is listed along with the key when running the command:
-@code{gpgsm --dump-secret-keys}. One of the following command options
-must be given:
+@var{cacheid} is either a 40 character keygrip of hexadecimal
+characters identifying the key for which the passphrase should be set
+or cleared.  The keygrip is listed along with the key when running the
+command: @code{gpgsm --dump-secret-keys}.  Alternatively an arbitrary
+string may be used to identify a passphrase; it is suggested that such
+a string is prefixed with the name of the application (e.g
+@code{foo:12346}).
+
+@noindent
+One of the following command options must be given:
 
 @table @gnupgtabopt
 @item --preset
@@ -1027,7 +1032,7 @@ use. @command{gpg-preset-passphrase} will then read the passphrase from
 
 @item --forget
 @opindex forget
-Flush the passphrase for the given keygrip from the cache.
+Flush the passphrase for the given cache ID from the cache.
 
 @end table
 

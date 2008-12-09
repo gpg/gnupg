@@ -147,10 +147,10 @@ main( int argc, char **argv )
   log_set_prefix ("gpgv", 1);
   
   /* Make sure that our subsystems are ready.  */
+  i18n_init();
   init_common_subsystems ();
   
   gnupg_init_signals (0, NULL);
-  i18n_init();
 
   opt.command_fd = -1; /* no command fd */
   opt.pgp2_workarounds = 1;

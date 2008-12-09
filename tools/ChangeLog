@@ -1,3 +1,11 @@
+2008-12-09  Werner Koch  <wk@g10code.com>
+
+	* gpg-check-pattern.c (main): Call i18n_init before
+	init_common_subsystems.
+	* gpg-connect-agent.c (main): Ditto.
+	* gpgconf.c (main): Ditto.
+	* symcryptrun.c (main): Ditto.
+
 2008-12-08  Werner Koch  <wk@g10code.com>
 
 	* gpgkey2ssh.c (main): Change order of output for RSA. Change name

@@ -229,7 +229,7 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
 
 
 /* Print the BEGIN_SIGNING status message.  If MD is not NULL it is
-   used retrieve the hash algorithms used for the message. */
+   used to retrieve the hash algorithms used for the message. */
 void
 write_status_begin_signing (gcry_md_hd_t md)
 {

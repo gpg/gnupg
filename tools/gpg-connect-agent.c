@@ -1152,11 +1152,11 @@ main (int argc, char **argv)
   log_set_prefix ("gpg-connect-agent", 1);
 
   /* Make sure that our subsystems are ready.  */
+  i18n_init();
   init_common_subsystems ();
 
   assuan_set_assuan_err_source (0);
 
-  i18n_init();
 
   opt.homedir = default_homedir ();
   opt.connect_flags = 1; /* Use extended connect mode.  */

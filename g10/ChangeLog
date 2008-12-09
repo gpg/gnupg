@@ -1,3 +1,15 @@
+2008-12-09  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (open_info_file): Add arg BINARY and adjust callers.
+
+	* gpg.c (main): Call i18n_init before init_common_subsystems.
+	* gpgv.c (main): Ditto.
+
+	* keylist.c (set_attrib_fd): Do not close ATTRIB_FP if it is the
+	log stream. 
+	(set_attrib_fd) [W32]: Set to binary mode.
+	(dump_attribs): Flush the stream after writing.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (percent_plus_escape): Rename to

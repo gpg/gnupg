@@ -1,3 +1,7 @@
+2008-12-09  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Call i18n_init before init_common_subsystems.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (create_request): Provide a custom prompt for the
