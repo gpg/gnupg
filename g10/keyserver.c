@@ -731,6 +731,8 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 {
   char *answer;
 
+  fflush (stdout);
+
   if(count && opt.command_fd==-1)
     {
       static int from=1;
