@@ -836,7 +836,7 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-/* GET_PASSPHRASE [--data] [--check] <cache_id>
+/* GET_PASSPHRASE [--data] [--check] [--no-ask] <cache_id>
                   [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -853,6 +853,10 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
    If the option "--check" is used the passphrase constraints checks as
    implemented by gpg-agent are applied.  A check is not done if the
    passphrase has been found in the cache.
+
+   If the option "--no-ask" is used and the passphrase is not in the
+   cache the user will not be asked to enter a passphrase but the error
+   code GPG_ERR_NO_DATA is returned.  
 */
 
 static int
@@ -865,10 +869,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
   char *p;
   void *cache_marker;
-  int opt_data, opt_check;
+  int opt_data, opt_check, opt_no_ask;
 
   opt_data = has_option (line, "--data");
   opt_check = has_option (line, "--check");
+  opt_no_ask = has_option (line, "--no-ask");
   line = skip_options (line);
 
   cacheid = line;
@@ -920,6 +925,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
       rc = send_back_passphrase (ctx, opt_data, pw);
       agent_unlock_cache_entry (&cache_marker);
     }
+  else if (opt_no_ask)
+    rc = gpg_error (GPG_ERR_NO_DATA);
   else
     {
       /* Note, that we only need to replace the + characters and

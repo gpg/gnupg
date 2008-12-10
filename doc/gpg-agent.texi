@@ -1036,7 +1036,7 @@ special handling of passphrases.  This command uses a syntax which helps
 clients to use the agent with minimum effort.
 
 @example
-  GET_PASSPHRASE [--data] [--check] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
+  GET_PASSPHRASE [--data] [--check] [--no-ask] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
 @end example
 
 @var{cache_id} is expected to be a string used to identify a cached
@@ -1066,6 +1066,11 @@ but by regular data lines; this is the preferred method.
 If the option @option{--check} is used, the standard passphrase
 constraints checks are applied.  A check is not done if the passphrase
 has been found in the cache.
+
+If the option @option{--no-ask} is used and the passphrase is not in the
+cache the user will not be asked to enter a passphrase but the error
+code @code{GPG_ERR_NO_DATA} is returned.  
+
 
 @example
   CLEAR_PASSPHRASE @var{cache_id}
