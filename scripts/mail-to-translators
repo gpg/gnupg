@@ -48,15 +48,20 @@ security problems.  Furthermore the TP Robot is not able to handle
 more than one version of a project (we maintain 1.4 and 2.0) and thus
 I'd ask you *not to use the TP Robot* for GnuPG.
 
+The release candidate for 2.0.10 is available at:
+
+  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-2.0.10rc1.tar.bz2
+  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-2.0.10rc1.tar.bz2.sig
+
 Output of msgfmt is:
 $(msgfmt --check --statistics $file 2>&1 | head)
 
 If you are not able to continue the translation work, I suggest to
-pass this message on to another translator and drop a a short note to
+pass this message on to another translator and drop a short note to
 gnupg-hackers@gnupg.org .
 
 
-Thanks,
+Happy hacking,
 
   Werner
 

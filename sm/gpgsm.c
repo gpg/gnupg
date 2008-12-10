@@ -448,10 +448,10 @@ our_cipher_test_algo (int algo)
     case GCRY_CIPHER_SERPENT128:
     case GCRY_CIPHER_SERPENT192:
     case GCRY_CIPHER_SERPENT256:
-    case 309 /*GCRY_CIPHER_SEED*/:
-    case 310 /*GCRY_CIPHER_CAMELLIA128*/:
-    case 311 /*GCRY_CIPHER_CAMELLIA192*/:
-    case 312 /*GCRY_CIPHER_CAMELLIA256*/:
+    case GCRY_CIPHER_SEED:
+    case GCRY_CIPHER_CAMELLIA128:
+    case GCRY_CIPHER_CAMELLIA192:
+    case GCRY_CIPHER_CAMELLIA256:
       return gcry_cipher_test_algo (algo);
     default:
       return 1;
@@ -467,10 +467,11 @@ our_md_test_algo (int algo)
     case GCRY_MD_MD5:
     case GCRY_MD_SHA1:
     case GCRY_MD_RMD160:
+    case GCRY_MD_SHA224:
     case GCRY_MD_SHA256:
     case GCRY_MD_SHA384:
     case GCRY_MD_SHA512:
-    case 305 /*GCRY_MD_WHIRLPOOL*/:
+    case GCRY_MD_WHIRLPOOL:
       return gcry_md_test_algo (algo);
     default:
       return 1;
@@ -890,6 +891,8 @@ main ( int argc, char **argv)
   
   create_dotlock (NULL); /* register locking cleanup */
 
+  /* Note: If you change this default cipher algorithm , please
+     remember to update the Gpgconflist entry as well.  */
   opt.def_cipher_algoid = "AES";  /*des-EDE3-CBC*/
 
   opt.homedir = default_homedir ();
@@ -1604,7 +1607,7 @@ main ( int argc, char **argv)
 #ifndef HAVE_W32_SYSTEM
         printf ("prefer-system-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
-        printf ("cipher-algo:%lu:\"3DES:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("cipher-algo:%lu:\"AES:\n", GC_OPT_FLAG_DEFAULT);
         printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);

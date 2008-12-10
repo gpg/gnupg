@@ -1,3 +1,10 @@
+2008-12-10  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (our_cipher_test_algo): Use the GCRY constants as we now
+	require 1.4.
+	(our_md_test_algo): Ditto.  Add SHA224.
+	(main) <aGpgConfList>: Update default cipher algo.
+
 2008-12-09  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Call i18n_init before init_common_subsystems.
