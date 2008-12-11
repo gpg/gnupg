@@ -1,6 +1,8 @@
 2008-12-11  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (check_revocation_keys): Close message digest.
+	(signature_check2): Switch to SHA-1 for SIG_ID computation.  This
+	is to match 2.0.10.
 
 2008-12-09  Werner Koch  <wk@g10code.com>
 

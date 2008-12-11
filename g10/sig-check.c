@@ -124,19 +124,31 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 	 * and the timestamp, but the drawback of this is, that it is
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote batch processing applications might
-	 * like this feature here */
+	 * like this feature here.
+         *
+         * Note that before 1.4.10, we used RIPE-MD160 for the hash
+         * and accidently didn't include the timestamp and algorithm
+         * information in the hash.  Given that this feature is not
+         * commonly used and that a replay attacks detection should
+         * not solely be based on this feature (because it does not
+         * work with RSA), we take the freedom and switch to SHA-1
+         * with 1.4.10 to take advantage of hardware supported SHA-1
+         * implementations and to match the 2.0.10 behaviour.  We also
+         * include the missing information in the hash.  Note also the
+         * SIG_ID as computed by gpg 1.x and gpg 2.x didn't matched
+         * either because 2.x used to print MPIs not in PGP format.  */
 	MD_HANDLE md;
 	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p, *buffer;
 
-	md = md_open( DIGEST_ALGO_RMD160, 0);
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	md = md_open (DIGEST_ALGO_SHA1, 0);
+	md_putc (md, sig->pubkey_algo);
+	md_putc (md, sig->digest_algo);
+	md_putc (md, (a >> 24) & 0xff);
+	md_putc (md, (a >> 16) & 0xff);
+	md_putc (md, (a >>	8) & 0xff);
+	md_putc (md,  a	& 0xff);
 	for(i=0; i < nsig; i++ ) {
 	    unsigned n = mpi_get_nbits( sig->data[i]);
 
