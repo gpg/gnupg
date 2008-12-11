@@ -427,6 +427,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
               hash_public_key(md,pk);
               rc=signature_check(sig,md);
 	      cache_sig_result(sig,rc);
+              md_close (md);
 	      break;
 	    }
 	}
