@@ -33,6 +33,7 @@
 #include "options.h"
 #include "keydb.h"
 #include "i18n.h"
+#include "rmd160.h"
 
 int
 pubkey_letter( int algo )
@@ -448,16 +449,14 @@ keyid_from_sig( PKT_signature *sig, u32 *keyid )
 byte *
 namehash_from_uid(PKT_user_id *uid)
 {
-  if(uid->namehash==NULL)
+  if (!uid->namehash)
     {
-      uid->namehash = xmalloc(20);
-
+      uid->namehash = xmalloc (20);
+      
       if(uid->attrib_data)
-	gcry_md_hash_buffer (GCRY_MD_RMD160, uid->namehash,
-                             uid->attrib_data, uid->attrib_len);
+	rmd160_hash_buffer (uid->namehash, uid->attrib_data, uid->attrib_len);
       else
-	gcry_md_hash_buffer (GCRY_MD_RMD160, uid->namehash,
-                             uid->name, uid->len);
+	rmd160_hash_buffer (uid->namehash, uid->name, uid->len);
     }
   
   return uid->namehash;

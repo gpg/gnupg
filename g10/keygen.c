@@ -352,7 +352,8 @@ keygen_set_std_prefs (const char *string,int personal)
 	      strcat(dummy_string,"H8 ");
 
 	    /* RIPEMD160 */
-	    strcat(dummy_string,"H3 ");
+	    if (!openpgp_md_test_algo(DIGEST_ALGO_RMD160))
+              strcat(dummy_string,"H3 ");
 
 	    /* ZLIB */
 	    strcat(dummy_string,"Z2 ");

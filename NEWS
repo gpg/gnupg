@@ -19,6 +19,8 @@ Noteworthy changes in version 2.0.10 (unreleased)
  * [gpg] New control statement %ask-passphrase for the unattended key
    generation.
 
+ * [gpg] The algorithm to compute the SIG_ID status has been changed.
+
  * [gpgsm] Now uses AES by default.
 
  * [gpgsm] Made --output option work with --export-secret-key-p12.

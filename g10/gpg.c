@@ -4187,7 +4187,8 @@ print_mds( const char *fname, int algo )
             else {
                 print_hashline( md, GCRY_MD_MD5, fname );
                 print_hashline( md, GCRY_MD_SHA1, fname );
-                print_hashline( md, GCRY_MD_RMD160, fname );
+                if (!gcry_md_test_algo (GCRY_MD_RMD160))
+                    print_hashline( md, GCRY_MD_RMD160, fname );
                 if (!gcry_md_test_algo (GCRY_MD_SHA224))
                     print_hashline (md, GCRY_MD_SHA224, fname);
                 if (!gcry_md_test_algo (GCRY_MD_SHA256))
@@ -4204,7 +4205,8 @@ print_mds( const char *fname, int algo )
             else {
                 print_hex( md, GCRY_MD_MD5, fname );
                 print_hex( md, GCRY_MD_SHA1, fname );
-                print_hex( md, GCRY_MD_RMD160, fname );
+                if (!gcry_md_test_algo (GCRY_MD_RMD160))
+                    print_hex( md, GCRY_MD_RMD160, fname );
                 if (!gcry_md_test_algo (GCRY_MD_SHA224))
                     print_hex (md, GCRY_MD_SHA224, fname);
                 if (!gcry_md_test_algo (GCRY_MD_SHA256))

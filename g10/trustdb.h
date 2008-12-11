@@ -36,7 +36,6 @@
 #define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
 #define TRUST_FLAG_PENDING_CHECK 256 /* a check-trustdb is pending */
 
-#define NAMEHASH_HASH DIGEST_ALGO_RMD160
 #define NAMEHASH_LEN  20
 
 /*-- trustdb.c --*/

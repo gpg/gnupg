@@ -30,6 +30,8 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 needed_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a 
 
 bin_PROGRAMS = gpg2 gpgv2
+noinst_PROGRAMS = $(module_tests)
+TESTS = $(module_tests)
 
 if ENABLE_BZIP2_SUPPORT
 bzip2_source = compress-bz2.c
@@ -57,6 +59,7 @@ common_source =  \
 	      textfilter.c	\
 	      progress.c	\
 	      misc.c		\
+              rmd160.c          \
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
@@ -120,6 +123,12 @@ gpg2_LDADD =  $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV)
 gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV)
+
+t_common_ldadd = 
+module_tests = t-rmd160
+t_rmd160_SOURCES = t-rmd160.c rmd160.c
+t_rmd160_LDADD = $(t_common_ldadd)
+
 
 $(PROGRAMS): $(needed_libs) ../common/libgpgrl.a
 

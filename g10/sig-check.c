@@ -130,41 +130,63 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	 * and the timestamp, but the drawback of this is, that it is
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote batch processing applications might
-	 * like this feature here */
-	gcry_md_hd_t md;
-
+	 * like this feature here.  
+         * 
+         * Note that before 2.0.10, we used RIPE-MD160 for the hash
+         * and accidently didn't include the timestamp and algorithm
+         * information in the hash.  Given that this feature is not
+         * commonly used and that a replay attacks detection should
+         * not solely be based on this feature (because it does not
+         * work with RSA), we take the freedom and switch to SHA-1
+         * with 2.0.10 to take advantage of hardware supported SHA-1
+         * implementations.  We also include the missing information
+         * in the hash.  Note also the SIG_ID as computed by gpg 1.x
+         * and gpg 2.x didn't matched either because 2.x used to print
+         * MPIs not in PGP format.  */
 	u32 a = sig->timestamp;
-	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
-	byte *p, *buffer;
+	int nsig = pubkey_get_nsig( sig->pubkey_algo );
+	unsigned char *p, *buffer;
+        size_t n, nbytes;
+        int i;
+        char hashbuf[20];
 
-	if (gcry_md_open (&md, GCRY_MD_RMD160, 0))
-          BUG ();
-
-        /* FIXME:  Why the hell are we updating DIGEST here??? */
-	gcry_md_putc( digest, sig->pubkey_algo );
-	gcry_md_putc( digest, sig->digest_algo );
-	gcry_md_putc( digest, (a >> 24) & 0xff );
-	gcry_md_putc( digest, (a >> 16) & 0xff );
-	gcry_md_putc( digest, (a >>	8) & 0xff );
-	gcry_md_putc( digest,  a	   & 0xff );
-	for(i=0; i < nsig; i++ ) {
-	    size_t n;
-            unsigned char *tmp;
-
-	    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &tmp, &n, sig->data[i]))
+        nbytes = 6;
+	for (i=0; i < nsig; i++ )
+          {
+	    if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, &n, sig->data[i]))
               BUG();
-	    gcry_md_write (md, tmp, n);
-	    xfree (tmp);
-	}
-	gcry_md_final (md);
-	p = make_radix64_string ( gcry_md_read( md, 0 ), 20 );
-	buffer = xmalloc( strlen(p) + 60 );
-	sprintf( buffer, "%s %s %lu",
-		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
-	write_status_text( STATUS_SIG_ID, buffer );
-	xfree(buffer);
-	xfree(p);
-	gcry_md_close(md);
+            nbytes += n;
+          }
+
+        /* Make buffer large enough to be later used as output buffer.  */
+        if (nbytes < 100)
+          nbytes = 100;
+        nbytes += 10;  /* Safety margin.  */
+
+        /* Fill and hash buffer.  */
+        buffer = p = xmalloc (nbytes);
+	*p++ = sig->pubkey_algo;
+	*p++ = sig->digest_algo;
+	*p++ = (a >> 24) & 0xff;
+	*p++ = (a >> 16) & 0xff;
+	*p++ = (a >>  8) & 0xff;
+	*p++ =  a & 0xff;
+        nbytes -= 6;
+	for (i=0; i < nsig; i++ )
+          {
+	    if (gcry_mpi_print (GCRYMPI_FMT_PGP, p, nbytes, &n, sig->data[i]))
+              BUG();
+            p += n;
+            nbytes -= n;
+          }
+        gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, buffer, p-buffer);
+
+	p = make_radix64_string (hashbuf, 20);
+	sprintf (buffer, "%s %s %lu",
+		 p, strtimestamp (sig->timestamp), (ulong)sig->timestamp);
+	xfree (p);
+	write_status_text (STATUS_SIG_ID, buffer);
+	xfree (buffer);
     }
 
     return rc;
@@ -420,6 +442,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
               hash_public_key(md,pk);
               rc=signature_check(sig,md);
 	      cache_sig_result(sig,rc);
+              gcry_md_close (md);
 	      break;
 	    }
 	}

@@ -1,3 +1,23 @@
+2008-12-11  Werner Koch  <wk@g10code.com>
+
+	* sig-check.c (signature_check2): Change algorithm used to compute
+	the SIG_ID.
+	(check_revocation_keys): Close message digest.
+
+	* rmd160.c, rmd160.h: New.  Based on code from GnuPG-1.4.
+	* t-rmd160.c: New.
+	* Makefile.am: Add support to run tests.
+	* keyid.c (namehash_from_uid): Use rmd160_hash_buffer.
+
+2008-12-10  Werner Koch  <wk@g10code.com>
+
+	* trustdb.h (NAMEHASH_HASH): Remove unsued constant.
+
+	* gpg.c (print_mds): Print RMD160 only is enabled.
+
+	* keygen.c (keygen_set_std_prefs): Include RMD160 only if
+	available.
+
 2008-12-09  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (main) [IS_DEVELOPMENT_VERSION]: Fix strusage use.

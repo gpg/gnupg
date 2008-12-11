@@ -328,7 +328,6 @@ void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 
-
 /*-- server.c --*/
 int gpg_server (ctrl_t);
 
