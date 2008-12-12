@@ -1,3 +1,8 @@
+2008-12-12  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (General GPGSM Commands): Fix --help, --version and
+	--warranty wording.
+
 2008-12-08  Werner Koch  <wk@g10code.com>
 
 	* DETAILS: Clarify the use of "trust" and "validity" as suggested
