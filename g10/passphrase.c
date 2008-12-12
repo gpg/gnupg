@@ -377,6 +377,8 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
          errors from the agent.  */ 
       if (canceled)
         *canceled = 1;
+
+      write_status_error ("get_passphrase", rc);
     }
 
   if (pk)

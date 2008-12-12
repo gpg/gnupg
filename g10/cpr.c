@@ -157,6 +157,19 @@ write_status_text ( int no, const char *text)
 }
 
 
+void
+write_status_error (const char *where, int errcode)
+{
+  if (!statusfp || !status_currently_allowed (STATUS_ERROR))
+    return;  /* Not enabled or allowed. */
+
+  fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+           get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
+  if (fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
 /*
  * Write a status line with a buffer using %XX escapes.  If WRAP is >
  * 0 wrap the line after this length.  If STRING is not NULL it will

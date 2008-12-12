@@ -1,5 +1,8 @@
 2008-12-12  Werner Koch  <wk@g10code.com>
 
+	* passphrase.c (passphrase_get): Write a STATUS_ERROR.
+	* cpr.c (write_status_error): New.
+
 	* Makefile.am (common_source): Add rmd160.h.
 
 2008-12-11  Werner Koch  <wk@g10code.com>
