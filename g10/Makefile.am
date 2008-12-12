@@ -59,7 +59,7 @@ common_source =  \
 	      textfilter.c	\
 	      progress.c	\
 	      misc.c		\
-              rmd160.c          \
+              rmd160.c rmd160.h \
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\

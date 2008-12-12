@@ -1,3 +1,7 @@
+2008-12-12  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (common_source): Add rmd160.h.
+
 2008-12-11  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (signature_check2): Change algorithm used to compute
