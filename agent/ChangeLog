@@ -1,3 +1,8 @@
+2008-12-17  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_connections): Set action of all pth event
+	handled signals to SIG_IGN.  Use a different pth_sigmask strategy.
+
 2008-12-10  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_get_passphrase): Implement option --no-ask.

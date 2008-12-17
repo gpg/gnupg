@@ -1748,13 +1748,28 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
 #ifndef HAVE_W32_SYSTEM /* fixme */
   /* Make sure that the signals we are going to handle are not blocked
-     and create an event object for them. */
+     and create an event object for them.  We also set the default
+     action to ignore because we use an Pth event to get notified
+     about signals.  This avoids that the default action is taken in
+     case soemthing goes wrong within Pth.  The problem might also be
+     a Pth bug.  */
   sigemptyset (&sigs );
-  sigaddset (&sigs, SIGHUP);
-  sigaddset (&sigs, SIGUSR1);
-  sigaddset (&sigs, SIGUSR2);
-  sigaddset (&sigs, SIGINT);
-  sigaddset (&sigs, SIGTERM);
+  {
+    static const int mysigs[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGINT, SIGTERM };
+    struct sigaction sa;
+    int i;
+
+    for (i=0; i < DIM (mysigs); i++)
+      {
+        sigemptyset (&sa.sa_mask);
+        sa.sa_handler = SIG_IGN;
+        sa.sa_flags = 0;
+        sigaction (mysigs[i], &sa, NULL);
+        
+        sigaddset (&sigs, mysigs[i]);
+      }
+  }
+
   pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
@@ -1782,8 +1797,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
   for (;;)
     {
-      sigset_t oldsigs;
+      /* Make sure that our signals are not blocked.  */
+      pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
 
+      /* Shutdown test.  */
       if (shutdown_pending)
         {
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
@@ -1843,7 +1860,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           log_error (_("pth_select failed: %s - waiting 1s\n"),
                      strerror (errno));
           pth_sleep (1);
-	  continue;
+          continue;
 	}
 
       if (pth_event_occurred (ev))
@@ -1862,11 +1879,11 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           handle_tick ();
         }
 
-      
+
       /* We now might create new threads and because we don't want any
          signals (as we are handling them here) to be delivered to a
          new thread.  Thus we need to block those signals. */
-      pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
+      pth_sigmask (SIG_BLOCK, &sigs, NULL);
 
       if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
@@ -1943,10 +1960,6 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             }
           fd = GNUPG_INVALID_FD;
 	}
-
-      /* Restore the signal mask. */
-      pth_sigmask (SIG_SETMASK, &oldsigs, NULL);
-
     }
 
   pth_event_free (ev, PTH_FREE_ALL);
