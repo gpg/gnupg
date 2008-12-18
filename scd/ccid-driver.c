@@ -1,5 +1,6 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
- * Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007
+ *               2008  Free Software Foundation, Inc.
  * Written by Werner Koch.
  *
  * This file is part of GnuPG.
@@ -262,6 +263,7 @@ static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
+static int abort_cmd (ccid_driver_t handle);
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
@@ -1069,7 +1071,10 @@ scan_or_find_devices (int readerno, const char *readerid,
 /* Set the level of debugging to LEVEL and return the old level.  -1
    just returns the old level.  A level of 0 disables debugging, 1
    enables debugging, 2 enables additional tracing of the T=1
-   protocol, other values are not yet defined. */
+   protocol, other values are not yet defined.
+
+   Note that libusb may provide its own debugging feature which is
+   enabled by setting the envvar USB_DEBUG.  */
 int
 ccid_set_debug_level (int level)
 {
@@ -1395,7 +1400,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
       rc = usb_bulk_write (handle->idev, 
                            handle->ep_bulk_out,
                            (char*)msg, msglen,
-                           1000 /* ms timeout */);
+                           5000 /* ms timeout */);
       if (rc == msglen)
         return 0;
       if (rc == -1)
@@ -1463,17 +1468,20 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (msglen < 10)
     {
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
+      abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[5] != 0)    
     {
       DEBUGOUT_1 ("unexpected bulk-in slot (%d)\n", buffer[5]);
+      abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[6] != seqno)    
     {
       DEBUGOUT_2 ("bulk-in seqno does not match (%d/%d)\n",
                   seqno, buffer[6]);
+      abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
 
@@ -1492,6 +1500,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (buffer[0] != expected_type)
     {
       DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
+      abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
 
@@ -1517,6 +1526,113 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     case 2: return CCID_DRIVER_ERR_NO_CARD;
     case 3: /* RFU */ break;
     }
+  return 0;
+}
+
+
+
+/* Send an abort sequence and wait until everything settled.  */
+static int
+abort_cmd (ccid_driver_t handle)
+{
+  int rc;
+  char dummybuf[8];
+  unsigned char seqno;
+  unsigned char msg[100];
+  size_t msglen;
+  int i;
+
+  if (!handle->idev)
+    {
+      /* I don't know how to send an abort to non-USB devices.  */
+      rc = CCID_DRIVER_ERR_NOT_SUPPORTED;
+    }
+  
+  DEBUGOUT ("sending abort sequence\n");
+  /* Send the abort command to the control pipe.  Note that we don't
+     need to keep track of sent abort commands because there should
+     never be another thread using the same slot concurrently.  */
+  seqno = (handle->seqno & 0xff);
+  rc = usb_control_msg (handle->idev, 
+                        0x21,/* bmRequestType: host-to-device,
+                                class specific, to interface.  */
+                        1,   /* ABORT */
+                        (seqno << 8 | 0 /* slot */),
+                        handle->ifc_no,
+                        dummybuf, 0,
+                        1000 /* ms timeout */);
+  if (rc < 0)
+    {
+      DEBUGOUT_1 ("usb_control_msg error: %s\n", strerror (errno));
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+    }
+
+  /* Now send the abort command to the bulk out pipe using the same
+     SEQNO and SLOT. */
+  msg[0] = PC_to_RDR_Abort;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno;
+  msg[7] = 0; /* RFU */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  msglen = 10;
+  set_msg_len (msg, 0);
+  handle->seqno++;  /* Bumb up for the next use. */
+
+  DEBUGOUT ("sending");
+  for (i=0; i < msglen; i++)
+    DEBUGOUT_CONT_1 (" %02X", msg[i]);
+  DEBUGOUT_LF ();
+  rc = usb_bulk_write (handle->idev, 
+                       handle->ep_bulk_out,
+                       (char*)msg, msglen,
+                       5000 /* ms timeout */);
+  if (rc == msglen)
+    rc = 0;
+  else if (rc == -1)
+    DEBUGOUT_1 ("usb_bulk_write error in abort_cmd: %s\n", strerror (errno));
+  else
+    DEBUGOUT_1 ("usb_bulk_write failed in abort_cmd: %d\n", rc);
+
+  if (rc)
+    return rc;
+
+  /* Wait for the expected response.  */
+  do
+    {
+      rc = usb_bulk_read (handle->idev, 
+                          handle->ep_bulk_in,
+                          (char*)msg, sizeof msg, 
+                          5000 /*ms timeout*/);
+      if (rc < 0)
+        {
+          DEBUGOUT_1 ("usb_bulk_read error in abort_cmd: %s\n",
+                      strerror (errno));
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+      msglen = rc;
+
+      if (msglen < 10)
+        {
+          DEBUGOUT_1 ("bulk-in msg in abort_cmd too short (%u)\n",
+                      (unsigned int)msglen);
+          return CCID_DRIVER_ERR_INV_VALUE;
+        }
+      if (msg[5] != 0)    
+        {
+          DEBUGOUT_1 ("unexpected bulk-in slot (%d) in abort_cmd\n", msg[5]);
+          return CCID_DRIVER_ERR_INV_VALUE;
+        }
+
+      DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n",
+                  msg[7], msg[8], msg[9]);
+      if (CCID_COMMAND_FAILED (msg))
+        print_command_failed (msg);
+    }
+  while (msg[0] != RDR_to_PC_SlotStatus && msg[5] != 0 && msg[6] != seqno);
+
+  DEBUGOUT ("sending abort sequence succeeded\n");
+
   return 0;
 }
 

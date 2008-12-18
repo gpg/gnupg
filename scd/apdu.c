@@ -133,6 +133,7 @@ struct reader_table_s {
   } rapdu;
 #endif /*USE_G10CODE_RAPDU*/
   char *rdrname;     /* Name of the connected reader or NULL if unknown. */
+  int any_status;    /* True if we have seen any status.  */
   int last_status;
   int status;
   int is_t0;         /* True if we know that we are running T=0. */
@@ -340,7 +341,8 @@ new_reader_slot (void)
   reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = NULL;
 
-  reader_table[reader].used = 1;
+  reader_table[reader].used = 1;  
+  reader_table[reader].any_status = 0;
   reader_table[reader].last_status = 0;
   reader_table[reader].is_t0 = 1;
 #ifdef NEED_PCSC_WRAPPER
@@ -1289,8 +1291,7 @@ connect_pcsc_card (int slot)
              and usable.  Remember this.  */
           reader_table[slot].last_status = (   APDU_CARD_USABLE
                                              | APDU_CARD_PRESENT
-                                             | APDU_CARD_ACTIVE
-                                             | 0x8000);
+                                             | APDU_CARD_ACTIVE);
           reader_table[slot].is_t0 = !!(card_protocol & PCSC_PROTOCOL_T0);
         }
     }
@@ -1743,8 +1744,7 @@ open_pcsc_reader_wrapped (const char *portstr)
          and usable.  Thus remember this.  */
       slotp->last_status = (  APDU_CARD_USABLE
                             | APDU_CARD_PRESENT
-                            | APDU_CARD_ACTIVE
-                            | 0x8000);
+                            | APDU_CARD_ACTIVE);
     }
   slotp->atrlen = len;
 
@@ -1947,8 +1947,7 @@ open_ccid_reader (const char *portstr)
          and usable.  Thus remember this.  */
       reader_table[slot].last_status = (APDU_CARD_USABLE
                                         | APDU_CARD_PRESENT
-                                        | APDU_CARD_ACTIVE 
-                                        | 0x8000);
+                                        | APDU_CARD_ACTIVE);
     }
 
   reader_table[slot].close_reader = close_ccid_reader;
@@ -2615,8 +2614,7 @@ apdu_reset (int slot)
          and usable.  Thus remember this.  */
       reader_table[slot].last_status = (APDU_CARD_USABLE
                                         | APDU_CARD_PRESENT
-                                        | APDU_CARD_ACTIVE 
-                                        | 0x8000);
+                                        | APDU_CARD_ACTIVE);
     }
 
   unlock_slot (slot);
@@ -2662,8 +2660,7 @@ apdu_activate (int slot)
                      and usable.  Thus remember this.  */
                   reader_table[slot].last_status = (APDU_CARD_USABLE
                                                     | APDU_CARD_PRESENT
-                                                    | APDU_CARD_ACTIVE
-                                                    | 0x8000);
+                                                    | APDU_CARD_ACTIVE);
                 }
             }
         }
@@ -2733,17 +2730,16 @@ apdu_get_status (int slot, int hang,
       return sw;
     }
 
-  /* Keep track of changes.  We use one extra bit to test whether we
-     have checked the status at least once. */
-  if ( s != (reader_table[slot].last_status & 0x07ff)
-       || !reader_table[slot].last_status )
+  /* Keep track of changes.  */
+  if (s != reader_table[slot].last_status
+      || !reader_table[slot].any_status )
     {
       reader_table[slot].change_counter++;
       /* Make sure that the ATR is invalid so that a reset will be by
          activate.  */
       reader_table[slot].atrlen = 0;
     }
-  reader_table[slot].last_status = (s | 0x8000);
+  reader_table[slot].any_status = 1;
 
   if (status)
     *status = s;

@@ -1602,7 +1602,7 @@ static void
 agent_sigusr2_action (void)
 {
   if (opt.verbose)
-    log_info ("SIGUSR2 received - checking smartcard status\n");
+    log_info ("SIGUSR2 received - updating card event counter\n");
   /* Nothing to check right now.  We only increment a counter.  */
   bump_card_eventcounter ();
 }

@@ -1964,6 +1964,84 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
+
+/* Helper to send the clients a status change notification.  */
+static void
+send_client_notifications (void)
+{
+  struct {
+    pid_t pid; 
+#ifdef HAVE_W32_SYSTEM
+    HANDLE handle;
+#else
+    int signo; 
+#endif
+  } killed[50];
+  int killidx = 0;
+  int kidx;
+  struct server_local_s *sl;
+  
+  for (sl=session_list; sl; sl = sl->next_session)
+    {
+      if (sl->event_signal && sl->assuan_ctx)
+        {
+          pid_t pid = assuan_get_pid (sl->assuan_ctx);
+#ifdef HAVE_W32_SYSTEM
+          HANDLE handle = (void *)sl->event_signal;
+          
+          for (kidx=0; kidx < killidx; kidx++)
+            if (killed[kidx].pid == pid 
+                && killed[kidx].handle == handle)
+              break;
+          if (kidx < killidx)
+            log_info ("event %lx (%p) already triggered for client %d\n",
+                      sl->event_signal, handle, (int)pid);
+          else
+            {
+              log_info ("triggering event %lx (%p) for client %d\n",
+                        sl->event_signal, handle, (int)pid);
+              if (!SetEvent (handle))
+                log_error ("SetEvent(%lx) failed: %s\n",
+                           sl->event_signal, w32_strerror (-1));
+              if (killidx < DIM (killed))
+                {
+                  killed[killidx].pid = pid;
+                  killed[killidx].handle = handle;
+                  killidx++;
+                }
+            }
+#else /*!HAVE_W32_SYSTEM*/
+          int signo = sl->event_signal;
+          
+          if (pid != (pid_t)(-1) && pid && signo > 0)
+            {
+              for (kidx=0; kidx < killidx; kidx++)
+                if (killed[kidx].pid == pid 
+                    && killed[kidx].signo == signo)
+                  break;
+              if (kidx < killidx)
+                log_info ("signal %d already sent to client %d\n",
+                          signo, (int)pid);
+              else
+                {
+                  log_info ("sending signal %d to client %d\n",
+                            signo, (int)pid);
+                  kill (pid, signo);
+                  if (killidx < DIM (killed))
+                    {
+                      killed[killidx].pid = pid;
+                      killed[killidx].signo = signo;
+                      killidx++;
+                    }
+                }
+#endif /*!HAVE_W32_SYSTEM*/
+            }
+        }
+    }
+}
+
+
+
 /* This is the core of scd_update_reader_status_file but the caller
    needs to take care of the locking.  */
 static void
@@ -1985,12 +2063,17 @@ update_reader_status_file (int set_card_removed_flag)
     {
       struct slot_status_s *ss = slot_table + idx;
       struct server_local_s *sl;
+      int sw_apdu;
 
       if (!ss->valid || ss->slot == -1)
         continue; /* Not valid or reader not yet open. */
       
-      if ( apdu_get_status (ss->slot, 0, &status, &changed) )
-        continue; /* Get status failed. */
+      sw_apdu = apdu_get_status (ss->slot, 0, &status, &changed);
+      if (sw_apdu)
+        {
+          /* Get status failed.  Ignore that.  */
+          continue; 
+        }
 
       if (!ss->any || ss->status != status || ss->changed != changed )
         {
@@ -1998,8 +2081,10 @@ update_reader_status_file (int set_card_removed_flag)
           char templ[50];
           FILE *fp;
 
-          log_info ("updating status of slot %d to 0x%04X\n",
-                    ss->slot, status);
+          log_info ("updating slot %d status: 0x%04X->0x%04X (%u->%u)\n",
+                    ss->slot, ss->status, status, ss->changed, changed);
+          ss->status = status;
+          ss->changed = changed;
 
 	  /* FIXME: Should this be IDX instead of ss->slot?  This
 	     depends on how client sessions will associate the reader
@@ -2065,33 +2150,9 @@ update_reader_status_file (int set_card_removed_flag)
             update_card_removed (idx, 1);
           
           ss->any = 1;
-          ss->status = status;
-          ss->changed = changed;
 
           /* Send a signal to all clients who applied for it.  */
-          for (sl=session_list; sl; sl = sl->next_session)
-            if (sl->event_signal && sl->assuan_ctx)
-              {
-                pid_t pid = assuan_get_pid (sl->assuan_ctx);
-
-#ifdef HAVE_W32_SYSTEM
-                HANDLE handle = (void *)sl->event_signal;
-                
-                log_info ("client pid is %d, triggering event %lx (%p)\n",
-                          pid, sl->event_signal, handle);
-                if (!SetEvent (handle))
-                  log_error ("SetEvent(%lx) failed: %s\n",
-                             sl->event_signal, w32_strerror (-1));
-#else
-                int signo = sl->event_signal;
-                
-                log_info ("client pid is %d, sending signal %d\n",
-                          pid, signo);
-                if (pid != (pid_t)(-1) && pid && signo > 0)
-                  kill (pid, signo);
-#endif
-              }
-
+          send_client_notifications ();
         }
       
       /* Check whether a disconnect is pending.  */
@@ -2104,7 +2165,7 @@ update_reader_status_file (int set_card_removed_flag)
             {
               /* FIXME: Use a real timeout.  */
               /* At least one connection and all allow a disconnect.  */
-              log_debug ("disconnecting card in slot %d\n", ss->slot);
+              log_info ("disconnecting card in slot %d\n", ss->slot);
               apdu_disconnect (ss->slot);
             }
         }
