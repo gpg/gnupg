@@ -1,3 +1,8 @@
+2008-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c (main): Properly handle UTF8 usernames with --sign-key and
+	--lsign-key.
+
 2008-12-11  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (check_revocation_keys): Close message digest.
