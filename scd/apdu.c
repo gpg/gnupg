@@ -2735,11 +2735,12 @@ apdu_get_status (int slot, int hang,
       || !reader_table[slot].any_status )
     {
       reader_table[slot].change_counter++;
-      /* Make sure that the ATR is invalid so that a reset will be by
-         activate.  */
+      /* Make sure that the ATR is invalid so that a reset will be
+         triggered by activate.  */
       reader_table[slot].atrlen = 0;
     }
   reader_table[slot].any_status = 1;
+  reader_table[slot].last_status = s;
 
   if (status)
     *status = s;
