@@ -1,3 +1,11 @@
+2009-01-05  Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>  (wk)
+
+	* tr.po: Update.
+
+2009-01-05  Jedi <jedi@jedi.org>  (wk)
+
+	* zh_TW.po: Update.
+
 2008-12-08  Werner Koch  <wk@g10code.com>
 
 	* de.po: Typo fixes.  Reported by Daniel Leidert.
@@ -227,7 +235,7 @@
 	* de.po: New.
 
 	
- Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+ Copyright 2002, 2003, 2004, 2005, 2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
