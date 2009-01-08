@@ -57,6 +57,10 @@ gpg_error_t iso7816_select_path (int slot,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_apdu_direct (int slot,
+                                 const void *apdudata, size_t apdudatalen, 
+                                 int handle_more,
+                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_check_keypad (int slot, int command,
                                   iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_verify (int slot,

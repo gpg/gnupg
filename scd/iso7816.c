@@ -1,5 +1,5 @@
 /* iso7816.c - ISO 7816 commands
- * Copyright (C) 2003, 2004, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -215,6 +215,48 @@ iso7816_list_directory (int slot, int list_dirs,
 
   sw = apdu_send (slot, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
                   result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+    }
+  return map_sw (sw);
+}
+
+
+/* This funcion sends an already formatted APDU to the card.  With
+   HANDLE_MORE set to true a MORE DATA status will be handled
+   internally.  The return value is a gpg error code (i.e. a mapped
+   status word).  This is basically the same as apdu_send_direct but
+   it maps the status word and does not return it in the result
+   buffer.  */
+gpg_error_t
+iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen, 
+                     int handle_more,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  sw = apdu_send_direct (slot, apdudata, apdudatalen, handle_more,
+                         result, resultlen);
+  if (!sw)
+    {
+      if (*resultlen < 2)
+        sw = SW_HOST_GENERAL_ERROR;
+      else
+        {
+          sw = ((*result)[*resultlen-2] << 8) | (*result)[*resultlen-1];
+          (*resultlen)--;
+          (*resultlen)--;
+        }
+    }
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -668,14 +710,7 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
     {
       buffer = NULL;
       bufferlen = 0;
-      /* Note, that we to set N to 254 due to problems either with the
-         ccid driver or some TCOS cards.  It actually should be 0
-         which is the official ISO value to read a variable length
-         object. */
-      if (read_all || nmax > 254)
-        n = 254;
-      else
-        n = nmax;
+      n = read_all? 0 : nmax;
       sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
                          ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                          n, &buffer, &bufferlen);
@@ -769,13 +804,11 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
 
   buffer = NULL;
   bufferlen = 0;
-  /* Fixme: Either the ccid driver or the TCOS cards have problems
-     with an Le of 0. */
   sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
                      recno, 
                      short_ef? short_ef : 0x04,
                      -1, NULL,
-                     254, &buffer, &bufferlen);
+                     0, &buffer, &bufferlen);
 
   if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
     {

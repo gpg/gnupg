@@ -2793,9 +2793,9 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
    related operations if not NULL.  If EXTENDED_MODE is not NULL
    command chaining or extended length will be used according to these
    values:
-       n < 0 := Use command chaining without the data part limited to -n
+       n < 0 := Use command chaining with the data part limited to -n
                 in each chunk.  If -1 is used a default value is used.
-      n == 1 := Use extended length for input and output with out a
+      n == 1 := Use extended length for input and output without a
                 length limit.
        n > 1 := Use extended length with up to N bytes.
 */
@@ -3107,7 +3107,7 @@ apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
 
 /* This is a more generic version of the apdu sending routine.  It
    takes an already formatted APDU in APDUDATA or length APDUDATALEN
-   and returns the with an APDU including the status word.  With
+   and returns with an APDU including the status word.  With
    HANDLE_MORE set to true this function will handle the MORE DATA
    status and return all APDUs concatenated with one status word at
    the end.  The function does not return a regular status word but 0
@@ -3237,7 +3237,7 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
                 }
             }
           else
-            log_info ("apdu_send_sdirect(%d) "
+            log_info ("apdu_send_direct(%d) "
                       "got unexpected status %04X from get response\n",
                       slot, sw);
         }
@@ -3268,8 +3268,8 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
 
   unlock_slot (slot);
 
-  /* Append the status word - we reseved the two extra bytes while
-     allocating the buffer. */
+  /* Append the status word.  Note that we reserved the two extra
+     bytes while allocating the buffer.  */
   if (retbuf)
     {
       (*retbuf)[(*retbuflen)++] = (sw >> 8);

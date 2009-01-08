@@ -559,7 +559,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
       100 := Regular X.509 cert
       101 := Trusted X.509 cert
       102 := Useful X.509 cert
-      110 := Root CA cert (DINSIG)
+      110 := Root CA cert (e.g. DINSIG)
 
    For certain cards, more information will be returned:
 

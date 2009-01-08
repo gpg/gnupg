@@ -1,5 +1,5 @@
-/* app-nks.c - The Telesec NKS 2.0 card application.
- * Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+/* app-nks.c - The Telesec NKS card application.
+ * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,29 +34,55 @@
 static struct
 {
   int fid;       /* File ID. */
+  int nks_ver;   /* 0 for NKS version 2, 3 for version 3. */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
   int iskeypair; /* If true has the FID of the correspoding certificate. */
   int issignkey; /* True if file is a key usable for signing. */
   int isenckey;  /* True if file is a key usable for decryption. */
 } filelist[] = {
-  { 0x4531, 0,  0xC000, 1, 0 }, 
-  { 0xC000, 101 },
-  { 0x4331, 100 },
-  { 0x4332, 100 },
-  { 0xB000, 110 },
-  { 0x45B1, 0,  0xC200, 0, 1 },
-  { 0xC200, 101 },
-  { 0x43B1, 100 },
-  { 0x43B2, 100 },
-  { 0, 0 }
+  { 0x4531, 0, 0,  0xC000, 1, 0 }, /* EF_PK.NKS.SIG */
+  { 0xC000, 0, 101 },              /* EF_C.NKS.SIG  */
+  { 0x4331, 0, 100 },
+  { 0x4332, 0, 100 },
+  { 0xB000, 0, 110 },              /* EF_PK.RCA.NKS */
+  { 0x45B1, 0, 0,  0xC200, 0, 1 }, /* EF_PK.NKS.ENC */
+  { 0xC200, 0, 101 },              /* EF_C.NKS.ENC  */
+  { 0x43B1, 0, 100 },
+  { 0x43B2, 0, 100 },
+  { 0x4571, 3, 0,  0xc500, 0, 0 }, /* EF_PK.NKS.AUT */
+  { 0xC500, 3, 101 },              /* EF_C.NKS.AUT  */
+  { 0x45B2, 3, 0,  0xC201, 0, 1 }, /* EF_PK.NKS.ENC1024 */
+  { 0xC201, 3, 101 },              /* EF_C.NKS.ENC1024  */
+  { 0 }
 };
 
+
+
+/* Object with application (i.e. NKS) specific data.  */
+struct app_local_s {
+  int nks_version;  /* NKS version.  */
+
+};
+
+
+
+
+/* Release local data. */
+static void
+do_deinit (app_t app)
+{
+  if (app && app->app_local)
+    {
+      xfree (app->app_local);
+      app->app_local = NULL;
+    }
+}
 
 
 /* Read the file with FID, assume it contains a public key and return
    its keygrip in the caller provided 41 byte buffer R_GRIPSTR. */
 static gpg_error_t
-keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
+keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
 {
   gpg_error_t err;
   unsigned char grip[20];
@@ -65,29 +91,34 @@ keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
   gcry_sexp_t sexp;
   int i;
   
-  err = iso7816_select_file (slot, fid, 0, NULL, NULL);
+  err = iso7816_select_file (app->slot, fid, 0, NULL, NULL);
   if (err)
     return err;
-  err = iso7816_read_record (slot, 1, 1, 0, &buffer[0], &buflen[0]);
+  err = iso7816_read_record (app->slot, 1, 1, 0, &buffer[0], &buflen[0]);
   if (err)
     return err;
-  err = iso7816_read_record (slot, 2, 1, 0, &buffer[1], &buflen[1]);
+  err = iso7816_read_record (app->slot, 2, 1, 0, &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);
       return err;
     }
   
-  for (i=0; i < 2; i++)
+  if (app->app_local->nks_version < 3)
     {
-      /* Check that the value appears like an integer encoded as
-         Simple-TLV.  We don't check the tag because the tests cards I
-         have use 1 for both, the modulus and the exponent - the
-         example in the documentation gives 2 for the exponent. */
-      if (buflen[i] < 3)
-        err = gpg_error (GPG_ERR_TOO_SHORT);
-      else if (buffer[i][1] != buflen[i]-2 )
-        err = gpg_error (GPG_ERR_INV_OBJ);
+      /* Old versions of NKS store the values in a TLV encoded format.
+         We need to do some checks.  */
+      for (i=0; i < 2; i++)
+        {
+          /* Check that the value appears like an integer encoded as
+             Simple-TLV.  We don't check the tag because the tests cards I
+             have use 1 for both, the modulus and the exponent - the
+             example in the documentation gives 2 for the exponent. */
+          if (buflen[i] < 3)
+            err = gpg_error (GPG_ERR_TOO_SHORT);
+          else if (buffer[i][1] != buflen[i]-2 )
+            err = gpg_error (GPG_ERR_INV_OBJ);
+        }
     }
 
   if (!err)
@@ -126,6 +157,9 @@ do_learn_status (app_t app, ctrl_t ctrl)
   /* Output information about all useful objects. */
   for (i=0; filelist[i].fid; i++)
     {
+      if (filelist[i].nks_ver > app->app_local->nks_version)
+        continue;
+
       if (filelist[i].certtype)
         {
           size_t len;
@@ -149,7 +183,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
         {
           char gripstr[40+1];
 
-          err = keygripstr_from_pk_file (app->slot, filelist[i].fid, gripstr);
+          err = keygripstr_from_pk_file (app, filelist[i].fid, gripstr);
           if (err)
             log_error ("can't get keygrip from FID 0x%04X: %s\n",
                        filelist[i].fid, gpg_strerror (err));
@@ -580,7 +614,40 @@ do_check_pin (app_t app, const char *keyidstr,
 }
 
 
-/* Select the NKS 2.0 application.  */
+/* Return the version of the NKS application.  */
+static int
+get_nks_version (int slot)
+{
+  unsigned char *result = NULL;
+  size_t resultlen;
+  int type;
+
+  if (iso7816_apdu_direct (slot, "\x80\xaa\x06\x00\x00", 5, 0, 
+                           &result, &resultlen))
+    return 2; /* NKS 2 does not support this command.  */
+  
+  /* Example value:    04 11 19 22 21 6A 20 80 03 03 01 01 01 00 00 00
+                       vv tt ccccccccccccccccc aa bb cc vvvvvvvvvvv xx
+     vendor (Philips) -+  |  |                 |  |  |  |           |
+     chip type -----------+  |                 |  |  |  |           |
+     chip id ----------------+                 |  |  |  |           |
+     card type (3 - tcos 3) -------------------+  |  |  |           |
+     OS version of card type ---------------------+  |  |           |
+     OS release of card type ------------------------+  |           |
+     OS vendor internal version ------------------------+           |
+     RFU -----------------------------------------------------------+
+  */
+  if (resultlen < 16)
+    type = 0;  /* Invalid data returned.  */
+  else
+    type = result[8];
+  xfree (result);
+
+  return type;
+}
+
+
+/* Select the NKS application.  */
 gpg_error_t
 app_select_nks (app_t app)
 {
@@ -593,6 +660,18 @@ app_select_nks (app_t app)
     {
       app->apptype = "NKS";
 
+      app->app_local = xtrycalloc (1, sizeof *app->app_local);
+      if (!app->app_local)
+        {
+          rc = gpg_error (gpg_err_code_from_errno (errno));
+          goto leave;
+        }
+
+      app->app_local->nks_version = get_nks_version (slot);
+      if (opt.verbose)
+        log_info ("Detected NKS version: %d\n", app->app_local->nks_version);
+
+      app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
       app->fnc.getattr = NULL;
@@ -605,6 +684,9 @@ app_select_nks (app_t app)
       app->fnc.check_pin = do_check_pin;
    }
 
+ leave:
+  if (rc)
+    do_deinit (app);
   return rc;
 }
 

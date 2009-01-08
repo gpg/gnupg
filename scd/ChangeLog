@@ -1,3 +1,18 @@
+2009-01-08  Werner Koch  <wk@g10code.com>
+
+	* iso7816.c (iso7816_read_record, iso7816_read_binary): Pass 0 for
+	L_e because the problem with the CCID driver has gone.
+	(iso7816_apdu_direct): New.
+
+	* app-nks.c (filelist): Add NKS_VER field.  Add NKS 3 specific
+	entries.
+	(app_local_s, do_deinit): New.
+	(get_nks_version): New.
+	(app_select_nks): Setup local data.
+	(keygripstr_from_pk_file): Replace SLOT by APP and take care of
+	NKS version > 2.
+	(do_learn_status): Take care of NKS version.
+
 2009-01-05  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (apdu_get_status): Save the last status.
