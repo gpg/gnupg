@@ -1,3 +1,7 @@
+2009-01-08  Werner Koch  <wk@g10code.com>
+
+	* fingerprint.c (gpgsm_get_keygrip_hexstring): Add error detection.
+
 2008-12-10  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (our_cipher_test_algo): Use the GCRY constants as we now

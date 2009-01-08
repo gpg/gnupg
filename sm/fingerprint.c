@@ -152,9 +152,9 @@ gpgsm_get_short_fingerprint (ksba_cert_t cert)
 
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
-   key parameters expressed as an canoncial encoded S-Exp.  array must
-   be 20 bytes long. returns the array or a newly allocated one if the
-   passed one was NULL */
+   key parameters expressed as an canoncial encoded S-Exp.  ARRAY must
+   be 20 bytes long.  Returns ARRAY or a newly allocated buffer if ARRAY was
+   given as NULL.  May return NULL on error.  */
 unsigned char *
 gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
 {
@@ -204,9 +204,11 @@ gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
   unsigned char grip[20];
   char *buf;
 
-  gpgsm_get_keygrip (cert, grip);
-  buf = xmalloc (20*2+1);
-  bin2hex (grip, 20, buf);
+  if (!gpgsm_get_keygrip (cert, grip))
+    return NULL;
+  buf = xtrymalloc (20*2+1);
+  if (buf)
+    bin2hex (grip, 20, buf);
   return buf;
 }
 
