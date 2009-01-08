@@ -1958,6 +1958,11 @@ ask_user_id( int mode )
 
     if ( !mode )
       {
+        /* TRANSLATORS: This is the new string telling the user what
+           gpg is now going to do (i.e. ask for the parts of the user
+           ID).  Note that if you do not tyranslated this string, a
+           different string will be used used, which might still have
+           a correct transaltion.  */
 	const char *s1 =
           N_("\n"
              "GnuPG needs to construct a user ID to identify your key.\n"
@@ -1970,6 +1975,10 @@ ask_user_id( int mode )
                the old info text.  gettext has no way to tell whether
                a translation is actually available, thus we need to
                to compare again. */
+            /* TRANSLATORS: This string is in general not anymore used
+               but you should keep your existing translation.  In case
+               the new string is not translated this old string will
+               be used. */
             const char *s3 = N_("\n"
 "You need a user ID to identify your key; "
                                         "the software constructs the user ID\n"

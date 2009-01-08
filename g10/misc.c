@@ -1248,6 +1248,17 @@ unescape_percent_string (const unsigned char *s)
 }
 
 
+/* Check whether the string has characters not valid in an RFC822
+   address.  To cope with OpenPGP we ignore allow non-ascii characters
+   so that for example umlauts are legal in an email address.  An
+   OpenPGP user ID must be utf-8 encoded and tehre is no strict
+   requirement for RFC-822.  Thus to avoid IDNA encoding we put the
+   address verbatim as utf-8 into the user ID under the assumtiopn
+   that mail programs etc handle IDNA at a lower level and take
+   OpenPGP user IDS as utf-8.  Note that we can't do an utf-8 encoding
+   checking here becuase in keygen.c this function is called with the
+   native encoding and native to utf-8 encoding is done only after
+   checking. */
 int
 has_invalid_email_chars (const char *s)
 {
@@ -1257,8 +1268,8 @@ has_invalid_email_chars (const char *s)
 
   for ( ; *s; s++ ) 
     {
-      if ( *s & 0x80 )
-        return 1;
+      if ( (*s & 0x80) )
+        continue; /* We only care about ASCII.  */
       if ( *s == '@' )
         at_seen=1;
       else if ( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )

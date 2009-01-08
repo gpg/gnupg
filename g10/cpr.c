@@ -357,10 +357,6 @@ cpr_enabled()
 {
     if( opt.command_fd != -1 )
 	return 1;
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return 1;
-#endif
     return 0;
 }
 
@@ -371,10 +367,6 @@ cpr_get_no_help( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 0, 0 );
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return do_shm_get( keyword, 0, 0 );
-#endif
     for(;;) {
 	p = tty_get( prompt );
         return p;
@@ -388,10 +380,6 @@ cpr_get( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 0, 0 );
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return do_shm_get( keyword, 0, 0 );
-#endif
     for(;;) {
 	p = tty_get( prompt );
 	if( *p=='?' && !p[1] && !(keyword && !*keyword)) {
@@ -424,10 +412,6 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return do_get_from_fd ( keyword, 1, 0 );
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return do_shm_get( keyword, 1, 0 );
-#endif
     for(;;) {
 	p = tty_get_hidden( prompt );
 	if( *p == '?' && !p[1] ) {
@@ -444,10 +428,6 @@ cpr_kill_prompt(void)
 {
     if( opt.command_fd != -1 )
 	return;
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return;
-#endif
     tty_kill_prompt();
     return;
 }
@@ -460,10 +440,6 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return !!do_get_from_fd ( keyword, 0, 1 );
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return !!do_shm_get( keyword, 0, 1 );
-#endif
     for(;;) {
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */
@@ -488,10 +464,6 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
 
     if( opt.command_fd != -1 )
 	return !!do_get_from_fd ( keyword, 0, 1 );
-#ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess )
-	return !!do_shm_get( keyword, 0, 1 );
-#endif
     for(;;) {
 	p = tty_get( prompt );
 	trim_spaces(p); /* it is okay to do this here */
@@ -520,10 +492,6 @@ cpr_get_answer_okay_cancel (const char *keyword,
 
   if( opt.command_fd != -1 )
     answer = do_get_from_fd ( keyword, 0, 0 );
-#ifdef USE_SHM_COPROCESSING
-  else if( opt.shm_coprocess )
-    answer = do_shm_get( keyword, 0, 0 );
-#endif
 
   if (answer)
     {

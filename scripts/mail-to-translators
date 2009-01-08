@@ -5,6 +5,9 @@
 # remove the colon to armor this script.
 SENDMAIL=": /usr/sbin/sendmail"
 
+LC_ALL=C
+LC_CTYPE=C
+
 for file in *.po; do
     addr=$(head -100 $file | awk '/^# ?Designated-Translator:/ { printf "%s", $0; exit 0}' | sed 's/.*\(<.*>\).*/\1/')
     if [ -z "$addr" ]; then

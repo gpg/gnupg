@@ -1,3 +1,9 @@
+2009-01-08  Werner Koch  <wk@g10code.com>
+
+	* misc.c (has_invalid_email_chars): Let non-ascii pass through.
+
+	* cpr.c [USE_SHM_COPROCESSING]: Remove this code.
+
 2008-12-12  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (passphrase_get): Write a STATUS_ERROR.
