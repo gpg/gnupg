@@ -1,3 +1,7 @@
+Noteworthy changes in version 2.0.11 (unreleased)
+-------------------------------------------------
+
+
 Noteworthy changes in version 2.0.10 (2009-01-12)
 -------------------------------------------------
 
@@ -40,7 +44,7 @@ Noteworthy changes in version 2.0.10 (2009-01-12)
  * [w32] The gnupg2.nls directory is not anymore used.  The standard
    locale directory is now used.  
 
- * [w32] Fixed a race condition bteween gpg and gpgsm in the use of
+ * [w32] Fixed a race condition between gpg and gpgsm in the use of
    temporary file names.
 
  * The gpg-preset-passphrase mechanism works again.  An arbitrary
