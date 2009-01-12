@@ -597,7 +597,7 @@ print_utf8_extn_raw (estream_t fp, int indent,
       es_fprintf (fp, "%*s[%s]\n", indent, "", gpg_strerror (err));
       return;
     }
-  es_fprintf (fp, "%*s(%.*s)\n", indent, "", objlen, der);
+  es_fprintf (fp, "%*s(%.*s)\n", indent, "", (int)objlen, der);
 }
 
 

@@ -2034,8 +2034,8 @@ send_client_notifications (void)
                       killidx++;
                     }
                 }
-#endif /*!HAVE_W32_SYSTEM*/
             }
+#endif /*!HAVE_W32_SYSTEM*/
         }
     }
 }
