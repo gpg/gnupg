@@ -1,20 +1,21 @@
-# GnuPG Russian Translation
 # Copyright (C)2006 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxim.britov@gmail.com>, 2006.
-# Thanks a lot to Pawel I. Shajdo <pshajdo@gmail.com>.
-# Thanks to Golubev Eugeny (my CIO). He provides notebook for this work.
+# Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
+# Thanks Cmecb for the inspiration.
 msgid ""
 msgstr ""
-"Project-Id-Version: GnuPG 2.0.0\n"
+"Project-Id-Version: GnuPG 2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2009-01-12 09:27+0100\n"
-"PO-Revision-Date: 2006-11-07 19:31+0300\n"
+"PO-Revision-Date: 2008-12-21 00:40+0200\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : ((n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2);\n"
 
 #: agent/call-pinentry.c:225
 #, c-format
@@ -31,14 +32,13 @@ msgstr "Введите PIN-код для получения доступа к з
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
-msgstr "Введите фразу-пароль для доступа к закрытому ключу"
+msgstr "Введите фразу-пароль для получения доступа к закрытому ключу"
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
 #: agent/call-pinentry.c:634
-#, fuzzy
 msgid "Quality:"
-msgstr "достоверность: %s"
+msgstr "Стойкость:"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry
 #. when hovering over the quality bar.  Please use an
@@ -49,11 +49,13 @@ msgstr "достоверность: %s"
 #: agent/call-pinentry.c:657
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
+"Стойкость введенного выше текста. Можете прокосультироваться у Вашего "
+"администратора о критериях оценки стойкости."
 
 #: agent/call-pinentry.c:699
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
-msgstr ""
+msgstr "SETERROR %s (попытка %d из %d)"
 
 #: agent/call-pinentry.c:719 agent/call-pinentry.c:731
 msgid "PIN too long"
@@ -176,18 +178,16 @@ msgid "Reset Code"
 msgstr ""
 
 #: agent/divert-scd.c:284
-#, fuzzy
 msgid "Repeat this Reset Code"
-msgstr "Повторите ввод PIN"
+msgstr "Повторить Reset Code"
 
 #: agent/divert-scd.c:285
 msgid "Repeat this PIN"
 msgstr "Повторите ввод PIN"
 
 #: agent/divert-scd.c:290
-#, fuzzy
 msgid "Reset Code not correctly repeated; try again"
-msgstr "повторный PIN не совпал; попробуйте еще раз"
+msgstr "Reset Code не повторен корректно; попробуйте еще раз"
 
 #: agent/divert-scd.c:291
 msgid "PIN not correctly repeated; try again"
@@ -210,14 +210,12 @@ msgid "error writing to temporary file: %s\n"
 msgstr "ошибка записи во временный файл: %s\n"
 
 #: agent/genkey.c:153 agent/genkey.c:159
-#, fuzzy
 msgid "Enter new passphrase"
-msgstr "Введите фразу-пароль\n"
+msgstr "Введите новую фразу-пароль"
 
 #: agent/genkey.c:167
-#, fuzzy
 msgid "Take this one anyway"
-msgstr "Всё равно использовать данный ключ? (y/N)"
+msgstr "Принять как есть"
 
 #: agent/genkey.c:193
 #, c-format
@@ -228,7 +226,14 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
 "at least %u characters long."
 msgstr[0] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AДлина фразы-пароля должна "
+"содержать не менее %u знака."
 msgstr[1] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AДлина фразы-пароля должна "
+"содержать не менее %u знаков."
+msgstr[2] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AДлина фразы-пароля должна "
+"содержать не менее %u знаков."
 
 #: agent/genkey.c:214
 #, c-format
@@ -239,7 +244,14 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
 "contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AФраза-пароль должна "
+"содержать не менее %u символа, либо %%0Aспециальный символ."
 msgstr[1] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AФраза-пароль должна "
+"содержать не менее %u символа, либо %%0Aспециальных символа."
+msgstr[2] ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AФраза-пароль должна "
+"содержать не менее %u символов, либо %%0Aспециальный символов."
 
 #: agent/genkey.c:237
 #, c-format
@@ -247,12 +259,14 @@ msgid ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
 "a known term or match%%0Acertain pattern."
 msgstr ""
+"Внимание: Вы ввели небезопасную фразу-пароль.%%0AФраза-пароль не должна быть "
+"известным словом и не должна содержаться%%0Aв образце."
 
 #: agent/genkey.c:253
 #, c-format
 msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
-msgstr ""
+msgstr "Вы не ввели фразу-пароль!%0AПустая фраза-пароль недопустима."
 
 #: agent/genkey.c:255
 #, c-format
@@ -260,10 +274,12 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
+"Вы не ввели фразу-пароль - это весьма неудачное решение!%0A Подтвердите, что "
+"Вы действительно не хотите защитить Ваш ключ."
 
 #: agent/genkey.c:264
 msgid "Yes, protection is not needed"
-msgstr ""
+msgstr "Да, защита мне не нужна"
 
 #: agent/genkey.c:308
 #, c-format
@@ -373,7 +389,7 @@ msgstr "разрешить эмуляцию ssh-агента"
 
 #: agent/gpg-agent.c:175
 msgid "|FILE|write environment settings also to FILE"
-msgstr "|FILE|сохранить состояние в файл"
+msgstr "|FILE|сохранить состояние окружения и в файл"
 
 #: agent/gpg-agent.c:313 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:241 sm/gpgsm.c:513 tools/gpg-connect-agent.c:180
@@ -401,9 +417,9 @@ msgstr "запрошен недупустимый уровень отладки 
 #: agent/gpg-agent.c:557 agent/protect-tool.c:1067 kbx/kbxutil.c:429
 #: scd/scdaemon.c:385 sm/gpgsm.c:879 sm/gpgsm.c:882 tools/symcryptrun.c:996
 #: tools/gpg-check-pattern.c:177
-#, fuzzy, c-format
+#, c-format
 msgid "%s is too old (need %s, have %s)\n"
-msgstr "libksba слишком устаревшая (требуется %s, имеется %s)\n"
+msgstr "%s слишком устарело (требуется %s, имеется %s)\n"
 
 #: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:466 sm/gpgsm.c:971
 #, c-format
@@ -444,19 +460,17 @@ msgid "can't create socket: %s\n"
 msgstr "не могу создать сокет: %s\n"
 
 #: agent/gpg-agent.c:1399
-#, fuzzy, c-format
+#, c-format
 msgid "socket name `%s' is too long\n"
-msgstr "имя сокета слишком длинное\n"
+msgstr "имя сокета `%s' слишком длинное\n"
 
 #: agent/gpg-agent.c:1419
-#, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
-msgstr "нет gpg-agent доступого для данной сессии\n"
+msgstr "gpg-agent уже запущен - еще один, новый, запущен не будет\n"
 
 #: agent/gpg-agent.c:1430 scd/scdaemon.c:1028
-#, fuzzy
 msgid "error getting nonce for the socket\n"
-msgstr "ошибка при получении нового PIN: %s\n"
+msgstr ""
 
 #: agent/gpg-agent.c:1435 scd/scdaemon.c:1031
 #, c-format
@@ -489,9 +503,9 @@ msgid "can't use `%s' as home directory\n"
 msgstr "невозможно использовать `%s' как домашний каталог\n"
 
 #: agent/gpg-agent.c:1668 scd/scdaemon.c:1063
-#, fuzzy, c-format
+#, c-format
 msgid "error reading nonce on fd %d: %s\n"
-msgstr "ошибка чтения из %s: %s\n"
+msgstr ""
 
 #: agent/gpg-agent.c:1690
 #, c-format
@@ -556,7 +570,6 @@ msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
 msgstr "Использование: gpg-protect-tool [параметры] (-h для подсказки)\n"
 
 #: agent/protect-tool.c:151
-#, fuzzy
 msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
@@ -692,6 +705,7 @@ msgstr "Нет"
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
+"Замечание: Фразу-пароль ни разу не сменяли.%0AПожалуйста, смените ее сейчас."
 
 #: agent/findkey.c:174
 #, c-format
@@ -699,15 +713,16 @@ msgid ""
 "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
 "it now."
 msgstr ""
+"Фраза пароль не сменялась%%0Aс %.4s-%.2s-%.2s.  Пожалуйста, смените ее "
+"сейчас."
 
 #: agent/findkey.c:188 agent/findkey.c:195
-#, fuzzy
 msgid "Change passphrase"
-msgstr "сменить фразу-пароль"
+msgstr "Cменить фразу-пароль"
 
 #: agent/findkey.c:196
 msgid "I'll change it later"
-msgstr ""
+msgstr "Сменю позже"
 
 #: common/exechelp.c:380 common/exechelp.c:471 tools/gpgconf-comp.c:1406
 #: tools/gpgconf-comp.c:1745
@@ -863,135 +878,118 @@ msgid "can't connect to the agent - trying fall back\n"
 msgstr "невозможно подключиться к агенту - пробуем откатиться назад\n"
 
 #: common/audit.c:692
-#, fuzzy
 msgid "Certificate chain available"
-msgstr "цепочка сертификации слишком длинная\n"
+msgstr "Доступна цепочка сертификатов"
 
 #: common/audit.c:699
-#, fuzzy
 msgid "root certificate missing"
-msgstr "корневой сертификат не помечен доверяемым"
+msgstr "отсутствует корневой сертификат"
 
 #: common/audit.c:725
 msgid "Data encryption succeeded"
-msgstr ""
+msgstr "Данные зашифрованы"
 
 #: common/audit.c:730 common/audit.c:791 common/audit.c:811 common/audit.c:835
-#, fuzzy
 msgid "Data available"
-msgstr "вывести все доступные данные"
+msgstr "Данные доступны"
 
 #: common/audit.c:733
-#, fuzzy
 msgid "Session key created"
-msgstr "%s: таблица ключей создана\n"
+msgstr "Сессионный ключ создан"
 
 #: common/audit.c:738
-#, fuzzy, c-format
+#, c-format
 msgid "algorithm: %s"
-msgstr "достоверность: %s"
+msgstr "алгоритм: %s"
 
 #: common/audit.c:740 common/audit.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported algorithm: %s"
-msgstr ""
-"\n"
-"Поддерживаются следующие алгоритмы:\n"
+msgstr "неподдерживаемый алгоритм: %s"
 
 #: common/audit.c:744
-#, fuzzy
 msgid "seems to be not encrypted"
-msgstr "(это не похоже не зашифрованное сообщение)\n"
+msgstr "похоже на не зашифрованное"
 
 #: common/audit.c:750
-#, fuzzy
 msgid "Number of recipients"
-msgstr "Текущие получатели:\n"
+msgstr "Количество получателей"
 
 #: common/audit.c:758
 #, c-format
 msgid "Recipient %d"
-msgstr ""
+msgstr "Получатель %d"
 
 #: common/audit.c:786
 msgid "Data signing succeeded"
-msgstr ""
+msgstr "Данные подписаны"
 
 #: common/audit.c:806
 msgid "Data decryption succeeded"
-msgstr ""
+msgstr "Данные расшифрованы"
 
 #: common/audit.c:831
-#, fuzzy
 msgid "Data verification succeeded"
-msgstr "проверка подписи подавлена\n"
+msgstr "Данные проверены"
 
 #: common/audit.c:840
-#, fuzzy
 msgid "Signature available"
-msgstr "Подпись сделана"
+msgstr "Подпись доступна"
 
 #: common/audit.c:845
-#, fuzzy
 msgid "Parsing signature succeeded"
-msgstr "подпись не найдена\n"
+msgstr "Разбор подписи завершен"
 
 #: common/audit.c:850
-#, fuzzy, c-format
+#, c-format
 msgid "Bad hash algorithm: %s"
-msgstr "недопустимая хэш-функция `%s'\n"
+msgstr "Недопустимая хэш-функция: %s"
 
 #: common/audit.c:865
-#, fuzzy, c-format
+#, c-format
 msgid "Signature %d"
-msgstr "Подпись сделана"
+msgstr "Подпись %d"
 
 #: common/audit.c:881
-#, fuzzy
 msgid "Certificate chain valid"
-msgstr "сертификат еще не достоверен"
+msgstr "Цепочка сертифицирования действительна"
 
 #: common/audit.c:892
-#, fuzzy
 msgid "Root certificate trustworthy"
-msgstr "корневой сертификат не помечен доверяемым"
+msgstr "Корневой сертификат достоверен"
 
 #: common/audit.c:902
-#, fuzzy
 msgid "CRL/OCSP check of certificates"
-msgstr "не найдена CRL для сертификата"
+msgstr "проверка CRL/OCSP сертификата"
 
 #: common/audit.c:919
-#, fuzzy
 msgid "Included certificates"
-msgstr "экспорт сертификатов"
+msgstr "Задействованные сертификаты"
 
 #: common/audit.c:978
 msgid "No audit log entries."
-msgstr ""
+msgstr "Записи журнала аудита отсутствуют."
 
 #: common/audit.c:1027
-#, fuzzy
 msgid "Unknown operation"
-msgstr "неизвестный параметр `%s'\n"
+msgstr "Неизвестная операция"
 
 #: common/audit.c:1045
 msgid "Gpg-Agent usable"
-msgstr ""
+msgstr "Gpg-Agent доступен"
 
 #: common/audit.c:1055
 msgid "Dirmngr usable"
-msgstr ""
+msgstr "Dirmgr доступен"
 
 #: common/audit.c:1091
-#, fuzzy, c-format
+#, c-format
 msgid "No help available for `%s'."
-msgstr "Нет справки для `%s'"
+msgstr "Нет справки для `%s'."
 
 #: common/helpfile.c:80
-#, fuzzy
 msgid "ignoring garbage line"
-msgstr "ошибка в строке дополнения\n"
+msgstr "игнорируем дефектную строку"
 
 #: g10/armor.c:379
 #, c-format
@@ -1011,9 +1009,8 @@ msgid "invalid clearsig header\n"
 msgstr "неправильный заголовок прозрачной подписи\n"
 
 #: g10/armor.c:455
-#, fuzzy
 msgid "unknown armor header: "
-msgstr "заголовок ASCII: "
+msgstr "недопустимый заголовок ASCII: "
 
 #: g10/armor.c:508
 msgid "nested clear text signatures\n"
@@ -1117,14 +1114,12 @@ msgid "can't do this in batch mode\n"
 msgstr "невозможно сделать это в пакетном режиме\n"
 
 #: g10/card-util.c:83
-#, fuzzy
 msgid "This command is only available for version 2 cards\n"
-msgstr "Данная команда не допустима в режиме %s.\n"
+msgstr "Данная команда допустима только для карт версии 2\n"
 
 #: g10/card-util.c:85 scd/app-openpgp.c:1849
-#, fuzzy
 msgid "Reset Code not or not anymore available\n"
-msgstr "секретная часть ключ не доступна\n"
+msgstr "Reset Code не задан или недоступен\n"
 
 #: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
@@ -1150,11 +1145,11 @@ msgstr "не задан"
 
 #: g10/card-util.c:493
 msgid "not forced"
-msgstr ""
+msgstr "отключен"
 
 #: g10/card-util.c:493
 msgid "forced"
-msgstr ""
+msgstr "включен"
 
 #: g10/card-util.c:574
 msgid "Error: Only plain ASCII is currently allowed.\n"
@@ -1162,7 +1157,7 @@ msgstr "Ошибка: Допустим только чистый ASCII.\n"
 
 #: g10/card-util.c:576
 msgid "Error: The \"<\" character may not be used.\n"
-msgstr "Ошибка: Нельзя использовать символ \"<\"\n"
+msgstr "Ошибка: Нельзя использовать символ \"<\".\n"
 
 #: g10/card-util.c:578
 msgid "Error: Double spaces are not allowed.\n"
@@ -1382,7 +1377,7 @@ msgstr "проверить PIN и показать все данные"
 
 #: g10/card-util.c:1415
 msgid "unblock the PIN using a Reset Code"
-msgstr ""
+msgstr "разблокировать PIN используя Reset Code"
 
 #: g10/card-util.c:1537 g10/keyedit.c:1654
 msgid "Command> "
@@ -1607,7 +1602,7 @@ msgstr "экспорт подписей, помеченных как локал�
 
 #: g10/export.c:63
 msgid "export attribute user IDs (generally photo IDs)"
-msgstr ""
+msgstr "экспорт атрибутов UserID (обычно PhotoID)"
 
 #: g10/export.c:65
 msgid "export revocation keys marked as \"sensitive\""
@@ -1623,7 +1618,7 @@ msgstr "удаление неиспользуемых частей из ключ
 
 #: g10/export.c:71
 msgid "remove as much as possible from key during export"
-msgstr ""
+msgstr "удалить максимум возможного из ключа при экспортировании"
 
 #: g10/export.c:73
 msgid "export keys in an S-expression based format"
@@ -1650,7 +1645,7 @@ msgstr "ключ %s: ключ находится на карте - пропущ�
 
 #: g10/export.c:537
 msgid "about to export an unprotected subkey\n"
-msgstr ""
+msgstr "экспорт незащищенного подключа\n"
 
 #: g10/export.c:560
 #, c-format
@@ -1680,14 +1675,13 @@ msgid "automatically retrieved `%s' via %s\n"
 msgstr "автоматически полученный `%s' via %s\n"
 
 #: g10/getkey.c:1118
-#, fuzzy, c-format
+#, c-format
 msgid "error retrieving `%s' via %s: %s\n"
-msgstr "ошибка создания `%s': %s\n"
+msgstr "ошибка получения `%s' через %s: %s\n"
 
 #: g10/getkey.c:1120
-#, fuzzy
 msgid "No fingerprint"
-msgstr "отпечаток CA: "
+msgstr "Нет отпечатка"
 
 #: g10/getkey.c:1930
 #, c-format
@@ -1720,14 +1714,12 @@ msgstr ""
 " "
 
 #: g10/gpg.c:372 sm/gpgsm.c:187
-#, fuzzy
 msgid "make a signature"
-msgstr "|[файл]|создать подпись к файлу"
+msgstr "создать подпись"
 
 #: g10/gpg.c:373 sm/gpgsm.c:188
-#, fuzzy
 msgid "make a clear text signature"
-msgstr "|[файл]|создать прозрачную подпись к файлу"
+msgstr "создать прозрачную подпись"
 
 #: g10/gpg.c:374 sm/gpgsm.c:189
 msgid "make a detached signature"
@@ -1755,15 +1747,15 @@ msgstr "вывести список ключей"
 
 #: g10/gpg.c:385
 msgid "list keys and signatures"
-msgstr "вывести список ключей и подписей"
+msgstr "вывести список ключей и подписи"
 
 #: g10/gpg.c:386
 msgid "list and check key signatures"
-msgstr "вывести и проверить подписи ключей"
+msgstr "вывести и проверить подписи"
 
 #: g10/gpg.c:387 sm/gpgsm.c:200
 msgid "list keys and fingerprints"
-msgstr "вывести список ключей и их отпечатков"
+msgstr "вывести список ключей c отпечатками"
 
 #: g10/gpg.c:388 sm/gpgsm.c:198
 msgid "list secret keys"
@@ -1838,9 +1830,8 @@ msgid "update the trust database"
 msgstr "обновить таблицу доверий"
 
 #: g10/gpg.c:431
-#, fuzzy
 msgid "print message digests"
-msgstr "|algo [файлы]|вывести хэши файлов"
+msgstr "вывести хэши файлов"
 
 #: g10/gpg.c:434 sm/gpgsm.c:210
 msgid "run in server mode"
@@ -1862,17 +1853,14 @@ msgid "create ascii armored output"
 msgstr "вывод в ASCII формате"
 
 #: g10/gpg.c:441 sm/gpgsm.c:241
-#, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|NAME|зашифровать для получателя NAME"
+msgstr "|USER-ID|зашифровать для USER-ID"
 
 #: g10/gpg.c:454 sm/gpgsm.c:278
-#, fuzzy
 msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "использовать данный User ID для подписывания и расшифрования"
+msgstr "|USER-ID|использовать USER-ID для подписывания и расшифрования"
 
 #: g10/gpg.c:457
-#, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|установить уровень сжатия N (0 без сжатия)"
 
@@ -1881,7 +1869,6 @@ msgid "use canonical text mode"
 msgstr "использовать канонический текстовый режим"
 
 #: g10/gpg.c:480 sm/gpgsm.c:280
-#, fuzzy
 msgid "|FILE|write output to FILE"
 msgstr "|FILE|взять параметры из FILE"
 
@@ -1940,8 +1927,8 @@ msgid ""
 "default operation depends on the input data\n"
 msgstr ""
 "Синтаксис: gpg [параметры] [файлы]\n"
-"Подписи и их проверка, зашифрование и расшифрование\n"
-"действие по умолчанию зависит от входных данных\n"
+"Подписи и их проверка, зашифрование и расшифрование.\n"
+"Действие по умолчанию зависит от входных данных.\n"
 
 #: g10/gpg.c:845 sm/gpgsm.c:537
 msgid ""
@@ -1953,19 +1940,19 @@ msgstr ""
 
 #: g10/gpg.c:848
 msgid "Pubkey: "
-msgstr "С открытым ключом: "
+msgstr "  с открытым ключом: "
 
 #: g10/gpg.c:855 g10/keyedit.c:2343
 msgid "Cipher: "
-msgstr "Симметричные шифры: "
+msgstr "  симметричные шифры: "
 
 #: g10/gpg.c:862
 msgid "Hash: "
-msgstr "Хэш-функции: "
+msgstr "  хэш-функции: "
 
 #: g10/gpg.c:869 g10/keyedit.c:2388
 msgid "Compression: "
-msgstr "Алгоритмы сжатия: "
+msgstr "  алгоритмы сжатия: "
 
 #: g10/gpg.c:939
 msgid "usage: gpg [options] "
@@ -2066,11 +2053,11 @@ msgstr "показывать ссылку на политики при расп�
 
 #: g10/gpg.c:1655
 msgid "show all notations during signature listings"
-msgstr "показывать все примечания в списке подписей"
+msgstr "показывать все примечания при распечатке подписей"
 
 #: g10/gpg.c:1657
 msgid "show IETF standard notations during signature listings"
-msgstr ""
+msgstr "показывать стандартные IETF примечания при распечатке подписей"
 
 #: g10/gpg.c:1661
 msgid "show user-supplied notations during signature listings"
@@ -2079,7 +2066,7 @@ msgstr ""
 
 #: g10/gpg.c:1663
 msgid "show preferred keyserver URLs during signature listings"
-msgstr "показываеть предпочитаемый сервер ключей с списке подписей"
+msgstr "показывать предпочитаемый сервер ключей при распечатке подписей"
 
 #: g10/gpg.c:1665
 msgid "show user ID validity during key listings"
@@ -2091,15 +2078,15 @@ msgstr "показывать отозванные и просроченные Us
 
 #: g10/gpg.c:1669
 msgid "show revoked and expired subkeys in key listings"
-msgstr "показывать отозванные и просроченные ключи при распечатке списка"
+msgstr "показывать отозванные и просроченные ключи при распечатке ключей"
 
 #: g10/gpg.c:1671
 msgid "show the keyring name in key listings"
-msgstr "печатать имя таблиц ключей в списке ключей"
+msgstr "печатать имя таблиц ключей при распечатке ключей"
 
 #: g10/gpg.c:1673
 msgid "show expiration dates during signature listings"
-msgstr "печатать даты истечения в списке подписей"
+msgstr "печатать даты истечения при распечатке подписей"
 
 #: g10/gpg.c:1834
 #, c-format
@@ -2168,23 +2155,23 @@ msgstr "недопустимый список параметров\n"
 
 #: g10/gpg.c:2660
 msgid "display photo IDs during signature verification"
-msgstr "показывать Фото ID при проверке подписи"
+msgstr "отображать Фото ID при проверке подписи"
 
 #: g10/gpg.c:2662
 msgid "show policy URLs during signature verification"
-msgstr "показывать ссылку на политики при проверке подписи"
+msgstr "печатать ссылку на политики при проверке подписи"
 
 #: g10/gpg.c:2664
 msgid "show all notations during signature verification"
-msgstr "показывать все примечания в процессе проверки подписей"
+msgstr "печатать все примечания в процессе проверки подписей"
 
 #: g10/gpg.c:2666
 msgid "show IETF standard notations during signature verification"
-msgstr ""
+msgstr "печатать стандартные IETF примечания в процессе проверки подписей"
 
 #: g10/gpg.c:2670
 msgid "show user-supplied notations during signature verification"
-msgstr "показывать добавленные пользователем примечания при проверке подписей"
+msgstr "печатать добавленные пользователем примечания при проверке подписей"
 
 #: g10/gpg.c:2672
 msgid "show preferred keyserver URLs during signature verification"
@@ -2196,12 +2183,11 @@ msgstr "печатать действительность UserID при пров
 
 #: g10/gpg.c:2676
 msgid "show revoked and expired user IDs in signature verification"
-msgstr "показывать отозванные и просроченные User ID при проверке подписей"
+msgstr "печатать отозванные и просроченные User ID при проверке подписей"
 
 #: g10/gpg.c:2678
-#, fuzzy
 msgid "show only the primary user ID in signature verification"
-msgstr "показывать отозванные и просроченные User ID при проверке подписей"
+msgstr "печатать только главный User ID при проверке подписей"
 
 #: g10/gpg.c:2680
 msgid "validate signatures with PKA data"
@@ -2484,7 +2470,7 @@ msgstr "недопустимая хэш-функция `%s'\n"
 
 #: g10/gpg.c:3955
 msgid "[filename]"
-msgstr "[файл]"
+msgstr "[имяфайла]"
 
 #: g10/gpg.c:3959
 msgid "Go ahead and type your message ...\n"
@@ -2503,9 +2489,8 @@ msgid "the given preferred keyserver URL is invalid\n"
 msgstr "заданный URL предпочитаемого сервера ключей неправилен\n"
 
 #: g10/gpgv.c:74
-#, fuzzy
 msgid "|FILE|take the keys from the keyring FILE"
-msgstr "используются ключи из этой таблицы ключей"
+msgstr "|FILE|взять ключи из FILE связок ключей"
 
 #: g10/gpgv.c:76
 msgid "make timestamp conflicts only a warning"
@@ -3614,8 +3599,8 @@ msgstr "Действительно хотите отозвать данный п
 #: g10/keyedit.c:2118
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
-"Невозможно присвоить степень доверия пока используется указанная "
-"пользователем таблица доверий\n"
+"Доверие владельцу не может быть настроено с предоставленной пользователем "
+"таблицы доверий\n"
 
 #: g10/keyedit.c:2160
 msgid "Set preference list to:\n"
@@ -3813,24 +3798,24 @@ msgid "invalid"
 msgstr "недопустимый"
 
 #: g10/keyedit.c:3267
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\" compacted: %s\n"
-msgstr "User ID \"%s\": уже очищен\n"
+msgstr "User ID \"%s\": сжат: %s\n"
 
 #: g10/keyedit.c:3274
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": %d signature removed\n"
-msgstr "ключ %s: \"%s\" %d подпись очищена\n"
+msgstr "User ID \"%s\": %d подпись удалена\n"
 
 #: g10/keyedit.c:3275
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
-msgstr "ключ %s: \"%s\" %d очищеных подписей\n"
+msgstr "User ID \"%s\": %d удалено подписей\n"
 
 #: g10/keyedit.c:3283
-#, fuzzy, c-format
+#, c-format
 msgid "User ID \"%s\": already minimized\n"
-msgstr "User ID \"%s\": уже очищен\n"
+msgstr "User ID \"%s\": уже минимизирован\n"
 
 #: g10/keyedit.c:3284
 #, c-format
@@ -4292,6 +4277,9 @@ msgid ""
 "GnuPG needs to construct a user ID to identify your key.\n"
 "\n"
 msgstr ""
+"\n"
+"GnuPG необходимо составить UserID в качестве идентификатора ключа.\n"
+"\n"
 
 #. TRANSLATORS: This string is in general not anymore used
 #. but you should keep your existing translation.  In case
@@ -5020,9 +5008,9 @@ msgstr ""
 "ключом\n"
 
 #: g10/misc.c:302
-#, fuzzy
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
-msgstr "ВНИМАНИЕ: хеш-функция %s считается устаревшей\n"
+msgstr ""
+"ВНИМАНИЕ: Ключи Elgamal для шифрования+сжатие более не поддерживаются\n"
 
 #: g10/misc.c:315
 #, c-format
@@ -5077,13 +5065,13 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 
 #: g10/misc.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgstr "ВНИМАНИЕ: \"%s\" не рекомендуемая опция\n"
+msgstr "ВНИМАНИЕ: \"%s\" устаревший параметр - он не задействован\n"
 
 #: g10/misc.c:857
 msgid "Uncompressed"
-msgstr "Без сжатия"
+msgstr "без сжатия"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 #: g10/misc.c:882
@@ -5164,7 +5152,7 @@ msgid " (main key ID %s)"
 msgstr " (главный ключ ID %s)"
 
 #: g10/passphrase.c:309
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the OpenPGP "
 "certificate:\n"
@@ -5172,9 +5160,10 @@ msgid ""
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
 msgstr ""
-"Необходима фраза-пароль для доступа к секретному ключу пользователя:\n"
+"Необходима фраза-пароль для доступа к секретному ключу OpenPGP сертификата:\n"
 "\"%.*s\"\n"
-"%u-бит %s ключ, ID %s, создан %s%s\n"
+"%u-бит %s ключ, ID %s,\n"
+"создан %s%s.\n"
 
 #: g10/passphrase.c:335
 msgid "Repeat passphrase\n"
@@ -5524,14 +5513,14 @@ msgid "no valid addressees\n"
 msgstr "нет действительных адресов\n"
 
 #: g10/pkclist.c:1489
-#, fuzzy, c-format
+#, c-format
 msgid "Note: key %s has no %s feature\n"
-msgstr "ключ %s не имеет User ID\n"
+msgstr "Замечание: ключ %s не умеет %s\n"
 
 #: g10/pkclist.c:1514
-#, fuzzy, c-format
+#, c-format
 msgid "Note: key %s has no preference for %s\n"
-msgstr "ключ %s не имеет User ID\n"
+msgstr "Замечание: ключ %s не имеет предпочтения для %s\n"
 
 #: g10/plaintext.c:95
 msgid "data not saved; use option \"--output\" to save it\n"
@@ -5559,9 +5548,9 @@ msgid "can't open signed data `%s'\n"
 msgstr "не могу открыть подписанные данные `%s'\n"
 
 #: g10/plaintext.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "can't open signed data fd=%d: %s\n"
-msgstr "не могу открыть подписанные данные `%s'\n"
+msgstr "не могу открыть подписанные данные fd=%d: %s\n"
 
 #: g10/pubkey-enc.c:105
 #, c-format
@@ -5817,9 +5806,9 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "ЗАМЕЧАНИЕ: подписавший ключ %s - просрочен %s\n"
 
 #: g10/sig-check.c:248
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: signature key %s has been revoked\n"
-msgstr "ЗАМЕЧАНИЕ: ключ был отозван"
+msgstr "ЗАМЕЧАНИЕ: ключ %s подписи - отозван\n"
 
 #: g10/sig-check.c:324
 #, c-format
@@ -6104,7 +6093,7 @@ msgstr "не могу обработать строки текста длинн�
 #: g10/textfilter.c:247
 #, c-format
 msgid "input line longer than %d characters\n"
-msgstr "строка ввода длиннее %d символов\n"
+msgstr "введенная строка превышает %d символов\n"
 
 #: g10/trustdb.c:221
 #, c-format
@@ -6202,7 +6191,7 @@ msgstr "полное"
 
 #: g10/trustdb.c:531
 msgid "ultimate"
-msgstr "абсолютное"
+msgstr "абсолютно"
 
 #: g10/trustdb.c:571
 msgid "no need for a trustdb check\n"
@@ -6286,47 +6275,41 @@ msgid "input line %u too long or missing LF\n"
 msgstr "входная строка %u слишком длинная или пропущен LF\n"
 
 #: g10/verify.c:253
-#, fuzzy, c-format
+#, c-format
 msgid "can't open fd %d: %s\n"
-msgstr "не могу открыть `%s': %s\n"
+msgstr "не могу открыть fd %d: %s\n"
 
 #: jnlib/argparse.c:180
-#, fuzzy
 msgid "argument not expected"
-msgstr "Команды администрирования не разрешены\n"
+msgstr "неожиданный параметр"
 
 #: jnlib/argparse.c:182
-#, fuzzy
 msgid "read error"
-msgstr "ошибка чтения в `%s': %s\n"
+msgstr "ошибка чтения"
 
 #: jnlib/argparse.c:184
-#, fuzzy
 msgid "keyword too long"
-msgstr "строка слишком длинная"
+msgstr "ключевое слово слишком длинное"
 
 #: jnlib/argparse.c:186
 msgid "missing argument"
-msgstr ""
+msgstr "пропущен аргумент"
 
 #: jnlib/argparse.c:188
-#, fuzzy
 msgid "invalid command"
-msgstr "Команды администратора\n"
+msgstr "недопустимая команда"
 
 #: jnlib/argparse.c:190
-#, fuzzy
 msgid "invalid alias definition"
-msgstr "недопустимый список параметров\n"
+msgstr ""
 
 #: jnlib/argparse.c:192
 msgid "out of core"
 msgstr ""
 
 #: jnlib/argparse.c:194
-#, fuzzy
 msgid "invalid option"
-msgstr "недопустимый список параметров\n"
+msgstr "недопустимый параметр"
 
 #: jnlib/argparse.c:202
 #, c-format
@@ -6334,33 +6317,33 @@ msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
 
 #: jnlib/argparse.c:204
-#, fuzzy, c-format
+#, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "параметр \"%s\" требует программы и опциональных аргументов\n"
+msgstr "параметр \"%.50s\" не ожидает аргумента\n"
 
 #: jnlib/argparse.c:207
-#, fuzzy, c-format
+#, c-format
 msgid "invalid command \"%.50s\"\n"
-msgstr "Недопустимая команда  (список команд: \"help\")\n"
+msgstr "Недопустимая команда \"%.50s\"\n"
 
 #: jnlib/argparse.c:209
-#, fuzzy, c-format
+#, c-format
 msgid "option \"%.50s\" is ambiguous\n"
-msgstr "параметр \"%s\" игнорирован по причине \"%s\"\n"
+msgstr "параметр \"%.50s\" не понят\n"
 
 #: jnlib/argparse.c:211
 #, c-format
 msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
+msgstr "команда \"%.50s\" не понята\n"
 
 #: jnlib/argparse.c:213
 msgid "out of core\n"
 msgstr ""
 
 #: jnlib/argparse.c:215
-#, fuzzy, c-format
+#, c-format
 msgid "invalid option \"%.50s\"\n"
-msgstr "недопустимый список параметров\n"
+msgstr "недопустимый параметр \"%.50s\"\n"
 
 #: jnlib/logging.c:630
 #, c-format
@@ -6368,9 +6351,9 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку ... (%s:%d)\n"
 
 #: jnlib/utf8conv.c:85
-#, fuzzy, c-format
+#, c-format
 msgid "error loading `%s': %s\n"
-msgstr "ошибка чтения `%s': %s\n"
+msgstr "ошибка загрузки `%s': %s\n"
 
 #: jnlib/utf8conv.c:123
 #, c-format
@@ -6388,14 +6371,14 @@ msgid "conversion from `%s' to `%s' failed: %s\n"
 msgstr "сбой преобразования `%s' в `%s': %s\n"
 
 #: jnlib/dotlock.c:235
-#, fuzzy, c-format
+#, c-format
 msgid "failed to create temporary file `%s': %s\n"
-msgstr "невозможно создание временного каталога `%s': %s\n"
+msgstr "невозможно создание временного файла `%s': %s\n"
 
 #: jnlib/dotlock.c:270
-#, fuzzy, c-format
+#, c-format
 msgid "error writing to `%s': %s\n"
-msgstr "ошибка записи в %s: %s\n"
+msgstr "ошибка записи в `%s': %s\n"
 
 #: jnlib/dotlock.c:454
 #, c-format
@@ -6416,14 +6399,14 @@ msgid "(deadlock?) "
 msgstr ""
 
 #: jnlib/dotlock.c:494
-#, fuzzy, c-format
+#, c-format
 msgid "lock `%s' not made: %s\n"
-msgstr "открытый ключ %s не найден: %s\n"
+msgstr ""
 
 #: jnlib/dotlock.c:502
-#, fuzzy, c-format
+#, c-format
 msgid "waiting for lock %s...\n"
-msgstr "слушаем сокет `%s'\n"
+msgstr ""
 
 #: kbx/kbxutil.c:92
 msgid "set debugging flags"
@@ -6514,9 +6497,9 @@ msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
 #: scd/app-openpgp.c:1443
-#, fuzzy, c-format
+#, c-format
 msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
-msgstr "||Введите PIN%%0A[подписей: %lu]"
+msgstr "||Введите PIN на клавиатуре считывателя%%0A[подписей: %lu]"
 
 #: scd/app-openpgp.c:1477
 #, c-format
@@ -6524,9 +6507,8 @@ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Введите PIN%%0A[подписей: %lu]"
 
 #: scd/app-openpgp.c:1489
-#, fuzzy
 msgid "||Please enter the PIN"
-msgstr "||Введите PIN%%0A[подписей: %lu]"
+msgstr "||Введите PIN"
 
 #: scd/app-openpgp.c:1500 scd/app-openpgp.c:1665
 #, c-format
@@ -6554,20 +6536,19 @@ msgstr "карта заблокирована!\n"
 #: scd/app-openpgp.c:1610
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
-msgstr ""
-"осталось %d попыток ввода административного PIN перед блокировкой карты\n"
+msgstr "осталось %d попыток ввода административного PIN до блокировки карты\n"
 
 #: scd/app-openpgp.c:1620
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
 "%d]"
-msgstr "||Введите PIN%%0A[подписей: %lu]"
+msgstr ""
+"|A|Введите Admin PID на клавиатуре считывателя%%0A[осталось попыток: %d]"
 
 #: scd/app-openpgp.c:1635
-#, fuzzy
 msgid "|A|Please enter the Admin PIN at the reader's keypad"
-msgstr "||Введите PIN%%0A[подписей: %lu]"
+msgstr "|A|Введите Admin PIN на клавиатуре считывателя"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep
 #. it at the start of the string.  We need this elsewhere to
@@ -6577,18 +6558,17 @@ msgid "|A|Admin PIN"
 msgstr "|A|Административный PID"
 
 #: scd/app-openpgp.c:1854
-#, fuzzy
 msgid "||Please enter the Reset Code for the card"
-msgstr "Введите PIN%s%s%s для доступа к карте"
+msgstr "||Введите Reset Code к карте"
 
 #: scd/app-openpgp.c:1863 scd/app-openpgp.c:1926
-#, fuzzy, c-format
+#, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
-msgstr "PIN для CHV%d слишком короток, минимальная длина %d\n"
+msgstr "Reset Code слишком короток, минимальная длина %d\n"
 
 #: scd/app-openpgp.c:1897
 msgid "|RN|New Reset Code"
-msgstr ""
+msgstr "|RN| Новый Reset Code"
 
 #: scd/app-openpgp.c:1898
 msgid "|AN|New Admin PIN"
@@ -6684,7 +6664,6 @@ msgstr "нет доступа %s - неработоспособная карта
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
 #: scd/app-dinsig.c:526
-#, fuzzy
 msgid "|N|Initial New PIN"
 msgstr "|N|Новый PIN"
 
@@ -6697,13 +6676,12 @@ msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|LEVEL|установить уровень отладки в LEVEL"
 
 #: scd/scdaemon.c:121 tools/gpgconf-comp.c:619
-#, fuzzy
 msgid "|FILE|write a log to FILE"
-msgstr "|FILE|сохранять журнал режима сервера в FILE"
+msgstr "|FILE|сохранять журнал в FILE"
 
 #: scd/scdaemon.c:123
 msgid "|N|connect to reader at port N"
-msgstr ""
+msgstr "|N|подключаться к считывателю на порт N"
 
 #: scd/scdaemon.c:125
 msgid "|NAME|use NAME as ct-API driver"
@@ -6715,15 +6693,15 @@ msgstr ""
 
 #: scd/scdaemon.c:130
 msgid "do not use the internal CCID driver"
-msgstr ""
+msgstr "не использовать встроенный CCID драйвер"
 
 #: scd/scdaemon.c:136
 msgid "|N|disconnect the card after N seconds of inactivity"
-msgstr ""
+msgstr "|N|отсоединить карту по истечении N секунд неактивности"
 
 #: scd/scdaemon.c:138
 msgid "do not use a reader's keypad"
-msgstr ""
+msgstr "не использовать клавиатуру считывателя"
 
 #: scd/scdaemon.c:140
 msgid "allow the use of admin card commands"
@@ -6837,14 +6815,14 @@ msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
 #: sm/certchain.c:570
-#, fuzzy, c-format
+#, c-format
 msgid "number of matching certificates: %d\n"
-msgstr "ошибка импортирования сертификата: %s\n"
+msgstr "число соотвествий сертификатов: %d\n"
 
 #: sm/certchain.c:572
-#, fuzzy, c-format
+#, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
-msgstr "сбой при удалении блока ключа: %s\n"
+msgstr ""
 
 #: sm/certchain.c:744 sm/certchain.c:1231 sm/certchain.c:1835 sm/decrypt.c:259
 #: sm/encrypt.c:347 sm/sign.c:327 sm/verify.c:113
@@ -6861,7 +6839,7 @@ msgstr "не найдена CRL для сертификата"
 
 #: sm/certchain.c:919
 msgid "the status of the certificate is unknown"
-msgstr ""
+msgstr "статус сертификата не известен"
 
 #: sm/certchain.c:924
 msgid "the available CRL is too old"
@@ -6886,70 +6864,61 @@ msgid "certificate not yet valid"
 msgstr "сертификат еще не достоверен"
 
 #: sm/certchain.c:977 sm/certchain.c:1062
-#, fuzzy
 msgid "root certificate not yet valid"
-msgstr "сертификат еще не достоверен"
+msgstr "корневой сертификат еще не достоверен"
 
 #: sm/certchain.c:978 sm/certchain.c:1063
-#, fuzzy
 msgid "intermediate certificate not yet valid"
-msgstr "сертификат еще не достоверен"
+msgstr "промежуточный сертификат еще не достоверен"
 
 #: sm/certchain.c:991
 msgid "certificate has expired"
 msgstr "сертификат просрочен"
 
 #: sm/certchain.c:992
-#, fuzzy
 msgid "root certificate has expired"
-msgstr "сертификат просрочен"
+msgstr "корневой сертификат просрочен"
 
 #: sm/certchain.c:993
-#, fuzzy
 msgid "intermediate certificate has expired"
-msgstr "сертификат просрочен"
+msgstr "промежуточный сертификат просрочен"
 
 #: sm/certchain.c:1035
 #, c-format
 msgid "required certificate attributes missing: %s%s%s"
-msgstr ""
+msgstr "сертификат не имеет требуемых атрибутов: %s%s%s"
 
 #: sm/certchain.c:1044
-#, fuzzy
 msgid "certificate with invalid validity"
-msgstr "сертификат недостоверный: %s"
+msgstr "сертификат недостоверен"
 
 #: sm/certchain.c:1081
-#, fuzzy
 msgid "signature not created during lifetime of certificate"
-msgstr "ошибка чтения списка доверяемых корневых сертификатов\n"
+msgstr "подпись создана вне времени действительности сертификата"
 
 #: sm/certchain.c:1083
 msgid "certificate not created during lifetime of issuer"
-msgstr ""
+msgstr "сертификат создан вне времени действительности издателя"
 
 #: sm/certchain.c:1084
 msgid "intermediate certificate not created during lifetime of issuer"
-msgstr ""
+msgstr "промежуточный сертификат создан вне времени действительности издателя"
 
 #: sm/certchain.c:1088
-#, fuzzy
 msgid "  (  signature created at "
-msgstr "    подписей очищено: %lu\n"
+msgstr "  (  подписей создано "
 
 #: sm/certchain.c:1089
-#, fuzzy
 msgid "  (certificate created at "
-msgstr "Сертификат отзыва создан.\n"
+msgstr "  (сертификатов создано "
 
 #: sm/certchain.c:1092
-#, fuzzy
 msgid "  (certificate valid from "
-msgstr "сертификат еще не достоверен"
+msgstr "  (сертификат достоверен с "
 
 #: sm/certchain.c:1093
 msgid "  (     issuer valid from "
-msgstr ""
+msgstr "  (     издатель достоверен с "
 
 #: sm/certchain.c:1123
 #, c-format
@@ -7012,19 +6981,16 @@ msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "цепочка сертификации длиннее дозволенной CA (%d)"
 
 #: sm/certchain.c:1623 sm/certchain.c:1906
-#, fuzzy
 msgid "certificate is good\n"
-msgstr "цепочка сертификации слишком длинная\n"
+msgstr ""
 
 #: sm/certchain.c:1624
-#, fuzzy
 msgid "intermediate certificate is good\n"
-msgstr "дупликат сертификата `%s' удален\n"
+msgstr ""
 
 #: sm/certchain.c:1625
-#, fuzzy
 msgid "root certificate is good\n"
-msgstr "корневой сертификат не помечен доверяемым"
+msgstr ""
 
 #: sm/certchain.c:1796
 msgid "switching to chain model"
@@ -7036,9 +7002,9 @@ msgid "validation model used: %s"
 msgstr ""
 
 #: sm/certcheck.c:97
-#, fuzzy, c-format
+#, c-format
 msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr "ключ DSA %s использует небезопасный (%u бит) хеш\n"
+msgstr "%s ключ использует небезопасный (%u бит) хеш\n"
 
 #: sm/certcheck.c:107
 #, c-format
@@ -7074,7 +7040,7 @@ msgid "[Error - invalid DN]"
 msgstr "[Ошибка - недопустимый DN]"
 
 #: sm/certdump.c:961
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "
 "certificate:\n"
@@ -7082,9 +7048,10 @@ msgid ""
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Введите фразу-пароль для доступа к секретному ключу:\n"
-"\"%s\"\n"
-"S/N %s, ID %08lX, создан %s"
+"Введите фразу-пароль для доступа к секретному ключу к X.509 сертификату:\"%s"
+"\"\n"
+"S/N %s, ID 0x%08lX,\n"
+"создан %s, истекает %s.\n"
 
 #: sm/certlist.c:122
 msgid "no key usage specified - assuming all usages\n"
@@ -7160,9 +7127,9 @@ msgid "line %d: error getting key by keygrip `%s': %s\n"
 msgstr "строка %d: ошибка получения keygrip ключа `%s': %s\n"
 
 #: sm/certreqgen.c:574
-#, fuzzy, c-format
+#, c-format
 msgid "line %d: key generation failed: %s <%s>\n"
-msgstr "строка %d: cбой создания ключа: %s\n"
+msgstr "строка %d: cбой создания ключа: %s <%s>\n"
 
 #: sm/certreqgen.c:806
 msgid ""
@@ -7171,48 +7138,47 @@ msgid ""
 msgstr ""
 
 #: sm/certreqgen-ui.c:122
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA (только для подписи)\n"
+msgstr "   (%d) RSA\n"
 
 #: sm/certreqgen-ui.c:123
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) Existing key\n"
-msgstr "   (2) Ключ шифрования\n"
+msgstr "   (%d) Имеющийся ключ\n"
 
 #: sm/certreqgen-ui.c:124
 #, c-format
 msgid "   (%d) Existing key from card\n"
-msgstr ""
+msgstr "   (%d) Имеющийся на карте ключ\n"
 
 #: sm/certreqgen-ui.c:176
-#, fuzzy, c-format
+#, c-format
 msgid "Possible actions for a %s key:\n"
-msgstr "Возможные действия для ключа %s:"
+msgstr "Возможные действия для ключа %s:\n"
 
 #: sm/certreqgen-ui.c:177
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) sign, encrypt\n"
-msgstr "   (%d) DSA (только для подписи)\n"
+msgstr "   (%d) подпись, шифрование\n"
 
 #: sm/certreqgen-ui.c:178
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) sign\n"
-msgstr "   (%d) DSA (только для подписи)\n"
+msgstr "   (%d) подпись\n"
 
 #: sm/certreqgen-ui.c:179
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) encrypt\n"
-msgstr "   (%d) RSA (только для шифрования)\n"
+msgstr "   (%d) шифрование\n"
 
 #: sm/certreqgen-ui.c:203
 msgid "Enter the X.509 subject name: "
 msgstr ""
 
 #: sm/certreqgen-ui.c:207
-#, fuzzy
 msgid "No subject name given\n"
-msgstr "(Пояснения отсутствуют)\n"
+msgstr ""
 
 #: sm/certreqgen-ui.c:211
 #, c-format
@@ -7225,51 +7191,46 @@ msgstr ""
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #: sm/certreqgen-ui.c:220
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid subject name `%s'\n"
-msgstr "недопустимая хэш-функция `%s'\n"
+msgstr ""
 
 #: sm/certreqgen-ui.c:222
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
 msgstr ""
 
 #: sm/certreqgen-ui.c:234
-#, fuzzy
 msgid "Enter email addresses"
-msgstr "Email-адрес: "
+msgstr "Введите Email-адрес: "
 
 #: sm/certreqgen-ui.c:235
-#, fuzzy
 msgid " (end with an empty line):\n"
-msgstr ""
-"\n"
-"Введите User ID.  Пустая строка для завершения: "
+msgstr "(пустая строка для завершения):\n"
 
 #: sm/certreqgen-ui.c:239
-#, fuzzy
 msgid "Enter DNS names"
-msgstr "Введите новое имя файла"
+msgstr "Введите DNS имя"
 
 #: sm/certreqgen-ui.c:240 sm/certreqgen-ui.c:245
-#, fuzzy
 msgid " (optional; end with an empty line):\n"
-msgstr "Введите необязательное пояснение; закончите пустой строкой:\n"
+msgstr " (опционаьно; пустая строка для завершения):\n"
 
 #: sm/certreqgen-ui.c:244
 msgid "Enter URIs"
-msgstr ""
+msgstr "Введите URIs"
 
 #: sm/certreqgen-ui.c:271
 msgid "Parameters to be used for the certificate request:\n"
-msgstr ""
+msgstr "Параметры необходимые для создания запроса на сертификацию:\n"
 
 #: sm/certreqgen-ui.c:289
 msgid "Now creating certificate request.  This may take a while ...\n"
 msgstr ""
+"Создается запрос на сертификацию. Это может занять немного времени...\n"
 
 #: sm/certreqgen-ui.c:298
 msgid "Ready.  You should now send this request to your CA.\n"
-msgstr ""
+msgstr "Готово. Данный запрос теперь следует передать на подпись в CA.\n"
 
 #: sm/certreqgen-ui.c:303
 msgid "resource problem: out of core\n"
@@ -7393,14 +7354,12 @@ msgid "don't use the terminal at all"
 msgstr "не использовать терминал совсем"
 
 #: sm/gpgsm.c:285
-#, fuzzy
 msgid "|FILE|write a server mode log to FILE"
 msgstr "|FILE|сохранять журнал режима сервера в FILE"
 
 #: sm/gpgsm.c:290
-#, fuzzy
 msgid "|FILE|write an audit log to FILE"
-msgstr "|FILE|сохранять журнал режима сервера в FILE"
+msgstr "|FILE|сохранять журнал аудита в FILE"
 
 #: sm/gpgsm.c:292
 msgid "batch mode: never ask"
@@ -7415,19 +7374,16 @@ msgid "assume no on most questions"
 msgstr "предполагать Нет на большинство вопросов"
 
 #: sm/gpgsm.c:297
-#, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
-msgstr "добавить данную таблицу ключей в список таблиц ключей"
+msgstr "|FILE|добавить таблицу ключей в список таблиц ключей"
 
 #: sm/gpgsm.c:300
-#, fuzzy
 msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|NAME|использовать NAME как секретный ключ по умолчанию"
+msgstr "|USER-ID|использовать USER-ID как секретный ключ по умолчанию"
 
 #: sm/gpgsm.c:310 tools/gpgconf-comp.c:744
-#, fuzzy
 msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|HOST|использовать данный сервер ключей для поиска ключей"
+msgstr "|SPEC|использовать данный сервер ключей для поиска ключей"
 
 #: sm/gpgsm.c:328
 msgid "|NAME|use cipher algorithm NAME"
@@ -7457,19 +7413,19 @@ msgid "usage: gpgsm [options] "
 msgstr "использование: gpgsm [параметры] "
 
 #: sm/gpgsm.c:709
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
-msgstr "не могу зашифровать для `%s': %s\n"
+msgstr "Замечание: не могу зашифровать для `%s': %s\n"
 
 #: sm/gpgsm.c:720
-#, fuzzy, c-format
+#, c-format
 msgid "unknown validation model `%s'\n"
-msgstr "неизвестный параметр `%s'\n"
+msgstr ""
 
 #: sm/gpgsm.c:771
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%u: no hostname given\n"
-msgstr "(Пояснения отсутствуют)\n"
+msgstr ""
 
 #: sm/gpgsm.c:790
 #, c-format
@@ -7477,14 +7433,13 @@ msgid "%s:%u: password given without user\n"
 msgstr ""
 
 #: sm/gpgsm.c:811
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%u: skipping this line\n"
-msgstr " s = пропустить этот ключ\n"
+msgstr "%s:%u: не обрабатываем эту строку\n"
 
 #: sm/gpgsm.c:1325
-#, fuzzy
 msgid "could not parse keyserver\n"
-msgstr "не могу проанализировать URL сервера ключей\n"
+msgstr ""
 
 #: sm/gpgsm.c:1406
 msgid "WARNING: running with faked system time: "
@@ -7584,9 +7539,8 @@ msgid "error storing flags: %s\n"
 msgstr "ошибка сохранения флагов: %s\n"
 
 #: sm/keylist.c:623
-#, fuzzy
 msgid "Error - "
-msgstr "[Ошибка - Нет имени]"
+msgstr "Ошибка - "
 
 #: sm/misc.c:55
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
@@ -7631,9 +7585,9 @@ msgid ""
 msgstr ""
 
 #: sm/sign.c:420
-#, fuzzy, c-format
+#, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
-msgstr "метод защиты %d%s не поддерживается\n"
+msgstr "хеш-функция %d (%s) для %d не поддерживается; использую %s\n"
 
 #: sm/sign.c:433
 #, c-format
@@ -7654,14 +7608,16 @@ msgid "[date not given]"
 msgstr "[дата не указана]"
 
 #: sm/verify.c:452
-#, fuzzy, c-format
+#, c-format
 msgid " using certificate ID 0x%08lX\n"
-msgstr "с использованием сертификата ID %08lX\n"
+msgstr "с использованием сертификата ID 0x%08lX\n"
 
 #: sm/verify.c:470
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
+"недопустимая подпись: атрибут дайджеста сообщения не соответствует "
+"вычисленному\n"
 
 #: sm/verify.c:590
 msgid "Good signature from"
@@ -7672,9 +7628,8 @@ msgid "                aka"
 msgstr "                aka"
 
 #: sm/verify.c:609
-#, fuzzy
 msgid "This is a qualified signature\n"
-msgstr "Это будет самоподпись.\n"
+msgstr ""
 
 #: tools/gpg-connect-agent.c:70 tools/gpgconf.c:78 tools/symcryptrun.c:165
 msgid "quiet"
@@ -7701,13 +7656,12 @@ msgid "do not use extended connect mode"
 msgstr ""
 
 #: tools/gpg-connect-agent.c:80
-#, fuzzy
 msgid "|FILE|run commands from FILE on startup"
-msgstr "|FILE|взять параметры из FILE"
+msgstr "|FILE|выполнить команды из FILE при запуске"
 
 #: tools/gpg-connect-agent.c:81
 msgid "run /subst on startup"
-msgstr ""
+msgstr "выполнить /substr при запуске"
 
 #: tools/gpg-connect-agent.c:183
 msgid "Usage: gpg-connect-agent [options] (-h for help)"
@@ -7789,18 +7743,16 @@ msgid "Options controlling the security"
 msgstr "Параметры контролирующие безопасность"
 
 #: tools/gpgconf-comp.c:515
-#, fuzzy
 msgid "|N|expire SSH keys after N seconds"
-msgstr "|N|кеш PIN просрочен после N секунд"
+msgstr "|N|считать ключ SSH истекшим по истечении N секунд"
 
 #: tools/gpgconf-comp.c:519
-#, fuzzy
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr "|N|кеш PIN просрочен после N секунд"
+msgstr "|N|установить максимальный срок кешированного PIN N секунд"
 
 #: tools/gpgconf-comp.c:523
 msgid "|N|set maximum SSH key lifetime to N seconds"
-msgstr ""
+msgstr "|N|установить максимальный срок действия SSH ключа N секунд"
 
 #: tools/gpgconf-comp.c:537
 msgid "Options enforcing a passphrase policy"
@@ -7812,34 +7764,31 @@ msgstr ""
 
 #: tools/gpgconf-comp.c:544
 msgid "|N|set minimal required length for new passphrases to N"
-msgstr ""
+msgstr "|N|установить минимальную длину фразы-пароля равной N"
 
 #: tools/gpgconf-comp.c:548
 msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr ""
+msgstr "|n|требовать не менее N не алфавитных символов для новой фразы-пароля"
 
 #: tools/gpgconf-comp.c:552
 msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr ""
+msgstr "|FILE|проверять новую фразу-пароль по файлу образцов FILE"
 
 #: tools/gpgconf-comp.c:556
-#, fuzzy
 msgid "|N|expire the passphrase after N days"
-msgstr "|N|кеш PIN просрочен после N секунд"
+msgstr "|N|срок жизни фразы-пароля N дней"
 
 #: tools/gpgconf-comp.c:560
-#, fuzzy
 msgid "do not allow the reuse of old passphrases"
-msgstr "разрешить предустановленную фразу-пароль"
+msgstr "не разрешать повторное использование старых фраз-паролей"
 
 #: tools/gpgconf-comp.c:658 tools/gpgconf-comp.c:726
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|использовать NAME как секретный ключ по умолчанию"
 
 #: tools/gpgconf-comp.c:661 tools/gpgconf-comp.c:729
-#, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|зашифровать для получателя NAME"
+msgstr "|NAME|зашифровать для User ID: NAME"
 
 #: tools/gpgconf-comp.c:664
 msgid "|SPEC|set up email aliases"
@@ -7850,9 +7799,8 @@ msgid "Configuration for Keyservers"
 msgstr "Конфигурация серверов ключей"
 
 #: tools/gpgconf-comp.c:687
-#, fuzzy
 msgid "|URL|use keyserver at URL"
-msgstr "не могу проанализировать URL сервера ключей\n"
+msgstr "|URL|использовать север ключей по URL"
 
 #: tools/gpgconf-comp.c:690
 msgid "allow PKA lookups (DNS requests)"
@@ -7863,13 +7811,12 @@ msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
 
 #: tools/gpgconf-comp.c:738
-#, fuzzy
 msgid "disable all access to the dirmngr"
-msgstr "передать команду dirmngr"
+msgstr "полностью запретить доступ к dirmngr"
 
 #: tools/gpgconf-comp.c:741
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr ""
+msgstr "|NAME|использовать кодировку NAME для PKCS#12 фраз-паролей"
 
 #: tools/gpgconf-comp.c:767
 msgid "do not check CRLs for root certificates"
@@ -7929,9 +7876,8 @@ msgid "|COMPONENT|change options"
 msgstr "|COMPONENT|изменить параметры"
 
 #: tools/gpgconf.c:64
-#, fuzzy
 msgid "|COMPONENT|check options"
-msgstr "|COMPONENT|изменить параметры"
+msgstr "|COMPONENT|проверить параметры"
 
 #: tools/gpgconf.c:66
 msgid "apply global default values"
@@ -7942,14 +7888,12 @@ msgid "get the configuration directories for gpgconf"
 msgstr ""
 
 #: tools/gpgconf.c:70
-#, fuzzy
 msgid "list global configuration file"
-msgstr "неизвестный параметр в файле конфигурации `%s'\n"
+msgstr ""
 
 #: tools/gpgconf.c:72
-#, fuzzy
 msgid "check global configuration file"
-msgstr "неизвестный параметр в файле конфигурации `%s'\n"
+msgstr "проверить глобальный файл конфигурации"
 
 #: tools/gpgconf.c:76
 msgid "use as output file"
@@ -7984,9 +7928,8 @@ msgid "Component not found"
 msgstr "Компонент не найден"
 
 #: tools/gpgconf.c:251
-#, fuzzy
 msgid "No argument allowed"
-msgstr "Команды администрирования не разрешены\n"
+msgstr "Аргументы не разрешены"
 
 #: tools/symcryptrun.c:152
 msgid ""
@@ -8157,383 +8100,12 @@ msgid "class %s is not supported\n"
 msgstr "класс %s не поддерживается\n"
 
 #: tools/gpg-check-pattern.c:145
-#, fuzzy
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
-msgstr "Использование: gpg-connect-agent [параметры] (-h для подсказки)"
+msgstr ""
+"Использование: gpg-check-pattern [параметры] patternfile (-h для подсказки)\n"
 
 #: tools/gpg-check-pattern.c:148
 msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
-
-#~ msgid "read options from file"
-#~ msgstr "получение параметров конфигурации из файла"
-
-#~ msgid "generate PGP 2.x compatible messages"
-#~ msgstr "создает сообщение совместимым с PGP 2.x"
-
-#~ msgid "|[FILE]|make a signature"
-#~ msgstr "|[файл]|создать подпись"
-
-#~ msgid "|[FILE]|make a clear text signature"
-#~ msgstr "|[файл]|создать прозрачную подпись"
-
-#~ msgid "|NAME|use NAME as default recipient"
-#~ msgstr "|NAME|использовать NAME как получателя по умолчанию"
-
-#~ msgid "use the default key as default recipient"
-#~ msgstr "использовать ключ по умолчанию как получателя по умолчанию"
-
-#~ msgid "force v3 signatures"
-#~ msgstr "принудительная подпись v3"
-
-#~ msgid "always use a MDC for encryption"
-#~ msgstr "всегда использовать MDC для шифрования"
-
-#~ msgid "add this secret keyring to the list"
-#~ msgstr "добавить данную таблицу секретных ключей в список"
-
-#~ msgid "|NAME|set terminal charset to NAME"
-#~ msgstr "|NAME|установить кодировку терминала в NAME"
-
-#~ msgid "|FILE|load extension module FILE"
-#~ msgstr "|FILE|загрузить модуль дополнения FILE"
-
-#~ msgid "|N|use compress algorithm N"
-#~ msgstr "|N|использовать алгоритм сжатия N"
-
-#~ msgid "remove key from the public keyring"
-#~ msgstr "удалить ключ из таблицы открытых ключей"
-
-#~ msgid ""
-#~ "It's up to you to assign a value here; this value will never be exported\n"
-#~ "to any 3rd party.  We need it to implement the web-of-trust; it has "
-#~ "nothing\n"
-#~ "to do with the (implicitly created) web-of-certificates."
-#~ msgstr ""
-#~ "Вы должны ввести здесь значение; оно никогда не будет экспортировано\n"
-#~ "третьей стороне.  Это необходимо для реализации Сети Доверия;\n"
-#~ "и не имеет ничего общего с (неявно созданной) сетью сертификатов."
-
-#~ msgid ""
-#~ "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
-#~ "ultimately trusted - those are usually the keys for which you have\n"
-#~ "access to the secret key.  Answer \"yes\" to set this key to\n"
-#~ "ultimately trusted\n"
-#~ msgstr ""
-#~ "Для построения Сети Доверия, GnuPG должен знать, к каким ключам\n"
-#~ "имеется абсолютное доверие - обычно это ключи для которых у Вас есть\n"
-#~ "секретный ключ.  Ответьте \"yes\" для присвоения абсолютного доверия\n"
-#~ "данному ключу\n"
-
-#~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
-#~ msgstr ""
-#~ "Если хотите использовать данный недоверяемый ключ - ответьте \"yes\"."
-
-#~ msgid ""
-#~ "Enter the user ID of the addressee to whom you want to send the message."
-#~ msgstr "Введите User ID адресата, которому хотите отправить сообщение."
-
-#~ msgid ""
-#~ "Select the algorithm to use.\n"
-#~ "\n"
-#~ "DSA (aka DSS) is the Digital Signature Algorithm and can only be used\n"
-#~ "for signatures.\n"
-#~ "\n"
-#~ "Elgamal is an encrypt-only algorithm.\n"
-#~ "\n"
-#~ "RSA may be used for signatures or encryption.\n"
-#~ "\n"
-#~ "The first (primary) key must always be a key which is capable of signing."
-#~ msgstr ""
-#~ "Выберите алгоритм.\n"
-#~ "\n"
-#~ "DSA (aka DSS) - Digital Signature Algorithm может использоваться\n"
-#~ "только для подписей.\n"
-#~ "\n"
-#~ "Elgamal - алгоритм используемый только для шифрования.\n"
-#~ "\n"
-#~ "RSA может использоваться и для подписи, и для шифрования.\n"
-#~ "\n"
-#~ "Первый (он же главный) ключ всегда должен быть подписывающим."
-
-#~ msgid ""
-#~ "In general it is not a good idea to use the same key for signing and\n"
-#~ "encryption.  This algorithm should only be used in certain domains.\n"
-#~ "Please consult your security expert first."
-#~ msgstr ""
-#~ "Обычно не рекомендуется использовать один ключ и для подписи, и для "
-#~ "шифрования.\n"
-#~ "Данный алгоритм следует использовтаь только в некоторых случаях.\n"
-#~ "Проконсультируйтесь с Вашим экспертом по безопасности перед тем,\n"
-#~ "как использовать данный ключ."
-
-#~ msgid "Enter the size of the key"
-#~ msgstr "Введите размер ключа"
-
-#~ msgid "Answer \"yes\" or \"no\""
-#~ msgstr "Ответьте \"yes\" или \"no\""
-
-#~ msgid ""
-#~ "Enter the required value as shown in the prompt.\n"
-#~ "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
-#~ "get a good error response - instead the system tries to interpret\n"
-#~ "the given value as an interval."
-#~ msgstr ""
-#~ "Введите требуемое значение, как показано в подсказке.\n"
-#~ "Можно ввести дату в ISO формате (YYYY-MM-DD), но Вы не получите\n"
-#~ "уведомление при ошибке в формате - вместо этого система попробует\n"
-#~ "интерпретировать введенное значение как интервал."
-
-#~ msgid "Enter the name of the key holder"
-#~ msgstr "Введите имя владельца ключа"
-
-#~ msgid "please enter an optional but highly suggested email address"
-#~ msgstr "введите необязательный, но очень рекомендуемый email адрес"
-
-#~ msgid "Please enter an optional comment"
-#~ msgstr "Введите необязательный комментарий"
-
-#~ msgid ""
-#~ "N  to change the name.\n"
-#~ "C  to change the comment.\n"
-#~ "E  to change the email address.\n"
-#~ "O  to continue with key generation.\n"
-#~ "Q  to to quit the key generation."
-#~ msgstr ""
-#~ "N  изменить имя.\n"
-#~ "C  изменить комментарий.\n"
-#~ "E  изменить email адрес.\n"
-#~ "O  продолжить создание ключа.\n"
-#~ "Q  выйти и прервать создание ключа."
-
-#~ msgid ""
-#~ "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
-#~ msgstr "Ответьте \"yes\" (или только \"y\"), если готовы создавать подключ."
-
-#~ msgid ""
-#~ "When you sign a user ID on a key, you should first verify that the key\n"
-#~ "belongs to the person named in the user ID.  It is useful for others to\n"
-#~ "know how carefully you verified this.\n"
-#~ "\n"
-#~ "\"0\" means you make no particular claim as to how carefully you verified "
-#~ "the\n"
-#~ "    key.\n"
-#~ "\n"
-#~ "\"1\" means you believe the key is owned by the person who claims to own "
-#~ "it\n"
-#~ "    but you could not, or did not verify the key at all.  This is useful "
-#~ "for\n"
-#~ "    a \"persona\" verification, where you sign the key of a pseudonymous "
-#~ "user.\n"
-#~ "\n"
-#~ "\"2\" means you did casual verification of the key.  For example, this "
-#~ "could\n"
-#~ "    mean that you verified the key fingerprint and checked the user ID on "
-#~ "the\n"
-#~ "    key against a photo ID.\n"
-#~ "\n"
-#~ "\"3\" means you did extensive verification of the key.  For example, this "
-#~ "could\n"
-#~ "    mean that you verified the key fingerprint with the owner of the key "
-#~ "in\n"
-#~ "    person, and that you checked, by means of a hard to forge document "
-#~ "with a\n"
-#~ "    photo ID (such as a passport) that the name of the key owner matches "
-#~ "the\n"
-#~ "    name in the user ID on the key, and finally that you verified (by "
-#~ "exchange\n"
-#~ "    of email) that the email address on the key belongs to the key "
-#~ "owner.\n"
-#~ "\n"
-#~ "Note that the examples given above for levels 2 and 3 are *only* "
-#~ "examples.\n"
-#~ "In the end, it is up to you to decide just what \"casual\" and \"extensive"
-#~ "\"\n"
-#~ "mean to you when you sign other keys.\n"
-#~ "\n"
-#~ "If you don't know what the right answer is, answer \"0\"."
-#~ msgstr ""
-#~ "Перед подписыванием User ID ключа, следует прежде удостовериться, что\n"
-#~ "ключ действительно принадлежит человеку указанному в User ID. Это очень "
-#~ "важно\n"
-#~ "для тех, кто учитывает как хорошо Вы проверяете достоверность User ID.\n"
-#~ "\n"
-#~ "\"0\" означает, что Вы не можете сказать, как хорошо Вы проверили ключ.\n"
-#~ "\"1\" означает, что Вы полагаете, что ключ принадлежит человеку, который\n"
-#~ "    указан в нем, но Вы не могли или не проводили проверку ключа совсем.\n"
-#~ "    Это полезно, когда Вы подписываете ключ с псевдонимом человека.\n"
-#~ "\n"
-#~ "\"2\" означает, что Вы делали неаккуратную проверку ключа.  Например, это "
-#~ "может\n"
-#~ "    означать, что Вы проверили отпечаток ключа и проверили User ID на\n"
-#~ "    ключе на основании фото ID.\n"
-#~ "\n"
-#~ "\"3\" означает, что Вы выполнили всестороннюю проверку ключа.  Например, "
-#~ "это может\n"
-#~ "    означать, что Вы сверили отпечаток ключа с владельцем ключа лично\n"
-#~ "    и что Вы сверили всё посредством трудноподделываемого документа с\n"
-#~ "    фотографией (таким как паспорт), что имя владельца ключа совпадает с\n"
-#~ "    именем в User ID ключа и наконец, что Вы проверили (обменом "
-#~ "шифрованными\n"
-#~ "    письмами), что email адрес на ключе принадлежит владельцу ключа.\n"
-#~ "\n"
-#~ "Учтите, что примеры данные для уровней 2 и 3 - только примеры.\n"
-#~ "В конечном итоге, Вам решать, как классифицировать \"неаккуратно\" и "
-#~ "\"всесторонне\",\n"
-#~ "при подписывании чужих ключей.\n"
-#~ "\n"
-#~ "Если Вы не можете определиться с правильным ответом, ответьте \"0\"."
-
-#~ msgid "Answer \"yes\" if you want to sign ALL the user IDs"
-#~ msgstr "Ответьте \"yes\", если хотите подписать ВСЕ User ID"
-
-#~ msgid ""
-#~ "Answer \"yes\" if you really want to delete this user ID.\n"
-#~ "All certificates are then also lost!"
-#~ msgstr ""
-#~ "Ответьте \"yes\", если действительно хотите удалить данный User ID.\n"
-#~ "Все сертификаты также будут потеряны!"
-
-#~ msgid "Answer \"yes\" if it is okay to delete the subkey"
-#~ msgstr "Ответьте \"yes\", если готовы удалить подключ"
-
-#~ msgid ""
-#~ "This is a valid signature on the key; you normally don't want\n"
-#~ "to delete this signature because it may be important to establish a\n"
-#~ "trust connection to the key or another key certified by this key."
-#~ msgstr ""
-#~ "Это действительная подпись на ключе; обычно не желательно\n"
-#~ "удалять такие подписи, потому, что она может быть важна для установления\n"
-#~ "достоверности ключа или других ключей подписанных данным ключом."
-
-#~ msgid ""
-#~ "This signature can't be checked because you don't have the\n"
-#~ "corresponding key.  You should postpone its deletion until you\n"
-#~ "know which key was used because this signing key might establish\n"
-#~ "a trust connection through another already certified key."
-#~ msgstr ""
-#~ "Данная подпись не может быть проверена потому, что Вы не имеете\n"
-#~ "соответствующего ключа.  Можете отложить ее удаление, пока не\n"
-#~ "узнаете, какой ключ был использован, т.к. эта подпись может\n"
-#~ "устанавливать достоверность через другие уже удостоверенные ключи."
-
-#~ msgid ""
-#~ "The signature is not valid.  It does make sense to remove it from\n"
-#~ "your keyring."
-#~ msgstr ""
-#~ "Подпись недействительна.  Это дает основания удалить ее из\n"
-#~ "связки ключей."
-
-#~ msgid ""
-#~ "This is a signature which binds the user ID to the key. It is\n"
-#~ "usually not a good idea to remove such a signature.  Actually\n"
-#~ "GnuPG might not be able to use this key anymore.  So do this\n"
-#~ "only if this self-signature is for some reason not valid and\n"
-#~ "a second one is available."
-#~ msgstr ""
-#~ "Данная подпись является самоподписью и привязывает User ID к ключу.\n"
-#~ "Обычно это плохая идея удалить такую подпись.  На самом деле\n"
-#~ "GnuPG может не позволить использовать такой ключ далее.\n"
-#~ "Делайте это только если данная самоподпись не действительна по\n"
-#~ "каким-либо причинам и существует доступная вторая."
-
-#~ msgid ""
-#~ "Change the preferences of all user IDs (or just of the selected ones)\n"
-#~ "to the current list of preferences.  The timestamp of all affected\n"
-#~ "self-signatures will be advanced by one second.\n"
-#~ msgstr ""
-#~ "Изменение предпочтений для всех User ID (или только для выбранных)\n"
-#~ "на текущий список предпочтений.  Отметка времени на всех затронутых\n"
-#~ "самоподписях будет увеличена на одну секунду.\n"
-
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
-#~ msgstr "Введите фразу-пароль (это секретная строка) \n"
-
-#~ msgid ""
-#~ "Please repeat the last passphrase, so you are sure what you typed in."
-#~ msgstr ""
-#~ "Повторите фразу-пароль, чтобы убедиться в том, что она набрана правильно."
-
-#~ msgid "Give the name of the file to which the signature applies"
-#~ msgstr "Введите имя файла, к которому относится данная подпись"
-
-#~ msgid "Answer \"yes\" if it is okay to overwrite the file"
-#~ msgstr "Ответьте \"yes\", если хотите перезаписать файл"
-
-#~ msgid ""
-#~ "Please enter a new filename. If you just hit RETURN the default\n"
-#~ "file (which is shown in brackets) will be used."
-#~ msgstr ""
-#~ "Введите новое имя файла. Если нажмете только RETURN будет использован\n"
-#~ "по умолчанию тот файл, который показан в квадратных скобках."
-
-#~ msgid ""
-#~ "You should specify a reason for the certification.  Depending on the\n"
-#~ "context you have the ability to choose from this list:\n"
-#~ "  \"Key has been compromised\"\n"
-#~ "      Use this if you have a reason to believe that unauthorized persons\n"
-#~ "      got access to your secret key.\n"
-#~ "  \"Key is superseded\"\n"
-#~ "      Use this if you have replaced this key with a newer one.\n"
-#~ "  \"Key is no longer used\"\n"
-#~ "      Use this if you have retired this key.\n"
-#~ "  \"User ID is no longer valid\"\n"
-#~ "      Use this to state that the user ID should not longer be used;\n"
-#~ "      this is normally used to mark an email address invalid.\n"
-#~ msgstr ""
-#~ "Сейчас сможете указать причину отзыва ключа.  Основываясь на \n"
-#~ "контексте отзыва - можете выбрать один из следующих вариантов:\n"
-#~ "  \"Ключ был скомпрометирован\"\n"
-#~ "      Выберите, если предполагаете, что посторонний человек\n"
-#~ "      получил доступ к Вашему секретному ключу.\n"
-#~ "  \"Ключ заменен другим\"\n"
-#~ "      Выберите, если заменяете данный ключ на другой.\n"
-#~ "  \"Ключ больше не используется\"\n"
-#~ "      Выберите, если отказываетесь от использования данного ключа.\n"
-#~ "  \"User ID больше не действителен\"\n"
-#~ "      Выберите, если больше не собираетесь использовать данный User ID.\n"
-#~ "      Обычно используется, для указания, что данный e-mail больше\n"
-#~ "      не используется\n"
-
-#~ msgid ""
-#~ "If you like, you can enter a text describing why you issue this\n"
-#~ "revocation certificate.  Please keep this text concise.\n"
-#~ "An empty line ends the text.\n"
-#~ msgstr ""
-#~ "При необходимости здесь можно прокомментировать причины\n"
-#~ "создания сертификата отзыва.  Будьте кратки.\n"
-#~ "Для завершения введите пустую строку.\n"
-
-#~ msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
-#~ msgstr "невозможно добавить примечение в v3 (PGP 2.x стиля) подпись\n"
-
-#~ msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
-#~ msgstr "невозможно добавить примечание в v3 (PGP 2.x стиля) подпись ключа\n"
-
-#~ msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
-#~ msgstr "невозможно добавить URL правил в v3 (PGP 2.x стиля) подпись\n"
-
-#~ msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
-#~ msgstr "нельзя ставить URL правил в v3 (PGP 2.x стиля) подписи\n"
-
-#, fuzzy
-#~ msgid ""
-#~ "please see http://www.gnupg.org/download/iconv.html for more information\n"
-#~ msgstr "для дополнительной информации см. %s\n"
-
-#, fuzzy
-#~ msgid "key generation is not available from the commandline\n"
-#~ msgstr "gpg-agent недоступен в данной сессии\n"
-
-#, fuzzy
-#~ msgid "please use the script \"%s\" to generate a new key\n"
-#~ msgstr "Выберите тип создаваемого ключа:\n"
-
-#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-#~ msgstr ""
-#~ "расширение шифра `%s' не загружено вследствие небезопасных прав доступа\n"
-
-#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
-#~ msgstr "DSA требует использования 160 битной хэш-функции\n"
