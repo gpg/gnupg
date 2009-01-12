@@ -1,3 +1,8 @@
+2009-01-12  Werner Koch  <wk@g10code.com>
+
+	* getkey.c (finish_lookup): Take care of keys with a zero
+	timestamp.  Reported by Peter Gutmann.
+
 2009-01-08  Werner Koch  <wk@g10code.com>
 
 	* misc.c (has_invalid_email_chars): Let non-ascii pass through.
@@ -10420,7 +10425,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
-	   2006,2007,2008 Free Software Foundation, Inc.
+	   2006,2007,2008,2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

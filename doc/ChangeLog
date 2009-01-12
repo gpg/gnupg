@@ -1,3 +1,7 @@
+2009-01-12  Werner Koch  <wk@g10code.com>
+
+	* faq.raw: Fix bug reorting address.
+
 2008-12-12  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (General GPGSM Commands): Fix --help, --version and

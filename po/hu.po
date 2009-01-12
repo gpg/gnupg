@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-05 19:29+0100\n"
+"POT-Creation-Date: 2009-01-12 09:27+0100\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -1758,12 +1758,12 @@ msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
 "Nincs titkos alkulcs a %08lX nyilvános alkulcshoz - figyelmen kívül hagyom.\n"
 
-#: g10/getkey.c:2764
+#: g10/getkey.c:2769
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
 
-#: g10/getkey.c:2811
+#: g10/getkey.c:2816
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
@@ -6652,29 +6652,29 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:325 scd/app-openpgp.c:1457 scd/app-dinsig.c:297
+#: scd/app-nks.c:359 scd/app-openpgp.c:1457 scd/app-dinsig.c:297
 msgid "||Please enter your PIN at the reader's keypad"
 msgstr ""
 
-#: scd/app-nks.c:329 scd/app-openpgp.c:1461 scd/app-openpgp.c:1493
+#: scd/app-nks.c:363 scd/app-openpgp.c:1461 scd/app-openpgp.c:1493
 #: scd/app-openpgp.c:1640 scd/app-openpgp.c:1658 scd/app-openpgp.c:1858
 #: scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-nks.c:377
+#: scd/app-nks.c:411
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-nks.c:557 scd/app-openpgp.c:1898
+#: scd/app-nks.c:591 scd/app-openpgp.c:1898
 msgid "|N|New PIN"
 msgstr ""
 
-#: scd/app-nks.c:560 scd/app-openpgp.c:1902 scd/app-dinsig.c:529
+#: scd/app-nks.c:594 scd/app-openpgp.c:1902 scd/app-dinsig.c:529
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"

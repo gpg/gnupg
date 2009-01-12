@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.10 (unreleased)
+Noteworthy changes in version 2.0.10 (2009-01-12)
 -------------------------------------------------
 
  * [gpg] New keyserver helper gpg2keys_kdns as generic DNS CERT

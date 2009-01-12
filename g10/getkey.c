@@ -2696,8 +2696,13 @@ finish_lookup (GETKEY_CTX ctx)
             }
 
             if (DBG_CACHE)
-                log_debug( "\tsubkey looks fine\n");
-            if ( pk->timestamp > latest_date ) {
+                log_debug( "\tsubkey might be fine\n");
+            /* In case a key has a timestamp of 0 set, we make sure
+               that it is used.  A better change would be to compare
+               ">=" but that might also change the selected keys and
+               is as such a more intrusive change.  */
+            if ( pk->timestamp > latest_date
+                 || (!pk->timestamp && !latest_date)) {
                 latest_date = pk->timestamp;
                 latest_key  = k;
             }

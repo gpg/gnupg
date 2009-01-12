@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-05 19:29+0100\n"
+"POT-Creation-Date: 2009-01-12 09:27+0100\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -1727,12 +1727,12 @@ msgstr "Neplatný klíè %s zmìnìn na platný pomocí --always-non-selfsigned-uid\n"
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "neexistuje tajný podklíè pro veøejný klíè %s - ignorováno\n"
 
-#: g10/getkey.c:2764
+#: g10/getkey.c:2769
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "pou¾ívám podklíè %s místo primárního klíèe %s\n"
 
-#: g10/getkey.c:2811
+#: g10/getkey.c:2816
 #, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "klíè %s: tajný klíè bez klíèe veøejného - pøeskoèeno\n"
@@ -6526,29 +6526,29 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:325 scd/app-openpgp.c:1457 scd/app-dinsig.c:297
+#: scd/app-nks.c:359 scd/app-openpgp.c:1457 scd/app-dinsig.c:297
 msgid "||Please enter your PIN at the reader's keypad"
 msgstr ""
 
-#: scd/app-nks.c:329 scd/app-openpgp.c:1461 scd/app-openpgp.c:1493
+#: scd/app-nks.c:363 scd/app-openpgp.c:1461 scd/app-openpgp.c:1493
 #: scd/app-openpgp.c:1640 scd/app-openpgp.c:1658 scd/app-openpgp.c:1858
 #: scd/app-dinsig.c:301
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "funkce PIN callback zkonèila chybou: %s\n"
 
-#: scd/app-nks.c:377
+#: scd/app-nks.c:411
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-nks.c:557 scd/app-openpgp.c:1898
+#: scd/app-nks.c:591 scd/app-openpgp.c:1898
 msgid "|N|New PIN"
 msgstr "|N|Nový PIN"
 
-#: scd/app-nks.c:560 scd/app-openpgp.c:1902 scd/app-dinsig.c:529
+#: scd/app-nks.c:594 scd/app-openpgp.c:1902 scd/app-dinsig.c:529
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "chyba pøi získání nového PINu: %s\n"
