@@ -369,8 +369,29 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
   if (!info.serialno || strncmp (info.serialno, "D27600012401", 12) 
       || strlen (info.serialno) != 32 )
     {
-      if (opt.with_colons)
-        fputs ("unknown:\n", fp);
+      if (info.apptype && !strcmp (info.apptype, "NKS"))
+        {
+          if (opt.with_colons)
+            fputs ("netkey-card:\n", fp);
+          log_info ("this is a NetKey card\n");
+        }
+      else if (info.apptype && !strcmp (info.apptype, "DINSIG"))
+        {
+          if (opt.with_colons)
+            fputs ("dinsig-card:\n", fp);
+          log_info ("this is a DINSIG compliant card\n");
+        }
+      else if (info.apptype && !strcmp (info.apptype, "P15"))
+        {
+          if (opt.with_colons)
+            fputs ("pkcs15-card:\n", fp);
+          log_info ("this is a PKCS#15 compliant card\n");
+        }
+      else
+        {
+          if (opt.with_colons)
+            fputs ("unknown:\n", fp);
+        }
       log_info ("not an OpenPGP card\n");
       agent_release_card_info (&info);
       xfree (pk);

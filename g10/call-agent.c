@@ -208,6 +208,17 @@ store_serialno (const char *line)
 
 
 
+/* This is a dummy data line callback.  */
+static int
+dummy_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  (void)opaque;
+  (void)buffer;
+  (void)length;
+  return 0;
+}
+
+
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
 static int
@@ -239,6 +250,7 @@ agent_release_card_info (struct agent_card_info_s *info)
     return;
 
   xfree (info->serialno); info->serialno = NULL;
+  xfree (info->apptype); info->apptype = NULL;
   xfree (info->disp_name); info->disp_name = NULL;
   xfree (info->disp_lang); info->disp_lang = NULL;
   xfree (info->pubkey_url); info->pubkey_url = NULL;
@@ -266,6 +278,11 @@ learn_status_cb (void *opaque, const char *line)
       parm->serialno = store_serialno (line);
       parm->is_v2 = (strlen (parm->serialno) >= 16 
                      && xtoi_2 (parm->serialno+12) >= 2 );
+    }
+  else if (keywordlen == 7 && !memcmp (keyword, "APPTYPE", keywordlen))
+    {
+      xfree (parm->apptype);
+      parm->apptype = unescape_status_string (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
@@ -372,7 +389,7 @@ agent_learn (struct agent_card_info_s *info)
 
   memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, "LEARN --send",
-                        NULL, NULL, default_inq_cb, NULL,
+                        dummy_data_cb, NULL, default_inq_cb, NULL,
                         learn_status_cb, info);
   
   return rc;

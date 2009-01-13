@@ -543,7 +543,8 @@ cmd_serialno (assuan_context_t ctx, char *line)
        P15     = PKCS-15 structure used
        DINSIG  = DIN SIG
        OPENPGP = OpenPGP card
- 
+       NKS     = NetKey card
+
    are implemented.  These strings are aliases for the AID
 
      S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>

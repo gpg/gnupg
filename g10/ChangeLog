@@ -1,3 +1,10 @@
+2009-01-13  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (dummy_data_cb): New.
+	(agent_learn): Use it.
+	* card-util.c (card_status): Print type of non-OpenPGP card.
+	* call-agent.h (agent_card_info_s): Add field APPTYPE.
+
 2009-01-12  Werner Koch  <wk@g10code.com>
 
 	* getkey.c (finish_lookup): Take care of keys with a zero

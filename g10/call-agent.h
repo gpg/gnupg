@@ -23,6 +23,7 @@
 struct agent_card_info_s 
 {
   int error;         /* private. */
+  char *apptype;     /* Malloced application type string.  */
   char *serialno;    /* malloced hex string. */
   char *disp_name;   /* malloced. */
   char *disp_lang;   /* malloced. */
