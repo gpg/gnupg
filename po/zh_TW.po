@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-12 09:27+0100\n"
+"POT-Creation-Date: 2009-01-19 16:21+0100\n"
 "PO-Revision-Date: 2008-12-10 22:48+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -102,7 +102,7 @@ msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
 msgid "can't create `%s': %s\n"
 msgstr "無法建立 `%s': %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:733
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -675,11 +675,11 @@ msgid ""
 "certificates?"
 msgstr "請問你是否徹底信任%%0A  \"%s\"%%0A正確驗證使用者憑證的能力?"
 
-#: agent/trustlist.c:587 common/audit.c:463
+#: agent/trustlist.c:587 common/audit.c:467
 msgid "Yes"
 msgstr "Yes"
 
-#: agent/trustlist.c:587 common/audit.c:465
+#: agent/trustlist.c:587 common/audit.c:469
 msgid "No"
 msgstr "No"
 
@@ -856,112 +856,135 @@ msgstr "沒有執行中的 gpg-agent - 正在啟動一份\n"
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "無法連線至代理程式 - 正試著退回\n"
 
-#: common/audit.c:692
+#. TRANSLATORS: Copy the prefix between the vertical bars
+#. verbatim.  It will not be printed.
+#: common/audit.c:474
+msgid "|audit-log-result|Good"
+msgstr ""
+
+#: common/audit.c:477
+msgid "|audit-log-result|Bad"
+msgstr ""
+
+#: common/audit.c:479
+msgid "|audit-log-result|Not supported"
+msgstr ""
+
+#: common/audit.c:481
+#, fuzzy
+msgid "|audit-log-result|No certificate"
+msgstr "匯入憑證"
+
+#: common/audit.c:483
+msgid "|audit-log-result|Error"
+msgstr ""
+
+#: common/audit.c:716
 msgid "Certificate chain available"
 msgstr "有可用的憑證鏈"
 
-#: common/audit.c:699
+#: common/audit.c:723
 msgid "root certificate missing"
 msgstr "根憑證遺失"
 
-#: common/audit.c:725
+#: common/audit.c:749
 msgid "Data encryption succeeded"
 msgstr "資料已加密成功"
 
-#: common/audit.c:730 common/audit.c:791 common/audit.c:811 common/audit.c:835
+#: common/audit.c:754 common/audit.c:815 common/audit.c:835 common/audit.c:859
 msgid "Data available"
 msgstr "有可用的資料"
 
-#: common/audit.c:733
+#: common/audit.c:757
 msgid "Session key created"
 msgstr "階段金鑰已建立"
 
-#: common/audit.c:738
+#: common/audit.c:762
 #, c-format
 msgid "algorithm: %s"
 msgstr "演算法: %s"
 
-#: common/audit.c:740 common/audit.c:742
+#: common/audit.c:764 common/audit.c:766
 #, c-format
 msgid "unsupported algorithm: %s"
 msgstr "未支援的演算法: %s"
 
-#: common/audit.c:744
+#: common/audit.c:768
 msgid "seems to be not encrypted"
 msgstr "看起來未加密"
 
-#: common/audit.c:750
+#: common/audit.c:774
 msgid "Number of recipients"
 msgstr "收件者數量"
 
-#: common/audit.c:758
+#: common/audit.c:782
 #, c-format
 msgid "Recipient %d"
 msgstr "收件者 %d"
 
-#: common/audit.c:786
+#: common/audit.c:810
 msgid "Data signing succeeded"
 msgstr "資料已簽署成功"
 
-#: common/audit.c:806
+#: common/audit.c:830
 msgid "Data decryption succeeded"
 msgstr "資料已解密成功"
 
-#: common/audit.c:831
+#: common/audit.c:855
 msgid "Data verification succeeded"
 msgstr "資料驗證成功"
 
-#: common/audit.c:840
+#: common/audit.c:864
 msgid "Signature available"
 msgstr "有可用的簽章"
 
-#: common/audit.c:845
+#: common/audit.c:869
 msgid "Parsing signature succeeded"
 msgstr "剖析簽章成功"
 
-#: common/audit.c:850
+#: common/audit.c:874
 #, c-format
 msgid "Bad hash algorithm: %s"
 msgstr "不良的雜湊演算法: %s"
 
-#: common/audit.c:865
+#: common/audit.c:889
 #, c-format
 msgid "Signature %d"
 msgstr "簽章 %d"
 
-#: common/audit.c:881
+#: common/audit.c:905
 msgid "Certificate chain valid"
 msgstr "憑證鏈有效"
 
-#: common/audit.c:892
+#: common/audit.c:916
 msgid "Root certificate trustworthy"
 msgstr "根憑證可信賴"
 
-#: common/audit.c:902
+#: common/audit.c:926
 msgid "CRL/OCSP check of certificates"
 msgstr "CRL/OCSP 憑證檢查"
 
-#: common/audit.c:919
+#: common/audit.c:943
 msgid "Included certificates"
 msgstr "包含在內的憑證"
 
-#: common/audit.c:978
+#: common/audit.c:1002
 msgid "No audit log entries."
 msgstr "沒有稽核日誌項目."
 
-#: common/audit.c:1027
+#: common/audit.c:1051
 msgid "Unknown operation"
 msgstr "未知的操作"
 
-#: common/audit.c:1045
+#: common/audit.c:1069
 msgid "Gpg-Agent usable"
 msgstr "Gpg-Agent 可以使用"
 
-#: common/audit.c:1055
+#: common/audit.c:1079
 msgid "Dirmngr usable"
 msgstr "Dirmngr 可以使用"
 
-#: common/audit.c:1091
+#: common/audit.c:1115
 #, c-format
 msgid "No help available for `%s'."
 msgstr "`%s' 沒有可用的說明."
@@ -1083,7 +1106,7 @@ msgstr "沒有可用的 OpenPGP 卡片: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "偵測到 OpenPGP 卡片編號 %s\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "無法在批次模式中這樣做\n"
@@ -1096,7 +1119,7 @@ msgstr "祇有第二版卡片纔能用這個指令\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "(再也) 沒有重設碼\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
+#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1106,143 +1129,143 @@ msgstr "你要選哪一個? "
 msgid "[not set]"
 msgstr "[未設定]"
 
-#: g10/card-util.c:465
+#: g10/card-util.c:486
 msgid "male"
 msgstr "男性"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "female"
 msgstr "女性"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "unspecified"
 msgstr "未特定"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "not forced"
 msgstr "不強迫使用"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "forced"
 msgstr "強迫使用"
 
-#: g10/card-util.c:574
+#: g10/card-util.c:595
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "錯誤: 目前祇允許使用單純的 ASCII 字符.\n"
 
-#: g10/card-util.c:576
+#: g10/card-util.c:597
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "錯誤: 不能使用 \"<\" 字符.\n"
 
-#: g10/card-util.c:578
+#: g10/card-util.c:599
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "錯誤: 並不允許使用連續兩個以上的空格.\n"
 
-#: g10/card-util.c:595
+#: g10/card-util.c:616
 msgid "Cardholder's surname: "
 msgstr "卡片持有者的姓氏: "
 
-#: g10/card-util.c:597
+#: g10/card-util.c:618
 msgid "Cardholder's given name: "
 msgstr "卡片持有者的名字: "
 
-#: g10/card-util.c:615
+#: g10/card-util.c:636
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "錯誤: 合併後的名字太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:636
+#: g10/card-util.c:657
 msgid "URL to retrieve public key: "
 msgstr "取回公鑰的 URL: "
 
-#: g10/card-util.c:644
+#: g10/card-util.c:665
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "錯誤: URL 太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:740 tools/no-libgcrypt.c:30
+#: g10/card-util.c:761 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "配置足夠的記憶體時出錯: %s\n"
 
-#: g10/card-util.c:752 g10/import.c:283
+#: g10/card-util.c:773 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "讀取 `%s' 時出錯: %s\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:800
 msgid "Login data (account name): "
 msgstr "登入資料 (帳號名稱): "
 
-#: g10/card-util.c:789
+#: g10/card-util.c:810
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "錯誤: 登入資料太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:824
+#: g10/card-util.c:845
 msgid "Private DO data: "
 msgstr "私人的 DO 資料: "
 
-#: g10/card-util.c:834
+#: g10/card-util.c:855
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "錯誤: 私人的 DO 太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:884
+#: g10/card-util.c:905
 msgid "Language preferences: "
 msgstr "介面語言偏好設定: "
 
-#: g10/card-util.c:892
+#: g10/card-util.c:913
 msgid "Error: invalid length of preference string.\n"
 msgstr "錯誤: 無效的偏好設定字串長度\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:922
 msgid "Error: invalid characters in preference string.\n"
 msgstr "錯誤: 偏好設定字串中含有無效的字符\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:943
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "性別 ((M)男性, (F)女性或留空): "
 
-#: g10/card-util.c:936
+#: g10/card-util.c:957
 msgid "Error: invalid response.\n"
 msgstr "錯誤: 無效的回應.\n"
 
-#: g10/card-util.c:957
+#: g10/card-util.c:978
 msgid "CA fingerprint: "
 msgstr "憑證中心 (CA) 指紋: "
 
-#: g10/card-util.c:980
+#: g10/card-util.c:1001
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "錯誤: 無效的格式化指紋.\n"
 
-#: g10/card-util.c:1028
+#: g10/card-util.c:1049
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "不可能進行金鑰操作: %s\n"
 
-#: g10/card-util.c:1029
+#: g10/card-util.c:1050
 msgid "not an OpenPGP card"
 msgstr "這不是 OpenPGP 卡片"
 
-#: g10/card-util.c:1038
+#: g10/card-util.c:1059
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "取得現用金鑰資訊時出錯: %s\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1143
 msgid "Replace existing key? (y/N) "
 msgstr "是否要取代既有的金鑰? (y/N) "
 
-#: g10/card-util.c:1142 g10/card-util.c:1151
+#: g10/card-util.c:1163 g10/card-util.c:1172
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "是否要為加密用金鑰建立卡外備份? (Y/n) "
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1184
 msgid "Replace existing keys? (y/N) "
 msgstr "是否要取代既有的金鑰? (y/N) "
 
-#: g10/card-util.c:1172
+#: g10/card-util.c:1193
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1253,124 +1276,124 @@ msgstr ""
 "   PIN = `%s'     管理者 PIN = `%s'\n"
 "你應該用 --change-pin 指令來加以變更\n"
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1227
 msgid "Please select the type of key to generate:\n"
 msgstr "請選擇你要產生的金鑰種類:\n"
 
-#: g10/card-util.c:1208 g10/card-util.c:1285
+#: g10/card-util.c:1229 g10/card-util.c:1306
 msgid "   (1) Signature key\n"
 msgstr "   (1) 簽署用金鑰\n"
 
-#: g10/card-util.c:1209 g10/card-util.c:1287
+#: g10/card-util.c:1230 g10/card-util.c:1308
 msgid "   (2) Encryption key\n"
 msgstr "   (2) 加密用金鑰\n"
 
-#: g10/card-util.c:1210 g10/card-util.c:1289
+#: g10/card-util.c:1231 g10/card-util.c:1310
 msgid "   (3) Authentication key\n"
 msgstr "   (3) 憑證用金鑰\n"
 
-#: g10/card-util.c:1226 g10/card-util.c:1305 g10/keyedit.c:945
+#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "無效的選擇.\n"
 
-#: g10/card-util.c:1282
+#: g10/card-util.c:1303
 msgid "Please select where to store the key:\n"
 msgstr "請選擇要把金鑰存放在哪裡:\n"
 
-#: g10/card-util.c:1317
+#: g10/card-util.c:1338
 msgid "unknown key protection algorithm\n"
 msgstr "未知的金鑰保護演算法\n"
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1343
 msgid "secret parts of key are not available\n"
 msgstr "私鑰部分無法取用\n"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1348
 msgid "secret key already stored on a card\n"
 msgstr "私鑰已經存放在卡片上了\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1380
+#: g10/card-util.c:1417 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "離開這個選單"
 
-#: g10/card-util.c:1398
+#: g10/card-util.c:1419
 msgid "show admin commands"
 msgstr "顯示管理者指令"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1383
+#: g10/card-util.c:1420 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "顯示這份線上說明"
 
-#: g10/card-util.c:1401
+#: g10/card-util.c:1422
 msgid "list all available data"
 msgstr "列出所有可用的資料"
 
-#: g10/card-util.c:1404
+#: g10/card-util.c:1425
 msgid "change card holder's name"
 msgstr "變更卡片持有人的名字"
 
-#: g10/card-util.c:1405
+#: g10/card-util.c:1426
 msgid "change URL to retrieve key"
 msgstr "變更取回金鑰的 URL"
 
-#: g10/card-util.c:1406
+#: g10/card-util.c:1427
 msgid "fetch the key specified in the card URL"
 msgstr "從卡片 URL 取回指定的金鑰"
 
-#: g10/card-util.c:1407
+#: g10/card-util.c:1428
 msgid "change the login name"
 msgstr "變更登入名稱"
 
-#: g10/card-util.c:1408
+#: g10/card-util.c:1429
 msgid "change the language preferences"
 msgstr "變更介面語言偏好設定"
 
-#: g10/card-util.c:1409
+#: g10/card-util.c:1430
 msgid "change card holder's sex"
 msgstr "變更卡片持有者的性別"
 
-#: g10/card-util.c:1410
+#: g10/card-util.c:1431
 msgid "change a CA fingerprint"
 msgstr "變更某個憑證中心 (CA) 的指紋"
 
-#: g10/card-util.c:1411
+#: g10/card-util.c:1432
 msgid "toggle the signature force PIN flag"
 msgstr "切換簽章是否強制使用 PIN 的旗標"
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1433
 msgid "generate new keys"
 msgstr "產生新的金鑰"
 
-#: g10/card-util.c:1413
+#: g10/card-util.c:1434
 msgid "menu to change or unblock the PIN"
 msgstr "變更或解凍 PIN 的選單"
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1435
 msgid "verify the PIN and list all data"
 msgstr "驗證 PIN 並列出所有的資料"
 
-#: g10/card-util.c:1415
+#: g10/card-util.c:1436
 msgid "unblock the PIN using a Reset Code"
 msgstr "用重設碼來解凍 PIN"
 
-#: g10/card-util.c:1537 g10/keyedit.c:1654
+#: g10/card-util.c:1558 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "指令> "
 
-#: g10/card-util.c:1580
+#: g10/card-util.c:1601
 msgid "Admin-only command\n"
 msgstr "限管理者使用的指令\n"
 
-#: g10/card-util.c:1611
+#: g10/card-util.c:1632
 msgid "Admin commands are allowed\n"
 msgstr "允許使用管理者指令\n"
 
-#: g10/card-util.c:1613
+#: g10/card-util.c:1634
 msgid "Admin commands are not allowed\n"
 msgstr "未允許使用管理者指令\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2277
+#: g10/card-util.c:1720 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無效的指令  (試試看 \"help\")\n"
 

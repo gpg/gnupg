@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-12 09:27+0100\n"
+"POT-Creation-Date: 2009-01-19 16:21+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -121,7 +121,7 @@ msgstr "l'algoritme de protecció %d%s no està suportat\n"
 msgid "can't create `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:733
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -718,12 +718,12 @@ msgid ""
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:587 common/audit.c:463
+#: agent/trustlist.c:587 common/audit.c:467
 #, fuzzy
 msgid "Yes"
 msgstr "sí|si"
 
-#: agent/trustlist.c:587 common/audit.c:465
+#: agent/trustlist.c:587 common/audit.c:469
 msgid "No"
 msgstr ""
 
@@ -909,35 +909,58 @@ msgstr ""
 msgid "can't connect to the agent - trying fall back\n"
 msgstr ""
 
-#: common/audit.c:692
+#. TRANSLATORS: Copy the prefix between the vertical bars
+#. verbatim.  It will not be printed.
+#: common/audit.c:474
+msgid "|audit-log-result|Good"
+msgstr ""
+
+#: common/audit.c:477
+msgid "|audit-log-result|Bad"
+msgstr ""
+
+#: common/audit.c:479
+msgid "|audit-log-result|Not supported"
+msgstr ""
+
+#: common/audit.c:481
+#, fuzzy
+msgid "|audit-log-result|No certificate"
+msgstr "Certificat correcte"
+
+#: common/audit.c:483
+msgid "|audit-log-result|Error"
+msgstr ""
+
+#: common/audit.c:716
 #, fuzzy
 msgid "Certificate chain available"
 msgstr "Certificat de revocació vàlid"
 
-#: common/audit.c:699
+#: common/audit.c:723
 #, fuzzy
 msgid "root certificate missing"
 msgstr ""
 "No s'han trobat certificats amb confiança no definida.\n"
 "\n"
 
-#: common/audit.c:725
+#: common/audit.c:749
 msgid "Data encryption succeeded"
 msgstr ""
 
-#: common/audit.c:730 common/audit.c:791 common/audit.c:811 common/audit.c:835
+#: common/audit.c:754 common/audit.c:815 common/audit.c:835 common/audit.c:859
 #, fuzzy
 msgid "Data available"
 msgstr "La clau és disponible en: "
 
 # Fitxer indi fins final.  Hau!  ivb
 # Grrr. Com em tracten els esclaus ja... jm
-#: common/audit.c:733
+#: common/audit.c:757
 #, fuzzy
 msgid "Session key created"
 msgstr "%s: s'ha creat l'anell\n"
 
-#: common/audit.c:738
+#: common/audit.c:762
 #, fuzzy, c-format
 msgid "algorithm: %s"
 msgstr "armadura: %s\n"
@@ -947,7 +970,7 @@ msgstr "armadura: %s\n"
 # Precissament acabem de parlar d'«implementat a la llista del GNOME
 # i s'ha dit que és erroni, igual que «suportat» :) Les alternatives
 # encara no m'agraden massa... jm
-#: common/audit.c:740 common/audit.c:742
+#: common/audit.c:764 common/audit.c:766
 #, fuzzy, c-format
 msgid "unsupported algorithm: %s"
 msgstr ""
@@ -957,93 +980,93 @@ msgstr ""
 # Gènere?  Nombre?  ivb
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
-#: common/audit.c:744
+#: common/audit.c:768
 #, fuzzy
 msgid "seems to be not encrypted"
 msgstr "no és xifrat"
 
-#: common/audit.c:750
+#: common/audit.c:774
 msgid "Number of recipients"
 msgstr ""
 
-#: common/audit.c:758
+#: common/audit.c:782
 #, c-format
 msgid "Recipient %d"
 msgstr ""
 
-#: common/audit.c:786
+#: common/audit.c:810
 msgid "Data signing succeeded"
 msgstr ""
 
-#: common/audit.c:806
+#: common/audit.c:830
 msgid "Data decryption succeeded"
 msgstr ""
 
-#: common/audit.c:831
+#: common/audit.c:855
 #, fuzzy
 msgid "Data verification succeeded"
 msgstr "s'ha eliminat la verificació de signatura\n"
 
-#: common/audit.c:840
+#: common/audit.c:864
 #, fuzzy
 msgid "Signature available"
 msgstr "Aquesta signatura va caducar el %s\n"
 
-#: common/audit.c:845
+#: common/audit.c:869
 #, fuzzy
 msgid "Parsing signature succeeded"
 msgstr "Signatura correcta de \""
 
-#: common/audit.c:850
+#: common/audit.c:874
 #, fuzzy, c-format
 msgid "Bad hash algorithm: %s"
 msgstr "l'algoritme de dispersió és invàlid «%s»\n"
 
-#: common/audit.c:865
+#: common/audit.c:889
 #, fuzzy, c-format
 msgid "Signature %d"
 msgstr "Aquesta signatura va caducar el %s\n"
 
-#: common/audit.c:881
+#: common/audit.c:905
 #, fuzzy
 msgid "Certificate chain valid"
 msgstr "Certificat de revocació vàlid"
 
-#: common/audit.c:892
+#: common/audit.c:916
 #, fuzzy
 msgid "Root certificate trustworthy"
 msgstr ""
 "No s'han trobat certificats amb confiança no definida.\n"
 "\n"
 
-#: common/audit.c:902
+#: common/audit.c:926
 #, fuzzy
 msgid "CRL/OCSP check of certificates"
 msgstr "Certificat correcte"
 
-#: common/audit.c:919
+#: common/audit.c:943
 #, fuzzy
 msgid "Included certificates"
 msgstr "Certificat invàlid"
 
-#: common/audit.c:978
+#: common/audit.c:1002
 msgid "No audit log entries."
 msgstr ""
 
-#: common/audit.c:1027
+#: common/audit.c:1051
 #, fuzzy
 msgid "Unknown operation"
 msgstr "la versió és desconeguda"
 
-#: common/audit.c:1045
+#: common/audit.c:1069
 msgid "Gpg-Agent usable"
 msgstr ""
 
-#: common/audit.c:1055
+#: common/audit.c:1079
 msgid "Dirmngr usable"
 msgstr ""
 
-#: common/audit.c:1091
+#: common/audit.c:1115
 #, fuzzy, c-format
 msgid "No help available for `%s'."
 msgstr "No hi ha ajuda disponible per a `%s'"
@@ -1179,7 +1202,7 @@ msgstr ""
 
 # Destès? ivb
 # Desatès, sí. jm
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
@@ -1196,7 +1219,7 @@ msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "parts de la clau secreta no estan disponbles\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
+#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1206,15 +1229,15 @@ msgstr "La vostra selecció? "
 msgid "[not set]"
 msgstr "[no establert]"
 
-#: g10/card-util.c:465
+#: g10/card-util.c:486
 msgid "male"
 msgstr "home"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "female"
 msgstr "dóna"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "unspecified"
 msgstr "no especificat"
 
@@ -1222,139 +1245,139 @@ msgstr "no especificat"
 # Probablement és una clau, femení. jm
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "not forced"
 msgstr "no forçat"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "forced"
 msgstr "forçat"
 
-#: g10/card-util.c:574
+#: g10/card-util.c:595
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:576
+#: g10/card-util.c:597
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr ""
 
-#: g10/card-util.c:578
+#: g10/card-util.c:599
 msgid "Error: Double spaces are not allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:595
+#: g10/card-util.c:616
 msgid "Cardholder's surname: "
 msgstr ""
 
-#: g10/card-util.c:597
+#: g10/card-util.c:618
 msgid "Cardholder's given name: "
 msgstr ""
 
-#: g10/card-util.c:615
+#: g10/card-util.c:636
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:636
+#: g10/card-util.c:657
 #, fuzzy
 msgid "URL to retrieve public key: "
 msgstr "no hi ha cap clau pública corresponent: %s\n"
 
-#: g10/card-util.c:644
+#: g10/card-util.c:665
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:740 tools/no-libgcrypt.c:30
+#: g10/card-util.c:761 tools/no-libgcrypt.c:30
 #, fuzzy, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
-#: g10/card-util.c:752 g10/import.c:283
+#: g10/card-util.c:773 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:800
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:789
+#: g10/card-util.c:810
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:824
+#: g10/card-util.c:845
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:834
+#: g10/card-util.c:855
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:884
+#: g10/card-util.c:905
 #, fuzzy
 msgid "Language preferences: "
 msgstr "preferències actualitzades"
 
-#: g10/card-util.c:892
+#: g10/card-util.c:913
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:922
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:943
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:936
+#: g10/card-util.c:957
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
-#: g10/card-util.c:957
+#: g10/card-util.c:978
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "Empremta digital:"
 
-#: g10/card-util.c:980
+#: g10/card-util.c:1001
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
-#: g10/card-util.c:1028
+#: g10/card-util.c:1049
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
-#: g10/card-util.c:1029
+#: g10/card-util.c:1050
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "no s'han trobat dades OpenPGP vàlides.\n"
 
-#: g10/card-util.c:1038
+#: g10/card-util.c:1059
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1143
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1142 g10/card-util.c:1151
+#: g10/card-util.c:1163 g10/card-util.c:1172
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1184
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1172
+#: g10/card-util.c:1193
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1362,139 +1385,139 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1227
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Seleccioneu quin tipus de clau voleu:\n"
 
-#: g10/card-util.c:1208 g10/card-util.c:1285
+#: g10/card-util.c:1229 g10/card-util.c:1306
 msgid "   (1) Signature key\n"
 msgstr ""
 
-#: g10/card-util.c:1209 g10/card-util.c:1287
+#: g10/card-util.c:1230 g10/card-util.c:1308
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (només xifrar)\n"
 
-#: g10/card-util.c:1210 g10/card-util.c:1289
+#: g10/card-util.c:1231 g10/card-util.c:1310
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1226 g10/card-util.c:1305 g10/keyedit.c:945
+#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "La selecció és invàlida.\n"
 
-#: g10/card-util.c:1282
+#: g10/card-util.c:1303
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Seleccioneu la raó de la revocació:\n"
 
-#: g10/card-util.c:1317
+#: g10/card-util.c:1338
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "l'algorisme de protecció és desconegut\n"
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1343
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1348
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "es descarta: la clau secreta ja és present\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1380
+#: g10/card-util.c:1417 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "ix del menú"
 
-#: g10/card-util.c:1398
+#: g10/card-util.c:1419
 #, fuzzy
 msgid "show admin commands"
 msgstr "les ordres entren en conflicte\n"
 
 # «pantalla» o «ajuda»?  ivb
 # «ajuda», evidentment. jm
-#: g10/card-util.c:1399 g10/keyedit.c:1383
+#: g10/card-util.c:1420 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "mostra aquesta ajuda"
 
-#: g10/card-util.c:1401
+#: g10/card-util.c:1422
 #, fuzzy
 msgid "list all available data"
 msgstr "La clau és disponible en: "
 
-#: g10/card-util.c:1404
+#: g10/card-util.c:1425
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1405
+#: g10/card-util.c:1426
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1406
+#: g10/card-util.c:1427
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1407
+#: g10/card-util.c:1428
 #, fuzzy
 msgid "change the login name"
 msgstr "canvia la data de caducitat"
 
-#: g10/card-util.c:1408
+#: g10/card-util.c:1429
 #, fuzzy
 msgid "change the language preferences"
 msgstr "canvia la confiança"
 
-#: g10/card-util.c:1409
+#: g10/card-util.c:1430
 msgid "change card holder's sex"
 msgstr ""
 
-#: g10/card-util.c:1410
+#: g10/card-util.c:1431
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "mostra empremta"
 
-#: g10/card-util.c:1411
+#: g10/card-util.c:1432
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1433
 #, fuzzy
 msgid "generate new keys"
 msgstr "genera un nou parell de claus"
 
-#: g10/card-util.c:1413
+#: g10/card-util.c:1434
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1435
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1415
+#: g10/card-util.c:1436
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1537 g10/keyedit.c:1654
+#: g10/card-util.c:1558 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Ordre> "
 
-#: g10/card-util.c:1580
+#: g10/card-util.c:1601
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "les ordres entren en conflicte\n"
 
-#: g10/card-util.c:1611
+#: g10/card-util.c:1632
 msgid "Admin commands are allowed\n"
 msgstr ""
 
-#: g10/card-util.c:1613
+#: g10/card-util.c:1634
 msgid "Admin commands are not allowed\n"
 msgstr ""
 
-#: g10/card-util.c:1699 g10/keyedit.c:2277
+#: g10/card-util.c:1720 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no és vàlida (proveu «help»)\n"
 

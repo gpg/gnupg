@@ -1,3 +1,10 @@
+2009-01-19  Werner Koch  <wk@g10code.com>
+
+	* audit.c (writeout_li): Translate a few more result strings.
+	Fixes bug#970.
+
+	* convert.c (hex2str): Fix optimization to append a nul character.
+
 2008-12-05  Werner Koch  <wk@g10code.com>
 
 	* percent.c, t-percent.c: New.
@@ -1309,7 +1316,7 @@
 	
 	
  Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-	   2008 Free Software Foundation, Inc.
+	   2008, 2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

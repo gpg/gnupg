@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-12 09:27+0100\n"
+"POT-Creation-Date: 2009-01-19 16:21+0100\n"
 "PO-Revision-Date: 2008-12-21 00:40+0200\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -98,7 +98,7 @@ msgstr "не поддерживаются ssh ключи превышающие 
 msgid "can't create `%s': %s\n"
 msgstr "не могу создать `%s': %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:733
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -693,11 +693,11 @@ msgstr ""
 "Действительно абсолютно доверять%%0A  \"%s\"%%0Aкорректно подписанным "
 "сертификатам пользователя?"
 
-#: agent/trustlist.c:587 common/audit.c:463
+#: agent/trustlist.c:587 common/audit.c:467
 msgid "Yes"
 msgstr "Да"
 
-#: agent/trustlist.c:587 common/audit.c:465
+#: agent/trustlist.c:587 common/audit.c:469
 msgid "No"
 msgstr "Нет"
 
@@ -877,112 +877,135 @@ msgstr "нет работающих gpg-agent - запускаем\n"
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "невозможно подключиться к агенту - пробуем откатиться назад\n"
 
-#: common/audit.c:692
+#. TRANSLATORS: Copy the prefix between the vertical bars
+#. verbatim.  It will not be printed.
+#: common/audit.c:474
+msgid "|audit-log-result|Good"
+msgstr ""
+
+#: common/audit.c:477
+msgid "|audit-log-result|Bad"
+msgstr ""
+
+#: common/audit.c:479
+msgid "|audit-log-result|Not supported"
+msgstr ""
+
+#: common/audit.c:481
+#, fuzzy
+msgid "|audit-log-result|No certificate"
+msgstr "импорт сертификатов"
+
+#: common/audit.c:483
+msgid "|audit-log-result|Error"
+msgstr ""
+
+#: common/audit.c:716
 msgid "Certificate chain available"
 msgstr "Доступна цепочка сертификатов"
 
-#: common/audit.c:699
+#: common/audit.c:723
 msgid "root certificate missing"
 msgstr "отсутствует корневой сертификат"
 
-#: common/audit.c:725
+#: common/audit.c:749
 msgid "Data encryption succeeded"
 msgstr "Данные зашифрованы"
 
-#: common/audit.c:730 common/audit.c:791 common/audit.c:811 common/audit.c:835
+#: common/audit.c:754 common/audit.c:815 common/audit.c:835 common/audit.c:859
 msgid "Data available"
 msgstr "Данные доступны"
 
-#: common/audit.c:733
+#: common/audit.c:757
 msgid "Session key created"
 msgstr "Сессионный ключ создан"
 
-#: common/audit.c:738
+#: common/audit.c:762
 #, c-format
 msgid "algorithm: %s"
 msgstr "алгоритм: %s"
 
-#: common/audit.c:740 common/audit.c:742
+#: common/audit.c:764 common/audit.c:766
 #, c-format
 msgid "unsupported algorithm: %s"
 msgstr "неподдерживаемый алгоритм: %s"
 
-#: common/audit.c:744
+#: common/audit.c:768
 msgid "seems to be not encrypted"
 msgstr "похоже на не зашифрованное"
 
-#: common/audit.c:750
+#: common/audit.c:774
 msgid "Number of recipients"
 msgstr "Количество получателей"
 
-#: common/audit.c:758
+#: common/audit.c:782
 #, c-format
 msgid "Recipient %d"
 msgstr "Получатель %d"
 
-#: common/audit.c:786
+#: common/audit.c:810
 msgid "Data signing succeeded"
 msgstr "Данные подписаны"
 
-#: common/audit.c:806
+#: common/audit.c:830
 msgid "Data decryption succeeded"
 msgstr "Данные расшифрованы"
 
-#: common/audit.c:831
+#: common/audit.c:855
 msgid "Data verification succeeded"
 msgstr "Данные проверены"
 
-#: common/audit.c:840
+#: common/audit.c:864
 msgid "Signature available"
 msgstr "Подпись доступна"
 
-#: common/audit.c:845
+#: common/audit.c:869
 msgid "Parsing signature succeeded"
 msgstr "Разбор подписи завершен"
 
-#: common/audit.c:850
+#: common/audit.c:874
 #, c-format
 msgid "Bad hash algorithm: %s"
 msgstr "Недопустимая хэш-функция: %s"
 
-#: common/audit.c:865
+#: common/audit.c:889
 #, c-format
 msgid "Signature %d"
 msgstr "Подпись %d"
 
-#: common/audit.c:881
+#: common/audit.c:905
 msgid "Certificate chain valid"
 msgstr "Цепочка сертифицирования действительна"
 
-#: common/audit.c:892
+#: common/audit.c:916
 msgid "Root certificate trustworthy"
 msgstr "Корневой сертификат достоверен"
 
-#: common/audit.c:902
+#: common/audit.c:926
 msgid "CRL/OCSP check of certificates"
 msgstr "проверка CRL/OCSP сертификата"
 
-#: common/audit.c:919
+#: common/audit.c:943
 msgid "Included certificates"
 msgstr "Задействованные сертификаты"
 
-#: common/audit.c:978
+#: common/audit.c:1002
 msgid "No audit log entries."
 msgstr "Записи журнала аудита отсутствуют."
 
-#: common/audit.c:1027
+#: common/audit.c:1051
 msgid "Unknown operation"
 msgstr "Неизвестная операция"
 
-#: common/audit.c:1045
+#: common/audit.c:1069
 msgid "Gpg-Agent usable"
 msgstr "Gpg-Agent доступен"
 
-#: common/audit.c:1055
+#: common/audit.c:1079
 msgid "Dirmngr usable"
 msgstr "Dirmgr доступен"
 
-#: common/audit.c:1091
+#: common/audit.c:1115
 #, c-format
 msgid "No help available for `%s'."
 msgstr "Нет справки для `%s'."
@@ -1108,7 +1131,7 @@ msgstr "Карта OpenPGP недоступна: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "Обнаружена карта OpenPGP номер %s \n"
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "невозможно сделать это в пакетном режиме\n"
@@ -1121,7 +1144,7 @@ msgstr "Данная команда допустима только для ка�
 msgid "Reset Code not or not anymore available\n"
 msgstr "Reset Code не задан или недоступен\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
+#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1131,143 +1154,143 @@ msgstr "Ваш выбор (?-подробнее)? "
 msgid "[not set]"
 msgstr "[не установлено]"
 
-#: g10/card-util.c:465
+#: g10/card-util.c:486
 msgid "male"
 msgstr "мужской"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "female"
 msgstr "женский"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "unspecified"
 msgstr "не задан"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "not forced"
 msgstr "отключен"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "forced"
 msgstr "включен"
 
-#: g10/card-util.c:574
+#: g10/card-util.c:595
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Ошибка: Допустим только чистый ASCII.\n"
 
-#: g10/card-util.c:576
+#: g10/card-util.c:597
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Ошибка: Нельзя использовать символ \"<\".\n"
 
-#: g10/card-util.c:578
+#: g10/card-util.c:599
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Ошибка: Двойные пробелы недопустимы.\n"
 
-#: g10/card-util.c:595
+#: g10/card-util.c:616
 msgid "Cardholder's surname: "
 msgstr "Фамилия владельца карты:"
 
-#: g10/card-util.c:597
+#: g10/card-util.c:618
 msgid "Cardholder's given name: "
 msgstr "Имя владельца карты:"
 
-#: g10/card-util.c:615
+#: g10/card-util.c:636
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Ошибка: Скомбинированное имя слишком длинное (предел %d символов).\n"
 
-#: g10/card-util.c:636
+#: g10/card-util.c:657
 msgid "URL to retrieve public key: "
 msgstr "URL для получения открытого ключа: "
 
-#: g10/card-util.c:644
+#: g10/card-util.c:665
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Ошибка: URL слишком длинный (предел - %d символов).\n"
 
-#: g10/card-util.c:740 tools/no-libgcrypt.c:30
+#: g10/card-util.c:761 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "ошибка распределения памяти: %s\n"
 
-#: g10/card-util.c:752 g10/import.c:283
+#: g10/card-util.c:773 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "ошибка чтения `%s': %s\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:800
 msgid "Login data (account name): "
 msgstr "Учетная запись (имя):"
 
-#: g10/card-util.c:789
+#: g10/card-util.c:810
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Ошибка: Данные учетной записи слишком длинные (предел %d символов).\n"
 
-#: g10/card-util.c:824
+#: g10/card-util.c:845
 msgid "Private DO data: "
 msgstr "Секретные DO данные:"
 
-#: g10/card-util.c:834
+#: g10/card-util.c:855
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Ошибка: Секретные DO данные слишком длинные (предел %d символов).\n"
 
-#: g10/card-util.c:884
+#: g10/card-util.c:905
 msgid "Language preferences: "
 msgstr "Предпочитаемый язык: "
 
-#: g10/card-util.c:892
+#: g10/card-util.c:913
 msgid "Error: invalid length of preference string.\n"
 msgstr "Ошибка: недопустимая длина строки предпочтений.\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:922
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Ошибка: недопустимые символы в строке предпочтений.\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:943
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Пол ((M)Мужской, (F)Женский или пробел): "
 
-#: g10/card-util.c:936
+#: g10/card-util.c:957
 msgid "Error: invalid response.\n"
 msgstr "Ошибка: недопустимый ответ.\n"
 
-#: g10/card-util.c:957
+#: g10/card-util.c:978
 msgid "CA fingerprint: "
 msgstr "отпечаток CA: "
 
-#: g10/card-util.c:980
+#: g10/card-util.c:1001
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Ошибка: неправильный формат отпечатка.\n"
 
-#: g10/card-util.c:1028
+#: g10/card-util.c:1049
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "операция с ключом невозможна: %s\n"
 
-#: g10/card-util.c:1029
+#: g10/card-util.c:1050
 msgid "not an OpenPGP card"
 msgstr "карта не OpenPGP"
 
-#: g10/card-util.c:1038
+#: g10/card-util.c:1059
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "ошибка при считывании информации ключа: %s\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1143
 msgid "Replace existing key? (y/N) "
 msgstr "Заменить существующий ключ? (y/N) "
 
-#: g10/card-util.c:1142 g10/card-util.c:1151
+#: g10/card-util.c:1163 g10/card-util.c:1172
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Сделать резервную копию ключа шифрования вне карты? (Y/n)"
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1184
 msgid "Replace existing keys? (y/N) "
 msgstr "Заменить существующие ключи? (y/N) "
 
-#: g10/card-util.c:1172
+#: g10/card-util.c:1193
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1278,124 +1301,124 @@ msgstr ""
 "   PIN = `%s'     Admin PIN = `%s'\n"
 "Следует изменить их используя команду --change-pin\n"
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1227
 msgid "Please select the type of key to generate:\n"
 msgstr "Выберите тип создаваемого ключа:\n"
 
-#: g10/card-util.c:1208 g10/card-util.c:1285
+#: g10/card-util.c:1229 g10/card-util.c:1306
 msgid "   (1) Signature key\n"
 msgstr "   (1) Ключ подписи\n"
 
-#: g10/card-util.c:1209 g10/card-util.c:1287
+#: g10/card-util.c:1230 g10/card-util.c:1308
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Ключ шифрования\n"
 
-#: g10/card-util.c:1210 g10/card-util.c:1289
+#: g10/card-util.c:1231 g10/card-util.c:1310
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Ключ аутентификации\n"
 
-#: g10/card-util.c:1226 g10/card-util.c:1305 g10/keyedit.c:945
+#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Неправильный выбор.\n"
 
-#: g10/card-util.c:1282
+#: g10/card-util.c:1303
 msgid "Please select where to store the key:\n"
 msgstr "Выберите, где сохранить ключ:\n"
 
-#: g10/card-util.c:1317
+#: g10/card-util.c:1338
 msgid "unknown key protection algorithm\n"
 msgstr "неизвестный алгоритм защиты ключа\n"
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1343
 msgid "secret parts of key are not available\n"
 msgstr "секретные части ключа недоступны\n"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1348
 msgid "secret key already stored on a card\n"
 msgstr "секретный ключ уже сохранен в карте\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1380
+#: g10/card-util.c:1417 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "выйти из этого меню"
 
-#: g10/card-util.c:1398
+#: g10/card-util.c:1419
 msgid "show admin commands"
 msgstr "показать управляющие команды"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1383
+#: g10/card-util.c:1420 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "показать данную справку"
 
-#: g10/card-util.c:1401
+#: g10/card-util.c:1422
 msgid "list all available data"
 msgstr "вывести все доступные данные"
 
-#: g10/card-util.c:1404
+#: g10/card-util.c:1425
 msgid "change card holder's name"
 msgstr "изменить имя владельца карты"
 
-#: g10/card-util.c:1405
+#: g10/card-util.c:1426
 msgid "change URL to retrieve key"
 msgstr "изменить URL получения ключа"
 
-#: g10/card-util.c:1406
+#: g10/card-util.c:1427
 msgid "fetch the key specified in the card URL"
 msgstr "запросить ключ, указанный по заданному картой URL"
 
-#: g10/card-util.c:1407
+#: g10/card-util.c:1428
 msgid "change the login name"
 msgstr "изменить учетное имя"
 
-#: g10/card-util.c:1408
+#: g10/card-util.c:1429
 msgid "change the language preferences"
 msgstr "изменить языковые предпочтения"
 
-#: g10/card-util.c:1409
+#: g10/card-util.c:1430
 msgid "change card holder's sex"
 msgstr "изменение пола владельца карты"
 
-#: g10/card-util.c:1410
+#: g10/card-util.c:1431
 msgid "change a CA fingerprint"
 msgstr "сменить отпечаток CA"
 
-#: g10/card-util.c:1411
+#: g10/card-util.c:1432
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1433
 msgid "generate new keys"
 msgstr "сгенерировать новые ключи"
 
-#: g10/card-util.c:1413
+#: g10/card-util.c:1434
 msgid "menu to change or unblock the PIN"
 msgstr "меню изменения или разблокировки PIN"
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1435
 msgid "verify the PIN and list all data"
 msgstr "проверить PIN и показать все данные"
 
-#: g10/card-util.c:1415
+#: g10/card-util.c:1436
 msgid "unblock the PIN using a Reset Code"
 msgstr "разблокировать PIN используя Reset Code"
 
-#: g10/card-util.c:1537 g10/keyedit.c:1654
+#: g10/card-util.c:1558 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Команда> "
 
-#: g10/card-util.c:1580
+#: g10/card-util.c:1601
 msgid "Admin-only command\n"
 msgstr "Команды администратора\n"
 
-#: g10/card-util.c:1611
+#: g10/card-util.c:1632
 msgid "Admin commands are allowed\n"
 msgstr "Команды администрирования разрешены\n"
 
-#: g10/card-util.c:1613
+#: g10/card-util.c:1634
 msgid "Admin commands are not allowed\n"
 msgstr "Команды администрирования не разрешены\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2277
+#: g10/card-util.c:1720 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Недопустимая команда  (список команд: \"help\")\n"
 

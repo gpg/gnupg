@@ -451,18 +451,42 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
 
   if (ctx->use_html && format && oktext)
     {
-      if (!strcmp (oktext, "Yes"))
+      if (!strcmp (oktext, "Yes") 
+          || !strcmp (oktext, "good") )
         color = "green";
-      else if (!strcmp (oktext, "No"))
+      else if (!strcmp (oktext, "No")
+               || !strcmp (oktext, "bad") )
         color = "red";
     }
 
   if (format && oktext)
     {
+      const char *s = NULL;
+
       if (!strcmp (oktext, "Yes"))
         oktext = _("Yes");
       else if (!strcmp (oktext, "No"))
         oktext = _("No");
+      else if (!strcmp (oktext, "good"))
+        {
+          /* TRANSLATORS: Copy the prefix between the vertical bars
+             verbatim.  It will not be printed.  */
+          oktext = _("|audit-log-result|Good");
+        }
+      else if (!strcmp (oktext, "bad"))
+        oktext = _("|audit-log-result|Bad");
+      else if (!strcmp (oktext, "unsupported"))
+        oktext = _("|audit-log-result|Not supported");
+      else if (!strcmp (oktext, "no-cert"))
+        oktext = _("|audit-log-result|No certificate");
+      else if (!strcmp (oktext, "error"))
+        oktext = _("|audit-log-result|Error");
+      else
+        s = "";
+
+      /* If we have set a prefix, skip it.  */
+      if (!s && *oktext == '|' && (s=strchr (oktext+1,'|')))
+        oktext = s+1;
     }
 
   if (ctx->use_html)

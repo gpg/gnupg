@@ -194,7 +194,9 @@ hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
     ;
   if (*s && (!isascii (*s) || !isspace (*s)) )
     return NULL;   /* Not followed by Nul or white space.  */
-  need_nul = !(s[-2] == '0' && s[-1] == '0');
+  /* We need to append a nul character.  However we don't want that if
+     the hexstring already ends with "00".  */
+  need_nul = ((s == hexstring) || !(s[-2] == '0' && s[-1] == '0'));
   if (need_nul)
     count++;
 

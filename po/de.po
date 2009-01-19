@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-12 09:27+0100\n"
-"PO-Revision-Date: 2008-12-09 12:01+0100\n"
+"POT-Creation-Date: 2009-01-19 16:21+0100\n"
+"PO-Revision-Date: 2009-01-19 16:22+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -104,7 +104,7 @@ msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 msgid "can't create `%s': %s\n"
 msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:733
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -703,11 +703,11 @@ msgstr ""
 "Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
 "0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\"."
 
-#: agent/trustlist.c:587 common/audit.c:463
+#: agent/trustlist.c:587 common/audit.c:467
 msgid "Yes"
 msgstr "Ja"
 
-#: agent/trustlist.c:587 common/audit.c:465
+#: agent/trustlist.c:587 common/audit.c:469
 msgid "No"
 msgstr "Nein"
 
@@ -889,112 +889,134 @@ msgstr "Kein aktiver gpg-agent - es wird einer gestarted\n"
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
 
-#: common/audit.c:692
+#. TRANSLATORS: Copy the prefix between the vertical bars
+#. verbatim.  It will not be printed.
+#: common/audit.c:474
+msgid "|audit-log-result|Good"
+msgstr "Korrekt"
+
+#: common/audit.c:477
+msgid "|audit-log-result|Bad"
+msgstr "Falsch"
+
+#: common/audit.c:479
+msgid "|audit-log-result|Not supported"
+msgstr "Nicht unterstützt"
+
+#: common/audit.c:481
+msgid "|audit-log-result|No certificate"
+msgstr "Zertifikat fehlt"
+
+#: common/audit.c:483
+msgid "|audit-log-result|Error"
+msgstr "Fehler"
+
+#: common/audit.c:716
 msgid "Certificate chain available"
 msgstr "Zertifikatkette vorhanden"
 
-#: common/audit.c:699
+#: common/audit.c:723
 msgid "root certificate missing"
 msgstr "Das Wurzelzertifikat fehlt"
 
-#: common/audit.c:725
+#: common/audit.c:749
 msgid "Data encryption succeeded"
 msgstr "Verschlüsseln der Daten erfolgreich"
 
-#: common/audit.c:730 common/audit.c:791 common/audit.c:811 common/audit.c:835
+#: common/audit.c:754 common/audit.c:815 common/audit.c:835 common/audit.c:859
 msgid "Data available"
 msgstr "Daten vorhanden"
 
-#: common/audit.c:733
+#: common/audit.c:757
 msgid "Session key created"
 msgstr "Sitzungsschlüssel erzeugt"
 
-#: common/audit.c:738
+#: common/audit.c:762
 #, c-format
 msgid "algorithm: %s"
 msgstr "Verfahren: %s"
 
-#: common/audit.c:740 common/audit.c:742
+#: common/audit.c:764 common/audit.c:766
 #, c-format
 msgid "unsupported algorithm: %s"
 msgstr "Nicht unterstütztes Verfahren: %s"
 
-#: common/audit.c:744
+#: common/audit.c:768
 msgid "seems to be not encrypted"
 msgstr "dies is wahrscheinlich nicht verschlüsselt"
 
-#: common/audit.c:750
+#: common/audit.c:774
 msgid "Number of recipients"
 msgstr "Anzahl der Empfänger"
 
-#: common/audit.c:758
+#: common/audit.c:782
 #, c-format
 msgid "Recipient %d"
 msgstr "Empfänger %d"
 
-#: common/audit.c:786
+#: common/audit.c:810
 msgid "Data signing succeeded"
 msgstr "Signieren der Daten erfolgreich"
 
-#: common/audit.c:806
+#: common/audit.c:830
 msgid "Data decryption succeeded"
 msgstr "Entschlüsselung der Daten erfolgreich"
 
-#: common/audit.c:831
+#: common/audit.c:855
 msgid "Data verification succeeded"
 msgstr "Prüfung der Signatur erfolgreich"
 
-#: common/audit.c:840
+#: common/audit.c:864
 msgid "Signature available"
 msgstr "Signatur vorhanden"
 
-#: common/audit.c:845
+#: common/audit.c:869
 msgid "Parsing signature succeeded"
 msgstr "Syntaxanalyse der Signatur erfolgreich"
 
-#: common/audit.c:850
+#: common/audit.c:874
 #, c-format
 msgid "Bad hash algorithm: %s"
 msgstr "Ungültiges Hashverfahren: %s"
 
-#: common/audit.c:865
+#: common/audit.c:889
 #, c-format
 msgid "Signature %d"
 msgstr "Signatur %d"
 
-#: common/audit.c:881
+#: common/audit.c:905
 msgid "Certificate chain valid"
 msgstr "Zertifikatkette gültig"
 
-#: common/audit.c:892
+#: common/audit.c:916
 msgid "Root certificate trustworthy"
 msgstr "Wurzelzertifikat vertrauenswürdig"
 
-#: common/audit.c:902
+#: common/audit.c:926
 msgid "CRL/OCSP check of certificates"
 msgstr "CRL/OCSP Prüfung der Zertifikate"
 
-#: common/audit.c:919
+#: common/audit.c:943
 msgid "Included certificates"
 msgstr "Mitgesendete Zertifikate"
 
-#: common/audit.c:978
+#: common/audit.c:1002
 msgid "No audit log entries."
 msgstr "Keine Einträge in der Audit-Datei"
 
-#: common/audit.c:1027
+#: common/audit.c:1051
 msgid "Unknown operation"
 msgstr "Unbekannte Operation"
 
-#: common/audit.c:1045
+#: common/audit.c:1069
 msgid "Gpg-Agent usable"
 msgstr "Gpg-Agent benutzbar"
 
-#: common/audit.c:1055
+#: common/audit.c:1079
 msgid "Dirmngr usable"
 msgstr "Dirmngr benutzbar"
 
-#: common/audit.c:1091
+#: common/audit.c:1115
 #, c-format
 msgid "No help available for `%s'."
 msgstr "Keine Hilfe für '%s' vorhanden."
@@ -1120,7 +1142,7 @@ msgstr "OpenPGP Karte ist nicht vorhanden: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "OpenPGP Karte Nr. %s erkannt\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1485 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "Dies kann im Batchmodus nicht durchgeführt werden.\n"
@@ -1133,7 +1155,7 @@ msgstr "Dieser Befehl ist nur für Karten ab Version 2 möglich.\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "Der Rückstellcode ist nicht vorhanden\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1215 g10/card-util.c:1294
+#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1143,145 +1165,145 @@ msgstr "Ihre Auswahl? "
 msgid "[not set]"
 msgstr "[nicht gesetzt]"
 
-#: g10/card-util.c:465
+#: g10/card-util.c:486
 msgid "male"
 msgstr "männlich"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "female"
 msgstr "weiblich"
 
-#: g10/card-util.c:466
+#: g10/card-util.c:487
 msgid "unspecified"
 msgstr "unbestimmt"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "not forced"
 msgstr "nicht zwingend"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:514
 msgid "forced"
 msgstr "zwingend"
 
-#: g10/card-util.c:574
+#: g10/card-util.c:595
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fehler: Nur reines ASCII ist derzeit erlaubt.\n"
 
-#: g10/card-util.c:576
+#: g10/card-util.c:597
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Fehler: Das Zeichen \"<\" kann nicht benutzt werden.\n"
 
-#: g10/card-util.c:578
+#: g10/card-util.c:599
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Fehler: Doppelte Leerzeichen sind nicht erlaubt.\n"
 
-#: g10/card-util.c:595
+#: g10/card-util.c:616
 msgid "Cardholder's surname: "
 msgstr "Familienname des Kartenbesitzers:"
 
-#: g10/card-util.c:597
+#: g10/card-util.c:618
 msgid "Cardholder's given name: "
 msgstr "Vorname des Kartenbesitzers:"
 
-#: g10/card-util.c:615
+#: g10/card-util.c:636
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 "Fehler: Der zusammengesetzte Name ist zu lang (Grenze beträgt %d Zeichen).\n"
 
-#: g10/card-util.c:636
+#: g10/card-util.c:657
 msgid "URL to retrieve public key: "
 msgstr "URL um den öffentlichen Schlüssel zu holen: "
 
-#: g10/card-util.c:644
+#: g10/card-util.c:665
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
 
-#: g10/card-util.c:740 tools/no-libgcrypt.c:30
+#: g10/card-util.c:761 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "Fehler beim Zuteilen genügenden Speichers: %s\n"
 
-#: g10/card-util.c:752 g10/import.c:283
+#: g10/card-util.c:773 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "Fehler beim Lesen von `%s': %s\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:800
 msgid "Login data (account name): "
 msgstr "Logindaten (Kontenname): "
 
-#: g10/card-util.c:789
+#: g10/card-util.c:810
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Fehler: Logindaten sind zu lang (Grenze beträgt %d Zeichen).\n"
 
-#: g10/card-util.c:824
+#: g10/card-util.c:845
 msgid "Private DO data: "
 msgstr "Geheime DO-Daten: "
 
-#: g10/card-util.c:834
+#: g10/card-util.c:855
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Fehler: Geheime DO-Daten sind zu lang (Grenze beträgt %d Zeichen).\n"
 
-#: g10/card-util.c:884
+#: g10/card-util.c:905
 msgid "Language preferences: "
 msgstr "Spracheinstellungen"
 
-#: g10/card-util.c:892
+#: g10/card-util.c:913
 msgid "Error: invalid length of preference string.\n"
 msgstr "Fehler: Ungültige Länge der Einstellungs-Zeichenfolge.\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:922
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fehler: Ungültige Zeichen in der Einstellungs-Zeichenfolge\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:943
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Geschlecht: (Männlich (M), Weiblich (F) oder Leerzeichen): "
 
-#: g10/card-util.c:936
+#: g10/card-util.c:957
 msgid "Error: invalid response.\n"
 msgstr "Fehler: ungültige Antwort.\n"
 
-#: g10/card-util.c:957
+#: g10/card-util.c:978
 msgid "CA fingerprint: "
 msgstr "CA-Fingerabdruck: "
 
-#: g10/card-util.c:980
+#: g10/card-util.c:1001
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Fehler: ungültig geformter Fingerabdruck.\n"
 
-#: g10/card-util.c:1028
+#: g10/card-util.c:1049
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "Schlüsseloperation nicht möglich: %s\n"
 
-#: g10/card-util.c:1029
+#: g10/card-util.c:1050
 msgid "not an OpenPGP card"
 msgstr "Keine gültige OpenPGP-Karte"
 
-#: g10/card-util.c:1038
+#: g10/card-util.c:1059
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "Fehler beim Holen der aktuellen Schlüsselinfo: %s\n"
 
-#: g10/card-util.c:1122
+#: g10/card-util.c:1143
 msgid "Replace existing key? (y/N) "
 msgstr "Vorhandenen Schlüssel ersetzen? (j/N) "
 
-#: g10/card-util.c:1142 g10/card-util.c:1151
+#: g10/card-util.c:1163 g10/card-util.c:1172
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "Sicherung des Verschlüsselungsschlüssel außerhalb der Karte erstellen? (J/n) "
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1184
 msgid "Replace existing keys? (y/N) "
 msgstr "Vorhandene Schlüssel ersetzen? (j/N) "
 
-#: g10/card-util.c:1172
+#: g10/card-util.c:1193
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1292,124 +1314,124 @@ msgstr ""
 "   PIN = `%s'     Admin-PIN = `%s'\n"
 "Sie sollten sie mittels des Befehls --change-pin ändern\n"
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1227
 msgid "Please select the type of key to generate:\n"
 msgstr "Bitte wählen Sie die Art des Schlüssel, der erzeugt werden soll:\n"
 
-#: g10/card-util.c:1208 g10/card-util.c:1285
+#: g10/card-util.c:1229 g10/card-util.c:1306
 msgid "   (1) Signature key\n"
 msgstr "   (1) Unterschriften-Schlüssel\n"
 
-#: g10/card-util.c:1209 g10/card-util.c:1287
+#: g10/card-util.c:1230 g10/card-util.c:1308
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Verschlüsselungs-Schlüssel\n"
 
-#: g10/card-util.c:1210 g10/card-util.c:1289
+#: g10/card-util.c:1231 g10/card-util.c:1310
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Authentisierungs-Schlüssel\n"
 
-#: g10/card-util.c:1226 g10/card-util.c:1305 g10/keyedit.c:945
+#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Ungültige Auswahl.\n"
 
-#: g10/card-util.c:1282
+#: g10/card-util.c:1303
 msgid "Please select where to store the key:\n"
 msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
 
-#: g10/card-util.c:1317
+#: g10/card-util.c:1338
 msgid "unknown key protection algorithm\n"
 msgstr "Unbekanntes Schlüssel-Schutzverfahren\n"
 
-#: g10/card-util.c:1322
+#: g10/card-util.c:1343
 msgid "secret parts of key are not available\n"
 msgstr "Geheime Teile des Schlüssels sind nicht vorhanden\n"
 
-#: g10/card-util.c:1327
+#: g10/card-util.c:1348
 msgid "secret key already stored on a card\n"
 msgstr "geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
 
-#: g10/card-util.c:1396 g10/keyedit.c:1380
+#: g10/card-util.c:1417 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "Menü verlassen"
 
-#: g10/card-util.c:1398
+#: g10/card-util.c:1419
 msgid "show admin commands"
 msgstr "Zeige Admin-Befehle"
 
-#: g10/card-util.c:1399 g10/keyedit.c:1383
+#: g10/card-util.c:1420 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "Diese Hilfe zeigen"
 
-#: g10/card-util.c:1401
+#: g10/card-util.c:1422
 msgid "list all available data"
 msgstr "Alle vorhandenen Daten auflisten"
 
-#: g10/card-util.c:1404
+#: g10/card-util.c:1425
 msgid "change card holder's name"
 msgstr "Kartenbesitzernamen ändern"
 
-#: g10/card-util.c:1405
+#: g10/card-util.c:1426
 msgid "change URL to retrieve key"
 msgstr "Schlüssel-holen-URL ändern"
 
-#: g10/card-util.c:1406
+#: g10/card-util.c:1427
 msgid "fetch the key specified in the card URL"
 msgstr "Holen des Schlüssels mittels der URL auf der Karte"
 
-#: g10/card-util.c:1407
+#: g10/card-util.c:1428
 msgid "change the login name"
 msgstr "Ändern der Logindaten"
 
-#: g10/card-util.c:1408
+#: g10/card-util.c:1429
 msgid "change the language preferences"
 msgstr "Ändern der Spracheinstellungen"
 
-#: g10/card-util.c:1409
+#: g10/card-util.c:1430
 msgid "change card holder's sex"
 msgstr "Ändern des Geschlechts des Kartenbesitzers"
 
-#: g10/card-util.c:1410
+#: g10/card-util.c:1431
 msgid "change a CA fingerprint"
 msgstr "Ändern des CA-Fingerabdrucks"
 
-#: g10/card-util.c:1411
+#: g10/card-util.c:1432
 msgid "toggle the signature force PIN flag"
 msgstr "Umschalte des \"Signature-force-PIN\"-Schalters"
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1433
 msgid "generate new keys"
 msgstr "neue Schlüssel erzeugen"
 
-#: g10/card-util.c:1413
+#: g10/card-util.c:1434
 msgid "menu to change or unblock the PIN"
 msgstr "Menü für Ändern oder Entsperren der PIN"
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1435
 msgid "verify the PIN and list all data"
 msgstr "überprüfe die PIN und liste alle Daten auf"
 
-#: g10/card-util.c:1415
+#: g10/card-util.c:1436
 msgid "unblock the PIN using a Reset Code"
 msgstr "die PIN mit dem Rückstellcode wieder freigeben"
 
-#: g10/card-util.c:1537 g10/keyedit.c:1654
+#: g10/card-util.c:1558 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Befehl> "
 
-#: g10/card-util.c:1580
+#: g10/card-util.c:1601
 msgid "Admin-only command\n"
 msgstr "nur-Admin Befehl\n"
 
-#: g10/card-util.c:1611
+#: g10/card-util.c:1632
 msgid "Admin commands are allowed\n"
 msgstr "Admin-Befehle sind erlaubt\n"
 
-#: g10/card-util.c:1613
+#: g10/card-util.c:1634
 msgid "Admin commands are not allowed\n"
 msgstr "Admin-Befehle sind nicht erlaubt\n"
 
-#: g10/card-util.c:1699 g10/keyedit.c:2277
+#: g10/card-util.c:1720 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ungültiger Befehl (versuchen Sie's mal mit \"help\")\n"
 
