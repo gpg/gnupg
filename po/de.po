@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gnupg-2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "POT-Creation-Date: 2009-01-19 16:21+0100\n"
-"PO-Revision-Date: 2009-01-19 16:22+0100\n"
+"PO-Revision-Date: 2009-01-19 16:43+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -893,7 +893,7 @@ msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
 #. verbatim.  It will not be printed.
 #: common/audit.c:474
 msgid "|audit-log-result|Good"
-msgstr "Korrekt"
+msgstr "|audit-log-result|Korrekt"
 
 #: common/audit.c:477
 msgid "|audit-log-result|Bad"

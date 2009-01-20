@@ -258,12 +258,51 @@ main (int argc, char **argv)
       break;
       
     case aListDirs:
-      /* Show the system configuration directory for gpgconf.  */
+      /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
       fprintf (outfp, "sysconfdir:%s\n",
 	       gc_percent_escape (gnupg_sysconfdir ()));
       fprintf (outfp, "bindir:%s\n",
 	       gc_percent_escape (gnupg_bindir ()));
+      fprintf (outfp, "libexecdir:%s\n",
+	       gc_percent_escape (gnupg_libexecdir ()));
+      fprintf (outfp, "libdir:%s\n",
+	       gc_percent_escape (gnupg_libdir ()));
+      fprintf (outfp, "datadir:%s\n",
+	       gc_percent_escape (gnupg_datadir ()));
+      fprintf (outfp, "localedir:%s\n",
+	       gc_percent_escape (gnupg_localedir ()));
+      fprintf (outfp, "dirmngr-socket:%s\n",
+	       gc_percent_escape (dirmngr_socket_name ()));
+      {
+        char *infostr = getenv ("GPG_AGENT_INFO");
+
+        if (!infostr || !*infostr)
+          infostr = make_filename (default_homedir (), "S.gpg-agent", NULL);
+        else
+          {
+            char *tmp;
+
+            infostr = xstrdup (infostr);
+            tmp = strchr (infostr, PATHSEP_C);
+            if (!tmp || tmp == infostr)
+              {
+                xfree (infostr);
+                infostr = NULL;
+              }
+            else
+              *tmp = 0;
+          }
+        fprintf (outfp, "agent-socket:%s\n",
+                 infostr? gc_percent_escape (infostr) : "");
+        xfree (infostr);
+      }
+      {
+        /* We need to use make_filename to expand a possible "~/".  */
+        char *tmp = make_filename (default_homedir (), NULL);
+        fprintf (outfp, "homedir:%s\n", gc_percent_escape (tmp));
+        xfree (tmp);
+      }
       break;
     }
 

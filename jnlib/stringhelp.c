@@ -314,8 +314,8 @@ make_dirname(const char *filepath)
 
 
 /* Implementation of make_filename and make_filename_try.  We need to
-   use macros here toa void the use of the soemtimes problematic
-   va_copy fucntion which is not available on all systems.  */
+   use macros here to avoid the use of the sometimes problematic
+   va_copy function which is not available on all systems.  */
 #define MAKE_FILENAME_PART1                        \
   va_list arg_ptr;                                 \
   size_t n;                                        \
