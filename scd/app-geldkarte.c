@@ -20,10 +20,9 @@
 
 
 /* This is a read-only application to quickly dump information of a
-   German Geldkarte (debit card for small amounts).
-
-   Because this application does no use an AID it is best to test for
-   it after the test for other applications.
+   German Geldkarte (debit card for small amounts).  We only support
+   newer Geldkarte (with the AID DF_BOERSE_NEU) issued since 2000 or
+   even earlier.
 */
 
 
@@ -58,6 +57,9 @@ struct app_local_s
   unsigned int currency_mult100;
   unsigned char chipid;
   unsigned char osvers;
+  int balance;
+  int maxamount;
+  int maxamount1;
 };
 
 
@@ -109,11 +111,6 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     err = send_one_string (ctrl, name, ld->country);
   else if (!strcmp (name, "X-CURRENCY"))
     err = send_one_string (ctrl, name, ld->currency);
-  else if (!strcmp (name, "X-CRNCMULT"))
-    {
-      snprintf (numbuf, sizeof numbuf, "%u", ld->currency_mult100);
-      err = send_one_string (ctrl, name, numbuf);
-    }
   else if (!strcmp (name, "X-ZKACHIPID"))
     {
       snprintf (numbuf, sizeof numbuf, "0x%02X", ld->chipid);
@@ -122,6 +119,24 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   else if (!strcmp (name, "X-OSVERSION"))
     {
       snprintf (numbuf, sizeof numbuf, "0x%02X", ld->osvers);
+      err = send_one_string (ctrl, name, numbuf);
+    }
+  else if (!strcmp (name, "X-BALANCE"))
+    {
+      snprintf (numbuf, sizeof numbuf, "%.2f", 
+                (double)ld->balance / 100 * ld->currency_mult100);
+      err = send_one_string (ctrl, name, numbuf);
+    }
+  else if (!strcmp (name, "X-MAXAMOUNT"))
+    {
+      snprintf (numbuf, sizeof numbuf, "%.2f", 
+                (double)ld->maxamount / 100 * ld->currency_mult100);
+      err = send_one_string (ctrl, name, numbuf);
+    }
+  else if (!strcmp (name, "X-MAXAMOUNT1"))
+    {
+      snprintf (numbuf, sizeof numbuf, "%.2f", 
+                (double)ld->maxamount1 / 100 * ld->currency_mult100);
       err = send_one_string (ctrl, name, numbuf);
     }
   else
@@ -142,9 +157,11 @@ do_learn_status (app_t app, ctrl_t ctrl)
     "X-VALIDFROM",
     "X-COUNTRY",
     "X-CURRENCY",
-    "X-CRNCMULT",
     "X-ZKACHIPID",
     "X-OSVERSION",
+    "X-BALANCE",
+    "X-MAXAMOUNT",
+    "X-MAXAMOUNT1",
     NULL
   };
   gpg_error_t err = 0;
@@ -235,12 +252,28 @@ copy_bcd (const unsigned char *string, size_t length)
 }
 
 
+/* Convert the BCD number at STING of LENGTH into an integer and store
+   that at RESULT.  Return 0 on success.  */
+static gpg_error_t
+bcd_to_int (const unsigned char *string, size_t length, int *result)
+{
+  char *tmp;
+
+  tmp = copy_bcd (string, length);
+  if (!tmp)
+    return gpg_error (GPG_ERR_BAD_DATA);
+  *result = strtol (tmp, NULL, 10);
+  xfree (tmp);
+  return 0;
+}
 
 
 /* Select the Geldkarte application.  */
 gpg_error_t
 app_select_geldkarte (app_t app)
 {
+  static unsigned char const aid[] =
+    { 0xD2, 0x76, 0x00, 0x00, 0x25, 0x45, 0x50, 0x02, 0x00 };
   gpg_error_t err;
   int slot = app->slot;
   unsigned char *result = NULL;
@@ -248,16 +281,16 @@ app_select_geldkarte (app_t app)
   struct app_local_s *ld;
   const char *banktype;
   
-  err = iso7816_select_file (slot, 0x3f00, 1, NULL, NULL);
+  err = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (err)
-    goto leave;  /* Oops.  */
-
-  /* Read short EF 0xbc.  We require this record to be at least 24
-     bytes with the the first byte 0x67 and a correct the filler
-     byte. */
-  err = iso7816_read_record (slot, 1, 1, 0xbc, &result, &resultlen);
+    goto leave; 
+  
+  /* Read the first record of EF_ID (SFI=0x17).  We require this
+     record to be at least 24 bytes with the the first byte 0x67 and a
+     correct filler byte. */
+  err = iso7816_read_record (slot, 1, 1, ((0x17 << 3)|4), &result, &resultlen);
   if (err)
-    goto leave;  /* No such record or other error - not a Geldkarte.  */
+    goto leave;  /* Oops - not a Geldkarte.  */
   if (resultlen < 24 || *result != 0x67 || result[22])
     {
       err = gpg_error (GPG_ERR_NOT_FOUND);
@@ -279,6 +312,23 @@ app_select_geldkarte (app_t app)
   
   app->apptype = "GELDKARTE";
   app->fnc.deinit = do_deinit;
+
+  /* If we don't have a serialno yet construct it from the EF_ID.  */
+  if (!app->serialno)
+    {
+      app->serialno = xtrymalloc (10);
+      if (!app->serialno)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (app->serialno, result, 10);
+      app->serialnolen = 10;
+      err = app_munge_serialno (app);
+      if (err)
+        goto leave;
+    }
+
 
   app->app_local = ld = xtrycalloc (1, sizeof *app->app_local);
   if (!app->app_local)
@@ -323,6 +373,26 @@ app_select_geldkarte (app_t app)
 
   ld->chipid = result[21];
   ld->osvers = result[23];
+
+  /* Read the first record of EF_BETRAG (SFI=0x18). */
+  xfree (result);
+  err = iso7816_read_record (slot, 1, 1, ((0x18 << 3)|4), &result, &resultlen);
+  if (err)
+    goto leave;  /* It does not make sense to continue.  */
+  if (resultlen < 12)
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
+  err = bcd_to_int (result+0, 3, &ld->balance);
+  if (!err)
+    err = bcd_to_int (result+3, 3, &ld->maxamount);
+  if (!err)
+    err = bcd_to_int (result+6, 3, &ld->maxamount1);
+  /* The next 3 bytes are the maximum amount chargable without using a
+     MAC.  This is usually 0.  */
+  if (err)
+    goto leave;
 
   /* Setup the rest of the methods.  */
   app->fnc.learn_status = do_learn_status;

@@ -1,5 +1,7 @@
 2009-01-27  Werner Koch  <wk@g10code.com>
 
+	* app-geldkarte.c: Changed to use an AID.
+
 	* app.c (app_munge_serialno): Add case for no serialno.
 	(app_get_serial_and_stamp): Ditto.
 
