@@ -387,6 +387,12 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
             fputs ("pkcs15-card:\n", fp);
           log_info ("this is a PKCS#15 compliant card\n");
         }
+      else if (info.apptype && !strcmp (info.apptype, "GELDKARTE"))
+        {
+          if (opt.with_colons)
+            fputs ("geldkarte-card:\n", fp);
+          log_info ("this is a Geldkarte compliant card\n");
+        }
       else
         {
           if (opt.with_colons)

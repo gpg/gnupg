@@ -1,3 +1,7 @@
+2009-01-26  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (card_status): Detect a Geldkarte. 
+
 2009-01-13  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (dummy_data_cb): New.

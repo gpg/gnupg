@@ -1,4 +1,6 @@
-# Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+# Makefile.am - Makefile for keyservers
+# Copyright (C) 2001, 2002, 2004, 2005, 2006, 
+#               2009 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -66,14 +68,17 @@ gpg2keys_hkp_CPPFLAGS = $(AM_CPPFLAGS)
 gpg2keys_hkp_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
 	             $(other_libs) 
 else
+# Note that we need to include all other libs here as well because
+# some compilers don't care about inline fucntions and insert
+# references to symbols used in unused inline functions.
 gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_curl_LDADD = $(LIBCURL) $(GETOPT)
+gpg2keys_curl_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
+                      $(other_libs) $(LIBCURL) $(GETOPT)
 gpg2keys_hkp_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_hkp_LDADD = $(LIBCURL) $(GETOPT)
+gpg2keys_hkp_LDADD =  $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
+                      $(other_libs) $(LIBCURL) $(GETOPT)
 endif
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
 $(PROGRAMS): $(common_libs)
-
-

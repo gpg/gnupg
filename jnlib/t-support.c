@@ -22,9 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "t-support.h"
 
+
 /* Replacements for the malloc functions as used here. */
 
 static void
@@ -107,3 +109,31 @@ gcry_free (void *a)
   if (a)
     free (a);
 }
+
+
+
+/* Stubs for gpg-error functions required because some compilers do
+   not eliminate the supposed-to-be-unused-inline-functions and thus
+   require functions called from these inline fucntions.  Although we
+   do not use gpg-error, gpg-error.h may get included via gcrypt.h if
+   it happens to be used used in libjnlib-config.h.  */
+int
+gpg_err_code_from_errno (int err)
+{
+  assert (!"stub function");
+  return -1;
+}
+
+
+/* Retrieve the error code directly from the ERRNO variable.  This
+   returns GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped
+   (report this) and GPG_ERR_MISSING_ERRNO if ERRNO has the value 0. */
+int
+gpg_err_code_from_syserror (void)
+{
+  assert (!"stub function");
+  return -1;
+}
+
+
+

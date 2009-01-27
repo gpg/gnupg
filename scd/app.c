@@ -352,6 +352,9 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     err = app_select_p15 (app);
   if (err && is_app_allowed ("dinsig") && (!name || !strcmp (name, "dinsig")))
     err = app_select_dinsig (app);
+  if (err && is_app_allowed ("geldkarte")
+      && (!name || !strcmp (name, "geldkarte")))
+    err = app_select_geldkarte (app);
   if (err && name)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
@@ -440,6 +443,7 @@ release_application (app_t app)
      FF 00 00 = For serial numbers starting with an FF
      FF 01 00 = Some german p15 cards return an empty serial number so the
                 serial number from the EF(TokenInfo) is used instead.
+     FF 7F 00 = No serialno.
      
      All other serial number not starting with FF are used as they are.
 */
@@ -452,10 +456,20 @@ app_munge_serialno (app_t app)
          requires that we put our default prefix "FF0000" in front. */
       unsigned char *p = xtrymalloc (app->serialnolen + 3);
       if (!p)
-        return gpg_error (gpg_err_code_from_errno (errno));
+        return gpg_error_from_syserror ();
       memcpy (p, "\xff\0", 3);
       memcpy (p+3, app->serialno, app->serialnolen);
       app->serialnolen += 3;
+      xfree (app->serialno);
+      app->serialno = p;
+    }
+  else if (!app->serialnolen)
+    { 
+      unsigned char *p = xtrymalloc (3);
+      if (!p)
+        return gpg_error_from_syserror ();
+      memcpy (p, "\xff\x7f", 3);
+      app->serialnolen = 3;
       xfree (app->serialno);
       app->serialno = p;
     }
@@ -482,7 +496,10 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
   if (stamp)
     *stamp = 0; /* not available */
 
-  buf = bin2hex (app->serialno, app->serialnolen, NULL);
+  if (!app->serialnolen)
+    buf = xtrystrdup ("FF7F00");
+  else
+    buf = bin2hex (app->serialno, app->serialnolen, NULL);
   if (!buf)
     return gpg_error_from_syserror ();
 

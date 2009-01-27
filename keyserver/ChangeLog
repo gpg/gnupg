@@ -1,3 +1,8 @@
+2009-01-22  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg2keys_curl_LDADD, gpg2keys_hkp_LDADD): Add all
+	standard libs.
+
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* curl-shim.c (curl_global_init): Mark usused arg.

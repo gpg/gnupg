@@ -1,3 +1,14 @@
+2009-01-27  Werner Koch  <wk@g10code.com>
+
+	* app.c (app_munge_serialno): Add case for no serialno.
+	(app_get_serial_and_stamp): Ditto.
+
+2009-01-26  Werner Koch  <wk@g10code.com>
+
+	* app-geldkarte.c: New.
+	* Makefile.am (card_apps): Add new file.
+	* app.c (select_application): Test for geldkarte.
+
 2009-01-12  Werner Koch  <wk@g10code.com>
 
 	* command.c (send_client_notifications) [HAVE_W32_SYSTEM]: Fix
