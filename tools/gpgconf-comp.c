@@ -622,8 +622,8 @@ static gc_option_t gc_options_scdaemon[] =
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the security") },
-   { "allow-admin", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
-     "gnupg", "allow the use of admin card commands",
+   { "deny-admin", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "deny the use of admin card commands",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
 
 

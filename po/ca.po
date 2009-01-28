@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-19 16:21+0100\n"
+"POT-Creation-Date: 2009-01-28 14:11+0100\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -121,7 +121,7 @@ msgstr "l'algoritme de protecció %d%s no està suportat\n"
 msgid "can't create `%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:760
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -446,18 +446,18 @@ msgstr ""
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:466 sm/gpgsm.c:971
+#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:467 sm/gpgsm.c:971
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existeix el fitxer d'opcions predeterminades «%s»\n"
 
 #: agent/gpg-agent.c:661 agent/gpg-agent.c:1240 g10/gpg.c:2090
-#: scd/scdaemon.c:471 sm/gpgsm.c:975 tools/symcryptrun.c:929
+#: scd/scdaemon.c:472 sm/gpgsm.c:975 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fitxer d'opcions «%s»: %s\n"
 
-#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:479 sm/gpgsm.c:982
+#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:480 sm/gpgsm.c:982
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "s'estan llegint opcions de «%s»\n"
@@ -470,16 +470,16 @@ msgstr "error en crear «%s»: %s\n"
 
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1473 agent/gpg-agent.c:1477
 #: agent/gpg-agent.c:1518 agent/gpg-agent.c:1522 g10/exec.c:172
-#: g10/openfile.c:429 scd/scdaemon.c:971
+#: g10/openfile.c:429 scd/scdaemon.c:973
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "no es pot crear el directori «%s»: %s\n"
 
-#: agent/gpg-agent.c:1367 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1367 scd/scdaemon.c:987
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1390 scd/scdaemon.c:1008
+#: agent/gpg-agent.c:1390 scd/scdaemon.c:1010
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
@@ -494,22 +494,22 @@ msgstr "Certificat de revocació vàlid"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent no està disponible en aquesta sessió\n"
 
-#: agent/gpg-agent.c:1430 scd/scdaemon.c:1028
+#: agent/gpg-agent.c:1430 scd/scdaemon.c:1030
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "error en crear «%s»: %s\n"
 
-#: agent/gpg-agent.c:1435 scd/scdaemon.c:1031
+#: agent/gpg-agent.c:1435 scd/scdaemon.c:1033
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "error mentre s'enviava a «%s»: %s\n"
 
-#: agent/gpg-agent.c:1447 scd/scdaemon.c:1040
+#: agent/gpg-agent.c:1447 scd/scdaemon.c:1042
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "ha fallat l'actualització: %s\n"
 
-#: agent/gpg-agent.c:1453 scd/scdaemon.c:1047
+#: agent/gpg-agent.c:1453 scd/scdaemon.c:1049
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
@@ -529,7 +529,7 @@ msgstr "base de dades de confiança: ha fallat la lectura (n=%d): %s\n"
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: no s'ha pogut crear el directori: %s\n"
 
-#: agent/gpg-agent.c:1668 scd/scdaemon.c:1063
+#: agent/gpg-agent.c:1668 scd/scdaemon.c:1065
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
@@ -554,12 +554,12 @@ msgstr ""
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1860 scd/scdaemon.c:1200
+#: agent/gpg-agent.c:1860 scd/scdaemon.c:1202
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "ha fallat l'actualització de la clau secreta: %s\n"
 
-#: agent/gpg-agent.c:1969 scd/scdaemon.c:1267
+#: agent/gpg-agent.c:1969 scd/scdaemon.c:1269
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "\t%lu claus es descarta\n"
@@ -1202,7 +1202,7 @@ msgstr ""
 
 # Destès? ivb
 # Desatès, sí. jm
-#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1512 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
@@ -1219,7 +1219,7 @@ msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "parts de la clau secreta no estan disponbles\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
+#: g10/card-util.c:122 g10/card-util.c:1242 g10/card-util.c:1321
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1229,15 +1229,15 @@ msgstr "La vostra selecció? "
 msgid "[not set]"
 msgstr "[no establert]"
 
-#: g10/card-util.c:486
+#: g10/card-util.c:492
 msgid "male"
 msgstr "home"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 msgid "female"
 msgstr "dóna"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 msgid "unspecified"
 msgstr "no especificat"
 
@@ -1245,139 +1245,139 @@ msgstr "no especificat"
 # Probablement és una clau, femení. jm
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 msgid "not forced"
 msgstr "no forçat"
 
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 msgid "forced"
 msgstr "forçat"
 
-#: g10/card-util.c:595
+#: g10/card-util.c:601
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:597
+#: g10/card-util.c:603
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr ""
 
-#: g10/card-util.c:599
+#: g10/card-util.c:605
 msgid "Error: Double spaces are not allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:616
+#: g10/card-util.c:622
 msgid "Cardholder's surname: "
 msgstr ""
 
-#: g10/card-util.c:618
+#: g10/card-util.c:624
 msgid "Cardholder's given name: "
 msgstr ""
 
-#: g10/card-util.c:636
+#: g10/card-util.c:642
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:657
+#: g10/card-util.c:663
 #, fuzzy
 msgid "URL to retrieve public key: "
 msgstr "no hi ha cap clau pública corresponent: %s\n"
 
-#: g10/card-util.c:665
+#: g10/card-util.c:671
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:761 tools/no-libgcrypt.c:30
+#: g10/card-util.c:767 tools/no-libgcrypt.c:30
 #, fuzzy, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
-#: g10/card-util.c:773 g10/import.c:283
+#: g10/card-util.c:779 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
-#: g10/card-util.c:800
+#: g10/card-util.c:806
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:810
+#: g10/card-util.c:816
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:845
+#: g10/card-util.c:851
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:855
+#: g10/card-util.c:861
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:905
+#: g10/card-util.c:911
 #, fuzzy
 msgid "Language preferences: "
 msgstr "preferències actualitzades"
 
-#: g10/card-util.c:913
+#: g10/card-util.c:919
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:928
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "hi ha un caràcter invàlid en la cadena de preferència\n"
 
-#: g10/card-util.c:943
+#: g10/card-util.c:949
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:957
+#: g10/card-util.c:963
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
-#: g10/card-util.c:978
+#: g10/card-util.c:984
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "Empremta digital:"
 
-#: g10/card-util.c:1001
+#: g10/card-util.c:1007
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
-#: g10/card-util.c:1049
+#: g10/card-util.c:1055
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
-#: g10/card-util.c:1050
+#: g10/card-util.c:1056
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "no s'han trobat dades OpenPGP vàlides.\n"
 
-#: g10/card-util.c:1059
+#: g10/card-util.c:1065
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
 
-#: g10/card-util.c:1143
+#: g10/card-util.c:1149
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1163 g10/card-util.c:1172
+#: g10/card-util.c:1169 g10/card-util.c:1178
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1184
+#: g10/card-util.c:1190
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1193
+#: g10/card-util.c:1199
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1385,139 +1385,139 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1227
+#: g10/card-util.c:1233
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Seleccioneu quin tipus de clau voleu:\n"
 
-#: g10/card-util.c:1229 g10/card-util.c:1306
+#: g10/card-util.c:1235 g10/card-util.c:1312
 msgid "   (1) Signature key\n"
 msgstr ""
 
-#: g10/card-util.c:1230 g10/card-util.c:1308
+#: g10/card-util.c:1236 g10/card-util.c:1314
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (només xifrar)\n"
 
-#: g10/card-util.c:1231 g10/card-util.c:1310
+#: g10/card-util.c:1237 g10/card-util.c:1316
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
+#: g10/card-util.c:1253 g10/card-util.c:1332 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "La selecció és invàlida.\n"
 
-#: g10/card-util.c:1303
+#: g10/card-util.c:1309
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Seleccioneu la raó de la revocació:\n"
 
-#: g10/card-util.c:1338
+#: g10/card-util.c:1344
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "l'algorisme de protecció és desconegut\n"
 
-#: g10/card-util.c:1343
+#: g10/card-util.c:1349
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 
-#: g10/card-util.c:1348
+#: g10/card-util.c:1354
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "es descarta: la clau secreta ja és present\n"
 
-#: g10/card-util.c:1417 g10/keyedit.c:1380
+#: g10/card-util.c:1423 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "ix del menú"
 
-#: g10/card-util.c:1419
+#: g10/card-util.c:1425
 #, fuzzy
 msgid "show admin commands"
 msgstr "les ordres entren en conflicte\n"
 
 # «pantalla» o «ajuda»?  ivb
 # «ajuda», evidentment. jm
-#: g10/card-util.c:1420 g10/keyedit.c:1383
+#: g10/card-util.c:1426 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "mostra aquesta ajuda"
 
-#: g10/card-util.c:1422
+#: g10/card-util.c:1428
 #, fuzzy
 msgid "list all available data"
 msgstr "La clau és disponible en: "
 
-#: g10/card-util.c:1425
+#: g10/card-util.c:1431
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1426
+#: g10/card-util.c:1432
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1427
+#: g10/card-util.c:1433
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1428
+#: g10/card-util.c:1434
 #, fuzzy
 msgid "change the login name"
 msgstr "canvia la data de caducitat"
 
-#: g10/card-util.c:1429
+#: g10/card-util.c:1435
 #, fuzzy
 msgid "change the language preferences"
 msgstr "canvia la confiança"
 
-#: g10/card-util.c:1430
+#: g10/card-util.c:1436
 msgid "change card holder's sex"
 msgstr ""
 
-#: g10/card-util.c:1431
+#: g10/card-util.c:1437
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "mostra empremta"
 
-#: g10/card-util.c:1432
+#: g10/card-util.c:1438
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1433
+#: g10/card-util.c:1439
 #, fuzzy
 msgid "generate new keys"
 msgstr "genera un nou parell de claus"
 
-#: g10/card-util.c:1434
+#: g10/card-util.c:1440
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1435
+#: g10/card-util.c:1441
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1436
+#: g10/card-util.c:1442
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1558 g10/keyedit.c:1654
+#: g10/card-util.c:1564 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Ordre> "
 
-#: g10/card-util.c:1601
+#: g10/card-util.c:1607
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "les ordres entren en conflicte\n"
 
-#: g10/card-util.c:1632
+#: g10/card-util.c:1638
 msgid "Admin commands are allowed\n"
 msgstr ""
 
-#: g10/card-util.c:1634
+#: g10/card-util.c:1640
 msgid "Admin commands are not allowed\n"
 msgstr ""
 
-#: g10/card-util.c:1720 g10/keyedit.c:2277
+#: g10/card-util.c:1726 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no és vàlida (proveu «help»)\n"
 
@@ -7141,9 +7141,9 @@ msgstr ""
 msgid "do not use a reader's keypad"
 msgstr ""
 
-#: scd/scdaemon.c:140
+#: scd/scdaemon.c:141
 #, fuzzy
-msgid "allow the use of admin card commands"
+msgid "deny the use of admin card commands"
 msgstr "les ordres entren en conflicte\n"
 
 #: scd/scdaemon.c:254
@@ -7157,16 +7157,16 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:718
+#: scd/scdaemon.c:720
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1072
+#: scd/scdaemon.c:1074
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1084
+#: scd/scdaemon.c:1086
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""

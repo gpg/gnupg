@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-19 16:21+0100\n"
+"POT-Creation-Date: 2009-01-28 14:11+0100\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -116,7 +116,7 @@ msgstr "suojausalgoritmi %d%s ei ole käytettävissä\n"
 msgid "can't create `%s': %s\n"
 msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:760
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -437,18 +437,18 @@ msgstr ""
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:466 sm/gpgsm.c:971
+#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:467 sm/gpgsm.c:971
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "HUOM: Ei oletusasetustiedostoa \"%s\"\n"
 
 #: agent/gpg-agent.c:661 agent/gpg-agent.c:1240 g10/gpg.c:2090
-#: scd/scdaemon.c:471 sm/gpgsm.c:975 tools/symcryptrun.c:929
+#: scd/scdaemon.c:472 sm/gpgsm.c:975 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "asetustiedosto \"%s\": %s\n"
 
-#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:479 sm/gpgsm.c:982
+#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:480 sm/gpgsm.c:982
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "luetaan asetukset tiedostosta \"%s\"\n"
@@ -461,16 +461,16 @@ msgstr "virhe luotaessa \"%s\": %s\n"
 
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1473 agent/gpg-agent.c:1477
 #: agent/gpg-agent.c:1518 agent/gpg-agent.c:1522 g10/exec.c:172
-#: g10/openfile.c:429 scd/scdaemon.c:971
+#: g10/openfile.c:429 scd/scdaemon.c:973
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
 
-#: agent/gpg-agent.c:1367 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1367 scd/scdaemon.c:987
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1390 scd/scdaemon.c:1008
+#: agent/gpg-agent.c:1390 scd/scdaemon.c:1010
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "ei voida luoda kohdetta %s: %s\n"
@@ -485,22 +485,22 @@ msgstr ""
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ei ole käytettävissä tässä istunnossa\n"
 
-#: agent/gpg-agent.c:1430 scd/scdaemon.c:1028
+#: agent/gpg-agent.c:1430 scd/scdaemon.c:1030
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
-#: agent/gpg-agent.c:1435 scd/scdaemon.c:1031
+#: agent/gpg-agent.c:1435 scd/scdaemon.c:1033
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "virhe lähettäessä kohteeseen \"%s\": %s\n"
 
-#: agent/gpg-agent.c:1447 scd/scdaemon.c:1040
+#: agent/gpg-agent.c:1447 scd/scdaemon.c:1042
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "päivitys epäonnistui: %s\n"
 
-#: agent/gpg-agent.c:1453 scd/scdaemon.c:1047
+#: agent/gpg-agent.c:1453 scd/scdaemon.c:1049
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
@@ -520,7 +520,7 @@ msgstr "trustdb: luku epäonnistui (n=%d): %s\n"
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: hakemistoa ei voi luoda: %s\n"
 
-#: agent/gpg-agent.c:1668 scd/scdaemon.c:1063
+#: agent/gpg-agent.c:1668 scd/scdaemon.c:1065
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
@@ -545,12 +545,12 @@ msgstr ""
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1860 scd/scdaemon.c:1200
+#: agent/gpg-agent.c:1860 scd/scdaemon.c:1202
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "salaisen päivitys epäonnistui: %s\n"
 
-#: agent/gpg-agent.c:1969 scd/scdaemon.c:1267
+#: agent/gpg-agent.c:1969 scd/scdaemon.c:1269
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: ohitettu: %s\n"
@@ -1171,7 +1171,7 @@ msgstr "salaista avainta ei löydy"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1512 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
@@ -1187,7 +1187,7 @@ msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "salaisen avaimen osat eivät ole käytettävissä\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
+#: g10/card-util.c:122 g10/card-util.c:1242 g10/card-util.c:1321
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1197,155 +1197,155 @@ msgstr "Valintasi? "
 msgid "[not set]"
 msgstr ""
 
-#: g10/card-util.c:486
+#: g10/card-util.c:492
 #, fuzzy
 msgid "male"
 msgstr "enable"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 #, fuzzy
 msgid "female"
 msgstr "enable"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 #, fuzzy
 msgid "unspecified"
 msgstr "Ei eriteltyä syytä"
 
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 #, fuzzy
 msgid "not forced"
 msgstr "ei käsitelty"
 
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 msgid "forced"
 msgstr ""
 
-#: g10/card-util.c:595
+#: g10/card-util.c:601
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:597
+#: g10/card-util.c:603
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr ""
 
-#: g10/card-util.c:599
+#: g10/card-util.c:605
 msgid "Error: Double spaces are not allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:616
+#: g10/card-util.c:622
 msgid "Cardholder's surname: "
 msgstr ""
 
-#: g10/card-util.c:618
+#: g10/card-util.c:624
 msgid "Cardholder's given name: "
 msgstr ""
 
-#: g10/card-util.c:636
+#: g10/card-util.c:642
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:657
+#: g10/card-util.c:663
 #, fuzzy
 msgid "URL to retrieve public key: "
 msgstr "ei vastaavaa julkista avainta: %s\n"
 
-#: g10/card-util.c:665
+#: g10/card-util.c:671
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:761 tools/no-libgcrypt.c:30
+#: g10/card-util.c:767 tools/no-libgcrypt.c:30
 #, fuzzy, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
-#: g10/card-util.c:773 g10/import.c:283
+#: g10/card-util.c:779 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
-#: g10/card-util.c:800
+#: g10/card-util.c:806
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:810
+#: g10/card-util.c:816
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:845
+#: g10/card-util.c:851
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:855
+#: g10/card-util.c:861
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:905
+#: g10/card-util.c:911
 #, fuzzy
 msgid "Language preferences: "
 msgstr "päivitä valinnat"
 
-#: g10/card-util.c:913
+#: g10/card-util.c:919
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "Valinnassa on luvaton merkki\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:928
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Valinnassa on luvaton merkki\n"
 
-#: g10/card-util.c:943
+#: g10/card-util.c:949
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:957
+#: g10/card-util.c:963
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "virhe: sormenjälki on väärä\n"
 
-#: g10/card-util.c:978
+#: g10/card-util.c:984
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "näytä sormenjälki"
 
-#: g10/card-util.c:1001
+#: g10/card-util.c:1007
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "virhe: sormenjälki on väärä\n"
 
-#: g10/card-util.c:1049
+#: g10/card-util.c:1055
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "Avaimen luonti epäonnistui: %s\n"
 
-#: g10/card-util.c:1050
+#: g10/card-util.c:1056
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "kelvollista OpenPGP-dataa ei löytynyt.\n"
 
-#: g10/card-util.c:1059
+#: g10/card-util.c:1065
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "virhe kirjoitettaessa salaiseen avainrenkaaseen \"%s\": %s\n"
 
-#: g10/card-util.c:1143
+#: g10/card-util.c:1149
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1163 g10/card-util.c:1172
+#: g10/card-util.c:1169 g10/card-util.c:1178
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1184
+#: g10/card-util.c:1190
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1193
+#: g10/card-util.c:1199
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1353,140 +1353,140 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1227
+#: g10/card-util.c:1233
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Valitse millaisen avaimen haluat:\n"
 
-#: g10/card-util.c:1229 g10/card-util.c:1306
+#: g10/card-util.c:1235 g10/card-util.c:1312
 #, fuzzy
 msgid "   (1) Signature key\n"
 msgstr "Allekirjoitus vanheni %s\n"
 
-#: g10/card-util.c:1230 g10/card-util.c:1308
+#: g10/card-util.c:1236 g10/card-util.c:1314
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (vain salaus)\n"
 
-#: g10/card-util.c:1231 g10/card-util.c:1310
+#: g10/card-util.c:1237 g10/card-util.c:1316
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
+#: g10/card-util.c:1253 g10/card-util.c:1332 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Valinta ei kelpaa.\n"
 
-#: g10/card-util.c:1303
+#: g10/card-util.c:1309
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Valitse mitätöinnin syy:\n"
 
-#: g10/card-util.c:1338
+#: g10/card-util.c:1344
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "tuntematon suojausalgoritmi\n"
 
-#: g10/card-util.c:1343
+#: g10/card-util.c:1349
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "Ensisijaisen avaimen salaiset osat eivät ole saatavilla.\n"
 
-#: g10/card-util.c:1348
+#: g10/card-util.c:1354
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "ohitetaan: salainen avain on jo paikalla\n"
 
-#: g10/card-util.c:1417 g10/keyedit.c:1380
+#: g10/card-util.c:1423 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "ulos tästä valikosta"
 
-#: g10/card-util.c:1419
+#: g10/card-util.c:1425
 #, fuzzy
 msgid "show admin commands"
 msgstr "ristiriitainen komento\n"
 
-#: g10/card-util.c:1420 g10/keyedit.c:1383
+#: g10/card-util.c:1426 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "näytä tämä ohje"
 
-#: g10/card-util.c:1422
+#: g10/card-util.c:1428
 #, fuzzy
 msgid "list all available data"
 msgstr "Avain saatavilla kohteessa: "
 
-#: g10/card-util.c:1425
+#: g10/card-util.c:1431
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1426
+#: g10/card-util.c:1432
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1427
+#: g10/card-util.c:1433
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1428
+#: g10/card-util.c:1434
 #, fuzzy
 msgid "change the login name"
 msgstr "muuta voimassoloaikaa"
 
-#: g10/card-util.c:1429
+#: g10/card-util.c:1435
 #, fuzzy
 msgid "change the language preferences"
 msgstr "muuta luottamusastetta"
 
-#: g10/card-util.c:1430
+#: g10/card-util.c:1436
 msgid "change card holder's sex"
 msgstr ""
 
-#: g10/card-util.c:1431
+#: g10/card-util.c:1437
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "näytä sormenjälki"
 
-#: g10/card-util.c:1432
+#: g10/card-util.c:1438
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1433
+#: g10/card-util.c:1439
 #, fuzzy
 msgid "generate new keys"
 msgstr "luo uusi avainpari"
 
-#: g10/card-util.c:1434
+#: g10/card-util.c:1440
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1435
+#: g10/card-util.c:1441
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1436
+#: g10/card-util.c:1442
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1558 g10/keyedit.c:1654
+#: g10/card-util.c:1564 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Komento> "
 
-#: g10/card-util.c:1601
+#: g10/card-util.c:1607
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "ristiriitainen komento\n"
 
-#: g10/card-util.c:1632
+#: g10/card-util.c:1638
 #, fuzzy
 msgid "Admin commands are allowed\n"
 msgstr "ristiriitainen komento\n"
 
-#: g10/card-util.c:1634
+#: g10/card-util.c:1640
 #, fuzzy
 msgid "Admin commands are not allowed\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
-#: g10/card-util.c:1720 g10/keyedit.c:2277
+#: g10/card-util.c:1726 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komento ei kelpaa (kirjoita \"help\")\n"
 
@@ -6990,9 +6990,9 @@ msgstr ""
 msgid "do not use a reader's keypad"
 msgstr ""
 
-#: scd/scdaemon.c:140
+#: scd/scdaemon.c:141
 #, fuzzy
-msgid "allow the use of admin card commands"
+msgid "deny the use of admin card commands"
 msgstr "ristiriitainen komento\n"
 
 #: scd/scdaemon.c:254
@@ -7006,16 +7006,16 @@ msgid ""
 "Smartcard daemon for GnuPG\n"
 msgstr ""
 
-#: scd/scdaemon.c:718
+#: scd/scdaemon.c:720
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 
-#: scd/scdaemon.c:1072
+#: scd/scdaemon.c:1074
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr ""
 
-#: scd/scdaemon.c:1084
+#: scd/scdaemon.c:1086
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""

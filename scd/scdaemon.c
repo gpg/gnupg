@@ -136,9 +136,9 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|N|disconnect the card after N seconds of inactivity")),
   ARGPARSE_s_n (oDisableKeypad, "disable-keypad", 
                 N_("do not use a reader's keypad")),
-  ARGPARSE_s_n (oAllowAdmin, "allow-admin", 
-                N_("allow the use of admin card commands")),
-  ARGPARSE_s_n (oDenyAdmin, "deny-admin", "@"),  
+  ARGPARSE_s_n (oAllowAdmin, "allow-admin", "@"),
+  ARGPARSE_s_n (oDenyAdmin, "deny-admin", 
+                N_("deny the use of admin card commands")),
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
   
   ARGPARSE_end ()
@@ -399,6 +399,7 @@ main (int argc, char **argv )
   may_coredump = disable_core_dumps ();
 
   /* Set default options. */
+  opt.allow_admin = 1;
   opt.pcsc_driver = DEFAULT_PCSC_DRIVER; 
 
 #ifdef HAVE_W32_SYSTEM
@@ -534,7 +535,8 @@ main (int argc, char **argv )
 
         case oDisableKeypad: opt.disable_keypad = 1; break;
 
-        case oAllowAdmin: opt.allow_admin = 1; break;
+        case oAllowAdmin: /* Dummy because allow is now the default.  */
+          break;
         case oDenyAdmin: opt.allow_admin = 0; break;
           
         case oCardTimeout: opt.card_timeout = pargs.r.ret_ulong; break;
@@ -629,7 +631,7 @@ main (int argc, char **argv )
 #ifdef HAVE_LIBUSB
       printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
 #endif
-      printf ("allow-admin:%lu:\n", GC_OPT_FLAG_NONE );
+      printf ("deny-admin:%lu:\n", GC_OPT_FLAG_NONE );
       printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
       printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
 

@@ -272,15 +272,17 @@ than 0.
 Even if a card reader features a keypad, do not try to use it.
 
 
-@item --allow-admin
-@itemx --deny-admin
-@opindex allow-admin
+@item --deny-admin
 @opindex deny-admin
-This enables the use of Admin class commands for card applications
-where this is supported.  Currently we support it for the OpenPGP
-card.  Deny is the default.  This commands is useful to inhibit
-accidental access to admin class command which could ultimately lock
-the card through wrong PIN numbers.
+@opindex allow-admin
+This option disables the use of admin class commands for card
+applications where this is supported.  Currently we support it for the
+OpenPGP card. This commands is useful to inhibit accidental access to
+admin class command which could ultimately lock the card through wrong
+PIN numbers.  Note that GnuPG versions older than 2.0.11 featured an
+@option{--allow-admin} command which was required to use such admin
+commands.  This option has no more effect today because the default is
+now to allow admin commands.
 
 @item --disable-application @var{name}
 @opindex disable-application
@@ -305,16 +307,19 @@ stripping off the two leading dashes.
 * NKS Card::              The Telesec NetKey card application
 * DINSIG Card::           The DINSIG card application
 * PKCS#15 Card::          The PKCS#15 card application
+* Geldkarte Card::        The Geldkarte application
 @end menu
 
 @node OpenPGP Card
 @subsection The OpenPGP card application ``openpgp''
 
 This application is currently only used by @command{gpg} but may in
-future also be useful with @command{gpgsm}. 
+future also be useful with @command{gpgsm}.  Version 1 and version 2 of
+the card is supported. 
 
-The specification for such a card is available at
-@uref{http://g10code.com/docs/openpgp-card-1.0.pdf}.
+The specifications for these cards are available at
+@uref{http://g10code.com/docs/openpgp-card-1.0.pdf} and
+@uref{http://g10code.com/docs/openpgp-card-2.0.pdf}.
 
 @node NKS Card
 @subsection The Telesec NetKey card ``nks''
@@ -335,6 +340,13 @@ the German signature law and its bylaws (SigG and SigV).
 
 This is common fraqmework for smart card applications.  It is used by
 @command{gpgsm}.
+
+@node Geldkarte Card
+@subsection The Geldkarte card application ``geldkarte''
+
+This is a simple application to display information of a German
+Geldkarte.  The Geldkarte is a small amount debit card application which
+comes with almost all German banking cards.
 
 
 @c *******************************************

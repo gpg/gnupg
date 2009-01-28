@@ -1,3 +1,8 @@
+2009-01-28  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): Make --allow-admin the default and make the
+	option a dummy.
+
 2009-01-27  Werner Koch  <wk@g10code.com>
 
 	* app-geldkarte.c: Changed to use an AID.

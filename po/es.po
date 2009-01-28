@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-01-19 16:21+0100\n"
+"POT-Creation-Date: 2009-01-28 14:11+0100\n"
 "PO-Revision-Date: 2008-12-14 19:34+0100\n"
 "Last-Translator: Jaime Suárez <jaime@mundocripto.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -120,7 +120,7 @@ msgstr "no pueden usarse claves ssh de más de %d bits\n"
 msgid "can't create `%s': %s\n"
 msgstr "no se puede crear %s: %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:754
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:760
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
 #: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
@@ -441,18 +441,18 @@ msgstr "el nivel de depuración `%s` no es válido\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s es demasiado antiguo (necesita %s, tiene %s)\n"
 
-#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:466 sm/gpgsm.c:971
+#: agent/gpg-agent.c:656 g10/gpg.c:2086 scd/scdaemon.c:467 sm/gpgsm.c:971
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTA: no existe el fichero de opciones predefinido `%s'\n"
 
 #: agent/gpg-agent.c:661 agent/gpg-agent.c:1240 g10/gpg.c:2090
-#: scd/scdaemon.c:471 sm/gpgsm.c:975 tools/symcryptrun.c:929
+#: scd/scdaemon.c:472 sm/gpgsm.c:975 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "fichero de opciones `%s': %s\n"
 
-#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:479 sm/gpgsm.c:982
+#: agent/gpg-agent.c:669 g10/gpg.c:2097 scd/scdaemon.c:480 sm/gpgsm.c:982
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "leyendo opciones desde `%s'\n"
@@ -465,16 +465,16 @@ msgstr "error creando `%s': %s\n"
 
 #: agent/gpg-agent.c:1353 agent/gpg-agent.c:1473 agent/gpg-agent.c:1477
 #: agent/gpg-agent.c:1518 agent/gpg-agent.c:1522 g10/exec.c:172
-#: g10/openfile.c:429 scd/scdaemon.c:971
+#: g10/openfile.c:429 scd/scdaemon.c:973
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "no se puede crear el directorio `%s': %s\n"
 
-#: agent/gpg-agent.c:1367 scd/scdaemon.c:985
+#: agent/gpg-agent.c:1367 scd/scdaemon.c:987
 msgid "name of socket too long\n"
 msgstr "nombre de socket demasiado largo\n"
 
-#: agent/gpg-agent.c:1390 scd/scdaemon.c:1008
+#: agent/gpg-agent.c:1390 scd/scdaemon.c:1010
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "no se puede crear el socket: %s\n"
@@ -488,21 +488,21 @@ msgstr "el nombre de socket `%s' es demasiado largo\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "ya hay un agente gpg ejecutándose - no se inicia otro\n"
 
-#: agent/gpg-agent.c:1430 scd/scdaemon.c:1028
+#: agent/gpg-agent.c:1430 scd/scdaemon.c:1030
 msgid "error getting nonce for the socket\n"
 msgstr "error obteniendo valor único para el socket\n"
 
-#: agent/gpg-agent.c:1435 scd/scdaemon.c:1031
+#: agent/gpg-agent.c:1435 scd/scdaemon.c:1033
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "error enlazando el socket con `%s': %s\n"
 
-#: agent/gpg-agent.c:1447 scd/scdaemon.c:1040
+#: agent/gpg-agent.c:1447 scd/scdaemon.c:1042
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() falló: %s\n"
 
-#: agent/gpg-agent.c:1453 scd/scdaemon.c:1047
+#: agent/gpg-agent.c:1453 scd/scdaemon.c:1049
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "escuchando el socket `%s'\n"
@@ -522,7 +522,7 @@ msgstr "stat() falló para `%s': %s\n"
 msgid "can't use `%s' as home directory\n"
 msgstr "no puede usar `%s' como directorio personal\n"
 
-#: agent/gpg-agent.c:1668 scd/scdaemon.c:1063
+#: agent/gpg-agent.c:1668 scd/scdaemon.c:1065
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "error leyendo valor único en el descriptor %d: %s\n"
@@ -547,13 +547,13 @@ msgstr "manejador ssh 0x%lx para el descriptor %d iniciado\n"
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "manejador ssh 0x%lx para el descriptor %d finalizado\n"
 
-#: agent/gpg-agent.c:1860 scd/scdaemon.c:1200
+#: agent/gpg-agent.c:1860 scd/scdaemon.c:1202
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select falló: %s - espero 1s\n"
 
 # msgstr "clave %08lX: %d nuevas subclaves\n"
-#: agent/gpg-agent.c:1969 scd/scdaemon.c:1267
+#: agent/gpg-agent.c:1969 scd/scdaemon.c:1269
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s detenido\n"
@@ -1161,7 +1161,7 @@ msgstr "tarjeta OpenPGP no disponible: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "tarjeta OpenPGP num. %s detectada\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1506 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:75 g10/card-util.c:1512 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "imposible hacer esto en modo de proceso por lotes\n"
@@ -1174,7 +1174,7 @@ msgstr "Esta orden solo está disponible en tarjetas versión 2\n"
 msgid "Reset Code not or not anymore available\n"
 msgstr "No hay Código de Reinicio o ya no está disponible\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1236 g10/card-util.c:1315
+#: g10/card-util.c:122 g10/card-util.c:1242 g10/card-util.c:1321
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
@@ -1184,145 +1184,145 @@ msgstr "Su elección: "
 msgid "[not set]"
 msgstr "[no establecido]"
 
-#: g10/card-util.c:486
+#: g10/card-util.c:492
 msgid "male"
 msgstr "hombre"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 msgid "female"
 msgstr "mujer"
 
-#: g10/card-util.c:487
+#: g10/card-util.c:493
 msgid "unspecified"
 msgstr "no especificado"
 
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 msgid "not forced"
 msgstr "no forzado"
 
-#: g10/card-util.c:514
+#: g10/card-util.c:520
 msgid "forced"
 msgstr "forzado"
 
-#: g10/card-util.c:595
+#: g10/card-util.c:601
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Error: sólo se permite ASCII sin formato actualmente.\n"
 
-#: g10/card-util.c:597
+#: g10/card-util.c:603
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Error: El caracter \"<\" no puede usarse.\n"
 
-#: g10/card-util.c:599
+#: g10/card-util.c:605
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Error: no se permiten dobles espacios.\n"
 
-#: g10/card-util.c:616
+#: g10/card-util.c:622
 msgid "Cardholder's surname: "
 msgstr "Apellido del titular de la tarjeta: "
 
-#: g10/card-util.c:618
+#: g10/card-util.c:624
 msgid "Cardholder's given name: "
 msgstr "Nombre del titular de la tarjeta: "
 
-#: g10/card-util.c:636
+#: g10/card-util.c:642
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Error: nombre combinado demasiado largo (máximo %d caracteres).\n"
 
-#: g10/card-util.c:657
+#: g10/card-util.c:663
 msgid "URL to retrieve public key: "
 msgstr "URL de donde recuperar la clave pública: "
 
-#: g10/card-util.c:665
+#: g10/card-util.c:671
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Error: URL demasiado larga (el máximo son %d caracteres).\n"
 
-#: g10/card-util.c:761 tools/no-libgcrypt.c:30
+#: g10/card-util.c:767 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "error reservando memoria: %s\n"
 
-#: g10/card-util.c:773 g10/import.c:283
+#: g10/card-util.c:779 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "error leyendo `%s': %s\n"
 
-#: g10/card-util.c:800
+#: g10/card-util.c:806
 msgid "Login data (account name): "
 msgstr "Datos de login (nombre de la cuenta): "
 
-#: g10/card-util.c:810
+#: g10/card-util.c:816
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Error: el login es demasiado largo (límite de %d caracteres).\n"
 
-#: g10/card-util.c:845
+#: g10/card-util.c:851
 msgid "Private DO data: "
 msgstr "Datos privados: "
 
-#: g10/card-util.c:855
+#: g10/card-util.c:861
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 "Error: los datos privados son demasiado largos (límite de %d caracteres).\n"
 
-#: g10/card-util.c:905
+#: g10/card-util.c:911
 msgid "Language preferences: "
 msgstr "Preferencias de idioma: "
 
-#: g10/card-util.c:913
+#: g10/card-util.c:919
 msgid "Error: invalid length of preference string.\n"
 msgstr "Error: longitud de la cadena de preferencias inválida.\n"
 
-#: g10/card-util.c:922
+#: g10/card-util.c:928
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Error: caracteres inválidos en cadena de preferencias.\n"
 
-#: g10/card-util.c:943
+#: g10/card-util.c:949
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Sexo ((H)ombre, (M)mujer o espacio): "
 
-#: g10/card-util.c:957
+#: g10/card-util.c:963
 msgid "Error: invalid response.\n"
 msgstr "Error: respuesta no válida.\n"
 
-#: g10/card-util.c:978
+#: g10/card-util.c:984
 msgid "CA fingerprint: "
 msgstr "Huella dactilar CA:"
 
-#: g10/card-util.c:1001
+#: g10/card-util.c:1007
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Error: formato inválido de huella dactilar.\n"
 
-#: g10/card-util.c:1049
+#: g10/card-util.c:1055
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "la operación con la clave no es posible: %s\n"
 
-#: g10/card-util.c:1050
+#: g10/card-util.c:1056
 msgid "not an OpenPGP card"
 msgstr "no es una tarjeta OpenPGP"
 
-#: g10/card-util.c:1059
+#: g10/card-util.c:1065
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "error obteniendo la información actual de la clave: %s\n"
 
-#: g10/card-util.c:1143
+#: g10/card-util.c:1149
 msgid "Replace existing key? (y/N) "
 msgstr "¿Reemplazar la clave existente? (s/N) "
 
-#: g10/card-util.c:1163 g10/card-util.c:1172
+#: g10/card-util.c:1169 g10/card-util.c:1178
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "¿Hacer copia de seguridad externa a la tarjeta de clave de cifrado? (S/n)"
 
-#: g10/card-util.c:1184
+#: g10/card-util.c:1190
 msgid "Replace existing keys? (y/N) "
 msgstr "¿Reemplazar las claves existentes? (s/N) "
 
-#: g10/card-util.c:1193
+#: g10/card-util.c:1199
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1333,124 +1333,124 @@ msgstr ""
 "   PIN = `%s'     PIN Administrador = `%s'\n"
 "Debería cambiarlos usando la orden --change-pin\n"
 
-#: g10/card-util.c:1227
+#: g10/card-util.c:1233
 msgid "Please select the type of key to generate:\n"
 msgstr "Por favor seleccione tipo de clave que generar:\n"
 
-#: g10/card-util.c:1229 g10/card-util.c:1306
+#: g10/card-util.c:1235 g10/card-util.c:1312
 msgid "   (1) Signature key\n"
 msgstr "    (1) Clave de firmado\n"
 
-#: g10/card-util.c:1230 g10/card-util.c:1308
+#: g10/card-util.c:1236 g10/card-util.c:1314
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Clave de cifrado\n"
 
-#: g10/card-util.c:1231 g10/card-util.c:1310
+#: g10/card-util.c:1237 g10/card-util.c:1316
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Clave de autentificación\n"
 
-#: g10/card-util.c:1247 g10/card-util.c:1326 g10/keyedit.c:945
+#: g10/card-util.c:1253 g10/card-util.c:1332 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Elección inválida.\n"
 
-#: g10/card-util.c:1303
+#: g10/card-util.c:1309
 msgid "Please select where to store the key:\n"
 msgstr "Por favor elija donde guardar la clave:\n"
 
-#: g10/card-util.c:1338
+#: g10/card-util.c:1344
 msgid "unknown key protection algorithm\n"
 msgstr "algoritmo de protección de clave desconocido\n"
 
-#: g10/card-util.c:1343
+#: g10/card-util.c:1349
 msgid "secret parts of key are not available\n"
 msgstr "las partes secretas de la clave no están disponibles\n"
 
-#: g10/card-util.c:1348
+#: g10/card-util.c:1354
 msgid "secret key already stored on a card\n"
 msgstr "clave secreta ya almacenada en una tarjeta\n"
 
-#: g10/card-util.c:1417 g10/keyedit.c:1380
+#: g10/card-util.c:1423 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "sale de este menú"
 
-#: g10/card-util.c:1419
+#: g10/card-util.c:1425
 msgid "show admin commands"
 msgstr "ver órdenes de administrador"
 
-#: g10/card-util.c:1420 g10/keyedit.c:1383
+#: g10/card-util.c:1426 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "muestra esta ayuda"
 
-#: g10/card-util.c:1422
+#: g10/card-util.c:1428
 msgid "list all available data"
 msgstr "listar todos los datos disponibles"
 
-#: g10/card-util.c:1425
+#: g10/card-util.c:1431
 msgid "change card holder's name"
 msgstr "cambiar el nombre del titular de la tarjeta"
 
-#: g10/card-util.c:1426
+#: g10/card-util.c:1432
 msgid "change URL to retrieve key"
 msgstr "cambiar URL de donde obtener la clave"
 
-#: g10/card-util.c:1427
+#: g10/card-util.c:1433
 msgid "fetch the key specified in the card URL"
 msgstr "recuperar la clave especificada en la URL de la tarjeta"
 
-#: g10/card-util.c:1428
+#: g10/card-util.c:1434
 msgid "change the login name"
 msgstr "cambiar nombre de usuario"
 
-#: g10/card-util.c:1429
+#: g10/card-util.c:1435
 msgid "change the language preferences"
 msgstr "cambiar preferencias de idioma"
 
-#: g10/card-util.c:1430
+#: g10/card-util.c:1436
 msgid "change card holder's sex"
 msgstr "cambiar sexo del titular de la tarjeta"
 
-#: g10/card-util.c:1431
+#: g10/card-util.c:1437
 msgid "change a CA fingerprint"
 msgstr "cambiar huella dactilar de una CA"
 
-#: g10/card-util.c:1432
+#: g10/card-util.c:1438
 msgid "toggle the signature force PIN flag"
 msgstr "cambiar estado de la opción forzar firma del PIN"
 
-#: g10/card-util.c:1433
+#: g10/card-util.c:1439
 msgid "generate new keys"
 msgstr "generar nuevas claves"
 
-#: g10/card-util.c:1434
+#: g10/card-util.c:1440
 msgid "menu to change or unblock the PIN"
 msgstr "menú para cambiar o desbloquear el PIN"
 
-#: g10/card-util.c:1435
+#: g10/card-util.c:1441
 msgid "verify the PIN and list all data"
 msgstr "verificar PIN y listar todos los datos"
 
-#: g10/card-util.c:1436
+#: g10/card-util.c:1442
 msgid "unblock the PIN using a Reset Code"
 msgstr "desbloquear PIN usando Código de Reinicio"
 
-#: g10/card-util.c:1558 g10/keyedit.c:1654
+#: g10/card-util.c:1564 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Orden> "
 
-#: g10/card-util.c:1601
+#: g10/card-util.c:1607
 msgid "Admin-only command\n"
 msgstr "Órdenes sólo de administrador\n"
 
-#: g10/card-util.c:1632
+#: g10/card-util.c:1638
 msgid "Admin commands are allowed\n"
 msgstr "Se permiten órdenes de administrador\n"
 
-#: g10/card-util.c:1634
+#: g10/card-util.c:1640
 msgid "Admin commands are not allowed\n"
 msgstr "No se permiten órdenes de administrador\n"
 
-#: g10/card-util.c:1720 g10/keyedit.c:2277
+#: g10/card-util.c:1726 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Orden inválida (pruebe \"help\")\n"
 
@@ -6796,8 +6796,9 @@ msgstr "|N|desconectar la tarjeta después de N segundos de inactividad"
 msgid "do not use a reader's keypad"
 msgstr "no usa el teclado del lector"
 
-#: scd/scdaemon.c:140
-msgid "allow the use of admin card commands"
+#: scd/scdaemon.c:141
+#, fuzzy
+msgid "deny the use of admin card commands"
 msgstr "permitir órdenes de administrador en la tarjeta"
 
 #: scd/scdaemon.c:254
@@ -6812,16 +6813,16 @@ msgstr ""
 "Sintaxis: scdaemon [opciones] [orden [args]]\n"
 "Demonio de la tarjeta inteligente para GnuPG\n"
 
-#: scd/scdaemon.c:718
+#: scd/scdaemon.c:720
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr "use la opción `--daemon' para ejectuar el programa en segundo plano\n"
 
-#: scd/scdaemon.c:1072
+#: scd/scdaemon.c:1074
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr "manejador del descriptor %d iniciado\n"
 
-#: scd/scdaemon.c:1084
+#: scd/scdaemon.c:1086
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "manejador del descriptor %d terminado\n"

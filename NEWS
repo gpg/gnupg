@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.0.11 (unreleased)
 -------------------------------------------------
 
+ * [scdaemon] --allow-admin is now the default.
+
 
 Noteworthy changes in version 2.0.10 (2009-01-12)
 -------------------------------------------------
