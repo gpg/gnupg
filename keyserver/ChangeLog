@@ -1,3 +1,8 @@
+2009-02-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key, get_key, get_name, search_key, main):
+	Add support for SSLized HKP.
+
 2008-11-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.h, gpgkeys_curl.c, gpgkeys_hkp.c (main): Always show

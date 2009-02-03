@@ -1,6 +1,6 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,6 +54,7 @@ static FILE *input,*output,*console;
 static CURL *curl;
 static struct ks_options *opt;
 static char errorbuffer[CURL_ERROR_SIZE];
+static char *proto,*port;
 
 static size_t
 curl_mrindex_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
@@ -186,13 +187,10 @@ send_key(int *eof)
   strcpy(key,"keytext=");
   strcat(key,encoded_key);
 
-  strcpy(request,"http://");
+  strcpy(request,proto);
   strcat(request,opt->host);
   strcat(request,":");
-  if(opt->port)
-    strcat(request,opt->port);
-  else
-    strcat(request,"11371");
+  strcat(request,port);
   strcat(request,opt->path);
   /* request is MAX_URL+15 bytes long - MAX_URL covers the whole URL,
      including any supplied path.  The 15 covers /pks/add. */
@@ -253,13 +251,10 @@ get_key(char *getkey)
       return KEYSERVER_NOT_SUPPORTED;
     }
 
-  strcpy(request,"http://");
+  strcpy(request,proto);
   strcat(request,opt->host);
   strcat(request,":");
-  if(opt->port)
-    strcat(request,opt->port);
-  else
-    strcat(request,"11371");
+  strcat(request,port);
   strcat(request,opt->path);
   /* request is MAX_URL+55 bytes long - MAX_URL covers the whole URL,
      including any supplied path.  The 60 overcovers this /pks/... etc
@@ -334,13 +329,10 @@ get_name(const char *getkey)
 
   fprintf(output,"NAME %s BEGIN\n",getkey);
 
-  strcpy(request,"http://");
+  strcpy(request,proto);
   strcat(request,opt->host);
   strcat(request,":");
-  if(opt->port)
-    strcat(request,opt->port);
-  else
-    strcat(request,"11371");
+  strcat(request,port);
   strcat(request,opt->path);
   append_path(request,"/pks/lookup?op=get&options=mr&search=");
   strcat(request,searchkey_encoded);
@@ -420,13 +412,10 @@ search_key(const char *searchkey)
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
-  strcpy(request,"http://");
+  strcpy(request,proto);
   strcat(request,opt->host);
   strcat(request,":");
-  if(opt->port)
-    strcat(request,opt->port);
-  else
-    strcat(request,"11371");
+  strcat(request,port);
   strcat(request,opt->path);
   append_path(request,"/pks/lookup?op=index&options=mr&search=");
 
@@ -633,6 +622,28 @@ main(int argc,char *argv[])
 	}
     }
 
+
+  if(!opt->scheme)
+    {
+      fprintf(console,"gpgkeys: no scheme supplied!\n");
+      ret=KEYSERVER_SCHEME_NOT_FOUND;
+      goto fail;
+    }
+
+  if(ascii_strcasecmp(opt->scheme,"hkps")==0)
+    {
+      proto="https://";
+      port="11372";
+    }
+  else
+    {
+      proto="http://";
+      port="11371";
+    }
+
+  if(opt->port)
+    port=opt->port;
+
   if(!opt->host)
     {
       fprintf(console,"gpgkeys: no keyserver host provided\n");
@@ -665,6 +676,9 @@ main(int argc,char *argv[])
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
       curl_easy_setopt(curl,CURLOPT_VERBOSE,1L);
     }
+
+  curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
+  curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
 
   if(proxy)
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
