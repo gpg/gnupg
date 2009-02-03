@@ -1,3 +1,8 @@
+2009-02-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_typemap): gpgkeys_hkp handles hkps as
+	well.
+
 2008-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main): Properly handle UTF8 usernames with --sign-key and
