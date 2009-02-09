@@ -469,7 +469,7 @@ percent_plus_unescape (unsigned char *string)
 /* SERIALNO [APPTYPE] 
 
    Return the serial number of the card using a status reponse.  This
-   functon should be used to check for the presence of a card.
+   function should be used to check for the presence of a card.
 
    If APPTYPE is given, an application of that type is selected and an
    error is returned if the application is not supported or available.

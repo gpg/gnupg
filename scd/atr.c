@@ -278,7 +278,7 @@ atr_dump (int slot, FILE *fp)
 
 
 /* Note: This code has not yet been tested!  It shall return -1 on
-   error or the nu,ber of hiostroical bytes and store them at
+   error or the number of historical bytes and store them at
    HISTORICAL.  */
 int
 atr_get_historical (int slot, unsigned char historical[])
