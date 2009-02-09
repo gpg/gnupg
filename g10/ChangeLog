@@ -1,3 +1,8 @@
+2009-02-09  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (print_capabilities): Take care of cert-only keys.
+	Fixes bug#998.
+
 2009-02-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_typemap): gpgkeys_hkp handles hkps as
