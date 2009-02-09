@@ -594,6 +594,7 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
   if(pk || (sk && sk->protect.s2k.mode!=1001))
     {
       unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
+      int c_printed = 0;
     
       if ( use & PUBKEY_USAGE_ENC )
         putchar ('e');
@@ -602,8 +603,18 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 	{
 	  putchar ('s');
 	  if( pk? pk->is_primary : sk->is_primary )
-	    putchar ('c');
+            {
+              putchar ('c');
+              /* The PUBKEY_USAGE_CERT flag was introduced later and
+                 we used to always print 'c' for a primary key.  To
+                 avoid any regression here we better track whether we
+                 printed 'c' already.  */
+              c_printed = 1;
+            }
 	}
+
+      if ( (use & PUBKEY_USAGE_CERT) && !c_printed )
+        putchar ('c');
 
       if ( (use & PUBKEY_USAGE_AUTH) )
         putchar ('a');
@@ -630,6 +641,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 			if(pk->is_primary)
 			  cert = 1;
 		      }
+                    if ( pk->pubkey_usage & PUBKEY_USAGE_CERT )
+                      cert = 1;
                     if ( (pk->pubkey_usage & PUBKEY_USAGE_AUTH) )
                       auth = 1;
                 }
@@ -647,6 +660,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 			if(sk->is_primary)
 			  cert = 1;
 		      }
+                    if ( (sk->pubkey_usage & PUBKEY_USAGE_CERT) )
+                        cert = 1;
                     if ( (sk->pubkey_usage & PUBKEY_USAGE_AUTH) )
                         auth = 1;
                 }

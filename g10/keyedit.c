@@ -2522,6 +2522,17 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks ))
 	    putchar(get_ownertrust_info (pk));
           putchar(':');
+          putchar (':');
+          putchar (':');
+          /* Print capabilities.  */
+          if ( (pk->pubkey_usage & PUBKEY_USAGE_ENC) )
+            putchar ('e');
+          if ( (pk->pubkey_usage & PUBKEY_USAGE_SIG) )
+            putchar ('s');
+          if ( (pk->pubkey_usage & PUBKEY_USAGE_CERT) )
+            putchar ('c');
+          if ( (pk->pubkey_usage & PUBKEY_USAGE_AUTH) )
+            putchar ('a');
           putchar('\n');
           
           print_fingerprint (pk, NULL, 0);
