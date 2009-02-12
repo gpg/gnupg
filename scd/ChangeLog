@@ -1,3 +1,7 @@
+2009-02-12  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_getinfo): Add new subcommand "deny_admin".
+
 2009-01-28  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (main): Make --allow-admin the default and make the

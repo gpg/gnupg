@@ -1557,6 +1557,10 @@ cmd_unlock (assuan_context_t ctx, char *line)
 
    reader_list - Return a list of detected card readers.  Does
                  currently only work with the internal CCID driver.
+
+   deny_admin  - Returns OK if admin commands are not allowed or
+                 GPG_ERR_GENERAL if admin commands are allowed.
+
 */
 
 static int
@@ -1622,6 +1626,8 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         rc = gpg_error (GPG_ERR_NO_DATA);
       xfree (s);
     }
+  else if (!strcmp (line, "deny_admin"))
+    rc = opt.allow_admin? gpg_error (GPG_ERR_GENERAL) : 0;
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
   return rc;

@@ -5,9 +5,9 @@ Noteworthy changes in version 2.0.11 (unreleased)
 
  * SCDAEMON is now aware of the Geldkarte.
 
- * [gpgsm] The default cipher algorith is now again 3DES.  This is due
-   to interoperability problems with Outlook 2003 which still can't
-   cope with AES.
+ * The default cipher algorithm in GPGSM is now again 3DES.  This is
+   due to interoperability problems with Outlook 2003 which still
+   can't cope with AES.
 
 
 Noteworthy changes in version 2.0.10 (2009-01-12)

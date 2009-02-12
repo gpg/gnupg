@@ -48,7 +48,8 @@ Release process:
   * Update the webpages - at least the file swdb.wml needs an update.
   * Add a new headline to NEWS.
   * Bump "my_version" up and set "my_issvn" back to "yes" in configure.ac 
-  * Write an announcement.
+  * Write an announcement.  Update https://savannah.gnu.org/projects/gnupg .
+
 
 
 

@@ -69,7 +69,7 @@ gpg2keys_hkp_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
 	             $(other_libs) 
 else
 # Note that we need to include all other libs here as well because
-# some compilers don't care about inline fucntions and insert
+# some compilers don't care about inline functions and insert
 # references to symbols used in unused inline functions.
 gpg2keys_curl_CPPFLAGS = $(LIBCURL_CPPFLAGS) $(AM_CPPFLAGS)
 gpg2keys_curl_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(DNSLIBS) \
