@@ -1075,7 +1075,7 @@ start_connection_thread (void *arg)
               FD2INT(ctrl->thread_startup.fd));
 
   /* If this is a pipe server, we request a shutdown if the command
-     hanlder asked for it.  With the next ticker event and given that
+     handler asked for it.  With the next ticker event and given that
      no other connections are running the shutdown will then
      happen.  */
   if (scd_command_handler (ctrl, FD2INT(ctrl->thread_startup.fd))

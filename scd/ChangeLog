@@ -154,7 +154,6 @@
 
 2008-10-14  Werner Koch  <wk@g10code.com>
 
-
 	* apdu.c (reader_table_s): Add fields connect_card and
 	disconnect_card.
 	(new_reader_slot): Set them to NULL.

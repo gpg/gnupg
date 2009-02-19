@@ -42,7 +42,7 @@ SCRATCH="scratch.$$.tmp"
 MYTIME="20080508T120000"
 
 
-if [ "$GNUPGHOME" != "`pwd`" ]; then
+if [ "$GNUPGHOME" != "`/bin/pwd`" ]; then
     echo "inittests: please set GNUPGHOME to the tests/pkits directory" >&2
     exit 1
 fi

@@ -20,8 +20,8 @@
 
 GPGSM = ../../sm/gpgsm
 
-TESTS_ENVIRONMENT = GNUPGHOME=`pwd` GPG_AGENT_INFO= LC_ALL=C GPGSM=$(GPGSM) \
-		    silent=yes
+TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
+                    GPGSM=$(GPGSM) silent=yes
 
 
 testscripts = import-all-certs validate-all-certs \

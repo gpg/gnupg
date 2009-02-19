@@ -1326,6 +1326,18 @@ you could search in the mailing list archive.
     timestamp of the self-signature is increased by one second when
     running this command.
 
+<Q> How can I import all the missing signer keys?
+
+    If you imported a key and you want to also import all the signer's
+    keys, you can do this with this command:
+
+      gpg --check-sigs --with-colon KEYID \
+        | awk -F: '$1 == "sig" && $2 == "?"  { print $5 }' \
+        | sort | uniq | xargs echo gpg --recv-keys
+
+    Note that the invocation of sort is also required to wait for the
+    of the listing before before starting the import.
+
 
 <S> ACKNOWLEDGEMENTS
 
