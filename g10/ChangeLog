@@ -1,3 +1,8 @@
+2009-02-24  Werner Koch  <wk@g10code.com>
+
+	* pkglue.c (pk_verify): Return an error for improper DATA instead
+	of calling BUG().
+
 2009-02-09  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (print_capabilities): Take care of cert-only keys.

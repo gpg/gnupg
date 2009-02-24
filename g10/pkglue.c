@@ -134,13 +134,14 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
     return GPG_ERR_PUBKEY_ALGO;
 
   if (rc)
-    BUG ();
+    BUG ();  /* gcry_sexp_build should never fail.  */
 
   /* put hash into a S-Exp s_hash */
   if (gcry_sexp_build (&s_hash, NULL, "%m", hash))
-    BUG ();
+    BUG (); /* gcry_sexp_build should never fail.  */
 
-  /* put data into a S-Exp s_sig */
+  /* Put data into a S-Exp s_sig. */
+  s_sig = NULL;
   if (algo == GCRY_PK_DSA)
     {
       if (!data[0] || !data[1])
@@ -167,11 +168,9 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
   else
     BUG ();
 
-  if (rc)
-    BUG ();
+  if (!rc)
+    rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
 
-
-  rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
   gcry_sexp_release (s_pkey);
