@@ -1,3 +1,26 @@
+2009-02-24  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_get_atr): Move debug output to ..
+	(print_r2p_parameters): .. new.
+	(print_r2p_header, print_pr_data, print_r2p_unknown)
+	(print_r2p_datablock, print_r2p_slotstatus, print_r2p_escape) 
+	(print_r2p_datarate): New.
+	(bulk_in): Call parameter printing.
+	(ccid_set_debug_level): Add debug level 3.
+	(convert_le_u16): New.
+	(print_p2r_header, print_p2r_iccpoweron, print_p2r_iccpoweroff) 
+	(print_p2r_getslotstatus, print_p2r_xfrblock) 
+	(print_p2r_getparameters, print_p2r_resetparameters) 
+	(print_p2r_setparameters, print_p2r_escape, print_p2r_iccclock) 
+	(print_p2r_to0apdu, print_p2r_secure, print_p2r_mechanical) 
+	(print_p2r_abort, print_p2r_setdatarate, print_r2p_unknown): New.
+	(bulk_out): Add arg NO_DEBUG and change all callers to pass 0.
+	Call parameter printing.
+	(ccid_slot_status): Call with NO_DEBUG set.
+	(abort_cmd, send_escape_cmd, ccid_get_atr, ccid_get_atr) 
+	(ccid_transceive_apdu_level, ccid_transceive) 
+	(ccid_transceive_secure): Remove old debug print code.
+
 2009-02-12  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): Add new subcommand "deny_admin".

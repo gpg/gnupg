@@ -253,13 +253,15 @@ static int initialized_usb; /* Tracks whether USB has been initialized. */
 static int debug_level;     /* Flag to control the debug output. 
                                0 = No debugging
                                1 = USB I/O info
-                               2 = T=1 protocol tracing
+                               2 = Level 1 + T=1 protocol tracing
+                               3 = Level 2 + USB/I/O tracing of SlotStatus.
                               */
 
 
 static unsigned int compute_edc (const unsigned char *data, size_t datalen,
                                  int use_crc);
-static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
+static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
+                     int no_debug);
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
@@ -271,6 +273,15 @@ static unsigned int
 convert_le_u32 (const unsigned char *buf)
 {
   return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); 
+}
+
+
+/* Convert a little endian stored 2 byte value into an unsigned
+   integer. */
+static unsigned int 
+convert_le_u16 (const unsigned char *buf)
+{
+  return buf[0] | (buf[1] << 8); 
 }
 
 static void
@@ -328,7 +339,317 @@ print_command_failed (const unsigned char *msg)
     }
   DEBUGOUT_1 ("CCID command failed: %s\n", t);
 }
+
+
+static void
+print_pr_data (const unsigned char *data, size_t datalen, size_t off)
+{
+  int any = 0;
+
+  for (; off < datalen; off++)
+    {
+      if (!any || !(off % 16))
+        {
+          if (any)
+            DEBUGOUT_LF ();
+          DEBUGOUT_1 ("  [%04d] ", off);
+        }
+      DEBUGOUT_CONT_1 (" %02X", data[off]);
+      any = 1;
+    }
+  if (any && !(off % 16))
+    DEBUGOUT_LF ();
+}
+
+ 
+static void
+print_p2r_header (const char *name, const unsigned char *msg, size_t msglen)
+{
+  DEBUGOUT_1 ("%s:\n", name);
+  if (msglen < 7)
+    return;
+  DEBUGOUT_1 ("  dwLength ..........: %u\n", convert_le_u32 (msg+1));
+  DEBUGOUT_1 ("  bSlot .............: %u\n", msg[5]);
+  DEBUGOUT_1 ("  bSeq ..............: %u\n", msg[6]);
+}
+
+
+static void
+print_p2r_iccpoweron (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_IccPowerOn", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_2 ("  bPowerSelect ......: 0x%02x (%s)\n", msg[7],
+              msg[7] == 0? "auto":
+              msg[7] == 1? "5.0 V":
+              msg[7] == 2? "3.0 V":
+              msg[7] == 3? "1.8 V":"");
+  print_pr_data (msg, msglen, 8);
+}
+
+
+static void
+print_p2r_iccpoweroff (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_IccPowerOff", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_getslotstatus (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_GetSlotStatus", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_xfrblock (const unsigned char *msg, size_t msglen)
+{
+  unsigned int val;
+
+  print_p2r_header ("PC_to_RDR_XfrBlock", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bBWI ..............: 0x%02x\n", msg[7]);
+  val = convert_le_u16 (msg+8);
+  DEBUGOUT_2 ("  wLevelParameter ...: 0x%04x%s\n", val,
+              val == 1? " (continued)":
+              val == 2? " (continues+ends)":
+              val == 3? " (continues+continued)":
+              val == 16? " (DataBlock-expected)":"");
+  print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_p2r_getparameters (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_GetParameters", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_resetparameters (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_ResetParameters", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_setparameters (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_SetParameters", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bProtocolNum ......: 0x%02x\n", msg[7]);
+  print_pr_data (msg, msglen, 8);
+}
+
+
+static void
+print_p2r_escape (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_Escape", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_iccclock (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_IccClock", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bClockCommand .....: 0x%02x\n", msg[7]);
+  print_pr_data (msg, msglen, 8);
+}
+
+
+static void
+print_p2r_to0apdu (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_T0APDU", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bmChanges .........: 0x%02x\n", msg[7]);
+  DEBUGOUT_1 ("  bClassGetResponse .: 0x%02x\n", msg[8]);
+  DEBUGOUT_1 ("  bClassEnvelope ....: 0x%02x\n", msg[9]);
+  print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_p2r_secure (const unsigned char *msg, size_t msglen)
+{
+  unsigned int val;
+
+  print_p2r_header ("PC_to_RDR_Secure", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bBMI ..............: 0x%02x\n", msg[7]);
+  val = convert_le_u16 (msg+8);
+  DEBUGOUT_2 ("  wLevelParameter ...: 0x%04x%s\n", val,
+              val == 1? " (continued)":
+              val == 2? " (continues+ends)":
+              val == 3? " (continues+continued)":
+              val == 16? " (DataBlock-expected)":"");
+  print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_p2r_mechanical (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_Mechanical", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bFunction .........: 0x%02x\n", msg[7]);
+  print_pr_data (msg, msglen, 8);
+}
+
+
+static void
+print_p2r_abort (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_Abort", msg, msglen);
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_setdatarate (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("PC_to_RDR_SetDataRate", msg, msglen);
+  if (msglen < 10)
+    return;
+  print_pr_data (msg, msglen, 7);
+}
+
+
+static void
+print_p2r_unknown (const unsigned char *msg, size_t msglen)
+{
+  print_p2r_header ("Unknown PC_to_RDR command", msg, msglen);
+  if (msglen < 10)
+    return;
+  print_pr_data (msg, msglen, 0);
+}
+
+
+static void
+print_r2p_header (const char *name, const unsigned char *msg, size_t msglen)
+{
+  DEBUGOUT_1 ("%s:\n", name);
+  if (msglen < 9)
+    return;
+  DEBUGOUT_1 ("  dwLength ..........: %u\n", convert_le_u32 (msg+1));
+  DEBUGOUT_1 ("  bSlot .............: %u\n", msg[5]);
+  DEBUGOUT_1 ("  bSeq ..............: %u\n", msg[6]);
+  DEBUGOUT_1 ("  bStatus ...........: %u\n", msg[7]);
+  if (msg[8])
+    DEBUGOUT_1 ("  bError ............: %u\n", msg[8]);
+}
+
+
+static void
+print_r2p_datablock (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("RDR_to_PC_DataBlock", msg, msglen);
+  if (msglen < 10)
+    return;
+  if (msg[9])
+    DEBUGOUT_2 ("  bChainParameter ...: 0x%02x%s\n", msg[9],
+                msg[9] == 1? " (continued)":
+                msg[9] == 2? " (continues+ends)":
+                msg[9] == 3? " (continues+continued)":
+                msg[9] == 16? " (XferBlock-expected)":"");
+  print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_r2p_slotstatus (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("RDR_to_PC_SlotStatus", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_2 ("  bClockStatus ......: 0x%02x%s\n", msg[9],
+              msg[9] == 0? " (running)":
+              msg[9] == 1? " (stopped-L)":
+              msg[9] == 2? " (stopped-H)":
+              msg[9] == 3? " (stopped)":"");
+  print_pr_data (msg, msglen, 10);
+}
   
+
+static void
+print_r2p_parameters (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("RDR_to_PC_Parameters", msg, msglen);
+  if (msglen < 10)
+    return;
+
+  DEBUGOUT_1 ("  protocol ..........: T=%d\n", msg[9]);
+  if (msglen == 17 && msg[9] == 1)
+    {
+      /* Protocol T=1.  */
+      DEBUGOUT_1 ("  bmFindexDindex ....: %02X\n", msg[10]);
+      DEBUGOUT_1 ("  bmTCCKST1 .........: %02X\n", msg[11]);
+      DEBUGOUT_1 ("  bGuardTimeT1 ......: %02X\n", msg[12]);
+      DEBUGOUT_1 ("  bmWaitingIntegersT1: %02X\n", msg[13]);
+      DEBUGOUT_1 ("  bClockStop ........: %02X\n", msg[14]);
+      DEBUGOUT_1 ("  bIFSC .............: %d\n", msg[15]);
+      DEBUGOUT_1 ("  bNadValue .........: %d\n", msg[16]);
+    }
+  else
+    print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_r2p_escape (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("RDR_to_PC_Escape", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  buffer[9] .........: %02X\n", msg[9]);
+  print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_r2p_datarate (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("RDR_to_PC_DataRate", msg, msglen);
+  if (msglen < 10)
+    return;
+  if (msglen >= 18)
+    {
+      DEBUGOUT_1 ("  dwClockFrequency ..: %u\n", convert_le_u32 (msg+10));
+      DEBUGOUT_1 ("  dwDataRate ..... ..: %u\n", convert_le_u32 (msg+14));
+      print_pr_data (msg, msglen, 18);
+    }
+  else
+    print_pr_data (msg, msglen, 10);
+}
+
+
+static void
+print_r2p_unknown (const unsigned char *msg, size_t msglen)
+{
+  print_r2p_header ("Unknown RDR_to_PC command", msg, msglen);
+  if (msglen < 10)
+    return;
+  DEBUGOUT_1 ("  bMessageType ......: %02X\n", msg[0]);
+  DEBUGOUT_1 ("  buffer[9] .........: %02X\n", msg[9]);
+  print_pr_data (msg, msglen, 10);
+}
+
 
 /* Given a handle used for special transport prepare it for use.  In
    particular setup all information in way that resembles what
@@ -1071,7 +1392,8 @@ scan_or_find_devices (int readerno, const char *readerid,
 /* Set the level of debugging to LEVEL and return the old level.  -1
    just returns the old level.  A level of 0 disables debugging, 1
    enables debugging, 2 enables additional tracing of the T=1
-   protocol, other values are not yet defined.
+   protocol, 3 additionally enables debuggng for GetSlotStatus, other
+   values are not yet defined.
 
    Note that libusb may provide its own debugging feature which is
    enabled by setting the envvar USB_DEBUG.  */
@@ -1247,7 +1569,7 @@ do_close_reader (ccid_driver_t handle)
       set_msg_len (msg, 0);
       msglen = 10;
       
-      rc = bulk_out (handle, msg, msglen);
+      rc = bulk_out (handle, msg, msglen, 0);
       if (!rc)
         bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
                  seqno, 2000, 0);
@@ -1391,10 +1713,63 @@ writen (int fd, const void *buf, size_t nbytes)
 /* Write a MSG of length MSGLEN to the designated bulk out endpoint.
    Returns 0 on success. */
 static int
-bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
+bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
+          int no_debug)
 {
   int rc;
 
+  if (debug_level && (!no_debug || debug_level >= 3))
+    {
+      switch (msglen? msg[0]:0)
+        {
+        case PC_to_RDR_IccPowerOn:
+          print_p2r_iccpoweron (msg, msglen);
+          break;
+        case PC_to_RDR_IccPowerOff:
+          print_p2r_iccpoweroff (msg, msglen);
+          break;
+	case PC_to_RDR_GetSlotStatus:
+          print_p2r_getslotstatus (msg, msglen);
+          break;
+        case PC_to_RDR_XfrBlock:
+          print_p2r_xfrblock (msg, msglen);
+          break;
+	case PC_to_RDR_GetParameters:
+          print_p2r_getparameters (msg, msglen);
+          break;
+        case PC_to_RDR_ResetParameters:
+          print_p2r_resetparameters (msg, msglen);
+          break;
+	case PC_to_RDR_SetParameters:
+          print_p2r_setparameters (msg, msglen);
+          break;
+        case PC_to_RDR_Escape:
+          print_p2r_escape (msg, msglen);
+          break;
+        case PC_to_RDR_IccClock:
+          print_p2r_iccclock (msg, msglen);
+          break;
+	case PC_to_RDR_T0APDU:
+          print_p2r_to0apdu (msg, msglen);
+          break;
+        case PC_to_RDR_Secure:
+          print_p2r_secure (msg, msglen);
+          break;
+        case PC_to_RDR_Mechanical:
+          print_p2r_mechanical (msg, msglen);
+          break;
+        case PC_to_RDR_Abort:
+          print_p2r_abort (msg, msglen);
+          break;
+        case PC_to_RDR_SetDataRate:
+          print_p2r_setdatarate (msg, msglen);
+          break;
+        default:
+          print_p2r_unknown (msg, msglen);
+          break;
+        }
+    }
+  
   if (handle->idev)
     {
       rc = usb_bulk_write (handle->idev, 
@@ -1426,13 +1801,14 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen)
    is the sequence number used to send the request and EXPECTED_TYPE
    the type of message we expect. Does checks on the ccid
    header. TIMEOUT is the timeout value in ms. NO_DEBUG may be set to
-   avoid debug messages in case of no error. Returns 0 on success. */
+   avoid debug messages in case of no error; this can be overriden
+   with a glibal debug level of at least 3. Returns 0 on success. */
 static int
 bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
          size_t *nread, int expected_type, int seqno, int timeout,
          int no_debug)
 {
-  int i, rc;
+  int rc;
   size_t msglen;
 
   /* Fixme: The next line for the current Valgrind without support
@@ -1486,7 +1862,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     }
 
   /* We need to handle the time extension request before we check that
-     we go the expected message type.  This is in particular required
+     we got the expected message type.  This is in particular required
      for the Cherry keyboard which sends a time extension request for
      each key hit.  */
   if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
@@ -1505,13 +1881,29 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     }
 
 
-  if (!no_debug)
+  if (debug_level && (!no_debug || debug_level >= 3))
     {
-      DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n"
-                  "               data:",  buffer[7], buffer[8], buffer[9] );
-      for (i=10; i < msglen; i++)
-        DEBUGOUT_CONT_1 (" %02X", buffer[i]);
-      DEBUGOUT_LF ();
+      switch (buffer[0])
+        {
+        case RDR_to_PC_DataBlock:
+          print_r2p_datablock (buffer, msglen);
+          break;
+        case RDR_to_PC_SlotStatus:
+          print_r2p_slotstatus (buffer, msglen);
+          break;
+        case RDR_to_PC_Parameters:
+          print_r2p_parameters (buffer, msglen);
+          break;
+        case RDR_to_PC_Escape:
+          print_r2p_escape (buffer, msglen);
+          break;
+        case RDR_to_PC_DataRate:
+          print_r2p_datarate (buffer, msglen);
+          break;
+        default:
+          print_r2p_unknown (buffer, msglen);
+          break;
+        }
     }
   if (CCID_COMMAND_FAILED (buffer))
     print_command_failed (buffer);
@@ -1540,7 +1932,6 @@ abort_cmd (ccid_driver_t handle)
   unsigned char seqno;
   unsigned char msg[100];
   size_t msglen;
-  int i;
 
   if (!handle->idev)
     {
@@ -1579,10 +1970,6 @@ abort_cmd (ccid_driver_t handle)
   set_msg_len (msg, 0);
   handle->seqno++;  /* Bumb up for the next use. */
 
-  DEBUGOUT ("sending");
-  for (i=0; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", msg[i]);
-  DEBUGOUT_LF ();
   rc = usb_bulk_write (handle->idev, 
                        handle->ep_bulk_out,
                        (char*)msg, msglen,
@@ -1647,7 +2034,7 @@ send_escape_cmd (ccid_driver_t handle,
                  const unsigned char *data, size_t datalen,
                  unsigned char *result, size_t resultmax, size_t *resultlen)
 {
-  int i, rc;
+  int rc;
   unsigned char msg[100];
   size_t msglen;
   unsigned char seqno;
@@ -1668,11 +2055,7 @@ send_escape_cmd (ccid_driver_t handle,
   msglen = 10 + datalen;
   set_msg_len (msg, datalen);
 
-  DEBUGOUT ("sending");
-  for (i=0; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", msg[i]);
-  DEBUGOUT_LF ();
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Escape,
@@ -1793,7 +2176,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
   msg[9] = 0; /* RFU */
   set_msg_len (msg, 0);
 
-  rc = bulk_out (handle, msg, 10);
+  rc = bulk_out (handle, msg, 10, 1);
   if (rc)
     return rc;
   /* Note that we set the NO_DEBUG flag here, so that the logs won't
@@ -1837,7 +2220,6 @@ ccid_get_atr (ccid_driver_t handle,
   unsigned char seqno;
   int use_crc = 0;
   unsigned int edc;
-  int i;
   int tried_iso = 0;
   int got_param;
 
@@ -1860,7 +2242,7 @@ ccid_get_atr (ccid_driver_t handle,
   set_msg_len (msg, 0);
   msglen = 10;
 
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock,
@@ -1905,34 +2287,14 @@ ccid_get_atr (ccid_driver_t handle,
   msg[9] = 0; /* RFU */
   set_msg_len (msg, 0);
   msglen = 10;
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (!rc)
     rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
                   seqno, 2000, 0);
   if (rc)
     DEBUGOUT ("GetParameters failed\n");
-  else
-    {
-      DEBUGOUT ("GetParametes returned");
-      for (i=0; i < msglen; i++)
-        DEBUGOUT_CONT_1 (" %02X", msg[i]);
-      DEBUGOUT_LF ();
-      if (msglen >= 10)
-        {
-          DEBUGOUT_1 ("  protocol ..........: T=%d\n", msg[9]);
-          if (msglen == 17 && msg[9] == 1)
-            {
-              DEBUGOUT_1 ("  bmFindexDindex ....: %02X\n", msg[10]);
-              DEBUGOUT_1 ("  bmTCCKST1 .........: %02X\n", msg[11]);
-              DEBUGOUT_1 ("  bGuardTimeT1 ......: %02X\n", msg[12]);
-              DEBUGOUT_1 ("  bmWaitingIntegersT1: %02X\n", msg[13]);
-              DEBUGOUT_1 ("  bClockStop ........: %02X\n", msg[14]);
-              DEBUGOUT_1 ("  bIFSC .............: %d\n", msg[15]);
-              DEBUGOUT_1 ("  bNadValue .........: %d\n", msg[16]);
-              got_param = 1;
-            }
-        }
-    }
+  else if (msglen == 17 && msg[9] == 1)
+    got_param = 1;
 
   /* Setup parameters to select T=1. */
   msg[0] = PC_to_RDR_SetParameters;
@@ -1956,12 +2318,7 @@ ccid_get_atr (ccid_driver_t handle,
   set_msg_len (msg, 7);
   msglen = 10 + 7;
 
-  DEBUGOUT ("sending");
-  for (i=0; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", msg[i]);
-  DEBUGOUT_LF ();
-
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (rc)
     return rc;
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
@@ -1996,11 +2353,6 @@ ccid_get_atr (ccid_driver_t handle,
       set_msg_len (msg, tpdulen);
       msglen = 10 + tpdulen;
 
-      DEBUGOUT ("sending");
-      for (i=0; i < msglen; i++)
-        DEBUGOUT_CONT_1 (" %02X", msg[i]);
-      DEBUGOUT_LF ();
-
       if (debug_level > 1)
         DEBUGOUT_3 ("T=1: put %c-block seq=%d%s\n",
                       ((msg[11] & 0xc0) == 0x80)? 'R' :
@@ -2009,7 +2361,7 @@ ccid_get_atr (ccid_driver_t handle,
                                        : !!(msg[11] & 0x40)),
                     (!(msg[11] & 0x80) && (msg[11] & 0x20)? " [more]":""));
 
-      rc = bulk_out (handle, msg, msglen);
+      rc = bulk_out (handle, msg, msglen, 0);
       if (rc)
         return rc;
 
@@ -2080,7 +2432,6 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   unsigned char *msg;
   size_t msglen;
   unsigned char seqno;
-  int i;
 
   msg = send_buffer;
 
@@ -2090,7 +2441,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
 
   /* The maximum length for a short APDU T=1 block is 261.  For an
      extended APDU T=1 block the maximum length 65544; however
-     extended APDU exchange levele is not yet supported.  */
+     extended APDU exchange level is not yet supported.  */
   if (apdulen > 261)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
@@ -2104,12 +2455,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   set_msg_len (msg, apdulen);
   msglen = 10 + apdulen;
 
-  DEBUGOUT ("sending");
-  for (i=0; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", msg[i]);
-  DEBUGOUT_LF ();
-  
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (rc)
     return rc;
 
@@ -2205,7 +2551,6 @@ ccid_transceive (ccid_driver_t handle,
   unsigned char *msg, *tpdu, *p;
   size_t msglen, tpdulen, last_tpdulen, n;
   unsigned char seqno;
-  int i;
   unsigned int edc;
   int use_crc = 0;
   size_t dummy_nresp;
@@ -2274,11 +2619,6 @@ ccid_transceive (ccid_driver_t handle,
       msglen = 10 + tpdulen;
       last_tpdulen = tpdulen;
 
-      DEBUGOUT ("sending");
-      for (i=0; i < msglen; i++)
-        DEBUGOUT_CONT_1 (" %02X", msg[i]);
-      DEBUGOUT_LF ();
-
       if (debug_level > 1)
           DEBUGOUT_3 ("T=1: put %c-block seq=%d%s\n",
                       ((msg[11] & 0xc0) == 0x80)? 'R' :
@@ -2287,7 +2627,7 @@ ccid_transceive (ccid_driver_t handle,
                                        : !!(msg[11] & 0x40)),
                       (!(msg[11] & 0x80) && (msg[11] & 0x20)? " [more]":""));
 
-      rc = bulk_out (handle, msg, msglen);
+      rc = bulk_out (handle, msg, msglen, 0);
       if (rc)
         return rc;
 
@@ -2464,7 +2804,6 @@ ccid_transceive_secure (ccid_driver_t handle,
   unsigned char *msg, *tpdu, *p;
   size_t msglen, tpdulen, n;
   unsigned char seqno;
-  int i;
   size_t dummy_nresp;
   int testmode;
   int cherry_mode = 0;
@@ -2585,12 +2924,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   /* An EDC is not required. */
   set_msg_len (msg, msglen - 10);
 
-  DEBUGOUT ("sending");
-  for (i=0; i < msglen; i++)
-    DEBUGOUT_CONT_1 (" %02X", msg[i]);
-  DEBUGOUT_LF ();
-  
-  rc = bulk_out (handle, msg, msglen);
+  rc = bulk_out (handle, msg, msglen, 0);
   if (rc)
     return rc;
   
@@ -2732,6 +3066,7 @@ print_error (int err)
     }
   fprintf (stderr, "operation failed: %s\n", p);
 }
+
 
 static void
 print_data (const unsigned char *data, size_t length)
