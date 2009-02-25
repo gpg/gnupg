@@ -1,3 +1,13 @@
+2009-02-25  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (apdu_get_status): Factor all code out to ...
+	(apdu_private_get_status): .. new.  Add arg NO_ATR_RESET.
+	(apdu_connect): Call new function.
+
+	* scdaemon.c: New option --debug-log-tid.
+	(tid_log_callback): New.
+	(main): Move debug-wait code after debug stream init.
+
 2009-02-24  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (ccid_get_atr): Move debug output to ..

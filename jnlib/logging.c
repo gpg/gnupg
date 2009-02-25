@@ -1,6 +1,6 @@
 /* logging.c - Useful logging functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005, 2006 Free Software Foundation, Inc.
+ *               2004, 2005, 2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -61,6 +61,7 @@ static char prefix_buffer[80];
 static int with_time;
 static int with_prefix;
 static int with_pid;
+static unsigned long (*get_tid_callback)(void);
 static int running_detached;
 static int force_prefixes;
 
@@ -366,6 +367,13 @@ log_set_fd (int fd)
 
 
 void
+log_set_get_tid_callback (unsigned long (*cb)(void))
+{
+  get_tid_callback = cb;
+}
+
+
+void
 log_set_prefix (const char *text, unsigned int flags)
 {
   if (text)
@@ -460,7 +468,13 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
       if (with_prefix || force_prefixes)
         fputs (prefix_buffer, logstream);
       if (with_pid || force_prefixes)
-        fprintf (logstream, "[%u]", (unsigned int)getpid ());
+        {
+          if (get_tid_callback)
+            fprintf (logstream, "[%u.%lx]", 
+                     (unsigned int)getpid (), get_tid_callback ());
+          else
+            fprintf (logstream, "[%u]", (unsigned int)getpid ());
+        }
       if (!with_time || force_prefixes)
         putc (':', logstream);
       /* A leading backspace suppresses the extra space so that we can

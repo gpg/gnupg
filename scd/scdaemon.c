@@ -1,6 +1,6 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
  * Copyright (C) 2001, 2002, 2004, 2005, 
- *               2007, 2008 Free Software Foundation, Inc.
+ *               2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -69,6 +69,7 @@ enum cmd_and_opt_values
   oDebugWait,
   oDebugAllowCoreDump,
   oDebugCCIDDriver,
+  oDebugLogTid,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -117,6 +118,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
   ARGPARSE_s_n (oDebugDisableTicker, "debug-disable-ticker", "@"),
+  ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
   ARGPARSE_s_s (oReaderPort, "reader-port", 
@@ -260,6 +262,17 @@ my_strusage (int level)
     default: p = NULL;
     }
   return p;
+}
+
+
+static unsigned long
+tid_log_callback (void)
+{
+#ifdef PTH_HAVE_PTH_THREAD_ID
+  return pth_thread_id ();
+#else
+  return (unsigned long)pth_self ();
+#endif
 }
 
 
@@ -505,6 +518,9 @@ main (int argc, char **argv )
 #endif /*HAVE_LIBUSB*/
           break;
         case oDebugDisableTicker: ticker_disabled = 1; break;
+        case oDebugLogTid: 
+          log_set_get_tid_callback (tid_log_callback);
+          break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */
@@ -586,14 +602,6 @@ main (int argc, char **argv )
 
   set_debug (debug_level);
 
-  if (debug_wait && pipe_server)
-    {
-      log_debug ("waiting for debugger - my pid is %u .....\n",
-                 (unsigned int)getpid());
-      gnupg_sleep (debug_wait);
-      log_debug ("... okay\n");
-    }
-  
   initialize_module_command ();
 
   if (gpgconf_list == 2)
@@ -638,13 +646,21 @@ main (int argc, char **argv )
       scd_exit (0);
     }
 
-  /* now start with logging to a file if this is desired */
+  /* Now start with logging to a file if this is desired.  */
   if (logfile)
     {
       log_set_file (logfile);
       log_set_prefix (NULL, 1|2|4);
     }
 
+  if (debug_wait && pipe_server)
+    {
+      log_debug ("waiting for debugger - my pid is %u .....\n",
+                 (unsigned int)getpid());
+      gnupg_sleep (debug_wait);
+      log_debug ("... okay\n");
+    }
+  
   if (pipe_server)
     { 
       /* This is the simple pipe based server */

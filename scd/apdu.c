@@ -1,5 +1,5 @@
 /* apdu.c - ISO 7816 APDU functions and low level I/O
- * Copyright (C) 2003, 2004, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -295,6 +295,9 @@ long (* DLSTDCALL pcsc_set_timeout) (unsigned long context,
 /*  Prototypes.  */
 static int pcsc_get_status (int slot, unsigned int *status);
 static int reset_pcsc_reader (int slot);
+static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
+                                     unsigned int *status,
+                                     unsigned int *changed);
 
 
 
@@ -2565,8 +2568,17 @@ apdu_connect (int slot)
     }
   else
     sw = 0;
+  
+  /* We need to call apdu_get_status_internal, so that the last-status
+     machinery gets setup properly even if a card is inserted while
+     scdaemon is fired up and apdu_get_status has not yet been called.
+     Without that we would force a reset of the card with the next
+     call to apdu_get_status.  */
+  apdu_get_status_internal (slot, 1, 1, NULL, NULL);
+
   return sw;
 }
+
 
 int
 apdu_disconnect (int slot)
@@ -2706,9 +2718,9 @@ apdu_get_atr (int slot, size_t *atrlen)
    of card insertions.  This value may be used to detect a card
    change.
 */
-int
-apdu_get_status (int slot, int hang,
-                 unsigned int *status, unsigned int *changed)
+static int
+apdu_get_status_internal (int slot, int hang, int no_atr_reset,
+                          unsigned int *status, unsigned int *changed)
 {
   int sw;
   unsigned int s;
@@ -2736,8 +2748,9 @@ apdu_get_status (int slot, int hang,
     {
       reader_table[slot].change_counter++;
       /* Make sure that the ATR is invalid so that a reset will be
-         triggered by activate.  */
-      reader_table[slot].atrlen = 0;
+         triggered by apdu_activate.  */
+      if (!no_atr_reset)
+        reader_table[slot].atrlen = 0;
     }
   reader_table[slot].any_status = 1;
   reader_table[slot].last_status = s;
@@ -2747,6 +2760,15 @@ apdu_get_status (int slot, int hang,
   if (changed)
     *changed = reader_table[slot].change_counter;
   return 0;
+}
+
+
+/* See above for a description.  */
+int
+apdu_get_status (int slot, int hang,
+                 unsigned int *status, unsigned int *changed)
+{
+  return apdu_get_status_internal (slot, hang, 0, status, changed);
 }
 
 

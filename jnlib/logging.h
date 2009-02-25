@@ -33,6 +33,7 @@ int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);
 void log_set_file( const char *name );
 void log_set_fd (int fd);
+void log_set_get_tid_callback (unsigned long (*cb)(void));
 void log_set_prefix (const char *text, unsigned int flags);
 const char *log_get_prefix (unsigned int *flags);
 int log_test_fd (int fd);

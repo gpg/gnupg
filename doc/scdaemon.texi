@@ -205,6 +205,10 @@ aborts.  For debugging purposes it is sometimes better to allow core
 dump.  This options enables it and also changes the working directory to
 @file{/tmp} when running in @option{--server} mode.
 
+@item --debug-log-tid
+@opindex debug-log-tid
+This option appends a thread ID to the PID in the log output.
+
 
 @item --no-detach
 @opindex no-detach

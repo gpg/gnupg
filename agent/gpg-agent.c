@@ -2065,7 +2065,7 @@ check_own_socket (void)
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "check-owb-socket");
+  pth_attr_set (tattr, PTH_ATTR_NAME, "check-own-socket");
 
   if (!pth_spawn (tattr, check_own_socket_thread, sockname))
       log_error ("error spawning check_own_socket_thread: %s\n",

@@ -357,7 +357,7 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
       DEBUGOUT_CONT_1 (" %02X", data[off]);
       any = 1;
     }
-  if (any && !(off % 16))
+  if (any && (off % 16))
     DEBUGOUT_LF ();
 }
 
