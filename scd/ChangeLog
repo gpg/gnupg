@@ -1,3 +1,12 @@
+2009-02-27  Werner Koch  <wk@g10code.com>
+
+	* app.c (get_supported_applications): New.
+	* command.c (cmd_getinfo): New subcommand "app_list"
+	(cmd_killscd): New.
+	(register_commands): Register command KILLSCD.
+	(struct server_local_s): Add field STOPME.
+	(scd_command_handler): Act upon this.
+
 2009-02-25  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (apdu_get_status): Factor all code out to ...

@@ -104,7 +104,8 @@ gc_error (int status, int errnum, const char *fmt, ...)
 
 
 /* Forward declaration.  */
-void gpg_agent_runtime_change (void);
+static void gpg_agent_runtime_change (void);
+static void scdaemon_runtime_change (void);
 
 /* Backend configuration.  Backends are used to decide how the default
    and current value of an option can be determined, and how the
@@ -181,7 +182,7 @@ static struct
     { "GPG Agent", "gpg-agent", GNUPG_MODULE_NAME_AGENT, 
       gpg_agent_runtime_change, "gpgconf-gpg-agent.conf" },
     { "SCDaemon", "scdaemon", GNUPG_MODULE_NAME_SCDAEMON,
-      NULL, "gpgconf-scdaemon.conf" },
+      scdaemon_runtime_change, "gpgconf-scdaemon.conf" },
     { "DirMngr", "dirmngr", GNUPG_MODULE_NAME_DIRMNGR,
       NULL, "gpgconf-dirmngr.conf" },
     { "DirMngr LDAP Server List", NULL, 0, 
@@ -574,7 +575,7 @@ static gc_option_t gc_options_scdaemon[] =
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the diagnostic output") },
-   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+   { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
    { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
@@ -590,39 +591,39 @@ static gc_option_t gc_options_scdaemon[] =
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
-   { "reader-port", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "reader-port", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "|N|connect to reader at port N",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
-   { "ctapi-driver", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "ctapi-driver", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|NAME|use NAME as ct-API driver",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
-   { "pcsc-driver", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "pcsc-driver", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|NAME|use NAME as PC/SC driver",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
-   { "disable-ccid", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+   { "disable-ccid", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_EXPERT,
      "gnupg", "do not use the internal CCID driver",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
-   { "disable-keypad", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "disable-keypad", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "do not use a reader's keypad",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
-   { "card-timeout", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "card-timeout", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "|N|disconnect the card after N seconds of inactivity",
      GC_ARG_TYPE_UINT32, GC_BACKEND_SCDAEMON },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
      "gnupg", N_("Options useful for debugging") },
-   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+   { "debug-level", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
-   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+   { "log-file", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", N_("|FILE|write a log to FILE"),
      GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
 
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the security") },
-   { "deny-admin", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "deny-admin", GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "deny the use of admin card commands",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
 
@@ -994,7 +995,7 @@ struct error_line_s
 
 
 /* Engine specific support.  */
-void
+static void
 gpg_agent_runtime_change (void)
 {
 #ifndef HAVE_W32_SYSTEM
@@ -1042,6 +1043,27 @@ gpg_agent_runtime_change (void)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " reloadagent", gpg_strerror (err));
 #endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+static void
+scdaemon_runtime_change (void)
+{
+  gpg_error_t err;
+  const char *pgmname;
+  const char *argv[2];
+  pid_t pid;
+  
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
+  argv[0] = "scd killscd";
+  argv[1] = NULL;
+  
+  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  if (!err)
+    err = gnupg_wait_process (pgmname, pid, NULL);
+  if (err)
+    gc_error (0, 0, "error running `%s%s': %s",
+              pgmname, " scd killscd", gpg_strerror (err));
 }
 
 

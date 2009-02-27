@@ -1,3 +1,8 @@
+2009-02-27  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_scd_pksign, agent_scd_pkdecrypt): First send
+	the SERIALNO command.
+
 2009-02-24  Werner Koch  <wk@g10code.com>
 
 	* pkglue.c (pk_verify): Return an error for improper DATA instead

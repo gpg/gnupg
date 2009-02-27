@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-# include <pth.h>
+#include <pth.h>
 
 #include "scdaemon.h"
 #include "app-common.h"
@@ -373,11 +373,42 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     }
 
   app->ref_count = 1;
-  log_debug ("USING application context (refcount=%u) (new)\n", app->ref_count);
+
   lock_table[slot].app = app;
   *r_app = app;
   unlock_reader (slot);
   return 0;
+}
+
+
+char *
+get_supported_applications (void)
+{
+  const char *list[] = {
+    "openpgp",
+    "nks",
+    "p15",
+    "dinsig",
+    "geldkarte",
+    NULL
+  };
+  int idx;
+  size_t nbytes;
+  char *buffer, *p;
+  
+  for (nbytes=1, idx=0; list[idx]; idx++)
+    nbytes += strlen (list[idx]) + 1 + 1;
+  
+  buffer = xtrymalloc (nbytes);
+  if (!buffer)
+    return NULL;
+
+  for (p=buffer, idx=0; list[idx]; idx++)
+    if (is_app_allowed (list[idx]))
+      p = stpcpy (stpcpy (p, list[idx]), ":\n");
+  *p = 0;
+
+  return buffer;
 }
 
 

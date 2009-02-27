@@ -114,6 +114,11 @@ struct server_local_s
 
   /* A disconnect command has been sent.  */
   int disconnect_allowed;
+
+  /* If set to true we will be terminate ourself at the end of the
+     this session.  */
+  int stopme;  
+
 };
 
 
@@ -1561,6 +1566,9 @@ cmd_unlock (assuan_context_t ctx, char *line)
    deny_admin  - Returns OK if admin commands are not allowed or
                  GPG_ERR_GENERAL if admin commands are allowed.
 
+   app_list    - Return a list of supported applciations.  One
+                 application per line, fields delimited by colons,
+                 first field is the name.
 */
 
 static int
@@ -1628,6 +1636,15 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "deny_admin"))
     rc = opt.allow_admin? gpg_error (GPG_ERR_GENERAL) : 0;
+  else if (!strcmp (line, "app_list"))
+    {
+      char *s = get_supported_applications ();
+      if (s)
+        rc = assuan_send_data (ctx, s, strlen (s));
+      else
+        rc = 0;
+      xfree (s);
+    }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
   return rc;
@@ -1767,6 +1784,17 @@ cmd_apdu (assuan_context_t ctx, char *line)
 }
 
 
+/* KILLSCD - Commit suicide. */
+static int
+cmd_killscd (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
+
+  ctrl->server_local->stopme = 1;
+  return gpg_error (GPG_ERR_EOF);
+}
 
 
 
@@ -1802,6 +1830,7 @@ register_commands (assuan_context_t ctx)
     { "RESTART",      cmd_restart },
     { "DISCONNECT",   cmd_disconnect },
     { "APDU",         cmd_apdu },
+    { "KILLSCD",      cmd_killscd },
     { NULL }
   };
   int i, rc;
@@ -1918,6 +1947,9 @@ scd_command_handler (ctrl_t ctrl, int fd)
 
   /* Release the Assuan context.  */
   assuan_deinit_server (ctx);
+
+  if (ctrl->server_local->stopme)
+    scd_exit (0);
 
   /* If there are no more sessions return true.  */
   return !session_list;

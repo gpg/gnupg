@@ -698,6 +698,15 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (indatalen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
 
+  /* Send the serialno command to initialize the connection. We don't
+     care about the data returned.  If the card has already been
+     initialized, this is a very fast command.  We request the openpgp
+     card because that is waht we expect. */
+  rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                        NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return rc;
+
   sprintf (line, "SCD SETDATA ");
   p = line + strlen (line);
   for (i=0; i < indatalen ; i++, p += 2 )
@@ -753,6 +762,15 @@ agent_scd_pkdecrypt (const char *serialno,
   /* FIXME: use secure memory where appropriate */
   if (indatalen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
+
+  /* Send the serialno command to initialize the connection. We don't
+     care about the data returned.  If the card has already been
+     initialized, this is a very fast command.  We request the openpgp
+     card because that is waht we expect. */
+  rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                        NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return rc;
 
   sprintf (line, "SCD SETDATA ");
   p = line + strlen (line);

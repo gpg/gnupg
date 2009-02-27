@@ -1,3 +1,10 @@
+2009-02-27  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gpg_agent_runtime_change): Declare static.
+	(scdaemon_runtime_change): New.
+	(gc_backend_scdaemon): Register new function.
+	(gc_options_scdaemon): Make most options runtime changable.
+
 2009-01-20  Werner Koch  <wk@g10code.com>
 
 	* gpgconf.c (main): Print more directories.
