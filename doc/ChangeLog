@@ -1,3 +1,7 @@
+2009-03-02  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.texi (Invoking GPG-AGENT): Modernized instructions.
+
 2009-01-12  Werner Koch  <wk@g10code.com>
 
 	* faq.raw: Fix bug reorting address.

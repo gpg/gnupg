@@ -86,7 +86,7 @@ w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
 
 /* Get the standard home directory.  In general this function should
    not be used as it does not consider a registry value (under W32) or
-   the GNUPGHOME encironment variable.  It is better to use
+   the GNUPGHOME environment variable.  It is better to use
    default_homedir(). */
 const char *
 standard_homedir (void)

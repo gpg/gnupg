@@ -61,23 +61,36 @@ to run multiple instance of the @command{gpg-agent}, so you should make
 sure that only one is running: @command{gpg-agent} uses an environment
 variable to inform clients about the communication parameters. You can
 write the content of this environment variable to a file so that you can
-test for a running agent.  This short script may do the job:
+test for a running agent.  Here is an example using Bourne shell synax:
 
 @smallexample
-if test -f $HOME/.gpg-agent-info && \
-   kill -0 $(cut -d: -f 2 $HOME/.gpg-agent-info) 2>/dev/null; then
-     GPG_AGENT_INFO=$(cat $HOME/.gpg-agent-info)
-     export GPG_AGENT_INFO   
-else
-     eval $(gpg-agent --daemon)
-     echo $GPG_AGENT_INFO >$HOME/.gpg-agent-info
+gpg-agent --daemon --enable-ssh-support \
+          --write-env-file "$@{HOME@}/.gpg-agent-info"
+@end smallexample
+
+This code should only be run once per user session to initially fire up
+the agent.  In the example the optional support for the included Secure
+Shell agent is enabled and the information about the agent is written to
+a file in the HOME directory.  Note that by running gpg-agent without
+arguments you may test whether an agent is already running; however such
+a test may lead to a race condition, thus it is not suggested.
+
+@noindent
+The second script needs to be run for each interactive session:
+
+@smallexample
+if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
+  . "$@{HOME@}/.gpg-agent-info"
+  export GPG_AGENT_INFO
+  export SSH_AUTH_SOCK
+  export SSH_AGENT_PID
 fi
 @end smallexample
 
 @noindent
-Note that the new option @option{--write-env-file} may be used instead.
+It reads the data out of the file and exports the variables.  If you
+don't use Secure Shell, you don't need the last two export statements.
  
-
 @noindent
 You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
