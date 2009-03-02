@@ -1,6 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
  * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007 Free Software Foundation, Inc.
+ *               2006, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -140,6 +140,9 @@ static ARGPARSE_OPTS opts[] = {
                                N_("|PGM|use PGM as the SCdaemon program") },
   { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
   { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
+
+  { oBatch,      "batch",       0, "@" },
+  { oHomedir,    "homedir",     2, "@"},   
 
   { oDisplay,    "display",     2, "@" },
   { oTTYname,    "ttyname",     2, "@" },

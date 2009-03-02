@@ -433,13 +433,13 @@ default on Windows systems.
 @item --display @var{string}
 @itemx --ttyname @var{string}
 @itemx --ttytype @var{string}
-@itemx --lc-type @var{string}
+@itemx --lc-ctype @var{string}
 @itemx --lc-messages @var{string}
 @itemx --xauthority @var{string}
 @opindex display 
 @opindex ttyname 
 @opindex ttytype 
-@opindex lc-type 
+@opindex lc-ctype 
 @opindex lc-messages
 @opindex xauthority
 These options are used with the server mode to pass localization
