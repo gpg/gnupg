@@ -754,7 +754,11 @@ import_p12_file (const char *fname)
   gcry_sexp_release (s_key);
 
 
-  rc = agent_protect (key, (pw=get_new_passphrase (4)), &result, &resultlen);
+  pw = get_new_passphrase (4);
+  if (!pw)
+    rc = gpg_error (GPG_ERR_CANCELED);
+  else
+    rc = agent_protect (key, pw, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -981,8 +985,11 @@ export_p12_file (const char *fname)
   kparms[7] = sk.u;
   kparms[8] = NULL;
 
-  key = p12_build (kparms, cert, certlen,
-                   (pw=get_new_passphrase (3)), opt_p12_charset, &keylen);
+  pw = get_new_passphrase (3);
+  if (!pw)
+    key = NULL;
+  else
+    key = p12_build (kparms, cert, certlen, pw, opt_p12_charset, &keylen);
   release_passphrase (pw);
   xfree (cert);
   for (i=0; i < 8; i++)
