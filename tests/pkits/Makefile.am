@@ -64,7 +64,7 @@ inittests.stamp: inittests
 
 run-all-tests: inittests.stamp
 	@set -e; \
-         GNUPGHOME=`pwd`; export GNUPGHOME;\
+         GNUPGHOME=`/bin/pwd`; export GNUPGHOME;\
          unset GPG_AGENT_INFO; \
          for tst in $(testscripts); do \
            if ./$${tst}; then : ; \
