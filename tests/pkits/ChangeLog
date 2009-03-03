@@ -1,5 +1,7 @@
 2009-03-03  Werner Koch  <wk@g10code.com>
 
+	* inittests (clean_files): Use /bin/pwd here as well.
+
 	* Makefile.am (run-all-tests): Also use /bin/pwd here.
 
 2009-02-19  Werner Koch  <wk@g10code.com>
