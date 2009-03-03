@@ -1,3 +1,8 @@
+2009-03-03  Werner Koch  <wk@g10code.com>
+
+	* command.c (scd_command_handler): Remove dereference of STOPME
+	after free.
+
 2009-02-27  Werner Koch  <wk@g10code.com>
 
 	* app.c (get_supported_applications): New.

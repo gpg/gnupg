@@ -1857,6 +1857,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
 {
   int rc;
   assuan_context_t ctx;
+  int stopme;
   
   if (fd == -1)
     {
@@ -1942,13 +1943,14 @@ scd_command_handler (ctrl_t ctrl, int fd)
           BUG ();
       sl->next_session = ctrl->server_local->next_session;
     }
+  stopme = ctrl->server_local->stopme;
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 
   /* Release the Assuan context.  */
   assuan_deinit_server (ctx);
 
-  if (ctrl->server_local->stopme)
+  if (stopme)
     scd_exit (0);
 
   /* If there are no more sessions return true.  */
