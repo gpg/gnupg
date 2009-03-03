@@ -1023,7 +1023,7 @@ show_version ()
   fputs (strusage (11), stdout);
   if ((s=strusage (12)))
     printf (" (%s)", s );
-  printf (" %s %s\n", strusage (13), "(Gpg4win @PACKAGE_VERSION@)");
+  printf (" %s\n", strusage (13) );
   /* Additional version lines. */
   for (i=20; i < 30; i++)
     if ((s=strusage (i)))
