@@ -1396,7 +1396,7 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
      pid         - Return the process id of the server.
      socket_name - Return the name of the socket.
      ssh_socket_name - Return the name of the ssh socket.
-
+     scd_running - Return OK if the SCdaemon is already running.
  */
 static int
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -1432,6 +1432,10 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         rc = assuan_send_data (ctx, s, strlen (s));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "scd_running"))
+    {
+      rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

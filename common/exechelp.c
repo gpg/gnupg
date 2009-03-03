@@ -238,7 +238,7 @@ do_exec (const char *pgmname, const char *argv[],
     for (i=0,j=1; argv[i]; i++, j++)
       arg_list[j] = (char*)argv[i];
 
-  /* Connect the standard files. */
+  /* Assign /dev/null to unused FDs. */
   for (i=0; i <= 2; i++)
     {
       if (fds[i] == -1 )
@@ -248,7 +248,12 @@ do_exec (const char *pgmname, const char *argv[],
             log_fatal ("failed to open `%s': %s\n",
                        "/dev/null", strerror (errno));
         }
-      else if (fds[i] != i && dup2 (fds[i], i) == -1)
+    }
+
+  /* Connect the standard files.  */
+  for (i=0; i <= 2; i++)
+    {
+      if (fds[i] != i && dup2 (fds[i], i) == -1)
         log_fatal ("dup2 std%s failed: %s\n",
                    i==0?"in":i==1?"out":"err", strerror (errno));
     }

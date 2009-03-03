@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
- * Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1051,12 +1051,21 @@ scdaemon_runtime_change (void)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[2];
+  const char *argv[6];
   pid_t pid;
   
+  /* We use "GETINFO app_running" to see whether the agent is already
+     running and kill it only in this case.  This avoids an explicit
+     starting of the agent in case it is not yet running.  There is
+     obviously a race condition but that should not harm too much.  */
+
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "scd killscd";
-  argv[1] = NULL;
+  argv[0] = "-s";
+  argv[1] = "GETINFO scd_running";
+  argv[2] = "/if ${! $?}";
+  argv[3] = "scd killscd";
+  argv[4] = "/end";
+  argv[5] = NULL;
   
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
@@ -1064,6 +1073,44 @@ scdaemon_runtime_change (void)
   if (err)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " scd killscd", gpg_strerror (err));
+}
+
+
+/* Unconditionally reload COMPONENT or all components if COMPONENT is -1.  */
+void
+gc_component_reload (int component)
+{
+  int runtime[GC_BACKEND_NR];
+  gc_option_t *option;
+  gc_backend_t backend;
+
+  /* Set a flag for the backends to be reloaded.  */
+  for (backend = 0; backend < GC_BACKEND_NR; backend++)
+    runtime[backend] = 0;
+  
+  if (component == -1)
+    {
+      for (component = 0; component < GC_COMPONENT_NR; component++)
+        {
+          option = gc_component[component].options;
+          for (; option && option->name; option++)
+            runtime[option->backend] = 1;
+        }
+    }
+  else
+    {
+      assert (component < GC_COMPONENT_NR);
+      option = gc_component[component].options;
+      for (; option && option->name; option++)
+        runtime[option->backend] = 1;
+    }
+
+  /* Do the reload for all selected backends.  */
+  for (backend = 0; backend < GC_BACKEND_NR; backend++)  
+    {
+      if (runtime[backend] && gc_backend[backend].runtime_change)
+        (*gc_backend[backend].runtime_change) ();
+    }
 }
 
 

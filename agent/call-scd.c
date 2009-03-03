@@ -409,6 +409,16 @@ start_scd (ctrl_t ctrl)
 }
 
 
+/* Check whether the SCdaemon is active.  This is a fast check without
+   any locking and might give a wrong result if another thread is about
+   to start the daemon or the daemon is about to be stopped.. */
+int
+agent_scd_check_running (void)
+{
+  return !!primary_scd_ctx;
+}
+
+
 /* Check whether the Scdaemon is still alive and clean it up if not. */
 void
 agent_scd_check_aliveness (void)

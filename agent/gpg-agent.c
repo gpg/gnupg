@@ -2022,7 +2022,7 @@ check_own_socket_thread (void *arg)
       log_error ("socket is now serviced by another server\n");
       rc = 1;
     }
-  else if (opt.verbose)
+  else if (opt.verbose > 1)
     log_error ("socket is still served by this server\n");
     
   xfree (buffer);

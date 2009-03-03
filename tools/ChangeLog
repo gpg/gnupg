@@ -1,3 +1,14 @@
+2009-03-03  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c: New command --reload.
+
+	* gpgconf-comp.c (gc_component_reload): New.
+
+2009-03-02  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (scdaemon_runtime_change): Killsc d only if it is
+	not running.
+
 2009-02-27  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gpg_agent_runtime_change): Declare static.

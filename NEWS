@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.11 (unreleased)
+Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------
 
  * Fixed a problem in SCDAEMON which caused unexpected card resets.
@@ -6,6 +6,8 @@ Noteworthy changes in version 2.0.11 (unreleased)
  * SCDAEMON is now aware of the Geldkarte.
 
  * The SCDAEMON option --allow-admin is now used by default.
+
+ * GPGCONF now restarts SCdaemon if necessary.
 
  * The default cipher algorithm in GPGSM is now again 3DES.  This is
    due to interoperability problems with Outlook 2003 which still

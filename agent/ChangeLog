@@ -1,5 +1,9 @@
 2009-03-02  Werner Koch  <wk@g10code.com>
 
+	* command.c (cmd_getinfo): Add subcommand "scd_running".
+
+	* call-scd.c (agent_scd_check_running): New.
+
 	* gpg-agent.c: Add missing option strings for "--batch" and
 	"--homedir".  Reported by Petr Uzel.
 

@@ -1,5 +1,5 @@
 /* gpgconf.c - Configuration utility for GnuPG
- *	Copyright (C) 2003, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,7 +47,8 @@ enum cmd_and_opt_values
     aApplyDefaults,
     aListConfig,
     aCheckConfig,
-    aListDirs
+    aListDirs,
+    aReload
 
   };
 
@@ -70,6 +71,7 @@ static ARGPARSE_OPTS opts[] =
       N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
+    { aReload,        "reload", 256, "@" },
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
     
@@ -176,6 +178,7 @@ main (int argc, char **argv)
         case aApplyDefaults:
         case aListConfig:
         case aCheckConfig:
+        case aReload:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -231,6 +234,31 @@ main (int argc, char **argv)
 	  else
 	    gc_component_check_options (idx, get_outfp (&outfp), NULL);
 	}
+      break;
+
+    case aReload:
+      if (!fname)
+	{
+          /* Reload all.  */
+          gc_component_reload (-1);
+	}
+      else
+        {
+          /* Reload given component.  */
+          int idx;
+
+          idx = gc_component_find (fname);
+          if (idx < 0)
+            {
+              fputs (_("Component not found"), stderr);
+              putc ('\n', stderr);
+              exit (1);
+            }
+          else
+            {
+              gc_component_reload (idx);
+            }
+        }
       break;
 
     case aListConfig:
