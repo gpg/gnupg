@@ -1,5 +1,6 @@
 /* app-openpgp.c - The OpenPGP card application.
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1402,7 +1403,8 @@ verify_a_chv (app_t app,
               int chvno, unsigned long sigcount, char **pinvalue)
 {
   int rc = 0;
-  char *prompt;
+  char *prompt_buffer = NULL;
+  const char *prompt;
   iso7816_pininfo_t pininfo;
   int minlen = 6;
 
@@ -1432,30 +1434,34 @@ verify_a_chv (app_t app,
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.mode = 1;
   pininfo.minlen = minlen;
+
+
+  if (chvno == 1)
+    {
+#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
+      size_t promptsize = strlen (PROMPTSTRING) + 50;
+
+      prompt_buffer = xtrymalloc (promptsize);
+      if (!prompt_buffer)
+        return gpg_error_from_syserror ();
+      snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, sigcount);
+      prompt = prompt_buffer;
+#undef PROMPTSTRING
+    }
+  else
+    prompt = _("||Please enter the PIN");
+
   
   if (!opt.disable_keypad
       && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
     {
-      /* The reader supports the verify command through the keypad. */
-
-      if (chvno == 1)
-        {
-#define PROMPTSTRING  _("||Please enter your PIN at the reader's keypad%%0A" \
-                        "[sigs done: %lu]")
-          size_t promptsize = strlen (PROMPTSTRING) + 50;
-
-          prompt = xmalloc (promptsize);
-          if (!prompt)
-            return gpg_error_from_syserror ();
-          snprintf (prompt, promptsize-1, PROMPTSTRING, sigcount);
-          rc = pincb (pincb_arg, prompt, NULL); 
-          xfree (prompt);
-#undef PROMPTSTRING
-        }
-      else
-        rc = pincb (pincb_arg,
-                    _("||Please enter your PIN at the reader's keypad"),
-                    NULL);
+      /* The reader supports the verify command through the keypad.
+         Note that the pincb appends a text to the prompt telling the
+         user to use the keypad. */
+      rc = pincb (pincb_arg, prompt, NULL); 
+      prompt = NULL;
+      xfree (prompt_buffer); 
+      prompt_buffer = NULL;
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -1471,23 +1477,10 @@ verify_a_chv (app_t app,
   else
     {
       /* The reader has no keypad or we don't want to use it. */
-
-      if (chvno == 1)
-        {
-#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
-          size_t promptsize = strlen (PROMPTSTRING) + 50;
-
-          prompt = xtrymalloc (promptsize);
-          if (!prompt)
-            return gpg_error_from_syserror ();
-          snprintf (prompt, promptsize-1, PROMPTSTRING, sigcount);
-          rc = pincb (pincb_arg, prompt, pinvalue); 
-          xfree (prompt);
-#undef PROMPTSTRING
-        }
-      else
-        rc = pincb (pincb_arg, _("||Please enter the PIN"), pinvalue); 
-
+      rc = pincb (pincb_arg, prompt, pinvalue); 
+      prompt = NULL;
+      xfree (prompt_buffer); 
+      prompt_buffer = NULL;
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -1586,6 +1579,8 @@ verify_chv3 (app_t app,
       iso7816_pininfo_t pininfo;
       int minlen = 8;
       int remaining;
+      char *prompt_buffer = NULL;
+      const char *prompt;
 
       memset (&pininfo, 0, sizeof pininfo);
       pininfo.mode = 1;
@@ -1610,31 +1605,33 @@ verify_chv3 (app_t app,
       log_info(_("%d Admin PIN attempts remaining before card"
                  " is permanently locked\n"), remaining);
 
+      if (remaining < 3)
+        {
+          /* TRANSLATORS: Do not translate the "|A|" prefix but keep
+             it at the start of the string.  Use %%0A to force a
+             lienfeed.  */
+#define PROMPTSTRING  _("|A|Please enter the Admin PIN%%0A" \
+                        "[remaining attempts: %d]")
+          size_t promptsize = strlen (PROMPTSTRING) + 50;
+          
+          prompt_buffer = xtrymalloc (promptsize);
+          if (!prompt_buffer)
+            return gpg_error_from_syserror ();
+          snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, remaining);
+          prompt = prompt_buffer;
+#undef PROMPTSTRING
+        }
+      else
+        prompt = _("|A|Please enter the Admin PIN");
+
       if (!opt.disable_keypad
           && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
         {
           /* The reader supports the verify command through the keypad. */
-          
-          if (remaining < 3)
-            {
-#define PROMPTSTRING  _("|A|Please enter the Admin PIN" \
-                        " at the reader's keypad%%0A"   \
-                        "[remaining attempts: %d]")
-              size_t promptsize = strlen (PROMPTSTRING) + 50;
-              char *prompt;
-              
-              prompt = xmalloc (promptsize);
-              if (!prompt)
-                return gpg_error_from_syserror ();
-              snprintf (prompt, promptsize-1, PROMPTSTRING, remaining);
-              rc = pincb (pincb_arg, prompt, NULL); 
-              xfree (prompt);
-#undef PROMPTSTRING
-            }
-          else
-            rc = pincb (pincb_arg, _("|A|Please enter the Admin PIN"
-                                     " at the reader's keypad"),   NULL);
-
+          rc = pincb (pincb_arg, prompt, NULL); 
+          prompt = NULL;
+          xfree (prompt_buffer);
+          prompt_buffer = NULL;
           if (rc)
             {
               log_info (_("PIN callback returned error: %s\n"),
@@ -1649,10 +1646,10 @@ verify_chv3 (app_t app,
         {
           char *pinvalue;
 
-          /* TRANSLATORS: Do not translate the "|A|" prefix but keep
-             it at the start of the string.  We need this elsewhere to
-             get some infos on the string. */
-          rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
+          rc = pincb (pincb_arg, prompt, &pinvalue); 
+          prompt = NULL;
+          xfree (prompt_buffer);
+          prompt_buffer = NULL;
           if (rc)
             {
               log_info (_("PIN callback returned error: %s\n"),

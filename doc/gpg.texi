@@ -425,7 +425,7 @@ Import/merge keys. This adds the given keys to the
 keyring. The fast version is currently just a synonym.
 
 There are a few other options which control how this command works.
-Most notable here is the @option{--keyserver-options merge-only} option
+Most notable here is the @option{--import-options merge-only} option
 which does not insert new keys but does only the merging of new
 signatures, user-IDs and subkeys.
 

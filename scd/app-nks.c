@@ -17,6 +17,27 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Notes:
+
+  - This is still work in progress.  We are now targeting TCOS 3 cards
+    but try to keep compatibility to TCOS 2.  Both are not fully
+    working as of now.  TCOS 3 PIN management seems to work.  Use GPA
+    from SVN trunk to test it.
+
+  - If required, we automagically switch between the NKS application
+    and the SigG application.  This avoids to use the DINSIG
+    application which is somewhat limited, has no support for Secure
+    Messaging as required by TCOS 3 and has no way to change the PIN
+    or even set the NullPIN.
+
+  - We use the prefix NKS-DF01 for TCOS 2 cards and NKS-NKS3 for newer
+    cards.  This is because the NKS application has moved to DF02 with
+    TCOS 3 and thus we better use a DF independent tag.
+
+  - We use only the global PINs for the NKS application.
+
+ */
+
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -30,9 +51,15 @@
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
+#include "apdu.h"
+
+static char const aid_nks[]  = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
+static char const aid_sigg[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
+
 
 static struct
 {
+  int is_sigg;   /* Valid for SigG application.  */
   int fid;       /* File ID. */
   int nks_ver;   /* 0 for NKS version 2, 3 for version 3. */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
@@ -40,20 +67,23 @@ static struct
   int issignkey; /* True if file is a key usable for signing. */
   int isenckey;  /* True if file is a key usable for decryption. */
 } filelist[] = {
-  { 0x4531, 0, 0,  0xC000, 1, 0 }, /* EF_PK.NKS.SIG */
-  { 0xC000, 0, 101 },              /* EF_C.NKS.SIG  */
-  { 0x4331, 0, 100 },
-  { 0x4332, 0, 100 },
-  { 0xB000, 0, 110 },              /* EF_PK.RCA.NKS */
-  { 0x45B1, 0, 0,  0xC200, 0, 1 }, /* EF_PK.NKS.ENC */
-  { 0xC200, 0, 101 },              /* EF_C.NKS.ENC  */
-  { 0x43B1, 0, 100 },
-  { 0x43B2, 0, 100 },
-  { 0x4571, 3, 0,  0xc500, 0, 0 }, /* EF_PK.NKS.AUT */
-  { 0xC500, 3, 101 },              /* EF_C.NKS.AUT  */
-  { 0x45B2, 3, 0,  0xC201, 0, 1 }, /* EF_PK.NKS.ENC1024 */
-  { 0xC201, 3, 101 },              /* EF_C.NKS.ENC1024  */
-  { 0 }
+  { 0, 0x4531, 0, 0,  0xC000, 1, 0 }, /* EF_PK.NKS.SIG */
+  { 1, 0x4531, 3, 0,  0x0000, 1, 1 }, /* EF_PK.CH.SIG  */
+  { 0, 0xC000, 0, 101 },              /* EF_C.NKS.SIG  */
+  { 1, 0xC000, 0, 101 },              /* EF_C.CH.SIG  */
+  { 0, 0x4331, 0, 100 },
+  { 0, 0x4332, 0, 100 },
+  { 0, 0xB000, 0, 110 },              /* EF_PK.RCA.NKS */
+  { 0, 0x45B1, 0, 0,  0xC200, 0, 1 }, /* EF_PK.NKS.ENC */
+  { 0, 0xC200, 0, 101 },              /* EF_C.NKS.ENC  */
+  { 0, 0x43B1, 0, 100 },
+  { 0, 0x43B2, 0, 100 },
+  { 0, 0x4571, 3, 0,  0xc500, 0, 0 }, /* EF_PK.NKS.AUT */
+  { 0, 0xC500, 3, 101 },              /* EF_C.NKS.AUT  */
+  { 0, 0x45B2, 3, 0,  0xC201, 0, 1 }, /* EF_PK.NKS.ENC1024 */
+  { 0, 0xC201, 3, 101 },              /* EF_C.NKS.ENC1024  */
+/*   { 1, 0xB000, 3, ...  */
+  { 0, 0 }
 };
 
 
@@ -62,8 +92,12 @@ static struct
 struct app_local_s {
   int nks_version;  /* NKS version.  */
 
+  int sigg_active;  /* True if switched to the SigG application.  */
 };
 
+
+
+static gpg_error_t switch_application (app_t app, int enable_sigg);
 
 
 
@@ -146,6 +180,134 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
 }
 
 
+/* TCOS responds to a verify with empty data (i.e. without the Lc
+   byte) with the status of the PIN.  PWID is the PIN ID, If SIGG is
+   true, the application is switched into SigG mode.
+   Returns:
+            -1 = Error retrieving the data,
+            -2 = No such PIN,
+            -3 = PIN blocked,
+            -4 = NullPIN activ,
+        n >= 0 = Number of verification attempts left.  */
+static int
+get_chv_status (app_t app, int sigg, int pwid)
+{
+  unsigned char *result = NULL;
+  size_t resultlen;
+  char command[4];
+  int rc;
+
+  if (switch_application (app, sigg))
+    return sigg? -2 : -1; /* No such PIN / General error.  */
+
+  command[0] = 0x00;
+  command[1] = 0x20;
+  command[2] = 0x00;
+  command[3] = pwid;
+
+  if (apdu_send_direct (app->slot, command, 4, 0, &result, &resultlen))
+    rc = -1; /* Error. */
+  else if (resultlen < 2)
+    rc = -1; /* Error. */
+  else
+    {
+      unsigned int sw = ((result[resultlen-2] << 8) | result[resultlen-1]);
+
+      if (sw == 0x6a88)
+        rc = -2; /* No such PIN.  */
+      else if (sw == 0x6983)
+        rc = -3; /* PIN is blocked.  */
+      else if (sw == 0x6985)
+        rc = -4; /* NullPIN is activ.  */
+      else if ((sw & 0xfff0) == 0x63C0)
+        rc = (sw & 0x000f); /* PIN has N tries left.  */
+      else
+        rc = -1; /* Other error.  */
+    }
+  xfree (result);
+
+  return rc;
+}
+
+
+/* Implement the GETATTR command.  This is similar to the LEARN
+   command but returns just one value via the status interface. */
+static gpg_error_t 
+do_getattr (app_t app, ctrl_t ctrl, const char *name)
+{
+  static struct {
+    const char *name;
+    int special;
+  } table[] = {
+    { "$AUTHKEYID",   1 },
+    { "NKS-VERSION",  2 },
+    { "CHV-STATUS",   3 },
+    { NULL, 0 }
+  };
+  gpg_error_t err = 0;
+  int idx;
+  char buffer[100];
+
+  err = switch_application (app, 0);
+  if (err)
+    return err;
+
+  for (idx=0; table[idx].name && strcmp (table[idx].name, name); idx++)
+    ;
+  if (!table[idx].name)
+    return gpg_error (GPG_ERR_INV_NAME); 
+
+  switch (table[idx].special)
+    {
+    case 1: /* $AUTHKEYID */
+      {
+        /* NetKey 3.0 cards define this key for authentication.
+           FIXME: We don't have the readkey command, so this
+           information is pretty useless.  */
+        char const tmp[] = "NKS-NKS3.4571";
+        send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
+      }
+      break;
+
+    case 2: /* NKS-VERSION */
+      snprintf (buffer, sizeof buffer, "%d", app->app_local->nks_version);
+      send_status_info (ctrl, table[idx].name,
+                        buffer, strlen (buffer), NULL, 0);
+      break;
+
+    case 3: /* CHV-STATUS */
+      {
+        /* Returns: PW1.CH PW2.CH PW1.CH.SIG PW2.CH.SIG That are the
+           two global passwords followed by the two SigG passwords.
+           For the values, see the function get_chv_status.  */
+        int tmp[4];
+        
+        /* We use a helper array so that we can control that there is
+           no superfluous application switch.  Note that PW2.CH.SIG
+           really has the identifier 0x83 and not 0x82 as one would
+           expect.  */
+        tmp[0] = get_chv_status (app, 0, 0x00);
+        tmp[1] = get_chv_status (app, 0, 0x01);
+        tmp[2] = get_chv_status (app, 1, 0x81);
+        tmp[3] = get_chv_status (app, 1, 0x83); 
+        snprintf (buffer, sizeof buffer, 
+                  "%d %d %d %d", tmp[0], tmp[1], tmp[2], tmp[3]);
+        send_status_info (ctrl, table[idx].name,
+                          buffer, strlen (buffer), NULL, 0);
+      }
+      break;
+
+
+    default:
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      break;
+    }
+
+  return err;
+}
+
+
+
 
 static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl)
@@ -154,10 +316,17 @@ do_learn_status (app_t app, ctrl_t ctrl)
   char ct_buf[100], id_buf[100];
   int i;
 
-  /* Output information about all useful objects. */
+  err = switch_application (app, 0);
+  if (err)
+    return err;
+
+  /* Output information about all useful objects in the NKS application. */
   for (i=0; filelist[i].fid; i++)
     {
       if (filelist[i].nks_ver > app->app_local->nks_version)
+        continue;
+
+      if (filelist[i].is_sigg)
         continue;
 
       if (filelist[i].certtype)
@@ -171,8 +340,10 @@ do_learn_status (app_t app, ctrl_t ctrl)
               /* FIXME: We should store the length in the application's
                  context so that a following readcert does only need to
                  read that many bytes. */
-              sprintf (ct_buf, "%d", filelist[i].certtype);
-              sprintf (id_buf, "NKS-DF01.%04X", filelist[i].fid);
+              snprintf (ct_buf, sizeof ct_buf, "%d", filelist[i].certtype);
+              snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X", 
+                        app->app_local->nks_version < 3? "DF01":"NKS3",
+                        filelist[i].fid);
               send_status_info (ctrl, "CERTINFO",
                                 ct_buf, strlen (ct_buf), 
                                 id_buf, strlen (id_buf), 
@@ -189,7 +360,9 @@ do_learn_status (app_t app, ctrl_t ctrl)
                        filelist[i].fid, gpg_strerror (err));
           else
             {
-              sprintf (id_buf, "NKS-DF01.%04X", filelist[i].fid);
+              snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
+                        app->app_local->nks_version < 3? "DF01":"NKS3",
+                        filelist[i].fid);
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40, 
                                 id_buf, strlen (id_buf), 
@@ -197,6 +370,59 @@ do_learn_status (app_t app, ctrl_t ctrl)
             }
         }
     }
+
+  err = switch_application (app, 1);
+  if (err)
+    return 0;  /* Silently ignore if we can't swicth to SigG.  */
+
+  for (i=0; filelist[i].fid; i++)
+    {
+      if (filelist[i].nks_ver > app->app_local->nks_version)
+        continue;
+
+      if (!filelist[i].is_sigg)
+        continue;
+
+      if (filelist[i].certtype)
+        {
+          size_t len;
+
+          len = app_help_read_length_of_cert (app->slot,
+                                              filelist[i].fid, NULL);
+          if (len)
+            {
+              /* FIXME: We should store the length in the application's
+                 context so that a following readcert does only need to
+                 read that many bytes. */
+              snprintf (ct_buf, sizeof ct_buf, "%d", filelist[i].certtype);
+              snprintf (id_buf, sizeof id_buf, "NKS-SIGG.%04X",
+                        filelist[i].fid);
+              send_status_info (ctrl, "CERTINFO",
+                                ct_buf, strlen (ct_buf), 
+                                id_buf, strlen (id_buf), 
+                                NULL, (size_t)0);
+            }
+        }
+      else if (filelist[i].iskeypair)
+        {
+          char gripstr[40+1];
+
+          err = keygripstr_from_pk_file (app, filelist[i].fid, gripstr);
+          if (err)
+            log_error ("can't get keygrip from FID 0x%04X: %s\n",
+                       filelist[i].fid, gpg_strerror (err));
+          else
+            {
+              snprintf (id_buf, sizeof id_buf, "NKS-SIGG.%04X",
+                        filelist[i].fid);
+              send_status_info (ctrl, "KEYPAIRINFO",
+                                gripstr, 40, 
+                                id_buf, strlen (id_buf), 
+                                NULL, (size_t)0);
+            }
+        }
+    }
+
 
   return 0;
 }
@@ -223,7 +449,16 @@ do_readcert (app_t app, const char *certid,
 
   *cert = NULL;
   *certlen = 0;
-  if (strncmp (certid, "NKS-DF01.", 9) ) 
+
+  err = switch_application (app, 0);
+  if (err)
+    return err;
+
+  if (!strncmp (certid, "NKS-NKS3.", 9)) 
+    ;
+  else if (!strncmp (certid, "NKS-DF01.", 9)) 
+    ;
+  else
     return gpg_error (GPG_ERR_INV_ID);
   certid += 9;
   if (!hexdigitp (certid) || !hexdigitp (certid+1)
@@ -331,21 +566,34 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+static gpg_error_t
+basic_pin_checks (const char *pinvalue, int minlen, int maxlen)
+{
+  if (strlen (pinvalue) < minlen)
+    {
+      log_error ("PIN is too short; minimum length is %d\n", minlen);
+      return gpg_error (GPG_ERR_BAD_PIN);
+    }
+  if (strlen (pinvalue) > maxlen)
+    {
+      log_error ("PIN is too large; maximum length is %d\n", maxlen);
+      return gpg_error (GPG_ERR_BAD_PIN);
+    }
+  return 0;
+}
+
+
 /* Verify the PIN if required.  */
 static gpg_error_t
-verify_pin (app_t app,
+verify_pin (app_t app, int pwid, const char *desc,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
   iso7816_pininfo_t pininfo;
   int rc;
 
-  /* Note that force_chv1 is never set but we do it here anyway so
-     that other applications may reuse this function.  For example it
-     makes sense to set force_chv1 for German signature law cards.
-     NKS is very similar to the DINSIG draft standard. */
-  if ( app->did_chv1 && !app->force_chv1 ) 
-    return 0;  /* No need to verify it again.  */
+  if (!desc)
+    desc = "PIN";
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.mode = 1;
@@ -375,7 +623,7 @@ verify_pin (app_t app,
     {
       char *pinvalue;
 
-      rc = pincb (pincb_arg, "PIN", &pinvalue); 
+      rc = pincb (pincb_arg, desc, &pinvalue); 
       if (rc)
         {
           log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
@@ -384,24 +632,14 @@ verify_pin (app_t app,
 
       /* The following limits are due to TCOS but also defined in the
          NKS specs. */
-      if (strlen (pinvalue) < pininfo.minlen)
+      rc = basic_pin_checks (pinvalue, pininfo.minlen, pininfo.maxlen);
+      if (rc)
         {
-          log_error ("PIN is too short; minimum length is %d\n",
-                     pininfo.minlen);
           xfree (pinvalue);
-          return gpg_error (GPG_ERR_BAD_PIN);
-        }
-      else if (strlen (pinvalue) > pininfo.maxlen)
-        {
-          log_error ("PIN is too large; maximum length is %d\n",
-                     pininfo.maxlen);
-          xfree (pinvalue);
-          return gpg_error (GPG_ERR_BAD_PIN);
+          return rc;
         }
 
-      /* Although it is possible to use a local PIN, we use the global
-         PIN for this application.  */
-      rc = iso7816_verify (app->slot, 0, pinvalue, strlen (pinvalue));
+      rc = iso7816_verify (app->slot, pwid, pinvalue, strlen (pinvalue));
       xfree (pinvalue);
     }
 
@@ -413,7 +651,6 @@ verify_pin (app_t app,
         log_error ("verify PIN failed\n");
       return rc;
     }
-  app->did_chv1 = 1;
 
   return 0;
 }
@@ -447,9 +684,17 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (indatalen != 20 && indatalen != 16 && indatalen != 35)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  rc = switch_application (app, 0);
+  if (rc)
+    return rc;
+
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
-  if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
+  if (!strncmp (keyidstr, "NKS-NKS3.", 9) ) 
+    ;
+  else if (!strncmp (keyidstr, "NKS-DF01.", 9) ) 
+    ;
+  else
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 9;
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
@@ -490,7 +735,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       memcpy (data+15, indata, indatalen);
     }
 
-  rc = verify_pin (app, pincb, pincb_arg);
+  rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
   if (!rc)
     rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
   return rc;
@@ -519,9 +764,17 @@ do_decipher (app_t app, const char *keyidstr,
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  rc = switch_application (app, 0);
+  if (rc)
+    return rc;
+
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to to enforce correct usage by the caller. */
-  if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
+  if (!strncmp (keyidstr, "NKS-NKS3.", 9) ) 
+    ;
+  else if (!strncmp (keyidstr, "NKS-DF01.", 9) ) 
+    ;
+  else
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 9;
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
@@ -542,7 +795,7 @@ do_decipher (app_t app, const char *keyidstr,
                                     0xC1, 0xB8,
                                     mse_parm, sizeof mse_parm);
   if (!rc)
-    rc = verify_pin (app, pincb, pincb_arg);
+    rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
   if (!rc)
     rc = iso7816_decipher (app->slot, indata, indatalen, 0x81,
                            outdata, outdatalen);
@@ -550,67 +803,221 @@ do_decipher (app_t app, const char *keyidstr,
 }
 
 
-/* Handle the PASSWD command.  CHVNOSTR is currently ignored; we
-   always use VHV0.  RESET_MODE is not yet implemented.  */
+
+/* Parse a password ID string.  Returns NULL on error or a string
+   suitable as passpahrse prompt on success.  On success stores the
+   reference value for the password at R_PWID and a flag indicating
+   that the SigG application is to be used at R_SIGG.  If NEW_MODE is
+   true, the returned description is suitable for a new Password.
+   Supported values for PWIDSTR are:
+
+     PW1.CH       - Global password 1
+     PW2.CH       - Global password 2
+     PW1.CH.SIG   - SigG password 1
+     PW2.CH.SIG   - SigG password 2
+ */
+static const char *
+parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
+{
+  const char *desc;
+
+  if (!pwidstr)
+    desc = NULL;
+  else if (!strcmp (pwidstr, "PW1.CH"))
+    {
+      *r_sigg = 0;
+      *r_pwid = 0x00;
+      /* TRANSLATORS: Do not translate the "|*|" prefixes but keep
+         them verbatim at the start of the string.  */
+      desc = (new_mode
+              ? _("|N|Please enter a new PIN for the standard keys.")
+              : _("||Please enter the PIN for the standard keys."));
+    }
+  else if (!strcmp (pwidstr, "PW2.CH"))
+    {
+      *r_pwid = 0x01;
+      desc = (new_mode
+              ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
+                  "for the standard keys.")
+              : _("|P|Please enter the PIN Unblocking Code (PUK) "
+                  "for the standard keys."));
+    }
+  else if (!strcmp (pwidstr, "PW1.CH.SIG"))
+    {
+      *r_pwid = 0x81;
+      *r_sigg = 1;
+      desc = (new_mode
+              ? _("|N|Please enter a new PIN for the key to create "
+                  "qualified signatures.")
+              : _("||Please enter the PIN for the key to create "
+                  "qualified signatures."));
+    }
+  else if (!strcmp (pwidstr, "PW2.CH.SIG"))
+    {
+      *r_pwid = 0x83;  /* Yes, that is 83 and not 82.  */
+      *r_sigg = 1;
+      desc = (new_mode
+              ? _("|NP|Please enter a new PIN Unblocking Code (PUK) "
+                  "for the key to create qualified signatures.")
+              : _("|P|Please enter the PIN Unblocking Code (PUK) "
+                  "for the key to create qualified signatures."));
+    }
+  else
+    desc = NULL;
+
+  return desc;
+}
+
+
+/* Handle the PASSWD command. See parse_pwidstr() for allowed values
+   for CHVNOSTR.  */
 static gpg_error_t 
-do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
+do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr, 
                unsigned int flags,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
 {
   gpg_error_t err;
-  char *pinvalue;
-  const char *oldpin;
+  char *newpin = NULL;
+  char *oldpin = NULL;
+  size_t newpinlen;
   size_t oldpinlen;
+  int is_sigg;
+  const char *newdesc;
+  int pwid;
+  iso7816_pininfo_t pininfo;
 
   (void)ctrl;
-  (void)chvnostr;
 
-  if ((flags & APP_CHANGE_FLAG_RESET))
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  /* The minimum length is enforced by TCOS, the maximum length is
+     just a reasonable value.  */
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.minlen = 6;
+  pininfo.maxlen = 16;
+  
+  newdesc = parse_pwidstr (pwidstr, 1, &is_sigg, &pwid);
+  if (!newdesc)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  err = switch_application (app, is_sigg);
+  if (err)
+    return err;
 
   if ((flags & APP_CHANGE_FLAG_NULLPIN))
     {
-      /* With the nullpin flag, we do not verify the PIN - it would fail
-         if the Nullpin is still set.  */
-      oldpin = "\0\0\0\0\0";
+      /* With the nullpin flag, we do not verify the PIN - it would
+         fail if the Nullpin is still set.  */
+      oldpin = xtrycalloc (1, 6);
+      if (!oldpin)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       oldpinlen = 6;
     }
   else
     {
-      err = verify_pin (app, pincb, pincb_arg);
+      const char *desc;
+      int dummy1, dummy2;
+
+      if ((flags & APP_CHANGE_FLAG_RESET))
+        {
+          /* Reset mode: Ask for the alternate PIN.  */
+          const char *altpwidstr;
+
+          if (!strcmp (pwidstr, "PW1.CH"))
+            altpwidstr = "PW2.CH";
+          else if (!strcmp (pwidstr, "PW2.CH"))
+            altpwidstr = "PW1.CH";
+          else if (!strcmp (pwidstr, "PW1.CH.SIG"))
+            altpwidstr = "PW2.CH.SIG";
+          else if (!strcmp (pwidstr, "PW2.CH.SIG"))
+            altpwidstr = "PW1.CH.SIG";
+          else
+            {
+              err = gpg_error (GPG_ERR_BUG);
+              goto leave;
+            }
+          desc = parse_pwidstr (altpwidstr, 0, &dummy1, &dummy2);
+        }
+      else
+        {
+          /* Regular change mode:  Ask for the old PIN.  */
+          desc = parse_pwidstr (pwidstr, 0, &dummy1, &dummy2);
+        }
+      err = pincb (pincb_arg, desc, &oldpin); 
       if (err)
-        return err;
-      oldpin = NULL;
-      oldpinlen = 0;
+        {
+          log_error ("error getting old PIN: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      oldpinlen = strlen (oldpin);
+      err = basic_pin_checks (oldpin, pininfo.minlen, pininfo.maxlen);
+      if (err)
+        goto leave;
     }
 
-  /* TRANSLATORS: Do not translate the "|*|" prefixes but
-     keep it at the start of the string.  We need this elsewhere
-     to get some infos on the string. */
-  err = pincb (pincb_arg, _("|N|New PIN"), &pinvalue); 
+  err = pincb (pincb_arg, newdesc, &newpin); 
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
-      return err;
+      goto leave;
     }
+  newpinlen = strlen (newpin);
+  
+  err = basic_pin_checks (newpin, pininfo.minlen, pininfo.maxlen);
+  if (err)
+    goto leave;
 
-  err = iso7816_change_reference_data (app->slot, 0x00, 
-                                       oldpin, oldpinlen,
-                                       pinvalue, strlen (pinvalue));
-  xfree (pinvalue);
+  if ((flags & APP_CHANGE_FLAG_RESET))
+    {
+      char *data;
+      size_t datalen = oldpinlen + newpinlen;
+
+      data = xtrymalloc (datalen);
+      if (!data)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      memcpy (data, oldpin, oldpinlen);
+      memcpy (data+oldpinlen, newpin, newpinlen);
+      err = iso7816_reset_retry_counter_with_rc (app->slot, pwid,
+                                                 data, datalen);
+      wipememory (data, datalen);
+      xfree (data);
+    }
+  else 
+    err = iso7816_change_reference_data (app->slot, pwid, 
+                                         oldpin, oldpinlen,
+                                         newpin, newpinlen);
+ leave:
+  xfree (oldpin);
+  xfree (newpin);
   return err;
 }
 
 
 /* Perform a simple verify operation.  KEYIDSTR should be NULL or empty.  */
 static gpg_error_t 
-do_check_pin (app_t app, const char *keyidstr,
+do_check_pin (app_t app, const char *pwidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg)
 {
-  (void)keyidstr;
-  return verify_pin (app, pincb, pincb_arg);
+  gpg_error_t err;
+  int pwid;
+  int is_sigg;
+  const char *desc;
+
+  desc = parse_pwidstr (pwidstr, 0, &is_sigg, &pwid);
+  if (!desc)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  err = switch_application (app, is_sigg);
+  if (err)
+    return err;
+
+  return verify_pin (app, pwid, desc, pincb, pincb_arg);
 }
 
 
@@ -647,15 +1054,42 @@ get_nks_version (int slot)
 }
 
 
+/* If ENABLE_SIGG is true switch to the SigG application if not yet
+   active.  If false switch to the NKS application if not yet active.
+   Returns 0 on success.  */
+static gpg_error_t
+switch_application (app_t app, int enable_sigg)
+{
+  gpg_error_t err;
+
+  if ((app->app_local->sigg_active && enable_sigg)
+      || (!app->app_local->sigg_active && !enable_sigg) )
+    return 0;  /* Already switched.  */
+
+  log_info ("app-nks: switching to %s\n", enable_sigg? "SigG":"NKS");
+  if (enable_sigg)
+    err = iso7816_select_application (app->slot, aid_sigg, sizeof aid_sigg, 0);
+  else
+    err = iso7816_select_application (app->slot, aid_nks, sizeof aid_nks, 0);
+  
+  if (!err)
+    app->app_local->sigg_active = enable_sigg;
+  else
+    log_error ("app-nks: error switching to %s: %s\n",
+               enable_sigg? "SigG":"NKS", gpg_strerror (err));
+
+  return err;
+}
+
+
 /* Select the NKS application.  */
 gpg_error_t
 app_select_nks (app_t app)
 {
-  static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
   int slot = app->slot;
   int rc;
   
-  rc = iso7816_select_application (slot, aid, sizeof aid, 0);
+  rc = iso7816_select_application (slot, aid_nks, sizeof aid_nks, 0);
   if (!rc)
     {
       app->apptype = "NKS";
@@ -674,7 +1108,7 @@ app_select_nks (app_t app)
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
-      app->fnc.getattr = NULL;
+      app->fnc.getattr = do_getattr;
       app->fnc.setattr = NULL;
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;

@@ -1,5 +1,5 @@
 /* divert-scd.c - divert operations to the scdaemon 
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -181,10 +181,11 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
 
    Flags:
 
-      'N' = New PIN, this requests a second prompt to repeat the the
+      'N' = New PIN, this requests a second prompt to repeat the
             PIN.  If the PIN is not correctly repeated it starts from
             all over.
-      'A' = The PIN is an Admin PIN, SO-PIN, PUK or alike.
+      'A' = The PIN is an Admin PIN, SO-PIN or alike.
+      'P' = The PIN is a PUK (Personal Unblocking Key).
       'R' = The PIN is a Reset Code.
 
    Example:
@@ -204,6 +205,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   int any_flags = 0;
   int newpin = 0;
   int resetcode = 0;
+  int is_puk = 0;
   const char *again_text = NULL;
   const char *prompt = "PIN";
 
@@ -217,6 +219,13 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
         {
           if (*s == 'A')
             prompt = _("Admin PIN");
+          else if (*s == 'P')
+            {
+              /* TRANSLATORS: A PUK is the Personal Unblocking Code
+                 used to unblock a PIN. */
+              prompt = _("PUK");
+              is_puk = 1;
+            }
           else if (*s == 'N')
             newpin = 1;
           else if (*s == 'R')
@@ -242,7 +251,22 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
         }
       else if (maxbuf == 1)  /* Open the pinentry. */
         {
-          rc = agent_popup_message_start (ctrl, info, NULL);
+          if (info)
+            {
+              char *desc;
+
+              if ( asprintf (&desc,
+                             _("%s%%0A%%0AUse the reader's keypad for input."),
+                             info) < 0 )
+                rc = gpg_error_from_syserror ();
+              else
+                {
+                  rc = agent_popup_message_start (ctrl, desc, NULL);
+                  xfree (desc);
+                }
+            }
+          else
+            rc = agent_popup_message_start (ctrl, NULL, NULL);
         }
       else
         rc = gpg_error (GPG_ERR_INV_VALUE);
@@ -258,7 +282,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
     return gpg_error_from_syserror ();
   pi->max_length = maxbuf-1;
   pi->min_digits = 0;  /* we want a real passphrase */
-  pi->max_digits = 8;
+  pi->max_digits = 16;
   pi->max_tries = 3;
 
   if (any_flags)
@@ -277,17 +301,21 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
             }
           pi2->max_length = maxbuf-1;
           pi2->min_digits = 0;
-          pi2->max_digits = 8;
+          pi2->max_digits = 16;
           pi2->max_tries = 1;
           rc = agent_askpin (ctrl,
                              (resetcode?
                               _("Repeat this Reset Code"):
+                              is_puk?
+                              _("Repeat this PUK"):
                               _("Repeat this PIN")),
                              prompt, NULL, pi2);
           if (!rc && strcmp (pi->pin, pi2->pin))
             {
               again_text = (resetcode? 
                             N_("Reset Code not correctly repeated; try again"):
+                            is_puk?
+                            N_("PUK not correctly repeated; try again"):
                             N_("PIN not correctly repeated; try again"));
               xfree (pi2);
               xfree (pi);

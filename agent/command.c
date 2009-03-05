@@ -1061,7 +1061,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 /* PASSWD <hexstring_with_keygrip>
   
-   Change the passphrase/PID for the key identified by keygrip in LINE. */
+   Change the passphrase/PIN for the key identified by keygrip in LINE. */
 static int
 cmd_passwd (assuan_context_t ctx, char *line)
 {

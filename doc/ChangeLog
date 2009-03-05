@@ -1,3 +1,12 @@
+2009-03-04  Werner Koch  <wk@g10code.com>
+
+	* help.txt (gpg.keygen.size): Add a link to web page.
+
+2009-03-03  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (Operational GPG Commands): "merge-only" is an
+	import-option.  Reported by Joseph Oreste Bruni.
+
 2009-03-02  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.texi (Invoking GPG-AGENT): Modernized instructions.

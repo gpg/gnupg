@@ -135,7 +135,13 @@ Please consult your security expert first.
 
 
 .gpg.keygen.size
-Enter the size of the key.
+Enter the size of the key.  
+
+The suggested default is usually a good choice.
+
+If you want to use a large key size, for example 4096 bit, please
+think again whether it really makes sense for you.  You may want 
+to view the web page http://www.xkcd.com/538/ .
 .
 
 .gpg.keygen.size.huge.okay

@@ -1370,9 +1370,10 @@ cmd_random (assuan_context_t ctx, char *line)
 
 /* PASSWD [--reset] [--nullpin] <chvno>
   
-   Change the PIN or reset the retry counter of the card holder
-   verfication vector CHVNO.  The option --nullpin is used for TCOS
-   cards to set the initial PIN. */
+   Change the PIN or, if --reset is given, reset the retry counter of
+   the card holder verfication vector CHVNO.  The option --nullpin is
+   used for TCOS cards to set the initial PIN.  The format of CHVNO
+   depends on the card application.  */
 static int
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1435,13 +1436,27 @@ cmd_passwd (assuan_context_t ctx, char *line)
       literal string "[CHV3]": In this case the Admin PIN is checked
       if and only if the retry counter is still at 3.
 
+   For Netkey:
+
+      Any of the valid PIN Ids may be used.  These are the strings:
+
+        PW1.CH       - Global password 1
+        PW2.CH       - Global password 2
+        PW1.CH.SIG   - SigG password 1
+        PW2.CH.SIG   - SigG password 2
+
+      For a definitive list, see the implementation in app-nks.c.
+      Note that we call a PW2.* PIN a "PUK" despite that since TCOS
+      3.0 they are technically alternative PINs used to mutally
+      unblock each other.
+
  */
 static int
 cmd_checkpin (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  char *keyidstr;
+  char *idstr;
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
@@ -1455,14 +1470,12 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid. */
-  keyidstr = xtrystrdup (line);
-  if (!keyidstr)
+  idstr = xtrystrdup (line);
+  if (!idstr)
     return out_of_core ();
   
-  rc = app_check_pin (ctrl->app_ctx,
-                      keyidstr,
-                      pin_cb, ctx);
-  xfree (keyidstr);
+  rc = app_check_pin (ctrl->app_ctx, idstr, pin_cb, ctx);
+  xfree (idstr);
   if (rc)
     log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));
 
@@ -1566,7 +1579,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
    deny_admin  - Returns OK if admin commands are not allowed or
                  GPG_ERR_GENERAL if admin commands are allowed.
 
-   app_list    - Return a list of supported applciations.  One
+   app_list    - Return a list of supported applications.  One
                  application per line, fields delimited by colons,
                  first field is the name.
 */

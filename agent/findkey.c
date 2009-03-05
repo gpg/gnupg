@@ -367,7 +367,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
     return gpg_error_from_syserror ();
   pi->max_length = 100;
   pi->min_digits = 0;  /* we want a real passphrase */
-  pi->max_digits = 8;
+  pi->max_digits = 16;
   pi->max_tries = 3;
   pi->check_cb = try_unprotect_cb;
   arg.ctrl = ctrl;

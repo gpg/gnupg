@@ -1,3 +1,9 @@
+2009-03-05  Werner Koch  <wk@g10code.com>
+
+	* divert-scd.c (getpin_cb): Support flag 'P'.  Change max_digits
+	from 8 to 16.  Append a message about keypads.
+	* findkey.c (unprotect): Change max digits to 16.
+
 2009-03-02  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): Add subcommand "scd_running".

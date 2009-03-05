@@ -1,3 +1,30 @@
+2009-03-05  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_a_chv): Remove special case for keypads.
+	(verify_chv3): Ditto.
+
+	* app-nks.c (get_chv_status): New.
+	(parse_pwidstr): New.
+	(verify_pin): Add args PWID and DESC and use them.  Remove the
+	CHV1 caching.
+	(do_change_pin): Allow PIN selection and add reset mode.
+	(do_learn_status): Use NKS-NKS3 tag for TCOS 3 cards.
+	(do_readcert, do_sign): Allow NKS-NKS3 tag.
+
+2009-03-04  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (do_getattr): New.
+	(app_select_nks): Register it.
+	(verify_pin): Factor some code out to...
+	(basic_pin_checks): New.
+	(do_change_pin): Call the basic check.
+	(app_select_nks): Move AID to ..
+	(aid_nks): .. new.
+	(aid_sigg): New.
+	(switch_application): New.
+	(do_getattr, do_learn_status, do_readcert, do_sign, do_decipher) 
+	(do_change_pin, do_check_pin): Make sure we are in NKS mode.
+
 2009-03-03  Werner Koch  <wk@g10code.com>
 
 	* command.c (scd_command_handler): Remove dereference of STOPME
