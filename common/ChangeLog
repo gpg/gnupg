@@ -1,3 +1,7 @@
+2009-03-06  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c (make_canon_sexp): New.
+
 2009-03-03  Werner Koch  <wk@g10code.com>
 
 	* exechelp.c (do_exec): Make sure that /dev/null connected FDs are

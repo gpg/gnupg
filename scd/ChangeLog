@@ -1,3 +1,10 @@
+2009-03-06  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (do_learn_status): Factor code out to..
+	(do_learn_status_core): .. new.
+	(do_readcert, do_sign, do_decipher): Switch to SigG if needed.
+	(verify_pin): Use DESC also for keypad based verify.
+
 2009-03-05  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_a_chv): Remove special case for keypads.

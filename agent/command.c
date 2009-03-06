@@ -1,6 +1,6 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2008  Free Software Foundation, Inc.
+ *               2006, 2008, 2009  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +30,9 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 #include <assuan.h>
 
@@ -308,8 +311,21 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
           *p++ = ' ';
           n++;
         }
-      for ( ; *text && n < DIM (buf)-2; n++)
-        *p++ = *text++;
+      for ( ; *text && n < DIM (buf)-3; n++, text++)
+        {
+          if (*text == '\n')
+            {
+              *p++ = '\\';
+              *p++ = 'n';
+            }
+          else if (*text == '\r')
+            {
+              *p++ = '\\';
+              *p++ = 'r';
+            }
+          else
+            *p++ = *text;
+        }
     }
   *p = 0;
   err = assuan_write_status (ctx, keyword, buf);
@@ -806,7 +822,145 @@ cmd_readkey (assuan_context_t ctx, char *line)
 }
 
 
+
+/* KEYINFO [--list] <keygrip>
 
+   Return information about the key specified by the KEYGRIP.  If the
+   key is not available GPG_ERR_NOT_FOUND is returned.  If the option
+   --list is given the keygrip is ignored and information about all
+   available keys are returned.  The information is returned as a
+   status line with this format:
+
+     KEYINFO <keygrip> <type> <serialno> <idstr>
+
+   KEYGRIP is the keygrip.
+
+   TYPE is describes the type of the key:
+       'D' - Regular key stored on disk,
+       'T' - Key is stored on a smartcard (token).
+       '-' - Unknown type.
+
+   SERIALNO is an ASCII string with the serial number of the
+            smartcard.  If the serial number is not known a single
+            dash '-' is used instead.
+
+   IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it
+         is not known a dash is used instead.
+
+   More information may be added in the future.
+*/
+static gpg_error_t
+do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
+{
+  gpg_error_t err;
+  char hexgrip[40+1];
+  int keytype;
+  unsigned char *shadow_info = NULL;
+  char *serialno = NULL;
+  char *idstr = NULL;
+  const char *keytypestr;
+
+  err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
+  if (err)
+    goto leave;
+
+  /* Reformat the grip so that we use uppercase as good style. */
+  bin2hex (grip, 20, hexgrip);
+      
+  if (keytype == PRIVATE_KEY_CLEAR 
+      || keytype == PRIVATE_KEY_PROTECTED)
+    keytypestr = "D";
+  else if (keytype == PRIVATE_KEY_SHADOWED)
+    keytypestr = "T";
+  else 
+    keytypestr = "-";
+      
+  if (shadow_info)
+    {
+      err = parse_shadow_info (shadow_info, &serialno, &idstr);
+      if (err)
+        goto leave;
+    }
+      
+  err = agent_write_status (ctrl, "KEYINFO",
+                            hexgrip,
+                            keytypestr,
+                            serialno? serialno : "-",
+                            idstr? idstr : "-",
+                            NULL);
+ leave:
+  xfree (shadow_info);
+  xfree (serialno);
+  xfree (idstr);
+  return err;
+}
+
+
+static int
+cmd_keyinfo (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int err;
+  unsigned char grip[20];
+  DIR *dir = NULL;
+  int list_mode;
+
+  list_mode = has_option (line, "--list");
+  line = skip_options (line);
+
+  if (list_mode)
+    {
+      char *dirname;
+      struct dirent *dir_entry;
+      char hexgrip[41];
+      
+      dirname = make_filename_try (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
+      if (!dirname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      dir = opendir (dirname);
+      if (!dir)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (dirname);
+          goto leave;
+        }
+      xfree (dirname);
+
+      while ( (dir_entry = readdir (dir)) )
+        {
+          if (strlen (dir_entry->d_name) != 44
+              || strcmp (dir_entry->d_name + 40, ".key"))
+            continue;
+          strncpy (hexgrip, dir_entry->d_name, 40);
+          hexgrip[40] = 0;
+
+          if ( hex2bin (hexgrip, grip, 20) < 0 )
+            continue; /* Bad hex string.  */
+
+          err = do_one_keyinfo (ctrl, grip);
+          if (err)
+            goto leave;
+        }
+      err = 0;
+    }
+  else
+    {
+      err = parse_keygrip (ctx, line, grip);
+      if (err)
+        goto leave;
+      err = do_one_keyinfo (ctrl, grip);
+    }
+      
+ leave:
+  if (dir)
+    closedir (dir);
+  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+    log_error ("command keyinfo failed: %s\n", gpg_strerror (err));
+  return err;
+}
 
 
 
@@ -1574,6 +1728,7 @@ register_commands (assuan_context_t ctx)
     { "GETEVENTCOUNTER",cmd_geteventcounter },
     { "ISTRUSTED",      cmd_istrusted },
     { "HAVEKEY",        cmd_havekey },
+    { "KEYINFO",        cmd_keyinfo },
     { "SIGKEY",         cmd_sigkey },
     { "SETKEY",         cmd_sigkey },
     { "SETKEYDESC",     cmd_setkeydesc },

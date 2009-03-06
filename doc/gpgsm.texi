@@ -240,10 +240,12 @@ optional @var{pattern}. Those pattern consist of a list of user ids
 (@pxref{how-to-specify-a-user-id}).  When used along with the
 @option{--armor} option a few informational lines are prepended before
 each block.  There is one limitation: As there is no commonly agreed
-upon way to pack more than one certificate into an ASN.1 structure, the
-binary export (i.e. without using @option{armor}) works only for the
-export of one certificate.  Thus it is required to specify a
-@var{pattern} which yields exactly one certificate.
+upon way to pack more than one certificate into an ASN.1 structure,
+the binary export (i.e. without using @option{armor}) works only for
+the export of one certificate.  Thus it is required to specify a
+@var{pattern} which yields exactly one certificate.  Ephemeral
+certificate are only exported if all @var{pattern} are given as
+fingerprints or keygrips.
 
 @item --export-secret-key-p12 @var{key-id}
 @opindex export
@@ -601,7 +603,9 @@ forth to @var{epoch} which is the number of seconds elapsed since the year
 
 @item --with-ephemeral-keys
 @opindex with-ephemeral-keys
-Include ephemeral flagged keys in the output of key listings.
+Include ephemeral flagged keys in the output of key listings.  Note
+that they are included anyway if the key specification for a listing
+is given as fingerprint or keygrip.
 
 @item --debug-level @var{level}
 @opindex debug-level

@@ -56,14 +56,12 @@ int
 agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force)
 {
-  int i;
   char *fname;
   FILE *fp;
   char hexgrip[40+4+1];
   int fd;
   
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
@@ -307,14 +305,12 @@ unprotect (ctrl_t ctrl, const char *desc_text,
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
-  int rc, i;
+  int rc;
   unsigned char *result;
   size_t resultlen;
   char hexgrip[40+1];
   
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
-  hexgrip[40] = 0;
+  bin2hex (grip, 20, hexgrip);
 
   /* First try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
@@ -425,7 +421,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
 static gpg_error_t
 read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 {
-  int i, rc;
+  int rc;
   char *fname;
   FILE *fp;
   struct stat st;
@@ -436,8 +432,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   
   *result = NULL;
 
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
@@ -445,7 +440,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (!fp)
     {
       rc = gpg_error_from_syserror ();
-      log_error ("can't open `%s': %s\n", fname, strerror (errno));
+      if (gpg_err_code (rc) != GPG_ERR_ENOENT)
+        log_error ("can't open `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       return rc;
     }
@@ -488,11 +484,11 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 
 
 /* Return the secret key as an S-Exp in RESULT after locating it using
-   the grip.  Returns NULL in RESULT if the operation should be
-   diverted to a token; SHADOW_INFO will point then to an allocated
-   S-Expression with the shadow_info part from the file.  CACHE_MODE
-   defines now the cache shall be used.  DESC_TEXT may be set to
-   present a custom description for the pinentry. */
+   the GRIP.  Stores NULL at RESULT if the operation shall be diverted
+   to a token; in this case an allocated S-expression with the
+   shadow_info part from the file is stored at SHADOW_INFO.
+   CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
+   set to present a custom description for the pinentry.  */
 gpg_error_t
 agent_key_from_file (ctrl_t ctrl, const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
@@ -513,20 +509,11 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
     return rc;
 
   /* For use with the protection functions we also need the key as an
-     canonical encoded S-expression in abuffer.  Create this buffer
+     canonical encoded S-expression in a buffer.  Create this buffer
      now.  */
-  len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xtrymalloc (len);
-  if (!buf)
-    {
-      rc = gpg_error_from_syserror ();
-      gcry_sexp_release (s_skey);
-      return rc;
-    }
-  len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
-
+  rc = make_canon_sexp (s_skey, &buf, &len);
+  if (rc)
+    return rc;
 
   switch (agent_private_key_type (buf))
     {
@@ -842,19 +829,94 @@ agent_public_key_from_file (ctrl_t ctrl,
 int
 agent_key_available (const unsigned char *grip)
 {
-  int i;
+  int result;
   char *fname;
   char hexgrip[40+4+1];
   
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
-  i = !access (fname, R_OK)? 0 : -1;
+  result = !access (fname, R_OK)? 0 : -1;
   xfree (fname);
-  return i;
+  return result;
 }
 
 
 
+/* Return the information about the secret key specified by the binary
+   keygrip GRIP.  If the key is a shadowed one the shadow information
+   will be stored at the address R_SHADOW_INFO as an allocated
+   S-expression.  */
+gpg_error_t
+agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
+                          int *r_keytype, unsigned char **r_shadow_info)
+{
+  gpg_error_t err;
+  unsigned char *buf;
+  size_t len;
+  int keytype;
+
+  (void)ctrl;
+  
+  if (r_keytype)
+    *r_keytype = PRIVATE_KEY_UNKNOWN;
+  if (r_shadow_info)
+    *r_shadow_info = NULL;
+
+  {
+    gcry_sexp_t sexp;
+    
+    err = read_key_file (grip, &sexp);
+    if (err)
+      {
+        if (gpg_err_code (err) == GPG_ERR_ENOENT)
+          return gpg_error (GPG_ERR_NOT_FOUND);
+        else
+          return err;
+      }
+    err = make_canon_sexp (sexp, &buf, &len);
+    gcry_sexp_release (sexp);
+    if (err)
+      return err;
+  }
+  
+  keytype = agent_private_key_type (buf);
+  switch (keytype)
+    {
+    case PRIVATE_KEY_CLEAR:
+      break; 
+    case PRIVATE_KEY_PROTECTED:
+      /* If we ever require it we could retrieve the comment fields
+         from such a key. */
+      break;
+    case PRIVATE_KEY_SHADOWED:
+      if (r_shadow_info)
+        {
+          const unsigned char *s;
+          size_t n;
+
+          err = agent_get_shadow_info (buf, &s);
+          if (!err)
+            {
+              n = gcry_sexp_canon_len (s, 0, NULL, NULL);
+              assert (n);
+              *r_shadow_info = xtrymalloc (n);
+              if (!*r_shadow_info)
+                err = gpg_error_from_syserror ();
+              else
+                memcpy (*r_shadow_info, s, n);
+            }
+        }
+      break;
+    default:
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      break;
+    }
+
+  if (!err && r_keytype)
+    *r_keytype = keytype;
+
+  xfree (buf);
+  return err;
+}

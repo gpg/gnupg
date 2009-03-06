@@ -457,7 +457,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 
 #ifdef KEYBOX_WITH_X509
 /* Return true if the key in BLOB matches the 20 bytes keygrip GRIP.
-   We don't have the keygrips as meta data, thus wen need to parse the
+   We don't have the keygrips as meta data, thus we need to parse the
    certificate. Fixme: We might want to return proper error codes
    instead of failing a search for invalid certificates etc.  */
 static int

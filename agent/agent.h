@@ -233,6 +233,9 @@ gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
+gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
+                                      int *r_keytype,
+                                      unsigned char **r_shadow_info);
 
 /*-- call-pinentry.c --*/
 void initialize_module_call_pinentry (void);
@@ -294,6 +297,8 @@ int agent_shadow_key (const unsigned char *pubkey,
                       unsigned char **result);
 int agent_get_shadow_info (const unsigned char *shadowkey,
                            unsigned char const **shadow_info);
+gpg_error_t parse_shadow_info (const unsigned char *shadow_info, 
+                               char **r_hexsn, char **r_idstr);
 
 
 /*-- trustlist.c --*/

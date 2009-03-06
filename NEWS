@@ -1,6 +1,12 @@
 Noteworthy changes in version 2.0.12
 -------------------------------------------------
 
+ * GPGSM now always lists ephemeral certificates if specified by
+   fingerprint or keygrip.
+
+ * New command "KEYINFO" for GPG_AGENT.  GPGSM now also returns
+   information about smartcards.
+
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------

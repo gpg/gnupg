@@ -28,16 +28,14 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "sexp-parse.h"
 #include "i18n.h"
+#include "sexp-parse.h"
 
 
 static int
 ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
 {
   int rc, i;
-  const unsigned char *s;
-  size_t n;
   char *serialno;
   int no_card = 0;
   char *desc;
@@ -45,38 +43,18 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
   int want_sn_displen;
 
   *r_kid = NULL;
-  s = shadow_info;
-  if (*s != '(')
-    return gpg_error (GPG_ERR_INV_SEXP);
-  s++;
-  n = snext (&s);
-  if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP);
-  want_sn = xtrymalloc (n*2+1);
-  if (!want_sn)
-    return out_of_core ();
-  for (i=0; i < n; i++)
-    sprintf (want_sn+2*i, "%02X", s[i]);
-  s += n;
+
+  rc = parse_shadow_info (shadow_info, &want_sn, &want_kid);
+  if (rc)
+    return rc;
+
   /* We assume that a 20 byte serial number is a standard one which
-     seems to have the property to have a zero in the last nibble.  We
-     don't display this '0' because it may confuse the user */
+     has the property to have a zero in the last nibble (Due to BCD
+     representation).  We don't display this '0' because it may
+     confuse the user.  */
   want_sn_displen = strlen (want_sn);
   if (want_sn_displen == 20 && want_sn[19] == '0')
     want_sn_displen--;
-
-  n = snext (&s);
-  if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP);
-  want_kid = xtrymalloc (n+1);
-  if (!want_kid)
-    {
-      gpg_error_t tmperr = out_of_core ();
-      xfree (want_sn);
-      return tmperr;
-    }
-  memcpy (want_kid, s, n);
-  want_kid[n] = 0;
 
   for (;;)
     {

@@ -196,8 +196,8 @@ gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
   return array;
 }
 
-/* Return an allocated buffer with the keygrip of CERT in from of an
-   hexstring.  NULL is returned in case of error */
+/* Return an allocated buffer with the keygrip of CERT encoded as a
+   hexstring.  NULL is returned in case of error.  */
 char *
 gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 {

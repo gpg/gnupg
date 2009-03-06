@@ -395,6 +395,8 @@ int gpgsm_agent_learn (ctrl_t ctrl);
 int gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc);
 gpg_error_t gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc);
 gpg_error_t gpgsm_agent_send_nop (ctrl_t ctrl);
+gpg_error_t gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
+                                 char **r_serialno);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,

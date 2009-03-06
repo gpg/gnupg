@@ -1,3 +1,14 @@
+2009-03-06  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (gpgsm_agent_keyinfo, keyinfo_status_cb): New.
+	* keylist.c (list_cert_colon): Print card S/N.
+
+	* keylist.c (list_internal_keys): Always list ephemeral keys if
+	specified by keygrip or fingerprint.
+	(list_cert_raw): Always show ephemeral flag.
+	* export.c (gpgsm_export): Export ephemeral keys if specified by
+	keygrip.
+
 2009-02-09  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Change default cipher back to 3DES.
@@ -2451,7 +2462,7 @@ h2007-11-22  Werner Koch  <wk@g10code.com>
 
 	
  Copyright 2001, 2002, 2003, 2004, 2005, 2006,
-	   2007, 2008 Free Software Foundation, Inc.
+	   2007, 2008, 2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -1,5 +1,5 @@
 /* export.c - Export certificates and private keys.
- * Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,11 +37,11 @@
 
 
 /* A table to store a fingerprint as used in a duplicates table.  We
-   don't need to hash here because a fingerprint is alrady a perfect
+   don't need to hash here because a fingerprint is already a perfect
    hash value.  This we use the most significant bits to index the
    table and then use a linked list for the overflow.  Possible
-   enhancement for very large number of certictates: Add a second
-   level table and then resort to a linked list. */
+   enhancement for very large number of certificates:  Add a second
+   level table and then resort to a linked list.  */
 struct duptable_s
 {
   struct duptable_s *next;
@@ -192,18 +192,16 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream)
         }
     }
 
-  /* If all specifications are done by fingerprint, we switch to
-     ephemeral mode so that _all_ currently available and matching
-     certificates are exported. 
-
-     fixme: we should in this case keep a list of certificates to
-     avoid accidential export of duplicate certificates. */
+  /* If all specifications are done by fingerprint or keygrip, we
+     switch to ephemeral mode so that _all_ currently available and
+     matching certificates are exported.  */
   if (names && ndesc)
     {
       for (i=0; (i < ndesc
                  && (desc[i].mode == KEYDB_SEARCH_MODE_FPR
                      || desc[i].mode == KEYDB_SEARCH_MODE_FPR20
-                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR16)); i++)
+                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR16
+                     || desc[i].mode == KEYDB_SEARCH_MODE_KEYGRIP)); i++)
         ;
       if (i == ndesc)
         keydb_set_ephemeral (hd, 1);
@@ -228,7 +226,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream)
       rc = insert_duptable (dtable, fpr, &exists);
       if (rc)
         {
-          log_error ("inserting into duplicates table fauiled: %s\n",
+          log_error ("inserting into duplicates table failed: %s\n",
                      gpg_strerror (rc));
           goto leave;
         }

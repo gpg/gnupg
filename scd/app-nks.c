@@ -308,17 +308,20 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
 
 
-
-static gpg_error_t
-do_learn_status (app_t app, ctrl_t ctrl)
+static void
+do_learn_status_core (app_t app, ctrl_t ctrl, int is_sigg)
 {
   gpg_error_t err;
   char ct_buf[100], id_buf[100];
   int i;
+  const char *tag;
 
-  err = switch_application (app, 0);
-  if (err)
-    return err;
+  if (is_sigg)
+    tag = "SIGG";
+  else if (app->app_local->nks_version < 3)
+    tag = "DF01";
+  else
+    tag = "NKS3";
 
   /* Output information about all useful objects in the NKS application. */
   for (i=0; filelist[i].fid; i++)
@@ -326,7 +329,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
       if (filelist[i].nks_ver > app->app_local->nks_version)
         continue;
 
-      if (filelist[i].is_sigg)
+      if (!!filelist[i].is_sigg != !!is_sigg)
         continue;
 
       if (filelist[i].certtype)
@@ -342,8 +345,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
                  read that many bytes. */
               snprintf (ct_buf, sizeof ct_buf, "%d", filelist[i].certtype);
               snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X", 
-                        app->app_local->nks_version < 3? "DF01":"NKS3",
-                        filelist[i].fid);
+                        tag, filelist[i].fid);
               send_status_info (ctrl, "CERTINFO",
                                 ct_buf, strlen (ct_buf), 
                                 id_buf, strlen (id_buf), 
@@ -361,8 +363,7 @@ do_learn_status (app_t app, ctrl_t ctrl)
           else
             {
               snprintf (id_buf, sizeof id_buf, "NKS-%s.%04X",
-                        app->app_local->nks_version < 3? "DF01":"NKS3",
-                        filelist[i].fid);
+                        tag, filelist[i].fid);
               send_status_info (ctrl, "KEYPAIRINFO",
                                 gripstr, 40, 
                                 id_buf, strlen (id_buf), 
@@ -370,59 +371,27 @@ do_learn_status (app_t app, ctrl_t ctrl)
             }
         }
     }
+
+
+}
+
+
+static gpg_error_t
+do_learn_status (app_t app, ctrl_t ctrl)
+{
+  gpg_error_t err;
+
+  err = switch_application (app, 0);
+  if (err)
+    return err;
+  
+  do_learn_status_core (app, ctrl, 0);
 
   err = switch_application (app, 1);
   if (err)
-    return 0;  /* Silently ignore if we can't swicth to SigG.  */
+    return 0;  /* Silently ignore if we can't switch to SigG.  */
 
-  for (i=0; filelist[i].fid; i++)
-    {
-      if (filelist[i].nks_ver > app->app_local->nks_version)
-        continue;
-
-      if (!filelist[i].is_sigg)
-        continue;
-
-      if (filelist[i].certtype)
-        {
-          size_t len;
-
-          len = app_help_read_length_of_cert (app->slot,
-                                              filelist[i].fid, NULL);
-          if (len)
-            {
-              /* FIXME: We should store the length in the application's
-                 context so that a following readcert does only need to
-                 read that many bytes. */
-              snprintf (ct_buf, sizeof ct_buf, "%d", filelist[i].certtype);
-              snprintf (id_buf, sizeof id_buf, "NKS-SIGG.%04X",
-                        filelist[i].fid);
-              send_status_info (ctrl, "CERTINFO",
-                                ct_buf, strlen (ct_buf), 
-                                id_buf, strlen (id_buf), 
-                                NULL, (size_t)0);
-            }
-        }
-      else if (filelist[i].iskeypair)
-        {
-          char gripstr[40+1];
-
-          err = keygripstr_from_pk_file (app, filelist[i].fid, gripstr);
-          if (err)
-            log_error ("can't get keygrip from FID 0x%04X: %s\n",
-                       filelist[i].fid, gpg_strerror (err));
-          else
-            {
-              snprintf (id_buf, sizeof id_buf, "NKS-SIGG.%04X",
-                        filelist[i].fid);
-              send_status_info (ctrl, "KEYPAIRINFO",
-                                gripstr, 40, 
-                                id_buf, strlen (id_buf), 
-                                NULL, (size_t)0);
-            }
-        }
-    }
-
+  do_learn_status_core (app, ctrl, 1);
 
   return 0;
 }
@@ -446,20 +415,24 @@ do_readcert (app_t app, const char *certid,
   int class, tag, constructed, ndef;
   size_t totobjlen, objlen, hdrlen;
   int rootca = 0;
+  int is_sigg = 0;
 
   *cert = NULL;
   *certlen = 0;
-
-  err = switch_application (app, 0);
-  if (err)
-    return err;
 
   if (!strncmp (certid, "NKS-NKS3.", 9)) 
     ;
   else if (!strncmp (certid, "NKS-DF01.", 9)) 
     ;
+  else if (!strncmp (certid, "NKS-SIGG.", 9)) 
+    is_sigg = 1;
   else
     return gpg_error (GPG_ERR_INV_ID);
+
+  err = switch_application (app, is_sigg);
+  if (err)
+    return err;
+
   certid += 9;
   if (!hexdigitp (certid) || !hexdigitp (certid+1)
       || !hexdigitp (certid+2) || !hexdigitp (certid+3) 
@@ -603,9 +576,7 @@ verify_pin (app_t app, int pwid, const char *desc,
   if (!opt.disable_keypad
       && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
     {
-      rc = pincb (pincb_arg,
-                  _("||Please enter your PIN at the reader's keypad"),
-                  NULL);
+      rc = pincb (pincb_arg, desc, NULL);
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"),
@@ -613,11 +584,8 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
  
-      /* Although it is possible to use a local PIN, we use the global
-         PIN for this application.  */
-      rc = iso7816_verify_kp (app->slot, 0, "", 0, &pininfo); 
-      /* Dismiss the prompt. */
-      pincb (pincb_arg, NULL, NULL);
+      rc = iso7816_verify_kp (app->slot, pwid, "", 0, &pininfo); 
+      pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
     }
   else
     {
@@ -630,8 +598,6 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      /* The following limits are due to TCOS but also defined in the
-         NKS specs. */
       rc = basic_pin_checks (pinvalue, pininfo.minlen, pininfo.maxlen);
       if (rc)
         {
@@ -675,6 +641,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
       0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
   int rc, i;
+  int is_sigg = 0;
   int fid;
   unsigned char data[35];   /* Must be large enough for a SHA-1 digest
                                + the largest OID _prefix above. */
@@ -684,19 +651,22 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (indatalen != 20 && indatalen != 16 && indatalen != 35)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  rc = switch_application (app, 0);
-  if (rc)
-    return rc;
-
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
   if (!strncmp (keyidstr, "NKS-NKS3.", 9) ) 
     ;
   else if (!strncmp (keyidstr, "NKS-DF01.", 9) ) 
     ;
+  else if (!strncmp (keyidstr, "NKS-SIGG.", 9) ) 
+    is_sigg = 1;
   else
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 9;
+
+  rc = switch_application (app, is_sigg);
+  if (rc)
+    return rc;
+
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
       || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
       || keyidstr[4])
@@ -743,7 +713,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
 
 
-
 /* Decrypt the data in INDATA and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
@@ -759,14 +728,11 @@ do_decipher (app_t app, const char *keyidstr,
     0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
   };
   int rc, i;
+  int is_sigg = 0;
   int fid;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
-
-  rc = switch_application (app, 0);
-  if (rc)
-    return rc;
 
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to to enforce correct usage by the caller. */
@@ -774,9 +740,16 @@ do_decipher (app_t app, const char *keyidstr,
     ;
   else if (!strncmp (keyidstr, "NKS-DF01.", 9) ) 
     ;
+  else if (!strncmp (keyidstr, "NKS-SIGG.", 9) ) 
+    is_sigg = 1;
   else
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 9;
+
+  rc = switch_application (app, is_sigg);
+  if (rc)
+    return rc;
+
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
       || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
       || keyidstr[4])

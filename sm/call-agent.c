@@ -1,6 +1,6 @@
 /* call-agent.c - Divert GPGSM operations to the agent
  * Copyright (C) 2001, 2002, 2003, 2005, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -835,4 +835,69 @@ gpgsm_agent_send_nop (ctrl_t ctrl)
   return rc;
 }
 
+
+
+static int
+keyinfo_status_cb (void *opaque, const char *line)
+{
+  char **serialno = opaque;
+  const char *s, *s2;
+
+  if (!strncmp (line, "KEYINFO ", 8) && !*serialno)
+    {
+      s = strchr (line+8, ' ');
+      if (s && s[1] == 'T' && s[2] == ' ' && s[3])
+        {
+          s += 3;
+          s2 = strchr (s, ' ');
+          if ( s2 > s )
+            {
+              *serialno = xtrymalloc ((s2 - s)+1);
+              if (*serialno)
+                {
+                  memcpy (*serialno, s, s2 - s);
+                  (*serialno)[s2 - s] = 0;
+                }
+            }
+        }
+    }
+  return 0;
+}
+
+/* Return the serial number for a secret key.  If the returned serial
+   number is NULL, the key is not stored on a smartcard.  Caller needs
+   to free R_SERIALNO.  */
+gpg_error_t
+gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char *serialno = NULL;
+
+  *r_serialno = NULL;
+
+  err = start_agent (ctrl);
+  if (err)
+    return err;
+
+  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  snprintf (line, DIM(line)-1, "KEYINFO %s", hexkeygrip);
+  line[DIM(line)-1] = 0;
+
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
+                         keyinfo_status_cb, &serialno);
+  if (!err && serialno)
+    {
+      /* Sanity check for bad characters.  */
+      if (strpbrk (serialno, ":\n\r"))
+        err = GPG_ERR_INV_VALUE;
+    }
+  if (err)
+    xfree (serialno);
+  else
+    *r_serialno = serialno;
+  return err;
+}
 

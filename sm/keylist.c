@@ -1,6 +1,6 @@
 /* keylist.c - Print certificates in various formats.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005, 2008 Free Software Foundation, Inc.
+ *               2004, 2005, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -481,7 +481,24 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);
   /* Field 12, capabilities: */ 
   print_capabilities (cert, fp);
+  /* Field 13, not used: */
   es_putc (':', fp);
+  if (have_secret)
+    {
+      char *cardsn;
+
+      p = gpgsm_get_keygrip_hexstring (cert);
+      if (!gpgsm_agent_keyinfo (ctrl, p, &cardsn) && cardsn)
+        {
+          /* Field 14, not used: */
+          es_putc (':', fp);
+          /* Field 15:  Token serial number.  */
+          es_fputs (cardsn, fp);
+          es_putc (':', fp);
+        }
+      xfree (cardsn);
+      xfree (p);
+    }
   es_putc ('\n', fp);
 
   /* FPR record */
@@ -989,7 +1006,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
         es_fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
     }
 
-  if (opt.with_ephemeral_keys && hd)
+  if (hd)
     {
       unsigned int blobflags;
 
@@ -1275,6 +1292,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   gpg_error_t rc = 0;
   const char *lastresname, *resname;
   int have_secret;
+  int want_ephemeral = opt.with_ephemeral_keys;
 
   hd = keydb_new (0);
   if (!hd)
@@ -1319,7 +1337,24 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
       
     }
 
-  if (opt.with_ephemeral_keys)
+  /* If all specifications are done by fingerprint or keygrip, we
+     switch to ephemeral mode so that _all_ currently available and
+     matching certificates are listed.  */
+  if (!want_ephemeral && names && ndesc)
+    {
+      int i;
+
+      for (i=0; (i < ndesc
+                 && (desc[i].mode == KEYDB_SEARCH_MODE_FPR
+                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR20
+                     || desc[i].mode == KEYDB_SEARCH_MODE_FPR16
+                     || desc[i].mode == KEYDB_SEARCH_MODE_KEYGRIP)); i++)
+        ;
+      if (i == ndesc)
+        want_ephemeral = 1;
+    }
+
+  if (want_ephemeral)
     keydb_set_ephemeral (hd, 1);
 
   /* It would be nice to see which of the given users did actually

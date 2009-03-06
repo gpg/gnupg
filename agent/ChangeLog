@@ -1,3 +1,16 @@
+2009-03-06  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_keyinfo): New command.
+	(register_commands): Register it.
+	(agent_write_status): Make sure not to print LR or CR.
+	* divert-scd.c (ask_for_card): Factor shadow info parsing out to ...
+	* protect.c (parse_shadow_info): New.
+	* findkey.c (agent_key_from_file): Use make_canon_sexp.
+	(agent_write_private_key, unprotect, read_key_file)
+	(agent_key_available): Use bin2hex.
+	(agent_key_info_from_file): New.
+	(read_key_file): Log no error message for ENOENT.
+
 2009-03-05  Werner Koch  <wk@g10code.com>
 
 	* divert-scd.c (getpin_cb): Support flag 'P'.  Change max_digits
@@ -2227,7 +2240,7 @@ Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
 
 
  Copyright 2001, 2002, 2003, 2004, 2005,
-	   2007 Free Software Foundation, Inc.
+	   2007, 2008, 2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

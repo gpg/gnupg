@@ -1,6 +1,6 @@
 /* protect.c - Un/Protect a secret key
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003, 2007 Free Software Foundation, Inc.
+ *               2003, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1102,6 +1102,71 @@ agent_get_shadow_info (const unsigned char *shadowkey,
     }
   else
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+  return 0;
+}
+
+
+/* Parse the canonical encoded SHADOW_INFO S-expression.  On success
+   the hex encoded serial number is returned as a malloced strings at
+   R_HEXSN and the Id string as a malloced string at R_IDSTR.  On
+   error an error code is returned and NULL is stored at the result
+   parameters addresses.  If the serial number or the ID string is not
+   required, NULL may be passed for them.  */
+gpg_error_t
+parse_shadow_info (const unsigned char *shadow_info, 
+                   char **r_hexsn, char **r_idstr)
+{
+  const unsigned char *s;
+  size_t n;
+
+  if (r_hexsn)
+    *r_hexsn = NULL;
+  if (r_idstr)
+    *r_idstr = NULL;
+
+  s = shadow_info;
+  if (*s != '(')
+    return gpg_error (GPG_ERR_INV_SEXP);
+  s++;
+  n = snext (&s);
+  if (!n)
+    return gpg_error (GPG_ERR_INV_SEXP);
+
+  if (r_hexsn)
+    {
+      *r_hexsn = bin2hex (s, n, NULL);
+      if (!*r_hexsn)
+        return gpg_error_from_syserror ();
+    }
+  s += n;
+
+  n = snext (&s);
+  if (!n)
+    {
+      if (r_hexsn)
+        {
+          xfree (*r_hexsn);
+          *r_hexsn = NULL;
+        }
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+  
+  if (r_idstr)
+    {
+      *r_idstr = xtrymalloc (n+1);
+      if (!*r_idstr)
+        {
+          if (r_hexsn)
+            {
+              xfree (*r_hexsn);
+              *r_hexsn = NULL;
+            }
+          return gpg_error_from_syserror ();
+        }
+      memcpy (*r_idstr, s, n);
+      (*r_idstr)[n] = 0;
+    }
+
   return 0;
 }
 

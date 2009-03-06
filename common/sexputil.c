@@ -1,5 +1,5 @@
 /* sexputil.c - Utility functions for S-expressions.
- * Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +33,42 @@
 
 #include "util.h"
 #include "sexp-parse.h"
+
+
+/* Helper function to create a a canonical encoded S-expression from a
+   Libgcrypt S-expression object.  The function returns 0 on success
+   and the malloced canonical S-expression is stored at R_BUFFER and
+   the allocated length at R_BUFLEN.  On error an error code is
+   returned and (NULL, 0) stored at R_BUFFER and R_BUFLEN.  If the
+   allocated buffer length is not required, NULL by be used for
+   R_BUFLEN.  */
+gpg_error_t
+make_canon_sexp (gcry_sexp_t sexp, unsigned char **r_buffer, size_t *r_buflen)
+{
+  size_t len;
+  unsigned char *buf;
+
+  *r_buffer = NULL;
+  if (r_buflen)
+    *r_buflen = 0;;
+  
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
+  if (!len)
+    return gpg_error (GPG_ERR_BUG);
+  buf = xtrymalloc (len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, buf, len);
+  if (!len)
+    return gpg_error (GPG_ERR_BUG);
+
+  *r_buffer = buf;
+  if (r_buflen)
+    *r_buflen = len;
+
+  return 0;
+}
+
 
 /* Return the so called "keygrip" which is the SHA-1 hash of the
    public key parameters expressed in a way depended on the algorithm.
