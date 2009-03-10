@@ -1,3 +1,9 @@
+2009-03-10  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (send_key_attr): New.
+	(do_getattr): New attribute KEY_ATTR.
+	* command.c (send_status_direct): New.
+
 2009-03-06  Werner Koch  <wk@g10code.com>
 
 	* app-nks.c (do_learn_status): Factor code out to..

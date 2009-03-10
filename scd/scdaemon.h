@@ -125,6 +125,7 @@ void initialize_module_command (void);
 int  scd_command_handler (ctrl_t, int);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...)
      GNUPG_GCC_A_SENTINEL(1);
+void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 void scd_update_reader_status_file (void);
 
 

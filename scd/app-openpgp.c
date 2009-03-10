@@ -151,7 +151,7 @@ struct app_local_s {
                            key. Might be NULL if key is not
                            available.  */
     size_t keylen;      /* The length of the above S-expression.  This
-                           is usullay only required for cross checks
+                           is usually only required for cross checks
                            because the length of an S-expression is
                            implicitly available.  */
   } pk[3];
@@ -746,6 +746,24 @@ send_key_data (ctrl_t ctrl, const char *name,
   xfree (buf);
 }
 
+
+static void
+send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
+{                      
+  char buffer[200];
+
+  assert (number >=0 && number < DIM(app->app_local->keyattr));
+
+  /* We only support RSA thus the algo identifier is fixed to 1.  */
+  snprintf (buffer, sizeof buffer, "%d 1 %u %u %d",
+            number+1,
+            app->app_local->keyattr[number].n_bits,
+            app->app_local->keyattr[number].e_bits,
+            app->app_local->keyattr[number].format);
+  send_status_direct (ctrl, keyword, buffer);
+}
+
+
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
 static gpg_error_t 
@@ -763,6 +781,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PUBKEY-URL",   0x5F50 },
     { "KEY-FPR",      0x00C5, 3 },
     { "KEY-TIME",     0x00CD, 4 },
+    { "KEY-ATTR",     0x0000, -5 },
     { "CA-FPR",       0x00C6, 3 },
     { "CHV-STATUS",   0x00C4, 1 }, 
     { "SIG-COUNTER",  0x0093, 2 },
@@ -811,14 +830,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -2)
     {
-      char tmp[50];
+      char tmp[100];
 
-      sprintf (tmp, "gc=%d ki=%d fc=%d pd=%d mcl3=%u", 
-               app->app_local->extcap.get_challenge,
-               app->app_local->extcap.key_import,
-               app->app_local->extcap.change_force_chv,
-               app->app_local->extcap.private_dos,
-               app->app_local->extcap.max_certlen_3);
+      snprintf (tmp, sizeof tmp,
+                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d", 
+                app->app_local->extcap.get_challenge,
+                app->app_local->extcap.key_import,
+                app->app_local->extcap.change_force_chv,
+                app->app_local->extcap.private_dos,
+                app->app_local->extcap.max_certlen_3,
+                app->app_local->extcap.algo_attr_change);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
@@ -844,6 +865,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           xfree (serial);
         }
       return gpg_error (GPG_ERR_INV_NAME); 
+    }
+  if (table[idx].special == -5)
+    {
+      for (i=0; i < 3; i++)
+        send_key_attr (ctrl, app, table[idx].name, i);
+      return 0;
     }
 
   relptr = get_one_do (app, table[idx].tag, &value, &valuelen, &rc);
