@@ -343,16 +343,27 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	      }
 
 	    strlwr( p );
-	    uri->host = p;
-	    if( (p3=strchr( p, ':' )) ) {
-		*p3++ = 0;
-		uri->port = atoi( p3 );
-	    }
 
-	    uri->host = p;
+	    /* Handle a host of [IP] so that [IP:V6]:port works */
+	    if( *p == '[' && (p3=strchr( p, ']' )) )
+	      {
+		*p3++ = '\0';
+		/* worst case, uri->host should have length 0, points to \0 */
+		uri->host = p + 1;
+		p = p3;
+	      }
+	    else
+	      uri->host = p;
+
+	    if( (p3=strchr( p, ':' )) )
+	      {
+		*p3++ = '\0';
+		uri->port = atoi( p3 );
+	      }
+
 	    if( (n = remove_escapes( uri->host )) < 0 )
 		return G10ERR_BAD_URI;
-	    if( n != strlen( p ) )
+	    if( n != strlen( uri->host ) )
 		return G10ERR_BAD_URI; /* hostname with a Nul in it */
 	    p = p2 ? p2 : NULL;
 	}
