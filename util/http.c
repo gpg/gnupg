@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
  * Copyright (C) 1999, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -713,7 +713,7 @@ parse_response( HTTP_HD hd )
 
 #ifdef TEST
 static int
-start_server()
+start_server(void)
 {
     struct sockaddr_in mya;
     struct sockaddr_in peer;
@@ -1062,7 +1062,7 @@ main(int argc, char **argv)
     }
     release_parsed_uri( uri ); uri = NULL;
 
-    rc = http_open_document( &hd, *argv, 0, NULL );
+    rc = http_open_document( &hd, *argv, NULL, 0, NULL );
     if( rc ) {
 	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
 	return 1;
