@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -623,17 +623,27 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
 
           for (pp=p; *pp; pp++)
             *pp = tolower (*(unsigned char*)pp);
-	  uri->host = p;
+
+	  /* Handle an IPv6 literal */
+	  if( *p == '[' && (p3=strchr( p, ']' )) )
+	    {
+	      *p3++ = '\0';
+	      /* worst case, uri->host should have length 0, points to \0 */
+	      uri->host = p + 1;
+	      p = p3;
+	    }
+	  else
+	    uri->host = p;
+
 	  if ((p3 = strchr (p, ':')))
 	    {
-	      *p3++ = 0;
+	      *p3++ = '\0';
 	      uri->port = atoi (p3);
 	    }
 
-	  uri->host = p;
 	  if ((n = remove_escapes (uri->host)) < 0)
 	    return gpg_error (GPG_ERR_BAD_URI);
-	  if (n != strlen (p))
+	  if (n != strlen (uri->host))
 	    return gpg_error (GPG_ERR_BAD_URI);	/* Hostname incudes a Nul. */
 	  p = p2 ? p2 : NULL;
 	}

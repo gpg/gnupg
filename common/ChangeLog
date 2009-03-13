@@ -1,3 +1,8 @@
+2009-03-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (do_parse_uri): Properly handle IPv6 literal addresses as
+	per RFC-2732.  Adapted from patch by Phil Pennock.
+
 2009-03-06  Werner Koch  <wk@g10code.com>
 
 	* sexputil.c (make_canon_sexp): New.
