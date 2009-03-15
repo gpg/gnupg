@@ -1,5 +1,8 @@
 2009-03-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.c (my_strusage): gpg2 and gpgv2 (not gpg and gpgv).
+	* gpgv.c (my_strusage): Same.
+
 	* gpgv.c (my_strusage): Fix name of program in "Syntax" line.
 
 2009-02-27  Werner Koch  <wk@g10code.com>

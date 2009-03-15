@@ -107,16 +107,16 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpgv (GnuPG)";
+    case 11: p = "gpgv2 (GnuPG)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p =  _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
 	break;
     case 1:
-    case 40: p = _("Usage: gpgv [options] [files] (-h for help)");
+    case 40: p = _("Usage: gpgv2 [options] [files] (-h for help)");
       break;
-    case 41: p = _("Syntax: gpgv [options] [files]\n"
+    case 41: p = _("Syntax: gpgv2 [options] [files]\n"
                    "Check signatures against known trusted keys\n");
 	break;
 
