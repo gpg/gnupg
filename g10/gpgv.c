@@ -116,7 +116,7 @@ my_strusage( int level )
     case 1:
     case 40: p = _("Usage: gpgv [options] [files] (-h for help)");
       break;
-    case 41: p = _("Syntax: gpg [options] [files]\n"
+    case 41: p = _("Syntax: gpgv [options] [files]\n"
                    "Check signatures against known trusted keys\n");
 	break;
 
