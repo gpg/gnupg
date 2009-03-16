@@ -148,19 +148,6 @@ gpgsm_print_time (estream_t fp, ksba_isotime_t t)
 
 
 void
-gpgsm_dump_time (ksba_isotime_t t)
-{
-  if (!t || !*t)
-    log_printf (_("[none]"));
-  else
-    log_printf ("%.4s-%.2s-%.2s %.2s:%.2s:%s",
-                t, t+4, t+6, t+9, t+11, t+13);
-}
-
-
-
-
-void
 gpgsm_dump_string (const char *string)
 {
 
@@ -207,11 +194,11 @@ gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 
       ksba_cert_get_validity (cert, 0, t);
       log_debug ("  notBefore: ");
-      gpgsm_dump_time (t);
+      dump_isotime (t);
       log_printf ("\n");
       ksba_cert_get_validity (cert, 1, t);
       log_debug ("   notAfter: ");
-      gpgsm_dump_time (t);
+      dump_isotime (t);
       log_printf ("\n");
 
       dn = ksba_cert_get_issuer (cert, 0);

@@ -26,6 +26,7 @@
 #endif
 
 #include "util.h"
+#include "i18n.h"
 
 static unsigned long timewarp;
 static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
@@ -494,6 +495,16 @@ check_isotime (const gnupg_isotime_t atime)
   return 0;
 }
 
+
+void
+dump_isotime (const gnupg_isotime_t t)
+{
+  if (!t || !*t)
+    log_printf (_("[none]"));
+  else
+    log_printf ("%.4s-%.2s-%.2s %.2s:%.2s:%s",
+                t, t+4, t+6, t+9, t+11, t+13);
+}
 
 
 /* Add SECONDS to ATIME.  SECONDS may not be negative and is limited

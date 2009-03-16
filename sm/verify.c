@@ -446,7 +446,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       log_info (_("Signature made "));
       if (*sigtime)
-        gpgsm_dump_time (sigtime);
+        dump_isotime (sigtime);
       else
         log_printf (_("[date not given]"));
       log_printf (_(" using certificate ID 0x%08lX\n"),

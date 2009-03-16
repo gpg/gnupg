@@ -1,3 +1,9 @@
+2009-03-12  Werner Koch  <wk@g10code.com>
+
+	* certdump.c (gpgsm_dump_time): Remove.
+	* certdump.c, verify.c, certchain.c
+	* gpgsm.c: s/gpgsm_dump_time/dump_isotime/.
+
 2009-03-06  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (gpgsm_agent_keyinfo, keyinfo_status_cb): New.

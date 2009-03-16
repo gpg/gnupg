@@ -979,7 +979,7 @@ check_validity_period (ksba_isotime_t current_time,
       if (!listmode)
         {
           log_info ("  (valid from ");
-          gpgsm_dump_time (not_before);
+          dump_isotime (not_before);
           log_printf (")\n");
         }
       return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
@@ -994,7 +994,7 @@ check_validity_period (ksba_isotime_t current_time,
       if (!listmode)
         {
           log_info ("  (expired at ");
-          gpgsm_dump_time (not_after);
+          dump_isotime (not_after);
           log_printf (")\n");
         }
       if (opt.ignore_expiration)
@@ -1043,9 +1043,9 @@ check_validity_period_cm (ksba_isotime_t current_time,
       do_list (1, listmode, listfp,
                _("certificate with invalid validity"));
       log_info ("  (valid from ");
-      gpgsm_dump_time (not_before);
+      dump_isotime (not_before);
       log_printf (" expired at ");
-      gpgsm_dump_time (not_after);
+      dump_isotime (not_after);
       log_printf (")\n");
       return gpg_error (GPG_ERR_BAD_CERT);
     }
@@ -1064,7 +1064,7 @@ check_validity_period_cm (ksba_isotime_t current_time,
       if (!listmode)
         {
           log_info ("  (valid from ");
-          gpgsm_dump_time (not_before);
+          dump_isotime (not_before);
           log_printf (")\n");
         }
       return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
@@ -1087,13 +1087,13 @@ check_validity_period_cm (ksba_isotime_t current_time,
         {
           log_info (depth== 0? _("  (  signature created at ") :
                     /* */      _("  (certificate created at ") );
-          gpgsm_dump_time (check_time);
+          dump_isotime (check_time);
           log_printf (")\n");
           log_info (depth==0? _("  (certificate valid from ") :
                     /* */     _("  (     issuer valid from ") );
-          gpgsm_dump_time (not_before);
+          dump_isotime (not_before);
           log_info (" to ");
-          gpgsm_dump_time (not_after);
+          dump_isotime (not_after);
           log_printf (")\n");
         }
       if (opt.ignore_expiration)

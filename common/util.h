@@ -119,6 +119,7 @@ const char *asctimestamp (u32 stamp); /* localized */
 gpg_error_t add_seconds_to_isotime (gnupg_isotime_t atime, int nseconds);
 gpg_error_t add_days_to_isotime (gnupg_isotime_t atime, int ndays);
 gpg_error_t check_isotime (const gnupg_isotime_t atime);
+void dump_isotime (const gnupg_isotime_t atime);
 
 /* Copy one ISO date to another, this is inline so that we can do a
    minimal sanity check.  A null date (empty string) is allowed.  */

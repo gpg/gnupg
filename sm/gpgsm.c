@@ -1405,7 +1405,7 @@ main ( int argc, char **argv)
 
       log_info (_("WARNING: running with faked system time: "));
       gnupg_get_isotime (tbuf);
-      gpgsm_dump_time (tbuf);
+      dump_isotime (tbuf);
       log_printf ("\n");
     }
   
