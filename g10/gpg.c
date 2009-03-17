@@ -800,7 +800,7 @@ my_strusage( int level )
   const char *p;
 
     switch( level ) {
-      case 11: p = "gpg2 (GnuPG)";
+      case 11: p = "gpg (GnuPG)";
 	break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
@@ -828,10 +828,10 @@ my_strusage( int level )
 
       case 1:
       case 40:	p =
-	    _("Usage: gpg2 [options] [files] (-h for help)");
+	    _("Usage: gpg [options] [files] (-h for help)");
 	break;
       case 41:	p =
-	    _("Syntax: gpg2 [options] [files]\n"
+	    _("Syntax: gpg [options] [files]\n"
 	      "sign, check, encrypt or decrypt\n"
 	      "default operation depends on the input data\n");
 	break;

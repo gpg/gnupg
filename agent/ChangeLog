@@ -1,3 +1,13 @@
+2009-03-17  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_get_passphrase): Break repeat loop on error.
+
+2009-03-17  Daiki Ueno  <ueno@unixuser.org>
+
+	* command.c (option_value): New function.
+	(cmd_get_passphrase): Accept new option --repeat, which makes
+	gpg-agent to ask passphrase several times.
+
 2009-03-06  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_keyinfo): New command.

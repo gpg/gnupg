@@ -237,7 +237,6 @@ read_passphrase_from_fd( int fd )
  * Ask the GPG Agent for the passphrase.
  * Mode 0:  Allow cached passphrase
  *      1:  No cached passphrase FIXME: Not really implemented
- *      2:  Ditto, but change the text to "repeat entry"
  *
  * Note that TRYAGAIN_TEXT must not be translated.  If CANCELED is not
  * NULL, the function does set it to 1 if the user canceled the
@@ -246,7 +245,7 @@ read_passphrase_from_fd( int fd )
  * computed, this will be used as the cacheid.
  */
 static char *
-passphrase_get ( u32 *keyid, int mode, const char *cacheid,
+passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
                  const char *tryagain_text,
                  const char *custom_description,
                  const char *custom_prompt, int *canceled)
@@ -331,8 +330,6 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
       }
       
     }
-  else if (mode == 2 ) 
-    atext = xstrdup ( _("Repeat passphrase\n") );
   else
     atext = xstrdup ( _("Enter passphrase\n") );
                 
@@ -349,7 +346,8 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid,
 
   my_prompt = custom_prompt ? native_to_utf8 (custom_prompt): NULL;
 
-  rc = agent_get_passphrase (my_cacheid, tryagain_text, my_prompt, atext, &pw);
+  rc = agent_get_passphrase (my_cacheid, tryagain_text, my_prompt, atext,
+                             repeat, &pw);
   
   xfree (my_prompt);
   xfree (atext); atext = NULL;
@@ -470,7 +468,7 @@ ask_passphrase (const char *description,
       strcpy (pw, fd_passwd);
     }
   else
-    pw = passphrase_get (NULL, 0, cacheid,
+    pw = passphrase_get (NULL, 0, cacheid, 0,
                          tryagain_text, description, prompt,
                          canceled );
 
@@ -611,7 +609,8 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
   else 
     {
       /* Divert to the gpg-agent. */
-      pw = passphrase_get ( keyid, mode == 2? 1: 0, NULL,
+      pw = passphrase_get ( keyid, mode == 2, NULL,
+                            mode == 2? opt.passwd_repeat: 0,
                             tryagain_text, NULL, NULL, canceled );
       if (*canceled)
         {
@@ -619,33 +618,6 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 	  write_status( STATUS_MISSING_PASSPHRASE );
           return NULL;
         }
-      if (!pw)
-        pw = xstrdup ("");
-      if ( *pw && mode == 2 )
-        {
-	  int i;
-	  for(i=0;i<opt.passwd_repeat;i++)
-	    {
-	      char *pw2 = passphrase_get ( keyid, 2, NULL, NULL, NULL,
-					   NULL, canceled );
-              if (*canceled)
-                {
-                  xfree (pw);
-                  xfree (pw2);
-		  write_status( STATUS_MISSING_PASSPHRASE );
-                  return NULL;
-                }
-	      if (!pw2)
-		pw2 = xstrdup ("");
-	      if ( strcmp(pw, pw2) )
-		{
-		  xfree(pw2);
-		  xfree(pw);
-		  return NULL;
-		}
-	      xfree(pw2);
-	    }
-	}
     }
     
   if ( !pw || !*pw )

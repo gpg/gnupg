@@ -874,11 +874,12 @@ agent_get_passphrase (const char *cache_id,
                       const char *err_msg,
                       const char *prompt,
                       const char *desc_msg,
+                      int repeat,
                       char **r_passphrase)
 {
   int rc;
   char *line, *p;
-  char cmd[] = "GET_PASSPHRASE --data -- ";
+  char cmd[] = "GET_PASSPHRASE --data --repeat=%d -- ";
   membuf_t data;
 
   *r_passphrase = NULL;
@@ -889,7 +890,7 @@ agent_get_passphrase (const char *cache_id,
 
   /* We allocate 3 times the needed space for the texts so that
      there is enough space for escaping. */
-  line = xtrymalloc ( strlen (cmd) + 1
+  line = xtrymalloc ( strlen (cmd) + sizeof(repeat) + 1
                       + (cache_id? 3*strlen (cache_id): 1) + 1
                       + (err_msg?  3*strlen (err_msg): 1) + 1
                       + (prompt?   3*strlen (prompt): 1) + 1
@@ -898,7 +899,7 @@ agent_get_passphrase (const char *cache_id,
   if (!line)
     return gpg_error_from_syserror ();
 
-  p = stpcpy (line, cmd);
+  p = line + sprintf (line, cmd, repeat);
   if (cache_id && *cache_id)
     p = my_percent_plus_escape (p, cache_id);
   else

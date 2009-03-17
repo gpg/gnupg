@@ -36,6 +36,7 @@
 
 #include <assuan.h>
 
+#include "i18n.h"
 #include "agent.h"
 
 /* maximum allowed size of the inquired ciphertext */
@@ -179,6 +180,26 @@ has_option_name (const char *line, const char *name)
   s = strstr (line, name);
   return (s && (s == line || spacep (s-1))
           && (!s[n] || spacep (s+n) || s[n] == '='));
+}
+
+/* Return a pointer to the argument of the option with NAME.  If such
+   an option is not given, it returns NULL. */
+static char *
+option_value (const char *line, const char *name)
+{
+  char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  if (s && (s == line || spacep (s-1))
+      && s[n] && (spacep (s+n) || s[n] == '='))
+    {
+      s += n + 1;
+      s += strspn (s, " ");
+      if (*s && !spacep(s))
+        return s;
+    }
+  return NULL;
 }
 
 
@@ -990,7 +1011,7 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-/* GET_PASSPHRASE [--data] [--check] [--no-ask] <cache_id>
+/* GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] <cache_id>
                   [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -1021,13 +1042,22 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   const char *pw;
   char *response;
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
+  const char *desc2 = _("Please re-enter this passphrase");
   char *p;
   void *cache_marker;
-  int opt_data, opt_check, opt_no_ask;
+  int opt_data, opt_check, opt_no_ask, opt_repeat = 0;
 
   opt_data = has_option (line, "--data");
   opt_check = has_option (line, "--check");
   opt_no_ask = has_option (line, "--no-ask");
+  if (has_option_name (line, "--repeat"))
+    {
+      p = option_value (line, "--repeat");
+      if (p)
+	opt_repeat = atoi (p);
+      else
+	opt_repeat = 1;
+    }
   line = skip_options (line);
 
   cacheid = line;
@@ -1094,21 +1124,39 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
       if (desc)
         plus_to_blank (desc);
 
-      response = NULL;
-      do
-        {
-          xfree (response);
-          rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
-        }
-      while (!rc
-             && opt_check
-             && check_passphrase_constraints (ctrl, response, 0));
-
+    next_try:
+      rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
       if (!rc)
         {
-          if (cacheid)
-            agent_put_cache (cacheid, CACHE_MODE_USER, response, 0);
-          rc = send_back_passphrase (ctx, opt_data, response);
+          int i;
+
+          if (opt_check && check_passphrase_constraints (ctrl, response, 0))
+            {
+              xfree (response);
+              goto next_try;
+            }
+          for (i = 0; i < opt_repeat; i++)
+            {
+              char *response2;
+
+              rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
+                                         errtext);
+              if (rc)
+                break;
+              if (strcmp (response2, response))
+                {
+                  xfree (response2);
+                  xfree (response);
+                  goto next_try;
+                }
+              xfree (response2);
+            }
+          if (!rc)
+            {
+              if (cacheid)
+                agent_put_cache (cacheid, CACHE_MODE_USER, response, 0);
+              rc = send_back_passphrase (ctx, opt_data, response);
+            }
           xfree (response);
         }
     }

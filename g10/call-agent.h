@@ -115,6 +115,7 @@ gpg_error_t agent_get_passphrase (const char *cache_id,
                                   const char *err_msg,
                                   const char *prompt,
                                   const char *desc_msg,
+                                  int repeat,
                                   char **r_passphrase);
 
 /* Send the CLEAR_PASSPHRASE command to the agent.  */

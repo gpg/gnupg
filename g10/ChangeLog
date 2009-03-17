@@ -1,3 +1,19 @@
+2009-03-17  Daiki Ueno  <ueno@unixuser.org>
+
+	* passphrase.c (passphrase_get): Add extra arg REPEAT and adjust
+	callers; remove special treatment for MODE==2.
+	(passphrase_to_dek): Move --passphrase-repeat handling to
+	gpg-agent.
+
+	* call-agent.c (agent_get_passphrase): Add extra arg REPEAT.
+	* call-agent.h: Ditto.
+
+2009-03-16  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (my_strusage): Revert last change.  Systems w/o a gpg1 may,
+	and actually do, install gpg2 as gpg.
+	* gpgv.c (my_strusage): Ditto.
+
 2009-03-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (my_strusage): gpg2 and gpgv2 (not gpg and gpgv).
