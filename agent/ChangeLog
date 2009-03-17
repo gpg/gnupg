@@ -1,6 +1,9 @@
 2009-03-17  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_get_passphrase): Break repeat loop on error.
+	Show error message.
+	(cmd_getinfo): Add subcommand "cmd_has_option".
+	(command_has_option): New.
 
 2009-03-17  Daiki Ueno  <ueno@unixuser.org>
 

@@ -105,6 +105,10 @@ struct
 } eventcounter;
 
 
+
+/*  Local prototypes.  */
+static int command_has_option (const char *cmd, const char *cmdopt);
+
 
 
 
@@ -1046,6 +1050,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *p;
   void *cache_marker;
   int opt_data, opt_check, opt_no_ask, opt_repeat = 0;
+  char *repeat_errtext = NULL;
 
   opt_data = has_option (line, "--data");
   opt_check = has_option (line, "--check");
@@ -1125,7 +1130,10 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
         plus_to_blank (desc);
 
     next_try:
-      rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
+      rc = agent_get_passphrase (ctrl, &response, desc, prompt, 
+                                 repeat_errtext? repeat_errtext:errtext);
+      xfree (repeat_errtext);
+      repeat_errtext = NULL;
       if (!rc)
         {
           int i;
@@ -1147,6 +1155,13 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                 {
                   xfree (response2);
                   xfree (response);
+                  repeat_errtext = try_percent_escape 
+                    (_("does not match - try again"), NULL);
+                  if (!repeat_errtext)
+                    {
+                      rc = gpg_error_from_syserror ();
+                      break;
+                    }
                   goto next_try;
                 }
               xfree (response2);
@@ -1599,6 +1614,9 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
      socket_name - Return the name of the socket.
      ssh_socket_name - Return the name of the ssh socket.
      scd_running - Return OK if the SCdaemon is already running.
+
+     cmd_has_option CMD OPT
+                 - Returns OK if the command CMD implements the option OPT.
  */
 static int
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -1638,6 +1656,38 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "scd_running"))
     {
       rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
+    }
+  else if (!strncmp (line, "cmd_has_option", 14)
+           && (line[14] == ' ' || line[14] == '\t' || !line[14]))
+    {
+      char *cmd, *cmdopt;
+      line += 14;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        rc = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          cmd = line;
+          while (*line && (*line != ' ' && *line != '\t'))
+            line++;
+          if (!*line)
+            rc = gpg_error (GPG_ERR_MISSING_VALUE);
+          else
+            {
+              *line++ = 0;
+              while (*line == ' ' || *line == '\t')
+                line++;
+              if (!*line)
+                rc = gpg_error (GPG_ERR_MISSING_VALUE);
+              else
+                {
+                  cmdopt = line;
+                  if (!command_has_option (cmd, cmdopt))
+                    rc = gpg_error (GPG_ERR_GENERAL);
+                }
+            }
+        }
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
@@ -1762,6 +1812,20 @@ io_monitor (assuan_context_t ctx, int direction,
     }
 
   return ctrl->server_local->pause_io_logging? 1:0;
+}
+
+
+/* Return true if the commznd CMD implements the option OPT.  */
+static int
+command_has_option (const char *cmd, const char *cmdopt)
+{
+  if (!strcmp (cmd, "GET_PASSPHRASE"))
+    {
+      if (!strcmp (cmdopt, "repeat"))
+          return 1;
+    }
+      
+  return 0;
 }
 
 

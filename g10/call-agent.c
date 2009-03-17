@@ -144,29 +144,6 @@ unescape_status_string (const unsigned char *s)
   return buffer;
 }
 
-/* Copy the text ATEXT into the buffer P and do plus '+' and percent
-   escaping.  Note that the provided buffer needs to be 3 times the
-   size of ATEXT plus 1.  Returns a pointer to the leading Nul in P. */
-static char *
-my_percent_plus_escape (char *p, const char *atext)
-{
-  const unsigned char *s;
-
-  for (s=atext; *s; s++)
-    {
-      if (*s < ' ' || *s == '+' || *s == '%')
-        {
-          snprintf (p, 4, "%%%02X", *s);
-          p += 3;
-        }
-      else if (*s == ' ')
-        *p++ = '+';
-      else
-        *p++ = *s;
-    }
-  *p = 0;
-  return p;
-}
 
 /* Take a 20 byte hexencoded string and put it into the the provided
    20 byte buffer FPR in binary format. */
@@ -878,8 +855,11 @@ agent_get_passphrase (const char *cache_id,
                       char **r_passphrase)
 {
   int rc;
-  char *line, *p;
-  char cmd[] = "GET_PASSPHRASE --data --repeat=%d -- ";
+  char line[ASSUAN_LINELENGTH];
+  char *arg1 = NULL;
+  char *arg2 = NULL;  
+  char *arg3 = NULL; 
+  char *arg4 = NULL;
   membuf_t data;
 
   *r_passphrase = NULL;
@@ -888,41 +868,37 @@ agent_get_passphrase (const char *cache_id,
   if (rc)
     return rc;
 
-  /* We allocate 3 times the needed space for the texts so that
-     there is enough space for escaping. */
-  line = xtrymalloc ( strlen (cmd) + sizeof(repeat) + 1
-                      + (cache_id? 3*strlen (cache_id): 1) + 1
-                      + (err_msg?  3*strlen (err_msg): 1) + 1
-                      + (prompt?   3*strlen (prompt): 1) + 1
-                      + (desc_msg? 3*strlen (desc_msg): 1) + 1
-                      + 1);
-  if (!line)
-    return gpg_error_from_syserror ();
+  /* Check that the gpg-agent understands the repeat option.  */
+  if (assuan_transact (agent_ctx, 
+                       "GETINFO cmd_has_option GET_PASSPHRASE repeat",
+                       NULL, NULL, NULL, NULL, NULL, NULL))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  p = line + sprintf (line, cmd, repeat);
   if (cache_id && *cache_id)
-    p = my_percent_plus_escape (p, cache_id);
-  else
-    *p++ = 'X';
-  *p++ = ' ';
-
+    if (!(arg1 = percent_plus_escape (cache_id)))
+      goto no_mem;
   if (err_msg && *err_msg)
-    p = my_percent_plus_escape (p, err_msg);
-  else
-    *p++ = 'X';
-  *p++ = ' ';
-
+    if (!(arg2 = percent_plus_escape (err_msg)))
+      goto no_mem;
   if (prompt && *prompt)
-    p = my_percent_plus_escape (p, prompt);
-  else
-    *p++ = 'X'; 
-  *p++ = ' ';
-
+    if (!(arg3 = percent_plus_escape (prompt)))
+      goto no_mem;
   if (desc_msg && *desc_msg)
-    p = my_percent_plus_escape (p, desc_msg);
-  else
-    *p++ = 'X';
-  *p = 0;
+    if (!(arg4 = percent_plus_escape (desc_msg)))
+      goto no_mem;
+
+  snprintf (line, DIM(line)-1, 
+            "GET_PASSPHRASE --data --repeat=%d -- %s %s %s %s", 
+            repeat, 
+            arg1? arg1:"X",
+            arg2? arg2:"X",
+            arg3? arg3:"X",
+            arg4? arg4:"X");
+  line[DIM(line)-1] = 0;
+  xfree (arg1);
+  xfree (arg2);
+  xfree (arg3);
+  xfree (arg4);
 
   init_membuf_secure (&data, 64);
   rc = assuan_transact (agent_ctx, line, 
@@ -938,7 +914,13 @@ agent_get_passphrase (const char *cache_id,
       if (!*r_passphrase)
         rc = gpg_error_from_syserror ();
     }
-  xfree (line);
+  return rc;
+ no_mem:
+  rc = gpg_error_from_syserror ();
+  xfree (arg1);
+  xfree (arg2);
+  xfree (arg3);
+  xfree (arg4);
   return rc;
 }
 
