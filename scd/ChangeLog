@@ -1,3 +1,12 @@
+2009-03-18  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_learn): Add option --keypairinfo.
+	* app.c (app_write_learn_status): Add arg FLAGS.
+	* app-common.h (struct app_ctx_s): Add arg FLAGS to LEARN_STATUS.
+	Change all implementors.
+	* app-p15.c (do_learn_status): Take care of flag bit 0.
+	* app-nks.c (do_learn_status, do_learn_status_core): Ditto.
+
 2009-03-10  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (send_key_attr): New.

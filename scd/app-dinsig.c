@@ -86,7 +86,7 @@
 
 
 static gpg_error_t
-do_learn_status (app_t app, ctrl_t ctrl)
+do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
   char ct_buf[100], id_buf[100];
@@ -96,6 +96,8 @@ do_learn_status (app_t app, ctrl_t ctrl)
   size_t derlen;
   ksba_cert_t cert;
   int fid;
+
+  (void)flags;
 
   /* Return the certificate of the card holder. */
   fid = 0xC000;

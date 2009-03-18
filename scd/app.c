@@ -542,7 +542,7 @@ app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 /* Write out the application specifig status lines for the LEARN
    command. */
 gpg_error_t
-app_write_learn_status (app_t app, ctrl_t ctrl)
+app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
@@ -553,13 +553,14 @@ app_write_learn_status (app_t app, ctrl_t ctrl)
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
-  if (app->apptype)
+  /* We do not send APPTYPE if only keypairinfo is requested.  */
+  if (app->apptype && !(flags & 1))
     send_status_info (ctrl, "APPTYPE",
                       app->apptype, strlen (app->apptype), NULL, 0);
   err = lock_reader (app->slot);
   if (err)
     return err;
-  err = app->fnc.learn_status (app, ctrl);
+  err = app->fnc.learn_status (app, ctrl, flags);
   unlock_reader (app->slot);
   return err;
 }

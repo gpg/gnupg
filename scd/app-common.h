@@ -67,7 +67,7 @@ struct app_ctx_s {
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
-    gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl);
+    gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
     gpg_error_t (*readkey) (app_t app, const char *certid,
@@ -145,7 +145,8 @@ char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
-gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl);
+gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl, 
+                                    unsigned int flags);
 gpg_error_t app_readcert (app_t app, const char *certid,
                   unsigned char **cert, size_t *certlen);
 gpg_error_t app_readkey (app_t app, const char *keyid,

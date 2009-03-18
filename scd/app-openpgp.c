@@ -1295,8 +1295,10 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
 
 /* Handle the LEARN command for OpenPGP.  */
 static gpg_error_t
-do_learn_status (app_t app, ctrl_t ctrl)
+do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
+  (void)flags;
+  
   do_getattr (app, ctrl, "EXTCAP");
   do_getattr (app, ctrl, "DISP-NAME");
   do_getattr (app, ctrl, "DISP-LANG");

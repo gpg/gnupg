@@ -309,7 +309,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
 
 static void
-do_learn_status_core (app_t app, ctrl_t ctrl, int is_sigg)
+do_learn_status_core (app_t app, ctrl_t ctrl, unsigned int flags, int is_sigg)
 {
   gpg_error_t err;
   char ct_buf[100], id_buf[100];
@@ -332,7 +332,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, int is_sigg)
       if (!!filelist[i].is_sigg != !!is_sigg)
         continue;
 
-      if (filelist[i].certtype)
+      if (filelist[i].certtype && !(flags &1))
         {
           size_t len;
 
@@ -377,7 +377,7 @@ do_learn_status_core (app_t app, ctrl_t ctrl, int is_sigg)
 
 
 static gpg_error_t
-do_learn_status (app_t app, ctrl_t ctrl)
+do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
@@ -385,13 +385,13 @@ do_learn_status (app_t app, ctrl_t ctrl)
   if (err)
     return err;
   
-  do_learn_status_core (app, ctrl, 0);
+  do_learn_status_core (app, ctrl, flags, 0);
 
   err = switch_application (app, 1);
   if (err)
     return 0;  /* Silently ignore if we can't switch to SigG.  */
 
-  do_learn_status_core (app, ctrl, 1);
+  do_learn_status_core (app, ctrl, flags, 1);
 
   return 0;
 }

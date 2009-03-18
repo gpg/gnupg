@@ -1292,7 +1292,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   gpg_error_t rc = 0;
   const char *lastresname, *resname;
   int have_secret;
-  int want_ephemeral = opt.with_ephemeral_keys;
+  int want_ephemeral = ctrl->with_ephemeral_keys;
 
   hd = keydb_new (0);
   if (!hd)

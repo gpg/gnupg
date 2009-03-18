@@ -1,3 +1,11 @@
+2009-03-18  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.h (struct opt): Move field WITH_EPHEMERAL_KEYS to struct
+	server_control_s.
+	* gpgsm.c (main): Change accordingly.
+	* keylist.c (list_internal_keys): Ditto.
+	* server.c (option_handler): Add "with-ephemeral-keys".
+
 2009-03-12  Werner Koch  <wk@g10code.com>
 
 	* certdump.c (gpgsm_dump_time): Remove.

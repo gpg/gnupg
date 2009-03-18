@@ -82,9 +82,6 @@ struct
   int with_md5_fingerprint; /* Also print an MD5 fingerprint for
                                standard key listings. */
 
-  int with_ephemeral_keys;  /* Include ephemeral flagged keys in the
-                               keylisting. */
-
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
 
@@ -176,6 +173,8 @@ struct server_control_s
   int with_colons;    /* Use column delimited output format */
   int with_chain;     /* Include the certifying certs in a listing */
   int with_validation;/* Validate each key while listing. */
+  int with_ephemeral_keys;  /* Include ephemeral flagged keys in the
+                               keylisting. */
 
   int autodetect_encoding; /* Try to detect the input encoding */
   int is_pem;         /* Is in PEM format */

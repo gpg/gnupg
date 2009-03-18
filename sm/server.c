@@ -296,6 +296,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "allow-pinentry-notify"))
     ctrl->server_local->allow_pinentry_notify = 1;
+  else if (!strcmp (key, "with-ephemeral-keys"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->with_ephemeral_keys = i;
+    }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 

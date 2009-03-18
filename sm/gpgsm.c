@@ -1259,7 +1259,7 @@ main ( int argc, char **argv)
         case oWithKeyData: opt.with_key_data=1; /* fall thru */
         case oWithColons: ctrl.with_colons = 1; break;
         case oWithValidation: ctrl.with_validation=1; break;
-        case oWithEphemeralKeys: opt.with_ephemeral_keys=1; break;
+        case oWithEphemeralKeys: ctrl.with_ephemeral_keys=1; break;
 
         case oSkipVerify: opt.skip_verify=1; break;
 

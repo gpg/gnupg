@@ -147,7 +147,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
 
 static gpg_error_t
-do_learn_status (app_t app, ctrl_t ctrl)
+do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   static const char *names[] = {
     "X-KBLZ",
@@ -166,6 +166,8 @@ do_learn_status (app_t app, ctrl_t ctrl)
   };
   gpg_error_t err = 0;
   int idx;
+
+  (void)flags;
 
   for (idx=0; names[idx] && !err; idx++)
     err = do_getattr (app, ctrl, names[idx]);

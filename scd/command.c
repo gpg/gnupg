@@ -1,6 +1,6 @@
 /* command.c - SCdaemon command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2007, 2008  Free Software Foundation, Inc.
+ *               2007, 2008, 2009  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -184,7 +184,7 @@ update_card_removed (int slot, int value)
 
 
 
-/* Check whether the option NAME appears in LINE */
+/* Check whether the option NAME appears in LINE.  Returns 1 or 0. */
 static int
 has_option (const char *line, const char *name)
 {
@@ -528,7 +528,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
 
 
-/* LEARN [--force]
+/* LEARN [--force] [--keypairinfo]
 
    Learn all useful information of the currently inserted card.  When
    used without the force options, the command might do an INQUIRE
@@ -538,8 +538,13 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
    The client should just send an "END" if the processing should go on
    or a "CANCEL" to force the function to terminate with a Cancel
-   error message.  The response of this command is a list of status
-   lines formatted as this:
+   error message.  
+
+   With the option --keypairinfo only KEYPARIINFO lstatus lines are
+   returned.
+
+   The response of this command is a list of status lines formatted as
+   this:
 
      S APPTYPE <apptype>
 
@@ -589,13 +594,14 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
    The URL to be used for locating the entire public key.
      
-   Note, that this function may be even be used on a locked card.
+   Note, that this function may even be used on a locked card.
 */
 static int
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
+  int only_keypairinfo = has_option (line, "--keypairinfo");
 
   if ((rc = open_card (ctrl, NULL)))
     return rc;
@@ -604,51 +610,53 @@ cmd_learn (assuan_context_t ctx, char *line)
      the card using a serial number and inquiring the client with
      that. The client may choose to cancel the operation if he already
      knows about this card */
-  {
-    char *serial_and_stamp;
-    char *serial;
-    time_t stamp;
-
-    rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
-    if (rc)
-      return rc;
-    rc = estream_asprintf (&serial_and_stamp, "%s %lu", serial, (unsigned long)stamp);
-    xfree (serial);
-    if (rc < 0)
-      return out_of_core ();
-    rc = 0;
-    assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
-
-    if (!has_option (line, "--force"))
-      {
-        char *command;
-
-        rc = estream_asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
-        if (rc < 0)
-          {
-            xfree (serial_and_stamp);
-            return out_of_core ();
-          }
-        rc = 0;
-        rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
-        xfree (command);
-        if (rc)
-          {
-            if (gpg_err_code (rc) != GPG_ERR_ASS_CANCELED)
-              log_error ("inquire KNOWNCARDP failed: %s\n",
-                         gpg_strerror (rc));
-            xfree (serial_and_stamp);
-            return rc; 
-          }
-        /* not canceled, so we have to proceeed */
-      }
-    xfree (serial_and_stamp);
-  }
-
+  if (!only_keypairinfo)
+    {
+      char *serial_and_stamp;
+      char *serial;
+      time_t stamp;
+      
+      rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
+      if (rc)
+        return rc;
+      rc = estream_asprintf (&serial_and_stamp, "%s %lu",
+                             serial, (unsigned long)stamp);
+      xfree (serial);
+      if (rc < 0)
+        return out_of_core ();
+      rc = 0;
+      assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
+      
+      if (!has_option (line, "--force"))
+        {
+          char *command;
+          
+          rc = estream_asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
+          if (rc < 0)
+            {
+              xfree (serial_and_stamp);
+              return out_of_core ();
+            }
+          rc = 0;
+          rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
+          xfree (command);
+          if (rc)
+            {
+              if (gpg_err_code (rc) != GPG_ERR_ASS_CANCELED)
+                log_error ("inquire KNOWNCARDP failed: %s\n",
+                           gpg_strerror (rc));
+              xfree (serial_and_stamp);
+              return rc; 
+            }
+          /* Not canceled, so we have to proceeed.  */
+        }
+      xfree (serial_and_stamp);
+    }
+  
   /* Let the application print out its collection of useful status
      information. */
   if (!rc)
-    rc = app_write_learn_status (ctrl->app_ctx, ctrl);
+    rc = app_write_learn_status (ctrl->app_ctx, ctrl, only_keypairinfo);
 
   TEST_CARD_REMOVAL (ctrl, rc);
   return rc;

@@ -2492,17 +2492,23 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 
 /* This is the handler for the LEARN command.  */
 static gpg_error_t 
-do_learn_status (app_t app, ctrl_t ctrl)
+do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
 
-  err = send_certinfo (app, ctrl, "100", app->app_local->certificate_info);
-  if (!err)
-    err = send_certinfo (app, ctrl, "101",
-                         app->app_local->trusted_certificate_info);
-  if (!err)
-    err = send_certinfo (app, ctrl, "102",
-                         app->app_local->useful_certificate_info);
+  if ((flags & 1))
+    err = 0;
+  else
+    {
+      err = send_certinfo (app, ctrl, "100", app->app_local->certificate_info);
+      if (!err)
+        err = send_certinfo (app, ctrl, "101",
+                             app->app_local->trusted_certificate_info);
+      if (!err)
+        err = send_certinfo (app, ctrl, "102",
+                             app->app_local->useful_certificate_info);
+    }
+
   if (!err)
     err = send_keypairinfo (app, ctrl, app->app_local->private_key_info);
 
