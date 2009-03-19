@@ -47,6 +47,7 @@
 #include "sysutils.h"
 #include "setenv.h"
 #include "gc-opt-flags.h"
+#include "exechelp.h"
 
 
 enum cmd_and_opt_values 
@@ -195,6 +196,17 @@ static ARGPARSE_OPTS opts[] = {
 #define TIMERTICK_INTERVAL    (4)
 #else
 #define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
+#endif
+
+
+/* The list of open file descriptors at startup.  Note that this list
+   has been allocated using the standard malloc.  */
+static int *startup_fd_list;
+
+/* The signal mask at startup and a flag telling whether it is valid.  */
+#ifdef HAVE_SIGPROCMASK
+static sigset_t startup_signal_mask;
+static int startup_signal_mask_valid;
 #endif
 
 /* Flag to indicate that a shutdown was requested.  */
@@ -530,6 +542,16 @@ main (int argc, char **argv )
   const char *env_file_name = NULL;
 
 
+  /* Before we do anything else we save the list of currently open
+     file descriptors and the signal mask.  This info is required to
+     do the exec call properly. */
+  startup_fd_list = get_all_open_fds ();
+#ifdef HAVE_SIGPROCMASK
+  if (!sigprocmask (SIG_UNBLOCK, NULL, &startup_signal_mask))
+    startup_signal_mask_valid = 1;
+#endif /*HAVE_SIGPROCMASK*/
+
+  /* Set program name etc.  */
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -961,6 +983,27 @@ main (int argc, char **argv )
           
           close (fd);
           
+          /* Note that we used a standard fork so that Pth runs in
+             both the parent and the child.  The pth_fork would
+             terminate Pth in the child but that is not the way we
+             want it.  Thus we use a plain fork and terminate Pth here
+             in the parent.  The pth_kill may or may not work reliable
+             but it should not harm to call it.  Because Pth fiddles
+             with the signal mask the signal mask might not be correct
+             right now and thus we restore it.  That is not strictly
+             necessary but some programs falsely assume a cleared
+             signal mask.  */
+#ifdef HAVE_SIGPROCMASK
+          if (startup_signal_mask_valid)
+            {
+              if (sigprocmask (SIG_SETMASK, &startup_signal_mask, NULL))
+                log_error ("error restoring signal mask: %s\n",
+                           strerror (errno));
+            }
+          else
+            log_info ("no saved signal mask\n");
+#endif /*HAVE_SIGPROCMASK*/          
+
           /* Create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
                         socket_name, (ulong)pid ) < 0)
@@ -1039,6 +1082,14 @@ main (int argc, char **argv )
                   kill (pid, SIGTERM );
                   exit (1);
                 }
+
+              /* Close all the file descriptors except the standard
+                 ones and those open at startup.  We explicitly don't
+                 close 0,1,2 in case something went wrong collecting
+                 them at startup.  */
+              close_all_fds (3, startup_fd_list);
+
+              /* Run the command.  */
               execvp (argv[0], argv);
               log_error ("failed to run the command: %s\n", strerror (errno));
               kill (pid, SIGTERM);

@@ -1,3 +1,13 @@
+2009-03-18  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c: Include sys/resource.h and sys/stat.h.
+	(get_max_open_fds): New.
+	(do_exec): Use it.
+	(get_all_open_fds): New.
+	(close_all_fds): New.
+	(do_exec): Use close_all_fds.
+	* t-exechelp.c: New.
+
 2009-03-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (do_parse_uri): Properly handle IPv6 literal addresses as

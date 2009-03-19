@@ -57,6 +57,7 @@
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
+#include "exechelp.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
 #include "apdu.h"
@@ -81,11 +82,6 @@
 #define DLSTDCALL
 #endif
 
-#ifdef _POSIX_OPEN_MAX
-#define MAX_OPEN_FDS _POSIX_OPEN_MAX
-#else
-#define MAX_OPEN_FDS 20
-#endif
 
 /* Helper to pass parameters related to keypad based operations. */
 struct pininfo_s
@@ -1653,12 +1649,7 @@ open_pcsc_reader_wrapped (const char *portstr)
         log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
 
       /* Close all other files. */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=3; i < n; i++)
-        close(i);
-      errno = 0;
+      close_all_fds (3, NULL);
 
       execl (wrapperpgm,
              "pcsc-wrapper",

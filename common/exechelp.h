@@ -1,5 +1,5 @@
 /* exechelp.h - Definitions for the fork and exec helpers
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -19,6 +19,25 @@
 
 #ifndef GNUPG_COMMON_EXECHELP_H
 #define GNUPG_COMMON_EXECHELP_H
+
+/* Return the maximum number of currently allowed file descriptors.
+   Only useful on POSIX systems.  */
+int get_max_fds (void);
+
+
+/* Close all file descriptors starting with descriptor FIRST.  If
+   EXCEPT is not NULL, it is expected to be a list of file descriptors
+   which are not to close.  This list shall be sorted in ascending
+   order with its end marked by -1.  */
+void close_all_fds (int first, int *except);
+
+
+/* Returns an array with all currently open file descriptors.  The end
+   of the array is marked by -1.  The caller needs to release this
+   array using the *standard free* and not with xfree.  This allow the
+   use of this fucntion right at startup even before libgcrypt has
+   been initialized.  Returns NULL on error and sets ERRNO accordingly.  */
+int *get_all_open_fds (void);
 
 
 /* Portable function to create a pipe.  Under Windows the write end is

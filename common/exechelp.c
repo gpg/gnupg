@@ -1,5 +1,5 @@
 /* exechelp.c - fork and exec helpers
- *	Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,16 @@
 #include <sys/wait.h>
 #endif
 
+#ifdef HAVE_GETRLIMIT
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif /*HAVE_GETRLIMIT*/
+
+#ifdef HAVE_STAT
+# include <sys/stat.h>
+#endif
+
+
 #include "util.h"
 #include "i18n.h"
 #include "exechelp.h"
@@ -47,12 +57,6 @@
 /* Define to 1 do enable debugging.  */
 #define DEBUG_W32_SPAWN 1
 
-
-#ifdef _POSIX_OPEN_MAX
-#define MAX_OPEN_FDS _POSIX_OPEN_MAX
-#else
-#define MAX_OPEN_FDS 20
-#endif
 
 /* We have the usual problem here: Some modules are linked against pth
    and some are not.  However we want to use pth_fork and pth_waitpid
@@ -83,6 +87,145 @@
 # define pid_to_handle(a) ((HANDLE)(a))
 # define handle_to_pid(a) ((int)(a))
 #endif
+
+
+/* Return the maximum number of currently allowed open file
+   descriptors.  Only useful on POSIX systems but returns a value on
+   other systems too.  */
+int
+get_max_fds (void)
+{
+  int max_fds = -1;
+#ifdef HAVE_GETRLIMIT
+  struct rlimit rl;
+
+# ifdef RLIMIT_NOFILE
+  if (!getrlimit (RLIMIT_NOFILE, &rl))
+    max_fds = rl.rlim_max;
+# endif
+
+# ifdef RLIMIT_OFILE
+  if (max_fds == -1 && !getrlimit (RLIMIT_OFILE, &rl))
+    max_fds = rl.rlim_max;
+
+# endif
+#endif /*HAVE_GETRLIMIT*/
+
+#ifdef _SC_OPEN_MAX
+  if (max_fds == -1)
+    {
+      long int scres = sysconf (_SC_OPEN_MAX);
+      if (scres >= 0)
+        max_fds = scres;
+    }
+#endif
+
+#ifdef _POSIX_OPEN_MAX
+  if (max_fds == -1)
+    max_fds = _POSIX_OPEN_MAX;
+#endif
+
+#ifdef OPEN_MAX
+  if (max_fds == -1)
+    max_fds = OPEN_MAX;
+#endif
+
+  if (max_fds == -1)
+    max_fds = 256;  /* Arbitrary limit.  */
+
+  return max_fds;
+}
+
+
+/* Close all file descriptors starting with descriptor FIRST.  If
+   EXCEPT is not NULL, it is expected to be a list of file descriptors
+   which shall not be closed.  This list shall be sorted in ascending
+   order with the end marked by -1.  */
+void
+close_all_fds (int first, int *except)
+{
+  int max_fd = get_max_fds ();
+  int fd, i, except_start;
+
+  if (except)
+    {
+      except_start = 0;
+      for (fd=first; fd < max_fd; fd++)
+        {
+          for (i=except_start; except[i] != -1; i++)
+            {
+              if (except[i] == fd)
+                {
+                  /* If we found the descriptor in the exception list
+                     we can start the next compare run at the next
+                     index because the exception list is ordered.  */
+                except_start = i + 1;
+                break;
+                }
+            }
+          if (except[i] == -1)
+            close (fd);
+        }
+    }
+  else
+    {
+      for (fd=first; fd < max_fd; fd++)
+        close (fd);
+    }
+
+  errno = 0;
+}
+
+
+/* Returns an array with all currently open file descriptors.  The end
+   of the array is marked by -1.  The caller needs to release this
+   array using the *standard free* and not with xfree.  This allow the
+   use of this fucntion right at startup even before libgcrypt has
+   been initialized.  Returns NULL on error and sets ERRNO
+   accordingly.  */
+int *
+get_all_open_fds (void)
+{
+  int *array;
+  size_t narray;
+  int fd, max_fd, idx;
+#ifndef HAVE_STAT
+  array = calloc (1, sizeof *array);
+  if (array)
+    array[0] = -1;
+#else /*HAVE_STAT*/
+  struct stat statbuf;
+
+  max_fd = get_max_fds ();
+  narray = 32;  /* If you change this change also t-exechelp.c.  */
+  array = calloc (narray, sizeof *array);
+  if (!array)
+    return NULL;
+  
+  /* Note:  The list we return is ordered.  */
+  for (idx=0, fd=0; fd < max_fd; fd++)
+    if (!(fstat (fd, &statbuf) == -1 && errno == EBADF))
+      {
+        if (idx+1 >= narray)
+          {
+            int *tmp;
+
+            narray += (narray < 256)? 32:256;
+            tmp = realloc (array, narray * sizeof *array);
+            if (!tmp)
+              {
+                free (array);
+                return NULL;
+              }
+            array = tmp;
+          }
+        array[idx++] = fd;
+      }
+  array[idx] = -1;
+#endif /*HAVE_STAT*/
+  return array;
+}
+
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -216,7 +359,7 @@ do_exec (const char *pgmname, const char *argv[],
          void (*preexec)(void) )
 {
   char **arg_list;
-  int n, i, j;
+  int i, j;
   int fds[3];
 
   fds[0] = fd_in;
@@ -259,12 +402,7 @@ do_exec (const char *pgmname, const char *argv[],
     }
 
   /* Close all other files. */
-  n = sysconf (_SC_OPEN_MAX);
-  if (n < 0)
-    n = MAX_OPEN_FDS;
-  for (i=3; i < n; i++)
-    close(i);
-  errno = 0;
+  close_all_fds (3, NULL);
   
   if (preexec)
     preexec ();

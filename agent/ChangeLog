@@ -1,3 +1,8 @@
+2009-03-19  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Save signal mask and open fds.  Restore mask
+	and close all fds prior to the exec.  Fixes bug#1013.
+
 2009-03-17  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_get_passphrase): Break repeat loop on error.
