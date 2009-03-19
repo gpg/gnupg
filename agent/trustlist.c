@@ -1,5 +1,5 @@
 /* trustlist.c - Maintain the list of trusted keys
- * Copyright (C) 2002, 2004, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2006, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,6 +38,7 @@ struct trustitem_s
 {
   struct
   {
+    int disabled:1;       /* This entry is disabled.  */
     int for_pgp:1;        /* Set by '*' or 'P' as first flag. */
     int for_smime:1;      /* Set by '*' or 'S' as first flag. */
     int relax:1;          /* Relax checking of root certificate
@@ -59,11 +60,13 @@ static pth_mutex_t trusttable_lock;
 static const char headerblurb[] =
 "# This is the list of trusted keys.  Comment lines, like this one, as\n"
 "# well as empty lines are ignored.  Lines have a length limit but this\n"
-"# is not serious limitation as the format of the entries is fixed and\n"
+"# is not a serious limitation as the format of the entries is fixed and\n"
 "# checked by gpg-agent.  A non-comment line starts with optional white\n"
-"# space, followed by the SHA-1 fingerpint in hex, optionally followed\n"
-"# by a flag character which my either be 'P', 'S' or '*'.  You should\n"
-"# give the gpg-agent a HUP after editing this file.\n"
+"# space, followed by the SHA-1 fingerpint in hex, followed by a flag\n"
+"# which may be one of 'P', 'S' or '*' and optionally followed by a list of\n"
+"# other flags.  The fingerprint may be prefixed with a '!' to mark the\n"
+"# key as not trusted.  You should give the gpg-agent a HUP or run the\n"
+"# command \"gpgconf --reload gpg-agent\" after changing this file.\n"
 "\n\n"
 "# Include the default trust list\n"
 "include-default\n"
@@ -120,7 +123,7 @@ read_one_trustfile (const char *fname, int allow_include,
   int tableidx;
   size_t tablesize;
   int lnr = 0;
-
+  
   table = *addr_of_table;
   tablesize = *addr_of_tablesize;
   tableidx = *addr_of_tableidx;
@@ -210,6 +213,15 @@ read_one_trustfile (const char *fname, int allow_include,
 
       ti = table + tableidx;
 
+      memset (&ti->flags, 0, sizeof ti->flags);
+      if (*p == '!')
+        {
+          ti->flags.disabled = 1;
+          p++;
+          while (spacep (p))
+            p++;
+        }
+
       n = hexcolon2bin (p, ti->fpr, 20);
       if (n < 0)
         {
@@ -221,7 +233,6 @@ read_one_trustfile (const char *fname, int allow_include,
       for (; spacep (p); p++)
         ;
       
-      memset (&ti->flags, 0, sizeof ti->flags);
       /* Process the first flag which needs to be the first for
          backward compatibility. */
       if (!*p || *p == '*' )
@@ -366,12 +377,15 @@ read_trustfiles (void)
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
 gpg_error_t 
-agent_istrusted (ctrl_t ctrl, const char *fpr)
+agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
 {
   gpg_error_t err;
   trustitem_t *ti;
   size_t len;
   unsigned char fprbin[20];
+
+  if (r_disabled)
+    *r_disabled = 0;
 
   if ( hexcolon2bin (fpr, fprbin, 20) < 0 )
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -407,7 +421,13 @@ agent_istrusted (ctrl_t ctrl, const char *fpr)
                 if (err)
                   return err;
               }
-            return 0; /* Trusted. */
+            if (ti->flags.disabled)
+              {
+                if (r_disabled)
+                  *r_disabled = 1;
+                return gpg_error (GPG_ERR_NOT_TRUSTED);
+              }
+            return 0; /* Trusted.  */
           }
     }
   return gpg_error (GPG_ERR_NOT_TRUSTED);
@@ -440,6 +460,8 @@ agent_listtrusted (void *assuan_context)
       lock_trusttable ();
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
         {
+          if (ti->flags.disabled)
+            continue;
           bin2hex (ti->fpr, 20, key);
           key[40] = ' ';
           key[41] = ((ti->flags.for_smime && ti->flags.for_pgp)? '*'
@@ -490,7 +512,7 @@ insert_colons (const char *string)
    This function does first check whether that key has already been put
    into the trustdb and returns success in this case.  Before a FPR
    actually gets inserted, the user is asked by means of the Pinentry
-   whether this is actual wants he want to do.  */
+   whether this is actual want he wants to do.  */
 gpg_error_t
 agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
@@ -499,7 +521,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   char *fname;
   FILE *fp;
   char *fprformatted;
-
+  int is_disabled;
+  int yes_i_trust;
 
   /* Check whether we are at all allowed to modify the trustlist.
      This is useful so that the trustlist may be a symlink to a global
@@ -514,57 +537,29 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     }    
   xfree (fname);
 
-  if (!agent_istrusted (ctrl, fpr))
+  if (!agent_istrusted (ctrl, fpr, &is_disabled))
     {
       return 0; /* We already got this fingerprint.  Silently return
                    success. */
     }
-
+  
   /* This feature must explicitly been enabled. */
   if (!opt.allow_mark_trusted)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
+  if (is_disabled)
+    {
+      /* There is an disabled entry in the trustlist.  Return an error
+         so that the user won't be asked again for that one.  Changing
+         this flag with the integrated marktrusted feature is and will
+         not be made possible.  */
+      return gpg_error (GPG_ERR_NOT_TRUSTED);
+    }
+
+
   /* Insert a new one. */
-  fprformatted = insert_colons (fpr);
-  if (!fprformatted)
-    return out_of_core ();
-  desc = xtryasprintf (
-                /* TRANSLATORS: This prompt is shown by the Pinentry
-                   and has one special property: A "%%0A" is used by
-                   Pinentry to insert a line break.  The double
-                   percent sign is actually needed because it is also
-                   a printf format string.  If you need to insert a
-                   plain % sign, you need to encode it as "%%25".  The
-                   second "%s" gets replaced by a hexdecimal
-                   fingerprint string whereas the first one receives
-                   the name as stored in the certificate. */
-                _("Please verify that the certificate identified as:%%0A"
-                  "  \"%s\"%%0A"
-                  "has the fingerprint:%%0A"
-                  "  %s"), name, fprformatted);
-  if (!desc)
-    {
-      xfree (fprformatted);
-      return out_of_core ();
-    }
 
-  /* TRANSLATORS: "Correct" is the label of a button and intended to
-     be hit if the fingerprint matches the one of the CA.  The other
-     button is "the default "Cancel" of the Pinentry. */
-  err = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
-  xfree (desc);
-  /* If the user did not confirmed this, we return cancel here so that
-     gpgsm may stop asking further questions.  We won't do this for
-     the second question of course. */
-  if (err)
-    {
-      xfree (fprformatted);
-      return (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED ? 
-              gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED) : err);
-    }
-
-
-
+  /* First a general question whether this is trusted.  */
   desc = xtryasprintf (
                 /* TRANSLATORS: This prompt is shown by the Pinentry
                    and has one special property: A "%%0A" is used by
@@ -579,30 +574,75 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                   "to correctly certify user certificates?"),
                 name);
   if (!desc)
-    {
-      xfree (fprformatted);
-      return out_of_core ();
-    }
-
+    return out_of_core ();
   err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
   xfree (desc);
-  if (err)
+  if (!err)
+    yes_i_trust = 1;
+  else if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
+    yes_i_trust = 0;
+  else
+    return err;
+
+
+  fprformatted = insert_colons (fpr);
+  if (!fprformatted)
+    return out_of_core ();
+
+  /* If the user trusts this certificate he has to verify the
+     fingerprint of course.  */
+  if (yes_i_trust)
     {
-      xfree (fprformatted);
-      return err;
+      desc = xtryasprintf 
+        (
+         /* TRANSLATORS: This prompt is shown by the Pinentry and has
+            one special property: A "%%0A" is used by Pinentry to
+            insert a line break.  The double percent sign is actually
+            needed because it is also a printf format string.  If you
+            need to insert a plain % sign, you need to encode it as
+            "%%25".  The second "%s" gets replaced by a hexdecimal
+            fingerprint string whereas the first one receives the name
+            as stored in the certificate. */
+         _("Please verify that the certificate identified as:%%0A"
+           "  \"%s\"%%0A"
+           "has the fingerprint:%%0A"
+           "  %s"), name, fprformatted);
+      if (!desc)
+        {
+          xfree (fprformatted);
+          return out_of_core ();
+        }
+      
+      /* TRANSLATORS: "Correct" is the label of a button and intended
+         to be hit if the fingerprint matches the one of the CA.  The
+         other button is "the default "Cancel" of the Pinentry. */
+      err = agent_get_confirmation (ctrl, desc, _("Correct"), _("Wrong"));
+      xfree (desc);
+      if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
+        yes_i_trust = 0;
+      else if (err)
+        {
+          xfree (fprformatted);
+          return err;
+        }
     }
+
 
   /* Now check again to avoid duplicates.  We take the lock to make
      sure that nobody else plays with our file.  Frankly we don't work
      with the trusttable but using this lock is just fine for our
      purpose.  */
   lock_trusttable ();
-  if (!agent_istrusted (ctrl, fpr))
-    {
-      unlock_trusttable ();
-      xfree (fprformatted);
-      return 0; 
-    }
+  {
+    int now_disabled;
+
+    if (!agent_istrusted (ctrl, fpr, &now_disabled) || now_disabled)
+      {
+        unlock_trusttable ();
+        xfree (fprformatted);
+        return now_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0; 
+      }
+  }
 
 
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
@@ -635,7 +675,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   /* Append the key. */
   fputs ("\n# ", fp);
   print_sanitized_string (fp, name, 0);
-  fprintf (fp, "\n%s %c\n", fprformatted, flag);
+  fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
   if (ferror (fp))
     err = gpg_error_from_syserror ();
   

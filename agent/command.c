@@ -461,7 +461,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
   for (p=line; i < 40; p++, i++)
     fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
   fpr[i] = 0;
-  rc = agent_istrusted (ctrl, fpr);
+  rc = agent_istrusted (ctrl, fpr, NULL);
   if (!rc || gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
     return rc;
   else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF )

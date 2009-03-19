@@ -1,5 +1,12 @@
 2009-03-19  Werner Koch  <wk@g10code.com>
 
+	* trustlist.c (struct trustitem_s): Add field DISABLED.
+	(read_one_trustfile): Parse the '!' flag.
+	(agent_istrusted, agent_listtrusted): Check flag.
+	(agent_istrusted): Add arg R_DISABLED.  Change all callers.
+	(agent_marktrusted): Do not ask if flagged as disabled.  Reverse
+	the order of the questions.  Store the disabled flag.
+	
 	* gpg-agent.c (main): Save signal mask and open fds.  Restore mask
 	and close all fds prior to the exec.  Fixes bug#1013.
 

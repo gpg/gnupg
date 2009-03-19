@@ -7,8 +7,11 @@ Noteworthy changes in version 2.0.12
  * New command "KEYINFO" for GPG_AGENT.  GPGSM now also returns
    information about smartcards.
 
- * Make sure not to leak file descriptors if running gpg-agent with a
-   command.  Restore the signal mask to solve a problem in Mono.
+ * Made sure not to leak file descriptors if running gpg-agent with a
+   command.  Restores the signal mask to solve a problem in Mono.
+
+ * Changed order of the confirmation questions for root certificates
+   and stores negative answers in trustlist.txt.
 
 
 Noteworthy changes in version 2.0.11 (2009-03-03)

@@ -303,7 +303,7 @@ gpg_error_t parse_shadow_info (const unsigned char *shadow_info,
 
 /*-- trustlist.c --*/
 void initialize_module_trustlist (void);
-gpg_error_t agent_istrusted (ctrl_t ctrl, const char *fpr);
+gpg_error_t agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled);
 gpg_error_t agent_listtrusted (void *assuan_context);
 gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
                                const char *fpr, int flag);

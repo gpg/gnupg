@@ -520,9 +520,11 @@ agent. By default they may all be found in the current home directory
   you need to enter its fingerprint followed by a space and a capital
   letter @code{S}.  Colons may optionally be used to separate the bytes of
   a fingerprint; this allows to cut and paste the fingerprint from a key
-  listing output.
+  listing output.  If the line is prefixed with a @code{!} the key is
+  explicitly marked as not trusted.
   
-  Here is an example where two keys are marked as ultimately trusted:
+  Here is an example where two keys are marked as ultimately trusted
+  and one as not trusted:
   
   @example
   # CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
@@ -530,6 +532,9 @@ agent. By default they may all be found in the current home directory
   
   # CN=PCA-1-Verwaltung-02/O=PKI-1-Verwaltung/C=DE
   DC:BD:69:25:48:BD:BB:7E:31:6E:BB:80:D3:00:80:35:D4:F8:A6:CD S 
+
+  # CN=Root-CA/O=Schlapphuete/L=Pullach/C=DE
+  !14:56:98:D3:FE:9C:CA:5A:31:6E:BC:81:D3:11:4E:00:90:A3:44:C2 S
   @end example
   
 Before entering a key into this file, you need to ensure its
