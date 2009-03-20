@@ -124,7 +124,8 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
   size_t buflen[2];
   gcry_sexp_t sexp;
   int i;
-  
+  int offset[2] = { 0, 0 };
+
   err = iso7816_select_file (app->slot, fid, 0, NULL, NULL);
   if (err)
     return err;
@@ -137,7 +138,7 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
       xfree (buffer[0]);
       return err;
     }
-  
+
   if (app->app_local->nks_version < 3)
     {
       /* Old versions of NKS store the values in a TLV encoded format.
@@ -152,14 +153,55 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
             err = gpg_error (GPG_ERR_TOO_SHORT);
           else if (buffer[i][1] != buflen[i]-2 )
             err = gpg_error (GPG_ERR_INV_OBJ);
+          else
+            offset[i] = 2;
+        }
+    }
+  else
+    {
+      /* Remove leading zeroes to get a correct keygrip.  Take care of
+         negative numbers.  We should also fix it the same way in
+         libgcrypt but we can't yet rely on it yet.  */
+      for (i=0; i < 2; i++)
+        {
+          while (buflen[i]-offset[i] > 1 
+                 && !buffer[i][offset[i]] 
+                 && !(buffer[i][offset[i]+1] & 0x80))
+            offset[i]++;
+        }
+    }
+
+  /* Check whether negative values are not prefixed with a zero and
+     fix that.  */
+  for (i=0; i < 2; i++)
+    {
+      if ((buflen[i]-offset[i]) && (buffer[i][offset[i]] & 0x80))
+        {
+          unsigned char *newbuf;          
+          size_t newlen;
+          
+          newlen = 1 + buflen[i] - offset[i];
+          newbuf = xtrymalloc (newlen);
+          if (!newlen)
+            {
+              xfree (buffer[0]);
+              xfree (buffer[1]);
+              return gpg_error_from_syserror ();
+            }
+          newbuf[0] = 0;
+          memcpy (newbuf+1, buffer[i]+offset[i], buflen[i] - offset[i]);
+          xfree (buffer[i]);
+          buffer[i] = newbuf;
+          buflen[i] = newlen;
+          offset[i] = 0;
         }
     }
 
   if (!err)
     err = gcry_sexp_build (&sexp, NULL,
                            "(public-key (rsa (n %b) (e %b)))",
-                           (int)buflen[0]-2, buffer[0]+2,
-                           (int)buflen[1]-2, buffer[1]+2);
+                           (int)buflen[0]-offset[0], buffer[0]+offset[0],
+                           (int)buflen[1]-offset[1], buffer[1]+offset[1]);
 
   xfree (buffer[0]);
   xfree (buffer[1]);

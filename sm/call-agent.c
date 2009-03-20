@@ -668,6 +668,25 @@ gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
 
 
 static int
+learn_status_cb (void *opaque, const char *line)
+{
+  struct learn_parm_s *parm = opaque;
+
+  /* Pass progress data to the caller.  */
+  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+    {
+      if (parm->ctrl)
+        {
+          for (line += 8; *line == ' '; line++)
+            ;
+          if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
+            return gpg_error (GPG_ERR_ASS_CANCELED);
+        }
+    }
+  return 0;
+}
+
+static int
 learn_cb (void *opaque, const void *buffer, size_t length)
 {
   struct learn_parm_s *parm = opaque;
@@ -692,6 +711,8 @@ learn_cb (void *opaque, const void *buffer, size_t length)
       return 0;
     }
 
+  if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, "learncard C 0 0"))
+    return gpg_error (GPG_ERR_ASS_CANCELED);
 
   /* FIXME: this should go into import.c */
   rc = ksba_cert_new (&cert);
@@ -755,7 +776,8 @@ gpgsm_agent_learn (ctrl_t ctrl)
   learn_parm.data = &data;
   rc = assuan_transact (agent_ctx, "LEARN --send",
                         learn_cb, &learn_parm, 
-                        NULL, NULL, NULL, NULL);
+                        NULL, NULL, 
+                        learn_status_cb, &learn_parm);
   xfree (get_membuf (&data, &len));
   if (rc)
     return rc;

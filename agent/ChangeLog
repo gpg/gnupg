@@ -1,3 +1,12 @@
+2009-03-20  Werner Koch  <wk@g10code.com>
+
+	* learncard.c (struct kpinfo_cp_parm_s): Add field CTRL.
+	(struct certinfo_cb_parm_s): Ditto.
+	(agent_handle_learn): Set CTRL field.
+	(kpinfo_cb, certinfo_cb): Send progress status.
+
+	* agent.h (agent_write_status): Flag with GNUPG_GCC_A_SENTINEL.
+
 2009-03-19  Werner Koch  <wk@g10code.com>
 
 	* trustlist.c (struct trustitem_s): Add field DISABLED.

@@ -1,5 +1,5 @@
 /* learncard.c - Handle the LEARN command
- *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,7 +32,8 @@
 
 /* Structures used by the callback mechanism to convey information
    pertaining to key pairs.  */
-struct keypair_info_s {
+struct keypair_info_s 
+{
   struct keypair_info_s *next;
   int no_cert;
   char *id;          /* points into grip */
@@ -43,11 +44,12 @@ struct keypair_info_s {
 };
 typedef struct keypair_info_s *KEYPAIR_INFO;
 
-struct kpinfo_cb_parm_s {
+struct kpinfo_cb_parm_s 
+{
+  ctrl_t ctrl;
   int error;
   KEYPAIR_INFO info;
 };
-
 
 
 /* Structures used by the callback mechanism to convey information
@@ -60,7 +62,9 @@ struct certinfo_s {
 };
 typedef struct certinfo_s *CERTINFO;
 
-struct certinfo_cb_parm_s {
+struct certinfo_cb_parm_s 
+{
+  ctrl_t ctrl;
   int error;
   CERTINFO info;
 };
@@ -130,6 +134,11 @@ kpinfo_cb (void *opaque, const char *line)
 
   if (parm->error)
     return; /* no need to gather data after an error coccured */
+
+  if ((parm->error = agent_write_status (parm->ctrl, "PROGRESS",
+                                         "learncard", "k", "0", "0", NULL)))
+    return;
+
   item = xtrycalloc (1, sizeof *item + strlen (line));
   if (!item)
     {
@@ -182,6 +191,10 @@ certinfo_cb (void *opaque, const char *line)
 
   if (parm->error)
     return; /* no need to gather data after an error coccured */
+
+  if ((parm->error = agent_write_status (parm->ctrl, "PROGRESS",
+                                         "learncard", "c", "0", "0", NULL)))
+    return;
 
   type = strtol (line, &p, 10);
   while (spacep (p))
@@ -296,6 +309,8 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
   memset (&parm, 0, sizeof parm);
   memset (&cparm, 0, sizeof cparm);
   memset (&sparm, 0, sizeof sparm);
+  parm.ctrl = ctrl;
+  cparm.ctrl = ctrl;
 
   /* Check whether a card is present and get the serial number */
   rc = agent_card_serialno (ctrl, &serialno);

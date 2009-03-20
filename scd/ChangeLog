@@ -1,3 +1,7 @@
+2009-03-20  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (keygripstr_from_pk_file): Fix for TCOS 3 cards.
+
 2009-03-18  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (open_pcsc_reader_wrapped): Use close_all_fds.

@@ -518,7 +518,8 @@ more arguments in future versions.
                           still working.
              "starting_agent" - A gpg-agent was started because it is not
                           running as a daemon.
-
+             "learncard"  Send by the agent and gpgsm while learing
+	                  the data of a smartcard.
         
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
 	A signature has been created using these parameters.

@@ -1391,6 +1391,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
       if (gpgsm_certs_identical_p (cert, lastcert))
 	{
 	  ksba_cert_release (cert);
+          cert = NULL;
 	  continue;
 	}
 
