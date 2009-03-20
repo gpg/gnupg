@@ -1,3 +1,11 @@
+2009-03-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyring.c (rename_tmp_file): Force a fsync (via iobuf_ioctl) on
+	secret keyring files to be extra safe on filesystems that may not
+	sync data and metadata together (ext4).  Also check return code
+	from the cache invalidation to make sure we're safe over NFS and
+	similar.
+
 2009-03-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgv.c (strusage): Fix name of program in "Syntax" line.
