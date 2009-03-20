@@ -1,6 +1,6 @@
 /* iobuf.c  -  file handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2008,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -162,10 +162,11 @@ fd_cache_strcmp (const char *a, const char *b)
  * Invalidate (i.e. close) a cached iobuf or all iobufs if NULL is
  * used for FNAME.
  */
-static void
+static int
 fd_cache_invalidate (const char *fname)
 {
     CLOSE_CACHE cc;
+    int err=0;
 
     if (!fname) {
         if( DBG_IOBUF )
@@ -181,7 +182,7 @@ fd_cache_invalidate (const char *fname)
                 cc->fp = INVALID_FP;
             }
         }
-        return;
+        return err;
     }
 
     if( DBG_IOBUF )
@@ -192,16 +193,43 @@ fd_cache_invalidate (const char *fname)
             if( DBG_IOBUF )
                 log_debug ("                did (%s)\n", cc->fname);
 #ifdef HAVE_DOSISH_SYSTEM
-            CloseHandle (cc->fp);
+            if(CloseHandle (cc->fp)==0)
+	      err=-1;
 #else
-	    close(cc->fp);
+	    err=close(cc->fp);
 #endif
             cc->fp = INVALID_FP;
         }
     }
+
+    return err;
 }
 
+static int
+fd_cache_synchronize(const char *fname)
+{
+  int err=0;
 
+#ifndef HAVE_DOSISH_SYSTEM
+  CLOSE_CACHE cc;
+
+  if( DBG_IOBUF )
+    log_debug ("fd_cache_synchronize (%s)\n", fname);
+
+  for (cc=close_cache; cc; cc = cc->next )
+    {
+      if ( cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname) )
+	{
+	  if( DBG_IOBUF )
+	    log_debug ("                did (%s)\n", cc->fname);
+
+	  err=fsync(cc->fp);
+	}
+    }
+#endif
+
+  return err;
+}
 
 static FILEP_OR_FD
 direct_open (const char *fname, const char *mode)
@@ -1298,10 +1326,10 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
                       ptrval? (char*)ptrval:"[all]");
         if ( !a && !intval ) {
 #ifndef FILE_FILTER_USES_STDIO
-            fd_cache_invalidate (ptrval);
+	    return fd_cache_invalidate (ptrval);
 #endif
             return 0;
-        }
+	 }
     }
     else if ( cmd == 3 ) {  /* disallow/allow caching */
         if( DBG_IOBUF )
@@ -1322,6 +1350,23 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
             }
 #endif
     }
+    else if(cmd==4)
+      {
+	/* Do a fsync on the open fd and return any errors to the
+	   caller of iobuf_ioctl */
+        if( DBG_IOBUF )
+	  log_debug("iobuf-*.*: ioctl `%s' fsync\n",
+                      ptrval? (char*)ptrval:"<null>");
+
+	if(!a && !intval && ptrval)
+	  {
+#ifndef FILE_FILTER_USES_STDIO
+	    return fd_cache_synchronize (ptrval);
+#else
+	    return 0;
+#endif
+	  }
+      }
 
     return -1;
 }

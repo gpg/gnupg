@@ -1,3 +1,10 @@
+2009-03-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (fd_cache_synchronize): New.  fsync() a file in cache.
+	(iobuf_ioctl): Called here, for ioctl 4.
+	(fd_cache_invalidate): Pass return code from close() back to
+	iobuf_ioctl().
+
 2009-03-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (do_parse_uri): Properly handle IPv6 literal addresses as
