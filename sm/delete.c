@@ -1,5 +1,5 @@
-/* delete.c
- * Copyright (C) 2002 Free Software Foundation, Inc.
+/* delete.c - Delete certificates from the keybox.
+ * Copyright (C) 2002, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -43,6 +43,7 @@ delete_one (ctrl_t ctrl, const char *username)
   KEYDB_HANDLE kh = NULL;
   ksba_cert_t cert = NULL;
   int duplicates = 0;
+  int is_ephem = 0;
   
   rc = keydb_classify_name (username, &desc);
   if (rc)
@@ -60,11 +61,21 @@ delete_one (ctrl_t ctrl, const char *username)
       goto leave;
     }
 
-      
+  /* If the key is specified in a unique way, include ephemeral keys
+     in the search.  */
+  if ( desc.mode == KEYDB_SEARCH_MODE_FPR
+       || desc.mode == KEYDB_SEARCH_MODE_FPR20
+       || desc.mode == KEYDB_SEARCH_MODE_FPR16
+       || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP )
+    {
+      is_ephem = 1;
+      keydb_set_ephemeral (kh, 1);
+    }
+
   rc = keydb_search (kh, &desc, 1);
   if (!rc)
     rc = keydb_get_cert (kh, &cert);
-  if (!rc)
+  if (!rc && !is_ephem)
     {
       unsigned char fpr[20];
 

@@ -1,3 +1,8 @@
+2009-03-23  Werner Koch  <wk@g10code.com>
+
+	* delete.c (delete_one): Also delete ephemeral certificates if
+	specified uniquely.
+
 2009-03-20  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (list_internal_keys): Set released cert to NULL.
