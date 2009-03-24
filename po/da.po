@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-03-03 09:09+0100\n"
+"POT-Creation-Date: 2009-03-24 18:42+0100\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -171,47 +171,68 @@ msgstr ""
 msgid "failed to create stream from socket: %s\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
-#: agent/divert-scd.c:219
+#: agent/divert-scd.c:199
 #, fuzzy
 msgid "Admin PIN"
 msgstr "Indtast bruger-id: "
 
-#: agent/divert-scd.c:224
+#. TRANSLATORS: A PUK is the Personal Unblocking Code
+#. used to unblock a PIN.
+#: agent/divert-scd.c:204
+msgid "PUK"
+msgstr ""
+
+#: agent/divert-scd.c:211
 msgid "Reset Code"
 msgstr ""
 
-#: agent/divert-scd.c:284
+#: agent/divert-scd.c:237
+#, c-format
+msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgstr ""
+
+#: agent/divert-scd.c:286
 #, fuzzy
 msgid "Repeat this Reset Code"
 msgstr "Gentag kodesætning: "
 
-#: agent/divert-scd.c:285
+#: agent/divert-scd.c:288
+#, fuzzy
+msgid "Repeat this PUK"
+msgstr "Gentag kodesætning: "
+
+#: agent/divert-scd.c:289
 #, fuzzy
 msgid "Repeat this PIN"
 msgstr "Gentag kodesætning: "
 
-#: agent/divert-scd.c:290
+#: agent/divert-scd.c:294
 #, fuzzy
 msgid "Reset Code not correctly repeated; try again"
 msgstr "kodesætningen blev ikke ordentlig gentaget; prøv igen.\n"
 
-#: agent/divert-scd.c:291
+#: agent/divert-scd.c:296
+#, fuzzy
+msgid "PUK not correctly repeated; try again"
+msgstr "kodesætningen blev ikke ordentlig gentaget; prøv igen.\n"
+
+#: agent/divert-scd.c:297
 #, fuzzy
 msgid "PIN not correctly repeated; try again"
 msgstr "kodesætningen blev ikke ordentlig gentaget; prøv igen.\n"
 
-#: agent/divert-scd.c:303
+#: agent/divert-scd.c:309
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
-#: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:634 sm/export.c:650
+#: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:632 sm/export.c:648
 #: sm/import.c:531 sm/import.c:556
 #, fuzzy, c-format
 msgid "error creating temporary file: %s\n"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
-#: agent/genkey.c:115 sm/export.c:641 sm/import.c:539
+#: agent/genkey.c:115 sm/export.c:639 sm/import.c:539
 #, fuzzy, c-format
 msgid "error writing to temporary file: %s\n"
 msgstr "skriver til `%s'\n"
@@ -284,7 +305,7 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "ændr kodesætningen"
 
-#: agent/gpg-agent.c:117 agent/preset-passphrase.c:72 agent/protect-tool.c:109
+#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 agent/protect-tool.c:109
 #: scd/scdaemon.c:102 tools/gpg-check-pattern.c:70
 #, fuzzy
 msgid ""
@@ -295,260 +316,260 @@ msgstr ""
 "Indstillinger:\n"
 " "
 
-#: agent/gpg-agent.c:119 scd/scdaemon.c:104
+#: agent/gpg-agent.c:120 scd/scdaemon.c:104
 msgid "run in server mode (foreground)"
 msgstr ""
 
-#: agent/gpg-agent.c:120 scd/scdaemon.c:107
+#: agent/gpg-agent.c:121 scd/scdaemon.c:107
 msgid "run in daemon mode (background)"
 msgstr ""
 
-#: agent/gpg-agent.c:121 g10/gpg.c:483 g10/gpgv.c:71 kbx/kbxutil.c:88
+#: agent/gpg-agent.c:122 g10/gpg.c:483 g10/gpgv.c:71 kbx/kbxutil.c:88
 #: scd/scdaemon.c:108 sm/gpgsm.c:281 tools/gpg-connect-agent.c:69
 #: tools/gpgconf.c:79 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "meddelsom"
 
-#: agent/gpg-agent.c:122 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:109
+#: agent/gpg-agent.c:123 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:109
 #: sm/gpgsm.c:282
 msgid "be somewhat more quiet"
 msgstr "vær mere stille"
 
-#: agent/gpg-agent.c:123 scd/scdaemon.c:110
+#: agent/gpg-agent.c:124 scd/scdaemon.c:110
 msgid "sh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:124 scd/scdaemon.c:111
+#: agent/gpg-agent.c:125 scd/scdaemon.c:111
 msgid "csh-style command output"
 msgstr ""
 
-#: agent/gpg-agent.c:125 scd/scdaemon.c:112 sm/gpgsm.c:311
+#: agent/gpg-agent.c:126 scd/scdaemon.c:112 sm/gpgsm.c:311
 #: tools/symcryptrun.c:167
 #, fuzzy
 msgid "|FILE|read options from FILE"
 msgstr "|FILE|indlæs udvidelsesmodul FILE"
 
-#: agent/gpg-agent.c:130 scd/scdaemon.c:122
+#: agent/gpg-agent.c:131 scd/scdaemon.c:122
 msgid "do not detach from the console"
 msgstr ""
 
-#: agent/gpg-agent.c:131
+#: agent/gpg-agent.c:132
 msgid "do not grab keyboard and mouse"
 msgstr ""
 
-#: agent/gpg-agent.c:132 tools/symcryptrun.c:166
+#: agent/gpg-agent.c:133 tools/symcryptrun.c:166
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "eksportér nøgler til en nøgletjener"
 
-#: agent/gpg-agent.c:134
+#: agent/gpg-agent.c:135
 #, fuzzy
 msgid "use a standard location for the socket"
 msgstr "Generér en annullérbar certifikat"
 
-#: agent/gpg-agent.c:137
+#: agent/gpg-agent.c:138
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
 
-#: agent/gpg-agent.c:140
+#: agent/gpg-agent.c:141
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr ""
 
-#: agent/gpg-agent.c:141
+#: agent/gpg-agent.c:142
 #, fuzzy
 msgid "do not use the SCdaemon"
 msgstr "opdatér tillidsdatabasen"
 
-#: agent/gpg-agent.c:153
+#: agent/gpg-agent.c:154
 msgid "ignore requests to change the TTY"
 msgstr ""
 
-#: agent/gpg-agent.c:155
+#: agent/gpg-agent.c:156
 msgid "ignore requests to change the X display"
 msgstr ""
 
-#: agent/gpg-agent.c:158
+#: agent/gpg-agent.c:159
 msgid "|N|expire cached PINs after N seconds"
 msgstr ""
 
-#: agent/gpg-agent.c:171
+#: agent/gpg-agent.c:172
 msgid "do not use the PIN cache when signing"
 msgstr ""
 
-#: agent/gpg-agent.c:173
+#: agent/gpg-agent.c:174
 msgid "allow clients to mark keys as \"trusted\""
 msgstr ""
 
-#: agent/gpg-agent.c:175
+#: agent/gpg-agent.c:176
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
-#: agent/gpg-agent.c:176
+#: agent/gpg-agent.c:177
 msgid "enable ssh-agent emulation"
 msgstr ""
 
-#: agent/gpg-agent.c:178
+#: agent/gpg-agent.c:179
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:316 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:328 agent/preset-passphrase.c:94 agent/protect-tool.c:146
 #: scd/scdaemon.c:243 sm/gpgsm.c:513 tools/gpg-connect-agent.c:180
 #: tools/gpgconf.c:101 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
 msgid "Please report bugs to <"
 msgstr "Rapportér venligst fejl til <gnupg-bugs@gnu.org>.\n"
 
-#: agent/gpg-agent.c:325
+#: agent/gpg-agent.c:337
 #, fuzzy
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
-#: agent/gpg-agent.c:327
+#: agent/gpg-agent.c:339
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:362 g10/gpg.c:980 scd/scdaemon.c:304 sm/gpgsm.c:640
+#: agent/gpg-agent.c:374 g10/gpg.c:980 scd/scdaemon.c:304 sm/gpgsm.c:640
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:560 agent/protect-tool.c:1074 kbx/kbxutil.c:429
+#: agent/gpg-agent.c:582 agent/protect-tool.c:1074 kbx/kbxutil.c:429
 #: scd/scdaemon.c:398 sm/gpgsm.c:879 sm/gpgsm.c:882 tools/symcryptrun.c:996
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:659 g10/gpg.c:2086 scd/scdaemon.c:480 sm/gpgsm.c:971
+#: agent/gpg-agent.c:681 g10/gpg.c:2086 scd/scdaemon.c:480 sm/gpgsm.c:971
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTITS: ingen standard alternativfil '%s'\n"
 
-#: agent/gpg-agent.c:664 agent/gpg-agent.c:1243 g10/gpg.c:2090
+#: agent/gpg-agent.c:686 agent/gpg-agent.c:1294 g10/gpg.c:2090
 #: scd/scdaemon.c:485 sm/gpgsm.c:975 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "alternativfil`%s': %s\n"
 
-#: agent/gpg-agent.c:672 g10/gpg.c:2097 scd/scdaemon.c:493 sm/gpgsm.c:982
+#: agent/gpg-agent.c:694 g10/gpg.c:2097 scd/scdaemon.c:493 sm/gpgsm.c:982
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "læser indstillinger fra `%s'\n"
 
-#: agent/gpg-agent.c:1001 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1044 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, fuzzy, c-format
 msgid "error creating `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: agent/gpg-agent.c:1356 agent/gpg-agent.c:1476 agent/gpg-agent.c:1480
-#: agent/gpg-agent.c:1521 agent/gpg-agent.c:1525 g10/exec.c:172
+#: agent/gpg-agent.c:1407 agent/gpg-agent.c:1527 agent/gpg-agent.c:1531
+#: agent/gpg-agent.c:1572 agent/gpg-agent.c:1576 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:989
 #, fuzzy, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "%s: kan ikke oprette mappe: %s\n"
 
-#: agent/gpg-agent.c:1370 scd/scdaemon.c:1003
+#: agent/gpg-agent.c:1421 scd/scdaemon.c:1003
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1393 scd/scdaemon.c:1026
+#: agent/gpg-agent.c:1444 scd/scdaemon.c:1026
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "kan ikke oprette %s: %s\n"
 
-#: agent/gpg-agent.c:1402
+#: agent/gpg-agent.c:1453
 #, fuzzy, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "certifikatlæseproblem: %s\n"
 
-#: agent/gpg-agent.c:1422
+#: agent/gpg-agent.c:1473
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1433 scd/scdaemon.c:1046
+#: agent/gpg-agent.c:1484 scd/scdaemon.c:1046
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
-#: agent/gpg-agent.c:1438 scd/scdaemon.c:1049
+#: agent/gpg-agent.c:1489 scd/scdaemon.c:1049
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: agent/gpg-agent.c:1450 scd/scdaemon.c:1058
+#: agent/gpg-agent.c:1501 scd/scdaemon.c:1058
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "signering fejlede: %s\n"
 
-#: agent/gpg-agent.c:1456 scd/scdaemon.c:1065
+#: agent/gpg-agent.c:1507 scd/scdaemon.c:1065
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: agent/gpg-agent.c:1484 agent/gpg-agent.c:1531 g10/openfile.c:432
+#: agent/gpg-agent.c:1535 agent/gpg-agent.c:1582 g10/openfile.c:432
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: mappe oprettet\n"
 
-#: agent/gpg-agent.c:1537
+#: agent/gpg-agent.c:1588
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "kan ikke åbne %s: %s\n"
 
-#: agent/gpg-agent.c:1541
+#: agent/gpg-agent.c:1592
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: kan ikke oprette mappe: %s\n"
 
-#: agent/gpg-agent.c:1671 scd/scdaemon.c:1081
+#: agent/gpg-agent.c:1722 scd/scdaemon.c:1081
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: agent/gpg-agent.c:1693
+#: agent/gpg-agent.c:1744
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1698
+#: agent/gpg-agent.c:1749
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1718
+#: agent/gpg-agent.c:1769
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1723
+#: agent/gpg-agent.c:1774
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1863 scd/scdaemon.c:1218
+#: agent/gpg-agent.c:1914 scd/scdaemon.c:1218
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1972 scd/scdaemon.c:1285
+#: agent/gpg-agent.c:2023 scd/scdaemon.c:1285
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s: udelod: %s\n"
 
-#: agent/gpg-agent.c:2100
+#: agent/gpg-agent.c:2151
 msgid "no gpg-agent running in this session\n"
 msgstr ""
 
-#: agent/gpg-agent.c:2111 common/simple-pwquery.c:349 common/asshelp.c:326
+#: agent/gpg-agent.c:2162 common/simple-pwquery.c:349 common/asshelp.c:326
 #: tools/gpg-connect-agent.c:2133
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr ""
 
-#: agent/gpg-agent.c:2124 common/simple-pwquery.c:361 common/asshelp.c:338
+#: agent/gpg-agent.c:2175 common/simple-pwquery.c:361 common/asshelp.c:338
 #: tools/gpg-connect-agent.c:2144
 #, fuzzy, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -610,66 +631,43 @@ msgstr "fejl ved oprettelse af kodesætning: %s\n"
 msgid "cancelled\n"
 msgstr ""
 
-#: agent/trustlist.c:132 agent/trustlist.c:322
+#: agent/trustlist.c:135 agent/trustlist.c:333
 #, fuzzy, c-format
 msgid "error opening `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: agent/trustlist.c:147 common/helpfile.c:63 common/helpfile.c:79
+#: agent/trustlist.c:150 common/helpfile.c:63 common/helpfile.c:79
 #, fuzzy, c-format
 msgid "file `%s', line %d: %s\n"
 msgstr "%s: bruger ikke fundet: %s\n"
 
-#: agent/trustlist.c:167 agent/trustlist.c:175
+#: agent/trustlist.c:170 agent/trustlist.c:178
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:181
+#: agent/trustlist.c:184
 #, fuzzy, c-format
 msgid "system trustlist `%s' not available\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
-#: agent/trustlist.c:216
+#: agent/trustlist.c:228
 #, fuzzy, c-format
 msgid "bad fingerprint in `%s', line %d\n"
 msgstr "panser: %s\n"
 
-#: agent/trustlist.c:242 agent/trustlist.c:249
+#: agent/trustlist.c:253 agent/trustlist.c:260
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
 msgstr ""
 
-#: agent/trustlist.c:283 common/helpfile.c:126
+#: agent/trustlist.c:294 common/helpfile.c:126
 #, fuzzy, c-format
 msgid "error reading `%s', line %d: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: agent/trustlist.c:384 agent/trustlist.c:431
+#: agent/trustlist.c:398 agent/trustlist.c:451
 msgid "error reading list of trusted root certificates\n"
-msgstr ""
-
-#. TRANSLATORS: This prompt is shown by the Pinentry
-#. and has one special property: A "%%0A" is used by
-#. Pinentry to insert a line break.  The double
-#. percent sign is actually needed because it is also
-#. a printf format string.  If you need to insert a
-#. plain % sign, you need to encode it as "%%25".  The
-#. second "%s" gets replaced by a hexdecimal
-#. fingerprint string whereas the first one receives
-#. the name as stored in the certificate.
-#: agent/trustlist.c:541
-#, c-format
-msgid ""
-"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
-"fingerprint:%%0A  %s"
-msgstr ""
-
-#. TRANSLATORS: "Correct" is the label of a button and intended to
-#. be hit if the fingerprint matches the one of the CA.  The other
-#. button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:554
-msgid "Correct"
 msgstr ""
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
@@ -680,90 +678,116 @@ msgstr ""
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as store in the
 #. certificate.
-#: agent/trustlist.c:577
+#: agent/trustlist.c:572
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:587 common/audit.c:467
+#: agent/trustlist.c:578 common/audit.c:467
 #, fuzzy
 msgid "Yes"
 msgstr "ja"
 
-#: agent/trustlist.c:587 common/audit.c:469
+#: agent/trustlist.c:578 common/audit.c:469
 msgid "No"
 msgstr ""
 
-#: agent/findkey.c:158
+#. TRANSLATORS: This prompt is shown by the Pinentry and has
+#. one special property: A "%%0A" is used by Pinentry to
+#. insert a line break.  The double percent sign is actually
+#. needed because it is also a printf format string.  If you
+#. need to insert a plain % sign, you need to encode it as
+#. "%%25".  The second "%s" gets replaced by a hexdecimal
+#. fingerprint string whereas the first one receives the name
+#. as stored in the certificate.
+#: agent/trustlist.c:606
+#, c-format
+msgid ""
+"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
+"fingerprint:%%0A  %s"
+msgstr ""
+
+#. TRANSLATORS: "Correct" is the label of a button and intended
+#. to be hit if the fingerprint matches the one of the CA.  The
+#. other button is "the default "Cancel" of the Pinentry.
+#: agent/trustlist.c:619
+msgid "Correct"
+msgstr ""
+
+#: agent/trustlist.c:619
+msgid "Wrong"
+msgstr ""
+
+#: agent/findkey.c:156
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
 
-#: agent/findkey.c:174
+#: agent/findkey.c:172
 #, c-format
 msgid ""
 "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
 "it now."
 msgstr ""
 
-#: agent/findkey.c:188 agent/findkey.c:195
+#: agent/findkey.c:186 agent/findkey.c:193
 #, fuzzy
 msgid "Change passphrase"
 msgstr "ændr kodesætningen"
 
-#: agent/findkey.c:196
+#: agent/findkey.c:194
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:385 common/exechelp.c:476 tools/gpgconf-comp.c:1475
+#: common/exechelp.c:523 common/exechelp.c:614 tools/gpgconf-comp.c:1475
 #: tools/gpgconf-comp.c:1814
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
-#: common/exechelp.c:450 common/exechelp.c:509
+#: common/exechelp.c:588 common/exechelp.c:647
 #, fuzzy, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "kan ikke åbne %s: %s\n"
 
-#: common/exechelp.c:488 common/exechelp.c:616 common/exechelp.c:851
+#: common/exechelp.c:626 common/exechelp.c:754 common/exechelp.c:989
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: common/exechelp.c:662 common/exechelp.c:715
+#: common/exechelp.c:800 common/exechelp.c:853
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
-#: common/exechelp.c:670
+#: common/exechelp.c:808
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: common/exechelp.c:676 common/exechelp.c:726
+#: common/exechelp.c:814 common/exechelp.c:864
 #, fuzzy, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: common/exechelp.c:721
+#: common/exechelp.c:859
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr ""
 
-#: common/exechelp.c:734
+#: common/exechelp.c:872
 #, fuzzy, c-format
 msgid "error running `%s': terminated\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: common/http.c:1636
+#: common/http.c:1646
 #, fuzzy, c-format
 msgid "error creating socket: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: common/http.c:1680
+#: common/http.c:1690
 #, fuzzy
 msgid "host not found"
 msgstr "%s: bruger ikke fundet\n"
@@ -1151,7 +1175,7 @@ msgstr ""
 msgid "This command is only available for version 2 cards\n"
 msgstr ""
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1849
+#: g10/card-util.c:85 scd/app-openpgp.c:1875
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
@@ -2594,7 +2618,7 @@ msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
 #: g10/gpgv.c:119
 msgid ""
-"Syntax: gpg [options] [files]\n"
+"Syntax: gpgv [options] [files]\n"
 "Check signatures against known trusted keys\n"
 msgstr ""
 
@@ -5248,12 +5272,12 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
 
-#: g10/passphrase.c:295 g10/passphrase.c:589
+#: g10/passphrase.c:294 g10/passphrase.c:587
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (hovednøgle-ID %08lX)"
 
-#: g10/passphrase.c:309
+#: g10/passphrase.c:308
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the OpenPGP "
@@ -5265,26 +5289,21 @@ msgstr ""
 "Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
 "\n"
 
-#: g10/passphrase.c:335
-#, fuzzy
-msgid "Repeat passphrase\n"
-msgstr "Gentag kodesætning: "
-
-#: g10/passphrase.c:337
+#: g10/passphrase.c:334
 #, fuzzy
 msgid "Enter passphrase\n"
 msgstr "Indtast kodesætning: "
 
-#: g10/passphrase.c:364
+#: g10/passphrase.c:362
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:370 g10/passphrase.c:433
+#: g10/passphrase.c:368 g10/passphrase.c:431
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr ""
 
-#: g10/passphrase.c:568
+#: g10/passphrase.c:566
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5293,12 +5312,12 @@ msgstr ""
 "Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
 "\n"
 
-#: g10/passphrase.c:576
+#: g10/passphrase.c:574
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr ""
 
-#: g10/passphrase.c:585
+#: g10/passphrase.c:583
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
@@ -6526,246 +6545,272 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:359 scd/app-openpgp.c:1457 scd/app-dinsig.c:297
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
-
-#: scd/app-nks.c:363 scd/app-openpgp.c:1461 scd/app-openpgp.c:1493
-#: scd/app-openpgp.c:1640 scd/app-openpgp.c:1658 scd/app-openpgp.c:1858
-#: scd/app-dinsig.c:301
+#: scd/app-nks.c:624 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
+#: scd/app-openpgp.c:1666 scd/app-openpgp.c:1684 scd/app-openpgp.c:1884
+#: scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-nks.c:411
+#: scd/app-nks.c:657
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
-#. TRANSLATORS: Do not translate the "|*|" prefixes but
-#. keep it at the start of the string.  We need this elsewhere
-#. to get some infos on the string.
-#: scd/app-nks.c:591 scd/app-openpgp.c:1898
-msgid "|N|New PIN"
+#: scd/app-nks.c:848
+#, fuzzy
+msgid "|N|Please enter a new PIN for the standard keys."
+msgstr "ændr kodesætningen"
+
+#: scd/app-nks.c:849
+#, fuzzy
+msgid "||Please enter the PIN for the standard keys."
+msgstr "ændr kodesætningen"
+
+#: scd/app-nks.c:855
+#, fuzzy
+msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
+msgstr "rev- forkert nøgletilbagekald\n"
+
+#: scd/app-nks.c:857
+#, fuzzy
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
+msgstr "rev- forkert nøgletilbagekald\n"
+
+#: scd/app-nks.c:865
+msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:594 scd/app-openpgp.c:1902 scd/app-dinsig.c:529
+#: scd/app-nks.c:867
+msgid "||Please enter the PIN for the key to create qualified signatures."
+msgstr ""
+
+#: scd/app-nks.c:875
+msgid ""
+"|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
+"qualified signatures."
+msgstr ""
+
+#: scd/app-nks.c:877
+msgid ""
+"|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
+"qualified signatures."
+msgstr ""
+
+#: scd/app-nks.c:978 scd/app-openpgp.c:1928 scd/app-dinsig.c:531
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
 # er det klogt at oversætte TrustDB?
-#: scd/app-openpgp.c:668
+#: scd/app-openpgp.c:669
 #, fuzzy, c-format
 msgid "failed to store the fingerprint: %s\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
-#: scd/app-openpgp.c:681
+#: scd/app-openpgp.c:682
 #, fuzzy, c-format
 msgid "failed to store the creation date: %s\n"
 msgstr "ingen standard offentlig nøglering\n"
 
-#: scd/app-openpgp.c:1076
+#: scd/app-openpgp.c:1104
 #, fuzzy, c-format
 msgid "reading public key failed: %s\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
-#: scd/app-openpgp.c:1084 scd/app-openpgp.c:2552
+#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2578
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1092 scd/app-openpgp.c:2560
+#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2586
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1101 scd/app-openpgp.c:2570
+#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2596
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1417
+#: scd/app-openpgp.c:1448
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1424
+#: scd/app-openpgp.c:1455
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1443
-#, c-format
-msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
-msgstr ""
-
-#: scd/app-openpgp.c:1477
+#: scd/app-openpgp.c:1470
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:1489
+#: scd/app-openpgp.c:1481
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "ændr kodesætningen"
 
-#: scd/app-openpgp.c:1500 scd/app-openpgp.c:1665
+#: scd/app-openpgp.c:1522 scd/app-openpgp.c:1691
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1513 scd/app-openpgp.c:1553 scd/app-openpgp.c:1677
-#: scd/app-openpgp.c:2869
+#: scd/app-openpgp.c:1535 scd/app-openpgp.c:1575 scd/app-openpgp.c:1703
+#: scd/app-openpgp.c:2895
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "påklædning af beskyttelse fejlede: %s\n"
 
-#: scd/app-openpgp.c:1576
+#: scd/app-openpgp.c:1598
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1597 scd/app-openpgp.c:1840 scd/app-openpgp.c:3120
+#: scd/app-openpgp.c:1621 scd/app-openpgp.c:1866 scd/app-openpgp.c:3146
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1603 scd/app-openpgp.c:3129
+#: scd/app-openpgp.c:1627 scd/app-openpgp.c:3155
 msgid "card is permanently locked!\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1610
+#: scd/app-openpgp.c:1634
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1620
-#, c-format
-msgid ""
-"|A|Please enter the Admin PIN at the reader's keypad%%0A[remaining attempts: "
-"%d]"
-msgstr ""
-
-#: scd/app-openpgp.c:1635
-#, fuzzy
-msgid "|A|Please enter the Admin PIN at the reader's keypad"
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep
+#. it at the start of the string.  Use %%0A to force a
+#. lienfeed.
+#: scd/app-openpgp.c:1642
+#, fuzzy, c-format
+msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr "ændr kodesætningen"
 
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep
-#. it at the start of the string.  We need this elsewhere to
-#. get some infos on the string.
-#: scd/app-openpgp.c:1655
-msgid "|A|Admin PIN"
-msgstr ""
+#: scd/app-openpgp.c:1654
+#, fuzzy
+msgid "|A|Please enter the Admin PIN"
+msgstr "ændr kodesætningen"
 
-#: scd/app-openpgp.c:1854
+#: scd/app-openpgp.c:1880
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "rev- forkert nøgletilbagekald\n"
 
-#: scd/app-openpgp.c:1863 scd/app-openpgp.c:1926
+#: scd/app-openpgp.c:1889 scd/app-openpgp.c:1952
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1897
+#: scd/app-openpgp.c:1923
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:1898
+#: scd/app-openpgp.c:1924
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:1988 scd/app-openpgp.c:2638
+#: scd/app-openpgp.c:1924
+msgid "|N|New PIN"
+msgstr ""
+
+#: scd/app-openpgp.c:2014 scd/app-openpgp.c:2664
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: scd/app-openpgp.c:1994 scd/app-openpgp.c:2645
+#: scd/app-openpgp.c:2020 scd/app-openpgp.c:2671
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "fejl i trailerlinie\n"
 
-#: scd/app-openpgp.c:2004
+#: scd/app-openpgp.c:2030
 #, fuzzy
 msgid "key already exists\n"
 msgstr "fjern nøgle fra den hemmelige nøglering"
 
-#: scd/app-openpgp.c:2008
+#: scd/app-openpgp.c:2034
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2010
+#: scd/app-openpgp.c:2036
 #, fuzzy
 msgid "generating new key\n"
 msgstr "generér et nyt nøglepar"
 
-#: scd/app-openpgp.c:2336
+#: scd/app-openpgp.c:2362
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2345
+#: scd/app-openpgp.c:2371
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2357
+#: scd/app-openpgp.c:2383
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2367 scd/app-openpgp.c:2375
+#: scd/app-openpgp.c:2393 scd/app-openpgp.c:2401
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
 # er det klogt at oversætte TrustDB?
-#: scd/app-openpgp.c:2469
+#: scd/app-openpgp.c:2495
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
-#: scd/app-openpgp.c:2529
+#: scd/app-openpgp.c:2555
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2543
+#: scd/app-openpgp.c:2569
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
-#: scd/app-openpgp.c:2546
+#: scd/app-openpgp.c:2572
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Nøgleoprettelse annulleret.\n"
 
-#: scd/app-openpgp.c:2603
+#: scd/app-openpgp.c:2629
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2653
+#: scd/app-openpgp.c:2679
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2768
+#: scd/app-openpgp.c:2794
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s signatur fra: %s\n"
 
-#: scd/app-openpgp.c:2844
+#: scd/app-openpgp.c:2870
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3134
+#: scd/app-openpgp.c:3160
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3359 scd/app-openpgp.c:3370
+#: scd/app-openpgp.c:3385 scd/app-openpgp.c:3396
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "ingen gyldig OpenPGP data fundet.\n"
 
+#: scd/app-dinsig.c:299
+msgid "||Please enter your PIN at the reader's keypad"
+msgstr ""
+
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
 #. to get some infos on the string.
-#: scd/app-dinsig.c:526
+#: scd/app-dinsig.c:528
 #, fuzzy
 msgid "|N|Initial New PIN"
 msgstr "Indtast bruger-id: "
@@ -7146,30 +7191,25 @@ msgstr ""
 msgid "none"
 msgstr "n"
 
-#: sm/certdump.c:154
-#, fuzzy
-msgid "[none]"
-msgstr "ukendt version"
-
-#: sm/certdump.c:577 sm/certdump.c:622 sm/certdump.c:687 sm/certdump.c:745
+#: sm/certdump.c:564 sm/certdump.c:609 sm/certdump.c:674 sm/certdump.c:732
 #, fuzzy
 msgid "[Error - invalid encoding]"
 msgstr "fejl i trailerlinie\n"
 
-#: sm/certdump.c:585 sm/certdump.c:630
+#: sm/certdump.c:572 sm/certdump.c:617
 msgid "[Error - out of core]"
 msgstr ""
 
-#: sm/certdump.c:667 sm/certdump.c:723
+#: sm/certdump.c:654 sm/certdump.c:710
 msgid "[Error - No name]"
 msgstr ""
 
-#: sm/certdump.c:692 sm/certdump.c:751
+#: sm/certdump.c:679 sm/certdump.c:738
 #, fuzzy
 msgid "[Error - invalid DN]"
 msgstr "fejl i trailerlinie\n"
 
-#: sm/certdump.c:961
+#: sm/certdump.c:948
 #, fuzzy, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the X.509 "
@@ -7374,27 +7414,27 @@ msgstr ""
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
-#: sm/delete.c:50 sm/delete.c:101
+#: sm/delete.c:51 sm/delete.c:112
 #, fuzzy, c-format
 msgid "certificate `%s' not found: %s\n"
 msgstr "%s: bruger ikke fundet: %s\n"
 
-#: sm/delete.c:111 sm/keydb.c:1399 sm/keydb.c:1501
+#: sm/delete.c:122 sm/keydb.c:1399 sm/keydb.c:1501
 #, fuzzy, c-format
 msgid "error locking keybox: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: sm/delete.c:132
+#: sm/delete.c:143
 #, fuzzy, c-format
 msgid "duplicated certificate `%s' deleted\n"
 msgstr "nøgle %08lX: offentlig nøgle importeret\n"
 
-#: sm/delete.c:134
+#: sm/delete.c:145
 #, fuzzy, c-format
 msgid "certificate `%s' deleted\n"
 msgstr "vis præferencer"
 
-#: sm/delete.c:164
+#: sm/delete.c:175
 #, fuzzy, c-format
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
@@ -7688,7 +7728,7 @@ msgstr "fejl ved oprettelse af kodesætning: %s\n"
 msgid "error storing flags: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: sm/keylist.c:623
+#: sm/keylist.c:640
 msgid "Error - "
 msgstr ""
 
@@ -8270,6 +8310,14 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Repeat passphrase\n"
+#~ msgstr "Gentag kodesætning: "
+
+#, fuzzy
+#~ msgid "[none]"
+#~ msgstr "ukendt version"
 
 #, fuzzy
 #~ msgid "read options from file"

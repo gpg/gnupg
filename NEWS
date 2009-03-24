@@ -1,5 +1,7 @@
-Noteworthy changes in version 2.0.12
+Noteworthy changes in version 2.0.12 (not released)
 -------------------------------------------------
+
+ This is a BETA version!
 
  * GPGSM now always lists ephemeral certificates if specified by
    fingerprint or keygrip.
