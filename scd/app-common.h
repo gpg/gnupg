@@ -38,15 +38,19 @@
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 struct app_ctx_s {
-  unsigned int ref_count;  /* Number of connections currently using
-                              this application context.  If this is
-                              not 0 the application has been
-                              initialized and the function pointers
-                              may be used.  Note that for unsupported
-                              operations the particular function
-                              pointer is set to NULL */
+  /* Number of connections currently using this application context.
+     If this is not 0 the application has been initialized and the
+     function pointers may be used.  Note that for unsupported
+     operations the particular function pointer is set to NULL */
+  unsigned int ref_count;
 
-  int slot;         /* Used reader. */
+  /* Flag indicating that a reset has been done for that application
+     and that this context is merely lingering and just should not be
+     reused.  */
+  int no_reuse;            
+
+  /* Used reader slot. */
+  int slot;     
 
   /* If this is used by GnuPG 1.4 we need to know the assuan context
      in case we need to divert the operation to an already running

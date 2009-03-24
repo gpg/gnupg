@@ -13,6 +13,8 @@ Noteworthy changes in version 2.0.12
  * Changed order of the confirmation questions for root certificates
    and stores negative answers in trustlist.txt.
 
+ * Better synchronization of several smartcard sessions.
+
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------

@@ -173,6 +173,10 @@ application_notify_card_reset (int slot)
   /* FIXME: We are ignoring any error value here.  */
   lock_reader (slot); 
 
+  /* Mark application as non-reusable.  */
+  if (lock_table[slot].app)
+    lock_table[slot].app->no_reuse = 1;
+
   /* Deallocate a saved application for that slot, so that we won't
      try to reuse it.  If there is no saved application, set a flag so
      that we won't save the current state. */
@@ -241,6 +245,16 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
         return gpg_error (GPG_ERR_CONFLICT);
       }
 
+  /* Don't use a non-reusable marked application.  */
+  if (app && app->no_reuse)
+    {
+      unlock_reader (slot);
+      log_info ("lingering application `%s' in use by reader %d"
+                " - can't switch\n",
+                app->apptype? app->apptype:"?", slot);
+      return gpg_error (GPG_ERR_CONFLICT);
+    }
+
   /* If we don't have an app, check whether we have a saved
      application for that slot.  This is useful so that a card does
      not get reset even if only one session is using the card - this
@@ -278,7 +292,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       unlock_reader (slot);
       return 0; /* Okay: We share that one. */
     }
-
+  
   /* Need to allocate a new one.  */
   app = xtrycalloc (1, sizeof *app);
   if (!app)
@@ -458,7 +472,15 @@ release_application (app_t app)
 
   if (lock_table[slot].last_app)
     deallocate_app (lock_table[slot].last_app);
-  lock_table[slot].last_app = lock_table[slot].app;
+  if (app->no_reuse)
+    {
+      /* If we shall not re-use the application we can't save it for
+         later use. */
+      deallocate_app (app);
+      lock_table[slot].last_app = NULL;
+    }
+  else
+    lock_table[slot].last_app = lock_table[slot].app;
   lock_table[slot].app = NULL;
   unlock_reader (slot);
 }

@@ -1,3 +1,14 @@
+2009-03-24  Werner Koch  <wk@g10code.com>
+
+	* command.c (struct server_local_s): Add flag
+	APP_CTX_MARKED_FOR_RELEASE.
+	(do_reset): Set the flag.
+	(open_card): Act on this flag.
+	* app-common.h (struct app_ctx_s): Add flag NO_REUSE.
+	(application_notify_card_reset): Set the flag.
+	* app.c (select_application, release_application): Take care of
+	that flag.
+
 2009-03-20  Werner Koch  <wk@g10code.com>
 
 	* app-nks.c (keygripstr_from_pk_file): Fix for TCOS 3 cards.

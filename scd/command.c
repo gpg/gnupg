@@ -112,6 +112,10 @@ struct server_local_s
      continue operation. */
   int card_removed;        
 
+  /* Flag indicating that the application context needs to be released
+     at the next opportunity.  */
+  int app_ctx_marked_for_release;
+
   /* A disconnect command has been sent.  */
   int disconnect_allowed;
 
@@ -165,7 +169,7 @@ initialize_module_command (void)
 
 
 /* Update the CARD_REMOVED element of all sessions using the reader
-   given by SLOT to VALUE  */
+   given by SLOT to VALUE.  */
 static void
 update_card_removed (int slot, int value)
 {
@@ -274,11 +278,24 @@ do_reset (ctrl_t ctrl, int send_reset)
   if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
     BUG ();
 
-  /* If there is an active application, release it. */
+  /* If there is an active application, release it.  Tell all other
+     sessions using the same application to release the
+     application.  */
   if (ctrl->app_ctx)
     {
       release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
+      if (send_reset)
+        {
+          struct server_local_s *sl;
+          
+          for (sl=session_list; sl; sl = sl->next_session)
+            if (sl->ctrl_backlink
+                && sl->ctrl_backlink->reader_slot == slot)
+              {
+                sl->app_ctx_marked_for_release = 1;
+              }
+        }
     }
 
   /* If we want a real reset for the card, send the reset APDU and
@@ -397,14 +414,23 @@ open_card (ctrl_t ctrl, const char *apptype)
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
-  if (ctrl->app_ctx)
+  /* If the application has been marked for release do it now.  We
+     can't do it immediately in do_reset because the application may
+     still be in use.  */
+  if (ctrl->server_local->app_ctx_marked_for_release)
     {
-      /* Already initialized for one specific application.  Need to
-         check that the client didn't requested a specific application
-         different from the one in use. */
-      return check_application_conflict (ctrl, apptype);
+      ctrl->server_local->app_ctx_marked_for_release = 0;
+      release_application (ctrl->app_ctx);
+      ctrl->app_ctx = NULL;
     }
 
+  /* If we are already initialized for one specific application we
+     need to check that the client didn't requested a specific
+     application different from the one in use before we continue. */
+  if (ctrl->app_ctx)
+    return check_application_conflict (ctrl, apptype);
+
+  /* Setup the slot and select the application.  */
   if (ctrl->reader_slot != -1)
     slot = ctrl->reader_slot;
   else
