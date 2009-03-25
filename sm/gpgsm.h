@@ -229,7 +229,7 @@ int  gpgsm_parse_validation_model (const char *model);
 /*-- server.c --*/
 void gpgsm_server (certlist_t default_recplist);
 gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
-gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...);
+gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...) GNUPG_GCC_A_SENTINEL(0);
 gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
 gpg_error_t gpgsm_proxy_pinentry_notify (ctrl_t ctrl,
@@ -240,7 +240,8 @@ unsigned char *gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
                                       unsigned char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo);
-unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert);
+unsigned long gpgsm_get_short_fingerprint (ksba_cert_t cert,
+                                           unsigned long *r_high);
 unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);

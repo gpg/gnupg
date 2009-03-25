@@ -1,3 +1,7 @@
+2009-03-25  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (print_pkenc_list): Use snprintf.
+
 2009-03-17  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (my_percent_plus_escape): Remove.

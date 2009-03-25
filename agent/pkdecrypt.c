@@ -69,7 +69,10 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                             CACHE_MODE_NORMAL, &s_skey);
   if (rc)
     {
-      log_error ("failed to read the secret key\n");
+      if (gpg_err_code (rc) == GPG_ERR_ENOENT)
+        rc = gpg_error (GPG_ERR_NO_SECKEY);
+      else
+        log_error ("failed to read the secret key\n");
       goto leave;
     }
 

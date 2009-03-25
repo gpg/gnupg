@@ -672,7 +672,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   (void)have_secret;
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
-              gpgsm_get_short_fingerprint (cert));
+              gpgsm_get_short_fingerprint (cert, NULL));
 
   sexp = ksba_cert_get_serial (cert);
   es_fputs ("          S/N: ", fp);
@@ -1042,7 +1042,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   (void)have_secret;
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
-              gpgsm_get_short_fingerprint (cert));
+              gpgsm_get_short_fingerprint (cert, NULL));
 
   sexp = ksba_cert_get_serial (cert);
   es_fputs ("          S/N: ", fp);

@@ -1,5 +1,8 @@
 2009-03-25  Werner Koch  <wk@g10code.com>
 
+	* pkdecrypt.c (agent_pkdecrypt): Return a specific error message
+	if the key is not available.
+
 	* gpg-agent.c (main): Print a started message to show the real pid.
 
 2009-03-20  Werner Koch  <wk@g10code.com>

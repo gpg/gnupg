@@ -140,13 +140,16 @@ gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo)
 }
 
 /* Return a certificate ID.  These are the last 4 bytes of the SHA-1
-   fingerprint. */
+   fingerprint.  If R_HIGH is not NULL the next 4 bytes are stored
+   there. */
 unsigned long
-gpgsm_get_short_fingerprint (ksba_cert_t cert)
+gpgsm_get_short_fingerprint (ksba_cert_t cert, unsigned long *r_high)
 {
   unsigned char digest[20];
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL);
+  if (r_high)
+    *r_high = ((digest[12]<<24)|(digest[13]<<16)|(digest[14]<< 8)|digest[15]);
   return ((digest[16]<<24)|(digest[17]<<16)|(digest[18]<< 8)|digest[19]);
 }
 

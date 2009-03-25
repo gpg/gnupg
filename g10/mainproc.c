@@ -469,8 +469,8 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	if( list->reason == G10ERR_NO_SECKEY ) {
 	    if( is_status_enabled() ) {
 		char buf[20];
-		sprintf(buf,"%08lX%08lX", (ulong)list->kid[0],
-					  (ulong)list->kid[1] );
+		snprintf (buf, sizeof buf, "%08lX%08lX",
+                          (ulong)list->kid[0], (ulong)list->kid[1]);
 		write_status_text( STATUS_NO_SECKEY, buf );
 	    }
 	}

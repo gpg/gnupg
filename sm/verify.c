@@ -450,7 +450,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       else
         log_printf (_("[date not given]"));
       log_printf (_(" using certificate ID 0x%08lX\n"),
-                  gpgsm_get_short_fingerprint (cert));
+                  gpgsm_get_short_fingerprint (cert, NULL));
 
 
       if (msgdigest)

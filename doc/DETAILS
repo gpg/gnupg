@@ -309,12 +309,12 @@ more arguments in future versions.
         since epoch or an ISO 8601 string which can be detected by the
         presence of the letter 'T' inside.
 
-
-    ENC_TO  <long keyid>  <keytype>  <keylength>
-	The message is encrypted to this keyid.
-	keytype is the numerical value of the public key algorithm,
-	keylength is the length of the key or 0 if it is not known
-	(which is currently always the case).
+    ENC_TO  <long_keyid>  <keytype>  <keylength>
+	The message is encrypted to this LONG_KEYID.  KEYTYPE is the
+	numerical value of the public key algorithm or 0 if it is not
+	known, KEYLENGTH is the length of the key or 0 if it is not
+	known (which is currently always the case).  Gpg prints this
+	line always; Gpgsm only if it knows the certificate.
 
     NODATA  <what>
 	No data has been found. Codes for what are:

@@ -952,7 +952,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
                          "created %s, expires %s.\n" ),
                        subject? subject:"?",
                        sn? sn: "?",
-                       gpgsm_get_short_fingerprint (cert),
+                       gpgsm_get_short_fingerprint (cert, NULL),
                        created, expires);
   
   i18n_switchback (orig_codeset);

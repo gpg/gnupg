@@ -362,6 +362,9 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
               ksba_sexp_t enc_val;
               char *hexkeygrip = NULL;
               char *desc = NULL;
+              char kidbuf[16+1];
+
+              *kidbuf = 0;
 
               rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
               if (rc == -1 && recp)
@@ -394,6 +397,25 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                       log_error ("failed to get cert: %s\n", gpg_strerror (rc));
                       goto oops;     
                     }
+
+                  /* Print the ENC_TO status line.  Note that we can
+                     do so only if we have the certificate.  This is
+                     in contrast to gpg where the keyID is commonly
+                     included in the encrypted messages. It is too
+                     cumbersome to retrieve the used algorithm, thus
+                     we don't print it for now.  We also record the
+                     keyid for later use.  */
+                  {
+                    unsigned long kid[2];
+                    
+                    kid[0] = gpgsm_get_short_fingerprint (cert, kid+1);
+                    snprintf (kidbuf, sizeof kidbuf, "%08lX%08lX",
+                              kid[1], kid[0]);
+                    gpgsm_status2 (ctrl, STATUS_ENC_TO, 
+                                   kidbuf, "0", "0", NULL);
+                  }
+
+
                   /* Just in case there is a problem with the own
                      certificate we print this message - should never
                      happen of course */
@@ -430,6 +452,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                     {
                       log_info ("decrypting session key failed: %s\n",
                                 gpg_strerror (rc));
+                      if (gpg_err_code (rc) == GPG_ERR_NO_SECKEY && *kidbuf)
+                        gpgsm_status2 (ctrl, STATUS_NO_SECKEY, kidbuf, NULL);
                     }
                   else
                     { /* setup the bulk decrypter */
