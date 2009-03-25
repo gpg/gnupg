@@ -467,6 +467,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           || strcmp (current_logfile, pargs->r.ret_str))
         {
           log_set_file (pargs->r.ret_str);
+          assuan_set_assuan_log_stream (log_get_stream ());
           xfree (current_logfile);
           current_logfile = xtrystrdup (pargs->r.ret_str);
         }
@@ -980,9 +981,10 @@ main (int argc, char **argv )
       else if (pid) 
         { /* We are the parent */
           char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
-          
+
+          /* Close the socket FD. */
           close (fd);
-          
+
           /* Note that we used a standard fork so that Pth runs in
              both the parent and the child.  The pth_fork would
              terminate Pth in the child but that is not the way we
@@ -1184,6 +1186,7 @@ main (int argc, char **argv )
       }
 #endif /*!HAVE_W32_SYSTEM*/
 
+      log_info ("%s %s started\n", strusage(11), strusage(13) );
       handle_connections (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD);
       assuan_sock_close (fd);
     }

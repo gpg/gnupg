@@ -120,6 +120,7 @@ gcry_free (void *a)
 int
 gpg_err_code_from_errno (int err)
 {
+  (void)err;
   assert (!"stub function");
   return -1;
 }

@@ -1,3 +1,7 @@
+2009-03-25  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Print a started message to show the real pid.
+
 2009-03-20  Werner Koch  <wk@g10code.com>
 
 	* learncard.c (struct kpinfo_cp_parm_s): Add field CTRL.

@@ -1,3 +1,8 @@
+2009-03-25  Werner Koch  <wk@g10code.com>
+
+	* logging.c (fun_closer): Never close fd 2.
+	(set_file_fd): Close logstream early.
+
 2009-02-25  Werner Koch  <wk@g10code.com>
 
 	* logging.c (get_tid_callback): New.

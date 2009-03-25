@@ -218,7 +218,7 @@ fun_closer (void *cookie_arg)
 {
   struct fun_cookie_s *cookie = cookie_arg;
 
-  if (cookie->fd != -1)
+  if (cookie->fd != -1 && cookie->fd != 2)
     close (cookie->fd);
   jnlib_free (cookie);
   log_socket = -1;
@@ -239,6 +239,15 @@ set_file_fd (const char *name, int fd)
   struct fun_cookie_s *cookie;
 #endif
 
+  /* Close an open log stream.  */
+  if (logstream)
+    {
+      if (logstream != stderr && logstream != stdout)
+        fclose (logstream);
+      logstream = NULL;
+    }
+
+  /* Figure out what kind of logging we want.  */
   if (name && !strcmp (name, "-"))
     {
       name = NULL;
@@ -256,6 +265,7 @@ set_file_fd (const char *name, int fd)
       want_socket = 0;
     }
 
+  /* Setup a new stream.  */
 #ifdef USE_FUNWRITER
   cookie = jnlib_xmalloc (sizeof *cookie + (name? strlen (name):0));
   strcpy (cookie->name, name? name:"");
@@ -310,15 +320,7 @@ set_file_fd (const char *name, int fd)
 
 #endif /*!USE_FUNWRITER*/
 
-  /* On success close the old logstream right now, so that we are
-     really sure it has been closed. */
-  if (fp && logstream)
-    {
-      if (logstream != stderr && logstream != stdout)
-        fclose (logstream);
-      logstream = NULL;
-    }
-      
+  /* On error default to stderr.  */
   if (!fp)
     {
       if (name)
@@ -333,8 +335,6 @@ set_file_fd (const char *name, int fd)
   else
     setvbuf (fp, NULL, _IOLBF, 0);
   
-  if (logstream && logstream != stderr && logstream != stdout)
-    fclose (logstream);
   logstream = fp;
 
   /* We always need to print the prefix and the pid for socket mode,
