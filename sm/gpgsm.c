@@ -843,8 +843,8 @@ main ( int argc, char **argv)
   int use_random_seed = 1;
   int no_common_certs_import = 0;
   int with_fpr = 0;
-  char *def_digest_string = NULL;
-  char *extra_digest_algo = NULL;
+  const char *forced_digest_algo = NULL;
+  const char *extra_digest_algo = NULL;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
   certlist_t recplist = NULL;
@@ -1301,7 +1301,7 @@ main ( int argc, char **argv)
           break;
 
         case oDigestAlgo:
-          /* Dummy for now. */
+          forced_digest_algo = pargs.r.ret_str;
           break;
 
         case oExtraDigestAlgo: 
@@ -1460,12 +1460,10 @@ main ( int argc, char **argv)
            || !gcry_cipher_mode_from_oid (opt.def_cipher_algoid))
         log_error (_("selected cipher algorithm is invalid\n"));
 
-      if (def_digest_string)
+      if (forced_digest_algo)
         {
-          opt.def_digest_algo = gcry_md_map_name (def_digest_string);
-          xfree (def_digest_string);
-          def_digest_string = NULL;
-          if (our_md_test_algo(opt.def_digest_algo) )
+          opt.forced_digest_algo = gcry_md_map_name (forced_digest_algo);
+          if (our_md_test_algo(opt.forced_digest_algo) )
             log_error (_("selected digest algorithm is invalid\n"));
         }
       if (extra_digest_algo)

@@ -42,7 +42,7 @@
 #define MD_USER_TLS_MD5SHA1 (GCRY_MODULE_ID_USER+1)
 
 /* Maximum length of a digest.  */
-#define MAX_DIGEST_LEN 36
+#define MAX_DIGEST_LEN 64
 
 /* A large struct name "opt" to keep global flags */
 struct

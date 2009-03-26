@@ -399,11 +399,22 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   /* Figure out the hash algorithm to use. We do not want to use the
      one for the certificate but if possible an OID for the plain
      algorithm.  */
+  if (opt.forced_digest_algo && opt.verbose)
+    log_info ("user requested hash algorithm %d\n", opt.forced_digest_algo);
   for (i=0, cl=signerlist; cl; cl = cl->next, i++)
     {
       const char *oid = ksba_cert_get_digest_algo (cl->cert);
 
-      cl->hash_algo = oid ? gcry_md_map_name (oid) : 0;
+      if (opt.forced_digest_algo)
+        {
+          oid = NULL;
+          cl->hash_algo = opt.forced_digest_algo;
+        }
+      else
+        {
+          oid = ksba_cert_get_digest_algo (cl->cert);
+          cl->hash_algo = oid ? gcry_md_map_name (oid) : 0;
+        }
       switch (cl->hash_algo)
         {
         case GCRY_MD_SHA1:   oid = "1.3.14.3.2.26"; break;
@@ -427,6 +438,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
       cl->hash_algo_oid = oid;
     }
+
   if (opt.verbose)
     {
       for (i=0, cl=signerlist; cl; cl = cl->next, i++)

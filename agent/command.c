@@ -637,8 +637,14 @@ cmd_sethash (assuan_context_t ctx, char *line)
     {
       if (has_option (line, "--hash=sha1"))
         algo = GCRY_MD_SHA1;
+      else if (has_option (line, "--hash=sha224"))
+        algo = GCRY_MD_SHA224;
       else if (has_option (line, "--hash=sha256"))
         algo = GCRY_MD_SHA256;
+      else if (has_option (line, "--hash=sha384"))
+        algo = GCRY_MD_SHA384;
+      else if (has_option (line, "--hash=sha512"))
+        algo = GCRY_MD_SHA512;
       else if (has_option (line, "--hash=rmd160"))
         algo = GCRY_MD_RMD160;
       else if (has_option (line, "--hash=md5"))
@@ -671,7 +677,8 @@ cmd_sethash (assuan_context_t ctx, char *line)
   n /= 2;
   if (algo == MD_USER_TLS_MD5SHA1 && n == 36)
     ;
-  else if (n != 16 && n != 20 && n != 24 && n != 32)
+  else if (n != 16 && n != 20 && n != 24 
+           && n != 28 && n != 32 && n != 48 && n != 64)
     return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
 
   if (n > MAX_DIGEST_LEN)

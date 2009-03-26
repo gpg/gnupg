@@ -1,3 +1,16 @@
+2009-03-26  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_pksign): Allow more hash algorithms.
+
+	* scdaemon.h (MAX_DIGEST_LEN): Change to 64.
+
+	* apdu.c (open_ccid_reader): Clear the is_to flag.
+
+	* app-nks.c (filelist): Add field KID.
+	(do_getattr): Change standard authentication key.
+	(do_sign): Setup a security environment for TCOS 3 cards and support
+	all SHA-2 algorithms.
+
 2009-03-24  Werner Koch  <wk@g10code.com>
 
 	* command.c (struct server_local_s): Add flag

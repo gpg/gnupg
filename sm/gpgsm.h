@@ -33,7 +33,7 @@
 #include "../common/estream.h"
 #include "../common/audit.h"
 
-#define MAX_DIGEST_LEN 24 
+#define MAX_DIGEST_LEN 64
 
 struct keyserver_spec
 {
@@ -92,8 +92,9 @@ struct
   const char *def_cipher_algoid;  /* cipher algorithm to use if
                                      nothing else is specified */
 
-  int def_digest_algo;    /* Ditto for hash algorithm */
   int def_compress_algo;  /* Ditto for compress algorithm */
+
+  int forced_digest_algo; /* User forced hash algorithm. */
 
   char *def_recipient;    /* userID of the default recipient */
   int def_recipient_self; /* The default recipient is the default key */

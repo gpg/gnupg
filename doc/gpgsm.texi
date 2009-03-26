@@ -568,6 +568,12 @@ encryption.  For convenience the strings @code{3DES}, @code{AES} and
 @code{AES256} may be used instead of their OIDs.  The default is
 @code{3DES} (1.2.840.113549.3.7).
   
+@item --digest-algo @code{name}
+Use @code{name} as the message digest algorithm.  Usually this
+algorithm is deduced from the respective signing certificate.  This
+option forces the use of the given algorithm and may lead to severe
+interoperability problems.
+
 @end table
 
 

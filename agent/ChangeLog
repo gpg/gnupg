@@ -1,5 +1,9 @@
 2009-03-26  Werner Koch  <wk@g10code.com>
 
+	* agent.h (MAX_DIGEST_LEN): Change to 64.
+	* command.c (cmd_sethash): Allow digest length of 48 and 64.
+	(cmd_sethash): Allow more hash algos.
+
 	* trustlist.c (reformat_name): New.
 	(agent_marktrusted): Use a reformatted name.  Reload the table
 	before the update and always reload it at the end.

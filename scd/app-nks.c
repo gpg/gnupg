@@ -19,10 +19,11 @@
 
 /* Notes:
 
-  - This is still work in progress.  We are now targeting TCOS 3 cards
-    but try to keep compatibility to TCOS 2.  Both are not fully
-    working as of now.  TCOS 3 PIN management seems to work.  Use GPA
-    from SVN trunk to test it.
+  - We are now targeting TCOS 3 cards and it may happen that there is
+    a regression towards TCOS 2 cards.  Please report.
+
+  - The TKS3 AUT key is not used by our authentication command but
+    accessible via the decrypt command.
 
   - If required, we automagically switch between the NKS application
     and the SigG application.  This avoids to use the DINSIG
@@ -63,25 +64,26 @@ static struct
   int fid;       /* File ID. */
   int nks_ver;   /* 0 for NKS version 2, 3 for version 3. */
   int certtype;  /* Type of certificate or 0 if it is not a certificate. */
-  int iskeypair; /* If true has the FID of the correspoding certificate. */
+  int iskeypair; /* If true has the FID of the corresponding certificate. */
   int issignkey; /* True if file is a key usable for signing. */
   int isenckey;  /* True if file is a key usable for decryption. */
+  unsigned char kid;  /* Corresponding key references.  */
 } filelist[] = {
-  { 0, 0x4531, 0, 0,  0xC000, 1, 0 }, /* EF_PK.NKS.SIG */
-  { 1, 0x4531, 3, 0,  0x0000, 1, 1 }, /* EF_PK.CH.SIG  */
-  { 0, 0xC000, 0, 101 },              /* EF_C.NKS.SIG  */
-  { 1, 0xC000, 0, 101 },              /* EF_C.CH.SIG  */
+  { 0, 0x4531, 0, 0,  0xC000, 1, 0, 0x80 }, /* EF_PK.NKS.SIG */
+  { 1, 0x4531, 3, 0,  0x0000, 1, 1, 0x84 }, /* EF_PK.CH.SIG  */
+  { 0, 0xC000, 0, 101 },                    /* EF_C.NKS.SIG  */
+  { 1, 0xC000, 0, 101 },                    /* EF_C.CH.SIG  */
   { 0, 0x4331, 0, 100 },
   { 0, 0x4332, 0, 100 },
-  { 0, 0xB000, 0, 110 },              /* EF_PK.RCA.NKS */
-  { 0, 0x45B1, 0, 0,  0xC200, 0, 1 }, /* EF_PK.NKS.ENC */
-  { 0, 0xC200, 0, 101 },              /* EF_C.NKS.ENC  */
+  { 0, 0xB000, 0, 110 },                    /* EF_PK.RCA.NKS */
+  { 0, 0x45B1, 0, 0,  0xC200, 0, 1, 0x81 }, /* EF_PK.NKS.ENC */
+  { 0, 0xC200, 0, 101 },                    /* EF_C.NKS.ENC  */
   { 0, 0x43B1, 0, 100 },
   { 0, 0x43B2, 0, 100 },
-  { 0, 0x4571, 3, 0,  0xc500, 0, 0 }, /* EF_PK.NKS.AUT */
-  { 0, 0xC500, 3, 101 },              /* EF_C.NKS.AUT  */
-  { 0, 0x45B2, 3, 0,  0xC201, 0, 1 }, /* EF_PK.NKS.ENC1024 */
-  { 0, 0xC201, 3, 101 },              /* EF_C.NKS.ENC1024  */
+  { 0, 0x4571, 3, 0,  0xc500, 0, 0, 0x82 }, /* EF_PK.NKS.AUT */
+  { 0, 0xC500, 3, 101 },                    /* EF_C.NKS.AUT  */
+  { 0, 0x45B2, 3, 0,  0xC201, 0, 1, 0x83 }, /* EF_PK.NKS.ENC1024 */
+  { 0, 0xC201, 3, 101 },                    /* EF_C.NKS.ENC1024  */
 /*   { 1, 0xB000, 3, ...  */
   { 0, 0 }
 };
@@ -303,10 +305,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     {
     case 1: /* $AUTHKEYID */
       {
-        /* NetKey 3.0 cards define this key for authentication.
-           FIXME: We don't have the readkey command, so this
-           information is pretty useless.  */
-        char const tmp[] = "NKS-NKS3.4571";
+        /* NetKey 3.0 cards define an authentication key but according
+           to the specs this key is only usable for encryption and not
+           signing.  it might work anyway but it has not yet been
+           tested - fixme.  Thus for now we use the NKS signature key
+           for authentication.  */
+        char const tmp[] = "NKS-NKS3.4531";
         send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       }
       break;
@@ -685,13 +689,18 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   int rc, i;
   int is_sigg = 0;
   int fid;
-  unsigned char data[35];   /* Must be large enough for a SHA-1 digest
-                               + the largest OID _prefix above. */
+  unsigned char kid;
+  unsigned char data[83];   /* Must be large enough for a SHA-1 digest
+                               + the largest OID prefix. */
+  size_t datalen;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20 && indatalen != 16 && indatalen != 35)
-    return gpg_error (GPG_ERR_INV_VALUE);
+  switch (indatalen)
+    {
+    case 16: case 20: case 35: case 47: case 51: case 67: case 83: break;
+    default: return gpg_error (GPG_ERR_INV_VALUE);
+    }
 
   /* Check that the provided ID is valid.  This is not really needed
      but we do it to enforce correct usage by the caller. */
@@ -721,22 +730,35 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_NOT_FOUND);
   if (!filelist[i].issignkey)
     return gpg_error (GPG_ERR_INV_ID);
+  kid = filelist[i].kid;
 
-  /* Prepare the DER object from INDATA. */
-  if (indatalen == 35)
+  /* Prepare the DER object from INDATA.  */
+  if (app->app_local->nks_version > 2 && (indatalen == 35
+                                          || indatalen == 47
+                                          || indatalen == 51
+                                          || indatalen == 67 
+                                          || indatalen == 83))
+    {
+      /* The caller send data matching the length of the ASN.1 encoded
+         hash for SHA-{1,224,256,384,512}.  Assume that is okay.  */
+      assert (indatalen <= sizeof data);
+      memcpy (data, indata, indatalen);
+      datalen = indatalen;
+    }
+  else if (indatalen == 35)
     {
       /* Alright, the caller was so kind to send us an already
-         prepared DER object.  Check that it is waht we want and that
-         it matches the hash algorithm. */
+         prepared DER object.  This is for TCOS 2. */
       if (hashalgo == GCRY_MD_SHA1 && !memcmp (indata, sha1_prefix, 15))
         ;
-      else if (hashalgo == GCRY_MD_RMD160 && !memcmp (indata, rmd160_prefix,15))
+      else if (hashalgo == GCRY_MD_RMD160 && !memcmp (indata,rmd160_prefix,15))
         ;
       else 
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
+      datalen = 35;
     }
-  else
+  else if (indatalen == 20)
     {
       if (hashalgo == GCRY_MD_SHA1)
         memcpy (data, sha1_prefix, 15);
@@ -745,11 +767,32 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       else 
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data+15, indata, indatalen);
+      datalen = 35;
     }
+  else
+    return gpg_error (GPG_ERR_INV_VALUE);
 
-  rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
+
+  /* Send an MSE for PSO:Computer_Signature.  */
+  if (app->app_local->nks_version > 2)
+    {
+      unsigned char mse[6];
+      
+      mse[0] = 0x80; /* Algorithm reference.  */
+      mse[1] = 1;
+      mse[2] = 2;    /* RSA, card does pkcs#1 v1.5 padding, no ASN.1 check.  */
+      mse[3] = 0x84; /* Private key reference.  */
+      mse[4] = 1;
+      mse[5] = kid;
+      rc = iso7816_manage_security_env (app->slot, 0x41, 0xB6,
+                                        mse, sizeof mse);
+    }
+  /* Verify using PW1.CH.  */
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+    rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
+  /* Compute the signature.  */
+  if (!rc)
+    rc = iso7816_compute_ds (app->slot, data, datalen, outdata, outdatalen);
   return rc;
 }
 

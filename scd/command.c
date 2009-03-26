@@ -905,7 +905,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
 }
 
 
-/* PKSIGN [--hash=[rmd160|sha1|md5]] <hexified_id>
+/* PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5]] <hexified_id>
 
    The --hash option is optional; the default is SHA1.
 
@@ -924,6 +924,14 @@ cmd_pksign (assuan_context_t ctx, char *line)
     hash_algo = GCRY_MD_RMD160;
   else if (has_option (line, "--hash=sha1"))
     hash_algo = GCRY_MD_SHA1;
+  else if (has_option (line, "--hash=sha224"))
+    hash_algo = GCRY_MD_SHA224;
+  else if (has_option (line, "--hash=sha256"))
+    hash_algo = GCRY_MD_SHA256;
+  else if (has_option (line, "--hash=sha384"))
+    hash_algo = GCRY_MD_SHA384;
+  else if (has_option (line, "--hash=sha512"))
+    hash_algo = GCRY_MD_SHA512;
   else if (has_option (line, "--hash=md5"))
     hash_algo = GCRY_MD_MD5;
   else if (!strstr (line, "--"))

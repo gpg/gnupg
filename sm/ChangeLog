@@ -1,5 +1,12 @@
 2009-03-26  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c (main): s/def_digest_string/forced_digest_algo/ and
+	activate the --digest-algo option.
+	* gpgsm.h (struct opt): s/def_digest_algo/forced_digest_algo/.
+	* sign.c (gpgsm_sign): Implement --digest-algo.
+
+	* sign.c (MAX_DIGEST_LEN): Change to 64.
+
 	* call-agent.c (gpgsm_agent_marktrusted): Format the issuer name.
 
 2009-03-25  Werner Koch  <wk@g10code.com>

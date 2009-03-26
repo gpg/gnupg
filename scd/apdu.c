@@ -1951,6 +1951,9 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].send_apdu_reader = send_apdu_ccid;
   reader_table[slot].check_keypad = check_ccid_keypad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
+  /* Our CCID reader code does not support T=0 at all, thus reset the
+     flag.  */
+  reader_table[slot].is_t0 = 0;
 
   dump_reader_status (slot);
   return slot;
@@ -2839,10 +2842,10 @@ send_le (int slot, int class, int ins, int p0, int p1,
 
   if (lc != -1 && (lc > 255 || lc < 0))
     {
-      /* Data does not fit into an APDU.  What we do now dependes on
+      /* Data does not fit into an APDU.  What we do now depends on
          the EXTENDED_MODE parameter.  */
       if (!extended_mode)
-        return SW_WRONG_LENGTH; /* No way. to send such an APDU. */
+        return SW_WRONG_LENGTH; /* No way to send such an APDU.  */
       else if (extended_mode > 0)
         return SW_HOST_NOT_SUPPORTED; /* FIXME.  */
       else if (extended_mode < 0)
