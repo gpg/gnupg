@@ -612,7 +612,7 @@ int
 gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
 {
   int rc;
-  char *fpr, *dn;
+  char *fpr, *dn, *dnfmt;
   char line[ASSUAN_LINELENGTH];
 
   rc = start_agent (ctrl);
@@ -632,9 +632,13 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
       xfree (fpr);
       return gpg_error (GPG_ERR_GENERAL);
     }
-  snprintf (line, DIM(line)-1, "MARKTRUSTED %s S %s", fpr, dn);
+  dnfmt = gpgsm_format_name2 (dn, 0);
+  xfree (dn);
+  if (!dnfmt)
+    return gpg_error_from_syserror ();
+  snprintf (line, DIM(line)-1, "MARKTRUSTED %s S %s", fpr, dnfmt);
   line[DIM(line)-1] = 0;
-  ksba_free (dn);
+  ksba_free (dnfmt);
   xfree (fpr);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,

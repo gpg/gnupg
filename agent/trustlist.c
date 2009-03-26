@@ -405,6 +405,9 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
         if (!memcmp (ti->fpr, fprbin, 20))
           {
+            if (ti->flags.disabled && r_disabled)
+              *r_disabled = 1;
+
             if (ti->flags.relax)
               {
                 err = agent_write_status (ctrl,
@@ -421,13 +424,7 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
                 if (err)
                   return err;
               }
-            if (ti->flags.disabled)
-              {
-                if (r_disabled)
-                  *r_disabled = 1;
-                return gpg_error (GPG_ERR_NOT_TRUSTED);
-              }
-            return 0; /* Trusted.  */
+            return ti->flags.disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0;
           }
     }
   return gpg_error (GPG_ERR_NOT_TRUSTED);
@@ -507,6 +504,42 @@ insert_colons (const char *string)
 }
 
 
+/* To pretty print DNs in the Pinentry, we replace slashes by
+   REPLSTRING.  The caller needs to free the returned string.  NULL is
+   returned on error with ERRNO set.  */
+static char *
+reformat_name (const char *name, const char *replstring)
+{
+  const char *s;
+  char *newname;
+  char *d;
+  size_t count;
+  size_t replstringlen = strlen (replstring);
+
+  /* If the name does not start with a slash it is not a preformatted
+     DN and thus we don't bother to reformat it.  */
+  if (*name != '/')
+    return xtrystrdup (name);
+
+  /* Count the names.  Note that a slash contained in a DN part is
+     expected to be C style escaped and thus the slashes we see here
+     are the actual part delimiters.  */
+  for (s=name+1, count=0; *s; s++)
+    if (*s == '/')
+      count++;
+  newname = xtrymalloc (strlen (name) + count*replstringlen + 1);
+  if (!newname)
+    return NULL; 
+  for (s=name+1, d=newname; *s; s++)
+    if (*s == '/')
+      d = stpcpy (d, replstring);
+    else
+      *d++ = *s;
+  *d = 0;
+  return newname;
+}
+
+
 /* Insert the given fpr into our trustdb.  We expect FPR to be an all
    uppercase hexstring of 40 characters. FLAG is either 'P' or 'C'.
    This function does first check whether that key has already been put
@@ -521,6 +554,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   char *fname;
   FILE *fp;
   char *fprformatted;
+  char *nameformatted;
   int is_disabled;
   int yes_i_trust;
 
@@ -558,6 +592,9 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 
 
   /* Insert a new one. */
+  nameformatted = reformat_name (name, "%0A   ");
+  if (!nameformatted)
+    return gpg_error_from_syserror ();
 
   /* First a general question whether this is trusted.  */
   desc = xtryasprintf (
@@ -567,14 +604,17 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                    percent sign is actually needed because it is also
                    a printf format string.  If you need to insert a
                    plain % sign, you need to encode it as "%%25".  The
-                   "%s" gets replaced by the name as store in the
+                   "%s" gets replaced by the name as stored in the
                    certificate. */
                 _("Do you ultimately trust%%0A"
                   "  \"%s\"%%0A"
                   "to correctly certify user certificates?"),
-                name);
+                nameformatted);
   if (!desc)
-    return out_of_core ();
+    {
+      xfree (nameformatted);
+      return out_of_core ();
+    }
   err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
   xfree (desc);
   if (!err)
@@ -582,12 +622,18 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   else if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
     yes_i_trust = 0;
   else
-    return err;
-
+    {
+      xfree (nameformatted);
+      return err;
+    }
+    
 
   fprformatted = insert_colons (fpr);
   if (!fprformatted)
-    return out_of_core ();
+    {
+      xfree (nameformatted);
+      return out_of_core ();
+    }
 
   /* If the user trusts this certificate he has to verify the
      fingerprint of course.  */
@@ -606,10 +652,11 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
          _("Please verify that the certificate identified as:%%0A"
            "  \"%s\"%%0A"
            "has the fingerprint:%%0A"
-           "  %s"), name, fprformatted);
+           "  %s"), nameformatted, fprformatted);
       if (!desc)
         {
           xfree (fprformatted);
+          xfree (nameformatted);
           return out_of_core ();
         }
       
@@ -623,27 +670,23 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       else if (err)
         {
           xfree (fprformatted);
+          xfree (nameformatted);
           return err;
         }
     }
 
 
   /* Now check again to avoid duplicates.  We take the lock to make
-     sure that nobody else plays with our file.  Frankly we don't work
-     with the trusttable but using this lock is just fine for our
-     purpose.  */
+     sure that nobody else plays with our file and force a reread.  */
   lock_trusttable ();
-  {
-    int now_disabled;
-
-    if (!agent_istrusted (ctrl, fpr, &now_disabled) || now_disabled)
-      {
-        unlock_trusttable ();
-        xfree (fprformatted);
-        return now_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0; 
-      }
-  }
-
+  agent_reload_trustlist ();
+  if (!agent_istrusted (ctrl, fpr, &is_disabled) || is_disabled)
+    {
+      unlock_trusttable ();
+      xfree (fprformatted);
+      xfree (nameformatted);
+      return is_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0; 
+    }
 
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
   if ( access (fname, F_OK) && errno == ENOENT)
@@ -656,6 +699,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
           xfree (fname);
           unlock_trusttable ();
           xfree (fprformatted);
+          xfree (nameformatted);
           return err;
         }
       fputs (headerblurb, fp);
@@ -669,12 +713,22 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       xfree (fname);
       unlock_trusttable ();
       xfree (fprformatted);
+      xfree (nameformatted);
       return err;
     }
 
   /* Append the key. */
   fputs ("\n# ", fp);
-  print_sanitized_string (fp, name, 0);
+  xfree (nameformatted);
+  nameformatted = reformat_name (name, "\n# ");
+  if (!nameformatted || strchr (name, '\n'))
+    {
+      /* Note that there should never be a LF in NAME but we better
+         play safe and print a sanitized version in this case.  */
+      print_sanitized_string (fp, name, 0);
+    }
+  else
+    fputs (nameformatted, fp);
   fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
   if (ferror (fp))
     err = gpg_error_from_syserror ();
@@ -682,11 +736,11 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (fclose (fp))
     err = gpg_error_from_syserror ();
 
-  if (!err)
-    agent_reload_trustlist ();
+  agent_reload_trustlist ();
   xfree (fname);
   unlock_trusttable ();
   xfree (fprformatted);
+  xfree (nameformatted);
   return err;
 }
 

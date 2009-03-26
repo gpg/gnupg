@@ -1,3 +1,10 @@
+2009-03-26  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (reformat_name): New.
+	(agent_marktrusted): Use a reformatted name.  Reload the table
+	before the update and always reload it at the end.
+	(agent_istrusted): Check early for the disabled flag.
+
 2009-03-25  Werner Koch  <wk@g10code.com>
 
 	* pkdecrypt.c (agent_pkdecrypt): Return a specific error message

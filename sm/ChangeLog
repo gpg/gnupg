@@ -1,7 +1,11 @@
+2009-03-26  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (gpgsm_agent_marktrusted): Format the issuer name.
+
 2009-03-25  Werner Koch  <wk@g10code.com>
 
-	* decrypt.c (gpgsm_decrypt): Print ENC_TO and NO_SECKEY
-	stati.  Fixes bug#1020.
+	* decrypt.c (gpgsm_decrypt): Print ENC_TO and NO_SECKEY stati.
+	Fixes bug#1020.
 	* fingerprint.c (gpgsm_get_short_fingerprint): Add arg R_HIGH and
 	change all callers.
 
