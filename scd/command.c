@@ -596,7 +596,8 @@ cmd_serialno (assuan_context_t ctx, char *line)
       100 := Regular X.509 cert
       101 := Trusted X.509 cert
       102 := Useful X.509 cert
-      110 := Root CA cert (e.g. DINSIG)
+      110 := Root CA cert in a special format (e.g. DINSIG)
+      111 := Root CA cert as standard X509 cert.
 
    For certain cards, more information will be returned:
 
@@ -963,7 +964,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   xfree (keyidstr);
   if (rc)
     {
-      log_error ("card_sign failed: %s\n", gpg_strerror (rc));
+      log_error ("app_sign failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -1013,7 +1014,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   xfree (keyidstr);
   if (rc)
     {
-      log_error ("app_auth_sign failed: %s\n", gpg_strerror (rc));
+      log_error ("app_auth failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -1057,7 +1058,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   xfree (keyidstr);
   if (rc)
     {
-      log_error ("card_create_signature failed: %s\n", gpg_strerror (rc));
+      log_error ("app_decipher failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -1821,7 +1822,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *result = NULL;
       size_t resultlen;
 
-      rc = apdu_send_direct (ctrl->reader_slot, apdu, apdulen, handle_more,
+      rc = apdu_send_direct (ctrl->reader_slot, 0, apdu, apdulen, handle_more,
                              &result, &resultlen);
       if (rc)
         log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));

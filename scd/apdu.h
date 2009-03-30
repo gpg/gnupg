@@ -41,6 +41,7 @@ enum {
   SW_NOT_SUPPORTED  = 0x6a81,
   SW_FILE_NOT_FOUND = 0x6a82,
   SW_RECORD_NOT_FOUND = 0x6a83,
+  SW_BAD_LC         = 0x6a87, /* Lc does not match command or p1/p2.  */
   SW_REF_NOT_FOUND  = 0x6a88,
   SW_BAD_P0_P1      = 0x6b00,
   SW_EXACT_LENGTH   = 0x6c00,
@@ -117,13 +118,14 @@ int apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
                          int lc, const char *data,  
                          int pin_mode,
                          int pinlen_min, int pinlen_max, int pin_padlen);
-int apdu_send (int slot, int class, int ins, int p0, int p1,
-               int lc, const char *data,
+int apdu_send (int slot, int extended_mode, 
+               int class, int ins, int p0, int p1, int lc, const char *data,
                unsigned char **retbuf, size_t *retbuflen);
-int apdu_send_le (int slot, int class, int ins, int p0, int p1,
+int apdu_send_le (int slot, int extended_mode, 
+                  int class, int ins, int p0, int p1,
                   int lc, const char *data, int le,
                   unsigned char **retbuf, size_t *retbuflen);
-int apdu_send_direct (int slot,
+int apdu_send_direct (int slot, int extended_mode,
                       const unsigned char *apdudata, size_t apdudatalen,
                       int handle_more,
                       unsigned char **retbuf, size_t *retbuflen);

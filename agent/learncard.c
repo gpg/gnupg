@@ -298,10 +298,12 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
   char *p;
   int i;
   static int certtype_list[] = { 
+    111, /* Root CA */
     101, /* trusted */
     102, /* useful */
     100, /* regular */
-    /* We don't include 110 here because gpgsm can't handle it. */
+    /* We don't include 110 here because gpgsm can't handle that
+       special root CA format. */
     -1 /* end of list */
   };
 

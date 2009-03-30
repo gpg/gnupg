@@ -22,8 +22,11 @@
   - We are now targeting TCOS 3 cards and it may happen that there is
     a regression towards TCOS 2 cards.  Please report.
 
-  - The TKS3 AUT key is not used by our authentication command but
-    accessible via the decrypt command.
+  - The TKS3 AUT key is not used.  It seems that it is only useful for
+    the internal authentication command and not accessible by other
+    applications.  The key itself is in the encryption class but the
+    corresponding certificate has only the digitalSignature
+    capability.
 
   - If required, we automagically switch between the NKS application
     and the SigG application.  This avoids to use the DINSIG
@@ -70,9 +73,7 @@ static struct
   unsigned char kid;  /* Corresponding key references.  */
 } filelist[] = {
   { 0, 0x4531, 0, 0,  0xC000, 1, 0, 0x80 }, /* EF_PK.NKS.SIG */
-  { 1, 0x4531, 3, 0,  0x0000, 1, 1, 0x84 }, /* EF_PK.CH.SIG  */
   { 0, 0xC000, 0, 101 },                    /* EF_C.NKS.SIG  */
-  { 1, 0xC000, 0, 101 },                    /* EF_C.CH.SIG  */
   { 0, 0x4331, 0, 100 },
   { 0, 0x4332, 0, 100 },
   { 0, 0xB000, 0, 110 },                    /* EF_PK.RCA.NKS */
@@ -80,11 +81,15 @@ static struct
   { 0, 0xC200, 0, 101 },                    /* EF_C.NKS.ENC  */
   { 0, 0x43B1, 0, 100 },
   { 0, 0x43B2, 0, 100 },
-  { 0, 0x4571, 3, 0,  0xc500, 0, 0, 0x82 }, /* EF_PK.NKS.AUT */
-  { 0, 0xC500, 3, 101 },                    /* EF_C.NKS.AUT  */
+/* The authentication key is not used.  */
+/*   { 0, 0x4571, 3, 0,  0xC500, 0, 0, 0x82 }, /\* EF_PK.NKS.AUT *\/ */
+/*   { 0, 0xC500, 3, 101 },                    /\* EF_C.NKS.AUT  *\/ */
   { 0, 0x45B2, 3, 0,  0xC201, 0, 1, 0x83 }, /* EF_PK.NKS.ENC1024 */
   { 0, 0xC201, 3, 101 },                    /* EF_C.NKS.ENC1024  */
-/*   { 1, 0xB000, 3, ...  */
+  { 1, 0x4531, 3, 0,  0xC000, 1, 1, 0x84 }, /* EF_PK.CH.SIG  */
+  { 1, 0xC000, 0, 101 },                    /* EF_C.CH.SIG  */
+  { 1, 0xC008, 3, 101 },                    /* EF_C.CA.SIG  */
+  { 1, 0xC00E, 3, 111 },                    /* EF_C.RCA.SIG  */
   { 0, 0 }
 };
 
@@ -249,7 +254,7 @@ get_chv_status (app_t app, int sigg, int pwid)
   command[2] = 0x00;
   command[3] = pwid;
 
-  if (apdu_send_direct (app->slot, command, 4, 0, &result, &resultlen))
+  if (apdu_send_direct (app->slot, 0, command, 4, 0, &result, &resultlen))
     rc = -1; /* Error. */
   else if (resultlen < 2)
     rc = -1; /* Error. */
@@ -808,13 +813,10 @@ do_decipher (app_t app, const char *keyidstr,
              const void *indata, size_t indatalen,
              unsigned char **outdata, size_t *outdatalen )
 {
-  static const unsigned char mse_parm[] = {
-    0x80, 1, 0x10, /* Select algorithm RSA. */
-    0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
-  };
   int rc, i;
   int is_sigg = 0;
   int fid;
+  int kid;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -847,15 +849,40 @@ do_decipher (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_NOT_FOUND);
   if (!filelist[i].isenckey)
     return gpg_error (GPG_ERR_INV_ID);
+  kid = filelist[i].kid;
 
-  /* Do the TCOS specific MSE. */
-  rc = iso7816_manage_security_env (app->slot, 
-                                    0xC1, 0xB8,
-                                    mse_parm, sizeof mse_parm);
+  if (app->app_local->nks_version > 2)
+    {
+      unsigned char mse[6];
+      mse[0] = 0x80; /* Algorithm reference.  */
+      mse[1] = 1;
+      mse[2] = 0x0a; /* RSA no padding.  (0x1A is pkcs#1.5 padding.)  */
+      mse[3] = 0x84; /* Private key reference.  */
+      mse[4] = 1;
+      mse[5] = kid;
+      rc = iso7816_manage_security_env (app->slot, 0x41, 0xB8,
+                                        mse, sizeof mse);
+    }
+  else
+    {
+      static const unsigned char mse[] = 
+        {
+          0x80, 1, 0x10, /* Select algorithm RSA. */
+          0x84, 1, 0x81  /* Select local secret key 1 for decryption. */
+        };
+      rc = iso7816_manage_security_env (app->slot, 0xC1, 0xB8,
+                                        mse, sizeof mse);
+
+    }
+
   if (!rc)
     rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
+
+  /* Note that we need to use extended length APDUs for TCOS 3 cards.
+     Command chaining does not work.  */
   if (!rc)
-    rc = iso7816_decipher (app->slot, indata, indatalen, 0x81,
+    rc = iso7816_decipher (app->slot, app->app_local->nks_version > 2? 1:0,
+                           indata, indatalen, 0x81,
                            outdata, outdatalen);
   return rc;
 }

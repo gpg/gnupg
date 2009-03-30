@@ -1,3 +1,16 @@
+2009-03-30  Werner Koch  <wk@g10code.com>
+
+	* app-nks.c (do_decipher): Make it work for TCOS 3.
+	* iso7816.c (iso7816_decipher): Add arg EXTENDED_MODE.
+	* apdu.c (apdu_send): Add arg EXTENDED_MODE and change all callers.
+	(apdu_send_le):  Ditto. 
+	(apdu_send_direct): Ditto, but not yet functional.
+	(send_le): Fix command chaining.  Implement extended length option.
+	* ccid-driver.c (ccid_transceive): Remove restriction on apdu length.
+	(struct ccid_driver_s): Add field IFSC.
+	(ccid_get_atr): Set IFSC.
+	(ccid_transceive): Use negotiated IFSC and support S(IFS) command.
+
 2009-03-26  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_pksign): Allow more hash algorithms.

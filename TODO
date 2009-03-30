@@ -23,7 +23,10 @@
 ** mark all unimplemented commands and options.
 ** Implement --default-key
 ** support the anyPolicy semantic
-
+** Should we prefer nonRepudiation certs over plain signing certs?
+   Also: Do we need a way to allow the selection of a qualSig cert
+   over a plain one?  The background is that the Telesec cards have 3
+   certs capable of signing all with the same subject name.
 
 * sm/keydb.c
 ** Check file permissions

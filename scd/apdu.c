@@ -414,6 +414,7 @@ apdu_strerror (int rc)
     case SW_FILE_NOT_FOUND : return "file not found";
     case SW_RECORD_NOT_FOUND:return "record not found";
     case SW_REF_NOT_FOUND  : return "reference not found";
+    case SW_BAD_LC         : return "bad Lc";
     case SW_BAD_P0_P1      : return "bad P0 or P1";
     case SW_INS_NOT_SUP    : return "instruction not supported";
     case SW_CLA_NOT_SUP    : return "class not supported";
@@ -2806,14 +2807,18 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 
 /* Core APDU tranceiver function. Parameters are described at
    apdu_send_le with the exception of PININFO which indicates keypad
-   related operations if not NULL.  If EXTENDED_MODE is not NULL
+   related operations if not NULL.  If EXTENDED_MODE is not 0
    command chaining or extended length will be used according to these
    values:
        n < 0 := Use command chaining with the data part limited to -n
                 in each chunk.  If -1 is used a default value is used.
+      n == 0 := No extended mode or command chaining.
       n == 1 := Use extended length for input and output without a
                 length limit.
        n > 1 := Use extended length with up to N bytes.
+
+       FIXME: We don't support extended length return values larger
+       than 256 bytes due to a static buffer. 
 */
 static int
 send_le (int slot, int class, int ins, int p0, int p1,
@@ -2825,12 +2830,16 @@ send_le (int slot, int class, int ins, int p0, int p1,
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
                                          the driver. */
   size_t resultlen;
-  unsigned char apdu[5+256+1];
+  unsigned char short_apdu_buffer[5+256+1];
+  unsigned char *apdu_buffer = NULL;
+  size_t apdu_buffer_size;
+  unsigned char *apdu;
   size_t apdulen;
   int sw;
   long rc; /* We need a long here due to PC/SC. */
   int did_exact_length_hack = 0;
   int use_chaining = 0;
+  int use_extended_length = 0;
   int lc_chunk;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
@@ -2847,7 +2856,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
       if (!extended_mode)
         return SW_WRONG_LENGTH; /* No way to send such an APDU.  */
       else if (extended_mode > 0)
-        return SW_HOST_NOT_SUPPORTED; /* FIXME.  */
+        use_extended_length = 1;
       else if (extended_mode < 0)
         {
           /* Send APDU using chaining mode.  */
@@ -2861,51 +2870,99 @@ send_le (int slot, int class, int ins, int p0, int p1,
       else 
         return SW_HOST_INV_VALUE;
     }
+  else if (lc == -1 && extended_mode > 0)
+    use_extended_length = 1;
+    
   if (le != -1 && (le > 256 || le < 0))
     return SW_WRONG_LENGTH;
   if ((!data && lc != -1) || (data && lc == -1))
     return SW_HOST_INV_VALUE;
+
+  if (use_extended_length)
+    {
+      if (reader_table[slot].is_t0)
+        return SW_HOST_NOT_SUPPORTED;
+
+      /* Space for: cls/ins/p1/p2+Z+2_byte_Lc+Lc+2_byte_Le.  */
+      apdu_buffer_size = 4 + 1 + (lc >= 0? (2+lc):0) + 2;
+      apdu_buffer = xtrymalloc (apdu_buffer_size);
+      if (!apdu_buffer)
+        return SW_HOST_OUT_OF_CORE;
+      apdu = apdu_buffer;
+    }
+  else
+    {
+      apdu_buffer_size = sizeof short_apdu_buffer;
+      apdu = short_apdu_buffer;
+    }
 
   if ((sw = lock_slot (slot)))
     return sw;
 
   do
     {
-      apdulen = 0;
-      apdu[apdulen] = class;
-      if (use_chaining && lc > 255)
+      if (use_extended_length)
         {
-          apdu[apdulen] |= 0x10;
-          assert (use_chaining < 256);
-          lc_chunk = use_chaining;
-          lc -= use_chaining;
+          use_chaining = 0;
+          apdulen = 0;
+          apdu[apdulen++] = class;
+          apdu[apdulen++] = ins;
+          apdu[apdulen++] = p0;
+          apdu[apdulen++] = p1;
+          apdu[apdulen++] = 0;  /* Z byte: Extended length marker.  */
+          if (lc >= 0)
+            {
+              apdu[apdulen++] = ((lc >> 8) & 0xff);
+              apdu[apdulen++] = (lc & 0xff);
+              memcpy (apdu+apdulen, data, lc);
+              data += lc;
+              apdulen += lc;
+            }
+          if (le != -1)
+            {
+              apdu[apdulen++] = ((le >> 8) & 0xff); 
+              apdu[apdulen++] = (le & 0xff); 
+            }
         }
       else
         {
-          use_chaining = 0;
-          lc_chunk = lc;
+          apdulen = 0;
+          apdu[apdulen] = class;
+          if (use_chaining && lc > 255)
+            {
+              apdu[apdulen] |= 0x10;
+              assert (use_chaining < 256);
+              lc_chunk = use_chaining;
+              lc -= use_chaining;
+            }
+          else
+            {
+              use_chaining = 0;
+              lc_chunk = lc;
+            }
+          apdulen++;
+          apdu[apdulen++] = ins;
+          apdu[apdulen++] = p0;
+          apdu[apdulen++] = p1;
+          if (lc_chunk != -1)
+            {
+              apdu[apdulen++] = lc_chunk;
+              memcpy (apdu+apdulen, data, lc_chunk);
+              data += lc_chunk;
+              apdulen += lc_chunk;
+              /* T=0 does not allow the use of Lc together with Le;
+                 thus disable Le in this case.  */
+              if (reader_table[slot].is_t0)
+                le = -1;
+            }
+          if (le != -1 && !use_chaining)
+            apdu[apdulen++] = le; /* Truncation is okay (0 means 256). */
         }
-      apdulen++;
-      apdu[apdulen++] = ins;
-      apdu[apdulen++] = p0;
-      apdu[apdulen++] = p1;
-      if (lc_chunk != -1)
-        {
-          apdu[apdulen++] = lc_chunk;
-          memcpy (apdu+apdulen, data, lc_chunk);
-          data += lc_chunk;
-          apdulen += lc_chunk;
-          /* T=0 does not allow the use of Lc together with Le; thus
-             disable Le in this case.  */
-          if (reader_table[slot].is_t0)
-            le = -1;
-        }
-      if (le != -1)
-        apdu[apdulen++] = le; /* Truncation is okay because 0 means 256. */
-      /* As safeguard don't pass any garbage from the stack to the driver. */
-      assert (sizeof (apdu) >= apdulen);
-      memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+
     exact_length_hack:
+      /* As a safeguard don't pass any garbage to the driver.  */
+      assert (apdulen <= apdu_buffer_size);
+      memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
       resultlen = RESULTLEN;
       rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
       if (rc || resultlen < 2)
@@ -2916,7 +2973,8 @@ send_le (int slot, int class, int ins, int p0, int p1,
           return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
         }
       sw = (result[resultlen-2] << 8) | result[resultlen-1];
-      if (!did_exact_length_hack && SW_EXACT_LENGTH_P (sw))
+      if (!use_extended_length 
+          && !did_exact_length_hack && SW_EXACT_LENGTH_P (sw))
         {
           apdu[apdulen-1] = (sw & 0x00ff);
           did_exact_length_hack = 1;
@@ -2925,6 +2983,13 @@ send_le (int slot, int class, int ins, int p0, int p1,
     }
   while (use_chaining && sw == SW_SUCCESS);
 
+  if (apdu_buffer)
+    {
+      xfree (apdu_buffer);
+      apdu_buffer = NULL;
+      apdu_buffer_size = 0;
+    }
+  
   /* Store away the returned data but strip the statusword. */
   resultlen -= 2;
   if (DBG_CARD_IO)
@@ -2976,13 +3041,16 @@ send_le (int slot, int class, int ins, int p0, int p1,
           if (DBG_CARD_IO)
             log_debug ("apdu_send_simple(%d): %d more bytes available\n",
                        slot, len);
+          apdu_buffer_size = sizeof short_apdu_buffer;
+          apdu = short_apdu_buffer;
           apdulen = 0;
           apdu[apdulen++] = class;
           apdu[apdulen++] = 0xC0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = len;
-          memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
+          assert (apdulen <= apdu_buffer_size);
+          memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
           resultlen = RESULTLEN;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
           if (rc || resultlen < 2)
@@ -3052,47 +3120,52 @@ send_le (int slot, int class, int ins, int p0, int p1,
 /* Send an APDU to the card in SLOT.  The APDU is created from all
    given parameters: CLASS, INS, P0, P1, LC, DATA, LE.  A value of -1
    for LC won't sent this field and the data field; in this case DATA
-   must also be passed as NULL.  The return value is the status word
-   or -1 for an invalid SLOT or other non card related error.  If
-   RETBUF is not NULL, it will receive an allocated buffer with the
-   returned data.  The length of that data will be put into
-   *RETBUFLEN.  The caller is reponsible for releasing the buffer even
-   in case of errors.  */
+   must also be passed as NULL.  If EXTENDED_MODE is not 0 command
+   chaining or extended length will be used; see send_le for details.
+   The return value is the status word or -1 for an invalid SLOT or
+   other non card related error.  If RETBUF is not NULL, it will
+   receive an allocated buffer with the returned data.  The length of
+   that data will be put into *RETBUFLEN.  The caller is reponsible
+   for releasing the buffer even in case of errors.  */
 int
-apdu_send_le(int slot, int class, int ins, int p0, int p1,
+apdu_send_le(int slot, int extended_mode, 
+             int class, int ins, int p0, int p1,
              int lc, const char *data, int le,
              unsigned char **retbuf, size_t *retbuflen)
 {
   return send_le (slot, class, ins, p0, p1,
                   lc, data, le,
                   retbuf, retbuflen,
-                  NULL, 0);
+                  NULL, extended_mode);
 }
 
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
    given parameters: CLASS, INS, P0, P1, LC, DATA.  A value of -1 for
    LC won't sent this field and the data field; in this case DATA must
-   also be passed as NULL. The return value is the status word or -1
-   for an invalid SLOT or other non card related error.  If RETBUF is
-   not NULL, it will receive an allocated buffer with the returned
-   data.  The length of that data will be put into *RETBUFLEN.  The
-   caller is reponsible for releasing the buffer even in case of
-   errors.  */
+   also be passed as NULL.  If EXTENDED_MODE is not 0 command chaining
+   or extended length will be used; see send_le for details.  The
+   return value is the status word or -1 for an invalid SLOT or other
+   non card related error.  If RETBUF is not NULL, it will receive an
+   allocated buffer with the returned data.  The length of that data
+   will be put into *RETBUFLEN.  The caller is reponsible for
+   releasing the buffer even in case of errors.  */
 int
-apdu_send (int slot, int class, int ins, int p0, int p1,
+apdu_send (int slot, int extended_mode,
+           int class, int ins, int p0, int p1,
            int lc, const char *data, unsigned char **retbuf, size_t *retbuflen)
 {
   return send_le (slot, class, ins, p0, p1, lc, data, 256,
-                  retbuf, retbuflen, NULL, 0);
+                  retbuf, retbuflen, NULL, extended_mode);
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
    given parameters: CLASS, INS, P0, P1, LC, DATA.  A value of -1 for
    LC won't sent this field and the data field; in this case DATA must
-   also be passed as NULL. The return value is the status word or -1
-   for an invalid SLOT or other non card related error.  No data will be
-   returned. */
+   also be passed as NULL.  If EXTENDED_MODE is not 0 command chaining
+   or extended length will be used; see send_le for details.  The
+   return value is the status word or -1 for an invalid SLOT or other
+   non card related error.  No data will be returned.  */
 int
 apdu_send_simple (int slot, int extended_mode,
                   int class, int ins, int p0, int p1,
@@ -3126,11 +3199,13 @@ apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
    and returns with an APDU including the status word.  With
    HANDLE_MORE set to true this function will handle the MORE DATA
    status and return all APDUs concatenated with one status word at
-   the end.  The function does not return a regular status word but 0
-   on success.  If the slot is locked, the function returns
-   immediately with an error.  */
+   the end.  If EXTENDED_MODE is not 0 command chaining or extended
+   length will be used; see send_le for details.  The function does
+   not return a regular status word but 0 on success.  If the slot is
+   locked, the function returns immediately with an error.  */
 int
-apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
+apdu_send_direct (int slot, int extended_mode,
+                  const unsigned char *apdudata, size_t apdudatalen,
                   int handle_more,
                   unsigned char **retbuf, size_t *retbuflen)
 {
@@ -3146,6 +3221,9 @@ apdu_send_direct (int slot, const unsigned char *apdudata, size_t apdudatalen,
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
+
+  if (extended_mode)
+    return SW_HOST_NOT_SUPPORTED; /* FIXME. */
 
   if ((sw = trylock_slot (slot)))
     return sw;

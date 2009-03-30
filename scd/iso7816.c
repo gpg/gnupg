@@ -213,7 +213,7 @@ iso7816_list_directory (int slot, int list_dirs,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
+  sw = apdu_send (slot, 0, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
                   result, resultlen);
   if (sw != SW_SUCCESS)
     {
@@ -244,7 +244,7 @@ iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send_direct (slot, apdudata, apdudatalen, handle_more,
+  sw = apdu_send_direct (slot, 0, apdudata, apdudatalen, handle_more,
                          result, resultlen);
   if (!sw)
     {
@@ -430,7 +430,7 @@ iso7816_get_data (int slot, int tag,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_GET_DATA,
+  sw = apdu_send (slot, 0, 0x00, CMD_GET_DATA,
                   ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL,
                   result, resultlen);
   if (sw != SW_SUCCESS)
@@ -462,7 +462,7 @@ iso7816_put_data (int slot, int extended_mode, int tag,
   return map_sw (sw);
 }
 
-/* Same as iso7816_put_data but uses an odd instrcution byte.  */
+/* Same as iso7816_put_data but uses an odd instruction byte.  */
 gpg_error_t
 iso7816_put_data_odd (int slot, int extended_mode, int tag,
                       const unsigned char *data, size_t datalen)
@@ -509,7 +509,8 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_PSO, 0x9E, 0x9A, datalen, (const char*)data,
+  sw = apdu_send (slot, 0, 
+                  0x00, CMD_PSO, 0x9E, 0x9A, datalen, (const char*)data,
                   result, resultlen);
   if (sw != SW_SUCCESS)
     {
@@ -530,7 +531,8 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
    and the plaintext is available in a newly allocated buffer stored
    at RESULT with its length stored at RESULTLEN. */
 gpg_error_t
-iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
+iso7816_decipher (int slot, int extended_mode, 
+                  const unsigned char *data, size_t datalen,
                   int padind, unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -547,17 +549,19 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
       buf = xtrymalloc (datalen + 1);
       if (!buf)
         return gpg_error (gpg_err_code_from_errno (errno));
-
+      
       *buf = padind; /* Padding indicator. */
       memcpy (buf+1, data, datalen);
-      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86,
+      sw = apdu_send (slot, extended_mode, 
+                      0x00, CMD_PSO, 0x80, 0x86,
                       datalen+1, (char*)buf,
                       result, resultlen);
       xfree (buf);
     }
   else
     {
-      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86,
+      sw = apdu_send (slot, extended_mode,
+                      0x00, CMD_PSO, 0x80, 0x86,
                       datalen, (const char *)data,
                       result, resultlen);
     }
@@ -586,7 +590,7 @@ iso7816_internal_authenticate (int slot,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
+  sw = apdu_send (slot, 0, 0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
                   datalen, (const char*)data,  result, resultlen);
   if (sw != SW_SUCCESS)
     {
@@ -613,7 +617,8 @@ do_generate_keypair (int slot, int readonly,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
+  sw = apdu_send (slot, 0,
+                  0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
                   datalen, (const char*)data,  result, resultlen);
   if (sw != SW_SUCCESS)
     {
@@ -661,8 +666,8 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
     {
       result = NULL;
       n = length > 254? 254 : length;
-      sw = apdu_send_le (slot, 0x00, CMD_GET_CHALLENGE, 0, 0, -1, NULL,
-                         n,
+      sw = apdu_send_le (slot, 0, 
+                         0x00, CMD_GET_CHALLENGE, 0, 0, -1, NULL, n,
                          &result, &resultlen);
       if (sw != SW_SUCCESS)
         {
@@ -711,13 +716,13 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
       buffer = NULL;
       bufferlen = 0;
       n = read_all? 0 : nmax;
-      sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+      sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
                          ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                          n, &buffer, &bufferlen);
       if ( SW_EXACT_LENGTH_P(sw) )
         {
           n = (sw & 0x00ff);
-          sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+          sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
                              ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                              n, &buffer, &bufferlen);
         }
@@ -804,7 +809,7 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
 
   buffer = NULL;
   bufferlen = 0;
-  sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
+  sw = apdu_send_le (slot, 0, 0x00, CMD_READ_RECORD,
                      recno, 
                      short_ef? short_ef : 0x04,
                      -1, NULL,

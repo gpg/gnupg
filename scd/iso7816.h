@@ -96,7 +96,7 @@ gpg_error_t iso7816_manage_security_env (int slot, int p1, int p2,
 gpg_error_t iso7816_compute_ds (int slot,
                                 const unsigned char *data, size_t datalen,
                                 unsigned char **result, size_t *resultlen);
-gpg_error_t iso7816_decipher (int slot,
+gpg_error_t iso7816_decipher (int slot, int extended_mode,
                               const unsigned char *data, size_t datalen,
                               int padind,
                               unsigned char **result, size_t *resultlen);

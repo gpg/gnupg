@@ -1,3 +1,7 @@
+2009-03-27  Werner Koch  <wk@g10code.com>
+
+	* learncard.c (agent_handle_learn): Add new certtype 111.
+
 2009-03-26  Werner Koch  <wk@g10code.com>
 
 	* agent.h (MAX_DIGEST_LEN): Change to 64.

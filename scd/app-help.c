@@ -121,8 +121,7 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
   if ( !(class == CLASS_UNIVERSAL &&  constructed
          && (tag == TAG_SEQUENCE || tag == TAG_SET)))
     {
-      log_info ("contents of FID 0x%04X does not look like a certificate\n",
-                fid);
+      log_info ("data at FID 0x%04X does not look like a certificate\n", fid);
       return 0;
     }
 

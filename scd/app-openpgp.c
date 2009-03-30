@@ -3066,14 +3066,16 @@ do_decipher (app_t app, const char *keyidstr,
             {
               memset (fixbuf, 0, fixuplen);
               memcpy (fixbuf+fixuplen, indata, indatalen);
-              rc = iso7816_decipher (app->slot, fixbuf, fixuplen+indatalen, -1,
+              rc = iso7816_decipher (app->slot, 0,
+                                     fixbuf, fixuplen+indatalen, -1,
                                      outdata, outdatalen);
               xfree (fixbuf);
             }
 
         }
       else
-        rc = iso7816_decipher (app->slot, indata, indatalen, 0,
+        rc = iso7816_decipher (app->slot, 0, 
+                               indata, indatalen, 0,
                                outdata, outdatalen);
     }
   return rc;

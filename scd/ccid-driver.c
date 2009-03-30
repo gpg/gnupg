@@ -243,6 +243,7 @@ struct ccid_driver_s
   int auto_ifsd;
   int max_ifsd;
   int ifsd;
+  int ifsc;
   int powered_off;
   int has_pinpad;
   int apdu_level;     /* Reader supports short APDU level exchange.  */
@@ -1840,7 +1841,6 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       *nread = msglen = rc;
     }
 
-
   if (msglen < 10)
     {
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
@@ -1879,7 +1879,6 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
-
 
   if (debug_level && (!no_debug || debug_level >= 3))
     {
@@ -2326,6 +2325,11 @@ ccid_get_atr (ccid_driver_t handle,
   if (rc)
     DEBUGOUT ("SetParameters failed (ignored)\n");
 
+  if (!rc && msglen > 15 && msg[15] >= 16 && msg[15] <= 254 )
+    handle->ifsc = msg[15];
+  else
+    handle->ifsc = 128; /* Something went wrong, assume 128 bytes.  */
+
   handle->t1_ns = 0;
   handle->t1_nr = 0;
 
@@ -2582,22 +2586,15 @@ ccid_transceive (ccid_driver_t handle,
           assert (apdulen);
 
           /* Construct an I-Block. */
-          /* Fixme: I am not sure whether limiting the length to 259
-             as per CCID spec is required.  The code blow chops the
-             APDU anyway into 128 byte blocks.  Needs to be addressed
-             when supporting extended length APDUs. */
-          if (apdulen > 259)
-            return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
-
           tpdu = msg+10;
           /* NAD: DAD=1, SAD=0 */
           tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
           tpdu[1] = ((handle->t1_ns & 1) << 6); /* I-block */
-          if (apdulen > 128 /* fixme: replace by ifsc */)
+          if (apdulen > handle->ifsc )
             {
-              apdulen = 128;
-              apdu_buf += 128;  
-              apdu_buflen -= 128;
+              apdulen = handle->ifsc;
+              apdu_buf += handle->ifsc;  
+              apdu_buflen -= handle->ifsc;
               tpdu[1] |= (1 << 5); /* Set more bit. */
             }
           tpdu[2] = apdulen;
@@ -2752,8 +2749,31 @@ ccid_transceive (ccid_driver_t handle,
           DEBUGOUT_2 ("T=1 S-block %s received cmd=%d\n",
                       (tpdu[1] & 0x20)? "response": "request",
                       (tpdu[1] & 0x1f));
-          if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
-            { /* Wait time extension request. */
+          if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 1 && tpdu[2] == 1)
+            {
+              /* Information field size request.  */
+              unsigned char ifsc = tpdu[3];
+
+              if (ifsc < 16 || ifsc > 254)
+                return CCID_DRIVER_ERR_CARD_IO_ERROR;
+
+              msg = send_buffer;
+              tpdu = msg+10;
+              /* NAD: DAD=1, SAD=0 */
+              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+              tpdu[1] = (0xc0 | 0x20 | 1); /* S-block response */
+              tpdu[2] = 1;
+              tpdu[3] = ifsc;
+              tpdulen = 4;
+              edc = compute_edc (tpdu, tpdulen, use_crc);
+              if (use_crc)
+                tpdu[tpdulen++] = (edc >> 8);
+              tpdu[tpdulen++] = edc;
+              DEBUGOUT_1 ("T=1 requesting an ifsc=%d\n", ifsc);
+            }
+          else if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
+            {
+              /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
               msg = send_buffer;
               tpdu = msg+10;
