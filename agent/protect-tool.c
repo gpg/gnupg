@@ -41,13 +41,14 @@
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "minip12.h"
-#include "simple-pwquery.h"
 #include "i18n.h"
+#include "get-passphrase.h"
 #include "sysutils.h"
 
 
 enum cmd_and_opt_values 
-{ aNull = 0,
+{ 
+  aNull = 0,
   oVerbose	  = 'v',
   oArmor          = 'a',
   oPassphrase     = 'P',
@@ -72,17 +73,19 @@ enum cmd_and_opt_values
   oPrompt,
   oStatusMsg, 
 
-aTest };
+  oAgentProgram
+};
+
 
 struct rsa_secret_key_s 
-  {
-    gcry_mpi_t n;	    /* public modulus */
-    gcry_mpi_t e;	    /* public exponent */
-    gcry_mpi_t d;	    /* exponent */
-    gcry_mpi_t p;	    /* prime  p. */
-    gcry_mpi_t q;	    /* prime  q. */
-    gcry_mpi_t u;	    /* inverse of p mod q. */
-  };
+{
+  gcry_mpi_t n;	    /* public modulus */
+  gcry_mpi_t e;	    /* public exponent */
+  gcry_mpi_t d;	    /* exponent */
+  gcry_mpi_t p;	    /* prime  p. */
+  gcry_mpi_t q;	    /* prime  q. */
+  gcry_mpi_t u;	    /* inverse of p mod q. */
+};
 
 
 static const char *opt_homedir;
@@ -96,41 +99,51 @@ static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
 static const char *opt_p12_charset;
+static const char *opt_agent_program; 
 
-static char *get_passphrase (int promptno, int opt_check);
-static char *get_new_passphrase (int promptno);
+static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
 static int store_private_key (const unsigned char *grip,
                               const void *buffer, size_t length, int force);
 
 
 static ARGPARSE_OPTS opts[] = {
+  ARGPARSE_group (300, N_("@Commands:\n ")),
+
+  ARGPARSE_c (oProtect,   "protect",   "protect a private key"),
+  ARGPARSE_c (oUnprotect, "unprotect", "unprotect a private key"),
+  ARGPARSE_c (oShadow,    "shadow", "create a shadow entry for a public key"),
+  ARGPARSE_c (oShowShadowInfo,  "show-shadow-info", "return the shadow info"),
+  ARGPARSE_c (oShowKeygrip, "show-keygrip", "show the \"keygrip\""),
+  ARGPARSE_c (oP12Import, "p12-import", 
+              "import a pkcs#12 encoded private key"),
+  ARGPARSE_c (oP12Export, "p12-export",
+              "export a private key pkcs#12 encoded"),
   
-  { 301, NULL, 0, N_("@Options:\n ") },
+  ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
-  { oVerbose, "verbose",   0, "verbose" },
-  { oArmor,   "armor",     0, "write output in advanced format" },
-  { oCanonical, "canonical", 0, "write output in canonical format" },
-  { oPassphrase, "passphrase", 2, "|STRING|use passphrase STRING" },
-  { oProtect, "protect",     256, "protect a private key"},
-  { oUnprotect, "unprotect", 256, "unprotect a private key"},
-  { oShadow,  "shadow", 256, "create a shadow entry for a public key"},
-  { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
-  { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
+  ARGPARSE_s_n (oVerbose, "verbose", "verbose"),
+  ARGPARSE_s_n (oArmor, "armor", "write output in advanced format"),
+  ARGPARSE_s_n (oCanonical, "canonical", "write output in canonical format"),
 
-  { oP12Import, "p12-import", 256, "import a pkcs#12 encoded private key"},
-  { oP12Export, "p12-export", 256, "export a private key pkcs#12 encoded"},
-  { oP12Charset,"p12-charset", 2,
-    "|NAME|set charset for a new PKCS#12 passphrase to NAME" },
-  { oHaveCert, "have-cert", 0,  "certificate to export provided on STDIN"},
-  { oStore,     "store", 0, "store the created key in the appropriate place"},
-  { oForce,     "force", 0, "force overwriting"},
-  { oNoFailOnExist, "no-fail-on-exist", 0, "@" },
-  { oHomedir, "homedir", 2, "@" }, 
-  { oPrompt,  "prompt", 2, "|ESCSTRING|use ESCSTRING as prompt in pinentry"}, 
-  { oStatusMsg, "enable-status-msg", 0, "@"},
+  ARGPARSE_s_s (oPassphrase, "passphrase", "|STRING|use passphrase STRING"),
+  ARGPARSE_s_s (oP12Charset,"p12-charset",
+                "|NAME|set charset for a new PKCS#12 passphrase to NAME"),
+  ARGPARSE_s_n (oHaveCert, "have-cert",
+                "certificate to export provided on STDIN"),
+  ARGPARSE_s_n (oStore,    "store", 
+                "store the created key in the appropriate place"),
+  ARGPARSE_s_n (oForce,    "force", 
+                "force overwriting"),
+  ARGPARSE_s_n (oNoFailOnExist, "no-fail-on-exist", "@"),
+  ARGPARSE_s_s (oHomedir, "homedir", "@"), 
+  ARGPARSE_s_s (oPrompt,  "prompt", 
+                "|ESCSTRING|use ESCSTRING as prompt in pinentry"), 
+  ARGPARSE_s_n (oStatusMsg, "enable-status-msg", "@"),
 
-  {0}
+  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+
+  ARGPARSE_end ()
 };
 
 static const char *
@@ -157,9 +170,6 @@ my_strusage (int level)
   return p;
 }
 
-
-/* Include the implementation of map_spwq_error.  */
-MAP_SPWQ_ERROR_IMPL
 
 /*  static void */
 /*  print_mpi (const char *text, gcry_mpi_t a) */
@@ -333,7 +343,7 @@ read_and_protect (const char *fname)
   if (!key)
     return;
 
-  pw = get_passphrase (1, 0);
+  pw = get_passphrase (1);
   rc = agent_protect (key, pw, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -372,7 +382,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1, 0)), 
+  rc = agent_unprotect (key, (pw=get_passphrase (1)), 
                         protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -678,7 +688,7 @@ import_p12_file (const char *fname)
     buf_off = 0;
 
   kparms = p12_parse ((unsigned char*)buf+buf_off, buflen-buf_off,
-                      (pw=get_passphrase (2, 0)),
+                      (pw=get_passphrase (2)),
                       import_p12_cert_cb, NULL);
   release_passphrase (pw);
   xfree (buf);
@@ -753,12 +763,8 @@ import_p12_file (const char *fname)
   assert (buflen);
   gcry_sexp_release (s_key);
 
-
-  pw = get_new_passphrase (4);
-  if (!pw)
-    rc = gpg_error (GPG_ERR_CANCELED);
-  else
-    rc = agent_protect (key, pw, &result, &resultlen);
+  pw = get_passphrase (4);
+  rc = agent_protect (key, pw, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -896,7 +902,7 @@ export_p12_file (const char *fname)
       unsigned char *tmpkey;
       size_t tmplen;
 
-      rc = agent_unprotect (key, (pw=get_passphrase (1, 0)),
+      rc = agent_unprotect (key, (pw=get_passphrase (1)),
                             NULL, &tmpkey, &tmplen);
       release_passphrase (pw);
       if (rc)
@@ -985,11 +991,8 @@ export_p12_file (const char *fname)
   kparms[7] = sk.u;
   kparms[8] = NULL;
 
-  pw = get_new_passphrase (3);
-  if (!pw)
-    key = NULL;
-  else
-    key = p12_build (kparms, cert, certlen, pw, opt_p12_charset, &keylen);
+  pw = get_passphrase (3);
+  key = p12_build (kparms, cert, certlen, pw, opt_p12_charset, &keylen);
   release_passphrase (pw);
   xfree (cert);
   for (i=0; i < 8; i++)
@@ -1004,54 +1007,6 @@ export_p12_file (const char *fname)
   xfree (key);
 }
 
-
-
-/* Do the percent and plus/space unescaping in place and return the
-   length of the valid buffer. */
-static size_t
-percent_plus_unescape (unsigned char *string)
-{
-  unsigned char *p = string;
-  size_t n = 0;
-
-  while (*string)
-    {
-      if (*string == '%' && string[1] && string[2])
-        { 
-          string++;
-          *p++ = xtoi_2 (string);
-          n++;
-          string+= 2;
-        }
-      else if (*string == '+')
-        {
-          *p++ = ' ';
-          n++;
-          string++;
-        }
-      else
-        {
-          *p++ = *string++;
-          n++;
-        }
-    }
-
-  return n;
-}
-
-/* Remove percent and plus escaping and make sure that the reuslt is a
-   string.  This is done in place. Returns STRING. */
-static char *
-percent_plus_unescape_string (char *string) 
-{
-  unsigned char *p = (unsigned char*)string;
-  size_t n;
-
-  n = percent_plus_unescape (p);
-  p[n] = 0;
-
-  return string;
-}
 
 
 int
@@ -1094,6 +1049,8 @@ main (int argc, char **argv )
         case oCanonical: opt_canonical=1; break;
         case oHomedir: opt_homedir = pargs.r.ret_str; break;
 
+        case oAgentProgram: opt_agent_program = pargs.r.ret_str; break;
+
         case oProtect: cmd = oProtect; break;
         case oUnprotect: cmd = oUnprotect; break;
         case oShadow: cmd = oShadow; break;
@@ -1111,11 +1068,11 @@ main (int argc, char **argv )
         case oPrompt: opt_prompt = pargs.r.ret_str; break;
         case oStatusMsg: opt_status_msg = 1; break;
           
-        default : pargs.err = 2; break;
+        default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
-  if (log_get_errorcount(0))
-    exit(2);
+  if (log_get_errorcount (0))
+    exit (2);
 
   fname = "-";
   if (argc == 1)
@@ -1123,15 +1080,15 @@ main (int argc, char **argv )
   else if (argc > 1)
     usage (1);
 
-  /* Tell simple-pwquery about the the standard socket name.  */
-  {
-    char *tmp = make_filename (opt_homedir, "S.gpg-agent", NULL);
-    simple_pw_set_socket (tmp);
-    xfree (tmp);
-  }
+  /* Set the information which can't be taken from envvars.  */
+  gnupg_prepare_get_passphrase (GPG_ERR_SOURCE_DEFAULT,
+                                opt.verbose,
+                                opt_homedir,
+                                opt_agent_program,
+                                NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
   if (opt_prompt)
-    opt_prompt = percent_plus_unescape_string (xstrdup (opt_prompt));
+    opt_prompt = percent_plus_unescape (opt_prompt, 0);
 
   if (cmd == oProtect)
     read_and_protect (fname);
@@ -1169,100 +1126,63 @@ agent_exit (int rc)
      2 = for unprotecting a pkcs#12 object
      3 = for protecting a new pkcs#12 object
      4 = for protecting an imported pkcs#12 in our system
-     5 = reenter the passphrase
-   When adding 100 to the values, a "does not match - try again" error
-   message is shown.
 */
 static char *
-get_passphrase (int promptno, int opt_check)
+get_passphrase (int promptno)
 {
   char *pw;
   int err;
   const char *desc;
   char *orig_codeset;
-  int error_msgno;
+  int repeat = 0;
   
   if (opt_passphrase)
     return xstrdup (opt_passphrase);
 
-  error_msgno = promptno / 100;
-  promptno %= 100;
-
   orig_codeset = i18n_switchto_utf8 ();
 
   if (promptno == 1 && opt_prompt)
-    desc = opt_prompt;
+    {
+      desc = opt_prompt;
+    }
   else if (promptno == 2)
-    desc = _("Please enter the passphrase to unprotect the "
-             "PKCS#12 object.");
+    {
+      desc = _("Please enter the passphrase to unprotect the "
+               "PKCS#12 object.");
+    }
   else if (promptno == 3)
-    desc = _("Please enter the passphrase to protect the "
-             "new PKCS#12 object.");
+    {
+      desc = _("Please enter the passphrase to protect the "
+               "new PKCS#12 object.");
+      repeat = 1;
+    }
   else if (promptno == 4)
-    desc = _("Please enter the passphrase to protect the "
-             "imported object within the GnuPG system.");
-  else if (promptno == 5)
-    desc = _("Please re-enter this passphrase");
+    {
+      desc = _("Please enter the passphrase to protect the "
+               "imported object within the GnuPG system.");
+      repeat = 1;
+    }
   else
     desc = _("Please enter the passphrase or the PIN\n"
              "needed to complete this operation.");
 
-  pw = simple_pwquery (NULL,
-                       error_msgno == 1? _("does not match - try again"):NULL,
-                       _("Passphrase:"), desc, opt_check, &err);
-  err = map_spwq_error (err);
-
   i18n_switchback (orig_codeset);
 
-  if (!pw)
+  err = gnupg_get_passphrase (NULL, NULL, _("Passphrase:"), desc,
+                              repeat, repeat, 1, &pw);
+  if (err)
     {
-      if (err)
+      if (gpg_err_code (err) == GPG_ERR_CANCELED)
+        log_info (_("cancelled\n"));
+      else
         log_error (_("error while asking for the passphrase: %s\n"),
                    gpg_strerror (err));
-      else
-        log_info (_("cancelled\n"));
       agent_exit (0);
     }
+  assert (pw);
 
   return pw;
 }
-
-
-/* Same as get_passphrase but requests it a second time and compares
-   it to the one entered the first time. */
-static char *
-get_new_passphrase (int promptno)
-{
-  char *pw;
-  int i, secondpromptno;
-  
-  pw = get_passphrase (promptno, 1);
-  if (!pw)
-    return NULL; /* Canceled. */
-  if (!*pw)
-    return pw;   /* Empty passphrase - no need to ask for repeating it. */
-
-  secondpromptno = 5;
-  for (i=0; i < 3; i++)
-    {
-      char *pw2 = get_passphrase (secondpromptno, 0);
-      if (!pw2)
-        {
-          xfree (pw);
-          return NULL; /* Canceled.  */
-        }
-      if (!strcmp (pw, pw2))
-        {
-          xfree (pw2);
-          return pw; /* Okay. */
-        }
-      secondpromptno = 105;
-      xfree (pw2);
-    }
-  xfree (pw);
-  return NULL; /* 3 times repeated wrong - cancel.  */
-}
-
 
 
 static void

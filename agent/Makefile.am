@@ -74,9 +74,9 @@ gpg_protect_tool_SOURCES = \
 	protect.c \
 	minip12.c minip12.h 
 
-# Needs $(NETLIBS) for libsimple-pwquery.la.
-gpg_protect_tool_LDADD = $(pwquery_libs) $(common_libs) \
-         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
+gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
+gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
+         $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpg_preset_passphrase_SOURCES = \
 	preset-passphrase.c

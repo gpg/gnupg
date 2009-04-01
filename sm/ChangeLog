@@ -1,3 +1,9 @@
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* export.c (popen_protect_tool): Add command line option
+	--agent-program and pass flag bit 6.
+	* import.c (popen_protect_tool): Ditto.
+
 2009-03-26  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): s/def_digest_string/forced_digest_algo/ and

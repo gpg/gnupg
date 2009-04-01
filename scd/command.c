@@ -462,41 +462,6 @@ open_card (ctrl_t ctrl, const char *apptype)
 }
 
 
-/* Do the percent and plus/space unescaping in place and return the
-   length of the valid buffer. */
-static size_t
-percent_plus_unescape (unsigned char *string)
-{
-  unsigned char *p = string;
-  size_t n = 0;
-
-  while (*string)
-    {
-      if (*string == '%' && string[1] && string[2])
-        { 
-          string++;
-          *p++ = xtoi_2 (string);
-          n++;
-          string+= 2;
-        }
-      else if (*string == '+')
-        {
-          *p++ = ' ';
-          n++;
-          string++;
-        }
-      else
-        {
-          *p++ = *string++;
-          n++;
-        }
-    }
-
-  return n;
-}
-
-
-
 /* SERIALNO [APPTYPE] 
 
    Return the serial number of the card using a status reponse.  This
@@ -1153,7 +1118,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
       *line++ = 0;
   while (spacep (line))
     line++;
-  nbytes = percent_plus_unescape ((unsigned char*)line);
+  nbytes = percent_plus_unescape_inplace (line, 0);
 
   rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx,
                     (const unsigned char*)line, nbytes);

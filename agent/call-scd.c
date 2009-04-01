@@ -136,6 +136,7 @@ static void
 dump_mutex_state (pth_mutex_t *m)
 {
 #ifdef _W32_PTH_H
+  (void)m;
   log_printf ("unknown under W32");
 #else
   if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
@@ -558,43 +559,6 @@ agent_reset_scd (ctrl_t ctrl)
     }
 
   return 0;
-}
-
-
-
-/* Return a new malloced string by unescaping the string S.  Escaping
-   is percent escaping and '+'/space mapping.  A binary Nul will
-   silently be replaced by a 0xFF.  Function returns NULL to indicate
-   an out of memory status. */
-static char *
-unescape_status_string (const unsigned char *s)
-{
-  char *buffer, *d;
-
-  buffer = d = xtrymalloc (strlen ((const char*)s)+1);
-  if (!buffer)
-    return NULL;
-  while (*s)
-    {
-      if (*s == '%' && s[1] && s[2])
-        { 
-          s++;
-          *d = xtoi_2 (s);
-          if (!*d)
-            *d = '\xff';
-          d++;
-          s += 2;
-        }
-      else if (*s == '+')
-        {
-          *d++ = ' ';
-          s++;
-        }
-      else
-        *d++ = *s++;
-    }
-  *d = 0; 
-  return buffer;
 }
 
 
@@ -1045,7 +1009,7 @@ card_getattr_cb (void *opaque, const char *line)
   if (keywordlen == parm->keywordlen
       && !memcmp (keyword, parm->keyword, keywordlen))
     {
-      parm->data = unescape_status_string ((const unsigned char*)line);
+      parm->data = percent_plus_unescape ((const unsigned char*)line, 0xff);
       if (!parm->data)
         parm->error = errno;
     }

@@ -116,32 +116,7 @@ start_agent (void)
 static char *
 unescape_status_string (const unsigned char *s)
 {
-  char *buffer, *d;
-
-  buffer = d = xtrymalloc (strlen (s)+1);
-  if (!buffer)
-    return NULL;
-  while (*s)
-    {
-      if (*s == '%' && s[1] && s[2])
-        { 
-          s++;
-          *d = xtoi_2 (s);
-          if (!*d)
-            *d = '\xff';
-          d++;
-          s += 2;
-        }
-      else if (*s == '+')
-        {
-          *d++ = ' ';
-          s++;
-        }
-      else
-        *d++ = *s++;
-    }
-  *d = 0; 
-  return buffer;
+  return percent_plus_unescape (s, 0xff);
 }
 
 

@@ -471,7 +471,9 @@ gnupg_reopen_std (const char *pgmname)
 
   if (did_stdin == 2 || did_stdout == 2 || did_stderr == 2)
     exit (3);
-#endif /* HAVE_STAT && !HAVE_W32_SYSTEM */
+#else /* !(HAVE_STAT && !HAVE_W32_SYSTEM) */
+  (void)pgmname;
+#endif
 }
 
 
@@ -479,11 +481,11 @@ gnupg_reopen_std (const char *pgmname)
 void 
 gnupg_allow_set_foregound_window (pid_t pid)
 {
-  if (!pid || pid == (pid_t)(-1))
+  if (!pid)
     log_info ("%s called with invalid pid %lu\n",
               "gnupg_allow_set_foregound_window", (unsigned long)pid);
 #ifdef HAVE_W32_SYSTEM  
-  else if (!AllowSetForegroundWindow (pid))
+  else if (!AllowSetForegroundWindow ((pid_t)pid == (pid_t)(-1)?ASFW_ANY:pid))
     log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
                (unsigned long)pid, w32_strerror (-1));
 #endif

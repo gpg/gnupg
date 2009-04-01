@@ -19,6 +19,9 @@ Noteworthy changes in version 2.0.12 (not released)
 
  * Support for the Telesec Netkey 3 cards.
 
+ * The gpg-protect-tool now uses gpg-agent via libassuan.  Under
+   Windows the Pinentry will now be put into the foreground.
+
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------

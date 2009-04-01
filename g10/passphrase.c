@@ -453,8 +453,9 @@ ask_passphrase (const char *description,
     {
       if (strchr (description, '%'))
         {
-          char *tmp = unescape_percent_string
-            ((const unsigned char*)description);
+          char *tmp = percent_plus_unescape (description, 0xff);
+          if (!tmp)
+            log_fatal(_("out of core\n"));
           tty_printf ("\n%s\n", tmp);
           xfree (tmp);
         }

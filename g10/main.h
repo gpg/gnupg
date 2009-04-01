@@ -135,7 +135,6 @@ char *optsep(char **stringp);
 char *argsplit(char *string);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
-char *unescape_percent_string (const unsigned char *s);
 int has_invalid_email_chars (const char *s);
 int is_valid_mailbox (const char *name);
 const char *get_libexecdir (void);

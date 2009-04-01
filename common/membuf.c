@@ -1,5 +1,5 @@
-/* membuf.c - A simple implementation of a dynamic buffer
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+/* membuf.c - A simple implementation of a dynamic buffer.
+ * Copyright (C) 2001, 2003, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -75,7 +75,7 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
              in case we are storing sensitive data here.  The membuf
              API does not provide another way to cleanup after an
              error. */ 
-          memset (mb->buf, 0, mb->len);
+          wipememory (mb->buf, mb->len);
           return;
         }
       mb->buf = p;
@@ -99,8 +99,12 @@ get_membuf (membuf_t *mb, size_t *len)
 
   if (mb->out_of_core)
     {
-      xfree (mb->buf);
-      mb->buf = NULL;
+      if (mb->buf)
+        {
+          wipememory (mb->buf, mb->len);
+          xfree (mb->buf);
+          mb->buf = NULL;
+        }
       errno = mb->out_of_core;
       return NULL;
     }

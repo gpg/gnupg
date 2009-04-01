@@ -1141,7 +1141,7 @@ my_dgettext (const char *domain, const char *msgid)
 
       /* FIXME: we have no dgettext, thus we can't switch.  */
 
-      text = gettext (msgid);
+      text = (char*)gettext (msgid);
       return text ? text : msgid;
     }
 #elif defined(ENABLE_NLS)

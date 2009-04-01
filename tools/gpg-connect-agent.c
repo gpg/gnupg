@@ -215,7 +215,7 @@ gnu_getcwd (void)
 }
 
 
-/* Unescale STRING and returned the malloced result.  The surrounding
+/* Unescape STRING and returned the malloced result.  The surrounding
    quotes must already be removed from STRING.  */
 static char *
 unescape_string (const char *string)

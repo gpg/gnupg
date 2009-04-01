@@ -1,3 +1,21 @@
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (pe_opt): New.
+	(opts): Add option --agent-program.  Use ARGPARSE macros.
+	(get_new_passphrase): Remove.
+	(get_passphrase): Use gpg-agent directly. Remove arg OPT_CHECK and
+	change all callers.
+	* Makefile.am (gpg_protect_tool_LDADD): Replace pwquery_libs by
+	LIBASSUAN_LIBS.
+	(gpg_protect_tool_CFLAGS): New.
+
+	* command.c (percent_plus_unescape): Remove.
+	(cmd_putval): Use percent_plus_unescape_inplace.
+	* call-scd.c (unescape_status_string): Remove.
+	(card_getattr_cb): Use percent_plus_unescape.
+	* protect-tool.c (main): Use percent_plus_unescape from common/.
+	(percent_plus_unescape, percent_plus_unescape_string): Remove.
+
 2009-03-27  Werner Koch  <wk@g10code.com>
 
 	* learncard.c (agent_handle_learn): Add new certtype 111.

@@ -1,3 +1,8 @@
+2009-03-31  Werner Koch  <wk@g10code.com>
+
+	* command.c (percent_plus_unescape): Remove.
+	(cmd_setattr): Use percent_plus_unescape_inplace.
+
 2009-03-30  Werner Koch  <wk@g10code.com>
 
 	* app-nks.c (do_decipher): Make it work for TCOS 3.

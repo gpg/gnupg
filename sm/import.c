@@ -463,13 +463,14 @@ static gpg_error_t
 popen_protect_tool (ctrl_t ctrl, const char *pgmname,
                     FILE *infile, FILE *outfile, FILE **statusfile, pid_t *pid)
 {
-  const char *argv[20];
+  const char *argv[22];
   int i=0;
 
   /* Make sure that the agent is running so that the protect tool is
      able to ask for a passphrase.  This has only an effect under W32
      where the agent is started on demand; sending a NOP does not harm
-     on other platforms. */
+     on other platforms.  This is not really necessary anymore because
+     the protect tool does this now by itself; it does not harm either. */
   gpgsm_agent_send_nop (ctrl);
 
   argv[i++] = "--homedir";
@@ -483,12 +484,17 @@ popen_protect_tool (ctrl_t ctrl, const char *pgmname,
       argv[i++] = "--passphrase";
       argv[i++] = opt.fixed_passphrase;
     }
+  if (opt.agent_program)
+    {
+      argv[i++] = "--agent-program";
+      argv[i++] = opt.agent_program;
+    }
   argv[i++] = "--",
   argv[i] = NULL;
   assert (i < sizeof argv);
 
   return gnupg_spawn_process (pgmname, argv, infile, outfile,
-                              setup_pinentry_env, 128,
+                              setup_pinentry_env, (128 | 64),
                               statusfile, pid);
 }
 

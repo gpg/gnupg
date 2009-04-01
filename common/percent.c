@@ -1,5 +1,5 @@
 /* percent.c - Percent escaping
- *	Copyright (C) 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "util.h"
 
@@ -74,3 +75,155 @@ percent_plus_escape (const char *string)
   return buffer;
 
 }
+
+
+/* Do the percent and plus/space unescaping from STRING to BUFFER and
+   return the length of the valid buffer.  Plus unescaping is only
+   done if WITHPLUS is true.  An escaped Nul character will be
+   replaced by NULREPL.  */
+static size_t
+do_unescape (unsigned char *buffer, const unsigned char *string, 
+             int withplus, int nulrepl)
+{
+  unsigned char *p = buffer;
+
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          *p = xtoi_2 (string);
+          if (!*p)
+            *p = nulrepl;
+          string++;
+        }
+      else if (*string == '+' && withplus)
+        *p = ' ';
+      else
+        *p = *string;
+      p++;
+      string++;
+    }
+
+  return (p - buffer);
+}
+
+
+/* Count space required after unescaping STRING.  Note that this will
+   never be larger than strlen (STRING).  */
+static size_t
+count_unescape (const unsigned char *string)
+{
+  size_t n = 0;
+
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          string++;
+        }
+      string++;
+      n++;
+    }
+
+  return n;
+}
+
+
+/* Helper.  */
+static char *
+do_plus_or_plain_unescape (const char *string, int withplus, int nulrepl)
+{
+  size_t nbytes, n;
+  char *newstring;
+
+  nbytes = count_unescape (string);
+  newstring = xtrymalloc (nbytes+1);
+  if (newstring)
+    {
+      n = do_unescape (newstring, string, withplus, nulrepl);
+      assert (n == nbytes);
+      newstring[n] = 0;
+    }
+  return newstring;
+}
+
+
+/* Create a new allocated string from STRING with all "%xx" sequences
+   decoded and all plus signs replaced by a space.  Embedded Nul
+   characters are replaced by the value of NULREPL.  The function
+   returns the new string or NULL in case of a malloc failure.  */
+char *
+percent_plus_unescape (const char *string, int nulrepl)
+{
+  return do_plus_or_plain_unescape (string, 1, nulrepl);
+}
+
+
+/* Create a new allocated string from STRING with all "%xx" sequences
+   decoded.  Embedded Nul characters are replaced by the value of
+   NULREPL.  The function returns the new string or NULL in case of a
+   malloc failure.  */
+char *
+percent_unescape (const char *string, int nulrepl)
+{
+  return do_plus_or_plain_unescape (string, 0, nulrepl);
+}
+
+
+static size_t
+do_unescape_inplace (char *string, int withplus, int nulrepl)
+{
+  unsigned char *p, *p0;
+
+  p = p0 = string;
+  while (*string)
+    {
+      if (*string == '%' && string[1] && string[2])
+        { 
+          string++;
+          *p = xtoi_2 (string);
+          if (!*p)
+            *p = nulrepl;
+          string++;
+        }
+      else if (*string == '+' && withplus)
+        *p = ' ';
+      else
+        *p = *string;
+      p++;
+      string++;
+    }
+
+  return (p - p0);
+}
+
+
+/* Perform percent and plus unescaping in STRING and return the new
+   valid length of the string.  Embedded Nul characters are replaced
+   by the value of NULREPL.  A terminating Nul character is not
+   inserted; the caller might want to call this function this way:
+
+      foo[percent_plus_unescape_inplace (foo, 0)] = 0;
+ */
+size_t
+percent_plus_unescape_inplace (char *string, int nulrepl)
+{
+  return do_unescape_inplace (string, 1, nulrepl);
+}
+
+
+/* Perform percent unescaping in STRING and return the new valid
+   length of the string.  Embedded Nul characters are replaced by the
+   value of NULREPL.  A terminating Nul character is not inserted; the
+   caller might want to call this function this way:
+
+      foo[percent_unescape_inplace (foo, 0)] = 0;
+ */
+size_t
+percent_unescape_inplace (char *string, int nulrepl)
+{
+  return do_unescape_inplace (string, 0, nulrepl);
+}
+

@@ -204,6 +204,11 @@ char *hex2str_alloc (const char *hexstring, size_t *r_count);
 
 /*-- percent.c --*/
 char *percent_plus_escape (const char *string);
+char *percent_plus_unescape (const char *string, int nulrepl);
+char *percent_unescape (const char *string, int nulrepl);
+
+size_t percent_plus_unescape_inplace (char *string, int nulrepl);
+size_t percent_unescape_inplace (char *string, int nulrepl);
 
 
 /*-- homedir.c --*/

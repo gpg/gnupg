@@ -71,9 +71,12 @@ common_sources = \
 	localename.c \
 	helpfile.c
 
+# Sources only useful without PTH.
+without_pth_sources = \
+        get-passphrase.c get-passphrase.h
 
 
-libcommon_a_SOURCES = $(common_sources)
+libcommon_a_SOURCES = $(common_sources) $(without_pth_sources)
 if USE_DNS_SRV
 libcommon_a_SOURCES += srv.c
 endif

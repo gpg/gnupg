@@ -52,6 +52,7 @@
 
 #include "util.h"
 #include "i18n.h"
+#include "sysutils.h"
 #include "exechelp.h"
 
 /* Define to 1 do enable debugging.  */
@@ -471,6 +472,10 @@ gnupg_create_inbound_pipe (int filedes[2])
           This flag is only useful under W32 systems, so that no new
           console is created and pops up a console window when
           starting the server
+ 
+   Bit 6: On W32 run AllowSetForegroundWindow for the child.  Due to
+          error problems this actually allows SetForegroundWindow for
+          childs of this process.
 
    Returns 0 on success or an error code. */
 gpg_error_t
@@ -568,6 +573,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 /*              " dwProcessID=%d dwThreadId=%d\n", */
 /*              pi.hProcess, pi.hThread, */
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
+  
+  /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
+     invalid argument error if we pass the the correct processID to
+     it.  As a workaround we use -1 (ASFW_ANY).  */
+  if ( (flags & 64) )
+    gnupg_allow_set_foregound_window ((pid_t)(-1)/*pi.dwProcessId*/);
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);

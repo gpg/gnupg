@@ -1,3 +1,11 @@
+2009-03-31  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (ask_passphrase): Use percent_plus_unescape.
+	* misc.c (unescape_percent_string): Remove.
+
+	* call-agent.c (unescape_status_string): Chnage to use
+	percent_plus_unescape.
+
 2009-03-25  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (print_pkenc_list): Use snprintf.

@@ -66,8 +66,9 @@ test_percent_plus_escape (void)
       "%0A+ABC%09"
     }, { NULL, NULL }
   };
-  char *buf;
+  char *buf, *buf2;
   int i;
+  size_t len;
   
   for (i=0; tbl[i].string; i++)
     {
@@ -79,9 +80,24 @@ test_percent_plus_escape (void)
         }
       if (strcmp (buf, tbl[i].expect))
         fail (i);
+      buf2 = percent_plus_unescape (buf, 0);
+      if (!buf2)
+        {
+          fprintf (stderr, "out of core: %s\n", strerror (errno));
+          exit (2);
+        }
+      if (strcmp (buf2, tbl[i].string))
+        fail (i);
+      xfree (buf2);
+      /* Now test the inplace conversion.  */
+      len = percent_plus_unescape_inplace (buf, 0);
+      buf[len] = 0;
+      if (strcmp (buf, tbl[i].string))
+        fail (i);
       xfree (buf);
     }
 }
+
 
 
 int
@@ -90,6 +106,8 @@ main (int argc, char **argv)
   (void)argc;
   (void)argv;
   
+  /* FIXME: We escape_unescape is not tested - only
+     percent_plus_unescape.  */
   test_percent_plus_escape ();
 
   return 0;

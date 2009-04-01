@@ -236,42 +236,6 @@ plus_to_blank (char *s)
 }
 
 
-/* Do the percent and plus/space unescaping in place and return the
-   length of the valid buffer. */
-static size_t
-percent_plus_unescape (char *string)
-{
-  unsigned char *p = (unsigned char *)string;
-  size_t n = 0;
-
-  while (*string)
-    {
-      if (*string == '%' && string[1] && string[2])
-        { 
-          string++;
-          *p++ = xtoi_2 (string);
-          n++;
-          string+= 2;
-        }
-      else if (*string == '+')
-        {
-          *p++ = ' ';
-          n++;
-          string++;
-        }
-      else
-        {
-          *p++ = *string++;
-          n++;
-        }
-    }
-
-  return n;
-}
-
-
-
-
 /* Parse a hex string.  Return an Assuan error code or 0 on success and the
    length of the parsed string in LEN. */
 static int
@@ -1494,7 +1458,7 @@ cmd_putval (assuan_context_t ctx, char *line)
           p = strchr (value, ' ');
           if (p)
             *p = 0;
-          valuelen = percent_plus_unescape (value);
+          valuelen = percent_plus_unescape_inplace (value, 0);
         }
     }
   if (!key || !*key)

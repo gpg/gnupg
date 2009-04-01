@@ -105,6 +105,7 @@ static void
 dump_mutex_state (pth_mutex_t *m)
 {
 #ifdef _W32_PTH_H
+  (void)m;
   log_printf ("unknown under W32");
 #else
   if (!(m->mx_state & PTH_MUTEX_INITIALIZED))

@@ -1,3 +1,22 @@
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_spawn_process): Implement new flag bit 6.
+	* sysutils.c (gnupg_allow_set_foregound_window): Allow the use of
+	ASFW_ANY.
+
+	* membuf.c (put_membuf, get_membuf): Wipe memory on out of core.
+
+2009-03-31  Werner Koch  <wk@g10code.com>
+
+	* percent.c (percent_unescape, percent_plus_unescape): New.
+	(percent_plus_unescape_inplace, percent_unescape_inplace): New.
+	(do_plus_or_plain_unescape, count_unescape, do_unescape): New.
+	(do_unescape_inplace): New.
+	* t-percent.c (test_percent_plus_escape): Test percent_plus_unescape.
+
+	* get-passphrase.c, get-passphrase.h: New.
+	* Makefile.am (without_pth_sources): New.
+
 2009-03-18  Werner Koch  <wk@g10code.com>
 
 	* exechelp.c: Include sys/resource.h and sys/stat.h.
