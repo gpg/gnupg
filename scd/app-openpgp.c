@@ -1772,9 +1772,11 @@ do_setattr (app_t app, const char *name,
      will reread the data from the card and thus get synced in case of
      errors (e.g. data truncated by the card). */
   flush_cache_item (app, table[idx].tag);
-  /* For command chaining we use a value of 254 for this card.  */
-  if (app->app_local->cardcap.cmd_chaining && valuelen > 254)
-    exmode = -254;
+
+  if (app->app_local->cardcap.ext_lc_le && valuelen > 254)
+    exmode = 1;    /* Use extended length w/o a limit.  */
+  else if (app->app_local->cardcap.cmd_chaining && valuelen > 254)
+    exmode = -254; /* Command chaining with max. 254 bytes.  */
   else
     exmode = 0;
   rc = iso7816_put_data (app->slot, exmode, table[idx].tag, value, valuelen);
@@ -2432,7 +2434,9 @@ do_writekey (app_t app, ctrl_t ctrl,
         goto leave;
 
       /* Store the key. */
-      if (app->app_local->cardcap.cmd_chaining && template_len > 254)
+      if (app->app_local->cardcap.ext_lc_le && template_len > 254)
+        exmode = 1;    /* Use extended length w/o a limit.  */
+      else if (app->app_local->cardcap.cmd_chaining && template_len > 254)
         exmode = -254;
       else
         exmode = 0;

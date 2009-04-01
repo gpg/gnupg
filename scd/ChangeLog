@@ -1,3 +1,8 @@
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_setattr, do_writekey): Prepare for extended
+	length cards.
+
 2009-03-31  Werner Koch  <wk@g10code.com>
 
 	* command.c (percent_plus_unescape): Remove.
