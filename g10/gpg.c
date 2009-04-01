@@ -3562,7 +3562,7 @@ main (int argc, char **argv)
 
 	append_to_strlist( &sl, "save" );
 	username = make_username( fname );
-	keyedit_menu(fname, locusr, sl, 0, 0 );
+	keyedit_menu (username, locusr, sl, 0, 0 );
 	xfree(username);
 	free_strlist(sl);
 	break;

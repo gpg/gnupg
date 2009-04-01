@@ -1,6 +1,6 @@
 /* iobuf.c  -  File Handling for OpenPGP.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006,
- *               2007, 2008  Free Software Foundation, Inc.
+ *               2007, 2008, 2009  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -48,7 +48,8 @@
    test "armored_key_8192" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
-/* We don't want to use the STDIO based backend.  */
+/* We don't want to use the STDIO based backend.  If you change this
+   be aware that there is no fsync support for the stdio backend.  */
 #undef FILE_FILTER_USES_STDIO
 
 /*-- End configurable part.  --*/
@@ -187,13 +188,32 @@ static int translate_file_handle (int fd, int for_write);
 
 
 #ifndef FILE_FILTER_USES_STDIO
+/* This is a replacement for strcmp.  Under W32 it does not
+   distinguish between backslash and slash.  */
+static int
+fd_cache_strcmp (const char *a, const char *b)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+  for (; *a && *b; a++, b++)
+    {
+      if (*a != *b && !((*a == '/' && *b == '\\') 
+                        || (*a == '\\' && *b == '/')) )
+        break;
+    }
+  return *(const unsigned char *)a - *(const unsigned char *)b;
+#else
+  return strcmp (a, b);
+#endif
+}
+
 /*
  * Invalidate (i.e. close) a cached iobuf
  */
-static void
+static int
 fd_cache_invalidate (const char *fname)
 {
   close_cache_t cc;
+  int rc = 0;
 
   assert (fname);
   if (DBG_IOBUF)
@@ -201,18 +221,52 @@ fd_cache_invalidate (const char *fname)
 
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp != INVALID_FP && !strcmp (cc->fname, fname))
+      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  if (DBG_IOBUF)
 	    log_debug ("                did (%s)\n", cc->fname);
 #ifdef HAVE_W32_SYSTEM
-	  CloseHandle (cc->fp);
+	  if (!CloseHandle (cc->fp))
+            rc = -1;
 #else
-	  close (cc->fp);
+	  rc = close (cc->fp);
 #endif
 	  cc->fp = INVALID_FP;
 	}
     }
+  return rc;
+}
+
+
+/* Try to sync changes to the disk.  This is to avoid data loss during
+   a system crash in write/close/rename cycle on some file
+   systems.  */
+static int
+fd_cache_synchronize (const char *fname)
+{
+  int err = 0;
+
+#ifdef HAVE_FSYNC
+  close_cache_t cc;
+
+  if (DBG_IOBUF)
+    log_debug ("fd_cache_synchronize (%s)\n", fname);
+
+  for (cc=close_cache; cc; cc = cc->next )
+    {
+      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
+	{
+	  if (DBG_IOBUF)
+	    log_debug ("                 did (%s)\n", cc->fname);
+
+	  err = fsync (cc->fp);
+	}
+    }
+#else
+  (void)fname;
+#endif /*HAVE_FSYNC*/
+
+  return err;
 }
 
 
@@ -226,19 +280,21 @@ direct_open (const char *fname, const char *mode)
   /* Note, that we do not handle all mode combinations */
 
   /* According to the ReactOS source it seems that open() of the
-   * standard MSW32 crt does open the file in share mode which is
+   * standard MSW32 crt does open the file in shared mode which is
    * something new for MS applications ;-)
    */
   if (strchr (mode, '+'))
     {
-      fd_cache_invalidate (fname);
+      if (fd_cache_invalidate (fname))
+        return INVALID_FP;
       da = GENERIC_READ | GENERIC_WRITE;
       cd = OPEN_EXISTING;
       sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
     }
   else if (strchr (mode, 'w'))
     {
-      fd_cache_invalidate (fname);
+      if (fd_cache_invalidate (fname))
+        return INVALID_FP;
       da = GENERIC_WRITE;
       cd = CREATE_ALWAYS;
       sm = FILE_SHARE_WRITE;
@@ -259,12 +315,14 @@ direct_open (const char *fname, const char *mode)
   /* Note, that we do not handle all mode combinations */
   if (strchr (mode, '+'))
     {
-      fd_cache_invalidate (fname);
+      if (fd_cache_invalidate (fname))
+        return INVALID_FP;
       oflag = O_RDWR;
     }
   else if (strchr (mode, 'w'))
     {
-      fd_cache_invalidate (fname);
+      if (fd_cache_invalidate (fname))
+        return INVALID_FP;
       oflag = O_WRONLY | O_CREAT | O_TRUNC;
     }
   else
@@ -318,7 +376,7 @@ fd_cache_close (const char *fname, fp_or_fd_t fp)
   /* try to reuse a slot */
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp == INVALID_FP && !strcmp (cc->fname, fname))
+      if (cc->fp == INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  cc->fp = fp;
 	  if (DBG_IOBUF)
@@ -347,7 +405,7 @@ fd_cache_open (const char *fname, const char *mode)
   assert (fname);
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp != INVALID_FP && !strcmp (cc->fname, fname))
+      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  fp_or_fd_t fp = cc->fp;
 	  cc->fp = INVALID_FP;
@@ -1449,7 +1507,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
       if (!a && !intval && ptrval)
 	{
 #ifndef FILE_FILTER_USES_STDIO
-	  fd_cache_invalidate (ptrval);
+	  if (fd_cache_invalidate (ptrval))
+            return -1;
 #endif
 	  return 0;
 	}
@@ -1477,6 +1536,24 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	  }
 #endif
     }
+  else if (cmd == 4)
+    {
+      /* Do a fsync on the open fd and return any errors to the caller
+         of iobuf_ioctl.  Note that we work on a file name here. */
+      if (DBG_IOBUF)
+        log_debug ("iobuf-*.*: ioctl `%s' fsync\n",
+                   ptrval? (const char*)ptrval:"<null>");
+
+	if (!a && !intval && ptrval)
+	  {
+#ifndef FILE_FILTER_USES_STDIO
+	    return fd_cache_synchronize (ptrval);
+#else
+	    return 0;
+#endif
+	  }
+      }
+
 
   return -1;
 }
@@ -2310,7 +2387,6 @@ iobuf_get_fname (iobuf_t a)
 	file_filter_ctx_t *b = a->filter_ov;
 	return b->fname;
       }
-
   return NULL;
 }
 

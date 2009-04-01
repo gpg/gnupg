@@ -1,5 +1,14 @@
 2009-04-01  Werner Koch  <wk@g10code.com>
 
+	* iobuf.c: Port David's changes from 1.4:
+	(fd_cache_invalidate): Pass return code from close back.
+	(direct_open, iobuf_ioctl): Check that eturn value.
+	(fd_cache_synchronize): New.
+	(iobuf_ioctl): Add new sub command 4 (fsync).
+
+	* iobuf.c (fd_cache_strcmp): New. Taken from 1.4.
+	(fd_cache_invalidate, fd_cache_close, fd_cache_open):  Use it.
+
 	* exechelp.c (gnupg_spawn_process): Implement new flag bit 6.
 	* sysutils.c (gnupg_allow_set_foregound_window): Allow the use of
 	ASFW_ANY.

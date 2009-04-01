@@ -1,5 +1,5 @@
 /* keyring.c - keyring file handling
- * Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1219,10 +1219,23 @@ static int
 rename_tmp_file (const char *bakfname, const char *tmpfname,
                  const char *fname, int secret )
 {
-  int rc=0;
+  int rc = 0;
 
-  /* invalidate close caches*/
-  iobuf_ioctl (NULL, 2, 0, (char*)tmpfname );
+  /* It's a secret keyring, so let's force a fsync just to be safe on
+     filesystems that may not sync data and metadata together
+     (e.g. ext4). */
+  if (secret && iobuf_ioctl (NULL, 4, 0, (char*)tmpfname))
+    {
+      rc = gpg_error_from_syserror ();
+      goto fail;
+    }
+
+  /* Invalidate close caches.  */
+  if (iobuf_ioctl (NULL, 2, 0, (char*)tmpfname ))
+    {
+      rc = gpg_error_from_syserror ();
+      goto fail;
+    }
   iobuf_ioctl (NULL, 2, 0, (char*)bakfname );
   iobuf_ioctl (NULL, 2, 0, (char*)fname );
 
@@ -1253,15 +1266,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
       log_error (_("renaming `%s' to `%s' failed: %s\n"),
                  tmpfname, fname, strerror(errno) );
       register_secured_file (fname);
-      if (secret)
-        {
-          log_info(_("WARNING: 2 files with confidential"
-                     " information exists.\n"));
-          log_info(_("%s is the unchanged one\n"), fname );
-          log_info(_("%s is the new one\n"), tmpfname );
-          log_info(_("Please fix this possible security flaw\n"));
-	}
-      return rc;
+      goto fail;
     }
 
   /* Now make sure the file has the same permissions as the original */
@@ -1272,17 +1277,27 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 
     statbuf.st_mode=S_IRUSR | S_IWUSR;
 
-    if(((secret && !opt.preserve_permissions) ||
-	(stat(bakfname,&statbuf)==0)) &&
-       (chmod(fname,statbuf.st_mode)==0))
+    if (((secret && !opt.preserve_permissions)
+         || !stat (bakfname,&statbuf)) 
+        && !chmod (fname,statbuf.st_mode))
       ;
     else
-      log_error("WARNING: unable to restore permissions to `%s': %s",
-		fname,strerror(errno));
+      log_error ("WARNING: unable to restore permissions to `%s': %s",
+                 fname, strerror(errno));
   }
 #endif
 
   return 0;
+
+ fail:
+  if (secret)
+    {
+      log_info(_("WARNING: 2 files with confidential information exists.\n"));
+      log_info(_("%s is the unchanged one\n"), fname );
+      log_info(_("%s is the new one\n"), tmpfname );
+      log_info(_("Please fix this possible security flaw\n"));
+    }
+  return rc;
 }
 
 

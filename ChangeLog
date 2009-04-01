@@ -1,3 +1,7 @@
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for fsync.
+
 2009-03-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Test for getrlimit.

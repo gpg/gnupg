@@ -1062,7 +1062,7 @@ AC_CHECK_FUNCS([unsetenv getpwnam getpwuid fcntl ftruncate])
 AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe stat getaddrinfo])
-AC_CHECK_FUNCS([ttyname rand ftello])
+AC_CHECK_FUNCS([ttyname rand ftello fsync])
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 

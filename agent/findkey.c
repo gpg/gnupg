@@ -50,7 +50,7 @@ struct try_unprotect_arg_s
 
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
-   pased as true an existing key with the given GRIP will get
+   passed as true an existing key with the given GRIP will get
    overwritten.  */
 int
 agent_write_private_key (const unsigned char *grip,
