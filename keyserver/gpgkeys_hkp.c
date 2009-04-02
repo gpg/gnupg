@@ -633,7 +633,7 @@ main(int argc,char *argv[])
   if(ascii_strcasecmp(opt->scheme,"hkps")==0)
     {
       proto="https://";
-      port="11372";
+      port="443";
     }
   else
     {

@@ -1,3 +1,8 @@
+2009-04-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main): Switch default port for SSLized HKP to
+	443 (i.e. the regular https port).
+
 2009-02-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (send_key, get_key, get_name, search_key, main):
