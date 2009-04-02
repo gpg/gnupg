@@ -1039,7 +1039,6 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   const char *oid;
   const unsigned char *cert_der = NULL;
 
-  (void)have_secret;
 
   es_fprintf (fp, "           ID: 0x%08lX\n",
               gpgsm_get_short_fingerprint (cert, NULL));
@@ -1215,7 +1214,16 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   es_fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
   xfree (dn);
 
+  if (have_secret)
+    {
+      char *cardsn;
 
+      p = gpgsm_get_keygrip_hexstring (cert);
+      if (!gpgsm_agent_keyinfo (ctrl, p, &cardsn) && cardsn)
+        es_fprintf (fp, "     card s/n: %s\n", cardsn);
+      xfree (cardsn);
+      xfree (p);
+    }
 
   if (with_validation)
     {
