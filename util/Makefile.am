@@ -44,10 +44,6 @@ if USE_INTERNAL_REGEX
 libutil_a_SOURCES+=regex.c
 endif
 
-if USE_DNS_SRV
-libutil_a_SOURCES+=srv.c srv.h
-endif
-
 # The internal regex code #includes these.
 EXTRA_libutil_a_SOURCES = regcomp.c regexec.c regex_internal.c \
 	                  regex_internal.h
@@ -63,6 +59,10 @@ libutil_a_LIBADD = @LIBOBJS@
 libcompat_a_SOURCES=compat.c
 libcompat_a_DEPENDENCIES = @LIBOBJS@
 libcompat_a_LIBADD = @LIBOBJS@
+
+if USE_DNS_SRV
+libcompat_a_SOURCES+=srv.c
+endif
 
 http-test:  http.c
 	$(CC) -DHAVE_CONFIG_H $(CFLAGS) -I. $(INCLUDES) $(LDFLAGS) -g -Wall \

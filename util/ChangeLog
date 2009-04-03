@@ -1,3 +1,11 @@
+2009-04-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Make srv.c part of libcompat instead of libutil.
+
+	* srv.c (getsrv): Raise maximum packet size to 2048, as PACKETSZ
+	is too small these days.  Use libc malloc and free as we're part
+	of libcompat now which may not be linked to memory.c.
+
 2009-03-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (fd_cache_synchronize): New.  fsync() a file in cache.

@@ -1,5 +1,5 @@
 /* srv.c - DNS SRV code
- * Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -31,8 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "memory.h"
-#include "types.h"
 #include "srv.h"
 
 /* Not every installation has gotten around to supporting SRVs
@@ -56,15 +54,15 @@ priosort(const void *a,const void *b)
 int
 getsrv(const char *name,struct srventry **list)
 {
-  unsigned char answer[PACKETSZ];
+  unsigned char answer[2048];
   int r,srvcount=0;
   unsigned char *pt,*emsg;
   u16 count,dlen;
 
   *list=NULL;
 
-  r=res_query(name,C_IN,T_SRV,answer,PACKETSZ);
-  if(r<sizeof(HEADER) || r>PACKETSZ)
+  r=res_query(name,C_IN,T_SRV,answer,2048);
+  if(r<sizeof(HEADER) || r>2048)
     return -1;
 
   if((((HEADER *)answer)->rcode)==NOERROR &&
@@ -88,7 +86,11 @@ getsrv(const char *name,struct srventry **list)
 	  struct srventry *srv=NULL;
 	  u16 type,class;
 
-	  *list=xrealloc(*list,(srvcount+1)*sizeof(struct srventry));
+	  srv=realloc(*list,(srvcount+1)*sizeof(struct srventry));
+	  if(!srv)
+	    goto fail;
+
+	  *list=srv;
 	  memset(&(*list)[srvcount],0,sizeof(struct srventry));
 	  srv=&(*list)[srvcount];
 	  srvcount++;
@@ -215,12 +217,12 @@ getsrv(const char *name,struct srventry **list)
   return srvcount;
 
  noanswer:
-  xfree(*list);
+  free(*list);
   *list=NULL;
   return 0;
 
  fail:
-  xfree(*list);
+  free(*list);
   *list=NULL;
   return -1;
 }
@@ -243,7 +245,7 @@ main(int argc,char *argv[])
       printf("\n");
     }
 
-  xfree(srv);
+  free(srv);
 
   return 0;
 }
