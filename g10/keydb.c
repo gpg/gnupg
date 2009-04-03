@@ -1,6 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -207,9 +207,10 @@ maybe_create_keyring (char *filename, int force)
  * created if it does not exist.
  * Note: this function may be called before secure memory is
  * available.
- * Flag 1 == force
- * Flag 2 == mark resource as primary
- * Flag 4 == This is a default resources
+ * Flag 1   - Force.
+ * Flag 2   - Mark resource as primary.
+ * Flag 4   - This is a default resources.
+ * Flag 8   - Open as read-only.
  */
 int
 keydb_add_resource (const char *url, int flags, int secret)
@@ -217,10 +218,14 @@ keydb_add_resource (const char *url, int flags, int secret)
     static int any_secret, any_public;
     const char *resname = url;
     char *filename = NULL;
-    int force=(flags&1);
+    int force = (flags&1);
+    int readonly = !!(flags&8);
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
     void *token;
+
+    if (readonly)
+      force = 0;
 
     /* Do we have an URL?
      *	gnupg-ring:filename  := this is a plain keyring
@@ -249,10 +254,10 @@ keydb_add_resource (const char *url, int flags, int secret)
     else
 	filename = xstrdup (resname);
 
-    if (!force)
+    if (!force && !readonly)
 	force = secret? !any_secret : !any_public;
 
-    /* see whether we can determine the filetype */
+    /* See whether we can determine the filetype.  */
     if (rt == KEYDB_RESOURCE_TYPE_NONE) {
 	FILE *fp = fopen( filename, "rb" );
 
@@ -284,7 +289,7 @@ keydb_add_resource (const char *url, int flags, int secret)
         if (rc)
           goto leave;
 
-        if(keyring_register_filename (filename, secret, &token))
+        if(keyring_register_filename (filename, secret, readonly, &token))
 	  {
 	    if (used_resources >= MAX_KEYDB_RESOURCES)
 	      rc = G10ERR_RESOURCE_LIMIT;
@@ -701,6 +706,8 @@ keydb_rebuild_caches (int noisy)
   for (i=0; i < used_resources; i++)
     {
       if (all_resources[i].secret)
+        continue;
+      if (!keyring_is_writable (all_resources[i].token))
         continue;
       switch (all_resources[i].type)
         {

@@ -50,9 +50,11 @@ typedef struct off_item **OffsetHashTable;
 
 
 typedef struct keyring_name *KR_NAME;
-struct keyring_name {
+struct keyring_name 
+{
   struct keyring_name *next;
   int secret;
+  int readonly;
   DOTLOCK lockhd;
   int is_locked;
   int did_full_scan;
@@ -199,7 +201,8 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
  * if a new keyring was registered.
 */
 int
-keyring_register_filename (const char *fname, int secret, void **ptr)
+keyring_register_filename (const char *fname, int secret, int readonly, 
+                           void **ptr)
 {
     KR_NAME kr;
 
@@ -210,8 +213,11 @@ keyring_register_filename (const char *fname, int secret, void **ptr)
       {
         if (same_file_p (kr->fname, fname))
 	  {
+            /* Already registered. */
+            if (readonly)
+              kr->readonly = 1;
             *ptr=kr;
-	    return 0; /* Already registered.  */
+	    return 0; 
 	  }
       }
 
@@ -221,6 +227,7 @@ keyring_register_filename (const char *fname, int secret, void **ptr)
     kr = xmalloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
     kr->secret = !!secret;
+    kr->readonly = readonly;
     kr->lockhd = NULL;
     kr->is_locked = 0;
     kr->did_full_scan = 0;
@@ -242,7 +249,7 @@ keyring_is_writable (void *token)
 {
   KR_NAME r = token;
 
-  return r? !access (r->fname, W_OK) : 0;
+  return r? (r->readonly || !access (r->fname, W_OK)) : 0;
 }
     
 
@@ -499,6 +506,9 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     if (!hd->found.kr)
         return -1; /* no successful prior search */
 
+    if (hd->found.kr->readonly)
+      return gpg_error (GPG_ERR_EACCES);
+
     if (!hd->found.n_packets) {
         /* need to know the number of packets - do a dummy get_keyblock*/
         rc = keyring_get_keyblock (hd, NULL);
@@ -540,16 +550,24 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     if (!hd)
         fname = NULL;
     else if (hd->found.kr)
+      {
         fname = hd->found.kr->fname;
+        if (hd->found.kr->readonly)
+          return gpg_error (GPG_ERR_EACCES);
+      }
     else if (hd->current.kr)
+      {
         fname = hd->current.kr->fname;
+        if (hd->current.kr->readonly)
+          return gpg_error (GPG_ERR_EACCES);
+      }
     else 
         fname = hd->resource? hd->resource->fname:NULL;
 
     if (!fname)
         return G10ERR_GENERAL; 
 
-    /* close this one otherwise we will lose the position for
+    /* Close this one otherwise we will lose the position for
      * a next search.  Fixme: it would be better to adjust the position
      * after the write opertions.
      */
@@ -574,6 +592,9 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
 
     if (!hd->found.kr)
         return -1; /* no successful prior search */
+
+    if (hd->found.kr->readonly)
+      return gpg_error (GPG_ERR_EACCES);
 
     if (!hd->found.n_packets) {
         /* need to know the number of packets - do a dummy get_keyblock*/

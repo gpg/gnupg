@@ -75,7 +75,7 @@ struct server_control_s
 #define g10_errstr(a)  gpg_strerror ((a))
 
 
-/* Mapping of the old erro codes to the gpg-error ones.  Fixme: This
+/* Mapping of the old error codes to the gpg-error ones.  Fixme: This
    is just a temporary solution: We need to do all these gpg_error()
    calls in the code.  */
 #define G10ERR_BAD_KEY         GPG_ERR_BAD_KEY          
