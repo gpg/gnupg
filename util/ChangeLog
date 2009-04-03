@@ -1,5 +1,8 @@
 2009-04-02  David Shaw  <dshaw@jabberwocky.com>
 
+	* http.c (connect_server): free (rather than xfree) the result of
+	getsrv().
+
 	* Makefile.am: Make srv.c part of libcompat instead of libutil.
 
 	* srv.c (getsrv): Raise maximum packet size to 2048, as PACKETSZ

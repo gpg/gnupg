@@ -856,7 +856,9 @@ connect_server( const char *server, ushort port, unsigned int flags,
     {
       /* Either we're not using SRV, or the SRV lookup failed.  Make
 	 up a fake SRV record. */
-      srvlist=xmalloc_clear(sizeof(struct srventry));
+      srvlist=calloc(1,sizeof(struct srventry));
+      if(!srvlist)
+	return -1;
       srvlist->port=port;
       strncpy(srvlist->target,server,MAXDNAME);
       srvlist->target[MAXDNAME-1]='\0';
@@ -959,7 +961,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
     }
 #endif /* !HAVE_GETADDRINFO */
 
-  xfree(srvlist);
+  free(srvlist);
 
   if(!connected)
     {
