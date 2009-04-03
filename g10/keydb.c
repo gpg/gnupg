@@ -196,6 +196,7 @@ maybe_create_keyring (char *filename, int force)
  * Flag 1 == force
  * Flag 2 == mark resource as primary
  * Flag 4 == This is a default resources
+ * Flag 8 == Readonly
  */
 int
 keydb_add_resource (const char *url, int flags, int secret)
@@ -204,9 +205,13 @@ keydb_add_resource (const char *url, int flags, int secret)
     const char *resname = url;
     char *filename = NULL;
     int force=(flags&1);
+    int readonly=!!(flags&8);
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
     void *token;
+
+    if (readonly)
+      force = 0;
 
     /* Do we have an URL?
      *	gnupg-ring:filename  := this is a plain keyring
@@ -235,7 +240,7 @@ keydb_add_resource (const char *url, int flags, int secret)
     else
 	filename = xstrdup (resname);
 
-    if (!force)
+    if (!force && !readonly)
 	force = secret? !any_secret : !any_public;
 
     /* see whether we can determine the filetype */

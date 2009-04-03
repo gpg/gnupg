@@ -178,9 +178,9 @@ main( int argc, char **argv )
 	set_packet_list_mode(1);
 
     if( !nrings )  /* no keyring given: use default one */
-        keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 0, 0);
+        keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8, 0);
     for(sl = nrings; sl; sl = sl->next )
-        keydb_add_resource (sl->d, 0, 0 );
+        keydb_add_resource (sl->d, 8, 0 );
     
     FREE_STRLIST(nrings);
     

@@ -1,3 +1,8 @@
+2009-04-03  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c (main): Pass readonly flag to keydb_add_resource.
+	* keydb.c (keydb_add_resource): Add arg READONLY.
+
 2009-03-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyring.c (rename_tmp_file): Force a fsync (via iobuf_ioctl) on
