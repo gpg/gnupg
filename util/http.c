@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004,
- *               2005, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -148,7 +148,8 @@ make_radix64_string( const byte *data, size_t len )
 
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
-	   char *auth, unsigned int flags, const char *proxy )
+	   char *auth, unsigned int flags, const char *proxy,
+	   const char *srvtag )
 {
     int rc;
 
@@ -232,11 +233,11 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
 int
 http_open_document( HTTP_HD hd, const char *document, char *auth,
-		    unsigned int flags, const char *proxy )
+		    unsigned int flags, const char *proxy, const char *srvtag )
 {
     int rc;
 
-    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy );
+    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy, srvtag );
     if( rc )
 	return rc;
 
@@ -836,7 +837,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
 
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
-  if(flags&HTTP_FLAG_TRY_SRV && srvtag)
+  if(srvtag)
     {
       /* We're using SRV, so append the tags */
       if(1+strlen(srvtag)+6+strlen(server)+1<=MAXDNAME)

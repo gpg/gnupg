@@ -2,6 +2,8 @@
 
 	* http.c (connect_server): free (rather than xfree) the result of
 	getsrv().
+	(http_open, http_open_document): Allow passing srvtag to http_open
+	and http_open_document.
 
 	* Makefile.am: Make srv.c part of libcompat instead of libutil.
 

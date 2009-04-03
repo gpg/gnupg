@@ -1,3 +1,8 @@
+2009-04-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.h: Allow passing srvtag to http_open and
+	http_open_document.
+
 2008-04-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h: Add the 192-bit variant of Camellia.

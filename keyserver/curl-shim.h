@@ -1,5 +1,5 @@
 /* curl-shim.h
- * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -48,7 +48,8 @@ typedef enum
     CURLOPT_CAINFO,
     CURLOPT_POST,
     CURLOPT_POSTFIELDS,
-    CURLOPT_FAILONERROR
+    CURLOPT_FAILONERROR,
+    CURLOPT_SRVTAG_GPG_HACK
   } CURLoption;
 
 typedef size_t (*write_func)(char *buffer,size_t size,
@@ -63,6 +64,7 @@ typedef struct
   write_func writer;
   void *file;
   char *postfields;
+  char *srvtag;
   unsigned int status;
   FILE *errors;
   struct

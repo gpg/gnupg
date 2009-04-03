@@ -1,3 +1,9 @@
+2009-04-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.h, curl-shim.c (curl_easy_setopt, curl_easy_perform):
+	Add a CURLOPT_SRVTAG_GPG_HACK (passed through the the http
+	engine).
+
 2009-04-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (main): Switch default port for SSLized HKP to

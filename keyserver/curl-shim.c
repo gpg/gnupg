@@ -1,7 +1,7 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -134,6 +134,9 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_POSTFIELDS:
       curl->postfields=va_arg(ap,char *);
       break;
+    case CURLOPT_SRVTAG_GPG_HACK:
+      curl->srvtag=va_arg(ap,char *);
+      break;
     case CURLOPT_FAILONERROR:
       curl->flags.failonerror=va_arg(ap,long)?1:0;
       break;
@@ -182,7 +185,8 @@ curl_easy_perform(CURL *curl)
 
   if(curl->flags.post)
     {
-      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,proxy,
+		   curl->srvtag);
       if(rc==0)
 	{
 	  char content_len[50];
@@ -203,7 +207,8 @@ curl_easy_perform(CURL *curl)
     }
   else
     {
-      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,proxy);
+      rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,proxy,
+		   curl->srvtag);
       if(rc==0)
 	{
 	  rc=http_wait_response(&curl->hd,&curl->status);
