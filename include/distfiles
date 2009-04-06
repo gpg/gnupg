@@ -14,5 +14,6 @@ _regex.h
 dynload.h
 assuan.h
 compat.h
+srv.h
 
 ChangeLog
