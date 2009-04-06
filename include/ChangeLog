@@ -1,3 +1,7 @@
+2009-04-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.h: Move from util/srv.h.
+
 2009-04-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.h: Allow passing srvtag to http_open and

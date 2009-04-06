@@ -68,7 +68,8 @@ static int remove_escapes( byte *string );
 static int insert_escapes( byte *buffer, const byte *string,
 					 const byte *special );
 static URI_TUPLE parse_tuple( byte *string );
-static int send_request( HTTP_HD hd, const char *auth, const char *proxy );
+static int send_request( HTTP_HD hd, const char *auth, const char *proxy,
+			 const char *srvtag);
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
@@ -165,7 +166,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
-	rc = send_request( hd, auth, proxy );
+        rc = send_request( hd, auth, proxy, srvtag );
 	if( !rc ) {
 	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
@@ -519,7 +520,8 @@ parse_tuple( byte *string )
  * Returns 0 if the request was successful
  */
 static int
-send_request( HTTP_HD hd, const char *auth, const char *proxy )
+send_request( HTTP_HD hd, const char *auth, const char *proxy,
+	      const char *srvtag )
 {
     const byte *server;
     byte *request, *p;
@@ -556,7 +558,7 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy )
 	release_parsed_uri( uri );
       }
     else
-      hd->sock = connect_server( server, port, hd->flags, hd->uri->scheme );
+      hd->sock = connect_server( server, port, hd->flags, srvtag );
 
     if(auth || hd->uri->auth)
       {
