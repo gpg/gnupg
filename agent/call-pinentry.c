@@ -870,9 +870,15 @@ agent_get_confirmation (ctrl_t ctrl,
     }
   if (cancel)
     {
-      snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel);
+      snprintf (line, DIM(line)-1, "SETNOTOK %s", cancel);
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      if (gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+	{
+	  snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel);
+	  line[DIM(line)-1] = 0;
+	  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+	}
       if (rc)
         return unlock_pinentry (rc);
     }
