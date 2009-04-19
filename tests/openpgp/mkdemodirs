@@ -2,7 +2,11 @@
 
 set -e
 
-GPG="../g10/gpg2 --batch --quiet --no-secmem-warning --allow-secret-key-import"
+# We need to use --no-options so that a gpg.conf from an older version
+# of gpg is not used.
+GPG="../g10/gpg2 --no-options --batch --quiet
+     --no-secmem-warning --allow-secret-key-import"
+
 NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India
        Juliet Kilo Lima Mike November Oscar Papa Quebec Romeo
        Sierra Tango Uniform Victor Whisky XRay Yankee Zulu'
