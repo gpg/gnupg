@@ -43,6 +43,9 @@
 #else
 #include "curl-shim.h"
 #endif
+#ifdef USE_DNS_SRV
+#include "srv.h"
+#endif
 #include "compat.h"
 #include "keyserver.h"
 #include "ksutil.h"
@@ -188,6 +191,7 @@ send_key(int *eof)
   strcat(key,encoded_key);
 
   strcpy(request,proto);
+  strcat(request,"://");
   strcat(request,opt->host);
   strcat(request,":");
   strcat(request,port);
@@ -252,6 +256,7 @@ get_key(char *getkey)
     }
 
   strcpy(request,proto);
+  strcat(request,"://");
   strcat(request,opt->host);
   strcat(request,":");
   strcat(request,port);
@@ -330,6 +335,7 @@ get_name(const char *getkey)
   fprintf(output,"NAME %s BEGIN\n",getkey);
 
   strcpy(request,proto);
+  strcat(request,"://");
   strcat(request,opt->host);
   strcat(request,":");
   strcat(request,port);
@@ -413,6 +419,7 @@ search_key(const char *searchkey)
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
   strcpy(request,proto);
+  strcat(request,"://");
   strcat(request,opt->host);
   strcat(request,":");
   strcat(request,port);
@@ -483,6 +490,49 @@ fail_all(struct keylist *keylist,int err)
       }
 }
 
+/* If there is a SRV record, take the highest ranked possibility.
+   This is a hack, as we don't proceed downwards. */
+static void
+srv_replace(void)
+{
+#ifdef USE_DNS_SRV
+  struct srventry *srvlist=NULL;
+  int srvcount;
+
+  if(1+strlen(opt->scheme)+6+strlen(opt->host)+1<=MAXDNAME)
+    {
+      char srvname[MAXDNAME];
+
+      strcpy(srvname,"_");
+      strcat(srvname,opt->scheme);
+      strcat(srvname,"._tcp.");
+      strcat(srvname,opt->host);
+      srvcount=getsrv(srvname,&srvlist);
+    }
+
+  if(srvlist)
+    {
+      char *newname,*newport;
+
+      newname=strdup(srvlist->target);
+      newport=malloc(MAX_PORT);
+      if(newname && newport)
+	{
+	  free(opt->host);
+	  free(opt->port);
+	  opt->host=newname;
+	  snprintf(newport,MAX_PORT,"%u",srvlist->port);
+	  opt->port=newport;
+	}
+      else
+	{
+	  free(newname);
+	  free(newport);
+	}
+    }
+#endif
+}
+
 static void 
 show_help (FILE *fp)
 {
@@ -495,7 +545,7 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR,try_srv=1;
   char line[MAX_LINE];
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
@@ -609,15 +659,14 @@ main(int argc,char *argv[])
 		    }
 		}
 	    }
-#if 0
 	  else if(ascii_strcasecmp(start,"try-dns-srv")==0)
 	    {
 	      if(no)
-		http_flags&=~HTTP_FLAG_TRY_SRV;
+		try_srv=0;
 	      else
-		http_flags|=HTTP_FLAG_TRY_SRV;
+		try_srv=1;
 	    }
-#endif
+
 	  continue;
 	}
     }
@@ -632,17 +681,14 @@ main(int argc,char *argv[])
 
   if(ascii_strcasecmp(opt->scheme,"hkps")==0)
     {
-      proto="https://";
+      proto="https";
       port="443";
     }
   else
     {
-      proto="http://";
+      proto="http";
       port="11371";
     }
-
-  if(opt->port)
-    port=opt->port;
 
   if(!opt->host)
     {
@@ -665,6 +711,26 @@ main(int argc,char *argv[])
       goto fail;
     }
 
+  /* If the user gives a :port, then disable SRV.  The semantics of a
+     specified port and SRV do not play well together. */
+  if(opt->port)
+    port=opt->port;
+  else if(try_srv)
+    {
+#ifdef HAVE_LIBCURL
+      /* We're using libcurl, so fake SRV support via our wrapper.
+	 This isn't as good as true SRV support, as we do not try all
+	 possible targets at one particular level and work our way
+	 down the list, but it's better than nothing. */
+      srv_replace();
+#else
+      /* We're using our internal curl shim, so we can use its (true)
+	 SRV support.  Obviously, CURLOPT_SRVTAG_GPG_HACK isn't a real
+	 libcurl option.  It's specific to our shim. */
+      curl_easy_setopt(curl,CURLOPT_SRVTAG_GPG_HACK,opt->scheme);
+#endif
+    }
+
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
   if(opt->auth)
@@ -682,13 +748,6 @@ main(int argc,char *argv[])
 
   if(proxy)
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
-
-#if 0
-  /* By suggested convention, if the user gives a :port, then disable
-     SRV. */
-  if(opt->port)
-    http_flags&=~HTTP_FLAG_TRY_SRV;
-#endif
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */

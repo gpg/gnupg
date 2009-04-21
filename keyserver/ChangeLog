@@ -1,3 +1,10 @@
+2009-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (srv_replace): New function to transform a SRV
+	hostname to a real hostname.
+	(main): Call it from here for the HAVE_LIBCURL case (without
+	libcurl is handled via the curl-shim).
+	
 2009-04-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.h, curl-shim.c (curl_easy_setopt, curl_easy_perform):
