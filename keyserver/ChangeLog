@@ -1,3 +1,8 @@
+2009-05-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Set 'mail-from' as a keyserver-option, rather
+	than the ugly ?from= syntax.
+
 2009-04-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (srv_replace): New function to transform a SRV
