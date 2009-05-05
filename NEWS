@@ -4,6 +4,8 @@ Noteworthy changes in version 1.4.10 (unreleased)
     * The algorithm to compute the SIG_ID status has been changed to
       match the one from 2.0.10.
 
+    * Improved file locking.  Implemented it for W32.
+
 
 Noteworthy changes in version 1.4.9 (2008-03-26)
 ------------------------------------------------
