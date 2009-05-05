@@ -52,10 +52,6 @@ if(@ARGV)
     open(STDIN,$ARGV[0]) || die "Can't open input file $ARGV[0]\n";
 }
 
-($login,$name)=(getpwuid($<))[0,6];
-
-$from="$name <$login>";
-
 while(<STDIN>)
 {
     last if($_ eq "\n");
@@ -85,7 +81,22 @@ while(<STDIN>)
 	{
 	    $verbose--;
 	}
+	elsif($1=~/^mail-from=(.+)$/i)
+	{
+	    $from=$1;
+	}
+	elsif($1=~/^no-mail-from$/i)
+	{
+	    undef $from;
+	}
+
     }
+}
+
+if(!defined($from))
+{
+    ($login,$name)=(getpwuid($<))[0,6];
+    $from="$name <$login>";
 }
 
 $program="(unknown)" if(!defined($program));
@@ -94,29 +105,6 @@ if(!defined($address))
 {
     print STDERR "gpgkeys: no address provided\n";
     exit(1);
-}
-
-# decode $address
-
-($address,$args)=split(/\?/,$address);
-
-if(defined($args))
-{
-    @pairs = split(/&/, $args);
-    foreach $pair (@pairs)
-    {
-	($hdr, $val) = split(/=/, $pair);
-	$hdr =~ tr/+/ /;
-	$hdr =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-	$val =~ tr/+/ /;
-	$val =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-# we only handle "from" right now
-	if($hdr=~/^from$/i)
-	{
-	    $from=$val;
-	    last;
-	}
-    }
 }
 
 while(<STDIN>)
