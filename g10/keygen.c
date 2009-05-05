@@ -57,8 +57,9 @@ enum para_name {
   pPREFERENCES,
   pREVOKER,
   pUSERID,
+  pCREATIONDATE,
+  pKEYCREATIONDATE, /* Same in seconds since epoch.  */
   pEXPIREDATE,
-  pCREATETIME, /* in n seconds */
   pKEYEXPIRE, /* in n seconds */
   pSUBKEYEXPIRE, /* in n seconds */
   pPASSPHRASE,
@@ -77,8 +78,8 @@ struct para_data_s {
     union {
         DEK *dek;
         STRING2KEY *s2k;
-        u32 create;
         u32 expire;
+        u32 creation;
         unsigned int usage;
         struct revocation_key revkey;
         char value[1];
@@ -119,9 +120,9 @@ static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
 static int mdc_available,ks_modify;
 
-static void do_generate_keypair( struct para_data_s *para,
+static void do_generate_keypair (struct para_data_s *para,
 				 struct output_control_s *outctrl,
-				 u32 timestamp, int card );
+				 int card);
 static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
@@ -1595,24 +1596,42 @@ ask_keysize( int algo )
  * similar.
  */
 u32
-parse_expire_string(u32 timestamp,const char *string)
+parse_expire_string (u32 timestamp, const char *string)
 {
-    int mult;
-    u32 seconds,abs_date=0;
+  int mult;
+  u32 seconds;
+  u32 abs_date = 0;
 
-    if( !*string )
-      seconds = 0;
-    else if ( !strncmp (string, "seconds=", 8) )
-      seconds = atoi (string+8);
-    else if( (abs_date = scan_isodatestr(string)) && abs_date > timestamp )
-      seconds = abs_date - timestamp;
-    else if( (mult=check_valid_days(string)) )
-      seconds = atoi(string) * 86400L * mult;
-    else
-      seconds=(u32)-1;
-
-    return seconds;
+  if ( !*string )
+    seconds = 0;
+  else if ( !strncmp (string, "seconds=", 8) )
+    seconds = atoi (string+8);
+  else if( (abs_date = scan_isodatestr(string)) && abs_date > timestamp )
+    seconds = abs_date - timestamp;
+  else if( (mult=check_valid_days(string)) )
+    seconds = atoi(string) * 86400L * mult;
+  else
+    seconds=(u32)-1;
+  
+  return seconds;
 }
+
+/* Parse an Creation-Date string which is either "1986-04-26" or
+   "19860426T042640".  Returns 0 on error. */
+static u32
+parse_creation_string (const char *string)
+{
+  u32 seconds;
+  
+  if (!*string)
+    seconds = 0;
+  else if ( !strncmp (string, "seconds=", 8) )
+    seconds = atoi (string+8);
+  else if ( !(seconds = scan_isodatestr (string)))
+    seconds = isotime2seconds (string);
+  return seconds;
+}
+
 
 /* object == 0 for a key, and 1 for a sig */
 u32
@@ -1678,7 +1697,7 @@ ask_expire_interval(u32 timestamp,int object,const char *def_expire)
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
-	interval = parse_expire_string( timestamp, answer );
+	interval = parse_expire_string (timestamp, answer);
 	if( interval == (u32)-1 )
 	  {
 	    tty_printf(_("invalid value\n"));
@@ -2121,16 +2140,56 @@ parse_revocation_key (const char *fname,
 static u32
 get_parameter_u32( struct para_data_s *para, enum para_name key )
 {
-    struct para_data_s *r = get_parameter( para, key );
+  struct para_data_s *r;
 
-    if( !r )
-	return 0;
+  r = get_parameter (para, key);
+  if (!r && key == pKEYCREATIONDATE)
+    {
+      /* Return a default for the creation date if it has not yet been
+         set.  We need to set this into the parameter list so that a
+         second call for pKEYCREATIONDATE returns the same value.  The
+         default is the current time unless an explicit creation date
+         has been specified.  Checking the creation date here is only
+         for the case that it has not yet been parsed. */
+      r = get_parameter (para, pCREATIONDATE);
+      if (r && *r->u.value)
+        {
+          u32 seconds;
+          
+          seconds = parse_creation_string (r->u.value);
+          if (!seconds)
+            log_error ("invalid creation date in line %d\n", r->lnr );
+          else /* Okay: Change this parameter. */
+            {
+              r->u.creation = seconds;
+              r->key = pKEYCREATIONDATE;  
+            }
+        }
+
+      r = get_parameter (para, key);
+      if (!r)
+        {
+          /* Create a new parameter. */
+          r = xmalloc_clear (sizeof *r);
+          r->key = key;
+          r->u.creation = make_timestamp ();
+          r->next = para;
+          para = r;
+        }
+
+      r = get_parameter (para, key);
+      assert (r);
+    }
+
+
+    if (!r)
+      return 0;
+    if( r->key == pKEYCREATIONDATE )
+      return r->u.creation;
     if( r->key == pKEYEXPIRE || r->key == pSUBKEYEXPIRE )
 	return r->u.expire;
     if( r->key == pKEYUSAGE || r->key == pSUBKEYUSAGE )
 	return r->u.usage;
-    if( r->key == pCREATETIME )
-	return r->u.create;
 
     return (unsigned int)strtoul( r->u.value, NULL, 10 );
 }
@@ -2171,13 +2230,6 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   size_t n;
   char *p;
   int have_user_id=0,err,algo;
-  u32 timestamp;
-
-  /* If we were told a creation time from outside, use it.  Otherwise
-     look at the clock. */
-  timestamp=get_parameter_u32( para, pCREATETIME );
-  if(!timestamp)
-    timestamp=make_timestamp();
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
@@ -2315,9 +2367,9 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   /* make DEK and S2K from the Passphrase */
   r = get_parameter( para, pPASSPHRASE );
   if( r && *r->u.value ) {
-    /* we have a plain text passphrase - create a DEK from it.
-     * It is a little bit ridiculous to keep it ih secure memory
-     * but becuase we do this alwasy, why not here */
+    /* We have a plain text passphrase - create a DEK from it.
+     * It is a little bit ridiculous to keep it in secure memory
+     * but because we do this alwasy, why not here.  */
     STRING2KEY *s2k;
     DEK *dek;
 
@@ -2343,14 +2395,31 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     para = r;
   }
 
-  /* make KEYEXPIRE from Expire-Date */
+  /* Make KEYCREATIONDATE from Creation-Date.  */
+  r = get_parameter (para, pCREATIONDATE);
+  if (r && *r->u.value)
+    {
+      u32 seconds;
+
+      seconds = parse_creation_string (r->u.value);
+      if (!seconds)
+	{
+	  log_error ("%s:%d: invalid creation date\n", fname, r->lnr );
+	  return -1;
+	}
+      r->u.creation = seconds;
+      r->key = pKEYCREATIONDATE;  /* Change that entry. */
+    }
+
+  /* Make KEYEXPIRE from Expire-Date.  */
   r = get_parameter( para, pEXPIREDATE );
   if( r && *r->u.value )
     {
       u32 seconds;
 
-      seconds = parse_expire_string( timestamp, r->u.value );
-      if( seconds == (u32)-1 )
+      seconds = parse_expire_string
+        (get_parameter_u32 (para, pKEYCREATIONDATE), r->u.value);
+      if (seconds == (u32)(-1))
 	{
 	  log_error("%s:%d: invalid expire date\n", fname, r->lnr );
 	  return -1;
@@ -2370,7 +2439,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     return -1;
   }
 
-  do_generate_keypair( para, outctrl, timestamp, card );
+  do_generate_keypair (para, outctrl, card);
   return 0;
 }
 
@@ -2396,6 +2465,7 @@ read_parameter_file( const char *fname )
 	{ "Name-Email",     pNAMEEMAIL },
 	{ "Name-Comment",   pNAMECOMMENT },
 	{ "Expire-Date",    pEXPIREDATE },
+	{ "Creation-Date",  pCREATIONDATE },
 	{ "Passphrase",     pPASSPHRASE },
 	{ "Preferences",    pPREFERENCES },
 	{ "Revoker",        pREVOKER },
@@ -2600,7 +2670,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   int algo;
   unsigned int use;
   int both = 0;
-  u32 timestamp,expire;
+  u32 expire;
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
@@ -2619,13 +2689,6 @@ generate_keypair (const char *fname, const char *card_serialno,
       read_parameter_file( fname );
       return;
     }
-
-  timestamp=make_timestamp();
-  r = xmalloc_clear( sizeof *r );
-  r->key = pCREATETIME;
-  r->u.create = timestamp;
-  r->next = para;
-  para = r;
 
   if (card_serialno)
     {
@@ -2741,7 +2804,8 @@ generate_keypair (const char *fname, const char *card_serialno,
       para = r;
     }
    
-  expire = ask_expire_interval(timestamp,0,NULL);
+  expire = ask_expire_interval (get_parameter_u32 (para, pKEYCREATIONDATE),
+                                0, NULL);
   r = xmalloc_clear( sizeof *r + 20 );
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
@@ -2878,8 +2942,8 @@ start_tree(KBNODE *tree)
 }
 
 static void
-do_generate_keypair( struct para_data_s *para,struct output_control_s *outctrl,
-		     u32 timestamp,int card )
+do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
+		     int card)
 {
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
@@ -2888,6 +2952,7 @@ do_generate_keypair( struct para_data_s *para,struct output_control_s *outctrl,
     struct revocation_key *revkey;
     int rc;
     int did_sub = 0;
+    u32 timestamp;
 
     if( outctrl->dryrun )
       {
@@ -2965,7 +3030,7 @@ do_generate_keypair( struct para_data_s *para,struct output_control_s *outctrl,
     }
 
 
-    /* we create the packets as a tree of kbnodes. Because the
+    /* We create the packets as a tree of kbnodes. Because the
      * structure we create is known in advance we simply generate a
      * linked list.  The first packet is a dummy packet which we flag
      * as deleted.  The very first packet must always be a KEY packet.
@@ -2973,6 +3038,8 @@ do_generate_keypair( struct para_data_s *para,struct output_control_s *outctrl,
     
     start_tree(&pub_root);
     start_tree(&sec_root);
+
+    timestamp = get_parameter_u32 (para, pKEYCREATIONDATE);
 
     if (!card)
       {

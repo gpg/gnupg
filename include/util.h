@@ -149,6 +149,7 @@ int is_file_compressed(const char *s, int *r_status);
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
 u32 scan_isodatestr( const char *string );
+u32 isotime2seconds (const char *string);
 const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
 const char *isotimestamp( u32 stamp ); /* GMT with hh:mm:ss */
