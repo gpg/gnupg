@@ -1,3 +1,12 @@
+2009-05-05  Werner Koch  <wk@g10code.com>
+
+	* tdbio.c (lookup_hashtable): Add const to function args.
+	(cmp_trec_fpr): Ditto.
+	(tdbio_search_trust_byfpr): Remove cast.
+
+	* parse-packet.c (parse): Remove special treatment for compressed
+	new style packets.  Fixes bug#931.
+	
 2009-04-03  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (main): Pass readonly flag to keydb_add_resource.
