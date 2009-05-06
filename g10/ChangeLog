@@ -1,3 +1,10 @@
+2009-05-06  Werner Koch  <wk@g10code.com>
+
+	* getkey.c (finish_lookup): Remove dead code.
+
+	* keyring.c (keyring_get_keyblock): Fix memory leak due to ring
+	trust packets.  Fixes bug#1034.
+
 2009-04-03  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (main): Open keyrings readonly.
