@@ -6,6 +6,8 @@ Noteworthy changes in version 1.4.10 (unreleased)
 
     * Improved file locking.  Implemented it for W32.
 
+    * Fixed a memory leak which made imports of many keys very slow.
+
 
 Noteworthy changes in version 1.4.9 (2008-03-26)
 ------------------------------------------------

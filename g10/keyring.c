@@ -419,38 +419,43 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
             if ( lastnode 
                  && lastnode->pkt->pkttype == PKT_SIGNATURE
                  && (pkt->pkt.ring_trust->sigcache & 1) ) {
-                /* this is a ring trust packet with a checked signature 
+                /* This is a ring trust packet with a checked signature 
                  * status cache following directly a signature paket.
-                 * Set the cache status into that signature packet */
+                 * Set the cache status into that signature packet.  */
                 PKT_signature *sig = lastnode->pkt->pkt.signature;
                 
                 sig->flags.checked = 1;
                 sig->flags.valid = !!(pkt->pkt.ring_trust->sigcache & 2);
             }
-            /* reset lastnode, so that we set the cache status only from
-             * the ring trust packet immediately folling a signature */
+            /* Reset LASTNODE, so that we set the cache status only
+             * from the ring trust packets immediately following
+             * signature packets.  */
             lastnode = NULL;
-        }
-        else {
-            node = lastnode = new_kbnode (pkt);
-            if (!keyblock)
-                keyblock = node;
-            else
-                add_kbnode (keyblock, node);
-
-            if ( pkt->pkttype == PKT_PUBLIC_KEY
-                 || pkt->pkttype == PKT_PUBLIC_SUBKEY
-                 || pkt->pkttype == PKT_SECRET_KEY
-                 || pkt->pkttype == PKT_SECRET_SUBKEY) {
-                if (++pk_no == hd->found.pk_no)
-                    node->flag |= 1;
-            }
-            else if ( pkt->pkttype == PKT_USER_ID) {
-                if (++uid_no == hd->found.uid_no)
-                    node->flag |= 2;
-            }
+	    free_packet(pkt);
+	    init_packet(pkt);
+            continue;
         }
 
+        node = lastnode = new_kbnode (pkt);
+        if (!keyblock)
+          keyblock = node;
+        else
+          add_kbnode (keyblock, node);
+        
+        if ( pkt->pkttype == PKT_PUBLIC_KEY
+             || pkt->pkttype == PKT_PUBLIC_SUBKEY
+             || pkt->pkttype == PKT_SECRET_KEY
+             || pkt->pkttype == PKT_SECRET_SUBKEY) 
+          {
+            if (++pk_no == hd->found.pk_no)
+              node->flag |= 1;
+          }
+        else if ( pkt->pkttype == PKT_USER_ID) 
+          {
+            if (++uid_no == hd->found.uid_no)
+              node->flag |= 2;
+          }
+        
         pkt = xmalloc (sizeof *pkt);
         init_packet(pkt);
     }

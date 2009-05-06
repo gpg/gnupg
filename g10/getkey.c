@@ -2541,17 +2541,7 @@ finish_lookup (GETKEY_CTX ctx)
         latest_key = foundk? foundk:keyblock;
         goto found;
     }
-    
-    if (!req_usage) {
-        PKT_public_key *pk = foundk->pkt->pkt.public_key;
-        if (pk->user_id)
-            free_user_id (pk->user_id);
-        pk->user_id = scopy_user_id (foundu);
-        ctx->found_key = foundk;
-        cache_user_id( keyblock );
-        return 1; /* found */
-    }
-    
+
     latest_date = 0;
     latest_key  = NULL;
     /* do not look at subkeys if a certification key is requested */
