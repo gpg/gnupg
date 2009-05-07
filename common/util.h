@@ -192,6 +192,15 @@ int cmp_simple_canon_sexp (const unsigned char *a, const unsigned char *b);
 unsigned char *make_simple_sexp_from_hexstr (const char *line,
                                              size_t *nscanned);
 int hash_algo_from_sigval (const unsigned char *sigval);
+unsigned char *make_canon_sexp_from_rsa_pk (const void *m, size_t mlen,
+                                            const void *e, size_t elen,
+                                            size_t *r_len);
+gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
+                                        size_t keydatalen,
+                                        unsigned char const **r_n, 
+                                        size_t *r_nlen,
+                                        unsigned char const **r_e, 
+                                        size_t *r_elen);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);

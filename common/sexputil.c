@@ -32,6 +32,7 @@
 #endif
 
 #include "util.h"
+#include "tlv.h"
 #include "sexp-parse.h"
 
 
@@ -225,3 +226,163 @@ hash_algo_from_sigval (const unsigned char *sigval)
   return gcry_md_map_name (buffer);
 }
 
+
+/* Create a public key S-expression for an RSA public key from the
+   modulus M with length MLEN and the public exponent E with length
+   ELEN.  Returns a newly allocated buffer of NULL in case of a memory
+   allocation problem.  If R_LEN is not NULL, the length of the
+   canonical S-expression is stored there. */
+unsigned char *
+make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
+                             const void *e_arg, size_t elen,
+                             size_t *r_len)
+{
+  const unsigned char *m = m_arg;
+  const unsigned char *e = e_arg;
+  int m_extra = 0;
+  int e_extra = 0;
+  char mlen_str[35];
+  char elen_str[35];
+  unsigned char *keybuf, *p;
+  const char const part1[] = "(10:public-key(3:rsa(1:n";
+  const char const part2[] = ")(1:e";
+  const char const part3[] = ")))";
+
+  /* Remove leading zeroes.  */
+  for (; mlen && !*m; mlen--, m++)
+    ;
+  for (; elen && !*e; elen--, e++)
+    ;
+      
+  /* Insert a leading zero if the number would be zero or interpreted
+     as negative.  */
+  if (!mlen || (m[0] & 0x80))
+    m_extra = 1;
+  if (!elen || (e[0] & 0x80))
+    e_extra = 1;
+
+  /* Build the S-expression.  */
+  snprintf (mlen_str, sizeof mlen_str, "%u:", (unsigned int)mlen+m_extra);
+  snprintf (elen_str, sizeof elen_str, "%u:", (unsigned int)elen+e_extra);
+
+  keybuf = xtrymalloc (strlen (part1) + strlen (mlen_str) + mlen + m_extra
+                       + strlen (part2) + strlen (elen_str) + elen + e_extra
+                       + strlen (part3) + 1);
+  if (!keybuf)
+    return NULL;
+  
+  p = stpcpy (keybuf, part1);
+  p = stpcpy (p, mlen_str);
+  if (m_extra)
+    *p++ = 0;
+  memcpy (p, m, mlen);
+  p += mlen;
+  p = stpcpy (p, part2);
+  p = stpcpy (p, elen_str);
+  if (e_extra)
+    *p++ = 0;
+  memcpy (p, e, elen);
+  p += elen;
+  p = stpcpy (p, part3);
+ 
+  if (r_len)
+    *r_len = p - keybuf;
+
+  return keybuf;
+}
+
+
+/* Return the so called "keygrip" which is the SHA-1 hash of the
+   public key parameters expressed in a way depended on the algorithm.
+
+   KEY is expected to be an canonical encoded S-expression with a
+   public or private key. KEYLEN is the length of that buffer.
+
+   GRIP must be at least 20 bytes long.  On success 0 is returned, on
+   error an error code. */
+gpg_error_t
+get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
+                            unsigned char const **r_n, size_t *r_nlen,
+                            unsigned char const **r_e, size_t *r_elen)
+{
+  gpg_error_t err;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth, last_depth1, last_depth2;
+  const unsigned char *rsa_n = NULL;
+  const unsigned char *rsa_e = NULL;
+  size_t rsa_n_len, rsa_e_len;
+
+  *r_n = NULL;
+  *r_nlen = 0;
+  *r_e = NULL;
+  *r_elen = 0;
+
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok || toklen != 10 || memcmp ("public-key", tok, toklen))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok || toklen != 3 || memcmp ("rsa", tok, toklen))
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        return err;
+      if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 'n': mpi = &rsa_n; mpi_len = &rsa_n_len; break; 
+            case 'e': mpi = &rsa_e; mpi_len = &rsa_e_len; break; 
+            default:  mpi = NULL;   mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            return gpg_error (GPG_ERR_DUP_VALUE);
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            return err;
+          if (tok && mpi)
+            {
+              /* Strip off leading zero bytes and save. */
+              for (;toklen && !*tok; toklen--, tok++)
+                ;
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+
+      /* Skip to the end of the list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        return err;
+    }
+
+  if (!rsa_n || !rsa_n_len || !rsa_e || !rsa_e_len)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  *r_n = rsa_n;
+  *r_nlen = rsa_n_len;
+  *r_e = rsa_e;
+  *r_elen = rsa_e_len;
+  return 0;
+}
