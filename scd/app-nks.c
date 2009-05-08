@@ -100,6 +100,11 @@ struct app_local_s {
   int nks_version;  /* NKS version.  */
 
   int sigg_active;  /* True if switched to the SigG application.  */
+  int sigg_msig_checked;/*  True if we checked for a mass signature card.  */
+  int sigg_is_msig; /* True if this is a mass signature card.  */
+
+  int need_app_select; /* Need to re-select the application.  */
+
 };
 
 
@@ -117,6 +122,18 @@ do_deinit (app_t app)
       xfree (app->app_local);
       app->app_local = NULL;
     }
+}
+
+
+static int
+all_zero_p (void *buffer, size_t length)
+{
+  char *p;
+
+  for (p=buffer; length; length--, p++)
+    if (*p)
+      return 0;
+  return 1;
 }
 
 
@@ -590,6 +607,65 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Handle the READKEY command. On success a canonical encoded
+   S-expression with the public key will get stored at PK and its
+   length at PKLEN; the caller must release that buffer.  On error PK
+   and PKLEN are not changed and an error code is returned.  As of now
+   this function is only useful for the internal authentication key.
+   Other keys are automagically retrieved via by means of the
+   certificate parsing code in commands.c:cmd_readkey.  For internal
+   use PK and PKLEN may be NULL to just check for an existing key.  */
+static gpg_error_t
+do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+{
+  gpg_error_t err;
+  unsigned char *buffer[2];
+  size_t buflen[2];
+  unsigned short path[1] = { 0x4500 };
+
+  /* We use a generic name to retrieve PK.AUT.IFD-SPK.  */
+  if (!strcmp (keyid, "$IFDAUTHKEY") && app->app_local->nks_version >= 3)
+    ;
+  else /* Return the error code expected by cmd_readkey.  */
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION); 
+
+  /* Access the KEYD file which is always in the master directory.  */
+  err = iso7816_select_path (app->slot, path, DIM (path), NULL, NULL);
+  if (err)
+    return err;
+  /* Due to the above select we need to re-select our application.  */
+  app->app_local->need_app_select = 1;
+  /* Get the two records.  */
+  err = iso7816_read_record (app->slot, 5, 1, 0, &buffer[0], &buflen[0]);
+  if (err)
+    return err;
+  if (all_zero_p (buffer[0], buflen[0]))
+    {
+      xfree (buffer[0]);
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
+  err = iso7816_read_record (app->slot, 6, 1, 0, &buffer[1], &buflen[1]);
+  if (err)
+    {
+      xfree (buffer[0]);
+      return err;
+    }
+
+  if (pk && pklen)
+    {
+      *pk = make_canon_sexp_from_rsa_pk (buffer[0], buflen[0],
+                                         buffer[1], buflen[1],
+                                         pklen);
+      if (!*pk)
+        err = gpg_error_from_syserror ();
+    }
+
+  xfree (buffer[0]);
+  xfree (buffer[1]);
+  return err;
+}
+
+
 static gpg_error_t
 basic_pin_checks (const char *pinvalue, int minlen, int maxlen)
 {
@@ -673,7 +749,6 @@ verify_pin (app_t app, int pwid, const char *desc,
 }
 
 
-
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
@@ -722,6 +797,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   rc = switch_application (app, is_sigg);
   if (rc)
     return rc;
+
+  if (is_sigg && app->app_local->sigg_is_msig)
+    {
+      log_info ("mass signature cards are not allowed\n");
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
 
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
       || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
@@ -1147,8 +1228,9 @@ switch_application (app_t app, int enable_sigg)
 {
   gpg_error_t err;
 
-  if ((app->app_local->sigg_active && enable_sigg)
-      || (!app->app_local->sigg_active && !enable_sigg) )
+  if (((app->app_local->sigg_active && enable_sigg)
+       || (!app->app_local->sigg_active && !enable_sigg))
+      && !app->app_local->need_app_select)
     return 0;  /* Already switched.  */
 
   log_info ("app-nks: switching to %s\n", enable_sigg? "SigG":"NKS");
@@ -1156,9 +1238,40 @@ switch_application (app_t app, int enable_sigg)
     err = iso7816_select_application (app->slot, aid_sigg, sizeof aid_sigg, 0);
   else
     err = iso7816_select_application (app->slot, aid_nks, sizeof aid_nks, 0);
+
+  if (!err && enable_sigg && app->app_local->nks_version >= 3 
+      && !app->app_local->sigg_msig_checked)
+    {
+      /* Check whether this card is a mass signature card.  */
+      unsigned char *buffer;
+      size_t buflen;
+      const unsigned char *tmpl;
+      size_t tmpllen;
+      
+      app->app_local->sigg_msig_checked = 1;
+      app->app_local->sigg_is_msig = 1;
+      err = iso7816_select_file (app->slot, 0x5349, 0, NULL, NULL);
+      if (!err)
+        err = iso7816_read_record (app->slot, 1, 1, 0, &buffer, &buflen);
+      if (!err)
+        {
+          tmpl = find_tlv (buffer, buflen, 0x7a, &tmpllen);
+          if (tmpl && tmpllen == 12 
+              && !memcmp (tmpl,
+                          "\x93\x02\x00\x01\xA4\x06\x83\x01\x81\x83\x01\x83",
+                          12))
+            app->app_local->sigg_is_msig = 0;
+          xfree (buffer);
+        }
+      if (app->app_local->sigg_is_msig)
+        log_info ("This is a mass signature card\n");
+    }
   
   if (!err)
-    app->app_local->sigg_active = enable_sigg;
+    {
+      app->app_local->need_app_select = 0;
+      app->app_local->sigg_active = enable_sigg;
+    }
   else
     log_error ("app-nks: error switching to %s: %s\n",
                enable_sigg? "SigG":"NKS", gpg_strerror (err));
@@ -1193,8 +1306,10 @@ app_select_nks (app_t app)
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
       app->fnc.readcert = do_readcert;
+      app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = NULL;
+      app->fnc.writekey = NULL;
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;
       app->fnc.auth = NULL;

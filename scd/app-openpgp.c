@@ -1095,9 +1095,9 @@ get_public_key (app_t app, int keyno)
     {
       /* We may simply read the public key out of these cards.  */
       err = iso7816_read_public_key 
-        (app->slot, (const unsigned char*)(keyno == 0? "\xB6" :
-                                           keyno == 1? "\xB8" : "\xA4"),
-         2,  
+        (app->slot, 0, (const unsigned char*)(keyno == 0? "\xB6" :
+                                              keyno == 1? "\xB8" : "\xA4"), 2,  
+         0,
          &buffer, &buflen);
       if (err)
         {
@@ -2530,6 +2530,9 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   int keyno = atoi (keynostr);
   int force = (flags & 1);
   time_t start_at;
+  int exmode;
+  int le_value;
+  unsigned int keybits; 
 
   if (keyno < 1 || keyno > 3)
     return gpg_error (GPG_ERR_INV_ID);
@@ -2550,22 +2553,44 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (rc)
     return rc;
 
+  /* Because we send the key parameter back via status lines we need
+     to put a limit on the max. allowed keysize.  2048 bit will
+     already lead to a 527 byte long status line and thus a 4096 bit
+     key would exceed the Assuan line length limit.  */ 
+  keybits = app->app_local->keyattr[keyno].n_bits;
+  if (keybits > 3072)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+
   /* Prepare for key generation by verifying the Admin PIN.  */
   rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
     goto leave;
-   
-#if 1
+
+  /* Test whether we will need extended length mode.  (1900 is an
+     arbitrary length which for sure fits into a short apdu.)  */
+  if (app->app_local->cardcap.ext_lc_le && keybits > 1900)
+    {
+      exmode = 1;    /* Use extended length w/o a limit.  */
+      le_value = app->app_local->extcap.max_rsp_data;
+      /* No need to check le_value because it comes from a 16 bit
+         value and thus can't create an overflow on a 32 bit
+         system.  */ 
+    }
+  else
+    {
+      exmode = 0;
+      le_value = 256; /* Use legacy value. */
+    }
+
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
-#else
-# warning key generation temporary replaced by reading an existing key.
-  rc = iso7816_read_public_key
-#endif
-    (app->slot, (const unsigned char*)(keyno == 0? "\xB6" :
-                                       keyno == 1? "\xB8" : "\xA4"),
-     2,
+/* # warning key generation temporary replaced by reading an existing key. */
+/*   rc = iso7816_read_public_key */
+    (app->slot, exmode, 
+     (const unsigned char*)(keyno == 0? "\xB6" :
+                            keyno == 1? "\xB8" : "\xA4"), 2,
+     le_value,
      &buffer, &buflen);
   if (rc)
     {
@@ -2575,6 +2600,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
     }
   log_info (_("key generation completed (%d seconds)\n"),
             (int)(time (NULL) - start_at));
+
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
@@ -2590,7 +2616,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
       log_error (_("response does not contain the RSA modulus\n"));
       goto leave;
     }
-/*    log_printhex ("RSA n:", m, mlen); */
+  /* log_printhex ("RSA n:", m, mlen); */
   send_key_data (ctrl, "n", m, mlen);
 
   e = find_tlv (keydata, keydatalen, 0x0082, &elen);
@@ -2600,7 +2626,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
       log_error (_("response does not contain the RSA public exponent\n"));
       goto leave;
     }
-/*    log_printhex ("RSA e:", e, elen); */
+  /* log_printhex ("RSA e:", e, elen); */
   send_key_data (ctrl, "e", e, elen);
 
   created_at = createtime? createtime : gnupg_get_time ();
@@ -2995,6 +3021,7 @@ do_decipher (app_t app, const char *keyidstr,
   const char *s;
   int n;
   const char *fpr = NULL;
+  int exmode;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3030,7 +3057,7 @@ do_decipher (app_t app, const char *keyidstr,
      the card.  This is allows for a meaningful error message in case
      the key on the card has been replaced but the shadow information
      known to gpg was not updated.  If there is no fingerprint, the
-     decryption will won't produce the right plaintext anyway. */
+     decryption won't produce the right plaintext anyway. */
   rc = fpr? check_against_given_fingerprint (app, fpr, 2) : 0;
   if (rc)
     return rc;
@@ -3039,6 +3066,8 @@ do_decipher (app_t app, const char *keyidstr,
   if (!rc)
     {
       size_t fixuplen;
+      unsigned char *fixbuf = NULL;
+      int padind = 0;
 
       /* We might encounter a couple of leading zeroes in the
          cryptogram.  Due to internal use of MPIs thease leading
@@ -3049,39 +3078,46 @@ do_decipher (app_t app, const char *keyidstr,
          probability anyway broken.  */
       if (indatalen >= (128-16) && indatalen < 128)      /* 1024 bit key.  */
         fixuplen = 128 - indatalen;
-      else if (indatalen >= (256-16) && indatalen < 256) /* 2048 bit key.  */
-        fixuplen = 256 - indatalen;
       else if (indatalen >= (192-16) && indatalen < 192) /* 1536 bit key.  */
         fixuplen = 192 - indatalen;
+      else if (indatalen >= (256-16) && indatalen < 256) /* 2048 bit key.  */
+        fixuplen = 256 - indatalen;
+      else if (indatalen >= (384-16) && indatalen < 384) /* 3072 bit key.  */
+        fixuplen = 384 - indatalen;
       else
         fixuplen = 0;
+
       if (fixuplen)
         {
-          unsigned char *fixbuf;
-
           /* While we have to prepend stuff anyway, we can also
              include the padding byte here so that iso1816_decipher
-             does not need to do yet another data mangling.  */
+             does not need to do another data mangling.  */
           fixuplen++;
+
           fixbuf = xtrymalloc (fixuplen + indatalen);
           if (!fixbuf)
-            rc = gpg_error_from_syserror ();
-          else
-            {
-              memset (fixbuf, 0, fixuplen);
-              memcpy (fixbuf+fixuplen, indata, indatalen);
-              rc = iso7816_decipher (app->slot, 0,
-                                     fixbuf, fixuplen+indatalen, -1,
-                                     outdata, outdatalen);
-              xfree (fixbuf);
-            }
-
+            return gpg_error_from_syserror ();
+          
+          memset (fixbuf, 0, fixuplen);
+          memcpy (fixbuf+fixuplen, indata, indatalen);
+          indata = fixbuf;
+          indatalen = fixuplen + indatalen;
+          padind = -1; /* Already padded.  */
         }
+      
+      if (app->app_local->cardcap.ext_lc_le && indatalen > 254 )
+        exmode = 1;    /* Extended length w/o a limit.  */
+      else if (app->app_local->cardcap.cmd_chaining && indatalen > 254)
+        exmode = -254; /* Command chaining with max. 254 bytes.  */
       else
-        rc = iso7816_decipher (app->slot, 0, 
-                               indata, indatalen, 0,
-                               outdata, outdatalen);
+        exmode = 0;    
+
+      rc = iso7816_decipher (app->slot, exmode, 
+                             indata, indatalen, padind,
+                             outdata, outdatalen);
+      xfree (fixbuf);
     }
+
   return rc;
 }
 

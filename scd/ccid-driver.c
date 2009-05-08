@@ -159,6 +159,11 @@
 #endif /* This source not used by scdaemon. */
 
 
+#ifndef EAGAIN
+#define EAGAIN  EWOULDBLOCK
+#endif
+
+
 
 enum {
   RDR_to_PC_NotifySlotChange= 0x50,
@@ -1811,6 +1816,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 {
   int rc;
   size_t msglen;
+  int eagain_retries = 0;
 
   /* Fixme: The next line for the current Valgrind without support
      for USB IOCTLs. */
@@ -1824,7 +1830,13 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                           timeout);
       if (rc < 0)
         {
-          DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (errno));
+          rc = errno;
+          DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (rc));
+          if (rc == EAGAIN && eagain_retries++ < 5)
+            {
+              gnupg_sleep (1);
+              goto retry;
+            }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
       *nread = msglen = rc;
@@ -1834,12 +1846,19 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       rc = read (handle->dev_fd, buffer, length);
       if (rc < 0)
         {
+          rc = errno;
           DEBUGOUT_2 ("read from %d failed: %s\n",
-                      handle->dev_fd, strerror (errno));
+                      handle->dev_fd, strerror (rc));
+          if (rc == EAGAIN && eagain_retries++ < 5)
+            {
+              gnupg_sleep (1);
+              goto retry;
+            }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
       *nread = msglen = rc;
     }
+  eagain_retries = 0;
 
   if (msglen < 10)
     {
@@ -1942,6 +1961,7 @@ abort_cmd (ccid_driver_t handle)
   /* Send the abort command to the control pipe.  Note that we don't
      need to keep track of sent abort commands because there should
      never be another thread using the same slot concurrently.  */
+  handle->seqno--;  /* Restore the last one sent.  */
   seqno = (handle->seqno & 0xff);
   rc = usb_control_msg (handle->idev, 
                         0x21,/* bmRequestType: host-to-device,
@@ -1958,34 +1978,36 @@ abort_cmd (ccid_driver_t handle)
     }
 
   /* Now send the abort command to the bulk out pipe using the same
-     SEQNO and SLOT. */
-  msg[0] = PC_to_RDR_Abort;
-  msg[5] = 0; /* slot */
-  msg[6] = seqno;
-  msg[7] = 0; /* RFU */
-  msg[8] = 0; /* RFU */
-  msg[9] = 0; /* RFU */
-  msglen = 10;
-  set_msg_len (msg, 0);
-  handle->seqno++;  /* Bumb up for the next use. */
-
-  rc = usb_bulk_write (handle->idev, 
-                       handle->ep_bulk_out,
-                       (char*)msg, msglen,
-                       5000 /* ms timeout */);
-  if (rc == msglen)
-    rc = 0;
-  else if (rc == -1)
-    DEBUGOUT_1 ("usb_bulk_write error in abort_cmd: %s\n", strerror (errno));
-  else
-    DEBUGOUT_1 ("usb_bulk_write failed in abort_cmd: %d\n", rc);
-
-  if (rc)
-    return rc;
-
-  /* Wait for the expected response.  */
+     SEQNO and SLOT.  Do this in a loop to so that all seqno are
+     tried.  */
+  seqno--;  /* Adjust for next increment.  */
   do
     {
+      seqno++; 
+      msg[0] = PC_to_RDR_Abort;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno;
+      msg[7] = 0; /* RFU */
+      msg[8] = 0; /* RFU */
+      msg[9] = 0; /* RFU */
+      msglen = 10;
+      set_msg_len (msg, 0);
+
+      rc = usb_bulk_write (handle->idev, 
+                           handle->ep_bulk_out,
+                           (char*)msg, msglen,
+                           5000 /* ms timeout */);
+      if (rc == msglen)
+        rc = 0;
+      else if (rc == -1)
+        DEBUGOUT_1 ("usb_bulk_write error in abort_cmd: %s\n", 
+                    strerror (errno));
+      else
+        DEBUGOUT_1 ("usb_bulk_write failed in abort_cmd: %d\n", rc);
+
+      if (rc)
+        return rc;
+      
       rc = usb_bulk_read (handle->idev, 
                           handle->ep_bulk_in,
                           (char*)msg, sizeof msg, 
@@ -2017,6 +2039,7 @@ abort_cmd (ccid_driver_t handle)
     }
   while (msg[0] != RDR_to_PC_SlotStatus && msg[5] != 0 && msg[6] != seqno);
 
+  handle->seqno = seqno;
   DEBUGOUT ("sending abort sequence succeeded\n");
 
   return 0;
@@ -2430,12 +2453,13 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
                             size_t *nresp)
 {
   int rc;
-  unsigned char send_buffer[10+261], recv_buffer[10+261];
+  unsigned char send_buffer[10+261+300], recv_buffer[10+261+300];
   const unsigned char *apdu;
   size_t apdulen;
   unsigned char *msg;
   size_t msglen;
   unsigned char seqno;
+  int bwi = 4;
 
   msg = send_buffer;
 
@@ -2448,11 +2472,11 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
      extended APDU exchange level is not yet supported.  */
   if (apdulen > 261)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
-
+  
   msg[0] = PC_to_RDR_XfrBlock;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
-  msg[7] = 4; /* bBWI */
+  msg[7] = bwi; /* bBWI */
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
   memcpy (msg+10, apdu, apdulen);
@@ -3273,6 +3297,13 @@ main (int argc, char **argv)
 
   return 0;
 }
+
+static coid
+gnupg_sleep (int seconds)
+{
+  sleep (seconds);
+}
+
 
 /*
  * Local Variables:

@@ -1,5 +1,5 @@
 /* app-help.c - Application helper functions
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -27,6 +27,30 @@
 #include "app-common.h"
 #include "iso7816.h"
 #include "tlv.h"
+
+
+/* Count the number of bits, assuming the A represents an unsigned big
+   integer of length LEN bytes.  If A is NULL a length of 0 is
+   returned. */
+unsigned int
+app_help_count_bits (const unsigned char *a, size_t len)
+{
+  unsigned int n = len * 8;
+  int i;
+
+  if (!a)
+    return 0;
+
+  for (; len && !*a; len--, a++, n -=8)
+    ;
+  if (len)
+    {
+      for (i=7; i && !(*a & (1<<i)); i--)
+        n--;
+    }
+  return n;
+}
+
 
 /* Return the KEYGRIP for the certificate CERT as an hex encoded
    string in the user provided buffer HEXKEYGRIP which must be of at

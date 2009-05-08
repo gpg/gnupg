@@ -135,6 +135,7 @@ gpg_error_t app_openpgp_storekey (app_t app, int keyno,
                           void *pincb_arg);
 #else
 /*-- app-help.c --*/
+unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
 size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 

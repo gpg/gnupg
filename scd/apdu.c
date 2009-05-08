@@ -2817,8 +2817,6 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
                 length limit.
        n > 1 := Use extended length with up to N bytes.
 
-       FIXME: We don't support extended length return values larger
-       than 256 bytes due to a static buffer. 
 */
 static int
 send_le (int slot, int class, int ins, int p0, int p1,
@@ -2826,9 +2824,12 @@ send_le (int slot, int class, int ins, int p0, int p1,
          unsigned char **retbuf, size_t *retbuflen,
          struct pininfo_s *pininfo, int extended_mode)
 {
-#define RESULTLEN 258
-  unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
-                                         the driver. */
+#define SHORT_RESULT_BUFFER_SIZE 258
+  /* We allocate 8 extra bytes as a safety margin towards a driver bug.  */
+  unsigned char short_result_buffer[SHORT_RESULT_BUFFER_SIZE+10]; 
+  unsigned char *result_buffer = NULL;
+  size_t result_buffer_size;
+  unsigned char *result;
   size_t resultlen;
   unsigned char short_apdu_buffer[5+256+1];
   unsigned char *apdu_buffer = NULL;
@@ -2873,8 +2874,22 @@ send_le (int slot, int class, int ins, int p0, int p1,
   else if (lc == -1 && extended_mode > 0)
     use_extended_length = 1;
     
-  if (le != -1 && (le > 256 || le < 0))
-    return SW_WRONG_LENGTH;
+  if (le != -1 && (le > (extended_mode > 0? 255:256) || le < 0))
+    {
+      /* Expected Data does not fit into an APDU.  What we do now
+         depends on the EXTENDED_MODE parameter.  Note that a check
+         for command chaining does not make sense because we are
+         looking at Le.  */
+      if (!extended_mode)
+        return SW_WRONG_LENGTH; /* No way to send such an APDU.  */
+      else if (use_extended_length)
+        ; /* We are already using extended length.  */
+      else if (extended_mode > 0)
+        use_extended_length = 1;
+      else 
+        return SW_HOST_INV_VALUE;
+    }
+
   if ((!data && lc != -1) || (data && lc == -1))
     return SW_HOST_INV_VALUE;
 
@@ -2885,7 +2900,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
 
       /* Space for: cls/ins/p1/p2+Z+2_byte_Lc+Lc+2_byte_Le.  */
       apdu_buffer_size = 4 + 1 + (lc >= 0? (2+lc):0) + 2;
-      apdu_buffer = xtrymalloc (apdu_buffer_size);
+      apdu_buffer = xtrymalloc (apdu_buffer_size + 10);
       if (!apdu_buffer)
         return SW_HOST_OUT_OF_CORE;
       apdu = apdu_buffer;
@@ -2895,6 +2910,24 @@ send_le (int slot, int class, int ins, int p0, int p1,
       apdu_buffer_size = sizeof short_apdu_buffer;
       apdu = short_apdu_buffer;
     }
+
+  if (use_extended_length && (le > 256 || le < 0))
+    {
+      result_buffer_size = le < 0? 4096 : le;
+      result_buffer = xtrymalloc (result_buffer_size + 10);
+      if (!result_buffer)
+        {
+          xfree (apdu_buffer);
+          return SW_HOST_OUT_OF_CORE;
+        }
+      result = result_buffer;
+    }
+  else
+    {
+      result_buffer_size = SHORT_RESULT_BUFFER_SIZE;
+      result = short_result_buffer;
+    }
+#undef SHORT_RESULT_BUFFER_SIZE
 
   if ((sw = lock_slot (slot)))
     return sw;
@@ -2963,7 +2996,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
       /* As a safeguard don't pass any garbage to the driver.  */
       assert (apdulen <= apdu_buffer_size);
       memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
-      resultlen = RESULTLEN;
+      resultlen = result_buffer_size;
       rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
       if (rc || resultlen < 2)
         {
@@ -3051,7 +3084,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = len;
           assert (apdulen <= apdu_buffer_size);
           memset (apdu+apdulen, 0, apdu_buffer_size - apdulen);
-          resultlen = RESULTLEN;
+          resultlen = result_buffer_size;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
           if (rc || resultlen < 2)
             {
@@ -3114,7 +3147,6 @@ send_le (int slot, int class, int ins, int p0, int p1,
     log_printhex ("      dump: ", *retbuf, *retbuflen);
 
   return sw;
-#undef RESULTLEN
 }
 
 /* Send an APDU to the card in SLOT.  The APDU is created from all
@@ -3210,6 +3242,7 @@ apdu_send_direct (int slot, int extended_mode,
                   unsigned char **retbuf, size_t *retbuflen)
 {
 #define RESULTLEN 258
+  /* FIXME:  Implement dynamic result buffer and extended Le.  */
   unsigned char apdu[5+256+1];
   size_t apdulen;
   unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in

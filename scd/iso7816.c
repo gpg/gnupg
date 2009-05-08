@@ -605,10 +605,15 @@ iso7816_internal_authenticate (int slot,
 }
 
 
+/* LE is the expected return length.  This is usually 0 except if
+   extended length mode is used and more than 256 byte will be
+   returned.  In that case a value of -1 uses a large default
+   (e.g. 4096 bytes), a value larger 256 used that value.  */
 static gpg_error_t
-do_generate_keypair (int slot, int readonly,
-                  const unsigned char *data, size_t datalen,
-                  unsigned char **result, size_t *resultlen)
+do_generate_keypair (int slot, int extended_mode, int readonly,
+                     const unsigned char *data, size_t datalen,
+                     int le, 
+                     unsigned char **result, size_t *resultlen)
 {
   int sw;
 
@@ -617,9 +622,11 @@ do_generate_keypair (int slot, int readonly,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0,
-                  0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
-                  datalen, (const char*)data,  result, resultlen);
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
+                     datalen, (const char*)data,
+                     le >= 0 && le < 256? 256:le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -634,20 +641,24 @@ do_generate_keypair (int slot, int readonly,
 
 
 gpg_error_t
-iso7816_generate_keypair (int slot,
+iso7816_generate_keypair (int slot, int extended_mode,
                           const unsigned char *data, size_t datalen,
+                          int le, 
                           unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, 0, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, extended_mode, 0,
+                              data, datalen, le, result, resultlen);
 }
 
 
 gpg_error_t
-iso7816_read_public_key (int slot,
-                          const unsigned char *data, size_t datalen,
-                          unsigned char **result, size_t *resultlen)
+iso7816_read_public_key (int slot, int extended_mode,
+                         const unsigned char *data, size_t datalen,
+                         int le, 
+                         unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, 1, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, extended_mode, 1,
+                              data, datalen, le, result, resultlen);
 }
 
 

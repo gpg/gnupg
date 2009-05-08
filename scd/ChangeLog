@@ -1,3 +1,26 @@
+2009-05-08  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_genkey): Allow larger key sizes.
+	(do_decipher): Ditto.
+	* iso7816.c (do_generate_keypair): Add arg EXTENDED_MODE an LE.
+	(iso7816_generate_keypair, iso7816_read_public_key): Ditto.
+	Changed all callers.
+	* apdu.c (send_le): Implement extended length return values.
+	
+	* ccid-driver.c (bulk_in): Retry on EAGAIN.
+	(abort_cmd): Change seqno handling.
+
+2009-04-28  Werner Koch  <wk@g10code.com>
+
+	* app-help.c (app_help_count_bits): New.
+
+	* app-nks.c (switch_application): Detect mass signature cards.
+	Take care of new NEED_APP_SELECT flag.
+	(do_sign): Don't allow mass signature cards.
+	(all_zero_p): New.
+	(do_readkey): New.
+	(app_select_nks): Register do_readkey.
+
 2009-04-01  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_setattr, do_writekey): Prepare for extended

@@ -103,12 +103,14 @@ gpg_error_t iso7816_decipher (int slot, int extended_mode,
 gpg_error_t iso7816_internal_authenticate (int slot,
                                    const unsigned char *data, size_t datalen,
                                    unsigned char **result, size_t *resultlen);
-gpg_error_t iso7816_generate_keypair (int slot,
-                                   const unsigned char *data, size_t datalen,
-                                   unsigned char **result, size_t *resultlen);
-gpg_error_t iso7816_read_public_key (int slot,
-                                   const unsigned char *data, size_t datalen,
-                                   unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_generate_keypair (int slot, int extended_mode,
+                                    const unsigned char *data, size_t datalen,
+                                    int le,
+                                    unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_read_public_key (int slot, int extended_mode,
+                                    const unsigned char *data, size_t datalen,
+                                    int le,
+                                    unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_get_challenge (int slot,
                                    int length, unsigned char *buffer);
 
