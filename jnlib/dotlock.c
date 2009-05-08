@@ -165,7 +165,6 @@ create_dotlock (const char *file_to_lock)
    */
 
   snprintf (pidstr, sizeof pidstr, "%10d\n", (int)getpid() );
-  /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
   /* Create a temporary file. */
   if ( uname ( &utsbuf ) )

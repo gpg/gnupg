@@ -1949,7 +1949,7 @@ Set the list of personal digest preferences to @code{string}.  Use
 and use @code{none} to set no preference at all.  This allows the user
 to factor in their own preferred algorithms when algorithms are chosen
 via recipient key preferences.  The most highly ranked digest
-algorithm in this list is algo used when signing without encryption
+algorithm in this list is also used when signing without encryption
 (e.g. @option{--clearsign} or @option{--sign}). The default value is
 SHA-1.
 
@@ -1959,7 +1959,7 @@ Use @command{@gpgname --version} to get a list of available
 algorithms, and use @code{none} to set no preference at all.  This
 allows the user to factor in their own preferred algorithms when
 algorithms are chosen via recipient key preferences.  The most highly
-ranked compression algorithm in this list is algo used when there are
+ranked compression algorithm in this list is also used when there are
 no recipient keys to consider (e.g. @option{--symmetric}).
 
 @item --s2k-cipher-algo @code{name}
