@@ -307,7 +307,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
         int overflow;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
-             && !overflow )
+             && !overflow && opt.verbose)
           log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the
@@ -607,7 +607,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
         int overflow;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
-             && !overflow )
+             && !overflow && opt.verbose)
           log_info(_("WARNING: `%s' is an empty file\n"), filename );
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the the

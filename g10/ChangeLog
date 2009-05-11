@@ -1,3 +1,10 @@
+2009-05-11  Werner Koch  <wk@g10code.com>
+
+	* encode.c (encode_simple): Print empty file warning only in
+	verbose mode.  Closes bug#1039.
+	(encode_crypt): Ditto.
+	* sign.c (write_plaintext_packet): Ditto.
+
 2009-05-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_typemap): gpgkeys_hkp handles hkps as
