@@ -166,7 +166,7 @@ build_sk_list( strlist_t locusr, SK_LIST *ret_sk_list,
              */
             if ( is_duplicated_entry ( locusr_orig, locusr ) )
 	      {
-		log_error(_("skipped \"%s\": duplicated\n"), locusr->d );
+		log_info (_("skipped \"%s\": duplicated\n"), locusr->d );
                 continue;
 	      }
 	    sk = xmalloc_clear( sizeof *sk );

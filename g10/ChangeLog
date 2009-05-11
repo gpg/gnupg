@@ -1,5 +1,8 @@
 2009-05-11  Werner Koch  <wk@g10code.com>
 
+	* skclist.c (build_sk_list): Use log_info for "duplicated entry".
+	Fixes bug#1045.
+
 	* encode.c (encode_simple): Print empty file warning only in
 	verbose mode.  Closes bug#1039.
 	(encode_crypt): Ditto.
