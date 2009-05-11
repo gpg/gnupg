@@ -1,6 +1,6 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -941,6 +941,8 @@ keyserver_typemap(const char *type)
 {
   if(strcmp(type,"ldaps")==0)
     return "ldap";
+  else if(strcmp(type,"hkps")==0)
+    return "hkp";
   else
     return type;
 }
