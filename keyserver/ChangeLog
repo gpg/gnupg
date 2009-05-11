@@ -1,7 +1,10 @@
 2009-05-10  David Shaw  <dshaw@jabberwocky.com>
 
 	From 1.4:
-	
+
+	* gpgkeys_hkp.c (send_key, get_key, get_name, search_key, main):
+	Add support for SSLized HKP.
+
 	* curl-shim.h (curl_version): No need to provide a version for
 	curl-shim as it always matches the GnuPG version.
 
