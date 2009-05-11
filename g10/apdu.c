@@ -2632,8 +2632,11 @@ send_le (int slot, int class, int ins, int p0, int p1,
   rc = send_apdu (slot, apdu, apdulen, result, &resultlen, pininfo);
   if (rc || resultlen < 2)
     {
-      log_error ("apdu_send_simple(%d) failed: %s\n",
-                 slot, apdu_strerror (rc));
+      /* We use log_info here so that in case of a transient error, and
+         if this module is used by gpg standalone, the error counter
+         isn't incremented.  */
+      log_info ("apdu_send_simple(%d) failed: %s\n",
+                slot, apdu_strerror (rc));
       unlock_slot (slot);
       return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
