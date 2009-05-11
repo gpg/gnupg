@@ -1,3 +1,9 @@
+2009-05-11  Werner Koch  <wk@g10code.com>
+
+	* encode.c (encode_simple, encode_crypt): Print empty file warning
+	only in verbose mode.  Closes bug#1039.
+	* sign.c (write_plaintext_packet): 
+
 2009-05-06  Werner Koch  <wk@g10code.com>
 
 	* keyring.c (keyring_get_keyblock): Fix memory leak due to
