@@ -1,3 +1,7 @@
+2009-05-11  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (send_le): Replace log_error by log_info.
+
 2009-05-08  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_genkey): Allow larger key sizes.

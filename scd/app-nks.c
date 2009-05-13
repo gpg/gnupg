@@ -666,6 +666,97 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 }
 
 
+/* Handle the WRITEKEY command for NKS.  This function expects a
+   canonical encoded S-expression with the public key in KEYDATA and
+   its length in KEYDATALEN.  The only supported KEYID is
+   "$IFDAUTHKEY" to store the terminal key on the card.  Bit 0 of
+   FLAGS indicates whether an existing key shall get overwritten.
+   PINCB and PINCB_ARG are the usual arguments for the pinentry
+   callback.  */
+static gpg_error_t
+do_writekey (app_t app, ctrl_t ctrl,
+             const char *keyid, unsigned int flags,
+             gpg_error_t (*pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const unsigned char *keydata, size_t keydatalen)
+{
+  gpg_error_t err;
+  int force = (flags & 1);
+  const unsigned char *rsa_n = NULL;
+  const unsigned char *rsa_e = NULL;
+  size_t rsa_n_len, rsa_e_len;
+  unsigned int nbits;
+
+  (void)ctrl;
+  (void)pincb;
+  (void)pincb_arg;
+
+  if (!strcmp (keyid, "$IFDAUTHKEY") && app->app_local->nks_version >= 3)
+    ;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+  
+  if (!force && !do_readkey (app, keyid, NULL, NULL))
+    return gpg_error (GPG_ERR_EEXIST);
+
+  /* Parse the S-expression.  */
+  err = get_rsa_pk_from_canon_sexp (keydata, keydatalen,
+                                    &rsa_n, &rsa_n_len, &rsa_e, &rsa_e_len);
+  if (err) 
+    goto leave;
+
+  /* Check that the parameters match the requirements.  */
+  nbits = app_help_count_bits (rsa_n, rsa_n_len);
+  if (nbits != 1024)
+    {
+      log_error (_("RSA modulus missing or not of size %d bits\n"), 1024);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+
+  nbits = app_help_count_bits (rsa_e, rsa_e_len);
+  if (nbits < 2 || nbits > 32)
+    {
+      log_error (_("RSA public exponent missing or larger than %d bits\n"),
+                 32);
+      err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      goto leave;
+    }
+
+/*   /\* Store them.  *\/ */
+/*   err = verify_pin (app, 0, NULL, pincb, pincb_arg); */
+/*   if (err) */
+/*     goto leave; */
+
+  /* Send the MSE:Store_Public_Key.  */
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+/*   mse = xtrymalloc (1000); */
+  
+/*   mse[0] = 0x80; /\* Algorithm reference.  *\/ */
+/*   mse[1] = 1; */
+/*   mse[2] = 0x17; */
+/*   mse[3] = 0x84; /\* Private key reference.  *\/ */
+/*   mse[4] = 1; */
+/*   mse[5] = 0x77; */
+/*   mse[6] = 0x7F; /\* Public key parameter.  *\/ */
+/*   mse[7] = 0x49; */
+/*   mse[8] = 0x81; */
+/*   mse[9] = 3 + 0x80 + 2 + rsa_e_len; */
+/*   mse[10] = 0x81; /\* RSA modulus of 128 byte.  *\/ */
+/*   mse[11] = 0x81; */
+/*   mse[12] = rsa_n_len; */
+/*   memcpy (mse+12, rsa_n, rsa_n_len); */
+/*   mse[10] = 0x82; /\* RSA public exponent of up to 4 bytes.  *\/ */
+/*   mse[12] = rsa_e_len; */
+/*   memcpy (mse+12, rsa_e, rsa_e_len); */
+/*   err = iso7816_manage_security_env (app->slot, 0x81, 0xB6, */
+/*                                      mse, sizeof mse); */
+
+ leave:
+  return err;
+}
+
+
 static gpg_error_t
 basic_pin_checks (const char *pinvalue, int minlen, int maxlen)
 {
@@ -1309,7 +1400,7 @@ app_select_nks (app_t app)
       app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = NULL;
-      app->fnc.writekey = NULL;
+      app->fnc.writekey = do_writekey;
       app->fnc.genkey = NULL;
       app->fnc.sign = do_sign;
       app->fnc.auth = NULL;

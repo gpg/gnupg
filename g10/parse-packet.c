@@ -1672,6 +1672,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
+    u32 keyid[2];
 
     (void)hdr;
 
@@ -1997,6 +1998,9 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		fprintf (listfp, "\tchecksum: %04hx\n", sk->csum);
 	    }
 	}
+
+        if (list_mode)
+          keyid_from_sk (sk, keyid);
     }
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
@@ -2021,7 +2025,13 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
         if (rc)
             goto leave;
+        if (list_mode)
+          keyid_from_pk (pk, keyid);
     }
+
+    if (list_mode)
+      fprintf (listfp, "\tkeyid: %08lX%08lX\n", 
+               (ulong)keyid[0], (ulong)keyid[1]);
 
   leave:
     iobuf_skip_rest(inp, pktlen, 0);

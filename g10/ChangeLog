@@ -1,4 +1,11 @@
+2009-05-13  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (parse_expire_string): Base ISO date string at noon.
+	Also allow full ISO timestamp.
+
 2009-05-11  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_key): Print the key id in list mode.
 
 	* skclist.c (build_sk_list): Use log_info for "duplicated entry".
 	Fixes bug#1045.

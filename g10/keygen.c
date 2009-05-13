@@ -1799,13 +1799,17 @@ parse_expire_string( const char *string )
   u32 seconds;
   u32 abs_date = 0;
   u32 curtime = make_timestamp ();
+  time_t tt;
   
   if (!*string)
     seconds = 0;
   else if (!strncmp (string, "seconds=", 8))
     seconds = atoi (string+8);
-  else if ((abs_date = scan_isodatestr(string)) && abs_date > curtime)
-    seconds = abs_date - curtime;
+  else if ((abs_date = scan_isodatestr(string))
+           && (abs_date+86400/2) > curtime)
+    seconds = (abs_date+86400/2) - curtime;
+  else if ((tt = isotime2epoch (string)) != (time_t)(-1))
+    seconds = (u32)tt - curtime;
   else if ((mult = check_valid_days (string)))
     seconds = atoi (string) * 86400L * mult;
   else
