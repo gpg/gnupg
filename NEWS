@@ -15,13 +15,16 @@ Noteworthy changes in version 2.0.12 (not released)
  * Changed order of the confirmation questions for root certificates
    and stores negative answers in trustlist.txt.
 
- * Better synchronization of several smartcard sessions.
+ * Better synchronization of concurrent smartcard sessions.
 
- * Support for the Telesec Netkey 3 cards.
+ * Support 2048 bit OpenPGP cards.
+
+ * Support Telesec Netkey 3 cards.
 
  * The gpg-protect-tool now uses gpg-agent via libassuan.  Under
    Windows the Pinentry will now be put into the foreground.
 
+ 
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------

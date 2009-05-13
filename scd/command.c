@@ -202,7 +202,7 @@ has_option (const char *line, const char *name)
 /* Same as has_option but does only test for the name of the option
    and ignores an argument, i.e. with NAME being "--hash" it would
    return a pointer for "--hash" as well as for "--hash=foo".  If
-   thhere is no such option NULL is returned.  The pointer returned
+   there is no such option NULL is returned.  The pointer returned
    points right behind the option name, this may be an equal sign, Nul
    or a space.  */
 static const char *
@@ -1722,7 +1722,7 @@ cmd_disconnect (assuan_context_t ctx, char *line)
 
 
 
-/* APDU [--atr] [--more] [hexstring]
+/* APDU [--atr] [--more] [--exlen[=N]] [hexstring]
 
    Send an APDU to the current reader.  This command bypasses the high
    level functions and sends the data directly to the card.  HEXSTRING
@@ -1735,8 +1735,11 @@ cmd_disconnect (assuan_context_t ctx, char *line)
      S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1
 
    Using the option --more handles the card status word MORE_DATA
-   (61xx) and concatenate all reponses to one block.
+   (61xx) and concatenates all reponses to one block.
 
+   Using the option "--exlen" the returned APDU may use extended
+   length up to N bytes.  If N is not given a default value is used
+   (currently 4096).
  */
 static int
 cmd_apdu (assuan_context_t ctx, char *line)
@@ -1747,9 +1750,21 @@ cmd_apdu (assuan_context_t ctx, char *line)
   size_t apdulen;
   int with_atr;
   int handle_more;
+  const char *s;
+  size_t exlen;
 
   with_atr = has_option (line, "--atr");
   handle_more = has_option (line, "--more");
+
+  if ((s=has_option_name (line, "--exlen")))
+    {
+      if (*s == '=')
+        exlen = strtoul (s+1, NULL, 0);
+      else
+        exlen = 4096;
+    }
+  else
+    exlen = 0;
 
   line = skip_options (line);
 
@@ -1787,7 +1802,8 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *result = NULL;
       size_t resultlen;
 
-      rc = apdu_send_direct (ctrl->reader_slot, 0, apdu, apdulen, handle_more,
+      rc = apdu_send_direct (ctrl->reader_slot, exlen,
+                             apdu, apdulen, handle_more,
                              &result, &resultlen);
       if (rc)
         log_error ("apdu_send_direct failed: %s\n", gpg_strerror (rc));

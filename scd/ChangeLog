@@ -1,3 +1,12 @@
+2009-05-13  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (abort_cmd): Add arg SEQNO and change callers.
+	(bulk_in): Retry on seqno mismatch.
+
+	* apdu.c (send_le): Release result_buffer.
+	(apdu_send_direct): Implemend extended length.
+	* command.c (cmd_apdu): Add option "--exlen".
+
 2009-05-11  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (send_le): Replace log_error by log_info.

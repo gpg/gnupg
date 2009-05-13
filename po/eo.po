@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-03-24 18:56+0100\n"
+"POT-Creation-Date: 2009-05-13 18:04+0200\n"
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -14,18 +14,18 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-3\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/call-pinentry.c:225
+#: agent/call-pinentry.c:226
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 
-#: agent/call-pinentry.c:596
+#: agent/call-pinentry.c:597
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
 
-#: agent/call-pinentry.c:599
+#: agent/call-pinentry.c:600
 #, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
@@ -34,7 +34,7 @@ msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 #. TRANSLATORS: This string is displayed by pinentry as the
 #. label for the quality bar.
-#: agent/call-pinentry.c:634
+#: agent/call-pinentry.c:635
 msgid "Quality:"
 msgstr ""
 
@@ -44,45 +44,45 @@ msgstr ""
 #. length of the tooltip is limited to about 900 characters.
 #. If you do not translate this entry, a default english
 #. text (see source) will be used.
-#: agent/call-pinentry.c:657
+#: agent/call-pinentry.c:658
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:699
+#: agent/call-pinentry.c:700
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:719 agent/call-pinentry.c:731
+#: agent/call-pinentry.c:720 agent/call-pinentry.c:732
 #, fuzzy
 msgid "PIN too long"
 msgstr "pasfrazo estas tro longa\n"
 
-#: agent/call-pinentry.c:720
+#: agent/call-pinentry.c:721
 #, fuzzy
 msgid "Passphrase too long"
 msgstr "pasfrazo estas tro longa\n"
 
-#: agent/call-pinentry.c:728
+#: agent/call-pinentry.c:729
 #, fuzzy
 msgid "Invalid characters in PIN"
 msgstr "Nevalida signo en nomo\n"
 
-#: agent/call-pinentry.c:733
+#: agent/call-pinentry.c:734
 msgid "PIN too short"
 msgstr ""
 
-#: agent/call-pinentry.c:745
+#: agent/call-pinentry.c:746
 #, fuzzy
 msgid "Bad PIN"
 msgstr "malbona MPI"
 
-#: agent/call-pinentry.c:746
+#: agent/call-pinentry.c:747
 #, fuzzy
 msgid "Bad Passphrase"
 msgstr "malbona pasfrazo"
 
-#: agent/call-pinentry.c:782
+#: agent/call-pinentry.c:783
 #, fuzzy
 msgid "Passphrase"
 msgstr "malbona pasfrazo"
@@ -92,22 +92,22 @@ msgstr "malbona pasfrazo"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "protekto-metodo %d%s ne estas realigita\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3258
-#: g10/keygen.c:3291 g10/keyring.c:1206 g10/keyring.c:1510 g10/openfile.c:275
+#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3262
+#: g10/keygen.c:3295 g10/keyring.c:1237 g10/keyring.c:1556 g10/openfile.c:275
 #: g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107 g10/tdbio.c:547
-#: jnlib/dotlock.c:311
+#: jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "ne povas krei '%s': %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:760
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2743
-#: g10/keyring.c:1536 g10/openfile.c:192 g10/openfile.c:353
+#: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2747
+#: g10/keyring.c:1582 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
-#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1981
-#: sm/gpgsm.c:2018 sm/gpgsm.c:2056 sm/qualified.c:66
+#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
+#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
@@ -148,7 +148,6 @@ msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 #: agent/command-ssh.c:2346 agent/genkey.c:310 agent/genkey.c:432
-#: agent/protect-tool.c:1205
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "þanøi la pasfrazon"
@@ -161,7 +160,7 @@ msgid ""
 msgstr ""
 
 #: agent/command-ssh.c:2405 agent/genkey.c:340 agent/genkey.c:463
-#: agent/protect-tool.c:1211 tools/symcryptrun.c:434
+#: tools/symcryptrun.c:434
 msgid "does not match - try again"
 msgstr ""
 
@@ -225,13 +224,13 @@ msgstr "la pasfrazo ne estis øuste ripetita; provu denove"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr ""
 
-#: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:632 sm/export.c:648
-#: sm/import.c:531 sm/import.c:556
+#: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:638 sm/export.c:654
+#: sm/import.c:537 sm/import.c:562
 #, fuzzy, c-format
 msgid "error creating temporary file: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-#: agent/genkey.c:115 sm/export.c:639 sm/import.c:539
+#: agent/genkey.c:115 sm/export.c:645 sm/import.c:545
 #, fuzzy, c-format
 msgid "error writing to temporary file: %s\n"
 msgstr "skribas al '%s'\n"
@@ -304,8 +303,8 @@ msgstr ""
 msgid "Please enter the new passphrase"
 msgstr "þanøi la pasfrazon"
 
-#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 agent/protect-tool.c:109
-#: scd/scdaemon.c:102 tools/gpg-check-pattern.c:70
+#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 scd/scdaemon.c:102
+#: tools/gpg-check-pattern.c:70
 #, fuzzy
 msgid ""
 "@Options:\n"
@@ -412,7 +411,7 @@ msgstr ""
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
-#: agent/gpg-agent.c:328 agent/preset-passphrase.c:94 agent/protect-tool.c:146
+#: agent/gpg-agent.c:328 agent/preset-passphrase.c:94 agent/protect-tool.c:159
 #: scd/scdaemon.c:243 sm/gpgsm.c:513 tools/gpg-connect-agent.c:180
 #: tools/gpgconf.c:101 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
@@ -435,142 +434,142 @@ msgstr ""
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
-#: agent/gpg-agent.c:582 agent/protect-tool.c:1074 kbx/kbxutil.c:429
+#: agent/gpg-agent.c:583 agent/protect-tool.c:1029 kbx/kbxutil.c:429
 #: scd/scdaemon.c:398 sm/gpgsm.c:879 sm/gpgsm.c:882 tools/symcryptrun.c:996
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:681 g10/gpg.c:2086 scd/scdaemon.c:480 sm/gpgsm.c:971
+#: agent/gpg-agent.c:682 g10/gpg.c:2086 scd/scdaemon.c:480 sm/gpgsm.c:971
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
 
-#: agent/gpg-agent.c:686 agent/gpg-agent.c:1294 g10/gpg.c:2090
+#: agent/gpg-agent.c:687 agent/gpg-agent.c:1297 g10/gpg.c:2090
 #: scd/scdaemon.c:485 sm/gpgsm.c:975 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "opcio-dosiero '%s': %s\n"
 
-#: agent/gpg-agent.c:694 g10/gpg.c:2097 scd/scdaemon.c:493 sm/gpgsm.c:982
+#: agent/gpg-agent.c:695 g10/gpg.c:2097 scd/scdaemon.c:493 sm/gpgsm.c:982
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "legas opciojn el '%s'\n"
 
-#: agent/gpg-agent.c:1044 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1046 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "eraro dum kreado de '%s': %s\n"
 
-#: agent/gpg-agent.c:1407 agent/gpg-agent.c:1527 agent/gpg-agent.c:1531
-#: agent/gpg-agent.c:1572 agent/gpg-agent.c:1576 g10/exec.c:172
+#: agent/gpg-agent.c:1410 agent/gpg-agent.c:1530 agent/gpg-agent.c:1534
+#: agent/gpg-agent.c:1575 agent/gpg-agent.c:1579 g10/exec.c:172
 #: g10/openfile.c:429 scd/scdaemon.c:989
 #, fuzzy, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
 
-#: agent/gpg-agent.c:1421 scd/scdaemon.c:1003
+#: agent/gpg-agent.c:1424 scd/scdaemon.c:1003
 msgid "name of socket too long\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1444 scd/scdaemon.c:1026
+#: agent/gpg-agent.c:1447 scd/scdaemon.c:1026
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "ne povas krei %s: %s\n"
 
-#: agent/gpg-agent.c:1453
+#: agent/gpg-agent.c:1456
 #, fuzzy, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "Valida atestilrevoko"
 
-#: agent/gpg-agent.c:1473
+#: agent/gpg-agent.c:1476
 #, fuzzy
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
 
-#: agent/gpg-agent.c:1484 scd/scdaemon.c:1046
+#: agent/gpg-agent.c:1487 scd/scdaemon.c:1046
 #, fuzzy
 msgid "error getting nonce for the socket\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-#: agent/gpg-agent.c:1489 scd/scdaemon.c:1049
+#: agent/gpg-agent.c:1492 scd/scdaemon.c:1049
 #, fuzzy, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
-#: agent/gpg-agent.c:1501 scd/scdaemon.c:1058
+#: agent/gpg-agent.c:1504 scd/scdaemon.c:1058
 #, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
 
-#: agent/gpg-agent.c:1507 scd/scdaemon.c:1065
+#: agent/gpg-agent.c:1510 scd/scdaemon.c:1065
 #, fuzzy, c-format
 msgid "listening on socket `%s'\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: agent/gpg-agent.c:1535 agent/gpg-agent.c:1582 g10/openfile.c:432
+#: agent/gpg-agent.c:1538 agent/gpg-agent.c:1585 g10/openfile.c:432
 #, fuzzy, c-format
 msgid "directory `%s' created\n"
 msgstr "%s: dosierujo kreita\n"
 
-#: agent/gpg-agent.c:1588
+#: agent/gpg-agent.c:1591
 #, fuzzy, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "fido-datenaro: lego malsukcesis (n=%d): %s\n"
 
-#: agent/gpg-agent.c:1592
+#: agent/gpg-agent.c:1595
 #, fuzzy, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
 
-#: agent/gpg-agent.c:1722 scd/scdaemon.c:1081
+#: agent/gpg-agent.c:1725 scd/scdaemon.c:1081
 #, fuzzy, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
-#: agent/gpg-agent.c:1744
+#: agent/gpg-agent.c:1747
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1749
+#: agent/gpg-agent.c:1752
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1769
+#: agent/gpg-agent.c:1772
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1774
+#: agent/gpg-agent.c:1777
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
-#: agent/gpg-agent.c:1914 scd/scdaemon.c:1218
+#: agent/gpg-agent.c:1917 scd/scdaemon.c:1218
 #, fuzzy, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "aktualigo de sekreto malsukcesis: %s\n"
 
-#: agent/gpg-agent.c:2023 scd/scdaemon.c:1285
+#: agent/gpg-agent.c:2026 scd/scdaemon.c:1285
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "\t%lu þlosiloj ignoritaj\n"
 
-#: agent/gpg-agent.c:2151
+#: agent/gpg-agent.c:2154
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
 
-#: agent/gpg-agent.c:2162 common/simple-pwquery.c:349 common/asshelp.c:326
+#: agent/gpg-agent.c:2165 common/simple-pwquery.c:349 common/asshelp.c:326
 #: tools/gpg-connect-agent.c:2133
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
 
-#: agent/gpg-agent.c:2175 common/simple-pwquery.c:361 common/asshelp.c:338
+#: agent/gpg-agent.c:2178 common/simple-pwquery.c:361 common/asshelp.c:338
 #: tools/gpg-connect-agent.c:2144
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -587,54 +586,75 @@ msgid ""
 "Password cache maintenance\n"
 msgstr ""
 
-#: agent/protect-tool.c:149
+#: agent/protect-tool.c:111 g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:185
+#: tools/gpgconf.c:59
+msgid ""
+"@Commands:\n"
+" "
+msgstr ""
+"@Komandoj:\n"
+" "
+
+#: agent/protect-tool.c:123 g10/gpg.c:436 g10/gpgv.c:69 kbx/kbxutil.c:81
+#: sm/gpgsm.c:226 tools/gpg-connect-agent.c:67 tools/gpgconf.c:76
+#: tools/symcryptrun.c:157
+msgid ""
+"@\n"
+"Options:\n"
+" "
+msgstr ""
+"@\n"
+"Opcioj:\n"
+" "
+
+#: agent/protect-tool.c:162
 #, fuzzy
 msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
-#: agent/protect-tool.c:151
+#: agent/protect-tool.c:164
 msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
 
-#: agent/protect-tool.c:1196
+#: agent/protect-tool.c:1150
 #, fuzzy
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
-#: agent/protect-tool.c:1199
+#: agent/protect-tool.c:1155
 #, fuzzy
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
-#: agent/protect-tool.c:1202
+#: agent/protect-tool.c:1161
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
 msgstr ""
 
-#: agent/protect-tool.c:1207
+#: agent/protect-tool.c:1166
 #, fuzzy
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
-#: agent/protect-tool.c:1212 tools/symcryptrun.c:435
+#: agent/protect-tool.c:1171 tools/symcryptrun.c:435
 #, fuzzy
 msgid "Passphrase:"
 msgstr "malbona pasfrazo"
 
-#: agent/protect-tool.c:1220 tools/symcryptrun.c:442
-#, fuzzy, c-format
-msgid "error while asking for the passphrase: %s\n"
-msgstr "eraro dum kreado de pasfrazo: %s\n"
-
-#: agent/protect-tool.c:1223 tools/symcryptrun.c:446
+#: agent/protect-tool.c:1176 tools/symcryptrun.c:446
 #, fuzzy
 msgid "cancelled\n"
 msgstr "nuligita de uzanto\n"
+
+#: agent/protect-tool.c:1178 tools/symcryptrun.c:442
+#, fuzzy, c-format
+msgid "error while asking for the passphrase: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #: agent/trustlist.c:135 agent/trustlist.c:333
 #, fuzzy, c-format
@@ -671,7 +691,7 @@ msgstr ""
 msgid "error reading `%s', line %d: %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
-#: agent/trustlist.c:398 agent/trustlist.c:451
+#: agent/trustlist.c:398 agent/trustlist.c:448
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -681,21 +701,21 @@ msgstr ""
 #. percent sign is actually needed because it is also
 #. a printf format string.  If you need to insert a
 #. plain % sign, you need to encode it as "%%25".  The
-#. "%s" gets replaced by the name as store in the
+#. "%s" gets replaced by the name as stored in the
 #. certificate.
-#: agent/trustlist.c:572
+#: agent/trustlist.c:609
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
 
-#: agent/trustlist.c:578 common/audit.c:467
+#: agent/trustlist.c:618 common/audit.c:467
 #, fuzzy
 msgid "Yes"
 msgstr "jes"
 
-#: agent/trustlist.c:578 common/audit.c:469
+#: agent/trustlist.c:618 common/audit.c:469
 msgid "No"
 msgstr ""
 
@@ -707,7 +727,7 @@ msgstr ""
 #. "%%25".  The second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
-#: agent/trustlist.c:606
+#: agent/trustlist.c:652
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -717,11 +737,11 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
 #. other button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:619
+#: agent/trustlist.c:666
 msgid "Correct"
 msgstr ""
 
-#: agent/trustlist.c:619
+#: agent/trustlist.c:666
 msgid "Wrong"
 msgstr ""
 
@@ -746,43 +766,43 @@ msgstr "þanøi la pasfrazon"
 msgid "I'll change it later"
 msgstr ""
 
-#: common/exechelp.c:523 common/exechelp.c:614 tools/gpgconf-comp.c:1475
+#: common/exechelp.c:528 common/exechelp.c:625 tools/gpgconf-comp.c:1475
 #: tools/gpgconf-comp.c:1814
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-#: common/exechelp.c:588 common/exechelp.c:647
+#: common/exechelp.c:599 common/exechelp.c:658
 #, fuzzy, c-format
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "ne povas malfermi %s: %s\n"
 
-#: common/exechelp.c:626 common/exechelp.c:754 common/exechelp.c:989
+#: common/exechelp.c:637 common/exechelp.c:765 common/exechelp.c:1000
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
-#: common/exechelp.c:800 common/exechelp.c:853
+#: common/exechelp.c:811 common/exechelp.c:864
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
-#: common/exechelp.c:808
+#: common/exechelp.c:819
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
-#: common/exechelp.c:814 common/exechelp.c:864
+#: common/exechelp.c:825 common/exechelp.c:875
 #, fuzzy, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
-#: common/exechelp.c:859
+#: common/exechelp.c:870
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr ""
 
-#: common/exechelp.c:872
+#: common/exechelp.c:883
 #, fuzzy, c-format
 msgid "error running `%s': terminated\n"
 msgstr "eraro dum legado de '%s': %s\n"
@@ -1186,7 +1206,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
 #: g10/card-util.c:75 g10/card-util.c:1512 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:2934 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:2938 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "ne povas fari tion en neinteraga reøimo\n"
@@ -1196,7 +1216,7 @@ msgstr "ne povas fari tion en neinteraga reøimo\n"
 msgid "This command is only available for version 2 cards\n"
 msgstr "Tiu komando ne eblas en la reøimo %s.\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1875
+#: g10/card-util.c:85 scd/app-openpgp.c:1877
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "sekretaj þlosilpartoj ne estas disponataj\n"
@@ -1508,18 +1528,18 @@ msgstr "Nevalida komando (provu per \"helpo\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output ne funkcias por æi tiu komando\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:3969 g10/keyring.c:380 g10/keyring.c:667
+#: g10/decrypt.c:166 g10/gpg.c:3969 g10/keyring.c:387 g10/keyring.c:698
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "ne povas malfermi '%s'\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1729
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1731
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1743
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1745
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1805,23 +1825,15 @@ msgstr "Nevalida þlosilo %08lX validigita per --always-trust\n"
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
 
-#: g10/getkey.c:2769
+#: g10/getkey.c:2759
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
 
-#: g10/getkey.c:2816
+#: g10/getkey.c:2806
 #, fuzzy, c-format
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
-
-#: g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:185 tools/gpgconf.c:59
-msgid ""
-"@Commands:\n"
-" "
-msgstr ""
-"@Komandoj:\n"
-" "
 
 #: g10/gpg.c:372 sm/gpgsm.c:187
 #, fuzzy
@@ -1950,17 +1962,6 @@ msgstr "|metodo [dosieroj]|presi mesaøo-kompendiojn"
 #: g10/gpg.c:434 sm/gpgsm.c:210
 msgid "run in server mode"
 msgstr ""
-
-#: g10/gpg.c:436 g10/gpgv.c:69 kbx/kbxutil.c:81 sm/gpgsm.c:226
-#: tools/gpg-connect-agent.c:67 tools/gpgconf.c:76 tools/symcryptrun.c:157
-msgid ""
-"@\n"
-"Options:\n"
-" "
-msgstr ""
-"@\n"
-"Opcioj:\n"
-" "
 
 #: g10/gpg.c:438 sm/gpgsm.c:228
 msgid "create ascii armored output"
@@ -2387,7 +2388,7 @@ msgstr "æifri mesaøon kun --pgp2 postulas la æifron IDEA\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "elektita æifrad-metodo ne validas\n"
 
-#: g10/gpg.c:3126 g10/gpg.c:3150 sm/gpgsm.c:1469 sm/gpgsm.c:1475
+#: g10/gpg.c:3126 g10/gpg.c:3150 sm/gpgsm.c:1467 sm/gpgsm.c:1473
 msgid "selected digest algorithm is invalid\n"
 msgstr "elektita kompendi-metodo ne validas\n"
 
@@ -3108,12 +3109,12 @@ msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 msgid "keyring `%s' created\n"
 msgstr "þlosilaro '%s' kreita\n"
 
-#: g10/keydb.c:328 g10/keydb.c:331
+#: g10/keydb.c:333 g10/keydb.c:336
 #, fuzzy, c-format
 msgid "keyblock resource `%s': %s\n"
 msgstr "eraro dum kreado de '%s': %s\n"
 
-#: g10/keydb.c:712
+#: g10/keydb.c:719
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "malsukcesis rekonstrui þlosilaran staplon: %s\n"
@@ -3445,20 +3446,20 @@ msgstr "subskribado malsukcesis: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1142 g10/keygen.c:3633
+#: g10/keyedit.c:1142 g10/keygen.c:3637
 msgid "This key is not protected.\n"
 msgstr "Æi tiu þlosilo ne estas protektita.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3620 g10/revoke.c:538
+#: g10/keyedit.c:1146 g10/keygen.c:3624 g10/revoke.c:538
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3636
+#: g10/keyedit.c:1150 g10/keygen.c:3640
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3640
+#: g10/keyedit.c:1156 g10/keygen.c:3644
 msgid "Key is protected.\n"
 msgstr "Þlosilo estas protektita.\n"
 
@@ -3475,7 +3476,7 @@ msgstr ""
 "Donu la novan pasfrazon por æi tiu sekreta þlosilo.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2173
+#: g10/keyedit.c:1207 g10/keygen.c:2177
 msgid "passphrase not correctly repeated; try again"
 msgstr "la pasfrazo ne estis øuste ripetita; provu denove"
 
@@ -4278,12 +4279,12 @@ msgid "writing key binding signature\n"
 msgstr "skribas þlosilbindan subskribon\n"
 
 #: g10/keygen.c:1158 g10/keygen.c:1269 g10/keygen.c:1274 g10/keygen.c:1409
-#: g10/keygen.c:3133
+#: g10/keygen.c:3137
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "þlosilgrando nevalida; uzas %u bitojn\n"
 
-#: g10/keygen.c:1164 g10/keygen.c:1280 g10/keygen.c:1415 g10/keygen.c:3139
+#: g10/keygen.c:1164 g10/keygen.c:1280 g10/keygen.c:1415 g10/keygen.c:3143
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "þlosilgrando rondigita øis %u bitoj\n"
@@ -4423,7 +4424,7 @@ msgstr "Petita þlosilgrando estas %u bitoj\n"
 msgid "rounded up to %u bits\n"
 msgstr "rondigita øis %u bitoj\n"
 
-#: g10/keygen.c:1849
+#: g10/keygen.c:1853
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -4439,7 +4440,7 @@ msgstr ""
 "      <n>m = þlosilo eksvalidiøos post n monatoj\n"
 "      <n>y = þlosilo eksvalidiøos post n jaroj\n"
 
-#: g10/keygen.c:1860
+#: g10/keygen.c:1864
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -4455,40 +4456,40 @@ msgstr ""
 "      <n>m = þlosilo eksvalidiøos post n monatoj\n"
 "      <n>y = þlosilo eksvalidiøos post n jaroj\n"
 
-#: g10/keygen.c:1883
+#: g10/keygen.c:1887
 msgid "Key is valid for? (0) "
 msgstr "Þlosilo validu ...? (0) "
 
-#: g10/keygen.c:1888
+#: g10/keygen.c:1892
 #, fuzzy, c-format
 msgid "Signature is valid for? (%s) "
 msgstr "Þlosilo validu por ...? (0) "
 
-#: g10/keygen.c:1906 g10/keygen.c:1931
+#: g10/keygen.c:1910 g10/keygen.c:1935
 msgid "invalid value\n"
 msgstr "nevalida valoro\n"
 
-#: g10/keygen.c:1913
+#: g10/keygen.c:1917
 #, fuzzy
 msgid "Key does not expire at all\n"
 msgstr "%s neniam eksvalidiøos\n"
 
-#: g10/keygen.c:1914
+#: g10/keygen.c:1918
 #, fuzzy
 msgid "Signature does not expire at all\n"
 msgstr "%s neniam eksvalidiøos\n"
 
-#: g10/keygen.c:1919
+#: g10/keygen.c:1923
 #, fuzzy, c-format
 msgid "Key expires at %s\n"
 msgstr "%s eksvalidiøos je %s\n"
 
-#: g10/keygen.c:1920
+#: g10/keygen.c:1924
 #, fuzzy, c-format
 msgid "Signature expires at %s\n"
 msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
 
-#: g10/keygen.c:1924
+#: g10/keygen.c:1928
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4496,12 +4497,12 @@ msgstr ""
 "Via sistemo ne povas montri datojn post 2038.\n"
 "Tamen, øi estos øuste traktata øis 2106.\n"
 
-#: g10/keygen.c:1937
+#: g10/keygen.c:1941
 #, fuzzy
 msgid "Is this correct? (y/N) "
 msgstr "Æu tio estas øusta (j/n)? "
 
-#: g10/keygen.c:1967
+#: g10/keygen.c:1971
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4512,7 +4513,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:1982
+#: g10/keygen.c:1986
 #, fuzzy
 msgid ""
 "\n"
@@ -4528,44 +4529,44 @@ msgstr ""
 "    \"Heinrich Heine (la poeto) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-#: g10/keygen.c:2001
+#: g10/keygen.c:2005
 msgid "Real name: "
 msgstr "Vera nomo: "
 
-#: g10/keygen.c:2009
+#: g10/keygen.c:2013
 msgid "Invalid character in name\n"
 msgstr "Nevalida signo en nomo\n"
 
-#: g10/keygen.c:2011
+#: g10/keygen.c:2015
 msgid "Name may not start with a digit\n"
 msgstr "Nomo ne povas komenciøi per cifero\n"
 
-#: g10/keygen.c:2013
+#: g10/keygen.c:2017
 msgid "Name must be at least 5 characters long\n"
 msgstr "Nomo devas havi almenaý 5 signojn\n"
 
-#: g10/keygen.c:2021
+#: g10/keygen.c:2025
 msgid "Email address: "
 msgstr "Retadreso: "
 
-#: g10/keygen.c:2027
+#: g10/keygen.c:2031
 msgid "Not a valid email address\n"
 msgstr "Nevalida retadreso\n"
 
-#: g10/keygen.c:2035
+#: g10/keygen.c:2039
 msgid "Comment: "
 msgstr "Komento: "
 
-#: g10/keygen.c:2041
+#: g10/keygen.c:2045
 msgid "Invalid character in comment\n"
 msgstr "Nevalida signo en komento\n"
 
-#: g10/keygen.c:2063
+#: g10/keygen.c:2067
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Vi uzas la signaron '%s'.\n"
 
-#: g10/keygen.c:2069
+#: g10/keygen.c:2073
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4576,7 +4577,7 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2074
+#: g10/keygen.c:2078
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bonvolu ne meti la retadreson en la veran nomon aý la komenton\n"
 
@@ -4591,23 +4592,23 @@ msgstr "Bonvolu ne meti la retadreson en la veran nomon aý la komenton\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2090
+#: g10/keygen.c:2094
 msgid "NnCcEeOoQq"
 msgstr "NnKkAaBbFf"
 
-#: g10/keygen.c:2100
+#: g10/keygen.c:2104
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (F)ini? "
 
-#: g10/keygen.c:2101
+#: g10/keygen.c:2105
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (B)one/(F)ini? "
 
-#: g10/keygen.c:2120
+#: g10/keygen.c:2124
 msgid "Please correct the error first\n"
 msgstr "Bonvolu korekti la eraron unue\n"
 
-#: g10/keygen.c:2159
+#: g10/keygen.c:2163
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4615,12 +4616,12 @@ msgstr ""
 "Vi bezonas pasfrazon por protekti vian sekretan þlosilon.\n"
 "\n"
 
-#: g10/keygen.c:2174
+#: g10/keygen.c:2178
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2180
+#: g10/keygen.c:2184
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4632,7 +4633,7 @@ msgstr ""
 "uzante æi tiun programon kun la opcio \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2204
+#: g10/keygen.c:2208
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4644,50 +4645,50 @@ msgstr ""
 "kreado de la primoj; tio donas al la stokastilo pli bonan þancon\n"
 "akiri sufiæe da entropio.\n"
 
-#: g10/keygen.c:3073 g10/keygen.c:3100
+#: g10/keygen.c:3077 g10/keygen.c:3104
 msgid "Key generation canceled.\n"
 msgstr "Kreado de þlosiloj nuligita.\n"
 
-#: g10/keygen.c:3305 g10/keygen.c:3472
+#: g10/keygen.c:3309 g10/keygen.c:3476
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skribas publikan þlosilon al '%s'\n"
 
-#: g10/keygen.c:3307 g10/keygen.c:3475
+#: g10/keygen.c:3311 g10/keygen.c:3479
 #, fuzzy, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: g10/keygen.c:3310 g10/keygen.c:3478
+#: g10/keygen.c:3314 g10/keygen.c:3482
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: g10/keygen.c:3459
+#: g10/keygen.c:3463
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "neniu skribebla publika þlosilaro trovita: %s\n"
 
-#: g10/keygen.c:3466
+#: g10/keygen.c:3470
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "neniu skribebla sekreta þlosilaro trovita: %s\n"
 
-#: g10/keygen.c:3486
+#: g10/keygen.c:3490
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "eraro dum skribado de publika þlosilaro '%s': %s\n"
 
-#: g10/keygen.c:3494
+#: g10/keygen.c:3498
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
-#: g10/keygen.c:3521
+#: g10/keygen.c:3525
 msgid "public and secret key created and signed.\n"
 msgstr "publika kaj sekreta þlosiloj kreitaj kaj subskribitaj.\n"
 
-#: g10/keygen.c:3532
+#: g10/keygen.c:3536
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -4696,12 +4697,12 @@ msgstr ""
 "Notu, ke æi tiu þlosilo ne estas uzebla por æifrado. Vi eble volos\n"
 "uzi la komandon \"--edit-key\" por krei flankan þlosilon por tiu celo.\n"
 
-#: g10/keygen.c:3545 g10/keygen.c:3690 g10/keygen.c:3811
+#: g10/keygen.c:3549 g10/keygen.c:3694 g10/keygen.c:3815
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Kreado de þlosiloj malsukcesis: %s\n"
 
-#: g10/keygen.c:3600 g10/keygen.c:3741 g10/sign.c:241
+#: g10/keygen.c:3604 g10/keygen.c:3745 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4709,7 +4710,7 @@ msgstr ""
 "þlosilo estis kreita %lu sekundon en la estonteco (tempotordo aý "
 "horloøeraro)\n"
 
-#: g10/keygen.c:3602 g10/keygen.c:3743 g10/sign.c:243
+#: g10/keygen.c:3606 g10/keygen.c:3747 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4717,26 +4718,26 @@ msgstr ""
 "þlosilo estis kreita %lu sekundojn en la estonteco (tempotordo aý "
 "horloøeraro)\n"
 
-#: g10/keygen.c:3613 g10/keygen.c:3754
+#: g10/keygen.c:3617 g10/keygen.c:3758
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTO: krei subþlosilojn por v3-þlosiloj ne estas OpenPGP-kongrue\n"
 
-#: g10/keygen.c:3654 g10/keygen.c:3787
+#: g10/keygen.c:3658 g10/keygen.c:3791
 #, fuzzy
 msgid "Really create? (y/N) "
 msgstr "Æu vere krei? "
 
-#: g10/keygen.c:3960
+#: g10/keygen.c:3964
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 
-#: g10/keygen.c:4008
+#: g10/keygen.c:4012
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "ne povas krei '%s': %s\n"
 
-#: g10/keygen.c:4034
+#: g10/keygen.c:4038
 #, fuzzy, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "NOTO: sekreta þlosilo %08lX eksvalidiøis je %s\n"
@@ -4802,45 +4803,45 @@ msgstr "     Þlosilo-fingrospuro ="
 msgid "      Card serial no. ="
 msgstr ""
 
-#: g10/keyring.c:1253
+#: g10/keyring.c:1297
 #, fuzzy, c-format
 msgid "renaming `%s' to `%s' failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
 
-#: g10/keyring.c:1258
+#: g10/keyring.c:1326
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "AVERTO: ekzistas 2 dosieroj kun sekretaj informoj.\n"
 
-#: g10/keyring.c:1260
+#: g10/keyring.c:1327
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s estas la neþanøita\n"
 
-#: g10/keyring.c:1261
+#: g10/keyring.c:1328
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s estas la nova\n"
 
-#: g10/keyring.c:1262
+#: g10/keyring.c:1329
 msgid "Please fix this possible security flaw\n"
 msgstr "Bonvolu ripari æi tiun eblan sekurecproblemon\n"
 
-#: g10/keyring.c:1384
+#: g10/keyring.c:1430
 #, fuzzy, c-format
 msgid "caching keyring `%s'\n"
 msgstr "kontrolas þlosilaron '%s'\n"
 
-#: g10/keyring.c:1430
+#: g10/keyring.c:1476
 #, fuzzy, c-format
 msgid "%lu keys cached so far (%lu signatures)\n"
 msgstr "%lu þlosiloj kontrolitaj (%lu subskriboj)\n"
 
-#: g10/keyring.c:1442
+#: g10/keyring.c:1488
 #, fuzzy, c-format
 msgid "%lu keys cached (%lu signatures)\n"
 msgstr "%lu þlosiloj kontrolitaj (%lu subskriboj)\n"
 
-#: g10/keyring.c:1514
+#: g10/keyring.c:1560
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: þlosilaro kreita\n"
@@ -4888,7 +4889,7 @@ msgstr "el"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:828 g10/keyserver.c:1450
+#: g10/keyserver.c:828 g10/keyserver.c:1452
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "nevalida þlosilaro"
@@ -4903,126 +4904,126 @@ msgstr "þlosilo '%s' ne trovita: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
-#: g10/keyserver.c:1169
+#: g10/keyserver.c:1171
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1173
+#: g10/keyserver.c:1175
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1197
+#: g10/keyserver.c:1199
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1200
+#: g10/keyserver.c:1202
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1353
+#: g10/keyserver.c:1355
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1357
+#: g10/keyserver.c:1359
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "subskribita per via þlosilo %08lX je %s\n"
 
-#: g10/keyserver.c:1400
+#: g10/keyserver.c:1402
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1403
+#: g10/keyserver.c:1405
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
 
-#: g10/keyserver.c:1410 g10/keyserver.c:1506
+#: g10/keyserver.c:1412 g10/keyserver.c:1508
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "nevalida þlosilaro"
 
-#: g10/keyserver.c:1458
+#: g10/keyserver.c:1460
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1467
+#: g10/keyserver.c:1469
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1529 g10/keyserver.c:2058
+#: g10/keyserver.c:1531 g10/keyserver.c:2060
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "neniu þlosilservilo konata (uzu la opcion --keyserver)\n"
 
-#: g10/keyserver.c:1535
+#: g10/keyserver.c:1537
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1547
+#: g10/keyserver.c:1549
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1552
+#: g10/keyserver.c:1554
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1560
+#: g10/keyserver.c:1562
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1567
+#: g10/keyserver.c:1569
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "þlosilservila eraro"
 
-#: g10/keyserver.c:1572
+#: g10/keyserver.c:1574
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "þlosilservila eraro"
 
-#: g10/keyserver.c:1581
+#: g10/keyserver.c:1583
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "listigo de sekretaj þlosiloj malsukcesis: %s\n"
 
-#: g10/keyserver.c:1606 g10/keyserver.c:1640
+#: g10/keyserver.c:1608 g10/keyserver.c:1642
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: ne valida þlosilidentigilo\n"
 
-#: g10/keyserver.c:1899
+#: g10/keyserver.c:1901
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
-#: g10/keyserver.c:1921
+#: g10/keyserver.c:1923
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1923
+#: g10/keyserver.c:1925
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
-#: g10/keyserver.c:1979
+#: g10/keyserver.c:1981
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
-#: g10/keyserver.c:1985
+#: g10/keyserver.c:1987
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
@@ -5392,7 +5393,7 @@ msgstr ""
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpaketo de speco %d havas þaltitan \"critical bit\"\n"
 
-#: g10/passphrase.c:294 g10/passphrase.c:587
+#: g10/passphrase.c:294 g10/passphrase.c:588
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (æefþlosilo %08lX)"
@@ -5423,7 +5424,12 @@ msgstr "nuligita de uzanto\n"
 msgid "problem with the agent: %s\n"
 msgstr "problemo kun agento: agento redonas 0x%lx\n"
 
-#: g10/passphrase.c:566
+#: g10/passphrase.c:458 jnlib/argparse.c:213
+#, fuzzy
+msgid "out of core\n"
+msgstr "ne traktita"
+
+#: g10/passphrase.c:567
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5433,12 +5439,12 @@ msgstr ""
 "Vi bezonas pasfrazon por malþlosi la sekretan þlosilon\n"
 "por la uzanto: \""
 
-#: g10/passphrase.c:574
+#: g10/passphrase.c:575
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bita %s-þlosilo, %08lX, kreita je %s"
 
-#: g10/passphrase.c:583
+#: g10/passphrase.c:584
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
@@ -6598,11 +6604,6 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-#: jnlib/argparse.c:213
-#, fuzzy
-msgid "out of core\n"
-msgstr "ne traktita"
-
 #: jnlib/argparse.c:215
 #, fuzzy, c-format
 msgid "invalid option \"%.50s\"\n"
@@ -6633,40 +6634,40 @@ msgstr "ne povas malfermi %s: %s\n"
 msgid "conversion from `%s' to `%s' failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
 
-#: jnlib/dotlock.c:235
+#: jnlib/dotlock.c:234
 #, fuzzy, c-format
 msgid "failed to create temporary file `%s': %s\n"
 msgstr "%s: ne povas krei dosierujon: %s\n"
 
-#: jnlib/dotlock.c:270
+#: jnlib/dotlock.c:269
 #, fuzzy, c-format
 msgid "error writing to `%s': %s\n"
 msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
 
-#: jnlib/dotlock.c:454
+#: jnlib/dotlock.c:453
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
 msgstr ""
 
-#: jnlib/dotlock.c:460
+#: jnlib/dotlock.c:459
 msgid " - probably dead - removing lock"
 msgstr ""
 
-#: jnlib/dotlock.c:470
+#: jnlib/dotlock.c:469
 #, fuzzy, c-format
 msgid "waiting for lock (held by %d%s) %s...\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#: jnlib/dotlock.c:471
+#: jnlib/dotlock.c:470
 msgid "(deadlock?) "
 msgstr ""
 
-#: jnlib/dotlock.c:494
+#: jnlib/dotlock.c:493
 #, fuzzy, c-format
 msgid "lock `%s' not made: %s\n"
 msgstr "publika þlosilo %08lX ne trovita: %s\n"
 
-#: jnlib/dotlock.c:502
+#: jnlib/dotlock.c:501
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
@@ -6695,58 +6696,68 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:624 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
-#: scd/app-openpgp.c:1666 scd/app-openpgp.c:1684 scd/app-openpgp.c:1884
+#: scd/app-nks.c:712 scd/app-openpgp.c:2373
+#, c-format
+msgid "RSA modulus missing or not of size %d bits\n"
+msgstr ""
+
+#: scd/app-nks.c:720 scd/app-openpgp.c:2385
+#, c-format
+msgid "RSA public exponent missing or larger than %d bits\n"
+msgstr ""
+
+#: scd/app-nks.c:800 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
+#: scd/app-openpgp.c:1666 scd/app-openpgp.c:1684 scd/app-openpgp.c:1886
 #: scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: scd/app-nks.c:657
+#: scd/app-nks.c:833
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
-#: scd/app-nks.c:848
+#: scd/app-nks.c:1090
 #, fuzzy
 msgid "|N|Please enter a new PIN for the standard keys."
 msgstr "þanøi la pasfrazon"
 
-#: scd/app-nks.c:849
+#: scd/app-nks.c:1091
 #, fuzzy
 msgid "||Please enter the PIN for the standard keys."
 msgstr "þanøi la pasfrazon"
 
-#: scd/app-nks.c:855
+#: scd/app-nks.c:1097
 #, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Kialo por revoko: "
 
-#: scd/app-nks.c:857
+#: scd/app-nks.c:1099
 #, fuzzy
 msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "Kialo por revoko: "
 
-#: scd/app-nks.c:865
+#: scd/app-nks.c:1107
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:867
+#: scd/app-nks.c:1109
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:875
+#: scd/app-nks.c:1117
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:877
+#: scd/app-nks.c:1119
 msgid ""
 "|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:978 scd/app-openpgp.c:1928 scd/app-dinsig.c:531
+#: scd/app-nks.c:1220 scd/app-openpgp.c:1930 scd/app-dinsig.c:531
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
@@ -6766,15 +6777,15 @@ msgstr "malsukcesis rekonstrui þlosilaran staplon: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 
-#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2578
+#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2608
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2586
+#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2616
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2596
+#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2626
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
@@ -6804,7 +6815,7 @@ msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
 #: scd/app-openpgp.c:1535 scd/app-openpgp.c:1575 scd/app-openpgp.c:1703
-#: scd/app-openpgp.c:2895
+#: scd/app-openpgp.c:2925
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Kreado de þlosiloj malsukcesis: %s\n"
@@ -6813,11 +6824,11 @@ msgstr "Kreado de þlosiloj malsukcesis: %s\n"
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1621 scd/app-openpgp.c:1866 scd/app-openpgp.c:3146
+#: scd/app-openpgp.c:1621 scd/app-openpgp.c:1868 scd/app-openpgp.c:3188
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1627 scd/app-openpgp.c:3155
+#: scd/app-openpgp.c:1627 scd/app-openpgp.c:3197
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6839,114 +6850,104 @@ msgstr "þanøi la pasfrazon"
 msgid "|A|Please enter the Admin PIN"
 msgstr "þanøi la pasfrazon"
 
-#: scd/app-openpgp.c:1880
+#: scd/app-openpgp.c:1882
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Kialo por revoko: "
 
-#: scd/app-openpgp.c:1889 scd/app-openpgp.c:1952
+#: scd/app-openpgp.c:1891 scd/app-openpgp.c:1954
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1923
+#: scd/app-openpgp.c:1925
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:1924
+#: scd/app-openpgp.c:1926
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:1924
+#: scd/app-openpgp.c:1926
 msgid "|N|New PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:2014 scd/app-openpgp.c:2664
+#: scd/app-openpgp.c:2016 scd/app-openpgp.c:2694
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "eraro dum legado de þlosilbloko: %s\n"
 
-#: scd/app-openpgp.c:2020 scd/app-openpgp.c:2671
+#: scd/app-openpgp.c:2022 scd/app-openpgp.c:2701
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "%s: eraro dum legado de libera registro: %s\n"
 
-#: scd/app-openpgp.c:2030
+#: scd/app-openpgp.c:2032
 #, fuzzy
 msgid "key already exists\n"
 msgstr "'%s' jam densigita\n"
 
-#: scd/app-openpgp.c:2034
+#: scd/app-openpgp.c:2036
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2036
+#: scd/app-openpgp.c:2038
 #, fuzzy
 msgid "generating new key\n"
 msgstr "krei novan þlosilparon"
 
-#: scd/app-openpgp.c:2362
+#: scd/app-openpgp.c:2364
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2371
-#, c-format
-msgid "RSA modulus missing or not of size %d bits\n"
-msgstr ""
-
-#: scd/app-openpgp.c:2383
-#, c-format
-msgid "RSA public exponent missing or larger than %d bits\n"
-msgstr ""
-
-#: scd/app-openpgp.c:2393 scd/app-openpgp.c:2401
+#: scd/app-openpgp.c:2395 scd/app-openpgp.c:2403
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2495
+#: scd/app-openpgp.c:2499
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 
-#: scd/app-openpgp.c:2555
+#: scd/app-openpgp.c:2585
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2569
+#: scd/app-openpgp.c:2598
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 
-#: scd/app-openpgp.c:2572
+#: scd/app-openpgp.c:2601
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Kreado de þlosiloj malsukcesis: %s\n"
 
-#: scd/app-openpgp.c:2629
+#: scd/app-openpgp.c:2659
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2679
+#: scd/app-openpgp.c:2709
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2794
+#: scd/app-openpgp.c:2824
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s-subskribo de: %s\n"
 
-#: scd/app-openpgp.c:2870
+#: scd/app-openpgp.c:2900
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3160
+#: scd/app-openpgp.c:3202
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3385 scd/app-openpgp.c:3396
+#: scd/app-openpgp.c:3427 scd/app-openpgp.c:3438
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "validaj OpenPGP-datenoj ne trovitaj.\n"
@@ -7795,21 +7796,21 @@ msgstr "ne povis analizi URI de þlosilservilo\n"
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1508
+#: sm/gpgsm.c:1506
 #, fuzzy, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "skribas al '%s'\n"
 
-#: sm/gpgsm.c:1546
+#: sm/gpgsm.c:1544
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "ne povas fermi '%s': %s\n"
 
-#: sm/gpgsm.c:1717
+#: sm/gpgsm.c:1715
 msgid "this command has not yet been implemented\n"
 msgstr ""
 
-#: sm/gpgsm.c:1872
+#: sm/gpgsm.c:1870
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7832,7 +7833,7 @@ msgstr ""
 msgid "error importing certificate: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-#: sm/import.c:548 tools/gpg-connect-agent.c:1329
+#: sm/import.c:554 tools/gpg-connect-agent.c:1329
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
@@ -7934,17 +7935,17 @@ msgid ""
 "Note, that this certificate will NOT create a qualified signature!"
 msgstr ""
 
-#: sm/sign.c:420
+#: sm/sign.c:431
 #, fuzzy, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
 msgstr "protekto-metodo %d%s ne estas realigita\n"
 
-#: sm/sign.c:433
+#: sm/sign.c:445
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"
 msgstr ""
 
-#: sm/sign.c:483
+#: sm/sign.c:495
 #, fuzzy, c-format
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"

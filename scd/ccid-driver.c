@@ -271,7 +271,7 @@ static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
-static int abort_cmd (ccid_driver_t handle);
+static int abort_cmd (ccid_driver_t handle, int seqno);
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
@@ -1832,9 +1832,11 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
         {
           rc = errno;
           DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (rc));
-          if (rc == EAGAIN && eagain_retries++ < 5)
+          if (rc == EAGAIN && eagain_retries++ < 3)
             {
+#ifndef TEST
               gnupg_sleep (1);
+#endif
               goto retry;
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
@@ -1851,7 +1853,9 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                       handle->dev_fd, strerror (rc));
           if (rc == EAGAIN && eagain_retries++ < 5)
             {
+#ifndef TEST
               gnupg_sleep (1);
+#endif
               goto retry;
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
@@ -1863,21 +1867,20 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (msglen < 10)
     {
       DEBUGOUT_1 ("bulk-in msg too short (%u)\n", (unsigned int)msglen);
-      abort_cmd (handle);
+      abort_cmd (handle, seqno);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[5] != 0)    
     {
       DEBUGOUT_1 ("unexpected bulk-in slot (%d)\n", buffer[5]);
-      abort_cmd (handle);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
   if (buffer[6] != seqno)    
     {
       DEBUGOUT_2 ("bulk-in seqno does not match (%d/%d)\n",
                   seqno, buffer[6]);
-      abort_cmd (handle);
-      return CCID_DRIVER_ERR_INV_VALUE;
+      /* Retry until we are synced again.  */
+      goto retry;
     }
 
   /* We need to handle the time extension request before we check that
@@ -1895,7 +1898,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   if (buffer[0] != expected_type)
     {
       DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
-      abort_cmd (handle);
+      abort_cmd (handle, seqno);
       return CCID_DRIVER_ERR_INV_VALUE;
     }
 
@@ -1943,11 +1946,10 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 
 /* Send an abort sequence and wait until everything settled.  */
 static int
-abort_cmd (ccid_driver_t handle)
+abort_cmd (ccid_driver_t handle, int seqno)
 {
   int rc;
   char dummybuf[8];
-  unsigned char seqno;
   unsigned char msg[100];
   size_t msglen;
 
@@ -1957,12 +1959,11 @@ abort_cmd (ccid_driver_t handle)
       rc = CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
   
-  DEBUGOUT ("sending abort sequence\n");
+  seqno &= 0xff;
+  DEBUGOUT_1 ("sending abort sequence for seqno %d\n", seqno);
   /* Send the abort command to the control pipe.  Note that we don't
      need to keep track of sent abort commands because there should
      never be another thread using the same slot concurrently.  */
-  handle->seqno--;  /* Restore the last one sent.  */
-  seqno = (handle->seqno & 0xff);
   rc = usb_control_msg (handle->idev, 
                         0x21,/* bmRequestType: host-to-device,
                                 class specific, to interface.  */
@@ -2039,7 +2040,7 @@ abort_cmd (ccid_driver_t handle)
     }
   while (msg[0] != RDR_to_PC_SlotStatus && msg[5] != 0 && msg[6] != seqno);
 
-  handle->seqno = seqno;
+  handle->seqno = ((seqno + 1) & 0xff);
   DEBUGOUT ("sending abort sequence succeeded\n");
 
   return 0;
@@ -2178,7 +2179,7 @@ ccid_poll (ccid_driver_t handle)
 }
 
 
-/* Note that this fucntion won't return the error codes NO_CARD or
+/* Note that this function won't return the error codes NO_CARD or
    CARD_INACTIVE */
 int 
 ccid_slot_status (ccid_driver_t handle, int *statusbits)
@@ -3297,13 +3298,6 @@ main (int argc, char **argv)
 
   return 0;
 }
-
-static coid
-gnupg_sleep (int seconds)
-{
-  sleep (seconds);
-}
-
 
 /*
  * Local Variables:

@@ -125,7 +125,7 @@ int apdu_send_le (int slot, int extended_mode,
                   int class, int ins, int p0, int p1,
                   int lc, const char *data, int le,
                   unsigned char **retbuf, size_t *retbuflen);
-int apdu_send_direct (int slot, int extended_mode,
+int apdu_send_direct (int slot, size_t extended_length,
                       const unsigned char *apdudata, size_t apdudatalen,
                       int handle_more,
                       unsigned char **retbuf, size_t *retbuflen);

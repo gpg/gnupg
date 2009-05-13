@@ -2930,7 +2930,11 @@ send_le (int slot, int class, int ins, int p0, int p1,
 #undef SHORT_RESULT_BUFFER_SIZE
 
   if ((sw = lock_slot (slot)))
-    return sw;
+    {
+      xfree (apdu_buffer);
+      xfree (result_buffer);
+      return sw;
+    }
 
   do
     {
@@ -3003,6 +3007,8 @@ send_le (int slot, int class, int ins, int p0, int p1,
           log_info ("apdu_send_simple(%d) failed: %s\n",
                     slot, apdu_strerror (rc));
           unlock_slot (slot);
+          xfree (apdu_buffer);
+          xfree (result_buffer);
           return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
         }
       sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -3041,6 +3047,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           if (!*retbuf)
             {
               unlock_slot (slot);
+              xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
           *retbuflen = resultlen;
@@ -3060,6 +3067,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
           if (!*retbuf)
             {
               unlock_slot (slot);
+              xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
           assert (resultlen < bufsize);
@@ -3091,6 +3099,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
               log_error ("apdu_send_simple(%d) for get response failed: %s\n",
                          slot, apdu_strerror (rc));
               unlock_slot (slot);
+              xfree (result_buffer);
               return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
             }
           sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -3116,6 +3125,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
                       if (!tmp)
                         {
                           unlock_slot (slot);
+                          xfree (result_buffer);
                           return SW_HOST_OUT_OF_CORE;
                         }
                       p = tmp + (p - *retbuf);
@@ -3142,6 +3152,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
     }
 
   unlock_slot (slot);
+  xfree (result_buffer);
 
   if (DBG_CARD_IO && retbuf && sw == SW_SUCCESS)
     log_printhex ("      dump: ", *retbuf, *retbuflen);
@@ -3231,23 +3242,27 @@ apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
    and returns with an APDU including the status word.  With
    HANDLE_MORE set to true this function will handle the MORE DATA
    status and return all APDUs concatenated with one status word at
-   the end.  If EXTENDED_MODE is not 0 command chaining or extended
-   length will be used; see send_le for details.  The function does
-   not return a regular status word but 0 on success.  If the slot is
-   locked, the function returns immediately with an error.  */
+   the end.  If EXTENDED_LENGTH is != 0 extended lengths are allowed
+   with a max. result data length of EXTENDED_LENGTH bytes.  The
+   function does not return a regular status word but 0 on success.
+   If the slot is locked, the function returns immediately with an
+   error.  */
 int
-apdu_send_direct (int slot, int extended_mode,
+apdu_send_direct (int slot, size_t extended_length,
                   const unsigned char *apdudata, size_t apdudatalen,
                   int handle_more,
                   unsigned char **retbuf, size_t *retbuflen)
 {
-#define RESULTLEN 258
-  /* FIXME:  Implement dynamic result buffer and extended Le.  */
-  unsigned char apdu[5+256+1];
-  size_t apdulen;
-  unsigned char result[RESULTLEN+10]; /* 10 extra in case of bugs in
-                                         the driver. */
+#define SHORT_RESULT_BUFFER_SIZE 258
+  unsigned char short_result_buffer[SHORT_RESULT_BUFFER_SIZE+10]; 
+  unsigned char *result_buffer = NULL;
+  size_t result_buffer_size;
+  unsigned char *result;
   size_t resultlen;
+  unsigned char short_apdu_buffer[5+256+10];
+  unsigned char *apdu_buffer = NULL;
+  unsigned char *apdu;
+  size_t apdulen;
   int sw;
   long rc; /* we need a long here due to PC/SC. */
   int class;
@@ -3255,26 +3270,59 @@ apdu_send_direct (int slot, int extended_mode,
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
 
-  if (extended_mode)
-    return SW_HOST_NOT_SUPPORTED; /* FIXME. */
+  if (apdudatalen > 65535)
+    return SW_HOST_INV_VALUE;
 
-  if ((sw = trylock_slot (slot)))
-    return sw;
-
-  /* We simply trunctate a too long APDU.  */
-  if (apdudatalen > sizeof apdu)
-    apdudatalen = sizeof apdu;
+  if (apdudatalen > sizeof short_apdu_buffer - 5)
+    {
+      apdu_buffer = xtrymalloc (apdudatalen + 5);
+      if (!apdu_buffer)
+        return SW_HOST_OUT_OF_CORE;
+      apdu = apdu_buffer;
+    }
+  else
+    {
+      apdu = short_apdu_buffer;
+    }
   apdulen = apdudatalen;
   memcpy (apdu, apdudata, apdudatalen);
   class = apdulen? *apdu : 0;
 
-  resultlen = RESULTLEN;
+  if (extended_length >= 256 && extended_length <= 65536)
+    {
+      result_buffer_size = extended_length;
+      result_buffer = xtrymalloc (result_buffer_size + 10);
+      if (!result_buffer)
+        {
+          xfree (apdu_buffer);
+          return SW_HOST_OUT_OF_CORE;
+        }
+      result = result_buffer;
+    }
+  else
+    {
+      result_buffer_size = SHORT_RESULT_BUFFER_SIZE;
+      result = short_result_buffer;
+    }
+#undef SHORT_RESULT_BUFFER_SIZE
+
+  if ((sw = trylock_slot (slot)))
+    {
+      xfree (apdu_buffer);
+      xfree (result_buffer);
+      return sw;
+    }
+
+  resultlen = result_buffer_size;
   rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
+  xfree (apdu_buffer);
+  apdu_buffer = NULL;
   if (rc || resultlen < 2)
     {
       log_error ("apdu_send_direct(%d) failed: %s\n",
                  slot, apdu_strerror (rc));
       unlock_slot (slot);
+      xfree (result_buffer);
       return rc? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -3301,6 +3349,7 @@ apdu_send_direct (int slot, int extended_mode,
           if (!*retbuf)
             {
               unlock_slot (slot);
+              xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
           assert (resultlen < bufsize);
@@ -3315,20 +3364,22 @@ apdu_send_direct (int slot, int extended_mode,
           if (DBG_CARD_IO)
             log_debug ("apdu_send_direct(%d): %d more bytes available\n",
                        slot, len);
+          apdu = short_apdu_buffer;
           apdulen = 0;
           apdu[apdulen++] = class;
           apdu[apdulen++] = 0xC0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = 0;
           apdu[apdulen++] = len;
-          memset (apdu+apdulen, 0, sizeof (apdu) - apdulen);
-          resultlen = RESULTLEN;
+          memset (apdu+apdulen, 0, sizeof (short_apdu_buffer) - apdulen);
+          resultlen = result_buffer_size;
           rc = send_apdu (slot, apdu, apdulen, result, &resultlen, NULL);
           if (rc || resultlen < 2)
             {
               log_error ("apdu_send_direct(%d) for get response failed: %s\n",
                          slot, apdu_strerror (rc));
               unlock_slot (slot);
+              xfree (result_buffer);
               return rc ? rc : SW_HOST_INCOMPLETE_CARD_RESPONSE;
             }
           sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -3354,6 +3405,7 @@ apdu_send_direct (int slot, int extended_mode,
                       if (!tmp)
                         {
                           unlock_slot (slot);
+                          xfree (result_buffer);
                           return SW_HOST_OUT_OF_CORE;
                         }
                       p = tmp + (p - *retbuf);
@@ -3386,6 +3438,7 @@ apdu_send_direct (int slot, int extended_mode,
           if (!*retbuf)
             {
               unlock_slot (slot);
+              xfree (result_buffer);
               return SW_HOST_OUT_OF_CORE;
             }
           *retbuflen = resultlen;
@@ -3394,6 +3447,7 @@ apdu_send_direct (int slot, int extended_mode,
     }
 
   unlock_slot (slot);
+  xfree (result_buffer);
 
   /* Append the status word.  Note that we reserved the two extra
      bytes while allocating the buffer.  */
@@ -3407,5 +3461,4 @@ apdu_send_direct (int slot, int extended_mode,
     log_printhex ("      dump: ", *retbuf, *retbuflen);
 
   return 0;
-#undef RESULTLEN
 }
