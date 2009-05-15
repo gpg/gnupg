@@ -325,7 +325,19 @@ learn_status_cb (void *opaque, const char *line)
       else if (no == 3)
         parm->cafpr3valid = unhexify_fpr (line, parm->cafpr3);
     }
-  
+  else if (keywordlen == 8 && !memcmp (keyword, "KEY-ATTR", keywordlen))
+    {
+      int keyno, algo, nbits;
+
+      sscanf (line, "%d %d %d", &keyno, &algo, &nbits);
+      keyno--;
+      if (keyno >= 0 && keyno < DIM (parm->key_attr))
+        {
+          parm->key_attr[keyno].algo = algo;
+          parm->key_attr[keyno].nbits = nbits;
+        }
+    }
+
   return 0;
 }
 
@@ -343,6 +355,9 @@ agent_learn (struct agent_card_info_s *info)
   rc = assuan_transact (agent_ctx, "LEARN --send",
                         dummy_data_cb, NULL, default_inq_cb, NULL,
                         learn_status_cb, info);
+  /* Also try to get the key attributes.  */
+  if (!rc)
+    agent_scd_getattr ("KEY-ATTR", info);
   
   return rc;
 }
@@ -535,7 +550,6 @@ scd_genkey_cb (void *opaque, const char *line)
   int keywordlen;
   gpg_error_t rc;
 
-  log_debug ("got status line `%s'\n", line);
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
   while (spacep (line))
@@ -827,6 +841,7 @@ agent_get_passphrase (const char *cache_id,
                       const char *prompt,
                       const char *desc_msg,
                       int repeat,
+                      int check,
                       char **r_passphrase)
 {
   int rc;
@@ -863,8 +878,9 @@ agent_get_passphrase (const char *cache_id,
       goto no_mem;
 
   snprintf (line, DIM(line)-1, 
-            "GET_PASSPHRASE --data --repeat=%d -- %s %s %s %s", 
+            "GET_PASSPHRASE --data --repeat=%d%s -- %s %s %s %s", 
             repeat, 
+            check? " --check --qualitybar":"",
             arg1? arg1:"X",
             arg2? arg2:"X",
             arg3? arg3:"X",

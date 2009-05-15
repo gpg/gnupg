@@ -202,11 +202,11 @@ int  have_static_passphrase(void);
 void set_passphrase_from_string(const char *pass);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo );
-char *ask_passphrase (const char *description,
-                      const char *tryagain_text,
-                      const char *promptid,
-                      const char *prompt, 
-                      const char *cacheid, int *canceled);
+DEK *passphrase_to_dek_ext(u32 *keyid, int pubkey_algo,
+                           int cipher_algo, STRING2KEY *s2k, int mode,
+                           const char *tryagain_text,
+                           const char *custdesc, const char *custprompt,
+                           int *canceled);
 DEK *passphrase_to_dek( u32 *keyid, int pubkey_algo,
 			int cipher_algo, STRING2KEY *s2k, int mode,
                         const char *tryagain_text, int *canceled);

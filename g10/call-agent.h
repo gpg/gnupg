@@ -53,6 +53,10 @@ struct agent_card_info_s
   int is_v2;         /* True if this is a v2 card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
+  struct {           /* Array with key attributes.  */
+    int algo;              /* Algorithm identifier.  */
+    unsigned int nbits;    /* Supported keysize.  */
+  } key_attr[3];      
 };
 
 struct agent_card_genkey_s {
@@ -116,6 +120,7 @@ gpg_error_t agent_get_passphrase (const char *cache_id,
                                   const char *prompt,
                                   const char *desc_msg,
                                   int repeat,
+                                  int check,
                                   char **r_passphrase);
 
 /* Send the CLEAR_PASSPHRASE command to the agent.  */

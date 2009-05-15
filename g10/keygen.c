@@ -2153,21 +2153,28 @@ ask_user_id( int mode )
 }
 
 
+/*  MODE  0 - standard
+          1 - Ask for passphrase of the card backup key.  */
 static DEK *
-do_ask_passphrase ( STRING2KEY **ret_s2k, int *r_canceled )
+do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
 {
     DEK *dek = NULL;
     STRING2KEY *s2k;
     const char *errtext = NULL;
+    const char *custdesc = NULL;
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
+
+    if (mode == 1)
+      custdesc = _("Please enter a passphrase to protect the off-card "
+                   "backup of the new encryption key.");
 
     s2k = xmalloc_secure( sizeof *s2k );
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;
-	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k,2,
-                                 errtext, r_canceled);
+	dek = passphrase_to_dek_ext (NULL, 0, opt.s2k_cipher_algo, s2k, 2,
+                                     errtext, custdesc, NULL, r_canceled);
         if (!dek && *r_canceled) {
 	    xfree(dek); dek = NULL;
 	    xfree(s2k); s2k = NULL;
@@ -2587,7 +2594,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       STRING2KEY *s2k;
       DEK *dek;
 
-      dek = do_ask_passphrase ( &s2k, &canceled );
+      dek = do_ask_passphrase (&s2k, 0, &canceled);
       if (dek)
         {
           r = xmalloc_clear( sizeof *r );
@@ -3085,7 +3092,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   para = r;
     
   canceled = 0;
-  dek = card_serialno? NULL : do_ask_passphrase ( &s2k, &canceled );
+  dek = card_serialno? NULL : do_ask_passphrase (&s2k, 0, &canceled);
   if( dek )
     {
       r = xmalloc_clear( sizeof *r );
@@ -3143,7 +3150,7 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
       log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
-  dek = do_ask_passphrase (&s2k, &canceled);
+  dek = do_ask_passphrase (&s2k, 1, &canceled);
   if (canceled)
     {
       rc = gpg_error (GPG_ERR_CANCELED);
@@ -3547,6 +3554,7 @@ do_generate_keypair (struct para_data_s *para,
         log_error ("key generation failed: %s\n", g10_errstr(rc) );
       else
         tty_printf (_("Key generation failed: %s\n"), g10_errstr(rc) );
+      write_status_error (card? "card_key_generate":"key_generate", rc);
       print_status_key_not_created ( get_parameter_value (para, pHANDLE) );
     }
   else
@@ -3660,7 +3668,7 @@ generate_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock)
   
   canceled = 0;
   if (ask_pass)
-    dek = do_ask_passphrase (&s2k, &canceled);
+    dek = do_ask_passphrase (&s2k, 0, &canceled);
   else if (passphrase)
     {
       s2k = xmalloc_secure ( sizeof *s2k );
@@ -3951,19 +3959,35 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   PKT_public_key *pk;
   size_t n;
   int i;
+  unsigned int nbits;
+    
+  /* Get the size of the key directly from the card.  */
+  {
+    struct agent_card_info_s info;
+    
+    memset (&info, 0, sizeof info);
+    if (!agent_scd_getattr ("KEY-ATTR", &info)
+        && info.key_attr[1].algo)
+      nbits = info.key_attr[1].nbits;
+    else
+      nbits = 1024; /* All pre-v2.0 cards.  */
+    agent_release_card_info (&info);
+  }
 
-  rc = generate_raw_key (algo, 1024, timestamp,
+  /* Create a key of this size in memory.  */
+  rc = generate_raw_key (algo, nbits, timestamp,
                          &sk_unprotected, &sk_protected);
   if (rc)
     return rc;
 
-  /* First, store the key to the card. */
+  /* Store the key to the card. */
   rc = save_unprotected_key_to_card (sk_unprotected, keyno);
   if (rc)
     {
       log_error (_("storing key onto card failed: %s\n"), g10_errstr (rc));
       free_secret_key (sk_unprotected);
       free_secret_key (sk_protected);
+      write_status_error ("save_key_to_card", rc);
       return rc;
     }
 

@@ -2368,6 +2368,9 @@ do_writekey (app_t app, ctrl_t ctrl,
 
   maxbits = app->app_local->keyattr[keyno].n_bits;
   nbits = rsa_n? count_bits (rsa_n, rsa_n_len) : 0;
+  if (opt.verbose)
+    log_info ("RSA modulus size is %u bits (%u bytes)\n", 
+              nbits, (unsigned int)rsa_n_len);
   if (nbits != maxbits)
     {
       log_error (_("RSA modulus missing or not of size %d bits\n"), 

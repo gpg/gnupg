@@ -236,7 +236,8 @@ read_passphrase_from_fd( int fd )
 /*
  * Ask the GPG Agent for the passphrase.
  * Mode 0:  Allow cached passphrase
- *      1:  No cached passphrase FIXME: Not really implemented
+ *      1:  No cached passphrase; that is we are asking for a new passphrase
+ *          FIXME: Only partially implemented
  *
  * Note that TRYAGAIN_TEXT must not be translated.  If CANCELED is not
  * NULL, the function does set it to 1 if the user canceled the
@@ -260,6 +261,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   char *my_prompt;
   char hexfprbuf[20*2+1];
   const char *my_cacheid;
+  int check = (mode == 1);
 
   if (canceled)
     *canceled = 0;
@@ -347,7 +349,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   my_prompt = custom_prompt ? native_to_utf8 (custom_prompt): NULL;
 
   rc = agent_get_passphrase (my_cacheid, tryagain_text, my_prompt, atext,
-                             repeat, &pw);
+                             repeat, check, &pw);
   
   xfree (my_prompt);
   xfree (atext); atext = NULL;
@@ -432,54 +434,6 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 }
 
 
-/****************
- * Ask for a passphrase and return that string.
- */
-char *
-ask_passphrase (const char *description,
-                const char *tryagain_text,
-                const char *promptid,
-                const char *prompt,
-                const char *cacheid, int *canceled)
-{
-  char *pw = NULL;
-
-  (void)promptid;
-  
-  if (canceled)
-    *canceled = 0;
-
-  if (!opt.batch && description)
-    {
-      if (strchr (description, '%'))
-        {
-          char *tmp = percent_plus_unescape (description, 0xff);
-          if (!tmp)
-            log_fatal(_("out of core\n"));
-          tty_printf ("\n%s\n", tmp);
-          xfree (tmp);
-        }
-      else
-        tty_printf ("\n%s\n",description);
-    }
-               
-  if (have_static_passphrase ()) 
-    {
-      pw = xmalloc_secure (strlen(fd_passwd)+1);
-      strcpy (pw, fd_passwd);
-    }
-  else
-    pw = passphrase_get (NULL, 0, cacheid, 0,
-                         tryagain_text, description, prompt,
-                         canceled );
-
-  if (!pw || !*pw)
-    write_status( STATUS_MISSING_PASSPHRASE );
-
-  return pw;
-}
-
-
 /* Return a new DEK object Using the string-to-key sepcifier S2K.  Use
    KEYID and PUBKEY_ALGO to prompt the user.  Returns NULL is the user
    selected to cancel the passphrase entry and if CANCELED is not
@@ -490,9 +444,11 @@ ask_passphrase (const char *description,
         2:  Ditto, but change the text to "repeat entry"
 */
 DEK *
-passphrase_to_dek (u32 *keyid, int pubkey_algo,
-		   int cipher_algo, STRING2KEY *s2k, int mode,
-                   const char *tryagain_text, int *canceled)
+passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
+                       int cipher_algo, STRING2KEY *s2k, int mode,
+                       const char *tryagain_text, 
+                       const char *custdesc, const char *custprompt,
+                       int *canceled)
 {
   char *pw = NULL;
   DEK *dek;
@@ -612,7 +568,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
       /* Divert to the gpg-agent. */
       pw = passphrase_get ( keyid, mode == 2, NULL,
                             mode == 2? opt.passwd_repeat: 0,
-                            tryagain_text, NULL, NULL, canceled );
+                            tryagain_text, custdesc, custprompt, canceled);
       if (*canceled)
         {
           xfree (pw);
@@ -636,4 +592,15 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
   xfree(last_pw);
   last_pw = pw;
   return dek;
+}
+
+
+DEK *
+passphrase_to_dek (u32 *keyid, int pubkey_algo,
+		   int cipher_algo, STRING2KEY *s2k, int mode,
+                   const char *tryagain_text, int *canceled)
+{
+  return passphrase_to_dek_ext (keyid, pubkey_algo, cipher_algo,
+                                s2k, mode, tryagain_text, NULL, NULL,
+                                canceled);
 }

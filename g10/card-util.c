@@ -443,6 +443,10 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       fputs (":\n", fp);
 
       fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
+      for (i=0; i < DIM (info.key_attr); i++)
+        if (info.key_attr[0].algo)
+          fprintf (fp, "keyattr:%d:%d:%u:\n", i+1,
+                   info.key_attr[i].algo, info.key_attr[i].nbits);
       fprintf (fp, "maxpinlen:%d:%d:%d:\n",
                    info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
       fprintf (fp, "pinretry:%d:%d:%d:\n",
@@ -518,6 +522,16 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
         }
       tty_fprintf (fp,    "Signature PIN ....: %s\n",
                    info.chv1_cached? _("not forced"): _("forced"));
+      if (info.key_attr[0].algo)
+        {
+          tty_fprintf (fp,    "Key attributes ...:");
+          for (i=0; i < DIM (info.key_attr); i++)
+            tty_fprintf (fp, " %u%c",
+                         info.key_attr[i].nbits,
+                         info.key_attr[i].algo == 1? 'R':
+                         info.key_attr[i].algo == 17? 'D': '?');
+          tty_fprintf (fp, "\n");
+        }
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
                    info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
       tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
@@ -1077,7 +1091,7 @@ check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
 
   *forced_chv1 = !info->chv1_cached;
   if (*forced_chv1)
-    { /* Switch of the forced mode so that during key generation we
+    { /* Switch off the forced mode so that during key generation we
          don't get bothered with PIN queries for each
          self-signature. */
       rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1, info->serialno);

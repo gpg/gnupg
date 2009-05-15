@@ -1,7 +1,28 @@
+2009-05-15  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_card_key_with_backup): Get the size of the key
+	from the card.
+	* call-agent.h (struct agent_card_info_s): Add field KEY_ATTR.
+	* call-agent.c (learn_status_cb): Support KEY-ATTR.
+	* card-util.c (card_status): Print key attributes.
+
 2009-05-15  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpg.c (gpgconf_list): Remove dead entry "allow-pka-lookup" (a
 	verify option for a couple of years now).
+
+2009-05-14  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_get_passphrase): Add arg CHECK.
+	* passphrase.c (passphrase_get): Pass new arg.
+
+	* keygen.c (gen_card_key_with_backup): Print a status error.
+	(do_generate_keypair): Ditto.
+	(do_ask_passphrase): Add arg MODE.
+	(generate_raw_key): Call with mode 1.
+	* passphrase.c (ask_passphrase): Remove becuase it is not used.
+	(passphrase_to_dek): Factor code out to ...
+	(passphrase_to_dek_ext): .. New.  Add args CUSTDESC and CUSTPROMPT.
 
 2009-05-13  Werner Koch  <wk@g10code.com>
 

@@ -579,8 +579,10 @@ manually.  Comment lines, indicated by a leading hash mark, as well as
 empty lines are ignored.  An entry starts with optional whitespace,
 followed by the keygrip of the key given as 40 hex digits, optionally
 followed by the caching TTL in seconds and another optional field for
-arbitrary flags.  The keygrip may be prefixed with a @code{!} to
-disable this entry.
+arbitrary flags.  A non-zero TTL overrides the global default as
+set by @option{--default-cache-ttl-ssh}.
+
+The keygrip may be prefixed with a @code{!} to disable an entry entry.
     
 The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
@@ -1054,7 +1056,7 @@ special handling of passphrases.  This command uses a syntax which helps
 clients to use the agent with minimum effort.
 
 @example
-  GET_PASSPHRASE [--data] [--check] [--no-ask] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
+  GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] [--qualitybar] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
 @end example
 
 @var{cache_id} is expected to be a string used to identify a cached
@@ -1089,6 +1091,9 @@ If the option @option{--no-ask} is used and the passphrase is not in the
 cache the user will not be asked to enter a passphrase but the error
 code @code{GPG_ERR_NO_DATA} is returned.  
 
+If the option @option{--qualitybar} is used and a minimum passphrase
+length has been configured, a visual indication of the entered
+passphrase quality is shown.
 
 @example
   CLEAR_PASSPHRASE @var{cache_id}
