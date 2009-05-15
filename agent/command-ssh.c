@@ -1,5 +1,5 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
- * Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -710,17 +710,20 @@ open_control_file (FILE **r_fp, int append)
 
 /* Search the file at stream FP from the beginning until a matching
    HEXGRIP is found; return success in this case and store true at
-   DISABLED if the found key has been disabled.  */
+   DISABLED if the found key has been disabled.  If R_TTL is not NULL
+   a specified TTL for that key is stored there. */
 static gpg_error_t
-search_control_file (FILE *fp, const char *hexgrip, int *disabled)
+search_control_file (FILE *fp, const char *hexgrip, 
+                     int *r_disabled, int *r_ttl)
 {
   int c, i;
-  char *p, line[256];
-  
+  char *p, *pend, line[256];
+  long ttl;
+
   assert (strlen (hexgrip) == 40 );
 
   rewind (fp);
-  *disabled = 0;
+  *r_disabled = 0;
  next_line:
   do
     {
@@ -746,10 +749,10 @@ search_control_file (FILE *fp, const char *hexgrip, int *disabled)
     }
   while (!*p || *p == '\n' || *p == '#');
   
-  *disabled = 0;
+  *r_disabled = 0;
   if (*p == '!')
     {
-      *disabled = 1;
+      *r_disabled = 1;
       for (p++; spacep (p); p++)
         ;
     }
@@ -763,7 +766,17 @@ search_control_file (FILE *fp, const char *hexgrip, int *disabled)
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
-  /* Fixme: Get TTL and flags.  */
+  ttl = strtol (p, &pend, 10);
+  p = pend;
+  if (!(spacep (p) || *p == '\n') || ttl < -1)
+    {
+      log_error ("invalid TTL value in ssh control file; assuming 0\n");
+      ttl = 0;
+    }
+  if (r_ttl)
+    *r_ttl = ttl;
+
+  /* Here is the place to parse flags if we need them.  */  
 
   return 0; /* Okay:  found it.  */
 }
@@ -788,7 +801,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
   if (err)
     return err;
 
-  err = search_control_file (fp, hexgrip, &disabled);
+  err = search_control_file (fp, hexgrip, &disabled, NULL);
   if (err && gpg_err_code(err) == GPG_ERR_EOF)
     {
       struct tm *tp;
@@ -805,6 +818,29 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
     }
   fclose (fp);
   return 0;
+}
+
+
+/* Scan the sshcontrol file and return the TTL.  */
+static int
+ttl_from_sshcontrol (const char *hexgrip)
+{
+  FILE *fp;
+  int disabled, ttl;
+
+  if (!hexgrip || strlen (hexgrip) != 40)
+    return 0;  /* Wrong input: Use global default.  */
+
+  if (open_control_file (&fp, 0))
+    return 0; /* Error: Use the global default TTL.  */
+
+  if (search_control_file (fp, hexgrip, &disabled, &ttl)
+      || disabled)
+    ttl = 0;  /* Use the global default if not found or disabled.  */
+
+  fclose (fp); 
+
+  return ttl;
 }
 
 
@@ -1875,7 +1911,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           hexgrip[40] = 0;
           if ( strlen (hexgrip) != 40 )
             continue;
-          if (search_control_file (ctrl_fp, hexgrip, &disabled)
+          if (search_control_file (ctrl_fp, hexgrip, &disabled, NULL)
               || disabled)
             continue;
 
@@ -1972,6 +2008,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   return ret_err;
 }
 
+
 /* This function hashes the data contained in DATA of size DATA_N
    according to the message digest algorithm specified by MD_ALGORITHM
    and writes the message digest to HASH, which needs to large enough
@@ -2017,7 +2054,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   err = agent_pksign_do (ctrl,
                          _("Please enter the passphrase "
                            "for the ssh key%0A  %c"), &signature_sexp,
-                         CACHE_MODE_SSH);
+                         CACHE_MODE_SSH, ttl_from_sshcontrol);
   ctrl->use_auth_call = 0;
   if (err)
     goto out;

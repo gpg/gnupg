@@ -297,11 +297,12 @@ modify_description (const char *in, const char *comment, char **result)
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
    caching mechanism. DESC_TEXT may be set to override the default
-   description used for the pinentry. */
+   description used for the pinentry.  If LOOKUP_TTL is given this
+   function is used to lookup the default ttl. */
 static int
 unprotect (ctrl_t ctrl, const char *desc_text,
            unsigned char **keybuf, const unsigned char *grip, 
-           cache_mode_t cache_mode)
+           cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
@@ -406,7 +407,8 @@ unprotect (ctrl_t ctrl, const char *desc_text,
               return rc;
             }
         }
-      agent_put_cache (hexgrip, cache_mode, pi->pin, 0);
+      agent_put_cache (hexgrip, cache_mode, pi->pin, 
+                       lookup_ttl? lookup_ttl (hexgrip) : 0);
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;
     }
@@ -488,11 +490,16 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
    to a token; in this case an allocated S-expression with the
    shadow_info part from the file is stored at SHADOW_INFO.
    CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
-   set to present a custom description for the pinentry.  */
+   set to present a custom description for the pinentry.  LOOKUP_TTL
+   is an optional function to convey a TTL to the cache manager; we do
+   not simply pass the TTL value because the value is only needed if an
+   unprotect action was needed and looking up the TTL may have some
+   overhead (e.g. scanning the sshcontrol file). */
 gpg_error_t
 agent_key_from_file (ctrl_t ctrl, const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
-                     cache_mode_t cache_mode, gcry_sexp_t *result)
+                     cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
+                     gcry_sexp_t *result)
 {
   int rc;
   unsigned char *buf;
@@ -502,7 +509,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
   
   *result = NULL;
   if (shadow_info)
-      *shadow_info = NULL;
+    *shadow_info = NULL;
 
   rc = read_key_file (grip, &s_skey);
   if (rc)
@@ -563,7 +570,8 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
 
 	if (!rc)
 	  {
-	    rc = unprotect (ctrl, desc_text_final, &buf, grip, cache_mode);
+	    rc = unprotect (ctrl, desc_text_final, &buf, grip,
+                            cache_mode, lookup_ttl);
 	    if (rc)
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));

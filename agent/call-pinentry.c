@@ -570,6 +570,59 @@ inq_quality (void *opaque, const char *line)
 }
 
 
+/* Helper for agent_askpin and agent_get_passphrase.  */
+static int
+setup_qualitybar (void)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  char *tmpstr, *tmpstr2;
+  const char *tooltip;
+  
+  /* TRANSLATORS: This string is displayed by Pinentry as the label
+     for the quality bar.  */
+  tmpstr = try_percent_escape (_("Quality:"), "\t\r\n\f\v");
+  snprintf (line, DIM(line)-1, "SETQUALITYBAR %s", tmpstr? tmpstr:"");
+  line[DIM(line)-1] = 0;
+  xfree (tmpstr);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc == 103 /*(Old assuan error code)*/
+      || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old Pinentry versions.  */
+  else if (rc)
+    return rc;
+  
+  tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip", 0);
+  if (tmpstr2)
+    tooltip = tmpstr2;
+  else
+    {
+      /* TRANSLATORS: This string is a tooltip, shown by pinentry when
+         hovering over the quality bar.  Please use an appropriate
+         string to describe what this is about.  The length of the
+         tooltip is limited to about 900 characters.  If you do not
+         translate this entry, a default english text (see source)
+         will be used. */
+      tooltip =  _("pinentry.qualitybar.tooltip");
+      if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
+        tooltip = ("The quality of the text entered above.\n"
+                   "Please ask your administrator for "
+                   "details about the criteria.");
+    }
+  tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
+  xfree (tmpstr2);
+  snprintf (line, DIM(line)-1, "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
+  line[DIM(line)-1] = 0;
+  xfree (tmpstr);
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc == 103 /*(Old assuan error code)*/
+          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
+    ; /* Ignore Unknown Command from old pinentry versions.  */
+  else if (rc)
+    return rc;
+
+  return 0;
+}
 
 
 
@@ -627,51 +680,8 @@ agent_askpin (ctrl_t ctrl,
      to the pinentry.  */
   if (pininfo->with_qualitybar && opt.min_passphrase_len )
     {
-      char *tmpstr, *tmpstr2;
-      const char *tooltip;
-
-      /* TRANSLATORS: This string is displayed by pinentry as the
-         label for the quality bar.  */
-      tmpstr = try_percent_escape (_("Quality:"), "\t\r\n\f\v");
-      snprintf (line, DIM(line)-1, "SETQUALITYBAR %s", tmpstr? tmpstr:"");
-      line[DIM(line)-1] = 0;
-      xfree (tmpstr);
-      rc = assuan_transact (entry_ctx, line,
-                            NULL, NULL, NULL, NULL, NULL, NULL);
-      if (rc == 103 /*(Old assuan error code)*/
-          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
-        ; /* Ignore Unknown Command from old pinentry versions.  */
-      else if (rc)
-        return unlock_pinentry (rc);
-
-      tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip", 0);
-      if (tmpstr2)
-        tooltip = tmpstr2;
-      else
-        {
-          /* TRANSLATORS: This string is a tooltip, shown by pinentry
-             when hovering over the quality bar.  Please use an
-             appropriate string to describe what this is about.  The
-             length of the tooltip is limited to about 900 characters.
-             If you do not translate this entry, a default english
-             text (see source) will be used. */
-          tooltip =  _("pinentry.qualitybar.tooltip");
-          if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
-            tooltip = ("The quality of the text entered above.\n"
-                       "Please ask your administrator for "
-                       "details about the criteria.");
-        }
-      tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
-      xfree (tmpstr2);
-      snprintf (line, DIM(line)-1, "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
-      line[DIM(line)-1] = 0;
-      xfree (tmpstr);
-      rc = assuan_transact (entry_ctx, line,
-                            NULL, NULL, NULL, NULL, NULL, NULL);
-      if (rc == 103 /*(Old assuan error code)*/
-          || gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
-        ; /* Ignore Unknown Command from old pinentry versions.  */
-      else if (rc)
+      rc = setup_qualitybar ();
+      if (rc)
         return unlock_pinentry (rc);
     }
 
@@ -764,7 +774,7 @@ agent_askpin (ctrl_t ctrl,
 int 
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
-                      const char *errtext)
+                      const char *errtext, int with_qualitybar)
 {
 
   int rc;
@@ -798,6 +808,13 @@ agent_get_passphrase (ctrl_t ctrl,
   if (rc)
     return unlock_pinentry (rc);
 
+  if (with_qualitybar && opt.min_passphrase_len)
+    {
+      rc = setup_qualitybar ();
+      if (rc)
+        return unlock_pinentry (rc);
+    }
+
   if (errtext)
     {
       snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
@@ -815,7 +832,7 @@ agent_get_passphrase (ctrl_t ctrl,
 
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                        NULL, NULL, NULL, NULL);
+                        inq_quality, entry_ctx, NULL, NULL);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
      not to the code for a user cancel.  Fix this here. */

@@ -201,6 +201,10 @@ typedef enum
 cache_mode_t;
 
 
+/* The type of a function to lookup a TTL by a keygrip.  */
+typedef int (*lookup_ttl_t)(const char *hexgrip);
+
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
 const char *get_agent_socket_name (void);
@@ -229,6 +233,7 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const unsigned char *grip,
                                  unsigned char **shadow_info,
                                  cache_mode_t cache_mode,
+                                 lookup_ttl_t lookup_ttl,
                                  gcry_sexp_t *result);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl, 
                                         const unsigned char *grip,
@@ -249,7 +254,7 @@ int agent_askpin (ctrl_t ctrl,
                   struct pin_entry_info_s *pininfo);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
-                          const char *errtext);
+                          const char *errtext, int with_qualitybar);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *cancel);
 int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
@@ -270,7 +275,7 @@ void agent_unlock_cache_entry (void **cache_id);
 /*-- pksign.c --*/
 int agent_pksign_do (ctrl_t ctrl, const char *desc_text,
 		     gcry_sexp_t *signature_sexp,
-                     cache_mode_t cache_mode);
+                     cache_mode_t cache_mode, lookup_ttl_t lookup_ttl);
 int agent_pksign (ctrl_t ctrl, const char *desc_text,
                   membuf_t *outbuf, cache_mode_t cache_mode);
 

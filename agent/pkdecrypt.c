@@ -66,7 +66,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
     }
   rc = agent_key_from_file (ctrl, desc_text,
                             ctrl->keygrip, &shadow_info,
-                            CACHE_MODE_NORMAL, &s_skey);
+                            CACHE_MODE_NORMAL, NULL, &s_skey);
   if (rc)
     {
       if (gpg_err_code (rc) == GPG_ERR_ENOENT)

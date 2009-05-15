@@ -194,8 +194,8 @@ agent_flush_cache (void)
    with a maximum lifetime of TTL seconds.  If there is already data
    under this key, it will be replaced.  Using a DATA of NULL deletes
    the entry.  A TTL of 0 is replaced by the default TTL and a TTL of
-   -1 set infinite timeout. CACHE_MODE is stored with the cache entry
-   and used t select different timeouts. */
+   -1 set infinite timeout.  CACHE_MODE is stored with the cache entry
+   and used to select different timeouts.  */
 int
 agent_put_cache (const char *key, cache_mode_t cache_mode,
                  const char *data, int ttl)

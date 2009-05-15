@@ -986,7 +986,8 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-/* GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] <cache_id>
+/* GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] 
+                  [--qualitybar] <cache_id>
                   [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -1007,6 +1008,10 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
    If the option "--no-ask" is used and the passphrase is not in the
    cache the user will not be asked to enter a passphrase but the error
    code GPG_ERR_NO_DATA is returned.  
+
+   If the option "--qualitybar" is used a visual indication of the
+   entered passphrase quality is shown.  (Unless no minimum passphrase
+   length has been configured.)
 */
 
 static int
@@ -1020,7 +1025,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   const char *desc2 = _("Please re-enter this passphrase");
   char *p;
   void *cache_marker;
-  int opt_data, opt_check, opt_no_ask, opt_repeat = 0;
+  int opt_data, opt_check, opt_no_ask, opt_qualbar;
+  int opt_repeat = 0;
   char *repeat_errtext = NULL;
 
   opt_data = has_option (line, "--data");
@@ -1034,6 +1040,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
       else
 	opt_repeat = 1;
     }
+  opt_qualbar = has_option (line, "--qualitybar");
   line = skip_options (line);
 
   cacheid = line;
@@ -1102,7 +1109,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 
     next_try:
       rc = agent_get_passphrase (ctrl, &response, desc, prompt, 
-                                 repeat_errtext? repeat_errtext:errtext);
+                                 repeat_errtext? repeat_errtext:errtext, 
+                                 opt_qualbar);
       xfree (repeat_errtext);
       repeat_errtext = NULL;
       if (!rc)
@@ -1119,7 +1127,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               char *response2;
 
               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
-                                         errtext);
+                                         errtext, 0);
               if (rc)
                 break;
               if (strcmp (response2, response))
@@ -1265,7 +1273,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   ctrl->in_passwd++;
   rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
-                            grip, &shadow_info, CACHE_MODE_IGNORE, &s_skey);
+                            grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
+                            &s_skey);
   if (rc)
     ;
   else if (!s_skey)
