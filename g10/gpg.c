@@ -1572,7 +1572,6 @@ gpgconf_list (const char *configfile)
   printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("allow-pka-lookup:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   printf ("group:%lu:\n", GC_OPT_FLAG_NONE);

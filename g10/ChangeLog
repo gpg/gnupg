@@ -1,3 +1,8 @@
+2009-05-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg.c (gpgconf_list): Remove dead entry "allow-pka-lookup" (a
+	verify option for a couple of years now).
+
 2009-05-13  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (parse_expire_string): Base ISO date string at noon.
