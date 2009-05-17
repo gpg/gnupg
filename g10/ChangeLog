@@ -1,3 +1,12 @@
+2009-05-17  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_algo): Add arg R_SUBKEY_ALGO.  Change return value
+	semantics.  Change presented order of algorithms.  Make RSA+RSA
+	the default.
+	(generate_keypair): Adjust for change.
+	(ask_keysize): Add arg PRIMARY_KEYSIZE for subkey creation.
+	Change callers.
+
 2009-05-15  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (gen_card_key_with_backup): Get the size of the key
