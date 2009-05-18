@@ -311,7 +311,7 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	  }
 	else
 	  {
-	    c->dek = passphrase_to_dek (NULL, 0, algo, &enc->s2k, 0,
+	    c->dek = passphrase_to_dek (NULL, 0, algo, &enc->s2k, 3,
                                         NULL, NULL);
 	    if(c->dek)
 	      {
@@ -548,7 +548,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 		log_info (_("assuming %s encrypted data\n"), "IDEA");
 	      }
 
-	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0, NULL, NULL );
+	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 3, NULL, NULL );
 	    if (c->dek)
 	      c->dek->algo_info_printed = 1;
 	  }

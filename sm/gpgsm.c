@@ -66,7 +66,6 @@ enum cmd_and_opt_values {
   aDeleteKey,
   aImport,
   aVerify,
-  aVerifyFiles,
   aListExternalKeys,
   aListChain,
   aSendKeys,
@@ -191,7 +190,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aSym, "symmetric", N_("encryption only with symmetric cipher")),
   ARGPARSE_c (aDecrypt, "decrypt", N_("decrypt data (default)")),
   ARGPARSE_c (aVerify, "verify",  N_("verify a signature")),
-  ARGPARSE_c (aVerifyFiles, "verify-files", "@"),
   ARGPARSE_c (aListKeys, "list-keys", N_("list keys")),
   ARGPARSE_c (aListExternalKeys, "list-external-keys", 
               N_("list external keys")),
@@ -1709,10 +1707,6 @@ main ( int argc, char **argv)
         if (fp && fp != stdout)
           fclose (fp);
       }
-      break;
-
-    case aVerifyFiles:
-      log_error (_("this command has not yet been implemented\n"));
       break;
 
     case aDecrypt:

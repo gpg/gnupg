@@ -216,7 +216,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	s2k->mode = RFC1991? 0:opt.s2k_mode;
 	s2k->hash_algo=S2K_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, 0,
-				     default_cipher_algo(), s2k, 2,
+				     default_cipher_algo(), s2k, 4,
                                      NULL, &canceled);
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = gpg_error (canceled? GPG_ERR_CANCELED:GPG_ERR_INV_PASSPHRASE);
@@ -397,7 +397,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
   (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
 
   *symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
-				*symkey_s2k,2,NULL, &canceled);
+				*symkey_s2k, 4, NULL, &canceled);
   if(!*symkey_dek || !(*symkey_dek)->keylen)
     {
       xfree(*symkey_dek);

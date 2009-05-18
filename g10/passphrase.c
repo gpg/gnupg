@@ -50,11 +50,10 @@ static char *next_pw = NULL;
 static char *last_pw = NULL;
 
 
-/* Hash a passphrase using the supplied s2k. If create is true, create
-   a new salt or what else must be filled into the s2k for a new key.
-   always needs: dek->algo, s2k->mode, s2k->hash_algo.  */
+/* Hash a passphrase using the supplied s2k. 
+   Always needs: dek->algo, s2k->mode, s2k->hash_algo.  */
 static void
-hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k, int create )
+hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
 {
   gcry_md_hd_t md;
   int pass, i;
@@ -82,13 +81,6 @@ hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k, int create )
           int len2 = pwlen + 8;
           ulong count = len2;
           
-          if ( create && !pass )
-            {
-              gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
-              if ( s2k->mode == 3 )
-                s2k->count = opt.s2k_count;
-	    }
-
           if ( s2k->mode == 3 )
             {
               count = S2K_DECODE_COUNT(s2k->count);
@@ -441,7 +433,9 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 
    MODE 0:  Allow cached passphrase
         1:  Ignore cached passphrase 
-        2:  Ditto, but change the text to "repeat entry"
+        2:  Ditto, but create a new key
+        3:  Allow cached passphrase; use the S2K salt as the cache ID
+        4:  Ditto, but create a new key
 */
 DEK *
 passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
@@ -461,11 +455,21 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
   
   if ( !s2k )
     {
+      assert (mode != 3 && mode != 4);
       /* This is used for the old rfc1991 mode 
        * Note: This must match the code in encode.c with opt.rfc1991 set */
       s2k = &help_s2k;
       s2k->mode = 0;
       s2k->hash_algo = S2K_DIGEST_ALGO;
+    }
+
+  /* Create a new salt or what else to be filled into the s2k for a
+     new key.  */
+  if ((mode == 2 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
+    {
+      gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
+      if ( s2k->mode == 3 )
+        s2k->count = opt.s2k_count;
     }
 
   /* If we do not have a passphrase available in NEXT_PW and status
@@ -565,10 +569,21 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     }
   else 
     {
+      char *cacheid = NULL;
+      char buf[1+16+1];
+
+      if ((mode == 3 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
+	{
+	  memset (buf, 0, sizeof buf);
+	  *buf = 'S';
+	  bin2hex (s2k->salt, 8, buf + 1);
+          cacheid = buf;
+	}
+
       /* Divert to the gpg-agent. */
-      pw = passphrase_get ( keyid, mode == 2, NULL,
-                            mode == 2? opt.passwd_repeat: 0,
-                            tryagain_text, custdesc, custprompt, canceled);
+      pw = passphrase_get (keyid, mode == 2, cacheid,
+                           (mode == 2 || mode == 4)? opt.passwd_repeat : 0,
+                           tryagain_text, custdesc, custprompt, canceled);
       if (*canceled)
         {
           xfree (pw);
@@ -585,10 +600,10 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
      get_last_passphrase(). */
   dek = xmalloc_secure_clear ( sizeof *dek );
   dek->algo = cipher_algo;
-  if ( !*pw && mode == 2 )
+  if ( !*pw && (mode == 2 || mode == 4))
     dek->keylen = 0;
   else
-    hash_passphrase( dek, pw, s2k, mode==2 );
+    hash_passphrase (dek, pw, s2k);
   xfree(last_pw);
   last_pw = pw;
   return dek;

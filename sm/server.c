@@ -51,6 +51,7 @@ struct server_local_s {
   certlist_t default_recplist; /* As set by main() - don't release. */
   int allow_pinentry_notify;   /* Set if pinentry notifications should
                                   be passed back to the client. */
+  int no_encrypt_to;           /* Local version of option.  */
 };
 
 
@@ -301,6 +302,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->with_ephemeral_keys = i;
     }
+  else if (!strcmp (key, "no-encrypt-to"))
+    {
+      ctrl->server_local->no_encrypt_to = 1;
+    }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -486,7 +491,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   /* Now add all encrypt-to marked recipients from the default
      list. */
   rc = 0;
-  if (!opt.no_encrypt_to)
+  if (!opt.no_encrypt_to && !ctrl->server_local->no_encrypt_to)
     {
       for (cl=ctrl->server_local->default_recplist; !rc && cl; cl = cl->next)
         if (cl->is_encrypt_to)

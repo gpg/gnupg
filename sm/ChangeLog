@@ -1,3 +1,10 @@
+2009-05-18  Werner Koch  <wk@g10code.com>
+
+	* server.c (option_handler): New option "no-encrypt-to".
+	(cmd_encrypt): Make use of it.
+
+	* gpgsm.c: Remove not implemented --verify-files.
+
 2009-04-02  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (list_cert_std): Print card serial number.

@@ -20,6 +20,7 @@ Per Tunedal    <per@clipanish.com> Translations [sv]
 Daniel Nylander <po@danielnylander.se> Translations [sv]
 
 Daiki Ueno <ueno@unixuser.org>  Assigns Past and Future Changes.
+    (changed:passphrase.c and related code)
 
 David Shaw <dshaw@jabberwocky.com> Assigns past and future changes.
     (all in keyserver/,

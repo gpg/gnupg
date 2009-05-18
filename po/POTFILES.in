@@ -19,6 +19,7 @@ common/miscellaneous.c
 common/asshelp.c
 common/audit.c
 common/helpfile.c
+common/gettime.c
 
 g10/armor.c
 g10/build-packet.c
