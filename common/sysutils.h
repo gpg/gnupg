@@ -56,7 +56,4 @@ void gnupg_allow_set_foregound_window (pid_t pid);
 
 #endif /*HAVE_W32_SYSTEM*/
 
-
-
-
 #endif /*GNUPG_COMMON_SYSUTILS_H*/

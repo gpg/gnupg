@@ -1,3 +1,8 @@
+2009-05-19  Werner Koch  <wk@g10code.com>
+
+	* mischelp.h: Define PF_LOCAL, AF_LOCAL and SUN_LEN if requested.
+	* logging.c (fun_writer): Use SUN_LEN to fix a Mac OS X freeze.
+
 2009-03-25  Werner Koch  <wk@g10code.com>
 
 	* logging.c (fun_closer): Never close fd 2.

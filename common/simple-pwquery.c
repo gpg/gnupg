@@ -39,6 +39,9 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+
+#define JNLIB_NEED_AFLOCAL
+#include "../jnlib/mischelp.h"
 #ifdef HAVE_W32_SYSTEM
 #include "../jnlib/w32-afunix.h"
 #endif
@@ -379,8 +382,7 @@ agent_open (int *rfd)
   memset (&client_addr, 0, sizeof client_addr);
   client_addr.sun_family = AF_UNIX;
   strcpy (client_addr.sun_path, infostr);
-  len = (offsetof (struct sockaddr_un, sun_path)
-         + strlen(client_addr.sun_path) + 1);
+  len = SUN_LEN (&client_addr);
     
 #ifdef HAVE_W32_SYSTEM       
   rc = _w32_sock_connect (fd, (struct sockaddr*)&client_addr, len );

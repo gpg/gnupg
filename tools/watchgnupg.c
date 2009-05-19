@@ -35,7 +35,7 @@
 
 #define PGM "watchgnupg"
 
-/* Allow for a standalone build. */
+/* Allow for a standalone build on most systems. */
 #ifdef VERSION
 #define MYVERSION_LINE PGM " (GnuPG) " VERSION
 #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
@@ -43,16 +43,9 @@
 #define MYVERSION_LINE PGM 
 #define BUGREPORT_LINE ""
 #endif
-
-#ifndef PF_LOCAL
-# ifdef PF_UNIX
-#  define PF_LOCAL PF_UNIX
-# else
-#  define PF_LOCAL AF_UNIX
-# endif
-# ifndef AF_LOCAL
-#  define AF_LOCAL AF_UNIX
-# endif
+#if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
+#define JNLIB_NEED_AFLOCAL
+#include "../jnlib/mischelp.h"
 #endif
 
 
@@ -285,8 +278,7 @@ main (int argc, char **argv)
   srvr_addr.sun_family = AF_LOCAL;
   strncpy (srvr_addr.sun_path, *argv, sizeof (srvr_addr.sun_path) - 1);
   srvr_addr.sun_path[sizeof (srvr_addr.sun_path) - 1] = 0;
-  addrlen = (offsetof (struct sockaddr_un, sun_path)
-             + strlen (srvr_addr.sun_path) + 1);
+  addrlen = SUN_LEN (&srvr_addr);
 
   
  again:

@@ -24,7 +24,8 @@ Noteworthy changes in version 2.0.12 (not released)
  * The gpg-protect-tool now uses gpg-agent via libassuan.  Under
    Windows the Pinentry will now be put into the foreground.
 
- 
+ * Changed code to avoid a possible Mac OS X system freeze.
+
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------

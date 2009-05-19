@@ -39,6 +39,7 @@
 #include <pth.h>
 
 #define JNLIB_NEED_LOG_LOGV
+#define JNLIB_NEED_AFLOCAL
 #include "agent.h"
 #include <assuan.h> /* Malloc hooks  and socket wrappers. */
 
@@ -1457,9 +1458,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
       agent_exit (2);
     }
   strcpy (serv_addr->sun_path, name);
-  len = (offsetof (struct sockaddr_un, sun_path)
-	 + strlen (serv_addr->sun_path) + 1);
-
+  len = SUN_LEN (serv_addr);
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
   if (use_standard_socket && rc == -1 && errno == EADDRINUSE)
     {

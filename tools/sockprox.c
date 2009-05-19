@@ -86,7 +86,6 @@ create_server_socket (const char *filename, int *new_sock)
   name.sun_family = AF_LOCAL;
   strncpy (name.sun_path, filename, sizeof (name.sun_path));
   name.sun_path[sizeof (name.sun_path) - 1] = '\0';
-
   size = SUN_LEN (&name);
 
   remove (filename);

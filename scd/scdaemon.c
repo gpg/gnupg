@@ -38,6 +38,7 @@
 #include <pth.h>
 
 #define JNLIB_NEED_LOG_LOGV
+#define JNLIB_NEED_AFLOCAL
 #include "scdaemon.h"
 #include <ksba.h>
 #include <gcrypt.h>
@@ -1032,8 +1033,7 @@ create_server_socket (int is_standard_name, const char *name,
   serv_addr->sun_family = AF_UNIX;
   assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
   strcpy (serv_addr->sun_path, name);
-  len = (offsetof (struct sockaddr_un, sun_path)
-	 + strlen (serv_addr->sun_path) + 1);
+  len = SUN_LEN (serv_addr);
 
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
   if (is_standard_name && rc == -1 && errno == EADDRINUSE)

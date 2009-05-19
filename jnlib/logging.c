@@ -39,6 +39,7 @@
 
 
 #define JNLIB_NEED_LOG_LOGV 1
+#define JNLIB_NEED_AFLOCAL 1
 #include "libjnlib-config.h"
 #include "logging.h"
 
@@ -152,8 +153,7 @@ fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
           addr.sun_family = PF_LOCAL;
           strncpy (addr.sun_path, cookie->name, sizeof (addr.sun_path)-1);
           addr.sun_path[sizeof (addr.sun_path)-1] = 0;
-          addrlen = (offsetof (struct sockaddr_un, sun_path)
-                     + strlen (addr.sun_path) + 1);
+          addrlen = SUN_LEN (&addr);
       
           if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
             {
