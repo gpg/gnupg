@@ -1453,7 +1453,6 @@ g10/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile
-g13/Makefile
 keyserver/Makefile
 keyserver/gpg2keys_mailto
 keyserver/gpg2keys_test

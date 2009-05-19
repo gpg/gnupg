@@ -171,9 +171,9 @@ fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
           if (!running_detached)
             {
               /* Due to all the problems with apps not running
-                 detahced but beeing caled with stderr closed or
+                 detached but being called with stderr closed or
                  used for a different purposes, it does not make
-                 sense to switch to stderr.  We tehrefore disable it. */
+                 sense to switch to stderr.  We therefore disable it. */
               if (!cookie->quiet)
                 {
                   /* fputs ("switching logging to stderr\n", stderr);*/
