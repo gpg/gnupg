@@ -1,8 +1,12 @@
 2009-05-20  Werner Koch  <wk@g10code.com>
 
+	* keygen.c (ask_keysize): Allow selection of DSA key size even
+	without --enable-dsa2.
+	(gen_dsa): Remove size check.
+
 	* keygen.c (ask_key_flags): Fix bug in the translation check.
 	Fixes bug#1056.
-
+	
 2009-05-18  Daiki Ueno  <ueno@unixuser.org>  (wk)
 
 	* encode.c (encode_simple): Tell passphrase_to_dek to cache

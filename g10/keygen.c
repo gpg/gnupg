@@ -1263,7 +1263,7 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
   gcry_sexp_t misc_key_info;
   unsigned int qbits;
 
-  if ( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024)) 
+  if ( nbits < 512) 
     {
       nbits = 1024;
       log_info(_("keysize invalid; using %u bits\n"), nbits );
@@ -1768,16 +1768,8 @@ ask_keysize (int algo, unsigned int primary_keysize)
   switch(algo)
     {
     case PUBKEY_ALGO_DSA:
-      if(opt.flags.dsa2)
-	{
-	  def=2048;
-	  max=3072;
-	}
-      else
-	{
-	  tty_printf(_("DSA keypair will have %u bits.\n"),1024);
-	  return 1024;
-	}
+      def=2048;
+      max=3072;
       break;
 
     case PUBKEY_ALGO_RSA:

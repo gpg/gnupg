@@ -1093,10 +1093,10 @@ validation. This option is only meaningful if pka-lookups is set.
 
 @item --enable-dsa2
 @itemx --disable-dsa2
-Enables new-style DSA keys which (unlike the old style) may be larger
-than 1024 bit and use hashes other than SHA-1 and RIPEMD/160. Note
-that very few programs currently support these keys and signatures
-from them.
+Enable hash truncation for all DSA keys even for old DSA Keys up to
+1024 bit.  This is also the default with @option{--openpgp}.  Note
+that older versions of GnuPG also required this flag to allow the
+generation of DSA larger than 1024 bit.
 
 @item --photo-viewer @code{string}
 This is the command line that should be run to view a photo ID. "%i"
