@@ -1869,7 +1869,7 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
     return err;
 
   if (DBG_CARD_IO)
-    log_printhex ("  APDU_data:", apdu, apdulen);
+    log_printhex (" raw apdu:", apdu, apdulen);
 
   maxbuflen = *buflen;
   if (pininfo)
@@ -2847,7 +2847,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
     return SW_HOST_NO_DRIVER;
 
   if (DBG_CARD_IO)
-    log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d em=%d\n",
+    log_debug ("send apdu: c=%02X i=%02X p1=%02X p2=%02X lc=%d le=%d em=%d\n",
                class, ins, p0, p1, lc, le, extended_mode);
 
   if (lc != -1 && (lc > 255 || lc < 0))
@@ -3036,7 +3036,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
       log_debug (" response: sw=%04X  datalen=%d\n",
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
-        log_printhex ("     dump: ", result, resultlen);
+        log_printhex ("    dump: ", result, resultlen);
     }
 
   if (sw == SW_SUCCESS || sw == SW_EOF_REACHED)

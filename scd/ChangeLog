@@ -1,3 +1,10 @@
+2009-05-20  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv2): Add case for v2 cards.
+	(verify_chv3): Factor some code out to ..
+	(build_enter_admin_pin_prompt): .. new.
+	(do_change_pin): Properly handle v2 cards.
+
 2009-05-19  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (create_server_socket): Use SUN_LEN.

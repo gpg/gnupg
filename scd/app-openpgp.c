@@ -1420,7 +1420,7 @@ do_readcert (app_t app, const char *certid,
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
    used with CHV1.  PINVALUE is the address of a pointer which will
    receive a newly allocated block with the actual PIN (this is useful
-   in case that PIN shall be used for another verifiy operation).  The
+   in case that PIN shall be used for another verify operation).  The
    caller needs to free this value.  If the function returns with
    success and NULL is stored at PINVALUE, the caller should take this
    as an indication that the keypad has been used.
@@ -1553,34 +1553,96 @@ verify_chv2 (app_t app,
   char *pinvalue;
 
   if (app->did_chv2) 
-    return 0;  /* We already verified CHV2.  */
+    return 0;  /* We already verified CHV2 (PW1 for v2 cards).  */
 
-  rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue);
-  if (rc)
-    return rc;
-
-  app->did_chv2 = 1;
-  
-  if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+  if (app->app_local->extcap.is_v2)
     {
-      /* For convenience we verify CHV1 here too.  We do this only if
-         the card is not configured to require a verification before
-         each CHV1 controlled operation (force_chv1) and if we are not
-         using the keypad (PINVALUE == NULL). */
-      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-      if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-        rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+      /* Version two cards don't have a CHV2 anymore.  We need to
+         verify CHV1 (now called PW1) instead.  */
+      rc = verify_a_chv (app, pincb, pincb_arg, 1, 0, &pinvalue);
       if (rc)
+        return rc;
+      app->did_chv2 = 1;
+    }
+  else
+    {
+      /* Version 1 cards only.  */
+      rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue);
+      if (rc)
+        return rc;
+      app->did_chv2 = 1;
+  
+      if (!app->did_chv1 && !app->force_chv1 && pinvalue)
         {
-          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-          flush_cache_after_error (app);
+          /* For convenience we verify CHV1 here too.  We do this only
+             if the card is not configured to require a verification
+             before each CHV1 controlled operation (force_chv1) and if
+             we are not using the keypad (PINVALUE == NULL). */
+          rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+          if (rc)
+            {
+              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
+              flush_cache_after_error (app);
+            }
+          else
+            app->did_chv1 = 1;
         }
-      else
-        app->did_chv1 = 1;
     }
   xfree (pinvalue);
 
   return rc;
+}
+
+
+/* Build the prompt to enter the Admin PIN.  The prompt depends on the
+   current sdtate of the card.  */
+static gpg_error_t 
+build_enter_admin_pin_prompt (app_t app, char **r_prompt)
+{
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  int remaining;
+  char *prompt;
+
+  *r_prompt = NULL;
+
+  relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
+  if (!relptr || valuelen < 7)
+    {
+      log_error (_("error retrieving CHV status from card\n"));
+      xfree (relptr);
+      return gpg_error (GPG_ERR_CARD);
+    }
+  if (value[6] == 0)
+    {
+      log_info (_("card is permanently locked!\n"));
+      xfree (relptr);
+      return gpg_error (GPG_ERR_BAD_PIN);
+    }
+  remaining = value[6];
+  xfree (relptr);
+  
+  log_info(_("%d Admin PIN attempts remaining before card"
+             " is permanently locked\n"), remaining);
+
+  if (remaining < 3)
+    {
+      /* TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+         the start of the string.  Use %%0A to force a linefeed.  */
+      prompt = xtryasprintf (_("|A|Please enter the Admin PIN%%0A"
+                               "[remaining attempts: %d]"), remaining);
+    }
+  else
+    prompt = xtrystrdup (_("|A|Please enter the Admin PIN"));
+  
+  if (!prompt)
+    return gpg_error_from_syserror ();
+  
+  *r_prompt = prompt;
+  return 0;
 }
 
 
@@ -1602,65 +1664,25 @@ verify_chv3 (app_t app,
       
   if (!app->did_chv3) 
     {
-      void *relptr;
-      unsigned char *value;
-      size_t valuelen;
       iso7816_pininfo_t pininfo;
       int minlen = 8;
-      int remaining;
-      char *prompt_buffer = NULL;
-      const char *prompt;
+      char *prompt;
 
       memset (&pininfo, 0, sizeof pininfo);
       pininfo.mode = 1;
       pininfo.minlen = minlen;
 
-      relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
-      if (!relptr || valuelen < 7)
-        {
-          log_error (_("error retrieving CHV status from card\n"));
-          xfree (relptr);
-          return gpg_error (GPG_ERR_CARD);
-        }
-      if (value[6] == 0)
-        {
-          log_info (_("card is permanently locked!\n"));
-          xfree (relptr);
-          return gpg_error (GPG_ERR_BAD_PIN);
-        }
-      remaining = value[6];
-      xfree (relptr);
-
-      log_info(_("%d Admin PIN attempts remaining before card"
-                 " is permanently locked\n"), remaining);
-
-      if (remaining < 3)
-        {
-          /* TRANSLATORS: Do not translate the "|A|" prefix but keep
-             it at the start of the string.  Use %%0A to force a
-             lienfeed.  */
-#define PROMPTSTRING  _("|A|Please enter the Admin PIN%%0A" \
-                        "[remaining attempts: %d]")
-          size_t promptsize = strlen (PROMPTSTRING) + 50;
-          
-          prompt_buffer = xtrymalloc (promptsize);
-          if (!prompt_buffer)
-            return gpg_error_from_syserror ();
-          snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, remaining);
-          prompt = prompt_buffer;
-#undef PROMPTSTRING
-        }
-      else
-        prompt = _("|A|Please enter the Admin PIN");
+      rc = build_enter_admin_pin_prompt (app, &prompt);
+      if (rc)
+        return rc;
 
       if (!opt.disable_keypad
           && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
         {
           /* The reader supports the verify command through the keypad. */
           rc = pincb (pincb_arg, prompt, NULL); 
+          xfree (prompt);
           prompt = NULL;
-          xfree (prompt_buffer);
-          prompt_buffer = NULL;
           if (rc)
             {
               log_info (_("PIN callback returned error: %s\n"),
@@ -1676,9 +1698,8 @@ verify_chv3 (app_t app,
           char *pinvalue;
 
           rc = pincb (pincb_arg, prompt, &pinvalue); 
+          xfree (prompt);
           prompt = NULL;
-          xfree (prompt_buffer);
-          prompt_buffer = NULL;
           if (rc)
             {
               log_info (_("PIN callback returned error: %s\n"),
@@ -1821,7 +1842,21 @@ do_writecert (app_t app, ctrl_t ctrl,
 
 
 
-/* Handle the PASSWD command. */
+/* Handle the PASSWD command.  The following combinations are
+   possible:
+
+    Flags  CHVNO Vers.  Description
+    RESET    1   1      Verify CHV3 and set a new CHV1 and CHV2
+    RESET    1   2      Verify PW3 and set a new PW1.
+    RESET    2   1      Verify CHV3 and set a new CHV1 and CHV2.
+    RESET    2   2      Verify PW3 and set a new Reset Code.
+    RESET    3   any    Returns GPG_ERR_INV_ID.
+     -       1   1      Verify CHV2 and set a new CHV1 and CHV2.
+     -       1   2      Verify PW1 and set a new PW1.
+     -       2   1      Verify CHV2 and set a new CHV1 and CHV2.
+     -       2   2      Verify Reset Code and set a new PW1.
+     -       3   any    Verify CHV3/PW3 and set a new CHV3/PW3.
+ */
 static gpg_error_t 
 do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
                unsigned int flags,
@@ -1831,6 +1866,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   int rc = 0;
   int chvno = atoi (chvnostr);
   char *resetcode = NULL;
+  char *oldpinvalue = NULL;
   char *pinvalue;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
@@ -1842,75 +1878,136 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       rc = gpg_error (GPG_ERR_INV_ID);
       goto leave;
     }
-  else if (reset_mode || chvno == 3)
-    {
-      /* We always require that the PIN is entered. */
-      app->did_chv3 = 0;
-      rc = verify_chv3 (app, pincb, pincb_arg);
-      if (rc)
-        goto leave;
-  
-      if (chvno == 2 && app->app_local->extcap.is_v2)
-        set_resetcode = 1;
-    }
-  else if (chvno == 2 && app->app_local->extcap.is_v2)
-    {
-      /* There is no PW2 for v2 cards.  We use this condition to allow
-         a PW reset using the Reset Code.  */
-      void *relptr;
-      unsigned char *value;
-      size_t valuelen;
-      int remaining;
 
-      relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
-      if (!relptr || valuelen < 7)
+  if (!app->app_local->extcap.is_v2)
+    {
+      /* Version 1 cards.  */
+
+      if (reset_mode || chvno == 3)
         {
-          log_error (_("error retrieving CHV status from card\n"));
-          xfree (relptr);
-          rc = gpg_error (GPG_ERR_CARD);
+          /* We always require that the PIN is entered. */
+          app->did_chv3 = 0;
+          rc = verify_chv3 (app, pincb, pincb_arg);
+          if (rc)
+            goto leave;
+        }
+      else if (chvno == 1 || chvno == 2)
+        {
+          /* On a v1.x card CHV1 and CVH2 should always have the same
+             value, thus we enforce it here.  */
+          int save_force = app->force_chv1;
+          
+          app->force_chv1 = 0;
+          app->did_chv1 = 0;
+          app->did_chv2 = 0;
+          rc = verify_chv2 (app, pincb, pincb_arg);
+          app->force_chv1 = save_force;
+          if (rc)
+            goto leave;
+        }
+      else
+        {
+          rc = gpg_error (GPG_ERR_INV_ID);
           goto leave;
         }
-      remaining = value[5];
-      xfree (relptr);
-      if (!remaining)
-        {
-          log_error (_("Reset Code not or not anymore available\n"));
-          rc = gpg_error (GPG_ERR_BAD_PIN);
-          goto leave;
-        }          
-
-      rc = pincb (pincb_arg, _("||Please enter the Reset Code for the card"),
-                  &resetcode); 
-      if (rc)
-        {
-          log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
-          goto leave;
-        }
-      if (strlen (resetcode) < 8)
-        {
-          log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
-          rc = gpg_error (GPG_ERR_BAD_PIN);
-          goto leave;
-        }
-    }
-  else if (chvno == 1 || chvno == 2)
-    {
-      /* CHV1 and CVH2 should always have the same value, thus we
-         enforce it here.  */
-      int save_force = app->force_chv1;
-
-      app->force_chv1 = 0;
-      app->did_chv1 = 0;
-      app->did_chv2 = 0;
-      rc = verify_chv2 (app, pincb, pincb_arg);
-      app->force_chv1 = save_force;
-      if (rc)
-        goto leave;
     }
   else
     {
-      rc = gpg_error (GPG_ERR_INV_ID);
-      goto leave;
+      /* Version 2 cards.  */
+
+      if (reset_mode)
+        {
+          /* To reset a PIN the Admin PIN is required. */
+          app->did_chv3 = 0;
+          rc = verify_chv3 (app, pincb, pincb_arg);
+          if (rc)
+            goto leave;
+          
+          if (chvno == 2)
+            set_resetcode = 1;
+        }
+      else if (chvno == 1 || chvno == 3)
+        {
+          int minlen = (chvno ==3)? 8 : 6;
+          char *promptbuf = NULL;
+          const char *prompt;
+
+          if (chvno == 3)
+            {
+              rc = build_enter_admin_pin_prompt (app, &promptbuf);
+              if (rc)
+                goto leave;
+              prompt = promptbuf;
+            }
+          else
+            prompt = _("||Please enter the PIN");
+          rc = pincb (pincb_arg, prompt, &oldpinvalue);
+          xfree (promptbuf);
+          promptbuf = NULL;
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              goto leave;
+            }
+
+          if (strlen (oldpinvalue) < minlen)
+            {
+              log_info (_("PIN for CHV%d is too short;"
+                          " minimum length is %d\n"), chvno, minlen);
+              rc = gpg_error (GPG_ERR_BAD_PIN);
+              goto leave;
+            }
+        }
+      else if (chvno == 2)
+        {
+          /* There is no PW2 for v2 cards.  We use this condition to
+             allow a PW reset using the Reset Code.  */
+          void *relptr;
+          unsigned char *value;
+          size_t valuelen;
+          int remaining;
+          int minlen = 8;
+
+          relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
+          if (!relptr || valuelen < 7)
+            {
+              log_error (_("error retrieving CHV status from card\n"));
+              xfree (relptr);
+              rc = gpg_error (GPG_ERR_CARD);
+              goto leave;
+            }
+          remaining = value[5];
+          xfree (relptr);
+          if (!remaining)
+            {
+              log_error (_("Reset Code not or not anymore available\n"));
+              rc = gpg_error (GPG_ERR_BAD_PIN);
+              goto leave;
+            }          
+          
+          rc = pincb (pincb_arg,
+                      _("||Please enter the Reset Code for the card"),
+                      &resetcode); 
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"), 
+                        gpg_strerror (rc));
+              goto leave;
+            }
+          if (strlen (resetcode) < minlen)
+            {
+              log_info (_("Reset Code is too short; minimum length is %d\n"),
+                        minlen);
+              rc = gpg_error (GPG_ERR_BAD_PIN);
+              goto leave;
+            }
+        }
+      else
+        {
+          rc = gpg_error (GPG_ERR_INV_ID);
+          goto leave;
+        }
     }
 
   if (chvno == 3)
@@ -1930,6 +2027,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
       goto leave;
     }
+
 
   if (resetcode)
     {
@@ -1966,20 +2064,33 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         rc = iso7816_reset_retry_counter (app->slot, 0x82,
                                           pinvalue, strlen (pinvalue));
     }
-  else
+  else if (!app->app_local->extcap.is_v2)
     {
+      /* Version 1 cards.  */
       if (chvno == 1 || chvno == 2)
         {
           rc = iso7816_change_reference_data (app->slot, 0x81, NULL, 0,
                                               pinvalue, strlen (pinvalue));
-          if (!rc && !app->app_local->extcap.is_v2)
+          if (!rc)
             rc = iso7816_change_reference_data (app->slot, 0x82, NULL, 0,
                                                 pinvalue, strlen (pinvalue));
         }
-      else
-        rc = iso7816_change_reference_data (app->slot, 0x80 + chvno, NULL, 0,
-                                            pinvalue, strlen (pinvalue));
+      else /* CHVNO == 3 */
+        {
+          rc = iso7816_change_reference_data (app->slot, 0x80 + chvno, NULL, 0,
+                                              pinvalue, strlen (pinvalue));
+        }
     }
+  else
+    {
+      /* Version 2 cards.  */
+      assert (chvno == 1 || chvno == 3);
+      
+      rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
+                                          oldpinvalue, strlen (oldpinvalue),
+                                          pinvalue, strlen (pinvalue));
+    }
+
   if (pinvalue)
     {
       wipememory (pinvalue, strlen (pinvalue));
@@ -1993,6 +2104,11 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     {
       wipememory (resetcode, strlen (resetcode));
       xfree (resetcode);
+    }
+  if (oldpinvalue)
+    {
+      wipememory (oldpinvalue, strlen (oldpinvalue));
+      xfree (oldpinvalue);
     }
   return rc;
 }
