@@ -1892,7 +1892,7 @@ main (int argc, char **argv)
     int eyes_only=0;
     int multifile=0;
     int pwfd = -1;
-    int with_fpr = 0; /* make an option out of --fingerprint */
+    int fpr_maybe_cmd = 0; /* --fingerprint maybe a command.  */
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
 
@@ -2241,8 +2241,13 @@ main (int argc, char **argv)
 
 	  case oWithFingerprint:
             opt.with_fingerprint = 1;
-            with_fpr=1; /*fall thru*/
-	  case oFingerprint: opt.fingerprint++; break;
+            opt.fingerprint++;
+            break;
+	  case oFingerprint:
+            opt.fingerprint++;
+            fpr_maybe_cmd = 1;
+            break;
+
 	  case oSecretKeyring:
             append_to_strlist( &sec_nrings, pargs.r.ret_str);
             break;
@@ -3299,9 +3304,12 @@ main (int argc, char **argv)
 	xfree(p);
     }
 
-    if( !cmd && opt.fingerprint && !with_fpr ) {
-	set_cmd( &cmd, aListKeys);
-    }
+    /* If there is no command but the --fingerprint is given, default
+       to the --list-keys command.  */
+    if (!cmd && fpr_maybe_cmd)
+      {
+	set_cmd (&cmd, aListKeys);
+      }
 
 
     if( opt.verbose > 1 )
