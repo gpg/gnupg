@@ -1555,7 +1555,7 @@ ask_key_flags(int algo,int subkey)
   unsigned int current=0;
   unsigned int possible=openpgp_pk_algo_usage(algo);
 
-  if ( strlen(togglers) != 7 )
+  if ( strlen(togglers) != 8 )
     {
       tty_printf ("NOTE: Bad translation at %s:%d. "
                   "Please report.\n", __FILE__, __LINE__);
