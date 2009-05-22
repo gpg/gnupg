@@ -88,6 +88,7 @@ got_fatal_signal( int sig )
     rl_free_line_state ();
     rl_cleanup_after_signal ();
 #endif
+    tty_cleanup_after_signal ();
 
     /* Better don't translate these messages. */
     write(2, "\n", 1 );

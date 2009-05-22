@@ -122,6 +122,14 @@ cleanup(void)
 }
 #endif
 
+void
+tty_cleanup_after_signal (void)
+{
+#ifdef HAVE_TCGETATTR
+  cleanup ();
+#endif
+}
+
 static void
 init_ttyfp(void)
 {

@@ -53,5 +53,6 @@ void tty_disable_completion(void);
 #define tty_enable_completion(x)
 #define tty_disable_completion()
 #endif
+void tty_cleanup_after_signal (void);
 
 #endif /*G10_TTYIO_H*/
