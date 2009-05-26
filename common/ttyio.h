@@ -47,6 +47,7 @@ int tty_no_terminal (int onoff);
 
 void tty_enable_completion (rl_completion_func_t *completer);
 void tty_disable_completion (void);
+void tty_cleanup_after_signal (void);
 void tty_cleanup_rl_after_signal (void);
 
 

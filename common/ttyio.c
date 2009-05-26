@@ -674,6 +674,14 @@ tty_disable_completion (void)
 
 
 void
+tty_cleanup_after_signal (void)
+{
+#ifdef HAVE_TCGETATTR
+  cleanup ();
+#endif
+}
+
+void
 tty_cleanup_rl_after_signal (void)
 {
   if (my_rl_cleanup_after_signal)
