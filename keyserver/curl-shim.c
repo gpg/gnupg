@@ -146,6 +146,9 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_STDERR:
       curl->errors=va_arg(ap,FILE *);
       break;
+    case CURLOPT_HTTPHEADER:
+      curl->headers=va_arg(ap,struct curl_slist *);
+      break;
     default:
       /* We ignore the huge majority of curl options */
       break;
@@ -186,7 +189,7 @@ curl_easy_perform(CURL *curl)
   if(curl->flags.post)
     {
       rc=http_open(&curl->hd,HTTP_REQ_POST,curl->url,curl->auth,0,proxy,
-		   curl->srvtag);
+		   curl->srvtag,curl->headers?curl->headers->list:NULL);
       if(rc==0)
 	{
 	  char content_len[50];
@@ -208,7 +211,7 @@ curl_easy_perform(CURL *curl)
   else
     {
       rc=http_open(&curl->hd,HTTP_REQ_GET,curl->url,curl->auth,0,proxy,
-		   curl->srvtag);
+		   curl->srvtag,curl->headers?curl->headers->list:NULL);
       if(rc==0)
 	{
 	  rc=http_wait_response(&curl->hd,&curl->status);
@@ -334,4 +337,29 @@ curl_version_info(int type)
   data.protocols=protocols;
 
   return &data;
+}
+
+struct curl_slist *
+curl_slist_append(struct curl_slist *list,const char *string)
+{
+  if(!list)
+    {
+      list=calloc(1,sizeof(*list));
+      if(!list)
+	return NULL;
+    }
+
+  add_to_strlist(&list->list,string);
+
+  return list;
+}
+
+void
+curl_slist_free_all(struct curl_slist *list)
+{
+  if(list)
+    {
+      free_strlist(list->list);
+      free(list);
+    }
 }

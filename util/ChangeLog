@@ -1,3 +1,8 @@
+2009-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (send_request): Pass in a STRLIST for additional headers.
+	Change all callers.
+
 2009-05-22  Werner Koch  <wk@g10code.com>
 
 	* ttyio.c (tty_cleanup_after_signal): New.

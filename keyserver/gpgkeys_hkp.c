@@ -550,6 +550,7 @@ main(int argc,char *argv[])
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
   char *proxy=NULL;
+  struct curl_slist *headers=NULL;
 
   console=stderr;
 
@@ -746,6 +747,26 @@ main(int argc,char *argv[])
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
   curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
 
+  /* Avoid caches to get the most recent copy of the key.  This is bug
+     #1061.  In pre-curl versions of the code, we didn't do it.  Then
+     we did do it (as a curl default) until curl changed the default.
+     Now we're doing it again, but in such a way that changing
+     defaults in the future won't impact us.  We set both the Pragma
+     and Cache-Control versions of the header, so we're good with both
+     HTTP 1.0 and 1.1. */
+  headers=curl_slist_append(headers,"Pragma: no-cache");
+  if(headers)
+    headers=curl_slist_append(headers,"Cache-Control: no-cache");
+
+  if(!headers)
+    {
+      fprintf(console,"gpgkeys: out of memory when building HTTP headers\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headers);
+
   if(proxy)
     curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
 
@@ -922,6 +943,8 @@ main(int argc,char *argv[])
     fclose(output);
 
   free_ks_options(opt);
+
+  curl_slist_free_all(headers);
 
   if(curl)
     curl_easy_cleanup(curl);

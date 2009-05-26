@@ -1,3 +1,8 @@
+2009-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.h: Pass in a STRLIST for additional headers on http_open
+	and http_open_document.
+
 2009-04-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* srv.h: Move from util/srv.h.

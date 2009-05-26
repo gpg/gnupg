@@ -1,3 +1,13 @@
+2009-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.c (curl_slist_append, curl_slist_free_all): New.
+	Simple wrappers around STRLIST to emulate the curl way of doing
+	string lists.
+	(curl_easy_setopt): Handle the curl HTTPHEADER option.
+
+	* gpgkeys_curl.c, gpgkeys_hkp.c (main): Avoid caches to get the
+	most recent copy of the key.  This is bug #1061.
+
 2009-05-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_mailto.in: Set 'mail-from' as a keyserver-option, rather

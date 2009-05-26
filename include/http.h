@@ -75,12 +75,12 @@ typedef struct http_context *HTTP_HD;
 
 int http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 	       char *auth, unsigned int flags, const char *proxy,
-	       const char *srvtag );
+	       const char *srvtag, STRLIST headers );
 void http_start_data( HTTP_HD hd );
 int  http_wait_response( HTTP_HD hd, unsigned int *ret_status );
 void http_close( HTTP_HD hd );
 int http_open_document( HTTP_HD hd, const char *document, char *auth,
 			unsigned int flags, const char *proxy,
-			const char *srvtag );
+			const char *srvtag, STRLIST headers );
 
 #endif /*G10_HTTP_H*/

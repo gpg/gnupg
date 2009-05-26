@@ -69,7 +69,7 @@ static int insert_escapes( byte *buffer, const byte *string,
 					 const byte *special );
 static URI_TUPLE parse_tuple( byte *string );
 static int send_request( HTTP_HD hd, const char *auth, const char *proxy,
-			 const char *srvtag);
+			 const char *srvtag, STRLIST headers);
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
@@ -150,7 +150,7 @@ make_radix64_string( const byte *data, size_t len )
 int
 http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 	   char *auth, unsigned int flags, const char *proxy,
-	   const char *srvtag )
+	   const char *srvtag, STRLIST headers )
 {
     int rc;
 
@@ -166,7 +166,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
-        rc = send_request( hd, auth, proxy, srvtag );
+        rc = send_request( hd, auth, proxy, srvtag, headers );
 	if( !rc ) {
 	    hd->fp_write = iobuf_sockopen( hd->sock , "w" );
 	    if( hd->fp_write )
@@ -234,11 +234,13 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
 int
 http_open_document( HTTP_HD hd, const char *document, char *auth,
-		    unsigned int flags, const char *proxy, const char *srvtag )
+		    unsigned int flags, const char *proxy, const char *srvtag,
+		    STRLIST headers )
 {
     int rc;
 
-    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy, srvtag );
+    rc = http_open(hd, HTTP_REQ_GET, document, auth, flags, proxy, srvtag,
+		   headers );
     if( rc )
 	return rc;
 
@@ -521,7 +523,7 @@ parse_tuple( byte *string )
  */
 static int
 send_request( HTTP_HD hd, const char *auth, const char *proxy,
-	      const char *srvtag )
+	      const char *srvtag, STRLIST headers )
 {
     const byte *server;
     byte *request, *p;
@@ -613,6 +615,19 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy,
     xfree(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
+
+    if(rc==0)
+      for(;headers;headers=headers->next)
+	{
+	  rc = write_server( hd->sock, headers->d, strlen(headers->d) );
+	  if(rc)
+	    break;
+
+	  rc = write_server( hd->sock, "\r\n", 2 );
+	  if(rc)
+	    break;
+	}
+
     xfree( request );
     xfree(proxy_authstr);
     xfree(authstr);
@@ -1078,7 +1093,7 @@ main(int argc, char **argv)
     }
     release_parsed_uri( uri ); uri = NULL;
 
-    rc = http_open_document( &hd, *argv, NULL, 0, NULL );
+    rc = http_open_document( &hd, *argv, NULL, 0, NULL, NULL, NULL );
     if( rc ) {
 	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
 	return 1;

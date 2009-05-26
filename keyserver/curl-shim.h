@@ -49,6 +49,7 @@ typedef enum
     CURLOPT_POST,
     CURLOPT_POSTFIELDS,
     CURLOPT_FAILONERROR,
+    CURLOPT_HTTPHEADER,
     CURLOPT_SRVTAG_GPG_HACK
   } CURLoption;
 
@@ -67,6 +68,7 @@ typedef struct
   char *srvtag;
   unsigned int status;
   FILE *errors;
+  struct curl_slist *headers;
   struct
   {
     unsigned int post:1;
@@ -95,5 +97,14 @@ char *curl_easy_escape(CURL *curl,char *str,int len);
 #define curl_free(x) free(x)
 #define curl_version() "GnuPG curl-shim"
 curl_version_info_data *curl_version_info(int type);
+
+struct curl_slist
+{
+  STRLIST list;
+};
+
+struct curl_slist *curl_slist_append(struct curl_slist *list,
+				     const char *string);
+void curl_slist_free_all(struct curl_slist *list);
 
 #endif /* !_CURL_SHIM_H_ */
