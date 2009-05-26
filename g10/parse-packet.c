@@ -139,9 +139,19 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
       p[i+2] = iobuf_get(inp) & 0xff;
       nread++;
     }
-  if ( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, nread, &nread ) )
-    a = NULL;
-    
+
+  if (nread >= 2 && !(buf[0] << 8 | buf[1]))
+    {
+      /* Libgcrypt < 1.5.0 accidently rejects zero-length (i.e. zero)
+         MPIs.  We fix this here.  */
+      a = gcry_mpi_new (0);
+    }
+  else
+    {
+      if ( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, nread, &nread ) )
+        a = NULL;
+    }
+
  leave:
   gcry_free(buf);
   if ( nread > *ret_nread )

@@ -81,6 +81,7 @@ got_fatal_signal( int sig )
     gcry_control (GCRYCTL_TERM_SECMEM );
 
     tty_cleanup_rl_after_signal ();
+    tty_cleanup_after_signal ();
 
     /* Better don't translate these messages. */
     write(2, "\n", 1 );
