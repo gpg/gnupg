@@ -1,5 +1,5 @@
 /* srv.c - DNS SRV code
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -55,15 +55,15 @@ priosort(const void *a,const void *b)
 int
 getsrv(const char *name,struct srventry **list)
 {
-  unsigned char answer[PACKETSZ];
+  unsigned char answer[2048];
   int r,srvcount=0;
   unsigned char *pt,*emsg;
   u16 count,dlen;
 
   *list=NULL;
 
-  r=res_query(name,C_IN,T_SRV,answer,PACKETSZ);
-  if(r<sizeof(HEADER) || r>PACKETSZ)
+  r=res_query(name,C_IN,T_SRV,answer,2048);
+  if(r<sizeof(HEADER) || r>2048)
     return -1;
 
   if((((HEADER *)answer)->rcode)==NOERROR &&
