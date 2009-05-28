@@ -490,6 +490,7 @@ fail_all(struct keylist *keylist,int err)
       }
 }
 
+#ifdef HAVE_LIBCURL
 /* If there is a SRV record, take the highest ranked possibility.
    This is a hack, as we don't proceed downwards. */
 static void
@@ -532,6 +533,7 @@ srv_replace(void)
     }
 #endif
 }
+#endif
 
 static void 
 show_help (FILE *fp)

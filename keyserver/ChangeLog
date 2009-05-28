@@ -1,3 +1,7 @@
+2009-05-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (srv_replace): Fix build warning.
+
 2009-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* curl-shim.c (curl_slist_append, curl_slist_free_all): New.
