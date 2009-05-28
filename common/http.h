@@ -82,7 +82,8 @@ gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        unsigned int flags,
                        const char *proxy,
                        void *tls_context,
-		       const char *srvtag);
+		       const char *srvtag,
+		       strlist_t headers);
 
 void http_start_data (http_t hd);
 
@@ -96,7 +97,8 @@ gpg_error_t http_open_document (http_t *r_hd,
                                 unsigned int flags,
                                 const char *proxy,
                                 void *tls_context,
-				const char *srvtag);
+				const char *srvtag,
+				strlist_t headers);
 
 #ifdef HTTP_USE_ESTREAM
 estream_t http_get_read_ptr (http_t hd);

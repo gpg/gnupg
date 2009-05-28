@@ -128,8 +128,8 @@ static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
-static gpg_error_t send_request (http_t hd, const char *auth,
-				 const char *proxy, const char *srvtag);
+static gpg_error_t send_request (http_t hd, const char *auth,const char *proxy,
+				 const char *srvtag,strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
@@ -317,7 +317,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
            const char *auth, unsigned int flags, const char *proxy,
-           void *tls_context, const char *srvtag)
+           void *tls_context, const char *srvtag,strlist_t headers)
 {
   gpg_error_t err;
   http_t hd;
@@ -338,7 +338,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = http_parse_uri (&hd->uri, url);
   if (!err)
-    err = send_request (hd, auth, proxy, srvtag);
+    err = send_request (hd, auth, proxy, srvtag, headers);
   
   if (err)
     {
@@ -457,12 +457,12 @@ http_wait_response (http_t hd)
 gpg_error_t
 http_open_document (http_t *r_hd, const char *document, 
                     const char *auth, unsigned int flags, const char *proxy,
-                    void *tls_context, const char *srvtag)
+                    void *tls_context, const char *srvtag,strlist_t headers)
 {
   gpg_error_t err;
 
   err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                   proxy, tls_context, srvtag);
+                   proxy, tls_context, srvtag, headers);
   if (err)
     return err;
 
@@ -835,7 +835,8 @@ parse_tuple (char *string)
  * Returns 0 if the request was successful
  */
 static gpg_error_t
-send_request (http_t hd, const char *auth, const char *proxy,const char *srvtag)
+send_request (http_t hd, const char *auth,
+	      const char *proxy,const char *srvtag,strlist_t headers)
 {
   gnutls_session_t tls_session;
   gpg_error_t err;
@@ -1051,6 +1052,17 @@ send_request (http_t hd, const char *auth, const char *proxy,const char *srvtag)
       err = gpg_error_from_syserror ();
     else
       err = 0;
+
+  if(err==0)
+    for(;headers;headers=headers->next)
+      {
+	if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
+	    || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
+	  {
+	    err = gpg_error_from_syserror ();
+	    break;
+	  }
+      }
   }
 
  leave:
@@ -1060,12 +1072,25 @@ send_request (http_t hd, const char *auth, const char *proxy,const char *srvtag)
      function and only then assign a stdio stream.  This allows for
      better error reporting that through standard stdio means. */
   err = write_server (hd->sock, request, strlen (request));
+
+  if(err==0)
+    for(;headers;headers=headers->next)
+      {
+	err = write_server( hd->sock, headers->d, strlen(headers->d) );
+	if(err)
+	  break;
+	err = write_server( hd->sock, "\r\n", 2 );
+	if(err)
+	  break;
+      }
+
   if (!err)
     {
       hd->fp_write = fdopen (hd->sock, "w");
       if (!hd->fp_write)
         err = gpg_error_from_syserror ();
     }
+
 #endif /*!HTTP_USE_ESTREAM*/
 
   xfree (request);

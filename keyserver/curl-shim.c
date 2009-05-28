@@ -1,7 +1,7 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "http.h"
 #include "util.h"
+#include "http.h"
 #include "ksutil.h"
 #include "curl-shim.h"
 
@@ -156,6 +156,9 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_STDERR:
       curl->errors=va_arg(ap,FILE *);
       break;
+    case CURLOPT_HTTPHEADER:
+      curl->headers=va_arg(ap,struct curl_slist *);
+      break;
     default:
       /* We ignore the huge majority of curl options */
       break;
@@ -196,7 +199,8 @@ curl_easy_perform(CURL *curl)
   if(curl->flags.post)
     {
       rc = http_open (&curl->hd, HTTP_REQ_POST, curl->url, curl->auth,
-                      0, proxy, NULL, curl->srvtag);
+                      0, proxy, NULL, curl->srvtag,
+		      curl->headers?curl->headers->list:NULL);
       if (!rc)
 	{
 	  unsigned int post_len = strlen(curl->postfields);
@@ -219,7 +223,8 @@ curl_easy_perform(CURL *curl)
   else
     {
       rc = http_open (&curl->hd, HTTP_REQ_GET, curl->url, curl->auth,
-                      0, proxy, NULL, curl->srvtag);
+                      0, proxy, NULL, curl->srvtag,
+		      curl->headers?curl->headers->list:NULL);
       if (!rc)
 	{
 	  rc = http_wait_response (curl->hd);
@@ -349,4 +354,29 @@ curl_version_info(int type)
   data.protocols=protocols;
 
   return &data;
+}
+
+struct curl_slist *
+curl_slist_append(struct curl_slist *list,const char *string)
+{
+  if(!list)
+    {
+      list=calloc(1,sizeof(*list));
+      if(!list)
+	return NULL;
+    }
+
+  add_to_strlist(&list->list,string);
+
+  return list;
+}
+
+void
+curl_slist_free_all(struct curl_slist *list)
+{
+  if(list)
+    {
+      free_strlist(list->list);
+      free(list);
+    }
 }

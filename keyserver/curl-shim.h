@@ -1,5 +1,5 @@
 /* curl-shim.h
- * Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -20,6 +20,7 @@
 #ifndef _CURL_SHIM_H_
 #define _CURL_SHIM_H_
 
+#include "util.h"
 #include "http.h"
 
 typedef enum
@@ -49,6 +50,7 @@ typedef enum
     CURLOPT_POST,
     CURLOPT_POSTFIELDS,
     CURLOPT_FAILONERROR,
+    CURLOPT_HTTPHEADER,
     CURLOPT_SRVTAG_GPG_HACK
   } CURLoption;
 
@@ -67,6 +69,7 @@ typedef struct
   char *srvtag;
   unsigned int status;
   FILE *errors;
+  struct curl_slist *headers;
   struct
   {
     unsigned int post:1;
@@ -95,5 +98,14 @@ char *curl_escape(char *str,int len);
 #define curl_free(x) free(x)
 #define curl_version() "GnuPG curl-shim"
 curl_version_info_data *curl_version_info(int type);
+
+struct curl_slist
+{
+  strlist_t list;
+};
+
+struct curl_slist *curl_slist_append(struct curl_slist *list,
+				     const char *string);
+void curl_slist_free_all(struct curl_slist *list);
 
 #endif /* !_CURL_SHIM_H_ */
