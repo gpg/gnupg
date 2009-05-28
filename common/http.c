@@ -128,8 +128,8 @@ static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
-static gpg_error_t send_request (http_t hd,
-                                 const char *auth, const char *proxy);
+static gpg_error_t send_request (http_t hd, const char *auth,
+				 const char *proxy, const char *srvtag);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
@@ -317,7 +317,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
            const char *auth, unsigned int flags, const char *proxy,
-           void *tls_context)
+           void *tls_context, const char *srvtag)
 {
   gpg_error_t err;
   http_t hd;
@@ -338,7 +338,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = http_parse_uri (&hd->uri, url);
   if (!err)
-    err = send_request (hd, auth, proxy);
+    err = send_request (hd, auth, proxy, srvtag);
   
   if (err)
     {
@@ -457,12 +457,12 @@ http_wait_response (http_t hd)
 gpg_error_t
 http_open_document (http_t *r_hd, const char *document, 
                     const char *auth, unsigned int flags, const char *proxy,
-                    void *tls_context)
+                    void *tls_context, const char *srvtag)
 {
   gpg_error_t err;
 
   err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                   proxy, tls_context);
+                   proxy, tls_context, srvtag);
   if (err)
     return err;
 
@@ -835,7 +835,7 @@ parse_tuple (char *string)
  * Returns 0 if the request was successful
  */
 static gpg_error_t
-send_request (http_t hd, const char *auth, const char *proxy)
+send_request (http_t hd, const char *auth, const char *proxy,const char *srvtag)
 {
   gnutls_session_t tls_session;
   gpg_error_t err;
@@ -893,13 +893,13 @@ send_request (http_t hd, const char *auth, const char *proxy)
 
       hd->sock = connect_server (*uri->host ? uri->host : "localhost",
 				 uri->port ? uri->port : 80,
-                                 hd->flags, hd->uri->scheme);
+                                 hd->flags, srvtag);
       save_errno = errno;
       http_release_parsed_uri (uri);
     }
   else
     {
-      hd->sock = connect_server (server, port, hd->flags, hd->uri->scheme);
+      hd->sock = connect_server (server, port, hd->flags, srvtag);
       save_errno = errno;
     }
 
@@ -1524,6 +1524,9 @@ connect_server (const char *server, unsigned short port,
   int last_errno = 0;
   struct srventry *serverlist = NULL;
 
+  /* Not currently using the flags */
+  (void)flags;
+
 #ifdef HAVE_W32_SYSTEM
   unsigned long inaddr;
 
@@ -1559,7 +1562,7 @@ connect_server (const char *server, unsigned short port,
 
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
-  if ((flags & HTTP_FLAG_TRY_SRV) && srvtag)
+  if (srvtag)
     {
       /* We're using SRV, so append the tags. */
       if (1+strlen (srvtag) + 6 + strlen (server) + 1 <= MAXDNAME)

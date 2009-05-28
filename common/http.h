@@ -63,9 +63,8 @@ enum
   { 
     HTTP_FLAG_TRY_PROXY = 1,
     HTTP_FLAG_NO_SHUTDOWN = 2,
-    HTTP_FLAG_TRY_SRV = 4,
-    HTTP_FLAG_LOG_RESP = 8,
-    HTTP_FLAG_NEED_HEADER = 16
+    HTTP_FLAG_LOG_RESP = 4,
+    HTTP_FLAG_NEED_HEADER = 8
   };
 
 struct http_context_s;
@@ -82,7 +81,8 @@ gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *auth,
                        unsigned int flags,
                        const char *proxy,
-                       void *tls_context);
+                       void *tls_context,
+		       const char *srvtag);
 
 void http_start_data (http_t hd);
 
@@ -95,7 +95,8 @@ gpg_error_t http_open_document (http_t *r_hd,
                                 const char *auth,
                                 unsigned int flags,
                                 const char *proxy,
-                                void *tls_context);
+                                void *tls_context,
+				const char *srvtag);
 
 #ifdef HTTP_USE_ESTREAM
 estream_t http_get_read_ptr (http_t hd);

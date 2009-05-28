@@ -1,5 +1,12 @@
 2009-05-27  David Shaw  <dshaw@jabberwocky.com>
 
+	From 1.4:
+	
+	* http.h, http.c (send_request): Pass in srvtag and make its
+	presence sufficient to turn the feature on.
+	(http_open): From here.
+	(http_document): And here.
+
 	* srv.c (getsrv): Raise maximum packet size to 2048, as PACKETSZ
 	is too small these days.
 

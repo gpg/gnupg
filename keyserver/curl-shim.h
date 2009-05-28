@@ -48,7 +48,8 @@ typedef enum
     CURLOPT_CAINFO,
     CURLOPT_POST,
     CURLOPT_POSTFIELDS,
-    CURLOPT_FAILONERROR
+    CURLOPT_FAILONERROR,
+    CURLOPT_SRVTAG_GPG_HACK
   } CURLoption;
 
 typedef size_t (*write_func)(char *buffer,size_t size,
@@ -63,6 +64,7 @@ typedef struct
   write_func writer;
   void *file;
   char *postfields;
+  char *srvtag;
   unsigned int status;
   FILE *errors;
   struct

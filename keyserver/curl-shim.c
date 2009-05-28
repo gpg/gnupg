@@ -144,6 +144,9 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
     case CURLOPT_POSTFIELDS:
       curl->postfields=va_arg(ap,char *);
       break;
+    case CURLOPT_SRVTAG_GPG_HACK:
+      curl->srvtag=va_arg(ap,char *);
+      break;
     case CURLOPT_FAILONERROR:
       curl->flags.failonerror=va_arg(ap,long)?1:0;
       break;
@@ -193,7 +196,7 @@ curl_easy_perform(CURL *curl)
   if(curl->flags.post)
     {
       rc = http_open (&curl->hd, HTTP_REQ_POST, curl->url, curl->auth,
-                      0, proxy, NULL);
+                      0, proxy, NULL, curl->srvtag);
       if (!rc)
 	{
 	  unsigned int post_len = strlen(curl->postfields);
@@ -216,7 +219,7 @@ curl_easy_perform(CURL *curl)
   else
     {
       rc = http_open (&curl->hd, HTTP_REQ_GET, curl->url, curl->auth,
-                      0, proxy, NULL);
+                      0, proxy, NULL, curl->srvtag);
       if (!rc)
 	{
 	  rc = http_wait_response (curl->hd);
