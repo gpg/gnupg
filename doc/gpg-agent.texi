@@ -157,14 +157,16 @@ default mode is to create a socket and listen for commands there.
 
 @item --daemon [@var{command line}]
 @opindex daemon
-Run the program in the background.  This option is required to prevent
-it from being accidently running in the background.  A common way to do
-this is:
-@example
-@end example
-$ eval $(gpg-agent --daemon)
+Start the gpg-agent as a daemon; that is, detach it from the console
+and run it in the background.  Because @command{gpg-agent} prints out
+important information required for further use, a common way of
+invoking gpg-agent is: @code{eval $(gpg-agent --daemon)} to setup the
+environment variables.  The option @option{--write-env-file} is
+another way commonly used to do this.  Yet another way is creating
+a new process as a child of gpg-agent: @code{gpg-agent --daemon
+/bin/sh}.  This way you get a new shell with the environment setup
+properly; if you exit from this shell, gpg-agent terminates as well.
 @end table
-
 
 @mansect options
 @node Agent Options

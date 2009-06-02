@@ -1,3 +1,7 @@
+2009-06-02  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (get_manufacturer): Add new manufacturer.
+
 2009-05-26  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (mpi_read): Workaround for zero-length MPI bug in

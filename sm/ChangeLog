@@ -1,3 +1,7 @@
+2009-05-27  Werner Koch  <wk@g10code.com>
+
+	* encrypt.c (encrypt_dek): Make use of make_canon_sexp.
+
 2009-05-18  Werner Koch  <wk@g10code.com>
 
 	* server.c (option_handler): New option "no-encrypt-to".

@@ -996,6 +996,9 @@ main (int argc, char **argv )
              right now and thus we restore it.  That is not strictly
              necessary but some programs falsely assume a cleared
              signal mask.  */
+          if ( !pth_kill () )
+            log_error ("pth_kill failed in foked process\n");
+            
 #ifdef HAVE_SIGPROCMASK
           if (startup_signal_mask_valid)
             {

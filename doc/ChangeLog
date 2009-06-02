@@ -1,3 +1,9 @@
+2009-06-02  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (watchgnupg): Typo fix.  Fixes bug#1065.
+
+	* gpg-agent.texi (Agent Commands): Update description of --daemon.
+
 2009-05-20  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (GPG Configuration Options): Explain new meaning of

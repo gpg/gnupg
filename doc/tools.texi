@@ -41,7 +41,7 @@ GnuPG comes with a couple of smaller tools:
 @end ifset
 
 @mansect description
-Most of the main utilities are able to write there log files to a
+Most of the main utilities are able to write their log files to a
 Unix Domain socket if configured that way.  @command{watchgnupg} is a simple
 listener for such a socket.  It ameliorates the output with a time
 stamp and makes sure that long lines are not interspersed with log

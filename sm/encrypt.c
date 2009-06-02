@@ -207,22 +207,10 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
   gcry_sexp_release (s_data);
   gcry_sexp_release (s_pkey);
   
-  /* reformat it */
-  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len); 
-  buf = xtrymalloc (len);
-  if (!buf)
-    {
-      gpg_error_t tmperr = out_of_core ();
-      gcry_sexp_release (s_ciph);
-      return tmperr;
-    }
-  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, (char*)buf, len);
-  assert (len);
+  /* Reformat it. */
+  rc = make_canon_sexp (s_ciph, encval, NULL);
   gcry_sexp_release (s_ciph);
-
-  *encval = buf;
-  return 0;
+  return rc;
 }
 
 
