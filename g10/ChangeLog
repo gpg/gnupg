@@ -1,3 +1,7 @@
+2009-06-02  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c (tty_cleanup_after_signal): Add new stub.
+
 2009-05-22  Werner Koch  <wk@g10code.com>
 
 	* signal.c (got_fatal_signal): Call tty_cleanup_after_signal.

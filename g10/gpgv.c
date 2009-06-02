@@ -417,6 +417,7 @@ char *tty_get_hidden( const char *prompt ) {return NULL; }
 void tty_kill_prompt(void) {}
 int tty_get_answer_is_yes( const char *prompt ) {return 0;}
 int tty_no_terminal(int onoff) {return 0;}
+void tty_cleanup_after_signal (void) {}
 #ifdef HAVE_LIBREADLINE
 void tty_enable_completion(rl_completion_func_t *completer) {}
 void tty_disable_completion(void) {}
