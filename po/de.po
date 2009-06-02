@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-05-13 18:04+0200\n"
+"POT-Creation-Date: 2009-05-13 18:14+0200\n"
 "PO-Revision-Date: 2009-03-24 18:54+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -172,7 +172,7 @@ msgstr "Keine Übereinstimmung - bitte nochmal versuchen"
 #: agent/command-ssh.c:2900
 #, c-format
 msgid "failed to create stream from socket: %s\n"
-msgstr "Das Erzeugen eines Datenstrom aus dem Socket schlug fehl: %s\n"
+msgstr "Das Erzeugen eines Datenstroms aus dem Socket schlug fehl: %s\n"
 
 #: agent/divert-scd.c:199
 msgid "Admin PIN"
@@ -220,7 +220,7 @@ msgstr "PIN wurde nicht richtig wiederholt; noch einmal versuchen"
 #: agent/divert-scd.c:309
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
-msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
+msgstr "Bitte geben Sie die PIN%s%s%s ein, um die Karte zu entsperren"
 
 #: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:638 sm/export.c:654
 #: sm/import.c:537 sm/import.c:562
@@ -307,7 +307,7 @@ msgstr "Ja, ein Schutz ist nicht notwendig"
 #: agent/genkey.c:308
 #, c-format
 msgid "Please enter the passphrase to%0Ato protect your new key"
-msgstr "Bitte geben Sie die Passphrase ein%0Aum Ihren Schlüssel zu schützen"
+msgstr "Bitte geben Sie die Passphrase ein,%0Aum Ihren Schlüssel zu schützen"
 
 #: agent/genkey.c:431
 msgid "Please enter the new passphrase"
@@ -376,7 +376,7 @@ msgstr "|PGM|benutze PGM as PIN-Entry"
 
 #: agent/gpg-agent.c:141
 msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|benutze PGM as SCdaemon"
+msgstr "|PGM|benutze PGM als SCdaemon"
 
 #: agent/gpg-agent.c:142
 msgid "do not use the SCdaemon"
@@ -396,7 +396,7 @@ msgstr "|N|lasse PINs im Cache nach N Sekunden verfallen"
 
 #: agent/gpg-agent.c:172
 msgid "do not use the PIN cache when signing"
-msgstr "benutze PINs im Cache nicht bem Signieren"
+msgstr "benutze PINs im Cache nicht beim Signieren"
 
 #: agent/gpg-agent.c:174
 msgid "allow clients to mark keys as \"trusted\""
@@ -412,7 +412,7 @@ msgstr "Die ssh-agent-Emulation anschalten"
 
 #: agent/gpg-agent.c:179
 msgid "|FILE|write environment settings also to FILE"
-msgstr "|DATEI|Schreibe die Umgebungsvariabeln auf DATEI"
+msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
 
 #: agent/gpg-agent.c:328 agent/preset-passphrase.c:94 agent/protect-tool.c:159
 #: scd/scdaemon.c:243 sm/gpgsm.c:513 tools/gpg-connect-agent.c:180
@@ -643,7 +643,7 @@ msgid ""
 "needed to complete this operation."
 msgstr ""
 "Die Eingabe der Passphrase bzw. der PIN\n"
-"wird benötigt um diese Aktion auszuführen."
+"wird benötigt, um diese Aktion auszuführen."
 
 #: agent/protect-tool.c:1171 tools/symcryptrun.c:435
 msgid "Passphrase:"
@@ -689,7 +689,7 @@ msgstr "fehlerhafter Fingerabdruck in `%s', Zeile %d\n"
 #: agent/trustlist.c:253 agent/trustlist.c:260
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
-msgstr "Ungültiger Schlüsselflag in `%s', Zeile %d\n"
+msgstr "Ungültiges Schlüsselflag in `%s', Zeile %d\n"
 
 #: agent/trustlist.c:294 common/helpfile.c:126
 #, c-format
@@ -811,7 +811,7 @@ msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
 #: common/exechelp.c:870
 #, c-format
 msgid "error running `%s': probably not installed\n"
-msgstr "Feler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
+msgstr "Fehler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
 
 #: common/exechelp.c:883
 #, c-format
@@ -842,7 +842,7 @@ msgstr "Kommunikationsproblem mit GPG-Agent\n"
 
 #: common/simple-pwquery.c:414
 msgid "problem setting the gpg-agent options\n"
-msgstr "Beim setzen der gpg-agent Optionen ist ein problem aufgetreten\n"
+msgstr "Beim Setzen der gpg-agent Optionen ist ein Problem aufgetreten\n"
 
 #: common/simple-pwquery.c:577 common/simple-pwquery.c:673
 msgid "canceled by user\n"
@@ -925,7 +925,7 @@ msgstr "Kein Speicher mehr vorhanden, als %lu Byte zugewiesen werden sollten"
 
 #: common/asshelp.c:244 tools/gpg-connect-agent.c:2101
 msgid "no running gpg-agent - starting one\n"
-msgstr "Kein aktiver gpg-agent - es wird einer gestarted\n"
+msgstr "Kein aktiver gpg-agent - es wird einer gestartet\n"
 
 #: common/asshelp.c:349
 msgid "can't connect to the agent - trying fall back\n"
@@ -1391,7 +1391,7 @@ msgstr "Geheime Teile des Schlüssels sind nicht vorhanden\n"
 
 #: g10/card-util.c:1354
 msgid "secret key already stored on a card\n"
-msgstr "geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
+msgstr "Geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
 
 #: g10/card-util.c:1423 g10/keyedit.c:1380
 msgid "quit this menu"
@@ -1439,7 +1439,7 @@ msgstr "Ändern des CA-Fingerabdrucks"
 
 #: g10/card-util.c:1438
 msgid "toggle the signature force PIN flag"
-msgstr "Umschalte des \"Signature-force-PIN\"-Schalters"
+msgstr "Umschalten des \"Signature-force-PIN\"-Schalters"
 
 #: g10/card-util.c:1439
 msgid "generate new keys"
@@ -2177,7 +2177,7 @@ msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
-"Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
+"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist %s)\n"
 
 #: g10/gpg.c:2309 g10/gpg.c:2995 g10/gpg.c:3007
 #, c-format
@@ -2284,7 +2284,7 @@ msgstr "werte das Vertrauen zu Unterschriften durch gültige PKA-Daten auf"
 #: g10/gpg.c:2689
 #, c-format
 msgid "%s:%d: invalid verify options\n"
-msgstr "%s:%d: ungültige Überprüfuns-Option.\n"
+msgstr "%s:%d: ungültige Überprüfungs-Option.\n"
 
 #: g10/gpg.c:2692
 msgid "invalid verify options\n"
@@ -2349,7 +2349,7 @@ msgstr ""
 #: g10/gpg.c:3054
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
-"Verschlüssen einer Botschaft benötigt im --pgp2-Modus die IDEA-"
+"Verschlüsseln einer Botschaft benötigt im --pgp2-Modus die IDEA-"
 "Verschlüsselung\n"
 
 #: g10/gpg.c:3120 g10/gpg.c:3144 sm/gpgsm.c:1461
@@ -2598,7 +2598,7 @@ msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
 
 #: g10/gpgv.c:117
 msgid "Usage: gpgv [options] [files] (-h for help)"
-msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
+msgstr "Aufruf: gpgv [Optionen] [Dateien] (-h für Hilfe)"
 
 #: g10/gpgv.c:119
 msgid ""
@@ -2737,7 +2737,7 @@ msgid ""
 "WARNING: key %s contains preferences for unavailable\n"
 "algorithms on these user IDs:\n"
 msgstr ""
-"WARNING: Schlüssel %s hat Einstellungen zu nicht verfügbaren\n"
+"WARNUNG: Schlüssel %s hat Einstellungen zu nicht verfügbaren\n"
 "Verfahren für folgende User-ID:\n"
 
 #: g10/import.c:610
@@ -3176,7 +3176,7 @@ msgstr ""
 #: g10/keyedit.c:454
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr ""
-"Geben Sie bitte eine Domain ein, um die Unterschrift einzuschränken,\n"
+"Geben Sie bitte eine Domain ein, um die Unterschrift einzuschränken\n"
 "oder nur die Eingabetaste für keine Domain\n"
 
 #: g10/keyedit.c:598
@@ -3400,11 +3400,11 @@ msgstr "Dieser Schlüssel ist nicht geschützt.\n"
 
 #: g10/keyedit.c:1146 g10/keygen.c:3624 g10/revoke.c:538
 msgid "Secret parts of primary key are not available.\n"
-msgstr "Geheime Teile des Haupschlüssels sind nicht vorhanden\n"
+msgstr "Geheime Teile des Hauptschlüssels sind nicht vorhanden.\n"
 
 #: g10/keyedit.c:1150 g10/keygen.c:3640
 msgid "Secret parts of primary key are stored on-card.\n"
-msgstr "Geheime Teile des Haupschlüssels sind auf der Karte gespeichert.\n"
+msgstr "Geheime Teile des Hauptschlüssels sind auf der Karte gespeichert.\n"
 
 #: g10/keyedit.c:1156 g10/keygen.c:3644
 msgid "Key is protected.\n"
@@ -3481,7 +3481,7 @@ msgstr "Die ausgewählte User-ID mit einer \"Trust\"-Unterschrift beglaubigen"
 
 #: g10/keyedit.c:1404
 msgid "sign selected user IDs with a non-revocable signature"
-msgstr "die ausgewählten User-ID unwiderrufbar beglaubigen"
+msgstr "die ausgewählten User-IDs unwiderrufbar beglaubigen"
 
 #: g10/keyedit.c:1408
 msgid "add a user ID"
@@ -3501,15 +3501,15 @@ msgstr "einen Unterschlüssel hinzufügen"
 
 #: g10/keyedit.c:1421
 msgid "add a key to a smartcard"
-msgstr "der Smartcard einen Schlssel hinzufgen"
+msgstr "der Smartcard einen Schlüssel hinzufügen"
 
 #: g10/keyedit.c:1423
 msgid "move a key to a smartcard"
-msgstr "einen Schlssel auf die Smartcard schieben"
+msgstr "einen Schlüssel auf die Smartcard schieben"
 
 #: g10/keyedit.c:1425
 msgid "move a backup key to a smartcard"
-msgstr "eine Sicherungskopie des Schlssels auf die Smartcard schieben"
+msgstr "eine Sicherungskopie des Schlüssels auf die Smartcard schieben"
 
 #: g10/keyedit.c:1429
 msgid "delete selected subkeys"
@@ -3592,13 +3592,13 @@ msgstr "ausgewählte Foto-IDs anzeigen"
 #: g10/keyedit.c:1473
 msgid "compact unusable user IDs and remove unusable signatures from key"
 msgstr ""
-"unbrauchbare User-IDs verkleinern und unbrauchbare Unterschrifen aus dem "
+"unbrauchbare User-IDs verkleinern und unbrauchbare Unterschriften aus dem "
 "Schlüssel entfernen"
 
 #: g10/keyedit.c:1475
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
-"unbrauchbare User-IDs verkleinern und alle Unterschrifen aus dem Schlüssel "
+"unbrauchbare User-IDs verkleinern und alle Unterschriften aus dem Schlüssel "
 "entfernen"
 
 #: g10/keyedit.c:1599
@@ -3876,7 +3876,7 @@ msgid ""
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
 "WARNUNG: Keine User-ID ist als primär markiert.  Dieser Befehl kann\n"
-"dazu führen, daß eine andere User-ID as primär angesehen wird.\n"
+"dazu führen, daß eine andere User-ID als primär angesehen wird.\n"
 
 #: g10/keyedit.c:3054
 msgid ""
@@ -4637,7 +4637,7 @@ msgstr ""
 
 #: g10/keygen.c:3617 g10/keygen.c:3758
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "HINWEIS: Unterschlüssel für v3-Schlüssen sind nicht OpenPGP-konform\n"
+msgstr "HINWEIS: Unterschlüssel für v3-Schlüssel sind nicht OpenPGP-konform\n"
 
 #: g10/keygen.c:3658 g10/keygen.c:3791
 msgid "Really create? (y/N) "
@@ -5037,7 +5037,7 @@ msgstr "WARNUNG: Mehr als ein Klartext erkannt\n"
 #: g10/mainproc.c:842
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
-"Einzelner Widerruf - verwenden Sie \"gpg --import\" um ihn anzuwenden\n"
+"Einzelner Widerruf - verwenden Sie \"gpg --import\", um ihn anzuwenden\n"
 
 #: g10/mainproc.c:1195 g10/mainproc.c:1232
 msgid "no signature found\n"
@@ -5545,7 +5545,7 @@ msgstr "WARNUNG: Ein Schlüssel ohne gesichertes Vertrauen wird benutzt!\n"
 #: g10/pkclist.c:520
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
-"WARNUNG: Dieser schlüssel ist u.U. widerrufen: Widerrufschlüssel ist nicht "
+"WARNUNG: Dieser Schlüssel ist u.U. widerrufen: Widerrufschlüssel ist nicht "
 "vorhanden\n"
 
 #: g10/pkclist.c:529
@@ -5811,7 +5811,7 @@ msgstr "kein zugehöriger öffentlicher Schlüssel: %s\n"
 
 #: g10/revoke.c:510
 msgid "public key does not match secret key!\n"
-msgstr "Öffentliche Schlüssel paßt nicht zum geheimen Schlüssel!\n"
+msgstr "Öffentlicher Schlüssel paßt nicht zum geheimen Schlüssel!\n"
 
 #: g10/revoke.c:517
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -5920,7 +5920,7 @@ msgstr "Unsicherer Schlüssel erzeugt - neuer Versuch\n"
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
-"Trotz %d-fachen Versuch konnte die Erzeugung eines unsicheren Schlüssels für "
+"Trotz %d-fachen Versuches konnte die Erzeugung eines unsicheren Schlüssels für "
 "sym. Verschlüsselung nicht vermieden werden!\n"
 
 #: g10/seskey.c:227 sm/certcheck.c:85
@@ -6110,7 +6110,7 @@ msgid ""
 "# List of assigned trustvalues, created %s\n"
 "# (Use \"gpg --import-ownertrust\" to restore them)\n"
 msgstr ""
-"# Liste de zugewiesenden Trustwerte, erzeugt am %s\n"
+"# Liste der zugewiesenen Trustwerte, erzeugt am %s\n"
 "# (\"gpg --import-ownertrust\" um sie zu restaurieren)\n"
 
 #: g10/tdbdump.c:161 g10/tdbdump.c:169 g10/tdbdump.c:174 g10/tdbdump.c:179
@@ -6430,7 +6430,7 @@ msgstr "%d Schlüssel verarbeitet (%d Validity Zähler gelöscht)\n"
 
 #: g10/trustdb.c:2264
 msgid "no ultimately trusted keys found\n"
-msgstr "keine uneingeschränkt vertrauenswürdige Schlüssel gefunden\n"
+msgstr "keine uneingeschränkt vertrauenswürdigen Schlüssel gefunden\n"
 
 #: g10/trustdb.c:2278
 #, c-format
@@ -6466,7 +6466,7 @@ msgid ""
 msgstr ""
 "Die Unterschrift konnte nicht überprüft werden.\n"
 "Denken Sie daran, daß die Datei mit der Unterschrift (.sig oder .asc)\n"
-"als erster in der Kommandozeile stehen sollte.\n"
+"als erste in der Kommandozeile stehen sollte.\n"
 
 #: g10/verify.c:205
 #, c-format
@@ -6496,7 +6496,7 @@ msgstr "Fehlendes Argument"
 
 #: jnlib/argparse.c:188
 msgid "invalid command"
-msgstr "Ungültige Befehl"
+msgstr "Ungültiger Befehl"
 
 #: jnlib/argparse.c:190
 msgid "invalid alias definition"
@@ -6543,7 +6543,7 @@ msgstr "Ungültige Option \"%.50s\"\n"
 #: jnlib/logging.c:644
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
-msgstr "Sie haben eine Bug (Programmfehler) gefunden ... (%s:%d)\n"
+msgstr "Sie haben einen Bug (Programmfehler) gefunden ... (%s:%d)\n"
 
 #: jnlib/utf8conv.c:85
 #, c-format
@@ -6613,7 +6613,7 @@ msgstr "Alle Debug Flags setzen"
 
 #: kbx/kbxutil.c:114
 msgid "Please report bugs to "
-msgstr "Bitte richten sie Berichte über Bugs (Softwarefehler) an "
+msgstr "Bitte richten Sie Berichte über Bugs (Softwarefehler) an "
 
 #: kbx/kbxutil.c:118
 msgid "Usage: kbxutil [options] [files] (-h for help)"
@@ -6625,7 +6625,7 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 "Syntax: kbxutil [Optionen] [Dateien]\n"
-"Anlistem exportieren und Importieren von KeyBox Dateien\n"
+"Anlisten exportieren und Importieren von KeyBox Dateien\n"
 
 #: scd/app-nks.c:712 scd/app-openpgp.c:2373
 #, c-format
@@ -6635,7 +6635,7 @@ msgstr "Der RSA Modulus fehlt oder ist nicht %d Bits lang\n"
 #: scd/app-nks.c:720 scd/app-openpgp.c:2385
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
-msgstr "der öffentliche Exponent fehlt oder ist zu groß (mehr als %d Bit)\n"
+msgstr "Der öffentliche Exponent fehlt oder ist zu groß (mehr als %d Bit)\n"
 
 #: scd/app-nks.c:800 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
 #: scd/app-openpgp.c:1666 scd/app-openpgp.c:1684 scd/app-openpgp.c:1886
@@ -6858,7 +6858,7 @@ msgstr "Schlüsselerzeugung abgeschlossen (%d Sekunden)\n"
 
 #: scd/app-openpgp.c:2659
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
-msgstr "Ungültige Struktur der OpenPGP-Karte (DO 0x93)}\n"
+msgstr "Ungültige Struktur der OpenPGP-Karte (DO 0x93)\n"
 
 #: scd/app-openpgp.c:2709
 msgid "fingerprint on card does not match requested one\n"
@@ -6878,7 +6878,7 @@ msgstr "Anzahl bereits erzeugter Signaturen: %lu\n"
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
-"Die Überprüfung der Admin PIN is momentan durch einen Befehl verboten "
+"Die Überprüfung der Admin PIN ist momentan durch einen Befehl verboten "
 "worden\n"
 
 #: scd/app-openpgp.c:3427 scd/app-openpgp.c:3438
@@ -6888,7 +6888,7 @@ msgstr "Kann auf %s nicht zugreifen - ungültige OpenPGP-Karte?\n"
 
 #: scd/app-dinsig.c:299
 msgid "||Please enter your PIN at the reader's keypad"
-msgstr "||Bitte die PIN auf der Tastatur des Kartenleser eingeben"
+msgstr "||Bitte die PIN auf der Tastatur des Kartenlesers eingeben"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -6931,7 +6931,7 @@ msgstr "|N|Schalte die Karte nach N Sekunden Inaktivität ab"
 
 #: scd/scdaemon.c:140
 msgid "do not use a reader's keypad"
-msgstr "Die Tastatur des Kartenleser nicht benutzen"
+msgstr "Die Tastatur des Kartenlesers nicht benutzen"
 
 #: scd/scdaemon.c:143
 msgid "deny the use of admin card commands"
@@ -6946,13 +6946,13 @@ msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
 msgstr ""
-"Synatx: scdaemon [Optionen] [Befehl [Argumente]]\n"
+"Syntax: scdaemon [Optionen] [Befehl [Argumente]]\n"
 "Smartcard Daemon für GnuPG\n"
 
 #: scd/scdaemon.c:736
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
-"Bitte die Option `--daemon' nutzen um das Programm im Hintergund "
+"Bitte die Option `--daemon' nutzen, um das Programm im Hintergund "
 "auszuführen\n"
 
 #: scd/scdaemon.c:1090
@@ -7081,7 +7081,7 @@ msgstr "Die vorhandene CRL ist zu alt"
 #: sm/certchain.c:926
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
-"Bitte vergewissern Sie sich das der \"dirmngr\" richtig installierrt ist\n"
+"Bitte vergewissern Sie sich, daß der \"dirmngr\" richtig installiert ist\n"
 
 #: sm/certchain.c:932
 #, c-format
@@ -7490,7 +7490,7 @@ msgstr "(Dies ist der RC-2 Algorithmus)\n"
 
 #: sm/decrypt.c:326
 msgid "(this does not seem to be an encrypted message)\n"
-msgstr "(dies is wahrscheinlich keine verschlüsselte Nachricht)\n"
+msgstr "(dies ist wahrscheinlich keine verschlüsselte Nachricht)\n"
 
 #: sm/delete.c:51 sm/delete.c:112
 #, c-format
@@ -7543,7 +7543,7 @@ msgstr "Smartcard registrieren"
 
 #: sm/gpgsm.c:212
 msgid "pass a command to the dirmngr"
-msgstr "Das Kommand an den Dirmngr durchreichen"
+msgstr "Das Kommando an den Dirmngr durchreichen"
 
 #: sm/gpgsm.c:214
 msgid "invoke gpg-protect-tool"
@@ -7555,7 +7555,7 @@ msgstr "Die Passphrase ändern"
 
 #: sm/gpgsm.c:230
 msgid "create base-64 encoded output"
-msgstr "Ausgabe im Basis-64 format erzeugen"
+msgstr "Ausgabe im Basis-64 Format erzeugen"
 
 #: sm/gpgsm.c:235
 msgid "assume input is in PEM format"
@@ -7652,7 +7652,7 @@ msgid ""
 "default operation depends on the input data\n"
 msgstr ""
 "Syntax: gpgsm [Optionen] [Dateien]\n"
-"Signieren, prüfen, ver- und entschlüsseln mittels S/MIME protocol\n"
+"Signieren, prüfen, ver- und entschlüsseln mittels S/MIME Protokoll\n"
 
 #: sm/gpgsm.c:611
 msgid "usage: gpgsm [options] "
@@ -7716,7 +7716,7 @@ msgstr "gesamte verarbeitete Anzahl: %lu\n"
 
 #: sm/import.c:227
 msgid "error storing certificate\n"
-msgstr "Fehler beim speichern des Zertifikats\n"
+msgstr "Fehler beim Speichern des Zertifikats\n"
 
 #: sm/import.c:235
 msgid "basic certificate checks failed - not imported\n"
@@ -8237,7 +8237,7 @@ msgid ""
 "Call a simple symmetric encryption tool\n"
 msgstr ""
 "Syntax: symcryptrun --class KLASSE --program PROGRAMM --"
-"keyfileSCHLUESSELDATEI [Optionen...] KOMMANDO [Eingabedatei]\n"
+"keyfile SCHLUESSELDATEI [Optionen...] KOMMANDO [Eingabedatei]\n"
 "Aufruf eines einfachen symmetrischen Verschlüsselungstool\n"
 
 #: tools/symcryptrun.c:279
@@ -8277,7 +8277,7 @@ msgstr "Fehler beim Schließen von %s: %s\n"
 
 #: tools/symcryptrun.c:486
 msgid "no --program option provided\n"
-msgstr "Option --programm nicht angegeben\n"
+msgstr "Option --program nicht angegeben\n"
 
 #: tools/symcryptrun.c:492
 msgid "only --decrypt and --encrypt are supported\n"
