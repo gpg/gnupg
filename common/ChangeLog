@@ -1,3 +1,7 @@
+2009-06-03  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_convert_mode): Rewrite and support the "x" flag.
+
 2009-05-28  David Shaw  <dshaw@jabberwocky.com>
 
 	From 1.4:

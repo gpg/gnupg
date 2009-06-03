@@ -195,6 +195,7 @@ get_manufacturer (unsigned int no)
     case 0x0004: return "Wewid AB";
     case 0x0005: return "ZeitControl";
 
+    case 0x002A: return "Magrathea";
       /* 0x00000 and 0xFFFF are defined as test cards per spec,
          0xFFF00 to 0xFFFE are assigned for use with randomly created
          serial numbers.  */

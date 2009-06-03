@@ -31,6 +31,7 @@
 #include "agent.h"
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
 #include "i18n.h"
+#include "estream.h"
 
 
 /* A structure to store the information from the trust file. */
@@ -552,7 +553,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   gpg_error_t err = 0;
   char *desc;
   char *fname;
-  FILE *fp;
+  estream_t fp;
   char *fprformatted;
   char *nameformatted;
   int is_disabled;
@@ -691,7 +692,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
   if ( access (fname, F_OK) && errno == ENOENT)
     {
-      fp = fopen (fname, "wx"); /* Warning: "x" is a GNU extension. */
+      fp = es_fopen (fname, "wx");
       if (!fp)
         {
           err = gpg_error_from_syserror ();
@@ -702,10 +703,10 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
           xfree (nameformatted);
           return err;
         }
-      fputs (headerblurb, fp);
-      fclose (fp);
+      es_fputs (headerblurb, fp);
+      es_fclose (fp);
     }
-  fp = fopen (fname, "a+");
+  fp = es_fopen (fname, "a+");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
@@ -718,22 +719,22 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     }
 
   /* Append the key. */
-  fputs ("\n# ", fp);
+  es_fputs ("\n# ", fp);
   xfree (nameformatted);
   nameformatted = reformat_name (name, "\n# ");
   if (!nameformatted || strchr (name, '\n'))
     {
       /* Note that there should never be a LF in NAME but we better
          play safe and print a sanitized version in this case.  */
-      print_sanitized_string (fp, name, 0);
+      es_write_sanitized (fp, name, strlen (name), NULL, NULL);
     }
   else
-    fputs (nameformatted, fp);
-  fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
-  if (ferror (fp))
+    es_fputs (nameformatted, fp);
+  es_fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
+  if (es_ferror (fp))
     err = gpg_error_from_syserror ();
   
-  if (fclose (fp))
+  if (es_fclose (fp))
     err = gpg_error_from_syserror ();
 
   agent_reload_trustlist ();

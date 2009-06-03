@@ -44,6 +44,7 @@
 #include "i18n.h"
 #include "get-passphrase.h"
 #include "sysutils.h"
+#include "estream.h"
 
 
 enum cmd_and_opt_values 
@@ -1199,18 +1200,15 @@ static int
 store_private_key (const unsigned char *grip,
                    const void *buffer, size_t length, int force)
 {
-  int i;
   char *fname;
-  FILE *fp;
+  estream_t fp;
   char hexgrip[40+4+1];
   
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
-  strcpy (hexgrip+40, ".key");
+  bin2hex (grip, 20, hexgrip);
 
   fname = make_filename (opt_homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   if (force)
-    fp = fopen (fname, "wb");
+    fp = es_fopen (fname, "wb");
   else
     {
       if (!access (fname, F_OK))
@@ -1224,9 +1222,9 @@ store_private_key (const unsigned char *grip,
         xfree (fname);
         return opt_no_fail_on_exist? 0 : -1;
       }
-      fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
-                                     configure check whether this actually
-                                     works */
+      /* FWIW: Under Windows Vista the standard fopen in the msvcrt
+         fails if the "x" GNU extension is used.  */
+      fp = es_fopen (fname, "wbx"); 
     }
 
   if (!fp) 
@@ -1236,15 +1234,15 @@ store_private_key (const unsigned char *grip,
       return -1;
     }
 
-  if (fwrite (buffer, length, 1, fp) != 1)
+  if (es_fwrite (buffer, length, 1, fp) != 1)
     {
       log_error ("error writing `%s': %s\n", fname, strerror (errno));
-      fclose (fp);
+      es_fclose (fp);
       remove (fname);
       xfree (fname);
       return -1;
     }
-  if ( fclose (fp) )
+  if (es_fclose (fp))
     {
       log_error ("error closing `%s': %s\n", fname, strerror (errno));
       remove (fname);

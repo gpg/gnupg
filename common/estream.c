@@ -897,67 +897,49 @@ static es_cookie_io_functions_t estream_functions_file =
   };
 
 
-
-/* Stream primitives.  */
-
 static int
 es_convert_mode (const char *mode, unsigned int *modeflags)
 {
+  unsigned int omode, oflags;
 
-  /* FIXME: We need to allow all mode flags permutations.  */
-  struct
-  {
-    const char *mode;
-    unsigned int flags;
-  } mode_flags[] = { { "r",
-		       O_RDONLY },
-		     { "rb",
-		       O_RDONLY | O_BINARY },
-		     { "w",
-		       O_WRONLY | O_TRUNC | O_CREAT },
-		     { "wb",
-		       O_WRONLY | O_TRUNC | O_CREAT | O_BINARY },
-		     { "a",
-		       O_WRONLY | O_APPEND | O_CREAT },
-		     { "ab",
-		       O_WRONLY | O_APPEND | O_CREAT | O_BINARY },
-		     { "r+",
-		       O_RDWR },
-		     { "rb+",
-		       O_RDWR | O_BINARY },
-		     { "r+b",
-		       O_RDONLY | O_WRONLY | O_BINARY },
-		     { "w+",
-		       O_RDWR | O_TRUNC | O_CREAT },
-		     { "wb+",
-		       O_RDWR | O_TRUNC | O_CREAT | O_BINARY },
-		     { "w+b",
-		       O_RDWR | O_TRUNC | O_CREAT | O_BINARY },
-		     { "a+",
-		       O_RDWR | O_CREAT | O_APPEND },
-		     { "ab+",
-		       O_RDWR | O_CREAT | O_APPEND | O_BINARY },
-		     { "a+b",
-		       O_RDWR | O_CREAT | O_APPEND | O_BINARY }
-  };
-  unsigned int i;
-  int err; 
-
-  for (i = 0; i < DIM (mode_flags); i++)
-    if (! strcmp (mode_flags[i].mode, mode))
+  switch (*mode)
+    {
+    case 'r':
+      omode = O_RDONLY;
+      oflags = 0;
       break;
-  if (i == DIM (mode_flags))
-    {
+    case 'w':
+      omode = O_WRONLY;
+      oflags = O_TRUNC | O_CREAT;
+      break;
+    case 'a':
+      omode = O_WRONLY;
+      oflags = O_APPEND | O_CREAT;
+      break;
+    default:
       errno = EINVAL;
-      err = -1;
+      return -1;
     }
-  else
+  for (mode++; *mode; mode++)
     {
-      err = 0;
-      *modeflags = mode_flags[i].flags;
+      switch (*mode)
+        {
+        case '+':
+          omode = O_RDWR;
+          break;
+        case 'b':
+          oflags |= O_BINARY;
+          break;
+        case 'x':
+          oflags |= O_EXCL;
+          break;
+        default: /* Ignore unknown flags.  */
+          break; 
+        }
     }
 
-  return err;
+  *modeflags = (omode | oflags);
+  return 0;
 }
 
 
