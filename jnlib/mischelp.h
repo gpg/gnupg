@@ -61,9 +61,13 @@ time_t timegm (struct tm *tm);
 
 
 /* Include hacks which are mainly required for Slowaris.  */
-#if defined(JNLIB_NEED_AFLOCAL) && !defined(HAVE_W32_SYSTEM)
-#include <sys/socket.h>
-#include <sys/un.h>
+#ifdef JNLIB_NEED_AFLOCAL
+#ifndef HAVE_W32_SYSTEM
+# include <sys/socket.h>
+# include <sys/un.h>
+#else
+# include <windows.h>
+#endif
 
 #ifndef PF_LOCAL
 # ifdef PF_UNIX
@@ -88,7 +92,7 @@ time_t timegm (struct tm *tm);
 # define SUN_LEN(ptr) ((size_t) (((struct sockaddr_un *) 0)->sun_path) \
 	               + strlen ((ptr)->sun_path))
 #endif /*SUN_LEN*/
-#endif /*JNLIB_NEED_AFLOCAL && !HAVE_W32_SYSTEM*/
+#endif /*JNLIB_NEED_AFLOCAL*/
 
 
 #endif /*LIBJNLIB_MISCHELP_H*/

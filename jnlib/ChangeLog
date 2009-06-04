@@ -1,3 +1,7 @@
+2009-06-04  Werner Koch  <wk@g10code.com>
+
+	* mischelp.h: Include SUN_LEN etc also for W32.
+
 2009-05-19  Werner Koch  <wk@g10code.com>
 
 	* mischelp.h: Define PF_LOCAL, AF_LOCAL and SUN_LEN if requested.
