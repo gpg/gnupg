@@ -1,10 +1,15 @@
+2009-06-05  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (store_private_key): Fix last change by appending
+	a ".key".
+
 2009-06-03  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c: Include estream.h.
 	(store_private_key): Replace stdio streams by estream functions
 	for a portable use of the "x" mode.
 	* trustlist.c: Include estream.h.
-	(agent_marktrusted): Repalce stdio stream by estream functions.
+	(agent_marktrusted): Replace stdio stream by estream functions.
 
 	* protect-tool.c (store_private_key): Use bin2hex.	
 

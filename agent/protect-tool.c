@@ -1205,6 +1205,7 @@ store_private_key (const unsigned char *grip,
   char hexgrip[40+4+1];
   
   bin2hex (grip, 20, hexgrip);
+  strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt_homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   if (force)
