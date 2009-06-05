@@ -1,6 +1,6 @@
 /* seskey.c -  make sesssion keys etc.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,12 +40,12 @@ make_session_key( DEK *dek )
     gcry_cipher_hd_t chd;
     int i, rc;
 
-    dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
+    dek->keylen = openpgp_cipher_get_algo_keylen (dek->algo);
 
-    if (gcry_cipher_open (&chd, dek->algo, GCRY_CIPHER_MODE_CFB,
-                          (GCRY_CIPHER_SECURE
-                           | (dek->algo >= 100 ?
-                              0 : GCRY_CIPHER_ENABLE_SYNC))) )
+    if (openpgp_cipher_open (&chd, dek->algo, GCRY_CIPHER_MODE_CFB,
+			     (GCRY_CIPHER_SECURE
+			      | (dek->algo >= 100 ?
+				 0 : GCRY_CIPHER_ENABLE_SYNC))) )
       BUG();
     gcry_randomize (dek->key, dek->keylen, GCRY_STRONG_RANDOM );
     for (i=0; i < 16; i++ ) 

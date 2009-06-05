@@ -1,6 +1,6 @@
 /* encr-data.c -  process an encrypted data packet
  * Copyright (C) 1998, 1999, 2000, 2001, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -98,7 +98,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
   rc = openpgp_cipher_test_algo (dek->algo);
   if (rc)
     goto leave;
-  blocksize = gcry_cipher_get_algo_blklen (dek->algo);
+  blocksize = openpgp_cipher_get_algo_blklen (dek->algo);
   if ( !blocksize || blocksize > 16 )
     log_fatal ("unsupported blocksize %u\n", blocksize );
   nprefix = blocksize;
@@ -113,11 +113,11 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
         gcry_md_start_debug (dfx->mdc_hash, "checkmdc");
     }
 
-  rc = gcry_cipher_open (&dfx->cipher_hd, dek->algo,
-                         GCRY_CIPHER_MODE_CFB,
-                         (GCRY_CIPHER_SECURE
-                          | ((ed->mdc_method || dek->algo >= 100)?
-                             0 : GCRY_CIPHER_ENABLE_SYNC)));
+  rc = openpgp_cipher_open (&dfx->cipher_hd, dek->algo,
+			    GCRY_CIPHER_MODE_CFB,
+			    (GCRY_CIPHER_SECURE
+			     | ((ed->mdc_method || dek->algo >= 100)?
+				0 : GCRY_CIPHER_ENABLE_SYNC)));
   if (rc)
     {
       /* We should never get an error here cause we already checked

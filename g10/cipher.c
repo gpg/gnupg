@@ -1,6 +1,6 @@
 /* cipher.c - En-/De-ciphering filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,7 +49,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     unsigned int blocksize;
     unsigned int nprefix;
 
-    blocksize = gcry_cipher_get_algo_blklen (cfx->dek->algo);
+    blocksize = openpgp_cipher_get_algo_blklen (cfx->dek->algo);
     if ( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
 
@@ -81,12 +81,12 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    err = gcry_cipher_open (&cfx->cipher_hd, 
-                            cfx->dek->algo,
-                            GCRY_CIPHER_MODE_CFB,
-                            (GCRY_CIPHER_SECURE
-                             | ((cfx->dek->use_mdc || cfx->dek->algo >= 100)?
-                                0 : GCRY_CIPHER_ENABLE_SYNC)));
+    err = openpgp_cipher_open (&cfx->cipher_hd, 
+			       cfx->dek->algo,
+			       GCRY_CIPHER_MODE_CFB,
+			       (GCRY_CIPHER_SECURE
+				| ((cfx->dek->use_mdc || cfx->dek->algo >= 100)?
+				   0 : GCRY_CIPHER_ENABLE_SYNC)));
     if (err) {
 	/* We should never get an error here cause we already checked,
 	 * that the algorithm is available.  */

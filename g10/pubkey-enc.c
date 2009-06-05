@@ -1,6 +1,6 @@
 /* pubkey-enc.c -  public key encoded packet handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -251,7 +251,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	dek->algo = 0;
 	goto leave;
     }
-    if ( dek->keylen != gcry_cipher_get_algo_keylen (dek->algo) ) {
+    if ( dek->keylen != openpgp_cipher_get_algo_keylen (dek->algo) ) {
 	rc = GPG_ERR_WRONG_SECKEY;
 	goto leave;
     }

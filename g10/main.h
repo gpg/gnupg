@@ -1,6 +1,6 @@
 /* main.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -82,6 +82,10 @@ u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
+int map_cipher_openpgp_to_gcry (int algo);
+#define openpgp_cipher_open(_a,_b,_c,_d) gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
+#define openpgp_cipher_get_algo_keylen(_a) gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
+#define openpgp_cipher_get_algo_blklen(_a) gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
 int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);

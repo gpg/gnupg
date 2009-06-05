@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -233,7 +233,7 @@ symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
       return G10ERR_BAD_KEY;
     }
 
-  if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+  if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
       BUG ();
   if (gcry_cipher_setkey ( hd, dek->key, dek->keylen ))
     BUG ();

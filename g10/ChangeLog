@@ -1,3 +1,19 @@
+2009-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.c (main), misc.c (openpgp_cipher_test_algo): Remove Camellia
+	restriction.
+
+	* misc.c (map_cipher_openpgp_to_gcry), main.h: Add macros for
+	openpgp_cipher_open, openpgp_cipher_get_algo_keylen, and
+	openpgp_cipher_get_algo_blklen to wrap around the corresponding
+	gcry_* functions, but pass the algorithm number through
+	map_cipher_openpgp_to_gcry.  This is needed in case the gcry
+	algorithm number doesn't match the OpenPGP number (c.f. Camellia).
+
+	* encr-data.c, pubkey-enc.c, mainproc.c, cipher.c, encode.c,
+	seskey.c, passphrase.c, seckey-cert.c: Use new openpgp_cipher_*
+	macros here.
+
 2009-06-02  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (get_manufacturer): Add new manufacturer.

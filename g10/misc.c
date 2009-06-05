@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -340,7 +340,7 @@ print_digest_algo_note( int algo )
 /* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
    this for algorithms we implemented in Libgcrypt after they become
    part of OpenPGP.  */
-static int
+int
 map_cipher_openpgp_to_gcry (int algo)
 {
   switch (algo)
@@ -399,15 +399,6 @@ openpgp_cipher_test_algo( int algo )
   /* (5 and 6 are marked reserved by rfc4880.)  */
   if ( algo < 0 || algo > 110 || algo == 5 || algo == 6 )
     return gpg_error (GPG_ERR_CIPHER_ALGO);
-
-  /* Camellia is not yet defined for OpenPGP thus only allow it if
-     requested.  */
-#ifndef USE_CAMELLIA
-  if (algo == CIPHER_ALGO_CAMELLIA128 
-      || algo == CIPHER_ALGO_CAMELLIA192
-      || algo == CIPHER_ALGO_CAMELLIA256)
-    return gpg_error (GPG_ERR_CIPHER_ALGO);
-#endif
 
   return gcry_cipher_test_algo (map_cipher_openpgp_to_gcry (algo));
 }

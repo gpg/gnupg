@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2008 Free Software Foundation, Inc.
+ *               2006, 2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2963,15 +2963,6 @@ main (int argc, char **argv)
         log_set_prefix (NULL, 1|2|4);
       }
 
-#ifdef USE_CAMELLIA    
-    /* We better also print a runtime warning if people build it with
-       support for Camellia (which is not yet defined by OpenPGP). */
-    log_info ("WARNING: This version has been built with support for the "
-              "Camellia cipher.\n");
-    log_info ("         It is for testing only and is NOT for production "
-              "use!\n");
-#endif
-
     /* Older Libgcrypts fail with an assertion during DSA key
        generation.  Better disable DSA2 entirely. */
     if (opt.flags.dsa2 && !gcry_check_version ("1.4.0") )
@@ -4323,4 +4314,3 @@ add_keyserver_url( const char *string, int which )
   if(critical)
     sl->flags |= 1;    
 }
-

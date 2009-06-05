@@ -1,6 +1,6 @@
 /* encode.c - encode data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -86,7 +86,7 @@ encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
     
     /* We only pass already checked values to the following fucntion,
        thus we consider any failure as fatal.  */
-    if (gcry_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
+    if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
       BUG ();
     if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
       BUG ();
@@ -142,7 +142,7 @@ use_mdc(PK_LIST pk_list,int algo)
 
   /* Last try.  Use MDC for the modern ciphers. */
 
-  if (gcry_cipher_get_algo_blklen (algo) != 8)
+  if (openpgp_cipher_get_algo_blklen (algo) != 8)
     return 1;
 
   if (opt.verbose)
@@ -237,7 +237,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	  {
 	    DEK *dek = NULL;
 
-            seskeylen = gcry_cipher_get_algo_keylen (default_cipher_algo ());
+            seskeylen = openpgp_cipher_get_algo_keylen (default_cipher_algo ());
             encode_seskey( cfx.dek, &dek, enckey );
             xfree( cfx.dek ); cfx.dek = dek;
 	  }
@@ -411,7 +411,7 @@ setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek)
 static int
 write_symkey_enc(STRING2KEY *symkey_s2k,DEK *symkey_dek,DEK *dek,IOBUF out)
 {
-  int rc, seskeylen = gcry_cipher_get_algo_keylen (dek->algo);
+  int rc, seskeylen = openpgp_cipher_get_algo_keylen (dek->algo);
 
   PKT_symkey_enc *enc;
   byte enckey[33];

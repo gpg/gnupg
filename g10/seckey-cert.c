@@ -1,6 +1,6 @@
 /* seckey-cert.c -  secret key certificate packet handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2006  Free Software Foundation, Inc.
+ *               2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -86,11 +86,11 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    return G10ERR_GENERAL;
 
 
-	err = gcry_cipher_open (&cipher_hd, sk->protect.algo,
-                                GCRY_CIPHER_MODE_CFB,
-                                (GCRY_CIPHER_SECURE
-                                 | (sk->protect.algo >= 100 ?
-                                    0 : GCRY_CIPHER_ENABLE_SYNC)));
+	err = openpgp_cipher_open (&cipher_hd, sk->protect.algo,
+				   GCRY_CIPHER_MODE_CFB,
+				   (GCRY_CIPHER_SECURE
+				    | (sk->protect.algo >= 100 ?
+				       0 : GCRY_CIPHER_ENABLE_SYNC)));
         if (err)
           log_fatal ("cipher open failed: %s\n", gpg_strerror (err) );
 
@@ -351,16 +351,16 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	else {
 	    print_cipher_algo_note( sk->protect.algo );
 	    
-	    if ( gcry_cipher_open (&cipher_hd, sk->protect.algo,
-                                   GCRY_CIPHER_MODE_CFB,
-                                   (GCRY_CIPHER_SECURE
-                                    | (sk->protect.algo >= 100 ?
-                                       0 : GCRY_CIPHER_ENABLE_SYNC))) )
+	    if ( openpgp_cipher_open (&cipher_hd, sk->protect.algo,
+				      GCRY_CIPHER_MODE_CFB,
+				      (GCRY_CIPHER_SECURE
+				       | (sk->protect.algo >= 100 ?
+					  0 : GCRY_CIPHER_ENABLE_SYNC))) )
               BUG();
 	    if ( gcry_cipher_setkey ( cipher_hd, dek->key, dek->keylen ) )
 		log_info(_("WARNING: Weak key detected"
 			   " - please change passphrase again.\n"));
-	    sk->protect.ivlen = gcry_cipher_get_algo_blklen (sk->protect.algo);
+	    sk->protect.ivlen = openpgp_cipher_get_algo_blklen (sk->protect.algo);
 	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
 	    if( sk->protect.ivlen != 8 && sk->protect.ivlen != 16 )
 		BUG(); /* yes, we are very careful */
@@ -471,4 +471,3 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
     }
     return rc;
 }
-
