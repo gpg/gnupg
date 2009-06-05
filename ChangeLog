@@ -1,3 +1,7 @@
+2009-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Remove Camellia restriction.
+
 2008-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac, acinclude.m4: Remove GNUPG_CHECK_DOCBOOK_TO_TEXI

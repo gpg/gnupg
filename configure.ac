@@ -1,6 +1,6 @@
 # configure.ac script for GnuPG
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-#               2008 Free Software Foundation, Inc.
+#               2008, 2009 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 # 
@@ -139,7 +139,7 @@ use_cast5=yes
 use_blowfish=yes
 use_aes=yes
 use_twofish=yes
-use_camellia=no
+use_camellia=yes
 use_sha256=yes
 use_sha512=yes
 use_bzip2=yes
@@ -263,10 +263,6 @@ AC_ARG_ENABLE(camellia,
 AC_MSG_RESULT($use_camellia)
 if test x"$use_camellia" = xyes ; then
    AC_DEFINE(USE_CAMELLIA,1,[Define to include the CAMELLIA cipher])
-   AC_MSG_WARN([[
-***
-*** The Camellia cipher is for testing only and is NOT for production use!
-***]])
 fi
 
 AC_MSG_CHECKING([whether to enable the SHA-224 and SHA-256 digests])
@@ -1452,9 +1448,3 @@ if test -n "$show_extraasm"; then
   echo "  Extra cpu specific functions:$show_extraasm"
 fi
 echo
-
-if test  x"$use_camellia" = xyes ; then
-  echo "WARNING: The Camellia cipher is for testing only and is NOT for production use!"
-  echo
-fi
-
