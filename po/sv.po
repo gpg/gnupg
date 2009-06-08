@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg trunk\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-05-13 18:04+0200\n"
+"POT-Creation-Date: 2009-06-08 09:58+0200\n"
 "PO-Revision-Date: 2008-07-21 09:04+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -38,34 +38,19 @@ msgstr ""
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "misslyckades med att ta kontroll över PIN-inmatningslåset: %s\n"
 
-#: agent/call-pinentry.c:597
-msgid ""
-"Please enter your PIN, so that the secret key can be unlocked for this "
-"session"
-msgstr ""
-"Ange din PIN-kod så att den hemliga nyckeln kan låsas upp för den här "
-"sessionen"
-
-#: agent/call-pinentry.c:600
-msgid ""
-"Please enter your passphrase, so that the secret key can be unlocked for "
-"this session"
-msgstr ""
-"Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
-
-#. TRANSLATORS: This string is displayed by pinentry as the
-#. label for the quality bar.
-#: agent/call-pinentry.c:635
+#. TRANSLATORS: This string is displayed by Pinentry as the label
+#. for the quality bar.
+#: agent/call-pinentry.c:584
 msgid "Quality:"
 msgstr "Kvalitet:"
 
-#. TRANSLATORS: This string is a tooltip, shown by pinentry
-#. when hovering over the quality bar.  Please use an
-#. appropriate string to describe what this is about.  The
-#. length of the tooltip is limited to about 900 characters.
-#. If you do not translate this entry, a default english
-#. text (see source) will be used.
-#: agent/call-pinentry.c:658
+#. TRANSLATORS: This string is a tooltip, shown by pinentry when
+#. hovering over the quality bar.  Please use an appropriate
+#. string to describe what this is about.  The length of the
+#. tooltip is limited to about 900 characters.  If you do not
+#. translate this entry, a default english text (see source)
+#. will be used.
+#: agent/call-pinentry.c:606
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 "Denna rad indikerar kvaliteten för ovan angiven lösenfras.\n"
@@ -74,37 +59,52 @@ msgstr ""
 "och specialtecken. Fråga din administratör om mer exakt information hur\n"
 "man anger säkra lösenfraser."
 
-#: agent/call-pinentry.c:700
+#: agent/call-pinentry.c:650
+msgid ""
+"Please enter your PIN, so that the secret key can be unlocked for this "
+"session"
+msgstr ""
+"Ange din PIN-kod så att den hemliga nyckeln kan låsas upp för den här "
+"sessionen"
+
+#: agent/call-pinentry.c:653
+msgid ""
+"Please enter your passphrase, so that the secret key can be unlocked for "
+"this session"
+msgstr ""
+"Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
+
+#: agent/call-pinentry.c:710
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (försök %d av %d)"
 
-#: agent/call-pinentry.c:720 agent/call-pinentry.c:732
+#: agent/call-pinentry.c:730 agent/call-pinentry.c:742
 msgid "PIN too long"
 msgstr "PIN-koden är för lång"
 
-#: agent/call-pinentry.c:721
+#: agent/call-pinentry.c:731
 msgid "Passphrase too long"
 msgstr "Lösenfrasen är för lång"
 
-#: agent/call-pinentry.c:729
+#: agent/call-pinentry.c:739
 msgid "Invalid characters in PIN"
 msgstr "Ogiltiga tecken i PIN-kod"
 
-#: agent/call-pinentry.c:734
+#: agent/call-pinentry.c:744
 msgid "PIN too short"
 msgstr "PIN-kod för kort"
 
 # MPI står för Multiple Precision Integer (tror jag)
-#: agent/call-pinentry.c:746
+#: agent/call-pinentry.c:756
 msgid "Bad PIN"
 msgstr "Felaktig PIN-kod"
 
-#: agent/call-pinentry.c:747
+#: agent/call-pinentry.c:757
 msgid "Bad Passphrase"
 msgstr "Felaktig lösenfras"
 
-#: agent/call-pinentry.c:783
+#: agent/call-pinentry.c:793
 msgid "Passphrase"
 msgstr "Lösenfras"
 
@@ -115,66 +115,66 @@ msgstr "Lösenfras"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh-nycklar större än %d bitar stöds inte\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3262
-#: g10/keygen.c:3295 g10/keyring.c:1237 g10/keyring.c:1556 g10/openfile.c:275
+#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3311
+#: g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556 g10/openfile.c:275
 #: g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107 g10/tdbio.c:547
 #: jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "kan inte skapa \"%s\": %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:760
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:776
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2747
+#: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2794
 #: g10/keyring.c:1582 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
-#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1979
-#: sm/gpgsm.c:2016 sm/gpgsm.c:2054 sm/qualified.c:66
+#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1973
+#: sm/gpgsm.c:2010 sm/gpgsm.c:2048 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
 
-#: agent/command-ssh.c:1617 agent/command-ssh.c:1635
+#: agent/command-ssh.c:1653 agent/command-ssh.c:1671
 #, c-format
 msgid "error getting serial number of card: %s\n"
 msgstr "fel när serienumret hämtades från kortet: %s\n"
 
-#: agent/command-ssh.c:1621
+#: agent/command-ssh.c:1657
 #, c-format
 msgid "detected card with S/N: %s\n"
 msgstr "identifierade kort med serienummer: %s\n"
 
-#: agent/command-ssh.c:1626
+#: agent/command-ssh.c:1662
 #, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr "fel när nyckel-id för autentisering hämtades från kortet: %s\n"
 
-#: agent/command-ssh.c:1646
+#: agent/command-ssh.c:1682
 #, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "ingen lämplig kortnyckel hittades: %s\n"
 
-#: agent/command-ssh.c:1696
+#: agent/command-ssh.c:1732
 #, c-format
 msgid "shadowing the key failed: %s\n"
 msgstr "skuggning av nyckeln misslyckades: %s\n"
 
-#: agent/command-ssh.c:1711
+#: agent/command-ssh.c:1747
 #, c-format
 msgid "error writing key: %s\n"
 msgstr "fel vid skrivning av nyckel: %s\n"
 
-#: agent/command-ssh.c:2018
+#: agent/command-ssh.c:2055
 #, c-format
 msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgstr "Ange lösenfrasen för ssh-nyckeln%0A  %c"
 
-#: agent/command-ssh.c:2346 agent/genkey.c:310 agent/genkey.c:432
+#: agent/command-ssh.c:2383 agent/genkey.c:310 agent/genkey.c:432
 msgid "Please re-enter this passphrase"
 msgstr "Ange denna lösenfras igen"
 
-#: agent/command-ssh.c:2367
+#: agent/command-ssh.c:2404
 #, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%"
@@ -183,12 +183,12 @@ msgstr ""
 "Ange en lösenfras för att skydda den mottagna hemliga nyckeln%%0A   %s%%0Ai  "
 "gpg-agents nyckellager"
 
-#: agent/command-ssh.c:2405 agent/genkey.c:340 agent/genkey.c:463
+#: agent/command-ssh.c:2442 agent/genkey.c:340 agent/genkey.c:463
 #: tools/symcryptrun.c:434
 msgid "does not match - try again"
 msgstr "stämmer inte överens - försök igen"
 
-#: agent/command-ssh.c:2900
+#: agent/command-ssh.c:2937
 #, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "misslyckades med att skapa flöde från uttag: %s\n"
@@ -333,7 +333,7 @@ msgid "Please enter the new passphrase"
 msgstr "Ange den nya lösenfrasen"
 
 # Här bruksanvisning för kommandoraden. Resultatet har jag översatt med "inställningar", eftersom flaggorna även kan förekomma i en inställningsfil.
-#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 scd/scdaemon.c:102
+#: agent/gpg-agent.c:119 agent/preset-passphrase.c:72 scd/scdaemon.c:103
 #: tools/gpg-check-pattern.c:70
 msgid ""
 "@Options:\n"
@@ -342,110 +342,110 @@ msgstr ""
 "@Flaggor:\n"
 " "
 
-#: agent/gpg-agent.c:120 scd/scdaemon.c:104
+#: agent/gpg-agent.c:121 scd/scdaemon.c:105
 msgid "run in server mode (foreground)"
 msgstr "kör i serverläge (förgrund)"
 
-#: agent/gpg-agent.c:121 scd/scdaemon.c:107
+#: agent/gpg-agent.c:122 scd/scdaemon.c:108
 msgid "run in daemon mode (background)"
 msgstr "kör i demonläge (bakgrund)"
 
-#: agent/gpg-agent.c:122 g10/gpg.c:483 g10/gpgv.c:71 kbx/kbxutil.c:88
-#: scd/scdaemon.c:108 sm/gpgsm.c:281 tools/gpg-connect-agent.c:69
-#: tools/gpgconf.c:79 tools/symcryptrun.c:164
+#: agent/gpg-agent.c:123 g10/gpg.c:483 g10/gpgv.c:71 kbx/kbxutil.c:88
+#: scd/scdaemon.c:109 sm/gpgsm.c:279 tools/gpg-connect-agent.c:69
+#: tools/gpgconf.c:80 tools/symcryptrun.c:164
 msgid "verbose"
 msgstr "utförlig"
 
-#: agent/gpg-agent.c:123 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:109
-#: sm/gpgsm.c:282
+#: agent/gpg-agent.c:124 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:110
+#: sm/gpgsm.c:280
 msgid "be somewhat more quiet"
 msgstr "var något tystare"
 
-#: agent/gpg-agent.c:124 scd/scdaemon.c:110
+#: agent/gpg-agent.c:125 scd/scdaemon.c:111
 msgid "sh-style command output"
 msgstr "sh-liknande kommandoutdata"
 
-#: agent/gpg-agent.c:125 scd/scdaemon.c:111
+#: agent/gpg-agent.c:126 scd/scdaemon.c:112
 msgid "csh-style command output"
 msgstr "csh-liknande kommandoutdata"
 
-#: agent/gpg-agent.c:126 scd/scdaemon.c:112 sm/gpgsm.c:311
+#: agent/gpg-agent.c:127 scd/scdaemon.c:113 sm/gpgsm.c:309
 #: tools/symcryptrun.c:167
 msgid "|FILE|read options from FILE"
 msgstr "|FIL|läs inställningar från FIL"
 
-#: agent/gpg-agent.c:131 scd/scdaemon.c:122
+#: agent/gpg-agent.c:132 scd/scdaemon.c:123
 msgid "do not detach from the console"
 msgstr "frigör inte från konsollen"
 
-#: agent/gpg-agent.c:132
+#: agent/gpg-agent.c:133
 msgid "do not grab keyboard and mouse"
 msgstr "fånga inte tangentbord och mus"
 
-#: agent/gpg-agent.c:133 tools/symcryptrun.c:166
+#: agent/gpg-agent.c:134 tools/symcryptrun.c:166
 msgid "use a log file for the server"
 msgstr "använd en loggfil för servern"
 
-#: agent/gpg-agent.c:135
+#: agent/gpg-agent.c:136
 msgid "use a standard location for the socket"
 msgstr "använd en standardplats för uttaget"
 
-#: agent/gpg-agent.c:138
+#: agent/gpg-agent.c:139
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PRG|använd PRG som PIN-inmatningsprogrammet"
 
-#: agent/gpg-agent.c:141
+#: agent/gpg-agent.c:142
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "|PRG|använd PRG som SCdaemon-programmet"
 
-#: agent/gpg-agent.c:142
+#: agent/gpg-agent.c:143
 msgid "do not use the SCdaemon"
 msgstr "använd inte SCdaemon"
 
-#: agent/gpg-agent.c:154
+#: agent/gpg-agent.c:155
 msgid "ignore requests to change the TTY"
 msgstr "ignorera begäran om att ändra TTY"
 
-#: agent/gpg-agent.c:156
+#: agent/gpg-agent.c:157
 msgid "ignore requests to change the X display"
 msgstr "ignorera begäran om att ändra X-display"
 
-#: agent/gpg-agent.c:159
+#: agent/gpg-agent.c:160
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|låt mellanlagrade PIN-koder gå ut efter N sekunder"
 
-#: agent/gpg-agent.c:172
+#: agent/gpg-agent.c:173
 msgid "do not use the PIN cache when signing"
 msgstr "använd inte mellanlagring av PIN-kod vid signering"
 
 # Antar att värdet inte ska översättas.
-#: agent/gpg-agent.c:174
+#: agent/gpg-agent.c:175
 msgid "allow clients to mark keys as \"trusted\""
 msgstr "tillåt klienter att markera nycklar som \"trusted\""
 
-#: agent/gpg-agent.c:176
+#: agent/gpg-agent.c:177
 msgid "allow presetting passphrase"
 msgstr "tillåt förinställning av lösenfras"
 
-#: agent/gpg-agent.c:177
+#: agent/gpg-agent.c:178
 msgid "enable ssh-agent emulation"
 msgstr "aktivera ssh-agent-emulering"
 
-#: agent/gpg-agent.c:179
+#: agent/gpg-agent.c:180
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv miljöinställningar även till FIL"
 
-#: agent/gpg-agent.c:328 agent/preset-passphrase.c:94 agent/protect-tool.c:159
-#: scd/scdaemon.c:243 sm/gpgsm.c:513 tools/gpg-connect-agent.c:180
-#: tools/gpgconf.c:101 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
+#: agent/gpg-agent.c:329 agent/preset-passphrase.c:94 agent/protect-tool.c:160
+#: scd/scdaemon.c:244 sm/gpgsm.c:511 tools/gpg-connect-agent.c:180
+#: tools/gpgconf.c:102 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <"
 msgstr "Rapportera fel till <"
 
-#: agent/gpg-agent.c:337
+#: agent/gpg-agent.c:338
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Användning: gpg-agent [flaggor] (-h för hjälp)"
 
-#: agent/gpg-agent.c:339
+#: agent/gpg-agent.c:340
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
@@ -453,145 +453,145 @@ msgstr ""
 "Syntax: gpg-agent [flaggor] [kommando [argument]]\n"
 "Hantering av hemliga nycklar för GnuPG\n"
 
-#: agent/gpg-agent.c:374 g10/gpg.c:980 scd/scdaemon.c:304 sm/gpgsm.c:640
+#: agent/gpg-agent.c:375 g10/gpg.c:980 scd/scdaemon.c:305 sm/gpgsm.c:638
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ogiltig debug-level \"%s\" angiven\n"
 
-#: agent/gpg-agent.c:583 agent/protect-tool.c:1029 kbx/kbxutil.c:429
-#: scd/scdaemon.c:398 sm/gpgsm.c:879 sm/gpgsm.c:882 tools/symcryptrun.c:996
+#: agent/gpg-agent.c:584 agent/protect-tool.c:1030 kbx/kbxutil.c:429
+#: scd/scdaemon.c:399 sm/gpgsm.c:877 sm/gpgsm.c:880 tools/symcryptrun.c:996
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s är för gammal (behöver %s, har %s)\n"
 
-#: agent/gpg-agent.c:682 g10/gpg.c:2086 scd/scdaemon.c:480 sm/gpgsm.c:971
+#: agent/gpg-agent.c:683 g10/gpg.c:2085 scd/scdaemon.c:481 sm/gpgsm.c:969
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "OBS: inställningsfilen \"%s\" saknas\n"
 
-#: agent/gpg-agent.c:687 agent/gpg-agent.c:1297 g10/gpg.c:2090
-#: scd/scdaemon.c:485 sm/gpgsm.c:975 tools/symcryptrun.c:929
+#: agent/gpg-agent.c:688 agent/gpg-agent.c:1301 g10/gpg.c:2089
+#: scd/scdaemon.c:486 sm/gpgsm.c:973 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
-#: agent/gpg-agent.c:695 g10/gpg.c:2097 scd/scdaemon.c:493 sm/gpgsm.c:982
+#: agent/gpg-agent.c:696 g10/gpg.c:2096 scd/scdaemon.c:494 sm/gpgsm.c:980
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "läser inställningar från \"%s\"\n"
 
-#: agent/gpg-agent.c:1046 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1050 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "Fel när \"%s\" skapades: %s\n"
 
-#: agent/gpg-agent.c:1410 agent/gpg-agent.c:1530 agent/gpg-agent.c:1534
-#: agent/gpg-agent.c:1575 agent/gpg-agent.c:1579 g10/exec.c:172
-#: g10/openfile.c:429 scd/scdaemon.c:989
+#: agent/gpg-agent.c:1414 agent/gpg-agent.c:1532 agent/gpg-agent.c:1536
+#: agent/gpg-agent.c:1577 agent/gpg-agent.c:1581 g10/exec.c:172
+#: g10/openfile.c:429 scd/scdaemon.c:990
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "%s: kan inte skapa katalog: %s\n"
 
-#: agent/gpg-agent.c:1424 scd/scdaemon.c:1003
+#: agent/gpg-agent.c:1428 scd/scdaemon.c:1004
 msgid "name of socket too long\n"
 msgstr "namnet på uttaget är för långt\n"
 
-#: agent/gpg-agent.c:1447 scd/scdaemon.c:1026
+#: agent/gpg-agent.c:1451 scd/scdaemon.c:1027
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "kan inte skapa uttag: %s\n"
 
-#: agent/gpg-agent.c:1456
+#: agent/gpg-agent.c:1460
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "namnet på uttaget \"%s\" är för långt\n"
 
-#: agent/gpg-agent.c:1476
+#: agent/gpg-agent.c:1478
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "en gpg-agent är redan igång - startar inte en till\n"
 
 # Jag har valt att inte översätta nonce. Nonce är data eller information som endast används en gång
-#: agent/gpg-agent.c:1487 scd/scdaemon.c:1046
+#: agent/gpg-agent.c:1489 scd/scdaemon.c:1046
 msgid "error getting nonce for the socket\n"
 msgstr "fel vid hämtning av nonce för uttaget\n"
 
-#: agent/gpg-agent.c:1492 scd/scdaemon.c:1049
+#: agent/gpg-agent.c:1494 scd/scdaemon.c:1049
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "fel när \"%s\" bands till uttag: %s\n"
 
-#: agent/gpg-agent.c:1504 scd/scdaemon.c:1058
+#: agent/gpg-agent.c:1506 scd/scdaemon.c:1058
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() misslyckades: %s\n"
 
-#: agent/gpg-agent.c:1510 scd/scdaemon.c:1065
+#: agent/gpg-agent.c:1512 scd/scdaemon.c:1065
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "lyssnar på uttaget \"%s\"\n"
 
-#: agent/gpg-agent.c:1538 agent/gpg-agent.c:1585 g10/openfile.c:432
+#: agent/gpg-agent.c:1540 agent/gpg-agent.c:1587 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "katalogen \"%s\" skapades\n"
 
-#: agent/gpg-agent.c:1591
+#: agent/gpg-agent.c:1593
 #, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "stat() misslyckades för \"%s\": %s\n"
 
-#: agent/gpg-agent.c:1595
+#: agent/gpg-agent.c:1597
 #, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "kan inte använda \"%s\" som hemkatalog\n"
 
-#: agent/gpg-agent.c:1725 scd/scdaemon.c:1081
+#: agent/gpg-agent.c:1727 scd/scdaemon.c:1081
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "fel vid läsning av nonce på fd %d: %s\n"
 
-#: agent/gpg-agent.c:1747
+#: agent/gpg-agent.c:1749
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr "hanteraren 0x%lx för fd %d startad\n"
 
-#: agent/gpg-agent.c:1752
+#: agent/gpg-agent.c:1754
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr "hanteraren 0x%lx för fd %d avslutad\n"
 
-#: agent/gpg-agent.c:1772
+#: agent/gpg-agent.c:1774
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr "ssh-hanteraren 0x%lx för fd %d startad\n"
 
-#: agent/gpg-agent.c:1777
+#: agent/gpg-agent.c:1779
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "ssh-hanteraren 0x%lx för fd %d avslutad\n"
 
-#: agent/gpg-agent.c:1917 scd/scdaemon.c:1218
+#: agent/gpg-agent.c:1919 scd/scdaemon.c:1218
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select misslyckades: %s - väntar 1 s\n"
 
-#: agent/gpg-agent.c:2026 scd/scdaemon.c:1285
+#: agent/gpg-agent.c:2028 scd/scdaemon.c:1285
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s stoppad\n"
 
-#: agent/gpg-agent.c:2154
+#: agent/gpg-agent.c:2156
 msgid "no gpg-agent running in this session\n"
 msgstr "ingen gpg-agent kör i den här sessionen\n"
 
-#: agent/gpg-agent.c:2165 common/simple-pwquery.c:349 common/asshelp.c:326
+#: agent/gpg-agent.c:2167 common/simple-pwquery.c:352 common/asshelp.c:326
 #: tools/gpg-connect-agent.c:2133
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "miljövariabeln GPG_AGENT_INFO är felformaterad\n"
 
-#: agent/gpg-agent.c:2178 common/simple-pwquery.c:361 common/asshelp.c:338
+#: agent/gpg-agent.c:2180 common/simple-pwquery.c:364 common/asshelp.c:338
 #: tools/gpg-connect-agent.c:2144
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -611,8 +611,8 @@ msgstr ""
 "Syntax: gpg-preset-passphrase [flaggor] NYCKELHASH\n"
 "Underhåll av lösenordscache\n"
 
-#: agent/protect-tool.c:111 g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:185
-#: tools/gpgconf.c:59
+#: agent/protect-tool.c:112 g10/gpg.c:370 kbx/kbxutil.c:71 sm/gpgsm.c:184
+#: tools/gpgconf.c:60
 msgid ""
 "@Commands:\n"
 " "
@@ -621,8 +621,8 @@ msgstr ""
 " "
 
 # Här bruksanvisning för kommandoraden. Resultatet har jag översatt med "inställningar", eftersom flaggorna även kan förekomma i en inställningsfil.
-#: agent/protect-tool.c:123 g10/gpg.c:436 g10/gpgv.c:69 kbx/kbxutil.c:81
-#: sm/gpgsm.c:226 tools/gpg-connect-agent.c:67 tools/gpgconf.c:76
+#: agent/protect-tool.c:124 g10/gpg.c:436 g10/gpgv.c:69 kbx/kbxutil.c:81
+#: sm/gpgsm.c:224 tools/gpg-connect-agent.c:67 tools/gpgconf.c:77
 #: tools/symcryptrun.c:157
 msgid ""
 "@\n"
@@ -633,11 +633,11 @@ msgstr ""
 "Flaggor:\n"
 " "
 
-#: agent/protect-tool.c:162
+#: agent/protect-tool.c:163
 msgid "Usage: gpg-protect-tool [options] (-h for help)\n"
 msgstr "Användning: gpg-protect-tool [flaggor] (-h för hjälp)\n"
 
-#: agent/protect-tool.c:164
+#: agent/protect-tool.c:165
 msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
@@ -645,22 +645,22 @@ msgstr ""
 "Syntax: gpg-protect-tool [flaggor] [argument]\n"
 "Underhållsverktyg för hemliga nycklar\n"
 
-#: agent/protect-tool.c:1150
+#: agent/protect-tool.c:1151
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
 msgstr "Ange lösenfrasen för att avskydda PKCS#12-objektet."
 
-#: agent/protect-tool.c:1155
+#: agent/protect-tool.c:1156
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "Ange lösenfrasen för att skydda det nya PKCS#12-objektet."
 
-#: agent/protect-tool.c:1161
+#: agent/protect-tool.c:1162
 msgid ""
 "Please enter the passphrase to protect the imported object within the GnuPG "
 "system."
 msgstr ""
 "Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
 
-#: agent/protect-tool.c:1166
+#: agent/protect-tool.c:1167
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
@@ -668,55 +668,55 @@ msgstr ""
 "Ange lösenfrasen eller PIN-koden som\n"
 "behövs för att färdigställa denna åtgärd."
 
-#: agent/protect-tool.c:1171 tools/symcryptrun.c:435
+#: agent/protect-tool.c:1172 tools/symcryptrun.c:435
 msgid "Passphrase:"
 msgstr "Lösenfras:"
 
-#: agent/protect-tool.c:1176 tools/symcryptrun.c:446
+#: agent/protect-tool.c:1177 tools/symcryptrun.c:446
 msgid "cancelled\n"
 msgstr "avbruten\n"
 
-#: agent/protect-tool.c:1178 tools/symcryptrun.c:442
+#: agent/protect-tool.c:1179 tools/symcryptrun.c:442
 #, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "fel vid fråga efter lösenfrasen: %s\n"
 
-#: agent/trustlist.c:135 agent/trustlist.c:333
+#: agent/trustlist.c:136 agent/trustlist.c:334
 #, c-format
 msgid "error opening `%s': %s\n"
 msgstr "fel vid öppnandet av \"%s\": %s\n"
 
-#: agent/trustlist.c:150 common/helpfile.c:63 common/helpfile.c:79
+#: agent/trustlist.c:151 common/helpfile.c:63 common/helpfile.c:79
 #, c-format
 msgid "file `%s', line %d: %s\n"
 msgstr "fil \"%s\", rad %d: %s\n"
 
-#: agent/trustlist.c:170 agent/trustlist.c:178
+#: agent/trustlist.c:171 agent/trustlist.c:179
 #, c-format
 msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgstr "uttrycket \"%s\" ignorerat i \"%s\", rad %d\n"
 
-#: agent/trustlist.c:184
+#: agent/trustlist.c:185
 #, c-format
 msgid "system trustlist `%s' not available\n"
 msgstr "systemets tillitslista \"%s\" är inte tillgänglig\n"
 
-#: agent/trustlist.c:228
+#: agent/trustlist.c:229
 #, c-format
 msgid "bad fingerprint in `%s', line %d\n"
 msgstr "felaktigt fingeravtryck i \"%s\", rad %d\n"
 
-#: agent/trustlist.c:253 agent/trustlist.c:260
+#: agent/trustlist.c:254 agent/trustlist.c:261
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
 msgstr "ogiltig nyckelflagga i \"%s\", rad %d\n"
 
-#: agent/trustlist.c:294 common/helpfile.c:126
+#: agent/trustlist.c:295 common/helpfile.c:126
 #, c-format
 msgid "error reading `%s', line %d: %s\n"
 msgstr "fel vid läsning av \"%s\", rad %d: %s\n"
 
-#: agent/trustlist.c:398 agent/trustlist.c:448
+#: agent/trustlist.c:399 agent/trustlist.c:449
 msgid "error reading list of trusted root certificates\n"
 msgstr "fel vid inläsning av betrodda rotcertifikat\n"
 
@@ -728,7 +728,7 @@ msgstr "fel vid inläsning av betrodda rotcertifikat\n"
 #. plain % sign, you need to encode it as "%%25".  The
 #. "%s" gets replaced by the name as stored in the
 #. certificate.
-#: agent/trustlist.c:609
+#: agent/trustlist.c:610
 #, c-format
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
@@ -737,11 +737,11 @@ msgstr ""
 "Litar du förbehållslöst på%%0A  \"%s\"%%0Aatt korrekt certifiera "
 "användarcertifikat?"
 
-#: agent/trustlist.c:618 common/audit.c:467
+#: agent/trustlist.c:619 common/audit.c:467
 msgid "Yes"
 msgstr "Ja"
 
-#: agent/trustlist.c:618 common/audit.c:469
+#: agent/trustlist.c:619 common/audit.c:469
 msgid "No"
 msgstr "Nej"
 
@@ -753,7 +753,7 @@ msgstr "Nej"
 #. "%%25".  The second "%s" gets replaced by a hexdecimal
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
-#: agent/trustlist.c:652
+#: agent/trustlist.c:653
 #, c-format
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
@@ -765,11 +765,11 @@ msgstr ""
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
 #. other button is "the default "Cancel" of the Pinentry.
-#: agent/trustlist.c:666
+#: agent/trustlist.c:667
 msgid "Correct"
 msgstr "Korrekt"
 
-#: agent/trustlist.c:666
+#: agent/trustlist.c:667
 msgid "Wrong"
 msgstr ""
 
@@ -839,37 +839,37 @@ msgstr "fel vid körning av \"%s\": antagligen inte installerat\n"
 msgid "error running `%s': terminated\n"
 msgstr "fel vid körning av \"%s\": avslutades\n"
 
-#: common/http.c:1646
+#: common/http.c:1674
 #, c-format
 msgid "error creating socket: %s\n"
 msgstr "fel när uttag skapades: %s\n"
 
-#: common/http.c:1690
+#: common/http.c:1718
 msgid "host not found"
 msgstr "värden hittades inte"
 
-#: common/simple-pwquery.c:335
+#: common/simple-pwquery.c:338
 msgid "gpg-agent is not available in this session\n"
 msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
-#: common/simple-pwquery.c:393
+#: common/simple-pwquery.c:395
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
-#: common/simple-pwquery.c:404
+#: common/simple-pwquery.c:406
 msgid "communication problem with gpg-agent\n"
 msgstr "kommunikationsproblem med gpg-agent\n"
 
-#: common/simple-pwquery.c:414
+#: common/simple-pwquery.c:416
 msgid "problem setting the gpg-agent options\n"
 msgstr "inställningsproblem för gpg-agent\n"
 
-#: common/simple-pwquery.c:577 common/simple-pwquery.c:673
+#: common/simple-pwquery.c:579 common/simple-pwquery.c:675
 msgid "canceled by user\n"
 msgstr "avbruten av användaren\n"
 
-#: common/simple-pwquery.c:592 common/simple-pwquery.c:679
+#: common/simple-pwquery.c:594 common/simple-pwquery.c:681
 msgid "problem with the agent\n"
 msgstr "problem med agenten\n"
 
@@ -1089,6 +1089,10 @@ msgstr "Det finns ingen hjälp tillgänglig för \"%s\"."
 msgid "ignoring garbage line"
 msgstr "ignorerar skräprad"
 
+#: common/gettime.c:503
+msgid "[none]"
+msgstr "[ingen]"
+
 #: g10/armor.c:379
 #, c-format
 msgid "armor: %s\n"
@@ -1201,7 +1205,7 @@ msgstr "VARNING: ogiltig notationsdata hittades\n"
 msgid "not human readable"
 msgstr "inte läsbart"
 
-#: g10/card-util.c:62 g10/card-util.c:358
+#: g10/card-util.c:62 g10/card-util.c:360
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP-kort är inte tillgängligt: %s\n"
@@ -1211,8 +1215,8 @@ msgstr "OpenPGP-kort är inte tillgängligt: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "OpenPGP-kort nr. %s identifierades\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1512 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:2938 g10/revoke.c:216 g10/revoke.c:455
+#: g10/card-util.c:75 g10/card-util.c:1528 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/keygen.c:2985 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "kan inte göra detta i satsläge\n"
 
@@ -1221,158 +1225,158 @@ msgstr "kan inte göra detta i satsläge\n"
 msgid "This command is only available for version 2 cards\n"
 msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1877
+#: g10/card-util.c:85 scd/app-openpgp.c:1984
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "de hemliga nyckeldelarna är inte tillgängliga\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1242 g10/card-util.c:1321
+#: g10/card-util.c:122 g10/card-util.c:1258 g10/card-util.c:1337
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
-#: g10/keygen.c:1665 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
+#: g10/keygen.c:1679 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
 msgstr "Vad väljer du? "
 
-#: g10/card-util.c:256 g10/card-util.c:306
+#: g10/card-util.c:258 g10/card-util.c:308
 msgid "[not set]"
 msgstr "[inte inställt]"
 
-#: g10/card-util.c:492
+#: g10/card-util.c:498
 msgid "male"
 msgstr "man"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:499
 msgid "female"
 msgstr "kvinna"
 
-#: g10/card-util.c:493
+#: g10/card-util.c:499
 msgid "unspecified"
 msgstr "ej angiven"
 
-#: g10/card-util.c:520
+#: g10/card-util.c:526
 msgid "not forced"
 msgstr "inte tvingad"
 
-#: g10/card-util.c:520
+#: g10/card-util.c:526
 msgid "forced"
 msgstr "tvingad"
 
-#: g10/card-util.c:601
+#: g10/card-util.c:617
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "Fel: Endast ren ASCII tillåts för närvarande.\n"
 
-#: g10/card-util.c:603
+#: g10/card-util.c:619
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Fel: Tecknet \"<\" får inte användas.\n"
 
-#: g10/card-util.c:605
+#: g10/card-util.c:621
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "Fel: Dubbla blanksteg tillåts inte.\n"
 
-#: g10/card-util.c:622
+#: g10/card-util.c:638
 msgid "Cardholder's surname: "
 msgstr "Kortinnehavarens efternamn: "
 
-#: g10/card-util.c:624
+#: g10/card-util.c:640
 msgid "Cardholder's given name: "
 msgstr "Kortinnehavarens förnamn: "
 
-#: g10/card-util.c:642
+#: g10/card-util.c:658
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "Fel: Fullständigt namn för långt (gränsen är %d tecken).\n"
 
-#: g10/card-util.c:663
+#: g10/card-util.c:679
 msgid "URL to retrieve public key: "
 msgstr "Url för att hämta publik nyckel: "
 
-#: g10/card-util.c:671
+#: g10/card-util.c:687
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fel: URL:en är för lång (gränsen är %d tecken).\n"
 
-#: g10/card-util.c:767 tools/no-libgcrypt.c:30
+#: g10/card-util.c:783 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
 
-#: g10/card-util.c:779 g10/import.c:283
+#: g10/card-util.c:795 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "fel vid läsning av \"%s\": %s\n"
 
-#: g10/card-util.c:806
+#: g10/card-util.c:822
 msgid "Login data (account name): "
 msgstr "Inloggningsdata (kontonamn): "
 
-#: g10/card-util.c:816
+#: g10/card-util.c:832
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "Fel: Inloggningsdata är för långt (gräns är %d tecken).\n"
 
-#: g10/card-util.c:851
+#: g10/card-util.c:867
 msgid "Private DO data: "
 msgstr "Privat DO-data: "
 
-#: g10/card-util.c:861
+#: g10/card-util.c:877
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
 
-#: g10/card-util.c:911
+#: g10/card-util.c:927
 msgid "Language preferences: "
 msgstr "Språkinställningar: "
 
-#: g10/card-util.c:919
+#: g10/card-util.c:935
 msgid "Error: invalid length of preference string.\n"
 msgstr "Fel: ogiltig längd på inställningssträngen\n"
 
-#: g10/card-util.c:928
+#: g10/card-util.c:944
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Fel: ogiltiga tecken i inställningssträngen.\n"
 
-#: g10/card-util.c:949
+#: g10/card-util.c:965
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "Kön ((M)an, Kvinna(F) eller blanksteg): "
 
-#: g10/card-util.c:963
+#: g10/card-util.c:979
 msgid "Error: invalid response.\n"
 msgstr "Fel: ogiltigt svar.\n"
 
-#: g10/card-util.c:984
+#: g10/card-util.c:1000
 msgid "CA fingerprint: "
 msgstr "CA-fingeravtryck: "
 
-#: g10/card-util.c:1007
+#: g10/card-util.c:1023
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "Fel: ogiltigt formaterat fingeravtryck.\n"
 
-#: g10/card-util.c:1055
+#: g10/card-util.c:1071
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "nyckelåtgärden är inte möjlig: %s\n"
 
-#: g10/card-util.c:1056
+#: g10/card-util.c:1072
 msgid "not an OpenPGP card"
 msgstr "inte ett OpenPGP-kort"
 
-#: g10/card-util.c:1065
+#: g10/card-util.c:1081
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "fel vid hämtning av aktuell nyckelinformation: %s\n"
 
-#: g10/card-util.c:1149
+#: g10/card-util.c:1165
 msgid "Replace existing key? (y/N) "
 msgstr "Ersätt existerande nyckel? (j/N) "
 
-#: g10/card-util.c:1169 g10/card-util.c:1178
+#: g10/card-util.c:1185 g10/card-util.c:1194
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Skapa säkerhetskopia av krypteringsnyckel utanför kortet? (J/n) "
 
-#: g10/card-util.c:1190
+#: g10/card-util.c:1206
 msgid "Replace existing keys? (y/N) "
 msgstr "Ersätt existerande nycklar? (j/N) "
 
-#: g10/card-util.c:1199
+#: g10/card-util.c:1215
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1383,126 +1387,126 @@ msgstr ""
 "   PIN-kod = \"%s\"     Admin PIN-kod = \"%s\"\n"
 "Du bör ändra dem med kommandot --change-pin\n"
 
-#: g10/card-util.c:1233
+#: g10/card-util.c:1249
 msgid "Please select the type of key to generate:\n"
 msgstr "Välj vilken typ av nyckel som ska genereras:\n"
 
-#: g10/card-util.c:1235 g10/card-util.c:1312
+#: g10/card-util.c:1251 g10/card-util.c:1328
 msgid "   (1) Signature key\n"
 msgstr "   (1) Signeringsnyckel\n"
 
-#: g10/card-util.c:1236 g10/card-util.c:1314
+#: g10/card-util.c:1252 g10/card-util.c:1330
 msgid "   (2) Encryption key\n"
 msgstr "   (2) Krypteringsnyckel\n"
 
-#: g10/card-util.c:1237 g10/card-util.c:1316
+#: g10/card-util.c:1253 g10/card-util.c:1332
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Autentiseringsnyckel\n"
 
-#: g10/card-util.c:1253 g10/card-util.c:1332 g10/keyedit.c:945
-#: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1704 g10/revoke.c:685
+#: g10/card-util.c:1269 g10/card-util.c:1348 g10/keyedit.c:945
+#: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1732 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Ogiltigt val.\n"
 
-#: g10/card-util.c:1309
+#: g10/card-util.c:1325
 msgid "Please select where to store the key:\n"
 msgstr "Välj var nyckeln ska sparas:\n"
 
-#: g10/card-util.c:1344
+#: g10/card-util.c:1360
 msgid "unknown key protection algorithm\n"
 msgstr "okänd nyckelskyddsalgoritm\n"
 
-#: g10/card-util.c:1349
+#: g10/card-util.c:1365
 msgid "secret parts of key are not available\n"
 msgstr "hemliga delar av nyckeln är inte tillgängliga.\n"
 
-#: g10/card-util.c:1354
+#: g10/card-util.c:1370
 msgid "secret key already stored on a card\n"
 msgstr "hemlig nyckel redan lagrad på ett kort\n"
 
-#: g10/card-util.c:1423 g10/keyedit.c:1380
+#: g10/card-util.c:1439 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "avsluta denna meny"
 
-#: g10/card-util.c:1425
+#: g10/card-util.c:1441
 msgid "show admin commands"
 msgstr "visa administratörskommandon"
 
-#: g10/card-util.c:1426 g10/keyedit.c:1383
+#: g10/card-util.c:1442 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "visa denna hjälp"
 
-#: g10/card-util.c:1428
+#: g10/card-util.c:1444
 msgid "list all available data"
 msgstr "lista allt tillgängligt data"
 
-#: g10/card-util.c:1431
+#: g10/card-util.c:1447
 msgid "change card holder's name"
 msgstr "ändra kortinnehavarens namn"
 
-#: g10/card-util.c:1432
+#: g10/card-util.c:1448
 msgid "change URL to retrieve key"
 msgstr "ändra url för att hämta nyckel"
 
-#: g10/card-util.c:1433
+#: g10/card-util.c:1449
 msgid "fetch the key specified in the card URL"
 msgstr "hämta nyckel som anges i kortets url"
 
-#: g10/card-util.c:1434
+#: g10/card-util.c:1450
 msgid "change the login name"
 msgstr "ändra inloggningsnamnet"
 
 # originalet borde ha ett value
-#: g10/card-util.c:1435
+#: g10/card-util.c:1451
 msgid "change the language preferences"
 msgstr "ändra språkinställningarna"
 
-#: g10/card-util.c:1436
+#: g10/card-util.c:1452
 msgid "change card holder's sex"
 msgstr "ändra kortinnehavarens kön"
 
-#: g10/card-util.c:1437
+#: g10/card-util.c:1453
 msgid "change a CA fingerprint"
 msgstr "ändra ett CA-fingeravtryck"
 
 # den låter skum
-#: g10/card-util.c:1438
+#: g10/card-util.c:1454
 msgid "toggle the signature force PIN flag"
 msgstr "växla flagga för att tvinga signatur-PIN-kod"
 
-#: g10/card-util.c:1439
+#: g10/card-util.c:1455
 msgid "generate new keys"
 msgstr "generera nya nycklar"
 
-#: g10/card-util.c:1440
+#: g10/card-util.c:1456
 msgid "menu to change or unblock the PIN"
 msgstr "meny för att ändra eller avblockera PIN-koden"
 
-#: g10/card-util.c:1441
+#: g10/card-util.c:1457
 msgid "verify the PIN and list all data"
 msgstr "validera PIN-koden och lista allt data"
 
-#: g10/card-util.c:1442
+#: g10/card-util.c:1458
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1564 g10/keyedit.c:1654
+#: g10/card-util.c:1580 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Kommando> "
 
-#: g10/card-util.c:1607
+#: g10/card-util.c:1623
 msgid "Admin-only command\n"
 msgstr "Kommandon endast för administratör\n"
 
-#: g10/card-util.c:1638
+#: g10/card-util.c:1654
 msgid "Admin commands are allowed\n"
 msgstr "Administrationskommandon tillåts\n"
 
-#: g10/card-util.c:1640
+#: g10/card-util.c:1656
 msgid "Admin commands are not allowed\n"
 msgstr "Administrationskommandon tillåts inte\n"
 
-#: g10/card-util.c:1726 g10/keyedit.c:2277
+#: g10/card-util.c:1742 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ogiltigt kommando (prova med \"help\")\n"
 
@@ -1511,7 +1515,7 @@ msgid "--output doesn't work for this command\n"
 msgstr "--output kan inte användas för detta kommando\n"
 
 # se förra kommentaren
-#: g10/decrypt.c:166 g10/gpg.c:3969 g10/keyring.c:387 g10/keyring.c:698
+#: g10/decrypt.c:166 g10/gpg.c:3967 g10/keyring.c:387 g10/keyring.c:698
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "kan inte öppna \"%s\"\n"
@@ -1819,38 +1823,38 @@ msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
-#: g10/gpg.c:372 sm/gpgsm.c:187
+#: g10/gpg.c:372 sm/gpgsm.c:186
 #, fuzzy
 msgid "make a signature"
 msgstr "|[fil]|skapa en signatur"
 
-#: g10/gpg.c:373 sm/gpgsm.c:188
+#: g10/gpg.c:373 sm/gpgsm.c:187
 #, fuzzy
 msgid "make a clear text signature"
 msgstr "|[fil]|skapa en klartextsignatur"
 
-#: g10/gpg.c:374 sm/gpgsm.c:189
+#: g10/gpg.c:374 sm/gpgsm.c:188
 msgid "make a detached signature"
 msgstr "skapa signatur i en separat fil"
 
-#: g10/gpg.c:375 sm/gpgsm.c:190
+#: g10/gpg.c:375 sm/gpgsm.c:189
 msgid "encrypt data"
 msgstr "kryptera data"
 
-#: g10/gpg.c:377 sm/gpgsm.c:191
+#: g10/gpg.c:377 sm/gpgsm.c:190
 msgid "encryption only with symmetric cipher"
 msgstr "kryptering endast med symmetriskt chiffer"
 
 # gnupg dekrypterar data om inget kommando anges dvs. kommandot "decrypt" behöver inte användas.
-#: g10/gpg.c:379 sm/gpgsm.c:192
+#: g10/gpg.c:379 sm/gpgsm.c:191
 msgid "decrypt data (default)"
 msgstr "dekryptera data (standard)"
 
-#: g10/gpg.c:381 sm/gpgsm.c:193
+#: g10/gpg.c:381 sm/gpgsm.c:192
 msgid "verify a signature"
 msgstr "validera en signatur"
 
-#: g10/gpg.c:383 sm/gpgsm.c:195
+#: g10/gpg.c:383 sm/gpgsm.c:193
 msgid "list keys"
 msgstr "lista nycklar"
 
@@ -1862,11 +1866,11 @@ msgstr "lista nycklar och signaturer"
 msgid "list and check key signatures"
 msgstr "lista och kontrollera nyckelsignaturer"
 
-#: g10/gpg.c:387 sm/gpgsm.c:200
+#: g10/gpg.c:387 sm/gpgsm.c:198
 msgid "list keys and fingerprints"
 msgstr "lista nycklar och fingeravtryck"
 
-#: g10/gpg.c:388 sm/gpgsm.c:198
+#: g10/gpg.c:388 sm/gpgsm.c:196
 msgid "list secret keys"
 msgstr "lista hemliga nycklar"
 
@@ -1874,7 +1878,7 @@ msgstr "lista hemliga nycklar"
 msgid "generate a new key pair"
 msgstr "generera ett nytt nyckelpar"
 
-#: g10/gpg.c:391 sm/gpgsm.c:203
+#: g10/gpg.c:391 sm/gpgsm.c:201
 msgid "remove keys from the public keyring"
 msgstr "ta bort nycklar från den publika nyckelringen"
 
@@ -1902,11 +1906,11 @@ msgstr "generera ett spärrcertifikat"
 msgid "export keys"
 msgstr "exportera nycklar"
 
-#: g10/gpg.c:400 sm/gpgsm.c:204
+#: g10/gpg.c:400 sm/gpgsm.c:202
 msgid "export keys to a key server"
 msgstr "exportera nycklar till en nyckelserver"
 
-#: g10/gpg.c:401 sm/gpgsm.c:205
+#: g10/gpg.c:401 sm/gpgsm.c:203
 msgid "import keys from a key server"
 msgstr "importera nycklar från en nyckelserver"
 
@@ -1943,20 +1947,20 @@ msgstr "uppdatera tillitsdatabasen"
 msgid "print message digests"
 msgstr "|algo [filer]|skriv ut kontrollsummor"
 
-#: g10/gpg.c:434 sm/gpgsm.c:210
+#: g10/gpg.c:434 sm/gpgsm.c:208
 msgid "run in server mode"
 msgstr "kör i serverläge"
 
-#: g10/gpg.c:438 sm/gpgsm.c:228
+#: g10/gpg.c:438 sm/gpgsm.c:226
 msgid "create ascii armored output"
 msgstr "skapa utdata med ett ascii-skal"
 
-#: g10/gpg.c:441 sm/gpgsm.c:241
+#: g10/gpg.c:441 sm/gpgsm.c:239
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|NAMN|kryptera för NAMN"
 
-#: g10/gpg.c:454 sm/gpgsm.c:278
+#: g10/gpg.c:454 sm/gpgsm.c:276
 #, fuzzy
 msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "använd denna användaridentitet för att signera eller dekryptera"
@@ -1970,11 +1974,11 @@ msgstr "|N|ställ in komprimeringsnivån till N (0 för att inaktivera)"
 msgid "use canonical text mode"
 msgstr "använd \"ursprunglig text\"-läget"
 
-#: g10/gpg.c:480 sm/gpgsm.c:280
+#: g10/gpg.c:480 sm/gpgsm.c:278
 msgid "|FILE|write output to FILE"
 msgstr "|FIL|skriv utdata till FIL"
 
-#: g10/gpg.c:496 kbx/kbxutil.c:90 sm/gpgsm.c:291 tools/gpgconf.c:81
+#: g10/gpg.c:496 kbx/kbxutil.c:90 sm/gpgsm.c:289 tools/gpgconf.c:82
 msgid "do not make any changes"
 msgstr "gör inga ändringar"
 
@@ -1988,7 +1992,7 @@ msgstr "använd strikt OpenPGP-beteende"
 
 # inställningar istället för flaggor?
 # Nej, här är det bruksanvisningen för kommandoraden.
-#: g10/gpg.c:580 sm/gpgsm.c:335
+#: g10/gpg.c:580 sm/gpgsm.c:333
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -1996,7 +2000,7 @@ msgstr ""
 "@\n"
 "(Se manualsidan för en fullständig lista över alla kommandon och flaggor)\n"
 
-#: g10/gpg.c:583 sm/gpgsm.c:338
+#: g10/gpg.c:583 sm/gpgsm.c:336
 msgid ""
 "@\n"
 "Examples:\n"
@@ -2037,7 +2041,7 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera\n"
 "standardåtgärden beror på inmatningsdata\n"
 
-#: g10/gpg.c:845 sm/gpgsm.c:537
+#: g10/gpg.c:845 sm/gpgsm.c:535
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -2065,7 +2069,7 @@ msgstr "Komprimering: "
 msgid "usage: gpg [options] "
 msgstr "användning: gpg [flaggor] "
 
-#: g10/gpg.c:1115 sm/gpgsm.c:676
+#: g10/gpg.c:1115 sm/gpgsm.c:674
 msgid "conflicting commands\n"
 msgstr "motstridiga kommandon\n"
 
@@ -2151,459 +2155,459 @@ msgstr ""
 msgid "unknown configuration item `%s'\n"
 msgstr "okänd konfigurationspost \"%s\"\n"
 
-#: g10/gpg.c:1651
+#: g10/gpg.c:1650
 msgid "display photo IDs during key listings"
 msgstr "visa foto-id under nyckellistning"
 
-#: g10/gpg.c:1653
+#: g10/gpg.c:1652
 msgid "show policy URLs during signature listings"
 msgstr "visa policy-url:er under signaturlistningar"
 
-#: g10/gpg.c:1655
+#: g10/gpg.c:1654
 msgid "show all notations during signature listings"
 msgstr "visa alla notationer under signaturlistningar"
 
-#: g10/gpg.c:1657
+#: g10/gpg.c:1656
 msgid "show IETF standard notations during signature listings"
 msgstr "visa IETF-standardnotationer under signaturlistningar"
 
-#: g10/gpg.c:1661
+#: g10/gpg.c:1660
 msgid "show user-supplied notations during signature listings"
 msgstr "visa användarangivna notationer under signaturlistningar"
 
-#: g10/gpg.c:1663
+#: g10/gpg.c:1662
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "visa url:er till föredragna nyckelservrar under signaturlistningar"
 
-#: g10/gpg.c:1665
+#: g10/gpg.c:1664
 msgid "show user ID validity during key listings"
 msgstr "visa giltighet för användaridentitet vid nyckellistningar "
 
-#: g10/gpg.c:1667
+#: g10/gpg.c:1666
 msgid "show revoked and expired user IDs in key listings"
 msgstr "visa spärrade och utgångna användaridentiteter i nyckellistningar"
 
-#: g10/gpg.c:1669
+#: g10/gpg.c:1668
 msgid "show revoked and expired subkeys in key listings"
 msgstr "visa spärrade och utgångna undernycklar i nyckellistningar"
 
-#: g10/gpg.c:1671
+#: g10/gpg.c:1670
 msgid "show the keyring name in key listings"
 msgstr "visa nyckelringens namn i nyckellistningar"
 
-#: g10/gpg.c:1673
+#: g10/gpg.c:1672
 msgid "show expiration dates during signature listings"
 msgstr "visa utgångsdatum under signaturlistningar"
 
-#: g10/gpg.c:1834
+#: g10/gpg.c:1833
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "OBS: den gamla inställningsfilen \"%s\" används inte\n"
 
-#: g10/gpg.c:1926
+#: g10/gpg.c:1925
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt är för gammalt (behöver %s, har %s)\n"
 
-#: g10/gpg.c:2309 g10/gpg.c:2995 g10/gpg.c:3007
+#: g10/gpg.c:2313 g10/gpg.c:2990 g10/gpg.c:3002
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "OBS: %s är inte för normal användning!\n"
 
-#: g10/gpg.c:2490 g10/gpg.c:2502
+#: g10/gpg.c:2494 g10/gpg.c:2506
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "\"%s\" är inte ett giltigt utgångsdatum för en signatur\n"
 
-#: g10/gpg.c:2584
+#: g10/gpg.c:2588
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "\"%s\" är ingen giltig teckentabell\n"
 
-#: g10/gpg.c:2607 g10/gpg.c:2802 g10/keyedit.c:4118
+#: g10/gpg.c:2611 g10/gpg.c:2806 g10/keyedit.c:4118
 msgid "could not parse keyserver URL\n"
 msgstr "kunde inte tolka url till nyckelserver\n"
 
-#: g10/gpg.c:2619
+#: g10/gpg.c:2623
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: ogiltiga flaggor för nyckelserver\n"
 
-#: g10/gpg.c:2622
+#: g10/gpg.c:2626
 msgid "invalid keyserver options\n"
 msgstr "ogiltiga flaggor för nyckelserver\n"
 
-#: g10/gpg.c:2629
+#: g10/gpg.c:2633
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: ogiltiga importeringsflaggor\n"
 
-#: g10/gpg.c:2632
+#: g10/gpg.c:2636
 msgid "invalid import options\n"
 msgstr "ogiltiga importflaggor\n"
 
-#: g10/gpg.c:2639
+#: g10/gpg.c:2643
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ogiltiga exportflaggor\n"
 
-#: g10/gpg.c:2642
+#: g10/gpg.c:2646
 msgid "invalid export options\n"
 msgstr "ogiltiga exportinställningar\n"
 
-#: g10/gpg.c:2649
+#: g10/gpg.c:2653
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: ogiltiga listflaggor\n"
 
-#: g10/gpg.c:2652
+#: g10/gpg.c:2656
 msgid "invalid list options\n"
 msgstr "ogiltiga listflaggor\n"
 
-#: g10/gpg.c:2660
+#: g10/gpg.c:2664
 msgid "display photo IDs during signature verification"
 msgstr "visa foto-id under signaturvalidering"
 
-#: g10/gpg.c:2662
+#: g10/gpg.c:2666
 msgid "show policy URLs during signature verification"
 msgstr "visa policy-url:er under signaturvalidering"
 
-#: g10/gpg.c:2664
+#: g10/gpg.c:2668
 msgid "show all notations during signature verification"
 msgstr "visa alla notationer under signaturvalidering"
 
-#: g10/gpg.c:2666
+#: g10/gpg.c:2670
 msgid "show IETF standard notations during signature verification"
 msgstr "visa IETF-standardnotationer under signaturvalidering"
 
-#: g10/gpg.c:2670
+#: g10/gpg.c:2674
 msgid "show user-supplied notations during signature verification"
 msgstr "visa användarangivna notationer under signaturvalidering"
 
-#: g10/gpg.c:2672
+#: g10/gpg.c:2676
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "visa url:er till föredragna nyckelserver under signaturvalidering"
 
-#: g10/gpg.c:2674
+#: g10/gpg.c:2678
 msgid "show user ID validity during signature verification"
 msgstr "visa giltighet för användaridentitet vid signaturvalidering"
 
-#: g10/gpg.c:2676
+#: g10/gpg.c:2680
 msgid "show revoked and expired user IDs in signature verification"
 msgstr "visa spärrade och utgångna användaridentiteter i signaturvalidering"
 
-#: g10/gpg.c:2678
+#: g10/gpg.c:2682
 msgid "show only the primary user ID in signature verification"
 msgstr "visa endast primär användaridentitet i signaturvalidering"
 
-#: g10/gpg.c:2680
+#: g10/gpg.c:2684
 msgid "validate signatures with PKA data"
 msgstr "validera signaturer med PKA-data"
 
-#: g10/gpg.c:2682
+#: g10/gpg.c:2686
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr "öka tillit på signaturer med giltigt PKA-data"
 
-#: g10/gpg.c:2689
+#: g10/gpg.c:2693
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: ogiltiga flaggor för validering\n"
 
-#: g10/gpg.c:2692
+#: g10/gpg.c:2696
 msgid "invalid verify options\n"
 msgstr "ogiltiga flaggor för validering\n"
 
-#: g10/gpg.c:2699
+#: g10/gpg.c:2703
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "kunde inte ställa in exec-path till %s\n"
 
-#: g10/gpg.c:2874
+#: g10/gpg.c:2878
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: ogiltig auto-key-locate-lista\n"
 
-#: g10/gpg.c:2877
+#: g10/gpg.c:2881
 msgid "invalid auto-key-locate list\n"
 msgstr "ogiltig auto-key-locate-lista\n"
 
 # Programmet skapar en avbildning (image) av minnet för att lättare kunna spåra fel.
-#: g10/gpg.c:2984 sm/gpgsm.c:1389
+#: g10/gpg.c:2979 sm/gpgsm.c:1387
 msgid "WARNING: program may create a core file!\n"
 msgstr "VARNING: programmet kan komma att skapa en minnesavbild!\n"
 
-#: g10/gpg.c:2988
+#: g10/gpg.c:2983
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VARNING: %s gäller istället för %s\n"
 
-#: g10/gpg.c:2997
+#: g10/gpg.c:2992
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s är inte tillåten tillsammans med %s!\n"
 
-#: g10/gpg.c:3000
+#: g10/gpg.c:2995
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "det är ingen poäng att använda %s tillsammans med %s!\n"
 
-#: g10/gpg.c:3015
+#: g10/gpg.c:3010
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "kommer inte att köra med osäkert minne på grund av %s\n"
 
-#: g10/gpg.c:3029
+#: g10/gpg.c:3024
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "du kan bara göra signaturer i en separat fil eller klartextsignaturer\n"
 "i --pgp2-läge\n"
 
-#: g10/gpg.c:3035
+#: g10/gpg.c:3030
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "du kan inte signera och kryptera samtidigt i --pgp2-läge\n"
 
-#: g10/gpg.c:3041
+#: g10/gpg.c:3036
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "du måste använda filer (och inte rör) i --pgp2-läge\n"
 
 # IDEA-algoritmen är patenterat i flera länder och finns därför inte med i GnuPG som standard.
-#: g10/gpg.c:3054
+#: g10/gpg.c:3049
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "kryptering av meddelanden i --pgp2-läge kräver IDEA-chiffret\n"
 
-#: g10/gpg.c:3120 g10/gpg.c:3144 sm/gpgsm.c:1461
+#: g10/gpg.c:3115 g10/gpg.c:3139 sm/gpgsm.c:1459
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda chifferalgoritmen är ogiltig\n"
 
-#: g10/gpg.c:3126 g10/gpg.c:3150 sm/gpgsm.c:1467 sm/gpgsm.c:1473
+#: g10/gpg.c:3121 g10/gpg.c:3145 sm/gpgsm.c:1465 sm/gpgsm.c:1471
 msgid "selected digest algorithm is invalid\n"
 msgstr "vald sammandragsalgoritm är ogiltig\n"
 
-#: g10/gpg.c:3132
+#: g10/gpg.c:3127
 msgid "selected compression algorithm is invalid\n"
 msgstr "vald komprimeringsalgoritm är ogiltig\n"
 
-#: g10/gpg.c:3138
+#: g10/gpg.c:3133
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "vald algoritm för certifieringssammandrag är felaktig\n"
 
 # antalet betrodda signaturer som behövs (1-3) för att du ska lita på en nyckel du inte själv verifierat.
-#: g10/gpg.c:3153
+#: g10/gpg.c:3148
 msgid "completes-needed must be greater than 0\n"
 msgstr "variabeln \"completes-needed\" måste ha ett värde som är större än 0\n"
 
 # antalet delvis betrodda signaturer som behövs (1-3) för att du ska lita på en nyckel du inte själv verifierat.
-#: g10/gpg.c:3155
+#: g10/gpg.c:3150
 msgid "marginals-needed must be greater than 1\n"
 msgstr "variabeln \"marginals-needed\" måste vara större än 1\n"
 
 # Hur djupt GnuPG ska leta i Web-of-trust.
-#: g10/gpg.c:3157
+#: g10/gpg.c:3152
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth måste vara inom intervallet från 1 till 255\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
-#: g10/gpg.c:3159
+#: g10/gpg.c:3154
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr ""
 "ogiltigt standardvärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
-#: g10/gpg.c:3161
+#: g10/gpg.c:3156
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ogiltigt minimivärde för certifieringsnivån; måste vara 1, 2 eller 3\n"
 
 # S2K har med krypteringen av hemliga nyckeln att göra
-#: g10/gpg.c:3164
+#: g10/gpg.c:3159
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "OBS: enkelt S2K-läge (0) rekommenderas inte\n"
 
-#: g10/gpg.c:3168
+#: g10/gpg.c:3163
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ogiltigt S2K-läge; måste vara 0, 1 eller 3\n"
 
-#: g10/gpg.c:3175
+#: g10/gpg.c:3170
 msgid "invalid default preferences\n"
 msgstr "ogiltiga standardinställningar\n"
 
 # Du kan ange de algoritmer du föredrar i prioritetsordning. Då avgör inte enbart standard (symmetrisk kryptering) eller mottagarens preferenser (kryptering till öppen nyckel).
-#: g10/gpg.c:3184
+#: g10/gpg.c:3179
 msgid "invalid personal cipher preferences\n"
 msgstr "ogiltig inställning av personligt chiffer\n"
 
-#: g10/gpg.c:3188
+#: g10/gpg.c:3183
 msgid "invalid personal digest preferences\n"
 msgstr "ogiltig inställning av föredragna kontrollsummealgoritmer\n"
 
-#: g10/gpg.c:3192
+#: g10/gpg.c:3187
 msgid "invalid personal compress preferences\n"
 msgstr "ogiltig inställning av föredragna kompressionsalgoritmer\n"
 
-#: g10/gpg.c:3225
+#: g10/gpg.c:3220
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
-#: g10/gpg.c:3272
+#: g10/gpg.c:3267
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
 
-#: g10/gpg.c:3277
+#: g10/gpg.c:3272
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr ""
 "du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
-#: g10/gpg.c:3282
+#: g10/gpg.c:3277
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr ""
 "du får inte använda komprimeringsalgoritmen \"%s\" när du är i %s-läget\n"
 
-#: g10/gpg.c:3365
+#: g10/gpg.c:3363
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
-#: g10/gpg.c:3376
+#: g10/gpg.c:3374
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VARNING: mottagare (-r) angivna utan att använda publik nyckel-kryptering\n"
 
-#: g10/gpg.c:3397
+#: g10/gpg.c:3395
 msgid "--store [filename]"
 msgstr "--store [filnamn]"
 
-#: g10/gpg.c:3404
+#: g10/gpg.c:3402
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnamn]"
 
-#: g10/gpg.c:3406
+#: g10/gpg.c:3404
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "symmetrisk kryptering av \"%s\" misslyckades: %s\n"
 
-#: g10/gpg.c:3416
+#: g10/gpg.c:3414
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnamn]"
 
-#: g10/gpg.c:3429
+#: g10/gpg.c:3427
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [filnamn]"
 
-#: g10/gpg.c:3431
+#: g10/gpg.c:3429
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "du kan inte använda --symmetric --encrypt med --s2k-mode 0\n"
 
-#: g10/gpg.c:3434
+#: g10/gpg.c:3432
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "du kan inte använda --symmetric --encrypt i %s-läget\n"
 
-#: g10/gpg.c:3452
+#: g10/gpg.c:3450
 msgid "--sign [filename]"
 msgstr "--sign [filnamn]"
 
-#: g10/gpg.c:3465
+#: g10/gpg.c:3463
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/gpg.c:3480
+#: g10/gpg.c:3478
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [filnamn]"
 
-#: g10/gpg.c:3482
+#: g10/gpg.c:3480
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "du kan inte använda --symmetric --sign --encrypt med --s2k-mode 0\n"
 
-#: g10/gpg.c:3485
+#: g10/gpg.c:3483
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
 "du kan inte använda --symmetric --sign --encrypt när du är i %s-läget\n"
 
-#: g10/gpg.c:3505
+#: g10/gpg.c:3503
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [filnamn]"
 
-#: g10/gpg.c:3514
+#: g10/gpg.c:3512
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnamn]"
 
-#: g10/gpg.c:3539
+#: g10/gpg.c:3537
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnamn]"
 
-#: g10/gpg.c:3547
+#: g10/gpg.c:3545
 msgid "--sign-key user-id"
 msgstr "--sign-key användaridentitet"
 
-#: g10/gpg.c:3551
+#: g10/gpg.c:3549
 msgid "--lsign-key user-id"
 msgstr "--lsign-key användaridentitet"
 
-#: g10/gpg.c:3572
+#: g10/gpg.c:3570
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key användaridentitet [kommandon]"
 
-#: g10/gpg.c:3664
+#: g10/gpg.c:3662
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "sändning till nyckelservern misslyckades: %s\n"
 
-#: g10/gpg.c:3666
+#: g10/gpg.c:3664
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "hämtning från nyckelservern misslyckades: %s\n"
 
-#: g10/gpg.c:3668
+#: g10/gpg.c:3666
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "export av nyckeln misslyckades: %s\n"
 
-#: g10/gpg.c:3679
+#: g10/gpg.c:3677
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "sökning på nyckelservern misslyckades: %s\n"
 
-#: g10/gpg.c:3689
+#: g10/gpg.c:3687
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "uppdatering av  nyckeln från en nyckelserver misslyckades: %s\n"
 
-#: g10/gpg.c:3740
+#: g10/gpg.c:3738
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "misslyckades med att ta bort ASCII-skalet: %s\n"
 
-#: g10/gpg.c:3748
+#: g10/gpg.c:3746
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "misslyckades med att skapa ASCII-skal: %s\n"
 
-#: g10/gpg.c:3838
+#: g10/gpg.c:3836
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ogiltig kontrollsummealgoritm \"%s\"\n"
 
-#: g10/gpg.c:3955
+#: g10/gpg.c:3953
 msgid "[filename]"
 msgstr "[filnamn]"
 
-#: g10/gpg.c:3959
+#: g10/gpg.c:3957
 msgid "Go ahead and type your message ...\n"
 msgstr "Skriv ditt meddelande här ...\n"
 
-#: g10/gpg.c:4273
+#: g10/gpg.c:4271
 msgid "the given certification policy URL is invalid\n"
 msgstr "den angivna URL som beskriver certifieringsspolicy är ogiltig\n"
 
-#: g10/gpg.c:4275
+#: g10/gpg.c:4273
 msgid "the given signature policy URL is invalid\n"
 msgstr "den angivna URL som beskriver signaturpolicy är ogiltig\n"
 
-#: g10/gpg.c:4308
+#: g10/gpg.c:4306
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angivna föredragna nyckelserver-url:n är ogiltig\n"
 
@@ -2619,7 +2623,7 @@ msgstr "ta nycklarna från denna nyckelring "
 msgid "make timestamp conflicts only a warning"
 msgstr "utfärda enbart en varning när tidsstämpeln är orimlig"
 
-#: g10/gpgv.c:78 sm/gpgsm.c:325
+#: g10/gpgv.c:78 sm/gpgsm.c:323
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinformation till denna FD"
 
@@ -3409,19 +3413,19 @@ msgstr ""
 "Nyckeln har endast en stump eller nyckelobjekt på kortet - ingen lösenfras "
 "att ändra.\n"
 
-#: g10/keyedit.c:1142 g10/keygen.c:3637
+#: g10/keyedit.c:1142 g10/keygen.c:3687
 msgid "This key is not protected.\n"
 msgstr "Denna nyckel är inte skyddad.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3624 g10/revoke.c:538
+#: g10/keyedit.c:1146 g10/keygen.c:3674 g10/revoke.c:538
 msgid "Secret parts of primary key are not available.\n"
 msgstr "De hemliga delarna av den primära nyckeln är inte tillgängliga.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3640
+#: g10/keyedit.c:1150 g10/keygen.c:3690
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Hemliga delar av den primära nyckeln är lagrade på kortet.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3644
+#: g10/keyedit.c:1156 g10/keygen.c:3694
 msgid "Key is protected.\n"
 msgstr "Nyckeln är skyddad.\n"
 
@@ -3438,7 +3442,7 @@ msgstr ""
 "Skriv in den nya lösenfrasen för den hemliga nyckeln.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2177
+#: g10/keyedit.c:1207 g10/keygen.c:2224
 msgid "passphrase not correctly repeated; try again"
 msgstr "lösenfrasen repeterades inte korrekt; försök igen."
 
@@ -4209,12 +4213,12 @@ msgid "writing key binding signature\n"
 msgstr "skriver signatur knuten till nyckeln\n"
 
 #: g10/keygen.c:1158 g10/keygen.c:1269 g10/keygen.c:1274 g10/keygen.c:1409
-#: g10/keygen.c:3137
+#: g10/keygen.c:3186
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "ogiltig nyckelstorlek; använder %u bitar\n"
 
-#: g10/keygen.c:1164 g10/keygen.c:1280 g10/keygen.c:1415 g10/keygen.c:3143
+#: g10/keygen.c:1164 g10/keygen.c:1280 g10/keygen.c:1415 g10/keygen.c:3192
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "nyckelstorleken avrundad uppåt till %u bitar\n"
@@ -4289,77 +4293,82 @@ msgstr "   (%c) Växla autentiseringsförmågan\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Färdig\n"
 
-#: g10/keygen.c:1650 sm/certreqgen-ui.c:121
+#: g10/keygen.c:1654 sm/certreqgen-ui.c:121
 msgid "Please select what kind of key you want:\n"
 msgstr "Välj vilken typ av nyckel du vill ha:\n"
 
-#: g10/keygen.c:1652
-#, c-format
-msgid "   (%d) DSA and Elgamal (default)\n"
+#: g10/keygen.c:1657
+#, fuzzy, c-format
+msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) DSA och Elgamal (standard)\n"
 
-#: g10/keygen.c:1653
+#: g10/keygen.c:1659
+#, fuzzy, c-format
+msgid "   (%d) DSA and Elgamal\n"
+msgstr "   (%d) DSA och Elgamal (standard)\n"
+
+#: g10/keygen.c:1661
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (endast signering)\n"
 
-#: g10/keygen.c:1655
-#, c-format
-msgid "   (%d) DSA (set your own capabilities)\n"
-msgstr "   (%d) DSA (ställ in dina egna förmågor)\n"
-
-#: g10/keygen.c:1657
-#, c-format
-msgid "   (%d) Elgamal (encrypt only)\n"
-msgstr "   (%d) Elgamal (endast kryptering)\n"
-
-#: g10/keygen.c:1658
+#: g10/keygen.c:1662
 #, c-format
 msgid "   (%d) RSA (sign only)\n"
 msgstr "   (%d) RSA (endast signering)\n"
 
-#: g10/keygen.c:1660
+#: g10/keygen.c:1666
+#, c-format
+msgid "   (%d) Elgamal (encrypt only)\n"
+msgstr "   (%d) Elgamal (endast kryptering)\n"
+
+#: g10/keygen.c:1667
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
 msgstr "   (%d) RSA (endast kryptering)\n"
 
-#: g10/keygen.c:1662
+#: g10/keygen.c:1671
+#, c-format
+msgid "   (%d) DSA (set your own capabilities)\n"
+msgstr "   (%d) DSA (ställ in dina egna förmågor)\n"
+
+#: g10/keygen.c:1672
 #, c-format
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (ställ in dina egna förmågor)\n"
 
-#: g10/keygen.c:1731
-#, c-format
-msgid "DSA keypair will have %u bits.\n"
-msgstr "DSA-nyckelparet kommer att ha %u bitar.\n"
-
-#: g10/keygen.c:1741
+#: g10/keygen.c:1780
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-nycklar kan vara mellan %u och %u bitar långa.\n"
 
-#: g10/keygen.c:1748 sm/certreqgen-ui.c:142
+#: g10/keygen.c:1788
+#, fuzzy, c-format
+msgid "What keysize do you want for the subkey? (%u) "
+msgstr "Vilken nyckelstorlek vill du ha? (%u) "
+
+#: g10/keygen.c:1791 sm/certreqgen-ui.c:142
 #, c-format
 msgid "What keysize do you want? (%u) "
 msgstr "Vilken nyckelstorlek vill du ha? (%u) "
 
-#: g10/keygen.c:1762 sm/certreqgen-ui.c:147
+#: g10/keygen.c:1799 sm/certreqgen-ui.c:147
 #, c-format
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s nyckelstorlekar måste vara inom intervallet %u-%u\n"
 
-#: g10/keygen.c:1768 sm/certreqgen-ui.c:152
+#: g10/keygen.c:1805 sm/certreqgen-ui.c:152
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Den efterfrågade nyckelstorleken är %u bitar\n"
 
-#: g10/keygen.c:1773 g10/keygen.c:1778 sm/certreqgen-ui.c:157
+#: g10/keygen.c:1812 g10/keygen.c:1818 sm/certreqgen-ui.c:157
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "avrundade uppåt till %u bitar\n"
 
 # borde kolla upp möjligheterna i källkoden att använda v m å istället för wmy
-#: g10/keygen.c:1853
+#: g10/keygen.c:1893
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -4376,7 +4385,7 @@ msgstr ""
 "      <n>y = nyckeln blir ogiltig efter n år\n"
 
 # borde kolla upp möjligheterna i källkoden att använda v m å istället för wmy
-#: g10/keygen.c:1864
+#: g10/keygen.c:1904
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -4392,38 +4401,38 @@ msgstr ""
 "      <n>m = signaturen blir ogiltig efter n månader\n"
 "      <n>y = signaturen blir ogiltig efter n år\n"
 
-#: g10/keygen.c:1887
+#: g10/keygen.c:1927
 msgid "Key is valid for? (0) "
 msgstr "För hur lång tid ska nyckeln vara giltig? (0) "
 
-#: g10/keygen.c:1892
+#: g10/keygen.c:1932
 #, c-format
 msgid "Signature is valid for? (%s) "
 msgstr "Signaturen är giltig hur länge? (%s) "
 
-#: g10/keygen.c:1910 g10/keygen.c:1935
+#: g10/keygen.c:1950 g10/keygen.c:1975
 msgid "invalid value\n"
 msgstr "ogiltigt värde\n"
 
-#: g10/keygen.c:1917
+#: g10/keygen.c:1957
 msgid "Key does not expire at all\n"
 msgstr "Nyckeln går aldrig ut\n"
 
-#: g10/keygen.c:1918
+#: g10/keygen.c:1958
 msgid "Signature does not expire at all\n"
 msgstr "Signaturen går aldrig ut\n"
 
-#: g10/keygen.c:1923
+#: g10/keygen.c:1963
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "Nyckeln går ut %s\n"
 
-#: g10/keygen.c:1924
+#: g10/keygen.c:1964
 #, c-format
 msgid "Signature expires at %s\n"
 msgstr "Signaturen går ut %s\n"
 
-#: g10/keygen.c:1928
+#: g10/keygen.c:1968
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -4431,11 +4440,11 @@ msgstr ""
 "Ditt system kan inte visa datum senare än år 2038.\n"
 "Datum fram till år 2106 kommer dock att hanteras korrekt.\n"
 
-#: g10/keygen.c:1941
+#: g10/keygen.c:1981
 msgid "Is this correct? (y/N) "
 msgstr "Stämmer detta? (j/N) "
 
-#: g10/keygen.c:1971
+#: g10/keygen.c:2011
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4450,7 +4459,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:1986
+#: g10/keygen.c:2026
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4468,44 +4477,44 @@ msgstr ""
 "    \"Gustav Vasa (Brutal kung) <gustav@trekronor.se>\"\n"
 "\n"
 
-#: g10/keygen.c:2005
+#: g10/keygen.c:2045
 msgid "Real name: "
 msgstr "Namn: "
 
-#: g10/keygen.c:2013
+#: g10/keygen.c:2053
 msgid "Invalid character in name\n"
 msgstr "Ogiltigt tecken i namnet\n"
 
-#: g10/keygen.c:2015
+#: g10/keygen.c:2055
 msgid "Name may not start with a digit\n"
 msgstr "Namnet får inte börja med en siffra\n"
 
-#: g10/keygen.c:2017
+#: g10/keygen.c:2057
 msgid "Name must be at least 5 characters long\n"
 msgstr "Namnet måste vara åtminstone 5 tecken långt\n"
 
-#: g10/keygen.c:2025
+#: g10/keygen.c:2065
 msgid "Email address: "
 msgstr "E-postadress: "
 
-#: g10/keygen.c:2031
+#: g10/keygen.c:2071
 msgid "Not a valid email address\n"
 msgstr "E-postadressen är ogiltig\n"
 
-#: g10/keygen.c:2039
+#: g10/keygen.c:2079
 msgid "Comment: "
 msgstr "Kommentar: "
 
-#: g10/keygen.c:2045
+#: g10/keygen.c:2085
 msgid "Invalid character in comment\n"
 msgstr "Ogiltigt tecken i kommentaren\n"
 
-#: g10/keygen.c:2067
+#: g10/keygen.c:2107
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Du använder teckentabellen \"%s\"\n"
 
-#: g10/keygen.c:2073
+#: g10/keygen.c:2113
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4516,7 +4525,7 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2118
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Ange inte e-postadressen som namn eller kommentar\n"
 
@@ -4532,24 +4541,24 @@ msgstr "Ange inte e-postadressen som namn eller kommentar\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2094
+#: g10/keygen.c:2134
 msgid "NnCcEeOoQq"
 msgstr "NnKkEeOoAa"
 
-#: g10/keygen.c:2104
+#: g10/keygen.c:2144
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (A)vsluta? "
 
-#: g10/keygen.c:2105
+#: g10/keygen.c:2145
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (O)k/(A)vsluta? "
 
-#: g10/keygen.c:2124
+#: g10/keygen.c:2164
 msgid "Please correct the error first\n"
 msgstr "Rätta först felet\n"
 
 # fel kapitalisering i originalet?
-#: g10/keygen.c:2163
+#: g10/keygen.c:2206
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4557,12 +4566,20 @@ msgstr ""
 "Du behöver en lösenfras för att skydda din hemliga nyckel\n"
 "\n"
 
-#: g10/keygen.c:2178
+#: g10/keygen.c:2209
+#, fuzzy
+msgid ""
+"Please enter a passphrase to protect the off-card backup of the new "
+"encryption key."
+msgstr ""
+"Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
+
+#: g10/keygen.c:2225
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2184
+#: g10/keygen.c:2231
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4574,7 +4591,7 @@ msgstr ""
 "om du använder detta program med flaggan \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2208
+#: g10/keygen.c:2255
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4586,51 +4603,51 @@ msgstr ""
 "hårddisken) under primtalsgenereringen; detta ger slumptalsgeneratorn\n"
 "en större chans att samla ihop en tillräcklig mängd slumpmässig data.\n"
 
-#: g10/keygen.c:3077 g10/keygen.c:3104
+#: g10/keygen.c:3126 g10/keygen.c:3153
 msgid "Key generation canceled.\n"
 msgstr "Skapandet av nycklar avbröts.\n"
 
-#: g10/keygen.c:3309 g10/keygen.c:3476
+#: g10/keygen.c:3358 g10/keygen.c:3525
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skriver den publika nyckeln till \"%s\"\n"
 
-#: g10/keygen.c:3311 g10/keygen.c:3479
+#: g10/keygen.c:3360 g10/keygen.c:3528
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "skriver hemliga nyckelstumpen till \"%s\"\n"
 
-#: g10/keygen.c:3314 g10/keygen.c:3482
+#: g10/keygen.c:3363 g10/keygen.c:3531
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/keygen.c:3463
+#: g10/keygen.c:3512
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "ingen skrivbar publik nyckelring hittades: %s\n"
 
-#: g10/keygen.c:3470
+#: g10/keygen.c:3519
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "ingen skrivbar hemlig nyckelring hittades: %s\n"
 
-#: g10/keygen.c:3490
+#: g10/keygen.c:3539
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "fel vid skrivning av publika nyckelringen \"%s\": %s\n"
 
-#: g10/keygen.c:3498
+#: g10/keygen.c:3547
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "fel vid skrivning av hemliga nyckelringen \"%s\": %s\n"
 
-#: g10/keygen.c:3525
+#: g10/keygen.c:3574
 msgid "public and secret key created and signed.\n"
 msgstr "den publika och den hemliga nyckeln är skapade och signerade.\n"
 
 # Flagga.. inte kommando
-#: g10/keygen.c:3536
+#: g10/keygen.c:3585
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4639,13 +4656,13 @@ msgstr ""
 "vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
 "syfte.\n"
 
-#: g10/keygen.c:3549 g10/keygen.c:3694 g10/keygen.c:3815
+#: g10/keygen.c:3598 g10/keygen.c:3744 g10/keygen.c:3865
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 
 # c-format behövs inte i singularis
-#: g10/keygen.c:3604 g10/keygen.c:3745 g10/sign.c:241
+#: g10/keygen.c:3654 g10/keygen.c:3795 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4653,7 +4670,7 @@ msgstr ""
 "nyckeln är skapad %lu sekund in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:3606 g10/keygen.c:3747 g10/sign.c:243
+#: g10/keygen.c:3656 g10/keygen.c:3797 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4661,25 +4678,25 @@ msgstr ""
 "nyckeln är skapad %lu sekunder in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:3617 g10/keygen.c:3758
+#: g10/keygen.c:3667 g10/keygen.c:3808
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "OBS: att skapa undernycklar till v3-nycklar bryter mot OpenPGP\n"
 
-#: g10/keygen.c:3658 g10/keygen.c:3791
+#: g10/keygen.c:3708 g10/keygen.c:3841
 msgid "Really create? (y/N) "
 msgstr "Verkligen skapa? (j/N) "
 
-#: g10/keygen.c:3964
+#: g10/keygen.c:4029
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "misslyckades med att lagra nyckeln på kortet: %s\n"
 
-#: g10/keygen.c:4012
+#: g10/keygen.c:4078
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "kan inte skapa säkerhetskopian \"%s\": %s\n"
 
-#: g10/keygen.c:4038
+#: g10/keygen.c:4104
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "OBSERVERA: säkerhetskopia av kortnyckeln sparades i \"%s\"\n"
@@ -5210,65 +5227,65 @@ msgstr "VARNING: använder experimentella sammandragsalgoritmen %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "VARNING: sammandragsalgoritmen %s är föråldrad\n"
 
-#: g10/misc.c:512
+#: g10/misc.c:503
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "insticksmodul för IDEA-chiffer är inte installerat\n"
 
-#: g10/misc.c:513 g10/sig-check.c:107 jnlib/utf8conv.c:87
+#: g10/misc.c:504 g10/sig-check.c:107 jnlib/utf8conv.c:87
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "se %s för mer information\n"
 
-#: g10/misc.c:770
+#: g10/misc.c:761
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: flaggan är föråldrad \"%s\"\n"
 
-#: g10/misc.c:774
+#: g10/misc.c:765
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated option\n"
 msgstr "VARNING: inställningen \"%s\" är föråldrad\n"
 
-#: g10/misc.c:776
+#: g10/misc.c:767
 #, c-format
 msgid "please use \"%s%s\" instead\n"
 msgstr "Använd \"%s%s\" istället\n"
 
-#: g10/misc.c:783
+#: g10/misc.c:774
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "VARNING: \"%s\" är ett föråldrat kommando - använd det inte\n"
 
-#: g10/misc.c:793
+#: g10/misc.c:784
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s:%u: föråldrad flagga \"%s\" - den har ingen effekt\n"
 
-#: g10/misc.c:796
+#: g10/misc.c:787
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 
-#: g10/misc.c:857
+#: g10/misc.c:848
 msgid "Uncompressed"
 msgstr "Okomprimerad"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: g10/misc.c:882
+#: g10/misc.c:873
 msgid "uncompressed|none"
 msgstr "okomprimerad|ingen"
 
-#: g10/misc.c:1009
+#: g10/misc.c:1000
 #, c-format
 msgid "this message may not be usable by %s\n"
 msgstr "detta meddelande kanske inte kan användas av %s\n"
 
-#: g10/misc.c:1184
+#: g10/misc.c:1175
 #, c-format
 msgid "ambiguous option `%s'\n"
 msgstr "tvetydlig flagga \"%s\"\n"
 
-#: g10/misc.c:1209
+#: g10/misc.c:1200
 #, c-format
 msgid "unknown option `%s'\n"
 msgstr "okänd flagga \"%s\"\n"
@@ -5311,26 +5328,26 @@ msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgstr ""
 "VARNING: inställningar i \"%s\" är ännu inte aktiva under denna körning\n"
 
-#: g10/parse-packet.c:191
+#: g10/parse-packet.c:201
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "kan inte hantera algoritmen %d för publika nycklar\n"
 
-#: g10/parse-packet.c:808
+#: g10/parse-packet.c:818
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "VARNING: potentiellt osäker symmetriskt krypterad sessionsnyckel\n"
 
-#: g10/parse-packet.c:1259
+#: g10/parse-packet.c:1269
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
 
-#: g10/passphrase.c:294 g10/passphrase.c:588
+#: g10/passphrase.c:288 g10/passphrase.c:548
 #, c-format
 msgid " (main key ID %s)"
 msgstr " (primära nyckelns id %s)"
 
-#: g10/passphrase.c:308
+#: g10/passphrase.c:302
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for the OpenPGP "
@@ -5345,25 +5362,20 @@ msgstr ""
 "%u-bitars %s-nyckel, ID %s,\n"
 "skapad %s%s.\n"
 
-#: g10/passphrase.c:334
+#: g10/passphrase.c:328
 msgid "Enter passphrase\n"
 msgstr "Ange lösenfrasen\n"
 
-#: g10/passphrase.c:362
+#: g10/passphrase.c:356
 msgid "cancelled by user\n"
 msgstr "avbruten av användaren\n"
 
-#: g10/passphrase.c:368 g10/passphrase.c:431
+#: g10/passphrase.c:362 g10/passphrase.c:425
 #, c-format
 msgid "problem with the agent: %s\n"
 msgstr "problem med agenten: %s\n"
 
-#: g10/passphrase.c:458 jnlib/argparse.c:213
-#, fuzzy
-msgid "out of core\n"
-msgstr "[Fel - slut på kärna]"
-
-#: g10/passphrase.c:567
+#: g10/passphrase.c:527
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -5372,12 +5384,12 @@ msgstr ""
 "Du behöver en lösenfras för att låsa upp den hemliga\n"
 "nyckeln för användaren: \"%s\"\n"
 
-#: g10/passphrase.c:575
+#: g10/passphrase.c:535
 #, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bitars %s-nyckel, id %s, skapad %s"
 
-#: g10/passphrase.c:584
+#: g10/passphrase.c:544
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (undernyckel på primärt nyckel-id %s)"
@@ -6565,6 +6577,11 @@ msgstr "flagga \"%.50s\" är tvetydig\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "kommandot \"%.50s\" är tvetydigt\n"
 
+#: jnlib/argparse.c:213
+#, fuzzy
+msgid "out of core\n"
+msgstr "[Fel - slut på kärna]"
+
 #: jnlib/argparse.c:215
 #, c-format
 msgid "invalid option \"%.50s\"\n"
@@ -6657,19 +6674,19 @@ msgstr ""
 "Syntax: kbxutil [flaggor] [filer]\n"
 "lista, exportera, importera nyckelskåpsdata\n"
 
-#: scd/app-nks.c:712 scd/app-openpgp.c:2373
+#: scd/app-nks.c:712 scd/app-openpgp.c:2492
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA modulus saknas eller är inte %d bitar stor\n"
 
-#: scd/app-nks.c:720 scd/app-openpgp.c:2385
+#: scd/app-nks.c:720 scd/app-openpgp.c:2504
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "Publik RSA-exponent saknas eller större än %d bitar\n"
 
 #: scd/app-nks.c:800 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
-#: scd/app-openpgp.c:1666 scd/app-openpgp.c:1684 scd/app-openpgp.c:1886
-#: scd/app-dinsig.c:303
+#: scd/app-openpgp.c:1688 scd/app-openpgp.c:1705 scd/app-openpgp.c:1949
+#: scd/app-openpgp.c:1994 scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN-återanrop returnerade fel: %s\n"
@@ -6718,7 +6735,7 @@ msgid ""
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:1220 scd/app-openpgp.c:1930 scd/app-dinsig.c:531
+#: scd/app-nks.c:1220 scd/app-openpgp.c:2027 scd/app-dinsig.c:531
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "fel vid hämtning av ny PIN-kod: %s\n"
@@ -6738,15 +6755,15 @@ msgstr "misslyckades med att lagra datum för skapandet: %s\n"
 msgid "reading public key failed: %s\n"
 msgstr "läsning av publik nyckel misslyckades: %s\n"
 
-#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2608
+#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2727
 msgid "response does not contain the public key data\n"
 msgstr "svaret innehåller inte publikt nyckeldata\n"
 
-#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2616
+#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2735
 msgid "response does not contain the RSA modulus\n"
 msgstr "svaret innehåller inte en RSA-modulus\n"
 
-#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2626
+#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2745
 msgid "response does not contain the RSA public exponent\n"
 msgstr "svaret innehåller inte den publika RSA-exponenten\n"
 
@@ -6767,149 +6784,148 @@ msgstr ""
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
 
-#: scd/app-openpgp.c:1481
+#: scd/app-openpgp.c:1481 scd/app-openpgp.c:1943
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
 
-#: scd/app-openpgp.c:1522 scd/app-openpgp.c:1691
+#: scd/app-openpgp.c:1522 scd/app-openpgp.c:1712 scd/app-openpgp.c:1956
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "PIN-kod för CHV%d är för kort; minimumlängd är %d\n"
 
-#: scd/app-openpgp.c:1535 scd/app-openpgp.c:1575 scd/app-openpgp.c:1703
-#: scd/app-openpgp.c:2925
+#: scd/app-openpgp.c:1535 scd/app-openpgp.c:1586 scd/app-openpgp.c:1724
+#: scd/app-openpgp.c:3044
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "validering av CHV%d misslyckades: %s\n"
 
-#: scd/app-openpgp.c:1598
-msgid "access to admin commands is not configured\n"
-msgstr "åtkomst till administrationskommandon är inte konfigurerat\n"
-
-#: scd/app-openpgp.c:1621 scd/app-openpgp.c:1868 scd/app-openpgp.c:3188
+#: scd/app-openpgp.c:1615 scd/app-openpgp.c:1975 scd/app-openpgp.c:3307
 msgid "error retrieving CHV status from card\n"
 msgstr "fel vid hämtning av CHV-status från kort\n"
 
-#: scd/app-openpgp.c:1627 scd/app-openpgp.c:3197
+#: scd/app-openpgp.c:1621 scd/app-openpgp.c:3316
 msgid "card is permanently locked!\n"
 msgstr "kortet är låst permanent!\n"
 
-#: scd/app-openpgp.c:1634
+#: scd/app-openpgp.c:1628
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "%d försök för Admin PIN-koden återstår innan kortet låses permanent\n"
 
-#. TRANSLATORS: Do not translate the "|A|" prefix but keep
-#. it at the start of the string.  Use %%0A to force a
-#. lienfeed.
-#: scd/app-openpgp.c:1642
+#. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+#. the start of the string.  Use %%0A to force a linefeed.
+#: scd/app-openpgp.c:1635
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr ""
 "|A|Ange administratörens PIN-kod på läsarens knappsats%%0A[återstående "
 "försök: %d]"
 
-#: scd/app-openpgp.c:1654
+#: scd/app-openpgp.c:1639
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
 
-#: scd/app-openpgp.c:1882
+#: scd/app-openpgp.c:1660
+msgid "access to admin commands is not configured\n"
+msgstr "åtkomst till administrationskommandon är inte konfigurerat\n"
+
+#: scd/app-openpgp.c:1990
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Ange PIN-koden%s%s%s för att låsa upp kortet"
 
-#: scd/app-openpgp.c:1891 scd/app-openpgp.c:1954
+#: scd/app-openpgp.c:2000 scd/app-openpgp.c:2052
 #, fuzzy, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "PIN-kod för CHV%d är för kort; minimumlängd är %d\n"
 
-#: scd/app-openpgp.c:1925
+#: scd/app-openpgp.c:2022
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:1926
+#: scd/app-openpgp.c:2023
 msgid "|AN|New Admin PIN"
 msgstr "|AN|Ny Admin PIN-kod"
 
-#: scd/app-openpgp.c:1926
+#: scd/app-openpgp.c:2023
 msgid "|N|New PIN"
 msgstr "|N|Ny PIN-kod"
 
-#: scd/app-openpgp.c:2016 scd/app-openpgp.c:2694
+#: scd/app-openpgp.c:2132 scd/app-openpgp.c:2813
 msgid "error reading application data\n"
 msgstr "fel vid läsning av programdata\n"
 
-#: scd/app-openpgp.c:2022 scd/app-openpgp.c:2701
+#: scd/app-openpgp.c:2138 scd/app-openpgp.c:2820
 msgid "error reading fingerprint DO\n"
 msgstr "fel vid läsning av fingeravtryckets DO\n"
 
-#: scd/app-openpgp.c:2032
+#: scd/app-openpgp.c:2148
 msgid "key already exists\n"
 msgstr "nyckeln finns redan\n"
 
-#: scd/app-openpgp.c:2036
+#: scd/app-openpgp.c:2152
 msgid "existing key will be replaced\n"
 msgstr "befintlig nyckel kommer att ersättas\n"
 
-#: scd/app-openpgp.c:2038
+#: scd/app-openpgp.c:2154
 msgid "generating new key\n"
 msgstr "genererar ny nyckel\n"
 
-#: scd/app-openpgp.c:2364
+#: scd/app-openpgp.c:2480
 msgid "creation timestamp missing\n"
 msgstr "tidsstämpel för skapandet saknas\n"
 
-#: scd/app-openpgp.c:2395 scd/app-openpgp.c:2403
+#: scd/app-openpgp.c:2514 scd/app-openpgp.c:2522
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "RSA-primtal %s saknas eller inte %d bitar stor\n"
 
-#: scd/app-openpgp.c:2499
+#: scd/app-openpgp.c:2618
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "misslyckades med att lagra nyckeln: %s\n"
 
-#: scd/app-openpgp.c:2585
+#: scd/app-openpgp.c:2704
 msgid "please wait while key is being generated ...\n"
 msgstr "var god vänta under tiden nyckeln genereras ...\n"
 
-#: scd/app-openpgp.c:2598
+#: scd/app-openpgp.c:2717
 msgid "generating key failed\n"
 msgstr "nyckelgenereringen misslyckades\n"
 
-#: scd/app-openpgp.c:2601
+#: scd/app-openpgp.c:2720
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "nyckelgenereringen är färdig (%d sekunder)\n"
 
-#: scd/app-openpgp.c:2659
+#: scd/app-openpgp.c:2778
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "ogiltig struktur för OpenPGP-kort (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2709
+#: scd/app-openpgp.c:2828
 msgid "fingerprint on card does not match requested one\n"
 msgstr "avtrycket på kortet stämmer inte med den begärda\n"
 
-#: scd/app-openpgp.c:2824
+#: scd/app-openpgp.c:2943
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
 
-#: scd/app-openpgp.c:2900
+#: scd/app-openpgp.c:3019
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "signaturer skapade hittills: %lu\n"
 
-#: scd/app-openpgp.c:3202
+#: scd/app-openpgp.c:3321
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "validering av Admin PIN-kod är för närvarande förbjudet genom detta "
 "kommando\n"
 
-#: scd/app-openpgp.c:3427 scd/app-openpgp.c:3438
+#: scd/app-openpgp.c:3546 scd/app-openpgp.c:3557
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "kan inte komma åt %s - ogiltigt OpenPGP-kort?\n"
@@ -6925,53 +6941,53 @@ msgstr "||Knappa in din PIN-kod på läsarens knappsats"
 msgid "|N|Initial New PIN"
 msgstr "|N|Initial PIN-kod"
 
-#: scd/scdaemon.c:106
+#: scd/scdaemon.c:107
 msgid "run in multi server mode (foreground)"
 msgstr "kör i multiserverläge (förgrund)"
 
-#: scd/scdaemon.c:116 sm/gpgsm.c:315
+#: scd/scdaemon.c:117 sm/gpgsm.c:313
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|NIVÅ|ställ in felsökningsnivån till NIVÅ"
 
-#: scd/scdaemon.c:123 tools/gpgconf-comp.c:620
+#: scd/scdaemon.c:124 tools/gpgconf-comp.c:620
 #, fuzzy
 msgid "|FILE|write a log to FILE"
 msgstr "|FIL|skriv en granskningslogg till FIL"
 
-#: scd/scdaemon.c:125
+#: scd/scdaemon.c:126
 msgid "|N|connect to reader at port N"
 msgstr "|N|anslut till läsare på port N"
 
-#: scd/scdaemon.c:127
+#: scd/scdaemon.c:128
 msgid "|NAME|use NAME as ct-API driver"
 msgstr "|NAMN|använd NAMN som ct-API-drivrutin"
 
-#: scd/scdaemon.c:129
+#: scd/scdaemon.c:130
 msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|NAMN|använd NAMN som PC/SC-drivrutin"
 
-#: scd/scdaemon.c:132
+#: scd/scdaemon.c:133
 msgid "do not use the internal CCID driver"
 msgstr "använd inte den interna CCID-drivrutinen"
 
-#: scd/scdaemon.c:138
+#: scd/scdaemon.c:139
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-#: scd/scdaemon.c:140
+#: scd/scdaemon.c:141
 msgid "do not use a reader's keypad"
 msgstr "använd inte läsarens knappsats"
 
-#: scd/scdaemon.c:143
+#: scd/scdaemon.c:144
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "tillåt användning av administratörskommandon för kort"
 
-#: scd/scdaemon.c:256
+#: scd/scdaemon.c:257
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Användning: scdaemon [flaggor] (-h för hjälp)"
 
-#: scd/scdaemon.c:258
+#: scd/scdaemon.c:259
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
@@ -6979,7 +6995,7 @@ msgstr ""
 "Syntax: scdaemon [flaggor] [kommando [argument]]\n"
 "Smartkortsdemon för GnuPG\n"
 
-#: scd/scdaemon.c:736
+#: scd/scdaemon.c:737
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr "använd flaggan \"--daemon\" för att köra programmet i bakgrunden\n"
 
@@ -7085,7 +7101,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "uppslag av endast-mellanlagrad dirmngr-nyckel misslyckades: %s\n"
 
 #: sm/certchain.c:744 sm/certchain.c:1231 sm/certchain.c:1835 sm/decrypt.c:259
-#: sm/encrypt.c:347 sm/sign.c:327 sm/verify.c:113
+#: sm/encrypt.c:335 sm/sign.c:327 sm/verify.c:113
 msgid "failed to allocated keyDB handle\n"
 msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
@@ -7529,138 +7545,138 @@ msgstr "certifikatet \"%s\" togs bort\n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "borttagning av certifikatet \"%s\" misslyckades: %s\n"
 
-#: sm/encrypt.c:333
+#: sm/encrypt.c:321
 msgid "no valid recipients given\n"
 msgstr "inga giltiga mottagare angavs\n"
 
-#: sm/gpgsm.c:197
+#: sm/gpgsm.c:195
 msgid "list external keys"
 msgstr "lista externa nycklar"
 
-#: sm/gpgsm.c:199
+#: sm/gpgsm.c:197
 msgid "list certificate chain"
 msgstr "lista certifikatkedja"
 
-#: sm/gpgsm.c:206
+#: sm/gpgsm.c:204
 msgid "import certificates"
 msgstr "importera certifikat"
 
-#: sm/gpgsm.c:207
+#: sm/gpgsm.c:205
 msgid "export certificates"
 msgstr "exportera certifikat"
 
-#: sm/gpgsm.c:209
+#: sm/gpgsm.c:207
 msgid "register a smartcard"
 msgstr "registrera ett smartkort"
 
-#: sm/gpgsm.c:212
+#: sm/gpgsm.c:210
 msgid "pass a command to the dirmngr"
 msgstr "skicka ett kommando till dirmngr"
 
-#: sm/gpgsm.c:214
+#: sm/gpgsm.c:212
 msgid "invoke gpg-protect-tool"
 msgstr "starta gpg-protect-tool"
 
-#: sm/gpgsm.c:215
+#: sm/gpgsm.c:213
 msgid "change a passphrase"
 msgstr "ändra en lösenfras"
 
-#: sm/gpgsm.c:230
+#: sm/gpgsm.c:228
 msgid "create base-64 encoded output"
 msgstr "skapa base-64-kodat utdata"
 
-#: sm/gpgsm.c:235
+#: sm/gpgsm.c:233
 msgid "assume input is in PEM format"
 msgstr "anta att inmatning är i PEM-format"
 
-#: sm/gpgsm.c:237
+#: sm/gpgsm.c:235
 msgid "assume input is in base-64 format"
 msgstr "anta att inmatning är i base-64-format"
 
-#: sm/gpgsm.c:239
+#: sm/gpgsm.c:237
 msgid "assume input is in binary format"
 msgstr "anta att inmatning är i binärformat"
 
-#: sm/gpgsm.c:244
+#: sm/gpgsm.c:242
 msgid "use system's dirmngr if available"
 msgstr "använd systemets dirmngr om tillgängligt"
 
-#: sm/gpgsm.c:247
+#: sm/gpgsm.c:245
 msgid "never consult a CRL"
 msgstr "kontrollera aldrig mot spärrlista"
 
-#: sm/gpgsm.c:257
+#: sm/gpgsm.c:255
 msgid "check validity using OCSP"
 msgstr "kontrollera giltigheten med OCSP"
 
-#: sm/gpgsm.c:262
+#: sm/gpgsm.c:260
 msgid "|N|number of certificates to include"
 msgstr "|N|antal certifikat att inkludera"
 
-#: sm/gpgsm.c:265
+#: sm/gpgsm.c:263
 msgid "|FILE|take policy information from FILE"
 msgstr "|FIL|hämta policyinformation från FIL"
 
-#: sm/gpgsm.c:268
+#: sm/gpgsm.c:266
 msgid "do not check certificate policies"
 msgstr "kontrollera inte certifikatpolicier"
 
-#: sm/gpgsm.c:272
+#: sm/gpgsm.c:270
 msgid "fetch missing issuer certificates"
 msgstr "hämta saknade utfärdarcertifikat"
 
-#: sm/gpgsm.c:283
+#: sm/gpgsm.c:281
 msgid "don't use the terminal at all"
 msgstr "använd inte terminalen alls"
 
-#: sm/gpgsm.c:285
+#: sm/gpgsm.c:283
 msgid "|FILE|write a server mode log to FILE"
 msgstr "|FIL|skriv en serverlägeslogg till FIL"
 
-#: sm/gpgsm.c:290
+#: sm/gpgsm.c:288
 msgid "|FILE|write an audit log to FILE"
 msgstr "|FIL|skriv en granskningslogg till FIL"
 
-#: sm/gpgsm.c:292
+#: sm/gpgsm.c:290
 msgid "batch mode: never ask"
 msgstr "satsläge: fråga aldrig"
 
-#: sm/gpgsm.c:293
+#: sm/gpgsm.c:291
 msgid "assume yes on most questions"
 msgstr "anta ja på de flesta frågorna"
 
-#: sm/gpgsm.c:294
+#: sm/gpgsm.c:292
 msgid "assume no on most questions"
 msgstr "anta nej på de flesta frågorna"
 
-#: sm/gpgsm.c:297
+#: sm/gpgsm.c:295
 #, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
 msgstr "lägg till denna nyckelring till listan över nyckelringar"
 
-#: sm/gpgsm.c:300
+#: sm/gpgsm.c:298
 #, fuzzy
 msgid "|USER-ID|use USER-ID as default secret key"
 msgstr "|NAMN|använd NAMN som förvald hemlig nyckel"
 
-#: sm/gpgsm.c:310 tools/gpgconf-comp.c:745
+#: sm/gpgsm.c:308 tools/gpgconf-comp.c:745
 msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|SPEC|använd denna nyckelserver för att slå upp nycklar"
 
-#: sm/gpgsm.c:328
+#: sm/gpgsm.c:326
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAMN|använd chifferalgoritmen NAMN"
 
-#: sm/gpgsm.c:330
+#: sm/gpgsm.c:328
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAMN|använd sammandragsalgoritmen NAMN"
 
-#: sm/gpgsm.c:516
+#: sm/gpgsm.c:514
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Användning: gpgsm [flaggor] [filer] (-h för hjälp)"
 
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
-#: sm/gpgsm.c:519
+#: sm/gpgsm.c:517
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -7670,58 +7686,54 @@ msgstr ""
 "signera, kontrollera, kryptera eller dekryptera med S/MIME-protokollet\n"
 "standardåtgärden beror på inmatningsdata\n"
 
-#: sm/gpgsm.c:611
+#: sm/gpgsm.c:609
 msgid "usage: gpgsm [options] "
 msgstr "användning: gpgsm [flaggor] "
 
-#: sm/gpgsm.c:709
+#: sm/gpgsm.c:707
 #, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "OBSERVERA: kommer inte att kunna kryptera till \"%s\": %s\n"
 
-#: sm/gpgsm.c:720
+#: sm/gpgsm.c:718
 #, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "okänd valideringsmodell \"%s\"\n"
 
-#: sm/gpgsm.c:771
+#: sm/gpgsm.c:769
 #, c-format
 msgid "%s:%u: no hostname given\n"
 msgstr "%s:%u: inget värdnamn angivet\n"
 
-#: sm/gpgsm.c:790
+#: sm/gpgsm.c:788
 #, c-format
 msgid "%s:%u: password given without user\n"
 msgstr "%s:%u: lösenord angivet utan användare\n"
 
-#: sm/gpgsm.c:811
+#: sm/gpgsm.c:809
 #, c-format
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: hoppar över denna rad\n"
 
-#: sm/gpgsm.c:1325
+#: sm/gpgsm.c:1323
 msgid "could not parse keyserver\n"
 msgstr "kunde inte tolka nyckelserver\n"
 
-#: sm/gpgsm.c:1406
+#: sm/gpgsm.c:1404
 msgid "WARNING: running with faked system time: "
 msgstr "VARNING: kör med falsk systemtid: "
 
-#: sm/gpgsm.c:1506
+#: sm/gpgsm.c:1504
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "importerar vanliga certifikat \"%s\"\n"
 
-#: sm/gpgsm.c:1544
+#: sm/gpgsm.c:1542
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "kan inte signera med \"%s\": %s\n"
 
-#: sm/gpgsm.c:1715
-msgid "this command has not yet been implemented\n"
-msgstr "det här kommandot har ännu inte implementerats\n"
-
-#: sm/gpgsm.c:1870
+#: sm/gpgsm.c:1864
 msgid "invalid command (there is no implicit command)\n"
 msgstr "ogiltigt kommando (det finns inget implicit kommando)\n"
 
@@ -7902,7 +7914,7 @@ msgstr "      även känd som"
 msgid "This is a qualified signature\n"
 msgstr "Det här är en kvalificerad signatur\n"
 
-#: tools/gpg-connect-agent.c:70 tools/gpgconf.c:80 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:70 tools/gpgconf.c:81 tools/symcryptrun.c:165
 msgid "quiet"
 msgstr "tyst"
 
@@ -8130,55 +8142,55 @@ msgstr "Extern validering av komponenten %s misslyckades"
 msgid "Note that group specifications are ignored\n"
 msgstr "Observera att gruppspecifikationer ignoreras\n"
 
-#: tools/gpgconf.c:61
+#: tools/gpgconf.c:62
 msgid "list all components"
 msgstr "lista alla komponenter"
 
-#: tools/gpgconf.c:62
+#: tools/gpgconf.c:63
 msgid "check all programs"
 msgstr "kontrollera alla program"
 
-#: tools/gpgconf.c:63
+#: tools/gpgconf.c:64
 msgid "|COMPONENT|list options"
 msgstr "|KOMPONENT|lista flaggor"
 
-#: tools/gpgconf.c:64
+#: tools/gpgconf.c:65
 msgid "|COMPONENT|change options"
 msgstr "|KOMPONENT|ändra flaggor"
 
-#: tools/gpgconf.c:65
+#: tools/gpgconf.c:66
 msgid "|COMPONENT|check options"
 msgstr "|KOMPONENT|kontrollera flaggor"
 
-#: tools/gpgconf.c:67
+#: tools/gpgconf.c:68
 msgid "apply global default values"
 msgstr "tillämpa globala standardvärden"
 
-#: tools/gpgconf.c:69
+#: tools/gpgconf.c:70
 msgid "get the configuration directories for gpgconf"
 msgstr "hämta konfigurationskatalogerna för gpgconf"
 
-#: tools/gpgconf.c:71
+#: tools/gpgconf.c:72
 msgid "list global configuration file"
 msgstr "lista global konfigurationsfil"
 
-#: tools/gpgconf.c:73
+#: tools/gpgconf.c:74
 msgid "check global configuration file"
 msgstr "kontrollera global konfigurationsfil"
 
-#: tools/gpgconf.c:78
+#: tools/gpgconf.c:79
 msgid "use as output file"
 msgstr "använd som fil för utdata"
 
-#: tools/gpgconf.c:82
+#: tools/gpgconf.c:83
 msgid "activate changes at runtime, if possible"
 msgstr "aktivera ändringar vid körtid, om möjligt"
 
-#: tools/gpgconf.c:104
+#: tools/gpgconf.c:105
 msgid "Usage: gpgconf [options] (-h for help)"
 msgstr "Användning: gpgconf [flaggor] (-h för hjälp)"
 
-#: tools/gpgconf.c:107
+#: tools/gpgconf.c:108
 msgid ""
 "Syntax: gpgconf [options]\n"
 "Manage configuration options for tools of the GnuPG system\n"
@@ -8186,19 +8198,19 @@ msgstr ""
 "Syntax: gpgconf [flaggor]\n"
 "Hantera konfigurationsinställningar för verktygen i GnuPG-systemet\n"
 
-#: tools/gpgconf.c:212 tools/gpgconf.c:277
+#: tools/gpgconf.c:214 tools/gpgconf.c:279
 msgid "usage: gpgconf [options] "
 msgstr "användning: gpgconf [flaggor] "
 
-#: tools/gpgconf.c:214
+#: tools/gpgconf.c:216
 msgid "Need one component argument"
 msgstr "Behöver ett komponentargument"
 
-#: tools/gpgconf.c:223 tools/gpgconf.c:253
+#: tools/gpgconf.c:225 tools/gpgconf.c:255
 msgid "Component not found"
 msgstr "Komponenten hittades inte"
 
-#: tools/gpgconf.c:279
+#: tools/gpgconf.c:281
 msgid "No argument allowed"
 msgstr "Inget argument tillåts"
 
@@ -8384,6 +8396,12 @@ msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
 
+#~ msgid "DSA keypair will have %u bits.\n"
+#~ msgstr "DSA-nyckelparet kommer att ha %u bitar.\n"
+
+#~ msgid "this command has not yet been implemented\n"
+#~ msgstr "det här kommandot har ännu inte implementerats\n"
+
 #~ msgid "Repeat passphrase\n"
 #~ msgstr "Repetera lösenfrasen\n"
 
@@ -8393,9 +8411,6 @@ msgstr ""
 
 #~ msgid "|A|Admin PIN"
 #~ msgstr "|A|Admin PIN-kod"
-
-#~ msgid "[none]"
-#~ msgstr "[ingen]"
 
 #~ msgid "read options from file"
 #~ msgstr "läs inställningar från fil"

@@ -2833,11 +2833,11 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
 }
 
 
-  /* If a fingerprint has been specified check it against the one on
-     the card.  This is allows for a meaningful error message in case
-     the key on the card has been replaced but the shadow information
-     known to gpg was not updated.  If there is no fingerprint we
-     assume that this is okay. */
+/* If a fingerprint has been specified check it against the one on the
+   card.  This allows for a meaningful error message in case the key
+   on the card has been replaced but the shadow information known to
+   gpg has not been updated.  If there is no fingerprint we assume
+   that this is okay. */
 static gpg_error_t
 check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 {
