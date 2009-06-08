@@ -1,3 +1,7 @@
+2009-06-08  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c (main): Call gnupg_reopen_std.  Should fix bug#1072.
+
 2009-05-19  Werner Koch  <wk@g10code.com>
 
 	* watchgnupg.c: Include jnlib/mischelp.h if required.

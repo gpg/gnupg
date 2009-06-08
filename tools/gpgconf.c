@@ -25,6 +25,7 @@
 
 #include "gpgconf.h"
 #include "i18n.h"
+#include "sysutils.h"
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values
@@ -145,6 +146,7 @@ main (int argc, char **argv)
   enum cmd_and_opt_values cmd = 0;
   FILE *outfp = NULL;
 
+  gnupg_reopen_std ("gpgconf");
   set_strusage (my_strusage);
   log_set_prefix ("gpgconf", 1);
 
