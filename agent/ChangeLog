@@ -1,3 +1,7 @@
+2009-06-09  Werner Koch  <wk@g10code.com>
+
+	* learncard.c (send_cert_back): Ignore certain error codes.
+
 2009-06-05  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c (store_private_key): Fix last change by appending

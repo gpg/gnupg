@@ -48,6 +48,29 @@
 #define CONTROL_D ('D' - 'A' + 1)
 
 
+static void
+write_sc_op_status (gpg_error_t err)
+{
+  switch (gpg_err_code (err))
+    {
+    case 0:
+      write_status (STATUS_SC_OP_SUCCESS);
+      break;
+#if GNUPG_MAJOR_VERSION != 1
+    case GPG_ERR_CANCELED:
+      write_status_text (STATUS_SC_OP_FAILURE, "1");
+      break;
+    case GPG_ERR_BAD_PIN:
+      write_status_text (STATUS_SC_OP_FAILURE, "2");
+      break;
+    default:
+      write_status (STATUS_SC_OP_FAILURE);
+      break;
+#endif /* GNUPG_MAJOR_VERSION != 1 */
+    }
+}
+
+
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
 void
@@ -86,25 +109,21 @@ change_pin (int unblock_v2, int allow_admin)
       else
         {
           rc = agent_scd_change_pin (2, info.serialno);
+          write_sc_op_status (rc);
           if (rc)
             tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
           else
-            {
-              write_status (STATUS_SC_OP_SUCCESS);
-              tty_printf ("PIN changed.\n");
-            }
+            tty_printf ("PIN changed.\n");
         }
     }
   else if (!allow_admin)
     {
       rc = agent_scd_change_pin (1, info.serialno);
+      write_sc_op_status (rc);
       if (rc)
 	tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
       else
-        {
-          write_status (STATUS_SC_OP_SUCCESS);
-          tty_printf ("PIN changed.\n");
-        }
+        tty_printf ("PIN changed.\n");
     }
   else
     for (;;)
@@ -129,50 +148,42 @@ change_pin (int unblock_v2, int allow_admin)
 	  {
             /* Change PIN.  */
 	    rc = agent_scd_change_pin (1, info.serialno);
+            write_sc_op_status (rc);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
-              {
-                write_status (STATUS_SC_OP_SUCCESS);
-                tty_printf ("PIN changed.\n");
-              }
+              tty_printf ("PIN changed.\n");
 	  }
 	else if (*answer == '2')
 	  {
             /* Unblock PIN.  */
 	    rc = agent_scd_change_pin (101, info.serialno);
+            write_sc_op_status (rc);
 	    if (rc)
 	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
 	    else
-              {
-                write_status (STATUS_SC_OP_SUCCESS);
-                tty_printf ("PIN unblocked and new PIN set.\n");
-              }
+              tty_printf ("PIN unblocked and new PIN set.\n");
           }
 	else if (*answer == '3')
 	  {
             /* Change Admin PIN.  */
 	    rc = agent_scd_change_pin (3, info.serialno);
+            write_sc_op_status (rc);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
-              {
-                write_status (STATUS_SC_OP_SUCCESS);
-                tty_printf ("PIN changed.\n");
-              }
+              tty_printf ("PIN changed.\n");
 	  }
 	else if (*answer == '4')
 	  {
             /* Set a new Reset Code.  */
 	    rc = agent_scd_change_pin (102, info.serialno);
+            write_sc_op_status (rc);
 	    if (rc)
 	      tty_printf ("Error setting the Reset Code: %s\n", 
                           gpg_strerror (rc));
 	    else
-              {
-                write_status (STATUS_SC_OP_SUCCESS);
-                tty_printf ("Reset Code set.\n");
-              }
+              tty_printf ("Reset Code set.\n");
 	  }
 	else if (*answer == 'q' || *answer == 'Q')
 	  {
@@ -694,6 +705,7 @@ change_url (void)
   if (rc)
     log_error ("error setting URL: %s\n", gpg_strerror (rc));
   xfree (url);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -744,6 +756,7 @@ fetch_url(void)
 
   return rc;
 #else
+  #warning need to implemented fucntion
   return 0;
 #endif
 }
@@ -839,6 +852,7 @@ change_login (const char *args)
   if (rc)
     log_error ("error setting login data: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -884,6 +898,7 @@ change_private_do (const char *args, int nr)
   if (rc)
     log_error ("error setting private DO: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -913,6 +928,7 @@ change_cert (const char *args)
   if (rc)
     log_error ("error writing certificate to card: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -950,6 +966,7 @@ change_lang (void)
   if (rc)
     log_error ("error setting lang: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -985,6 +1002,7 @@ change_sex (void)
   if (rc)
     log_error ("error setting sex: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -1029,6 +1047,7 @@ change_cafpr (int fprno)
                           fprno==3?"CA-FPR-3":"x", fpr, 20, NULL );
   if (rc)
     log_error ("error setting cafpr: %s\n", gpg_strerror (rc));
+  write_sc_op_status (rc);
   return rc;
 }
 
@@ -1054,6 +1073,7 @@ toggle_forcesig (void)
   rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1, NULL);
   if (rc)
     log_error ("error toggling signature PIN flag: %s\n", gpg_strerror (rc));
+  write_sc_op_status (rc);
 }
 
 
@@ -1111,8 +1131,11 @@ check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
          binding signature. */
       rc = agent_scd_checkpin (info->serialno);
       if (rc)
-        log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
-    }
+        {
+          log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+          write_sc_op_status (rc);
+        }
+  }
   return rc;
 }
 

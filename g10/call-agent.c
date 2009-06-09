@@ -667,7 +667,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   /* Send the serialno command to initialize the connection. We don't
      care about the data returned.  If the card has already been
      initialized, this is a very fast command.  We request the openpgp
-     card because that is waht we expect. */
+     card because that is what we expect. */
   rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
@@ -732,7 +732,7 @@ agent_scd_pkdecrypt (const char *serialno,
   /* Send the serialno command to initialize the connection. We don't
      care about the data returned.  If the card has already been
      initialized, this is a very fast command.  We request the openpgp
-     card because that is waht we expect. */
+     card because that is what we expect. */
   rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)

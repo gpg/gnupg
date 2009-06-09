@@ -620,7 +620,7 @@ app_readcert (app_t app, const char *certid,
    code returned.
 
    This function might not be supported by all applications.  */
-gpg_error_t
+gpg_error_t 
 app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;

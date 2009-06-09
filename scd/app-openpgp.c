@@ -833,13 +833,16 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char tmp[100];
 
       snprintf (tmp, sizeof tmp,
-                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d", 
+                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d sm=%d", 
                 app->app_local->extcap.get_challenge,
                 app->app_local->extcap.key_import,
                 app->app_local->extcap.change_force_chv,
                 app->app_local->extcap.private_dos,
                 app->app_local->extcap.max_certlen_3,
-                app->app_local->extcap.algo_attr_change);
+                app->app_local->extcap.algo_attr_change,
+                (app->app_local->extcap.sm_supported
+                 ? (app->app_local->extcap.sm_aes128? 7 : 2)
+                 : 0));
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
@@ -1398,8 +1401,9 @@ do_readcert (app_t app, const char *certid,
   if (!relptr)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
-  *cert = xtrymalloc (buflen);
-  if (!*cert)
+  if (!buflen)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  else if (!(*cert = xtrymalloc (buflen)))
     err = gpg_error_from_syserror ();
   else
     {

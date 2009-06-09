@@ -262,9 +262,23 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
   rc = agent_card_readcert (ctrl, id, &derbuf, &derbuflen);
   if (rc)
     {
-      log_error ("error reading certificate: %s\n",
-                 gpg_strerror (rc));
-      return rc;
+      const char *action;
+
+      switch (gpg_err_code (rc))
+        {
+        case GPG_ERR_INV_ID:
+        case GPG_ERR_NOT_FOUND:
+          action = " - ignored";
+          break;
+        default:
+          action = "";
+          break;
+        }
+      if (opt.verbose || !*action)
+        log_info ("error reading certificate `%s': %s%s\n",
+                  id? id:"?", gpg_strerror (rc), action);
+
+      return *action? 0 : rc;
     }
 
   rc = assuan_send_data (assuan_context, derbuf, derbuflen);
@@ -288,6 +302,7 @@ int
 agent_handle_learn (ctrl_t ctrl, void *assuan_context)
 {
   int rc;
+
   struct kpinfo_cb_parm_s parm;
   struct certinfo_cb_parm_s cparm;
   struct sinfo_cb_parm_s sparm;

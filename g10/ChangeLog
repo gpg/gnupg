@@ -1,3 +1,11 @@
+2009-06-09  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (write_sc_op_status): New.
+	(change_pin): Use it.
+	(change_url, change_login, change_private_do, change_cert)
+	(change_lang, change_sex, change_cafpr, toggle_forcesig)
+	(check_pin_for_key_operation): Ditto.
+
 2009-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main), misc.c (openpgp_cipher_test_algo): Remove Camellia
