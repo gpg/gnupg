@@ -862,6 +862,9 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	      if(i!=count)
 		validcount=0;
 
+              if (opt.with_colons && opt.batch)
+                break;
+                
 	      for(;;)
 		{
 		  if(show_prompt(desc,i,validcount?count:0,localstr))

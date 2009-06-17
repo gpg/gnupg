@@ -1,3 +1,15 @@
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (put_data_to_file, read_cert): New. 
+	(card_edit): Add command "readcert".
+	(fetch_url): Allow code also for this gnupg major version 2.
+	* call-agent.c (agent_scd_readcert): New.
+
+2009-06-15  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (keyserver_search_prompt): No prompt in batch+colons
+	mode.
+
 2009-06-09  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (write_sc_op_status): New.

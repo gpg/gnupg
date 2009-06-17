@@ -575,7 +575,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
   
   /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
-     invalid argument error if we pass the the correct processID to
+     invalid argument error if we pass the correct processID to
      it.  As a workaround we use -1 (ASFW_ANY).  */
   if ( (flags & 64) )
     gnupg_allow_set_foregound_window ((pid_t)(-1)/*pi.dwProcessId*/);

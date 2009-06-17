@@ -420,19 +420,27 @@ iso7816_reset_retry_counter (int slot, int chvno,
    a newly allocated buffer at the address passed by RESULT.  Return
    the length of this data at the address of RESULTLEN. */
 gpg_error_t
-iso7816_get_data (int slot, int tag,
+iso7816_get_data (int slot, int extended_mode, int tag,
                   unsigned char **result, size_t *resultlen)
 {
   int sw;
+  int le;
 
   if (!result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0, 0x00, CMD_GET_DATA,
-                  ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL,
-                  result, resultlen);
+  if (extended_mode > 0 && extended_mode < 256)
+    le = 65534; /* Not 65535 in case it is used as some special flag.  */
+  else if (extended_mode > 0)
+    le = extended_mode;
+  else
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode, 0x00, CMD_GET_DATA,
+                     ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL, le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */

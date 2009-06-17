@@ -1,3 +1,17 @@
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	* iso7816.c (iso7816_get_data): Add arg EXTENDED_MODE.  Change all
+	callers.
+	* app-openpgp.c (data_objects): Use bit flags.  Add flag
+	TRY_EXTLENGTH.
+	(get_cached_data): Add arg TRY_EXTLEN and use it for iso7816_get_data.
+	(get_one_do): Use extended length APDU if necessary.
+
+2009-06-10  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (store_fpr): Change first arg to app_t; adjust
+	callers.  Flush the cache.
+
 2009-06-09  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_readcert): Return NOT_FOUND if the retrieved

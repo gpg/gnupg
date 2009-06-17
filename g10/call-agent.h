@@ -104,6 +104,10 @@ int agent_scd_pkdecrypt (const char *serialno,
                          const unsigned char *indata, size_t indatalen,
                          unsigned char **r_buf, size_t *r_buflen);
 
+/* Send a READKEY command to the SCdaemon. */
+int agent_scd_readcert (const char *certidstr,
+                        void **r_buf, size_t *r_buflen);
+
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno, const char *serialno);
 

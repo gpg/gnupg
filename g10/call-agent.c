@@ -488,7 +488,6 @@ agent_scd_writecert (const char *certidstr,
 }
 
 
-
 
 /* Handle a KEYDATA inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
@@ -537,7 +536,6 @@ agent_scd_writekey (int keyno, const char *serialno,
 
   return rc;
 }
-
 
 
 
@@ -765,6 +763,43 @@ agent_scd_pkdecrypt (const char *serialno,
 }
 
 
+
+/* Send a READCERT command to the SCdaemon. */
+int 
+agent_scd_readcert (const char *certidstr,
+                    void **r_buf, size_t *r_buflen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t len;
+
+  *r_buf = NULL;
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 2048);
+
+  snprintf (line, DIM(line)-1, "SCD READCERT %s", certidstr);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line,
+                        membuf_data_cb, &data,
+                        default_inq_cb, NULL, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return rc;
+    }
+  *r_buf = get_membuf (&data, r_buflen);
+  if (!*r_buf)
+    return gpg_error (GPG_ERR_ENOMEM);
+
+  return 0;
+}
+
+
+
 /* Change the PIN of an OpenPGP card or reset the retry counter.
    CHVNO 1: Change the PIN
          2: For v1 cards: Same as 1.

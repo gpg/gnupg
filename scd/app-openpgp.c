@@ -75,43 +75,45 @@ static struct {
   int tag;
   int constructed;
   int get_from;  /* Constructed DO with this DO or 0 for direct access. */
-  int binary;
-  int dont_cache;
-  int flush_on_error;
-  int get_immediate_in_v11; /* Enable a hack to bypass the cache of
-                               this data object if it is used in 1.1
-                               and later versions of the card.  This
-                               does not work with composite DO and is
-                               currently only useful for the CHV
-                               status bytes. */
+  int binary:1;
+  int dont_cache:1;
+  int flush_on_error:1;
+  int get_immediate_in_v11:1; /* Enable a hack to bypass the cache of
+                                 this data object if it is used in 1.1
+                                 and later versions of the card.  This
+                                 does not work with composite DO and
+                                 is currently only useful for the CHV
+                                 status bytes. */
+  int try_extlen:1;           /* Large object; try to use an extended
+                                 length APDU.  */
   char *desc;
 } data_objects[] = {
-  { 0x005E, 0,    0, 1, 0, 0, 0, "Login Data" },
-  { 0x5F50, 0,    0, 0, 0, 0, 0, "URL" },
-  { 0x5F52, 0,    0, 1, 0, 0, 0, "Historical Bytes" },
-  { 0x0065, 1,    0, 1, 0, 0, 0, "Cardholder Related Data"},
-  { 0x005B, 0, 0x65, 0, 0, 0, 0, "Name" },
-  { 0x5F2D, 0, 0x65, 0, 0, 0, 0, "Language preferences" },
-  { 0x5F35, 0, 0x65, 0, 0, 0, 0, "Sex" },
-  { 0x006E, 1,    0, 1, 0, 0, 0, "Application Related Data" },
-  { 0x004F, 0, 0x6E, 1, 0, 0, 0, "AID" },
-  { 0x0073, 1,    0, 1, 0, 0, 0, "Discretionary Data Objects" },
-  { 0x0047, 0, 0x6E, 1, 1, 0, 0, "Card Capabilities" },
-  { 0x00C0, 0, 0x6E, 1, 1, 0, 0, "Extended Card Capabilities" },
-  { 0x00C1, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Signature" },
-  { 0x00C2, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Decryption" },
-  { 0x00C3, 0, 0x6E, 1, 1, 0, 0, "Algorithm Attributes Authentication" },
-  { 0x00C4, 0, 0x6E, 1, 0, 1, 1, "CHV Status Bytes" },
-  { 0x00C5, 0, 0x6E, 1, 0, 0, 0, "Fingerprints" },
-  { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
-  { 0x00CD, 0, 0x6E, 1, 0, 0, 0, "Generation time" },
-  { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
-  { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
-  { 0x0101, 0,    0, 0, 0, 0, 0, "Private DO 1"},
-  { 0x0102, 0,    0, 0, 0, 0, 0, "Private DO 2"},
-  { 0x0103, 0,    0, 0, 0, 0, 0, "Private DO 3"},
-  { 0x0104, 0,    0, 0, 0, 0, 0, "Private DO 4"},
-  { 0x7F21, 1,    0, 1, 0, 0, 0, "Cardholder certificate"},
+  { 0x005E, 0,    0, 1, 0, 0, 0, 0, "Login Data" },
+  { 0x5F50, 0,    0, 0, 0, 0, 0, 0, "URL" },
+  { 0x5F52, 0,    0, 1, 0, 0, 0, 0, "Historical Bytes" },
+  { 0x0065, 1,    0, 1, 0, 0, 0, 0, "Cardholder Related Data"},
+  { 0x005B, 0, 0x65, 0, 0, 0, 0, 0, "Name" },
+  { 0x5F2D, 0, 0x65, 0, 0, 0, 0, 0, "Language preferences" },
+  { 0x5F35, 0, 0x65, 0, 0, 0, 0, 0, "Sex" },
+  { 0x006E, 1,    0, 1, 0, 0, 0, 0, "Application Related Data" },
+  { 0x004F, 0, 0x6E, 1, 0, 0, 0, 0, "AID" },
+  { 0x0073, 1,    0, 1, 0, 0, 0, 0, "Discretionary Data Objects" },
+  { 0x0047, 0, 0x6E, 1, 1, 0, 0, 0, "Card Capabilities" },
+  { 0x00C0, 0, 0x6E, 1, 1, 0, 0, 0, "Extended Card Capabilities" },
+  { 0x00C1, 0, 0x6E, 1, 1, 0, 0, 0, "Algorithm Attributes Signature" },
+  { 0x00C2, 0, 0x6E, 1, 1, 0, 0, 0, "Algorithm Attributes Decryption" },
+  { 0x00C3, 0, 0x6E, 1, 1, 0, 0, 0, "Algorithm Attributes Authentication" },
+  { 0x00C4, 0, 0x6E, 1, 0, 1, 1, 0, "CHV Status Bytes" },
+  { 0x00C5, 0, 0x6E, 1, 0, 0, 0, 0, "Fingerprints" },
+  { 0x00C6, 0, 0x6E, 1, 0, 0, 0, 0, "CA Fingerprints" },
+  { 0x00CD, 0, 0x6E, 1, 0, 0, 0, 0, "Generation time" },
+  { 0x007A, 1,    0, 1, 0, 0, 0, 0, "Security Support Template" },
+  { 0x0093, 0, 0x7A, 1, 1, 0, 0, 0, "Digital Signature Counter" },
+  { 0x0101, 0,    0, 0, 0, 0, 0, 0, "Private DO 1"},
+  { 0x0102, 0,    0, 0, 0, 0, 0, 0, "Private DO 2"},
+  { 0x0103, 0,    0, 0, 0, 0, 0, 0, "Private DO 3"},
+  { 0x0104, 0,    0, 0, 0, 0, 0, 0, "Private DO 4"},
+  { 0x7F21, 1,    0, 1, 0, 0, 0, 1, "Cardholder certificate"},
   { 0 }
 };
 
@@ -244,17 +246,19 @@ do_deinit (app_t app)
 
 /* Wrapper around iso7816_get_data which first tries to get the data
    from the cache.  With GET_IMMEDIATE passed as true, the cache is
-   bypassed. */
+   bypassed.  With TRY_EXTLEN extended lengths APDUs are use if
+   supported by the card.  */
 static gpg_error_t
 get_cached_data (app_t app, int tag, 
                  unsigned char **result, size_t *resultlen,
-                 int get_immediate)
+                 int get_immediate, int try_extlen)
 {
   gpg_error_t err;
   int i;
   unsigned char *p;
   size_t len;
   struct cache_s *c;
+  int exmode;
 
   *result = NULL;
   *resultlen = 0;
@@ -279,7 +283,12 @@ get_cached_data (app_t app, int tag,
           }
     }
   
-  err = iso7816_get_data (app->slot, tag, &p, &len);
+  if (try_extlen && app->app_local->cardcap.ext_lc_le)
+    exmode = app->app_local->extcap.max_rsp_data;
+  else
+    exmode = 0;
+
+  err = iso7816_get_data (app->slot, exmode, tag, &p, &len);
   if (err)
     return err;
   *result = p;
@@ -392,6 +401,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
   unsigned char *value;
   size_t valuelen;
   int dummyrc;
+  int exmode;
 
   if (!r_rc)
     r_rc = &dummyrc;
@@ -404,7 +414,11 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
 
   if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
-      rc = iso7816_get_data (app->slot, tag, &buffer, &buflen);
+      if (data_objects[i].try_extlen && app->app_local->cardcap.ext_lc_le)
+        exmode = app->app_local->extcap.max_rsp_data;
+      else
+        exmode = 0;
+      rc = iso7816_get_data (app->slot, exmode, tag, &buffer, &buflen);
       if (rc)
         {
           *r_rc = rc;
@@ -422,7 +436,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
       rc = get_cached_data (app, data_objects[i].get_from,
                             &buffer, &buflen,
                             (data_objects[i].dont_cache 
-                             || data_objects[i].get_immediate_in_v11));
+                             || data_objects[i].get_immediate_in_v11),
+                            data_objects[i].try_extlen);
       if (!rc)
         {
           const unsigned char *s;
@@ -445,7 +460,8 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
     {
       rc = get_cached_data (app, tag, &buffer, &buflen,
                             (data_objects[i].dont_cache 
-                             || data_objects[i].get_immediate_in_v11));
+                             || data_objects[i].get_immediate_in_v11),
+                            data_objects[i].try_extlen);
       if (!rc)
         {
           value = buffer;
@@ -476,7 +492,9 @@ dump_all_do (int slot)
       if (data_objects[i].get_from)
         continue;
 
-      rc = iso7816_get_data (slot, data_objects[i].tag, &buffer, &buflen);
+      /* We don't try extended length APDU because such large DO would
+         be pretty useless in a log file.  */
+      rc = iso7816_get_data (slot, 0, data_objects[i].tag, &buffer, &buflen);
       if (gpg_err_code (rc) == GPG_ERR_NO_OBJ)
         ;
       else if (rc) 
@@ -621,13 +639,14 @@ parse_login_data (app_t app)
 
 /* Note, that FPR must be at least 20 bytes. */
 static gpg_error_t 
-store_fpr (int slot, int keynumber, u32 timestamp,
+store_fpr (app_t app, int keynumber, u32 timestamp,
            const unsigned char *m, size_t mlen,
            const unsigned char *e, size_t elen, 
            unsigned char *fpr, unsigned int card_version)
 {
   unsigned int n, nbits;
   unsigned char *buffer, *p;
+  int tag, tag2;
   int rc;
   
   for (; mlen && !*m; mlen--, m++) /* strip leading zeroes */
@@ -662,9 +681,12 @@ store_fpr (int slot, int keynumber, u32 timestamp,
 
   xfree (buffer);
 
-  rc = iso7816_put_data (slot, 0, 
-                         (card_version > 0x0007? 0xC7 : 0xC6)
-                         + keynumber, fpr, 20);
+  tag = (card_version > 0x0007? 0xC7 : 0xC6) + keynumber;
+  flush_cache_item (app, tag);
+  tag2 = 0xCE + keynumber;
+  flush_cache_item (app, tag2);
+
+  rc = iso7816_put_data (app->slot, 0, tag, fpr, 20);
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
@@ -677,7 +699,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
       buf[2] = timestamp >>  8;
       buf[3] = timestamp;
 
-      rc = iso7816_put_data (slot, 0, 0xCE + keynumber, buf, 4);
+      rc = iso7816_put_data (app->slot, 0, tag2, buf, 4);
       if (rc)
         log_error (_("failed to store the creation date: %s\n"),
                    gpg_strerror (rc));
@@ -2131,7 +2153,7 @@ does_key_exist (app_t app, int keyidx, int force)
 
   assert (keyidx >=0 && keyidx <= 2);
 
-  if (iso7816_get_data (app->slot, 0x006E, &buffer, &buflen))
+  if (iso7816_get_data (app->slot, 0, 0x006E, &buffer, &buflen))
     {
       log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
@@ -2623,7 +2645,7 @@ do_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
  
-  err = store_fpr (app->slot, keyno, created_at,
+  err = store_fpr (app, keyno, created_at,
                   rsa_n, rsa_n_len, rsa_e, rsa_e_len,
                   fprbuf, app->card_version);
   if (err)
@@ -2757,7 +2779,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
-  rc = store_fpr (app->slot, keyno, (u32)created_at,
+  rc = store_fpr (app, keyno, (u32)created_at,
                   m, mlen, e, elen, fprbuf, app->card_version);
   if (rc)
     goto leave;
@@ -2811,7 +2833,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   
   assert (keyno >= 1 && keyno <= 3);
 
-  rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0);
+  rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0, 0);
   if (rc)
     {
       log_error (_("error reading application data\n"));
@@ -3502,7 +3524,7 @@ app_select_openpgp (app_t app)
          replace a possibly already set one from a EF.GDO with this
          one.  Note, that for current OpenPGP cards, no EF.GDO exists
          and thus it won't matter at all. */
-      rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);
+      rc = iso7816_get_data (slot, 0, 0x004F, &buffer, &buflen);
       if (rc)
         goto leave;
       if (opt.verbose)

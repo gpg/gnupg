@@ -715,7 +715,6 @@ change_url (void)
 static int
 fetch_url(void)
 {
-#if GNUPG_MAJOR_VERSION == 1
   int rc;
   struct agent_card_info_s info;
 
@@ -755,15 +754,11 @@ fetch_url(void)
     }
 
   return rc;
-#else
-  #warning need to implemented fucntion
-  return 0;
-#endif
 }
 
 
 /* Read data from file FNAME up to MAXLEN characters.  On error return
-   -1 and store NULl at R_BUFFER; on success return the number of
+   -1 and store NULL at R_BUFFER; on success return the number of
    bytes read and store the address of a newly allocated buffer at
    R_BUFFER. */
 static int
@@ -811,6 +806,39 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
     }
   *r_buffer = data;
   return n;
+}
+
+
+/* Write LENGTH bytes from BUFFER to file FNAME.  Return 0 on
+   success.  */
+static int
+put_data_to_file (const char *fname, const void *buffer, size_t length)
+{
+  FILE *fp;
+  
+  fp = fopen (fname, "wb");
+#if GNUPG_MAJOR_VERSION == 1
+  if (fp && is_secured_file (fileno (fp)))
+    {
+      fclose (fp);
+      fp = NULL;
+      errno = EPERM;
+    }
+#endif
+  if (!fp)
+    {
+      tty_printf (_("can't create `%s': %s\n"), fname, strerror (errno));
+      return -1;
+    }
+          
+  if (length && fwrite (buffer, length, 1, fp) != 1)
+    {
+      tty_printf (_("error writing `%s': %s\n"), fname, strerror (errno));
+      fclose (fp);
+      return -1;
+    }
+  fclose (fp);
+  return 0;
 }
 
 
@@ -928,6 +956,37 @@ change_cert (const char *args)
   if (rc)
     log_error ("error writing certificate to card: %s\n", gpg_strerror (rc));
   xfree (data);
+  write_sc_op_status (rc);
+  return rc;
+}
+
+
+static int
+read_cert (const char *args)
+{
+  const char *fname;
+  void *buffer;
+  size_t length;
+  int rc;
+
+  if (args && *args == '>')  /* Write it to a file */
+    {
+      for (args++; spacep (args); args++)
+        ;
+      fname = args;
+    }
+  else
+    {
+      tty_printf ("usage error: redirectrion to file required\n");
+      return -1;
+    }
+
+  rc = agent_scd_readcert ("OPENPGP.3", &buffer, &length);
+  if (rc)
+    log_error ("error reading certificate from card: %s\n", gpg_strerror (rc));
+  else
+    rc = put_data_to_file (fname, buffer, length);
+  xfree (buffer);
   write_sc_op_status (rc);
   return rc;
 }
@@ -1447,7 +1506,7 @@ enum cmdids
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
-    cmdUNBLOCK,
+    cmdREADCERT, cmdUNBLOCK,
     cmdINVCMD
   };
 
@@ -1481,6 +1540,7 @@ static struct
     { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
+    { "readcert", cmdREADCERT, 0, NULL },
     { "writecert", cmdWRITECERT, 1, NULL },
     { NULL, cmdINVCMD, 0, NULL } 
   };
@@ -1733,6 +1793,13 @@ card_edit (strlist_t commands)
             tty_printf ("usage: writecert 3 < FILE\n");
           else
             change_cert (arg_rest);
+          break;
+
+        case cmdREADCERT:
+          if ( arg_number != 3 )
+            tty_printf ("usage: readcert 3 > FILE\n");
+          else
+            read_cert (arg_rest);
           break;
 
         case cmdFORCESIG:
