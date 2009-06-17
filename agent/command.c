@@ -1229,7 +1229,7 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
   if (desc)
     plus_to_blank (desc);
 
-  rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
+  rc = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
   if (rc)
     log_error ("command get_confirmation failed: %s\n", gpg_strerror (rc));
   return rc;

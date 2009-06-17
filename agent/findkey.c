@@ -183,7 +183,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
       if (opt.enforce_passphrase_constraints)
         {
           err = agent_get_confirmation (arg->ctrl, desc,
-                                        _("Change passphrase"), NULL);
+                                        _("Change passphrase"), NULL, 0);
           if (!err)
             arg->change_required = 1;
         }
@@ -191,7 +191,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
         {
           err = agent_get_confirmation (arg->ctrl, desc,
                                         _("Change passphrase"),
-                                        _("I'll change it later"));
+                                        _("I'll change it later"), 0);
           if (!err)
             arg->change_required = 1;
           else if (gpg_err_code (err) == GPG_ERR_CANCELED)

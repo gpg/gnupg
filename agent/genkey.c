@@ -156,7 +156,7 @@ take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
     }
   else
     err = agent_get_confirmation (ctrl, desc,
-                                  anyway_btn, _("Enter new passphrase"));
+                                  anyway_btn, _("Enter new passphrase"), 0);
   return err;
 }
 

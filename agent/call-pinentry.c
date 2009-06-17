@@ -850,10 +850,14 @@ agent_get_passphrase (ctrl_t ctrl,
 /* Pop up the PIN-entry, display the text and the prompt and ask the
    user to confirm this.  We return 0 for success, ie. the user
    confirmed it, GPG_ERR_NOT_CONFIRMED for what the text says or an
-   other error. */
+   other error.  If WITH_CANCEL it true an extra cancel button is
+   displayed to allow the user to easily return a GPG_ERR_CANCELED.
+   if the Pinentry does not support this, the user can still cancel by
+   closing the Pinentry window.  */
 int 
 agent_get_confirmation (ctrl_t ctrl,
-                        const char *desc, const char *ok, const char *cancel)
+                        const char *desc, const char *ok, 
+                        const char *notok, int with_cancel)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -881,26 +885,39 @@ agent_get_confirmation (ctrl_t ctrl,
     {
       snprintf (line, DIM(line)-1, "SETOK %s", ok);
       line[DIM(line)-1] = 0;
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      rc = assuan_transact (entry_ctx,
+                            line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return unlock_pinentry (rc);
     }
-  if (cancel)
+  if (notok)
     {
-      snprintf (line, DIM(line)-1, "SETNOTOK %s", cancel);
-      line[DIM(line)-1] = 0;
-      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      /* Try to use the newer NOTOK feature if a cancel button is
+         requested.  If no cacnel button is requested we keep on using
+         the standard cancel.  */
+      if (with_cancel)
+        {
+          snprintf (line, DIM(line)-1, "SETNOTOK %s", notok);
+          line[DIM(line)-1] = 0;
+          rc = assuan_transact (entry_ctx,
+                                line, NULL, NULL, NULL, NULL, NULL, NULL);
+        }
+      else
+        rc = GPG_ERR_ASS_UNKNOWN_CMD;
+
       if (gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
 	{
-	  snprintf (line, DIM(line)-1, "SETCANCEL %s", cancel);
+	  snprintf (line, DIM(line)-1, "SETCANCEL %s", notok);
 	  line[DIM(line)-1] = 0;
-	  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+	  rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
 	}
       if (rc)
         return unlock_pinentry (rc);
     }
 
-  rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = assuan_transact (entry_ctx, "CONFIRM",
+                        NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 

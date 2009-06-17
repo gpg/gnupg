@@ -256,7 +256,7 @@ int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext, int with_qualitybar);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
-			    const char *cancel);
+			    const char *notokay, int with_cancel);
 int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
 int agent_popup_message_start (ctrl_t ctrl,
                                const char *desc, const char *ok_btn);

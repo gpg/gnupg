@@ -616,7 +616,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       xfree (nameformatted);
       return out_of_core ();
     }
-  err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
+  err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"), 1);
   xfree (desc);
   if (!err)
     yes_i_trust = 1;
@@ -664,7 +664,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       /* TRANSLATORS: "Correct" is the label of a button and intended
          to be hit if the fingerprint matches the one of the CA.  The
          other button is "the default "Cancel" of the Pinentry. */
-      err = agent_get_confirmation (ctrl, desc, _("Correct"), _("Wrong"));
+      err = agent_get_confirmation (ctrl, desc, _("Correct"), _("Wrong"), 1);
       xfree (desc);
       if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
         yes_i_trust = 0;

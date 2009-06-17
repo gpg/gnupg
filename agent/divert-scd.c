@@ -97,7 +97,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
             }
           else
             {
-              rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
+              rc = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
               xfree (desc);
             }
         }
