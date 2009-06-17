@@ -1,3 +1,8 @@
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse): Use a casted -1 instead of a 32 bit
+	constant to check for a garbled package.  Fixes bug#1040.
+
 2009-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main): Remove Camellia restriction.

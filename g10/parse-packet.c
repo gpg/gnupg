@@ -441,8 +441,8 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	  }
       }
 
-    if (pktlen == 0xffffffff) {
-        /* with a some probability this is caused by a problem in the
+    if (pktlen == (unsigned long)(-1)) {
+        /* With some probability this is caused by a problem in the
          * the uncompressing layer - in some error cases it just loops
          * and spits out 0xff bytes. */
         log_error ("%s: garbled packet detected\n", iobuf_where(inp) );
