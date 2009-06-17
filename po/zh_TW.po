@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-06-08 09:58+0200\n"
+"POT-Creation-Date: 2009-06-17 11:55+0200\n"
 "PO-Revision-Date: 2008-12-10 22:48+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -94,15 +94,15 @@ msgstr "密語"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3311
-#: g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556 g10/openfile.c:275
-#: g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107 g10/tdbio.c:547
-#: jnlib/dotlock.c:310
+#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:478 g10/gpg.c:1079
+#: g10/keygen.c:3311 g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556
+#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
+#: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "無法建立 `%s': %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:776
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2794
 #: g10/keyring.c:1582 g10/openfile.c:192 g10/openfile.c:353
@@ -1144,176 +1144,181 @@ msgstr "警告: 找到無效的標記資料\n"
 msgid "not human readable"
 msgstr "不是人類能讀得懂的"
 
-#: g10/card-util.c:62 g10/card-util.c:360
+#: g10/card-util.c:85 g10/card-util.c:371
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "沒有可用的 OpenPGP 卡片: %s\n"
 
-#: g10/card-util.c:67
+#: g10/card-util.c:90
 #, c-format
 msgid "OpenPGP card no. %s detected\n"
 msgstr "偵測到 OpenPGP 卡片編號 %s\n"
 
-#: g10/card-util.c:75 g10/card-util.c:1528 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:98 g10/card-util.c:1611 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2985 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "無法在批次模式中這樣做\n"
 
-#: g10/card-util.c:83
+#: g10/card-util.c:106
 msgid "This command is only available for version 2 cards\n"
 msgstr "祇有第二版卡片纔能用這個指令\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1984
+#: g10/card-util.c:108 scd/app-openpgp.c:2010
 msgid "Reset Code not or not anymore available\n"
 msgstr "(再也) 沒有重設碼\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1258 g10/card-util.c:1337
+#: g10/card-util.c:141 g10/card-util.c:1340 g10/card-util.c:1419
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1679 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
 msgstr "你要選哪一個? "
 
-#: g10/card-util.c:258 g10/card-util.c:308
+#: g10/card-util.c:269 g10/card-util.c:319
 msgid "[not set]"
 msgstr "[未設定]"
 
-#: g10/card-util.c:498
+#: g10/card-util.c:509
 msgid "male"
 msgstr "男性"
 
-#: g10/card-util.c:499
+#: g10/card-util.c:510
 msgid "female"
 msgstr "女性"
 
-#: g10/card-util.c:499
+#: g10/card-util.c:510
 msgid "unspecified"
 msgstr "未特定"
 
-#: g10/card-util.c:526
+#: g10/card-util.c:537
 msgid "not forced"
 msgstr "不強迫使用"
 
-#: g10/card-util.c:526
+#: g10/card-util.c:537
 msgid "forced"
 msgstr "強迫使用"
 
-#: g10/card-util.c:617
+#: g10/card-util.c:628
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr "錯誤: 目前祇允許使用單純的 ASCII 字符.\n"
 
-#: g10/card-util.c:619
+#: g10/card-util.c:630
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "錯誤: 不能使用 \"<\" 字符.\n"
 
-#: g10/card-util.c:621
+#: g10/card-util.c:632
 msgid "Error: Double spaces are not allowed.\n"
 msgstr "錯誤: 並不允許使用連續兩個以上的空格.\n"
 
-#: g10/card-util.c:638
+#: g10/card-util.c:649
 msgid "Cardholder's surname: "
 msgstr "卡片持有者的姓氏: "
 
-#: g10/card-util.c:640
+#: g10/card-util.c:651
 msgid "Cardholder's given name: "
 msgstr "卡片持有者的名字: "
 
-#: g10/card-util.c:658
+#: g10/card-util.c:669
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr "錯誤: 合併後的名字太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:679
+#: g10/card-util.c:690
 msgid "URL to retrieve public key: "
 msgstr "取回公鑰的 URL: "
 
-#: g10/card-util.c:687
+#: g10/card-util.c:698
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "錯誤: URL 太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:783 tools/no-libgcrypt.c:30
+#: g10/card-util.c:791 tools/no-libgcrypt.c:30
 #, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "配置足夠的記憶體時出錯: %s\n"
 
-#: g10/card-util.c:795 g10/import.c:283
+#: g10/card-util.c:803 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "讀取 `%s' 時出錯: %s\n"
 
-#: g10/card-util.c:822
+#: g10/card-util.c:836
+#, fuzzy, c-format
+msgid "error writing `%s': %s\n"
+msgstr "寫入 %s 時出錯: %s\n"
+
+#: g10/card-util.c:863
 msgid "Login data (account name): "
 msgstr "登入資料 (帳號名稱): "
 
-#: g10/card-util.c:832
+#: g10/card-util.c:873
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "錯誤: 登入資料太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:867
+#: g10/card-util.c:909
 msgid "Private DO data: "
 msgstr "私人的 DO 資料: "
 
-#: g10/card-util.c:877
+#: g10/card-util.c:919
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "錯誤: 私人的 DO 太長 (上限是 %d 個字符).\n"
 
-#: g10/card-util.c:927
+#: g10/card-util.c:1002
 msgid "Language preferences: "
 msgstr "介面語言偏好設定: "
 
-#: g10/card-util.c:935
+#: g10/card-util.c:1010
 msgid "Error: invalid length of preference string.\n"
 msgstr "錯誤: 無效的偏好設定字串長度\n"
 
-#: g10/card-util.c:944
+#: g10/card-util.c:1019
 msgid "Error: invalid characters in preference string.\n"
 msgstr "錯誤: 偏好設定字串中含有無效的字符\n"
 
-#: g10/card-util.c:965
+#: g10/card-util.c:1041
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "性別 ((M)男性, (F)女性或留空): "
 
-#: g10/card-util.c:979
+#: g10/card-util.c:1055
 msgid "Error: invalid response.\n"
 msgstr "錯誤: 無效的回應.\n"
 
-#: g10/card-util.c:1000
+#: g10/card-util.c:1077
 msgid "CA fingerprint: "
 msgstr "憑證中心 (CA) 指紋: "
 
-#: g10/card-util.c:1023
+#: g10/card-util.c:1100
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "錯誤: 無效的格式化指紋.\n"
 
-#: g10/card-util.c:1071
+#: g10/card-util.c:1150
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "不可能進行金鑰操作: %s\n"
 
-#: g10/card-util.c:1072
+#: g10/card-util.c:1151
 msgid "not an OpenPGP card"
 msgstr "這不是 OpenPGP 卡片"
 
-#: g10/card-util.c:1081
+#: g10/card-util.c:1160
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "取得現用金鑰資訊時出錯: %s\n"
 
-#: g10/card-util.c:1165
+#: g10/card-util.c:1247
 msgid "Replace existing key? (y/N) "
 msgstr "是否要取代既有的金鑰? (y/N) "
 
-#: g10/card-util.c:1185 g10/card-util.c:1194
+#: g10/card-util.c:1267 g10/card-util.c:1276
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "是否要為加密用金鑰建立卡外備份? (Y/n) "
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1288
 msgid "Replace existing keys? (y/N) "
 msgstr "是否要取代既有的金鑰? (y/N) "
 
-#: g10/card-util.c:1215
+#: g10/card-util.c:1297
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1324,124 +1329,124 @@ msgstr ""
 "   PIN = `%s'     管理者 PIN = `%s'\n"
 "你應該用 --change-pin 指令來加以變更\n"
 
-#: g10/card-util.c:1249
+#: g10/card-util.c:1331
 msgid "Please select the type of key to generate:\n"
 msgstr "請選擇你要產生的金鑰種類:\n"
 
-#: g10/card-util.c:1251 g10/card-util.c:1328
+#: g10/card-util.c:1333 g10/card-util.c:1410
 msgid "   (1) Signature key\n"
 msgstr "   (1) 簽署用金鑰\n"
 
-#: g10/card-util.c:1252 g10/card-util.c:1330
+#: g10/card-util.c:1334 g10/card-util.c:1412
 msgid "   (2) Encryption key\n"
 msgstr "   (2) 加密用金鑰\n"
 
-#: g10/card-util.c:1253 g10/card-util.c:1332
+#: g10/card-util.c:1335 g10/card-util.c:1414
 msgid "   (3) Authentication key\n"
 msgstr "   (3) 憑證用金鑰\n"
 
-#: g10/card-util.c:1269 g10/card-util.c:1348 g10/keyedit.c:945
+#: g10/card-util.c:1351 g10/card-util.c:1430 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1732 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "無效的選擇.\n"
 
-#: g10/card-util.c:1325
+#: g10/card-util.c:1407
 msgid "Please select where to store the key:\n"
 msgstr "請選擇要把金鑰存放在哪裡:\n"
 
-#: g10/card-util.c:1360
+#: g10/card-util.c:1442
 msgid "unknown key protection algorithm\n"
 msgstr "未知的金鑰保護演算法\n"
 
-#: g10/card-util.c:1365
+#: g10/card-util.c:1447
 msgid "secret parts of key are not available\n"
 msgstr "私鑰部分無法取用\n"
 
-#: g10/card-util.c:1370
+#: g10/card-util.c:1452
 msgid "secret key already stored on a card\n"
 msgstr "私鑰已經存放在卡片上了\n"
 
-#: g10/card-util.c:1439 g10/keyedit.c:1380
+#: g10/card-util.c:1521 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "離開這個選單"
 
-#: g10/card-util.c:1441
+#: g10/card-util.c:1523
 msgid "show admin commands"
 msgstr "顯示管理者指令"
 
-#: g10/card-util.c:1442 g10/keyedit.c:1383
+#: g10/card-util.c:1524 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "顯示這份線上說明"
 
-#: g10/card-util.c:1444
+#: g10/card-util.c:1526
 msgid "list all available data"
 msgstr "列出所有可用的資料"
 
-#: g10/card-util.c:1447
+#: g10/card-util.c:1529
 msgid "change card holder's name"
 msgstr "變更卡片持有人的名字"
 
-#: g10/card-util.c:1448
+#: g10/card-util.c:1530
 msgid "change URL to retrieve key"
 msgstr "變更取回金鑰的 URL"
 
-#: g10/card-util.c:1449
+#: g10/card-util.c:1531
 msgid "fetch the key specified in the card URL"
 msgstr "從卡片 URL 取回指定的金鑰"
 
-#: g10/card-util.c:1450
+#: g10/card-util.c:1532
 msgid "change the login name"
 msgstr "變更登入名稱"
 
-#: g10/card-util.c:1451
+#: g10/card-util.c:1533
 msgid "change the language preferences"
 msgstr "變更介面語言偏好設定"
 
-#: g10/card-util.c:1452
+#: g10/card-util.c:1534
 msgid "change card holder's sex"
 msgstr "變更卡片持有者的性別"
 
-#: g10/card-util.c:1453
+#: g10/card-util.c:1535
 msgid "change a CA fingerprint"
 msgstr "變更某個憑證中心 (CA) 的指紋"
 
-#: g10/card-util.c:1454
+#: g10/card-util.c:1536
 msgid "toggle the signature force PIN flag"
 msgstr "切換簽章是否強制使用 PIN 的旗標"
 
-#: g10/card-util.c:1455
+#: g10/card-util.c:1537
 msgid "generate new keys"
 msgstr "產生新的金鑰"
 
-#: g10/card-util.c:1456
+#: g10/card-util.c:1538
 msgid "menu to change or unblock the PIN"
 msgstr "變更或解凍 PIN 的選單"
 
-#: g10/card-util.c:1457
+#: g10/card-util.c:1539
 msgid "verify the PIN and list all data"
 msgstr "驗證 PIN 並列出所有的資料"
 
-#: g10/card-util.c:1458
+#: g10/card-util.c:1540
 msgid "unblock the PIN using a Reset Code"
 msgstr "用重設碼來解凍 PIN"
 
-#: g10/card-util.c:1580 g10/keyedit.c:1654
+#: g10/card-util.c:1663 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "指令> "
 
-#: g10/card-util.c:1623
+#: g10/card-util.c:1706
 msgid "Admin-only command\n"
 msgstr "限管理者使用的指令\n"
 
-#: g10/card-util.c:1654
+#: g10/card-util.c:1737
 msgid "Admin commands are allowed\n"
 msgstr "允許使用管理者指令\n"
 
-#: g10/card-util.c:1656
+#: g10/card-util.c:1739
 msgid "Admin commands are not allowed\n"
 msgstr "未允許使用管理者指令\n"
 
-#: g10/card-util.c:1742 g10/keyedit.c:2277
+#: g10/card-util.c:1832 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無效的指令  (試試看 \"help\")\n"
 
@@ -1454,13 +1459,13 @@ msgstr "--output 在這個指令中沒有作用\n"
 msgid "can't open `%s'\n"
 msgstr "無法開啟 `%s'\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1731
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1734
 #: g10/revoke.c:226
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "找不到金鑰 \"%s\": %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1745
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1748
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -4656,135 +4661,135 @@ msgstr "已停用"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr "請輸入數字, N)下一頁, 或 Q)離開 > "
 
-#: g10/keyserver.c:828 g10/keyserver.c:1452
+#: g10/keyserver.c:828 g10/keyserver.c:1455
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "無效的金鑰伺服器協定 (我們用 %d!=經手程式 %d)\n"
 
-#: g10/keyserver.c:926
+#: g10/keyserver.c:929
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰 \"%s\"\n"
 
-#: g10/keyserver.c:928
+#: g10/keyserver.c:931
 msgid "key not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰\n"
 
-#: g10/keyserver.c:1171
+#: g10/keyserver.c:1174
 #, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1175
+#: g10/keyserver.c:1178
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "正在請求金鑰 %s 自 %s\n"
 
-#: g10/keyserver.c:1199
+#: g10/keyserver.c:1202
 #, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "正在從 %s 伺服器 %s 搜尋名字\n"
 
-#: g10/keyserver.c:1202
+#: g10/keyserver.c:1205
 #, c-format
 msgid "searching for names from %s\n"
 msgstr "正在從 %s 搜尋名字\n"
 
-#: g10/keyserver.c:1355
+#: g10/keyserver.c:1358
 #, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "遞送金鑰 %s 至 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1359
+#: g10/keyserver.c:1362
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "遞送金鑰 %s 至 %s\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1405
 #, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "正在搜尋 \"%s\" 於 %s 伺服器 %s\n"
 
-#: g10/keyserver.c:1405
+#: g10/keyserver.c:1408
 #, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "正在搜尋 \"%s\" 於 %s\n"
 
-#: g10/keyserver.c:1412 g10/keyserver.c:1508
+#: g10/keyserver.c:1415 g10/keyserver.c:1511
 msgid "no keyserver action!\n"
 msgstr "沒有金鑰伺服器動作!\n"
 
-#: g10/keyserver.c:1460
+#: g10/keyserver.c:1463
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr "警告: 金鑰伺服器經手程式係來自不同版本的 GnuPG (%s)\n"
 
-#: g10/keyserver.c:1469
+#: g10/keyserver.c:1472
 msgid "keyserver did not send VERSION\n"
 msgstr "金鑰伺服器並未送出版本 (VERSION)\n"
 
-#: g10/keyserver.c:1531 g10/keyserver.c:2060
+#: g10/keyserver.c:1534 g10/keyserver.c:2063
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
 
-#: g10/keyserver.c:1537
+#: g10/keyserver.c:1540
 msgid "external keyserver calls are not supported in this build\n"
 msgstr "本版並不支援外部金鑰伺服器叫用\n"
 
-#: g10/keyserver.c:1549
+#: g10/keyserver.c:1552
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr "沒有 `%s' 金鑰伺服器架構的經手程式\n"
 
-#: g10/keyserver.c:1554
+#: g10/keyserver.c:1557
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr "`%s' 動作在 `%s' 金鑰伺服器架構中未支援\n"
 
-#: g10/keyserver.c:1562
+#: g10/keyserver.c:1565
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr "%s 並不支援第 %d 版經手程式\n"
 
-#: g10/keyserver.c:1569
+#: g10/keyserver.c:1572
 msgid "keyserver timed out\n"
 msgstr "金鑰伺服器逾時\n"
 
-#: g10/keyserver.c:1574
+#: g10/keyserver.c:1577
 msgid "keyserver internal error\n"
 msgstr "金鑰伺服器內部錯誤\n"
 
-#: g10/keyserver.c:1583
+#: g10/keyserver.c:1586
 #, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "金鑰伺服器通訊錯誤: %s\n"
 
-#: g10/keyserver.c:1608 g10/keyserver.c:1642
+#: g10/keyserver.c:1611 g10/keyserver.c:1645
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" 並非金鑰 ID: 跳過中\n"
 
-#: g10/keyserver.c:1901
+#: g10/keyserver.c:1904
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "警告: 無法更新金鑰 %s 於 %s: %s\n"
 
-#: g10/keyserver.c:1923
+#: g10/keyserver.c:1926
 #, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "更新 1 份金鑰中 (從 %s )\n"
 
-#: g10/keyserver.c:1925
+#: g10/keyserver.c:1928
 #, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "更新 %d 份金鑰中 (從 %s )\n"
 
-#: g10/keyserver.c:1981
+#: g10/keyserver.c:1984
 #, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "警告: 無法抓取 URI %s: %s\n"
 
-#: g10/keyserver.c:1987
+#: g10/keyserver.c:1990
 #, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "警告: 無法剖析 URI %s\n"
@@ -6394,19 +6399,19 @@ msgstr ""
 "語法: kbxutil [選項] [檔案]\n"
 "列出, 匯出, 匯入金鑰鑰匙盒資料\n"
 
-#: scd/app-nks.c:712 scd/app-openpgp.c:2492
+#: scd/app-nks.c:712 scd/app-openpgp.c:2518
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr "RSA 模組缺漏或者並非 %d 位元大\n"
 
-#: scd/app-nks.c:720 scd/app-openpgp.c:2504
+#: scd/app-nks.c:720 scd/app-openpgp.c:2530
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr "RSA 公用指數缺漏或者大於 %d 位元\n"
 
-#: scd/app-nks.c:800 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
-#: scd/app-openpgp.c:1688 scd/app-openpgp.c:1705 scd/app-openpgp.c:1949
-#: scd/app-openpgp.c:1994 scd/app-dinsig.c:303
+#: scd/app-nks.c:800 scd/app-openpgp.c:1522 scd/app-openpgp.c:1541
+#: scd/app-openpgp.c:1714 scd/app-openpgp.c:1731 scd/app-openpgp.c:1975
+#: scd/app-openpgp.c:2020 scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr "收回 PIN 時傳回錯誤: %s\n"
@@ -6455,189 +6460,189 @@ msgid ""
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:1220 scd/app-openpgp.c:2027 scd/app-dinsig.c:531
+#: scd/app-nks.c:1220 scd/app-openpgp.c:2053 scd/app-dinsig.c:531
 #, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "取得新的 PIN 時出錯: %s\n"
 
-#: scd/app-openpgp.c:669
+#: scd/app-openpgp.c:691
 #, c-format
 msgid "failed to store the fingerprint: %s\n"
 msgstr "存放指紋失敗: %s\n"
 
-#: scd/app-openpgp.c:682
+#: scd/app-openpgp.c:704
 #, c-format
 msgid "failed to store the creation date: %s\n"
 msgstr "存放創生日期失敗: %s\n"
 
-#: scd/app-openpgp.c:1104
+#: scd/app-openpgp.c:1129
 #, c-format
 msgid "reading public key failed: %s\n"
 msgstr "讀取公鑰時失敗: %s\n"
 
-#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2727
+#: scd/app-openpgp.c:1137 scd/app-openpgp.c:2753
 msgid "response does not contain the public key data\n"
 msgstr "回應中未包含公鑰資料\n"
 
-#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2735
+#: scd/app-openpgp.c:1145 scd/app-openpgp.c:2761
 msgid "response does not contain the RSA modulus\n"
 msgstr "回應中未包含 RSA 系數\n"
 
-#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2745
+#: scd/app-openpgp.c:1154 scd/app-openpgp.c:2771
 msgid "response does not contain the RSA public exponent\n"
 msgstr "回應中未包含 RSA 公用指數\n"
 
-#: scd/app-openpgp.c:1448
+#: scd/app-openpgp.c:1474
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "以預設 PIN 做為 %s\n"
 
-#: scd/app-openpgp.c:1455
+#: scd/app-openpgp.c:1481
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr "使用預設 PIN 做為 %s 失敗: %s - 正在停用之後的預設使用\n"
 
-#: scd/app-openpgp.c:1470
+#: scd/app-openpgp.c:1496
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||請輸入 PIN%%0A[簽署完成: %lu]"
 
-#: scd/app-openpgp.c:1481 scd/app-openpgp.c:1943
+#: scd/app-openpgp.c:1507 scd/app-openpgp.c:1969
 msgid "||Please enter the PIN"
 msgstr "||請輸入 PIN"
 
-#: scd/app-openpgp.c:1522 scd/app-openpgp.c:1712 scd/app-openpgp.c:1956
+#: scd/app-openpgp.c:1548 scd/app-openpgp.c:1738 scd/app-openpgp.c:1982
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr "用於 CHV%d 的 PIN 太短; 長度最少要有 %d\n"
 
-#: scd/app-openpgp.c:1535 scd/app-openpgp.c:1586 scd/app-openpgp.c:1724
-#: scd/app-openpgp.c:3044
+#: scd/app-openpgp.c:1561 scd/app-openpgp.c:1612 scd/app-openpgp.c:1750
+#: scd/app-openpgp.c:3070
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "驗證 CHV%d 失敗: %s\n"
 
-#: scd/app-openpgp.c:1615 scd/app-openpgp.c:1975 scd/app-openpgp.c:3307
+#: scd/app-openpgp.c:1641 scd/app-openpgp.c:2001 scd/app-openpgp.c:3333
 msgid "error retrieving CHV status from card\n"
 msgstr "從卡片取回 CHV 狀態時出錯\n"
 
-#: scd/app-openpgp.c:1621 scd/app-openpgp.c:3316
+#: scd/app-openpgp.c:1647 scd/app-openpgp.c:3342
 msgid "card is permanently locked!\n"
 msgstr "卡片永久鎖定了!!\n"
 
-#: scd/app-openpgp.c:1628
+#: scd/app-openpgp.c:1654
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr "%d 管理者 PIN 試圖在卡片永久鎖定前遺留下來\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
-#: scd/app-openpgp.c:1635
+#: scd/app-openpgp.c:1661
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr "|A|請在讀卡機鍵盤上輸入管理者 PIN%%0A[剩餘嘗試次數: %d]"
 
-#: scd/app-openpgp.c:1639
+#: scd/app-openpgp.c:1665
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "||請輸入 PIN"
 
-#: scd/app-openpgp.c:1660
+#: scd/app-openpgp.c:1686
 msgid "access to admin commands is not configured\n"
 msgstr "管理者指令存取權限尚未組態\n"
 
-#: scd/app-openpgp.c:1990
+#: scd/app-openpgp.c:2016
 msgid "||Please enter the Reset Code for the card"
 msgstr "||請輸入卡片的重設碼"
 
-#: scd/app-openpgp.c:2000 scd/app-openpgp.c:2052
+#: scd/app-openpgp.c:2026 scd/app-openpgp.c:2078
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "重設碼太短; 長度最少要有 %d\n"
 
-#: scd/app-openpgp.c:2022
+#: scd/app-openpgp.c:2048
 msgid "|RN|New Reset Code"
 msgstr "|RN|新增重設碼"
 
-#: scd/app-openpgp.c:2023
+#: scd/app-openpgp.c:2049
 msgid "|AN|New Admin PIN"
 msgstr "|AN|新增管理者 PIN"
 
-#: scd/app-openpgp.c:2023
+#: scd/app-openpgp.c:2049
 msgid "|N|New PIN"
 msgstr "|N|新增 PIN"
 
-#: scd/app-openpgp.c:2132 scd/app-openpgp.c:2813
+#: scd/app-openpgp.c:2158 scd/app-openpgp.c:2839
 msgid "error reading application data\n"
 msgstr "讀取應用程式資料時出錯\n"
 
-#: scd/app-openpgp.c:2138 scd/app-openpgp.c:2820
+#: scd/app-openpgp.c:2164 scd/app-openpgp.c:2846
 msgid "error reading fingerprint DO\n"
 msgstr "讀取指紋 DO 時出錯\n"
 
-#: scd/app-openpgp.c:2148
+#: scd/app-openpgp.c:2174
 msgid "key already exists\n"
 msgstr "金鑰已存在\n"
 
-#: scd/app-openpgp.c:2152
+#: scd/app-openpgp.c:2178
 msgid "existing key will be replaced\n"
 msgstr "既有的金鑰將被取代\n"
 
-#: scd/app-openpgp.c:2154
+#: scd/app-openpgp.c:2180
 msgid "generating new key\n"
 msgstr "正在產生新的金鑰\n"
 
-#: scd/app-openpgp.c:2480
+#: scd/app-openpgp.c:2506
 msgid "creation timestamp missing\n"
 msgstr "缺漏創生時間戳印\n"
 
-#: scd/app-openpgp.c:2514 scd/app-openpgp.c:2522
+#: scd/app-openpgp.c:2540 scd/app-openpgp.c:2548
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr "RSA 質數 %s 缺漏或者並非 %d 位元大\n"
 
-#: scd/app-openpgp.c:2618
+#: scd/app-openpgp.c:2644
 #, c-format
 msgid "failed to store the key: %s\n"
 msgstr "存放金鑰失敗: %s\n"
 
-#: scd/app-openpgp.c:2704
+#: scd/app-openpgp.c:2730
 msgid "please wait while key is being generated ...\n"
 msgstr "正在產生金鑰中, 請稍候 ...\n"
 
-#: scd/app-openpgp.c:2717
+#: scd/app-openpgp.c:2743
 msgid "generating key failed\n"
 msgstr "產生金鑰時失敗\n"
 
-#: scd/app-openpgp.c:2720
+#: scd/app-openpgp.c:2746
 #, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "金鑰產生完畢 (%d 秒)\n"
 
-#: scd/app-openpgp.c:2778
+#: scd/app-openpgp.c:2804
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "無效的 OpenPGP 卡片結構 (DO 0x93)\n"
 
-#: scd/app-openpgp.c:2828
+#: scd/app-openpgp.c:2854
 msgid "fingerprint on card does not match requested one\n"
 msgstr "卡片上的指紋與所要求的那個並不吻合\n"
 
-#: scd/app-openpgp.c:2943
+#: scd/app-openpgp.c:2969
 #, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "卡片不支援 %s 摘要演算法\n"
 
-#: scd/app-openpgp.c:3019
+#: scd/app-openpgp.c:3045
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr "目前建立的簽章: %lu\n"
 
-#: scd/app-openpgp.c:3321
+#: scd/app-openpgp.c:3347
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr "目前在此指令中的管理者 PIN 驗證被禁止了\n"
 
-#: scd/app-openpgp.c:3546 scd/app-openpgp.c:3557
+#: scd/app-openpgp.c:3572 scd/app-openpgp.c:3583
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "無法存取 %s - 無效的 OpenPGP 卡片?\n"

@@ -1,5 +1,8 @@
 2009-06-17  Werner Koch  <wk@g10code.com>
 
+	* parse-packet.c (parse): Use a casted -1 instead of a 32 bit
+	constant to check for a garbled package.  Fixes bug#1040.
+
 	* card-util.c (put_data_to_file, read_cert): New. 
 	(card_edit): Add command "readcert".
 	(fetch_url): Allow code also for this gnupg major version 2.

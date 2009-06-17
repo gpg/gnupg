@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-06-08 09:58+0200\n"
+"POT-Creation-Date: 2009-06-17 11:55+0200\n"
 "PO-Revision-Date: 2004-07-20 15:52+0200\n"
 "Last-Translator: Michal Majer <mmajer@econ.umb.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
@@ -91,15 +91,15 @@ msgstr "nesprávne heslo"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ochranný algoritmus %d%s nie je podporováný\n"
 
-#: agent/command-ssh.c:688 g10/exec.c:478 g10/gpg.c:1079 g10/keygen.c:3311
-#: g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556 g10/openfile.c:275
-#: g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107 g10/tdbio.c:547
-#: jnlib/dotlock.c:310
+#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:478 g10/gpg.c:1079
+#: g10/keygen.c:3311 g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556
+#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
+#: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "nemô¾em vytvori» `%s': %s\n"
 
-#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:776
+#: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2794
 #: g10/keyring.c:1582 g10/openfile.c:192 g10/openfile.c:353
@@ -1193,191 +1193,196 @@ msgstr "VAROVANIE: nájdený neplatný formát zápisu dátumu\n"
 msgid "not human readable"
 msgstr "nie je v priamo èitateµnom formáte"
 
-#: g10/card-util.c:62 g10/card-util.c:360
+#: g10/card-util.c:85 g10/card-util.c:371
 #, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "tajný kµúè nie je dostupný"
 
-#: g10/card-util.c:67
+#: g10/card-util.c:90
 #, c-format
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:75 g10/card-util.c:1528 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:98 g10/card-util.c:1611 g10/delkey.c:126 g10/keyedit.c:1549
 #: g10/keygen.c:2985 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "nemo¾no previes» v dávkovom móde\n"
 
-#: g10/card-util.c:83
+#: g10/card-util.c:106
 #, fuzzy
 msgid "This command is only available for version 2 cards\n"
 msgstr "Tento príkaz nie je v módoch %s dovolený.\n"
 
-#: g10/card-util.c:85 scd/app-openpgp.c:1984
+#: g10/card-util.c:108 scd/app-openpgp.c:2010
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "tajné èasti kµúèa nie sú dostupné\n"
 
-#: g10/card-util.c:122 g10/card-util.c:1258 g10/card-util.c:1337
+#: g10/card-util.c:141 g10/card-util.c:1340 g10/card-util.c:1419
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
 #: g10/keygen.c:1679 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
 msgid "Your selection? "
 msgstr "Vá¹ výber? "
 
-#: g10/card-util.c:258 g10/card-util.c:308
+#: g10/card-util.c:269 g10/card-util.c:319
 msgid "[not set]"
 msgstr ""
 
-#: g10/card-util.c:498
+#: g10/card-util.c:509
 #, fuzzy
 msgid "male"
 msgstr "enable"
 
-#: g10/card-util.c:499
+#: g10/card-util.c:510
 #, fuzzy
 msgid "female"
 msgstr "enable"
 
-#: g10/card-util.c:499
+#: g10/card-util.c:510
 #, fuzzy
 msgid "unspecified"
 msgstr "Dôvod nebol ¹pecifikovaný"
 
-#: g10/card-util.c:526
+#: g10/card-util.c:537
 #, fuzzy
 msgid "not forced"
 msgstr "nespracované"
 
-#: g10/card-util.c:526
+#: g10/card-util.c:537
 msgid "forced"
 msgstr ""
 
-#: g10/card-util.c:617
+#: g10/card-util.c:628
 msgid "Error: Only plain ASCII is currently allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:619
+#: g10/card-util.c:630
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr ""
 
-#: g10/card-util.c:621
+#: g10/card-util.c:632
 msgid "Error: Double spaces are not allowed.\n"
 msgstr ""
 
-#: g10/card-util.c:638
+#: g10/card-util.c:649
 msgid "Cardholder's surname: "
 msgstr ""
 
-#: g10/card-util.c:640
+#: g10/card-util.c:651
 msgid "Cardholder's given name: "
 msgstr ""
 
-#: g10/card-util.c:658
+#: g10/card-util.c:669
 #, c-format
 msgid "Error: Combined name too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:679
+#: g10/card-util.c:690
 #, fuzzy
 msgid "URL to retrieve public key: "
 msgstr "¾iadny zodpovedajúci verejný kµúè: %s\n"
 
-#: g10/card-util.c:687
+#: g10/card-util.c:698
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:783 tools/no-libgcrypt.c:30
+#: g10/card-util.c:791 tools/no-libgcrypt.c:30
 #, fuzzy, c-format
 msgid "error allocating enough memory: %s\n"
 msgstr "chyba pri vytváraní súboru kµúèov (keyring)`%s': %s\n"
 
-#: g10/card-util.c:795 g10/import.c:283
+#: g10/card-util.c:803 g10/import.c:283
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "chyba pri èítaní `%s': %s\n"
 
-#: g10/card-util.c:822
+#: g10/card-util.c:836
+#, fuzzy, c-format
+msgid "error writing `%s': %s\n"
+msgstr "chyba pri zápise súboru kµúèov (keyring)  `%s': %s\n"
+
+#: g10/card-util.c:863
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:832
+#: g10/card-util.c:873
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:867
+#: g10/card-util.c:909
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:877
+#: g10/card-util.c:919
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:927
+#: g10/card-util.c:1002
 #, fuzzy
 msgid "Language preferences: "
 msgstr "aktualizova» predvoµby"
 
-#: g10/card-util.c:935
+#: g10/card-util.c:1010
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "neplatný znak v re»azci s predvoµbami\n"
 
-#: g10/card-util.c:944
+#: g10/card-util.c:1019
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "neplatný znak v re»azci s predvoµbami\n"
 
-#: g10/card-util.c:965
+#: g10/card-util.c:1041
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:979
+#: g10/card-util.c:1055
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "chyba: neplatný odtlaèok\n"
 
-#: g10/card-util.c:1000
+#: g10/card-util.c:1077
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "vypísa» fingerprint"
 
-#: g10/card-util.c:1023
+#: g10/card-util.c:1100
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "chyba: neplatný odtlaèok\n"
 
-#: g10/card-util.c:1071
+#: g10/card-util.c:1150
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "Vytvorenie kµúèa sa nepodarilo: %s\n"
 
-#: g10/card-util.c:1072
+#: g10/card-util.c:1151
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "nenájdené ¾iadne platné dáta vo formáte OpenPGP.\n"
 
-#: g10/card-util.c:1081
+#: g10/card-util.c:1160
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "chyba pri zápise do súboru tajných kµúèov `%s': %s\n"
 
-#: g10/card-util.c:1165
+#: g10/card-util.c:1247
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1185 g10/card-util.c:1194
+#: g10/card-util.c:1267 g10/card-util.c:1276
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1206
+#: g10/card-util.c:1288
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:1215
+#: g10/card-util.c:1297
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -1385,140 +1390,140 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1249
+#: g10/card-util.c:1331
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Prosím, vyberte druh kµúèa, ktorý chcete:\n"
 
-#: g10/card-util.c:1251 g10/card-util.c:1328
+#: g10/card-util.c:1333 g10/card-util.c:1410
 #, fuzzy
 msgid "   (1) Signature key\n"
 msgstr "Platnos» podpisu vypr¹ala %s\n"
 
-#: g10/card-util.c:1252 g10/card-util.c:1330
+#: g10/card-util.c:1334 g10/card-util.c:1412
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (len na ¹ifrovanie)\n"
 
-#: g10/card-util.c:1253 g10/card-util.c:1332
+#: g10/card-util.c:1335 g10/card-util.c:1414
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1269 g10/card-util.c:1348 g10/keyedit.c:945
+#: g10/card-util.c:1351 g10/card-util.c:1430 g10/keyedit.c:945
 #: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1732 g10/revoke.c:685
 msgid "Invalid selection.\n"
 msgstr "Neplatný výber.\n"
 
-#: g10/card-util.c:1325
+#: g10/card-util.c:1407
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
-#: g10/card-util.c:1360
+#: g10/card-util.c:1442
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "neznámy ochranný algoritmus\n"
 
-#: g10/card-util.c:1365
+#: g10/card-util.c:1447
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "Tajné èasti primárneho kµúèa nie sú dostupné.\n"
 
-#: g10/card-util.c:1370
+#: g10/card-util.c:1452
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "preskoèené: tajný kµúè je u¾ v databáze\n"
 
-#: g10/card-util.c:1439 g10/keyedit.c:1380
+#: g10/card-util.c:1521 g10/keyedit.c:1380
 msgid "quit this menu"
 msgstr "ukonèi» toto menu"
 
-#: g10/card-util.c:1441
+#: g10/card-util.c:1523
 #, fuzzy
 msgid "show admin commands"
 msgstr "konfliktné príkazy\n"
 
-#: g10/card-util.c:1442 g10/keyedit.c:1383
+#: g10/card-util.c:1524 g10/keyedit.c:1383
 msgid "show this help"
 msgstr "ukáza» túto pomoc"
 
-#: g10/card-util.c:1444
+#: g10/card-util.c:1526
 #, fuzzy
 msgid "list all available data"
 msgstr "Kµúè k dispozícii na: "
 
-#: g10/card-util.c:1447
+#: g10/card-util.c:1529
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1448
+#: g10/card-util.c:1530
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1449
+#: g10/card-util.c:1531
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1450
+#: g10/card-util.c:1532
 #, fuzzy
 msgid "change the login name"
 msgstr "zmeni» dobu platnosti"
 
-#: g10/card-util.c:1451
+#: g10/card-util.c:1533
 #, fuzzy
 msgid "change the language preferences"
 msgstr "zmeni» dôveryhodnos» vlastníka kµúèa"
 
-#: g10/card-util.c:1452
+#: g10/card-util.c:1534
 msgid "change card holder's sex"
 msgstr ""
 
-#: g10/card-util.c:1453
+#: g10/card-util.c:1535
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "vypísa» fingerprint"
 
-#: g10/card-util.c:1454
+#: g10/card-util.c:1536
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1455
+#: g10/card-util.c:1537
 #, fuzzy
 msgid "generate new keys"
 msgstr "vytvori» nový pár kµúèov"
 
-#: g10/card-util.c:1456
+#: g10/card-util.c:1538
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1457
+#: g10/card-util.c:1539
 msgid "verify the PIN and list all data"
 msgstr ""
 
-#: g10/card-util.c:1458
+#: g10/card-util.c:1540
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-#: g10/card-util.c:1580 g10/keyedit.c:1654
+#: g10/card-util.c:1663 g10/keyedit.c:1654
 msgid "Command> "
 msgstr "Príkaz> "
 
-#: g10/card-util.c:1623
+#: g10/card-util.c:1706
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "konfliktné príkazy\n"
 
-#: g10/card-util.c:1654
+#: g10/card-util.c:1737
 #, fuzzy
 msgid "Admin commands are allowed\n"
 msgstr "konfliktné príkazy\n"
 
-#: g10/card-util.c:1656
+#: g10/card-util.c:1739
 #, fuzzy
 msgid "Admin commands are not allowed\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
 
-#: g10/card-util.c:1742 g10/keyedit.c:2277
+#: g10/card-util.c:1832 g10/keyedit.c:2277
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Neplatný príkaz (skúste \"help\")\n"
 
@@ -1531,13 +1536,13 @@ msgstr "--output pre tento príkaz nefunguje\n"
 msgid "can't open `%s'\n"
 msgstr "nemo¾no otvori» `%s'\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1731
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1734
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1745
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1748
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -4905,141 +4910,141 @@ msgstr "disable"
 msgid "Enter number(s), N)ext, or Q)uit > "
 msgstr ""
 
-#: g10/keyserver.c:828 g10/keyserver.c:1452
+#: g10/keyserver.c:828 g10/keyserver.c:1455
 #, fuzzy, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "neplatný parameter pre export\n"
 
-#: g10/keyserver.c:926
+#: g10/keyserver.c:929
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
 
-#: g10/keyserver.c:928
+#: g10/keyserver.c:931
 #, fuzzy
 msgid "key not found on keyserver\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
 
-#: g10/keyserver.c:1171
+#: g10/keyserver.c:1174
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
 
-#: g10/keyserver.c:1175
+#: g10/keyserver.c:1178
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
 
-#: g10/keyserver.c:1199
+#: g10/keyserver.c:1202
 #, fuzzy, c-format
 msgid "searching for names from %s server %s\n"
 msgstr "vyhµadávam \"%s\" na HKP serveri %s\n"
 
-#: g10/keyserver.c:1202
+#: g10/keyserver.c:1205
 #, fuzzy, c-format
 msgid "searching for names from %s\n"
 msgstr "vyhµadávam \"%s\" na HKP serveri %s\n"
 
-#: g10/keyserver.c:1355
+#: g10/keyserver.c:1358
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
 msgstr "vyhµadávam \"%s\" na HKP serveri %s\n"
 
-#: g10/keyserver.c:1359
+#: g10/keyserver.c:1362
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
 msgstr ""
 "\"\n"
 "podpísané Va¹ím kµúèom %08lX v %s\n"
 
-#: g10/keyserver.c:1402
+#: g10/keyserver.c:1405
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s server %s\n"
 msgstr "vyhµadávam \"%s\" na HKP serveri %s\n"
 
-#: g10/keyserver.c:1405
+#: g10/keyserver.c:1408
 #, fuzzy, c-format
 msgid "searching for \"%s\" from %s\n"
 msgstr "vyhµadávam \"%s\" na HKP serveri %s\n"
 
-#: g10/keyserver.c:1412 g10/keyserver.c:1508
+#: g10/keyserver.c:1415 g10/keyserver.c:1511
 #, fuzzy
 msgid "no keyserver action!\n"
 msgstr "neplatný parameter pre export\n"
 
-#: g10/keyserver.c:1460
+#: g10/keyserver.c:1463
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
 
-#: g10/keyserver.c:1469
+#: g10/keyserver.c:1472
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
-#: g10/keyserver.c:1531 g10/keyserver.c:2060
+#: g10/keyserver.c:1534 g10/keyserver.c:2063
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
-#: g10/keyserver.c:1537
+#: g10/keyserver.c:1540
 msgid "external keyserver calls are not supported in this build\n"
 msgstr ""
 
-#: g10/keyserver.c:1549
+#: g10/keyserver.c:1552
 #, c-format
 msgid "no handler for keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1554
+#: g10/keyserver.c:1557
 #, c-format
 msgid "action `%s' not supported with keyserver scheme `%s'\n"
 msgstr ""
 
-#: g10/keyserver.c:1562
+#: g10/keyserver.c:1565
 #, c-format
 msgid "%s does not support handler version %d\n"
 msgstr ""
 
-#: g10/keyserver.c:1569
+#: g10/keyserver.c:1572
 #, fuzzy
 msgid "keyserver timed out\n"
 msgstr "chyba servera kµúèov"
 
-#: g10/keyserver.c:1574
+#: g10/keyserver.c:1577
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "chyba servera kµúèov"
 
-#: g10/keyserver.c:1583
+#: g10/keyserver.c:1586
 #, fuzzy, c-format
 msgid "keyserver communications error: %s\n"
 msgstr "nepodarilo sa prija» kµúè zo servera: %s\n"
 
-#: g10/keyserver.c:1608 g10/keyserver.c:1642
+#: g10/keyserver.c:1611 g10/keyserver.c:1645
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
-#: g10/keyserver.c:1901
+#: g10/keyserver.c:1904
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
 
-#: g10/keyserver.c:1923
+#: g10/keyserver.c:1926
 #, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
 
-#: g10/keyserver.c:1925
+#: g10/keyserver.c:1928
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
 
-#: g10/keyserver.c:1981
+#: g10/keyserver.c:1984
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
 
-#: g10/keyserver.c:1987
+#: g10/keyserver.c:1990
 #, fuzzy, c-format
 msgid "WARNING: unable to parse URI %s\n"
 msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
@@ -6730,19 +6735,19 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:712 scd/app-openpgp.c:2492
+#: scd/app-nks.c:712 scd/app-openpgp.c:2518
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-nks.c:720 scd/app-openpgp.c:2504
+#: scd/app-nks.c:720 scd/app-openpgp.c:2530
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#: scd/app-nks.c:800 scd/app-openpgp.c:1496 scd/app-openpgp.c:1515
-#: scd/app-openpgp.c:1688 scd/app-openpgp.c:1705 scd/app-openpgp.c:1949
-#: scd/app-openpgp.c:1994 scd/app-dinsig.c:303
+#: scd/app-nks.c:800 scd/app-openpgp.c:1522 scd/app-openpgp.c:1541
+#: scd/app-openpgp.c:1714 scd/app-openpgp.c:1731 scd/app-openpgp.c:1975
+#: scd/app-openpgp.c:2020 scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
@@ -6791,196 +6796,196 @@ msgid ""
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:1220 scd/app-openpgp.c:2027 scd/app-dinsig.c:531
+#: scd/app-nks.c:1220 scd/app-openpgp.c:2053 scd/app-dinsig.c:531
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
-#: scd/app-openpgp.c:669
+#: scd/app-openpgp.c:691
 #, fuzzy, c-format
 msgid "failed to store the fingerprint: %s\n"
 msgstr "nemô¾em inicializova» databázu dôvery: %s\n"
 
-#: scd/app-openpgp.c:682
+#: scd/app-openpgp.c:704
 #, fuzzy, c-format
 msgid "failed to store the creation date: %s\n"
 msgstr "zlyhalo obnovenie vyrovnávacej pamäti kµúèov: %s\n"
 
-#: scd/app-openpgp.c:1104
+#: scd/app-openpgp.c:1129
 #, fuzzy, c-format
 msgid "reading public key failed: %s\n"
 msgstr "zmazanie bloku kµúèa sa nepodarilo:  %s\n"
 
-#: scd/app-openpgp.c:1112 scd/app-openpgp.c:2727
+#: scd/app-openpgp.c:1137 scd/app-openpgp.c:2753
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1120 scd/app-openpgp.c:2735
+#: scd/app-openpgp.c:1145 scd/app-openpgp.c:2761
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1129 scd/app-openpgp.c:2745
+#: scd/app-openpgp.c:1154 scd/app-openpgp.c:2771
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1448
+#: scd/app-openpgp.c:1474
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1455
+#: scd/app-openpgp.c:1481
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1470
+#: scd/app-openpgp.c:1496
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:1481 scd/app-openpgp.c:1943
+#: scd/app-openpgp.c:1507 scd/app-openpgp.c:1969
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "zmeni» heslo"
 
-#: scd/app-openpgp.c:1522 scd/app-openpgp.c:1712 scd/app-openpgp.c:1956
+#: scd/app-openpgp.c:1548 scd/app-openpgp.c:1738 scd/app-openpgp.c:1982
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1535 scd/app-openpgp.c:1586 scd/app-openpgp.c:1724
-#: scd/app-openpgp.c:3044
+#: scd/app-openpgp.c:1561 scd/app-openpgp.c:1612 scd/app-openpgp.c:1750
+#: scd/app-openpgp.c:3070
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "nepodarilo posla» kµúè na server: %s\n"
 
-#: scd/app-openpgp.c:1615 scd/app-openpgp.c:1975 scd/app-openpgp.c:3307
+#: scd/app-openpgp.c:1641 scd/app-openpgp.c:2001 scd/app-openpgp.c:3333
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1621 scd/app-openpgp.c:3316
+#: scd/app-openpgp.c:1647 scd/app-openpgp.c:3342
 msgid "card is permanently locked!\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1628
+#: scd/app-openpgp.c:1654
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
-#: scd/app-openpgp.c:1635
+#: scd/app-openpgp.c:1661
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr "zmeni» heslo"
 
-#: scd/app-openpgp.c:1639
+#: scd/app-openpgp.c:1665
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "zmeni» heslo"
 
-#: scd/app-openpgp.c:1660
+#: scd/app-openpgp.c:1686
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1990
+#: scd/app-openpgp.c:2016
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Prosím výberte dôvod na revokáciu:\n"
 
-#: scd/app-openpgp.c:2000 scd/app-openpgp.c:2052
+#: scd/app-openpgp.c:2026 scd/app-openpgp.c:2078
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2022
+#: scd/app-openpgp.c:2048
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:2023
+#: scd/app-openpgp.c:2049
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:2023
+#: scd/app-openpgp.c:2049
 msgid "|N|New PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:2132 scd/app-openpgp.c:2813
+#: scd/app-openpgp.c:2158 scd/app-openpgp.c:2839
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "chyba pri èítaní bloku kµúèa: %s\n"
 
-#: scd/app-openpgp.c:2138 scd/app-openpgp.c:2820
+#: scd/app-openpgp.c:2164 scd/app-openpgp.c:2846
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "%s: chyba pri èítaní voµného záznamu: %s\n"
 
-#: scd/app-openpgp.c:2148
+#: scd/app-openpgp.c:2174
 #, fuzzy
 msgid "key already exists\n"
 msgstr "`%s' je u¾ skomprimovaný\n"
 
-#: scd/app-openpgp.c:2152
+#: scd/app-openpgp.c:2178
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2154
+#: scd/app-openpgp.c:2180
 #, fuzzy
 msgid "generating new key\n"
 msgstr "vytvori» nový pár kµúèov"
 
-#: scd/app-openpgp.c:2480
+#: scd/app-openpgp.c:2506
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2514 scd/app-openpgp.c:2522
+#: scd/app-openpgp.c:2540 scd/app-openpgp.c:2548
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2618
+#: scd/app-openpgp.c:2644
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "nemô¾em inicializova» databázu dôvery: %s\n"
 
-#: scd/app-openpgp.c:2704
+#: scd/app-openpgp.c:2730
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2717
+#: scd/app-openpgp.c:2743
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "zmazanie bloku kµúèa sa nepodarilo:  %s\n"
 
-#: scd/app-openpgp.c:2720
+#: scd/app-openpgp.c:2746
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "Vytvorenie kµúèa sa nepodarilo: %s\n"
 
-#: scd/app-openpgp.c:2778
+#: scd/app-openpgp.c:2804
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2828
+#: scd/app-openpgp.c:2854
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2943
+#: scd/app-openpgp.c:2969
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "%s podpis, hashovací algoritmus %s\n"
 
-#: scd/app-openpgp.c:3019
+#: scd/app-openpgp.c:3045
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3321
+#: scd/app-openpgp.c:3347
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3546 scd/app-openpgp.c:3557
+#: scd/app-openpgp.c:3572 scd/app-openpgp.c:3583
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nenájdené ¾iadne platné dáta vo formáte OpenPGP.\n"

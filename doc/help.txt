@@ -168,6 +168,7 @@ Answer "yes" or "no".
 
 .gpg.keygen.name
 Enter the name of the key holder. 
+The characters "<" and ">" are not allowed.
 Example: Heinrich Heine
 .
 
@@ -179,6 +180,7 @@ Example: heinrichh@duesseldorf.de
 
 .gpg.keygen.comment
 Please enter an optional comment.
+The characters "(" and ")" are not allowed.
 In general there is no need for a comment.
 .
 
