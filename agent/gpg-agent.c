@@ -997,7 +997,7 @@ main (int argc, char **argv )
              necessary but some programs falsely assume a cleared
              signal mask.  */
           if ( !pth_kill () )
-            log_error ("pth_kill failed in foked process\n");
+            log_error ("pth_kill failed in forked process\n");
             
 #ifdef HAVE_SIGPROCMASK
           if (startup_signal_mask_valid)
