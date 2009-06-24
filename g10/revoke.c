@@ -488,8 +488,6 @@ gen_revoke( const char *uname )
     keyid_from_sk( sk, sk_keyid );
     print_seckey_info (sk);
 
-    pk = xmalloc_clear( sizeof *pk );
-
     /* FIXME: We should get the public key direct from the secret one */
 
     pub_keyblock=get_pubkeyblock(sk_keyid);

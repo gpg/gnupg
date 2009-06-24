@@ -777,13 +777,16 @@ send_key(int *eof)
 
  fail:
   /* Unwind and free the whole modlist structure */
-  for(ml=modlist;*ml;ml++)
+  if (modlist)
     {
-      free_mod_values(*ml);
-      free(*ml);
+      for(ml=modlist;*ml;ml++)
+        {
+          free_mod_values(*ml);
+          free(*ml);
+        }
+      free(modlist);
     }
 
-  free(modlist);
   free(addlist);
   free(dn);
   free(key);

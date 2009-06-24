@@ -1,3 +1,8 @@
+2009-06-24  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (passphrase_to_dek): Do not deref a PW of NULL.
+	* revoke.c (gen_revoke): Remove unused malloc of PK.
+
 2009-06-17  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse): Use a casted -1 instead of a 32 bit
