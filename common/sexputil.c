@@ -377,6 +377,9 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
         return err;
     }
 
+  if (err)
+    return err;
+
   if (!rsa_n || !rsa_n_len || !rsa_e || !rsa_e_len)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 

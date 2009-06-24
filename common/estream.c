@@ -450,8 +450,8 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
 	  
   if (!mem_cookie->flags.grow)
     {
-      /* We are not alloew to grow, thus limit the size to the left
-         space.  FIXME: Does the grow flag an its semtics make sense
+      /* We are not allowed to grow, thus limit the size to the left
+         space.  FIXME: Does the grow flag and its sematics make sense
          at all? */
       if (size > mem_cookie->memory_size - mem_cookie->offset)
         size = mem_cookie->memory_size - mem_cookie->offset;
@@ -463,7 +463,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       size_t newsize;
       
       newsize = mem_cookie->memory_size + mem_cookie->block_size;
-      
+#warning READ the code and see how it should work      
       newsize = mem_cookie->offset + size;
       if (newsize < mem_cookie->offset)
         {
@@ -2797,7 +2797,9 @@ es_read_line (estream_t stream,
             {
               int save_errno = errno;
               mem_free (buffer); 
-              *length_of_buffer = *max_length = 0;
+              *length_of_buffer = 0;
+              if (max_length)
+                *max_length = 0;
               ESTREAM_UNLOCK (stream);
               errno = save_errno;
               return -1;
@@ -3203,7 +3205,7 @@ es_write_sanitized_utf8_buffer (estream_t stream,
         *bytes_written = strlen (buf);
       ret = es_fputs (buf, stream);
       xfree (buf);
-      return i;
+      return rt == EOF? ret : (int)i;
     }
   else
     return es_write_sanitized (stream, p, length, delimiters, bytes_written);

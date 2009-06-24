@@ -600,7 +600,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
      get_last_passphrase(). */
   dek = xmalloc_secure_clear ( sizeof *dek );
   dek->algo = cipher_algo;
-  if ( !*pw && (mode == 2 || mode == 4))
+  if ( (!pw || !*pw) && (mode == 2 || mode == 4))
     dek->keylen = 0;
   else
     hash_passphrase (dek, pw, s2k);

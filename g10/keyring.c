@@ -997,7 +997,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           hd->word_match.name = xstrdup (name);
           hd->word_match.pattern = prepare_word_match (name);
         }
-      name = hd->word_match.pattern;
+      /*  name = hd->word_match.pattern; */
     }
 
   init_packet(&pkt);

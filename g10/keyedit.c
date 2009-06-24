@@ -4458,7 +4458,7 @@ menu_select_uid( KBNODE keyblock, int idx )
 	}
     }
     else { /* reset all */
-	for( i=0, node = keyblock; node; node = node->next ) {
+	for (node = keyblock; node; node = node->next) {
 	    if( node->pkt->pkttype == PKT_USER_ID )
 		node->flag &= ~NODFLG_SELUID;
 	}
@@ -4543,7 +4543,7 @@ menu_select_key( KBNODE keyblock, int idx )
 	}
     }
     else { /* reset all */
-	for( i=0, node = keyblock; node; node = node->next ) {
+	for ( node = keyblock; node; node = node->next ) {
 	    if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 		|| node->pkt->pkttype == PKT_SECRET_SUBKEY )
 		node->flag &= ~NODFLG_SELKEY;

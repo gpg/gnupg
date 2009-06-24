@@ -95,7 +95,9 @@ read_line (FILE *fp,
             {
               int save_errno = errno;
               xfree (buffer); 
-              *length_of_buffer = *max_length = 0;
+              *length_of_buffer = 0;
+              if (max_length)
+                *max_length = 0;
               errno = save_errno;
               return -1;
             }

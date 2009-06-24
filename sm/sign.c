@@ -403,7 +403,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     log_info ("user requested hash algorithm %d\n", opt.forced_digest_algo);
   for (i=0, cl=signerlist; cl; cl = cl->next, i++)
     {
-      const char *oid = ksba_cert_get_digest_algo (cl->cert);
+      const char *oid;
 
       if (opt.forced_digest_algo)
         {

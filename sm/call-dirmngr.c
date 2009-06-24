@@ -747,7 +747,7 @@ pattern_from_strlist (strlist_t names)
   if (!pattern)
     return NULL;
 
-  for (n=0, sl=names; sl; sl = sl->next)
+  for (sl=names; sl; sl = sl->next)
     {
       for (s=sl->d; *s; s++)
         {

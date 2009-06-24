@@ -176,8 +176,11 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
       iv = xtrymalloc (blklen*2+8);
       if (!iv)
         rc = gpg_error (GPG_ERR_ENOMEM);
-      gcry_create_nonce (iv, blklen*2+8);
-      rc = gcry_cipher_setiv (hd, iv, blklen);
+      else
+        {
+          gcry_create_nonce (iv, blklen*2+8);
+          rc = gcry_cipher_setiv (hd, iv, blklen);
+        }
     }
   if (!rc)
     {

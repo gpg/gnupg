@@ -112,7 +112,7 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 
   int c, c1, c2, i;
   unsigned int nbits, nbytes;
-  size_t nread;
+  size_t nread = 0;
   gcry_mpi_t a = NULL;
   byte *buf = NULL;
   byte *p;

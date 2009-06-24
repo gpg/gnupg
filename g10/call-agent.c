@@ -132,7 +132,6 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
     ;
   if (*s || (n != 40))
     return 0; /* no fingerprint (invalid or wrong length). */
-  n /= 2;
   for (s=hexstr, n=0; *s; s += 2, n++)
     fpr[n] = xtoi_2 (s);
   return 1; /* okay */

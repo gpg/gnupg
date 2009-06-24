@@ -1,3 +1,15 @@
+2009-06-24  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (menu_select_key): Renmove dead assign to I.
+	(menu_select_uid): Ditto.
+	* keyring.c (keyring_search): Remove dead assign to NAME.
+	* card-util.c (card_edit): Remove useless DID_CHECKPIN.
+	* call-agent.c (unhexify_fpr): Remove dead op on N.
+	* passphrase.c (passphrase_to_dek_ext): Do not deref a NULL PW.
+	* revoke.c (gen_revoke): Remove unused malloc of PK.
+	* parse-packet.c (mpi_read): Init NREAD.
+	Reported by Fabian Keil.
+
 2009-06-17  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse): Use a casted -1 instead of a 32 bit

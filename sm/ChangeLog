@@ -1,3 +1,10 @@
+2009-06-24  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (pattern_from_strlist): Remove dead assignment of N.
+	* sign.c (gpgsm_sign): Remove dead assignment.
+	* certreqgen.c (create_request): Assign GPG_ERR_BUG to RC.
+	Reported by Fabian Keil.
+
 2009-05-27  Werner Koch  <wk@g10code.com>
 
 	* encrypt.c (encrypt_dek): Make use of make_canon_sexp.

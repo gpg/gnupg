@@ -769,7 +769,7 @@ create_request (ctrl_t ctrl,
           if (!n)
             {
               log_error ("libksba did not return a proper S-Exp\n");
-              err = gpg_error (GPG_ERR_BUG);
+              rc = gpg_error (GPG_ERR_BUG);
               goto leave;
             }
           rc = gcry_sexp_sscan (&s_pkey, NULL, (const char*)public, n);

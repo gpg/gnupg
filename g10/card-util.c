@@ -1600,7 +1600,7 @@ card_edit (strlist_t commands)
   int have_commands = !!commands;
   int redisplay = 1;
   char *answer = NULL;
-  int did_checkpin = 0, allow_admin=0;
+  int allow_admin=0;
   char serialnobuf[50];
 
 
@@ -1812,12 +1812,10 @@ card_edit (strlist_t commands)
 
         case cmdPASSWD:
           change_pin (0, allow_admin);
-          did_checkpin = 0; /* Need to reset it of course. */
           break;
 
         case cmdUNBLOCK:
           change_pin (1, allow_admin);
-          did_checkpin = 0; /* Need to reset it of course. */
           break;
 
         case cmdQUIT:

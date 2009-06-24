@@ -1,3 +1,13 @@
+2009-06-24  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_read_line): In the malloc error case, set
+	MAX_LENGTH to 0 only if requested.
+	* xreadline.c (read_line): Ditto.
+	* estream.c (es_write_sanitized_utf8_buffer): Pass on error from
+	es_fputs.
+	* sexputil.c (get_rsa_pk_from_canon_sexp): Check for error after
+	the loop.  Reported by Fabian Keil.
+
 2009-06-03  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_convert_mode): Rewrite and support the "x" flag.

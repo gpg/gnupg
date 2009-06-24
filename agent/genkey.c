@@ -480,5 +480,5 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
 
   rc = store_key (s_skey, pi? pi->pin:NULL, 1);
   xfree (pi);
-  return 0;
+  return rc;
 }

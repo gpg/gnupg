@@ -739,6 +739,8 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         }
     }
 
+  (void)need_words;  /* Not yet implemented.  */
+
   if (!hd->fp)
     {
       hd->fp = fopen (hd->kb->fname, "rb");
