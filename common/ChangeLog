@@ -1,3 +1,7 @@
+2009-06-25  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_write_sanitized_utf8_buffer): Typo fix.
+
 2009-06-24  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_read_line): In the malloc error case, set

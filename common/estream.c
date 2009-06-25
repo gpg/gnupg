@@ -3205,7 +3205,7 @@ es_write_sanitized_utf8_buffer (estream_t stream,
         *bytes_written = strlen (buf);
       ret = es_fputs (buf, stream);
       xfree (buf);
-      return rt == EOF? ret : (int)i;
+      return rc == EOF? ret : (int)i;
     }
   else
     return es_write_sanitized (stream, p, length, delimiters, bytes_written);
