@@ -1,3 +1,7 @@
+2009-06-29  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_write_sanitized_utf8_buffer): Typo typo fix.
+
 2009-06-25  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_write_sanitized_utf8_buffer): Typo fix.
@@ -11,6 +15,11 @@
 	es_fputs.
 	* sexputil.c (get_rsa_pk_from_canon_sexp): Check for error after
 	the loop.  Reported by Fabian Keil.
+
+2009-06-22  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_pth_read, es_pth_write) [W32]: New.
+	(ESTREAM_SYS_READ, ESTREAM_SYS_WRITE) [HAVE_PTH]: Use them.
 
 2009-06-03  Werner Koch  <wk@g10code.com>
 

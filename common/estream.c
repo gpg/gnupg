@@ -138,8 +138,8 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 /* Primitive system I/O.  */
 
 #ifdef HAVE_PTH
-# define ESTREAM_SYS_READ  pth_read
-# define ESTREAM_SYS_WRITE pth_write
+# define ESTREAM_SYS_READ  es_pth_read
+# define ESTREAM_SYS_WRITE es_pth_write
 #else
 # define ESTREAM_SYS_READ  read
 # define ESTREAM_SYS_WRITE write
@@ -231,7 +231,7 @@ static estream_mutex_t estream_list_lock;
   while (0)
 
 
-/* Malloc wrappers to overcvome problems on some older OSes.  */
+/* Malloc wrappers to overcome problems on some older OSes.  */
 static void *
 mem_alloc (size_t n)
 {
@@ -324,6 +324,45 @@ es_list_iterate (estream_iterator_t iterator)
 
   return ret;
 }
+
+
+
+/*
+ * I/O Helper
+ *
+ * Unfortunately our Pth emulation for Windows expects system handles
+ * for pth_read and pth_write.  We use a simple approach to fix this:
+ * If the function returns an error we fall back to a vanilla read or
+ * write, assuming that we do I/O on a plain file where the operation
+ * can't block.
+ */
+#ifdef HAVE_PTH
+static int
+es_pth_read (int fd, void *buffer, size_t size)
+{
+# ifdef HAVE_W32_SYSTEM
+  int rc = pth_read (fd, buffer, size);
+  if (rc == -1 && errno == EINVAL)
+    rc = read (fd, buffer, size);
+  return rc;
+# else /*!HAVE_W32_SYSTEM*/
+  return pth_read (fd, buffer, size);
+# endif /* !HAVE_W32_SYSTEM*/
+}
+
+static int
+es_pth_write (int fd, const void *buffer, size_t size)
+{
+# ifdef HAVE_W32_SYSTEM
+  int rc = pth_write (fd, buffer, size);
+  if (rc == -1 && errno == EINVAL)
+    rc = write (fd, buffer, size);
+  return rc;
+# else /*!HAVE_W32_SYSTEM*/
+  return pth_write (fd, buffer, size);
+# endif /* !HAVE_W32_SYSTEM*/
+}
+#endif /*HAVE_PTH*/
 
 
 
@@ -3205,7 +3244,7 @@ es_write_sanitized_utf8_buffer (estream_t stream,
         *bytes_written = strlen (buf);
       ret = es_fputs (buf, stream);
       xfree (buf);
-      return rc == EOF? ret : (int)i;
+      return ret == EOF? ret : (int)i;
     }
   else
     return es_write_sanitized (stream, p, length, delimiters, bytes_written);
