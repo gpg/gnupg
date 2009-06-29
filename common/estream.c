@@ -1,5 +1,5 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -88,12 +88,6 @@ typedef void (*func_free_t) (void *mem);
 
 #define BUFFER_BLOCK_SIZE  BUFSIZ
 #define BUFFER_UNREAD_SIZE 16
-
-
-
-/* Macros.  */
-
-#define BUFFER_ROUND_TO_BLOCK(size, block_size) \
 
 
 
@@ -400,11 +394,11 @@ typedef struct estream_cookie_mem
 {
   unsigned int modeflags;	/* Open flags.  */
   unsigned char *memory;	/* Allocated data buffer.  */
-  size_t memory_size;		/* Allocated size of memory.  */
-  size_t memory_limit;          /* Maximum allowed allocation size or
-                                   0 for no limit.  */
+  size_t memory_size;		/* Allocated size of MEMORY.  */
+  size_t memory_limit;          /* Caller supplied maximum allowed
+                                   allocation size or 0 for no limit.  */
   size_t offset;		/* Current offset in MEMORY.  */
-  size_t data_len;		/* Length of data in MEMORY.  */
+  size_t data_len;		/* Used length of data in MEMORY.  */
   size_t block_size;		/* Block size.  */
   struct {
     unsigned int grow: 1;	/* MEMORY is allowed to grow.  */
@@ -414,7 +408,11 @@ typedef struct estream_cookie_mem
 } *estream_cookie_mem_t;
 
 
-/* Create function for memory objects.  */
+/* Create function for memory objects.  DATA is either NULL or a user
+   supplied buffer with the initial conetnt of the memory buffer.  If
+   DATA is NULL, DATA_N and DATA_LEN need to be 0 as well.  If DATA is
+   not NULL, DATA_N gives the allocated size of DATA and DATA_LEN the
+   used length in DATA.  */
 static int
 es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 		    unsigned char *ES__RESTRICT data, size_t data_n,
@@ -426,6 +424,12 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 {
   estream_cookie_mem_t mem_cookie;
   int err;
+
+  if (!data && (data_n || data_len))
+    {
+      errno = EINVAL;
+      return -1;
+    }
 
   mem_cookie = mem_alloc (sizeof (*mem_cookie));
   if (!mem_cookie)
@@ -477,6 +481,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
 {
   estream_cookie_mem_t mem_cookie = cookie;
   ssize_t ret;
+  size_t nleft;
 
   if (!size)
     return 0;  /* A flush is a NOP for memory objects.  */
@@ -486,38 +491,45 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       /* Append to data.  */
       mem_cookie->offset = mem_cookie->data_len;
     }
-	  
-  if (!mem_cookie->flags.grow)
-    {
-      /* We are not allowed to grow, thus limit the size to the left
-         space.  FIXME: Does the grow flag and its sematics make sense
-         at all? */
-      if (size > mem_cookie->memory_size - mem_cookie->offset)
-        size = mem_cookie->memory_size - mem_cookie->offset;
-    }
 
-  if (size > (mem_cookie->memory_size - mem_cookie->offset))
+  assert (mem_cookie->memory_size >= mem_cookie->offset);
+  nleft = mem_cookie->memory_size - mem_cookie->offset;
+  
+  /* If we are not allowed to grow limit the size to the left space.  */
+  if (!mem_cookie->flags.grow && size > nleft)
+    size = nleft;
+
+  /* Enlarge the memory buffer if needed.  */
+  if (size > nleft)
     {
       unsigned char *newbuf;
       size_t newsize;
-      
-      newsize = mem_cookie->memory_size + mem_cookie->block_size;
-#warning READ the code and see how it should work      
-      newsize = mem_cookie->offset + size;
+
+      if (!mem_cookie->memory_size)
+        newsize = size;  /* Not yet allocated.  */
+      else
+        newsize = mem_cookie->memory_size + (nleft - size);
       if (newsize < mem_cookie->offset)
         {
           errno = EINVAL;
           return -1;
         }
-      newsize += mem_cookie->block_size - 1;
-      if (newsize < mem_cookie->offset)
+
+      /* Round up to the next block length.  BLOCK_SIZE should always
+         be set; we check anyway.  */
+      if (mem_cookie->block_size)
         {
-          errno = EINVAL;
-          return -1;
+          newsize += mem_cookie->block_size - 1;
+          if (newsize < mem_cookie->offset)
+            {
+              errno = EINVAL;
+              return -1;
+            }
+          newsize /= mem_cookie->block_size;
+          newsize *= mem_cookie->block_size;
         }
-      newsize /= mem_cookie->block_size;
-      newsize *= mem_cookie->block_size;
-      
+
+      /* Check for a total limit.  */
       if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
         {
           errno = ENOSPC;
@@ -530,8 +542,11 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       
       mem_cookie->memory = newbuf;
       mem_cookie->memory_size = newsize;
+
+      assert (mem_cookie->memory_size >= mem_cookie->offset);
+      nleft = mem_cookie->memory_size - mem_cookie->offset;
       
-      assert (!(size > (mem_cookie->memory_size - mem_cookie->offset)));
+      assert (size <= nleft);
     }
       
   memcpy (mem_cookie->memory + mem_cookie->offset, buffer, size);
@@ -579,7 +594,6 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
 	{
 	  errno = ENOSPC;
 	  return -1;
-
         }
 
       newsize = pos_new + mem_cookie->block_size - 1;
@@ -590,6 +604,7 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
         }
       newsize /= mem_cookie->block_size;
       newsize *= mem_cookie->block_size;
+
       if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
         {
           errno = ENOSPC;

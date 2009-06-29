@@ -1,3 +1,8 @@
+2009-06-18  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv2): Remove special case for v2 cards.
+	(get_public_key): Use extended mode.
+
 2009-06-17  Werner Koch  <wk@g10code.com>
 
 	* iso7816.c (iso7816_get_data): Add arg EXTENDED_MODE.  Change all

@@ -820,11 +820,13 @@ AC_ARG_WITH(adns,
                CPPFLAGS="${CPPFLAGS} -I$withval/include"
                LDFLAGS="${LDFLAGS} -L$withval/lib"
              fi])
-AC_CHECK_HEADERS(adns.h,
+if test "$with_adns" != "no"; then
+  AC_CHECK_HEADERS(adns.h,
                 AC_CHECK_LIB(adns, adns_init,
                              [have_adns=yes],
                              [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
                 [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
+fi
 if test "$have_adns" = "yes"; then
   ADNSLIBS="-ladns" 
 fi

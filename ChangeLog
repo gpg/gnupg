@@ -1,3 +1,12 @@
+2009-06-29  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Take care of --without-adns.  Suggested by
+	Arfrever Frehtes Taifersar Arahesis.
+
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.12.
+
 2009-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Remove Camellia restriction.

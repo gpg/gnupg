@@ -671,6 +671,9 @@ readn (int fd, void *buf, size_t buflen, size_t *nread)
   while (nleft > 0)
     {
 #ifdef USE_GNU_PTH
+# ifdef HAVE_W32_SYSTEM
+#  error Cannot use pth_read here because it expects a system HANDLE.
+# endif
       n = pth_read (fd, buf, nleft);
 #else
       n = read (fd, buf, nleft);

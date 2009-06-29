@@ -1118,11 +1118,25 @@ get_public_key (app_t app, int keyno)
 
   if (app->card_version > 0x0100)
     {
+      int exmode, le_value;
+
       /* We may simply read the public key out of these cards.  */
+      if (app->app_local->cardcap.ext_lc_le)
+        {
+          exmode = 1;    /* Use extended length.  */
+          le_value = app->app_local->extcap.max_rsp_data;
+        }
+      else
+        {
+          exmode = 0;
+          le_value = 256; /* Use legacy value. */
+        }
+
       err = iso7816_read_public_key 
-        (app->slot, 0, (const unsigned char*)(keyno == 0? "\xB6" :
-                                              keyno == 1? "\xB8" : "\xA4"), 2,  
-         0,
+        (app->slot, exmode,
+         (const unsigned char*)(keyno == 0? "\xB6" :
+                                keyno == 1? "\xB8" : "\xA4"), 2,  
+         le_value,
          &buffer, &buflen);
       if (err)
         {
@@ -1579,43 +1593,31 @@ verify_chv2 (app_t app,
   char *pinvalue;
 
   if (app->did_chv2) 
-    return 0;  /* We already verified CHV2 (PW1 for v2 cards).  */
+    return 0;  /* We already verified CHV2.  */
 
-  if (app->app_local->extcap.is_v2)
-    {
-      /* Version two cards don't have a CHV2 anymore.  We need to
-         verify CHV1 (now called PW1) instead.  */
-      rc = verify_a_chv (app, pincb, pincb_arg, 1, 0, &pinvalue);
-      if (rc)
-        return rc;
-      app->did_chv2 = 1;
-    }
-  else
-    {
-      /* Version 1 cards only.  */
-      rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue);
-      if (rc)
-        return rc;
-      app->did_chv2 = 1;
+  rc = verify_a_chv (app, pincb, pincb_arg, 2, 0, &pinvalue);
+  if (rc)
+    return rc;
+  app->did_chv2 = 1;
   
-      if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+  if (!app->did_chv1 && !app->force_chv1 && pinvalue)
+    {
+      /* For convenience we verify CHV1 here too.  We do this only if
+         the card is not configured to require a verification before
+         each CHV1 controlled operation (force_chv1) and if we are not
+         using the keypad (PINVALUE == NULL). */
+      rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
+      if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
+        rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
+      if (rc)
         {
-          /* For convenience we verify CHV1 here too.  We do this only
-             if the card is not configured to require a verification
-             before each CHV1 controlled operation (force_chv1) and if
-             we are not using the keypad (PINVALUE == NULL). */
-          rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
-          if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
-          if (rc)
-            {
-              log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
-              flush_cache_after_error (app);
-            }
-          else
-            app->did_chv1 = 1;
+          log_error (_("verify CHV%d failed: %s\n"), 1, gpg_strerror (rc));
+          flush_cache_after_error (app);
         }
+      else
+        app->did_chv1 = 1;
     }
+
   xfree (pinvalue);
 
   return rc;

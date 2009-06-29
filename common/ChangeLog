@@ -1,5 +1,8 @@
 2009-06-29  Werner Koch  <wk@g10code.com>
 
+	* estream.c (BUFFER_ROUND_TO_BLOCK): Remove unused macro.
+	(es_func_mem_write): Rewrite reallocation part.
+
 	* estream.c (es_write_sanitized_utf8_buffer): Typo typo fix.
 
 2009-06-25  Werner Koch  <wk@g10code.com>
