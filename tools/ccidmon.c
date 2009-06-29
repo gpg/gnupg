@@ -51,6 +51,8 @@ static int verbose;
 static int debug;
 static int skip_escape;
 static int usb_bus, usb_dev;
+static int sniffusb;
+ 
 
 /* Error counter.  */
 static int any_error;
@@ -355,7 +357,11 @@ print_p2r_setdatarate (const unsigned char *msg, size_t msglen)
 static void
 print_p2r_unknown (const unsigned char *msg, size_t msglen)
 {
-  print_p2r_header ("Unknown PC_to_RDR command", msg, msglen);
+  char buf[100];
+
+  snprintf (buf, sizeof buf, "Unknown PC_to_RDR command 0x%02X", 
+            msglen? msg[0]:0);
+  print_p2r_header (buf, msg, msglen);
   if (msglen < 10)
     return;
   print_pr_data (msg, msglen, 0);
@@ -519,7 +525,11 @@ print_r2p_datarate (const unsigned char *msg, size_t msglen)
 static void
 print_r2p_unknown (const unsigned char *msg, size_t msglen)
 {
-  print_r2p_header ("Unknown RDR_to_PC command", msg, msglen);
+  char buf[100];
+
+  snprintf (buf, sizeof buf, "Unknown RDR_to_PC command 0x%02X", 
+            msglen? msg[0]:0);
+  print_r2p_header (buf, msg, msglen);
   if (msglen < 10)
     return;
   printf ("  bMessageType ......: %02X\n", msg[0]);
@@ -685,6 +695,75 @@ parse_line (char *line, unsigned int lineno)
 
 
 static void
+parse_line_sniffusb (char *line, unsigned int lineno)
+{
+  char *p;
+
+  if (debug)
+    printf ("line[%u] =`%s'\n", lineno, line);
+
+  p = strtok (line, " ");
+  if (!p)
+    return;
+  p = strtok (NULL, " ");
+  if (!p)
+    return; 
+  p = strtok (NULL, " ");
+  if (!p)
+    return; 
+
+  if (hexdigitp (p[0]) && hexdigitp (p[1])
+      && hexdigitp (p[2]) && hexdigitp (p[3])
+      && p[4] == ':' && !p[5])
+    {
+      size_t length;
+      unsigned int value;
+      
+      length = databuffer.count;
+      while ((p=strtok (NULL, " ")))
+        {
+          if (!hexdigitp (p[0]) || !hexdigitp (p[1]))
+            {
+              err ("invalid hex digit in line %u (%s)", lineno,p);
+              break;
+            }
+          value = xtoi_1 (p[0]) * 16 + xtoi_1 (p[1]);
+
+          if (length >= sizeof (databuffer.data))
+            {
+              err ("too much data at line %u - can handle only up to % bytes",
+                   lineno, sizeof (databuffer.data));
+              break;
+            }
+          databuffer.data[length++] = value;
+        }
+      databuffer.count = length;
+
+    }
+  else if (!strcmp (p, "TransferFlags"))
+    {
+      flush_data ();
+
+      *databuffer.address = 0;
+      while ((p=strtok (NULL, " (,)")))
+        {
+          if (!strcmp (p, "USBD_TRANSFER_DIRECTION_IN"))
+            {
+              databuffer.is_bi = 1;
+              break;
+            }
+          else if (!strcmp (p, "USBD_TRANSFER_DIRECTION_OUT"))
+            {
+              databuffer.is_bi = 0;
+              break;
+            }
+        }
+    }
+
+}
+
+
+static void
 parse_input (FILE *fp)
 {
   char line[2000];
@@ -701,7 +780,10 @@ parse_input (FILE *fp)
         err ("line number %u too long or last line not terminated", lineno);
       if (length && line[length - 1] == '\r')
 	line[--length] = 0;
-      parse_line (line, lineno);
+      if (sniffusb)
+        parse_line_sniffusb (line, lineno);
+      else
+        parse_line (line, lineno);
     }
   flush_data ();
   if (ferror (fp))
@@ -713,7 +795,7 @@ int
 main (int argc, char **argv)
 {
   int last_argc = -1;
- 
+
   if (argc)
     {
       argc--; argv++;
@@ -736,6 +818,7 @@ main (int argc, char **argv)
           puts ("Usage: " PGM " [BUS:DEV]\n"
                 "Parse the output of usbmod assuming it is CCID compliant.\n\n"
                 "  --skip-escape  do not show escape packets\n"
+                "  --sniffusb     Assume output from Sniffusb.exe\n"
                 "  --verbose      enable extra informational output\n"
                 "  --debug        enable additional debug output\n"
                 "  --help         display this help and exit\n\n"
@@ -757,9 +840,16 @@ main (int argc, char **argv)
           skip_escape = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--sniffusb"))
+        {
+          sniffusb = 1;
+          argc--; argv++;
+        }
     }          
- 
-  if (argc > 1)
+
+  if (argc && sniffusb)
+    die ("no arguments expected when using --sniffusb\n");
+  else if (argc > 1)
     die ("usage: " PGM " [BUS:DEV]  (try --help for more information)\n");
 
   if (argc == 1)
@@ -772,7 +862,7 @@ main (int argc, char **argv)
       if (usb_bus < 1 || usb_bus > 999 || usb_dev < 1 || usb_dev > 999)
         die ("invalid bus:dev specified");
     }
-
+  
 
   signal (SIGPIPE, SIG_IGN);
 
