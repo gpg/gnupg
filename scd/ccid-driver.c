@@ -1,6 +1,6 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
  * Copyright (C) 2003, 2004, 2005, 2006, 2007
- *               2008  Free Software Foundation, Inc.
+ *               2008, 2009  Free Software Foundation, Inc.
  * Written by Werner Koch.
  *
  * This file is part of GnuPG.
@@ -251,7 +251,9 @@ struct ccid_driver_s
   int ifsc;
   int powered_off;
   int has_pinpad;
-  int apdu_level;     /* Reader supports short APDU level exchange.  */
+  int apdu_level;     /* Reader supports short APDU level exchange.
+                         With a value of 2 short and extended level is
+                         supported.*/
 };
 
 
@@ -822,7 +824,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
   else if ((us & 0x00040000))
     {
       DEBUGOUT ("    Short and extended APDU level exchange\n");
-      handle->apdu_level = 1;
+      handle->apdu_level = 2;
     }
   else if ((us & 0x00070000))
     DEBUGOUT ("    WARNING: conflicting exchange levels\n");
@@ -2446,6 +2448,16 @@ compute_edc (const unsigned char *data, size_t datalen, int use_crc)
 }
 
 
+/* Return true if APDU is an extended length one.  */
+static int
+is_exlen_apdu (const unsigned char *apdu, size_t apdulen)
+{
+  if (apdulen < 7 || apdu[4])
+    return 0;  /* Too short or no Z byte.  */
+  return 1;
+}
+
+
 /* Helper for ccid_transceive used for APDU level exchanges.  */
 static int
 ccid_transceive_apdu_level (ccid_driver_t handle,
@@ -2574,7 +2586,9 @@ ccid_transceive (ccid_driver_t handle,
                  unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
-  unsigned char send_buffer[10+259], recv_buffer[10+259];
+  /* The size of the buffer used to be 10+259.  For the via_escape
+     hack we need one extra byte, thus 11+259.  */
+  unsigned char send_buffer[11+259], recv_buffer[11+259];
   const unsigned char *apdu;
   size_t apdulen;
   unsigned char *msg, *tpdu, *p;
@@ -2582,10 +2596,14 @@ ccid_transceive (ccid_driver_t handle,
   unsigned char seqno;
   unsigned int edc;
   int use_crc = 0;
+  int hdrlen, pcboff;
   size_t dummy_nresp;
+  int via_escape = 0;
   int next_chunk = 1;
   int sending = 1;
   int retries = 0;
+  int resyncing = 0;
+  int nad_byte;
 
   if (!nresp)
     nresp = &dummy_nresp;
@@ -2593,13 +2611,32 @@ ccid_transceive (ccid_driver_t handle,
 
   /* Smarter readers allow to send APDUs directly; divert here. */
   if (handle->apdu_level)
-    return ccid_transceive_apdu_level (handle, apdu_buf, apdu_buflen,
-                                       resp, maxresplen, nresp);
+    {
+      /* We employ a hack for Omnikey readers which are able to send
+         TPDUs using an escape sequence.  There is no documentation
+         but the Windows driver does it this way.  Tested using a
+         CM6121.  */
+      if ((handle->id_vendor == VENDOR_OMNIKEY
+           || (!handle->idev && handle->id_product == TRANSPORT_CM4040))
+          && handle->apdu_level < 2
+          && is_exlen_apdu (apdu_buf, apdu_buflen))
+        via_escape = 1;
+      else
+        return ccid_transceive_apdu_level (handle, apdu_buf, apdu_buflen,
+                                           resp, maxresplen, nresp);
+    }
 
   /* The other readers we support require sending TPDUs.  */
 
   tpdulen = 0; /* Avoid compiler warning about no initialization. */
   msg = send_buffer;
+  hdrlen = via_escape? 11 : 10;
+
+  /* NAD: DAD=1, SAD=0 */
+  nad_byte = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  if (via_escape)
+    nad_byte = 0;
+
   for (;;)
     {
       if (next_chunk)
@@ -2611,9 +2648,8 @@ ccid_transceive (ccid_driver_t handle,
           assert (apdulen);
 
           /* Construct an I-Block. */
-          tpdu = msg+10;
-          /* NAD: DAD=1, SAD=0 */
-          tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+          tpdu = msg + hdrlen;
+          tpdu[0] = nad_byte;
           tpdu[1] = ((handle->t1_ns & 1) << 6); /* I-block */
           if (apdulen > handle->ifsc )
             {
@@ -2631,37 +2667,56 @@ ccid_transceive (ccid_driver_t handle,
           tpdu[tpdulen++] = edc;
         }
 
-      msg[0] = PC_to_RDR_XfrBlock;
-      msg[5] = 0; /* slot */
-      msg[6] = seqno = handle->seqno++;
-      msg[7] = 4; /* bBWI */
-      msg[8] = 0; /* RFU */
-      msg[9] = 0; /* RFU */
-      set_msg_len (msg, tpdulen);
-      msglen = 10 + tpdulen;
-      last_tpdulen = tpdulen;
+      if (via_escape)
+        {
+          msg[0] = PC_to_RDR_Escape;
+          msg[5] = 0; /* slot */
+          msg[6] = seqno = handle->seqno++;
+          msg[7] = 0; /* RFU */
+          msg[8] = 0; /* RFU */
+          msg[9] = 0; /* RFU */
+          msg[10] = 0x1a; /* Omnikey command to send a TPDU.  */
+          set_msg_len (msg, 1 + tpdulen);
+        }
+      else
+        {
+          msg[0] = PC_to_RDR_XfrBlock;
+          msg[5] = 0; /* slot */
+          msg[6] = seqno = handle->seqno++;
+          msg[7] = 4; /* bBWI */
+          msg[8] = 0; /* RFU */
+          msg[9] = 0; /* RFU */
+          set_msg_len (msg, tpdulen);
+        }
+      msglen = hdrlen + tpdulen;
+      if (!resyncing)
+        last_tpdulen = tpdulen;
+      pcboff = hdrlen+1;
 
       if (debug_level > 1)
-          DEBUGOUT_3 ("T=1: put %c-block seq=%d%s\n",
-                      ((msg[11] & 0xc0) == 0x80)? 'R' :
-                                (msg[11] & 0x80)? 'S' : 'I',
-                      ((msg[11] & 0x80)? !!(msg[11]& 0x10)
-                                       : !!(msg[11] & 0x40)),
-                      (!(msg[11] & 0x80) && (msg[11] & 0x20)? " [more]":""));
-
+        DEBUGOUT_3 ("T=1: put %c-block seq=%d%s\n",
+                    ((msg[pcboff] & 0xc0) == 0x80)? 'R' :
+                    (msg[pcboff] & 0x80)? 'S' : 'I',
+                    ((msg[pcboff] & 0x80)? !!(msg[pcboff]& 0x10)
+                     : !!(msg[pcboff] & 0x40)),
+                    (!(msg[pcboff] & 0x80) && (msg[pcboff] & 0x20)?
+                     " [more]":""));
+      
       rc = bulk_out (handle, msg, msglen, 0);
       if (rc)
         return rc;
 
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                    RDR_to_PC_DataBlock, seqno, 5000, 0);
+                    via_escape? RDR_to_PC_Escape : RDR_to_PC_DataBlock, 
+                    seqno, 5000, 0);
       if (rc)
         return rc;
-      
-      tpdu = msg + 10;
-      tpdulen = msglen - 10;
-      
+
+      tpdu = msg + hdrlen;
+      tpdulen = msglen - hdrlen;
+      resyncing = 0;
+            
       if (tpdulen < 4) 
         {
           usb_clear_halt (handle->idev, handle->ep_bulk_in);
@@ -2670,11 +2725,13 @@ ccid_transceive (ccid_driver_t handle,
 
       if (debug_level > 1)
         DEBUGOUT_4 ("T=1: got %c-block seq=%d err=%d%s\n",
-                    ((msg[11] & 0xc0) == 0x80)? 'R' :
-                              (msg[11] & 0x80)? 'S' : 'I',
-                    ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
-                    ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0,
-                    (!(msg[11] & 0x80) && (msg[11] & 0x20)? " [more]":""));
+                    ((msg[pcboff] & 0xc0) == 0x80)? 'R' :
+                              (msg[pcboff] & 0x80)? 'S' : 'I',
+                    ((msg[pcboff] & 0x80)? !!(msg[pcboff]& 0x10)
+                     : !!(msg[pcboff] & 0x40)),
+                    ((msg[pcboff] & 0xc0) == 0x80)? (msg[pcboff] & 0x0f) : 0,
+                    (!(msg[pcboff] & 0x80) && (msg[pcboff] & 0x20)?
+                     " [more]":""));
 
       if (!(tpdu[1] & 0x80))
         { /* This is an I-block. */
@@ -2688,9 +2745,8 @@ ccid_transceive (ccid_driver_t handle,
           if (!!(tpdu[1] & 0x40) != handle->t1_nr)
             { /* Reponse does not match our sequence number. */
               msg = send_buffer;
-              tpdu = msg+10;
-              /* NAD: DAD=1, SAD=0 */
-              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+              tpdu = msg + hdrlen;
+              tpdu[0] = nad_byte;
               tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4 | 2); /* R-block */
               tpdu[2] = 0;
               tpdulen = 3;
@@ -2727,9 +2783,8 @@ ccid_transceive (ccid_driver_t handle,
             return 0; /* No chaining requested - ready. */
           
           msg = send_buffer;
-          tpdu = msg+10;
-          /* NAD: DAD=1, SAD=0 */
-          tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+          tpdu = msg + hdrlen;
+          tpdu[0] = nad_byte;
           tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4); /* R-block */
           tpdu[2] = 0;
           tpdulen = 3;
@@ -2741,14 +2796,36 @@ ccid_transceive (ccid_driver_t handle,
       else if ((tpdu[1] & 0xc0) == 0x80)
         { /* This is a R-block. */
           if ( (tpdu[1] & 0x0f)) 
-            { /* Error: repeat last block */
-              if (++retries > 3)
+            { 
+              retries++;
+              if (via_escape && retries == 1 && (msg[pcboff] & 0x0f))
                 {
-                  DEBUGOUT ("3 failed retries\n");
+                  /* Error probably due to switching to TPDU.  Send a
+                     resync request.  We use the recv_buffer so that
+                     we don't corrupt the send_buffer.  */
+                  msg = recv_buffer;
+                  tpdu = msg + hdrlen;
+                  tpdu[0] = nad_byte;
+                  tpdu[1] = 0xc0; /* S-block resync request. */
+                  tpdu[2] = 0;
+                  tpdulen = 3;
+                  edc = compute_edc (tpdu, tpdulen, use_crc);
+                  if (use_crc)
+                    tpdu[tpdulen++] = (edc >> 8);
+                  tpdu[tpdulen++] = edc;
+                  DEBUGOUT ("T=1: requesting re-sync\n");
+                }
+              else if (retries > 3)
+                {
+                  DEBUGOUT ("T=1: 3 failed retries\n");
                   return CCID_DRIVER_ERR_CARD_IO_ERROR;
                 }
-              msg = send_buffer;
-              tpdulen = last_tpdulen;
+              else
+                {
+                  /* Error: repeat last block */
+                  msg = send_buffer;
+                  tpdulen = last_tpdulen;
+                }
             }
           else if (sending && !!(tpdu[1] & 0x10) == handle->t1_ns)
             { /* Response does not match our sequence number. */
@@ -2771,7 +2848,7 @@ ccid_transceive (ccid_driver_t handle,
       else 
         { /* This is a S-block. */
           retries = 0;
-          DEBUGOUT_2 ("T=1 S-block %s received cmd=%d\n",
+          DEBUGOUT_2 ("T=1: S-block %s received cmd=%d\n",
                       (tpdu[1] & 0x20)? "response": "request",
                       (tpdu[1] & 0x1f));
           if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 1 && tpdu[2] == 1)
@@ -2783,9 +2860,8 @@ ccid_transceive (ccid_driver_t handle,
                 return CCID_DRIVER_ERR_CARD_IO_ERROR;
 
               msg = send_buffer;
-              tpdu = msg+10;
-              /* NAD: DAD=1, SAD=0 */
-              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+              tpdu = msg + hdrlen;
+              tpdu[0] = nad_byte;
               tpdu[1] = (0xc0 | 0x20 | 1); /* S-block response */
               tpdu[2] = 1;
               tpdu[3] = ifsc;
@@ -2794,16 +2870,15 @@ ccid_transceive (ccid_driver_t handle,
               if (use_crc)
                 tpdu[tpdulen++] = (edc >> 8);
               tpdu[tpdulen++] = edc;
-              DEBUGOUT_1 ("T=1 requesting an ifsc=%d\n", ifsc);
+              DEBUGOUT_1 ("T=1: requesting an ifsc=%d\n", ifsc);
             }
           else if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
             {
               /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
               msg = send_buffer;
-              tpdu = msg+10;
-              /* NAD: DAD=1, SAD=0 */
-              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+              tpdu = msg + hdrlen;
+              tpdu[0] = nad_byte;
               tpdu[1] = (0xc0 | 0x20 | 3); /* S-block response */
               tpdu[2] = 1;
               tpdu[3] = bwi;
@@ -2812,7 +2887,14 @@ ccid_transceive (ccid_driver_t handle,
               if (use_crc)
                 tpdu[tpdulen++] = (edc >> 8);
               tpdu[tpdulen++] = edc;
-              DEBUGOUT_1 ("T=1 waittime extension of bwi=%d\n", bwi);
+              DEBUGOUT_1 ("T=1: waittime extension of bwi=%d\n", bwi);
+            }
+          else if ( (tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 0 && !tpdu[2])
+            {
+              DEBUGOUT ("T=1: resync ack from reader\n");
+              /* Repeat previous block.  */
+              msg = send_buffer;
+              tpdulen = last_tpdulen;
             }
           else
             return CCID_DRIVER_ERR_CARD_IO_ERROR;
@@ -3070,8 +3152,8 @@ ccid_transceive_secure (ccid_driver_t handle,
         }
     }
   else 
-    { /* This is a S-block. */
-      DEBUGOUT_2 ("T=1 S-block %s received cmd=%d for Secure operation\n",
+    { /* This is a S-bl<ock. */
+      DEBUGOUT_2 ("T=1: S-block %s received cmd=%d for Secure operation\n",
                   (tpdu[1] & 0x20)? "response": "request",
                   (tpdu[1] & 0x1f));
       return CCID_DRIVER_ERR_CARD_IO_ERROR;

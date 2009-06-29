@@ -1,3 +1,10 @@
+2009-06-29  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_transceive): Add a hack to support extended
+	length for Omnikey readers.
+	(is_exlen_apdu): New.
+	(parse_ccid_descriptor): Track short+extended apdu exchange level.
+
 2009-06-18  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (verify_chv2): Remove special case for v2 cards.
