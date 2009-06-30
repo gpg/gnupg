@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-06-17 11:55+0200\n"
+"POT-Creation-Date: 2009-06-30 12:14+0200\n"
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -1263,7 +1263,7 @@ msgid "This command is only available for version 2 cards\n"
 msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 
 # Parts?  Peces?  ivb
-#: g10/card-util.c:108 scd/app-openpgp.c:2010
+#: g10/card-util.c:108 scd/app-openpgp.c:2012
 #, fuzzy
 msgid "Reset Code not or not anymore available\n"
 msgstr "parts de la clau secreta no estan disponbles\n"
@@ -1458,7 +1458,7 @@ msgid "   (3) Authentication key\n"
 msgstr ""
 
 #: g10/card-util.c:1351 g10/card-util.c:1430 g10/keyedit.c:945
-#: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1732 g10/revoke.c:685
+#: g10/keygen.c:1602 g10/keygen.c:1630 g10/keygen.c:1732 g10/revoke.c:683
 msgid "Invalid selection.\n"
 msgstr "La selecció és invàlida.\n"
 
@@ -1571,7 +1571,7 @@ msgstr ""
 msgid "Admin commands are not allowed\n"
 msgstr ""
 
-#: g10/card-util.c:1832 g10/keyedit.c:2277
+#: g10/card-util.c:1830 g10/keyedit.c:2280
 msgid "Invalid command  (try \"help\")\n"
 msgstr "L'ordre no és vàlida (proveu «help»)\n"
 
@@ -1584,7 +1584,7 @@ msgstr "--output no funciona per a aquesta ordre\n"
 msgid "can't open `%s'\n"
 msgstr "no s'ha pogut obrir «%s»\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3435 g10/keyserver.c:1734
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3438 g10/keyserver.c:1734
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1893,7 +1893,7 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clau invàlida %08lX s'ha fet vàlida amb --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3760
+#: g10/getkey.c:2533 g10/keyedit.c:3763
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
@@ -2145,7 +2145,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Clau pública: "
 
-#: g10/gpg.c:855 g10/keyedit.c:2343
+#: g10/gpg.c:855 g10/keyedit.c:2346
 msgid "Cipher: "
 msgstr "Xifratge: "
 
@@ -2153,7 +2153,7 @@ msgstr "Xifratge: "
 msgid "Hash: "
 msgstr "Dispersió: "
 
-#: g10/gpg.c:869 g10/keyedit.c:2388
+#: g10/gpg.c:869 g10/keyedit.c:2391
 msgid "Compression: "
 msgstr "Compressió: "
 
@@ -2313,7 +2313,7 @@ msgstr "%s no és un joc de caràcters vàlid\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s no és un joc de caràcters vàlid\n"
 
-#: g10/gpg.c:2611 g10/gpg.c:2806 g10/keyedit.c:4118
+#: g10/gpg.c:2611 g10/gpg.c:2806 g10/keyedit.c:4121
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "no s'ha pogut analitzar sintàcticament la URI del servidor de claus\n"
@@ -3525,8 +3525,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Signar realment? "
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4837 g10/keyedit.c:4928 g10/keyedit.c:4992
-#: g10/keyedit.c:5053 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4840 g10/keyedit.c:4931 g10/keyedit.c:4995
+#: g10/keyedit.c:5056 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Ha fallat el procés de signatura: %s\n"
@@ -3539,7 +3539,7 @@ msgstr ""
 msgid "This key is not protected.\n"
 msgstr "Aquesta clau no està protegida.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3674 g10/revoke.c:538
+#: g10/keyedit.c:1146 g10/keygen.c:3674 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 
@@ -3821,7 +3821,7 @@ msgstr "la classe de signatura és desconeguda"
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 
-#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2033
+#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2036
 msgid "You must select at least one user ID.\n"
 msgstr "Heu de seleccionar al menys un ID d'usuari.\n"
 
@@ -3839,204 +3839,206 @@ msgstr "Realment voleu eliminar tots els ID d'usuari seleccionats? "
 msgid "Really remove this user ID? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
-#: g10/keyedit.c:1902
+#. TRANSLATORS: Please take care: This is about
+#. moving the key and not about removing it.
+#: g10/keyedit.c:1905
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Realment voleu esborrar aquesta autosignatura? (s/N)"
 
-#: g10/keyedit.c:1914
+#: g10/keyedit.c:1917
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Heu de seleccionar, si més no, una clau.\n"
 
-#: g10/keyedit.c:1942
+#: g10/keyedit.c:1945
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1956
+#: g10/keyedit.c:1959
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "no s'ha pogut obrir «%s»: %s\n"
 
-#: g10/keyedit.c:1973
+#: g10/keyedit.c:1976
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
-#: g10/keyedit.c:1997
+#: g10/keyedit.c:2000
 msgid "You must select at least one key.\n"
 msgstr "Heu de seleccionar, si més no, una clau.\n"
 
-#: g10/keyedit.c:2000
+#: g10/keyedit.c:2003
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Realment voleu eliminar les claus seleccionades? "
 
-#: g10/keyedit.c:2001
+#: g10/keyedit.c:2004
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Realment voleu eliminar aquesta clau? "
 
-#: g10/keyedit.c:2036
+#: g10/keyedit.c:2039
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Realment voleu revocar tots els ID d'usuari seleccionats? "
 
-#: g10/keyedit.c:2037
+#: g10/keyedit.c:2040
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Realment voleu eliminar aquest ID d'usuari? "
 
-#: g10/keyedit.c:2055
+#: g10/keyedit.c:2058
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Realment voleu revocar aquesta clau? "
 
-#: g10/keyedit.c:2066
+#: g10/keyedit.c:2069
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Realment voleu revocar les claus seleccionades? "
 
-#: g10/keyedit.c:2068
+#: g10/keyedit.c:2071
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Realment voleu revocar aquesta clau? "
 
-#: g10/keyedit.c:2118
+#: g10/keyedit.c:2121
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2160
+#: g10/keyedit.c:2163
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "estableix la llista de preferències"
 
-#: g10/keyedit.c:2166
+#: g10/keyedit.c:2169
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr ""
 "Voleu actualitzar les preferències per a les ID d'usuaris seleccionades?"
 
-#: g10/keyedit.c:2168
+#: g10/keyedit.c:2171
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Realment voleu actualitzar les preferències? "
 
-#: g10/keyedit.c:2238
+#: g10/keyedit.c:2241
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Voleu desar els canvis? "
 
-#: g10/keyedit.c:2241
+#: g10/keyedit.c:2244
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Voleu eixir sense desar? "
 
-#: g10/keyedit.c:2251
+#: g10/keyedit.c:2254
 #, c-format
 msgid "update failed: %s\n"
 msgstr "ha fallat l'actualització: %s\n"
 
-#: g10/keyedit.c:2258
+#: g10/keyedit.c:2261
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "ha fallat l'actualització de la clau secreta: %s\n"
 
-#: g10/keyedit.c:2265
+#: g10/keyedit.c:2268
 msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualització.\n"
 
-#: g10/keyedit.c:2366
+#: g10/keyedit.c:2369
 msgid "Digest: "
 msgstr "Resum: "
 
-#: g10/keyedit.c:2417
+#: g10/keyedit.c:2420
 msgid "Features: "
 msgstr "Funcionalitats: "
 
-#: g10/keyedit.c:2428
+#: g10/keyedit.c:2431
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2443 g10/keylist.c:314
+#: g10/keyedit.c:2446 g10/keylist.c:314
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2451 g10/keyedit.c:2452
+#: g10/keyedit.c:2454 g10/keyedit.c:2455
 #, fuzzy
 msgid "Notations: "
 msgstr "Notació: "
 
-#: g10/keyedit.c:2673
+#: g10/keyedit.c:2676
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "No hi ha preferències en un ID d'usuari d'estil PGP 2.x.\n"
 
 # Potser %s haja d'anar darrere de «clau».  ivb
 # És cert. Nova funcionalitat de 1.2.0, IIRC. jm
-#: g10/keyedit.c:2732
+#: g10/keyedit.c:2735
 #, fuzzy, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Aquesta clau pot ser revocada per la clau %s "
 
 # Potser %s haja d'anar darrere de «clau».  ivb
 # És cert. Nova funcionalitat de 1.2.0, IIRC. jm
-#: g10/keyedit.c:2753
+#: g10/keyedit.c:2756
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Aquesta clau pot ser revocada per la clau %s "
 
-#: g10/keyedit.c:2759
+#: g10/keyedit.c:2762
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (sensible)"
 
-#: g10/keyedit.c:2775 g10/keyedit.c:2831 g10/keyedit.c:2892 g10/keyedit.c:2907
+#: g10/keyedit.c:2778 g10/keyedit.c:2834 g10/keyedit.c:2895 g10/keyedit.c:2910
 #: g10/keylist.c:200 g10/keyserver.c:529
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "no s'ha pogut creat %s: %s\n"
 
-#: g10/keyedit.c:2778 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:989
+#: g10/keyedit.c:2781 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:989
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[revocada]"
 
-#: g10/keyedit.c:2780 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
+#: g10/keyedit.c:2783 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [caduca: %s]"
 
-#: g10/keyedit.c:2782 g10/keyedit.c:2833 g10/keyedit.c:2894 g10/keyedit.c:2909
+#: g10/keyedit.c:2785 g10/keyedit.c:2836 g10/keyedit.c:2897 g10/keyedit.c:2912
 #: g10/keylist.c:202 g10/keylist.c:809 g10/keylist.c:844 g10/keylist.c:938
 #: g10/keylist.c:959 g10/keyserver.c:535 g10/mainproc.c:995
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [caduca: %s]"
 
-#: g10/keyedit.c:2784
+#: g10/keyedit.c:2787
 #, c-format
 msgid "usage: %s"
 msgstr ""
 
-#: g10/keyedit.c:2799
+#: g10/keyedit.c:2802
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " confiança: %c/%c"
 
-#: g10/keyedit.c:2803
+#: g10/keyedit.c:2806
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2810
+#: g10/keyedit.c:2813
 msgid "This key has been disabled"
 msgstr "Aquesta clau ha estat desactivada"
 
-#: g10/keyedit.c:2838 g10/keylist.c:206
+#: g10/keyedit.c:2841 g10/keylist.c:206
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2862
+#: g10/keyedit.c:2865
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -4044,19 +4046,19 @@ msgstr ""
 "Teniu en compte que la validesa de la clau mostrada no és necessàriament\n"
 "correcta a no ser que torneu a executar el programa.\n"
 
-#: g10/keyedit.c:2926 g10/keyedit.c:3272 g10/keyserver.c:539
+#: g10/keyedit.c:2929 g10/keyedit.c:3275 g10/keyserver.c:539
 #: g10/mainproc.c:1842 g10/trustdb.c:1173 g10/trustdb.c:1701
 #, fuzzy
 msgid "revoked"
 msgstr "[revocada]"
 
-#: g10/keyedit.c:2928 g10/keyedit.c:3274 g10/keyserver.c:543
+#: g10/keyedit.c:2931 g10/keyedit.c:3277 g10/keyserver.c:543
 #: g10/mainproc.c:1844 g10/trustdb.c:526 g10/trustdb.c:1703
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2993
+#: g10/keyedit.c:2996
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -4066,7 +4068,7 @@ msgstr ""
 "assumida.\n"
 
 # Photo ID com abans.  ivb
-#: g10/keyedit.c:3054
+#: g10/keyedit.c:3057
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4075,78 +4077,78 @@ msgstr ""
 "AVÍS: Aquesta és una clau d'estil PGP2. Afegir un photo ID pot fer que "
 "algunes versions de PGP rebutgen aquesta clau.\n"
 
-#: g10/keyedit.c:3059 g10/keyedit.c:3394
+#: g10/keyedit.c:3062 g10/keyedit.c:3397
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Esteu segur que encara voleu afegir-lo? (s/N) "
 
-#: g10/keyedit.c:3065
+#: g10/keyedit.c:3068
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "No podeu afegir un photo ID a una clau d'estil PGP2.\n"
 
 # Aquesta i les següents no haurien de portar (s/N/q) i no (y/N/q)?  ivb
 # Hmm. Sí... (s/N/x) jm
-#: g10/keyedit.c:3205
+#: g10/keyedit.c:3208
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura correcta? (s/N/x)"
 
-#: g10/keyedit.c:3215
+#: g10/keyedit.c:3218
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura invàlida? (s/N/x)"
 
-#: g10/keyedit.c:3219
+#: g10/keyedit.c:3222
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Voleu esborrar aquesta signatura desconeguda? (s/N/x)"
 
-#: g10/keyedit.c:3225
+#: g10/keyedit.c:3228
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Realment voleu esborrar aquesta autosignatura? (s/N)"
 
 # Werner FIXME: use ngettext. jm
-#: g10/keyedit.c:3239
+#: g10/keyedit.c:3242
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "S'ha esborrat %d signatura.\n"
 
 # Werner FIXME: use ngettext. jm
-#: g10/keyedit.c:3240
+#: g10/keyedit.c:3243
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "S'han esborrat %d signatures.\n"
 
-#: g10/keyedit.c:3243
+#: g10/keyedit.c:3246
 msgid "Nothing deleted.\n"
 msgstr "No s'hi ha eliminat res.\n"
 
-#: g10/keyedit.c:3276 g10/trustdb.c:1705
+#: g10/keyedit.c:3279 g10/trustdb.c:1705
 msgid "invalid"
 msgstr "invàlida"
 
-#: g10/keyedit.c:3278
+#: g10/keyedit.c:3281
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "L'ID d'usuari «%s» està revocat."
 
-#: g10/keyedit.c:3285
+#: g10/keyedit.c:3288
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "L'ID d'usuari «%s» està revocat."
 
-#: g10/keyedit.c:3286
+#: g10/keyedit.c:3289
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "L'ID d'usuari «%s» està revocat."
 
-#: g10/keyedit.c:3294
+#: g10/keyedit.c:3297
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
-#: g10/keyedit.c:3295
+#: g10/keyedit.c:3298
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
-#: g10/keyedit.c:3389
+#: g10/keyedit.c:3392
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -4155,205 +4157,205 @@ msgstr ""
 "AVÍS: Aquesta és una clau d'estil PGP 2.x. Afegir un revocador designat pot\n"
 "fer que algunes versions de PGP rebutjen aquesta clau.\n"
 
-#: g10/keyedit.c:3400
+#: g10/keyedit.c:3403
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "No podeu afegir un revocador designat a una clau d'estil PGP 2.x.\n"
 
-#: g10/keyedit.c:3420
+#: g10/keyedit.c:3423
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Introduïu l'ID d'usuari del revocador designat: "
 
-#: g10/keyedit.c:3445
+#: g10/keyedit.c:3448
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "no es pot nominar a una clau d'estil PGP 2.x com a revocador designat\n"
 
-#: g10/keyedit.c:3460
+#: g10/keyedit.c:3463
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "no podeu nominar una clau com el seu propi revocador designat\n"
 
-#: g10/keyedit.c:3482
+#: g10/keyedit.c:3485
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "no podeu nominar una clau com el seu propi revocador designat\n"
 
-#: g10/keyedit.c:3501
+#: g10/keyedit.c:3504
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "AVÍS: no es pot desfer la nominació d'una clau com a revocador designat!\n"
 
-#: g10/keyedit.c:3507
+#: g10/keyedit.c:3510
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Esteu segur que voleu nominar aquesta clau com a revocador designat? (s/N): "
 
-#: g10/keyedit.c:3568
+#: g10/keyedit.c:3571
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Per favor, elimineu les seleccions de les claus secretes.\n"
 
-#: g10/keyedit.c:3574
+#: g10/keyedit.c:3577
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Per favor, seleccioneu com a molt una clau secundària.\n"
 
-#: g10/keyedit.c:3578
+#: g10/keyedit.c:3581
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "S'està canviant la data de caducitat per a una clau secundària.\n"
 
-#: g10/keyedit.c:3581
+#: g10/keyedit.c:3584
 msgid "Changing expiration time for the primary key.\n"
 msgstr "S'està canviant la data de caducitat per a una clau primària.\n"
 
-#: g10/keyedit.c:3627
+#: g10/keyedit.c:3630
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No podeu canviar la data de caducitat de les claus v3\n"
 
-#: g10/keyedit.c:3643
+#: g10/keyedit.c:3646
 msgid "No corresponding signature in secret ring\n"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
-#: g10/keyedit.c:3721
+#: g10/keyedit.c:3724
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr ""
 "AVÍS: no es pot desfer la nominació d'una clau com a revocador designat!\n"
 
-#: g10/keyedit.c:3727
+#: g10/keyedit.c:3730
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3890
+#: g10/keyedit.c:3893
 msgid "Please select exactly one user ID.\n"
 msgstr "Heu de seleccionar exactament un ID.\n"
 
-#: g10/keyedit.c:3929 g10/keyedit.c:4039 g10/keyedit.c:4159 g10/keyedit.c:4300
+#: g10/keyedit.c:3932 g10/keyedit.c:4042 g10/keyedit.c:4162 g10/keyedit.c:4303
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "es descarta l'autosignatura v3 en l'id d'usuari «%s»\n"
 
-#: g10/keyedit.c:4100
+#: g10/keyedit.c:4103
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4180
+#: g10/keyedit.c:4183
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Esteu segur que encara voleu utilitzarla (s/N)? "
 
-#: g10/keyedit.c:4181
+#: g10/keyedit.c:4184
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Esteu segur que encara voleu utilitzarla (s/N)? "
 
-#: g10/keyedit.c:4243
+#: g10/keyedit.c:4246
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Notació de signatura: "
 
-#: g10/keyedit.c:4392
+#: g10/keyedit.c:4395
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Voleu sobreescriure? (s/N) "
 
-#: g10/keyedit.c:4456
+#: g10/keyedit.c:4459
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
 
-#: g10/keyedit.c:4514
+#: g10/keyedit.c:4517
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
 
-#: g10/keyedit.c:4541
+#: g10/keyedit.c:4544
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
 
-#: g10/keyedit.c:4676
+#: g10/keyedit.c:4679
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "ID d'usuari: «"
 
-#: g10/keyedit.c:4679 g10/keyedit.c:4743 g10/keyedit.c:4786
+#: g10/keyedit.c:4682 g10/keyedit.c:4746 g10/keyedit.c:4789
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr ""
 "»\n"
 "signat amb la vostra clau %08lX el %s\n"
 
-#: g10/keyedit.c:4681 g10/keyedit.c:4745 g10/keyedit.c:4788
+#: g10/keyedit.c:4684 g10/keyedit.c:4748 g10/keyedit.c:4791
 msgid " (non-exportable)"
 msgstr " (no-exportable)"
 
-#: g10/keyedit.c:4685
+#: g10/keyedit.c:4688
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Aquesta signatura va caducar el %s.\n"
 
-#: g10/keyedit.c:4689
+#: g10/keyedit.c:4692
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Esteu segur de que encara voleu revocarla? (s/N) "
 
 # (s/N) ivb
 # S! jm
-#: g10/keyedit.c:4693
+#: g10/keyedit.c:4696
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Voleu crear un certificat de revocació per a aquesta signatura? (s/N) "
 
-#: g10/keyedit.c:4720
+#: g10/keyedit.c:4723
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Heu signat els següents ID d'usuari:\n"
 
-#: g10/keyedit.c:4746
+#: g10/keyedit.c:4749
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (no-exportable)"
 
-#: g10/keyedit.c:4753
+#: g10/keyedit.c:4756
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   revocat per %08lX el %s\n"
 
-#: g10/keyedit.c:4775
+#: g10/keyedit.c:4778
 msgid "You are about to revoke these signatures:\n"
 msgstr "Esteu a punt de revocar aquestes signatures:\n"
 
 # (s/N)?  ivb
-#: g10/keyedit.c:4795
+#: g10/keyedit.c:4798
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Realment voleu crear els certificats de revocació? (s/N) "
 
-#: g10/keyedit.c:4825
+#: g10/keyedit.c:4828
 msgid "no secret key\n"
 msgstr "ho hi ha clau secreta\n"
 
-#: g10/keyedit.c:4895
+#: g10/keyedit.c:4898
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
-#: g10/keyedit.c:4912
+#: g10/keyedit.c:4915
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "AVÍS: una signatura d'ID d'usuari està datada %d segons en el futur\n"
 
-#: g10/keyedit.c:4976
+#: g10/keyedit.c:4979
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
-#: g10/keyedit.c:5038
+#: g10/keyedit.c:5041
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "l'ID d'usuari «%s» ja està revocat\n"
 
-#: g10/keyedit.c:5133
+#: g10/keyedit.c:5136
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -5651,23 +5653,23 @@ msgstr "És aquesta foto correcta (s/N/x)? "
 msgid "unable to display photo ID!\n"
 msgstr "no s'ha pogut mostrar el photo ID!\n"
 
-#: g10/pkclist.c:60 g10/revoke.c:623
+#: g10/pkclist.c:60 g10/revoke.c:621
 msgid "No reason specified"
 msgstr "No s'ha especificat cap raó"
 
-#: g10/pkclist.c:62 g10/revoke.c:625
+#: g10/pkclist.c:62 g10/revoke.c:623
 msgid "Key is superseded"
 msgstr "La clau ha estat substituïda"
 
-#: g10/pkclist.c:64 g10/revoke.c:624
+#: g10/pkclist.c:64 g10/revoke.c:622
 msgid "Key has been compromised"
 msgstr "La clau ha estat compromesa"
 
-#: g10/pkclist.c:66 g10/revoke.c:626
+#: g10/pkclist.c:66 g10/revoke.c:624
 msgid "Key is no longer used"
 msgstr "La clau ja no s'usa"
 
-#: g10/pkclist.c:68 g10/revoke.c:627
+#: g10/pkclist.c:68 g10/revoke.c:625
 msgid "User ID is no longer valid"
 msgstr "L'ID d'usuari ja no és vàlid"
 
@@ -5739,7 +5741,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: g10/pkclist.c:298 g10/revoke.c:652
+#: g10/pkclist.c:298 g10/revoke.c:650
 msgid "Your decision? "
 msgstr "La vostra decisió? "
 
@@ -6005,7 +6007,7 @@ msgid "NOTE: key has been revoked"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
 #: g10/revoke.c:102 g10/revoke.c:116 g10/revoke.c:128 g10/revoke.c:174
-#: g10/revoke.c:186 g10/revoke.c:587
+#: g10/revoke.c:186 g10/revoke.c:585
 #, c-format
 msgid "build_packet failed: %s\n"
 msgstr "ha fallat build_packet: %s\n"
@@ -6028,11 +6030,11 @@ msgstr "(Aquesta és una clau de revocació sensible)\n"
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 
-#: g10/revoke.c:327 g10/revoke.c:553
+#: g10/revoke.c:327 g10/revoke.c:551
 msgid "ASCII armored output forced.\n"
 msgstr "s'ha forçat l'eixida d'armadura ASCII.\n"
 
-#: g10/revoke.c:342 g10/revoke.c:567
+#: g10/revoke.c:342 g10/revoke.c:565
 #, c-format
 msgid "make_keysig_packet failed: %s\n"
 msgstr "ha fallat make_keysig_packet: %s\n"
@@ -6051,29 +6053,29 @@ msgstr "no s'han ttrobat claus de revocació per a «%s»\n"
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
-#: g10/revoke.c:499
+#: g10/revoke.c:497
 #, c-format
 msgid "no corresponding public key: %s\n"
 msgstr "no hi ha cap clau pública corresponent: %s\n"
 
-#: g10/revoke.c:510
+#: g10/revoke.c:508
 msgid "public key does not match secret key!\n"
 msgstr "la clau pública no coincideix amb la clau secreta!\n"
 
-#: g10/revoke.c:517
+#: g10/revoke.c:515
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 
-#: g10/revoke.c:534
+#: g10/revoke.c:532
 msgid "unknown protection algorithm\n"
 msgstr "l'algorisme de protecció és desconegut\n"
 
-#: g10/revoke.c:542
+#: g10/revoke.c:540
 msgid "NOTE: This key is not protected!\n"
 msgstr "NOTA: Aquesta clau no està protegida!\n"
 
-#: g10/revoke.c:593
+#: g10/revoke.c:591
 msgid ""
 "Revocation certificate created.\n"
 "\n"
@@ -6092,34 +6094,34 @@ msgstr ""
 "d'impressió de la vostra màquina podria emmagatzemar les dades i fer-les\n"
 "disponibles a altres!\n"
 
-#: g10/revoke.c:635
+#: g10/revoke.c:633
 msgid "Please select the reason for the revocation:\n"
 msgstr "Seleccioneu la raó de la revocació:\n"
 
-#: g10/revoke.c:645
+#: g10/revoke.c:643
 msgid "Cancel"
 msgstr "Cancel·la"
 
-#: g10/revoke.c:647
+#: g10/revoke.c:645
 #, c-format
 msgid "(Probably you want to select %d here)\n"
 msgstr "(Segurament voleu seleccionar %d ací)\n"
 
-#: g10/revoke.c:688
+#: g10/revoke.c:686
 msgid "Enter an optional description; end it with an empty line:\n"
 msgstr ""
 "Introduïu una descripció opcional; finalitzeu amb una línia en blanc:\n"
 
-#: g10/revoke.c:716
+#: g10/revoke.c:714
 #, c-format
 msgid "Reason for revocation: %s\n"
 msgstr "Raó de la revocació: %s\n"
 
-#: g10/revoke.c:718
+#: g10/revoke.c:716
 msgid "(No description given)\n"
 msgstr "(No es va donar una descripció)\n"
 
-#: g10/revoke.c:723
+#: g10/revoke.c:721
 #, fuzzy
 msgid "Is this okay? (y/N) "
 msgstr "És açò correcte? "
@@ -6903,19 +6905,19 @@ msgid ""
 "list, export, import Keybox data\n"
 msgstr ""
 
-#: scd/app-nks.c:712 scd/app-openpgp.c:2518
+#: scd/app-nks.c:712 scd/app-openpgp.c:2520
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-nks.c:720 scd/app-openpgp.c:2530
+#: scd/app-nks.c:720 scd/app-openpgp.c:2532
 #, c-format
 msgid "RSA public exponent missing or larger than %d bits\n"
 msgstr ""
 
-#: scd/app-nks.c:800 scd/app-openpgp.c:1522 scd/app-openpgp.c:1541
-#: scd/app-openpgp.c:1714 scd/app-openpgp.c:1731 scd/app-openpgp.c:1975
-#: scd/app-openpgp.c:2020 scd/app-dinsig.c:303
+#: scd/app-nks.c:800 scd/app-openpgp.c:1536 scd/app-openpgp.c:1555
+#: scd/app-openpgp.c:1716 scd/app-openpgp.c:1733 scd/app-openpgp.c:1977
+#: scd/app-openpgp.c:2022 scd/app-dinsig.c:303
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
@@ -6964,7 +6966,7 @@ msgid ""
 "qualified signatures."
 msgstr ""
 
-#: scd/app-nks.c:1220 scd/app-openpgp.c:2053 scd/app-dinsig.c:531
+#: scd/app-nks.c:1220 scd/app-openpgp.c:2055 scd/app-dinsig.c:531
 #, fuzzy, c-format
 msgid "error getting new PIN: %s\n"
 msgstr "error en crear «%s»: %s\n"
@@ -6979,181 +6981,181 @@ msgstr "no s'ha pogut emmagatzemar l'empremta digital: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "no s'ha pogut reconstruir la memòria cau de l'anell: %s\n"
 
-#: scd/app-openpgp.c:1129
+#: scd/app-openpgp.c:1143
 #, fuzzy, c-format
 msgid "reading public key failed: %s\n"
 msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
 
-#: scd/app-openpgp.c:1137 scd/app-openpgp.c:2753
+#: scd/app-openpgp.c:1151 scd/app-openpgp.c:2755
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1145 scd/app-openpgp.c:2761
+#: scd/app-openpgp.c:1159 scd/app-openpgp.c:2763
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1154 scd/app-openpgp.c:2771
+#: scd/app-openpgp.c:1168 scd/app-openpgp.c:2773
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1474
+#: scd/app-openpgp.c:1488
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1481
+#: scd/app-openpgp.c:1495
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1496
+#: scd/app-openpgp.c:1510
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr ""
 
-#: scd/app-openpgp.c:1507 scd/app-openpgp.c:1969
+#: scd/app-openpgp.c:1521 scd/app-openpgp.c:1971
 #, fuzzy
 msgid "||Please enter the PIN"
 msgstr "canvia la contrasenya"
 
-#: scd/app-openpgp.c:1548 scd/app-openpgp.c:1738 scd/app-openpgp.c:1982
+#: scd/app-openpgp.c:1562 scd/app-openpgp.c:1740 scd/app-openpgp.c:1984
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1561 scd/app-openpgp.c:1612 scd/app-openpgp.c:1750
-#: scd/app-openpgp.c:3070
+#: scd/app-openpgp.c:1575 scd/app-openpgp.c:1614 scd/app-openpgp.c:1752
+#: scd/app-openpgp.c:3072
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "l'enviament al servidor de claus ha fallat: %s\n"
 
-#: scd/app-openpgp.c:1641 scd/app-openpgp.c:2001 scd/app-openpgp.c:3333
+#: scd/app-openpgp.c:1643 scd/app-openpgp.c:2003 scd/app-openpgp.c:3335
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1647 scd/app-openpgp.c:3342
+#: scd/app-openpgp.c:1649 scd/app-openpgp.c:3344
 msgid "card is permanently locked!\n"
 msgstr ""
 
-#: scd/app-openpgp.c:1654
+#: scd/app-openpgp.c:1656
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
-#: scd/app-openpgp.c:1661
+#: scd/app-openpgp.c:1663
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr "canvia la contrasenya"
 
-#: scd/app-openpgp.c:1665
+#: scd/app-openpgp.c:1667
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "canvia la contrasenya"
 
-#: scd/app-openpgp.c:1686
+#: scd/app-openpgp.c:1688
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2016
+#: scd/app-openpgp.c:2018
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
 msgstr "Seleccioneu la raó de la revocació:\n"
 
-#: scd/app-openpgp.c:2026 scd/app-openpgp.c:2078
+#: scd/app-openpgp.c:2028 scd/app-openpgp.c:2080
 #, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2048
+#: scd/app-openpgp.c:2050
 msgid "|RN|New Reset Code"
 msgstr ""
 
-#: scd/app-openpgp.c:2049
+#: scd/app-openpgp.c:2051
 msgid "|AN|New Admin PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:2049
+#: scd/app-openpgp.c:2051
 msgid "|N|New PIN"
 msgstr ""
 
-#: scd/app-openpgp.c:2158 scd/app-openpgp.c:2839
+#: scd/app-openpgp.c:2160 scd/app-openpgp.c:2841
 #, fuzzy
 msgid "error reading application data\n"
 msgstr "s'ha produït un error en llegir el bloc de claus: %s\n"
 
-#: scd/app-openpgp.c:2164 scd/app-openpgp.c:2846
+#: scd/app-openpgp.c:2166 scd/app-openpgp.c:2848
 #, fuzzy
 msgid "error reading fingerprint DO\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
-#: scd/app-openpgp.c:2174
+#: scd/app-openpgp.c:2176
 #, fuzzy
 msgid "key already exists\n"
 msgstr "«%s» ja està comprimida\n"
 
-#: scd/app-openpgp.c:2178
+#: scd/app-openpgp.c:2180
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2180
+#: scd/app-openpgp.c:2182
 #, fuzzy
 msgid "generating new key\n"
 msgstr "genera un nou parell de claus"
 
-#: scd/app-openpgp.c:2506
+#: scd/app-openpgp.c:2508
 msgid "creation timestamp missing\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2540 scd/app-openpgp.c:2548
+#: scd/app-openpgp.c:2542 scd/app-openpgp.c:2550
 #, c-format
 msgid "RSA prime %s missing or not of size %d bits\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2644
+#: scd/app-openpgp.c:2646
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "no s'ha pogut inicialitzar la base de dades de confiança: %s\n"
 
-#: scd/app-openpgp.c:2730
+#: scd/app-openpgp.c:2732
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2743
+#: scd/app-openpgp.c:2745
 #, fuzzy
 msgid "generating key failed\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
-#: scd/app-openpgp.c:2746
+#: scd/app-openpgp.c:2748
 #, fuzzy, c-format
 msgid "key generation completed (%d seconds)\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
-#: scd/app-openpgp.c:2804
+#: scd/app-openpgp.c:2806
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2854
+#: scd/app-openpgp.c:2856
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
-#: scd/app-openpgp.c:2969
+#: scd/app-openpgp.c:2971
 #, fuzzy, c-format
 msgid "card does not support digest algorithm %s\n"
 msgstr "signatura %s, algorisme de resum %s\n"
 
-#: scd/app-openpgp.c:3045
+#: scd/app-openpgp.c:3047
 #, c-format
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3347
+#: scd/app-openpgp.c:3349
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: scd/app-openpgp.c:3572 scd/app-openpgp.c:3583
+#: scd/app-openpgp.c:3574 scd/app-openpgp.c:3585
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr ""

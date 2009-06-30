@@ -1898,8 +1898,11 @@ keyedit_menu( const char *username, strlist_t locusr,
 	    switch ( count_selected_keys (sec_keyblock) )
 	      {
 	      case 0:
-		if (cpr_get_answer_is_yes("keyedit.keytocard.use_primary",
-				     _("Really move the primary key? (y/N) ")))
+                if (cpr_get_answer_is_yes 
+                    ("keyedit.keytocard.use_primary",
+                     /* TRANSLATORS: Please take care: This is about
+                        moving the key and not about removing it.  */
+                     _("Really move the primary key? (y/N) ")))
 		  node = sec_keyblock;
 		break;
 	      case 1:

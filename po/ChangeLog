@@ -1,3 +1,11 @@
+2009-06-30  Werner Koch  <wk@g10code.com>
+
+	* es.po: Mark a bad translation fuzzy.
+
+2009-06-30  Daiki Ueno  <ueno@unixuser.org>
+
+	* ja.po: Typo fix.  Fixes bug#1078.
+
 2009-06-02  Werner Koch  <wk@g10code.com>
 
 	* de.po: Applied a patch from Daniel Leidert to fix a bunch of
