@@ -2814,7 +2814,8 @@ ccid_transceive (ccid_driver_t handle,
                   if (use_crc)
                     tpdu[tpdulen++] = (edc >> 8);
                   tpdu[tpdulen++] = edc;
-                  DEBUGOUT ("T=1: requesting re-sync\n");
+                  resyncing = 1;
+                  DEBUGOUT ("T=1: requesting resync\n");
                 }
               else if (retries > 3)
                 {
@@ -2871,7 +2872,6 @@ ccid_transceive (ccid_driver_t handle,
               if (use_crc)
                 tpdu[tpdulen++] = (edc >> 8);
               tpdu[tpdulen++] = edc;
-              resyncing = 1;
               DEBUGOUT_1 ("T=1: requesting an ifsc=%d\n", ifsc);
             }
           else if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
