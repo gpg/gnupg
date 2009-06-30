@@ -2637,6 +2637,7 @@ ccid_transceive (ccid_driver_t handle,
   if (via_escape)
     nad_byte = 0;
 
+  last_tpdulen = 0;  /* Avoid gcc warning (controlled by RESYNCING). */
   for (;;)
     {
       if (next_chunk)
@@ -2870,6 +2871,7 @@ ccid_transceive (ccid_driver_t handle,
               if (use_crc)
                 tpdu[tpdulen++] = (edc >> 8);
               tpdu[tpdulen++] = edc;
+              resyncing = 1;
               DEBUGOUT_1 ("T=1: requesting an ifsc=%d\n", ifsc);
             }
           else if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
