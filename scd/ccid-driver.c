@@ -2615,7 +2615,11 @@ ccid_transceive (ccid_driver_t handle,
       /* We employ a hack for Omnikey readers which are able to send
          TPDUs using an escape sequence.  There is no documentation
          but the Windows driver does it this way.  Tested using a
-         CM6121.  */
+         CM6121.  This method works also for the Cherry XX44
+         keyboards; however there are problems with the
+         ccid_tranceive_secure which leads to a loss of sync on the
+         CCID level.  If Cherry wants to make their keyboard work
+         again, they should hand over some docs. */
       if ((handle->id_vendor == VENDOR_OMNIKEY
            || (!handle->idev && handle->id_product == TRANSPORT_CM4040))
           && handle->apdu_level < 2
@@ -3154,7 +3158,7 @@ ccid_transceive_secure (ccid_driver_t handle,
         }
     }
   else 
-    { /* This is a S-bl<ock. */
+    { /* This is a S-block. */
       DEBUGOUT_2 ("T=1: S-block %s received cmd=%d for Secure operation\n",
                   (tpdu[1] & 0x20)? "response": "request",
                   (tpdu[1] & 0x1f));
