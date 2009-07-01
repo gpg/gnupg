@@ -1,3 +1,11 @@
+2009-07-01  Werner Koch  <wk@g10code.com>
+
+	* certreqgen-ui.c (check_keygrip): New.
+	(gpgsm_gencertreq_tty): Allow using an existing key.
+
+	* gpgsm.c (open_es_fread): New.
+	(main) <aKeygen>: Implement --batch mode.
+
 2009-06-24  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (pattern_from_strlist): Remove dead assignment of N.

@@ -86,6 +86,39 @@ store_mb_lines (membuf_t *mb, membuf_t *lines)
 }
 
 
+/* Chech whether we have a key for the key with HEXGRIP.  Returns NULL
+   if not or a string describing the type of the key (RSA, ELG, DSA,
+   etc..).  */ 
+static const char *
+check_keygrip (ctrl_t ctrl, const char *hexgrip)
+{
+  gpg_error_t err;
+  ksba_sexp_t public;
+  size_t publiclen;
+  int algo;
+
+  if (hexgrip[0] == '0' && hexgrip[1] == 'x')
+    hexgrip += 2;
+
+  err = gpgsm_agent_readkey (ctrl, 0, hexgrip, &public);
+  if (err)
+    return NULL;
+  publiclen = gcry_sexp_canon_len (public, 0, NULL, NULL);
+
+  get_pk_algo_from_canon_sexp (public, publiclen, &algo);
+  xfree (public);
+
+  switch (algo)
+    {
+    case GCRY_PK_RSA: return "RSA";
+    case GCRY_PK_DSA: return "DSA";
+    case GCRY_PK_ELG: return "ELG";
+    case GCRY_PK_ECDSA: return "ECDSA";
+    default: return NULL;
+    }
+}
+
+
 /* This function is used to create a certificate request from the
    command line.  In the past the similar gpgsm-gencert.sh script has
    been used for it; however that scripts requires a full Unix shell
@@ -99,7 +132,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   int selection;
   estream_t fp = NULL;
   int method;
-  char *keytype;
+  const char *keytype;
   char *keygrip = NULL;
   unsigned int nbits;
   int minbits = 1024;
@@ -112,11 +145,13 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   int i;
   const char *s, *s2;
 
+  answer = NULL;
   init_membuf (&mb_email, 100);
   init_membuf (&mb_dns, 100);
   init_membuf (&mb_uri, 100);
   init_membuf (&mb_result, 512);
 
+ again:
   /* Get the type of the key.  */
   tty_printf (_("Please select what kind of key you want:\n"));
   tty_printf (_("   (%d) RSA\n"), 1 );
@@ -125,10 +160,10 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
 
   do
     {
+      xfree (answer);
       answer = tty_get (_("Your selection? "));
       tty_kill_prompt ();
       selection = *answer? atoi (answer): 1;
-      xfree (answer);
     }
   while (!(selection >= 1 && selection <= 3));
   method = selection;
@@ -136,13 +171,14 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   /* Get  size of the key.  */
   if (method == 1)
     {
-      keytype = xstrdup ("RSA");
+      keytype = "RSA";
       for (;;)
         {
+          xfree (answer);
           answer = tty_getf (_("What keysize do you want? (%u) "), defbits);
           tty_kill_prompt ();
+          trim_spaces (answer);
           nbits = *answer? atoi (answer): defbits;
-          xfree (answer);
           if (nbits < minbits || nbits > maxbits)
             tty_printf(_("%s keysizes must be in the range %u-%u\n"),
                          "RSA", minbits, maxbits);
@@ -159,17 +195,34 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
     }
   else if (method == 2)
     {
-      tty_printf ("Not yet supported; "
-                  "use the gpgsm-gencert.sh script instead\n");
-      keytype = xstrdup ("RSA"); 
-      nbits = defbits; /* We need a dummy value.  */
+      for (;;)
+        {
+          xfree (answer);
+          answer = tty_get (_("Enter the keygrip: "));
+          tty_kill_prompt ();
+          trim_spaces (answer);
+          
+          if (!*answer)
+            goto again;
+          else if (strlen (answer) != 40 &&
+                   !(answer[0] == '0' && answer[1] == 'x' 
+                     && strlen (answer+2) == 40))
+            tty_printf (_("Not a valid keygrip (expecting 40 hex digits)\n"));
+          else if (!(keytype = check_keygrip (ctrl, answer)) )
+            tty_printf (_("No key with this keygrip\n"));
+          else
+            break; /* Okay.  */
+        }
+      nbits = 1024; /* A dummy value is sufficient.  */
+      xfree (keygrip);
+      keygrip = answer;
+      answer = NULL;
     }
   else /* method == 3 */
     {
       tty_printf ("Not yet supported; "
                   "use the gpgsm-gencert.sh script instead\n");
-      keytype = xstrdup ("card:foobar");
-      nbits = defbits; /* We need a dummy value.  */
+      goto again;
     }
 
   /* Ask for the key usage.  */
@@ -179,10 +232,11 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   tty_printf (_("   (%d) encrypt\n"), 3 );
   do
     {
+      xfree (answer);
       answer = tty_get (_("Your selection? "));
       tty_kill_prompt ();
+      trim_spaces (answer);
       selection = *answer? atoi (answer): 1;
-      xfree (answer);
       switch (selection)
         {
         case 1: keyusage = "sign, encrypt"; break;
@@ -194,7 +248,6 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   while (!keyusage);
 
   /* Get the subject name.  */
-  answer = NULL;
   do
     {
       size_t erroff, errlen;
@@ -303,7 +356,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   log_error (_("resource problem: out of core\n"));
  leave:
   es_fclose (fp);
-  xfree (keytype);         
+  xfree (answer);
   xfree (subject_name);
   xfree (keygrip);
   xfree (get_membuf (&mb_email, NULL));

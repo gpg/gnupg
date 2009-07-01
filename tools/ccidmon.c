@@ -702,13 +702,13 @@ parse_line_sniffusb (char *line, unsigned int lineno)
   if (debug)
     printf ("line[%u] =`%s'\n", lineno, line);
 
-  p = strtok (line, " ");
+  p = strtok (line, " \t");
   if (!p)
     return;
-  p = strtok (NULL, " ");
+  p = strtok (NULL, " \t");
   if (!p)
     return; 
-  p = strtok (NULL, " ");
+  p = strtok (NULL, " \t");
   if (!p)
     return; 
 
@@ -720,7 +720,7 @@ parse_line_sniffusb (char *line, unsigned int lineno)
       unsigned int value;
       
       length = databuffer.count;
-      while ((p=strtok (NULL, " ")))
+      while ((p=strtok (NULL, " \t")))
         {
           if (!hexdigitp (p[0]) || !hexdigitp (p[1]))
             {
@@ -745,7 +745,7 @@ parse_line_sniffusb (char *line, unsigned int lineno)
       flush_data ();
 
       *databuffer.address = 0;
-      while ((p=strtok (NULL, " (,)")))
+      while ((p=strtok (NULL, " \t(,)")))
         {
           if (!strcmp (p, "USBD_TRANSFER_DIRECTION_IN"))
             {

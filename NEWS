@@ -3,7 +3,9 @@ Noteworthy changes in version 2.0.13
 
  This is a BETA version!
 
- *
+ * Minor bnug fixes
+
+ * gpgsm --gen-key now implements a --batch mode.
 
 
 Noteworthy changes in version 2.0.12 (2009-06-17)

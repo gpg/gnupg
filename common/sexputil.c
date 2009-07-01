@@ -292,14 +292,8 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
 }
 
 
-/* Return the so called "keygrip" which is the SHA-1 hash of the
-   public key parameters expressed in a way depended on the algorithm.
-
-   KEY is expected to be an canonical encoded S-expression with a
-   public or private key. KEYLEN is the length of that buffer.
-
-   GRIP must be at least 20 bytes long.  On success 0 is returned, on
-   error an error code. */
+/* Return the so parameters of a public RSA key expressed as an
+   canonical encoded S-expression.  */
 gpg_error_t
 get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
                             unsigned char const **r_n, size_t *r_nlen,
@@ -387,5 +381,49 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
   *r_nlen = rsa_n_len;
   *r_e = rsa_e;
   *r_elen = rsa_e_len;
+  return 0;
+}
+
+
+/* Return the algo of a public RSA expressed as an canonical encoded
+   S-expression.  On error the algo is set to 0. */
+gpg_error_t
+get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
+                             int *r_algo)
+{
+  gpg_error_t err;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth;
+    
+  *r_algo = 0;
+
+  buf = keydata;
+  buflen = keydatalen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok || toklen != 10 || memcmp ("public-key", tok, toklen))
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  if (toklen == 3 && !memcmp ("rsa", tok, toklen))
+    *r_algo = GCRY_PK_RSA;
+  else if (toklen == 3 && !memcmp ("dsa", tok, toklen))
+    *r_algo = GCRY_PK_DSA;
+  else if (toklen == 3 && !memcmp ("elg", tok, toklen))
+    *r_algo = GCRY_PK_ELG;
+  else if (toklen == 5 && !memcmp ("ecdsa", tok, toklen))
+    *r_algo = GCRY_PK_ECDSA;
+  else
+    return  gpg_error (GPG_ERR_PUBKEY_ALGO);
+
   return 0;
 }

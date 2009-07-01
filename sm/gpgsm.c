@@ -417,6 +417,7 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
 static void emergency_cleanup (void);
 static int check_special_filename (const char *fname, int for_write);
 static int open_read (const char *filename);
+static estream_t open_es_fread (const char *filename);
 static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
@@ -1770,10 +1771,28 @@ main ( int argc, char **argv)
 
     case aKeygen: /* Generate a key; well kind of. */
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
-        gpgsm_gencertreq_tty (&ctrl, fp);
-        if (fp != stdout)
-          fclose (fp);
+        estream_t fpin = NULL;
+        FILE *fpout;
+
+        if (opt.batch)
+          {
+            if (!argc) /* Create from stdin. */
+              fpin = open_es_fread ("-"); 
+            else if (argc == 1) /* From file. */
+              fpin = open_es_fread (*argv); 
+            else
+              wrong_args ("--gen-key --batch [parmfile]");
+          }
+        
+        fpout = open_fwrite (opt.outfile?opt.outfile:"-");
+
+        if (fpin)
+          gpgsm_genkey (&ctrl, fpin, fpout);
+        else
+          gpgsm_gencertreq_tty (&ctrl, fpout);
+
+        if (fpout != stdout)
+          fclose (fpout);
       }
       break;
 
@@ -1975,6 +1994,37 @@ open_read (const char *filename)
     }
   return fd;
 }
+
+/* Same as open_read but return an estream_t.  */
+static estream_t
+open_es_fread (const char *filename)
+{
+  int fd;
+  estream_t fp;
+
+  if (filename[0] == '-' && !filename[1])
+    fd = fileno (stdin);
+  else
+    fd = check_special_filename (filename, 0);
+  if (fd != -1)
+    {
+      fp = es_fdopen_nc (fd, "rb");
+      if (!fp)
+        {
+          log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));
+          gpgsm_exit (2);
+        }
+      return fp;
+    }
+  fp = es_fopen (filename, "rb");
+  if (!fp)
+    {
+      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      gpgsm_exit (2);
+    }
+  return fp;
+}
+
 
 /* Open FILENAME for fwrite and return the stream.  Stop with an error
    message in case of problems.  "-" denotes stdout and if special
