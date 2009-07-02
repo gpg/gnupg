@@ -97,8 +97,8 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
   size_t publiclen;
   int algo;
 
-  if (hexgrip[0] == '0' && hexgrip[1] == 'x')
-    hexgrip += 2;
+  if (hexgrip[0] == '&')
+    hexgrip++;
 
   err = gpgsm_agent_readkey (ctrl, 0, hexgrip, &public);
   if (err)
@@ -132,6 +132,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   int selection;
   estream_t fp = NULL;
   int method;
+  char *keytype_buffer = NULL;
   const char *keytype;
   char *keygrip = NULL;
   unsigned int nbits;
@@ -205,24 +206,70 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
           if (!*answer)
             goto again;
           else if (strlen (answer) != 40 &&
-                   !(answer[0] == '0' && answer[1] == 'x' 
-                     && strlen (answer+2) == 40))
+                   !(answer[0] == '&' && strlen (answer+1) == 40))
             tty_printf (_("Not a valid keygrip (expecting 40 hex digits)\n"));
           else if (!(keytype = check_keygrip (ctrl, answer)) )
             tty_printf (_("No key with this keygrip\n"));
           else
             break; /* Okay.  */
         }
-      nbits = 1024; /* A dummy value is sufficient.  */
       xfree (keygrip);
       keygrip = answer;
       answer = NULL;
+      nbits = 1024; /* A dummy value is sufficient.  */
     }
   else /* method == 3 */
     {
-      tty_printf ("Not yet supported; "
-                  "use the gpgsm-gencert.sh script instead\n");
-      goto again;
+      char *serialno;
+      strlist_t keypairlist, sl;
+      int count;
+
+      err = gpgsm_agent_scd_serialno (ctrl, &serialno);
+      if (err)
+        {
+          tty_printf (_("error reading the card: %s\n"), gpg_strerror (err));
+          goto again;
+        }
+      tty_printf (_("Serial number of the card: %s\n"), serialno);
+      xfree (serialno);
+
+      err = gpgsm_agent_scd_keypairinfo (ctrl, &keypairlist);
+      if (err)
+        {
+          tty_printf (_("error reading the card: %s\n"), gpg_strerror (err));
+          goto again;
+        }
+
+      do
+        {
+          tty_printf (_("Available keys:\n"));
+          for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+            tty_printf ("   (%d) %s\n", count, sl->d);
+          xfree (answer);
+          answer = tty_get (_("Your selection? "));
+          tty_kill_prompt ();
+          trim_spaces (answer);
+          selection = atoi (answer);
+        }
+      while (!(selection > 0 && selection < count));
+
+      for (count=1,sl=keypairlist; sl; sl = sl->next, count++)
+        if (count == selection)
+          break;
+
+      s = sl->d;
+      while (*s && !spacep (s))
+        s++;
+      while (spacep (s))
+        s++;
+
+      xfree (keygrip);
+      keygrip = NULL;
+      xfree (keytype_buffer);
+      keytype_buffer = xasprintf ("card:%s", s);
+      free_strlist (keypairlist);
+      keytype = keytype_buffer;
+      nbits = 1024; /* A dummy value is sufficient.  */
     }
 
   /* Ask for the key usage.  */
@@ -358,6 +405,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   es_fclose (fp);
   xfree (answer);
   xfree (subject_name);
+  xfree (keytype_buffer);
   xfree (keygrip);
   xfree (get_membuf (&mb_email, NULL));
   xfree (get_membuf (&mb_dns, NULL));

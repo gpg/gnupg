@@ -388,6 +388,8 @@ int gpgsm_agent_genkey (ctrl_t ctrl,
                         ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
 int gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
                          ksba_sexp_t *r_pubkey);
+int gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno);
+int gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list);
 int gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
                            struct rootca_flags_s *rootca_flags);
 int gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip);

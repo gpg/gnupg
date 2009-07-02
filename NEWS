@@ -3,9 +3,11 @@ Noteworthy changes in version 2.0.13
 
  This is a BETA version!
 
- * Minor bnug fixes
+ * Minor bug fixes.
 
- * gpgsm --gen-key now implements a --batch mode.
+ * gpgsm --gen-key implements a --batch mode.
+
+ * gpgsm --gen-key implements all features of gpgsm-gencert.sh.
 
 
 Noteworthy changes in version 2.0.12 (2009-06-17)

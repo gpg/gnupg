@@ -83,7 +83,9 @@ query_user_menu()
 }
 
 
-
+echo "WARNING: This script is deprecated; please use" >&2
+echo "           gpgsm --gen-key" >&2
+echo "         instead." >&2
 KEY_TYPE=""
 while [ -z "$KEY_TYPE" ]; do
   query_user_menu "Key type" "RSA" "Existing key" "Direct from card"

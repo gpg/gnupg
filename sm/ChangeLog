@@ -1,3 +1,11 @@
+2009-07-02  Werner Koch  <wk@g10code.com>
+
+	* certreqgen-ui.c (gpgsm_gencertreq_tty): Allow using a key from a
+	card.
+	* call-agent.c (gpgsm_agent_scd_serialno)
+	(scd_serialno_status_cb, store_serialno): New.
+	(scd_keypairinfo_status_cb, gpgsm_agent_scd_keypairinfo): New.
+
 2009-07-01  Werner Koch  <wk@g10code.com>
 
 	* certreqgen-ui.c (check_keygrip): New.

@@ -538,8 +538,150 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   return 0;
 }
 
-
 
+
+/* Take the serial number from LINE and return it verbatim in a newly
+   allocated string.  We make sure that only hex characters are
+   returned. */
+static char *
+store_serialno (const char *line)
+{
+  const char *s;
+  char *p;
+
+  for (s=line; hexdigitp (s); s++)
+    ;
+  p = xtrymalloc (s + 1 - line);
+  if (p)
+    {
+      memcpy (p, line, s-line);
+      p[s-line] = 0;
+    }
+  return p;
+}
+
+
+/* Callback for the gpgsm_agent_serialno fucntion.  */
+static int
+scd_serialno_status_cb (void *opaque, const char *line)
+{
+  char **r_serialno = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      xfree (*r_serialno);
+      *r_serialno = store_serialno (line);
+    }
+
+  return 0;
+}
+
+
+/* Call the agent to read the serial number of the current card.  */
+int
+gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
+{
+  int rc;
+  char *serialno = NULL;
+ 
+  *r_serialno = NULL;
+  rc = start_agent (ctrl);
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, "SCD SERIALNO",
+                        NULL, NULL,
+                        default_inq_cb, ctrl,
+                        scd_serialno_status_cb, &serialno);
+  if (!rc && !serialno)
+    rc = gpg_error (GPG_ERR_INTERNAL);
+  if (rc)
+    {
+      xfree (serialno);
+      return rc;
+    }
+  *r_serialno = serialno;
+  return 0;
+}
+
+
+
+/* Callback for the gpgsm_agent_serialno fucntion.  */
+static int
+scd_keypairinfo_status_cb (void *opaque, const char *line)
+{
+  strlist_t *listaddr = opaque;
+  const char *keyword = line;
+  int keywordlen;
+  strlist_t sl;
+  char *p;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
+    {
+      sl = append_to_strlist (listaddr, line);
+      p = sl->d;
+      /* Make sure that we only have two tokes so that future
+         extensions of the format won't change the format expected by
+         the caller.  */
+      while (*p && !spacep (p))
+        p++;
+      if (*p)
+        {
+          while (spacep (p))
+            p++;
+          while (*p && !spacep (p))
+            p++;
+          *p = 0;
+        }
+    }
+
+  return 0;
+}
+
+
+/* Call the agent to read the keypairinfo lines of the current card.
+   The list is returned as a string made up of the keygrip, a space
+   and the keyid.  */
+int
+gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
+{
+  int rc;
+  strlist_t list = NULL;
+ 
+  *r_list = NULL;
+  rc = start_agent (ctrl);
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, "SCD LEARN --force",
+                        NULL, NULL,
+                        default_inq_cb, ctrl,
+                        scd_keypairinfo_status_cb, &list);
+  if (!rc && !list)
+    rc = gpg_error (GPG_ERR_NO_DATA);
+  if (rc)
+    {
+      free_strlist (list);
+      return rc;
+    }
+  *r_list = list;
+  return 0;
+}
+
+
+
 static int
 istrusted_status_cb (void *opaque, const char *line)
 {
