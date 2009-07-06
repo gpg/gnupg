@@ -228,6 +228,15 @@ instead of @command{wine}, which will launch a windows console that
 implements those additional features.
 
 
+@item Why does GPG's --search-key list weird keys?
+
+For performance reasons the keyservers do not check the keys the same
+way @command{gpg} does.  It may happen that the listing of keys
+available on the keyservers shows keys with wrong user IDs or with user
+Ids from other keys.  If you try to import this key, the bad keys or bad
+user ids won't get imported, though.  This is a bit unfortunate but we
+can't do anything about it without actually downloading the keys.
+
 @end itemize
 
 
