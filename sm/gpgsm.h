@@ -333,7 +333,7 @@ gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,
                              estream_t fp, unsigned int mode);
 
 /*-- import.c --*/
-int gpgsm_import (ctrl_t ctrl, int in_fd);
+int gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode);
 int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                         int (*of)(const char *fname));
 

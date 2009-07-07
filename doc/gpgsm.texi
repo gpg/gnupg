@@ -1219,13 +1219,18 @@ in the same way as with the OUTPUT command.
 To import certificates into the internal key database, the command
 
 @example
-  IMPORT
+  IMPORT [--re-import]
 @end example
 
 is used.  The data is expected on the file descriptor set with the
 @code{INPUT} command.  Certain checks are performend on the
-certificate.  Note that the code will also handle PKCS\#12 files and
+certificate.  Note that the code will also handle PKCS#12 files and
 import private keys; a helper program is used for that.
+
+With the option @option{--re-import} the input data is expected to a be
+a linefeed separated list of fingerprints.  The command will re-import
+the corresponding certificates; that is they are made permanent by
+removing their ephemeral flag.
 
 
 @node GPGSM DELETE
@@ -1259,6 +1264,11 @@ The value of @var{what} specifies the kind of information returned:
 Return the version of the program.
 @item pid
 Return the process id of the process.
+@item agent-check
+Return success if the agent is running.
+@item cmd_has_option @var{cmd} @var{opt}
+Return success if the command @var{cmd} implements the option @var{opt}.
+The leading two dashes usually used with @var{opt} shall not be given.
 @end table
 
 @mansect see also

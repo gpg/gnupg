@@ -8,6 +8,8 @@ Noteworthy changes in version 2.0.13
 
  * gpgsm --gen-key implements all features of gpgsm-gencert.sh.
 
+ * New option --re-import for gpgsm's IMPORT server command.
+
  * Minor bug fixes.
 
 

@@ -82,9 +82,6 @@
 ** check that we issue NO_SECKEY xxx if a -u key was not found
    We don't. The messages returned are also wrong (recipient vs. signer).
 
-* jnlib/
-** Try to remove all jnlib_xmalloc.
-
 * g10/
 ** issue a NO_SECKEY xxxx if a -u key was not found.
 

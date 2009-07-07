@@ -1802,7 +1802,7 @@ io_monitor (assuan_context_t ctx, int direction,
 }
 
 
-/* Return true if the commznd CMD implements the option OPT.  */
+/* Return true if the command CMD implements the option OPT.  */
 static int
 command_has_option (const char *cmd, const char *cmdopt)
 {

@@ -1,5 +1,11 @@
 2009-07-07  Werner Koch  <wk@g10code.com>
 
+	* server.c (command_has_option): New.
+	(cmd_getinfo): Add subcommand "cmd_has_option".
+	(cmd_import): Implement option --re-import.
+	* import.c (gpgsm_import): Add arg reimport_mode.
+	(reimport_one): New.
+
 	* gpgsm.h: Include session-env.h.
 	(opt): Add field SESSION_ENV.  Remove obsolete fields.
 	* server.c (option_handler): Rewrite setting of option fields.

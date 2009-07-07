@@ -1,6 +1,6 @@
 /* server.c - Server mode and main entry point 
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2008 Free Software Foundation, Inc.
+ *               2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -66,6 +66,10 @@ static es_cookie_io_functions_t data_line_cookie_functions =
     NULL,
     data_line_cookie_close
   };
+
+
+
+static int command_has_option (const char *cmd, const char *cmdopt);
 
 
 
@@ -638,25 +642,31 @@ cmd_sign (assuan_context_t ctx, char *line)
 }
 
 
-/* IMPORT
+/* IMPORT [--re-import]
 
-  Import the certificates read form the input-fd, return status
-  message for each imported one.  The import checks the validity of
-  the certificate but not of the entire chain.  It is possible to
-  import expired certificates.  */
+   Import the certificates read form the input-fd, return status
+   message for each imported one.  The import checks the validity of
+   the certificate but not of the entire chain.  It is possible to
+   import expired certificates.
+
+   With the option --re-import the input data is expected to a be a LF
+   separated list of fingerprints.  The command will re-import these
+   certificates, meaning that they are made permanent by removing
+   their ephemeral flag.   */
 static int 
 cmd_import (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
+  int reimport = has_option (line, "--re-import"); 
 
   (void)line;
 
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
 
-  rc = gpgsm_import (assuan_get_pointer (ctx), fd);
+  rc = gpgsm_import (assuan_get_pointer (ctx), fd, reimport);
 
   /* close and reset the fd */
   close_message_fd (ctrl);
@@ -1029,12 +1039,14 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
      version     - Return the version of the program.
      pid         - Return the process id of the server.
      agent-check - Return success if the agent is running.
+     cmd_has_option CMD OPT
+                 - Returns OK if the command CMD implements the option OPT.
 
  */
 static int
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
-  int rc;
+  int rc = 0;
 
   if (!strcmp (line, "version"))
     {
@@ -1053,13 +1065,60 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       ctrl_t ctrl = assuan_get_pointer (ctx);
       rc = gpgsm_agent_send_nop (ctrl);
     }
+  else if (!strncmp (line, "cmd_has_option", 14)
+           && (line[14] == ' ' || line[14] == '\t' || !line[14]))
+    {
+      char *cmd, *cmdopt;
+      line += 14;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        rc = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          cmd = line;
+          while (*line && (*line != ' ' && *line != '\t'))
+            line++;
+          if (!*line)
+            rc = gpg_error (GPG_ERR_MISSING_VALUE);
+          else
+            {
+              *line++ = 0;
+              while (*line == ' ' || *line == '\t')
+                line++;
+              if (!*line)
+                rc = gpg_error (GPG_ERR_MISSING_VALUE);
+              else
+                {
+                  cmdopt = line;
+                  if (!command_has_option (cmd, cmdopt))
+                    rc = gpg_error (GPG_ERR_GENERAL);
+                }
+            }
+        }
+    }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+
   return rc;
 }
 
 
 
+/* Return true if the command CMD implements the option OPT.  */
+static int
+command_has_option (const char *cmd, const char *cmdopt)
+{
+  if (!strcmp (cmd, "IMPORT"))
+    {
+      if (!strcmp (cmdopt, "re-import"))
+        return 1;
+    }
+      
+  return 0;
+}
+
+
 /* Tell the assuan library about our commands */
 static int
 register_commands (assuan_context_t ctx)

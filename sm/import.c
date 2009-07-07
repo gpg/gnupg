@@ -1,5 +1,5 @@
 /* import.c - Import certificates
- *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,6 +34,8 @@
 #include "exechelp.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
+
 
 struct stats_s {
   unsigned long count;
@@ -405,14 +407,136 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
 }
 
 
+
+/* Re-import certifciates.  IN_FD is a list of linefeed delimited
+   fingerprints t re-import.  The actual re-import is done by clearing
+   the ephemeral flag.  */
+static int
+reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
+{
+  gpg_error_t err = 0;
+  estream_t fp = NULL;
+  char line[100];  /* Sufficient for a fingerprint.  */
+  KEYDB_HANDLE kh;
+  KEYDB_SEARCH_DESC desc;
+  ksba_cert_t cert = NULL;
+  unsigned int flags;
+
+  kh = keydb_new (0);
+  if (!kh)
+    {
+      err = gpg_error (GPG_ERR_ENOMEM);;
+      log_error (_("failed to allocate keyDB handle\n"));
+      goto leave;
+    }
+  keydb_set_ephemeral (kh, 1);
+   
+  fp = es_fdopen_nc (in_fd, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("es_fdopen(%d) failed: %s\n", in_fd, gpg_strerror (err));
+      goto leave;
+    }
+
+  while (es_fgets (line, DIM(line)-1, fp) )
+    {
+      if (*line && line[strlen(line)-1] != '\n')
+        {
+          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+          goto leave;
+	}
+      trim_spaces (line);
+      if (!*line)
+        continue;
+    
+      stats->count++;
+
+      err = keydb_classify_name (line, &desc);
+      if (err)
+        {
+          print_import_problem (ctrl, NULL, 0);
+          stats->not_imported++;
+          continue;
+        }
+
+      keydb_search_reset (kh);
+      err = keydb_search (kh, &desc, 1);
+      if (err)
+        {
+          print_import_problem (ctrl, NULL, 0);
+          stats->not_imported++;
+          continue;
+        }
+
+      ksba_cert_release (cert);
+      cert = NULL;
+      err = keydb_get_cert (kh, &cert);
+      if (err)
+        {
+          log_error ("keydb_get_cert() failed: %s\n", gpg_strerror (err));
+          print_import_problem (ctrl, NULL, 1);
+          stats->not_imported++;
+          continue;
+        }
+
+      err = keydb_get_flags (kh, KEYBOX_FLAG_BLOB, 0, &flags);
+      if (err)
+        {
+          log_error (_("error getting stored flags: %s\n"), gpg_strerror (err));
+          print_imported_status (ctrl, cert, 0);
+          stats->not_imported++;
+          continue;
+        }
+      if ( !(flags & KEYBOX_FLAG_BLOB_EPHEMERAL) )
+        {
+          print_imported_status (ctrl, cert, 0);
+          stats->unchanged++;
+          continue;
+        }
+
+      err = keydb_set_cert_flags (cert, 1, KEYBOX_FLAG_BLOB, 0,
+                                  KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
+      if (err)
+        {
+          log_error ("clearing ephemeral flag failed: %s\n",
+                     gpg_strerror (err)); 
+          print_import_problem (ctrl, cert, 0);
+          stats->not_imported++;
+          continue;
+        }
+
+      print_imported_status (ctrl, cert, 1);
+      stats->imported++;
+    }
+  err = 0;
+  if (es_ferror (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading fd %d: %s\n", in_fd, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  ksba_cert_release (cert);
+  keydb_release (kh);
+  es_fclose (fp);
+  return err;
+}
+
+
+
 int
-gpgsm_import (ctrl_t ctrl, int in_fd)
+gpgsm_import (ctrl_t ctrl, int in_fd, int reimport_mode)
 {
   int rc;
   struct stats_s stats;
 
   memset (&stats, 0, sizeof stats);
-  rc = import_one (ctrl, &stats, in_fd);
+  if (reimport_mode)
+    rc = reimport_one (ctrl, &stats, in_fd);
+  else
+    rc = import_one (ctrl, &stats, in_fd);
   print_imported_summary (ctrl, &stats);
   /* If we never printed an error message do it now so that a command
      line invocation will return with an error (log_error keeps a
