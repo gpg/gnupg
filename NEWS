@@ -1,13 +1,14 @@
 Noteworthy changes in version 2.0.13
 -------------------------------------------------
 
- This is a BETA version!
-
- * Minor bug fixes.
+ * The envvars XMODIFIERS, GTK_IM_MODULE and QT_IM_MODULE are now
+   passed to the Pinentry to make SCIM work.
 
  * gpgsm --gen-key implements a --batch mode.
 
  * gpgsm --gen-key implements all features of gpgsm-gencert.sh.
+
+ * Minor bug fixes.
 
 
 Noteworthy changes in version 2.0.12 (2009-06-17)

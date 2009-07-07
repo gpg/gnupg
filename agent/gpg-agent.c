@@ -609,28 +609,40 @@ main (int argc, char **argv )
   opt.homedir = default_homedir ();
 
   /* Record some of the original environment strings. */
-  opt.startup_display = getenv ("DISPLAY");
-  if (opt.startup_display)
-    opt.startup_display = xstrdup (opt.startup_display);
-  opt.startup_ttyname = ttyname (0);
-  if (opt.startup_ttyname)
-    opt.startup_ttyname = xstrdup (opt.startup_ttyname);
-  opt.startup_ttytype = getenv ("TERM");
-  if (opt.startup_ttytype)
-    opt.startup_ttytype = xstrdup (opt.startup_ttytype);
-  /* Fixme: Better use the locale function here.  */
-  opt.startup_lc_ctype = getenv ("LC_CTYPE");
-  if (opt.startup_lc_ctype) 
-    opt.startup_lc_ctype = xstrdup (opt.startup_lc_ctype);
-  opt.startup_lc_messages = getenv ("LC_MESSAGES");
-  if (opt.startup_lc_messages)
-    opt.startup_lc_messages = xstrdup (opt.startup_lc_messages);
-  opt.startup_xauthority = getenv ("XAUTHORITY");
-  if (opt.startup_xauthority)
-    opt.startup_xauthority = xstrdup (opt.startup_xauthority);
-  opt.startup_pinentry_user_data = getenv ("PINENTRY_USER_DATA");
-  if (opt.startup_pinentry_user_data)
-    opt.startup_pinentry_user_data = xstrdup (opt.startup_pinentry_user_data);
+  {
+    const char *s;
+    int idx;
+    static const char *names[] = 
+      { "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL };
+
+    err = 0;
+    opt.startup_env = session_env_new ();
+    if (!opt.startup_env)
+      err = gpg_error_from_syserror ();
+    for (idx=0; !err && names[idx]; idx++)
+      {
+        s = getenv (names[idx]);
+        if (s)
+          err = session_env_setenv (opt.startup_env, names[idx], s);
+      }
+    if (!err)
+      {
+        s = ttyname (0);
+        if (s)
+          err = session_env_setenv (opt.startup_env, "GPG_TTY", s);
+      }
+    if (err)
+      log_fatal ("error recording startup environment: %s\n",
+                 gpg_strerror (err));
+    
+    /* Fixme: Better use the locale function here.  */
+    opt.startup_lc_ctype = getenv ("LC_CTYPE");
+    if (opt.startup_lc_ctype) 
+      opt.startup_lc_ctype = xstrdup (opt.startup_lc_ctype);
+    opt.startup_lc_messages = getenv ("LC_MESSAGES");
+    if (opt.startup_lc_messages)
+      opt.startup_lc_messages = xstrdup (opt.startup_lc_messages);
+  }
 
   /* Check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -922,6 +934,14 @@ main (int argc, char **argv )
         {
           log_error ("error allocating connection control data: %s\n",
                      strerror (errno) );
+          agent_exit (1);
+        }
+      ctrl->session_env = session_env_new ();
+      if (!ctrl->session_env)
+        {
+          log_error ("error allocating session environment block: %s\n",
+                     strerror (errno) );
+          xfree (ctrl);
           agent_exit (1);
         }
       agent_init_default_ctrl (ctrl);
@@ -1218,62 +1238,42 @@ agent_exit (int rc)
   exit (rc);
 }
 
+
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
   /* Note we ignore malloc errors because we can't do much about it
      and the request will fail anyway shortly after this
      initialization. */
-  if (ctrl->display)
-    xfree (ctrl->display);
-  ctrl->display = default_display? xtrystrdup (default_display) : NULL;
-
-  if (ctrl->ttyname)
-    xfree (ctrl->ttyname);
-  ctrl->ttyname = default_ttyname? xtrystrdup (default_ttyname) : NULL;
-
-  if (ctrl->ttytype)
-    xfree (ctrl->ttytype);
-  ctrl->ttytype = default_ttytype? xtrystrdup (default_ttytype) : NULL;
-
+  session_env_setenv (ctrl->session_env, "DISPLAY", default_display);
+  session_env_setenv (ctrl->session_env, "GPG_TTY", default_ttyname);
+  session_env_setenv (ctrl->session_env, "TERM", default_ttytype);
+  session_env_setenv (ctrl->session_env, "XAUTHORITY", default_xauthority);
+  session_env_setenv (ctrl->session_env, "PINENTRY_USER_DATA", NULL);
+  
   if (ctrl->lc_ctype)
     xfree (ctrl->lc_ctype);
   ctrl->lc_ctype = default_lc_ctype? xtrystrdup (default_lc_ctype) : NULL;
-
+  
   if (ctrl->lc_messages)
     xfree (ctrl->lc_messages);
   ctrl->lc_messages = default_lc_messages? xtrystrdup (default_lc_messages)
                                     /**/ : NULL;
 
-  if (ctrl->xauthority)
-    xfree (ctrl->xauthority);
-  ctrl->xauthority = default_xauthority? xtrystrdup (default_xauthority)
-                                   /**/: NULL;
-
-  if (ctrl->pinentry_user_data)
-    xfree (ctrl->pinentry_user_data);
-  ctrl->pinentry_user_data = NULL;
 }
 
 
 static void
 agent_deinit_default_ctrl (ctrl_t ctrl)
 {
-  if (ctrl->display)
-    xfree (ctrl->display);
-  if (ctrl->ttyname)
-    xfree (ctrl->ttyname);
-  if (ctrl->ttytype)
-    xfree (ctrl->ttytype);
+  session_env_release (ctrl->session_env);
+
   if (ctrl->lc_ctype)
     xfree (ctrl->lc_ctype);
   if (ctrl->lc_messages)
     xfree (ctrl->lc_messages);
-  if (ctrl->xauthority)
-    xfree (ctrl->xauthority);
-  if (ctrl->pinentry_user_data)
-    xfree (ctrl->pinentry_user_data);
 }
+
 
 /* Reread parts of the configuration.  Note, that this function is
    obviously not thread-safe and should only be called from the PTH
@@ -1961,6 +1961,13 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
                          strerror (errno) );
               assuan_sock_close (fd);
             }
+          else if ( !(ctrl->session_env = session_env_new ()) )
+            {
+              log_error ("error allocating session environment block: %s\n",
+                         strerror (errno) );
+              xfree (ctrl);
+              assuan_sock_close (fd);
+            }
           else 
             {
               char threadname[50];
@@ -1997,6 +2004,13 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             {
               log_error ("error allocating connection control data: %s\n",
                          strerror (errno) );
+              assuan_sock_close (fd);
+            }
+          else if ( !(ctrl->session_env = session_env_new ()) )
+            {
+              log_error ("error allocating session environment block: %s\n",
+                         strerror (errno) );
+              xfree (ctrl);
               assuan_sock_close (fd);
             }
           else

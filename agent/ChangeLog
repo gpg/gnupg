@@ -1,3 +1,21 @@
+2009-07-06  Werner Koch  <wk@g10code.com>
+
+	* agent.h: Include session-env.h.
+	(opt): Replace most of the startup_xxx fields by a session_env_t.
+	(struct server_control_s): Likewise.
+	* gpg-agent.c (main): Rewrite setting of the startup fields.
+	(handle_connections, main): Allocate SESSION_ENV.
+	(agent_init_default_ctrl, agent_deinit_default_ctrl): Change
+	accordingly.
+	* command.c (option_handler): Ditto.
+	(cmd_updatestartuptty): Change accordingly.  Protect old values
+	from out of core failures.
+	* command-ssh.c (start_command_handler_ssh): Ditto.
+	(start_command_handler_ssh): Replace strdup by xtrystrdup.
+	* call-pinentry.c (atfork_cb): Pass new envrinmnet variables.
+	(start_pinentry): Use session_env stuff.
+	* protect-tool.c (main): Adjust call to gnupg_prepare_get_passphrase.
+
 2009-06-24  Werner Koch  <wk@g10code.com>
 
 	* genkey.c (agent_protect_and_store): Return RC and not 0.

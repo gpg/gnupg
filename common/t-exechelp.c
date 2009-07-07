@@ -69,7 +69,7 @@ xget_all_open_fds (void)
 
 /* That is a very crude test.  To do a proper test we would need to
    fork a test process and best return information by some other means
-   that file descriptors. */
+   than file descriptors. */
 static void
 test_close_all_fds (void)
 {
@@ -77,7 +77,7 @@ test_close_all_fds (void)
   int *array;
   int fd;
   int initial_count, count, n;
-#if 1
+#if 0
   char buffer[100];
 
   snprintf (buffer, sizeof buffer, "/bin/ls -l /proc/%d/fd", (int)getpid ());

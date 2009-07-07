@@ -33,6 +33,7 @@
 #include "../common/util.h"
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
+#include "../common/session-env.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -56,13 +57,9 @@ struct
 
   /* Environment setting gathered at program start or changed using the
      Assuan command UPDATESTARTUPTTY. */
-  char *startup_display;
-  char *startup_ttyname;
-  char *startup_ttytype;
+  session_env_t startup_env;
   char *startup_lc_ctype;
   char *startup_lc_messages;
-  char *startup_xauthority;   
-  char *startup_pinentry_user_data; 
 
 
   const char *pinentry_program; /* Filename of the program to start as
@@ -142,13 +139,10 @@ struct server_control_s
   /* Private data of the SCdaemon (call-scd.c). */
   struct scd_local_s *scd_local;
 
-  char *display;
-  char *ttyname;
-  char *ttytype;
+  session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
-  char *xauthority;   
-  char *pinentry_user_data; 
+
   struct {
     int algo;
     unsigned char value[MAX_DIGEST_LEN];

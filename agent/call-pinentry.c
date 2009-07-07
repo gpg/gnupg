@@ -172,13 +172,29 @@ atfork_cb (void *opaque, int where)
 
   if (!where)
     {
+      int iterator = 0;
+      const char *name, *assname, *value;
+      
       gcry_control (GCRYCTL_TERM_SECMEM);
-      if (ctrl->xauthority)
-        setenv ("XAUTHORITY", ctrl->xauthority, 1);
-      if (ctrl->pinentry_user_data)
-        setenv ("PINENTRY_USER_DATA", ctrl->pinentry_user_data, 1 );
+
+      while ((name = session_env_list_stdenvnames (&iterator, &assname)))
+        {
+          /* For all new envvars (!ASSNAME) and the two medium old
+             ones which do have an assuan name but are conveyed using
+             environment variables, update the environment of the
+             forked process.  */
+          if (!assname 
+              || !strcmp (name, "XAUTHORITY")
+              || !strcmp (name, "PINENTRY_USER_DATA"))
+            {
+              value = session_env_getenv (ctrl->session_env, name);
+              if (value)
+                setenv (name, value, 1);
+            }
+        }
     }
 }
+
 
 static int
 getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
@@ -214,6 +230,7 @@ start_pinentry (ctrl_t ctrl)
   pth_event_t evt;
   const char *tmpstr;
   unsigned long pinentry_pid;
+  const char *value;
 
   evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
   if (!pth_mutex_acquire (&entry_lock, 0, evt))
@@ -273,10 +290,11 @@ start_pinentry (ctrl_t ctrl)
   argv[0] = pgmname;
 #endif /*__APPLE__*/
 
-  if (ctrl->display && !opt.keep_display)
+  if (!opt.keep_display
+      && (value = session_env_getenv (ctrl->session_env, "DISPLAY")))
     {
       argv[1] = "--display";
-      argv[2] = ctrl->display;
+      argv[2] = value;
       argv[3] = NULL;
     }
   else
@@ -313,10 +331,12 @@ start_pinentry (ctrl_t ctrl)
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
-  if (ctrl->ttyname)
+
+  value = session_env_getenv (ctrl->session_env, "GPG_TTY");
+  if (value)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION ttyname=%s", ctrl->ttyname) < 0 )
+      if (asprintf (&optstr, "OPTION ttyname=%s", value) < 0 )
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
@@ -324,10 +344,11 @@ start_pinentry (ctrl_t ctrl)
       if (rc)
 	return unlock_pinentry (rc);
     }
-  if (ctrl->ttytype)
+  value = session_env_getenv (ctrl->session_env, "TERM");
+  if (value)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION ttytype=%s", ctrl->ttytype) < 0 )
+      if (asprintf (&optstr, "OPTION ttytype=%s", value) < 0 )
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);

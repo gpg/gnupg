@@ -91,9 +91,8 @@ start_agent (void)
                             GPG_ERR_SOURCE_DEFAULT,
                             opt.homedir,
                             opt.agent_program,
-                            opt.display, opt.ttyname, opt.ttytype,
                             opt.lc_ctype, opt.lc_messages,
-                            opt.xauthority, opt.pinentry_user_data,
+                            opt.session_env,
                             opt.verbose, DBG_ASSUAN,
                             NULL, NULL);
   if (!rc)

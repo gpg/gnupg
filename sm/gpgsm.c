@@ -196,7 +196,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
   ARGPARSE_c (aListChain,   "list-chain",  N_("list certificate chain")), 
   ARGPARSE_c (aFingerprint, "fingerprint", N_("list keys and fingerprints")),
-  ARGPARSE_c (aKeygen, "gen-key", "@"),
+  ARGPARSE_c (aKeygen, "gen-key", N_("generate a new key pair")),
   ARGPARSE_c (aDeleteKey, "delete-keys", 
               N_("remove keys from the public keyring")),
   ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a key server")),
@@ -614,6 +614,18 @@ wrong_args (const char *text)
 }
 
 
+static void
+set_opt_session_env (const char *name, const char *value)
+{
+  gpg_error_t err;
+  
+  err = session_env_setenv (opt.session_env, name, value);
+  if (err)
+    log_fatal ("error setting session environment: %s\n",
+               gpg_strerror (err));
+}
+
+
 /* Setup the debugging.  With a DEBUG_LEVEL of NULL only the active
    debug flags are propagated to the subsystems.  With DEBUG_LEVEL
    set, a specific set of debug flags is set; and individual debugging
@@ -890,6 +902,11 @@ main ( int argc, char **argv)
   
   create_dotlock (NULL); /* register locking cleanup */
 
+  opt.session_env = session_env_new ();
+  if (!opt.session_env)
+    log_fatal ("error allocating session environment block: %s\n",
+               strerror (errno));
+
   /* Note: If you change this default cipher algorithm , please
      remember to update the Gpgconflist entry as well.  */
   opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
@@ -943,7 +960,7 @@ main ( int argc, char **argv)
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
   ctrl.no_server = 1;
-  ctrl.status_fd = -1; /* not status output */
+  ctrl.status_fd = -1; /* No status output. */
   ctrl.autodetect_encoding = 1;
 
   /* Set the default option file */
@@ -1208,12 +1225,23 @@ main ( int argc, char **argv)
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-        case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
-        case oTTYname: opt.ttyname = xstrdup (pargs.r.ret_str); break;
-        case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
+
+        case oDisplay:
+          set_opt_session_env ("DISPLAY", pargs.r.ret_str);
+          break;
+        case oTTYname:
+          set_opt_session_env ("GPG_TTY", pargs.r.ret_str);
+          break;
+        case oTTYtype:
+          set_opt_session_env ("TERM", pargs.r.ret_str);
+          break;
+        case oXauthority:
+          set_opt_session_env ("XAUTHORITY", pargs.r.ret_str);
+          break;
+
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
-        case oXauthority: opt.xauthority = xstrdup (pargs.r.ret_str); break;
+
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
         case oPreferSystemDirmngr: opt.prefer_system_dirmngr = 1; break;
@@ -1357,7 +1385,7 @@ main ( int argc, char **argv)
   if (log_get_errorcount(0))
     gpgsm_exit(2);
 
-  /* Now that we have the optiosn parsed we need to update the default
+  /* Now that we have the options parsed we need to update the default
      control structure.  */
   gpgsm_init_default_ctrl (&ctrl);
 

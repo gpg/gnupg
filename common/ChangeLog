@@ -1,3 +1,20 @@
+2009-07-06  Werner Koch  <wk@g10code.com>
+
+	* get-passphrase.c (struct agentargs): Add SESSION_ENV and remove
+	obsolete args.
+	(gnupg_prepare_get_passphrase): Ditto.
+
+	* session-env.c, session-env.h: New.
+	* t-session-env.c: New.
+	* Makefile.am (common_sources, module_tests): Add them.
+	* asshelp.h: Include "session-env.h"
+	* asshelp.c (send_one_option): Add arg PUTENV.
+	(send_pinentry_environment): Replace most args by SESSION_ENV and
+	rewrite fucntion.
+	(start_new_gpg_agent): Likewise.
+
+	* t-exechelp.c (test_close_all_fds): Remove debug code.
+
 2009-07-01  Werner Koch  <wk@g10code.com>
 
 	* sexputil.c (get_pk_algo_from_canon_sexp): New.

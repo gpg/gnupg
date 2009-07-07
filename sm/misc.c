@@ -1,5 +1,5 @@
 /* misc.c - Miscellaneous fucntions
- *	Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,16 +40,16 @@ setup_pinentry_env (void)
 {
 #ifndef HAVE_W32_SYSTEM
   char *lc;
-
-  if (opt.display)
-    setenv ("DISPLAY", opt.display, 1);
+  const char *name, *value;
+  int iterator;
 
   /* Try to make sure that GPG_TTY has been set.  This is needed if we
      call for example the protect-tools with redirected stdin and thus
      it won't be able to ge a default by itself.  Try to do it here
      but print a warning.  */
-  if (opt.ttyname)
-    setenv ("GPG_TTY", opt.ttyname, 1);
+  value = session_env_getenv (opt.session_env, "GPG_TTY");
+  if (value)
+    setenv ("GPG_TTY", value, 1);
   else if (!(lc=getenv ("GPG_TTY")) || !*lc)
     {
       log_error (_("GPG_TTY has not been set - "
@@ -59,9 +59,6 @@ setup_pinentry_env (void)
         lc = "/dev/tty";
       setenv ("GPG_TTY", lc, 1);
     }
-
-  if (opt.ttytype)
-    setenv ("TERM", opt.ttytype, 1);
 
   if (opt.lc_ctype)
     setenv ("LC_CTYPE", opt.lc_ctype, 1);
@@ -77,11 +74,15 @@ setup_pinentry_env (void)
     setenv ("LC_MESSAGES", lc, 1);
 #endif
 
-  if (opt.xauthority)
-    setenv ("XAUTHORITY", opt.xauthority, 1);
-
-  if (opt.pinentry_user_data)
-    setenv ("PINENTRY_USER_DATA", opt.pinentry_user_data, 1);
+  iterator = 0;
+  while ((name = session_env_list_stdenvnames (&iterator, NULL)))
+    {
+      if (!strcmp (name, "GPG_TTY"))
+        continue;  /* Already set.  */
+      value = session_env_getenv (opt.session_env, name);
+      if (value)
+        setenv (name, value, 1);
+    }
 
 #endif /*!HAVE_W32_SYSTEM*/
 }

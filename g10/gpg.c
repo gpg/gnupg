@@ -955,6 +955,17 @@ make_username( const char *string )
 }
 
 
+static void
+set_opt_session_env (const char *name, const char *value)
+{
+  gpg_error_t err;
+  
+  err = session_env_setenv (opt.session_env, name, value);
+  if (err)
+    log_fatal ("error setting session environment: %s\n",
+               gpg_strerror (err));
+}
+
 /* Setup the debugging.  With a LEVEL of NULL only the active debug
    flags are propagated to the subsystems.  With LEVEL set, a specific
    set of debug flags is set; thus overriding all flags already
@@ -1935,6 +1946,10 @@ main (int argc, char **argv)
 
     create_dotlock(NULL); /* Register locking cleanup. */
 
+    opt.session_env = session_env_new ();
+    if (!opt.session_env)
+      log_fatal ("error allocating session environment block: %s\n",
+                 strerror (errno));
 
     opt.command_fd = -1; /* no command fd */
     opt.compress_level = -1; /* defaults to standard compress level */
@@ -2820,12 +2835,23 @@ main (int argc, char **argv)
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
           case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
-          case oDisplay: opt.display = pargs.r.ret_str; break;
-          case oTTYname: opt.ttyname = pargs.r.ret_str; break;
-          case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
+
+          case oDisplay:
+            set_opt_session_env ("DISPLAY", pargs.r.ret_str);
+            break;
+          case oTTYname:
+            set_opt_session_env ("GPG_TTY", pargs.r.ret_str);
+            break;
+          case oTTYtype:
+            set_opt_session_env ("TERM", pargs.r.ret_str);
+            break;
+          case oXauthority:
+            set_opt_session_env ("XAUTHORITY", pargs.r.ret_str);
+            break;
+
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
-          case oXauthority: opt.xauthority = pargs.r.ret_str; break;
+
 	  case oGroup: add_group(pargs.r.ret_str); break;
 	  case oUnGroup: rm_group(pargs.r.ret_str); break;
 	  case oNoGroups:

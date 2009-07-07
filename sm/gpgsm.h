@@ -1,5 +1,5 @@
 /* gpgsm.h - Global definitions for GpgSM
- * Copyright (C) 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,6 +32,8 @@
 #include "../common/status.h"
 #include "../common/estream.h"
 #include "../common/audit.h"
+#include "../common/session-env.h"
+
 
 #define MAX_DIGEST_LEN 64
 
@@ -61,13 +63,10 @@ struct
   const char *homedir;         /* Configuration directory name */
   const char *config_filename; /* Name of the used config file. */
   const char *agent_program; 
-  char *display;
-  char *ttyname;
-  char *ttytype;
+
+  session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
-  char *xauthority;
-  char *pinentry_user_data;
 
   const char *dirmngr_program;
   int prefer_system_dirmngr;  /* Prefer using a system wide drimngr.  */

@@ -1086,7 +1086,7 @@ main (int argc, char **argv )
                                 opt.verbose,
                                 opt_homedir,
                                 opt_agent_program,
-                                NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                                NULL, NULL, NULL);
 
   if (opt_prompt)
     opt_prompt = percent_plus_unescape (opt_prompt, 0);

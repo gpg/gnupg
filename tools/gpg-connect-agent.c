@@ -2079,6 +2079,12 @@ start_agent (void)
   int rc = 0;
   char *infostr, *p;
   assuan_context_t ctx;
+  session_env_t session_env;
+
+  session_env = session_env_new ();
+  if (!session_env)
+    log_fatal ("error allocating session environment block: %s\n",
+               strerror (errno));
 
   infostr = getenv ("GPG_AGENT_INFO");
   if (!infostr || !*infostr)
@@ -2169,7 +2175,7 @@ start_agent (void)
     }
 
   rc = send_pinentry_environment (ctx, GPG_ERR_SOURCE_DEFAULT,
-                                  NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                                  NULL, NULL, session_env);
   if (rc)
     {
       log_error (_("error sending standard options: %s\n"), gpg_strerror (rc));

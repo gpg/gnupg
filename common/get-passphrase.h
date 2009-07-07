@@ -20,17 +20,15 @@
 #ifndef GNUPG_COMMON_GET_PASSPHRASE_H
 #define GNUPG_COMMON_GET_PASSPHRASE_H
 
+#include "session-env.h"
+
 void gnupg_prepare_get_passphrase (gpg_err_source_t errsource,
                                    int verbosity,
                                    const char *homedir,
                                    const char *agent_program,
-                                   const char *opt_display,
-                                   const char *opt_ttyname,
-                                   const char *opt_ttytype,
                                    const char *opt_lc_ctype,
                                    const char *opt_lc_messages,
-                                   const char *opt_xauthority,
-                                   const char *opt_pinentry_user_data);
+                                   session_env_t session_env);
 
 gpg_error_t gnupg_get_passphrase (const char *cache_id,
                                   const char *err_msg,

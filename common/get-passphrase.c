@@ -39,12 +39,9 @@ static struct
   int verbosity;
   const char *homedir;
   const char *agent_program;
-  const char *display;
-  const char *ttyname;
-  const char *ttytype;
   const char *lc_ctype;
   const char *lc_messages;
-  const char *xauthority;
+  session_env_t session_env;
   const char *pinentry_user_data;
 } agentargs;
 
@@ -57,25 +54,17 @@ gnupg_prepare_get_passphrase (gpg_err_source_t errsource,
                               int verbosity,
                               const char *homedir,
                               const char *agent_program,
-                              const char *opt_display,
-                              const char *opt_ttyname,
-                              const char *opt_ttytype,
                               const char *opt_lc_ctype,
                               const char *opt_lc_messages,
-                              const char *opt_xauthority,
-                              const char *opt_pinentry_user_data)
+                              session_env_t session_env)
 {
   agentargs.errsource          = errsource;
   agentargs.verbosity          = verbosity;
   agentargs.homedir            = homedir;
   agentargs.agent_program      = agent_program;
-  agentargs.display            = opt_display;
-  agentargs.ttyname            = opt_ttyname;
-  agentargs.ttytype            = opt_ttytype;
   agentargs.lc_ctype           = opt_lc_ctype;
   agentargs.lc_messages        = opt_lc_messages;
-  agentargs.xauthority         = opt_xauthority;
-  agentargs.pinentry_user_data = opt_pinentry_user_data;
+  agentargs.session_env        = session_env;
 }
 
 
@@ -96,13 +85,9 @@ start_agent (void)
                              agentargs.errsource,
                              agentargs.homedir,
                              agentargs.agent_program,
-                             agentargs.display, 
-                             agentargs.ttyname,
-                             agentargs.ttytype,
                              agentargs.lc_ctype,
                              agentargs.lc_messages,
-                             agentargs.xauthority,
-                             agentargs.pinentry_user_data,
+                             agentargs.session_env,
                              agentargs.verbosity, 0, NULL, NULL);
   if (!err)
     {

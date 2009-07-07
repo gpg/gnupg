@@ -24,6 +24,7 @@
 #include <types.h>
 #include "main.h"
 #include "packet.h"
+#include "../common/session-env.h"
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 /* Norcraft can't cope with common symbols */
@@ -85,13 +86,11 @@ struct
   int max_cert_depth;
   const char *homedir;
   const char *agent_program; 
-  char *display;      /* 5 options to be passed to the gpg-agent */
-  char *ttyname;     
-  char *ttytype;
+
+  /* Options to be passed to the gpg-agent */
+  session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
-  char *xauthority;
-  char *pinentry_user_data;
 
   int skip_verify;
   int compress_keys;

@@ -1,5 +1,5 @@
 /* asshelp.c - Helper functions for Assuan
- * Copyright (C) 2002, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,10 +34,9 @@
 #include "status.h" 
 #include "asshelp.h"
 
-
 static gpg_error_t
 send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
-                 const char *name, const char *value)
+                 const char *name, const char *value, int use_putenv)
 {
   gpg_error_t err;
   char *optstr;
@@ -46,7 +45,8 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
 
   if (!value || !*value)
     err = 0;  /* Avoid sending empty strings.  */
-  else if (asprintf (&optstr, "OPTION %s=%s", name, value ) < 0)
+  else if (asprintf (&optstr, "OPTION %s%s=%s", 
+                     use_putenv? "putenv=":"", name, value) < 0)
     err = gpg_error_from_syserror ();
   else
     {
@@ -64,57 +64,43 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,
                            gpg_err_source_t errsource,
-                           const char *opt_display,
-                           const char *opt_ttyname,
-                           const char *opt_ttytype,
                            const char *opt_lc_ctype,
                            const char *opt_lc_messages,
-                           const char *opt_xauthority,
-                           const char *opt_pinentry_user_data)
+                           session_env_t session_env)
+
 {
   gpg_error_t err = 0;
-  char *dft_display = NULL;
-  char *dft_ttyname = NULL;
-  char *dft_ttytype = NULL;
   char *old_lc = NULL; 
   char *dft_lc = NULL;
-  char *dft_xauthority = NULL;
-  char *dft_pinentry_user_data = NULL;
+  const char *dft_ttyname;
+  int iterator;
+  const char *name, *assname, *value;
+  int is_default;
 
-  /* Send the DISPLAY variable.  */
-  dft_display = getenv ("DISPLAY");
-  if (opt_display || dft_display)
+  iterator = 0; 
+  while ((name = session_env_list_stdenvnames (&iterator, &assname)))
     {
-      err = send_one_option (ctx, errsource, "display", 
-                             opt_display ? opt_display : dft_display);
+      value = session_env_getenv_or_default (session_env, name, NULL);
+      if (!value)
+        continue;
+
+      if (assname)
+        err = send_one_option (ctx, errsource, assname, value, 0);
+      else
+        {
+          err = send_one_option (ctx, errsource, name, value, 1);
+          if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+            err = 0;  /* Server too old; can't pass the new envvars.  */
+        }
       if (err)
         return err;
     }
 
-  /* Send the name of the TTY.  */
-  if (!opt_ttyname)
-    {
-      dft_ttyname = getenv ("GPG_TTY");
-      if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
-        dft_ttyname = ttyname (0);
-    }
-  if (opt_ttyname || dft_ttyname)
-    {
-      err = send_one_option (ctx, errsource, "ttyname", 
-                             opt_ttyname ? opt_ttyname : dft_ttyname);
-      if (err)
-        return err;
-    }
 
-  /* Send the type of the TTY.  */
-  dft_ttytype = getenv ("TERM");
-  if (opt_ttytype || (dft_ttyname && dft_ttytype))
-    {
-      err = send_one_option (ctx, errsource, "ttytype", 
-                             opt_ttyname ? opt_ttytype : dft_ttytype);
-      if (err)
-        return err;
-    }
+  dft_ttyname = session_env_getenv_or_default (session_env, "GPG_TTY", 
+                                               &is_default);
+  if (dft_ttyname && !is_default)
+    dft_ttyname = NULL;  /* We need the default value.  */
 
   /* Send the value for LC_CTYPE.  */
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
@@ -130,7 +116,7 @@ send_pinentry_environment (assuan_context_t ctx,
   if (opt_lc_ctype || (dft_ttyname && dft_lc))
     {
       err = send_one_option (ctx, errsource, "lc-ctype", 
-                             opt_lc_ctype ? opt_lc_ctype : dft_lc);
+                             opt_lc_ctype ? opt_lc_ctype : dft_lc, 0);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   if (old_lc)
@@ -156,7 +142,7 @@ send_pinentry_environment (assuan_context_t ctx,
   if (opt_lc_messages || (dft_ttyname && dft_lc))
     {
       err = send_one_option (ctx, errsource, "lc-messages", 
-                             opt_lc_messages ? opt_lc_messages : dft_lc);
+                             opt_lc_messages ? opt_lc_messages : dft_lc, 0);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   if (old_lc)
@@ -167,31 +153,6 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (err)
     return err;
-
-  /* Send the XAUTHORITY variable.  */
-  dft_xauthority = getenv ("XAUTHORITY");
-  if (opt_xauthority || dft_xauthority)
-    {
-      err = send_one_option (ctx, errsource, "xauthority", 
-                             opt_xauthority ? opt_xauthority : dft_xauthority);
-      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
-        err = 0;
-      if (err)
-        return err;
-    }
-
-  /* Send the PINENTRY_USER_DATA variable.  */
-  dft_pinentry_user_data = getenv ("PINENTRY_USER_DATA");
-  if (opt_pinentry_user_data || dft_pinentry_user_data)
-    {
-      err = send_one_option (ctx, errsource, "pinentry-user-data", 
-                             opt_pinentry_user_data ?
-                             opt_pinentry_user_data : dft_pinentry_user_data);
-      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
-        err = 0;
-      if (err)
-        return err;
-    }
 
   return 0;
 }
@@ -205,13 +166,9 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_err_source_t errsource,
                      const char *homedir,
                      const char *agent_program,
-                     const char *opt_display,
-                     const char *opt_ttyname,
-                     const char *opt_ttytype,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
-                     const char *opt_xauthority,
-                     const char *opt_pinentry_user_data,
+                     session_env_t session_env,
                      int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg)
@@ -365,10 +322,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (!rc)
     rc = send_pinentry_environment (ctx, errsource,
-                                    opt_display, opt_ttyname, opt_ttytype,
                                     opt_lc_ctype, opt_lc_messages,
-                                    opt_xauthority,
-                                    opt_pinentry_user_data);
+                                    session_env);
   if (rc)
     {
       assuan_disconnect (ctx);

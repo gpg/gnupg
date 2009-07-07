@@ -2906,27 +2906,39 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 void
 start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 {
-  estream_t stream_sock;
-  gpg_error_t err;
+  estream_t stream_sock = NULL;
+  gpg_error_t err = 0;
   int ret;
 
   /* Because the ssh protocol does not send us information about the
      the current TTY setting, we resort here to use those from startup
      or those explictly set.  */
-  if (!ctrl->display && opt.startup_display)
-    ctrl->display = strdup (opt.startup_display);
-  if (!ctrl->ttyname && opt.startup_ttyname)
-    ctrl->ttyname = strdup (opt.startup_ttyname);
-  if (!ctrl->ttytype && opt.startup_ttytype)
-    ctrl->ttytype = strdup (opt.startup_ttytype);
-  if (!ctrl->lc_ctype && opt.startup_lc_ctype)
-    ctrl->lc_ctype = strdup (opt.startup_lc_ctype);
-  if (!ctrl->lc_messages && opt.startup_lc_messages)
-    ctrl->lc_messages = strdup (opt.startup_lc_messages);
-  if (!ctrl->xauthority && opt.startup_xauthority)
-    ctrl->xauthority = strdup (opt.startup_xauthority);
-  if (!ctrl->pinentry_user_data && opt.startup_pinentry_user_data)
-    ctrl->pinentry_user_data = strdup (opt.startup_pinentry_user_data);
+  {
+    static const char *names[] = 
+      {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
+    int idx;
+    const char *value;
+
+    for (idx=0; !err && names[idx]; idx++)
+      if (!session_env_getenv (ctrl->session_env, names[idx])
+          && (value = session_env_getenv (opt.startup_env, names[idx])))
+        err = session_env_setenv (ctrl->session_env, names[idx], value);
+    
+    if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
+      if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
+        err = gpg_error_from_syserror ();
+
+    if (!err && !ctrl->lc_messages && opt.startup_lc_messages)
+      if (!(ctrl->lc_messages = xtrystrdup (opt.startup_lc_messages)))
+        err = gpg_error_from_syserror ();
+
+    if (err)
+      {
+        log_error ("error setting default session environment: %s\n", 
+                   gpg_strerror (err));
+        goto out;
+      }
+  }
 
 
   /* Create stream from socket.  */

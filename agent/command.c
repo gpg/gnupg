@@ -1520,33 +1520,53 @@ cmd_putval (assuan_context_t ctx, char *line)
 static int
 cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
+  static const char *names[] = 
+    { "GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL };
   ctrl_t ctrl = assuan_get_pointer (ctx);
-
+  gpg_error_t err = 0;
+  session_env_t se;
+  int idx;
+  char *lc_ctype = NULL;
+  char *lc_messages = NULL;
+  
   (void)line;
 
-  xfree (opt.startup_display); opt.startup_display = NULL;
-  xfree (opt.startup_ttyname); opt.startup_ttyname = NULL;
-  xfree (opt.startup_ttytype); opt.startup_ttytype = NULL;
-  xfree (opt.startup_lc_ctype); opt.startup_lc_ctype = NULL;
-  xfree (opt.startup_lc_messages); opt.startup_lc_messages = NULL;
-  xfree (opt.startup_xauthority); opt.startup_xauthority = NULL;
+  se = session_env_new ();
+  if (!se)
+    err = gpg_error_from_syserror ();
 
-  if (ctrl->display)
-    opt.startup_display = xtrystrdup (ctrl->display);
-  if (ctrl->ttyname)
-    opt.startup_ttyname = xtrystrdup (ctrl->ttyname);
-  if (ctrl->ttytype)
-    opt.startup_ttytype = xtrystrdup (ctrl->ttytype);
-  if (ctrl->lc_ctype) 
-    opt.startup_lc_ctype = xtrystrdup (ctrl->lc_ctype);
-  if (ctrl->lc_messages)
-    opt.startup_lc_messages = xtrystrdup (ctrl->lc_messages);
-  if (ctrl->xauthority)
-    opt.startup_xauthority = xtrystrdup (ctrl->xauthority);
-  if (ctrl->pinentry_user_data)
-    opt.startup_pinentry_user_data = xtrystrdup (ctrl->pinentry_user_data);
+  for (idx=0; !err && names[idx]; idx++)
+    {
+      const char *value = session_env_getenv (ctrl->session_env, names[idx]);
+      if (value)
+        err = session_env_setenv (se, names[idx], value);
+    }
 
-  return 0;
+  if (!err && ctrl->lc_ctype) 
+    if (!(lc_ctype = xtrystrdup (ctrl->lc_ctype)))
+      err = gpg_error_from_syserror ();
+
+  if (!err && ctrl->lc_messages)
+    if (!(lc_messages = xtrystrdup (ctrl->lc_messages)))
+      err = gpg_error_from_syserror ();
+   
+  if (err)
+    {
+      session_env_release (se);
+      xfree (lc_ctype);
+      xfree (lc_messages);
+    }
+  else
+    {
+      session_env_release (opt.startup_env);
+      opt.startup_env = se;
+      xfree (opt.startup_lc_ctype);
+      opt.startup_lc_ctype = lc_ctype;
+      xfree (opt.startup_lc_messages);
+      opt.startup_lc_messages = lc_messages;
+    }
+
+  return err;
 }
 
 
@@ -1680,36 +1700,31 @@ static int
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
 
-  if (!strcmp (key, "display"))
+  if (!strcmp (key, "putenv"))
     {
-      if (ctrl->display)
-        xfree (ctrl->display);
-      ctrl->display = xtrystrdup (value);
-      if (!ctrl->display)
-        return out_of_core ();
+      /* Change the session's environment to be used for the
+         Pinentry.  Valid values are:
+          <NAME>            Delete envvar NAME
+          <KEY>=            Set envvar NAME to the empty string
+          <KEY>=<VALUE>     Set envvar NAME to VALUE
+      */
+      err = session_env_putenv (ctrl->session_env, value);
+    }
+  else if (!strcmp (key, "display"))
+    {
+      err = session_env_setenv (ctrl->session_env, "DISPLAY", value);
     }
   else if (!strcmp (key, "ttyname"))
     {
       if (!opt.keep_tty)
-        {
-          if (ctrl->ttyname)
-            xfree (ctrl->ttyname);
-          ctrl->ttyname = xtrystrdup (value);
-          if (!ctrl->ttyname)
-            return out_of_core ();
-        }
+        err = session_env_setenv (ctrl->session_env, "GPG_TTY", value);
     }
   else if (!strcmp (key, "ttytype"))
     {
       if (!opt.keep_tty)
-        {
-          if (ctrl->ttytype)
-            xfree (ctrl->ttytype);
-          ctrl->ttytype = xtrystrdup (value);
-          if (!ctrl->ttytype)
-            return out_of_core ();
-        }
+        err = session_env_setenv (ctrl->session_env, "TERM", value);
     }
   else if (!strcmp (key, "lc-ctype"))
     {
@@ -1729,28 +1744,20 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "xauthority"))
     {
-      if (ctrl->xauthority)
-        xfree (ctrl->xauthority);
-      ctrl->xauthority = xtrystrdup (value);
-      if (!ctrl->xauthority)
-        return out_of_core ();
+      err = session_env_setenv (ctrl->session_env, "XAUTHORITY", value);
     }
   else if (!strcmp (key, "pinentry-user-data"))
     {
-      if (ctrl->pinentry_user_data)
-        xfree (ctrl->pinentry_user_data);
-      ctrl->pinentry_user_data = xtrystrdup (value);
-      if (!ctrl->pinentry_user_data)
-        return out_of_core ();
+      err = session_env_setenv (ctrl->session_env, "PINENTRY_USER_DATA", value);
     }
   else if (!strcmp (key, "use-cache-for-signing"))
     ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
   else if (!strcmp (key, "allow-pinentry-notify"))
     ctrl->server_local->allow_pinentry_notify = 1;
   else
-    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
+    err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
-  return 0;
+  return err;
 }
 
 

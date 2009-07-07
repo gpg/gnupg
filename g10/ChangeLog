@@ -1,6 +1,18 @@
+2009-07-07  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (set_opt_session_env): New.
+	(main): Allocate opt.session_env.  Use it for oDisplay, oTTYname,
+	oTTYtype and oXauthority.
+
+	* options.h: Include session_env.h.
+	(opt): Add field SESSION_ENV, remove obsolete fields.
+	
+	* call-agent.c (start_agent): Adjust start_new_gpg_agent for
+	changed args.
+
 2009-06-24  Werner Koch  <wk@g10code.com>
 
-	* keyedit.c (menu_select_key): Renmove dead assign to I.
+	* keyedit.c (menu_select_key): Remove dead assign to I.
 	(menu_select_uid): Ditto.
 	* keyring.c (keyring_search): Remove dead assign to NAME.
 	* card-util.c (card_edit): Remove useless DID_CHECKPIN.

@@ -183,69 +183,59 @@ static int
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
 
-  if (!strcmp (key, "include-certs"))
+  if (!strcmp (key, "putenv"))
     {
-      int i = *value? atoi (value) : -1;
-      if (ctrl->include_certs < -2)
-        return gpg_error (GPG_ERR_ASS_PARAMETER);
-      ctrl->include_certs = i;
+      /* Change the session's environment to be used for the
+         Pinentry.  Valid values are:
+          <NAME>            Delete envvar NAME
+          <KEY>=            Set envvar NAME to the empty string
+          <KEY>=<VALUE>     Set envvar NAME to VALUE
+      */
+      err = session_env_putenv (opt.session_env, value);
     }
   else if (!strcmp (key, "display"))
     {
-      if (opt.display)
-        free (opt.display);
-      opt.display = strdup (value);
-      if (!opt.display)
-        return out_of_core ();
+      err = session_env_setenv (opt.session_env, "DISPLAY", value);
     }
   else if (!strcmp (key, "ttyname"))
     {
-      if (opt.ttyname)
-        free (opt.ttyname);
-      opt.ttyname = strdup (value);
-      if (!opt.ttyname)
-        return out_of_core ();
+      err = session_env_setenv (opt.session_env, "GPG_TTY", value);
     }
   else if (!strcmp (key, "ttytype"))
     {
-      if (opt.ttytype)
-        free (opt.ttytype);
-      opt.ttytype = strdup (value);
-      if (!opt.ttytype)
-        return out_of_core ();
+      err = session_env_setenv (opt.session_env, "TERM", value);
     }
   else if (!strcmp (key, "lc-ctype"))
     {
-      if (opt.lc_ctype)
-        free (opt.lc_ctype);
-      opt.lc_ctype = strdup (value);
+      xfree (opt.lc_ctype);
+      opt.lc_ctype = xtrystrdup (value);
       if (!opt.lc_ctype)
-        return out_of_core ();
+        err = gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "lc-messages"))
     {
-      if (opt.lc_messages)
-        free (opt.lc_messages);
-      opt.lc_messages = strdup (value);
+      xfree (opt.lc_messages);
+      opt.lc_messages = xtrystrdup (value);
       if (!opt.lc_messages)
-        return out_of_core ();
+        err = gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "xauthority"))
     {
-      if (opt.xauthority)
-        free (opt.xauthority);
-      opt.xauthority = strdup (value);
-      if (!opt.xauthority)
-        return out_of_core ();
+      err = session_env_setenv (opt.session_env, "XAUTHORITY", value);
     }
   else if (!strcmp (key, "pinentry-user-data"))
     {
-      if (opt.pinentry_user_data)
-        free (opt.pinentry_user_data);
-      opt.pinentry_user_data = strdup (value);
-      if (!opt.pinentry_user_data)
-        return out_of_core ();
+      err = session_env_setenv (opt.session_env, "PINENTRY_USER_DATA", value);
+    }
+  else if (!strcmp (key, "include-certs"))
+    {
+      int i = *value? atoi (value) : -1;
+      if (ctrl->include_certs < -2)
+        err = gpg_error (GPG_ERR_ASS_PARAMETER);
+      else
+        ctrl->include_certs = i;
     }
   else if (!strcmp (key, "list-mode"))
     {
@@ -266,7 +256,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
           ctrl->server_local->list_external = 1;
         }
       else
-        return gpg_error (GPG_ERR_ASS_PARAMETER);
+        err = gpg_error (GPG_ERR_ASS_PARAMETER);
     }
   else if (!strcmp (key, "list-to-output"))
     {
@@ -284,7 +274,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if ( i >= 0 && i <= 1 )
         ctrl->validation_model = i;
       else
-        return gpg_error (GPG_ERR_ASS_PARAMETER);
+        err = gpg_error (GPG_ERR_ASS_PARAMETER);
     }
   else if (!strcmp (key, "with-key-data"))
     {
@@ -296,7 +286,9 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       ctrl->server_local->enable_audit_log = i;
     }
   else if (!strcmp (key, "allow-pinentry-notify"))
-    ctrl->server_local->allow_pinentry_notify = 1;
+    {
+      ctrl->server_local->allow_pinentry_notify = 1;
+    }
   else if (!strcmp (key, "with-ephemeral-keys"))
     {
       int i = *value? atoi (value) : 0;
@@ -307,9 +299,9 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       ctrl->server_local->no_encrypt_to = 1;
     }
   else
-    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
+    err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
-  return 0;
+  return err;
 }
 
 
