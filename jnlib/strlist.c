@@ -41,6 +41,8 @@ free_strlist( strlist_t sl )
 }
 
 
+/* Add STRING to the LIST at the front.  This function terminates the
+   process on memory shortage.  */
 strlist_t
 add_to_strlist( strlist_t *list, const char *string )
 {
@@ -55,8 +57,9 @@ add_to_strlist( strlist_t *list, const char *string )
 }
 
 
-/* Same as add_to_strlist() but if is_utf8 is *not* set, a conversion
-   to UTF-8 is done.  */
+/* Same as add_to_strlist() but if IS_UTF8 is *not* set, a conversion
+   to UTF-8 is done.  This function terminates the process on memory
+   shortage.  */
 #ifdef JNLIB_NEED_UTF8CONV
 strlist_t
 add_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
@@ -75,6 +78,9 @@ add_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 }
 #endif /* JNLIB_NEED_UTF8CONV*/
 
+
+/* Add STRING to the LIST at the end.  This function terminates the
+   process on memory shortage.  */
 strlist_t
 append_to_strlist( strlist_t *list, const char *string )
 {
@@ -114,7 +120,8 @@ append_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 #endif /* JNLIB_NEED_UTF8CONV */
 
 
-/* Return a copy of LIST. */
+/* Return a copy of LIST.  This function terminates the process on
+   memory shortage.*/
 strlist_t
 strlist_copy (strlist_t list)
 {
@@ -155,6 +162,9 @@ strlist_last( strlist_t node )
 }
 
 
+/* Remove the first item from LIST and return its content in an
+   allocated buffer.  This function terminates the process on memory
+   shortage.  */
 char *
 strlist_pop (strlist_t *list)
 {

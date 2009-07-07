@@ -314,7 +314,8 @@ is_native_utf8 (void)
 
 
 /* Convert string, which is in native encoding to UTF8 and return a
-   new allocated UTF-8 string.  */
+   new allocated UTF-8 string.  This function terminates the process
+   on memory shortage.  */
 char *
 native_to_utf8 (const char *orig_string)
 {
@@ -682,7 +683,8 @@ do_utf8_to_native (const char *string, size_t length, int delim,
    illegal encodings by some "\xnn" and quote all control
    characters. A character with value DELIM will always be quoted, it
    must be a vanilla ASCII character.  A DELIM value of -1 is special:
-   it disables all quoting of control characters. */
+   it disables all quoting of control characters.  This function
+   terminates the process on memory shortage.  */
 char *
 utf8_to_native (const char *string, size_t length, int delim)
 {

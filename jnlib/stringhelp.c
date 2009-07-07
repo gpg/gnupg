@@ -252,9 +252,9 @@ length_sans_trailing_ws (const unsigned char *line, size_t len)
 
 
 
-/***************
- * Extract from a given path the filename component.
- *
+/*
+ * Extract from a given path the filename component.  This function
+ * terminates the process on memory shortage.
  */
 char *
 make_basename(const char *filepath, const char *inputpath)
@@ -281,11 +281,10 @@ make_basename(const char *filepath, const char *inputpath)
 
 
 
-/***************
- * Extract from a given filename the path prepended to it.
- * If their isn't a path prepended to the filename, a dot
- * is returned ('.').
- *
+/*
+ * Extract from a given filename the path prepended to it.  If there
+ * isn't a path prepended to the filename, a dot is returned ('.').
+ * This function terminates the process on memory shortage.
  */
 char *
 make_dirname(const char *filepath)
@@ -346,7 +345,8 @@ make_dirname(const char *filepath)
 
 
 /* Construct a filename from the NULL terminated list of parts.  Tilde
-   expansion is done here.  This function will never fail. */
+   expansion is done here.  This function terminates the process on
+   memory shortage. */
 char *
 make_filename (const char *first_part, ... )
 {
@@ -361,7 +361,7 @@ char *
 make_filename_try (const char *first_part, ... )
 {
   MAKE_FILENAME_PART1
-  name = jnlib_xmalloc (n);
+  name = jnlib_malloc (n);
   if (!name)
     return NULL;
   MAKE_FILENAME_PART2
@@ -550,8 +550,9 @@ print_sanitized_utf8_string (FILE *fp, const char *string, int delim)
                                               delim) : 0;
 }
 
-/* Create a string from the buffer P_ARG of length N which is suitable for
-   printing.  Caller must release the created string using xfree. */
+/* Create a string from the buffer P_ARG of length N which is suitable
+   for printing.  Caller must release the created string using xfree.
+   This function terminates the process on memory shortage.  */
 char *
 sanitize_buffer (const void *p_arg, size_t n, int delim)
 {
@@ -940,7 +941,8 @@ do_percent_escape (const char *str, const char *extra, int die)
 }
 
 /* Percent-escape the string STR by replacing colons with '%3a'.  If
-   EXTRA is not NULL all characters in EXTRA are also escaped.  */
+   EXTRA is not NULL all characters in EXTRA are also escaped.  This
+   function terminates the process on memory shortage.  */
 char *
 percent_escape (const char *str, const char *extra)
 {

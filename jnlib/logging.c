@@ -267,6 +267,9 @@ set_file_fd (const char *name, int fd)
 
   /* Setup a new stream.  */
 #ifdef USE_FUNWRITER
+  /* The xmalloc below is justified because we can expect that this
+     function is called only during initialization and there is no
+     easy way out of this error condition.  */
   cookie = jnlib_xmalloc (sizeof *cookie + (name? strlen (name):0));
   strcpy (cookie->name, name? name:"");
   cookie->quiet = 0;

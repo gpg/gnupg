@@ -598,7 +598,11 @@ read_lockfile (DOTLOCK h, int *same_node )
   *same_node = 0;
   expected_len = 10 + 1 + h->nodename_len + 1;
   if ( expected_len >= sizeof buffer_space)
-    buffer = jnlib_xmalloc (expected_len);
+    {
+      buffer = jnlib_malloc (expected_len);
+      if (!buffer)
+        return -1;
+    }
   else
     buffer = buffer_space;
 

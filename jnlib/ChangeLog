@@ -1,3 +1,9 @@
+2009-07-07  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (make_filename_try): Use jnlib_malloc.
+
+	* dotlock.c (read_lockfile): Replace jnlib_xmalloc by jnlib_malloc.
+
 2009-06-04  Werner Koch  <wk@g10code.com>
 
 	* mischelp.h: Include SUN_LEN etc also for W32.
