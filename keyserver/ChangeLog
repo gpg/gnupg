@@ -1,3 +1,9 @@
+2009-07-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main, srv_replace): Minor tweaks to use the
+	DNS-SD names ("pgpkey-http" and "pgpkey-https") in SRV lookups
+	instead of "hkp" and "hkps".
+
 2009-06-24  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_ldap.c (send_key): Do not loop over a NULL modlist in

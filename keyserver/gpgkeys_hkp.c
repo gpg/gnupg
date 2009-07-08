@@ -494,18 +494,21 @@ fail_all(struct keylist *keylist,int err)
 /* If there is a SRV record, take the highest ranked possibility.
    This is a hack, as we don't proceed downwards. */
 static void
-srv_replace(void)
+srv_replace(const char *srvtag)
 {
 #ifdef USE_DNS_SRV
   struct srventry *srvlist=NULL;
   int srvcount;
 
-  if(1+strlen(opt->scheme)+6+strlen(opt->host)+1<=MAXDNAME)
+  if(!srvtag)
+    return;
+
+  if(1+strlen(srvtag)+6+strlen(opt->host)+1<=MAXDNAME)
     {
       char srvname[MAXDNAME];
 
       strcpy(srvname,"_");
-      strcat(srvname,opt->scheme);
+      strcat(srvname,srvtag);
       strcat(srvname,"._tcp.");
       strcat(srvname,opt->host);
       srvcount=getsrv(srvname,&srvlist);
@@ -720,17 +723,26 @@ main(int argc,char *argv[])
     port=opt->port;
   else if(try_srv)
     {
+      char *srvtag;
+
+      if(ascii_strcasecmp(opt->scheme,"hkp")==0)
+	srvtag="pgpkey-http";
+      else if(ascii_strcasecmp(opt->scheme,"hkps")==0)
+	srvtag="pgpkey-https";
+      else
+	srvtag=NULL;
+
 #ifdef HAVE_LIBCURL
       /* We're using libcurl, so fake SRV support via our wrapper.
 	 This isn't as good as true SRV support, as we do not try all
 	 possible targets at one particular level and work our way
 	 down the list, but it's better than nothing. */
-      srv_replace();
+      srv_replace(srvtag);
 #else
       /* We're using our internal curl shim, so we can use its (true)
 	 SRV support.  Obviously, CURLOPT_SRVTAG_GPG_HACK isn't a real
 	 libcurl option.  It's specific to our shim. */
-      curl_easy_setopt(curl,CURLOPT_SRVTAG_GPG_HACK,opt->scheme);
+      curl_easy_setopt(curl,CURLOPT_SRVTAG_GPG_HACK,srvtag);
 #endif
     }
 
