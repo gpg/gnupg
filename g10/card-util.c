@@ -1,5 +1,5 @@
 /* card-util.c - Utility functions for the OpenPGP card.
- *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1393,7 +1393,8 @@ card_store_subkey (KBNODE node, int use)
 
   show_card_key_info (&info);
 
-  if (!is_RSA (sk->pubkey_algo) || nbits_from_sk (sk) != 1024 )
+  if (!is_RSA (sk->pubkey_algo) 
+      || (!info.is_v2 && nbits_from_sk (sk) != 1024) )
     {
       tty_printf ("You may only store a 1024 bit RSA key on the card\n");
       tty_printf ("\n");
@@ -1461,7 +1462,10 @@ card_store_subkey (KBNODE node, int use)
 
   rc = save_unprotected_key_to_card (sk, keyno);
   if (rc)
-    goto leave;
+    {
+      log_error (_("error writing key to card: %s\n"), gpg_strerror (rc));
+      goto leave;
+    }
 
   /* Get back to the maybe protected original secret key.  */
   if (copied_sk)

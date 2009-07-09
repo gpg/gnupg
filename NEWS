@@ -13,6 +13,11 @@ Noteworthy changes in version 2.0.13
 
  * New option --re-import for GPGSM's IMPORT server command.
 
+ * Enhanced writing of existing keys to OpenPGP v2 cards.
+
+ * Add hack to the internal CCID driver to allow the use of some
+   Omnikey based card readers with 2048 bit keys.
+
  * Minor bug fixes.
 
 

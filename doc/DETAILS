@@ -503,8 +503,9 @@ more arguments in future versions.
 	"char" is the character displayed with no --status-fd enabled, with
 	the linefeed replaced by an 'X'.  "cur" is the current amount
 	done and "total" is amount to be done; a "total" of 0 indicates that
-	the total amount is not known.	100/100 may be used to detect the
-	end of operation.
+	the total amount is not known.	The condition 
+           TOATL && CUR == TOTAL
+        may be used to detect the end of an operation.
         Well known values for WHAT:
              "pk_dsa"   - DSA key generation
              "pk_elg"   - Elgamal key generation

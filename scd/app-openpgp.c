@@ -213,6 +213,7 @@ static gpg_error_t do_auth (app_t app, const char *keyidstr,
                             void *pincb_arg,
                             const void *indata, size_t indatalen,
                             unsigned char **outdata, size_t *outdatalen);
+static void parse_algorithm_attribute (app_t app, int keyno);
 
 
 
@@ -2144,9 +2145,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
 /* Check whether a key already exists.  KEYIDX is the index of the key
    (0..2).  If FORCE is TRUE a diagnositic will be printed but no
-   error returned if the key already exists. */
+   error returned if the key already exists.  The flag GENERATING is
+   only used to print correct messages. */
 static gpg_error_t
-does_key_exist (app_t app, int keyidx, int force)
+does_key_exist (app_t app, int keyidx, int generating, int force)
 {
   const unsigned char *fpr;
   unsigned char *buffer;
@@ -2178,8 +2180,10 @@ does_key_exist (app_t app, int keyidx, int force)
     }
   else if (i!=20)
     log_info (_("existing key will be replaced\n"));
-  else
+  else if (generating)
     log_info (_("generating new key\n"));
+  else
+    log_info (_("writing new key\n"));
   return 0;
 }
 
@@ -2340,6 +2344,63 @@ build_privkey_template (app_t app, int keyno,
 }
 
 
+/* Helper for do_writekley to change the size of a key.  Not ethat
+   this deletes the entire key without asking.  */
+static gpg_error_t
+change_keyattr (app_t app, int keyno, unsigned int nbits,
+                gpg_error_t (*pincb)(void*, const char *, char **),
+                void *pincb_arg)
+{
+  gpg_error_t err;
+  unsigned char *buffer;
+  size_t buflen;
+  void *relptr;
+
+  assert (keyno >=0 && keyno <= 2);
+
+  if (nbits > 3072)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+
+  /* Read the current attributes into a buffer.  */
+  relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
+  if (!relptr)
+    return gpg_error (GPG_ERR_CARD);
+  if (buflen < 6 || buffer[0] != 1)
+    {
+      /* Attriutes too short or not an RSA key.  */
+      xfree (relptr);
+      return gpg_error (GPG_ERR_CARD);
+    }
+  
+  /* We only change n_bits and don't touch anything else.  Before we
+     do so, we round up NBITS to a sensible way in the same way as
+     gpg's key generation does it.  This may help to sort out problems
+     with a few bits too short keys.  */
+  nbits = ((nbits + 31) / 32) * 32;
+  buffer[1] = (nbits >> 8);
+  buffer[2] = nbits;
+
+  /* Prepare for storing the key.  */
+  err = verify_chv3 (app, pincb, pincb_arg);
+  if (err)
+    {
+      xfree (relptr);
+      return err;
+    }
+
+  /* Change the attribute.  */
+  err = iso7816_put_data (app->slot, 0, 0xC1+keyno, buffer, buflen);
+  xfree (relptr);
+  if (err)
+    log_error ("error changing size of key %d to %u bits\n", keyno+1, nbits);
+  else
+    log_info ("size of key %d changed to %u bits\n", keyno+1, nbits);
+  flush_cache (app);
+  parse_algorithm_attribute (app, keyno);
+  return err;
+}
+
+
 
 /* Handle the WRITEKEY command for OpenPGP.  This function expects a
    canonical encoded S-expression with the secret key in KEYDATA and
@@ -2385,7 +2446,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   else
     return gpg_error (GPG_ERR_INV_ID);
   
-  err = does_key_exist (app, keyno, force);
+  err = does_key_exist (app, keyno, 0, force);
   if (err)
     return err;
 
@@ -2515,6 +2576,14 @@ do_writekey (app_t app, ctrl_t ctrl,
   if (opt.verbose)
     log_info ("RSA modulus size is %u bits (%u bytes)\n", 
               nbits, (unsigned int)rsa_n_len);
+  if (nbits && nbits != maxbits
+      && app->app_local->extcap.algo_attr_change)
+    {
+      /* Try to switch the key to a new length.  */
+      err = change_keyattr (app, keyno, nbits, pincb, pincb_arg);
+      if (!err)
+        maxbits = app->app_local->keyattr[keyno].n_bits;
+    }
   if (nbits != maxbits)
     {
       log_error (_("RSA modulus missing or not of size %d bits\n"), 
@@ -2696,7 +2765,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   app->app_local->pk[keyno].read_done = 0;
 
   /* Check whether a key already exists.  */
-  rc = does_key_exist (app, keyno, force);
+  rc = does_key_exist (app, keyno, 1, force);
   if (rc)
     return rc;
 
