@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.4\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-06-30 12:14+0200\n"
-"PO-Revision-Date: 2006-07-02 10:58+0800\n"
+"POT-Creation-Date: 2009-07-07 17:45+0200\n"
+"PO-Revision-Date: 2009-07-09 10:03+0200\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
@@ -19,14 +19,14 @@ msgstr ""
 "X-Poedit-SourceCharset: iso-8859-1\n"
 "X-Poedit-Basepath: d:\\msys\\source\\gnupg-1.4.3\n"
 
-#: agent/call-pinentry.c:226
+#: agent/call-pinentry.c:243
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "无法存储指纹：%s\n"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
-#: agent/call-pinentry.c:584
+#: agent/call-pinentry.c:605
 #, fuzzy
 msgid "Quality:"
 msgstr "有效性：%s"
@@ -37,58 +37,58 @@ msgstr "有效性：%s"
 #. tooltip is limited to about 900 characters.  If you do not
 #. translate this entry, a default english text (see source)
 #. will be used.
-#: agent/call-pinentry.c:606
+#: agent/call-pinentry.c:627
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:650
+#: agent/call-pinentry.c:671
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr ""
 
-#: agent/call-pinentry.c:653
+#: agent/call-pinentry.c:674
 #, fuzzy
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr "请输入密码：这是一个秘密的句子 \n"
 
-#: agent/call-pinentry.c:710
+#: agent/call-pinentry.c:731
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
 
-#: agent/call-pinentry.c:730 agent/call-pinentry.c:742
+#: agent/call-pinentry.c:751 agent/call-pinentry.c:763
 #, fuzzy
 msgid "PIN too long"
 msgstr "列太长"
 
-#: agent/call-pinentry.c:731
+#: agent/call-pinentry.c:752
 #, fuzzy
 msgid "Passphrase too long"
 msgstr "列太长"
 
-#: agent/call-pinentry.c:739
+#: agent/call-pinentry.c:760
 #, fuzzy
 msgid "Invalid characters in PIN"
 msgstr "姓名含有无效的字符\n"
 
-#: agent/call-pinentry.c:744
+#: agent/call-pinentry.c:765
 msgid "PIN too short"
 msgstr ""
 
-#: agent/call-pinentry.c:756
+#: agent/call-pinentry.c:777
 #, fuzzy
 msgid "Bad PIN"
 msgstr "损坏的多精度整数(MPI)"
 
-#: agent/call-pinentry.c:757
+#: agent/call-pinentry.c:778
 #, fuzzy
 msgid "Bad Passphrase"
 msgstr "错误的密码"
 
-#: agent/call-pinentry.c:793
+#: agent/call-pinentry.c:814
 #, fuzzy
 msgid "Passphrase"
 msgstr "错误的密码"
@@ -98,7 +98,7 @@ msgstr "错误的密码"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "不支持保护散列 %d\n"
 
-#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:478 g10/gpg.c:1079
+#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:478 g10/gpg.c:1090
 #: g10/keygen.c:3311 g10/keygen.c:3344 g10/keyring.c:1237 g10/keyring.c:1556
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
@@ -108,12 +108,12 @@ msgstr "无法建立‘%s’：%s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1080 g10/import.c:193 g10/keygen.c:2794
+#: g10/encode.c:504 g10/gpg.c:1091 g10/import.c:193 g10/keygen.c:2794
 #: g10/keyring.c:1582 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
-#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:1973
-#: sm/gpgsm.c:2010 sm/gpgsm.c:2048 sm/qualified.c:66
+#: g10/tdbio.c:615 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2020
+#: sm/gpgsm.c:2050 sm/gpgsm.c:2088 sm/gpgsm.c:2126 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "无法打开‘%s’： %s\n"
@@ -170,7 +170,7 @@ msgstr ""
 msgid "does not match - try again"
 msgstr ""
 
-#: agent/command-ssh.c:2937
+#: agent/command-ssh.c:2949
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
 msgstr "%s：建立散列表失败：%s\n"
@@ -229,13 +229,13 @@ msgstr "PIN 再次输入时与首次输入不符；请再试一次"
 msgid "Please enter the PIN%s%s%s to unlock the card"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
-#: agent/genkey.c:108 sm/certreqgen-ui.c:284 sm/export.c:638 sm/export.c:654
-#: sm/import.c:537 sm/import.c:562
+#: agent/genkey.c:108 sm/certreqgen-ui.c:384 sm/export.c:638 sm/export.c:654
+#: sm/import.c:661 sm/import.c:686
 #, fuzzy, c-format
 msgid "error creating temporary file: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
 
-#: agent/genkey.c:115 sm/export.c:645 sm/import.c:545
+#: agent/genkey.c:115 sm/export.c:645 sm/import.c:669
 #, fuzzy, c-format
 msgid "error writing to temporary file: %s\n"
 msgstr "%s：写入目录记录时出错：%s\n"
@@ -417,7 +417,7 @@ msgid "|FILE|write environment settings also to FILE"
 msgstr ""
 
 #: agent/gpg-agent.c:329 agent/preset-passphrase.c:94 agent/protect-tool.c:160
-#: scd/scdaemon.c:244 sm/gpgsm.c:511 tools/gpg-connect-agent.c:180
+#: scd/scdaemon.c:244 sm/gpgsm.c:512 tools/gpg-connect-agent.c:180
 #: tools/gpgconf.c:102 tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
 #, fuzzy
 msgid "Please report bugs to <"
@@ -436,35 +436,35 @@ msgid ""
 "Secret key management for GnuPG\n"
 msgstr ""
 
-#: agent/gpg-agent.c:375 g10/gpg.c:980 scd/scdaemon.c:305 sm/gpgsm.c:638
+#: agent/gpg-agent.c:375 g10/gpg.c:991 scd/scdaemon.c:305 sm/gpgsm.c:651
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr ""
 
 #: agent/gpg-agent.c:584 agent/protect-tool.c:1030 kbx/kbxutil.c:429
-#: scd/scdaemon.c:399 sm/gpgsm.c:877 sm/gpgsm.c:880 tools/symcryptrun.c:996
+#: scd/scdaemon.c:399 sm/gpgsm.c:890 sm/gpgsm.c:893 tools/symcryptrun.c:996
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#: agent/gpg-agent.c:683 g10/gpg.c:2085 scd/scdaemon.c:481 sm/gpgsm.c:969
+#: agent/gpg-agent.c:695 g10/gpg.c:2100 scd/scdaemon.c:481 sm/gpgsm.c:987
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意：没有默认配置文件‘%s’\n"
 
-#: agent/gpg-agent.c:688 agent/gpg-agent.c:1301 g10/gpg.c:2089
-#: scd/scdaemon.c:486 sm/gpgsm.c:973 tools/symcryptrun.c:929
+#: agent/gpg-agent.c:700 agent/gpg-agent.c:1301 g10/gpg.c:2104
+#: scd/scdaemon.c:486 sm/gpgsm.c:991 tools/symcryptrun.c:929
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "配置文件‘%s’：%s\n"
 
-#: agent/gpg-agent.c:696 g10/gpg.c:2096 scd/scdaemon.c:494 sm/gpgsm.c:980
+#: agent/gpg-agent.c:708 g10/gpg.c:2111 scd/scdaemon.c:494 sm/gpgsm.c:998
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "从‘%s’读取选项\n"
 
-#: agent/gpg-agent.c:1050 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1070 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
@@ -561,23 +561,23 @@ msgstr ""
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "更新私钥失败：%s\n"
 
-#: agent/gpg-agent.c:2028 scd/scdaemon.c:1285
+#: agent/gpg-agent.c:2042 scd/scdaemon.c:1285
 #, fuzzy, c-format
 msgid "%s %s stopped\n"
 msgstr "%s：已跳过：%s\n"
 
-#: agent/gpg-agent.c:2156
+#: agent/gpg-agent.c:2170
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent 在此次舍话中无法使用\n"
 
-#: agent/gpg-agent.c:2167 common/simple-pwquery.c:352 common/asshelp.c:326
-#: tools/gpg-connect-agent.c:2133
+#: agent/gpg-agent.c:2181 common/simple-pwquery.c:352 common/asshelp.c:283
+#: tools/gpg-connect-agent.c:2134
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
 
-#: agent/gpg-agent.c:2180 common/simple-pwquery.c:364 common/asshelp.c:338
-#: tools/gpg-connect-agent.c:2144
+#: agent/gpg-agent.c:2194 common/simple-pwquery.c:364 common/asshelp.c:295
+#: tools/gpg-connect-agent.c:2145
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "不支持 gpg-agent 协议版本 %d\n"
@@ -921,11 +921,11 @@ msgstr ""
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-#: common/asshelp.c:244 tools/gpg-connect-agent.c:2101
+#: common/asshelp.c:201 tools/gpg-connect-agent.c:2102
 msgid "no running gpg-agent - starting one\n"
 msgstr ""
 
-#: common/asshelp.c:349
+#: common/asshelp.c:306
 msgid "can't connect to the agent - trying fall back\n"
 msgstr ""
 
@@ -1220,7 +1220,8 @@ msgstr "私钥部分不可用\n"
 
 #: g10/card-util.c:141 g10/card-util.c:1340 g10/card-util.c:1419
 #: g10/keyedit.c:424 g10/keyedit.c:445 g10/keyedit.c:459 g10/keygen.c:1598
-#: g10/keygen.c:1679 sm/certreqgen-ui.c:128 sm/certreqgen-ui.c:182
+#: g10/keygen.c:1679 sm/certreqgen-ui.c:165 sm/certreqgen-ui.c:249
+#: sm/certreqgen-ui.c:283
 msgid "Your selection? "
 msgstr "您的选择？ "
 
@@ -1505,7 +1506,7 @@ msgstr "无效的指令(尝试“help”)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在这个命令中不起作用\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:3967 g10/keyring.c:387 g10/keyring.c:698
+#: g10/decrypt.c:166 g10/gpg.c:3993 g10/keyring.c:387 g10/keyring.c:698
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "无法打开‘%s’\n"
@@ -1851,7 +1852,7 @@ msgstr "列出密钥和指纹"
 msgid "list secret keys"
 msgstr "列出私钥"
 
-#: g10/gpg.c:389
+#: g10/gpg.c:389 sm/gpgsm.c:199
 msgid "generate a new key pair"
 msgstr "生成一副新的密钥对"
 
@@ -2016,7 +2017,7 @@ msgstr ""
 "签名、检查、加密或解密\n"
 "默认的操作依输入数据而定\n"
 
-#: g10/gpg.c:845 sm/gpgsm.c:535
+#: g10/gpg.c:845 sm/gpgsm.c:536
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -2044,520 +2045,520 @@ msgstr "压缩："
 msgid "usage: gpg [options] "
 msgstr "用法：gpg [选项] "
 
-#: g10/gpg.c:1115 sm/gpgsm.c:674
+#: g10/gpg.c:1126 sm/gpgsm.c:687
 msgid "conflicting commands\n"
 msgstr "冲突的指令\n"
 
-#: g10/gpg.c:1133
+#: g10/gpg.c:1144
 #, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "在‘%s’组定义里找不到等号(=)\n"
 
-#: g10/gpg.c:1330
+#: g10/gpg.c:1341
 #, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "警告：用户目录‘%s’所有权不安全\n"
 
-#: g10/gpg.c:1333
+#: g10/gpg.c:1344
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’所有权不安全\n"
 
-#: g10/gpg.c:1336
+#: g10/gpg.c:1347
 #, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "警告：扩展模块‘%s’所有权不安全\n"
 
-#: g10/gpg.c:1342
+#: g10/gpg.c:1353
 #, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "警告：用户目录‘%s’权限不安全\n"
 
-#: g10/gpg.c:1345
+#: g10/gpg.c:1356
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’权限不安全\n"
 
-#: g10/gpg.c:1348
+#: g10/gpg.c:1359
 #, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "警告：扩展模块‘%s’权限不安全\n"
 
-#: g10/gpg.c:1354
+#: g10/gpg.c:1365
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "警告：用户目录‘%s’的关闭目录所有权不安全\n"
 
-#: g10/gpg.c:1357
+#: g10/gpg.c:1368
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’的关闭目录所有权不安全\n"
 
-#: g10/gpg.c:1360
+#: g10/gpg.c:1371
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr "警告：扩展模块‘%s’的关闭目录所有权不安全\n"
 
-#: g10/gpg.c:1366
+#: g10/gpg.c:1377
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "警告：用户目录‘%s’的关闭目录权限不安全\n"
 
-#: g10/gpg.c:1369
+#: g10/gpg.c:1380
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告：配置文件‘%s’的关闭目录权限不安全\n"
 
-#: g10/gpg.c:1372
+#: g10/gpg.c:1383
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "警告：扩展模块‘%s’的关闭目录权限不安全\n"
 
-#: g10/gpg.c:1551
+#: g10/gpg.c:1562
 #, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "未知的配置项‘%s’\n"
 
-#: g10/gpg.c:1650
+#: g10/gpg.c:1661
 msgid "display photo IDs during key listings"
 msgstr "列出密钥时显示用户标识"
 
-#: g10/gpg.c:1652
+#: g10/gpg.c:1663
 msgid "show policy URLs during signature listings"
 msgstr "列出签名时显示策略 URL"
 
-#: g10/gpg.c:1654
+#: g10/gpg.c:1665
 msgid "show all notations during signature listings"
 msgstr "列出签名时显示 IETF 标准注记"
 
-#: g10/gpg.c:1656
+#: g10/gpg.c:1667
 msgid "show IETF standard notations during signature listings"
 msgstr "列出签名时显示 IETF 标准注记"
 
-#: g10/gpg.c:1660
+#: g10/gpg.c:1671
 msgid "show user-supplied notations during signature listings"
 msgstr "列出签名时显示用户提供的注记"
 
-#: g10/gpg.c:1662
+#: g10/gpg.c:1673
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "列出密钥时显示首选公钥服务器 URL"
 
-#: g10/gpg.c:1664
+#: g10/gpg.c:1675
 msgid "show user ID validity during key listings"
 msgstr "列出密钥时显示用户标识的有效性"
 
-#: g10/gpg.c:1666
+#: g10/gpg.c:1677
 msgid "show revoked and expired user IDs in key listings"
 msgstr "列出密钥时显示已吊销或已过期的用户标识"
 
-#: g10/gpg.c:1668
+#: g10/gpg.c:1679
 msgid "show revoked and expired subkeys in key listings"
 msgstr "列出密钥时显示已吊销或已过期的子钥"
 
-#: g10/gpg.c:1670
+#: g10/gpg.c:1681
 msgid "show the keyring name in key listings"
 msgstr "列出密钥时显示钥匙环的名称"
 
-#: g10/gpg.c:1672
+#: g10/gpg.c:1683
 msgid "show expiration dates during signature listings"
 msgstr "列出签名时显示过期日期"
 
-#: g10/gpg.c:1833
+#: g10/gpg.c:1844
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "注意：旧式的默认配置文件‘%s’已被忽略\n"
 
-#: g10/gpg.c:1925
+#: g10/gpg.c:1936
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#: g10/gpg.c:2313 g10/gpg.c:2990 g10/gpg.c:3002
+#: g10/gpg.c:2328 g10/gpg.c:3016 g10/gpg.c:3028
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意：一般情况下不会用到 %s！\n"
 
-#: g10/gpg.c:2494 g10/gpg.c:2506
+#: g10/gpg.c:2509 g10/gpg.c:2521
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "‘%s’不是一个有效的签名过期日期\n"
 
-#: g10/gpg.c:2588
+#: g10/gpg.c:2603
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "‘%s’不是一个有效的字符集\n"
 
-#: g10/gpg.c:2611 g10/gpg.c:2806 g10/keyedit.c:4121
+#: g10/gpg.c:2626 g10/gpg.c:2821 g10/keyedit.c:4121
 msgid "could not parse keyserver URL\n"
 msgstr "无法解析公钥服务器 URL\n"
 
-#: g10/gpg.c:2623
+#: g10/gpg.c:2638
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s：%d：无效的公钥服务器选项\n"
 
-#: g10/gpg.c:2626
+#: g10/gpg.c:2641
 msgid "invalid keyserver options\n"
 msgstr "无效的公钥服务器选项\n"
 
-#: g10/gpg.c:2633
+#: g10/gpg.c:2648
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s：%d：无效的导入选项\n"
 
-#: g10/gpg.c:2636
+#: g10/gpg.c:2651
 msgid "invalid import options\n"
 msgstr "无效的导入选项\n"
 
-#: g10/gpg.c:2643
+#: g10/gpg.c:2658
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s：%d：无效的导出选项\n"
 
-#: g10/gpg.c:2646
+#: g10/gpg.c:2661
 msgid "invalid export options\n"
 msgstr "无效的导出选项\n"
 
-#: g10/gpg.c:2653
+#: g10/gpg.c:2668
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s：%d：无效的列表选项\n"
 
-#: g10/gpg.c:2656
+#: g10/gpg.c:2671
 msgid "invalid list options\n"
 msgstr "无效的列表选项\n"
 
-#: g10/gpg.c:2664
+#: g10/gpg.c:2679
 msgid "display photo IDs during signature verification"
 msgstr "验证签名时显示照片标识"
 
-#: g10/gpg.c:2666
+#: g10/gpg.c:2681
 msgid "show policy URLs during signature verification"
 msgstr "验证签名时显示策略 URL"
 
-#: g10/gpg.c:2668
+#: g10/gpg.c:2683
 msgid "show all notations during signature verification"
 msgstr "验证签名时显示所有注记"
 
-#: g10/gpg.c:2670
+#: g10/gpg.c:2685
 msgid "show IETF standard notations during signature verification"
 msgstr "验证签名时显示 IETF 标准注记"
 
-#: g10/gpg.c:2674
+#: g10/gpg.c:2689
 msgid "show user-supplied notations during signature verification"
 msgstr "验证签名时显示用户提供的注记"
 
-#: g10/gpg.c:2676
+#: g10/gpg.c:2691
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "验证签名时显示首选公钥服务器 URL"
 
-#: g10/gpg.c:2678
+#: g10/gpg.c:2693
 msgid "show user ID validity during signature verification"
 msgstr "验证签名时显示用户标识的有效性"
 
-#: g10/gpg.c:2680
+#: g10/gpg.c:2695
 msgid "show revoked and expired user IDs in signature verification"
 msgstr "验证密钥时显示已吊销或已过期的子钥"
 
-#: g10/gpg.c:2682
+#: g10/gpg.c:2697
 #, fuzzy
 msgid "show only the primary user ID in signature verification"
 msgstr "验证密钥时显示已吊销或已过期的子钥"
 
-#: g10/gpg.c:2684
+#: g10/gpg.c:2699
 msgid "validate signatures with PKA data"
 msgstr "使用 PKA 数据验证签名的有效性"
 
-#: g10/gpg.c:2686
+#: g10/gpg.c:2701
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr "提升带有有效 PKA 数据的签名的信任度"
 
-#: g10/gpg.c:2693
+#: g10/gpg.c:2708
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s：%d：无效的校验选项\n"
 
-#: g10/gpg.c:2696
+#: g10/gpg.c:2711
 msgid "invalid verify options\n"
 msgstr "无效的校验选项\n"
 
-#: g10/gpg.c:2703
+#: g10/gpg.c:2718
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "无法把运行路径设成 %s\n"
 
-#: g10/gpg.c:2878
+#: g10/gpg.c:2904
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s：%d：无效的 auto-key-locate 清单\n"
 
-#: g10/gpg.c:2881
+#: g10/gpg.c:2907
 msgid "invalid auto-key-locate list\n"
 msgstr "无效的 auto-key-locate 清单\n"
 
-#: g10/gpg.c:2979 sm/gpgsm.c:1387
+#: g10/gpg.c:3005 sm/gpgsm.c:1416
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告：程序可能会创建核心内存转储！\n"
 
-#: g10/gpg.c:2983
+#: g10/gpg.c:3009
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "警告：%s 会使得 %s 失效\n"
 
-#: g10/gpg.c:2992
+#: g10/gpg.c:3018
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s 不可与 %s 并用\n"
 
-#: g10/gpg.c:2995
+#: g10/gpg.c:3021
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s 与 %s 并用无意义！\n"
 
-#: g10/gpg.c:3010
+#: g10/gpg.c:3036
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "不会在内存不安全的情况下运行，原因是 %s\n"
 
-#: g10/gpg.c:3024
+#: g10/gpg.c:3050
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "您只有在 --pgp2 模式下才能做分离式或明文签名\n"
 
-#: g10/gpg.c:3030
+#: g10/gpg.c:3056
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "您在 --pgp2 模式下时，不能同时签名和加密\n"
 
-#: g10/gpg.c:3036
+#: g10/gpg.c:3062
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "启用 --pgp2 时您应该只使用文件，而非管道\n"
 
-#: g10/gpg.c:3049
+#: g10/gpg.c:3075
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "在 --pgp2 模式下加密报文需要 IDEA 算法\n"
 
-#: g10/gpg.c:3115 g10/gpg.c:3139 sm/gpgsm.c:1459
+#: g10/gpg.c:3141 g10/gpg.c:3165 sm/gpgsm.c:1488
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所选的对称加密算法无效\n"
 
-#: g10/gpg.c:3121 g10/gpg.c:3145 sm/gpgsm.c:1465 sm/gpgsm.c:1471
+#: g10/gpg.c:3147 g10/gpg.c:3171 sm/gpgsm.c:1494 sm/gpgsm.c:1500
 msgid "selected digest algorithm is invalid\n"
 msgstr "所选的散列算法无效\n"
 
-#: g10/gpg.c:3127
+#: g10/gpg.c:3153
 msgid "selected compression algorithm is invalid\n"
 msgstr "所选的压缩算法无效\n"
 
-#: g10/gpg.c:3133
+#: g10/gpg.c:3159
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "所选的证书散列算法无效\n"
 
-#: g10/gpg.c:3148
+#: g10/gpg.c:3174
 msgid "completes-needed must be greater than 0\n"
 msgstr "需要的完全可信签名数一定要大于 0\n"
 
-#: g10/gpg.c:3150
+#: g10/gpg.c:3176
 msgid "marginals-needed must be greater than 1\n"
 msgstr "需要的勉强可信签名数一定要大于 1\n"
 
-#: g10/gpg.c:3152
+#: g10/gpg.c:3178
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "最大验证深度一定要介于 1 和 255 之间\n"
 
-#: g10/gpg.c:3154
+#: g10/gpg.c:3180
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "无效的默认验证级别；一定要是 0，1，2 或 3\n"
 
-#: g10/gpg.c:3156
+#: g10/gpg.c:3182
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "无效的最小验证级别；一定要是 1，2 或 3\n"
 
-#: g10/gpg.c:3159
+#: g10/gpg.c:3185
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "注意：强烈不建议使用简单的 S2K 模式(0)\n"
 
-#: g10/gpg.c:3163
+#: g10/gpg.c:3189
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "无效的 S2K 模式；必须是 0，1 或 3\n"
 
-#: g10/gpg.c:3170
+#: g10/gpg.c:3196
 msgid "invalid default preferences\n"
 msgstr "无效的默认首选项\n"
 
-#: g10/gpg.c:3179
+#: g10/gpg.c:3205
 msgid "invalid personal cipher preferences\n"
 msgstr "无效的个人对称加密算法首选项\n"
 
-#: g10/gpg.c:3183
+#: g10/gpg.c:3209
 msgid "invalid personal digest preferences\n"
 msgstr "无效的个人散列算法首选项\n"
 
-#: g10/gpg.c:3187
+#: g10/gpg.c:3213
 msgid "invalid personal compress preferences\n"
 msgstr "无效的个人压缩算法首选项\n"
 
-#: g10/gpg.c:3220
+#: g10/gpg.c:3246
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 尚不能和 %s 并用\n"
 
-#: g10/gpg.c:3267
+#: g10/gpg.c:3293
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "您不能在 %s 模式下使用‘%s’对称加密算法\n"
 
-#: g10/gpg.c:3272
+#: g10/gpg.c:3298
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "您不能在 %s 模式下使用‘%s’散列算法\n"
 
-#: g10/gpg.c:3277
+#: g10/gpg.c:3303
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "您不能在 %s 模式下使用‘%s’压缩算法\n"
 
-#: g10/gpg.c:3363
+#: g10/gpg.c:3389
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "初始化信任度数据库失败：%s\n"
 
-#: g10/gpg.c:3374
+#: g10/gpg.c:3400
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "警告：给定了收件人(-r)但并未使用公钥加密\n"
 
-#: g10/gpg.c:3395
+#: g10/gpg.c:3421
 msgid "--store [filename]"
 msgstr "--store [文件名]"
 
-#: g10/gpg.c:3402
+#: g10/gpg.c:3428
 msgid "--symmetric [filename]"
 msgstr "--symmetric [文件名]"
 
-#: g10/gpg.c:3404
+#: g10/gpg.c:3430
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "对称加密‘%s’失败：%s\n"
 
-#: g10/gpg.c:3414
+#: g10/gpg.c:3440
 msgid "--encrypt [filename]"
 msgstr "--encrypt [文件名]"
 
-#: g10/gpg.c:3427
+#: g10/gpg.c:3453
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [文件名]"
 
-#: g10/gpg.c:3429
+#: g10/gpg.c:3455
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --encrypt 时不能使用 --s2k-mode 0\n"
 
-#: g10/gpg.c:3432
+#: g10/gpg.c:3458
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric -encrypt\n"
 
-#: g10/gpg.c:3450
+#: g10/gpg.c:3476
 msgid "--sign [filename]"
 msgstr "--sign [文件名]"
 
-#: g10/gpg.c:3463
+#: g10/gpg.c:3489
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [文件名]"
 
-#: g10/gpg.c:3478
+#: g10/gpg.c:3504
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [文件名]"
 
-#: g10/gpg.c:3480
+#: g10/gpg.c:3506
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --sign --encrypt 时不能使用 --s2k-mode 0\n"
 
-#: g10/gpg.c:3483
+#: g10/gpg.c:3509
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric --sign -encrypt\n"
 
-#: g10/gpg.c:3503
+#: g10/gpg.c:3529
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [文件名]"
 
-#: g10/gpg.c:3512
+#: g10/gpg.c:3538
 msgid "--clearsign [filename]"
 msgstr "--clearsign [文件名]"
 
-#: g10/gpg.c:3537
+#: g10/gpg.c:3563
 msgid "--decrypt [filename]"
 msgstr "--decrypt [文件名]"
 
-#: g10/gpg.c:3545
+#: g10/gpg.c:3571
 msgid "--sign-key user-id"
 msgstr "--sign-key 用户标识"
 
-#: g10/gpg.c:3549
+#: g10/gpg.c:3575
 msgid "--lsign-key user-id"
 msgstr "--lsign-key 用户标识"
 
-#: g10/gpg.c:3570
+#: g10/gpg.c:3596
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key 用户标识 [指令]"
 
-#: g10/gpg.c:3662
+#: g10/gpg.c:3688
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "上传至公钥服务器失败：%s\n"
 
-#: g10/gpg.c:3664
+#: g10/gpg.c:3690
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "从公钥服务器接收失败：%s\n"
 
-#: g10/gpg.c:3666
+#: g10/gpg.c:3692
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "导出密钥失败：%s\n"
 
-#: g10/gpg.c:3677
+#: g10/gpg.c:3703
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "搜寻公钥服务器失败：%s\n"
 
-#: g10/gpg.c:3687
+#: g10/gpg.c:3713
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "从公钥服务器更新失败：%s\n"
 
-#: g10/gpg.c:3738
+#: g10/gpg.c:3764
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "解开 ASCII 封装失败：%s\n"
 
-#: g10/gpg.c:3746
+#: g10/gpg.c:3772
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "进行 ASCII 封装失败：%s\n"
 
-#: g10/gpg.c:3836
+#: g10/gpg.c:3862
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "无效的‘%s’散列算法\n"
 
-#: g10/gpg.c:3953
+#: g10/gpg.c:3979
 msgid "[filename]"
 msgstr "[文件名]"
 
-#: g10/gpg.c:3957
+#: g10/gpg.c:3983
 msgid "Go ahead and type your message ...\n"
 msgstr "请开始键入您的报文……\n"
 
-#: g10/gpg.c:4271
+#: g10/gpg.c:4297
 msgid "the given certification policy URL is invalid\n"
 msgstr "给定的的验证策略 URL 无效\n"
 
-#: g10/gpg.c:4273
+#: g10/gpg.c:4299
 msgid "the given signature policy URL is invalid\n"
 msgstr "给定的签名策略 URL 无效\n"
 
-#: g10/gpg.c:4306
+#: g10/gpg.c:4332
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "给定的首选公钥服务器 URL 无效\n"
 
@@ -2649,12 +2650,12 @@ msgstr "  已跳过的新密钥：%lu\n"
 msgid "          w/o user IDs: %lu\n"
 msgstr "    遗失用户标识：%lu\n"
 
-#: g10/import.c:302 sm/import.c:112
+#: g10/import.c:302 sm/import.c:114
 #, c-format
 msgid "              imported: %lu"
 msgstr "          已导入：%lu"
 
-#: g10/import.c:308 sm/import.c:116
+#: g10/import.c:308 sm/import.c:118
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "          未改变：%lu\n"
@@ -2679,22 +2680,22 @@ msgstr "        新的签名：%lu\n"
 msgid "   new key revocations: %lu\n"
 msgstr "    新的密钥吊销：%lu\n"
 
-#: g10/import.c:318 sm/import.c:118
+#: g10/import.c:318 sm/import.c:120
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr "      读取的私钥：%lu\n"
 
-#: g10/import.c:320 sm/import.c:120
+#: g10/import.c:320 sm/import.c:122
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "      导入的私钥：%lu\n"
 
-#: g10/import.c:322 sm/import.c:122
+#: g10/import.c:322 sm/import.c:124
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr "    未改变的私钥：%lu\n"
 
-#: g10/import.c:324 sm/import.c:124
+#: g10/import.c:324 sm/import.c:126
 #, c-format
 msgid "          not imported: %lu\n"
 msgstr "        未被导入：%lu\n"
@@ -3606,6 +3607,7 @@ msgstr "真的要删除这个用户标识吗？(y/N)"
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
 #: g10/keyedit.c:1905
+#, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "真的要删除主钥吗？(y/N)"
 
@@ -4189,7 +4191,7 @@ msgstr "   (%c) 选择是否用于认证\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) 已完成\n"
 
-#: g10/keygen.c:1654 sm/certreqgen-ui.c:121
+#: g10/keygen.c:1654 sm/certreqgen-ui.c:157
 msgid "Please select what kind of key you want:\n"
 msgstr "请选择您要使用的密钥种类：\n"
 
@@ -4243,22 +4245,22 @@ msgstr "%s 密钥长度应在 %u 位与 %u 位之间。\n"
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "您想要用多大的密钥尺寸？(%u)"
 
-#: g10/keygen.c:1791 sm/certreqgen-ui.c:142
+#: g10/keygen.c:1791 sm/certreqgen-ui.c:179
 #, c-format
 msgid "What keysize do you want? (%u) "
 msgstr "您想要用多大的密钥尺寸？(%u)"
 
-#: g10/keygen.c:1799 sm/certreqgen-ui.c:147
+#: g10/keygen.c:1799 sm/certreqgen-ui.c:184
 #, c-format
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s 密钥尺寸必须在 %u 与 %u 间\n"
 
-#: g10/keygen.c:1805 sm/certreqgen-ui.c:152
+#: g10/keygen.c:1805 sm/certreqgen-ui.c:189
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "您所要求的密钥尺寸是 %u 位\n"
 
-#: g10/keygen.c:1812 g10/keygen.c:1818 sm/certreqgen-ui.c:157
+#: g10/keygen.c:1812 g10/keygen.c:1818 sm/certreqgen-ui.c:194
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "舍入到 %u 位\n"
@@ -6372,7 +6374,7 @@ msgstr "可选"
 msgid "invalid option \"%.50s\"\n"
 msgstr "无效的列表选项\n"
 
-#: jnlib/logging.c:644
+#: jnlib/logging.c:647
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "您找到一个程序缺陷了……(%s:%d)\n"
@@ -6392,7 +6394,7 @@ msgstr ""
 msgid "iconv_open failed: %s\n"
 msgstr "签名时失败： %s\n"
 
-#: jnlib/utf8conv.c:387 jnlib/utf8conv.c:653
+#: jnlib/utf8conv.c:388 jnlib/utf8conv.c:654
 #, fuzzy, c-format
 msgid "conversion from `%s' to `%s' failed: %s\n"
 msgstr "将‘%s’重命名为‘%s’时失败：%s\n"
@@ -6795,7 +6797,7 @@ msgstr ""
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "跳过无效的 64 进制字符 %02x\n"
 
-#: sm/call-agent.c:138
+#: sm/call-agent.c:137
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
@@ -7030,7 +7032,7 @@ msgstr ""
 msgid "checking the trust list failed: %s\n"
 msgstr "检查已建立的签名时发生错误： %s\n"
 
-#: sm/certchain.c:1456 sm/import.c:158
+#: sm/certchain.c:1456 sm/import.c:160
 msgid "certificate chain too long\n"
 msgstr ""
 
@@ -7210,51 +7212,80 @@ msgid ""
 "you just created once more.\n"
 msgstr ""
 
-#: sm/certreqgen-ui.c:122
+#: sm/certreqgen-ui.c:158
 #, fuzzy, c-format
 msgid "   (%d) RSA\n"
 msgstr "   (%d) RSA (仅用于签名)\n"
 
-#: sm/certreqgen-ui.c:123
+#: sm/certreqgen-ui.c:159
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
 msgstr "  (2) 加密密钥\n"
 
-#: sm/certreqgen-ui.c:124
+#: sm/certreqgen-ui.c:160
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr ""
 
-#: sm/certreqgen-ui.c:176
+#: sm/certreqgen-ui.c:202
+#, fuzzy
+msgid "Enter the keygrip: "
+msgstr "输入注记："
+
+#: sm/certreqgen-ui.c:210
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
+
+#: sm/certreqgen-ui.c:212
+#, fuzzy
+msgid "No key with this keygrip\n"
+msgstr "没有索引为 %d 的子钥\n"
+
+#: sm/certreqgen-ui.c:230 sm/certreqgen-ui.c:239
+#, fuzzy, c-format
+msgid "error reading the card: %s\n"
+msgstr "%s：读取自由记录时出错：%s\n"
+
+#: sm/certreqgen-ui.c:233
+#, fuzzy, c-format
+msgid "Serial number of the card: %s\n"
+msgstr "获取新 PIN 时出错：%s\n"
+
+#: sm/certreqgen-ui.c:245
+#, fuzzy
+msgid "Available keys:\n"
+msgstr "禁用密钥"
+
+#: sm/certreqgen-ui.c:276
 #, fuzzy, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "%s 密钥可能的操作："
 
-#: sm/certreqgen-ui.c:177
+#: sm/certreqgen-ui.c:277
 #, fuzzy, c-format
 msgid "   (%d) sign, encrypt\n"
 msgstr "   (%d) DSA (仅用于签名)\n"
 
-#: sm/certreqgen-ui.c:178
+#: sm/certreqgen-ui.c:278
 #, fuzzy, c-format
 msgid "   (%d) sign\n"
 msgstr "   (%d) DSA (仅用于签名)\n"
 
-#: sm/certreqgen-ui.c:179
+#: sm/certreqgen-ui.c:279
 #, fuzzy, c-format
 msgid "   (%d) encrypt\n"
 msgstr "   (%d) RSA (仅用于加密)\n"
 
-#: sm/certreqgen-ui.c:203
+#: sm/certreqgen-ui.c:303
 msgid "Enter the X.509 subject name: "
 msgstr ""
 
-#: sm/certreqgen-ui.c:207
+#: sm/certreqgen-ui.c:307
 #, fuzzy
 msgid "No subject name given\n"
 msgstr "(不给定描述)\n"
 
-#: sm/certreqgen-ui.c:211
+#: sm/certreqgen-ui.c:311
 #, c-format
 msgid "Invalid subject name label `%.*s'\n"
 msgstr ""
@@ -7264,55 +7295,55 @@ msgstr ""
 #. adjust it do the length of your translation.  The
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
-#: sm/certreqgen-ui.c:220
+#: sm/certreqgen-ui.c:320
 #, fuzzy, c-format
 msgid "Invalid subject name `%s'\n"
 msgstr "无效的‘%s’散列算法\n"
 
-#: sm/certreqgen-ui.c:222
+#: sm/certreqgen-ui.c:322
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
 msgstr ""
 
-#: sm/certreqgen-ui.c:234
+#: sm/certreqgen-ui.c:334
 #, fuzzy
 msgid "Enter email addresses"
 msgstr "电子邮件地址："
 
-#: sm/certreqgen-ui.c:235
+#: sm/certreqgen-ui.c:335
 #, fuzzy
 msgid " (end with an empty line):\n"
 msgstr ""
 "\n"
 "输入用户标识。以空白行结束："
 
-#: sm/certreqgen-ui.c:239
+#: sm/certreqgen-ui.c:339
 #, fuzzy
 msgid "Enter DNS names"
 msgstr "请输入新的文件名"
 
-#: sm/certreqgen-ui.c:240 sm/certreqgen-ui.c:245
+#: sm/certreqgen-ui.c:340 sm/certreqgen-ui.c:345
 #, fuzzy
 msgid " (optional; end with an empty line):\n"
 msgstr "请输入描述(可选)；以空白行结束：\n"
 
-#: sm/certreqgen-ui.c:244
+#: sm/certreqgen-ui.c:344
 #, fuzzy
 msgid "Enter URIs"
 msgstr "输入 PIN："
 
-#: sm/certreqgen-ui.c:271
+#: sm/certreqgen-ui.c:371
 msgid "Parameters to be used for the certificate request:\n"
 msgstr ""
 
-#: sm/certreqgen-ui.c:289
+#: sm/certreqgen-ui.c:389
 msgid "Now creating certificate request.  This may take a while ...\n"
 msgstr ""
 
-#: sm/certreqgen-ui.c:298
+#: sm/certreqgen-ui.c:398
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr ""
 
-#: sm/certreqgen-ui.c:303
+#: sm/certreqgen-ui.c:403
 msgid "resource problem: out of core\n"
 msgstr ""
 
@@ -7485,12 +7516,12 @@ msgstr "未知的对称加密算法"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "%s 签名，散列算法 %s\n"
 
-#: sm/gpgsm.c:514
+#: sm/gpgsm.c:515
 #, fuzzy
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
-#: sm/gpgsm.c:517
+#: sm/gpgsm.c:518
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
@@ -7501,79 +7532,89 @@ msgstr ""
 "签名、检查、加密或解密\n"
 "默认的操作依输入数据而定\n"
 
-#: sm/gpgsm.c:609
+#: sm/gpgsm.c:610
 #, fuzzy
 msgid "usage: gpgsm [options] "
 msgstr "用法：gpg [选项] "
 
-#: sm/gpgsm.c:707
+#: sm/gpgsm.c:720
 #, fuzzy, c-format
 msgid "NOTE: won't be able to encrypt to `%s': %s\n"
 msgstr "无法连接至‘%s’：%s\n"
 
-#: sm/gpgsm.c:718
+#: sm/gpgsm.c:731
 #, fuzzy, c-format
 msgid "unknown validation model `%s'\n"
 msgstr "未知的选项 '%s'\n"
 
-#: sm/gpgsm.c:769
+#: sm/gpgsm.c:782
 #, fuzzy, c-format
 msgid "%s:%u: no hostname given\n"
 msgstr "(不给定描述)\n"
 
-#: sm/gpgsm.c:788
+#: sm/gpgsm.c:801
 #, c-format
 msgid "%s:%u: password given without user\n"
 msgstr ""
 
-#: sm/gpgsm.c:809
+#: sm/gpgsm.c:822
 #, fuzzy, c-format
 msgid "%s:%u: skipping this line\n"
 msgstr "  s = 跳过这把密钥\n"
 
-#: sm/gpgsm.c:1323
+#: sm/gpgsm.c:1352
 #, fuzzy
 msgid "could not parse keyserver\n"
 msgstr "无法解析公钥服务器 URL\n"
 
-#: sm/gpgsm.c:1404
+#: sm/gpgsm.c:1433
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
-#: sm/gpgsm.c:1504
+#: sm/gpgsm.c:1533
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr ""
 
-#: sm/gpgsm.c:1542
+#: sm/gpgsm.c:1571
 #, fuzzy, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "无法存取‘%s’：%s\n"
 
-#: sm/gpgsm.c:1864
+#: sm/gpgsm.c:1911
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
-#: sm/import.c:109
+#: sm/import.c:111
 #, fuzzy, c-format
 msgid "total number processed: %lu\n"
 msgstr "合计被处理的数量：%lu\n"
 
-#: sm/import.c:227
+#: sm/import.c:229
 #, fuzzy
 msgid "error storing certificate\n"
 msgstr "生成一份吊销证书"
 
-#: sm/import.c:235
+#: sm/import.c:237
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
-#: sm/import.c:421 sm/import.c:453
+#: sm/import.c:429 sm/keydb.c:1321 sm/keydb.c:1389
+#, fuzzy
+msgid "failed to allocate keyDB handle\n"
+msgstr "无法存储密钥：%s\n"
+
+#: sm/import.c:486 sm/keydb.c:1419 sm/keydb.c:1513
+#, fuzzy, c-format
+msgid "error getting stored flags: %s\n"
+msgstr "获取新 PIN 时出错：%s\n"
+
+#: sm/import.c:545 sm/import.c:577
 #, fuzzy, c-format
 msgid "error importing certificate: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
 
-#: sm/import.c:554 tools/gpg-connect-agent.c:1329
+#: sm/import.c:678 tools/gpg-connect-agent.c:1329
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
@@ -7597,11 +7638,6 @@ msgstr "钥匙环‘%s’已建立\n"
 msgid "failed to get the fingerprint\n"
 msgstr "无法存储指纹：%s\n"
 
-#: sm/keydb.c:1321 sm/keydb.c:1389
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "无法存储密钥：%s\n"
-
 #: sm/keydb.c:1342
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
@@ -7621,11 +7657,6 @@ msgstr "取得当前密钥信息时出错：%s\n"
 #, c-format
 msgid "problem re-searching certificate: %s\n"
 msgstr ""
-
-#: sm/keydb.c:1419 sm/keydb.c:1513
-#, fuzzy, c-format
-msgid "error getting stored flags: %s\n"
-msgstr "获取新 PIN 时出错：%s\n"
 
 #: sm/keydb.c:1431 sm/keydb.c:1524
 #, fuzzy, c-format
@@ -7803,12 +7834,12 @@ msgstr "未知的选项 '%s'\n"
 msgid "sending line failed: %s\n"
 msgstr "签名时失败： %s\n"
 
-#: tools/gpg-connect-agent.c:2166
+#: tools/gpg-connect-agent.c:2167
 #, fuzzy, c-format
 msgid "error sending %s command: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
-#: tools/gpg-connect-agent.c:2175
+#: tools/gpg-connect-agent.c:2182
 #, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
