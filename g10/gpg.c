@@ -3195,11 +3195,6 @@ main (int argc, char **argv)
 	keygen_set_std_prefs(opt.def_preference_list,0))
       log_error(_("invalid default preferences\n"));
 
-    /* We provide defaults for the personal digest list.  This is
-       SHA-1. */
-    if(!pers_digest_list)
-      pers_digest_list="h2";
-
     if(pers_cipher_list &&
        keygen_set_std_prefs(pers_cipher_list,PREFTYPE_SYM))
       log_error(_("invalid personal cipher preferences\n"));

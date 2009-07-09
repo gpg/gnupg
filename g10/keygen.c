@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007 Free Software Foundation, Inc.
+ *               2006, 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -301,7 +301,7 @@ keygen_set_std_prefs (const char *string,int personal)
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int nsym=0, nhash=0, nzip=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
-    char dummy_string[45+1]; /* Enough for 15 items. */
+    char dummy_string[20*4+1]; /* Enough for 20 items. */
 
     if (!string || !ascii_strcasecmp (string, "default"))
       {
@@ -345,15 +345,29 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
 	      strcat(dummy_string,"S1 ");
 
-	    /* SHA-1 */
-	    strcat(dummy_string,"H2 ");
 
-	    if (!openpgp_md_test_algo(DIGEST_ALGO_SHA256))
-	      strcat(dummy_string,"H8 ");
+            /* The default hash algo order is:
+                 SHA-256, SHA-1, SHA-384, SHA-512, SHA-224.
+               Ordering SHA-1 before SHA-384 might be viewed as a bit
+               strange; it is done because we expect that soon enough
+               SHA-3 will be available and at that point there should
+               be no more need for SHA-384 etc.  Anyway this order is
+               just a default and can easily be changed by a config
+               option.  */
+	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
+	      strcat (dummy_string, "H8 ");
 
-	    /* RIPEMD160 */
-	    if (!openpgp_md_test_algo(DIGEST_ALGO_RMD160))
-              strcat(dummy_string,"H3 ");
+	    strcat (dummy_string, "H2 "); /* SHA-1 */
+
+	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
+	      strcat (dummy_string, "H9 ");
+
+	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
+	      strcat (dummy_string, "H10 ");
+
+	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
+	      strcat (dummy_string, "H11 ");
+
 
 	    /* ZLIB */
 	    strcat(dummy_string,"Z2 ");
@@ -507,7 +521,8 @@ keygen_set_std_prefs (const char *string,int personal)
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */
-PKT_user_id *keygen_get_std_prefs(void)
+PKT_user_id *
+keygen_get_std_prefs(void)
 {
   int i,j=0;
   PKT_user_id *uid=xmalloc_clear(sizeof(PKT_user_id));
@@ -1280,6 +1295,14 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
       log_info(_("keysize rounded up to %u bits\n"), nbits );
     }
 
+  /* To comply with FIPS rules we round up to the next value unless in
+     expert mode.  */
+  if (!opt.expert && nbits > 1024 && (nbits % 1024))
+    {
+      nbits = ((nbits + 1023) / 1024) * 1024;
+      log_info(_("keysize rounded up to %u bits\n"), nbits );
+    }
+
   /*
     Figure out a q size based on the key size.  FIPS 180-3 says:
  
@@ -1291,11 +1314,11 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     2048/256 is an odd pair since there is also a 2048/224 and
     3072/256.  Matching sizes is not a very exact science.
       
-    We'll do 256 qbits for nbits over 2048, 224 for nbits over 1024
+    We'll do 256 qbits for nbits over 2047, 224 for nbits over 1024
     but less than 2048, and 160 for 1024 (DSA1).
   */
  
-  if (nbits > 2048)
+  if (nbits > 2047)
     qbits = 256;
   else if ( nbits > 1024)
     qbits = 224;

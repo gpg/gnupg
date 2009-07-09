@@ -1,14 +1,17 @@
 Noteworthy changes in version 2.0.13
 -------------------------------------------------
 
+ * GPG now generates 2048 bit RSA keys by default.  The default hash
+   algorithm preferences has changed to prefer SHA-256 over SHA-1.
+   2048 bit DSA keys are now generated to use a 256 bit hash algorithm
+
  * The envvars XMODIFIERS, GTK_IM_MODULE and QT_IM_MODULE are now
    passed to the Pinentry to make SCIM work.
 
- * gpgsm --gen-key implements a --batch mode.
+ * The GPGSM command --gen-key features a --batch mode and implements
+   all features of gpgsm-gencert.sh in standard mode.
 
- * gpgsm --gen-key implements all features of gpgsm-gencert.sh.
-
- * New option --re-import for gpgsm's IMPORT server command.
+ * New option --re-import for GPGSM's IMPORT server command.
 
  * Minor bug fixes.
 
