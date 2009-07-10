@@ -2397,6 +2397,9 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
     log_info ("size of key %d changed to %u bits\n", keyno+1, nbits);
   flush_cache (app);
   parse_algorithm_attribute (app, keyno);
+  app->did_chv1 = 0;
+  app->did_chv2 = 0;
+  app->did_chv3 = 0;
   return err;
 }
 

@@ -6,6 +6,7 @@
 	* app-openpgp.c (do_sign): Take exmode and Le from card
 	capabilities and pass them to iso7816_compute_ds.
 	(do_auth): Ditto for iso7816_internal_authenticate.
+	(change_keyattr): Reset CHV verification status.
 
 2009-07-09  Werner Koch  <wk@g10code.com>
 
