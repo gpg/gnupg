@@ -1,3 +1,12 @@
+2009-07-10  Werner Koch  <wk@g10code.com>
+
+	* iso7816.c (iso7816_compute_ds): Add args EXTENDED_MODE and LE.
+	Change all callers to use 0.
+	(iso7816_internal_authenticate): Add args EXTENDED_MODE and LE.
+	* app-openpgp.c (do_sign): Take exmode and Le from card
+	capabilities and pass them to iso7816_compute_ds.
+	(do_auth): Ditto for iso7816_internal_authenticate.
+
 2009-07-09  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (change_keyattr): New.

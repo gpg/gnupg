@@ -505,9 +505,10 @@ iso7816_manage_security_env (int slot, int p1, int p2,
 /* Perform the security operation COMPUTE DIGITAL SIGANTURE.  On
    success 0 is returned and the data is availavle in a newly
    allocated buffer stored at RESULT with its length stored at
-   RESULTLEN. */
+   RESULTLEN.  For LE see do_generate_keypair. */
 gpg_error_t
-iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
+iso7816_compute_ds (int slot, int extended_mode,
+                    const unsigned char *data, size_t datalen, int le,
                     unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -517,9 +518,16 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0, 
-                  0x00, CMD_PSO, 0x9E, 0x9A, datalen, (const char*)data,
-                  result, resultlen);
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode, 
+                     0x00, CMD_PSO, 0x9E, 0x9A,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -586,9 +594,11 @@ iso7816_decipher (int slot, int extended_mode,
 }
 
 
+/*  For LE see do_generate_keypair.  */
 gpg_error_t
-iso7816_internal_authenticate (int slot,
+iso7816_internal_authenticate (int slot, int extended_mode,
                                const unsigned char *data, size_t datalen,
+                               int le,
                                unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -598,8 +608,16 @@ iso7816_internal_authenticate (int slot,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0, 0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
-                  datalen, (const char*)data,  result, resultlen);
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */

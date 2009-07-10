@@ -93,15 +93,17 @@ gpg_error_t iso7816_put_data_odd (int slot, int extended_mode, int tag,
 gpg_error_t iso7816_manage_security_env (int slot, int p1, int p2,
                                          const unsigned char *data,
                                          size_t datalen);
-gpg_error_t iso7816_compute_ds (int slot,
+gpg_error_t iso7816_compute_ds (int slot, int extended_mode,
                                 const unsigned char *data, size_t datalen,
+                                int le,
                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_decipher (int slot, int extended_mode,
                               const unsigned char *data, size_t datalen,
                               int padind,
                               unsigned char **result, size_t *resultlen);
-gpg_error_t iso7816_internal_authenticate (int slot,
+gpg_error_t iso7816_internal_authenticate (int slot, int extended_mode,
                                    const unsigned char *data, size_t datalen,
+                                   int le,
                                    unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_generate_keypair (int slot, int extended_mode,
                                     const unsigned char *data, size_t datalen,

@@ -3008,6 +3008,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   const char *fpr = NULL;
   unsigned long sigcount;
   int use_auth = 0;
+  int exmode, le_value;
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3148,7 +3149,19 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       xfree (pinvalue);
     }
 
-  rc = iso7816_compute_ds (app->slot, data, datalen, outdata, outdatalen);
+
+  if (app->app_local->cardcap.ext_lc_le)
+    {
+      exmode = 1;    /* Use extended length.  */
+      le_value = app->app_local->extcap.max_rsp_data;
+    }
+  else
+    {
+      exmode = 0;
+      le_value = 0; 
+    }
+  rc = iso7816_compute_ds (app->slot, exmode, data, datalen, le_value,
+                           outdata, outdatalen);
   return rc;
 }
 
@@ -3219,8 +3232,23 @@ do_auth (app_t app, const char *keyidstr,
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_internal_authenticate (app->slot, indata, indatalen,
-                                        outdata, outdatalen);
+    {
+      int exmode, le_value;
+
+      if (app->app_local->cardcap.ext_lc_le)
+        {
+          exmode = 1;    /* Use extended length.  */
+          le_value = app->app_local->extcap.max_rsp_data;
+        }
+      else
+        {
+          exmode = 0;
+          le_value = 0; 
+        }
+      rc = iso7816_internal_authenticate (app->slot, exmode,
+                                          indata, indatalen, le_value,
+                                          outdata, outdatalen);
+    }
   return rc;
 }
 

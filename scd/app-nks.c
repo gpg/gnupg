@@ -969,7 +969,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     rc = verify_pin (app, 0, NULL, pincb, pincb_arg);
   /* Compute the signature.  */
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, data, datalen, outdata, outdatalen);
+    rc = iso7816_compute_ds (app->slot, 0, data, datalen, 0,
+                             outdata, outdatalen);
   return rc;
 }
 

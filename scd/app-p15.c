@@ -3180,11 +3180,11 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
   if (hashalgo == MD_USER_TLS_MD5SHA1)
-    err = iso7816_compute_ds (app->slot, data, 36, outdata, outdatalen);
+    err = iso7816_compute_ds (app->slot, 0, data, 36, 0, outdata, outdatalen);
   else if (no_data_padding)
-    err = iso7816_compute_ds (app->slot, data+15, 20, outdata, outdatalen);
+    err = iso7816_compute_ds (app->slot, 0, data+15, 20, 0,outdata,outdatalen);
   else
-    err = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+    err = iso7816_compute_ds (app->slot, 0, data, 35, 0, outdata, outdatalen);
   return err;
 }
 
