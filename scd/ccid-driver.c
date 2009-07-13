@@ -254,6 +254,12 @@ struct ccid_driver_s
   int apdu_level;     /* Reader supports short APDU level exchange.
                          With a value of 2 short and extended level is
                          supported.*/
+  time_t last_progress; /* Last time we sent progress line.  */
+
+  /* The progress callback and its first arg as supplied to
+     ccid_set_progress_cb.  */
+  void (*progress_cb)(void *, const char *, int, int, int);
+  void *progress_cb_arg;
 };
 
 
@@ -300,6 +306,23 @@ set_msg_len (unsigned char *msg, unsigned int length)
   msg[3] = length >> 16;
   msg[4] = length >> 24;
 }
+
+
+static void
+print_progress (ccid_driver_t handle)
+{
+  time_t ct = time (NULL);
+
+  /* We don't want to print progress lines too often. */
+  if (ct == handle->last_progress)
+    return;
+
+  if (handle->progress_cb)
+    handle->progress_cb (handle->progress_cb_arg, "card_busy", 'w', 0, 0);
+
+  handle->last_progress = ct;
+}
+
 
 
 /* Pint an error message for a failed CCID command including a textual
@@ -1670,6 +1693,20 @@ ccid_shutdown_reader (ccid_driver_t handle)
 }
 
 
+int 
+ccid_set_progress_cb (ccid_driver_t handle, 
+                      void (*cb)(void *, const char *, int, int, int),
+                      void *cb_arg)
+{
+  if (!handle || !handle->rid)
+    return CCID_DRIVER_ERR_INV_VALUE;
+
+  handle->progress_cb = cb;
+  handle->progress_cb_arg = cb_arg;
+  return 0;
+}
+
+
 /* Close the reader HANDLE. */
 int 
 ccid_close_reader (ccid_driver_t handle)
@@ -2894,6 +2931,7 @@ ccid_transceive (ccid_driver_t handle,
                 tpdu[tpdulen++] = (edc >> 8);
               tpdu[tpdulen++] = edc;
               DEBUGOUT_1 ("T=1: waittime extension of bwi=%d\n", bwi);
+              print_progress (handle);
             }
           else if ( (tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 0 && !tpdu[2])
             {

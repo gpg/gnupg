@@ -1,3 +1,19 @@
+2009-07-13  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (struct ccid_driver_s): Add fields last_progress,
+	progress_cb and progress_cb_arg.
+	(ccid_set_progress_cb): New.
+	(print_progress): New.
+	(ccid_transceive): Call print_progress for wait time extensions.
+	* apdu.c (struct reader_table_s): Add field set_progress_cb.
+	(new_reader_slot): Clear that field.
+	(open_ccid_reader): Set it to ..
+	(set_progress_cb_ccid_reader): ... new fucntion.
+	* app.c (print_progress_line): New.
+	(lock_reader): Add arg CTRL to set a progress callback and
+	change all callers to provide it.
+	(unlock_reader): Remove the progress callback.
+
 2009-07-10  Werner Koch  <wk@g10code.com>
 
 	* iso7816.c (iso7816_compute_ds): Add args EXTENDED_MODE and LE.

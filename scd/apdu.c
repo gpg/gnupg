@@ -109,6 +109,7 @@ struct reader_table_s {
                           unsigned char *, size_t *, struct pininfo_s *);
   int (*check_keypad)(int, int, int, int, int, int);
   void (*dump_status_reader)(int);
+  int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
 
   struct {
     ccid_driver_t handle;
@@ -339,6 +340,7 @@ new_reader_slot (void)
   reader_table[reader].send_apdu_reader = NULL;
   reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = NULL;
+  reader_table[reader].set_progress_cb = NULL;
 
   reader_table[reader].used = 1;  
   reader_table[reader].any_status = 0;
@@ -1835,6 +1837,15 @@ reset_ccid_reader (int slot)
 
 
 static int
+set_progress_cb_ccid_reader (int slot, gcry_handler_progress_t cb, void *cb_arg)
+{
+  reader_table_t slotp = reader_table + slot;
+
+  return ccid_set_progress_cb (slotp->ccid.handle, cb, cb_arg);
+}
+
+
+static int
 get_status_ccid (int slot, unsigned int *status)
 {
   int rc;
@@ -1955,6 +1966,7 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].send_apdu_reader = send_apdu_ccid;
   reader_table[slot].check_keypad = check_ccid_keypad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
+  reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
   /* Our CCID reader code does not support T=0 at all, thus reset the
      flag.  */
   reader_table[slot].is_t0 = 0;
@@ -2601,6 +2613,30 @@ apdu_disconnect (int slot)
 }
 
 
+/* Set the progress callback of SLOT to CB and its args to CB_ARG.  If
+   CB is NULL the progress callback is removed.  */
+int
+apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg)
+{
+  int sw;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].set_progress_cb)
+    {
+      sw = lock_slot (slot);
+      if (!sw)
+        {
+          sw = reader_table[slot].set_progress_cb (slot, cb, cb_arg);
+          unlock_slot (slot);
+        }
+    }
+  else
+    sw = 0;
+  return sw;
+}
+
 
 /* Do a reset for the card in reader at SLOT. */
 int
@@ -2679,7 +2715,6 @@ apdu_activate (int slot)
   unlock_slot (slot);
   return sw;
 }
-
 
 
 unsigned char *
