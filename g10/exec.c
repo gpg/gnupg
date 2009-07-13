@@ -17,6 +17,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* 
+   FIXME: We should replace most code in this module by our
+   spawn implementation from common/exechelp.c.
+ */
+
+
 #include <config.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -40,19 +46,24 @@
 #include "iobuf.h"
 #include "util.h"
 #include "mkdtemp.h"  /* From gnulib. */
+#include "membuf.h"
 #include "exec.h"
 
 #ifdef NO_EXEC
-int exec_write(struct exec_info **info,const char *program,
+int 
+exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
   log_error(_("no remote program execution supported\n"));
   return G10ERR_GENERAL;
 }
 
-int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
-int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
-int set_exec_path(const char *path) { return G10ERR_GENERAL; }
+int
+exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
+int
+exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
+int
+set_exec_path(const char *path) { return G10ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -60,7 +71,8 @@ int set_exec_path(const char *path) { return G10ERR_GENERAL; }
 /* This is a nicer system() for windows that waits for programs to
    return before returning control to the caller.  I hate helpful
    computers. */
-static int w32_system(const char *command)
+static int 
+w32_system(const char *command)
 {
   PROCESS_INFORMATION pi;
   STARTUPINFO si;
@@ -74,7 +86,9 @@ static int w32_system(const char *command)
   memset(&si,0,sizeof(si));
   si.cb=sizeof(si);
 
-  if(!CreateProcess(NULL,string,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi))
+  if(!CreateProcess(NULL,string,NULL,NULL,FALSE,
+                    DETACHED_PROCESS,
+                    NULL,NULL,&si,&pi))
     return -1;
 
   /* Wait for the child to exit */
@@ -89,7 +103,8 @@ static int w32_system(const char *command)
 #endif
 
 /* Replaces current $PATH */
-int set_exec_path(const char *path)
+int 
+set_exec_path(const char *path)
 {
   char *p;
 
@@ -111,7 +126,8 @@ int set_exec_path(const char *path)
 }
 
 /* Makes a temp directory and filenames */
-static int make_tempdir(struct exec_info *info)
+static int 
+make_tempdir(struct exec_info *info)
 {
   char *tmp=opt.temp_dir,*namein=info->name,*nameout;
 
@@ -192,10 +208,11 @@ static int make_tempdir(struct exec_info *info)
 
 /* Expands %i and %o in the args to the full temp files within the
    temp directory. */
-static int expand_args(struct exec_info *info,const char *args_in)
+static int 
+expand_args(struct exec_info *info,const char *args_in)
 {
-  const char *ch=args_in;
-  unsigned int size,len;
+  const char *ch = args_in;
+  membuf_t command;
 
   info->flags.use_temp_files=0;
   info->flags.keep_temp_files=0;
@@ -203,10 +220,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
   if(DBG_EXTPROG)
     log_debug("expanding string \"%s\"\n",args_in);
 
-  size=100;
-  info->command=xmalloc(size);
-  len=0;
-  info->command[0]='\0';
+  init_membuf (&command, 100);
 
   while(*ch!='\0')
     {
@@ -252,36 +266,19 @@ static int expand_args(struct exec_info *info,const char *args_in)
 	    }
 
 	  if(append)
-	    {
-	      size_t applen=strlen(append);
-
-	      if(applen+len>size-1)
-		{
-		  if(applen<100)
-		    applen=100;
-
-		  size+=applen;
-		  info->command=xrealloc(info->command,size);
-		}
-
-	      strcat(info->command,append);
-	      len+=strlen(append);
-	    }
+            put_membuf_str (&command, append);
 	}
       else
-	{
-	  if(len==size-1) /* leave room for the \0 */
-	    {
-	      size+=100;
-	      info->command=xrealloc(info->command,size);
-	    }
-
-	  info->command[len++]=*ch;
-	  info->command[len]='\0';
-	}
+        put_membuf (&command, ch, 1);
 
       ch++;
     }
+
+  put_membuf (&command, "", 1);  /* Terminate string.  */
+
+  info->command = get_membuf (&command, NULL);
+  if (!info->command)
+    return gpg_error_from_syserror ();
 
   if(DBG_EXTPROG)
     log_debug("args expanded to \"%s\", use %u, keep %u\n",info->command,
@@ -290,10 +287,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
   return 0;
 
  fail:
-
-  xfree(info->command);
-  info->command=NULL;
-
+  xfree (get_membuf (&command, NULL));
   return G10ERR_GENERAL;
 }
 
@@ -303,8 +297,9 @@ static int expand_args(struct exec_info *info,const char *args_in)
    If there are args, but no tempfiles, then it's a fork/exec/pipe via
    shell -c.  If there are tempfiles, then it's a system. */
 
-int exec_write(struct exec_info **info,const char *program,
-	       const char *args_in,const char *name,int writeonly,int binary)
+int 
+exec_write(struct exec_info **info,const char *program,
+           const char *args_in,const char *name,int writeonly,int binary)
 {
   int ret=G10ERR_GENERAL;
 
@@ -483,10 +478,16 @@ int exec_write(struct exec_info **info,const char *program,
   ret=0;
 
  fail:
+  if (ret)
+    {
+      xfree (*info);
+      *info = NULL;
+    }
   return ret;
 }
 
-int exec_read(struct exec_info *info)
+int
+exec_read(struct exec_info *info)
 {
   int ret=G10ERR_GENERAL;
 
@@ -565,7 +566,8 @@ int exec_read(struct exec_info *info)
   return ret;
 }
 
-int exec_finish(struct exec_info *info)
+int
+exec_finish(struct exec_info *info)
 {
   int ret=info->progreturn;
 

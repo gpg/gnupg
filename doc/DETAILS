@@ -521,6 +521,7 @@ more arguments in future versions.
                           running as a daemon.
              "learncard"  Send by the agent and gpgsm while learing
 	                  the data of a smartcard.
+             "card_busy"  A smartcard is still working
         
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
 	A signature has been created using these parameters.
