@@ -105,6 +105,8 @@ const char *apdu_strerror (int rc);
 int apdu_connect (int slot);
 int apdu_disconnect (int slot);
 
+int apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg);
+
 int apdu_activate (int slot);
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang,
