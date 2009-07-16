@@ -367,10 +367,10 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     }
 
   /* For certain error codes, there is no need to try more.  */
-  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+  if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT
+      || gpg_err_code (err) == GPG_ERR_ENODEV)
     goto leave;
   
-
   /* Figure out the application to use.  */
   err = gpg_error (GPG_ERR_NOT_FOUND);
 

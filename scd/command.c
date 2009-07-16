@@ -54,12 +54,14 @@
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
-/* Macro to flag a removed card.  */
+/* Macro to flag a removed card.  ENODEV is also tested to catch teh
+   case of a removed reader.  */
 #define TEST_CARD_REMOVAL(c,r)                              \
        do {                                                 \
           int _r = (r);                                     \
           if (gpg_err_code (_r) == GPG_ERR_CARD_NOT_PRESENT \
-              || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED) \
+              || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED  \
+              || gpg_err_code (_r) == GPG_ERR_ENODEV )      \
             update_card_removed ((c)->reader_slot, 1);      \
        } while (0)
 
@@ -2159,7 +2161,13 @@ update_reader_status_file (int set_card_removed_flag)
         continue; /* Not valid or reader not yet open. */
       
       sw_apdu = apdu_get_status (ss->slot, 0, &status, &changed);
-      if (sw_apdu)
+      if (sw_apdu == SW_HOST_NO_READER)
+        {
+          /* Most likely the _reader_ has been unplugged.  */
+          status = 0;
+          changed = ss->changed;
+        }
+      else if (sw_apdu)
         {
           /* Get status failed.  Ignore that.  */
           continue; 

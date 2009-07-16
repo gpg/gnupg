@@ -1,3 +1,17 @@
+2009-07-16  Werner Koch  <wk@g10code.com>
+
+	* command.c (update_reader_status_file): Test for unplugged reader.
+	(TEST_CARD_REMOVAL): Ditto.
+	* app.c (select_application): Ditto.
+	* ccid-driver.c (bulk_out): Return CCID_DRIVER_ERR_NO_READER if a
+	reader was unplugged.
+	(struct ccid_driver_s): Turn nonnull_nad into an unsigned char.
+	Turn apdu_level, auto_ifsd, powered_off, has_pinpad into
+	bitfields. Add enodev_seen.
+	* apdu.c (apdu_prepare_exit): New.
+	(get_status_ccid): Return the status word and nut just -1.
+	* scdaemon.c (scd_exit): Call it.
+
 2009-07-13  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (struct ccid_driver_s): Add fields last_progress,

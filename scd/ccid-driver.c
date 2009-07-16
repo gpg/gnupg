@@ -84,6 +84,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include <usb.h>
 
@@ -244,16 +245,18 @@ struct ccid_driver_s
   int seqno;
   unsigned char t1_ns;
   unsigned char t1_nr;
-  int nonnull_nad;
-  int auto_ifsd;
+  unsigned char nonnull_nad;
   int max_ifsd;
   int ifsd;
   int ifsc;
-  int powered_off;
-  int has_pinpad;
-  int apdu_level;     /* Reader supports short APDU level exchange.
-                         With a value of 2 short and extended level is
-                         supported.*/
+  unsigned char apdu_level:2;     /* Reader supports short APDU level
+                                     exchange.  With a value of 2 short
+                                     and extended level is supported.*/
+  unsigned int auto_ifsd:1;
+  unsigned int powered_off:1;
+  unsigned int has_pinpad:2;
+  unsigned int enodev_seen:1;
+
   time_t last_progress; /* Last time we sent progress line.  */
 
   /* The progress callback and its first arg as supplied to
@@ -1423,7 +1426,7 @@ scan_or_find_devices (int readerno, const char *readerid,
 /* Set the level of debugging to LEVEL and return the old level.  -1
    just returns the old level.  A level of 0 disables debugging, 1
    enables debugging, 2 enables additional tracing of the T=1
-   protocol, 3 additionally enables debuggng for GetSlotStatus, other
+   protocol, 3 additionally enables debugging for GetSlotStatus, other
    values are not yet defined.
 
    Note that libusb may provide its own debugging feature which is
@@ -1763,6 +1766,11 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
 {
   int rc;
 
+  /* No need to continue and clutter the log withy USB error if we
+     ever got an ENODEV.  */
+  if (handle->enodev_seen)
+    return CCID_DRIVER_ERR_NO_READER;
+
   if (debug_level && (!no_debug || debug_level >= 3))
     {
       switch (msglen? msg[0]:0)
@@ -1823,8 +1831,27 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
                            5000 /* ms timeout */);
       if (rc == msglen)
         return 0;
+#ifdef ENODEV
+      if (rc == -(ENODEV))
+        {
+          /* The Linux libusb returns a negative error value.  Catch
+             the most important one.  */
+          errno = ENODEV;
+          rc = -1;
+        }
+#endif /*ENODEV*/
+
       if (rc == -1)
-        DEBUGOUT_1 ("usb_bulk_write error: %s\n", strerror (errno));
+        {
+          DEBUGOUT_1 ("usb_bulk_write error: %s\n", strerror (errno));
+#ifdef ENODEV
+          if (errno == ENODEV)
+            {
+              handle->enodev_seen = 1;
+              return CCID_DRIVER_ERR_NO_READER;
+            }
+#endif /*ENODEV*/
+        }
       else
         DEBUGOUT_1 ("usb_bulk_write failed: %d\n", rc);
     }

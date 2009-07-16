@@ -1853,7 +1853,7 @@ get_status_ccid (int slot, unsigned int *status)
 
   rc = ccid_slot_status (reader_table[slot].ccid.handle, &bits);
   if (rc)
-    return -1;
+    return rc;
 
   if (bits == 0)
     *status = (APDU_CARD_USABLE|APDU_CARD_PRESENT|APDU_CARD_ACTIVE);
@@ -2522,6 +2522,33 @@ apdu_close_reader (int slot)
     return reader_table[slot].close_reader (slot);
   return SW_HOST_NOT_SUPPORTED;
 }
+
+
+/* Function suitable for a cleanup function to close all reader.  It
+   should not be used if the reader will be opened again.  The reason
+   for implementing this to properly close USB devices so that they
+   will startup the next time without error. */
+void
+apdu_prepare_exit (void)
+{
+  static int sentinel;
+  int slot;
+
+  if (!sentinel)
+    {
+      sentinel = 1;
+      for (slot = 0; slot < MAX_READER; slot++)
+        if (reader_table[slot].used)
+          {
+            apdu_disconnect (slot);
+            if (reader_table[slot].close_reader)
+              reader_table[slot].close_reader (slot);
+            reader_table[slot].used = 0;
+          }
+      sentinel = 0;
+    }
+}
+
 
 /* Shutdown a reader; that is basically the same as a close but keeps
    the handle ready for later use. A apdu_reset_reader or apdu_connect

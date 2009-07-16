@@ -48,6 +48,7 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
+#include "apdu.h"
 #include "ccid-driver.h"
 #include "mkdtemp.h"
 #include "gc-opt-flags.h"
@@ -858,6 +859,7 @@ main (int argc, char **argv )
 void
 scd_exit (int rc)
 {
+  apdu_prepare_exit ();
 #if 0
 #warning no update_random_seed_file
   update_random_seed_file();
