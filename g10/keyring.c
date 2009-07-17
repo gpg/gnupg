@@ -1399,7 +1399,20 @@ keyring_rebuild_cache (void *token,int noisy)
           log_error ("keyring_get_keyblock failed: %s\n", g10_errstr(rc));
           goto leave;
         }
-      assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+      if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
+        {
+          /* We had a few reports about corrupted keyrings; if we have
+             been called directly from the command line we delete such
+             a keyblock instead of bailing out.  */
+          log_error ("unexpected keyblock found (pkttype=%d)%s\n",
+                     keyblock->pkt->pkttype, noisy? " - deleted":"");
+          if (noisy)
+            continue;
+          log_info ("Hint: backup your keys and try running `%s'\n",
+                    "gpg --rebuild-keydb-caches");
+          rc = G10ERR_INV_KEYRING;
+          goto leave;
+        }
 
       /* check all signature to set the signature's cache flags */
       for (node=keyblock; node; node=node->next)
