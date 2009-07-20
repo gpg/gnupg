@@ -3123,7 +3123,7 @@ generate_keypair (const char *fname, const char *card_serialno,
           nbits = 0;
         }
 
-      nbits = ask_keysize (algo, nbits);
+      nbits = ask_keysize (both? subkey_algo : algo, nbits);
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
       sprintf( r->u.value, "%u", nbits);
@@ -3400,6 +3400,15 @@ do_generate_keypair (struct para_data_s *para,
   if (!timestamp)
     timestamp = make_timestamp ();
 
+  /* Note that, depending on the backend (i.e. the used scdaemon
+     version), the card key generation may update TIMESTAMP for each
+     key.  Thus we need to pass TIMESTAMP to all signing function to
+     make sure that the binding signature is done using the timestamp
+     of the corresponding (sub)key and not that of the primary key.
+     An alternative implementation could tell the signing function the
+     node of the subkey but that is more work than just to pass the
+     current timestamp.  */
+
   if (!card)
     {
       rc = do_create (get_parameter_algo( para, pKEYTYPE ),
@@ -3413,8 +3422,6 @@ do_generate_keypair (struct para_data_s *para,
     }
   else
     {
-      /* Note, that depending on the backend, the card key generation
-         may update TIMESTAMP.  */
       rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root, NULL,
                          &timestamp,
                          get_parameter_u32 (para, pKEYEXPIRE), para);
@@ -3450,8 +3457,6 @@ do_generate_keypair (struct para_data_s *para,
 
   if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
     {
-      /* Note, that depending on the backend, the card key generation
-         may update TIMESTAMP.  */
       rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root, NULL,
                          &timestamp,
                          get_parameter_u32 (para, pKEYEXPIRE), para);
@@ -3493,8 +3498,6 @@ do_generate_keypair (struct para_data_s *para,
             }
           else
             {
-              /* Note, that depending on the backend, the card key
-                 generation may update TIMESTAMP.  */
               rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
                                  NULL,
                                  &timestamp,

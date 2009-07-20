@@ -1207,7 +1207,7 @@ parse_options(char *str,unsigned int *options,
 
 
 /* Check whether the string has characters not valid in an RFC-822
-   address.  To cope with OpenPGP we ignore allow non-ascii characters
+   address.  To cope with OpenPGP we ignore non-ascii characters
    so that for example umlauts are legal in an email address.  An
    OpenPGP user ID must be utf-8 encoded but there is no strict
    requirement for RFC-822.  Thus to avoid IDNA encoding we put the

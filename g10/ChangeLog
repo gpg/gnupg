@@ -1,3 +1,13 @@
+2009-07-20  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (generate_keypair): Allow Elgamal > 3072 in BOTH mode.
+	Reported by Jeroen Schot.  Fixes bug#1091.
+
+2009-07-17  Werner Koch  <wk@g10code.com>
+
+	* keyring.c (keyring_rebuild_cache): Replace the assert by a
+	proper error message and allow to delete a bad keyblock.
+
 2009-07-13  Werner Koch  <wk@g10code.com>
 
 	* exec.c: Fix function name indentation.
