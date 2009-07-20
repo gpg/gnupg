@@ -1,3 +1,8 @@
+2009-07-20  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (Operational GPG Commands): Add a note for --send-keys.
+	Fixes bug#1090.
+
 2009-07-06  Werner Koch  <wk@g10code.com>
 
 	* debugging.texi (Common Problems): Add a note about corrupted

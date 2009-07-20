@@ -404,7 +404,7 @@ Similar to @option{--export} but sends the keys to a keyserver.
 Fingerprints may be used instead of key IDs. Option @option{--keyserver}
 must be used to give the name of this keyserver. Don't send your
 complete keyring to a keyserver --- select only those keys which are new
-or changed by you.
+or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 
 @item --export-secret-keys
 @itemx --export-secret-subkeys
