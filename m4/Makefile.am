@@ -6,6 +6,7 @@ EXTRA_DIST = glibc2.m4 intl.m4 intldir.m4 lock.m4 visibility.m4 intmax.m4 longdo
              po.m4 progtest.m4 stdint_h.m4 uintmax_t.m4 ulonglong.m4 \
              readline.m4 libcurl.m4 libusb.m4 tar-ustar.m4 \
 	     ldap.m4 \
-	     noexecstack.m4 autobuild.m4
+	     noexecstack.m4 autobuild.m4 estream.m4
+
 
 

@@ -131,10 +131,12 @@ typedef union {
     double g;
 } PROPERLY_ALIGNED_TYPE;
 
-typedef struct string_list {
+struct string_list {
     struct string_list *next;
     unsigned int flags;
     char d[1];
-} *STRLIST;
+};
+typedef struct string_list *STRLIST;
+typedef struct string_list *strlist_t;
 
 #endif /*G10_TYPES_H*/

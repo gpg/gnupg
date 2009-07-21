@@ -23,7 +23,8 @@ noinst_LIBRARIES = libutil.a libcompat.a
 
 libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c \
 		    ttyio.c argparse.c memory.c secmem.c errors.c iobuf.c \
-		    dotlock.c http.c pka.c membuf.c cert.c \
+		    dotlock.c http.c pka.c membuf.c cert.c convert.c \
+		    estream-printf.c \
 		    $(libcompat_a_SOURCES)
 
 if USE_SIMPLE_GETTEXT

@@ -239,13 +239,14 @@ tty_printf( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
     {   
-        char *buf = NULL;
+        char *buf;
         int n;
 	DWORD nwritten;
 
-	n = vasprintf(&buf, fmt, arg_ptr);
-	if( !buf )
-	    log_bug("vasprintf() failed\n");
+	buf = xtryasprintf(fmt, arg_ptr);
+	if (!buf)
+          log_bug("xtryasprintf() failed\n");
+        n = strlen (buf);
         
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
 	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));
@@ -286,13 +287,14 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
     {   
-        char *buf = NULL;
+        char *buf;
         int n;
 	DWORD nwritten;
 
-	n = vasprintf(&buf, fmt, arg_ptr);
-	if( !buf )
-	    log_bug("vasprintf() failed\n");
+	buf = xtryasprintf (fmt, arg_ptr);
+	if (!buf)
+          log_bug ("xtryasprintf() failed\n");
+        n = strlen (buf);
         
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
 	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));

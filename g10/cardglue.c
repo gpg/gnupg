@@ -190,6 +190,37 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
   va_end (arg_ptr);
 }
 
+/* Send a ready formatted status line via assuan.  */
+void
+send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
+{
+  char buf[950];
+
+  if (strchr (args, '\n'))
+    log_error ("error: LF detected in status line - not sending\n");
+  else
+    {
+      snprintf (buf, sizeof buf, "%s%s%s",
+                keyword, args? " ":"", args? args:"");
+      if (ctrl && ctrl->status_cb)
+        ctrl->status_cb (ctrl->status_cb_arg, buf);
+    }
+}
+
+
+
+void
+gcry_mpi_release (MPI a)
+{
+  mpi_free (a);
+}
+
+MPI 
+gcry_mpi_set_opaque (MPI a, void *p, unsigned int len)
+{
+  return mpi_set_opaque (a, p, len);
+}
+
 
 /* Replacement function of the Libgcrypt onewhich is used in gnupg
    1.9.  Thus function computes the digest of ALGO from the data in
@@ -205,6 +236,17 @@ gcry_md_hash_buffer (int algo, void *digest,
   md_final (h);
   memcpy (digest, md_read (h, algo), md_digest_length (algo));
   md_close (h);
+}
+
+
+/* This function simply returns the name of the algorithm or some
+   constant string when there is no algo.  It will never return
+   NULL.  */
+const char *
+gcry_md_algo_name (int algorithm)
+{
+  const char *s = digest_algo_to_string (algorithm);
+  return s ? s : "?";
 }
 
 
@@ -297,6 +339,7 @@ agent_release_card_info (struct agent_card_info_s *info)
     return;
 
   xfree (info->serialno); info->serialno = NULL;
+  xfree (info->apptype); info->apptype = NULL;
   xfree (info->disp_name); info->disp_name = NULL;
   xfree (info->disp_lang); info->disp_lang = NULL;
   xfree (info->pubkey_url); info->pubkey_url = NULL;
@@ -448,7 +491,7 @@ open_card (void)
     }
 
  ready:
-  app->initialized = 1;
+  app->ref_count = 1;
   current_app = app;
   if (is_status_enabled () )
     {
@@ -629,6 +672,15 @@ store_serialno (const char *line)
   return p;
 }
 
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary nul will
+   silently be replaced by a 0xFF.  Function returns NULL to indicate
+   an out of memory status. */
+static char *
+unescape_status_string (const unsigned char *s)
+{
+  return unescape_percent_string (s);
+}
 
 
 static assuan_error_t
@@ -649,6 +701,13 @@ learn_status_cb (void *opaque, const char *line)
     {
       xfree (parm->serialno);
       parm->serialno = store_serialno (line);
+      parm->is_v2 = (strlen (parm->serialno) >= 16 
+                     && xtoi_2 (parm->serialno+12) >= 2 );
+    }
+  else if (keywordlen == 7 && !memcmp (keyword, "APPTYPE", keywordlen))
+    {
+      xfree (parm->apptype);
+      parm->apptype = unescape_status_string (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
@@ -761,6 +820,18 @@ learn_status_cb (void *opaque, const char *line)
       xfree (parm->private_do[no]);
       parm->private_do[no] = unescape_percent_string (line);
     }
+  else if (keywordlen == 8 && !memcmp (keyword, "KEY-ATTR", keywordlen))
+    {
+      int keyno, algo, nbits;
+
+      sscanf (line, "%d %d %d", &keyno, &algo, &nbits);
+      keyno--;
+      if (keyno >= 0 && keyno < DIM (parm->key_attr))
+        {
+          parm->key_attr[keyno].algo = algo;
+          parm->key_attr[keyno].nbits = nbits;
+        }
+    }
  
   return 0;
 }
@@ -801,7 +872,7 @@ agent_learn (struct agent_card_info_s *info)
           send_status_info (&ctrl, "SERIALNO",
                             serial, strlen(serial), NULL, 0);
           xfree (serial);
-          rc = app->fnc.learn_status (app, &ctrl);
+          rc = app->fnc.learn_status (app, &ctrl, 0);
         }
     }
 
@@ -1132,7 +1203,7 @@ genkey_status_cb (void *opaque, const char *line)
 /* Send a GENKEY command to the SCdaemon. */
 int 
 agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                  const char *serialno)
+                  const char *serialno, u32 *createtime)
 {
   app_t app;
   char line[ASSUAN_LINELENGTH];
@@ -1166,6 +1237,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
       ctrl.status_cb_arg = info;
       rc = app->fnc.genkey (app, &ctrl, line,
                             force? 1:0,
+                            *createtime,
                             pin_cb, &parm);
     }
 

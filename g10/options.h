@@ -214,6 +214,7 @@ struct
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
+  int disable_keypad;  /* Do not allow the use of a keypad.  */
 #endif /*ENABLE_CARD_SUPPORT*/
 
   struct

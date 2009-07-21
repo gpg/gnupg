@@ -1,6 +1,6 @@
 /* strgutil.c -  string utilities
  * Copyright (C) 1994, 1998, 1999, 2000, 2001,
- *               2003, 2004, 2005 Free Software Foundation, Inc.
+ *               2003, 2004, 2005, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,6 +47,14 @@
 #include "memory.h"
 #include "i18n.h"
 #include "dynload.h"
+#include "estream-printf.h"
+
+/* Our xasprintf replacements are expected to work with our memory
+   allocator.  Let's test for this here.  */
+#if !defined(_ESTREAM_PRINTF_MALLOC) || !defined(_ESTREAM_PRINTF_FREE)
+#error Please define _ESTREAM_PRINTF_MALLOC and _FREE
+#endif
+
 
 
 #ifndef USE_GNUPG_ICONV
@@ -1040,6 +1048,40 @@ utf8_to_native( const char *string, size_t length, int delim )
     }
 }
 
+
+/* Same as asprintf but return an allocated buffer suitable to be
+   freed using xfree.  This function simply dies on memory failure,
+   thus no extra check is required. */
+char *
+xasprintf (const char *fmt, ...)
+{
+  va_list ap;
+  char *buf;
+
+  va_start (ap, fmt);
+  if (estream_vasprintf (&buf, fmt, ap) < 0)
+    log_fatal ("estream_asprintf failed: %s\n", strerror (errno));
+  va_end (ap);
+  return buf;
+}
+
+/* Same as above but return NULL on memory failure.  */
+char *
+xtryasprintf (const char *fmt, ...)
+{
+  int rc;
+  va_list ap;
+  char *buf;
+
+  va_start (ap, fmt);
+  rc = estream_vasprintf (&buf, fmt, ap);
+  va_end (ap);
+  if (rc < 0)
+    return NULL;
+  return buf;
+}
+
+
 /****************************************************
  ******** locale insensitive ctype functions ********
  ****************************************************/
@@ -1127,111 +1169,6 @@ strncasecmp( const char *a, const char *b, size_t n )
 
 
 #ifdef _WIN32
-/* 
- * Like vsprintf but provides a pointer to malloc'd storage, which
- * must be freed by the caller (xfree).  Taken from libiberty as
- * found in gcc-2.95.2 and a little bit modernized.
- * FIXME: Write a new CRT for W32.
- */
-int
-vasprintf (char **result, const char *format, va_list args)
-{
-  const char *p = format;
-  /* Add one to make sure that it is never zero, which might cause malloc
-     to return NULL.  */
-  int total_width = strlen (format) + 1;
-  va_list ap;
-
-  /* this is not really portable but works under Windows */
-  memcpy ( &ap, &args, sizeof (va_list));
-
-  while (*p != '\0')
-    {
-      if (*p++ == '%')
-	{
-	  while (strchr ("-+ #0", *p))
-	    ++p;
-	  if (*p == '*')
-	    {
-	      ++p;
-	      total_width += abs (va_arg (ap, int));
-	    }
-	  else
-            {
-              char *endp;  
-              total_width += strtoul (p, &endp, 10);
-              p = endp;
-            }
-	  if (*p == '.')
-	    {
-	      ++p;
-	      if (*p == '*')
-		{
-		  ++p;
-		  total_width += abs (va_arg (ap, int));
-		}
-	      else
-                {
-                  char *endp;
-                  total_width += strtoul (p, &endp, 10);
-                  p = endp;
-                }
-	    }
-	  while (strchr ("hlL", *p))
-	    ++p;
-	  /* Should be big enough for any format specifier except %s
-             and floats.  */
-	  total_width += 30;
-	  switch (*p)
-	    {
-	    case 'd':
-	    case 'i':
-	    case 'o':
-	    case 'u':
-	    case 'x':
-	    case 'X':
-	    case 'c':
-	      (void) va_arg (ap, int);
-	      break;
-	    case 'f':
-	    case 'e':
-	    case 'E':
-	    case 'g':
-	    case 'G':
-	      (void) va_arg (ap, double);
-	      /* Since an ieee double can have an exponent of 307, we'll
-		 make the buffer wide enough to cover the gross case. */
-	      total_width += 307;
-	    
-	    case 's':
-	      total_width += strlen (va_arg (ap, char *));
-	      break;
-	    case 'p':
-	    case 'n':
-	      (void) va_arg (ap, char *);
-	      break;
-	    }
-	}
-    }
-  *result = xmalloc (total_width);
-  if (*result != NULL)
-    return vsprintf (*result, format, args);
-  else
-    return 0;
-}
-
-int
-asprintf (char **buf, const char *fmt, ...)
-{
-  int status;
-  va_list ap;
-
-  va_start (ap, fmt);
-  status = vasprintf (buf, fmt, ap);
-  va_end (ap);
-  return status;  
-}
-
 const char *
 w32_strerror (int w32_errno)
 {

@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -127,9 +127,11 @@ static int  write_keyblock( IOBUF out, KBNODE node );
 static int gen_card_key (int algo, int keyno, int is_primary,
                          KBNODE pub_root, KBNODE sec_root,
 			 PKT_secret_key **ret_sk,
+                         u32 *timestamp,
                          u32 expireval, struct para_data_s *para);
 static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
                                      KBNODE pub_root, KBNODE sec_root,
+                                     u32 timestamp,
                                      u32 expireval, struct para_data_s *para,
                                      const char *backup_dir);
 
@@ -770,17 +772,20 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
   return 0;
 }
 
+/* Create a back-signature.  If TIMESTAMP is not NULL, use it for the
+   signature creation time.  */
 int
-make_backsig(PKT_signature *sig,PKT_public_key *pk,
- 	     PKT_public_key *sub_pk,PKT_secret_key *sub_sk)
+make_backsig (PKT_signature *sig, PKT_public_key *pk,
+ 	      PKT_public_key *sub_pk, PKT_secret_key *sub_sk,
+              u32 timestamp)
 {
   PKT_signature *backsig;
   int rc;
 
   cache_public_key(sub_pk);
 
-  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk,0x19,0,0,
-			sub_pk->timestamp,0,NULL,NULL);
+  rc= make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_sk, 0x19,
+                          0, 0, timestamp, 0, NULL, NULL);
   if(rc)
     log_error("make_keysig_packet failed for backsig: %s\n",g10_errstr(rc));
   else
@@ -863,7 +868,7 @@ make_backsig(PKT_signature *sig,PKT_public_key *pk,
 
 static int
 write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
-		  struct revocation_key *revkey )
+		  struct revocation_key *revkey, u32 timestamp)
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -885,8 +890,9 @@ write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet(&sig,pk,NULL,NULL,sk,0x1F,0,0,pk->timestamp,0,
-			    keygen_add_revkey,revkey);
+    rc = make_keysig_packet (&sig, pk, NULL, NULL, sk, 0x1F,
+                             0, 0, timestamp, 0,
+                             keygen_add_revkey, revkey);
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -900,8 +906,8 @@ write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 }
 
 static int
-write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
-		unsigned int use )
+write_selfsigs (KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
+		unsigned int use, u32 timestamp)
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -929,8 +935,9 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
-			     pk->timestamp, 0, keygen_add_std_prefs, pk );
+    rc = make_keysig_packet (&sig, pk, uid, NULL, sk, 0x13,
+                             0, 0, timestamp, 0,
+                             keygen_add_std_prefs, pk);
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -949,9 +956,9 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
 }
 
 static int
-write_keybinding( KBNODE root, KBNODE pub_root,
+write_keybinding (KBNODE root, KBNODE pub_root,
 		  PKT_secret_key *pri_sk, PKT_secret_key *sub_sk,
-                  unsigned int use )
+                  unsigned int use, u32 timestamp)
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -984,8 +991,8 @@ write_keybinding( KBNODE root, KBNODE pub_root,
     /* and make the signature */
     oduap.usage = use;
     oduap.pk = sub_pk;
-    rc=make_keysig_packet(&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18, 0, 0,
-			  sub_pk->timestamp, 0,
+    rc=make_keysig_packet(&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18,
+                          0, 0, timestamp, 0,
 			  keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -995,7 +1002,7 @@ write_keybinding( KBNODE root, KBNODE pub_root,
     /* make a backsig */
     if(use&PUBKEY_USAGE_SIG)
       {
-	rc=make_backsig(sig,pri_pk,sub_pk,sub_sk);
+	rc = make_backsig (sig, pri_pk, sub_pk, sub_sk, timestamp);
 	if(rc)
 	  return rc;
       }
@@ -3041,6 +3048,15 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
 
     timestamp = get_parameter_u32 (para, pKEYCREATIONDATE);
 
+    /* Note that, depending on the backend (i.e. the used scdaemon
+       version or the internal code), the card key generation may
+       update TIMESTAMP for each key.  Thus we need to pass TIMESTAMP
+       to all signing function to make sure that the binding signature
+       is done using the timestamp of the corresponding (sub)key and
+       not that of the primary key.  An alternative implementation
+       could tell the signing function the node of the subkey but that
+       is more work than just to pass the current timestamp.  */
+
     if (!card)
       {
         rc = do_create( get_parameter_algo( para, pKEYTYPE ),
@@ -3055,6 +3071,7 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
     else
       {
         rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root, NULL,
+                           &timestamp,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         if (!rc)
           {
@@ -3065,9 +3082,9 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
 
     if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
       {
-	rc=write_direct_sig(pub_root,pub_root,pri_sk,revkey);
-	if(!rc)
-	  write_direct_sig(sec_root,pub_root,pri_sk,revkey);
+	rc = write_direct_sig (pub_root, pub_root, pri_sk, revkey, timestamp);
+	if (!rc)
+	  write_direct_sig (sec_root, pub_root, pri_sk, revkey, timestamp);
       }
 
     if( !rc && (s=get_parameter_value(para, pUSERID)) )
@@ -3076,9 +3093,10 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
 	if( !rc )
 	  write_uid(sec_root, s );
 
-	if( !rc )
-	  rc = write_selfsigs(sec_root, pub_root, pri_sk,
-			      get_parameter_uint (para, pKEYUSAGE));
+	if (!rc)
+	  rc = write_selfsigs (sec_root, pub_root, pri_sk,
+                               get_parameter_uint (para, pKEYUSAGE),
+                               timestamp);
       }
 
     /* Write the auth key to the card before the encryption key.  This
@@ -3091,12 +3109,15 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
     if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
       {
         rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root, NULL,
+                           &timestamp,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         
         if (!rc)
-          rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
+          rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk,
+                                 PUBKEY_USAGE_AUTH, timestamp);
         if (!rc)
-          rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk, PUBKEY_USAGE_AUTH);
+          rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk,
+                                 PUBKEY_USAGE_AUTH, timestamp);
       }
 
     if( !rc && get_parameter( para, pSUBKEYTYPE ) )
@@ -3121,6 +3142,7 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
                    the card.  Write a backup file. */
                 rc = gen_card_key_with_backup (PUBKEY_ALGO_RSA, 2, 0,
                                                pub_root, sec_root,
+                                               timestamp,
                                                get_parameter_u32 (para,
                                                                   pKEYEXPIRE),
                                                para, s);
@@ -3128,15 +3150,18 @@ do_generate_keypair (struct para_data_s *para,struct output_control_s *outctrl,
             else
               rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
 				 NULL,
+                                 &timestamp,
                                  get_parameter_u32 (para, pKEYEXPIRE), para);
           }
 
         if( !rc )
-          rc = write_keybinding(pub_root, pub_root, pri_sk, sub_sk,
-                                get_parameter_uint (para, pSUBKEYUSAGE));
+          rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk,
+                                 get_parameter_uint (para, pSUBKEYUSAGE),
+                                 timestamp );
         if( !rc )
-          rc = write_keybinding(sec_root, pub_root, pri_sk, sub_sk,
-                                get_parameter_uint (para, pSUBKEYUSAGE));
+          rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk,
+                                 get_parameter_uint (para, pSUBKEYUSAGE),
+                                 timestamp);
         did_sub = 1;
       }
 
@@ -3351,16 +3376,19 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
                                  NULL, NULL );
     }
 
-    rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
+    rc = do_create (algo, nbits, pub_keyblock, sec_keyblock,
 		    dek, s2k, &sub_sk, timestamp, expire, 1 );
-    if( !rc )
-	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
-    if( !rc )
-	rc = write_keybinding(sec_keyblock, pub_keyblock, pri_sk, sub_sk, use);
-    if( !rc ) {
+    if (!rc)
+	rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, 
+                               use, timestamp);
+    if (!rc)
+	rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk,
+                               use, timestamp);
+    if (!rc)
+      {
 	okay = 1;
         write_status_text (STATUS_KEY_CREATED, "S");
-    }
+      }
 
   leave:
     if( rc )
@@ -3466,11 +3494,13 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
   if (passphrase)
     set_next_passphrase (passphrase);
   rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock,
-		     &sub_sk, expire, para);
+		     &sub_sk, &timestamp, expire, para);
   if (!rc)
-    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
+    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, use,
+                           timestamp);
   if (!rc)
-    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, use);
+    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, use,
+                           timestamp);
   if (!rc)
     {
       okay = 1;
@@ -3515,10 +3545,11 @@ write_keyblock( IOBUF out, KBNODE node )
 }
 
 
+/* Note that TIMESTAMP is an in/out arg. */
 static int
 gen_card_key (int algo, int keyno, int is_primary,
               KBNODE pub_root, KBNODE sec_root, PKT_secret_key **ret_sk,
-              u32 expireval, struct para_data_s *para)
+              u32 *timestamp, u32 expireval, struct para_data_s *para)
 {
 #ifdef ENABLE_CARD_SUPPORT
   int rc;
@@ -3531,7 +3562,7 @@ gen_card_key (int algo, int keyno, int is_primary,
   assert (algo == PUBKEY_ALGO_RSA);
   
   /* Fixme: We don't have the serialnumber available, thus passing NULL. */
-  rc = agent_scd_genkey (&info, keyno, 1, NULL);
+  rc = agent_scd_genkey (&info, keyno, 1, NULL, timestamp);
 /*    if (gpg_err_code (rc) == GPG_ERR_EEXIST) */
 /*      { */
 /*        tty_printf ("\n"); */
@@ -3555,6 +3586,9 @@ gen_card_key (int algo, int keyno, int is_primary,
       return gpg_error (GPG_ERR_GENERAL);
     }
   
+  if (*timestamp != info.created_at)
+    log_info ("Note that the key does not use the suggested creation date\n");
+  *timestamp = info.created_at;
 
   pk = xcalloc (1, sizeof *pk );
   sk = xcalloc (1, sizeof *sk );
@@ -3602,6 +3636,7 @@ gen_card_key (int algo, int keyno, int is_primary,
 static int
 gen_card_key_with_backup (int algo, int keyno, int is_primary,
                           KBNODE pub_root, KBNODE sec_root,
+                          u32 timestamp,
                           u32 expireval, struct para_data_s *para,
                           const char *backup_dir)
 {
@@ -3616,7 +3651,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
   sk_unprotected = NULL;
   sk_protected = NULL;
-  rc = generate_raw_key (algo, 1024, make_timestamp (),
+  rc = generate_raw_key (algo, 1024, timestamp,
                          &sk_unprotected, &sk_protected);
   if (rc)
     return rc;

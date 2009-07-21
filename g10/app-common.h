@@ -1,5 +1,5 @@
 /* app-common.h - Common declarations for all card applications
- *	Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2005, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,14 +31,26 @@
 #endif
 
 
+#define APP_CHANGE_FLAG_RESET    1
+#define APP_CHANGE_FLAG_NULLPIN  2
+
+
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 struct app_ctx_s {
-  int initialized;  /* The application has been initialied and the
-                       function pointers may be used.  Note that for
-                       unsupported operations the particular
-                       function pointer is set to NULL */
-  int slot;         /* Used reader. */
+  /* Number of connections currently using this application context.
+     If this is not 0 the application has been initialized and the
+     function pointers may be used.  Note that for unsupported
+     operations the particular function pointer is set to NULL */
+  unsigned int ref_count;
+
+  /* Flag indicating that a reset has been done for that application
+     and that this context is merely lingering and just should not be
+     reused.  */
+  int no_reuse;            
+
+  /* Used reader slot. */
+  int slot;     
 
   /* If this is used by GnuPG 1.4 we need to know the assuan context
      in case we need to divert the operation to an already running
@@ -59,7 +71,7 @@ struct app_ctx_s {
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
-    gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl);
+    gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
     gpg_error_t (*readkey) (app_t app, const char *certid,
@@ -85,17 +97,23 @@ struct app_ctx_s {
                      void *pincb_arg,
                      const void *indata, size_t indatalen,
                      unsigned char **outdata, size_t *outdatalen);
+    gpg_error_t (*writecert) (app_t app, ctrl_t ctrl,
+                              const char *certid,
+                              gpg_error_t (*pincb)(void*,const char *,char **),
+                              void *pincb_arg,
+                              const unsigned char *data, size_t datalen);
     gpg_error_t (*writekey) (app_t app, ctrl_t ctrl,
-                             const char *certid, unsigned int flags,
+                             const char *keyid, unsigned int flags,
                              gpg_error_t (*pincb)(void*,const char *,char **),
                              void *pincb_arg,
                              const unsigned char *pk, size_t pklen);
     gpg_error_t (*genkey) (app_t app, ctrl_t ctrl,
-                   const char *keynostr, unsigned int flags,
-                   gpg_error_t (*pincb)(void*, const char *, char **),
-                   void *pincb_arg);
+                           const char *keynostr, unsigned int flags,
+                           time_t createtime,
+                           gpg_error_t (*pincb)(void*, const char *, char **),
+                           void *pincb_arg);
     gpg_error_t (*change_pin) (app_t app, ctrl_t ctrl,
-                       const char *chvnostr, int reset_mode,
+                       const char *chvnostr, unsigned int flags,
                        gpg_error_t (*pincb)(void*, const char *, char **),
                        void *pincb_arg);
     gpg_error_t (*check_pin) (app_t app, const char *keyidstr,
@@ -117,17 +135,23 @@ gpg_error_t app_openpgp_storekey (app_t app, int keyno,
                           void *pincb_arg);
 #else
 /*-- app-help.c --*/
+unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
 size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
 /*-- app.c --*/
+void app_dump_state (void);
+void application_notify_card_reset (int slot);
+gpg_error_t check_application_conflict (ctrl_t ctrl, const char *name);
 gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
                                 app_t *r_app);
+char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
-gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl);
+gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl, 
+                                    unsigned int flags);
 gpg_error_t app_readcert (app_t app, const char *certid,
                   unsigned char **cert, size_t *certlen);
 gpg_error_t app_readkey (app_t app, const char *keyid,
@@ -152,15 +176,21 @@ gpg_error_t app_decipher (app_t app, const char *keyidstr,
                   void *pincb_arg,
                   const void *indata, size_t indatalen,
                   unsigned char **outdata, size_t *outdatalen );
+gpg_error_t app_writecert (app_t app, ctrl_t ctrl,
+                           const char *certidstr,
+                           gpg_error_t (*pincb)(void*, const char *, char **),
+                           void *pincb_arg,
+                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_writekey (app_t app, ctrl_t ctrl,
                           const char *keyidstr, unsigned int flags,
                           gpg_error_t (*pincb)(void*, const char *, char **),
                           void *pincb_arg,
                           const unsigned char *keydata, size_t keydatalen);
 gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
-                const char *keynostr, unsigned int flags,
-                gpg_error_t (*pincb)(void*, const char *, char **),
-                void *pincb_arg);
+                        const char *keynostr, unsigned int flags,
+                        time_t createtime,
+                        gpg_error_t (*pincb)(void*, const char *, char **),
+                        void *pincb_arg);
 gpg_error_t app_get_challenge (app_t app, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
@@ -183,6 +213,9 @@ gpg_error_t app_select_dinsig (app_t app);
 
 /*-- app-p15.c --*/
 gpg_error_t app_select_p15 (app_t app);
+
+/*-- app-geldkarte.c --*/
+gpg_error_t app_select_geldkarte (app_t app);
 
 
 #endif

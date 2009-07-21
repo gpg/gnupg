@@ -499,6 +499,11 @@ is intended for making fat binary builds on OS X. */
 #define SAFE_VERSION_DOT  '.'
 #define SAFE_VERSION_DASH '-'
 
+/* We want to use our memory allocator for estream-printf.  */
+#define _ESTREAM_PRINTF_MALLOC        xtrymalloc
+#define _ESTREAM_PRINTF_FREE          xfree
+#define _ESTREAM_PRINTF_EXTRA_INCLUDE "memory.h"
+
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
@@ -1048,6 +1053,12 @@ fi
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
+
+#
+# Prepare building of estream-printf
+#
+estream_PRINTF_INIT
+
 
 dnl
 dnl Check whether we can use Linux capabilities as requested

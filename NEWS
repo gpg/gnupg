@@ -8,6 +8,10 @@ Noteworthy changes in version 1.4.10 (unreleased)
 
     * Fixed a memory leak which made imports of many keys very slow.
 
+    * Support v2 OpenPGP cards.
+
+    * FIXME:  Anything else?
+
 
 Noteworthy changes in version 1.4.9 (2008-03-26)
 ------------------------------------------------

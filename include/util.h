@@ -240,10 +240,12 @@ char *read_w32_registry_string( const char *root,
 int write_w32_registry_string(const char *root, const char *dir,
                               const char *name, const char *value);
 
-/*-- strgutil.c --*/
-int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **buf, const char *fmt, ...);
 #endif /*_WIN32*/
+
+/*-- strgutil.c --*/
+char *xasprintf (const char *fmt, ...);
+char *xtryasprintf (const char *fmt, ...);
+
 
 /*-- pka.c --*/
 char *get_pka_info (const char *address, unsigned char *fpr);
@@ -251,6 +253,16 @@ char *get_pka_info (const char *address, unsigned char *fpr);
 /*-- cert.c --*/
 int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
 	     unsigned char **fpr,size_t *fpr_len,char **url);
+
+/*-- convert.c --*/
+int hex2bin (const char *string, void *buffer, size_t length);
+int hexcolon2bin (const char *string, void *buffer, size_t length);
+char *bin2hex (const void *buffer, size_t length, char *stringbuf);
+char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
+const char *hex2str (const char *hexstring,
+                     char *buffer, size_t bufsize, size_t *buflen);
+char *hex2str_alloc (const char *hexstring, size_t *r_count);
+
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */

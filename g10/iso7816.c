@@ -1,5 +1,5 @@
 /* iso7816.c - ISO 7816 commands
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,9 +45,9 @@
 
 
 #define CMD_SELECT_FILE 0xA4
-#define CMD_VERIFY      0x20
-#define CMD_CHANGE_REFERENCE_DATA 0x24
-#define CMD_RESET_RETRY_COUNTER   0x2C
+#define CMD_VERIFY                ISO7816_VERIFY
+#define CMD_CHANGE_REFERENCE_DATA ISO7816_CHANGE_REFERENCE_DATA
+#define CMD_RESET_RETRY_COUNTER   ISO7816_RESET_RETRY_COUNTER
 #define CMD_GET_DATA    0xCA
 #define CMD_PUT_DATA    0xDA
 #define CMD_MSE         0x22
@@ -66,7 +66,10 @@ map_sw (int sw)
   switch (sw)
     {
     case SW_EEPROM_FAILURE: ec = GPG_ERR_HARDWARE; break;
+    case SW_TERM_STATE:     ec = GPG_ERR_CARD; break;
     case SW_WRONG_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
+    case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CHV_WRONG:      ec = GPG_ERR_BAD_PIN; break;
     case SW_CHV_BLOCKED:    ec = GPG_ERR_PIN_BLOCKED; break;
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;
@@ -93,6 +96,7 @@ map_sw (int sw)
     case SW_HOST_GENERAL_ERROR:  ec = GPG_ERR_GENERAL; break;
     case SW_HOST_NO_READER:      ec = GPG_ERR_ENODEV; break;
     case SW_HOST_ABORTED:        ec = GPG_ERR_CANCELED; break;
+    case SW_HOST_NO_KEYPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
 
     default:
       if ((sw & 0x010000))
@@ -122,12 +126,15 @@ iso7816_map_sw (int sw)
    requested application ID.  The function can't be used to enumerate
    AIDs and won't return the AID on success.  The return value is 0
    for okay or a GPG error code.  Note that ISO error codes are
-   internally mapped. */
+   internally mapped.  Bit 0 of FLAGS should be set if the card does
+   not understand P2=0xC0. */
 gpg_error_t
-iso7816_select_application (int slot, const char *aid, size_t aidlen)
+iso7816_select_application (int slot, const char *aid, size_t aidlen,
+                            unsigned int flags)
 {
   int sw;
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, 0, aidlen, aid);
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE, 4,
+                         (flags&1)? 0 :0x0c, aidlen, aid);
   return map_sw (sw);
 }
 
@@ -152,7 +159,7 @@ iso7816_select_file (int slot, int tag, int is_dir,
     {
       p0 = (tag == 0x3F00)? 0: is_dir? 1:2;
       p1 = 0x0c; /* No FC return. */
-      sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+      sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                              p0, p1, 2, (char*)tagbuf );
       return map_sw (sw);
     }
@@ -188,7 +195,7 @@ iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
 
   p0 = 0x08;
   p1 = 0x0c; /* No FC return. */
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_SELECT_FILE,
                          p0, p1, buflen, (char*)buffer );
   return map_sw (sw);
 }
@@ -206,7 +213,7 @@ iso7816_list_directory (int slot, int list_dirs,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
+  sw = apdu_send (slot, 0, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
                   result, resultlen);
   if (sw != SW_SUCCESS)
     {
@@ -219,27 +226,101 @@ iso7816_list_directory (int slot, int list_dirs,
 }
 
 
+/* This funcion sends an already formatted APDU to the card.  With
+   HANDLE_MORE set to true a MORE DATA status will be handled
+   internally.  The return value is a gpg error code (i.e. a mapped
+   status word).  This is basically the same as apdu_send_direct but
+   it maps the status word and does not return it in the result
+   buffer.  */
+gpg_error_t
+iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen, 
+                     int handle_more,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  sw = apdu_send_direct (slot, 0, apdudata, apdudatalen, handle_more,
+                         result, resultlen);
+  if (!sw)
+    {
+      if (*resultlen < 2)
+        sw = SW_HOST_GENERAL_ERROR;
+      else
+        {
+          sw = ((*result)[*resultlen-2] << 8) | (*result)[*resultlen-1];
+          (*resultlen)--;
+          (*resultlen)--;
+        }
+    }
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+    }
+  return map_sw (sw);
+}
+
+
+/* Check whether the reader supports the ISO command code COMMAND on
+   the keypad.  Returns 0 on success.  */
+gpg_error_t
+iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  sw = apdu_check_keypad (slot, command, 
+                          pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                          pininfo->padlen);
+  return iso7816_map_sw (sw);
+}
+
+
+/* Perform a VERIFY command on SLOT using the card holder verification
+   vector CHVNO with a CHV of lenght CHVLEN.  With PININFO non-NULL
+   the keypad of the reader will be used.  Returns 0 on success. */
+gpg_error_t
+iso7816_verify_kp (int slot, int chvno, const char *chv, size_t chvlen,
+                   iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv,
+                              pininfo->mode,
+                              pininfo->minlen,
+                              pininfo->maxlen,
+                              pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
+  return map_sw (sw);
+}
 
 /* Perform a VERIFY command on SLOT using the card holder verification
    vector CHVNO with a CHV of lenght CHVLEN.  Returns 0 on success. */
 gpg_error_t
 iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 {
-  int sw;
-
-  sw = apdu_send_simple (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
-  return map_sw (sw);
+  return iso7816_verify_kp (slot, chvno, chv, chvlen, NULL);
 }
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
    verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
    0), a "change reference data" is done, otherwise an "exchange
    reference data".  The new reference data is expected in NEWCHV of
-   length NEWCHVLEN.  */
+   length NEWCHVLEN.  With PININFO non-NULL the keypad of the reader
+   will be used.  */
 gpg_error_t
-iso7816_change_reference_data (int slot, int chvno,
-                               const char *oldchv, size_t oldchvlen,
-                               const char *newchv, size_t newchvlen)
+iso7816_change_reference_data_kp (int slot, int chvno,
+                                  const char *oldchv, size_t oldchvlen,
+                                  const char *newchv, size_t newchvlen,
+                                  iso7816_pininfo_t *pininfo)
 {
   int sw;
   char *buf;
@@ -256,45 +337,110 @@ iso7816_change_reference_data (int slot, int chvno,
     memcpy (buf, oldchv, oldchvlen);
   memcpy (buf+oldchvlen, newchv, newchvlen);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
-                         oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf,
+                           pininfo->mode,
+                           pininfo->minlen,
+                           pininfo->maxlen,
+                           pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
+                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
   xfree (buf);
   return map_sw (sw);
 
 }
 
+/* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
+   verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
+   0), a "change reference data" is done, otherwise an "exchange
+   reference data".  The new reference data is expected in NEWCHV of
+   length NEWCHVLEN.  */
 gpg_error_t
-iso7816_reset_retry_counter (int slot, int chvno,
-                             const char *newchv, size_t newchvlen)
+iso7816_change_reference_data (int slot, int chvno,
+                               const char *oldchv, size_t oldchvlen,
+                               const char *newchv, size_t newchvlen)
+{
+  return iso7816_change_reference_data_kp (slot, chvno, oldchv, oldchvlen,
+                                           newchv, newchvlen, NULL);
+}
+
+
+gpg_error_t
+iso7816_reset_retry_counter_kp (int slot, int chvno,
+                                const char *newchv, size_t newchvlen,
+                                iso7816_pininfo_t *pininfo)
 {
   int sw;
 
   if (!newchv || !newchvlen )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_RESET_RETRY_COUNTER,
-                         2, chvno, newchvlen, newchv);
+  /* FIXME:  The keypad mode has not yet been tested.  */
+  if (pininfo && pininfo->mode)
+    sw = apdu_send_simple_kp (slot, 0x00, CMD_RESET_RETRY_COUNTER,
+                           2, chvno, newchvlen, newchv,
+                           pininfo->mode,
+                           pininfo->minlen,
+                           pininfo->maxlen,
+                           pininfo->padlen);
+  else
+    sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
+                           2, chvno, newchvlen, newchv);
   return map_sw (sw);
 }
+
+
+gpg_error_t
+iso7816_reset_retry_counter_with_rc (int slot, int chvno,
+                                     const char *data, size_t datalen)
+{
+  int sw;
+
+  if (!data || !datalen )
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
+                         0, chvno, datalen, data);
+  return map_sw (sw);
+}
+
+
+gpg_error_t
+iso7816_reset_retry_counter (int slot, int chvno,
+                             const char *newchv, size_t newchvlen)
+{
+  return iso7816_reset_retry_counter_kp (slot, chvno, newchv, newchvlen, NULL);
+}
+
 
 
 /* Perform a GET DATA command requesting TAG and storing the result in
    a newly allocated buffer at the address passed by RESULT.  Return
    the length of this data at the address of RESULTLEN. */
 gpg_error_t
-iso7816_get_data (int slot, int tag,
+iso7816_get_data (int slot, int extended_mode, int tag,
                   unsigned char **result, size_t *resultlen)
 {
   int sw;
+  int le;
 
   if (!result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_GET_DATA,
-                  ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL,
-                  result, resultlen);
+  if (extended_mode > 0 && extended_mode < 256)
+    le = 65534; /* Not 65535 in case it is used as some special flag.  */
+  else if (extended_mode > 0)
+    le = extended_mode;
+  else
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode, 0x00, CMD_GET_DATA,
+                     ((tag >> 8) & 0xff), (tag & 0xff), -1, NULL, le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -309,14 +455,29 @@ iso7816_get_data (int slot, int tag,
 
 
 /* Perform a PUT DATA command on card in SLOT.  Write DATA of length
-   DATALEN to TAG. */
+   DATALEN to TAG.  EXTENDED_MODE controls whether extended length
+   headers or command chaining is used instead of single length
+   bytes. */
 gpg_error_t
-iso7816_put_data (int slot, int tag,
+iso7816_put_data (int slot, int extended_mode, int tag,
                   const unsigned char *data, size_t datalen)
 {
   int sw;
 
-  sw = apdu_send_simple (slot, 0x00, CMD_PUT_DATA,
+  sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_PUT_DATA,
+                         ((tag >> 8) & 0xff), (tag & 0xff),
+                         datalen, (const char*)data);
+  return map_sw (sw);
+}
+
+/* Same as iso7816_put_data but uses an odd instruction byte.  */
+gpg_error_t
+iso7816_put_data_odd (int slot, int extended_mode, int tag,
+                      const unsigned char *data, size_t datalen)
+{
+  int sw;
+
+  sw = apdu_send_simple (slot, extended_mode, 0x00, CMD_PUT_DATA+1,
                          ((tag >> 8) & 0xff), (tag & 0xff),
                          datalen, (const char*)data);
   return map_sw (sw);
@@ -335,7 +496,7 @@ iso7816_manage_security_env (int slot, int p1, int p2,
   if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0x00, CMD_MSE, p1, p2, 
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_MSE, p1, p2, 
                          data? datalen : -1, (const char*)data);
   return map_sw (sw);
 }
@@ -344,9 +505,10 @@ iso7816_manage_security_env (int slot, int p1, int p2,
 /* Perform the security operation COMPUTE DIGITAL SIGANTURE.  On
    success 0 is returned and the data is availavle in a newly
    allocated buffer stored at RESULT with its length stored at
-   RESULTLEN. */
+   RESULTLEN.  For LE see do_generate_keypair. */
 gpg_error_t
-iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
+iso7816_compute_ds (int slot, int extended_mode,
+                    const unsigned char *data, size_t datalen, int le,
                     unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -356,8 +518,16 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_PSO, 0x9E, 0x9A, datalen, (const char*)data,
-                  result, resultlen);
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode, 
+                     0x00, CMD_PSO, 0x9E, 0x9A,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -377,7 +547,8 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
    and the plaintext is available in a newly allocated buffer stored
    at RESULT with its length stored at RESULTLEN. */
 gpg_error_t
-iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
+iso7816_decipher (int slot, int extended_mode, 
+                  const unsigned char *data, size_t datalen,
                   int padind, unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -394,17 +565,19 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
       buf = xtrymalloc (datalen + 1);
       if (!buf)
         return gpg_error (gpg_err_code_from_errno (errno));
-
+      
       *buf = padind; /* Padding indicator. */
       memcpy (buf+1, data, datalen);
-      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86,
+      sw = apdu_send (slot, extended_mode, 
+                      0x00, CMD_PSO, 0x80, 0x86,
                       datalen+1, (char*)buf,
                       result, resultlen);
       xfree (buf);
     }
   else
     {
-      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86,
+      sw = apdu_send (slot, extended_mode,
+                      0x00, CMD_PSO, 0x80, 0x86,
                       datalen, (const char *)data,
                       result, resultlen);
     }
@@ -421,9 +594,11 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
 }
 
 
+/*  For LE see do_generate_keypair.  */
 gpg_error_t
-iso7816_internal_authenticate (int slot,
+iso7816_internal_authenticate (int slot, int extended_mode,
                                const unsigned char *data, size_t datalen,
+                               int le,
                                unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -433,8 +608,16 @@ iso7816_internal_authenticate (int slot,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
-                  datalen, (const char*)data,  result, resultlen);
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_INTERNAL_AUTHENTICATE, 0, 0,
+                     datalen, (const char*)data,
+                     le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -448,10 +631,15 @@ iso7816_internal_authenticate (int slot,
 }
 
 
+/* LE is the expected return length.  This is usually 0 except if
+   extended length mode is used and more than 256 byte will be
+   returned.  In that case a value of -1 uses a large default
+   (e.g. 4096 bytes), a value larger 256 used that value.  */
 static gpg_error_t
-do_generate_keypair (int slot, int readonly,
-                  const unsigned char *data, size_t datalen,
-                  unsigned char **result, size_t *resultlen)
+do_generate_keypair (int slot, int extended_mode, int readonly,
+                     const unsigned char *data, size_t datalen,
+                     int le, 
+                     unsigned char **result, size_t *resultlen)
 {
   int sw;
 
@@ -460,8 +648,11 @@ do_generate_keypair (int slot, int readonly,
   *result = NULL;
   *resultlen = 0;
 
-  sw = apdu_send (slot, 0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
-                  datalen, (const char*)data,  result, resultlen);
+  sw = apdu_send_le (slot, extended_mode,
+                     0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
+                     datalen, (const char*)data,
+                     le >= 0 && le < 256? 256:le,
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -476,20 +667,24 @@ do_generate_keypair (int slot, int readonly,
 
 
 gpg_error_t
-iso7816_generate_keypair (int slot,
+iso7816_generate_keypair (int slot, int extended_mode,
                           const unsigned char *data, size_t datalen,
+                          int le, 
                           unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, 0, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, extended_mode, 0,
+                              data, datalen, le, result, resultlen);
 }
 
 
 gpg_error_t
-iso7816_read_public_key (int slot,
-                          const unsigned char *data, size_t datalen,
-                          unsigned char **result, size_t *resultlen)
+iso7816_read_public_key (int slot, int extended_mode,
+                         const unsigned char *data, size_t datalen,
+                         int le, 
+                         unsigned char **result, size_t *resultlen)
 {
-  return do_generate_keypair (slot, 1, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, extended_mode, 1,
+                              data, datalen, le, result, resultlen);
 }
 
 
@@ -508,8 +703,8 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
     {
       result = NULL;
       n = length > 254? 254 : length;
-      sw = apdu_send_le (slot, 0x00, CMD_GET_CHALLENGE, 0, 0, -1, NULL,
-                         n,
+      sw = apdu_send_le (slot, 0, 
+                         0x00, CMD_GET_CHALLENGE, 0, 0, -1, NULL, n,
                          &result, &resultlen);
       if (sw != SW_SUCCESS)
         {
@@ -557,21 +752,14 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
     {
       buffer = NULL;
       bufferlen = 0;
-      /* Note, that we to set N to 254 due to problems either with the
-         ccid driver or some TCOS cards.  It actually should be 0
-         which is the official ISO value to read a variable length
-         object. */
-      if (read_all || nmax > 254)
-        n = 254;
-      else
-        n = nmax;
-      sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+      n = read_all? 0 : nmax;
+      sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
                          ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                          n, &buffer, &bufferlen);
       if ( SW_EXACT_LENGTH_P(sw) )
         {
           n = (sw & 0x00ff);
-          sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+          sw = apdu_send_le (slot, 0, 0x00, CMD_READ_BINARY,
                              ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
                              n, &buffer, &bufferlen);
         }
@@ -598,7 +786,7 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
           unsigned char *p = xtryrealloc (*result, *resultlen + bufferlen);
           if (!p)
             {
-              gpg_error_t err = gpg_error_from_errno (errno);
+              gpg_error_t err = gpg_error_from_syserror ();
               xfree (buffer);
               xfree (*result);
               *result = NULL;
@@ -658,13 +846,11 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
 
   buffer = NULL;
   bufferlen = 0;
-  /* Fixme: Either the ccid driver or the TCOS cards have problems
-     with an Le of 0. */
-  sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
+  sw = apdu_send_le (slot, 0, 0x00, CMD_READ_RECORD,
                      recno, 
                      short_ef? short_ef : 0x04,
                      -1, NULL,
-                     254, &buffer, &bufferlen);
+                     0, &buffer, &bufferlen);
 
   if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
     {

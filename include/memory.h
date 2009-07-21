@@ -30,6 +30,7 @@
 #define M_DBGINFO(a)	     "["__FILE__ ":"  STR(a) "]"
 #endif /* __riscos__ */
 #define xmalloc(n)		m_debug_alloc((n), M_DBGINFO( __LINE__ ) )
+#define xtrymalloc(n)		m_debug_trymalloc ((n), M_DBGINFO( __LINE__ ))
 #define xmalloc_clear(n)	m_debug_alloc_clear((n), M_DBGINFO(__LINE__) )
 #define xmalloc_secure(n)	m_debug_alloc_secure(n), M_DBGINFO(__LINE__) )
 #define xmalloc_secure_clear(n) m_debug_alloc_secure_clear((n), M_DBGINFO(__LINE__) )
@@ -38,8 +39,10 @@
 #define m_check(n)		m_debug_check((n), M_DBGINFO(__LINE__) )
 /*#define m_copy(a)		  m_debug_copy((a), M_DBGINFO(__LINE__) )*/
 #define xstrdup(a)		m_debug_strdup((a), M_DBGINFO(__LINE__) )
+#define xtrystrdup(a)		m_debug_trystrdup((a), M_DBGINFO(__LINE__) )
 
 void *m_debug_alloc( size_t n, const char *info );
+void *m_debug_trymalloc (size_t n, const char *info);
 void *m_debug_alloc_clear( size_t n, const char *info  );
 void *m_debug_alloc_secure( size_t n, const char *info	);
 void *m_debug_alloc_secure_clear( size_t n, const char *info  );
@@ -48,9 +51,11 @@ void m_debug_free( void *p, const char *info  );
 void m_debug_check( const void *a, const char *info );
 /*void *m_debug_copy( const void *a, const char *info );*/
 char *m_debug_strdup( const char *a, const char *info );
+char *m_debug_trystrdup (const char *a, const char *info);
 
 #else
 void *xmalloc( size_t n );
+void *xtrymalloc (size_t n);
 void *xmalloc_clear( size_t n );
 void *xmalloc_secure( size_t n );
 void *xmalloc_secure_clear( size_t n );
@@ -59,6 +64,7 @@ void xfree( void *p );
 void m_check( const void *a );
 /*void *m_copy( const void *a );*/
 char *xstrdup( const char * a);
+char *xtrystrdup (const char *a);
 #endif
 
 size_t m_size( const void *a );

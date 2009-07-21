@@ -1932,6 +1932,7 @@ main (int argc, char **argv )
 #else
     opt.pcsc_driver = "libpcsclite.so"; 
 #endif
+    opt.disable_keypad = 1;  /* No keypad support; use gpg2 instead.  */
 #endif /*ENABLE_CARD_SUPPORT*/
 
     /* check whether we have a config file on the commandline */

@@ -62,6 +62,7 @@
 #define M_GUARD 1
 #endif
 #undef xmalloc
+#undef xtrymalloc
 #undef xmalloc_clear
 #undef xmalloc_secure
 #undef xmalloc_secure_clear
@@ -69,6 +70,7 @@
 #undef xfree
 #undef m_check
 #undef xstrdup
+#undef xtrystrdup
 #define FNAME(a)   m_debug_ ##a
 #define FNAMEX(a)  m_debug_ ##a
 #define FNAMEXM(a) m_debug_ ##a
@@ -444,6 +446,30 @@ FNAMEXM(alloc)( size_t n FNAMEPRT )
 #endif
 }
 
+/* Allocate memory of size n.  This function returns NULL if we do not
+   have enough memory.  */
+void *
+FNAMEX(trymalloc)(size_t n FNAMEPRT)
+{
+#ifdef M_GUARD
+    char *p;
+
+    if (!n)
+      n = 1;
+    p = malloc (n + EXTRA_ALIGN+5);
+    if (!p)
+      return NULL;
+    store_len(p,n,0);
+    used_memory += n;
+    p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
+    return p+EXTRA_ALIGN+4;
+#else
+    /* Mallocing zero bytes is undefined by ISO-C, so we better make
+       sure that it won't happen.  */
+    return malloc (n? n: 1);
+#endif
+}
+
 /****************
  * Allocate memory of size n from the secure memory pool.
  * This function gives up if we do not have enough memory
@@ -613,6 +639,16 @@ FNAMEX(strdup)( const char *a FNAMEPRT )
     size_t n = strlen(a);
     char *p = FNAMEXM(alloc)(n+1 FNAMEARG);
     strcpy(p, a);
+    return p;
+}
+
+char *
+FNAMEX(trystrdup)(const char *a FNAMEPRT)
+{
+    size_t n = strlen (a);
+    char *p = FNAMEX(trymalloc)(n+1 FNAMEARG);
+    if (p)
+      strcpy (p, a);
     return p;
 }
 

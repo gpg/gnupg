@@ -21,15 +21,21 @@
 
 #ifdef ENABLE_CARD_SUPPORT
 /* 
-   Note, that most card related code has been taken from 1.9.x branch
+   Note, that most card related code has been taken from 2.x branch
    and is maintained over there if at all possible.  Thus, if you make
    changes here, please check that a similar change has been commited
-   to the 1.9.x branch.
+   to the 2.x branch.
 */
 
+/* We don't use libgcrypt but the shared codes uses a function type
+   from libgcrypt.  Thus we have to provide this type here.  */
+typedef void (*gcry_handler_progress_t) (void *, const char *, int, int, int);
 
+
+/* Object to hold all info about the card.  */
 struct agent_card_info_s {
   int error;         /* private. */
+  char *apptype;     /* Malloced application type string.  */
   char *serialno;    /* malloced hex string. */
   char *disp_name;   /* malloced. */
   char *disp_lang;   /* malloced. */
@@ -56,8 +62,13 @@ struct agent_card_info_s {
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache
                         it anyway. */
+  int is_v2;         /* True if this is a v2 card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
+  struct {           /* Array with key attributes.  */
+    int algo;              /* Algorithm identifier.  */
+    unsigned int nbits;    /* Supported keysize.  */
+  } key_attr[3];      
 };
 
 struct agent_card_genkey_s {
@@ -147,14 +158,24 @@ void card_set_reader_port (const char *portstr);
 char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
                                 PKT_secret_key *sk);
 void send_status_info (ctrl_t ctrl, const char *keyword, ...);
+void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 void gcry_md_hash_buffer (int algo, void *digest,
 			  const void *buffer, size_t length);
+const char *gcry_md_algo_name (int algorithm);
 void log_printf (const char *fmt, ...);
 void log_printhex (const char *text, const void *buffer, size_t length);
 
 
 #define GCRY_MD_SHA1 DIGEST_ALGO_SHA1
 #define GCRY_MD_RMD160 DIGEST_ALGO_RMD160
+#define GCRY_MD_SHA256 DIGEST_ALGO_SHA256
+#define GCRY_MD_SHA384 DIGEST_ALGO_SHA384
+#define GCRY_MD_SHA512 DIGEST_ALGO_SHA512
+#define GCRY_MD_SHA224 DIGEST_ALGO_SHA224
+
+void gcry_mpi_release (MPI a);
+MPI  gcry_mpi_set_opaque (MPI a, void *p, unsigned int len);
+
 
 void card_close (void);
 
@@ -183,7 +204,7 @@ int agent_scd_writekey (int keyno, const char *serialno,
 
 /* Send a GENKEY command to the SCdaemon. */
 int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                      const char *serialno);
+                      const char *serialno, u32 *createtime);
 
 /* Send a PKSIGN command to the SCdaemon. */
 int agent_scd_pksign (const char *keyid, int hashalgo,
