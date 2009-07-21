@@ -54,6 +54,7 @@
 #include "memory.h"
 #include "util.h"
 #include "i18n.h"
+#include "dynload.h"
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"

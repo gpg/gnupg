@@ -326,8 +326,11 @@ my_strusage (int level)
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
-    case 19: p = _("Please report bugs to <" PACKAGE_BUGREPORT ">.\n");
-      break;
+      /* TRANSLATORS: @EMAIL@ will get replaced by the actual bug
+         reporting address.  This is so that we can change the
+         reporting address without breaking the translations.  */
+    case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
+
     case 20:
       if (!ver_gcry)
         ver_gcry = make_libversion ("libgcrypt", gcry_check_version);

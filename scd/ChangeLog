@@ -1,3 +1,13 @@
+2009-07-21  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c [HAVE_PTH]: Include pth.h.
+	(my_sleep): New.
+	(bulk_in): s/gnupg_sleep/my_sleep/.
+
+2009-07-20  Werner Koch  <wk@g10code.com>
+
+	* apdu.c [GNUPG_MAJOR_VERSION==1]: Include dynload.h.
+
 2009-07-16  Werner Koch  <wk@g10code.com>
 
 	* command.c (update_reader_status_file): Test for unplugged reader.

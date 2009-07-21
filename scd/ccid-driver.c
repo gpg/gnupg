@@ -85,6 +85,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#ifdef HAVE_PTH
+# include <pth.h>
+#endif /*HAVE_PTH*/
 
 #include <usb.h>
 
@@ -310,6 +313,30 @@ set_msg_len (unsigned char *msg, unsigned int length)
   msg[4] = length >> 24;
 }
 
+
+static void
+my_sleep (int seconds)
+{
+#ifdef HAVE_PTH
+  /* With Pth we also call the standard sleep(0) so that the process
+     may give up its timeslot.  */
+  if (!seconds)
+    {
+# ifdef HAVE_W32_SYSTEM    
+      Sleep (0);
+# else
+      sleep (0);
+# endif
+    }
+  pth_sleep (seconds);
+#else
+# ifdef HAVE_W32_SYSTEM    
+  Sleep (seconds*1000);
+# else
+  sleep (seconds);
+# endif
+#endif
+}
 
 static void
 print_progress (ccid_driver_t handle)
@@ -1766,8 +1793,8 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
 {
   int rc;
 
-  /* No need to continue and clutter the log withy USB error if we
-     ever got an ENODEV.  */
+  /* No need to continue and clutter the log with USB write error
+     messages after we got the first ENODEV.  */
   if (handle->enodev_seen)
     return CCID_DRIVER_ERR_NO_READER;
 
@@ -1900,9 +1927,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
           DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (rc));
           if (rc == EAGAIN && eagain_retries++ < 3)
             {
-#ifndef TEST
-              gnupg_sleep (1);
-#endif
+              my_sleep (1);
               goto retry;
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
@@ -1919,9 +1944,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                       handle->dev_fd, strerror (rc));
           if (rc == EAGAIN && eagain_retries++ < 5)
             {
-#ifndef TEST
-              gnupg_sleep (1);
-#endif
+              my_sleep (1);
               goto retry;
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;

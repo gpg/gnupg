@@ -111,8 +111,8 @@ my_strusage( int level )
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
-    case 19: p =  _("Please report bugs to <gnupg-bugs@gnu.org>.\n");
-	break;
+    case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
+
     case 1:
     case 40: p = _("Usage: gpgv [options] [files] (-h for help)");
       break;
