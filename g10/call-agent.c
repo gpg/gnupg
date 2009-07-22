@@ -39,12 +39,14 @@
 #include "asshelp.h"
 #include "sysutils.h"
 #include "call-agent.h"
+#include "status.h"
 
 #ifndef DBG_ASSUAN
 # define DBG_ASSUAN 1
 #endif
 
 static assuan_context_t agent_ctx = NULL;
+static int did_early_card_test;
 
 struct cipher_parm_s 
 {
@@ -75,35 +77,104 @@ struct genkey_parm_s
 };
 
 
+static int learn_status_cb (void *opaque, const char *line);
+
+
 
+/* If RC is not 0, write an appropriate status message. */
+static void
+status_sc_op_failure (int rc)
+{
+  switch (gpg_err_code (rc))
+    {
+    case 0:
+      break;
+    case GPG_ERR_CANCELED:
+      write_status_text (STATUS_SC_OP_FAILURE, "1");
+      break;
+    case GPG_ERR_BAD_PIN:
+      write_status_text (STATUS_SC_OP_FAILURE, "2");
+      break;
+    default:
+      write_status (STATUS_SC_OP_FAILURE);
+      break;
+    }
+}  
+
+
+
+
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
-start_agent (void)
+start_agent (int for_card)
 {
   int rc;
 
+  /* Fixme: We need a context for each thread or serialize the access
+     to the agent. */
   if (agent_ctx)
-    return 0; /* Fixme: We need a context for each thread or serialize
-                 the access to the agent. */
-
-  rc = start_new_gpg_agent (&agent_ctx,
-                            GPG_ERR_SOURCE_DEFAULT,
-                            opt.homedir,
-                            opt.agent_program,
-                            opt.lc_ctype, opt.lc_messages,
-                            opt.session_env,
-                            opt.verbose, DBG_ASSUAN,
-                            NULL, NULL);
-  if (!rc)
+    rc = 0;
+  else
     {
-      /* Tell the agent that we support Pinentry notifications.  No
-         error checking so that it will work also with older
-         agents.  */
-      assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
-                       NULL, NULL, NULL, NULL, NULL, NULL);
+      rc = start_new_gpg_agent (&agent_ctx,
+                                GPG_ERR_SOURCE_DEFAULT,
+                                opt.homedir,
+                                opt.agent_program,
+                                opt.lc_ctype, opt.lc_messages,
+                                opt.session_env,
+                                opt.verbose, DBG_ASSUAN,
+                                NULL, NULL);
+      if (!rc)
+        {
+          /* Tell the agent that we support Pinentry notifications.
+             No error checking so that it will work also with older
+             agents.  */
+          assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+        }
     }
 
+  if (!rc && for_card && !did_early_card_test)
+    {
+      /* Request the serial number of the card for an early test.  */
+      struct agent_card_info_s info;
+
+      memset (&info, 0, sizeof info);
+      rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                            NULL, NULL, NULL, NULL,
+                            learn_status_cb, &info);
+      if (rc)
+        {
+          switch (gpg_err_code (rc))
+            {
+            case GPG_ERR_NOT_SUPPORTED:
+            case GPG_ERR_NO_SCDAEMON:
+              write_status_text (STATUS_CARDCTRL, "6");
+              break;
+            default:
+              write_status_text (STATUS_CARDCTRL, "4");
+              log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
+              break;
+            }
+        }
+
+      if (!rc && is_status_enabled () && info.serialno)
+        {
+          char *buf;
+          
+          buf = xasprintf ("3 %s", info.serialno);
+          write_status_text (STATUS_CARDCTRL, buf);
+          xfree (buf);
+        }
+
+      agent_release_card_info (&info);
+
+      if (!rc)
+        did_early_card_test = 1;
+    }
+
+  
   return rc;
 }
 
@@ -345,12 +416,12 @@ agent_learn (struct agent_card_info_s *info)
 {
   int rc;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
   memset (info, 0, sizeof *info);
-  rc = assuan_transact (agent_ctx, "LEARN --send",
+  rc = assuan_transact (agent_ctx, "SCD LEARN --force",
                         dummy_data_cb, NULL, default_inq_cb, NULL,
                         learn_status_cb, info);
   /* Also try to get the key attributes.  */
@@ -377,7 +448,7 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
     return gpg_error (GPG_ERR_TOO_LARGE);
   stpcpy (stpcpy (line, "SCD GETATTR "), name); 
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -427,12 +498,14 @@ agent_scd_setattr (const char *name,
     }
   *p = 0;
 
-  rc = start_agent ();
-  if (rc)
-    return rc;
+  rc = start_agent (1);
+  if (!rc)
+    {
+      rc = assuan_transact (agent_ctx, line, NULL, NULL, 
+                            default_inq_cb, NULL, NULL, NULL);
+    }
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, 
-                        default_inq_cb, NULL, NULL, NULL);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -467,7 +540,7 @@ agent_scd_writecert (const char *certidstr,
   char line[ASSUAN_LINELENGTH];
   struct writecert_parm_s parms;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -517,7 +590,7 @@ agent_scd_writekey (int keyno, const char *serialno,
 
   (void)serialno;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -532,6 +605,7 @@ agent_scd_writekey (int keyno, const char *serialno,
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         inq_writekey_parms, &parms, NULL, NULL);
 
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -601,7 +675,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
 
   (void)serialno;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -622,6 +696,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
                         NULL, NULL, default_inq_cb, NULL,
                         scd_genkey_cb, info);
   
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -653,7 +728,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   *r_buf = NULL;
   *r_buflen = 0;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -692,11 +767,12 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return rc;
     }
-  *r_buf = get_membuf (&data, r_buflen);
+  else
+    *r_buf = get_membuf (&data, r_buflen);
 
-  return 0;
+  status_sc_op_failure (rc);
+  return rc;
 }
 
 
@@ -717,7 +793,7 @@ agent_scd_pkdecrypt (const char *serialno,
   size_t len;
 
   *r_buf = NULL;
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -751,13 +827,16 @@ agent_scd_pkdecrypt (const char *serialno,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return rc;
     }
-  *r_buf = get_membuf (&data, r_buflen);
-  if (!*r_buf)
-    return gpg_error (GPG_ERR_ENOMEM);
+  else
+    {
+      *r_buf = get_membuf (&data, r_buflen);
+      if (!*r_buf)
+        rc = gpg_error (GPG_ERR_ENOMEM);
+    }
 
-  return 0;
+  status_sc_op_failure (rc);
+  return rc;
 }
 
 
@@ -773,7 +852,7 @@ agent_scd_readcert (const char *certidstr,
   size_t len;
 
   *r_buf = NULL;
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -821,7 +900,7 @@ agent_scd_change_pin (int chvno, const char *serialno)
     reset = "--reset";
   chvno %= 100;
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
@@ -829,6 +908,7 @@ agent_scd_change_pin (int chvno, const char *serialno)
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         default_inq_cb, NULL, NULL, NULL);
+  status_sc_op_failure (rc);
   return rc;
 }
 
@@ -842,15 +922,17 @@ agent_scd_checkpin  (const char *serialno)
   int rc;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_agent ();
+  rc = start_agent (1);
   if (rc)
     return rc;
 
   snprintf (line, DIM(line)-1, "SCD CHECKPIN %s", serialno);
   line[DIM(line)-1] = 0;
-  return assuan_transact (agent_ctx, line,
-                          NULL, NULL,
-                          default_inq_cb, NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line,
+                        NULL, NULL,
+                        default_inq_cb, NULL, NULL, NULL);
+  status_sc_op_failure (rc);
+  return rc;
 }
 
 
@@ -887,7 +969,7 @@ agent_get_passphrase (const char *cache_id,
 
   *r_passphrase = NULL;
 
-  rc = start_agent ();
+  rc = start_agent (0);
   if (rc)
     return rc;
 
@@ -958,7 +1040,7 @@ agent_clear_passphrase (const char *cache_id)
   if (!cache_id || !*cache_id)
     return 0;
 
-  rc = start_agent ();
+  rc = start_agent (0);
   if (rc)
     return rc;
 
