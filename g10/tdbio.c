@@ -1499,12 +1499,11 @@ tdbio_search_trust_bypk (PKT_public_key *pk, TRUSTREC *rec)
 }
 
 
-
 void
 tdbio_invalid(void)
 {
-    log_error(_(
-	"the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n") );
-    g10_exit(2);
+  log_error (_("Error: The trustdb is corrupted.\n"));
+  how_to_fix_the_trustdb ();
+  g10_exit (2);
 }
 

@@ -111,6 +111,7 @@ ulong tdbio_new_recnum(void);
 int tdbio_search_trust_byfpr(const byte *fingerprint, TRUSTREC *rec );
 int tdbio_search_trust_bypk(PKT_public_key *pk, TRUSTREC *rec );
 
+void tdbio_how_to_fix (void);
 void tdbio_invalid(void);
 
 #endif /*G10_TDBIO_H*/
