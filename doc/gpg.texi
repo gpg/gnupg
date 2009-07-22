@@ -328,7 +328,7 @@ The status of the verification is indicated by a flag directly following
 the "sig" tag (and thus before the flags described above for
 @option{--list-sigs}).  A "!" indicates that the signature has been
 successfully verified, a "-" denotes a bad signature and a "%" is used
-if an error occured while checking the signature (e.g. a non supported
+if an error occurred while checking the signature (e.g. a non supported
 algorithm).
 
 @ifclear gpgone
@@ -2660,7 +2660,7 @@ files; They all live in in the current home directory (@pxref{option
 The secret keyring.  You should backup this file.
 
 @item ~/.gnupg/secring.gpg.lock
-The lock file for teh secret keyring.
+The lock file for the secret keyring.
 
 @item ~/.gnupg/pubring.gpg
 The public keyring.  You should backup this file.
@@ -2676,7 +2676,7 @@ to backup the ownertrust values (@pxref{option --export-ownertrust}).
 The lock file for the trust database.
 
 @item ~/.gnupg/random_seed
-A file used to preserve the state of theinternal random pool.
+A file used to preserve the state of the internal random pool.
 
 @item /usr[/local]/share/gnupg/options.skel
 The skeleton options file.
@@ -2710,7 +2710,7 @@ value. The option @option{--gpg-agent-info} can be used to override it.
 
 @item PINENTRY_USER_DATA
 This value is passed via gpg-agent to pinentry.  It is useful to convey
-extra information to a custom pinentry
+extra information to a custom pinentry.
 
 @item COLUMNS
 @itemx LINES
@@ -2719,11 +2719,11 @@ Used to size some displays to the full size of the screen.
 
 @item LANGUAGE
 Apart from its use by GNU, it is used in the W32 version to override the
-language selection done through the Registry.  If used and set to a a
+language selection done through the Registry.  If used and set to a
 valid and available language name (@var{langid}), the file with the
 translation is loaded from
 @code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
-directory out of which the gpg binary has been laoded.  If it can't be
+directory out of which the gpg binary has been loaded.  If it can't be
 loaded the Registry is tried and as last resort the native Windows
 locale system is used.  
 

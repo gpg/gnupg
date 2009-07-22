@@ -10,7 +10,7 @@ there is a need to track down problems.  We call this debugging in a
 reminiscent to the moth jamming a relay in a Mark II box back in 1947.
 
 Most of the problems a merely configuration and user problems but
-nevertheless there are the most annoying ones and reponsible for many
+nevertheless there are the most annoying ones and responsible for many
 gray hairs.  We try to give some guidelines here on how to identify and
 solve the problem at hand.
 
@@ -36,7 +36,7 @@ and solving problems.
 @node kbxutil
 @subsection Scrutinizing a keybox file
 
-A keybox is a file fomat used to store public keys along with meta
+A keybox is a file format used to store public keys along with meta
 information and indices.  The commonly used one is the file
 @file{pubring.kbx} in the @file{.gnupg} directory. It contains all
 X.509 certificates as well as OpenPGP keys@footnote{Well, OpenPGP keys
@@ -72,10 +72,10 @@ Total number of blobs:       99
 @end example
 
 In this example you see that the keybox does not have any OpenPGP keys
-but contains 98 X.509 cerificates and a total of 17 keys or certificates
-are flagges as ephemeral, meaning that they are only temporary stored
+but contains 98 X.509 certificates and a total of 17 keys or certificates
+are flagged as ephemeral, meaning that they are only temporary stored
 (cached) in the keybox and won't get listed using the usual commands
-provided by @command{gpgsm} or @command{gpg}. 81 certifcates are stored
+provided by @command{gpgsm} or @command{gpg}. 81 certificates are stored
 in a standard way and directly available from @command{gpgsm}.
 
 @noindent
@@ -137,7 +137,7 @@ on how to do it.
 SSH has no way to tell the gpg-agent what terminal or X display it is
 running on.  So when remotely logging into a box where a gpg-agent with
 SSH support is running, the pinentry will get popped up on whatever
-display t he gpg-agent has been started.  To solve this problem you may
+display the gpg-agent has been started.  To solve this problem you may
 issue the command
 
 @smallexample
@@ -171,7 +171,7 @@ Pick the key which best matches the creation time and run the command
   /usr/local/libexec/gpg-protect-tool --p12-export ~/.gnupg/private-keys-v1.d/@var{foo} >@var{foo}.p12
 @end smallexample
 
-(Please adjust the path to @command{gpg-protect-tool} to the approriate
+(Please adjust the path to @command{gpg-protect-tool} to the appropriate
 location). @var{foo} is the name of the key file you picked (it should
 have the suffix @file{.key}).  A Pinentry box will pop up and ask you
 for the current passphrase of the key and a new passphrase to protect it
@@ -205,7 +205,7 @@ fingerprint and this flag may only be added manually to
 
 The signature is broken.  You may try the option
 @option{--extra-digest-algo SHA256} to workaround the problem.  The
-number N is the internal algorighm indentifier; for example 8 refers to
+number N is the internal algorithm identifier; for example 8 refers to
 SHA-256.
 
 

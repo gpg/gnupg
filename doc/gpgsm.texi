@@ -29,7 +29,7 @@
 
 @mansect description
 @command{gpgsm} is a tool similar to @command{gpg} to provide digital
-encryption and signing servicesd on X.509 certificates and the CMS
+encryption and signing services on X.509 certificates and the CMS
 protocol.  It is mainly used as a backend for S/MIME mail processing.
 @command{gpgsm} includes a full features certificate management and
 complies with all rules defined for the German Sphinx project.
@@ -82,7 +82,7 @@ cannot abbreviate this command.
 
 @item --help, -h
 @opindex help
-Print a usage message summarizing the most usefule command-line options.
+Print a usage message summarizing the most useful command-line options.
 Note that you cannot abbreviate this command.
 
 @item --warranty
@@ -123,7 +123,7 @@ in the keybox or those set with the @option{--local-user} option.
 @item --verify
 @opindex verify
 Check a signature file for validity.  Depending on the arguments a
-detached signatrue may also be checked.
+detached signature may also be checked.
  
 @item --server
 @opindex server
@@ -134,7 +134,7 @@ Run in server mode and wait for commands on the @code{stdin}.
 Behave as a Dirmngr client issuing the request @var{command} with the
 optional list of @var{args}.  The output of the Dirmngr is printed
 stdout.  Please note that file names given as arguments should have an
-absulte file name (i.e. commencing with @code{/} because they are
+absolute file name (i.e. commencing with @code{/} because they are
 passed verbatim to the Dirmngr and the working directory of the
 Dirmngr might not be the same as the one of this client.  Currently it
 is not possible to pass data via stdin to the Dirmngr.  @var{command}
@@ -219,7 +219,7 @@ mainly for debugging.
 @opindex keydb-clear-some-cert-flags
 This is a debugging aid to reset certain flags in the key database
 which are used to cache certain certificate stati.  It is especially
-useful if a bad CRL or a weird running OCSP reponder did accidently
+useful if a bad CRL or a weird running OCSP responder did accidentally
 revoke certificate.  There is no security issue with this command
 because @command{gpgsm} always make sure that the validity of a certificate is
 checked right before it is used.
@@ -286,7 +286,7 @@ smartcard is not yet supported.
 @node GPGSM Options
 @section Option Summary
 
-@command{GPGSM} comes features a bunch ofoptions to control the exact behaviour
+@command{GPGSM} comes features a bunch of options to control the exact behaviour
 and to change the default configuration.
 
 @menu 
@@ -304,7 +304,7 @@ and to change the default configuration.
 @node Configuration Options
 @subsection How to change the configuration
 
-These options are used to change the configuraton and are usually found
+These options are used to change the configuration and are usually found
 in the option file.
 
 @table @gnupgtabopt
@@ -335,7 +335,7 @@ Change the default name of the policy file to @var{filename}.
 @opindex agent-program
 Specify an agent program to be used for secret key operations.  The
 default value is the @file{/usr/local/bin/gpg-agent}.  This is only used
-as a fallback when the envrionment variable @code{GPG_AGENT_INFO} is not
+as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent can't be connected.
   
 @item --dirmngr-program @var{file}
@@ -408,7 +408,7 @@ line of the @file{trustlist.txt}
 @opindex force-crl-refresh
 Tell the dirmngr to reload the CRL for each request.  For better
 performance, the dirmngr will actually optimize this by suppressing
-the loading for short time intervalls (e.g. 30 minutes). This option
+the loading for short time intervals (e.g. 30 minutes). This option
 is useful to make sure that a fresh CRL is available for certificates
 hold in the keybox.  The suggested way of doing this is by using it
 along with the option @option{--with-validation} for a key listing
@@ -430,7 +430,7 @@ so you will get the error code @samp{Not supported}.
 @opindex auto-issuer-key-retrieve
 If a required certificate is missing while validating the chain of
 certificates, try to load that certificate from an external location.
-This usually means that Dirmngr is employed t search for the
+This usually means that Dirmngr is employed to search for the
 certificate.  Note that this option makes a "web bug" like behavior
 possible.  LDAP server operators can see which keys you request, so by
 sending you a message signed by a brand new key (which you naturally
@@ -537,7 +537,7 @@ requires a CRL lookup and other operations.
 
 When used along with --import, a validation of the certificate to
 import is done and only imported if it succeeds the test.  Note that
-this does not affect an already available cwertificate in the DB.
+this does not affect an already available certificate in the DB.
 This option is therefore useful to simply verify a certificate.
 
 
@@ -592,7 +592,7 @@ interoperability problems.
 @opindex extra-digest-algo
 Sometimes signatures are broken in that they announce a different digest
 algorithm than actually used.  @command{gpgsm} uses a one-pass data
-processing model and thus needs to rely on the announcde digest
+processing model and thus needs to rely on the announced digest
 algorithms to properly hash the data.  As a workaround this option may
 be used to tell gpg to also hash the data using the algorithm
 @var{name}; this slows processing down a little bit but allows to verify
@@ -605,7 +605,7 @@ with @samp{SHA256} for @var{name}.
 @opindex faked-system-time
 This option is only useful for testing; it sets the system time back or
 forth to @var{epoch} which is the number of seconds elapsed since the year
-1970.  Alternativly @var{epoch} may be given as a full ISO time string
+1970.  Alternatively @var{epoch} may be given as a full ISO time string
 (e.g. "20070924T154812").
 
 @item --with-ephemeral-keys
@@ -662,7 +662,7 @@ write hashed data to files named @code{dbgmd-000*}
 trace Assuan protocol
 @end table
 
-Note, that all flags set using this option may get overriden by
+Note, that all flags set using this option may get overridden by
 @code{--debug-level}.
 
 @item --debug-all
@@ -685,7 +685,7 @@ lets @command{gpgsm} bypass all certificate chain validation checks.
 @item --debug-ignore-expiration
 @opindex debug-ignore-expiration
 This is actually not a debugging option but only useful as such.  It
-lets @command{gpgsm} ignore all notAfter dates, this is used by the regresssion
+lets @command{gpgsm} ignore all notAfter dates, this is used by the regression
 tests.
 
 @item --fixed-passphrase @var{string}
@@ -820,10 +820,10 @@ X.509 certificates.  This global file is installed in the data directory
 @c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
-start up with a working configuration.  For existing users the a small
+start up with a working configuration.  For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
-For internal purposes gpgsm creates and maintaines a few other files;
+For internal purposes gpgsm creates and maintains a few other files;
 they all live in in the current home directory (@pxref{option
 --homedir}).  Only @command{gpgsm} may modify these files.
 
@@ -839,7 +839,7 @@ this file.
 @item random_seed
 @cindex random_seed
 This content of this file is used to maintain the internal state of the
-random number generator accross invocations.  The same file is used by
+random number generator across invocations.  The same file is used by
 other programs of this software too.
 
 @item S.gpg-agent
@@ -848,7 +848,7 @@ If this file exists and the environment variable @env{GPG_AGENT_INFO} is
 not set, @command{gpgsm} will first try to connect to this socket for
 accessing @command{gpg-agent} before starting a new @command{gpg-agent}
 instance.  Under Windows this socket (which in reality be a plain file
-describing a regular TCP litening port) is the standard way of
+describing a regular TCP listening port) is the standard way of
 connecting the @command{gpg-agent}.
 
 @end table
@@ -894,7 +894,7 @@ but may also be used in the standard operation mode by using the
 
 It is very important to understand the semantics used with signature
 verification.  Checking a signature is not as simple as it may sound and
-so the ooperation si a bit complicated.  In mosted cases it is required
+so the operation is a bit complicated.  In most cases it is required
 to look at several status lines.  Here is a table of all cases a signed
 message may have:
 
@@ -919,7 +919,7 @@ these status codes:
 
 @item The signature is invalid
 This means that the signature verification failed (this is an indication
-of af a transfer error, a programm error or tampering with the message).
+of af a transfer error, a program error or tampering with the message).
 @command{gpgsm} issues one of these status codes sequences:
   @table @code
   @item  @code{BADSIG}
@@ -971,7 +971,7 @@ Assuan manual for details.
 @node GPGSM ENCRYPT
 @subsection Encrypting a Message
 
-Before encrytion can be done the recipient must be set using the
+Before encryption can be done the recipient must be set using the
 command:
 
 @example
@@ -1086,7 +1086,7 @@ Sign the data set with the INPUT command and write it to the sink set by
 OUTPUT.  With @code{--detached}, a detached signature is created
 (surprise).
 
-The key used for signining is the default one or the one specified in
+The key used for signing is the default one or the one specified in
 the configuration file.  To get finer control over the keys, it is
 possible to use the command
 
@@ -1226,7 +1226,7 @@ To import certificates into the internal key database, the command
 @end example
 
 is used.  The data is expected on the file descriptor set with the
-@code{INPUT} command.  Certain checks are performend on the
+@code{INPUT} command.  Certain checks are performed on the
 certificate.  Note that the code will also handle PKCS#12 files and
 import private keys; a helper program is used for that.
 

@@ -61,7 +61,7 @@ to run multiple instance of the @command{gpg-agent}, so you should make
 sure that only one is running: @command{gpg-agent} uses an environment
 variable to inform clients about the communication parameters. You can
 write the content of this environment variable to a file so that you can
-test for a running agent.  Here is an example using Bourne shell synax:
+test for a running agent.  Here is an example using Bourne shell syntax:
 
 @smallexample
 gpg-agent --daemon --enable-ssh-support \
@@ -727,7 +727,7 @@ special command line option is required to activate the use of the
 protocol.
 
 To identify a key we use a thing called keygrip which is the SHA-1 hash
-of an canoncical encoded S-Expression of the the public key as used in
+of an canonical encoded S-Expression of the public key as used in
 Libgcrypt.  For the purpose of this interface the keygrip is given as a
 hex string.  The advantage of using this and not the hash of a
 certificate is that it will be possible to use the same keypair for
@@ -855,7 +855,7 @@ The actual signing is done using
    PKSIGN <options>
 @end example
 
-Options are not yet defined, but my later be used to choosen among
+Options are not yet defined, but my later be used to choose among
 different algorithms.  The agent does then some checks, asks for the
 passphrase and as a result the server returns the signature as an SPKI
 like S-expression in "D" lines:
@@ -957,7 +957,7 @@ Here is an example session:
 @node Agent IMPORT
 @subsection Importing a Secret Key
 
-This operation is not yet supportted by GpgAgent.  Specialized tools
+This operation is not yet supported by GpgAgent.  Specialized tools
 are to be used for this.
 
 There is no actual need because we can expect that secret keys
@@ -976,7 +976,7 @@ Should be done by an extra tool.
 
 Actually we do not import a Root Cert but provide a way to validate
 any piece of data by storing its Hash along with a description and
-an identifier in the PSE.  Here is the interface desription:
+an identifier in the PSE.  Here is the interface description:
 
 @example
     ISTRUSTED <fingerprint>
@@ -1017,7 +1017,7 @@ GpgAgent returns a list of trusted keys line by line:
 @end example
 
 The first item on a line is the hexified fingerprint where MD5
-ingerprints are @code{00} padded to the left and the second item is a
+fingerprints are @code{00} padded to the left and the second item is a
 flag to indicate the type of key (so that gpg is able to only take care
 of PGP keys).  P = OpenPGP, S = S/MIME.  A client should ignore the rest
 of the line, so that we can extend the format in the future.
@@ -1114,7 +1114,7 @@ function returns with OK even when there is no cached passphrase.
 @subsection Ask for confirmation
 
 This command may be used to ask for a simple confirmation by
-presenting a text and 2 bottonts: Okay and Cancel.
+presenting a text and 2 buttons: Okay and Cancel.
 
 @example
   GET_CONFIRMATION @var{description}
@@ -1164,7 +1164,7 @@ option given the certificates are send back.
 @end example
 
 This command is used to interactively change the passphrase of the key
-indentified by the hex string @var{keygrip}.
+identified by the hex string @var{keygrip}.
 
 
 @node Agent UPDATESTARTUPTTY

@@ -251,7 +251,7 @@ which a private key is available.  To see more details, you may use
 
 
 To make actual use of the certificate you need to install it on your
-server. Server software usally expects a PKCS\#12 file with key and
+server. Server software usually expects a PKCS\#12 file with key and
 certificate. To create such a file, run:
 
 @cartouche

@@ -334,7 +334,7 @@ never contain any special characters.
 Some fields contain strings that are described to be
 @emph{percent-escaped}.  Such strings need to be de-escaped before
 their content can be presented to the user.  A percent-escaped string
-is de-escaped by replacing all occurences of @code{%XY} by the byte
+is de-escaped by replacing all occurrences of @code{%XY} by the byte
 that has the hexadecimal value @code{XY}.  @code{X} and @code{Y} are
 from the set @code{0-9a-f}.
 
@@ -477,7 +477,7 @@ dirmngr:Directory Manager:/usr/local/bin/dirmngr:
 
 The command @code{--check-programs} is similar to
 @code{--list-components} but works on backend programs and not on
-components.  It runs each program to test wether it is installed and
+components.  It runs each program to test whether it is installed and
 runnable.  This also includes a syntax check of all config file options
 of the program.
 
@@ -514,17 +514,17 @@ The @emph{boolean value} in this field indicates whether the program's
 config file is syntactically okay.
 
 @item cfgfile
-If an error occured in the configuraion file (as indicated by a false
+If an error occurred in the configuration file (as indicated by a false
 value in the field @code{okay}), this field has the name of the failing
 configuration file.  It is @emph{percent-escaped}.
 
 @item line
-If an error occured in the configuration file, this field has the line
+If an error occurred in the configuration file, this field has the line
 number of the failing statement in the configuration file.  
 It is an @emph{unsigned number}.
 
 @item error
-If an error occured in the configuration file, this field has the error
+If an error occurred in the configuration file, this field has the error
 text of the failing statement in the configuration file.  It is
 @emph{percent-escaped} and @emph{localized}.
 
@@ -747,7 +747,7 @@ no argument is given.
 @item value
 This field is defined only for options.  Its format is that of an
 @emph{option argument}.  If it is empty, then the option is not
-explicitely set in the current configuration, and the default applies
+explicitly set in the current configuration, and the default applies
 (if any).  Otherwise, it contains the current value of the option.
 Note that this field is also meaningful if the option itself does not
 take a real argument (in this case, it contains the number of times
@@ -865,7 +865,7 @@ empty string.
 @end table
 
 @noindent
-Unknown record typs should be ignored.  Note that there is intentionally
+Unknown record types should be ignored.  Note that there is intentionally
 no feature to change the global option file through @command{gpgconf}.
 
 
@@ -947,7 +947,7 @@ applygnupgdefaults
 @end ifset
 
 @mansect description
-This is a simple tool to interactivly generate a certificate request
+This is a simple tool to interactively generate a certificate request
 which will be printed to stdout.
 
 @manpause
@@ -1089,7 +1089,7 @@ for other users.
 The @command{gpg-connect-agent} is a utility to communicate with a
 running @command{gpg-agent}.  It is useful to check out the commands
 gpg-agent provides using the Assuan interface.  It might also be useful
-for scripting simple applications.  Inputis expected at stdin and out
+for scripting simple applications.  Input is expected at stdin and out
 put gets printed to stdout.
 
 It is very similar to running @command{gpg-agent} in server mode; but
@@ -1192,7 +1192,7 @@ Just print @var{args}.
 @item /let @var{name} @var{value}
 Set the variable @var{name} to @var{value}.  Variables are only
 substituted on the input if the @command{/subst} has been used.
-Variables are referenced by prefixing the name with a dollr sign and
+Variables are referenced by prefixing the name with a dollar sign and
 optionally include the name in curly braces.  The rules for a valid name
 are identically to those of the standard bourne shell.  This is not yet
 enforced but may be in the future.  When used with curly braces no
@@ -1237,14 +1237,14 @@ the function name.
 
 @item unpercent @var{args}
 @itemx unpercent+ @var{args}
-Remove percent style ecaping from @var{args}.  Note that @code{%00}
+Remove percent style escaping from @var{args}.  Note that @code{%00}
 terminates the string implicitly.  The string to be converted are the
 entire arguments right behind the delimiting space of the function
 name. @code{unpercent+} also maps plus signs to a spaces.
 
 @item percent @var{args}
 @itemx percent+ @var{args}
-Escape the @var{args} using percent style ecaping.  Tabs, formfeeds,
+Escape the @var{args} using percent style escaping.  Tabs, formfeeds,
 linefeeds, carriage returns and colons are escaped. @code{percent+} also
 maps spaces to plus signs.
 
@@ -1290,9 +1290,9 @@ entire line to it as command line arguments.
 
 @item /datafile @var{name}
 Write all data lines from the server to the file @var{name}.  The file
-is opened for writing and created if it does not exists.  An existsing
+is opened for writing and created if it does not exists.  An existing
 file is first truncated to 0.  The data written to the file fully
-decoded.  Using a singel dash for @var{name} writes to stdout.  The
+decoded.  Using a single dash for @var{name} writes to stdout.  The
 file is kept open until a new file is set using this command or this
 command is used without an argument.
 
@@ -1466,7 +1466,7 @@ argument @var{inputfile}, and the ciphertext will be output to STDOUT.
 For decryption vice versa.
 
 @var{CLASS} describes the calling conventions of the external tool.
-Currently it must be given as @samp{confucius}.  @var{PROGRAM} is the
+Currently it must be given as @samp{confucius}.  @var{PROGRAM} is
 the full filename of that external tool.
  
 For the class @samp{confucius} the option @option{--keyfile} is
@@ -1499,7 +1499,7 @@ Try to be as quiet as possible.
 @item --log-file @var{file}
 @opindex log-file
 Append all logging output to @var{file}.  Default is to write logging
-informaton to STDERR.
+information to STDERR.
 
 @end table
 

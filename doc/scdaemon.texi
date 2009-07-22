@@ -69,7 +69,7 @@ abbreviate this command.
 
 @item --help, -h
 @opindex help
-Print a usage message summarizing the most usefule command-line options.
+Print a usage message summarizing the most useful command-line options.
 Not that you can abbreviate this command.
 
 @item --dump-options
@@ -91,7 +91,7 @@ may be used to get the name of that extra socket.
 @item --daemon
 @opindex daemon
 Run the program in the background.  This option is required to prevent
-it from being accidently running in the background.
+it from being accidentally running in the background.
 
 @end table
 
@@ -267,7 +267,7 @@ accessing the card takes longer and that the user needs to enter the
 PIN again after the next power up.
 
 Note that with the current version of Scdaemon the card is powered
-down immediatley at the next timer tick for any value of @var{n} other
+down immediately at the next timer tick for any value of @var{n} other
 than 0.
 
 
@@ -342,7 +342,7 @@ the German signature law and its bylaws (SigG and SigV).
 @node PKCS#15 Card
 @subsection The PKCS#15 card application ``p15''
 
-This is common fraqmework for smart card applications.  It is used by
+This is common framework for smart card applications.  It is used by
 @command{gpgsm}.
 
 @node Geldkarte Card
@@ -413,7 +413,7 @@ $ scdaemon --server -v
 
 The SC-Daemon should be started by the system to provide access to
 external tokens.  Using Smartcards on a multi-user system does not
-make much sense expcet for system services, but in this case no
+make much sense expect for system services, but in this case no
 regular user accounts are hosted on the machine.
 
 A client connects to the SC-Daemon by connecting to the socket named
@@ -421,7 +421,7 @@ A client connects to the SC-Daemon by connecting to the socket named
 @var{/etc/scdaemon.conf}
 
 Each connection acts as one session, SC-Daemon takes care of
-syncronizing access to a token between sessions.
+synchronizing access to a token between sessions.
 
 @menu
 * Scdaemon SERIALNO::     Return the serial number.
@@ -457,7 +457,7 @@ done on the same card unless he call this function.
   SERIALNO
 @end example
 
-Return the serial number of the card using a status reponse like:
+Return the serial number of the card using a status response like:
 
 @example
   S SERIALNO D27600000000000000000000 0
@@ -505,7 +505,7 @@ returned in @var{hexstring_with_keygrip}.
 
 This function is used to read a certificate identified by
 @var{hexified_certid} from the card.  With OpenPGP cards the keyid
-@code{OpenPGP.3} may be used to rad the certticate of version 2 cards.
+@code{OpenPGP.3} may be used to rad the certificate of version 2 cards.
 
 
 @node Scdaemon READKEY
@@ -584,7 +584,7 @@ TO BE WRITTEN.
   WRITEKEY [--force] @var{keyid}
 @end example
 
-This command is used to store a secret key on a a smartcard.  The
+This command is used to store a secret key on a smartcard.  The
 allowed keyids depend on the currently selected smartcard
 application. The actual keydata is requested using the inquiry
 @code{KEYDATA} and need to be provided without any protection.  With
@@ -592,7 +592,7 @@ application. The actual keydata is requested using the inquiry
 overwritten.  The key data is expected to be the usual canonical encoded
 S-expression.
 
-A PIN will be requested in most saes.  This however depends on the
+A PIN will be requested in most cases.  This however depends on the
 actual card application.
 
 
@@ -687,7 +687,7 @@ message before any data like this:
 @end example
 
 Using the option @code{--more} handles the card status word MORE_DATA
-(61xx) and concatenate all reponses to one block.
+(61xx) and concatenate all responses to one block.
 
 Using the option @code{--exlen} the returned APDU may use extended
 length up to N bytes.  If N is not given a default value is used
