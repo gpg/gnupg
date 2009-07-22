@@ -734,7 +734,8 @@ This is the standard configuration file read by @command{gpgsm} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
 name may be changed on the command line (@pxref{option
-  --options}).
+  --options}).  You should backup this file.
+
 
 @item policies.txt
 @cindex policies.txt
@@ -743,7 +744,8 @@ object identifiers of the policies line by line.  Empty lines and
 lines starting with a hash mark are ignored.  Policies missing in this
 file and not marked as critical in the certificate will print only a
 warning; certificates with policies marked as critical and not listed
-in this file will fail the signature verification.
+in this file will fail the signature verification.  You should backup
+this file.
 
 For example, to allow only the policy 2.289.9.9, the file should look
 like this:
@@ -831,7 +833,8 @@ they all live in in the current home directory (@pxref{option
 @cindex pubring.kbx
 This a database file storing the certificates as well as meta
 information.  For debugging purposes the tool @command{kbxutil} may be
-used to show the internal structure of this file.
+used to show the internal structure of this file.  You should backup
+this file.
 
 @item random_seed
 @cindex random_seed

@@ -485,16 +485,34 @@ For use with cron jobs, this command can be used together with
 a check is needed. To force a run even in batch mode add the option
 @option{--yes}.
 
+@anchor{option --export-ownertrust}
 @item --export-ownertrust
 @opindex export-ownertrust
 Send the ownertrust values to STDOUT. This is useful for backup purposes
 as these values are the only ones which can't be re-created from a
-corrupted trust DB.
+corrupted trustdb.  Example:
+@c man:.RS
+@example
+  @gpgname{} --export-ownertrust > otrust.txt
+@end example
+@c man:.RE
+
 
 @item --import-ownertrust
 @opindex import-ownertrust
 Update the trustdb with the ownertrust values stored in @code{files} (or
-STDIN if not given); existing values will be overwritten.
+STDIN if not given); existing values will be overwritten.  In case of a
+severely damaged trustdb and if you have a recent backup of the
+ownertrust values (e.g. in the file @file{otrust.txt}, you may re-create
+the trustdb using these commands:
+@c man:.RS
+@example
+  cd ~/.gnupg
+  rm trustdb.gpg
+  @gpgname{} --import-ownertrust < otrust.txt
+@end example
+@c man:.RE
+
 
 @item --rebuild-keydb-caches
 @opindex rebuild-keydb-caches
@@ -2614,12 +2632,12 @@ current home directory (@pxref{option --homedir}).
 @table @file
 
 @item gpg.conf
-@cindex gpgsm.conf
+@cindex gpg.conf
 This is the standard configuration file read by @command{@gpgname} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
-name may be changed on the command line (@pxref{option
-  --options}).
+name may be changed on the command line (@pxref{option --options}).
+You should backup this file.
 
 @end table
 
@@ -2639,31 +2657,32 @@ files; They all live in in the current home directory (@pxref{option
 
 @table @file
 @item ~/.gnupg/secring.gpg
-The secret keyring.
+The secret keyring.  You should backup this file.
 
 @item ~/.gnupg/secring.gpg.lock
-and the lock file
+The lock file for teh secret keyring.
 
 @item ~/.gnupg/pubring.gpg
-The public keyring
+The public keyring.  You should backup this file.
 
 @item ~/.gnupg/pubring.gpg.lock
-and the lock file
+The lock file for the public keyring.
 
 @item ~/.gnupg/trustdb.gpg
-The trust database
+The trust database.  There is no need to backup this file; it is better
+to backup the ownertrust values (@pxref{option --export-ownertrust}).
 
 @item ~/.gnupg/trustdb.gpg.lock
-and the lock file
+The lock file for the trust database.
 
 @item ~/.gnupg/random_seed
-used to preserve the internal random pool
+A file used to preserve the state of theinternal random pool.
 
 @item /usr[/local]/share/gnupg/options.skel
-Skeleton options file
+The skeleton options file.
 
 @item /usr[/local]/lib/gnupg/
-Default location for extensions
+Default location for extensions.
 
 @end table
 

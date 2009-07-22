@@ -514,16 +514,19 @@ agent. By default they may all be found in the current home directory
   two dashes may not be entered and the option may not be abbreviated.
   This file is also read after a @code{SIGHUP} however only a few
   options will actually have an effect.  This default name may be
-  changed on the command line (@pxref{option --options}).
+  changed on the command line (@pxref{option --options}).  
+  You should backup this file.
 
 @item trustlist.txt
-  This is the list of trusted keys.  Comment lines, indicated by a leading
-  hash mark, as well as empty lines are ignored.  To mark a key as trusted
-  you need to enter its fingerprint followed by a space and a capital
-  letter @code{S}.  Colons may optionally be used to separate the bytes of
-  a fingerprint; this allows to cut and paste the fingerprint from a key
-  listing output.  If the line is prefixed with a @code{!} the key is
-  explicitly marked as not trusted.
+  This is the list of trusted keys.  You should backup this file.
+
+  Comment lines, indicated by a leading hash mark, as well as empty
+  lines are ignored.  To mark a key as trusted you need to enter its
+  fingerprint followed by a space and a capital letter @code{S}.  Colons
+  may optionally be used to separate the bytes of a fingerprint; this
+  allows to cut and paste the fingerprint from a key listing output.  If
+  the line is prefixed with a @code{!} the key is explicitly marked as
+  not trusted.
   
   Here is an example where two keys are marked as ultimately trusted
   and one as not trusted:
@@ -574,15 +577,16 @@ fails, try again using the chain validation model.
 @item sshcontrol
 
 This file is used when support for the secure shell agent protocol has
-been enabled (@pxref{option --enable-ssh-support}). Only keys present
-in this file are used in the SSH protocol.  The @command{ssh-add} tool
-may be used to add new entries to this file; you may also add them
-manually.  Comment lines, indicated by a leading hash mark, as well as
-empty lines are ignored.  An entry starts with optional whitespace,
-followed by the keygrip of the key given as 40 hex digits, optionally
-followed by the caching TTL in seconds and another optional field for
-arbitrary flags.  A non-zero TTL overrides the global default as
-set by @option{--default-cache-ttl-ssh}.
+been enabled (@pxref{option --enable-ssh-support}). Only keys present in
+this file are used in the SSH protocol.  You should backup this file.
+
+The @command{ssh-add} tool may be used to add new entries to this file;
+you may also add them manually.  Comment lines, indicated by a leading
+hash mark, as well as empty lines are ignored.  An entry starts with
+optional whitespace, followed by the keygrip of the key given as 40 hex
+digits, optionally followed by the caching TTL in seconds and another
+optional field for arbitrary flags.  A non-zero TTL overrides the global
+default as set by @option{--default-cache-ttl-ssh}.
 
 The keygrip may be prefixed with a @code{!} to disable an entry entry.
     
@@ -599,7 +603,8 @@ implicitly added to this list; i.e. there is no need to list them.
 
   This is the directory where gpg-agent stores the private keys.  Each
   key is stored in a file with the name made up of the keygrip and the
-  suffix @file{key}.
+  suffix @file{key}.  You should backup all files in this directory
+  and take great care to keep this backup closed away.
 
 
 @end table

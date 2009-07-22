@@ -60,30 +60,10 @@ API (called here @emph{W32}) will be supported to some extend.
 @node W32 Notes
 @section Microsoft Windows Notes
 
-The port to Microsoft Windows based OSes is pretty new and has some
-limitations we might remove over time.  Note, that we have not yet done
-any security audit and you should not use any valuable private key.  In
-particular, @strong{using it on a box with more than one user, might
-lead to a key compromise}.
-
-@strong{It is quite possible that the current version does not even
-build.}
-
 @noindent
 Current limitations are:
 
 @itemize
-@item
-The @code{LISTKEYS} Assuan command of @command{gpgsm} is not supported.
-Using the command line options @option{--list-keys} or
-@option{--list-secret-keys} does however work.
-
-@item 
-No support for CRL checks.  By default the option
-@option{--disable-crl-checks} has been turned on and the log will show
-an appropriate warning message.  The reason for this is that the
-separate CRL checking daemin (@command{dirmngr}) has not been ported to
-W32.
 
 @item
 @command{gpgconf} does not create backup files, so in case of trouble
@@ -96,10 +76,6 @@ possible.
 @item
 The periodical smartcard status checking done by @command{scdaemon} is
 not yet supported.
-
-@item
-Detached running of the gpg-agent is not directly supported.  It needs
-to be started in a console and left alone then.
 
 @end itemize
 
