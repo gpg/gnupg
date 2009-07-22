@@ -366,6 +366,30 @@ learn_status_cb (void *opaque, const char *line)
           xfree (buf);
         }
     }
+  else if (keywordlen == 6 && !memcmp (keyword, "EXTCAP", keywordlen))
+    {
+      char *p, *p2, *buf;
+      int abool;
+
+      buf = p = unescape_status_string (line);
+      if (buf)
+        {
+          for (p = strtok (buf, " "); p; p = strtok (NULL, " "))
+            {
+              p2 = strchr (p, '=');
+              if (p2)
+                {
+                  *p2++ = 0;
+                  abool = (*p2 == '1');
+                  if (!strcmp (p, "ki"))
+                    parm->extcap.ki = abool;
+                  else if (!strcmp (p, "aac"))
+                    parm->extcap.aac = abool;
+                }
+            }
+          xfree (buf);
+        }
+    }
   else if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
     {
       int no = atoi (line);
@@ -379,6 +403,20 @@ learn_status_cb (void *opaque, const char *line)
         parm->fpr2valid = unhexify_fpr (line, parm->fpr2);
       else if (no == 3)
         parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
+    }
+  else if (keywordlen == 8 && !memcmp (keyword, "KEY-TIME", keywordlen))
+    {
+      int no = atoi (line);
+      while (* line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (no == 1)
+        parm->fpr1time = strtoul (line, NULL, 10);
+      else if (no == 2)
+        parm->fpr2time = strtoul (line, NULL, 10);
+      else if (no == 3)
+        parm->fpr3time = strtoul (line, NULL, 10);
     }
   else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
     {

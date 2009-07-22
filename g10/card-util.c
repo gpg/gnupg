@@ -1156,6 +1156,8 @@ get_info_for_key_operation (struct agent_card_info_s *info)
     rc = agent_scd_getattr ("CHV-STATUS", info);
   if (!rc)
     rc = agent_scd_getattr ("DISP-NAME", info);
+  if (!rc)
+    rc = agent_scd_getattr ("EXTCAP", info);
   if (rc)
     log_error (_("error getting current key info: %s\n"), gpg_strerror (rc));
   return rc;
@@ -1261,21 +1263,27 @@ generate_card_keys (void)
   if (get_info_for_key_operation (&info))
     return;
 
+  if (info.extcap.ki)
+    {
 #if GNUPG_MAJOR_VERSION == 1
-  {
-    char *answer=cpr_get("cardedit.genkeys.backup_enc",
-			 _("Make off-card backup of encryption key? (Y/n) "));
+      char *answer;
 
-    want_backup=answer_is_yes_no_default(answer,1);
-    cpr_kill_prompt();
-    xfree(answer);
-  }
+
+      answer = cpr_get ("cardedit.genkeys.backup_enc",
+                        _("Make off-card backup of encryption key? (Y/n) "));
+
+      want_backup=answer_is_yes_no_default(answer,1);
+      cpr_kill_prompt();
+      xfree(answer);
 #else
-  want_backup = cpr_get_answer_is_yes 
-                  ( "cardedit.genkeys.backup_enc",
+      want_backup = cpr_get_answer_is_yes 
+          ( "cardedit.genkeys.backup_enc",
                     _("Make off-card backup of encryption key? (Y/n) "));
   /*FIXME: we need answer_is_yes_no_default()*/
 #endif
+    }
+  else
+    want_backup = 0;
 
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
        || (info.fpr2valid && !fpr_is_zero (info.fpr2))
@@ -1383,6 +1391,8 @@ card_store_subkey (KBNODE node, int use)
   size_t n;
   const char *s;
   int allow_keyno[3];
+  unsigned int nbits;
+
 
   assert (node->pkt->pkttype == PKT_SECRET_KEY
           || node->pkt->pkttype == PKT_SECRET_SUBKEY);
@@ -1391,10 +1401,18 @@ card_store_subkey (KBNODE node, int use)
   if (get_info_for_key_operation (&info))
     return 0;
 
+  if (!info.extcap.ki)
+    {
+      tty_printf ("The card does not support the import of keys\n");
+      tty_printf ("\n");
+      goto leave;
+    }
+
   show_card_key_info (&info);
 
-  if (!is_RSA (sk->pubkey_algo) 
-      || (!info.is_v2 && nbits_from_sk (sk) != 1024) )
+  nbits = nbits_from_sk (sk);
+
+  if (!is_RSA (sk->pubkey_algo) || (!info.is_v2 && nbits != 1024) )
     {
       tty_printf ("You may only store a 1024 bit RSA key on the card\n");
       tty_printf ("\n");
@@ -1427,8 +1445,17 @@ card_store_subkey (KBNODE node, int use)
       keyno = *answer? atoi(answer): 0;
       xfree(answer);
       if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1])
-        break; /* Okay. */
-      tty_printf(_("Invalid selection.\n"));
+        {
+          if (info.is_v2 && !info.extcap.aac 
+              && info.key_attr[keyno-1].nbits != nbits)
+            {
+              tty_printf ("Key does not match the card's capability.\n");
+            }
+          else
+            break; /* Okay. */
+        }
+      else
+        tty_printf(_("Invalid selection.\n"));
     }
 
   if (replace_existing_key_p (&info, keyno))

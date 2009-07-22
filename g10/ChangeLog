@@ -1,5 +1,11 @@
 2009-07-22  Werner Koch  <wk@g10code.com>
 
+	* card-util.c (generate_card_keys): Ask for off-card keys only if
+	the card supports it.
+	(get_info_for_key_operation): Read EXTCAP.
+	(card_store_subkey): Check for non matching sizes.
+
+	* call-agent.h (struct agent_card_info_s): Add field EXTCAP.
 	* call-agent.c (agent_learn): Use a direct SCD command.
 	(did_early_card_test): New.
 	(start_agent): Perform an early test for the card.  Add arg FOR_CARD.
@@ -7,6 +13,7 @@
 	(agent_scd_setattr, agent_scd_writekey, agent_scd_genkey)
 	(agent_scd_pksign, agent_scd_pkdecrypt, agent_scd_change_pin)
 	(agent_scd_checkpin): Call new function.
+	(learn_status_cb): Parse KEY_TIME and EXTCAP.
 
 	* gpg.c (main) <aFixTrustDB>: Show commands to run.
 	* trustdb.c (how_to_fix_the_trustdb): New.
