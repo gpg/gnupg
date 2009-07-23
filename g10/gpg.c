@@ -3343,8 +3343,8 @@ main (int argc, char **argv )
       case aGenRandom:
       case aDeArmor:
       case aEnArmor:
-      case aFixTrustDB:
 	break;
+      case aFixTrustDB:
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = setup_trustdb(1, trustdb_name ); break;
@@ -3874,9 +3874,7 @@ main (int argc, char **argv )
 	break;
 
       case aFixTrustDB:
-	log_error("this command is not yet implemented.\n");
-	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
-	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
+        how_to_fix_the_trustdb ();
 	break;
 
       case aListTrustPath:

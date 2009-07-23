@@ -69,6 +69,10 @@ struct agent_card_info_s {
     int algo;              /* Algorithm identifier.  */
     unsigned int nbits;    /* Supported keysize.  */
   } key_attr[3];      
+  struct {
+    unsigned int ki:1;     /* Key import available.  */
+    unsigned int aac:1;    /* Algorithm attributes are changeable.  */
+  } extcap;
 };
 
 struct agent_card_genkey_s {

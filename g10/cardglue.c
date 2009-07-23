@@ -1,5 +1,5 @@
 /* cardglue.c - mainly dispatcher for card related functions.
- * Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -382,7 +382,7 @@ open_card_via_agent (int *scd_available)
   if (!ctx)
     return NULL;
 
-  /* Request the serialbnumber of the card.  If we get
+  /* Request the serialnumber of the card.  If we get
      NOT_SUPPORTED or NO_SCDAEMON back, the gpg-agent either has
      disabled scdaemon or it can't be used.  We close the connection
      in this case and use our own code.  This may happen if just the
@@ -438,7 +438,7 @@ open_card (void)
       if (app)
         goto ready; /* Yes, there is a agent with a usable card, go that way. */
       if (scd_available)
-        return NULL; /* agent avilabale but card problem. */
+        return NULL; /* Agent available but card problem. */
     }
 
 
@@ -770,6 +770,30 @@ learn_status_cb (void *opaque, const char *line)
           xfree (buf);
         }
     }
+  else if (keywordlen == 6 && !memcmp (keyword, "EXTCAP", keywordlen))
+    {
+      char *p, *p2, *buf;
+      int abool;
+
+      buf = p = unescape_status_string (line);
+      if (buf)
+        {
+          for (p = strtok (buf, " "); p; p = strtok (NULL, " "))
+            {
+              p2 = strchr (p, '=');
+              if (p2)
+                {
+                  *p2++ = 0;
+                  abool = (*p2 == '1');
+                  if (!strcmp (p, "ki"))
+                    parm->extcap.ki = abool;
+                  else if (!strcmp (p, "aac"))
+                    parm->extcap.aac = abool;
+                }
+            }
+          xfree (buf);
+        }
+    }
   else if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
     {
       int no = atoi (line);
@@ -875,6 +899,9 @@ agent_learn (struct agent_card_info_s *info)
           rc = app->fnc.learn_status (app, &ctrl, 0);
         }
     }
+
+  if (!rc)
+    agent_scd_getattr ("KEY-ATTR", info);
 
   return rc;
 }
