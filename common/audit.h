@@ -139,6 +139,9 @@ typedef enum
     /* Tells whether the root certificate is trusted.  This event is
        emmited durcing chain validation.  */
 
+    AUDIT_CRL_CHECK, /* err */
+    /* Tells the status of a CRL or OCSP check.  */
+
     AUDIT_GOT_RECIPIENTS,  /* int */
     /* Records the number of recipients to be used for encryption.
        This includes the recipients set by --encrypt-to but records 0

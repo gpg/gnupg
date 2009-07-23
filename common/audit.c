@@ -251,8 +251,8 @@ audit_log (audit_ctx_t ctx, audit_event_t event)
 }
 
 /* Add a new event to the audit log.  If CTX is NULL, this function
-   does nothing.  This version also adds the result of the oepration
-   to the log.. */
+   does nothing.  This version also adds the result of the operation
+   to the log.  */
 void
 audit_log_ok (audit_ctx_t ctx, audit_event_t event, gpg_error_t err)
 {
@@ -479,6 +479,8 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
         oktext = _("|audit-log-result|Not supported");
       else if (!strcmp (oktext, "no-cert"))
         oktext = _("|audit-log-result|No certificate");
+      else if (!strcmp (oktext, "disabled"))
+        oktext = _("|audit-log-result|Not enabled");
       else if (!strcmp (oktext, "error"))
         oktext = _("|audit-log-result|Error");
       else
@@ -923,9 +925,31 @@ proc_type_verify (audit_ctx_t ctx)
         }
 
       /* Show result of the CRL/OCSP check.  */
-      writeout_li (ctx, "-", "%s", _("CRL/OCSP check of certificates"));
- /*      add_helptag (ctx, "gpgsm.ocsp-problem"); */
-
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_CRL_CHECK, AUDIT_NEW_SIG);
+      if (item)
+        {
+          const char *ok;
+          switch (gpg_err_code (item->err))
+            {
+            case 0:                    ok = "good"; break;
+            case GPG_ERR_CERT_REVOKED: ok = "bad"; break;
+            case GPG_ERR_NOT_ENABLED:  ok = "disabled"; break;
+            case GPG_ERR_NO_CRL_KNOWN:
+              ok = _("no CRL found for certificate");
+              break;
+            case GPG_ERR_CRL_TOO_OLD:
+              ok = _("the available CRL is too old");
+              break;
+            default: ok = gpg_strerror (item->err); break;
+            }
+            
+          writeout_li (ctx, ok, "%s", _("CRL/OCSP check of certificates"));
+          if (item->err 
+              && gpg_err_code (item->err) != GPG_ERR_CERT_REVOKED
+              && gpg_err_code (item->err) != GPG_ERR_NOT_ENABLED)
+            add_helptag (ctx, "gpgsm.crl-problem");
+        }
 
       leave_li (ctx);
     }

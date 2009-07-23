@@ -889,11 +889,17 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
   gpg_error_t err;
 
   if (opt.no_crl_check && !ctrl->use_ocsp)
-    return 0;
+    {
+      audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, 
+                    gpg_error (GPG_ERR_NOT_ENABLED));
+      return 0;
+    }
 
   err = gpgsm_dirmngr_isvalid (ctrl,
                                subject_cert, issuer_cert, 
                                force_ocsp? 2 : !!ctrl->use_ocsp);
+  audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, err);
+
   if (err)
     {
       if (!lm)

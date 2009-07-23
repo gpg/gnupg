@@ -1759,7 +1759,7 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 }
 
 
-/* Ask for the key size.  ALGO is the algorithjm.  If PRIMARY_KEYSIZE
+/* Ask for the key size.  ALGO is the algorithm.  If PRIMARY_KEYSIZE
    is not 0, the function asks for the size of the encryption
    subkey. */
 static unsigned

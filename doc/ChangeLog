@@ -1,3 +1,7 @@
+2009-07-23  Werner Koch  <wk@g10code.com>
+
+	* help.txt (gpgsm.crl-problem): New.
+
 2009-07-22  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.texi, instguide.texi, gpgsm.texi, sysnotes.texi

@@ -628,12 +628,12 @@ more arguments in future versions.
         This is used to control smartcard operations.
         Defined values for WHAT are:
            1 = Request insertion of a card.  Serialnumber may be given
-               to request a specific card.
-           2 = Request removal of a card.
+               to request a specific card.  Used by gpg 1.4 w/o scdaemon.
+           2 = Request removal of a card.  Used by gpg 1.4 w/o scdaemon.
            3 = Card with serialnumber detected
            4 = No card available.
            5 = No card reader available
-
+           6 = No card support available                      
 
     PLAINTEXT <format> <timestamp> <filename>
         This indicates the format of the plaintext that is about to be

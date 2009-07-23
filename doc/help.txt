@@ -357,7 +357,13 @@ trustlist.txt in GnuPG's home directory.  If you are in doubt, ask
 your system administrator whether you should trust this certificate.
 
 
-
+.gpgsm.crl-problem
+# This tex is displayed by the audit log for problems with
+# the CRL or OCSP checking.
+Depending on your configuration a problem retrieving the CRL or
+performing an OCSP check occurred.  There are a great variety of
+reasons why this did not work.  Check the manual for possible
+solutions.
 
 
 # Local variables:
