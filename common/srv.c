@@ -59,6 +59,7 @@ getsrv(const char *name,struct srventry **list)
   int r,srvcount=0;
   unsigned char *pt,*emsg;
   u16 count,dlen;
+  HEADER *header=(HEADER *)answer;
 
   *list=NULL;
 
@@ -66,8 +67,7 @@ getsrv(const char *name,struct srventry **list)
   if(r<sizeof(HEADER) || r>2048)
     return -1;
 
-  if((((HEADER *)answer)->rcode)==NOERROR &&
-     (count=ntohs(((HEADER *)answer)->ancount)))
+  if(header->rcode==NOERROR && (count=ntohs(header->ancount)))
     {
       int i,rc;
 
