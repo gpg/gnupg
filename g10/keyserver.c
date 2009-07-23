@@ -42,6 +42,9 @@
 #include "util.h"
 #include "dns-cert.h"
 #include "pka.h"
+#ifdef USE_DNS_SRV
+#include "srv.h"
+#endif
 
 #ifdef HAVE_W32_SYSTEM
 /* It seems Vista doesn't grok X_OK and so fails access() tests.
@@ -2125,17 +2128,19 @@ keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
   return rc;
 }
 
-/* Use the PGP Universal trick of asking ldap://keys.(maildomain) for
-   the key. */
+/* Import a key by name using LDAP */
 int
 keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain;
   struct keyserver_spec *keyserver;
   strlist_t list=NULL;
-  int rc;
-
-  append_to_strlist(&list,name);
+  int rc,hostlen=1;
+#ifdef USE_DNS_SRV
+  struct srventry *srvlist=NULL;
+  int srvcount,i;
+  char srvname[MAXDNAME];
+#endif
 
   /* Parse out the domain */
   domain=strrchr(name,'@');
@@ -2145,16 +2150,48 @@ keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
   domain++;
 
   keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
-
   keyserver->scheme=xstrdup("ldap");
-  keyserver->host=xmalloc(5+strlen(domain)+1);
-  strcpy(keyserver->host,"keys.");
+  keyserver->host=xmalloc(1);
+  keyserver->host[0]='\0';
+
+#ifdef USE_DNS_SRV
+  snprintf(srvname,MAXDNAME,"_pgpkey-ldap._tcp.%s",domain);
+
+  srvcount=getsrv(srvname,&srvlist);
+
+  for(i=0;i<srvcount;i++)
+    {
+      hostlen+=strlen(srvlist[i].target)+1;
+      keyserver->host=xrealloc(keyserver->host,hostlen);
+
+      strcat(keyserver->host,srvlist[i].target);
+
+      if(srvlist[i].port!=389)
+	{
+	  char port[7];
+
+	  hostlen+=6; /* a colon, plus 5 digits (unsigned 16-bit value) */
+	  keyserver->host=xrealloc(keyserver->host,hostlen);
+
+	  snprintf(port,7,":%u",srvlist[i].port);
+	  strcat(keyserver->host,port);
+	}
+	
+      strcat(keyserver->host," ");
+    }
+
+  free(srvlist);
+#endif
+
+  /* If all else fails, do the PGP Universal trick of
+     ldap://keys.(domain) */
+
+  hostlen+=5+strlen(domain);
+  keyserver->host=xrealloc(keyserver->host,hostlen);
+  strcat(keyserver->host,"keys.");
   strcat(keyserver->host,domain);
-  keyserver->uri=xmalloc(strlen(keyserver->scheme)+
-			 3+strlen(keyserver->host)+1);
-  strcpy(keyserver->uri,keyserver->scheme);
-  strcat(keyserver->uri,"://");
-  strcat(keyserver->uri,keyserver->host);
+
+  append_to_strlist(&list,name);
     
   rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
 

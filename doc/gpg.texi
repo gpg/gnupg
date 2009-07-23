@@ -1376,8 +1376,9 @@ Locate a key using DNS CERT, as specified in rfc4398.
 Locate a key using DNS PKA.
 
 @item ldap
-Locate a key using the PGP Universal method of checking
-@samp{ldap://keys.(thedomain)}.
+Using DNS Service Discovery, check the domain in question for any LDAP
+keyservers to use.  If this fails, attempt to locate the key using the
+PGP Universal method of checking @samp{ldap://keys.(thedomain)}.
 
 @item keyserver
 Locate a key using whatever keyserver is defined using the
