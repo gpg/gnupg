@@ -58,6 +58,7 @@ getsrv(const char *name,struct srventry **list)
   int r,srvcount=0;
   unsigned char *pt,*emsg;
   u16 count,dlen;
+  HEADER *header=(HEADER *)answer;
 
   *list=NULL;
 
@@ -65,8 +66,7 @@ getsrv(const char *name,struct srventry **list)
   if(r<sizeof(HEADER) || r>2048)
     return -1;
 
-  if((((HEADER *)answer)->rcode)==NOERROR &&
-     (count=ntohs(((HEADER *)answer)->ancount)))
+  if(header->rcode==NOERROR && (count=ntohs(header->ancount)))
     {
       int i,rc;
 
@@ -234,7 +234,14 @@ main(int argc,char *argv[])
   struct srventry *srv;
   int rc,i;
 
-  rc=getsrv("_hkp._tcp.wwwkeys.pgp.net",&srv);
+  if(argc!=2)
+    {
+      fprintf(stderr,"%s {srv}\n",argv[0]);
+      fprintf(stderr," Try %s _hkp._tcp.wwwkeys.pgp.net\n",argv[0]);
+      return 1;
+    }
+
+  rc=getsrv(argv[1],&srv);
   printf("Count=%d\n\n",rc);
   for(i=0;i<rc;i++)
     {
