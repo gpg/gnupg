@@ -286,6 +286,8 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
     es_putc ('S', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
     es_putc ('C', fp);
+
+  es_putc (':', fp);
 }
 
 
