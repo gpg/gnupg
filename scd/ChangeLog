@@ -1,3 +1,7 @@
+2009-07-29  Marcus Brinkmann  <marcus@g10code.com>
+
+	* ccid-driver.c (print_pr_data): Fix 64 bit compat problem.
+
 2009-07-24  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (parse_ccid_descriptor): Enable hack for SCR 3320.

@@ -413,7 +413,7 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
         {
           if (any)
             DEBUGOUT_LF ();
-          DEBUGOUT_1 ("  [%04d] ", off);
+          DEBUGOUT_1 ("  [%04lu] ", (unsigned long) off);
         }
       DEBUGOUT_CONT_1 (" %02X", data[off]);
       any = 1;
