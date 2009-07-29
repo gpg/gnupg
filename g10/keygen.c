@@ -298,7 +298,7 @@ keygen_set_std_prefs (const char *string,int personal)
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int nsym=0, nhash=0, nzip=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
-    char dummy_string[45+1]; /* Enough for 15 items. */
+    char dummy_string[20*4+1]; /* Enough for 20 items. */
 
     if (!string || !ascii_strcasecmp (string, "default"))
       {
@@ -342,14 +342,29 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
 	      strcat(dummy_string,"S1 ");
 
-	    /* SHA-1 */
-	    strcat(dummy_string,"H2 ");
 
-	    if(!check_digest_algo(DIGEST_ALGO_SHA256))
-	      strcat(dummy_string,"H8 ");
+            /* The default hash algo order is:
+                 SHA-256, SHA-1, SHA-384, SHA-512, SHA-224.
+               Ordering SHA-1 before SHA-384 might be viewed as a bit
+               strange; it is done because we expect that soon enough
+               SHA-3 will be available and at that point there should
+               be no more need for SHA-384 etc.  Anyway this order is
+               just a default and can easily be changed by a config
+               option.  */
+	    if (!check_digest_algo (DIGEST_ALGO_SHA256))
+	      strcat (dummy_string, "H8 ");
 
-	    /* RIPEMD160 */
-	    strcat(dummy_string,"H3 ");
+	    strcat (dummy_string,"H2 ");/* SHA-1 */
+
+	    if (!check_digest_algo (DIGEST_ALGO_SHA384))
+	      strcat (dummy_string, "H9 ");
+
+	    if (!check_digest_algo (DIGEST_ALGO_SHA512))
+	      strcat (dummy_string, "H10 ");
+
+	    if (!check_digest_algo (DIGEST_ALGO_SHA224))
+	      strcat (dummy_string, "H11 ");
+
 
 	    /* ZLIB */
 	    strcat(dummy_string,"Z2 ");
@@ -503,7 +518,8 @@ keygen_set_std_prefs (const char *string,int personal)
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */
-PKT_user_id *keygen_get_std_prefs(void)
+PKT_user_id *
+keygen_get_std_prefs (void)
 {
   int i,j=0;
   PKT_user_id *uid=xmalloc_clear(sizeof(PKT_user_id));
@@ -631,6 +647,8 @@ add_keyserver_modify (PKT_signature *sig,int enabled)
 int
 keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 {
+    (void)opaque;
+
     if (!prefs_initialized)
         keygen_set_std_prefs (NULL, 0);
 
@@ -1111,7 +1129,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI *factors;
     unsigned int qbits;
 
-    if( nbits < 512 || (!opt.flags.dsa2 && nbits > 1024))
+    if( nbits < 512)
       {
 	nbits = 1024;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
@@ -1128,6 +1146,14 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_info(_("keysize rounded up to %u bits\n"), nbits );
       }
 
+    /* To comply with FIPS rules we round up to the next value unless
+       in expert mode.  */
+    if (!opt.expert && nbits > 1024 && (nbits % 1024))
+      {
+        nbits = ((nbits + 1023) / 1024) * 1024;
+        log_info (_("keysize rounded up to %u bits\n"), nbits );
+      }
+
     /*
       Figure out a q size based on the key size.  FIPS 180-3 says:
 
@@ -1139,11 +1165,11 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
       2048/256 is an odd pair since there is also a 2048/224 and
       3072/256.  Matching sizes is not a very exact science.
       
-      We'll do 256 qbits for nbits over 2048, 224 for nbits over 1024
+      We'll do 256 qbits for nbits over 2047, 224 for nbits over 1024
       but less than 2048, and 160 for 1024 (DSA1).
     */
 
-    if(nbits>2048)
+    if(nbits>2047)
       qbits=256;
     else if(nbits>1024)
       qbits=224;
@@ -1446,101 +1472,139 @@ ask_key_flags(int algo,int subkey)
 }
 
 
-/****************
- * Returns: 0 to create both a DSA and a Elgamal key.
- *          and only if key flags are to be written the desired usage.
- */
+/* Ask for an algorithm.  The function returns the algorithm id to
+   create.  If ADDMODE is false the function won't show an option to
+   create the primary and subkey combined and won't set R_USAGE
+   either.  If a combined algorithm has been selected, the subkey
+   algorithm is stored at R_SUBKEY_ALGO.  */
 static int
-ask_algo (int addmode, unsigned int *r_usage)
+ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 {
-    char *answer;
-    int algo;
+  char *answer;
+  int algo;
+  int dummy_algo;
+  
+  if (!r_subkey_algo)
+    r_subkey_algo = &dummy_algo;
+  
+  tty_printf(_("Please select what kind of key you want:\n"));
+  if (!addmode)
+    tty_printf (_("   (%d) RSA and RSA (default)\n"), 1 );
+  if ( !addmode )
+    tty_printf (_("   (%d) DSA and Elgamal\n"), 2 );
 
-    *r_usage = 0;
-    tty_printf(_("Please select what kind of key you want:\n"));
-    if( !addmode )
-	tty_printf(_("   (%d) DSA and Elgamal (default)\n"), 1 );
-    tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
-    if (opt.expert)
-      tty_printf(  _("   (%d) DSA (set your own capabilities)\n"), 3 );
-    if( addmode )
-	tty_printf(_("   (%d) Elgamal (encrypt only)\n"), 4 );
-    tty_printf(    _("   (%d) RSA (sign only)\n"), 5 );
-    if (addmode)
-        tty_printf(_("   (%d) RSA (encrypt only)\n"), 6 );
-    if (opt.expert)
-      tty_printf(  _("   (%d) RSA (set your own capabilities)\n"), 7 );
+  tty_printf(    _("   (%d) DSA (sign only)\n"), 3 );
+  tty_printf(    _("   (%d) RSA (sign only)\n"), 4 );
 
-    for(;;) {
-	answer = cpr_get("keygen.algo",_("Your selection? "));
-	cpr_kill_prompt();
-	algo = *answer? atoi(answer): 1;
-	xfree(answer);
-	if( algo == 1 && !addmode ) {
-	    algo = 0;	/* create both keys */
-	    break;
-	}
-	else if( algo == 7 && opt.expert ) {
-	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage=ask_key_flags(algo,addmode);
-	    break;
-	}
-	else if( algo == 6 && addmode ) {
-	    algo = PUBKEY_ALGO_RSA;
-            *r_usage = PUBKEY_USAGE_ENC;
-	    break;
-	}
-	else if( algo == 5 ) {
-	    algo = PUBKEY_ALGO_RSA;
-            *r_usage = PUBKEY_USAGE_SIG;
-	    break;
-	}
-	else if( algo == 4 && addmode ) {
-	    algo = PUBKEY_ALGO_ELGAMAL_E;
-            *r_usage = PUBKEY_USAGE_ENC;
-	    break;
-	}
-	else if( algo == 3 && opt.expert ) {
-	    algo = PUBKEY_ALGO_DSA;
-	    *r_usage=ask_key_flags(algo,addmode);
-	    break;
-	}
-	else if( algo == 2 ) {
-	    algo = PUBKEY_ALGO_DSA;
-            *r_usage = PUBKEY_USAGE_SIG;
-	    break;
-	}
-	else
-	    tty_printf(_("Invalid selection.\n"));
+  if (addmode)
+    {
+      tty_printf (_("   (%d) Elgamal (encrypt only)\n"), 5 );
+      tty_printf (_("   (%d) RSA (encrypt only)\n"), 6 );
+    }
+  if (opt.expert)
+    {
+      tty_printf (_("   (%d) DSA (set your own capabilities)\n"), 7 );
+      tty_printf (_("   (%d) RSA (set your own capabilities)\n"), 8 );
     }
 
-    return algo;
+  for (;;) 
+    {
+      *r_usage = 0;
+      *r_subkey_algo = 0;
+      answer = cpr_get ("keygen.algo", _("Your selection? "));
+      cpr_kill_prompt ();
+      algo = *answer? atoi(answer): 1;
+      xfree (answer);
+      if ( algo == 1 && !addmode )
+        {
+          algo = PUBKEY_ALGO_RSA;
+          *r_subkey_algo = PUBKEY_ALGO_RSA;
+          break;
+	}
+      else if (algo == 2 && !addmode)
+        {
+          algo = PUBKEY_ALGO_DSA;
+          *r_subkey_algo = PUBKEY_ALGO_ELGAMAL_E;
+          break;
+	}
+      else if (algo == 3)
+        {
+          algo = PUBKEY_ALGO_DSA;
+          *r_usage = PUBKEY_USAGE_SIG;
+          break;
+	}
+      else if (algo == 4)
+        {
+          algo = PUBKEY_ALGO_RSA;
+          *r_usage = PUBKEY_USAGE_SIG;
+          break;
+	}
+      else if (algo == 5 && addmode)
+        {
+          algo = PUBKEY_ALGO_ELGAMAL_E;
+          *r_usage = PUBKEY_USAGE_ENC;
+          break;
+	}
+      else if (algo == 6 && addmode)
+        {
+          algo = PUBKEY_ALGO_RSA;
+          *r_usage = PUBKEY_USAGE_ENC;
+          break;
+	}
+      else if (algo == 7 && opt.expert)
+        {
+          algo = PUBKEY_ALGO_DSA;
+          *r_usage = ask_key_flags (algo, addmode);
+          break;
+	}
+      else if (algo == 8 && opt.expert)
+        {
+          algo = PUBKEY_ALGO_RSA;
+          *r_usage = ask_key_flags (algo, addmode);
+          break;
+	}
+      else
+        tty_printf (_("Invalid selection.\n"));
+    }
+  
+  return algo;
 }
 
 
-static unsigned
-ask_keysize( int algo )
+/* Ask for the key size.  ALGO is the algorithm.  If PRIMARY_KEYSIZE
+   is not 0, the function asks for the size of the encryption
+   subkey.  */
+static unsigned int
+ask_keysize (int algo, unsigned int primary_keysize)
 {
-  unsigned nbits,min,def=2048,max=4096;
+  unsigned nbits, min, def=2048, max=4096;
+  int for_subkey = !!primary_keysize;
+  int autocomp = 0;
 
   if(opt.expert)
     min=512;
   else
     min=1024;
 
+  if (primary_keysize && !opt.expert)
+    {
+      /* Deduce the subkey size from the primary key size.  */
+      if (algo == PUBKEY_ALGO_DSA && primary_keysize > 3072)
+        nbits = 3072; /* For performance reasons we don't support more
+                         than 3072 bit DSA.  However we won't see this
+                         case anyway because DSA can't be used as an
+                         encryption subkey ;-). */
+      else
+        nbits = primary_keysize;
+      autocomp = 1;
+      goto leave;
+    }
+
   switch(algo)
     {
     case PUBKEY_ALGO_DSA:
-      if(opt.flags.dsa2)
-	{
-	  def=1024;
-	  max=3072;
-	}
-      else
-	{
-	  tty_printf(_("DSA keypair will have %u bits.\n"),1024);
-	  return 1024;
-	}
+      def=2048;
+      max=3072;
       break;
 
     case PUBKEY_ALGO_RSA:
@@ -1555,12 +1619,11 @@ ask_keysize( int algo )
     {
       char *prompt,*answer;
 
-#define PROMPTSTRING _("What keysize do you want? (%u) ")
-
-      prompt=xmalloc(strlen(PROMPTSTRING)+20);
-      sprintf(prompt,PROMPTSTRING,def);
-
-#undef PROMPTSTRING
+      if (for_subkey)
+        prompt = xasprintf (_("What keysize do you want "
+                              "for the subkey? (%u) "), def);
+      else
+        prompt = xasprintf (_("What keysize do you want? (%u) "), def);
 
       answer = cpr_get("keygen.size",prompt);
       cpr_kill_prompt();
@@ -1577,15 +1640,18 @@ ask_keysize( int algo )
 
   tty_printf(_("Requested keysize is %u bits\n"), nbits );
 
+ leave:
   if( algo == PUBKEY_ALGO_DSA && (nbits % 64) )
     {
       nbits = ((nbits + 63) / 64) * 64;
-      tty_printf(_("rounded up to %u bits\n"), nbits );
+      if (!autocomp)
+        tty_printf (_("rounded up to %u bits\n"), nbits);
     }
   else if( (nbits % 32) )
     {
       nbits = ((nbits + 31) / 32) * 32;
-      tty_printf(_("rounded up to %u bits\n"), nbits );
+      if (!autocomp)
+        tty_printf (_("rounded up to %u bits\n"), nbits);
     }
 
   return nbits;
@@ -2748,16 +2814,19 @@ generate_keypair (const char *fname, const char *card_serialno,
     }
   else
     {
-      algo = ask_algo( 0, &use );
-      if( !algo )
-        { /* default: DSA with ElG subkey of the specified size */
+      int subkey_algo;
+
+      algo = ask_algo (0, &subkey_algo, &use );
+      if (subkey_algo)
+        { 
+          /* Create primary and subkey at once.  */
           both = 1;
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYTYPE;
-          sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+          sprintf (r->u.value, "%d", algo);
           r->next = para;
           para = r;
-	  nbits = ask_keysize( PUBKEY_ALGO_DSA );
+	  nbits = ask_keysize (algo, 0);
 	  r = xmalloc_clear( sizeof *r + 20 );
 	  r->key = pKEYLENGTH;
 	  sprintf( r->u.value, "%u", nbits);
@@ -2769,10 +2838,9 @@ generate_keypair (const char *fname, const char *card_serialno,
           r->next = para;
           para = r;
            
-          algo = PUBKEY_ALGO_ELGAMAL_E;
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pSUBKEYTYPE;
-          sprintf( r->u.value, "%d", algo );
+          sprintf( r->u.value, "%d", subkey_algo );
           r->next = para;
           para = r;
           r = xmalloc_clear( sizeof *r + 20 );
@@ -2800,10 +2868,10 @@ generate_keypair (const char *fname, const char *card_serialno,
               r->next = para;
               para = r;
             }
-           
+          nbits = 0;
         }
 
-      nbits = ask_keysize( algo );
+      nbits = ask_keysize (both? subkey_algo : algo, nbits);
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
       sprintf( r->u.value, "%u", nbits);
@@ -3357,9 +3425,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( rc )
 	goto leave;
 
-    algo = ask_algo( 1, &use );
+    algo = ask_algo (1, NULL, &use);
     assert(algo);
-    nbits = ask_keysize( algo );
+    nbits = ask_keysize (algo, 0);
     expire = ask_expire_interval(timestamp,0,NULL);
     if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
 						  _("Really create? (y/N) ")))
