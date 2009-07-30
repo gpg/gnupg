@@ -88,6 +88,10 @@ hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
                 count = len2;
 	    }
 
+          /* Fixme: To avoid DoS attacks by sending an sym-encrypted
+             packet with a very high S2K count, we should either cap
+             the iteration count or CPU seconds based timeout.  */
+
           /* A little bit complicated because we need a ulong for count. */
           while ( count > len2 )  /* maybe iterated+salted */
             { 

@@ -875,13 +875,11 @@ learn_cb (void *opaque, const void *buffer, size_t length)
       return 0;
     }
 
+  /* We do not store a certifciate with missing issuers as ephemeral
+     because we can assume that the --learn-card command has been used
+     on purpose.  */
   rc = gpgsm_basic_cert_check (parm->ctrl, cert);
-  if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT)
-    { /* For later use we store it in the ephemeral database. */
-      log_info ("issuer certificate missing - storing as ephemeral\n");
-      keydb_store_cert (cert, 1, NULL);
-    }
-  else if (rc)
+  if (rc && gpg_err_code (rc) != GPG_ERR_MISSING_CERT)
     log_error ("invalid certificate: %s\n", gpg_strerror (rc));
   else
     {
