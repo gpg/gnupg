@@ -3112,6 +3112,7 @@ main (int argc, char **argv)
       }
     else if(PGP6)
       {
+	opt.disable_mdc=1;
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
