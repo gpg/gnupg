@@ -2062,9 +2062,9 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --no-sk-comment --escape-from-lines
---force-v3-sigs --cipher-algo IDEA --digest-algo MD5 --compress-algo
-ZIP}. It also disables @option{--textmode} when encrypting.
+--no-force-v4-certs --escape-from-lines --force-v3-sigs --cipher-algo
+IDEA --digest-algo MD5 --compress-algo ZIP}. It also disables
+@option{--textmode} when encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -2075,8 +2075,8 @@ compression algorithms none and ZIP. This also disables
 --throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-This option implies @option{--disable-mdc --no-sk-comment
---escape-from-lines --force-v3-sigs}.
+This option implies @option{--disable-mdc --escape-from-lines
+--force-v3-sigs}.
 
 @item --pgp7
 @opindex pgp7
