@@ -350,8 +350,7 @@ print_digest_algo_note( int algo )
 	}
     }
   else if(algo==DIGEST_ALGO_MD5)
-    log_info(_("WARNING: digest algorithm %s is deprecated\n"),
-	     digest_algo_to_string(algo));
+    md5_digest_warn (1);
 }
 
 /* Return a string which is used as a kind of process ID */
@@ -464,7 +463,41 @@ idea_cipher_warn(int show)
 }
 #endif
 
-static unsigned long get_signature_count(PKT_secret_key *sk)
+/* Print a warning if the md5 digest algorithm has been used.  This
+   warning is printed only once unless SHOW is used. */
+void
+md5_digest_warn (int show)
+{
+  static int warned = 0;
+
+  if (!warned || show)
+    {
+      log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+                digest_algo_to_string (DIGEST_ALGO_MD5));
+      log_info (_("please see %s for more information\n"),
+                "http://www.gnupg.org/faq/weak-digest-algos.html");
+      warned = 1;
+    }
+}
+
+
+void
+not_in_gpg1_notice (void)
+{
+  static int warned = 0;
+
+  if (!warned)
+    {
+      log_info (_("NOTE: This feature is not available in %s\n"), "GnuPG 1.x");
+      log_info (_("please see %s for more information\n"),
+                "http://www.gnupg.org/faq/features-not-in-gnupg-1.html");
+      warned = 1;
+    }
+}
+
+
+static unsigned long 
+get_signature_count(PKT_secret_key *sk)
 {
 #ifdef ENABLE_CARD_SUPPORT
   if(sk && sk->is_protected && sk->protect.s2k.mode==1002)

@@ -1,3 +1,19 @@
+2009-08-03  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (generate_card_keys): Ask for off-card keys only if
+	the card supports it.
+	(get_info_for_key_operation): Read EXTCAP.
+	(card_store_subkey): Check for non matching sizes.
+
+	* cardglue.c (agent_scd_writecert, agent_scd_readcert): New stubs.
+	* misc.c (not_in_gpg1_notice): New.
+
+2009-07-30  Werner Koch  <wk@g10code.com>
+
+	* misc.c (md5_digest_warn): New.
+	(print_digest_algo_note): Divert to new function.
+	* sig-check.c (do_check): Print MD5 warning.
+
 2009-07-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main): --pgp6 includes --disable-mdc.

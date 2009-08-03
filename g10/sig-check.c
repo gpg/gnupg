@@ -318,6 +318,12 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	mpi_free(result);
       }
 
+    /* Print the MD5 warning if not yet done.  Thus at most we get one
+       warning during signature checking.  Note that while validating
+       a key we might have already checked MD5 key signatures.  */
+    if (sig->digest_algo == DIGEST_ALGO_MD5)
+      md5_digest_warn (0);  
+
     if( !rc && sig->flags.unknown_critical )
       {
 	log_info(_("assuming bad signature from key %s"

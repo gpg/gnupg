@@ -230,6 +230,13 @@ int agent_scd_checkpin (const char *serialnobuf);
 void agent_clear_pin_cache (const char *sn);
 
 
+/* Dummy functions.  */
+int agent_scd_writecert (const char *certidstr,
+                         const unsigned char *certdata, size_t certdatalen);
+int agent_scd_readcert (const char *certidstr,
+                        void **r_buf, size_t *r_buflen);
+
+
 #endif /*ENABLE_CARD_SUPPORT*/
 #endif /*GNUPG_G10_CARDGLUE_H*/
 

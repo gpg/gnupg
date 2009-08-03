@@ -1527,3 +1527,26 @@ agent_clear_pin_cache (const char *sn)
       xfree (cacheid);
     }
 }
+
+
+int 
+agent_scd_writecert (const char *certidstr,
+                     const unsigned char *certdata, size_t certdatalen)
+{
+  /* It does not make sense to implement this rarely used and mainly
+     interactive command in GPG-1.  GPG-2 is better suited for this.  */ 
+  not_in_gpg1_notice ();
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}
+
+
+int 
+agent_scd_readcert (const char *certidstr,
+                    void **r_buf, size_t *r_buflen)
+{
+  /* It does not make sense to implement this rarely used and mainly
+     interactive command in GPG-1.  GPG-2 is better suited for this.  */ 
+  *r_buf = NULL;
+  not_in_gpg1_notice ();
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+}

@@ -91,6 +91,10 @@ void idea_cipher_warn( int show );
 #define idea_cipher_warn(a)
 #endif
 
+void md5_digest_warn (int show);
+
+void not_in_gpg1_notice (void);
+
 struct expando_args
 {
   PKT_public_key *pk;
