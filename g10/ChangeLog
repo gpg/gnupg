@@ -1,3 +1,16 @@
+2009-08-05  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Add --key-edit alias.
+
+	* call-agent.c (scd_genkey_cb): Forward progress status lines.
+
+	* card-util.c (generate_card_keys): Remove special case for
+	GnuPG-2.  Ask for the keysize and change it.
+	(card_generate_subkey): Ask for the keysize and change it.
+	(get_info_for_key_operation): Read KEY-ATTR.
+	(show_keysize_warning, ask_card_keysize): New.
+	(do_change_keysize): New.
+
 2009-07-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.c (main): --pgp6 includes --disable-mdc.

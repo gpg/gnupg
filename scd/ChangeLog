@@ -1,3 +1,8 @@
+2009-08-05  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (change_keyattr_from_string): New.
+	(do_setattr): Support KEY-ATTR.
+
 2009-07-29  Marcus Brinkmann  <marcus@g10code.com>
 
 	* ccid-driver.c (print_pr_data): Fix 64 bit compat problem.

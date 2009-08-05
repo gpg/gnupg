@@ -24,8 +24,12 @@
 #include "i18n.h"
 #include "util.h"
 
+
+/* Check the string S for a YES or NO answer and take care of
+   localization.  If no valid string is given the value of DEF_ANSWER
+   is returned.  Returns 1 for yes and 0 for no.  */
 int
-answer_is_yes_no_default( const char *s, int def_answer )
+answer_is_yes_no_default (const char *s, int def_answer)
 {
   /* TRANSLATORS: See doc/TRANSLATE about this string. */
   const char *long_yes = _("yes");

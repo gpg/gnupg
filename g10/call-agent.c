@@ -667,7 +667,7 @@ scd_genkey_cb (void *opaque, const char *line)
     {
       parm->fprvalid = unhexify_fpr (line, parm->fpr);
     }
-  if (keywordlen == 8 && !memcmp (keyword, "KEY-DATA", keywordlen))
+  else if (keywordlen == 8 && !memcmp (keyword, "KEY-DATA", keywordlen))
     {
       gcry_mpi_t a;
       const char *name = line;
@@ -693,6 +693,10 @@ scd_genkey_cb (void *opaque, const char *line)
   else if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
     {
       parm->created_at = (u32)strtoul (line, NULL, 10);
+    }
+  else if (keywordlen == 8 && !memcmp (keyword, "PROGRESS", keywordlen))
+    {
+      write_status_text (STATUS_PROGRESS, line);
     }
 
   return 0;

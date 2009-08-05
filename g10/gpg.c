@@ -394,6 +394,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aSignKey,  "sign-key"   ,N_("sign a key")),
   ARGPARSE_c (aLSignKey, "lsign-key"  ,N_("sign a key locally")),
   ARGPARSE_c (aEditKey,  "edit-key"   ,N_("sign or edit a key")),
+  ARGPARSE_c (aEditKey,  "key-edit"   ,"@"),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
   ARGPARSE_c (aDesigRevoke, "desig-revoke","@" ),
   ARGPARSE_c (aExport, "export"           , N_("export keys") ),
