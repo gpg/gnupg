@@ -23,6 +23,10 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef HAVE_LIBREADLINE
+# define GNUPG_LIBREADLINE_H_INCLUDED
+# include <readline/readline.h>
+#endif /*HAVE_LIBREADLINE*/
 
 #if GNUPG_MAJOR_VERSION != 1
 # include "gpg.h"
@@ -34,12 +38,8 @@
 #include "options.h"
 #include "main.h"
 #include "keyserver-internal.h"
+
 #if GNUPG_MAJOR_VERSION == 1
-# ifdef HAVE_LIBREADLINE
-# define GNUPG_LIBREADLINE_H_INCLUDED
-# include <stdio.h>
-# include <readline/readline.h>
-# endif /*HAVE_LIBREADLINE*/
 # include "cardglue.h"
 #else /*GNUPG_MAJOR_VERSION!=1*/
 # include "call-agent.h"
@@ -1704,7 +1704,7 @@ static struct
   };
 
 
-#if GNUPG_MAJOR_VERSION == 1 && defined (HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
 
 /* These two functions are used by readline for command completion. */
 
@@ -1737,6 +1737,7 @@ command_generator(const char *text,int state)
 static char **
 card_edit_completion(const char *text, int start, int end)
 {
+  (void)end;
   /* If we are at the start of a line, we try and command-complete.
      If not, just do nothing for now. */
 
@@ -1747,7 +1748,7 @@ card_edit_completion(const char *text, int start, int end)
 
   return NULL;
 }
-#endif /* GNUPG_MAJOR_VERSION == 1 && HAVE_LIBREADLINE */
+#endif /*HAVE_LIBREADLINE*/
 
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
@@ -1815,15 +1816,11 @@ card_edit (strlist_t commands)
 
 	    if (!have_commands)
               {
-#if GNUPG_MAJOR_VERSION == 1
 		tty_enable_completion (card_edit_completion);
-#endif
 		answer = cpr_get_no_help("cardedit.prompt", _("Command> "));
 		cpr_kill_prompt();
-#if GNUPG_MAJOR_VERSION == 1
 		tty_disable_completion ();
-#endif
-	    }
+              }
 	    trim_spaces(answer);
 	}
       while ( *answer == '#' );
