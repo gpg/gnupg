@@ -202,6 +202,12 @@ write_status_text_and_buffer ( int no, const char *string,
             if (first && string) {
                 fputs (string, statusfp);
                 count += strlen (string);
+                /* Make sure that there is space after the string.  */
+                if (*string && string[strlen (string)-1] != ' ')
+                  {
+                    putc (' ', statusfp);
+                    count++;
+                  }
             }
             first = 0;
         }

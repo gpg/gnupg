@@ -361,7 +361,7 @@ more arguments in future versions.
 
     KEYEXPIRED <expire-timestamp>
 	The key has expired.  expire-timestamp is the expiration time
-	in seconds sice Epoch.  This status line is not very useful
+	in seconds since Epoch.  This status line is not very useful
 	because it will also be emitted for expired subkeys even if
 	this subkey is not used.  To check whether a key used to sign
 	a message has expired, the EXPKEYSIG status line is to be
@@ -571,7 +571,8 @@ more arguments in future versions.
         Issued by pipemode.
 
     INV_RECP <reason> <requested_recipient>
-        Issued for each unusable recipient. The reasons codes
+    INV_SGNR <reason> <requested_sender>
+        Issued for each unusable recipient/sender. The reasons codes
         currently in use are:
           0 := "No specific reason given".
           1 := "Not Found"
@@ -584,13 +585,20 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
-         11 := "Missing certifciate"  (e.g. intermediate or root cert.)
+         11 := "Missing certificate"  (e.g. intermediate or root cert.)
 
-        Note that this status is also used for gpgsm's SIGNER command
-        where it relates to signer's of course.
+        Note that for historical reasons the INV_RECP status is also
+        used for gpgsm's SIGNER command where it relates to signer's
+        of course.  Newer GnuPG versions are using INV_SGNR;
+        applications should ignore the INV_RECP during the sender's
+        command processing once they have seen an INV_SGNR.  We use
+        different code so that we can distinguish them while doing an
+        encrypt+sign.
+
 
     NO_RECP <reserved>
-        Issued when no recipients are usable.
+    NO_SGNR <reserved>
+        Issued when no recipients/senders are usable.
 
     ALREADY_SIGNED <long-keyid>
         Warning: This is experimental and might be removed at any time.

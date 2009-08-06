@@ -91,7 +91,9 @@ enum
     STATUS_USERID_HINT,
     STATUS_UNEXPECTED,
     STATUS_INV_RECP,
+    STATUS_INV_SGNR,
     STATUS_NO_RECP,
+    STATUS_NO_SGNR,
 
     STATUS_ALREADY_SIGNED,
     STATUS_KEYEXPIRED,
@@ -127,6 +129,7 @@ enum
 
 
 const char *get_status_string (int code);
+const char *get_inv_recpsgnr_code (gpg_error_t err);
 
 
 #endif /*GNUPG_COMMON_STATUS_H*/

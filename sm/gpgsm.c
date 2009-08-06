@@ -704,17 +704,7 @@ do_add_recipient (ctrl_t ctrl, const char *name,
         {
           log_error ("can't encrypt to `%s': %s\n", name, gpg_strerror (rc));
           gpgsm_status2 (ctrl, STATUS_INV_RECP,
-                     gpg_err_code (rc) == -1?                         "1":
-                     gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?          "1":
-                     gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?     "2":
-                     gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE?    "3":
-                     gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?       "4":
-                     gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?       "5":
-                     gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?       "6":
-                     gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?        "7":
-                     gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH?    "8":
-                     "0",
-                     name, NULL);
+                         get_inv_recpsgnr_code (rc), name, NULL);
         }
       else
         log_info (_("NOTE: won't be able to encrypt to `%s': %s\n"),
@@ -1570,19 +1560,10 @@ main ( int argc, char **argv)
             {
               log_error (_("can't sign using `%s': %s\n"),
                          sl->d, gpg_strerror (rc));
+              gpgsm_status2 (&ctrl, STATUS_INV_SGNR,
+                             get_inv_recpsgnr_code (rc), sl->d, NULL);
               gpgsm_status2 (&ctrl, STATUS_INV_RECP,
-                         gpg_err_code (rc) == -1?                      "1":
-                         gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?       "1":
-                         gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?  "2":
-                         gpg_err_code (rc) == GPG_ERR_WRONG_KEY_USAGE? "3":
-                         gpg_err_code (rc) == GPG_ERR_CERT_REVOKED?    "4":
-                         gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED?    "5":
-                         gpg_err_code (rc) == GPG_ERR_NO_CRL_KNOWN?    "6":
-                         gpg_err_code (rc) == GPG_ERR_CRL_TOO_OLD?     "7":
-                         gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH? "8":
-                         gpg_err_code (rc) == GPG_ERR_NO_SECKEY?       "9":
-                         "0",
-                         sl->d, NULL);
+                             get_inv_recpsgnr_code (rc), sl->d, NULL);
             }
         }
       

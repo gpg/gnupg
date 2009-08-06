@@ -53,7 +53,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
 	if( sk->protect.s2k.mode == 1001 ) {
 	    log_info(_("secret key parts are not available\n"));
-	    return G10ERR_GENERAL;
+	    return G10ERR_UNU_SECKEY;
 	}
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();

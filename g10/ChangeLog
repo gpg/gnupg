@@ -1,3 +1,9 @@
+2009-08-06  Werner Koch  <wk@g10code.com>
+
+	* skclist.c (build_sk_list): Print INV_SGNR status line.
+	* seckey-cert.c (do_check): Return G10ERR_UNU_SECKEY instead of
+	general error.
+
 2009-08-05  Werner Koch  <wk@g10code.com>
 
 	* card-util.c: Enable readline support also in GnuPG-2.

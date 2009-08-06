@@ -372,6 +372,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (!cert)
         {
           log_error ("no default signer found\n");
+          gpgsm_status2 (ctrl, STATUS_INV_SGNR, 
+                         get_inv_recpsgnr_code (GPG_ERR_NO_SECKEY), NULL);
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
@@ -382,7 +384,15 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (!rc)
         rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
       if (rc)
-        goto leave;
+        {
+          char *tmpfpr;
+
+          tmpfpr = gpgsm_get_fingerprint_hexstring (cert, 0);
+          gpgsm_status2 (ctrl, STATUS_INV_SGNR, 
+                         get_inv_recpsgnr_code (rc), tmpfpr, NULL);
+          xfree (tmpfpr);
+          goto leave;
+        }
 
       /* That one is fine - create signerlist. */
       signerlist = xtrycalloc (1, sizeof *signerlist);

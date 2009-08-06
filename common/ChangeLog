@@ -1,3 +1,8 @@
+2009-08-06  Werner Koch  <wk@g10code.com>
+
+	* status.h (STATUS_INV_SGNR, STATUS_NO_SGNR): New.
+	* status.c (get_inv_recpsgnr_code): New.
+
 2009-07-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* srv.c (getsrv): Fix type-punning warning.

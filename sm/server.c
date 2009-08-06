@@ -384,20 +384,8 @@ cmd_recipient (assuan_context_t ctx, char *line)
                                 &ctrl->server_local->recplist, 0);
   if (rc)
     {
-      gpg_err_code_t r = gpg_err_code (rc);
       gpgsm_status2 (ctrl, STATUS_INV_RECP,
-                   r == -1? "1":
-                   r == GPG_ERR_NO_PUBKEY?       "1":
-                   r == GPG_ERR_AMBIGUOUS_NAME?  "2":
-                   r == GPG_ERR_WRONG_KEY_USAGE? "3":
-                   r == GPG_ERR_CERT_REVOKED?    "4":
-                   r == GPG_ERR_CERT_EXPIRED?    "5":
-                   r == GPG_ERR_NO_CRL_KNOWN?    "6":
-                   r == GPG_ERR_CRL_TOO_OLD?     "7":
-                   r == GPG_ERR_NO_POLICY_MATCH? "8":
-                   r == GPG_ERR_MISSING_CERT?   "11":
-                   "0",
-                   line, NULL);
+                     get_inv_recpsgnr_code (rc), line, NULL);
     }
 
   return rc;
@@ -415,10 +403,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
   has to take care of this.  All SIGNER commands are cumulative until
   a RESET but they are *not* reset by an SIGN command becuase it can
   be expected that set of signers are used for more than one sign
-  operation.  
-
-  Note that this command returns an INV_RECP status which is a bit
-  strange, but they are very similar.  */
+  operation.  */
 static int 
 cmd_signer (assuan_context_t ctx, char *line)
 {
@@ -429,21 +414,12 @@ cmd_signer (assuan_context_t ctx, char *line)
                               &ctrl->server_local->signerlist, 0);
   if (rc)
     {
-      gpg_err_code_t r = gpg_err_code (rc);
-      gpgsm_status2 (ctrl, STATUS_INV_RECP,
-                   r == -1?                          "1":
-                   r == GPG_ERR_NO_PUBKEY?           "1":
-                   r == GPG_ERR_AMBIGUOUS_NAME?      "2":
-                   r == GPG_ERR_WRONG_KEY_USAGE?     "3":
-                   r == GPG_ERR_CERT_REVOKED?        "4":
-                   r == GPG_ERR_CERT_EXPIRED?        "5":
-                   r == GPG_ERR_NO_CRL_KNOWN?        "6":
-                   r == GPG_ERR_CRL_TOO_OLD?         "7":
-                   r == GPG_ERR_NO_POLICY_MATCH?     "8":
-                   r == GPG_ERR_NO_SECKEY?           "9":
-                   r == GPG_ERR_MISSING_CERT?       "11":
-                   "0",
-                  line, NULL);
+      gpgsm_status2 (ctrl, STATUS_INV_SGNR, 
+                     get_inv_recpsgnr_code (rc), line, NULL);
+      /* For compatibiliy reasons we also issue the old code after the
+         new one.  */
+      gpgsm_status2 (ctrl, STATUS_INV_RECP, 
+                     get_inv_recpsgnr_code (rc), line, NULL);
     }
   return rc;
 }
