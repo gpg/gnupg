@@ -1,5 +1,6 @@
 /* ttyio.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2006,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -45,8 +46,16 @@ void tty_kill_prompt (void);
 int tty_get_answer_is_yes (const char *prompt);
 int tty_no_terminal (int onoff);
 
+#ifdef HAVE_LIBREADLINE
 void tty_enable_completion (rl_completion_func_t *completer);
 void tty_disable_completion (void);
+#else
+/* Use a macro to stub out these functions since a macro has no need
+   to typedef a "rl_completion_func_t" which would be undefined
+   without readline. */
+#define tty_enable_completion(x)
+#define tty_disable_completion()
+#endif
 void tty_cleanup_after_signal (void);
 void tty_cleanup_rl_after_signal (void);
 

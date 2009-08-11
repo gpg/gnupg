@@ -1,6 +1,6 @@
 /* ttyio.c -  tty i/O functions
- * Copyright (C) 1998,1999,2000,2001,2002,2003,
- *               2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003,2004,2006,2007,
+ *               2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -648,6 +648,7 @@ tty_private_set_rl_hooks (void (*init_stream) (FILE *),
 }
 
 
+#ifdef HAVE_LIBREADLINE
 void
 tty_enable_completion (rl_completion_func_t *completer)
 {
@@ -671,7 +672,7 @@ tty_disable_completion (void)
 
   my_rl_inhibit_completion (1);
 }
-
+#endif
 
 void
 tty_cleanup_after_signal (void)

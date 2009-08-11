@@ -1,3 +1,8 @@
+2009-08-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* ttyio.h, ttyio.c (tty_enable_completion): Some ifdefs around
+	HAVE_LIBREADLINE to allow building when readline isn't available.
+
 2009-08-06  Werner Koch  <wk@g10code.com>
 
 	* status.h (STATUS_INV_SGNR, STATUS_NO_SGNR): New.
