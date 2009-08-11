@@ -88,9 +88,10 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
                     "  \"%.*s\"",
-                    no_card? "Please insert the card with serial number" 
-                    : "Please remove the current card and "
-                    "insert the one with serial number",
+                        no_card
+                        ? _("Please insert the card with serial number")
+                        : _("Please remove the current card and "
+                            "insert the one with serial number"),
                     want_sn_displen, want_sn) < 0)
             {
               rc = out_of_core ();

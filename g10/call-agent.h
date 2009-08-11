@@ -134,6 +134,9 @@ gpg_error_t agent_get_passphrase (const char *cache_id,
 /* Send the CLEAR_PASSPHRASE command to the agent.  */
 gpg_error_t agent_clear_passphrase (const char *cache_id);
 
+/* Present the prompt DESC and ask the user to confirm.  */
+gpg_error_t gpg_agent_get_confirmation (const char *desc);
+
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/
 

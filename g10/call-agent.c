@@ -1,6 +1,6 @@
 /* call-agent.c - Divert GPG operations to the agent.
  * Copyright (C) 2001, 2002, 2003, 2006, 2007, 
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -236,6 +236,38 @@ dummy_data_cb (void *opaque, const void *buffer, size_t length)
   (void)opaque;
   (void)buffer;
   (void)length;
+  return 0;
+}
+
+/* A simple callback used to return the serialnumber of a card.  */
+static int
+get_serialno_cb (void *opaque, const char *line)
+{
+  char **serialno = opaque;
+  const char *keyword = line;
+  const char *s;
+  int keywordlen, n;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      if (*serialno)
+        return gpg_error (GPG_ERR_CONFLICT); /* Unexpected status line. */
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+      if (!n || (n&1)|| !(spacep (s) || !*s) )
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+      *serialno = xtrymalloc (n+1);
+      if (!*serialno)
+        return out_of_core ();
+      memcpy (*serialno, line, n);
+      (*serialno)[n] = 0;
+    }
+  
   return 0;
 }
 
@@ -755,6 +787,100 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
   return rc;
 }
 
+
+
+
+/* Issue an SCD SERIALNO openpgp command and if SERIALNO is not NULL
+   ask the user to insert the requested card.  */
+gpg_error_t
+select_openpgp (const char *serialno)
+{
+  gpg_error_t err;
+
+  /* Send the serialno command to initialize the connection.  Without
+     a given S/N we don't care about the data returned.  If the card
+     has already been initialized, this is a very fast command.  We
+     request the openpgp card because that is what we expect. 
+
+     Note that an opt.limit_card_insert_tries of 1 means: No tries at
+     all whereas 0 means do not limit the number of tries.  Due to the
+     sue of a pinentry prompt with a cancel option we use it here in a
+     boolean sense.  */
+  if (!serialno || opt.limit_card_insert_tries == 1)
+    err = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+  else
+    {
+      char *this_sn = NULL;
+      char *desc;
+      int ask;
+      char *want_sn;
+      char *p;
+      
+      want_sn = xtrystrdup (serialno);
+      if (!want_sn)
+        return gpg_error_from_syserror ();
+      p = strchr (want_sn, '/');
+      if (p)
+        *p = 0;
+
+      do 
+        {
+          ask = 0;
+          err = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                                 NULL, NULL, NULL, NULL, 
+                                 get_serialno_cb, &this_sn);
+          if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT)
+            ask = 1; 
+          else if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
+            ask = 2;
+          else if (err)
+            ;
+          else if (this_sn)
+            {
+              if (strcmp (want_sn, this_sn))
+                ask = 2;
+            }
+
+          xfree (this_sn);
+          this_sn = NULL;
+                  
+          if (ask)
+            {
+              char *formatted = NULL;
+              char *ocodeset = i18n_switchto_utf8 ();
+
+              if (!strncmp (want_sn, "D27600012401", 12) 
+                  && strlen (want_sn) == 32 )
+                formatted = xtryasprintf ("(%.4s) %.8s",
+                                          want_sn + 16, want_sn + 20);
+              
+              err = 0;
+              desc = xtryasprintf 
+                ("%s:\n\n"
+                 "  \"%s\"",
+                 ask == 1
+                 ? _("Please insert the card with serial number")
+                 : _("Please remove the current card and "
+                     "insert the one with serial number"),
+                 formatted? formatted : want_sn);
+              if (!desc)
+                err = gpg_error_from_syserror ();
+              xfree (formatted);
+              i18n_switchback (ocodeset);
+              if (!err)
+                err = gpg_agent_get_confirmation (desc);
+              xfree (desc);
+            }
+        }
+      while (ask && !err);
+      xfree (want_sn);
+    }
+
+  return err;
+}
+
+
 
 static int
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
@@ -784,18 +910,16 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   *r_buflen = 0;
 
   rc = start_agent (1);
+  if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT
+      || gpg_err_code (rc) == GPG_ERR_NOT_SUPPORTED)
+    rc = 0; /* We check later.  */
   if (rc)
     return rc;
 
   if (indatalen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
 
-  /* Send the serialno command to initialize the connection. We don't
-     care about the data returned.  If the card has already been
-     initialized, this is a very fast command.  We request the openpgp
-     card because that is what we expect. */
-  rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = select_openpgp (serialno);
   if (rc)
     return rc;
 
@@ -833,7 +957,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 
 /* Decrypt INDATA of length INDATALEN using the card identified by
    SERIALNO.  Return the plaintext in a nwly allocated buffer stored
-   at the address of R_BUF. 
+   at the address of R_BUF.
 
    Note, we currently support only RSA or more exactly algorithms
    taking one input data element. */
@@ -849,6 +973,9 @@ agent_scd_pkdecrypt (const char *serialno,
 
   *r_buf = NULL;
   rc = start_agent (1);
+  if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT
+      || gpg_err_code (rc) == GPG_ERR_NOT_SUPPORTED)
+    rc = 0; /* We check later.  */
   if (rc)
     return rc;
 
@@ -856,15 +983,10 @@ agent_scd_pkdecrypt (const char *serialno,
   if (indatalen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
 
-  /* Send the serialno command to initialize the connection. We don't
-     care about the data returned.  If the card has already been
-     initialized, this is a very fast command.  We request the openpgp
-     card because that is what we expect. */
-  rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
+  rc = select_openpgp (serialno);
   if (rc)
     return rc;
-
+  
   sprintf (line, "SCD SETDATA ");
   p = line + strlen (line);
   for (i=0; i < indatalen ; i++, p += 2 )
@@ -1104,3 +1226,31 @@ agent_clear_passphrase (const char *cache_id)
   return assuan_transact (agent_ctx, line, NULL, NULL,
                           default_inq_cb, NULL, NULL, NULL);
 }
+
+
+/* Ask the agent to pop up a confirmation dialog with the text DESC
+   and an okay and cancel button. */
+gpg_error_t
+gpg_agent_get_confirmation (const char *desc)
+{
+  int rc;
+  char *tmp;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent (0);
+  if (rc)
+    return rc;
+
+  tmp = percent_plus_escape (desc);
+  if (!tmp)
+    return gpg_error_from_syserror ();
+  snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", tmp);
+  line[DIM(line)-1] = 0;
+  xfree (tmp);
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL,
+                        default_inq_cb, NULL, NULL, NULL);
+  return rc;
+}
+
+

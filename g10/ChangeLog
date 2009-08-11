@@ -1,3 +1,10 @@
+2009-08-11  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (get_serialno_cb): New.  From ../agent/call-scd.c.
+	(gpg_agent_get_confirmation): New.
+	(select_openpgp): New.
+	(agent_scd_pkdecrypt, agent_scd_pksign): Use it here.
+
 2009-08-06  Werner Koch  <wk@g10code.com>
 
 	* skclist.c (build_sk_list): Print INV_SGNR status line.

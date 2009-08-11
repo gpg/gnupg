@@ -18,6 +18,9 @@ Noteworthy changes in version 2.0.13
  * Add hack to the internal CCID driver to allow the use of some
    Omnikey based card readers with 2048 bit keys.
 
+ * GPG now repeatly asks the user to insert the requested OpenPGP
+   card.  This can be disabled with --limit-card-insert-tries=1.
+
  * Minor bug fixes.
 
 
