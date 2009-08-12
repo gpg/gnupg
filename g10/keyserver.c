@@ -1270,23 +1270,48 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 			{
 			  PKT_user_id *uid=node->pkt->pkt.user_id;
 			  int r;
+			  char *uidstr1,*uidstr2,*uidstr3;
+			  size_t uidstrlen;
 
 			  if(uid->attrib_data)
 			    continue;
 
 			  fprintf(spawn->tochild,"uid:");
 
-			  /* Quote ':', '%', and any 8-bit
-			     characters */
-			  for(r=0;r<uid->len;r++)
+			  /* Make sure it's real UTF8.  What happens
+			     here is that first we heuristically try
+			     and convert the string (which may be
+			     mis-coded) into UTF8.  We then bring it
+			     to native and then back to UTF8.  For
+			     true UTF8, this whole process should be
+			     lossless.  For the common Latin-1
+			     mis-encoding, it will become UTF8.  For
+			     other encodings, it will become UTF8 but
+			     with unknown characters quoted.  This
+			     preserves the notion that anything in the
+			     stream to the keyserver handler program
+			     is UTF8. */
+			  uidstr1=string_to_utf8(uid->name);
+			  uidstr2=utf8_to_native(uidstr1,strlen(uidstr1),-1);
+			  uidstr3=native_to_utf8(uidstr2);
+
+			  uidstrlen=strlen(uidstr3);
+
+			  /* Quote ':', '%', and anything not
+			     printable ASCII */
+			  for(r=0;r<uidstrlen;r++)
 			    {
-			      if(uid->name[r]==':' || uid->name[r]=='%'
-				 || uid->name[r]&0x80)
+			      if(uidstr3[r]==':' || uidstr3[r]=='%'
+				 || uidstr3[r]<' ' || uidstr3[r]>'~')
 				fprintf(spawn->tochild,"%%%02X",
-					(byte)uid->name[r]);
+					(byte)uidstr3[r]);
 			      else
-				fprintf(spawn->tochild,"%c",uid->name[r]);
+				fprintf(spawn->tochild,"%c",uidstr3[r]);
 			    }
+
+			  xfree(uidstr1);
+			  xfree(uidstr2);
+			  xfree(uidstr3);
 
 			  fprintf(spawn->tochild,":%u:%u:",
 				  uid->created,uid->expiredate);

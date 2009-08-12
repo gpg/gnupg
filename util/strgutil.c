@@ -1048,6 +1048,77 @@ utf8_to_native( const char *string, size_t length, int delim )
     }
 }
 
+/* This is similar to native_to_utf8, except it can take any input
+   (which may or may not be UTF8 encoded) and return something that is
+   (almost) definitely UTF8.  This code is mostly borrowed from
+   GPA. */
+
+char *
+string_to_utf8 (const char *string)
+{
+  const char *s;
+  
+  if (!string)
+    return NULL;
+  
+  /* Due to a bug in old and not so old PGP versions user IDs have
+     been copied verbatim into the key.  Thus many users with Umlauts
+     et al. in their name will see their names garbled.  Although this
+     is not an issue for me (;-)), I have a couple of friends with
+     Umlauts in their name, so let's try to make their life easier by
+     detecting invalid encodings and convert that to Latin-1.  We use
+     this even for X.509 because it may make things even better given
+     all the invalid encodings often found in X.509 certificates.  */
+  for (s = string; *s && !(*s & 0x80); s++)
+    ;
+  if (*s && ((s[1] & 0xc0) == 0x80) && ( ((*s & 0xe0) == 0xc0)
+                                         || ((*s & 0xf0) == 0xe0)
+                                         || ((*s & 0xf8) == 0xf0)
+                                         || ((*s & 0xfc) == 0xf8)
+                                         || ((*s & 0xfe) == 0xfc)) )
+    {  
+      /* Possible utf-8 character followed by continuation byte.
+         Although this might still be Latin-1 we better assume that it
+         is valid utf-8. */
+      return xstrdup (string);
+     }
+  else if (*s && !strchr (string, 0xc3))
+    {
+      size_t length=0;
+      char *buffer,*p;
+
+      /* No 0xC3 character in the string; assume that it is Latin-1.  */
+
+      for(s=string; *s; s++ ) 
+        {
+          length++;
+          if( *s & 0x80 )
+            length++;
+	}
+      buffer = xmalloc( length + 1 );
+      for(p=buffer, s=string; *s; s++ )
+        {
+          if( *s & 0x80 )
+            {
+              *p++ = 0xc0 | ((*s >> 6) & 3);
+              *p++ = 0x80 | ( *s & 0x3f );
+            }
+          else
+            *p++ = *s;
+        }
+      *p = 0;
+
+      return buffer;
+    }
+  else
+    {
+      /* Everything else is assumed to be UTF-8.  We do this even that
+         we know the encoding is not valid.  However as we only test
+         the first non-ascii character, valid encodings might
+         follow.  */
+      return xstrdup (string);
+    }
+}
 
 /* Same as asprintf but return an allocated buffer suitable to be
    freed using xfree.  This function simply dies on memory failure,
