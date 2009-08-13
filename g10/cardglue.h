@@ -134,6 +134,11 @@ typedef struct ctrl_ctx_s *ctrl_t;
 #define GPG_ERR_ENODEV            G10ERR_GENERAL
 #define GPG_ERR_CANCELED          G10ERR_CANCELED
 
+#define GPG_ERR_INV_DATA          G10ERR_GENERAL
+#define GPG_ERR_PUBKEY_ALGO       G10ERR_PUBKEY_ALGO
+#define GPG_ERR_TOO_SHORT         G10ERR_INV_ARG
+
+
 typedef int gpg_error_t;
 typedef int gpg_err_code_t;
 

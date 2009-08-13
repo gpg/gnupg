@@ -1,3 +1,19 @@
+2009-08-13  Werner Koch  <wk@g10code.com>
+
+	* cardglue.h: Add new error code mappings.
+
+	From GnuPG-2:
+	* app-openpgp.c (change_keyattr_from_string): New.
+	(do_setattr): Support KEY-ATTR.
+	* ccid-driver.c (print_pr_data): Fix 64 bit compat problem.
+	* ccid-driver.c (parse_ccid_descriptor): Enable hack for SCR 3320.
+	* card-util.c (generate_card_keys): Remove special case for
+	GnuPG-2.  Ask for the keysize and change it.
+	(card_generate_subkey): Ask for the keysize and change it.
+	(get_info_for_key_operation): Read KEY-ATTR.
+	(show_keysize_warning, ask_card_keysize): New.
+	(do_change_keysize): New.
+
 2009-08-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Try and detect mis-coded Latin1

@@ -413,7 +413,7 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
         {
           if (any)
             DEBUGOUT_LF ();
-          DEBUGOUT_1 ("  [%04d] ", off);
+          DEBUGOUT_1 ("  [%04lu] ", (unsigned long) off);
         }
       DEBUGOUT_CONT_1 (" %02X", data[off]);
       any = 1;
@@ -944,6 +944,11 @@ parse_ccid_descriptor (ccid_driver_t handle,
 	 0x5111 - SCR 331-DI 
 	 0x5115 - SCR 335 
 	 0xe003 - SPR 532 
+     The     
+         0x5117 - SCR 3320 USB ID-000 reader
+     seems to be very slow but enabling this workaround boosts the
+     performance to a a more or less acceptable level (tested by David). 
+         
   */
   if (handle->id_vendor == VENDOR_SCM
       && handle->max_ifsd > 48      
@@ -951,6 +956,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
           ||(handle->id_product == 0x5111 && handle->bcd_device < 0x0620)
           ||(handle->id_product == 0x5115 && handle->bcd_device < 0x0514)
           ||(handle->id_product == 0xe003 && handle->bcd_device < 0x0504)
+          ||(handle->id_product == 0x5117 && handle->bcd_device < 0x0522)
           ))
     {
       DEBUGOUT ("enabling workaround for buggy SCM readers\n");

@@ -1,5 +1,5 @@
-@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-@c               2007 Free Software Foundation, Inc.
+@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+@c               2008, 2009 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
@@ -149,7 +149,7 @@ cannot abbreviate this command.
 @itemx -h
 @opindex help
 Print a usage message summarizing the most useful command line options.
-Not that you cannot abbreviate this command.
+Note that you cannot abbreviate this command.
 
 @item --warranty
 @opindex warranty
@@ -175,18 +175,23 @@ abbreviate this command.
 @itemx -s
 @opindex sign
 Make a signature. This command may be combined with @option{--encrypt}
-(for a signed and encrypted message), @option{--symmetric} (for a signed
-and symmetrically encrypted message), or @option{--encrypt} and
+(for a signed and encrypted message), @option{--symmetric} (for a
+signed and symmetrically encrypted message), or @option{--encrypt} and
 @option{--symmetric} together (for a signed message that may be
-decrypted via a secret key or a passphrase).
+decrypted via a secret key or a passphrase).  The key to be used for
+signing is chosen by default or can be set with the
+@option{--local-user} and @option{--default-key} options.
 
 @item --clearsign
 @opindex clearsign
-Make a clear text signature. The content in a clear text signature is
-readable without any special software. OpenPGP software is only
-needed to verify the signature. Clear text signatures may modify
-end-of-line whitespace for platform independence and are not intended
-to be reversible.
+Make a clear text signature.  The content in a clear text signature is
+readable without any special software. OpenPGP software is only needed
+to verify the signature.  Clear text signatures may modify end-of-line
+whitespace for platform independence and are not intended to be
+reversible.  The key to be used for signing is chosen by default or
+can be set with the @option{--local-user} and @option{--default-key}
+options.
+
 
 @item --detach-sign
 @itemx -b
@@ -221,8 +226,8 @@ Store only (make a simple RFC1991 literal data packet).
 @item --decrypt
 @itemx -d
 @opindex decrypt
-Decrypt the file given on the command line (or @code{stdin} if no file
-is specified) and write it to stdout (or the file specified with
+Decrypt the file given on the command line (or STDIN if no file
+is specified) and write it to STDOUT (or the file specified with
 @option{--output}). If the decrypted file is signed, the signature is also
 verified. This command differs from the default operation, as it never
 writes to the filename which is included in the file and it rejects
@@ -232,19 +237,19 @@ files which don't begin with an encrypted message.
 @opindex verify
 Assume that the first argument is a signed file or a detached signature
 and verify it without generating any output. With no arguments, the
-signature packet is read from stdin. If only a sigfile is given, it may
+signature packet is read from STDIN. If only a sigfile is given, it may
 be a complete signature or a detached signature, in which case the
 signed stuff is expected in a file without the ".sig" or ".asc"
 extension.  With more than 1 argument, the first should be a detached
 signature and the remaining files are the signed stuff. To read the
-signed stuff from stdin, use @samp{-} as the second filename.  For
+signed stuff from STDIN, use @samp{-} as the second filename.  For
 security reasons a detached signature cannot read the signed material
-from stdin without denoting it in the above way.
+from STDIN without denoting it in the above way.
 
 @item --multifile
 @opindex multifile
 This modifies certain other commands to accept multiple files for
-processing on the command line or read from stdin with each filename on
+processing on the command line or read from STDIN with each filename on
 a separate line. This allows for many files to be processed at
 once. @option{--multifile} may currently be used along with
 @option{--verify}, @option{--encrypt}, and @option{--decrypt}. Note that
@@ -291,6 +296,10 @@ secret key is not usable (for example, if it was created via
 @item --list-sigs
 @opindex list-sigs
 Same as @option{--list-keys}, but the signatures are listed too.
+@ifclear gpgone
+This command has the same effect as 
+using @option{--list-keys} with @option{--with-sig-list}.
+@end ifclear
 
 For each signature listed, there are several flags in between the "sig"
 tag and keyid. These flags give additional information about each
@@ -307,14 +316,30 @@ command "tsign").
 
 @item --check-sigs
 @opindex check-sigs
-Same as @option{--list-sigs}, but the signatures are verified.
+Same as @option{--list-sigs}, but the signatures are verified.  Note
+that for performance reasons the revocation status of a signing key is
+not shown.
+@ifclear gpgone
+This command has the same effect as 
+using @option{--list-keys} with @option{--with-sig-check}.
+@end ifclear
 
 The status of the verification is indicated by a flag directly following
 the "sig" tag (and thus before the flags described above for
 @option{--list-sigs}).  A "!" indicates that the signature has been
 successfully verified, a "-" denotes a bad signature and a "%" is used
-if an error occured while checking the signature (e.g. a non supported
+if an error occurred while checking the signature (e.g. a non supported
 algorithm).
+
+@ifclear gpgone
+@item --locate-keys
+@opindex locate-keys
+Locate the keys given as arguments.  This command basically uses the
+same algorithm as used when locating keys for encryption or signing and
+may thus be used to see what keys @command{@gpgname} might use.  In
+particular external methods as defined by @option{--auto-key-locate} may
+be used to locate a key.  Only public keys are listed.
+@end ifclear
 
 
 @item --fingerprint
@@ -369,7 +394,7 @@ removed first. In batch mode the key must be specified by fingerprint.
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option @option{--keyring}), or if at least one name is given,
-those of the given name. The new keyring is written to stdout or to the
+those of the given name. The new keyring is written to STDOUT or to the
 file given with option @option{--output}. Use together with
 @option{--armor} to mail those keys.
 
@@ -379,7 +404,7 @@ Similar to @option{--export} but sends the keys to a keyserver.
 Fingerprints may be used instead of key IDs. Option @option{--keyserver}
 must be used to give the name of this keyserver. Don't send your
 complete keyring to a keyserver --- select only those keys which are new
-or changed by you.
+or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 
 @item --export-secret-keys
 @itemx --export-secret-subkeys
@@ -400,7 +425,7 @@ Import/merge keys. This adds the given keys to the
 keyring. The fast version is currently just a synonym.
 
 There are a few other options which control how this command works.
-Most notable here is the @option{--keyserver-options merge-only} option
+Most notable here is the @option{--import-options merge-only} option
 which does not insert new keys but does only the merging of new
 signatures, user-IDs and subkeys.
 
@@ -460,16 +485,34 @@ For use with cron jobs, this command can be used together with
 a check is needed. To force a run even in batch mode add the option
 @option{--yes}.
 
+@anchor{option --export-ownertrust}
 @item --export-ownertrust
 @opindex export-ownertrust
-Send the ownertrust values to stdout. This is useful for backup purposes
+Send the ownertrust values to STDOUT. This is useful for backup purposes
 as these values are the only ones which can't be re-created from a
-corrupted trust DB.
+corrupted trustdb.  Example:
+@c man:.RS
+@example
+  @gpgname{} --export-ownertrust > otrust.txt
+@end example
+@c man:.RE
+
 
 @item --import-ownertrust
 @opindex import-ownertrust
 Update the trustdb with the ownertrust values stored in @code{files} (or
-stdin if not given); existing values will be overwritten.
+STDIN if not given); existing values will be overwritten.  In case of a
+severely damaged trustdb and if you have a recent backup of the
+ownertrust values (e.g. in the file @file{otrust.txt}, you may re-create
+the trustdb using these commands:
+@c man:.RS
+@example
+  cd ~/.gnupg
+  rm trustdb.gpg
+  @gpgname{} --import-ownertrust < otrust.txt
+@end example
+@c man:.RE
+
 
 @item --rebuild-keydb-caches
 @opindex rebuild-keydb-caches
@@ -480,7 +523,7 @@ situations too.
 @item --print-md @code{algo}
 @itemx --print-mds
 @opindex print-md
-Print message digest of algorithm ALGO for all given files or stdin.
+Print message digest of algorithm ALGO for all given files or STDIN.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
@@ -729,12 +772,23 @@ preferred keyserver and signature notations (if any) are shown.
 Set the list of user ID preferences to @code{string} for all (or just
 the selected) user IDs. Calling setpref with no arguments sets the
 preference list to the default (either built-in or set via
-@option{--default-preference-list}), and calling setpref with "none" as
-the argument sets an empty preference list. Use @command{@gpgname
+@option{--default-preference-list}), and calling setpref with "none"
+as the argument sets an empty preference list. Use @command{@gpgname
 --version} to get a list of available algorithms. Note that while you
 can change the preferences on an attribute user ID (aka "photo ID"),
 GnuPG does not select keys via attribute user IDs so these preferences
 will not be used by GnuPG.
+
+When setting preferences, you should list the algorithms in the order
+which you'd like to see them used by someone else when encrypting a
+message to your key.  If you don't include 3DES, it will be
+automatically added at the end.  Note that there are many factors that
+go into choosing an algorithm (for example, your key may not be the
+only recipient), and so the remote OpenPGP application being used to
+send to you may or may not follow your exact chosen order for a given
+message.  It will, however, only choose an algorithm that is present
+on the preference list of every recipient key.  See also the
+INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS section below.
 
 @item keyserver
 @opindex keyedit:keyserver
@@ -921,7 +975,12 @@ Try to be as quiet as possible.
 @opindex batch
 @opindex no-batch
 Use batch mode.  Never ask, do not allow interactive commands.
-@option{--no-batch} disables this option.
+@option{--no-batch} disables this option.  Note that even with a
+filename given on the command line, gpg might still need to read from
+STDIN (in particular if gpg figures that the input is a
+detached signature and no data file has been specified).  Thus if you
+do not want to feed data via STDIN, you should connect STDIN to
+@file{/dev/null}.
 
 @item --no-tty
 @opindex no-tty
@@ -1052,10 +1111,10 @@ validation. This option is only meaningful if pka-lookups is set.
 
 @item --enable-dsa2
 @itemx --disable-dsa2
-Enables new-style DSA keys which (unlike the old style) may be larger
-than 1024 bit and use hashes other than SHA-1 and RIPEMD/160. Note
-that very few programs currently support these keys and signatures
-from them.
+Enable hash truncation for all DSA keys even for old DSA Keys up to
+1024 bit.  This is also the default with @option{--openpgp}.  Note
+that older versions of GnuPG also required this flag to allow the
+generation of DSA larger than 1024 bit.
 
 @item --photo-viewer @code{string}
 This is the command line that should be run to view a photo ID. "%i"
@@ -1068,7 +1127,7 @@ and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin". Note that if your image viewer program is not secure, then
+STDIN". Note that if your image viewer program is not secure, then
 executing it from GnuPG does not make it secure.
 
 @item --exec-path @code{string}
@@ -1305,29 +1364,42 @@ exists.
 GnuPG can automatically locate and retrieve keys as needed using this
 option. This happens when encrypting to an email address (in the
 "user@@example.com" form), and there are no user@@example.com keys on
-the local keyring. This option takes any number of the following
-arguments, in the order they are to be tried:
+the local keyring.  This option takes any number of the following
+mechanisms, in the order they are to be tried:
 
 @table @asis
 
 @item cert
-locate a key using DNS CERT, as specified in 2538bis (currently in
-draft): http://www.josefsson.org/rfc2538bis/
+Locate a key using DNS CERT, as specified in rfc4398.
 
 @item pka
-locate a key using DNS PKA.
+Locate a key using DNS PKA.
 
 @item ldap
-locate a key using the PGP Universal method of checking
-"ldap://keys.(thedomain)".
+Using DNS Service Discovery, check the domain in question for any LDAP
+keyservers to use.  If this fails, attempt to locate the key using the
+PGP Universal method of checking @samp{ldap://keys.(thedomain)}.
 
 @item keyserver
-locate a key using whatever keyserver is defined using the
+Locate a key using whatever keyserver is defined using the
 @option{--keyserver} option.
 
-@item (keyserver URL)
-In addition, a keyserver URL as used in the @option{--keyserver} option may be
-used here to query that particular keyserver.
+@item keyserver-URL
+In addition, a keyserver URL as used in the @option{--keyserver} option
+may be used here to query that particular keyserver.
+
+@item local
+Locate the key using the local keyrings.  This mechanism allows to
+select the order a local key lookup is done.  Thus using
+@samp{--auto-key-locate local} is identical to
+@option{--no-auto-key-locate}.
+
+@item nodefault
+This flag disables the standard local key lookup, done before any of the
+mechanisms defined by the @option{--auto-key-locate} are tried.  The
+position of this mechanism in the list does not matter.  It is not
+required if @code{local} is also used.
+
 @end table
 
 @item --keyid-format @code{short|0xshort|long|0xlong}
@@ -1352,7 +1424,7 @@ from below, but apply only to this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
-@code{hkp://subkeys.pgp.net} uses round robin DNS to give a different
+@code{hkp://keys.gnupg.net} uses round robin DNS to give a different
 keyserver each time you use it.
 
 @item --keyserver-options @code{name=value1 }
@@ -1437,6 +1509,12 @@ Set the proxy to use for HTTP and HKP keyservers.  This overrides the
 @item max-cert-size
 When retrieving a key via DNS CERT, only accept keys up to this size.
 Defaults to 16384 bytes.
+
+@item debug
+Turn on debug output in the keyserver helper program.  Note that the
+details of debug output depends on which keyserver helper program is
+being used, and in turn, on any libraries that the keyserver helper
+program uses internally (libcurl, openldap, etc).
 @end table
 
 @item --completes-needed @code{n}
@@ -1809,6 +1887,10 @@ source distribution.
 @opindex fixed-list-mode
 Do not merge primary user ID and primary key in @option{--with-colon}
 listing mode and print all timestamps as seconds since 1970-01-01.
+@ifclear gpgone
+Since GnuPG 2.0.10, this mode is always used and thus this option is
+obsolete; it does not harm to use it though.
+@end ifclear
 
 @item --with-fingerprint
 @opindex with-fingerprint
@@ -1886,7 +1968,7 @@ Set the list of personal digest preferences to @code{string}.  Use
 and use @code{none} to set no preference at all.  This allows the user
 to factor in their own preferred algorithms when algorithms are chosen
 via recipient key preferences.  The most highly ranked digest
-algorithm in this list is algo used when signing without encryption
+algorithm in this list is also used when signing without encryption
 (e.g. @option{--clearsign} or @option{--sign}). The default value is
 SHA-1.
 
@@ -1896,7 +1978,7 @@ Use @command{@gpgname --version} to get a list of available
 algorithms, and use @code{none} to set no preference at all.  This
 allows the user to factor in their own preferred algorithms when
 algorithms are chosen via recipient key preferences.  The most highly
-ranked compression algorithm in this list is algo used when there are
+ranked compression algorithm in this list is also used when there are
 no recipient keys to consider (e.g. @option{--symmetric}).
 
 @item --s2k-cipher-algo @code{name}
@@ -1980,9 +2062,9 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --no-sk-comment --escape-from-lines
---force-v3-sigs --cipher-algo IDEA --digest-algo MD5 --compress-algo
-ZIP}. It also disables @option{--textmode} when encrypting.
+--no-force-v4-certs --escape-from-lines --force-v3-sigs --cipher-algo
+IDEA --digest-algo MD5 --compress-algo ZIP}. It also disables
+@option{--textmode} when encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -1993,8 +2075,8 @@ compression algorithms none and ZIP. This also disables
 --throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-This option implies @option{--disable-mdc --no-sk-comment
---escape-from-lines --force-v3-sigs}.
+This option implies @option{--disable-mdc --escape-from-lines
+--force-v3-sigs}.
 
 @item --pgp7
 @opindex pgp7
@@ -2066,11 +2148,13 @@ Same as @option{--status-fd}, except the status data is written to file
 @code{file}.
 
 @item --logger-fd @code{n}
-Write log output to file descriptor @code{n} and not to stderr.
+Write log output to file descriptor @code{n} and not to STDERR.
 
-@item --logger-file @code{file}
+@item --log-file @code{file}
+@itemx --logger-file @code{file}
 Same as @option{--logger-fd}, except the logger data is written to file
-@code{file}.
+@code{file}.  Note that @option{--log-file} is only implemented for
+GnuPG-2.
 
 @item --attribute-fd @code{n}
 Write attribute subpackets to the file descriptor @code{n}. This is most
@@ -2152,10 +2236,10 @@ file being encrypted.
 
 @item --for-your-eyes-only
 @itemx --no-for-your-eyes-only
-Set the `for your eyes only' flag in the message. This causes GnuPG
-to refuse to save the file unless the @option{--output} option is given, and
-PGP to use the "secure viewer" with a Tempest-resistant font to
-display the message. This option overrides @option{--set-filename}.
+Set the `for your eyes only' flag in the message. This causes GnuPG to
+refuse to save the file unless the @option{--output} option is given,
+and PGP to use a "secure viewer" with a claimed Tempest-resistant font
+to display the message. This option overrides @option{--set-filename}.
 @option{--no-for-your-eyes-only} disables this option.
 
 @item --use-embedded-filename
@@ -2221,12 +2305,15 @@ will still get disabled.
 
 @item --throw-keyids
 @itemx --no-throw-keyids
-Do not put the recipient key IDs into encrypted messages. This helps
-to hide the receivers of the message and is a limited countermeasure
-against traffic analysis. On the receiving side, it may slow down the
-decryption process because all available secret keys must be tried.
-@option{--no-throw-keyids} disables this option. This option is essentially
-the same as using @option{--hidden-recipient} for all recipients.
+Do not put the recipient key IDs into encrypted messages. This helps to
+hide the receivers of the message and is a limited countermeasure
+against traffic analysis.@footnote{Using a little social engineering
+anyone who is able to decrypt the message can check whether one of the
+other recipients is the one he suspects.}  On the receiving side, it may
+slow down the decryption process because all available secret keys must
+be tried.  @option{--no-throw-keyids} disables this option. This option
+is essentially the same as using @option{--hidden-recipient} for all
+recipients.
 
 @item --not-dash-escaped
 This option changes the behavior of cleartext signatures
@@ -2253,7 +2340,7 @@ passphrase.  Defaults to 1 repetition.
 @item --passphrase-fd @code{n}
 Read the passphrase from file descriptor @code{n}. Only the first line
 will be read from file descriptor @code{n}. If you use 0 for @code{n},
-the passphrase will be read from stdin. This can only be used if only
+the passphrase will be read from STDIN. This can only be used if only
 one passphrase is supplied.
 @ifclear gpgone
 Note that this passphrase is only used if the option @option{--batch}
@@ -2415,11 +2502,15 @@ This is an obsolete option and is not used anywhere.
 
 @item --allow-multiple-messages
 @item --no-allow-multiple-messages
-Allow processing of multiple OpenPGP messages contained in a single
-file or stream.  Some programs that call GPG are not prepared to deal
-with multiple messages being processed together, so this option
-defaults to no.  Note that versions of GPG prior to 1.4.7 always
-allowed multiple messages.
+Allow processing of multiple OpenPGP messages contained in a single file
+or stream.  Some programs that call GPG are not prepared to deal with
+multiple messages being processed together, so this option defaults to
+no.  Note that versions of GPG prior to 1.4.7 always allowed multiple
+messages.  
+
+Warning: Do not use this option unless you need it as a temporary
+workaround!
+
 
 @item --enable-special-filenames
 This options enables a mode in which filenames of the form
@@ -2542,12 +2633,12 @@ current home directory (@pxref{option --homedir}).
 @table @file
 
 @item gpg.conf
-@cindex gpgsm.conf
+@cindex gpg.conf
 This is the standard configuration file read by @command{@gpgname} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
-name may be changed on the command line (@pxref{option
-  --options}).
+name may be changed on the command line (@pxref{option --options}).
+You should backup this file.
 
 @end table
 
@@ -2567,31 +2658,32 @@ files; They all live in in the current home directory (@pxref{option
 
 @table @file
 @item ~/.gnupg/secring.gpg
-The secret keyring.
+The secret keyring.  You should backup this file.
 
 @item ~/.gnupg/secring.gpg.lock
-and the lock file
+The lock file for the secret keyring.
 
 @item ~/.gnupg/pubring.gpg
-The public keyring
+The public keyring.  You should backup this file.
 
 @item ~/.gnupg/pubring.gpg.lock
-and the lock file
+The lock file for the public keyring.
 
 @item ~/.gnupg/trustdb.gpg
-The trust database
+The trust database.  There is no need to backup this file; it is better
+to backup the ownertrust values (@pxref{option --export-ownertrust}).
 
 @item ~/.gnupg/trustdb.gpg.lock
-and the lock file
+The lock file for the trust database.
 
 @item ~/.gnupg/random_seed
-used to preserve the internal random pool
+A file used to preserve the state of the internal random pool.
 
 @item /usr[/local]/share/gnupg/options.skel
-Skeleton options file
+The skeleton options file.
 
 @item /usr[/local]/lib/gnupg/
-Default location for extensions
+Default location for extensions.
 
 @end table
 
@@ -2619,7 +2711,7 @@ value. The option @option{--gpg-agent-info} can be used to override it.
 
 @item PINENTRY_USER_DATA
 This value is passed via gpg-agent to pinentry.  It is useful to convey
-extra information to a custom pinentry
+extra information to a custom pinentry.
 
 @item COLUMNS
 @itemx LINES
@@ -2628,12 +2720,13 @@ Used to size some displays to the full size of the screen.
 
 @item LANGUAGE
 Apart from its use by GNU, it is used in the W32 version to override the
-language selection done through the Registry.  If used and set to a a
+language selection done through the Registry.  If used and set to a
 valid and available language name (@var{langid}), the file with the
 translation is loaded from
 @code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
-directory out of which the gpg binary has been laoded.  If it can't be
-loaded the Registry is tried as a fallback.
+directory out of which the gpg binary has been loaded.  If it can't be
+loaded the Registry is tried and as last resort the native Windows
+locale system is used.  
 
 @end table
 
@@ -2657,6 +2750,9 @@ make a clear text signature
 
 @item gpg -sb @code{file}
 make a detached signature
+
+@item gpg -u 0x12345678 -sb @code{file}
+make a detached signature with the key 0x12345678
 
 @item gpg --list-keys @code{user_ID}
 show keys
@@ -2706,7 +2802,7 @@ is *very* easy to spy out your passphrase!
 
 If you are going to verify detached signatures, make sure that the
 program knows about it; either give both filenames on the command line
-or use @samp{-} to specify stdin.
+or use @samp{-} to specify STDIN.
 
 @mansect interoperability
 @chapheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS

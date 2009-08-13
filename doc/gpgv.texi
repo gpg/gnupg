@@ -123,13 +123,14 @@ one signature was bad, and other error codes for fatal errors.
 @table @asis
 
 @item @gpgvname @code{pgpfile}
-@itemx @gpgvname @code{sigfile} 
-Verify the signature of the file. The second form
-is used for detached signatures, where @code{sigfile} is the detached
-signature (either ASCII-armored or binary) and are the signed
-data; if this is not given the name of the file holding the signed data is
-constructed by cutting off the extension (".asc", ".sig" or ".sign") from
-@code{sigfile}.
+@itemx @gpgvname @code{sigfile} [@code{datafile}]
+Verify the signature of the file. The second form is used for detached
+signatures, where @code{sigfile} is the detached signature (either
+ASCII-armored or binary) and @code{datafile} contains the signed data;
+if @code{datafile} is "-" the signed data is expected on
+@code{stdin}; if @code{datafile} is not given the name of the file
+holding the signed data is constructed by cutting off the extension
+(".asc", ".sig" or ".sign") from @code{sigfile}.
 
 @end table
 

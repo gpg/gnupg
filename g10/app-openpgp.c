@@ -214,6 +214,11 @@ static gpg_error_t do_auth (app_t app, const char *keyidstr,
                             const void *indata, size_t indatalen,
                             unsigned char **outdata, size_t *outdatalen);
 static void parse_algorithm_attribute (app_t app, int keyno);
+static gpg_error_t change_keyattr_from_string
+                           (app_t app, 
+                            gpg_error_t (*pincb)(void*, const char *, char **),
+                            void *pincb_arg,
+                            const void *value, size_t valuelen);
 
 
 
@@ -1793,6 +1798,7 @@ do_setattr (app_t app, const char *name,
     { "CERT-3",       0x7F21, 3, 0, 1 },
     { "SM-KEY-ENC",   0x00D1, 3, 0, 1 },
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
+    { "KEY-ATTR",     0,      0, 3, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -1803,6 +1809,9 @@ do_setattr (app_t app, const char *name,
     return gpg_error (GPG_ERR_INV_NAME); 
   if (table[idx].need_v2 && !app->app_local->extcap.is_v2)
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Not yet supported.  */
+
+  if (table[idx].special == 3)
+    return change_keyattr_from_string (app, pincb, pincb_arg, value, valuelen);
 
   switch (table[idx].need_chv)
     {
@@ -2403,6 +2412,45 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
   return err;
 }
 
+
+/* Helper to process an setattr command for name KEY-ATTR.  It expects
+   a string "--force <keyno> <algo> <nbits>" in (VALUE,VALUELEN).  */
+static gpg_error_t 
+change_keyattr_from_string (app_t app, 
+                            gpg_error_t (*pincb)(void*, const char *, char **),
+                            void *pincb_arg,
+                            const void *value, size_t valuelen)
+{
+  gpg_error_t err;
+  char *string;
+  int keyno, algo;
+  unsigned int nbits;
+
+  /* VALUE is expected to be a string but not guaranteed to be
+     terminated.  Thus copy it to an allocated buffer first. */
+  string = xtrymalloc (valuelen+1);
+  if (!string)
+    return gpg_error_from_syserror ();
+  memcpy (string, value, valuelen);
+  string[valuelen] = 0;
+
+  /* Because this function deletes the key we require the string
+     "--force" in the data to make clear that something serious might
+     happen.  */
+  if (sscanf (string, " --force %d %d %u", &keyno, &algo, &nbits) != 3)
+    err = gpg_error (GPG_ERR_INV_DATA);
+  else if (keyno < 1 || keyno > 3)
+    err = gpg_error (GPG_ERR_INV_ID);
+  else if (algo != 1)
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO); /* Not RSA.  */
+  else if (nbits < 1024)
+    err = gpg_error (GPG_ERR_TOO_SHORT);
+  else
+    err = change_keyattr (app, keyno-1, nbits, pincb, pincb_arg);
+
+  xfree (string);
+  return err;
+}
 
 
 /* Handle the WRITEKEY command for OpenPGP.  This function expects a

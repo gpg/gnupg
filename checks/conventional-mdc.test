@@ -9,6 +9,7 @@ for ciph in `all_cipher_algos`; do
     # *BSD's dd can't cope with a count of 0
     if test "$i" = "0"; then
         : >z
+        my_chtag z
     else
         dd if=data-80000 of=z bs=1 count=$i 2>/dev/null
     fi

@@ -23,6 +23,10 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef HAVE_LIBREADLINE
+# define GNUPG_LIBREADLINE_H_INCLUDED
+# include <readline/readline.h>
+#endif /*HAVE_LIBREADLINE*/
 
 #if GNUPG_MAJOR_VERSION != 1
 # include "gpg.h"
@@ -34,12 +38,8 @@
 #include "options.h"
 #include "main.h"
 #include "keyserver-internal.h"
+
 #if GNUPG_MAJOR_VERSION == 1
-# ifdef HAVE_LIBREADLINE
-# define GNUPG_LIBREADLINE_H_INCLUDED
-# include <stdio.h>
-# include <readline/readline.h>
-# endif /*HAVE_LIBREADLINE*/
 # include "cardglue.h"
 #else /*GNUPG_MAJOR_VERSION!=1*/
 # include "call-agent.h"
@@ -1158,6 +1158,8 @@ get_info_for_key_operation (struct agent_card_info_s *info)
     rc = agent_scd_getattr ("DISP-NAME", info);
   if (!rc)
     rc = agent_scd_getattr ("EXTCAP", info);
+  if (!rc)
+    rc = agent_scd_getattr ("KEY-ATTR", info);
   if (rc)
     log_error (_("error getting current key info: %s\n"), gpg_strerror (rc));
   return rc;
@@ -1254,33 +1256,113 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
 
 
 static void
+show_keysize_warning (void)
+{
+  static int shown;
+
+  if (shown)
+    return;
+  shown = 1;
+  tty_printf
+    (_("NOTE: There is no guarantee that the card "
+       "supports the requested size.\n"
+       "      If the key generation does not succeed, "
+       "please check the\n"
+       "      documentation of your card to see what "
+       "sizes are allowed.\n"));
+}
+
+
+/* Ask for the size of a card key.  NBITS is the current size
+   configured for the card.  KEYNO is the number of the key used to
+   select the prompt.  Returns 0 to use the default size (i.e. NBITS)
+   or the selected size.  */
+static unsigned int
+ask_card_keysize (int keyno, unsigned int nbits)
+{
+  unsigned int min_nbits = 1024;
+  unsigned int max_nbits = 3072; /* GnuPG limit due to Assuan.  */
+  char *prompt, *answer;
+  unsigned int req_nbits;
+
+  for (;;)
+    {
+      prompt = xasprintf 
+        (keyno == 0?
+         _("What keysize do you want for the Signature key? (%u) "):
+         keyno == 1?
+         _("What keysize do you want for the Encryption key? (%u) "):
+         _("What keysize do you want for the Authentication key? (%u) "),
+         nbits);
+      answer = cpr_get ("cardedit.genkeys.size", prompt);
+      cpr_kill_prompt ();
+      req_nbits = *answer? atoi (answer): nbits;
+      xfree (prompt);
+      xfree (answer);
+      
+      if (req_nbits != nbits && (req_nbits % 32) )
+        {
+          req_nbits = ((req_nbits + 31) / 32) * 32;
+          tty_printf (_("rounded up to %u bits\n"), req_nbits);
+        }
+  
+      if (req_nbits == nbits)
+        return 0;  /* Use default.  */
+      
+      if (req_nbits < min_nbits || req_nbits > max_nbits)
+        {
+          tty_printf (_("%s keysizes must be in the range %u-%u\n"),
+                      "RSA", min_nbits, max_nbits);
+        }
+      else
+        {
+          tty_printf (_("The card will now be re-configured "
+                        "to generate a key of %u bits\n"), req_nbits);
+          show_keysize_warning ();
+          return req_nbits;
+        }
+    }
+}
+
+
+/* Change the size of key KEYNO (0..2) to NBITS and show an error
+   message if that fails.  */
+static gpg_error_t
+do_change_keysize (int keyno, unsigned int nbits) 
+{
+  gpg_error_t err;
+  char args[100];
+  
+  snprintf (args, sizeof args, "--force %d 1 %u", keyno+1, nbits);
+  err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
+  if (err)
+    log_error (_("error changing size of key %d to %u bits: %s\n"), 
+               keyno+1, nbits, gpg_strerror (err));
+  return err;
+}
+ 
+
+static void
 generate_card_keys (void)
 {
   struct agent_card_info_s info;
   int forced_chv1;
   int want_backup;
+  int keyno;
 
   if (get_info_for_key_operation (&info))
     return;
 
   if (info.extcap.ki)
     {
-#if GNUPG_MAJOR_VERSION == 1
       char *answer;
-
 
       answer = cpr_get ("cardedit.genkeys.backup_enc",
                         _("Make off-card backup of encryption key? (Y/n) "));
 
-      want_backup=answer_is_yes_no_default(answer,1);
-      cpr_kill_prompt();
-      xfree(answer);
-#else
-      want_backup = cpr_get_answer_is_yes 
-          ( "cardedit.genkeys.backup_enc",
-                    _("Make off-card backup of encryption key? (Y/n) "));
-  /*FIXME: we need answer_is_yes_no_default()*/
-#endif
+      want_backup = answer_is_yes_no_default (answer, 1/*(default to Yes)*/);
+      cpr_kill_prompt ();
+      xfree (answer);
     }
   else
     want_backup = 0;
@@ -1290,16 +1372,19 @@ generate_card_keys (void)
        || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
     {
       tty_printf ("\n");
-      log_info ("NOTE: keys are already stored on the card!\n");
+      log_info (_("NOTE: keys are already stored on the card!\n"));
       tty_printf ("\n");
-      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_keys",
-                                  _("Replace existing keys? (y/N) ")))
+      if ( !cpr_get_answer_is_yes ("cardedit.genkeys.replace_keys",
+                                   _("Replace existing keys? (y/N) ")))
         {
           agent_release_card_info (&info);
           return;
         }
     }
-  else if (!info.disp_name || !*info.disp_name)
+
+  /* If no displayed name has been set, we assume that this is a fresh
+     card and print a hint about the default PINs.  */
+  if (!info.disp_name || !*info.disp_name)
     {
       tty_printf ("\n");
       tty_printf (_("Please note that the factory settings of the PINs are\n"
@@ -1311,9 +1396,31 @@ generate_card_keys (void)
 
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
-  
-  generate_keypair (NULL, info.serialno,
-                    want_backup? opt.homedir:NULL);
+
+  /* If the cards features changeable key attributes, we ask for the
+     key size.  */
+  if (info.is_v2 && info.extcap.aac)
+    {
+      unsigned int nbits;
+
+      for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
+        {
+          nbits = ask_card_keysize (keyno, info.key_attr[keyno].nbits);
+          if (nbits && do_change_keysize (keyno, nbits))
+            {
+              /* Error: Better read the default key size again.  */
+              agent_release_card_info (&info);
+              if (get_info_for_key_operation (&info))
+                goto leave;
+              /* Ask again for this key size. */
+              keyno--;
+            }
+        }
+      /* Note that INFO has not be synced.  However we will only use
+         the serialnumber and thus it won't harm.  */
+    }
+     
+  generate_keypair (NULL, info.serialno, want_backup? opt.homedir:NULL);
 
  leave:
   agent_release_card_info (&info);
@@ -1364,6 +1471,26 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
+
+  /* If the cards features changeable key attributes, we ask for the
+     key size.  */
+  if (info.is_v2 && info.extcap.aac)
+    {
+      unsigned int nbits;
+
+    ask_again:
+      nbits = ask_card_keysize (keyno-1, info.key_attr[keyno-1].nbits);
+      if (nbits && do_change_keysize (keyno-1, nbits))
+        {
+          /* Error: Better read the default key size again.  */
+          agent_release_card_info (&info);
+          if (get_info_for_key_operation (&info))
+            goto leave;
+          goto ask_again;
+        }
+      /* Note that INFO has not be synced.  However we will only use
+         the serialnumber and thus it won't harm.  */
+    }
 
   okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
                                    keyno, info.serialno);
@@ -1577,7 +1704,7 @@ static struct
   };
 
 
-#if GNUPG_MAJOR_VERSION == 1 && defined (HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
 
 /* These two functions are used by readline for command completion. */
 
@@ -1610,6 +1737,7 @@ command_generator(const char *text,int state)
 static char **
 card_edit_completion(const char *text, int start, int end)
 {
+  (void)end;
   /* If we are at the start of a line, we try and command-complete.
      If not, just do nothing for now. */
 
@@ -1620,7 +1748,7 @@ card_edit_completion(const char *text, int start, int end)
 
   return NULL;
 }
-#endif /* GNUPG_MAJOR_VERSION == 1 && HAVE_LIBREADLINE */
+#endif /*HAVE_LIBREADLINE*/
 
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
@@ -1688,15 +1816,11 @@ card_edit (strlist_t commands)
 
 	    if (!have_commands)
               {
-#if GNUPG_MAJOR_VERSION == 1
 		tty_enable_completion (card_edit_completion);
-#endif
 		answer = cpr_get_no_help("cardedit.prompt", _("Command> "));
 		cpr_kill_prompt();
-#if GNUPG_MAJOR_VERSION == 1
 		tty_disable_completion ();
-#endif
-	    }
+              }
 	    trim_spaces(answer);
 	}
       while ( *answer == '#' );

@@ -112,6 +112,17 @@ echo_n () {
 #    cleanup_files="$cleanup_files $*"
 #}
 
+
+# Special function for zOS.
+my_chtag () {
+  #FIXME: Is there an envvar to test for the OS or do we 
+  #       need to resort to a configure test
+  #if test "$FOO" = "bar"; then
+  #   chtag -tc ISO8859-1 $1
+  #fi
+  :
+}
+
 have_pubkey_algo () {
   if  ../g10/gpg --homedir .  --version | grep "Pubkey:.*$1" >/dev/null
   then
