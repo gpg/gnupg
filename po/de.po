@@ -172,7 +172,9 @@ msgstr "Die Standard-PIN wird für %s benutzt\n"
 #: g10/app-openpgp.c:1501
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
-msgstr "Die Standard-PIN konnte für %s nicht benutzt werden: %s - sie wird vorläufig ausgeschaltet\n"
+msgstr ""
+"Die Standard-PIN konnte für %s nicht benutzt werden: %s - sie wird vorläufig "
+"ausgeschaltet\n"
 
 #: g10/app-openpgp.c:1516
 #, c-format
@@ -630,7 +632,8 @@ msgstr "%s-Schlüssellängen müssen im Bereich %u-%u sein\n"
 #: g10/card-util.c:1319
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgstr "Die Karten wird nun umkonfiguriert um Schlüssel von %u Bit zu erzeugen\n"
+msgstr ""
+"Die Karten wird nun umkonfiguriert um Schlüssel von %u Bit zu erzeugen\n"
 
 #: g10/card-util.c:1339
 #, c-format
@@ -6074,7 +6077,9 @@ msgstr "Vertrauenssatz %lu ist nicht von der angeforderten Art %d\n"
 
 #: g10/trustdb.c:422
 msgid "You may try to re-create the trustdb using the commands:\n"
-msgstr "Sie können versuchen die Vertrauensdatenbank durch folgende Befehle wiederherzustellen:\n"
+msgstr ""
+"Sie können versuchen die Vertrauensdatenbank durch folgende Befehle "
+"wiederherzustellen:\n"
 
 #: g10/trustdb.c:431
 msgid "If that does not work, please consult the manual\n"

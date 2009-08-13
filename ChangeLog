@@ -2,6 +2,9 @@
 
 	Release 1.4.10rc1.
 
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Remove now obsolete
+	--enable-camellia
+
 2009-08-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note Camellia and hkps.
