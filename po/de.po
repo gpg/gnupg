@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gnupg-1.4.8\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
 "POT-Creation-Date: 2009-08-13 09:26+0200\n"
-"PO-Revision-Date: 2009-07-14 18:04+0200\n"
+"PO-Revision-Date: 2009-08-13 16:13+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -167,12 +167,12 @@ msgstr "Antwort enthält den öffentlichen RSA-Exponenten nicht\n"
 #: g10/app-openpgp.c:1494
 #, c-format
 msgid "using default PIN as %s\n"
-msgstr ""
+msgstr "Die Standard-PIN wird für %s benutzt\n"
 
 #: g10/app-openpgp.c:1501
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
-msgstr ""
+msgstr "Die Standard-PIN konnte für %s nicht benutzt werden: %s - sie wird vorläufig ausgeschaltet\n"
 
 #: g10/app-openpgp.c:1516
 #, c-format
@@ -180,9 +180,8 @@ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
 
 #: g10/app-openpgp.c:1527 g10/app-openpgp.c:1981
-#, fuzzy
 msgid "||Please enter the PIN"
-msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
+msgstr "||Bitte die PIN eingeben"
 
 #: g10/app-openpgp.c:1542 g10/app-openpgp.c:1561 g10/app-openpgp.c:1722
 #: g10/app-openpgp.c:1739 g10/app-openpgp.c:1987 g10/app-openpgp.c:2032
@@ -217,37 +216,34 @@ msgstr "Noch %d Admin-PIN-Versuche, bis die Karte dauerhaft gesperrt ist\n"
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
 #: g10/app-openpgp.c:1669
-#, fuzzy, c-format
+#, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
+msgstr "|A|Bitte die Admin PIN eingeben%%0A[verbleibende Versuche: %d]"
 
 #: g10/app-openpgp.c:1673
-#, fuzzy
 msgid "|A|Please enter the Admin PIN"
-msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
+msgstr "|A|Bitte die Admin PIN eingeben"
 
 #: g10/app-openpgp.c:1694
 msgid "access to admin commands is not configured\n"
 msgstr "Zugriff auf Admin-Befehle ist nicht eingerichtet\n"
 
 #: g10/app-openpgp.c:2022 g10/card-util.c:108
-#, fuzzy
 msgid "Reset Code not or not anymore available\n"
-msgstr "Teile des geheimen Schlüssels sind nicht vorhanden\n"
+msgstr "Der Rückstellcode ist nicht oder nicht mehr vorhanden\n"
 
 #: g10/app-openpgp.c:2028
-#, fuzzy
 msgid "||Please enter the Reset Code for the card"
-msgstr "Bitte geben Sie die PIN%s%s%s ein um die Karte zu entsperren"
+msgstr "||Bitte geben Sie den Rückstellcode der karte ein"
 
 #: g10/app-openpgp.c:2038 g10/app-openpgp.c:2090
-#, fuzzy, c-format
+#, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
-msgstr "PIN für CHV%d ist zu kurz; die Mindestlänge beträgt %d\n"
+msgstr "Der Rückstellcode ist zu kurz; die Mindestlänge beträgt %d\n"
 
 #: g10/app-openpgp.c:2060
 msgid "|RN|New Reset Code"
-msgstr ""
+msgstr "|RN|Neuer Rückstellcode"
 
 #: g10/app-openpgp.c:2061
 msgid "|AN|New Admin PIN"
@@ -283,9 +279,8 @@ msgid "generating new key\n"
 msgstr "neue Schlüssel werden erzeugt\n"
 
 #: g10/app-openpgp.c:2195
-#, fuzzy
 msgid "writing new key\n"
-msgstr "neue Schlüssel werden erzeugt\n"
+msgstr "der neue Schlüssel wird geschrieben\n"
 
 #: g10/app-openpgp.c:2620
 msgid "creation timestamp missing\n"
@@ -449,9 +444,8 @@ msgid "can't do this in batch mode\n"
 msgstr "Dies kann im Batchmodus nicht durchgeführt werden.\n"
 
 #: g10/card-util.c:106
-#, fuzzy
 msgid "This command is only available for version 2 cards\n"
-msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
+msgstr "Dieser Befehl ist nur für Karten der Version 2 verfügbar.\n"
 
 #: g10/card-util.c:141 g10/card-util.c:1455 g10/card-util.c:1565
 #: g10/keyedit.c:423 g10/keyedit.c:444 g10/keyedit.c:458 g10/keygen.c:1434
@@ -529,9 +523,9 @@ msgid "error reading `%s': %s\n"
 msgstr "Fehler beim Lesen von `%s': %s\n"
 
 #: g10/card-util.c:836
-#, fuzzy, c-format
+#, c-format
 msgid "error writing `%s': %s\n"
-msgstr "Fehler beim Erstellen von `%s': %s\n"
+msgstr "Fehler beim Schreiben von `%s': %s\n"
 
 #: g10/card-util.c:863
 msgid "Login data (account name): "
@@ -603,21 +597,25 @@ msgid ""
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
+"Hinweis: Es kann nicht sichergestellt werden, daß die Karte die\n"
+"         angeforderte Schlüssellange unterstützt.  Falls die \n"
+"         Schlüsselerzeugung fehlschlägt, sollten Sie in den Unterlagen\n"
+"         zu Ihrer Karte nachsehen, welche Längen möglich sind.\n"
 
 #: g10/card-util.c:1292
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
+msgstr "Welche Länge wünschen Sie für den Signaturschlüssel? (%u) "
 
 #: g10/card-util.c:1294
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
+msgstr "Welche Länge wünschen Sie für den Verschlüsselungsschlüssel? (%u) "
 
 #: g10/card-util.c:1295
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
+msgstr "Welche Länge wünschen Sie für den Authentifizierungsschlüssel? (%u) "
 
 #: g10/card-util.c:1306 g10/keygen.c:1648 g10/keygen.c:1654
 #, c-format
@@ -632,12 +630,12 @@ msgstr "%s-Schlüssellängen müssen im Bereich %u-%u sein\n"
 #: g10/card-util.c:1319
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgstr ""
+msgstr "Die Karten wird nun umkonfiguriert um Schlüssel von %u Bit zu erzeugen\n"
 
 #: g10/card-util.c:1339
-#, fuzzy, c-format
+#, c-format
 msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "Der Socket kann nicht an `%s' gebunden werden: %s\n"
+msgstr "Fehler bem Ändern der Länge des Schlüssels %d auf %u Bits: %s\n"
 
 #: g10/card-util.c:1361
 msgid "Make off-card backup of encryption key? (Y/n) "
@@ -645,9 +643,8 @@ msgstr ""
 "Sicherung des Verschlüsselungsschlüssel außerhalb der Karte erstellen? (J/n) "
 
 #: g10/card-util.c:1375
-#, fuzzy
 msgid "NOTE: keys are already stored on the card!\n"
-msgstr "Geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
+msgstr "ACHTUNG: Auf der Karte sind bereits Schlüssel gespeichert!\n"
 
 #: g10/card-util.c:1378
 msgid "Replace existing keys? (y/N) "
@@ -702,9 +699,9 @@ msgid "secret key already stored on a card\n"
 msgstr "Geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
 
 #: g10/card-util.c:1620
-#, fuzzy, c-format
+#, c-format
 msgid "error writing key to card: %s\n"
-msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
+msgstr "Fehler beim Schreiben des Schlüssels auf die Karte: %s\n"
 
 #: g10/card-util.c:1679 g10/keyedit.c:1349
 msgid "quit this menu"
@@ -768,7 +765,7 @@ msgstr "überprüfe die PIN und liste alle Daten auf"
 
 #: g10/card-util.c:1698
 msgid "unblock the PIN using a Reset Code"
-msgstr ""
+msgstr "Blockierung der PIN mittels des Rückstellcodes aufheben"
 
 #: g10/card-util.c:1820 g10/keyedit.c:1619
 msgid "Command> "
@@ -4027,14 +4024,14 @@ msgid "Please select what kind of key you want:\n"
 msgstr "Bitte wählen Sie, welche Art von Schlüssel Sie möchten:\n"
 
 #: g10/keygen.c:1492
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA and RSA (default)\n"
-msgstr "   (%d) DSA und Elgamal (voreingestellt)\n"
+msgstr "   (%d) RSA und RSA (voreingestellt)\n"
 
 #: g10/keygen.c:1494
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) DSA and Elgamal\n"
-msgstr "   (%d) DSA und Elgamal (voreingestellt)\n"
+msgstr "   (%d) DSA und Elgamal\n"
 
 #: g10/keygen.c:1496
 #, c-format
@@ -4072,9 +4069,9 @@ msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-Schlüssel können zwischen %u und %u Bit lang sein.\n"
 
 #: g10/keygen.c:1623
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
+msgstr "Welche Länge wünschen Sie für den Unterschlüssel? (%u) "
 
 #: g10/keygen.c:1626
 #, c-format
@@ -4932,9 +4929,9 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "WARNUNG: Die Verwendung des Hashverfahrens %s ist nicht ratsam\n"
 
 #: g10/misc.c:491
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: This feature is not available in %s\n"
-msgstr "HINWEIS: %s ist in dieser Version nicht vorhanden\n"
+msgstr "HINWEIS: Diese Funktion ist in %s nicht vorhanden\n"
 
 #: g10/misc.c:748
 #, c-format
@@ -6025,9 +6022,8 @@ msgid "%s: failed to append a record: %s\n"
 msgstr "%s: konnte Satz nicht anhängen: %s\n"
 
 #: g10/tdbio.c:1502
-#, fuzzy
 msgid "Error: The trustdb is corrupted.\n"
-msgstr "%s: trust-db erzeugt\n"
+msgstr "Fehler: Die Vertrauensdatenbank ist fehlerhaft\n"
 
 #: g10/textfilter.c:147
 #, c-format
@@ -6078,11 +6074,11 @@ msgstr "Vertrauenssatz %lu ist nicht von der angeforderten Art %d\n"
 
 #: g10/trustdb.c:422
 msgid "You may try to re-create the trustdb using the commands:\n"
-msgstr ""
+msgstr "Sie können versuchen die Vertrauensdatenbank durch folgende Befehle wiederherzustellen:\n"
 
 #: g10/trustdb.c:431
 msgid "If that does not work, please consult the manual\n"
-msgstr ""
+msgstr "Falls dies nicht funktioniert, sehen Sie bitte im Handbuch nach\n"
 
 #: g10/trustdb.c:466
 #, c-format
