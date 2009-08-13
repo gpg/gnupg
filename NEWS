@@ -17,6 +17,10 @@ Noteworthy changes in version 1.4.10 (unreleased)
 
     * Many smaller bug fixes.
 
+    * Support for the Camellia cipher (RFC-5581).
+
+    * Support for HKP keyservers over SSL ("HKPS").
+
 
 Noteworthy changes in version 1.4.9 (2008-03-26)
 ------------------------------------------------

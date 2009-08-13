@@ -1,3 +1,7 @@
+2009-08-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note Camellia and hkps.
+
 2009-07-21  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AH_BOTTOM): Add macros for estream-printf.
