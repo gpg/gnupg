@@ -1429,11 +1429,11 @@ keyserver each time you use it.
 
 @item --keyserver-options @code{name=value1 }
 This is a space or comma delimited string that gives options for the
-keyserver. Options can be prepended with a `no-' to give the opposite
-meaning. Valid import-options or export-options may be used here as well
-to apply to importing (@option{--recv-key}) or exporting
-(@option{--send-key}) a key from a keyserver. While not all options are
-available for all keyserver types, some common options are:
+keyserver. Options can be prefixed with a `no-' to give the opposite
+meaning. Valid import-options or export-options may be used here as
+well to apply to importing (@option{--recv-key}) or exporting
+(@option{--send-key}) a key from a keyserver. While not all options
+are available for all keyserver types, some common options are:
 
 @table @asis
 
@@ -1515,6 +1515,16 @@ Turn on debug output in the keyserver helper program.  Note that the
 details of debug output depends on which keyserver helper program is
 being used, and in turn, on any libraries that the keyserver helper
 program uses internally (libcurl, openldap, etc).
+
+@item check-cert
+Enable certificate checking if the keyserver presents one (for hkps or
+ldaps).  Defaults to on.
+
+@item ca-cert-file
+Provide a certificate file to override the system default.  Only
+necessary if check-cert is enabled, and the keyserver is using a
+certificate that is not present in a system default certificate list.
+
 @end table
 
 @item --completes-needed @code{n}
