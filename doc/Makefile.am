@@ -22,8 +22,13 @@ EXTRA_DIST = DETAILS faq.raw FAQ faq.html \
              gpg.texi gpgv.texi specify-user-id.texi see-also-note.texi \
 	     opt-homedir.texi texi.css yat2m.c gpl.texi gpg-zip.1
 
+
 myman_sources = gpg.texi gpgv.texi
 myman_pages   = gpg.1 gpgv.1
+
+
+sources_from_trunk = $(myman_sources) \
+                     opt-homedir.texi specify-user-id.texi see-also-note.texi
 
 info_TEXINFOS = gnupg1.texi
 
@@ -105,3 +110,14 @@ endif
 dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
+
+# Helper to update some source files.
+update-source-from-gnupg-2:
+	@set -e; \
+	 if test -d ../../gnupg/scd; then dir="../../gnupg"; \
+	 else exit 1; \
+	 fi; \
+	 for i in $(sources_from_trunk); do \
+           cp $$dir/doc/$$i $$i; echo $$i; \
+	 done ;\
+	 echo "Please remember to update the ChangeLog!"

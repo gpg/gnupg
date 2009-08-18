@@ -1,6 +1,11 @@
+2009-08-18  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (sources_from_trunk): New.
+	(update-source-from-gnupg-2): New.  Run it.  Fixes bug#917
+
 2009-08-13  Werner Koch  <wk@g10code.com>
 
-	* gpgv.texi, gpg.texi: Udpate from GnuPG-2.
+	* gpgv.texi, gpg.texi: Update from GnuPG-2.
 
 2008-04-30  David Shaw  <dshaw@jabberwocky.com>
 

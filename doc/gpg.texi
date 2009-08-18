@@ -1429,11 +1429,11 @@ keyserver each time you use it.
 
 @item --keyserver-options @code{name=value1 }
 This is a space or comma delimited string that gives options for the
-keyserver. Options can be prepended with a `no-' to give the opposite
-meaning. Valid import-options or export-options may be used here as well
-to apply to importing (@option{--recv-key}) or exporting
-(@option{--send-key}) a key from a keyserver. While not all options are
-available for all keyserver types, some common options are:
+keyserver. Options can be prefixed with a `no-' to give the opposite
+meaning. Valid import-options or export-options may be used here as
+well to apply to importing (@option{--recv-key}) or exporting
+(@option{--send-key}) a key from a keyserver. While not all options
+are available for all keyserver types, some common options are:
 
 @table @asis
 
@@ -1515,6 +1515,16 @@ Turn on debug output in the keyserver helper program.  Note that the
 details of debug output depends on which keyserver helper program is
 being used, and in turn, on any libraries that the keyserver helper
 program uses internally (libcurl, openldap, etc).
+
+@item check-cert
+Enable certificate checking if the keyserver presents one (for hkps or
+ldaps).  Defaults to on.
+
+@item ca-cert-file
+Provide a certificate file to override the system default.  Only
+necessary if check-cert is enabled, and the keyserver is using a
+certificate that is not present in a system default certificate list.
+
 @end table
 
 @item --completes-needed @code{n}
@@ -1958,17 +1968,19 @@ message modification attack.
 Set the list of personal cipher preferences to @code{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
-to factor in their own preferred algorithms when algorithms are chosen
-via recipient key preferences.  The most highly ranked cipher in this
-list is also used for the @option{--symmetric} encryption command.
+to safely override the algorithm chosen by the recipient key
+preferences, as GPG will only select an algorithm that is usable by
+all recipients.  The most highly ranked cipher in this list is also
+used for the @option{--symmetric} encryption command.
 
 @item --personal-digest-preferences @code{string}
 Set the list of personal digest preferences to @code{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
-to factor in their own preferred algorithms when algorithms are chosen
-via recipient key preferences.  The most highly ranked digest
-algorithm in this list is also used when signing without encryption
+to safely override the algorithm chosen by the recipient key
+preferences, as GPG will only select an algorithm that is usable by
+all recipients.  The most highly ranked digest algorithm in this list
+is also used when signing without encryption
 (e.g. @option{--clearsign} or @option{--sign}). The default value is
 SHA-1.
 
@@ -1976,10 +1988,11 @@ SHA-1.
 Set the list of personal compression preferences to @code{string}.
 Use @command{@gpgname --version} to get a list of available
 algorithms, and use @code{none} to set no preference at all.  This
-allows the user to factor in their own preferred algorithms when
-algorithms are chosen via recipient key preferences.  The most highly
-ranked compression algorithm in this list is also used when there are
-no recipient keys to consider (e.g. @option{--symmetric}).
+allows the user to safely override the algorithm chosen by the
+recipient key preferences, as GPG will only select an algorithm that
+is usable by all recipients.  The most highly ranked compression
+algorithm in this list is also used when there are no recipient keys
+to consider (e.g. @option{--symmetric}).
 
 @item --s2k-cipher-algo @code{name}
 Use @code{name} as the cipher algorithm used to protect secret keys.

@@ -6,7 +6,7 @@ If GnuPG and the info program are properly installed at your site, the
 command
 
 @example
-info gnupg1
+info gnupg
 @end example
 
 should give you access to the complete manual including a menu structure
