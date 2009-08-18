@@ -256,7 +256,8 @@ void
 print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 )
 {
     for( ; n; n--, p++ )
-	if( *p < 0x20 || (*p >= 0x7f && *p < 0xa0)
+	if (*p < 0x20 
+            || *p == 0x7f
 	    || *p == delim || *p == delim2
 	    || ((delim || delim2) && *p=='\\'))
 	  {
