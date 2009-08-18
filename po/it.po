@@ -6228,7 +6228,7 @@ msgstr "non è necessario un controllo del trustdb\n"
 #: g10/trustdb.c:602 g10/trustdb.c:2468
 #, c-format
 msgid "next trustdb check due at %s\n"
-msgstr "il prossimoi controllo del trustdb sarà fatto il %s\n"
+msgstr "il prossimo controllo del trustdb sarà fatto il %s\n"
 
 #: g10/trustdb.c:611
 #, fuzzy, c-format
