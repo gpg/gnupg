@@ -1,5 +1,8 @@
 2009-08-18  Werner Koch  <wk@g10code.com>
 
+	* iobuf.c (fd_cache_close): Change debug printf format assuming
+	that FILEP_OR_FD is today always an int.
+
 	* miscutil.c (print_string2): Loose check for control characters
 	to better cope with utf-8.  The range 0x80..0x9f is nowadays not
 	anymore accidently used for control charaters.  Fixes bug#1103.

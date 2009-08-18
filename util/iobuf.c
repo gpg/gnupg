@@ -319,7 +319,7 @@ fd_cache_close (const char *fname, FILEP_OR_FD fp)
         close(fp);
 #endif
         if( DBG_IOBUF )
-            log_debug ("fd_cache_close (%p) real\n", (void*)fp);
+          log_debug ("fd_cache_close (%d) real\n", (int)fp);
         return;
     }
     /* try to reuse a slot */
