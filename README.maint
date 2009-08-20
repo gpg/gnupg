@@ -21,7 +21,8 @@ Release process:
   * Make sure that all new PO files are checked in.
   * Decide whether you want to update the automake standard files 
     (Mainly config.guess and config.sub).
-  * [1.4 only] Update gpg.texi and gpgv.texi from the trunk.
+  * [1.4 only] Update gpg.texi and gpgv.texi from the trunk:
+       make -C doc update-source-from-gnupg-2
   * Run "make -C po update-po".
   * Write NEWS entries and set the release date in NEWS.
   * In configure.ac set "my_issvn" to "no".

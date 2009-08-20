@@ -452,6 +452,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
   DEK *dek;
   STRING2KEY help_s2k;
   int dummy_canceled;
+  char s2k_cacheidbuf[1+16+1], *s2k_cacheid = NULL;
 
   if (!canceled)
     canceled = &dummy_canceled;
@@ -573,19 +574,16 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     }
   else 
     {
-      char *cacheid = NULL;
-      char buf[1+16+1];
-
       if ((mode == 3 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
 	{
-	  memset (buf, 0, sizeof buf);
-	  *buf = 'S';
-	  bin2hex (s2k->salt, 8, buf + 1);
-          cacheid = buf;
+	  memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
+	  *s2k_cacheidbuf = 'S';
+	  bin2hex (s2k->salt, 8, s2k_cacheidbuf + 1);
+	  s2k_cacheid = s2k_cacheidbuf;
 	}
 
       /* Divert to the gpg-agent. */
-      pw = passphrase_get (keyid, mode == 2, cacheid,
+      pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
                            (mode == 2 || mode == 4)? opt.passwd_repeat : 0,
                            tryagain_text, custdesc, custprompt, canceled);
       if (*canceled)
@@ -608,6 +606,8 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     dek->keylen = 0;
   else
     hash_passphrase (dek, pw, s2k);
+  if (s2k_cacheid)
+    memcpy (dek->s2k_cacheid, s2k_cacheid, sizeof dek->s2k_cacheid);
   xfree(last_pw);
   last_pw = pw;
   return dek;

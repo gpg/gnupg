@@ -426,6 +426,14 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
   return NULL;
 }
 
+void
+passphrase_clear_cache (u32 *keyid, const char *cacheid, int algo)
+{
+  (void)keyid;
+  (void)cacheid;
+  (void)algo;
+}
+
 struct keyserver_spec *
 parse_preferred_keyserver(PKT_signature *sig) 
 {

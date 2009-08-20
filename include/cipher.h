@@ -94,6 +94,7 @@ typedef struct
   int use_mdc;
   int symmetric;
   byte key[32]; /* This is the largest used keylen (256 bit). */
+  char s2k_cacheid[1+16+1];
 } DEK;
 
 

@@ -1,3 +1,7 @@
+2009-08-20  Daiki Ueno  <ueno@unixuser.org>  (wk)
+
+	* cipher.h (struct DEK): Add field S2K_CACHEID.
+
 2008-04-18  Werner Koch  <wk@g10code.com>
 
 	* cipher.h (CIPHER_ALGO_CAMELLIA256): Change ID to 13.

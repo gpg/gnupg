@@ -586,6 +586,13 @@ proc_encrypted( CTX c, PACKET *pkt )
 	write_status( STATUS_DECRYPTION_FAILED );
     }
     else {
+        if (gpg_err_code (result) == GPG_ERR_BAD_KEY
+	    && *c->dek->s2k_cacheid != '\0')
+	  {
+	    log_debug(_("cleared passphrase cached with ID: %s\n"),
+		      c->dek->s2k_cacheid);
+	    passphrase_clear_cache (NULL, c->dek->s2k_cacheid, 0);
+	  }
 	write_status( STATUS_DECRYPTION_FAILED );
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
 	/* Hmmm: does this work when we have encrypted using multiple
