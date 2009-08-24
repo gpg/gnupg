@@ -1,3 +1,7 @@
+2009-08-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.text: Suggested new ordering for --edit-key.
+
 2009-08-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (OpenPGP Options): Clarify that
