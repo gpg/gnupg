@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
- *               2006, 2007, 2008  Free Software Foundation, Inc.
+ *               2006, 2007, 2008, 2009  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <errno.h>
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
@@ -956,3 +957,85 @@ try_percent_escape (const char *str, const char *extra)
 {
   return do_percent_escape (str, extra, 0);
 }
+
+
+
+static char *
+do_strconcat (const char *s1, va_list arg_ptr)
+{
+  const char *argv[48];
+  size_t argc;
+  size_t needed;
+  char *buffer, *p;
+
+  argc = 0;
+  argv[argc++] = s1;
+  needed = strlen (s1);
+  while (((argv[argc] = va_arg (arg_ptr, const char *))))
+    {
+      needed += strlen (argv[argc]);
+      if (argc >= DIM (argv)-1)
+        {
+          errno = EINVAL;
+          return NULL;
+        }
+      argc++;
+    }
+  needed++;
+  buffer = jnlib_malloc (needed);
+  if (buffer)
+    {
+      for (p = buffer, argc=0; argv[argc]; argc++)
+        p = stpcpy (p, argv[argc]);
+    }
+  return buffer;
+}
+
+
+/* Concatenate the string S1 with all the following strings up to a
+   NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *
+strconcat (const char *s1, ...)
+{
+  va_list arg_ptr;
+  char *result;
+
+  if (!s1)
+    result = jnlib_strdup ("");
+  else
+    {
+      va_start (arg_ptr, s1);
+      result = do_strconcat (s1, arg_ptr);
+      va_end (arg_ptr);
+    }
+  return result;
+}
+
+/* Same as strconcat but terminate the process with an error message
+   if something goes wrong.  */
+char *
+xstrconcat (const char *s1, ...)
+{
+  va_list arg_ptr;
+  char *result;
+
+  if (!s1)
+    result = jnlib_xstrdup ("");
+  else
+    {
+      va_start (arg_ptr, s1);
+      result = do_strconcat (s1, arg_ptr);
+      va_end (arg_ptr);
+    }
+  if (!result)
+    {
+      if (errno == EINVAL)
+        fputs ("\nfatal: too many args for xstrconcat\n", stderr);
+      else
+        fputs ("\nfatal: out of memory\n", stderr);
+      exit (2);
+    }
+  return result;
+}
+

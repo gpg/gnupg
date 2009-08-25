@@ -99,4 +99,16 @@
 #  endif
 #endif
 
+
+/* Some GCC attributes.  Note that we use also define some in
+   mischelp.h, but this header and types.h are not always included.
+   Should eventually be put into one file (e.g. nlib-common.h).  */
+#if __GNUC__ >= 4 
+# define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
+#else
+# define GNUPG_GCC_A_SENTINEL(a) 
+#endif
+
+
+
 #endif /*LIBJNLIB_TYPES_H*/

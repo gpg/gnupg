@@ -1,6 +1,6 @@
 /* stringhelp.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2006, 2007  Free Software Foundation, Inc.
+ *               2006, 2007, 2009  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -122,6 +122,15 @@ isascii (int c)
    allocated.  */
 char *percent_escape (const char *str, const char *extra);
 char *try_percent_escape (const char *str, const char *extra);
+
+
+/* Concatenate the string S1 with all the following strings up to a
+   NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
+/* Ditto, but die on error.  */
+char *xstrconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
+
 
 
 #endif /*LIBJNLIB_STRINGHELP_H*/
