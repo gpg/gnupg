@@ -1,3 +1,7 @@
+2009-08-25  Werner Koch  <wk@g10code.com>
+
+	* compat.h: Add xstrconcat.
+
 2009-08-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add string_to_utf8() from GPA.

@@ -288,7 +288,7 @@ curl_easy_escape(CURL *curl,char *str,int length)
   else
     len=strlen(str);
 
-  enc=malloc(len+1);
+  enc = xtrymalloc(len+1);
   if(!enc)
     return enc;
 

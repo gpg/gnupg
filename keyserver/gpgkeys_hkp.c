@@ -106,7 +106,7 @@ send_key(int *eof)
   char *key=NULL,*encoded_key=NULL;
   size_t keysize=1;
 
-  key=malloc(1);
+  key = xtrymalloc(1);
   if(!key)
     {
       fprintf(console,"gpgkeys: unable to allocate memory for key\n");
@@ -179,7 +179,7 @@ send_key(int *eof)
 
   free(key);
 
-  key=malloc(8+strlen(encoded_key)+1);
+  key=xtrymalloc(8+strlen(encoded_key)+1);
   if(!key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -324,7 +324,7 @@ get_name(const char *getkey)
       goto fail;
     }
 
-  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
+  request=xtrymalloc(MAX_URL+60+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -408,7 +408,7 @@ search_key(const char *searchkey)
       goto fail;
     }
 
-  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
+  request=xtrymalloc(MAX_URL+60+strlen(searchkey_encoded));
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -519,7 +519,7 @@ srv_replace(const char *srvtag)
       char *newname,*newport;
 
       newname=strdup(srvlist->target);
-      newport=malloc(MAX_PORT);
+      newport=xtrymalloc(MAX_PORT);
       if(newname && newport)
 	{
 	  free(opt->host);
@@ -803,7 +803,7 @@ main(int argc,char *argv[])
 	      if(line[0]=='\n' || line[0]=='\0')
 		break;
 
-	      work=malloc(sizeof(struct keylist));
+	      work=xtrymalloc(sizeof(struct keylist));
 	      if(work==NULL)
 		{
 		  fprintf(console,"gpgkeys: out of memory while "
@@ -909,7 +909,7 @@ main(int argc,char *argv[])
 	  keyptr=keyptr->next;
 	}
 
-      searchkey=malloc(len+1);
+      searchkey=xtrymalloc(len+1);
       if(searchkey==NULL)
 	{
 	  ret=KEYSERVER_NO_MEMORY;

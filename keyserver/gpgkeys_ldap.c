@@ -147,7 +147,7 @@ key_in_keylist(const char *key,struct keylist *list)
 static int
 add_key_to_keylist(const char *key,struct keylist **list)
 {
-  struct keylist *keyptr=malloc(sizeof(struct keylist));
+  struct keylist *keyptr=xtrymalloc(sizeof(struct keylist));
 
   if(keyptr==NULL)
     {
@@ -320,14 +320,14 @@ make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
 	return 0;
 
       *modlist=grow;
-      grow[nummods]=malloc(sizeof(LDAPMod));
+      grow[nummods]=xtrymalloc(sizeof(LDAPMod));
       if(!grow[nummods])
 	return 0;
       grow[nummods]->mod_op=LDAP_MOD_REPLACE;
       grow[nummods]->mod_type=attr;
       if(value)
 	{
-	  grow[nummods]->mod_values=malloc(sizeof(char *)*2);
+	  grow[nummods]->mod_values=xtrymalloc(sizeof(char *)*2);
 	  if(!grow[nummods]->mod_values)
 	    {
 	      grow[nummods]=NULL;
@@ -586,7 +586,7 @@ send_key(int *eof)
   char keyid[17],state[6];
   LDAPMod **modlist,**addlist,**ml;
 
-  modlist=malloc(sizeof(LDAPMod *));
+  modlist=xtrymalloc(sizeof(LDAPMod *));
   if(!modlist)
     {
       fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
@@ -596,7 +596,7 @@ send_key(int *eof)
 
   *modlist=NULL;
 
-  addlist=malloc(sizeof(LDAPMod *));
+  addlist=xtrymalloc(sizeof(LDAPMod *));
   if(!addlist)
     {
       fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
@@ -647,7 +647,7 @@ send_key(int *eof)
       goto fail;
     }
 
-  dn=malloc(strlen("pgpCertID=")+16+1+strlen(basekeyspacedn)+1);
+  dn=xtrymalloc(strlen("pgpCertID=")+16+1+strlen(basekeyspacedn)+1);
   if(dn==NULL)
     {
       fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
@@ -657,7 +657,7 @@ send_key(int *eof)
 
   sprintf(dn,"pgpCertID=%s,%s",keyid,basekeyspacedn);
 
-  key=malloc(1);
+  key=xtrymalloc(1);
   if(!key)
     {
       fprintf(console,"gpgkeys: unable to allocate memory for key\n");
@@ -812,7 +812,7 @@ send_key_keyserver(int *eof)
   attrs[0]=&mod;
   attrs[1]=NULL;
 
-  dn=malloc(strlen("pgpCertid=virtual,")+strlen(basekeyspacedn)+1);
+  dn=xtrymalloc(strlen("pgpCertid=virtual,")+strlen(basekeyspacedn)+1);
   if(dn==NULL)
     {
       fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
@@ -823,7 +823,7 @@ send_key_keyserver(int *eof)
   strcpy(dn,"pgpCertid=virtual,");
   strcat(dn,basekeyspacedn);
 
-  key[0]=malloc(1);
+  key[0]=xtrymalloc(1);
   if(key[0]==NULL)
     {
       fprintf(console,"gpgkeys: unable to allocate memory for key\n");
@@ -1308,7 +1308,7 @@ search_key(const char *searchkey)
 		 "pgpkeysize","pgpkeytype",NULL};
   enum ks_search_type search_type;
 
-  search=malloc(2+1+9+1+3+strlen(searchkey)+3+1+15+14+1+1+20);
+  search=xtrymalloc(2+1+9+1+3+strlen(searchkey)+3+1+15+14+1+1+20);
   if(!search)
     {
       fprintf(console,"gpgkeys: out of memory when building search list\n");
@@ -1671,7 +1671,7 @@ find_basekeyspacedn(void)
 	      LDAPMessage *si_res;
 	      char *object;
 
-	      object=malloc(17+strlen(context[i])+1);
+	      object=xtrymalloc(17+strlen(context[i])+1);
 	      if(!object)
 		return -1;
 
@@ -2042,7 +2042,7 @@ main(int argc,char *argv[])
 	      if(line[0]=='\n' || line[0]=='\0')
 		break;
 
-	      work=malloc(sizeof(struct keylist));
+	      work=xtrymalloc(sizeof(struct keylist));
 	      if(work==NULL)
 		{
 		  fprintf(console,"gpgkeys: out of memory while "
@@ -2326,7 +2326,7 @@ main(int argc,char *argv[])
 	  keyptr=keyptr->next;
 	}
 
-      searchkey=malloc((len*3)+1);
+      searchkey=xtrymalloc((len*3)+1);
       if(searchkey==NULL)
 	{
 	  ret=KEYSERVER_NO_MEMORY;

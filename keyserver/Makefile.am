@@ -27,10 +27,10 @@ gpglibexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@ @GPGKEYS_CUR
 gpglibexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
-gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
-gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
+gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h ksmalloc.c
+gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h ksmalloc.c
 gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
-gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
+gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h ksmalloc.c
 
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 

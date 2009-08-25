@@ -15,4 +15,11 @@ int ascii_strncasecmp( const char *a, const char *b, size_t n);
 char *strsep (char **stringp, const char *delim);
 #endif
 
+#if __GNUC__ >= 4 
+char *xstrconcat (const char *s1, ...) __attribute__ ((sentinel(0)));
+#else
+char *xstrconcat (const char *s1, ...);
+#endif
+
+
 #endif /* !_COMPAT_H_ */
