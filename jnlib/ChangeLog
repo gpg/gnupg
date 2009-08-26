@@ -1,3 +1,15 @@
+2009-08-26  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c [HAVE_PWD_H]: Include pwd.h.
+	(do_make_filename): New.
+	(make_filename, make_filename_try): Implement using the new
+	function.
+	* t-stringhelp.c (test_make_filename_try): New.
+	* t-support.c (gcry_strdup): Fix.
+
+	* stringhelp.h (make_filename, make_filename_try): Add sentinel
+	attribute.
+
 2009-08-25  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c: Include errno.h.

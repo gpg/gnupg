@@ -22,11 +22,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "stringhelp.h"
 
 #include "t-support.h"
 
+
+static char *home_buffer;
+
+
+const char *
+gethome (void)
+{
+  if (!home_buffer)
+    {
+      char *home = getenv("HOME");
+      
+#if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
+      if(home)
+        home_buffer = xstrdup (home);
+      else
+        {
+          struct passwd *pwd;
+          
+          pwd = getpwuid (getuid());
+          if (pwd)
+            home_buffer = xstrdup (pwd->pw_dir);
+        }
+#endif
+    }
+  return home_buffer;
+}
 
 
 static void
@@ -261,6 +292,110 @@ test_xstrconcat (void)
 }
 
 
+static void
+test_make_filename_try (void)
+{
+  char *out;
+  const char *home = gethome ();
+  size_t homelen = home? strlen (home):0;
+
+  out = make_filename_try ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", NULL);
+  if (out)
+    fail (0);
+  else if (errno != EINVAL)
+    fail (0);
+  xfree (out);
+  out = make_filename_try ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", NULL);
+  if (out)
+    fail (0);
+  else if (errno != EINVAL)
+    fail (0);
+  xfree (out);
+
+  out = make_filename_try ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                           "1", "2", NULL);
+  if (!out || strcmp (out, 
+                      "1/2/3/4/5/6/7/8/9/10/" 
+                      "1/2/3/4/5/6/7/8/9/10/" 
+                      "1/2/3/4/5/6/7/8/9/10/" 
+                      "1/2"))
+    fail (0);
+  xfree (out);
+
+  out = make_filename_try ("foo", "~/bar", "baz/cde", NULL);
+  if (!out || strcmp (out, "foo/~/bar/baz/cde"))
+    fail (1);
+  xfree (out);
+
+  out = make_filename_try ("foo", "~/bar", "baz/cde/", NULL);
+  if (!out || strcmp (out, "foo/~/bar/baz/cde/"))
+    fail (1);
+  xfree (out);
+
+  out = make_filename_try ("/foo", "~/bar", "baz/cde/", NULL);
+  if (!out || strcmp (out, "/foo/~/bar/baz/cde/"))
+    fail (1);
+  xfree (out);
+
+  out = make_filename_try ("//foo", "~/bar", "baz/cde/", NULL);
+  if (!out || strcmp (out, "//foo/~/bar/baz/cde/"))
+    fail (1);
+  xfree (out);
+
+  out = make_filename_try ("", "~/bar", "baz/cde", NULL);
+  if (!out || strcmp (out, "/~/bar/baz/cde"))
+    fail (1);
+  xfree (out);
+
+
+  out = make_filename_try ("~/foo", "bar", NULL);
+  if (!out)
+    fail (2);
+  if (home)
+    {
+      if (strlen (out) < homelen + 7)
+        fail (2);
+      if (strncmp (out, home, homelen))
+        fail (2);
+      if (strcmp (out+homelen, "/foo/bar"))
+        fail (2);
+    }
+  else
+    {
+      if (strcmp (out, "~/foo/bar"))
+        fail (2);
+    }
+  xfree (out);
+
+  out = make_filename_try ("~", "bar", NULL);
+  if (!out)
+    fail (2);
+  if (home)
+    {
+      if (strlen (out) < homelen + 3)
+        fail (2);
+      if (strncmp (out, home, homelen))
+        fail (2);
+      if (strcmp (out+homelen, "/bar"))
+        fail (2);
+    }
+  else
+    {
+      if (strcmp (out, "~/bar"))
+        fail (2);
+    }
+  xfree (out);
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -271,7 +406,9 @@ main (int argc, char **argv)
   test_compare_filenames ();
   test_strconcat ();
   test_xstrconcat ();
+  test_make_filename_try ();
 
+  xfree (home_buffer);
   return 0;
 }
 

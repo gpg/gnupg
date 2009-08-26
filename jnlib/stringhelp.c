@@ -24,8 +24,13 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <errno.h>
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif
+#include <unistd.h>
+#include <sys/types.h>
 #ifdef HAVE_W32_SYSTEM
-#include <windows.h>
+# include <windows.h>
 #endif
 
 #include "libjnlib-config.h"
@@ -313,62 +318,159 @@ make_dirname(const char *filepath)
 
 
 
-/* Implementation of make_filename and make_filename_try.  We need to
-   use macros here to avoid the use of the sometimes problematic
-   va_copy function which is not available on all systems.  */
-#define MAKE_FILENAME_PART1                        \
-  va_list arg_ptr;                                 \
-  size_t n;                                        \
-  const char *s;                                   \
-  char *name, *home, *p;                           \
-                                                   \
-  va_start (arg_ptr, first_part);                  \
-  n = strlen (first_part) + 1;                     \
-  while ( (s = va_arg (arg_ptr, const char *)) )   \
-    n += strlen(s) + 1;                            \
-  va_end(arg_ptr);                                 \
-                                                   \
-  home = NULL;                                     \
-  if ( *first_part == '~' && first_part[1] == '/'  \
-       && (home = getenv("HOME")) && *home )       \
-    n += strlen (home);                            
+static char *
+do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
+{
+  const char *argv[32];
+  int argc;
+  size_t n; 
+  int skip = 1;
+  char *home_buffer = NULL;
+  char *name, *home, *p;                           
+       
+  n = strlen (first_part) + 1;                     
+  argc = 0;
+  while ( (argv[argc] = va_arg (arg_ptr, const char *)) )   
+    {
+      n += strlen (argv[argc]) + 1;                        
+      if (argc >= DIM (argv)-1)
+        {
+          if (xmode)
+            BUG ();
+          errno = EINVAL;
+          return NULL;
+        }
+      argc++; 
+    }
+  n++;
   
-#define MAKE_FILENAME_PART2                         \
-  p = (home                                         \
-       ? stpcpy (stpcpy (name,home), first_part + 1)\
-       : stpcpy(name, first_part));                 \
-                                                    \
-  va_start (arg_ptr, first_part);                   \
-  while ( (s = va_arg(arg_ptr, const char *)) )     \
-    p = stpcpy (stpcpy (p,"/"), s);                 \
-  va_end(arg_ptr);                                  \
-  return change_slashes (name);
+  home = NULL;                                     
+  if (*first_part == '~')
+    {
+      if (first_part[1] == '/' || !first_part[1])
+        {
+          /* This is the "~/" or "~" case.  */
+          home = getenv("HOME");
 
+#if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
+          if (!home)
+            {
+              struct passwd *pwd;
+              
+              pwd = getpwuid (getuid());
+              if (pwd)
+                {
+                  if (xmode)
+                    home_buffer = home = jnlib_xstrdup (pwd->pw_dir);
+                  else
+                    {
+                      home_buffer = home = jnlib_strdup (pwd->pw_dir);
+                      if (!home)
+                        return NULL;
+                    }
+                }
+            }
+#endif /* HAVE_GETPWUID && HAVE_PWD_H */
+
+          if (home && *home)
+            n += strlen (home);                            
+        }
+#if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
+      else
+        {
+          /* This is the "~username/" or "~username" case.  */
+          char *user;
+          struct passwd *pwd;
+
+          if (xmode)
+            user = jnlib_xstrdup (first_part+1);
+          else
+            {
+              user = jnlib_strdup (first_part+1);
+              if (!user)
+                return NULL;
+            }
+          p = strchr (user, '/');
+          if (p)
+            *p = 0;
+          skip = 1 + strlen (user);
+
+          /* Fixme: Use getwpnam_r if available.  */
+          pwd = getpwnam (user);
+          jnlib_free (user);
+          if (pwd)
+            {
+              if (xmode)
+                home_buffer = home = jnlib_xstrdup (pwd->pw_dir);
+              else
+                {
+                  home_buffer = home = jnlib_strdup (pwd->pw_dir);
+                  if (!home)
+                    return NULL;
+                }
+            }
+          if (home)
+            n += strlen (home);
+          else
+            skip = 1;
+        }
+#endif /*HAVE_GETPWNAM && HAVE_PWD_H*/
+    }
+
+  if (xmode)
+    name = jnlib_xmalloc (n);
+  else
+    {
+      name = jnlib_malloc (n);
+      if (!name)
+        {
+          jnlib_free (home_buffer);
+          return NULL;
+        }
+    }
+  
+  if (home)
+    p = stpcpy (stpcpy (name, home), first_part + skip);
+  else
+    p = stpcpy (name, first_part);
+
+  jnlib_free (home_buffer);
+
+  for (argc=0; argv[argc]; argc++)
+    p = stpcpy (stpcpy (p, "/"), argv[argc]);
+
+  return change_slashes (name);
+}
 
 /* Construct a filename from the NULL terminated list of parts.  Tilde
-   expansion is done here.  This function terminates the process on
-   memory shortage. */
+   expansion is done for the first argument.  This function terminates
+   the process on memory shortage. */
 char *
 make_filename (const char *first_part, ... )
 {
-  MAKE_FILENAME_PART1
-  name = jnlib_xmalloc (n);
-  MAKE_FILENAME_PART2
+  va_list arg_ptr;
+  char *result;
+
+  va_start (arg_ptr, first_part);
+  result = do_make_filename (1, first_part, arg_ptr);
+  va_end (arg_ptr);
+  return result;
 }
 
 /* Construct a filename from the NULL terminated list of parts.  Tilde
-   expansion is done here.  This function may return NULL on error. */
+   expansion is done for the first argument.  This function may return
+   NULL on error. */
 char *
 make_filename_try (const char *first_part, ... )
 {
-  MAKE_FILENAME_PART1
-  name = jnlib_malloc (n);
-  if (!name)
-    return NULL;
-  MAKE_FILENAME_PART2
+  va_list arg_ptr;
+  char *result;
+
+  va_start (arg_ptr, first_part);
+  result = do_make_filename (0, first_part, arg_ptr);
+  va_end (arg_ptr);
+  return result;
 }
-#undef MAKE_FILENAME_PART1
-#undef MAKE_FILENAME_PART2
 
 
 
