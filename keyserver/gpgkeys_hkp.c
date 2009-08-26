@@ -43,6 +43,7 @@
 #else
 #include "curl-shim.h"
 #endif
+#include "util.h"
 #ifdef USE_DNS_SRV
 #include "srv.h"
 #endif
@@ -93,6 +94,20 @@ append_path(char *dest,const char *src)
 
   return strcat(dest,src);
 }
+
+/* Return a pointer into STRING so that appending PATH to STRING will
+   not yield a duplicated slash. */
+static const char *
+appendable_path (const char *string, const char *path)
+{
+  size_t n;
+
+  if (path[0] == '/' && (n=strlen (string)) && string[n-1] == '/')
+    return path+1;
+  else
+    return path;
+}
+
 
 int
 send_key(int *r_eof)
@@ -174,16 +189,13 @@ send_key(int *r_eof)
 
   free(key);
 
-  key=malloc(8+strlen(encoded_key)+1);
+  key = strconcat ("keytext=", encoded_key, NULL);
   if(!key)
     {
       fprintf(console,"gpgkeys: out of memory\n");
       ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
-
-  strcpy(key,"keytext=");
-  strcat(key,encoded_key);
 
   strcpy(request,proto);
   strcat(request,"://");
@@ -216,7 +228,7 @@ send_key(int *r_eof)
   ret=KEYSERVER_OK;
 
  fail:
-  free(key);
+  xfree (key);
   curl_free(encoded_key);
 
   if(ret!=0 && begin)
@@ -319,27 +331,25 @@ get_name(const char *getkey)
       goto fail;
     }
 
-  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
+  request = strconcat
+    (proto,
+     "://",
+     opt->host,
+     ":",
+     port,
+     opt->path,
+     appendable_path (opt->path,"/pks/lookup?op=get&options=mr&search="),
+     searchkey_encoded,
+     opt->action == KS_GETNAME? "&exact=on":"",
+     NULL);
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
       ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
-
+  
   fprintf(output,"NAME %s BEGIN\n",getkey);
-
-  strcpy(request,proto);
-  strcat(request,"://");
-  strcat(request,opt->host);
-  strcat(request,":");
-  strcat(request,port);
-  strcat(request,opt->path);
-  append_path(request,"/pks/lookup?op=get&options=mr&search=");
-  strcat(request,searchkey_encoded);
-
-  if(opt->action==KS_GETNAME)
-    strcat(request,"&exact=on");
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -372,7 +382,7 @@ get_name(const char *getkey)
 
  fail:
   curl_free(searchkey_encoded);
-  free(request);
+  xfree (request);
 
   if(ret!=KEYSERVER_OK)
     fprintf(output,"\nNAME %s FAILED %d\n",getkey,ret);
@@ -388,6 +398,7 @@ search_key(const char *searchkey)
   char *searchkey_encoded;
   int ret=KEYSERVER_INTERNAL_ERROR;
   enum ks_search_type search_type;
+  const char *hexprefix;
 
   search_type=classify_ks_search(&searchkey);
 
@@ -403,7 +414,23 @@ search_key(const char *searchkey)
       goto fail;
     }
 
-  request=malloc(MAX_URL+60+strlen(searchkey_encoded));
+  /* HKP keyservers like the 0x to be present when searching by
+     keyid.  */
+  hexprefix = (search_type==KS_SEARCH_KEYID_SHORT
+               || search_type==KS_SEARCH_KEYID_LONG)? "0x":"";
+
+  request = strconcat
+    (proto,
+     "://",
+     opt->host,
+     ":",
+     port,
+     opt->path,
+     appendable_path (opt->path, "/pks/lookup?op=index&options=mr&search="),
+     hexprefix,
+     searchkey_encoded,
+     opt->action == KS_GETNAME? "&exact=on":"",
+     NULL);
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
@@ -412,24 +439,6 @@ search_key(const char *searchkey)
     }
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
-
-  strcpy(request,proto);
-  strcat(request,"://");
-  strcat(request,opt->host);
-  strcat(request,":");
-  strcat(request,port);
-  strcat(request,opt->path);
-  append_path(request,"/pks/lookup?op=index&options=mr&search=");
-
-  /* HKP keyservers like the 0x to be present when searching by
-     keyid */
-  if(search_type==KS_SEARCH_KEYID_SHORT || search_type==KS_SEARCH_KEYID_LONG)
-    strcat(request,"0x");
-
-  strcat(request,searchkey_encoded);
-
-  if(search_type!=KS_SEARCH_SUBSTR)
-    strcat(request,"&exact=on");
 
   if(opt->verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -451,9 +460,8 @@ search_key(const char *searchkey)
     }
 
  fail:
-
   curl_free(searchkey_encoded);
-  free(request);
+  xfree (request);
 
   if(ret!=KEYSERVER_OK)
     fprintf(output,"\nSEARCH %s FAILED %d\n",searchkey,ret);

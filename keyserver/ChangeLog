@@ -1,5 +1,11 @@
 2009-08-26  Werner Koch  <wk@g10code.com>
 
+	* gpgkeys_hkp.c: Include util.h.
+	(send_key): Use strconcat to build KEY.
+	(appendable_path): New.
+	(get_name): Use strconcat to build REQUEST.
+	(search_key): Ditto.
+
 	* ksutil.c: Include util.h.
 	(parse_ks_options): Use make_filename_try for the ca-cert-file arg.
 
