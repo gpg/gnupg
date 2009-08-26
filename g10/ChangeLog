@@ -26,7 +26,7 @@
 2009-08-05  Werner Koch  <wk@g10code.com>
 
 	* card-util.c: Enable readline support also in GnuPG-2.
-	
+
 	* call-agent.c (agent_learn): Always select the card first.
 
 	* gpg.c: Add --key-edit alias.

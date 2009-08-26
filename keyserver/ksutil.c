@@ -44,6 +44,7 @@
 #else
 #include "curl-shim.h"
 #endif
+#include "util.h"
 #include "keyserver.h"
 #include "ksutil.h"
 
@@ -325,7 +326,7 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  else if(start[12]=='=')
 	    {
 	      free(opt->ca_cert_file);
-	      opt->ca_cert_file=strdup(&start[13]);
+	      opt->ca_cert_file = make_filename_try (start+13, NULL);
 	      if(!opt->ca_cert_file)
 		return KEYSERVER_NO_MEMORY;
 	    }

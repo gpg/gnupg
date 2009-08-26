@@ -1043,7 +1043,7 @@ AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap])
 AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r])
-AC_CHECK_FUNCS([unsetenv getpwnam getpwuid fcntl ftruncate])
+AC_CHECK_FUNCS([unsetenv fcntl ftruncate])
 AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe stat getaddrinfo])
@@ -1053,10 +1053,10 @@ AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 #
 # These are needed by libjnlib - fixme: we should use a jnlib.m4
-#
+# Note:  We already checked pwd.h.
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol])
 AC_CHECK_FUNCS([memrchr isascii timegm getrusage setrlimit stat setlocale])
-AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen])
+AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen getpwnam getpwuid])
 
 #
 # gnulib checks
