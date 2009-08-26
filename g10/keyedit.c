@@ -4682,6 +4682,36 @@ menu_revsig( KBNODE keyblock )
 
     assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
 
+    /* First check whether we have any signatures at all.  */
+    any = 0;
+    for (node = keyblock; node; node = node->next ) 
+      {
+	node->flag &= ~(NODFLG_SELSIG | NODFLG_MARK_A);
+	if (node->pkt->pkttype == PKT_USER_ID) {
+          if (node->flag&NODFLG_SELUID || all)
+            skip = 0;
+          else
+            skip = 1;
+	}
+	else if (!skip && node->pkt->pkttype == PKT_SIGNATURE
+                 && ((sig = node->pkt->pkt.signature),
+                     !seckey_available(sig->keyid)     ))
+	  {
+	    if ((sig->sig_class&~3) == 0x10)
+	      {
+                any = 1;
+                break;
+              }
+	  }
+      }
+
+    if (!any)
+      {
+        tty_printf (_("Not signed by you.\n"));
+        return 0;
+      }
+
+
     /* FIXME: detect duplicates here  */
     tty_printf(_("You have signed these user IDs on key %s:\n"),
 	       keystr_from_pk(keyblock->pkt->pkt.public_key));
