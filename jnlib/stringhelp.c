@@ -319,6 +319,38 @@ make_dirname(const char *filepath)
 
 
 static char *
+get_pwdir (int xmode, const char *name)
+{
+  char *result = NULL;
+#ifdef HAVE_PWD_H
+  struct passwd *pwd = NULL;
+
+  if (name)
+    {
+#ifdef HAVE_GETPWNAM
+      /* Fixme: We should use getpwnam_r if available.  */
+      pwd = getpwnam (name);
+#endif
+    }
+  else
+    {
+#ifdef HAVE_GETPWUID
+      /* Fixme: We should use getpwuid_r if available.  */
+      pwd = getpwuid (getuid());
+#endif
+    }
+  if (pwd)
+    {
+      if (xmode)
+        result = jnlib_xstrdup (pwd->pw_dir);
+      else
+        result = jnlib_strdup (pwd->pw_dir);
+    }
+#endif /*HAVE_PWD_H*/
+  return result;
+}
+
+static char *
 do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
 {
   const char *argv[32];
@@ -351,37 +383,16 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
         {
           /* This is the "~/" or "~" case.  */
           home = getenv("HOME");
-
-#if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
           if (!home)
-            {
-              struct passwd *pwd;
-              
-              pwd = getpwuid (getuid());
-              if (pwd)
-                {
-                  if (xmode)
-                    home_buffer = home = jnlib_xstrdup (pwd->pw_dir);
-                  else
-                    {
-                      home_buffer = home = jnlib_strdup (pwd->pw_dir);
-                      if (!home)
-                        return NULL;
-                    }
-                }
-            }
-#endif /* HAVE_GETPWUID && HAVE_PWD_H */
-
+            home = home_buffer = get_pwdir (xmode, NULL);
           if (home && *home)
             n += strlen (home);                            
         }
-#if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
       else
         {
           /* This is the "~username/" or "~username" case.  */
           char *user;
-          struct passwd *pwd;
-
+    
           if (xmode)
             user = jnlib_xstrdup (first_part+1);
           else
@@ -394,27 +405,14 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           if (p)
             *p = 0;
           skip = 1 + strlen (user);
-
-          /* Fixme: Use getwpnam_r if available.  */
-          pwd = getpwnam (user);
+          
+          home = home_buffer = get_pwdir (xmode, user);
           jnlib_free (user);
-          if (pwd)
-            {
-              if (xmode)
-                home_buffer = home = jnlib_xstrdup (pwd->pw_dir);
-              else
-                {
-                  home_buffer = home = jnlib_strdup (pwd->pw_dir);
-                  if (!home)
-                    return NULL;
-                }
-            }
           if (home)
             n += strlen (home);
           else
             skip = 1;
         }
-#endif /*HAVE_GETPWNAM && HAVE_PWD_H*/
     }
 
   if (xmode)

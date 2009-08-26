@@ -1,5 +1,10 @@
 2009-08-26  Werner Koch  <wk@g10code.com>
 
+	* stringhelp.c (do_make_filename): Factor some code out to ..
+	(get_pwdir): .. new.
+
+2009-08-26  Werner Koch  <wk@g10code.com>
+
 	* stringhelp.c [HAVE_PWD_H]: Include pwd.h.
 	(do_make_filename): New.
 	(make_filename, make_filename_try): Implement using the new
