@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2005-03-16 07:30+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -197,11 +197,11 @@ msgstr "CHV%d için PIN çok kısa; asgari uzunluk: %d\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "CHV%d doğrulaması başarısız oldu: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr "karttan CHV durumu alınırken hata\n"
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr "kart kalıcı olarak kilitli!\n"
 
@@ -339,12 +339,12 @@ msgstr "%s imzası, %s özümleme algoritması\n"
 msgid "signatures created so far: %lu\n"
 msgstr "şu ana kadar oluşturulan imzalar: %lu\n"
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%s erişilebilir değil - OpenPGP kartı geçersiz olabilir mi?\n"

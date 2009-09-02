@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.6\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2007-03-05 10:27+0100\n"
 "Last-Translator: Ivar Snaaijer\n"
 "Language-Team: none\n"
@@ -222,11 +222,11 @@ msgstr "PIN voor CHV%d is te kort; deze moet minimaal %d lang zijn\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "controle CHV%d heeft gefaalt: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr "Ophalen van de CHV status geeft een fout\n"
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr "kaart is permanent geblokkeerd!\n"
 
@@ -365,14 +365,14 @@ msgstr "de kaart ondersteund het samenvattings algortime %s niet\n"
 msgid "signatures created so far: %lu\n"
 msgstr "momenteel gegenereerde ondertekeningen: %lu\n"
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "controleren van de beheerders PIN is momenteel niet toegestaan met dit "
 "commando\n"
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "kan %s niet benaderen - ongeldige OpenPGP kaart?\n"

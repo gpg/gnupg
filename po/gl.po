@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2003-12-04 11:39+0100\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
@@ -197,11 +197,11 @@ msgstr ""
 msgid "verify CHV%d failed: %s\n"
 msgstr "o envío ao servidor de chaves fallou: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -343,12 +343,12 @@ msgstr "Sinatura %s, algoritmo de resumo %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "non se atoparon datos OpenPGP válidos.\n"

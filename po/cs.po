@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2004-11-26 09:12+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -196,11 +196,11 @@ msgstr "PIN pro CHV%d je pøíli¹ krátký; minimální délka je %d\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "verifikace CHV%d se nezdaøila: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr "chyba pøi získání CHV z karty\n"
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr "karta je trvale uzamèena!\n"
 
@@ -338,14 +338,14 @@ msgstr "podpis %s, hashovací algoritmus %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "dosud vytvoøené podpisy: %lu\n"
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "ovìøení administrátorského PIN je nyní prostøednictvím tohoto pøíkazu "
 "zakázáno\n"
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "pøístup na %s se nezdaøil - vadná OpenPGP karta?\n"

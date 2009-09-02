@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2005-06-22 02:53+0200\n"
 "Last-Translator: Maxim Britov <maxbritov@tut.by>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -199,11 +199,11 @@ msgstr "PIN для CHV%d слишком короток, минимальная �
 msgid "verify CHV%d failed: %s\n"
 msgstr "при проверке CHV%d сбой: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr "ошибка получения статуса CHV с карты\n"
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr "карта заблокирована!\n"
 
@@ -341,13 +341,13 @@ msgstr "%s подпись, хэш-функция %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "подписей создано: %lu\n"
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 "проверка административного PIN в данный момент запрещен этой командой\n"
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "нет доступа %s - неработоспособная карта OpenPGP?\n"

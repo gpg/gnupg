@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-09-02 15:05+0200\n"
+"POT-Creation-Date: 2009-09-02 18:19+0200\n"
 "PO-Revision-Date: 2007-10-23 11:32+0200\n"
 "Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -207,11 +207,11 @@ msgstr "El PIN para CHV%d es demasiado corto; longitud mínima %d\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "la verificación CHV%d falló: %s\n"
 
-#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3483
+#: g10/app-openpgp.c:1649 g10/app-openpgp.c:2013 g10/app-openpgp.c:3489
 msgid "error retrieving CHV status from card\n"
 msgstr "error recuperando el estatus CHV de la tarjeta\n"
 
-#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3492
+#: g10/app-openpgp.c:1655 g10/app-openpgp.c:3498
 msgid "card is permanently locked!\n"
 msgstr "¡la tarjeta está bloqueada permanentemente!\n"
 
@@ -350,12 +350,12 @@ msgstr "firma %s, algoritmo de resumen %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "firmas creadas hasta ahora: %lu\n"
 
-#: g10/app-openpgp.c:3497
+#: g10/app-openpgp.c:3503
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
 
-#: g10/app-openpgp.c:3722 g10/app-openpgp.c:3733
+#: g10/app-openpgp.c:3728 g10/app-openpgp.c:3739
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "no se puede acceder a %s - ¿tarjeta OpenPGP inválida?\n"
