@@ -175,7 +175,8 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 #endif /* __riscos__ */
 	    count = zfx->inbufsize - n;
 	    nread = iobuf_read( a, zfx->inbuf + n, count );
-	    if( nread == -1 ) nread = 0;
+	    if( nread == -1 )
+                nread = 0;
 	    n += nread;
 	    /* If we use the undocumented feature to suppress
 	     * the zlib header, we have to give inflate an

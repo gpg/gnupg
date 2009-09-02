@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-08-13 09:26+0200\n"
+"POT-Creation-Date: 2009-09-02 15:05+0200\n"
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -3126,8 +3126,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Valóban aláírja? "
 
-#: g10/keyedit.c:1059 g10/keyedit.c:4803 g10/keyedit.c:4894 g10/keyedit.c:4958
-#: g10/keyedit.c:5019 g10/sign.c:317
+#: g10/keyedit.c:1059 g10/keyedit.c:4833 g10/keyedit.c:4924 g10/keyedit.c:4988
+#: g10/keyedit.c:5049 g10/sign.c:317
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Aláírás sikertelen: %s\n"
@@ -3856,12 +3856,12 @@ msgstr "Nincs %d indexû felhasználóazonosító!\n"
 msgid "user ID: \"%s\"\n"
 msgstr "Felhasználóazonosító: \""
 
-#: g10/keyedit.c:4645 g10/keyedit.c:4709 g10/keyedit.c:4752
+#: g10/keyedit.c:4645 g10/keyedit.c:4739 g10/keyedit.c:4782
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   aláírva %08lX által %s%s%s idõpontban.\n"
 
-#: g10/keyedit.c:4647 g10/keyedit.c:4711 g10/keyedit.c:4754
+#: g10/keyedit.c:4647 g10/keyedit.c:4741 g10/keyedit.c:4784
 msgid " (non-exportable)"
 msgstr " (nem exportálható)"
 
@@ -3878,55 +3878,60 @@ msgstr "Biztos benne, hogy mégis visszavonja? (i/N) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Csináljunk egy visszavonó igazolást ehhez az aláíráshoz? (i/N) "
 
-#: g10/keyedit.c:4686
+#: g10/keyedit.c:4710
+#, fuzzy
+msgid "Not signed by you.\n"
+msgstr "   aláírva %08lX által %s%s idõpontban.\n"
+
+#: g10/keyedit.c:4716
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Ön aláírta a következõ felhasználóazonosítókat:\n"
 
-#: g10/keyedit.c:4712
+#: g10/keyedit.c:4742
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (nem exportálható)"
 
-#: g10/keyedit.c:4719
+#: g10/keyedit.c:4749
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   visszavonva %08lX által %s idõpontban.\n"
 
-#: g10/keyedit.c:4741
+#: g10/keyedit.c:4771
 msgid "You are about to revoke these signatures:\n"
 msgstr "A következõ aláírásokat fogja visszavonni:\n"
 
-#: g10/keyedit.c:4761
+#: g10/keyedit.c:4791
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Valóban létrehozzam a visszavonó igazolást? (i/N) "
 
-#: g10/keyedit.c:4791
+#: g10/keyedit.c:4821
 msgid "no secret key\n"
 msgstr "Nincs titkos kulcs.\n"
 
-#: g10/keyedit.c:4861
+#: g10/keyedit.c:4891
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:4878
+#: g10/keyedit.c:4908
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "FIGYELEM: A felhasználóazonosítót %d másodperccel a jövõben írták alá.\n"
 
-#: g10/keyedit.c:4942
+#: g10/keyedit.c:4972
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:5004
+#: g10/keyedit.c:5034
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "\"%s\" felhasználói azonosítót már visszavonták.\n"
 
-#: g10/keyedit.c:5099
+#: g10/keyedit.c:5129
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "%s fotóazonosító (méret: %ld, kulcs: 0x%08lX, felh: %d) mutatása.\n"
@@ -6491,47 +6496,47 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "Talált egy programhibát... (%s:%d)\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:379 util/miscutil.c:416
+#: util/miscutil.c:380 util/miscutil.c:417
 msgid "yes"
 msgstr "igen"
 
-#: util/miscutil.c:380 util/miscutil.c:421
+#: util/miscutil.c:381 util/miscutil.c:422
 msgid "yY"
 msgstr "iI"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:382 util/miscutil.c:418
+#: util/miscutil.c:383 util/miscutil.c:419
 msgid "no"
 msgstr "nem"
 
-#: util/miscutil.c:383 util/miscutil.c:422
+#: util/miscutil.c:384 util/miscutil.c:423
 msgid "nN"
 msgstr "nN"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:420
+#: util/miscutil.c:421
 msgid "quit"
 msgstr "kilépés|kilepes"
 
-#: util/miscutil.c:423
+#: util/miscutil.c:424
 msgid "qQ"
 msgstr "kK"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:456
+#: util/miscutil.c:457
 msgid "okay|okay"
 msgstr ""
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:458
+#: util/miscutil.c:459
 msgid "cancel|cancel"
 msgstr ""
 
-#: util/miscutil.c:459
+#: util/miscutil.c:460
 msgid "oO"
 msgstr ""
 
-#: util/miscutil.c:460
+#: util/miscutil.c:461
 #, fuzzy
 msgid "cC"
 msgstr "c"
@@ -6984,10 +6989,6 @@ msgstr "(Lehet, hogy nem a megfelelõ programot használja a feladatra.)\n"
 #~ msgstr ""
 #~ "\"\n"
 #~ "Helyileg aláírva az Ön %08lX kulcsával %s idõpontban.\n"
-
-#, fuzzy
-#~ msgid "   signed by %s on %s%s\n"
-#~ msgstr "   aláírva %08lX által %s%s idõpontban.\n"
 
 #~ msgid "%s: can't access: %s\n"
 #~ msgstr "%s: Nem tudom elérni: %s.\n"

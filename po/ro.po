@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-08-13 09:26+0200\n"
+"POT-Creation-Date: 2009-09-02 15:05+0200\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -3106,8 +3106,8 @@ msgstr "Am verificat aceastã cheie foarte atent.\n"
 msgid "Really sign? (y/N) "
 msgstr "Doriþi cu adevãrat sã semnaþi? (d/N) "
 
-#: g10/keyedit.c:1059 g10/keyedit.c:4803 g10/keyedit.c:4894 g10/keyedit.c:4958
-#: g10/keyedit.c:5019 g10/sign.c:317
+#: g10/keyedit.c:1059 g10/keyedit.c:4833 g10/keyedit.c:4924 g10/keyedit.c:4988
+#: g10/keyedit.c:5049 g10/sign.c:317
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "semnarea a eºuat: %s\n"
@@ -3808,12 +3808,12 @@ msgstr "Nici o subcheie cu indicele %d\n"
 msgid "user ID: \"%s\"\n"
 msgstr "ID utilizator: \"%s\"\n"
 
-#: g10/keyedit.c:4645 g10/keyedit.c:4709 g10/keyedit.c:4752
+#: g10/keyedit.c:4645 g10/keyedit.c:4739 g10/keyedit.c:4782
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "semnatã de cheia d-voastrã %s la %s%s%s\n"
 
-#: g10/keyedit.c:4647 g10/keyedit.c:4711 g10/keyedit.c:4754
+#: g10/keyedit.c:4647 g10/keyedit.c:4741 g10/keyedit.c:4784
 msgid " (non-exportable)"
 msgstr " (non-exportabilã)"
 
@@ -3830,54 +3830,58 @@ msgstr "Sunteþi încã sigur(ã) cã doriþi sã o revocaþi? (d/N) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Creaþi un certificat de revocare pentru aceastã semnãturã? (d/N) "
 
-#: g10/keyedit.c:4686
+#: g10/keyedit.c:4710
+msgid "Not signed by you.\n"
+msgstr ""
+
+#: g10/keyedit.c:4716
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Aþi semnat aceste ID-uri utilizator pe cheia %s:\n"
 
-#: g10/keyedit.c:4712
+#: g10/keyedit.c:4742
 msgid " (non-revocable)"
 msgstr " (non-revocabilã)"
 
-#: g10/keyedit.c:4719
+#: g10/keyedit.c:4749
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "revocatã de cheia d-voastrã %s pe %s\n"
 
-#: g10/keyedit.c:4741
+#: g10/keyedit.c:4771
 msgid "You are about to revoke these signatures:\n"
 msgstr "Sunteþi pe cale sã revocaþi aceste semnãturi:\n"
 
-#: g10/keyedit.c:4761
+#: g10/keyedit.c:4791
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Doriþi într-adevãr sã creaþi certificatele de revocare? (d/N) "
 
-#: g10/keyedit.c:4791
+#: g10/keyedit.c:4821
 msgid "no secret key\n"
 msgstr "nici o cheie secretã\n"
 
-#: g10/keyedit.c:4861
+#: g10/keyedit.c:4891
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "ID-ul utilizator \"%s\" este deja revocat\n"
 
-#: g10/keyedit.c:4878
+#: g10/keyedit.c:4908
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVERTISMENT: o semnãturã ID utilizator este datatã %d secunde în viitor\n"
 
-#: g10/keyedit.c:4942
+#: g10/keyedit.c:4972
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Cheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:5004
+#: g10/keyedit.c:5034
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Subcheia %s este deja revocatã.\n"
 
-#: g10/keyedit.c:5099
+#: g10/keyedit.c:5129
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Afiºez poza ID %s de dimensiune %ld pentru cheia %s (uid %d)\n"
@@ -6401,47 +6405,47 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "aþi gãsit un bug ... (%s:%d)\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:379 util/miscutil.c:416
+#: util/miscutil.c:380 util/miscutil.c:417
 msgid "yes"
 msgstr "da"
 
-#: util/miscutil.c:380 util/miscutil.c:421
+#: util/miscutil.c:381 util/miscutil.c:422
 msgid "yY"
 msgstr "dD"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:382 util/miscutil.c:418
+#: util/miscutil.c:383 util/miscutil.c:419
 msgid "no"
 msgstr "nu"
 
-#: util/miscutil.c:383 util/miscutil.c:422
+#: util/miscutil.c:384 util/miscutil.c:423
 msgid "nN"
 msgstr "nN"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:420
+#: util/miscutil.c:421
 msgid "quit"
 msgstr "terminã"
 
-#: util/miscutil.c:423
+#: util/miscutil.c:424
 msgid "qQ"
 msgstr "tT"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:456
+#: util/miscutil.c:457
 msgid "okay|okay"
 msgstr "OK|OK"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:458
+#: util/miscutil.c:459
 msgid "cancel|cancel"
 msgstr "renunþã|renunþã"
 
-#: util/miscutil.c:459
+#: util/miscutil.c:460
 msgid "oO"
 msgstr "oO"
 
-#: util/miscutil.c:460
+#: util/miscutil.c:461
 msgid "cC"
 msgstr "cC"
 

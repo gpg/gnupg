@@ -1,3 +1,11 @@
+2009-09-02  Werner Koch  <wk@g10code.com>
+
+	Release 1.4.10.
+
+	* configure.ac (AC_RG_ENABLE): Don't disable try_gettext in
+	--enable-minimal.
+	* README <--enable-minimal>: Mention --disable-nls.
+
 2009-08-13  Werner Koch  <wk@g10code.com>
 
 	Release 1.4.10rc1.

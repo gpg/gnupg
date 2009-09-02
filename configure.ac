@@ -25,7 +25,7 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh --force" right before creating a distribution.
-m4_define([my_version], [1.4.10rc1])
+m4_define([my_version], [1.4.10])
 m4_define([my_issvn], [no])
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
           | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
@@ -150,7 +150,6 @@ disable_keyserver_path=no
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
-   try_gettext=no
    try_dns=no
    use_rsa=no
    use_idea=no

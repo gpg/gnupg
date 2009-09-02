@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2009-08-13 09:26+0200\n"
+"POT-Creation-Date: 2009-09-02 15:05+0200\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -3153,8 +3153,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Varmastiko allekirjoita? "
 
-#: g10/keyedit.c:1059 g10/keyedit.c:4803 g10/keyedit.c:4894 g10/keyedit.c:4958
-#: g10/keyedit.c:5019 g10/sign.c:317
+#: g10/keyedit.c:1059 g10/keyedit.c:4833 g10/keyedit.c:4924 g10/keyedit.c:4988
+#: g10/keyedit.c:5049 g10/sign.c:317
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "allekirjoitus epäonnistui: %s\n"
@@ -3881,12 +3881,12 @@ msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 msgid "user ID: \"%s\"\n"
 msgstr "käyttäjätunnus: \""
 
-#: g10/keyedit.c:4645 g10/keyedit.c:4709 g10/keyedit.c:4752
+#: g10/keyedit.c:4645 g10/keyedit.c:4739 g10/keyedit.c:4782
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   %08lX allekirjoitti tämän %s%s%s\n"
 
-#: g10/keyedit.c:4647 g10/keyedit.c:4711 g10/keyedit.c:4754
+#: g10/keyedit.c:4647 g10/keyedit.c:4741 g10/keyedit.c:4784
 msgid " (non-exportable)"
 msgstr " (vientiin kelpaamaton)"
 
@@ -3903,56 +3903,61 @@ msgstr "Haluatko varmasti mitätöidä sen? (k/E) "
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Luodaanko tälle alekirjoitukselle mitätöintivarmenne? (k/E) "
 
-#: g10/keyedit.c:4686
+#: g10/keyedit.c:4710
+#, fuzzy
+msgid "Not signed by you.\n"
+msgstr "   %08lX allekirjoitti tämän %s%s\n"
+
+#: g10/keyedit.c:4716
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Olet allekirjoittanut seuraavat käyttäjätunnukset:\n"
 
-#: g10/keyedit.c:4712
+#: g10/keyedit.c:4742
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (vientiin kelpaamaton)"
 
-#: g10/keyedit.c:4719
+#: g10/keyedit.c:4749
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   %08lX mitätöi tämän %s\n"
 
-#: g10/keyedit.c:4741
+#: g10/keyedit.c:4771
 msgid "You are about to revoke these signatures:\n"
 msgstr "Olet mitätöimässä seuraavat allekirjoitukset:\n"
 
-#: g10/keyedit.c:4761
+#: g10/keyedit.c:4791
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Varmastiko luo mitätöintivarmenteet? (k/E) "
 
-#: g10/keyedit.c:4791
+#: g10/keyedit.c:4821
 msgid "no secret key\n"
 msgstr "salainen avain ei ole saatavilla\n"
 
-#: g10/keyedit.c:4861
+#: g10/keyedit.c:4891
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:4878
+#: g10/keyedit.c:4908
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "VAROITUS: käyttäjätunnuksen allekirjoitus on päivätty %d sekuntin päähän "
 "tulevaisuuteen\n"
 
-#: g10/keyedit.c:4942
+#: g10/keyedit.c:4972
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:5004
+#: g10/keyedit.c:5034
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:5099
+#: g10/keyedit.c:5129
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -6523,47 +6528,47 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "olet löytänyt ohjelmistovian ... (%s:%d)\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:379 util/miscutil.c:416
+#: util/miscutil.c:380 util/miscutil.c:417
 msgid "yes"
 msgstr "kyllä|kylla|joo"
 
-#: util/miscutil.c:380 util/miscutil.c:421
+#: util/miscutil.c:381 util/miscutil.c:422
 msgid "yY"
 msgstr "kK"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:382 util/miscutil.c:418
+#: util/miscutil.c:383 util/miscutil.c:419
 msgid "no"
 msgstr "ei"
 
-#: util/miscutil.c:383 util/miscutil.c:422
+#: util/miscutil.c:384 util/miscutil.c:423
 msgid "nN"
 msgstr "eE"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:420
+#: util/miscutil.c:421
 msgid "quit"
 msgstr "lopeta|sulje"
 
-#: util/miscutil.c:423
+#: util/miscutil.c:424
 msgid "qQ"
 msgstr "lLsS"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:456
+#: util/miscutil.c:457
 msgid "okay|okay"
 msgstr ""
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
-#: util/miscutil.c:458
+#: util/miscutil.c:459
 msgid "cancel|cancel"
 msgstr ""
 
-#: util/miscutil.c:459
+#: util/miscutil.c:460
 msgid "oO"
 msgstr ""
 
-#: util/miscutil.c:460
+#: util/miscutil.c:461
 #, fuzzy
 msgid "cC"
 msgstr "c"
@@ -7019,10 +7024,6 @@ msgstr "(olet ehkä käyttänyt tehtävään väärää ohjelmaa)\n"
 #~ msgstr ""
 #~ "\"\n"
 #~ "allekirjoitettu paikallisesti avaimellasi %08lX %s\n"
-
-#, fuzzy
-#~ msgid "   signed by %s on %s%s\n"
-#~ msgstr "   %08lX allekirjoitti tämän %s%s\n"
 
 #~ msgid "%s: can't access: %s\n"
 #~ msgstr "%s: kohteeseen ei päästä: %s\n"
