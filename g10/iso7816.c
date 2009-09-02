@@ -545,10 +545,11 @@ iso7816_compute_ds (int slot, int extended_mode,
    indicator to be used.  It should be 0 if no padding is required, a
    value of -1 suppresses the padding byte.  On success 0 is returned
    and the plaintext is available in a newly allocated buffer stored
-   at RESULT with its length stored at RESULTLEN. */
+   at RESULT with its length stored at RESULTLEN.  For LE see
+   do_generate_keypair. */
 gpg_error_t
 iso7816_decipher (int slot, int extended_mode, 
-                  const unsigned char *data, size_t datalen,
+                  const unsigned char *data, size_t datalen, int le,
                   int padind, unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -559,6 +560,11 @@ iso7816_decipher (int slot, int extended_mode,
   *result = NULL;
   *resultlen = 0;
 
+  if (!extended_mode)
+    le = 256;  /* Ignore provided Le and use what apdu_send uses. */
+  else if (le >= 0 && le < 256)
+    le = 256;
+
   if (padind >= 0)
     {
       /* We need to prepend the padding indicator. */
@@ -568,18 +574,18 @@ iso7816_decipher (int slot, int extended_mode,
       
       *buf = padind; /* Padding indicator. */
       memcpy (buf+1, data, datalen);
-      sw = apdu_send (slot, extended_mode, 
-                      0x00, CMD_PSO, 0x80, 0x86,
-                      datalen+1, (char*)buf,
-                      result, resultlen);
+      sw = apdu_send_le (slot, extended_mode, 
+                         0x00, CMD_PSO, 0x80, 0x86,
+                         datalen+1, (char*)buf, le,
+                         result, resultlen);
       xfree (buf);
     }
   else
     {
-      sw = apdu_send (slot, extended_mode,
-                      0x00, CMD_PSO, 0x80, 0x86,
-                      datalen, (const char *)data,
-                      result, resultlen);
+      sw = apdu_send_le (slot, extended_mode,
+                         0x00, CMD_PSO, 0x80, 0x86,
+                         datalen, (const char *)data, le,
+                         result, resultlen);
     }
   if (sw != SW_SUCCESS)
     {

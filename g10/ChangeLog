@@ -1,5 +1,8 @@
 2009-09-02  Werner Koch  <wk@g10code.com>
 
+	* app-openpgp.c (do_decipher): Compute required Le.
+	* iso7816.c (iso7816_decipher): Add new arg LE.
+
 	* compress-bz2.c (do_uncompress): Detect unexpected EOF.  Fixes
 	bug#1011.
 

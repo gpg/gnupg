@@ -1,3 +1,8 @@
+2009-09-02  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgkeys_curl_SOURCES, gpgkeys_ldap_SOURCES)
+	(gpgkeys_finger_SOURCES): Add ksmalloc.c only with non-faked cURL.
+
 2009-08-25  Werner Koch  <wk@g10code.com>
 
 	* ksmalloc.c: New

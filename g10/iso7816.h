@@ -99,7 +99,7 @@ gpg_error_t iso7816_compute_ds (int slot, int extended_mode,
                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_decipher (int slot, int extended_mode,
                               const unsigned char *data, size_t datalen,
-                              int padind,
+                              int le, int padind,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_internal_authenticate (int slot, int extended_mode,
                                    const unsigned char *data, size_t datalen,

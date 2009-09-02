@@ -28,9 +28,9 @@ gpglibexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h ksmalloc.c
-gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h ksmalloc.c
+gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
 gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
-gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h ksmalloc.c
+gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
 
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
@@ -45,8 +45,10 @@ gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @DNSLIBS@ $(other_libs) @GETOPT
 gpgkeys_hkp_SOURCES += curl-shim.c curl-shim.h
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @DNSLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 else
+gpgkeys_curl_SOURCES += ksmalloc.c
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_curl_LDADD = ../util/libcompat.a @LIBCURL@ @GETOPT@
+gpgkeys_hkp_SOURCES += ksmalloc.c
 gpgkeys_hkp_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_hkp_LDADD = ../util/libcompat.a @DNSLIBS@ @LIBCURL@ @GETOPT@
 gpgkeys_finger_CPPFLAGS = @LIBCURL_CPPFLAGS@
