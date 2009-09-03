@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 12:26+0200\n"
+"POT-Creation-Date: 2009-09-03 21:36+0200\n"
 "PO-Revision-Date: 2008-12-21 00:40+0200\n"
 "Last-Translator: Maxim Britov <maxim.britov@gmail.com>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -91,7 +91,7 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "не поддерживаются ssh ключи превышающие %d бит\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1089
-#: g10/keygen.c:3334 g10/keygen.c:3367 g10/keyring.c:1237 g10/keyring.c:1569
+#: g10/keygen.c:3362 g10/keygen.c:3395 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
@@ -100,7 +100,7 @@ msgstr "не могу создать `%s': %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2817
+#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2845
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
@@ -1205,7 +1205,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "Обнаружена карта OpenPGP номер %s \n"
 
 #: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:3008 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:3036 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "невозможно сделать это в пакетном режиме\n"
 
@@ -3407,19 +3407,19 @@ msgstr "не удалось подписать: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1142 g10/keygen.c:3713
+#: g10/keyedit.c:1142 g10/keygen.c:3741
 msgid "This key is not protected.\n"
 msgstr "Данный ключ не защищен.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3700 g10/revoke.c:536
+#: g10/keyedit.c:1146 g10/keygen.c:3728 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Секретная часть главного ключа отсутствует.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3716
+#: g10/keyedit.c:1150 g10/keygen.c:3744
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Секретная часть главного ключа сохранена на карте.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3720
+#: g10/keyedit.c:1156 g10/keygen.c:3748
 msgid "Key is protected.\n"
 msgstr "Ключ защищен.\n"
 
@@ -3436,7 +3436,7 @@ msgstr ""
 "Введите новую фразу-пароль для данного секретного ключа.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2247
+#: g10/keyedit.c:1207 g10/keygen.c:2282
 msgid "passphrase not correctly repeated; try again"
 msgstr "повторный ввод фразы-пароля некорректен; попробуйте еще раз"
 
@@ -4190,13 +4190,13 @@ msgid "writing key binding signature\n"
 msgstr "сохраняем объединяющую подпись\n"
 
 #: g10/keygen.c:1173 g10/keygen.c:1284 g10/keygen.c:1289 g10/keygen.c:1432
-#: g10/keygen.c:3209
+#: g10/keygen.c:3237
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "неверный размер ключа; используется %u бит\n"
 
 #: g10/keygen.c:1179 g10/keygen.c:1295 g10/keygen.c:1303 g10/keygen.c:1438
-#: g10/keygen.c:3215
+#: g10/keygen.c:3243
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "размер ключа приведен к %u битам\n"
@@ -4406,7 +4406,7 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "Все верно? (y/N) "
 
-#: g10/keygen.c:2034
+#: g10/keygen.c:2054
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4420,7 +4420,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:2049
+#: g10/keygen.c:2069
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4435,44 +4435,44 @@ msgstr ""
 "    \"Baba Yaga (pensioner) <yaga@deepforest.ru>\"\n"
 "\n"
 
-#: g10/keygen.c:2068
+#: g10/keygen.c:2088
 msgid "Real name: "
 msgstr "Ваше настоящее имя: "
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2096
 msgid "Invalid character in name\n"
 msgstr "Недопустимый символ в Имени\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2098
 msgid "Name may not start with a digit\n"
 msgstr "Имя не должно начинаться с цифры\n"
 
-#: g10/keygen.c:2080
+#: g10/keygen.c:2100
 msgid "Name must be at least 5 characters long\n"
 msgstr "Имя не должно быть короче 5 символов\n"
 
-#: g10/keygen.c:2088
+#: g10/keygen.c:2108
 msgid "Email address: "
 msgstr "Email-адрес: "
 
-#: g10/keygen.c:2094
+#: g10/keygen.c:2114
 msgid "Not a valid email address\n"
 msgstr "Неправильный e-mail адрес\n"
 
-#: g10/keygen.c:2102
+#: g10/keygen.c:2122
 msgid "Comment: "
 msgstr "Комментарий: "
 
-#: g10/keygen.c:2108
+#: g10/keygen.c:2128
 msgid "Invalid character in comment\n"
 msgstr "Недопустимый символ в комментарии\n"
 
-#: g10/keygen.c:2130
+#: g10/keygen.c:2150
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Используемая таблица символов: `%s'.\n"
 
-#: g10/keygen.c:2136
+#: g10/keygen.c:2156
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4483,9 +4483,13 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2141
+#: g10/keygen.c:2161
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Не вставляйте email-адрес в имя пользователя или комментарий\n"
+
+#: g10/keygen.c:2176
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4498,24 +4502,24 @@ msgstr "Не вставляйте email-адрес в имя пользоват�
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2157
+#: g10/keygen.c:2192
 msgid "NnCcEeOoQq"
 msgstr ""
 
-#: g10/keygen.c:2167
+#: g10/keygen.c:2202
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Сменить (N)Имя, (C)Комментарий, (E)email-адрес или (Q)Выход? "
 
-#: g10/keygen.c:2168
+#: g10/keygen.c:2203
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "Сменить (N)Имя, (C)Комментарий, (E)email-адрес или (O)Принять/(Q)Выход? "
 
-#: g10/keygen.c:2187
+#: g10/keygen.c:2222
 msgid "Please correct the error first\n"
 msgstr "Сначала исправьте ошибку\n"
 
-#: g10/keygen.c:2229
+#: g10/keygen.c:2264
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4523,19 +4527,19 @@ msgstr ""
 "Для защиты секретного ключа необходима фраза-пароль.\n"
 "\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2267
 #, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr "Введите фразу-пароль для защиты импортированных в GnuPG объектов."
 
-#: g10/keygen.c:2248
+#: g10/keygen.c:2283
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2254
+#: g10/keygen.c:2289
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4547,7 +4551,7 @@ msgstr ""
 "запустив данную программу с ключом \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2278
+#: g10/keygen.c:2313
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4560,50 +4564,50 @@ msgstr ""
 "обращения к дискам) в процессе генерации; это даст генератору\n"
 "случайных чисел возможность получить лучшую энтропию.\n"
 
-#: g10/keygen.c:3149 g10/keygen.c:3176
+#: g10/keygen.c:3177 g10/keygen.c:3204
 msgid "Key generation canceled.\n"
 msgstr "Создание ключа прервано.\n"
 
-#: g10/keygen.c:3381 g10/keygen.c:3551
+#: g10/keygen.c:3409 g10/keygen.c:3579
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "сохранение открытого ключа в `%s'\n"
 
-#: g10/keygen.c:3383 g10/keygen.c:3554
+#: g10/keygen.c:3411 g10/keygen.c:3582
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "сохранение заглушки секретного ключа в `%s'\n"
 
-#: g10/keygen.c:3386 g10/keygen.c:3557
+#: g10/keygen.c:3414 g10/keygen.c:3585
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "сохранение секретного ключа в `%s'\n"
 
-#: g10/keygen.c:3538
+#: g10/keygen.c:3566
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "нет доступной для записи таблицы открытых ключей: %s\n"
 
-#: g10/keygen.c:3545
+#: g10/keygen.c:3573
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "нет доступной для записи таблицы закрытых ключей: %s\n"
 
-#: g10/keygen.c:3565
+#: g10/keygen.c:3593
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "ошибка записи таблицы открытых ключей `%s': %s\n"
 
-#: g10/keygen.c:3573
+#: g10/keygen.c:3601
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "ошибка записи таблицы секретных ключей `%s': %s\n"
 
-#: g10/keygen.c:3600
+#: g10/keygen.c:3628
 msgid "public and secret key created and signed.\n"
 msgstr "открытый и закрытый ключи созданы и подписаны.\n"
 
-#: g10/keygen.c:3611
+#: g10/keygen.c:3639
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4611,44 +4615,44 @@ msgstr ""
 "Учтите, данный ключ не может использоваться для шифрования.  Можно\n"
 "воспользоваться командой \"--edit-key\" и создать подключ для этих целей.\n"
 
-#: g10/keygen.c:3624 g10/keygen.c:3770 g10/keygen.c:3891
+#: g10/keygen.c:3652 g10/keygen.c:3798 g10/keygen.c:3919
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Сбой при создании ключа: %s\n"
 
-#: g10/keygen.c:3680 g10/keygen.c:3821 g10/sign.c:241
+#: g10/keygen.c:3708 g10/keygen.c:3849 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "ключ был создан на %lu секунд в будущем (time warp или проблемы с часами)\n"
 
-#: g10/keygen.c:3682 g10/keygen.c:3823 g10/sign.c:243
+#: g10/keygen.c:3710 g10/keygen.c:3851 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
 "ключ был создан на %lu секунд в будущем (time warp или проблемы с часами)\n"
 
-#: g10/keygen.c:3693 g10/keygen.c:3834
+#: g10/keygen.c:3721 g10/keygen.c:3862
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "ЗАМЕЧАНИЕ: создание подключа для ключей v3 не совместимо с OpenPGP\n"
 
-#: g10/keygen.c:3734 g10/keygen.c:3867
+#: g10/keygen.c:3762 g10/keygen.c:3895
 msgid "Really create? (y/N) "
 msgstr "Действительно создать? (y/N)"
 
-#: g10/keygen.c:4055
+#: g10/keygen.c:4083
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "сбой сохранения ключа на карту: %s\n"
 
-#: g10/keygen.c:4104
+#: g10/keygen.c:4132
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "не могу создать резервную копию, файл `%s': %s\n"
 
-#: g10/keygen.c:4130
+#: g10/keygen.c:4158
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "ЗАМЕЧАНИЕ: архивная копия ключа карты сохранена в `%s'\n"
@@ -5343,7 +5347,7 @@ msgstr "%u-бит %s ключ, ID %s, создан %s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (подключ на главном ключе %s)"
 
-#: g10/photoid.c:73
+#: g10/photoid.c:74
 msgid ""
 "\n"
 "Pick an image to use for your photo ID.  The image must be a JPEG file.\n"
@@ -5357,34 +5361,34 @@ msgstr ""
 "с Вашим открытым ключом и увеличит его размер, т.е. не следует брать очень\n"
 "большое изображение. Рекомендуемый размер около 240x288.\n"
 
-#: g10/photoid.c:95
+#: g10/photoid.c:96
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Введите имя JPEG файла для Фото ID: "
 
-#: g10/photoid.c:116
+#: g10/photoid.c:117
 #, c-format
 msgid "unable to open JPEG file `%s': %s\n"
 msgstr "Не могу открыть JPEG файл `%s': %s\n"
 
-#: g10/photoid.c:127
+#: g10/photoid.c:128
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
 msgstr "Этот JPEG очень велик (%d байт)!\n"
 
-#: g10/photoid.c:129
+#: g10/photoid.c:130
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Действительно хотите использовать его? (y/N)"
 
-#: g10/photoid.c:146
+#: g10/photoid.c:147
 #, c-format
 msgid "`%s' is not a JPEG file\n"
 msgstr "`%s' - не JPEG файл\n"
 
-#: g10/photoid.c:165
+#: g10/photoid.c:166
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Данное фото правильное (y/N/q)? "
 
-#: g10/photoid.c:373
+#: g10/photoid.c:374
 msgid "unable to display photo ID!\n"
 msgstr "не могу отобразить Фото ID!\n"
 

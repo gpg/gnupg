@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 12:26+0200\n"
+"POT-Creation-Date: 2009-09-03 21:36+0200\n"
 "PO-Revision-Date: 2004-07-20 15:52+0200\n"
 "Last-Translator: Michal Majer <mmajer@econ.umb.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
@@ -92,7 +92,7 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ochranný algoritmus %d%s nie je podporováný\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1089
-#: g10/keygen.c:3334 g10/keygen.c:3367 g10/keyring.c:1237 g10/keyring.c:1569
+#: g10/keygen.c:3362 g10/keygen.c:3395 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
@@ -101,7 +101,7 @@ msgstr "nemô¾em vytvori» `%s': %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2817
+#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2845
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
@@ -1231,7 +1231,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
 #: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:3008 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:3036 g10/revoke.c:216 g10/revoke.c:455
 #, fuzzy
 msgid "can't do this in batch mode\n"
 msgstr "nemo¾no previes» v dávkovom móde\n"
@@ -3539,20 +3539,20 @@ msgstr "podpisovanie zlyhalo: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-#: g10/keyedit.c:1142 g10/keygen.c:3713
+#: g10/keyedit.c:1142 g10/keygen.c:3741
 msgid "This key is not protected.\n"
 msgstr "Tento kµúè nie je chránený.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3700 g10/revoke.c:536
+#: g10/keyedit.c:1146 g10/keygen.c:3728 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Tajné èasti primárneho kµúèa nie sú dostupné.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3716
+#: g10/keyedit.c:1150 g10/keygen.c:3744
 #, fuzzy
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Tajné èasti primárneho kµúèa nie sú dostupné.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3720
+#: g10/keyedit.c:1156 g10/keygen.c:3748
 msgid "Key is protected.\n"
 msgstr "kµúè je chránený.\n"
 
@@ -3569,7 +3569,7 @@ msgstr ""
 "Vlo¾te nové heslo (passphrase) pre tento tajný kµúè.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2247
+#: g10/keyedit.c:1207 g10/keygen.c:2282
 msgid "passphrase not correctly repeated; try again"
 msgstr "heslo nie je zopakované správne; skúste to znovu"
 
@@ -4375,13 +4375,13 @@ msgid "writing key binding signature\n"
 msgstr "zapisujem \"key-binding\" podpis\n"
 
 #: g10/keygen.c:1173 g10/keygen.c:1284 g10/keygen.c:1289 g10/keygen.c:1432
-#: g10/keygen.c:3209
+#: g10/keygen.c:3237
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "neplatná då¾ka kµúèa; pou¾ijem %u bitov\n"
 
 #: g10/keygen.c:1179 g10/keygen.c:1295 g10/keygen.c:1303 g10/keygen.c:1438
-#: g10/keygen.c:3215
+#: g10/keygen.c:3243
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "då¾ka kµúèa zaokrúhlená na %u bitov\n"
@@ -4594,7 +4594,7 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "Je to správne (a/n)? "
 
-#: g10/keygen.c:2034
+#: g10/keygen.c:2054
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4605,7 +4605,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:2049
+#: g10/keygen.c:2069
 #, fuzzy
 msgid ""
 "\n"
@@ -4622,44 +4622,44 @@ msgstr ""
 "    \"Jozko Mrkvicka (student) <jozko@mrkvicka.sk>\"\n"
 "\n"
 
-#: g10/keygen.c:2068
+#: g10/keygen.c:2088
 msgid "Real name: "
 msgstr "Meno a priezvisko: "
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2096
 msgid "Invalid character in name\n"
 msgstr "Neplatný znak ve mene\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2098
 msgid "Name may not start with a digit\n"
 msgstr "Meno nemô¾e zaèína» èíslicou\n"
 
-#: g10/keygen.c:2080
+#: g10/keygen.c:2100
 msgid "Name must be at least 5 characters long\n"
 msgstr "Meno musí by» dlhé aspoò 5 znakov\n"
 
-#: g10/keygen.c:2088
+#: g10/keygen.c:2108
 msgid "Email address: "
 msgstr "E-mailová adresa: "
 
-#: g10/keygen.c:2094
+#: g10/keygen.c:2114
 msgid "Not a valid email address\n"
 msgstr "Neplatná e-mailová adresa\n"
 
-#: g10/keygen.c:2102
+#: g10/keygen.c:2122
 msgid "Comment: "
 msgstr "Komentár: "
 
-#: g10/keygen.c:2108
+#: g10/keygen.c:2128
 msgid "Invalid character in comment\n"
 msgstr "Neplatný znak v komentári\n"
 
-#: g10/keygen.c:2130
+#: g10/keygen.c:2150
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Pou¾ívate znakovú sadu `%s'.\n"
 
-#: g10/keygen.c:2136
+#: g10/keygen.c:2156
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4670,9 +4670,13 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2141
+#: g10/keygen.c:2161
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do poµa meno alebo komentár nepí¹te, prosím, e-mailovú adresu.\n"
+
+#: g10/keygen.c:2176
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4685,23 +4689,23 @@ msgstr "Do poµa meno alebo komentár nepí¹te, prosím, e-mailovú adresu.\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2157
+#: g10/keygen.c:2192
 msgid "NnCcEeOoQq"
 msgstr "mMkKeEPpUu"
 
-#: g10/keygen.c:2167
+#: g10/keygen.c:2202
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Zmeni» (M)eno, (K)omentár, (E)-mail alebo (U)konèi»? "
 
-#: g10/keygen.c:2168
+#: g10/keygen.c:2203
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Zmeni» (M)eno, (K)omentár, (E)-mail alebo (P)okraèova»/(U)konèi»? "
 
-#: g10/keygen.c:2187
+#: g10/keygen.c:2222
 msgid "Please correct the error first\n"
 msgstr "Najskôr, prosím, opravte chybu\n"
 
-#: g10/keygen.c:2229
+#: g10/keygen.c:2264
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4709,19 +4713,19 @@ msgstr ""
 "Na ochranu Vá¹ho tajného kµúèa musíte zada» heslo.\n"
 "\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2267
 #, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr "Prosím, vlo¾te heslo; toto je tajná veta \n"
 
-#: g10/keygen.c:2248
+#: g10/keygen.c:2283
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2254
+#: g10/keygen.c:2289
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4733,7 +4737,7 @@ msgstr ""
 "tohto programu s parametrom \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2278
+#: g10/keygen.c:2313
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4745,50 +4749,50 @@ msgstr ""
 "pou¾íva» disky); vïaka tomu má generátor lep¹iu ¹ancu získa» dostatok "
 "entropie.\n"
 
-#: g10/keygen.c:3149 g10/keygen.c:3176
+#: g10/keygen.c:3177 g10/keygen.c:3204
 msgid "Key generation canceled.\n"
 msgstr "Vytváranie kµúèa bolo zru¹ené.\n"
 
-#: g10/keygen.c:3381 g10/keygen.c:3551
+#: g10/keygen.c:3409 g10/keygen.c:3579
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "zapisujem verejný kµúè do `%s'\n"
 
-#: g10/keygen.c:3383 g10/keygen.c:3554
+#: g10/keygen.c:3411 g10/keygen.c:3582
 #, fuzzy, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
 
-#: g10/keygen.c:3386 g10/keygen.c:3557
+#: g10/keygen.c:3414 g10/keygen.c:3585
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
 
-#: g10/keygen.c:3538
+#: g10/keygen.c:3566
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nenájdený zapisovateµný súbor verejných kµúèov (pubring): %s\n"
 
-#: g10/keygen.c:3545
+#: g10/keygen.c:3573
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "nenájdený zapisovateµný súbor tajných kµúèov (secring): %s\n"
 
-#: g10/keygen.c:3565
+#: g10/keygen.c:3593
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "chyba pri zápise do súboru verejných kµúèov `%s': %s\n"
 
-#: g10/keygen.c:3573
+#: g10/keygen.c:3601
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "chyba pri zápise do súboru tajných kµúèov `%s': %s\n"
 
-#: g10/keygen.c:3600
+#: g10/keygen.c:3628
 msgid "public and secret key created and signed.\n"
 msgstr "verejný a tajný kµúè boli vytvorené a podpísané.\n"
 
-#: g10/keygen.c:3611
+#: g10/keygen.c:3639
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -4797,12 +4801,12 @@ msgstr ""
 "Tento kµúè nemô¾e by» pou¾itý na ¹ifrovanie. Pre vytvorenie\n"
 "sekundárneho kµúèa na tento úèel mô¾ete pou¾i» príkaz \"--edit-key\".\n"
 
-#: g10/keygen.c:3624 g10/keygen.c:3770 g10/keygen.c:3891
+#: g10/keygen.c:3652 g10/keygen.c:3798 g10/keygen.c:3919
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Vytvorenie kµúèa sa nepodarilo: %s\n"
 
-#: g10/keygen.c:3680 g10/keygen.c:3821 g10/sign.c:241
+#: g10/keygen.c:3708 g10/keygen.c:3849 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4810,7 +4814,7 @@ msgstr ""
 "kµúè bol vytvorený %lu sekund v budúcnosti (do¹lo k zmene èasu alebo\n"
 "je problém so systémovým èasom)\n"
 
-#: g10/keygen.c:3682 g10/keygen.c:3823 g10/sign.c:243
+#: g10/keygen.c:3710 g10/keygen.c:3851 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4818,26 +4822,26 @@ msgstr ""
 "kµúè bol vytvorený %lu sekund v budúcnosti (do¹lo k zmene èasu alebo\n"
 "je problém so systémovým èasom)\n"
 
-#: g10/keygen.c:3693 g10/keygen.c:3834
+#: g10/keygen.c:3721 g10/keygen.c:3862
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "POZNÁMKA: vytvorenie podkµúèa pre kµúèe v3 nie je v súlade s OpenPGP\n"
 
-#: g10/keygen.c:3734 g10/keygen.c:3867
+#: g10/keygen.c:3762 g10/keygen.c:3895
 #, fuzzy
 msgid "Really create? (y/N) "
 msgstr "Skutoène vytvori»? "
 
-#: g10/keygen.c:4055
+#: g10/keygen.c:4083
 #, fuzzy, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "zmazanie bloku kµúèa sa nepodarilo:  %s\n"
 
-#: g10/keygen.c:4104
+#: g10/keygen.c:4132
 #, fuzzy, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "nemô¾em vytvori» `%s': %s\n"
 
-#: g10/keygen.c:4130
+#: g10/keygen.c:4158
 #, fuzzy, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "POZNÁMKA: platnos» tajného kµúèa %08lX skonèila %s\n"
@@ -5547,7 +5551,7 @@ msgstr "då¾ka %u bitov, typ %s, ID %08lX, vytvorený %s"
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/photoid.c:73
+#: g10/photoid.c:74
 msgid ""
 "\n"
 "Pick an image to use for your photo ID.  The image must be a JPEG file.\n"
@@ -5562,35 +5566,35 @@ msgstr ""
 "Ak pou¾ijete veµmi veµký obrázok, kµúè bude tie¾ veµký! Odporúèaná veµkos»\n"
 "obrázka je okolo 240x288.\n"
 
-#: g10/photoid.c:95
+#: g10/photoid.c:96
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Meno súbor s fotografiou vo formáte JPEG: "
 
-#: g10/photoid.c:116
+#: g10/photoid.c:117
 #, fuzzy, c-format
 msgid "unable to open JPEG file `%s': %s\n"
 msgstr "nemo¾no otvori» súbor: %s\n"
 
-#: g10/photoid.c:127
+#: g10/photoid.c:128
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
 msgstr ""
 
-#: g10/photoid.c:129
+#: g10/photoid.c:130
 #, fuzzy
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Ste si istý, ¾e ho chcete pou¾i»? (a/N) "
 
-#: g10/photoid.c:146
+#: g10/photoid.c:147
 #, fuzzy, c-format
 msgid "`%s' is not a JPEG file\n"
 msgstr "\"%s\" nie je súbor JPEG\n"
 
-#: g10/photoid.c:165
+#: g10/photoid.c:166
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Je táto fotografia správna (a/N/u)? "
 
-#: g10/photoid.c:373
+#: g10/photoid.c:374
 msgid "unable to display photo ID!\n"
 msgstr "nemo¾no nastavi» exec-path na %s\n"
 

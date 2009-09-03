@@ -137,3 +137,5 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
+uninstall-local:
+	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel        

@@ -42,7 +42,8 @@
 #include "ttyio.h"
 #include "trustdb.h"
 
-/* Generate a new photo id packet, or return NULL if canceled */
+/* Generate a new photo id packet, or return NULL if canceled.
+   FIXME:  Should we add a duplicates check similar to generate_user_id? */
 PKT_user_id *
 generate_photo_id(PKT_public_key *pk,const char *photo_name)
 {

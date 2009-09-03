@@ -1,5 +1,14 @@
 2009-09-03  Werner Koch  <wk@g10code.com>
 
+	* keyedit.c (menu_adduid): Pass keyblock to generate_user_id.
+	* keygen.c (generate_user_id): Add arg KEYBLOCK.  Factor code out
+	to ...
+	(uid_from_string): ... new.
+	(ask_user_id): Add arg KEYBLOCK and check for duplicates.  Fix
+	bug#1122.
+
+	* Makefile.am (uninstall-local): New.
+
 	* compress-bz2.c (do_uncompress): Detect unexpected EOF.  Fix
 	bug#1011.
 

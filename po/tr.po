@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 12:26+0200\n"
+"POT-Creation-Date: 2009-09-03 21:36+0200\n"
 "PO-Revision-Date: 2008-12-14 23:25+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
@@ -93,7 +93,7 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "%d bitlikten daha büyük SSH anahtarları desteklenmiyor\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1089
-#: g10/keygen.c:3334 g10/keygen.c:3367 g10/keyring.c:1237 g10/keyring.c:1569
+#: g10/keygen.c:3362 g10/keygen.c:3395 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
@@ -102,7 +102,7 @@ msgstr "\"%s\" oluşturulamıyor: %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2817
+#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2845
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
@@ -1205,7 +1205,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "%s numaralı OpenPGP kartı saptandı\n"
 
 #: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:3008 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:3036 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "bu önceden betik kipinde yapılamaz\n"
 
@@ -3426,19 +3426,19 @@ msgstr ""
 "Anahtar sadece kısa veya karta özel öğeler içeriyor,\n"
 "değiştirilecek bir anahtar parolası yok.\n"
 
-#: g10/keyedit.c:1142 g10/keygen.c:3713
+#: g10/keyedit.c:1142 g10/keygen.c:3741
 msgid "This key is not protected.\n"
 msgstr "Bu anahtar korunmamış.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3700 g10/revoke.c:536
+#: g10/keyedit.c:1146 g10/keygen.c:3728 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Asıl anahtarın gizli parçaları kullanılamaz.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3716
+#: g10/keyedit.c:1150 g10/keygen.c:3744
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Asıl anahtarın gizli parçaları kart üzerinde saklı.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3720
+#: g10/keyedit.c:1156 g10/keygen.c:3748
 msgid "Key is protected.\n"
 msgstr "Anahtar korunmuş.\n"
 
@@ -3455,7 +3455,7 @@ msgstr ""
 "Bu gizli anahtar için yeni anahtar parolasını giriniz.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2247
+#: g10/keyedit.c:1207 g10/keygen.c:2282
 msgid "passphrase not correctly repeated; try again"
 msgstr ""
 "ikinci kez yazdığınız anahtar parolası ilkiyle aynı değil; işlem "
@@ -4257,13 +4257,13 @@ msgid "writing key binding signature\n"
 msgstr "anahtarı garantileyen imzayı yazıyor\n"
 
 #: g10/keygen.c:1173 g10/keygen.c:1284 g10/keygen.c:1289 g10/keygen.c:1432
-#: g10/keygen.c:3209
+#: g10/keygen.c:3237
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "anahtar uzunluğu geçersiz; %u bit kullanılıyor\n"
 
 #: g10/keygen.c:1179 g10/keygen.c:1295 g10/keygen.c:1303 g10/keygen.c:1438
-#: g10/keygen.c:3215
+#: g10/keygen.c:3243
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "anahtar uzunluğu %u bite yuvarlandı\n"
@@ -4473,7 +4473,7 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "Bu doğru mu? (e/H ya da y/N) "
 
-#: g10/keygen.c:2034
+#: g10/keygen.c:2054
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4488,7 +4488,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:2049
+#: g10/keygen.c:2069
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4504,44 +4504,44 @@ msgstr ""
 "\t\"Fatih Sultan Mehmed (Padisah) <padisah@ottoman.gov>\"\n"
 "\n"
 
-#: g10/keygen.c:2068
+#: g10/keygen.c:2088
 msgid "Real name: "
 msgstr "Adınız ve Soyadınız: "
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2096
 msgid "Invalid character in name\n"
 msgstr "Ad ve soyadınızda geçersiz karakter var\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2098
 msgid "Name may not start with a digit\n"
 msgstr "Ad ve soyadınız bir rakamla başlamamalı\n"
 
-#: g10/keygen.c:2080
+#: g10/keygen.c:2100
 msgid "Name must be at least 5 characters long\n"
 msgstr "Ad ve soyadınız en az 5 harfli olmalı\n"
 
-#: g10/keygen.c:2088
+#: g10/keygen.c:2108
 msgid "Email address: "
 msgstr "E-posta adresiniz: "
 
-#: g10/keygen.c:2094
+#: g10/keygen.c:2114
 msgid "Not a valid email address\n"
 msgstr "geçerli bir E-posta adresi değil\n"
 
-#: g10/keygen.c:2102
+#: g10/keygen.c:2122
 msgid "Comment: "
 msgstr "Önbilgi: "
 
-#: g10/keygen.c:2108
+#: g10/keygen.c:2128
 msgid "Invalid character in comment\n"
 msgstr "Önbilgi alanında geçersiz karakter var\n"
 
-#: g10/keygen.c:2130
+#: g10/keygen.c:2150
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "`%s' karakter kümesini kullanıyorsunuz.\n"
 
-#: g10/keygen.c:2136
+#: g10/keygen.c:2156
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4552,10 +4552,14 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2141
+#: g10/keygen.c:2161
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Lütfen E-posta adresinizi Adı ve Soyadı veya Açıklama alanı içine koymayın\n"
+
+#: g10/keygen.c:2176
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4568,24 +4572,24 @@ msgstr ""
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2157
+#: g10/keygen.c:2192
 msgid "NnCcEeOoQq"
 msgstr "AaYyEeTtKk"
 
-#: g10/keygen.c:2167
+#: g10/keygen.c:2202
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "(A)dı ve Soyadı, (Y)orum, (E)posta alanlarını değiştir ya da Çı(k)? "
 
-#: g10/keygen.c:2168
+#: g10/keygen.c:2203
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "(A)dı ve Soyadı, (Y)orum, (E)posta alanlarını değiştir ya da (T)amam/Çı(k)? "
 
-#: g10/keygen.c:2187
+#: g10/keygen.c:2222
 msgid "Please correct the error first\n"
 msgstr "Lütfen önce hatayı düzeltin\n"
 
-#: g10/keygen.c:2229
+#: g10/keygen.c:2264
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4593,7 +4597,7 @@ msgstr ""
 "Gizli anahtarınızı korumak için bir Anahtar Parolanız olmalı.\n"
 "\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2267
 #, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
@@ -4602,12 +4606,12 @@ msgstr ""
 "Lütfen GnuPG sistemine ithal edilen nesneyi koruyacak anahtar parolasını "
 "giriniz."
 
-#: g10/keygen.c:2248
+#: g10/keygen.c:2283
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2254
+#: g10/keygen.c:2289
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4619,7 +4623,7 @@ msgstr ""
 "seçeneği ile kullanarak her zaman değiştirebilirsiniz.\n"
 "\n"
 
-#: g10/keygen.c:2278
+#: g10/keygen.c:2313
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4632,50 +4636,50 @@ msgstr ""
 "iyi olacaktır; bu yeterli rasgele bayt kazanmak için rasgele sayı\n"
 "üretecine yardımcı olur. \n"
 
-#: g10/keygen.c:3149 g10/keygen.c:3176
+#: g10/keygen.c:3177 g10/keygen.c:3204
 msgid "Key generation canceled.\n"
 msgstr "Anahtar üretimi durduruldu.\n"
 
-#: g10/keygen.c:3381 g10/keygen.c:3551
+#: g10/keygen.c:3409 g10/keygen.c:3579
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "genel anahtarı `%s'e yazıyor\n"
 
-#: g10/keygen.c:3383 g10/keygen.c:3554
+#: g10/keygen.c:3411 g10/keygen.c:3582
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "gizli anahtar koçanı `%s'e yazılıyor\n"
 
-#: g10/keygen.c:3386 g10/keygen.c:3557
+#: g10/keygen.c:3414 g10/keygen.c:3585
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "gizli anahtarı `%s'e yazıyor\n"
 
-#: g10/keygen.c:3538
+#: g10/keygen.c:3566
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "yazılabilir bir genel anahtar zinciri yok: %s\n"
 
-#: g10/keygen.c:3545
+#: g10/keygen.c:3573
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "yazılabilir bir gizli anahtar zinciri yok: %s\n"
 
-#: g10/keygen.c:3565
+#: g10/keygen.c:3593
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "`%s' genel anahtarlığa yazılırken hata oluştu: %s\n"
 
-#: g10/keygen.c:3573
+#: g10/keygen.c:3601
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "`%s' gizli anahtarlığa yazılırken hata oluştu: %s\n"
 
-#: g10/keygen.c:3600
+#: g10/keygen.c:3628
 msgid "public and secret key created and signed.\n"
 msgstr "genel ve gizli anahtar üretildi ve imzalandı.\n"
 
-#: g10/keygen.c:3611
+#: g10/keygen.c:3639
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4683,19 +4687,19 @@ msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
 
-#: g10/keygen.c:3624 g10/keygen.c:3770 g10/keygen.c:3891
+#: g10/keygen.c:3652 g10/keygen.c:3798 g10/keygen.c:3919
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
 
-#: g10/keygen.c:3680 g10/keygen.c:3821 g10/sign.c:241
+#: g10/keygen.c:3708 g10/keygen.c:3849 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "anahtar %lu saniye sonra üretilmiş (zaman sapması veya saat problemi)\n"
 
-#: g10/keygen.c:3682 g10/keygen.c:3823 g10/sign.c:243
+#: g10/keygen.c:3710 g10/keygen.c:3851 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4703,26 +4707,26 @@ msgstr ""
 "anahtar bundan %lu saniye sonra üretilmiş (zaman sapması veya saat "
 "problemi)\n"
 
-#: g10/keygen.c:3693 g10/keygen.c:3834
+#: g10/keygen.c:3721 g10/keygen.c:3862
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "BİLGİ: v3 anahtarları için yardımcı anahtar üretimi OpenPGP uyumlu değildir\n"
 
-#: g10/keygen.c:3734 g10/keygen.c:3867
+#: g10/keygen.c:3762 g10/keygen.c:3895
 msgid "Really create? (y/N) "
 msgstr "Gerçekten oluşturulsun mu? (e/H ya da y/N) "
 
-#: g10/keygen.c:4055
+#: g10/keygen.c:4083
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "anahtarın kart üzerinde saklanması başarısız: %s\n"
 
-#: g10/keygen.c:4104
+#: g10/keygen.c:4132
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "'%s' yedek dosyası oluşturulamıyor: %s\n"
 
-#: g10/keygen.c:4130
+#: g10/keygen.c:4158
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "BİLGİ: kart anahtarının yedeklemesi '%s' e kaydedildi\n"
@@ -5415,7 +5419,7 @@ msgstr "%u bitlik %s anahtarı, %s kimliği ile %s tarihinde üretilmiş"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (asıl anahtar kimliği %s üzerinde yardımcı anahtar)"
 
-#: g10/photoid.c:73
+#: g10/photoid.c:74
 msgid ""
 "\n"
 "Pick an image to use for your photo ID.  The image must be a JPEG file.\n"
@@ -5429,34 +5433,34 @@ msgstr ""
 "bir resim kullanırsanız genel anahtarınız da çok büyük olacaktır. Resim\n"
 "boyutlarının 240x288 civarında seçilmesi uygun olacaktır.\n"
 
-#: g10/photoid.c:95
+#: g10/photoid.c:96
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Foto kimliği için JPEG dosya ismini giriniz: "
 
-#: g10/photoid.c:116
+#: g10/photoid.c:117
 #, c-format
 msgid "unable to open JPEG file `%s': %s\n"
 msgstr "JPEG dosyası `%s' açılamıyor: %s\n"
 
-#: g10/photoid.c:127
+#: g10/photoid.c:128
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
 msgstr "Bu JPEG gerçekten büyük (%d bayt)!\n"
 
-#: g10/photoid.c:129
+#: g10/photoid.c:130
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Onu kullanmak istediğinizden emin misiniz? (e/H ya da y/N)  "
 
-#: g10/photoid.c:146
+#: g10/photoid.c:147
 #, c-format
 msgid "`%s' is not a JPEG file\n"
 msgstr "'%s' bir JPEG dosyası değil\n"
 
-#: g10/photoid.c:165
+#: g10/photoid.c:166
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Bu foto doğru mu? (e/H/ç veya y/N/ç) "
 
-#: g10/photoid.c:373
+#: g10/photoid.c:374
 msgid "unable to display photo ID!\n"
 msgstr "foto kimliği gösterilemiyor!\n"
 

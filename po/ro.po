@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 12:26+0200\n"
+"POT-Creation-Date: 2009-09-03 21:36+0200\n"
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -99,7 +99,7 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "algoritm rezumat %d nu este suportat\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1089
-#: g10/keygen.c:3334 g10/keygen.c:3367 g10/keyring.c:1237 g10/keyring.c:1569
+#: g10/keygen.c:3362 g10/keygen.c:3395 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
@@ -108,7 +108,7 @@ msgstr "nu pot crea `%s': %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2817
+#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2845
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
@@ -1244,7 +1244,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "cardul OpenPGP nr. %s detectat\n"
 
 #: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:3008 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:3036 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "nu pot face acest lucru în modul batch\n"
 
@@ -3492,19 +3492,19 @@ msgstr ""
 "Cheia are numai articole de cheie sau talon (stub) pe card - nici o frazã "
 "parolã de schimbat.\n"
 
-#: g10/keyedit.c:1142 g10/keygen.c:3713
+#: g10/keyedit.c:1142 g10/keygen.c:3741
 msgid "This key is not protected.\n"
 msgstr "Aceastã cheie nu este protejatã.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3700 g10/revoke.c:536
+#: g10/keyedit.c:1146 g10/keygen.c:3728 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Pãrþile secrete ale cheii primare nu sunt disponibile.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3716
+#: g10/keyedit.c:1150 g10/keygen.c:3744
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Pãrþi secrete ale cheii primare sunt stacate pe card.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3720
+#: g10/keyedit.c:1156 g10/keygen.c:3748
 msgid "Key is protected.\n"
 msgstr "Cheia este protejatã.\n"
 
@@ -3521,7 +3521,7 @@ msgstr ""
 "Introduceþi noua frazã-parolã pentru acestã cheie secretã.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2247
+#: g10/keyedit.c:1207 g10/keygen.c:2282
 msgid "passphrase not correctly repeated; try again"
 msgstr "fraza-parolã nu a fost repetatã corect; mai încercaþi o datã"
 
@@ -4297,13 +4297,13 @@ msgid "writing key binding signature\n"
 msgstr "scriu semnãturã legatã de cheie\n"
 
 #: g10/keygen.c:1173 g10/keygen.c:1284 g10/keygen.c:1289 g10/keygen.c:1432
-#: g10/keygen.c:3209
+#: g10/keygen.c:3237
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "lungime cheie invalidã; folosesc %u biþi\n"
 
 #: g10/keygen.c:1179 g10/keygen.c:1295 g10/keygen.c:1303 g10/keygen.c:1438
-#: g10/keygen.c:3215
+#: g10/keygen.c:3243
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "lungime cheie rotunjitã la %u biþi\n"
@@ -4511,7 +4511,7 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "Este aceasta corect? (d/N) "
 
-#: g10/keygen.c:2034
+#: g10/keygen.c:2054
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4522,7 +4522,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:2049
+#: g10/keygen.c:2069
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4539,44 +4539,44 @@ msgstr ""
 "    \"Popa Ioan (popicã) <popa.ioan@compania.ro>\"\n"
 "\n"
 
-#: g10/keygen.c:2068
+#: g10/keygen.c:2088
 msgid "Real name: "
 msgstr "Nume real: "
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2096
 msgid "Invalid character in name\n"
 msgstr "Caracter invalid în nume\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2098
 msgid "Name may not start with a digit\n"
 msgstr "Numele nu poate începe cu o cifrã\n"
 
-#: g10/keygen.c:2080
+#: g10/keygen.c:2100
 msgid "Name must be at least 5 characters long\n"
 msgstr "Numele trebuie sã fie de cel puþin 5 caractere\n"
 
-#: g10/keygen.c:2088
+#: g10/keygen.c:2108
 msgid "Email address: "
 msgstr "Adresã de email: "
 
-#: g10/keygen.c:2094
+#: g10/keygen.c:2114
 msgid "Not a valid email address\n"
 msgstr "Nu este o adresã de email validã\n"
 
-#: g10/keygen.c:2102
+#: g10/keygen.c:2122
 msgid "Comment: "
 msgstr "Comentariu: "
 
-#: g10/keygen.c:2108
+#: g10/keygen.c:2128
 msgid "Invalid character in comment\n"
 msgstr "Caracter invalid în comentariu\n"
 
-#: g10/keygen.c:2130
+#: g10/keygen.c:2150
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Folosiþi setul de caractere `%s'\n"
 
-#: g10/keygen.c:2136
+#: g10/keygen.c:2156
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4587,9 +4587,13 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2141
+#: g10/keygen.c:2161
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Vã rugãm nu puneþi adresa de email în numele real sau comentariu\n"
+
+#: g10/keygen.c:2176
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4602,23 +4606,23 @@ msgstr "Vã rugãm nu puneþi adresa de email în numele real sau comentariu\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2157
+#: g10/keygen.c:2192
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoTt"
 
-#: g10/keygen.c:2167
+#: g10/keygen.c:2202
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Schimbã (N)ume, (C)omentariu, (E)mail sau (T)Terminã? "
 
-#: g10/keygen.c:2168
+#: g10/keygen.c:2203
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Schimbã (N)ume, (C)omentariu, (E)mail sau (O)K/(T)Terminã? "
 
-#: g10/keygen.c:2187
+#: g10/keygen.c:2222
 msgid "Please correct the error first\n"
 msgstr "Vã rugãm corectaþi mai întâi eroarea\n"
 
-#: g10/keygen.c:2229
+#: g10/keygen.c:2264
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4626,7 +4630,7 @@ msgstr ""
 "Aveþi nevoie de o frazã-parolã pentru a vã proteja cheia secretã.\n"
 "\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2267
 #, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
@@ -4634,12 +4638,12 @@ msgid ""
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
-#: g10/keygen.c:2248
+#: g10/keygen.c:2283
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2254
+#: g10/keygen.c:2289
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4650,7 +4654,7 @@ msgstr ""
 "O sã o fac oricum.  Puteþi schimba fraza-parolã oricând, folosind acest\n"
 "program cu opþiunea \"--edit-key\".\n"
 
-#: g10/keygen.c:2278
+#: g10/keygen.c:2313
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4662,50 +4666,50 @@ msgstr ""
 "în timpul generãrii numerelor prime; aceasta dã o ºansã generatorului de\n"
 "numere aleatoare o ºansã mai bunã de a aduna destulã entropie.\n"
 
-#: g10/keygen.c:3149 g10/keygen.c:3176
+#: g10/keygen.c:3177 g10/keygen.c:3204
 msgid "Key generation canceled.\n"
 msgstr "Generarea cheii a fost anulatã.\n"
 
-#: g10/keygen.c:3381 g10/keygen.c:3551
+#: g10/keygen.c:3409 g10/keygen.c:3579
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "scriu cheia publicã în `%s'\n"
 
-#: g10/keygen.c:3383 g10/keygen.c:3554
+#: g10/keygen.c:3411 g10/keygen.c:3582
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "scriu talonul (stub) cheii secrete în `%s'\n"
 
-#: g10/keygen.c:3386 g10/keygen.c:3557
+#: g10/keygen.c:3414 g10/keygen.c:3585
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "scriu cheia secretã în `%s'\n"
 
-#: g10/keygen.c:3538
+#: g10/keygen.c:3566
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nu am gãsit nici un inel de chei public de scris: %s\n"
 
-#: g10/keygen.c:3545
+#: g10/keygen.c:3573
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "nu am gãsit nici un inel de chei secret de scris: %s\n"
 
-#: g10/keygen.c:3565
+#: g10/keygen.c:3593
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "eroare la scrierea inelului de chei public `%s': %s\n"
 
-#: g10/keygen.c:3573
+#: g10/keygen.c:3601
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "eroare la scrierea inelului de chei secret `%s': %s\n"
 
-#: g10/keygen.c:3600
+#: g10/keygen.c:3628
 msgid "public and secret key created and signed.\n"
 msgstr "cheile secretã ºi publicã au fost create ºi semnate.\n"
 
-#: g10/keygen.c:3611
+#: g10/keygen.c:3639
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4715,12 +4719,12 @@ msgstr ""
 "sã folosiþi comanda \"--edit-key\" pentru a genera o subcheie secundarã\n"
 "pentru acest scop.\n"
 
-#: g10/keygen.c:3624 g10/keygen.c:3770 g10/keygen.c:3891
+#: g10/keygen.c:3652 g10/keygen.c:3798 g10/keygen.c:3919
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Generarea cheii a eºuat: %s\n"
 
-#: g10/keygen.c:3680 g10/keygen.c:3821 g10/sign.c:241
+#: g10/keygen.c:3708 g10/keygen.c:3849 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4728,7 +4732,7 @@ msgstr ""
 "cheia a fost creatã %lu secundã în viitor (warp în timp sau probleme cu "
 "ceasul)\n"
 
-#: g10/keygen.c:3682 g10/keygen.c:3823 g10/sign.c:243
+#: g10/keygen.c:3710 g10/keygen.c:3851 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4736,25 +4740,25 @@ msgstr ""
 "cheia a fost creatã %lu secunde în viitor (warp în timp sau probleme cu "
 "ceasul)\n"
 
-#: g10/keygen.c:3693 g10/keygen.c:3834
+#: g10/keygen.c:3721 g10/keygen.c:3862
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTÃ: crearea de subchei pentru chei v3 nu este conform OpenPGP\n"
 
-#: g10/keygen.c:3734 g10/keygen.c:3867
+#: g10/keygen.c:3762 g10/keygen.c:3895
 msgid "Really create? (y/N) "
 msgstr "Creaþi într-adevãr? (d/N) "
 
-#: g10/keygen.c:4055
+#: g10/keygen.c:4083
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "stocarea cheii pe card a eºuat: %s\n"
 
-#: g10/keygen.c:4104
+#: g10/keygen.c:4132
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "nu pot crea fiºier de rezervã `%s': %s\n"
 
-#: g10/keygen.c:4130
+#: g10/keygen.c:4158
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "NOTÃ: copia de siguranþa a cheii cardului salvatã la `%s'\n"
@@ -5454,7 +5458,7 @@ msgstr "cheia %u-bit %s, ID %s, creatã %s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (subcheie pe cheia principalã ID %s)"
 
-#: g10/photoid.c:73
+#: g10/photoid.c:74
 msgid ""
 "\n"
 "Pick an image to use for your photo ID.  The image must be a JPEG file.\n"
@@ -5470,34 +5474,34 @@ msgstr ""
 "foarte largã!\n"
 "Încercaþi sã folosiþi o imagine de aproximativ 240x288 pixeli.\n"
 
-#: g10/photoid.c:95
+#: g10/photoid.c:96
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Introduceþi nume-fiºier JPEG pentru pozã ID: "
 
-#: g10/photoid.c:116
+#: g10/photoid.c:117
 #, c-format
 msgid "unable to open JPEG file `%s': %s\n"
 msgstr "nu pot deschide fiºierul JPEG `%s': %s\n"
 
-#: g10/photoid.c:127
+#: g10/photoid.c:128
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
 msgstr "Acest JPEG este foarte mare (%d octeþi) !\n"
 
-#: g10/photoid.c:129
+#: g10/photoid.c:130
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Sunteþi sigur(ã) cã doriþi sã îl folosiþi? (d/N) "
 
-#: g10/photoid.c:146
+#: g10/photoid.c:147
 #, c-format
 msgid "`%s' is not a JPEG file\n"
 msgstr "`%s' nu este un fiºier JPEG\n"
 
-#: g10/photoid.c:165
+#: g10/photoid.c:166
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Este aceastã pozã corectã (d/N/t)? "
 
-#: g10/photoid.c:373
+#: g10/photoid.c:374
 msgid "unable to display photo ID!\n"
 msgstr "nu pot afiºa poza ID!\n"
 

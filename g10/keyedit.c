@@ -3073,7 +3073,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock,
 
       uid = generate_photo_id(pk,photo_name);
     } else
-      uid = generate_user_id();
+      uid = generate_user_id (pub_keyblock);
     if( !uid )
 	return 0;
 

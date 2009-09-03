@@ -2017,8 +2017,28 @@ ask_expiredate()
 }
 
 
+
+static PKT_user_id *
+uid_from_string (const char *string)
+{
+  size_t n;
+  PKT_user_id *uid;
+
+  n = strlen (string);
+  uid = xmalloc_clear (sizeof *uid + n);
+  uid->len = n;
+  strcpy (uid->name, string);
+  uid->ref = 1;
+  return uid;
+}
+
+
+/* Ask for a user ID.  With a MODE of 1 an extra help prompt is
+   printed for use during a new key creation.  If KEYBLOCK is not NULL
+   the function prevents the creation of an already existing user
+   ID.  */
 static char *
-ask_user_id( int mode )
+ask_user_id (int mode, KBNODE keyblock)
 {
     char *answer;
     char *aname, *acomment, *amail, *uid;
@@ -2134,13 +2154,28 @@ ask_user_id( int mode )
 	}
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
-	/* fixme: add a warning if this user-id already exists */
+
 	if( !*amail && !opt.allow_freeform_uid
 	    && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
 	    fail = 1;
-	    tty_printf(_("Please don't put the email address "
-			  "into the real name or the comment\n") );
+            tty_printf(_("Please don't put the email address "
+                         "into the real name or the comment\n") );
 	}
+
+        if (!fail && keyblock)
+          {
+            PKT_user_id *uidpkt = uid_from_string (uid);
+            KBNODE node;
+
+            for (node=keyblock; node && !fail; node=node->next)
+              if (!is_deleted_kbnode (node)
+                  && node->pkt->pkttype == PKT_USER_ID
+                  && !cmp_user_ids (uidpkt, node->pkt->pkt.user_id))
+		fail = 1;
+            if (fail)
+              tty_printf (_("Such a user ID already exists on this key!\n"));
+            free_user_id (uidpkt);
+          }
 
 	for(;;) {
             /* TRANSLATORS: These are the allowed answers in
@@ -2296,25 +2331,18 @@ do_create (int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 }
 
 
-/****************
- * Generate a new user id packet, or return NULL if canceled
- */
+/* Generate a new user id packet or return NULL if canceled.  If
+   KEYBLOCK is not NULL the function prevents the creation of an
+   already existing user ID.  */
 PKT_user_id *
-generate_user_id()
+generate_user_id (KBNODE keyblock)
 {
-    PKT_user_id *uid;
-    char *p;
-    size_t n;
-
-    p = ask_user_id( 1 );
-    if( !p )
-	return NULL;
-    n = strlen(p);
-    uid = xmalloc_clear( sizeof *uid + n );
-    uid->len = n;
-    strcpy(uid->name, p);
-    uid->ref = 1;
-    return uid;
+  char *p;
+  
+  p = ask_user_id (1, keyblock);
+  if (!p)
+    return NULL;  /* Canceled. */
+  return uid_from_string (p);
 }
 
 
@@ -3143,7 +3171,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   r->next = para;
   para = r;
 
-  uid = ask_user_id(0);
+  uid = ask_user_id (0, NULL);
   if( !uid ) 
     {
       log_error(_("Key generation canceled.\n"));

@@ -509,6 +509,6 @@ int update_keysig_packet( PKT_signature **ret_sig,
                       void *opaque   );
 
 /*-- keygen.c --*/
-PKT_user_id *generate_user_id(void);
+PKT_user_id *generate_user_id (KBNODE keyblock);
 
 #endif /*G10_PACKET_H*/

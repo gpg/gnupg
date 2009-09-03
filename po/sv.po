@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg trunk\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 12:26+0200\n"
+"POT-Creation-Date: 2009-09-03 21:36+0200\n"
 "PO-Revision-Date: 2008-07-21 09:04+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -116,7 +116,7 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh-nycklar större än %d bitar stöds inte\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1089
-#: g10/keygen.c:3334 g10/keygen.c:3367 g10/keyring.c:1237 g10/keyring.c:1569
+#: g10/keygen.c:3362 g10/keygen.c:3395 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:547 jnlib/dotlock.c:310
 #, c-format
@@ -125,7 +125,7 @@ msgstr "kan inte skapa \"%s\": %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2817
+#: g10/encode.c:504 g10/gpg.c:1090 g10/import.c:193 g10/keygen.c:2845
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:551
@@ -1242,7 +1242,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "OpenPGP-kort nr. %s identifierades\n"
 
 #: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
-#: g10/keygen.c:3008 g10/revoke.c:216 g10/revoke.c:455
+#: g10/keygen.c:3036 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "kan inte göra detta i satsläge\n"
 
@@ -3492,19 +3492,19 @@ msgstr ""
 "Nyckeln har endast en stump eller nyckelobjekt på kortet - ingen lösenfras "
 "att ändra.\n"
 
-#: g10/keyedit.c:1142 g10/keygen.c:3713
+#: g10/keyedit.c:1142 g10/keygen.c:3741
 msgid "This key is not protected.\n"
 msgstr "Denna nyckel är inte skyddad.\n"
 
-#: g10/keyedit.c:1146 g10/keygen.c:3700 g10/revoke.c:536
+#: g10/keyedit.c:1146 g10/keygen.c:3728 g10/revoke.c:536
 msgid "Secret parts of primary key are not available.\n"
 msgstr "De hemliga delarna av den primära nyckeln är inte tillgängliga.\n"
 
-#: g10/keyedit.c:1150 g10/keygen.c:3716
+#: g10/keyedit.c:1150 g10/keygen.c:3744
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Hemliga delar av den primära nyckeln är lagrade på kortet.\n"
 
-#: g10/keyedit.c:1156 g10/keygen.c:3720
+#: g10/keyedit.c:1156 g10/keygen.c:3748
 msgid "Key is protected.\n"
 msgstr "Nyckeln är skyddad.\n"
 
@@ -3521,7 +3521,7 @@ msgstr ""
 "Skriv in den nya lösenfrasen för den hemliga nyckeln.\n"
 "\n"
 
-#: g10/keyedit.c:1207 g10/keygen.c:2247
+#: g10/keyedit.c:1207 g10/keygen.c:2282
 msgid "passphrase not correctly repeated; try again"
 msgstr "lösenfrasen repeterades inte korrekt; försök igen."
 
@@ -4298,13 +4298,13 @@ msgid "writing key binding signature\n"
 msgstr "skriver signatur knuten till nyckeln\n"
 
 #: g10/keygen.c:1173 g10/keygen.c:1284 g10/keygen.c:1289 g10/keygen.c:1432
-#: g10/keygen.c:3209
+#: g10/keygen.c:3237
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "ogiltig nyckelstorlek; använder %u bitar\n"
 
 #: g10/keygen.c:1179 g10/keygen.c:1295 g10/keygen.c:1303 g10/keygen.c:1438
-#: g10/keygen.c:3215
+#: g10/keygen.c:3243
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "nyckelstorleken avrundad uppåt till %u bitar\n"
@@ -4520,7 +4520,7 @@ msgstr ""
 msgid "Is this correct? (y/N) "
 msgstr "Stämmer detta? (j/N) "
 
-#: g10/keygen.c:2034
+#: g10/keygen.c:2054
 msgid ""
 "\n"
 "GnuPG needs to construct a user ID to identify your key.\n"
@@ -4535,7 +4535,7 @@ msgstr ""
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
 #. be used.
-#: g10/keygen.c:2049
+#: g10/keygen.c:2069
 msgid ""
 "\n"
 "You need a user ID to identify your key; the software constructs the user "
@@ -4553,44 +4553,44 @@ msgstr ""
 "    \"Gustav Vasa (Brutal kung) <gustav@trekronor.se>\"\n"
 "\n"
 
-#: g10/keygen.c:2068
+#: g10/keygen.c:2088
 msgid "Real name: "
 msgstr "Namn: "
 
-#: g10/keygen.c:2076
+#: g10/keygen.c:2096
 msgid "Invalid character in name\n"
 msgstr "Ogiltigt tecken i namnet\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2098
 msgid "Name may not start with a digit\n"
 msgstr "Namnet får inte börja med en siffra\n"
 
-#: g10/keygen.c:2080
+#: g10/keygen.c:2100
 msgid "Name must be at least 5 characters long\n"
 msgstr "Namnet måste vara åtminstone 5 tecken långt\n"
 
-#: g10/keygen.c:2088
+#: g10/keygen.c:2108
 msgid "Email address: "
 msgstr "E-postadress: "
 
-#: g10/keygen.c:2094
+#: g10/keygen.c:2114
 msgid "Not a valid email address\n"
 msgstr "E-postadressen är ogiltig\n"
 
-#: g10/keygen.c:2102
+#: g10/keygen.c:2122
 msgid "Comment: "
 msgstr "Kommentar: "
 
-#: g10/keygen.c:2108
+#: g10/keygen.c:2128
 msgid "Invalid character in comment\n"
 msgstr "Ogiltigt tecken i kommentaren\n"
 
-#: g10/keygen.c:2130
+#: g10/keygen.c:2150
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Du använder teckentabellen \"%s\"\n"
 
-#: g10/keygen.c:2136
+#: g10/keygen.c:2156
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -4601,9 +4601,13 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:2141
+#: g10/keygen.c:2161
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Ange inte e-postadressen som namn eller kommentar\n"
+
+#: g10/keygen.c:2176
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 # Ej solklart vad förkortningarna står för
 #. TRANSLATORS: These are the allowed answers in
@@ -4617,24 +4621,24 @@ msgstr "Ange inte e-postadressen som namn eller kommentar\n"
 #. o = Okay (ready, continue)
 #. q = Quit
 #.
-#: g10/keygen.c:2157
+#: g10/keygen.c:2192
 msgid "NnCcEeOoQq"
 msgstr "NnKkEeOoAa"
 
-#: g10/keygen.c:2167
+#: g10/keygen.c:2202
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (A)vsluta? "
 
-#: g10/keygen.c:2168
+#: g10/keygen.c:2203
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Ändra (N)amn, (K)ommentar, (E)post eller (O)k/(A)vsluta? "
 
-#: g10/keygen.c:2187
+#: g10/keygen.c:2222
 msgid "Please correct the error first\n"
 msgstr "Rätta först felet\n"
 
 # fel kapitalisering i originalet?
-#: g10/keygen.c:2229
+#: g10/keygen.c:2264
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -4642,7 +4646,7 @@ msgstr ""
 "Du behöver en lösenfras för att skydda din hemliga nyckel\n"
 "\n"
 
-#: g10/keygen.c:2232
+#: g10/keygen.c:2267
 #, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
@@ -4650,12 +4654,12 @@ msgid ""
 msgstr ""
 "Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
 
-#: g10/keygen.c:2248
+#: g10/keygen.c:2283
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:2254
+#: g10/keygen.c:2289
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -4667,7 +4671,7 @@ msgstr ""
 "om du använder detta program med flaggan \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:2278
+#: g10/keygen.c:2313
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -4679,51 +4683,51 @@ msgstr ""
 "hårddisken) under primtalsgenereringen; detta ger slumptalsgeneratorn\n"
 "en större chans att samla ihop en tillräcklig mängd slumpmässig data.\n"
 
-#: g10/keygen.c:3149 g10/keygen.c:3176
+#: g10/keygen.c:3177 g10/keygen.c:3204
 msgid "Key generation canceled.\n"
 msgstr "Skapandet av nycklar avbröts.\n"
 
-#: g10/keygen.c:3381 g10/keygen.c:3551
+#: g10/keygen.c:3409 g10/keygen.c:3579
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skriver den publika nyckeln till \"%s\"\n"
 
-#: g10/keygen.c:3383 g10/keygen.c:3554
+#: g10/keygen.c:3411 g10/keygen.c:3582
 #, c-format
 msgid "writing secret key stub to `%s'\n"
 msgstr "skriver hemliga nyckelstumpen till \"%s\"\n"
 
-#: g10/keygen.c:3386 g10/keygen.c:3557
+#: g10/keygen.c:3414 g10/keygen.c:3585
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
-#: g10/keygen.c:3538
+#: g10/keygen.c:3566
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "ingen skrivbar publik nyckelring hittades: %s\n"
 
-#: g10/keygen.c:3545
+#: g10/keygen.c:3573
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "ingen skrivbar hemlig nyckelring hittades: %s\n"
 
-#: g10/keygen.c:3565
+#: g10/keygen.c:3593
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "fel vid skrivning av publika nyckelringen \"%s\": %s\n"
 
-#: g10/keygen.c:3573
+#: g10/keygen.c:3601
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "fel vid skrivning av hemliga nyckelringen \"%s\": %s\n"
 
-#: g10/keygen.c:3600
+#: g10/keygen.c:3628
 msgid "public and secret key created and signed.\n"
 msgstr "den publika och den hemliga nyckeln är skapade och signerade.\n"
 
 # Flagga.. inte kommando
-#: g10/keygen.c:3611
+#: g10/keygen.c:3639
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
@@ -4732,13 +4736,13 @@ msgstr ""
 "vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
 "syfte.\n"
 
-#: g10/keygen.c:3624 g10/keygen.c:3770 g10/keygen.c:3891
+#: g10/keygen.c:3652 g10/keygen.c:3798 g10/keygen.c:3919
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 
 # c-format behövs inte i singularis
-#: g10/keygen.c:3680 g10/keygen.c:3821 g10/sign.c:241
+#: g10/keygen.c:3708 g10/keygen.c:3849 g10/sign.c:241
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -4746,7 +4750,7 @@ msgstr ""
 "nyckeln är skapad %lu sekund in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:3682 g10/keygen.c:3823 g10/sign.c:243
+#: g10/keygen.c:3710 g10/keygen.c:3851 g10/sign.c:243
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -4754,25 +4758,25 @@ msgstr ""
 "nyckeln är skapad %lu sekunder in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
-#: g10/keygen.c:3693 g10/keygen.c:3834
+#: g10/keygen.c:3721 g10/keygen.c:3862
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "OBS: att skapa undernycklar till v3-nycklar bryter mot OpenPGP\n"
 
-#: g10/keygen.c:3734 g10/keygen.c:3867
+#: g10/keygen.c:3762 g10/keygen.c:3895
 msgid "Really create? (y/N) "
 msgstr "Verkligen skapa? (j/N) "
 
-#: g10/keygen.c:4055
+#: g10/keygen.c:4083
 #, c-format
 msgid "storing key onto card failed: %s\n"
 msgstr "misslyckades med att lagra nyckeln på kortet: %s\n"
 
-#: g10/keygen.c:4104
+#: g10/keygen.c:4132
 #, c-format
 msgid "can't create backup file `%s': %s\n"
 msgstr "kan inte skapa säkerhetskopian \"%s\": %s\n"
 
-#: g10/keygen.c:4130
+#: g10/keygen.c:4158
 #, c-format
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "OBSERVERA: säkerhetskopia av kortnyckeln sparades i \"%s\"\n"
@@ -5475,7 +5479,7 @@ msgstr "%u-bitars %s-nyckel, id %s, skapad %s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (undernyckel på primärt nyckel-id %s)"
 
-#: g10/photoid.c:73
+#: g10/photoid.c:74
 msgid ""
 "\n"
 "Pick an image to use for your photo ID.  The image must be a JPEG file.\n"
@@ -5489,35 +5493,35 @@ msgstr ""
 "en mycket stor bild, så blir din nyckel också väldigt stor!\n"
 "Försök att använda en bild som har ungefär  formatet 240x288 pixlar.\n"
 
-#: g10/photoid.c:95
+#: g10/photoid.c:96
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Skriv JPEG-filnamnet för foto-id: "
 
-#: g10/photoid.c:116
+#: g10/photoid.c:117
 #, c-format
 msgid "unable to open JPEG file `%s': %s\n"
 msgstr "kunde inte öppna JPEG-filen \"%s\": %s\n"
 
-#: g10/photoid.c:127
+#: g10/photoid.c:128
 #, c-format
 msgid "This JPEG is really large (%d bytes) !\n"
 msgstr "Den här JPEG-bilden är verkligen stor (%d byte)!\n"
 
 # Obs! Syftar på bildfilen med ditt foto. Meddelandet visas om du valt en mycket stor fil.
-#: g10/photoid.c:129
+#: g10/photoid.c:130
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Vill du verkligen använda den? (j/N)? "
 
-#: g10/photoid.c:146
+#: g10/photoid.c:147
 #, c-format
 msgid "`%s' is not a JPEG file\n"
 msgstr "\"%s\" är inte en JPEG-fil\n"
 
-#: g10/photoid.c:165
+#: g10/photoid.c:166
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Är detta foto korrekt (j/N/a)? "
 
-#: g10/photoid.c:373
+#: g10/photoid.c:374
 msgid "unable to display photo ID!\n"
 msgstr "kan inte visa foto-id!\n"
 
