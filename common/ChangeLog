@@ -1,3 +1,13 @@
+2009-09-03  Werner Koch  <wk@g10code.com>
+
+	Update from libestream:
+	* estream-printf.c: Include stdint.h only if HAVE_STDINT_H is
+	defined.
+	* estream-printf.c: Remove all test code.  Use macro DEBUG instead
+	of TEST for debugging.
+	* estream-printf.c (pr_float): Make buffer larger for silly high
+	numbers.
+
 2009-08-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* ttyio.h, ttyio.c (tty_enable_completion): Some ifdefs around
@@ -72,14 +82,14 @@
 2009-05-28  David Shaw  <dshaw@jabberwocky.com>
 
 	From 1.4:
-	
+
 	* http.h, http.c (send_request) Pass in a STRLIST for additional
 	headers.  Change all callers.
 
 2009-05-27  David Shaw  <dshaw@jabberwocky.com>
 
 	From 1.4:
-	
+
 	* http.h, http.c (send_request): Pass in srvtag and make its
 	presence sufficient to turn the feature on.
 	(http_open): From here.

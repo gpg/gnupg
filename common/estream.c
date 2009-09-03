@@ -2756,7 +2756,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
 
  out:
 
-  return err ? err : line_n;
+  return err ? err : (ssize_t)line_n;
 }
 
 
@@ -2927,6 +2927,44 @@ es_fprintf (estream_t ES__RESTRICT stream,
   va_end (ap);
 
   return ret;
+}
+
+/* A variant of asprintf.  The function returns the allocated buffer
+   or NULL on error; ERRNO is set in the error case.  The caller
+   should use es_free to release the buffer.  This function actually
+   belongs into estream-printf but we put it here as a convenience
+   and because es_free is required anyway.  */
+char *
+es_asprintf (const char *ES__RESTRICT format, ...)
+{
+  int rc;
+  va_list ap;
+  char *buf;
+
+  va_start (ap, format);
+  rc = estream_vasprintf (&buf, format, ap);
+  va_end (ap);
+  if (rc < 0)
+    return NULL;
+  return buf;
+}
+
+
+/* A variant of vasprintf.  The function returns the allocated buffer
+   or NULL on error; ERRNO is set in the error case.  The caller
+   should use es_free to release the buffer.  This function actually
+   belongs into estream-printf but we put it here as a convenience
+   and because es_free is required anyway.  */
+char * 
+es_vasprintf (const char *ES__RESTRICT format, va_list ap)
+{
+  int rc;
+  char *buf;
+
+  rc = estream_vasprintf (&buf, format, ap);
+  if (rc < 0)
+    return NULL;
+  return buf;
 }
 
 
