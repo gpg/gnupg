@@ -1,6 +1,6 @@
 2009-08-24  David Shaw  <dshaw@jabberwocky.com>
 
-	* gpg.text: Suggested new ordering for --edit-key.
+	* gpg.texi: Suggested new ordering for --edit-key.
 
 2009-08-17  David Shaw  <dshaw@jabberwocky.com>
 
