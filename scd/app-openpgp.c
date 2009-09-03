@@ -16,8 +16,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- *
- * $Id$
  */
 
 /* Some notes:
@@ -3316,7 +3314,7 @@ do_decipher (app_t app, const char *keyidstr,
   const char *s;
   int n;
   const char *fpr = NULL;
-  int exmode;
+  int exmode, le_value;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -3399,16 +3397,22 @@ do_decipher (app_t app, const char *keyidstr,
           indatalen = fixuplen + indatalen;
           padind = -1; /* Already padded.  */
         }
-      
+
       if (app->app_local->cardcap.ext_lc_le && indatalen > 254 )
-        exmode = 1;    /* Extended length w/o a limit.  */
+        {
+          exmode = 1;    /* Extended length w/o a limit.  */
+          le_value = app->app_local->extcap.max_rsp_data;
+        }
       else if (app->app_local->cardcap.cmd_chaining && indatalen > 254)
-        exmode = -254; /* Command chaining with max. 254 bytes.  */
+        {
+          exmode = -254; /* Command chaining with max. 254 bytes.  */
+          le_value = 0;
+        }
       else
-        exmode = 0;    
+        exmode = le_value = 0;    
 
       rc = iso7816_decipher (app->slot, exmode, 
-                             indata, indatalen, padind,
+                             indata, indatalen, le_value, padind,
                              outdata, outdatalen);
       xfree (fixbuf);
     }

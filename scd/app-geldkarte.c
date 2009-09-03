@@ -274,7 +274,7 @@ bcd_to_int (const unsigned char *string, size_t length, int *result)
 gpg_error_t
 app_select_geldkarte (app_t app)
 {
-  static unsigned char const aid[] =
+  static char const aid[] =
     { 0xD2, 0x76, 0x00, 0x00, 0x25, 0x45, 0x50, 0x02, 0x00 };
   gpg_error_t err;
   int slot = app->slot;

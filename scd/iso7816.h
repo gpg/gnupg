@@ -15,8 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
- *
- * $Id$
  */
 
 #ifndef ISO7816_H
@@ -87,9 +85,9 @@ gpg_error_t iso7816_reset_retry_counter_with_rc (int slot, int chvno,
 gpg_error_t iso7816_get_data (int slot, int extended_mode, int tag,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_put_data (int slot, int extended_mode, int tag,
-                              const unsigned char *data, size_t datalen);
+                              const void *data, size_t datalen);
 gpg_error_t iso7816_put_data_odd (int slot, int extended_mode, int tag,
-                                  const unsigned char *data, size_t datalen);
+                                  const void *data, size_t datalen);
 gpg_error_t iso7816_manage_security_env (int slot, int p1, int p2,
                                          const unsigned char *data,
                                          size_t datalen);
@@ -99,7 +97,7 @@ gpg_error_t iso7816_compute_ds (int slot, int extended_mode,
                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_decipher (int slot, int extended_mode,
                               const unsigned char *data, size_t datalen,
-                              int padind,
+                              int le, int padind,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_internal_authenticate (int slot, int extended_mode,
                                    const unsigned char *data, size_t datalen,

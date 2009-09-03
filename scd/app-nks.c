@@ -271,7 +271,8 @@ get_chv_status (app_t app, int sigg, int pwid)
   command[2] = 0x00;
   command[3] = pwid;
 
-  if (apdu_send_direct (app->slot, 0, command, 4, 0, &result, &resultlen))
+  if (apdu_send_direct (app->slot, 0, (unsigned char *)command, 
+                        4, 0, &result, &resultlen))
     rc = -1; /* Error. */
   else if (resultlen < 2)
     rc = -1; /* Error. */
@@ -1055,7 +1056,7 @@ do_decipher (app_t app, const char *keyidstr,
      Command chaining does not work.  */
   if (!rc)
     rc = iso7816_decipher (app->slot, app->app_local->nks_version > 2? 1:0,
-                           indata, indatalen, 0x81,
+                           indata, indatalen, 0, 0x81,
                            outdata, outdatalen);
   return rc;
 }
