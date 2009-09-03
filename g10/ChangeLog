@@ -1,3 +1,8 @@
+2009-09-03  Werner Koch  <wk@g10code.com>
+
+	* compress-bz2.c (do_uncompress): Detect unexpected EOF.  Fix
+	bug#1011.
+
 2009-08-26  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (menu_revsig): Check for signature right away.  Fix
@@ -191,7 +196,7 @@
 
 	* keygen.c (ask_key_flags): Fix bug in the translation check.
 	Fixes bug#1056.
-	
+
 2009-05-18  Daiki Ueno  <ueno@unixuser.org>  (wk)
 
 	* encode.c (encode_simple): Tell passphrase_to_dek to cache
@@ -826,7 +831,7 @@
 
 	* gpg.c (reopen_std): Moved to ../common and renamed to
 	gnupg_reopen_std.
-	
+
 	* gpg.c: Remove second inclusion of fcntl.h.
 
 2007-11-19  Werner Koch  <wk@g10code.com>
@@ -874,7 +879,7 @@
 	alias to it.  --rfc2440 now stands alone.  For now, use the old
 	2440 defaults for 4880.
 	* misc.c (compliance_option_string): Ditto.
-	
+
 	* keyedit.c (keyedit_menu): Use compliance_option_string() instead
 	of printing the compliance modes here.
 
@@ -888,7 +893,7 @@
 2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	From 1.4 (July):
-	
+
 	* armor.c (parse_header_line): Improve test so that the header
 	test only allows "Hash" in the signed data section.
 
@@ -979,7 +984,6 @@
 	* gpg.c, gpgv.c: Include sysutils.h.
 	(main): Replace iobuf_translate_file_handle by
 	translate_sys2libc_fd.
-	
 
 2007-06-21  Werner Koch  <wk@g10code.com>
 
@@ -994,7 +998,7 @@
 
 	* misc.c (setsysinfo, trap_unaligned): Remove.  It is also in
 	common/sysutils.c.
-	(disable_core_dumps, get_session_marker): 
+	(disable_core_dumps, get_session_marker):
 
 	* sign.c (sleep): Remove sleep wrapper.
 

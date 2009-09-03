@@ -118,6 +118,7 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
   size_t n;
   int nread, count;
   int refill = !bzs->avail_in;
+  int eofseen = 0;
 
   if( DBG_FILTER )
     log_debug("begin bzDecompress: avail_in=%u, avail_out=%u, inbuf=%u\n",
@@ -132,12 +133,16 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
 	    bzs->next_in = zfx->inbuf;
 	  count = zfx->inbufsize - n;
 	  nread = iobuf_read( a, zfx->inbuf + n, count );
-	  if( nread == -1 ) nread = 0;
+	  if( nread == -1 )
+            {
+              eofseen = 1;
+              nread = 0;
+            }
 	  n += nread;
 	  bzs->avail_in = n;
 	}
-
-      refill = 1;
+      if (!eofseen)
+        refill = 1;
 
       if( DBG_FILTER )
 	log_debug("enter bzDecompress: avail_in=%u, avail_out=%u\n",
@@ -151,6 +156,13 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
 	rc = -1; /* eof */
       else if( zrc != BZ_OK && zrc != BZ_PARAM_ERROR )
 	log_fatal("bz2lib inflate problem: rc=%d\n", zrc );
+      else if (zrc == BZ_OK && eofseen 
+               && !bzs->avail_in && bzs->avail_out > 0)
+        {
+          log_error ("unexpected EOF in bz2lib\n");
+          rc = GPG_ERR_BAD_DATA;
+          break;
+        }
     }
   while( bzs->avail_out && zrc != BZ_STREAM_END && zrc != BZ_PARAM_ERROR );
 
