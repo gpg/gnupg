@@ -1,5 +1,8 @@
 2009-09-03  Werner Koch  <wk@g10code.com>
 
+	* ttyio.c (tty_printf) [_WIN32]: s/xtryasprintf/xtryvasprint/
+	* strgutil.c (xtryvasprintf): New.
+
 	* estream-printf.c: Include stdint.h only if HAVE_STDINT_H is
 	defined.  Problem reported by Nelson H. F. Beebe.
 	* estream.m4: Check for stdint.h.

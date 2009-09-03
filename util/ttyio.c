@@ -243,9 +243,9 @@ tty_printf( const char *fmt, ... )
         int n;
 	DWORD nwritten;
 
-	buf = xtryasprintf(fmt, arg_ptr);
+	buf = xtryvasprintf(fmt, arg_ptr);
 	if (!buf)
-          log_bug("xtryasprintf() failed\n");
+          log_bug("xtryvasprintf() failed\n");
         n = strlen (buf);
         
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
@@ -291,9 +291,9 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
         int n;
 	DWORD nwritten;
 
-	buf = xtryasprintf (fmt, arg_ptr);
+	buf = xtryvasprintf (fmt, arg_ptr);
 	if (!buf)
-          log_bug ("xtryasprintf() failed\n");
+          log_bug ("xtryvasprintf() failed\n");
         n = strlen (buf);
         
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))

@@ -20,9 +20,7 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
-#if defined (_WIN32) || defined (__CYGWIN32__)
 #include <stdarg.h>
-#endif
 
 #include "types.h"
 #include "errors.h"
@@ -245,6 +243,7 @@ int write_w32_registry_string(const char *root, const char *dir,
 /*-- strgutil.c --*/
 char *xasprintf (const char *fmt, ...);
 char *xtryasprintf (const char *fmt, ...);
+char *xtryvasprintf (const char *fmt, va_list arg_ptr);
 
 
 /*-- pka.c --*/
