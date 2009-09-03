@@ -1,5 +1,5 @@
 /* estream-printf.c - Versatile C-99 compliant printf formatting
- * Copyright (C) 2007, 2008 g10 Code GmbH
+ * Copyright (C) 2007, 2008, 2009 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -34,6 +34,7 @@
 
   Missing stuff:  wchar and wint_t
                   thousands_sep in pr_float.
+
 */
 
 #ifdef HAVE_CONFIG_H
@@ -49,27 +50,28 @@
 #include <stddef.h>
 #include <assert.h>
 #if defined(HAVE_INTMAX_T) || defined(HAVE_UINTMAX_T)
-# include <stdint.h>
+# ifdef HAVE_STDINT_H
+#  include <stdint.h>
+# endif 
 #endif
 #ifdef HAVE_LANGINFO_THOUSANDS_SEP
 #include <langinfo.h>
 #endif
-#ifdef TEST
-# include <locale.h>
-#else
-# ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
-#  include _ESTREAM_PRINTF_EXTRA_INCLUDE
-# endif
+#ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
+# include _ESTREAM_PRINTF_EXTRA_INCLUDE
 #endif
 #include "estream-printf.h"
 
+/* #define DEBUG 1 */
+
+
 /* Allow redefinition of asprintf used malloc functions.  */
-#if defined(_ESTREAM_PRINTF_MALLOC) && !defined(TEST)
+#if defined(_ESTREAM_PRINTF_MALLOC)
 #define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))  
 #else
 #define my_printf_malloc(a) malloc((a))
 #endif
-#if defined(_ESTREAM_PRINTF_FREE) && !defined(TEST)
+#if defined(_ESTREAM_PRINTF_FREE)
 #define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))  
 #else
 #define my_printf_free(a)   free((a))
@@ -257,9 +259,7 @@ struct valueitem_s
 typedef struct valueitem_s *valueitem_t;
 
 
-#ifdef TEST
-static int verbose; 
-
+#ifdef DEBUG
 static void
 dump_argspecs (argspec_t arg, size_t argcount)
 {
@@ -281,7 +281,7 @@ dump_argspecs (argspec_t arg, size_t argcount)
              arg->width_pos,
              arg->precision_pos);
 }
-#endif /*TEST*/
+#endif /*DEBUG*/
 
 
 /* Set the vt field for ARG.  */
@@ -1482,8 +1482,7 @@ estream_format (estream_printf_out_t outfnc,
   if (max_pos < 0 || max_pos >= strlen (format))
     goto leave_einval;
 
-#ifdef TEST
-  if (verbose > 1)
+#ifdef DEBUG
     dump_argspecs (argspecs, argspecs_len);
 #endif
 
@@ -1787,324 +1786,3 @@ estream_asprintf (char **bufp, const char *format, ...)
 }
 
 
-#ifdef TEST
-
-static int
-one_test (const char *format, ...)
-{
-#ifdef _WIN32
-  {
-    static int show;
-
-    if (!show)
-      {
-        /* We do not have a system vasprintf.  */
-        printf ("one-test: disabled under W32\n");
-        show = 1;
-      }
-  }
-#else    
-  int rc1, rc2;
-  va_list arg_ptr;
-  char *buf1, *buf2;
-
-  if (verbose)
-    printf ("format: ->%s<-\n", format);
-
-  va_start (arg_ptr, format);
-  rc1 = vasprintf (&buf1, format, arg_ptr);
-  va_end (arg_ptr);
-  if (rc1 == -1)
-    {
-      printf ("   sys: errno=%d (%s)\n", errno, strerror (errno));
-      buf1 = NULL;
-    }
-  else if (verbose)
-    printf ("   sys: ->%s<-\n", buf1);
-  
-  va_start (arg_ptr, format);
-  rc2 = estream_vasprintf (&buf2, format, arg_ptr);
-  va_end (arg_ptr);
-  if (rc2 == -1)
-    printf ("   our: errno=%d (%s)\n", errno, strerror (errno));
-  else if (verbose)
-    printf ("   our: ->%s<-\n", buf2);
-
-  if (rc1 != -1 && rc2 != -1 && strcmp (buf1, buf2))
-    printf ("error: output does not match\n"
-            "format: ->%s<-\n   sys: ->%s<-\n   our: ->%s<-\n",
-            format, buf1, buf2);
-  else if ( rc1 != rc2 )
-    printf ("error: return codes are different: sys_rc=%d our_rc=%d\n",
-            rc1, rc2);
-
-  free (buf2);
-  free (buf1);
-#endif
-  return 0;
-}
-
-
-static void
-run_tests (void)
-{
-  /*one_test ("%d %% %'d", 17, 19681977);*/
-
-  one_test ("%d %% %d", 17, 768114563);
-  one_test ("%d %% %d", 17, -768114563);
-
-  one_test ("%d", 17);
-  one_test ("%4d", 17);
-  one_test ("%40d", 17);
-  one_test ("%-d", 17);
-  one_test ("%-4d", 17);
-  one_test ("%-140d", 17);
-  one_test ("%d", -17);
-  one_test ("%4d", -17);
-  one_test ("%40d", -17);
-  one_test ("%-d", -17);
-  one_test ("%-4d", -17);
-  one_test ("%-40d", -17);
-
-  one_test ("%+4d", 17);
-  one_test ("%+4d", -17);
-  one_test ("%-+4d", 17);
-  one_test ("%-+4d", -17);
-  one_test ("% 4d", 17);
-  one_test ("% 4d", -17);
-  one_test ("%- +4d", 17);
-  one_test ("%- +4d", -17);
-
-  one_test ("%.4d", 17);
-  one_test ("%.0d", 17);
-  one_test ("%.0d", 0);
-  one_test ("%.4d", -17);
-  one_test ("%.0d", -17);
-  one_test ("%6.4d", 17);
-  one_test ("%6.4d", -17);
-  one_test ("%6.0d", 0);
-  one_test ("%4.6d", 17);
-  one_test ("%4.6d", -17);
-
-  one_test ("% 4.6d", 17);
-  one_test ("% 6.0d", 0);
-
-  one_test ("%.4d", 17);
-  one_test ("%04d", 17);
-  one_test ("%.4d", -17);
-  one_test ("%04d", -17);
-  one_test ("%0.d", 0);
-
-  one_test ("%*d", 7, 42);
-  one_test ("%*d", -7, 42);
-  one_test ("%.*d", 7, 42);
-  one_test ("%.*d", -7, 42);
-  one_test ("%*.*d", 10, 7, 42);
-  one_test ("%*.*d", 10, -7, 42);
-  one_test ("%*.*d", -10, 7, 42);
-  one_test ("%*.*d", -10, -7, 42);
-
-  one_test ("%*x", 7, 42);
-  one_test ("%*x", -7, 42);
-  one_test ("%.*x", 7, 42);
-  one_test ("%.*x", -7, 42);
-  one_test ("%*.*x", 10, 7, 42);
-  one_test ("%*.*x", 10, -7, 42);
-  one_test ("%*.*x", -10, 7, 42);
-  one_test ("%*.*x", -10, -7, 42);
-  one_test ("%#*x", 7, 42);
-  one_test ("%#*x", -7, 42);
-  one_test ("%#.*x", 7, 42);
-  one_test ("%#.*x", -7, 42);
-  one_test ("%#*.*x", 10, 7, 42);
-  one_test ("%#*.*x", 10, -7, 42);
-  one_test ("%#*.*x", -10, 7, 42);
-  one_test ("%#*.*x", -10, -7, 42);
-
-  one_test ("%*X", 7, 42);
-  one_test ("%*X", -7, 42);
-  one_test ("%.*X", 7, 42);
-  one_test ("%.*X", -7, 42);
-  one_test ("%*.*X", 10, 7, 42);
-  one_test ("%*.*X", 10, -7, 42);
-  one_test ("%*.*X", -10, 7, 42);
-  one_test ("%*.*X", -10, -7, 42);
-  one_test ("%#*X", 7, 42);
-  one_test ("%#*X", -7, 42);
-  one_test ("%#.*X", 7, 42);
-  one_test ("%#.*X", -7, 42);
-  one_test ("%#*.*X", 10, 7, 42);
-  one_test ("%#*.*X", 10, -7, 42);
-  one_test ("%#*.*X", -10, 7, 42);
-  one_test ("%#*.*X", -10, -7, 42);
-
-  one_test ("%*o", 7, 42);
-  one_test ("%*o", -7, 42);
-  one_test ("%.*o", 7, 42);
-  one_test ("%.*o", -7, 42);
-  one_test ("%*.*o", 10, 7, 42);
-  one_test ("%*.*o", 10, -7, 42);
-  one_test ("%*.*o", -10, 7, 42);
-  one_test ("%*.*o", -10, -7, 42);
-  one_test ("%#*o", 7, 42);
-  one_test ("%#*o", -7, 42);
-  one_test ("%#.*o", 7, 42);
-  one_test ("%#.*o", -7, 42);
-  one_test ("%#*.*o", 10, 7, 42);
-  one_test ("%#*.*o", 10, -7, 42);
-  one_test ("%#*.*o", -10, 7, 42);
-  one_test ("%#*.*o", -10, -7, 42);
-
-  one_test ("%s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.0s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.10s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.48s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.49s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.50s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%.51s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%48s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%49s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%50s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%51s", "the quick brown fox jumps over the lazy dogs back");
-  one_test ("%-51s", "the quick brown fox jumps over the lazy dogs back");
-
-  one_test ("/%s=", "CN");
-
-  one_test ("%f", 3.1415926535);
-  one_test ("%f", -3.1415926535);
-  one_test ("%.10f", 3.1415926535);
-  one_test ("%.2f", 3.1415926535);
-  one_test ("%.1f", 3.1415926535);
-  one_test ("%.0f", 3.1415926535);
-  one_test ("%.20f", 3.1415926535);
-  one_test ("%10.10f", 3.1415926535);
-  one_test ("%10.2f", 3.1415926535);
-  one_test ("%10.1f", 3.1415926535);
-  one_test ("%10.0f", 3.1415926535);
-  one_test ("%30.20f", 3.1415926535);
-  one_test ("%10.10f", -3.1415926535);
-  one_test ("%10.2f", -3.1415926535);
-  one_test ("%10.1f", -3.1415926535);
-  one_test ("%10.0f", -3.1415926535);
-  one_test ("%30.20f", -3.1415926535);
-
-  one_test ("%-10f", 3.1415926535);
-  one_test ("%-10.10f", 3.1415926535);
-  one_test ("%-10.2f", 3.1415926535);
-  one_test ("%-10.1f", 3.1415926535);
-  one_test ("%-10.0f", 3.1415926535);
-  one_test ("%-30.20f", 3.1415926535);
-  one_test ("%-10f", -3.1415926535);
-  one_test ("%-10.10f", -3.1415926535);
-  one_test ("%-10.2f", -3.1415926535);
-  one_test ("%-10.1f", -3.1415926535);
-  one_test ("%-10.0f", -3.1415926535);
-  one_test ("%-30.20f", -3.1415926535);
-
-  one_test ("%#.0f",  3.1415926535);
-  one_test ("%#10.0f",  3.1415926535);
-  one_test ("%#10.0f", -3.1415926535);
-  one_test ("%-#10.0f",  3.1415926535);
-  one_test ("%-#10.0f", -3.1415926535);
-
-  one_test ("%e", 3.1415926535);
-  one_test ("%g", 3.1415926535);
-
-  one_test ("%a", 1);
-  one_test ("%a", -1);
-  one_test ("%a", 3.1415926535);
-
-#ifdef HAVE_LONG_DOUBLE
-  one_test ("%La", 1);
-  one_test ("%La", -1);
-  one_test ("%La", 3.1415926535);
-#endif
-
-#ifdef __GLIBC__
-  /* "%m" is a glibc extension so this _test_ will only work on such a
-     system.  */
-  errno = ENOENT;
-  one_test ("%m");
-  errno = ENOENT;
-  one_test ("%d=%m", 17);
-  errno = ENOENT;
-  one_test ("%2$d:%m:%1$d", 42, 17);
-#endif /*__GLIBC__*/
-
-}
-
-static void
-check_snprintf (void)
-{
-  char buffer[20];
-  int rc, rc2;
-  size_t tmplen, blen, blen2;
-
-  rc = estream_snprintf (buffer, 0, "%*s", 18, "");
-  if (rc != 18)
-    printf ("rc=%d\n", rc );
-  rc = estream_snprintf (buffer, sizeof buffer, "%*s", 18, "");
-  if (rc != 18)
-    printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
-  rc = estream_snprintf (buffer, sizeof buffer, "%*s", 19, "");
-  if (rc != 19)
-    printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
-  rc = estream_snprintf (buffer, sizeof buffer, "%*s", 20, "");
-  if (rc != 20)
-    printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
-  rc = estream_snprintf (buffer, sizeof buffer, "%*s", 21, "");
-  if (rc != 21)
-    printf ("rc=%d, strlen(buffer)=%d\n", rc, (int)strlen (buffer));
-
-  for (tmplen = 0; tmplen <= sizeof buffer; tmplen++)
-    {
-      rc = estream_snprintf (buffer, tmplen, "%04d%02d%02dT%02d%02d%02d",
-                             1998, 9, 7, 16, 56, 05);
-      blen = strlen (buffer);
-      rc2 = snprintf (buffer, tmplen, "%04d%02d%02dT%02d%02d%02d",
-                     1998, 9, 7, 16, 56, 05);
-      blen2 = strlen (buffer);
-      if (rc != rc2 || blen != blen2)
-        printf ("snprintf test with len %u gives %d instead of %d (%d,%d)\n",
-                (unsigned int)tmplen, rc, rc2, blen, blen2);
-    }
-}
-
-
-
-int
-main (int argc, char **argv)
-{
-  int rc;
-
-  if (argc) {argc--; argv++; }
-
-  setlocale (LC_NUMERIC, "");
-
-  while (argc && !strcmp (*argv, "--verbose"))
-    {
-      verbose++;
-      argc--;
-      argv++;
-    }
-
-  if (!argc)
-    {
-      run_tests ();
-      check_snprintf () ;
-    }
-  else
-    {
-      rc = estream_vfprintf (stdout, argv[0], NULL);
-      fflush (stdout);
-      fprintf (stderr, "[estream_vfprintf returns: %d]\n", rc);
-    }
-
-  return 0;
-}
-#endif /*TEST*/
-/*
-Local Variables:
-compile-command: "cc -Wall -O3 -g -I.. -DHAVE_CONFIG_H -DTEST -o estream-printf estream-printf.c"
-End:
-*/

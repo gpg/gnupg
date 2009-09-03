@@ -16,6 +16,7 @@ dnl
 AC_DEFUN([estream_PRINTF_INIT],
 [ 
   AC_MSG_NOTICE([checking system features for estream-printf])
+  AC_CHECK_HEADERS(stdint.h)
   AC_TYPE_LONG_LONG_INT  
   AC_TYPE_LONG_DOUBLE  
   AC_TYPE_INTMAX_T
