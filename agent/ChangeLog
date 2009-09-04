@@ -1,3 +1,8 @@
+2009-09-04  Marcus Brinkmann  <marcus@g10code.com>
+
+	* command.c (start_command_handler): Add comment about gap in
+	implementation (in dead code), for future reference.
+
 2009-08-11  Werner Koch  <wk@g10code.com>
 
 	* divert-scd.c (ask_for_card): I18n a prompt string.

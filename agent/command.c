@@ -1895,6 +1895,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   else if (listen_fd != GNUPG_INVALID_FD)
     {
       rc = assuan_init_socket_server_ext (&ctx, listen_fd, 0);
+      /* FIXME: Need to call assuan_sock_set_nonce for Windows.  But
+	 this branch is currently not used.  */
     }
   else 
     {
