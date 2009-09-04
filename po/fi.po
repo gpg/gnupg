@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-09-03 21:36+0200\n"
+"POT-Creation-Date: 2009-09-04 14:23+0200\n"
 "PO-Revision-Date: 2004-06-16 22:40+0300\n"
 "Last-Translator: Tommi Vainikainen <Tommi.Vainikainen@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -1621,7 +1621,7 @@ msgstr "ristiriitainen komento\n"
 msgid "Admin commands are not allowed\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 
-#: g10/card-util.c:1985 g10/keyedit.c:2280
+#: g10/card-util.c:1985 g10/keyedit.c:2290
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komento ei kelpaa (kirjoita \"help\")\n"
 
@@ -1634,7 +1634,7 @@ msgstr "--output ei toimi yhdessä tämän komennon kanssa\n"
 msgid "can't open `%s'\n"
 msgstr "tiedostoa \"%s\" ei voi avata\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3438 g10/keyserver.c:1737
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3448 g10/keyserver.c:1737
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1930,7 +1930,7 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Epäkelpo avain %08lX hyväksytty valitsimella --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3763
+#: g10/getkey.c:2533 g10/keyedit.c:3773
 #, fuzzy, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "ei salaista aliavainta julkiselle aliavaimelle %08lX - ohitetaan\n"
@@ -2170,7 +2170,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "JulkAvain: "
 
-#: g10/gpg.c:854 g10/keyedit.c:2346
+#: g10/gpg.c:854 g10/keyedit.c:2356
 msgid "Cipher: "
 msgstr "Salaus: "
 
@@ -2178,7 +2178,7 @@ msgstr "Salaus: "
 msgid "Hash: "
 msgstr "Tiiviste: "
 
-#: g10/gpg.c:868 g10/keyedit.c:2391
+#: g10/gpg.c:868 g10/keyedit.c:2401
 msgid "Compression: "
 msgstr "Pakkaus: "
 
@@ -2335,7 +2335,7 @@ msgstr "%s ei kelpaa merkistöksi\n"
 msgid "`%s' is not a valid character set\n"
 msgstr "%s ei kelpaa merkistöksi\n"
 
-#: g10/gpg.c:2625 g10/gpg.c:2820 g10/keyedit.c:4121
+#: g10/gpg.c:2625 g10/gpg.c:2820 g10/keyedit.c:4131
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "avainpalvelimen URI:iä ei voi jäsentää\n"
@@ -3315,12 +3315,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "Käyttäjätunnus \"%s\" on mitätöity."
 
 #: g10/keyedit.c:607 g10/keyedit.c:635 g10/keyedit.c:662 g10/keyedit.c:830
-#: g10/keyedit.c:895 g10/keyedit.c:1773
+#: g10/keyedit.c:895 g10/keyedit.c:1783
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Haluatko varmasti edelleen allekirjoittaa? (k/E) "
 
 #: g10/keyedit.c:621 g10/keyedit.c:649 g10/keyedit.c:676 g10/keyedit.c:836
-#: g10/keyedit.c:1779
+#: g10/keyedit.c:1789
 msgid "  Unable to sign.\n"
 msgstr "  Allekirjoittaminen ei onnistu.\n"
 
@@ -3533,8 +3533,8 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Varmastiko allekirjoita? "
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4870 g10/keyedit.c:4961 g10/keyedit.c:5025
-#: g10/keyedit.c:5086 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4899 g10/keyedit.c:4990 g10/keyedit.c:5054
+#: g10/keyedit.c:5115 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "allekirjoitus epäonnistui: %s\n"
@@ -3792,242 +3792,242 @@ msgid ""
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
-#: g10/keyedit.c:1767
+#: g10/keyedit.c:1777
 msgid "Key is revoked."
 msgstr "Avain on mitätöity."
 
-#: g10/keyedit.c:1786
+#: g10/keyedit.c:1796
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Varmastiko allekirjoita kaikki käyttäjätunnukset?"
 
-#: g10/keyedit.c:1793
+#: g10/keyedit.c:1803
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Vihje: Valitse allekirjoitettavat käyttäjätunnukset\n"
 
-#: g10/keyedit.c:1802
+#: g10/keyedit.c:1812
 #, fuzzy, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "tuntematon allekirjoitusluokka"
 
-#: g10/keyedit.c:1825
+#: g10/keyedit.c:1835
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
 
-#: g10/keyedit.c:1847 g10/keyedit.c:1867 g10/keyedit.c:2036
+#: g10/keyedit.c:1857 g10/keyedit.c:1877 g10/keyedit.c:2046
 msgid "You must select at least one user ID.\n"
 msgstr "Sinun täytyy valita ainakin yksi käyttäjätunnus.\n"
 
-#: g10/keyedit.c:1849
+#: g10/keyedit.c:1859
 msgid "You can't delete the last user ID!\n"
 msgstr "Et voi poistaa viimeistä käyttäjätunnusta!\n"
 
-#: g10/keyedit.c:1851
+#: g10/keyedit.c:1861
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Varmastiko poista kaikki valitut käyttäjätunnukset? "
 
-#: g10/keyedit.c:1852
+#: g10/keyedit.c:1862
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Varmastiko poista tämä käyttäjätunnus? "
 
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
-#: g10/keyedit.c:1905
+#: g10/keyedit.c:1915
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Varmastiko poista tämä käyttäjätunnus? "
 
-#: g10/keyedit.c:1917
+#: g10/keyedit.c:1927
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Sinun täytyy valita ainakin yksi avain.\n"
 
-#: g10/keyedit.c:1945
+#: g10/keyedit.c:1955
 msgid "Command expects a filename argument\n"
 msgstr ""
 
-#: g10/keyedit.c:1959
+#: g10/keyedit.c:1969
 #, fuzzy, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "tiedostoa \"%s\" ei voi avata: %s\n"
 
-#: g10/keyedit.c:1976
+#: g10/keyedit.c:1986
 #, fuzzy, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
-#: g10/keyedit.c:2000
+#: g10/keyedit.c:2010
 msgid "You must select at least one key.\n"
 msgstr "Sinun täytyy valita ainakin yksi avain.\n"
 
-#: g10/keyedit.c:2003
+#: g10/keyedit.c:2013
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Haluatko varmasti poistaa valitut avaimet? "
 
-#: g10/keyedit.c:2004
+#: g10/keyedit.c:2014
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Haluatko varmasti poistaa tämän avaimen? "
 
-#: g10/keyedit.c:2039
+#: g10/keyedit.c:2049
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Varmastiko mitätöi kaikki valitut käyttäjätunnukset? "
 
-#: g10/keyedit.c:2040
+#: g10/keyedit.c:2050
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Varmastiko mitätöi tämä käyttäjätunnus? "
 
-#: g10/keyedit.c:2058
+#: g10/keyedit.c:2068
 #, fuzzy
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr "Haluatko varmasti mitätöidä tämän avaimen? "
 
-#: g10/keyedit.c:2069
+#: g10/keyedit.c:2079
 #, fuzzy
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr "Haluatko varmasti mitätöidä valitut avaimet? "
 
-#: g10/keyedit.c:2071
+#: g10/keyedit.c:2081
 #, fuzzy
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Haluatko varmasti mitätöidä tämän avaimen? "
 
-#: g10/keyedit.c:2121
+#: g10/keyedit.c:2131
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:2163
+#: g10/keyedit.c:2173
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "näytä valinnat"
 
-#: g10/keyedit.c:2169
+#: g10/keyedit.c:2179
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Varmastiko päivitä valinnat näille käyttäjätunnuksille? "
 
-#: g10/keyedit.c:2171
+#: g10/keyedit.c:2181
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Varmastiko päivitä valinnat? "
 
-#: g10/keyedit.c:2241
+#: g10/keyedit.c:2251
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Tallenna muutokset? "
 
-#: g10/keyedit.c:2244
+#: g10/keyedit.c:2254
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Lopeta tallentamatta muutoksia?"
 
-#: g10/keyedit.c:2254
+#: g10/keyedit.c:2264
 #, c-format
 msgid "update failed: %s\n"
 msgstr "päivitys epäonnistui: %s\n"
 
-#: g10/keyedit.c:2261
+#: g10/keyedit.c:2271
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "salaisen päivitys epäonnistui: %s\n"
 
-#: g10/keyedit.c:2268
+#: g10/keyedit.c:2278
 msgid "Key not changed so no update needed.\n"
 msgstr "Päivitystä ei tarvita, koska avain ei ole muuttunut.\n"
 
-#: g10/keyedit.c:2369
+#: g10/keyedit.c:2379
 msgid "Digest: "
 msgstr "Tiiviste: "
 
-#: g10/keyedit.c:2420
+#: g10/keyedit.c:2430
 msgid "Features: "
 msgstr "Ominaisuudet: "
 
-#: g10/keyedit.c:2431
+#: g10/keyedit.c:2441
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:2446 g10/keylist.c:314
+#: g10/keyedit.c:2456 g10/keylist.c:314
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2454 g10/keyedit.c:2455
+#: g10/keyedit.c:2464 g10/keyedit.c:2465
 #, fuzzy
 msgid "Notations: "
 msgstr "Notaatio: "
 
-#: g10/keyedit.c:2676
+#: g10/keyedit.c:2686
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x -muodon käyttäjätunnukselle ei ole valintoja.\n"
 
-#: g10/keyedit.c:2735
+#: g10/keyedit.c:2745
 #, fuzzy, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "Tämä avain voidaan mitätöidä %s-avaimella "
 
-#: g10/keyedit.c:2756
+#: g10/keyedit.c:2766
 #, fuzzy, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "Tämä avain voidaan mitätöidä %s-avaimella "
 
-#: g10/keyedit.c:2762
+#: g10/keyedit.c:2772
 #, fuzzy
 msgid "(sensitive)"
 msgstr " (luottamuksellinen)"
 
-#: g10/keyedit.c:2778 g10/keyedit.c:2834 g10/keyedit.c:2895 g10/keyedit.c:2910
+#: g10/keyedit.c:2788 g10/keyedit.c:2844 g10/keyedit.c:2905 g10/keyedit.c:2920
 #: g10/keylist.c:200 g10/keyserver.c:532
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "ei voida luoda kohdetta %s: %s\n"
 
-#: g10/keyedit.c:2781 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
+#: g10/keyedit.c:2791 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[mitätöity] "
 
-#: g10/keyedit.c:2783 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
+#: g10/keyedit.c:2793 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [vanhenee: %s]"
 
-#: g10/keyedit.c:2785 g10/keyedit.c:2836 g10/keyedit.c:2897 g10/keyedit.c:2912
+#: g10/keyedit.c:2795 g10/keyedit.c:2846 g10/keyedit.c:2907 g10/keyedit.c:2922
 #: g10/keylist.c:202 g10/keylist.c:809 g10/keylist.c:844 g10/keylist.c:938
 #: g10/keylist.c:959 g10/keyserver.c:538 g10/mainproc.c:1002
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [vanhenee: %s]"
 
-#: g10/keyedit.c:2787
+#: g10/keyedit.c:2797
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " luottamus: %c/%c"
 
-#: g10/keyedit.c:2802
+#: g10/keyedit.c:2812
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " luottamus: %c/%c"
 
-#: g10/keyedit.c:2806
+#: g10/keyedit.c:2816
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2813
+#: g10/keyedit.c:2823
 msgid "This key has been disabled"
 msgstr "Tämä avain on poistettu käytöstä"
 
-#: g10/keyedit.c:2841 g10/keylist.c:206
+#: g10/keyedit.c:2851 g10/keylist.c:206
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2865
+#: g10/keyedit.c:2875
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -4035,19 +4035,19 @@ msgstr ""
 "Huomioi, että tässä näytetty voimassaolo ei ole välttämättä\n"
 "ajan tasalla jollet käynnistä ohjelmaa uudelleen\n"
 
-#: g10/keyedit.c:2929 g10/keyedit.c:3275 g10/keyserver.c:542
+#: g10/keyedit.c:2939 g10/keyedit.c:3285 g10/keyserver.c:542
 #: g10/mainproc.c:1849 g10/trustdb.c:1194 g10/trustdb.c:1722
 #, fuzzy
 msgid "revoked"
 msgstr "[mitätöity] "
 
-#: g10/keyedit.c:2931 g10/keyedit.c:3277 g10/keyserver.c:546
+#: g10/keyedit.c:2941 g10/keyedit.c:3287 g10/keyserver.c:546
 #: g10/mainproc.c:1851 g10/trustdb.c:547 g10/trustdb.c:1724
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2996
+#: g10/keyedit.c:3006
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -4055,7 +4055,7 @@ msgstr ""
 "VAROITUS: mitään käyttäjätunnusta ei ole merkitty ensisijaiseksi.  Tämän \n"
 "komennon johdosta eri käyttäjätunnus voi tulla oletetuksi ensisijaiseksi.\n"
 
-#: g10/keyedit.c:3057
+#: g10/keyedit.c:3067
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4064,75 +4064,75 @@ msgstr ""
 "VAROITUS: Tämä on PGP2-muodon avain.  Valokuvan lisääminen voi\n"
 "          saada jotkin PGP:n versiot hylkäämään avaimen.\n"
 
-#: g10/keyedit.c:3062 g10/keyedit.c:3397
+#: g10/keyedit.c:3072 g10/keyedit.c:3407
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Haluatko edelleen varmasti lisätä sen? (k/E) "
 
-#: g10/keyedit.c:3068
+#: g10/keyedit.c:3078
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Et voi lisätä valokuvaa PGP2-muodon avaimeen.\n"
 
-#: g10/keyedit.c:3208
+#: g10/keyedit.c:3218
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Poistetaanko tämä kelvollinen allekirjoitus? (k/E/l)"
 
-#: g10/keyedit.c:3218
+#: g10/keyedit.c:3228
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Poistetaanko tämä epäkelpo allekirjoitus? (k/E/l)"
 
-#: g10/keyedit.c:3222
+#: g10/keyedit.c:3232
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Poistetaanko tämä tuntematon allekirjoitus? (k/E/l)"
 
-#: g10/keyedit.c:3228
+#: g10/keyedit.c:3238
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Varmastiko poista oma-allekirjoitus? (k/E)"
 
-#: g10/keyedit.c:3242
+#: g10/keyedit.c:3252
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d allekirjoitus poistettu.\n"
 
-#: g10/keyedit.c:3243
+#: g10/keyedit.c:3253
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d allekirjoitusta poistettu.\n"
 
-#: g10/keyedit.c:3246
+#: g10/keyedit.c:3256
 msgid "Nothing deleted.\n"
 msgstr "Mitään ei poistettu.\n"
 
-#: g10/keyedit.c:3279 g10/trustdb.c:1726
+#: g10/keyedit.c:3289 g10/trustdb.c:1726
 #, fuzzy
 msgid "invalid"
 msgstr "virheellinen ascii-koodaus"
 
-#: g10/keyedit.c:3281
+#: g10/keyedit.c:3291
 #, fuzzy, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "Käyttäjätunnus \"%s\" on mitätöity."
 
-#: g10/keyedit.c:3288
+#: g10/keyedit.c:3298
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "Käyttäjätunnus \"%s\" on mitätöity."
 
-#: g10/keyedit.c:3289
+#: g10/keyedit.c:3299
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "Käyttäjätunnus \"%s\" on mitätöity."
 
-#: g10/keyedit.c:3297
+#: g10/keyedit.c:3307
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:3298
+#: g10/keyedit.c:3308
 #, fuzzy, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:3392
+#: g10/keyedit.c:3402
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -4142,204 +4142,204 @@ msgstr ""
 "voi\n"
 "          saada jotkin PGP:n versiot hylkäämään avaimen.\n"
 
-#: g10/keyedit.c:3403
+#: g10/keyedit.c:3413
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Et voi lisätä määrättyä mitätöijää PGP 2.x -muodon avaimeen.\n"
 
-#: g10/keyedit.c:3423
+#: g10/keyedit.c:3433
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Syötä määrätyn mitätöijän käyttäjätunnus: "
 
-#: g10/keyedit.c:3448
+#: g10/keyedit.c:3458
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "PGP 2.x -avainta ei voi nimetä määrätyksi mitätöijäksi\n"
 
-#: g10/keyedit.c:3463
+#: g10/keyedit.c:3473
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "et voi nimittää avainta sen omaksi määrätyksi mitätöijäksi\n"
 
-#: g10/keyedit.c:3485
+#: g10/keyedit.c:3495
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "VAROITUS: Tämän avaimen nimetty mitätöijä on mitätöinyt avaimen!\n"
 
-#: g10/keyedit.c:3504
+#: g10/keyedit.c:3514
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "VAROITUS: avaimen nimittämistä määrätyksi mitätöijäksi ei voi perua!\n"
 
-#: g10/keyedit.c:3510
+#: g10/keyedit.c:3520
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Haluatko varmasti nimittää tämän avaimen määrätyksi mitätöijäksi? (k/E): "
 
-#: g10/keyedit.c:3571
+#: g10/keyedit.c:3581
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Poista salaisten avainten valinnat, kiitos.\n"
 
-#: g10/keyedit.c:3577
+#: g10/keyedit.c:3587
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Valitse korkeintaan yksi toissijainen avain, kiitos.\n"
 
-#: g10/keyedit.c:3581
+#: g10/keyedit.c:3591
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Muutetaan toissijaisen avaimen vanhentumisaikaa.\n"
 
-#: g10/keyedit.c:3584
+#: g10/keyedit.c:3594
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Muutetaan ensisijaisen avaimen vanhentumisaikaa.\n"
 
-#: g10/keyedit.c:3630
+#: g10/keyedit.c:3640
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Et voi muuttaa v3-avainten vanhentumispäivää\n"
 
-#: g10/keyedit.c:3646
+#: g10/keyedit.c:3656
 msgid "No corresponding signature in secret ring\n"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
-#: g10/keyedit.c:3724
+#: g10/keyedit.c:3734
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "VAROITUS: allekirjoitusaliavain %08lX ei ole ristiinvarmennettu\n"
 
-#: g10/keyedit.c:3730
+#: g10/keyedit.c:3740
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 
-#: g10/keyedit.c:3893
+#: g10/keyedit.c:3903
 msgid "Please select exactly one user ID.\n"
 msgstr "Valitse tasan yksi käyttäjätunnus!\n"
 
-#: g10/keyedit.c:3932 g10/keyedit.c:4042 g10/keyedit.c:4162 g10/keyedit.c:4303
+#: g10/keyedit.c:3942 g10/keyedit.c:4052 g10/keyedit.c:4172 g10/keyedit.c:4313
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "ohitetaan v3-muodon oma-allekirjoitus käyttäjätunnukselle \"%s\"\n"
 
-#: g10/keyedit.c:4103
+#: g10/keyedit.c:4113
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:4183
+#: g10/keyedit.c:4193
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Haluatko varmasti käyttää sitä (k/E)? "
 
-#: g10/keyedit.c:4184
+#: g10/keyedit.c:4194
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Haluatko varmasti käyttää sitä (k/E)? "
 
-#: g10/keyedit.c:4246
+#: g10/keyedit.c:4256
 #, fuzzy
 msgid "Enter the notation: "
 msgstr "Allekirjoitusnotaatio: "
 
-#: g10/keyedit.c:4395
+#: g10/keyedit.c:4405
 #, fuzzy
 msgid "Proceed? (y/N) "
 msgstr "Ylikirjoita (k/E)? "
 
-#: g10/keyedit.c:4459
+#: g10/keyedit.c:4477
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4517
+#: g10/keyedit.c:4538
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4544
+#: g10/keyedit.c:4573
 #, fuzzy, c-format
 msgid "No subkey with index %d\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
-#: g10/keyedit.c:4679
+#: g10/keyedit.c:4708
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "käyttäjätunnus: \""
 
-#: g10/keyedit.c:4682 g10/keyedit.c:4776 g10/keyedit.c:4819
+#: g10/keyedit.c:4711 g10/keyedit.c:4805 g10/keyedit.c:4848
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   %08lX allekirjoitti tämän %s%s%s\n"
 
-#: g10/keyedit.c:4684 g10/keyedit.c:4778 g10/keyedit.c:4821
+#: g10/keyedit.c:4713 g10/keyedit.c:4807 g10/keyedit.c:4850
 msgid " (non-exportable)"
 msgstr " (vientiin kelpaamaton)"
 
-#: g10/keyedit.c:4688
+#: g10/keyedit.c:4717
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Tämä allekirjoitus vanheni %s.\n"
 
-#: g10/keyedit.c:4692
+#: g10/keyedit.c:4721
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Haluatko varmasti mitätöidä sen? (k/E) "
 
-#: g10/keyedit.c:4696
+#: g10/keyedit.c:4725
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Luodaanko tälle alekirjoitukselle mitätöintivarmenne? (k/E) "
 
-#: g10/keyedit.c:4747
+#: g10/keyedit.c:4776
 #, fuzzy
 msgid "Not signed by you.\n"
 msgstr "   %08lX allekirjoitti tämän %s%s\n"
 
-#: g10/keyedit.c:4753
+#: g10/keyedit.c:4782
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Olet allekirjoittanut seuraavat käyttäjätunnukset:\n"
 
-#: g10/keyedit.c:4779
+#: g10/keyedit.c:4808
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (vientiin kelpaamaton)"
 
-#: g10/keyedit.c:4786
+#: g10/keyedit.c:4815
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   %08lX mitätöi tämän %s\n"
 
-#: g10/keyedit.c:4808
+#: g10/keyedit.c:4837
 msgid "You are about to revoke these signatures:\n"
 msgstr "Olet mitätöimässä seuraavat allekirjoitukset:\n"
 
-#: g10/keyedit.c:4828
+#: g10/keyedit.c:4857
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Varmastiko luo mitätöintivarmenteet? (k/E) "
 
-#: g10/keyedit.c:4858
+#: g10/keyedit.c:4887
 msgid "no secret key\n"
 msgstr "salainen avain ei ole saatavilla\n"
 
-#: g10/keyedit.c:4928
+#: g10/keyedit.c:4957
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:4945
+#: g10/keyedit.c:4974
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "VAROITUS: käyttäjätunnuksen allekirjoitus on päivätty %d sekuntin päähän "
 "tulevaisuuteen\n"
 
-#: g10/keyedit.c:5009
+#: g10/keyedit.c:5038
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:5071
+#: g10/keyedit.c:5100
 #, fuzzy, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "käyttäjätunnus \"%s\" on jo mitätöity\n"
 
-#: g10/keyedit.c:5166
+#: g10/keyedit.c:5195
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""

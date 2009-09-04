@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.13
+Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------
 
  * GPG now generates 2048 bit RSA keys by default.  The default hash
