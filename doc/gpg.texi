@@ -592,12 +592,12 @@ line.
 @item uid @code{n}
 @opindex keyedit:uid
 Toggle selection of user ID or photographic user ID with index @code{n}.
-Use 0 to deselect all.
+Use @code{*} to select all and @code{0} to deselect all.
 
 @item key @code{n}
 @opindex keyedit:key
 Toggle selection of subkey with index @code{n}.
-Use 0 to deselect all.
+Use @code{*} to select all and @code{0} to deselect all.
 
 @item sign
 @opindex keyedit:sign

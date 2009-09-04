@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1743,12 +1743,22 @@ keyedit_menu( const char *username, strlist_t locusr,
 	    if(strlen(arg_string)==NAMEHASH_LEN*2)
 	      redisplay=menu_select_uid_namehash(cur_keyblock,arg_string);
 	    else
-	      redisplay=menu_select_uid(cur_keyblock,arg_number);
+              {
+                if (*arg_string == '*' 
+                    && (!arg_string[1] || spacep (arg_string+1)))
+                  arg_number = -1; /* Select all. */
+                redisplay = menu_select_uid (cur_keyblock, arg_number);
+              }
 	    break;
 
 	  case cmdSELKEY:
-	    if( menu_select_key( cur_keyblock, arg_number ) )
+            {
+              if (*arg_string == '*' 
+                  && (!arg_string[1] || spacep (arg_string+1)))
+                arg_number = -1; /* Select all. */
+              if (menu_select_key( cur_keyblock, arg_number))
 		redisplay = 1;
+            }
 	    break;
 
 	  case cmdCHECK:
@@ -4437,50 +4447,61 @@ menu_set_notation(const char *string,KBNODE pub_keyblock,KBNODE sec_keyblock)
 }
 
 
-/****************
- * Select one user id or remove all selection if index is 0.
- * Returns: True if the selection changed;
+/*
+ * Select one user id or remove all selection if IDX is 0 or select
+ * all if IDX is -1.  Returns: True if the selection changed.
  */
 static int
-menu_select_uid( KBNODE keyblock, int idx )
+menu_select_uid (KBNODE keyblock, int idx)
 {
-    KBNODE node;
-    int i;
+  KBNODE node;
+  int i;
+  
+  if (idx == -1) /* Select all. */
+    { 
+      for (node = keyblock; node; node = node->next) 
+        if (node->pkt->pkttype == PKT_USER_ID)
+          node->flag |= NODFLG_SELUID;
+      return 1;
+    }
+  else if (idx) /* Toggle.  */
+    {
+      for (i=0, node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_USER_ID)
+            if (++i == idx)
+              break;
+	}
+      if (!node)
+        {
+          tty_printf (_("No user ID with index %d\n"), idx );
+          return 0;
+	}
 
-    /* first check that the index is valid */
-    if( idx ) {
-	for( i=0, node = keyblock; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_USER_ID ) {
-		if( ++i == idx )
-		    break;
-	    }
-	}
-	if( !node ) {
-	    tty_printf(_("No user ID with index %d\n"), idx );
-	    return 0;
-	}
+      for (i=0, node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_USER_ID)
+            {
+              if (++i == idx)
+                {
+                  if ((node->flag & NODFLG_SELUID))
+                    node->flag &= ~NODFLG_SELUID;
+                  else
+                    node->flag |= NODFLG_SELUID;
+                }
+            }
+        }
     }
-    else { /* reset all */
-	for (node = keyblock; node; node = node->next) {
-	    if( node->pkt->pkttype == PKT_USER_ID )
-		node->flag &= ~NODFLG_SELUID;
-	}
-	return 1;
+  else /* Unselect all */
+    {
+      for (node = keyblock; node; node = node->next)
+        if (node->pkt->pkttype == PKT_USER_ID)
+          node->flag &= ~NODFLG_SELUID;
     }
-    /* and toggle the new index */
-    for( i=0, node = keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID ) {
-	    if( ++i == idx ) {
-		if( (node->flag & NODFLG_SELUID) )
-		    node->flag &= ~NODFLG_SELUID;
-		else
-		    node->flag |= NODFLG_SELUID;
-	    }
-	}
-    }
-
-    return 1;
+  
+  return 1;
 }
+
 
 /* Search in the keyblock for a uid that matches namehash */
 static int
@@ -4523,50 +4544,58 @@ menu_select_uid_namehash( KBNODE keyblock, const char *namehash )
 
 /****************
  * Select secondary keys
- * Returns: True if the selection changed;
+ * Returns: True if the selection changed.
  */
 static int
-menu_select_key( KBNODE keyblock, int idx )
+menu_select_key (KBNODE keyblock, int idx)
 {
-    KBNODE node;
-    int i;
+  KBNODE node;
+  int i;
 
-    /* first check that the index is valid */
-    if( idx ) {
-	for( i=0, node = keyblock; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		|| node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-		if( ++i == idx )
-		    break;
-	    }
-	}
-	if( !node ) {
-	    tty_printf(_("No subkey with index %d\n"), idx );
-	    return 0;
-	}
+  if (idx == -1) /* Select all.  */
+    {
+      for (node = keyblock; node; node = node->next)
+        if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+            || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+          node->flag |= NODFLG_SELKEY;
     }
-    else { /* reset all */
-	for ( node = keyblock; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		|| node->pkt->pkttype == PKT_SECRET_SUBKEY )
-		node->flag &= ~NODFLG_SELKEY;
-	}
-	return 1;
+  else if (idx) /* Toggle selection.  */
+    {
+      for (i=0, node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+            if (++i == idx)
+              break;
+        }
+      if (!node)
+        {
+          tty_printf (_("No subkey with index %d\n"), idx );
+          return 0;
+        }
+
+      for (i=0, node = keyblock; node; node = node->next)
+        {
+          if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+            if (++i == idx) 
+              {
+                if ((node->flag & NODFLG_SELKEY))
+                  node->flag &= ~NODFLG_SELKEY;
+                else
+                  node->flag |= NODFLG_SELKEY;
+              }
+        }
     }
-    /* and set the new index */
-    for( i=0, node = keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	    || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    if( ++i == idx ) {
-		if( (node->flag & NODFLG_SELKEY) )
-		    node->flag &= ~NODFLG_SELKEY;
-		else
-		    node->flag |= NODFLG_SELKEY;
-	    }
-	}
+  else /* Unselect all. */
+    {
+      for (node = keyblock; node; node = node->next)
+        if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+            || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+          node->flag &= ~NODFLG_SELKEY;
     }
 
-    return 1;
+  return 1;
 }
 
 

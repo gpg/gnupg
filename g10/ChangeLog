@@ -1,3 +1,9 @@
+2009-09-04  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (menu_select_uid): Use IDX ==-1 t select all.
+	(menu_select_key): Ditto.
+	(keyedit_menu) <cmdSELKEY, cmdSELUID>: Allow '*' to select all.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (menu_adduid): Pass keyblock to generate_user_id.
