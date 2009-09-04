@@ -919,6 +919,9 @@ AM_ICONV
 #
 # Check for gettext
 #
+# This is "GNU gnupg" - The project-id script from gettext
+#                       needs this string
+#
 AC_MSG_NOTICE([checking for gettext])
 AM_PO_SUBDIRS
 AM_GNU_GETTEXT_VERSION([0.17])

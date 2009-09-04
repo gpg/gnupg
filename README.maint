@@ -53,6 +53,7 @@ Release process:
   * Write an announcement.  Update https://savannah.gnu.org/projects/gnupg .
 
 
+
 Gotchas
 =======
 
@@ -63,7 +64,7 @@ Gotchas
   no distributed file with the string "GNU gnupg" (e.g. a log file
   from running make) you end up with different comments in the po
   files.  Check out /usr/lib/gettext/project-id for that silliness.
-
+  As a hack we added this string into configure.ac.
 
 
 
