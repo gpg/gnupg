@@ -1,6 +1,6 @@
 2009-09-03  Werner Koch  <wk@g10code.com>
 
-	* estream.m4: Update for limestream.
+	* estream.m4: Update for libestream.
 
 2008-04-23  Werner Koch  <wk@g10code.com>
 
