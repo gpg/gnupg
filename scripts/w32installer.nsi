@@ -229,6 +229,7 @@ Section "Documentation" SecDoc
 !ifdef WITH_PATCHES
   SetOutPath "$INSTDIR\Src"
   File '*.diff'
+  File '*.tar.gz'
 !endif
 
 SectionEnd ; Section Documentation

@@ -142,7 +142,7 @@ cp ${srcdir}/doc/README.W32 README-W32.txt
 todos README-W32.txt
 
 patches_defs=
-for i in `find "$topdir/patches" -type f -name '*.diff'`; do
+for i in `find "$topdir/patches" -type f \( -name '*.diff' -o -name '*.tar.gz' \)`; do
   cp $i .
   patches_defs="-DWITH_PATCHES"
 done
