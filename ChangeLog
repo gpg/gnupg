@@ -1,3 +1,8 @@
+2009-09-21  Werner Koch  <wk@g10code.com>
+
+	Start a new development branch in the SVN trunk.  The stable one
+	is now known in the SVN as branches/GNUPG-STABLE-2-0.
+
 2009-09-04  Werner Koch  <wk@g10code.com>
 
 	Release 2.0.13.
