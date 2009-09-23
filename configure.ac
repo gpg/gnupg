@@ -80,6 +80,7 @@ GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
+GNUPG_BUILD_PROGRAM(g13, yes)
 GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
@@ -417,9 +418,6 @@ AH_BOTTOM([
 /* We always include support for the OpenPGP card.  */
 #define ENABLE_CARD_SUPPORT 1
 
-/* We don't want the old assuan codes anymore. */
-#define _ASSUAN_ONLY_GPG_ERRORS 1
-
 /* We explicitly need to disable PTH's soft mapping as Debian
    currently enables it by default for no reason. */
 #define PTH_SYSCALL_SOFT 0
@@ -616,11 +614,8 @@ if test "$have_libassuan" = "yes"; then
   have_libassuan=no
   AM_PATH_LIBASSUAN_PTH("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                         have_libassuan=yes,have_libassuan=no)
-  AM_CHECK_LIBASSUAN("$NEED_LIBASSUAN_API:1.0.1",
-       [AC_DEFINE(HAVE_ASSUAN_SET_IO_MONITOR, 1,
-         [Define to 1 if you have the `assuan_set_io_monitor' function.])],)  
   AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
-            [version of the libbassuan library])
+                     [version of the libassuan library])
 fi
 
 
@@ -1351,6 +1346,7 @@ AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
 AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
+AM_CONDITIONAL(BUILD_G13,   test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_TOOLS, test "$build_tools" = "yes")
 AM_CONDITIONAL(BUILD_DOC,   test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
@@ -1441,6 +1437,7 @@ g10/Makefile
 sm/Makefile
 agent/Makefile
 scd/Makefile
+g13/Makefile
 keyserver/Makefile
 keyserver/gpg2keys_mailto
 keyserver/gpg2keys_test
@@ -1463,6 +1460,8 @@ echo "
         S/MIME:    $build_gpgsm
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_extra
+        G13:       $build_g13
+
 
         Protect tool:      $show_gnupg_protect_tool_pgm
         Default agent:     $show_gnupg_agent_pgm

@@ -54,6 +54,11 @@ scd = scd
 else
 scd =
 endif
+if BUILD_G13
+g13 = g13
+else
+g13 =
+endif
 if BUILD_TOOLS
 tools = tools
 else
@@ -72,7 +77,7 @@ tests = tests
 endif
 
 SUBDIRS = m4 gl include jnlib common ${kbx} \
- ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${tools} po ${doc} ${tests}
+ ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${tools} po ${doc} ${tests}
 
 dist_doc_DATA = README
 

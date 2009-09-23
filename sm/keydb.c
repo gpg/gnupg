@@ -47,7 +47,7 @@ struct resource_item {
   } u;
   void *token;
   int secret;
-  DOTLOCK lockhandle;
+  dotlock_t lockhandle;
 };
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];

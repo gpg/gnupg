@@ -55,7 +55,7 @@ struct keyring_name
   struct keyring_name *next;
   int secret;
   int readonly;
-  DOTLOCK lockhd;
+  dotlock_t lockhd;
   int is_locked;
   int did_full_scan;
   char fname[1];

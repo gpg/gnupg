@@ -21,13 +21,13 @@
 #define LIBJNLIB_DOTLOCK_H
 
 struct dotlock_handle;
-typedef struct dotlock_handle *DOTLOCK;
+typedef struct dotlock_handle *dotlock_t;
 
 void disable_dotlock (void);
-DOTLOCK create_dotlock(const char *file_to_lock);
-void destroy_dotlock ( DOTLOCK h );
-int make_dotlock (DOTLOCK h, long timeout);
-int release_dotlock (DOTLOCK h);
+dotlock_t create_dotlock (const char *file_to_lock);
+void destroy_dotlock ( dotlock_t h );
+int make_dotlock (dotlock_t h, long timeout);
+int release_dotlock (dotlock_t h);
 void dotlock_remove_lockfiles (void);
 
 #endif /*LIBJNLIB_DOTLOCK_H*/

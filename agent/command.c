@@ -1866,9 +1866,7 @@ register_commands (assuan_context_t ctx)
       if (rc)
         return rc;
     } 
-#ifdef HAVE_ASSUAN_SET_IO_MONITOR
   assuan_register_post_cmd_notify (ctx, post_cmd_notify);
-#endif
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_option_handler (ctx, option_handler);
   return 0;
@@ -1934,9 +1932,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
-#ifdef HAVE_ASSUAN_SET_IO_MONITOR
   assuan_set_io_monitor (ctx, io_monitor, NULL);
-#endif
 
   for (;;)
     {

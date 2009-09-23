@@ -76,7 +76,7 @@ struct dotlock_handle
 
 
 /* A list of of all lock handles. */
-static volatile DOTLOCK all_lockfiles;
+static volatile dotlock_t all_lockfiles;
 
 /* If this has the value true all locking is disabled.  */
 static int never_lock;
@@ -84,7 +84,7 @@ static int never_lock;
 
 /* Local protototypes.  */
 #ifndef HAVE_DOSISH_SYSTEM
-static int read_lockfile (DOTLOCK h, int *same_node);
+static int read_lockfile (dotlock_t h, int *same_node);
 #endif /*!HAVE_DOSISH_SYSTEM*/
 
 
@@ -102,7 +102,7 @@ disable_dotlock(void)
 
 
 /* Create a lockfile for a file name FILE_TO_LOCK and returns an
-   object of type DOTLOCK which may be used later to actually acquire
+   object of type dotlock_t which may be used later to actually acquire
    the lock.  A cleanup routine gets installed to cleanup left over
    locks or other files used internally by the lock mechanism.
 
@@ -119,11 +119,11 @@ disable_dotlock(void)
    destroy_dotlock but gets also released at the termination of the
    process.  On error NULL is returned.
  */
-DOTLOCK
+dotlock_t
 create_dotlock (const char *file_to_lock)
 {
   static int initialized;
-  DOTLOCK h;
+  dotlock_t h;
 #ifndef  HAVE_DOSISH_SYSTEM
   int  fd = -1;
   char pidstr[16];
@@ -321,9 +321,9 @@ create_dotlock (const char *file_to_lock)
 
 /* Destroy the local handle H and release the lock. */
 void
-destroy_dotlock ( DOTLOCK h )
+destroy_dotlock (dotlock_t h)
 {
-  DOTLOCK hprev, htmp;
+  dotlock_t hprev, htmp;
 
   if ( !h )
     return;
@@ -364,9 +364,9 @@ destroy_dotlock ( DOTLOCK h )
 
 #ifndef HAVE_DOSISH_SYSTEM
 static int
-maybe_deadlock( DOTLOCK h )
+maybe_deadlock (dotlock_t h)
 {
-  DOTLOCK r;
+  dotlock_t r;
 
   for ( r=all_lockfiles; r; r = r->next )
     {
@@ -383,7 +383,7 @@ maybe_deadlock( DOTLOCK h )
    forever (hopefully not), other values are reserved (should then be
    timeouts in milliseconds).  Returns: 0 on success  */
 int
-make_dotlock ( DOTLOCK h, long timeout )
+make_dotlock (dotlock_t h, long timeout)
 {
   int backoff = 0;
 #ifndef HAVE_DOSISH_SYSTEM
@@ -513,7 +513,7 @@ make_dotlock ( DOTLOCK h, long timeout )
 
 /* Release a lock.  Returns 0 on success.  */
 int
-release_dotlock( DOTLOCK h )
+release_dotlock (dotlock_t h)
 {
 #ifndef HAVE_DOSISH_SYSTEM
   int pid, same_node;
@@ -585,7 +585,7 @@ release_dotlock( DOTLOCK h )
    has been created on the same node. */
 #ifndef HAVE_DOSISH_SYSTEM
 static int
-read_lockfile (DOTLOCK h, int *same_node )
+read_lockfile (dotlock_t h, int *same_node )
 {
   char buffer_space[10+1+70+1]; /* 70 is just an estimated value; node
                                    name are usually shorter. */
@@ -680,9 +680,9 @@ read_lockfile (DOTLOCK h, int *same_node )
    installed by this module but may also be called by other
    termination handlers.  */
 void
-dotlock_remove_lockfiles()
+dotlock_remove_lockfiles (void)
 {
-  DOTLOCK h, h2;
+  dotlock_t h, h2;
   
   h = all_lockfiles;
   all_lockfiles = NULL;

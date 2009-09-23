@@ -1,3 +1,7 @@
+2009-09-22  Werner Koch  <wk@g10code.com>
+
+	* dotlock.h (DOTLOCK): Rename to dotlock_t.  Change all users.
+
 2009-08-26  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (do_make_filename): Factor some code out to ..

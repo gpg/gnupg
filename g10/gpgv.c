@@ -500,7 +500,7 @@ disable_dotlock (void)
 {
 }
 
-DOTLOCK 
+dotlock_t 
 create_dotlock (const char *file_to_lock)
 {
   (void)file_to_lock;
@@ -508,13 +508,13 @@ create_dotlock (const char *file_to_lock)
 }
 
 void 
-destroy_dotlock (DOTLOCK h)
+destroy_dotlock (dotlock_t h)
 {
   (void)h;
 }
 
 int
-make_dotlock (DOTLOCK h, long timeout)
+make_dotlock (dotlock_t h, long timeout)
 {
   (void)h;
   (void)timeout;
@@ -522,7 +522,7 @@ make_dotlock (DOTLOCK h, long timeout)
 }
 
 int
-release_dotlock (DOTLOCK h)
+release_dotlock (dotlock_t h)
 {
   (void)h;
   return 0;

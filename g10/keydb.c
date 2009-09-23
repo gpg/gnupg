@@ -78,7 +78,7 @@ static void unlock_all (KEYDB_HANDLE hd);
 static int
 maybe_create_keyring (char *filename, int force)
 {
-  DOTLOCK lockhd = NULL;
+  dotlock_t lockhd = NULL;
   IOBUF iobuf;
   int rc;
   mode_t oldmask;

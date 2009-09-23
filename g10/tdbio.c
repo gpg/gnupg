@@ -86,7 +86,7 @@ struct cmp_xdir_struct {
 
 
 static char *db_name;
-static DOTLOCK lockhandle;
+static dotlock_t lockhandle;
 static int is_locked;
 static int  db_fd = -1;
 static int in_transaction;
