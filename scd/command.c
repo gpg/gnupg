@@ -30,9 +30,8 @@
 # include <pth.h>
 #endif
 
-#include <assuan.h>
-
 #include "scdaemon.h"
+#include <assuan.h>
 #include <ksba.h>
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
@@ -348,7 +347,7 @@ reset_notify (assuan_context_t ctx)
 }
 
 
-static int
+static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -401,7 +400,7 @@ get_reader_slot (void)
 /* If the card has not yet been opened, do it.  Note that this
    function returns an Assuan error, so don't map the error a second
    time.  */
-static assuan_error_t
+static gpg_error_t
 open_card (ctrl_t ctrl, const char *apptype)
 {
   gpg_error_t err;
@@ -483,7 +482,7 @@ open_card (ctrl_t ctrl, const char *apptype)
    changes between operations; i.e. the client can assume that all
    operations are done on the same card unless he calls this function.
  */
-static int
+static gpg_error_t
 cmd_serialno (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -590,7 +589,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
      
    Note, that this function may even be used on a locked card.
 */
-static int
+static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -662,7 +661,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
    Note, that this function may even be used on a locked card.
  */
-static int
+static gpg_error_t
 cmd_readcert (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -699,7 +698,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
    Note, that this function may even be used on a locked card.
   */
-static int
+static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -780,7 +779,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
    The client should use this command to tell us the data he want to
    sign.  */
-static int
+static gpg_error_t
 cmd_setdata (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -878,7 +877,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
    The --hash option is optional; the default is SHA1.
 
  */
-static int
+static gpg_error_t
 cmd_pksign (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -948,7 +947,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 /* PKAUTH <hexified_id>
 
  */
-static int
+static gpg_error_t
 cmd_pkauth (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -998,7 +997,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
 /* PKDECRYPT <hexified_id>
 
  */
-static int
+static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1052,7 +1051,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
  
    Note, that this function may even be used on a locked card.
 */
-static int
+static gpg_error_t
 cmd_getattr (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1091,7 +1090,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
    A PIN will be requested for most NAMEs.  See the corresponding
    setattr function of the actually used application (app-*.c) for
    details.  */
-static int
+static gpg_error_t
 cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1142,7 +1141,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
    In almost all cases a a PIN will be requested.  See the related
    writecert function of the actually used application (app-*.c) for
    details.  */
-static int
+static gpg_error_t
 cmd_writecert (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1207,7 +1206,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
    A PIN will be requested for most NAMEs.  See the corresponding
    writekey function of the actually used application (app-*.c) for
    details.  */
-static int
+static gpg_error_t
 cmd_writekey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1283,7 +1282,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
    READKEY command.
 
  */
-static int
+static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1342,7 +1341,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
    Note, that this function may be even be used on a locked card.
 */
-static int
+static gpg_error_t
 cmd_random (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1384,7 +1383,7 @@ cmd_random (assuan_context_t ctx, char *line)
    the card holder verfication vector CHVNO.  The option --nullpin is
    used for TCOS cards to set the initial PIN.  The format of CHVNO
    depends on the card application.  */
-static int
+static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1461,7 +1460,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
       unblock each other.
 
  */
-static int
+static gpg_error_t
 cmd_checkpin (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1504,7 +1503,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
    If the option --wait is given the command will wait until a
    lock has been released.
  */
-static int
+static gpg_error_t
 cmd_lock (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1542,7 +1541,7 @@ cmd_lock (assuan_context_t ctx, char *line)
 
    Release exclusive card access.
  */
-static int
+static gpg_error_t
 cmd_unlock (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1594,7 +1593,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
                  first field is the name.
 */
 
-static int
+static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
@@ -1685,7 +1684,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
    command; i.e. to select another application. 
 */
 
-static int
+static gpg_error_t
 cmd_restart (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1711,7 +1710,7 @@ cmd_restart (assuan_context_t ctx, char *line)
    Disconnect the card if it is not any longer used by other
    connections and the backend supports a disconnect operation. 
  */
-static int
+static gpg_error_t
 cmd_disconnect (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1743,7 +1742,7 @@ cmd_disconnect (assuan_context_t ctx, char *line)
    length up to N bytes.  If N is not given a default value is used
    (currently 4096).
  */
-static int
+static gpg_error_t
 cmd_apdu (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1824,7 +1823,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 
 
 /* KILLSCD - Commit suicide. */
-static int
+static gpg_error_t
 cmd_killscd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1843,7 +1842,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(assuan_context_t, char *line);
+    gpg_error_t (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "SERIALNO",     cmd_serialno },
     { "LEARN",        cmd_learn },
@@ -1895,20 +1894,28 @@ int
 scd_command_handler (ctrl_t ctrl, int fd)
 {
   int rc;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   int stopme;
   
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("failed to allocate assuan context: %s\n",
+                 gpg_strerror (rc));
+      scd_exit (2);
+    }
+
   if (fd == -1)
     {
       int filedes[2];
 
       filedes[0] = 0;
       filedes[1] = 1;
-      rc = assuan_init_pipe_server (&ctx, filedes);
+      rc = assuan_init_pipe_server (ctx, filedes);
     }
   else
     {
-      rc = assuan_init_socket_server_ext (&ctx, INT2FD(fd), 2);
+      rc = assuan_init_socket_server_ext (ctx, INT2FD(fd), 2);
     }
   if (rc)
     {
@@ -1987,7 +1994,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
   ctrl->server_local = NULL;
 
   /* Release the Assuan context.  */
-  assuan_deinit_server (ctx);
+  assuan_release (ctx);
 
   if (stopme)
     scd_exit (0);

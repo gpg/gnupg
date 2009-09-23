@@ -471,7 +471,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           || strcmp (current_logfile, pargs->r.ret_str))
         {
           log_set_file (pargs->r.ret_str);
-          assuan_set_assuan_log_stream (log_get_stream ());
           xfree (current_logfile);
           current_logfile = xtrystrdup (pargs->r.ret_str);
         }
@@ -545,7 +544,7 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   gpg_error_t err;
   const char *env_file_name = NULL;
-
+  struct assuan_malloc_hooks malloc_hooks;
 
   /* Before we do anything else we save the list of currently open
      file descriptors and the signal mask.  This info is required to
@@ -588,10 +587,12 @@ main (int argc, char **argv )
                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
 
-  assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-  assuan_set_assuan_log_stream (log_get_stream ());
+  malloc_hooks.malloc = gcry_malloc;
+  malloc_hooks.realloc = gcry_realloc;
+  malloc_hooks.free = gcry_free;
+  assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
-  assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
@@ -917,7 +918,6 @@ main (int argc, char **argv )
                              |JNLIB_LOG_WITH_TIME
                              |JNLIB_LOG_WITH_PID));
       current_logfile = xstrdup (logfile);
-      assuan_set_assuan_log_stream (log_get_stream ());
     }
 
   /* Make sure that we have a default ttyname. */
@@ -2048,7 +2048,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
 
 /* Helper for check_own_socket.  */
-static int
+static gpg_error_t
 check_own_socket_pid_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *mb = opaque;
@@ -2065,14 +2065,21 @@ check_own_socket_thread (void *arg)
 {
   int rc;
   char *sockname = arg;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   membuf_t mb;
   char *buffer;
 
   check_own_socket_running++;
 
-  rc = assuan_socket_connect (&ctx, sockname, (pid_t)(-1));
+  rc = assuan_new (&ctx);
   xfree (sockname);
+  if (rc)
+    {
+      log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+
+  rc = assuan_socket_connect (ctx, sockname, (pid_t)(-1));
   if (rc)
     {
       log_error ("can't connect my own socket: %s\n", gpg_strerror (rc));
@@ -2099,9 +2106,10 @@ check_own_socket_thread (void *arg)
     log_error ("socket is still served by this server\n");
     
   xfree (buffer);
-  assuan_disconnect (ctx);
 
  leave:
+  if (ctx)
+    assuan_release (ctx);
   if (rc)
     {
       /* We may not remove the socket as it is now in use by another
@@ -2159,7 +2167,7 @@ check_for_running_agent (int silent, int mode)
 {
   int rc;
   char *infostr, *p;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   int prot, pid;
 
   if (!mode)
@@ -2207,8 +2215,9 @@ check_for_running_agent (int silent, int mode)
       pid = (pid_t)(-1);
     }
 
-
-  rc = assuan_socket_connect (&ctx, infostr, pid);
+  rc = assuan_new (&ctx);
+  if (! rc)
+    rc = assuan_socket_connect (&ctx, infostr, pid);
   xfree (infostr);
   if (rc)
     {
@@ -2217,12 +2226,15 @@ check_for_running_agent (int silent, int mode)
 
       if (!mode && !silent)
         log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
+
+      if (ctx)
+	assuan_release (ctx);
       return -1;
     }
 
   if (!opt.quiet && !silent)
     log_info ("gpg-agent running and available\n");
 
-  assuan_disconnect (ctx);
+  assuan_release (ctx);
   return 0;
 }

@@ -27,9 +27,8 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include <assuan.h>
-
 #include "gpgsm.h"
+#include <assuan.h>
 #include "sysutils.h"
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
@@ -183,7 +182,7 @@ start_audit_session (ctrl_t ctrl)
 }
 
 
-static int
+static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -368,7 +367,7 @@ output_notify (assuan_context_t ctx, const char *line)
   policy is not to encrypt at all if not all recipients are valid, the
   client has to take care of this.  All RECIPIENT commands are
   cumulative until a RESET or an successful ENCRYPT command.  */
-static int 
+static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -404,7 +403,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
   a RESET but they are *not* reset by an SIGN command becuase it can
   be expected that set of signers are used for more than one sign
   operation.  */
-static int 
+static gpg_error_t
 cmd_signer (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -438,7 +437,7 @@ cmd_signer (assuan_context_t ctx, char *line)
   This command should in general not fail, as all necessary checks
   have been done while setting the recipients.  The input and output
   pipes are closed. */
-static int 
+static gpg_error_t
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -495,7 +494,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   it utilizes the GPG-Agent for the session key decryption, there is
   no need to ask the client for a protecting passphrase - GpgAgent
   does take care of this by requesting this from the user. */
-static int 
+static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -539,7 +538,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   If the signature is a detached one, the server will inquire about
   the signed material and the client must provide it.
   */
-static int 
+static gpg_error_t
 cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -581,7 +580,7 @@ cmd_verify (assuan_context_t ctx, char *line)
   Sign the data set with the INPUT command and write it to the sink
   set by OUTPUT.  With "--detached" specified, a detached signature is
   created (surprise).  */
-static int 
+static gpg_error_t
 cmd_sign (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -629,7 +628,7 @@ cmd_sign (assuan_context_t ctx, char *line)
    separated list of fingerprints.  The command will re-import these
    certificates, meaning that they are made permanent by removing
    their ephemeral flag.   */
-static int 
+static gpg_error_t
 cmd_import (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -657,7 +656,7 @@ cmd_import (assuan_context_t ctx, char *line)
 
  */
 
-static int 
+static gpg_error_t
 cmd_export (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -743,7 +742,7 @@ cmd_export (assuan_context_t ctx, char *line)
 }
 
 
-static int 
+static gpg_error_t
 cmd_delkeys (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -791,7 +790,7 @@ cmd_delkeys (assuan_context_t ctx, char *line)
 
    Set the file descriptor to read a message which is used with
    detached signatures */
-static int 
+static gpg_error_t
 cmd_message (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -879,25 +878,25 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
   return err;
 }
 
-static int 
+static gpg_error_t
 cmd_listkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 3);
 }
 
-static int 
+static gpg_error_t
 cmd_dumpkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 259);
 }
 
-static int 
+static gpg_error_t
 cmd_listsecretkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 2);
 }
 
-static int 
+static gpg_error_t
 cmd_dumpsecretkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 258);
@@ -909,7 +908,7 @@ cmd_dumpsecretkeys (assuan_context_t ctx, char *line)
    Read the parameters in native format from the input fd and write a
    certificate request to the output.
  */
-static int 
+static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -959,7 +958,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
    If --html is used the output is formated as an XHTML block. This is
    designed to be incorporated into a HTML document.
  */
-static int 
+static gpg_error_t
 cmd_getauditlog (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1019,7 +1018,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
                  - Returns OK if the command CMD implements the option OPT.
 
  */
-static int
+static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
@@ -1101,7 +1100,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(assuan_context_t, char *line);
+    gpg_error_t (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer },
@@ -1156,7 +1155,15 @@ gpgsm_server (certlist_t default_recplist)
      called with a socketpair and ignore FIELDES in this case. */
   filedes[0] = 0;
   filedes[1] = 1;
-  rc = assuan_init_pipe_server (&ctx, filedes);
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("failed to allocate assuan context: %s\n",
+                 gpg_strerror (rc));
+      gpgsm_exit (2);
+    }
+
+  rc = assuan_init_pipe_server (ctx, filedes);
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n",
@@ -1241,7 +1248,7 @@ gpgsm_server (certlist_t default_recplist)
   audit_release (ctrl.audit);
   ctrl.audit = NULL;
 
-  assuan_deinit_server (ctx);
+  assuan_release (ctx);
 }
 
 

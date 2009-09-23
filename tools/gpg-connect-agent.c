@@ -1086,7 +1086,7 @@ do_showopen (void)
 
 
 
-static int
+static gpg_error_t
 getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *mb = opaque;
@@ -1155,7 +1155,7 @@ main (int argc, char **argv)
   i18n_init();
   init_common_subsystems ();
 
-  assuan_set_assuan_err_source (0);
+  assuan_set_gpg_err_source (0);
 
 
   opt.homedir = default_homedir ();
@@ -1883,7 +1883,7 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
 {
   char *line;
   size_t linelen;
-  assuan_error_t rc;
+  gpg_error_t rc;
   int i, j;
   int need_lf = 0;
 

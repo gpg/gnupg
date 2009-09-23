@@ -29,9 +29,9 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
-#include <assuan.h>
 
 #include "gpg.h"
+#include <assuan.h>
 #include "util.h"
 #include "membuf.h"
 #include "options.h"
@@ -77,7 +77,7 @@ struct genkey_parm_s
 };
 
 
-static int learn_status_cb (void *opaque, const char *line);
+static gpg_error_t learn_status_cb (void *opaque, const char *line);
 
 
 
@@ -230,7 +230,7 @@ store_serialno (const char *line)
 
 
 /* This is a dummy data line callback.  */
-static int
+static gpg_error_t
 dummy_data_cb (void *opaque, const void *buffer, size_t length)
 {
   (void)opaque;
@@ -240,7 +240,7 @@ dummy_data_cb (void *opaque, const void *buffer, size_t length)
 }
 
 /* A simple callback used to return the serialnumber of a card.  */
-static int
+static gpg_error_t
 get_serialno_cb (void *opaque, const char *line)
 {
   char **serialno = opaque;
@@ -274,7 +274,7 @@ get_serialno_cb (void *opaque, const char *line)
 
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
-static int
+static gpg_error_t
 default_inq_cb (void *opaque, const char *line)
 {
   (void)opaque;
@@ -312,7 +312,7 @@ agent_release_card_info (struct agent_card_info_s *info)
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
 }
 
-static int
+static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct agent_card_info_s *parm = opaque;
@@ -597,7 +597,7 @@ agent_scd_setattr (const char *name,
 /* Handle a CERTDATA inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the END
    command. */
-static int
+static gpg_error_t
 inq_writecert_parms (void *opaque, const char *line)
 {
   int rc;
@@ -645,7 +645,7 @@ agent_scd_writecert (const char *certidstr,
 
 /* Handle a KEYDATA inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
-static int
+static gpg_error_t
 inq_writekey_parms (void *opaque, const char *line)
 {
   int rc;
@@ -695,7 +695,7 @@ agent_scd_writekey (int keyno, const char *serialno,
 
 
 /* Status callback for the SCD GENKEY command. */
-static int
+static gpg_error_t
 scd_genkey_cb (void *opaque, const char *line)
 {
   struct agent_card_genkey_s *parm = opaque;
@@ -882,7 +882,7 @@ select_openpgp (const char *serialno)
 
 
 
-static int
+static gpg_error_t
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;

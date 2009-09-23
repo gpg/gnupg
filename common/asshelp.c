@@ -183,6 +183,13 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
   *r_ctx = NULL;
 
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("error allocating assuan context: %s\n", gpg_strerror (rc));
+      return rc;
+    }
+
  restart:
   infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
   if (!infostr || !*infostr)
@@ -192,7 +199,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       /* First check whether we can connect at the standard
          socket.  */
       sockname = make_filename (homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (&ctx, sockname, 0);
+      rc = assuan_socket_connect (ctx, sockname, 0);
 
       if (rc)
         {
@@ -210,6 +217,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               log_error ("error flushing pending output: %s\n",
                          strerror (errno));
               xfree (sockname);
+	      assuan_release (ctx);
               return tmperr;
             }
           
@@ -239,7 +247,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                 /* Give the agent some time to prepare itself. */
                 gnupg_sleep (3);
                 /* Now try again to connect the agent.  */
-                rc = assuan_socket_connect (&ctx, sockname, 0);
+                rc = assuan_socket_connect (ctx, sockname, 0);
               }
           }
 #else /*!HAVE_W32_SYSTEM*/
@@ -265,7 +273,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             no_close_list[i] = -1;
             
             /* Connect to the agent and perform initial handshaking. */
-            rc = assuan_pipe_connect (&ctx, agent_program, argv,
+            rc = assuan_pipe_connect (ctx, agent_program, argv,
                                       no_close_list);
           }
 #endif /*!HAVE_W32_SYSTEM*/
@@ -299,7 +307,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           goto restart;
         }
 
-      rc = assuan_socket_connect (&ctx, infostr, pid);
+      rc = assuan_socket_connect (ctx, infostr, pid);
       xfree (infostr);
       if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {
@@ -312,6 +320,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   if (rc)
     {
       log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
+      assuan_release (ctx);
       return gpg_error (GPG_ERR_NO_AGENT);
     }
 
@@ -326,7 +335,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                                     session_env);
   if (rc)
     {
-      assuan_disconnect (ctx);
+      assuan_release (ctx);
       return rc;
     }
 

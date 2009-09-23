@@ -370,7 +370,8 @@ main (int argc, char **argv )
   const char *config_filename = NULL;
   int allow_coredump = 0;
   int standard_socket = 0;
-
+  struct assuan_malloc_hooks malloc_hooks;
+  
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -403,10 +404,12 @@ main (int argc, char **argv )
 
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
-  assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-  assuan_set_assuan_log_stream (log_get_stream ());
+  malloc_hooks.malloc = gcry_malloc;
+  malloc_hooks.realloc = gcry_realloc;
+  malloc_hooks.free = gcry_free;
+  assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
-  assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

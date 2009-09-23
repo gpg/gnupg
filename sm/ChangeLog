@@ -1,3 +1,24 @@
+2009-09-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm.c (main): Update to new assuan API.
+	* server.c: Include "gpgsm.h" before <assuan.h> due to check for
+	GPG_ERR_SOURCE_DEFAULT and assuan.h now including gpg-error.h.
+	(option_handler, cmd_recipient, cmd_signer, cmd_encrypt)
+	(cmd_decrypt, cmd_verify, cmd_sign, cmd_import, cmd_export)
+	(cmd_delkeys, cmd_message, cmd_listkeys, cmd_dumpkeys)
+	(cmd_listsecretkeys, cmd_dumpsecretkeys, cmd_genkey)
+	(cmd_getauditlog, cmd_getinfo): Return gpg_error_t instead of int.
+	(register_commands): Same for member HANDLER in table.
+	(gpgsm_server): Allocate assuan context before starting server.
+	* sm/call-dirmngr.c:
+	* call-dirmngr.c (prepare_dirmngr): Check for CTX and error before
+	setting LDAPSERVER.
+	(start_dirmngr_ext): Allocate assuan context before starting
+	server.
+	(inq_certificate, isvalid_status_cb, lookup_cb, lookup_status_cb)
+	(run_command_cb, run_command_inq_cb, run_command_status_cb):
+	Return gpg_error_t instead of int.
+
 2009-08-06  Werner Koch  <wk@g10code.com>
 
 	* sign.c (gpgsm_sign): Print INV_SNDR for a bad default key.

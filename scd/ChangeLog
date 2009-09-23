@@ -1,3 +1,16 @@
+2009-09-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* command.c: Include "scdaemon.h" before <assuan.h> because of
+	GPG_ERR_SOURCE_DEFAULT check.
+	(option_handler, open_card, cmd_serialno, cmd_lean, cmd_readcert)
+	(cmd_readkey, cmd_setdata, cmd_pksign, cmd_pkauth, cmd_pkdecrypt)
+	(cmd_getattr, cmd_setattr, cmd_writecert, cmd_writekey)
+	(cmd_genkey, cmd_random, cmd_passwd, cmd_checkpin, cmd_lock)
+	(cmd_unlock, cmd_getinfo, cmd_restart, cmd_disconnect, cmd_apdu)
+	(cmd_killscd): Return gpg_error_t instead of int.
+	(scd_command_handler): Allocate assuan context before starting server.
+	* scdaemon.c (main): Update to new Assuan API.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_decipher): Compute required Le.

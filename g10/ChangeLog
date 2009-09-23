@@ -1,3 +1,25 @@
+2009-09-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-agent.c: Include "scdaemon.h" before <assuan.h> because of
+	GPG_ERR_SOURCE_DEFAULT check.
+	(learn_status_cb, dummy_data_cb, get_serialno_cb, default_inq_cb)
+	(learn_status_cb, inq_writecert_parms, inq_writekey_parms)
+	(scd_genkey_cb, membuf_data_cb): Return gpg_error_t instead of
+	int.
+	* gpg.c: Include "scdaemon.h" before <assuan.h> because of
+	GPG_ERR_SOURCE_DEFAULT check.
+	(main): Update to new Assuan API.
+	* server.c: Include "scdaemon.h" before <assuan.h> because of
+	GPG_ERR_SOURCE_DEFAULT check.
+	(option_handler, cmd_recipient, cmd_signer, cmd_encrypt)
+	(cmd_decrypt, cmd_verify, cmd_sign, cmd_import, cmd_export)
+	(cmd_delkeys, cmd_message, do_listkeys, cmd_listkeys)
+	(cmd_listsecretkeys, cmd_genkey, cmd_getinfo): Return gpg_error_t
+	instead of int.
+	(register_commands): Allocate assuan context before starting
+	server.
+	(gpg_server): Allocate assuan_context before starting server.
+
 2009-09-04  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (menu_select_uid): Use IDX ==-1 t select all.

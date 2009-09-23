@@ -1,3 +1,40 @@
+2009-09-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg-agent.c (parse_rereadable_options): Don't set global assuan
+	log file (there ain't one anymore).
+	(main): Update to new API.
+	(check_own_socket_pid_cb): Return gpg_error_t instead of int.
+	(check_own_socket_thread, check_for_running_agent): Create assuan
+	context before connecting to server.
+	* command.c: Include "scdaemon.h" before <assuan.h> because of
+	GPG_ERR_SOURCE_DEFAULT check.
+	(write_and_clear_outbuf): Use gpg_error_t instead of
+	assuan_error_t.
+	(cmd_geteventcounter, cmd_istrusted, cmd_listtrusted)
+	(cmd_marktrusted, cmd_havekey, cmd_sigkey, cmd_setkeydesc)
+	(cmd_sethash, cmd_pksign, cmd_pkdecrypt, cmd_genkey, cmd_readkey)
+	(cmd_keyinfo, cmd_get_passphrase, cmd_clear_passphrase)
+	(cmd_get_confirmation, cmd_learn, cmd_passwd)
+	(cmd_preset_passphrase, cmd_scd, cmd_getval, cmd_putval)
+	(cmd_updatestartuptty, cmd_killagent, cmd_reloadagent)
+	(cmd_getinfo, option_handler): Return gpg_error_t instead of int.
+	(post_cmd_notify): Change type of ERR to gpg_error_t from int.
+	(io_monitor): Add hook argument.  Use symbols for constants.
+	(register_commands): Change return type of HANDLER to gpg_error_t.
+	(start_command_handler): Allocate assuan context before starting
+	server.
+	* call-pinentry.c: Include "scdaemon.h" before <assuan.h> because
+	of GPG_ERR_SOURCE_DEFAULT check.
+	(unlock_pinentry): Call assuan_release instead of
+	assuan_disconnect.
+	(getinfo_pid_cb, getpin_cb): Return gpg_error_t instead of int.
+	(start_pinentry): Allocate assuan context before connecting to
+	server.
+	* call-scd.c (membuf_data_cb, learn_status_cb, get_serialno_cb)
+	(membuf_data_cb, inq_needpin, card_getattr_cb, pass_status_thru)
+	(pass_data_thru): Change return type to gpg_error_t.
+	(start_scd): Allocate assuan context before connecting to server.
+
 2009-09-04  Marcus Brinkmann  <marcus@g10code.com>
 
 	* command.c (start_command_handler): Add comment about gap in

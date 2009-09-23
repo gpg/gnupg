@@ -34,10 +34,9 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include <assuan.h>
-
-#include "i18n.h"
 #include "agent.h"
+#include <assuan.h>
+#include "i18n.h"
 
 /* maximum allowed size of the inquired ciphertext */
 #define MAXLEN_CIPHERTEXT 4096
@@ -133,7 +132,7 @@ clear_outbuf (membuf_t *mb)
 static gpg_error_t
 write_and_clear_outbuf (assuan_context_t ctx, membuf_t *mb)
 {
-  assuan_error_t ae;
+  gpg_error_t ae;
   void *p;
   size_t n;
 
@@ -354,7 +353,7 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
    KEY  - Incremented for added or removed private keys.
    CARD - Incremented for changes of the card readers stati.
 */
-static int
+static gpg_error_t
 cmd_geteventcounter (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -403,7 +402,7 @@ bump_card_eventcounter (void)
 
    Return OK when we have an entry with this fingerprint in our
    trustlist */
-static int
+static gpg_error_t
 cmd_istrusted (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -440,7 +439,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
 /* LISTTRUSTED 
 
    List all entries from the trustlist */
-static int
+static gpg_error_t
 cmd_listtrusted (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -457,7 +456,7 @@ cmd_listtrusted (assuan_context_t ctx, char *line)
 /* MARKTRUSTED <hexstring_with_fingerprint> <flag> <display_name>
 
    Store a new key in into the trustlist*/
-static int
+static gpg_error_t
 cmd_marktrusted (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -501,7 +500,7 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 /* HAVEKEY <hexstring_with_keygrip>
   
    Return success when the secret key is available */
-static int
+static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -522,7 +521,7 @@ cmd_havekey (assuan_context_t ctx, char *line)
    SETKEY <hexstring_with_keygrip>
   
    Set the  key used for a sign or decrypt operation */
-static int
+static gpg_error_t
 cmd_sigkey (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -550,7 +549,7 @@ cmd_sigkey (assuan_context_t ctx, char *line)
    The description is only valid for the next PKSIGN or PKDECRYPT
    operation.
 */
-static int
+static gpg_error_t
 cmd_setkeydesc (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -584,7 +583,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 
   The client can use this command to tell the server about the data
   (which usually is a hash) to be signed. */
-static int
+static gpg_error_t
 cmd_sethash (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -662,7 +661,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
 
    Perform the actual sign operation. Neither input nor output are
    sensitive to eavesdropping. */
-static int
+static gpg_error_t
 cmd_pksign (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -696,7 +695,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
    Perform the actual decrypt operation.  Input is not 
    sensitive to eavesdropping */
-static int
+static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -744,7 +743,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
    S  OK key created
 */
 
-static int
+static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -779,7 +778,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 /* READKEY <hexstring_with_keygrip>
   
    Return the public key for the given keygrip.  */
-static int
+static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -892,7 +891,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
 }
 
 
-static int
+static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1014,7 +1013,7 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
    length has been configured.)
 */
 
-static int
+static gpg_error_t
 cmd_get_passphrase (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1167,7 +1166,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
    function returns with OK even when there is no cached passphrase.
 */
 
-static int
+static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   char *cacheid = NULL;
@@ -1200,7 +1199,7 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
    as '+'.
 */
 
-static int
+static gpg_error_t
 cmd_get_confirmation (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1241,7 +1240,7 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
 
    Learn something about the currently inserted smartcard.  With
    --send the new certificates are send back.  */
-static int
+static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1258,7 +1257,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 /* PASSWD <hexstring_with_keygrip>
   
    Change the passphrase/PIN for the key identified by keygrip in LINE. */
-static int
+static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1304,7 +1303,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
    the default (currently only a timeout of -1 is allowed, which means
    to never expire it).  If passwd is not provided, ask for it via the
    pinentry module.  */
-static int
+static gpg_error_t
 cmd_preset_passphrase (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -1367,7 +1366,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   
    This is a general quote command to redirect everything to the
    SCDAEMON. */
-static int
+static gpg_error_t
 cmd_scd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1385,7 +1384,7 @@ cmd_scd (assuan_context_t ctx, char *line)
    Return the value for KEY from the special environment as created by
    PUTVAL.
  */
-static int
+static gpg_error_t
 cmd_getval (assuan_context_t ctx, char *line)
 {
   int rc = 0;
@@ -1442,7 +1441,7 @@ cmd_getval (assuan_context_t ctx, char *line)
    restrictions.  If that value is not given any value under that KEY
    is removed from this special environment.
 */
-static int
+static gpg_error_t
 cmd_putval (assuan_context_t ctx, char *line)
 {
   int rc = 0;
@@ -1517,7 +1516,7 @@ cmd_putval (assuan_context_t ctx, char *line)
   session.  This command is useful to pull future pinentries to
   another screen.  It is only required because there is no way in the
   ssh-agent protocol to convey this information.  */
-static int
+static gpg_error_t
 cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
   static const char *names[] = 
@@ -1576,7 +1575,7 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 
    Under Windows we start the agent on the fly.  Thus it also make
    sense to allow a client to stop the agent. */
-static int
+static gpg_error_t
 cmd_killagent (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1591,7 +1590,7 @@ cmd_killagent (assuan_context_t ctx, char *line)
 
    As signals are inconvenient under Windows, we provide this command
    to allow reloading of the configuration.  */
-static int
+static gpg_error_t
 cmd_reloadagent (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -1615,10 +1614,10 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
      ssh_socket_name - Return the name of the ssh socket.
      scd_running - Return OK if the SCdaemon is already running.
 
-     cmd_has_option CMD OPT
+ gpg_error_t
                  - Returns OK if the command CMD implements the option OPT.
  */
-static int
+static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc = 0;
@@ -1696,7 +1695,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
 
 
-static int
+static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -1766,7 +1765,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 /* Called by libassuan after all commands. ERR is the error from the
    last assuan operation and not the one returned from the command. */
 static void
-post_cmd_notify (assuan_context_t ctx, int err)
+post_cmd_notify (assuan_context_t ctx, gpg_error_t err)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   
@@ -1782,15 +1781,17 @@ post_cmd_notify (assuan_context_t ctx, int err)
    that the debug output won't get cluttered by this primitive
    command.  */
 static unsigned int
-io_monitor (assuan_context_t ctx, int direction,
+io_monitor (assuan_context_t ctx, void *hook, int direction,
             const char *line, size_t linelen)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   
+  (void) hook;
+
   /* Note that we only check for the uppercase name.  This allows to
      see the logging for debugging if using a non-upercase command
      name. */
-  if (ctx && !direction 
+  if (ctx && direction == ASSUAN_IO_FROM_PEER
       && linelen >= 15
       && !strncmp (line, "GETEVENTCOUNTER", 15)
       && (linelen == 15 || spacep (line+15)))
@@ -1798,7 +1799,7 @@ io_monitor (assuan_context_t ctx, int direction,
       ctrl->server_local->pause_io_logging = 1;
     }
 
-  return ctrl->server_local->pause_io_logging? 1:0;
+  return ctrl->server_local->pause_io_logging? ASSUAN_IO_MONITOR_NOLOG : 0;
 }
 
 
@@ -1822,7 +1823,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    int (*handler)(assuan_context_t, char *line);
+    gpg_error_t (*handler)(assuan_context_t, char *line);
   } table[] = {
     { "GETEVENTCOUNTER",cmd_geteventcounter },
     { "ISTRUSTED",      cmd_istrusted },
@@ -1882,7 +1883,14 @@ void
 start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 {
   int rc;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
+
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("failed to allocate assuan context: %s\n", gpg_strerror (rc));
+      agent_exit (2);
+    }
 
   if (listen_fd == GNUPG_INVALID_FD && fd == GNUPG_INVALID_FD)
     {
@@ -1890,17 +1898,17 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
       filedes[0] = 0;
       filedes[1] = 1;
-      rc = assuan_init_pipe_server (&ctx, filedes);
+      rc = assuan_init_pipe_server (ctx, filedes);
     }
   else if (listen_fd != GNUPG_INVALID_FD)
     {
-      rc = assuan_init_socket_server_ext (&ctx, listen_fd, 0);
+      rc = assuan_init_socket_server_ext (ctx, listen_fd, 0);
       /* FIXME: Need to call assuan_sock_set_nonce for Windows.  But
 	 this branch is currently not used.  */
     }
   else 
     {
-      rc = assuan_init_socket_server_ext (&ctx, fd, 2);
+      rc = assuan_init_socket_server_ext (ctx, fd, 2);
     }
   if (rc)
     {
@@ -1927,7 +1935,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
     assuan_set_log_stream (ctx, log_get_stream ());
 
 #ifdef HAVE_ASSUAN_SET_IO_MONITOR
-  assuan_set_io_monitor (ctx, io_monitor);
+  assuan_set_io_monitor (ctx, io_monitor, NULL);
 #endif
 
   for (;;)
@@ -1958,7 +1966,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   agent_reset_query (ctrl);
 
   /* Cleanup.  */
-  assuan_deinit_server (ctx);
+  assuan_release (ctx);
 #ifdef HAVE_W32_SYSTEM
   if (ctrl->server_local->stopme)
     agent_exit (0);
