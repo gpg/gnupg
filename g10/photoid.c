@@ -194,7 +194,8 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
 }
 
 /* Returns 0 for error, 1 for valid */
-int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
+int 
+parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
 {
   u16 headerlen;
 
@@ -229,7 +230,8 @@ int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
    make sure it is not too big (see parse-packet.c:parse_attribute).
    Extensions should be 3 characters long for the best cross-platform
    compatibility. */
-char *image_type_to_string(byte type,int style)
+char *
+image_type_to_string(byte type,int style)
 {
   char *string;
 

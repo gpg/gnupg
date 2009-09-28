@@ -1,3 +1,9 @@
+2009-09-28  Werner Koch  <wk@g10code.com>
+
+	* trustdb.c (get_validity_info): Take care of a NULL PK.  Fixes
+	bug#1138.
+	(get_validity_string): Ditto.
+
 2009-09-02  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_decipher): Compute required Le.
@@ -108,7 +114,7 @@
 	TIMESTAMP.
 	(write_direct_sig, write_selfsigs, write_keybinding)
 	(make_backsig): Ditto.
-	(do_generate_keypair): Pass timestamp to all signing functions. 
+	(do_generate_keypair): Pass timestamp to all signing functions.
 	(generate_card_subkeypair): Ditto.
 	* keyedit.c (menu_backsign): Pass a new timestamp to all backsisg.
 
