@@ -1,3 +1,9 @@
+2009-09-28  Werner Koch  <wk@g10code.com>
+
+	* trustdb.c (get_validity_info): Take care of a NULL PK.  Fixes
+	bug#1138.
+	(get_validity_string): Ditto.
+
 2009-09-25  Werner Koch  <wk@g10code.com>
 
 	* pkglue.c (pk_sign, pk_verify, pk_encrypt, pk_decrypt)
