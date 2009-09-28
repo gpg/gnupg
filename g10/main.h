@@ -182,12 +182,12 @@ int  cpr_get_answer_okay_cancel (const char *keyword,
 void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
-int setup_symkey(STRING2KEY **symkey_s2k,DEK **symkey_dek);
-int encode_symmetric( const char *filename );
-int encode_store( const char *filename );
-int encode_crypt( const char *filename, strlist_t remusr, int use_symkey );
-void encode_crypt_files(int nfiles, char **files, strlist_t remusr);
-int encrypt_filter( void *opaque, int control,
+int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
+int encrypt_symmetric (const char *filename );
+int encrypt_store (const char *filename );
+int encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey );
+void encrypt_crypt_files (int nfiles, char **files, strlist_t remusr);
+int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 
 

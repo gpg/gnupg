@@ -540,18 +540,18 @@ gpg_server (ctrl_t ctrl)
       char *tmp = NULL;
       const char *s1 = getenv ("GPG_AGENT_INFO");
 
-      if (asprintf (&tmp,
-                    "Home: %s\n"
-                    "Config: %s\n"
-                    "AgentInfo: %s\n"
-                    "%s",
-                    opt.homedir,
-                    "fixme: need config filename",
-                    s1?s1:"[not set]",
-                    hello) > 0)
+      tmp = xtryasprintf ("Home: %s\n"
+                          "Config: %s\n"
+                          "AgentInfo: %s\n"
+                          "%s",
+                          opt.homedir,
+                          "fixme: need config filename",
+                          s1?s1:"[not set]",
+                          hello);
+      if (tmp)
         {
           assuan_set_hello_line (ctx, tmp);
-          free (tmp);
+          xfree (tmp);
         }
     }
   else

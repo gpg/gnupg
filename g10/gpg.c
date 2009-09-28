@@ -2059,9 +2059,9 @@ main (int argc, char **argv)
     malloc_hooks.realloc = gcry_realloc;
     malloc_hooks.free = gcry_free;
     assuan_set_malloc_hooks (&malloc_hooks);
+    assuan_set_assuan_log_prefix (log_get_prefix (NULL));
     assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
  
-
     /* Try for a version specific config file first */
     default_configname = get_default_configname ();
     if (default_config)
@@ -3418,26 +3418,26 @@ main (int argc, char **argv)
       case aStore: /* only store the file */
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
-	if( (rc = encode_store(fname)) )
+	if( (rc = encrypt_store(fname)) )
 	    log_error ("storing `%s' failed: %s\n",
                        print_fname_stdin(fname),g10_errstr(rc) );
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
-	if( (rc = encode_symmetric(fname)) )
+	if( (rc = encrypt_symmetric(fname)) )
             log_error (_("symmetric encryption of `%s' failed: %s\n"),
                         print_fname_stdin(fname),g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if(multifile)
-	  encode_crypt_files(argc, argv, remusr);
+	  encrypt_crypt_files(argc, argv, remusr);
 	else
 	  {
 	    if( argc > 1 )
 	      wrong_args(_("--encrypt [filename]"));
-	    if( (rc = encode_crypt(fname,remusr,0)) )
+	    if( (rc = encrypt_crypt(fname,remusr,0)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }
@@ -3458,7 +3458,7 @@ main (int argc, char **argv)
 		      " while in %s mode\n"),compliance_option_string());
 	else
 	  {
-	    if( (rc = encode_crypt(fname,remusr,1)) )
+	    if( (rc = encrypt_crypt(fname,remusr,1)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }

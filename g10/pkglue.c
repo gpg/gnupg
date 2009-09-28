@@ -61,7 +61,7 @@ pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
 			    "(private-key(dsa(p%m)(q%m)(g%m)(y%m)(x%m)))",
 			    skey[0], skey[1], skey[2], skey[3], skey[4]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_S)
     {
       rc = gcry_sexp_build (&s_skey, NULL,
 			    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
@@ -90,7 +90,7 @@ pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
 
   if (rc)
     ;
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_S)
     data[0] = mpi_from_sexp (s_sig, "s");
   else
     {
@@ -125,7 +125,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_S)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(rsa(n%m)(e%m)))", pkey[0], pkey[1]);
@@ -158,7 +158,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
         rc = gcry_sexp_build (&s_sig, NULL,
                               "(sig-val(elg(r%m)(s%m)))", data[0], data[1]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_S)
     {
       if (!data[0])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -197,7 +197,7 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, gcry_mpi_t * pkey)
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_E)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(rsa(n%m)(e%m)))",
@@ -223,7 +223,7 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, gcry_mpi_t * pkey)
   else
     { /* add better error handling or make gnupg use S-Exp directly */
       resarr[0] = mpi_from_sexp (s_ciph, "a");
-      if (algo != GCRY_PK_RSA)
+      if (algo != GCRY_PK_RSA && algo != GCRY_PK_RSA_E)
         resarr[1] = mpi_from_sexp (s_ciph, "b");
     }
 
@@ -252,7 +252,7 @@ pk_decrypt (int algo, gcry_mpi_t * result, gcry_mpi_t * data,
 			    "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
 			    skey[0], skey[1], skey[2], skey[3]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_E)
     {
       rc = gcry_sexp_build (&s_skey, NULL,
 			    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
@@ -274,7 +274,7 @@ pk_decrypt (int algo, gcry_mpi_t * result, gcry_mpi_t * data,
         rc = gcry_sexp_build (&s_data, NULL,
                               "(enc-val(elg(a%m)(b%m)))", data[0], data[1]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_E)
     {
       if (!data[0])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -321,7 +321,8 @@ pk_check_secret_key (int algo, gcry_mpi_t *skey)
 			    "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
 			    skey[0], skey[1], skey[2], skey[3]);
     }
-  else if (algo == GCRY_PK_RSA)
+  else if (algo == GCRY_PK_RSA
+           || algo == GCRY_PK_RSA_S || algo == GCRY_PK_RSA_E)
     {
       rc = gcry_sexp_build (&s_skey, NULL,
 			    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",

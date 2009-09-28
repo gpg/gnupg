@@ -81,7 +81,7 @@ gpg2_SOURCES  = gpg.c		\
 	      seckey-cert.c	\
 	      encr-data.c	\
 	      cipher.c		\
-	      encode.c		\
+	      encrypt.c		\
 	      sign.c		\
 	      verify.c		\
 	      revoke.c		\
