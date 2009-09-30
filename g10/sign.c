@@ -801,7 +801,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	else if( opt.verbose )
 	    log_info(_("writing to `%s'\n"), outfile );
     }
-    else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
+    else if( (rc = open_outfile (GNUPG_INVALID_FD, fname,
+                                 opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
 
     /* prepare to calculate the MD over the input */
@@ -1110,7 +1111,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 	else if( opt.verbose )
 	    log_info(_("writing to `%s'\n"), outfile );
     }
-    else if( (rc = open_outfile( fname, 1, &out )) )
+    else if( (rc = open_outfile (GNUPG_INVALID_FD, fname, 1, &out )) )
 	goto leave;
 
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
@@ -1275,7 +1276,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       cfx.dek->use_mdc=1;
 
     /* now create the outfile */
-    rc = open_outfile (fname, opt.armor? 1:0, &out);
+    rc = open_outfile (GNUPG_INVALID_FD, fname, opt.armor? 1:0, &out);
     if (rc)
 	goto leave;
 

@@ -1920,9 +1920,6 @@ main (int argc, char **argv)
     gnupg_rl_initialize ();
     set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-    /* We don't need any locking in libgcrypt unless we use any kind of
-       threading. */
-    gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
     log_set_prefix ("gpg", 1);
 
     /* Make sure that our subsystems are ready.  */
@@ -3437,7 +3434,8 @@ main (int argc, char **argv)
 	  {
 	    if( argc > 1 )
 	      wrong_args(_("--encrypt [filename]"));
-	    if( (rc = encrypt_crypt(fname,remusr,0)) )
+	    if( (rc = encrypt_crypt (GNUPG_INVALID_FD, fname,
+                                     remusr, 0, NULL, GNUPG_INVALID_FD)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }
@@ -3458,7 +3456,8 @@ main (int argc, char **argv)
 		      " while in %s mode\n"),compliance_option_string());
 	else
 	  {
-	    if( (rc = encrypt_crypt(fname,remusr,1)) )
+	    if( (rc = encrypt_crypt (GNUPG_INVALID_FD, fname, 
+                                     remusr, 1, NULL, GNUPG_INVALID_FD)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }

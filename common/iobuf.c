@@ -1260,6 +1260,32 @@ iobuf_is_pipe_filename (const char *fname)
   return check_special_filename (fname) != -1;
 }
 
+
+/* Either open the file specified by the file descriptor FD or - if FD
+   is GNUPG_INVALID_FD - the file with name FNAME.  As of now MODE is
+   assumed to be "rb" if FNAME is used.  In contrast to iobuf_fdopen
+   the fiel descriptor FD will not be closed during an iobuf_close. */
+iobuf_t
+iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname, const char *mode)
+{
+  iobuf_t a;
+
+  if (fd == GNUPG_INVALID_FD)
+    a = iobuf_open (fname);
+  else
+    {
+      gnupg_fd_t fd2;
+
+      fd2 = dup (fd);
+      if (fd2 == GNUPG_INVALID_FD)
+        a = NULL;
+      else
+        a = iobuf_fdopen (fd2, mode);
+    }
+  return a;
+}
+
+
 /****************
  * Create a head iobuf for reading from a file
  * returns: NULL if an error occures and sets errno
@@ -1306,8 +1332,8 @@ iobuf_open (const char *fname)
 }
 
 /****************
- * Create a head iobuf for reading from a file
- * returns: NULL if an error occures and sets errno
+ * Create a head iobuf for reading or writing from/to a file
+ * Returns: NULL if an error occures and sets ERRNO.
  */
 iobuf_t
 iobuf_fdopen (int fd, const char *mode)
@@ -2355,7 +2381,9 @@ iobuf_seek (iobuf_t a, off_t newpos)
 
 
 /****************
- * Retrieve the real filename
+ * Retrieve the real filename.  This is the filename actually used on
+ * disk and not a made up one.  Returns NULL if no real filename is
+ * available.
  */
 const char *
 iobuf_get_real_fname (iobuf_t a)
@@ -2376,7 +2404,7 @@ iobuf_get_real_fname (iobuf_t a)
 
 
 /****************
- * Retrieve the filename
+ * Retrieve the filename.  This name should only be used in diagnostics.
  */
 const char *
 iobuf_get_fname (iobuf_t a)
@@ -2388,6 +2416,16 @@ iobuf_get_fname (iobuf_t a)
 	return b->fname;
       }
   return NULL;
+}
+
+/* Same as iobuf_get_fname but never returns NULL.  */
+const char *
+iobuf_get_fname_nonnull (iobuf_t a)
+{
+  const char *fname;
+
+  fname = iobuf_get_fname (a);
+  return fname? fname : "[?]";
 }
 
 

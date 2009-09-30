@@ -304,7 +304,7 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
 #ifdef HAVE_W32_SYSTEM
 /* Create  pipe where the write end is inheritable.  */
 static int
-create_inheritable_pipe (int filedes[2])
+create_inheritable_pipe_w (int filedes[2])
 {
   HANDLE r, w, h;
   SECURITY_ATTRIBUTES sec_attr;
@@ -327,6 +327,37 @@ create_inheritable_pipe (int filedes[2])
     }
   CloseHandle (w);
   w = h;
+
+  filedes[0] = handle_to_fd (r);
+  filedes[1] = handle_to_fd (w);
+  return 0;
+}
+
+/* Create  pipe where the read end is inheritable.  */
+static int
+create_inheritable_pipe_r (int filedes[2])
+{
+  HANDLE r, w, h;
+  SECURITY_ATTRIBUTES sec_attr;
+
+  memset (&sec_attr, 0, sizeof sec_attr );
+  sec_attr.nLength = sizeof sec_attr;
+  sec_attr.bInheritHandle = FALSE;
+    
+  if (!CreatePipe (&r, &w, &sec_attr, 0))
+    return -1;
+
+  if (!DuplicateHandle (GetCurrentProcess(), r,
+                        GetCurrentProcess(), &h, 0,
+                        TRUE, DUPLICATE_SAME_ACCESS ))
+    {
+      log_error ("DuplicateHandle failed: %s\n", w32_strerror (-1));
+      CloseHandle (r);
+      CloseHandle (w);
+      return -1;
+    }
+  CloseHandle (r);
+  r = h;
 
   filedes[0] = handle_to_fd (r);
   filedes[1] = handle_to_fd (w);
@@ -425,7 +456,51 @@ gnupg_create_inbound_pipe (int filedes[2])
 
   filedes[0] = filedes[1] = -1;
   err = gpg_error (GPG_ERR_GENERAL);
-  if (!create_inheritable_pipe (fds))
+  if (!create_inheritable_pipe_w (fds))
+    {
+      filedes[0] = _open_osfhandle (fds[0], 0);
+      if (filedes[0] == -1)
+        {
+          log_error ("failed to translate osfhandle %p\n", (void*)fds[0]);
+          CloseHandle (fd_to_handle (fds[1]));
+        }
+      else 
+        {
+          filedes[1] = _open_osfhandle (fds[1], 1);
+          if (filedes[1] == -1)
+            {
+              log_error ("failed to translate osfhandle %p\n", (void*)fds[1]);
+              close (filedes[0]);
+              filedes[0] = -1;
+              CloseHandle (fd_to_handle (fds[1]));
+            }
+          else
+            err = 0;
+        }
+    }
+#else
+  if (pipe (filedes) == -1)
+    {
+      err = gpg_error_from_syserror ();
+      filedes[0] = filedes[1] = -1;
+    }
+#endif
+  return err;
+}
+
+
+/* Portable function to create a pipe.  Under Windows the read end is
+   inheritable.  */
+gpg_error_t
+gnupg_create_outbound_pipe (int filedes[2])
+{
+  gpg_error_t err = 0;
+#if HAVE_W32_SYSTEM
+  int fds[2];
+
+  filedes[0] = filedes[1] = -1;
+  err = gpg_error (GPG_ERR_GENERAL);
+  if (!create_inheritable_pipe_r (fds))
     {
       filedes[0] = _open_osfhandle (fds[0], 0);
       if (filedes[0] == -1)
@@ -522,7 +597,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     return err; 
 
   /* Create a pipe.  */
-  if (create_inheritable_pipe (rp))
+  if (create_inheritable_pipe_w (rp))
     {
       err = gpg_error (GPG_ERR_GENERAL);
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));

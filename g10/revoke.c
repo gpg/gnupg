@@ -326,7 +326,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    if( !opt.armor )
 	      tty_printf(_("ASCII armored output forced.\n"));
 
-	    if( (rc = open_outfile( NULL, 0, &out )) )
+	    if( (rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out )) )
 	      goto leave;
 
 	    afx->what = 1;
@@ -550,7 +550,7 @@ gen_revoke( const char *uname )
     if( !opt.armor )
 	tty_printf(_("ASCII armored output forced.\n"));
 
-    if( (rc = open_outfile( NULL, 0, &out )) )
+    if( (rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out )) )
 	goto leave;
 
     afx->what = 1;

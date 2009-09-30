@@ -1,4 +1,32 @@
+2009-09-30  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (skip_packet, parse_gpg_control) <ist_mode>: Take
+	care of premature EOFs.
+
+	* gpg.c (main): Remove obsolete GCRYCTL_DISABLE_INTERNAL_LOCKING.
+
+2009-09-29  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (open_outfile): Re-indent.  Use xstrconcat.
+	(NAME_OF_DEV_NULL): New.
+	(open_outfile): Use it.
+	(overwrite_filep): Use it.  Also use case insensitive compare
+	when needed.  Re-indent.
+	(open_outfile): Add arg INP_FD.  Change all callers.
+
+	* encrypt.c (encrypt_crypt): Add new args FILEFD, OUTPUTFD and
+	PROVIDED_KEYS.  Change all callers.
+
 2009-09-28  Werner Koch  <wk@g10code.com>
+
+	* server.c (skip_options, has_option): New.
+	(cmd_recipient): Implement.
+
+	* keydb.h (pk_list_t): New.
+
+	* pkclist.c (send_status_inv_recp): New.  Replace direct calls.
+	(build_pk_list): Factor some code out to ...
+	(find_and_check_key): ... new.
 
 	* encode.c: Rename to encrypt.c.  Re-indent all.
 	* encrypt.c (encode_symmetric, encode_store, encode_seskey)

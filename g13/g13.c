@@ -25,14 +25,18 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <pth.h>
 
 #include "g13.h"
 
 #include <gcrypt.h>
+#include <assuan.h>
 
 #include "i18n.h"
 #include "sysutils.h"
 #include "gc-opt-flags.h"
+#include "create.h"
+#include "keyblob.h"
 
 
 enum cmd_and_opt_values {
@@ -60,6 +64,8 @@ enum cmd_and_opt_values {
   oOutput,
 
   oAgentProgram,
+  oGpgProgram,
+
   oDisplay,
   oTTYname,
   oTTYtype,
@@ -141,6 +147,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoOptions, "no-options", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),   
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oGpgProgram, "gpg-program", "@"),
   ARGPARSE_s_s (oDisplay,    "display", "@"),
   ARGPARSE_s_s (oTTYname,    "ttyname", "@"),
   ARGPARSE_s_s (oTTYtype,    "ttytype", "@"),
@@ -171,6 +178,14 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
 static void emergency_cleanup (void);
+
+/* Begin Pth wrapper functions. */
+GCRY_THREAD_OPTION_PTH_IMPL;
+static int fixed_gcry_pth_init (void)
+{
+  return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
+}
+/* End Pth wrapper functions. */
 
 
 static const char *
@@ -299,6 +314,7 @@ main ( int argc, char **argv)
   ARGPARSE_ARGS pargs;
   int orig_argc;
   char **orig_argv;
+  gpg_error_t err;
   const char *fname;
   int may_coredump;
   FILE *configfp = NULL;
@@ -324,13 +340,22 @@ main ( int argc, char **argv)
   gnupg_reopen_std ("g13");
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
 
   log_set_prefix ("g13", 1);
 
   /* Make sure that our subsystems are ready.  */
-  i18n_init();
+  i18n_init ();
   init_common_subsystems ();
+
+  /* Libgcrypt requires us to register the threading model first.
+     Note that this will also do the pth_init. */
+  gcry_threads_pth.init = fixed_gcry_pth_init;
+  err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
+  if (err)
+    {
+      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
+                 gpg_strerror (err));
+    }
 
   /* Check that the Libgcrypt is suitable.  */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
@@ -378,6 +403,20 @@ main ( int argc, char **argv)
      Now we are now working under our real uid 
   */
 
+  /* Setup malloc hooks. */
+  {
+    struct assuan_malloc_hooks malloc_hooks;
+
+    malloc_hooks.malloc = gcry_malloc;
+    malloc_hooks.realloc = gcry_realloc;
+    malloc_hooks.free = gcry_free;
+    assuan_set_malloc_hooks (&malloc_hooks);
+  }
+  
+  /* Prepare libassuan.  */
+  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+
 
   /* Setup a default control structure for command line mode.  */
   memset (&ctrl, 0, sizeof ctrl);
@@ -394,29 +433,31 @@ main ( int argc, char **argv)
   pargs.flags =  1;  /* Do not remove the args.  */
 
  next_pass:
-  if (configname) {
-    configlineno = 0;
-    configfp = fopen (configname, "r");
-    if (!configfp)
-      {
-        if (default_config)
-          {
-            if (parse_debug)
-              log_info (_("NOTE: no default option file `%s'\n"), configname);
-          }
-        else 
-          {
-            log_error (_("option file `%s': %s\n"), configname, strerror(errno));
-            g13_exit(2);
-          }
-        xfree (configname);
-        configname = NULL;
-      }
-    if (parse_debug && configname)
-      log_info (_("reading options from `%s'\n"), configname);
-    default_config = 0;
-  }
-
+  if (configname)
+    {
+      configlineno = 0;
+      configfp = fopen (configname, "r");
+      if (!configfp)
+        {
+          if (default_config)
+            {
+              if (parse_debug)
+                log_info (_("NOTE: no default option file `%s'\n"), configname);
+            }
+          else 
+            {
+              log_error (_("option file `%s': %s\n"), 
+                         configname, strerror(errno));
+              g13_exit(2);
+            }
+          xfree (configname);
+          configname = NULL;
+        }
+      if (parse_debug && configname)
+        log_info (_("reading options from `%s'\n"), configname);
+      default_config = 0;
+    }
+  
   while (!no_more_options 
          && optfile_parse (configfp, configname, &configlineno, &pargs, opts))
     {
@@ -484,6 +525,7 @@ main ( int argc, char **argv)
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
 
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+        case oGpgProgram: opt.gpg_program = pargs.r.ret_str;  break;
         case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
         case oTTYname: opt.ttyname = xstrdup (pargs.r.ret_str); break;
         case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
@@ -635,7 +677,10 @@ main ( int argc, char **argv)
       {
         if (argc != 1) 
           wrong_args ("--create filename");
-        
+        err = create_new_container (&ctrl, argv[0]);
+        if (err)
+          log_error ("error creating a new container: %s <%s>\n",
+                     gpg_strerror (err), gpg_strsource (err));
       }
       break;
 
@@ -647,8 +692,8 @@ main ( int argc, char **argv)
   /* Print the audit result if needed.  */
   if (auditlog && auditfp)
     {
-      audit_print_result (ctrl.audit, auditfp, 0);
-      audit_release (ctrl.audit);
+      /* audit_print_result (ctrl.audit, auditfp, 0); */
+      /* audit_release (ctrl.audit); */
       ctrl.audit = NULL;
       es_fclose (auditfp);
     }
@@ -686,7 +731,7 @@ g13_exit (int rc)
 void
 g13_init_default_ctrl (struct server_control_s *ctrl)
 {
-  (void)ctrl;
+  ctrl->conttype = CONTTYPE_ENCFS;
 }
 
 

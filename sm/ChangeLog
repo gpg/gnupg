@@ -1,3 +1,7 @@
+2009-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Remove obsolete GCRYCTL_DISABLE_INTERNAL_LOCKING.
+
 2009-09-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgsm.c (main): Update to new assuan API.

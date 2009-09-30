@@ -83,12 +83,14 @@ struct keyblock_pos_struct {
 };
 typedef struct keyblock_pos_struct KBPOS;
 
-/* structure to hold a couple of public key certificates */
-typedef struct pk_list *PK_LIST;
-struct pk_list {
-    PK_LIST next;
-    PKT_public_key *pk;
-    int flags; /* flag bit 1==throw_keyid */
+/* Structure to hold a couple of public key certificates. */
+typedef struct pk_list *PK_LIST;  /* Deprecated. */
+typedef struct pk_list *pk_list_t;
+struct pk_list 
+{
+  PK_LIST next;
+  PKT_public_key *pk;
+  int flags; /* flag bit 1==throw_keyid */
 };
 
 /* structure to hold a couple of secret key certificates */
@@ -179,8 +181,12 @@ int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 /*-- pkclist.c --*/
 void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
-void release_pk_list( PK_LIST pk_list );
-int  build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use );
+
+void release_pk_list (PK_LIST pk_list);
+int  build_pk_list (strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use);
+gpg_error_t find_and_check_key (const char *name, unsigned int use, 
+                                int mark_hidden, pk_list_t *pk_list_addr);
+
 int  algo_available( preftype_t preftype, int algo,
 		     const union pref_hint *hint );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,

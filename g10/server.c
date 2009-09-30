@@ -33,6 +33,7 @@
 #include "i18n.h"
 #include "options.h"
 #include "../common/sysutils.h"
+#include "status.h"
 
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
@@ -45,6 +46,10 @@ struct server_local_s
   assuan_context_t assuan_ctx;  
   /* File descriptor as set by the MESSAGE command. */
   gnupg_fd_t message_fd;               
+
+  /* List of prepared recipients.  */
+  pk_list_t recplist;
+
 };
 
 
@@ -59,6 +64,39 @@ close_message_fd (ctrl_t ctrl)
       ctrl->server_local->message_fd = GNUPG_INVALID_FD;
     } 
 }
+
+
+/* Skip over options.  Blanks after the options are also removed.  */
+static char *
+skip_options (const char *line)
+{
+  while (spacep (line))
+    line++;
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return (char*)line;
+}
+
+
+/* Check whether the option NAME appears in LINE.  */
+static int
+has_option (const char *line, const char *name)
+{
+  const char *s;
+  int n = strlen (name);
+  
+  s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return 0;
+  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
+}
+
+
 
 
 
@@ -111,6 +149,9 @@ reset_notify (assuan_context_t ctx)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
+  release_pk_list (ctrl->server_local->recplist);
+  ctrl->server_local->recplist = NULL;
+
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -157,7 +198,7 @@ output_notify (assuan_context_t ctx, const char *line)
 
 
 
-/*  RECIPIENT <userID>
+/*  RECIPIENT [--hidden] <userID>
 
    Set the recipient for the encryption.  <userID> should be the
    internal representation of the key; the server may accept any other
@@ -171,9 +212,26 @@ output_notify (assuan_context_t ctx, const char *line)
 static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
-  (void)ctx;
-  (void)line;
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  int hidden;
+
+  hidden = has_option (line,"--hidden");
+  line = skip_options (line);
+
+  /* FIXME: Expand groups
+  if (opt.grouplist)
+    remusr = expand_group (rcpts);
+  else
+    remusr = rcpts;
+  */
+
+  err = find_and_check_key (line, PUBKEY_USAGE_ENC, hidden, 
+                            &ctrl->server_local->recplist);
+  
+  if (err)
+    log_error ("command '%s' failed: %s\n", "RECIPIENT", gpg_strerror (err));
+  return err;
 }
 
 
@@ -206,22 +264,81 @@ cmd_signer (assuan_context_t ctx, char *line)
 /*  ENCRYPT 
 
    Do the actual encryption process.  Takes the plaintext from the
-   INPUT command, writes to the ciphertext to the file descriptor set
-   with the OUTPUT command, take the recipients form all the
-   recipients set so far.  If this command fails the clients should
-   try to delete all output currently done or otherwise mark it as
-   invalid.  GPG does ensure that there won't be any security problem
-   with leftover data on the output in this case.
+   INPUT command, writes the ciphertext to the file descriptor set
+   with the OUTPUT command, take the recipients from all the
+   recipients set so far with RECIPIENTS.
 
-   This command should in general not fail, as all necessary checks
-   have been done while setting the recipients.  The input and output
-   pipes are closed.  */
+   If this command fails the clients should try to delete all output
+   currently done or otherwise mark it as invalid.  GPG does ensure
+   that there won't be any security problem with leftover data on the
+   output in this case.
+
+   In most cases this command won't fail because most necessary checks
+   have been done while setting the recipients.  However some checks
+   can only be done right here and thus error may occur anyway (for
+   example, no recipients at all).
+
+   The input, output and message pipes are closed after this
+   command.  */
 static gpg_error_t
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
-  (void)ctx;
-  (void)line;
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  int inp_fd, out_fd;
+
+  (void)line; /* LINE is not used.  */
+
+  if ( !ctrl->server_local->recplist ) 
+    {
+      write_status_text (STATUS_NO_RECP, "0");
+      err = gpg_error (GPG_ERR_NO_USER_ID);
+      goto leave;
+    }
+
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
+  if (inp_fd == -1)
+    {
+      err = set_error (GPG_ERR_ASS_NO_INPUT, NULL);
+      goto leave;
+    }
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+  if (out_fd == -1)
+    {
+      err = set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+      goto leave;
+    }
+
+  /* Fixme: Check that we are using real files and not pipes if in
+     PGP-2 mode.  Do all the other checks we do in gpg.c for aEncr.
+     Maybe we should drop the PGP2 compatibility. */
+
+  
+  /* FIXME: GPGSM does this here: Add all encrypt-to marked recipients
+     from the default list. */
+
+  /* fixme: err = ctrl->audit? 0 : start_audit_session (ctrl);*/
+    
+  err = encrypt_crypt (inp_fd, NULL, NULL, 0,
+                       ctrl->server_local->recplist,
+                       out_fd);
+
+ leave:
+  /* Release the recipient list on success.  */
+  if (!err)
+    {
+      release_pk_list (ctrl->server_local->recplist);
+      ctrl->server_local->recplist = NULL;
+    }
+
+  /* Close and reset the fds. */
+  close_message_fd (ctrl);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
+
+  if (err)
+    log_error ("command '%s' failed: %s\n", "ENCRYPT", gpg_strerror (err));
+  return err;
 }
 
 
@@ -258,6 +375,9 @@ cmd_verify (assuan_context_t ctx, char *line)
   gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
   FILE *out_fp = NULL;
 
+  /* FIXME: Revamp this code it is nearly to 3 years old and was only
+     intended as a quick test.  */
+  
   (void)line;
 
   if (fd == GNUPG_INVALID_FD)
@@ -270,8 +390,8 @@ cmd_verify (assuan_context_t ctx, char *line)
         return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
     }
 
-  log_debug ("WARNING: The server mode work "
-             "in progress and not ready for use\n");
+  log_debug ("WARNING: The server mode is WORK "
+             "iN PROGRESS and not ready for use\n");
 
   /* Need to dup it because it might get closed and libassuan won't
      know about it then. */
@@ -596,8 +716,13 @@ gpg_server (ctrl_t ctrl)
     }
 
  leave:
-  xfree (ctrl->server_local);
-  ctrl->server_local = NULL;
+  if (ctrl->server_local)
+    {
+      release_pk_list (ctrl->server_local->recplist);
+
+      xfree (ctrl->server_local);
+      ctrl->server_local = NULL;
+    }
   assuan_release (ctx);
   return rc;
 }

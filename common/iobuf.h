@@ -21,7 +21,7 @@
 #define GNUPG_COMMON_IOBUF_H
 
 #include "../include/types.h" /* fixme: should be moved elsewhere. */
-
+#include "../common/sysutils.h"
 
 #define DBG_IOBUF   iobuf_debug_mode
 
@@ -85,6 +85,8 @@ int  iobuf_is_pipe_filename (const char *fname);
 iobuf_t iobuf_alloc (int use, size_t bufsize);
 iobuf_t iobuf_temp (void);
 iobuf_t iobuf_temp_with_content (const char *buffer, size_t length);
+iobuf_t iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname,
+                               const char *mode);
 iobuf_t iobuf_open (const char *fname);
 iobuf_t iobuf_fdopen (int fd, const char *mode);
 iobuf_t iobuf_sockopen (int fd, const char *mode);
@@ -131,6 +133,7 @@ off_t iobuf_get_filelength (iobuf_t a, int *overflow);
 int  iobuf_get_fd (iobuf_t a);
 const char *iobuf_get_real_fname (iobuf_t a);
 const char *iobuf_get_fname (iobuf_t a);
+const char *iobuf_get_fname_nonnull (iobuf_t a);
 
 void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
 

@@ -24,12 +24,19 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS =  $(LIBGCRYPT_CFLAGS)  $(LIBASSUAN_CFLAGS) 
+AM_CFLAGS =  $(LIBGCRYPT_CFLAGS)  $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
 
 g13_SOURCES = \
-	g13.c g13.h
+	g13.c g13.h \
+	keyblob.h \
+	utils.c utils.h \
+	create.c create.h \
+	call-gpg.c call-gpg.h \
+	backend.c backend.h \
+	be-encfs.c be-encfs.h \
+	be-truecrypt.c be-truecrypt.h
 
-g13_LDADD = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a \
-	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-        $(LIBINTL)
+g13_LDADD = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a \
+	$(LIBGCRYPT_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
+	$(GPG_ERROR_LIBS) $(LIBINTL)
 

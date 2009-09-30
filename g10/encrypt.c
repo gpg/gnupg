@@ -264,7 +264,8 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       do_compress = 0;        
     }
   
-  if ( rc || (rc = open_outfile( filename, opt.armor? 1:0, &out )))
+  if ( rc || (rc = open_outfile (GNUPG_INVALID_FD, filename,
+                                 opt.armor? 1:0, &out )))
     {
       iobuf_cancel (inp);
       xfree (cfx.dek);
@@ -455,11 +456,15 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
 
 
 /*
- * Encrypt the file with the given userids (or ask if none
- * is supplied).
+ * Encrypt the file with the given userids (or ask if none is
+ * supplied).  Either FILENAME or FILEFD must be given, but not both.
+ * The caller may provide a checked list of public keys in
+ * PROVIDED_PKS; if not the function builds a list of keys on its own.
  */
 int
-encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
+encrypt_crypt (gnupg_fd_t filefd, const char *filename,
+               strlist_t remusr, int use_symkey, pk_list_t provided_keys,
+               gnupg_fd_t outputfd)
 {
   iobuf_t inp = NULL;
   iobuf_t out = NULL;
@@ -477,6 +482,9 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
   PK_LIST pk_list, work_list;
   int do_compress;
 
+  if (filefd != GNUPG_INVALID_FD && filename)
+    return gpg_error (GPG_ERR_INV_ARG);
+
   do_compress = opt.compress_algo && !RFC1991;
 
   pfx = new_progress_context ();
@@ -492,10 +500,15 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
       return rc;
     }
 
-  if ((rc = build_pk_list (remusr, &pk_list, PUBKEY_USAGE_ENC)))
+  if (provided_keys)
+    pk_list = provided_keys;
+  else
     {
-      release_progress_context (pfx);
-      return rc;
+      if ((rc = build_pk_list (remusr, &pk_list, PUBKEY_USAGE_ENC)))
+        {
+          release_progress_context (pfx);
+          return rc;
+        }
     }
   
   if(PGP2)
@@ -512,7 +525,7 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
     }
 
   /* Prepare iobufs. */
-  inp = iobuf_open(filename);
+  inp = iobuf_open_fd_or_name (filefd, filename, "rb");
   if (inp)
     iobuf_ioctl (inp, 3, 1, NULL); /* Disable fd caching. */
   if (inp && is_secured_file (iobuf_get_fd (inp)))
@@ -523,20 +536,30 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
     }
   if (!inp)
     {
+      char xname[64];
+
       rc = gpg_error_from_syserror ();
+      if (filefd != GNUPG_INVALID_FD)
+        snprintf (xname, sizeof xname, "[fd %d]", filefd);
+      else if (!filename)
+        strcpy (xname, "[stdin]");
+      else
+        *xname = 0;
       log_error (_("can't open `%s': %s\n"),
-                 filename? filename: "[stdin]", gpg_strerror (rc) );
+                 *xname? xname : filename, gpg_strerror (rc) );
       goto leave;
     }
-  else if (opt.verbose)
-    log_info (_("reading from `%s'\n"), filename? filename: "[stdin]");
+
+  if (opt.verbose)
+    log_info (_("reading from `%s'\n"), iobuf_get_fname_nonnull (inp));
 
   handle_progress (pfx, inp, filename);
 
   if (opt.textmode)
     iobuf_push_filter (inp, text_filter, &tfx);
 
-  if ((rc = open_outfile( filename, opt.armor? 1:0, &out )))
+  rc = open_outfile (outputfd, filename, opt.armor? 1:0, &out);
+  if (rc)
     goto leave;
   
   if (opt.armor)
@@ -629,7 +652,8 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
   if (!opt.no_literal)
     pt = setup_plaintext_name (filename, inp);
   
-  if (!iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+  if (filefd != GNUPG_INVALID_FD 
+      && !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
     {
       off_t tmpsize;
       int overflow;
@@ -709,13 +733,16 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
          plain data. */
       byte copy_buffer[4096];
       int  bytes_copied;
-      while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-        if ((rc=iobuf_write(out, copy_buffer, bytes_copied)))
-          {
-            log_error ("copying input to output failed: %s\n",
-                       gpg_strerror (rc));
-            break;
-          }
+      while ((bytes_copied = iobuf_read (inp, copy_buffer, 4096)) != -1)
+        {
+          rc = iobuf_write (out, copy_buffer, bytes_copied);
+          if (rc)
+            {
+              log_error ("copying input to output failed: %s\n",
+                         gpg_strerror (rc));
+              break;
+            }
+        }
       wipememory (copy_buffer, 4096); /* Burn the buffer. */
     }
 
@@ -735,7 +762,8 @@ encrypt_crypt (const char *filename, strlist_t remusr, int use_symkey)
   xfree (cfx.dek);
   xfree (symkey_dek);
   xfree (symkey_s2k);
-  release_pk_list (pk_list);
+  if (!provided_keys)
+    release_pk_list (pk_list);
   release_armor_context (afx);
   release_progress_context (pfx);
   return rc;
@@ -936,9 +964,11 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
             }
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
-          if ( (rc = encrypt_crypt(line, remusr, 0)) )
-            log_error("encryption of `%s' failed: %s\n",
-                      print_fname_stdin(line), g10_errstr(rc) );
+          rc = encrypt_crypt (GNUPG_INVALID_FD, line, remusr, 0,
+                              NULL, GNUPG_INVALID_FD);
+          if (rc)
+            log_error ("encryption of `%s' failed: %s\n",
+                       print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
         }
     }
@@ -947,7 +977,8 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
       while (nfiles--)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
-          if ( (rc = encrypt_crypt(*files, remusr, 0)) )
+          if ( (rc = encrypt_crypt (GNUPG_INVALID_FD, *files, remusr, 0,
+                                    NULL, GNUPG_INVALID_FD)) )
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );

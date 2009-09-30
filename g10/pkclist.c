@@ -1,6 +1,6 @@
 /* pkclist.c - create a list of public keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,6 +39,18 @@
 #include "i18n.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
+
+static void
+send_status_inv_recp (int reason, const char *name)
+{
+  char buf[40];
+
+  snprintf (buf, sizeof buf, "%d ", reason);
+  write_status_text_and_buffer (STATUS_INV_RECP, buf,
+                                name, strlen (name), 
+                                -1);
+}
+
 
 /****************
  * Show the revocation reason as it is stored with the given signature
@@ -656,14 +668,15 @@ check_signatures_trust( PKT_signature *sig )
 
 
 void
-release_pk_list( PK_LIST pk_list )
+release_pk_list (pk_list_t pk_list)
 {
-    PK_LIST pk_rover;
-
-    for( ; pk_list; pk_list = pk_rover ) {
-	pk_rover = pk_list->next;
-	free_public_key( pk_list->pk );
-	xfree( pk_list );
+  PK_LIST pk_rover;
+  
+  for ( ; pk_list; pk_list = pk_rover)
+    {
+      pk_rover = pk_list->next;
+      free_public_key ( pk_list->pk );
+      xfree ( pk_list );
     }
 }
 
@@ -680,7 +693,7 @@ key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
 
 
 /****************
- * Return a malloced string with a default reciepient if there is any
+ * Return a malloced string with a default recipient if there is any
  */
 static char *
 default_recipient(void)
@@ -760,6 +773,96 @@ expand_group(strlist_t input)
 }
 
 
+/* Helper for build_pk_list to find and check one key.  This helper is
+   also used directly in server mode by the RECIPIENTS command.  On
+   success the new key is added to PK_LIST_ADDR.  NAME is the user id
+   of the key. USE the requested usage and a set MARK_HIDDEN will mark
+   the key in the updated list as a hidden recipient. */
+gpg_error_t
+find_and_check_key (const char *name, unsigned int use, 
+                    int mark_hidden, pk_list_t *pk_list_addr)
+{
+  int rc;
+  PKT_public_key *pk;
+  int trustlevel;
+
+  if (!name || !*name)
+    return gpg_error (GPG_ERR_INV_NAME);
+
+  pk = xtrycalloc (1, sizeof *pk);
+  if (!pk)
+    return gpg_error_from_syserror ();
+  pk->req_usage = use;
+
+  rc = get_pubkey_byname (NULL, pk, name, NULL, NULL, 0, 0);
+  if (rc)
+    {
+      /* Key not found or other error. */
+      log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
+      send_status_inv_recp (0, name);
+      free_public_key (pk);
+      return rc;
+    }
+
+  rc = openpgp_pk_test_algo2 (pk->pubkey_algo, use);
+  if (rc)
+    {
+      /* Key found but not usable for us (e.g. sign-only key). */
+      send_status_inv_recp (0, name);
+      log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
+      free_public_key (pk);
+      return rc;
+    }
+
+  /* Key found and usable.  Check validity. */
+  trustlevel = get_validity (pk, pk->user_id);
+  if ( (trustlevel & TRUST_FLAG_DISABLED) ) 
+    {
+      /* Key has been disabled. */
+      send_status_inv_recp (0, name);
+      log_info (_("%s: skipped: public key is disabled\n"), name);
+      free_public_key (pk);
+      return G10ERR_UNU_PUBKEY;
+    }
+
+  if ( !do_we_trust_pre (pk, trustlevel) ) 
+    {
+      /* We don't trust this key.  */
+      send_status_inv_recp (10, name);
+      free_public_key (pk);
+      return G10ERR_UNU_PUBKEY;
+    }
+  /* Note: do_we_trust may have changed the trustlevel. */
+  
+  /* Skip the actual key if the key is already present in the
+     list.  */
+  if (!key_present_in_pk_list (*pk_list_addr, pk)) 
+    {
+      log_info (_("%s: skipped: public key already present\n"), name);
+      free_public_key (pk);
+    }
+  else
+    {
+      pk_list_t r;
+      
+      r = xtrymalloc (sizeof *r);
+      if (!r)
+        {
+          rc = gpg_error_from_syserror ();
+          free_public_key (pk);
+          return rc;
+        }
+      r->pk = pk;
+      r->next = *pk_list_addr;
+      r->flags = mark_hidden? 1:0;
+      *pk_list_addr = r;
+    }
+  
+  return 0;
+}
+
+
+
 /* This is the central function to collect the keys for recipients.
    It is thus used to prepare a public key encryption. encrypt-to
    keys, default keys and the keys for the actual recipients are all
@@ -831,8 +934,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
             {
               free_public_key ( pk ); pk = NULL;
               log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                            rov->d, strlen (rov->d), -1);
+              send_status_inv_recp (0, rov->d);
               goto fail;
             }
           else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
@@ -873,8 +975,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
                  available. */
               free_public_key( pk ); pk = NULL;
               log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                            rov->d, strlen (rov->d), -1);
+              send_status_inv_recp (0, rov->d);
               goto fail;
             }
         }
@@ -1078,85 +1179,11 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
           if ( (remusr->flags & 1) )
             continue; /* encrypt-to keys are already handled. */
 
-          pk = xmalloc_clear( sizeof *pk );
-          pk->req_usage = use;
-          if ((rc = get_pubkey_byname (NULL, pk, remusr->d, NULL, NULL, 0, 0)))
-            {
-              /* Key not found or other error. */
-              free_public_key( pk ); pk = NULL;
-              log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                            remusr->d, strlen (remusr->d),
-                                            -1);
-              goto fail;
-            }
-          else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use )) ) 
-            {
-              /* Key found and usable.  Check validity. */
-              int trustlevel;
-              
-              trustlevel = get_validity (pk, pk->user_id);
-              if ( (trustlevel & TRUST_FLAG_DISABLED) ) 
-                {
-                  /*Key has been disabled. */
-                  free_public_key(pk); pk = NULL;
-                  log_info(_("%s: skipped: public key is disabled\n"),
-                           remusr->d);
-                  write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                                remusr->d,
-                                                strlen (remusr->d),
-                                                -1);
-                  rc=G10ERR_UNU_PUBKEY;
-                  goto fail;
-                }
-              else if ( do_we_trust_pre( pk, trustlevel ) ) 
-                {
-                  /* Note: do_we_trust may have changed the trustlevel */
-
-                  /* We have at least one valid recipient. It doesn't
-                   * matters if this recipient is already present. */
-                  any_recipients = 1;
-
-                  /* Skip the actual key if the key is already present
-                   * in the list */
-                  if (!key_present_in_pk_list(pk_list, pk)) 
-                    {
-                      free_public_key(pk); pk = NULL;
-                      log_info(_("%s: skipped: public key already present\n"),
-                               remusr->d);
-                    }
-                  else
-                    {
-                      PK_LIST r;
-                      r = xmalloc( sizeof *r );
-                      r->pk = pk; pk = NULL;
-                      r->next = pk_list;
-                      r->flags = (remusr->flags&2)?1:0;
-                      pk_list = r;
-                    }
-                }
-              else
-                { /* We don't trust this key. */
-                  free_public_key( pk ); pk = NULL;
-                  write_status_text_and_buffer (STATUS_INV_RECP, "10 ",
-                                                remusr->d,
-                                                strlen (remusr->d),
-                                                -1);
-                  rc=G10ERR_UNU_PUBKEY;
-                  goto fail;
-                }
-            }
-          else
-            {
-              /* Key found but not usable for us (e.g. sign-only key). */
-              free_public_key( pk ); pk = NULL;
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
-                                            remusr->d,
-                                            strlen (remusr->d),
-                                            -1);
-              log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
-              goto fail;
-            }
+          rc = find_and_check_key (remusr->d, use, !!(remusr->flags&2),
+                                   &pk_list);
+          if (rc)
+            goto fail;
+          any_recipients = 1;
         }
     }
   

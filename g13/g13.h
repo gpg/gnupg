@@ -41,7 +41,16 @@ struct
 
   const char *homedir;         /* Configuration directory name.  */
   const char *config_filename; /* Name of the used config file.  */
+
+  /* Filename of the AGENT program.  */
   const char *agent_program; 
+
+  /* Filename of the GPG program.  Unless set via an program option it
+     is initialzed at the first engine startup to the standard gpg
+     filename.  */
+  const char *gpg_program; 
+
+  /* Environment variables passed along to the engine.  */
   char *display;
   char *ttyname;
   char *ttytype;
@@ -50,7 +59,9 @@ struct
   char *xauthority;
   char *pinentry_user_data;
 
-  char *outfile;             /* Name of the output file.  */
+  /* Name of the output file - FIXME: what is this?  */
+  const char *outfile;
+
 } opt;
 
 
@@ -83,6 +94,10 @@ struct server_control_s
                          accessed.  */
   
   int with_colons;    /* Use column delimited output format */
+
+  /* Type of the current container.  See the CONTTYPE_ constants.  */
+  int conttype;
+
 };
 
 

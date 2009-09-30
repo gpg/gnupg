@@ -140,7 +140,7 @@ do_export( strlist_t users, int secret, unsigned int options )
   
   memset( &zfx, 0, sizeof zfx);
   
-  rc = open_outfile( NULL, 0, &out );
+  rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out );
   if (rc)
     return rc;
 

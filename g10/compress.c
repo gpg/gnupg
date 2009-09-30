@@ -245,6 +245,9 @@ compress_filter( void *opaque, int control,
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
 	    cd.algorithm = zfx->algo;
+            /* Fixme: We should force a new CTB here:
+               cd.new_ctb = zfx->new_ctb;
+            */
 	    init_packet( &pkt );
 	    pkt.pkttype = PKT_COMPRESSED;
 	    pkt.pkt.compressed = &cd;

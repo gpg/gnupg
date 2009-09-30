@@ -62,6 +62,15 @@ typedef enum
        operations the Dirmngr is not required and thus no such event
        will be logged.  */
 
+    AUDIT_GPG_READY,   /* err */
+    /* Indicates whether the Gpg engine is available. */
+
+    AUDIT_GPGSM_READY, /* err */
+    /* Indicates whether the Gpgsm engine is available. */
+
+    AUDIT_G13_READY, /* err */
+    /* Indicates whether the G13 engine is available. */
+
     AUDIT_GOT_DATA,
     /* Data to be processed has been seen.  */
 
