@@ -1,6 +1,6 @@
-/* decrypt.c - verify signed data
+/* decrypt.c - decrypt and verify data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,67 +36,69 @@
 #include "status.h"
 #include "i18n.h"
 
-
-
-/****************
- * Assume that the input is an encrypted message and decrypt
+/* Assume that the input is an encrypted message and decrypt
  * (and if signed, verify the signature on) it.
  * This command differs from the default operation, as it never
  * writes to the filename which is included in the file and it
  * rejects files which don't begin with an encrypted message.
  */
-
 int
-decrypt_message( const char *filename )
+decrypt_message (const char *filename)
 {
-    IOBUF fp;
-    armor_filter_context_t *afx = NULL;
-    progress_filter_context_t *pfx;
-    int rc;
-    int no_out = 0;
+  IOBUF fp;
+  armor_filter_context_t *afx = NULL;
+  progress_filter_context_t *pfx;
+  int rc;
+  int no_out = 0;
 
-    pfx = new_progress_context ();
-
-    /* Open the message file.  */
-    fp = iobuf_open(filename);
-    if (fp && is_secured_file (iobuf_get_fd (fp)))
-      {
-        iobuf_close (fp);
-        fp = NULL;
-        errno = EPERM;
-      }
-    if( !fp ) {
-        rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
-                   gpg_strerror (rc));
-        release_progress_context (pfx);
-	return rc;
+  pfx = new_progress_context ();
+  
+  /* Open the message file.  */
+  fp = iobuf_open (filename);
+  if (fp && is_secured_file (iobuf_get_fd (fp)))
+    {
+      iobuf_close (fp);
+      fp = NULL;
+      errno = EPERM;
+    }
+  if ( !fp )
+    {
+      rc = gpg_error_from_syserror ();
+      log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
+                 gpg_strerror (rc));
+      release_progress_context (pfx);
+      return rc;
     }
 
-    handle_progress (pfx, fp, filename);
+  handle_progress (pfx, fp, filename);
 
-    if( !opt.no_armor ) {
-	if( use_armor_filter( fp ) ) {
-            afx = new_armor_context ();
-	    push_armor_filter ( afx, fp );
+  if ( !opt.no_armor )
+    {
+      if ( use_armor_filter( fp ) )
+        {
+          afx = new_armor_context ();
+          push_armor_filter ( afx, fp );
 	}
     }
 
-    if( !opt.outfile ) {
-	no_out = 1;
-	opt.outfile = "-";
+  if (!opt.outfile)
+    {
+      no_out = 1;
+      opt.outfile = "-";
     }
-    rc = proc_encryption_packets( NULL, fp );
-    if( no_out )
-       opt.outfile = NULL;
-    iobuf_close(fp);
-    release_armor_context (afx);
-    release_progress_context (pfx);
-    return rc;
+  rc = proc_encryption_packets ( NULL, fp );
+  if (no_out)
+    opt.outfile = NULL;
+
+  iobuf_close (fp);
+  release_armor_context (afx);
+  release_progress_context (pfx);
+  return rc;
 }
 
+
 void
-decrypt_messages(int nfiles, char *files[])
+decrypt_messages (int nfiles, char *files[])
 {
   IOBUF fp;
   armor_filter_context_t *afx = NULL;  

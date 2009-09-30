@@ -345,14 +345,33 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
 /*  DECRYPT
 
-   This performs the decrypt operation after doing some checks on the
-   internal state (e.g. that only needed data has been set).   */
+    This performs the decrypt operation.  */
 static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
-  (void)ctx;
-  (void)line;
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  int inp_fd, out_fd;
+
+  (void)line; /* LINE is not used.  */
+
+  inp_fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
+  if (inp_fd == -1)
+    return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
+  out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
+  if (out_fd == -1)
+    return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
+
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  /* Close and reset the fds. */
+  close_message_fd (ctrl);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
+
+  if (err)
+    log_error ("command '%s' failed: %s\n", "DECRYPT", gpg_strerror (err));
+  return err;
 }
 
 
@@ -406,6 +425,8 @@ cmd_verify (assuan_context_t ctx, char *line)
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 
+  if (rc)
+    log_error ("command '%s' failed: %s\n", "VERIFY", gpg_strerror (rc));
   return rc;
 }
 
