@@ -2617,16 +2617,11 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
   unsigned long orig_pktlen = pktlen;
 
   ed = pkt->pkt.encrypted = xmalloc (sizeof *pkt->pkt.encrypted);
-  ed->len = pktlen;
-  /* We don't know the extralen which is (cipher_blocksize+2) because
-     the algorithm ist not specified in this packet.  However, it is
-     only important to know this for some sanity checks on the packet
-     length - it doesn't matter that we can't do it.  */
-  ed->extralen = 0;
+  /* ed->len is set below.  */
+  ed->extralen = 0;  /* Unknown here; only used in build_packet.  */
   ed->buf = NULL;
   ed->new_ctb = new_ctb;
   ed->is_partial = partial;
-  ed->mdc_method = 0;
   if (pkttype == PKT_ENCRYPTED_MDC)
     {
       /* Fixme: add some pktlen sanity checks.  */
@@ -2645,6 +2640,12 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       ed->mdc_method = DIGEST_ALGO_SHA1;
     }
+  else
+    ed->mdc_method = 0;
+
+  /* A basic sanity check.  We need at least an 8 byte IV plus the 2
+     detection bytes.  Note that we don't known the algorithm and thus
+     we may only check against the minimum blocksize.  */
   if (orig_pktlen && pktlen < 10)
     {
       /* Actually this is blocksize+2.  */
@@ -2653,6 +2654,12 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
       iobuf_skip_rest (inp, pktlen, partial);
       goto leave;
     }
+
+  /* Store the remaining length of the encrypted data (i.e. without
+     the MDC version number but with the IV etc.).  This value is
+     required during decryption.  */
+  ed->len = pktlen;
+
   if (list_mode)
     {
       if (orig_pktlen)

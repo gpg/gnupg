@@ -45,6 +45,8 @@ typedef struct decode_filter_context_s
   int  defer_filled;
   int  eof_seen;
   int  refcount;
+  int  partial;   /* Working on a partial length packet.  */
+  size_t length;  /* If !partial: Remaining bytes in the packet.  */
 } *decode_filter_ctx_t;
 
 
@@ -182,6 +184,8 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     gcry_md_write (dfx->mdc_hash, temp, nprefix+2);
 
   dfx->refcount++;
+  dfx->partial = ed->is_partial;
+  dfx->length = ed->len;
   if ( ed->mdc_method )
     iobuf_push_filter ( ed->buf, mdc_decode_filter, dfx );
   else
@@ -189,7 +193,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
   proc_packets ( procctx, ed->buf );
   ed->buf = NULL;
-  if ( ed->mdc_method && dfx->eof_seen == 2 )
+  if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
   else if ( ed->mdc_method )
     { 
@@ -235,7 +239,6 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 
 
 
-/* I think we should merge this with cipher_filter */
 static int
 mdc_decode_filter (void *opaque, int control, IOBUF a,
                    byte *buf, size_t *ret_len)
@@ -244,6 +247,14 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
   size_t n, size = *ret_len;
   int rc = 0;
   int c;
+
+  /* Note: We need to distinguish between a partial and a fixed length
+     packet.  The first is the usual case as created by GPG.  However
+     for short messages the format degrades to a fixed length packet
+     and other implementations might use fixed length as well.  Only
+     looking for the EOF on fixed data works only if the encrypted
+     packet is not followed by other data.  This used to be a long
+     standing bug which was fixed on 2009-10-02.  */
   
   if ( control == IOBUFCTRL_UNDERFLOW && dfx->eof_seen )
     {
@@ -253,37 +264,71 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
   else if( control == IOBUFCTRL_UNDERFLOW )
     {
       assert (a);
-      assert ( size > 44 );
+      assert (size > 44); /* Our code requires at least this size.  */
       
-      /* Get at least 22 bytes and put it somewhere ahead in the buffer. */
-      for (n=22; n < 44 ; n++ )
+      /* Get at least 22 bytes and put it ahead in the buffer.  */
+      if (dfx->partial)
         {
-          if( (c = iobuf_get(a)) == -1 )
-            break;
-          buf[n] = c;
-	}
-      if ( n == 44 ) 
-        {
-          /* We have enough stuff - flush the deferred stuff.  */
-          /* (we asserted that the buffer is large enough) */
-          if ( !dfx->defer_filled )  /* First time. */
-            {
-              memcpy (buf, buf+22, 22 );
-              n = 22;
-	    }
-          else
-            {
-              memcpy (buf, dfx->defer, 22 );
-	    }
-          /* Now fill up. */
-          for (; n < size; n++ ) 
+          for (n=22; n < 44; n++)
             {
               if ( (c = iobuf_get(a)) == -1 )
                 break;
               buf[n] = c;
+            }
+        }
+      else
+        {
+          for (n=22; n < 44 && dfx->length; n++, dfx->length--)
+            {
+              c = iobuf_get (a);
+              if (c == -1)
+                break; /* Premature EOF.  */
+              buf[n] = c;
+            }
+        }
+      if (n == 44) 
+        {
+          /* We have enough stuff - flush the deferred stuff.  */
+          if ( !dfx->defer_filled )  /* First time. */
+            {
+              memcpy (buf, buf+22, 22);
+              n = 22;
 	    }
-          /* Move the last 22 bytes back to the defer buffer. */
-	  /* (right, we are wasting 22 bytes of the supplied buffer.) */
+          else
+            {
+              memcpy (buf, dfx->defer, 22);
+	    }
+          /* Fill up the buffer. */
+          if (dfx->partial)
+            {
+              for (; n < size; n++ ) 
+                {
+                  if ( (c = iobuf_get(a)) == -1 )
+                    {
+                      dfx->eof_seen = 1; /* Normal EOF. */
+                      break;
+                    }
+                  buf[n] = c;
+                }
+            }
+          else
+            {
+              for (; n < size && dfx->length; n++, dfx->length--) 
+                {
+                  c = iobuf_get(a);
+                  if (c == -1)
+                    {
+                      dfx->eof_seen = 3; /* Premature EOF. */
+                      break;
+                    }
+                  buf[n] = c;
+                }
+              if (!dfx->length)
+                dfx->eof_seen = 1; /* Normal EOF.  */
+            }
+          
+          /* Move the trailing 22 bytes back to the defer buffer.  We
+             have at least 44 bytes thus a memmove is not needed.  */
           n -= 22;
           memcpy (dfx->defer, buf+n, 22 );
           dfx->defer_filled = 1;
@@ -313,7 +358,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
       else
         {
           assert ( dfx->eof_seen );
-          rc = -1; /* eof */
+          rc = -1; /* Return EOF.  */
 	}
       *ret_len = n;
     }
@@ -333,22 +378,59 @@ static int
 decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
 {
   decode_filter_ctx_t fc = opaque;
-  size_t n, size = *ret_len;
-  int rc = 0;
-  
-  if ( control == IOBUFCTRL_UNDERFLOW ) 
+  size_t size = *ret_len;
+  size_t n;
+  int c, rc = 0;
+
+
+  if ( control == IOBUFCTRL_UNDERFLOW && fc->eof_seen )
+    {
+      *ret_len = 0;
+      rc = -1;
+    }
+  else if ( control == IOBUFCTRL_UNDERFLOW ) 
     {
       assert(a);
-      n = iobuf_read ( a, buf, size );
-      if ( n == -1 )
-        n = 0;
-      if ( n )
+      
+      if (fc->partial)
+        {
+          for (n=0; n < size; n++ ) 
+            {
+              c = iobuf_get(a);
+              if (c == -1)
+                {
+                  fc->eof_seen = 1; /* Normal EOF. */
+                  break;
+                }
+              buf[n] = c;
+            }
+        }
+      else
+        {
+          for (n=0; n < size && fc->length; n++, fc->length--) 
+            {
+              c = iobuf_get(a);
+              if (c == -1)
+                {
+                  fc->eof_seen = 3; /* Premature EOF. */
+                  break;
+                }
+              buf[n] = c;
+            }
+          if (!fc->length)
+            fc->eof_seen = 1; /* Normal EOF.  */
+        }
+      if (n)
         {
           if (fc->cipher_hd)
             gcry_cipher_decrypt (fc->cipher_hd, buf, n, NULL, 0);
         }
       else
-        rc = -1; /* EOF */
+        {
+          if (!fc->eof_seen)
+            fc->eof_seen = 1;
+          rc = -1; /* Return EOF. */
+        }
       *ret_len = n;
     }
   else if ( control == IOBUFCTRL_FREE ) 

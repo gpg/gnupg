@@ -1,6 +1,16 @@
+2009-10-02  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c (decode_filter_context_s): Add fields PARTIAL and
+	LENGTH.
+	(decrypt_data): Set them.  Simplify premature EOF detection.
+	(mdc_decode_filter): Take fixed length packets in account.
+	(decode_filter): Ditto.  Better EOF detection.
+	* parse-packet.c (parse_encrypted): Store ed->LEN without the MDC
+	version byte.
+
 2009-09-30  Werner Koch  <wk@g10code.com>
 
-	* parse-packet.c (skip_packet, parse_gpg_control) <ist_mode>: Take
+	* parse-packet.c (skip_packet, parse_gpg_control) <list_mode>: Take
 	care of premature EOFs.
 
 	* gpg.c (main): Remove obsolete GCRYCTL_DISABLE_INTERNAL_LOCKING.
