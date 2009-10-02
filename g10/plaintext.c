@@ -86,10 +86,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   /* Create the filename as C string.  */
   if (nooutput)
     ;
+  else if (opt.outfp)
+    {
+      fname = xstrdup ("[FP]");
+    }
   else if (opt.outfile)
     {
-      fname = xmalloc (strlen (opt.outfile) + 1);
-      strcpy (fname, opt.outfile);
+      fname = xstrdup (opt.outfile);
     }
   else if (pt->namelen == 8 && !memcmp (pt->name, "_CONSOLE", 8))
     {
@@ -112,6 +115,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 
   if (nooutput)
     ;
+  else if (opt.outfp)
+    {
+      fp = opt.outfp;
+#ifdef HAVE_DOSISH_SYSTEM
+      setmode (fileno (fp), O_BINARY);
+#endif
+    }
   else if (iobuf_is_pipe_filename (fname) || !*fname)
     {
       /* No filename or "-" given; write to stdout. */
@@ -138,7 +148,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     }
   
 #ifndef __riscos__
-  if (fp || nooutput)
+  if (opt.outfp && is_secured_file (fileno (opt.outfp)))
+    {
+      rc = gpg_error (GPG_ERR_EPERM);
+      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (rc));
+      goto leave;
+    }
+  else if (fp || nooutput)
     ;
   else if (is_secured_filename (fname))
     {
@@ -154,9 +170,9 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       goto leave;
     }
 #else /* __riscos__ */
-  /* If no output filename was given, i.e. we constructed it,
-     convert all '.' in fname to '/' but not vice versa as
-     we don't create directories! */
+  /* If no output filename was given, i.e. we constructed it, convert
+     all '.' in fname to '/' but not vice versa as we don't create
+     directories! */
   if (!opt.outfile)
     for (c = 0; fname[c]; ++c)
       if (fname[c] == '.')
@@ -418,7 +434,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       pt->buf = NULL;
     }
 
-  if (fp && fp != stdout && fclose (fp))
+  if (fp && fp != stdout && fp != opt.outfp && fclose (fp))
     {
       rc = (errno ? gpg_error_from_syserror ()
 	    : gpg_error (GPG_ERR_INTERNAL));
@@ -434,7 +450,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
      before checking the signature.  */
   fflush (stdout);
 
-  if (fp && fp != stdout)
+  if (fp && fp != stdout && fp != opt.outfp)
     fclose (fp);
   xfree (fname);
   return rc;

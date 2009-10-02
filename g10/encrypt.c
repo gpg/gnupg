@@ -264,8 +264,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       do_compress = 0;        
     }
   
-  if ( rc || (rc = open_outfile (GNUPG_INVALID_FD, filename,
-                                 opt.armor? 1:0, &out )))
+  if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, &out )))
     {
       iobuf_cancel (inp);
       xfree (cfx.dek);
@@ -462,9 +461,9 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
  * PROVIDED_PKS; if not the function builds a list of keys on its own.
  */
 int
-encrypt_crypt (gnupg_fd_t filefd, const char *filename,
+encrypt_crypt (int filefd, const char *filename,
                strlist_t remusr, int use_symkey, pk_list_t provided_keys,
-               gnupg_fd_t outputfd)
+               int outputfd)
 {
   iobuf_t inp = NULL;
   iobuf_t out = NULL;
@@ -482,7 +481,7 @@ encrypt_crypt (gnupg_fd_t filefd, const char *filename,
   PK_LIST pk_list, work_list;
   int do_compress;
 
-  if (filefd != GNUPG_INVALID_FD && filename)
+  if (filefd != -1 && filename)
     return gpg_error (GPG_ERR_INV_ARG);
 
   do_compress = opt.compress_algo && !RFC1991;
@@ -539,7 +538,7 @@ encrypt_crypt (gnupg_fd_t filefd, const char *filename,
       char xname[64];
 
       rc = gpg_error_from_syserror ();
-      if (filefd != GNUPG_INVALID_FD)
+      if (filefd != -1)
         snprintf (xname, sizeof xname, "[fd %d]", filefd);
       else if (!filename)
         strcpy (xname, "[stdin]");
@@ -652,7 +651,7 @@ encrypt_crypt (gnupg_fd_t filefd, const char *filename,
   if (!opt.no_literal)
     pt = setup_plaintext_name (filename, inp);
   
-  if (filefd != GNUPG_INVALID_FD 
+  if (filefd != -1
       && !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
     {
       off_t tmpsize;
@@ -964,8 +963,7 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
             }
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
-          rc = encrypt_crypt (GNUPG_INVALID_FD, line, remusr, 0,
-                              NULL, GNUPG_INVALID_FD);
+          rc = encrypt_crypt (-1, line, remusr, 0, NULL, -1);
           if (rc)
             log_error ("encryption of `%s' failed: %s\n",
                        print_fname_stdin(line), g10_errstr(rc) );
@@ -977,8 +975,7 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
       while (nfiles--)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
-          if ( (rc = encrypt_crypt (GNUPG_INVALID_FD, *files, remusr, 0,
-                                    NULL, GNUPG_INVALID_FD)) )
+          if ( (rc = encrypt_crypt (-1, *files, remusr, 0, NULL, -1)) )
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );

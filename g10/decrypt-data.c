@@ -1,4 +1,4 @@
-/* encr-data.c -  process an encrypted data packet
+/* decrypt-data.c - Decrypt an encrypted data packet
  * Copyright (C) 1998, 1999, 2000, 2001, 2005,
  *               2006, 2009 Free Software Foundation, Inc.
  *

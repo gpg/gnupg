@@ -362,7 +362,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  err = decrypt_message_fd (inp_fd, out_fd);
 
   /* Close and reset the fds. */
   close_message_fd (ctrl);

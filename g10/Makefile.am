@@ -79,13 +79,13 @@ gpg2_SOURCES  = gpg.c		\
 	      pubkey-enc.c	\
 	      passphrase.c	\
 	      seckey-cert.c	\
-	      encr-data.c	\
+	      decrypt.c 	\
+	      decrypt-data.c	\
 	      cipher.c		\
 	      encrypt.c		\
 	      sign.c		\
 	      verify.c		\
 	      revoke.c		\
-	      decrypt.c 	\
 	      keyedit.c 	\
 	      dearmor.c 	\
 	      import.c		\

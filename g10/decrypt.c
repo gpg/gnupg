@@ -97,6 +97,73 @@ decrypt_message (const char *filename)
 }
 
 
+/* Same as decrypt_message but takes a file descriptor for input and
+   output.  */
+gpg_error_t
+decrypt_message_fd (int input_fd, int output_fd)
+{
+  gpg_error_t err;
+  IOBUF fp;
+  armor_filter_context_t *afx = NULL;
+  progress_filter_context_t *pfx;
+
+  if (opt.outfp)
+    return gpg_error (GPG_ERR_BUG);
+
+  pfx = new_progress_context ();
+  
+  /* Open the message file.  */
+  fp = iobuf_open_fd_or_name (input_fd, NULL, "rb");
+  if (fp && is_secured_file (iobuf_get_fd (fp)))
+    {
+      iobuf_close (fp);
+      fp = NULL;
+      errno = EPERM;
+    }
+  if (!fp)
+    {
+      char xname[64];
+      
+      err = gpg_error_from_syserror ();
+      snprintf (xname, sizeof xname, "[fd %d]", input_fd);
+      log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (err));
+      release_progress_context (pfx);
+      return err;
+    }
+
+  opt.outfp = fdopen (dup (output_fd), "wb");
+  if (!opt.outfp)
+    {
+      char xname[64];
+
+      err = gpg_error_from_syserror ();
+      snprintf (xname, sizeof xname, "[fd %d]", output_fd);
+      log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (err));
+      iobuf_close (fp);
+      release_progress_context (pfx);
+      return err;
+    }
+
+  if (!opt.no_armor)
+    {
+      if (use_armor_filter (fp))
+        {
+          afx = new_armor_context ();
+          push_armor_filter ( afx, fp );
+	}
+    }
+
+  err = proc_encryption_packets ( NULL, fp );
+
+  iobuf_close (fp);
+  fclose (opt.outfp);
+  opt.outfp = NULL;
+  release_armor_context (afx);
+  release_progress_context (pfx);
+  return err;
+}
+
+
 void
 decrypt_messages (int nfiles, char *files[])
 {

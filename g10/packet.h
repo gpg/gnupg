@@ -289,8 +289,8 @@ typedef struct {
 } PKT_compressed;
 
 typedef struct {
-    u32  len;		  /* length of encrypted data */
-    int  extralen;        /* this is (blocksize+2) */
+    u32  len;		  /* Remaining length of encrypted data. */
+    int  extralen;        /* This is (blocksize+2).  Used by build_packet. */
     byte new_ctb;	  /* uses a new CTB */
     byte is_partial;      /* partial length encoded */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */

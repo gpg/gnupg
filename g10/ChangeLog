@@ -1,5 +1,15 @@
 2009-10-02  Werner Koch  <wk@g10code.com>
 
+	* server.c (cmd_encrypt, cmd_decrypt): Implement.
+	* decrypt.c (decrypt_message_fd): New.
+	* options.h (struct opt): Add field OUTFP.
+	* plaintext.c (handle_plaintext): Support opt.outfp.
+
+	* encr-data.c: Rename to decrypt-data.c to reflect the action and
+	not the processed packet type.
+
+2009-10-02  Werner Koch  <wk@g10code.com>
+
 	* encr-data.c (decode_filter_context_s): Add fields PARTIAL and
 	LENGTH.
 	(decrypt_data): Set them.  Simplify premature EOF detection.

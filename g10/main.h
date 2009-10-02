@@ -185,9 +185,9 @@ void display_online_help( const char *keyword );
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );
-int encrypt_crypt (gnupg_fd_t filefd, const char *filename,
+int encrypt_crypt (int filefd, const char *filename,
                    strlist_t remusr, int use_symkey, pk_list_t provided_keys,
-                   gnupg_fd_t outputfd);
+                   int outputfd);
 void encrypt_crypt_files (int nfiles, char **files, strlist_t remusr);
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
@@ -245,7 +245,7 @@ int save_unprotected_key_to_card (PKT_secret_key *sk, int keyno);
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
-int open_outfile (gnupg_fd_t inp_fd, const char *iname, int mode, iobuf_t *a);
+int open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a);
 iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
 void try_make_homedir( const char *fname );
 
@@ -319,6 +319,7 @@ int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp);
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );
+gpg_error_t decrypt_message_fd (int input_fd, int output_fd);
 void decrypt_messages(int nfiles, char *files[]);
 
 /*-- plaintext.c --*/

@@ -178,24 +178,24 @@ ask_outfile_name( const char *name, size_t namelen )
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"
-
- * If INP_FD is not GNUPG_INVALID_FD the function will simply create
- * an IOBUF for that file descriptor and ignore a INAME and MODE.
- * Note that INP_FD won't be closed if the returned IOBUF is closed.
+ *
+ * If INP_FD is not -1 the function simply creates an IOBUF for that
+ * file descriptor and ignorea INAME and MODE.  Note that INP_FD won't
+ * be closed if the returned IOBUF is closed.
  */
 int
-open_outfile (gnupg_fd_t inp_fd, const char *iname, int mode, iobuf_t *a)
+open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
 {
   int rc = 0;
 
   *a = NULL;
-  if (inp_fd != GNUPG_INVALID_FD)
+  if (inp_fd != -1)
     {
       char xname[64];
-      gnupg_fd_t fd2;
+      int fd2;
       
-      fd2 = INT2FD (dup (FD2INT (inp_fd)));
-      if (fd2 == GNUPG_INVALID_FD)
+      fd2 = dup (inp_fd);
+      if (fd2 == -1)
         *a = NULL;
       else
         *a = iobuf_fdopen (fd2, "wb");

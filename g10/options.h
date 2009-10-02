@@ -43,6 +43,7 @@ struct
   unsigned debug;
   int armor;
   char *outfile;
+  FILE *outfp;      /* Hack, sometimes used in place of outfile.  */
   off_t max_output;
   int dry_run;
   int list_only;
