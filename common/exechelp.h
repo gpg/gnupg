@@ -86,6 +86,12 @@ gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
 gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode);
 
 
+/* Kill a process; that is send an appropriate signal to the process.
+   gnupg_wait_process must be called to actually remove the process
+   from the system.  An invalid PID is ignored.  */
+void gnupg_kill_process (pid_t pid);
+
+
 /* Spawn a new process and immediatley detach from it.  The name of
    the program to exec is PGMNAME and its arguments are in ARGV (the
    programname is automatically passed as first argument).

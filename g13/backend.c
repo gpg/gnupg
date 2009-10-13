@@ -41,6 +41,22 @@ no_such_backend (int conttype)
 }
 
 
+/* Return true if CONTTYPE is supported by us.  */
+int 
+be_is_supported_conttype (int conttype)
+{
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS:
+      return 1;
+
+    default: 
+      return 0;
+    }
+}
+
+
+
 /* If the backend requires a separate file or directory for the
    container, return its name by computing it from FNAME which gives
    the g13 filename.  The new file name is allocated and stored at
@@ -81,3 +97,37 @@ be_create_new_keys (int conttype, membuf_t *mb)
     }
 }
 
+
+/*  Dispatcher to the backend's create function.  */
+gpg_error_t
+be_create_container (ctrl_t ctrl, int conttype, 
+                     const char *fname, int fd, tupledesc_t tuples)
+{
+  (void)fd;  /* Not yet used.  */
+
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS: 
+      return be_encfs_create_container (ctrl, fname, tuples);
+
+    default:
+      return no_such_backend (conttype);
+    }
+}
+
+
+/*  Dispatcher to the backend's mount function.  */
+gpg_error_t
+be_mount_container (ctrl_t ctrl, int conttype, 
+                    const char *fname,  const char *mountpoint,
+                    tupledesc_t tuples)
+{
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS: 
+      return be_encfs_mount_container (ctrl, fname, mountpoint, tuples);
+
+    default:
+      return no_such_backend (conttype);
+    }
+}

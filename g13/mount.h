@@ -1,4 +1,4 @@
-/* create.h - Defs to create a new crypto container
+/* mmount.h - Defs to mount a crypto container
  * Copyright (C) 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -17,10 +17,13 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G13_CREATE_H
-#define G13_CREATE_H
+#ifndef G13_MOUNT_H
+#define G13_MOUNT_H
 
-gpg_error_t g13_create_container (ctrl_t ctrl, const char *filename);
+gpg_error_t g13_mount_container (ctrl_t ctrl, 
+                                 const char *filename,
+                                 const char *mountpoint);
 
 
-#endif /*G13_CREATE_H*/
+#endif /*G13_MOUNT_H*/
+

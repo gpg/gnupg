@@ -1,3 +1,7 @@
+2009-10-13  Werner Koch  <wk@g10code.com>
+
+	* exechelp.c (gnupg_kill_process): New.
+
 2009-09-29  Werner Koch  <wk@g10code.com>
 
 	* exechelp.c (create_inheritable_pipe): Rename to

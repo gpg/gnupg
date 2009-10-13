@@ -63,8 +63,9 @@
 
 #define KEYBLOB_TAG_BLOBVERSION 0
 /* This tag is used to describe the version of the keyblob.  It must
-   be the first tag in a keyblob.  Its value is a single byte giving
-   the blob version.  The current version is 1.  */
+   be the first tag in a keyblob and may only occur once.  Its value
+   is a single byte giving the blob version.  The only defined version
+   is 1.  */
 
 #define KEYBLOB_TAG_CONTTYPE 1
 /* This tag gives the type of the container.  The value is a two byte

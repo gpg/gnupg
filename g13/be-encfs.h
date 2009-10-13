@@ -26,6 +26,15 @@ gpg_error_t be_encfs_get_detached_name (const char *fname,
                                         char **r_name, int *r_isdir);
 gpg_error_t be_encfs_create_new_keys (membuf_t *mb);
 
+gpg_error_t be_encfs_create_container (ctrl_t ctrl, 
+                                       const char *fname,
+                                       tupledesc_t tuples);
+
+gpg_error_t be_encfs_mount_container (ctrl_t ctrl,
+                                      const char *fname, 
+                                      const char *mountpoint,
+                                      tupledesc_t tuples);
+
 
 #endif /*G13_BE_ENCFS_H*/
 

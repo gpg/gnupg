@@ -79,8 +79,8 @@ create_new_keyblob (ctrl_t ctrl, int is_detached,
   if (err)
     goto leave;
 
+  /* Just for testing.  */
   append_tuple (&mb, KEYBLOB_TAG_FILLER, "filler", 6);
-
 
   *r_blob = get_membuf (&mb, r_bloblen);
   if (!*r_blob)
@@ -122,7 +122,7 @@ encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
    appropriate header.  This fucntion is called with a lock file in
    place and after checking that the filename does not exists.  */
 static gpg_error_t
-write_keyblob (ctrl_t ctrl, const char *filename, 
+write_keyblob (const char *filename, 
                const void *keyblob, size_t keybloblen)
 {
   gpg_error_t err;
@@ -152,7 +152,7 @@ write_keyblob (ctrl_t ctrl, const char *filename,
   packet[4] = 0;
   packet[5] = 26;
   memcpy (packet+6, "GnuPG/G13", 10); /* Packet subtype.  */
-  packet[16] = 1;   /* G13 packet format.  */
+  packet[16] = 1;   /* G13 packet format version.  */
   packet[17] = 0;   /* Reserved.  */
   packet[18] = 0;   /* Reserved.  */
   packet[19] = 0;   /* OS Flag.  */
@@ -202,7 +202,7 @@ write_keyblob (ctrl_t ctrl, const char *filename,
       return err;
     }
 
-  return err;
+  return 0;
   
 
  writeerr:
@@ -220,7 +220,7 @@ write_keyblob (ctrl_t ctrl, const char *filename,
    using the current settings.  If the file already exists an error is
    returned. */
 gpg_error_t
-create_new_container (ctrl_t ctrl, const char *filename)
+g13_create_container (ctrl_t ctrl, const char *filename)
 {
   gpg_error_t err;
   dotlock_t lock;
@@ -230,6 +230,7 @@ create_new_container (ctrl_t ctrl, const char *filename)
   size_t enckeybloblen;
   char *detachedname = NULL;
   int detachedisdir;
+  tupledesc_t tuples = NULL;
 
   /* A quick check to see that no container with that name already
      exists.  */
@@ -286,17 +287,28 @@ create_new_container (ctrl_t ctrl, const char *filename)
                          &enckeyblob, &enckeybloblen);
   if (err)
     goto leave;
+
+  /* Put a copy of the keyblob into a tuple structure.  */
+  err = create_tupledesc (&tuples, keyblob, keybloblen);
+  if (err)
+    goto leave;
+  keyblob = NULL;
+  /* if (opt.verbose) */
+  /*   dump_keyblob (tuples); */
   
   /* Write out the header, the encrypted keyblob and some padding. */
-  err = write_keyblob (ctrl, filename, enckeyblob, enckeybloblen);
+  err = write_keyblob (filename, enckeyblob, enckeybloblen);
   if (err)
     goto leave;
 
-  /* Create and append the container.  */
-
+  /* Create and append the container.  FIXME: We should pass the
+     estream object in addition to the filename, so that the backend
+     can append the container to the g13 file.  */
+  err = be_create_container (ctrl, ctrl->conttype, filename, -1, tuples);
 
 
  leave:
+  destroy_tupledesc (tuples);
   xfree (detachedname);
   xfree (enckeyblob);
   xfree (keyblob);

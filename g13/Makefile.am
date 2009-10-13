@@ -31,7 +31,9 @@ g13_SOURCES = \
 	keyblob.h \
 	utils.c utils.h \
 	create.c create.h \
+	mount.c mount.h \
 	call-gpg.c call-gpg.h \
+	runner.c runner.h \
 	backend.c backend.h \
 	be-encfs.c be-encfs.h \
 	be-truecrypt.c be-truecrypt.h

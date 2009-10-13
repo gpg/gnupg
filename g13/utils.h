@@ -22,9 +22,22 @@
 
 #include "../common/membuf.h"
 
-
+/* Append a new tuple to a memory buffer.  */
 void append_tuple (membuf_t *membuf,
                    int tag, const void *value, size_t length);
+
+/* The tuple descriptor object. */
+struct tupledesc_s;
+typedef struct tupledesc_s *tupledesc_t;
+
+gpg_error_t create_tupledesc (tupledesc_t *r_tupledesc, 
+                              void *data, size_t datalen);
+void destroy_tupledesc (tupledesc_t tupledesc);
+tupledesc_t ref_tupledesc (tupledesc_t tupledesc);
+const void *find_tuple (tupledesc_t tupledesc, 
+                        unsigned int tag, size_t *r_length);
+const void *next_tuple (tupledesc_t tupledesc, 
+                        unsigned int *r_tag, size_t *r_length);
 
 
 

@@ -1102,3 +1102,28 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   return 0;
 #endif /* !HAVE_W32_SYSTEM*/
 }
+
+
+/* Kill a process; that is send an appropriate signal to the process.
+   gnupg_wait_process must be called to actually remove the process
+   from the system.  An invalid PID is ignored.  */
+void
+gnupg_kill_process (pid_t pid)
+{
+#ifdef HAVE_W32_SYSTEM
+  /* Older versions of libassuan set PID to 0 on Windows to indicate
+     an invalid value.  */
+  if (pid != (pid_t) INVALID_HANDLE_VALUE && pid != 0)
+    {
+      HANDLE process = (HANDLE) pid;
+      
+      /* Arbitrary error code.  */
+      TerminateProcess (process, 1);
+    }
+#else
+  if (pid != (pid_t)(-1))
+    {
+      kill (pid, SIGTERM); 
+    }
+#endif
+}

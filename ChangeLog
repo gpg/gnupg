@@ -1,3 +1,8 @@
+2009-10-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use -O3 because newer gcc versions require that
+	for uninitialized variable warnings.
+
 2009-09-23  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (HAVE_ASSUAN_SET_IO_MONITOR): Remove test.

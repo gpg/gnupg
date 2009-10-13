@@ -35,8 +35,10 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "gc-opt-flags.h"
-#include "create.h"
 #include "keyblob.h"
+#include "./runner.h"
+#include "./create.h"
+#include "./mount.h"
 
 
 enum cmd_and_opt_values {
@@ -84,6 +86,7 @@ enum cmd_and_opt_values {
   oHomedir,
   oWithColons,
   oDryRun,
+  oNoDetach,
 
   oRecipient,
 
@@ -111,6 +114,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_n (oNoTTY, "no-tty", N_("don't use the terminal at all")),
+  ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile, "log-file",  N_("|FILE|write log output to FILE")),
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
@@ -329,6 +333,7 @@ main ( int argc, char **argv)
   int nogreeting = 0;
   int debug_wait = 0;
   int use_random_seed = 1;
+  int nodetach = 0;
   int nokeysetup = 0;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
@@ -498,6 +503,8 @@ main ( int argc, char **argv)
         case oNoLogFile: logfile = NULL; break;          
 
         case oAuditLog: auditlog = pargs.r.ret_str; break;
+
+        case oNoDetach: nodetach = 1; break;
 
         case oDebug: debug_value |= pargs.r.ret_ulong; break;
         case oDebugAll: debug_value = ~0; break;
@@ -677,16 +684,47 @@ main ( int argc, char **argv)
       {
         if (argc != 1) 
           wrong_args ("--create filename");
-        err = create_new_container (&ctrl, argv[0]);
+        err = g13_create_container (&ctrl, argv[0]);
         if (err)
           log_error ("error creating a new container: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
+        else
+          {
+            unsigned int n;
+
+            while ((n = runner_get_threads ()))
+              {
+                log_info ("number of running threads: %u\n", n);
+                pth_sleep (5);
+              }
+          }
+      }
+      break;
+
+    case aMount: /* Mount a container. */
+      {
+        if (argc != 1 && argc != 2 ) 
+          wrong_args ("--mount filename [mountpoint]");
+        err = g13_mount_container (&ctrl, argv[0], argc == 2?argv[1]:NULL);
+        if (err)
+          log_error ("error mounting container `%s': %s <%s>\n",
+                     *argv, gpg_strerror (err), gpg_strsource (err));
+        else
+          {
+            unsigned int n;
+
+            while ((n = runner_get_threads ()))
+              {
+                log_info ("number of running threads: %u\n", n);
+                pth_sleep (5);
+              }
+          }
       }
       break;
 
     default:
-        log_error (_("invalid command (there is no implicit command)\n"));
-	break;
+      log_error (_("invalid command (there is no implicit command)\n"));
+      break;
     }
 
   /* Print the audit result if needed.  */
@@ -735,3 +773,84 @@ g13_init_default_ctrl (struct server_control_s *ctrl)
 }
 
 
+/* static void */
+/* daemonize (int nodetach) */
+/* { */
+/*   gnupg_fd_t fd; */
+/*   gnupg_fd_t fd_ssh; */
+/*   pid_t pid; */
+
+/*   fflush (NULL); */
+/* #ifdef HAVE_W32_SYSTEM */
+/*   pid = getpid (); */
+/* #else /\*!HAVE_W32_SYSTEM*\/ */
+/*   pid = fork (); */
+/*   if (pid == (pid_t)-1)  */
+/*     { */
+/*       log_fatal ("fork failed: %s\n", strerror (errno) ); */
+/*       g13_exit (1); */
+/*     } */
+/*   else if (pid) /\* We are the parent *\/ */
+/*     {  */
+/*       /\* We need to clwanup our resources.  An gcry_atfork might be */
+/*          needed. *\/ */
+/*       exit (0);  */
+/*       /\*NOTREACHED*\/ */
+/*     } /\* End parent *\/ */
+
+/*   /\*  */
+/*      This is the child */
+/*   *\/ */
+
+/*   /\* Detach from tty and put process into a new session *\/ */
+/*   if (!nodetach ) */
+/*     {  */
+/*       int i; */
+/*       unsigned int oldflags; */
+      
+/*       /\* Close stdin, stdout and stderr unless it is the log stream *\/ */
+/*       for (i=0; i <= 2; i++)  */
+/*         { */
+/*           if (!log_test_fd (i) && i != fd ) */
+/*             { */
+/*               if ( ! close (i) */
+/*                    && open ("/dev/null", i? O_WRONLY : O_RDONLY) == -1) */
+/*                 { */
+/*                   log_error ("failed to open `%s': %s\n", */
+/*                              "/dev/null", strerror (errno)); */
+/*                   cleanup (); */
+/*                   exit (1); */
+/*                 } */
+/*             } */
+/*         } */
+/*       if (setsid() == -1) */
+/*         { */
+/*           log_error ("setsid() failed: %s\n", strerror(errno) ); */
+/*           cleanup (); */
+/*           exit (1); */
+/*         } */
+
+/*       log_get_prefix (&oldflags); */
+/*       log_set_prefix (NULL, oldflags | JNLIB_LOG_RUN_DETACHED); */
+/*       opt.running_detached = 1; */
+/*     } */
+  
+/*   if (chdir("/")) */
+/*     { */
+/*       log_error ("chdir to / failed: %s\n", strerror (errno)); */
+/*       exit (1); */
+/*     } */
+
+/*   { */
+/*     struct sigaction sa; */
+    
+/*     sa.sa_handler = SIG_IGN; */
+/*     sigemptyset (&sa.sa_mask); */
+/*     sa.sa_flags = 0; */
+/*     sigaction (SIGPIPE, &sa, NULL); */
+/*   } */
+/* #endif /\*!HAVE_W32_SYSTEM*\/ */
+
+/*   log_info ("%s %s started\n", strusage(11), strusage(13) ); */
+/*   handle_something (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD); */
+/* } */

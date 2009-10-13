@@ -21,11 +21,19 @@
 #define G13_BACKEND_H
 
 #include "../common/membuf.h"
+#include "utils.h"  /* For tupledesc_t */
 
-
+int         be_is_supported_conttype (int conttype);
 gpg_error_t be_get_detached_name (int conttype, const char *fname, 
                                   char **r_name, int *r_isdir);
 gpg_error_t be_create_new_keys (int conttype, membuf_t *mb);
+
+gpg_error_t be_create_container (ctrl_t ctrl, int conttype, 
+                                 const char *fname, int fd,
+                                 tupledesc_t tuples);
+gpg_error_t be_mount_container (ctrl_t ctrl, int conttype, 
+                                const char *fname, const char *mountpoint,
+                                tupledesc_t tuples);
 
 
 #endif /*G13_BACKEND_H*/

@@ -1,0 +1,444 @@
+/* runner.c - Run and watch the backend engines
+ * Copyright (C) 2009 Free Software Foundation, Inc.
+ *
+ * This file is part of GnuPG.
+ *
+ * GnuPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GnuPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <assert.h>
+#include <pth.h>
+
+#include "g13.h"
+#include "i18n.h"
+#include "keyblob.h"
+#include "runner.h"
+#include "../common/exechelp.h"
+
+
+/* The runner object.  */
+struct runner_s
+{
+  char *name;   /* The name of this runner.  */
+
+  int spawned;  /* True if runner_spawn has been called.  */
+  pth_t threadid; /* The TID of the runner thread.  */
+
+  int cancel_flag;  /* If set the thread should terminate itself.  */
+
+  /* We use a reference counter to know when it is safe to remove the
+     object.  Lackiong an explicit ref fucntion this counter will take
+     only these two values:
+
+     1 = Thread not running or only the thread is still running.
+     2 = Thread is running and someone is holding a reference.  */
+  int refcount; 
+
+  pid_t pid;  /* PID of the backend's process (the engine).  */
+  int in_fd;  /* File descriptors to read from the engine.  */
+  int out_fd; /* File descriptors to write to the engine.  */
+  engine_handler_fnc_t handler;  /* The handler functions.  */
+  engine_handler_cleanup_fnc_t handler_cleanup;
+  void *handler_data;  /* Private data of HANDLER and HANDLER_CLEANUP.  */
+
+  /* Instead of IN_FD we use an estream.  Note that the runner thread
+     may close the stream and set status_fp to NULL at any time.  Thus
+     it won't be a good idea to use it while the runner thread is
+     running.  */
+  estream_t status_fp;
+};
+
+
+/* Avariabale to track the number of active runner threads.  */
+static unsigned int thread_count;
+
+
+
+/* Write NBYTES of BUF to file descriptor FD. */
+static int
+writen (int fd, const void *buf, size_t nbytes)
+{
+  size_t nleft = nbytes;
+  int nwritten;
+  
+  while (nleft > 0)
+    {
+      nwritten = pth_write (fd, buf, nleft);
+      if (nwritten < 0)
+        {
+          if (errno == EINTR)
+            nwritten = 0;
+          else
+            return -1;
+        }
+      nleft -= nwritten;
+      buf = (const char*)buf + nwritten;
+    }
+    
+  return 0;
+}
+
+
+static int
+check_already_spawned (runner_t runner, const char *funcname)
+{
+  if (runner->spawned)
+    {
+      log_error ("BUG: runner already spawned - ignoring call to %s\n",
+                 funcname);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+
+/* Return the number of active threads.  */
+unsigned int
+runner_get_threads (void)
+{
+  return thread_count;
+}
+
+
+/* The public release function. */
+void
+runner_release (runner_t runner)
+{
+  if (!runner)
+    return;
+
+  if (!--runner->refcount)
+    return;
+
+  es_fclose (runner->status_fp);
+  if (runner->in_fd != -1)
+    close (runner->in_fd);
+  if (runner->out_fd != -1)
+    close (runner->out_fd);
+  
+  /* Fixme: close the process. */
+
+  /* Tell the engine to release its data.  */
+  if (runner->handler_cleanup)
+    runner->handler_cleanup (runner->handler_data);
+
+  if (runner->pid != (pid_t)(-1))
+    {
+      /* The process has not been cleaned up - do it now.  */
+      gnupg_kill_process (runner->pid);
+      /* (Actually we should use the program name and not the
+          arbitrary NAME of the runner object.  However it does not
+          matter because that information is only used for
+          diagnostics.)  */
+      gnupg_wait_process (runner->name, runner->pid, NULL);
+    }
+
+  xfree (runner->name);
+  xfree (runner);
+}
+
+
+/* Create a new runner context.  On success a new runner object is
+   stored at R_RUNNER.  On failure NULL is stored at this address and
+   an error code returned.  */
+gpg_error_t 
+runner_new (runner_t *r_runner, const char *name)
+{
+  runner_t runner;
+
+  *r_runner = NULL;
+
+  runner = xtrycalloc (1, sizeof *runner);
+  if (!runner)
+    return gpg_error_from_syserror ();
+  runner->name = xtrystrdup (name? name: "[unknown]");
+  if (!runner->name)
+    {
+      xfree (runner);
+      return gpg_error_from_syserror ();
+    }
+  runner->refcount = 1;
+  runner->pid = (pid_t)(-1);
+  runner->in_fd = -1;
+  runner->out_fd = -1;
+  
+
+  *r_runner = runner;
+  return 0;
+}
+
+
+/* A runner usually maintaines two file descriptors to control the
+   backend engine.  This function is used to set these file
+   descriptors.  The function takes ownership of these file
+   descriptors.  IN_FD will be used to read from engine and OUT_FD to
+   send data to the engine. */
+void
+runner_set_fds (runner_t runner, int in_fd, int out_fd)
+{
+  if (check_already_spawned (runner, "runner_set_fds"))
+    return;
+
+  if (runner->in_fd != -1)
+    close (runner->in_fd);
+  if (runner->out_fd != -1)
+    close (runner->out_fd);
+  runner->in_fd = in_fd;
+  runner->out_fd = out_fd;
+}
+
+
+/* Set the PID of the backend engine.  After this call the engine is
+   owned by the runner object.  */
+void
+runner_set_pid (runner_t runner, pid_t pid)
+{
+  if (check_already_spawned (runner, "runner_set_fds"))
+    return;
+
+  runner->pid = pid;
+}
+
+
+/* Register the engine handler fucntions HANDLER and HANDLER_CLEANUP
+   and its private HANDLER_DATA with RUNNER.  */
+void
+runner_set_handler (runner_t runner,
+                    engine_handler_fnc_t handler, 
+                    engine_handler_cleanup_fnc_t handler_cleanup, 
+                    void *handler_data)
+{
+  if (check_already_spawned (runner, "runner_set_handler"))
+    return;
+
+  runner->handler = handler;
+  runner->handler_cleanup = handler_cleanup;
+  runner->handler_data = handler_data;
+}
+
+
+/* The thread spawned by runner_spawn.  */
+static void *
+runner_thread (void *arg)
+{
+  runner_t runner = arg;
+  gpg_error_t err;
+
+  log_debug ("starting runner thread\n");
+  /* If a status_fp is available, the thread's main task is to read
+     from that stream and invoke the backend's handler function.  This
+     is done on a line by line base and the line length is limited to
+     a reasonable value (about 1000 characters). Other work will
+     continue either due to an EOF of the stream or by demand of the
+     engine.  */
+  if (runner->status_fp)
+    {
+      int c, cont_line;
+      unsigned int pos;
+      char buffer[1024];
+      estream_t fp = runner->status_fp;
+
+      pos = 0;
+      err = 0;
+      cont_line = 0;
+      while (!err && !runner->cancel_flag && (c=es_getc (fp)) != EOF)
+        {
+          buffer[pos++] = c;
+          if (pos >= sizeof buffer - 5 || c == '\n')
+            {
+              buffer[pos - (c == '\n')] = 0;
+              if (opt.verbose)
+                log_info ("%s%s: %s\n", 
+                          runner->name, cont_line? "(cont)":"", buffer);
+              /* We handle only complete lines and ignore any stuff we
+                 possibly had to truncate.  That is - at least for the
+                 encfs engine - not an issue because our changes to
+                 the tool make sure that only relatively short prompt
+                 lines are of interest.  */
+              if (!cont_line && runner->handler) 
+                err = runner->handler (runner->handler_data,
+                                       runner, buffer);
+              pos = 0;
+              cont_line = (c != '\n');
+            }
+        }
+      if (!err && runner->cancel_flag)
+        log_debug ("runner thread noticed cancel flag\n");
+      else
+        log_debug ("runner thread saw EOF\n");
+      if (pos)
+        {
+          buffer[pos] = 0;
+          if (opt.verbose)
+            log_info ("%s%s: %s\n",
+                      runner->name, cont_line? "(cont)":"", buffer);
+          if (!cont_line && !err && runner->handler) 
+            err = runner->handler (runner->handler_data,
+                                          runner, buffer);
+        }
+      if (!err && es_ferror (fp))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error reading from %s: %s\n",
+                     runner->name, gpg_strerror (err));
+        }
+
+      runner->status_fp = NULL;
+      es_fclose (fp);
+      log_debug ("runner thread closed status fp\n");
+    }
+
+  /* Now wait for the process to finish.  */
+  if (!err && runner->pid != (pid_t)(-1))
+    {
+      int exitcode;
+
+      log_debug ("runner thread waiting ...\n");
+      err = gnupg_wait_process (runner->name, runner->pid, &exitcode);
+      runner->pid = (pid_t)(-1);
+      if (err)
+        log_error ("running `%s' failed (exitcode=%d): %s\n",
+                   runner->name, exitcode, gpg_strerror (err));
+      log_debug ("runner thread waiting finished\n");
+    }
+
+  /* Get rid of the runner object (note: it is refcounted).  */
+  log_debug ("runner thread releasing runner ...\n");
+  runner_release (runner);
+  log_debug ("runner thread runner released\n");
+  thread_count--;
+  
+  return NULL;
+}
+
+
+/* Spawn a new thread to let RUNNER work as a coprocess.  */
+gpg_error_t
+runner_spawn (runner_t runner)
+{
+  gpg_error_t err;
+  pth_attr_t tattr;
+  pth_t tid;
+  
+  if (check_already_spawned (runner, "runner_spawn"))
+    return gpg_error (GPG_ERR_BUG);
+
+  /* In case we have an input fd, open it as an estream so that the
+     Pth scheduling will work.  The stdio functions don't work with
+     Pth because they don't call the pth counterparts of read and
+     write unless linker tricks are used.  */
+  if (runner->in_fd != -1)
+    {
+      estream_t fp;
+      
+      fp = es_fdopen (runner->in_fd, "r");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't fdopen pipe for reading: %s\n", gpg_strerror (err));
+          return err;
+        }
+      runner->status_fp = fp;
+      runner->in_fd = -1;  /* Now owned by status_fp.  */
+    }
+
+  tattr = pth_attr_new ();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, runner->name);
+  
+  tid = pth_spawn (tattr, runner_thread, runner);
+  if (!tid)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error spawning runner thread: %s\n", gpg_strerror (err));
+      return err;
+    }
+  /* The scheduler has not yet kicked in, thus we can safely set the
+     spawned flag and the tid.  */
+  thread_count++;
+  runner->spawned = 1;
+  runner->threadid = tid;
+  pth_attr_destroy (tattr);
+
+  /* The runner thread is now runnable.  */
+  
+  
+
+  return 0;
+}
+
+
+/* Cancel a running thread.  */
+void
+runner_cancel (runner_t runner)
+{
+  if (runner->spawned)
+    {
+      /* FIXME: This does only work if the thread emits status lines.  We
+         need to change the trhead to wait on an event.  */
+      runner->cancel_flag = 1;
+      /* For now we use the brutal way and kill the process. */
+      gnupg_kill_process (runner->pid);
+    }
+}
+
+
+/* Send a line of data down to the engine.  This line may not contain
+   a binary Nul or a LF character.  This function is used by the
+   engine's handler.  */
+gpg_error_t 
+runner_send_line (runner_t runner, const void *data, size_t datalen)
+{
+  gpg_error_t err = 0;
+
+  if (!runner->spawned)
+    {
+      log_error ("BUG: runner for %s not spawned\n", runner->name);
+      err = gpg_error (GPG_ERR_INTERNAL);
+    }
+  else if (runner->out_fd == -1)
+    {
+      log_error ("no output file descriptor for runner %s\n", runner->name);
+      err = gpg_error (GPG_ERR_EBADF);
+    }
+  else if (data && datalen)
+    {
+      if (memchr (data, '\n', datalen))
+        {
+          log_error ("LF detected in response data\n");
+          err = gpg_error (GPG_ERR_BUG);
+        }
+      else if (memchr (data, 0, datalen))
+        {
+          log_error ("Nul detected in response data\n");
+          err = gpg_error (GPG_ERR_BUG);
+        }
+      else if (writen (runner->out_fd, data, datalen))
+        err = gpg_error_from_syserror ();
+    }
+
+  if (!err)
+    if (writen (runner->out_fd, "\n", 1))
+      err = gpg_error_from_syserror ();
+  
+  return err;
+}

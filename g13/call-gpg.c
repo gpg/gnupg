@@ -43,7 +43,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   gpg_error_t err;
   assuan_context_t ctx = NULL;
   const char *pgmname;
-  const char *argv[6];
+  const char *argv[7];
   int no_close_list[5];
   int i;
   char line[ASSUAN_LINELENGTH];
@@ -432,6 +432,136 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
   /* Return the data.  */
   *r_ciph = get_membuf (&reader_mb, r_ciphlen);
   if (!*r_ciph)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error while storing the data in the reader thread: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  if (reader_tid)
+    {
+      pth_cancel (reader_tid);
+      pth_join (reader_tid, NULL);
+    }
+  if (writer_tid)
+    {
+      pth_cancel (writer_tid);
+      pth_join (writer_tid, NULL);
+    }
+  if (outbound_fds[0] != -1)
+    close (outbound_fds[0]);
+  if (outbound_fds[1] != -1)
+    close (outbound_fds[1]);
+  if (inbound_fds[0] != -1)
+    close (inbound_fds[0]);
+  if (inbound_fds[1] != -1)
+    close (inbound_fds[1]);
+  release_gpg (ctx);
+  xfree (get_membuf (&reader_mb, NULL));
+  return err;
+}
+
+
+
+/* Call GPG to decrypt a block of data. 
+
+
+ */
+gpg_error_t
+gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
+                  void **r_plain, size_t *r_plainlen)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  int outbound_fds[2] = { -1, -1 };
+  int inbound_fds[2]  = { -1, -1 };
+  pth_t writer_tid = NULL;
+  pth_t reader_tid = NULL;
+  gpg_error_t writer_err, reader_err;
+  membuf_t reader_mb;
+
+  *r_plain = NULL;
+  *r_plainlen = 0;
+
+  /* Init the memory buffer to receive the encrypted stuff.  */
+  init_membuf_secure (&reader_mb, 1024);
+
+  /* Create two pipes.  */
+  err = gnupg_create_outbound_pipe (outbound_fds);
+  if (!err)
+    err = gnupg_create_inbound_pipe (inbound_fds);
+  if (err)
+    {
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Start GPG and send the INPUT and OUTPUT commands.  */
+  err = start_gpg (ctrl, outbound_fds[0], inbound_fds[1], &ctx);
+  if (err)
+    goto leave;
+  close (outbound_fds[0]); outbound_fds[0] = -1;
+  close (inbound_fds[1]); inbound_fds[1] = -1;
+  
+  /* Start a writer thread to feed the INPUT command of the server.  */
+  err = start_writer (outbound_fds[1], ciph, ciphlen, 
+                      &writer_tid, &writer_err);
+  if (err)
+    return err;
+  outbound_fds[1] = -1;  /* The thread owns the FD now.  */
+
+  /* Start a reader thread to eat from the OUTPUT command of the
+     server.  */
+  err = start_reader (inbound_fds[0], &reader_mb, 
+                      &reader_tid, &reader_err);
+  if (err)
+    return err;
+  outbound_fds[0] = -1;  /* The thread owns the FD now.  */
+
+  /* Run the decryption.  */
+  err = assuan_transact (ctx, "DECRYPT", NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      log_error ("the engine's DECRYPT command failed: %s <%s>\n",
+                 gpg_strerror (err), gpg_strsource (err));
+      goto leave;
+    }
+
+  /* Wait for reader and return the data.  */
+  if (!pth_join (reader_tid, NULL))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("waiting for reader thread failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  reader_tid = NULL;
+  if (reader_err)
+    {
+      err = reader_err;
+      log_error ("read error in reader thread: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Wait for the writer to catch a writer error.  */
+  if (!pth_join (writer_tid, NULL))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("waiting for writer thread failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  writer_tid = NULL;
+  if (writer_err)
+    {
+      err = writer_err;
+      log_error ("write error in writer thread: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Return the data.  */
+  *r_plain = get_membuf (&reader_mb, r_plainlen);
+  if (!*r_plain)
     {
       err = gpg_error_from_syserror ();
       log_error ("error while storing the data in the reader thread: %s\n",
