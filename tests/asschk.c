@@ -199,7 +199,10 @@ die (const char *format, ...)
   exit (1);
 }
 
-#define die(format, args...) (die) ("%s: " format, __func__ , ##args)
+#define die_0(format)          (die) ("%s: " format, __func__)
+#define die_1(format, a)       (die) ("%s: " format, __func__, (a))
+#define die_2(format, a, b)    (die) ("%s: " format, __func__, (a),(b))
+#define die_3(format, a, b, c) (die) ("%s: " format, __func__, (a),(b),(c))
 
 static void
 err (const char *format, ...)
@@ -290,7 +293,7 @@ read_assuan (int fd)
       if (pending_len)
         {
           if (pending_len >= nleft)
-            die ("received line too large");
+            die_0 ("received line too large");
           memcpy (buf, pending, pending_len);
           n = pending_len;
           pending_len = 0;
@@ -315,9 +318,9 @@ read_assuan (int fd)
 	}
 
       if (n < 0)
-        die ("reading fd %d failed: %s", fd, strerror (errno));
+        die_2 ("reading fd %d failed: %s", fd, strerror (errno));
       else if (!n)
-        die ("received incomplete line on fd %d", fd);
+        die_1 ("received incomplete line on fd %d", fd);
       p = buf;
       nleft -= n;
       buf += n;
@@ -337,7 +340,7 @@ read_assuan (int fd)
         }
     }
   if (!nleft)
-    die ("received line too large");
+    die_0 ("received line too large");
 
   p = recv_line;
   if (p[0] == 'O' && p[1] == 'K' && (p[2] == ' ' || !p[2]))
@@ -367,7 +370,7 @@ read_assuan (int fd)
       p += 3;
     }
   else 
-    die ("invalid line type (%.5s)", p);
+    die_1 ("invalid line type (%.5s)", p);
 
   return p;
 }
@@ -381,13 +384,13 @@ write_assuan (int fd, const char *line)
   size_t n = strlen (line);
 
   if (n > 1024)
-    die ("line too long for Assuan protocol");
+    die_0 ("line too long for Assuan protocol");
   strcpy (buffer, line);
   if (!n || buffer[n-1] != '\n')
     buffer[n++] = '\n';
 
   if (writen (fd, buffer, n))
-      die ("sending line (\"%s\") to %d failed: %s", buffer, fd,
+      die_3 ("sending line (\"%s\") to %d failed: %s", buffer, fd,
 	   strerror (errno));
 }
 
@@ -404,15 +407,15 @@ start_server (const char *pgmname)
   pid_t pid;
 
   if (pipe (rp) < 0)
-    die ("pipe creation failed: %s", strerror (errno));
+    die_1 ("pipe creation failed: %s", strerror (errno));
   if (pipe (wp) < 0)
-    die ("pipe creation failed: %s", strerror (errno));
+    die_1 ("pipe creation failed: %s", strerror (errno));
 
   fflush (stdout);
   fflush (stderr);
   pid = fork ();
   if (pid < 0)
-    die ("fork failed");
+    die_0 ("fork failed");
 
   if (!pid)
     {
@@ -427,29 +430,29 @@ start_server (const char *pgmname)
       if (wp[0] != STDIN_FILENO)
         {
           if (dup2 (wp[0], STDIN_FILENO) == -1)
-              die ("dup2 failed in child: %s", strerror (errno));
+            die_1 ("dup2 failed in child: %s", strerror (errno));
           close (wp[0]);
         }
       if (rp[1] != STDOUT_FILENO)
         {
           if (dup2 (rp[1], STDOUT_FILENO) == -1)
-              die ("dup2 failed in child: %s", strerror (errno));
+            die_1 ("dup2 failed in child: %s", strerror (errno));
           close (rp[1]);
         }
       if (!opt_verbose)
         {
 	  int fd = open ("/dev/null", O_WRONLY);
 	  if (fd == -1)
-	    die ("can't open `/dev/null': %s", strerror (errno));
+	    die_1 ("can't open `/dev/null': %s", strerror (errno));
           if (dup2 (fd, STDERR_FILENO) == -1)
-            die ("dup2 failed in child: %s", strerror (errno));
+            die_1 ("dup2 failed in child: %s", strerror (errno));
 	  close (fd);
         }
 
       close (wp[1]);
       close (rp[0]);
       execl (pgmname, arg0, "--server", NULL); 
-      die ("exec failed for `%s': %s", pgmname, strerror (errno));
+      die_2 ("exec failed for `%s': %s", pgmname, strerror (errno));
     }
   close (wp[0]);
   close (rp[1]);
@@ -458,7 +461,7 @@ start_server (const char *pgmname)
 
   read_assuan (server_recv_fd);
   if (recv_type != LINE_OK)
-    die ("no greating message");
+    die_0 ("no greating message");
 }
 
 
@@ -723,7 +726,7 @@ cmd_expect_ok (const char *assign_to, char *arg)
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_OK)
-    die ("expected OK but got `%s'", recv_line);
+    die_1 ("expected OK but got `%s'", recv_line);
 }
 
 static void
@@ -744,7 +747,7 @@ cmd_expect_err (const char *assign_to, char *arg)
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_ERR)
-    die ("expected ERR but got `%s'", recv_line);
+    die_1 ("expected ERR but got `%s'", recv_line);
 }
 
 static void
@@ -753,7 +756,7 @@ cmd_count_status (const char *assign_to, char *arg)
   char *p;
 
   if (!*assign_to || !*arg)
-    die ("syntax error: count-status requires an argument and a variable");
+    die_0 ("syntax error: count-status requires an argument and a variable");
 
   for (p=arg; *p && !spacep (p); p++)
     ;
@@ -762,7 +765,7 @@ cmd_count_status (const char *assign_to, char *arg)
       for (*p++ = 0; spacep (p); p++)
         ;
       if (*p)
-        die ("cmpfiles: syntax error");
+        die_0 ("cmpfiles: syntax error");
     }
   set_type_var (assign_to, arg, VARTYPE_COUNTER);
 }
@@ -777,7 +780,7 @@ cmd_openfile (const char *assign_to, char *arg)
     fd = open (arg, O_RDONLY);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
-    die ("error opening `%s': %s", arg, strerror (errno));
+    die_2 ("error opening `%s': %s", arg, strerror (errno));
   
   sprintf (numbuf, "%d", fd);
   set_type_var (assign_to, numbuf, VARTYPE_FD);
@@ -793,7 +796,7 @@ cmd_createfile (const char *assign_to, char *arg)
     fd = open (arg, O_WRONLY|O_CREAT|O_TRUNC, 0666);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
-    die ("error creating `%s': %s", arg, strerror (errno));
+    die_2 ("error creating `%s': %s", arg, strerror (errno));
 
   sprintf (numbuf, "%d", fd);
   set_type_var (assign_to, numbuf, VARTYPE_FD);
@@ -806,7 +809,7 @@ cmd_pipeserver (const char *assign_to, char *arg)
   (void)assign_to;
 
   if (!*arg)
-    die ("syntax error: servername missing");
+    die_0 ("syntax error: servername missing");
 
   start_server (arg);
 }
@@ -846,7 +849,7 @@ cmd_cmpfiles (const char *assign_to, char *arg)
   for (p=arg; *p && !spacep (p); p++)
     ;
   if (!*p)
-    die ("cmpfiles: syntax error");
+    die_0 ("cmpfiles: syntax error");
   for (*p++ = 0; spacep (p); p++)
     ;
   second = p;
@@ -857,7 +860,7 @@ cmd_cmpfiles (const char *assign_to, char *arg)
       for (*p++ = 0; spacep (p); p++)
         ;
       if (*p)
-        die ("cmpfiles: syntax error");
+        die_0 ("cmpfiles: syntax error");
     }
   
   fp1 = fopen (arg, "rb");
@@ -973,7 +976,7 @@ interpreter (char *line)
         assign_to = line;
     }
   if (!*line)
-    die ("syntax error");
+    die_0 ("syntax error");
   stmt = line;
   save_c = 0;
   save_p = NULL;
@@ -1003,7 +1006,7 @@ interpreter (char *line)
   if (!cmdtbl[i].name)
     {
       if (!assign_to)
-        die ("invalid statement `%s'\n", stmt);
+        die_1 ("invalid statement `%s'\n", stmt);
       if (save_p)
         *save_p = save_c;
       set_var (assign_to, stmt);
@@ -1078,7 +1081,7 @@ main (int argc, char **argv)
     {
       p = strchr (buffer,'\n');
       if (!p)
-        die ("incomplete script line");
+        die_0 ("incomplete script line");
       *p = 0;
       if (interpreter (buffer))
         break;
