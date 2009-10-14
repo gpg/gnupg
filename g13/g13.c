@@ -36,8 +36,9 @@
 #include "sysutils.h"
 #include "gc-opt-flags.h"
 #include "keyblob.h"
-#include "./runner.h"
-#include "./create.h"
+#include "server.h"
+#include "runner.h"
+#include "create.h"
 #include "./mount.h"
 
 
@@ -51,6 +52,7 @@ enum cmd_and_opt_values {
   aCreate,
   aMount,
   aUmount,
+  aServer,
 
   oOptions,
   oDebug,
@@ -102,6 +104,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCreate, "create", N_("Create a new file system container")),
   ARGPARSE_c (aMount,  "mount",  N_("Mount a file system container") ),
   ARGPARSE_c (aUmount, "umount", N_("Unmount a file system container") ),
+  ARGPARSE_c (aServer, "server", N_("Run in server mode")),
 
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
@@ -168,6 +171,10 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
+/* The timer tick interval used by the idle task.  */
+#define TIMERTICK_INTERVAL_SEC     (1)
+
+
 /* Global variable to keep an error count. */
 int g13_errors_seen = 0;
 
@@ -178,11 +185,23 @@ static int maybe_setuid = 1;
 static const char *debug_level;
 static unsigned int debug_value;
 
+/* Flag to indicate that a shutdown was requested.  */
+static int shutdown_pending;
+
+/* The thread id of the idle task.  */
+static pth_t idle_task_tid;
+
+
+
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
 static void emergency_cleanup (void);
+static void start_idle_task (void);
+static void join_idle_task (void);
 
+
+
 /* Begin Pth wrapper functions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
@@ -475,6 +494,7 @@ main ( int argc, char **argv)
           nokeysetup = 1;
           break;
 
+        case aServer:
         case aMount:
         case aUmount:
           nokeysetup = 1;
@@ -591,9 +611,9 @@ main ( int argc, char **argv)
   
   if (greeting)
     {
-      fprintf(stderr, "%s %s; %s\n",
-              strusage(11), strusage(13), strusage(14) );
-      fprintf(stderr, "%s\n", strusage(15) );
+      fprintf (stderr, "%s %s; %s\n",
+               strusage(11), strusage(13), strusage(14) );
+      fprintf (stderr, "%s\n", strusage(15) );
     }
 
   if (may_coredump && !opt.quiet)
@@ -680,24 +700,25 @@ main ( int argc, char **argv)
          configuration file is valid.  */
       break;
 
+    case aServer:
+      {
+        start_idle_task ();
+        err = g13_server (&ctrl);
+        if (err)
+          log_error ("server exited with error: %s <%s>\n",
+                     gpg_strerror (err), gpg_strsource (err));
+      }
+      break;
+
     case aCreate: /* Create a new container. */
       {
         if (argc != 1) 
           wrong_args ("--create filename");
+        start_idle_task ();
         err = g13_create_container (&ctrl, argv[0]);
         if (err)
           log_error ("error creating a new container: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
-        else
-          {
-            unsigned int n;
-
-            while ((n = runner_get_threads ()))
-              {
-                log_info ("number of running threads: %u\n", n);
-                pth_sleep (5);
-              }
-          }
       }
       break;
 
@@ -705,20 +726,11 @@ main ( int argc, char **argv)
       {
         if (argc != 1 && argc != 2 ) 
           wrong_args ("--mount filename [mountpoint]");
+        start_idle_task ();
         err = g13_mount_container (&ctrl, argv[0], argc == 2?argv[1]:NULL);
         if (err)
           log_error ("error mounting container `%s': %s <%s>\n",
                      *argv, gpg_strerror (err), gpg_strsource (err));
-        else
-          {
-            unsigned int n;
-
-            while ((n = runner_get_threads ()))
-              {
-                log_info ("number of running threads: %u\n", n);
-                pth_sleep (5);
-              }
-          }
       }
       break;
 
@@ -726,6 +738,9 @@ main ( int argc, char **argv)
       log_error (_("invalid command (there is no implicit command)\n"));
       break;
     }
+
+  if (!err)
+    join_idle_task ();
 
   /* Print the audit result if needed.  */
   if (auditlog && auditfp)
@@ -740,6 +755,7 @@ main ( int argc, char **argv)
   g13_exit (0);
   return 8; /*NOTREACHED*/
 }
+
 
 /* Note: This function is used by signal handlers!. */
 static void
@@ -766,6 +782,7 @@ g13_exit (int rc)
 }
 
 
+/* Store defaults into the per-connection CTRL object.  */
 void
 g13_init_default_ctrl (struct server_control_s *ctrl)
 {
@@ -773,84 +790,179 @@ g13_init_default_ctrl (struct server_control_s *ctrl)
 }
 
 
-/* static void */
-/* daemonize (int nodetach) */
-/* { */
-/*   gnupg_fd_t fd; */
-/*   gnupg_fd_t fd_ssh; */
-/*   pid_t pid; */
-
-/*   fflush (NULL); */
-/* #ifdef HAVE_W32_SYSTEM */
-/*   pid = getpid (); */
-/* #else /\*!HAVE_W32_SYSTEM*\/ */
-/*   pid = fork (); */
-/*   if (pid == (pid_t)-1)  */
-/*     { */
-/*       log_fatal ("fork failed: %s\n", strerror (errno) ); */
-/*       g13_exit (1); */
-/*     } */
-/*   else if (pid) /\* We are the parent *\/ */
-/*     {  */
-/*       /\* We need to clwanup our resources.  An gcry_atfork might be */
-/*          needed. *\/ */
-/*       exit (0);  */
-/*       /\*NOTREACHED*\/ */
-/*     } /\* End parent *\/ */
-
-/*   /\*  */
-/*      This is the child */
-/*   *\/ */
-
-/*   /\* Detach from tty and put process into a new session *\/ */
-/*   if (!nodetach ) */
-/*     {  */
-/*       int i; */
-/*       unsigned int oldflags; */
+/* This function is called for each signal we catch.  It is run in the
+   main context or the one of a Pth thread and thus it is not
+   restricted in what it may do.  */
+static void
+handle_signal (int signo)
+{
+  switch (signo)
+    {
+#ifndef HAVE_W32_SYSTEM
+    case SIGHUP:
+      log_info ("SIGHUP received - re-reading configuration\n");
+      /* Fixme:  Not yet implemented.  */
+      break;
       
-/*       /\* Close stdin, stdout and stderr unless it is the log stream *\/ */
-/*       for (i=0; i <= 2; i++)  */
-/*         { */
-/*           if (!log_test_fd (i) && i != fd ) */
-/*             { */
-/*               if ( ! close (i) */
-/*                    && open ("/dev/null", i? O_WRONLY : O_RDONLY) == -1) */
-/*                 { */
-/*                   log_error ("failed to open `%s': %s\n", */
-/*                              "/dev/null", strerror (errno)); */
-/*                   cleanup (); */
-/*                   exit (1); */
-/*                 } */
-/*             } */
-/*         } */
-/*       if (setsid() == -1) */
-/*         { */
-/*           log_error ("setsid() failed: %s\n", strerror(errno) ); */
-/*           cleanup (); */
-/*           exit (1); */
-/*         } */
+    case SIGUSR1:
+      log_info ("SIGUSR1 received - printing internal information:\n");
+      pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      break;
 
-/*       log_get_prefix (&oldflags); */
-/*       log_set_prefix (NULL, oldflags | JNLIB_LOG_RUN_DETACHED); */
-/*       opt.running_detached = 1; */
-/*     } */
+    case SIGUSR2:
+      log_info ("SIGUSR2 received - no action defined\n");
+      break;
+
+    case SIGTERM:
+      if (!shutdown_pending)
+        log_info ("SIGTERM received - shutting down ...\n");
+      else
+        log_info ("SIGTERM received - still %u runners active\n",
+                  runner_get_threads ());
+      shutdown_pending++;
+      if (shutdown_pending > 2)
+        {
+          log_info ("shutdown forced\n");
+          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          g13_exit (0);
+	}
+      break;
+      
+    case SIGINT:
+      log_info ("SIGINT received - immediate shutdown\n");
+      log_info( "%s %s stopped\n", strusage(11), strusage(13));
+      g13_exit (0);
+      break;
+#endif /*!HAVE_W32_SYSTEM*/
+      
+    default:
+      log_info ("signal %d received - no action defined\n", signo);
+    }
+}
+
+
+/* This ticker function is called about every TIMERTICK_INTERVAL_SEC
+   seconds. */
+static void
+handle_tick (void)
+{
+  /* log_debug ("TICK\n"); */
+}
+
+
+/* The idle task.  We use a separate thread to do idle stuff and to
+   catch signals.  */
+static void *
+idle_task (void *dummy_arg)
+{
+  sigset_t sigs;       /* The set of signals we want to catch.  */
+  pth_event_t ev;      /* The main event to catch signals.  */
+  pth_event_t time_ev; /* The time event.  */
+  int signo;           /* The number of a raised signal is stored here.  */
+
+  (void)dummy_arg;
+
+  /* Create the event to catch the signals. */
+#ifndef HAVE_W32_SYSTEM
+  sigemptyset (&sigs );
+  sigaddset (&sigs, SIGHUP);
+  sigaddset (&sigs, SIGUSR1);
+  sigaddset (&sigs, SIGUSR2);
+  sigaddset (&sigs, SIGINT);
+  sigaddset (&sigs, SIGTERM);
+  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
+#else
+  sigs = 0;
+#endif
+  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+
+  /* The time event neds to computed n tghe fly.  */
+  time_ev = NULL;
+
+  for (;;)
+    {
+      /* The shutdown flag allows us to terminate the idle task.  */
+      if (shutdown_pending)
+        {
+          runner_cancel_all ();
+
+          if (!runner_get_threads ())
+            break; /* ready */
+	}
+
+      /* Create a timeout event if needed.  To help with power saving
+         we syncronize the ticks to the next full second.  */
+      if (!time_ev)
+        {
+          pth_time_t nexttick;
+
+          nexttick = pth_timeout (TIMERTICK_INTERVAL_SEC, 0);
+          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
+            {
+              nexttick.tv_sec++;
+              nexttick.tv_usec = 0;
+            }
+          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
+        }
+
+      pth_event_concat (ev, time_ev, NULL);
+      pth_wait (ev);
+      pth_event_isolate (time_ev);
+
+      if (pth_event_occurred (ev))
+        {
+          handle_signal (signo);
+        }
+
+      if (time_ev && pth_event_occurred (time_ev))
+        {
+          pth_event_free (time_ev, PTH_FREE_ALL);
+          time_ev = NULL;
+          handle_tick ();
+        }
+    }
+
+  pth_event_free (ev, PTH_FREE_ALL);
+  if (time_ev)
+    pth_event_free (time_ev, PTH_FREE_ALL);
+  log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
+  return NULL;
+}
+
+
+/* Start the idle task.   */
+static void
+start_idle_task (void)
+{
+  pth_attr_t tattr;
+  pth_t tid;
   
-/*   if (chdir("/")) */
-/*     { */
-/*       log_error ("chdir to / failed: %s\n", strerror (errno)); */
-/*       exit (1); */
-/*     } */
+  tattr = pth_attr_new ();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "idle-task");
+  
+  tid = pth_spawn (tattr, idle_task, NULL);
+  if (!tid)
+    {
+      log_fatal ("error starting idle task: %s\n", 
+                 gpg_strerror (gpg_error_from_syserror ()));
+      return; /*NOTREACHED*/
+    }
+  idle_task_tid = tid;
+  pth_attr_destroy (tattr);
+}
 
-/*   { */
-/*     struct sigaction sa; */
-    
-/*     sa.sa_handler = SIG_IGN; */
-/*     sigemptyset (&sa.sa_mask); */
-/*     sa.sa_flags = 0; */
-/*     sigaction (SIGPIPE, &sa, NULL); */
-/*   } */
-/* #endif /\*!HAVE_W32_SYSTEM*\/ */
 
-/*   log_info ("%s %s started\n", strusage(11), strusage(13) ); */
-/*   handle_something (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD); */
-/* } */
+/* Wait for the idle task to finish.  */
+static void
+join_idle_task (void)
+{
+  if (idle_task_tid)
+    {
+      if (!pth_join (idle_task_tid, NULL))
+        log_error ("waiting for idle task thread failed: %s\n",
+                   gpg_strerror (gpg_error_from_syserror ()));
+    }
+}
+

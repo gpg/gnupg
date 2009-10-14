@@ -57,6 +57,9 @@ gpg_error_t runner_spawn (runner_t runner);
 /* Cancel a runner.  */
 void runner_cancel (runner_t runner);
 
+/* Cancel all runner.  */
+void runner_cancel_all (void);
+
 /* Send data back to the engine.  This function is used by the
    engine's handler.  */
 gpg_error_t runner_send_line (runner_t runner,

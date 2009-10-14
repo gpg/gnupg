@@ -30,6 +30,7 @@
 #include "../common/status.h"
 #include "../common/estream.h"
 #include "../common/audit.h"
+#include "../common/session-env.h"
 
 /* A large struct named "opt" to keep global flags.  */
 struct 
@@ -58,6 +59,7 @@ struct
   char *lc_messages;
   char *xauthority;
   char *pinentry_user_data;
+  session_env_t session_env;
 
   /* Name of the output file - FIXME: what is this?  */
   const char *outfile;

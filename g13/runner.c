@@ -40,8 +40,11 @@ struct runner_s
 
   int spawned;  /* True if runner_spawn has been called.  */
   pth_t threadid; /* The TID of the runner thread.  */
+  runner_t next_running; /* Builds a list of all running threads.  */
+  int canceled;     /* Set if a cancel has already been send once.  */
 
   int cancel_flag;  /* If set the thread should terminate itself.  */
+
 
   /* We use a reference counter to know when it is safe to remove the
      object.  Lackiong an explicit ref fucntion this counter will take
@@ -66,8 +69,9 @@ struct runner_s
 };
 
 
-/* Avariabale to track the number of active runner threads.  */
-static unsigned int thread_count;
+/* The head of the list of all running threads.  */
+static runner_t running_threads;
+
 
 
 
@@ -114,7 +118,12 @@ check_already_spawned (runner_t runner, const char *funcname)
 unsigned int
 runner_get_threads (void)
 {
-  return thread_count;
+  unsigned int n = 0;
+  runner_t r;
+
+  for (r = running_threads; r; r = r->next_running)
+    n++;
+  return n;
 }
 
 
@@ -240,7 +249,7 @@ static void *
 runner_thread (void *arg)
 {
   runner_t runner = arg;
-  gpg_error_t err;
+  gpg_error_t err = 0;
 
   log_debug ("starting runner thread\n");
   /* If a status_fp is available, the thread's main task is to read
@@ -257,7 +266,6 @@ runner_thread (void *arg)
       estream_t fp = runner->status_fp;
 
       pos = 0;
-      err = 0;
       cont_line = 0;
       while (!err && !runner->cancel_flag && (c=es_getc (fp)) != EOF)
         {
@@ -322,9 +330,22 @@ runner_thread (void *arg)
 
   /* Get rid of the runner object (note: it is refcounted).  */
   log_debug ("runner thread releasing runner ...\n");
+  {
+    runner_t r, rprev;
+    
+    for (r = running_threads, rprev = NULL; r; rprev = r, r = r->next_running)
+      if (r == runner)
+        {
+          if (!rprev)
+            running_threads = r->next_running;
+          else
+            rprev->next_running = r->next_running;
+          r->next_running = NULL;
+          break;
+        }
+  }
   runner_release (runner);
   log_debug ("runner thread runner released\n");
-  thread_count--;
   
   return NULL;
 }
@@ -374,14 +395,14 @@ runner_spawn (runner_t runner)
     }
   /* The scheduler has not yet kicked in, thus we can safely set the
      spawned flag and the tid.  */
-  thread_count++;
   runner->spawned = 1;
   runner->threadid = tid;
+  runner->next_running = running_threads;
+  running_threads = runner;
+
   pth_attr_destroy (tattr);
 
   /* The runner thread is now runnable.  */
-  
-  
 
   return 0;
 }
@@ -391,14 +412,35 @@ runner_spawn (runner_t runner)
 void
 runner_cancel (runner_t runner)
 {
+  /* Warning: runner_cancel_all has knowledge of this code.  */
   if (runner->spawned)
     {
+      runner->canceled = 1;  /* Mark that we canceled this one already.  */
       /* FIXME: This does only work if the thread emits status lines.  We
          need to change the trhead to wait on an event.  */
       runner->cancel_flag = 1;
       /* For now we use the brutal way and kill the process. */
       gnupg_kill_process (runner->pid);
     }
+}
+
+
+/* Cancel all runner threads.  */
+void
+runner_cancel_all (void)
+{
+  runner_t r;
+
+  do 
+    {
+      for (r = running_threads; r; r = r->next_running)
+        if (r->spawned && !r->canceled)
+          {
+            runner_cancel (r);
+            break;
+          }
+    }
+  while (r);
 }
 
 

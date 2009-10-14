@@ -262,7 +262,8 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   pgmname = "/usr/bin/encfs";
   idx = 0;
   argv[idx++] = "-f";
-  argv[idx++] = "-v";
+  if (opt.verbose)
+    argv[idx++] = "-v";
   argv[idx++] = "--stdinpass";
   argv[idx++] = "--annotate";
   argv[idx++] = rawdir;

@@ -30,6 +30,7 @@ g13_SOURCES = \
 	g13.c g13.h \
 	keyblob.h \
 	utils.c utils.h \
+	server.c server.h \
 	create.c create.h \
 	mount.c mount.h \
 	call-gpg.c call-gpg.h \

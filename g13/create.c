@@ -39,7 +39,7 @@
 /* Create a new blob with all the session keys and other meta
    information which are to be stored encrypted in the crypto
    container header.  On success the malloced blob is stored at R_BLOB
-   and its length at R_BLOBLEN.  On error en error ocde is returned
+   and its length at R_BLOBLEN.  On error an error code is returned
    and (R_BLOB,R_BLOBLEN) are set to (NULL,0). 
 
    The format of this blob is a sequence of tag-length-value tuples.
