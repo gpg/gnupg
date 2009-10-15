@@ -33,6 +33,7 @@ g13_SOURCES = \
 	server.c server.h \
 	create.c create.h \
 	mount.c mount.h \
+	mountinfo.c mountinfo.h \
 	call-gpg.c call-gpg.h \
 	runner.c runner.h \
 	backend.c backend.h \

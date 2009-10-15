@@ -40,6 +40,12 @@ gpg_error_t runner_new (runner_t *r_runner, const char *name);
 /* Free a runner object.  */
 void runner_release (runner_t runner);
 
+/* Return the identifier of RUNNER.  */
+unsigned int runner_get_rid (runner_t runner); 
+
+/* Find a runner by its rid.  */
+runner_t runner_find_by_rid (unsigned int rid);
+
 /* Functions to set properties of the runner.  */
 void runner_set_fds (runner_t runner, int in_fd, int out_fd);
 

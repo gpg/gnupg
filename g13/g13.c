@@ -39,7 +39,8 @@
 #include "server.h"
 #include "runner.h"
 #include "create.h"
-#include "./mount.h"
+#include "mount.h"
+#include "mountinfo.h"
 
 
 enum cmd_and_opt_values {
@@ -707,6 +708,8 @@ main ( int argc, char **argv)
         if (err)
           log_error ("server exited with error: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
+        else
+          shutdown_pending++;
       }
       break;
 
@@ -719,6 +722,8 @@ main ( int argc, char **argv)
         if (err)
           log_error ("error creating a new container: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
+        else
+          shutdown_pending++;
       }
       break;
 
@@ -807,6 +812,7 @@ handle_signal (int signo)
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      mountinfo_dump_all ();
       break;
 
     case SIGUSR2:

@@ -231,6 +231,7 @@ g13_create_container (ctrl_t ctrl, const char *filename)
   char *detachedname = NULL;
   int detachedisdir;
   tupledesc_t tuples = NULL;
+  unsigned int dummy_rid;
 
   /* A quick check to see that no container with that name already
      exists.  */
@@ -304,7 +305,8 @@ g13_create_container (ctrl_t ctrl, const char *filename)
   /* Create and append the container.  FIXME: We should pass the
      estream object in addition to the filename, so that the backend
      can append the container to the g13 file.  */
-  err = be_create_container (ctrl, ctrl->conttype, filename, -1, tuples);
+  err = be_create_container (ctrl, ctrl->conttype, filename, -1, tuples,
+                             &dummy_rid);
 
 
  leave:

@@ -101,14 +101,15 @@ be_create_new_keys (int conttype, membuf_t *mb)
 /*  Dispatcher to the backend's create function.  */
 gpg_error_t
 be_create_container (ctrl_t ctrl, int conttype, 
-                     const char *fname, int fd, tupledesc_t tuples)
+                     const char *fname, int fd, tupledesc_t tuples,
+                     unsigned int *r_id)
 {
   (void)fd;  /* Not yet used.  */
 
   switch (conttype)
     {
     case CONTTYPE_ENCFS: 
-      return be_encfs_create_container (ctrl, fname, tuples);
+      return be_encfs_create_container (ctrl, fname, tuples, r_id);
 
     default:
       return no_such_backend (conttype);
@@ -120,12 +121,12 @@ be_create_container (ctrl_t ctrl, int conttype,
 gpg_error_t
 be_mount_container (ctrl_t ctrl, int conttype, 
                     const char *fname,  const char *mountpoint,
-                    tupledesc_t tuples)
+                    tupledesc_t tuples, unsigned int *r_id)
 {
   switch (conttype)
     {
     case CONTTYPE_ENCFS: 
-      return be_encfs_mount_container (ctrl, fname, mountpoint, tuples);
+      return be_encfs_mount_container (ctrl, fname, mountpoint, tuples, r_id);
 
     default:
       return no_such_backend (conttype);

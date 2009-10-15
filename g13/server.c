@@ -40,42 +40,28 @@ struct server_local_s
   /* The Assuan contect we are working on.  */
   assuan_context_t assuan_ctx;
 
-  char *mountpoint;  /* Malloced current mountpoint.  */
+  char *containername;  /* Malloced active containername.  */
 
 };
 
 
-/* Cookie definition for assuan data line output.  */
-static ssize_t data_line_cookie_write (void *cookie,
-                                       const void *buffer, size_t size);
-static int data_line_cookie_close (void *cookie);
-static es_cookie_io_functions_t data_line_cookie_functions =
-  {
-    NULL,
-    data_line_cookie_write,
-    NULL,
-    data_line_cookie_close
-  };
-
-
-/* The filepointer for status message used in non-server mode.  */
-/* static FILE *statusfp;  FIXME; */
-
-
 
 
+/* Local prototypes.  */
 static int command_has_option (const char *cmd, const char *cmdopt);
 
 
 
 
+/*
+   Helper functions. 
+ */
+
+/* Set an error and a description.  */
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
-
-
-/* Skip over options.  
-   Blanks after the options are also removed.  */
+/* Skip over options.  Blanks after the options are also removed.  */
 static char *
 skip_options (const char *line)
 {
@@ -93,58 +79,49 @@ skip_options (const char *line)
 
 
 /* Check whether the option NAME appears in LINE.  */
-static int
-has_option (const char *line, const char *name)
+/* static int */
+/* has_option (const char *line, const char *name) */
+/* { */
+/*   const char *s; */
+/*   int n = strlen (name); */
+
+/*   s = strstr (line, name); */
+/*   if (s && s >= skip_options (line)) */
+/*     return 0; */
+/*   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n))); */
+/* } */
+
+
+/* Helper to print a message while leaving a command.  */
+static gpg_error_t
+leave_cmd (assuan_context_t ctx, gpg_error_t err)
 {
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return 0;
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
-}
-
-
-/* A write handler used by es_fopencookie to write Assuan data
-   lines.  */
-static ssize_t
-data_line_cookie_write (void *cookie, const void *buffer, size_t size)
-{
-  assuan_context_t ctx = cookie;
-
-  if (assuan_send_data (ctx, buffer, size))
+  if (err)
     {
-      errno = EIO;
-      return -1;
+      const char *name = assuan_get_command_name (ctx);
+      if (!name)
+        name = "?";
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
+        log_error ("command '%s' failed: %s\n", name,
+                   gpg_strerror (err));
+      else
+        log_error ("command '%s' failed: %s <%s>\n", name,
+                   gpg_strerror (err), gpg_strsource (err));
     }
-
-  return size;
-}
-
-/* A close handler used by es_fopencookie to write Assuan data
-   lines.  */
-static int
-data_line_cookie_close (void *cookie)
-{
-  assuan_context_t ctx = cookie;
-
-  if (assuan_send_data (ctx, NULL, 0))
-    {
-      errno = EIO;
-      return -1;
-    }
-
-  return 0;
+  return err;
 }
 
 
+
+
 /* The handler for Assuan OPTION commands.  */
 static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
+
+  (void)ctrl;
 
   if (!strcmp (key, "putenv"))
     {
@@ -213,31 +190,167 @@ reset_notify (assuan_context_t ctx)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
-  xfree (ctrl->server_local->mountpoint);
-  ctrl->server_local->mountpoint = NULL;
+  xfree (ctrl->server_local->containername);
+  ctrl->server_local->containername = NULL;
 
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
 }
 
 
-/* Helper to print a message while leaving a command.  */
+
+/* OPEN [options] <filename>
+
+   Open the container FILENAME.  FILENAME must be percent-plus
+   escaped.  A quick check to see whether this is a suitable G13
+   container file is done.  However no cryptographic check or any
+   other check is done.  This command is used to define the target for
+   further commands.  The filename is reset with the RESET command,
+   another OPEN or the CREATE command.
+ */
 static gpg_error_t
-leave_cmd (assuan_context_t ctx, gpg_error_t err)
+cmd_open (assuan_context_t ctx, char *line)
 {
-  if (err)
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  char *p, *pend;
+  size_t len;
+
+  /* In any case reset the active container.  */
+  xfree (ctrl->server_local->containername);
+  ctrl->server_local->containername = NULL;
+
+  /* Parse the line.  */
+  line = skip_options (line);
+  for (p=line; *p && !spacep (p); p++)
+    ;
+  pend = p;
+  while (spacep(p))
+    p++;
+  if (*p || pend == line)
     {
-      const char *name = assuan_get_command_name (ctx);
-      if (!name)
-        name = "?";
-      if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
-        log_error ("command '%s' failed: %s\n", name,
-                   gpg_strerror (err));
-      else
-        log_error ("command '%s' failed: %s <%s>\n", name,
-                   gpg_strerror (err), gpg_strsource (err));
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
     }
-  return err;
+  *pend = 0;
+
+  /* Unescape the line and check for embedded Nul bytes.  */
+  len = percent_plus_unescape_inplace (line, 0);
+  line[len] = 0;
+  if (!len || memchr (line, 0, len))
+    {
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  /* Do a basic check.  */
+  err = g13_is_container (ctrl, line);
+  if (err)
+    goto leave;
+
+  /* Store the filename.  */
+  ctrl->server_local->containername = xtrystrdup (line);
+  if (!ctrl->server_local->containername)
+    err = gpg_error_from_syserror ();
+  
+  
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+/* MOUNT [options] [<mountpoint>]
+
+   Mount the currently open file onto MOUNTPOINT.  If MOUNTPOINT is
+   not given the system picks an unused mountpoint.  MOUNTPOINT must
+   be percent-plus escaped to allow for arbitrary names.
+ */
+static gpg_error_t
+cmd_mount (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  char *p, *pend;
+  size_t len;
+
+  line = skip_options (line);
+  for (p=line; *p && !spacep (p); p++)
+    ;
+  pend = p;
+  while (spacep(p))
+    p++;
+  if (*p)
+    {
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
+    }
+  *pend = 0;
+
+  /* Unescape the line and check for embedded Nul bytes.  */
+  len = percent_plus_unescape_inplace (line, 0);
+  line[len] = 0;
+  if (memchr (line, 0, len))
+    {
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  if (!ctrl->server_local->containername)
+    {
+      err = gpg_error (GPG_ERR_MISSING_ACTION);
+      goto leave;
+    }
+
+  /* Perform the mount.  */
+  err = g13_mount_container (ctrl, ctrl->server_local->containername, 
+                             *line? line : NULL);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+/* UMOUNT [options] [<mountpoint>]
+
+   Unmount the currently open file or the one opened at MOUNTPOINT.
+   MOUNTPOINT must be percent-plus escaped.
+ */
+static gpg_error_t
+cmd_umount (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  char *p, *pend;
+  size_t len;
+
+  line = skip_options (line);
+  for (p=line; *p && !spacep (p); p++)
+    ;
+  pend = p;
+  while (spacep(p))
+    p++;
+  if (*p)
+    {
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
+    }
+  *pend = 0;
+
+  /* Unescape the line and check for embedded Nul bytes.  */
+  len = percent_plus_unescape_inplace (line, 0);
+  line[len] = 0;
+  if (memchr (line, 0, len))
+    {
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  /* Perform the unmount.  */
+  err = g13_umount_container (ctrl, ctrl->server_local->containername, 
+                              *line? line : NULL);
+
+ leave:
+  return leave_cmd (ctx, err);
 }
 
 
@@ -285,106 +398,26 @@ cmd_signer (assuan_context_t ctx, char *line)
 }
 
 
-/* SETMOUNTPOINT [options] [<dirname>]
+/* CREATE [options] filename
 
-   Set DIRNAME as the new mount point for future operations.  
+   Create a new container.  On success the OPEN command is done
+   implictly for the new container.
  */
 static gpg_error_t
-cmd_setmountpoint (assuan_context_t ctx, char *line)
+cmd_create (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err = 0;
-  char *p, *pend;
-  size_t len;
+  gpg_error_t err;
 
-  line = skip_options (line);
-  for (p=line; *p && !spacep (p); p++)
-    ;
-  pend = p;
-  while (spacep(p))
-    p++;
-  if (*p)
-    {
-      err = gpg_error (GPG_ERR_ASS_SYNTAX);
-      goto leave;
-    }
-  *pend = 0;
+  (void)ctrl;
 
-  /* Unescape the line and check for embedded Nul bytes.  */
-  len = percent_plus_unescape_inplace (line, 0);
-  line[len] = 0;
-  if (memchr (line, 0, len))
-    {
-      err = gpg_error (GPG_ERR_INV_NAME);
-      goto leave;
-    }
-
-  xfree (ctrl->server_local->mountpoint);
-  if (!len)  /* Reset mountpoint.  */
-    ctrl->server_local->mountpoint = NULL;
-  else
-    {
-      ctrl->server_local->mountpoint = xtrystrdup (line);
-      if (!ctrl->server_local->mountpoint)
-        err = gpg_error_from_syserror ();
-    }
-
-  if (!err)
-    log_debug ("mountpoint is now `%s'\n", 
-               ctrl->server_local->mountpoint
-               ? ctrl->server_local->mountpoint: "[none]");
-
- leave:
-  return leave_cmd (ctx, err);
-}
+  /* First we close the active container.  */
+  xfree (ctrl->server_local->containername);
+  ctrl->server_local->containername = NULL;
 
 
-/* MOUNT [options] <containername>
 
-   Mount CONTAINERNAME onto the current mount point.  CONTAINERNAME is
-   the name of a file in the g13 format and must be percent-plus
-   escaped to allow for arbitrary names.  The mount poiunt must have
-   been set already.
-
-
-   A reason why we use a separate command for the mount point is to
-   allow for longer filenames (an assuan command line is limited to
-   ~1000 byte. 
- */
-static gpg_error_t
-cmd_mount (assuan_context_t ctx, char *line)
-{
-  ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err = 0;
-  char *p, *pend;
-  size_t len;
-
-  line = skip_options (line);
-  for (p=line; *p && !spacep (p); p++)
-    ;
-  pend = p;
-  while (spacep(p))
-    p++;
-  if (*p || pend == line)
-    {
-      err = gpg_error (GPG_ERR_ASS_SYNTAX);
-      goto leave;
-    }
-  *pend = 0;
-
-  /* Unescape the line and check for embedded Nul bytes.  */
-  len = percent_plus_unescape_inplace (line, 0);
-  line[len] = 0;
-  if (!len || memchr (line, 0, len))
-    {
-      err = gpg_error (GPG_ERR_INV_NAME);
-      goto leave;
-    }
-    
-  /* Perform the mount.  */
-  err = g13_mount_container (ctrl, line, ctrl->server_local->mountpoint);
-
- leave:
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
   return leave_cmd (ctx, err);
 }
 
@@ -476,10 +509,12 @@ register_commands (assuan_context_t ctx)
     const char *name;
     gpg_error_t (*handler)(assuan_context_t, char *line);
   } table[] =  {
+    { "OPEN",          cmd_open },
+    { "MOUNT",         cmd_mount },
+    { "UMOUNT",        cmd_umount },
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer },
-    { "MOUNT",         cmd_mount },
-    { "SETMOUNTPOINT", cmd_setmountpoint },
+    { "CREATE",        cmd_create },
     { "INPUT",         NULL }, 
     { "OUTPUT",        NULL }, 
     { "GETINFO",       cmd_getinfo },

@@ -31,12 +31,13 @@
 #include "keyblob.h"
 #include "runner.h"
 #include "../common/exechelp.h"
-
+#include "mountinfo.h"
 
 /* The runner object.  */
 struct runner_s
 {
-  char *name;   /* The name of this runner.  */
+  char *name;              /* The name of this runner.  */
+  unsigned int identifier; /* The runner identifier.  */
 
   int spawned;  /* True if runner_spawn has been called.  */
   pth_t threadid; /* The TID of the runner thread.  */
@@ -131,11 +132,18 @@ runner_get_threads (void)
 void
 runner_release (runner_t runner)
 {
+  gpg_error_t err;
+
   if (!runner)
     return;
 
   if (!--runner->refcount)
     return;
+
+  err = mountinfo_del_mount (NULL, NULL, runner->identifier);
+  if (err)
+    log_error ("failed to remove mount with rid %u from mtab: %s\n",
+               runner->identifier, gpg_strerror (err));
 
   es_fclose (runner->status_fp);
   if (runner->in_fd != -1)
@@ -171,14 +179,32 @@ runner_release (runner_t runner)
 gpg_error_t 
 runner_new (runner_t *r_runner, const char *name)
 {
-  runner_t runner;
+  static unsigned int namecounter; /* Global name counter.  */
+  char *namebuffer;
+  runner_t runner, r;
 
   *r_runner = NULL;
 
   runner = xtrycalloc (1, sizeof *runner);
   if (!runner)
     return gpg_error_from_syserror ();
-  runner->name = xtrystrdup (name? name: "[unknown]");
+
+  /* Bump up the namecounter.  In case we ever had an overflow we
+     check that this number is currently not in use.  The algorithm is
+     a bit lame but should be sufficient because such an wrap is not
+     very likely: Assuming that we do a mount 10 times a second, then
+     we would overwrap on a 32 bit system after 13 years.  */
+  do
+    {
+      namecounter++;
+      for (r = running_threads; r; r = r->next_running)
+        if (r->identifier == namecounter)
+          break;
+    }
+  while (r);
+
+  runner->identifier = namecounter;
+  runner->name = namebuffer = xtryasprintf ("%s-%d", name, namecounter);
   if (!runner->name)
     {
       xfree (runner);
@@ -189,13 +215,37 @@ runner_new (runner_t *r_runner, const char *name)
   runner->in_fd = -1;
   runner->out_fd = -1;
   
-
   *r_runner = runner;
   return 0;
 }
 
 
-/* A runner usually maintaines two file descriptors to control the
+/* Return the identifier of RUNNER.  */
+unsigned int 
+runner_get_rid (runner_t runner)
+{
+  return runner->identifier;
+}
+
+
+/* Find a runner by its rid.  Returns the runner object.  The caller
+   must release the runner object.  */
+runner_t
+runner_find_by_rid (unsigned int rid)
+{
+  runner_t r;
+
+  for (r = running_threads; r; r = r->next_running)
+    if (r->identifier == rid)
+      {
+        r->refcount++;
+        return r;
+      }
+  return NULL;
+}
+
+
+/* A runner usually maintains two file descriptors to control the
    backend engine.  This function is used to set these file
    descriptors.  The function takes ownership of these file
    descriptors.  IN_FD will be used to read from engine and OUT_FD to
@@ -382,8 +432,8 @@ runner_spawn (runner_t runner)
     }
 
   tattr = pth_attr_new ();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 128*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, runner->name);
   
   tid = pth_spawn (tattr, runner_thread, runner);

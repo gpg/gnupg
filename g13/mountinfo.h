@@ -1,4 +1,4 @@
-/* mount.h - Defs to mount a crypto container
+/* mountinfo.h - Track infos about mounts
  * Copyright (C) 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -17,18 +17,24 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G13_MOUNT_H
-#define G13_MOUNT_H
+#ifndef G13_MOUNTINFO_H
+#define G13_MOUNTINFO_H
 
-gpg_error_t g13_mount_container (ctrl_t ctrl, 
-                                 const char *filename,
-                                 const char *mountpoint);
-gpg_error_t g13_umount_container (ctrl_t ctrl,
-                                  const char *filename,
-                                  const char *mountpoint);
+struct mounttable_s;
+typedef struct mounttable_s *mtab_t;
 
-gpg_error_t g13_is_container (ctrl_t ctrl, const char *filename);
+gpg_error_t mountinfo_add_mount (const char *container,
+                                 const char *mountpoint,
+                                 int conttype, unsigned int rid);
+gpg_error_t mountinfo_del_mount (const char *container,
+                                 const char *mountpoint,
+                                 unsigned int rid);
+gpg_error_t mountinfo_find_mount (const char *container,
+                                  const char *mountpoint,
+                                  unsigned int *r_rid);
+
+void mountinfo_dump_all (void);
 
 
-#endif /*G13_MOUNT_H*/
+#endif /*G13_MOUNTINFO_H*/
 

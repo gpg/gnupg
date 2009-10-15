@@ -28,12 +28,14 @@ gpg_error_t be_encfs_create_new_keys (membuf_t *mb);
 
 gpg_error_t be_encfs_create_container (ctrl_t ctrl, 
                                        const char *fname,
-                                       tupledesc_t tuples);
+                                       tupledesc_t tuples,
+                                       unsigned int *r_id);
 
 gpg_error_t be_encfs_mount_container (ctrl_t ctrl,
                                       const char *fname, 
                                       const char *mountpoint,
-                                      tupledesc_t tuples);
+                                      tupledesc_t tuples,
+                                      unsigned int *r_id);
 
 
 #endif /*G13_BE_ENCFS_H*/

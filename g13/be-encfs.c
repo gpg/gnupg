@@ -211,7 +211,8 @@ encfs_handler_cleanup (void *opaque)
 /* Run the encfs tool.  */
 static gpg_error_t
 run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
-                const char *rawdir, const char *mountpoint, tupledesc_t tuples)
+                const char *rawdir, const char *mountpoint, tupledesc_t tuples,
+                unsigned int *r_id)
 {
   gpg_error_t err;
   encfs_parm_t parm;
@@ -240,15 +241,9 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
       goto leave;
     }
 
-  {
-    static int namecounter;
-    char buffer[50];
-
-    snprintf (buffer, sizeof buffer, "encfs-%d", ++namecounter);
-    err = runner_new (&runner, buffer);
-    if (err)
-      goto leave;
-  }
+  err = runner_new (&runner, "encfs");
+  if (err)
+    goto leave;
 
   err = gnupg_create_inbound_pipe (inbound);
   if (!err)
@@ -295,6 +290,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   if (err)
     goto leave;
 
+  *r_id = runner_get_rid (runner);
   log_info ("running `%s' in the background\n", pgmname);
 
  leave:
@@ -400,7 +396,8 @@ be_encfs_create_new_keys (membuf_t *mb)
 /* Create the container described by the filename FNAME and the keyblob
    information in TUPLES. */
 gpg_error_t
-be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples)
+be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
+                           unsigned int *r_id)
 {
   gpg_error_t err;
   int dummy;
@@ -426,7 +423,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples)
     }
 
   err = run_encfs_tool (ctrl, ENCFS_CMD_CREATE, containername, mountpoint,
-                        tuples);
+                        tuples, r_id);
   
   /* In any case remove the temporary mount point.  */
   if (rmdir (mountpoint))
@@ -442,11 +439,11 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples)
 
 
 /* Mount the container described by the filename FNAME and the keyblob
-   information in TUPLES. */
+   information in TUPLES.  On success the runner id is stored at R_ID. */
 gpg_error_t
 be_encfs_mount_container (ctrl_t ctrl, 
                           const char *fname, const char *mountpoint,
-                          tupledesc_t tuples)
+                          tupledesc_t tuples, unsigned int *r_id)
 {
   gpg_error_t err;
   int dummy;
@@ -464,7 +461,7 @@ be_encfs_mount_container (ctrl_t ctrl,
     goto leave;
 
   err = run_encfs_tool (ctrl, ENCFS_CMD_MOUNT, containername, mountpoint,
-                        tuples);
+                        tuples, r_id);
   
  leave:
   xfree (containername);

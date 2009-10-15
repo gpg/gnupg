@@ -35,6 +35,8 @@
 #include "utils.h"
 #include "call-gpg.h"
 #include "estream.h"
+#include "mountinfo.h"
+#include "runner.h"
 
 
 /* Parse the header prefix and return the length of the entire header.  */
@@ -89,28 +91,23 @@ parse_header (const char *filename,
 }
 
 
-
-/* Read the keyblob at FILENAME.  The caller should have acquired a
-   lockfile and checked that the file exists.  */
+/* Read the prefix of the keyblob and do some basic parsing.  On
+   success returns an open estream file at R_FP and the length of the
+   header at R_HEADERLEN.  */
 static gpg_error_t
-read_keyblob (const char *filename, 
-              void **r_enckeyblob, size_t *r_enckeybloblen)
+read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
 {
   gpg_error_t err;
   estream_t fp;
   unsigned char packet[32];
-  size_t headerlen, msglen;
-  void *msg = NULL;
   
-  *r_enckeyblob = NULL;
-  *r_enckeybloblen = 0;
+  *r_fp = NULL;
 
   fp = es_fopen (filename, "rb");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error reading `%s': %s\n", 
-                 filename, gpg_strerror (err));
+      log_error ("error reading `%s': %s\n", filename, gpg_strerror (err));
       return err;
     }
   
@@ -120,10 +117,35 @@ read_keyblob (const char *filename,
       err = gpg_error_from_syserror ();
       log_error ("error reading the header of `%s': %s\n",
                  filename, gpg_strerror (err));
-      goto leave;
+      es_fclose (fp);
+      return err;
     }
   
-  err = parse_header (filename, packet, 32, &headerlen);
+  err = parse_header (filename, packet, 32, r_headerlen);
+  if (err)
+    es_fclose (fp);
+  else
+    *r_fp = fp;
+
+  return err;
+}
+
+
+/* Read the keyblob at FILENAME.  The caller should have acquired a
+   lockfile and checked that the file exists.  */
+static gpg_error_t
+read_keyblob (const char *filename, 
+              void **r_enckeyblob, size_t *r_enckeybloblen)
+{
+  gpg_error_t err;
+  estream_t fp = NULL;
+  size_t headerlen, msglen;
+  void *msg = NULL;
+  
+  *r_enckeyblob = NULL;
+  *r_enckeybloblen = 0;
+
+  err = read_keyblob_prefix (filename, &fp, &headerlen);
   if (err)
     goto leave;
   
@@ -227,6 +249,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   size_t n;
   const unsigned char *value;
   int conttype;
+  unsigned int rid;
 
   /* A quick check to see whether the container exists.  */
   if (access (filename, R_OK))
@@ -292,7 +315,13 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
-  err = be_mount_container (ctrl, conttype, filename, mountpoint, tuples);
+  err = be_mount_container (ctrl, conttype, filename, mountpoint, tuples, &rid);
+  if (!err)
+    {
+      err = mountinfo_add_mount (filename, mountpoint, conttype, rid);
+      /* Fixme: What shall we do if this fails?  Add a provisional
+         mountinfo entry first and remove it on error? */
+    }
 
  leave:
   destroy_tupledesc (tuples);
@@ -301,3 +330,56 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   destroy_dotlock (lock);
   return err;
 }
+
+
+/* Unmount the container with name FILENAME or the one mounted at
+   MOUNTPOINT.  If both are given the FILENAME takes precedence.  */
+gpg_error_t
+g13_umount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
+{
+  gpg_error_t err;
+  unsigned int rid;
+  runner_t runner;
+
+  (void)ctrl;
+
+  if (!filename && !mountpoint)
+    return gpg_error (GPG_ERR_ENOENT);
+  err = mountinfo_find_mount (filename, mountpoint, &rid);
+  if (err)
+    return err;
+  
+  runner = runner_find_by_rid (rid);
+  if (!runner)
+    {
+      log_error ("runner %u not found\n", rid);
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
+
+  runner_cancel (runner);
+  runner_release (runner);
+  
+  return 0;
+}
+
+
+/* Test whether the container with name FILENAME is a suitable G13
+   container.  This function may even be called on a mounted
+   container.  */
+gpg_error_t
+g13_is_container (ctrl_t ctrl, const char *filename)
+{
+  gpg_error_t err;
+  estream_t fp = NULL;
+  size_t dummy;
+
+  (void)ctrl;
+
+  /* Read just the prefix of the header.  */
+  err = read_keyblob_prefix (filename, &fp, &dummy);
+  if (!err)
+    es_fclose (fp);
+  return err;
+}
+
+

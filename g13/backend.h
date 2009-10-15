@@ -30,10 +30,12 @@ gpg_error_t be_create_new_keys (int conttype, membuf_t *mb);
 
 gpg_error_t be_create_container (ctrl_t ctrl, int conttype, 
                                  const char *fname, int fd,
-                                 tupledesc_t tuples);
+                                 tupledesc_t tuples,
+                                 unsigned int *r_id);
 gpg_error_t be_mount_container (ctrl_t ctrl, int conttype, 
                                 const char *fname, const char *mountpoint,
-                                tupledesc_t tuples);
+                                tupledesc_t tuples,
+                                unsigned int *r_id);
 
 
 #endif /*G13_BACKEND_H*/
