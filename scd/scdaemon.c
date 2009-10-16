@@ -53,7 +53,6 @@
 #include "mkdtemp.h"
 #include "gc-opt-flags.h"
 
-
 enum cmd_and_opt_values 
 { aNull = 0,
   oCsh		  = 'c',
@@ -204,6 +203,8 @@ static void *start_connection_thread (void *arg);
 static void handle_connections (int listen_fd);
 
 /* Pth wrapper function definitions. */
+ASSUAN_SYSTEM_PTH_IMPL;
+
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
 {
@@ -410,6 +411,8 @@ main (int argc, char **argv )
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
+  assuan_sock_init ();
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

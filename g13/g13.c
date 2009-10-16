@@ -204,6 +204,8 @@ static void join_idle_task (void);
 
 
 /* Begin Pth wrapper functions. */
+ASSUAN_SYSTEM_PTH_IMPL;
+
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
 {
@@ -441,6 +443,7 @@ main ( int argc, char **argv)
   /* Prepare libassuan.  */
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
 
 
   /* Setup a default control structure for command line mode.  */

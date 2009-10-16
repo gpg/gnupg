@@ -50,7 +50,6 @@
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 
-
 enum cmd_and_opt_values 
 { aNull = 0,
   oCsh		  = 'c',
@@ -276,6 +275,8 @@ static void check_own_socket (void);
 static int check_for_running_agent (int silent, int mode);
 
 /* Pth wrapper function definitions. */
+ASSUAN_SYSTEM_PTH_IMPL;
+
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
 {
@@ -593,6 +594,8 @@ main (int argc, char **argv )
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
+  assuan_sock_init ();
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
@@ -2217,7 +2220,7 @@ check_for_running_agent (int silent, int mode)
 
   rc = assuan_new (&ctx);
   if (! rc)
-    rc = assuan_socket_connect (&ctx, infostr, pid);
+    rc = assuan_socket_connect (ctx, infostr, pid);
   xfree (infostr);
   if (rc)
     {

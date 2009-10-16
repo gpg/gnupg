@@ -1,3 +1,11 @@
+2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* gpg_agent_CFLAGS, gpg_agent_LDADD: Use libassuan instead of
+	libassuan-pth.
+	* gpg-agent.c: Invoke ASSUAN_SYSTEM_PTH_IMPL.
+	(main): Call assuan_set_system_hooks and assuan_sock_init.
+	Fix invocation of assuan_socket_connect.
+
 2009-09-23  Werner Koch  <wk@g10code.com>
 
 	* command.c (register_commands) [HAVE_ASSUAN_SET_IO_MONITOR]:

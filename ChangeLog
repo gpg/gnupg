@@ -1,3 +1,7 @@
+2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* configure.ac: Check for libassuan instead of libassuan-pth.
+
 2009-10-12  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Use -O3 because newer gcc versions require that
