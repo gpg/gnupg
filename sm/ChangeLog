@@ -1,3 +1,8 @@
+2009-10-16  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (DEFAULT_INCLUDE_CERTS): New.
+	(default_include_certs):  Init to -2.
+
 2009-08-06  Werner Koch  <wk@g10code.com>
 
 	* sign.c (gpgsm_sign): Print INV_SNDR for a bad default key.

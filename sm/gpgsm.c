@@ -402,8 +402,11 @@ static unsigned int debug_value;
 /* Option --enable-special-filenames */
 static int allow_special_filenames;
 
-/* Default value for include-certs. */
-static int default_include_certs = 1; /* Only include the signer's cert. */
+/* Default value for include-certs.  We need an extra macro for
+   gpgconf-list because the variable will be changed by the command
+   line option.  */
+#define DEFAULT_INCLUDE_CERTS -2 /* Include all certs but root. */
+static int default_include_certs = DEFAULT_INCLUDE_CERTS; 
 
 /* Whether the chain mode shall be used for validation.  */
 static int default_validation_model;
@@ -1606,7 +1609,8 @@ main ( int argc, char **argv)
         printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("include-certs:%lu:1:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
+                DEFAULT_INCLUDE_CERTS);
         printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);

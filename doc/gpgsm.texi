@@ -560,7 +560,7 @@ Using @var{n} of -2 includes all certificate except for the root cert,
 -1 includes all certs, 0 does not include any certs, 1 includes only
 the signers cert (this is the default) and all other positive
 values include up to @var{n} certificates starting with the signer cert.
-
+The default is -2.
 
 @item --cipher-algo @var{oid}
 @opindex cipher-algo
