@@ -1,0 +1,5 @@
+2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* Makefile.am (AM_CFLAGS): Add $(KSBA_CFLAGS).
+	(g13_LDADD): Add $(KSBA_LIBS).
+

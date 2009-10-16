@@ -1,3 +1,8 @@
+2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* POTFILES.in: g10/encode.c was renamed to g10/encrypt.c, and
+	encr-data.c was renamed to decrypt-data.c
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* de.po: Translate new strings.

@@ -28,8 +28,8 @@ g10/card-util.c
 g10/dearmor.c
 g10/decrypt.c
 g10/delkey.c
-g10/encode.c
-g10/encr-data.c
+g10/encrypt.c
+g10/decrypt-data.c
 g10/exec.c
 g10/export.c
 g10/getkey.c
