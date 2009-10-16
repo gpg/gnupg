@@ -1224,7 +1224,15 @@ main (int argc, char **argv)
       no_close[0] = fileno (stderr);
       no_close[1] = log_get_fd ();
       no_close[2] = -1;
-      rc = assuan_pipe_connect_ext (&ctx, *argv, (const char **)argv,
+
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_pipe_connect_ext (ctx, *argv, argv,
                                     no_close, NULL, NULL,
                                     opt.connect_flags);
       if (rc)
@@ -1240,7 +1248,14 @@ main (int argc, char **argv)
     }
   else if (opt.raw_socket)
     {
-      rc = assuan_socket_connect_ext (&ctx, opt.raw_socket, 0,
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_socket_connect_ext (ctx, opt.raw_socket, 0,
                                       opt.connect_flags);
       if (rc)
         {
@@ -2086,9 +2101,16 @@ start_agent (void)
     {
       char *sockname;
 
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
       /* Check whether we can connect at the standard socket.  */
       sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (&ctx, sockname, 0);
+      rc = assuan_socket_connect (ctx, sockname, 0);
 
 #ifdef HAVE_W32_SYSTEM
       /* If we failed to connect under Windows, we fire up the agent.  */
@@ -2115,7 +2137,14 @@ start_agent (void)
               /* Give the agent some time to prepare itself. */
               gnupg_sleep (3);
               /* Now try again to connect the agent.  */
-              rc = assuan_socket_connect (&ctx, sockname, 0);
+	      rc = assuan_new (&ctx);
+	      if (rc)
+		{
+		  log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+		  exit (1);
+		}
+
+              rc = assuan_socket_connect (ctx, sockname, 0);
             }
           if (rc)
             rc = save_rc;
@@ -2148,7 +2177,14 @@ start_agent (void)
           exit (1);
         }
 
-      rc = assuan_socket_connect (&ctx, infostr, pid);
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_socket_connect (ctx, infostr, pid);
       xfree (infostr);
     }
 
