@@ -100,12 +100,6 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
 
   /* Connect to GPG and perform initial handshaking.  */
   err = assuan_pipe_connect (ctx, opt.gpg_program, argv, no_close_list);
-
-  /* if (!err) */
-  /*   err = assuan_transact (ctx, "OPTION audit-events=1", */
-  /*                          NULL, NULL, NULL, NULL, NULL, NULL); */
-  /* audit_log_ok (ctrl->audit, AUDIT_GPG_READY, err); */
-  
   if (err)
     {
       assuan_release (ctx);

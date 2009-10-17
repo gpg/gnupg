@@ -1,11 +1,3 @@
-2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
 
-	* AM_CFLAGS, g13_LDADD: Use libassuan instead of libassuan-pth.
-	* g13.c: Invoke ASSUAN_SYSTEM_PTH_IMPL.
-	(main): Call assuan_set_system_hooks.
-
-2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
-
-	* Makefile.am (AM_CFLAGS): Add $(KSBA_CFLAGS).
-	(g13_LDADD): Add $(KSBA_LIBS).
+	Under initial development - no need for a ChangeLog.
 

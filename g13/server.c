@@ -167,12 +167,6 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       err = session_env_setenv (opt.session_env, "PINENTRY_USER_DATA", value);
     }
-  else if (!strcmp (key, "enable-audit-log"))
-    {
-      /* This is not yet used.  */
-      /* int i = *value? atoi (value) : 0; */
-      /* ctrl->server_local->enable_audit_log = i; */
-    }
   else if (!strcmp (key, "allow-pinentry-notify"))
     {
       ; /* We always allow it.  */

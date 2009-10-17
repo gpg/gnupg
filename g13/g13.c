@@ -123,8 +123,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoLogFile, "no-log-file", "@"),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
 
-  ARGPARSE_s_s (oAuditLog, "audit-log",
-                N_("|FILE|write an audit log to FILE")),
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
 
   ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
@@ -350,7 +348,6 @@ main ( int argc, char **argv)
   int no_more_options = 0;
   int default_config =1;
   char *logfile = NULL;
-  char *auditlog = NULL;
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
@@ -359,7 +356,6 @@ main ( int argc, char **argv)
   int nokeysetup = 0;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
-  estream_t auditfp = NULL;
   strlist_t recipients = NULL;
 
   /*mtrace();*/
@@ -525,8 +521,6 @@ main ( int argc, char **argv)
 
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oNoLogFile: logfile = NULL; break;          
-
-        case oAuditLog: auditlog = pargs.r.ret_str; break;
 
         case oNoDetach: nodetach = 1; break;
 
@@ -750,15 +744,6 @@ main ( int argc, char **argv)
   if (!err)
     join_idle_task ();
 
-  /* Print the audit result if needed.  */
-  if (auditlog && auditfp)
-    {
-      /* audit_print_result (ctrl.audit, auditfp, 0); */
-      /* audit_release (ctrl.audit); */
-      ctrl.audit = NULL;
-      es_fclose (auditfp);
-    }
-  
   /* Cleanup.  */
   g13_exit (0);
   return 8; /*NOTREACHED*/
