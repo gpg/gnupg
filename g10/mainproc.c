@@ -581,6 +581,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	  }
     }
     else if( result == G10ERR_BAD_SIGN ) {
+        glo_ctrl.lasterr = result;
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
 	write_status( STATUS_BADMDC );
 	write_status( STATUS_DECRYPTION_FAILED );
@@ -593,6 +594,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 		      c->dek->s2k_cacheid);
 	    passphrase_clear_cache (NULL, c->dek->s2k_cacheid, 0);
 	  }
+        glo_ctrl.lasterr = result;
 	write_status( STATUS_DECRYPTION_FAILED );
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
 	/* Hmmm: does this work when we have encrypted using multiple

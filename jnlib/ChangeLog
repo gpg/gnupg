@@ -1,3 +1,7 @@
+2009-10-19  Werner Koch  <wk@g10code.com>
+
+	* strlist.c (add_to_strlist_try): New.
+
 2009-09-22  Werner Koch  <wk@g10code.com>
 
 	* dotlock.h (DOTLOCK): Rename to dotlock_t.  Change all users.

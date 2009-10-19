@@ -57,6 +57,25 @@ add_to_strlist( strlist_t *list, const char *string )
 }
 
 
+/* Add STRING to the LIST at the front.  This function returns NULL
+   and sets ERRNO on memory shortage.  */
+strlist_t
+add_to_strlist_try (strlist_t *list, const char *string)
+{
+  strlist_t sl;
+  
+  sl = jnlib_malloc (sizeof *sl + strlen (string));
+  if (sl)
+    {
+      sl->flags = 0;
+      strcpy (sl->d, string);
+      sl->next = *list;
+      *list = sl;
+    }
+  return sl;
+}
+
+
 /* Same as add_to_strlist() but if IS_UTF8 is *not* set, a conversion
    to UTF-8 is done.  This function terminates the process on memory
    shortage.  */

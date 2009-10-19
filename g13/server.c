@@ -29,9 +29,9 @@
 #include <assuan.h>
 #include "i18n.h"
 #include "keyblob.h"
-#include "./server.h"
-#include "./mount.h"
-
+#include "server.h"
+#include "mount.h"
+#include "create.h"
 
 /* Local data for this server module.  A pointer to this is stored in
    the CTRL object of each connection.  */
@@ -42,6 +42,7 @@ struct server_local_s
 
   char *containername;  /* Malloced active containername.  */
 
+  strlist_t recipients; /* List of recipients.  */
 };
 
 
@@ -186,6 +187,8 @@ reset_notify (assuan_context_t ctx)
 
   xfree (ctrl->server_local->containername);
   ctrl->server_local->containername = NULL;
+
+  FREE_STRLIST (ctrl->server_local->recipients);
 
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -359,17 +362,12 @@ static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err;
+  gpg_error_t err = 0;
 
-  (void)ctrl;
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-  /* err = gpgsm_add_to_certlist (ctrl, line, 0, */
-  /*                              &ctrl->server_local->recplist, 0); */
-  /* if (err) */
-  /*   { */
-  /*     gpgsm_status2 (ctrl, STATUS_INV_RECP, */
-  /*                    get_inv_recpsgnr_code (rc), line, NULL); */
-  /*   } */
+  line = skip_options (line);
+
+  if (!add_to_strlist_try (&ctrl->server_local->recipients, line))
+    err = gpg_error_from_syserror ();
 
   return leave_cmd (ctx, err);
 }
@@ -386,6 +384,7 @@ cmd_signer (assuan_context_t ctx, char *line)
   gpg_error_t err;
 
   (void)ctrl;
+  (void)line;
 
   err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
   return leave_cmd (ctx, err);
@@ -402,16 +401,50 @@ cmd_create (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-
-  (void)ctrl;
+  char *p, *pend;
+  size_t len;
 
   /* First we close the active container.  */
   xfree (ctrl->server_local->containername);
   ctrl->server_local->containername = NULL;
 
+  /* Parse the line.  */
+  line = skip_options (line);
+  for (p=line; *p && !spacep (p); p++)
+    ;
+  pend = p;
+  while (spacep(p))
+    p++;
+  if (*p || pend == line)
+    {
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
+    }
+  *pend = 0;
 
+  /* Unescape the line and check for embedded Nul bytes.  */
+  len = percent_plus_unescape_inplace (line, 0);
+  line[len] = 0;
+  if (!len || memchr (line, 0, len))
+    {
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
 
-  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  /* Create container.  */
+  err = g13_create_container (ctrl, line, ctrl->server_local->recipients);
+
+  if (!err)
+    {
+      FREE_STRLIST (ctrl->server_local->recipients);
+  
+      /* Store the filename.  */
+      ctrl->server_local->containername = xtrystrdup (line);
+      if (!ctrl->server_local->containername)
+        err = gpg_error_from_syserror ();
+
+    }
+ leave:
   return leave_cmd (ctx, err);
 }
 
@@ -617,6 +650,7 @@ g13_server (ctrl_t ctrl)
     log_info ("Assuan accept problem: %s\n", gpg_strerror (err));
   
  leave:
+  reset_notify (ctx);  /* Release all items hold by SERVER_LOCAL.  */
   if (ctrl->server_local)
     {
       xfree (ctrl->server_local);

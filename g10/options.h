@@ -257,6 +257,11 @@ EXTERN_UNLESS_MAIN_MODULE
 struct {
   int in_auto_key_retrieve; /* True if we are doing an
                                auto_key_retrieve. */
+  /* Hack to store the last error.  We currently need it because the
+     proc_packet machinery is not able to reliabale return error
+     codes.  Thus for the --server purposes we store some of the error
+     codes here.  FIXME! */
+  gpg_error_t lasterr;
 } glo_ctrl;
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */

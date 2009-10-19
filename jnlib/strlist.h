@@ -30,6 +30,7 @@ typedef struct string_list *strlist_t;
 
 void    free_strlist (strlist_t sl);
 strlist_t add_to_strlist (strlist_t *list, const char *string);
+strlist_t add_to_strlist_try (strlist_t *list, const char *string);
 
 strlist_t add_to_strlist2( strlist_t *list, const char *string, int is_utf8);
 

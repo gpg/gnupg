@@ -43,7 +43,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   gpg_error_t err;
   assuan_context_t ctx = NULL;
   const char *pgmname;
-  const char *argv[7];
+  const char *argv[10];
   int no_close_list[5];
   int i;
   char line[ASSUAN_LINELENGTH];
@@ -86,6 +86,8 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
     argv[i++] = "--debug=1024";
   argv[i++] = "-z";
   argv[i++] = "0";
+  argv[i++] = "--trust-model";
+  argv[i++] = "always";
   argv[i++] = NULL;
   
   i = 0;
@@ -326,7 +328,7 @@ start_reader (int fd, membuf_t *mb, pth_t *r_tid, gpg_error_t *err_addr)
  */
 gpg_error_t
 gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
-                  void **r_ciph, size_t *r_ciphlen)
+                  strlist_t keys, void **r_ciph, size_t *r_ciphlen)
 {
   gpg_error_t err;
   assuan_context_t ctx;
@@ -336,6 +338,8 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
   pth_t reader_tid = NULL;
   gpg_error_t writer_err, reader_err;
   membuf_t reader_mb;
+  char line[ASSUAN_LINELENGTH];
+  strlist_t sl;
 
   *r_ciph = NULL;
   *r_ciphlen = 0;
@@ -376,13 +380,16 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
   outbound_fds[0] = -1;  /* The thread owns the FD now.  */
 
   /* Run the encryption.  */
-  err = assuan_transact (ctx, "RECIPIENT alpha@example.net",
-                         NULL, NULL, NULL, NULL, NULL, NULL);
-  if (err)
+  for (sl = keys; sl; sl = sl->next)
     {
-      log_error ("the engine's RECIPIENT command failed: %s <%s>\n",
+      snprintf (line, sizeof line, "RECIPIENT -- %s", sl->d);
+      err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        {
+          log_error ("the engine's RECIPIENT command failed: %s <%s>\n",
                  gpg_strerror (err), gpg_strsource (err));
-      goto leave;
+          goto leave;
+        }
     }
 
   err = assuan_transact (ctx, "ENCRYPT", NULL, NULL, NULL, NULL, NULL, NULL);

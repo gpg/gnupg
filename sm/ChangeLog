@@ -1,3 +1,9 @@
+2009-10-16  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (default_include_certs): Change to -2.
+	(DEFAULT_INCLUDE_CERTS): New.
+	(DEFAULT_CIPHER_ALGO): New.  Use instead of hardcoded "3DES".
+
 2009-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Remove obsolete GCRYCTL_DISABLE_INTERNAL_LOCKING.

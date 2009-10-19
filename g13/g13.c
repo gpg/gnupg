@@ -47,6 +47,7 @@ enum cmd_and_opt_values {
   aNull = 0,
   oQuiet	= 'q',
   oVerbose	= 'v',
+  oRecipient	= 'r',
 
   aGPGConfList  = 500,
   aGPGConfTest,
@@ -90,8 +91,6 @@ enum cmd_and_opt_values {
   oWithColons,
   oDryRun,
   oNoDetach,
-
-  oRecipient,
 
   oNoRandomSeedFile,
   oFakedSystemTime
@@ -305,30 +304,6 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
     }
 
   *ret_cmd = cmd;
-}
-
-
-/* Helper to add recipients to a list. */
-static int
-add_encryption_key (ctrl_t ctrl, const char *name,
-                    void /*FIXME*/ *keylist, int is_cms)
-{
-  /* FIXME: Decide whether to add a CMS or OpenPGP key and then add
-     the key to a list.  */
-  /* int rc = foo_add_to_certlist (ctrl, name, 0, recplist, is_encrypt_to); */
-  /* if (rc) */
-  /*   { */
-  /*     if (recp_required) */
-  /*       { */
-  /*         log_error ("can't encrypt to `%s': %s\n", name, gpg_strerror (rc)); */
-  /*         gpgsm_status2 (ctrl, STATUS_INV_RECP, */
-  /*                        get_inv_recpsgnr_code (rc), name, NULL); */
-  /*       } */
-  /*     else */
-  /*       log_info (_("NOTE: won't be able to encrypt to `%s': %s\n"), */
-  /*                 name, gpg_strerror (rc)); */
-  /*   } */
-  return 0; /* Key is good.  */
 }
 
 
@@ -664,18 +639,20 @@ main ( int argc, char **argv)
 
   /* Parse all given encryption keys.  This does a lookup of the keys
      and stops if any of the given keys was not found. */
+#if 0 /* Currently not implemented.  */  
   if (!nokeysetup)
     {
       strlist_t sl;
       int failed = 0;
       
       for (sl = recipients; sl; sl = sl->next)
-        if (add_encryption_key (&ctrl, sl->d, NULL /* FIXME*/, 0))
+        if (check_encryption_key ())
           failed = 1;
       if (failed)
         g13_exit (1);
     }
-  
+#endif /*0*/ 
+ 
   /* Dispatch command.  */
   switch (cmd)
     {
@@ -715,7 +692,7 @@ main ( int argc, char **argv)
         if (argc != 1) 
           wrong_args ("--create filename");
         start_idle_task ();
-        err = g13_create_container (&ctrl, argv[0]);
+        err = g13_create_container (&ctrl, argv[0], recipients);
         if (err)
           log_error ("error creating a new container: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));

@@ -362,7 +362,10 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
+  glo_ctrl.lasterr = 0;
   err = decrypt_message_fd (inp_fd, out_fd);
+  if (!err)
+    err = glo_ctrl.lasterr;
 
   /* Close and reset the fds. */
   close_message_fd (ctrl);

@@ -20,7 +20,8 @@
 #ifndef G13_CREATE_H
 #define G13_CREATE_H
 
-gpg_error_t g13_create_container (ctrl_t ctrl, const char *filename);
+gpg_error_t g13_create_container (ctrl_t ctrl, const char *filename,
+                                  strlist_t keys);
 
 
 #endif /*G13_CREATE_H*/

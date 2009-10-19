@@ -106,12 +106,13 @@ create_new_keyblob (ctrl_t ctrl, int is_detached,
    concatenation of both with the CMS packet being the last.  */
 static gpg_error_t
 encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
+                 strlist_t keys,
                  void **r_encblob, size_t *r_encbloblen)
 {
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_encrypt_blob (ctrl, keyblob, keybloblen,
+  err = gpg_encrypt_blob (ctrl, keyblob, keybloblen, keys,
                           r_encblob, r_encbloblen);
 
   return err;
@@ -217,10 +218,11 @@ write_keyblob (const char *filename,
 
 
 /* Create a new container under the name FILENAME and intialize it
-   using the current settings.  If the file already exists an error is
-   returned. */
+   using the current settings.  KEYS is a list of public keys to which
+   the container will be encrypted.  If the file already exists an
+   error is returned.  */
 gpg_error_t
-g13_create_container (ctrl_t ctrl, const char *filename)
+g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
 {
   gpg_error_t err;
   dotlock_t lock;
@@ -232,6 +234,9 @@ g13_create_container (ctrl_t ctrl, const char *filename)
   int detachedisdir;
   tupledesc_t tuples = NULL;
   unsigned int dummy_rid;
+
+  if (!keys)
+    return gpg_error (GPG_ERR_NO_PUBKEY);
 
   /* A quick check to see that no container with that name already
      exists.  */
@@ -284,7 +289,7 @@ g13_create_container (ctrl_t ctrl, const char *filename)
     goto leave;
 
   /* Encrypt that keyblob.  */
-  err = encrypt_keyblob (ctrl, keyblob, keybloblen,
+  err = encrypt_keyblob (ctrl, keyblob, keybloblen, keys,
                          &enckeyblob, &enckeybloblen);
   if (err)
     goto leave;

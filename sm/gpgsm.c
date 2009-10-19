@@ -402,11 +402,24 @@ static unsigned int debug_value;
 /* Option --enable-special-filenames */
 static int allow_special_filenames;
 
-/* Default value for include-certs. */
-static int default_include_certs = 1; /* Only include the signer's cert. */
+/* Default value for include-certs.  We need an extra macro for
+   gpgconf-list because the variable will be changed by the command
+   line option.  
+
+   It is often cumbersome to locate intermediate certificates, thus by
+   default we include all certificates in the chain.  However we leave
+   out the root certificate because that would make it too easy for
+   the recipient to import that root certificate.  A root certificate
+   should be installed only after due checks and thus it won't help to
+   send it along with each message.  */
+#define DEFAULT_INCLUDE_CERTS -2 /* Include all certs but root. */
+static int default_include_certs = DEFAULT_INCLUDE_CERTS; 
 
 /* Whether the chain mode shall be used for validation.  */
 static int default_validation_model;
+
+/* The default cipher algo.  */
+#define DEFAULT_CIPHER_ALGO "3DES"  /*des-EDE3-CBC*/
 
 
 static char *build_list (const char *text,
@@ -897,7 +910,7 @@ main ( int argc, char **argv)
 
   /* Note: If you change this default cipher algorithm , please
      remember to update the Gpgconflist entry as well.  */
-  opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
+  opt.def_cipher_algoid = DEFAULT_CIPHER_ALGO; 
 
   opt.homedir = default_homedir ();
 
@@ -1606,14 +1619,16 @@ main ( int argc, char **argv)
         printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("include-certs:%lu:1:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
+                DEFAULT_INCLUDE_CERTS);
         printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #ifndef HAVE_W32_SYSTEM
         printf ("prefer-system-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
-        printf ("cipher-algo:%lu:\"3DES:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("cipher-algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+                DEFAULT_CIPHER_ALGO);
         printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);

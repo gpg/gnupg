@@ -22,6 +22,7 @@
 
 gpg_error_t gpg_encrypt_blob (ctrl_t ctrl,
                               const void *plain, size_t plainlen,
+                              strlist_t keys,
                               void **r_ciph, size_t *r_ciphlen);
 gpg_error_t gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
                               void **r_plain, size_t *r_plainlen);
