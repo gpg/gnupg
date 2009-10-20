@@ -649,6 +649,16 @@ DL_LIBS=$LIBS
 AC_SUBST(DL_LIBS)
 LIBS="$gnupg_dlopen_save_libs"
 
+# Checks for g13
+
+AC_PATH_PROG(ENCFS, encfs, /usr/bin/encfs)
+AC_DEFINE_UNQUOTED(ENCFS,
+	"${ENCFS}", [defines the filename of the encfs program])
+
+AC_PATH_PROG(FUSERMOUNT, fusermount, /usr/bin/fusermount)
+AC_DEFINE_UNQUOTED(FUSERMOUNT,
+	"${FUSERMOUNT}", [defines the filename of the fusermount program])
+
 #
 # Checks for symcryptrun:
 #
@@ -665,7 +675,6 @@ AC_SUBST(LIBUTIL_LIBS)
 AC_PATH_PROG(SHRED, shred, /usr/bin/shred)
 AC_DEFINE_UNQUOTED(SHRED,
 	"${SHRED}", [defines the filename of the shred program])
-
 
 
 #
