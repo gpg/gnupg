@@ -1,3 +1,7 @@
+2009-10-20  Marcus Brinkmann  <marcus@g10code.com>
+
+	* configure.ac: Check for fusermount and encfs.
+
 2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
 
 	* configure.ac: Check for libassuan instead of libassuan-pth.

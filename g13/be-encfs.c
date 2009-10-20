@@ -73,7 +73,7 @@ static void
 run_umount_helper (const char *mountpoint)
 {
   gpg_error_t err;
-  const char pgmname[] = "/usr/bin/fusermount";
+  const char pgmname[] = FUSERMOUNT;
   const char *args[3];
   
   args[0] = "-u";
@@ -254,7 +254,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
       goto leave;
     }
 
-  pgmname = "/usr/bin/encfs";
+  pgmname = ENCFS;
   idx = 0;
   argv[idx++] = "-f";
   if (opt.verbose)
