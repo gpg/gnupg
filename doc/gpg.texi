@@ -1522,10 +1522,12 @@ Enable certificate checking if the keyserver presents one (for hkps or
 ldaps).  Defaults to on.
 
 @item ca-cert-file
-Provide a certificate file to override the system default.  Only
+Provide a certificate store to override the system default.  Only
 necessary if check-cert is enabled, and the keyserver is using a
 certificate that is not present in a system default certificate list.
 
+Note that depending on the SSL library that the keyserver helper is
+built with, this may actually be a directory or a file.
 @end table
 
 @item --completes-needed @code{n}
