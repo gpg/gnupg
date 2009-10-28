@@ -106,6 +106,8 @@ struct server_control_s
 void g13_exit (int rc);
 void g13_init_default_ctrl (struct server_control_s *ctrl);
 
+/*-- server.c (commonly used, thus declared here) --*/
+gpg_error_t g13_status (ctrl_t ctrl, int no, ...) GNUPG_GCC_A_SENTINEL(0);
 
 
 #endif /*G13_H*/

@@ -680,6 +680,12 @@ more arguments in future versions.
         A backup key named FNAME has been created for the key with
         KEYID.
 
+    MOUNTPOINT <name>
+        NAME is a percent-plus escaped filename describing the
+        mountpoint for the current operation (e.g. g13 --mount).  This
+        may either be the specified mountpoint or one randomly choosen
+        by g13.
+
 
 Format of the "--attribute-fd" output
 =====================================

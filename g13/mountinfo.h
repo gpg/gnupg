@@ -25,7 +25,8 @@ typedef struct mounttable_s *mtab_t;
 
 gpg_error_t mountinfo_add_mount (const char *container,
                                  const char *mountpoint,
-                                 int conttype, unsigned int rid);
+                                 int conttype, unsigned int rid,
+                                 int remove_flag);
 gpg_error_t mountinfo_del_mount (const char *container,
                                  const char *mountpoint,
                                  unsigned int rid);

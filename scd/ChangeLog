@@ -1,3 +1,9 @@
+2009-10-25  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (scd_deinit_default_ctrl): Release IN_DATA.
+	* command.c (cmd_setdata): Release IN_DATA.  Reported by Klaus
+	Flittner.
+
 2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
 
 	* AM_CFLAGS, scdaemon_LDADD: Use libassuan instead of libassuan-pth.

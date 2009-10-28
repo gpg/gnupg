@@ -33,6 +33,10 @@
 #include "mount.h"
 #include "create.h"
 
+
+/* The filepointer for status message used in non-server mode */
+static FILE *statusfp;
+
 /* Local data for this server module.  A pointer to this is stored in
    the CTRL object of each connection.  */
 struct server_local_s 
@@ -310,7 +314,8 @@ cmd_mount (assuan_context_t ctx, char *line)
 /* UMOUNT [options] [<mountpoint>]
 
    Unmount the currently open file or the one opened at MOUNTPOINT.
-   MOUNTPOINT must be percent-plus escaped.
+   MOUNTPOINT must be percent-plus escaped.  On success the mountpoint
+   is returned via a "MOUNTPOINT" status line.
  */
 static gpg_error_t
 cmd_umount (assuan_context_t ctx, char *line)
@@ -662,99 +667,81 @@ g13_server (ctrl_t ctrl)
 }
 
 
+/* Send a status line with status ID NO.  The arguments are a list of
+   strings terminated by a NULL argument.  */
+gpg_error_t
+g13_status (ctrl_t ctrl, int no, ...)
+{
+  gpg_error_t err = 0;
+  va_list arg_ptr;
+  const char *text;
 
-/* gpg_error_t */
-/* gpgsm_status2 (ctrl_t ctrl, int no, ...) */
-/* { */
-/*   gpg_error_t err = 0; */
-/*   va_list arg_ptr; */
-/*   const char *text; */
+  va_start (arg_ptr, no);
 
-/*   va_start (arg_ptr, no); */
-
-/*   if (ctrl->no_server && ctrl->status_fd == -1) */
-/*     ; /\* No status wanted. *\/ */
-/*   else if (ctrl->no_server) */
-/*     { */
-/*       if (!statusfp) */
-/*         { */
-/*           if (ctrl->status_fd == 1) */
-/*             statusfp = stdout; */
-/*           else if (ctrl->status_fd == 2) */
-/*             statusfp = stderr; */
-/*           else */
-/*             statusfp = fdopen (ctrl->status_fd, "w"); */
+  if (ctrl->no_server && ctrl->status_fd == -1)
+    ; /* No status wanted. */
+  else if (ctrl->no_server)
+    {
+      if (!statusfp)
+        {
+          if (ctrl->status_fd == 1)
+            statusfp = stdout;
+          else if (ctrl->status_fd == 2)
+            statusfp = stderr;
+          else
+            statusfp = fdopen (ctrl->status_fd, "w");
+          
+          if (!statusfp)
+            {
+              log_fatal ("can't open fd %d for status output: %s\n",
+                         ctrl->status_fd, strerror(errno));
+            }
+        }
       
-/*           if (!statusfp) */
-/*             { */
-/*               log_fatal ("can't open fd %d for status output: %s\n", */
-/*                          ctrl->status_fd, strerror(errno)); */
-/*             } */
-/*         } */
-      
-/*       fputs ("[GNUPG:] ", statusfp); */
-/*       fputs (get_status_string (no), statusfp); */
+      fputs ("[GNUPG:] ", statusfp);
+      fputs (get_status_string (no), statusfp);
     
-/*       while ( (text = va_arg (arg_ptr, const char*) )) */
-/*         { */
-/*           putc ( ' ', statusfp ); */
-/*           for (; *text; text++)  */
-/*             { */
-/*               if (*text == '\n') */
-/*                 fputs ( "\\n", statusfp ); */
-/*               else if (*text == '\r') */
-/*                 fputs ( "\\r", statusfp ); */
-/*               else  */
-/*                 putc ( *(const byte *)text,  statusfp ); */
-/*             } */
-/*         } */
-/*       putc ('\n', statusfp); */
-/*       fflush (statusfp); */
-/*     } */
-/*   else  */
-/*     { */
-/*       assuan_context_t ctx = ctrl->server_local->assuan_ctx; */
-/*       char buf[950], *p; */
-/*       size_t n; */
+      while ( (text = va_arg (arg_ptr, const char*) ))
+        {
+          putc ( ' ', statusfp );
+          for (; *text; text++)
+            {
+              if (*text == '\n')
+                fputs ( "\\n", statusfp );
+              else if (*text == '\r')
+                fputs ( "\\r", statusfp );
+              else
+                putc ( *(const byte *)text,  statusfp );
+            }
+        }
+      putc ('\n', statusfp);
+      fflush (statusfp);
+    }
+  else
+    {
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+      char buf[950], *p;
+      size_t n;
 
-/*       p = buf;  */
-/*       n = 0; */
-/*       while ( (text = va_arg (arg_ptr, const char *)) ) */
-/*         { */
-/*           if (n) */
-/*             { */
-/*               *p++ = ' '; */
-/*               n++; */
-/*             } */
-/*           for ( ; *text && n < DIM (buf)-2; n++) */
-/*             *p++ = *text++; */
-/*         } */
-/*       *p = 0; */
-/*       err = assuan_write_status (ctx, get_status_string (no), buf); */
-/*     } */
+      p = buf;
+      n = 0;
+      while ( (text = va_arg (arg_ptr, const char *)) )
+        {
+          if (n)
+            {
+              *p++ = ' ';
+              n++;
+            }
+          for ( ; *text && n < DIM (buf)-2; n++)
+            *p++ = *text++;
+        }
+      *p = 0;
+      err = assuan_write_status (ctx, get_status_string (no), buf);
+    }
 
-/*   va_end (arg_ptr); */
-/*   return err; */
-/* } */
-
-/* gpg_error_t */
-/* gpgsm_status (ctrl_t ctrl, int no, const char *text) */
-/* { */
-/*   return gpgsm_status2 (ctrl, no, text, NULL); */
-/* } */
-
-/* gpg_error_t */
-/* gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text, */
-/*                             gpg_err_code_t ec) */
-/* { */
-/*   char buf[30]; */
-
-/*   sprintf (buf, "%u", (unsigned int)ec); */
-/*   if (text) */
-/*     return gpgsm_status2 (ctrl, no, text, buf, NULL); */
-/*   else */
-/*     return gpgsm_status2 (ctrl, no, buf, NULL); */
-/* } */
+  va_end (arg_ptr);
+  return err;
+}
 
 
 /* Helper to notify the client about Pinentry events.  Returns an gpg
@@ -766,7 +753,5 @@ g13_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
     return 0;
   return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
-
-
 
 

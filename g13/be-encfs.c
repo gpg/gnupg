@@ -418,7 +418,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
     {
       err = gpg_error_from_syserror ();
       log_error (_("can't create directory `%s': %s\n"),
-                 "/tmp/g13-XXXXXX", gpg_strerror (err));
+                 "/tmp/.#g13_XXXXXX", gpg_strerror (err));
       goto leave;
     }
 

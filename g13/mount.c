@@ -250,15 +250,35 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   const unsigned char *value;
   int conttype;
   unsigned int rid;
+  char *mountpoint_buffer = NULL;
 
   /* A quick check to see whether the container exists.  */
   if (access (filename, R_OK))
     return gpg_error_from_syserror ();
 
+  if (!mountpoint)
+    {
+      mountpoint_buffer = xtrystrdup ("/tmp/g13-XXXXXX");
+      if (!mountpoint_buffer)
+        return gpg_error_from_syserror ();
+      if (!mkdtemp (mountpoint_buffer))
+        {
+          err = gpg_error_from_syserror ();
+          log_error (_("can't create directory `%s': %s\n"),
+                     "/tmp/g13-XXXXXX", gpg_strerror (err));
+          xfree (mountpoint_buffer);
+          return err;
+        }
+      mountpoint = mountpoint_buffer;
+    }
+
   /* Try to take a lock.  */
   lock = create_dotlock (filename);
   if (!lock)
-    return gpg_error_from_syserror ();
+    {
+      xfree (mountpoint_buffer);
+      return gpg_error_from_syserror ();
+    }
 
   if (make_dotlock (lock, 0))
     {
@@ -318,9 +338,21 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   err = be_mount_container (ctrl, conttype, filename, mountpoint, tuples, &rid);
   if (!err)
     {
-      err = mountinfo_add_mount (filename, mountpoint, conttype, rid);
+      err = mountinfo_add_mount (filename, mountpoint, conttype, rid,
+                                 !!mountpoint_buffer);
       /* Fixme: What shall we do if this fails?  Add a provisional
          mountinfo entry first and remove it on error? */
+      if (!err)
+        {
+          char *tmp = percent_plus_escape (mountpoint);
+          if (!tmp)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              g13_status (ctrl, STATUS_MOUNTPOINT, tmp, NULL);
+              xfree (tmp);
+            }
+        }
     }
 
  leave:
@@ -328,6 +360,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   xfree (keyblob);
   xfree (enckeyblob);
   destroy_dotlock (lock);
+  xfree (mountpoint_buffer);
   return err;
 }
 

@@ -895,7 +895,11 @@ scd_init_default_ctrl (ctrl_t ctrl)
 static void
 scd_deinit_default_ctrl (ctrl_t ctrl)
 {
-  (void)ctrl;
+  if (!ctrl)
+    return;
+  xfree (ctrl->in_data.value);
+  ctrl->in_data.value = NULL;
+  ctrl->in_data.valuelen = 0;
 }
 
 

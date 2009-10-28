@@ -804,6 +804,7 @@ cmd_setdata (assuan_context_t ctx, char *line)
   if (!buf)
     return out_of_core ();
 
+  xfree (ctrl->in_data.value);
   ctrl->in_data.value = buf;
   ctrl->in_data.valuelen = n;
   for (p=line, n=0; n < ctrl->in_data.valuelen; p += 2, n++)

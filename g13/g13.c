@@ -420,6 +420,8 @@ main ( int argc, char **argv)
   /* Setup a default control structure for command line mode.  */
   memset (&ctrl, 0, sizeof ctrl);
   g13_init_default_ctrl (&ctrl);
+  ctrl.no_server = 1;
+  ctrl.status_fd = -1; /* No status output. */
 
   /* Set the default option file */
   if (default_config )
@@ -678,6 +680,7 @@ main ( int argc, char **argv)
     case aServer:
       {
         start_idle_task ();
+        ctrl.no_server = 0;
         err = g13_server (&ctrl);
         if (err)
           log_error ("server exited with error: %s <%s>\n",

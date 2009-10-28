@@ -43,6 +43,10 @@ struct mounttable_s
   char *mountpoint;  /* Name of the mounttype.  */
   int conttype;      /* Type of the container.  */
   unsigned int rid;  /* Identifier of the runner task.  */
+  struct {
+    unsigned int remove:1;  /* True if the mountpoint shall be removed
+                               on umount.  */
+  } flags;
 };
 
 
@@ -55,7 +59,7 @@ size_t mounttable_size;
 /* Add CONTAINER,MOUNTPOINT,CONTTYPE,RID to the mounttable.  */
 gpg_error_t
 mountinfo_add_mount (const char *container, const char *mountpoint,
-                     int conttype, unsigned int rid)
+                     int conttype, unsigned int rid, int remove_flag)
 {
   size_t idx;
   mtab_t m;
@@ -96,6 +100,7 @@ mountinfo_add_mount (const char *container, const char *mountpoint,
     }
   m->conttype = conttype;
   m->rid = rid;
+  m->flags.remove = !!remove_flag;
   m->in_use = 1;
 
   return 0;
@@ -125,6 +130,16 @@ mountinfo_del_mount (const char *container, const char *mountpoint,
   for (idx=0, m = mounttable; idx < mounttable_size; idx++, m++)
     if (m->in_use && m->rid == rid)
       {
+        if (m->flags.remove && m->mountpoint)
+          {
+            /* FIXME: This does not always work because the umount may
+               not have completed yet.  We should add the mountpoints
+               to an idle queue and retry a remove.  */ 
+            if (rmdir (m->mountpoint))
+              log_error ("error removing mount point `%s': %s\n",
+                         m->mountpoint, 
+                         gpg_strerror (gpg_error_from_syserror ()));
+          }
         m->in_use = 0;
         xfree (m->container);
         m->container = NULL;
@@ -177,7 +192,8 @@ mountinfo_dump_all (void)
 
   for (idx=0, m = mounttable; idx < mounttable_size; idx++, m++)
     if (m->in_use)
-      log_info ("mtab[%d] %s on %s type %d rid %u\n", 
-                idx, m->container, m->mountpoint, m->conttype, m->rid);
+      log_info ("mtab[%d] %s on %s type %d rid %u%s\n", 
+                idx, m->container, m->mountpoint, m->conttype, m->rid,
+                m->flags.remove?" [remove]":"");
 }
 
