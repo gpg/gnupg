@@ -1,3 +1,13 @@
+2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (reset_notify, input_notify, output_notify): Update to
+	new assuan interface.
+	(register_commands): Use assuan_handler_t.
+	* call-agent.c (membuf_data_cb, default_inq_cb)
+	(inq_ciphertext_cb, scd_serialno_status_cb)
+	(scd_keypairinfo_status_cb, istrusted_status_cb)
+	(learn_status_cb, learn_cb, keyinfo_status_cb): Return gpg_error_t.
+
 2009-10-16  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (default_include_certs): Change to -2.

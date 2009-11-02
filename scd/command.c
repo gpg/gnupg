@@ -338,12 +338,15 @@ do_reset (ctrl_t ctrl, int send_reset)
 }
 
 
-static void
-reset_notify (assuan_context_t ctx)
+static gpg_error_t
+reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx); 
 
+  (void) line;
+
   do_reset (ctrl, 1);
+  return 0;
 }
 
 
@@ -1843,7 +1846,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    gpg_error_t (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
   } table[] = {
     { "SERIALNO",     cmd_serialno },
     { "LEARN",        cmd_learn },

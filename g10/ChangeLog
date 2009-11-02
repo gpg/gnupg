@@ -1,3 +1,9 @@
+2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (reset_notify, input_notify, output_notify): Update to
+	new assuan interface.
+	(register_commands): Use assuan_handler_t.
+
 2009-10-19  Werner Koch  <wk@g10code.com>
 
 	* options.h (glo_ctrl): Add field LASTERR.

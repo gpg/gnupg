@@ -144,10 +144,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 /* Called by libassuan for RESET commands. */
-static void
-reset_notify (assuan_context_t ctx)
+static gpg_error_t
+reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
 
   release_pk_list (ctrl->server_local->recplist);
   ctrl->server_local->recplist = NULL;
@@ -155,12 +157,13 @@ reset_notify (assuan_context_t ctx)
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
+  return 0;
 }
 
 
 /* Called by libassuan for INPUT commands. */
-static void
-input_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+input_notify (assuan_context_t ctx, char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
 
@@ -176,12 +179,13 @@ input_notify (assuan_context_t ctx, const char *line)
     {
       /* FIXME (autodetect encoding) */
     }
+  return 0;
 }
 
 
 /* Called by libassuan for OUTPUT commands. */
-static void
-output_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+output_notify (assuan_context_t ctx, char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
   
@@ -193,6 +197,7 @@ output_notify (assuan_context_t ctx, const char *line)
     {
       /* FIXME */
     }
+  return 0;
 }
 
 
@@ -605,7 +610,7 @@ register_commands (assuan_context_t ctx)
   static struct 
   {
     const char *name;
-    gpg_error_t (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer    },

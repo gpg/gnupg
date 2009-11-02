@@ -103,7 +103,7 @@ start_agent (void)
 
 /* This is the default inquiry callback.  It merely handles the
    Pinentry notification.  */
-static int
+static gpg_error_t
 default_inq_cb (void *opaque, const char *line)
 {
   (void)opaque;
@@ -120,7 +120,7 @@ default_inq_cb (void *opaque, const char *line)
 }
 
 
-static int
+static gpg_error_t
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;

@@ -308,10 +308,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 }
 
 
-static void
-reset_notify (assuan_context_t ctx)
+static gpg_error_t
+reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void) line;
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   gpgsm_release_certlist (ctrl->server_local->signerlist);
@@ -320,11 +322,12 @@ reset_notify (assuan_context_t ctx)
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
+  return 0;
 }
 
 
-static void
-input_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+input_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
@@ -339,10 +342,11 @@ input_notify (assuan_context_t ctx, const char *line)
     ;
   else
     ctrl->autodetect_encoding = 1;
+  return 0;
 }
 
-static void
-output_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+output_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
@@ -352,6 +356,7 @@ output_notify (assuan_context_t ctx, const char *line)
     ctrl->create_pem = 1;  
   else if (strstr (line, "--base64"))
     ctrl->create_base64 = 1; /* just the raw output */
+  return 0;
 }
 
 
@@ -1100,7 +1105,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    gpg_error_t (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer },

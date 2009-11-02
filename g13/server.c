@@ -184,10 +184,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 /* The handler for an Assuan RESET command.  */
-static void
-reset_notify (assuan_context_t ctx)
+static gpg_error_t
+reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
 
   xfree (ctrl->server_local->containername);
   ctrl->server_local->containername = NULL;
@@ -196,6 +198,7 @@ reset_notify (assuan_context_t ctx)
 
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
+  return 0;
 }
 
 
@@ -539,7 +542,7 @@ register_commands (assuan_context_t ctx)
 {
   static struct {
     const char *name;
-    gpg_error_t (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
   } table[] =  {
     { "OPEN",          cmd_open },
     { "MOUNT",         cmd_mount },
@@ -655,7 +658,7 @@ g13_server (ctrl_t ctrl)
     log_info ("Assuan accept problem: %s\n", gpg_strerror (err));
   
  leave:
-  reset_notify (ctx);  /* Release all items hold by SERVER_LOCAL.  */
+  reset_notify (ctx, NULL);  /* Release all items hold by SERVER_LOCAL.  */
   if (ctrl->server_local)
     {
       xfree (ctrl->server_local);
