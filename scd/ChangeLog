@@ -1,7 +1,7 @@
 2009-11-04  Werner Koch  <wk@g10code.com>
 
-	* command.c (register_commands): Add NULL arg to
-	assuan_register_command.
+	* command.c (register_commands): Add help arg to
+	assuan_register_command.  Add help strings to all commands.
 
 2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
 

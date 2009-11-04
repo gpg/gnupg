@@ -466,25 +466,25 @@ open_card (ctrl_t ctrl, const char *apptype)
 }
 
 
-/* SERIALNO [APPTYPE] 
-
-   Return the serial number of the card using a status reponse.  This
-   function should be used to check for the presence of a card.
-
-   If APPTYPE is given, an application of that type is selected and an
-   error is returned if the application is not supported or available.
-   The default is to auto-select the application using a hardwired
-   preference system.  Note, that a future extension to this function
-   may allow to specify a list and order of applications to try.
-
-   This function is special in that it can be used to reset the card.
-   Most other functions will return an error when a card change has
-   been detected and the use of this function is therefore required.
-
-   Background: We want to keep the client clear of handling card
-   changes between operations; i.e. the client can assume that all
-   operations are done on the same card unless he calls this function.
- */
+static const char hlp_serialno[] = 
+  "SERIALNO [<apptype>]\n"
+  "\n"
+  "Return the serial number of the card using a status reponse.  This\n"
+  "function should be used to check for the presence of a card.\n"
+  "\n"
+  "If APPTYPE is given, an application of that type is selected and an\n"
+  "error is returned if the application is not supported or available.\n"
+  "The default is to auto-select the application using a hardwired\n"
+  "preference system.  Note, that a future extension to this function\n"
+  "may allow to specify a list and order of applications to try.\n"
+  "\n"
+  "This function is special in that it can be used to reset the card.\n"
+  "Most other functions will return an error when a card change has\n"
+  "been detected and the use of this function is therefore required.\n"
+  "\n"
+  "Background: We want to keep the client clear of handling card\n"
+  "changes between operations; i.e. the client can assume that all\n"
+  "operations are done on the same card unless he calls this function.";
 static gpg_error_t
 cmd_serialno (assuan_context_t ctx, char *line)
 {
@@ -521,77 +521,75 @@ cmd_serialno (assuan_context_t ctx, char *line)
 }
 
 
-
-
-/* LEARN [--force] [--keypairinfo]
-
-   Learn all useful information of the currently inserted card.  When
-   used without the force options, the command might do an INQUIRE
-   like this:
-
-      INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>
-
-   The client should just send an "END" if the processing should go on
-   or a "CANCEL" to force the function to terminate with a Cancel
-   error message.  
-
-   With the option --keypairinfo only KEYPARIINFO lstatus lines are
-   returned.
-
-   The response of this command is a list of status lines formatted as
-   this:
-
-     S APPTYPE <apptype>
-
-   This returns the type of the application, currently the strings:
-
-       P15     = PKCS-15 structure used
-       DINSIG  = DIN SIG
-       OPENPGP = OpenPGP card
-       NKS     = NetKey card
-
-   are implemented.  These strings are aliases for the AID
-
-     S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>
-
-   If there is no certificate yet stored on the card a single "X" is
-   returned as the keygrip.  In addition to the keypair info, information
-   about all certificates stored on the card is also returned:
-
-     S CERTINFO <certtype> <hexstring_with_id>
-
-   Where CERTTYPE is a number indicating the type of certificate:
-      0   := Unknown
-      100 := Regular X.509 cert
-      101 := Trusted X.509 cert
-      102 := Useful X.509 cert
-      110 := Root CA cert in a special format (e.g. DINSIG)
-      111 := Root CA cert as standard X509 cert.
-
-   For certain cards, more information will be returned:
-
-     S KEY-FPR <no> <hexstring>
-
-   For OpenPGP cards this returns the stored fingerprints of the
-   keys. This can be used check whether a key is available on the
-   card.  NO may be 1, 2 or 3.
-
-     S CA-FPR <no> <hexstring>
-
-   Similar to above, these are the fingerprints of keys assumed to be
-   ultimately trusted.
-
-     S DISP-NAME <name_of_card_holder>
-
-   The name of the card holder as stored on the card; percent
-   escaping takes place, spaces are encoded as '+'
-
-     S PUBKEY-URL <url>
-
-   The URL to be used for locating the entire public key.
-     
-   Note, that this function may even be used on a locked card.
-*/
+static const char hlp_learn[] = 
+  "LEARN [--force] [--keypairinfo]\n"
+  "\n"
+  "Learn all useful information of the currently inserted card.  When\n"
+  "used without the force options, the command might do an INQUIRE\n"
+  "like this:\n"
+  "\n"
+  "   INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>\n"
+  "\n"
+  "The client should just send an \"END\" if the processing should go on\n"
+  "or a \"CANCEL\" to force the function to terminate with a Cancel\n"
+  "error message.\n"
+  "\n"
+  "With the option --keypairinfo only KEYPARIINFO lstatus lines are\n"
+  "returned.\n"
+  "\n"
+  "The response of this command is a list of status lines formatted as\n"
+  "this:\n"
+  "\n"
+  "  S APPTYPE <apptype>\n"
+  "\n"
+  "This returns the type of the application, currently the strings:\n"
+  "\n"
+  "    P15     = PKCS-15 structure used\n"
+  "    DINSIG  = DIN SIG\n"
+  "    OPENPGP = OpenPGP card\n"
+  "    NKS     = NetKey card\n"
+  "\n"
+  "are implemented.  These strings are aliases for the AID\n"
+  "\n"
+  "  S KEYPAIRINFO <hexstring_with_keygrip> <hexstring_with_id>\n"
+  "\n"
+  "If there is no certificate yet stored on the card a single 'X' is\n"
+  "returned as the keygrip.  In addition to the keypair info, information\n"
+  "about all certificates stored on the card is also returned:\n"
+  "\n"
+  "  S CERTINFO <certtype> <hexstring_with_id>\n"
+  "\n"
+  "Where CERTTYPE is a number indicating the type of certificate:\n"
+  "   0   := Unknown\n"
+  "   100 := Regular X.509 cert\n"
+  "   101 := Trusted X.509 cert\n"
+  "   102 := Useful X.509 cert\n"
+  "   110 := Root CA cert in a special format (e.g. DINSIG)\n"
+  "   111 := Root CA cert as standard X509 cert.\n"
+  "\n"
+  "For certain cards, more information will be returned:\n"
+  "\n"
+  "  S KEY-FPR <no> <hexstring>\n"
+  "\n"
+  "For OpenPGP cards this returns the stored fingerprints of the\n"
+  "keys. This can be used check whether a key is available on the\n"
+  "card.  NO may be 1, 2 or 3.\n"
+  "\n"
+  "  S CA-FPR <no> <hexstring>\n"
+  "\n"
+  "Similar to above, these are the fingerprints of keys assumed to be\n"
+  "ultimately trusted.\n"
+  "\n"
+  "  S DISP-NAME <name_of_card_holder>\n"
+  "\n"
+  "The name of the card holder as stored on the card; percent\n"
+  "escaping takes place, spaces are encoded as '+'\n"
+  "\n"
+  "  S PUBKEY-URL <url>\n"
+  "\n"
+  "The URL to be used for locating the entire public key.\n"
+  "  \n"
+  "Note, that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
@@ -660,10 +658,10 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 
-/* READCERT <hexified_certid>|<keyid>
-
-   Note, that this function may even be used on a locked card.
- */
+static const char hlp_readcert[] =
+  "READCERT <hexified_certid>|<keyid>\n"
+  "\n"
+  "Note, that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_readcert (assuan_context_t ctx, char *line)
 {
@@ -694,13 +692,13 @@ cmd_readcert (assuan_context_t ctx, char *line)
 }
 
 
-/* READKEY <keyid>
-
-   Return the public key for the given cert or key ID as an standard
-   S-Expression.
-
-   Note, that this function may even be used on a locked card.
-  */
+static const char hlp_readkey[] = 
+  "READKEY <keyid>\n"
+  "\n"
+  "Return the public key for the given cert or key ID as a standard\n"
+  "S-expression.\n"
+  "\n"
+  "Note, that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
@@ -777,11 +775,10 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 
-
-/* SETDATA <hexstring> 
-
-   The client should use this command to tell us the data he want to
-   sign.  */
+static const char hlp_setdata[] = 
+  "SETDATA <hexstring> \n"
+  "\n"
+  "The client should use this command to tell us the data he want to sign.";
 static gpg_error_t
 cmd_setdata (assuan_context_t ctx, char *line)
 {
@@ -876,11 +873,10 @@ pin_cb (void *opaque, const char *info, char **retstr)
 }
 
 
-/* PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5]] <hexified_id>
-
-   The --hash option is optional; the default is SHA1.
-
- */
+static const char hlp_pksign[] = 
+  "PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5]] <hexified_id>\n"
+  "\n"
+  "The --hash option is optional; the default is SHA1.";
 static gpg_error_t
 cmd_pksign (assuan_context_t ctx, char *line)
 {
@@ -948,9 +944,9 @@ cmd_pksign (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/* PKAUTH <hexified_id>
 
- */
+static const char hlp_pkauth[] = 
+  "PKAUTH <hexified_id>";
 static gpg_error_t
 cmd_pkauth (assuan_context_t ctx, char *line)
 {
@@ -998,9 +994,9 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/* PKDECRYPT <hexified_id>
 
- */
+static const char hlp_pkdecrypt[] = 
+  "PKDECRYPT <hexified_id>";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
@@ -1043,18 +1039,18 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 }
 
 
-/* GETATTR <name>
-
-   This command is used to retrieve data from a smartcard.  The
-   allowed names depend on the currently selected smartcard
-   application.  NAME must be percent and '+' escaped.  The value is
-   returned through status message, see the LEARN command for details.
-
-   However, the current implementation assumes that Name is not escaped;
-   this works as long as noone uses arbitrary escaping. 
- 
-   Note, that this function may even be used on a locked card.
-*/
+static const char hlp_getattr[] = 
+  "GETATTR <name>\n"
+  "\n"
+  "This command is used to retrieve data from a smartcard.  The\n"
+  "allowed names depend on the currently selected smartcard\n"
+  "application.  NAME must be percent and '+' escaped.  The value is\n"
+  "returned through status message, see the LEARN command for details.\n"
+  "\n"
+  "However, the current implementation assumes that Name is not escaped;\n"
+  "this works as long as noone uses arbitrary escaping. \n"
+  "\n"
+  "Note, that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_getattr (assuan_context_t ctx, char *line)
 {
@@ -1082,18 +1078,19 @@ cmd_getattr (assuan_context_t ctx, char *line)
 }
 
 
-/* SETATTR <name> <value> 
-
-   This command is used to store data on a a smartcard.  The allowed
-   names and values are depend on the currently selected smartcard
-   application.  NAME and VALUE must be percent and '+' escaped.
-
-   However, the current implementation assumes that NAME is not
-   escaped; this works as long as noone uses arbitrary escaping.
- 
-   A PIN will be requested for most NAMEs.  See the corresponding
-   setattr function of the actually used application (app-*.c) for
-   details.  */
+static const char hlp_setattr[] = 
+  "SETATTR <name> <value> \n"
+  "\n"
+  "This command is used to store data on a a smartcard.  The allowed\n"
+  "names and values are depend on the currently selected smartcard\n"
+  "application.  NAME and VALUE must be percent and '+' escaped.\n"
+  "\n"
+  "However, the current implementation assumes that NAME is not\n"
+  "escaped; this works as long as noone uses arbitrary escaping.\n"
+  "\n"
+  "A PIN will be requested for most NAMEs.  See the corresponding\n"
+  "setattr function of the actually used application (app-*.c) for\n"
+  "details.";
 static gpg_error_t
 cmd_setattr (assuan_context_t ctx, char *orig_line)
 {
@@ -1134,17 +1131,17 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
 }
 
 
-
-/* WRITECERT <hexified_certid>
-
-   This command is used to store a certifciate on a smartcard.  The
-   allowed certids depend on the currently selected smartcard
-   application. The actual certifciate is requested using the inquiry
-   "CERTDATA" and needs to be provided in its raw (e.g. DER) form.
-
-   In almost all cases a a PIN will be requested.  See the related
-   writecert function of the actually used application (app-*.c) for
-   details.  */
+static const char hlp_writecert[] = 
+  "WRITECERT <hexified_certid>\n"
+  "\n"
+  "This command is used to store a certifciate on a smartcard.  The\n"
+  "allowed certids depend on the currently selected smartcard\n"
+  "application. The actual certifciate is requested using the inquiry\n"
+  "\"CERTDATA\" and needs to be provided in its raw (e.g. DER) form.\n"
+  "\n"
+  "In almost all cases a a PIN will be requested.  See the related\n"
+  "writecert function of the actually used application (app-*.c) for\n"
+  "details.";
 static gpg_error_t
 cmd_writecert (assuan_context_t ctx, char *line)
 {
@@ -1196,20 +1193,20 @@ cmd_writecert (assuan_context_t ctx, char *line)
 }
 
 
-
-/* WRITEKEY [--force] <keyid> 
-
-   This command is used to store a secret key on a a smartcard.  The
-   allowed keyids depend on the currently selected smartcard
-   application. The actual keydata is requested using the inquiry
-   "KEYDATA" and need to be provided without any protection.  With
-   --force set an existing key under this KEYID will get overwritten.
-   The keydata is expected to be the usual canonical encoded
-   S-expression.
-
-   A PIN will be requested for most NAMEs.  See the corresponding
-   writekey function of the actually used application (app-*.c) for
-   details.  */
+static const char hlp_writekey[] = 
+  "WRITEKEY [--force] <keyid> \n"
+  "\n"
+  "This command is used to store a secret key on a a smartcard.  The\n"
+  "allowed keyids depend on the currently selected smartcard\n"
+  "application. The actual keydata is requested using the inquiry\n"
+  "\"KEYDATA\" and need to be provided without any protection.  With\n"
+  "--force set an existing key under this KEYID will get overwritten.\n"
+  "The keydata is expected to be the usual canonical encoded\n"
+  "S-expression.\n"
+  "\n"
+  "A PIN will be requested for most NAMEs.  See the corresponding\n"
+  "writekey function of the actually used application (app-*.c) for\n"
+  "details.";
 static gpg_error_t
 cmd_writekey (assuan_context_t ctx, char *line)
 {
@@ -1263,29 +1260,27 @@ cmd_writekey (assuan_context_t ctx, char *line)
 }
 
 
-
-/* GENKEY [--force] [--timestamp=<isodate>] <no>
-
-   Generate a key on-card identified by NO, which is application
-   specific.  Return values are application specific.  For OpenPGP
-   cards 2 status lines are returned:
-
-     S KEY-FPR  <hexstring>
-     S KEY-CREATED-AT <seconds_since_epoch>
-     S KEY-DATA [p|n] <hexdata>
-     
-   --force is required to overwrite an already existing key.  The
-   KEY-CREATED-AT is required for further processing because it is
-   part of the hashed key material for the fingerprint.
-
-   If --timestamp is given an OpenPGP key will be created using this
-   value.  The value needs to be in ISO Format; e.g.
-   "--timestamp=20030316T120000" and after 1970-01-01 00:00:00.
-
-   The public part of the key can also later be retrieved using the
-   READKEY command.
-
- */
+static const char hlp_genkey[] = 
+  "GENKEY [--force] [--timestamp=<isodate>] <no>\n"
+  "\n"
+  "Generate a key on-card identified by NO, which is application\n"
+  "specific.  Return values are application specific.  For OpenPGP\n"
+  "cards 2 status lines are returned:\n"
+  "\n"
+  "  S KEY-FPR  <hexstring>\n"
+  "  S KEY-CREATED-AT <seconds_since_epoch>\n"
+  "  S KEY-DATA [p|n] <hexdata>\n"
+  "\n"
+  "--force is required to overwrite an already existing key.  The\n"
+  "KEY-CREATED-AT is required for further processing because it is\n"
+  "part of the hashed key material for the fingerprint.\n"
+  "\n"
+  "If --timestamp is given an OpenPGP key will be created using this\n"
+  "value.  The value needs to be in ISO Format; e.g.\n"
+  "\"--timestamp=20030316T120000\" and after 1970-01-01 00:00:00.\n"
+  "\n"
+  "The public part of the key can also later be retrieved using the\n"
+  "READKEY command.";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -1339,12 +1334,14 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
-/* RANDOM <nbytes>
-
-   Get NBYTES of random from the card and send them back as data. 
-
-   Note, that this function may be even be used on a locked card.
-*/
+static const char hlp_random[] = 
+  "RANDOM <nbytes>\n"
+  "\n"
+  "Get NBYTES of random from the card and send them back as data.\n"
+  "This usually involves EEPROM write on the card and thus excessive\n"
+  "use of this command may destroy the card.\n"
+  "\n"
+  "Note, that this function may be even be used on a locked card.";
 static gpg_error_t
 cmd_random (assuan_context_t ctx, char *line)
 {
@@ -1354,7 +1351,8 @@ cmd_random (assuan_context_t ctx, char *line)
   unsigned char *buffer;
 
   if (!*line)
-    return set_error (GPG_ERR_ASS_PARAMETER, "number of requested bytes missing");
+    return set_error (GPG_ERR_ASS_PARAMETER, 
+                      "number of requested bytes missing");
   nbytes = strtoul (line, NULL, 0);
 
   if ((rc = open_card (ctrl, NULL)))
@@ -1380,13 +1378,15 @@ cmd_random (assuan_context_t ctx, char *line)
   return rc;
 }
 
+
 
-/* PASSWD [--reset] [--nullpin] <chvno>
-  
-   Change the PIN or, if --reset is given, reset the retry counter of
-   the card holder verfication vector CHVNO.  The option --nullpin is
-   used for TCOS cards to set the initial PIN.  The format of CHVNO
-   depends on the card application.  */
+static const char hlp_passwd[] =
+  "PASSWD [--reset] [--nullpin] <chvno>\n"
+  "\n"
+  "Change the PIN or, if --reset is given, reset the retry counter of\n"
+  "the card holder verfication vector CHVNO.  The option --nullpin is\n"
+  "used for TCOS cards to set the initial PIN.  The format of CHVNO\n"
+  "depends on the card application.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1431,39 +1431,38 @@ cmd_passwd (assuan_context_t ctx, char *line)
 }
 
 
-/* CHECKPIN <idstr>
-
-   Perform a VERIFY operation without doing anything else.  This may
-   be used to initialize a the PIN cache earlier to long lasting
-   operations.  Its use is highly application dependent.
-
-   For OpenPGP:
-
-      Perform a simple verify operation for CHV1 and CHV2, so that
-      further operations won't ask for CHV2 and it is possible to do a
-      cheap check on the PIN: If there is something wrong with the PIN
-      entry system, only the regular CHV will get blocked and not the
-      dangerous CHV3.  IDSTR is the usual card's serial number in hex
-      notation; an optional fingerprint part will get ignored.  There
-      is however a special mode if the IDSTR is sffixed with the
-      literal string "[CHV3]": In this case the Admin PIN is checked
-      if and only if the retry counter is still at 3.
-
-   For Netkey:
-
-      Any of the valid PIN Ids may be used.  These are the strings:
-
-        PW1.CH       - Global password 1
-        PW2.CH       - Global password 2
-        PW1.CH.SIG   - SigG password 1
-        PW2.CH.SIG   - SigG password 2
-
-      For a definitive list, see the implementation in app-nks.c.
-      Note that we call a PW2.* PIN a "PUK" despite that since TCOS
-      3.0 they are technically alternative PINs used to mutally
-      unblock each other.
-
- */
+static const char hlp_checkpin[] = 
+  "CHECKPIN <idstr>\n"
+  "\n"
+  "Perform a VERIFY operation without doing anything else.  This may\n"
+  "be used to initialize a the PIN cache earlier to long lasting\n"
+  "operations.  Its use is highly application dependent.\n"
+  "\n"
+  "For OpenPGP:\n"
+  "\n"
+  "   Perform a simple verify operation for CHV1 and CHV2, so that\n"
+  "   further operations won't ask for CHV2 and it is possible to do a\n"
+  "   cheap check on the PIN: If there is something wrong with the PIN\n"
+  "   entry system, only the regular CHV will get blocked and not the\n"
+  "   dangerous CHV3.  IDSTR is the usual card's serial number in hex\n"
+  "   notation; an optional fingerprint part will get ignored.  There\n"
+  "   is however a special mode if the IDSTR is sffixed with the\n"
+  "   literal string \"[CHV3]\": In this case the Admin PIN is checked\n"
+  "   if and only if the retry counter is still at 3.\n"
+  "\n"
+  "For Netkey:\n"
+  "\n"
+  "   Any of the valid PIN Ids may be used.  These are the strings:\n"
+  "\n"
+  "     PW1.CH       - Global password 1\n"
+  "     PW2.CH       - Global password 2\n"
+  "     PW1.CH.SIG   - SigG password 1\n"
+  "     PW2.CH.SIG   - SigG password 2\n"
+  "\n"
+  "   For a definitive list, see the implementation in app-nks.c.\n"
+  "   Note that we call a PW2.* PIN a \"PUK\" despite that since TCOS\n"
+  "   3.0 they are technically alternative PINs used to mutally\n"
+  "   unblock each other.";
 static gpg_error_t
 cmd_checkpin (assuan_context_t ctx, char *line)
 {
@@ -1497,16 +1496,16 @@ cmd_checkpin (assuan_context_t ctx, char *line)
 }
 
 
-/* LOCK [--wait]
-
-   Grant exclusive card access to this session.  Note that there is
-   no lock counter used and a second lock from the same session will
-   be ignored.  A single unlock (or RESET) unlocks the session.
-   Return GPG_ERR_LOCKED if another session has locked the reader.
-
-   If the option --wait is given the command will wait until a
-   lock has been released.
- */
+static const char hlp_lock[] = 
+  "LOCK [--wait]\n"
+  "\n"
+  "Grant exclusive card access to this session.  Note that there is\n"
+  "no lock counter used and a second lock from the same session will\n"
+  "be ignored.  A single unlock (or RESET) unlocks the session.\n"
+  "Return GPG_ERR_LOCKED if another session has locked the reader.\n"
+  "\n"
+  "If the option --wait is given the command will wait until a\n"
+  "lock has been released.";
 static gpg_error_t
 cmd_lock (assuan_context_t ctx, char *line)
 {
@@ -1541,10 +1540,10 @@ cmd_lock (assuan_context_t ctx, char *line)
 }
 
 
-/* UNLOCK
-
-   Release exclusive card access.
- */
+static const char hlp_unlock[] = 
+  "UNLOCK\n"
+  "\n"
+  "Release exclusive card access.";
 static gpg_error_t
 cmd_unlock (assuan_context_t ctx, char *line)
 {
@@ -1569,34 +1568,33 @@ cmd_unlock (assuan_context_t ctx, char *line)
 }
 
 
-/* GETINFO <what>
-
-   Multi purpose command to return certain information.  
-   Supported values of WHAT are:
-
-   version     - Return the version of the program.
-   pid         - Return the process id of the server.
-
-   socket_name - Return the name of the socket.
-
-   status - Return the status of the current slot (in the future, may
-   also return the status of all slots).  The status is a list of
-   one-character flags.  The following flags are currently defined:
-     'u'  Usable card present.  This is the normal state during operation.
-     'r'  Card removed.  A reset is necessary.
-   These flags are exclusive.
-
-   reader_list - Return a list of detected card readers.  Does
-                 currently only work with the internal CCID driver.
-
-   deny_admin  - Returns OK if admin commands are not allowed or
-                 GPG_ERR_GENERAL if admin commands are allowed.
-
-   app_list    - Return a list of supported applications.  One
-                 application per line, fields delimited by colons,
-                 first field is the name.
-*/
-
+static const char hlp_getinfo[] = 
+  "GETINFO <what>\n"
+  "\n"
+  "Multi purpose command to return certain information.  \n"
+  "Supported values of WHAT are:\n"
+  "\n"
+  "version     - Return the version of the program.\n"
+  "pid         - Return the process id of the server.\n"
+  "\n"
+  "socket_name - Return the name of the socket.\n"
+  "\n"
+  "status - Return the status of the current slot (in the future, may\n"
+  "also return the status of all slots).  The status is a list of\n"
+  "one-character flags.  The following flags are currently defined:\n"
+  "  'u'  Usable card present.  This is the normal state during operation.\n"
+  "  'r'  Card removed.  A reset is necessary.\n"
+  "These flags are exclusive.\n"
+  "\n"
+  "reader_list - Return a list of detected card readers.  Does\n"
+  "              currently only work with the internal CCID driver.\n"
+  "\n"
+  "deny_admin  - Returns OK if admin commands are not allowed or\n"
+  "              GPG_ERR_GENERAL if admin commands are allowed.\n"
+  "\n"
+  "app_list    - Return a list of supported applications.  One\n"
+  "              application per line, fields delimited by colons,\n"
+  "              first field is the name.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1677,17 +1675,16 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
-/* RESTART
-
-   Restart the current connection; this is a kind of warm reset.  It
-   deletes the context used by this connection but does not send a
-   RESET to the card.  Thus the card itself won't get reset. 
-
-   This is used by gpg-agent to reuse a primary pipe connection and
-   may be used by clients to backup from a conflict in the serial
-   command; i.e. to select another application. 
-*/
-
+static const char hlp_restart[] = 
+  "RESTART\n"
+  "\n"
+  "Restart the current connection; this is a kind of warm reset.  It\n"
+  "deletes the context used by this connection but does not send a\n"
+  "RESET to the card.  Thus the card itself won't get reset. \n"
+  "\n"
+  "This is used by gpg-agent to reuse a primary pipe connection and\n"
+  "may be used by clients to backup from a conflict in the serial\n"
+  "command; i.e. to select another application.";
 static gpg_error_t
 cmd_restart (assuan_context_t ctx, char *line)
 {
@@ -1709,11 +1706,11 @@ cmd_restart (assuan_context_t ctx, char *line)
 }
 
 
-/* DISCONNECT
-
-   Disconnect the card if it is not any longer used by other
-   connections and the backend supports a disconnect operation. 
- */
+static const char hlp_disconnect[] = 
+  "DISCONNECT\n"
+  "\n"
+  "Disconnect the card if it is not any longer used by other\n"
+  "connections and the backend supports a disconnect operation.";
 static gpg_error_t
 cmd_disconnect (assuan_context_t ctx, char *line)
 {
@@ -1727,25 +1724,25 @@ cmd_disconnect (assuan_context_t ctx, char *line)
 
 
 
-/* APDU [--atr] [--more] [--exlen[=N]] [hexstring]
-
-   Send an APDU to the current reader.  This command bypasses the high
-   level functions and sends the data directly to the card.  HEXSTRING
-   is expected to be a proper APDU.  If HEXSTRING is not given no
-   commands are set to the card but the command will implictly check
-   whether the card is ready for use. 
-
-   Using the option "--atr" returns the ATR of the card as a status
-   message before any data like this:
-     S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1
-
-   Using the option --more handles the card status word MORE_DATA
-   (61xx) and concatenates all reponses to one block.
-
-   Using the option "--exlen" the returned APDU may use extended
-   length up to N bytes.  If N is not given a default value is used
-   (currently 4096).
- */
+static const char hlp_apdu[] = 
+  "APDU [--atr] [--more] [--exlen[=N]] [hexstring]\n"
+  "\n"
+  "Send an APDU to the current reader.  This command bypasses the high\n"
+  "level functions and sends the data directly to the card.  HEXSTRING\n"
+  "is expected to be a proper APDU.  If HEXSTRING is not given no\n"
+  "commands are set to the card but the command will implictly check\n"
+  "whether the card is ready for use. \n"
+  "\n"
+  "Using the option \"--atr\" returns the ATR of the card as a status\n"
+  "message before any data like this:\n"
+  "  S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1\n"
+  "\n"
+  "Using the option --more handles the card status word MORE_DATA\n"
+  "(61xx) and concatenates all reponses to one block.\n"
+  "\n"
+  "Using the option \"--exlen\" the returned APDU may use extended\n"
+  "length up to N bytes.  If N is not given a default value is used\n"
+  "(currently 4096).";
 static gpg_error_t
 cmd_apdu (assuan_context_t ctx, char *line)
 {
@@ -1826,7 +1823,10 @@ cmd_apdu (assuan_context_t ctx, char *line)
 }
 
 
-/* KILLSCD - Commit suicide. */
+static const char hlp_killscd[] = 
+  "KILLSCD\n"
+  "\n"
+  "Commit suicide.";
 static gpg_error_t
 cmd_killscd (assuan_context_t ctx, char *line)
 {
@@ -1847,39 +1847,41 @@ register_commands (assuan_context_t ctx)
   static struct {
     const char *name;
     assuan_handler_t handler;
+    const char * const help;
   } table[] = {
-    { "SERIALNO",     cmd_serialno },
-    { "LEARN",        cmd_learn },
-    { "READCERT",     cmd_readcert },
-    { "READKEY",      cmd_readkey },
-    { "SETDATA",      cmd_setdata },
-    { "PKSIGN",       cmd_pksign },
-    { "PKAUTH",       cmd_pkauth },
-    { "PKDECRYPT",    cmd_pkdecrypt },
+    { "SERIALNO",     cmd_serialno, hlp_serialno },
+    { "LEARN",        cmd_learn,    hlp_learn },
+    { "READCERT",     cmd_readcert, hlp_readcert },
+    { "READKEY",      cmd_readkey,  hlp_readkey },
+    { "SETDATA",      cmd_setdata,  hlp_setdata },
+    { "PKSIGN",       cmd_pksign,   hlp_pksign },
+    { "PKAUTH",       cmd_pkauth,   hlp_pkauth },
+    { "PKDECRYPT",    cmd_pkdecrypt,hlp_pkdecrypt },
     { "INPUT",        NULL }, 
     { "OUTPUT",       NULL }, 
-    { "GETATTR",      cmd_getattr },
-    { "SETATTR",      cmd_setattr },
-    { "WRITECERT",    cmd_writecert },
-    { "WRITEKEY",     cmd_writekey },
-    { "GENKEY",       cmd_genkey },
-    { "RANDOM",       cmd_random },
-    { "PASSWD",       cmd_passwd },
-    { "CHECKPIN",     cmd_checkpin },
-    { "LOCK",         cmd_lock },
-    { "UNLOCK",       cmd_unlock },
-    { "GETINFO",      cmd_getinfo },
-    { "RESTART",      cmd_restart },
-    { "DISCONNECT",   cmd_disconnect },
-    { "APDU",         cmd_apdu },
-    { "KILLSCD",      cmd_killscd },
+    { "GETATTR",      cmd_getattr,  hlp_getattr },
+    { "SETATTR",      cmd_setattr,  hlp_setattr },
+    { "WRITECERT",    cmd_writecert,hlp_writecert },
+    { "WRITEKEY",     cmd_writekey, hlp_writekey },
+    { "GENKEY",       cmd_genkey,   hlp_genkey },
+    { "RANDOM",       cmd_random,   hlp_random },
+    { "PASSWD",       cmd_passwd,   hlp_passwd },
+    { "CHECKPIN",     cmd_checkpin, hlp_checkpin },
+    { "LOCK",         cmd_lock,     hlp_lock },
+    { "UNLOCK",       cmd_unlock,   hlp_unlock },
+    { "GETINFO",      cmd_getinfo,  hlp_getinfo },
+    { "RESTART",      cmd_restart,  hlp_restart },
+    { "DISCONNECT",   cmd_disconnect,hlp_disconnect },
+    { "APDU",         cmd_apdu,     hlp_apdu },
+    { "KILLSCD",      cmd_killscd,  hlp_killscd },
     { NULL }
   };
   int i, rc;
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler,
+                                    table[i].help);
       if (rc)
         return rc;
     } 
