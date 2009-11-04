@@ -202,16 +202,6 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-
-/* OPEN [options] <filename>
-
-   Open the container FILENAME.  FILENAME must be percent-plus
-   escaped.  A quick check to see whether this is a suitable G13
-   container file is done.  However no cryptographic check or any
-   other check is done.  This command is used to define the target for
-   further commands.  The filename is reset with the RESET command,
-   another OPEN or the CREATE command.
- */
 static const char hlp_open[] = 
   "OPEN [<options>] <filename>\n"
   "\n"
@@ -272,12 +262,12 @@ cmd_open (assuan_context_t ctx, char *line)
 }
 
 
-/* MOUNT [options] [<mountpoint>]
-
-   Mount the currently open file onto MOUNTPOINT.  If MOUNTPOINT is
-   not given the system picks an unused mountpoint.  MOUNTPOINT must
-   be percent-plus escaped to allow for arbitrary names.
- */
+static const char hlp_mount[] = 
+  "MOUNT [options] [<mountpoint>]\n"
+  "\n"
+  "Mount the currently open file onto MOUNTPOINT.  If MOUNTPOINT is not\n"
+  "given the system picks an unused mountpoint.  MOUNTPOINT must\n"
+  "be percent-plus escaped to allow for arbitrary names.";
 static gpg_error_t
 cmd_mount (assuan_context_t ctx, char *line)
 {
@@ -323,12 +313,12 @@ cmd_mount (assuan_context_t ctx, char *line)
 }
 
 
-/* UMOUNT [options] [<mountpoint>]
-
-   Unmount the currently open file or the one opened at MOUNTPOINT.
-   MOUNTPOINT must be percent-plus escaped.  On success the mountpoint
-   is returned via a "MOUNTPOINT" status line.
- */
+static const char hlp_umount[] = 
+  "UMOUNT [options] [<mountpoint>]\n"
+  "\n"
+  "Unmount the currently open file or the one opened at MOUNTPOINT.\n"
+  "MOUNTPOINT must be percent-plus escaped.  On success the mountpoint\n"
+  "is returned via a \"MOUNTPOINT\" status line.";
 static gpg_error_t
 cmd_umount (assuan_context_t ctx, char *line)
 {
@@ -368,13 +358,12 @@ cmd_umount (assuan_context_t ctx, char *line)
 }
 
 
-
-/* RECIPIENT <userID>
-
-   FIXME - description. 
-   All RECIPIENT commands are cumulative until a RESET or an
-   successful CREATE command.
- */
+static const char hlp_recipient[] = 
+  "RECIPIENT <userID>\n"
+  "\n"
+  "Add USERID to the list of recipients to be used for the next CREATE\n"
+  "command.  All recipient commands are cumulative until a RESET or an\n"
+  "successful create command.";
 static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
@@ -390,10 +379,10 @@ cmd_recipient (assuan_context_t ctx, char *line)
 }
 
 
-/* SIGNER <userID>
-
-   FIXME - description. 
- */
+static const char hlp_signer[] =
+  "SIGNER <userID>\n"
+  "\n"
+  "Not yet implemented.";
 static gpg_error_t
 cmd_signer (assuan_context_t ctx, char *line)
 {
@@ -408,11 +397,11 @@ cmd_signer (assuan_context_t ctx, char *line)
 }
 
 
-/* CREATE [options] filename
-
-   Create a new container.  On success the OPEN command is done
-   implictly for the new container.
- */
+static const char hlp_create[] =
+  "CREATE [options] <filename>\n"
+  "\n"
+  "Create a new container.  On success the OPEN command is \n"
+  "implictly done for the new container.";
 static gpg_error_t
 cmd_create (assuan_context_t ctx, char *line)
 {
@@ -466,17 +455,16 @@ cmd_create (assuan_context_t ctx, char *line)
 }
 
 
-/* GETINFO <what>
-
-   Multipurpose function to return a variety of information.
-   Supported values for WHAT are:
-
-     version     - Return the version of the program.
-     pid         - Return the process id of the server.
-     cmd_has_option CMD OPT
-                 - Returns OK if the command CMD implements the option OPT.
-
- */
+static const char hlp_getinfo[] = 
+  "GETINFO <what>\n"
+  "\n"
+  "Multipurpose function to return a variety of information.\n"
+  "Supported values for WHAT are:\n"
+  "\n"
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  cmd_has_option CMD OPT\n"
+  "              - Return OK if the command CMD implements the option OPT.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -554,15 +542,15 @@ register_commands (assuan_context_t ctx)
     assuan_handler_t handler;
     const char * const help;
   } table[] =  {
-    { "OPEN",          cmd_open, hlp_open },
-    { "MOUNT",         cmd_mount },
-    { "UMOUNT",        cmd_umount },
-    { "RECIPIENT",     cmd_recipient },
-    { "SIGNER",        cmd_signer },
-    { "CREATE",        cmd_create },
+    { "OPEN",          cmd_open,   hlp_open },
+    { "MOUNT",         cmd_mount,  hlp_mount},
+    { "UMOUNT",        cmd_umount, hlp_umount },
+    { "RECIPIENT",     cmd_recipient, hlp_recipient },
+    { "SIGNER",        cmd_signer, hlp_signer },
+    { "CREATE",        cmd_create, hlp_create },
     { "INPUT",         NULL }, 
     { "OUTPUT",        NULL }, 
-    { "GETINFO",       cmd_getinfo },
+    { "GETINFO",       cmd_getinfo,hlp_getinfo },
     { NULL }
   };
   gpg_error_t err;
