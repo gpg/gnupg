@@ -159,7 +159,8 @@ static struct
 
 /*-- local prototypes --*/
 static char *substitute_line_copy (const char *buffer);
-static int read_and_print_response (assuan_context_t ctx, int *r_goterr);
+static int read_and_print_response (assuan_context_t ctx, int withhash,
+                                    int *r_goterr);
 static assuan_context_t start_agent (void);
 
 
@@ -1232,7 +1233,7 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
-      rc = assuan_pipe_connect_ext (ctx, *argv, argv,
+      rc = assuan_pipe_connect_ext (ctx, *argv, (const char **)argv,
                                     no_close, NULL, NULL,
                                     opt.connect_flags);
       if (rc)
@@ -1274,7 +1275,7 @@ main (int argc, char **argv)
      assuan did not run the initial handshaking).  */
   if (assuan_pending_line (ctx))
     {
-      rc = read_and_print_response (ctx, &cmderr);
+      rc = read_and_print_response (ctx, 0, &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
@@ -1762,7 +1763,9 @@ main (int argc, char **argv)
       if (*line == '#' || !*line)
         continue; /* Don't expect a response for a comment line. */
 
-      rc = read_and_print_response (ctx, &cmderr);
+      rc = read_and_print_response (ctx, (!ascii_strncasecmp (line, "HELP", 4)
+                                          && (spacep (line+4) || !line[4])),
+                                    &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
       if ((rc || cmderr) && script_fp)
@@ -1891,10 +1894,11 @@ handle_inquire (assuan_context_t ctx, char *line)
 
 
 /* Read all response lines from server and print them.  Returns 0 on
-   success or an assuan error code.  Set R_GOTERR to true if the
-   command did not returned OK.  */
+   success or an assuan error code.  If WITHHASH istrue, comment lines
+   are printed.  Sets R_GOTERR to true if the command did not returned
+   OK.  */
 static int
-read_and_print_response (assuan_context_t ctx, int *r_goterr)
+read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
 {
   char *line;
   size_t linelen;
@@ -1911,7 +1915,7 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
           if (rc)
             return rc;
 
-          if (opt.verbose > 1 && *line == '#')
+          if ((withhash || opt.verbose > 1) && *line == '#')
             {
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
