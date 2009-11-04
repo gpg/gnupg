@@ -264,7 +264,7 @@ static int
 parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 {
   int rc;
-  size_t n;
+  size_t n = 0;
 
   rc = parse_hexstring (ctx, string, &n);
   if (rc)
@@ -343,19 +343,19 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
 
 
 
-/* GETEVENTCOUNTER
-
-   Return a a status line named EVENTCOUNTER with the current values
-   of all event counters.  The values are decimal numbers in the range
-   0 to UINT_MAX and wrapping around to 0.  The actual values should
-   not be relied upon, they shall only be used to detect a change.
-
-   The currently defined counters are:
-
-   ANY  - Incremented with any change of any of the other counters.
-   KEY  - Incremented for added or removed private keys.
-   CARD - Incremented for changes of the card readers stati.
-*/
+static const char hlp_geteventcounter[] = 
+  "GETEVENTCOUNTER\n"
+  "\n"
+  "Return a a status line named EVENTCOUNTER with the current values\n"
+  "of all event counters.  The values are decimal numbers in the range\n"
+  "0 to UINT_MAX and wrapping around to 0.  The actual values should\n"
+  "not be relied upon, they shall only be used to detect a change.\n"
+  "\n"
+  "The currently defined counters are:\n"
+  "\n"
+  "ANY  - Incremented with any change of any of the other counters.\n"
+  "KEY  - Incremented for added or removed private keys.\n"
+  "CARD - Incremented for changes of the card readers stati.";
 static gpg_error_t
 cmd_geteventcounter (assuan_context_t ctx, char *line)
 {
@@ -401,10 +401,11 @@ bump_card_eventcounter (void)
 
 
 
-/* ISTRUSTED <hexstring_with_fingerprint>
-
-   Return OK when we have an entry with this fingerprint in our
-   trustlist */
+static const char hlp_istrusted[] = 
+  "ISTRUSTED <hexstring_with_fingerprint>\n"
+  "\n"
+  "Return OK when we have an entry with this fingerprint in our\n"
+  "trustlist";
 static gpg_error_t
 cmd_istrusted (assuan_context_t ctx, char *line)
 {
@@ -439,9 +440,11 @@ cmd_istrusted (assuan_context_t ctx, char *line)
     }
 }
 
-/* LISTTRUSTED 
 
-   List all entries from the trustlist */
+static const char hlp_listtrusted[] = 
+  "LISTTRUSTED\n"
+  "\n"
+  "List all entries from the trustlist.";
 static gpg_error_t
 cmd_listtrusted (assuan_context_t ctx, char *line)
 {
@@ -456,9 +459,10 @@ cmd_listtrusted (assuan_context_t ctx, char *line)
 }
 
 
-/* MARKTRUSTED <hexstring_with_fingerprint> <flag> <display_name>
-
-   Store a new key in into the trustlist*/
+static const char hlp_martrusted[] = 
+  "MARKTRUSTED <hexstring_with_fingerprint> <flag> <display_name>\n"
+  "\n"
+  "Store a new key in into the trustlist.";
 static gpg_error_t
 cmd_marktrusted (assuan_context_t ctx, char *line)
 {
@@ -500,9 +504,10 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 
 
 
-/* HAVEKEY <hexstring_with_keygrip>
-  
-   Return success when the secret key is available */
+static const char hlp_havekey[] =
+  "HAVEKEY <hexstring_with_keygrip>\n"
+  "\n"
+  "Return success when the secret key is available.";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
@@ -520,10 +525,11 @@ cmd_havekey (assuan_context_t ctx, char *line)
 }
 
 
-/* SIGKEY <hexstring_with_keygrip>
-   SETKEY <hexstring_with_keygrip>
-  
-   Set the  key used for a sign or decrypt operation */
+static const char hlp_sigkey[] =
+  "SIGKEY <hexstring_with_keygrip>\n"
+  "SETKEY <hexstring_with_keygrip>\n"
+  "\n"
+  "Set the  key used for a sign or decrypt operation.";
 static gpg_error_t
 cmd_sigkey (assuan_context_t ctx, char *line)
 {
@@ -538,20 +544,20 @@ cmd_sigkey (assuan_context_t ctx, char *line)
 }
 
 
-/* SETKEYDESC plus_percent_escaped_string
-
-   Set a description to be used for the next PKSIGN or PKDECRYPT
-   operation if this operation requires the entry of a passphrase.  If
-   this command is not used a default text will be used.  Note, that
-   this description implictly selects the label used for the entry
-   box; if the string contains the string PIN (which in general will
-   not be translated), "PIN" is used, otherwise the translation of
-   "passphrase" is used.  The description string should not contain
-   blanks unless they are percent or '+' escaped.
-
-   The description is only valid for the next PKSIGN or PKDECRYPT
-   operation.
-*/
+static const char hlp_setkeydesc[] = 
+  "SETKEYDESC plus_percent_escaped_string\n"
+  "\n"
+  "Set a description to be used for the next PKSIGN or PKDECRYPT\n"
+  "operation if this operation requires the entry of a passphrase.  If\n"
+  "this command is not used a default text will be used.  Note, that\n"
+  "this description implictly selects the label used for the entry\n"
+  "box; if the string contains the string PIN (which in general will\n"
+  "not be translated), \"PIN\" is used, otherwise the translation of\n"
+  "\"passphrase\" is used.  The description string should not contain\n"
+  "blanks unless they are percent or '+' escaped.\n"
+  "\n"
+  "The description is only valid for the next PKSIGN or PKDECRYPT\n"
+  "operation.";
 static gpg_error_t
 cmd_setkeydesc (assuan_context_t ctx, char *line)
 {
@@ -582,10 +588,11 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 }
 
 
-/* SETHASH --hash=<name>|<algonumber> <hexstring> 
-
-  The client can use this command to tell the server about the data
-  (which usually is a hash) to be signed. */
+static const char hlp_sethash[] =
+  "SETHASH --hash=<name>|<algonumber> <hexstring>\n"
+  "\n"
+  "The client can use this command to tell the server about the data\n"
+  "(which usually is a hash) to be signed.";
 static gpg_error_t
 cmd_sethash (assuan_context_t ctx, char *line)
 {
@@ -637,6 +644,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   ctrl->digest.algo = algo;
 
   /* Parse the hash value. */
+  n = 0;
   rc = parse_hexstring (ctx, line, &n);
   if (rc)
     return rc;
@@ -660,10 +668,11 @@ cmd_sethash (assuan_context_t ctx, char *line)
 }
 
 
-/* PKSIGN <options>
-
-   Perform the actual sign operation. Neither input nor output are
-   sensitive to eavesdropping. */
+static const char hlp_pksign[] = 
+  "PKSIGN [options]\n"
+  "\n"
+  "Perform the actual sign operation.  Neither input nor output are\n"
+  "sensitive to eavesdropping.";
 static gpg_error_t
 cmd_pksign (assuan_context_t ctx, char *line)
 {
@@ -694,10 +703,12 @@ cmd_pksign (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/* PKDECRYPT <options>
 
-   Perform the actual decrypt operation.  Input is not 
-   sensitive to eavesdropping */
+static const char hlp_pkdecrypt[] = 
+  "PKDECRYPT <options>\n"
+  "\n"
+  "Perform the actual decrypt operation.  Input is not\n"
+  "sensitive to eavesdropping.";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
 {
@@ -732,20 +743,20 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 }
 
 
-/* GENKEY
-
-   Generate a new key, store the secret part and return the public
-   part.  Here is an example transaction:
-
-   C: GENKEY
-   S: INQUIRE KEYPARAM
-   C: D (genkey (rsa (nbits  1024)))
-   C: END
-   S: D (public-key
-   S: D   (rsa (n 326487324683264) (e 10001)))
-   S  OK key created
-*/
-
+static const char hlp_genkey[] = 
+  "GENKEY\n"
+  "\n"
+  "Generate a new key, store the secret part and return the public\n"
+  "part.  Here is an example transaction:\n"
+  "\n"
+  "  C: GENKEY\n"
+  "  S: INQUIRE KEYPARAM\n"
+  "  C: D (genkey (rsa (nbits  1024)))\n"
+  "  C: END\n"
+  "  S: D (public-key\n"
+  "  S: D   (rsa (n 326487324683264) (e 10001)))\n"
+  "  S: OK key created\n"
+  "\n";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -778,9 +789,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 
-/* READKEY <hexstring_with_keygrip>
-  
-   Return the public key for the given keygrip.  */
+static const char hlp_readkey[] = 
+  "READKEY <hexstring_with_keygrip>\n"
+  "\n"
+  "Return the public key for the given keygrip.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
@@ -821,32 +833,32 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 
-/* KEYINFO [--list] <keygrip>
-
-   Return information about the key specified by the KEYGRIP.  If the
-   key is not available GPG_ERR_NOT_FOUND is returned.  If the option
-   --list is given the keygrip is ignored and information about all
-   available keys are returned.  The information is returned as a
-   status line with this format:
-
-     KEYINFO <keygrip> <type> <serialno> <idstr>
-
-   KEYGRIP is the keygrip.
-
-   TYPE is describes the type of the key:
-       'D' - Regular key stored on disk,
-       'T' - Key is stored on a smartcard (token).
-       '-' - Unknown type.
-
-   SERIALNO is an ASCII string with the serial number of the
-            smartcard.  If the serial number is not known a single
-            dash '-' is used instead.
-
-   IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it
-         is not known a dash is used instead.
-
-   More information may be added in the future.
-*/
+static const char hlp_keyinfo[] = 
+  "KEYINFO [--list] <keygrip>\n"
+  "\n"
+  "Return information about the key specified by the KEYGRIP.  If the\n"
+  "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
+  "--list is given the keygrip is ignored and information about all\n"
+  "available keys are returned.  The information is returned as a\n"
+  "status line with this format:\n"
+  "\n"
+  "  KEYINFO <keygrip> <type> <serialno> <idstr>\n"
+  "\n"
+  "KEYGRIP is the keygrip.\n"
+  "\n"
+  "TYPE is describes the type of the key:\n"
+  "    'D' - Regular key stored on disk,\n"
+  "    'T' - Key is stored on a smartcard (token).\n"
+  "    '-' - Unknown type.\n"
+  "\n"
+  "SERIALNO is an ASCII string with the serial number of the\n"
+  "         smartcard.  If the serial number is not known a single\n"
+  "         dash '-' is used instead.\n"
+  "\n"
+  "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
+  "      is not known a dash is used instead.\n"
+  "\n"
+  "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
 {
@@ -988,34 +1000,33 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-/* GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] 
-                  [--qualitybar] <cache_id>
-                  [<error_message> <prompt> <description>]
-
-   This function is usually used to ask for a passphrase to be used
-   for conventional encryption, but may also be used by programs which
-   need specal handling of passphrases.  This command uses a syntax
-   which helps clients to use the agent with minimum effort.  The
-   agent either returns with an error or with a OK followed by the hex
-   encoded passphrase.  Note that the length of the strings is
-   implicitly limited by the maximum length of a command.
-
-   If the option "--data" is used the passphrase is returned by usual
-   data lines and not on the okay line.
-
-   If the option "--check" is used the passphrase constraints checks as
-   implemented by gpg-agent are applied.  A check is not done if the
-   passphrase has been found in the cache.
-
-   If the option "--no-ask" is used and the passphrase is not in the
-   cache the user will not be asked to enter a passphrase but the error
-   code GPG_ERR_NO_DATA is returned.  
-
-   If the option "--qualitybar" is used a visual indication of the
-   entered passphrase quality is shown.  (Unless no minimum passphrase
-   length has been configured.)
-*/
-
+static const char hlp_get_passphrase[] = 
+  "GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]]\n"
+  "               [--qualitybar] <cache_id>\n"
+  "               [<error_message> <prompt> <description>]\n"
+  "\n"
+  "This function is usually used to ask for a passphrase to be used\n"
+  "for conventional encryption, but may also be used by programs which\n"
+  "need specal handling of passphrases.  This command uses a syntax\n"
+  "which helps clients to use the agent with minimum effort.  The\n"
+  "agent either returns with an error or with a OK followed by the hex\n"
+  "encoded passphrase.  Note that the length of the strings is\n"
+  "implicitly limited by the maximum length of a command.\n"
+  "\n"
+  "If the option \"--data\" is used the passphrase is returned by usual\n"
+  "data lines and not on the okay line.\n"
+  "\n"
+  "If the option \"--check\" is used the passphrase constraints checks as\n"
+  "implemented by gpg-agent are applied.  A check is not done if the\n"
+  "passphrase has been found in the cache.\n"
+  "\n"
+  "If the option \"--no-ask\" is used and the passphrase is not in the\n"
+  "cache the user will not be asked to enter a passphrase but the error\n"
+  "code GPG_ERR_NO_DATA is returned.  \n"
+  "\n"
+  "If the option \"--qualitybar\" is used a visual indication of the\n"
+  "entered passphrase quality is shown.  (Unless no minimum passphrase\n"
+  "length has been configured.)";
 static gpg_error_t
 cmd_get_passphrase (assuan_context_t ctx, char *line)
 {
@@ -1163,12 +1174,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 }
 
 
-/* CLEAR_PASSPHRASE <cache_id>
-
-   may be used to invalidate the cache entry for a passphrase.  The
-   function returns with OK even when there is no cached passphrase.
-*/
-
+static const char hlp_clear_passphrase[] = 
+  "CLEAR_PASSPHRASE <cache_id>\n"
+  "\n"
+  "may be used to invalidate the cache entry for a passphrase.  The\n"
+  "function returns with OK even when there is no cached passphrase.";
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
@@ -1190,18 +1200,17 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
 }
 
 
-/* GET_CONFIRMATION <description>
-
-   This command may be used to ask for a simple confirmation.
-   DESCRIPTION is displayed along with a Okay and Cancel button.  This
-   command uses a syntax which helps clients to use the agent with
-   minimum effort.  The agent either returns with an error or with a
-   OK.  Note, that the length of DESCRIPTION is implicitly limited by
-   the maximum length of a command. DESCRIPTION should not contain
-   any spaces, those must be encoded either percent escaped or simply
-   as '+'.
-*/
-
+static const char hlp_get_confirmation[] = 
+  "GET_CONFIRMATION <description>\n"
+  "\n"
+  "This command may be used to ask for a simple confirmation.\n"
+  "DESCRIPTION is displayed along with a Okay and Cancel button.  This\n"
+  "command uses a syntax which helps clients to use the agent with\n"
+  "minimum effort.  The agent either returns with an error or with a\n"
+  "OK.  Note, that the length of DESCRIPTION is implicitly limited by\n"
+  "the maximum length of a command. DESCRIPTION should not contain\n"
+  "any spaces, those must be encoded either percent escaped or simply\n"
+  "as '+'.";
 static gpg_error_t
 cmd_get_confirmation (assuan_context_t ctx, char *line)
 {
@@ -1239,10 +1248,11 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
 
 
 
-/* LEARN [--send]
-
-   Learn something about the currently inserted smartcard.  With
-   --send the new certificates are send back.  */
+static const char hlp_learn[] =
+  "LEARN [--send]\n"
+  "\n"
+  "Learn something about the currently inserted smartcard.  With\n"
+  "--send the new certificates are send back.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
@@ -1257,9 +1267,10 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 
-/* PASSWD <hexstring_with_keygrip>
-  
-   Change the passphrase/PIN for the key identified by keygrip in LINE. */
+static const char hlp_passwd[] = 
+  "PASSWD <hexstring_with_keygrip>\n"
+  "\n"
+  "Change the passphrase/PIN for the key identified by keygrip in LINE.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1299,13 +1310,15 @@ cmd_passwd (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/* PRESET_PASSPHRASE <string_or_keygrip> <timeout> <hexstring>
-  
-   Set the cached passphrase/PIN for the key identified by the keygrip
-   to passwd for the given time, where -1 means infinite and 0 means
-   the default (currently only a timeout of -1 is allowed, which means
-   to never expire it).  If passwd is not provided, ask for it via the
-   pinentry module.  */
+
+static const char hlp_preset_passphrase[] = 
+  "PRESET_PASSPHRASE <string_or_keygrip> <timeout> <hexstring>\n"
+  "\n"
+  "Set the cached passphrase/PIN for the key identified by the keygrip\n"
+  "to passwd for the given time, where -1 means infinite and 0 means\n"
+  "the default (currently only a timeout of -1 is allowed, which means\n"
+  "to never expire it).  If passwd is not provided, ask for it via the\n"
+  "pinentry module.";
 static gpg_error_t
 cmd_preset_passphrase (assuan_context_t ctx, char *line)
 {
@@ -1338,6 +1351,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     line++;
 
   /* Syntax check the hexstring.  */
+  len = 0;
   rc = parse_hexstring (ctx, line, &len);
   if (rc)
     return rc;
@@ -1364,11 +1378,13 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   return rc;
 }
 
+
 
-/* SCD <commands to pass to the scdaemon>
-  
-   This is a general quote command to redirect everything to the
-   SCDAEMON. */
+static const char hlp_scd[] = 
+  "SCD <commands to pass to the scdaemon>\n"
+  " \n"
+  "This is a general quote command to redirect everything to the\n"
+  "SCdaemon.";
 static gpg_error_t
 cmd_scd (assuan_context_t ctx, char *line)
 {
@@ -1382,11 +1398,11 @@ cmd_scd (assuan_context_t ctx, char *line)
 
 
 
-/* GETVAL <key>
-
-   Return the value for KEY from the special environment as created by
-   PUTVAL.
- */
+static const char hlp_getval[] = 
+  "GETVAL <key>\n"
+  "\n"
+  "Return the value for KEY from the special environment as created by\n"
+  "PUTVAL.";
 static gpg_error_t
 cmd_getval (assuan_context_t ctx, char *line)
 {
@@ -1426,24 +1442,24 @@ cmd_getval (assuan_context_t ctx, char *line)
 }
 
 
-/* PUTVAL <key> [<percent_escaped_value>]
-
-   The gpg-agent maintains a kind of environment which may be used to
-   store key/value pairs in it, so that they can be retrieved later.
-   This may be used by helper daemons to daemonize themself on
-   invocation and register them with gpg-agent.  Callers of the
-   daemon's service may now first try connect to get the information
-   for that service from gpg-agent through the GETVAL command and then
-   try to connect to that daemon.  Only if that fails they may start
-   an own instance of the service daemon. 
-
-   KEY is an an arbitrary symbol with the same syntax rules as keys
-   for shell environment variables.  PERCENT_ESCAPED_VALUE is the
-   corresponsing value; they should be similar to the values of
-   envronment variables but gpg-agent does not enforce any
-   restrictions.  If that value is not given any value under that KEY
-   is removed from this special environment.
-*/
+static const char hlp_putval[] = 
+  "PUTVAL <key> [<percent_escaped_value>]\n"
+  "\n"
+  "The gpg-agent maintains a kind of environment which may be used to\n"
+  "store key/value pairs in it, so that they can be retrieved later.\n"
+  "This may be used by helper daemons to daemonize themself on\n"
+  "invocation and register them with gpg-agent.  Callers of the\n"
+  "daemon's service may now first try connect to get the information\n"
+  "for that service from gpg-agent through the GETVAL command and then\n"
+  "try to connect to that daemon.  Only if that fails they may start\n"
+  "an own instance of the service daemon. \n"
+  "\n"
+  "KEY is an an arbitrary symbol with the same syntax rules as keys\n"
+  "for shell environment variables.  PERCENT_ESCAPED_VALUE is the\n"
+  "corresponsing value; they should be similar to the values of\n"
+  "envronment variables but gpg-agent does not enforce any\n"
+  "restrictions.  If that value is not given any value under that KEY\n"
+  "is removed from this special environment.";
 static gpg_error_t
 cmd_putval (assuan_context_t ctx, char *line)
 {
@@ -1513,12 +1529,13 @@ cmd_putval (assuan_context_t ctx, char *line)
 
 
 
-/* UPDATESTARTUPTTY 
-  
-  Set startup TTY and X DISPLAY variables to the values of this
-  session.  This command is useful to pull future pinentries to
-  another screen.  It is only required because there is no way in the
-  ssh-agent protocol to convey this information.  */
+static const char hlp_updatestartuptty[] = 
+  "UPDATESTARTUPTTY\n"
+  "\n"
+  "Set startup TTY and X11 DISPLAY variables to the values of this\n"
+  "session.  This command is useful to pull future pinentries to\n"
+  "another screen.  It is only required because there is no way in the\n"
+  "ssh-agent protocol to convey this information.";
 static gpg_error_t
 cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
@@ -1574,10 +1591,11 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 
 
 #ifdef HAVE_W32_SYSTEM
-/* KILLAGENT
-
-   Under Windows we start the agent on the fly.  Thus it also make
-   sense to allow a client to stop the agent. */
+static const char hlp_killagent[] =
+  "KILLAGENT\n"
+  "\n"
+  "Under Windows we start the agent on the fly.  Thus it also make\n"
+  "sense to allow a client to stop the agent.";
 static gpg_error_t
 cmd_killagent (assuan_context_t ctx, char *line)
 {
@@ -1589,10 +1607,12 @@ cmd_killagent (assuan_context_t ctx, char *line)
   return gpg_error (GPG_ERR_EOF);
 }
 
-/* RELOADAGENT
 
-   As signals are inconvenient under Windows, we provide this command
-   to allow reloading of the configuration.  */
+static const char hlp_reloadagent[] =
+  "RELOADAGENT\n"
+  "\n"
+  "As signals are inconvenient under Windows, we provide this command\n"
+  "to allow reloading of the configuration.";
 static gpg_error_t
 cmd_reloadagent (assuan_context_t ctx, char *line)
 {
@@ -1606,20 +1626,19 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
 
 
 
-/* GETINFO <what>
-
-   Multipurpose function to return a variety of information.
-   Supported values for WHAT are:
-
-     version     - Return the version of the program.
-     pid         - Return the process id of the server.
-     socket_name - Return the name of the socket.
-     ssh_socket_name - Return the name of the ssh socket.
-     scd_running - Return OK if the SCdaemon is already running.
-
- gpg_error_t
-                 - Returns OK if the command CMD implements the option OPT.
- */
+static const char hlp_getinfo[] = 
+  "GETINFO <what>\n"
+  "\n"
+  "Multipurpose function to return a variety of information.\n"
+  "Supported values for WHAT are:\n"
+  "\n"
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  socket_name - Return the name of the socket.\n"
+  "  ssh_socket_name - Return the name of the ssh socket.\n"
+  "  scd_running - Return OK if the SCdaemon is already running.\n"
+  "  cmd_has_option\n"
+  "              - Returns OK if the command CMD implements the option OPT.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1827,45 +1846,47 @@ register_commands (assuan_context_t ctx)
   static struct {
     const char *name;
     assuan_handler_t handler;
+    const char * const help;
   } table[] = {
-    { "GETEVENTCOUNTER",cmd_geteventcounter },
-    { "ISTRUSTED",      cmd_istrusted },
-    { "HAVEKEY",        cmd_havekey },
-    { "KEYINFO",        cmd_keyinfo },
-    { "SIGKEY",         cmd_sigkey },
-    { "SETKEY",         cmd_sigkey },
-    { "SETKEYDESC",     cmd_setkeydesc },
-    { "SETHASH",        cmd_sethash },
-    { "PKSIGN",         cmd_pksign },
-    { "PKDECRYPT",      cmd_pkdecrypt },
-    { "GENKEY",         cmd_genkey },
-    { "READKEY",        cmd_readkey },
-    { "GET_PASSPHRASE", cmd_get_passphrase },
-    { "PRESET_PASSPHRASE", cmd_preset_passphrase },
-    { "CLEAR_PASSPHRASE", cmd_clear_passphrase },
-    { "GET_CONFIRMATION", cmd_get_confirmation },
-    { "LISTTRUSTED",    cmd_listtrusted },
-    { "MARKTRUSTED",    cmd_marktrusted },
-    { "LEARN",          cmd_learn },
-    { "PASSWD",         cmd_passwd },
+    { "GETEVENTCOUNTER",cmd_geteventcounter, hlp_geteventcounter },
+    { "ISTRUSTED",      cmd_istrusted, hlp_istrusted },
+    { "HAVEKEY",        cmd_havekey,   hlp_havekey },
+    { "KEYINFO",        cmd_keyinfo,   hlp_keyinfo },
+    { "SIGKEY",         cmd_sigkey,    hlp_sigkey },
+    { "SETKEY",         cmd_sigkey,    hlp_sigkey },
+    { "SETKEYDESC",     cmd_setkeydesc,hlp_setkeydesc },
+    { "SETHASH",        cmd_sethash,   hlp_sethash },
+    { "PKSIGN",         cmd_pksign,    hlp_pksign },
+    { "PKDECRYPT",      cmd_pkdecrypt, hlp_pkdecrypt },
+    { "GENKEY",         cmd_genkey,    hlp_genkey },
+    { "READKEY",        cmd_readkey,   hlp_readkey },
+    { "GET_PASSPHRASE", cmd_get_passphrase, hlp_get_passphrase },
+    { "PRESET_PASSPHRASE", cmd_preset_passphrase, hlp_preset_passphrase },
+    { "CLEAR_PASSPHRASE", cmd_clear_passphrase,   hlp_clear_passphrase },
+    { "GET_CONFIRMATION", cmd_get_confirmation,   hlp_get_confirmation },
+    { "LISTTRUSTED",    cmd_listtrusted, hlp_listtrusted },
+    { "MARKTRUSTED",    cmd_marktrusted, hlp_martrusted },
+    { "LEARN",          cmd_learn,     hlp_learn },
+    { "PASSWD",         cmd_passwd,    hlp_passwd },
     { "INPUT",          NULL }, 
     { "OUTPUT",         NULL }, 
-    { "SCD",            cmd_scd },
-    { "GETVAL",         cmd_getval },
-    { "PUTVAL",         cmd_putval },
-    { "UPDATESTARTUPTTY",  cmd_updatestartuptty },
+    { "SCD",            cmd_scd,       hlp_scd },
+    { "GETVAL",         cmd_getval,    hlp_getval },
+    { "PUTVAL",         cmd_putval,    hlp_putval },
+    { "UPDATESTARTUPTTY",  cmd_updatestartuptty, hlp_updatestartuptty },
 #ifdef HAVE_W32_SYSTEM
-    { "KILLAGENT",      cmd_killagent },
-    { "RELOADAGENT",    cmd_reloadagent },
+    { "KILLAGENT",      cmd_killagent,  hlp_killagent },
+    { "RELOADAGENT",    cmd_reloadagent,hlp_reloadagent },
 #endif
-    { "GETINFO",        cmd_getinfo },
+    { "GETINFO",        cmd_getinfo,   hlp_getinfo },
     { NULL }
   };
   int i, rc;
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler,
+                                    table[i].help);
       if (rc)
         return rc;
     } 
