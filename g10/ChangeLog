@@ -1,3 +1,8 @@
+2009-11-04  Werner Koch  <wk@g10code.com>
+
+	* server.c (register_commands): Add NULL arg to
+	assuan_register_command.
+
 2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (reset_notify, input_notify, output_notify): Update to

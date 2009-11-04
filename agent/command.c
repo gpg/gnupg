@@ -1865,7 +1865,7 @@ register_commands (assuan_context_t ctx)
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
       if (rc)
         return rc;
     } 

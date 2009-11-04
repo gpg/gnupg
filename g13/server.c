@@ -212,6 +212,15 @@ reset_notify (assuan_context_t ctx, char *line)
    further commands.  The filename is reset with the RESET command,
    another OPEN or the CREATE command.
  */
+static const char hlp_open[] = 
+  "OPEN [<options>] <filename>\n"
+  "\n"
+  "Open the container FILENAME.  FILENAME must be percent-plus\n"
+  "escaped.  A quick check to see whether this is a suitable G13\n"
+  "container file is done.  However no cryptographic check or any\n"
+  "other check is done.  This command is used to define the target for\n"
+  "further commands.  The filename is reset with the RESET command,\n"
+  "another OPEN or the CREATE command.";
 static gpg_error_t
 cmd_open (assuan_context_t ctx, char *line)
 {
@@ -543,8 +552,9 @@ register_commands (assuan_context_t ctx)
   static struct {
     const char *name;
     assuan_handler_t handler;
+    const char * const help;
   } table[] =  {
-    { "OPEN",          cmd_open },
+    { "OPEN",          cmd_open, hlp_open },
     { "MOUNT",         cmd_mount },
     { "UMOUNT",        cmd_umount },
     { "RECIPIENT",     cmd_recipient },
@@ -560,7 +570,8 @@ register_commands (assuan_context_t ctx)
 
   for (i=0; table[i].name; i++)
     {
-      err = assuan_register_command (ctx, table[i].name, table[i].handler);
+      err = assuan_register_command (ctx, table[i].name, table[i].handler,
+                                     table[i].help);
       if (err)
         return err;
     } 
