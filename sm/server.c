@@ -360,18 +360,18 @@ output_notify (assuan_context_t ctx, char *line)
 }
 
 
-
-/*  RECIPIENT <userID>
-
-  Set the recipient for the encryption.  <userID> should be the
-  internal representation of the key; the server may accept any other
-  way of specification [we will support this].  If this is a valid and
-  trusted recipient the server does respond with OK, otherwise the
-  return is an ERR with the reason why the recipient can't be used,
-  the encryption will then not be done for this recipient.  If the
-  policy is not to encrypt at all if not all recipients are valid, the
-  client has to take care of this.  All RECIPIENT commands are
-  cumulative until a RESET or an successful ENCRYPT command.  */
+static const char hlp_recipient[] = 
+  "RECIPIENT <userID>\n"
+  "\n"
+  "Set the recipient for the encryption.  USERID shall be the\n"
+  "internal representation of the key; the server may accept any other\n"
+  "way of specification [we will support this].  If this is a valid and\n"
+  "trusted recipient the server does respond with OK, otherwise the\n"
+  "return is an ERR with the reason why the recipient can't be used,\n"
+  "the encryption will then not be done for this recipient.  If the\n"
+  "policy is not to encrypt at all if not all recipients are valid, the\n"
+  "client has to take care of this.  All RECIPIENT commands are\n"
+  "cumulative until a RESET or an successful ENCRYPT command.";
 static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
@@ -395,19 +395,21 @@ cmd_recipient (assuan_context_t ctx, char *line)
   return rc;
 }
 
-/*  SIGNER <userID>
 
-  Set the signer's keys for the signature creation.  <userID> should
-  be the internal representation of the key; the server may accept any
-  other way of specification [we will support this].  If this is a
-  valid and usable signing key the server does respond with OK,
-  otherwise it returns an ERR with the reason why the key can't be
-  used, the signing will then not be done for this key.  If the policy
-  is not to sign at all if not all signer keys are valid, the client
-  has to take care of this.  All SIGNER commands are cumulative until
-  a RESET but they are *not* reset by an SIGN command becuase it can
-  be expected that set of signers are used for more than one sign
-  operation.  */
+static const char hlp_signer[] = 
+  "SIGNER <userID>\n"
+  "\n"
+  "Set the signer's keys for the signature creation.  USERID should\n"
+  "be the internal representation of the key; the server may accept any\n"
+  "other way of specification [we will support this].  If this is a\n"
+  "valid and usable signing key the server does respond with OK,\n"
+  "otherwise it returns an ERR with the reason why the key can't be\n"
+  "used, the signing will then not be done for this key.  If the policy\n"
+  "is not to sign at all if not all signer keys are valid, the client\n"
+  "has to take care of this.  All SIGNER commands are cumulative until\n"
+  "a RESET but they are *not* reset by an SIGN command becuase it can\n"
+  "be expected that set of signers are used for more than one sign\n"
+  "operation.";
 static gpg_error_t
 cmd_signer (assuan_context_t ctx, char *line)
 {
@@ -429,19 +431,20 @@ cmd_signer (assuan_context_t ctx, char *line)
 }
 
 
-/* ENCRYPT 
-
-  Do the actual encryption process. Takes the plaintext from the INPUT
-  command, writes to the ciphertext to the file descriptor set with
-  the OUTPUT command, take the recipients form all the recipients set
-  so far.  If this command fails the clients should try to delete all
-  output currently done or otherwise mark it as invalid.  GPGSM does
-  ensure that there won't be any security problem with leftover data
-  on the output in this case.
-
-  This command should in general not fail, as all necessary checks
-  have been done while setting the recipients.  The input and output
-  pipes are closed. */
+static const char hlp_encrypt[] = 
+  "ENCRYPT \n"
+  "\n"
+  "Do the actual encryption process. Takes the plaintext from the INPUT\n"
+  "command, writes to the ciphertext to the file descriptor set with\n"
+  "the OUTPUT command, take the recipients form all the recipients set\n"
+  "so far.  If this command fails the clients should try to delete all\n"
+  "output currently done or otherwise mark it as invalid.  GPGSM does\n"
+  "ensure that there won't be any security problem with leftover data\n"
+  "on the output in this case.\n"
+  "\n"
+  "This command should in general not fail, as all necessary checks\n"
+  "have been done while setting the recipients.  The input and output\n"
+  "pipes are closed.";
 static gpg_error_t
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
@@ -492,13 +495,14 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 }
 
 
-/* DECRYPT
-
-  This performs the decrypt operation after doing some check on the
-  internal state. (e.g. that only needed data has been set).  Because
-  it utilizes the GPG-Agent for the session key decryption, there is
-  no need to ask the client for a protecting passphrase - GpgAgent
-  does take care of this by requesting this from the user. */
+static const char hlp_decrypt[] = 
+  "DECRYPT\n"
+  "\n"
+  "This performs the decrypt operation after doing some check on the\n"
+  "internal state. (e.g. that only needed data has been set).  Because\n"
+  "it utilizes the GPG-Agent for the session key decryption, there is\n"
+  "no need to ask the client for a protecting passphrase - GPG-Agent\n"
+  "does take care of this by requesting this from the user.";
 static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
@@ -534,15 +538,15 @@ cmd_decrypt (assuan_context_t ctx, char *line)
 }
 
 
-/* VERIFY
-
-  This does a verify operation on the message send to the input-FD.
-  The result is written out using status lines.  If an output FD was
-  given, the signed text will be written to that.
-  
-  If the signature is a detached one, the server will inquire about
-  the signed material and the client must provide it.
-  */
+static const char hlp_verify[] = 
+  "VERIFY\n"
+  "\n"
+  "This does a verify operation on the message send to the input FD.\n"
+  "The result is written out using status lines.  If an output FD was\n"
+  "given, the signed text will be written to that.\n"
+  "\n"
+  "If the signature is a detached one, the server will inquire about\n"
+  "the signed material and the client must provide it.";
 static gpg_error_t
 cmd_verify (assuan_context_t ctx, char *line)
 {
@@ -580,11 +584,12 @@ cmd_verify (assuan_context_t ctx, char *line)
 }
 
 
-/* SIGN [--detached]
-
-  Sign the data set with the INPUT command and write it to the sink
-  set by OUTPUT.  With "--detached" specified, a detached signature is
-  created (surprise).  */
+static const char hlp_sign[] = 
+  "SIGN [--detached]\n"
+  "\n"
+  "Sign the data set with the INPUT command and write it to the sink\n"
+  "set by OUTPUT.  With \"--detached\", a detached signature is\n"
+  "created (surprise).";
 static gpg_error_t
 cmd_sign (assuan_context_t ctx, char *line)
 {
@@ -622,17 +627,18 @@ cmd_sign (assuan_context_t ctx, char *line)
 }
 
 
-/* IMPORT [--re-import]
-
-   Import the certificates read form the input-fd, return status
-   message for each imported one.  The import checks the validity of
-   the certificate but not of the entire chain.  It is possible to
-   import expired certificates.
-
-   With the option --re-import the input data is expected to a be a LF
-   separated list of fingerprints.  The command will re-import these
-   certificates, meaning that they are made permanent by removing
-   their ephemeral flag.   */
+static const char hlp_import[] = 
+  "IMPORT [--re-import]\n"
+  "\n"
+  "Import the certificates read form the input-fd, return status\n"
+  "message for each imported one.  The import checks the validity of\n"
+  "the certificate but not of the entire chain.  It is possible to\n"
+  "import expired certificates.\n"
+  "\n"
+  "With the option --re-import the input data is expected to a be a LF\n"
+  "separated list of fingerprints.  The command will re-import these\n"
+  "certificates, meaning that they are made permanent by removing\n"
+  "their ephemeral flag.";
 static gpg_error_t
 cmd_import (assuan_context_t ctx, char *line)
 {
@@ -657,10 +663,14 @@ cmd_import (assuan_context_t ctx, char *line)
 }
 
 
-/* EXPORT [--data [--armor|--base64]] [--] pattern
-
- */
-
+static const char hlp_export[] =
+  "EXPORT [--data [--armor|--base64]] [--] <pattern>\n"
+  "\n"
+  "Export the certificates selected by PATTERN.  With --data the output\n"
+  "is returned using Assuan D lines; the default is to use the sink given\n"
+  "by the last \"OUTPUT\" command.  The options --armor or --base64 encode \n"
+  "the output using the PEM respective a plain base-64 format; the default\n"
+  "is a binary format which is only suitable for a single certificate.";
 static gpg_error_t
 cmd_export (assuan_context_t ctx, char *line)
 {
@@ -747,6 +757,13 @@ cmd_export (assuan_context_t ctx, char *line)
 }
 
 
+
+static const char hlp_delkeys[] =
+  "DELKEYS <patterns>\n"
+  "\n"
+  "Delete the certificates specified by PATTERNS.  Each pattern shall be\n"
+  "a percent-plus escaped certificate specification.  Usually a\n"
+  "fingerprint will be used for this.";
 static gpg_error_t
 cmd_delkeys (assuan_context_t ctx, char *line)
 {
@@ -791,10 +808,27 @@ cmd_delkeys (assuan_context_t ctx, char *line)
 
 
 
-/* MESSAGE FD=<n>
-
-   Set the file descriptor to read a message which is used with
-   detached signatures */
+static const char hlp_output[] =
+  "OUTPUT FD[=<n>]\n"
+  "\n"
+  "Set the file descriptor to write the output data to N.  If N is not\n"
+  "given and the operating system supports file descriptor passing, the\n"
+  "file descriptor currently in flight will be used.  See also the\n"
+  "\"INPUT\" and \"MESSAGE\" commands.";
+static const char hlp_input[] =
+  "INPUT FD[=<n>]\n"
+  "\n"
+  "Set the file descriptor to read the input data to N.  If N is not\n"
+  "given and the operating system supports file descriptor passing, the\n"
+  "file descriptor currently in flight will be used.  See also the\n"
+  "\"MESSAGE\" and \"OUTPUT\" commands.";
+static const char hlp_message[] =
+  "MESSAGE FD[=<n>]\n"
+  "\n"
+  "Set the file descriptor to read the message for a detached\n"
+  "signatures to N.  If N is not given and the operating system\n"
+  "supports file descriptor passing, the file descriptor currently in\n"
+  "flight will be used.  See also the \"INPUT\" and \"OUTPUT\" commands.";
 static gpg_error_t
 cmd_message (assuan_context_t ctx, char *line)
 {
@@ -813,11 +847,36 @@ cmd_message (assuan_context_t ctx, char *line)
   return 0;
 }
 
-/* LISTKEYS [<patterns>]
-   DUMPKEYS [<patterns>]
-   LISTSECRETKEYS [<patterns>]
-   DUMPSECRETKEYS [<patterns>]
-*/
+
+
+static const char hlp_listkeys[] = 
+  "LISTKEYS [<patterns>]\n"
+  "LISTSECRETKEYS [<patterns>]\n"
+  "DUMPKEYS [<patterns>]\n"
+  "DUMPSECRETKEYS [<patterns>]\n"
+  "\n"
+  "List all certificates or only those specified by PATTERNS.  Each\n"
+  "pattern shall be a percent-plus escaped certificate specification.\n"
+  "The \"SECRET\" versions of the command filter the output to include\n"
+  "only certificates where the secret key is available or a corresponding\n"
+  "smartcard has been registered.  The \"DUMP\" versions of the command\n"
+  "are only useful for debugging.  The output format is a percent escaped\n"
+  "colon delimited listing as described in the manual.\n"
+  "\n"
+  "These \"OPTION\" command keys effect the output::\n"
+  "\n"
+  "  \"list-mode\" set to 0: List only local certificates (default).\n"
+  "                     1: Ditto.\n"
+  "                     2: List only external certificates.\n"
+  "                     3: List local and external certificates.\n"
+  "\n"
+  "  \"with-validation\" set to true: Validate each certificate.\n"
+  "\n"
+  "  \"with-ephemeral-key\" set to true: Always include ephemeral\n"
+  "                                    certificates.\n"
+  "\n"
+  "  \"list-to-output\" set to true: Write output to the file descriptor\n"
+  "                                given by the last \"OUTPUT\" command.";
 static int 
 do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
@@ -907,12 +966,13 @@ cmd_dumpsecretkeys (assuan_context_t ctx, char *line)
   return do_listkeys (ctx, line, 258);
 }
 
-
-/* GENKEY
 
-   Read the parameters in native format from the input fd and write a
-   certificate request to the output.
- */
+
+static const char hlp_genkey[] =
+  "GENKEY\n"
+  "\n"
+  "Read the parameters in native format from the input fd and write a\n"
+  "certificate request to the output.";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -953,16 +1013,14 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 
-/* GETAUDITLOG [--data] [--html]
-
-   !!!WORK in PROGRESS!!!
-
-   If --data is used, the output is send using D-lines and not to the
-   source given by an OUTPUT command.
-
-   If --html is used the output is formated as an XHTML block. This is
-   designed to be incorporated into a HTML document.
- */
+static const char hlp_getauditlog[] =
+  "GETAUDITLOG [--data] [--html]\n"
+  "\n"
+  "If --data is used, the output is send using D-lines and not to the\n"
+  "file descriptor given by an OUTPUT command.\n"
+  "\n"
+  "If --html is used the output is formated as an XHTML block. This is\n"
+  "designed to be incorporated into a HTML document.";
 static gpg_error_t
 cmd_getauditlog (assuan_context_t ctx, char *line)
 {
@@ -1011,18 +1069,17 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
 }
 
 
-/* GETINFO <what>
-
-   Multipurpose function to return a variety of information.
-   Supported values for WHAT are:
-
-     version     - Return the version of the program.
-     pid         - Return the process id of the server.
-     agent-check - Return success if the agent is running.
-     cmd_has_option CMD OPT
-                 - Returns OK if the command CMD implements the option OPT.
-
- */
+static const char hlp_getinfo[] = 
+  "GETINFO <what>\n"
+  "\n"
+  "Multipurpose function to return a variety of information.\n"
+  "Supported values for WHAT are:\n"
+  "\n"
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  agent-check - Return success if the agent is running.\n"
+  "  cmd_has_option CMD OPT\n"
+  "              - Returns OK if the command CMD implements the option OPT.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1106,33 +1163,35 @@ register_commands (assuan_context_t ctx)
   static struct {
     const char *name;
     assuan_handler_t handler;
+    const char * const help;
   } table[] = {
-    { "RECIPIENT",     cmd_recipient },
-    { "SIGNER",        cmd_signer },
-    { "ENCRYPT",       cmd_encrypt },
-    { "DECRYPT",       cmd_decrypt },
-    { "VERIFY",        cmd_verify },
-    { "SIGN",          cmd_sign },
-    { "IMPORT",        cmd_import },
-    { "EXPORT",        cmd_export },
-    { "INPUT",         NULL }, 
-    { "OUTPUT",        NULL }, 
-    { "MESSAGE",       cmd_message },
-    { "LISTKEYS",      cmd_listkeys },
-    { "DUMPKEYS",      cmd_dumpkeys },
-    { "LISTSECRETKEYS",cmd_listsecretkeys },
-    { "DUMPSECRETKEYS",cmd_dumpsecretkeys },
-    { "GENKEY",        cmd_genkey },
-    { "DELKEYS",       cmd_delkeys },
-    { "GETAUDITLOG",   cmd_getauditlog },
-    { "GETINFO",       cmd_getinfo },
+    { "RECIPIENT",     cmd_recipient, hlp_recipient },
+    { "SIGNER",        cmd_signer,    hlp_signer },
+    { "ENCRYPT",       cmd_encrypt,   hlp_encrypt },
+    { "DECRYPT",       cmd_decrypt,   hlp_decrypt },
+    { "VERIFY",        cmd_verify,    hlp_verify },
+    { "SIGN",          cmd_sign,      hlp_sign },
+    { "IMPORT",        cmd_import,    hlp_import },
+    { "EXPORT",        cmd_export,    hlp_export },
+    { "INPUT",         NULL,          hlp_input }, 
+    { "OUTPUT",        NULL,          hlp_output }, 
+    { "MESSAGE",       cmd_message,   hlp_message },
+    { "LISTKEYS",      cmd_listkeys,  hlp_listkeys },
+    { "DUMPKEYS",      cmd_dumpkeys,  hlp_listkeys },
+    { "LISTSECRETKEYS",cmd_listsecretkeys, hlp_listkeys },
+    { "DUMPSECRETKEYS",cmd_dumpsecretkeys, hlp_listkeys },
+    { "GENKEY",        cmd_genkey,    hlp_genkey },
+    { "DELKEYS",       cmd_delkeys,   hlp_delkeys },
+    { "GETAUDITLOG",   cmd_getauditlog,    hlp_getauditlog },
+    { "GETINFO",       cmd_getinfo,   hlp_getinfo },
     { NULL }
   };
   int i, rc;
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler,
+                                    table[i].help);
       if (rc)
         return rc;
     } 
