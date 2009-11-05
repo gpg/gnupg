@@ -369,6 +369,11 @@ main ( int argc, char **argv)
   
   create_dotlock (NULL); /* Register locking cleanup.  */
 
+  opt.session_env = session_env_new ();
+  if (!opt.session_env)
+    log_fatal ("error allocating session environment block: %s\n",
+               strerror (errno));
+
   opt.homedir = default_homedir ();
 
   /* First check whether we have a config file on the commandline.  */
