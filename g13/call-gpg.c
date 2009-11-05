@@ -101,7 +101,8 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   no_close_list[i] = -1;
 
   /* Connect to GPG and perform initial handshaking.  */
-  err = assuan_pipe_connect (ctx, opt.gpg_program, argv, no_close_list);
+  err = assuan_pipe_connect (ctx, opt.gpg_program, argv, no_close_list,
+			     NULL, NULL, 0);
   if (err)
     {
       assuan_release (ctx);

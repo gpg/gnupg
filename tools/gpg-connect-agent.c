@@ -1160,7 +1160,7 @@ main (int argc, char **argv)
 
 
   opt.homedir = default_homedir ();
-  opt.connect_flags = 1; /* Use extended connect mode.  */
+  opt.connect_flags = 1;
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -1233,9 +1233,9 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
-      rc = assuan_pipe_connect_ext (ctx, *argv, (const char **)argv,
-                                    no_close, NULL, NULL,
-                                    opt.connect_flags);
+      rc = assuan_pipe_connect
+	(ctx, *argv, (const char **)argv, no_close, NULL, NULL,
+	 (opt.connect_flags & 1) ? ASSUAN_PIPE_CONNECT_FDPASSING : 0);
       if (rc)
         {
           log_error ("assuan_pipe_connect_ext failed: %s\n",
@@ -1256,8 +1256,9 @@ main (int argc, char **argv)
 	  exit (1);
 	}
 
-      rc = assuan_socket_connect_ext (ctx, opt.raw_socket, 0,
-                                      opt.connect_flags);
+      rc = assuan_socket_connect
+	(ctx, opt.raw_socket, 0,
+	 (opt.connect_flags & 1) ? ASSUAN_SOCKET_CONNECT_FDPASSING : 0);
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
@@ -2114,7 +2115,7 @@ start_agent (void)
 
       /* Check whether we can connect at the standard socket.  */
       sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (ctx, sockname, 0);
+      rc = assuan_socket_connect (ctx, sockname, 0, 0);
 
 #ifdef HAVE_W32_SYSTEM
       /* If we failed to connect under Windows, we fire up the agent.  */
@@ -2148,7 +2149,7 @@ start_agent (void)
 		  exit (1);
 		}
 
-              rc = assuan_socket_connect (ctx, sockname, 0);
+              rc = assuan_socket_connect (ctx, sockname, 0, 0);
             }
           if (rc)
             rc = save_rc;
@@ -2188,7 +2189,7 @@ start_agent (void)
 	  exit (1);
 	}
 
-      rc = assuan_socket_connect (ctx, infostr, pid);
+      rc = assuan_socket_connect (ctx, infostr, pid, 0);
       xfree (infostr);
     }
 

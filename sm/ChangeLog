@@ -1,3 +1,8 @@
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-dirmngr.c (start_dirmngr_ext): Update use of
+	assuan_pipe_connect and assuan_socket_connect.
+
 2009-11-04  Werner Koch  <wk@g10code.com>
 
 	* server.c (register_commands): Add help arg to

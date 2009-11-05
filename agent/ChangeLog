@@ -1,3 +1,14 @@
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* call-pinentry.c (start_pinentry): Call assuan_pipe_connect, not
+	assuan_pipe_connect_ext.
+	* command.c (start_command_handler): Change
+	assuan_init_socket_server_ext into assuan_init_socket_server.
+	* call-scd.c (start_scd): Update use of assuan_socket_connect and
+	assuan_pipe_connect.
+	* gpg-agent.c (check_own_socket_thread, check_for_running_agent):
+	Update use of assuan_socket_connect.
+
 2009-11-04  Werner Koch  <wk@g10code.com>
 
 	* command.c (register_commands): Add help arg to

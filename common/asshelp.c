@@ -199,7 +199,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       /* First check whether we can connect at the standard
          socket.  */
       sockname = make_filename (homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (ctx, sockname, 0);
+      rc = assuan_socket_connect (ctx, sockname, 0, 0);
 
       if (rc)
         {
@@ -274,7 +274,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             
             /* Connect to the agent and perform initial handshaking. */
             rc = assuan_pipe_connect (ctx, agent_program, argv,
-                                      no_close_list);
+                                      no_close_list, NULL, NULL, 0);
           }
 #endif /*!HAVE_W32_SYSTEM*/
         }
@@ -307,7 +307,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           goto restart;
         }
 
-      rc = assuan_socket_connect (ctx, infostr, pid);
+      rc = assuan_socket_connect (ctx, infostr, pid, 0);
       xfree (infostr);
       if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
         {

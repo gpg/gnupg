@@ -1,3 +1,8 @@
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asshelp.c (start_new_gpg_agent): Update use of
+	assuan_socket_connect and assuan_pipe_connect.
+
 2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* get-passphrase.c (default_inq_cb, membuf_data_cb): Change return

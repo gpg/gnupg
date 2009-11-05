@@ -264,7 +264,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 
       /* connect to the agent and perform initial handshaking */
       rc = assuan_pipe_connect (ctx, opt.dirmngr_program, argv,
-                                no_close_list);
+                                no_close_list, NULL, NULL, 0);
     }
   else
     {
@@ -297,7 +297,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
       else
         pid = -1;
 
-      rc = assuan_socket_connect (ctx, infostr, pid);
+      rc = assuan_socket_connect (ctx, infostr, pid, 0);
 #ifdef HAVE_W32_SYSTEM
       if (rc)
         log_debug ("connecting dirmngr at `%s' failed\n", infostr);

@@ -320,8 +320,9 @@ start_pinentry (ctrl_t ctrl)
      that atfork is used to change the environment for pinentry.  We
      start the server in detached mode to suppress the console window
      under Windows.  */
-  rc = assuan_pipe_connect_ext (ctx, opt.pinentry_program, argv,
-                                no_close_list, atfork_cb, ctrl, 128);
+  rc = assuan_pipe_connect (ctx, opt.pinentry_program, argv,
+			    no_close_list, atfork_cb, ctrl,
+			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",

@@ -278,7 +278,7 @@ start_scd (ctrl_t ctrl)
 
   if (socket_name)
     {
-      rc = assuan_socket_connect (ctx, socket_name, 0);
+      rc = assuan_socket_connect (ctx, socket_name, 0, 0);
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
@@ -341,8 +341,8 @@ start_scd (ctrl_t ctrl)
   /* Connect to the pinentry and perform initial handshaking.  Use
      detached flag (128) so that under W32 SCDAEMON does not show up a
      new window.  */
-  rc = assuan_pipe_connect_ext (ctx, opt.scdaemon_program, argv,
-                                no_close_list, atfork_cb, NULL, 128);
+  rc = assuan_pipe_connect (ctx, opt.scdaemon_program, argv,
+			    no_close_list, atfork_cb, NULL, 128);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",

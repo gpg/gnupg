@@ -1921,7 +1921,8 @@ scd_command_handler (ctrl_t ctrl, int fd)
     }
   else
     {
-      rc = assuan_init_socket_server_ext (ctx, INT2FD(fd), 2);
+      rc = assuan_init_socket_server (ctx, INT2FD(fd),
+				      ASSUAN_SOCKET_SERVER_ACCEPTED);
     }
   if (rc)
     {

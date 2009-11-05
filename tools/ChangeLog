@@ -1,3 +1,8 @@
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpg-connect-agent.c (start_agent): Update use of
+	assuan_socket_connect and assuan_pipe_connect.
+
 2009-11-04  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (read_and_print_response): Add arg WITHHASH.

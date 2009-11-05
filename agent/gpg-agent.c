@@ -2082,7 +2082,7 @@ check_own_socket_thread (void *arg)
       goto leave;
     }
 
-  rc = assuan_socket_connect (ctx, sockname, (pid_t)(-1));
+  rc = assuan_socket_connect (ctx, sockname, (pid_t)(-1), 0);
   if (rc)
     {
       log_error ("can't connect my own socket: %s\n", gpg_strerror (rc));
@@ -2220,7 +2220,7 @@ check_for_running_agent (int silent, int mode)
 
   rc = assuan_new (&ctx);
   if (! rc)
-    rc = assuan_socket_connect (ctx, infostr, pid);
+    rc = assuan_socket_connect (ctx, infostr, pid, 0);
   xfree (infostr);
   if (rc)
     {
