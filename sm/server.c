@@ -1050,7 +1050,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
       if (out_fd == -1)
         return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
       
-      out_stream = es_fdopen_nc ( dup (out_fd), "w");
+      out_stream = es_fdopen_nc (out_fd, "w");
       if (!out_stream)
         {
           return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen() failed");
