@@ -10,6 +10,9 @@
 
 2009-11-04  Werner Koch  <wk@g10code.com>
 
+	* certreqgen.c (proc_parameters): Change fallback key length to
+	2048.
+
 	* server.c (register_commands): Add help arg to
 	assuan_register_command.  Provide help strings for all commands.
 
