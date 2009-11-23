@@ -1634,6 +1634,11 @@ main ( int argc, char **argv)
         printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
 	printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
 
+        /* The next one is an info only item and should match what
+           proc_parameters actually implements.  */
+        printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+                "RSA-2048");
+
       }
       break;
     case aGPGConfTest:

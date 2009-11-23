@@ -233,6 +233,8 @@ enum cmd_and_opt_values
     oWithSigList,
     oWithSigCheck,
     oSkipVerify,
+    oSkipHiddenRecipients,
+    oNoSkipHiddenRecipients,
     oCompressKeys,
     oCompressSigs,
     oAlwaysTrust,
@@ -626,6 +628,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (aListSigs, "list-sig", "@"),   /* alias */
   ARGPARSE_s_n (aCheckKeys, "check-sig", "@"), /* alias */
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
+  ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
+  ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oCompressKeys, "compress-keys", "@"),
   ARGPARSE_s_n (oCompressSigs, "compress-sigs", "@"),
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
@@ -1586,6 +1590,11 @@ gpgconf_list (const char *configfile)
   printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
 
+  /* The next one is an info only item and should match what
+     keygen:ask_keysize actually implements.  */
+  printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+          "RSA-2048");
+
   xfree (configfile_esc);
 }
 
@@ -2315,6 +2324,10 @@ main (int argc, char **argv)
           case oWithSigList: opt.list_sigs = 1; break;  
 
 	  case oSkipVerify: opt.skip_verify=1; break;
+
+	  case oSkipHiddenRecipients: opt.skip_hidden_recipients = 1; break;
+	  case oNoSkipHiddenRecipients: opt.skip_hidden_recipients = 0; break;
+
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	    /* There are many programs (like mutt) that call gpg with

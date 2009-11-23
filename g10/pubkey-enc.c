@@ -85,6 +85,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	if( !(rc = get_seckey( sk, k->keyid )) )
 	    rc = get_it( k, dek, sk, k->keyid );
     }
+    else if (opt.skip_hidden_recipients)
+      rc = gpg_error (GPG_ERR_NO_SECKEY);
     else { /* anonymous receiver: Try all available secret keys */
 	void *enum_context = NULL;
 	u32 keyid[2];

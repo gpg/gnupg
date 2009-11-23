@@ -1,3 +1,13 @@
+2009-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (gpgconf_list): Add key "default_pubkey_algo".
+
+2009-11-18  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Add option --skip-hidden-recipients and no- variant.
+	* options.h (struct opt): Add field SKIP_HIDDEN_RECIPIENTS.
+	* pubkey-enc.c (get_session_key): Implement that option.
+
 2009-11-04  Werner Koch  <wk@g10code.com>
 
 	* server.c (register_commands): Add NULL arg to

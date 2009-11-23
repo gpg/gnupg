@@ -1761,14 +1761,24 @@ Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
 @item --try-all-secrets
+@opindex try-all-secrets
 Don't look at the key ID as stored in the message but try all secret
 keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
 @option{--throw-keyids}) and might come handy in case where an encrypted
 message contains a bogus key ID.
 
-
-
+@item --skip-hidden-recipients
+@itemx --no-skip-hidden-recipients
+@opindex skip-hidden-recipients
+@opindex no-skip-hidden-recipients
+During decryption skip all anonymous recipients.  This option helps in
+the case that people use the hidden recipients feature to hide there
+own encrypt-to key from others.  If oneself has many secret keys this
+may lead to a major annoyance because all keys are tried in turn to
+decrypt soemthing which was not really intended for it.  The drawback
+of this option is that it is currently not possible to decrypt a
+message which includes real anonymous recipients.
 
 
 @end table

@@ -667,6 +667,11 @@ static gc_option_t gc_options_gpg[] =
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
+   { "default_pubkey_algo",
+     (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
@@ -693,6 +698,8 @@ static gc_option_t gc_options_gpg[] =
    { "auto-key-locate", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|MECHANISMS|use MECHANISMS to locate keys by mail address"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+
+
 
 
    GC_OPTION_NULL
@@ -744,6 +751,10 @@ static gc_option_t gc_options_gpgsm[] =
    { "keyserver", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "gnupg", N_("|SPEC|use this keyserver to lookup keys"),
      GC_ARG_TYPE_LDAP_SERVER, GC_BACKEND_GPGSM },
+   { "default_pubkey_algo",
+     (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

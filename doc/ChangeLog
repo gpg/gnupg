@@ -1,3 +1,8 @@
+2009-11-18  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Key related Options): Describe
+	--skip-hidden-recipients.
+
 2009-10-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (GPG Configuration Options): Clarify that ca-cert-file
