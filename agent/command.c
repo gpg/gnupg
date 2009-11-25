@@ -1916,10 +1916,10 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   if (listen_fd == GNUPG_INVALID_FD && fd == GNUPG_INVALID_FD)
     {
-      int filedes[2];
+      assuan_fd_t filedes[2];
 
-      filedes[0] = 0;
-      filedes[1] = 1;
+      filedes[0] = assuan_fdopen (0);
+      filedes[1] = assuan_fdopen (1);
       rc = assuan_init_pipe_server (ctx, filedes);
     }
   else if (listen_fd != GNUPG_INVALID_FD)

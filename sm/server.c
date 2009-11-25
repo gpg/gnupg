@@ -1205,7 +1205,7 @@ void
 gpgsm_server (certlist_t default_recplist)
 {
   int rc;
-  int filedes[2];
+  assuan_fd_t filedes[2];
   assuan_context_t ctx;
   struct server_control_s ctrl;
   static const char hello[] = ("GNU Privacy Guard's S/M server "
@@ -1217,8 +1217,8 @@ gpgsm_server (certlist_t default_recplist)
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FIELDES in this case. */
-  filedes[0] = 0;
-  filedes[1] = 1;
+  filedes[0] = assuan_fdopen (0);
+  filedes[1] = assuan_fdopen (1);
   rc = assuan_new (&ctx);
   if (rc)
     {

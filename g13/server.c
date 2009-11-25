@@ -574,7 +574,7 @@ gpg_error_t
 g13_server (ctrl_t ctrl)
 {
   gpg_error_t err;
-  int filedes[2];
+  assuan_fd_t filedes[2];
   assuan_context_t ctx = NULL;
   static const char hello[] = ("GNU Privacy Guard's G13 server "
                                PACKAGE_VERSION " ready");
@@ -582,8 +582,8 @@ g13_server (ctrl_t ctrl)
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FIELDES in this case. */
-  filedes[0] = 0;
-  filedes[1] = 1;
+  filedes[0] = assuan_fdopen (0);
+  filedes[1] = assuan_fdopen (1);
   err = assuan_new (&ctx);
   if (err)
     {

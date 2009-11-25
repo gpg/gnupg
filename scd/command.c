@@ -1913,10 +1913,10 @@ scd_command_handler (ctrl_t ctrl, int fd)
 
   if (fd == -1)
     {
-      int filedes[2];
+      assuan_fd_t filedes[2];
 
-      filedes[0] = 0;
-      filedes[1] = 1;
+      filedes[0] = assuan_fdopen (0);
+      filedes[1] = assuan_fdopen (1);
       rc = assuan_init_pipe_server (ctx, filedes);
     }
   else

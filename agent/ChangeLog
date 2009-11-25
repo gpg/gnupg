@@ -1,3 +1,8 @@
+2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* command.c (start_command_handler): Use assuan_fd_t and
+	assuan_fdopen on fds.
+
 2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	* call-pinentry.c (start_pinentry): Call assuan_pipe_connect, not
