@@ -1,3 +1,9 @@
+2009-11-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* command.c (start_command_handler): Do not call
+	assuan_set_log_stream anymore.
+	* gpg-agent.c (main): But call assuan_set_assuan_log_stream here.
+
 2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* command.c (start_command_handler): Use assuan_fd_t and

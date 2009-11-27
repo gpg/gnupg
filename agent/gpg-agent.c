@@ -472,6 +472,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           || strcmp (current_logfile, pargs->r.ret_str))
         {
           log_set_file (pargs->r.ret_str);
+	  if (DBG_ASSUAN)
+	    assuan_set_assuan_log_stream (log_get_stream ());
           xfree (current_logfile);
           current_logfile = xtrystrdup (pargs->r.ret_str);
         }
@@ -922,6 +924,8 @@ main (int argc, char **argv )
                              |JNLIB_LOG_WITH_PID));
       current_logfile = xstrdup (logfile);
     }
+  if (DBG_ASSUAN)
+    assuan_set_assuan_log_stream (log_get_stream ());
 
   /* Make sure that we have a default ttyname. */
   if (!default_ttyname && ttyname (1))

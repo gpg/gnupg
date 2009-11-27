@@ -1953,9 +1953,6 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   ctrl->server_local->use_cache_for_signing = 1;
   ctrl->digest.raw_value = 0;
 
-  if (DBG_ASSUAN)
-    assuan_set_log_stream (ctx, log_get_stream ());
-
   assuan_set_io_monitor (ctx, io_monitor, NULL);
 
   for (;;)
