@@ -361,13 +361,14 @@ read_trustfiles (void)
   ti = xtryrealloc (table, (tableidx?tableidx:1) * sizeof *table);
   if (!ti)
     {
+      err = gpg_error_from_syserror ();
       xfree (table);
       return err;
     }
 
   lock_trusttable ();
   xfree (trusttable);
-  trusttable = table;
+  trusttable = ti;
   trusttablesize = tableidx;
   unlock_trusttable ();
   return 0;
