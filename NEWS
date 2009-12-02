@@ -4,6 +4,11 @@ Noteworthy changes in version 2.1 (under development)
  * Encrypted OpenPGP messages with trailing data (e.g. other OpenPGP
    packets) are now correctly parsed.
 
+ * The GPGSM --audit-log feature is now more complete.
+
+ * The G13 tool for disk encryption key management has been added.
+
+
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------

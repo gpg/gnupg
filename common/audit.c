@@ -1,5 +1,5 @@
 /* audit.c - GnuPG's audit subsystem
- *	Copyright (C) 2007 Free Software Foundation, Inc.
+ *	Copyright (C) 2007, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,7 +42,7 @@ struct log_item_s
 {
   audit_event_t event; /* The event.  */
   gpg_error_t err;     /* The logged error code.  */
-  int intvalue;        /* A logged interger value.  */
+  int intvalue;        /* A logged integer value.  */
   char *string;        /* A malloced string or NULL.  */
   ksba_cert_t cert;    /* A certifciate or NULL. */
   int have_err:1;
@@ -483,6 +483,14 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
         oktext = _("|audit-log-result|Not enabled");
       else if (!strcmp (oktext, "error"))
         oktext = _("|audit-log-result|Error");
+      else if (!strcmp (oktext, "not-used"))
+        oktext = _("|audit-log-result|Not used");
+      else if (!strcmp (oktext, "okay"))
+        oktext = _("|audit-log-result|Okay");
+      else if (!strcmp (oktext, "skipped"))
+        oktext = _("|audit-log-result|Skipped");
+      else if (!strcmp (oktext, "some"))
+        oktext = _("|audit-log-result|Some");
       else
         s = "";
 
@@ -806,16 +814,72 @@ proc_type_encrypt (audit_ctx_t ctx)
 static void
 proc_type_sign (audit_ctx_t ctx)
 {
-  log_item_t item;
+  log_item_t item, loopitem;
+  int signer, idx;
+  const char *result;
+  ksba_cert_t cert;
+  char *name;
+  int lastalgo;
 
-  item = NULL;
+  item = find_log_item (ctx, AUDIT_SIGNING_DONE, 0);
   writeout_li (ctx, item?"Yes":"No", "%s", _("Data signing succeeded"));
 
   enter_li (ctx);
 
   item = find_log_item (ctx, AUDIT_GOT_DATA, 0);
   writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
+  /* Write remarks with the data hash algorithms.  We use a very
+     simple scheme to avoid some duplicates.  */
+  loopitem = NULL; 
+  lastalgo = 0;
+  while ((loopitem = find_next_log_item
+          (ctx, loopitem, AUDIT_DATA_HASH_ALGO, AUDIT_NEW_SIG)))
+    {
+      if (loopitem->intvalue && loopitem->intvalue != lastalgo)
+        writeout_rem (ctx, _("data hash algorithm: %s"),
+                      gcry_md_algo_name (loopitem->intvalue));
+      lastalgo = loopitem->intvalue;
+    }
 
+  /* Loop over all signer.  */
+  loopitem = NULL;
+  signer = 0;
+  while ((loopitem=find_next_log_item (ctx, loopitem, AUDIT_NEW_SIG, 0)))
+    {
+      signer++;
+
+      item = find_next_log_item (ctx, loopitem, AUDIT_SIGNED_BY, AUDIT_NEW_SIG);
+      if (!item)
+        result = "error";
+      else if (!item->err)
+        result = "okay";
+      else if (gpg_err_code (item->err) == GPG_ERR_CANCELED)
+        result = "skipped";
+      else
+        result = gpg_strerror (item->err);
+      cert = item? item->cert : NULL;
+
+      writeout_li (ctx, result, _("Signer %d"), signer);
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_ATTR_HASH_ALGO, AUDIT_NEW_SIG);
+      if (item)
+        writeout_rem (ctx, _("attr hash algorithm: %s"),
+                      gcry_md_algo_name (item->intvalue));
+
+      if (cert)
+        {
+          name = get_cert_name (cert);
+          writeout_rem (ctx, "%s", name);
+          xfree (name);
+          enter_li (ctx);
+          for (idx=0; (name = get_cert_subject (cert, idx)); idx++)
+            {
+              writeout_rem (ctx, "%s", name);
+              xfree (name);
+            }
+          leave_li (ctx);
+        }
+    }
 
   leave_li (ctx);
 }
@@ -826,16 +890,87 @@ proc_type_sign (audit_ctx_t ctx)
 static void
 proc_type_decrypt (audit_ctx_t ctx)
 {
-  log_item_t item;
+  log_item_t loopitem, item;
+  int algo, recpno;
+  char *name;
+  char numbuf[35];
+  int idx;
 
-  item = NULL;
-  writeout_li (ctx, item?"Yes":"No", "%s", _("Data decryption succeeded"));
+  item = find_log_item (ctx, AUDIT_DECRYPTION_RESULT, 0);
+  writeout_li (ctx, item && !item->err?"Yes":"No",
+               "%s", _("Data decryption succeeded"));
 
   enter_li (ctx);
 
   item = find_log_item (ctx, AUDIT_GOT_DATA, 0);
   writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
 
+  item = find_log_item (ctx, AUDIT_DATA_CIPHER_ALGO, 0);
+  algo = item? item->intvalue : 0;
+  writeout_li (ctx, algo?"Yes":"No", "%s", _("Encryption algorithm supported"));
+  if (algo)
+    writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+
+  item = find_log_item (ctx, AUDIT_BAD_DATA_CIPHER_ALGO, 0);
+  if (item && item->string)
+    {
+      algo = gcry_cipher_map_name (item->string);
+      if (algo)
+        writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+      else if (item->string && !strcmp (item->string, "1.2.840.113549.3.2"))
+        writeout_rem (ctx, _("unsupported algorithm: %s"), "RC2");
+      else if (item->string)
+        writeout_rem (ctx, _("unsupported algorithm: %s"), item->string);
+      else
+        writeout_rem (ctx, _("seems to be not encrypted"));
+    }
+
+
+  for (recpno = 0, item = NULL;
+       (item = find_next_log_item (ctx, item, AUDIT_NEW_RECP, 0)); recpno++)
+    ;
+  snprintf (numbuf, sizeof numbuf, "%d", recpno);
+  writeout_li (ctx, numbuf, "%s", _("Number of recipients"));
+
+  /* Loop over all recipients.  */
+  loopitem = NULL;
+  while ((loopitem = find_next_log_item (ctx, loopitem, AUDIT_NEW_RECP, 0)))
+    {
+      const char *result;
+
+      recpno = loopitem->have_intvalue? loopitem->intvalue : -1;
+
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_RECP_RESULT, AUDIT_NEW_RECP);
+      if (!item)
+        result = "not-used";
+      else if (!item->err)
+        result = "okay";
+      else if (gpg_err_code (item->err) == GPG_ERR_CANCELED)
+        result = "skipped";
+      else
+        result = gpg_strerror (item->err);
+
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_RECP_NAME, AUDIT_NEW_RECP);
+      writeout_li (ctx, result, _("Recipient %d"), recpno);
+      if (item && item->string)
+        writeout_rem (ctx, "%s", item->string);
+
+      /* If we have a certificate write out more infos.  */
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_SAVE_CERT, AUDIT_NEW_RECP);
+      if (item && item->cert)
+        {
+          enter_li (ctx);
+          for (idx=0; (name = get_cert_subject (item->cert, idx)); idx++)
+            {
+              writeout_rem (ctx, "%s", name);
+              xfree (name);
+            }
+          leave_li (ctx);
+        }
+    }
 
   leave_li (ctx);
 }
@@ -847,11 +982,12 @@ static void
 proc_type_verify (audit_ctx_t ctx)
 {
   log_item_t loopitem, item;
-  int signo, count, idx;
+  int signo, count, idx, n_good, n_bad;
   char numbuf[35];
+  const char *result;
 
   /* If there is at least one signature status we claim that the
-     verifciation succeeded.  This does not mean that the data has
+     verification succeeded.  This does not mean that the data has
      verified okay.  */
   item = find_log_item (ctx, AUDIT_SIG_STATUS, 0);
   writeout_li (ctx, item?"Yes":"No", "%s", _("Data verification succeeded"));
@@ -867,17 +1003,41 @@ proc_type_verify (audit_ctx_t ctx)
   if (!item)
     goto leave;
 
-  item = find_log_item (ctx, AUDIT_DATA_HASH_ALGO, AUDIT_NEW_SIG);
-  writeout_li (ctx, item?"Yes":"No", "%s", _("Parsing signature succeeded"));
-  if (!item)
+  /* Print info about the used data hashing algorithms.  */
+  for (idx=0, n_good=n_bad=0; idx < ctx->logused; idx++)
     {
-      item = find_log_item (ctx, AUDIT_BAD_DATA_HASH_ALGO, AUDIT_NEW_SIG);
-      if (item)
-        writeout_rem (ctx, _("Bad hash algorithm: %s"), 
-                      item->string? item->string:"?");
-
-      goto leave;
+      item = ctx->log + idx;
+      if (item->event == AUDIT_NEW_SIG)
+        break;
+      else if (item->event == AUDIT_DATA_HASH_ALGO)
+        n_good++;
+      else if (item->event == AUDIT_BAD_DATA_HASH_ALGO)
+        n_bad++;
     }
+  item = find_log_item (ctx, AUDIT_DATA_HASHING, AUDIT_NEW_SIG);
+  if (!item || item->err || !n_good)
+    result = "No";
+  else if (n_good && !n_bad)
+    result = "Yes";
+  else
+    result = "Some";
+  writeout_li (ctx, result, "%s", _("Parsing data succeeded"));
+  if (n_good || n_bad)
+    {
+      for (idx=0; idx < ctx->logused; idx++)
+        {
+          item = ctx->log + idx;
+          if (item->event == AUDIT_NEW_SIG)
+            break;
+          else if (item->event == AUDIT_DATA_HASH_ALGO)
+            writeout_rem (ctx, _("data hash algorithm: %s"),
+                          gcry_md_algo_name (item->intvalue));
+          else if (item->event == AUDIT_BAD_DATA_HASH_ALGO)
+            writeout_rem (ctx, _("bad data hash algorithm: %s"), 
+                          item->string? item->string:"?");
+        }
+    }
+
 
   /* Loop over all signatures.  */
   loopitem = find_log_item (ctx, AUDIT_NEW_SIG, 0);
@@ -893,6 +1053,18 @@ proc_type_verify (audit_ctx_t ctx)
                                  AUDIT_SIG_NAME, AUDIT_NEW_SIG);
       if (item)
         writeout_rem (ctx, "%s", item->string);
+
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_DATA_HASH_ALGO, AUDIT_NEW_SIG);
+      if (item)
+        writeout_rem (ctx, _("data hash algorithm: %s"),
+                      gcry_md_algo_name (item->intvalue));
+      item = find_next_log_item (ctx, loopitem,
+                                 AUDIT_ATTR_HASH_ALGO, AUDIT_NEW_SIG);
+      if (item)
+        writeout_rem (ctx, _("attr hash algorithm: %s"),
+                      gcry_md_algo_name (item->intvalue));
+
       enter_li (ctx);
       
       /* List the certificate chain.  */
@@ -1006,11 +1178,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   /* We use an environment variable to include some debug info in the
      log.  */
   if ((s = getenv ("gnupg_debug_audit")))
-    {
-      show_raw = 1;
-      if (!strcmp (s, "html"))
-        use_html = 1;
-    }
+    show_raw = 1;
 
   assert (!ctx->outstream);
   ctx->outstream = out;

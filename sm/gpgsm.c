@@ -99,6 +99,7 @@ enum cmd_and_opt_values {
   oLogFile,
   oNoLogFile,
   oAuditLog,
+  oHtmlAuditLog,
 
   oEnableSpecialFilenames,
 
@@ -286,6 +287,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oAuditLog, "audit-log", 
                 N_("|FILE|write an audit log to FILE")),
+  ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", ""),
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_n (oBatch, "batch", N_("batch mode: never ask")),
   ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),
@@ -851,6 +853,7 @@ main ( int argc, char **argv)
   int default_keyring = 1;
   char *logfile = NULL;
   char *auditlog = NULL;
+  char *htmlauditlog = NULL;
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
@@ -866,6 +869,7 @@ main ( int argc, char **argv)
   int do_not_setup_keys = 0;
   int recp_required = 0;
   estream_t auditfp = NULL;
+  estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
 
   /*mtrace();*/
@@ -1182,6 +1186,7 @@ main ( int argc, char **argv)
         case oNoLogFile: logfile = NULL; break;          
 
         case oAuditLog: auditlog = pargs.r.ret_str; break;
+        case oHtmlAuditLog: htmlauditlog = pargs.r.ret_str; break;
 
         case oBatch: 
           opt.batch = 1;
@@ -1410,11 +1415,6 @@ main ( int argc, char **argv)
     }
 #  endif
 
-  if (auditlog)
-    log_info ("NOTE: The audit log feature (--audit-log) is "
-              "WORK IN PRORESS and not ready for use!\n");
-
-
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
 
@@ -1546,7 +1546,7 @@ main ( int argc, char **argv)
 
 
   /* Prepare the audit log feature for certain commands.  */
-  if (auditlog)
+  if (auditlog || htmlauditlog)
     {
       switch (cmd)
         {
@@ -1556,7 +1556,10 @@ main ( int argc, char **argv)
         case aVerify:
           audit_release (ctrl.audit);
           ctrl.audit = audit_new ();
-          auditfp = open_es_fwrite (auditlog);
+          if (auditlog)
+            auditfp = open_es_fwrite (auditlog);
+          if (htmlauditlog)
+            htmlauditfp = open_es_fwrite (htmlauditlog);
           break;
         default:
           break;
@@ -1914,12 +1917,16 @@ main ( int argc, char **argv)
     }
 
   /* Print the audit result if needed.  */
-  if (auditlog && auditfp)
+  if ((auditlog && auditfp) || (htmlauditlog && htmlauditfp))
     {
-      audit_print_result (ctrl.audit, auditfp, 0);
+      if (auditlog && auditfp)
+        audit_print_result (ctrl.audit, auditfp, 0);
+      if (htmlauditlog && htmlauditfp)
+        audit_print_result (ctrl.audit, htmlauditfp, 1);
       audit_release (ctrl.audit);
       ctrl.audit = NULL;
       es_fclose (auditfp);
+      es_fclose (htmlauditfp);
     }
   
   /* cleanup */

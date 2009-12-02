@@ -34,18 +34,20 @@
 #include "i18n.h"
 
 
-static void
+/* Hash the data and return if something was hashed.  Return -1 on error.  */
+static int
 hash_data (int fd, gcry_md_hd_t md)
 {
   FILE *fp;
   char buffer[4096];
   int nread;
+  int rc = 0;
 
   fp = fdopen ( dup (fd), "rb");
   if (!fp)
     {
       log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-      return;
+      return -1;
     }
 
   do 
@@ -55,8 +57,12 @@ hash_data (int fd, gcry_md_hd_t md)
     }
   while (nread);
   if (ferror (fp))
+    {
       log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+      rc = -1;
+    }
   fclose (fp);
+  return rc;
 }
 
 static int
@@ -321,6 +327,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   certlist_t cl;
   int release_signerlist = 0;
 
+  audit_set_type (ctrl->audit, AUDIT_TYPE_SIGN);
+
   kh = keydb_new (0);
   if (!kh)
     {
@@ -539,7 +547,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           goto leave;
         }
       gcry_md_enable (data_md, algo);
+      audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
     }
+
+  audit_log (ctrl->audit, AUDIT_SETUP_READY);
 
   if (detached)
     { /* We hash the data right now so that we can store the message
@@ -548,7 +559,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       unsigned char *digest;
       size_t digest_len;
 
-      hash_data (data_fd, data_md);
+      if (!hash_data (data_fd, data_md))
+        audit_log (ctrl->audit, AUDIT_GOT_DATA);
       for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
         {
           digest = gcry_md_read (data_md, cl->hash_algo);
@@ -623,6 +635,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           rc = hash_and_copy_data (data_fd, data_md, writer);
           if (rc)
             goto leave;
+          audit_log (ctrl->audit, AUDIT_GOT_DATA);
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
             {
               digest = gcry_md_read (data_md, cl->hash_algo);
@@ -663,13 +676,18 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               unsigned char *sigval = NULL;
               char *buf, *fpr;
 
+              audit_log_i (ctrl->audit, AUDIT_NEW_SIG, signer);
               if (signer)
                 gcry_md_reset (md);
               {
                 certlist_t cl_tmp;
 
                 for (cl_tmp=signerlist; cl_tmp; cl_tmp = cl_tmp->next)
-                  gcry_md_enable (md, cl_tmp->hash_algo);
+                  {
+                    gcry_md_enable (md, cl_tmp->hash_algo);
+                    audit_log_i (ctrl->audit, AUDIT_ATTR_HASH_ALGO, 
+                                 cl_tmp->hash_algo);
+                  }
               }
 
               rc = ksba_cms_hash_signed_attrs (cms, signer);
@@ -685,6 +703,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                                                md, cl->hash_algo, &sigval);
               if (rc)
                 {
+                  audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, rc);
                   gcry_md_close (md);
                   goto leave;
                 }
@@ -693,6 +712,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               xfree (sigval);
               if (err)
                 {
+                  audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, err);
                   log_error ("failed to store the signature: %s\n",
                              gpg_strerror (err));
                   rc = err;
@@ -708,28 +728,29 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                   gcry_md_close (md);
                   goto leave;
                 }
+              rc = 0;
               {
                 int pkalgo = gpgsm_get_key_algo_info (cl->cert, NULL);
-                rc = asprintf (&buf, "%c %d %d 00 %s %s",
-                               detached? 'D':'S',
-                               pkalgo, 
-                               cl->hash_algo, 
-                               signed_at,
-                               fpr);
+                buf = xtryasprintf ("%c %d %d 00 %s %s",
+                                    detached? 'D':'S',
+                                    pkalgo, 
+                                    cl->hash_algo, 
+                                    signed_at,
+                                    fpr);
+                if (!buf)
+                  rc = gpg_error_from_syserror ();
               }
               xfree (fpr);
-              if (rc < 0)
+              if (rc)
                 {
-                  rc = gpg_error (GPG_ERR_ENOMEM);
                   gcry_md_close (md);
                   goto leave;
                 }
-              rc = 0;
               gpgsm_status (ctrl, STATUS_SIG_CREATED, buf);
-              free (buf); /* yes, we must use the regular free() here */
+              xfree (buf);
+              audit_log_cert (ctrl->audit, AUDIT_SIGNED_BY, cl->cert, 0);
             }
           gcry_md_close (md);
-
         }
     }
   while (stopreason != KSBA_SR_READY);   
@@ -741,6 +762,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
+  audit_log (ctrl->audit, AUDIT_SIGNING_DONE);
   log_info ("signature created\n");
 
 

@@ -1,3 +1,7 @@
+2009-11-27  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (cmds, keyedit_menu): New command "checkbkupkey".
+
 2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (gpg_server): Use assuan_fd_t and assuan_fdopen on fds.
