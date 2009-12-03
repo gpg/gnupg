@@ -1,3 +1,8 @@
+2009-12-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (set_debug): Allow for numerical debug levels.  Print
+	active debug flags.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_decipher): Compute required Le.

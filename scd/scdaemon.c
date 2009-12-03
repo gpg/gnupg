@@ -288,19 +288,30 @@ tid_log_callback (void)
 static void
 set_debug (const char *level)
 {
+  int numok = (level && digitp (level));
+  int numlvl = numok? atoi (level) : 0;
+
   if (!level)
     ;
-  else if (!strcmp (level, "none"))
+  else if (!strcmp (level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
-  else if (!strcmp (level, "basic"))
+  else if (!strcmp (level, "basic") || (numok && numlvl <= 2))
     opt.debug = DBG_ASSUAN_VALUE;
-  else if (!strcmp (level, "advanced"))
+  else if (!strcmp (level, "advanced") || (numok && numlvl <= 5))
     opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
-  else if (!strcmp (level, "expert"))
+  else if (!strcmp (level, "expert") || (numok && numlvl <= 8))
     opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
                  |DBG_CACHE_VALUE|DBG_CARD_IO_VALUE);
-  else if (!strcmp (level, "guru"))
-    opt.debug = ~0;
+  else if (!strcmp (level, "guru") || numok)
+    {
+      opt.debug = ~0;
+      /* Unless the "guru" string has been used we don't want to allow
+         hashing debugging.  The rationale is that people tend to
+         select the highest debug value and would then clutter their
+         disk with debug files which may reveal confidential data.  */ 
+      if (numok)
+        opt.debug &= ~(DBG_HASHING_VALUE);
+    }
   else
     {
       log_error (_("invalid debug-level `%s' given\n"), level);
@@ -318,6 +329,18 @@ set_debug (const char *level)
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+
+  if (opt.debug)
+    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s\n",
+              (opt.debug & DBG_COMMAND_VALUE)? " command":"",    
+              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",    
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
+              (opt.debug & DBG_CACHE_VALUE  )? " cache":"", 
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
+              (opt.debug & DBG_HASHING_VALUE)? " hashing":"", 
+              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
+              (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"");
 }
  
 

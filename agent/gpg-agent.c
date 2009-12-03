@@ -360,19 +360,30 @@ my_strusage (int level)
 static void
 set_debug (void)
 {
+  int numok = (debug_level && digitp (debug_level));
+  int numlvl = numok? atoi (debug_level) : 0;
+
   if (!debug_level)
     ;
-  else if (!strcmp (debug_level, "none"))
+  else if (!strcmp (debug_level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
-  else if (!strcmp (debug_level, "basic"))
+  else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
     opt.debug = DBG_ASSUAN_VALUE;
-  else if (!strcmp (debug_level, "advanced"))
+  else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
     opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
-  else if (!strcmp (debug_level, "expert"))
+  else if (!strcmp (debug_level, "expert") || (numok && numlvl <= 8))
     opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
                  |DBG_CACHE_VALUE);
-  else if (!strcmp (debug_level, "guru"))
-    opt.debug = ~0;
+  else if (!strcmp (debug_level, "guru") || numok)
+    {
+      opt.debug = ~0;
+      /* Unless the "guru" string has been used we don't want to allow
+         hashing debugging.  The rationale is that people tend to
+         select the highest debug value and would then clutter their
+         disk with debug files which may reveal confidential data.  */ 
+      if (numok)
+        opt.debug &= ~(DBG_HASHING_VALUE);
+    }
   else
     {
       log_error (_("invalid debug-level `%s' given\n"), debug_level);
@@ -390,6 +401,17 @@ set_debug (void)
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+
+  if (opt.debug)
+    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s\n",
+              (opt.debug & DBG_COMMAND_VALUE)? " command":"",    
+              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",    
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
+              (opt.debug & DBG_CACHE_VALUE  )? " cache":"", 
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
+              (opt.debug & DBG_HASHING_VALUE)? " hashing":"", 
+              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
 }
  
 

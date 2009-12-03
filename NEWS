@@ -4,6 +4,9 @@ Noteworthy changes in version 2.0.14
  * The default for --inlucde-cert is now to include all certificates
    in the chain except for the root certificate.
 
+ * Numerical values may now be used as an alternative to the
+   debug-level keywords.
+
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------
