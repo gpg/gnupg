@@ -1,3 +1,12 @@
+2009-12-03  Werner Koch  <wk@g10code.com>
+
+	From trunk:
+	* audit.c (proc_type_decrypt, proc_type_sign): Implemented.
+	(proc_type_verify): Print hash algo infos.
+	* audit.h (AUDIT_DATA_CIPHER_ALGO, AUDIT_BAD_DATA_CIPHER_ALSO)
+	(AUDIT_NEW_RECP, AUDIT_DECRYPTION_RESULT, AUDIT_RECP_RESULT)
+	(AUDIT_ATTR_HASH_ALGO, AUDIT_SIGNED_BY, AUDIT_SIGNING_DONE):
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	Update from libestream:

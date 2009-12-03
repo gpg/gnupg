@@ -62,6 +62,12 @@ typedef enum
        operations the Dirmngr is not required and thus no such event
        will be logged.  */
 
+    AUDIT_GPG_READY,   /* err */
+    /* Indicates whether the Gpg engine is available. */
+
+    AUDIT_GPGSM_READY, /* err */
+    /* Indicates whether the Gpgsm engine is available. */
+
     AUDIT_GOT_DATA,
     /* Data to be processed has been seen.  */
 
@@ -72,14 +78,26 @@ typedef enum
     /* A certifciate only signature has been detected.  */
 
     AUDIT_DATA_HASH_ALGO,  /* int */
-    /* The hash algo given as argument is used for this signature.
-       This event will be repeated for all hash algorithms used with
-       the data.  */
+    /* The hash algo given as argument is used for the data.  This
+       event will be repeated for all hash algorithms used with the
+       data.  */
+
+    AUDIT_ATTR_HASH_ALGO,  /* int */
+    /* The hash algo given as argument is used to hash the message
+       digest and other signed attributes of this signature. */
+
+    AUDIT_DATA_CIPHER_ALGO,  /* int */
+    /* The cipher algo given as argument is used for this data.  */
 
     AUDIT_BAD_DATA_HASH_ALGO,  /* string */
     /* The hash algo as specified by the signature can't be used.
        STRING is the description of this algorithm which usually is an
        OID string.  STRING may be NULL. */
+
+    AUDIT_BAD_DATA_CIPHER_ALGO,  /* string */
+    /* The symmetric cipher algorithm is not supported.  STRING is the
+       description of this algorithm which usually is an OID string.
+       STRING may be NULL. */
 
     AUDIT_DATA_HASHING,    /* ok_err */
     /* Logs the result of the data hashing. */
@@ -109,7 +127,7 @@ typedef enum
        certificate used for verification.  An example for STRING when
        using CMS is: "#1234/CN=Prostetnic Vogon Jeltz".  */
 
-    AUDIT_SIG_STATUS,     /* string */
+    AUDIT_SIG_STATUS,      /* string */
     /* The signature status of the current signer.  This is the last
        audit information for one signature.  STRING gives the status:
 
@@ -120,6 +138,24 @@ typedef enum
          "bad"         - bad signature
          "good"        - good signature
     */
+
+    AUDIT_NEW_RECP,        /* int */
+    /* A new recipient has been seen during decryption.  The argument
+       is the recipient number as used internally by the program.  */
+    
+    AUDIT_RECP_NAME,       /* string */
+    /* The name of a recipient.  This is the name or other identification
+       data as known from the decryption and not the name from the
+       certificate used for decryption.  An example for STRING when
+       using CMS is: "#1234/CN=Prostetnic Vogon Jeltz".  */
+
+    AUDIT_RECP_RESULT,    /* ok_err */
+    /* The status of the session key decryption.  This is only written
+       for recipients tried. */
+
+    AUDIT_DECRYPTION_RESULT,    /* ok_err */
+    /* The status of the entire decryption.  The decryption was
+       successful if the error code is 0. */
 
     AUDIT_VALIDATE_CHAIN,
     /* Start the validation of a certificate chain. */
@@ -158,7 +194,12 @@ typedef enum
     AUDIT_ENCRYPTION_DONE,
     /* Encryption succeeded.  */
 
-    
+    AUDIT_SIGNED_BY,   /* cert, err */
+    /* Records the certificate used for signed and whether the signure
+       could be created (if err==0).  */
+
+    AUDIT_SIGNING_DONE,
+    /* Signing succeeded.  */
 
 
     AUDIT_LAST_EVENT  /* Marker for parsing this list.  */

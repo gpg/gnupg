@@ -1613,6 +1613,11 @@ gpgconf_list (const char *configfile)
   printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
 
+  /* The next one is an info only item and should match what
+     keygen:ask_keysize actually implements.  */
+  printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+          "RSA-2048");
+
   xfree (configfile_esc);
 }
 

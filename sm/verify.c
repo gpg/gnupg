@@ -216,6 +216,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
                 log_debug ("enabling extra hash algorithm %d\n", 
                            opt.extra_digest_algo);
               gcry_md_enable (data_md, opt.extra_digest_algo);
+              audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO,
+                           opt.extra_digest_algo);
             }
           if (is_detached)
             {
@@ -236,7 +238,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
       else if (stopreason == KSBA_SR_END_DATA)
         { /* The data bas been hashed */
-
+          audit_log_ok (ctrl->audit, AUDIT_DATA_HASHING, 0);
         }
     }
   while (stopreason != KSBA_SR_READY);   
@@ -452,6 +454,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
       log_printf (_(" using certificate ID 0x%08lX\n"),
                   gpgsm_get_short_fingerprint (cert, NULL));
 
+      audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO, algo);
 
       if (msgdigest)
         { /* Signed attributes are available. */
@@ -484,6 +487,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
               goto next_signer; 
             }
             
+          audit_log_i (ctrl->audit, AUDIT_ATTR_HASH_ALGO, sigval_hash_algo);
           rc = gcry_md_open (&md, sigval_hash_algo, 0);
           if (rc)
             {

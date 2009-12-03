@@ -3,6 +3,8 @@
 	* gpg.c (set_debug): Allow for numerical debug levels.  Print
 	active debug flags.
 
+	* gpg.c (gpgconf_list): Add key "default_pubkey_algo".
+
 2009-09-28  Werner Koch  <wk@g10code.com>
 
 	* trustdb.c (get_validity_info): Take care of a NULL PK.  Fixes

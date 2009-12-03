@@ -1,5 +1,20 @@
 2009-12-03  Werner Koch  <wk@g10code.com>
 
+	From trunk:
+
+	* verify.c (gpgsm_verify): Add audit info on hash algorithms.
+	* sign.c (gpgsm_sign): Add audit log calls.
+	(hash_data): Return an error indicator.
+	* decrypt.c (gpgsm_decrypt): Add audit log calls.
+
+	* gpgsm.c: New option --html-audit-log.
+
+	* certreqgen.c (proc_parameters): Change fallback key length to
+	2048.
+	* gpgsm.c (main) <aGpgConfList>: Add key "default_pubkey_algo".
+
+2009-12-03  Werner Koch  <wk@g10code.com>
+
 	* gpgsm.c (set_debug): Allow for numerical debug levels.  Print
 	active debug flags.
 

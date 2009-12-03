@@ -1765,6 +1765,8 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 static unsigned
 ask_keysize (int algo, unsigned int primary_keysize)
 {
+  /* NOTE: If you change the default key size/algo, remember to change
+     it also in gpg.c:gpgconf_list.  */
   unsigned int nbits, min, def=2048, max=4096;
   int for_subkey = !!primary_keysize;
   int autocomp = 0;

@@ -61,7 +61,7 @@ The format of the native parameter file is follows:
 	This is a required parameter.  For now the only supported
         algorithm is "rsa".
      Key-Length: <length-in-bits>
-	Length of the key in bits.  Default is 1024.
+	Length of the key in bits.  Default is 2048.
      Key-Grip: hexstring
         This is optional and used to generate a request for an already
         existing key.  Key-Length will be ignored when given,
@@ -83,7 +83,7 @@ Here is an example:
 $ cat >foo <<EOF
 %echo Generating a standard key
 Key-Type: RSA
-Key-Length: 1024
+Key-Length: 2048
 Name-DN: CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE
 Name-Email: joe@foo.bar
 # Do a commit here, so that we can later print "done" :-)
@@ -477,7 +477,7 @@ proc_parameters (ctrl_t ctrl,
   
   /* Check the keylength. */
   if (!get_parameter (para, pKEYLENGTH, 0))
-    nbits = 1024;
+    nbits = 2048;
   else
     nbits = get_parameter_uint (para, pKEYLENGTH);
   if ((nbits < 1024 || nbits > 4096) && !cardkeyid)

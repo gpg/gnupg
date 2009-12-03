@@ -253,6 +253,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
 
   memset (&dfparm, 0, sizeof dfparm);
 
+  audit_set_type (ctrl->audit, AUDIT_TYPE_DECRYPT);
+
   kh = keydb_new (0);
   if (!kh)
     {
@@ -296,6 +298,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
+  audit_log (ctrl->audit, AUDIT_SETUP_READY);
+
   /* Parser loop. */
   do 
     {
@@ -313,6 +317,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
           const char *algoid;
           int any_key = 0;
           
+          audit_log (ctrl->audit, AUDIT_GOT_DATA);
+
           algoid = ksba_cms_get_content_oid (cms, 2/* encryption algo*/);
           algo = gcry_cipher_map_name (algoid);
           mode = gcry_cipher_mode_from_oid (algoid);
@@ -330,6 +336,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                 sprintf (numbuf, "%d", rc);
                 gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.algorithm",
                                numbuf, algoid?algoid:"?", NULL);
+                audit_log_s (ctrl->audit, AUDIT_BAD_DATA_CIPHER_ALGO, algoid);
               }
 
               /* If it seems that this is not an encrypted message we
@@ -339,6 +346,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
 
               goto leave;
             }
+
+          audit_log_i (ctrl->audit, AUDIT_DATA_CIPHER_ALGO, algo);
           dfparm.algo = algo;
           dfparm.mode = mode;
           dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
@@ -369,6 +378,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
               rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
               if (rc == -1 && recp)
                 break; /* no more recipients */
+              audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
               if (rc)
                 log_error ("recp %d - error getting info: %s\n",
                            recp, gpg_strerror (rc));
@@ -381,6 +391,13 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                   log_debug ("recp %d - serial: ", recp);
                   gpgsm_dump_serial (serial);
                   log_printf ("\n");
+
+                  if (ctrl->audit)
+                    {
+                      char *tmpstr = gpgsm_format_sn_issuer (serial, issuer);
+                      audit_log_s (ctrl->audit, AUDIT_RECP_NAME, tmpstr);
+                      xfree (tmpstr);
+                    }
 
                   keydb_search_reset (kh);
                   rc = keydb_search_issuer_sn (kh, issuer, serial);
@@ -415,6 +432,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                                    kidbuf, "0", "0", NULL);
                   }
 
+                  /* Put the certificate into the audit log.  */
+                  audit_log_cert (ctrl->audit, AUDIT_SAVE_CERT, cert, 0);
 
                   /* Just in case there is a problem with the own
                      certificate we print this message - should never
@@ -462,10 +481,41 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                                               decrypt_filter,
                                               &dfparm);
                     }
+                  audit_log_ok (ctrl->audit, AUDIT_RECP_RESULT, rc);
                 }
               xfree (hexkeygrip);
               xfree (desc);
             }
+
+          /* If we write an audit log add the unused recipients to the
+             log as well.  */
+          if (ctrl->audit && any_key)
+            {
+              for (;; recp++)
+                {
+                  char *issuer;
+                  ksba_sexp_t serial;
+                  int tmp_rc;
+
+                  tmp_rc = ksba_cms_get_issuer_serial (cms, recp,
+                                                       &issuer, &serial);
+                  if (tmp_rc == -1)
+                    break; /* no more recipients */
+                  audit_log_i (ctrl->audit, AUDIT_NEW_RECP, recp);
+                  if (tmp_rc)
+                    log_error ("recp %d - error getting info: %s\n",
+                               recp, gpg_strerror (rc));
+                  else
+                    {
+                      char *tmpstr = gpgsm_format_sn_issuer (serial, issuer);
+                      audit_log_s (ctrl->audit, AUDIT_RECP_NAME, tmpstr);
+                      xfree (tmpstr);
+                      xfree (issuer);
+                      xfree (serial);
+                    }
+                }
+            }
+
           if (!any_key)
             {
               rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -488,7 +538,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                                       dfparm.lastblock, 
                                       dfparm.blklen - npadding);
               if (rc)
-                  goto leave;
+                goto leave;
 
               for (i=dfparm.blklen - npadding; i < dfparm.blklen; i++)
                 {
@@ -515,6 +565,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
 
 
  leave:
+  audit_log_ok (ctrl->audit, AUDIT_DECRYPTION_RESULT, rc);
   if (rc)
     {
       gpgsm_status (ctrl, STATUS_DECRYPTION_FAILED, NULL);
