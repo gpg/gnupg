@@ -2146,6 +2146,34 @@ therefore enables a fast listing of the encryption keys.
 @opindex interactive
 Prompt before overwriting any files.
 
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+a numeric value or by a keyword:
+
+@table @code
+@item none
+No debugging at all.  A value of less than 1 may be used instead of
+the keyword.
+@item basic  
+Some basic debug messages.  A value between 1 and 2 may be used
+instead of the keyword.
+@item advanced
+More verbose debug messages.  A value between 3 and 5 may be used
+instead of the keyword.
+@item expert
+Even more detailed messages.  A value between 6 and 8 may be used
+instead of the keyword.
+@item guru
+All of the debug messages you can get. A value greater than 8 may be
+used instead of the keyword.  The creation of hash tracing files is
+only enabled if the keyword is used.
+@end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releases of this program. They are
+however carefully selected to best aid in debugging.
+
 @item --debug @var{flags}
 @opindex debug
 Set debugging flags. All flags are or-ed and @var{flags} may

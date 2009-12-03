@@ -258,18 +258,25 @@ wrong_args (const char *text)
 static void
 set_debug (void)
 {
+  int numok = (debug_level && digitp (debug_level));
+  int numlvl = numok? atoi (debug_level) : 0;
+
   if (!debug_level)
     ;
-  else if (!strcmp (debug_level, "none"))
+  else if (!strcmp (debug_level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
-  else if (!strcmp (debug_level, "basic"))
+  else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
     opt.debug = DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE;
-  else if (!strcmp (debug_level, "advanced"))
+  else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
     opt.debug = DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE;
-  else if (!strcmp (debug_level, "expert"))
+  else if (!strcmp (debug_level, "expert") || (numok && numlvl <= 8))
     opt.debug = (DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE|DBG_CRYPTO_VALUE);
-  else if (!strcmp (debug_level, "guru"))
-    opt.debug = ~0;
+  else if (!strcmp (debug_level, "guru") || numok)
+    {
+      opt.debug = ~0;
+      /* if (numok) */
+      /*   opt.debug &= ~(DBG_HASHING_VALUE); */
+    }
   else
     {
       log_error (_("invalid debug-level `%s' given\n"), debug_level);
@@ -286,6 +293,14 @@ set_debug (void)
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+
+  if (opt.debug)
+    log_info ("enabled debug flags:%s%s%s%s%s\n",
+              (opt.debug & DBG_MOUNT_VALUE  )? " mount":"",    
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
+              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
 }
  
 

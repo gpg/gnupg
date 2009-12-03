@@ -1,3 +1,8 @@
+2009-12-03  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (set_debug): Allow for numerical debug leveles.  Print
+	active debug flags.
+
 2009-11-27  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (cmds, keyedit_menu): New command "checkbkupkey".

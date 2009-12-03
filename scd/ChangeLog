@@ -1,3 +1,8 @@
+2009-12-03  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (set_debug): Allow for numerical debug leveles.  Print
+	active debug flags.
+
 2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* command.c (scd_command_handler): Use assuan_fd_t and

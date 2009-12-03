@@ -1,3 +1,8 @@
+2009-12-03  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (set_debug): Allow for numerical debug leveles.  Print
+	active debug flags.
+
 2009-12-02  Werner Koch  <wk@g10code.com>
 
 	* verify.c (gpgsm_verify): Add audit info on hash algorithms.

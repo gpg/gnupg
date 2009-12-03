@@ -1,5 +1,5 @@
-Noteworthy changes in version 2.1 (under development)
--------------------------------------------------
+Noteworthy changes in version 2.1.x (under development)
+-------------------------------------------------------
 
  * Encrypted OpenPGP messages with trailing data (e.g. other OpenPGP
    packets) are now correctly parsed.
@@ -8,6 +8,8 @@ Noteworthy changes in version 2.1 (under development)
 
  * The G13 tool for disk encryption key management has been added.
 
+ * Numerical values may now be used as an alternative to the
+   debug-level keywords.
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)

@@ -123,20 +123,26 @@ verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item --debug-level @var{level}
 @opindex debug-level
-Select the debug level for investigating problems. @var{level} may be
-one of:
+Select the debug level for investigating problems.  @var{level} may be
+a numeric value or a keyword:
 
 @table @code
 @item none
-no debugging at all.
+No debugging at all.  A value of less than 1 may be used instead of
+the keyword.
 @item basic  
-some basic debug messages
+Some basic debug messages.  A value between 1 and 2 may be used
+instead of the keyword.
 @item advanced
-more verbose debug messages
+More verbose debug messages.  A value between 3 and 5 may be used
+instead of the keyword.
 @item expert
-even more detailed messages
+Even more detailed messages.  A value between 6 and 8 may be used
+instead of the keyword.
 @item guru
-all of the debug messages you can get
+All of the debug messages you can get. A value greater than 8 may be
+used instead of the keyword.  The creation of hash tracing files is
+only enabled if the keyword is used.
 @end table
 
 How these messages are mapped to the actual debugging flags is not
