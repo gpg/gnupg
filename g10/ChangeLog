@@ -1,3 +1,11 @@
+2009-12-04  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE): New.
+	(ask_keysize): Use new macro.
+	(gen_rsa): Set default size if NBITS is 0.
+	(get_parameter_algo): Add algo name "default".  Add arg	R_DEFAULT.
+	(proc_parameter_file): Process default flag.
+
 2009-12-03  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (set_debug): Allow for numerical debug levels.  Print

@@ -43,6 +43,12 @@
 #include "keyserver-internal.h"
 #include "call-agent.h"
 
+/* The default algorithms.  If you change them remember to change them
+   also in gpg.c:gpgconf_list.  You should also check that the value
+   is inside the bounds enforced by ask_keysize and gen_xxx.  */
+#define DEFAULT_STD_ALGO    GCRY_PK_RSA
+#define DEFAULT_STD_KEYSIZE 2048
+
 
 #define MAX_PREFS 30 
 
@@ -1426,6 +1432,9 @@ gen_rsa (int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
   assert (is_RSA(algo));
 
+  if (!nbits)
+    nbits = DEFAULT_STD_KEYSIZE;
+
   if (nbits < 1024) 
     {
       nbits = 1024;
@@ -1765,9 +1774,7 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 static unsigned
 ask_keysize (int algo, unsigned int primary_keysize)
 {
-  /* NOTE: If you change the default key size/algo, remember to change
-     it also in gpg.c:gpgconf_list.  */
-  unsigned int nbits, min, def=2048, max=4096;
+  unsigned int nbits, min, def = DEFAULT_STD_KEYSIZE, max=4096;
   int for_subkey = !!primary_keysize;
   int autocomp = 0;
 
@@ -2382,22 +2389,37 @@ get_parameter_value( struct para_data_s *para, enum para_name key )
 }
 
 static int
-get_parameter_algo( struct para_data_s *para, enum para_name key )
+get_parameter_algo( struct para_data_s *para, enum para_name key, 
+                    int *r_default)
 {
-    int i;
-    struct para_data_s *r = get_parameter( para, key );
-    if( !r )
-	return -1;
-    if( digitp( r->u.value ) )
-	i = atoi( r->u.value );
-    else if ( !strcmp ( r->u.value, "ELG-E")
-              || !strcmp ( r->u.value, "ELG") )
-        i = GCRY_PK_ELG_E;
-    else
-        i = gcry_pk_map_name (r->u.value);
-    if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
-      i = 0; /* we don't want to allow generation of these algorithms */
-    return i;
+  int i;
+  struct para_data_s *r = get_parameter( para, key );
+
+  if (r_default)
+    *r_default = 0;
+
+  if (!r)
+    return -1;
+
+  if (!ascii_strcasecmp (r->u.value, "default"))
+    {
+      /* Note: If you change this default algo, remember to change it
+         also in gpg.c:gpgconf_list.  */
+      i = DEFAULT_STD_ALGO;
+      if (r_default)
+        *r_default = 1;
+    }
+  else if (digitp (r->u.value))
+    i = atoi( r->u.value );
+  else if (!strcmp (r->u.value, "ELG-E")
+           || !strcmp (r->u.value, "ELG"))
+    i = GCRY_PK_ELG_E;
+  else
+    i = gcry_pk_map_name (r->u.value);
+
+  if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
+    i = 0; /* we don't want to allow generation of these algorithms */
+  return i;
 }
 
 /* 
@@ -2541,13 +2563,15 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   const char *s1, *s2, *s3;
   size_t n;
   char *p;
-  int have_user_id=0,err,algo;
+  int is_default = 0;
+  int have_user_id = 0;
+  int err, algo;
 
   /* Check that we have all required parameters. */
   r = get_parameter( para, pKEYTYPE );
   if(r)
     {
-      algo=get_parameter_algo(para,pKEYTYPE);
+      algo = get_parameter_algo (para, pKEYTYPE, &is_default);
       if (openpgp_pk_test_algo2 (algo, PUBKEY_USAGE_SIG))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
@@ -2563,10 +2587,13 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   err = parse_parameter_usage (fname, para, pKEYUSAGE);
   if (!err)
     {
-      /* Default to algo capabilities if key-usage is not provided */
+      /* Default to algo capabilities if key-usage is not provided and
+         no default algorithm has been requested.  */
       r = xmalloc_clear(sizeof(*r));
       r->key = pKEYUSAGE;
-      r->u.usage = openpgp_pk_algo_usage(algo);
+      r->u.usage = (is_default
+                    ? (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG)
+                    : openpgp_pk_algo_usage(algo));
       r->next = para;
       para = r;
     }
@@ -2583,10 +2610,11 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
         }
     }
 
+  is_default = 0;
   r = get_parameter( para, pSUBKEYTYPE );
   if(r)
     {
-      algo = get_parameter_algo (para, pSUBKEYTYPE);
+      algo = get_parameter_algo (para, pSUBKEYTYPE, &is_default);
       if (openpgp_pk_test_algo (algo))
 	{
 	  log_error ("%s:%d: invalid algorithm\n", fname, r->lnr );
@@ -2600,7 +2628,9 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	     provided */
 	  r = xmalloc_clear (sizeof(*r));
 	  r->key = pSUBKEYUSAGE;
-	  r->u.usage = openpgp_pk_algo_usage (algo);
+	  r->u.usage = (is_default
+                        ? PUBKEY_USAGE_ENC
+                        : openpgp_pk_algo_usage (algo));
 	  r->next = para;
 	  para = r;
 	}
@@ -3441,7 +3471,7 @@ do_generate_keypair (struct para_data_s *para,
 
   if (!card)
     {
-      rc = do_create (get_parameter_algo( para, pKEYTYPE ),
+      rc = do_create (get_parameter_algo( para, pKEYTYPE, NULL ),
                       get_parameter_uint( para, pKEYLENGTH ),
                       pub_root, sec_root,
                       get_parameter_dek( para, pPASSPHRASE_DEK ),
@@ -3503,7 +3533,7 @@ do_generate_keypair (struct para_data_s *para,
     {
       if (!card)
         {
-          rc = do_create( get_parameter_algo( para, pSUBKEYTYPE ),
+          rc = do_create( get_parameter_algo( para, pSUBKEYTYPE, NULL ),
                           get_parameter_uint( para, pSUBKEYLENGTH ),
                           pub_root, sec_root,
                           get_parameter_dek( para, pPASSPHRASE_DEK ),
@@ -3612,7 +3642,8 @@ do_generate_keypair (struct para_data_s *para,
           int no_enc_rsa;
           PKT_public_key *pk;
 
-          no_enc_rsa = (get_parameter_algo (para, pKEYTYPE) == PUBKEY_ALGO_RSA
+          no_enc_rsa = ((get_parameter_algo (para, pKEYTYPE, NULL)
+                         == PUBKEY_ALGO_RSA)
                         && get_parameter_uint (para, pKEYUSAGE)
                         && !((get_parameter_uint (para, pKEYUSAGE)
                               & PUBKEY_USAGE_ENC)) );
@@ -3634,7 +3665,7 @@ do_generate_keypair (struct para_data_s *para,
             
           
           if (!opt.batch
-              && (get_parameter_algo (para, pKEYTYPE) == PUBKEY_ALGO_DSA
+              && (get_parameter_algo (para, pKEYTYPE, NULL) == PUBKEY_ALGO_DSA
                   || no_enc_rsa )
               && !get_parameter (para, pSUBKEYTYPE) )
             {
