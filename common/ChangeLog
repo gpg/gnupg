@@ -1,3 +1,8 @@
+2009-12-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (audit-events.h, status-codes.h): Create files in
+	the source dir.  Fixes bug#1164.
+
 2009-12-03  Werner Koch  <wk@g10code.com>
 
 	From trunk:

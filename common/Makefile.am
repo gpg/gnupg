@@ -97,16 +97,20 @@ libgpgrl_a_SOURCES = \
         gpgrlhelp.c
 
 # Create the audit-events.h include file from audit.h
+# Note: We create the target file in the source directory because it
+# is a distributed built source.  If we would not do that we may end
+# up with two files and then it is not clear which version of the
+# files will be picked up.
 audit-events.h: Makefile mkstrtable.awk exaudit.awk audit.h
 	$(AWK) -f $(srcdir)/exaudit.awk $(srcdir)/audit.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=eventstr_  >$@
+		   -v namespace=eventstr_  > $(srcdir)/$@
 
 # Create the status-codes.h include file from status.h
 status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
 	$(AWK) -f $(srcdir)/exstatus.awk $(srcdir)/status.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=statusstr_  >$@
+		   -v namespace=statusstr_  > $(srcdir)/$@
 
 
 #
