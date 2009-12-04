@@ -823,11 +823,14 @@ The format of this file is as follows:
      used. Some syntactically checks may be performed.
      The currently defined parameters are:
      Key-Type: <algo-number>|<algo-string>
-	Starts a new parameter block by giving the type of the
-	primary key. The algorithm must be capable of signing.
-	This is a required parameter.
+	Starts a new parameter block by giving the type of the primary
+	key. The algorithm must be capable of signing.  This is a
+	required parameter.  It may be "default" to use the default
+	one; in this case don't give a Key-Usage and use "default" for
+	the Subkey-Type.
      Key-Length: <length-in-bits>
-	Length of the key in bits.  Default is 1024.
+	Length of the key in bits.  The default is returned by running
+        the command "gpg --gpgconf-list".
      Key-Usage: <usage-list>
         Space or comma delimited list of key usage, allowed values are
         "encrypt", "sign", and "auth".  This is used to generate the
@@ -835,13 +838,15 @@ The format of this file is as follows:
         this usage.  Note that OpenPGP requires that all primary keys
         are capable of certification, so no matter what usage is given
         here, the "cert" flag will be on.  If no Key-Usage is
-        specified, all the allowed usages for that particular
-        algorithm are used.
+        specified and the key-type is not "default", all allowed
+        usages for that particular algorithm are used; if it is not
+        given but "default" is used the usage will be "sign".
      Subkey-Type: <algo-number>|<algo-string>
 	This generates a secondary key.  Currently only one subkey
 	can be handled.
      Subkey-Length: <length-in-bits>
-	Length of the subkey in bits.  Default is 1024.
+	Length of the subkey in bits.  The default is returned by running
+        the command "gpg --gpgconf-list".
      Subkey-Usage: <usage-list>
         Similar to Key-Usage.
      Passphrase: <string>
@@ -892,9 +897,9 @@ The format of this file is as follows:
         keyserver URL for the key.
 
 
-Here is an example:
+Here is an example on how to create a key:
 $ cat >foo <<EOF
-     %echo Generating a standard key
+     %echo Generating a basic OpenPGP key
      Key-Type: DSA
      Key-Length: 1024
      Subkey-Type: ELG-E
@@ -918,6 +923,24 @@ $ gpg --no-default-keyring --secret-keyring ./foo.sec \
 ------------------------------------------
 sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@foo.bar>
 ssb  1024g/8F70E2C0 2000-03-09
+
+If you want to create a key with the default algorithms you would
+use these parameters:
+
+     %echo Generating a default key
+     Key-Type: default
+     Subkey-Type: default
+     Name-Real: Joe Tester
+     Name-Comment: with stupid passphrase
+     Name-Email: joe@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Do a commit here, so that we can later print "done" :-)
+     %commit
+     %echo done
+
 
 
 

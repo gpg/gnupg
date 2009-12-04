@@ -8,6 +8,9 @@ Noteworthy changes in version 2.1.x (under development)
 
  * The G13 tool for disk encryption key management has been added.
 
+ * The default for --include-cert is now to include all certificates
+   in the chain except for the root certificate.
+
  * Numerical values may now be used as an alternative to the
    debug-level keywords.
 
