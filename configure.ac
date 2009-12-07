@@ -829,13 +829,11 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
         AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
      fi
   else
-     use_dns_srv=no
-     use_dns_pka=no
-     use_dns_cert=no
      # If we have no resolver library but ADNS (e.g. under W32) enable the
      # code parts which can be used with ADNS.
+     use_dns_cert=no
      if test x"$have_adns" = xyes ; then
-        DNSLIB="$ADNSLIBS"
+        DNSLIBS="$ADNSLIBS"
         AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
 
         if test x"$use_dns_srv" = xyes ; then
@@ -845,6 +843,9 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
         if test x"$use_dns_pka" = xyes ; then
            AC_DEFINE(USE_DNS_PKA,1)
         fi
+     else
+        use_dns_srv=no
+        use_dns_pka=no
      fi
   fi
 

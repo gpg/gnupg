@@ -2,6 +2,7 @@
 
 	* configure.ac: Check for ADNS before checking for the BIND
 	resolver.
+	(USE_ADNS): Fallback macro for PKA and CERT lookups.
 
 2009-10-20  Marcus Brinkmann  <marcus@g10code.com>
 
