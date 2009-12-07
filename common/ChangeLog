@@ -1,3 +1,10 @@
+2009-12-07  Werner Koch  <wk@g10code.com>
+
+	* pka.c (get_pka_info): Add support for ADNS.
+	* src.v (getsrv): Add support for ADNS.
+
+	* srv.c (getsrv): s/xrealloc/xtryrealloc/.
+
 2009-12-04  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (audit-events.h, status-codes.h): Create files in

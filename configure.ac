@@ -706,6 +706,34 @@ AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
 AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
+
+#
+# Check for ADNS.
+#
+_cppflags="${CPPFLAGS}"
+_ldflags="${LDFLAGS}"
+AC_ARG_WITH(adns,
+            AC_HELP_STRING([--with-adns=DIR],
+                           [look for the adns library in DIR]),
+            [if test -d "$withval"; then
+               CPPFLAGS="${CPPFLAGS} -I$withval/include"
+               LDFLAGS="${LDFLAGS} -L$withval/lib"
+             fi])
+if test "$with_adns" != "no"; then
+  AC_CHECK_HEADERS(adns.h,
+                AC_CHECK_LIB(adns, adns_init,
+                             [have_adns=yes],
+                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
+                [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
+fi
+if test "$have_adns" = "yes"; then
+  ADNSLIBS="-ladns" 
+fi
+AC_SUBST(ADNSLIBS)
+# Newer adns versions feature a free function to be used under W32.
+AC_CHECK_FUNCS(adns_free)
+
+
 #
 # Now try for the resolver functions so we can use DNS for SRV, PA and CERT.
 #
@@ -743,7 +771,8 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
     # Make sure that the BIND 4 resolver interface is workable before
     # enabling any code that calls it.  At some point I'll rewrite the
     # code to use the BIND 8 resolver API.
-    # We might also want to use adns instead.
+    # We might also want to use adns instead.  Problem with ADNS is that
+    # it does not support v6.
 
     AC_MSG_CHECKING([whether the resolver is usable])
     AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
@@ -795,9 +824,24 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
         AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
      fi
   else
-     use_dns_srv=no
-     use_dns_pka=no
+     # If we have no resolver library but ADNS (e.g. under W32) enable the
+     # code parts which can be used with ADNS.
      use_dns_cert=no
+     if test x"$have_adns" = xyes ; then
+        DNSLIBS="$ADNSLIBS"
+        AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
+
+        if test x"$use_dns_srv" = xyes ; then
+           AC_DEFINE(USE_DNS_SRV,1)
+        fi
+
+        if test x"$use_dns_pka" = xyes ; then
+           AC_DEFINE(USE_DNS_PKA,1)
+        fi
+     else
+        use_dns_srv=no
+        use_dns_pka=no
+     fi
   fi
 
   LIBS=$_dns_save_libs
@@ -806,33 +850,6 @@ fi
 AC_SUBST(DNSLIBS)
 
 AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
-
-
-#
-# Check for ADNS.
-#
-_cppflags="${CPPFLAGS}"
-_ldflags="${LDFLAGS}"
-AC_ARG_WITH(adns,
-            AC_HELP_STRING([--with-adns=DIR],
-                           [look for the adns library in DIR]),
-            [if test -d "$withval"; then
-               CPPFLAGS="${CPPFLAGS} -I$withval/include"
-               LDFLAGS="${LDFLAGS} -L$withval/lib"
-             fi])
-if test "$with_adns" != "no"; then
-  AC_CHECK_HEADERS(adns.h,
-                AC_CHECK_LIB(adns, adns_init,
-                             [have_adns=yes],
-                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
-                [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
-fi
-if test "$have_adns" = "yes"; then
-  ADNSLIBS="-ladns" 
-fi
-AC_SUBST(ADNSLIBS)
-# Newer adns versions feature a free function to be used under W32.
-AC_CHECK_FUNCS(adns_free)
 
 
 #

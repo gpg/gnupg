@@ -1,3 +1,9 @@
+2009-12-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for ADNS before checking for the BIND
+	resolver.
+	(USE_ADNS): Fallback macro for PKA and CERT lookups.
+
 2009-09-04  Werner Koch  <wk@g10code.com>
 
 	Release 2.0.13.

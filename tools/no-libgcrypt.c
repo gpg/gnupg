@@ -55,7 +55,10 @@ gcry_xmalloc (size_t n)
 char *
 gcry_strdup (const char *string)
 {
-  return malloc (strlen (string)+1);
+  char *p = malloc (strlen (string)+1);
+  if (p)
+    strcpy (p, string);
+  return p;
 }
 
 

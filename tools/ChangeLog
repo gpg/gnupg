@@ -1,3 +1,7 @@
+2009-12-07  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_strdup): Actually copy the string.
+
 2009-07-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsplit.c (my_strusage): Remove i18n stuff.

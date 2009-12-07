@@ -1,5 +1,5 @@
 /* pka.c - DNS Public Key Association RR access
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +33,12 @@
 #include <resolv.h>
 #endif
 #endif /* USE_DNS_PKA */
+#ifdef USE_ADNS
+# include <adns.h>
+# ifndef HAVE_ADNS_FREE
+#  define adns_free free
+# endif
+#endif
 
 #include "util.h"
 #include "pka.h"
@@ -106,6 +112,67 @@ parse_txt_record (char *buffer, unsigned char *fpr)
 char *
 get_pka_info (const char *address, unsigned char *fpr)
 {
+#ifdef USE_ADNS
+  int rc;
+  adns_state state;
+  const char *domain;
+  char *name;
+  adns_answer *answer = NULL;
+  char *buffer = NULL;
+  
+  domain = strrchr (address, '@');
+  if (!domain || domain == address || !domain[1])
+    return NULL; /* Invalid mail address given.  */
+  name = xtrymalloc (strlen (address) + 5 + 1);
+  if (!name)
+    return NULL;
+  memcpy (name, address, domain - address);
+  strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
+
+  rc = adns_init (&state, adns_if_noerrprint, NULL);
+  if (rc)
+    {
+      log_error ("error initializing adns: %s\n", strerror (errno));
+      xfree (name);
+      return NULL;
+    }
+
+  rc = adns_synchronous (state, name, adns_r_txt, adns_qf_quoteok_query,
+                         &answer);
+  xfree (name);
+  if (rc)
+    {
+      log_error ("DNS query failed: %s\n", strerror (errno));
+      adns_finish (state);
+      return NULL;
+    }
+  if (answer->status != adns_s_ok 
+      || answer->type != adns_r_txt || !answer->nrrs)
+    {
+      /* log_error ("DNS query returned an error: %s (%s)\n", */
+      /*            adns_strerror (answer->status), */
+      /*            adns_errabbrev (answer->status)); */
+      adns_free (answer);
+      adns_finish (state);
+      return NULL;
+    }
+
+  /* We use a PKA records iff there is exactly one record.  */
+  if (answer->nrrs == 1 && answer->rrs.manyistr[0]->i != -1)
+    {
+      buffer = xtrystrdup (answer->rrs.manyistr[0]->str);
+      if (parse_txt_record (buffer, fpr))
+        {
+          xfree (buffer);
+          buffer = NULL;   /* Not a valid gpg trustdns RR. */
+        }
+    }
+
+  adns_free (answer);
+  adns_finish (state);
+  return buffer;
+
+#else /*!USE_ADNS*/
   unsigned char answer[PACKETSZ];
   int anslen;
   int qdcount, ancount, nscount, arcount;
@@ -197,7 +264,9 @@ get_pka_info (const char *address, unsigned char *fpr)
     }
 
   return NULL;
+#endif /*!USE_ADNS*/
 }
+
 #else /* !USE_DNS_PKA */
 
 /* Dummy version of the function if we can't use the resolver
@@ -247,6 +316,6 @@ main(int argc,char *argv[])
 
 /*
 Local Variables:
-compile-command: "cc -DUSE_DNS_PKA -DTEST -I.. -I../include -Wall -g -o pka pka.c -lresolv libutil.a"
+compile-command: "cc -DUSE_DNS_PKA -DTEST -I.. -I../include -Wall -g -o pka pka.c -lresolv ../tools/no-libgcrypt.o ../jnlib/libjnlib.a"
 End:
 */
