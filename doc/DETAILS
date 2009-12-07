@@ -843,7 +843,7 @@ The format of this file is as follows:
         given but "default" is used the usage will be "sign".
      Subkey-Type: <algo-number>|<algo-string>
 	This generates a secondary key.  Currently only one subkey
-	can be handled.
+	can be handled.  "default" is also supported.
      Subkey-Length: <length-in-bits>
 	Length of the subkey in bits.  The default is returned by running
         the command "gpg --gpgconf-list".

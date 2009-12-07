@@ -1,3 +1,7 @@
+2009-12-07  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_strdup): Actually copy the string.
+
 2009-11-23  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_gpg): Add default_pubkey_algo.
