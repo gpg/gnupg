@@ -97,6 +97,10 @@ libsimple_pwquery_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 libgpgrl_a_SOURCES = \
         gpgrlhelp.c
 
+if MAINTAINER_MODE
+# Note: Due to the dependency on Makefile, the file will always be
+# rebuilt, so we allow this only in maintainer mode.
+
 # Create the audit-events.h include file from audit.h
 # Note: We create the target file in the source directory because it
 # is a distributed built source.  If we would not do that we may end
@@ -112,7 +116,7 @@ status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
 	$(AWK) -f $(srcdir)/exstatus.awk $(srcdir)/status.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
 		   -v namespace=statusstr_  > $(srcdir)/$@
-
+endif
 
 #
 # Module tests
