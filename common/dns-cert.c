@@ -1,5 +1,5 @@
 /* dns-cert.c - DNS CERT code
- * Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -21,13 +21,19 @@
 #include <sys/types.h>
 #ifdef USE_DNS_CERT
 # ifdef HAVE_W32_SYSTEM
-# include <windows.h>
+#  include <windows.h>
 # else
-# include <netinet/in.h>
-# include <arpa/nameser.h>
-# include <resolv.h>
+#  include <netinet/in.h>
+#  include <arpa/nameser.h>
+#  include <resolv.h>
 # endif
-#include <string.h>
+# include <string.h>
+#endif
+#ifdef USE_ADNS
+# include <adns.h>
+# ifndef HAVE_ADNS_FREE
+#  define adns_free free
+# endif
 #endif
 
 #include "util.h"
@@ -40,14 +46,106 @@
 #define T_CERT 37
 #endif
 
+/* ADNS has no support for CERT yes. */
+#define my_adns_r_cert 37
+
+
 
 /* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
-   IPGP provided. */
+   IPGP provided.  Note that this fucntion retruns the first CERT
+   found with a supported type; it is expected that only one CERT
+   record is used. */
 int
-get_dns_cert (const char *name,size_t max_size,IOBUF *iobuf,
-              unsigned char **fpr,size_t *fpr_len,char **url)
+get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
+              unsigned char **fpr, size_t *fpr_len, char **url)
 {
 #ifdef USE_DNS_CERT
+#ifdef USE_ADNS
+  adns_state state;
+  adns_answer *answer = NULL;
+  int rc;
+  unsigned int ctype;
+  int count;
+
+  rc = adns_init (&state, adns_if_noerrprint, NULL);
+  if (rc)
+    {
+      log_error ("error initializing adns: %s\n", strerror (errno));
+      return -1;
+    }
+
+  rc = adns_synchronous (state, name, (adns_r_unknown | my_adns_r_cert),
+                         adns_qf_quoteok_query, &answer);
+  if (rc)
+    {
+      /* log_error ("DNS query failed: %s\n", strerror (errno)); */
+      adns_finish (state);
+      return -1;
+    }
+  if (answer->status != adns_s_ok) 
+    {
+      /* log_error ("DNS query returned an error: %s (%s)\n", */
+      /*            adns_strerror (answer->status), */
+      /*            adns_errabbrev (answer->status)); */
+      adns_free (answer);
+      adns_finish (state);
+      return 0;
+    }
+
+  for (rc = 0, count=0; !rc && count < answer->nrrs; count++)
+    {
+      int datalen = answer->rrs.byteblock[count].len;
+      const unsigned char *data = answer->rrs.byteblock[count].data;
+
+      if (datalen < 5)
+        continue;  /* Truncated CERT record - skip.  */
+
+      ctype = ((data[0]<<8)|data[1]);
+      /* (key tag and algorithm fields are not required.) */
+      data += 5;
+      datalen -= 5;
+
+      if (ctype == 3 && datalen >= 11)
+        {
+          /* CERT type is PGP.  Gpg checks for a minimum length of 11,
+             thus we do the same.  */
+          *iobuf = iobuf_temp_with_content ((char*)data, datalen);
+          rc = 1;
+        }
+      else if (ctype == 6 && datalen && datalen < 1023 
+               && datalen >= data[0]+1 && fpr && fpr_len && url)
+        {
+          /* CERT type is IPGP.  We made sure tha the data is
+             plausible and that the caller requested the
+             information.  */
+          *fpr_len = data[0];
+          if (*fpr_len)
+            {
+              *fpr = xmalloc (*fpr_len);
+              memcpy (*fpr, data+1, *fpr_len);
+            }
+          else
+            *fpr = NULL;
+              
+          if (datalen > *fpr_len + 1)
+            {
+              *url = xmalloc (datalen - (*fpr_len+1) + 1);
+              memcpy (*url, data + (*fpr_len+1), datalen - (*fpr_len+1));
+              (*url)[datalen - (*fpr_len+1)] = '\0';
+            }
+          else
+            *url = NULL;
+          
+          rc = 2;
+        }
+    }
+  
+  adns_free (answer);
+  adns_finish (state);
+  return rc;
+
+#else /*!USE_ADNS*/
+
   unsigned char *answer;
   int r,ret=-1;
   u16 count;
@@ -178,8 +276,8 @@ get_dns_cert (const char *name,size_t max_size,IOBUF *iobuf,
 
  fail:
   xfree(answer);
-
   return ret;
+#endif /*!USE_ADNS*/
 #else /* !USE_DNS_CERT */
   return -1;
 #endif

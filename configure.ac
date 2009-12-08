@@ -826,7 +826,6 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
   else
      # If we have no resolver library but ADNS (e.g. under W32) enable the
      # code parts which can be used with ADNS.
-     use_dns_cert=no
      if test x"$have_adns" = xyes ; then
         DNSLIBS="$ADNSLIBS"
         AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
@@ -838,9 +837,14 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
         if test x"$use_dns_pka" = xyes ; then
            AC_DEFINE(USE_DNS_PKA,1)
         fi
+
+        if test x"$use_dns_cert" = xyes ; then
+           AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
+        fi
      else
         use_dns_srv=no
         use_dns_pka=no
+        use_dns_cert=no
      fi
   fi
 
