@@ -268,8 +268,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             
             i=0;
             if (log_get_fd () != -1)
-              no_close_list[i++] = log_get_fd ();
-            no_close_list[i++] = fileno (stderr);
+              no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
+            no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
             no_close_list[i] = -1;
             
             /* Connect to the agent and perform initial handshaking. */

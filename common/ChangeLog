@@ -1,5 +1,7 @@
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
+	* asshelp.c (start_new_gpg_agent): Convert posix FD to assuan FD.
+	
 	* asshelp.c (start_new_gpg_agent) [HAVE_W32_SYSTEM]: Add missing
 	argument in assuan_socket_connect invocation.
 	* iobuf.c (iobuf_open_fd_or_name): Fix type of FD in function

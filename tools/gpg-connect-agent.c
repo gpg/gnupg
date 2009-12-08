@@ -1222,8 +1222,8 @@ main (int argc, char **argv)
     {
       int no_close[3];
 
-      no_close[0] = fileno (stderr);
-      no_close[1] = log_get_fd ();
+      no_close[0] = assuan_fd_from_posix_fd (fileno (stderr));
+      no_close[1] = assuan_fd_from_posix_fd (log_get_fd ());
       no_close[2] = -1;
 
       rc = assuan_new (&ctx);
