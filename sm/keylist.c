@@ -1334,7 +1334,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
     {
       for (ndesc=0, sl=names; sl; sl = sl->next) 
         {
-          rc = keydb_classify_name (sl->d, desc+ndesc);
+          rc = classify_user_id (sl->d, desc+ndesc);
           if (rc)
             {
               log_error ("key `%s' not found: %s\n",

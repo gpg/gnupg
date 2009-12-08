@@ -787,7 +787,7 @@ find_and_check_key (const char *name, unsigned int use,
   int trustlevel;
 
   if (!name || !*name)
-    return gpg_error (GPG_ERR_INV_NAME);
+    return gpg_error (GPG_ERR_INV_USER_ID);
 
   pk = xtrycalloc (1, sizeof *pk);
   if (!pk)

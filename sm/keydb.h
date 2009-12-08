@@ -22,7 +22,7 @@
 
 #include <ksba.h>
 
-#include "../kbx/keybox-search-desc.h"
+#include "../common/userids.h"
 
 typedef struct keydb_handle *KEYDB_HANDLE;
 
@@ -68,8 +68,6 @@ int keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer);
 int keydb_search_issuer_sn (KEYDB_HANDLE hd,
                             const char *issuer, const unsigned char *serial);
 int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
-
-int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
 
 int keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed);
 gpg_error_t keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,

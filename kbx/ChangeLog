@@ -1,3 +1,11 @@
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* keybox-search-desc.h (keydb_search_desc): Use u32 type for
+	KID. Extend the skip function ptr.
+	(gpg_pkt_user_id_t): New.
+	* keybox-search.c (has_short_kid, has_long_kid): Change to use u32
+	args for KID.
+
 2008-12-09  Werner Koch  <wk@g10code.com>
 
 	* kbxutil.c (main): Call i18n_init before init_common_subsystems.

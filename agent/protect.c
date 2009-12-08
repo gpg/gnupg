@@ -775,6 +775,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP); 
   
+  cleartext = NULL; /* Avoid cc warning. */
   rc = do_decryption (s, n,
                       passphrase, s2ksalt, s2kcount,
                       iv, 16,

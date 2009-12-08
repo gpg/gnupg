@@ -301,7 +301,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
   KEYDB_HANDLE kh = NULL;
   ksba_cert_t cert = NULL;
 
-  rc = keydb_classify_name (name, &desc);
+  rc = classify_user_id (name, &desc);
   if (!rc)
     {
       kh = keydb_new (0);
@@ -480,7 +480,7 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
   KEYDB_HANDLE kh = NULL;
 
   *r_cert = NULL;
-  rc = keydb_classify_name (name, &desc);
+  rc = classify_user_id (name, &desc);
   if (!rc)
     {
       kh = keydb_new (0);

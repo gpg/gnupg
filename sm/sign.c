@@ -209,7 +209,7 @@ get_default_signer (ctrl_t ctrl)
       return cert;
     }
 
-  rc = keydb_classify_name (opt.local_user, &desc);
+  rc = classify_user_id (opt.local_user, &desc);
   if (rc)
     {
       log_error ("failed to find default signer: %s\n", gpg_strerror (rc));

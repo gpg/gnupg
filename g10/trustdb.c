@@ -214,9 +214,11 @@ register_trusted_keyid(u32 *keyid)
 void
 register_trusted_key( const char *string )
 {
+  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
-  if (classify_user_id (string, &desc) != KEYDB_SEARCH_MODE_LONG_KID )
+  err = classify_user_id (string, &desc);
+  if (err || desc.mode != KEYDB_SEARCH_MODE_LONG_KID )
     {
       log_error(_("`%s' is not a valid long keyID\n"), string );
       return;

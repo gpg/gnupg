@@ -530,15 +530,29 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
   The has_foo functions are used as helpers for search 
 */
 static inline int
-has_short_kid (KEYBOXBLOB blob, const unsigned char *kid)
+has_short_kid (KEYBOXBLOB blob, u32 lkid)
 {
-  return blob_cmp_fpr_part (blob, kid+4, 16, 4);
+  unsigned char buf[4];
+  buf[0] = lkid >> 24;
+  buf[1] = lkid >> 16;
+  buf[2] = lkid >> 8;
+  buf[3] = lkid;
+  return blob_cmp_fpr_part (blob, buf, 16, 4);
 }
 
 static inline int
-has_long_kid (KEYBOXBLOB blob, const unsigned char *kid)
+has_long_kid (KEYBOXBLOB blob, u32 mkid, u32 lkid)
 {
-  return blob_cmp_fpr_part (blob, kid, 12, 8);
+  unsigned char buf[8];
+  buf[0] = mkid >> 24;
+  buf[1] = mkid >> 16;
+  buf[2] = mkid >> 8;
+  buf[3] = mkid;
+  buf[4] = lkid >> 24;
+  buf[5] = lkid >> 16;
+  buf[6] = lkid >> 8;
+  buf[7] = lkid;
+  return blob_cmp_fpr_part (blob, buf, 12, 8);
 }
 
 static inline int
@@ -877,11 +891,11 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SHORT_KID: 
-              if (has_short_kid (blob, desc[n].u.kid))
+              if (has_short_kid (blob, desc[n].u.kid[1]))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_LONG_KID:
-              if (has_long_kid (blob, desc[n].u.kid))
+              if (has_long_kid (blob, desc[n].u.kid[0], desc[n].u.kid[1]))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_FPR:
@@ -909,7 +923,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       for (n=any_skip?0:ndesc; n < ndesc; n++) 
         {
 /*            if (desc[n].skipfnc */
-/*                && desc[n].skipfnc (desc[n].skipfncvalue, aki)) */
+/*                && desc[n].skipfnc (desc[n].skipfncvalue, aki, NULL)) */
 /*              break; */
         }
       if (n == ndesc)

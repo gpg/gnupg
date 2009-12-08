@@ -46,6 +46,7 @@
 #include "srv.h"
 #endif
 
+
 #ifdef HAVE_W32_SYSTEM
 /* It seems Vista doesn't grok X_OK and so fails access() tests.
    Previous versions interpreted X_OK as F_OK anyway, so we'll just
@@ -595,6 +596,7 @@ parse_keyrec(char *keystring)
   if(ascii_strcasecmp("pub",record)==0)
     {
       char *tok;
+      gpg_error_t err;
 
       if(work->desc.mode)
 	{
@@ -606,11 +608,11 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      classify_user_id(tok,&work->desc);
-      if(work->desc.mode!=KEYDB_SEARCH_MODE_SHORT_KID
-	 && work->desc.mode!=KEYDB_SEARCH_MODE_LONG_KID
-	 && work->desc.mode!=KEYDB_SEARCH_MODE_FPR16
-	 && work->desc.mode!=KEYDB_SEARCH_MODE_FPR20)
+      err = classify_user_id (tok, &work->desc);
+      if (err || (work->desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
+                  && work->desc.mode != KEYDB_SEARCH_MODE_LONG_KID
+                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR16
+                  && work->desc.mode != KEYDB_SEARCH_MODE_FPR20))
 	{
 	  work->desc.mode=KEYDB_SEARCH_MODE_NONE;
 	  return ret;
@@ -1598,6 +1600,7 @@ keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 int 
 keyserver_export(strlist_t users)
 {
+  gpg_error_t err;
   strlist_t sl=NULL;
   KEYDB_SEARCH_DESC desc;
   int rc=0;
@@ -1605,11 +1608,11 @@ keyserver_export(strlist_t users)
   /* Weed out descriptors that we don't support sending */
   for(;users;users=users->next)
     {
-      classify_user_id (users->d, &desc);
-      if(desc.mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
-	 desc.mode!=KEYDB_SEARCH_MODE_LONG_KID &&
-	 desc.mode!=KEYDB_SEARCH_MODE_FPR16 &&
-	 desc.mode!=KEYDB_SEARCH_MODE_FPR20)
+      err = classify_user_id (users->d, &desc);
+      if (err || (desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
+                  && desc.mode != KEYDB_SEARCH_MODE_LONG_KID
+                  && desc.mode != KEYDB_SEARCH_MODE_FPR16
+                  && desc.mode != KEYDB_SEARCH_MODE_FPR20))
 	{
 	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
 	  continue;
@@ -1630,6 +1633,7 @@ keyserver_export(strlist_t users)
 int 
 keyserver_import(strlist_t users)
 {
+  gpg_error_t err;
   KEYDB_SEARCH_DESC *desc;
   int num=100,count=0;
   int rc=0;
@@ -1639,13 +1643,13 @@ keyserver_import(strlist_t users)
 
   for(;users;users=users->next)
     {
-      classify_user_id (users->d, &desc[count]);
-      if(desc[count].mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
-	 desc[count].mode!=KEYDB_SEARCH_MODE_LONG_KID &&
-	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR16 &&
-	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR20)
+      err = classify_user_id (users->d, &desc[count]);
+      if (err || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
+                  && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
+                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR16
+                  && desc[count].mode != KEYDB_SEARCH_MODE_FPR20))
 	{
-	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
+	  log_error (_("\"%s\" not a key ID: skipping\n"), users->d);
 	  continue;
 	}
 
@@ -1731,11 +1735,12 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
         
       for (ndesc=0, sl=users; sl; sl = sl->next)
 	{
-	  if(classify_user_id (sl->d, desc+ndesc))
+          gpg_error_t err; 
+	  if (!(err = classify_user_id (sl->d, desc+ndesc)))
 	    ndesc++;
 	  else
 	    log_error (_("key \"%s\" not found: %s\n"),
-		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
+		       sl->d, gpg_strerror (err));
 	}
     }
 

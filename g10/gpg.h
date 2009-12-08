@@ -50,9 +50,6 @@ struct server_local_s;
 
 /* Object used to describe a keyblok node.  */
 typedef struct kbnode_struct *KBNODE;
-/* Object used for looking ob keys.  */
-typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
-
 
 
 /* Session control object.  This object is passed to most functions to

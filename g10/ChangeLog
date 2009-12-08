@@ -1,3 +1,23 @@
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* keyring.h: Include userids.h. 
+	* gpg.h (KEYDB_SEARCH_DESC): Remove.
+	* packet.h: Include userids.h.
+	(PKT_user_id): Declare using gpg_pkt_user_id_s.
+	* keydb.h (KeydbSearchMode, struct keydb_search_desc): Remove.  We
+	now use those in ../kbx.
+	* getkey.c (classify_user_id): Remove.  It is now in common/.
+	(key_byname): Adjust for changed classify_user_id.
+	* delkey.c (do_delete_key): Ditto.
+	* trustdb.c (register_trusted_key): Ditto.
+	* revoke.c (gen_desig_revoke, gen_revoke): Ditto.
+	* keyserver.c (parse_keyrec, keyserver_export, keyserver_import)
+	(keyidlist): Ditto.
+	* export.c (do_export_stream): Ditto.
+
+	* pkclist.c (find_and_check_key): Replace GPG_ERR_INV_NAME by
+	GPG_ERR_INV_USER_ID.
+
 2009-12-04  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE): New.

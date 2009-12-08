@@ -14,7 +14,7 @@ Noteworthy changes in version 2.1.x (under development)
  * Numerical values may now be used as an alternative to the
    debug-level keywords.
 
- * Support SRV and PKA records on W32.
+ * Support DNS lookups for SRV, PKA and CERT on W32.
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)

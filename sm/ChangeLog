@@ -1,3 +1,12 @@
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (keydb_search_kid): Fix code even that it is not used.
+	(classify_user_id): Adjust for change of u.kid type.
+	(keydb_classify_name): Replace GPG_ERR_INV_NAME by
+	GPG_ERR_INV_USER_ID.
+	(keydb_classify_name): Remove.  Replace all callers by
+	classify_user_id.
+
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* call-dirmngr.c (start_dirmngr_ext): Convert posix fd to assuan fd.

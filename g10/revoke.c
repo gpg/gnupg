@@ -220,8 +220,9 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     afx = new_armor_context ();
 
     kdbhd = keydb_new (0);
-    classify_user_id (uname, &desc);
-    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    rc = classify_user_id (uname, &desc);
+    if (!rc)
+      rc = keydb_search (kdbhd, &desc, 1);
     if (rc) {
 	log_error (_("key \"%s\" not found: %s\n"),uname, g10_errstr (rc));
 	goto leave;
@@ -463,8 +464,9 @@ gen_revoke( const char *uname )
      * We don't want the whole getkey stuff here but the entire keyblock
      */
     kdbhd = keydb_new (1);
-    classify_user_id (uname, &desc);
-    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    rc = classify_user_id (uname, &desc);
+    if (!rc)
+      rc = keydb_search (kdbhd, &desc, 1);
     if (rc)
       {
 	log_error (_("secret key \"%s\" not found: %s\n"),

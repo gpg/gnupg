@@ -63,12 +63,13 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 
     *r_sec_avail = 0;
 
-    /* search the userid */
-    classify_user_id (username, &desc);
+    /* Search the userid */
+    rc = classify_user_id (username, &desc);
     exactmatch = (desc.mode == KEYDB_SEARCH_MODE_FPR
                   || desc.mode == KEYDB_SEARCH_MODE_FPR16
                   || desc.mode == KEYDB_SEARCH_MODE_FPR20);
-    rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
+    if (!rc)
+      rc = keydb_search (hd, &desc, 1);
     if (rc) {
 	log_error (_("key \"%s\" not found: %s\n"), username, g10_errstr (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );

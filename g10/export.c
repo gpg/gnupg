@@ -293,6 +293,7 @@ do_export_stream( IOBUF out, strlist_t users, int secret,
 		  KBNODE *keyblock_out, unsigned int options, int *any )
 {
     int rc = 0;
+    gpg_error_t err;
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
@@ -318,11 +319,11 @@ do_export_stream( IOBUF out, strlist_t users, int secret,
         desc = xmalloc ( ndesc * sizeof *desc);
         
         for (ndesc=0, sl=users; sl; sl = sl->next) {
-	    if (classify_user_id (sl->d, desc+ndesc))
+            if (!(err=classify_user_id (sl->d, desc+ndesc)))
                 ndesc++;
             else
                 log_error (_("key \"%s\" not found: %s\n"),
-                           sl->d, g10_errstr (G10ERR_INV_USER_ID));
+                           sl->d, gpg_strerror (err));
         }
 
         /* It would be nice to see which of the given users did

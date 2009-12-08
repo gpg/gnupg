@@ -27,6 +27,7 @@
 #include "cipher.h"
 #include "filter.h"
 #include "../common/openpgpdefs.h"
+#include "../common/userids.h"
 
 #define DEBUG_PARSE_PACKET 1
 
@@ -151,14 +152,16 @@ typedef struct
 
 #define ATTRIB_IMAGE 1
 
-/* This is the cooked form of attributes */
+/* This is the cooked form of attributes.  */
 struct user_attribute {
   byte type;
   const byte *data;
   u32 len;
 };
 
-typedef struct
+
+/* (See also keybox-search-desc.h) */
+struct gpg_pkt_user_id_s
 {
   int ref;              /* reference counter */
   int len;	        /* length of the name */
@@ -181,12 +184,15 @@ typedef struct
   struct
   {
     /* TODO: Move more flags here */
-    unsigned mdc:1;
-    unsigned ks_modify:1;
-    unsigned compacted:1;
+    unsigned int mdc:1;
+    unsigned int ks_modify:1;
+    unsigned int compacted:1;
   } flags;
   char name[1];
-} PKT_user_id;
+};
+typedef struct gpg_pkt_user_id_s PKT_user_id;
+
+
 
 struct revoke_info
 {

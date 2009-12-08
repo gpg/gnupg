@@ -452,7 +452,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
     
       stats->count++;
 
-      err = keydb_classify_name (line, &desc);
+      err = classify_user_id (line, &desc);
       if (err)
         {
           print_import_problem (ctrl, NULL, 0);

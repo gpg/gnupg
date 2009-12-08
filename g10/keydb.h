@@ -115,35 +115,6 @@ struct pubkey_find_info {
 
 typedef struct keydb_handle *KEYDB_HANDLE;
 
-typedef enum {
-    KEYDB_SEARCH_MODE_NONE,
-    KEYDB_SEARCH_MODE_EXACT,
-    KEYDB_SEARCH_MODE_SUBSTR,
-    KEYDB_SEARCH_MODE_MAIL,
-    KEYDB_SEARCH_MODE_MAILSUB,
-    KEYDB_SEARCH_MODE_MAILEND,
-    KEYDB_SEARCH_MODE_WORDS,
-    KEYDB_SEARCH_MODE_SHORT_KID,
-    KEYDB_SEARCH_MODE_LONG_KID,
-    KEYDB_SEARCH_MODE_FPR16,
-    KEYDB_SEARCH_MODE_FPR20,
-    KEYDB_SEARCH_MODE_FPR,
-    KEYDB_SEARCH_MODE_FIRST,
-    KEYDB_SEARCH_MODE_NEXT
-} KeydbSearchMode;
-
-struct keydb_search_desc {
-    KeydbSearchMode mode;
-    int (*skipfnc)(void *,u32*,PKT_user_id*);
-    void *skipfncvalue;
-    union {
-        const char *name;
-        byte fpr[MAX_FINGERPRINT_LEN];
-        u32  kid[2];
-    } u;
-    int exact;
-};
-
 
 /* Helper type for preference fucntions. */
 union pref_hint
@@ -221,7 +192,6 @@ char *get_last_passphrase(void);
 void next_to_last_passphrase(void);
 
 /*-- getkey.c --*/
-int classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc);
 void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );

@@ -1,3 +1,7 @@
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* protect.c (agent_unprotect): Avoid compiler warning.
+
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* call-pinentry.c (start_pinentry): Convert posix fd to assuan fd.

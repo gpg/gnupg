@@ -48,24 +48,31 @@ typedef enum {
   KEYDB_SEARCH_MODE_NEXT
 } KeydbSearchMode;
 
-struct keydb_search_desc {
+
+/* Forwward declaration.  See g10/packet.h.  */
+struct gpg_pkt_user_id_s;
+typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;
+
+/* A search descriptor.  */
+struct keydb_search_desc 
+{
   KeydbSearchMode mode;
-  int (*skipfnc)(void *,void*); /* used to be: void*, u32* */
+  int (*skipfnc)(void *, u32 *, gpg_pkt_user_id_t); 
   void *skipfncvalue;
   const unsigned char *sn; 
   int snlen;  /* -1 := sn is a hex string */
   union {
     const char *name;
     unsigned char fpr[24];
-    unsigned char kid[8]; 
+    u32 kid[2]; /* Note that this is in native endianess.  */
     unsigned char grip[20];
   } u;
+  int exact;    /* Use exactly this key ('!' suffix in gpg).  */
 };
 
 
 struct keydb_search_desc;
 typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
-
 typedef struct keydb_search_desc KEYBOX_SEARCH_DESC;
 
 

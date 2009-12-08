@@ -70,6 +70,7 @@ common_sources = \
 	http.c http.h \
 	localename.c \
 	session-env.c session-env.h \
+	userids.c userids.h \
 	helpfile.c
 
 # Sources only useful without PTH.
