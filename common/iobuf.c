@@ -1266,7 +1266,7 @@ iobuf_is_pipe_filename (const char *fname)
    "rb" if FNAME is used.  In contrast to iobuf_fdopen the file
    descriptor FD will not be closed during an iobuf_close.  */
 iobuf_t
-iobuf_open_fd_or_name (int fd, const char *fname, const char *mode)
+iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname, const char *mode)
 {
   iobuf_t a;
 

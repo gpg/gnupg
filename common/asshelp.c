@@ -247,7 +247,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                 /* Give the agent some time to prepare itself. */
                 gnupg_sleep (3);
                 /* Now try again to connect the agent.  */
-                rc = assuan_socket_connect (ctx, sockname, 0);
+                rc = assuan_socket_connect (ctx, sockname, 0, 0);
               }
           }
 #else /*!HAVE_W32_SYSTEM*/

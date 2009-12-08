@@ -1,3 +1,10 @@
+2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* asshelp.c (start_new_gpg_agent) [HAVE_W32_SYSTEM]: Add missing
+	argument in assuan_socket_connect invocation.
+	* iobuf.c (iobuf_open_fd_or_name): Fix type of FD in function
+	declaration.
+
 2009-12-07  Werner Koch  <wk@g10code.com>
 
 	* pka.c (get_pka_info): Add support for ADNS.
