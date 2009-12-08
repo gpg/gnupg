@@ -1,3 +1,7 @@
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (USE_DNS_CERT): Support ADNS.
+
 2009-12-07  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Check for ADNS before checking for the BIND

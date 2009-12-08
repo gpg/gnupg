@@ -66,7 +66,7 @@ static const char *kdns_root;
 /* The replacement string for the at sign.  */
 static const char *kdns_at_repl;
 
-/* Flag indicating that a TCP conenction should be used.  */
+/* Flag indicating that a TCP connection should be used.  */
 static int kdns_usevc;
 
 
