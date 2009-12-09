@@ -1,3 +1,8 @@
+2009-12-09  Werner Koch  <wk@g10code.com>
+
+	* config.links: Remove asm modules for all sparc64.  This is
+	related to debian#560028.
+
 2008-03-25  Werner Koch  <wk@g10code.com>
 
 	* config.links (mpi_sflags): Powerpc64 needs to come even before

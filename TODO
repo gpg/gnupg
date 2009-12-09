@@ -1,73 +1,83 @@
-  * Using an expired key for signing should give an error message
-    "expired key" and not "unusable key'.  Furthermore the error should
-    also be thrown when the default key has expired.  Reported by
-    Eric.VanBuggenhaut add AdValvas.be.
+                                                                 -*- org -*-
 
-  * pause scrolling help in --edit-key and elsewhere.
+* Using an expired key for signing should give an error message
+  "expired key" and not "unusable key'.  Furthermore the error should
+  also be thrown when the default key has expired.  Reported by
+  Eric.VanBuggenhaut add AdValvas.be.
 
-  * getkey does not return revoked/expired keys - therefore it is not
-    possible to override it.
+* pause scrolling help in --edit-key and elsewhere.
 
-  * Selection using +wordlist does not work.
-    What about adding a feature -word to the +wordlist search mode.
+* getkey does not return revoked/expired keys - therefore it is not
+  possible to override it.
 
-  * Check the changes to the gpg random gatherer on all W32 platforms.
+* Selection using +wordlist does not work.
+  What about adding a feature -word to the +wordlist search mode.
 
-  * Show more info does not work from edit->trust. We should give more
-    information on the user ID under question while running
-    --update-trustdb.
+* Check the changes to the gpg random gatherer on all W32 platforms.
 
-  * Check that no secret temporary results are stored in the result parameter
-    of the mpi functions.  We have already done this for mpi-mul.c 
+* Show more info does not work from edit->trust. We should give more
+  information on the user ID under question while running
+  --update-trustdb.
 
-  * We need another special packet at the end of a clearsign message to mark
-    it's end and allow for multiple signature for one message.  And
-    add a real grammar to the code in mainproc.c
+* Check that no secret temporary results are stored in the result parameter
+  of the mpi functions.  We have already done this for mpi-mul.c 
 
-  * Fix the bug in the mips assembler code
+* We need another special packet at the end of a clearsign message to mark
+  it's end and allow for multiple signature for one message.  And
+  add a real grammar to the code in mainproc.c
 
-  * Add a way to show the fingerprint of an key signator's keys
+* Fix the bug in the mips assembler code
 
-  * Concatenated encryption messages don't work corectly - only the
-    first one is processed.
+* Add a way to show the fingerprint of an key signator's keys
 
-  * Add option to put the list of recipients (from the encryption
-    layer) into the signatures notation data.
+* Concatenated encryption messages don't work corectly - only the
+  first one is processed.
 
-  * --disable-asm should still assemble _udiv_qrnnd when needed
+* Add option to put the list of recipients (from the encryption
+  layer) into the signatures notation data.
 
-  * the pubkey encrypt functions should do some sanity checks.
+* --disable-asm should still assemble _udiv_qrnnd when needed
 
-  * "gpg filename.tar.gz.asc" should work like --verify (-sab).
+* the pubkey encrypt functions should do some sanity checks.
 
-  * for messages created with "-t", it might make sense to append the
-    verification status of the message to the output (i.e. write something to
-    the --output file and not only to stderr.  However the problem is
-    that we consider the message transpatrent and don't have any
-    indication of the used character set.  To implement this feature
-    we need to make sure that all output is plain 7 bit ascii but
-    given that we need to print a user name, this does not make sense
-    at all.  The only way this can be implemented is by assuming that
-    the message is encoded in utf8 and hope tht everyone starts to use
-    utf8 instead of latin-1 or whatever RSN.  Hmmm, I myself should
-    start with this.
+* "gpg filename.tar.gz.asc" should work like --verify (-sab).
 
-  * keyflags don't distinguish between {certify,signature}-only.
+* for messages created with "-t", it might make sense to append the
+  verification status of the message to the output (i.e. write something to
+  the --output file and not only to stderr.  However the problem is
+  that we consider the message transpatrent and don't have any
+  indication of the used character set.  To implement this feature
+  we need to make sure that all output is plain 7 bit ascii but
+  given that we need to print a user name, this does not make sense
+  at all.  The only way this can be implemented is by assuming that
+  the message is encoded in utf8 and hope tht everyone starts to use
+  utf8 instead of latin-1 or whatever RSN.  Hmmm, I myself should
+  start with this.
 
-  * cat foo | gpg --sign | gpg --list-packets
-    Does not list the signature packet.
+* keyflags don't distinguish between {certify,signature}-only.
 
-  * When presenting the result of a verification show the user ID with
-    the highest trust level first instead of the primary one.
+* cat foo | gpg --sign | gpg --list-packets
+  Does not list the signature packet.
 
-  * allow the use of option in gpg.conf. 
+* When presenting the result of a verification show the user ID with
+  the highest trust level first instead of the primary one.
 
-  * Add the NEWSIG status.
+* allow the use of option in gpg.conf. 
 
-  * Delete a card key as well as a wiping.
+* Add the NEWSIG status.
 
-  * passphrase_to_dek does not return NULL after a cancel.  There is
+* Delete a card key as well as a wiping.
+
+* passphrase_to_dek does not return NULL after a cancel.  There is
     no way to issue a cancel when unsing the CLI - this would however
     be a Good Thing when used with mixed symkey/pubkey encrypted
     messages. See comment in mainproc.c:proc_symkey_enc. 
     Note, that this has been fixed in 2.0.2 - we should backport it.
+
+* Backport from GnuPG-2:
+  
+  2009-09-04  Werner Koch  <wk@g10code.com>
+  
+	* keyedit.c (menu_select_uid): Use IDX ==-1 t select all.
+	(menu_select_key): Ditto.
+	(keyedit_menu) <cmdSELKEY, cmdSELUID>: Allow '*' to select all.

@@ -124,26 +124,24 @@ case "${host}" in
 	mpi_extra_modules="udiv-qrnnd"
 	;;
     sparc64-*-linux-gnu)
-	# An extra rule because we have an report for this one only.
-	# Should be compared against the next GMP version
-	echo '/* configured for sparc64-*-linux-gnu */' >>./mpi/asm-syntax.h
-	path="sparc32v8 sparc32"
-	mpi_extra_modules="udiv"
-	;;
+       echo '/* No working assembler modules available */' >>./mpi/asm-syntax.h
+       path=""
+       ;;
     sparc64-sun-solaris2*)
-	# Got a report that udiv is missing, so we try this one
-	echo '/* configured for sparc64-sun-solaris2 */' >>./mpi/asm-syntax.h
-	path="sparc32v8 sparc32"
-	mpi_extra_modules="udiv"
-        ;;
+       echo '/* No working assembler modules available */' >>./mpi/asm-syntax.h
+       path=""
+       ;;
     sparc64-*-netbsd* | sparc64-*-freebsd* | sparc64-*-openbsd*)
        # There are no sparc64 assembler modules that work on the
        # *BSDs, so use the generic C functions.
        echo '/* No working assembler modules available */' >>./mpi/asm-syntax.h
        path=""
        ;;
+    sparc64*-*-*)
+       echo '/* No working assembler modules available */' >>./mpi/asm-syntax.h
+       path=""
+       ;;
     sparc9*-*-*     | \
-    sparc64*-*-*    | \
     ultrasparc*-*-* )
 	echo '/* configured for sparc9 or higher */' >>./mpi/asm-syntax.h
 	path="sparc32v8 sparc32"
