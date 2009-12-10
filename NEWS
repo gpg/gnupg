@@ -9,7 +9,9 @@ Noteworthy changes in version 2.0.14
 
  * The GPGSM --audit-log feature is now more complete.
 
- * Support DNS lookups for SRV, PKA and CERT on W32.
+ * GPG now supports DNS lookups for SRV, PKA and CERT on W32.
+
+ * New GPGSM option --ignore-cert-extension.
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
