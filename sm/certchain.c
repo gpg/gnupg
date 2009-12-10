@@ -229,6 +229,8 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
   int rc = 0, i, idx, crit;
   const char *oid;
   gpg_error_t err;
+  int unsupported;
+  strlist_t sl;
 
   for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
                                              &oid, &crit, NULL, NULL));idx++)
@@ -237,7 +239,20 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
         continue;
       for (i=0; known[i] && strcmp (known[i],oid); i++)
         ;
-      if (!known[i])
+      unsupported = !known[i];
+
+      /* If this critical extension is not supoported, check the list
+         of to be ignored extensions to se whether we claim that it is
+         supported.  */
+      if (unsupported && opt.ignored_cert_extensions)
+        {
+          for (sl=opt.ignored_cert_extensions;
+               sl && strcmp (sl->d, oid); sl = sl->next)
+            ;
+          if (sl)
+            unsupported = 0;
+        }
+      if (unsupported)
         {
           do_list (1, listmode, fp,
                    _("critical certificate extension %s is not supported"),

@@ -446,7 +446,16 @@ use of the chain model.  The chain model is also used if an option in
 the @file{trustlist.txt} or an attribute of the certificate requests it.
 However the standard model (shell) is in that case always tried first.
 
-
+@item --ignore-cert-extension @var{oid}
+@opindex ignore-cert-extension
+Add @var{oid} to the list of ignored certificate extensions.  The
+@var{oid} is expected to be in dotted decimal form, like
+@code{2.5.29.3}.  This option may used more than once.  Critical
+flagged certificate extensions matching one of the OIDs in the list
+are treated as if they are actually handled and thus the certificate
+won't be rejected due to an unknown critical extension.  Use this
+option with care because extensions are usually flagged as critical
+for a reason.
 
 @end table
 

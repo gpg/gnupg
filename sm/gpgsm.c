@@ -176,7 +176,8 @@ enum cmd_and_opt_values {
   oDisablePubkeyAlgo,
   oIgnoreTimeConflict,
   oNoRandomSeedFile,
-  oNoCommonCertsImport
+  oNoCommonCertsImport,
+  oIgnoreCertExtension
  };
 
 
@@ -376,6 +377,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
+  ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),  
@@ -1390,6 +1392,10 @@ main ( int argc, char **argv)
 	      }
 	  }
 	  break;
+
+        case oIgnoreCertExtension:
+          add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
+          break;
 
         default: 
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR; 

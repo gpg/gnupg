@@ -1,3 +1,9 @@
+2009-12-10  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: Add option --ignore-cert-extension.
+	* gpgsm.h (opt): Add field IGNORED_CERT_EXTENSIONS.
+	* certchain.c (unknown_criticals): Handle ignored extensions,
+
 2009-12-08  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (keydb_search_kid): Fix code even that it is not used.

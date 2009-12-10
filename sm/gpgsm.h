@@ -134,8 +134,13 @@ struct
                                runtime. */
 
   struct keyserver_spec *keyserver;
-} opt;
 
+  /* A list of certificate extension OIDs which are ignored so that
+     one can claim that a critical extension has been handled.  One
+     OID per string.  */
+  strlist_t ignored_cert_extensions;
+
+} opt;
 
 /* Debug values and macros.  */
 #define DBG_X509_VALUE    1	/* debug x.509 data reading/writing */
