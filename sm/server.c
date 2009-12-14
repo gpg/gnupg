@@ -1068,7 +1068,6 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
   return rc;
 }
 
-
 static const char hlp_getinfo[] = 
   "GETINFO <what>\n"
   "\n"
@@ -1141,6 +1140,39 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_passwd[] =
+  "PASSWD <userID>\n"
+  "\n"
+  "Change the passphrase of the secret key for USERID.";
+static gpg_error_t
+cmd_passwd (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  ksba_cert_t cert = NULL;
+  char *grip = NULL;
+
+  line = skip_options (line);
+
+  err = gpgsm_find_cert (line, NULL, &cert);
+  if (err)
+    ;
+  else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
+    err = gpg_error (GPG_ERR_INTERNAL);
+  else 
+    {
+      char *desc = gpgsm_format_keydesc (cert);
+      err = gpgsm_agent_passwd (ctrl, grip, desc);
+      xfree (desc);
+    }
+
+  xfree (grip);
+  ksba_cert_release (cert);
+
+  return err;
+}
+
+
 
 /* Return true if the command CMD implements the option OPT.  */
 static int
@@ -1184,6 +1216,7 @@ register_commands (assuan_context_t ctx)
     { "DELKEYS",       cmd_delkeys,   hlp_delkeys },
     { "GETAUDITLOG",   cmd_getauditlog,    hlp_getauditlog },
     { "GETINFO",       cmd_getinfo,   hlp_getinfo },
+    { "PASSWD",        cmd_passwd,    hlp_passwd },
     { NULL }
   };
   int i, rc;

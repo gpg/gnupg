@@ -1,3 +1,8 @@
+2009-12-14  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_passwd): New.
+	(register_commands): Register new command.
+
 2009-12-10  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: Add option --ignore-cert-extension.
