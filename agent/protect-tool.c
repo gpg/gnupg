@@ -61,6 +61,7 @@ enum cmd_and_opt_values
   oShadow,
   oShowShadowInfo,
   oShowKeygrip,
+  oS2Kcalibration,
   oCanonical,
 
   oP12Import,
@@ -120,6 +121,8 @@ static ARGPARSE_OPTS opts[] = {
               "import a pkcs#12 encoded private key"),
   ARGPARSE_c (oP12Export, "p12-export",
               "export a private key pkcs#12 encoded"),
+
+  ARGPARSE_c (oS2Kcalibration, "s2k-calibration", "@"),
   
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
@@ -1061,6 +1064,8 @@ main (int argc, char **argv )
         case oP12Export: cmd = oP12Export; break;
         case oP12Charset: opt_p12_charset = pargs.r.ret_str; break;
 
+        case oS2Kcalibration: cmd = oS2Kcalibration; break;
+
         case oPassphrase: opt_passphrase = pargs.r.ret_str; break;
         case oStore: opt_store = 1; break;
         case oForce: opt_force = 1; break;
@@ -1105,6 +1110,12 @@ main (int argc, char **argv )
     import_p12_file (fname);
   else if (cmd == oP12Export)
     export_p12_file (fname);
+  else if (cmd == oS2Kcalibration)
+    {
+      if (!opt.verbose)
+        opt.verbose++; /* We need to see something.  */
+      get_standard_s2k_count ();
+    }
   else
     show_file (fname);
 

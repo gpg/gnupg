@@ -27,6 +27,11 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#else
+# include <sys/times.h>
+#endif
 
 #include "agent.h"
 
@@ -51,11 +56,132 @@ static struct {
 };
 
 
+/* A helper object for time measurement.  */
+struct calibrate_time_s
+{
+#ifdef HAVE_W32_SYSTEM
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+#else
+  clock_t ticks;
+#endif
+};
+
+
 static int
 hash_passphrase (const char *passphrase, int hashalgo,
                  int s2kmode,
                  const unsigned char *s2ksalt, unsigned long s2kcount,
                  unsigned char *key, size_t keylen);
+
+/* Get the process time and store it in DATA.  */
+static void
+calibrate_get_time (struct calibrate_time_s *data)
+{
+#ifdef HAVE_W32_SYSTEM
+  GetProcessTimes (GetCurrentProcess (),
+                   &data->creation_time, &data->exit_time,
+                   &data->kernel_time, &data->user_time);
+#else
+  struct tms tmp;
+  
+  times (&tmp);
+  data->ticks = tmp.tms_utime;
+#endif
+}
+
+
+static unsigned long
+calibrate_elapsed_time (struct calibrate_time_s *starttime)
+{
+  struct calibrate_time_s stoptime;
+  
+  calibrate_get_time (&stoptime);
+#ifdef HAVE_W32_SYSTEM
+  {
+    unsigned long long t1, t2;
+    
+    t1 = (((unsigned long long)starttime->kernel_time.dwHighDateTime << 32)
+          + starttime->kernel_time.dwLowDateTime);
+    t1 += (((unsigned long long)starttime->user_time.dwHighDateTime << 32)
+           + starttime->user_time.dwLowDateTime);
+    t2 = (((unsigned long long)stoptime.kernel_time.dwHighDateTime << 32)
+          + stoptime.kernel_time.dwLowDateTime);
+    t2 += (((unsigned long long)stoptime.user_time.dwHighDateTime << 32)
+           + stoptime.user_time.dwLowDateTime);
+    return (unsigned long)((t2 - t1)/10000);
+  }
+#else
+  return (unsigned long)((((double) (stoptime.ticks - starttime->ticks))
+                          /CLOCKS_PER_SEC)*10000000);
+#endif
+}
+
+
+/* Run a test hashing for COUNT and return the time required in
+   milliseconds.  */
+static unsigned long
+calibrate_s2k_count_one (unsigned long count)
+{
+  int rc;
+  char keybuf[PROT_CIPHER_KEYLEN];
+  struct calibrate_time_s starttime;
+
+  calibrate_get_time (&starttime);
+  rc = hash_passphrase ("123456789abcdef0", GCRY_MD_SHA1,
+                        3, "saltsalt", count, keybuf, sizeof keybuf);
+  if (rc)
+    BUG ();
+  return calibrate_elapsed_time (&starttime);
+}
+
+
+/* Measure the time we need to do the hash operations and deduce an
+   S2K count which requires about 100ms of time.  */ 
+static unsigned long
+calibrate_s2k_count (void)
+{
+  unsigned long count;
+  unsigned long ms;
+
+  for (count = 65536; count; count *= 2)
+    {
+      ms = calibrate_s2k_count_one (count);
+      if (opt.verbose > 1)
+        log_info ("S2K calibration: %lu -> %lums\n", count, ms);
+      if (ms > 100)
+        break;
+    }
+
+  count = (unsigned long)(((double)count / ms) * 100);
+  count /= 1024;
+  count *= 1024;
+  if (count < 65536)
+    count = 65536;
+
+  if (opt.verbose)
+    {
+      ms = calibrate_s2k_count_one (count);
+      log_info ("S2K calibration: %lu iterations for %lums\n", count, ms);
+    }
+
+  return count;
+}
+
+
+
+/* Return the standard S2K count.  */
+unsigned long
+get_standard_s2k_count (void)
+{
+  static unsigned long count;
+
+  if (!count)
+    count = calibrate_s2k_count ();
+
+  /* Enforce a lower limit.  */
+  return count < 65536 ? 65536 : count;
+}
+
 
 
 
@@ -193,7 +319,8 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
       else
         {
           rc = hash_passphrase (passphrase, GCRY_MD_SHA1,
-                                3, iv+2*blklen, 96, key, keylen);
+                                3, iv+2*blklen, 
+                                get_standard_s2k_count (), key, keylen);
           if (!rc)
             rc = gcry_cipher_setkey (hd, key, keylen);
           xfree (key);
@@ -757,9 +884,23 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
      is nothing we should worry about */
   if (s[n] != ')' )
     return gpg_error (GPG_ERR_INV_SEXP);
+  
+  /* Old versions of gpg-agent used the funny floating point number in
+     a byte encoding as specified by OpenPGP.  However this is not
+     needed and thus we now store it as a plain unsigned integer.  We
+     can easily distinguish the old format by looking at its value:
+     Less than 256 is an old-style encoded number; other values are
+     plain integers.  In any case we check that they are at least
+     65536 because we never used a lower value in the past and we
+     should have a lower limit.  */
   s2kcount = strtoul ((const char*)s, NULL, 10);
   if (!s2kcount)
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+  if (s2kcount < 256)
+    s2kcount = (16ul + (s2kcount & 15)) << ((s2kcount >> 4) + 6);
+  if (s2kcount < 65536)
+    return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+
   s += n;
   s++; /* skip list end */
 
@@ -847,8 +988,7 @@ agent_private_key_type (const unsigned char *privatekey)
 /* Transform a passphrase into a suitable key of length KEYLEN and
    store this key in the caller provided buffer KEY.  The caller must
    provide an HASHALGO, a valid S2KMODE (see rfc-2440) and depending on
-   that mode an S2KSALT of 8 random bytes and an S2KCOUNT (a suitable
-   value is 96).
+   that mode an S2KSALT of 8 random bytes and an S2KCOUNT.
   
    Returns an error code on failure.  */
 static int
@@ -890,7 +1030,7 @@ hash_passphrase (const char *passphrase, int hashalgo,
 
           if (s2kmode == 3)
             {
-              count = (16ul + (s2kcount & 15)) << ((s2kcount >> 4) + 6);
+              count = s2kcount;
               if (count < len2)
                 count = len2;
             }

@@ -1,3 +1,12 @@
+2009-12-14  Werner Koch  <wk@g10code.com>
+
+	* protect.c (agent_unprotect): Decode the S2K count here and take
+	care of the new unencoded values.  Add a lower limit sanity check.
+	(hash_passphrase): Do not decode here.
+	(get_standard_s2k_count, calibrate_s2k_count): New.
+	(calibrate_get_time, calibrate_elapsed_time): New.
+	(do_encryption): Use get_standard_s2k_count.
+
 2009-12-03  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (set_debug): Allow for numerical debug leveles.  Print
@@ -42,7 +51,7 @@
 	* genkey.c (agent_protect_and_store): Return RC and not 0.
 	* protect.c (do_encryption): Fix ignored error code from malloc.
 	Reported by Fabian Keil.
-	
+
 2009-06-17  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_get_confirmation): Add arg WITH_CANCEL.
