@@ -601,6 +601,24 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   return rc;
 }
 
+static const char hlp_passwd[] =
+  "PASSWD <userID>\n"
+  "\n"
+  "Change the passphrase of the secret key for USERID.";
+static gpg_error_t
+cmd_passwd (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  line = skip_options (line);
+
+  err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  return err;
+}
+
+
 
 
 /* Helper to register our commands with libassuan. */
@@ -611,6 +629,7 @@ register_commands (assuan_context_t ctx)
   {
     const char *name;
     assuan_handler_t handler;
+    assuan_handler_t help;
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer    },
@@ -628,13 +647,15 @@ register_commands (assuan_context_t ctx)
     { "GENKEY",        cmd_genkey    },
     { "DELKEYS",       cmd_delkeys   },
     { "GETINFO",       cmd_getinfo   },
+    { "PASSWD",        cmd_passwd,  hlp_passwd},
     { NULL }
   };
   int i, rc;
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
+      rc = assuan_register_command (ctx, table[i].name,
+                                    table[i].handler, table[i].help);
       if (rc)
         return rc;
     } 
