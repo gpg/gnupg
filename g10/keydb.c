@@ -219,12 +219,12 @@ keydb_add_resource (const char *url, int flags, int secret)
     const char *resname = url;
     char *filename = NULL;
     int force = (flags&1);
-    int readonly = !!(flags&8);
+    int read_only = !!(flags&8);
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
     void *token;
 
-    if (readonly)
+    if (read_only)
       force = 0;
 
     /* Do we have an URL?
@@ -254,7 +254,7 @@ keydb_add_resource (const char *url, int flags, int secret)
     else
 	filename = xstrdup (resname);
 
-    if (!force && !readonly)
+    if (!force && !read_only)
 	force = secret? !any_secret : !any_public;
 
     /* See whether we can determine the filetype.  */
@@ -289,7 +289,7 @@ keydb_add_resource (const char *url, int flags, int secret)
         if (rc)
           goto leave;
 
-        if(keyring_register_filename (filename, secret, readonly, &token))
+        if(keyring_register_filename (filename, secret, read_only, &token))
 	  {
 	    if (used_resources >= MAX_KEYDB_RESOURCES)
 	      rc = G10ERR_RESOURCE_LIMIT;

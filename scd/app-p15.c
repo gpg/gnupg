@@ -2178,7 +2178,7 @@ TokenInfo ::= SEQUENCE {
 } (CONSTRAINED BY { -- Each AlgorithmInfo.reference value must be unique --})
 
 TokenFlags ::= BIT STRING {
-    readonly		(0),
+    readOnly		(0),
     loginRequired 	(1),
     prnGeneration 	(2),
     eidCompliant  	(3)

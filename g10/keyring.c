@@ -54,7 +54,7 @@ struct keyring_name
 {
   struct keyring_name *next;
   int secret;
-  int readonly;
+  int read_only;
   dotlock_t lockhd;
   int is_locked;
   int did_full_scan;
@@ -201,7 +201,7 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
  * if a new keyring was registered.
 */
 int
-keyring_register_filename (const char *fname, int secret, int readonly, 
+keyring_register_filename (const char *fname, int secret, int read_only, 
                            void **ptr)
 {
     KR_NAME kr;
@@ -214,8 +214,8 @@ keyring_register_filename (const char *fname, int secret, int readonly,
         if (same_file_p (kr->fname, fname))
 	  {
             /* Already registered. */
-            if (readonly)
-              kr->readonly = 1;
+            if (read_only)
+              kr->read_only = 1;
             *ptr=kr;
 	    return 0; 
 	  }
@@ -227,7 +227,7 @@ keyring_register_filename (const char *fname, int secret, int readonly,
     kr = xmalloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
     kr->secret = !!secret;
-    kr->readonly = readonly;
+    kr->read_only = read_only;
     kr->lockhd = NULL;
     kr->is_locked = 0;
     kr->did_full_scan = 0;
@@ -249,7 +249,7 @@ keyring_is_writable (void *token)
 {
   KR_NAME r = token;
 
-  return r? (r->readonly || !access (r->fname, W_OK)) : 0;
+  return r? (r->read_only || !access (r->fname, W_OK)) : 0;
 }
     
 
@@ -516,7 +516,7 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     if (!hd->found.kr)
         return -1; /* no successful prior search */
 
-    if (hd->found.kr->readonly)
+    if (hd->found.kr->read_only)
       return gpg_error (GPG_ERR_EACCES);
 
     if (!hd->found.n_packets) {
@@ -562,13 +562,13 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     else if (hd->found.kr)
       {
         fname = hd->found.kr->fname;
-        if (hd->found.kr->readonly)
+        if (hd->found.kr->read_only)
           return gpg_error (GPG_ERR_EACCES);
       }
     else if (hd->current.kr)
       {
         fname = hd->current.kr->fname;
-        if (hd->current.kr->readonly)
+        if (hd->current.kr->read_only)
           return gpg_error (GPG_ERR_EACCES);
       }
     else 
@@ -603,7 +603,7 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
     if (!hd->found.kr)
         return -1; /* no successful prior search */
 
-    if (hd->found.kr->readonly)
+    if (hd->found.kr->read_only)
       return gpg_error (GPG_ERR_EACCES);
 
     if (!hd->found.n_packets) {

@@ -161,7 +161,7 @@ calibrate_s2k_count (void)
   if (opt.verbose)
     {
       ms = calibrate_s2k_count_one (count);
-      log_info ("S2K calibration: %lu iterations for %lums\n", count, ms);
+      log_info ("S2K calibration: %lu -> %lums\n", count, ms);
     }
 
   return count;
