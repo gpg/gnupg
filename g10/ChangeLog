@@ -1,3 +1,8 @@
+2009-12-15  Werner Koch  <wk@g10code.com>
+
+	* tdbio.c (tdbio_set_dbname): Do not call log_fatal after creating
+	the directory.  Fixes bug#1169.  Reported by Daniel Leidert.
+
 2009-12-04  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE): New.
