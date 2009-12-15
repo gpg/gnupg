@@ -508,7 +508,8 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    *p = 0;
 	    if( access( fname, F_OK ) ) {
 		try_make_homedir( fname );
-		log_fatal( _("%s: directory does not exist!\n"), fname );
+                if (access (fname, F_OK ))
+                  log_fatal (_("%s: directory does not exist!\n"), fname);
 	    }
 	    *p = DIRSEP_C;
 
