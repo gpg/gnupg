@@ -209,7 +209,11 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 	  return G10ERR_TIME_CONFLICT;
       }
 
-    if( pk->expiredate && pk->expiredate < cur_time ) {
+    /* Check whether the key has expired.  We check the has_expired
+       flag which is set after a full evaluation of the key (getkey.c)
+       as well as a simple compare to the current time in case the
+       merge has for whatever reasons not been done.  */
+    if (pk->has_expired || (pk->expiredate && pk->expiredate < cur_time)) {
         char buf[11];
         if (opt.verbose)
 	  log_info(_("NOTE: signature key %s expired %s\n"),

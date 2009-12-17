@@ -1,3 +1,8 @@
+2009-12-17  Werner Koch  <wk@g10code.com>
+
+	* sig-check.c (do_check_messages): Evaluate the HAS_EXPIRED flag.
+	Fixes bug#1059.
+
 2009-12-15  Werner Koch  <wk@g10code.com>
 
 	* iso7816.c (do_generate_keypair): s/readonly/read_only/.
