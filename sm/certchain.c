@@ -241,9 +241,9 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
         ;
       unsupported = !known[i];
 
-      /* If this critical extension is not supoported, check the list
-         of to be ignored extensions to se whether we claim that it is
-         supported.  */
+      /* If this critical extension is not supported.  Check the list
+         of to be ignored extensions to see whether we claim that it
+         is supported.  */
       if (unsupported && opt.ignored_cert_extensions)
         {
           for (sl=opt.ignored_cert_extensions;

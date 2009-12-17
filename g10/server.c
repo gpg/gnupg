@@ -608,7 +608,7 @@ static const char hlp_passwd[] =
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx);
+  /* ctrl_t ctrl = assuan_get_pointer (ctx); */
   gpg_error_t err;
 
   line = skip_options (line);
@@ -629,7 +629,7 @@ register_commands (assuan_context_t ctx)
   {
     const char *name;
     assuan_handler_t handler;
-    assuan_handler_t help;
+    const char * const help;
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer    },

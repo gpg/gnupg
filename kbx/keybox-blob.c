@@ -315,6 +315,9 @@ add_fixup (KEYBOXBLOB blob, u32 off, u32 val)
 static u32
 make_timestamp (void)
 {
+#ifdef __GNUC__
+#warning using time and not gnupg_get_time
+#endif
   return time(NULL);
 }
 

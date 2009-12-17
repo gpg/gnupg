@@ -221,12 +221,13 @@ more arguments in future versions.
 
     GOODSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good.  For each signature only
-        one of the three codes GOODSIG, BADSIG or ERRSIG will be
-        emitted and they may be used as a marker for a new signature.
-        The username is the primary one encoded in UTF-8 and %XX
-        escaped. The fingerprint may be used instead of the long keyid
-        if it is available.  This is the case with CMS and might
-        eventually also be available for OpenPGP.
+        one of the codes GOODSIG, BADSIG, EXPSIG, EXPKEYSIG, REVKEYSIG
+        or ERRSIG will be emitted.  In the past they were used as a
+        marker for a new signature; new code should use the NEWSIG
+        status instead.  The username is the primary one encoded in
+        UTF-8 and %XX escaped. The fingerprint may be used instead of
+        the long keyid if it is available.  This is the case with CMS
+        and might eventually also be available for OpenPGP.
 
     EXPSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good, but the signature is

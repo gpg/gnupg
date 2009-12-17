@@ -450,7 +450,7 @@ However the standard model (shell) is in that case always tried first.
 @opindex ignore-cert-extension
 Add @var{oid} to the list of ignored certificate extensions.  The
 @var{oid} is expected to be in dotted decimal form, like
-@code{2.5.29.3}.  This option may used more than once.  Critical
+@code{2.5.29.3}.  This option may be used more than once.  Critical
 flagged certificate extensions matching one of the OIDs in the list
 are treated as if they are actually handled and thus the certificate
 won't be rejected due to an unknown critical extension.  Use this

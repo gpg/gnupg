@@ -362,6 +362,7 @@ enum cmd_and_opt_values
     oDisableDSA2,
     oAllowMultipleMessages,
     oNoAllowMultipleMessages,
+    oFakedSystemTime,
 
     oNoop
   };
@@ -704,6 +705,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPersonalDigestPreferences, "personal-digest-preferences","@"),
   ARGPARSE_s_s (oPersonalCompressPreferences,
                                          "personal-compress-preferences", "@"),
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
 
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
@@ -2963,6 +2965,15 @@ main (int argc, char **argv)
 	    opt.flags.allow_multiple_messages=0;
 	    break;
 
+          case oFakedSystemTime:
+            {
+              time_t faked_time = isotime2epoch (pargs.r.ret_str); 
+              if (faked_time == (time_t)(-1))
+                faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
+              gnupg_set_time (faked_time, 0);
+            }
+            break;
+
 	  case oNoop: break;
 
 	  default: 
@@ -3068,6 +3079,17 @@ main (int argc, char **argv)
 	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )
 	tty_batchmode( 1 );
+
+    if (gnupg_faked_time_p ())
+      {
+        gnupg_isotime_t tbuf;
+        
+        log_info (_("WARNING: running with faked system time: "));
+        gnupg_get_isotime (tbuf);
+        dump_isotime (tbuf);
+        log_printf ("\n");
+      }
+    
 
     gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
