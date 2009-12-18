@@ -1,3 +1,7 @@
+2009-12-18  Werner Koch  <wk@g10code.com>
+
+	* applygnupgdefaults (errorfile): Use mktemp.  Fixes bug#1146.
+
 2009-12-07  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c (gcry_strdup): Actually copy the string.

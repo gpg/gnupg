@@ -1,5 +1,5 @@
 #!/bin/sh                                               
-# Apply defaults from/etc/gnupg/gpg.conf to all users             -*- sh -*-
+# Apply defaults from /etc/gnupg/gpg.conf to all users             -*- sh -*-
 #
 # Copyright 2007 Free Software Foundation, Inc.
 #
@@ -16,7 +16,7 @@ errorfile=
 
 error () {
   echo "$PGM: $*" >&2
-  echo "$PGM: $*" >>$errorfile
+  [ -n "$errorfile" ] && echo "$PGM: $*" >>$errorfile
 }
 
 info () {
@@ -34,9 +34,8 @@ cleanup ()
     [ -n "$errorfile" -a -f "$errorfile" ] && rm "$errorfile"
 }
 trap cleanup EXIT SIGINT SIGHUP SIGPIPE
-errorfile="/tmp/$PGM.$$.log"
-: >$errorfile
-
+errorfile=$(mktemp "/tmp/$PGM.log.XXXXXX")
+[ -n "$errorfile" -a -f "$errorfile" ] || exit 2
 
 # Check whether we can use getent
 if getent --help </dev/null >/dev/null 2>&1 ; then
@@ -62,7 +61,7 @@ fi
 
 ${cat_passwd} \
   | while IFS=: read -r user dmy_a uid dmy_c dmy_d home shell dmy_rest; do
-    # Process only entires with a valid login shell
+    # Process only entries with a valid login shell
     grep </etc/shells "^$shell" 2>/dev/null >/dev/null || continue
     # and with an existant gnupg home directory
     [ -d "$home/.gnupg" ] || continue
