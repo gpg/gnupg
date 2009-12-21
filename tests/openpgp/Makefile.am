@@ -19,6 +19,10 @@
 GPG_IMPORT = ../../g10/gpg2 --homedir . \
               --quiet --yes --no-permission-warning --import
 
+# Programs required before we can run these tests.
+required_pgms = ../../g10/gpg2 ../../agent/gpg-agent \
+                ../../tools/gpg-connect-agent
+
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
 	sigs.test sigs-dsa.test \
@@ -60,7 +64,9 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
 	 echo timestamp >./prepared.stamp
 
-./gpg_dearmor:
+# We need to depend on a couple of programs so that the tests don't
+# start before all programs are built.
+./gpg_dearmor: $(required_pgms)
 	echo '#!/bin/sh' >./gpg_dearmor
 	echo "../../g10/gpg2 --no-options --no-greeting \
              --no-secmem-warning --batch --dearmor" >>./gpg_dearmor
