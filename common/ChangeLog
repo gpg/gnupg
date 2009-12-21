@@ -1,3 +1,8 @@
+2009-12-21  Marcus Brinkmann  <marcus@g10code.de>  (wk)
+
+	* Makefile.am (audit-events.h, status.h) [!MAINTAINER_MODE]: No
+	longer include these rules if not in maintainer mode.
+
 2009-12-08  Werner Koch  <wk@g10code.com>
 
 	* dns-cert.c: Add support for ADNS.
