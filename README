@@ -31,10 +31,10 @@ BUILD INSTRUCTIONS
 
 GnuPG 2.0 depends on the following packages:
 
-  libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
-  libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
-  libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
-  libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
+  libgpg-error    (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
+  libgcrypt       (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
+  libksba         (ftp://ftp.gnupg.org/gcrypt/libksba/)
+  libassuan < 2.0 (ftp://ftp.gnupg.org/gcrypt/libassuan/)
   
 You also need the Pinentry package for most function of GnuPG; however
 it is not a build requirement.  Pinentry is available at
@@ -125,7 +125,7 @@ We have some mailing lists dedicated to GnuPG:
 You subscribe to one of the list by sending mail with a subject of
 "subscribe" to x-request@gnupg.org, where x is the name of the mailing
 list (gnupg-announce, gnupg-users, etc.).  An archive of the mailing
-lists are available at http://www.gnupg.org/documentation/mailing-lists.html
+lists is available at <http://www.gnupg.org/documentation/mailing-lists.html>.
 
 Please direct bug reports to http://bugs.gnupg.org or post them direct
 to the mailing list <gnupg-devel@gnupg.org>.
@@ -137,7 +137,7 @@ The English and German mailing lists are watched by the authors and we
 try to answer questions when time allows us to do so.
 
 Commercial grade support for GnuPG is available; please see
-http://www.gnupg.org/service.html .
+<http://www.gnupg.org/service.html>.
 
 
   This file is Free Software; as a special exception the authors gives
