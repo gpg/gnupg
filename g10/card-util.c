@@ -948,7 +948,7 @@ change_cert (const char *args)
     }
   else
     {
-      tty_printf ("usage error: redirectrion to file required\n");
+      tty_printf ("usage error: redirection to file required\n");
       return -1;
     }
 
@@ -977,7 +977,7 @@ read_cert (const char *args)
     }
   else
     {
-      tty_printf ("usage error: redirectrion to file required\n");
+      tty_printf ("usage error: redirection to file required\n");
       return -1;
     }
 
