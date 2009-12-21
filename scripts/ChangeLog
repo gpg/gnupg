@@ -1,3 +1,7 @@
+2009-12-21  Werner Koch  <wk@g10code.com>
+
+	* config.guess, config.sub: Update to version 2009-06-11.
+
 2007-12-14  Werner Koch  <wk@g10code.com>
 
 	* config.guess, config.sub: Update to version 2007-11-19. 

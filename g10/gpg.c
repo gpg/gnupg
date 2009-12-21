@@ -233,6 +233,8 @@ enum cmd_and_opt_values
     oWithSigList,
     oWithSigCheck,
     oSkipVerify,
+    oSkipHiddenRecipients,
+    oNoSkipHiddenRecipients,
     oCompressKeys,
     oCompressSigs,
     oAlwaysTrust,
@@ -626,6 +628,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (aListSigs, "list-sig", "@"),   /* alias */
   ARGPARSE_s_n (aCheckKeys, "check-sig", "@"), /* alias */
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
+  ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
+  ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
+  ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oCompressKeys, "compress-keys", "@"),
   ARGPARSE_s_n (oCompressSigs, "compress-sigs", "@"),
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
@@ -1789,33 +1794,6 @@ parse_trust_model(const char *model)
 }
 
 
-/* Pack an s2k iteration count into the form specified in 2440.  If
-   we're in between valid values, round up. */
-static unsigned char
-encode_s2k_iterations(int iterations)
-{
-  unsigned char c=0,result;
-  unsigned int count;
-
-  if(iterations<=1024)
-    return 0;
-
-  if(iterations>=65011712)
-    return 255;
-
-  /* Need count to be in the range 16-31 */
-  for(count=iterations>>6;count>=32;count>>=1)
-    c++;
-
-  result=(c<<4)|(count-16);
-
-  if(S2K_DECODE_COUNT(result)<iterations)
-    result++;
-
-  return result;
-}
-
-
 /* This fucntion called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
    function. */
@@ -1991,7 +1969,7 @@ main (int argc, char **argv)
     opt.cert_digest_algo = 0;
     opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
     opt.s2k_mode = 3; /* iterated+salted */
-    opt.s2k_count = 96; /* 65536 iterations */
+    opt.s2k_count = 0; /* Auto-calibrate when needed.  */
 #ifdef USE_CAST5
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 #else
@@ -2346,6 +2324,12 @@ main (int argc, char **argv)
           case oWithSigList: opt.list_sigs = 1; break;  
 
 	  case oSkipVerify: opt.skip_verify=1; break;
+
+	  case oSkipHiddenRecipients: 
+	  case oNoSkipHiddenRecipients: 
+            /* Dummies for options to be used in 2.1.  */
+            break;
+
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	    /* There are many programs (like mutt) that call gpg with
@@ -2507,7 +2491,10 @@ main (int argc, char **argv)
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = xstrdup(pargs.r.ret_str); break;
 	  case oS2KCount:
-	    opt.s2k_count=encode_s2k_iterations(pargs.r.ret_int);
+	    if (pargs.r.ret_int)
+              opt.s2k_count = encode_s2k_iterations (pargs.r.ret_int);
+            else
+              opt.s2k_count = 0;  /* Auto-calibrate when needed.  */
 	    break;
           case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;

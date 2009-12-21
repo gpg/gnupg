@@ -2909,7 +2909,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (aodf->pinflags.integrity_protected
       || aodf->pinflags.confidentiality_protected)
     {
-      log_error ("PIN verification requires unsupported protecion method\n");
+      log_error ("PIN verification requires unsupported protection method\n");
       return gpg_error (GPG_ERR_BAD_PIN_METHOD);
     }
   if (!aodf->stored_length && aodf->pinflags.needs_padding)

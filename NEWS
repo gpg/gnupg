@@ -13,8 +13,8 @@ Noteworthy changes in version 2.0.14
 
  * New GPGSM option --ignore-cert-extension.
 
- * New and changed passphrases for gpg-agent protected keys are now
-   created with an iteration count requiring about 100ms of CPU work.
+ * New and changed passphrases are now created with an iteration count
+   requiring about 100ms of CPU work.
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)

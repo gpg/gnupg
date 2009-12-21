@@ -1423,7 +1423,7 @@ es_readn (estream_t ES__RESTRICT stream,
 }
 
 /* Try to unread DATA_N bytes from DATA into STREAM, storing the
-   amount of bytes succesfully unread in *BYTES_UNREAD.  */
+   amount of bytes successfully unread in *BYTES_UNREAD.  */
 static void
 es_unreadn (estream_t ES__RESTRICT stream,
 	    const unsigned char *ES__RESTRICT data, size_t data_n,

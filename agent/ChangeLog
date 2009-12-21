@@ -1,3 +1,7 @@
+2009-12-21  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_getinfo): Add sub-command "s2k_count".
+
 2009-12-14  Werner Koch  <wk@g10code.com>
 
 	* protect.c (agent_unprotect): Decode the S2K count here and take

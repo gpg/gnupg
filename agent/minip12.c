@@ -1698,7 +1698,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
     }
   if (i != 8)
     {
-      log_error ("invalid paramters for p12_build\n");
+      log_error ("invalid parameters for p12_build\n");
       return NULL;
     }
   /* Now this all goes into a sequence. */

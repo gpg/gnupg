@@ -80,7 +80,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
         }
       else
         {
-          log_error ("error accesing card: %s\n", gpg_strerror (rc));
+          log_error ("error accessing card: %s\n", gpg_strerror (rc));
         }
 
       if (!rc)

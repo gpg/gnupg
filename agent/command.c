@@ -1614,7 +1614,7 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
      socket_name - Return the name of the socket.
      ssh_socket_name - Return the name of the ssh socket.
      scd_running - Return OK if the SCdaemon is already running.
-
+     s2k_count   - Return the calibrated S2K count.
      cmd_has_option CMD OPT
                  - Returns OK if the command CMD implements the option OPT.
  */
@@ -1656,6 +1656,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "scd_running"))
     {
       rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
+    }
+  else if (!strcmp (line, "s2k_count"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", get_standard_s2k_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else if (!strncmp (line, "cmd_has_option", 14)
            && (line[14] == ' ' || line[14] == '\t' || !line[14]))

@@ -196,6 +196,7 @@ int  build_sk_list( strlist_t locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned use );
 
 /*-- passphrase.h --*/
+unsigned char encode_s2k_iterations (int iterations);
 assuan_context_t agent_open (int try, const char *orig_codeset);
 void agent_close (assuan_context_t ctx);
 int  have_static_passphrase(void);

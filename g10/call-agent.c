@@ -1254,3 +1254,38 @@ gpg_agent_get_confirmation (const char *desc)
 }
 
 
+/* Return the S2K iteration count as computed by gpg-agent.  */
+gpg_error_t
+agent_get_s2k_count (unsigned long *r_count)
+{
+  gpg_error_t err;
+  membuf_t data;
+  char *buf;
+
+  *r_count = 0;
+
+  err = start_agent (0);
+  if (err)
+    return err;
+
+  init_membuf (&data, 32);
+  err = assuan_transact (agent_ctx, "GETINFO s2k_count", 
+                        membuf_data_cb, &data,
+                        NULL, NULL, NULL, NULL);
+  if (err)
+    xfree (get_membuf (&data, NULL));
+  else 
+    {
+      put_membuf (&data, "", 1);
+      buf = get_membuf (&data, NULL);
+      if (!buf)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          *r_count = strtoul (buf, NULL, 10);
+          xfree (buf);
+        }
+    }
+  return err;
+}
+

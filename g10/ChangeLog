@@ -1,3 +1,15 @@
+2009-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Add dummy options --skip-hidden-recipients and no
+	variant.
+
+	* call-agent.c (agent_get_s2k_count): New.
+	* gpg.c (main):  Set s2k_count to 0.
+	* (encode_s2k_iterations): Move ...
+	* passphrase.c (encode_s2k_iterations): ... here.  Call
+	agent_get_s2k_count if called with a 0 arg.
+	(passphrase_to_dek_ext): Set S2K_COUNT via encode_s2k_iterations.
+
 2009-12-17  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (do_check_messages): Evaluate the HAS_EXPIRED flag.
