@@ -730,7 +730,9 @@ version: the third field contains the version of GnuPG.
 
 pubkey: the third field contains the public key algorithmdcaiphers
 	this version of GnuPG supports, separated by semicolons.  The
-	algorithm numbers are as specified in RFC-4880.
+	algorithm numbers are as specified in RFC-4880.  Note that in
+	contrast to the --status-fd interface these are _not_ the
+	Libgcrypt identifiers.
 
    cfg:pubkey:1;2;3;16;17
 

@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2325,6 +2325,19 @@ keyedit_menu( const char *username, strlist_t locusr,
     keydb_release (kdbhd);
     xfree(answer);
 }
+
+
+/* Change the passphrase of the secret key identified by USERNAME.  */
+void
+keyedit_passwd (const char *username)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_BUG);  /* Not yet implemented.  */
+
+  log_info ("error changing the passphrase for `%s': %s\n", 
+             username, gpg_strerror (err));
+  write_status_error ("keyedit.passwd", err);
+}
+
 
 static void
 tty_print_notations(int indent,PKT_signature *sig)

@@ -1,6 +1,6 @@
 /* status.c - Status message and command-fd interface 
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004, 2005, 2006 Free Software Foundation, Inc.
+ *               2004, 2005, 2006, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -157,8 +157,23 @@ write_status_text ( int no, const char *text)
 }
 
 
+/* Wrte an ERROR status line using a full gpg-error error value.  */
 void
-write_status_error (const char *where, int errcode)
+write_status_error (const char *where, gpg_error_t err)
+{
+  if (!statusfp || !status_currently_allowed (STATUS_ERROR))
+    return;  /* Not enabled or allowed. */
+
+  fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+           get_status_string (STATUS_ERROR), where, err);
+  if (fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
+/* Same as above but only putputs the error code. */
+void
+write_status_errcode (const char *where, int errcode)
 {
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */

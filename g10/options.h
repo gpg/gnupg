@@ -1,6 +1,6 @@
 /* options.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -248,7 +248,7 @@ struct
     struct akl *next;
   } *auto_key_locate;
 
-  int passwd_repeat;
+  int passphrase_repeat;
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't

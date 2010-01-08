@@ -1663,7 +1663,7 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
       /* Everything else we delete */
 
       /* At this point, if 12 is set, the signing key was unavailable.
-	 If 9 or 10 is set, it's superceded.  Otherwise, it's
+	 If 9 or 10 is set, it's superseded.  Otherwise, it's
 	 invalid. */
 
       if(noisy)
@@ -1671,7 +1671,7 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
 		 keystr(node->pkt->pkt.signature->keyid),
 		 uidnode->pkt->pkt.user_id->name,
 		 node->flag&(1<<12)?"key unavailable":
-		 node->flag&(1<<9)?"signature superceded":"invalid signature");
+		 node->flag&(1<<9)?"signature superseded":"invalid signature");
 
       delete_kbnode(node);
       deleted++;

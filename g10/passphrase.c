@@ -50,6 +50,58 @@ static char *next_pw = NULL;
 static char *last_pw = NULL;
 
 
+
+/* Pack an s2k iteration count into the form specified in 2440.  If
+   we're in between valid values, round up.  With value 0 return the
+   old default.  */
+unsigned char
+encode_s2k_iterations (int iterations)
+{
+  gpg_error_t err;
+  unsigned char c=0;
+  unsigned char result;
+  unsigned int count;
+
+  if (!iterations)
+    {
+      unsigned long mycnt;
+
+      /* Ask the gpg-agent for a useful iteration count.  */
+      err = agent_get_s2k_count (&mycnt);
+      if (err || mycnt < 65536)
+        {
+          /* Don't print an error if an older agent is used.  */
+          if (err && gpg_err_code (err) != GPG_ERR_ASS_PARAMETER)
+            log_error (_("problem with the agent: %s\n"), gpg_strerror (err));
+          /* Default to 65536 which we used up to 2.0.13.  */
+          return 96; 
+        }
+      else if (mycnt >= 65011712)
+        return 255; /* Largest possible value.  */
+      else
+        return encode_s2k_iterations ((int)mycnt);
+    }
+
+  if (iterations <= 1024)
+    return 0;  /* Command line arg compatibility.  */
+
+  if (iterations >= 65011712)
+    return 255;
+  
+  /* Need count to be in the range 16-31 */
+  for (count=iterations>>6; count>=32; count>>=1)
+    c++;
+
+  result = (c<<4)|(count-16);
+
+  if (S2K_DECODE_COUNT(result) < iterations)
+    result++;
+  
+  return result;
+}
+
+
+
 /* Hash a passphrase using the supplied s2k. 
    Always needs: dek->algo, s2k->mode, s2k->hash_algo.  */
 static void
@@ -374,7 +426,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
       if (canceled)
         *canceled = 1;
 
-      write_status_error ("get_passphrase", rc);
+      write_status_errcode ("get_passphrase", rc);
     }
 
   if (pk)
@@ -474,7 +526,15 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     {
       gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
       if ( s2k->mode == 3 )
-        s2k->count = opt.s2k_count;
+        {
+          /* We delay the encoding until it is really needed.  This is
+             if we are going to dynamically calibrate it, we need to
+             call out to gpg-agent and that should not be done during
+             option processing in main().  */
+          if (!opt.s2k_count)
+            opt.s2k_count = encode_s2k_iterations (0);
+          s2k->count = opt.s2k_count;
+        }
     }
 
   /* If we do not have a passphrase available in NEXT_PW and status
@@ -584,7 +644,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
       /* Divert to the gpg-agent. */
       pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
-                           (mode == 2 || mode == 4)? opt.passwd_repeat : 0,
+                           (mode == 2 || mode == 4)? opt.passphrase_repeat : 0,
                            tryagain_text, custdesc, custprompt, canceled);
       if (*canceled)
         {

@@ -1,6 +1,6 @@
 /* main.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -156,7 +156,8 @@ int mpi_print( FILE *fp, gcry_mpi_t a, int mode );
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );
 void write_status ( int no );
-void write_status_error (const char *where, int errcode);
+void write_status_error (const char *where, gpg_error_t err);
+void write_status_errcode (const char *where, int errcode);
 void write_status_text ( int no, const char *text );
 void write_status_buffer ( int no,
                            const char *buffer, size_t len, int wrap );
@@ -215,6 +216,7 @@ int delete_keys( strlist_t names, int secret, int allow_both );
 /*-- keyedit.c --*/
 void keyedit_menu( const char *username, strlist_t locusr,
 		   strlist_t commands, int quiet, int seckey_check );
+void keyedit_passwd (const char *username);
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/

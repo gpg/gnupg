@@ -3683,7 +3683,7 @@ do_generate_keypair (struct para_data_s *para,
         log_error ("key generation failed: %s\n", g10_errstr(rc) );
       else
         tty_printf (_("Key generation failed: %s\n"), g10_errstr(rc) );
-      write_status_error (card? "card_key_generate":"key_generate", rc);
+      write_status_errcode (card? "card_key_generate":"key_generate", rc);
       print_status_key_not_created ( get_parameter_value (para, pHANDLE) );
     }
   else
@@ -4116,7 +4116,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
       log_error (_("storing key onto card failed: %s\n"), g10_errstr (rc));
       free_secret_key (sk_unprotected);
       free_secret_key (sk_protected);
-      write_status_error ("save_key_to_card", rc);
+      write_status_errcode ("save_key_to_card", rc);
       return rc;
     }
 

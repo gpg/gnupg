@@ -1,3 +1,29 @@
+2010-01-08  Werner Koch  <wk@g10code.com>
+
+	* cpr.c (write_status_error): Rename to write_status_errcode.
+	Change all callers.
+	(write_status_error): New.
+
+	* gpg.c: Add option --passwd.
+	(aPasswd): New.
+	(main): Implement.
+	* keyedit.c (keyedit_passwd): New.
+
+	* gpg.c (oPasswd, oPasswdFD, oPasswdFile, oPasswdRepeat): Change
+	to oPassphrase, oPassphraseFD, oPassphraseFile, oPassphraseRepeat.
+	* options.h (struct): s/passwd_repeat/passphrase_repeat/.
+	* gpg.c (main): Ditto.
+	* passphrase.c (passphrase_to_dek_ext): Ditto.
+
+2009-12-21  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_get_s2k_count): New.
+	* gpg.c (main):  Set s2k_count to 0.
+	* (encode_s2k_iterations): Move ...
+	* passphrase.c (encode_s2k_iterations): ... here.  Call
+	agent_get_s2k_count if called with a 0 arg.
+	(passphrase_to_dek_ext): Set S2K_COUNT via encode_s2k_iterations.
+
 2009-12-17  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (do_check_messages): Evaluate the HAS_EXPIRED flag.

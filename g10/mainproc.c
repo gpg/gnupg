@@ -361,7 +361,13 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     if( is_status_enabled() ) {
 	char buf[50];
-	sprintf(buf, "%08lX%08lX %d 0",
+        /* FIXME: For ECC support we need to map the OpenPGP algo
+           number to the Libgcrypt definef one.  This is due a
+           chicken-egg problem: We need to have code in libgcrypt for
+           a new algorithm so to implement a proposed new algorithm
+           before the IANA will finally assign an OpenPGP
+           indentifier.  */
+	snprintf (buf, sizeof buf, "%08lX%08lX %d 0",
 		(ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo );
 	write_status_text( STATUS_ENC_TO, buf );
     }

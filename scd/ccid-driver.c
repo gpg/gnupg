@@ -845,11 +845,11 @@ parse_ccid_descriptor (ccid_driver_t handle,
   if ((us & 0x0020))
     DEBUGOUT ("    Auto baud rate change\n");
   if ((us & 0x0040))
-    DEBUGOUT ("    Auto parameter negotation made by CCID\n");
+    DEBUGOUT ("    Auto parameter negotiation made by CCID\n");
   else if ((us & 0x0080))
     DEBUGOUT ("    Auto PPS made by CCID\n");
   else if ((us & (0x0040 | 0x0080)))
-    DEBUGOUT ("    WARNING: conflicting negotation features\n");
+    DEBUGOUT ("    WARNING: conflicting negotiation features\n");
 
   if ((us & 0x0100))
     DEBUGOUT ("    CCID can set ICC in clock stop mode\n");
