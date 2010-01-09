@@ -353,6 +353,8 @@ keydb_new (int secret)
   KEYDB_HANDLE hd;
   int i, j;
   
+  if (secret)
+    log_debug ("FIXME: keydb_new called for secret keys\n");
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
   
