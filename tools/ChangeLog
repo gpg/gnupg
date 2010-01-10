@@ -1,3 +1,7 @@
+2010-01-10  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (utmp.h): Remove header; it is not used.
+
 2009-12-18  Werner Koch  <wk@g10code.com>
 
 	* applygnupgdefaults (errorfile): Use mktemp.  Fixes bug#1146.
