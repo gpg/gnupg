@@ -586,6 +586,7 @@ Present a menu which enables you to do most of the key management
 related tasks.  It expects the specification of a key on the command
 line.
 
+
 @c ******** Begin Edit-key Options **********
 @table @asis
 
@@ -888,6 +889,13 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
+@ifclear gpgone
+@item --passwd @var{user_id}
+@opindex passwd
+Change the passphrase of the secret key belonging to the certificate
+specified as @var{user_id}.  This is a shortcut for the sub-command
+@code{passwd} in the edit key menu.
+@end ifclear
 
 @end table
 

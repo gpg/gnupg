@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+ *               2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -146,6 +146,7 @@ enum cmd_and_opt_values
     aCardStatus,
     aCardEdit,
     aChangePIN,
+    aPasswd,
     aServer,
 
     oTextmode,
@@ -207,10 +208,10 @@ enum cmd_and_opt_values
     oCompressLevel,
     oBZ2CompressLevel,
     oBZ2DecompressLowmem,
-    oPasswd,
-    oPasswdFD,
-    oPasswdFile,
-    oPasswdRepeat,
+    oPassphrase,
+    oPassphraseFD,
+    oPassphraseFile,
+    oPassphraseRepeat,
     oCommandFD,
     oCommandFile,
     oQuickRandom,
@@ -389,6 +390,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
   ARGPARSE_c (aKeygen,	   "gen-key",  N_("generate a new key pair")),
+  ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
   ARGPARSE_c (aDeleteKeys,"delete-keys", 
               N_("remove keys from the public keyring")),
   ARGPARSE_c (aDeleteSecretKeys, "delete-secret-keys",
@@ -397,7 +399,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aLSignKey, "lsign-key"  ,N_("sign a key locally")),
   ARGPARSE_c (aEditKey,  "edit-key"   ,N_("sign or edit a key")),
   ARGPARSE_c (aEditKey,  "key-edit"   ,"@"),
-  ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
+  ARGPARSE_c (aPasswd,   "passwd",     N_("change a passphrase")),
   ARGPARSE_c (aDesigRevoke, "desig-revoke","@" ),
   ARGPARSE_c (aExport, "export"           , N_("export keys") ),
   ARGPARSE_c (aSendKeys, "send-keys"     , N_("export keys to a key server") ),
@@ -599,10 +601,10 @@ static ARGPARSE_OPTS opts[] = {
               "delete-secret-and-public-keys", "@"),
   ARGPARSE_c (aRebuildKeydbCaches, "rebuild-keydb-caches", "@"),
 
-  ARGPARSE_s_s (oPasswd, "passphrase", "@"),
-  ARGPARSE_s_i (oPasswdFD, "passphrase-fd", "@"),
-  ARGPARSE_s_s (oPasswdFile, "passphrase-file", "@"),
-  ARGPARSE_s_i (oPasswdRepeat, "passphrase-repeat", "@"),
+  ARGPARSE_s_s (oPassphrase,      "passphrase", "@"),
+  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
+  ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
+  ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
   ARGPARSE_s_i (oCommandFD, "command-fd", "@"),
   ARGPARSE_s_s (oCommandFile, "command-file", "@"),
   ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
@@ -627,7 +629,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (aListKeys, "list-key", "@"),   /* alias */
   ARGPARSE_s_n (aListSigs, "list-sig", "@"),   /* alias */
   ARGPARSE_s_n (aCheckKeys, "check-sig", "@"), /* alias */
-  ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
@@ -1430,6 +1431,7 @@ check_permissions(const char *path,int item)
 }
 
 
+/* Print the OpenPGP defined algo numbers.  */
 static void
 print_algo_numbers(int (*checker)(int))
 {
@@ -1997,7 +1999,7 @@ main (int argc, char **argv)
     opt.def_sig_expire="0";
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
-    opt.passwd_repeat=1;
+    opt.passphrase_repeat=1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -2179,6 +2181,7 @@ main (int argc, char **argv)
 	  case aDeleteSecretKeys:
 	  case aDeleteSecretAndPublicKeys:
 	  case aDeleteKeys:
+          case aPasswd:
             set_cmd (&cmd, pargs.r_opt);
             greeting=1;
             break;
@@ -2558,16 +2561,16 @@ main (int argc, char **argv)
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
 	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
-	  case oPasswd:
+	  case oPassphrase:
 	    set_passphrase_from_string(pargs.r.ret_str);
 	    break;
-	  case oPasswdFD:
+	  case oPassphraseFD:
             pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
             break;
-	  case oPasswdFile:
+	  case oPassphraseFile:
             pwfd = open_info_file (pargs.r.ret_str, 0, 1);
             break;
-	  case oPasswdRepeat: opt.passwd_repeat=pargs.r.ret_int; break;
+	  case oPassphraseRepeat: opt.passphrase_repeat=pargs.r.ret_int; break;
 	  case oCommandFD:
             opt.command_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
             break;
@@ -3620,6 +3623,17 @@ main (int argc, char **argv)
 	    keyedit_menu(username, locusr, NULL, 0, 1 );
 	xfree(username);
 	break;
+
+      case aPasswd:
+        if (argc != 1)
+          wrong_args (_("--passwd <user-id>"));
+        else
+          {
+            username = make_username (fname);
+            keyedit_passwd (username);
+            xfree (username);
+          }
+        break;
 
       case aDeleteKeys:
       case aDeleteSecretKeys:

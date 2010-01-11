@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2298,6 +2298,72 @@ keyedit_menu( const char *username, strlist_t locusr,
     keydb_release (kdbhd);
     xfree(answer);
 }
+
+
+/* Change the passphrase of the secret key identified by USERNAME.  */
+void
+keyedit_passwd (const char *username)
+{
+  gpg_error_t err;
+  PKT_public_key *pk;
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  KEYDB_HANDLE kdh = NULL;
+  KBNODE keyblock = NULL;
+
+  pk = xtrycalloc (1, sizeof *pk);
+  if (!pk)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = get_pubkey_byname (NULL, pk, username, NULL, NULL, 1, 1);
+  if (err)
+    goto leave;
+  fingerprint_from_pk (pk, fpr, &fprlen);
+  while (fprlen < MAX_FINGERPRINT_LEN) 
+    fpr[fprlen++] = 0;
+  
+  kdh = keydb_new (1);
+  if (!kdh)
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  err = keydb_search_fpr (kdh, fpr);
+  if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
+    err = gpg_error (GPG_ERR_NO_SECKEY);
+  if (err)
+    goto leave;
+
+  err = keydb_get_keyblock (kdh, &keyblock);
+  if (err) 
+    goto leave;
+
+  if (!change_passphrase (keyblock))
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  err = keydb_update_keyblock (kdh, keyblock);
+  if (err)
+    log_error( _("update secret failed: %s\n"), gpg_strerror (err));
+
+ leave:
+  release_kbnode (keyblock);
+  if (pk)
+    free_public_key (pk);
+  keydb_release (kdh);
+  if (err)
+    {
+      log_info ("error changing the passphrase for `%s': %s\n", 
+                username, gpg_strerror (err));
+      write_status_error ("keyedit.passwd", gpg_err_code (err));
+    }
+}
+
 
 static void
 tty_print_notations(int indent,PKT_signature *sig)

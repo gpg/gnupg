@@ -644,7 +644,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
       /* Divert to the gpg-agent. */
       pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
-                           (mode == 2 || mode == 4)? opt.passwd_repeat : 0,
+                           (mode == 2 || mode == 4)? opt.passphrase_repeat : 0,
                            tryagain_text, custdesc, custprompt, canceled);
       if (*canceled)
         {

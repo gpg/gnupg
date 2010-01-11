@@ -246,7 +246,7 @@ struct
     struct akl *next;
   } *auto_key_locate;
 
-  int passwd_repeat;
+  int passphrase_repeat;
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't
