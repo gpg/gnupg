@@ -360,19 +360,25 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
        
      in canoncical format of course.  We use asprintf and %n modifier
      and dummy values as placeholders.  */
-  p = xtryasprintf
-    ("(9:protected%d:%s((4:sha18:%n_8bytes_2:96)%d:%n%*s)%d:%n%*s)",
-     (int)strlen (modestr), modestr,
-     &saltpos, 
-     blklen, &ivpos, blklen, "",
-     enclen, &encpos, enclen, "");
-  if (!p)
-    {
-      gpg_error_t tmperr = out_of_core ();
-      xfree (iv);
-      xfree (outbuf);
-      return tmperr;
-    }
+  {
+    char countbuf[35];
+
+    snprintf (countbuf, sizeof countbuf, "%lu", get_standard_s2k_count ());
+    p = xtryasprintf
+      ("(9:protected%d:%s((4:sha18:%n_8bytes_%u:%s)%d:%n%*s)%d:%n%*s)",
+       (int)strlen (modestr), modestr,
+       &saltpos, 
+       (unsigned int)strlen (countbuf), countbuf,
+       blklen, &ivpos, blklen, "",
+       enclen, &encpos, enclen, "");
+    if (!p)
+      {
+        gpg_error_t tmperr = out_of_core ();
+        xfree (iv);
+        xfree (outbuf);
+        return tmperr;
+      }
+  }
   *resultlen = strlen (p);
   *result = (unsigned char*)p;
   memcpy (p+saltpos, iv+2*blklen, 8);
