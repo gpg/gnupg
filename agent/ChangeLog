@@ -1,3 +1,8 @@
+2010-01-26  Werner Koch  <wk@g10code.com>
+
+	* protect.c (do_encryption): Encode the s2kcount and do not use a
+	static value of 96.
+
 2009-12-21  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_getinfo): Add sub-command "s2k_count".

@@ -3,6 +3,9 @@ Noteworthy changes in version 2.0.15 (unreleased)
 
  * New command --passwd for GPG.
 
+ * Fixes a regression in 2.0.14 which prevented unprotection of new
+   or changed gpg-agent passphrases.
+
 
 Noteworthy changes in version 2.0.14 (2009-12-21)
 -------------------------------------------------
