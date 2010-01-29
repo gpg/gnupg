@@ -48,7 +48,7 @@ section entitled ``Copying''.
 
 @dircategory GNU Utilities
 @direntry
-* gpg: (gpg).            OpenPGP encryption and signing tool (v1).
+* gpg: (gnupg1).            OpenPGP encryption and signing tool (v1).
 @end direntry
 
 
