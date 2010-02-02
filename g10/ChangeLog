@@ -1,3 +1,8 @@
+2010-02-02  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (card_edit): Change prompt to "gpg/card".
+	* keyedit.c (keyedit_menu): Change prompt to "gpg".
+
 2009-12-17  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (do_check_messages): Evaluate the HAS_EXPIRED flag.
