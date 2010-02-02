@@ -1,3 +1,8 @@
+2010-02-02  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (card_edit): Change prompt to "gpg/card".
+	* keyedit.c (keyedit_menu): Change prompt to "gpg".
+
 2010-01-11  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: Add option --passwd.

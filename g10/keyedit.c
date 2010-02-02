@@ -1651,7 +1651,7 @@ keyedit_menu( const char *username, strlist_t locusr,
 #ifdef HAVE_LIBREADLINE
 		tty_enable_completion(keyedit_completion);
 #endif
-		answer = cpr_get_no_help("keyedit.prompt", _("Command> "));
+		answer = cpr_get_no_help("keyedit.prompt", "gpg> ");
 		cpr_kill_prompt();
 		tty_disable_completion();
 	      }
