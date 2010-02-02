@@ -888,6 +888,13 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
+@ifclear gpgone
+@item --passwd @var{user_id}
+@opindex passwd
+Change the passphrase of the secret key belonging to the certificate
+specified as @var{user_id}.  This is a shortcut for the sub-command
+@code{passwd} of the edit key menu.
+@end ifclear
 
 @end table
 

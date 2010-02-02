@@ -1837,7 +1837,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 		if(un->pkt->pkt.user_id->attrib_data)
 		  {
-		    dump_attribs(un->pkt->pkt.user_id,pk,NULL);
+		    dump_attribs (un->pkt->pkt.user_id, pk);
 
 		    if(opt.verify_options&VERIFY_SHOW_PHOTOS)
 		      show_photos(un->pkt->pkt.user_id->attribs,

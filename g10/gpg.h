@@ -1,5 +1,5 @@
 /* gpg.h - top level include file for gpg etc.
- * Copyright (C) 2003, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2006, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,6 +50,7 @@ struct server_local_s;
 
 /* Object used to describe a keyblok node.  */
 typedef struct kbnode_struct *KBNODE;
+typedef struct kbnode_struct *kbnode_t;
 
 
 /* Session control object.  This object is passed to most functions to

@@ -511,7 +511,7 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
-    PKT_secret_key *sk = NULL;
+    PKT_public_key *pk = NULL;
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock) || interactive;
@@ -550,14 +550,16 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	   opt.cert_policy_url || opt.cert_notations)
 	  force_v4=1;
 
-	/* we have to use a copy of the sk, because make_keysig_packet
+	/* We have to use a copy of the pk, because make_keysig_packet
 	 * may remove the protection from sk and if we did other
 	 * changes to the secret key, we would save the unprotected
-	 * version */
-	if( sk )
-	    free_secret_key(sk);
-	sk = copy_secret_key( NULL, sk_rover->sk );
-	keyid_from_sk( sk, sk_keyid );
+	 * version.  FIXME: This can be removed because all protection
+	 * is now done by gpg-agent.  */
+	if (pk)
+          free_public_key (pk);
+	pk = copy_public_key (NULL, sk_rover->pk);
+	keyid_from_pk (pk, sk_keyid);
+
 	/* set mark A for all selected user ids */
 	for( node=keyblock; node; node = node->next ) {
 	    if( select_all || (node->flag & NODFLG_SELUID) )
@@ -777,10 +779,10 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
                     if (!node->pkt->pkt.signature->flags.exportable && local)
                       tty_printf(_(
 			      "\"%s\" was already locally signed by key %s\n"),
-				 user,keystr_from_sk(sk));
+				 user,keystr_from_pk (pk));
                     else
                       tty_printf(_("\"%s\" was already signed by key %s\n"),
-                                 user,keystr_from_sk(sk));
+                                 user,keystr_from_pk (pk));
 
 		    if(opt.expert
 		       && cpr_get_answer_is_yes("sign_uid.dupe_okay",
@@ -793,8 +795,8 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 			continue;
 		      }
 
-                    sprintf (buf, "%08lX%08lX",
-                             (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
+                    snprintf (buf, sizeof buf, "%08lX%08lX",
+                             (ulong)pk->keyid[0], (ulong)pk->keyid[1]);
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
 
@@ -806,7 +808,7 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	/* check whether any uids are left for signing */
 	if( !count_uids_with_flag(keyblock, NODFLG_MARK_A) )
 	  {
-	    tty_printf(_("Nothing to sign with key %s\n"),keystr_from_sk(sk));
+	    tty_printf (_("Nothing to sign with key %s\n"), keystr_from_pk (pk));
 	    continue;
 	  }
 
@@ -883,7 +885,7 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	   currently v3 and we're about to sign it with a v4 sig?  If
 	   so, danger! */
 	if(PGP2 && all_v3 &&
-	   (sk->version>3 || force_v4) && primary_pk->version<=3)
+	   (pk->version > 3 || force_v4) && primary_pk->version <= 3)
 	  {
 	    tty_printf(_("You may not make an OpenPGP signature on a "
 			 "PGP 2.x key while in --pgp2 mode.\n"));
@@ -953,8 +955,8 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	  }
 
 	p=get_user_id_native(sk_keyid);
-	tty_printf(_("Are you sure that you want to sign this key with your\n"
-		     "key \"%s\" (%s)\n"),p,keystr_from_sk(sk));
+	tty_printf (_("Are you sure that you want to sign this key with your\n"
+                      "key \"%s\" (%s)\n"), p, keystr_from_pk (pk));
 	xfree(p);
 
 	if(selfsig)
@@ -1051,14 +1053,14 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		  rc = make_keysig_packet( &sig, primary_pk,
 					   node->pkt->pkt.user_id,
 					   NULL,
-					   sk,
+					   pk,
 					   0x13, 0, force_v4?4:0, 0, 0,
 					   keygen_add_std_prefs, primary_pk);
 		else
 		  rc = make_keysig_packet( &sig, primary_pk,
 					   node->pkt->pkt.user_id,
 					   NULL,
-					   sk,
+					   pk,
 					   class, 0, force_v4?4:0,
 					   timestamp, duration,
 					   sign_mk_attrib, &attrib );
@@ -1086,8 +1088,8 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
 
   leave:
     release_sk_list( sk_list );
-    if( sk )
-	free_secret_key(sk);
+    if (pk)
+      free_public_key (pk);
     return rc;
 }
 
@@ -1653,7 +1655,7 @@ keyedit_menu( const char *username, strlist_t locusr,
 #ifdef HAVE_LIBREADLINE
 		tty_enable_completion(keyedit_completion);
 #endif
-		answer = cpr_get_no_help("keyedit.prompt", _("Command> "));
+		answer = cpr_get_no_help ("keyedit.prompt", "gpg> ");
 		cpr_kill_prompt();
 		tty_disable_completion();
 	      }
@@ -2331,11 +2333,66 @@ keyedit_menu( const char *username, strlist_t locusr,
 void
 keyedit_passwd (const char *username)
 {
-  gpg_error_t err = gpg_error (GPG_ERR_BUG);  /* Not yet implemented.  */
+  gpg_error_t err;
+  PKT_public_key *pk;
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  KEYDB_HANDLE kdh = NULL;
+  kbnode_t keyblock = NULL;
 
-  log_info ("error changing the passphrase for `%s': %s\n", 
-             username, gpg_strerror (err));
-  write_status_error ("keyedit.passwd", err);
+  pk = xtrycalloc (1, sizeof *pk);
+  if (!pk)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = getkey_byname (NULL, pk, username, 1, NULL);
+  if (err)
+    goto leave;
+  fingerprint_from_pk (pk, fpr, &fprlen);
+  while (fprlen < MAX_FINGERPRINT_LEN) 
+    fpr[fprlen++] = 0;
+  
+  /* FIXME: Call an agent function instead.  */
+
+  kdh = keydb_new (1);
+  if (!kdh)
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  err = keydb_search_fpr (kdh, fpr);
+  if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
+    err = gpg_error (GPG_ERR_NO_SECKEY);
+  if (err)
+    goto leave;
+
+  err = keydb_get_keyblock (kdh, &keyblock);
+  if (err) 
+    goto leave;
+
+  if (!change_passphrase (keyblock))
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  err = keydb_update_keyblock (kdh, keyblock);
+  if (err)
+    log_error( _("update secret failed: %s\n"), gpg_strerror (err));
+
+ leave:
+  release_kbnode (keyblock);
+  if (pk)
+    free_public_key (pk);
+  keydb_release (kdh);
+  if (err)
+    {
+      log_info ("error changing the passphrase for `%s': %s\n", 
+                username, gpg_strerror (err));
+      write_status_error ("keyedit.passwd", err);
+    }
 }
 
 

@@ -103,7 +103,7 @@ void idea_cipher_warn( int show );
 struct expando_args
 {
   PKT_public_key *pk;
-  PKT_secret_key *sk;
+  PKT_public_key *pksk;
   byte imagetype;
   int validity_info;
   const char *validity_string;
@@ -195,7 +195,7 @@ int encrypt_filter (void *opaque, int control,
 
 
 /*-- sign.c --*/
-int complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md );
+int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md);
 int sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
 int clearsign_file( const char *fname, strlist_t locusr, const char *outfile );
@@ -306,10 +306,9 @@ void print_revokers(PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
 void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode,int which);
-void dump_attribs(const PKT_user_id *uid,
-		  PKT_public_key *pk,PKT_secret_key *sk);
+void dump_attribs (const PKT_user_id *uid, PKT_public_key *pk);
 void set_attrib_fd(int fd);
-void print_seckey_info (PKT_secret_key *sk);
+void print_seckey_info (PKT_public_key *pk);
 void print_pubkey_info (FILE *fp, PKT_public_key *pk);
 void print_card_key_info (FILE *fp, KBNODE keyblock);
 

@@ -1,6 +1,6 @@
 /* keydb.h - Key database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +40,7 @@
 
 struct getkey_ctx_s;
 typedef struct getkey_ctx_s *GETKEY_CTX;
+typedef struct getkey_ctx_s *getkey_ctx_t;
 
 /****************
  * A Keyblock is all packets which form an entire certificate;
@@ -93,12 +94,13 @@ struct pk_list
   int flags; /* flag bit 1==throw_keyid */
 };
 
-/* structure to hold a couple of secret key certificates */
+/* Structure to hold a list of secret key certificates.  */
 typedef struct sk_list *SK_LIST;
-struct sk_list {
-    SK_LIST next;
-    PKT_secret_key *sk;
-    int mark; /* not used */
+struct sk_list 
+{
+  SK_LIST next;
+  PKT_public_key *pk;
+  int mark; /* not used */
 };
 
 /* structure to collect all information which can be used to
@@ -169,8 +171,8 @@ void warn_missing_aes_from_pklist (PK_LIST pk_list);
 /*-- skclist.c --*/
 int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );
-int  build_sk_list( strlist_t locusr, SK_LIST *ret_sk_list,
-					    int unlock, unsigned use );
+gpg_error_t  build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list,
+                            int unlock, unsigned use);
 
 /*-- passphrase.h --*/
 unsigned char encode_s2k_iterations (int iterations);
@@ -225,6 +227,18 @@ int get_seckey_byfprint( PKT_secret_key *sk,
 			 const byte *fprint, size_t fprint_len);
 int get_seckeyblock_byfprint (KBNODE *ret_keyblock, const byte *fprint,
                               size_t fprint_len );
+
+gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
+                            strlist_t names, int want_secret,
+                            kbnode_t *ret_keyblock);
+gpg_error_t getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
+                           const char *name, int want_secret,
+                           kbnode_t *ret_keyblock);
+gpg_error_t getkey_next (getkey_ctx_t ctx, PKT_public_key *pk,
+                         kbnode_t *ret_keyblock);
+void getkey_end (getkey_ctx_t ctx);
+
+gpg_error_t have_secret_key (kbnode_t keyblock);
 
 
 int enum_secret_keys( void **context, PKT_secret_key *sk,

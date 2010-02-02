@@ -1,6 +1,6 @@
 /* w32-gettext.h - A simple gettext implementation for Windows targets.
    Copyright (C) 1995, 1996, 1997, 1999, 2005, 2007,
-                 2008 Free Software Foundation, Inc.
+                 2008, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public License
@@ -612,6 +612,7 @@ my_nl_locale_name (const char *categoryname)
 
   /* Let the user override the system settings through environment
      variables, as on POSIX systems.  */
+#ifndef HAVE_W32CE_SYSTEM
   retval = getenv ("LC_ALL");
   if (retval != NULL && retval[0] != '\0')
     return retval;
@@ -621,9 +622,14 @@ my_nl_locale_name (const char *categoryname)
   retval = getenv ("LANG");
   if (retval != NULL && retval[0] != '\0')
     return retval;
+#endif /*!HAVE_W32CE_SYSTEM*/
 
   /* Use native Win32 API locale ID.  */
+#ifdef HAVE_W32CE_SYSTEM
+  lcid = GetSystemDefaultLCID ();
+#else
   lcid = GetThreadLocale ();
+#endif
 
   /* Strip off the sorting rules, keep only the language part.  */
   langid = LANGIDFROMLCID (lcid);
@@ -1116,14 +1122,15 @@ struct loaded_domain
   char *data_native; /* Data mapped to the native version of the
                         string.  (Allocated along with DATA). */
   int must_swap;
-  uint32_t nstrings;
-  uint32_t *mapped;  /* 0   := Not mapped (original utf8).
+  uint32_t nstrings; /* Number of strings.  */
+  uint32_t *mapped;  /* Array of mapping indicators:
+                        0   := Not mapped (original utf8).
                         1   := Mapped to native encoding in overflow space.
-                        >=2 := Mapped to native encoding. The values
+                        >=2 := Mapped to native encoding. The value
                                gives the length of the mapped string.
-                               becuase the 0 is included and an empty
-                               string is not allowed we will enver get
-                               values 0 and 1.  */
+                               Because the terminating nul is included
+                               in the length and an empty string is
+                               not allowed, values are always > 1.  */
   struct overflow_space_s *overflow_space;
   struct string_desc *orig_tab;
   struct string_desc *trans_tab;
@@ -1366,7 +1373,7 @@ bindtextdomain (const char *domainname, const char *dirname)
   catval = NULL;
   catval_full = my_nl_locale_name ("LC_MESSAGES");
 
-  /* Normally, we would have to loop over all returned locales, and
+  /* Normally we would have to loop over all returned locales and
      search for the right file.  See gettext intl/dcigettext.c for all
      the gory details.  Here, we only support the basic category, and
      ignore everything else.  */
@@ -1389,8 +1396,8 @@ bindtextdomain (const char *domainname, const char *dirname)
   /* Now build the filename string.  The complete filename is this:
      DIRNAME + \ + CATVAL + \LC_MESSAGES\ + DOMAINNAME + .mo  */
   {
-    int len = strlen (dirname) + 1 + strlen (catval) + 13
-      + strlen (domainname) + 3 + 1;
+    int len = (strlen (dirname) + 1 + strlen (catval) + 13
+               + strlen (domainname) + 3 + 1);
     char *p;
 
     fname = jnlib_malloc (len);
@@ -1497,9 +1504,9 @@ get_string (struct loaded_domain *domain, uint32_t idx,
       else
         {
           /* There is not enough space for the translation (or for
-             whatever reason an empry string is used): Store it in the
+             whatever reason an empty string is used): Store it in the
              overflow_space and mark that in the mapped array.
-             Because UTF-8 strings are in general longer than the
+             Because UTF-8 strings are in general shorter than the
              Windows 2 byte encodings, we expect that this won't
              happen too often (if at all) and thus we use a linked
              list to manage this space. */

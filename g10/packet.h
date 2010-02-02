@@ -501,7 +501,7 @@ int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
-			PKT_secret_key *sk, int sigclass, int digest_algo,
+			PKT_public_key *pksk, int sigclass, int digest_algo,
 			int sigversion, u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque  );
@@ -510,7 +510,7 @@ int update_keysig_packet( PKT_signature **ret_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid,
                       PKT_public_key *subpk,
-                      PKT_secret_key *sk,
+                      PKT_public_key *pksk,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque   );
 

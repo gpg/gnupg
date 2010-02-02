@@ -200,7 +200,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     int rc = 0;
     armor_filter_context_t *afx;
     PKT_public_key *pk = NULL;
-    PKT_secret_key *sk = NULL;
+    PKT_public_key *pk2 = NULL;
     PKT_signature *sig = NULL;
     IOBUF out = NULL;
     struct revocation_reason_info *reason = NULL;
@@ -262,8 +262,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
       {
 	SK_LIST list;
 
-	if(sk)
-	  free_secret_key(sk);
+	if (pk2)
+	  free_public_key (pk2);
 
 	if(sk_list)
 	  {
@@ -272,7 +272,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 		byte fpr[MAX_FINGERPRINT_LEN];
 		size_t fprlen;
 
-		fingerprint_from_sk(list->sk,fpr,&fprlen);
+		fingerprint_from_pk (list->pk, fpr, &fprlen);
 
 		/* Don't get involved with keys that don't have 160
 		   bit fingerprints */
@@ -283,18 +283,19 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 		  break;
 	      }
 
-	    if(list)
-	      sk=copy_secret_key(NULL,list->sk);
+	    if (list)
+	      pk2 = copy_public_key (NULL, list->pk);
 	    else
 	      continue;
 	  }
 	else
 	  {
-	    sk=xmalloc_secure_clear(sizeof(*sk));
-	    rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
+	    pk2 = xmalloc_clear (sizeof *pk2);
+	    rc = get_pubkey_byfprint (pk2,
+                                      pk->revkey[i].fpr, MAX_FINGERPRINT_LEN);
 	  }
 
-	/* We have the revocation key */
+	/* We have the revocation key.  */
 	if(!rc)
 	  {
 	    PKT_signature *revkey = NULL;
@@ -305,7 +306,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    tty_printf ("\n");
 
 	    tty_printf (_("To be revoked by:\n"));
-            print_seckey_info (sk);
+            print_seckey_info (pk2);
 
 	    if(pk->revkey[i].class&0x40)
 	      tty_printf(_("(This is a sensitive revocation key)\n"));
@@ -320,8 +321,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    if( !reason )
 	      continue;
 
-	    rc = check_secret_key( sk, 0 );
-	    if( rc )
+	    rc = -1;/*FIXME: check_secret_key (pk2, 0 );*/
+	    if (rc)
 	      continue;
 
 	    if( !opt.armor )
@@ -336,7 +337,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    push_armor_filter (afx, out);
 
 	    /* create it */
-	    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
+	    rc = make_keysig_packet( &sig, pk, NULL, NULL, pk2, 0x20, 0,
 				     0, 0, 0,
 				     revocation_reason_build_cb, reason );
 	    if( rc ) {
@@ -414,8 +415,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
   leave:
     if( pk )
 	free_public_key( pk );
-    if( sk )
-	free_secret_key( sk );
+    if (pk2)
+	free_public_key (pk2);
     if( sig )
 	free_seckey_enc( sig );
 

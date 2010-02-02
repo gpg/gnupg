@@ -1,3 +1,53 @@
+2010-02-02  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (keyedit_menu): Change prompt to "gpg".
+	* card-util.c (card_edit): Change prompt to "gpg/card".
+
+2010-01-11  Werner Koch  <wk@g10code.com>
+
+	* sign.c (only_old_style, write_onepass_sig_packets, hash_for)
+	(write_signature_packets, print_status_sig_created)
+	(clearsign_file, make_keysig_packet, mk_notation_policy_etc)
+	(complete_sig, do_sign, update_keysig_packet): Replace all
+	secret key access by the matching public key.
+	* keylist.c (print_seckey_info): Ditto.
+	* revoke.c (gen_desig_revoke): Ditto.
+	* skclist.c (release_sk_list): Ditto.
+	* keyedit.c (sign_uids): Ditto.
+	* misc.c (get_signature_count): Ditto. 
+	* main.h (struct expand_args): s/sk/pksk/.  Change all users.
+
+	* keyedit.c (keyedit_passwd): Finish implementation.
+
+2010-01-10  Werner Koch  <wk@g10code.com>
+
+	* skclist.c (GCRYCTL_FAKED_RANDOM_P): Remove because we require
+	libgcrypt 1.4.
+	(is_insecure, key_present_in_sk_list): Work with public keys.
+	(build_sk_list): Change to work on public keys.
+	* keydb.h (struct sk_list): Replace field SK by a PK field.
+
+	* keylist.c (list_keyblock_print): Always look for the public key
+	and ignore all secret key packets.
+	(list_keyblock_colon): Ditto.
+	(print_capabilities): Remove arg SK and all secret key stuff.
+	Adjust all callers.
+	(dump_attribs): Ditto.
+
+	* getkey.c (getkey_bynames, getkey_next, get_pubkey_end): New.
+	(getkey_byname): New.
+	(getkey_ctx_s): Add WANT_SECRET.
+	(key_byname): Set it.
+	(merge_keys_and_selfsig): Remove all the secret key merging.
+	(lookup): Simplify by removing secret key code.
+
+	* keylist.c (list_all): Scan public keys and use have_secret_key
+	to filter secret keys.
+	(list_one): Use the new get_key functions.
+
+	* gpg.h (kbnode_t): Add as alias for KBNODE.
+	* keydb.h (getkey_ctx_t): Add as alias for GETKEY_CTX.
+
 2010-01-09  Werner Koch  <wk@g10code.com>
 
 	* getkey.c, keylist.c: Re-indent.

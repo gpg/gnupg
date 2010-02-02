@@ -1817,7 +1817,7 @@ card_edit (strlist_t commands)
 	    if (!have_commands)
               {
 		tty_enable_completion (card_edit_completion);
-		answer = cpr_get_no_help("cardedit.prompt", _("Command> "));
+		answer = cpr_get_no_help("cardedit.prompt", _("gpg/card> "));
 		cpr_kill_prompt();
 		tty_disable_completion ();
               }

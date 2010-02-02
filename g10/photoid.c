@@ -297,7 +297,7 @@ show_photos(const struct user_attribute *attrs,
 
   memset(&args,0,sizeof(args));
   args.pk=pk;
-  args.sk=sk;
+  args.pksk=sk;
   args.validity_info=get_validity_info(pk,uid);
   args.validity_string=get_validity_string(pk,uid);
 

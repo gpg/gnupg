@@ -46,6 +46,7 @@
 struct getkey_ctx_s
 {
   int exact;
+  int want_secret;       /* The caller requested only secret keys.  */
   KBNODE keyblock;
   KBPOS kbpos;
   KBNODE found_key;	 /* Pointer into some keyblock. */
@@ -101,8 +102,8 @@ typedef struct user_id_db
 static user_id_db_t user_id_db;
 static int uid_cache_entries;	/* Number of entries in uid cache. */
 
-static void merge_selfsigs (KBNODE keyblock);
-static int lookup (GETKEY_CTX ctx, KBNODE * ret_keyblock, int secmode);
+static void merge_selfsigs (kbnode_t keyblock);
+static int lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret);
 
 #if 0
 static void
@@ -599,7 +600,7 @@ leave:
 
 
 /* Try to get the pubkey by the userid. This function looks for the
- * first pubkey certificate which has the given name in a user_id.  if
+ * first pubkey certificate which has the given name in a user_id.  If
  * pk/sk has the pubkey algo set, the function will only return a
  * pubkey with that algo.  If namelist is NULL, the first key is
  * returned.  The caller should provide storage for either the pk or
@@ -608,7 +609,7 @@ leave:
 static int
 key_byname (GETKEY_CTX * retctx, strlist_t namelist,
 	    PKT_public_key * pk, PKT_secret_key * sk,
-	    int secmode, int include_unusable,
+	    int want_secret, int include_unusable,
 	    KBNODE * ret_kb, KEYDB_HANDLE * ret_kdbhd)
 {
   int rc = 0;
@@ -616,6 +617,8 @@ key_byname (GETKEY_CTX * retctx, strlist_t namelist,
   strlist_t r;
   GETKEY_CTX ctx;
   KBNODE help_kb = NULL;
+
+  /* FIXME: Eventually remove the SK argument.  */
 
   if (retctx)
     {
@@ -667,35 +670,25 @@ key_byname (GETKEY_CTX * retctx, strlist_t namelist,
 	}
     }
 
-  ctx->kr_handle = keydb_new (secmode);
+  ctx->want_secret = want_secret;
+  ctx->kr_handle = keydb_new (0);
   if (!ret_kb)
     ret_kb = &help_kb;
 
-  if (secmode)
+  if (pk)
     {
-      if (sk)
-	{
-	  ctx->req_algo = sk->req_algo;
-	  ctx->req_usage = sk->req_usage;
-	}
-      rc = lookup (ctx, ret_kb, 1);
-      if (!rc && sk)
-	{
-	  sk_from_block (ctx, sk, *ret_kb);
-	}
+      ctx->req_algo = pk->req_algo;
+      ctx->req_usage = pk->req_usage;
     }
-  else
+  else if (sk) /* FIXME:  We should remove this.  */
     {
-      if (pk)
-	{
-	  ctx->req_algo = pk->req_algo;
-	  ctx->req_usage = pk->req_usage;
-	}
-      rc = lookup (ctx, ret_kb, 0);
-      if (!rc && pk)
-	{
-	  pk_from_block (ctx, pk, *ret_kb);
-	}
+      ctx->req_algo = sk->req_algo;
+      ctx->req_usage = sk->req_usage;
+    }
+  rc = lookup (ctx, ret_kb, want_secret);
+  if (!rc && pk)
+    {
+      pk_from_block (ctx, pk, *ret_kb);
     }
 
   release_kbnode (help_kb);
@@ -1219,114 +1212,101 @@ get_seckeyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
   return rc;
 }
 
+
+
+/* The new function to return a key.  
+   FIXME: Document it.  */
+gpg_error_t
+getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
+                strlist_t names, int want_secret, kbnode_t *ret_keyblock)
+{
+  return key_byname (retctx, names, pk, NULL, want_secret, 1,
+                     ret_keyblock, NULL);
+}
+
+
+/* Get a key by name and store it into PK.  If RETCTX is not NULL
+ * return the search context which needs to be released by the caller
+ * using getkey_end.  If NAME is NULL use the default key (see below).
+ * On success and if RET_KEYBLOCK is not NULL the found keyblock is
+ * stored at this address.  WANT_SECRET passed as true requires that a
+ * secret key is available for the selected key.
+ * 
+ * If WANT_SECRET is true and NAME is NULL and a default key has been
+ * defined that defined key is used.  In all other cases the first
+ * available key is used. 
+ * 
+ * FIXME: Explain what is up with unusable keys.
+ *
+ * FIXME: We also have the get_pubkey_byname fucntion which has a
+ * different semantic.  Should be merged with this one.
+ */
+gpg_error_t
+getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
+               const char *name, int want_secret, kbnode_t *ret_keyblock)
+{
+  gpg_error_t err;
+  strlist_t namelist = NULL;
+  int with_unusable = 1;
+
+  if (want_secret && !name && opt.def_secret_key && *opt.def_secret_key)
+    add_to_strlist (&namelist, opt.def_secret_key);
+  else if (name)
+    add_to_strlist (&namelist, name);
+  else
+    with_unusable = 0;
+
+  err = key_byname (retctx, namelist, pk, NULL, want_secret, with_unusable,
+                    ret_keyblock, NULL);
+  
+  /* FIXME: Check that we really return GPG_ERR_NO_SECKEY if
+     WANT_SECRET has been used.  */
+
+  free_strlist (namelist);
+
+  return err;
+}
+
+
+/* The new function to return the next key.  */
+gpg_error_t
+getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
+{
+  int rc; /* Fixme:  Make sure this is proper gpg_error */
+
+  rc = lookup (ctx, ret_keyblock, ctx->want_secret);
+  if (!rc && pk && ret_keyblock)
+    pk_from_block (ctx, pk, *ret_keyblock);
+
+  return rc;
+}
+
+
+/* The new function to finish a key listing.  */
+void
+getkey_end (getkey_ctx_t ctx)
+{
+  get_pubkey_end (ctx);
+}
+
+
 
 /************************************************
  ************* Merging stuff ********************
  ************************************************/
 
-/* Merge all self-signatures with the keys.
-
- * FIXME: replace this at least for the public key parts
- *        by merge_selfsigs.
- *        It is still used in keyedit.c and
- *        at 2 or 3 other places - check whether it is really needed.
- *        It might be needed by the key edit and import stuff because
- *        the keylock is changed.  */
+/* Merge all self-signatures with the keys.  */
 void
 merge_keys_and_selfsig (KBNODE keyblock)
 {
-  PKT_public_key *pk = NULL;
-  PKT_secret_key *sk = NULL;
-  PKT_signature *sig;
-  KBNODE k;
-  u32 kid[2] = { 0, 0 };
-  u32 sigdate = 0;
-
-  if (keyblock && keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
-    {
-      /* Divert to our new function.  */
-      merge_selfsigs (keyblock);
-      return;
-    }
-
-  /* Still need the old one because the new one can't handle secret keys.  */
-
-  for (k = keyblock; k; k = k->next)
-    {
-      if (k->pkt->pkttype == PKT_PUBLIC_KEY
-	  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  pk = k->pkt->pkt.public_key;
-	  sk = NULL;
-	  if (pk->version < 4)
-	    pk = NULL; /* Not needed for old keys.  */
-	  else if (k->pkt->pkttype == PKT_PUBLIC_KEY)
-	    keyid_from_pk (pk, kid);
-	  else if (!pk->expiredate)
-	    {
-              /* and subkey */
-	      /* insert the expiration date here */
-	      /*FIXME!!! pk->expiredate = subkeys_expiretime( k, kid ); */
-	    }
-	  sigdate = 0;
-	}
-      else if (k->pkt->pkttype == PKT_SECRET_KEY
-	       || k->pkt->pkttype == PKT_SECRET_SUBKEY)
-	{
-	  pk = NULL;
-	  sk = k->pkt->pkt.secret_key;
-	  if (sk->version < 4)
-	    sk = NULL;
-	  else if (k->pkt->pkttype == PKT_SECRET_KEY)
-	    keyid_from_sk (sk, kid);
-	  sigdate = 0;
-	}
-      else if ((pk || sk) && k->pkt->pkttype == PKT_SIGNATURE
-	       && (sig = k->pkt->pkt.signature)->sig_class >= 0x10
-	       && sig->sig_class <= 0x30 && sig->version > 3
-	       && !(sig->sig_class == 0x18 || sig->sig_class == 0x28)
-	       && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1])
-	{
-	  /* okay this is a self-signature which can be used.
-	   * This is not used for subkey binding signature, becuase this
-	   * is done above.
-	   * FIXME: We should only use this if the signature is valid
-	   *        but this is time consuming - we must provide another
-	   *        way to handle this
-	   */
-	  const byte *p;
-	  u32 ed;
-
-	  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-	  if (pk)
-	    {
-	      ed = p ? pk->timestamp + buffer_to_u32 (p) : 0;
-	      if (sig->timestamp > sigdate)
-		{
-		  pk->expiredate = ed;
-		  sigdate = sig->timestamp;
-		}
-	    }
-	  else
-	    {
-	      ed = p ? sk->timestamp + buffer_to_u32 (p) : 0;
-	      if (sig->timestamp > sigdate)
-		{
-		  sk->expiredate = ed;
-		  sigdate = sig->timestamp;
-		}
-	    }
-	}
-
-      if (pk && (pk->expiredate == 0 ||
-		 (pk->max_expiredate && pk->expiredate > pk->max_expiredate)))
-	pk->expiredate = pk->max_expiredate;
-
-      if (sk && (sk->expiredate == 0 ||
-		 (sk->max_expiredate && sk->expiredate > sk->max_expiredate)))
-	sk->expiredate = sk->max_expiredate;
-    }
+  if (!keyblock)
+    ;
+  else if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
+    merge_selfsigs (keyblock);
+  else
+    log_debug ("FIXME: merging secret key blocks is not anymore available\n");
 }
+
 
 static int
 parse_key_usage (PKT_signature * sig)
@@ -2309,146 +2289,10 @@ merge_selfsigs (KBNODE keyblock)
 }
 
 
-/*
- * Merge the secret keys from secblock into the pubblock thereby
- * replacing the public (sub)keys with their secret counterparts Hmmm:
- * It might be better to get away from the concept of entire secret
- * keys at all and have a way to store just the real secret parts
- * from the key.
- */
-static void
-merge_public_with_secret (KBNODE pubblock, KBNODE secblock)
-{
-  KBNODE pub;
-
-  assert (pubblock->pkt->pkttype == PKT_PUBLIC_KEY);
-  assert (secblock->pkt->pkttype == PKT_SECRET_KEY);
-
-  for (pub = pubblock; pub; pub = pub->next)
-    {
-      if (pub->pkt->pkttype == PKT_PUBLIC_KEY)
-	{
-	  PKT_public_key *pk = pub->pkt->pkt.public_key;
-	  PKT_secret_key *sk = secblock->pkt->pkt.secret_key;
-	  assert (pub == pubblock); /* Only in the first node.  */
-	  /* There is nothing to compare in this case, so just replace
-	   * some information.  */
-	  copy_public_parts_to_secret_key (pk, sk);
-	  free_public_key (pk);
-	  pub->pkt->pkttype = PKT_SECRET_KEY;
-	  pub->pkt->pkt.secret_key = copy_secret_key (NULL, sk);
-	}
-      else if (pub->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  KBNODE sec;
-	  PKT_public_key *pk = pub->pkt->pkt.public_key;
-
-	  /* This is more complicated: It may happen that the sequence
-	   * of the subkeys dosn't match, so we have to find the
-	   * appropriate secret key.  */
-	  for (sec = secblock->next; sec; sec = sec->next)
-	    {
-	      if (sec->pkt->pkttype == PKT_SECRET_SUBKEY)
-		{
-		  PKT_secret_key *sk = sec->pkt->pkt.secret_key;
-		  if (!cmp_public_secret_key (pk, sk))
-		    {
-		      copy_public_parts_to_secret_key (pk, sk);
-		      free_public_key (pk);
-		      pub->pkt->pkttype = PKT_SECRET_SUBKEY;
-		      pub->pkt->pkt.secret_key = copy_secret_key (NULL, sk);
-		      break;
-		    }
-		}
-	    }
-	  if (!sec)
-	    BUG (); /* Already checked in premerge.  */
-	}
-    }
-}
-
-
-/* This function checks that for every public subkey a corresponding
- * secret subkey is available and deletes the public subkey otherwise.
- * We need this function because we can't delete it later when we
- * actually merge the secret parts into the pubring.
- * The function also plays some games with the node flags.  */
-static void
-premerge_public_with_secret (KBNODE pubblock, KBNODE secblock)
-{
-  KBNODE last, pub;
-
-  assert (pubblock->pkt->pkttype == PKT_PUBLIC_KEY);
-  assert (secblock->pkt->pkttype == PKT_SECRET_KEY);
-
-  for (pub = pubblock, last = NULL; pub; last = pub, pub = pub->next)
-    {
-      pub->flag &= ~3; /* Reset bits 0 and 1.  */
-      if (pub->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  KBNODE sec;
-	  PKT_public_key *pk = pub->pkt->pkt.public_key;
-
-	  for (sec = secblock->next; sec; sec = sec->next)
-	    {
-	      if (sec->pkt->pkttype == PKT_SECRET_SUBKEY)
-		{
-		  PKT_secret_key *sk = sec->pkt->pkt.secret_key;
-		  if (!cmp_public_secret_key (pk, sk))
-		    {
-		      if (sk->protect.s2k.mode == 1001)
-			{
-			  /* The secret parts are not available so
-			     we can't use that key for signing etc.
-			     Fix the pubkey usage */
-			  pk->pubkey_usage &= ~(PUBKEY_USAGE_SIG
-						| PUBKEY_USAGE_AUTH);
-			}
-		      /* Transfer flag bits 0 and 1 to the pubblock.  */
-		      pub->flag |= (sec->flag & 3);
-		      break;
-		    }
-		}
-	    }
-	  if (!sec)
-	    {
-	      KBNODE next, ll;
-
-	      if (opt.verbose)
-		log_info (_("no secret subkey"
-			    " for public subkey %s - ignoring\n"),
-			  keystr_from_pk (pk));
-	      /* We have to remove the subkey in this case.  */
-	      assert (last);
-	      /* Find the next subkey.  */
-	      for (next = pub->next, ll = pub;
-		   next && next->pkt->pkttype != PKT_PUBLIC_SUBKEY;
-		   ll = next, next = next->next)
-		;
-	      /* Make new link.  */
-	      last->next = next;
-	      /* Release this public subkey with all sigs.  */
-	      ll->next = NULL;
-	      release_kbnode (pub);
-	      /* Let the loop continue.  */
-	      pub = last;
-	    }
-	}
-    }
-  /* We need to copy the found bits (0 and 1) from the secret key to
-     the public key.  This has already been done for the subkeys but
-     got lost on the primary key - fix it here.  */
-  pubblock->flag |= (secblock->flag & 3);
-}
-
-
 
-/* See see whether the key fits our requirements and in case we do not
- * request the primary key, we should select a suitable subkey.
+/* See whether the key fits our requirements and in case we do not
+ * request the primary key, select a suitable subkey.
  *
- * FIXME: Check against PGP 7 whether we still need a kludge
- *        to favor type 16 keys over type 20 keys when type 20
- *        has not been explitely requested.
  * Returns: True when a suitable key has been found.
  *
  * We have to distinguish four cases:  FIXME!
@@ -2533,7 +2377,7 @@ finish_lookup (GETKEY_CTX ctx)
   if ((!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) && !req_prim)
     {
       KBNODE nextk;
-      /* ceither start a loop or check just this one subkey.  */
+      /* Either start a loop or check just this one subkey.  */
       for (k = foundk ? foundk : keyblock; k; k = nextk)
 	{
 	  PKT_public_key *pk;
@@ -2635,7 +2479,7 @@ finish_lookup (GETKEY_CTX ctx)
     {
       if (DBG_CACHE)
 	log_debug ("\tno suitable key found -  giving up\n");
-      return 0;
+      return 0; /* Not found.  */
     }
 
 found:
@@ -2668,11 +2512,13 @@ found:
 }
 
 
+/* The main function to lookup a key.  On success the found keyblock
+   is stored at RET_KEYBLOCK and also in CTX.  If WANT_SECRET is true
+   a corresponding secret key is required.  */
 static int
-lookup (GETKEY_CTX ctx, KBNODE * ret_keyblock, int secmode)
+lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 {
   int rc;
-  KBNODE secblock = NULL; /* Helper.  */
   int no_suitable_key = 0;
 
   rc = 0;
@@ -2692,30 +2538,8 @@ lookup (GETKEY_CTX ctx, KBNODE * ret_keyblock, int secmode)
 	  goto skip;
 	}
 
-      if (secmode)
-	{
-	  /* Find the correspondig public key and use this
-	   * this one for the selection process.  */
-	  u32 aki[2];
-	  KBNODE k = ctx->keyblock;
-
-	  if (k->pkt->pkttype != PKT_SECRET_KEY)
-	    BUG ();
-
-	  keyid_from_sk (k->pkt->pkt.secret_key, aki);
-	  k = get_pubkeyblock (aki);
-	  if (!k)
-	    {
-	      if (!opt.quiet)
-		log_info (_("key %s: secret key without public key"
-			    " - skipped\n"), keystr (aki));
-	      goto skip;
-	    }
-	  secblock = ctx->keyblock;
-	  ctx->keyblock = k;
-
-	  premerge_public_with_secret (ctx->keyblock, secblock);
-	}
+      if (want_secret && have_secret_key (ctx->keyblock))
+        goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
        * merge_selfsigs.  For secret keys, premerge did tranfer the
@@ -2724,12 +2548,6 @@ lookup (GETKEY_CTX ctx, KBNODE * ret_keyblock, int secmode)
       if (finish_lookup (ctx))
 	{
 	  no_suitable_key = 0;
-	  if (secmode)
-	    {
-	      merge_public_with_secret (ctx->keyblock, secblock);
-	      release_kbnode (secblock);
-	      secblock = NULL;
-	    }
 	  goto found;
 	}
       else
@@ -2737,15 +2555,10 @@ lookup (GETKEY_CTX ctx, KBNODE * ret_keyblock, int secmode)
 
     skip:
       /* Release resources and continue search. */
-      if (secmode)
-	{
-	  release_kbnode (secblock);
-	  secblock = NULL;
-	}
       release_kbnode (ctx->keyblock);
       ctx->keyblock = NULL;
     }
-
+  
 found:
   if (rc && rc != -1)
     log_error ("keydb_search failed: %s\n", g10_errstr (rc));
@@ -2756,15 +2569,10 @@ found:
       ctx->keyblock = NULL;
     }
   else if (rc == -1 && no_suitable_key)
-    rc = secmode ? G10ERR_UNU_SECKEY : G10ERR_UNU_PUBKEY;
+    rc = want_secret? G10ERR_UNU_SECKEY : G10ERR_UNU_PUBKEY;
   else if (rc == -1)
-    rc = secmode ? G10ERR_NO_SECKEY : G10ERR_NO_PUBKEY;
+    rc = want_secret? G10ERR_NO_SECKEY : G10ERR_NO_PUBKEY;
 
-  if (secmode)
-    {
-      release_kbnode (secblock);
-      secblock = NULL;
-    }
   release_kbnode (ctx->keyblock);
   ctx->keyblock = NULL;
 
@@ -3083,3 +2891,180 @@ parse_auto_key_locate (char *options)
 
   return 1;
 }
+
+
+/* Return 0 if a secret key is available for the key described by
+   KEYBLOCK.  FIXME: How do we handel subkeys?  */
+gpg_error_t
+have_secret_key (kbnode_t keyblock)
+{
+  gpg_error_t err;
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+  KEYDB_HANDLE kdh;
+
+  if (!keyblock || keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
+    return gpg_error (GPG_ERR_NO_PUBKEY);  /* Should not happen.  */
+
+  fingerprint_from_pk (keyblock->pkt->pkt.public_key, fpr, &fprlen);
+  while (fprlen < MAX_FINGERPRINT_LEN) 
+    fpr[fprlen++] = 0;
+
+  /* FIXME: Always allocating a new handle is too slow.  However this
+     entire implementation is anyway a temporary solution until we can
+     ask gpg-agent for the secret key.  */
+  kdh = keydb_new (1);
+  if (!kdh)
+    return gpg_error (GPG_ERR_GENERAL);
+
+  err = keydb_search_fpr (kdh, fpr);
+  if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
+    err = gpg_error (GPG_ERR_NO_SECKEY);
+
+  keydb_release (kdh);
+
+  return err;
+}
+
+
+
+#if 0
+/*
+ * Merge the secret keys from secblock into the pubblock thereby
+ * replacing the public (sub)keys with their secret counterparts Hmmm:
+ * It might be better to get away from the concept of entire secret
+ * keys at all and have a way to store just the real secret parts
+ * from the key.
+ *
+ * FIXME: this is not anymore needed but we keep it as example code for the
+ * new code we need to write for the import/export feature.
+ */
+static void
+merge_public_with_secret (KBNODE pubblock, KBNODE secblock)
+{
+  KBNODE pub;
+
+  assert (pubblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  assert (secblock->pkt->pkttype == PKT_SECRET_KEY);
+
+  for (pub = pubblock; pub; pub = pub->next)
+    {
+      if (pub->pkt->pkttype == PKT_PUBLIC_KEY)
+	{
+	  PKT_public_key *pk = pub->pkt->pkt.public_key;
+	  PKT_secret_key *sk = secblock->pkt->pkt.secret_key;
+	  assert (pub == pubblock); /* Only in the first node.  */
+	  /* There is nothing to compare in this case, so just replace
+	   * some information.  */
+	  copy_public_parts_to_secret_key (pk, sk);
+	  free_public_key (pk);
+	  pub->pkt->pkttype = PKT_SECRET_KEY;
+	  pub->pkt->pkt.secret_key = copy_secret_key (NULL, sk);
+	}
+      else if (pub->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+	{
+	  KBNODE sec;
+	  PKT_public_key *pk = pub->pkt->pkt.public_key;
+
+	  /* This is more complicated: It may happen that the sequence
+	   * of the subkeys dosn't match, so we have to find the
+	   * appropriate secret key.  */
+	  for (sec = secblock->next; sec; sec = sec->next)
+	    {
+	      if (sec->pkt->pkttype == PKT_SECRET_SUBKEY)
+		{
+		  PKT_secret_key *sk = sec->pkt->pkt.secret_key;
+		  if (!cmp_public_secret_key (pk, sk))
+		    {
+		      copy_public_parts_to_secret_key (pk, sk);
+		      free_public_key (pk);
+		      pub->pkt->pkttype = PKT_SECRET_SUBKEY;
+		      pub->pkt->pkt.secret_key = copy_secret_key (NULL, sk);
+		      break;
+		    }
+		}
+	    }
+	  if (!sec)
+	    BUG (); /* Already checked in premerge.  */
+	}
+    }
+}
+
+
+/* This function checks that for every public subkey a corresponding
+ * secret subkey is available and deletes the public subkey otherwise.
+ * We need this function because we can't delete it later when we
+ * actually merge the secret parts into the pubring.
+ * The function also plays some games with the node flags.
+ *
+ * FIXME: this is not anymore needed but we keep it as example code for the
+ * new code we need to write for the import/export feature.
+ */
+static void
+premerge_public_with_secret (KBNODE pubblock, KBNODE secblock)
+{
+  KBNODE last, pub;
+
+  assert (pubblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  assert (secblock->pkt->pkttype == PKT_SECRET_KEY);
+
+  for (pub = pubblock, last = NULL; pub; last = pub, pub = pub->next)
+    {
+      pub->flag &= ~3; /* Reset bits 0 and 1.  */
+      if (pub->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+	{
+	  KBNODE sec;
+	  PKT_public_key *pk = pub->pkt->pkt.public_key;
+
+	  for (sec = secblock->next; sec; sec = sec->next)
+	    {
+	      if (sec->pkt->pkttype == PKT_SECRET_SUBKEY)
+		{
+		  PKT_secret_key *sk = sec->pkt->pkt.secret_key;
+		  if (!cmp_public_secret_key (pk, sk))
+		    {
+		      if (sk->protect.s2k.mode == 1001)
+			{
+			  /* The secret parts are not available so
+			     we can't use that key for signing etc.
+			     Fix the pubkey usage */
+			  pk->pubkey_usage &= ~(PUBKEY_USAGE_SIG
+						| PUBKEY_USAGE_AUTH);
+			}
+		      /* Transfer flag bits 0 and 1 to the pubblock.  */
+		      pub->flag |= (sec->flag & 3);
+		      break;
+		    }
+		}
+	    }
+	  if (!sec)
+	    {
+	      KBNODE next, ll;
+
+	      if (opt.verbose)
+		log_info (_("no secret subkey"
+			    " for public subkey %s - ignoring\n"),
+			  keystr_from_pk (pk));
+	      /* We have to remove the subkey in this case.  */
+	      assert (last);
+	      /* Find the next subkey.  */
+	      for (next = pub->next, ll = pub;
+		   next && next->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+		   ll = next, next = next->next)
+		;
+	      /* Make new link.  */
+	      last->next = next;
+	      /* Release this public subkey with all sigs.  */
+	      ll->next = NULL;
+	      release_kbnode (pub);
+	      /* Let the loop continue.  */
+	      pub = last;
+	    }
+	}
+    }
+  /* We need to copy the found bits (0 and 1) from the secret key to
+     the public key.  This has already been done for the subkeys but
+     got lost on the primary key - fix it here.  */
+  pubblock->flag |= (secblock->flag & 3);
+}
+#endif /*0*/

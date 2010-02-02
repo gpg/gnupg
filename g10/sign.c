@@ -1,6 +1,6 @@
 /* sign.c - sign data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -57,8 +57,8 @@ static int recipient_digest_algo=0;
  * a valid NAME=VALUE format.
  */
 static void
-mk_notation_policy_etc( PKT_signature *sig,
-			PKT_public_key *pk, PKT_secret_key *sk )
+mk_notation_policy_etc (PKT_signature *sig,
+			PKT_public_key *pk, PKT_public_key *pksk)
 {
     const char *string;
     char *s=NULL;
@@ -70,7 +70,7 @@ mk_notation_policy_etc( PKT_signature *sig,
 
     memset(&args,0,sizeof(args));
     args.pk=pk;
-    args.sk=sk;
+    args.pksk=pksk;
 
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notations)
@@ -229,15 +229,15 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 
 
 static int
-do_sign( PKT_secret_key *sk, PKT_signature *sig,
-	 gcry_md_hd_t md, int digest_algo )
+do_sign (PKT_public_key *pksk, PKT_signature *sig,
+	 gcry_md_hd_t md, int digest_algo)
 {
     gcry_mpi_t frame;
     byte *dp;
     int rc;
 
-    if( sk->timestamp > sig->timestamp ) {
-	ulong d = sk->timestamp - sig->timestamp;
+    if (pksk->timestamp > sig->timestamp ) {
+	ulong d = pksk->timestamp - sig->timestamp;
 	log_info( d==1 ? _("key has been created %lu second "
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
@@ -247,7 +247,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     }
 
 
-    print_pubkey_algo_note(sk->pubkey_algo);
+    print_pubkey_algo_note (pksk->pubkey_algo);
 
     if( !digest_algo )
 	digest_algo = gcry_md_get_algo (md);
@@ -257,37 +257,39 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-    if (sk->is_protected && sk->protect.s2k.mode == 1002) 
-      { 
-#ifdef ENABLE_CARD_SUPPORT
-        unsigned char *rbuf;
-        size_t rbuflen;
-        char *snbuf;
+
+    /* FIXME: Use agent.  */
+/*     if (pksk->is_protected && pksk->protect.s2k.mode == 1002)  */
+/*       {  */
+/* #ifdef ENABLE_CARD_SUPPORT */
+/*         unsigned char *rbuf; */
+/*         size_t rbuflen; */
+/*         char *snbuf; */
         
-        snbuf = serialno_and_fpr_from_sk (sk->protect.iv,
-                                          sk->protect.ivlen, sk);
-        rc = agent_scd_pksign (snbuf, digest_algo,
-                               gcry_md_read (md, digest_algo),
-                               gcry_md_get_algo_dlen (digest_algo),
-                               &rbuf, &rbuflen);
-        xfree (snbuf);
-        if (!rc)
-          {
-            if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG,
-                               rbuf, rbuflen, NULL))
-              BUG ();
-            xfree (rbuf);
-          }
-#else
-        return gpg_error (GPG_ERR_NOT_SUPPORTED);
-#endif /* ENABLE_CARD_SUPPORT */
-      }
-    else 
+/*         snbuf = serialno_and_fpr_from_sk (sk->protect.iv, */
+/*                                           sk->protect.ivlen, sk); */
+/*         rc = agent_scd_pksign (snbuf, digest_algo, */
+/*                                gcry_md_read (md, digest_algo), */
+/*                                gcry_md_get_algo_dlen (digest_algo), */
+/*                                &rbuf, &rbuflen); */
+/*         xfree (snbuf); */
+/*         if (!rc) */
+/*           { */
+/*             if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, */
+/*                                rbuf, rbuflen, NULL)) */
+/*               BUG (); */
+/*             xfree (rbuf); */
+/*           } */
+/* #else */
+/*         return gpg_error (GPG_ERR_NOT_SUPPORTED); */
+/* #endif /\* ENABLE_CARD_SUPPORT *\/ */
+/*       } */
+/*     else  */
       {
-        frame = encode_md_value( NULL, sk, md, digest_algo );
+        frame = encode_md_value (NULL, pksk, md, digest_algo );
         if (!frame)
           return G10ERR_GENERAL;
-        rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+        rc = pk_sign (pksk->pubkey_algo, sig->data, frame, pksk->pkey );
         gcry_mpi_release (frame);
       }
 
@@ -318,7 +320,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string_native (sig->keyid);
 	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     gcry_pk_algo_name (sk->pubkey_algo),
+		     gcry_pk_algo_name (pksk->pubkey_algo),
 		     gcry_md_algo_name (sig->digest_algo),
 		     ustr );
 	    xfree(ustr);
@@ -329,13 +331,13 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 
 
 int
-complete_sig( PKT_signature *sig, PKT_secret_key *sk, gcry_md_hd_t md )
+complete_sig( PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md )
 {
-    int rc=0;
+  int rc;
 
-    if( !(rc=check_secret_key( sk, 0 )) )
-	rc = do_sign( sk, sig, md, 0 );
-    return rc;
+  if (!(rc = check_secret_key (pksk, 0)))
+    rc = do_sign (pksk, sig, md, 0);
+  return rc;
 }
 
 
@@ -378,15 +380,19 @@ match_dsa_hash (unsigned int qbytes)
   list?
 */
 static int
-hash_for(PKT_secret_key *sk)
+hash_for (PKT_public_key *pk)
 {
-  if( opt.def_digest_algo )
-    return opt.def_digest_algo;
-  else if( recipient_digest_algo )
-    return recipient_digest_algo;
-  else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
+  if (opt.def_digest_algo)
     {
-      unsigned int qbytes = gcry_mpi_get_nbits (sk->skey[1]) / 8;
+      return opt.def_digest_algo;
+    }
+  else if (recipient_digest_algo)
+    {
+      return recipient_digest_algo;
+    }
+  else if (pk->pubkey_algo == PUBKEY_ALGO_DSA)
+    {
+      unsigned int qbytes = gcry_mpi_get_nbits (pk->pkey[1]) / 8;
 
       /* It's a DSA key, so find a hash that is the same size as q or
 	 larger.  If q is 160, assume it is an old DSA key and use a
@@ -415,9 +421,10 @@ hash_for(PKT_secret_key *sk)
 
       return match_dsa_hash(qbytes);
     }
-  else if (sk->is_protected && sk->protect.s2k.mode==1002)
+  else if (/*FIXME: call agent 
+             pk->is_protected && sk->protect.s2k.mode==1002*/ 0)
     {
-      /* The sk lives on a smartcard, and current smartcards only
+      /* The secret key lives on a smartcard, and current smartcards only
 	 handle SHA-1 and RIPEMD/160.  This is correct now, but may
 	 need revision as the cards add algorithms. */
 
@@ -433,12 +440,12 @@ hash_for(PKT_secret_key *sk)
 
       return DIGEST_ALGO_SHA1;
     }
-  else if (PGP2 && sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
+  else if (PGP2 && pk->pubkey_algo == PUBKEY_ALGO_RSA && pk->version < 4 )
     {
       /* Old-style PGP only understands MD5 */
       return DIGEST_ALGO_MD5;
     }
-  else if ( opt.personal_digest_prefs )
+  else if (opt.personal_digest_prefs)
     {
       /* It's not DSA, so we can use whatever the first hash algorithm
 	 is in the pref list */
@@ -449,42 +456,40 @@ hash_for(PKT_secret_key *sk)
 }
 
 
+/* Return true iff all keys in SK_LIST are old style (v3 RSA).  */
 static int
-only_old_style( SK_LIST sk_list )
+only_old_style (SK_LIST sk_list)
 {
-    SK_LIST sk_rover = NULL;
-    int old_style = 0;
+  SK_LIST sk_rover = NULL;
+  int old_style = 0;
+  
+  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+    {
+      PKT_public_key *pk = sk_rover->pk;
 
-    /* if there are only old style capable key we use the old sytle */
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk = sk_rover->sk;
-	if( sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
-	    old_style = 1;
-	else
-	    return 0;
+      if (pk->pubkey_algo == PUBKEY_ALGO_RSA && pk->version < 4)
+        old_style = 1;
+      else
+        return 0;
     }
-    return old_style;
+  return old_style;
 }
 
 
-
 static void
-print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
+print_status_sig_created (PKT_public_key *pk, PKT_signature *sig, int what)
 {
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    char buf[100+MAX_FINGERPRINT_LEN*2];
-    size_t i, n;
-
-    sprintf(buf, "%c %d %d %02x %lu ",
-	    what, sig->pubkey_algo, sig->digest_algo, sig->sig_class,
-	    (ulong)sig->timestamp );
-
-    fingerprint_from_sk( sk, array, &n );
-    p = buf + strlen(buf);
-    for(i=0; i < n ; i++ )
-	sprintf(p+2*i, "%02X", array[i] );
-
-    write_status_text( STATUS_SIG_CREATED, buf );
+  byte array[MAX_FINGERPRINT_LEN];
+  char buf[100+MAX_FINGERPRINT_LEN*2];
+  size_t n;
+  
+  snprintf (buf, sizeof buf - 2*MAX_FINGERPRINT_LEN, "%c %d %d %02x %lu ",
+            what, sig->pubkey_algo, sig->digest_algo, sig->sig_class,
+            (ulong)sig->timestamp );
+  fingerprint_from_pk (pk, array, &n);
+  bin2hex (array, n, buf + strlen (buf));
+  
+  write_status_text( STATUS_SIG_CREATED, buf );
 }
 
 
@@ -504,7 +509,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         skcount++;
 
     for (; skcount; skcount--) {
-        PKT_secret_key *sk;
+        PKT_public_key *pk;
         PKT_onepass_sig *ops;
         PACKET pkt;
         int i, rc;
@@ -514,12 +519,12 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
                 break;
         }
 
-        sk = sk_rover->sk;
+        pk = sk_rover->pk;
         ops = xmalloc_clear (sizeof *ops);
         ops->sig_class = sigclass;
-        ops->digest_algo = hash_for (sk);
-        ops->pubkey_algo = sk->pubkey_algo;
-        keyid_from_sk (sk, ops->keyid);
+        ops->digest_algo = hash_for (pk);
+        ops->pubkey_algo = pk->pubkey_algo;
+        keyid_from_pk (pk, ops->keyid);
         ops->last = (skcount == 1);
         
         init_packet(&pkt);
@@ -622,72 +627,75 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter)
 {
-    SK_LIST sk_rover;
+  SK_LIST sk_rover;
+  
+  /* Loop over the certificates with secret keys. */
+  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+    {
+      PKT_public_key *pk;
+      PKT_signature *sig;
+      gcry_md_hd_t md;
+      int rc;
 
-    /* loop over the secret certificates */
-    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
-	PKT_secret_key *sk;
-	PKT_signature *sig;
-	gcry_md_hd_t md;
-        int rc;
+      pk = sk_rover->pk;
 
-	sk = sk_rover->sk;
+      /* Build the signature packet.  */
+      sig = xmalloc_clear (sizeof *sig);
+      if (opt.force_v3_sigs || RFC1991)
+        sig->version = 3;
+      else if (duration || opt.sig_policy_url
+               || opt.sig_notations || opt.sig_keyserver_url)
+        sig->version = 4;
+      else
+        sig->version = pk->version;
 
-	/* build the signature packet */
-	sig = xmalloc_clear (sizeof *sig);
-	if(opt.force_v3_sigs || RFC1991)
-	  sig->version=3;
-	else if(duration || opt.sig_policy_url
-		|| opt.sig_notations || opt.sig_keyserver_url)
-	  sig->version=4;
-	else
-	  sig->version=sk->version;
-	keyid_from_sk (sk, sig->keyid);
-	sig->digest_algo = hash_for(sk);
-	sig->pubkey_algo = sk->pubkey_algo;
-	if(timestamp)
-	  sig->timestamp = timestamp;
-	else
-	  sig->timestamp = make_timestamp();
-	if(duration)
-	  sig->expiredate = sig->timestamp+duration;
-	sig->sig_class = sigclass;
+      keyid_from_pk (pk, sig->keyid);
+      sig->digest_algo = hash_for (pk);
+      sig->pubkey_algo = pk->pubkey_algo;
+      if (timestamp)
+        sig->timestamp = timestamp;
+      else
+        sig->timestamp = make_timestamp();
+      if (duration)
+        sig->expiredate = sig->timestamp + duration;
+      sig->sig_class = sigclass;
 
-	if (gcry_md_copy (&md, hash))
-          BUG ();
+      if (gcry_md_copy (&md, hash))
+        BUG ();
+      
+      if (sig->version >= 4)
+        {
+          build_sig_subpkt_from_sig (sig);
+          mk_notation_policy_etc (sig, pk, NULL);
+        }
+      
+      hash_sigversion_to_magic (md, sig);
+      gcry_md_final (md);
 
-	if (sig->version >= 4)
-          {
-	    build_sig_subpkt_from_sig (sig);
-            mk_notation_policy_etc (sig, NULL, sk);
-          }
-
-        hash_sigversion_to_magic (md, sig);
-	gcry_md_final (md);
-
-	rc = do_sign( sk, sig, md, hash_for (sk) );
-	gcry_md_close (md);
-	if( !rc ) { /* and write it */
-            PACKET pkt;
-
-	    init_packet(&pkt);
-	    pkt.pkttype = PKT_SIGNATURE;
-	    pkt.pkt.signature = sig;
-	    rc = build_packet (out, &pkt);
-	    if (!rc && is_status_enabled()) {
-		print_status_sig_created ( sk, sig, status_letter);
-	    }
-	    free_packet (&pkt);
-	    if (rc)
-		log_error ("build signature packet failed: %s\n",
-                           g10_errstr(rc) );
+      rc = do_sign (pk, sig, md, hash_for (pk));
+      gcry_md_close (md);
+      if (!rc)
+        { 
+          /* Write the packet.  */
+          PACKET pkt;
+          
+          init_packet (&pkt);
+          pkt.pkttype = PKT_SIGNATURE;
+          pkt.pkt.signature = sig;
+          rc = build_packet (out, &pkt);
+          if (!rc && is_status_enabled())
+            print_status_sig_created (pk, sig, status_letter);
+          free_packet (&pkt);
+          if (rc)
+            log_error ("build signature packet failed: %s\n", gpg_strerror (rc));
 	}
-	if( rc )
-	    return rc;;
+      if (rc)
+        return rc;
     }
-
-    return 0;
+  
+  return 0;
 }
+
 
 /****************
  * Sign the files whose names are in FILENAME.
@@ -863,10 +871,10 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
-		if (sk_rover->sk->pubkey_algo == PUBKEY_ALGO_DSA)
+		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA)
 		  {
 		    int temp_hashlen = gcry_mpi_get_nbits
-                      (sk_rover->sk->skey[1])+7/8;
+                      (sk_rover->pk->pkey[1])+7/8;
 
 		    /* Pick a hash that is large enough for our
 		       largest q */
@@ -874,9 +882,10 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 		    if (hint.digest_length<temp_hashlen)
 		      hint.digest_length=temp_hashlen;
 		  }
-		else if (sk_rover->sk->is_protected
-                         && sk_rover->sk->protect.s2k.mode == 1002)
-		  smartcard = 1;
+                /* FIXME: need toall gpg-agent */
+		/* else if (sk_rover->pk->is_protected */
+                /*          && sk_rover->pk->protect.s2k.mode == 1002) */
+		/*   smartcard = 1;  */
 	      }
 
 	    /* Current smartcards only do 160-bit hashes.  If we have
@@ -893,10 +902,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	  }
       }
 
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk = sk_rover->sk;
-	gcry_md_enable (mfx.md, hash_for(sk));
-    }
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+      gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
 
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
@@ -1116,15 +1123,16 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
 
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk = sk_rover->sk;
-	if( hash_for(sk) == DIGEST_ALGO_MD5 )
-	    only_md5 = 1;
-	else {
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+      {
+	if (hash_for (sk_rover->pk) == DIGEST_ALGO_MD5)
+          only_md5 = 1;
+	else 
+          {
 	    only_md5 = 0;
 	    break;
-	}
-    }
+          }
+      }
 
     if( !(old_style && only_md5) ) {
 	const char *s;
@@ -1134,8 +1142,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 	memset( hashs_seen, 0, sizeof hashs_seen );
 	iobuf_writestr(out, "Hash: " );
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	    PKT_secret_key *sk = sk_rover->sk;
-	    int i = hash_for(sk);
+	    int i = hash_for (sk_rover->pk);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
 		s = gcry_md_algo_name ( i );
@@ -1159,10 +1166,9 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 
     if ( gcry_md_open (&textmd, 0, 0) )
       BUG ();
-    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	PKT_secret_key *sk = sk_rover->sk;
-	gcry_md_enable (textmd, hash_for(sk));
-    }
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+      gcry_md_enable (textmd, hash_for(sk_rover->pk));
+
     if ( DBG_HASHING )
       gcry_md_start_debug ( textmd, "clearsign" );
 
@@ -1288,10 +1294,8 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     if ( DBG_HASHING )
       gcry_md_start_debug (mfx.md, "symc-sign");
 
-    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
-	PKT_secret_key *sk = sk_rover->sk;
-	gcry_md_enable (mfx.md, hash_for (sk));
-    }
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+      gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
 
     iobuf_push_filter (inp, md_filter, &mfx);
 
@@ -1376,7 +1380,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
-		    PKT_secret_key *sk,
+		    PKT_public_key *pksk,
 		    int sigclass, int digest_algo,
                     int sigversion, u32 timestamp, u32 duration,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
@@ -1393,8 +1397,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if (opt.force_v4_certs)
         sigversion = 4;
 
-    if (sigversion < sk->version)
-        sigversion = sk->version;
+    if (sigversion < pksk->version)
+        sigversion = pksk->version;
 
     /* If you are making a signature on a v4 key using your v3 key, it
        doesn't make sense to generate a v3 sig.  After all, no v3-only
@@ -1417,11 +1421,11 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 	if(opt.cert_digest_algo)
 	  digest_algo=opt.cert_digest_algo;
-	else if(sk->pubkey_algo==PUBKEY_ALGO_RSA
+	else if(pksk->pubkey_algo==PUBKEY_ALGO_RSA
 		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
-	else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
-	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (sk->skey[1])/8);
+	else if(pksk->pubkey_algo==PUBKEY_ALGO_DSA)
+	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }
@@ -1447,8 +1451,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     sig->version = sigversion;
     sig->flags.exportable=1;
     sig->flags.revocable=1;
-    keyid_from_sk( sk, sig->keyid );
-    sig->pubkey_algo = sk->pubkey_algo;
+    keyid_from_pk (pksk, sig->keyid);
+    sig->pubkey_algo = pksk->pubkey_algo;
     sig->digest_algo = digest_algo;
     if(timestamp)
       sig->timestamp=timestamp;
@@ -1460,7 +1464,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if( sig->version >= 4 )
       {
 	build_sig_subpkt_from_sig( sig );
-	mk_notation_policy_etc( sig, pk, sk );
+	mk_notation_policy_etc (sig, pk, pksk);
       }
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
@@ -1473,10 +1477,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig( sig, sk, md );
+	rc = complete_sig (sig, pksk, md);
     }
 
-    gcry_md_close ( md );
+    gcry_md_close (md);
     if( rc )
 	free_seckey_enc( sig );
     else
@@ -1497,7 +1501,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid, 
                       PKT_public_key *subpk,
-                      PKT_secret_key *sk,
+                      PKT_public_key *pksk,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque )
 {
@@ -1505,7 +1509,7 @@ update_keysig_packet( PKT_signature **ret_sig,
     int rc=0;
     gcry_md_hd_t md;
 
-    if ((!orig_sig || !pk || !sk)
+    if ((!orig_sig || !pk || !pksk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
 	|| (orig_sig->sig_class == 0x18 && !subpk))
       return G10ERR_GENERAL;
@@ -1556,7 +1560,7 @@ update_keysig_packet( PKT_signature **ret_sig,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig( sig, sk, md );
+	rc = complete_sig (sig, pksk, md);
     }
 
     gcry_md_close (md);

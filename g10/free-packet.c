@@ -471,6 +471,7 @@ cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b )
 {
     int n, i;
 
+    log_debug ("FIXME: %s Should not be used\n", __func__);
     if( a->timestamp != b->timestamp )
 	return -1;
     if( a->version < 4 && a->expiredate != b->expiredate )

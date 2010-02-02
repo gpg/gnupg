@@ -611,6 +611,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   /* ctrl_t ctrl = assuan_get_pointer (ctx); */
   gpg_error_t err;
 
+  (void)ctx;
   line = skip_options (line);
 
   err = gpg_error (GPG_ERR_NOT_SUPPORTED);

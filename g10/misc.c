@@ -510,15 +510,16 @@ idea_cipher_warn(int show)
 
 
 static unsigned long 
-get_signature_count (PKT_secret_key *sk)
+get_signature_count (PKT_public_key *pk)
 {
 #ifdef ENABLE_CARD_SUPPORT
-  if(sk && sk->is_protected && sk->protect.s2k.mode==1002)
-    {
-      struct agent_card_info_s info;
-      if(agent_scd_getattr("SIG-COUNTER",&info)==0)
-	return info.sig_counter;
-    }  
+  /* FIXME: Need to call the agent.  */
+  /* if(sk && sk->is_protected && sk->protect.s2k.mode==1002) */
+  /*   { */
+  /*     struct agent_card_info_s info; */
+  /*     if(agent_scd_getattr("SIG-COUNTER",&info)==0) */
+  /*       return info.sig_counter; */
+  /*   }   */
 #endif
 
   /* How to do this without a card? */
@@ -539,13 +540,13 @@ pct_expando(const char *string,struct expando_args *args)
   if(args->pk)
     keyid_from_pk(args->pk,pk_keyid);
 
-  if(args->sk)
-    keyid_from_sk(args->sk,sk_keyid);
+  if(args->pksk)
+    keyid_from_pk (args->pksk, sk_keyid);
 
   /* This is used so that %k works in photoid command strings in
      --list-secret-keys (which of course has a sk, but no pk). */
-  if(!args->pk && args->sk)
-    keyid_from_sk(args->sk,pk_keyid);
+  if(!args->pk && args->pksk)
+    keyid_from_pk (args->pksk, pk_keyid);
 
   while(*ch!='\0')
     {
@@ -606,7 +607,7 @@ pct_expando(const char *string,struct expando_args *args)
 	    case 'c': /* signature count from card, if any. */
 	      if(idx+10<maxlen)
 		{
-		  sprintf(&ret[idx],"%lu",get_signature_count(args->sk));
+		  sprintf (&ret[idx],"%lu", get_signature_count (args->pksk));
 		  idx+=strlen(&ret[idx]);
 		  done=1;
 		}	      
@@ -620,28 +621,31 @@ pct_expando(const char *string,struct expando_args *args)
 		size_t len;
 		int i;
 
-		if((*(ch+1))=='p' && args->sk)
+		if((*(ch+1))=='p' && args->pksk)
 		  {
-		    if(args->sk->is_primary)
-		      fingerprint_from_sk(args->sk,array,&len);
-		    else if(args->sk->main_keyid[0] || args->sk->main_keyid[1])
+		    if(args->pksk->is_primary)
+		      fingerprint_from_pk (args->pksk, array, &len);
+		    else if (args->pksk->main_keyid[0]
+                             || args->pksk->main_keyid[1])
 		      {
+                        /* FIXME: Document teh code and check whether
+                           it is still needed.  */
 			PKT_public_key *pk=
 			  xmalloc_clear(sizeof(PKT_public_key));
 
-			if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
-			  fingerprint_from_pk(pk,array,&len);
+			if (!get_pubkey_fast (pk,args->pksk->main_keyid))
+			  fingerprint_from_pk (pk, array, &len);
 			else
-			  memset(array,0,(len=MAX_FINGERPRINT_LEN));
-			free_public_key(pk);
+			  memset (array, 0, (len=MAX_FINGERPRINT_LEN));
+			free_public_key (pk);
 		      }
 		    else
 		      memset(array,0,(len=MAX_FINGERPRINT_LEN));
 		  }
 		else if((*(ch+1))=='f' && args->pk)
-		  fingerprint_from_pk(args->pk,array,&len);
-		else if((*(ch+1))=='g' && args->sk)
-		  fingerprint_from_sk(args->sk,array,&len);
+		  fingerprint_from_pk (args->pk, array, &len);
+		else if((*(ch+1))=='g' && args->pksk)
+		  fingerprint_from_pk (args->pksk, array, &len);
 		else
 		  memset(array,0,(len=MAX_FINGERPRINT_LEN));
 
