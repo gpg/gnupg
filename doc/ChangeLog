@@ -1,3 +1,7 @@
+2010-02-11  Werner Koch  <wk@g10code.com>
+
+	* faq.raw: Fixed the bug reporting address.
+
 2010-01-29  Werner Koch  <wk@g10code.com>
 
 	* gnupg1.texi: Fix dir entry.  Fixes bug#1183.

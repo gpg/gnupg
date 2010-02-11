@@ -1026,17 +1026,19 @@ you could search in the mailing list archive.
     lists? Did you have a look at the bug list (you'll find a link to
     the list of reported bugs on the documentation page). If you're not
     sure about it being a bug, you can send mail to the gnupg-devel
-    list. Otherwise, use the GUUG bug tracking system 
-    [H a href=http://bugs.guug.de/Reporting.html]<http://bugs.guug.de/Reporting.html>[H /a].
+    list. Otherwise, use the bug tracking system 
+    [H a href=http://bugs.gnupg.org]<http://bugs.gnupg.org>[H /a].
 
 <Q> Why doesn't GnuPG support X.509 certificates?
 
-    GnuPG, first and foremost, is an implementation of the OpenPGP
+    GnuPG 1.x, first and foremost, is an implementation of the OpenPGP
     standard (RFC 2440), which is a competing infrastructure, different
     from X.509.
 
     They are both public-key cryptosystems, but how the public keys are
     actually handled is different.
+
+    Note that GnuPG version 2.x fully supports S/MIME and X.509.
 
 <Q> Why do national characters in my user ID look funny?
 
