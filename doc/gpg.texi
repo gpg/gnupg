@@ -908,7 +908,7 @@ specified as @var{user_id}.  This is a shortcut for the sub-command
 @node GPG Options
 @section Option Summary
 
-@command{@gpgname} comes features a bunch of options to control the exact
+@command{@gpgname} features a bunch of options to control the exact
 behaviour and to change the default configuration.
 
 @menu
@@ -2906,7 +2906,7 @@ violation of OpenPGP, but rather reduce the available algorithms to a
 @mansect bugs
 @chapheading BUGS
 
-On many systems this program should be installed as setuid(root). This
+On older systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
 operating system from writing memory pages (which may contain
 passphrases or other sensitive material) to disk. If you get no
@@ -2920,6 +2920,10 @@ This writes all memory to disk before going into a low power or even
 powered off mode.  Unless measures are taken in the operating system
 to protect the saved memory, passphrases or other sensitive material
 may be recoverable from it later.
+
+Before you report a bug you should first search the mailing list
+archives for similar problems and second check whether such a bug has
+already been reported to our bug tracker at http://bugs.gnupg.org .
 
 @mansect see also
 @ifset isman
