@@ -586,7 +586,6 @@ Present a menu which enables you to do most of the key management
 related tasks.  It expects the specification of a key on the command
 line.
 
-
 @c ******** Begin Edit-key Options **********
 @table @asis
 
@@ -894,7 +893,7 @@ from @option{--edit-key}.
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user_id}.  This is a shortcut for the sub-command
-@code{passwd} in the edit key menu.
+@code{passwd} of the edit key menu.
 @end ifclear
 
 @end table
@@ -909,7 +908,7 @@ specified as @var{user_id}.  This is a shortcut for the sub-command
 @node GPG Options
 @section Option Summary
 
-@command{@gpgname} comes features a bunch of options to control the exact
+@command{@gpgname} features a bunch of options to control the exact
 behaviour and to change the default configuration.
 
 @menu
@@ -1530,10 +1529,12 @@ Enable certificate checking if the keyserver presents one (for hkps or
 ldaps).  Defaults to on.
 
 @item ca-cert-file
-Provide a certificate file to override the system default.  Only
+Provide a certificate store to override the system default.  Only
 necessary if check-cert is enabled, and the keyserver is using a
 certificate that is not present in a system default certificate list.
 
+Note that depending on the SSL library that the keyserver helper is
+built with, this may actually be a directory or a file.
 @end table
 
 @item --completes-needed @code{n}
@@ -1767,14 +1768,24 @@ Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
 @item --try-all-secrets
+@opindex try-all-secrets
 Don't look at the key ID as stored in the message but try all secret
 keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
 @option{--throw-keyids}) and might come handy in case where an encrypted
 message contains a bogus key ID.
 
-
-
+@item --skip-hidden-recipients
+@itemx --no-skip-hidden-recipients
+@opindex skip-hidden-recipients
+@opindex no-skip-hidden-recipients
+During decryption skip all anonymous recipients.  This option helps in
+the case that people use the hidden recipients feature to hide there
+own encrypt-to key from others.  If oneself has many secret keys this
+may lead to a major annoyance because all keys are tried in turn to
+decrypt soemthing which was not really intended for it.  The drawback
+of this option is that it is currently not possible to decrypt a
+message which includes real anonymous recipients.
 
 
 @end table
@@ -2888,7 +2899,7 @@ violation of OpenPGP, but rather reduce the available algorithms to a
 @mansect bugs
 @chapheading BUGS
 
-On many systems this program should be installed as setuid(root). This
+On older systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
 operating system from writing memory pages (which may contain
 passphrases or other sensitive material) to disk. If you get no
@@ -2902,6 +2913,10 @@ This writes all memory to disk before going into a low power or even
 powered off mode.  Unless measures are taken in the operating system
 to protect the saved memory, passphrases or other sensitive material
 may be recoverable from it later.
+
+Before you report a bug you should first search the mailing list
+archives for similar problems and second check whether such a bug has
+already been reported to our bug tracker at http://bugs.gnupg.org .
 
 @mansect see also
 @ifset isman

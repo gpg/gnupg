@@ -1033,12 +1033,8 @@ you could search in the mailing list archive.
 
 <Q> Why doesn't GnuPG support X.509 certificates?
 
-    GnuPG, first and foremost, is an implementation of the OpenPGP
-    standard (RFC 2440), which is a competing infrastructure, different
-    from X.509.
-
-    They are both public-key cryptosystems, but how the public keys are
-    actually handled is different.
+    That is only the case for GnuPG version 1.x.  GnuPG 2.x fully
+    supports X.509 and S/MIME using the gpgsm tool.
 
 <Q> Why do national characters in my user ID look funny?
 
