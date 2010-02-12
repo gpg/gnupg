@@ -884,6 +884,7 @@ main ( int argc, char **argv)
   int recp_required = 0;
   estream_t auditfp = NULL;
   estream_t htmlauditfp = NULL;
+  struct assuan_malloc_hooks malloc_hooks;
 
   /*mtrace();*/
 
@@ -970,10 +971,12 @@ main ( int argc, char **argv)
 
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 
-  assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-  assuan_set_assuan_log_stream (log_get_stream ());
+  malloc_hooks.malloc = gcry_malloc;
+  malloc_hooks.realloc = gcry_realloc;
+  malloc_hooks.free = gcry_free;
+  assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
-  assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 

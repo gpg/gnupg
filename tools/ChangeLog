@@ -1,3 +1,13 @@
+2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	From 2009-09-23, 2009-11-04, 2009-11-05, 2009-12-08:
+	
+	* gpg-connect-agent.c (read_and_print_response): Add arg WITHHASH.
+	(getinfo_pid_cb, read_and_print_response)
+	(main): Pass true for WITHHASH for the HELP command.  Update to
+	new Assuan API.  Update use of assuan_socket_connect and
+	assuan_pipe_connect.  Convert posix fd to assuan fd.
+	
 2010-01-10  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (utmp.h): Remove header; it is not used.

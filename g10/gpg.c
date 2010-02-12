@@ -30,13 +30,13 @@
 #include <sys/stat.h> /* for stat() */
 #endif
 #include <fcntl.h>
-#include <assuan.h>
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
+#include <assuan.h>
 #include "packet.h"
 #include "../common/iobuf.h"
 #include "util.h"
@@ -1917,6 +1917,7 @@ main (int argc, char **argv)
     int fpr_maybe_cmd = 0; /* --fingerprint maybe a command.  */
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
+    struct assuan_malloc_hooks malloc_hooks;
 
 #ifdef __riscos__
     opt.lock_once = 1;
@@ -2066,8 +2067,11 @@ main (int argc, char **argv)
     /* Okay, we are now working under our real uid */
 
     /* malloc hooks go here ... */
-    assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-    assuan_set_assuan_err_source (GPG_ERR_SOURCE_DEFAULT);
+    malloc_hooks.malloc = gcry_malloc;
+    malloc_hooks.realloc = gcry_realloc;
+    malloc_hooks.free = gcry_free;
+    assuan_set_malloc_hooks (&malloc_hooks);
+    assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
  
 
     /* Try for a version specific config file first */

@@ -1,3 +1,26 @@
+2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	From trunk 2009-10-16, 2009-11-02, 2009-11-05:
+
+	* Makefile.am (libcommon_a_CFLAGS): Use LIBASSUAN_CFLAGS instead
+	of LIBASSUAN_PTH_CFLAGS.
+	* get-passphrase.c (default_inq_cb, membuf_data_cb): Change return
+	type to gpg_error_t.
+	* asshelp.c (start_new_gpg_agent): Update use of
+	assuan_socket_connect and assuan_pipe_connect.  Convert posix FD
+	to assuan FD.
+	[HAVE_W32_SYSTEM]: Add missing argument in assuan_socket_connect
+	invocation.
+	* iobuf.c (iobuf_open_fd_or_name): Fix type of FD in function
+	declaration.
+
+2009-10-13  Werner Koch  <wk@g10code.com>
+
+	From trunk 2009-09-23:
+
+	* asshelp.c (start_new_gpg_agent): Allocate assuan context before
+	starting server.
+
 2009-12-21  Marcus Brinkmann  <marcus@g10code.de>  (wk)
 
 	* Makefile.am (audit-events.h, status.h) [!MAINTAINER_MODE]: No

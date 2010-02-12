@@ -111,7 +111,7 @@ start_agent (ctrl_t ctrl)
 
 
 
-static int
+static gpg_error_t
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;
@@ -124,7 +124,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
-static int
+static gpg_error_t
 default_inq_cb (void *opaque, const char *line)
 {
   gpg_error_t err;
@@ -301,7 +301,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 
 /* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
    assuan_transact talkes care of flushing and writing the end */
-static int
+static gpg_error_t
 inq_ciphertext_cb (void *opaque, const char *line)
 {
   struct cipher_parm_s *parm = opaque; 
@@ -423,7 +423,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 
 /* Handle a KEYPARMS inquiry.  Note, we only send the data,
    assuan_transact takes care of flushing and writing the end */
-static int
+static gpg_error_t
 inq_genkey_parms (void *opaque, const char *line)
 {
   struct genkey_parm_s *parm = opaque; 
@@ -561,7 +561,7 @@ store_serialno (const char *line)
 
 
 /* Callback for the gpgsm_agent_serialno fucntion.  */
-static int
+static gpg_error_t
 scd_serialno_status_cb (void *opaque, const char *line)
 {
   char **r_serialno = opaque;
@@ -613,7 +613,7 @@ gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 /* Callback for the gpgsm_agent_serialno fucntion.  */
-static int
+static gpg_error_t
 scd_keypairinfo_status_cb (void *opaque, const char *line)
 {
   strlist_t *listaddr = opaque;
@@ -681,7 +681,7 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 
 
 
-static int
+static gpg_error_t
 istrusted_status_cb (void *opaque, const char *line)
 {
   struct rootca_flags_s *flags = opaque;
@@ -812,7 +812,7 @@ gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
 }
 
 
-static int
+static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct learn_parm_s *parm = opaque;
@@ -831,7 +831,7 @@ learn_status_cb (void *opaque, const char *line)
   return 0;
 }
 
-static int
+static gpg_error_t
 learn_cb (void *opaque, const void *buffer, size_t length)
 {
   struct learn_parm_s *parm = opaque;
@@ -1002,7 +1002,7 @@ gpgsm_agent_send_nop (ctrl_t ctrl)
 
 
 
-static int
+static gpg_error_t
 keyinfo_status_cb (void *opaque, const char *line)
 {
   char **serialno = opaque;

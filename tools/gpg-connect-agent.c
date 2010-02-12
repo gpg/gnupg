@@ -159,7 +159,8 @@ static struct
 
 /*-- local prototypes --*/
 static char *substitute_line_copy (const char *buffer);
-static int read_and_print_response (assuan_context_t ctx, int *r_goterr);
+static int read_and_print_response (assuan_context_t ctx, int withhash,
+                                    int *r_goterr);
 static assuan_context_t start_agent (void);
 
 
@@ -1086,7 +1087,7 @@ do_showopen (void)
 
 
 
-static int
+static gpg_error_t
 getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *mb = opaque;
@@ -1155,11 +1156,11 @@ main (int argc, char **argv)
   i18n_init();
   init_common_subsystems ();
 
-  assuan_set_assuan_err_source (0);
+  assuan_set_gpg_err_source (0);
 
 
   opt.homedir = default_homedir ();
-  opt.connect_flags = 1; /* Use extended connect mode.  */
+  opt.connect_flags = 1;
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -1221,12 +1222,20 @@ main (int argc, char **argv)
     {
       int no_close[3];
 
-      no_close[0] = fileno (stderr);
-      no_close[1] = log_get_fd ();
+      no_close[0] = assuan_fd_from_posix_fd (fileno (stderr));
+      no_close[1] = assuan_fd_from_posix_fd (log_get_fd ());
       no_close[2] = -1;
-      rc = assuan_pipe_connect_ext (&ctx, *argv, (const char **)argv,
-                                    no_close, NULL, NULL,
-                                    opt.connect_flags);
+
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_pipe_connect
+	(ctx, *argv, (const char **)argv, no_close, NULL, NULL,
+	 (opt.connect_flags & 1) ? ASSUAN_PIPE_CONNECT_FDPASSING : 0);
       if (rc)
         {
           log_error ("assuan_pipe_connect_ext failed: %s\n",
@@ -1240,8 +1249,16 @@ main (int argc, char **argv)
     }
   else if (opt.raw_socket)
     {
-      rc = assuan_socket_connect_ext (&ctx, opt.raw_socket, 0,
-                                      opt.connect_flags);
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_socket_connect
+	(ctx, opt.raw_socket, 0,
+	 (opt.connect_flags & 1) ? ASSUAN_SOCKET_CONNECT_FDPASSING : 0);
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
@@ -1259,7 +1276,7 @@ main (int argc, char **argv)
      assuan did not run the initial handshaking).  */
   if (assuan_pending_line (ctx))
     {
-      rc = read_and_print_response (ctx, &cmderr);
+      rc = read_and_print_response (ctx, 0, &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
@@ -1747,7 +1764,9 @@ main (int argc, char **argv)
       if (*line == '#' || !*line)
         continue; /* Don't expect a response for a comment line. */
 
-      rc = read_and_print_response (ctx, &cmderr);
+      rc = read_and_print_response (ctx, (!ascii_strncasecmp (line, "HELP", 4)
+                                          && (spacep (line+4) || !line[4])),
+                                    &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
       if ((rc || cmderr) && script_fp)
@@ -1876,14 +1895,15 @@ handle_inquire (assuan_context_t ctx, char *line)
 
 
 /* Read all response lines from server and print them.  Returns 0 on
-   success or an assuan error code.  Set R_GOTERR to true if the
-   command did not returned OK.  */
+   success or an assuan error code.  If WITHHASH istrue, comment lines
+   are printed.  Sets R_GOTERR to true if the command did not returned
+   OK.  */
 static int
-read_and_print_response (assuan_context_t ctx, int *r_goterr)
+read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
 {
   char *line;
   size_t linelen;
-  assuan_error_t rc;
+  gpg_error_t rc;
   int i, j;
   int need_lf = 0;
 
@@ -1896,7 +1916,7 @@ read_and_print_response (assuan_context_t ctx, int *r_goterr)
           if (rc)
             return rc;
 
-          if (opt.verbose > 1 && *line == '#')
+          if ((withhash || opt.verbose > 1) && *line == '#')
             {
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
@@ -2086,9 +2106,16 @@ start_agent (void)
     {
       char *sockname;
 
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
       /* Check whether we can connect at the standard socket.  */
       sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (&ctx, sockname, 0);
+      rc = assuan_socket_connect (ctx, sockname, 0, 0);
 
 #ifdef HAVE_W32_SYSTEM
       /* If we failed to connect under Windows, we fire up the agent.  */
@@ -2115,7 +2142,14 @@ start_agent (void)
               /* Give the agent some time to prepare itself. */
               gnupg_sleep (3);
               /* Now try again to connect the agent.  */
-              rc = assuan_socket_connect (&ctx, sockname, 0);
+	      rc = assuan_new (&ctx);
+	      if (rc)
+		{
+		  log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+		  exit (1);
+		}
+
+              rc = assuan_socket_connect (ctx, sockname, 0, 0);
             }
           if (rc)
             rc = save_rc;
@@ -2148,7 +2182,14 @@ start_agent (void)
           exit (1);
         }
 
-      rc = assuan_socket_connect (&ctx, infostr, pid);
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_socket_connect (ctx, infostr, pid, 0);
       xfree (infostr);
     }
 

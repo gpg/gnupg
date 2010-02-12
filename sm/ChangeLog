@@ -1,3 +1,36 @@
+2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	From trunk 2009-09-23, 2009-11-02, 2009-11-04, 2009-11-05, 2009-11-25,
+	2009-12-08:
+
+	* call-agent.c (membuf_data_cb, default_inq_cb)
+	(inq_ciphertext_cb, scd_serialno_status_cb)
+	(scd_keypairinfo_status_cb, istrusted_status_cb)
+	(learn_status_cb, learn_cb, keyinfo_status_cb): Return gpg_error_t.
+	* gpgsm.c (main): Update to new assuan API.
+	* server.c: Include "gpgsm.h" before <assuan.h> due to check for
+	GPG_ERR_SOURCE_DEFAULT and assuan.h now including gpg-error.h.
+	* server.c (reset_notify, input_notify, output_notify): Update to
+	new assuan interface.
+	(option_handler, cmd_recipient, cmd_signer, cmd_encrypt)
+	(cmd_decrypt, cmd_verify, cmd_sign, cmd_import, cmd_export)
+	(cmd_delkeys, cmd_message, cmd_listkeys, cmd_dumpkeys)
+	(cmd_listsecretkeys, cmd_dumpsecretkeys, cmd_genkey)
+	(cmd_getauditlog, cmd_getinfo): Return gpg_error_t instead of int.
+	(register_commands): Use assuan_handler_t.  Same for member HANDLER
+	in table.  Add NULL arg to assuan_register_command.  Add help arg to
+	assuan_register_command.  Provide help strings for all commands.
+	(gpgsm_server): Allocate assuan context before starting server.
+	Use assuan_fd_t and assuan_fdopen on fds.
+	* call-dirmngr.c (prepare_dirmngr): Check for CTX and error before
+	setting LDAPSERVER.
+	(start_dirmngr_ext): Allocate assuan context before starting
+	server.  Update use ofassuan_pipe_connect and assuan_socket_connect.
+	Convert posix fd to assuan fd.
+	(inq_certificate, isvalid_status_cb, lookup_cb, lookup_status_cb)
+	(run_command_cb, run_command_inq_cb, run_command_status_cb):
+	Return gpg_error_t instead of int.
+
 2009-12-10  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c: Add option --ignore-cert-extension.

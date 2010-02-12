@@ -42,8 +42,8 @@ NEED_GPG_ERROR_VERSION=1.4
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.4.0
 
-NEED_LIBASSUAN_API=1
-NEED_LIBASSUAN_VERSION=1.0.4
+NEED_LIBASSUAN_API=2
+NEED_LIBASSUAN_VERSION=1.1.0
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.0.2
@@ -614,11 +614,8 @@ AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                   have_libassuan=yes,have_libassuan=no)
 if test "$have_libassuan" = "yes"; then
   have_libassuan=no
-  AM_PATH_LIBASSUAN_PTH("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
-                        have_libassuan=yes,have_libassuan=no)
-  AM_CHECK_LIBASSUAN("$NEED_LIBASSUAN_API:1.0.1",
-       [AC_DEFINE(HAVE_ASSUAN_SET_IO_MONITOR, 1,
-         [Define to 1 if you have the `assuan_set_io_monitor' function.])],)  
+  AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
+                    have_libassuan=yes,have_libassuan=no)	
   AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
             [version of the libbassuan library])
 fi
@@ -1409,7 +1406,7 @@ if test "$have_libassuan" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
 ***
-*** You need libassuan with Pth support to build this program.
+*** You need libassuan to build this program.
 *** This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/libassuan/
 *** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).

@@ -87,7 +87,7 @@ libcommonpth_a_SOURCES = $(common_sources)
 if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
-libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
+libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h

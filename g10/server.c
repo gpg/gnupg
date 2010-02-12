@@ -26,9 +26,9 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include <assuan.h>
 
 #include "gpg.h"
+#include <assuan.h>
 #include "util.h"
 #include "i18n.h"
 #include "options.h"
@@ -64,7 +64,7 @@ close_message_fd (ctrl_t ctrl)
 
 /* Called by libassuan for Assuan options.  See the Assuan manual for
    details. */
-static int
+static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
@@ -106,20 +106,23 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 
 /* Called by libassuan for RESET commands. */
-static void
-reset_notify (assuan_context_t ctx)
+static gpg_error_t
+reset_notify (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
 
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
+  return 0;
 }
 
 
 /* Called by libassuan for INPUT commands. */
-static void
-input_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+input_notify (assuan_context_t ctx, char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
 
@@ -135,12 +138,13 @@ input_notify (assuan_context_t ctx, const char *line)
     {
       /* FIXME (autodetect encoding) */
     }
+  return 0;
 }
 
 
 /* Called by libassuan for OUTPUT commands. */
-static void
-output_notify (assuan_context_t ctx, const char *line)
+static gpg_error_t
+output_notify (assuan_context_t ctx, char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
   
@@ -152,6 +156,7 @@ output_notify (assuan_context_t ctx, const char *line)
     {
       /* FIXME */
     }
+  return 0;
 }
 
 
@@ -168,7 +173,7 @@ output_notify (assuan_context_t ctx, const char *line)
    encrypt at all if not all recipients are valid, the client has to
    take care of this.  All RECIPIENT commands are cumulative until a
    RESET or an successful ENCRYPT command.  */
-static int 
+static gpg_error_t
 cmd_recipient (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -193,7 +198,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
 
    Note that this command returns an INV_RECP status which is a bit
    strange, but they are very similar.  */
-static int 
+static gpg_error_t
 cmd_signer (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -216,7 +221,7 @@ cmd_signer (assuan_context_t ctx, char *line)
    This command should in general not fail, as all necessary checks
    have been done while setting the recipients.  The input and output
    pipes are closed.  */
-static int 
+static gpg_error_t
 cmd_encrypt (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -230,7 +235,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
    This performs the decrypt operation after doing some checks on the
    internal state (e.g. that only needed data has been set).   */
-static int 
+static gpg_error_t
 cmd_decrypt (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -249,7 +254,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
    If the signature is a detached one, the server will inquire about
    the signed material and the client must provide it.
  */
-static int 
+static gpg_error_t
 cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -296,7 +301,7 @@ cmd_verify (assuan_context_t ctx, char *line)
    Sign the data set with the INPUT command and write it to the sink
    set by OUTPUT.  With "--detached" specified, a detached signature
    is created.  */
-static int 
+static gpg_error_t
 cmd_sign (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -310,7 +315,7 @@ cmd_sign (assuan_context_t ctx, char *line)
 
   Import keys as read from the input-fd, return status message for
   each imported one.  The import checks the validity of the key.  */
-static int 
+static gpg_error_t
 cmd_import (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -330,7 +335,7 @@ cmd_import (assuan_context_t ctx, char *line)
    Recall that in general the output format is set with the OUTPUT
    command.
  */
-static int 
+static gpg_error_t
 cmd_export (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -344,7 +349,7 @@ cmd_export (assuan_context_t ctx, char *line)
 
     Fixme
 */
-static int 
+static gpg_error_t
 cmd_delkeys (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -358,7 +363,7 @@ cmd_delkeys (assuan_context_t ctx, char *line)
 
    Set the file descriptor to read a message which is used with
    detached signatures.  */
-static int 
+static gpg_error_t
 cmd_message (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -381,7 +386,7 @@ cmd_message (assuan_context_t ctx, char *line)
 
    fixme
 */
-static int 
+static gpg_error_t
 do_listkeys (assuan_context_t ctx, char *line, int mode)
 {
   (void)ctx;
@@ -392,14 +397,14 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
 }
 
 
-static int 
+static gpg_error_t
 cmd_listkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 3);
 }
 
 
-static int 
+static gpg_error_t
 cmd_listsecretkeys (assuan_context_t ctx, char *line)
 {
   return do_listkeys (ctx, line, 2);
@@ -412,7 +417,7 @@ cmd_listsecretkeys (assuan_context_t ctx, char *line)
    Read the parameters in native format from the input fd and create a
    new OpenPGP key.
  */
-static int 
+static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
   (void)ctx;
@@ -430,7 +435,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
      pid         - Return the process id of the server.
 
  */
-static int
+static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -461,7 +466,7 @@ register_commands (assuan_context_t ctx)
   static struct 
   {
     const char *name;
-    int (*handler)(assuan_context_t, char *line);
+    assuan_handler_t handler;
   } table[] = {
     { "RECIPIENT",     cmd_recipient },
     { "SIGNER",        cmd_signer    },
@@ -485,7 +490,7 @@ register_commands (assuan_context_t ctx)
 
   for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx, table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
       if (rc)
         return rc;
     } 
@@ -502,16 +507,24 @@ gpg_server (ctrl_t ctrl)
 {
   int rc;
   int filedes[2];
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   static const char hello[] = ("GNU Privacy Guard's OpenPGP server "
                                VERSION " ready");
 
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FILEDES in this case.  */
-  filedes[0] = 0;
-  filedes[1] = 1;
-  rc = assuan_init_pipe_server (&ctx, filedes);
+  filedes[0] = assuan_fdopen (0);
+  filedes[1] = assuan_fdopen (1);
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("failed to allocate the assuan context: %s\n",
+		 gpg_strerror (rc));
+      goto leave;
+    }
+  
+  rc = assuan_init_pipe_server (ctx, filedes);
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n", gpg_strerror (rc));
@@ -590,7 +603,7 @@ gpg_server (ctrl_t ctrl)
  leave:
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
-  assuan_deinit_server (ctx);
+  assuan_release (ctx);
   return rc;
 }
 

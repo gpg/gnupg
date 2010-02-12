@@ -27,7 +27,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
-	     $(KSBA_CFLAGS) $(LIBASSUAN_PTH_CFLAGS) $(PTH_CFLAGS)
+	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 
 card_apps = app-openpgp.c app-nks.c app-dinsig.c app-p15.c app-geldkarte.c
@@ -42,7 +42,7 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a \
-	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
 	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) \
         $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV)
 
@@ -60,7 +60,7 @@ scdaemon_LDADD = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a \
 #sc_copykeys_LDADD = \
 #	../jnlib/libjnlib.a ../common/libcommon.a \
 #	../common/libsimple-pwquery.a \
-#	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_PTH_LIBS) $(PTH_LIBS) \
+#	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
 #	 $(LIBUSB_LIBS) \
 #        -lgpg-error @LIBINTL@ @DL_LIBS@
 #

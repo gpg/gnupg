@@ -159,6 +159,9 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
     }
   audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err);
 
+  if (!ctx || err)
+    return;
+
   server = opt.keyserver;
   while (server)
     {
@@ -188,7 +191,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 {
   int rc;
   char *infostr, *p;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   int try_default = 0;
 
   if (opt.disable_dirmngr)
@@ -216,6 +219,14 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
       infostr = xstrdup (dirmngr_socket_name ());
       try_default = 1;
     }
+
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
+      return rc;
+    }
+
   if (!infostr)
     {
       const char *pgmname;
@@ -247,13 +258,13 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 
       i=0;
       if (log_get_fd () != -1)
-        no_close_list[i++] = log_get_fd ();
-      no_close_list[i++] = fileno (stderr);
+        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
+      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
       no_close_list[i] = -1;
 
       /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (&ctx, opt.dirmngr_program, argv,
-                                no_close_list);
+      rc = assuan_pipe_connect (ctx, opt.dirmngr_program, argv,
+                                no_close_list, NULL, NULL, 0);
     }
   else
     {
@@ -286,7 +297,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
       else
         pid = -1;
 
-      rc = assuan_socket_connect (&ctx, infostr, pid);
+      rc = assuan_socket_connect (ctx, infostr, pid, 0);
 #ifdef HAVE_W32_SYSTEM
       if (rc)
         log_debug ("connecting dirmngr at `%s' failed\n", infostr);
@@ -307,6 +318,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 
   if (rc)
     {
+      assuan_release (ctx);
       log_error ("can't connect to the dirmngr: %s\n", gpg_strerror (rc));
       return gpg_error (GPG_ERR_NO_DIRMNGR);
     }
@@ -376,7 +388,7 @@ release_dirmngr2 (ctrl_t ctrl)
 
 
 /* Handle a SENDCERT inquiry. */
-static int
+static gpg_error_t
 inq_certificate (void *opaque, const char *line)
 {
   struct inq_certificate_parm_s *parm = opaque;
@@ -504,7 +516,7 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
 }
 
 
-static assuan_error_t
+static gpg_error_t
 isvalid_status_cb (void *opaque, const char *line)
 {
   struct isvalid_status_parm_s *parm = opaque;
@@ -677,7 +689,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
 
 
 /* Lookup helpers*/
-static int
+static gpg_error_t
 lookup_cb (void *opaque, const void *buffer, size_t length)
 {
   struct lookup_parm_s *parm = opaque;
@@ -783,7 +795,7 @@ pattern_from_strlist (strlist_t names)
   return pattern;
 }
 
-static int
+static gpg_error_t
 lookup_status_cb (void *opaque, const char *line)
 {
   struct lookup_parm_s *parm = opaque;
@@ -889,7 +901,7 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 /* Run Command helpers*/
 
 /* Fairly simple callback to write all output of dirmngr to stdout. */
-static int
+static gpg_error_t
 run_command_cb (void *opaque, const void *buffer, size_t length)
 {
   (void)opaque;
@@ -903,7 +915,7 @@ run_command_cb (void *opaque, const void *buffer, size_t length)
 }
 
 /* Handle inquiries from the dirmngr COMMAND. */
-static int
+static gpg_error_t
 run_command_inq_cb (void *opaque, const char *line)
 {
   struct run_command_parm_s *parm = opaque;
@@ -950,7 +962,7 @@ run_command_inq_cb (void *opaque, const char *line)
   return rc; 
 }
 
-static int
+static gpg_error_t
 run_command_status_cb (void *opaque, const char *line)
 {
   ctrl_t ctrl = opaque;

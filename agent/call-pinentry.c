@@ -32,9 +32,9 @@
 # include <signal.h>
 #endif
 #include <pth.h>
-#include <assuan.h>
 
 #include "agent.h"
+#include <assuan.h>
 #include "setenv.h"
 #include "i18n.h"
 
@@ -158,7 +158,7 @@ unlock_pinentry (int rc)
       if (!rc)
         rc = gpg_error (GPG_ERR_INTERNAL);
     }
-  assuan_disconnect (ctx);
+  assuan_release (ctx);
   return rc;
 }
 
@@ -196,7 +196,7 @@ atfork_cb (void *opaque, int where)
 }
 
 
-static int
+static gpg_error_t
 getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 {
   unsigned long *pid = opaque;
@@ -304,21 +304,30 @@ start_pinentry (ctrl_t ctrl)
   if (!opt.running_detached)
     {
       if (log_get_fd () != -1)
-        no_close_list[i++] = log_get_fd ();
-      no_close_list[i++] = fileno (stderr);
+        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
+      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
     }
   no_close_list[i] = -1;
+
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
+      return rc;
+    }
 
   /* Connect to the pinentry and perform initial handshaking.  Note
      that atfork is used to change the environment for pinentry.  We
      start the server in detached mode to suppress the console window
      under Windows.  */
-  rc = assuan_pipe_connect_ext (&ctx, opt.pinentry_program, argv,
-                                no_close_list, atfork_cb, ctrl, 128);
+  rc = assuan_pipe_connect (ctx, opt.pinentry_program, argv,
+			    no_close_list, atfork_cb, ctrl,
+			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",
                  gpg_strerror (rc));
+      assuan_release (ctx);
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
   entry_ctx = ctx;
@@ -463,7 +472,7 @@ pinentry_active_p (ctrl_t ctrl, int waitseconds)
 }
 
 
-static int
+static gpg_error_t
 getpin_cb (void *opaque, const void *buffer, size_t length)
 {
   struct entry_parm_s *parm = opaque;
@@ -553,7 +562,7 @@ estimate_passphrase_quality (const char *pw)
 
 
 /* Handle the QUALITY inquiry. */
-static int
+static gpg_error_t
 inq_quality (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;

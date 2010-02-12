@@ -1,3 +1,16 @@
+2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	From trunk 2009-10-16:
+
+	* configure.ac: Check for libassuan instead of libassuan-pth.
+
+2009-10-12  Werner Koch  <wk@g10code.com>
+
+	From trunk 2009-09-23:
+
+	* configure.ac (NEED_LIBASSUAN_API, NEED_LIBASSUAN_VERSION):
+	Update to new API (2, 1.1.0).
+
 2009-12-21  Werner Koch  <wk@g10code.com>
 
 	Release 2.0.14.

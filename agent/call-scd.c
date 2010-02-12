@@ -108,8 +108,8 @@ static int primary_scd_ctx_reusable;
 
 
 /* Local prototypes.  */
-static assuan_error_t membuf_data_cb (void *opaque,
-                                      const void *buffer, size_t length);
+static gpg_error_t membuf_data_cb (void *opaque,
+				   const void *buffer, size_t length);
 
 
 
@@ -209,7 +209,7 @@ start_scd (ctrl_t ctrl)
 {
   gpg_error_t err = 0;
   const char *pgmname;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   const char *argv[3];
   int no_close_list[3];
   int i;
@@ -268,9 +268,17 @@ start_scd (ctrl_t ctrl)
       goto leave;
     }
 
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
+      err = rc;
+      goto leave;
+    }
+
   if (socket_name)
     {
-      rc = assuan_socket_connect (&ctx, socket_name, 0);
+      rc = assuan_socket_connect (ctx, socket_name, 0, 0);
       if (rc)
         {
           log_error ("can't connect to socket `%s': %s\n",
@@ -325,16 +333,16 @@ start_scd (ctrl_t ctrl)
   if (!opt.running_detached)
     {
       if (log_get_fd () != -1)
-        no_close_list[i++] = log_get_fd ();
-      no_close_list[i++] = fileno (stderr);
+        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
+      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
     }
   no_close_list[i] = -1;
 
   /* Connect to the pinentry and perform initial handshaking.  Use
      detached flag (128) so that under W32 SCDAEMON does not show up a
      new window.  */
-  rc = assuan_pipe_connect_ext (&ctx, opt.scdaemon_program, argv,
-                                no_close_list, atfork_cb, NULL, 128);
+  rc = assuan_pipe_connect (ctx, opt.scdaemon_program, argv,
+			    no_close_list, atfork_cb, NULL, 128);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
@@ -399,6 +407,8 @@ start_scd (ctrl_t ctrl)
   if (err)
     {
       unlock_scd (ctrl, err);
+      if (ctx)
+	assuan_release (ctx);
     } 
   else
     {
@@ -477,14 +487,14 @@ agent_scd_check_aliveness (void)
           struct scd_local_s *sl;
 
           assuan_set_flag (primary_scd_ctx, ASSUAN_NO_WAITPID, 1);
-          assuan_disconnect (primary_scd_ctx);
+          assuan_release (primary_scd_ctx);
 
           for (sl=scd_local_list; sl; sl = sl->next_local)
             {
               if (sl->ctx)
                 {
                   if (sl->ctx != primary_scd_ctx)
-                    assuan_disconnect (sl->ctx);
+                    assuan_release (sl->ctx);
                   sl->ctx = NULL;
                 }
             }
@@ -534,7 +544,7 @@ agent_reset_scd (ctrl_t ctrl)
               primary_scd_ctx_reusable = 1;
             }
           else
-            assuan_disconnect (ctrl->scd_local->ctx);
+            assuan_release (ctrl->scd_local->ctx);
           ctrl->scd_local->ctx = NULL;
         }
       
@@ -563,7 +573,7 @@ agent_reset_scd (ctrl_t ctrl)
 
 
 
-static int
+static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct learn_parm_s *parm = opaque;
@@ -626,7 +636,7 @@ agent_card_learn (ctrl_t ctrl,
 
 
 
-static int
+static gpg_error_t
 get_serialno_cb (void *opaque, const char *line)
 {
   char **serialno = opaque;
@@ -684,7 +694,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 
-static assuan_error_t
+static gpg_error_t
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
   membuf_t *data = opaque;
@@ -695,7 +705,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 }
   
 /* Handle the NEEDPIN inquiry. */
-static int
+static gpg_error_t
 inq_needpin (void *opaque, const char *line)
 {
   struct inq_needpin_s *parm = opaque;
@@ -991,7 +1001,7 @@ struct card_getattr_parm_s {
 };
 
 /* Callback function for agent_card_getattr.  */
-static assuan_error_t
+static gpg_error_t
 card_getattr_cb (void *opaque, const char *line)
 {
   struct card_getattr_parm_s *parm = opaque;
@@ -1067,7 +1077,7 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
 
 
 
-static int
+static gpg_error_t
 pass_status_thru (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;
@@ -1087,7 +1097,7 @@ pass_status_thru (void *opaque, const char *line)
   return 0;
 }
 
-static int
+static gpg_error_t
 pass_data_thru (void *opaque, const void *buffer, size_t length)
 {
   assuan_context_t ctx = opaque;
