@@ -1927,7 +1927,7 @@ ask_user_id( int mode )
 	    if( strlen(ansstr) != 10 )
 		BUG();
 	    if( cpr_enabled() ) {
-		answer = xstrdup(ansstr+6);
+                answer = xstrdup (ansstr + (fail?8:6));
 		answer[1] = 0;
 	    }
 	    else {
