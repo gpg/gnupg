@@ -9,6 +9,7 @@ agent/preset-passphrase.c
 agent/protect-tool.c
 agent/trustlist.c
 agent/findkey.c
+agent/call-pinentry.c
 
 common/exechelp.c
 common/http.c
