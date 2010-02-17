@@ -1,3 +1,8 @@
+2010-02-17  Werner Koch  <wk@g10code.com>
+
+	* de.po: Replace "Unterschrift" by "Signatur".
+	(keygen.c): Use Abbrechen instead of Quit.
+
 2009-12-21  Jedi Lin  <Jedi@Jedi.org>  (wk)
 
 	* zh_TW.po: Update (dated 2009-09-05).
