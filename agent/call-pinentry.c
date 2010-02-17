@@ -1,5 +1,6 @@
-/* call-pinentry.c - fork of the pinentry to query stuff from the user
- * Copyright (C) 2001, 2002, 2004, 2007, 2008 Free Software Foundation, Inc.
+/* call-pinentry.c - Spawn the pinentry to query stuff from the user
+ * Copyright (C) 2001, 2002, 2004, 2007, 2008,
+ *               2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -361,6 +362,7 @@ start_pinentry (ctrl_t ctrl)
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
+      xfree (optstr);
       if (rc)
 	return unlock_pinentry (rc);
     }
@@ -371,6 +373,7 @@ start_pinentry (ctrl_t ctrl)
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
+      xfree (optstr);
       if (rc)
 	return unlock_pinentry (rc);
     }
@@ -381,9 +384,36 @@ start_pinentry (ctrl_t ctrl)
 	return unlock_pinentry (out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
+      xfree (optstr);
       if (rc)
 	return unlock_pinentry (rc);
     }
+
+  {
+    /* Provide a few default strings for use by the pinentries.  This
+       may help a pinentry to avoid implementing localization code.  */
+    static struct { const char *key, *value; } tbl[] = {
+      /* TRANSLATORS: These are labels for buttons etc used in
+         Pinentries.  A underscore indicates that the next letter
+         should be used as an accelerator.  The actual to be
+         translated text starts after the second vertical bar.  */
+      { "ok",     N_("|pinentry-label|_OK") },
+      { "cancel", N_("|pinentry-label|_Cancel") },
+      { NULL, NULL}
+    };
+    char *optstr;
+    int idx;
+
+    for (idx=0; tbl[idx].key; idx++)
+      {
+        if (asprintf (&optstr, "OPTION default-ok=%s",
+                      tbl[idx].key, _(tbl[idx].value)) < 0 )
+          return unlock_pinentry (out_of_core ());
+        assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+                         NULL);
+        xfree (optstr);
+      }
+  }
 
   
   /* Tell the pinentry the name of a file it shall touch after having
@@ -923,7 +953,7 @@ agent_get_confirmation (ctrl_t ctrl,
   if (notok)
     {
       /* Try to use the newer NOTOK feature if a cancel button is
-         requested.  If no cacnel button is requested we keep on using
+         requested.  If no cancel button is requested we keep on using
          the standard cancel.  */
       if (with_cancel)
         {
