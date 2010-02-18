@@ -778,7 +778,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   unsigned long s2kcount;
   const unsigned char *iv;
   const unsigned char *prot_begin;
-  unsigned char *cleartext;
+  unsigned char *cleartext = NULL; /* Just to avoid gcc warning.  */
   unsigned char *final;
   size_t finallen;
   size_t cutoff, cutlen;

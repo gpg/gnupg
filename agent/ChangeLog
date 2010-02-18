@@ -1,3 +1,11 @@
+2010-02-18  Werner Koch  <wk@g10code.com>
+
+	* protect.c (agent_unprotect): Initialize CLEARTEXT.
+
+	* command.c (register_commands): Unconditionally use
+	assuan_register_post_cmd_notify.
+	(start_command_handler): Undocumented use assuan_set_io_monitor.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (start_pinentry): Always free OPTSTR.  Send

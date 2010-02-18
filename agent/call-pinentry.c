@@ -406,7 +406,7 @@ start_pinentry (ctrl_t ctrl)
 
     for (idx=0; tbl[idx].key; idx++)
       {
-        if (asprintf (&optstr, "OPTION default-ok=%s",
+        if (asprintf (&optstr, "OPTION default-%s=%s",
                       tbl[idx].key, _(tbl[idx].value)) < 0 )
           return unlock_pinentry (out_of_core ());
         assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
