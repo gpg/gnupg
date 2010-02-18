@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2009-12-21 16:05+0100\n"
+"POT-Creation-Date: 2010-02-18 09:22+0100\n"
 "PO-Revision-Date: 2009-09-05 09:27+0800\n"
 "Last-Translator: Jedi <JediLin@Gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -21,14 +21,26 @@ msgstr ""
 "X-Poedit-Country: TAIWAN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: agent/call-pinentry.c:243
+#: agent/call-pinentry.c:244
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "個人識別碼項目鎖定獲取失敗: %s\n"
 
+#. TRANSLATORS: These are labels for buttons etc used in
+#. Pinentries.  A underscore indicates that the next letter
+#. should be used as an accelerator.  The actual to be
+#. translated text starts after the second vertical bar.
+#: agent/call-pinentry.c:400
+msgid "|pinentry-label|_OK"
+msgstr ""
+
+#: agent/call-pinentry.c:401
+msgid "|pinentry-label|_Cancel"
+msgstr ""
+
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
-#: agent/call-pinentry.c:605
+#: agent/call-pinentry.c:644
 msgid "Quality:"
 msgstr "品質: %s"
 
@@ -38,54 +50,54 @@ msgstr "品質: %s"
 #. tooltip is limited to about 900 characters.  If you do not
 #. translate this entry, a default english text (see source)
 #. will be used.
-#: agent/call-pinentry.c:627
+#: agent/call-pinentry.c:666
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 "輸入在上面的文字的品質.\n"
 "關於此規範的細節, 請洽你的系統管理者."
 
-#: agent/call-pinentry.c:671
+#: agent/call-pinentry.c:710
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr "請輸入你的個人識別碼 (PIN) 以便在此階段作業中解開密鑰"
 
-#: agent/call-pinentry.c:674
+#: agent/call-pinentry.c:713
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr "請輸入你的密語以便在此階段作業中解開私鑰"
 
-#: agent/call-pinentry.c:731
+#: agent/call-pinentry.c:770
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "設定錯誤 %s (第 %d 次嘗試, 最多 %d 次)"
 
-#: agent/call-pinentry.c:751 agent/call-pinentry.c:763
+#: agent/call-pinentry.c:790 agent/call-pinentry.c:802
 msgid "PIN too long"
 msgstr "個人識別碼 (PIN) 太長"
 
-#: agent/call-pinentry.c:752
+#: agent/call-pinentry.c:791
 msgid "Passphrase too long"
 msgstr "密語太長"
 
-#: agent/call-pinentry.c:760
+#: agent/call-pinentry.c:799
 msgid "Invalid characters in PIN"
 msgstr "個人識別碼 (PIN) 含有無效的字符"
 
-#: agent/call-pinentry.c:765
+#: agent/call-pinentry.c:804
 msgid "PIN too short"
 msgstr "個人識別碼 (PIN) 太短"
 
-#: agent/call-pinentry.c:777
+#: agent/call-pinentry.c:816
 msgid "Bad PIN"
 msgstr "不良的個人識別碼 (PIN)"
 
-#: agent/call-pinentry.c:778
+#: agent/call-pinentry.c:817
 msgid "Bad Passphrase"
 msgstr "不良的密語"
 
-#: agent/call-pinentry.c:814
+#: agent/call-pinentry.c:853
 msgid "Passphrase"
 msgstr "密語"
 
@@ -94,7 +106,7 @@ msgstr "密語"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
 
-#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1121
+#: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1122
 #: g10/keygen.c:3394 g10/keygen.c:3427 g10/keyring.c:1237 g10/keyring.c:1569
 #: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
 #: g10/tdbio.c:548 jnlib/dotlock.c:310
@@ -104,12 +116,12 @@ msgstr "無法建立 `%s': %s\n"
 
 #: agent/command-ssh.c:700 common/helpfile.c:47 g10/card-util.c:784
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
-#: g10/encode.c:504 g10/gpg.c:1122 g10/import.c:193 g10/keygen.c:2877
+#: g10/encode.c:504 g10/gpg.c:1123 g10/import.c:193 g10/keygen.c:2877
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
 #: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
 #: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
-#: g10/tdbio.c:616 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2044
-#: sm/gpgsm.c:2074 sm/gpgsm.c:2112 sm/gpgsm.c:2150 sm/qualified.c:66
+#: g10/tdbio.c:616 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2047
+#: sm/gpgsm.c:2077 sm/gpgsm.c:2115 sm/gpgsm.c:2153 sm/qualified.c:66
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "無法開啟 `%s': %s\n"
@@ -161,7 +173,7 @@ msgid ""
 msgstr "請輸入密語以保護收到的私鑰%%0A   %s%%0A於 gpg-agent 的金鑰存放處"
 
 #: agent/command-ssh.c:2442 agent/genkey.c:340 agent/genkey.c:463
-#: tools/symcryptrun.c:434
+#: tools/symcryptrun.c:433
 msgid "does not match - try again"
 msgstr "前後不一致 - 請再試一次"
 
@@ -303,7 +315,7 @@ msgstr "請輸入密語至%0A以保護你的新金鑰"
 msgid "Please enter the new passphrase"
 msgstr "請輸入新的密語"
 
-#: agent/gpg-agent.c:119 agent/preset-passphrase.c:72 scd/scdaemon.c:104
+#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 scd/scdaemon.c:103
 #: tools/gpg-check-pattern.c:70
 msgid ""
 "@Options:\n"
@@ -312,113 +324,113 @@ msgstr ""
 "@選項:\n"
 " "
 
-#: agent/gpg-agent.c:121 scd/scdaemon.c:106
+#: agent/gpg-agent.c:120 scd/scdaemon.c:105
 msgid "run in server mode (foreground)"
 msgstr "以伺服器模式執行 (前景)"
 
-#: agent/gpg-agent.c:122 scd/scdaemon.c:109
+#: agent/gpg-agent.c:121 scd/scdaemon.c:108
 msgid "run in daemon mode (background)"
 msgstr "以服務模式執行 (背景)"
 
-#: agent/gpg-agent.c:123 g10/gpg.c:486 g10/gpgv.c:71 kbx/kbxutil.c:88
-#: scd/scdaemon.c:110 sm/gpgsm.c:281 tools/gpg-connect-agent.c:69
-#: tools/gpgconf.c:80 tools/symcryptrun.c:164
+#: agent/gpg-agent.c:122 g10/gpg.c:488 g10/gpgv.c:71 kbx/kbxutil.c:88
+#: scd/scdaemon.c:109 sm/gpgsm.c:281 tools/gpg-connect-agent.c:69
+#: tools/gpgconf.c:80 tools/symcryptrun.c:163
 msgid "verbose"
 msgstr "囉唆模式"
 
-#: agent/gpg-agent.c:124 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:111
+#: agent/gpg-agent.c:123 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:110
 #: sm/gpgsm.c:282
 msgid "be somewhat more quiet"
 msgstr "盡量安靜些"
 
-#: agent/gpg-agent.c:125 scd/scdaemon.c:112
+#: agent/gpg-agent.c:124 scd/scdaemon.c:111
 msgid "sh-style command output"
 msgstr "sh 樣式的指令輸出"
 
-#: agent/gpg-agent.c:126 scd/scdaemon.c:113
+#: agent/gpg-agent.c:125 scd/scdaemon.c:112
 msgid "csh-style command output"
 msgstr "csh 樣式的指令輸出"
 
-#: agent/gpg-agent.c:127 scd/scdaemon.c:114 sm/gpgsm.c:312
-#: tools/symcryptrun.c:167
+#: agent/gpg-agent.c:126 scd/scdaemon.c:113 sm/gpgsm.c:312
+#: tools/symcryptrun.c:166
 msgid "|FILE|read options from FILE"
 msgstr "|檔案|從「檔案」中讀取選項"
 
-#: agent/gpg-agent.c:132 scd/scdaemon.c:124
+#: agent/gpg-agent.c:131 scd/scdaemon.c:123
 msgid "do not detach from the console"
 msgstr "不要從 console 分離"
 
-#: agent/gpg-agent.c:133
+#: agent/gpg-agent.c:132
 msgid "do not grab keyboard and mouse"
 msgstr "不要奪取鍵盤及滑鼠"
 
-#: agent/gpg-agent.c:134 tools/symcryptrun.c:166
+#: agent/gpg-agent.c:133 tools/symcryptrun.c:165
 msgid "use a log file for the server"
 msgstr "為伺服器使用日誌檔"
 
-#: agent/gpg-agent.c:136
+#: agent/gpg-agent.c:135
 msgid "use a standard location for the socket"
 msgstr "為 socket 使用標準的位置"
 
-#: agent/gpg-agent.c:139
+#: agent/gpg-agent.c:138
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PGM|使用 PGM 做為 PIN-Entry 程式"
 
-#: agent/gpg-agent.c:142
+#: agent/gpg-agent.c:141
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "|PGM|使用 PGM 做為 SCdaemon 程式"
 
-#: agent/gpg-agent.c:143
+#: agent/gpg-agent.c:142
 msgid "do not use the SCdaemon"
 msgstr "不要使用 SCdaemon"
 
-#: agent/gpg-agent.c:155
+#: agent/gpg-agent.c:154
 msgid "ignore requests to change the TTY"
 msgstr "忽略變更 TTY 的要求"
 
-#: agent/gpg-agent.c:157
+#: agent/gpg-agent.c:156
 msgid "ignore requests to change the X display"
 msgstr "忽略變更 X display 的要求"
 
-#: agent/gpg-agent.c:160
+#: agent/gpg-agent.c:159
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|讓快取住的個人識別碼 (PIN) 在 N 秒後到期"
 
-#: agent/gpg-agent.c:173
+#: agent/gpg-agent.c:172
 msgid "do not use the PIN cache when signing"
 msgstr "簽署時不要使用個人識別碼 (PIN) 快取"
 
-#: agent/gpg-agent.c:175
+#: agent/gpg-agent.c:174
 msgid "allow clients to mark keys as \"trusted\""
 msgstr "允許用戶端將金鑰標記為 \"已信任\""
 
-#: agent/gpg-agent.c:177
+#: agent/gpg-agent.c:176
 msgid "allow presetting passphrase"
 msgstr "允許預先設定密語"
 
-#: agent/gpg-agent.c:178
+#: agent/gpg-agent.c:177
 msgid "enable ssh-agent emulation"
 msgstr "啟用 ssh-agent 模擬"
 
-#: agent/gpg-agent.c:180
+#: agent/gpg-agent.c:179
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|檔案|將環境設定也寫至「檔案」"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
 #. reporting address without breaking the translations.
-#: agent/gpg-agent.c:332 agent/preset-passphrase.c:94 agent/protect-tool.c:163
-#: g10/gpg.c:813 g10/gpgv.c:114 kbx/kbxutil.c:113 scd/scdaemon.c:245
-#: sm/gpgsm.c:519 tools/gpg-connect-agent.c:180 tools/gpgconf.c:102
-#: tools/symcryptrun.c:204 tools/gpg-check-pattern.c:141
+#: agent/gpg-agent.c:333 agent/preset-passphrase.c:94 agent/protect-tool.c:163
+#: g10/gpg.c:814 g10/gpgv.c:114 kbx/kbxutil.c:113 scd/scdaemon.c:246
+#: sm/gpgsm.c:519 tools/gpg-connect-agent.c:181 tools/gpgconf.c:102
+#: tools/symcryptrun.c:203 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "翻譯瑕疵請回報給 <Jedi@Jedi.org>, 程式瑕疵則請回報給 <@EMAIL@>.\n"
 
-#: agent/gpg-agent.c:341
+#: agent/gpg-agent.c:342
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "用法: gpg-agent [選項] (或用 -h 求助)"
 
-#: agent/gpg-agent.c:343
+#: agent/gpg-agent.c:344
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
@@ -426,145 +438,145 @@ msgstr ""
 "語法: gpg-agent [選項] [指令 [引數]]\n"
 "GnuPG 私鑰管理\n"
 
-#: agent/gpg-agent.c:389 g10/gpg.c:1006 scd/scdaemon.c:317 sm/gpgsm.c:669
+#: agent/gpg-agent.c:390 g10/gpg.c:1007 scd/scdaemon.c:318 sm/gpgsm.c:669
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "給定的除錯等級 `%s' 無效\n"
 
-#: agent/gpg-agent.c:609 agent/protect-tool.c:1033 kbx/kbxutil.c:428
-#: scd/scdaemon.c:423 sm/gpgsm.c:911 sm/gpgsm.c:914 tools/symcryptrun.c:996
+#: agent/gpg-agent.c:611 agent/protect-tool.c:1033 kbx/kbxutil.c:428
+#: scd/scdaemon.c:425 sm/gpgsm.c:912 sm/gpgsm.c:915 tools/symcryptrun.c:995
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
 
-#: agent/gpg-agent.c:720 g10/gpg.c:2109 scd/scdaemon.c:505 sm/gpgsm.c:1008
+#: agent/gpg-agent.c:726 g10/gpg.c:2115 scd/scdaemon.c:511 sm/gpgsm.c:1011
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "請注意: 沒有預設選項檔 `%s'\n"
 
-#: agent/gpg-agent.c:725 agent/gpg-agent.c:1326 g10/gpg.c:2113
-#: scd/scdaemon.c:510 sm/gpgsm.c:1012 tools/symcryptrun.c:929
+#: agent/gpg-agent.c:731 agent/gpg-agent.c:1333 g10/gpg.c:2119
+#: scd/scdaemon.c:516 sm/gpgsm.c:1015 tools/symcryptrun.c:928
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "選項檔 `%s': %s\n"
 
-#: agent/gpg-agent.c:733 g10/gpg.c:2120 scd/scdaemon.c:518 sm/gpgsm.c:1019
+#: agent/gpg-agent.c:739 g10/gpg.c:2126 scd/scdaemon.c:524 sm/gpgsm.c:1022
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "從 `%s' 讀取選項中\n"
 
-#: agent/gpg-agent.c:1095 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1102 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "建立 `%s' 時出錯: %s\n"
 
-#: agent/gpg-agent.c:1439 agent/gpg-agent.c:1557 agent/gpg-agent.c:1561
-#: agent/gpg-agent.c:1602 agent/gpg-agent.c:1606 g10/exec.c:188
-#: g10/openfile.c:429 scd/scdaemon.c:1015
+#: agent/gpg-agent.c:1446 agent/gpg-agent.c:1564 agent/gpg-agent.c:1568
+#: agent/gpg-agent.c:1609 agent/gpg-agent.c:1613 g10/exec.c:188
+#: g10/openfile.c:429 scd/scdaemon.c:1021
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "無法建立目錄 `%s': %s\n"
 
-#: agent/gpg-agent.c:1453 scd/scdaemon.c:1029
+#: agent/gpg-agent.c:1460 scd/scdaemon.c:1035
 msgid "name of socket too long\n"
 msgstr "socket 名稱太長\n"
 
-#: agent/gpg-agent.c:1476 scd/scdaemon.c:1052
+#: agent/gpg-agent.c:1483 scd/scdaemon.c:1058
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "無法建立 socket: %s\n"
 
-#: agent/gpg-agent.c:1485
+#: agent/gpg-agent.c:1492
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "socket 名稱 `%s' 太長\n"
 
-#: agent/gpg-agent.c:1503
+#: agent/gpg-agent.c:1510
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "已經有一份 gpg-agent 在執行了 - 不會再啟動一份新的\n"
 
-#: agent/gpg-agent.c:1514 scd/scdaemon.c:1071
+#: agent/gpg-agent.c:1521 scd/scdaemon.c:1077
 msgid "error getting nonce for the socket\n"
 msgstr "為 socket 取得 nonce 時出錯\n"
 
-#: agent/gpg-agent.c:1519 scd/scdaemon.c:1074
+#: agent/gpg-agent.c:1526 scd/scdaemon.c:1080
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "綁定 socket 至 `%s' 時出錯: %s\n"
 
-#: agent/gpg-agent.c:1531 scd/scdaemon.c:1083
+#: agent/gpg-agent.c:1538 scd/scdaemon.c:1089
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() 失敗: %s\n"
 
-#: agent/gpg-agent.c:1537 scd/scdaemon.c:1090
+#: agent/gpg-agent.c:1544 scd/scdaemon.c:1096
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "正在候聽 socket `%s'\n"
 
-#: agent/gpg-agent.c:1565 agent/gpg-agent.c:1612 g10/openfile.c:432
+#: agent/gpg-agent.c:1572 agent/gpg-agent.c:1619 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "`%s' 目錄已建立\n"
 
-#: agent/gpg-agent.c:1618
+#: agent/gpg-agent.c:1625
 #, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "stat() 失敗於 `%s': %s\n"
 
-#: agent/gpg-agent.c:1622
+#: agent/gpg-agent.c:1629
 #, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "無法使用 `%s' 做為家目錄\n"
 
-#: agent/gpg-agent.c:1752 scd/scdaemon.c:1106
+#: agent/gpg-agent.c:1759 scd/scdaemon.c:1112
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "於 fd %d 讀取 nonce 時出錯: %s\n"
 
-#: agent/gpg-agent.c:1774
+#: agent/gpg-agent.c:1781
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr "經手程式 0x%lx (用於 fd %d) 已啟動\n"
 
-#: agent/gpg-agent.c:1779
+#: agent/gpg-agent.c:1786
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr "經手程式 0x%lx (用於 fd %d) 已終止\n"
 
-#: agent/gpg-agent.c:1799
+#: agent/gpg-agent.c:1806
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr "ssh 經手程式 0x%lx (用於 fd %d) 已啟動\n"
 
-#: agent/gpg-agent.c:1804
+#: agent/gpg-agent.c:1811
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "ssh 經手程式 0x%lx (用於 fd %d) 已終止\n"
 
-#: agent/gpg-agent.c:1944 scd/scdaemon.c:1243
+#: agent/gpg-agent.c:1951 scd/scdaemon.c:1249
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select 失敗: %s - 等 1 秒鐘\n"
 
-#: agent/gpg-agent.c:2067 scd/scdaemon.c:1310
+#: agent/gpg-agent.c:2074 scd/scdaemon.c:1316
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s 已停止\n"
 
-#: agent/gpg-agent.c:2195
+#: agent/gpg-agent.c:2210
 msgid "no gpg-agent running in this session\n"
 msgstr "在此階段中沒有執行中的 gpg-agent\n"
 
-#: agent/gpg-agent.c:2206 common/simple-pwquery.c:352 common/asshelp.c:283
-#: tools/gpg-connect-agent.c:2134
+#: agent/gpg-agent.c:2221 common/simple-pwquery.c:352 common/asshelp.c:291
+#: tools/gpg-connect-agent.c:2168
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "被變造的 GPG_AGENT_INFO 環境變數\n"
 
-#: agent/gpg-agent.c:2219 common/simple-pwquery.c:364 common/asshelp.c:295
-#: tools/gpg-connect-agent.c:2145
+#: agent/gpg-agent.c:2234 common/simple-pwquery.c:364 common/asshelp.c:303
+#: tools/gpg-connect-agent.c:2179
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agent 協定版本 %d 未被支援\n"
@@ -581,7 +593,7 @@ msgstr ""
 "語法: gpg-preset-passphrase [選項] 金鑰鑰柄\n"
 "密碼快取維護\n"
 
-#: agent/protect-tool.c:113 g10/gpg.c:372 kbx/kbxutil.c:71 sm/gpgsm.c:186
+#: agent/protect-tool.c:113 g10/gpg.c:373 kbx/kbxutil.c:71 sm/gpgsm.c:186
 #: tools/gpgconf.c:60
 msgid ""
 "@Commands:\n"
@@ -590,9 +602,9 @@ msgstr ""
 "@指令:\n"
 " "
 
-#: agent/protect-tool.c:127 g10/gpg.c:439 g10/gpgv.c:69 kbx/kbxutil.c:81
+#: agent/protect-tool.c:127 g10/gpg.c:441 g10/gpgv.c:69 kbx/kbxutil.c:81
 #: sm/gpgsm.c:226 tools/gpg-connect-agent.c:67 tools/gpgconf.c:77
-#: tools/symcryptrun.c:157
+#: tools/symcryptrun.c:156
 msgid ""
 "@\n"
 "Options:\n"
@@ -636,15 +648,15 @@ msgstr ""
 "請輸入完成這項操作所需的\n"
 "密語或個人識別碼 (PIN)."
 
-#: agent/protect-tool.c:1183 tools/symcryptrun.c:435
+#: agent/protect-tool.c:1183 tools/symcryptrun.c:434
 msgid "Passphrase:"
 msgstr "密語:"
 
-#: agent/protect-tool.c:1188 tools/symcryptrun.c:446
+#: agent/protect-tool.c:1188 tools/symcryptrun.c:445
 msgid "cancelled\n"
 msgstr "已取消\n"
 
-#: agent/protect-tool.c:1190 tools/symcryptrun.c:442
+#: agent/protect-tool.c:1190 tools/symcryptrun.c:441
 #, c-format
 msgid "error while asking for the passphrase: %s\n"
 msgstr "詢問密語時出錯: %s\n"
@@ -902,11 +914,11 @@ msgstr "在安全記憶體配置 %lu 位元組時超出核心"
 msgid "out of core while allocating %lu bytes"
 msgstr "配置 %lu 位元組時超出核心"
 
-#: common/asshelp.c:201 tools/gpg-connect-agent.c:2102
+#: common/asshelp.c:208 tools/gpg-connect-agent.c:2129
 msgid "no running gpg-agent - starting one\n"
 msgstr "沒有執行中的 gpg-agent - 正在啟動一份\n"
 
-#: common/asshelp.c:306
+#: common/asshelp.c:314
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "無法連線至代理程式 - 正試著退回\n"
 
@@ -1548,9 +1560,9 @@ msgstr "驗證個人識別碼 (PIN) 並列出所有的資料"
 msgid "unblock the PIN using a Reset Code"
 msgstr "用重設碼來解凍個人識別碼 (PIN)"
 
-#: g10/card-util.c:1820 g10/keyedit.c:1654
-msgid "Command> "
-msgstr "指令> "
+#: g10/card-util.c:1820
+msgid "gpg/card> "
+msgstr ""
 
 #: g10/card-util.c:1861
 msgid "Admin-only command\n"
@@ -1572,12 +1584,12 @@ msgstr "無效的指令  (試試看 \"help\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output 在這個指令中沒有作用\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:4005 g10/keyring.c:387 g10/keyring.c:698
+#: g10/decrypt.c:166 g10/gpg.c:4023 g10/keyring.c:387 g10/keyring.c:698
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "無法開啟 `%s'\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3448 g10/keyserver.c:1737
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3514 g10/keyserver.c:1737
 #: g10/revoke.c:226
 #, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1852,7 +1864,7 @@ msgstr "沒有指紋"
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "無效的金鑰 %s 可以藉由 --allow-non-selfsigned-uid 而生效\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3773
+#: g10/getkey.c:2533 g10/keyedit.c:3839
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr "公鑰 %s 沒有相對應的私鑰 - 正在忽略\n"
@@ -1867,167 +1879,171 @@ msgstr "使用子鑰 %s 來替換主鑰 %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
 
-#: g10/gpg.c:374 sm/gpgsm.c:188
+#: g10/gpg.c:375 sm/gpgsm.c:188
 msgid "make a signature"
 msgstr "建立簽章"
 
-#: g10/gpg.c:375 sm/gpgsm.c:189
+#: g10/gpg.c:376 sm/gpgsm.c:189
 msgid "make a clear text signature"
 msgstr "建立明文簽章"
 
-#: g10/gpg.c:376 sm/gpgsm.c:190
+#: g10/gpg.c:377 sm/gpgsm.c:190
 msgid "make a detached signature"
 msgstr "建立分離式簽章"
 
-#: g10/gpg.c:377 sm/gpgsm.c:191
+#: g10/gpg.c:378 sm/gpgsm.c:191
 msgid "encrypt data"
 msgstr "加密資料"
 
-#: g10/gpg.c:379 sm/gpgsm.c:192
+#: g10/gpg.c:380 sm/gpgsm.c:192
 msgid "encryption only with symmetric cipher"
 msgstr "僅使用對稱式編密法來加密"
 
-#: g10/gpg.c:381 sm/gpgsm.c:193
+#: g10/gpg.c:382 sm/gpgsm.c:193
 msgid "decrypt data (default)"
 msgstr "資料解密 (預設)"
 
-#: g10/gpg.c:383 sm/gpgsm.c:194
+#: g10/gpg.c:384 sm/gpgsm.c:194
 msgid "verify a signature"
 msgstr "驗證簽章"
 
-#: g10/gpg.c:385 sm/gpgsm.c:195
+#: g10/gpg.c:386 sm/gpgsm.c:195
 msgid "list keys"
 msgstr "列出金鑰"
 
-#: g10/gpg.c:387
+#: g10/gpg.c:388
 msgid "list keys and signatures"
 msgstr "列出金鑰和簽章"
 
-#: g10/gpg.c:388
+#: g10/gpg.c:389
 msgid "list and check key signatures"
 msgstr "列出並檢查金鑰簽章"
 
-#: g10/gpg.c:389 sm/gpgsm.c:200
+#: g10/gpg.c:390 sm/gpgsm.c:200
 msgid "list keys and fingerprints"
 msgstr "列出金鑰和指紋"
 
-#: g10/gpg.c:390 sm/gpgsm.c:198
+#: g10/gpg.c:391 sm/gpgsm.c:198
 msgid "list secret keys"
 msgstr "列出私鑰"
 
-#: g10/gpg.c:391 sm/gpgsm.c:201
+#: g10/gpg.c:392 sm/gpgsm.c:201
 msgid "generate a new key pair"
 msgstr "產生新的金鑰對"
 
-#: g10/gpg.c:393 sm/gpgsm.c:203
-msgid "remove keys from the public keyring"
-msgstr "從公鑰鑰匙圈裡移除金鑰"
-
-#: g10/gpg.c:395
-msgid "remove keys from the secret keyring"
-msgstr "從私鑰鑰匙圈裡移除金鑰"
-
-#: g10/gpg.c:396
-msgid "sign a key"
-msgstr "簽署金鑰"
-
-#: g10/gpg.c:397
-msgid "sign a key locally"
-msgstr "僅在本機簽署金鑰"
-
-#: g10/gpg.c:398
-msgid "sign or edit a key"
-msgstr "簽署或編輯金鑰"
-
-#: g10/gpg.c:400
+#: g10/gpg.c:393
 msgid "generate a revocation certificate"
 msgstr "產生撤銷憑證"
 
-#: g10/gpg.c:402
+#: g10/gpg.c:395 sm/gpgsm.c:203
+msgid "remove keys from the public keyring"
+msgstr "從公鑰鑰匙圈裡移除金鑰"
+
+#: g10/gpg.c:397
+msgid "remove keys from the secret keyring"
+msgstr "從私鑰鑰匙圈裡移除金鑰"
+
+#: g10/gpg.c:398
+msgid "sign a key"
+msgstr "簽署金鑰"
+
+#: g10/gpg.c:399
+msgid "sign a key locally"
+msgstr "僅在本機簽署金鑰"
+
+#: g10/gpg.c:400
+msgid "sign or edit a key"
+msgstr "簽署或編輯金鑰"
+
+#: g10/gpg.c:402 sm/gpgsm.c:215
+msgid "change a passphrase"
+msgstr "更改密語"
+
+#: g10/gpg.c:404
 msgid "export keys"
 msgstr "匯出金鑰"
 
-#: g10/gpg.c:403 sm/gpgsm.c:204
+#: g10/gpg.c:405 sm/gpgsm.c:204
 msgid "export keys to a key server"
 msgstr "把金鑰匯出至金鑰伺服器"
 
-#: g10/gpg.c:404 sm/gpgsm.c:205
+#: g10/gpg.c:406 sm/gpgsm.c:205
 msgid "import keys from a key server"
 msgstr "從金鑰伺服器匯入金鑰"
 
-#: g10/gpg.c:406
+#: g10/gpg.c:408
 msgid "search for keys on a key server"
 msgstr "在金鑰伺服器上搜尋金鑰"
 
-#: g10/gpg.c:408
+#: g10/gpg.c:410
 msgid "update all keys from a keyserver"
 msgstr "從金鑰伺服器更新所有的金鑰"
 
-#: g10/gpg.c:413
+#: g10/gpg.c:415
 msgid "import/merge keys"
 msgstr "匯入/合併金鑰"
 
-#: g10/gpg.c:416
+#: g10/gpg.c:418
 msgid "print the card status"
 msgstr "列印卡片狀態"
 
-#: g10/gpg.c:417
+#: g10/gpg.c:419
 msgid "change data on a card"
 msgstr "變更卡片上的資料"
 
-#: g10/gpg.c:418
+#: g10/gpg.c:420
 msgid "change a card's PIN"
 msgstr "變更卡片的個人識別碼 (PIN)"
 
-#: g10/gpg.c:427
+#: g10/gpg.c:429
 msgid "update the trust database"
 msgstr "更新信任資料庫"
 
-#: g10/gpg.c:434
+#: g10/gpg.c:436
 msgid "print message digests"
 msgstr "印出訊息摘要"
 
-#: g10/gpg.c:437 sm/gpgsm.c:210
+#: g10/gpg.c:439 sm/gpgsm.c:210
 msgid "run in server mode"
 msgstr "以伺服器模式執行"
 
-#: g10/gpg.c:441 sm/gpgsm.c:228
+#: g10/gpg.c:443 sm/gpgsm.c:228
 msgid "create ascii armored output"
 msgstr "建立以 ASCII 封裝過的輸出"
 
-#: g10/gpg.c:444 sm/gpgsm.c:241
+#: g10/gpg.c:446 sm/gpgsm.c:241
 msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|使用者-ID|以「使用者-ID」作為加密對象"
 
-#: g10/gpg.c:457 sm/gpgsm.c:278
+#: g10/gpg.c:459 sm/gpgsm.c:278
 msgid "|USER-ID|use USER-ID to sign or decrypt"
 msgstr "|使用者-ID|拿「使用者-ID」來簽署或解密"
 
-#: g10/gpg.c:460
+#: g10/gpg.c:462
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|設定壓縮等級為 N (0 表示不壓縮)"
 
-#: g10/gpg.c:466
+#: g10/gpg.c:468
 msgid "use canonical text mode"
 msgstr "使用標準的文字模式"
 
-#: g10/gpg.c:483 sm/gpgsm.c:280
+#: g10/gpg.c:485 sm/gpgsm.c:280
 msgid "|FILE|write output to FILE"
 msgstr "|檔案|將輸出寫入至「檔案」"
 
-#: g10/gpg.c:499 kbx/kbxutil.c:90 sm/gpgsm.c:292 tools/gpgconf.c:82
+#: g10/gpg.c:501 kbx/kbxutil.c:90 sm/gpgsm.c:292 tools/gpgconf.c:82
 msgid "do not make any changes"
 msgstr "不要做任何改變"
 
-#: g10/gpg.c:500
+#: g10/gpg.c:502
 msgid "prompt before overwriting"
 msgstr "覆寫前先詢問"
 
-#: g10/gpg.c:552
+#: g10/gpg.c:554
 msgid "use strict OpenPGP behavior"
 msgstr "使用嚴謹的 OpenPGP 行為"
 
-#: g10/gpg.c:583 sm/gpgsm.c:336
+#: g10/gpg.c:585 sm/gpgsm.c:336
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -2035,7 +2051,7 @@ msgstr ""
 "@\n"
 "(請參照線上說明頁面來取得所有命令和選項的完整清單)\n"
 
-#: g10/gpg.c:586 sm/gpgsm.c:339
+#: g10/gpg.c:588 sm/gpgsm.c:339
 msgid ""
 "@\n"
 "Examples:\n"
@@ -2055,11 +2071,11 @@ msgstr ""
 " --list-keys [名字]         顯示金鑰\n"
 " --fingerprint [名字]       顯示指紋\n"
 
-#: g10/gpg.c:835
+#: g10/gpg.c:836
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "用法: gpg [選項] [檔案] (或用 -h 求助)"
 
-#: g10/gpg.c:838
+#: g10/gpg.c:839
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -2069,7 +2085,7 @@ msgstr ""
 "簽署, 檢查, 加密或解密\n"
 "預設的操作會依輸入資料而定\n"
 
-#: g10/gpg.c:849 sm/gpgsm.c:543
+#: g10/gpg.c:850 sm/gpgsm.c:543
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -2077,539 +2093,544 @@ msgstr ""
 "\n"
 "已支援的演算法:\n"
 
-#: g10/gpg.c:852
+#: g10/gpg.c:853
 msgid "Pubkey: "
 msgstr "公鑰: "
 
-#: g10/gpg.c:859 g10/keyedit.c:2356
+#: g10/gpg.c:860 g10/keyedit.c:2422
 msgid "Cipher: "
 msgstr "編密法: "
 
-#: g10/gpg.c:866
+#: g10/gpg.c:867
 msgid "Hash: "
 msgstr "雜湊: "
 
-#: g10/gpg.c:873 g10/keyedit.c:2401
+#: g10/gpg.c:874 g10/keyedit.c:2467
 msgid "Compression: "
 msgstr "壓縮: "
 
-#: g10/gpg.c:943
+#: g10/gpg.c:944
 msgid "usage: gpg [options] "
 msgstr "用法: gpg [選項] "
 
-#: g10/gpg.c:1157 sm/gpgsm.c:716
+#: g10/gpg.c:1158 sm/gpgsm.c:716
 msgid "conflicting commands\n"
 msgstr "指令彼此矛盾\n"
 
-#: g10/gpg.c:1175
+#: g10/gpg.c:1176
 #, c-format
 msgid "no = sign found in group definition `%s'\n"
 msgstr "在群組定義 `%s' 裡找不到 = 記號\n"
 
-#: g10/gpg.c:1372
+#: g10/gpg.c:1373
 #, c-format
 msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的所有權並不安全\n"
 
-#: g10/gpg.c:1375
+#: g10/gpg.c:1376
 #, c-format
 msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的所有權並不安全\n"
 
-#: g10/gpg.c:1378
+#: g10/gpg.c:1379
 #, c-format
 msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgstr "警告: 延伸模組 `%s' 的所有權並不安全\n"
 
-#: g10/gpg.c:1384
+#: g10/gpg.c:1385
 #, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的權限並不安全\n"
 
-#: g10/gpg.c:1387
+#: g10/gpg.c:1388
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的權限並不安全\n"
 
-#: g10/gpg.c:1390
+#: g10/gpg.c:1391
 #, c-format
 msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "警告: 延伸模組 `%s' 的權限並不安全\n"
 
-#: g10/gpg.c:1396
+#: g10/gpg.c:1397
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄所有權並不安全\n"
 
-#: g10/gpg.c:1399
+#: g10/gpg.c:1400
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的封入目錄所有權並不安全\n"
 
-#: g10/gpg.c:1402
+#: g10/gpg.c:1403
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr "警告: 延伸模組 `%s' 的封入目錄所有權並不安全\n"
 
-#: g10/gpg.c:1408
+#: g10/gpg.c:1409
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄權限並不安全\n"
 
-#: g10/gpg.c:1411
+#: g10/gpg.c:1412
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的封入目錄權限並不安全\n"
 
-#: g10/gpg.c:1414
+#: g10/gpg.c:1415
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "警告: 延伸模組 `%s' 的封入目錄權限並不安全\n"
 
-#: g10/gpg.c:1593
+#: g10/gpg.c:1595
 #, c-format
 msgid "unknown configuration item `%s'\n"
 msgstr "未知的組態項目 `%s'\n"
 
-#: g10/gpg.c:1697
+#: g10/gpg.c:1699
 msgid "display photo IDs during key listings"
 msgstr "列出金鑰時顯示照片 ID"
 
-#: g10/gpg.c:1699
+#: g10/gpg.c:1701
 msgid "show policy URLs during signature listings"
 msgstr "列出簽章時顯示原則 URL"
 
-#: g10/gpg.c:1701
+#: g10/gpg.c:1703
 msgid "show all notations during signature listings"
 msgstr "列出簽章時顯示所有的註記"
 
-#: g10/gpg.c:1703
+#: g10/gpg.c:1705
 msgid "show IETF standard notations during signature listings"
 msgstr "列出簽章時顯示 IETF 標準註記"
 
-#: g10/gpg.c:1707
+#: g10/gpg.c:1709
 msgid "show user-supplied notations during signature listings"
 msgstr "列出簽章時顯示使用者提供的註記"
 
-#: g10/gpg.c:1709
+#: g10/gpg.c:1711
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "列出簽章時顯示偏好的金鑰伺服器 URL"
 
-#: g10/gpg.c:1711
+#: g10/gpg.c:1713
 msgid "show user ID validity during key listings"
 msgstr "列出金鑰時顯示使用者 ID 有效性"
 
-#: g10/gpg.c:1713
+#: g10/gpg.c:1715
 msgid "show revoked and expired user IDs in key listings"
 msgstr "列出金鑰時顯示已撤銷或過期的使用者 ID"
 
-#: g10/gpg.c:1715
+#: g10/gpg.c:1717
 msgid "show revoked and expired subkeys in key listings"
 msgstr "列出金鑰時顯示已撤銷或過期的子鑰"
 
-#: g10/gpg.c:1717
+#: g10/gpg.c:1719
 msgid "show the keyring name in key listings"
 msgstr "在金鑰清單中顯示鑰匙圈名稱"
 
-#: g10/gpg.c:1719
+#: g10/gpg.c:1721
 msgid "show expiration dates during signature listings"
 msgstr "列出簽章時顯示有效期限"
 
-#: g10/gpg.c:1853
+#: g10/gpg.c:1855
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "請注意: 已忽略舊有的預設選項檔 `%s'\n"
 
-#: g10/gpg.c:1945
+#: g10/gpg.c:1948
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt 太舊了 (需要 %s, 但是祇有 %s)\n"
 
-#: g10/gpg.c:2343 g10/gpg.c:3034 g10/gpg.c:3046
+#: g10/gpg.c:2350 g10/gpg.c:3041 g10/gpg.c:3053
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "請注意: 一般情況下不會用到 %s!\n"
 
-#: g10/gpg.c:2527 g10/gpg.c:2539
+#: g10/gpg.c:2534 g10/gpg.c:2546
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "`%s' 不是個有效的簽章使用期限\n"
 
-#: g10/gpg.c:2621
+#: g10/gpg.c:2628
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "`%s' 不是個有效的字元集\n"
 
-#: g10/gpg.c:2644 g10/gpg.c:2839 g10/keyedit.c:4131
+#: g10/gpg.c:2651 g10/gpg.c:2846 g10/keyedit.c:4197
 msgid "could not parse keyserver URL\n"
 msgstr "無法剖析金鑰伺服器 URL\n"
 
-#: g10/gpg.c:2656
+#: g10/gpg.c:2663
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: 無效的金鑰伺服器選項\n"
 
-#: g10/gpg.c:2659
+#: g10/gpg.c:2666
 msgid "invalid keyserver options\n"
 msgstr "無效的金鑰伺服器選項\n"
 
-#: g10/gpg.c:2666
+#: g10/gpg.c:2673
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: 無效的匯入選項\n"
 
-#: g10/gpg.c:2669
+#: g10/gpg.c:2676
 msgid "invalid import options\n"
 msgstr "無效的匯入選項\n"
 
-#: g10/gpg.c:2676
+#: g10/gpg.c:2683
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: 無效的匯出選項\n"
 
-#: g10/gpg.c:2679
+#: g10/gpg.c:2686
 msgid "invalid export options\n"
 msgstr "無效的匯出選項\n"
 
-#: g10/gpg.c:2686
+#: g10/gpg.c:2693
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: 無效的清單選項\n"
 
-#: g10/gpg.c:2689
+#: g10/gpg.c:2696
 msgid "invalid list options\n"
 msgstr "無效的清單選項\n"
 
-#: g10/gpg.c:2697
+#: g10/gpg.c:2704
 msgid "display photo IDs during signature verification"
 msgstr "驗證簽章時顯示照片 ID"
 
-#: g10/gpg.c:2699
+#: g10/gpg.c:2706
 msgid "show policy URLs during signature verification"
 msgstr "驗證簽章時顯示原則 URL"
 
-#: g10/gpg.c:2701
+#: g10/gpg.c:2708
 msgid "show all notations during signature verification"
 msgstr "驗證簽章時顯示所有的註記"
 
-#: g10/gpg.c:2703
+#: g10/gpg.c:2710
 msgid "show IETF standard notations during signature verification"
 msgstr "驗證簽章時顯示 IETF 標準註記"
 
-#: g10/gpg.c:2707
+#: g10/gpg.c:2714
 msgid "show user-supplied notations during signature verification"
 msgstr "驗證簽章時顯示使用者提供的註記"
 
-#: g10/gpg.c:2709
+#: g10/gpg.c:2716
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "驗證簽章時顯示偏好的金鑰伺服器 URL"
 
-#: g10/gpg.c:2711
+#: g10/gpg.c:2718
 msgid "show user ID validity during signature verification"
 msgstr "驗證簽章時顯示使用者 ID 有效性"
 
-#: g10/gpg.c:2713
+#: g10/gpg.c:2720
 msgid "show revoked and expired user IDs in signature verification"
 msgstr "驗證簽章時顯示已撤銷或過期的使用者 ID"
 
-#: g10/gpg.c:2715
+#: g10/gpg.c:2722
 msgid "show only the primary user ID in signature verification"
 msgstr "驗證簽章時祇顯示主要的使用者 ID"
 
-#: g10/gpg.c:2717
+#: g10/gpg.c:2724
 msgid "validate signatures with PKA data"
 msgstr "以 PKA 資料驗證簽章"
 
-#: g10/gpg.c:2719
+#: g10/gpg.c:2726
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr "提高對持有有效 PKA 資料之簽章的信任"
 
-#: g10/gpg.c:2726
+#: g10/gpg.c:2733
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: 無效的驗證選項\n"
 
-#: g10/gpg.c:2729
+#: g10/gpg.c:2736
 msgid "invalid verify options\n"
 msgstr "無效的驗證選項\n"
 
-#: g10/gpg.c:2736
+#: g10/gpg.c:2743
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "無法把執行檔路徑設成 %s\n"
 
-#: g10/gpg.c:2922
+#: g10/gpg.c:2929
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: 無效的自動金鑰定址清單\n"
 
-#: g10/gpg.c:2925
+#: g10/gpg.c:2932
 msgid "invalid auto-key-locate list\n"
 msgstr "無效的自動金鑰定址清單\n"
 
-#: g10/gpg.c:3023 sm/gpgsm.c:1437
+#: g10/gpg.c:3030 sm/gpgsm.c:1440
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告: 程式可能會傾印出核心檔!\n"
 
-#: g10/gpg.c:3027
+#: g10/gpg.c:3034
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "警告: %s 會推翻 %s\n"
 
-#: g10/gpg.c:3036
+#: g10/gpg.c:3043
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s 不允許跟 %s 併用!\n"
 
-#: g10/gpg.c:3039
+#: g10/gpg.c:3046
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s 跟 %s 放在一起沒有意義!\n"
 
-#: g10/gpg.c:3054
+#: g10/gpg.c:3061
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "因為 %s 而不會在不安全的記憶體中執行\n"
 
-#: g10/gpg.c:3068
+#: g10/gpg.c:3075
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "你祇有在 --pgp2 模式下纔能做出分離式或明文簽章\n"
 
-#: g10/gpg.c:3074
+#: g10/gpg.c:3081
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "你在 --pgp2 模式下時, 不能同時簽署和加密\n"
 
-#: g10/gpg.c:3080
+#: g10/gpg.c:3087
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "啟用 --pgp2 時你祇應該使用檔案, 而非管道\n"
 
-#: g10/gpg.c:3093
+#: g10/gpg.c:3100
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "在 --pgp2 模式下加密訊息需要 IDEA 編密法\n"
 
-#: g10/gpg.c:3160 g10/gpg.c:3184 sm/gpgsm.c:1509
+#: g10/gpg.c:3167 g10/gpg.c:3191 sm/gpgsm.c:1512
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所選的編密演算法無效\n"
 
-#: g10/gpg.c:3166 g10/gpg.c:3190 sm/gpgsm.c:1515 sm/gpgsm.c:1521
+#: g10/gpg.c:3173 g10/gpg.c:3197 sm/gpgsm.c:1518 sm/gpgsm.c:1524
 msgid "selected digest algorithm is invalid\n"
 msgstr "所選的摘要演算法無效\n"
 
-#: g10/gpg.c:3172
+#: g10/gpg.c:3179
 msgid "selected compression algorithm is invalid\n"
 msgstr "所選的壓縮演算法無效\n"
 
-#: g10/gpg.c:3178
+#: g10/gpg.c:3185
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "所選的憑證摘要演算法無效\n"
 
-#: g10/gpg.c:3193
+#: g10/gpg.c:3200
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed 一定要大於 0\n"
 
-#: g10/gpg.c:3195
+#: g10/gpg.c:3202
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed 一定要大於 1\n"
 
-#: g10/gpg.c:3197
+#: g10/gpg.c:3204
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth 一定要介於 1 和 255 之間\n"
 
-#: g10/gpg.c:3199
+#: g10/gpg.c:3206
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "無效的 default-cert-level; 一定要是 0, 1, 2 或 3\n"
 
-#: g10/gpg.c:3201
+#: g10/gpg.c:3208
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "無效的 min-cert-level; 一定要是 1, 2 或 3\n"
 
-#: g10/gpg.c:3204
+#: g10/gpg.c:3211
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "請注意: 強烈不建議使用單純的 S2K 模式 (0)\n"
 
-#: g10/gpg.c:3208
+#: g10/gpg.c:3215
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "無效的 S2K 模式; 一定要是 0, 1 或 3\n"
 
-#: g10/gpg.c:3215
+#: g10/gpg.c:3222
 msgid "invalid default preferences\n"
 msgstr "無效的預設偏好\n"
 
-#: g10/gpg.c:3219
+#: g10/gpg.c:3226
 msgid "invalid personal cipher preferences\n"
 msgstr "無效的個人編密法偏好\n"
 
-#: g10/gpg.c:3223
+#: g10/gpg.c:3230
 msgid "invalid personal digest preferences\n"
 msgstr "無效的個人摘要偏好\n"
 
-#: g10/gpg.c:3227
+#: g10/gpg.c:3234
 msgid "invalid personal compress preferences\n"
 msgstr "無效的個人壓縮偏好\n"
 
-#: g10/gpg.c:3260
+#: g10/gpg.c:3267
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
 
-#: g10/gpg.c:3307
+#: g10/gpg.c:3314
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "你不該將 `%s' 編密演算法用於 %s 模式中\n"
 
-#: g10/gpg.c:3312
+#: g10/gpg.c:3319
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "你不該將 `%s' 摘要演算法用於 %s 模式中\n"
 
-#: g10/gpg.c:3317
+#: g10/gpg.c:3324
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "你不該將 `%s' 壓縮演算法用於 %s 模式中\n"
 
-#: g10/gpg.c:3403
+#: g10/gpg.c:3410
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "信任資料庫啟始失敗: %s\n"
 
-#: g10/gpg.c:3414
+#: g10/gpg.c:3421
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "警告: 給定的收件者 (-r) 未使用公鑰加密\n"
 
-#: g10/gpg.c:3435
+#: g10/gpg.c:3442
 msgid "--store [filename]"
 msgstr "--store [檔名]"
 
-#: g10/gpg.c:3442
+#: g10/gpg.c:3449
 msgid "--symmetric [filename]"
 msgstr "--symmetric [檔名]"
 
-#: g10/gpg.c:3444
+#: g10/gpg.c:3451
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "`%s' 對稱式加密失敗: %s\n"
 
-#: g10/gpg.c:3454
+#: g10/gpg.c:3461
 msgid "--encrypt [filename]"
 msgstr "--encrypt [檔名]"
 
-#: g10/gpg.c:3467
+#: g10/gpg.c:3474
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [檔名]"
 
-#: g10/gpg.c:3469
+#: g10/gpg.c:3476
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "你不能在 --s2k-mode 0 中使用 --symmetric --encrypt\n"
 
-#: g10/gpg.c:3472
+#: g10/gpg.c:3479
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "你不能在 %s 模式中使用 --symmetric --encrypt\n"
 
-#: g10/gpg.c:3490
+#: g10/gpg.c:3497
 msgid "--sign [filename]"
 msgstr "--sign [檔名]"
 
-#: g10/gpg.c:3503
+#: g10/gpg.c:3510
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [檔名]"
 
-#: g10/gpg.c:3518
+#: g10/gpg.c:3525
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [檔名]"
 
-#: g10/gpg.c:3520
+#: g10/gpg.c:3527
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "你不能在 --s2k-mode 0 中使用 --symmetric --sign --encrypt\n"
 
-#: g10/gpg.c:3523
+#: g10/gpg.c:3530
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "你不能在 %s 模式中使用 --symmetric --sign --encrypt\n"
 
-#: g10/gpg.c:3543
+#: g10/gpg.c:3550
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [檔名]"
 
-#: g10/gpg.c:3552
+#: g10/gpg.c:3559
 msgid "--clearsign [filename]"
 msgstr "--clearsign [檔名]"
 
-#: g10/gpg.c:3577
+#: g10/gpg.c:3584
 msgid "--decrypt [filename]"
 msgstr "--decrypt [檔名]"
 
-#: g10/gpg.c:3585
+#: g10/gpg.c:3592
 msgid "--sign-key user-id"
 msgstr "--sign-key 使用者ID"
 
-#: g10/gpg.c:3589
+#: g10/gpg.c:3596
 msgid "--lsign-key user-id"
 msgstr "--lsign-key 使用者ID"
 
-#: g10/gpg.c:3610
+#: g10/gpg.c:3617
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key 使用者ID [指令]"
 
-#: g10/gpg.c:3702
+#: g10/gpg.c:3633
+#, fuzzy
+msgid "--passwd <user-id>"
+msgstr "--sign-key 使用者ID"
+
+#: g10/gpg.c:3720
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "送至金鑰伺服器失敗: %s\n"
 
-#: g10/gpg.c:3704
+#: g10/gpg.c:3722
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "從金鑰伺服器接收失敗: %s\n"
 
-#: g10/gpg.c:3706
+#: g10/gpg.c:3724
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "金鑰匯出失敗: %s\n"
 
-#: g10/gpg.c:3717
+#: g10/gpg.c:3735
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "用金鑰伺服器搜尋失敗: %s\n"
 
-#: g10/gpg.c:3727
+#: g10/gpg.c:3745
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "從金鑰伺服器更新失敗: %s\n"
 
-#: g10/gpg.c:3778
+#: g10/gpg.c:3796
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "解開封裝失敗: %s\n"
 
-#: g10/gpg.c:3786
+#: g10/gpg.c:3804
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "進行封裝失敗: %s\n"
 
-#: g10/gpg.c:3876
+#: g10/gpg.c:3894
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "無效的 `%s' 雜湊演算法\n"
 
-#: g10/gpg.c:3991
+#: g10/gpg.c:4009
 msgid "[filename]"
 msgstr "[檔名]"
 
-#: g10/gpg.c:3995
+#: g10/gpg.c:4013
 msgid "Go ahead and type your message ...\n"
 msgstr "請開始輸入你的訊息 ...\n"
 
-#: g10/gpg.c:4309
+#: g10/gpg.c:4327
 msgid "the given certification policy URL is invalid\n"
 msgstr "給定的的憑證原則 URL 無效\n"
 
-#: g10/gpg.c:4311
+#: g10/gpg.c:4329
 msgid "the given signature policy URL is invalid\n"
 msgstr "給定的簽章原則 URL 無效\n"
 
-#: g10/gpg.c:4344
+#: g10/gpg.c:4362
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "給定的偏好金鑰伺服器 URL 無效\n"
 
@@ -3380,8 +3401,8 @@ msgstr "我非常小心地檢查過這把金鑰了.\n"
 msgid "Really sign? (y/N) "
 msgstr "真的要簽署嗎? (y/N)"
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4899 g10/keyedit.c:4990 g10/keyedit.c:5054
-#: g10/keyedit.c:5115 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4965 g10/keyedit.c:5056 g10/keyedit.c:5120
+#: g10/keyedit.c:5181 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "簽署時失敗: %s\n"
@@ -3742,7 +3763,7 @@ msgstr "要不儲存就離開嗎? (y/N) "
 msgid "update failed: %s\n"
 msgstr "更新失敗: %s\n"
 
-#: g10/keyedit.c:2271
+#: g10/keyedit.c:2271 g10/keyedit.c:2352
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "更新私鑰失敗: %s\n"
@@ -3751,93 +3772,93 @@ msgstr "更新私鑰失敗: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "金鑰沒有變更所以不需要更新.\n"
 
-#: g10/keyedit.c:2379
+#: g10/keyedit.c:2445
 msgid "Digest: "
 msgstr "摘要: "
 
-#: g10/keyedit.c:2430
+#: g10/keyedit.c:2496
 msgid "Features: "
 msgstr "特點: "
 
-#: g10/keyedit.c:2441
+#: g10/keyedit.c:2507
 msgid "Keyserver no-modify"
 msgstr "金鑰伺服器無修改"
 
-#: g10/keyedit.c:2456 g10/keylist.c:314
+#: g10/keyedit.c:2522 g10/keylist.c:314
 msgid "Preferred keyserver: "
 msgstr "偏好的金鑰伺服器: "
 
-#: g10/keyedit.c:2464 g10/keyedit.c:2465
+#: g10/keyedit.c:2530 g10/keyedit.c:2531
 msgid "Notations: "
 msgstr "註記: "
 
-#: g10/keyedit.c:2686
+#: g10/keyedit.c:2752
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x 型態的使用者 ID 沒有偏好設定.\n"
 
-#: g10/keyedit.c:2745
+#: g10/keyedit.c:2811
 #, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr "這把金鑰已經在 %s 時被 %s 金鑰 %s 所撤銷\n"
 
-#: g10/keyedit.c:2766
+#: g10/keyedit.c:2832
 #, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr "這把金鑰可能被 %s 金鑰 %s 所撤銷"
 
-#: g10/keyedit.c:2772
+#: g10/keyedit.c:2838
 msgid "(sensitive)"
 msgstr "(機密)"
 
-#: g10/keyedit.c:2788 g10/keyedit.c:2844 g10/keyedit.c:2905 g10/keyedit.c:2920
+#: g10/keyedit.c:2854 g10/keyedit.c:2910 g10/keyedit.c:2971 g10/keyedit.c:2986
 #: g10/keylist.c:200 g10/keyserver.c:532
 #, c-format
 msgid "created: %s"
 msgstr "建立: %s"
 
-#: g10/keyedit.c:2791 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
+#: g10/keyedit.c:2857 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
 #, c-format
 msgid "revoked: %s"
 msgstr "撤銷: %s"
 
 #  of subkey
-#: g10/keyedit.c:2793 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
+#: g10/keyedit.c:2859 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
 #, c-format
 msgid "expired: %s"
 msgstr "過期: %s"
 
 #  of subkey
-#: g10/keyedit.c:2795 g10/keyedit.c:2846 g10/keyedit.c:2907 g10/keyedit.c:2922
+#: g10/keyedit.c:2861 g10/keyedit.c:2912 g10/keyedit.c:2973 g10/keyedit.c:2988
 #: g10/keylist.c:202 g10/keylist.c:809 g10/keylist.c:844 g10/keylist.c:938
 #: g10/keylist.c:959 g10/keyserver.c:538 g10/mainproc.c:1002
 #, c-format
 msgid "expires: %s"
 msgstr "到期: %s"
 
-#: g10/keyedit.c:2797
+#: g10/keyedit.c:2863
 #, c-format
 msgid "usage: %s"
 msgstr "用途: %s"
 
-#: g10/keyedit.c:2812
+#: g10/keyedit.c:2878
 #, c-format
 msgid "trust: %s"
 msgstr "信任: %s"
 
-#: g10/keyedit.c:2816
+#: g10/keyedit.c:2882
 #, c-format
 msgid "validity: %s"
 msgstr "有效性: %s"
 
-#: g10/keyedit.c:2823
+#: g10/keyedit.c:2889
 msgid "This key has been disabled"
 msgstr "這把金鑰已經停用了"
 
-#: g10/keyedit.c:2851 g10/keylist.c:206
+#: g10/keyedit.c:2917 g10/keylist.c:206
 msgid "card-no: "
 msgstr "卡片編號: "
 
-#: g10/keyedit.c:2875
+#: g10/keyedit.c:2941
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3845,17 +3866,17 @@ msgstr ""
 "請注意顯示出來的金鑰有效性不需要更正,\n"
 "除非你重新執行程式.\n"
 
-#: g10/keyedit.c:2939 g10/keyedit.c:3285 g10/keyserver.c:542
+#: g10/keyedit.c:3005 g10/keyedit.c:3351 g10/keyserver.c:542
 #: g10/mainproc.c:1849 g10/trustdb.c:1200 g10/trustdb.c:1728
 msgid "revoked"
 msgstr "已撤銷"
 
-#: g10/keyedit.c:2941 g10/keyedit.c:3287 g10/keyserver.c:546
+#: g10/keyedit.c:3007 g10/keyedit.c:3353 g10/keyserver.c:546
 #: g10/mainproc.c:1851 g10/trustdb.c:547 g10/trustdb.c:1730
 msgid "expired"
 msgstr "已過期"
 
-#: g10/keyedit.c:3006
+#: g10/keyedit.c:3072
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3863,7 +3884,7 @@ msgstr ""
 "警告: 沒有任何使用者 ID 被標示為主要 ID. 這項指令可能會\n"
 "      導致不同的使用者 ID 被當成主要 ID.\n"
 
-#: g10/keyedit.c:3067
+#: g10/keyedit.c:3133
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3872,74 +3893,74 @@ msgstr ""
 "警告: 這是一把 PGP2 型態的金鑰.\n"
 "      增加照片 ID 可能會導致某些版本的 PGP 駁回這把金鑰.\n"
 
-#: g10/keyedit.c:3072 g10/keyedit.c:3407
+#: g10/keyedit.c:3138 g10/keyedit.c:3473
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "你確定仍然想要增加嗎? (y/N) "
 
-#: g10/keyedit.c:3078
+#: g10/keyedit.c:3144
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "你不可以把照片 ID 增加到 PGP2 型態的金鑰裡.\n"
 
-#: g10/keyedit.c:3218
+#: g10/keyedit.c:3284
 msgid "Delete this good signature? (y/N/q)"
 msgstr "刪除這份完好的簽章嗎? (y/N/q)"
 
-#: g10/keyedit.c:3228
+#: g10/keyedit.c:3294
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "刪除這份無效的簽章嗎? (y/N/q)"
 
-#: g10/keyedit.c:3232
+#: g10/keyedit.c:3298
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "刪除這份未知的簽章嗎? (y/N/q)"
 
-#: g10/keyedit.c:3238
+#: g10/keyedit.c:3304
 msgid "Really delete this self-signature? (y/N)"
 msgstr "真的要刪除這份自我簽章嗎? (y/N)"
 
-#: g10/keyedit.c:3252
+#: g10/keyedit.c:3318
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "已經刪除了 %d 份簽章.\n"
 
-#: g10/keyedit.c:3253
+#: g10/keyedit.c:3319
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "已經刪除了 %d 份簽章.\n"
 
-#: g10/keyedit.c:3256
+#: g10/keyedit.c:3322
 msgid "Nothing deleted.\n"
 msgstr "沒有刪除任何東西.\n"
 
-#: g10/keyedit.c:3289 g10/trustdb.c:1732
+#: g10/keyedit.c:3355 g10/trustdb.c:1732
 msgid "invalid"
 msgstr "無效"
 
-#: g10/keyedit.c:3291
+#: g10/keyedit.c:3357
 #, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "使用者 ID \"%s\" 已精簡: %s\n"
 
-#: g10/keyedit.c:3298
+#: g10/keyedit.c:3364
 #, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "使用者 ID \"%s\": 已移除 %d 份簽章\n"
 
-#: g10/keyedit.c:3299
+#: g10/keyedit.c:3365
 #, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "使用者 ID \"%s\": 已移除 %d 份簽章\n"
 
-#: g10/keyedit.c:3307
+#: g10/keyedit.c:3373
 #, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "使用者 ID \"%s\": 已經最小化了\n"
 
-#: g10/keyedit.c:3308
+#: g10/keyedit.c:3374
 #, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "使用者 ID \"%s\": 已經是乾淨的了\n"
 
-#: g10/keyedit.c:3402
+#: g10/keyedit.c:3468
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3948,194 +3969,194 @@ msgstr ""
 "警告: 這是一把 PGP2 型態的金鑰.\n"
 "      增加指定撤銷者可能會導致某些版本的 PGP 駁回這把金鑰.\n"
 
-#: g10/keyedit.c:3413
+#: g10/keyedit.c:3479
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "你不可以把指定撤銷者增加到 PGP2 型態的金鑰裡.\n"
 
-#: g10/keyedit.c:3433
+#: g10/keyedit.c:3499
 msgid "Enter the user ID of the designated revoker: "
 msgstr "輸入指定撤銷者的使用者 ID: "
 
-#: g10/keyedit.c:3458
+#: g10/keyedit.c:3524
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "無法將 PGP 2.x 型態的金鑰指派為指定撤銷者\n"
 
 #  This actually causes no harm (after all, a key that
 #  designates itself as a revoker is the same as a
 #  regular key), but it's easy enough to check.
-#: g10/keyedit.c:3473
+#: g10/keyedit.c:3539
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "你不能指派某把金鑰為它自己的指定撤銷者\n"
 
-#: g10/keyedit.c:3495
+#: g10/keyedit.c:3561
 msgid "this key has already been designated as a revoker\n"
 msgstr "已指定這把金鑰為撤銷者了\n"
 
-#: g10/keyedit.c:3514
+#: g10/keyedit.c:3580
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "警告: 一旦把某把金鑰指派為指定撤銷者後, 就無法反悔了!\n"
 
-#: g10/keyedit.c:3520
+#: g10/keyedit.c:3586
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "你確定要指派這把金鑰為指定撤銷者嗎? (y/N) "
 
-#: g10/keyedit.c:3581
+#: g10/keyedit.c:3647
 msgid "Please remove selections from the secret keys.\n"
 msgstr "請從私鑰中移除選擇.\n"
 
-#: g10/keyedit.c:3587
+#: g10/keyedit.c:3653
 msgid "Please select at most one subkey.\n"
 msgstr "請至多選擇一把子鑰.\n"
 
-#: g10/keyedit.c:3591
+#: g10/keyedit.c:3657
 msgid "Changing expiration time for a subkey.\n"
 msgstr "正在變更子鑰的使用期限.\n"
 
-#: g10/keyedit.c:3594
+#: g10/keyedit.c:3660
 msgid "Changing expiration time for the primary key.\n"
 msgstr "正在變更主鑰的使用期限.\n"
 
-#: g10/keyedit.c:3640
+#: g10/keyedit.c:3706
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "你不能變更 v3 金鑰的使用期限\n"
 
-#: g10/keyedit.c:3656
+#: g10/keyedit.c:3722
 msgid "No corresponding signature in secret ring\n"
 msgstr "在私鑰圈裡沒有一致的簽章\n"
 
-#: g10/keyedit.c:3734
+#: g10/keyedit.c:3800
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "簽署子鑰 %s 已經交叉認證過了\n"
 
-#: g10/keyedit.c:3740
+#: g10/keyedit.c:3806
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr "子鑰 %s 不做簽署之用, 因此無須交叉驗證\n"
 
-#: g10/keyedit.c:3903
+#: g10/keyedit.c:3969
 msgid "Please select exactly one user ID.\n"
 msgstr "請祇選擇一個使用者 ID.\n"
 
-#: g10/keyedit.c:3942 g10/keyedit.c:4052 g10/keyedit.c:4172 g10/keyedit.c:4313
+#: g10/keyedit.c:4008 g10/keyedit.c:4118 g10/keyedit.c:4238 g10/keyedit.c:4379
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "正在跳過使用者 ID \"%s\" 的 v3 自我簽章\n"
 
-#: g10/keyedit.c:4113
+#: g10/keyedit.c:4179
 msgid "Enter your preferred keyserver URL: "
 msgstr "請輸入你的偏好金鑰伺服器 URL: "
 
-#: g10/keyedit.c:4193
+#: g10/keyedit.c:4259
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "你確定要取代它嗎？ (y/N) "
 
-#: g10/keyedit.c:4194
+#: g10/keyedit.c:4260
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "你確定要刪除它嗎？ (y/N) "
 
-#: g10/keyedit.c:4256
+#: g10/keyedit.c:4322
 msgid "Enter the notation: "
 msgstr "請輸入註記: "
 
-#: g10/keyedit.c:4405
+#: g10/keyedit.c:4471
 msgid "Proceed? (y/N) "
 msgstr "是否繼續? (y/N) "
 
-#: g10/keyedit.c:4477
+#: g10/keyedit.c:4543
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "索引 %d 沒有對應到使用者 ID\n"
 
-#: g10/keyedit.c:4538
+#: g10/keyedit.c:4604
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "雜湊 %s 沒有對應到使用者 ID\n"
 
-#: g10/keyedit.c:4573
+#: g10/keyedit.c:4639
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "索引 %d 沒有對應到子鑰\n"
 
-#: g10/keyedit.c:4708
+#: g10/keyedit.c:4774
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "使用者 ID: \"%s\"\n"
 
-#: g10/keyedit.c:4711 g10/keyedit.c:4805 g10/keyedit.c:4848
+#: g10/keyedit.c:4777 g10/keyedit.c:4871 g10/keyedit.c:4914
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "已被你的金鑰 %s 於 %s%s%s 所簽署\n"
 
-#: g10/keyedit.c:4713 g10/keyedit.c:4807 g10/keyedit.c:4850
+#: g10/keyedit.c:4779 g10/keyedit.c:4873 g10/keyedit.c:4916
 msgid " (non-exportable)"
 msgstr " (不可匯出)"
 
-#: g10/keyedit.c:4717
+#: g10/keyedit.c:4783
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "這份簽章已經在 %s 過期了.\n"
 
-#: g10/keyedit.c:4721
+#: g10/keyedit.c:4787
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "你確定仍然想要撤銷它嗎? (y/N) "
 
-#: g10/keyedit.c:4725
+#: g10/keyedit.c:4791
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "要為這份簽章建立一份撤銷憑證嗎? (y/N) "
 
-#: g10/keyedit.c:4776
+#: g10/keyedit.c:4842
 msgid "Not signed by you.\n"
 msgstr "並非由你所簽署.\n"
 
-#: g10/keyedit.c:4782
+#: g10/keyedit.c:4848
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "你已經簽署了金鑰 %s 上的這些使用者 ID:\n"
 
-#: g10/keyedit.c:4808
+#: g10/keyedit.c:4874
 msgid " (non-revocable)"
 msgstr " (不可撤銷)"
 
-#: g10/keyedit.c:4815
+#: g10/keyedit.c:4881
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "被你的金鑰 %s 於 %s 所撤銷了\n"
 
-#: g10/keyedit.c:4837
+#: g10/keyedit.c:4903
 msgid "You are about to revoke these signatures:\n"
 msgstr "你正要撤銷這些簽章:\n"
 
-#: g10/keyedit.c:4857
+#: g10/keyedit.c:4923
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "真的要建立撤銷憑證嗎? (y/N) "
 
-#: g10/keyedit.c:4887
+#: g10/keyedit.c:4953
 msgid "no secret key\n"
 msgstr "沒有私鑰\n"
 
-#: g10/keyedit.c:4957
+#: g10/keyedit.c:5023
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "使用者 ID \"%s\" 已撤銷\n"
 
-#: g10/keyedit.c:4974
+#: g10/keyedit.c:5040
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "警告: 有一份使用者 ID 的簽章日期為 %d 秒後的未來\n"
 
-#: g10/keyedit.c:5038
+#: g10/keyedit.c:5104
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "金鑰 %s 已撤銷.\n"
 
-#: g10/keyedit.c:5100
+#: g10/keyedit.c:5166
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "子鑰 %s 已撤銷.\n"
 
-#: g10/keyedit.c:5195
+#: g10/keyedit.c:5261
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "正在顯示 %s 照片 ID, 其尺寸為 %ld, 屬於金鑰 %s (uid %d) 的照片\n"
@@ -6778,51 +6799,51 @@ msgstr "||請在讀卡機鍵盤上輸入你的個人識別碼 (PIN)"
 msgid "|N|Initial New PIN"
 msgstr "|N|開始新增個人識別碼 (PIN)"
 
-#: scd/scdaemon.c:108
+#: scd/scdaemon.c:107
 msgid "run in multi server mode (foreground)"
 msgstr "以多重伺服器模式執行 (前景)"
 
-#: scd/scdaemon.c:118 sm/gpgsm.c:316
+#: scd/scdaemon.c:117 sm/gpgsm.c:316
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|等級|設定除錯等級為「等級」"
 
-#: scd/scdaemon.c:125 tools/gpgconf-comp.c:620
+#: scd/scdaemon.c:124 tools/gpgconf-comp.c:620
 msgid "|FILE|write a log to FILE"
 msgstr "|檔案|將日誌寫入至「檔案」"
 
-#: scd/scdaemon.c:127
+#: scd/scdaemon.c:126
 msgid "|N|connect to reader at port N"
 msgstr "|N|從 N 埠連線至讀卡機"
 
-#: scd/scdaemon.c:129
+#: scd/scdaemon.c:128
 msgid "|NAME|use NAME as ct-API driver"
 msgstr "|名稱|使用「名稱」做為 ct-API 驅動程式"
 
-#: scd/scdaemon.c:131
+#: scd/scdaemon.c:130
 msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|名稱|使用「名稱」做為 PC/SC 驅動程式"
 
-#: scd/scdaemon.c:134
+#: scd/scdaemon.c:133
 msgid "do not use the internal CCID driver"
 msgstr "不要使用內部的 CCID 驅動程式"
 
-#: scd/scdaemon.c:140
+#: scd/scdaemon.c:139
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|沒有活動達 N 秒後就與卡片斷線"
 
-#: scd/scdaemon.c:142
+#: scd/scdaemon.c:141
 msgid "do not use a reader's keypad"
 msgstr "不要使用讀卡機鍵盤"
 
-#: scd/scdaemon.c:145
+#: scd/scdaemon.c:144
 msgid "deny the use of admin card commands"
 msgstr "禁用管理者卡片指令"
 
-#: scd/scdaemon.c:258
+#: scd/scdaemon.c:259
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "用法: scdaemon [選項] (或用 -h 求助)"
 
-#: scd/scdaemon.c:260
+#: scd/scdaemon.c:261
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
@@ -6830,16 +6851,16 @@ msgstr ""
 "語法: scdaemon [選項] [指令 [引數]]\n"
 "GnuPg 智慧卡服務\n"
 
-#: scd/scdaemon.c:761
+#: scd/scdaemon.c:767
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr "請使用 `--daemon' 選項來將此程式執行於背景\n"
 
-#: scd/scdaemon.c:1115
+#: scd/scdaemon.c:1121
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr "用於 fd %d 的經手程式已啟動\n"
 
-#: scd/scdaemon.c:1127
+#: scd/scdaemon.c:1133
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "用於 fd %d 的經手程式已終止\n"
@@ -6854,21 +6875,21 @@ msgstr "已跳過無效的 radix64 字符 %02x\n"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr "以 %s 代理伺服器查詢用戶端時失敗\n"
 
-#: sm/call-dirmngr.c:234
+#: sm/call-dirmngr.c:245
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
 msgstr "沒有執行中的 dirmngr - 正在啟動 `%s'\n"
 
-#: sm/call-dirmngr.c:267
+#: sm/call-dirmngr.c:278
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "被變造的 DIRMNGR_INFO 環境變數\n"
 
-#: sm/call-dirmngr.c:279
+#: sm/call-dirmngr.c:290
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "未支援 dirmngr 協定版本 %d\n"
 
-#: sm/call-dirmngr.c:299
+#: sm/call-dirmngr.c:310
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr "無法連線至 dirmngr - 正試著退回\n"
 
@@ -7423,10 +7444,6 @@ msgstr "將指令遞送給 dirmngr"
 msgid "invoke gpg-protect-tool"
 msgstr "叫用 gpg-protect-tool"
 
-#: sm/gpgsm.c:215
-msgid "change a passphrase"
-msgstr "更改密語"
-
 #: sm/gpgsm.c:230
 msgid "create base-64 encoded output"
 msgstr "建立以 base-64 編碼過的輸出"
@@ -7558,25 +7575,25 @@ msgstr "%s:%u: 給定的密碼沒有使用者\n"
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: 正在跳過這一列\n"
 
-#: sm/gpgsm.c:1374
+#: sm/gpgsm.c:1377
 msgid "could not parse keyserver\n"
 msgstr "無法剖析金鑰伺服器\n"
 
-#: sm/gpgsm.c:1454
+#: sm/gpgsm.c:1457
 msgid "WARNING: running with faked system time: "
 msgstr "警告: 正在偽造的系統時間中執行: "
 
-#: sm/gpgsm.c:1554
+#: sm/gpgsm.c:1557
 #, c-format
 msgid "importing common certificates `%s'\n"
 msgstr "正在匯入通用憑證 `%s'\n"
 
-#: sm/gpgsm.c:1595
+#: sm/gpgsm.c:1598
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "無法用 `%s' 來簽署: %s\n"
 
-#: sm/gpgsm.c:1931
+#: sm/gpgsm.c:1934
 msgid "invalid command (there is no implicit command)\n"
 msgstr "無效的指令 (沒有這樣的指令)\n"
 
@@ -7607,7 +7624,7 @@ msgstr "取得已存放的旗標時出錯: %s\n"
 msgid "error importing certificate: %s\n"
 msgstr "匯入憑證時出錯: %s\n"
 
-#: sm/import.c:678 tools/gpg-connect-agent.c:1329
+#: sm/import.c:678 tools/gpg-connect-agent.c:1346
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "讀取輸入時出錯: %s\n"
@@ -7751,7 +7768,7 @@ msgstr "                亦即"
 msgid "This is a qualified signature\n"
 msgstr "這是一份合格簽章\n"
 
-#: tools/gpg-connect-agent.c:70 tools/gpgconf.c:81 tools/symcryptrun.c:165
+#: tools/gpg-connect-agent.c:70 tools/gpgconf.c:81 tools/symcryptrun.c:164
 msgid "quiet"
 msgstr "安靜模式"
 
@@ -7783,11 +7800,11 @@ msgstr "|檔案|啟動時執行「檔案」中的指令"
 msgid "run /subst on startup"
 msgstr "啟動時執行 /subst"
 
-#: tools/gpg-connect-agent.c:183
+#: tools/gpg-connect-agent.c:184
 msgid "Usage: gpg-connect-agent [options] (-h for help)"
 msgstr "用法: gpg-connect-agent [選項] (或用 -h 求助)"
 
-#: tools/gpg-connect-agent.c:186
+#: tools/gpg-connect-agent.c:187
 msgid ""
 "Syntax: gpg-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
@@ -7795,45 +7812,45 @@ msgstr ""
 "語法: gpg-connect-agent [選項]\n"
 "連線至運作中的代理程式並送出指令\n"
 
-#: tools/gpg-connect-agent.c:1200
+#: tools/gpg-connect-agent.c:1201
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
 msgstr "\"%s\" 選項需要有程式及選用的引數\n"
 
-#: tools/gpg-connect-agent.c:1209
+#: tools/gpg-connect-agent.c:1210
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
 msgstr "\"%s\" 選項因為 \"%s\" 而被忽略了\n"
 
-#: tools/gpg-connect-agent.c:1264 tools/gpg-connect-agent.c:1752
+#: tools/gpg-connect-agent.c:1281 tools/gpg-connect-agent.c:1771
 #, c-format
 msgid "receiving line failed: %s\n"
 msgstr "接收列時失敗: %s\n"
 
-#: tools/gpg-connect-agent.c:1354
+#: tools/gpg-connect-agent.c:1371
 msgid "line too long - skipped\n"
 msgstr "列太長 - 已跳過\n"
 
-#: tools/gpg-connect-agent.c:1358
+#: tools/gpg-connect-agent.c:1375
 msgid "line shortened due to embedded Nul character\n"
 msgstr "列因嵌入的 Nul 字符而縮短了\n"
 
-#: tools/gpg-connect-agent.c:1726
+#: tools/gpg-connect-agent.c:1743
 #, c-format
 msgid "unknown command `%s'\n"
 msgstr "未知的指令 `%s'\n"
 
-#: tools/gpg-connect-agent.c:1744
+#: tools/gpg-connect-agent.c:1761
 #, c-format
 msgid "sending line failed: %s\n"
 msgstr "送出列時失敗: %s\n"
 
-#: tools/gpg-connect-agent.c:2167
+#: tools/gpg-connect-agent.c:2208
 #, c-format
 msgid "error sending %s command: %s\n"
 msgstr "送出 `%s' 指令時出錯: %s\n"
 
-#: tools/gpg-connect-agent.c:2182
+#: tools/gpg-connect-agent.c:2223
 #, c-format
 msgid "error sending standard options: %s\n"
 msgstr "送出標準選項時出錯: %s\n"
@@ -8051,7 +8068,7 @@ msgstr "找不到元件"
 msgid "No argument allowed"
 msgstr "未允許使用引數"
 
-#: tools/symcryptrun.c:152
+#: tools/symcryptrun.c:151
 msgid ""
 "@\n"
 "Commands:\n"
@@ -8061,35 +8078,35 @@ msgstr ""
 "指令:\n"
 " "
 
-#: tools/symcryptrun.c:154
+#: tools/symcryptrun.c:153
 msgid "decryption modus"
 msgstr "解密方式"
 
-#: tools/symcryptrun.c:155
+#: tools/symcryptrun.c:154
 msgid "encryption modus"
 msgstr "加密方式"
 
-#: tools/symcryptrun.c:159
+#: tools/symcryptrun.c:158
 msgid "tool class (confucius)"
 msgstr "工具類別 (confucius)"
 
-#: tools/symcryptrun.c:160
+#: tools/symcryptrun.c:159
 msgid "program filename"
 msgstr "程式檔名"
 
-#: tools/symcryptrun.c:162
+#: tools/symcryptrun.c:161
 msgid "secret key file (required)"
 msgstr "私鑰檔案 (必要)"
 
-#: tools/symcryptrun.c:163
+#: tools/symcryptrun.c:162
 msgid "input file name (default stdin)"
 msgstr "輸入檔名 (預設是標準輸入)"
 
-#: tools/symcryptrun.c:207
+#: tools/symcryptrun.c:206
 msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "用法: symcryptrun [選項] (或用 -h 求助)"
 
-#: tools/symcryptrun.c:210
+#: tools/symcryptrun.c:209
 msgid ""
 "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
 "[options...] COMMAND [inputfile]\n"
@@ -8099,122 +8116,122 @@ msgstr ""
 "令 [輸入檔案]\n"
 "叫用單純對稱式加密工具\n"
 
-#: tools/symcryptrun.c:279
+#: tools/symcryptrun.c:278
 #, c-format
 msgid "%s on %s aborted with status %i\n"
 msgstr "%s 於 %s 以 %i 狀態中止了\n"
 
-#: tools/symcryptrun.c:286
+#: tools/symcryptrun.c:285
 #, c-format
 msgid "%s on %s failed with status %i\n"
 msgstr "%s 於 %s 以 %i 狀態失敗了\n"
 
-#: tools/symcryptrun.c:312
+#: tools/symcryptrun.c:311
 #, c-format
 msgid "can't create temporary directory `%s': %s\n"
 msgstr "無法建立暫存目錄 `%s': %s\n"
 
-#: tools/symcryptrun.c:352 tools/symcryptrun.c:369
+#: tools/symcryptrun.c:351 tools/symcryptrun.c:368
 #, c-format
 msgid "could not open %s for writing: %s\n"
 msgstr "無法開啟 %s 來寫入: %s\n"
 
-#: tools/symcryptrun.c:380
+#: tools/symcryptrun.c:379
 #, c-format
 msgid "error writing to %s: %s\n"
 msgstr "寫入 %s 時出錯: %s\n"
 
-#: tools/symcryptrun.c:387
+#: tools/symcryptrun.c:386
 #, c-format
 msgid "error reading from %s: %s\n"
 msgstr "讀取 %s 時出錯: %s\n"
 
-#: tools/symcryptrun.c:394 tools/symcryptrun.c:401
+#: tools/symcryptrun.c:393 tools/symcryptrun.c:400
 #, c-format
 msgid "error closing %s: %s\n"
 msgstr "關閉 %s 時出錯: %s\n"
 
-#: tools/symcryptrun.c:486
+#: tools/symcryptrun.c:485
 msgid "no --program option provided\n"
 msgstr "沒有提供 --program 選項\n"
 
-#: tools/symcryptrun.c:492
+#: tools/symcryptrun.c:491
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr "祇支援 --decrypt 和 --encrypt\n"
 
-#: tools/symcryptrun.c:498
+#: tools/symcryptrun.c:497
 msgid "no --keyfile option provided\n"
 msgstr "沒有提供 --keyfile 選項\n"
 
-#: tools/symcryptrun.c:509
+#: tools/symcryptrun.c:508
 msgid "cannot allocate args vector\n"
 msgstr "無法配置引數向量\n"
 
-#: tools/symcryptrun.c:527
+#: tools/symcryptrun.c:526
 #, c-format
 msgid "could not create pipe: %s\n"
 msgstr "無法建立管道: %s\n"
 
-#: tools/symcryptrun.c:534
+#: tools/symcryptrun.c:533
 #, c-format
 msgid "could not create pty: %s\n"
 msgstr "無法建立 pty: %s\n"
 
-#: tools/symcryptrun.c:550
+#: tools/symcryptrun.c:549
 #, c-format
 msgid "could not fork: %s\n"
 msgstr "無法衍生: %s\n"
 
-#: tools/symcryptrun.c:578
+#: tools/symcryptrun.c:577
 #, c-format
 msgid "execv failed: %s\n"
 msgstr "execv 失敗: %s\n"
 
-#: tools/symcryptrun.c:607
+#: tools/symcryptrun.c:606
 #, c-format
 msgid "select failed: %s\n"
 msgstr "挑選失敗: %s\n"
 
-#: tools/symcryptrun.c:624
+#: tools/symcryptrun.c:623
 #, c-format
 msgid "read failed: %s\n"
 msgstr "讀取失敗: %s\n"
 
-#: tools/symcryptrun.c:676
+#: tools/symcryptrun.c:675
 #, c-format
 msgid "pty read failed: %s\n"
 msgstr "pty 讀取失敗: %s\n"
 
-#: tools/symcryptrun.c:728
+#: tools/symcryptrun.c:727
 #, c-format
 msgid "waitpid failed: %s\n"
 msgstr "waitpid 失敗: %s\n"
 
-#: tools/symcryptrun.c:742
+#: tools/symcryptrun.c:741
 #, c-format
 msgid "child aborted with status %i\n"
 msgstr "子代以 %i 狀態中止了\n"
 
-#: tools/symcryptrun.c:797
+#: tools/symcryptrun.c:796
 #, c-format
 msgid "cannot allocate infile string: %s\n"
 msgstr "無法配置檔內字串: %s\n"
 
-#: tools/symcryptrun.c:810
+#: tools/symcryptrun.c:809
 #, c-format
 msgid "cannot allocate outfile string: %s\n"
 msgstr "無法配置檔外字串: %s\n"
 
-#: tools/symcryptrun.c:984
+#: tools/symcryptrun.c:983
 #, c-format
 msgid "either %s or %s must be given\n"
 msgstr "一定要給定 %s 或 %s 其中之一\n"
 
-#: tools/symcryptrun.c:1011
+#: tools/symcryptrun.c:1010
 msgid "no class provided\n"
 msgstr "沒有提供類別\n"
 
-#: tools/symcryptrun.c:1020
+#: tools/symcryptrun.c:1019
 #, c-format
 msgid "class %s is not supported\n"
 msgstr "未支援 %s 類別\n"
@@ -8230,6 +8247,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "Command> "
+#~ msgstr "指令> "
 
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr ""

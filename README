@@ -2,8 +2,8 @@
                       =========================
                              Version 2.0
 
-      Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-        2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+        2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 
 INTRODUCTION
@@ -31,10 +31,10 @@ BUILD INSTRUCTIONS
 
 GnuPG 2.0 depends on the following packages:
 
-  libgpg-error    (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
-  libgcrypt       (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
-  libksba         (ftp://ftp.gnupg.org/gcrypt/libksba/)
-  libassuan < 2.0 (ftp://ftp.gnupg.org/gcrypt/libassuan/)
+  libgpg-error     (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
+  libgcrypt        (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
+  libksba          (ftp://ftp.gnupg.org/gcrypt/libksba/)
+  libassuan >= 2.0 (ftp://ftp.gnupg.org/gcrypt/libassuan/)
   
 You also need the Pinentry package for most function of GnuPG; however
 it is not a build requirement.  Pinentry is available at
