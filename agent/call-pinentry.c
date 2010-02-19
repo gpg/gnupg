@@ -394,20 +394,25 @@ start_pinentry (ctrl_t ctrl)
        may help a pinentry to avoid implementing localization code.  */
     static struct { const char *key, *value; } tbl[] = {
       /* TRANSLATORS: These are labels for buttons etc used in
-         Pinentries.  A underscore indicates that the next letter
-         should be used as an accelerator.  The actual to be
-         translated text starts after the second vertical bar.  */
+         Pinentries.  An underscore indicates that the next letter
+         should be used as an accelerator.  Double the underscore for
+         a literal one.  The actual to be translated text starts after
+         the second vertical bar.  */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
+      { "prompt", N_("|pinentry-label|PIN:") },
       { NULL, NULL}
     };
     char *optstr;
     int idx;
+    const char *s, *s2;
 
     for (idx=0; tbl[idx].key; idx++)
       {
-        if (asprintf (&optstr, "OPTION default-%s=%s",
-                      tbl[idx].key, _(tbl[idx].value)) < 0 )
+        s = _(tbl[idx].value);
+        if (*s == '|' && (s2=strchr (s+1,'|')))
+          s = s2+1;
+        if (asprintf (&optstr, "OPTION default-%s=%s", tbl[idx].key, s) < 0 )
           return unlock_pinentry (out_of_core ());
         assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
                          NULL);
