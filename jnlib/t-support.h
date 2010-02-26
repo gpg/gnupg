@@ -24,7 +24,17 @@
 #error The regression tests should not include with gcrypt.h
 #endif
 
-/* Repalcement prototypes. */
+#ifdef HAVE_W32CE_SYSTEM
+#include <gpg-error.h>  /* Defines strerror.  */
+#endif
+
+
+#ifndef HAVE_GETENV
+# define getenv(a)  (NULL)
+#endif
+
+
+/* Replacement prototypes. */
 void *gcry_xmalloc (size_t n);
 void *gcry_xcalloc (size_t n, size_t m);
 void *gcry_xrealloc (void *a, size_t n);

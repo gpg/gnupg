@@ -27,15 +27,6 @@ char *read_w32_registry_string (const char *root,
 int write_w32_registry_string (const char *root, const char *dir,
                                const char *name, const char *value);
 
-#ifdef USE_SIMPLE_GETTEXT
-char *bindtextdomain (const char *domainname, const char *dirname);
-const char *gettext (const char *msgid );
-const char *ngettext (const char *msgid1, const char *msgid2,
-                      unsigned long int n);
-const char *gettext_localename (void);
-void gettext_select_utf8 (int value);
-#endif /*USE_SIMPLE_GETTEXT*/
-
 
 #endif /*HAVE_W32_SYSTEM*/
 #endif /*LIBJNLIB_MISCHELP_H*/

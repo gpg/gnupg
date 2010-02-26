@@ -1,3 +1,44 @@
+2010-02-26  Werner Koch  <wk@g10code.com>
+
+	* t-timestuff.c: New.
+
+	* dynload.h (dlopen, dlsym) [W32CE]: Map to wchar_t.
+
+	* mischelp.c (_jnlib_free): New.
+	(same_file_p) [W32CE]: Map to wchar_t.
+
+	* utf8conv.c (set_native_charset) [W32CE]: Do not use
+	GetConsoleOutputCP.
+	(wchar_to_utf8, utf8_to_wchar) [W32]: New.
+
+	* Makefile.am (t_jnlib_ldadd) [W32CE]: Add gpg-error.
+
+	* t-support.h (getenv) [HAVE_GETENV]: Add getenv stub.
+	[W32CE]: Include gpg-error.h
+	* t-support.c (gpg_err_code_from_errno)
+	(gpg_err_code_from_syserror) [GPG_ERROR_H]: Do not build.
+
+	* t-stringhelp.c (gethome) [!HAVE_GETPWUID]: Keep result of getenv.
+
+	* dotlock.c [!HAVE_SIGNAL_H]: Don't include signal.h.
+	(create_dotlock) [W32CE]: Map filename top wchar_t.
+
+	* libjnlib-config.h [USE_SIMPLE_GETTEXT]: Include gpg-error.h and
+	remove w32help.h.
+	(jnlib_set_errno): New.  Use it everywhere to set ERRNO.
+	(getenv) [!HAVE_GETENV]: New.
+	(getpid) [W32E]: New.
+
+	* stringhelp.c (get_pwdir) [!HAVE_PWD_H]: Mark unused args.
+	(w32_strerror) [W32CE]: Use a simple implementation.
+
+	* w32help.h [USE_SIMPLE_GETTEXT]: Remove all definitions; we are
+	now using the gpg-error included implementation.
+	* w32-gettext.c: Remove.
+
+	* mischelp.c (same_file_p): Fix bug in case the second file can't
+	be opened.
+
 2009-10-19  Werner Koch  <wk@g10code.com>
 
 	* strlist.c (add_to_strlist_try): New.
@@ -696,10 +737,10 @@ Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
      ***********************************************************
      * Please note that JNLIB is maintained as part of GnuPG.  *
      * You may find it source-copied in other packages.        *
-     ***********************************************************	
-	
- Copyright 2000, 2001, 2002, 2003, 2004,
-	   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+     ***********************************************************
+
+ Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+	   2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

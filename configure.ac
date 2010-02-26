@@ -918,6 +918,9 @@ AC_SUBST(GPGKEYS_MAILTO)
 # Construct a printable name of the OS
 #
 case "${host}" in
+    *-mingw32ce*)
+        PRINTABLE_OS_NAME="W32CE"
+        ;;
     *-mingw32*)
         PRINTABLE_OS_NAME="MingW32"
         ;;
@@ -1089,9 +1092,11 @@ AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 #
 # These are needed by libjnlib - fixme: we should use a jnlib.m4
 # Note:  We already checked pwd.h.
-AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol])
-AC_CHECK_FUNCS([memrchr isascii timegm getrusage setrlimit stat setlocale])
-AC_CHECK_FUNCS([flockfile funlockfile fopencookie funopen getpwnam getpwuid])
+AC_CHECK_HEADERS([signal.h])
+AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
+                memrchr isascii timegm getrusage setrlimit stat setlocale   \
+                flockfile funlockfile fopencookie funopen getpwnam getpwuid \
+                getenv ])
 
 #
 # gnulib checks

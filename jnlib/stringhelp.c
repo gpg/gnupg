@@ -346,6 +346,10 @@ get_pwdir (int xmode, const char *name)
       else
         result = jnlib_strdup (pwd->pw_dir);
     }
+#else /*!HAVE_PWD_H*/
+  /* No support at all.  */
+  (void)xmode;
+  (void)name;
 #endif /*HAVE_PWD_H*/
   return result;
 }
@@ -369,7 +373,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
         {
           if (xmode)
             BUG ();
-          errno = EINVAL;
+          jnlib_set_errno (EINVAL);
           return NULL;
         }
       argc++; 
@@ -738,9 +742,15 @@ w32_strerror (int ec)
   
   if (ec == -1)
     ec = (int)GetLastError ();
+#ifdef HAVE_W32CE_SYSTEM
+  /* There is only a wchar_t FormatMessage.  It does not make much
+     sense to play the conversion game; we print only the code.  */
+  snprintf (strerr, sizeof strerr, "ec=%d", (int)GetLastError ());
+#else
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, DIM (strerr)-1, NULL);
+#endif
   return strerr;    
 }
 #endif /*HAVE_W32_SYSTEM*/
@@ -1076,7 +1086,7 @@ do_strconcat (const char *s1, va_list arg_ptr)
       needed += strlen (argv[argc]);
       if (argc >= DIM (argv)-1)
         {
-          errno = EINVAL;
+          jnlib_set_errno (EINVAL);
           return NULL;
         }
       argc++;

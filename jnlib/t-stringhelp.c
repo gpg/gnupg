@@ -43,9 +43,9 @@ gethome (void)
     {
       char *home = getenv("HOME");
       
-#if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
       if(home)
         home_buffer = xstrdup (home);
+#if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
       else
         {
           struct passwd *pwd;

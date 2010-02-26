@@ -22,6 +22,10 @@
 #define LIBJNLIB_MISCHHELP_H
 
 
+/* Because we can't use the internal jnlib_free macro in inline
+   functions we provide a wrapper fucntion as well.   */
+void _jnlib_free (void *p);
+
 /* Check whether the files NAME1 and NAME2 are identical.  This is for
    example achieved by comparing the inode numbers of the files.  */
 int same_file_p (const char *name1, const char *name2);

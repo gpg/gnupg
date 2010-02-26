@@ -1,5 +1,5 @@
 /* dynload.h - Wrapper functions for run-time dynamic loading
- *      Copyright (C) 2003 Free Software Foundation, Inc.
+ *      Copyright (C) 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -24,13 +24,21 @@
 # include <dlfcn.h>
 #else
 # include <windows.h>
-
+# include "utf8conv.h"
+# include "mischelp.h"
 # define RTLD_LAZY 0
 
 static inline void *
-dlopen (const char * name, int flag)
+dlopen (const char *name, int flag)
 {
-  void * hd = LoadLibrary (name);
+  void *hd;
+#ifdef HAVE_W32CE_SYSTEM
+  wchar_t *wname = utf8_to_wchar (name);
+  hd = wname? LoadLibrary (wname) : NULL;
+  _jnlib_free (wname);
+#else
+  hd = LoadLibrary (name);
+#endif
   (void)flag;
   return hd;
 }
@@ -40,7 +48,13 @@ dlsym (void *hd, const char *sym)
 {
   if (hd && sym)
     {
-      void * fnc = GetProcAddress (hd, sym);
+#ifdef HAVE_W32CE_SYSTEM
+      wchar_t *wsym = utf8_to_wchar (sym);
+      void *fnc = wsym? GetProcAddress (hd, wsym) : NULL;
+      _jnlib_free (wsym);
+#else
+      void *fnc = GetProcAddress (hd, sym);
+#endif
       if (!fnc)
         return NULL;
       return fnc;
@@ -53,7 +67,7 @@ static inline const char *
 dlerror (void)
 {
   static char buf[32];
-  sprintf (buf, "ec=%lu", GetLastError ());
+  snprintf (buf, sizeof buf, "ec=%lu", GetLastError ());
   return buf;
 }
 

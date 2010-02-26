@@ -51,14 +51,15 @@ read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
   fclose (fp);
   if (!nread)
     {
-      errno = ENOFILE;
+#warning remove this file
+      jnlib_set_errno (EIO);
       return -1;
     }
   buffer[nread] = 0;
   aval = atoi (buffer);
   if (aval < 1 || aval > 65535)
     {
-      errno = EINVAL;
+      jnlib_set_errno (EINVAL);
       return -1;
     }
   *port = (unsigned int)aval;
@@ -66,7 +67,7 @@ read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
     ;
   if (*p != '\n' || nread != 17)
     {
-      errno = EINVAL;
+      jnlib_set_errno (EINVAL);
       return -1;
     }
   p++; nread--;
@@ -126,7 +127,7 @@ _w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen)
       ret = send (sockfd, nonce, 16, 0);
       if (ret >= 0 && ret != 16)
         {
-          errno = EIO;
+          jnlib_set_errno (EIO);
           ret = -1;
         }
     }

@@ -120,6 +120,7 @@ gcry_free (void *a)
    require functions called from these inline fucntions.  Although we
    do not use gpg-error, gpg-error.h may get included via gcrypt.h if
    it happens to be used used in libjnlib-config.h.  */
+#ifndef GPG_ERROR_H /* Don't do this if gpg-error.h has been included.  */
 int
 gpg_err_code_from_errno (int err)
 {
@@ -127,17 +128,20 @@ gpg_err_code_from_errno (int err)
   assert (!"stub function");
   return -1;
 }
+#endif /*GPG_ERROR_H*/
 
 
 /* Retrieve the error code directly from the ERRNO variable.  This
    returns GPG_ERR_UNKNOWN_ERRNO if the system error is not mapped
    (report this) and GPG_ERR_MISSING_ERRNO if ERRNO has the value 0. */
+#ifndef GPG_ERROR_H /* Don't do this if gpg-error.h has been included.  */
 int
 gpg_err_code_from_syserror (void)
 {
   assert (!"stub function");
   return -1;
 }
+#endif /*GPG_ERROR_H*/
 
 
 

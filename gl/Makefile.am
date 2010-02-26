@@ -29,6 +29,10 @@ MAINTAINERCLEANFILES =
 
 AM_CPPFLAGS =
 
+if HAVE_W32CE_SYSTEM
+AM_CFLAGS = $(GPG_ERROR_CFLAGS)
+endif
+
 ## begin gnulib module alloca-opt
 
 BUILT_SOURCES += $(ALLOCA_H)

@@ -35,11 +35,14 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 
 #include "libjnlib-config.h"
 #include "stringhelp.h"
 #include "dotlock.h"
+#include "utf8conv.h"
 
 #if !defined(DIRSEP_C) && !defined(EXTSEP_C) \
     && !defined(DIRSEP_S) && !defined(EXTSEP_S)
@@ -222,7 +225,7 @@ create_dotlock (const char *file_to_lock)
 
   do 
     {
-      errno = 0;
+      jnlib_set_errno (0);
       fd = open (h->tname, O_WRONLY|O_CREAT|O_EXCL,
                  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
     } 
@@ -301,10 +304,23 @@ create_dotlock (const char *file_to_lock)
      would not stop as expected but spin til until Windows crashes.
      Our solution is to keep the lock file open; that does not
      harm. */ 
-  h->lockhd = CreateFile (h->lockname,
-                          GENERIC_READ|GENERIC_WRITE,
-                          FILE_SHARE_READ|FILE_SHARE_WRITE,
-                          NULL, OPEN_ALWAYS, 0, NULL);
+  {
+#ifdef HAVE_W32CE_SYSTEM
+    wchar_t *wname = utf8_to_wchar (h->lockname);
+    
+    h->lockhd = INVALID_HANDLE_VALUE;
+    if (wname)
+      h->lockhd = CreateFile (wname,
+#else
+    h->lockhd = CreateFile (h->lockname,
+#endif
+                            GENERIC_READ|GENERIC_WRITE,
+                            FILE_SHARE_READ|FILE_SHARE_WRITE,
+                            NULL, OPEN_ALWAYS, 0, NULL);
+#ifdef HAVE_W32CE_SYSTEM
+    jnlib_free (wname);                           
+#endif
+  }
   if (h->lockhd == INVALID_HANDLE_VALUE)
     {
       log_error (_("can't create `%s': %s\n"), h->lockname, w32_strerror (-1));
@@ -613,7 +629,7 @@ read_lockfile (dotlock_t h, int *same_node )
                 h->lockname, strerror(errno) );
       if (buffer != buffer_space)
         jnlib_free (buffer);
-      errno = e; /* Need to return ERRNO here. */
+      jnlib_set_errno (e); /* Need to return ERRNO here. */
       return -1;
     }
 
@@ -630,7 +646,7 @@ read_lockfile (dotlock_t h, int *same_node )
           close (fd); 
           if (buffer != buffer_space)
             jnlib_free (buffer);
-          errno = 0; /* Do not return an inappropriate ERRNO. */
+          jnlib_set_errno (0); /* Do not return an inappropriate ERRNO. */
           return -1;
         }
       p += res;
@@ -644,7 +660,7 @@ read_lockfile (dotlock_t h, int *same_node )
       log_info ("invalid size of lockfile `%s'", h->lockname );
       if (buffer != buffer_space)
         jnlib_free (buffer);
-      errno = 0; /* Better don't return an inappropriate ERRNO. */
+      jnlib_set_errno (0); /* Better don't return an inappropriate ERRNO. */
       return -1;
     }
 
@@ -660,7 +676,7 @@ read_lockfile (dotlock_t h, int *same_node )
       log_error ("invalid pid %d in lockfile `%s'", pid, h->lockname );
       if (buffer != buffer_space)
         jnlib_free (buffer);
-      errno = 0;
+      jnlib_set_errno (0);
       return -1;
     }
 

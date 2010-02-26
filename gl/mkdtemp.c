@@ -23,7 +23,12 @@
 
 #include <errno.h>
 #ifndef __set_errno
-# define __set_errno(Val) errno = (Val)
+# ifdef HAVE_W32CE_SYSTEM
+#  include <gpg-error.h>
+#  define __set_errno(Val) gpg_err_set_errno ((Val))
+# else
+#  define __set_errno(Val) errno = (Val)
+# endif
 #endif
 
 #include <stddef.h>

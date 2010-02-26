@@ -29,10 +29,22 @@
 # include <sys/stat.h>
 # include <unistd.h>
 #endif /*!HAVE_W32_SYSTEM*/
+#include <errno.h>
 
 #include "libjnlib-config.h"
 #include "stringhelp.h"
+#include "utf8conv.h"
 #include "mischelp.h"
+
+
+/* Because we can't use our jnlib_free macro in inline functions we
+   provide this wrapper.  */
+void
+_jnlib_free (void *p)
+{
+  if (p)
+    jnlib_free (p);
+}
 
 
 /* Check whether the files NAME1 and NAME2 are identical.  This is for
@@ -50,14 +62,36 @@ same_file_p (const char *name1, const char *name2)
 #ifdef HAVE_W32_SYSTEM  
       HANDLE file1, file2;
       BY_HANDLE_FILE_INFORMATION info1, info2;
-      
+
+#ifdef HAVE_W32CE_SYSTEM
+      {
+        wchar_t *wname = utf8_to_wchar (name1);
+        if (wname)
+          file1 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+        else
+          file1 = INVALID_HANDLE_VALUE;
+        jnlib_free (wname);
+      }
+#else      
       file1 = CreateFile (name1, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+#endif
       if (file1 == INVALID_HANDLE_VALUE)
         yes = 0; /* If we can't open the file, it is not the same.  */
       else
         {
+#ifdef HAVE_W32CE_SYSTEM
+          {
+            wchar_t *wname = utf8_to_wchar (name2);
+            if (wname)
+              file2 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+            else
+              file2 = INVALID_HANDLE_VALUE;
+            jnlib_free (wname);
+          }
+#else
           file2 = CreateFile (name2, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-          if (file1 == INVALID_HANDLE_VALUE)
+#endif
+          if (file2 == INVALID_HANDLE_VALUE)
             yes = 0; /* If we can't open the file, it is not the same.  */
           else
             {
@@ -87,7 +121,7 @@ same_file_p (const char *name1, const char *name2)
   and get back a time_t.  It differs from mktime() in that it handles
   the case where the struct tm is UTC and the local environment isn't.
 
-  Note, that this replacement implementaion is not thread-safe!
+  Note, that this replacement implementation might not be thread-safe!
 
   Some BSDs don't handle the putenv("foo") case properly, so we use
   unsetenv if the platform has it to remove environment variables.
@@ -96,6 +130,35 @@ same_file_p (const char *name1, const char *name2)
 time_t
 timegm (struct tm *tm)
 {
+#ifdef HAVE_W32_SYSTEM
+  /* This one is thread safe.  */
+  SYSTEMTIME st;
+  FILETIME ft;
+  unsigned long long cnsecs;
+
+  st.wYear   = tm->tm_year + 1900;
+  st.wMonth  = tm->tm_mon  + 1;
+  st.wDay    = tm->tm_mday;
+  st.wHour   = tm->tm_hour;
+  st.wMinute = tm->tm_min;
+  st.wSecond = tm->tm_sec;
+  st.wMilliseconds = 0; /* Not available.  */
+  st.wDayOfWeek = 0;    /* Ignored.  */
+
+  /* System time is UTC thus the conversion is pretty easy.  */
+  if (!SystemTimeToFileTime (&st, &ft))
+    {
+      jnlib_set_errno (EINVAL);
+      return (time_t)(-1);
+    }
+
+  cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
+            | ft.dwLowDateTime);
+  cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
+  return (time_t)(cnsecs / 10000000ULL);
+
+#else /* (Non thread safe implementation!) */
+
   time_t answer;
   char *zone;
 
@@ -128,6 +191,7 @@ timegm (struct tm *tm)
 
   tzset();
   return answer;
+#endif
 }
 #endif /*!HAVE_TIMEGM*/
 

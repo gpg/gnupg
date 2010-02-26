@@ -39,7 +39,7 @@
 
 /* Gettext stuff */
 #ifdef USE_SIMPLE_GETTEXT
-# include "w32help.h"
+# include <gpg-error.h>
 # define _(a) gettext (a)
 # define N_(a) (a)
 
@@ -80,5 +80,20 @@
 #define jnlib_log_fatal    log_fatal
 #define jnlib_log_bug	   log_bug
 
+/* Wrapper to set ERRNO.  */
+#ifdef HAVE_W32CE_SYSTEM
+# define jnlib_set_errno(e)  gpg_err_set_errno ((e))
+#else
+# define jnlib_set_errno(e)  do { errno = (e); } while (0)
+#endif
+
+/* Dummy replacement for getenv.  */
+#ifndef HAVE_GETENV
+#define getenv(a)  (NULL)
+#endif
+
+#ifdef HAVE_W32CE_SYSTEM
+#define getpid() GetCurrentProcessId ()
+#endif
 
 #endif /*LIBJNUTIL_CONFIG_H*/

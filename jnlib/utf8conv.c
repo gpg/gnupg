@@ -1,6 +1,6 @@
 /* utf8conf.c -  UTF8 character set conversion
- * Copyright (C) 1994, 1998, 1999, 2000, 2001,
- *               2003, 2006, 2008  Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1998, 1999, 2000, 2001, 2003, 2006,
+ *               2008, 2010  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -50,12 +50,12 @@ static int use_iconv;          /* iconv comversion fucntions required. */
 #ifdef HAVE_W32_SYSTEM
 typedef void *iconv_t;
 #ifndef ICONV_CONST
-#define ICONV_CONST const 
+#define ICONV_CONST
 #endif
 static iconv_t (* __stdcall iconv_open) (const char *tocode,
                                          const char *fromcode);
 static size_t  (* __stdcall iconv) (iconv_t cd,
-                                    const char **inbuf, size_t *inbytesleft,
+                                    char **inbuf, size_t *inbytesleft,
                                     char **outbuf, size_t *outbytesleft);
 static int     (* __stdcall iconv_close) (iconv_t cd);
 
@@ -166,8 +166,10 @@ set_native_charset (const char *newset)
          different one for console input.  Not sure how to cope with
          that.  If the console Code page is not known we fall back to
          the system code page.  */
+#ifndef HAVE_W32CE_SYSTEM
       cpno = GetConsoleOutputCP ();
       if (!cpno)
+#endif
         cpno = GetACP ();
       sprintf (codepage, "CP%u", cpno );
       /* Resolve alias.  We use a long string string and not the usual
@@ -736,3 +738,76 @@ jnlib_iconv_close (jnlib_iconv_t cd)
 
   return iconv_close ((iconv_t)cd);
 }
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Return a malloced string encoded in UTF-8 from the wide char input
+   string STRING.  Caller must free this value.  Returns NULL and sets
+   ERRNO on failure.  Calling this function with STRING set to NULL is
+   not defined.  */
+char *
+wchar_to_utf8 (const wchar_t *string)
+{
+  int n;
+  char *result;
+
+  n = WideCharToMultiByte (CP_UTF8, 0, string, -1, NULL, 0, NULL, NULL);
+  if (n < 0)
+    {
+      jnlib_set_errno (EINVAL);
+      return NULL;
+    }
+
+  result = jnlib_malloc (n+1);
+  if (!result)
+    return NULL;
+
+  n = WideCharToMultiByte (CP_UTF8, 0, string, -1, result, n, NULL, NULL);
+  if (n < 0)
+    {
+      jnlib_free (result);
+      jnlib_set_errno (EINVAL);
+      result = NULL;
+    }
+  return result;
+}
+
+
+/* Return a malloced wide char string from an UTF-8 encoded input
+   string STRING.  Caller must free this value.  Returns NULL and sets
+   ERRNO on failure.  Calling this function with STRING set to NULL is
+   not defined.  */
+wchar_t *
+utf8_to_wchar (const char *string)
+{
+  int n;
+  size_t nbytes;
+  wchar_t *result;
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, NULL, 0);
+  if (n < 0)
+    {
+      jnlib_set_errno (EINVAL);
+      return NULL;
+    }
+
+  nbytes = (size_t)(n+1) * sizeof(*result);
+  if (nbytes / sizeof(*result) != (n+1)) 
+    {
+      jnlib_set_errno (ENOMEM);
+      return NULL;
+    }
+  result = malloc (nbytes);
+  if (!result)
+    return NULL;
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, result, n);
+  if (n < 0)
+    {
+      free (result);
+      jnlib_set_errno (EINVAL);
+      result = NULL;
+    }
+  return result;
+}
+#endif /*HAVE_W32_SYSTEM*/

@@ -1,6 +1,6 @@
 # Makefile for the JNLIB part of GnuPG
-# Copyright (C) 1999, 2000, 2001, 2004,
-#               2006 Feee Software Soundation, Inc.
+# Copyright (C) 1999, 2000, 2001, 2004, 2006,
+#               2010 Feee Software Soundation, Inc.
 # 
 # This file is part of JNLIB.
 # 
@@ -44,7 +44,7 @@ libjnlib_a_SOURCES = \
 	types.h mischelp.c mischelp.h dynload.h w32help.h
 
 if HAVE_W32_SYSTEM
-libjnlib_a_SOURCES += w32-reg.c w32-afunix.c w32-afunix.h w32-gettext.c
+libjnlib_a_SOURCES += w32-reg.c w32-afunix.c w32-afunix.h
 endif
 
 
@@ -60,11 +60,19 @@ endif
 # defines replacements for the actual used memory allocation functions
 # so that there is no dependency on libgcrypt.
 #
-module_tests = t-stringhelp
+module_tests = t-stringhelp t-timestuff
 
 t_jnlib_src = t-support.c t-support.h 
 t_jnlib_ldadd = libjnlib.a $(LIBINTL) $(LIBICONV)
+# For W32 we need libgpg-error because it provides gettext.
+if HAVE_W32_SYSTEM
+t_jnlib_ldadd += $(GPG_ERROR_LIBS)
+endif
 
 t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
 t_stringhelp_LDADD = $(t_jnlib_ldadd)
+
+t_timestuff_SOURCES = t-timestuff.c $(t_jnlib_src)
+t_timestuff_LDADD = $(t_jnlib_ldadd)
+
 
