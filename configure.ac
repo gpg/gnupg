@@ -483,6 +483,7 @@ AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
 try_gettext=yes
 have_dosish_system=no
 have_w32_system=no
+have_w32ce_system=no
 use_simple_gettext=no
 case "${host}" in
     *-mingw32*)
@@ -499,6 +500,7 @@ case "${host}" in
         disable_keyserver_path=yes
         have_dosish_system=yes
         have_w32_system=yes
+        case "${host}" in *-mingw32ce*) have_w32ce_system=yes ;; esac
         try_gettext="no"
 	use_simple_gettext=yes
         ;;
@@ -563,8 +565,12 @@ AM_CONDITIONAL(USE_SIMPLE_GETTEXT, test x"$use_simple_gettext" = xyes)
 
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+   if test "$have_w32ce_system" = yes; then
+      AC_DEFINE(HAVE_W32CE_SYSTEM,1,[Defined if we run on WindowsCE])
+   fi
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 if test "$disable_keyserver_path" = yes; then
     AC_DEFINE(DISABLE_KEYSERVER_PATH,1,

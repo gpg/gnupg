@@ -1,3 +1,9 @@
+2010-02-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_W32CE_SYSTEM): New ac_define and
+	am_conditional.
+	* autogen.sh: New option --build-w32ce.
+
 2009-12-08  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (USE_DNS_CERT): Support ADNS.

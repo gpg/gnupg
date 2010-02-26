@@ -234,7 +234,7 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
 /* FIXME: The following function should not go into this file but for
    now it is easier to keep it here. */
 
-/* Return the next token of an canconical encoded S-expression.  BUF
+/* Return the next token of an canonical encoded S-expression.  BUF
    is the pointer to the S-expression and BUFLEN is a pointer to the
    length of this S-expression (used to validate the syntax).  Both
    are updated to reflect the new position.  The token itself is

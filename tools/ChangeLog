@@ -1,3 +1,7 @@
+2010-02-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (main): New option --tcp-socket.
+
 2010-01-10  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (utmp.h): Remove header; it is not used.

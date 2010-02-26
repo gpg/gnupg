@@ -49,6 +49,7 @@ enum cmd_and_opt_values
     oQuiet      = 'q',
     oVerbose	= 'v',
     oRawSocket  = 'S',
+    oTcpSocket  = 'T',
     oExec       = 'E',
     oRun        = 'r',
     oSubst      = 's',
@@ -72,6 +73,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
   ARGPARSE_s_s (oRawSocket, "raw-socket", 
                 N_("|NAME|connect to Assuan socket NAME")),
+  ARGPARSE_s_s (oTcpSocket, "tcp-socket", 
+                N_("|ADDR|connect to Assuan server at ADDR")),
   ARGPARSE_s_n (oExec, "exec", 
                 N_("run the Assuan server given on the command line")),
   ARGPARSE_s_n (oNoExtConnect, "no-ext-connect",
@@ -96,6 +99,7 @@ struct
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
+  const char *tcp_socket; /* Name of server to connect in tcp mode. */
   int exec;             /* Run the pgm given on the command line. */
   unsigned int connect_flags;    /* Flags used for connecting. */
   int enable_varsubst;  /* Set if variable substitution is enabled.  */
@@ -1177,6 +1181,7 @@ main (int argc, char **argv)
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
+        case oTcpSocket: opt.tcp_socket = pargs.r.ret_str; break;
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
         case oRun:       opt_run = pargs.r.ret_str; break;
@@ -1207,8 +1212,23 @@ main (int argc, char **argv)
     cmdline_commands = argv;
 
   if (opt.exec && opt.raw_socket)
-    log_info (_("option \"%s\" ignored due to \"%s\"\n"),
-              "--raw-socket", "--exec");
+    {
+      opt.raw_socket = NULL;
+      log_info (_("option \"%s\" ignored due to \"%s\"\n"),
+                "--raw-socket", "--exec");
+    }
+  if (opt.exec && opt.tcp_socket)
+    {
+      opt.tcp_socket = NULL;
+      log_info (_("option \"%s\" ignored due to \"%s\"\n"),
+                "--tcp-socket", "--exec");
+    }
+  if (opt.tcp_socket && opt.raw_socket)
+    {
+      opt.tcp_socket = NULL;
+      log_info (_("option \"%s\" ignored due to \"%s\"\n"),
+                "--tcp-socket", "--raw-socket");
+    }
 
   if (opt_run && !(script_fp = fopen (opt_run, "r")))
     {
@@ -1268,6 +1288,32 @@ main (int argc, char **argv)
 
       if (opt.verbose)
         log_info ("connection to socket `%s' established\n", opt.raw_socket);
+    }
+  else if (opt.tcp_socket)
+    {
+      char *url;
+
+      url = xstrconcat ("assuan://", opt.tcp_socket, NULL);
+
+      rc = assuan_new (&ctx);
+      if (rc)
+	{
+          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
+	  exit (1);
+	}
+
+      rc = assuan_socket_connect (ctx, opt.tcp_socket, 0, 0);
+      if (rc)
+        {
+          log_error ("can't connect to server `%s': %s\n",
+                     opt.tcp_socket, gpg_strerror (rc));
+          exit (1);
+        }
+
+      if (opt.verbose)
+        log_info ("connection to socket `%s' established\n", url);
+
+      xfree (url);
     }
   else
     ctx = start_agent ();
