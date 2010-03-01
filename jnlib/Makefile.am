@@ -61,6 +61,9 @@ endif
 # so that there is no dependency on libgcrypt.
 #
 module_tests = t-stringhelp t-timestuff
+if HAVE_W32_SYSTEM
+module_tests += t-w32-reg
+endif
 
 t_jnlib_src = t-support.c t-support.h 
 t_jnlib_ldadd = libjnlib.a $(LIBINTL) $(LIBICONV)
@@ -75,4 +78,8 @@ t_stringhelp_LDADD = $(t_jnlib_ldadd)
 t_timestuff_SOURCES = t-timestuff.c $(t_jnlib_src)
 t_timestuff_LDADD = $(t_jnlib_ldadd)
 
+if HAVE_W32_SYSTEM
+t_w32_reg_SOURCES = t-w32-reg.c $(t_jnlib_src)
+t_w32_reg_LDADD   = $(t_jnlib_ldadd)
+endif
 

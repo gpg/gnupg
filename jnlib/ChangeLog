@@ -1,3 +1,10 @@
+2010-03-01  Werner Koch  <wk@g10code.com>
+
+	* t-w32-reg.c: New.
+
+	* w32-reg.c (read_w32_registry_string)
+	(write_w32_registry_string): Support W32CE.
+
 2010-02-26  Werner Koch  <wk@g10code.com>
 
 	* t-timestuff.c: New.

@@ -26,6 +26,9 @@
 #include <ws2tcpip.h>
 #include <unistd.h>
 
+/* We can easiliy replace this code by the socket wrappers from libassuan.  */
+#warning Please do not use this module anymore
+
 #define DIRSEP_C '\\'
 
 #define AF_LOCAL AF_UNIX
