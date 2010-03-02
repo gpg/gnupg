@@ -306,7 +306,21 @@ direct_open (const char *fname, const char *mode)
       sm = FILE_SHARE_READ;
     }
 
+#ifdef HAVE_W32CE_SYSTEM
+  {
+    wchar_t *wfname = utf8_to_wchar (fname);
+    if (wfname)
+      {
+        hfile = CreateFile (wfname, da, sm, NULL, cd,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
+        xfree (wfname);
+      }
+    else
+      hfile = INVALID_HANDLE_VALUE;
+  }
+#else
   hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
+#endif
   return hfile;
 #else /*!HAVE_W32_SYSTEM*/
   int oflag;
@@ -1188,7 +1202,14 @@ iobuf_cancel (iobuf_t a)
     {
       /* Argg, MSDOS does not allow to remove open files.  So
        * we have to do it here */
+#ifdef HAVE_W32CE_SYSTEM
+      wchar_t *wtmp = utf8_to_wchar (remove_name);
+      if (wtmp)
+        DeleteFile (wtmp);
+      xfree (wtmp);
+#else
       remove (remove_name);
+#endif
       xfree (remove_name);
     }
 #endif

@@ -1,3 +1,33 @@
+2010-03-02  Werner Koch  <wk@g10code.com>
+
+	* estream.c, estream.h, estream-printf.c, estream-printf.h: Update
+	from libestream.
+
+2010-03-01  Werner Koch  <wk@g10code.com>
+
+	* signal.c [!HAVE_SIGNAL_H]: Don't include signal.h.
+
+	* iobuf.c (direct_open) [W32CE]: Make filename to wchar_t.
+	(iobuf_cancel) [W32CE]: Use DeleteFile.
+
+	* gettime.c (dump_isotime): Use "%s" to print "none".
+
+	* homedir.c (standard_homedir) [W32CE]: Use wchar_t to create the
+	directory.
+	(w32_rootdir) [W32CE]: Likewise.
+
+	* sysutils.c (translate_sys2libc_fd) [W32CE]: Add support.
+	(gnupg_tmpfile) [W32CE]: Ditto.
+	(_gnupg_getenv) [W32CE]: New.
+
+	* util.h (getpid, getenv) [W32CE]: New.
+
+	* i18n.c (i18n_switchto_utf8)
+	(i18n_switchback) [USE_SIMPLE_GETTEXT]: Use new function from
+	libgpg-error which supports proper restoring.
+
+	* sysutils.c (get_session_marker): Simplified by using gcrypt.
+
 2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
 
 	* Makefile.am (audit-events.h, status.h) [!MAINTAINER_MODE]: No
@@ -266,7 +296,7 @@
 
 	* percent.c, t-percent.c: New.
 
-	* exechelp.c (gnupg_spawn_process, gnupg_spawn_process_fd) 
+	* exechelp.c (gnupg_spawn_process, gnupg_spawn_process_fd)
 	(gnupg_spawn_process_detached) [W32]: Remove debug output.
 
 2008-11-20  Werner Koch  <wk@g10code.com>
@@ -481,7 +511,7 @@
 
 2007-11-05  Werner Koch  <wk@g10code.com>
 
-	* audit.c, audit.h: New. 
+	* audit.c, audit.h: New.
 	* Makefile.am: Add rules to build audit-events.h.
 	* exaudit.awk: New.
 	* mkstrtable.awk: New.  Taken from libgpg-error.
@@ -506,7 +536,7 @@
 	(gnupg_create_inbound_pipe): New.
 	* util.h (GNUPG_MODULE_NAME_GPGSM, GNUPG_MODULE_NAME_GPG): New.
 	* homedir.c (gnupg_module_name): Add them
-	
+
 2007-08-28  Werner Koch  <wk@g10code.com>
 
 	* gettime.c (check_isotime, add_isotime): New.  Originally written
@@ -527,7 +557,7 @@
 2007-08-22  Werner Koch  <wk@g10code.com>
 
 	Updated estream from libestream.
-	
+
 	* estream.c (mem_malloc, mem_realloc, mem_free): New.  Use them
 	instead of the ES_MEM_foo.
 	* estream.c (estream_cookie_mem): Remove members DONT_FREE,
@@ -596,7 +626,7 @@
 
 2007-07-05  Werner Koch  <wk@g10code.com>
 
-	* t-gettime.c: New. 
+	* t-gettime.c: New.
 	* gettime.c (isotime2epoch, epoch2isotime): New.
 
 2007-07-04  Werner Koch  <wk@g10code.com>
@@ -628,7 +658,7 @@
 	(iobuf_translate_file_handle): Remove.
 	(translate_file_handle): Use new function.
 
-	* estream-printf.c [TEST]: Header including fixes. 
+	* estream-printf.c [TEST]: Header including fixes.
 	(do_format): Do not append a trailing Nul.  This avoids spurious
 	Nuls in the es_printf output.
 	(estream_vsnprintf, estream_vasprintf): Take this in account.
@@ -642,11 +672,11 @@
 	(es_convert_mode): Set O_BINARY.
 	(es_func_fd_create, es_func_fp_create, es_func_file_create) [W32]:
 	Call setmode if requested.
-	
+
 2007-06-24  Werner Koch  <wk@g10code.com>
 
 	* estream.c (do_fpopen, es_fpopen, es_fpopen_nc): New.
-	(es_func_fp_create, es_func_fp_read, es_func_fp_write) 
+	(es_func_fp_create, es_func_fp_read, es_func_fp_write)
 	(es_func_fp_seek, es_func_fp_destroy): New.
 
 2007-06-22  Werner Koch  <wk@g10code.com>
@@ -654,7 +684,7 @@
 	* estream.c (es_fdopen): Factored code out to..
 	(do_fdopen): .. new.
 	(es_fdopen_nc): New.
-	(estream_cookie_fd): Add field NO_CLOSE. 
+	(estream_cookie_fd): Add field NO_CLOSE.
 	(es_func_fd_create): Add arg NO_CLOSE and changed all callers.
 	(es_func_fd_destroy): Handle the new flag.
 
@@ -696,8 +726,8 @@
 	(agent_open): Use it if GPG_AGENT_INFO is not set.
 	(simple_pwquery): Extended to allow returning of otehyr error codes.
 
-	* util.h (GNUPG_MODULE_NAME_AGENT, GNUPG_MODULE_NAME_PINENTRY) 
-	(GNUPG_MODULE_NAME_SCDAEMON, GNUPG_MODULE_NAME_DIRMNGR) 
+	* util.h (GNUPG_MODULE_NAME_AGENT, GNUPG_MODULE_NAME_PINENTRY)
+	(GNUPG_MODULE_NAME_SCDAEMON, GNUPG_MODULE_NAME_DIRMNGR)
 	(GNUPG_MODULE_NAME_PROTECT_TOOL): New.
 	* homedir.c (gnupg_module_name): New.
 	(gnupg_bindir): New.
@@ -778,7 +808,7 @@
 2007-05-07  Werner Koch  <wk@g10code.com>
 
 	* signal.c (got_fatal_signal): Protect SIG from being clobbered by
-	a faulty signal implementaion.  Suggested by James Juran. 
+	a faulty signal implementaion.  Suggested by James Juran.
 
 2007-04-25  Werner Koch  <wk@g10code.com>
 
@@ -854,9 +884,9 @@
 
 2006-10-17  Werner Koch  <wk@g10code.com>
 
-	* estream.c (struct estream_internal, es_initialize) 
+	* estream.c (struct estream_internal, es_initialize)
 	(es_deinitialize, print_fun_writer, es_print): New and modified
-	functions to avoid tempfiles for printf style printing. 
+	functions to avoid tempfiles for printf style printing.
 
 	* Makefile.am (libcommonpth_a_SOURCES): New. We now build a secon
 	version of the library with explicit Pth support.
@@ -899,7 +929,7 @@
 	buffer.
 
 2006-09-27  Florian Weimer <fweimer@bfk.de>  (wk)
-	
+
 	* iobuf.c (iobuf_unread): New.
 
 2006-09-22  Werner Koch  <wk@g10code.com>
@@ -1086,7 +1116,7 @@
 	* estream.c (estream_cookie_mem): Make MEMORY unsigned char*.
 	(es_write): Make BUFFER a void *.
 	(es_writen): Ditto.
-	(es_func_fd_read, es_func_fd_write, es_func_mem_read) 
+	(es_func_fd_read, es_func_fd_write, es_func_mem_read)
 	(es_func_mem_write): Ditto.
 	(es_read, es_readn): Ditto.
 	(es_func_mem_write): Made MEMORY_NEW an unsigned char *.
@@ -1097,7 +1127,7 @@
 
 	* estream.c: Use HAVE_CONFIG_H and not USE_CONFIG_H!
 	(es_func_fd_read, es_func_fd_write): Protect against EINTR.
-	
+
 2005-06-01  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_CPPFLAGS): Added.
@@ -1169,7 +1199,7 @@
 
 	* signal.c (got_fatal_signal, got_usr_signal)
 	(got_fatal_signal) [DOSISH]: Don't build.
-	* simple-gettext.c: Include sysutils.h 
+	* simple-gettext.c: Include sysutils.h
 
 	* homedir.c: New. Use CSIDL_APPDATA for W32 as the default home
 	directory.
@@ -1363,10 +1393,10 @@
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
 	* dynload.h. New. W32 wrapper around the dynload mechanism.
-	
+
 2003-07-15  Werner Koch  <wk@gnupg.org>
 
-	* simple-pwquery.c, simple-pwquery.h:  New; moved from ../agent.  
+	* simple-pwquery.c, simple-pwquery.h:  New; moved from ../agent.
 	* Makefile.am (libsimple_pwquery_a_LIBADD): New.
 
 2003-06-25  Werner Koch  <wk@gnupg.org>
@@ -1540,10 +1570,10 @@
 	* sysutils.c: New.  This is the misc.c file from gnupg 1.0.6 with
 	the OpenPGP stuff removed.
 	* sysutils.h: New.
-	
+
 2002-01-15  Werner Koch  <wk@gnupg.org>
 
-	* maperror.c: Add mapping for Not_Trusted. 
+	* maperror.c: Add mapping for Not_Trusted.
 
 2002-01-11  Werner Koch  <wk@gnupg.org>
 
@@ -1570,10 +1600,10 @@
 
 	* util.h (digitp, hexdigitp): New ctype like macros.
 	(atoi_1,atoi_2,atoi_4,xtoi_1,xtoi_2): New.
-	
-	
- Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-	   2008, 2009 Free Software Foundation, Inc.
+
+
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+	   2009, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -1582,5 +1612,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-		
-

@@ -115,7 +115,7 @@ do_bin2hex (const void *buffer, size_t length, char *stringbuf, int with_colon)
       size_t nbytes = n * length + 1; 
       if (length &&  (nbytes-1) / n != length) 
         {
-          errno = ENOMEM;
+          gpg_err_set_errno (ENOMEM);
           return NULL;
         }
       stringbuf = xtrymalloc (nbytes);
@@ -232,7 +232,7 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
     {
       if (r_count)
         *r_count = 0;
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return NULL;
     }
   if (r_count)

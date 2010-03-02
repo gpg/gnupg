@@ -1225,7 +1225,7 @@ my_read_line (
 	      int save_errno = errno;
 	      xfree (buffer);
 	      *length_of_buffer = *max_length = 0;
-	      errno = save_errno;
+	      gpg_err_set_errno (save_errno);
 	      return 0;
 	    }
 	  buffer = *addr_of_buffer;
@@ -1548,12 +1548,13 @@ connect_server (const char *server, unsigned short port,
   int srv, connected;
   int last_errno = 0;
   struct srventry *serverlist = NULL;
-
+#ifdef HAVE_W32_SYSTEM
+  unsigned long inaddr;
+#endif
   /* Not currently using the flags */
   (void)flags;
 
 #ifdef HAVE_W32_SYSTEM
-  unsigned long inaddr;
 
 #ifndef HTTP_NO_WSASTARTUP
   init_sockets ();
@@ -1724,7 +1725,7 @@ connect_server (const char *server, unsigned short port,
 #endif
       if (sock != -1)
 	sock_close (sock);
-      errno = last_errno;
+      gpg_err_set_errno (last_errno);
       return -1;
     }
   return sock;
@@ -1805,7 +1806,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
           if (nread == GNUTLS_E_REHANDSHAKE)
             goto again; /* A client is allowed to just ignore this request. */
           log_info ("TLS network read failed: %s\n", gnutls_strerror (nread));
-          errno = EIO;
+          gpg_err_set_errno (EIO);
           return -1;
         }
     }
@@ -1856,7 +1857,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
                 }
               log_info ("TLS network write failed: %s\n",
                         gnutls_strerror (nwritten));
-              errno = EIO;
+              gpg_err_set_errno (EIO);
               return -1;
             }
           nleft -= nwritten;
@@ -1868,7 +1869,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
     {
       if ( write_server (c->fd, buffer, size) )
         {
-          errno = EIO;
+          gpg_err_set_errno (EIO);
           nwritten = -1;
         }
       else

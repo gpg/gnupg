@@ -1,5 +1,5 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2005, 2006, 2007, 2009 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -15,6 +15,40 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Libestream; if not, see <http://www.gnu.org/licenses/>.
+ *
+ * ALTERNATIVELY, Libestream may be distributed under the terms of the
+ * following license, in which case the provisions of this license are
+ * required INSTEAD OF the GNU General Public License. If you wish to
+ * allow use of your version of this file only under the terms of the
+ * GNU General Public License, and not to allow others to use your
+ * version of this file under the terms of the following license,
+ * indicate your decision by deleting this paragraph and the license
+ * below.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, and the entire permission notice in its entirety,
+ *    including the disclaimer of warranties.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifdef USE_ESTREAM_SUPPORT_H
@@ -27,6 +61,9 @@
 
 #if defined(_WIN32) && !defined(HAVE_W32_SYSTEM)
 # define HAVE_W32_SYSTEM 1
+# if defined(__MINGW32CE__) && !defined (HAVE_W32CE_SYSTEM)
+#  define HAVE_W32CE_SYSTEM
+# endif
 #endif
 
 #include <sys/types.h>
@@ -43,6 +80,9 @@
 #include <assert.h>
 #ifdef HAVE_W32_SYSTEM
 # include <windows.h>
+#endif
+#ifdef HAVE_W32CE_SYSTEM
+# include <gpg-error.h> /* ERRNO replacement.  */
 #endif
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
@@ -75,6 +115,13 @@ void *memrchr (const void *block, int c, size_t size);
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+
+#ifdef HAVE_W32CE_SYSTEM
+# define _set_errno(a)  gpg_err_set_errno ((a))
+#else
+# define _set_errno(a)  do { errno = (a); } while (0)
+#endif
+
 
 /* Generally used types.  */
 
@@ -427,7 +474,7 @@ es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
 
   if (!data && (data_n || data_len))
     {
-      errno = EINVAL;
+      _set_errno (EINVAL);
       return -1;
     }
 
@@ -511,7 +558,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
         newsize = mem_cookie->memory_size + (nleft - size);
       if (newsize < mem_cookie->offset)
         {
-          errno = EINVAL;
+          _set_errno (EINVAL);
           return -1;
         }
 
@@ -522,7 +569,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
           newsize += mem_cookie->block_size - 1;
           if (newsize < mem_cookie->offset)
             {
-              errno = EINVAL;
+              _set_errno (EINVAL);
               return -1;
             }
           newsize /= mem_cookie->block_size;
@@ -532,7 +579,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       /* Check for a total limit.  */
       if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
         {
-          errno = ENOSPC;
+          _set_errno (ENOSPC);
           return -1;
         }
       
@@ -581,7 +628,7 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
       break;
 
     default:
-      errno = EINVAL;
+      _set_errno (EINVAL);
       return -1;
     }
 
@@ -592,14 +639,14 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
 
       if (!mem_cookie->flags.grow)
 	{
-	  errno = ENOSPC;
+	  _set_errno (ENOSPC);
 	  return -1;
         }
 
       newsize = pos_new + mem_cookie->block_size - 1;
       if (newsize < pos_new)
         {
-          errno = EINVAL;
+          _set_errno (EINVAL);
           return -1;
         }
       newsize /= mem_cookie->block_size;
@@ -607,7 +654,7 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
 
       if (mem_cookie->memory_limit && newsize > mem_cookie->memory_limit)
         {
-          errno = ENOSPC;
+          _set_errno (ENOSPC);
           return -1;
         }
       
@@ -971,7 +1018,7 @@ es_convert_mode (const char *mode, unsigned int *modeflags)
       oflags = O_APPEND | O_CREAT;
       break;
     default:
-      errno = EINVAL;
+      _set_errno (EINVAL);
       return -1;
     }
   for (mode++; *mode; mode++)
@@ -1010,7 +1057,7 @@ es_fill (estream_t stream)
 
   if (!stream->intern->func_read)
     {
-      errno = EOPNOTSUPP;
+      _set_errno (EOPNOTSUPP);
       err = -1;
     }
   else
@@ -1173,7 +1220,7 @@ es_deinitialize (estream_t stream)
       int save_errno = errno;
       fclose (stream->intern->print_fp);
       stream->intern->print_fp = NULL;
-      errno = save_errno;
+      _set_errno (save_errno);
     }
 
   func_close = stream->intern->func_close;
@@ -1460,7 +1507,7 @@ es_seek (estream_t ES__RESTRICT stream, off_t offset, int whence,
 
   if (! func_seek)
     {
-      errno = EOPNOTSUPP;
+      _set_errno (EOPNOTSUPP);
       err = -1;
       goto out;
     }
@@ -1730,7 +1777,7 @@ es_skip (estream_t stream, size_t size)
 
   if (stream->data_offset + size > stream->data_len)
     {
-      errno = EINVAL;
+      _set_errno (EINVAL);
       err = -1;
     }
   else
@@ -2309,7 +2356,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
   else
     {
       /* FIXME?  We don't support re-opening at the moment.  */
-      errno = EINVAL;
+      _set_errno (EINVAL);
       es_deinitialize (stream);
       es_destroy (stream);
       stream = NULL;
@@ -2821,7 +2868,7 @@ es_read_line (estream_t stream,
     {
       /* This should never happen. If it does, the function has been
          called with wrong arguments. */
-      errno = EINVAL;
+      _set_errno (EINVAL);
       return -1;
     }
   length -= 3; /* Reserve 3 bytes for CR,LF,EOL. */
@@ -2855,7 +2902,7 @@ es_read_line (estream_t stream,
               if (max_length)
                 *max_length = 0;
               ESTREAM_UNLOCK (stream);
-              errno = save_errno;
+              _set_errno (save_errno);
               return -1;
             }
           buffer = *addr_of_buffer;
@@ -2973,21 +3020,32 @@ tmpfd (void)
 {
 #ifdef HAVE_W32_SYSTEM
   int attempts, n;
+#ifdef HAVE_W32CE_SYSTEM
+  wchar_t buffer[MAX_PATH+9+12+1];
+# define mystrlen(a) wcslen (a)
+  wchar_t *name, *p;
+#else
   char buffer[MAX_PATH+9+12+1];
+# define mystrlen(a) strlen (a)
   char *name, *p;
+#endif
   HANDLE file;
   int pid = GetCurrentProcessId ();
   unsigned int value;
   int i;
   
   n = GetTempPath (MAX_PATH+1, buffer);
-  if (!n || n > MAX_PATH || strlen (buffer) > MAX_PATH)
+  if (!n || n > MAX_PATH || mystrlen (buffer) > MAX_PATH)
     {
-      errno = ENOENT;
+      _set_errno (ENOENT);
       return -1;
     }
-  p = buffer + strlen (buffer);
+  p = buffer + mystrlen (buffer);
+#ifdef HAVE_W32CE_SYSTEM
+  wcscpy (p, L"_estream");
+#else
   strcpy (p, "_estream");
+#endif
   p += 8;
   /* We try to create the directory but don't care about an error as
      it may already exist and the CreateFile would throw an error
@@ -3004,7 +3062,11 @@ tmpfd (void)
           *p++ = tohex (((value >> 28) & 0x0f));
           value <<= 4;
         }
+#ifdef HAVE_W32CE_SYSTEM
+      wcscpy (p, L".tmp");
+#else
       strcpy (p, ".tmp");
+#endif
       file = CreateFile (buffer,
                          GENERIC_READ | GENERIC_WRITE,
                          0,
@@ -3014,17 +3076,21 @@ tmpfd (void)
                          NULL);
       if (file != INVALID_HANDLE_VALUE)
         {
+#ifdef HAVE_W32CE_SYSTEM
+          int fd = (int)file;
+#else
           int fd = _open_osfhandle ((long)file, 0);
           if (fd == -1)
             {
               CloseHandle (file);
               return -1;
             }
+#endif
           return fd;
         }
       Sleep (1); /* One ms as this is the granularity of GetTickCount.  */
     }
-  errno = ENOENT;
+  _set_errno (ENOENT);
   return -1;
 #else /*!HAVE_W32_SYSTEM*/
   FILE *fp;
@@ -3109,7 +3175,7 @@ es_setvbuf (estream_t ES__RESTRICT stream,
     }
   else
     {
-      errno = EINVAL;
+      _set_errno (EINVAL);
       err = -1;
     }
 

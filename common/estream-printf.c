@@ -1,5 +1,5 @@
-/* estream-printf.c - Versatile C-99 compliant printf formatting
- * Copyright (C) 2007, 2008, 2009 g10 Code GmbH
+/* estream-printf.c - Versatile mostly C-99 compliant printf formatting
+ * Copyright (C) 2007, 2008, 2009, 2010 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -15,6 +15,40 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Libestream; if not, see <http://www.gnu.org/licenses/>.
+ *
+ * ALTERNATIVELY, Libestream may be distributed under the terms of the
+ * following license, in which case the provisions of this license are
+ * required INSTEAD OF the GNU General Public License. If you wish to
+ * allow use of your version of this file only under the terms of the
+ * GNU General Public License, and not to allow others to use your
+ * version of this file under the terms of the following license,
+ * indicate your decision by deleting this paragraph and the license
+ * below.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, and the entire permission notice in its entirety,
+ *    including the disclaimer of warranties.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*  Required autoconf tests:
@@ -41,6 +75,13 @@
 # include <config.h>
 #endif
 
+#if defined(_WIN32) && !defined(HAVE_W32_SYSTEM)
+# define HAVE_W32_SYSTEM 1
+# if defined(__MINGW32CE__) && !defined (HAVE_W32CE_SYSTEM)
+#  define HAVE_W32CE_SYSTEM
+# endif
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,6 +97,9 @@
 #endif
 #ifdef HAVE_LANGINFO_THOUSANDS_SEP
 #include <langinfo.h>
+#endif
+#ifdef HAVE_W32CE_SYSTEM
+#include <gpg-error.h>  /* ERRNO replacement.  */
 #endif
 #ifdef _ESTREAM_PRINTF_EXTRA_INCLUDE
 # include _ESTREAM_PRINTF_EXTRA_INCLUDE
@@ -75,6 +119,13 @@
 #define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))  
 #else
 #define my_printf_free(a)   free((a))
+#endif
+
+/* A wrapper to set ERRNO.  */
+#ifdef HAVE_W32CE_SYSTEM
+# define _set_errno(a)  gpg_err_set_errno ((a))
+#else
+# define _set_errno(a)  do { errno = (a); } while (0)
 #endif
 
 
@@ -634,7 +685,7 @@ parse_format (const char *format,
   return 0; /* Success.  */
   
  leave_einval:
-  errno = EINVAL;
+  _set_errno (EINVAL);
  leave:
   if (argspecs != *argspecs_addr)
     free (argspecs);
@@ -1540,7 +1591,7 @@ estream_format (estream_printf_out_t outfnc,
   goto leave;
   
  leave_einval:
-  errno = EINVAL;
+  _set_errno (EINVAL);
  leave_error:
   rc = -1;
  leave:
@@ -1702,7 +1753,7 @@ dynamic_buffer_out (void *outfncarg, const char *buf, size_t buflen)
     {
       /* Just in case some formatting routine did not checked for an
          error. */
-      errno = parm->error_flag;
+      _set_errno (parm->error_flag);
       return -1;
     }
 
@@ -1755,7 +1806,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
   if (rc != -1 && parm.error_flag)
     {
       rc = -1;
-      errno = parm.error_flag;
+      _set_errno (parm.error_flag);
     }
   if (rc == -1)
     {

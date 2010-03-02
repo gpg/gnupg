@@ -98,7 +98,7 @@ read_line (FILE *fp,
               *length_of_buffer = 0;
               if (max_length)
                 *max_length = 0;
-              errno = save_errno;
+              gpg_err_set_errno (save_errno);
               return -1;
             }
           buffer = *addr_of_buffer;

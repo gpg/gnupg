@@ -130,31 +130,20 @@ enable_core_dumps (void)
 
 
 
-/* Return a string which is used as a kind of process ID */
+/* Return a string which is used as a kind of process ID.  */
 const byte *
-get_session_marker( size_t *rlen )
+get_session_marker (size_t *rlen)
 {
-    static byte marker[SIZEOF_UNSIGNED_LONG*2];
-    static int initialized;
-
-    if ( !initialized ) {
-        volatile ulong aa, bb; /* we really want the uninitialized value */
-        ulong a, b;
-
-        initialized = 1;
-        /* Although this marker is guessable it is not easy to use
-         * for a faked control packet because an attacker does not
-         * have enough control about the time the verification does 
-         * take place.  Of course, we can add just more random but 
-         * than we need the random generator even for verification
-         * tasks - which does not make sense. */
-        a = aa ^ (ulong)getpid();
-        b = bb ^ (ulong)time(NULL);
-        memcpy( marker, &a, SIZEOF_UNSIGNED_LONG );
-        memcpy( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
+  static byte marker[SIZEOF_UNSIGNED_LONG*2];
+  static int initialized;
+  
+  if (!initialized)
+    {
+      gcry_create_nonce (marker, sizeof marker);
+      initialized = 1;
     }
-    *rlen = sizeof(marker);
-    return marker;
+  *rlen = sizeof (marker);
+  return marker;
 }
 
 
@@ -286,7 +275,10 @@ gnupg_sleep (unsigned int seconds)
 int
 translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32CE_SYSTEM)
+  (void)for_write;
+  return (int)fd;
+#elif defined(HAVE_W32_SYSTEM)
   int x;
 
   if (fd == GNUPG_INVALID_FD)
@@ -331,8 +323,15 @@ gnupg_tmpfile (void)
 {
 #ifdef HAVE_W32_SYSTEM
   int attempts, n;
+#ifdef HAVE_W32CE_SYSTEM
+  wchar_t buffer[MAX_PATH+7+12+1];
+# define mystrlen(a) wcslen (a)
+  wchar_t *name, *p;
+#else
   char buffer[MAX_PATH+7+12+1];
+# define mystrlen(a) strlen (a)
   char *name, *p;
+#endif
   HANDLE file;
   int pid = GetCurrentProcessId ();
   unsigned int value;
@@ -344,13 +343,18 @@ gnupg_tmpfile (void)
   sec_attr.bInheritHandle = TRUE;
 
   n = GetTempPath (MAX_PATH+1, buffer);
-  if (!n || n > MAX_PATH || strlen (buffer) > MAX_PATH)
+  if (!n || n > MAX_PATH || mystrlen (buffer) > MAX_PATH)
     {
-      errno = ENOENT;
+      gpg_err_set_errno (ENOENT);
       return NULL;
     }
-  p = buffer + strlen (buffer);
+  p = buffer + mystrlen (buffer);
+#ifdef HAVE_W32CE_SYSTEM
+  wcscpy (p, L"_gnupg");
+  p += 7;
+#else
   p = stpcpy (p, "_gnupg");
+#endif
   /* We try to create the directory but don't care about an error as
      it may already exist and the CreateFile would throw an error
      anyway.  */
@@ -366,7 +370,11 @@ gnupg_tmpfile (void)
           *p++ = tohex (((value >> 28) & 0x0f));
           value <<= 4;
         }
+#ifdef HAVE_W32CE_SYSTEM
+      wcscpy (p, L".tmp");
+#else
       strcpy (p, ".tmp");
+#endif
       file = CreateFile (buffer,
                          GENERIC_READ | GENERIC_WRITE,
                          0,
@@ -377,6 +385,10 @@ gnupg_tmpfile (void)
       if (file != INVALID_HANDLE_VALUE)
         {
           FILE *fp;
+#ifdef HAVE_W32CE_SYSTEM
+          int fd = (int)file;
+          fp = _wfdopen (fd, L"w+b");
+#else
           int fd = _open_osfhandle ((long)file, 0);
           if (fd == -1)
             {
@@ -384,19 +396,21 @@ gnupg_tmpfile (void)
               return NULL;
             }
           fp = fdopen (fd, "w+b");
+#endif
           if (!fp)
             {
               int save = errno;
               close (fd);
-              errno = save;
+              gpg_err_set_errno (save);
               return NULL;
             }
           return fp;
         }
       Sleep (1); /* One ms as this is the granularity of GetTickCount.  */
     }
-  errno = ENOENT;
+  gpg_err_set_errno (ENOENT);
   return NULL;
+#undef mystrlen
 #else /*!HAVE_W32_SYSTEM*/
   return tmpfile ();
 #endif /*!HAVE_W32_SYSTEM*/
@@ -490,3 +504,18 @@ gnupg_allow_set_foregound_window (pid_t pid)
                (unsigned long)pid, w32_strerror (-1));
 #endif
 }
+
+
+
+#ifdef HAVE_W32CE_SYSTEM
+/* Replacement for getenv which takes care of the our use of getenv.
+   The code is not thread safe but we expect it to work in all cases
+   because it is called for the first time early enough.  */
+char *
+_gnupg_getenv (const char *name)
+{
+  (void)name;
+  return NULL;
+}
+#endif /*HAVE_W32CE_SYSTEM*/
+

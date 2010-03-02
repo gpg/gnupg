@@ -21,7 +21,9 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>

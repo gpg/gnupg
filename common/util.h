@@ -300,6 +300,13 @@ ttyname (int fd)
 }
 #endif /* !HAVE_TTYNAME */
 
+#ifdef HAVE_W32CE_SYSTEM
+#define getpid() GetCurrentProcessId ()
+char *_gnupg_getenv (const char *name); /* See sysutils.c */
+#define getenv(a)  _gnupg_getenv ((a))
+#endif
+
+
 
 /*-- Macros to replace ctype ones to avoid locale problems. --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')

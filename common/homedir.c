@@ -1,5 +1,5 @@
 /* homedir.c - Setup the home directory.
- *	Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -114,7 +114,18 @@ standard_homedir (void)
           
           /* Try to create the directory if it does not yet exists.  */
           if (access (dir, F_OK))
-            CreateDirectory (dir, NULL);
+            {
+#ifdef HAVE_W32CE_SYSTEM
+              wchar_t *wdir = utf8_to_wchar (dir);
+              if (wdir)
+                {
+                  CreateDirectory (wdir, NULL);
+                  xfree (wdir);
+                }
+#else              
+              CreateDirectory (dir, NULL);
+#endif
+            }
         }
       else
         dir = GNUPG_DEFAULT_HOMEDIR;
@@ -178,8 +189,20 @@ w32_rootdir (void)
   if (!got_dir)
     {
       char *p;
+      int rc;
 
-      if ( !GetModuleFileName ( NULL, dir, MAX_PATH) )
+#ifdef HAVE_W32CE_SYSTEM
+      {
+        wchar_t wdir [MAX_PATH+5];
+        rc = GetModuleFileName (NULL, wdir, MAX_PATH);
+        if (rc && WideCharToMultiByte (CP_UTF8, 0, wdir, -1, dir, MAX_PATH-4,
+                                       NULL, NULL) < 0)
+          rc = 0;
+      }
+#else
+      rc = GetModuleFileName (NULL, dir, MAX_PATH);
+#endif
+      if (!rc)
         {
           log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
           *dir = 0;

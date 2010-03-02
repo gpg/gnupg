@@ -105,7 +105,7 @@ get_membuf (membuf_t *mb, size_t *len)
           xfree (mb->buf);
           mb->buf = NULL;
         }
-      errno = mb->out_of_core;
+      gpg_err_set_errno (mb->out_of_core);
       return NULL;
     }
 
