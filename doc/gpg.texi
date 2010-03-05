@@ -1043,7 +1043,7 @@ Show any preferred keyserver URL in the @option{--list-sigs} or
 @option{--check-sigs} listings. Defaults to no.
 
 @item show-uid-validity
-Display the calculated validity of user IDs during key listings.
+Display the calculated validity of user IDs during public key listings.
 Defaults to no.
 
 @item show-unusable-uids

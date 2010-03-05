@@ -1,3 +1,9 @@
+2010-03-05  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi (GPG Configuration Options): Mention that
+	show-uid-validity does only work with public keys.  Noted by
+	Daniel Kahn Gillmor.
+
 2009-08-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi: Suggested new ordering for --edit-key.
