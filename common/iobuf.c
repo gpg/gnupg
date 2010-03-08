@@ -51,72 +51,32 @@
 /*-- End configurable part.  --*/
 
 
-/* Under W32 the default is to use the setmode call.  Define a macro
-   which allows us to enable this call.  */
 #ifdef HAVE_W32_SYSTEM
-# define USE_SETMODE 1
-#endif /*HAVE_W32_SYSTEM*/
-
-
-/* Definition of constants and macros used by our file filter
-   implementation.  What we define here are 3 macros to make the
-   appropriate calls:
-
-   my_fileno 
-     Is expanded to fileno(a) if using a stdion backend and to a if we
-     are using the low-level backend.
-
-   my_fopen 
-     Is defined to fopen for the stdio backend and to direct_open if
-     we are using the low-evel backend.
-
-   my_fopen_ro 
-     Is defined to fopen for the stdio backend and to fd_cache_open if
-     we are using the low-evel backend.
-
-   fp_or_fd_t
-     Is the type we use for the backend stream or file descriptor.
-
-   INVALID_FP, FILEP_OR_FD_FOR_STDIN, FILEP_OR_FD_FOR_STDOUT
-     Are macros defined depending on the used backend.
-
-*/
-#define my_fopen_ro(a,b) fd_cache_open ((a),(b))
-#define my_fopen(a,b)    direct_open ((a),(b))
-#ifdef HAVE_W32_SYSTEM
-/* (We assume that a HANDLE fits into an int.)  */
-# define my_fileno(a)  ((int)(a))
-  typedef HANDLE fp_or_fd_t;
-# define INVALID_FP             ((HANDLE)-1)
-# define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-# define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
-# undef USE_SETMODE
+# define FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+# define FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
 #else /*!HAVE_W32_SYSTEM*/
-# define my_fileno(a)  (a)
-  typedef int fp_or_fd_t;
-# define INVALID_FP             (-1)
-# define FILEP_OR_FD_FOR_STDIN  (0)
-# define FILEP_OR_FD_FOR_STDOUT (1)
+# define FD_FOR_STDIN  (0)
+# define FD_FOR_STDOUT (1)
 #endif /*!HAVE_W32_SYSTEM*/
+
 
 /* The context used by the file filter.  */
 typedef struct
 {
-  fp_or_fd_t fp;       /* Open file pointer or handle.  */
+  gnupg_fd_t fp;       /* Open file pointer or handle.  */
   int keep_open; 
   int no_cache;
   int eof_seen;
   int print_only_name; /* Flags indicating that fname is not a real file.  */
   char fname[1];       /* Name of the file.  */
-}
-file_filter_ctx_t;
+} file_filter_ctx_t;
 
 
 /* Object to control the "close cache".  */
 struct close_cache_s
 {
   struct close_cache_s *next;
-  fp_or_fd_t fp;
+  gnupg_fd_t fp;
   char fname[1];
 };
 typedef struct close_cache_s *close_cache_t;
@@ -203,7 +163,7 @@ fd_cache_invalidate (const char *fname)
 
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
+      if (cc->fp != GNUPG_INVALID_FD && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  if (DBG_IOBUF)
 	    log_debug ("                did (%s)\n", cc->fname);
@@ -213,7 +173,7 @@ fd_cache_invalidate (const char *fname)
 #else
 	  rc = close (cc->fp);
 #endif
-	  cc->fp = INVALID_FP;
+	  cc->fp = GNUPG_INVALID_FD;
 	}
     }
   return rc;
@@ -236,7 +196,7 @@ fd_cache_synchronize (const char *fname)
 
   for (cc=close_cache; cc; cc = cc->next )
     {
-      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
+      if (cc->fp != GNUPG_INVALID_FD && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  if (DBG_IOBUF)
 	    log_debug ("                 did (%s)\n", cc->fname);
@@ -252,7 +212,7 @@ fd_cache_synchronize (const char *fname)
 }
 
 
-static fp_or_fd_t
+static gnupg_fd_t
 direct_open (const char *fname, const char *mode)
 {
 #ifdef HAVE_W32_SYSTEM
@@ -268,7 +228,7 @@ direct_open (const char *fname, const char *mode)
   if (strchr (mode, '+'))
     {
       if (fd_cache_invalidate (fname))
-        return INVALID_FP;
+        return GNUPG_INVALID_FD;
       da = GENERIC_READ | GENERIC_WRITE;
       cd = OPEN_EXISTING;
       sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
@@ -276,7 +236,7 @@ direct_open (const char *fname, const char *mode)
   else if (strchr (mode, 'w'))
     {
       if (fd_cache_invalidate (fname))
-        return INVALID_FP;
+        return GNUPG_INVALID_FD;
       da = GENERIC_WRITE;
       cd = CREATE_ALWAYS;
       sm = FILE_SHARE_WRITE;
@@ -312,13 +272,13 @@ direct_open (const char *fname, const char *mode)
   if (strchr (mode, '+'))
     {
       if (fd_cache_invalidate (fname))
-        return INVALID_FP;
+        return GNUPG_INVALID_FD;
       oflag = O_RDWR;
     }
   else if (strchr (mode, 'w'))
     {
       if (fd_cache_invalidate (fname))
-        return INVALID_FP;
+        return GNUPG_INVALID_FD;
       oflag = O_WRONLY | O_CREAT | O_TRUNC;
     }
   else
@@ -353,7 +313,7 @@ direct_open (const char *fname, const char *mode)
  * Note that this caching strategy only works if the process does not chdir.
  */
 static void
-fd_cache_close (const char *fname, fp_or_fd_t fp)
+fd_cache_close (const char *fname, gnupg_fd_t fp)
 {
   close_cache_t cc;
 
@@ -372,7 +332,7 @@ fd_cache_close (const char *fname, fp_or_fd_t fp)
   /* try to reuse a slot */
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp == INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
+      if (cc->fp == GNUPG_INVALID_FD && !fd_cache_strcmp (cc->fname, fname))
 	{
 	  cc->fp = fp;
 	  if (DBG_IOBUF)
@@ -393,7 +353,7 @@ fd_cache_close (const char *fname, fp_or_fd_t fp)
 /*
  * Do an direct_open on FNAME but first try to reuse one from the fd_cache
  */
-static fp_or_fd_t
+static gnupg_fd_t
 fd_cache_open (const char *fname, const char *mode)
 {
   close_cache_t cc;
@@ -401,10 +361,10 @@ fd_cache_open (const char *fname, const char *mode)
   assert (fname);
   for (cc = close_cache; cc; cc = cc->next)
     {
-      if (cc->fp != INVALID_FP && !fd_cache_strcmp (cc->fname, fname))
+      if (cc->fp != GNUPG_INVALID_FD && !fd_cache_strcmp (cc->fname, fname))
 	{
-	  fp_or_fd_t fp = cc->fp;
-	  cc->fp = INVALID_FP;
+	  gnupg_fd_t fp = cc->fp;
+	  cc->fp = GNUPG_INVALID_FD;
 	  if (DBG_IOBUF)
 	    log_debug ("fd_cache_open (%s) using cached fp\n", fname);
 #ifdef HAVE_W32_SYSTEM
@@ -412,13 +372,13 @@ fd_cache_open (const char *fname, const char *mode)
 	    {
 	      log_error ("rewind file failed on handle %p: ec=%d\n",
 			 fp, (int) GetLastError ());
-	      fp = INVALID_FP;
+	      fp = GNUPG_INVALID_FD;
 	    }
 #else
 	  if (lseek (fp, 0, SEEK_SET) == (off_t) - 1)
 	    {
 	      log_error ("can't rewind fd %d: %s\n", fp, strerror (errno));
-	      fp = INVALID_FP;
+	      fp = GNUPG_INVALID_FD;
 	    }
 #endif
 	  return fp;
@@ -459,7 +419,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	     size_t * ret_len)
 {
   file_filter_ctx_t *a = opaque;
-  fp_or_fd_t f = a->fp;
+  gnupg_fd_t f = a->fp;
   size_t size = *ret_len;
   size_t nbytes = 0;
   int rc = 0;
@@ -595,24 +555,14 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   else if (control == IOBUFCTRL_FREE)
     {
-#ifdef HAVE_W32_SYSTEM
-      if (f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT)
+      if (f != FD_FOR_STDIN && f != FD_FOR_STDOUT)
 	{
 	  if (DBG_IOBUF)
-	    log_debug ("%s: close handle %p\n", a->fname, f);
+	    log_debug ("%s: close fd/handle %d\n", a->fname, FD2INT (f));
 	  if (!a->keep_open)
 	    fd_cache_close (a->no_cache ? NULL : a->fname, f);
 	}
-#else
-      if ((int) f != 0 && (int) f != 1)
-	{
-	  if (DBG_IOBUF)
-	    log_debug ("%s: close fd %d\n", a->fname, f);
-	  if (!a->keep_open)
-	    fd_cache_close (a->no_cache ? NULL : a->fname, f);
-	}
-      f = INVALID_FP;
-#endif
+      f = GNUPG_INVALID_FD;
       xfree (a); /* We can free our context now. */
     }
 
@@ -1230,7 +1180,7 @@ iobuf_t
 iobuf_open (const char *fname)
 {
   iobuf_t a;
-  fp_or_fd_t fp;
+  gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
   int print_only = 0;
@@ -1238,16 +1188,13 @@ iobuf_open (const char *fname)
 
   if (!fname || (*fname == '-' && !fname[1]))
     {
-      fp = FILEP_OR_FD_FOR_STDIN;
-#ifdef USE_SETMODE
-      setmode (my_fileno (fp), O_BINARY);
-#endif
+      fp = FD_FOR_STDIN;
       fname = "[stdin]";
       print_only = 1;
     }
   else if ((fd = check_special_filename (fname)) != -1)
     return iobuf_fdopen (translate_file_handle (fd, 0), "rb");
-  else if ((fp = my_fopen_ro (fname, "rb")) == INVALID_FP)
+  else if ((fp = fd_cache_open (fname, "rb")) == GNUPG_INVALID_FD)
     return NULL;
   a = iobuf_alloc (1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
@@ -1262,7 +1209,7 @@ iobuf_open (const char *fname)
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: open `%s' fd=%d\n",
-	       a->no, a->subno, fname, (int) my_fileno (fcx->fp));
+	       a->no, a->subno, fname, FD2INT (fcx->fp));
 
   return a;
 }
@@ -1275,11 +1222,11 @@ iobuf_t
 iobuf_fdopen (int fd, const char *mode)
 {
   iobuf_t a;
-  fp_or_fd_t fp;
+  gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
 
-  fp = (fp_or_fd_t) fd;
+  fp = (gnupg_fd_t) fd;
 
   a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + 20);
@@ -1330,7 +1277,7 @@ iobuf_t
 iobuf_create (const char *fname)
 {
   iobuf_t a;
-  fp_or_fd_t fp;
+  gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
   int print_only = 0;
@@ -1338,16 +1285,13 @@ iobuf_create (const char *fname)
 
   if (!fname || (*fname == '-' && !fname[1]))
     {
-      fp = FILEP_OR_FD_FOR_STDOUT;
-#ifdef USE_SETMODE
-      setmode (my_fileno (fp), O_BINARY);
-#endif
+      fp = FD_FOR_STDOUT;
       fname = "[stdout]";
       print_only = 1;
     }
   else if ((fd = check_special_filename (fname)) != -1)
     return iobuf_fdopen (translate_file_handle (fd, 1), "wb");
-  else if ((fp = my_fopen (fname, "wb")) == INVALID_FP)
+  else if ((fp = direct_open (fname, "wb")) == GNUPG_INVALID_FD)
     return NULL;
   a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
@@ -1383,7 +1327,7 @@ iobuf_append (const char *fname)
 
   if (!fname)
     return NULL;
-  else if (!(fp = my_fopen (fname, "ab")))
+  else if (!(fp = direct_open (fname, "ab")))
     return NULL;
   a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = m_alloc (sizeof *fcx + strlen (fname));
@@ -1406,13 +1350,13 @@ iobuf_t
 iobuf_openrw (const char *fname)
 {
   iobuf_t a;
-  fp_or_fd_t fp;
+  gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
 
   if (!fname)
     return NULL;
-  else if ((fp = my_fopen (fname, "r+b")) == INVALID_FP)
+  else if ((fp = direct_open (fname, "r+b")) == GNUPG_INVALID_FD)
     return NULL;
   a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
@@ -2112,7 +2056,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
     if ( !a->chain && a->filter == file_filter )
       {
         file_filter_ctx_t *b = a->filter_ov;
-        fp_or_fd_t fp = b->fp;
+        gnupg_fd_t fp = b->fp;
         
 #if defined(HAVE_W32_SYSTEM)
         ulong size;
@@ -2158,7 +2102,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
         log_error ("GetFileSize for handle %p failed: %s\n",
                    fp, w32_strerror (0));
 #else
-        if ( !fstat(my_fileno(fp), &st) )
+        if ( !fstat (FD2INT (fp), &st) )
           return st.st_size;
         log_error("fstat() failed: %s\n", strerror(errno) );
 #endif
@@ -2181,9 +2125,9 @@ iobuf_get_fd (iobuf_t a)
     if (!a->chain && a->filter == file_filter)
       {
         file_filter_ctx_t *b = a->filter_ov;
-        fp_or_fd_t fp = b->fp;
+        gnupg_fd_t fp = b->fp;
 
-        return my_fileno (fp);
+        return FD2INT (fp);
       }
 
   return -1;

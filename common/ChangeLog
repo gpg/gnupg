@@ -1,5 +1,14 @@
 2010-03-08  Werner Koch  <wk@g10code.com>
 
+	* iobuf.c (INVALID_FD): Replace by GNUPG_INVALID_FD.
+	(fp_or_fd_t): Replace by gnupg_fd_t.
+	(my_fileno): Replace by the FD2INT macro.
+	(FILEP_OR_FD_FOR_STDIN, FILEP_OR_FD_FOR_STDOUT): Rename to
+	FD_FOR_STDIN, FD_FOR_STDOUT.
+	(file_filter): Make full use of FD_FOR_STDIN.
+	(USE_SETMODE): Remove.  Not needed without stdio.
+	(my_fopen_ro, my_fopen): Replace unneeded macros.
+
 	* iobuf.c [FILE_FILTER_USES_STDIO]: Remove all code.  It has not
 	been used for a long time.
 
