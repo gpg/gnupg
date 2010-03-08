@@ -20,6 +20,9 @@
 #ifndef GNUPG_COMMON_EXECHELP_H
 #define GNUPG_COMMON_EXECHELP_H
 
+#include "estream.h"
+
+
 /* Return the maximum number of currently allowed file descriptors.
    Only useful on POSIX systems.  */
 int get_max_fds (void);
@@ -59,7 +62,7 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
    details.  Calling gnupg_wait_process is required.  Returns 0 on
    success or an error code. */
 gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
-                                 FILE *infile, FILE *outfile,
+                                 FILE *infile, estream_t outfile,
                                  void (*preexec)(void), unsigned int flags,
                                  FILE **statusfile, pid_t *pid);
 

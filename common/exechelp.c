@@ -1,5 +1,6 @@
 /* exechelp.c - fork and exec helpers
- * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -174,7 +175,7 @@ close_all_fds (int first, int *except)
         close (fd);
     }
 
-  errno = 0;
+  gpg_err_set_errno (0);
 }
 
 
@@ -555,7 +556,7 @@ gnupg_create_outbound_pipe (int filedes[2])
    Returns 0 on success or an error code. */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     FILE *infile, FILE *outfile,
+                     FILE *infile, estream_t outfile,
                      void (*preexec)(void), unsigned int flags,
                      FILE **statusfile, pid_t *pid)
 {
@@ -582,7 +583,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   fflush (infile);
   rewind (infile);
   fd = _get_osfhandle (fileno (infile));
-  fdout = _get_osfhandle (fileno (outfile));
+  fdout = _get_osfhandle (es_fileno (outfile));
   if (fd == -1 || fdout == -1)
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
@@ -690,7 +691,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   fflush (infile);
   rewind (infile);
   fd = fileno (infile);
-  fdout = fileno (outfile);
+  fdout = es_fileno (outfile);
   if (fd == -1 || fdout == -1)
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
