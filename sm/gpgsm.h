@@ -344,7 +344,7 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
                         int (*of)(const char *fname));
 
 /*-- export.c --*/
-void gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream);
+void gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream);
 void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
 
 /*-- delete.c --*/
@@ -366,10 +366,10 @@ int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
 int gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp);
 
 /*-- certreqgen.c --*/
-int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, FILE *out_fp);
+int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream);
 
 /*-- certreqgen-ui.c --*/
-void gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *out_fp);
+void gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t out_stream);
 
 
 /*-- qualified.c --*/

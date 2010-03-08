@@ -1,6 +1,6 @@
 /* openfile.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -192,13 +192,8 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
   if (inp_fd != -1)
     {
       char xname[64];
-      int fd2;
       
-      fd2 = dup (inp_fd);
-      if (fd2 == -1)
-        *a = NULL;
-      else
-        *a = iobuf_fdopen (fd2, "wb");
+      *a = iobuf_fdopen_nc (inp_fd, "wb");
       if (!*a)
         {
           rc = gpg_error_from_syserror ();

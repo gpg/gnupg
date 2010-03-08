@@ -1,11 +1,20 @@
 2010-03-08  Werner Koch  <wk@g10code.com>
 
+	* certreqgen.c (gpgsm_genkey): Change OUT_FP to an estream_t
+	OUT_STREAM.
+	* certreqgen-ui.c (gpgsm_gencertreq_tty): ditto.
+
+	* server.c (cmd_genkey): Close IN_STREAM.
+
 	* server.c (cmd_encrypt, cmd_decrypt, cmd_verify, cmd_sign): Avoid
 	dup call by using es_fdopen_nc.
 	(do_listkeys): Use es_fdopen_nc instead of dup and es_fdopen.
+	(cmd_export): Ditto.
+	(cmd_genkey): Ditto.
 	* export.c (popen_protect_tool): Change OUTFILE to an estream_t.
 	(export_p12): Change OUTFP and arg RETFP to an estream_t.
 	(gpgsm_p12_export): Change DATAFP to an estream_t.
+	(gpgsm_export): Remove arg FP.
 	* import.c (import_one): Change CERTFP and arg FP to an estream_t.
 	(popen_protect_tool): Ditto for OUTFILE.
 	(parse_p12): Change CERTFP to an estream_t.
@@ -23,6 +32,7 @@
 	(encrypt_cb): Use estream.
 	* gpgsm.c (main) <aEncr, aVerify, aSign, aDecrypt>: Use estream
 	functions.
+	(main) <aExport, aKeygen>: Use open_es_fwrite.
 
 2009-12-14  Werner Koch  <wk@g10code.com>
 

@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2009 Free Software Foundation, Inc.
+ *               2006, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -651,13 +651,14 @@ hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
   progress_filter_context_t *pfx = new_progress_context ();
   iobuf_t fp;
 
-  fp = iobuf_fdopen (data_fd, "rb");
-  if (fp && is_secured_file (data_fd))
+  if (is_secured_file (data_fd))
     {
-      iobuf_close (fp);
       fp = NULL;
       errno = EPERM;
     }
+  else
+    fp = iobuf_fdopen_nc (data_fd, "rb");
+
   if (!fp)
     {
       int rc = gpg_error_from_syserror ();

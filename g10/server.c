@@ -400,7 +400,7 @@ cmd_verify (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gnupg_fd_t fd = assuan_get_input_fd (ctx);
   gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
-  FILE *out_fp = NULL;
+  estream_t out_fp = NULL;
 
   /* FIXME: Revamp this code it is nearly to 3 years old and was only
      intended as a quick test.  */
@@ -412,23 +412,17 @@ cmd_verify (assuan_context_t ctx, char *line)
 
   if (out_fd != GNUPG_INVALID_FD)
     {
-      out_fp = fdopen ( dup (FD2INT (out_fd)), "w");
+      out_fp = es_fdopen_nc (out_fd, "w");
       if (!out_fp)
-        return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+        return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }
 
   log_debug ("WARNING: The server mode is WORK "
              "iN PROGRESS and not ready for use\n");
 
-  /* Need to dup it because it might get closed and libassuan won't
-     know about it then. */
-  rc = gpg_verify (ctrl,
-                   dup ( FD2INT (fd)), 
-                   dup ( FD2INT (ctrl->server_local->message_fd)),
-                   out_fp);
+  rc = gpg_verify (ctrl, fd, ctrl->server_local->message_fd, out_fp);
 
-  if (out_fp)
-    fclose (out_fp);
+  es_fclose (out_fp);
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);

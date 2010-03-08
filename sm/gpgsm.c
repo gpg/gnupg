@@ -1829,7 +1829,7 @@ main ( int argc, char **argv)
     case aKeygen: /* Generate a key; well kind of. */
       {
         estream_t fpin = NULL;
-        FILE *fpout;
+        estream_t fpout;
 
         if (opt.batch)
           {
@@ -1841,15 +1841,14 @@ main ( int argc, char **argv)
               wrong_args ("--gen-key --batch [parmfile]");
           }
         
-        fpout = open_fwrite (opt.outfile?opt.outfile:"-");
+        fpout = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         if (fpin)
           gpgsm_genkey (&ctrl, fpin, fpout);
         else
           gpgsm_gencertreq_tty (&ctrl, fpout);
 
-        if (fpout != stdout)
-          fclose (fpout);
+        es_fclose (fpout);
       }
       break;
 
@@ -1860,14 +1859,14 @@ main ( int argc, char **argv)
 
     case aExport:
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        estream_t fp;
 
+        fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
         for (sl=NULL; argc; argc--, argv++)
           add_to_strlist (&sl, *argv);
-        gpgsm_export (&ctrl, sl, fp, NULL);
+        gpgsm_export (&ctrl, sl, fp);
         free_strlist(sl);
-        if (fp != stdout)
-          fclose (fp);
+        es_fclose (fp);
       }
       break;
 

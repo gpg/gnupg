@@ -1,6 +1,6 @@
 /* verify.c - Verify signed data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,7 +37,6 @@
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
-
 
 
 /****************
@@ -231,7 +230,7 @@ verify_files( int nfiles, char **files )
    FIXME: OUTFP is not yet implemented.
 */
 int
-gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp)
+gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp)
 {
   int rc;
   iobuf_t fp;
@@ -241,13 +240,14 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp)
   (void)ctrl;
   (void)out_fp;
 
-  fp = iobuf_fdopen (sig_fd, "rb");
-  if (fp && is_secured_file (sig_fd))
+  if (is_secured_file (sig_fd))
     {
       fp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
-  if ( !fp )
+  else
+    fp = iobuf_fdopen_nc (sig_fd, "rb");
+  if (!fp)
     {
       rc = gpg_error_from_syserror ();
       log_error (_("can't open fd %d: %s\n"), sig_fd, strerror (errno));
@@ -262,15 +262,14 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp)
       push_armor_filter (afx, fp);
     }
 
-  rc = proc_signature_packets_by_fd ( NULL, fp, data_fd );
+  rc = proc_signature_packets_by_fd (NULL, fp, data_fd);
 
   if ( afx && afx->no_openpgp_data
        && (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF) )
     rc = gpg_error (GPG_ERR_NO_DATA);
 
  leave:  
-  if (fp)
-    iobuf_close (fp);
+  iobuf_close (fp);
   release_progress_context (pfx);
   release_armor_context (afx);
   return rc;

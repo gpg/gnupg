@@ -1,5 +1,5 @@
 /* certreqgen-ui.c - Simple user interface for certreqgen.c
- * Copyright (C) 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -125,7 +125,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
    and thus is not suitable for the Windows port.  So here is the
    re-implementation.  */
 void
-gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
+gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
 {
   gpg_error_t err;
   char *answer;
@@ -391,7 +391,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, FILE *output_fp)
   {
     int save_pem = ctrl->create_pem;
     ctrl->create_pem = 1; /* Force creation of PEM. */
-    err = gpgsm_genkey (ctrl, fp, output_fp);
+    err = gpgsm_genkey (ctrl, fp, output_stream);
     ctrl->create_pem = save_pem;
   }
   if (!err)

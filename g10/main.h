@@ -25,7 +25,7 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "util.h"
-
+#include "../common/estream.h"
 
 /* It could be argued that the default cipher should be 3DES rather
    than CAST5, and the default compression should be 0
@@ -316,7 +316,7 @@ void print_card_key_info (FILE *fp, KBNODE keyblock);
 void print_file_status( int status, const char *name, int what );
 int verify_signatures( int nfiles, char **files );
 int verify_files( int nfiles, char **files );
-int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, FILE *out_fp);
+int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp);
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );

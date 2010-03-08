@@ -723,28 +723,28 @@ cmd_export (assuan_context_t ctx, char *line)
           return set_error (GPG_ERR_ASS_GENERAL, 
                             "error setting up a data stream");
         }
-      gpgsm_export (ctrl, list, NULL, stream);
+      gpgsm_export (ctrl, list, stream);
       es_fclose (stream);
     }
   else
     {
       int fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-      FILE *out_fp;
+      estream_t out_fp;
 
       if (fd == -1)
         {
           free_strlist (list);
           return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
         }
-      out_fp = fdopen ( dup(fd), "w");
+      out_fp = es_fdopen_nc (fd, "w");
       if (!out_fp)
         {
           free_strlist (list);
-          return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+          return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
         }
       
-      gpgsm_export (ctrl, list, out_fp, NULL);
-      fclose (out_fp);
+      gpgsm_export (ctrl, list, out_fp);
+      es_fclose (out_fp);
     }
 
   free_strlist (list);
@@ -977,9 +977,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
-  FILE *out_fp;
+  estream_t in_stream, out_stream;
   int rc;
-  estream_t in_stream;
 
   (void)line;
 
@@ -994,14 +993,15 @@ cmd_genkey (assuan_context_t ctx, char *line)
   if (!in_stream)
     return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen failed");
 
-  out_fp = fdopen ( dup(out_fd), "w");
-  if (!out_fp)
+  out_stream = es_fdopen_nc (out_fd, "w");
+  if (!out_stream)
     {
       es_fclose (in_stream);
-      return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+      return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }
-  rc = gpgsm_genkey (ctrl, in_stream, out_fp);
-  fclose (out_fp);
+  rc = gpgsm_genkey (ctrl, in_stream, out_stream);
+  es_fclose (out_stream);
+  es_fclose (in_stream);
 
   /* close and reset the fds */
   assuan_close_input_fd (ctx);

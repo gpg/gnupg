@@ -1,5 +1,15 @@
 2010-03-08  Werner Koch  <wk@g10code.com>
 
+	* main.h: Include "estream.h"
+	* openfile.c (open_outfile): Replace dup/iobuf_fdopen by
+	iobuf_fdopen_nc.
+	* mainproc.c (proc_signature_packets_by_fd): Return error on
+	memory failure.
+	* plaintext.c (hash_datafile_by_fd): Ditto.
+	* verify.c (gpg_verify): Use iobuf_fdopen_nc.  Change OUT_FP to an
+	estream_t.
+	* server.c (cmd_verify): Do not dup the fds.
+
 	Use macros for iobuf_ioctl commands.
 
 2010-02-17  Werner Koch  <wk@g10code.com>
@@ -23,7 +33,7 @@
 	* revoke.c (gen_desig_revoke): Ditto.
 	* skclist.c (release_sk_list): Ditto.
 	* keyedit.c (sign_uids): Ditto.
-	* misc.c (get_signature_count): Ditto. 
+	* misc.c (get_signature_count): Ditto.
 	* main.h (struct expand_args): s/sk/pksk/.  Change all users.
 
 	* keyedit.c (keyedit_passwd): Finish implementation.

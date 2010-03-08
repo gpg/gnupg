@@ -125,12 +125,10 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 }
 
 
-
-
-/* Export all certificates or just those given in NAMES. If STREAM is
-   not NULL the output is send to this extended stream. */
+/* Export all certificates or just those given in NAMES.  The output
+   is written to STREAM.  */
 void
-gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream)
+gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
 {
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
@@ -256,24 +254,17 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, FILE *fp, estream_t stream)
           if (ctrl->create_pem)
             {
               if (count)
-                {
-                  if (stream)
-                    es_putc ('\n', stream);
-                  else
-                    putc ('\n', fp);
-                }
-              print_short_info (cert, fp, stream);
-              if (stream)
                 es_putc ('\n', stream);
-              else
-                putc ('\n', fp);
+              print_short_info (cert, NULL, stream);
+              es_putc ('\n', stream);
             }
           count++;
 
           if (!b64writer)
             {
               ctrl->pem_name = "CERTIFICATE";
-              rc = gpgsm_create_writer (&b64writer, ctrl, fp, stream, &writer);
+              rc = gpgsm_create_writer (&b64writer, ctrl,
+                                        NULL, stream, &writer);
               if (rc)
                 {
                   log_error ("can't create writer: %s\n", gpg_strerror (rc));

@@ -1,5 +1,6 @@
 /* certreqgen.c - Generate a key and a certification request
- * Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2005, 2007,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -846,14 +847,14 @@ create_request (ctrl_t ctrl,
 /* Create a new key by reading the parameters from IN_FP.  Multiple
    keys may be created */
 int
-gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, FILE *out_fp)
+gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream)
 {
   int rc;
   Base64Context b64writer = NULL;
   ksba_writer_t writer;
 
   ctrl->pem_name = "CERTIFICATE REQUEST";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_stream, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));

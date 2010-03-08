@@ -78,7 +78,7 @@ struct mainproc_context
     /* A list of filenames with the data files or NULL. This is only
        used if DATA_FD is -1. */
     strlist_t data_names;
-    /* Flag to indicated that either one of the next previous fieldss
+    /* Flag to indicated that either one of the next previous fields
        is used.  This is only needed for better readability. */
     int used;
   } signed_data;
@@ -1221,11 +1221,16 @@ proc_signature_packets( void *anchor, IOBUF a,
     return rc;
 }
 
+
 int
 proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
 {
   int rc;
-  CTX c = xcalloc (1, sizeof *c);
+  CTX c;
+
+  c = xtrycalloc (1, sizeof *c);
+  if (!c)
+    return gpg_error_from_syserror ();
 
   c->anchor = anchor;
   c->sigs_only = 1;
