@@ -1,6 +1,6 @@
 /* iobuf.c  -  File Handling for OpenPGP.
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006,
- *               2007, 2008, 2009  Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006, 2007, 2008,
+ *               2009, 2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -48,10 +48,6 @@
    test "armored_key_8192" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
-/* We don't want to use the STDIO based backend.  If you change this
-   be aware that there is no fsync support for the stdio backend.  */
-#undef FILE_FILTER_USES_STDIO
-
 /*-- End configurable part.  --*/
 
 
@@ -85,33 +81,23 @@
      Are macros defined depending on the used backend.
 
 */
-#ifdef FILE_FILTER_USES_STDIO
-# define my_fileno(a)     fileno ((a))
-# define my_fopen_ro(a,b) fopen ((a),(b))
-# define my_fopen(a,b)    fopen ((a),(b))
-  typedef FILE *fp_or_fd_t;
-# define INVALID_FP              NULL
-# define FILEP_OR_FD_FOR_STDIN   (stdin)
-# define FILEP_OR_FD_FOR_STDOUT  (stdout)
-#else /*!FILE_FILTER_USES_STDIO*/
-# define my_fopen_ro(a,b) fd_cache_open ((a),(b))
-# define my_fopen(a,b)    direct_open ((a),(b))
-# ifdef HAVE_W32_SYSTEM
-   /* (We assume that a HANDLE first into an int.)  */
-#  define my_fileno(a)  ((int)(a))
-   typedef HANDLE fp_or_fd_t;
-#  define INVALID_FP             ((HANDLE)-1)
-#  define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-#  define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
-#  undef USE_SETMODE
-# else /*!HAVE_W32_SYSTEM*/
-#  define my_fileno(a)  (a)
-   typedef int fp_or_fd_t;
-#  define INVALID_FP             (-1)
-#  define FILEP_OR_FD_FOR_STDIN  (0)
-#  define FILEP_OR_FD_FOR_STDOUT (1)
-# endif /*!HAVE_W32_SYSTEM*/
-#endif /*!FILE_FILTER_USES_STDIO*/
+#define my_fopen_ro(a,b) fd_cache_open ((a),(b))
+#define my_fopen(a,b)    direct_open ((a),(b))
+#ifdef HAVE_W32_SYSTEM
+/* (We assume that a HANDLE fits into an int.)  */
+# define my_fileno(a)  ((int)(a))
+  typedef HANDLE fp_or_fd_t;
+# define INVALID_FP             ((HANDLE)-1)
+# define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+# define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+# undef USE_SETMODE
+#else /*!HAVE_W32_SYSTEM*/
+# define my_fileno(a)  (a)
+  typedef int fp_or_fd_t;
+# define INVALID_FP             (-1)
+# define FILEP_OR_FD_FOR_STDIN  (0)
+# define FILEP_OR_FD_FOR_STDOUT (1)
+#endif /*!HAVE_W32_SYSTEM*/
 
 /* The context used by the file filter.  */
 typedef struct
@@ -126,9 +112,7 @@ typedef struct
 file_filter_ctx_t;
 
 
-/* If we are not using stdio as the backend we make use of a "close
-   cache".  */
-#ifndef FILE_FILTER_USES_STDIO
+/* Object to control the "close cache".  */
 struct close_cache_s
 {
   struct close_cache_s *next;
@@ -137,7 +121,6 @@ struct close_cache_s
 };
 typedef struct close_cache_s *close_cache_t;
 static close_cache_t close_cache;
-#endif /*!FILE_FILTER_USES_STDIO*/
 
 
 
@@ -150,8 +133,8 @@ typedef struct
   int eof_seen;
   int print_only_name;	/* Flag indicating that fname is not a real file.  */
   char fname[1];	/* Name of the file */
-}
-sock_filter_ctx_t;
+
+} sock_filter_ctx_t;
 #endif /*HAVE_W32_SYSTEM*/
 
 /* The first partial length header block must be of size 512
@@ -187,7 +170,6 @@ static int translate_file_handle (int fd, int for_write);
 
 
 
-#ifndef FILE_FILTER_USES_STDIO
 /* This is a replacement for strcmp.  Under W32 it does not
    distinguish between backslash and slash.  */
 static int
@@ -447,8 +429,6 @@ fd_cache_open (const char *fname, const char *mode)
   return direct_open (fname, mode);
 }
 
-#endif /*FILE_FILTER_USES_STDIO */
-
 
 /****************
  * Read data from a file into buf which has an allocated length of *LEN.
@@ -485,71 +465,6 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   int rc = 0;
 
   (void)chain; /* Not used.  */
-
-#ifdef FILE_FILTER_USES_STDIO
-  if (control == IOBUFCTRL_UNDERFLOW)
-    {
-      assert (size);  /* We need a buffer. */
-      if (feof (f))
-	{ 
-          /* On terminals you could easily read as many EOFs as you
-             call fread() or fgetc() repeatly.  Every call will block
-             until you press CTRL-D. So we catch this case before we
-             call fread() again.  */
-	  rc = -1;		
-	  *ret_len = 0;		
-	}
-      else
-	{
-	  clearerr (f);
-	  nbytes = fread (buf, 1, size, f);
-	  if (feof (f) && !nbytes)
-	    {
-	      rc = -1;	/* Okay: we can return EOF now. */
-	    }
-	  else if (ferror (f) && errno != EPIPE)
-	    {
-	      rc = gpg_error_from_syserror ();
-	      log_error ("%s: read error: %s\n", a->fname, strerror (errno));
-	    }
-	  *ret_len = nbytes;
-	}
-    }
-  else if (control == IOBUFCTRL_FLUSH)
-    {
-      if (size)
-	{
-	  clearerr (f);
-	  nbytes = fwrite (buf, 1, size, f);
-	  if (ferror (f))
-	    {
-	      rc = gpg_error_from_syserror ();
-	      log_error ("%s: write error: %s\n", a->fname, strerror (errno));
-	    }
-	}
-      *ret_len = nbytes;
-    }
-  else if (control == IOBUFCTRL_INIT)
-    {
-      a->keep_open = a->no_cache = 0;
-    }
-  else if (control == IOBUFCTRL_DESC)
-    {
-      *(char **) buf = "file_filter";
-    }
-  else if (control == IOBUFCTRL_FREE)
-    {
-      if (f != stdin && f != stdout)
-	{
-	  if (DBG_IOBUF)
-	    log_debug ("%s: close fd %d\n", a->fname, fileno (f));
-	  if (!a->keep_open)
-	    fclose (f);
-	}
-      f = NULL;
-      xfree (a); /* We can free our context now. */
-    }
-#else /* !stdio implementation */
 
   if (control == IOBUFCTRL_UNDERFLOW)
     {
@@ -700,7 +615,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 #endif
       xfree (a); /* We can free our context now. */
     }
-#endif /* !stdio implementation. */
+
   return rc;
 }
 
@@ -1364,12 +1279,8 @@ iobuf_fdopen (int fd, const char *mode)
   file_filter_ctx_t *fcx;
   size_t len;
 
-#ifdef FILE_FILTER_USES_STDIO
-  if (!(fp = fdopen (fd, mode)))
-    return NULL;
-#else
   fp = (fp_or_fd_t) fd;
-#endif
+
   a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + 20);
   fcx->fp = fp;
@@ -1553,10 +1464,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 		   ptrval ? (char *) ptrval : "?");
       if (!a && !intval && ptrval)
 	{
-#ifndef FILE_FILTER_USES_STDIO
 	  if (fd_cache_invalidate (ptrval))
             return -1;
-#endif
 	  return 0;
 	}
     }
@@ -1593,11 +1502,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 
 	if (!a && !intval && ptrval)
 	  {
-#ifndef FILE_FILTER_USES_STDIO
 	    return fd_cache_synchronize (ptrval);
-#else
-	    return 0;
-#endif
 	  }
       }
 
@@ -2209,7 +2114,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
         file_filter_ctx_t *b = a->filter_ov;
         fp_or_fd_t fp = b->fp;
         
-#if defined(HAVE_W32_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
+#if defined(HAVE_W32_SYSTEM)
         ulong size;
         static int (* __stdcall get_file_size_ex) (void *handle,
                                                    LARGE_INTEGER *r_size);
@@ -2357,13 +2262,6 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
       if (!a)
 	return -1;
-#ifdef FILE_FILTER_USES_STDIO
-      if (fseeko (b->fp, newpos, SEEK_SET))
-	{
-	  log_error ("can't fseek: %s\n", strerror (errno));
-	  return -1;
-	}
-#else
 #ifdef HAVE_W32_SYSTEM
       if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff)
 	{
@@ -2377,7 +2275,6 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	  log_error ("can't lseek: %s\n", strerror (errno));
 	  return -1;
 	}
-#endif
 #endif
     }
   a->d.len = 0;			/* discard buffer */
@@ -2546,9 +2443,6 @@ static int
 translate_file_handle (int fd, int for_write)
 {
 #ifdef HAVE_W32_SYSTEM
-# ifdef FILE_FILTER_USES_STDIO
-  fd = translate_sys2libc_fd (fd, for_write);
-# else
   {
     int x;
     
@@ -2569,7 +2463,6 @@ translate_file_handle (int fd, int for_write)
 
     fd = x;
   }
-# endif
 #else
   (void)for_write;
 #endif

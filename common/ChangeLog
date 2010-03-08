@@ -1,5 +1,8 @@
 2010-03-08  Werner Koch  <wk@g10code.com>
 
+	* iobuf.c [FILE_FILTER_USES_STDIO]: Remove all code.  It has not
+	been used for a long time.
+
 	* exechelp.h: Include "estream.h".
 
 	* exechelp.c (gnupg_spawn_process): Change OUTFILE to an estream_t.
