@@ -166,9 +166,9 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 #endif
 
   /* fixme: invalidate close caches (not used with stdio)*/
-/*    iobuf_ioctl (NULL, 2, 0, (char*)tmpfname ); */
-/*    iobuf_ioctl (NULL, 2, 0, (char*)bakfname ); */
-/*    iobuf_ioctl (NULL, 2, 0, (char*)fname ); */
+/*    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)tmpfname ); */
+/*    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)bakfname ); */
+/*    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname ); */
 
   /* First make a backup file except for secret keyboxes. */
   if (!secret)

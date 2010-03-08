@@ -1159,15 +1159,7 @@ iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname, const char *mode)
   if (fd == -1)
     a = iobuf_open (fname);
   else
-    {
-      int fd2;
-
-      fd2 = dup (fd);
-      if (fd2 == -1)
-        a = NULL;
-      else
-        a = iobuf_fdopen (fd2, mode);
-    }
+    a = iobuf_fdopen_nc (fd, mode);
   return a;
 }
 
@@ -1214,33 +1206,47 @@ iobuf_open (const char *fname)
   return a;
 }
 
-/****************
- * Create a head iobuf for reading or writing from/to a file
- * Returns: NULL if an error occures and sets ERRNO.
- */
-iobuf_t
-iobuf_fdopen (int fd, const char *mode)
+
+static iobuf_t
+do_iobuf_fdopen (int fd, const char *mode, int keep_open)
 {
   iobuf_t a;
   gnupg_fd_t fp;
   file_filter_ctx_t *fcx;
   size_t len;
 
-  fp = (gnupg_fd_t) fd;
+  fp = INT2FD (fd);
 
   a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + 20);
   fcx->fp = fp;
   fcx->print_only_name = 1;
+  fcx->keep_open = keep_open;
   sprintf (fcx->fname, "[fd %d]", fd);
   a->filter = file_filter;
   a->filter_ov = fcx;
   file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: fdopen `%s'\n", a->no, a->subno, fcx->fname);
-  iobuf_ioctl (a, 3, 1, NULL);	/* disable fd caching */
+    log_debug ("iobuf-%d.%d: fdopen%s `%s'\n",
+               a->no, a->subno, keep_open? "_nc":"", fcx->fname);
+  iobuf_ioctl (a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
   return a;
+}
+
+
+/* Create a head iobuf for reading or writing from/to a file Returns:
+ * NULL and sets ERRNO if an error occured.  */
+iobuf_t
+iobuf_fdopen (int fd, const char *mode)
+{
+  return do_iobuf_fdopen (fd, mode, 0);
+}
+
+iobuf_t
+iobuf_fdopen_nc (int fd, const char *mode)
+{
+  return do_iobuf_fdopen (fd, mode, 1);
 }
 
 
@@ -1263,7 +1269,7 @@ iobuf_sockopen (int fd, const char *mode)
   sock_filter (scx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
-  iobuf_ioctl (a, 3, 1, NULL);	/* disable fd caching */
+  iobuf_ioctl (a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 #else
   a = iobuf_fdopen (fd, mode);
 #endif
@@ -1311,40 +1317,6 @@ iobuf_create (const char *fname)
   return a;
 }
 
-/****************
- * append to an iobuf; if the file does not exist, create it.
- * cannot be used for stdout.
- * Note: This is not used.
- */
-#if 0				/* not used */
-iobuf_t
-iobuf_append (const char *fname)
-{
-  iobuf_t a;
-  FILE *fp;
-  file_filter_ctx_t *fcx;
-  size_t len;
-
-  if (!fname)
-    return NULL;
-  else if (!(fp = direct_open (fname, "ab")))
-    return NULL;
-  a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
-  fcx = m_alloc (sizeof *fcx + strlen (fname));
-  fcx->fp = fp;
-  strcpy (fcx->fname, fname);
-  a->real_fname = m_strdup (fname);
-  a->filter = file_filter;
-  a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
-  file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
-  if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: append `%s'\n", a->no, a->subno,
-               a->desc?a->desc:"?");
-
-  return a;
-}
-#endif
 
 iobuf_t
 iobuf_openrw (const char *fname)
@@ -1376,12 +1348,15 @@ iobuf_openrw (const char *fname)
 
 
 int
-iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
+iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
 {
-  if (cmd == 1)
-    {				/* keep system filepointer/descriptor open */
+  if (cmd == IOBUF_IOCTL_KEEP_OPEN)
+    {				
+      /* Keep system filepointer/descriptor open.  This was used in
+         the past by http.c; this ioctl is not directly used
+         anymore.  */
       if (DBG_IOBUF)
-	log_debug ("iobuf-%d.%d: ioctl `%s' keep=%d\n",
+	log_debug ("iobuf-%d.%d: ioctl `%s' keep_open=%d\n",
 		   a ? a->no : -1, a ? a->subno : -1, 
                    a && a->desc ? a->desc : "?",
 		   intval);
@@ -1401,8 +1376,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	  }
 #endif
     }
-  else if (cmd == 2)
-    {				/* invalidate cache */
+  else if (cmd == IOBUF_IOCTL_INVALIDATE_CACHE)
+    {
       if (DBG_IOBUF)
 	log_debug ("iobuf-*.*: ioctl `%s' invalidate\n",
 		   ptrval ? (char *) ptrval : "?");
@@ -1413,8 +1388,8 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	  return 0;
 	}
     }
-  else if (cmd == 3)
-    {				/* disallow/allow caching */
+  else if (cmd == IOBUF_IOCTL_NO_CACHE)
+    {
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
 		   a ? a->no : -1, a ? a->subno : -1, 
@@ -1436,7 +1411,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
 	  }
 #endif
     }
-  else if (cmd == 4)
+  else if (cmd == IOBUF_IOCTL_FSYNC)
     {
       /* Do a fsync on the open fd and return any errors to the caller
          of iobuf_ioctl.  Note that we work on a file name here. */

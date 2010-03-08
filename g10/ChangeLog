@@ -1,3 +1,7 @@
+2010-03-08  Werner Koch  <wk@g10code.com>
+
+	Use macros for iobuf_ioctl commands.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_user_id): Avoid infinite loop in case of invalid

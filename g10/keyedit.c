@@ -1981,7 +1981,7 @@ keyedit_menu( const char *username, strlist_t locusr,
             init_packet (pkt);
             rc = parse_packet (a, pkt);
             iobuf_close (a);
-            iobuf_ioctl (NULL, 2, 0, (char*)fname); /* (invalidate cache).  */
+            iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
             if (!rc 
                 && pkt->pkttype != PKT_SECRET_KEY 
                 && pkt->pkttype != PKT_SECRET_SUBKEY)

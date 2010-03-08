@@ -449,8 +449,8 @@ exec_write(struct exec_info **info,const char *program,
 	  goto fail;
 	}
 
-      /* fd iobufs are cached?! */
-      iobuf_ioctl((*info)->fromchild,3,1,NULL);
+      /* fd iobufs are cached! */
+      iobuf_ioctl((*info)->fromchild, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 
       return 0;
     }
@@ -556,7 +556,7 @@ exec_read(struct exec_info *info)
 	    }
 
 	  /* Do not cache this iobuf on close */
-	  iobuf_ioctl(info->fromchild,3,1,NULL);
+	  iobuf_ioctl(info->fromchild, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 	}
     }
 

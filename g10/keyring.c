@@ -1255,20 +1255,20 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   /* It's a secret keyring, so let's force a fsync just to be safe on
      filesystems that may not sync data and metadata together
      (e.g. ext4). */
-  if (secret && iobuf_ioctl (NULL, 4, 0, (char*)tmpfname))
+  if (secret && iobuf_ioctl (NULL, IOBUF_IOCTL_FSYNC, 0, (char*)tmpfname))
     {
       rc = gpg_error_from_syserror ();
       goto fail;
     }
 
   /* Invalidate close caches.  */
-  if (iobuf_ioctl (NULL, 2, 0, (char*)tmpfname ))
+  if (iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)tmpfname ))
     {
       rc = gpg_error_from_syserror ();
       goto fail;
     }
-  iobuf_ioctl (NULL, 2, 0, (char*)bakfname );
-  iobuf_ioctl (NULL, 2, 0, (char*)fname );
+  iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)bakfname );
+  iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname );
 
   /* first make a backup file except for secret keyrings */
   if (!secret)

@@ -185,7 +185,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   /* Prepare iobufs. */
   inp = iobuf_open(filename);
   if (inp)
-    iobuf_ioctl (inp,3,1,NULL); /* disable fd caching */
+    iobuf_ioctl (inp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
   if (inp && is_secured_file (iobuf_get_fd (inp)))
     {
       iobuf_close (inp);
@@ -526,7 +526,7 @@ encrypt_crypt (int filefd, const char *filename,
   /* Prepare iobufs. */
   inp = iobuf_open_fd_or_name (filefd, filename, "rb");
   if (inp)
-    iobuf_ioctl (inp, 3, 1, NULL); /* Disable fd caching. */
+    iobuf_ioctl (inp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
   if (inp && is_secured_file (iobuf_get_fd (inp)))
     {
       iobuf_close (inp);

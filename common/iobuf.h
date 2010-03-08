@@ -1,5 +1,6 @@
 /* iobuf.h - I/O buffer
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -25,7 +26,7 @@
 
 #define DBG_IOBUF   iobuf_debug_mode
 
-
+/* Filter control modes.  */
 #define IOBUFCTRL_INIT	    1
 #define IOBUFCTRL_FREE	    2
 #define IOBUFCTRL_UNDERFLOW 3
@@ -33,6 +34,17 @@
 #define IOBUFCTRL_DESC	    5
 #define IOBUFCTRL_CANCEL    6
 #define IOBUFCTRL_USER	    16
+
+
+/* Command codes for iobuf_ioctl.  */
+typedef enum 
+  {
+    IOBUF_IOCTL_KEEP_OPEN        = 1, /* Uses intval.  */
+    IOBUF_IOCTL_INVALIDATE_CACHE = 2, /* Uses ptrval.  */
+    IOBUF_IOCTL_NO_CACHE         = 3, /* Uses intval.  */
+    IOBUF_IOCTL_FSYNC            = 4  /* Uses ptrval.  */
+  } iobuf_ioctl_t;
+
 
 typedef struct iobuf_struct *iobuf_t;
 typedef struct iobuf_struct *IOBUF;  /* Compatibility with gpg 1.4. */
@@ -89,11 +101,12 @@ iobuf_t iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname,
                                const char *mode);
 iobuf_t iobuf_open (const char *fname);
 iobuf_t iobuf_fdopen (int fd, const char *mode);
+iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
 iobuf_t iobuf_sockopen (int fd, const char *mode);
 iobuf_t iobuf_create (const char *fname);
 iobuf_t iobuf_append (const char *fname);
 iobuf_t iobuf_openrw (const char *fname);
-int iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval);
+int iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval);
 int iobuf_close (iobuf_t iobuf);
 int iobuf_cancel (iobuf_t iobuf);
 
@@ -140,10 +153,10 @@ void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
 void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
 
 
-/* get a byte form the iobuf; must check for eof prior to this function
- * this function returns values in the range 0 .. 255 or -1 to indicate EOF
- * iobuf_get_noeof() does not return -1 to indicate EOF, but masks the
- * returned value to be in the range 0 ..255.
+/* Get a byte from the iobuf; must check for eof prior to this
+ * function.  This function returns values in the range 0 .. 255 or -1
+ * to indicate EOF.  iobuf_get_noeof() does not return -1 to indicate
+ * EOF, but masks the returned value to be in the range 0 .. 255.
  */
 #define iobuf_get(a)  \
      (	((a)->nofast || (a)->d.start >= (a)->d.len )?  \

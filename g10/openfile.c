@@ -305,7 +305,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
     }
   
   if (*a)
-    iobuf_ioctl (*a, 3, 1, NULL); /* Disable fd caching.  */
+    iobuf_ioctl (*a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 
   return rc;
 }

@@ -188,7 +188,7 @@ maybe_create_keyring (char *filename, int force)
 
   iobuf_close (iobuf);
   /* Must invalidate that ugly cache */
-  iobuf_ioctl (NULL, 2, 0, filename);
+  iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, filename);
   rc = 0;
 
  leave:

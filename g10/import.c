@@ -196,7 +196,8 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 	        rc = import( inp2, fname, stats, fpr, fpr_len, options );
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
-                iobuf_ioctl (NULL, 2, 0, (char*)fname);
+                iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 
+                             0, (char*)fname);
 	        if( rc )
 		  log_error("import from `%s' failed: %s\n", fname,
 			    g10_errstr(rc) );

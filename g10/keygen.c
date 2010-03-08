@@ -2877,7 +2877,7 @@ read_parameter_file( const char *fname )
       log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
       return;
     }
-    iobuf_ioctl (fp, 3, 1, NULL); /* No file caching. */
+    iobuf_ioctl (fp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 
     lnr = 0;
     err = NULL;
@@ -3018,9 +3018,11 @@ read_parameter_file( const char *fname )
 
         /* Must invalidate that ugly cache to actually close it.  */
         if (outctrl.pub.fname)
-          iobuf_ioctl (NULL, 2, 0, (char*)outctrl.pub.fname);
+          iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 
+                       0, (char*)outctrl.pub.fname);
         if (outctrl.sec.fname)
-          iobuf_ioctl (NULL, 2, 0, (char*)outctrl.sec.fname);
+          iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
+                       0, (char*)outctrl.sec.fname);
 
 	xfree( outctrl.pub.fname );
 	xfree( outctrl.pub.newfname );
@@ -3377,7 +3379,8 @@ do_generate_keypair (struct para_data_s *para,
           iobuf_close(outctrl->pub.stream);
           outctrl->pub.stream = NULL;
           if (outctrl->pub.fname)
-            iobuf_ioctl (NULL, 2, 0, (char*)outctrl->pub.fname);
+            iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
+                         0, (char*)outctrl->pub.fname);
           xfree( outctrl->pub.fname );
           outctrl->pub.fname =  outctrl->pub.newfname;
           outctrl->pub.newfname = NULL;
@@ -3408,7 +3411,8 @@ do_generate_keypair (struct para_data_s *para,
           iobuf_close(outctrl->sec.stream);
           outctrl->sec.stream = NULL;
           if (outctrl->sec.fname)
-            iobuf_ioctl (NULL, 2, 0, (char*)outctrl->sec.fname);
+            iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
+                         0, (char*)outctrl->sec.fname);
           xfree( outctrl->sec.fname );
           outctrl->sec.fname =  outctrl->sec.newfname;
           outctrl->sec.newfname = NULL;
@@ -4187,7 +4191,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
         char *fprbuf, *p;
        
         iobuf_close (fp);
-        iobuf_ioctl (NULL, 2, 0, (char*)fname);
+        iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
         log_info (_("NOTE: backup of card key saved to `%s'\n"), fname);
 
         fingerprint_from_sk (sk, array, &n);
