@@ -1,5 +1,6 @@
 /* encrypt.c - Encrypt a message
- * Copyright (C) 2001, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2007, 2008,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -45,8 +46,11 @@ struct dek_s {
 };
 typedef struct dek_s *DEK;
 
-struct encrypt_cb_parm_s {
-  FILE *fp;
+
+/* Callback parameters for the encryption.  */
+struct encrypt_cb_parm_s 
+{
+  estream_t fp;
   DEK dek;
   int eof_seen;
   int ready;
@@ -239,10 +243,10 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
       p = parm->buffer;
       for (n=parm->buflen; n < parm->bufsize; n++)
         {
-          int c = getc (parm->fp);
+          int c = es_getc (parm->fp);
           if (c == EOF)
             {
-              if (ferror (parm->fp))
+              if (es_ferror (parm->fp))
                 {
                   parm->readerror = errno;
                   return -1;
@@ -289,7 +293,7 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
    recipients are take from the certificate given in recplist; if this
    is NULL it will be encrypted for a default recipient */
 int
-gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
+gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 {
   int rc = 0;
   Base64Context b64writer = NULL;
@@ -302,7 +306,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
   struct encrypt_cb_parm_s encparm;
   DEK dek = NULL;
   int recpno;
-  FILE *data_fp = NULL;
+  estream_t data_fp = NULL;
   certlist_t cl;
   int count;
 
@@ -337,10 +341,11 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  data_fp = fdopen ( dup (data_fd), "rb");
+  /* Fixme:  We should use the unlocked version of the es functions.  */
+  data_fp = es_fdopen_nc (data_fd, "rb");
   if (!data_fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
@@ -356,7 +361,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
   encparm.fp = data_fp;
 
   ctrl->pem_name = "ENCRYPTED MESSAGE";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -506,8 +511,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, FILE *out_fp)
   ksba_reader_release (reader);
   keydb_release (kh); 
   xfree (dek);
-  if (data_fp)
-    fclose (data_fp);
+  es_fclose (data_fp);
   xfree (encparm.buffer);
   return rc;
 }

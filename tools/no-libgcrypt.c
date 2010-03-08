@@ -142,3 +142,13 @@ gcry_set_log_handler (gcry_handler_log_t f, void *opaque)
   (void)f;
   (void)opaque;
 }
+
+
+void
+gcry_create_nonce (void *buffer, size_t length)
+{
+  (void)buffer;
+  (void)length;
+  
+  log_fatal ("unexpected call to gcry_create_nonce\n");
+}

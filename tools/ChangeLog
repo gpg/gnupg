@@ -1,3 +1,7 @@
+2010-03-08  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_create_nonce): New.
+
 2010-02-26  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c (main): New option --tcp-socket.

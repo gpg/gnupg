@@ -1,5 +1,5 @@
 /* base64.c 
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,9 +39,10 @@
   #define LF "\n"
 #endif
 
-/* data used by the reader callbacks */
-struct reader_cb_parm_s {
-  FILE *fp;
+/* Data used by the reader callbacks.  */
+struct reader_cb_parm_s 
+{
+  estream_t fp;
   
   unsigned char line[1024];
   int linelen;
@@ -69,7 +70,8 @@ struct reader_cb_parm_s {
   } base64;
 };
 
-/* data used by the writer callbacks */
+
+/* Data used by the writer callbacks.  */
 struct writer_cb_parm_s {
   FILE *fp;            /* FP is only used if STREAM is NULL.  */
   estream_t stream;    /* Alternative output if not NULL.  */
@@ -179,11 +181,11 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
       parm->have_lf = 0;
       for (n=0; n < DIM(parm->line);)
         {
-          c = getc (parm->fp);
+          c = es_getc (parm->fp);
           if (c == EOF)
             {
               parm->eof_seen = 1;
-              if (ferror (parm->fp))
+              if (es_ferror (parm->fp))
                 return -1;
               break; 
             }
@@ -382,14 +384,14 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 
   for (n=0; n < count; n++)
     {
-      c = getc (parm->fp);
+      c = es_getc (parm->fp);
       if (c == EOF)
         {
           parm->eof_seen = 1;
-          if ( ferror (parm->fp) )
+          if (es_ferror (parm->fp))
             return -1;
           if (n)
-            break; /* return what we have before an EOF */
+            break; /* Return what we have before an EOF.  */
           return -1;
         }
       *(byte *)buffer++ = c;
@@ -579,7 +581,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
    until no more objects were found. */
 int
 gpgsm_create_reader (Base64Context *ctx,
-                     ctrl_t ctrl, FILE *fp, int allow_multi_pem,
+                     ctrl_t ctrl, estream_t fp, int allow_multi_pem,
                      ksba_reader_t *r_reader)
 {
   int rc;

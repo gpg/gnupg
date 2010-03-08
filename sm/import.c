@@ -48,8 +48,8 @@ struct stats_s {
  };
 
 
-static gpg_error_t parse_p12 (ctrl_t ctrl, ksba_reader_t reader, FILE **retfp,
-                              struct stats_s *stats);
+static gpg_error_t parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
+                              estream_t *retfp, struct stats_s *stats);
 
 
 
@@ -254,14 +254,14 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
   ksba_reader_t reader;
   ksba_cert_t cert = NULL;
   ksba_cms_t cms = NULL;
-  FILE *fp = NULL;
+  estream_t fp = NULL;
   ksba_content_type_t ct;
   int any = 0;
 
-  fp = fdopen ( dup (in_fd), "rb");
+  fp = es_fdopen_nc (in_fd, "rb");
   if (!fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
@@ -331,7 +331,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
              certificate we included in the p12 file; then we continue
              to look for other pkcs12 files (works only if they are in
              PEM format. */
-          FILE *certfp;
+          estream_t certfp;
           Base64Context b64p12rdr;
           ksba_reader_t p12rdr;
           
@@ -340,12 +340,12 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
             {
               any = 1;
               
-              rewind (certfp);
+              es_rewind (certfp);
               rc = gpgsm_create_reader (&b64p12rdr, ctrl, certfp, 1, &p12rdr);
               if (rc)
                 {
                   log_error ("can't create reader: %s\n", gpg_strerror (rc));
-                  fclose (certfp);
+                  es_fclose (certfp);
                   goto leave;
                 }
 
@@ -366,7 +366,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
               if (gpg_err_code (rc) == GPG_ERR_EOF)
                 rc = 0;
               gpgsm_destroy_reader (b64p12rdr);
-              fclose (certfp);
+              es_fclose (certfp);
               if (rc)
                 goto leave;
             }
@@ -401,8 +401,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
   ksba_cms_release (cms);
   ksba_cert_release (cert);
   gpgsm_destroy_reader (b64reader);
-  if (fp)
-    fclose (fp);
+  es_fclose (fp);
   return rc;
 }
 
@@ -585,7 +584,8 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
    success or an error code. */
 static gpg_error_t
 popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    FILE *infile, FILE *outfile, FILE **statusfile, pid_t *pid)
+                    FILE *infile, estream_t outfile, 
+                    FILE **statusfile, pid_t *pid)
 {
   const char *argv[22];
   int i=0;
@@ -627,17 +627,18 @@ popen_protect_tool (ctrl_t ctrl, const char *pgmname,
    certificates from that stupid format.  We will also store secret
    keys.  All of the pkcs#12 parsing and key storing is handled by the
    gpg-protect-tool, we merely have to take care of receiving the
-   certificates. On success RETFP returns a temporary file with
-   certificates. */
+   certificates.  On success RETFP returns a stream to a temporary
+   file with certificates.  */
 static gpg_error_t
 parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
-           FILE **retfp, struct stats_s *stats)
+           estream_t *retfp, struct stats_s *stats)
 {
   const char *pgmname;
   gpg_error_t err = 0, child_err = 0;
   int c, cont_line;
   unsigned int pos;
-  FILE *tmpfp, *certfp = NULL, *fp = NULL;
+  FILE *tmpfp, *fp = NULL;
+  estream_t certfp = NULL;
   char buffer[1024];
   size_t nread;
   pid_t pid = -1;
@@ -679,7 +680,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
       goto cleanup;
     }
 
-  certfp = gnupg_tmpfile ();
+  certfp = es_tmpfile ();
   if (!certfp)
     {
       err = gpg_error_from_syserror ();
@@ -780,8 +781,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     err = child_err;
   if (err)
     {
-      if (certfp)
-        fclose (certfp);
+      es_fclose (certfp);
     }
   else
     *retfp = certfp;

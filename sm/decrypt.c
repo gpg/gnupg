@@ -1,5 +1,5 @@
 /* decrypt.c - Decrypt a message
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,7 +33,8 @@
 #include "keydb.h"
 #include "i18n.h"
 
-struct decrypt_filter_parm_s {
+struct decrypt_filter_parm_s 
+{
   int algo;
   int mode;
   int blklen;
@@ -237,7 +238,7 @@ decrypt_filter (void *arg,
 
 /* Perform a decrypt operation.  */
 int
-gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
+gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 {
   int rc;
   Base64Context b64reader = NULL;
@@ -248,7 +249,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
   ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh;
   int recp;
-  FILE *in_fp = NULL;
+  estream_t in_fp = NULL;
   struct decrypt_filter_parm_s dfparm;
 
   memset (&dfparm, 0, sizeof dfparm);
@@ -263,11 +264,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-
-  in_fp = fdopen ( dup (in_fd), "rb");
+  in_fp = es_fdopen_nc (in_fd, "rb");
   if (!in_fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
@@ -279,7 +279,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -576,8 +576,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
   gpgsm_destroy_reader (b64reader);
   gpgsm_destroy_writer (b64writer);
   keydb_release (kh); 
-  if (in_fp)
-    fclose (in_fp);
+  es_fclose (in_fp);
   if (dfparm.hd)
     gcry_cipher_close (dfparm.hd); 
   return rc;

@@ -1,6 +1,6 @@
 /* gpgsm.c - GnuPG for S/MIME 
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2008  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+ *               2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1702,7 +1702,7 @@ main ( int argc, char **argv)
 
     case aEncr: /* Encrypt the given file. */
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         set_binary (stdin);
 
@@ -1713,14 +1713,13 @@ main ( int argc, char **argv)
         else
           wrong_args ("--encrypt [datafile]");
 
-        if (fp != stdout)
-          fclose (fp);
+        es_fclose (fp);
       }
       break;
 
     case aSign: /* Sign the given file. */
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         /* Fixme: We should also allow to concatenate multiple files for
            signing because that is what gpg does.*/
@@ -1733,8 +1732,7 @@ main ( int argc, char **argv)
         else
           wrong_args ("--sign [datafile]");
 
-        if (fp != stdout)
-          fclose (fp);
+        es_fclose (fp);
       }
       break;
         
@@ -1748,13 +1746,13 @@ main ( int argc, char **argv)
 
     case aVerify:
       {
-        FILE *fp = NULL;
+        estream_t fp = NULL;
 
         set_binary (stdin);
         if (argc == 2 && opt.outfile)
           log_info ("option --output ignored for a detached signature\n");
         else if (opt.outfile)
-          fp = open_fwrite (opt.outfile);
+          fp = open_es_fwrite (opt.outfile);
 
         if (!argc)
           gpgsm_verify (&ctrl, 0, -1, fp); /* normal signature from stdin */
@@ -1765,14 +1763,13 @@ main ( int argc, char **argv)
         else
           wrong_args ("--verify [signature [detached_data]]");
 
-        if (fp && fp != stdout)
-          fclose (fp);
+        es_fclose (fp);
       }
       break;
 
     case aDecrypt:
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         set_binary (stdin);
         if (!argc)
@@ -1781,8 +1778,8 @@ main ( int argc, char **argv)
           gpgsm_decrypt (&ctrl, open_read (*argv), fp); /* from file */
         else
           wrong_args ("--decrypt [filename]");
-        if (fp != stdout)
-          fclose (fp);
+
+        es_fclose (fp);
       }
       break;
 
@@ -2034,9 +2031,9 @@ check_special_filename (const char *fname, int for_write)
 
 
 
-/* Open the FILENAME for read and return the filedescriptor.  Stop
+/* Open the FILENAME for read and return the file descriptor.  Stop
    with an error message in case of problems.  "-" denotes stdin and
-   if special filenames are allowed the given fd is opened instead. */
+   if special filenames are allowed the given fd is opened instead.  */
 static int 
 open_read (const char *filename)
 {

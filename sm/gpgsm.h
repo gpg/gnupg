@@ -1,5 +1,6 @@
 /* gpgsm.h - Global definitions for GpgSM
- * Copyright (C) 2001, 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2007, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -255,7 +256,7 @@ char *gpgsm_get_certid (ksba_cert_t cert);
 
 /*-- base64.c --*/
 int  gpgsm_create_reader (Base64Context *ctx,
-                          ctrl_t ctrl, FILE *fp, int allow_multi_pem,
+                          ctrl_t ctrl, estream_t fp, int allow_multi_pem,
                           ksba_reader_t *r_reader);
 int gpgsm_reader_eof_seen (Base64Context ctx);
 void gpgsm_destroy_reader (Base64Context ctx);
@@ -350,18 +351,19 @@ void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
 int gpgsm_delete (ctrl_t ctrl, strlist_t names);
 
 /*-- verify.c --*/
-int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp);
+int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp);
 
 /*-- sign.c --*/
 int gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert);
 int gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
-                int data_fd, int detached, FILE *out_fp);
+                int data_fd, int detached, estream_t out_fp);
 
 /*-- encrypt.c --*/
-int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int in_fd, FILE *out_fp);
+int gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist,
+                   int in_fd, estream_t out_fp);
 
 /*-- decrypt.c --*/
-int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
+int gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp);
 
 /*-- certreqgen.c --*/
 int gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, FILE *out_fp);

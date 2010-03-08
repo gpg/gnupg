@@ -1,5 +1,6 @@
 /* export.c - Export certificates and private keys.
- * Copyright (C) 2002, 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2007, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,7 +61,7 @@ static void print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream);
 static gpg_error_t export_p12 (ctrl_t ctrl,
                                const unsigned char *certimg, size_t certimglen,
                                const char *prompt, const char *keygrip,
-                               FILE **retfp);
+                               estream_t *retfp);
 
 
 /* Create a table used to indetify duplicated certificates. */
@@ -341,7 +342,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   char *prompt;
   char buffer[1024];
   int  nread;
-  FILE *datafp = NULL;
+  estream_t datafp = NULL;
 
 
   hd = keydb_new (0);
@@ -447,16 +448,16 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   xfree (prompt);
   if (rc)
     goto leave;
-  rewind (datafp);
-  while ( (nread = fread (buffer, 1, sizeof buffer, datafp)) > 0 )
+  es_rewind (datafp);
+  while ( (nread = es_fread (buffer, 1, sizeof buffer, datafp)) > 0 )
     if ((rc = ksba_writer_write (writer, buffer, nread)))
       {
         log_error ("write failed: %s\n", gpg_strerror (rc));
         goto leave;
       }
-  if (ferror (datafp))
+  if (es_ferror (datafp))
     {
-      rc = gpg_error_from_errno (rc);
+      rc = gpg_error_from_syserror ();
       log_error ("error reading temporary file: %s\n", gpg_strerror (rc));
       goto leave;
     }
@@ -478,8 +479,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   cert = NULL;
 
  leave:
-  if (datafp)
-    fclose (datafp);
+  es_fclose (datafp);
   gpgsm_destroy_writer (b64writer);
   ksba_cert_release (cert);
   xfree (desc);
@@ -570,7 +570,7 @@ print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
 
 static gpg_error_t
 popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    FILE *infile, FILE *outfile, FILE **statusfile, 
+                    FILE *infile, estream_t outfile, FILE **statusfile, 
                     const char *prompt, const char *keygrip,
                     pid_t *pid)
 {
@@ -614,14 +614,14 @@ popen_protect_tool (ctrl_t ctrl, const char *pgmname,
 
 static gpg_error_t
 export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
-            const char *prompt, const char *keygrip,
-            FILE **retfp)
+            const char *prompt, const char *keygrip, estream_t *retfp)
 {
   const char *pgmname;
   gpg_error_t err = 0, child_err = 0;
   int c, cont_line;
   unsigned int pos;
-  FILE *infp = NULL, *outfp = NULL, *fp = NULL;
+  FILE *infp = NULL, *fp = NULL;
+  estream_t outfp = NULL;
   char buffer[1024];
   pid_t pid = -1;
   int bad_pass = 0;
@@ -647,7 +647,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       goto cleanup;
     }
 
-  outfp = gnupg_tmpfile ();
+  outfp = es_tmpfile ();
   if (!outfp)
     {
       err = gpg_error_from_syserror ();
@@ -731,8 +731,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     err = child_err;
   if (err)
     {
-      if (outfp)
-        fclose (outfp);
+      es_fclose (outfp);
     }
   else
     *retfp = outfp;

@@ -1,5 +1,6 @@
 /* verify.c - Verify a messages signature
- * Copyright (C) 2001, 2002, 2003, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2007, 
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,11 +53,11 @@ static gpg_error_t
 hash_data (int fd, gcry_md_hd_t md)
 {
   gpg_error_t err = 0;
-  FILE *fp;
+  estream_t fp;
   char buffer[4096];
   int nread;
 
-  fp = fdopen ( dup (fd), "rb");
+  fp = es_fdopen_nc (fd, "rb");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
@@ -66,27 +67,27 @@ hash_data (int fd, gcry_md_hd_t md)
 
   do 
     {
-      nread = fread (buffer, 1, DIM(buffer), fp);
+      nread = es_fread (buffer, 1, DIM(buffer), fp);
       gcry_md_write (md, buffer, nread);
     }
   while (nread);
-  if (ferror (fp))
+  if (es_ferror (fp))
     {
       err = gpg_error_from_syserror ();
       log_error ("read error on fd %d: %s\n", fd, gpg_strerror (err));
     }
-  fclose (fp);
+  es_fclose (fp);
   return err;
 }
 
 
 
 
-/* Perform a verify operation.  To verify detached signatures, data_fd
+/* Perform a verify operation.  To verify detached signatures, DATA_FD
    must be different than -1.  With OUT_FP given and a non-detached
-   signature, the signed material is written to that stream. */
+   signature, the signed material is written to that stream.  */
 int
-gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
+gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 {
   int i, rc;
   Base64Context b64reader = NULL;
@@ -102,7 +103,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
   const char *algoid;
   int algo;
   int is_detached;
-  FILE *fp = NULL;
+  estream_t in_fp = NULL;
   char *p;
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_VERIFY);
@@ -116,15 +117,15 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
     }
 
 
-  fp = fdopen ( dup (in_fd), "rb");
-  if (!fp)
+  in_fp = es_fdopen_nc (in_fd, "rb");
+  if (!in_fp)
     {
-      rc = gpg_error (gpg_err_code_from_errno (errno));
+      rc = gpg_error_from_syserror ();
       log_error ("fdopen() failed: %s\n", strerror (errno));
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, fp, 0, &reader);
+  rc = gpgsm_create_reader (&b64reader, ctrl, in_fp, 0, &reader);
   if (rc)
     {
       log_error ("can't create reader: %s\n", gpg_strerror (rc));
@@ -133,7 +134,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
 
   if (out_fp)
     {
-      rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, NULL, &writer);
+      rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_fp, &writer);
       if (rc)
         {
           log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -644,8 +645,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp)
   gpgsm_destroy_writer (b64writer);
   keydb_release (kh); 
   gcry_md_close (data_md);
-  if (fp)
-    fclose (fp);
+  es_fclose (in_fp);
 
   if (rc)
     {

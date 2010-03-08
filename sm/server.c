@@ -1,6 +1,6 @@
 /* server.c - Server mode and main entry point 
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -451,7 +451,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   certlist_t cl;
   int inp_fd, out_fd;
-  FILE *out_fp;
+  estream_t out_fp;
   int rc;
 
   (void)line;
@@ -463,9 +463,9 @@ cmd_encrypt (assuan_context_t ctx, char *line)
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = fdopen (dup (out_fd), "w");
+  out_fp = es_fdopen_nc (out_fd, "w");
   if (!out_fp)
-    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+    return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
   
   /* Now add all encrypt-to marked recipients from the default
      list. */
@@ -483,7 +483,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
     rc = gpgsm_encrypt (assuan_get_pointer (ctx),
                         ctrl->server_local->recplist,
                         inp_fd, out_fp);
-  fclose (out_fp);
+  es_fclose (out_fp);
 
   gpgsm_release_certlist (ctrl->server_local->recplist);
   ctrl->server_local->recplist = NULL;
@@ -508,7 +508,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
-  FILE *out_fp;
+  estream_t out_fp;
   int rc;
 
   (void)line;
@@ -520,16 +520,16 @@ cmd_decrypt (assuan_context_t ctx, char *line)
   if (out_fd == -1)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
-  out_fp = fdopen (dup(out_fd), "w");
+  out_fp = es_fdopen_nc (out_fd, "w");
   if (!out_fp)
-    return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+    return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
 
   rc = start_audit_session (ctrl);
   if (!rc)
     rc = gpgsm_decrypt (ctrl, inp_fd, out_fp); 
-  fclose (out_fp);
+  es_fclose (out_fp);
 
-  /* close and reset the fd */
+  /* Close and reset the fds. */
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -554,7 +554,7 @@ cmd_verify (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int fd = translate_sys2libc_fd (assuan_get_input_fd (ctx), 0);
   int out_fd = translate_sys2libc_fd (assuan_get_output_fd (ctx), 1);
-  FILE *out_fp = NULL;
+  estream_t out_fp = NULL;
 
   (void)line;
 
@@ -563,19 +563,18 @@ cmd_verify (assuan_context_t ctx, char *line)
 
   if (out_fd != -1)
     {
-      out_fp = fdopen ( dup(out_fd), "w");
+      out_fp = es_fdopen_nc (out_fd, "w");
       if (!out_fp)
-        return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
+        return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }
 
   rc = start_audit_session (ctrl);
   if (!rc)
     rc = gpgsm_verify (assuan_get_pointer (ctx), fd,
                        ctrl->server_local->message_fd, out_fp);
-  if (out_fp)
-    fclose (out_fp);
+  es_fclose (out_fp);
 
-  /* close and reset the fd */
+  /* Close and reset the fd.  */
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -595,7 +594,7 @@ cmd_sign (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
-  FILE *out_fp;
+  estream_t out_fp;
   int detached;
   int rc;
 
@@ -608,7 +607,7 @@ cmd_sign (assuan_context_t ctx, char *line)
 
   detached = has_option (line, "--detached"); 
 
-  out_fp = fdopen ( dup(out_fd), "w");
+  out_fp = es_fdopen_nc (out_fd, "w");
   if (!out_fp)
     return set_error (GPG_ERR_ASS_GENERAL, "fdopen() failed");
 
@@ -616,7 +615,7 @@ cmd_sign (assuan_context_t ctx, char *line)
   if (!rc)
     rc = gpgsm_sign (assuan_get_pointer (ctx), ctrl->server_local->signerlist,
                      inp_fd, detached, out_fp);
-  fclose (out_fp);
+  es_fclose (out_fp);
 
   /* close and reset the fd */
   close_message_fd (ctrl);
@@ -916,9 +915,9 @@ do_listkeys (assuan_context_t ctx, char *line, int mode)
 
       if ( outfd == -1 )
         return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
-      fp = es_fdopen ( dup (outfd), "w");
+      fp = es_fdopen_nc (outfd, "w");
       if (!fp)
-        return set_error (GPG_ERR_ASS_GENERAL, "es_fdopen() failed");
+        return set_error (gpg_err_code_from_syserror (), "es_fdopen() failed");
     }
   else
     {
