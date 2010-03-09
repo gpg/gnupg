@@ -1,3 +1,8 @@
+2010-03-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --disable-ccid-driver.
+	(AH_BOTTOM): Define GPG_ERR_ENABLE_GETTEXT_MACROS.
+
 2010-02-26  Werner Koch  <wk@g10code.com>
 
 	* gl/mkdtemp.c (__set_errno) [W32CE]: Use gpg_err_set_errno.

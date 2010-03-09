@@ -74,7 +74,7 @@ have_adns=no
 use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
-
+use_ccid_driver=yes
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -299,6 +299,19 @@ AC_ARG_WITH(capabilities,
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
+
+#
+# Allow disabling of internal CCID support.
+# It is defined only after we confirm the library is available later
+#
+AC_MSG_CHECKING([whether to enable the internal CCID driver])
+AC_ARG_ENABLE(ccid-driver,
+              AC_HELP_STRING([--disable-ccid-driver],
+                             [disable the internal CCID driver]),
+              use_ccid_driver=$enableval)
+AC_MSG_RESULT($use_ccid_driver)
+
+
 #
 # To avoid double inclusion of config.h which might happen at some
 # places, we add the usual double inclusion protection at the top of
@@ -427,6 +440,9 @@ AH_BOTTOM([
 #define _ESTREAM_PRINTF_MALLOC        gcry_malloc
 #define _ESTREAM_PRINTF_FREE          gcry_free
 #define _ESTREAM_PRINTF_EXTRA_INCLUDE "util.h"
+
+/* Under Windows we use the gettext code from libgpg-error.  */
+#define GPG_ERR_ENABLE_GETTEXT_MACROS
 
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
@@ -636,14 +652,16 @@ AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 # libusb allows us to use the integrated CCID smartcard reader driver.
 #
 # FiXME: Use GNUPG_CHECK_LIBUSB and modify to use separate AC_SUBSTs.
-AC_CHECK_LIB(usb, usb_bulk_write,
-              [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
-                AC_DEFINE(HAVE_LIBUSB,1,
-                         [defined if libusb is available])
-                have_libusb=yes
-             ])
+if test "$use_ccid_driver" = yes ; then
+  AC_CHECK_LIB(usb, usb_bulk_write,
+                [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
+                  AC_DEFINE(HAVE_LIBUSB,1,
+                           [defined if libusb is available])
+                  have_libusb=yes
+               ])
+  AC_CHECK_FUNCS(usb_create_match)
+fi
 AC_SUBST(LIBUSB_LIBS)
-AC_CHECK_FUNCS(usb_create_match)
 
 #
 # Check wether it is necessary to link against libdl.
