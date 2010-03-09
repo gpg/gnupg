@@ -5,7 +5,7 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release:  Version 2.0.14.
+release:  Version 2.0.15.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -31,21 +31,12 @@ GnuPG is distributed under the terms of the GNU General Public License
 What's New
 ===========
 
- * The default for --include-cert is now to include all certificates
-   in the chain except for the root certificate.
+ * New command --passwd for GPG.
 
- * Numerical values may now be used as an alternative to the
-   debug-level keywords.
+ * Fixes a regression in 2.0.14 which prevented unprotection of new
+   or changed gpg-agent passphrases.
 
- * The GPGSM --audit-log feature is now more complete.
-
- * GPG now supports DNS lookups for SRV, PKA and CERT on W32.
-
- * New GPGSM option --ignore-cert-extension.
-
- * New and changed passphrases are now created with an iteration count
-   requiring about 100ms of CPU work.
-
+ * Uses libassuan 2.0 which is available as a DSO.
 
 
 Getting the Software
@@ -54,7 +45,7 @@ Getting the Software
 Please follow the instructions found at http://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.14 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.15 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
 can be found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG
 is not available at ftp.gnu.org.
@@ -62,14 +53,14 @@ is not available at ftp.gnu.org.
 On the FTP server and its mirrors you should find the following files
 in the gnupg/ directory:
 
-  gnupg-2.0.14.tar.bz2 (3889k)
-  gnupg-2.0.14.tar.bz2.sig
+  gnupg-2.0.15.tar.bz2 (3884k)
+  gnupg-2.0.15.tar.bz2.sig
 
       GnuPG source compressed using BZIP2 and OpenPGP signature.
 
-  gnupg-2.0.13-2.0.14.diff.bz2 (42k)
+  gnupg-2.0.14-2.0.15.diff.bz2 (40k)
 
-      A patch file to upgrade a 2.0.13 GnuPG source tree.  This patch
+      A patch file to upgrade a 2.0.14 GnuPG source tree.  This patch
       does not include updates of the language files.
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2. 
@@ -84,9 +75,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.14.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.15.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.14.tar.bz2.sig
+     gpg --verify gnupg-2.0.15.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -112,13 +103,13 @@ the following ways:
    the SHA-1 checksum.  Assuming you downloaded the file
    gnupg-2.0.14.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.14.tar.bz2
+     sha1sum gnupg-2.0.15.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-cc5e4637f37f5bc82b00c73fc094ddadb7401821  gnupg-2.0.14.tar.bz2
-cad88a7f3653479df41ddb7956b9f8a0ff6f2185  gnupg-2.0.13-2.0.14.diff.bz2
+3596668fb9cc8ec0714463a5009f990fc23434b0  gnupg-2.0.15.tar.bz2
+ed35765ae081706c8856fd491201f4f9576135fd  gnupg-2.0.14-2.0.15.diff.bz2
 
 
 Internationalization
