@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-02-18 09:22+0100\n"
+"POT-Creation-Date: 2010-03-09 09:35+0100\n"
 "PO-Revision-Date: 2007-11-26 19:01+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -25,20 +25,25 @@ msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "nie uda³o siê uzyskaæ blokady pinentry: %s\n"
 
 #. TRANSLATORS: These are labels for buttons etc used in
-#. Pinentries.  A underscore indicates that the next letter
-#. should be used as an accelerator.  The actual to be
-#. translated text starts after the second vertical bar.
-#: agent/call-pinentry.c:400
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+#: agent/call-pinentry.c:401
 msgid "|pinentry-label|_OK"
 msgstr ""
 
-#: agent/call-pinentry.c:401
+#: agent/call-pinentry.c:402
 msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+#: agent/call-pinentry.c:403
+msgid "|pinentry-label|PIN:"
 msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
-#: agent/call-pinentry.c:644
+#: agent/call-pinentry.c:649
 #, fuzzy
 msgid "Quality:"
 msgstr "poprawno¶æ: %s"
@@ -49,53 +54,53 @@ msgstr "poprawno¶æ: %s"
 #. tooltip is limited to about 900 characters.  If you do not
 #. translate this entry, a default english text (see source)
 #. will be used.
-#: agent/call-pinentry.c:666
+#: agent/call-pinentry.c:671
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 
-#: agent/call-pinentry.c:710
+#: agent/call-pinentry.c:715
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr "Proszê wprowadziæ swój PIN, ¿eby odblokowaæ klucz tajny dla tej sesji"
 
-#: agent/call-pinentry.c:713
+#: agent/call-pinentry.c:718
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr ""
 "Proszê wprowadziæ swoje has³o, ¿eby odblokowaæ klucz tajny dla tej sesji"
 
-#: agent/call-pinentry.c:770
+#: agent/call-pinentry.c:775
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (próba %d z %d)"
 
-#: agent/call-pinentry.c:790 agent/call-pinentry.c:802
+#: agent/call-pinentry.c:795 agent/call-pinentry.c:807
 msgid "PIN too long"
 msgstr "PIN zbyt d³ugi"
 
-#: agent/call-pinentry.c:791
+#: agent/call-pinentry.c:796
 msgid "Passphrase too long"
 msgstr "Has³o zbyt d³ugie"
 
-#: agent/call-pinentry.c:799
+#: agent/call-pinentry.c:804
 msgid "Invalid characters in PIN"
 msgstr "Niew³a¶ciwy znak w PIN-ie"
 
-#: agent/call-pinentry.c:804
+#: agent/call-pinentry.c:809
 msgid "PIN too short"
 msgstr "PIN zbyt krótki"
 
-#: agent/call-pinentry.c:816
+#: agent/call-pinentry.c:821
 msgid "Bad PIN"
 msgstr "Niepoprawny PIN"
 
-#: agent/call-pinentry.c:817
+#: agent/call-pinentry.c:822
 msgid "Bad Passphrase"
 msgstr "Niepoprawne has³o"
 
-#: agent/call-pinentry.c:853
+#: agent/call-pinentry.c:858
 msgid "Passphrase"
 msgstr "Has³o"
 
@@ -106,7 +111,7 @@ msgstr "klucze ssh wiêksze ni¿ %d bitów nie s± obs³ugiwane\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1122
 #: g10/keygen.c:3394 g10/keygen.c:3427 g10/keyring.c:1237 g10/keyring.c:1569
-#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
+#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:801 g10/sign.c:1110
 #: g10/tdbio.c:548 jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -116,8 +121,8 @@ msgstr "nie mo¿na utworzyæ ,,%s'': %s\n"
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1123 g10/import.c:193 g10/keygen.c:2877
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
-#: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
-#: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
+#: g10/plaintext.c:503 g10/sign.c:783 g10/sign.c:978 g10/sign.c:1094
+#: g10/sign.c:1250 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
 #: g10/tdbio.c:616 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2047
 #: sm/gpgsm.c:2077 sm/gpgsm.c:2115 sm/gpgsm.c:2153 sm/qualified.c:66
 #, c-format
@@ -1688,7 +1693,7 @@ msgstr "dla klucza publicznego ,,%s'' istnieje klucz prywatny!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "aby go usun±æ nale¿y najpierw u¿yæ opcji \"--delete-secret-key\".\n"
 
-#: g10/encode.c:226 g10/sign.c:1266
+#: g10/encode.c:226 g10/sign.c:1269
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "b³±d podczas tworzenia has³a: %s\n"
@@ -1708,7 +1713,7 @@ msgstr "szyfrem %s\n"
 msgid "`%s' already compressed\n"
 msgstr ",,%s'' ju¿ jest skompresowany\n"
 
-#: g10/encode.c:311 g10/encode.c:611 g10/sign.c:561
+#: g10/encode.c:311 g10/encode.c:611 g10/sign.c:564
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "OSTRZE¯ENIE: plik ,,%s'' jest pusty\n"
@@ -1737,7 +1742,7 @@ msgstr ""
 "OSTRZE¯ENIE: wymuszone u¿ycie szyfru %s (%d) k³óci siê z ustawieniami "
 "adresata\n"
 
-#: g10/encode.c:655 g10/sign.c:936
+#: g10/encode.c:655 g10/sign.c:939
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -2958,7 +2963,7 @@ msgstr "klucz %s: nowy klucz - pominiêty\n"
 msgid "no writable keyring found: %s\n"
 msgstr "brak zapisywalnego zbioru kluczy: %s\n"
 
-#: g10/import.c:811 g10/openfile.c:278 g10/sign.c:802 g10/sign.c:1111
+#: g10/import.c:811 g10/openfile.c:278 g10/sign.c:805 g10/sign.c:1114
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "zapis do ,,%s''\n"
@@ -6171,13 +6176,13 @@ msgstr "sprawdzenie z³o¿onego podpisu nie powiod³o siê: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "podpis %s/%s z³o¿ony przez: ,,%s''\n"
 
-#: g10/sign.c:758
+#: g10/sign.c:761
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "kluczami PGP 2 w trybie --pgp2 mo¿na podpisywaæ tylko do oddzielonych "
 "podpisów\n"
 
-#: g10/sign.c:834
+#: g10/sign.c:837
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -6185,15 +6190,15 @@ msgstr ""
 "OSTRZE¯ENIE: wymuszone u¿ycie skrótu %s (%d) k³óci siê z ustawieniami "
 "adresata\n"
 
-#: g10/sign.c:961
+#: g10/sign.c:964
 msgid "signing:"
 msgstr "podpis:"
 
-#: g10/sign.c:1076
+#: g10/sign.c:1079
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "w trybie --pgp2 mo¿na podpisywaæ tylko za pomoc± kluczy z wersji 2.x\n"
 
-#: g10/sign.c:1260
+#: g10/sign.c:1263
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "zostanie u¿yty szyfr %s\n"

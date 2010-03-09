@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-02-18 09:22+0100\n"
+"POT-Creation-Date: 2010-03-09 09:35+0100\n"
 "PO-Revision-Date: 2009-09-05 09:27+0800\n"
 "Last-Translator: Jedi <JediLin@Gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -27,20 +27,25 @@ msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "個人識別碼項目鎖定獲取失敗: %s\n"
 
 #. TRANSLATORS: These are labels for buttons etc used in
-#. Pinentries.  A underscore indicates that the next letter
-#. should be used as an accelerator.  The actual to be
-#. translated text starts after the second vertical bar.
-#: agent/call-pinentry.c:400
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+#: agent/call-pinentry.c:401
 msgid "|pinentry-label|_OK"
 msgstr ""
 
-#: agent/call-pinentry.c:401
+#: agent/call-pinentry.c:402
 msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+#: agent/call-pinentry.c:403
+msgid "|pinentry-label|PIN:"
 msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
-#: agent/call-pinentry.c:644
+#: agent/call-pinentry.c:649
 msgid "Quality:"
 msgstr "品質: %s"
 
@@ -50,54 +55,54 @@ msgstr "品質: %s"
 #. tooltip is limited to about 900 characters.  If you do not
 #. translate this entry, a default english text (see source)
 #. will be used.
-#: agent/call-pinentry.c:666
+#: agent/call-pinentry.c:671
 msgid "pinentry.qualitybar.tooltip"
 msgstr ""
 "輸入在上面的文字的品質.\n"
 "關於此規範的細節, 請洽你的系統管理者."
 
-#: agent/call-pinentry.c:710
+#: agent/call-pinentry.c:715
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
 "session"
 msgstr "請輸入你的個人識別碼 (PIN) 以便在此階段作業中解開密鑰"
 
-#: agent/call-pinentry.c:713
+#: agent/call-pinentry.c:718
 msgid ""
 "Please enter your passphrase, so that the secret key can be unlocked for "
 "this session"
 msgstr "請輸入你的密語以便在此階段作業中解開私鑰"
 
-#: agent/call-pinentry.c:770
+#: agent/call-pinentry.c:775
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "設定錯誤 %s (第 %d 次嘗試, 最多 %d 次)"
 
-#: agent/call-pinentry.c:790 agent/call-pinentry.c:802
+#: agent/call-pinentry.c:795 agent/call-pinentry.c:807
 msgid "PIN too long"
 msgstr "個人識別碼 (PIN) 太長"
 
-#: agent/call-pinentry.c:791
+#: agent/call-pinentry.c:796
 msgid "Passphrase too long"
 msgstr "密語太長"
 
-#: agent/call-pinentry.c:799
+#: agent/call-pinentry.c:804
 msgid "Invalid characters in PIN"
 msgstr "個人識別碼 (PIN) 含有無效的字符"
 
-#: agent/call-pinentry.c:804
+#: agent/call-pinentry.c:809
 msgid "PIN too short"
 msgstr "個人識別碼 (PIN) 太短"
 
-#: agent/call-pinentry.c:816
+#: agent/call-pinentry.c:821
 msgid "Bad PIN"
 msgstr "不良的個人識別碼 (PIN)"
 
-#: agent/call-pinentry.c:817
+#: agent/call-pinentry.c:822
 msgid "Bad Passphrase"
 msgstr "不良的密語"
 
-#: agent/call-pinentry.c:853
+#: agent/call-pinentry.c:858
 msgid "Passphrase"
 msgstr "密語"
 
@@ -108,7 +113,7 @@ msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
 
 #: agent/command-ssh.c:688 g10/card-util.c:830 g10/exec.c:473 g10/gpg.c:1122
 #: g10/keygen.c:3394 g10/keygen.c:3427 g10/keyring.c:1237 g10/keyring.c:1569
-#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:798 g10/sign.c:1107
+#: g10/openfile.c:275 g10/openfile.c:368 g10/sign.c:801 g10/sign.c:1110
 #: g10/tdbio.c:548 jnlib/dotlock.c:310
 #, c-format
 msgid "can't create `%s': %s\n"
@@ -118,8 +123,8 @@ msgstr "無法建立 `%s': %s\n"
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1123 g10/import.c:193 g10/keygen.c:2877
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
-#: g10/plaintext.c:503 g10/sign.c:780 g10/sign.c:975 g10/sign.c:1091
-#: g10/sign.c:1247 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
+#: g10/plaintext.c:503 g10/sign.c:783 g10/sign.c:978 g10/sign.c:1094
+#: g10/sign.c:1250 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
 #: g10/tdbio.c:616 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2047
 #: sm/gpgsm.c:2077 sm/gpgsm.c:2115 sm/gpgsm.c:2153 sm/qualified.c:66
 #, c-format
@@ -1635,7 +1640,7 @@ msgstr "公鑰 \"%s\" 有相對應的私鑰!\n"
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "請先以 \"--delete-secret-keys\" 選項來刪除它.\n"
 
-#: g10/encode.c:226 g10/sign.c:1266
+#: g10/encode.c:226 g10/sign.c:1269
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "建立密語時出錯: %s\n"
@@ -1654,7 +1659,7 @@ msgstr "正在使用 %s 編密法\n"
 msgid "`%s' already compressed\n"
 msgstr "`%s' 已經被壓縮了\n"
 
-#: g10/encode.c:311 g10/encode.c:611 g10/sign.c:561
+#: g10/encode.c:311 g10/encode.c:611 g10/sign.c:564
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "警告: `%s' 是個空檔案\n"
@@ -1679,7 +1684,7 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
 
-#: g10/encode.c:655 g10/sign.c:936
+#: g10/encode.c:655 g10/sign.c:939
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -2854,7 +2859,7 @@ msgstr "金鑰 %s: 新的金鑰 - 已跳過\n"
 msgid "no writable keyring found: %s\n"
 msgstr "找不到可寫入的鑰匙圈: %s\n"
 
-#: g10/import.c:811 g10/openfile.c:278 g10/sign.c:802 g10/sign.c:1111
+#: g10/import.c:811 g10/openfile.c:278 g10/sign.c:805 g10/sign.c:1114
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "寫入 `%s' 中\n"
@@ -5972,25 +5977,25 @@ msgstr "檢查已建立的簽章時出錯: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s 簽章來自: \"%s\"\n"
 
-#: g10/sign.c:758
+#: g10/sign.c:761
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "你在 --pgp2 模式下祇能夠使用 PGP 2.x 型態的金鑰來做分離簽署\n"
 
-#: g10/sign.c:834
+#: g10/sign.c:837
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 摘要演算法會違反收件者偏好設定\n"
 
-#: g10/sign.c:961
+#: g10/sign.c:964
 msgid "signing:"
 msgstr "簽署:"
 
-#: g10/sign.c:1076
+#: g10/sign.c:1079
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "你在 --pgp2 模式下祇能夠使用 PGP 2.x 型態的金鑰來做明文簽署\n"
 
-#: g10/sign.c:1260
+#: g10/sign.c:1263
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "%s 加密將被採用\n"
