@@ -1,3 +1,7 @@
+2010-03-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --disable-ccid-driver.
+
 2010-02-18  Werner Koch  <wk@g10code.com>
 
 	Release 2.0.15rc1.

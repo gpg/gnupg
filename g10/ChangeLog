@@ -1,3 +1,8 @@
+2010-02-25  Werner Koch  <wk@g10code.com>
+
+	* sign.c (hash_for): Force SHA1 only for v1 OpenPGP cards.  Fixes
+	bug#1194.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_user_id): Avoid infinite loop in case of invalid
