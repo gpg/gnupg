@@ -32,8 +32,8 @@
 #include <unistd.h>
 #endif
 
-#include "../jnlib/logging.h"
-#include "../jnlib/utf8conv.h"
+#include "../common/logging.h"
+#include "../common/utf8conv.h"
 #include "minip12.h"
 
 #ifndef DIM
@@ -2354,7 +2354,7 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "gcc -Wall -O0 -g -DTEST=1 -o minip12 minip12.c ../jnlib/libjnlib.a -L /usr/local/lib -lgcrypt -lgpg-error"
+compile-command: "gcc -Wall -O0 -g -DTEST=1 -o minip12 minip12.c ../common/libcommon.a -L /usr/local/lib -lgcrypt -lgpg-error"
 End:
 */
 #endif /* TEST */

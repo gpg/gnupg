@@ -31,7 +31,6 @@
 #include <ksba.h>
 #include "../common/util.h"
 #include "../common/status.h"
-#include "../common/estream.h"
 #include "../common/audit.h"
 #include "../common/session-env.h"
 

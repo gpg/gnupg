@@ -76,7 +76,7 @@ else
 tests = tests
 endif
 
-SUBDIRS = m4 gl include jnlib common ${kbx} \
+SUBDIRS = m4 gl include common ${kbx} \
  ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${tools} po ${doc} ${tests}
 
 dist_doc_DATA = README

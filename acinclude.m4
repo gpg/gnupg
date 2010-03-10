@@ -103,6 +103,7 @@ dnl
 AC_DEFUN([GNUPG_CHECK_ENDIAN],
   [
     tmp_assumed_endian=big
+    tmp_assume_warn=""
     if test "$cross_compiling" = yes; then
       case "$host_cpu" in
          i@<:@345678@:>@* )
@@ -111,7 +112,6 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
          *)
             ;;
       esac
-      AC_MSG_WARN(cross compiling; assuming $tmp_assumed_endian endianess)
     fi
     AC_MSG_CHECKING(endianess)
     AC_CACHE_VAL(gnupg_cv_c_endian,
@@ -141,10 +141,11 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
               gnupg_cv_c_endian=little,
               gnupg_cv_c_endian=big,
               gnupg_cv_c_endian=$tmp_assumed_endian
+              tmp_assumed_warn=" (assumed)"
             )
         fi
       ])
-    AC_MSG_RESULT([$gnupg_cv_c_endian])
+    AC_MSG_RESULT([${gnupg_cv_c_endian}${tmp_assumed_warn}])
     if test "$gnupg_cv_c_endian" = little; then
       AC_DEFINE(LITTLE_ENDIAN_HOST,1,
                 [Defined if the host has little endian byte ordering])

@@ -1,3 +1,9 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (common_libs): Remove libjnlib.a.  Change order.
+
+	* gpgsm.h: Remove "estream.h".
+
 2010-03-08  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (gpgsm_genkey): Change OUT_FP to an estream_t

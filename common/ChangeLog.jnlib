@@ -1,3 +1,14 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	See gnupg/common/ChangeLog for newer changes.
+
+	JNLIB has been merged into GnuPG's common directory.  README.jnlib
+	list the files making up JNLIB.
+
+	* README: Rename to README.jnlib
+	* ChangeLog: Rename to ChangeLog.jnlib.
+	* Makefile.am: Remove.
+
 2010-03-01  Werner Koch  <wk@g10code.com>
 
 	* t-w32-reg.c: New.
@@ -108,7 +119,7 @@
 
 2009-01-22  Werner Koch  <wk@g10code.com>
 
-	* t-support.c (gpg_err_code_from_errno) 
+	* t-support.c (gpg_err_code_from_errno)
 	(gpg_err_code_from_syserror): New.
 
 2008-11-20  Werner Koch  <wk@g10code.com>
@@ -151,7 +162,7 @@
 
 	* stringhelp.c (make_basename): Silent gcc warning about unused arg.
 	* argparse.c (store_alias): Ditto.
-	(find_long_option): 
+	(find_long_option):
 
 2008-10-15  Werner Koch  <wk@g10code.com>
 
@@ -338,7 +349,7 @@
 	* stringhelp.c (strsep): New. Copied from gnupg 1.4.5
 	util/strgutil.c.
 
-	* strlist.h (STRLIST): Removed deprecated typedef. 
+	* strlist.h (STRLIST): Removed deprecated typedef.
 
 	* types.h: Made cpp commands work with old compilers.  Also shows
 	up nicer with Emacs' font locking.
@@ -348,14 +359,14 @@
         Changed license from GPL to LGPL.  Note that all code has either
 	been written by me, David, employees of g10 Code or taken from
 	glibc.
-	
+
 	* libjnlib-config.h, stringhelp.c, stringhelp.h:
 	* strlist.c, strlist.h,	utf8conv.c, utf8conv.h:
 	* argparse.c, argparse.h, logging.c, logging.h:
 	* dotlock.c, dotlock.h, types.h, mischelp.h:
         * xmalloc.c, xmalloc.h, w32-pth.c, w32-pth.h:
 	* w32-afunix.c, w32-afunix.h: Tagged them to be long to jnlib
-	which is a part of GnuPG but also used by other projetcs. 
+	which is a part of GnuPG but also used by other projetcs.
 
 2006-09-22  Werner Koch  <wk@g10code.com>
 
@@ -483,10 +494,10 @@
 	(_pth_strerror): New.
 	(do_pth_wait): Before we enter the loop we check if there
 	are too much events in the ring.
-	
+
 2004-12-14  Werner Koch  <wk@g10code.com>
 
-	* w32-pth.h (pth_event_occured): Removed macro. 
+	* w32-pth.h (pth_event_occured): Removed macro.
 	* w32-pth.c: Fixed license statement; its under the LGPL.
 	(enter_pth, leave_pth): Use them to bracket almost all public
 	functions.
@@ -498,7 +509,7 @@
 	(pth_kill): Release global mutex section.
 	(helper_thread): New.
 	(pth_spawn): Make sure only one thread is running.
-	
+
 2004-12-13  Werner Koch  <wk@g10code.com>
 
 	* stringhelp.c (w32_strerror) [W32]: New.
@@ -518,7 +529,7 @@
 
 	* w32-afunix.c: New. AF_UNIX emulation for W32.
 	* w32-afunix.h: Likewise.
-	
+
 2004-11-22  Werner Koch  <wk@g10code.com>
 
 	* logging.c (log_test_fd): Add test on LOGSTREAM.  Reported by
@@ -629,7 +640,7 @@
 
 2003-06-13  Werner Koch  <wk@gnupg.org>
 
-	* mischelp.h (wipememory2,wipememory): New. Taken from GnuPG 1.3.2. 
+	* mischelp.h (wipememory2,wipememory): New. Taken from GnuPG 1.3.2.
 
 2002-06-04  Werner Koch  <wk@gnupg.org>
 
@@ -683,7 +694,7 @@
 	* logging.c (log_set_prefix): New.
 	(do_logv): Include prefix and pid only if enabled. Print time only
 	when explicitly enabled.
-	(log_logv): New.  
+	(log_logv): New.
 	* logging.h: Include log_logv() only when requested.
 
 2001-11-06  Werner Koch  <wk@gnupg.org>

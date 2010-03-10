@@ -32,7 +32,6 @@
 
 #include "agent.h"
 
-#include "estream.h"
 #include "i18n.h"
 
 

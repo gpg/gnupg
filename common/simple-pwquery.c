@@ -41,9 +41,9 @@
 #endif
 
 #define JNLIB_NEED_AFLOCAL
-#include "../jnlib/mischelp.h"
+#include "../common/mischelp.h"
 #ifdef HAVE_W32_SYSTEM
-#include "../jnlib/w32-afunix.h"
+#include "../common/w32-afunix.h"
 #endif
 
 

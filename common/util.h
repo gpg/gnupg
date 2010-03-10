@@ -33,29 +33,30 @@
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
+/* Estream replaces most uses of stdio.  */
+#include "../common/estream.h"
+#include "../common/estream-printf.h"
+
 /* Get all the stuff from jnlib. */
-#include "../jnlib/logging.h"
-#include "../jnlib/argparse.h"
-#include "../jnlib/stringhelp.h"
-#include "../jnlib/mischelp.h"
-#include "../jnlib/strlist.h"
-#include "../jnlib/dotlock.h"
-#include "../jnlib/utf8conv.h"
-#include "../jnlib/dynload.h"
+#include "../common/logging.h"
+#include "../common/argparse.h"
+#include "../common/stringhelp.h"
+#include "../common/mischelp.h"
+#include "../common/strlist.h"
+#include "../common/dotlock.h"
+#include "../common/utf8conv.h"
+#include "../common/dynload.h"
 
 #include "init.h"
 
 /* Redefine asprintf by our estream version which uses our own memory
    allocator..  */
-#include "estream-printf.h"
 #define asprintf estream_asprintf
 #define vasprintf estream_vasprintf
 
-/* Due to a bug in mingw32's snprintf related to the 'l' modifier we
-   better use our snprintf.  */
-#ifdef HAVE_W32_SYSTEM
+/* Due to a bug in mingw32's snprintf related to the 'l' modifier and
+   for increased portability we use our snprintf on all systems. */
 #define snprintf estream_snprintf
-#endif
 
 
 /* GCC attributes.  */

@@ -25,7 +25,6 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "util.h"
-#include "../common/estream.h"
 
 /* It could be argued that the default cipher should be 3DES rather
    than CAST5, and the default compression should be 0

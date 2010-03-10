@@ -1,3 +1,10 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (kbxutil_LDADD, $(PROGRAMS)): Remove libjnlib.a.
+
+	* keybox-search.c, keybox-init.c, keybox-defs.h, kbxutil.c:
+	Replace "jnlib" include file part by "common".
+
 2010-03-08  Werner Koch  <wk@g10code.com>
 
 	Use macros for iobuf_ioctl commands.

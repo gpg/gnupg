@@ -22,7 +22,7 @@
 
 #include <gpg-error.h>
 #ifdef HTTP_USE_ESTREAM
-#include "estream.h"
+#include "../common/estream.h"
 #endif
 
 struct uri_tuple_s {

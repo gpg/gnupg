@@ -1,25 +1,45 @@
-# Makefile for the JNLIB part of GnuPG
-# Copyright (C) 1999, 2000, 2001, 2004, 2006,
-#               2010 Feee Software Soundation, Inc.
-# 
-# This file is part of JNLIB.
-# 
-# JNLIB is free software; you can redistribute it and/or modify it
-# under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation; either version 3 of
-# the License, or (at your option) any later version.
-# 
-# JNLIB is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, see <http://www.gnu.org/licenses/>.
+JNLIB - This is a collection of utility function which are too small
+to put into a library.  The code here is licensed under the LGPL.
+
+libjnlib-config.h should be be modified for each project to make these
+functions fit into the software. Mainly these are memory functions in
+case you need another allocator.
+
+Files which make up jnlib:
+    README.jnlib
+    ChangeLog.jnlib
+    libjnlib-config.h
+    argparse.c
+    argparse.h
+    dotlock.c
+    dotlock.h
+    dynload.h
+    logging.c
+    logging.h
+    mischelp.c
+    mischelp.h
+    stringhelp.c
+    stringhelp.h
+    strlist.c
+    strlist.h
+    types.h
+    utf8conv.c
+    utf8conv.h
+    w32-afunix.c
+    w32-afunix.h
+    w32-reg.c
+    w32help.h
+    xmalloc.c
+    xmalloc.h
+    t-stringhelp.c
+    t-support.c
+    t-support.h
+    t-timestuff.c
+    t-w32-reg.c
 
 
-## Process this file with automake to produce Makefile.in
-
+Here is a template Makefile.am for these jnlib modules:
+===8<==================================================
 EXTRA_DIST = README
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
@@ -27,12 +47,10 @@ TESTS = $(module_tests)
 AM_CPPFLAGS = -I$(top_srcdir)/intl
 
 # We need libgcrypt because libjnlib-config includes gcrypt.h
-AM_CFLAGS = -DJNLIB_IN_JNLIB $(LIBGCRYPT_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
 
 noinst_LIBRARIES = libjnlib.a
 
-
-#libjnlib_a_LDFLAGS =
 libjnlib_a_SOURCES = \
 	libjnlib-config.h \
 	stringhelp.c stringhelp.h \
@@ -41,16 +59,12 @@ libjnlib_a_SOURCES = \
 	argparse.c argparse.h \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \
-	types.h mischelp.c mischelp.h dynload.h w32help.h
+	types.h mischelp.c mischelp.h dynload.h w32help.h \
+        xmalloc.c xmalloc.h       
 
 if HAVE_W32_SYSTEM
 libjnlib_a_SOURCES += w32-reg.c w32-afunix.c w32-afunix.h
 endif
-
-
-# For GnuPG we don't need the xmalloc stuff.
-#       xmalloc.c xmalloc.h       
-
 
 #
 # Module tests.
@@ -82,4 +96,6 @@ if HAVE_W32_SYSTEM
 t_w32_reg_SOURCES = t-w32-reg.c $(t_jnlib_src)
 t_w32_reg_LDADD   = $(t_jnlib_ldadd)
 endif
+==>8===================================================
+
 

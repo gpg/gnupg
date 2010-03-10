@@ -29,10 +29,10 @@
 #include <assert.h>
 
 #define JNLIB_NEED_LOG_LOGV
-#include "../jnlib/logging.h"
-#include "../jnlib/argparse.h"
-#include "../jnlib/stringhelp.h"
-#include "../jnlib/utf8conv.h"
+#include "../common/logging.h"
+#include "../common/argparse.h"
+#include "../common/stringhelp.h"
+#include "../common/utf8conv.h"
 #include "i18n.h"
 #include "init.h"
 #include "keybox-defs.h"
@@ -433,7 +433,7 @@ main( int argc, char **argv )
 
   /*create_dotlock(NULL); register locking cleanup */
 
-  /* We need to use the gcry malloc function because jnlib does use them */
+  /* We need to use the gcry malloc function because jnlib uses them.  */
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 

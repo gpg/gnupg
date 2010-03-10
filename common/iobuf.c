@@ -1156,10 +1156,10 @@ iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname, const char *mode)
 {
   iobuf_t a;
 
-  if (fd == -1)
+  if (fd == GNUPG_INVALID_FD)
     a = iobuf_open (fname);
   else
-    a = iobuf_fdopen_nc (fd, mode);
+    a = iobuf_fdopen_nc (FD2INT(fd), mode);
   return a;
 }
 

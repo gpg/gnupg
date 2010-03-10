@@ -31,7 +31,6 @@
 #include <pth.h>
 #endif
 
-#include "estream.h"
 #include "util.h"
 
 

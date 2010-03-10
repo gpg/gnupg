@@ -30,7 +30,7 @@
 #include <locale.h>
 #endif
 
-#include "../jnlib/w32help.h"
+#include "../common/w32help.h"
 
 /* XPG3 defines the result of 'setlocale (category, NULL)' as:
    "Directs 'setlocale()' to query 'category' and return the current
@@ -101,7 +101,7 @@ gnupg_messages_locale_name (void)
   const char *s;
 
 #ifdef HAVE_W32_SYSTEM
-  /* We use the localname function from ../jnlib/w32-gettext.c. */
+  /* We use the localname function from ../common/w32-gettext.c. */
   s = gettext_localename ();
 #else
   s = do_nl_locale_name (LC_MESSAGES, "LC_MESSAGES");

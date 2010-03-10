@@ -1,3 +1,12 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	* jnlib/: Move all code to common/.
+	* Makefile.am (SUBDIRS): Remove jnlib.
+	* configure.ac (AC_CONFIG_FILES): Remove jnlib/Makefile.
+
+	* configure.ac (AM_PATH_LIBASSUAN): Remove double test.
+	* acinclude.m4 (GNUPG_CHECK_ENDIAN): Remove bogus warning.
+
 2010-03-09  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add option --disable-ccid-driver.

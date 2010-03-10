@@ -20,7 +20,7 @@
 #ifndef GNUPG_COMMON_EXECHELP_H
 #define GNUPG_COMMON_EXECHELP_H
 
-#include "estream.h"
+#include "../common/estream.h"
 
 
 /* Return the maximum number of currently allowed file descriptors.

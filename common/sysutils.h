@@ -52,7 +52,7 @@ void gnupg_allow_set_foregound_window (pid_t pid);
 
 #ifdef HAVE_W32_SYSTEM
 
-#include "../jnlib/w32help.h"
+#include "../common/w32help.h"
 
 #endif /*HAVE_W32_SYSTEM*/
 

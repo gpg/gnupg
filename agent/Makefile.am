@@ -45,8 +45,8 @@ gpg_agent_SOURCES = \
 	call-scd.c \
 	learncard.c
 
-common_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
-commonpth_libs = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a
+common_libs = $(libcommon) ../gl/libgnu.a
+commonpth_libs = $(libcommonpth) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
 #if HAVE_W32_SYSTEM

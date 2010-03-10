@@ -23,7 +23,7 @@
 
 #include "types.h"
 #include "../common/iobuf.h"
-#include "../jnlib/strlist.h"
+#include "../common/strlist.h"
 #include "cipher.h"
 #include "filter.h"
 #include "../common/openpgpdefs.h"

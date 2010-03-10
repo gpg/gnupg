@@ -53,7 +53,7 @@ endif
 
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 
-common_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
+common_libs = $(libcommon) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
 gpgsplit_LDADD = $(common_libs) \
@@ -62,7 +62,7 @@ gpgsplit_LDADD = $(common_libs) \
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
-# jnlib/common sucks in gpg-error, will they, nil they (some compilers
+# common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(common_libs) \
                 $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV) $(W32SOCKLIBS)
@@ -86,7 +86,7 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-# common sucks in jnlib, via use of BUG() in an inline function, which
+# common via use of BUG() in an inline function, which
 # some compilers do not eliminate.
 gpgkey2ssh_LDADD = $(common_libs) \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)

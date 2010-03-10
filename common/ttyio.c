@@ -48,7 +48,6 @@
 
 #include "util.h"
 #include "ttyio.h"
-#include "estream-printf.h"
 #include "common-defs.h"
 
 #define CONTROL_D ('D' - 'A' + 1)

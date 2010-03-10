@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "../jnlib/mischelp.h"
+#include "../common/mischelp.h"
 #include "keybox-defs.h"
 
 static KB_NAME kb_names;

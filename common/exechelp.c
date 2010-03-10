@@ -25,7 +25,9 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <unistd.h> 
 #include <fcntl.h>
 
@@ -77,6 +79,12 @@
 #undef X_OK
 #define X_OK F_OK
 #endif /* HAVE_W32_SYSTEM */
+
+/* Constants not supported by WindowsCE.  */
+#ifdef HAVE_W32CE_SYSTEM
+# define DETACHED_PROCESS         (0)
+# define CREATE_NEW_PROCESS_GROUP (0)
+#endif
 
 
 #ifdef HAVE_W32_SYSTEM

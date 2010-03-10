@@ -46,8 +46,8 @@ libkeybox_a_SOURCES = $(common_sources)
 # requires it - although we don't actually need it.  It is easier
 # to do it this way.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../common/libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
+kbxutil_LDADD   = ../common/libcommon.a ../gl/libgnu.a \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
-$(PROGRAMS) : ../common/libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a 
+$(PROGRAMS) : ../common/libcommon.a ../gl/libgnu.a 

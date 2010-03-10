@@ -27,7 +27,7 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a 
+needed_libs = $(libcommon) ../gl/libgnu.a 
 
 bin_PROGRAMS = gpg2 gpgv2
 noinst_PROGRAMS = $(module_tests)

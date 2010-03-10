@@ -37,12 +37,12 @@ libexec_PROGRAMS = $(GPGKEYS_LDAP) $(GPGKEYS_HKP) $(GPGKEYS_FINGER) \
 libexec_SCRIPTS = $(GPGKEYS_MAILTO)
 noinst_SCRIPTS = gpg2keys_test
 
-common_libs = ../gl/libgnu.a  ../common/libcommon.a ../jnlib/libjnlib.a
+common_libs = ../gl/libgnu.a  ../common/libcommon.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
 gpg2keys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h no-libgcrypt.c
 gpg2keys_ldap_CPPFLAGS = $(LDAP_CPPFLAGS) $(AM_CPPFLAGS)
-gpg2keys_ldap_LDADD = ../jnlib/libjnlib.a $(LDAPLIBS) $(GPG_ERROR_LIBS) \
+gpg2keys_ldap_LDADD = $(common_libs) $(LDAPLIBS) $(GPG_ERROR_LIBS) \
                       $(NETLIBS) $(other_libs)
 
 gpg2keys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h no-libgcrypt.c

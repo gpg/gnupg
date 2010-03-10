@@ -16,7 +16,7 @@
 
 
 #ifdef USE_SIMPLE_GETTEXT
-# include "../jnlib/w32help.h"
+# include "../common/w32help.h"
 # define _(a) gettext (a)
 # define N_(a) (a)
 #else

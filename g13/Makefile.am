@@ -40,7 +40,7 @@ g13_SOURCES = \
 	be-encfs.c be-encfs.h \
 	be-truecrypt.c be-truecrypt.h
 
-g13_LDADD = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a \
+g13_LDADD = $(libcommonpth) ../gl/libgnu.a \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
 	$(GPG_ERROR_LIBS) $(LIBINTL)
 

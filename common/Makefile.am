@@ -1,5 +1,5 @@
 # Makefile for common gnupg modules
-# Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2007, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -19,11 +19,11 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk \
-             audit-events.h status-codes.h
+             audit-events.h status-codes.h README.jnlib ChangeLog.jnlib
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
-noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
-TESTS = $(module_tests)
+noinst_PROGRAMS = $(jnlib_tests) $(module_tests) $(module_maint_tests)
+TESTS = $(jnlib_tests) $(module_tests)
 
 BUILT_SOURCES = audit-events.h status-codes.h
 
@@ -35,9 +35,26 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 include $(top_srcdir)/am/cmacros.am
 
+jnlib_sources = \
+	libjnlib-config.h \
+	types.h dynload.h w32help.h \
+	stringhelp.c stringhelp.h \
+	strlist.c strlist.h \
+	utf8conv.c utf8conv.h \
+	argparse.c argparse.h \
+	logging.c logging.h  \
+	dotlock.c dotlock.h  \
+        mischelp.c mischelp.h
+
+if HAVE_W32_SYSTEM
+jnlib_sources += w32-reg.c w32-afunix.c w32-afunix.h
+endif
+
+
 common_sources = \
 	common-defs.h \
 	util.h i18n.c i18n.h \
+	estream.c estream.h estream-printf.c estream-printf.h \
 	status.c status.h\
 	openpgpdefs.h \
 	gc-opt-flags.h \
@@ -62,7 +79,6 @@ common_sources = \
 	asshelp.c asshelp.h \
 	exechelp.c exechelp.h \
 	signal.c \
-	estream.c estream.h estream-printf.c estream-printf.h \
 	audit.c audit.h \
 	srv.h \
 	dns-cert.c dns-cert.h \
@@ -78,13 +94,13 @@ without_pth_sources = \
         get-passphrase.c get-passphrase.h
 
 
-libcommon_a_SOURCES = $(common_sources) $(without_pth_sources)
+libcommon_a_SOURCES = $(jnlib_sources) $(common_sources) $(without_pth_sources)
 if USE_DNS_SRV
 libcommon_a_SOURCES += srv.c
 endif
 libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_GNU_PTH=1
 
-libcommonpth_a_SOURCES = $(common_sources)
+libcommonpth_a_SOURCES = $(jnlib_sources) $(common_sources)
 if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
@@ -121,13 +137,32 @@ endif
 #
 # Module tests
 #
+t_jnlib_src = t-support.c t-support.h 
+jnlib_tests = t-stringhelp t-timestuff
+if HAVE_W32_SYSTEM
+jnlib_tests += t-w32-reg
+endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil t-exechelp \
 	       t-session-env
 module_maint_tests = t-helpfile t-b64
 
-t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
+
+t_common_ldadd = libcommon.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
+# jnlib tests
+t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
+t_stringhelp_LDADD = $(t_common_ldadd)
+
+t_timestuff_SOURCES = t-timestuff.c $(t_jnlib_src)
+t_timestuff_LDADD = $(t_common_ldadd)
+
+if HAVE_W32_SYSTEM
+t_w32_reg_SOURCES = t-w32-reg.c $(t_jnlib_src)
+t_w32_reg_LDADD   = $(t_common_ldadd)
+endif
+
+# common tests
 t_convert_LDADD = $(t_common_ldadd)
 t_percent_LDADD = $(t_common_ldadd)
 t_gettime_LDADD = $(t_common_ldadd)
@@ -137,4 +172,7 @@ t_sexputil_LDADD = $(t_common_ldadd)
 t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
+
+
+
 

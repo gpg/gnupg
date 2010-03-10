@@ -24,7 +24,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "../jnlib/stringhelp.h" /* ascii_xxxx() */
+#include "../common/stringhelp.h" /* ascii_xxxx() */
 
 #include "keybox-defs.h"
 #include <gcrypt.h>

@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../jnlib/types.h"
+#include "../common/types.h"
 #include "rmd160.h"
 
 /*

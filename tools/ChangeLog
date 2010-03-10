@@ -1,3 +1,7 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (common_libs): Remove libjnlib.a.
+
 2010-03-08  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c (gcry_create_nonce): New.

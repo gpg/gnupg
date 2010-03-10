@@ -21,6 +21,12 @@ common/audit.c
 common/helpfile.c
 common/gettime.c
 
+common/argparse.c
+common/logging.c
+common/utf8conv.c
+common/dotlock.c
+
+
 g10/armor.c
 g10/build-packet.c
 g10/call-agent.c
@@ -64,11 +70,6 @@ g10/tdbio.c
 g10/textfilter.c
 g10/trustdb.c
 g10/verify.c
-
-jnlib/argparse.c
-jnlib/logging.c
-jnlib/utf8conv.c
-jnlib/dotlock.c
 
 kbx/kbxutil.c
 

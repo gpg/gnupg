@@ -34,9 +34,9 @@
    owns here.  This will not allow us build KBX in a standalone way
    but there is currently no need for it anyway.  Same goes for
    stringhelp.h which for example provides a replacement for stpcpy -
-   fixme: Better the LIBOBJ mechnism. */
-#include "../jnlib/types.h"
-#include "../jnlib/stringhelp.h"
+   fixme: Better use the LIBOBJ mechnism. */
+#include "../common/types.h"
+#include "../common/stringhelp.h"
 
 #include "keybox.h"
 

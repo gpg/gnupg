@@ -44,7 +44,6 @@
 #include "i18n.h"
 #include "get-passphrase.h"
 #include "sysutils.h"
-#include "estream.h"
 
 
 enum cmd_and_opt_values 

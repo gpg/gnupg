@@ -472,7 +472,7 @@ open_file (const char **filename, FILE *outfp)
     {
       int save_errno = errno;
       fprintf (outfp, "can't open `%s': %s\n", *filename, strerror(errno));
-      errno = save_errno;
+      gpg_err_set_errno (save_errno);
     }
   return fp;
 }

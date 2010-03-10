@@ -1,3 +1,9 @@
+2010-03-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (common_libs): Remove libjnlib.a.
+
+	* trustlist.c, protect-tool.c, command-ssh.c: Remove estream.h.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (start_pinentry): Always free OPTSTR.  Send

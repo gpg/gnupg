@@ -43,7 +43,7 @@ NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.4.0
 
 NEED_LIBASSUAN_API=2
-NEED_LIBASSUAN_VERSION=1.1.0
+NEED_LIBASSUAN_VERSION=2.0.0
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.0.2
@@ -439,7 +439,7 @@ AH_BOTTOM([
    asprintf.  */
 #define _ESTREAM_PRINTF_MALLOC        gcry_malloc
 #define _ESTREAM_PRINTF_FREE          gcry_free
-#define _ESTREAM_PRINTF_EXTRA_INCLUDE "util.h"
+#define _ESTREAM_PRINTF_EXTRA_INCLUDE "../common/util.h"
 
 /* Under Windows we use the gettext code from libgpg-error.  */
 #define GPG_ERR_ENABLE_GETTEXT_MACROS
@@ -633,9 +633,6 @@ AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
 AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
                   have_libassuan=yes,have_libassuan=no)
 if test "$have_libassuan" = "yes"; then
-  have_libassuan=no
-  AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
-                    have_libassuan=yes,have_libassuan=no)	
   AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
                      [version of the libassuan library])
 fi
@@ -1108,7 +1105,7 @@ AC_CHECK_FUNCS([ttyname rand ftello fsync])
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 #
-# These are needed by libjnlib - fixme: we should use a jnlib.m4
+# These are needed by the jnlib parts in common.
 # Note:  We already checked pwd.h.
 AC_CHECK_HEADERS([signal.h])
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
@@ -1490,7 +1487,6 @@ Makefile
 po/Makefile.in
 gl/Makefile
 include/Makefile
-jnlib/Makefile
 common/Makefile
 kbx/Makefile
 g10/Makefile

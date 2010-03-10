@@ -23,7 +23,6 @@
 
 #include "util.h"
 #include "iobuf.h"
-#include "estream-printf.h"
 
 #if !defined(_ESTREAM_PRINTF_MALLOC) || !defined(_ESTREAM_PRINTF_FREE)
 #error Need to define ESTREAM_PRINTF_MALLOC and _FREE

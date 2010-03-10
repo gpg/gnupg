@@ -24,7 +24,7 @@
 
 /* Include whatever files you need.  */
 #include <gcrypt.h>
-#include "../jnlib/logging.h"
+#include "../common/logging.h"
 
 /* Try to write error message using the standard log mechanism.  The
    current implementation requires that the HAVE_JNLIB_LOGGING is also

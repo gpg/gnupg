@@ -1,8 +1,0 @@
-JNLIB - This is a collection of utility function which are too small
-to put into a library.  The code here is licensed under the LGPL.
-
-libjnlib-config.h should be be modified for each project to make these
-functions fit into the software. Mainly these are memory functions in
-case you need another allocator.
-
-
