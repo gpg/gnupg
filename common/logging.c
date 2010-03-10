@@ -1,6 +1,6 @@
 /* logging.c - Useful logging functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005, 2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 
+ *               2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -43,20 +43,8 @@
 #include "libjnlib-config.h"
 #include "logging.h"
 
-#if defined (HAVE_FOPENCOOKIE) ||  defined (HAVE_FUNOPEN)
-#define USE_FUNWRITER 1
-#endif
 
-#ifdef HAVE_FOPENCOOKIE
-typedef ssize_t my_funopen_hook_ret_t;
-typedef size_t  my_funopen_hook_size_t;
-#else
-typedef int     my_funopen_hook_ret_t;
-typedef int     my_funopen_hook_size_t;
-#endif
-
-
-static FILE *logstream;
+static estream_t logstream;
 static int log_socket = -1;
 static char prefix_buffer[80];
 static int with_time;
@@ -86,16 +74,17 @@ log_inc_errorcount (void)
 }
 
 
-/* The follwing 3 functions are used by funopen to write logs to a
-   socket. */
-#ifdef USE_FUNWRITER
-struct fun_cookie_s {
+/* The following 3 functions are used by es_fopencookie to write logs
+   to a socket.  */
+struct fun_cookie_s
+{
   int fd;
   int quiet;
   int want_socket;
   int is_socket;
   char name[1];
 };
+
 
 /* Write NBYTES of BUFFER to file descriptor FD. */
 static int
@@ -120,8 +109,8 @@ writen (int fd, const void *buffer, size_t nbytes)
 }
 
 
-static my_funopen_hook_ret_t 
-fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
+static ssize_t 
+fun_writer (void *cookie_arg, const void *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
 
@@ -191,7 +180,7 @@ fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
 
   log_socket = cookie->fd;
   if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
-    return (my_funopen_hook_ret_t)size; /* Okay. */ 
+    return (ssize_t)size; /* Okay. */ 
 
   if (!running_detached && cookie->fd != -1
       && isatty (fileno (stderr)))
@@ -210,8 +199,9 @@ fun_writer (void *cookie_arg, const char *buffer, my_funopen_hook_size_t size)
       log_socket = -1;
     }
 
-  return (my_funopen_hook_ret_t)size;
+  return (ssize_t)size;
 }
+
 
 static int
 fun_closer (void *cookie_arg)
@@ -224,8 +214,6 @@ fun_closer (void *cookie_arg)
   log_socket = -1;
   return 0;
 }
-#endif /*USE_FUNWRITER*/
-
 
 
 /* Common function to either set the logging to a file or a file
@@ -233,17 +221,14 @@ fun_closer (void *cookie_arg)
 static void
 set_file_fd (const char *name, int fd) 
 {
-  FILE *fp;
+  estream_t fp;
   int want_socket;
-#ifdef USE_FUNWRITER
   struct fun_cookie_s *cookie;
-#endif
 
   /* Close an open log stream.  */
   if (logstream)
     {
-      if (logstream != stderr && logstream != stdout)
-        fclose (logstream);
+      es_fclose (logstream);
       logstream = NULL;
     }
 
@@ -266,7 +251,7 @@ set_file_fd (const char *name, int fd)
     }
 
   /* Setup a new stream.  */
-#ifdef USE_FUNWRITER
+
   /* The xmalloc below is justified because we can expect that this
      function is called only during initialization and there is no
      easy way out of this error condition.  */
@@ -288,55 +273,44 @@ set_file_fd (const char *name, int fd)
     }
   log_socket = cookie->fd;
 
-#ifdef HAVE_FOPENCOOKIE
   {
-    cookie_io_functions_t io = { NULL };
-    io.write = fun_writer;
-    io.close = fun_closer;
+    es_cookie_io_functions_t io = { NULL };
+    io.func_write = fun_writer;
+    io.func_close = fun_closer;
     
-    fp = fopencookie (cookie, "w", io);
+    fp = es_fopencookie (cookie, "w", io);
   }
-#else /*!HAVE_FOPENCOOKIE*/
-  fp = funopen (cookie, NULL, fun_writer, NULL, fun_closer);
-#endif /*!HAVE_FOPENCOOKIE*/
 
-#else /*!USE_FUNWRITER*/
-
-  /* The system does not feature custom streams.  Thus fallback to
-     plain stdio. */
-  if (want_socket)
-    {
-      fprintf (stderr, "system does not support logging to a socket - "
-               "using stderr\n");
-      fp = stderr;
-    }
-  else if (name)
-    fp = fopen (name, "a");
-  else if (fd == 1)
-    fp = stdout;
-  else if (fd == 2)
-    fp = stderr;
-  else
-    fp = fdopen (fd, "a");
-
-  log_socket = -1; 
-
-#endif /*!USE_FUNWRITER*/
-
-  /* On error default to stderr.  */
+  /* On error default to a stderr based estream.  */
   if (!fp)
     {
-      if (name)
-        fprintf (stderr, "failed to open log file `%s': %s\n",
-                 name, strerror(errno));
+      fp = es_fpopen (stderr, "a");
+      if (fp)
+        {
+          if (name)
+            es_fprintf (fp, "failed to open log file `%s': %s\n",
+                        name, strerror (errno));
+          else
+            es_fprintf (fp, "failed to fdopen file descriptor %d: %s\n",
+                        fd, strerror (errno));
+        }
       else
-        fprintf (stderr, "failed to fdopen file descriptor %d: %s\n",
-                 fd, strerror(errno));
-      /* We need to make sure that there is a log stream.  We use stderr. */
-      fp = stderr;
+        {
+          fprintf (stderr, "failed to use stderr as log stream: %s\n",
+                   strerror (errno));
+          /* No way to log something.  Create a dummy estream so that
+             there is something we can use.  */
+          fp = es_fpopen (NULL, "a");
+          if (!fp)
+            {
+              fprintf (stderr, "fatal: failed to open dummy stream: %s\n",
+                       strerror (errno));
+              abort();
+            }
+        }
     }
-  else
-    setvbuf (fp, NULL, _IOLBF, 0);
+
+  es_setvbuf (fp, NULL, _IOLBF, 0);
   
   logstream = fp;
 
@@ -412,13 +386,13 @@ log_get_prefix (unsigned int *flags)
 
 /* This function returns true if the file descriptor FD is in use for
    logging.  This is preferable over a test using log_get_fd in that
-   it allows the logging code to use more then one file descriptor. */
+   it allows the logging code to use more then one file descriptor.  */
 int
 log_test_fd (int fd)
 {
   if (logstream)
     {
-      int tmp = fileno (logstream);
+      int tmp = es_fileno (logstream);
       if ( tmp != -1 && tmp == fd)
         return 1;
     }
@@ -430,16 +404,14 @@ log_test_fd (int fd)
 int
 log_get_fd ()
 {
-  return fileno(logstream?logstream:stderr);
+  return logstream? es_fileno(logstream) : -1;
 }
 
-FILE *
+estream_t
 log_get_stream ()
 {
-  /* FIXME: We should not return stderr here but initialize the log
-     stream properly.  This might break more things than using stderr,
-     though */
-  return logstream?logstream:stderr;
+  assert (logstream);
+  return logstream;
 }
 
 static void
@@ -451,8 +423,9 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
       assert (logstream);
     }
 
+  es_flockfile (logstream);
   if (missing_lf && level != JNLIB_LOG_CONT)
-    putc('\n', logstream );
+    es_putc_unlocked ('\n', logstream );
   missing_lf = 0;
 
   if (level != JNLIB_LOG_CONT)
@@ -464,28 +437,28 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
           time_t atime = time (NULL);
           
           tp = localtime (&atime);
-          fprintf (logstream, "%04d-%02d-%02d %02d:%02d:%02d ",
-                   1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                   tp->tm_hour, tp->tm_min, tp->tm_sec );
+          es_fprintf_unlocked (logstream, "%04d-%02d-%02d %02d:%02d:%02d ",
+                               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                               tp->tm_hour, tp->tm_min, tp->tm_sec );
         }
       if (with_prefix || force_prefixes)
-        fputs (prefix_buffer, logstream);
+        es_fputs_unlocked (prefix_buffer, logstream);
       if (with_pid || force_prefixes)
         {
           if (get_tid_callback)
-            fprintf (logstream, "[%u.%lx]", 
-                     (unsigned int)getpid (), get_tid_callback ());
+            es_fprintf_unlocked (logstream, "[%u.%lx]", 
+                        (unsigned int)getpid (), get_tid_callback ());
           else
-            fprintf (logstream, "[%u]", (unsigned int)getpid ());
+            es_fprintf_unlocked (logstream, "[%u]", (unsigned int)getpid ());
         }
       if (!with_time || force_prefixes)
-        putc (':', logstream);
+        es_putc_unlocked (':', logstream);
       /* A leading backspace suppresses the extra space so that we can
          correctly output, programname, filename and linenumber. */
       if (fmt && *fmt == '\b')
         fmt++;
       else
-        putc (' ', logstream);
+        es_putc_unlocked (' ', logstream);
     }
 
   switch (level)
@@ -495,37 +468,39 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
     case JNLIB_LOG_INFO: break;
     case JNLIB_LOG_WARN: break;
     case JNLIB_LOG_ERROR: break;
-    case JNLIB_LOG_FATAL: fputs("Fatal: ",logstream ); break;
-    case JNLIB_LOG_BUG: fputs("Ohhhh jeeee: ", logstream); break;
-    case JNLIB_LOG_DEBUG: fputs("DBG: ", logstream ); break;
-    default: fprintf(logstream,"[Unknown log level %d]: ", level ); break;
+    case JNLIB_LOG_FATAL: es_fputs_unlocked ("Fatal: ",logstream ); break;
+    case JNLIB_LOG_BUG:   es_fputs_unlocked ("Ohhhh jeeee: ", logstream); break;
+    case JNLIB_LOG_DEBUG: es_fputs_unlocked ("DBG: ", logstream ); break;
+    default: 
+      es_fprintf_unlocked (logstream,"[Unknown log level %d]: ", level);
+      break;
     }
-
 
   if (fmt)
     {
-      vfprintf(logstream,fmt,arg_ptr) ;
+      es_vfprintf_unlocked (logstream, fmt, arg_ptr);
       if (*fmt && fmt[strlen(fmt)-1] != '\n')
         missing_lf = 1;
-#ifdef HAVE_W32_SYSTEM
-      else
-        fflush (logstream);
-#endif
     }
 
   if (level == JNLIB_LOG_FATAL)
     {
       if (missing_lf)
-        putc('\n', logstream );
-      exit(2);
+        es_putc_unlocked ('\n', logstream);
+      es_funlockfile (logstream);
+      exit (2);
     }
-  if (level == JNLIB_LOG_BUG)
+  else if (level == JNLIB_LOG_BUG)
     {
       if (missing_lf)
-        putc('\n', logstream );
-      abort();
+        es_putc_unlocked ('\n', logstream );
+      es_funlockfile (logstream);
+      abort ();
     }
+  else
+    es_funlockfile (logstream);
 }
+
 
 static void
 do_log( int level, const char *fmt, ... )

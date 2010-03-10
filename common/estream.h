@@ -113,11 +113,14 @@
 #define es_fwrite             _ESTREAM_PREFIX(es_fwrite)
 #define es_fgets              _ESTREAM_PREFIX(es_fgets)
 #define es_fputs              _ESTREAM_PREFIX(es_fputs)
+#define es_fputs_unlocked     _ESTREAM_PREFIX(es_fputs_unlocked)
 #define es_getline            _ESTREAM_PREFIX(es_getline)
 #define es_read_line          _ESTREAM_PREFIX(es_read_line)
 #define es_free               _ESTREAM_PREFIX(es_free)
-#define es_fprf               _ESTREAM_PREFIX(es_fprf)
-#define es_vfprf              _ESTREAM_PREFIX(es_vfprf)
+#define es_fprintf            _ESTREAM_PREFIX(es_fprintf)
+#define es_fprintf_unlocked   _ESTREAM_PREFIX(es_fprintf_unlocked)
+#define es_vfprintf           _ESTREAM_PREFIX(es_vfprint)
+#define es_vfprintf_unlocked  _ESTREAM_PREFIX(es_vfprint_unlocked)
 #define es_setvbuf            _ESTREAM_PREFIX(es_setvbuf)
 #define es_setbuf             _ESTREAM_PREFIX(es_setbuf)
 #define es_tmpfile            _ESTREAM_PREFIX(es_tmpfile)
@@ -311,6 +314,8 @@ size_t es_fwrite (const void *ES__RESTRICT ptr, size_t size, size_t memb,
 
 char *es_fgets (char *ES__RESTRICT s, int n, estream_t ES__RESTRICT stream);
 int es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream);
+int es_fputs_unlocked (const char *ES__RESTRICT s,
+                       estream_t ES__RESTRICT stream);
 
 ssize_t es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr,
 		    size_t *ES__RESTRICT n,
@@ -323,9 +328,17 @@ void es_free (void *a);
 int es_fprintf (estream_t ES__RESTRICT stream,
 		const char *ES__RESTRICT format, ...)
      _ESTREAM_GCC_A_PRINTF(2,3);
+int es_fprintf_unlocked (estream_t ES__RESTRICT stream,
+                         const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(2,3);
+
 int es_vfprintf (estream_t ES__RESTRICT stream,
 		 const char *ES__RESTRICT format, va_list ap)
      _ESTREAM_GCC_A_PRINTF(2,0);
+int es_vfprintf_unlocked (estream_t ES__RESTRICT stream,
+                          const char *ES__RESTRICT format, va_list ap)
+     _ESTREAM_GCC_A_PRINTF(2,0);
+
 int es_setvbuf (estream_t ES__RESTRICT stream,
 		char *ES__RESTRICT buf, int mode, size_t size);
 void es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf);

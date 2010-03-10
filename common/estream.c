@@ -869,7 +869,10 @@ es_func_fp_read (void *cookie, void *buffer, size_t size)
   estream_cookie_fp_t file_cookie = cookie;
   ssize_t bytes_read;
 
-  bytes_read = fread (buffer, 1, size, file_cookie->fp);
+  if (file_cookie->fp)
+    bytes_read = fread (buffer, 1, size, file_cookie->fp);
+  else
+    bytes_read = 0;
   if (!bytes_read && ferror (file_cookie->fp))
     return -1;
   return bytes_read;
@@ -883,7 +886,11 @@ es_func_fp_write (void *cookie, const void *buffer, size_t size)
   estream_cookie_fp_t file_cookie = cookie;
   size_t bytes_written;
 
-  bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
+
+  if (file_cookie->fp)
+    bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
+  else
+    bytes_written = size; /* Successfully written to the bit bucket.  */
   if (bytes_written != size)
     return -1;
   return bytes_written;
@@ -896,17 +903,25 @@ es_func_fp_seek (void *cookie, off_t *offset, int whence)
   estream_cookie_fp_t file_cookie = cookie;
   long int offset_new;
 
+  if (!file_cookie->fp)
+    {
+      _set_errno (ESPIPE);
+      return -1; 
+    }
+
   if ( fseek (file_cookie->fp, (long int)*offset, whence) )
     {
-      fprintf (stderr, "\nfseek failed: errno=%d (%s)\n", errno,strerror (errno));
-    return -1;
+      /* fprintf (stderr, "\nfseek failed: errno=%d (%s)\n", */
+      /*          errno,strerror (errno)); */
+      return -1;
     }
 
   offset_new = ftell (file_cookie->fp);
   if (offset_new == -1)
     {
-      fprintf (stderr, "\nftell failed: errno=%d (%s)\n", errno,strerror (errno));
-    return -1;
+      /* fprintf (stderr, "\nftell failed: errno=%d (%s)\n",  */
+      /*          errno,strerror (errno)); */
+      return -1;
     }
   *offset = offset_new;
   return 0;
@@ -921,8 +936,13 @@ es_func_fp_destroy (void *cookie)
 
   if (fp_cookie)
     {
-      fflush (fp_cookie->fp);
-      err = fp_cookie->no_close? 0 : fclose (fp_cookie->fp);
+      if (fp_cookie->fp)
+        {
+          fflush (fp_cookie->fp);
+          err = fp_cookie->no_close? 0 : fclose (fp_cookie->fp);
+        }
+      else
+        err = 0;
       mem_free (fp_cookie);
     }
   else
@@ -2268,13 +2288,14 @@ do_fpopen (FILE *fp, const char *mode, int no_close)
   if (err)
     goto out;
 
-  fflush (fp);
+  if (fp)
+    fflush (fp);
   err = es_func_fp_create (&cookie, fp, modeflags, no_close);
   if (err)
     goto out;
-
+  
   create_called = 1;
-  err = es_create (&stream, cookie, fileno (fp), estream_functions_fp,
+  err = es_create (&stream, cookie, fp? fileno (fp):-1, estream_functions_fp,
                    modeflags);
 
  out:
@@ -2738,6 +2759,17 @@ es_fgets (char *ES__RESTRICT buffer, int length, estream_t ES__RESTRICT stream)
 
 
 int
+es_fputs_unlocked (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream)
+{
+  size_t length;
+  int err;
+
+  length = strlen (s);
+  err = es_writen (stream, s, length, NULL);
+  return err ? EOF : 0;
+}
+
+int
 es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream)
 {
   size_t length;
@@ -2932,6 +2964,15 @@ es_free (void *a)
 
 
 int
+es_vfprintf_unlocked (estream_t ES__RESTRICT stream,
+                      const char *ES__RESTRICT format,
+                      va_list ap)
+{
+  return es_print (stream, format, ap);
+}
+
+
+int
 es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 	     va_list ap)
 {
@@ -2945,9 +2986,9 @@ es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 }
 
 
-static int
+int
 es_fprintf_unlocked (estream_t ES__RESTRICT stream,
-           const char *ES__RESTRICT format, ...)
+                     const char *ES__RESTRICT format, ...)
 {
   int ret;
   

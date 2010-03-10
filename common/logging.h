@@ -1,5 +1,6 @@
 /* logging.h
- * Copyright (C) 1999, 2000, 2001, 2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2000, 2001, 2004, 2006,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -21,6 +22,7 @@
 #define LIBJNLIB_LOGGING_H
 
 #include <stdio.h>
+#include "estream.h"
 #include "mischelp.h"
 
 /* Flag values for log_set_prefix. */
@@ -38,7 +40,7 @@ void log_set_prefix (const char *text, unsigned int flags);
 const char *log_get_prefix (unsigned int *flags);
 int log_test_fd (int fd);
 int  log_get_fd(void);
-FILE *log_get_stream (void);
+estream_t log_get_stream (void);
 
 #ifdef JNLIB_GCC_M_FUNCTION
   void bug_at( const char *file, int line, const char *func ) JNLIB_GCC_A_NR;

@@ -1,5 +1,27 @@
 2010-03-10  Werner Koch  <wk@g10code.com>
 
+	* estream.c (es_func_fp_read, es_func_fp_write, es_func_fp_seek)
+	(es_func_fp_destroy): Allow a NULL FP to implement a dummy stream.
+	(do_fpopen): Ditto.
+	(es_vfprintf_unlocked): New.
+	(es_fprintf_unlocked): Make public.
+	(es_fputs_unlocked): New.
+
+	* logging.h: Replace FILE* by estream_t.
+	* logging.c: Remove USE_FUNWRITER cpp conditional because we now
+	use estream.
+	(my_funopen_hook_ret_t, my_funopen_hook_size_t): Replace by
+	ssize_t.
+	(log_get_stream): Change to return an estream_t.
+	(set_file_fd): Always close the log stream because it can't be
+	assigned to stderr or stdout directly.  Use a dummy estream as
+	last resort log stream.
+	(log_test_fd, log_get_fd): Use es_fileno.
+	(log_get_stream): Assert that we have a log stream.
+	(do_logv): Use estream functions and lock the output.
+
+2010-03-10  Werner Koch  <wk@g10code.com>
+
 	* util.h: Replace jnlib path part by common.
 	(snprintf): Use the replacement macro on all platforms.
 
