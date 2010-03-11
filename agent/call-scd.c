@@ -354,8 +354,6 @@ start_scd (ctrl_t ctrl)
   if (opt.verbose)
     log_debug ("first connection to SCdaemon established\n");
 
-  if (DBG_ASSUAN)
-    assuan_set_log_stream (ctx, log_get_stream ());
 
   /* Get the name of the additional socket opened by scdaemon. */
   {

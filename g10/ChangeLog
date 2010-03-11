@@ -1,3 +1,10 @@
+2010-03-11  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Include "asshelp.h".
+	(main): Remove assuan_set_assuan_log_prefix.  Add
+	assuan_set_log_cb.
+	* server.c (gpg_server): Remove assuan_set_log_stream.
+
 2010-03-10  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (needed_libs): Remove libjnlib.a.

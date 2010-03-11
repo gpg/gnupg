@@ -37,7 +37,7 @@
 #include "keydb.h"
 #include "sysutils.h"
 #include "gc-opt-flags.h"
-
+#include "asshelp.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -982,8 +982,8 @@ main ( int argc, char **argv)
   malloc_hooks.realloc = gcry_realloc;
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
-  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  setup_libassuan_logging (&opt.debug);
 
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 

@@ -1311,9 +1311,6 @@ gpgsm_server (certlist_t default_recplist)
   ctrl.server_local->list_external = 0;
   ctrl.server_local->default_recplist = default_recplist;
 
-  if (DBG_ASSUAN)
-    assuan_set_log_stream (ctx, log_get_stream ());
-
   for (;;)
     {
       rc = assuan_accept (ctx);

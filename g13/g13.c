@@ -35,6 +35,7 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "gc-opt-flags.h"
+#include "asshelp.h"
 #include "keyblob.h"
 #include "server.h"
 #include "runner.h"
@@ -432,10 +433,9 @@ main ( int argc, char **argv)
   }
   
   /* Prepare libassuan.  */
-  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
-
+  setup_libassuan_logging (&opt.debug);
 
   /* Setup a default control structure for command line mode.  */
   memset (&ctrl, 0, sizeof ctrl);
@@ -799,7 +799,9 @@ handle_signal (int signo)
       
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
-      pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      /* Fixme: We need to see how to integrate pth dumping into our
+         logging system.  */
+      /* pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ()); */
       mountinfo_dump_all ();
       break;
 

@@ -27,12 +27,43 @@
 #include <locale.h>
 #endif
 
+#define JNLIB_NEED_LOG_LOGV
 #include "i18n.h"
 #include "util.h"
 #include "exechelp.h"
 #include "sysutils.h"
 #include "status.h" 
 #include "asshelp.h"
+
+
+static int
+my_libassuan_log_handler (assuan_context_t ctx, void *hook,
+                          unsigned int cat, const char *msg)
+{
+  unsigned int dbgval;
+
+  if (cat != ASSUAN_LOG_CONTROL)
+    return 0; /* We only want the control channel messages.  */
+  dbgval = hook? *(unsigned int*)hook : 0;
+  if (!(dbgval & 1024))
+    return 0; /* Assuan debugging is not enabled.  */
+
+  if (msg)
+    log_string (JNLIB_LOG_DEBUG, msg);
+
+  return 1;
+}
+
+
+/* Setup libassuan to use our own logging functions.  Should be used
+   early at startup.  */
+void
+setup_libassuan_logging (unsigned int *debug_var_address)
+{
+  assuan_set_log_cb (my_libassuan_log_handler, debug_var_address);
+}
+
+
 
 static gpg_error_t
 send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,

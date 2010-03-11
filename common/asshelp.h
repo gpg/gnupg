@@ -25,6 +25,9 @@
 
 #include "session-env.h"
 
+void setup_libassuan_logging (unsigned int *debug_var_address);
+
+
 gpg_error_t
 send_pinentry_environment (assuan_context_t ctx,
                            gpg_err_source_t errsource,

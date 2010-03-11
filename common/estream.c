@@ -2028,6 +2028,8 @@ es_set_buffering (estream_t ES__RESTRICT stream,
 	buffer_new = buffer;
       else
 	{
+          if (!size)
+            size = BUFSIZ;
 	  buffer_new = mem_alloc (size);
 	  if (! buffer_new)
 	    {
@@ -3207,8 +3209,8 @@ es_setvbuf (estream_t ES__RESTRICT stream,
 {
   int err;
   
-  if (((type == _IOFBF) || (type == _IOLBF) || (type == _IONBF))
-      && (! ((! size) && (type != _IONBF))))
+  if ((type == _IOFBF || type == _IOLBF || type == _IONBF)
+      && (!buf || size || type == _IONBF))
     {
       ESTREAM_LOCK (stream);
       err = es_set_buffering (stream, buf, type, size);

@@ -49,6 +49,7 @@
 #include "setenv.h"
 #include "gc-opt-flags.h"
 #include "exechelp.h"
+#include "asshelp.h"
 
 enum cmd_and_opt_values 
 { aNull = 0,
@@ -494,8 +495,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           || strcmp (current_logfile, pargs->r.ret_str))
         {
           log_set_file (pargs->r.ret_str);
-	  if (DBG_ASSUAN)
-	    assuan_set_assuan_log_stream (log_get_stream ());
           xfree (current_logfile);
           current_logfile = xtrystrdup (pargs->r.ret_str);
         }
@@ -616,10 +615,10 @@ main (int argc, char **argv )
   malloc_hooks.realloc = gcry_realloc;
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
-  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
-  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+    assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
   assuan_sock_init ();
+  setup_libassuan_logging (&opt.debug);
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
@@ -946,8 +945,6 @@ main (int argc, char **argv )
                              |JNLIB_LOG_WITH_PID));
       current_logfile = xstrdup (logfile);
     }
-  if (DBG_ASSUAN)
-    assuan_set_assuan_log_stream (log_get_stream ());
 
   /* Make sure that we have a default ttyname. */
   if (!default_ttyname && ttyname (1))
@@ -1711,7 +1708,9 @@ handle_signal (int signo)
       
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
-      pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
+      /* Fixme: We need to see how to integrate pth dumping into our
+         logging system.  */
+      /* pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ()); */
       agent_query_dump_state ();
       agent_scd_dump_state ();
       break;

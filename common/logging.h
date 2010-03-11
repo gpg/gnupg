@@ -65,6 +65,7 @@ enum jnlib_log_levels {
     JNLIB_LOG_DEBUG
 };
 void log_logv (int level, const char *fmt, va_list arg_ptr);
+void log_string (int level, const char *string);
 #endif /*JNLIB_NEED_LOG_LOGV*/
 
 

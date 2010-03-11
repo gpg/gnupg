@@ -26,7 +26,6 @@
 #include "iobuf.h"
 #include "i18n.h"
 
-
 /* Used by libgcrypt for logging.  */
 static void
 my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
@@ -95,7 +94,6 @@ setup_libgcrypt_logging (void)
   gcry_set_fatalerror_handler (my_gcry_fatalerror_handler, NULL);
   gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
 }
-
 
 
 /* Decide whether the filename is stdout or a real filename and return

@@ -642,9 +642,6 @@ g13_server (ctrl_t ctrl)
     }
   ctrl->server_local->assuan_ctx = ctx;
 
-  if (DBG_ASSUAN)
-    assuan_set_log_stream (ctx, log_get_stream ());
-
   while ( !(err = assuan_accept (ctx)) )
     {
       err = assuan_process (ctx);

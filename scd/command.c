@@ -1947,9 +1947,6 @@ scd_command_handler (ctrl_t ctrl, int fd)
   ctrl->server_local->ctrl_backlink = ctrl;
   ctrl->server_local->assuan_ctx = ctx;
 
-  if (DBG_ASSUAN)
-    assuan_set_log_stream (ctx, log_get_stream ());
-
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
   if (ctrl->reader_slot == -1)

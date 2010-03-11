@@ -415,7 +415,7 @@ log_get_stream ()
 }
 
 static void
-do_logv (int level, const char *fmt, va_list arg_ptr)
+do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 {
   if (!logstream)
     {
@@ -478,7 +478,10 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
 
   if (fmt)
     {
-      es_vfprintf_unlocked (logstream, fmt, arg_ptr);
+      if (ignore_arg_ptr)
+        es_fputs_unlocked (fmt, logstream);
+      else
+        es_vfprintf_unlocked (logstream, fmt, arg_ptr);
       if (*fmt && fmt[strlen(fmt)-1] != '\n')
         missing_lf = 1;
     }
@@ -503,76 +506,91 @@ do_logv (int level, const char *fmt, va_list arg_ptr)
 
 
 static void
-do_log( int level, const char *fmt, ... )
+do_log (int level, const char *fmt, ...)
 {
-    va_list arg_ptr ;
-
-    va_start( arg_ptr, fmt ) ;
-    do_logv( level, fmt, arg_ptr );
-    va_end(arg_ptr);
+  va_list arg_ptr ;
+  
+  va_start (arg_ptr, fmt) ;
+  do_logv (level, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
 }
 
 
 void
 log_logv (int level, const char *fmt, va_list arg_ptr)
 {
-  do_logv (level, fmt, arg_ptr);
-}
-
-void
-log_info( const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    va_start( arg_ptr, fmt ) ;
-    do_logv( JNLIB_LOG_INFO, fmt, arg_ptr );
-    va_end(arg_ptr);
-}
-
-void
-log_error( const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    va_start( arg_ptr, fmt ) ;
-    do_logv( JNLIB_LOG_ERROR, fmt, arg_ptr );
-    va_end(arg_ptr);
-    /* protect against counter overflow */
-    if( errorcount < 30000 )
-	errorcount++;
+  do_logv (level, 0, fmt, arg_ptr);
 }
 
 
 void
-log_fatal( const char *fmt, ... )
+log_string (int level, const char *string)
 {
-    va_list arg_ptr ;
+  /* We need to provide a dummy arg_ptr.  volatile is needed to
+     suppress compiler warnings.  */
+  volatile va_list dummy_arg_ptr;
 
-    va_start( arg_ptr, fmt ) ;
-    do_logv( JNLIB_LOG_FATAL, fmt, arg_ptr );
-    va_end(arg_ptr);
-    abort(); /* never called, but it makes the compiler happy */
+  do_logv (level, 1, string, dummy_arg_ptr);
 }
 
-void
-log_bug( const char *fmt, ... )
-{
-    va_list arg_ptr ;
 
-    va_start( arg_ptr, fmt ) ;
-    do_logv( JNLIB_LOG_BUG, fmt, arg_ptr );
-    va_end(arg_ptr);
-    abort(); /* never called, but it makes the compiler happy */
+void
+log_info (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+  
+  va_start (arg_ptr, fmt);
+  do_logv (JNLIB_LOG_INFO, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
 }
 
-void
-log_debug( const char *fmt, ... )
-{
-    va_list arg_ptr ;
 
-    va_start( arg_ptr, fmt ) ;
-    do_logv( JNLIB_LOG_DEBUG, fmt, arg_ptr );
-    va_end(arg_ptr);
+void
+log_error (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+  
+  va_start (arg_ptr, fmt);
+  do_logv (JNLIB_LOG_ERROR, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
+  /* Protect against counter overflow.  */
+  if (errorcount < 30000)
+    errorcount++;
+}
+
+
+void
+log_fatal (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+  
+  va_start (arg_ptr, fmt);
+  do_logv (JNLIB_LOG_FATAL, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
+  abort (); /* Never called; just to make the compiler happy.  */
+}
+
+
+void
+log_bug (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+
+  va_start (arg_ptr, fmt);
+  do_logv (JNLIB_LOG_BUG, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
+  abort (); /* Never called; just to make the compiler happy.  */
+}
+
+
+void
+log_debug (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+  
+  va_start (arg_ptr, fmt);
+  do_logv (JNLIB_LOG_DEBUG, 0, fmt, arg_ptr);
+  va_end (arg_ptr);
 }
 
 
@@ -580,11 +598,12 @@ void
 log_printf (const char *fmt, ...)
 {
   va_list arg_ptr;
-
+  
   va_start (arg_ptr, fmt);
-  do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, fmt, arg_ptr);
+  do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, 0, fmt, arg_ptr);
   va_end (arg_ptr);
 }
+
 
 /* Print a hexdump of BUFFER.  With TEXT of NULL print just the raw
    dump, with TEXT just an empty string, print a trailing linefeed,
@@ -610,17 +629,15 @@ log_printhex (const char *text, const void *buffer, size_t length)
 void
 bug_at( const char *file, int line, const char *func )
 {
-    do_log( JNLIB_LOG_BUG,
-	     ("... this is a bug (%s:%d:%s)\n"), file, line, func );
-    abort(); /* never called, but it makes the compiler happy */
+  do_log (JNLIB_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
+  abort (); /* Never called; just to make the compiler happy.  */
 }
 #else
 void
 bug_at( const char *file, int line )
 {
-    do_log( JNLIB_LOG_BUG,
-	     _("you found a bug ... (%s:%d)\n"), file, line);
-    abort(); /* never called, but it makes the compiler happy */
+  do_log (JNLIB_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
+  abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif
 
