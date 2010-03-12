@@ -1,5 +1,8 @@
 2010-03-12  Werner Koch  <wk@g10code.com>
 
+	* plaintext.c (setup_plaintext_name): Do not encode pipe like
+	filenames.  This helps with bug#1201.
+
 	* seckey-cert.c (do_check): Return GPG_ERR_CANCELED.
 	* keyedit.c (change_passphrase): Add arg R_ERR.
 	(keyedit_passwd): Return the correct error or emit a success

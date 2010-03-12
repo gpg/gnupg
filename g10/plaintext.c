@@ -623,7 +623,8 @@ setup_plaintext_name(const char *filename,IOBUF iobuf)
 {
   PKT_plaintext *pt;
 
-  if(filename || opt.set_filename)
+  if ((filename && !iobuf_is_pipe_filename (filename))
+       || (opt.set_filename && !iobuf_is_pipe_filename (opt.set_filename)))
     {
       char *s;
 
