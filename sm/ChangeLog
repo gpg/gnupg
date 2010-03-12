@@ -1,3 +1,8 @@
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_passwd): New.  From trunk.
+	(register_commands): Register it.
+
 2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	From trunk 2009-09-23, 2009-11-02, 2009-11-04, 2009-11-05, 2009-11-25,
