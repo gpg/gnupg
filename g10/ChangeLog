@@ -1,3 +1,10 @@
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* seckey-cert.c (do_check): Return GPG_ERR_CANCELED.
+	* keyedit.c (change_passphrase): Add arg R_ERR.
+	(keyedit_passwd): Return the correct error or emit a success
+	status message.
+
 2010-02-25  Werner Koch  <wk@g10code.com>
 
 	* sign.c (hash_for): Force SHA1 only for v1 OpenPGP cards.  Fixes

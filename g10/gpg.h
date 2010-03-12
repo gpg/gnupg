@@ -119,5 +119,4 @@ struct server_control_s
 #define G10ERR_UNU_SECKEY      GPG_ERR_UNUSABLE_SECKEY       
 #define G10ERR_WRONG_SECKEY    GPG_ERR_WRONG_SECKEY        
 
-
 #endif /*GNUPG_G10_GPG_H*/
