@@ -81,12 +81,11 @@ do_show_revocation_reason( PKT_signature *sig )
 	else
 	    text = NULL;
 
-	log_info( _("reason for revocation: ") );
-	if( text )
-	    fputs( text, log_get_stream() );
+	log_info ( _("reason for revocation: "));
+	if (text)
+          log_printf ("%s\n", text);
 	else
-	    fprintf( log_get_stream(), "code=%02x", *p );
-	log_printf ("\n");
+          log_printf ("code=%02x\n", *p );
 	n--; p++;
 	pp = NULL;
 	do {
@@ -99,7 +98,7 @@ do_show_revocation_reason( PKT_signature *sig )
 		pp = memchr( p, '\n', n );
 		nn = pp? pp - p : n;
 		log_info ( _("revocation comment: ") );
-		print_string ( log_get_stream(), p, nn, 0 );
+		es_write_sanitized (log_get_stream(), p, nn, NULL, NULL);
 		log_printf ("\n");
 		p += nn; n -= nn;
 	    }

@@ -28,13 +28,13 @@ int tty_batchmode (int onoff);
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 void tty_printf (const char *fmt, ... )
                  __attribute__ ((format (printf,1,2)));
-void tty_fprintf (FILE *fp, const char *fmt, ... )
+void tty_fprintf (estream_t fp, const char *fmt, ... )
                  __attribute__ ((format (printf,2,3)));
 char *tty_getf (const char *promptfmt, ... )
                  __attribute__ ((format (printf,1,2)));
 #else
 void tty_printf (const char *fmt, ... );
-void tty_fprintf (FILE *fp, const char *fmt, ... );
+void tty_fprintf (estream_t fp, const char *fmt, ... );
 char *tty_getf (const char *promptfmt, ... );
 #endif
 void tty_print_string (const unsigned char *p, size_t n);

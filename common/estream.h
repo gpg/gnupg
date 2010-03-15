@@ -80,6 +80,7 @@
 #define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
 #define es_fpopen             _ESTREAM_PREFIX(es_fpopen)
 #define es_fpopen_nc          _ESTREAM_PREFIX(es_fpopen_nc)
+#define _es_get_std_stream    _ESTREAM_PREFIX(_es_get_std_stream)
 #define es_freopen            _ESTREAM_PREFIX(es_freopen)
 #define es_fopencookie        _ESTREAM_PREFIX(es_fopencookie)
 #define es_fclose             _ESTREAM_PREFIX(es_fclose)
@@ -249,6 +250,13 @@ estream_t es_fopencookie (void *ES__RESTRICT cookie,
 int es_fclose (estream_t stream);
 int es_fileno (estream_t stream);
 int es_fileno_unlocked (estream_t stream);
+
+estream_t _es_get_std_stream (int fd);
+
+#define es_stdin  _es_get_std_stream (0)
+#define es_stdout _es_get_std_stream (1)
+#define es_stderr _es_get_std_stream (2)
+
 
 void es_flockfile (estream_t stream);
 int es_ftrylockfile (estream_t stream);

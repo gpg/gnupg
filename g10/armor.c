@@ -415,9 +415,9 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     if( !p || (RFC2440 && p[1]!=' ')
 	|| (!RFC2440 && p[1]!=' ' && p[1]!='\n' && p[1]!='\r'))
       {
-	log_error(_("invalid armor header: "));
-	print_string( stderr, line, len, 0 );
-	putc('\n', stderr);
+	log_error (_("invalid armor header: "));
+	es_write_sanitized (log_get_stream (), line, len, NULL, NULL);
+	log_printf ("\n");
 	return -1;
       }
 
@@ -427,8 +427,8 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 
     if( opt.verbose ) {
 	log_info(_("armor header: "));
-	print_string( stderr, line, len, 0 );
-	putc('\n', stderr);
+	es_write_sanitized (log_get_stream (), line, len, NULL, NULL);
+	log_printf ("\n");
     }
 
     if( afx->in_cleartext )
@@ -453,8 +453,8 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 	   signed data section is "Hash". */
 
 	log_info(_("unknown armor header: "));
-	print_string( stderr, line, len, 0 );
-	putc('\n', stderr);
+	es_write_sanitized (log_get_stream (), line, len, NULL, NULL);
+	log_printf ("\n");
       }
 
     return 1;
@@ -641,8 +641,9 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		    if( type != BEGIN_SIGNATURE )
 		      {
 			log_info(_("unexpected armor: "));
-			print_string( stderr, p, n, 0 );
-			putc('\n', stderr);
+			es_write_sanitized (log_get_stream (), p, n,
+                                            NULL, NULL);
+			log_printf ("\n");
 		      }
 
 		    lastline = 1;
@@ -652,9 +653,9 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    else if(!afx->not_dash_escaped)
 	      {
 		/* Bad dash-escaping. */
-		log_info(_("invalid dash escaped line: "));
-		print_string( stderr, p, n, 0 );
-		putc('\n', stderr);
+		log_info (_("invalid dash escaped line: "));
+		es_write_sanitized (log_get_stream (), p, n, NULL, NULL);
+		log_printf ("\n");
 	      }
 	  }
 

@@ -213,6 +213,8 @@ struct estream_internal
     unsigned int eof: 1;
   } indicators;
   unsigned int deallocate_buffer: 1;
+  unsigned int is_stdstream:1;   /* This is a standard stream.  */
+  unsigned int stdstream_fd:2;   /* 0, 1 or 2 for a standard stream.  */
   unsigned int print_err: 1;     /* Error in print_fun_writer.  */
   int print_errno;               /* Errno from print_fun_writer.  */
   size_t print_ntotal;           /* Bytes written from in print_fun_writer. */
@@ -302,9 +304,11 @@ mem_free (void *p)
  * List manipulation.
  */
 
-/* Add STREAM to the list of registered stream objects.  */
+/* Add STREAM to the list of registered stream objects.  If
+   WITH_LOCKED_LIST is true we assumed that the list of streams is
+   already locked.  */
 static int
-es_list_add (estream_t stream)
+es_list_add (estream_t stream, int with_locked_list)
 {
   estream_list_t list_obj;
   int ret;
@@ -314,14 +318,16 @@ es_list_add (estream_t stream)
     ret = -1;
   else
     {
-      ESTREAM_LIST_LOCK;
+      if (!with_locked_list)
+        ESTREAM_LIST_LOCK;
       list_obj->car = stream;
       list_obj->cdr = estream_list;
       list_obj->prev_cdr = &estream_list;
       if (estream_list)
 	estream_list->prev_cdr = &list_obj->cdr;
       estream_list = list_obj;
-      ESTREAM_LIST_UNLOCK;
+      if (!with_locked_list)
+        ESTREAM_LIST_UNLOCK;
       ret = 0;
     }
 
@@ -330,11 +336,12 @@ es_list_add (estream_t stream)
 
 /* Remove STREAM from the list of registered stream objects.  */
 static void
-es_list_remove (estream_t stream)
+es_list_remove (estream_t stream, int with_locked_list)
 {
   estream_list_t list_obj;
   
-  ESTREAM_LIST_LOCK;
+  if (!with_locked_list)
+    ESTREAM_LIST_LOCK;
   for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
     if (list_obj->car == stream)
       {
@@ -344,7 +351,8 @@ es_list_remove (estream_t stream)
 	mem_free (list_obj);
 	break;
       }
-  ESTREAM_LIST_UNLOCK;
+  if (!with_locked_list)
+    ESTREAM_LIST_UNLOCK;
 }
 
 /* Type of an stream-iterator-function.  */
@@ -1211,6 +1219,8 @@ es_initialize (estream_t stream,
   stream->intern->print_fp = NULL;
   stream->intern->indicators.err = 0;
   stream->intern->indicators.eof = 0;
+  stream->intern->is_stdstream = 0;
+  stream->intern->stdstream_fd = 0;
   stream->intern->deallocate_buffer = 0;
 
   stream->data_len = 0;
@@ -1219,7 +1229,7 @@ es_initialize (estream_t stream,
   stream->unread_data_len = 0;
   /* Depending on the modeflags we set whether we start in writing or
      reading mode.  This is required in case we are working on a
-     wronly stream which is not seeekable (like stdout).  Without this
+     stream which is not seeekable (like stdout).  Without this
      pre-initialization we would do a seek at the first write call and
      as this will fail no utput will be delivered. */
   if ((modeflags & O_WRONLY) || (modeflags & O_RDWR) )
@@ -1258,7 +1268,8 @@ es_deinitialize (estream_t stream)
 /* Create a new stream object, initialize it.  */
 static int
 es_create (estream_t *stream, void *cookie, int fd,
-	   es_cookie_io_functions_t functions, unsigned int modeflags)
+	   es_cookie_io_functions_t functions, unsigned int modeflags,
+           int with_locked_list)
 {
   estream_internal_t stream_internal_new;
   estream_t stream_new;
@@ -1290,7 +1301,7 @@ es_create (estream_t *stream, void *cookie, int fd,
   ESTREAM_MUTEX_INITIALIZE (stream_new->intern->lock);
   es_initialize (stream_new, cookie, fd, functions, modeflags);
 
-  err = es_list_add (stream_new);
+  err = es_list_add (stream_new, with_locked_list);
   if (err)
     goto out;
 
@@ -1312,13 +1323,13 @@ es_create (estream_t *stream, void *cookie, int fd,
 
 /* Deinitialize a stream object and destroy it.  */
 static int
-es_destroy (estream_t stream)
+es_destroy (estream_t stream, int with_locked_list)
 {
   int err = 0;
 
   if (stream)
     {
-      es_list_remove (stream);
+      es_list_remove (stream, with_locked_list);
       err = es_deinitialize (stream);
       mem_free (stream->intern);
       mem_free (stream);
@@ -1838,7 +1849,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
     goto out;
 
   err = es_create (&line_stream, line_stream_cookie, -1,
-		   estream_functions_mem, O_RDWR);
+		   estream_functions_mem, O_RDWR, 0);
   if (err)
     goto out;
 
@@ -1923,7 +1934,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
  out:
 
   if (line_stream)
-    es_destroy (line_stream);
+    es_destroy (line_stream, 0);
   else if (line_stream_cookie)
     es_func_mem_destroy (line_stream_cookie);
 
@@ -2122,7 +2133,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_file, modeflags);
+  err = es_create (&stream, cookie, fd, estream_functions_file, modeflags, 0);
   if (err)
     goto out;
 
@@ -2162,7 +2173,7 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
     goto out;
   
   create_called = 1;
-  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags);
+  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0);
 
  out:
 
@@ -2193,7 +2204,7 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
                           memlimit))
     return NULL;
   
-  if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags))
+  if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0))
     (*estream_functions_mem.func_close) (cookie);
 
   return stream;
@@ -2217,7 +2228,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
   if (err)
     goto out;
 
-  err = es_create (&stream, cookie, -1, functions, modeflags);
+  err = es_create (&stream, cookie, -1, functions, modeflags, 0);
   if (err)
     goto out;
 
@@ -2249,7 +2260,8 @@ do_fdopen (int filedes, const char *mode, int no_close)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, filedes, estream_functions_fd, modeflags);
+  err = es_create (&stream, cookie, filedes, estream_functions_fd,
+                   modeflags, 0);
 
  out:
 
@@ -2274,7 +2286,7 @@ es_fdopen_nc (int filedes, const char *mode)
 
 
 estream_t
-do_fpopen (FILE *fp, const char *mode, int no_close)
+do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
 {
   unsigned int modeflags;
   int create_called;
@@ -2298,7 +2310,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close)
   
   create_called = 1;
   err = es_create (&stream, cookie, fp? fileno (fp):-1, estream_functions_fp,
-                   modeflags);
+                   modeflags, with_locked_list);
 
  out:
 
@@ -2320,7 +2332,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close)
 estream_t
 es_fpopen (FILE *fp, const char *mode)
 {
-  return do_fpopen (fp, mode, 0);
+  return do_fpopen (fp, mode, 0, 0);
 }
 
 
@@ -2328,7 +2340,52 @@ es_fpopen (FILE *fp, const char *mode)
 estream_t
 es_fpopen_nc (FILE *fp, const char *mode)
 {
-  return do_fpopen (fp, mode, 1);
+  return do_fpopen (fp, mode, 1, 0);
+}
+
+
+estream_t
+_es_get_std_stream (int fd)
+{
+  estream_list_t list_obj;
+  estream_t stream = NULL;
+
+  fd %= 3; /* We only allow 0, 1 or 2 but we don't want to return an error. */
+  ESTREAM_LIST_LOCK;
+  for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
+    if (list_obj->car->intern->is_stdstream
+        && list_obj->car->intern->stdstream_fd == fd)
+      {
+	stream = list_obj->car;
+	break;
+      }
+  if (!stream)
+    {
+      /* Standard stream not yet created - do it now.  */
+      if (!fd)
+        stream = do_fpopen (stdin, "r", 1, 1);
+      else if (fd == 1)
+        stream = do_fpopen (stdout, "a", 1, 1);
+      else
+        stream = do_fpopen (stderr, "a", 1, 1);
+
+      if (!stream) /* Fallback: Create a bit bucket.  */
+        {
+          stream = do_fpopen (NULL, fd? "a":"r", 0, 1);
+          if (!stream)
+            {
+              fprintf (stderr, "fatal: error creating a dummy estream"
+                       " for %d: %s\n", fd, strerror (errno));
+              abort();
+            }
+        }
+      stream->intern->is_stdstream = 1;
+      stream->intern->stdstream_fd = fd;
+      if (fd == 2)
+        es_set_buffering (stream, NULL, _IOLBF, 0);
+    }
+  ESTREAM_LIST_UNLOCK;
+  return stream;
 }
 
 
@@ -2370,7 +2427,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	  if (create_called)
 	    es_func_fd_destroy (cookie);
       
-	  es_destroy (stream);
+	  es_destroy (stream, 0);
 	  stream = NULL;
 	}
       else
@@ -2381,7 +2438,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       /* FIXME?  We don't support re-opening at the moment.  */
       _set_errno (EINVAL);
       es_deinitialize (stream);
-      es_destroy (stream);
+      es_destroy (stream, 0);
       stream = NULL;
     }
 
@@ -2394,7 +2451,7 @@ es_fclose (estream_t stream)
 {
   int err;
 
-  err = es_destroy (stream);
+  err = es_destroy (stream, 0);
 
   return err;
 }
@@ -2496,6 +2553,23 @@ es_clearerr (estream_t stream)
 }
 
 
+static int
+do_fflush (estream_t stream)
+{
+  int err;
+  
+  if (stream->flags.writing)
+    err = es_flush (stream);
+  else
+    {
+      es_empty (stream);
+      err = 0;
+    }
+
+  return err;
+}
+
+
 int
 es_fflush (estream_t stream)
 {
@@ -2504,17 +2578,11 @@ es_fflush (estream_t stream)
   if (stream)
     {
       ESTREAM_LOCK (stream);
-      if (stream->flags.writing)
-	err = es_flush (stream);
-      else
-	{
-	  es_empty (stream);
-	  err = 0;
-	}
+      err = do_fflush (stream);
       ESTREAM_UNLOCK (stream);
     }
   else
-    err = es_list_iterate (es_fflush);
+    err = es_list_iterate (do_fflush);
 
   return err ? EOF : 0;
 }
@@ -3186,7 +3254,7 @@ es_tmpfile (void)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags);
+  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags, 0);
 
  out:
 

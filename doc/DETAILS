@@ -617,6 +617,12 @@ more arguments in future versions.
         prefixed with a numerical error code and an underscore; e.g.:
         "151011327_EOF".
 
+    SUCCESS [<location>]
+        Postive confirimation that an operation succeeded.  <location>
+        is optional but if given should not contain spaces. 
+        Used only with a few commands.
+            
+
     ATTRIBUTE <fpr> <octets> <type> <index> <count>
 	      <timestamp> <expiredate> <flags>
 	This is one long line issued for each attribute subpacket when

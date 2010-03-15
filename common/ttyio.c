@@ -1,6 +1,6 @@
 /* ttyio.c -  tty i/O functions
  * Copyright (C) 1998,1999,2000,2001,2002,2003,2004,2006,2007,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -244,14 +244,14 @@ tty_printf( const char *fmt, ... )
 /* Same as tty_printf but if FP is not NULL, behave like a regular
    fprintf. */
 void
-tty_fprintf (FILE *fp, const char *fmt, ... )
+tty_fprintf (estream_t fp, const char *fmt, ... )
 {
   va_list arg_ptr;
 
   if (fp)
     {
       va_start (arg_ptr, fmt) ;
-      vfprintf (fp, fmt, arg_ptr );
+      es_vfprintf (fp, fmt, arg_ptr );
       va_end (arg_ptr);
       return;
     }
@@ -259,32 +259,32 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
   if (no_terminal)
     return;
 
-  if( !initialized )
-    init_ttyfp();
+  if (!initialized)
+    init_ttyfp ();
 
-    va_start( arg_ptr, fmt ) ;
+  va_start (arg_ptr, fmt);
 #ifdef _WIN32
-    {   
-        char *buf = NULL;
-        int n;
-	DWORD nwritten;
-
-	n = vasprintf(&buf, fmt, arg_ptr);
-	if( !buf )
-	    log_bug("vasprintf() failed\n");
-        
-	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
-	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
-	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
-	last_prompt_len += n;
-        xfree (buf);
-    }
+  {   
+    char *buf = NULL;
+    int n;
+    DWORD nwritten;
+    
+    n = vasprintf(&buf, fmt, arg_ptr);
+    if (!buf)
+      log_bug("vasprintf() failed\n");
+    
+    if (!WriteConsoleA( con.out, buf, n, &nwritten, NULL ))
+      log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
+    if (n != nwritten)
+      log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
+    last_prompt_len += n;
+    xfree (buf);
+  }
 #else
-    last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
-    fflush(ttyfp);
+  last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
+  fflush(ttyfp);
 #endif
-    va_end(arg_ptr);
+  va_end(arg_ptr);
 }
 
 

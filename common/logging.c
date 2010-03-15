@@ -283,32 +283,7 @@ set_file_fd (const char *name, int fd)
 
   /* On error default to a stderr based estream.  */
   if (!fp)
-    {
-      fp = es_fpopen (stderr, "a");
-      if (fp)
-        {
-          if (name)
-            es_fprintf (fp, "failed to open log file `%s': %s\n",
-                        name, strerror (errno));
-          else
-            es_fprintf (fp, "failed to fdopen file descriptor %d: %s\n",
-                        fd, strerror (errno));
-        }
-      else
-        {
-          fprintf (stderr, "failed to use stderr as log stream: %s\n",
-                   strerror (errno));
-          /* No way to log something.  Create a dummy estream so that
-             there is something we can use.  */
-          fp = es_fpopen (NULL, "a");
-          if (!fp)
-            {
-              fprintf (stderr, "fatal: failed to open dummy stream: %s\n",
-                       strerror (errno));
-              abort();
-            }
-        }
-    }
+    fp = es_stderr;
 
   es_setvbuf (fp, NULL, _IOLBF, 0);
   
@@ -602,6 +577,16 @@ log_printf (const char *fmt, ...)
   va_start (arg_ptr, fmt);
   do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, 0, fmt, arg_ptr);
   va_end (arg_ptr);
+}
+
+
+/* Flush the log - this is useful to make sure that the trailing
+   linefeed has been printed.  */
+void
+log_flush (void)
+{
+  volatile va_list dummy_arg_ptr;
+  do_logv (JNLIB_LOG_CONT, 1, NULL, dummy_arg_ptr);
 }
 
 

@@ -718,7 +718,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 		  pubkey_letter( pk->pubkey_algo ),
 		  keystr_from_pk(pk), datestr_from_pk(pk) );
 	if (uidnode)
-	  print_utf8_string (log_get_stream (),
+	  print_utf8_buffer (log_get_stream (),
                              uidnode->pkt->pkt.user_id->name,
 			     uidnode->pkt->pkt.user_id->len );
 	log_printf ("\n");
@@ -1127,7 +1127,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 		  pubkey_letter( sk->pubkey_algo ),
 		  keystr_from_sk(sk), datestr_from_sk(sk) );
 	if( uidnode )
-	  print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+	  print_utf8_buffer (es_stderr, uidnode->pkt->pkt.user_id->name,
 			     uidnode->pkt->pkt.user_id->len );
 	log_printf ("\n");
       }

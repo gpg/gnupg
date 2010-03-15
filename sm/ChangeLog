@@ -1,5 +1,7 @@
 2010-03-11  Werner Koch  <wk@g10code.com>
 
+	* verify.c (gpgsm_verify): Use gpgsm_es_print_name.
+
 	* gpgsm.c: Include "asshelp.h".
 	(main): Remove assuan_set_assuan_log_prefix.  Add
 	assuan_set_log_cb.

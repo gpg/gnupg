@@ -54,7 +54,7 @@ struct sig_stats
 };
 
 /* The stream used to write attribute packets to.  */
-static FILE *attrib_fp = NULL;
+static estream_t attrib_fp;
 
 
 /* List the keys.  If list is NULL, all available keys are listed.
@@ -71,32 +71,32 @@ public_key_list (strlist_t list, int locate_mode)
       read_trust_options (&trust_model, &created, &nextcheck,
 			  &marginals, &completes, &cert_depth);
 
-      printf ("tru:");
+      es_fprintf (es_stdout, "tru:");
 
       if (nextcheck && nextcheck <= make_timestamp ())
-	printf ("o");
+	es_fprintf (es_stdout, "o");
       if (trust_model != opt.trust_model)
-	printf ("t");
+	es_fprintf (es_stdout, "t");
       if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC)
 	{
 	  if (marginals != opt.marginals_needed)
-	    printf ("m");
+	    es_fprintf (es_stdout, "m");
 	  if (completes != opt.completes_needed)
-	    printf ("c");
+	    es_fprintf (es_stdout, "c");
 	  if (cert_depth != opt.max_cert_depth)
-	    printf ("d");
+	    es_fprintf (es_stdout, "d");
 	}
 
-      printf (":%d:%lu:%lu", trust_model, created, nextcheck);
+      es_fprintf (es_stdout, ":%d:%lu:%lu", trust_model, created, nextcheck);
 
       /* Only show marginals, completes, and cert_depth in the classic
          or PGP trust models since they are not meaningful
          otherwise. */
 
       if (trust_model == TM_PGP || trust_model == TM_CLASSIC)
-	printf (":%d:%d:%d", marginals, completes, cert_depth);
+	es_fprintf (es_stdout, ":%d:%d:%d", marginals, completes, cert_depth);
 
-      printf ("\n");
+      es_fprintf (es_stdout, "\n");
     }
 
   /* We need to do the stale check right here because it might need to
@@ -147,7 +147,7 @@ print_seckey_info (PKT_public_key *pk)
    the tty output interface is used, otherwise output is directted to
    the given stream.  */
 void
-print_pubkey_info (FILE * fp, PKT_public_key * pk)
+print_pubkey_info (estream_t fp, PKT_public_key * pk)
 {
   u32 keyid[2];
   char *p;
@@ -162,15 +162,11 @@ print_pubkey_info (FILE * fp, PKT_public_key * pk)
     p = get_user_id_native (keyid);
 
   if (fp)
-    fprintf (fp, "pub  %4u%c/%s %s %s\n",
-	     nbits_from_pk (pk),
-	     pubkey_letter (pk->pubkey_algo),
-	     keystr (keyid), datestr_from_pk (pk), p);
-  else
-    tty_printf ("\npub  %4u%c/%s %s %s\n",
-		nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
-		keystr (keyid), datestr_from_pk (pk), p);
-
+    tty_printf ("\n");
+  tty_fprintf (fp, "pub  %4u%c/%s %s %s\n",
+               nbits_from_pk (pk),
+               pubkey_letter (pk->pubkey_algo),
+               keystr (keyid), datestr_from_pk (pk), p);
   xfree (p);
 }
 
@@ -178,7 +174,7 @@ print_pubkey_info (FILE * fp, PKT_public_key * pk)
 /* Print basic information of a secret key including the card serial
    number information.  */
 void
-print_card_key_info (FILE * fp, KBNODE keyblock)
+print_card_key_info (estream_t fp, KBNODE keyblock)
 {
   KBNODE node;
   int i;
@@ -239,7 +235,8 @@ status_one_subpacket (sigsubpkttype_t type, size_t len, int flags,
   if (len > 256)
     return;
 
-  sprintf (status, "%d %u %u ", type, flags, (unsigned int) len);
+  snprintf (status, sizeof status, 
+            "%d %u %u ", type, flags, (unsigned int) len);
 
   write_status_text_and_buffer (STATUS_SIG_SUBPACKET, status, buf, len, 0);
 }
@@ -256,7 +253,7 @@ show_policy_url (PKT_signature * sig, int indent, int mode)
   const byte *p;
   size_t len;
   int seq = 0, crit;
-  FILE *fp = mode ? log_get_stream () : stdout;
+  estream_t fp = mode ? log_get_stream () : es_stdout;
 
   while ((p =
 	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &len, &seq, &crit)))
@@ -267,7 +264,7 @@ show_policy_url (PKT_signature * sig, int indent, int mode)
 	  const char *str;
 
 	  for (i = 0; i < indent; i++)
-	    putchar (' ');
+	    es_putc (' ', fp);
 
 	  if (crit)
 	    str = _("Critical signature policy: ");
@@ -276,9 +273,9 @@ show_policy_url (PKT_signature * sig, int indent, int mode)
 	  if (mode)
 	    log_info ("%s", str);
 	  else
-	    printf ("%s", str);
-	  print_utf8_string (fp, p, len);
-	  fprintf (fp, "\n");
+	    es_fprintf (fp, "%s", str);
+	  print_utf8_buffer (fp, p, len);
+	  es_fprintf (fp, "\n");
 	}
 
       if (mode)
@@ -299,7 +296,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
   const byte *p;
   size_t len;
   int seq = 0, crit;
-  FILE *fp = mode ? log_get_stream () : stdout;
+  estream_t fp = mode ? log_get_stream () : es_stdout;
 
   while ((p =
 	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_KS, &len, &seq,
@@ -311,7 +308,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
 	  const char *str;
 
 	  for (i = 0; i < indent; i++)
-	    putchar (' ');
+	    es_putc (' ', es_stdout);
 
 	  if (crit)
 	    str = _("Critical preferred keyserver: ");
@@ -320,9 +317,9 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
 	  if (mode)
 	    log_info ("%s", str);
 	  else
-	    printf ("%s", str);
-	  print_utf8_string (fp, p, len);
-	  fprintf (fp, "\n");
+	    es_fprintf (es_stdout, "%s", str);
+	  print_utf8_buffer (fp, p, len);
+	  es_fprintf (fp, "\n");
 	}
 
       if (mode)
@@ -343,7 +340,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
 void
 show_notation (PKT_signature * sig, int indent, int mode, int which)
 {
-  FILE *fp = mode ? log_get_stream () : stdout;
+  estream_t fp = mode ? log_get_stream () : es_stdout;
   struct notation *nd, *notations;
 
   if (which == 0)
@@ -364,7 +361,7 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 	      const char *str;
 
 	      for (i = 0; i < indent; i++)
-		putchar (' ');
+		es_putc (' ', es_stdout);
 
 	      if (nd->flags.critical)
 		str = _("Critical signature notation: ");
@@ -373,12 +370,12 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 	      if (mode)
 		log_info ("%s", str);
 	      else
-		printf ("%s", str);
+		es_fprintf (es_stdout, "%s", str);
 	      /* This is all UTF8 */
-	      print_utf8_string (fp, nd->name, strlen (nd->name));
-	      fprintf (fp, "=");
-	      print_utf8_string (fp, nd->value, strlen (nd->value));
-	      fprintf (fp, "\n");
+	      print_utf8_buffer (fp, nd->name, strlen (nd->name));
+	      es_fprintf (fp, "=");
+	      print_utf8_buffer (fp, nd->value, strlen (nd->value));
+	      es_fprintf (fp, "\n");
 	    }
 	}
 
@@ -455,10 +452,10 @@ list_all (int secret)
                 {
                   int i;
                   
-                  printf ("%s\n", resname);
+                  es_fprintf (es_stdout, "%s\n", resname);
                   for (i = strlen (resname); i; i--)
-                    putchar ('-');
-                  putchar ('\n');
+                    es_putc ('-', es_stdout);
+                  es_putc ('\n', es_stdout);
                   lastresname = resname;
                 }
             }
@@ -517,10 +514,10 @@ list_one (strlist_t names, int secret)
       if ((opt.list_options & LIST_SHOW_KEYRING) && !opt.with_colons)
         {
           resname = keydb_get_resource_name (get_ctx_handle (ctx));
-          printf ("%s: %s\n", keyring_str, resname);
+          es_fprintf (es_stdout, "%s: %s\n", keyring_str, resname);
           for (i = strlen (resname) + strlen (keyring_str) + 2; i; i--)
-            putchar ('-');
-          putchar ('\n');
+            es_putc ('-', es_stdout);
+          es_putc ('\n', es_stdout);
         }
       list_keyblock (keyblock, secret, opt.fingerprint,
                      (!secret && opt.check_sigs)? &stats : NULL);
@@ -580,10 +577,10 @@ print_key_data (PKT_public_key * pk)
 
   for (i = 0; i < n; i++)
     {
-      printf ("pkd:%d:%u:", i, mpi_get_nbits (pk->pkey[i]));
-      mpi_print (stdout, pk->pkey[i], 1);
-      putchar (':');
-      putchar ('\n');
+      es_fprintf (es_stdout, "pkd:%d:%u:", i, mpi_get_nbits (pk->pkey[i]));
+      mpi_print (es_stdout, pk->pkey[i], 1);
+      es_putc (':', es_stdout);
+      es_putc ('\n', es_stdout);
     }
 }
 
@@ -594,14 +591,14 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
   int c_printed = 0;
 
   if (use & PUBKEY_USAGE_ENC)
-    putchar ('e');
+    es_putc ('e', es_stdout);
   
   if (use & PUBKEY_USAGE_SIG)
     {
-      putchar ('s');
+      es_putc ('s', es_stdout);
       if (pk->is_primary)
         {
-          putchar ('c');
+          es_putc ('c', es_stdout);
           /* The PUBKEY_USAGE_CERT flag was introduced later and we
              used to always print 'c' for a primary key.  To avoid any
              regression here we better track whether we printed 'c'
@@ -611,10 +608,10 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
     }
 
   if ((use & PUBKEY_USAGE_CERT) && !c_printed)
-    putchar ('c');
+    es_putc ('c', es_stdout);
 
   if ((use & PUBKEY_USAGE_AUTH))
-    putchar ('a');
+    es_putc ('a', es_stdout);
 
   if (keyblock)
     {
@@ -650,18 +647,18 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
 	    }
 	}
       if (enc)
-	putchar ('E');
+	es_putc ('E', es_stdout);
       if (sign)
-	putchar ('S');
+	es_putc ('S', es_stdout);
       if (cert)
-	putchar ('C');
+	es_putc ('C', es_stdout);
       if (auth)
-	putchar ('A');
+	es_putc ('A', es_stdout);
       if (disabled)
-	putchar ('D');
+	es_putc ('D', es_stdout);
     }
   
-  putchar (':');
+  es_putc (':', es_stdout);
 }
 
 
@@ -673,18 +670,18 @@ print_one_subpacket (sigsubpkttype_t type, size_t len, int flags,
 {
   size_t i;
 
-  printf ("spk:%d:%u:%u:", type, flags, (unsigned int) len);
+  es_fprintf (es_stdout, "spk:%d:%u:%u:", type, flags, (unsigned int) len);
 
   for (i = 0; i < len; i++)
     {
       /* printable ascii other than : and % */
       if (buf[i] >= 32 && buf[i] <= 126 && buf[i] != ':' && buf[i] != '%')
-	printf ("%c", buf[i]);
+	es_fprintf (es_stdout, "%c", buf[i]);
       else
-	printf ("%%%02X", buf[i]);
+	es_fprintf (es_stdout, "%%%02X", buf[i]);
     }
 
-  printf ("\n");
+  es_fprintf (es_stdout, "\n");
 }
 
 
@@ -748,8 +745,8 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 	  write_status_text (STATUS_ATTRIBUTE, buf);
 	}
 
-      fwrite (uid->attribs[i].data, uid->attribs[i].len, 1, attrib_fp);
-      fflush (attrib_fp);
+      es_fwrite (uid->attribs[i].data, uid->attribs[i].len, 1, attrib_fp);
+      es_fflush (attrib_fp);
     }
 }
 
@@ -782,7 +779,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   
   check_trustdb_stale ();
 
-  printf ("%s%c  %4u%c/%s %s", 
+  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s", 
           secret? "sec":"pub",
           s2k_char,
           nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
@@ -790,21 +787,21 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 
   if (pk->is_revoked)
     {
-      printf (" [");
-      printf (_("revoked: %s"), revokestr_from_pk (pk));
-      printf ("]");
+      es_fprintf (es_stdout, " [");
+      es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk));
+      es_fprintf (es_stdout, "]");
     }
   else if (pk->has_expired)
     {
-      printf (" [");
-      printf (_("expired: %s"), expirestr_from_pk (pk));
-      printf ("]");
+      es_fprintf (es_stdout, " [");
+      es_fprintf (es_stdout, _("expired: %s"), expirestr_from_pk (pk));
+      es_fprintf (es_stdout, "]");
     }
   else if (pk->expiredate)
     {
-      printf (" [");
-      printf (_("expires: %s"), expirestr_from_pk (pk));
-      printf ("]");
+      es_fprintf (es_stdout, " [");
+      es_fprintf (es_stdout, _("expires: %s"), expirestr_from_pk (pk));
+      es_fprintf (es_stdout, "]");
     }
 
 #if 0
@@ -813,11 +810,11 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   if (opt.list_options & LIST_SHOW_VALIDITY)
     {
       int validity = get_validity (pk, NULL);
-      printf (" [%s]", trust_value_to_string (validity));
+      es_fprintf (es_stdout, " [%s]", trust_value_to_string (validity));
     }
 #endif
 
-  printf ("\n");
+  es_fprintf (es_stdout, "\n");
 
   if (fpr)
     print_fingerprint (pk, NULL, 0);
@@ -860,13 +857,13 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	      if (indent < 0 || indent > 40)
 		indent = 0;
 
-	      printf ("uid%*s%s ", indent, "", validity);
+	      es_fprintf (es_stdout, "uid%*s%s ", indent, "", validity);
 	    }
 	  else
-	    printf ("uid%*s", (int) keystrlen () + 10, "");
+	    es_fprintf (es_stdout, "uid%*s", (int) keystrlen () + 10, "");
 
-	  print_utf8_string (stdout, uid->name, uid->len);
-	  putchar ('\n');
+	  print_utf8_buffer (es_stdout, uid->name, uid->len);
+	  es_putc ('\n', es_stdout);
 
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
 	    show_photos (uid->attribs, uid->numattribs, pk, NULL, uid);
@@ -888,30 +885,30 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
           s2k_char = (/*(sk->protect.s2k.mode == 1001)? '#' :
                         (sk->protect.s2k.mode == 1002)? '>' : */' ');
 
-	  printf ("%s%c  %4u%c/%s %s",
+	  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
                   secret? "ssb":"sub",
                   s2k_char,
 		  nbits_from_pk (pk2), pubkey_letter (pk2->pubkey_algo),
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
 	  if (pk2->is_revoked)
 	    {
-	      printf (" [");
-	      printf (_("revoked: %s"), revokestr_from_pk (pk2));
-	      printf ("]");
+	      es_fprintf (es_stdout, " [");
+	      es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk2));
+	      es_fprintf (es_stdout, "]");
 	    }
 	  else if (pk2->has_expired)
 	    {
-	      printf (" [");
-	      printf (_("expired: %s"), expirestr_from_pk (pk2));
-	      printf ("]");
+	      es_fprintf (es_stdout, " [");
+	      es_fprintf (es_stdout, _("expired: %s"), expirestr_from_pk (pk2));
+	      es_fprintf (es_stdout, "]");
 	    }
 	  else if (pk2->expiredate)
 	    {
-	      printf (" [");
-	      printf (_("expires: %s"), expirestr_from_pk (pk2));
-	      printf ("]");
+	      es_fprintf (es_stdout, " [");
+	      es_fprintf (es_stdout, _("expires: %s"), expirestr_from_pk (pk2));
+	      es_fprintf (es_stdout, "]");
 	    }
-	  putchar ('\n');
+	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
             {
               print_fingerprint (pk2, NULL, 0);
@@ -972,14 +969,14 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	    sigstr = "sig";
 	  else
 	    {
-	      printf ("sig                             "
+	      es_fprintf (es_stdout, "sig                             "
 		      "[unexpected signature class 0x%02x]\n",
 		      sig->sig_class);
 	      continue;
 	    }
 
-	  fputs (sigstr, stdout);
-	  printf ("%c%c %c%c%c%c%c%c %s %s",
+	  es_fputs (sigstr, es_stdout);
+	  es_fprintf (es_stdout, "%c%c %c%c%c%c%c%c %s %s",
 		  sigrc, (sig->sig_class - 0x10 > 0 &&
 			  sig->sig_class - 0x10 <
 			  4) ? '0' + sig->sig_class - 0x10 : ' ',
@@ -993,20 +990,20 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 		  sig->trust_depth : ' ', keystr (sig->keyid),
 		  datestr_from_sig (sig));
 	  if (opt.list_options & LIST_SHOW_SIG_EXPIRE)
-	    printf (" %s", expirestr_from_sig (sig));
-	  printf ("  ");
+	    es_fprintf (es_stdout, " %s", expirestr_from_sig (sig));
+	  es_fprintf (es_stdout, "  ");
 	  if (sigrc == '%')
-	    printf ("[%s] ", g10_errstr (rc));
+	    es_fprintf (es_stdout, "[%s] ", g10_errstr (rc));
 	  else if (sigrc == '?')
 	    ;
 	  else if (!opt.fast_list_mode)
 	    {
 	      size_t n;
 	      char *p = get_user_id (sig->keyid, &n);
-	      print_utf8_string (stdout, p, n);
+	      print_utf8_buffer (es_stdout, p, n);
 	      xfree (p);
 	    }
-	  putchar ('\n');
+	  es_putc ('\n', es_stdout);
 
 	  if (sig->flags.policy_url
 	      && (opt.list_options & LIST_SHOW_POLICY_URLS))
@@ -1028,7 +1025,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  /* fixme: check or list other sigs here */
 	}
     }
-  putchar ('\n');
+  es_putc ('\n', es_stdout);
 }
 
 void
@@ -1045,11 +1042,11 @@ print_revokers (PKT_public_key * pk)
 	{
 	  byte *p;
 
-	  printf ("rvk:::%d::::::", pk->revkey[i].algid);
+	  es_fprintf (es_stdout, "rvk:::%d::::::", pk->revkey[i].algid);
 	  p = pk->revkey[i].fpr;
 	  for (j = 0; j < 20; j++, p++)
-	    printf ("%02X", *p);
-	  printf (":%02x%s:\n", pk->revkey[i].class,
+	    es_fprintf (es_stdout, "%02X", *p);
+	  es_fprintf (es_stdout, ":%02x%s:\n", pk->revkey[i].class,
 		  (pk->revkey[i].class & 0x40) ? "s" : "");
 	}
     }
@@ -1079,13 +1076,13 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   pk = node->pkt->pkt.public_key;
 
   keyid_from_pk (pk, keyid);
-  fputs (secret? "sec:":"pub:", stdout);
+  es_fputs (secret? "sec:":"pub:", es_stdout);
   if (!pk->is_valid)
-    putchar ('i');
+    es_putc ('i', es_stdout);
   else if (pk->is_revoked)
-    putchar ('r');
+    es_putc ('r', es_stdout);
   else if (pk->has_expired)
-    putchar ('e');
+    es_putc ('e', es_stdout);
   else if (opt.fast_list_mode || opt.no_expensive_trust_checks)
     ;
   else
@@ -1093,39 +1090,39 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
       trustletter = get_validity_info (pk, NULL);
       if (trustletter == 'u')
         ulti_hack = 1;
-      putchar (trustletter);
+      es_putc (trustletter, es_stdout);
     }
 
-  printf (":%u:%d:%08lX%08lX:%s:%s::",
+  es_fprintf (es_stdout, ":%u:%d:%08lX%08lX:%s:%s::",
           nbits_from_pk (pk),
           pk->pubkey_algo,
           (ulong) keyid[0], (ulong) keyid[1],
           colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
 
   if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
-    putchar (get_ownertrust_info (pk));
-  putchar (':');
+    es_putc (get_ownertrust (pk), es_stdout);
+  es_putc (':', es_stdout);
 
-  putchar (':');
-  putchar (':');
+  es_putc (':', es_stdout);
+  es_putc (':', es_stdout);
   print_capabilities (pk, keyblock);
   if (secret)
     {
-      putchar (':');		/* End of field 13. */
-      putchar (':');		/* End of field 14. */
+      es_putc (':', es_stdout);		/* End of field 13. */
+      es_putc (':', es_stdout);		/* End of field 14. */
       if (/*FIXME sk->protect.s2k.mode*/1 == 1001)
-	putchar ('#');		/* Key is just a stub. */
+	es_putc ('#', es_stdout);		/* Key is just a stub. */
       else if (/*FIXME sk->protect.s2k.mode*/1 == 1002)
 	{
 	  /* Key is stored on an external token (card) or handled by
 	     the gpg-agent.  Print the serial number of that token
 	     here. */
 	  /* FIXME: for (i = 0; i < sk->protect.ivlen; i++) */
-	  /*   printf ("%02X", sk->protect.iv[i]); */
+	  /*   es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
 	}
-      putchar (':');		/* End of field 15. */
+      es_putc (':', es_stdout);		/* End of field 15. */
     }
-  putchar ('\n');
+  es_putc ('\n', es_stdout);
 
   print_revokers (pk);
   if (fpr)
@@ -1147,11 +1144,11 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	   */
 	  str = uid->attrib_data ? "uat" : "uid";
 	  if (uid->is_revoked)
-	    printf ("%s:r::::", str);
+	    es_fprintf (es_stdout, "%s:r::::", str);
 	  else if (uid->is_expired)
-	    printf ("%s:e::::", str);
+	    es_fprintf (es_stdout, "%s:e::::", str);
 	  else if (opt.no_expensive_trust_checks)
-	    printf ("%s:::::", str);
+	    es_fprintf (es_stdout, "%s:::::", str);
 	  else
 	    {
 	      int uid_validity;
@@ -1160,25 +1157,25 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 		uid_validity = get_validity_info (pk, uid);
 	      else
 		uid_validity = 'u';
-	      printf ("%s:%c::::", str, uid_validity);
+	      es_fprintf (es_stdout, "%s:%c::::", str, uid_validity);
 	    }
 
-	  printf ("%s:", colon_strtime (uid->created));
-	  printf ("%s:", colon_strtime (uid->expiredate));
+	  es_fprintf (es_stdout, "%s:", colon_strtime (uid->created));
+	  es_fprintf (es_stdout, "%s:", colon_strtime (uid->expiredate));
 
 	  namehash_from_uid (uid);
 
 	  for (i = 0; i < 20; i++)
-	    printf ("%02X", uid->namehash[i]);
+	    es_fprintf (es_stdout, "%02X", uid->namehash[i]);
 
-	  printf ("::");
+	  es_fprintf (es_stdout, "::");
 
 	  if (uid->attrib_data)
-	    printf ("%u %lu", uid->numattribs, uid->attrib_len);
+	    es_fprintf (es_stdout, "%u %lu", uid->numattribs, uid->attrib_len);
 	  else
-	    print_string (stdout, uid->name, uid->len, ':');
-	  putchar (':');
-	  putchar ('\n');
+	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
+	  es_putc (':', es_stdout);
+	  es_putc ('\n', es_stdout);
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
@@ -1186,22 +1183,22 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
 	  keyid_from_pk (pk2, keyid2);
-	  fputs (secret? "ssb:":"sub:", stdout);
+	  es_fputs (secret? "ssb:":"sub:", es_stdout);
 	  if (!pk2->is_valid)
-	    putchar ('i');
+	    es_putc ('i', es_stdout);
 	  else if (pk2->is_revoked)
-	    putchar ('r');
+	    es_putc ('r', es_stdout);
 	  else if (pk2->has_expired)
-	    putchar ('e');
+	    es_putc ('e', es_stdout);
 	  else if (opt.fast_list_mode || opt.no_expensive_trust_checks)
 	    ;
 	  else
 	    {
 	      /* TRUSTLETTER should always be defined here. */
 	      if (trustletter)
-		printf ("%c", trustletter);
+		es_fprintf (es_stdout, "%c", trustletter);
 	    }
-	  printf (":%u:%d:%08lX%08lX:%s:%s:::::",
+	  es_fprintf (es_stdout, ":%u:%d:%08lX%08lX:%s:%s:::::",
 		  nbits_from_pk (pk2),
 		  pk2->pubkey_algo,
 		  (ulong) keyid2[0], (ulong) keyid2[1],
@@ -1211,21 +1208,21 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  print_capabilities (pk2, NULL);
           if (secret)
             {
-              putchar (':');	/* End of field 13. */
-              putchar (':');	/* End of field 14. */
+              es_putc (':', es_stdout);	/* End of field 13. */
+              es_putc (':', es_stdout);	/* End of field 14. */
               if (/*FIXME:sk2->protect.s2k.mode*/1 == 1001)
-                putchar ('#');	/* Key is just a stub. */
+                es_putc ('#', es_stdout);	/* Key is just a stub. */
               else if (/*FIXME: sk2->protect.s2k.mode*/1 == 1002)
                 {
                   /* Key is stored on an external token (card) or
                      handled by the gpg-agent.  Print the serial
                      number of that token here. */
                   /* FIXME: for (i = 0; i < sk2->protect.ivlen; i++)
-                     printf ("%02X", sk2->protect.iv[i]); */
+                     es_fprintf (es_stdout, "%02X", sk2->protect.iv[i]); */
                 }
-              putchar (':');	/* End of field 15. */
+              es_putc (':', es_stdout);	/* End of field 15. */
             }
-	  putchar ('\n');
+	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
 	    print_fingerprint (pk2, NULL, 0);
 	  if (opt.with_key_data)
@@ -1250,7 +1247,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	    sigstr = "sig";
 	  else
 	    {
-	      printf ("sig::::::::::%02x%c:\n",
+	      es_fprintf (es_stdout, "sig::::::::::%02x%c:\n",
 		      sig->sig_class, sig->flags.exportable ? 'x' : 'l');
 	      continue;
 	    }
@@ -1297,49 +1294,49 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	      rc = 0;
 	      sigrc = ' ';
 	    }
-	  fputs (sigstr, stdout);
-	  putchar (':');
+	  es_fputs (sigstr, es_stdout);
+	  es_putc (':', es_stdout);
 	  if (sigrc != ' ')
-	    putchar (sigrc);
-	  printf ("::%d:%08lX%08lX:%s:%s:", sig->pubkey_algo,
+	    es_putc (sigrc, es_stdout);
+	  es_fprintf (es_stdout, "::%d:%08lX%08lX:%s:%s:", sig->pubkey_algo,
 		  (ulong) sig->keyid[0], (ulong) sig->keyid[1],
 		  colon_datestr_from_sig (sig),
 		  colon_expirestr_from_sig (sig));
 
 	  if (sig->trust_depth || sig->trust_value)
-	    printf ("%d %d", sig->trust_depth, sig->trust_value);
-	  printf (":");
+	    es_fprintf (es_stdout, "%d %d", sig->trust_depth, sig->trust_value);
+	  es_fprintf (es_stdout, ":");
 
 	  if (sig->trust_regexp)
-	    print_string (stdout, sig->trust_regexp,
-			  strlen (sig->trust_regexp), ':');
-	  printf (":");
+	    es_write_sanitized (es_stdout, sig->trust_regexp,
+                                strlen (sig->trust_regexp), ":", NULL);
+	  es_fprintf (es_stdout, ":");
 
 	  if (sigrc == '%')
-	    printf ("[%s] ", g10_errstr (rc));
+	    es_fprintf (es_stdout, "[%s] ", g10_errstr (rc));
 	  else if (sigrc == '?')
 	    ;
 	  else if (!opt.fast_list_mode)
 	    {
 	      size_t n;
 	      char *p = get_user_id (sig->keyid, &n);
-	      print_string (stdout, p, n, ':');
+	      es_write_sanitized (es_stdout, p, n, ":", NULL);
 	      xfree (p);
 	    }
-	  printf (":%02x%c:", sig->sig_class,
+	  es_fprintf (es_stdout, ":%02x%c:", sig->sig_class,
 		  sig->flags.exportable ? 'x' : 'l');
 
 	  if (opt.no_sig_cache && opt.check_sigs && fprokay)
 	    {
-	      putchar (':');
+	      es_putc (':', es_stdout);
 
 	      for (i = 0; i < fplen; i++)
-		printf ("%02X", fparray[i]);
+		es_fprintf (es_stdout, "%02X", fparray[i]);
 
-	      putchar (':');
+	      es_putc (':', es_stdout);
 	    }
 
-	  printf ("\n");
+	  es_fprintf (es_stdout, "\n");
 
 	  if (opt.show_subpackets)
 	    print_subpackets_colon (sig);
@@ -1428,7 +1425,7 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
 {
   byte array[MAX_FINGERPRINT_LEN], *p;
   size_t i, n;
-  FILE *fp;
+  estream_t fp;
   const char *text;
   int primary = 0;
 
@@ -1497,7 +1494,7 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
     }
   else
     {
-      fp = stdout;
+      fp = es_stdout;
       text = _("      Key fingerprint =");
     }
 
@@ -1508,58 +1505,26 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
   p = array;
   if (opt.with_colons && !mode)
     {
-      fprintf (fp, "fpr:::::::::");
+      es_fprintf (fp, "fpr:::::::::");
       for (i = 0; i < n; i++, p++)
-	fprintf (fp, "%02X", *p);
-      putc (':', fp);
+	es_fprintf (fp, "%02X", *p);
+      es_putc (':', fp);
     }
   else
     {
-      if (fp)
-	fputs (text, fp);
-      else
-	tty_printf ("%s", text);
+      tty_fprintf (fp, "%s", text);
       if (n == 20)
 	{
 	  for (i = 0; i < n; i++, i++, p += 2)
-	    {
-	      if (fp)
-		{
-		  if (i == 10)
-		    putc (' ', fp);
-		  fprintf (fp, " %02X%02X", *p, p[1]);
-		}
-	      else
-		{
-		  if (i == 10)
-		    tty_printf (" ");
-		  tty_printf (" %02X%02X", *p, p[1]);
-		}
-	    }
+            tty_fprintf (fp, "%s %02X%02X", i==10? " ":"", *p, p[1]);
 	}
       else
 	{
 	  for (i = 0; i < n; i++, p++)
-	    {
-	      if (fp)
-		{
-		  if (i && !(i % 8))
-		    putc (' ', fp);
-		  fprintf (fp, " %02X", *p);
-		}
-	      else
-		{
-		  if (i && !(i % 8))
-		    tty_printf (" ");
-		  tty_printf (" %02X", *p);
-		}
-	    }
+            tty_fprintf (fp, "%s %02X", (i && !(i % 8))? " ":"", *p);
 	}
     }
-  if (fp)
-    putc ('\n', fp);
-  else
-    tty_printf ("\n");
+  tty_fprintf (fp, "\n");
 }
 
 /* Print the serial number of an OpenPGP card if available.  */
@@ -1575,8 +1540,8 @@ print_card_serialno (PKT_secret_key * sk)
   if (opt.with_colons)
     return; /* Handled elsewhere. */
 
-  fputs (_("      Card serial no. ="), stdout);
-  putchar (' ');
+  es_fputs (_("      Card serial no. ="), es_stdout);
+  es_putc (' ', es_stdout);
   if (sk->protect.ivlen == 16
       && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
     {		
@@ -1584,17 +1549,17 @@ print_card_serialno (PKT_secret_key * sk)
       for (i = 8; i < 14; i++)
 	{
 	  if (i == 10)
-	    putchar (' ');
-	  printf ("%02X", sk->protect.iv[i]);
+	    es_putc (' ', es_stdout);
+	  es_fprintf (es_stdout, "%02X", sk->protect.iv[i]);
 	}
     }
   else
     {
       /* Something is wrong: Print all.  */
       for (i = 0; i < sk->protect.ivlen; i++)
-	printf ("%02X", sk->protect.iv[i]);
+	es_fprintf (es_stdout, "%02X", sk->protect.iv[i]);
     }
-  putchar ('\n');
+  es_putc ('\n', es_stdout);
 }
 
 
@@ -1607,9 +1572,9 @@ set_attrib_fd (int fd)
   if (fd != -1 && last_fd == fd)
     return;
 
-  if (attrib_fp && attrib_fp != stdout && attrib_fp != stderr
-      && attrib_fp != log_get_stream ())
-    fclose (attrib_fp);
+  /* Fixme: Do we need to check for the log stream here?  */
+  if (attrib_fp && attrib_fp != log_get_stream ())
+    es_fclose (attrib_fp);
   attrib_fp = NULL;
   if (fd == -1)
     return;
@@ -1618,11 +1583,11 @@ set_attrib_fd (int fd)
   setmode (fd, O_BINARY);
 #endif
   if (fd == 1)
-    attrib_fp = stdout;
+    attrib_fp = es_stdout;
   else if (fd == 2)
-    attrib_fp = stderr;
+    attrib_fp = es_stderr;
   else
-    attrib_fp = fdopen (fd, "wb");
+    attrib_fp = es_fdopen (fd, "wb");
   if (!attrib_fp)
     {
       log_fatal ("can't open fd %d for attribute output: %s\n",

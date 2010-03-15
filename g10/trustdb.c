@@ -1376,7 +1376,8 @@ dump_key_array (int depth, struct key_array *keys)
                       (node->flag & 4)? 'f':
                       (node->flag & 2)? 'm':
                       (node->flag & 1)? 'q':'-');
-              print_string (stdout,  node->pkt->pkt.user_id->name, len, ':');
+              es_write_sanitized (es_stdout, node->pkt->pkt.user_id->name,
+                                  len, ":", NULL);
               putchar (':');
               putchar ('\n');
             }

@@ -218,7 +218,7 @@ get_manufacturer (unsigned int no)
 
 
 static void
-print_sha1_fpr (FILE *fp, const unsigned char *fpr)
+print_sha1_fpr (estream_t fp, const unsigned char *fpr)
 {
   int i;
 
@@ -238,21 +238,21 @@ print_sha1_fpr (FILE *fp, const unsigned char *fpr)
 
 
 static void
-print_sha1_fpr_colon (FILE *fp, const unsigned char *fpr)
+print_sha1_fpr_colon (estream_t fp, const unsigned char *fpr)
 {
   int i;
 
   if (fpr)
     {
       for (i=0; i < 20 ; i++, fpr++)
-        fprintf (fp, "%02X", *fpr);
+        es_fprintf (fp, "%02X", *fpr);
     }
-  putc (':', fp);
+  es_putc (':', fp);
 }
 
 
 static void
-print_name (FILE *fp, const char *text, const char *name)
+print_name (estream_t fp, const char *text, const char *name)
 {
   tty_fprintf (fp, "%s", text);
 
@@ -261,7 +261,7 @@ print_name (FILE *fp, const char *text, const char *name)
   if (name && *name)
     {
       if (fp)
-        print_utf8_string2 (fp, name, strlen (name), '\n');
+        print_utf8_buffer2 (fp, name, strlen (name), '\n');
       else
         tty_print_utf8_string2 (name, strlen (name), 0);
     }
@@ -271,10 +271,11 @@ print_name (FILE *fp, const char *text, const char *name)
 }
 
 static void
-print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
+print_isoname (estream_t fp, const char *text,
+               const char *tag, const char *name)
 {
   if (opt.with_colons)
-    fprintf (fp, "%s:", tag);
+    es_fprintf (fp, "%s:", tag);
   else
     tty_fprintf (fp, "%s", text);
 
@@ -291,22 +292,22 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
           *given = 0;
           given += 2;
           if (opt.with_colons)
-            print_string (fp, given, strlen (given), ':');
+            es_write_sanitized (fp, given, strlen (given), ":", NULL);
           else if (fp)
-            print_utf8_string2 (fp, given, strlen (given), '\n');
+            print_utf8_buffer2 (fp, given, strlen (given), '\n');
           else
             tty_print_utf8_string2 (given, strlen (given), 0);
 
           if (opt.with_colons)
-            putc (':', fp);
+            es_putc (':', fp);
           else if (*buf)
             tty_fprintf (fp, " ");
         }
 
       if (opt.with_colons)
-        print_string (fp, buf, strlen (buf), ':');
+        es_write_sanitized (fp, buf, strlen (buf), ":", NULL);
       else if (fp)
-        print_utf8_string2 (fp, buf, strlen (buf), '\n');
+        print_utf8_buffer2 (fp, buf, strlen (buf), '\n');
       else
         tty_print_utf8_string2 (buf, strlen (buf), 0);
       xfree (buf);
@@ -314,13 +315,13 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
   else
     {
       if (opt.with_colons)
-        putc (':', fp);
+        es_putc (':', fp);
       else
         tty_fprintf (fp, _("[not set]"));
     }
 
   if (opt.with_colons)
-    fputs (":\n", fp);
+    es_fputs (":\n", fp);
   else
     tty_fprintf (fp, "\n");
 }
@@ -351,7 +352,7 @@ fpr_is_ff (const char *fpr)
 
 /* Print all available information about the current card. */
 void
-card_status (FILE *fp, char *serialno, size_t serialnobuflen)
+card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 {
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
@@ -367,15 +368,14 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
   if (rc)
     {
       if (opt.with_colons)
-        fputs ("AID:::\n", fp);
-      log_error (_("OpenPGP card not available: %s\n"),
-                  gpg_strerror (rc));
+        es_fputs ("AID:::\n", fp);
+      log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (rc));
       xfree (pk);
       return;
     }
 
   if (opt.with_colons)
-    fprintf (fp, "AID:%s:", info.serialno? info.serialno : "");
+    es_fprintf (fp, "AID:%s:", info.serialno? info.serialno : "");
   else
     tty_fprintf (fp, "Application ID ...: %s\n",
                  info.serialno? info.serialno : "[none]");
@@ -385,31 +385,31 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       if (info.apptype && !strcmp (info.apptype, "NKS"))
         {
           if (opt.with_colons)
-            fputs ("netkey-card:\n", fp);
+            es_fputs ("netkey-card:\n", fp);
           log_info ("this is a NetKey card\n");
         }
       else if (info.apptype && !strcmp (info.apptype, "DINSIG"))
         {
           if (opt.with_colons)
-            fputs ("dinsig-card:\n", fp);
+            es_fputs ("dinsig-card:\n", fp);
           log_info ("this is a DINSIG compliant card\n");
         }
       else if (info.apptype && !strcmp (info.apptype, "P15"))
         {
           if (opt.with_colons)
-            fputs ("pkcs15-card:\n", fp);
+            es_fputs ("pkcs15-card:\n", fp);
           log_info ("this is a PKCS#15 compliant card\n");
         }
       else if (info.apptype && !strcmp (info.apptype, "GELDKARTE"))
         {
           if (opt.with_colons)
-            fputs ("geldkarte-card:\n", fp);
+            es_fputs ("geldkarte-card:\n", fp);
           log_info ("this is a Geldkarte compliant card\n");
         }
       else
         {
           if (opt.with_colons)
-            fputs ("unknown:\n", fp);
+            es_fputs ("unknown:\n", fp);
         }
       log_info ("not an OpenPGP card\n");
       agent_release_card_info (&info);
@@ -425,69 +425,72 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
     strcpy (serialno, info.serialno);
 
   if (opt.with_colons)
-    fputs ("openpgp-card:\n", fp);
+    es_fputs ("openpgp-card:\n", fp);
 
 
   if (opt.with_colons)
     {
-      fprintf (fp, "version:%.4s:\n", info.serialno+12);
+      es_fprintf (fp, "version:%.4s:\n", info.serialno+12);
       uval = xtoi_2(info.serialno+16)*256 + xtoi_2 (info.serialno+18);
-      fprintf (fp, "vendor:%04x:%s:\n", uval, get_manufacturer (uval));
-      fprintf (fp, "serial:%.8s:\n", info.serialno+20);
+      es_fprintf (fp, "vendor:%04x:%s:\n", uval, get_manufacturer (uval));
+      es_fprintf (fp, "serial:%.8s:\n", info.serialno+20);
       
       print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
 
-      fputs ("lang:", fp);
+      es_fputs ("lang:", fp);
       if (info.disp_lang)
-        print_string (fp, info.disp_lang, strlen (info.disp_lang), ':');
-      fputs (":\n", fp);
+        es_write_sanitized (fp, info.disp_lang, strlen (info.disp_lang),
+                            ":", NULL);
+      es_fputs (":\n", fp);
 
-      fprintf (fp, "sex:%c:\n", (info.disp_sex == 1? 'm':
+      es_fprintf (fp, "sex:%c:\n", (info.disp_sex == 1? 'm':
                                  info.disp_sex == 2? 'f' : 'u'));
 
-      fputs ("url:", fp);
+      es_fputs ("url:", fp);
       if (info.pubkey_url)
-        print_string (fp, info.pubkey_url, strlen (info.pubkey_url), ':');
-      fputs (":\n", fp);
+        es_write_sanitized (fp, info.pubkey_url, strlen (info.pubkey_url),
+                            ":", NULL);
+      es_fputs (":\n", fp);
 
-      fputs ("login:", fp);
+      es_fputs ("login:", fp);
       if (info.login_data)
-        print_string (fp, info.login_data, strlen (info.login_data), ':');
-      fputs (":\n", fp);
+        es_write_sanitized (fp, info.login_data, strlen (info.login_data),
+                            ":", NULL);
+      es_fputs (":\n", fp);
 
-      fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
+      es_fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
       for (i=0; i < DIM (info.key_attr); i++)
         if (info.key_attr[0].algo)
-          fprintf (fp, "keyattr:%d:%d:%u:\n", i+1,
-                   info.key_attr[i].algo, info.key_attr[i].nbits);
-      fprintf (fp, "maxpinlen:%d:%d:%d:\n",
-                   info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
-      fprintf (fp, "pinretry:%d:%d:%d:\n",
-                   info.chvretry[0], info.chvretry[1], info.chvretry[2]);
-      fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
+          es_fprintf (fp, "keyattr:%d:%d:%u:\n", i+1,
+                      info.key_attr[i].algo, info.key_attr[i].nbits);
+      es_fprintf (fp, "maxpinlen:%d:%d:%d:\n",
+                  info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
+      es_fprintf (fp, "pinretry:%d:%d:%d:\n",
+                  info.chvretry[0], info.chvretry[1], info.chvretry[2]);
+      es_fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
 
       for (i=0; i < 4; i++)
         {
           if (info.private_do[i])
             {
-              fprintf (fp, "private_do:%d:", i+1);
-              print_string (fp, info.private_do[i],
-                            strlen (info.private_do[i]), ':');
-              fputs (":\n", fp);
+              es_fprintf (fp, "private_do:%d:", i+1);
+              es_write_sanitized (fp, info.private_do[i],
+                                  strlen (info.private_do[i]), ":", NULL);
+              es_fputs (":\n", fp);
             }
         }
 
-      fputs ("cafpr:", fp);
+      es_fputs ("cafpr:", fp);
       print_sha1_fpr_colon (fp, info.cafpr1valid? info.cafpr1:NULL);
       print_sha1_fpr_colon (fp, info.cafpr2valid? info.cafpr2:NULL);
       print_sha1_fpr_colon (fp, info.cafpr3valid? info.cafpr3:NULL);
-      putc ('\n', fp);
-      fputs ("fpr:", fp);
+      es_putc ('\n', fp);
+      es_fputs ("fpr:", fp);
       print_sha1_fpr_colon (fp, info.fpr1valid? info.fpr1:NULL);
       print_sha1_fpr_colon (fp, info.fpr2valid? info.fpr2:NULL);
       print_sha1_fpr_colon (fp, info.fpr3valid? info.fpr3:NULL);
-      putc ('\n', fp);
-      fprintf (fp, "fprtime:%lu:%lu:%lu:\n",
+      es_putc ('\n', fp);
+      es_fprintf (fp, "fprtime:%lu:%lu:%lu:\n",
                (unsigned long)info.fpr1time, (unsigned long)info.fpr2time,
                (unsigned long)info.fpr3time);
     }
@@ -764,13 +767,13 @@ fetch_url(void)
 static int
 get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
 {
-  FILE *fp;
+  estream_t fp;
   char *data;
   int n;
   
   *r_buffer = NULL;
 
-  fp = fopen (fname, "rb");
+  fp = es_fopen (fname, "rb");
 #if GNUPG_MAJOR_VERSION == 1
   if (fp && is_secured_file (fileno (fp)))
     {
@@ -789,15 +792,15 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
   if (!data)
     {
       tty_printf (_("error allocating enough memory: %s\n"), strerror (errno));
-      fclose (fp);
+      es_fclose (fp);
       return -1;
     }
 
   if (maxlen)
-    n = fread (data, 1, maxlen, fp);
+    n = es_fread (data, 1, maxlen, fp);
   else
     n = 0;
-  fclose (fp);
+  es_fclose (fp);
   if (n < 0)
     {
       tty_printf (_("error reading `%s': %s\n"), fname, strerror (errno));
@@ -814,9 +817,9 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
 static int
 put_data_to_file (const char *fname, const void *buffer, size_t length)
 {
-  FILE *fp;
+  estream_t fp;
   
-  fp = fopen (fname, "wb");
+  fp = es_fopen (fname, "wb");
 #if GNUPG_MAJOR_VERSION == 1
   if (fp && is_secured_file (fileno (fp)))
     {
@@ -831,13 +834,13 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
       return -1;
     }
           
-  if (length && fwrite (buffer, length, 1, fp) != 1)
+  if (length && es_fwrite (buffer, length, 1, fp) != 1)
     {
       tty_printf (_("error writing `%s': %s\n"), fname, strerror (errno));
-      fclose (fp);
+      es_fclose (fp);
       return -1;
     }
-  fclose (fp);
+  es_fclose (fp);
   return 0;
 }
 
@@ -1785,7 +1788,7 @@ card_edit (strlist_t commands)
         {
           if (opt.with_colons)
             {
-              card_status (stdout, serialnobuf, DIM (serialnobuf));
+              card_status (es_stdout, serialnobuf, DIM (serialnobuf));
               fflush (stdout);
             }
           else

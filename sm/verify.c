@@ -595,7 +595,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           log_info (!i? _("Good signature from")
                       : _("                aka"));
           log_printf (" \"");
-          gpgsm_print_name (log_get_stream (), p);
+          gpgsm_es_print_name (log_get_stream (), p);
           log_printf ("\"\n");
           ksba_free (p);
         }

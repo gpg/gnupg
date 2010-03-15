@@ -1394,26 +1394,28 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 
 /* FIXME: Use gcry_mpi_print directly. */
 int
-mpi_print( FILE *fp, gcry_mpi_t a, int mode )
+mpi_print (estream_t fp, gcry_mpi_t a, int mode)
 {
-    int n=0;
-
-    if( !a )
-	return fprintf(fp, "[MPI_NULL]");
-    if( !mode ) {
-	unsigned int n1;
-	n1 = gcry_mpi_get_nbits(a);
-	n += fprintf(fp, "[%u bits]", n1);
+  int n=0;
+  
+  if (!a)
+    return es_fprintf (fp, "[MPI_NULL]");
+  if (!mode)
+    {
+      unsigned int n1;
+      n1 = gcry_mpi_get_nbits(a);
+      n += es_fprintf (fp, "[%u bits]", n1);
     }
-    else {
-	unsigned char *buffer;
-
-	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a))
-          BUG ();
-	fputs( buffer, fp );
-	n += strlen(buffer);
-	gcry_free( buffer );
+  else
+    {
+      unsigned char *buffer;
+      
+      if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a))
+        BUG ();
+      es_fputs (buffer, fp);
+      n += strlen (buffer);
+      gcry_free (buffer);
     }
-    return n;
+  return n;
 }
 

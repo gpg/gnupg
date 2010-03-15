@@ -1497,9 +1497,10 @@ list_config(char *items)
 	    {
 	      strlist_t sl;
 
-	      printf("cfg:group:");
-	      print_string(stdout,iter->name,strlen(iter->name),':');
-	      printf(":");
+	      es_fprintf (es_stdout, "cfg:group:");
+	      es_write_sanitized (es_stdout, iter->name, strlen(iter->name),
+                                  ":", NULL);
+	      es_putc (':', es_stdout);
 
 	      for(sl=iter->values;sl;sl=sl->next)
 		{
@@ -1517,7 +1518,7 @@ list_config(char *items)
       if(show_all || ascii_strcasecmp(name,"version")==0)
 	{
 	  printf("cfg:version:");
-	  print_string(stdout,VERSION,strlen(VERSION),':');
+	  es_write_sanitized (es_stdout, VERSION, strlen(VERSION), ":", NULL);
 	  printf("\n");
 	  any=1;
 	}
@@ -3828,29 +3829,30 @@ main (int argc, char **argv)
 	{   int mode = argc < 2 ? 0 : atoi(*argv);
 
 	    if( mode == 1 && argc == 2 ) {
-		mpi_print( stdout, generate_public_prime( atoi(argv[1]) ), 1);
+		mpi_print (es_stdout,
+                           generate_public_prime( atoi(argv[1]) ), 1);
 	    }
 	    else if( mode == 2 && argc == 3 ) {
-		mpi_print( stdout, generate_elg_prime(
+		mpi_print (es_stdout, generate_elg_prime(
 					     0, atoi(argv[1]),
 					     atoi(argv[2]), NULL,NULL ), 1);
 	    }
 	    else if( mode == 3 && argc == 3 ) {
 		MPI *factors;
-		mpi_print( stdout, generate_elg_prime(
+		mpi_print (es_stdout, generate_elg_prime(
 					     1, atoi(argv[1]),
 					     atoi(argv[2]), NULL,&factors ), 1);
 		putchar('\n');
-		mpi_print( stdout, factors[0], 1 ); /* print q */
+		mpi_print (es_stdout, factors[0], 1 ); /* print q */
 	    }
 	    else if( mode == 4 && argc == 3 ) {
 		MPI g = mpi_alloc(1);
-		mpi_print( stdout, generate_elg_prime(
+		mpi_print (es_stdout, generate_elg_prime(
 						 0, atoi(argv[1]),
 						 atoi(argv[2]), g, NULL ), 1);
 		putchar('\n');
-		mpi_print( stdout, g, 1 );
-		mpi_free(g);
+		mpi_print (es_stdout, g, 1 );
+		mpi_free (g);
 	    }
 	    else
 		wrong_args("--gen-prime mode bits [qbits] ");
@@ -3987,7 +3989,7 @@ main (int argc, char **argv)
       case aCardStatus:
         if (argc)
             wrong_args ("--card-status");
-        card_status (stdout, NULL, 0);
+        card_status (es_stdout, NULL, 0);
         break;
 
       case aCardEdit:

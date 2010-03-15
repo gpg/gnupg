@@ -42,6 +42,8 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
 {
   unsigned int dbgval;
 
+  (void)ctx;
+
   if (cat != ASSUAN_LOG_CONTROL)
     return 0; /* We only want the control channel messages.  */
   dbgval = hook? *(unsigned int*)hook : 0;

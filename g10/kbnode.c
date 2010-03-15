@@ -1,6 +1,6 @@
 /* kbnode.c -  keyblock node utility functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -336,63 +336,71 @@ move_kbnode( KBNODE *root, KBNODE node, KBNODE where )
 
 
 void
-dump_kbnode( KBNODE node )
+dump_kbnode (KBNODE node)
 {
-    for(; node; node = node->next ) {
-	const char *s;
-	switch( node->pkt->pkttype ) {
-	  case 0:		s="empty"; break;
-	  case PKT_PUBLIC_KEY:	s="public-key"; break;
-	  case PKT_SECRET_KEY:	s="secret-key"; break;
-	  case PKT_SECRET_SUBKEY: s= "secret-subkey"; break;
-	  case PKT_PUBKEY_ENC:	s="public-enc"; break;
-	  case PKT_SIGNATURE:	s="signature"; break;
-	  case PKT_ONEPASS_SIG: s="onepass-sig"; break;
-	  case PKT_USER_ID:	s="user-id"; break;
-	  case PKT_PUBLIC_SUBKEY: s="public-subkey"; break;
-	  case PKT_COMMENT:	s="comment"; break;
-	  case PKT_RING_TRUST:	s="trust"; break;
-	  case PKT_PLAINTEXT:	s="plaintext"; break;
-	  case PKT_COMPRESSED:	s="compressed"; break;
-	  case PKT_ENCRYPTED:	s="encrypted"; break;
-          case PKT_GPG_CONTROL: s="gpg-control"; break;
-	  default:		s="unknown"; break;
+  for (; node; node = node->next ) 
+    {
+      const char *s;
+      switch (node->pkt->pkttype)
+        {
+        case 0:		s="empty"; break;
+        case PKT_PUBLIC_KEY:	s="public-key"; break;
+        case PKT_SECRET_KEY:	s="secret-key"; break;
+        case PKT_SECRET_SUBKEY: s= "secret-subkey"; break;
+        case PKT_PUBKEY_ENC:	s="public-enc"; break;
+        case PKT_SIGNATURE:	s="signature"; break;
+        case PKT_ONEPASS_SIG: s="onepass-sig"; break;
+        case PKT_USER_ID:	s="user-id"; break;
+        case PKT_PUBLIC_SUBKEY: s="public-subkey"; break;
+        case PKT_COMMENT:	s="comment"; break;
+        case PKT_RING_TRUST:	s="trust"; break;
+        case PKT_PLAINTEXT:	s="plaintext"; break;
+        case PKT_COMPRESSED:	s="compressed"; break;
+        case PKT_ENCRYPTED:	s="encrypted"; break;
+        case PKT_GPG_CONTROL: s="gpg-control"; break;
+        default:		s="unknown"; break;
 	}
-	fprintf(stderr, "node %p %02x/%02x type=%s",
-		node, node->flag, node->private_flag, s);
-	if( node->pkt->pkttype == PKT_USER_ID ) {
-            PKT_user_id *uid = node->pkt->pkt.user_id;
-	    fputs("  \"", stderr);
-	    print_string( stderr, uid->name, uid->len, 0 );
-	    fprintf (stderr, "\" %c%c%c%c\n",
-                     uid->is_expired? 'e':'.',
-                     uid->is_revoked? 'r':'.',
-                     uid->created?    'v':'.',
-                     uid->is_primary? 'p':'.' );
-	}
-	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	    fprintf(stderr, "  class=%02x keyid=%08lX ts=%lu\n",
-		   node->pkt->pkt.signature->sig_class,
-		   (ulong)node->pkt->pkt.signature->keyid[1],
-                   (ulong)node->pkt->pkt.signature->timestamp);
-	}
-	else if( node->pkt->pkttype == PKT_GPG_CONTROL ) {
-	    fprintf(stderr, " ctrl=%d len=%u\n",
-                    node->pkt->pkt.gpg_control->control,
-                    (unsigned int)node->pkt->pkt.gpg_control->datalen);
-	}
-	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
-		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-            PKT_public_key *pk = node->pkt->pkt.public_key;
-	    fprintf(stderr, "  keyid=%08lX a=%d u=%d %c%c%c%c\n",
-                    (ulong)keyid_from_pk( pk, NULL ),
-                    pk->pubkey_algo, pk->pubkey_usage,
-                    pk->has_expired? 'e':'.',  
-                    pk->is_revoked?  'r':'.',  
-                    pk->is_valid?    'v':'.',
-                    pk->mdc_feature? 'm':'.');
-	}
-	else
-	    fputs("\n", stderr);
+      log_debug ("node %p %02x/%02x type=%s",
+                 node, node->flag, node->private_flag, s);
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          PKT_user_id *uid = node->pkt->pkt.user_id;
+          log_printf ("  \"");
+          es_write_sanitized (log_get_stream (), uid->name, uid->len,
+                              NULL, NULL);
+          log_printf ("\" %c%c%c%c\n",
+                      uid->is_expired? 'e':'.',
+                      uid->is_revoked? 'r':'.',
+                      uid->created?    'v':'.',
+                      uid->is_primary? 'p':'.' );
+        }
+      else if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          log_printf ("  class=%02x keyid=%08lX ts=%lu\n",
+                      node->pkt->pkt.signature->sig_class,
+                      (ulong)node->pkt->pkt.signature->keyid[1],
+                      (ulong)node->pkt->pkt.signature->timestamp);
+        }
+      else if (node->pkt->pkttype == PKT_GPG_CONTROL)
+        {
+          log_printf (" ctrl=%d len=%u\n",
+                      node->pkt->pkt.gpg_control->control,
+                      (unsigned int)node->pkt->pkt.gpg_control->datalen);
+        }
+      else if (node->pkt->pkttype == PKT_PUBLIC_KEY
+               || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+
+          log_printf ("  keyid=%08lX a=%d u=%d %c%c%c%c\n",
+                      (ulong)keyid_from_pk( pk, NULL ),
+                      pk->pubkey_algo, pk->pubkey_usage,
+                      pk->has_expired? 'e':'.',  
+                      pk->is_revoked?  'r':'.',  
+                      pk->is_valid?    'v':'.',
+                      pk->mdc_feature? 'm':'.');
+        }
+      
+      log_flush ();
     }
 }

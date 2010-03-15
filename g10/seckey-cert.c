@@ -83,7 +83,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 				 &sk->protect.s2k, mode,
                                  tryagain_text, canceled );
         if (!dek && canceled && *canceled)
-	    return G10ERR_GENERAL;
+	    return GPG_ERR_CANCELED;
 
 
 	err = openpgp_cipher_open (&cipher_hd, sk->protect.algo,

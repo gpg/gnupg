@@ -1,4 +1,38 @@
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* card-util.c: Replace stdio by estream.
+	* keylist.c: Ditto.
+
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* plaintext.c (setup_plaintext_name): Do not encode pipe like
+	filenames.  This helps with bug#1201.
+
+	* seckey-cert.c (do_check): Return GPG_ERR_CANCELED.
+	* keyedit.c (change_passphrase): Add arg R_ERR.
+	(keyedit_passwd): Return the correct error or emit a success
+	status message.
+
 2010-03-11  Werner Koch  <wk@g10code.com>
+
+	* misc.c (mpi_print): Change to take a estream_t arg.
+
+	* parse-packet.c (listfp): Change to an estream_t.  Change all
+	users to use estream functions.
+
+	* kbnode.c (dump_kbnode): Change to use log functions.
+	* pkclist.c (do_show_revocation_reason): Ditto
+
+	* armor.c (parse_header_line): Replace print_string by
+	es_print_sanitized.
+	(fake_packet): Ditto.
+	* keyedit.c (print_and_check_one_sig_colon): Ditto.
+	(show_key_with_all_names_colon): Ditto.
+	(ask_revoke_sig): Ditto.
+	* keylist.c (list_keyblock_colon): Ditto.
+	* mainproc.c (print_userid, list_node): Ditto.
+	* trustdb.c (dump_key_array): Ditto.
+	* gpg.c (list_config): ditto.
 
 	* gpg.c: Include "asshelp.h".
 	(main): Remove assuan_set_assuan_log_prefix.  Add

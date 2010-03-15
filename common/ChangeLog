@@ -1,10 +1,26 @@
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* status.h (STATUS_ENTER): New.
+
+	* ttyio.c (tty_fprintf): Change to use estream.
+
+	* miscellaneous.c (print_utf8_string): Rename to print_utf8_buffer
+	and change FP arg to an estream.  Change all callers.
+	(print_utf8_string2): Ditto; new name is to print_utf8_buffer2.
+
 2010-03-11  Werner Koch  <wk@g10code.com>
+
+	* miscellaneous.c (print_string): Remove.
 
 	* estream.c (es_setvbuf): Fix parameter check.
 	(es_set_buffering): Allow a SIZE of 0.
 	* asshelp.c (setup_libassuan_logging, my_libassuan_log_handler): New.
 	* logging.c (do_logv): Add arg IGNORE_ARG_PTR.  Change all callers.
 	(log_string): New.
+	(log_flush): New.
+	(set_file_fd): Simplify by using estreams es_stderr.
+
+	* estream.h (es_stdout, es_stderr, es_stdin): New.
 
 2010-03-10  Werner Koch  <wk@g10code.com>
 

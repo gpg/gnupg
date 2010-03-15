@@ -188,7 +188,9 @@ print_and_check_one_sig_colon( KBNODE keyblock, KBNODE node,
       printf(":");
 
       if(sig->trust_regexp)
-	print_string(stdout,sig->trust_regexp,strlen(sig->trust_regexp),':');
+	es_write_sanitized (es_stdout, 
+                            sig->trust_regexp, strlen (sig->trust_regexp),
+                            ":", NULL);
 
       printf("::%02x%c\n",sig->sig_class,sig->flags.exportable?'x':'l');
 
@@ -1100,7 +1102,7 @@ sign_uids( KBNODE keyblock, strlist_t locusr, int *ret_modified,
  * We use only one passphrase for all keys.
  */
 static int
-change_passphrase( KBNODE keyblock )
+change_passphrase (KBNODE keyblock, int *r_err)
 {
     int rc = 0;
     int changed=0;
@@ -1264,6 +1266,8 @@ change_passphrase( KBNODE keyblock )
   leave:
     xfree( passphrase );
     set_next_passphrase( NULL );
+    if (r_err)
+      *r_err = rc;
     return changed && !rc;
 }
 
@@ -2150,7 +2154,7 @@ keyedit_menu( const char *username, strlist_t locusr,
 	    break;
 
 	  case cmdPASSWD:
-	    if( change_passphrase( sec_keyblock ) )
+	    if (change_passphrase (sec_keyblock, NULL))
 		sec_modified = 1;
 	    break;
 
@@ -2372,11 +2376,8 @@ keyedit_passwd (const char *username)
   if (err) 
     goto leave;
 
-  if (!change_passphrase (keyblock))
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
+  if (!change_passphrase (keyblock, &err))
+    goto leave;
 
   err = keydb_update_keyblock (kdh, keyblock);
   if (err)
@@ -2393,6 +2394,8 @@ keyedit_passwd (const char *username)
                 username, gpg_strerror (err));
       write_status_error ("keyedit.passwd", err);
     }
+  else
+    write_status_text (STATUS_SUCCESS, "keyedit.passwd");
 }
 
 
@@ -2685,7 +2688,7 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	    if(uid->attrib_data)
 	      printf ("%u %lu",uid->numattribs,uid->attrib_len);
 	    else
-	      print_string (stdout, uid->name, uid->len, ':');
+	      es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
 
             putchar (':');
             /* signature class */
@@ -4791,7 +4794,7 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
 	else
 	  {
 	    printf("uid:::::::::");
-	    print_string (stdout, uid->name, uid->len, ':');
+	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
 	  }
 
 	printf("\n");

@@ -892,12 +892,12 @@ print_userid( PACKET *pkt )
 		 pkt->pkt.user_id->numattribs,
 		 pkt->pkt.user_id->attrib_len);
 	else
-	  print_string( stdout,  pkt->pkt.user_id->name,
-			pkt->pkt.user_id->len, ':');
+	  es_write_sanitized (es_stdout, pkt->pkt.user_id->name,
+                              pkt->pkt.user_id->len, ":", NULL);
       }
     else
-	print_utf8_string( stdout,  pkt->pkt.user_id->name,
-				     pkt->pkt.user_id->len );
+	print_utf8_buffer (es_stdout, pkt->pkt.user_id->name,
+                           pkt->pkt.user_id->len );
 }
 
 
@@ -1135,8 +1135,8 @@ list_node( CTX c, KBNODE node )
 	    printf(":");
 
 	    if(sig->trust_regexp)
-	      print_string(stdout,sig->trust_regexp,
-			   strlen(sig->trust_regexp),':');
+	      es_write_sanitized (es_stdout,sig->trust_regexp,
+                                  strlen(sig->trust_regexp), ":", NULL);
 	    printf(":");
 	}
 	else
@@ -1155,7 +1155,8 @@ list_node( CTX c, KBNODE node )
 	}
 	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
-	    print_string( stdout, p, n, opt.with_colons );
+	    es_write_sanitized (es_stdout, p, n,
+                                opt.with_colons?":":NULL, NULL );
 	    xfree(p);
 	}
 	if( opt.with_colons )
@@ -1633,7 +1634,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	       page, but "from" if it is located on a keyserver.  I'm
 	       not going to even try to make two strings here :) */
 	    log_info(_("Key available at: ") );
-	    print_utf8_string( log_get_stream(), p, n );
+	    print_utf8_buffer (log_get_stream(), p, n);
 	    log_printf ("\n");
 
 	    if(opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE

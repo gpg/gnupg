@@ -1,3 +1,7 @@
+2010-03-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_INIT): Prepare for using git.
+
 2010-03-10  Werner Koch  <wk@g10code.com>
 
 	* jnlib/: Move all code to common/.

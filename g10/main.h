@@ -149,7 +149,7 @@ int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
-int mpi_print( FILE *fp, gcry_mpi_t a, int mode );
+int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -308,8 +308,8 @@ void show_notation(PKT_signature *sig,int indent,int mode,int which);
 void dump_attribs (const PKT_user_id *uid, PKT_public_key *pk);
 void set_attrib_fd(int fd);
 void print_seckey_info (PKT_public_key *pk);
-void print_pubkey_info (FILE *fp, PKT_public_key *pk);
-void print_card_key_info (FILE *fp, KBNODE keyblock);
+void print_pubkey_info (estream_t fp, PKT_public_key *pk);
+void print_card_key_info (estream_t fp, KBNODE keyblock);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );
@@ -341,7 +341,7 @@ int gpg_server (ctrl_t);
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/
 void change_pin (int no, int allow_admin);
-void card_status (FILE *fp, char *serialno, size_t serialnobuflen);
+void card_status (estream_t fp, char *serialno, size_t serialnobuflen);
 void card_edit (strlist_t commands);
 int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);
 int  card_store_subkey (KBNODE node, int use);

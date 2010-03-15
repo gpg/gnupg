@@ -278,9 +278,8 @@ char *xtryasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
 
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);
-void print_string (FILE *fp, const byte *p, size_t n, int delim);
-void print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim);
-void print_utf8_string (FILE *fp, const byte *p, size_t n);
+void print_utf8_buffer2 (estream_t fp, const void *p, size_t n, int delim);
+void print_utf8_buffer (estream_t fp, const void *p, size_t n);
 void print_hexstring (FILE *fp, const void *buffer, size_t length,
                       int reserved);
 char *make_printable_string (const void *p, size_t n, int delim);

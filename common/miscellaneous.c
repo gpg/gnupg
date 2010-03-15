@@ -117,23 +117,22 @@ print_fname_stdin (const char *s)
     return s;
 }
 
-/* fixme: Globally replace it by print_sanitized_buffer. */
-void
-print_string( FILE *fp, const byte *p, size_t n, int delim )
-{
-  print_sanitized_buffer (fp, p, n, delim);
-}
 
 void
-print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim )
+print_utf8_buffer2 (estream_t stream, const void *p, size_t n, int delim)
 {
-  print_sanitized_utf8_buffer (fp, p, n, delim);
+  char tmp[2];
+  
+  tmp[0] = delim;
+  tmp[1] = 0;
+  es_write_sanitized_utf8_buffer (stream, p, n, tmp, NULL);
 }
 
+
 void
-print_utf8_string( FILE *fp, const byte *p, size_t n )
+print_utf8_buffer (estream_t stream, const void *p, size_t n)
 {
-    print_utf8_string2 (fp, p, n, 0);
+  es_write_sanitized_utf8_buffer (stream, p, n, NULL, NULL);
 }
 
 /* Write LENGTH bytes of BUFFER to FP as a hex encoded string.
