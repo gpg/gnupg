@@ -1,3 +1,12 @@
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* logging.c (S_IRGRP, S_IROTH, S_IWGRP, S_IWOTH) [W32]: New.
+	(fun_writer, set_file_fd) [W32]: Disable socket code.
+
+	* localename.c: Include gpg-error.h.
+
+	* util.h (GPG_ERR_NOT_ENABLED): Remove this temporary definition.
+
 2010-03-12  Werner Koch  <wk@g10code.com>
 
 	* status.h (STATUS_ENTER): New.

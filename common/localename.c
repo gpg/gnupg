@@ -29,6 +29,7 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
+#include <gpg-error.h> /* We need gettext_localename for W32. */
 
 #include "../common/w32help.h"
 
@@ -101,7 +102,7 @@ gnupg_messages_locale_name (void)
   const char *s;
 
 #ifdef HAVE_W32_SYSTEM
-  /* We use the localname function from ../common/w32-gettext.c. */
+  /* We use the localename function libgpg-error.  */
   s = gettext_localename ();
 #else
   s = do_nl_locale_name (LC_MESSAGES, "LC_MESSAGES");

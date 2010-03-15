@@ -1,3 +1,8 @@
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (my_dgettext):
+	s/gettext_select_utf8/gettext_use_utf8/.
+
 2010-03-10  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (common_libs): Remove libjnlib.a.

@@ -1144,7 +1144,7 @@ my_dgettext (const char *domain, const char *msgid)
       if (!switched_codeset)
         {
           switched_codeset = 1;
-          gettext_select_utf8 (1);
+          gettext_use_utf8 (1);
         }
 
       if (!strcmp (domain, "gnupg"))

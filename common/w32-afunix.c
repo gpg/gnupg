@@ -17,7 +17,7 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Use of this code is preprecated - you better use the sockt wrappers
+/* Use of this code is deprecated - you better use the socket wrappers
    from libassuan. */
 
 #ifdef _WIN32
@@ -51,15 +51,14 @@ read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
   fclose (fp);
   if (!nread)
     {
-#warning remove this file
-      jnlib_set_errno (EIO);
+      gpg_err_set_errno (EIO);
       return -1;
     }
   buffer[nread] = 0;
   aval = atoi (buffer);
   if (aval < 1 || aval > 65535)
     {
-      jnlib_set_errno (EINVAL);
+      gpg_err_set_errno (EINVAL);
       return -1;
     }
   *port = (unsigned int)aval;
@@ -67,7 +66,7 @@ read_port_and_nonce (const char *fname, unsigned short *port, char *nonce)
     ;
   if (*p != '\n' || nread != 17)
     {
-      jnlib_set_errno (EINVAL);
+      gpg_err_set_errno (EINVAL);
       return -1;
     }
   p++; nread--;
@@ -127,7 +126,7 @@ _w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen)
       ret = send (sockfd, nonce, 16, 0);
       if (ret >= 0 && ret != 16)
         {
-          jnlib_set_errno (EIO);
+          gpg_err_set_errno (EIO);
           ret = -1;
         }
     }

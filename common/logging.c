@@ -30,18 +30,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef HAVE_W32_SYSTEM
-#include <sys/socket.h>
-#include <sys/un.h>
-#endif /*!HAVE_W32_SYSTEM*/
+# include <sys/socket.h>
+# include <sys/un.h>
+#endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <fcntl.h>
 #include <assert.h>
+
 
 
 #define JNLIB_NEED_LOG_LOGV 1
 #define JNLIB_NEED_AFLOCAL 1
 #include "libjnlib-config.h"
 #include "logging.h"
+
+#ifdef HAVE_W32_SYSTEM
+# define S_IRGRP S_IRUSR
+# define S_IROTH S_IRUSR
+# define S_IWGRP S_IWUSR
+# define S_IWOTH S_IWUSR
+#endif
 
 
 static estream_t logstream;
@@ -121,6 +129,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
      processes often close stderr and by writing to file descriptor 2
      we might send the log message to a file not intended for logging
      (e.g. a pipe or network connection). */
+#ifndef HAVE_W32_SYSTEM
   if (cookie->want_socket && cookie->fd == -1)
     {
       /* Not yet open or meanwhile closed due to an error. */
@@ -177,6 +186,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           cookie->is_socket = 1;
         }
     }
+#endif /*HAVE_W32_SYSTEM*/
 
   log_socket = cookie->fd;
   if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
@@ -239,6 +249,7 @@ set_file_fd (const char *name, int fd)
       fd = fileno (stderr);
     }
 
+#ifndef HAVE_W32_SYSTEM
   if (name)
     {
       want_socket = (!strncmp (name, "socket://", 9) && name[9]);
@@ -246,6 +257,7 @@ set_file_fd (const char *name, int fd)
         name += 9;
     }
   else
+#endif /*HAVE_W32_SYSTEM*/
     {
       want_socket = 0;
     }

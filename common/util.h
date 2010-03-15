@@ -25,11 +25,6 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
 
-/* Add error codes available only in newer versions of libgpg-error.  */
-#ifndef GPG_ERR_NOT_ENABLED
-#define GPG_ERR_NOT_ENABLED 179
-#endif
-
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
