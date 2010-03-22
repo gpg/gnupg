@@ -1,4 +1,4 @@
-/* exechelp.c - fork and exec helpers
+/* exechelp-w32.c - Fork and exec helpers for W32CE.
  * Copyright (C) 2004, 2007, 2008, 2009,
  *               2010 Free Software Foundation, Inc.
  *
@@ -20,6 +20,10 @@
 
 #include <config.h>
 
+#if !defined(HAVE_W32_SYSTEM) && !defined (HAVE_W32CE_SYSTEM)
+#error This code is only used on W32CE.
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,14 +43,6 @@
 #ifdef USE_GNU_PTH      
 #include <pth.h>
 #endif
-#ifndef HAVE_W32_SYSTEM
-#include <sys/wait.h>
-#endif
-
-#ifdef HAVE_GETRLIMIT
-#include <sys/time.h>
-#include <sys/resource.h>
-#endif /*HAVE_GETRLIMIT*/
 
 #ifdef HAVE_STAT
 # include <sys/stat.h>
@@ -58,45 +54,22 @@
 #include "sysutils.h"
 #include "exechelp.h"
 
-/* Define to 1 do enable debugging.  */
-#define DEBUG_W32_SPAWN 1
 
-
-/* We have the usual problem here: Some modules are linked against pth
-   and some are not.  However we want to use pth_fork and pth_waitpid
-   here. Using a weak symbol works but is not portable - we should
-   provide a an explicit dummy pth module instead of using the
-   pragma.  */ 
-#ifndef _WIN32
-#pragma weak pth_fork
-#pragma weak pth_waitpid
-#endif
-
-#ifdef HAVE_W32_SYSTEM
 /* It seems Vista doesn't grok X_OK and so fails access() tests.
    Previous versions interpreted X_OK as F_OK anyway, so we'll just
    use F_OK directly. */
 #undef X_OK
 #define X_OK F_OK
-#endif /* HAVE_W32_SYSTEM */
-
-/* Constants not supported by WindowsCE.  */
-#ifdef HAVE_W32CE_SYSTEM
-# define DETACHED_PROCESS         (0)
-# define CREATE_NEW_PROCESS_GROUP (0)
-#endif
 
 
-#ifdef HAVE_W32_SYSTEM
 /* We assume that a HANDLE can be represented by an int which should
    be true for all i386 systems (HANDLE is defined as void *) and
    these are the only systems for which Windows is available.  Further
    we assume that -1 denotes an invalid handle.  */
-# define fd_to_handle(a)  ((HANDLE)(a))
-# define handle_to_fd(a)  ((int)(a))
-# define pid_to_handle(a) ((HANDLE)(a))
-# define handle_to_pid(a) ((int)(a))
-#endif
+#define fd_to_handle(a)  ((HANDLE)(a))
+#define handle_to_fd(a)  ((int)(a))
+#define pid_to_handle(a) ((HANDLE)(a))
+#define handle_to_pid(a) ((int)(a))
 
 
 /* Return the maximum number of currently allowed open file
@@ -106,34 +79,6 @@ int
 get_max_fds (void)
 {
   int max_fds = -1;
-#ifdef HAVE_GETRLIMIT
-  struct rlimit rl;
-
-# ifdef RLIMIT_NOFILE
-  if (!getrlimit (RLIMIT_NOFILE, &rl))
-    max_fds = rl.rlim_max;
-# endif
-
-# ifdef RLIMIT_OFILE
-  if (max_fds == -1 && !getrlimit (RLIMIT_OFILE, &rl))
-    max_fds = rl.rlim_max;
-
-# endif
-#endif /*HAVE_GETRLIMIT*/
-
-#ifdef _SC_OPEN_MAX
-  if (max_fds == -1)
-    {
-      long int scres = sysconf (_SC_OPEN_MAX);
-      if (scres >= 0)
-        max_fds = scres;
-    }
-#endif
-
-#ifdef _POSIX_OPEN_MAX
-  if (max_fds == -1)
-    max_fds = _POSIX_OPEN_MAX;
-#endif
 
 #ifdef OPEN_MAX
   if (max_fds == -1)
@@ -237,8 +182,6 @@ get_all_open_fds (void)
 }
 
 
-
-#ifdef HAVE_W32_SYSTEM
 /* Helper function to build_w32_commandline. */
 static char *
 build_w32_commandline_copy (char *buffer, const char *string)
@@ -307,23 +250,16 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
   *cmdline= buf;
   return 0;
 }
-#endif /*HAVE_W32_SYSTEM*/
 
 
-#ifdef HAVE_W32_SYSTEM
 /* Create pipe where one end is inheritable: With an INHERIT_IDX of 0
    the read end is inheritable, with 1 the write end is inheritable.  */
 static int
 create_inheritable_pipe (int filedes[2], int inherit_idx)
 {
   HANDLE r, w, h;
-  SECURITY_ATTRIBUTES sec_attr;
 
-  memset (&sec_attr, 0, sizeof sec_attr );
-  sec_attr.nLength = sizeof sec_attr;
-  sec_attr.bInheritHandle = FALSE;
-    
-  if (!CreatePipe (&r, &w, &sec_attr, 0))
+  if (!CreatePipe (&r, &w, NULL, 0))
     return -1;
 
   if (!DuplicateHandle (GetCurrentProcess(), inherit_idx? w : r,
@@ -351,93 +287,12 @@ create_inheritable_pipe (int filedes[2], int inherit_idx)
   filedes[1] = handle_to_fd (w);
   return 0;
 }
-#endif /*HAVE_W32_SYSTEM*/
-
-
-#ifdef HAVE_W32_SYSTEM
-static HANDLE
-w32_open_null (int for_write)
-{
-  HANDLE hfile;
-
-  hfile = CreateFileW (L"nul",
-                       for_write? GENERIC_WRITE : GENERIC_READ,
-                       FILE_SHARE_READ | FILE_SHARE_WRITE,
-                       NULL, OPEN_EXISTING, 0, NULL);
-  if (hfile == INVALID_HANDLE_VALUE)
-    log_debug ("can't open `nul': %s\n", w32_strerror (-1));
-  return hfile;
-}
-#endif /*HAVE_W32_SYSTEM*/
-
-
-#ifndef HAVE_W32_SYSTEM
-/* The exec core used right after the fork. This will never return. */
-static void
-do_exec (const char *pgmname, const char *argv[],
-         int fd_in, int fd_out, int fd_err,
-         void (*preexec)(void) )
-{
-  char **arg_list;
-  int i, j;
-  int fds[3];
-
-  fds[0] = fd_in;
-  fds[1] = fd_out;
-  fds[2] = fd_err;
-
-  /* Create the command line argument array.  */
-  i = 0;
-  if (argv)
-    while (argv[i])
-      i++;
-  arg_list = xcalloc (i+2, sizeof *arg_list);
-  arg_list[0] = strrchr (pgmname, '/');
-  if (arg_list[0])
-    arg_list[0]++;
-  else
-    arg_list[0] = xstrdup (pgmname);
-  if (argv)
-    for (i=0,j=1; argv[i]; i++, j++)
-      arg_list[j] = (char*)argv[i];
-
-  /* Assign /dev/null to unused FDs. */
-  for (i=0; i <= 2; i++)
-    {
-      if (fds[i] == -1 )
-        {
-          fds[i] = open ("/dev/null", i? O_WRONLY : O_RDONLY);
-          if (fds[i] == -1)
-            log_fatal ("failed to open `%s': %s\n",
-                       "/dev/null", strerror (errno));
-        }
-    }
-
-  /* Connect the standard files.  */
-  for (i=0; i <= 2; i++)
-    {
-      if (fds[i] != i && dup2 (fds[i], i) == -1)
-        log_fatal ("dup2 std%s failed: %s\n",
-                   i==0?"in":i==1?"out":"err", strerror (errno));
-    }
-
-  /* Close all other files. */
-  close_all_fds (3, NULL);
-  
-  if (preexec)
-    preexec ();
-  execv (pgmname, arg_list);
-  /* No way to print anything, as we have closed all streams. */
-  _exit (127);
-}
-#endif /*!HAVE_W32_SYSTEM*/
 
 
 static gpg_error_t
 do_create_pipe (int filedes[2], int inherit_idx)
 {
   gpg_error_t err = 0;
-#if HAVE_W32_SYSTEM
   int fds[2];
 
   filedes[0] = filedes[1] = -1;
@@ -464,13 +319,6 @@ do_create_pipe (int filedes[2], int inherit_idx)
             err = 0;
         }
     }
-#else
-  if (pipe (filedes) == -1)
-    {
-      err = gpg_error_from_syserror ();
-      filedes[0] = filedes[1] = -1;
-    }
-#endif
   return err;
 }
 
@@ -505,7 +353,7 @@ gnupg_create_outbound_pipe (int filedes[2])
    Bit 7: If set the process will be started as a background process.
           This flag is only useful under W32 systems, so that no new
           console is created and pops up a console window when
-          starting the server
+          starting the server.  Does not work on W32CE.
  
    Bit 6: On W32 run AllowSetForegroundWindow for the child.  Due to
           error problems this actually allows SetForegroundWindow for
@@ -518,9 +366,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
                      void (*preexec)(void), unsigned int flags,
                      FILE **statusfile, pid_t *pid)
 {
-#ifdef HAVE_W32_SYSTEM
   gpg_error_t err;
-  SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = 
     {
       NULL,      /* Returns process handle.  */
@@ -529,7 +375,6 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       0          /* Returns tid.  */
     };
   STARTUPINFO si;
-  int cr_flags;
   char *cmdline;
   int fd, fdout, rp[2];
 
@@ -545,11 +390,6 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (fd == -1 || fdout == -1)
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
-  /* Prepare security attributes.  */
-  memset (&sec_attr, 0, sizeof sec_attr );
-  sec_attr.nLength = sizeof sec_attr;
-  sec_attr.bInheritHandle = FALSE;
-  
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
@@ -566,28 +406,21 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   
   /* Start the process.  Note that we can't run the PREEXEC function
      because this would change our own environment. */
-  memset (&si, 0, sizeof si);
-  si.cb = sizeof (si);
-  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-  si.hStdInput  = fd_to_handle (fd);
-  si.hStdOutput = fd_to_handle (fdout);
-  si.hStdError  = fd_to_handle (rp[1]);
+  /* si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW; */
+  /* si.hStdInput  = fd_to_handle (fd); */
+  /* si.hStdOutput = fd_to_handle (fdout); */
+  /* si.hStdError  = fd_to_handle (rp[1]); */
 
-  cr_flags = (CREATE_DEFAULT_ERROR_MODE
-              | ((flags & 128)? DETACHED_PROCESS : 0)
-              | GetPriorityClass (GetCurrentProcess ())
-              | CREATE_SUSPENDED); 
 /*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
-                      TRUE,          /* Inherit handles.  */
-                      cr_flags,      /* Creation flags.  */
+                      NULL,          /* Process security attributes.  */
+                      NULL,          /* Thread security attributes.  */
+                      FALSE,          /* Inherit handles.  */
+                      CREATE_SUSPENDED, /* Creation flags.  */
                       NULL,          /* Environment.  */
                       NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
+                      NULL,           /* Startup information. */
                       &pi            /* Returns process information.  */
                       ))
     {
@@ -638,65 +471,6 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   *pid = handle_to_pid (pi.hProcess);
   return 0;
 
-#else /* !HAVE_W32_SYSTEM */
-  gpg_error_t err;
-  int fd, fdout, rp[2];
-
-  (void)flags; /* Currently not used.  */
-
-  *statusfile = NULL;
-  *pid = (pid_t)(-1);
-  fflush (infile);
-  rewind (infile);
-  fd = fileno (infile);
-  fdout = es_fileno (outfile);
-  if (fd == -1 || fdout == -1)
-    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
-
-  if (pipe (rp) == -1)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating a pipe: %s\n"), strerror (errno));
-      return err;
-    }
-
-#ifdef USE_GNU_PTH      
-  *pid = pth_fork? pth_fork () : fork ();
-#else
-  *pid = fork ();
-#endif
-  if (*pid == (pid_t)(-1))
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error forking process: %s\n"), strerror (errno));
-      close (rp[0]);
-      close (rp[1]);
-      return err;
-    }
-
-  if (!*pid)
-    { 
-      gcry_control (GCRYCTL_TERM_SECMEM);
-      /* Run child. */
-      do_exec (pgmname, argv, fd, fdout, rp[1], preexec);
-      /*NOTREACHED*/
-    }
-
-  /* Parent. */
-  close (rp[1]);
-
-  *statusfile = fdopen (rp[0], "r");
-  if (!*statusfile)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("can't fdopen pipe for reading: %s\n"), strerror (errno));
-      kill (*pid, SIGTERM);
-      *pid = (pid_t)(-1);
-      return err;
-    }
-
-  return 0;
-#endif /* !HAVE_W32_SYSTEM */
 }
 
 
@@ -713,9 +487,7 @@ gpg_error_t
 gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
                         int infd, int outfd, int errfd, pid_t *pid)
 {
-#ifdef HAVE_W32_SYSTEM
   gpg_error_t err;
-  SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
   STARTUPINFO si;
   char *cmdline;
@@ -725,39 +497,29 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   /* Setup return values.  */
   *pid = (pid_t)(-1);
 
-  /* Prepare security attributes.  */
-  memset (&sec_attr, 0, sizeof sec_attr );
-  sec_attr.nLength = sizeof sec_attr;
-  sec_attr.bInheritHandle = FALSE;
-  
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
     return err; 
 
-  memset (&si, 0, sizeof si);
-  si.cb = sizeof (si);
-  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-  stdhd[0] = infd  == -1? w32_open_null (0) : INVALID_HANDLE_VALUE;
-  stdhd[1] = outfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
-  stdhd[2] = errfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
-  si.hStdInput  = infd  == -1? stdhd[0] : (void*)_get_osfhandle (infd);
-  si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd);
-  si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd);
+  /* si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW; */
+  /* stdhd[0] = infd  == -1? w32_open_null (0) : INVALID_HANDLE_VALUE; */
+  /* stdhd[1] = outfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE; */
+  /* stdhd[2] = errfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE; */
+  /* si.hStdInput  = infd  == -1? stdhd[0] : (void*)_get_osfhandle (infd); */
+  /* si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd); */
+  /* si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd); */
 
 /*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
-                      TRUE,          /* Inherit handles.  */
-                      (CREATE_DEFAULT_ERROR_MODE
-                       | GetPriorityClass (GetCurrentProcess ())
-                       | CREATE_SUSPENDED | DETACHED_PROCESS),
+                      NULL,          /* Process security attributes.  */
+                      NULL,          /* Thread security attributes.  */
+                      FALSE,          /* Inherit handles.  */
+                      CREATE_SUSPENDED,
                       NULL,          /* Environment.  */
                       NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
+                      NULL,           /* Startup information. */
                       &pi            /* Returns process information.  */
                       ))
     {
@@ -785,31 +547,6 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   *pid = handle_to_pid (pi.hProcess);
   return 0;
 
-#else /* !HAVE_W32_SYSTEM */
-  gpg_error_t err;
-
-#ifdef USE_GNU_PTH      
-  *pid = pth_fork? pth_fork () : fork ();
-#else
-  *pid = fork ();
-#endif
-  if (*pid == (pid_t)(-1))
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error forking process: %s\n"), strerror (errno));
-      return err;
-    }
-
-  if (!*pid)
-    { 
-      gcry_control (GCRYCTL_TERM_SECMEM);
-      /* Run child. */
-      do_exec (pgmname, argv, infd, outfd, errfd, NULL);
-      /*NOTREACHED*/
-    }
-
-  return 0;
-#endif /* !HAVE_W32_SYSTEM */
 }
 
 
@@ -823,8 +560,6 @@ gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
 {
   gpg_err_code_t ec;
-
-#ifdef HAVE_W32_SYSTEM
   HANDLE proc = fd_to_handle (pid);
   int code;
   DWORD exc;
@@ -878,53 +613,6 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
         break;
     }
 
-#else /* !HAVE_W32_SYSTEM */
-  int i, status;
-
-  if (exitcode)
-    *exitcode = -1;
-
-  if (pid == (pid_t)(-1))
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-#ifdef USE_GNU_PTH
-  i = pth_waitpid ? pth_waitpid (pid, &status, 0) : waitpid (pid, &status, 0);
-#else
-  while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
-    ;
-#endif
-  if (i == (pid_t)(-1))
-    {
-      log_error (_("waiting for process %d to terminate failed: %s\n"),
-                 (int)pid, strerror (errno));
-      ec = gpg_err_code_from_errno (errno);
-    }
-  else if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
-    {
-      log_error (_("error running `%s': probably not installed\n"), pgmname);
-      ec = GPG_ERR_CONFIGURATION;
-    }
-  else if (WIFEXITED (status) && WEXITSTATUS (status))
-    {
-      log_error (_("error running `%s': exit status %d\n"), pgmname,
-                 WEXITSTATUS (status));
-      if (exitcode)
-        *exitcode = WEXITSTATUS (status);
-      ec = GPG_ERR_GENERAL;
-    }
-  else if (!WIFEXITED (status))
-    {
-      log_error (_("error running `%s': terminated\n"), pgmname);
-      ec = GPG_ERR_GENERAL;
-    }
-  else 
-    {
-      if (exitcode)
-        *exitcode = 0;
-      ec = 0;
-    }
-#endif /* !HAVE_W32_SYSTEM */
-
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 }
 
@@ -940,9 +628,7 @@ gpg_error_t
 gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                               const char *envp[] )
 {
-#ifdef HAVE_W32_SYSTEM
   gpg_error_t err;
-  SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi = 
     {
       NULL,      /* Returns process handle.  */
@@ -951,50 +637,29 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       0          /* Returns tid.  */
     };
   STARTUPINFO si;
-  int cr_flags;
   char *cmdline;
 
-
-  /* FIXME: We don't make use of ENVP yet.  It is currently only used
-     to pass the GPG_AGENT_INFO variable to gpg-agent.  As the default
-     on windows is to use a standard socket, this does not really
-     matter.  */
   (void)envp;
 
   if (access (pgmname, X_OK))
     return gpg_error_from_syserror ();
 
-  /* Prepare security attributes.  */
-  memset (&sec_attr, 0, sizeof sec_attr );
-  sec_attr.nLength = sizeof sec_attr;
-  sec_attr.bInheritHandle = FALSE;
-  
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
     return err; 
 
-  /* Start the process.  */
-  memset (&si, 0, sizeof si);
-  si.cb = sizeof (si);
-  si.dwFlags = STARTF_USESHOWWINDOW;
-  si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-
-  cr_flags = (CREATE_DEFAULT_ERROR_MODE
-              | GetPriorityClass (GetCurrentProcess ())
-              | CREATE_NEW_PROCESS_GROUP
-              | DETACHED_PROCESS); 
 /*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
 /*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
-                      &sec_attr,     /* Process security attributes.  */
-                      &sec_attr,     /* Thread security attributes.  */
+                      NULL,          /* Process security attributes.  */
+                      NULL,          /* Thread security attributes.  */
                       FALSE,         /* Inherit handles.  */
-                      cr_flags,      /* Creation flags.  */
+                      0,             /* Creation flags.  */
                       NULL,          /* Environment.  */
                       NULL,          /* Use current drive/directory.  */
-                      &si,           /* Startup information. */
+                      NULL,           /* Startup information. */
                       &pi            /* Returns process information.  */
                       ))
     {
@@ -1013,53 +678,6 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   CloseHandle (pi.hThread); 
 
   return 0;
-
-#else
-  pid_t pid;
-  int i;
-
-  if (getuid() != geteuid())
-    return gpg_error (GPG_ERR_BUG);
-
-  if (access (pgmname, X_OK))
-    return gpg_error_from_syserror ();
-
-#ifdef USE_GNU_PTH      
-  pid = pth_fork? pth_fork () : fork ();
-#else
-  pid = fork ();
-#endif
-  if (pid == (pid_t)(-1))
-    {
-      log_error (_("error forking process: %s\n"), strerror (errno));
-      return gpg_error_from_syserror ();
-    }
-  if (!pid)
-    {
-      gcry_control (GCRYCTL_TERM_SECMEM);
-      if (setsid() == -1 || chdir ("/"))
-        _exit (1);
-      pid = fork (); /* Double fork to let init takes over the new child. */
-      if (pid == (pid_t)(-1))
-        _exit (1);
-      if (pid)
-        _exit (0);  /* Let the parent exit immediately. */
-
-      if (envp)
-        for (i=0; envp[i]; i++)
-          putenv (xstrdup (envp[i]));
-      
-      do_exec (pgmname, argv, -1, -1, -1, NULL);
-
-      /*NOTREACHED*/
-    }
-  
-  if (waitpid (pid, NULL, 0) == -1)
-    log_error ("waitpid failed in gnupg_spawn_process_detached: %s",
-               strerror (errno));
-
-  return 0;
-#endif /* !HAVE_W32_SYSTEM*/
 }
 
 
@@ -1069,20 +687,11 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 void
 gnupg_kill_process (pid_t pid)
 {
-#ifdef HAVE_W32_SYSTEM
-  /* Older versions of libassuan set PID to 0 on Windows to indicate
-     an invalid value.  */
-  if (pid != (pid_t) INVALID_HANDLE_VALUE && pid != 0)
+  if (pid != (pid_t) INVALID_HANDLE_VALUE)
     {
       HANDLE process = (HANDLE) pid;
       
       /* Arbitrary error code.  */
       TerminateProcess (process, 1);
     }
-#else
-  if (pid != (pid_t)(-1))
-    {
-      kill (pid, SIGTERM); 
-    }
-#endif
 }

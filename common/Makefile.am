@@ -77,7 +77,7 @@ common_sources = \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
 	asshelp.c asshelp.h \
-	exechelp.c exechelp.h \
+	exechelp.h \
 	signal.c \
 	audit.c audit.h \
 	srv.h \
@@ -88,6 +88,18 @@ common_sources = \
 	session-env.c session-env.h \
 	userids.c userids.h \
 	helpfile.c
+
+# To make the code easier to read we have split home some code into
+# separate source files.
+if HAVE_W32_SYSTEM
+if HAVE_W32CE_SYSTEM
+common_sources += exechelp-w32ce.c 
+else
+common_sources += exechelp-w32.c 
+endif
+else
+common_sources += exechelp-posix.c 
+endif
 
 # Sources only useful without PTH.
 without_pth_sources = \
