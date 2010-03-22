@@ -1,5 +1,12 @@
 2010-03-22  Werner Koch  <wk@g10code.com>
 
+	* exechelp.c (create_inheritable_pipe_r)
+	(create_inheritable_pipe_w): Fold both into ...
+	(create_inheritable_pipe): .. New.  Change callers to use this.
+	(gnupg_create_inbound_pipe, gnupg_create_outbound_pipe): Factor
+	code out to ...
+	(do_create_pipe): .. New.
+
 	* init.c (parse_std_file_handles): Change to use rendezvous ids.
 
 2010-03-15  Werner Koch  <wk@g10code.com>
