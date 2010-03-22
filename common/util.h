@@ -141,7 +141,6 @@ gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
 
 /*-- signal.c --*/
 void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
-void gnupg_pause_on_sigusr (int which);
 void gnupg_block_all_signals (void);
 void gnupg_unblock_all_signals (void);
 

@@ -1600,6 +1600,8 @@ connect_server (const char *server, unsigned short port,
 	  srvcount = getsrv (srvname, &serverlist);
 	}
     }
+#else
+  (void)srvtag;
 #endif /*USE_DNS_SRV*/
 
   if (!serverlist)

@@ -1,4 +1,41 @@
+2010-03-22  Werner Koch  <wk@g10code.com>
+
+	* init.c (parse_std_file_handles): Change to use rendezvous ids.
+
 2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* init.c (init_common_subsystems): Add args ARGCP and
+	ARGVP.  Change all callers to provide them.
+	(parse_std_file_handles): New.
+
+	* t-sysutils.c (rewind) [W32CE]: Provide a replacement.
+
+	* Makefile.am (module_tests) [W32CE]: Don't build t-exechelp for now.
+
+	* sysutils.c (gnupg_allow_set_foregound_window) [W32CE]: Don't
+	call AllowSetForegroundWindow.
+
+	* logging.c (isatty) [W32CE]: New.
+	(fun_writer, set_file_fd): Use estream even for the internal error
+	messages.
+	(log_string, log_flush): Make DUMMY_ARG_PTR static.
+
+2010-03-15  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment) [!HAVE_SETLOCALE]: Do not
+	define OLD_LC.
+	* http.c (connect_server) [!USE_DNS_SRV]: Mark SRVTAG unused.
+	* dns-cert.c (get_dns_cert) [!USE_DNS_CERT]: Mark args unused.
+	* pka.c (get_pka_info): Ditto.
+
+	* signal.c (pause_on_sigusr): Remove.  It was used in ancient gpg
+	version with shared memory IPC.  Last caller removed on	2006-04-18.
+	(do_block) [W32]: Mark arg unused.
+
+	* exechelp.c (w32_open_null): Use CreateFileW.
+
+	* init.c (init_common_subsystems): Add args ARGCP and ARGVP.
+	Change all callers to pass them.
 
 	* logging.c (S_IRGRP, S_IROTH, S_IWGRP, S_IWOTH) [W32]: New.
 	(fun_writer, set_file_fd) [W32]: Disable socket code.

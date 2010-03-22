@@ -498,7 +498,7 @@ gnupg_allow_set_foregound_window (pid_t pid)
   if (!pid)
     log_info ("%s called with invalid pid %lu\n",
               "gnupg_allow_set_foregound_window", (unsigned long)pid);
-#ifdef HAVE_W32_SYSTEM  
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
   else if (!AllowSetForegroundWindow ((pid_t)pid == (pid_t)(-1)?ASFW_ANY:pid))
     log_info ("AllowSetForegroundWindow(%lu) failed: %s\n",
                (unsigned long)pid, w32_strerror (-1));

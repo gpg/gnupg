@@ -103,7 +103,9 @@ send_pinentry_environment (assuan_context_t ctx,
 
 {
   gpg_error_t err = 0;
+#if defined(HAVE_SETLOCALE)
   char *old_lc = NULL; 
+#endif
   char *dft_lc = NULL;
   const char *dft_ttyname;
   int iterator;

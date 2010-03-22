@@ -484,7 +484,7 @@ GNUPG_CHECK_USTAR
 
 # We need to compile and run a program on the build machine.  A
 # comment in libgpg-error says that the AC_PROG_CC_FOR_BUILD macro in
-# the AC archive is broken for autoconf 2.57.  Given that tehre is no
+# the AC archive is broken for autoconf 2.57.  Given that there is no
 # newer version of that macro, we assume that it is also broken for
 # autoconf 2.61 and thus we use a simple but usually sufficient
 # approach.

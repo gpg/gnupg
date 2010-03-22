@@ -142,8 +142,11 @@ jnlib_tests = t-stringhelp t-timestuff
 if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
 endif
-module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil t-exechelp \
+module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env
+if !HAVE_W32CE_SYSTEM
+module_tests += t-exechelp
+endif
 module_maint_tests = t-helpfile t-b64
 
 

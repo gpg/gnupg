@@ -589,7 +589,7 @@ main (int argc, char **argv )
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
-  init_common_subsystems ();
+  init_common_subsystems (&argc, &argv);
 
 
   /* Libgcrypt requires us to register the threading model first.
@@ -1385,7 +1385,7 @@ get_agent_scd_notify_event (void)
       HANDLE h, h2;
       SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
 
-      /* We need to use manual reset evet object due to the way our
+      /* We need to use a manual reset event object due to the way our
          w32-pth wait function works: If we would use an automatic
          reset event we are not able to figure out which handle has
          been signaled because at the time we single out the signaled

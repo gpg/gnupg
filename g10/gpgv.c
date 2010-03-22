@@ -148,7 +148,7 @@ main( int argc, char **argv )
   
   /* Make sure that our subsystems are ready.  */
   i18n_init();
-  init_common_subsystems ();
+  init_common_subsystems (&argc, &argv);
   
   gnupg_init_signals (0, NULL);
 

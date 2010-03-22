@@ -20,7 +20,7 @@
 #ifndef GNUPG_COMMON_INIT_H
 #define GNUPG_COMMON_INIT_H
 
-void init_common_subsystems (void);
+void init_common_subsystems (int *argcp, char ***argvp);
 
 
 #endif /*GNUPG_COMMON_INIT_H*/

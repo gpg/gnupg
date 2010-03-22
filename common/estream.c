@@ -245,6 +245,11 @@ static estream_mutex_t estream_list_lock;
 #define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
 #define ESTREAM_LIST_UNLOCK ESTREAM_MUTEX_UNLOCK (estream_list_lock)
 
+/* File descriptors registered to be used as the standard file handles. */
+static int custom_std_fds[3];
+static unsigned char custom_std_fds_valid[3];
+
+
 #ifndef EOPNOTSUPP
 # define EOPNOTSUPP ENOSYS
 #endif
@@ -2239,7 +2244,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
 
 
 estream_t
-do_fdopen (int filedes, const char *mode, int no_close)
+do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
 {
   unsigned int modeflags;
   int create_called;
@@ -2261,7 +2266,7 @@ do_fdopen (int filedes, const char *mode, int no_close)
 
   create_called = 1;
   err = es_create (&stream, cookie, filedes, estream_functions_fd,
-                   modeflags, 0);
+                   modeflags, with_locked_list);
 
  out:
 
@@ -2274,14 +2279,14 @@ do_fdopen (int filedes, const char *mode, int no_close)
 estream_t
 es_fdopen (int filedes, const char *mode)
 {
-  return do_fdopen (filedes, mode, 0);
+  return do_fdopen (filedes, mode, 0, 0);
 }
 
 /* A variant of es_fdopen which does not close FILEDES at the end.  */
 estream_t
 es_fdopen_nc (int filedes, const char *mode)
 {
-  return do_fdopen (filedes, mode, 1);
+  return do_fdopen (filedes, mode, 1, 0);
 }
 
 
@@ -2344,6 +2349,23 @@ es_fpopen_nc (FILE *fp, const char *mode)
 }
 
 
+/* Set custom standard descriptors to be used for stdin, stdout and
+   stderr.  This function needs to be called before any of the
+   standard streams are accessed.  */
+void
+_es_set_std_fd (int no, int fd)
+{
+  ESTREAM_LIST_LOCK;
+  if (no >= 0 && no < 3 && !custom_std_fds_valid[no])
+    {
+      custom_std_fds[no] = fd;
+      custom_std_fds_valid[no] = 1;
+    }
+  ESTREAM_LIST_UNLOCK;
+}
+
+
+/* Return the stream used for stdin, stdout or stderr.  */
 estream_t
 _es_get_std_stream (int fd)
 {
@@ -2359,6 +2381,17 @@ _es_get_std_stream (int fd)
 	stream = list_obj->car;
 	break;
       }
+  if (!stream)
+    {
+      /* Standard stream not yet created.  We first try to create them
+         from registered file descriptors.  */
+      if (!fd && custom_std_fds_valid[0])
+        stream = do_fdopen (custom_std_fds[0], "r", 1, 1);
+      else if (fd == 1 && custom_std_fds_valid[1])
+        stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
+      else if (custom_std_fds_valid[2])
+        stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
+    }
   if (!stream)
     {
       /* Standard stream not yet created - do it now.  */

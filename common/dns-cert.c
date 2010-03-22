@@ -279,6 +279,13 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
   return ret;
 #endif /*!USE_ADNS*/
 #else /* !USE_DNS_CERT */
+  (void)name;
+  (void)max_size;
+  (void)iobuf;
+  (void)fpr;
+  (void)fpr_len;
+  (void)url;
+
   return -1;
 #endif
 }

@@ -52,6 +52,11 @@
 #endif
 
 
+#ifdef HAVE_W32CE_SYSTEM
+# define isatty(a)  (0)
+#endif
+
+
 static estream_t logstream;
 static int log_socket = -1;
 static char prefix_buffer[80];
@@ -138,9 +143,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       if (cookie->fd == -1)
         {
           if (!cookie->quiet && !running_detached
-              && isatty (fileno (stderr)))
-            fprintf (stderr, "failed to create socket for logging: %s\n",
-                     strerror(errno));
+              && isatty (es_fileno (es_stderr)))
+            es_fprintf (es_stderr, "failed to create socket for logging: %s\n",
+                        strerror(errno));
         }
       else
         {
@@ -156,9 +161,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
             {
               if (!cookie->quiet && !running_detached
-                  && isatty (fileno (stderr)))
-                fprintf (stderr, "can't connect to `%s': %s\n",
-                         cookie->name, strerror(errno));
+                  && isatty (es_fileno (es_stderr)))
+                es_fprintf (es_stderr, "can't connect to `%s': %s\n",
+                            cookie->name, strerror(errno));
               close (cookie->fd);
               cookie->fd = -1;
             }
@@ -193,14 +198,14 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
     return (ssize_t)size; /* Okay. */ 
 
   if (!running_detached && cookie->fd != -1
-      && isatty (fileno (stderr)))
+      && isatty (es_fileno (es_stderr)))
     {
       if (*cookie->name)
-        fprintf (stderr, "error writing to `%s': %s\n",
-                 cookie->name, strerror(errno));
+        es_fprintf (es_stderr, "error writing to `%s': %s\n",
+                    cookie->name, strerror(errno));
       else
-        fprintf (stderr, "error writing to file descriptor %d: %s\n",
-                 cookie->fd, strerror(errno));
+        es_fprintf (es_stderr, "error writing to file descriptor %d: %s\n",
+                    cookie->fd, strerror(errno));
     }
   if (cookie->is_socket && cookie->fd != -1)
     {
@@ -246,7 +251,7 @@ set_file_fd (const char *name, int fd)
   if (name && !strcmp (name, "-"))
     {
       name = NULL;
-      fd = fileno (stderr);
+      fd = es_fileno (es_stderr);
     }
 
 #ifndef HAVE_W32_SYSTEM
@@ -514,8 +519,10 @@ void
 log_string (int level, const char *string)
 {
   /* We need to provide a dummy arg_ptr.  volatile is needed to
-     suppress compiler warnings.  */
-  volatile va_list dummy_arg_ptr;
+     suppress compiler warnings.  The static is required for gcc 4.4
+     because it seems that it detects that a volatile automatic
+     variable is not any good if not initialized.  */
+  static volatile va_list dummy_arg_ptr;
 
   do_logv (level, 1, string, dummy_arg_ptr);
 }
@@ -597,7 +604,7 @@ log_printf (const char *fmt, ...)
 void
 log_flush (void)
 {
-  volatile va_list dummy_arg_ptr;
+  static volatile va_list dummy_arg_ptr;
   do_logv (JNLIB_LOG_CONT, 1, NULL, dummy_arg_ptr);
 }
 

@@ -419,7 +419,7 @@ main( int argc, char **argv )
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
-  init_common_subsystems ();
+  init_common_subsystems (&argc, &argv);
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library.  */

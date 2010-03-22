@@ -359,7 +359,7 @@ main ( int argc, char **argv)
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
-  init_common_subsystems ();
+  init_common_subsystems (&argc, &argv);
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */

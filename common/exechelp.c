@@ -381,10 +381,10 @@ w32_open_null (int for_write)
 {
   HANDLE hfile;
 
-  hfile = CreateFile ("nul",
-                      for_write? GENERIC_WRITE : GENERIC_READ,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE,
-                      NULL, OPEN_EXISTING, 0, NULL);
+  hfile = CreateFileW (L"nul",
+                       for_write? GENERIC_WRITE : GENERIC_READ,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE,
+                       NULL, OPEN_EXISTING, 0, NULL);
   if (hfile == INVALID_HANDLE_VALUE)
     log_debug ("can't open `nul': %s\n", w32_strerror (-1));
   return hfile;

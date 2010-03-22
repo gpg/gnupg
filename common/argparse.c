@@ -1131,6 +1131,8 @@ strusage( int level )
   return p;
 }
 
+
+/* Set the usage handler.  This function is basically a constructor.  */
 void
 set_strusage ( const char *(*f)( int ) )
 {

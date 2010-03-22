@@ -76,10 +76,12 @@ if [ "$myhost" = "w32" ]; then
     fi
     build=`$tsdir/scripts/config.guess`
 
+    extraoptions=""
     case $myhostsub in
         ce)
           [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="arm-mingw32ce"
+          extraoptions="--disable-scdaemon"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
@@ -124,7 +126,7 @@ if [ "$myhost" = "w32" ]; then
 	     --with-regex=${w32root} \
              --with-pth-prefix=${w32root} \
              --with-adns=${w32root} \
-             --disable-g13 "$@"
+             ${extraoptions} --disable-g13 "$@"
     rc=$?
     exit $rc
 fi

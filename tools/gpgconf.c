@@ -152,7 +152,7 @@ main (int argc, char **argv)
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
-  init_common_subsystems ();
+  init_common_subsystems (&argc, &argv);
 
   /* Parse the command line. */
   pargs.argc  = &argc;

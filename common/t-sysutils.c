@@ -24,6 +24,10 @@
 #include "util.h"
 #include "sysutils.h"
 
+#ifdef HAVE_W32CE_SYSTEM
+# define rewind(f) do { fseek (f, 0, SEEK_SET); clearerr (f); } while (0)
+#endif
+
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
                                __FILE__,__LINE__, (a));          \

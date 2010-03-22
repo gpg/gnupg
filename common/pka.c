@@ -274,6 +274,8 @@ get_pka_info (const char *address, unsigned char *fpr)
 char *
 get_pka_info (const char *address, unsigned char *fpr)
 {
+  (void)address;
+  (void)fpr;
   return NULL;
 }
 #endif /* !USE_DNS_PKA */

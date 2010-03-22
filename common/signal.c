@@ -170,38 +170,13 @@ gnupg_init_signals (int mode, void (*fast_cleanup)(void))
 #endif
 }
 
-void
-gnupg_pause_on_sigusr (int which)
-{
-#ifndef HAVE_DOSISH_SYSTEM
-# ifdef HAVE_SIGPROCMASK
-  sigset_t mask, oldmask;
-
-  assert (which == 1);
-  sigemptyset( &mask );
-  sigaddset( &mask, SIGUSR1 );
-  
-  sigprocmask( SIG_BLOCK, &mask, &oldmask );
-  while (!caught_sigusr1)
-    sigsuspend (&oldmask);
-  caught_sigusr1 = 0;
-  sigprocmask (SIG_UNBLOCK, &mask, NULL);
-# else 
-  assert (which == 1);
-  sighold (SIGUSR1);
-  while (!caught_sigusr1)
-    sigpause(SIGUSR1);
-  caught_sigusr1 = 0;
-  sigrelease(SIGUSR1);
-# endif /*!HAVE_SIGPROCMASK*/
-#endif
-}
-
 
 static void
-do_block( int block )
+do_block (int block)
 {
-#ifndef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
+  (void)block;
+#else /*!HAVE_DOSISH_SYSTEM*/
   static int is_blocked;
 #ifdef HAVE_SIGPROCMASK
   static sigset_t oldmask;
@@ -247,7 +222,7 @@ do_block( int block )
       is_blocked = 0;
     }
 #endif /*!HAVE_SIGPROCMASK*/
-#endif /*HAVE_DOSISH_SYSTEM*/
+#endif /*!HAVE_DOSISH_SYSTEM*/
 }
 
 
