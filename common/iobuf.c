@@ -52,8 +52,13 @@
 
 
 #ifdef HAVE_W32_SYSTEM
-# define FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
-# define FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+# ifdef HAVE_W32CE_SYSTEM
+#  define FD_FOR_STDIN  (es_fileno (es_stdin))
+#  define FD_FOR_STDOUT (es_fileno (es_stdout))
+# else
+#  define FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+#  define FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+# endif
 #else /*!HAVE_W32_SYSTEM*/
 # define FD_FOR_STDIN  (0)
 # define FD_FOR_STDOUT (1)
@@ -2361,7 +2366,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 static int
 translate_file_handle (int fd, int for_write)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && !defined (HAVE_W32CE_SYSTEM)
   {
     int x;
     

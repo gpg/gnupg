@@ -1,5 +1,5 @@
 /* exechelp.h - Definitions for the fork and exec helpers
- *	Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -58,13 +58,25 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
    arguments for the process are expected in the NULL terminated array
    ARGV.  The program name itself should not be included there.  If
    PREEXEC is not NULL, that function will be called right before the
-   exec.  FLAGS is currently only useful for W32, see the source for
-   details.  Calling gnupg_wait_process is required.  Returns 0 on
-   success or an error code. */
+   exec.  Calling gnupg_wait_process is required.  Returns 0 on
+   success or an error code.
+
+   FLAGS is a bit vector:
+
+   Bit 7: If set the process will be started as a background process.
+          This flag is only useful under W32 (but not W32CE) systems,
+          so that no new console is created and pops up a console
+          window when starting the server.  Does not work on W32CE.
+ 
+   Bit 6: On W32 (but not on W32CE) run AllowSetForegroundWindow for
+          the child.  Note that due to unknown problems this actually
+          allows SetForegroundWindow for all childs of this process.
+
+ */
 gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
-                                 FILE *infile, estream_t outfile,
+                                 estream_t infile, estream_t outfile,
                                  void (*preexec)(void), unsigned int flags,
-                                 FILE **statusfile, pid_t *pid);
+                                 estream_t *statusfile, pid_t *pid);
 
 
 /* Simplified version of gnupg_spawn_process.  This function forks and

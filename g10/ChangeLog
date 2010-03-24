@@ -1,3 +1,8 @@
+2010-03-24  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (CMP_FILENAME): Depend on HAVE_DOSISH_SYSTEM instead
+	of HAVE_DRIVE_LETTERS.
+
 2010-03-15  Werner Koch  <wk@g10code.com>
 
 	* card-util.c: Replace stdio by estream.

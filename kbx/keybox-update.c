@@ -26,6 +26,9 @@
 #include <unistd.h>
 
 #include "keybox-defs.h"
+#ifdef HAVE_DOSISH_SYSTEM
+#include "../common/sysutils.h"
+#endif
 
 #define EXTSEP_S "."
 
@@ -174,7 +177,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   if (!secret)
     { 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-      remove (bakfname);
+      gnupg_remove (bakfname);
 #endif
       if (rename (fname, bakfname) )
         {
@@ -184,7 +187,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   
   /* Then rename the file. */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  remove (fname);
+  gnupg_remove (fname);
 #endif
   if (rename (tmpfname, fname) )
     {
@@ -607,7 +610,8 @@ keybox_compress (KEYBOX_HANDLE hd)
             }
         }
       _keybox_release_blob (blob);
-      rewind (fp);
+      fseek (fp, 0, SEEK_SET);
+      clearerr (fp);
     }
 
   /* Create the new file. */
@@ -709,7 +713,7 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   /* Rename or remove the temporary file. */
   if (rc || !any_changes)
-    remove (tmpfname);
+    gnupg_remove (tmpfname);
   else
     rc = rename_tmp_file (bakfname, tmpfname, fname, hd->secret);
 

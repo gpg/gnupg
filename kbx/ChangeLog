@@ -1,3 +1,12 @@
+2010-03-23  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (extra_libs): New.
+	(kbxutil_LDADD): Use it.
+
+	* keybox-update.c: [HAVE_DOSISH_SYSTEM]: Include sysutils.h.
+	(keybox_compress): Replace rewind by fseek+clearerr.
+	(rename_tmp_file, keybox_compress): s/remove/gnupg_remove/.
+
 2010-03-10  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (kbxutil_LDADD, $(PROGRAMS)): Remove libjnlib.a.

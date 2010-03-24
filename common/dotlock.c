@@ -1,6 +1,6 @@
 /* dotlock.c - dotfile locking
  * Copyright (C) 1998, 2000, 2001, 2003, 2004, 
- *               2005, 2006, 2008 Free Software Foundation, Inc.
+ *               2005, 2006, 2008, 2010 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -362,7 +362,10 @@ destroy_dotlock (dotlock_t h)
 #ifdef HAVE_DOSISH_SYSTEM
       if (h->locked)
         {
-          UnlockFile (h->lockhd, 0, 0, 1, 0);
+          OVERLAPPED ovl;
+
+          memset (&ovl, 0, sizeof ovl); 
+          UnlockFileEx (h->lockhd, 0, 1, 0, &ovl);
         }
       CloseHandle (h->lockhd);
 #else /* !HAVE_DOSISH_SYSTEM */
@@ -497,8 +500,12 @@ make_dotlock (dotlock_t h, long timeout)
         return -1;
 #else /*HAVE_DOSISH_SYSTEM*/
       int w32err;
+      OVERLAPPED ovl;
 
-      if (LockFile (h->lockhd, 0, 0, 1, 0))
+      /* Lock one byte at offset 0.  The offset is given by OVL.  */
+      memset (&ovl, 0, sizeof ovl); 
+      if (LockFileEx (h->lockhd, (LOCKFILE_EXCLUSIVE_LOCK
+                                  | LOCKFILE_FAIL_IMMEDIATELY), 0, 1, 0, &ovl))
         {
           h->locked = 1;
           return 0; /* okay */
@@ -552,12 +559,17 @@ release_dotlock (dotlock_t h)
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
-  if (!UnlockFile (h->lockhd, 0, 0, 1, 0))
-    {
-      log_error ("release_dotlock: error removing lockfile `%s': %s\n",
-                 h->lockname, w32_strerror (-1));
-      return -1;
-    }
+  {
+    OVERLAPPED ovl;
+    
+    memset (&ovl, 0, sizeof ovl); 
+    if (!UnlockFileEx (h->lockhd, 0, 1, 0, &ovl))
+      {
+        log_error ("release_dotlock: error removing lockfile `%s': %s\n",
+                   h->lockname, w32_strerror (-1));
+        return -1;
+      }
+  }
 #else
 
   pid = read_lockfile (h, &same_node);

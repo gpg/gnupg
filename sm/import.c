@@ -1,5 +1,5 @@
 /* import.c - Import certificates
- * Copyright (C) 2001, 2003, 2004, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -578,14 +578,14 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
 }
 
 
-/* Fork and exec the protecttool, connect the file descriptor of
-   INFILE to stdin, return a new stream in STATUSFILE, write the
+/* Fork and exec the protect tool, connect the file descriptor of
+   INFILE to stdin, return a new estream in STATUSFILE, write the
    output to OUTFILE and the pid of the process in PID.  Returns 0 on
    success or an error code. */
 static gpg_error_t
 popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    FILE *infile, estream_t outfile, 
-                    FILE **statusfile, pid_t *pid)
+                    estream_t infile, estream_t outfile, 
+                    estream_t *statusfile, pid_t *pid)
 {
   const char *argv[22];
   int i=0;
@@ -637,7 +637,8 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
   gpg_error_t err = 0, child_err = 0;
   int c, cont_line;
   unsigned int pos;
-  FILE *tmpfp, *fp = NULL;
+  estream_t tmpfp;
+  estream_t fp = NULL;
   estream_t certfp = NULL;
   char buffer[1024];
   size_t nread;
@@ -655,7 +656,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
      gpg-protect-tool will anyway parse the entire pkcs#12 message in
      memory, we simply use tempfiles here and pass them to
      the gpg-protect-tool. */
-  tmpfp = gnupg_tmpfile ();
+  tmpfp = es_tmpfile ();
   if (!tmpfp)
     {
       err = gpg_error_from_syserror ();
@@ -664,7 +665,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     }
   while (!(err = ksba_reader_read (reader, buffer, sizeof buffer, &nread)))
     {
-      if (nread && fwrite (buffer, nread, 1, tmpfp) != 1)
+      if (nread && es_fwrite (buffer, nread, 1, tmpfp) != 1)
         {
           err = gpg_error_from_syserror ();
           log_error (_("error writing to temporary file: %s\n"),
@@ -694,13 +695,13 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
       pid = -1;
       goto cleanup;
     }
-  fclose (tmpfp);
+  es_fclose (tmpfp);
   tmpfp = NULL;
 
   /* Read stderr of the protect tool. */
   pos = 0;
   cont_line = 0;
-  while ((c=getc (fp)) != EOF)
+  while ((c=es_getc (fp)) != EOF)
     {
       /* fixme: We could here grep for status information of the
          protect tool to figure out better error codes for
@@ -768,10 +769,8 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
     child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
 
  cleanup:
-  if (tmpfp)
-    fclose (tmpfp);
-  if (fp)
-    fclose (fp);
+  es_fclose (tmpfp);
+  es_fclose (fp);
   if (pid != -1)
     {
       if (!gnupg_wait_process (pgmname, pid, NULL))

@@ -299,31 +299,12 @@ gnupg_create_outbound_pipe (int filedes[2])
 }
 
 
-/* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
-   stdin, write the output to OUTFILE, return a new stream in
-   STATUSFILE for stderr and the pid of the process in PID. The
-   arguments for the process are expected in the NULL terminated array
-   ARGV.  The program name itself should not be included there.  If
-   PREEXEC is not NULL, that function will be called right before the
-   exec.  Calling gnupg_wait_process is required.
-
-   FLAGS is a bit vector with just one bit defined for now:
-
-   Bit 7: If set the process will be started as a background process.
-          This flag is only useful under W32 systems, so that no new
-          console is created and pops up a console window when
-          starting the server
- 
-   Bit 6: On W32 run AllowSetForegroundWindow for the child.  Due to
-          error problems this actually allows SetForegroundWindow for
-          childs of this process.
-
-   Returns 0 on success or an error code. */
+/* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     FILE *infile, estream_t outfile,
+                     estream_t infile, estream_t outfile,
                      void (*preexec)(void), unsigned int flags,
-                     FILE **statusfile, pid_t *pid)
+                     estream_t *statusfile, pid_t *pid)
 {
   gpg_error_t err;
   int fd, fdout, rp[2];
@@ -332,9 +313,9 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   *statusfile = NULL;
   *pid = (pid_t)(-1);
-  fflush (infile);
-  rewind (infile);
-  fd = fileno (infile);
+  es_fflush (infile);
+  es_rewind (infile);
+  fd = es_fileno (infile);
   fdout = es_fileno (outfile);
   if (fd == -1 || fdout == -1)
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
@@ -371,7 +352,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   /* Parent. */
   close (rp[1]);
 
-  *statusfile = fdopen (rp[0], "r");
+  *statusfile = es_fdopen (rp[0], "r");
   if (!*statusfile)
     {
       err = gpg_error_from_syserror ();

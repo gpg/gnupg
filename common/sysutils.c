@@ -505,6 +505,30 @@ gnupg_allow_set_foregound_window (pid_t pid)
 #endif
 }
 
+int
+gnupg_remove (const char *fname)
+{
+#ifdef HAVE_W32CE_SYSTEM
+  int rc;
+  wchar_t *wfname;
+
+  wfname = utf8_to_wchar (fname);
+  if (!wfname)
+    rc = 0;
+  else
+    {
+      rc = DeleteFile (wfname);
+      xfree (wfname);
+    }
+  if (!rc)
+    gpg_err_set_errno (EIO);
+  return !rc;
+#else
+  return remove;
+#endif
+}
+
+
 
 
 #ifdef HAVE_W32CE_SYSTEM

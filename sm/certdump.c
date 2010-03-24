@@ -786,7 +786,7 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
   else if (c->len + size < c->len)
     {
       p = NULL;
-      errno = ENOMEM;
+      gpg_err_set_errno (ENOMEM);
     }
   else if (c->size < c->len + size)
     {
@@ -804,7 +804,7 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
       c->error = errno;
       xfree (c->buffer);
       c->buffer = NULL;
-      errno = c->error;
+      gpg_err_set_errno (c->error);
       return -1;
     }
   memcpy (p + c->len, buffer, size);
@@ -834,8 +834,8 @@ gpgsm_format_name2 (const char *name, int translate)
   if (!fp)
     {
       int save_errno = errno;
-      log_error ("error creating memory stream: %s\n", strerror (errno));
-      errno = save_errno;
+      log_error ("error creating memory stream: %s\n", strerror (save_errno));
+      gpg_err_set_errno (save_errno);
       return NULL;
     }
   gpgsm_es_print_name2 (fp, name, translate);
@@ -843,7 +843,7 @@ gpgsm_format_name2 (const char *name, int translate)
   if (cookie.error || !cookie.buffer)
     {
       xfree (cookie.buffer);
-      errno = cookie.error;
+      gpg_err_set_errno (cookie.error);
       return NULL;
     }
   return cookie.buffer;

@@ -1,3 +1,14 @@
+2010-03-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Use /gnupg as the default homedir on
+	dosish systems which don't support drive letters (e.g. W32CE).
+
+	* am/cmacros.am (extra_sys_libs): New.
+
+2010-03-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (W32SOCKLIBS): Change value for W32CE.
+
 2010-03-12  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AC_INIT): Prepare for using git.

@@ -161,7 +161,11 @@ gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert, char *country)
     return gpg_error (GPG_ERR_GENERAL);
 
   if (listfp)
-    rewind (listfp);
+    {
+      /* W32ce has no rewind, thus we use the equivalent code.  */
+      fseek (listfp, 0, SEEK_SET);
+      clearerr (listfp);
+    }
   while (!(err = read_list (key, mycountry, &lnr)))
     {
       if (!strcmp (key, fpr))

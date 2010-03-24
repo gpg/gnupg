@@ -56,7 +56,8 @@ common_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
 
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) $(LIBICONV)
+              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) \
+	      $(LIBICONV) $(extra_sys_libs)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

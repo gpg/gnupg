@@ -24,6 +24,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
+
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
+# define USE_W32_CONSOLE 1
+#endif
+
 #ifdef HAVE_TCGETATTR
 #include <termios.h>
 #else
@@ -37,11 +42,11 @@
 #define HAVE_TCGETATTR
 #endif
 #endif
-#ifdef _WIN32 /* use the odd Win32 functions */
-#include <windows.h>
-#ifdef HAVE_TCGETATTR
-#error mingw32 and termios
-#endif
+#ifdef USE_W32_CONSOLE
+# include <windows.h>
+# ifdef HAVE_TCGETATTR
+#  error mingw32 and termios
+# endif
 #endif
 #include <errno.h>
 #include <ctype.h>
@@ -52,7 +57,8 @@
 
 #define CONTROL_D ('D' - 'A' + 1)
 
-#ifdef _WIN32 /* use the odd Win32 functions */
+
+#ifdef USE_W32_CONSOLE
 static struct {
     HANDLE in, out;
 } con;
@@ -116,7 +122,7 @@ tty_get_ttyname (void)
     }
 #endif /*HAVE_CTERMID*/
   /* Assume the standard tty on memory error or when tehre is no
-     certmid. */
+     ctermid. */
   return name? name : "/dev/tty";
 }
 
@@ -140,7 +146,7 @@ init_ttyfp(void)
     if( initialized )
 	return;
 
-#if defined(_WIN32)
+#if defined(USE_W32_CONSOLE)
     {
 	SECURITY_ATTRIBUTES sa;
 
@@ -168,6 +174,8 @@ init_ttyfp(void)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
     if (my_rl_init_stream)
       my_rl_init_stream (ttyfp);
+#elif defined (HAVE_W32CE_SYSTEM)
+    ttyfp = stderr;
 #else
     ttyfp = batchmode? stderr : fopen (tty_get_ttyname (), "r+");
     if( !ttyfp ) {
@@ -216,7 +224,7 @@ tty_printf( const char *fmt, ... )
 	init_ttyfp();
 
     va_start( arg_ptr, fmt ) ;
-#ifdef _WIN32
+#ifdef USE_W32_CONSOLE
     {   
         char *buf = NULL;
         int n;
@@ -263,7 +271,7 @@ tty_fprintf (estream_t fp, const char *fmt, ... )
     init_ttyfp ();
 
   va_start (arg_ptr, fmt);
-#ifdef _WIN32
+#ifdef USE_W32_CONSOLE
   {   
     char *buf = NULL;
     int n;
@@ -300,7 +308,7 @@ tty_print_string ( const byte *p, size_t n )
     if( !initialized )
 	init_ttyfp();
 
-#ifdef _WIN32
+#ifdef USE_W32_CONSOLE
     /* not so effective, change it if you want */
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
@@ -394,7 +402,7 @@ do_get( const char *prompt, int hidden )
     buf = xmalloc((n=50));
     i = 0;
 
-#ifdef _WIN32 /* windoze version */
+#ifdef USE_W32_CONSOLE
     if( hidden )
 	SetConsoleMode(con.in, HID_INPMODE );
 
@@ -428,9 +436,17 @@ do_get( const char *prompt, int hidden )
     if( hidden )
 	SetConsoleMode(con.in, DEF_INPMODE );
 
-#elif defined(__riscos__)
+#elif defined(__riscos__) || defined(HAVE_W32CE_SYSTEM)
     do {
+#ifdef HAVE_W32CE_SYSTEM
+      /* Using getchar is not a correct solution but for now it
+         doesn't matter becuase we have no real console at all.  We
+         should rework this as soon as we have switched this entire
+         module to estream.  */
+        c = getchar();
+#else
         c = riscos_getchar();
+#endif
         if (c == 0xa || c == 0xd) { /* Return || Enter */
             c = (int) '\n';
         } else if (c == 0x8 || c == 0x7f) { /* Backspace || Delete */
@@ -468,7 +484,7 @@ do_get( const char *prompt, int hidden )
         }
     } while (c != '\n');
     i = (i>0) ? i-1 : 0;
-#else /* unix version */
+#else /* Other systems. */
     if( hidden ) {
 #ifdef HAVE_TCGETATTR
 	struct termios term;
@@ -508,7 +524,6 @@ do_get( const char *prompt, int hidden )
 	buf[0] = CONTROL_D;
 	i = 1;
     }
-
 
     if( hidden ) {
 #ifdef HAVE_TCGETATTR
@@ -601,7 +616,7 @@ tty_kill_prompt()
 	last_prompt_len = 0;
     if( !last_prompt_len )
 	return;
-#ifdef _WIN32
+#ifdef USE_W32_CONSOLE
     tty_printf("\r%*s\r", last_prompt_len, "");
 #else
     {

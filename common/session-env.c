@@ -1,4 +1,4 @@
-/* se4ssiobn-env.c - session environment helper functions.
+/* session-env.c - Session environment helper functions.
  * Copyright (C) 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -300,7 +300,7 @@ session_env_getenv (session_env_t se, const char *name)
 /* Return the value of the environment variable NAME from the SE
    object.  The returned value is valid as long as SE is valid and as
    long it has not been removed or updated by a call to
-   session_env_putenv.  If the variable does not exist, the fucntion
+   session_env_putenv.  If the variable does not exist, the function
    tries to return the value trough a call to getenv; if that returns
    a value, this value is recorded and and used.  If no value could be
    found, returns NULL.  The caller must not change the returned
@@ -325,7 +325,7 @@ session_env_getenv_or_default (session_env_t se, const char *name,
         return se->array[idx]->value;
       }
   
-  /* Get the default value with and additional fallback for GPG_TTY.  */
+  /* Get the default value with an additional fallback for GPG_TTY.  */
   defvalue = getenv (name);
   if ((!defvalue || !*defvalue) && !strcmp (name, "GPG_TTY") && ttyname (0))
     defvalue = ttyname (0);

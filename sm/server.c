@@ -136,7 +136,7 @@ data_line_cookie_write (void *cookie, const void *buffer, size_t size)
 
   if (assuan_send_data (ctx, buffer, size))
     {
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return -1;
     }
 
@@ -150,7 +150,7 @@ data_line_cookie_close (void *cookie)
 
   if (assuan_send_data (ctx, NULL, 0))
     {
-      errno = EIO;
+      gpg_err_set_errno (EIO);
       return -1;
     }
 

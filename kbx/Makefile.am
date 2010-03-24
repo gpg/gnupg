@@ -28,6 +28,12 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl \
 noinst_LIBRARIES = libkeybox.a
 bin_PROGRAMS = kbxutil
 
+if HAVE_W32CE_SYSTEM
+extra_libs =  $(LIBASSUAN_LIBS)
+else
+extra_libs = 
+endif
+
 common_sources = \
 	keybox.h keybox-defs.h keybox-search-desc.h \
 	keybox-util.c \
@@ -47,7 +53,7 @@ libkeybox_a_SOURCES = $(common_sources)
 # to do it this way.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_LDADD   = ../common/libcommon.a ../gl/libgnu.a \
-                  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
+                  $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(extra_libs) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
 $(PROGRAMS) : ../common/libcommon.a ../gl/libgnu.a 

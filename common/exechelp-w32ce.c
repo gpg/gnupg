@@ -48,6 +48,7 @@
 # include <sys/stat.h>
 #endif
 
+#include <assuan.h>
 
 #include "util.h"
 #include "i18n.h"
@@ -71,7 +72,128 @@
 #define pid_to_handle(a) ((HANDLE)(a))
 #define handle_to_pid(a) ((int)(a))
 
+
+#ifdef USE_GNU_PTH      
+/* The data passed to the feeder_thread.  */ 
+struct feeder_thread_parms
+{
+  estream_t stream;
+  int fd;
+  int direction;
+};
 
+
+/* The thread started by start_feeded.  */
+static void *
+feeder_thread (void *arg)
+{
+  struct feeder_thread_parms *parm = arg;
+  char buffer[4096];
+
+  if (parm->direction)
+    {
+      size_t nread;
+      DWORD nwritten;
+
+      while (!es_read (parm->stream, buffer, sizeof buffer, &nread))
+        {
+          do
+            {
+              if (!WriteFile (fd_to_handle (parm->fd), 
+                              buffer, nread, &nwritten, NULL))
+                {
+                  log_debug ("feeder(%d): WriteFile error: rc=%d\n",
+                             parm->fd, (int)GetLastError ());
+                  goto leave;
+                }
+              nread -= nwritten;
+            }
+          while (nread);
+        }
+      if (nread)
+        log_debug ("feeder(%d): es_read error: %s\n",
+                   parm->fd, strerror (errno));
+    }
+  else
+    {
+      DWORD nread;
+      size_t nwritten;
+
+      while (ReadFile (fd_to_handle (parm->fd),
+                       buffer, sizeof buffer, &nread, NULL) && nread)
+        {
+          do 
+            {
+              if (es_write (parm->stream, buffer, nread, &nwritten))
+                {
+                  log_debug ("feeder(%d): es_write error: %s\n",
+                             parm->fd, strerror (errno));
+                  goto leave;
+                }
+              nread -= nwritten;
+            }
+          while (nread);
+        }
+      if (nread)
+        log_debug ("feeder(%d): ReadFile error: rc=%d\n",
+                   parm->fd, (int)GetLastError ());
+      else
+        log_debug ("feeder(%d): eof\n", parm->fd);
+    }
+
+leave:
+  CloseHandle (fd_to_handle (parm->fd));
+  xfree (parm);
+  return NULL;
+}
+#endif /*USE_GNU_PTH*/
+
+/* Fire up a thread to copy data between STREAM and a pipe's
+   descriptor FD.  With DIRECTION set to true the copy takes place
+   from the stream to the pipe, otherwise from the pipe to the
+   stream.  */
+static gpg_error_t
+start_feeder (estream_t stream, int fd, int direction)
+{
+#ifdef USE_GNU_PTH      
+  gpg_error_t err;
+  struct feeder_thread_parms *parm;
+  pth_attr_t tattr;
+  
+  parm = xtrymalloc (sizeof *parm);
+  if (!parm)
+    return gpg_error_from_syserror ();
+  parm->stream = stream;
+  parm->fd = fd;
+  parm->direction = direction;
+  
+  tattr = pth_attr_new ();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "exec-feeder");
+  
+  log_error ("spawning new feeder(%p, %d, %d)\n", stream, fd, direction);
+  if(!pth_spawn (tattr, feeder_thread, parm))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error spawning feeder: %s\n", gpg_strerror (err));
+      xfree (parm);
+    }
+  else
+    err = 0;
+  pth_attr_destroy (tattr);
+
+  return err;
+#else
+  (void)stream;
+  (void)fd;
+  (void)direction;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* No Pth.  */
+#endif
+}
+
+
+
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
    other systems too.  */
@@ -182,20 +304,18 @@ get_all_open_fds (void)
 }
 
 
-/* Helper function to build_w32_commandline. */
+
 static char *
-build_w32_commandline_copy (char *buffer, const char *string)
+copy_quoted (char *p, const char *string)
 {
-  char *p = buffer;
   const char *s;
 
   if (!*string) /* Empty string. */
     p = stpcpy (p, "\"\"");
-  else if (strpbrk (string, " \t\n\v\f\""))
+  else if (strpbrk (string, " \t\n\v\f\"")) /* Need quotes.  */
     {
-      /* Need to do some kind of quoting.  */
       p = stpcpy (p, "\"");
-      for (s=string; *s; s++)
+      for (s = string; *s; s++)
         {
           *p++ = *s;
           if (*s == '\"')
@@ -204,32 +324,52 @@ build_w32_commandline_copy (char *buffer, const char *string)
       *p++ = '\"';
       *p = 0;
     }
-  else
+  else /* Copy verbatim.  */
     p = stpcpy (p, string);
 
   return p;
 }
 
+
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
-static gpg_error_t
-build_w32_commandline (const char *pgmname, const char * const *argv, 
+static int
+build_w32_commandline (const char *pgmname, const char * const *argv,
+		       int fd0, int fd1, int fd2, int fd2_isnull,
                        char **cmdline)
 {
   int i, n;
   const char *s;
   char *buf, *p;
+  char fdbuf[3*30];
 
-  *cmdline = NULL;
-  n = 0;
-  s = pgmname;
-  n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting */
-  for (; *s; s++)
-    if (*s == '\"')
-      n++;  /* Need to double inner quotes.  */
-  for (i=0; (s=argv[i]); i++)
+  p = fdbuf;
+  *p = 0;
+  if (fd0)
     {
-      n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting */
+      snprintf (p, 25, "-&S0=%d ", fd0);
+      p += strlen (p);
+    }
+  if (fd1)
+    {
+      snprintf (p, 25, "-&S1=%d ", fd1);
+      p += strlen (p);
+    }
+  if (fd2)
+    {
+      if (fd2_isnull)
+        strcpy (p, "-&S2=null ");
+      else
+        snprintf (p, 25, "-&S2=%d ", fd2);
+      p += strlen (p);
+    }
+  
+  *cmdline = NULL;
+  n = strlen (fdbuf);
+  n += strlen (pgmname) + 1 + 2; /* (1 space, 2 quoting) */
+  for (i=0; (s = argv[i]); i++)
+    {
+      n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting) */
       for (; *s; s++)
         if (*s == '\"')
           n++;  /* Need to double inner quotes.  */
@@ -237,229 +377,203 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
   n++;
 
   buf = p = xtrymalloc (n);
-  if (!buf)
-    return gpg_error_from_syserror ();
+  if (! buf)
+    return -1;
 
-  p = build_w32_commandline_copy (p, pgmname);
-  for (i=0; argv[i]; i++) 
+  p = stpcpy (p, fdbuf);
+  p = copy_quoted (p, pgmname);
+  for (i = 0; argv[i]; i++) 
     {
       *p++ = ' ';
-      p = build_w32_commandline_copy (p, argv[i]);
+      p = copy_quoted (p, argv[i]);
     }
 
-  *cmdline= buf;
+  *cmdline = buf;
   return 0;
 }
 
 
 /* Create pipe where one end is inheritable: With an INHERIT_IDX of 0
-   the read end is inheritable, with 1 the write end is inheritable.  */
-static int
+   the read end is inheritable, with 1 the write end is inheritable.
+   Note that the inheritable ends are rendezvous ids and no file
+   descriptors or handles. */
+static gpg_error_t
 create_inheritable_pipe (int filedes[2], int inherit_idx)
 {
-  HANDLE r, w, h;
+  HANDLE hd;
+  int rvid;
 
-  if (!CreatePipe (&r, &w, NULL, 0))
-    return -1;
-
-  if (!DuplicateHandle (GetCurrentProcess(), inherit_idx? w : r,
-                        GetCurrentProcess(), &h, 0,
-                        TRUE, DUPLICATE_SAME_ACCESS ))
+  filedes[0] = filedes[1] = -1;
+  hd = _assuan_w32ce_prepare_pipe (&rvid, !inherit_idx);
+  if (hd == INVALID_HANDLE_VALUE)
     {
-      log_error ("DuplicateHandle failed: %s\n", w32_strerror (-1));
-      CloseHandle (r);
-      CloseHandle (w);
-      return -1;
+      log_error ("_assuan_w32ce_prepare_pipe failed: %s\n", w32_strerror (-1));
+      gpg_err_set_errno (EIO);
+      return gpg_error_from_syserror ();
     }
 
   if (inherit_idx)
     {
-      CloseHandle (w);
-      w = h;
+      filedes[0] = handle_to_fd (hd);
+      filedes[1] = rvid;
     }
   else
     {
-      CloseHandle (r);
-      r = h;
+      filedes[0] = rvid;
+      filedes[1] = handle_to_fd (hd);
     }
-
-  filedes[0] = handle_to_fd (r);
-  filedes[1] = handle_to_fd (w);
   return 0;
 }
 
 
-static gpg_error_t
-do_create_pipe (int filedes[2], int inherit_idx)
-{
-  gpg_error_t err = 0;
-  int fds[2];
-
-  filedes[0] = filedes[1] = -1;
-  err = gpg_error (GPG_ERR_GENERAL);
-  if (!create_inheritable_pipe (fds, inherit_idx))
-    {
-      filedes[0] = _open_osfhandle (fds[0], 0);
-      if (filedes[0] == -1)
-        {
-          log_error ("failed to translate osfhandle %p\n", (void*)fds[0]);
-          CloseHandle (fd_to_handle (fds[1]));
-        }
-      else 
-        {
-          filedes[1] = _open_osfhandle (fds[1], 1);
-          if (filedes[1] == -1)
-            {
-              log_error ("failed to translate osfhandle %p\n", (void*)fds[1]);
-              close (filedes[0]);
-              filedes[0] = -1;
-              CloseHandle (fd_to_handle (fds[1]));
-            }
-          else
-            err = 0;
-        }
-    }
-  return err;
-}
-
 /* Portable function to create a pipe.  Under Windows the write end is
-   inheritable.  */
+   inheritable (i.e. an rendezvous id).  */
 gpg_error_t
 gnupg_create_inbound_pipe (int filedes[2])
 {
-  return do_create_pipe (filedes, 1);
+  return create_inheritable_pipe (filedes, 1);
 }
 
 
 /* Portable function to create a pipe.  Under Windows the read end is
-   inheritable.  */
+   inheritable (i.e. an rendezvous id).  */
 gpg_error_t
 gnupg_create_outbound_pipe (int filedes[2])
 {
-  return do_create_pipe (filedes, 0);
+  return create_inheritable_pipe (filedes, 0);
 }
 
 
-/* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
-   stdin, write the output to OUTFILE, return a new stream in
-   STATUSFILE for stderr and the pid of the process in PID. The
-   arguments for the process are expected in the NULL terminated array
-   ARGV.  The program name itself should not be included there.  If
-   PREEXEC is not NULL, that function will be called right before the
-   exec.  Calling gnupg_wait_process is required.
+static int
+create_process (const char *pgmname, const char *cmdline,
+                PROCESS_INFORMATION *pi)
+{
+  int res;
+  wchar_t *wpgmname, *wcmdline;
 
-   FLAGS is a bit vector with just one bit defined for now:
+  wpgmname = utf8_to_wchar (pgmname);
+  if (!wpgmname)
+    return 0;
+  wcmdline = utf8_to_wchar (cmdline);
+  if (!wcmdline)
+    {
+      xfree (wpgmname);
+      return 0;
+    }
+  res = CreateProcess (wpgmname,      /* Program to start.  */
+                       wcmdline,      /* Command line arguments.  */
+                       NULL,          /* Process security attributes.  */
+                       NULL,          /* Thread security attributes.  */
+                       FALSE,          /* Inherit handles.  */
+                       CREATE_SUSPENDED, /* Creation flags.  */
+                       NULL,          /* Environment.  */
+                       NULL,          /* Use current drive/directory.  */
+                       NULL,          /* Startup information. */
+                       pi);           /* Returns process information.  */
+  xfree (wcmdline);
+  xfree (wpgmname);
+  return res;
+}
 
-   Bit 7: If set the process will be started as a background process.
-          This flag is only useful under W32 systems, so that no new
-          console is created and pops up a console window when
-          starting the server.  Does not work on W32CE.
- 
-   Bit 6: On W32 run AllowSetForegroundWindow for the child.  Due to
-          error problems this actually allows SetForegroundWindow for
-          childs of this process.
 
-   Returns 0 on success or an error code. */
+/* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     FILE *infile, estream_t outfile,
+                     estream_t infile, estream_t outfile,
                      void (*preexec)(void), unsigned int flags,
-                     FILE **statusfile, pid_t *pid)
+                     estream_t *statusfile, pid_t *pid)
 {
   gpg_error_t err;
-  PROCESS_INFORMATION pi = 
-    {
-      NULL,      /* Returns process handle.  */
-      0,         /* Returns primary thread handle.  */
-      0,         /* Returns pid.  */
-      0          /* Returns tid.  */
-    };
-  STARTUPINFO si;
+  PROCESS_INFORMATION pi = {NULL };
   char *cmdline;
-  int fd, fdout, rp[2];
+  int inpipe[2], outpipe[2], errpipe[2];
 
   (void)preexec;
-
+  (void)flags;
+  
   /* Setup return values.  */
   *statusfile = NULL;
   *pid = (pid_t)(-1);
-  fflush (infile);
-  rewind (infile);
-  fd = _get_osfhandle (fileno (infile));
-  fdout = _get_osfhandle (es_fileno (outfile));
-  if (fd == -1 || fdout == -1)
-    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
-  /* Build the command line.  */
-  err = build_w32_commandline (pgmname, argv, &cmdline);
+  es_fflush (infile);
+  es_rewind (infile);
+
+  /* Create a pipe to copy our infile to the stdin of the child
+     process.  On success inpipe[1] is owned by the feeder.  */
+  err = create_inheritable_pipe (inpipe, 0);
   if (err)
-    return err; 
-
-  /* Create a pipe.  */
-  if (create_inheritable_pipe (rp, 1))
     {
-      err = gpg_error (GPG_ERR_GENERAL);
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      xfree (cmdline);
       return err;
     }
-  
-  /* Start the process.  Note that we can't run the PREEXEC function
-     because this would change our own environment. */
-  /* si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW; */
-  /* si.hStdInput  = fd_to_handle (fd); */
-  /* si.hStdOutput = fd_to_handle (fdout); */
-  /* si.hStdError  = fd_to_handle (rp[1]); */
+  err = start_feeder (infile, inpipe[1], 1);
+  if (err)
+    {
+      log_error (_("error spawning feeder: %s\n"), gpg_strerror (err));
+      CloseHandle (fd_to_handle (inpipe[1]));
+      return err;
+    }
 
-/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      NULL,          /* Process security attributes.  */
-                      NULL,          /* Thread security attributes.  */
-                      FALSE,          /* Inherit handles.  */
-                      CREATE_SUSPENDED, /* Creation flags.  */
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      NULL,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  /* Create a pipe to copy stdout of the child process to our
+     outfile. On success outpipe[0] is owned by the feeded.  */
+  err = create_inheritable_pipe (outpipe, 1);
+  if (err)
+    {
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      return err;
+    }
+  err = start_feeder (outfile, outpipe[0], 0);
+  if (err)
+    {
+      log_error (_("error spawning feeder: %s\n"), gpg_strerror (err));
+      CloseHandle (fd_to_handle (outpipe[0]));
+      return err;
+    }
+
+
+  /* Create a pipe for use with stderr of the child process.  */
+  err = create_inheritable_pipe (errpipe, 1);
+  if (err)
+    {
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  /* Build the command line.  */
+  err = build_w32_commandline (pgmname, argv, inpipe[0], outpipe[1], errpipe[1],
+                               0, &cmdline);
+  if (err)
+    {
+      CloseHandle (fd_to_handle (errpipe[0]));
+      return err; 
+    }
+
+  
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
-      CloseHandle (fd_to_handle (rp[0]));
-      CloseHandle (fd_to_handle (rp[1]));
+      CloseHandle (fd_to_handle (errpipe[0]));
       return gpg_error (GPG_ERR_GENERAL);
     }
   xfree (cmdline);
   cmdline = NULL;
 
-  /* Close the other end of the pipe.  */
-  CloseHandle (fd_to_handle (rp[1]));
+  /* Note: The other end of the pipe is a rendezvous id and thus there
+     is no need to close.  */
+
+  log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
   
-/*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
-/*              " dwProcessID=%d dwThreadId=%d\n", */
-/*              pi.hProcess, pi.hThread, */
-/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
-  
-  /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
-     invalid argument error if we pass the correct processID to
-     it.  As a workaround we use -1 (ASFW_ANY).  */
-  if ( (flags & 64) )
-    gnupg_allow_set_foregound_window ((pid_t)(-1)/*pi.dwProcessId*/);
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
-  {
-    int x;
-
-    x = _open_osfhandle (rp[0], 0);
-    if (x == -1)
-      log_error ("failed to translate osfhandle %p\n", (void*)rp[0] );
-    else 
-      *statusfile = fdopen (x, "r");
-  }
+  *statusfile = es_fdopen (handle_to_fd (errpipe[0]), "r");
   if (!*statusfile)
     {
       err = gpg_error_from_syserror ();
@@ -487,6 +601,8 @@ gpg_error_t
 gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
                         int infd, int outfd, int errfd, pid_t *pid)
 {
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#if 0
   gpg_error_t err;
   PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
   STARTUPINFO si;
@@ -546,9 +662,8 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
-
+#endif
 }
-
 
 /* Wait for the process identified by PID to terminate. PGMNAME should
    be the same as supplied to the spawn function and is only used for
@@ -628,6 +743,8 @@ gpg_error_t
 gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                               const char *envp[] )
 {
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#if 0
   gpg_error_t err;
   PROCESS_INFORMATION pi = 
     {
@@ -678,8 +795,8 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   CloseHandle (pi.hThread); 
 
   return 0;
+#endif
 }
-
 
 /* Kill a process; that is send an appropriate signal to the process.
    gnupg_wait_process must be called to actually remove the process

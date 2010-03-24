@@ -1969,6 +1969,7 @@ static void
 emergency_cleanup (void)
 {
   gcry_control (GCRYCTL_TERM_SECMEM );
+  gnupg_sleep (2);
 }
 
 
@@ -2105,7 +2106,8 @@ open_fwrite (const char *filename)
   fd = check_special_filename (filename, 1);
   if (fd != -1)
     {
-      fp = fdopen (dup (fd), "wb");
+#warning replace the line below
+      fp = NULL; /*fdopen (dup (fd), "wb"); */
       if (!fp)
         {
           log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));

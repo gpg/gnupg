@@ -364,8 +364,12 @@ AH_BOTTOM([
 #define SAFE_VERSION_DASH '-'
 
 /* Some global constants. */
-#ifdef HAVE_DRIVE_LETTERS
-#define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
+#ifdef HAVE_DOSISH_SYSTEM
+# ifdef HAVE_DRIVE_LETTERS
+#  define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
+# else
+#  define GNUPG_DEFAULT_HOMEDIR "/gnupg"
+# endif
 #elif defined(__VMS)
 #define GNUPG_DEFAULT_HOMEDIR "/SYS\$LOGIN/gnupg" 
 #else
@@ -376,15 +380,22 @@ AH_BOTTOM([
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
    the values may be overridden by the make invocations; this is to
-   comply with the GNU coding standards. */
-#ifdef HAVE_DRIVE_LETTERS
- /* FIXME: We need to use a function to determine these values depending 
-    on the actual installation directory. */
-#define GNUPG_BINDIR      "c:\\gnupg"
-#define GNUPG_LIBEXECDIR  "c:\\gnupg"
-#define GNUPG_LIBDIR      "c:\\gnupg"
-#define GNUPG_DATADIR     "c:\\gnupg"
-#define GNUPG_SYSCONFDIR  "c:\\gnupg"
+   comply with the GNU coding standards.  Note that these values are
+   only defaults.  */
+#ifdef HAVE_DOSISH_SYSTEM
+# ifdef HAVE_DRIVE_LETTERS
+#  define GNUPG_BINDIR      "c:\\gnupg"
+#  define GNUPG_LIBEXECDIR  "c:\\gnupg"
+#  define GNUPG_LIBDIR      "c:\\gnupg"
+#  define GNUPG_DATADIR     "c:\\gnupg"
+#  define GNUPG_SYSCONFDIR  "c:\\gnupg"
+# else
+#  define GNUPG_BINDIR      "\\gnupg"
+#  define GNUPG_LIBEXECDIR  "\\gnupg"
+#  define GNUPG_LIBDIR      "\\gnupg"
+#  define GNUPG_DATADIR     "\\gnupg"
+#  define GNUPG_SYSCONFDIR  "\\gnupg"
+# endif
 #endif
 
 /* Derive some other constants. */
@@ -509,17 +520,23 @@ case "${host}" in
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,
-                  [set this to limit filenames to the 8.3 format])
-        AC_DEFINE(HAVE_DRIVE_LETTERS,1,
-                  [defined if we must run on a stupid file system])
+                  [Set this to limit filenames to the 8.3 format])
         AC_DEFINE(USE_SIMPLE_GETTEXT,1,
-                  [because the Unix gettext has too much overhead on
+                  [Because the Unix gettext has too much overhead on
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
         disable_keyserver_path=yes
         have_dosish_system=yes
         have_w32_system=yes
-        case "${host}" in *-mingw32ce*) have_w32ce_system=yes ;; esac
+        case "${host}" in 
+          *-mingw32ce*)
+            have_w32ce_system=yes
+            ;;
+          *)
+            AC_DEFINE(HAVE_DRIVE_LETTERS,1,
+                      [Defined if the OS supports drive letters.])
+            ;;
+        esac
         try_gettext="no"
 	use_simple_gettext=yes
         ;;
@@ -576,7 +593,8 @@ if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
              [Defined if we run on some of the PCDOS like systems 
               (DOS, Windoze. OS/2) with special properties like
-              no file modes])
+              no file modes, case insensitive file names and preferred
+              use of backslashes as directory name separators.])
 fi
 AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 
@@ -1272,9 +1290,13 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step should bail out.
 # W32SOCKLIBS is also defined so that if can be used for tools not
 # requiring any network stuff but linking to code in libcommon which
-# tracks in winsock stuff (e.g. init_common_subsystems.
+# tracks in winsock stuff (e.g. init_common_subsystems).
 if test "$have_w32_system" = yes; then
-   W32SOCKLIBS="-lws2_32"
+   if test "$have_w32ce_system" = yes; then
+     W32SOCKLIBS="-lws2"
+   else
+     W32SOCKLIBS="-lws2_32"
+   fi
    NETLIBS="${NETLIBS} ${W32SOCKLIBS}"
 fi
 

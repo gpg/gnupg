@@ -1,3 +1,17 @@
+2010-03-24  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgsm_LDADD): Add extra_sys_libs.
+
+2010-03-23  Werner Koch  <wk@g10code.com>
+
+	* qualified.c (gpgsm_is_in_qualified_list): Replace rewind by
+	fseek+clearerr.
+
+2010-03-22  Werner Koch  <wk@g10code.com>
+
+	* import.c (parse_p12): Use estream functions for the tmp streams.
+	* export.c (export_p12): Ditto.
+
 2010-03-11  Werner Koch  <wk@g10code.com>
 
 	* verify.c (gpgsm_verify): Use gpgsm_es_print_name.

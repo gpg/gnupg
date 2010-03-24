@@ -1,3 +1,34 @@
+2010-03-24  Werner Koch  <wk@g10code.com>
+
+	* stringhelp.c (change_slashes, compare_filenames): Replace
+	HAVE_DRIVE_LETTERS by HAVE_DOSISH_SYSTEM.
+	(make_basename, make_dirname): Detect backslashes and drive
+	letters separately.
+
+	* dotlock.c (make_dotlock, create_dotlock, release_dotlock): Use
+	LockFileEx and UnlockFileEx to support W32CE.
+
+	* ttyio.c (USE_W32_CONSOLE): Replace all _WIN32 by this.
+	(init_ttyfp) [W32CE]: Use stderr.
+
+	* iobuf.c (FD_FOR_STDIN, FD_FOR_STDOUT) [W32CE]: Use estream.
+	(translate_file_handle) [W32CE]: Remove handle translation.
+
+2010-03-23  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (gnupg_remove): New.
+
+2010-03-22  Werner Koch  <wk@g10code.com>
+
+	* exechelp-w32ce.c (build_w32_commandline): Replace by code from
+	libassuan.
+	(create_inheritable_pipe): Use _assuan_w32ce_prepare_pipe.
+	(build_w32_commandline_copy, do_create_pipe): Remove.
+
+	* exechelp-posix.c (gnupg_spawn_process): Change to use estream
+	also for INFILE and STATUSFILE.
+	* exechelp-w32.c (gnupg_spawn_process): Ditto.
+
 2010-03-22  Werner Koch  <wk@g10code.com>
 
 	* exechelp.c: Remove after factoring all code out to ...

@@ -1,6 +1,6 @@
 /* stringhelp.c -  standard string helper functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005,
- *               2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
+ *               2008, 2009, 2010  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
  *
@@ -48,7 +48,7 @@
 static inline char *
 change_slashes (char *name)
 {
-#ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DOSISH_SYSTEM
   char *p;
 
   if (strchr (name, '\\'))
@@ -57,7 +57,7 @@ change_slashes (char *name)
         if (*p == '/')
           *p = '\\';
     }
-#endif /*HAVE_DRIVE_LETTERS*/
+#endif /*HAVE_DOSISH_SYSTEM*/
   return name;
 }
 
@@ -273,8 +273,10 @@ make_basename(const char *filepath, const char *inputpath)
     (void)inputpath; /* Only required for riscos.  */
 
     if ( !(p=strrchr(filepath, '/')) )
-#ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DOSISH_SYSTEM
 	if ( !(p=strrchr(filepath, '\\')) )
+#endif
+#ifdef HAVE_DRIVE_LETTERS
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
@@ -300,8 +302,10 @@ make_dirname(const char *filepath)
     char *p;
 
     if ( !(p=strrchr(filepath, '/')) )
-#ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DOSISH_SYSTEM
 	if ( !(p=strrchr(filepath, '\\')) )
+#endif
+#ifdef HAVE_DRIVE_LETTERS
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
@@ -479,12 +483,12 @@ make_filename_try (const char *first_part, ... )
 /* Compare whether the filenames are identical.  This is a
    special version of strcmp() taking the semantics of filenames in
    account.  Note that this function works only on the supplied names
-   without considereing any context like the current directory.  See
+   without considering any context like the current directory.  See
    also same_file_p(). */
 int
 compare_filenames (const char *a, const char *b)
 {
-#ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DOSISH_SYSTEM
   for ( ; *a && *b; a++, b++ ) 
     {
       if (*a != *b 

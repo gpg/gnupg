@@ -561,7 +561,8 @@ print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
 
 static gpg_error_t
 popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    FILE *infile, estream_t outfile, FILE **statusfile, 
+                    estream_t infile, estream_t outfile, 
+                    estream_t *statusfile, 
                     const char *prompt, const char *keygrip,
                     pid_t *pid)
 {
@@ -611,7 +612,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   gpg_error_t err = 0, child_err = 0;
   int c, cont_line;
   unsigned int pos;
-  FILE *infp = NULL, *fp = NULL;
+  estream_t infp = NULL;
+  estream_t fp = NULL;
   estream_t outfp = NULL;
   char buffer[1024];
   pid_t pid = -1;
@@ -622,7 +624,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   else
     pgmname = opt.protect_tool_program;
 
-  infp = gnupg_tmpfile ();
+  infp = es_tmpfile ();
   if (!infp)
     {
       err = gpg_error_from_syserror ();
@@ -630,7 +632,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       goto cleanup;
     }
 
-  if (fwrite (certimg, certimglen, 1, infp) != 1)
+  if (es_fwrite (certimg, certimglen, 1, infp) != 1)
     {
       err = gpg_error_from_syserror ();
       log_error (_("error writing to temporary file: %s\n"),
@@ -653,13 +655,13 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       pid = -1;
       goto cleanup;
     }
-  fclose (infp);
+  es_fclose (infp);
   infp = NULL;
 
   /* Read stderr of the protect tool. */
   pos = 0;
   cont_line = 0;
-  while ((c=getc (fp)) != EOF)
+  while ((c=es_getc (fp)) != EOF)
     {
       /* fixme: We could here grep for status information of the
          protect tool to figure out better error codes for
@@ -709,10 +711,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
 
  cleanup:
-  if (infp)
-    fclose (infp);
-  if (fp)
-    fclose (fp);
+  es_fclose (infp);
+  es_fclose (fp);
   if (pid != -1)
     {
       if (!gnupg_wait_process (pgmname, pid, NULL))
@@ -721,9 +721,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   if (!err)
     err = child_err;
   if (err)
-    {
-      es_fclose (outfp);
-    }
+    es_fclose (outfp);
   else
     *retfp = outfp;
   if (bad_pass)

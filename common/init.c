@@ -101,7 +101,7 @@ init_common_subsystems (int *argcp, char ***argvp)
    SetStdioPath set and restore game.  The caller needs to pass the
    rendezvous ids using up to three options:
 
-     -&S0=<handle> -&S1=<handle> -&S2=<handle>
+     -&S0=<rvid> -&S1=<rvid> -&S2=<rvid>
 
    They are all optional but they must be the first arguments on the
    command line.  Parsing stops as soon as an invalid option is found.

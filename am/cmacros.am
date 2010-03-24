@@ -48,6 +48,15 @@ if GNUPG_PROTECT_TOOL_PGM
 AM_CPPFLAGS += -DGNUPG_DEFAULT_PROTECT_TOOL="\"@GNUPG_PROTECT_TOOL_PGM@\""
 endif
 
+# Under Windows we use LockFileEx.  WindowsCE provides this only on
+# the WindowsMobile 6 platform and thus we need to use the coredll6
+# import library.
+if HAVE_W32CE_SYSTEM
+extra_sys_libs = -lcoredll6
+else
+extra_sys_libs = 
+endif
+
 
 # Convenience macros
 libcommon = ../common/libcommon.a
