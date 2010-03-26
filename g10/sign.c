@@ -1,6 +1,6 @@
 /* sign.c - sign data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ *               2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -414,12 +414,15 @@ hash_for(PKT_secret_key *sk)
 
       return match_dsa_hash(qbytes);
     }
-  else if(sk->is_protected && sk->protect.s2k.mode==1002)
+  else if (sk->is_protected && sk->protect.s2k.mode == 1002
+           && sk->protect.ivlen == 16
+           && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01\x01", 7))
     {
-      /* The sk lives on a smartcard, and current smartcards only
-	 handle SHA-1 and RIPEMD/160.  This is correct now, but may
-	 need revision as the cards add algorithms. */
-
+      /* The sk lives on a smartcard, and old smartcards only handle
+	 SHA-1 and RIPEMD/160.  Newer smartcards (v2.0) don't have
+	 this restriction anymore.  Fortunately the serial number
+	 encodes the version of the card and thus we know that this
+	 key is on a v1 card. */
       if(opt.personal_digest_prefs)
 	{
 	  prefitem_t *prefs;
