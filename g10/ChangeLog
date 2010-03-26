@@ -1,3 +1,9 @@
+2010-03-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* plaintext.c (handle_plaintext): Make sure that the stdout flush
+	succeeded, so we can't lose data when using gpg in a pipeline.
+	Fixes bug #1207.
+
 2010-02-17  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_user_id): Avoid infinite loop in case of invalid
@@ -13615,7 +13621,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-	   2007, 2008, 2009 Free Software Foundation, Inc.
+	   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

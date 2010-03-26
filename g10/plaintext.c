@@ -1,6 +1,6 @@
 /* plaintext.c -  process plaintext packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+ *               2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -392,7 +392,15 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     /* Make sure that stdout gets flushed after the plaintext has
        been handled.  This is for extra security as we do a
        flush anyway before checking the signature.  */
-    fflush (stdout);
+    if(fflush(stdout))
+      {
+	/* We check whether this fflush succeeded since fp might have
+	   been stdout piping to a file.  The fflush could fail if the
+	   file cannot be written (disk full, etc).  See bug 1207 for
+	   more. */
+	log_error("Error flushing plaintext: %s\n",strerror(errno));
+	rc=G10ERR_WRITE_FILE;
+      }
 
     if( fp && fp != stdout )
 	fclose(fp);
