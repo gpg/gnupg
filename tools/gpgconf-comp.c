@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
- * Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +30,9 @@
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <ctype.h>
 #ifdef HAVE_W32_SYSTEM
 # define WIN32_LEAN_AND_MEAN 1
@@ -1869,7 +1871,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	  if (end)
 	    *(end++) = '\0';
 
-	  errno = 0;
+	  gpg_err_set_errno (0);
 	  flags = strtoul (linep, &tail, 0);
 	  if (errno)
 	    gc_error (1, errno, "malformed flags in option %s from %s",
@@ -2185,7 +2187,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
     {
       char *tail;
 
-      errno = 0;
+      gpg_err_set_errno (0);
       *new_value_nr = strtoul (new_value, &tail, 0);
 
       if (errno)
@@ -2239,7 +2241,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
 	{
-	  errno = 0;
+	  gpg_err_set_errno (0);
 	  (void) strtol (arg, &arg, 0);
 
 	  if (errno)
@@ -2252,7 +2254,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
 	{
-	  errno = 0;
+	  gpg_err_set_errno (0);
 	  (void) strtoul (arg, &arg, 0);
 
 	  if (errno)
@@ -2289,7 +2291,7 @@ copy_file (const char *src_name, const char *dst_name)
     {
       int saved_err = errno;
       fclose (src);
-      errno = saved_err;
+      gpg_err_set_errno (saved_err);
       return -1;
     }
 
@@ -2312,7 +2314,7 @@ copy_file (const char *src_name, const char *dst_name)
       fclose (src);
       fclose (dst);
       unlink (dst_name);
-      errno = saved_errno;
+      gpg_err_set_errno (saved_errno);
       return -1;
     }
 
@@ -2360,8 +2362,8 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   /* Note that get_config_filename() calls percent_deescape(), so we
      call this before processing the arguments.  */
   dest_filename = xstrdup (get_config_filename (component, backend));
-  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
-  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
+  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, (int)getpid ());
+  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename,(int)getpid ());
 
   arg = option->new_value;
   if (arg && arg[0] == '\0')
@@ -2412,7 +2414,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   res = errno;
   if (!src_file)
     {
-      errno = res;
+      gpg_err_set_errno (res);
       return -1;
     }
 
@@ -2599,7 +2601,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
       close (fd);
       if (dest_file)
 	fclose (dest_file);
-      errno = res;
+      gpg_err_set_errno (res);
       return -1;
     }
   close (fd);
@@ -2621,7 +2623,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
     }
   if (dest_file)
     fclose (dest_file);
-  errno = res;
+  gpg_err_set_errno (res);
   return -1;
 }
 
@@ -2652,8 +2654,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   dest_filename = xstrdup (get_config_filename (component, backend));
-  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
-  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
+  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, (int)getpid ());
+  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename,(int)getpid ());
 
 #ifdef HAVE_W32_SYSTEM
   res = copy_file (dest_filename, orig_filename);
@@ -2682,7 +2684,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   res = errno;
   if (!src_file)
     {
-      errno = res;
+      gpg_err_set_errno (res);
       return -1;
     }
 
@@ -2897,7 +2899,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       close (fd);
       if (dest_file)
 	fclose (dest_file);
-      errno = res;
+      gpg_err_set_errno (res);
       return -1;
     }
   close (fd);
@@ -2919,7 +2921,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
     }
   if (dest_file)
     fclose (dest_file);
-  errno = res;
+  gpg_err_set_errno (res);
   return -1;
 }
 
@@ -3017,7 +3019,7 @@ gc_component_change_options (int component, FILE *in, FILE *out)
               if (end)
                 *(end++) = '\0';
               
-              errno = 0;
+              gpg_err_set_errno (0);
               flags = strtoul (linep, &tail, 0);
               if (errno)
                 gc_error (1, errno, "malformed flags in option %s", line);
@@ -3087,7 +3089,7 @@ gc_component_change_options (int component, FILE *in, FILE *out)
 		  gc_error (0, 0,
 			    _("External verification of component %s failed"),
 			    gc_component[component].name);
-		  errno = EINVAL;
+		  gpg_err_set_errno (EINVAL);
 		}
 	    }
 
@@ -3236,6 +3238,7 @@ key_matches_user_or_group (char *user)
   /* Under Windows we don't support groups. */   
   if (group && *group)
     gc_error (0, 0, _("Note that group specifications are ignored\n"));
+#ifndef HAVE_W32CE_SYSTEM
   if (*user)
     {
       static char *my_name;
@@ -3255,6 +3258,7 @@ key_matches_user_or_group (char *user)
       if (!strcmp (user, my_name))
         return 1; /* Found.  */
     }
+#endif /*HAVE_W32CE_SYSTEM*/
 #else /*!HAVE_W32_SYSTEM*/
   /* First check whether the user matches.  */
   if (*user)

@@ -56,6 +56,10 @@ noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 common_libs = $(libcommon) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
+if HAVE_W32CE_SYSTEM
+opt_libassuan_libs = $(LIBASSUAN_LIBS)
+endif
+
 gpgsplit_LDADD = $(common_libs) \
 	         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		 $(ZLIBS) $(LIBINTL) $(LIBICONV)
@@ -64,7 +68,7 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
-gpgconf_LDADD = $(common_libs) \
+gpgconf_LDADD = $(common_libs) $(opt_libassuan_libs) \
                 $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h

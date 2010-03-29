@@ -331,7 +331,6 @@ PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
 /*-- signal.c --*/
 void init_signals(void);
-void pause_on_sigusr( int which );
 void block_all_signals(void);
 void unblock_all_signals(void);
 

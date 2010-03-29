@@ -36,7 +36,6 @@
 
 #ifdef HAVE_DOSISH_SYSTEM
 void init_signals(void) {}
-void pause_on_sigusr(int which) {}
 #else
 static volatile int caught_fatal_sig = 0;
 static volatile int caught_sigusr1 = 0;
@@ -132,31 +131,6 @@ init_signals()
     init_one_signal (SIGPIPE, SIG_IGN, 0 );
 }
 
-
-void
-pause_on_sigusr( int which )
-{
-#if defined(HAVE_SIGPROCMASK) && defined(HAVE_SIGSET_T)
-    sigset_t mask, oldmask;
-
-    assert( which == 1 );
-    sigemptyset( &mask );
-    sigaddset( &mask, SIGUSR1 );
-
-    sigprocmask( SIG_BLOCK, &mask, &oldmask );
-    while( !caught_sigusr1 )
-	sigsuspend( &oldmask );
-    caught_sigusr1 = 0;
-    sigprocmask( SIG_UNBLOCK, &mask, NULL );
-#else 
-     assert (which == 1);
-     sighold (SIGUSR1);
-     while (!caught_sigusr1)
-         sigpause(SIGUSR1);
-     caught_sigusr1 = 0;
-     sigrelse(SIGUSR1);
-#endif /*! HAVE_SIGPROCMASK && HAVE_SIGSET_T */
-}
 
 /* Disabled - see comment in tdbio.c:tdbio_begin_transaction() */
 #if 0

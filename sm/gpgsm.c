@@ -1969,7 +1969,6 @@ static void
 emergency_cleanup (void)
 {
   gcry_control (GCRYCTL_TERM_SECMEM );
-  gnupg_sleep (2);
 }
 
 

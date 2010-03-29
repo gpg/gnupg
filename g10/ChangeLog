@@ -1,3 +1,8 @@
+2010-03-26  Werner Koch  <wk@g10code.com>
+
+	* signal.c (pause_on_sigusr): Remove.  It was used in ancient gpg
+	version with shared memory IPC.  Last caller removed on	2006-04-18.
+
 2010-03-24  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (CMP_FILENAME): Depend on HAVE_DOSISH_SYSTEM instead

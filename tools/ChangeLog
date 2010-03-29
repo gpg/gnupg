@@ -1,3 +1,12 @@
+2010-03-25  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (opt_libassuan_libs) [W32CE]: New.
+	(gpgconf_LDADD): Use it.
+
+	* gpgconf-comp.c: Include signal.h only if available.  Use
+	gpg_err_set_errno.
+	(key_matches_user_or_group) [W32CE]: Do not match any user.
+
 2010-03-15  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (my_dgettext):

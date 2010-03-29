@@ -36,6 +36,13 @@
 #ifdef HAVE_W32CE_SYSTEM
 #include <assuan.h>
 static void parse_std_file_handles (int *argcp, char ***argvp);
+static void
+sleep_on_exit (void)
+{
+  /* The sshd on CE swallows some of the command output.  Sleeping a
+     while usually helps.  */
+  Sleep (400);
+}
 #endif /*HAVE_W32CE_SYSTEM*/
 
 
@@ -77,6 +84,7 @@ init_common_subsystems (int *argcp, char ***argvp)
   /* Special hack for Windows CE: We extract some options from arg
      to setup the standard handles.  */
 #ifdef HAVE_W32CE_SYSTEM
+  atexit (sleep_on_exit);
   parse_std_file_handles (argcp, argvp);
 #else
   (void)argcp;
