@@ -170,7 +170,7 @@ maybe_create_keyring (char *filename, int force)
   if (is_secured_filename (filename))
     {
       iobuf = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   else
     iobuf = iobuf_create (filename);

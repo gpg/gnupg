@@ -53,7 +53,7 @@ dearmor_file( const char *fname )
       {
         iobuf_close (inp);
         inp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if (!inp) {
         rc = gpg_error_from_syserror ();
@@ -100,7 +100,7 @@ enarmor_file( const char *fname )
       {
         iobuf_close (inp);
         inp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if (!inp) {
         rc = gpg_error_from_syserror ();

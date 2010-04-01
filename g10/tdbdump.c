@@ -146,7 +146,7 @@ import_ownertrust( const char *fname )
     if (is_secured_file (fileno (fp)))
       {
         fclose (fp);
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
 	log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
 	return;
       }

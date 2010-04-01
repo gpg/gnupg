@@ -1226,7 +1226,7 @@ create_tmp_file (const char *template,
     if (is_secured_filename (tmpfname))
       {
         *r_fp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     else
       *r_fp = iobuf_create (tmpfname);
@@ -1558,7 +1558,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	oldmask=umask(077);
         if (!secret && is_secured_filename (fname)) {
             newfp = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
         }
         else
             newfp = iobuf_create (fname);

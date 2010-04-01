@@ -59,7 +59,7 @@ decrypt_message (const char *filename)
     {
       iobuf_close (fp);
       fp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   if ( !fp )
     {
@@ -118,7 +118,7 @@ decrypt_message_fd (int input_fd, int output_fd)
     {
       iobuf_close (fp);
       fp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   if (!fp)
     {
@@ -228,7 +228,7 @@ decrypt_messages (int nfiles, char *files[])
         {
           iobuf_close (fp);
           fp = NULL;
-          errno = EPERM;
+          gpg_err_set_errno (EPERM);
         }
       if (!fp)
         {

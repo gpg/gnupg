@@ -1971,7 +1971,7 @@ keyedit_menu( const char *username, strlist_t locusr,
               {
                 iobuf_close (a);
                 a = NULL;
-                errno = EPERM;
+                gpg_err_set_errno (EPERM);
               }
             if (!a)
               {

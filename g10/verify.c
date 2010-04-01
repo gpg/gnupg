@@ -91,7 +91,7 @@ verify_signatures( int nfiles, char **files )
       {
         iobuf_close (fp);
         fp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if( !fp ) {
         rc = gpg_error_from_syserror ();
@@ -154,7 +154,7 @@ verify_one_file( const char *name )
       {
         iobuf_close (fp);
         fp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if( !fp ) {
         rc = gpg_error_from_syserror ();

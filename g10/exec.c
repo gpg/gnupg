@@ -463,7 +463,7 @@ exec_write(struct exec_info **info,const char *program,
   if( is_secured_filename ((*info)->tempfile_in) )
     {
       (*info)->tochild = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   else
     (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
@@ -545,7 +545,7 @@ exec_read(struct exec_info *info)
             {
               iobuf_close (info->fromchild);
               info->fromchild = NULL;
-              errno = EPERM;
+              gpg_err_set_errno (EPERM);
             }
 	  if(info->fromchild==NULL)
 	    {

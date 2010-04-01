@@ -158,7 +158,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     ;
   else if (is_secured_filename (fname))
     {
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
       rc = gpg_error_from_syserror ();
       log_error (_("error creating `%s': %s\n"), fname, strerror (errno));
       goto leave;
@@ -548,7 +548,7 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 	    {
 	      iobuf_close (fp);
 	      fp = NULL;
-	      errno = EPERM;
+	      gpg_err_set_errno (EPERM);
 	    }
 	  if (!fp && errno == ENOENT)
 	    {
@@ -622,7 +622,7 @@ hash_datafiles (gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 	{
 	  iobuf_close (fp);
 	  fp = NULL;
-	  errno = EPERM;
+	  gpg_err_set_errno (EPERM);
 	}
       if (!fp)
 	{
@@ -654,7 +654,7 @@ hash_datafile_by_fd (gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
   if (is_secured_file (data_fd))
     {
       fp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   else
     fp = iobuf_fdopen_nc (data_fd, "rb");

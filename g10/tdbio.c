@@ -539,7 +539,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    oldmask=umask(077);
             if (is_secured_filename (fname)) {
                 fp = NULL;
-                errno = EPERM;
+                gpg_err_set_errno (EPERM);
             }
             else
                 fp =fopen( fname, "wb" );

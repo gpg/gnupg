@@ -187,7 +187,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
               {
                 iobuf_close (inp2);
                 inp2 = NULL;
-                errno = EPERM;
+                gpg_err_set_errno (EPERM);
               }
 	    if( !inp2 )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );

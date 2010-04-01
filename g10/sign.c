@@ -783,7 +783,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
         {
           iobuf_close (inp);
           inp = NULL;
-          errno = EPERM;
+          gpg_err_set_errno (EPERM);
         }
       if( !inp ) 
         {
@@ -799,7 +799,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
     if( outfile ) {
         if (is_secured_filename ( outfile )) {
             out = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
         }
         else
             out = iobuf_create( outfile );
@@ -978,7 +978,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
                   {
                     iobuf_close (inp);
                     inp = NULL;
-                    errno = EPERM;
+                    gpg_err_set_errno (EPERM);
                   }
 		if( !inp )
 		  {
@@ -1095,7 +1095,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       {
         iobuf_close (inp);
         inp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
@@ -1108,7 +1108,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     if( outfile ) {
         if (is_secured_filename (outfile) ) {
             outfile = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
         }
         else 
             out = iobuf_create( outfile );
@@ -1250,7 +1250,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       {
         iobuf_close (inp);
         inp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();

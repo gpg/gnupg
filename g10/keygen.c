@@ -2871,7 +2871,7 @@ read_parameter_file( const char *fname )
       {
         iobuf_close (fp);
         fp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if (!fp) {
       log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
@@ -3388,7 +3388,7 @@ do_generate_keypair (struct para_data_s *para,
           if (is_secured_filename (outctrl->pub.fname) ) 
             {
               outctrl->pub.stream = NULL;
-              errno = EPERM;
+              gpg_err_set_errno (EPERM);
             }
           else
             outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
@@ -3421,7 +3421,7 @@ do_generate_keypair (struct para_data_s *para,
           if (is_secured_filename (outctrl->sec.fname) )
             {
               outctrl->sec.stream = NULL;
-              errno = EPERM;
+              gpg_err_set_errno (EPERM);
             }
           else
             outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
@@ -4158,7 +4158,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
     if (is_secured_filename (fname))
       {
         fp = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     else
       fp = iobuf_create (fname);

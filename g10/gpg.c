@@ -1107,7 +1107,7 @@ open_info_file (const char *fname, int for_write, int binary)
 /*   if (is_secured_filename (fname)) */
 /*     { */
 /*       fd = -1; */
-/*       errno = EPERM; */
+/*       gpg_err_set_errno (EPERM); */
 /*     } */
 /*   else */
 /*     { */
@@ -2108,7 +2108,7 @@ main (int argc, char **argv)
           {
             fclose (configfp);
             configfp = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
           }
 	if( !configfp ) {
 	    if( default_config ) {
@@ -4037,7 +4037,7 @@ main (int argc, char **argv)
           {
             iobuf_close (a);
             a = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
           }
 	if( !a )
 	    log_error(_("can't open `%s'\n"), print_fname_stdin(fname));
@@ -4224,7 +4224,7 @@ print_mds( const char *fname, int algo )
           {
             fclose (fp);
             fp = NULL;
-            errno = EPERM;
+            gpg_err_set_errno (EPERM);
           }
     }
     if( !fp ) {

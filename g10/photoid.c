@@ -110,7 +110,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
         {
           iobuf_close (file);
           file = NULL;
-          errno = EPERM;
+          gpg_err_set_errno (EPERM);
         }
       if(!file)
 	{

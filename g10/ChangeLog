@@ -1,3 +1,7 @@
+2010-04-01  Werner Koch  <wk@g10code.com>
+
+	Use gpg_err_set_errno to set ERRNO.
+
 2010-03-26  Werner Koch  <wk@g10code.com>
 
 	* signal.c (pause_on_sigusr): Remove.  It was used in ancient gpg

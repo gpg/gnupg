@@ -284,7 +284,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
           if (is_secured_filename (name) )
             {
               *a = NULL;
-              errno = EPERM;
+              gpg_err_set_errno (EPERM);
             }
           else
             *a = iobuf_create (name);
@@ -329,7 +329,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
               {
                 iobuf_close (a);
                 a = NULL;
-                errno = EPERM;
+                gpg_err_set_errno (EPERM);
               }
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
@@ -366,7 +366,7 @@ copy_options_file( const char *destdir )
       {
         fclose (src);
         src = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     if( !src ) {
 	log_info (_("can't open `%s': %s\n"), fname, strerror(errno) );
@@ -378,7 +378,7 @@ copy_options_file( const char *destdir )
     if ( is_secured_filename (fname) )
       {
         dst = NULL;
-        errno = EPERM;
+        gpg_err_set_errno (EPERM);
       }
     else
       dst = fopen( fname, "w" );

@@ -190,7 +190,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     {
       iobuf_close (inp);
       inp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   if (!inp)
     {
@@ -531,7 +531,7 @@ encrypt_crypt (int filefd, const char *filename,
     {
       iobuf_close (inp);
       inp = NULL;
-      errno = EPERM;
+      gpg_err_set_errno (EPERM);
     }
   if (!inp)
     {
