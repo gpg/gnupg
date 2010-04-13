@@ -1,3 +1,9 @@
+2010-04-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* POTFILES.in: Replace common/exechelp.c by
+	common/exechelp-posix.c, common/exechelp-w32.c and
+	common/exechelp-w32ce.c.
+
 2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
 
 	* POTFILES.in: g10/encode.c was renamed to g10/encrypt.c, and
