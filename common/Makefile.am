@@ -21,7 +21,10 @@
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk \
              audit-events.h status-codes.h README.jnlib ChangeLog.jnlib
 
-noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
+noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
+if !HAVE_W32CE_SYSTEM
+noinst_LIBRARIES += libsimple-pwquery.a
+endif
 noinst_PROGRAMS = $(jnlib_tests) $(module_tests) $(module_maint_tests)
 TESTS = $(jnlib_tests) $(module_tests)
 
@@ -118,9 +121,11 @@ libcommonpth_a_SOURCES += srv.c
 endif
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
+if !HAVE_W32CE_SYSTEM
 libsimple_pwquery_a_SOURCES = \
 	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
 libsimple_pwquery_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
+endif
 
 libgpgrl_a_SOURCES = \
         gpgrlhelp.c

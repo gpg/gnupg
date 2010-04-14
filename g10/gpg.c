@@ -1242,7 +1242,7 @@ rm_group(char *name)
 
    Returns true if the item is unsafe. */
 static int
-check_permissions(const char *path,int item)
+check_permissions (const char *path, int item)
 {
 #if defined(HAVE_STAT) && !defined(HAVE_DOSISH_SYSTEM)
   static int homedir_cache=-1;
@@ -1428,9 +1428,11 @@ check_permissions(const char *path,int item)
 
   return ret;
 
-#endif /* HAVE_STAT && !HAVE_DOSISH_SYSTEM */
-
+#else /*!(HAVE_STAT && !HAVE_DOSISH_SYSTEM)*/
+  (void)path;
+  (void)item;
   return 0;
+#endif /*!(HAVE_STAT && !HAVE_DOSISH_SYSTEM)*/
 }
 
 
@@ -4028,8 +4030,10 @@ main (int argc, char **argv)
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
 	/* Issue some output for the unix newbie */
-	if( !fname && !opt.outfile && isatty( fileno(stdin) )
-		&& isatty( fileno(stdout) ) && isatty( fileno(stderr) ) )
+	if (!fname && !opt.outfile
+            && gnupg_isatty (fileno (stdin))
+            && gnupg_isatty (fileno (stdout))
+            && gnupg_isatty (fileno (stderr)))
 	    log_info(_("Go ahead and type your message ...\n"));
 
 	a = iobuf_open(fname);

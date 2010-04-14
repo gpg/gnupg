@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2009 Free Software Foundation, Inc.
+ *               2006, 2007, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -374,15 +374,14 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
 	      strcat (dummy_string, "H11 ");
 
-
-	    /* ZLIB */
-	    strcat(dummy_string,"Z2 ");
+	    if(!check_compress_algo(COMPRESS_ALGO_ZLIB))
+              strcat(dummy_string,"Z2 ");
 
 	    if(!check_compress_algo(COMPRESS_ALGO_BZIP2))
 	      strcat(dummy_string,"Z3 ");
 
-	    /* ZIP */
-	    strcat(dummy_string,"Z1");
+	    if(!check_compress_algo(COMPRESS_ALGO_ZIP))
+              strcat(dummy_string,"Z1");
 
 	    string=dummy_string;
 	  }

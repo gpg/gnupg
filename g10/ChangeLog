@@ -1,3 +1,19 @@
+2010-04-14  Werner Koch  <wk@g10code.com>
+
+	* cpr.c (myread) [W32CE]: Do not use raise.
+
+	* misc.c (check_compress_algo): Rewrite to handle the new HAVE_ZIP.
+	* compress.c (push_compress_filter2): Ditto.
+	(init_compress, do_compress, init_uncompress, do_uncompress)
+	(compress_filter) [!HAVE_ZIP]: Do not build.
+	* main.h (DEFAULT_COMPRESS_ALGO): Depend on HAVE_ZIP.
+	* keygen.c (keygen_set_std_prefs): Use check_compress_algo also
+	for ZIP and ZLIB.
+
+	* Makefile.am (install-exec-hook) [W32CE]: New.
+	(bin_PROGRAMS) [W32CE]: Do not build gpgv2.
+	(gpg2_LDADD): Add extra_syslibs.
+
 2010-04-06  Werner Koch  <wk@g10code.com>
 
 	* openfile.c (mkdir): Remove.

@@ -18,7 +18,11 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = gpg-agent
-libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
+libexec_PROGRAMS = gpg-protect-tool
+if !HAVE_W32CE_SYSTEM
+# fixme: Do no use simple-pwquery for preset-passphrase.
+libexec_PROGRAMS += gpg-preset-passphrase
+endif
 noinst_PROGRAMS = $(TESTS)
 
 # EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc

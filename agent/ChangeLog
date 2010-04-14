@@ -1,5 +1,8 @@
 2010-04-14  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (libexec_PROGRAMS) [W32CE]: Do not build
+	gpg-preset-passphrase for now.
+
 	* trustlist.c (read_one_trustfile): Use estream.
 
 2010-04-13  Werner Koch  <wk@g10code.com>

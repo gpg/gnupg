@@ -1,6 +1,6 @@
 /* compress.c - compress filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003, 2006 Free Software Foundation, Inc.
+ *               2003, 2006, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,10 +31,12 @@
 #include <unistd.h>
 #include <assert.h>
 #include <errno.h>
-#include <zlib.h>
-#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
-# include "zlib-riscos.h"
-#endif 
+#ifdef HAVE_ZIP
+# include <zlib.h>
+# if defined(__riscos__) && defined(USE_ZLIBRISCOS)
+#  include "zlib-riscos.h"
+# endif 
+#endif
 
 #include "gpg.h"
 #include "util.h"
@@ -55,6 +57,7 @@
 int compress_filter_bz2( void *opaque, int control,
 			 IOBUF a, byte *buf, size_t *ret_len);
 
+#ifdef HAVE_ZIP
 static void
 init_compress( compress_filter_context_t *zfx, z_stream *zs )
 {
@@ -285,7 +288,7 @@ compress_filter( void *opaque, int control,
 	*(char**)buf = "compress_filter";
     return rc;
 }
-
+#endif /*HAVE_ZIP*/
 
 static void
 release_context (compress_filter_context_t *ctx)
@@ -337,10 +340,12 @@ push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
     case COMPRESS_ALGO_NONE:
       break;
 
+#ifdef HAVE_ZIP
     case COMPRESS_ALGO_ZIP:
     case COMPRESS_ALGO_ZLIB:
       iobuf_push_filter2(out,compress_filter,zfx,rel);
       break;
+#endif
 
 #ifdef HAVE_BZIP2
     case COMPRESS_ALGO_BZIP2:

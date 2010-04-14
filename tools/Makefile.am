@@ -42,16 +42,22 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun}
+# Fixme: We should remove the gpgkey2ssh tool.
+bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
+endif
+if !HAVE_W32CE_SYSTEM
+bin_PROGRAMS += gpgkey2ssh 
 endif
 
 if !DISABLE_REGEX
 libexec_PROGRAMS = gpg-check-pattern
 endif
 
+if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
+endif
 
 common_libs = $(libcommon) ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
@@ -88,13 +94,14 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(PTH_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
+if !HAVE_W32CE_SYSTEM
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
 gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 # common via use of BUG() in an inline function, which
 # some compilers do not eliminate.
 gpgkey2ssh_LDADD = $(common_libs) \
                    $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
-
+endif
 
 if !DISABLE_REGEX
 gpg_check_pattern_SOURCES = gpg-check-pattern.c

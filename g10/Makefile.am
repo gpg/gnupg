@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002,
-#               2003, 2006  Free Software Foundation, Inc.
+#               2003, 2006, 2010  Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -29,7 +29,10 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 needed_libs = $(libcommon) ../gl/libgnu.a 
 
-bin_PROGRAMS = gpg2 gpgv2
+bin_PROGRAMS = gpg2
+if !HAVE_W32CE_SYSTEM
+bin_PROGRAMS += gpgv2
+endif
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
@@ -120,9 +123,9 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(DNSLIBS) $(LIBREADLINE) \
          $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg2_LDADD =  $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	     $(LIBICONV)
+	     $(LIBICONV) $(extra_sys_libs)
 gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	      $(LIBICONV)
+	      $(LIBICONV) $(extra_sys_libs)
 
 t_common_ldadd = 
 module_tests = t-rmd160
@@ -139,3 +142,11 @@ install-data-local:
 
 uninstall-local:
 	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel        
+
+
+# There has never been a gpg for WindowsCE, thus we don't need a gpg2 here
+if HAVE_W32CE_SYSTEM
+install-exec-hook:
+	mv -f $(DESTDIR)$(bindir)/gpg2$(EXEEXT) \
+              $(DESTDIR)$(bindir)/gpg$(EXEEXT)
+endif

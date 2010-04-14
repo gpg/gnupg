@@ -74,6 +74,9 @@ set_exec_path(const char *path) { return G10ERR_GENERAL; }
 static int 
 w32_system(const char *command)
 {
+#ifdef HAVE_W32CE_SYSTEM
+#warning Change this code to use common/exechelp.c
+#else
   PROCESS_INFORMATION pi;
   STARTUPINFO si;
   char *string;
@@ -99,6 +102,7 @@ w32_system(const char *command)
   xfree(string);
 
   return 0;
+#endif
 }
 #endif
 
@@ -106,6 +110,9 @@ w32_system(const char *command)
 int 
 set_exec_path(const char *path)
 {
+#ifdef HAVE_W32CE_SYSTEM
+#warning Change this code to use common/exechelp.c
+#else
   char *p;
 
   p=xmalloc(5+strlen(path)+1);
@@ -123,6 +130,7 @@ set_exec_path(const char *path)
     return G10ERR_GENERAL;
   else
     return 0;
+#endif
 }
 
 /* Makes a temp directory and filenames */

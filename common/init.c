@@ -30,11 +30,14 @@
 #ifdef HAVE_PTH      
 #include <pth.h>
 #endif
+#ifdef HAVE_W32CE_SYSTEM
+# include <assuan.h> /* For _assuan_w32ce_finish_pipe. */
+#endif
 
 #include "util.h"
 
+
 #ifdef HAVE_W32CE_SYSTEM
-#include <assuan.h>
 static void parse_std_file_handles (int *argcp, char ***argvp);
 static void
 sleep_on_exit (void)

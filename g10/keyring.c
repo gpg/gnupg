@@ -1274,7 +1274,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   if (!secret)
     { 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-      remove (bakfname);
+      gnupg_remove (bakfname);
 #endif
       if (rename (fname, bakfname) )
         {
@@ -1287,7 +1287,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   
   /* then rename the file */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  remove( fname );
+  gnupg_remove( fname );
 #endif
   if (secret)
     unregister_secured_file (fname);

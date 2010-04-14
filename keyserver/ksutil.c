@@ -29,7 +29,9 @@
  */
 
 #include <config.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

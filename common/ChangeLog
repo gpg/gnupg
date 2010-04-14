@@ -1,5 +1,12 @@
 2010-04-14  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (noinst_LIBRARIES) [W32CE]: Exclude libsimple-pwquery.
+
+	* w32help.h (umask) [W32CE]: New.
+
+	* sysutils.c (_gnupg_isatty): New.
+	* util.h (gnupg_isatty): New.
+
 	* asshelp.c (setup_libassuan_logging): Read ASSUAN_DEBUG envvar.
 	(my_libassuan_log_handler): Use it.
 	* sysutils.c (_gnupg_getenv): Implement ASSUAN_DEBUG.

@@ -24,7 +24,9 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 
 #include "gpg.h"
 #include "util.h"
@@ -312,7 +314,9 @@ myread(int fd, void *buf, size_t count)
         }
         else { /* Ctrl-D not caught - do something reasonable */
 #ifdef HAVE_DOSISH_SYSTEM
+#ifndef HAVE_W32CE_SYSTEM
             raise (SIGINT);  /* nothing to hangup under DOS */
+#endif
 #else
             raise (SIGHUP); /* no more input data */
 #endif

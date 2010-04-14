@@ -74,6 +74,7 @@ have_pth=no
 have_libusb=no
 have_adns=no
 
+use_zip=yes
 use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
@@ -168,6 +169,16 @@ AC_ARG_ENABLE(selinux-support,
                              [enable SELinux support]),
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
+
+# Allow disabling of zip support.
+# This is in general not a good idea because according to rfc4880 OpenPGP
+# implementations SHOULD support ZLIB.
+AC_MSG_CHECKING([whether to enable the ZIP and ZLIB compression algorithm])
+AC_ARG_ENABLE(zip,
+   AC_HELP_STRING([--disable-zip],
+                  [disable the ZIP and ZLIB compression algorithm]),
+   use_zip=$enableval)
+AC_MSG_RESULT($use_zip)
 
 # Allow disabling of bzib2 support.
 # It is defined only after we confirm the library is available later
@@ -1210,21 +1221,26 @@ AM_CONDITIONAL(DISABLE_REGEX, test x"$use_regex" != xyes)
 # when compiling a conftest (due to the "-lz" from LIBS).
 # Note that we combine zlib and bzlib2 in ZLIBS.
 #
-_cppflags="${CPPFLAGS}"
-_ldflags="${LDFLAGS}"
-AC_ARG_WITH(zlib,
-  [  --with-zlib=DIR         use libz in DIR],[
-    if test -d "$withval"; then
-      CPPFLAGS="${CPPFLAGS} -I$withval/include"
-      LDFLAGS="${LDFLAGS} -L$withval/lib"
-    fi
-  ])
+if test "$use_zip" = yes ; then
+  _cppflags="${CPPFLAGS}"
+  _ldflags="${LDFLAGS}"
+  AC_ARG_WITH(zlib,
+    [  --with-zlib=DIR         use libz in DIR],[
+      if test -d "$withval"; then
+        CPPFLAGS="${CPPFLAGS} -I$withval/include"
+        LDFLAGS="${LDFLAGS} -L$withval/lib"
+      fi
+    ])
+  
+  AC_CHECK_HEADER(zlib.h,
+        AC_CHECK_LIB(z, deflateInit2_,
+         ZLIBS="-lz",
+         CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+         CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+         
+  AC_DEFINE(HAVE_ZIP,1, [Defined if ZIP and ZLIB are supported])
+fi
 
-AC_CHECK_HEADER(zlib.h,
-      AC_CHECK_LIB(z, deflateInit2_,
-       ZLIBS="-lz",
-       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
-       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
 
 #
 # Check whether we can support bzip2

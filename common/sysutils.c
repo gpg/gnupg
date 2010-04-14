@@ -623,6 +623,17 @@ gnupg_unsetenv (const char *name)
 #endif
 }
 
+#ifdef HAVE_W32CE_SYSTEM
+/* There is a isatty function declaration in cegcc but it does not
+   make sense, thus we redefine it.  */
+int 
+_gnupg_isatty (int fd)
+{
+  (void)fd;
+  return 0;
+}
+#endif
+
 
 #ifdef HAVE_W32CE_SYSTEM
 /* Replacement for getenv which takes care of the our use of getenv.

@@ -905,15 +905,18 @@ string_to_compress_algo(const char *string)
 int
 check_compress_algo(int algo)
 {
-#ifdef HAVE_BZIP2
-  if(algo>=0 && algo<=3)
-    return 0;
-#else
-  if(algo>=0 && algo<=2)
-    return 0;
+  switch (algo)
+    {
+    case 0: return 0;
+#ifdef HAVE_ZIP
+    case 1:  
+    case 2: return 0;
 #endif
-
-  return G10ERR_COMPR_ALGO;
+#ifdef HAVE_BZIP2
+    case 3: return 0;
+#endif
+    default: return G10ERR_COMPR_ALGO;
+    }
 }
 
 int

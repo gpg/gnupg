@@ -1203,11 +1203,7 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
-#ifdef HAVE_W32CE_SYSTEM
-  use_tty = 0;
-#else
-  use_tty = (isatty ( fileno (stdin)) && isatty (fileno (stdout)));
-#endif
+  use_tty = (gnupg_isatty (fileno (stdin)) && gnupg_isatty (fileno (stdout)));
 
   if (opt.exec)
     {

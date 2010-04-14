@@ -1,3 +1,12 @@
+2010-04-14  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (keyserver) [W32CE]: Do not build for now.
+
+	* configure.ac (use_zip): New.
+	(--disable-zip): New option.
+	(HAVE_ZIP): New.
+	* autogen.sh <build-w32ce>: Disable ZIP.
+
 2010-04-07  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Take a .gnupg-autogen.rc file in account.

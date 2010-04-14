@@ -82,7 +82,7 @@ case "$1" in
         exit 1
         ;;
     *)
-     ;;
+        ;;
 esac
 
 
@@ -100,9 +100,10 @@ if [ "$myhost" = "w32" ]; then
 
     case $myhostsub in
         ce)
-          [ -z "$w32ce_root" ] && w32root="$HOME/w32ce_root"
+          w32root="$w32ce_root"
+          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="--disable-scdaemon $w32ce_extraoptions"
+          extraoptions="--disable-scdaemon --disable-zip $w32ce_extraoptions"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
