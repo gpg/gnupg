@@ -30,7 +30,7 @@
 
 #include "gpgsm.h"
 #include "i18n.h"
-#include "setenv.h"
+#include "sysutils.h"
 
 /* Setup the environment so that the pinentry is able to get all
    required information.  This is used prior to an exec of the
@@ -49,7 +49,7 @@ setup_pinentry_env (void)
      but print a warning.  */
   value = session_env_getenv (opt.session_env, "GPG_TTY");
   if (value)
-    setenv ("GPG_TTY", value, 1);
+    gnupg_setenv ("GPG_TTY", value, 1);
   else if (!(lc=getenv ("GPG_TTY")) || !*lc)
     {
       log_error (_("GPG_TTY has not been set - "
@@ -57,21 +57,21 @@ setup_pinentry_env (void)
       lc = ttyname (0);
       if (!lc)
         lc = "/dev/tty";
-      setenv ("GPG_TTY", lc, 1);
+      gnupg_setenv ("GPG_TTY", lc, 1);
     }
 
   if (opt.lc_ctype)
-    setenv ("LC_CTYPE", opt.lc_ctype, 1);
+    gnupg_setenv ("LC_CTYPE", opt.lc_ctype, 1);
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   else if ( (lc = setlocale (LC_CTYPE, "")) )
-    setenv ("LC_CTYPE", lc, 1);
+    gnupg_setenv ("LC_CTYPE", lc, 1);
 #endif
 
   if (opt.lc_messages)
-    setenv ("LC_MESSAGES", opt.lc_messages, 1);
+    gnupg_setenv ("LC_MESSAGES", opt.lc_messages, 1);
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   else if ( (lc = setlocale (LC_MESSAGES, "")) )
-    setenv ("LC_MESSAGES", lc, 1);
+    gnupg_setenv ("LC_MESSAGES", lc, 1);
 #endif
 
   iterator = 0;
@@ -81,7 +81,7 @@ setup_pinentry_env (void)
         continue;  /* Already set.  */
       value = session_env_getenv (opt.session_env, name);
       if (value)
-        setenv (name, value, 1);
+        gnupg_setenv (name, value, 1);
     }
 
 #endif /*!HAVE_W32_SYSTEM*/

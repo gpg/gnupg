@@ -51,6 +51,8 @@
 #endif
 #include <fcntl.h>
 
+#include "setenv.h"   /* Gnulib replacement.  */
+
 #include "util.h"
 #include "i18n.h"
 
@@ -529,6 +531,97 @@ gnupg_remove (const char *fname)
 }
 
 
+/* A wrapper around mkdir which takes a string for the mode argument.
+   This makes it easier to handle the mode argument which is not
+   defined on all systems.  The format of the modestring is
+
+      "-rwxrwxrwx"
+      
+   '-' is a don't care or not set.  'r', 'w', 'x' are read allowed,
+   write allowed, execution allowed with the first group for the user,
+   the second for the group and the third for all others.  If the
+   string is shorter than above the missing mode characters are meant
+   to be not set.  */
+int
+gnupg_mkdir (const char *name, const char *modestr)
+{
+#ifdef HAVE_W32CE_SYSTEM
+  wchar_t *wname;
+  (void)modestr;
+  
+  wname = utf8_to_wchar (name);
+  if (!wname)
+    return -1;
+  if (!CreateDirectoryW (wname, NULL))
+    {
+      xfree (wname);
+      return -1;  /* ERRNO is automagically provided by gpg-error.h.  */
+    }
+  xfree (wname);
+  return 0;
+#elif MKDIR_TAKES_ONE_ARG
+  (void)modestr;
+  /* Note: In the case of W32 we better use CreateDirectory and try to
+     set appropriate permissions.  However using mkdir is easier
+     because this sets ERRNO.  */
+  return mkdir (name);
+#else
+  mode_t mode = 0;
+
+  if (modestr && *modestr)
+    {
+      modestr++;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IRUSR;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWUSR;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXUSR;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IRGRP;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWGRP;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXGRP;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IROTH;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWOTH;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXOTH;
+    }
+  return mkdir (home, mode)
+#endif
+}
+
+
+int
+gnupg_setenv (const char *name, const char *value, int overwrite)
+{
+#ifdef HAVE_W32CE_SYSTEM
+  (void)name;
+  (void)value;
+  (void)overwrite;
+  return 0;
+#else
+  setenv (name, value, overwrite);
+#endif
+}
+
+int 
+gnupg_unsetenv (const char *name)
+{
+#ifdef HAVE_W32CE_SYSTEM
+  (void)name;
+  return 0;
+#else
+# ifdef HAVE_UNSETENV
+  unsetenv (name);
+# else
+  putenv (name);
+# endif
+#endif
+}
 
 
 #ifdef HAVE_W32CE_SYSTEM
@@ -538,8 +631,22 @@ gnupg_remove (const char *fname)
 char *
 _gnupg_getenv (const char *name)
 {
-  (void)name;
-  return NULL;
+  static int initialized;
+  static char *assuan_debug;
+  
+  if (!initialized)
+    {
+      assuan_debug = read_w32_registry_string (NULL, 
+                                               "\\Software\\GNU\\libassuan",
+                                               "debug");
+      initialized = 1;
+    }
+
+  if (!strcmp (name, "ASSUAN_DEBUG"))
+    return assuan_debug;
+  else
+    return NULL;
 }
+
 #endif /*HAVE_W32CE_SYSTEM*/
 

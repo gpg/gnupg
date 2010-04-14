@@ -183,11 +183,7 @@ timegm (struct tm *tm)
         putenv (old_zone);	
     }
   else
-#ifdef HAVE_UNSETENV
-    unsetenv("TZ");
-#else
-    putenv("TZ");
-#endif
+    gnupg_unsetenv("TZ");
 
   tzset();
   return answer;

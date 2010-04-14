@@ -118,6 +118,9 @@ void *memrchr (const void *block, int c, size_t size);
 
 #ifdef HAVE_W32CE_SYSTEM
 # define _set_errno(a)  gpg_err_set_errno ((a))
+/* Setmode is missing in cegcc but available since CE 5.0.  */
+int _setmode (int handle, int mode);
+# define setmode(a,b)   _setmode ((a),(b))
 #else
 # define _set_errno(a)  do { errno = (a); } while (0)
 #endif

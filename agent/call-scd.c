@@ -25,7 +25,9 @@
 #include <ctype.h>
 #include <assert.h>
 #include <unistd.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifndef HAVE_W32_SYSTEM
@@ -385,7 +387,9 @@ start_scd (ctrl_t ctrl)
     xfree (databuf);
   }
 
-  /* Tell the scdaemon we want him to send us an event signal. */
+  /* Tell the scdaemon we want him to send us an event signal.  We
+     don't support this for W32CE.  */
+#ifndef HAVE_W32CE_SYSTEM
   {
     char buf[100];
 
@@ -397,6 +401,7 @@ start_scd (ctrl_t ctrl)
 #endif
     assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
   }
+#endif /*HAVE_W32CE_SYSTEM*/
 
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;

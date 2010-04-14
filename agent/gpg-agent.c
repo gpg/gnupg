@@ -1,6 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
- * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,7 +35,9 @@
 # include <sys/un.h>
 #endif /*!HAVE_W32_SYSTEM*/
 #include <unistd.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <pth.h>
 
 #define JNLIB_NEED_LOG_LOGV
@@ -46,7 +48,6 @@
 #include "i18n.h"
 #include "mkdtemp.h" /* Gnulib replacement. */
 #include "sysutils.h"
-#include "setenv.h"
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 #include "asshelp.h"
@@ -425,7 +426,7 @@ remove_socket (char *name)
     {
       char *p;
 
-      remove (name);
+      gnupg_remove (name);
       p = strrchr (name, '/');
       if (p)
 	{
@@ -615,7 +616,7 @@ main (int argc, char **argv )
   malloc_hooks.realloc = gcry_realloc;
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
-    assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug);
@@ -994,7 +995,7 @@ main (int argc, char **argv )
          exec the program given as arguments). */
 #ifndef HAVE_W32_SYSTEM
       if (!opt.keep_display && !argc)
-        unsetenv ("DISPLAY");
+        gnupg_unsetenv ("DISPLAY");
 #endif
 
 
@@ -1374,7 +1375,7 @@ get_agent_ssh_socket_name (void)
 /* Under W32, this function returns the handle of the scdaemon
    notification event.  Calling it the first time creates that
    event.  */
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
 void *
 get_agent_scd_notify_event (void)
 {
@@ -1412,7 +1413,7 @@ get_agent_scd_notify_event (void)
   log_debug  ("returning notify handle %p\n", the_event);
   return the_event;
 }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM && !HAVE_W32CE_SYSTEM*/
 
 
 
@@ -1510,7 +1511,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
           assuan_sock_close (fd);
           agent_exit (2);
         }
-      remove (name);
+      gnupg_remove (name);
       rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
   if (rc != -1 
@@ -1556,15 +1557,9 @@ create_private_keys_directory (const char *home)
   fname = make_filename (home, GNUPG_PRIVATE_KEYS_DIR, NULL);
   if (stat (fname, &statbuf) && errno == ENOENT)
     {
-#ifdef HAVE_W32_SYSTEM  /*FIXME: Setup proper permissions.  */
-      if (!CreateDirectory (fname, NULL))
-        log_error (_("can't create directory `%s': %s\n"),
-                   fname, w32_strerror (-1) );
-#else
-      if (mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR ))
+      if (gnupg_mkdir (fname, "-rwx"))
         log_error (_("can't create directory `%s': %s\n"),
                    fname, strerror (errno) );
-#endif
       else if (!opt.quiet)
         log_info (_("directory `%s' created\n"), fname);
     }
@@ -1601,15 +1596,9 @@ create_directories (void)
 #endif
                )
             {
-#ifdef HAVE_W32_SYSTEM
-              if (!CreateDirectory (home, NULL))
-                log_error (_("can't create directory `%s': %s\n"),
-                           home, w32_strerror (-1) );
-#else
-              if (mkdir (home, S_IRUSR|S_IWUSR|S_IXUSR ))
+              if (gnupg_mkdir (home, "-rwx"))
                 log_error (_("can't create directory `%s': %s\n"),
                            home, strerror (errno) );
-#endif
               else 
                 {
                   if (!opt.quiet)
@@ -1863,14 +1852,14 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
-# ifdef PTH_EVENT_HANDLE
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_HANDLE, get_agent_scd_notify_event ());
-  signo = 0;
-# else
+# ifdef HAVE_W32CE_SYSTEM
   /* Use a dummy event. */
   sigs = 0;
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+# else
+  sigs = 0;
+  ev = pth_event (PTH_EVENT_HANDLE, get_agent_scd_notify_event ());
+  signo = 0;
 # endif
 #endif
   time_ev = NULL;

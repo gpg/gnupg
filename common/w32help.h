@@ -28,5 +28,12 @@ int write_w32_registry_string (const char *root, const char *dir,
                                const char *name, const char *value);
 
 
+/* Other stuff.  */
+#ifdef HAVE_W32CE_SYSTEM
+/* Setmode is missing in cegcc but available since CE 5.0.  */
+int _setmode (int handle, int mode);
+# define setmode(a,b)   _setmode ((a),(b))
+#endif /*HAVE_W32CE_SYSTEM*/
+
 #endif /*HAVE_W32_SYSTEM*/
 #endif /*LIBJNLIB_MISCHELP_H*/

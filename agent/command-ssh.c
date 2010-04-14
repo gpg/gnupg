@@ -721,7 +721,8 @@ search_control_file (FILE *fp, const char *hexgrip,
 
   assert (strlen (hexgrip) == 40 );
 
-  rewind (fp);
+  fseek (fp, 0, SEEK_SET);
+  clearerr (fp);
   *r_disabled = 0;
  next_line:
   do

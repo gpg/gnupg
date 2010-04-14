@@ -298,6 +298,8 @@ ttyname (int fd)
 #define getpid() GetCurrentProcessId ()
 char *_gnupg_getenv (const char *name); /* See sysutils.c */
 #define getenv(a)  _gnupg_getenv ((a))
+char *_gnupg_setenv (const char *name); /* See sysutils.c */
+#define setenv(a,b,c)  _gnupg_setenv ((a),(b),(c))
 #endif
 
 

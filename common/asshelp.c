@@ -36,6 +36,14 @@
 #include "asshelp.h"
 
 
+/* A bitfield that specifies the assuan categories to log.  This is
+   identical to the default log handler of libassuan.  We need to do
+   it ourselves because we use a custom log handler and want to use
+   the same assuan variables to select the categories to log. */
+static int log_cats;
+#define TEST_LOG_CAT(x) (!! (log_cats & (1 << (x - 1))))
+
+
 static int
 my_libassuan_log_handler (assuan_context_t ctx, void *hook,
                           unsigned int cat, const char *msg)
@@ -44,8 +52,9 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
 
   (void)ctx;
 
-  if (cat != ASSUAN_LOG_CONTROL)
-    return 0; /* We only want the control channel messages.  */
+  if (! TEST_LOG_CAT (cat))
+    return 0;
+
   dbgval = hook? *(unsigned int*)hook : 0;
   if (!(dbgval & 1024))
     return 0; /* Assuan debugging is not enabled.  */
@@ -62,6 +71,13 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
 void
 setup_libassuan_logging (unsigned int *debug_var_address)
 {
+  char *flagstr;
+
+  flagstr = getenv ("ASSUAN_DEBUG");
+  if (flagstr)
+    log_cats = atoi (flagstr);
+  else /* Default to log the control channel.  */
+    log_cats = (1 << (ASSUAN_LOG_CONTROL - 1));
   assuan_set_log_cb (my_libassuan_log_handler, debug_var_address);
 }
 

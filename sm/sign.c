@@ -503,31 +503,34 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   /* Check whether one of the certificates is qualified.  Note that we
      already validated the certificate and thus the user data stored
      flag must be available. */
-  for (cl=signerlist; cl; cl = cl->next)
+  if (!opt.no_chain_validation)
     {
-      size_t buflen;
-      char buffer[1];
-      
-      err = ksba_cert_get_user_data (cl->cert, "is_qualified", 
-                                     &buffer, sizeof (buffer), &buflen);
-      if (err || !buflen)
+      for (cl=signerlist; cl; cl = cl->next)
         {
-          log_error (_("checking for qualified certificate failed: %s\n"),
-                     gpg_strerror (err)); 
-          rc = err;
-          goto leave;
-        }
-      if (*buffer)
-        err = gpgsm_qualified_consent (ctrl, cl->cert);
-      else
-        err = gpgsm_not_qualified_warning (ctrl, cl->cert);
-      if (err)
-        {
-          rc = err;
-          goto leave;
+          size_t buflen;
+          char buffer[1];
+          
+          err = ksba_cert_get_user_data (cl->cert, "is_qualified", 
+                                         &buffer, sizeof (buffer), &buflen);
+          if (err || !buflen)
+            {
+              log_error (_("checking for qualified certificate failed: %s\n"),
+                         gpg_strerror (err)); 
+              rc = err;
+              goto leave;
+            }
+          if (*buffer)
+            err = gpgsm_qualified_consent (ctrl, cl->cert);
+          else
+            err = gpgsm_not_qualified_warning (ctrl, cl->cert);
+          if (err)
+            {
+              rc = err;
+              goto leave;
+            }
         }
     }
-  
+
   /* Prepare hashing (actually we are figuring out what we have set
      above). */
   rc = gcry_md_open (&data_md, 0, 0);

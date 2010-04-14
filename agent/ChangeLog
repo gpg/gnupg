@@ -1,3 +1,40 @@
+2010-04-14  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (read_one_trustfile): Use estream.
+
+2010-04-13  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (read_key_file): Use estream.
+	(agent_write_private_key): Ditto.
+
+2010-04-07  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (handle_connections) [W32]: Assume that PTh support
+	the handle event.  Use a dummy event for W32CE.
+	(get_agent_scd_notify_event) [W32CE]: Do not build.
+
+	* call-pinentry.c: Remove setenv.h.  Include sysutils.h.
+	(atfork_cb): s/setenv/gnupg_setenv/.
+
+	* gpg-agent.c: Do not include setenv.h.
+	(main): s/unsetenv/gnupg_unsetenv/.
+
+	* protect.c (calibrate_get_time) [W32CE]: Use GetThreadTimes.
+
+2010-04-06  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c [!HAVE_SIGNAL_H]: Do not include signal.h.
+
+	* findkey.c (agent_write_private_key): s/remove/gnupg_remove/.
+
+	* command-ssh.c (search_control_file): Replace rewind by fseek and
+	clearerr.
+	* genkey.c (check_passphrase_pattern): Ditto.
+
+	* gpg-agent.c [!HAVE_SIGNAL_H]: Do not include signal.h.
+	(remove_socket): s/remove/gnupg_remove/.
+	(create_private_keys_directory): Use gnupg_mkdir.
+
 2010-03-11  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: Include "asshelp.h".

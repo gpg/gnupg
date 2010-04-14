@@ -18,7 +18,7 @@ cvtver () {
 }
 
 check_version () {
-    if [ `("$1" --version || echo "0") | cvtver` -ge "$2" ]; then
+    if [ $(( `("$1" --version || echo "0") | cvtver` >= $2 )) = 1 ]; then
        return 0
     fi
     echo "**Error**: "\`$1\'" not installed or too old." >&2
@@ -45,6 +45,24 @@ if test x"$1" = x"--force"; then
   shift
 fi
 
+# Begin list of optional variables sourced from ~/.gnupg-autogen.rc
+w32_toolprefixes=
+w32_extraoptions=
+w32ce_toolprefixes=
+w32ce_extraoptions=
+amd64_toolprefixes=
+# End list of optional variables sourced from ~/.gnupg-autogen.rc
+# What follows are variables which are sourced but default to 
+# environment variables or lacking them hardcoded values.
+#w32root=
+#w32ce_root=
+#amd64root=
+
+if [ -f "$HOME/.gnupg-autogen.rc" ]; then
+    echo "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
+    . "$HOME/.gnupg-autogen.rc"
+fi
+
 # Convenience option to use certain configure options for some hosts.
 myhost="" 
 myhostsub=""
@@ -58,6 +76,10 @@ case "$1" in
         ;;
     --build-amd64)
         myhost="amd64"
+        ;;
+    --build*)
+        echo "**Error**: invalid build option $1" >&2
+        exit 1
         ;;
     *)
      ;;
@@ -76,16 +98,17 @@ if [ "$myhost" = "w32" ]; then
     fi
     build=`$tsdir/scripts/config.guess`
 
-    extraoptions=""
     case $myhostsub in
         ce)
-          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
-          toolprefixes="arm-mingw32ce"
-          extraoptions="--disable-scdaemon"
+          [ -z "$w32ce_root" ] && w32root="$HOME/w32ce_root"
+          toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
+          extraoptions="--disable-scdaemon $w32ce_extraoptions"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
-          toolprefixes="i586-mingw32msvc i386-mingw32msvc mingw32"
+          toolprefixes="$w32_toolprefixes i586-mingw32msvc"
+          toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
+          extraoptions="$w32_extraoptions"
           ;;
     esac
     echo "Using $w32root as standard install directory" >&2
@@ -146,10 +169,12 @@ if [ "$myhost" = "amd64" ]; then
 
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
     echo "Using $amd64root as standard install directory" >&2
+
+    toolprefixes="$amd64_toolprefixes x86_64-linux-gnu amd64-linux-gnu"
     
     # Locate the cross compiler
     crossbindir=
-    for host in x86_64-linux-gnu amd64-linux-gnu; do
+    for host in $toolprefixes ; do
         if ${host}-gcc --version >/dev/null 2>&1 ; then
             crossbindir=/usr/${host}/bin
             conf_CC="CC=${host}-gcc"
@@ -224,7 +249,7 @@ if test "$DIE" = "yes"; then
     cat <<EOF
 
 Note that you may use alternative versions of the tools by setting 
-the corresponding environment variables; see README.CVS for details.
+the corresponding environment variables; see README.SVN for details.
                    
 EOF
     exit 1

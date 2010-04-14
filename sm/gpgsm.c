@@ -434,7 +434,7 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
 static void emergency_cleanup (void);
 static int check_special_filename (const char *fname, int for_write);
 static int open_read (const char *filename);
-static estream_t open_es_fread (const char *filename);
+static estream_t open_es_fread (const char *filename, const char *mode);
 static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
@@ -942,6 +942,11 @@ main ( int argc, char **argv)
 
   opt.homedir = default_homedir ();
 
+#ifdef HAVE_W32CE_SYSTEM
+  opt.disable_dirmngr = 1;
+  opt.no_crl_check = 1;
+#endif
+ 
   /* First check whether we have a config file on the commandline */
   orig_argc = argc;
   orig_argv = argv;
@@ -1834,9 +1839,9 @@ main ( int argc, char **argv)
         if (opt.batch)
           {
             if (!argc) /* Create from stdin. */
-              fpin = open_es_fread ("-"); 
+              fpin = open_es_fread ("-", "r"); 
             else if (argc == 1) /* From file. */
-              fpin = open_es_fread (*argv); 
+              fpin = open_es_fread (*argv, "r"); 
             else
               wrong_args ("--gen-key --batch [parmfile]");
           }
@@ -2057,7 +2062,7 @@ open_read (const char *filename)
 
 /* Same as open_read but return an estream_t.  */
 static estream_t
-open_es_fread (const char *filename)
+open_es_fread (const char *filename, const char *mode)
 {
   int fd;
   estream_t fp;
@@ -2068,7 +2073,7 @@ open_es_fread (const char *filename)
     fd = check_special_filename (filename, 0);
   if (fd != -1)
     {
-      fp = es_fdopen_nc (fd, "rb");
+      fp = es_fdopen_nc (fd, mode);
       if (!fp)
         {
           log_error ("es_fdopen(%d) failed: %s\n", fd, strerror (errno));
@@ -2076,7 +2081,7 @@ open_es_fread (const char *filename)
         }
       return fp;
     }
-  fp = es_fopen (filename, "rb");
+  fp = es_fopen (filename, mode);
   if (!fp)
     {
       log_error (_("can't open `%s': %s\n"), filename, strerror (errno));

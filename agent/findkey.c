@@ -57,9 +57,8 @@ agent_write_private_key (const unsigned char *grip,
                          const void *buffer, size_t length, int force)
 {
   char *fname;
-  FILE *fp;
+  estream_t fp;
   char hexgrip[40+4+1];
-  int fd;
   
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
@@ -73,53 +72,30 @@ agent_write_private_key (const unsigned char *grip,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  /* In FORCE mode we would like to create FNAME but only if it does
-     not already exist.  We cannot make this guarantee just using
-     POSIX (GNU provides the "x" opentype for fopen, however, this is
-     not portable).  Thus, we use the more flexible open function and
-     then use fdopen to obtain a stream. */
-  fd = open (fname, force? (O_CREAT | O_TRUNC | O_WRONLY | O_BINARY)
-                         : (O_CREAT | O_EXCL | O_WRONLY | O_BINARY),
-             S_IRUSR | S_IWUSR 
-#ifndef HAVE_W32_SYSTEM
-                 | S_IRGRP 
-#endif
-                 );
-  if (fd < 0)
-    fp = NULL;
-  else
-    {
-      fp = fdopen (fd, "wb");
-      if (!fp)
-        { 
-          int save_e = errno;
-          close (fd);
-          errno = save_e;
-        }
-    }
-
+  /* FIXME: On POSIX systems we used include S_IRGRP as well.  */
+  fp = es_fopen (fname, force? "wb" : "wbx");
   if (!fp) 
     { 
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("can't create `%s': %s\n", fname, strerror (errno));
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+      log_error ("can't create `%s': %s\n", fname, gpg_strerror (tmperr));
       xfree (fname);
       return tmperr;
     }
 
-  if (fwrite (buffer, length, 1, fp) != 1)
+  if (es_fwrite (buffer, length, 1, fp) != 1)
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("error writing `%s': %s\n", fname, strerror (errno));
-      fclose (fp);
-      remove (fname);
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+      log_error ("error writing `%s': %s\n", fname, gpg_strerror (tmperr));
+      es_fclose (fp);
+      gnupg_remove (fname);
       xfree (fname);
       return tmperr;
     }
-  if ( fclose (fp) )
+  if (es_fclose (fp))
     {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("error closing `%s': %s\n", fname, strerror (errno));
-      remove (fname);
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+      log_error ("error closing `%s': %s\n", fname, gpg_strerror (tmperr));
+      gnupg_remove (fname);
       xfree (fname);
       return tmperr;
     }
@@ -425,7 +401,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 {
   int rc;
   char *fname;
-  FILE *fp;
+  estream_t fp;
   struct stat st;
   unsigned char *buf;
   size_t buflen, erroff;
@@ -438,7 +414,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   strcpy (hexgrip+40, ".key");
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
-  fp = fopen (fname, "rb");
+  fp = es_fopen (fname, "rb");
   if (!fp)
     {
       rc = gpg_error_from_syserror ();
@@ -448,23 +424,36 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       return rc;
     }
   
-  if (fstat (fileno(fp), &st))
+  if (fstat (es_fileno (fp), &st))
     {
       rc = gpg_error_from_syserror ();
       log_error ("can't stat `%s': %s\n", fname, strerror (errno));
       xfree (fname);
-      fclose (fp);
+      es_fclose (fp);
       return rc;
     }
 
   buflen = st.st_size;
   buf = xtrymalloc (buflen+1);
-  if (!buf || fread (buf, buflen, 1, fp) != 1)
+  if (!buf)
     {
       rc = gpg_error_from_syserror ();
-      log_error ("error reading `%s': %s\n", fname, strerror (errno));
+      log_error ("error allocating %zu bytes for `%s': %s\n",
+                 buflen, fname, strerror (errno));
       xfree (fname);
-      fclose (fp);
+      es_fclose (fp);
+      xfree (buf);
+      return rc;
+
+    }
+
+  if (es_fread (buf, buflen, 1, fp) != 1)
+    {
+      rc = gpg_error_from_syserror ();
+      log_error ("error reading %zu bytes from `%s': %s\n", 
+                 buflen, fname, strerror (errno));
+      xfree (fname);
+      es_fclose (fp);
       xfree (buf);
       return rc;
     }
@@ -472,7 +461,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   /* Convert the file into a gcrypt S-expression object.  */
   rc = gcry_sexp_sscan (&s_skey, &erroff, (char*)buf, buflen);
   xfree (fname);
-  fclose (fp);
+  es_fclose (fp);
   xfree (buf);
   if (rc)
     {

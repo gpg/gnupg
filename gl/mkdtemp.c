@@ -80,6 +80,11 @@
 # include <io.h>
 #endif
 
+#ifdef HAVE_W32CE_SYSTEM
+#include <windows.h>
+#define getpid() GetCurrentProcessId ()
+#endif
+
 #if !_LIBC
 # define __getpid getpid
 # define __gettimeofday gettimeofday

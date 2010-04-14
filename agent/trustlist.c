@@ -116,7 +116,7 @@ read_one_trustfile (const char *fname, int allow_include,
                     int *addr_of_tableidx)
 {
   gpg_error_t err = 0;
-  FILE *fp;
+  estream_t fp;
   int n, c;
   char *p, line[256];
   trustitem_t *table, *ti;
@@ -128,7 +128,7 @@ read_one_trustfile (const char *fname, int allow_include,
   tablesize = *addr_of_tablesize;
   tableidx = *addr_of_tableidx;
 
-  fp = fopen (fname, "r");
+  fp = es_fopen (fname, "r");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
@@ -136,14 +136,14 @@ read_one_trustfile (const char *fname, int allow_include,
       goto leave;
     }
 
-  while (fgets (line, DIM(line)-1, fp))
+  while (es_fgets (line, DIM(line)-1, fp))
     {
       lnr++;
       
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line. */
-          while ( (c=getc (fp)) != EOF && c != '\n')
+          while ( (c=es_getc (fp)) != EOF && c != '\n')
             ;
           err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                            : GPG_ERR_INCOMPLETE_LINE);
@@ -288,7 +288,7 @@ read_one_trustfile (const char *fname, int allow_include,
         }
       tableidx++;
     }
-  if ( !err && !feof (fp) )
+  if ( !err && !es_feof (fp) )
     {
       err = gpg_error_from_syserror ();
       log_error (_("error reading `%s', line %d: %s\n"),
@@ -296,8 +296,7 @@ read_one_trustfile (const char *fname, int allow_include,
     }
 
  leave:
-  if (fp)
-    fclose (fp);
+  es_fclose (fp);
   *addr_of_table = table;
   *addr_of_tablesize = tablesize;
   *addr_of_tableidx = tableidx;

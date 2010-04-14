@@ -117,7 +117,8 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
       fclose (infp);
       return 1; /* Error - assume password should not be used.  */
     }
-  rewind (infp);
+  fseek (infp, 0, SEEK_SET);
+  clearerr (infp);
 
   i = 0;
   argv[i++] = "--null";
@@ -134,7 +135,8 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
     result = 0; /* Success; i.e. no match.  */
 
   /* Overwrite our temporary file. */
-  rewind (infp);
+  fseek (infp, 0, SEEK_SET);
+  clearerr (infp);
   for (i=((strlen (pw)+99)/100)*100; i > 0; i--)
     putc ('\xff', infp);
   fflush (infp);

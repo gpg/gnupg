@@ -56,10 +56,6 @@
 #define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif
 
-#ifdef MKDIR_TAKES_ONE_ARG
-#undef mkdir
-#define mkdir(a,b) mkdir(a)
-#endif
 
 /* FIXME:  Implement opt.interactive. */
 
@@ -444,12 +440,11 @@ try_make_homedir (const char *fname)
 #endif
       )
     {
-      if ( mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR) )
+      if (gnupg_mkdir (fname, "-rwx"))
         log_fatal ( _("can't create directory `%s': %s\n"),
                     fname, strerror(errno) );
       else if (!opt.quiet )
         log_info ( _("directory `%s' created\n"), fname );
       copy_options_file( fname );
-      
     }
 }

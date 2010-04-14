@@ -210,12 +210,17 @@ gnu_getcwd (void)
   for (;;)
     {
       buffer = xmalloc (size+1);
+#ifdef HAVE_W32CE_SYSTEM
+      strcpy (buffer, "/");
+      return buffer;
+#else      
       if (getcwd (buffer, size) == buffer)
         return buffer;
       xfree (buffer);
       if (errno != ERANGE)
         return NULL;
       size *= 2;
+#endif
     }
 }
 
@@ -989,7 +994,8 @@ do_open (char *line)
   if (fd >= 0 && fd < DIM (open_fd_table))
     {
       open_fd_table[fd].inuse = 1;
-#ifdef HAVE_W32_SYSTEM
+#warning fixme: implement our pipe emulation.
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
       {
         HANDLE prochandle, handle, newhandle;
 
@@ -1197,7 +1203,11 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
+#ifdef HAVE_W32CE_SYSTEM
+  use_tty = 0;
+#else
   use_tty = (isatty ( fileno (stdin)) && isatty (fileno (stdout)));
+#endif
 
   if (opt.exec)
     {
@@ -1890,7 +1900,11 @@ handle_inquire (assuan_context_t ctx, char *line)
     {
       if (d->is_prog)
         {
+#ifdef HAVE_W32CE_SYSTEM
+          fp = NULL;
+#else
           fp = popen (d->file, "r");
+#endif
           if (!fp)
             log_error ("error executing `%s': %s\n",
                        d->file, strerror (errno));
@@ -1931,8 +1945,10 @@ handle_inquire (assuan_context_t ctx, char *line)
     ;
   else if (d->is_prog)
     {
+#ifndef HAVE_W32CE_SYSTEM
       if (pclose (fp))
         log_error ("error running `%s': %s\n", d->file, strerror (errno));
+#endif
     }
   else
     fclose (fp);

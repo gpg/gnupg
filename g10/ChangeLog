@@ -1,3 +1,8 @@
+2010-04-06  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (mkdir): Remove.
+	(try_make_homedir): Use gnupg_mkdir.
+
 2010-04-01  Werner Koch  <wk@g10code.com>
 
 	Use gpg_err_set_errno to set ERRNO.

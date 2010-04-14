@@ -36,7 +36,7 @@
 
 #include "agent.h"
 #include <assuan.h>
-#include "setenv.h"
+#include "sysutils.h"
 #include "i18n.h"
 
 #ifdef _POSIX_OPEN_MAX
@@ -190,7 +190,7 @@ atfork_cb (void *opaque, int where)
             {
               value = session_env_getenv (ctrl->session_env, name);
               if (value)
-                setenv (name, value, 1);
+                gnupg_setenv (name, value, 1);
             }
         }
     }
@@ -276,7 +276,7 @@ start_pinentry (ctrl_t ctrl)
 
   if (!opt.pinentry_program || !*opt.pinentry_program)
     opt.pinentry_program = gnupg_module_name (GNUPG_MODULE_NAME_PINENTRY);
-    pgmname = opt.pinentry_program;
+  pgmname = opt.pinentry_program;
   if ( !(pgmname = strrchr (opt.pinentry_program, '/')))
     pgmname = opt.pinentry_program;
   else

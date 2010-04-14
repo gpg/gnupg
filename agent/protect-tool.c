@@ -1249,14 +1249,14 @@ store_private_key (const unsigned char *grip,
     {
       log_error ("error writing `%s': %s\n", fname, strerror (errno));
       es_fclose (fp);
-      remove (fname);
+      gnupg_remove (fname);
       xfree (fname);
       return -1;
     }
   if (es_fclose (fp))
     {
       log_error ("error closing `%s': %s\n", fname, strerror (errno));
-      remove (fname);
+      gnupg_remove (fname);
       xfree (fname);
       return -1;
     }
