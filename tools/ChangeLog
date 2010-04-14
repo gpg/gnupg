@@ -2,6 +2,7 @@
 
 	* Makefile.am (bin_PROGRAMS) [W32CE]: Exclude gpgkey2ssh.
 	(noinst_PROGRAMS) [W32CE]: Don't build them.
+	(pwquery_libs) [W32CE]: Set to empty.
 
 2010-03-25  Werner Koch  <wk@g10code.com>
 

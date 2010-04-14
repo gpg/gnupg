@@ -60,7 +60,11 @@ noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 endif
 
 common_libs = $(libcommon) ../gl/libgnu.a
+if HAVE_W32CE_SYSTEM
+pwquery_libs = 
+else
 pwquery_libs = ../common/libsimple-pwquery.a
+endif
 
 if HAVE_W32CE_SYSTEM
 opt_libassuan_libs = $(LIBASSUAN_LIBS)

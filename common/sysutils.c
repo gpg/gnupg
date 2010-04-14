@@ -526,7 +526,7 @@ gnupg_remove (const char *fname)
     gpg_err_set_errno (EIO);
   return !rc;
 #else
-  return remove;
+  return remove (fname);
 #endif
 }
 
@@ -590,7 +590,7 @@ gnupg_mkdir (const char *name, const char *modestr)
       if (*modestr && *modestr++ == 'x')
         mode |= S_IXOTH;
     }
-  return mkdir (home, mode)
+  return mkdir (name, mode);
 #endif
 }
 
