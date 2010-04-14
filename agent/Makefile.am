@@ -51,7 +51,11 @@ gpg_agent_SOURCES = \
 
 common_libs = $(libcommon) ../gl/libgnu.a
 commonpth_libs = $(libcommonpth) ../gl/libgnu.a
+if HAVE_W32CE_SYSTEM
+pwquery_libs = 
+else
 pwquery_libs = ../common/libsimple-pwquery.a
+endif
 
 #if HAVE_W32_SYSTEM
 #.rc.o:

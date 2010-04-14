@@ -2,6 +2,7 @@
 
 	* Makefile.am (libexec_PROGRAMS) [W32CE]: Do not build
 	gpg-preset-passphrase for now.
+	(pwquery_libs) [W32CE]: Set to empty.
 
 	* trustlist.c (read_one_trustfile): Use estream.
 
