@@ -1,3 +1,9 @@
+2010-04-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* keybox-update.c [!HAVE_DOSISH_SYSTEM]: Include
+	../common/sysutils.h even then to silence gcc warning about
+	missing declaration of gnupg_remove.
+
 2010-03-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (extra_libs): New.

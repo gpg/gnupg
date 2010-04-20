@@ -604,7 +604,7 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   (void)overwrite;
   return 0;
 #else
-  setenv (name, value, overwrite);
+  return setenv (name, value, overwrite);
 #endif
 }
 
@@ -616,9 +616,9 @@ gnupg_unsetenv (const char *name)
   return 0;
 #else
 # ifdef HAVE_UNSETENV
-  unsetenv (name);
+  return unsetenv (name);
 # else
-  putenv (name);
+  return putenv (name);
 # endif
 #endif
 }

@@ -180,7 +180,7 @@ get_pka_info (const char *address, unsigned char *fpr)
   unsigned char *p, *pend;
   const char *domain;
   char *name;
-
+  HEADER header;
 
   domain = strrchr (address, '@');
   if (!domain || domain == address || !domain[1])
@@ -196,18 +196,24 @@ get_pka_info (const char *address, unsigned char *fpr)
   xfree (name);
   if (anslen < sizeof(HEADER))
     return NULL; /* DNS resolver returned a too short answer. */
-  if ( (rc=((HEADER*)answer)->rcode) != NOERROR )
+
+  /* Don't despair: A good compiler should optimize this away, as
+     header is just 32 byte and constant at compile time.  It's
+     one way to comply with strict aliasing rules.  */
+  memcpy (&header, answer, sizeof (header));
+
+  if ( (rc=header.rcode) != NOERROR )
     return NULL; /* DNS resolver returned an error. */
 
   /* We assume that PACKETSZ is large enough and don't do dynmically
      expansion of the buffer. */
   if (anslen > PACKETSZ)
     return NULL; /* DNS resolver returned a too long answer */
-
-  qdcount = ntohs (((HEADER*)answer)->qdcount);
-  ancount = ntohs (((HEADER*)answer)->ancount);
-  nscount = ntohs (((HEADER*)answer)->nscount);
-  arcount = ntohs (((HEADER*)answer)->arcount);
+  
+  qdcount = ntohs (header.qdcount);
+  ancount = ntohs (header.ancount);
+  nscount = ntohs (header.nscount);
+  arcount = ntohs (header.arcount);
 
   if (!ancount)
     return NULL; /* Got no answer. */

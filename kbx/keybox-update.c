@@ -26,9 +26,7 @@
 #include <unistd.h>
 
 #include "keybox-defs.h"
-#ifdef HAVE_DOSISH_SYSTEM
 #include "../common/sysutils.h"
-#endif
 
 #define EXTSEP_S "."
 

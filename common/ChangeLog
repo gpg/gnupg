@@ -1,3 +1,15 @@
+2010-04-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* logging.c (do_log_ignore_arg): New helper function.
+	(log_string): Use it to remove ugly volatile hack that causes gcc
+	warning.
+	(log_flush): Likewise.
+	* sysutils.c (gnupg_unsetenv) [!HAVE_W32CE_SYSTEM]: Return something.
+	(gnupg_setenv) [!HAVE_W32CE_SYSTEM]: Likewise.
+	* pka.c (get_pka_info): Solve strict aliasing rule violation.
+	* t-exechelp.c (test_close_all_fds): Use dummy variables to
+	silence gcc warning.
+
 2010-04-14  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (noinst_LIBRARIES) [W32CE]: Exclude libsimple-pwquery.

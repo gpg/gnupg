@@ -515,16 +515,23 @@ log_logv (int level, const char *fmt, va_list arg_ptr)
 }
 
 
+static void
+do_log_ignore_arg (int level, const char *str, ...)
+{
+  va_list arg_ptr;
+  va_start (arg_ptr, str);
+  do_logv (level, 1, str, arg_ptr);
+  va_end (arg_ptr);
+}
+
+
 void
 log_string (int level, const char *string)
 {
-  /* We need to provide a dummy arg_ptr.  volatile is needed to
-     suppress compiler warnings.  The static is required for gcc 4.4
-     because it seems that it detects that a volatile automatic
-     variable is not any good if not initialized.  */
-  static volatile va_list dummy_arg_ptr;
-
-  do_logv (level, 1, string, dummy_arg_ptr);
+  /* We need a dummy arg_ptr, but there is no portable way to create
+     one.  So we call the do_logv function through a variadic wrapper.
+     MB: Why not just use "%s"?  */
+  do_log_ignore_arg (level, string);
 }
 
 
@@ -604,8 +611,7 @@ log_printf (const char *fmt, ...)
 void
 log_flush (void)
 {
-  static volatile va_list dummy_arg_ptr;
-  do_logv (JNLIB_LOG_CONT, 1, NULL, dummy_arg_ptr);
+  do_log_ignore_arg (JNLIB_LOG_CONT, NULL);
 }
 
 

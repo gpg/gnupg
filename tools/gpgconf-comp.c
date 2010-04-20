@@ -2241,8 +2241,11 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
 	{
+	  long res;
+
 	  gpg_err_set_errno (0);
-	  (void) strtol (arg, &arg, 0);
+	  res = strtol (arg, &arg, 0);
+	  (void) res;
 
 	  if (errno)
 	    gc_error (1, errno, "invalid argument for option %s",
@@ -2254,8 +2257,11 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
 	{
+	  unsigned long res;
+
 	  gpg_err_set_errno (0);
-	  (void) strtoul (arg, &arg, 0);
+	  res = strtoul (arg, &arg, 0);
+	  (void) res;
 
 	  if (errno)
 	    gc_error (1, errno, "invalid argument for option %s",
