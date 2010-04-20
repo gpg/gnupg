@@ -206,7 +206,7 @@ struct revoke_info
 
 /****************
  * Note about the pkey/skey elements:  We assume that the secret keys
- * has the same elemts as the public key at the begin of the array, so
+ * has the same elements as the public key at the begin of the array, so
  * that npkey < nskey and it is possible to compare the secret and
  * public keys by comparing the first npkey elements of pkey againts skey.
  */
@@ -477,9 +477,7 @@ int signature_check2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate
 		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
 /*-- seckey-cert.c --*/
-int is_secret_key_protected( PKT_secret_key *sk );
-int check_secret_key( PKT_secret_key *sk, int retries );
-int protect_secret_key( PKT_secret_key *sk, DEK *dek );
+int is_secret_key_protected (PKT_public_key *pk);
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );

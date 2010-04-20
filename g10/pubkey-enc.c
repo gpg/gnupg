@@ -114,10 +114,10 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 		xfree(p);
 	      }
 
-	    rc = check_secret_key( sk, opt.try_all_secrets?1:-1 ); /* ask
-								      only
-								      once */
-	    if( !rc )
+	    /* rc = check_secret_key( sk, opt.try_all_secrets?1:-1 ); /\* ask */
+	    /*     						      only */
+	    /*     						      once *\/ */
+	    /* if( !rc ) */
 	      {
 		rc = get_it( k, dek, sk, keyid );
 		/* Successfully checked the secret key (either it was

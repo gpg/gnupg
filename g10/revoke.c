@@ -436,181 +436,144 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
  * Generate a revocation certificate for UNAME
  */
 int
-gen_revoke( const char *uname )
+gen_revoke (const char *uname)
 {
-    int rc = 0;
-    armor_filter_context_t *afx;
-    PACKET pkt;
-    PKT_secret_key *sk; /* used as pointer into a kbnode */
-    PKT_public_key *pk = NULL;
-    PKT_signature *sig = NULL;
-    u32 sk_keyid[2];
-    IOBUF out = NULL;
-    KBNODE keyblock = NULL, pub_keyblock = NULL;
-    KBNODE node;
-    KEYDB_HANDLE kdbhd;
-    struct revocation_reason_info *reason = NULL;
-    KEYDB_SEARCH_DESC desc;
+  int rc = 0;
+  armor_filter_context_t *afx;
+  PACKET pkt;
+  PKT_public_key *psk;
+  PKT_signature *sig = NULL;
+  u32 keyid[2];
+  iobuf_t out = NULL;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
+  KEYDB_HANDLE kdbhd;
+  struct revocation_reason_info *reason = NULL;
+  KEYDB_SEARCH_DESC desc;
 
-    if( opt.batch )
-      {
-	log_error(_("can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
-      }
-
-    afx = new_armor_context ();
-    init_packet( &pkt );
-
-    /* search the userid: 
-     * We don't want the whole getkey stuff here but the entire keyblock
-     */
-    kdbhd = keydb_new (1);
-    rc = classify_user_id (uname, &desc);
-    if (!rc)
-      rc = keydb_search (kdbhd, &desc, 1);
-    if (rc)
-      {
-	log_error (_("secret key \"%s\" not found: %s\n"),
-                   uname, g10_errstr (rc));
-	goto leave;
-      }
-
-    rc = keydb_get_keyblock (kdbhd, &keyblock );
-    if( rc ) {
-	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
-	goto leave;
+  if( opt.batch )
+    {
+      log_error(_("can't do this in batch mode\n"));
+      return G10ERR_GENERAL;
     }
 
-    /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_SECRET_KEY );
-    if( !node ) 
-	BUG ();
+  afx = new_armor_context ();
+  init_packet( &pkt );
 
-    /* fixme: should make a function out of this stuff,
-     * it's used all over the source */
-    sk = node->pkt->pkt.secret_key;
-    keyid_from_sk( sk, sk_keyid );
-    print_seckey_info (sk);
-
-    /* FIXME: We should get the public key direct from the secret one */
-
-    pub_keyblock=get_pubkeyblock(sk_keyid);
-    if(!pub_keyblock)
-      {
-	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
-	goto leave;
-      }
-
-    node=find_kbnode(pub_keyblock,PKT_PUBLIC_KEY);
-    if(!node)
-      BUG();
-
-    pk=node->pkt->pkt.public_key;
-
-    if( cmp_public_secret_key( pk, sk ) ) {
-	log_error(_("public key does not match secret key!\n") );
-	rc = G10ERR_GENERAL;
-	goto leave;
+  /* Search the userid; we don't want the whole getkey stuff here.  */
+  kdbhd = keydb_new (1);
+  rc = classify_user_id (uname, &desc);
+  if (!rc)
+    rc = keydb_search (kdbhd, &desc, 1);
+  if (rc)
+    {
+      log_error (_("secret key \"%s\" not found: %s\n"),
+                 uname, g10_errstr (rc));
+      goto leave;
     }
 
-    tty_printf("\n");
-    if( !cpr_get_answer_is_yes("gen_revoke.okay",
-		  _("Create a revocation certificate for this key? (y/N) ")) )
-      {
-	rc = 0;
-	goto leave;
-      }
+  rc = keydb_get_keyblock (kdbhd, &keyblock );
+  if( rc ) {
+    log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+    goto leave;
+  }
 
-    if(sk->version>=4 || opt.force_v4_certs) {
-      /* get the reason for the revocation */
-      reason = ask_revocation_reason( 1, 0, 1 );
-      if( !reason ) { /* user decided to cancel */
-	rc = 0;
-	goto leave;
-      }
+  /* Get the keyid from the keyblock.  */
+  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+  if (!node) 
+    BUG ();
+
+  /* fixme: should make a function out of this stuff,
+   * it's used all over the source */
+  psk = node->pkt->pkt.public_key;
+  keyid_from_pk (psk, keyid );
+  print_seckey_info (psk);
+
+#warning add code to check that the secret key is available
+
+  tty_printf("\n");
+  if (!cpr_get_answer_is_yes ("gen_revoke.okay",
+                _("Create a revocation certificate for this key? (y/N) ")))
+    {
+      rc = 0;
+      goto leave;
     }
-
-    switch( is_secret_key_protected( sk ) ) {
-      case -1:
-	log_error(_("unknown protection algorithm\n"));
-	rc = G10ERR_PUBKEY_ALGO;
-	break;
-      case -3:
-	tty_printf (_("Secret parts of primary key are not available.\n"));
-        rc = G10ERR_NO_SECKEY;
-        break;
-      case 0:
-	tty_printf(_("NOTE: This key is not protected!\n"));
-	break;
-      default:
-        rc = check_secret_key( sk, 0 );
-	break;
+  
+  if (psk->version >= 4 || opt.force_v4_certs)
+    {
+      /* Get the reason for the revocation.  */
+      reason = ask_revocation_reason (1, 0, 1);
+      if (!reason)
+        { 
+          /* user decided to cancel */
+          rc = 0;
+          goto leave;
+        }
     }
-    if( rc )
-	goto leave;
+  
+  if (!opt.armor)
+    tty_printf (_("ASCII armored output forced.\n"));
 
+  if ((rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out )))
+    goto leave;
 
-    if( !opt.armor )
-	tty_printf(_("ASCII armored output forced.\n"));
+  afx->what = 1;
+  afx->hdrlines = "Comment: A revocation certificate should follow\n";
+  push_armor_filter (afx, out);
 
-    if( (rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out )) )
-	goto leave;
-
-    afx->what = 1;
-    afx->hdrlines = "Comment: A revocation certificate should follow\n";
-    push_armor_filter (afx, out);
-
-    /* create it */
-    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
-			     opt.force_v4_certs?4:0, 0, 0,
-			     revocation_reason_build_cb, reason );
-    if( rc ) {
-	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
-	goto leave;
+  /* create it */
+  rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
+                           opt.force_v4_certs?4:0, 0, 0,
+                           revocation_reason_build_cb, reason );
+  if (rc)
+    {
+      log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
+      goto leave;
     }
-
-    if(PGP2 || PGP6 || PGP7 || PGP8)
-      {
-	/* Use a minimal pk for PGPx mode, since PGP can't import bare
-	   revocation certificates. */
-	rc=export_minimal_pk(out,pub_keyblock,sig,NULL);
-	if(rc)
-	  goto leave;
-      }
-    else
-      {
-	init_packet( &pkt );
-	pkt.pkttype = PKT_SIGNATURE;
-	pkt.pkt.signature = sig;
-
-	rc = build_packet( out, &pkt );
-	if( rc ) {
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-	  goto leave;
-	}
-      }
-
-    /* and issue a usage notice */
-    tty_printf(_("Revocation certificate created.\n\n"
+    
+  if (PGP2 || PGP6 || PGP7 || PGP8)
+    {
+      /* Use a minimal pk for PGPx mode, since PGP can't import bare
+         revocation certificates. */
+      rc = export_minimal_pk (out, keyblock, sig, NULL);
+      if(rc)
+        goto leave;
+    }
+  else
+    {
+      init_packet( &pkt );
+      pkt.pkttype = PKT_SIGNATURE;
+      pkt.pkt.signature = sig;
+        
+      rc = build_packet (out, &pkt);
+      if (rc) 
+        {
+          log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+          goto leave;
+        }
+    }
+    
+  /* and issue a usage notice */
+  tty_printf (_(
+"Revocation certificate created.\n\n"
 "Please move it to a medium which you can hide away; if Mallory gets\n"
 "access to this certificate he can use it to make your key unusable.\n"
 "It is smart to print this certificate and store it away, just in case\n"
 "your media become unreadable.  But have some caution:  The print system of\n"
 "your machine might store the data and make it available to others!\n"));
 
-  leave:
-    if( sig )
-	free_seckey_enc( sig );
-    release_kbnode( keyblock );
-    release_kbnode( pub_keyblock );
-    keydb_release (kdbhd);
-    if( rc )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
-    release_revocation_reason_info( reason );
-    release_armor_context (afx);
-    return rc;
+ leave:
+  if (sig)
+    free_seckey_enc (sig);
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+  if (rc)
+    iobuf_cancel(out);
+  else
+    iobuf_close(out);
+  release_revocation_reason_info( reason );
+  release_armor_context (afx);
+  return rc;
 }
 
 

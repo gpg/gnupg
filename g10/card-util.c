@@ -1495,8 +1495,8 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
          the serialnumber and thus it won't harm.  */
     }
 
-  okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
-                                   keyno, info.serialno);
+  /* xxx = generate_card_subkeypair (pub_keyblock, sec_keyblock, */
+  /*                                  keyno, info.serialno); */
 
  leave:
   agent_release_card_info (&info);
@@ -1612,17 +1612,18 @@ card_store_subkey (KBNODE node, int use)
 	}
       /* We better copy the key before we unprotect it.  */
       copied_sk = sk = copy_secret_key (NULL, sk);
-      rc = check_secret_key (sk, 0);
+      rc = 0/*check_secret_key (sk, 0)*/;
       if (rc)
         goto leave;
     }
 
-  rc = save_unprotected_key_to_card (sk, keyno);
-  if (rc)
-    {
-      log_error (_("error writing key to card: %s\n"), gpg_strerror (rc));
-      goto leave;
-    }
+#warning code save_unprotected_key_to_card
+  /* rc = save_unprotected_key_to_card (sk, keyno); */
+  /* if (rc) */
+  /*   { */
+  /*     log_error (_("error writing key to card: %s\n"), gpg_strerror (rc)); */
+  /*     goto leave; */
+  /*   } */
 
   /* Get back to the maybe protected original secret key.  */
   if (copied_sk)

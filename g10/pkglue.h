@@ -20,8 +20,6 @@
 #ifndef GNUPG_G10_PKGLUE_H
 #define GNUPG_G10_PKGLUE_H
 
-int pk_sign (int algo, gcry_mpi_t *data, gcry_mpi_t hash,
-             gcry_mpi_t *skey);
 int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);
 int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,

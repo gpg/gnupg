@@ -237,10 +237,10 @@ int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
 int keygen_add_notations(PKT_signature *sig,void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
-int make_backsig(PKT_signature *sig,PKT_public_key *pk,
-		 PKT_public_key *sub_pk,PKT_secret_key *sub_sk,
-                 u32 timestamp);
-int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
+gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
+                          PKT_public_key *sub_pk, PKT_public_key *sub_psk,
+                          u32 timestamp);
+gpg_error_t generate_subkeypair (kbnode_t pub_keyblock);
 #ifdef ENABLE_CARD_SUPPORT
 int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
                               int keyno, const char *serialno);
@@ -258,7 +258,7 @@ void try_make_homedir( const char *fname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 gcry_mpi_t encode_session_key( DEK *dek, unsigned nbits );
-gcry_mpi_t encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
+gcry_mpi_t encode_md_value (PKT_public_key *pk, 
                             gcry_md_hd_t md, int hash_algo );
 
 /*-- import.c --*/

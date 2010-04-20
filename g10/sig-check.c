@@ -315,7 +315,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     }
     gcry_md_final( digest );
 
-    result = encode_md_value( pk, NULL, digest, sig->digest_algo );
+    result = encode_md_value (pk, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
     ctx.sig = sig;

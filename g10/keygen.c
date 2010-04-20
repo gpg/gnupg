@@ -132,15 +132,12 @@ static int mdc_available,ks_modify;
 
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
-static int  write_keyblock( IOBUF out, KBNODE node );
-static int gen_card_key (int algo, int keyno, int is_primary,
-                         KBNODE pub_root, KBNODE sec_root,
-			 PKT_secret_key **ret_sk,
-                         u32 *timestamp,
-                         u32 expireval, struct para_data_s *para);
+static int write_keyblock (iobuf_t out, kbnode_t node);
+static int gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
+                         u32 *timestamp, u32 expireval,
+                         struct para_data_s *para);
 static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
-                                     KBNODE pub_root, KBNODE sec_root,
-                                     u32 timestamp,
+                                     kbnode_t pub_root, u32 timestamp,
                                      u32 expireval, struct para_data_s *para,
                                      const char *backup_dir);
 
@@ -227,42 +224,45 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
 
 
 int
-keygen_add_key_expire( PKT_signature *sig, void *opaque )
+keygen_add_key_expire (PKT_signature *sig, void *opaque)
 {
-    PKT_public_key *pk = opaque;
-    byte buf[8];
-    u32  u;
-
-    if( pk->expiredate ) {
-        if(pk->expiredate > pk->timestamp)
-	  u= pk->expiredate - pk->timestamp;
-	else
-	  u= 1;
-
-	buf[0] = (u >> 24) & 0xff;
-	buf[1] = (u >> 16) & 0xff;
-	buf[2] = (u >>	8) & 0xff;
-	buf[3] = u & 0xff;
-	build_sig_subpkt( sig, SIGSUBPKT_KEY_EXPIRE, buf, 4 );
+  PKT_public_key *pk = opaque;
+  byte buf[8];
+  u32  u;
+  
+  if (pk->expiredate)
+    {
+      if (pk->expiredate > pk->timestamp)
+        u = pk->expiredate - pk->timestamp;
+      else
+        u = 1;
+      
+      buf[0] = (u >> 24) & 0xff;
+      buf[1] = (u >> 16) & 0xff;
+      buf[2] = (u >>	8) & 0xff;
+      buf[3] = u & 0xff;
+      build_sig_subpkt (sig, SIGSUBPKT_KEY_EXPIRE, buf, 4);
     }
-    else
-      {
-	/* Make sure we don't leave a key expiration subpacket lying
-	   around */
-	delete_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE);
-      }
+  else
+    {
+      /* Make sure we don't leave a key expiration subpacket lying
+         around */
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE);
+    }
 
-    return 0;
+  return 0;
 }
+
 
 static int
 keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 {
-    struct opaque_data_usage_and_pk *oduap = opaque;
-
-    do_add_key_flags (sig, oduap->usage);
-    return keygen_add_key_expire (sig, oduap->pk);
+  struct opaque_data_usage_and_pk *oduap = opaque;
+  
+  do_add_key_flags (sig, oduap->usage);
+  return keygen_add_key_expire (sig, oduap->pk);
 }
+
 
 static int
 set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
@@ -697,19 +697,18 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
 /****************
  * Add preference to the self signature packet.
  * This is only called for packets with version > 3.
-
  */
 int
-keygen_add_std_prefs( PKT_signature *sig, void *opaque )
+keygen_add_std_prefs (PKT_signature *sig, void *opaque)
 {
-    PKT_public_key *pk = opaque;
-
-    do_add_key_flags (sig, pk->pubkey_usage);
-    keygen_add_key_expire( sig, opaque );
-    keygen_upd_std_prefs (sig, opaque);
-    keygen_add_keyserver_url(sig,NULL);
-
-    return 0;
+  PKT_public_key *pk = opaque;
+  
+  do_add_key_flags (sig, pk->pubkey_usage);
+  keygen_add_key_expire (sig, opaque );
+  keygen_upd_std_prefs (sig, opaque);
+  keygen_add_keyserver_url (sig,NULL);
+  
+  return 0;
 }
 
 int
@@ -778,23 +777,23 @@ keygen_add_notations(PKT_signature *sig,void *opaque)
 }
 
 int
-keygen_add_revkey(PKT_signature *sig, void *opaque)
+keygen_add_revkey (PKT_signature *sig, void *opaque)
 {
-  struct revocation_key *revkey=opaque;
+  struct revocation_key *revkey = opaque;
   byte buf[2+MAX_FINGERPRINT_LEN];
 
-  buf[0]=revkey->class;
-  buf[1]=revkey->algid;
-  memcpy(&buf[2],revkey->fpr,MAX_FINGERPRINT_LEN);
+  buf[0] = revkey->class;
+  buf[1] = revkey->algid;
+  memcpy (&buf[2], revkey->fpr, MAX_FINGERPRINT_LEN);
 
-  build_sig_subpkt(sig,SIGSUBPKT_REV_KEY,buf,2+MAX_FINGERPRINT_LEN);
+  build_sig_subpkt (sig, SIGSUBPKT_REV_KEY, buf, 2+MAX_FINGERPRINT_LEN);
 
-  /* All sigs with revocation keys set are nonrevocable */
-  sig->flags.revocable=0;
+  /* All sigs with revocation keys set are nonrevocable.  */
+  sig->flags.revocable = 0;
   buf[0] = 0;
-  build_sig_subpkt( sig, SIGSUBPKT_REVOCABLE, buf, 1 );
+  build_sig_subpkt (sig, SIGSUBPKT_REVOCABLE, buf, 1);
 
-  parse_revkeys(sig);
+  parse_revkeys (sig);
 
   return 0;
 }
@@ -803,115 +802,118 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
 
 /* Create a back-signature.  If TIMESTAMP is not NULL, use it for the
    signature creation time.  */
-int
-make_backsig (PKT_signature *sig,PKT_public_key *pk,
-              PKT_public_key *sub_pk,PKT_secret_key *sub_sk,
+gpg_error_t
+make_backsig (PKT_signature *sig, PKT_public_key *pk,
+              PKT_public_key *sub_pk, PKT_public_key *sub_psk,
               u32 timestamp)
 {
+  gpg_error_t err;
   PKT_signature *backsig;
-  int rc;
 
-  cache_public_key(sub_pk);
+  cache_public_key (sub_pk);
 
-  rc = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_sk, 0x19,
-                           0, 0, timestamp, 0, NULL, NULL);
-  if(rc)
-    log_error("make_keysig_packet failed for backsig: %s\n",g10_errstr(rc));
+  err = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_psk, 0x19,
+                            0, 0, timestamp, 0, NULL, NULL);
+  if (err)
+    log_error ("make_keysig_packet failed for backsig: %s\n", g10_errstr(err));
   else
     {
       /* Get it into a binary packed form. */
-      IOBUF backsig_out=iobuf_temp();
+      IOBUF backsig_out = iobuf_temp();
       PACKET backsig_pkt;
  
-      init_packet(&backsig_pkt);
-      backsig_pkt.pkttype=PKT_SIGNATURE;
-      backsig_pkt.pkt.signature=backsig;
-      rc=build_packet(backsig_out,&backsig_pkt);
-      free_packet(&backsig_pkt);
-      if(rc)
-	log_error("build_packet failed for backsig: %s\n",g10_errstr(rc));
+      init_packet (&backsig_pkt);
+      backsig_pkt.pkttype = PKT_SIGNATURE;
+      backsig_pkt.pkt.signature = backsig;
+      err = build_packet (backsig_out, &backsig_pkt);
+      free_packet (&backsig_pkt);
+      if (err)
+	log_error ("build_packet failed for backsig: %s\n", g10_errstr(err));
       else
 	{
-	  size_t pktlen=0;
-	  byte *buf=iobuf_get_temp_buffer(backsig_out);
+	  size_t pktlen = 0;
+	  byte *buf = iobuf_get_temp_buffer (backsig_out);
  
-	  /* Remove the packet header */
+	  /* Remove the packet header. */
 	  if(buf[0]&0x40)
 	    {
-	      if(buf[1]<192)
+	      if (buf[1] < 192)
 		{
-		  pktlen=buf[1];
-		  buf+=2;
+		  pktlen = buf[1];
+		  buf += 2; 
+		} 
+	      else if(buf[1] < 224)
+		{
+		  pktlen = (buf[1]-192)*256;
+		  pktlen += buf[2]+192;
+		  buf += 3;
 		}
-	      else if(buf[1]<224)
+	      else if (buf[1] == 255)
 		{
-		  pktlen=(buf[1]-192)*256;
-		  pktlen+=buf[2]+192;
-		  buf+=3;
-		}
-	      else if(buf[1]==255)
-		{
-		  pktlen =buf[2] << 24;
-		  pktlen|=buf[3] << 16;
-		  pktlen|=buf[4] << 8;
-		  pktlen|=buf[5];
-		  buf+=6;
+		  pktlen  = buf[2] << 24;
+		  pktlen |= buf[3] << 16;
+		  pktlen |= buf[4] << 8;
+		  pktlen |= buf[5];
+		  buf += 6;
 		}
 	      else
-		BUG();
+		BUG ();
 	    }
 	  else
 	    {
-	      int mark=1;
+	      int mark = 1;
  
-	      switch(buf[0]&3)
+	      switch (buf[0]&3)
 		{
 		case 3:
-		  BUG();
+		  BUG ();
 		  break;
  
 		case 2:
-		  pktlen =buf[mark++] << 24;
-		  pktlen|=buf[mark++] << 16;
+		  pktlen  = buf[mark++] << 24;
+		  pktlen |= buf[mark++] << 16;
  
 		case 1:
-		  pktlen|=buf[mark++] << 8;
+		  pktlen |= buf[mark++] << 8;
  
 		case 0:
-		  pktlen|=buf[mark++];
+		  pktlen |= buf[mark++];
 		}
  
-	      buf+=mark;
+	      buf += mark;
 	    }
  
 	  /* Now make the binary blob into a subpacket.  */
-	  build_sig_subpkt(sig,SIGSUBPKT_SIGNATURE,buf,pktlen);
+	  build_sig_subpkt (sig, SIGSUBPKT_SIGNATURE, buf, pktlen);
 
-	  iobuf_close(backsig_out);
+	  iobuf_close (backsig_out);
 	}
     }
- 
-  return rc;
+  
+  return err;
 }
 
 
-static int
-write_direct_sig (KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
-		  struct revocation_key *revkey, u32 timestamp)
+/* Write a direct key signature to the first key in ROOT using the key
+   PSK.  REVKEY is describes the direct key signature and TIMESTAMP is
+   the timestamp to set on the signature.  */
+static gpg_error_t
+write_direct_sig (KBNODE root, PKT_public_key *psk,
+                  struct revocation_key *revkey, u32 timestamp)
 {
+  gpg_error_t err;
   PACKET *pkt;
   PKT_signature *sig;
-  int rc=0;
   KBNODE node;
   PKT_public_key *pk;
 
-  if( opt.verbose )
-    log_info(_("writing direct signature\n"));
+  if (opt.verbose)
+    log_info (_("writing direct signature\n"));
 
   /* Get the pk packet from the pub_tree. */
-  node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
-  if( !node )
-    BUG();
+  node = find_kbnode (root, PKT_PUBLIC_KEY);
+  if (!node)
+    BUG ();
   pk = node->pkt->pkt.public_key;
 
   /* We have to cache the key, so that the verification of the
@@ -919,48 +921,54 @@ write_direct_sig (KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  rc = make_keysig_packet (&sig,pk,NULL,NULL,sk,0x1F,
-                           0, 0, timestamp, 0,
-                           keygen_add_revkey, revkey);
-  if( rc )
+  err = make_keysig_packet (&sig, pk, NULL,NULL, psk, 0x1F,
+                            0, 0, timestamp, 0,
+                            keygen_add_revkey, revkey);
+  if (err)
     {
-      log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
-      return rc;
+      log_error ("make_keysig_packet failed: %s\n", g10_errstr (err) );
+      return err;
     }
   
-  pkt = xmalloc_clear( sizeof *pkt );
+  pkt = xmalloc_clear (sizeof *pkt);
   pkt->pkttype = PKT_SIGNATURE;
   pkt->pkt.signature = sig;
-  add_kbnode( root, new_kbnode( pkt ) );
-  return rc;
+  add_kbnode (root, new_kbnode (pkt));
+  return err;
 }
 
 
-static int
-write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
-		unsigned int use, u32 timestamp )
+
+/* Write a self-signature to the first user id in ROOT using the key
+   PSK.  USE and TIMESTAMP give the extra data we need for the
+   signature.  */
+static gpg_error_t
+write_selfsigs (KBNODE root, PKT_public_key *psk,
+		unsigned int use, u32 timestamp)
 {
+  gpg_error_t err;
   PACKET *pkt;
   PKT_signature *sig;
   PKT_user_id *uid;
-  int rc=0;
   KBNODE node;
   PKT_public_key *pk;
 
-  if( opt.verbose )
-    log_info(_("writing self signature\n"));
+  if (opt.verbose)
+    log_info (_("writing self signature\n"));
 
   /* Get the uid packet from the list. */
-  node = find_kbnode( pub_root, PKT_USER_ID );
-  if( !node )
+  node = find_kbnode (root, PKT_USER_ID);
+  if (!node)
     BUG(); /* No user id packet in tree.  */
   uid = node->pkt->pkt.user_id;
 
   /* Get the pk packet from the pub_tree. */
-  node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
-  if( !node )
+  node = find_kbnode (root, PKT_PUBLIC_KEY);
+  if (!node)
     BUG();
   pk = node->pkt->pkt.public_key;
+
+  /* The usage has not yet been set - do it now. */
   pk->pubkey_usage = use;
  
   /* We have to cache the key, so that the verification of the
@@ -968,48 +976,45 @@ write_selfsigs( KBNODE sec_root, KBNODE pub_root, PKT_secret_key *sk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  rc = make_keysig_packet (&sig, pk, uid, NULL, sk, 0x13,
-                           0, 0, timestamp, 0,
-                           keygen_add_std_prefs, pk);
-  if( rc ) 
+  err = make_keysig_packet (&sig, pk, uid, NULL, psk, 0x13,
+                            0, 0, timestamp, 0,
+                            keygen_add_std_prefs, pk);
+  if (err) 
     {
-      log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
-      return rc;
+      log_error ("make_keysig_packet failed: %s\n", g10_errstr (err));
+      return err;
     }
 
-  pkt = xmalloc_clear( sizeof *pkt );
+  pkt = xmalloc_clear (sizeof *pkt);
   pkt->pkttype = PKT_SIGNATURE;
   pkt->pkt.signature = sig;
-  add_kbnode( sec_root, new_kbnode( pkt ) );
+  add_kbnode (root, new_kbnode (pkt));
 
-  pkt = xmalloc_clear( sizeof *pkt );
-  pkt->pkttype = PKT_SIGNATURE;
-  pkt->pkt.signature = copy_signature(NULL,sig);
-  add_kbnode( pub_root, new_kbnode( pkt ) );
-  return rc;
+  return err;
 }
 
 
 /* Write the key binding signature.  If TIMESTAMP is not NULL use the
-   signature creation times.  */
+   signature creation time.  PRI_PSK is the key use for signing.
+   SUB_PSK is a key used to create a back-signature; that one is only
+   used if USE has the PUBKEY_USAGE_SIG capability.  */
 static int
-write_keybinding (KBNODE root, KBNODE pub_root,
-		  PKT_secret_key *pri_sk, PKT_secret_key *sub_sk,
+write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
                   unsigned int use, u32 timestamp)
 {
+  gpg_error_t err;
   PACKET *pkt;
   PKT_signature *sig;
-  int rc=0;
   KBNODE node;
   PKT_public_key *pri_pk, *sub_pk;
   struct opaque_data_usage_and_pk oduap;
 
-  if ( opt.verbose )
+  if (opt.verbose)
     log_info(_("writing key binding signature\n"));
 
-  /* Get the pk packet from the pub_tree.  */
-  node = find_kbnode ( pub_root, PKT_PUBLIC_KEY );
-  if ( !node )
+  /* Get the primary pk packet from the tree.  */
+  node = find_kbnode (root, PKT_PUBLIC_KEY);
+  if (!node)
     BUG();
   pri_pk = node->pkt->pkt.public_key;
 
@@ -1019,9 +1024,9 @@ write_keybinding (KBNODE root, KBNODE pub_root,
  
   /* Find the last subkey. */
   sub_pk = NULL;
-  for (node=pub_root; node; node = node->next ) 
+  for (node = root; node; node = node->next ) 
     {
-      if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
         sub_pk = node->pkt->pkt.public_key;
     }
   if (!sub_pk)
@@ -1030,28 +1035,28 @@ write_keybinding (KBNODE root, KBNODE pub_root,
   /* Make the signature.  */
   oduap.usage = use;
   oduap.pk = sub_pk;
-  rc = make_keysig_packet (&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18, 
-                           0, 0, timestamp, 0,
-                           keygen_add_key_flags_and_expire, &oduap );
-  if (rc) 
+  err = make_keysig_packet (&sig, pri_pk, NULL, sub_pk, pri_psk, 0x18, 
+                            0, 0, timestamp, 0,
+                            keygen_add_key_flags_and_expire, &oduap);
+  if (err) 
     {
-      log_error ("make_keysig_packet failed: %s\n", g10_errstr(rc) );
-      return rc;
+      log_error ("make_keysig_packet failed: %s\n", g10_errstr (err));
+      return err;
     }
 
   /* Make a backsig.  */
-  if (use&PUBKEY_USAGE_SIG)
+  if (use & PUBKEY_USAGE_SIG)
     {
-      rc = make_backsig (sig, pri_pk, sub_pk, sub_sk, timestamp);
-      if (rc)
-        return rc;
+      err = make_backsig (sig, pri_pk, sub_pk, sub_psk, timestamp);
+      if (err)
+        return err;
     }
   
   pkt = xmalloc_clear ( sizeof *pkt );
   pkt->pkttype = PKT_SIGNATURE;
   pkt->pkt.signature = sig;
   add_kbnode (root, new_kbnode (pkt) );
-  return rc;
+  return err;
 }
 
 
@@ -1106,71 +1111,76 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 }
 
 
+
+/* Common code for the key generation fucntion gen_xxx.  */
 static int
-genhelp_protect (DEK *dek, STRING2KEY *s2k, PKT_secret_key *sk)
+common_gen (const char *keyparms, int algo, const char *algoelem,
+            kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey)
 {
-  int rc = 0;
-
-  if (dek)
-    {
-      sk->protect.algo = dek->algo;
-      sk->protect.s2k = *s2k;
-      rc = protect_secret_key (sk, dek);
-      if (rc)
-        log_error ("protect_secret_key failed: %s\n", gpg_strerror (rc) );
-    }
-
-  return rc;
-}
-
-static void
-genhelp_factors (gcry_sexp_t misc_key_info, KBNODE sec_root)
-{
-  (void)misc_key_info;
-  (void)sec_root;
-#if 0 /* Not used anymore */
-  size_t n;
-  char *buf;
+  int err;
+  PACKET *pkt;
+  PKT_public_key *pk;
+  gcry_sexp_t s_key;
   
-  if (misc_key_info)
+  err = agent_genkey (NULL, keyparms, &s_key);
+  if (err)
     {
-      /* DSA: don't know whether it makes sense to have the factors, so for now
-         we store them in the secret keyring (but they are not secret)
-         p = 2 * q * f1 * f2 * ... * fn
-         We store only f1 to f_n-1;  fn can be calculated because p and q
-         are known. */
-      n = gcry_sexp_sprint (misc_key_info, 0, NULL, 0);
-      buf = xmalloc (n+4);
-      strcpy (buf, "#::");
-      n = gcry_sexp_sprint (misc_key_info, 0, buf+3, n);
-      if (n)
-        {
-          n += 3;
-          add_kbnode (sec_root, make_comment_node_from_buffer (buf, n));
-        }
-      xfree (buf);
-      gcry_sexp_release (misc_key_info);
+      log_error ("agent_genkey failed: %s\n", gpg_strerror (err) );
+      return err;
     }
-#endif
+  
+  pk = xtrycalloc (1, sizeof *pk);
+  if (!pk)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_sexp_release (s_key);
+      return err;
+    }
+
+  pk->timestamp = timestamp;
+  pk->version = 4;
+  if (expireval) 
+    pk->expiredate = pk->timestamp + expireval;
+  pk->pubkey_algo = algo;
+
+  err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
+  if (err) 
+    {
+      log_error ("key_from_sexp failed: %s\n", gpg_strerror (err) );
+      gcry_sexp_release (s_key);
+      free_public_key (pk);
+      return err;
+    }
+  gcry_sexp_release (s_key);
+  
+  pkt = xtrycalloc (1, sizeof *pkt);
+  if (!pkt)
+    {
+      err = gpg_error_from_syserror ();
+      free_public_key (pk);
+      return err;
+    }
+
+  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
+  pkt->pkt.public_key = pk;
+  add_kbnode (pub_root, new_kbnode (pkt));
+
+  return 0;
 }
 
 
-/* Generate an Elgamal encryption key pair. TIMESTAMP is the creatuion
-   time to be put into the key structure.  */
+/*
+ * Generate an Elgamal key.
+ */
 static int
-gen_elg (int algo, unsigned int nbits,
-         KBNODE pub_root, KBNODE sec_root, DEK *dek,
-         STRING2KEY *s2k, PKT_secret_key **ret_sk, 
+gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
          u32 timestamp, u32 expireval, int is_subkey)
 {
-  int rc;
-  PACKET *pkt;
-  PKT_secret_key *sk;
-  PKT_public_key *pk;
-  gcry_sexp_t s_parms, s_key;
-  gcry_sexp_t misc_key_info;
+  int err;
+  char *keyparms;
+  char nbitsstr[35];
   
-  assert( is_ELGAMAL(algo) );
+  assert (is_ELGAMAL (algo));
 
   if (nbits < 512)
     {
@@ -1184,104 +1194,36 @@ gen_elg (int algo, unsigned int nbits,
       log_info (_("keysize rounded up to %u bits\n"), nbits );
     }
 
-
-  rc = gcry_sexp_build ( &s_parms, NULL,
-                         "(genkey(%s(nbits %d)))",
-                         algo == GCRY_PK_ELG_E ? "openpgp-elg" :
-                         algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
-                         (int)nbits);
-  if (rc)
-    log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
-  
-  rc = gcry_pk_genkey (&s_key, s_parms);
-  gcry_sexp_release (s_parms);
-  if (rc)
+  snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
+  keyparms = xtryasprintf ("(genkey(%s(nbits %zu:%s)))",
+                           algo == GCRY_PK_ELG_E ? "openpgp-elg" :
+                           algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
+                           strlen (nbitsstr), nbitsstr);
+  if (!keyparms)
+    err = gpg_error_from_syserror ();
+  else
     {
-      log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
-      return rc;
+      err = common_gen (keyparms, algo, "pgy", 
+                        pub_root, timestamp, expireval, is_subkey);
+      xfree (keyparms);
     }
-  
-  sk = xmalloc_clear( sizeof *sk );
-  pk = xmalloc_clear( sizeof *pk );
-  sk->timestamp = pk->timestamp = timestamp;
-  sk->version = pk->version = 4;
-  if (expireval) 
-    {
-      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
-  sk->pubkey_algo = pk->pubkey_algo = algo;
 
-  rc = key_from_sexp (pk->pkey, s_key, "public-key", "pgy");
-  if (rc) 
-    {
-      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
-      gcry_sexp_release (s_key);
-      free_secret_key (sk);
-      free_public_key (pk);
-      return rc;
-    }
-  rc = key_from_sexp (sk->skey, s_key, "private-key", "pgyx");
-  if (rc)
-    {
-      log_error("key_from_sexp failed: %s\n", gpg_strerror (rc) );
-      gcry_sexp_release (s_key);
-      free_secret_key (sk);
-      free_public_key (pk);
-      return rc;
-    }
-  misc_key_info = gcry_sexp_find_token (s_key, "misc-key-info", 0);
-  gcry_sexp_release (s_key);
-  
-  sk->is_protected = 0;
-  sk->protect.algo = 0;
-
-  sk->csum = checksum_mpi (sk->skey[3]);
-  if (ret_sk) /* Return an unprotected version of the sk.  */
-    *ret_sk = copy_secret_key ( NULL, sk );
-
-  rc = genhelp_protect (dek, s2k, sk);
-  if (rc)
-    {
-      free_public_key (pk);
-      free_secret_key (sk);
-      gcry_sexp_release (misc_key_info);
-      return rc;
-    }
-  
-  pkt = xmalloc_clear (sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
-  pkt->pkt.public_key = pk;
-  add_kbnode (pub_root, new_kbnode( pkt ));
-
-  /* Don't know whether it makes sense to have access to the factors,
-     so for now we store them in the secret keyring (but they are not
-     secret).  */
-  pkt = xmalloc_clear (sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
-  pkt->pkt.secret_key = sk;
-  add_kbnode (sec_root, new_kbnode( pkt ));
-  
-  genhelp_factors (misc_key_info, sec_root);
-  
-  return 0;
+  return err;
 }
 
 
-/****************
- * Generate a DSA key
+/*
+ * Generate an DSA key
  */
-static int
-gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-         STRING2KEY *s2k, PKT_secret_key **ret_sk, 
+static gpg_error_t
+gen_dsa (unsigned int nbits, KBNODE pub_root, 
          u32 timestamp, u32 expireval, int is_subkey)
 {
-  int rc;
-  PACKET *pkt;
-  PKT_secret_key *sk;
-  PKT_public_key *pk;
-  gcry_sexp_t s_parms, s_key;
-  gcry_sexp_t misc_key_info;
+  int err;
   unsigned int qbits;
+  char *keyparms;
+  char nbitsstr[35];
+  char qbitsstr[35];
 
   if ( nbits < 512) 
     {
@@ -1334,84 +1276,21 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     log_info (_("WARNING: some OpenPGP programs can't"
                 " handle a DSA key with this digest size\n"));
 
-  rc = gcry_sexp_build (&s_parms, NULL,
-                        "(genkey(dsa(nbits %d)(qbits %d)))",
-                        (int)nbits, (int)qbits);
-  if (rc)
-    log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
-  
-  rc = gcry_pk_genkey (&s_key, s_parms);
-  gcry_sexp_release (s_parms);
-  if (rc)
+  snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
+  snprintf (qbitsstr, sizeof qbitsstr, "%u", qbits);
+  keyparms = xtryasprintf ("(genkey(dsa(nbits %zu:%s)(qbits %zu:%s)))",
+                           strlen (nbitsstr), nbitsstr,
+                           strlen (qbitsstr), qbitsstr);
+  if (!keyparms)
+    err = gpg_error_from_syserror ();
+  else
     {
-      log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
-      return rc;
+      err = common_gen (keyparms, PUBKEY_ALGO_DSA, "pqgy", 
+                        pub_root, timestamp, expireval, is_subkey);
+      xfree (keyparms);
     }
 
-  sk = xmalloc_clear( sizeof *sk );
-  pk = xmalloc_clear( sizeof *pk );
-  sk->timestamp = pk->timestamp = timestamp;
-  sk->version = pk->version = 4;
-  if (expireval) 
-    sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-  sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
-
-  rc = key_from_sexp (pk->pkey, s_key, "public-key", "pqgy");
-  if (rc) 
-    {
-      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc));
-      gcry_sexp_release (s_key);
-      free_public_key(pk);
-      free_secret_key(sk);
-      return rc;
-    }
-  rc = key_from_sexp (sk->skey, s_key, "private-key", "pqgyx");
-  if (rc) 
-    {
-      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
-      gcry_sexp_release (s_key);
-      free_public_key(pk);
-      free_secret_key(sk);
-      return rc;
-    }
-  misc_key_info = gcry_sexp_find_token (s_key, "misc-key-info", 0);
-  gcry_sexp_release (s_key);
-  
-  sk->is_protected = 0;
-  sk->protect.algo = 0;
-
-  sk->csum = checksum_mpi ( sk->skey[4] );
-  if( ret_sk ) /* return an unprotected version of the sk */
-    *ret_sk = copy_secret_key( NULL, sk );
-
-  rc = genhelp_protect (dek, s2k, sk);
-  if (rc)
-    {
-      free_public_key (pk);
-      free_secret_key (sk);
-      gcry_sexp_release (misc_key_info);
-      return rc;
-    }
-
-  pkt = xmalloc_clear(sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
-  pkt->pkt.public_key = pk;
-  add_kbnode(pub_root, new_kbnode( pkt ));
-
-  /* Don't know whether it makes sense to have the factors, so for now
-   * we store them in the secret keyring (but they are not secret)
-   * p = 2 * q * f1 * f2 * ... * fn
-   * We store only f1 to f_n-1;  fn can be calculated because p and q
-   * are known.
-   */
-  pkt = xmalloc_clear(sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
-  pkt->pkt.secret_key = sk;
-  add_kbnode(sec_root, new_kbnode( pkt ));
-
-  genhelp_factors (misc_key_info, sec_root);
-
-  return 0;
+  return err;
 }
 
 
@@ -1419,15 +1298,12 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  * Generate an RSA key.
  */
 static int
-gen_rsa (int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-         STRING2KEY *s2k, PKT_secret_key **ret_sk,
+gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
          u32 timestamp, u32 expireval, int is_subkey)
 {
-  int rc;
-  PACKET *pkt;
-  PKT_secret_key *sk;
-  PKT_public_key *pk;
-  gcry_sexp_t s_parms, s_key;
+  int err;
+  char *keyparms;
+  char nbitsstr[35];
 
   assert (is_RSA(algo));
 
@@ -1446,79 +1322,19 @@ gen_rsa (int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
       log_info (_("keysize rounded up to %u bits\n"), nbits );
     }
 
-  rc = gcry_sexp_build (&s_parms, NULL,
-                        "(genkey(rsa(nbits %d)))",
-                        (int)nbits);
-  if (rc)
-    log_bug ("gcry_sexp_build failed: %s\n", gpg_strerror (rc));
-  
-  rc = gcry_pk_genkey (&s_key, s_parms);
-  gcry_sexp_release (s_parms);
-  if (rc)
+  snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
+  keyparms = xtryasprintf ("(genkey(rsa(nbits %zu:%s)))", 
+                           strlen (nbitsstr), nbitsstr);
+  if (!keyparms)
+    err = gpg_error_from_syserror ();
+  else
     {
-      log_error ("gcry_pk_genkey failed: %s\n", gpg_strerror (rc) );
-      return rc;
+      err = common_gen (keyparms, algo, "ne", 
+                        pub_root, timestamp, expireval, is_subkey);
+      xfree (keyparms);
     }
 
-  sk = xmalloc_clear( sizeof *sk );
-  pk = xmalloc_clear( sizeof *pk );
-  sk->timestamp = pk->timestamp = timestamp;
-  sk->version = pk->version = 4;
-  if (expireval)
-    {
-      sk->expiredate = pk->expiredate = sk->timestamp + expireval;
-    }
-  sk->pubkey_algo = pk->pubkey_algo = algo;
-
-  rc = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
-  if (rc) 
-    {
-      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc));
-      gcry_sexp_release (s_key);
-      free_public_key(pk);
-      free_secret_key(sk);
-      return rc;
-    }
-  rc = key_from_sexp (sk->skey, s_key, "private-key", "nedpqu");
-  if (rc) 
-    {
-      log_error ("key_from_sexp failed: %s\n", gpg_strerror (rc) );
-      gcry_sexp_release (s_key);
-      free_public_key(pk);
-      free_secret_key(sk);
-      return rc;
-    }
-  gcry_sexp_release (s_key);
-
-  sk->is_protected = 0;
-  sk->protect.algo = 0;
-
-  sk->csum  = checksum_mpi (sk->skey[2] );
-  sk->csum += checksum_mpi (sk->skey[3] );
-  sk->csum += checksum_mpi (sk->skey[4] );
-  sk->csum += checksum_mpi (sk->skey[5] );
-  if( ret_sk ) /* return an unprotected version of the sk */
-    *ret_sk = copy_secret_key( NULL, sk );
-
-  rc = genhelp_protect (dek, s2k, sk);
-  if (rc)
-    {
-      free_public_key (pk);
-      free_secret_key (sk);
-      return rc;
-    }
-
-  pkt = xmalloc_clear(sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
-  pkt->pkt.public_key = pk;
-  add_kbnode(pub_root, new_kbnode( pkt ));
-
-  pkt = xmalloc_clear(sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
-  pkt->pkt.secret_key = sk;
-  add_kbnode(sec_root, new_kbnode( pkt ));
-
-  return 0;
+  return err;
 }
 
 
@@ -2310,32 +2126,30 @@ do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
 /* Basic key generation.  Here we divert to the actual generation
    routines based on the requested algorithm.  */
 static int
-do_create (int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, 
+do_create (int algo, unsigned int nbits, KBNODE pub_root,
            u32 timestamp, u32 expiredate, int is_subkey )
 {
-  int rc=0;
+  gpg_error_t err;
 
-  if( !opt.batch )
-    tty_printf(_(
+  /* Fixme: The entropy collecting message should be moved to a
+     libgcrypt progress handler.  */
+  if (!opt.batch)
+    tty_printf (_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n") );
 
-  if( algo == PUBKEY_ALGO_ELGAMAL_E )
-    rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk,
-                 timestamp, expiredate, is_subkey);
-  else if( algo == PUBKEY_ALGO_DSA )
-    rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk,
-                 timestamp, expiredate, is_subkey);
-  else if( algo == PUBKEY_ALGO_RSA )
-    rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk,
-                 timestamp, expiredate, is_subkey);
+  if (algo == PUBKEY_ALGO_ELGAMAL_E)
+    err = gen_elg (algo, nbits, pub_root, timestamp, expiredate, is_subkey);
+  else if (algo == PUBKEY_ALGO_DSA)
+    err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey);
+  else if (algo == PUBKEY_ALGO_RSA)
+    err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey);
   else
     BUG();
 
-  return rc;
+  return err;
 }
 
 
@@ -2531,20 +2345,6 @@ static unsigned int
 get_parameter_uint( struct para_data_s *para, enum para_name key )
 {
     return get_parameter_u32( para, key );
-}
-
-static DEK *
-get_parameter_dek( struct para_data_s *para, enum para_name key )
-{
-    struct para_data_s *r = get_parameter( para, key );
-    return r? r->u.dek : NULL;
-}
-
-static STRING2KEY *
-get_parameter_s2k( struct para_data_s *para, enum para_name key )
-{
-    struct para_data_s *r = get_parameter( para, key );
-    return r? r->u.s2k : NULL;
 }
 
 static struct revocation_key *
@@ -3050,8 +2850,6 @@ generate_keypair (const char *fname, const char *card_serialno,
 {
   unsigned int nbits;
   char *uid = NULL;
-  DEK *dek;
-  STRING2KEY *s2k;
   int algo;
   unsigned int use;
   int both = 0;
@@ -3059,7 +2857,6 @@ generate_keypair (const char *fname, const char *card_serialno,
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
-  int canceled;
   
   memset( &outctrl, 0, sizeof( outctrl ) );
   
@@ -3217,26 +3014,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   r->next = para;
   para = r;
     
-  canceled = 0;
-  dek = card_serialno? NULL : do_ask_passphrase (&s2k, 0, &canceled);
-  if( dek )
-    {
-      r = xmalloc_clear( sizeof *r );
-      r->key = pPASSPHRASE_DEK;
-      r->u.dek = dek;
-      r->next = para;
-      para = r;
-      r = xmalloc_clear( sizeof *r );
-      r->key = pPASSPHRASE_S2K;
-      r->u.s2k = s2k;
-      r->next = para;
-      para = r;
-    }
-
-  if (canceled) 
-    log_error (_("Key generation canceled.\n"));
-  else
-    proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
+  proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
   release_parameter_list( para );
 }
 
@@ -3356,16 +3134,16 @@ static void
 do_generate_keypair (struct para_data_s *para,
 		     struct output_control_s *outctrl, int card)
 {
+  gpg_error_t err;
   KBNODE pub_root = NULL;
-  KBNODE sec_root = NULL;
-  PKT_secret_key *pri_sk = NULL, *sub_sk = NULL;
   const char *s;
+  PKT_public_key *pri_psk = NULL;
+  PKT_public_key *sub_psk = NULL;
   struct revocation_key *revkey;
-  int rc;
   int did_sub = 0;
   u32 timestamp;
 
-  if( outctrl->dryrun )
+  if (outctrl->dryrun)
     {
       log_info("dry-run mode - key generation skipped\n");
       return;
@@ -3403,51 +3181,9 @@ do_generate_keypair (struct para_data_s *para,
               push_armor_filter (outctrl->pub.afx, outctrl->pub.stream);
             }
         }
-      if (outctrl->sec.newfname)
-        {
-          mode_t oldmask;
-          
-          iobuf_close(outctrl->sec.stream);
-          outctrl->sec.stream = NULL;
-          if (outctrl->sec.fname)
-            iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
-                         0, (char*)outctrl->sec.fname);
-          xfree( outctrl->sec.fname );
-          outctrl->sec.fname =  outctrl->sec.newfname;
-          outctrl->sec.newfname = NULL;
-
-          oldmask = umask (077);
-          if (is_secured_filename (outctrl->sec.fname) )
-            {
-              outctrl->sec.stream = NULL;
-              gpg_err_set_errno (EPERM);
-            }
-          else
-            outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
-          umask (oldmask);
-          if (!outctrl->sec.stream)
-            {
-              log_error(_("can't create `%s': %s\n"), outctrl->sec.newfname,
-                        strerror(errno) );
-              return;
-            }
-          if (opt.armor)
-            {
-              outctrl->sec.afx->what = 5;
-              push_armor_filter (outctrl->sec.afx, outctrl->sec.stream);
-            }
-        }
       assert( outctrl->pub.stream );
-      assert( outctrl->sec.stream );
       if (opt.verbose)
-        {
-          log_info (_("writing public key to `%s'\n"), outctrl->pub.fname );
-          if (card)
-            log_info (_("writing secret key stub to `%s'\n"),
-                      outctrl->sec.fname);
-          else
-            log_info(_("writing secret key to `%s'\n"), outctrl->sec.fname );
-        }
+        log_info (_("writing public key to `%s'\n"), outctrl->pub.fname );
     }
 
 
@@ -3457,7 +3193,6 @@ do_generate_keypair (struct para_data_s *para,
      deleted.  The very first packet must always be a KEY packet.  */
     
   start_tree (&pub_root);
-  start_tree (&sec_root);
 
   timestamp = get_parameter_u32 (para, pKEYCREATIONDATE);
   if (!timestamp)
@@ -3473,42 +3208,31 @@ do_generate_keypair (struct para_data_s *para,
      current timestamp.  */
 
   if (!card)
-    {
-      rc = do_create (get_parameter_algo( para, pKEYTYPE, NULL ),
-                      get_parameter_uint( para, pKEYLENGTH ),
-                      pub_root, sec_root,
-                      get_parameter_dek( para, pPASSPHRASE_DEK ),
-                      get_parameter_s2k( para, pPASSPHRASE_S2K ),
-                      &pri_sk,
-                      timestamp,
-                      get_parameter_u32( para, pKEYEXPIRE ), 0 );
-    }
+    err = do_create (get_parameter_algo( para, pKEYTYPE, NULL ),
+                     get_parameter_uint( para, pKEYLENGTH ),
+                     pub_root,
+                     timestamp,
+                     get_parameter_u32( para, pKEYEXPIRE ), 0 );
   else
+    err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
+                        &timestamp,
+                        get_parameter_u32 (para, pKEYEXPIRE), para);
+
+  /* Get the pointer to the generated public key packet.  */
+  if (!err)
     {
-      rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root, NULL,
-                         &timestamp,
-                         get_parameter_u32 (para, pKEYEXPIRE), para);
-      if (!rc)
-        {
-          pri_sk = sec_root->next->pkt->pkt.secret_key;
-          assert (pri_sk);
-        }
+      pri_psk = pub_root->next->pkt->pkt.public_key;
+      assert (pri_psk);
     }
 
-  if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
-    {
-      rc = write_direct_sig (pub_root, pub_root, pri_sk, revkey, timestamp);
-      if (!rc)
-        rc = write_direct_sig (sec_root, pub_root, pri_sk, revkey, timestamp);
-    }
+  if (!err && (revkey = get_parameter_revkey (para, pREVOKER)))
+    err = write_direct_sig (pub_root, pri_psk, revkey, timestamp);
 
-  if( !rc && (s=get_parameter_value(para, pUSERID)) )
+  if (!err && (s = get_parameter_value (para, pUSERID)))
     {
       write_uid (pub_root, s );
-      write_uid (sec_root, s );
-
-      rc = write_selfsigs (sec_root, pub_root, pri_sk,
-                           get_parameter_uint (para, pKEYUSAGE), timestamp);
+      err = write_selfsigs (pub_root, pri_psk,
+                            get_parameter_uint (para, pKEYUSAGE), timestamp);
     }
 
   /* Write the auth key to the card before the encryption key.  This
@@ -3518,32 +3242,36 @@ do_generate_keypair (struct para_data_s *para,
      actually an encryption type.  In this case, the auth key is an
      RSA key so it succeeds. */
 
-  if (!rc && card && get_parameter (para, pAUTHKEYTYPE))
+  if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
-      rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root, NULL,
-                         &timestamp,
-                         get_parameter_u32 (para, pKEYEXPIRE), para);
-        
-      if (!rc)
-        rc = write_keybinding (pub_root, pub_root, pri_sk, sub_sk,
-                               PUBKEY_USAGE_AUTH, timestamp);
-      if (!rc)
-        rc = write_keybinding (sec_root, pub_root, pri_sk, sub_sk,
-                               PUBKEY_USAGE_AUTH, timestamp);
+      err = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root,
+                          &timestamp,
+                          get_parameter_u32 (para, pKEYEXPIRE), para);
+      if (!err)
+        err = write_keybinding (pub_root, pri_psk, NULL,
+                                PUBKEY_USAGE_AUTH, timestamp);
     }
 
-  if( !rc && get_parameter( para, pSUBKEYTYPE ) )
+  if (!err && get_parameter (para, pSUBKEYTYPE))
     {
+      sub_psk = NULL;
       if (!card)
         {
-          rc = do_create( get_parameter_algo( para, pSUBKEYTYPE, NULL ),
-                          get_parameter_uint( para, pSUBKEYLENGTH ),
-                          pub_root, sec_root,
-                          get_parameter_dek( para, pPASSPHRASE_DEK ),
-                          get_parameter_s2k( para, pPASSPHRASE_S2K ),
-                          &sub_sk,
-                          timestamp,
-                          get_parameter_u32( para, pSUBKEYEXPIRE ), 1 );
+          err = do_create (get_parameter_algo (para, pSUBKEYTYPE, NULL),
+                           get_parameter_uint (para, pSUBKEYLENGTH),
+                           pub_root, 
+                           timestamp,
+                           get_parameter_u32 (para, pSUBKEYEXPIRE), 1 );
+          /* Get the pointer to the generated public subkey packet.  */
+          if (!err)
+            {
+              kbnode_t node;
+              
+              for (node = pub_root; node; node = node->next)
+                if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+                  sub_psk = node->pkt->pkt.public_key;
+              assert (sub_psk);
+            }
         }
       else
         {
@@ -3552,95 +3280,60 @@ do_generate_keypair (struct para_data_s *para,
               /* A backup of the encryption key has been requested.
                  Generate the key in software and import it then to
                  the card.  Write a backup file. */
-              rc = gen_card_key_with_backup (PUBKEY_ALGO_RSA, 2, 0,
-                                             pub_root, sec_root,
-                                             timestamp,
-                                             get_parameter_u32 (para,
-                                                                pKEYEXPIRE),
-                                             para, s);
+              err = gen_card_key_with_backup (PUBKEY_ALGO_RSA, 2, 0,
+                                              pub_root,
+                                              timestamp,
+                                              get_parameter_u32 (para,
+                                                                 pKEYEXPIRE),
+                                              para, s);
             }
           else
             {
-              rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
-                                 NULL,
-                                 &timestamp,
-                                 get_parameter_u32 (para, pKEYEXPIRE), para);
+              err = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root,
+                                  &timestamp,
+                                  get_parameter_u32 (para, pKEYEXPIRE), para);
             }
         }
 
-      if( !rc )
-        rc = write_keybinding(pub_root, pub_root, pri_sk, sub_sk,
-                              get_parameter_uint (para, pSUBKEYUSAGE),
-                              timestamp);
-      if( !rc )
-        rc = write_keybinding(sec_root, pub_root, pri_sk, sub_sk,
-                              get_parameter_uint (para, pSUBKEYUSAGE),
-                              timestamp);
+      if (!err)
+        err = write_keybinding (pub_root, pri_psk, sub_psk,
+                                get_parameter_uint (para, pSUBKEYUSAGE),
+                                timestamp);
       did_sub = 1;
     }
 
-  if (!rc && outctrl->use_files)  /* Direct write to specified files.  */
+  if (!err && outctrl->use_files)  /* Direct write to specified files.  */
     {
-      rc = write_keyblock( outctrl->pub.stream, pub_root );
-      if (rc)
-        log_error ("can't write public key: %s\n", g10_errstr(rc) );
-      if (!rc) 
-        {
-          rc = write_keyblock( outctrl->sec.stream, sec_root );
-          if(rc)
-            log_error ("can't write secret key: %s\n", g10_errstr(rc) );
-        }
+      err = write_keyblock (outctrl->pub.stream, pub_root);
+      if (err)
+        log_error ("can't write public key: %s\n", g10_errstr (err));
     }
-  else if (!rc) /* Write to the standard keyrings.  */
+  else if (!err) /* Write to the standard keyrings.  */
     {
       KEYDB_HANDLE pub_hd = keydb_new (0);
-      KEYDB_HANDLE sec_hd = keydb_new (1);
 
-      rc = keydb_locate_writable (pub_hd, NULL);
-      if (rc) 
+      err = keydb_locate_writable (pub_hd, NULL);
+      if (err) 
         log_error (_("no writable public keyring found: %s\n"),
-                   g10_errstr (rc));
-
-      if (!rc) 
-        {  
-          rc = keydb_locate_writable (sec_hd, NULL);
-          if (rc) 
-            log_error (_("no writable secret keyring found: %s\n"),
-                       g10_errstr (rc));
-        }
+                   g10_errstr (err));
       
-      if (!rc && opt.verbose)
+      if (!err && opt.verbose)
         {
           log_info (_("writing public key to `%s'\n"),
                     keydb_get_resource_name (pub_hd));
-          if (card)
-            log_info (_("writing secret key stub to `%s'\n"),
-                      keydb_get_resource_name (sec_hd));
-          else
-            log_info (_("writing secret key to `%s'\n"),
-                      keydb_get_resource_name (sec_hd));
         }
       
-      if (!rc) 
+      if (!err) 
         {
-          rc = keydb_insert_keyblock (pub_hd, pub_root);
-          if (rc)
+          err = keydb_insert_keyblock (pub_hd, pub_root);
+          if (err)
             log_error (_("error writing public keyring `%s': %s\n"),
-                       keydb_get_resource_name (pub_hd), g10_errstr(rc));
+                       keydb_get_resource_name (pub_hd), g10_errstr(err));
         }
       
-      if (!rc)
-        {
-          rc = keydb_insert_keyblock (sec_hd, sec_root);
-          if (rc)
-            log_error (_("error writing secret keyring `%s': %s\n"),
-                       keydb_get_resource_name (pub_hd), g10_errstr(rc));
-        }
-
       keydb_release (pub_hd);
-      keydb_release (sec_hd);
       
-      if (!rc)
+      if (!err)
         {
           int no_enc_rsa;
           PKT_public_key *pk;
@@ -3653,8 +3346,8 @@ do_generate_keypair (struct para_data_s *para,
 
           pk = find_kbnode (pub_root, PKT_PUBLIC_KEY)->pkt->pkt.public_key;
 
-          keyid_from_pk(pk,pk->main_keyid);
-          register_trusted_keyid(pk->main_keyid);
+          keyid_from_pk (pk, pk->main_keyid);
+          register_trusted_keyid (pk->main_keyid);
 
           update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
                                   | TRUST_ULTIMATE ));
@@ -3663,7 +3356,7 @@ do_generate_keypair (struct para_data_s *para,
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              list_keyblock(pub_root,0,1,NULL);
+              list_keyblock (pub_root, 0, 1, NULL);
             }
             
           
@@ -3680,13 +3373,13 @@ do_generate_keypair (struct para_data_s *para,
         }
     }
 
-  if (rc)
+  if (err)
     {
       if (opt.batch)
-        log_error ("key generation failed: %s\n", g10_errstr(rc) );
+        log_error ("key generation failed: %s\n", g10_errstr(err) );
       else
-        tty_printf (_("Key generation failed: %s\n"), g10_errstr(rc) );
-      write_status_errcode (card? "card_key_generate":"key_generate", rc);
+        tty_printf (_("Key generation failed: %s\n"), g10_errstr(err) );
+      write_status_error (card? "card_key_generate":"key_generate", err);
       print_status_key_not_created ( get_parameter_value (para, pHANDLE) );
     }
   else
@@ -3696,99 +3389,91 @@ do_generate_keypair (struct para_data_s *para,
       print_status_key_created (did_sub? 'B':'P', pk,
                                 get_parameter_value (para, pHANDLE));
     }
-  release_kbnode( pub_root );
-  release_kbnode( sec_root );
   
-  if (pri_sk && !card)        /* The unprotected secret key unless we */
-    free_secret_key (pri_sk); /* have a shallow copy in card mode. */
-  if (sub_sk)
-    free_secret_key(sub_sk);
+  release_kbnode (pub_root);
 }
 
 
-/* Add a new subkey to an existing key.  Returns true if a new key has
+/* Add a new subkey to an existing key.  Returns 0 if a new key has
    been generated and put into the keyblocks.  */
-int
-generate_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock)
+gpg_error_t
+generate_subkeypair (KBNODE keyblock)
 {
-  int okay=0, rc=0;
-  KBNODE node;
-  PKT_secret_key *pri_sk = NULL, *sub_sk = NULL;
+  gpg_error_t err = 0;
+  kbnode_t node;
+  PKT_public_key *pri_psk = NULL;
+  PKT_public_key *sub_psk = NULL;
   int algo;
   unsigned int use;
   u32 expire;
-  unsigned nbits;
-  char *passphrase = NULL;
-  DEK *dek = NULL;
-  STRING2KEY *s2k = NULL;
+  unsigned int nbits;
   u32 cur_time;
-  int ask_pass = 0;
-  int canceled;
 
-  /* Break out the primary secret key.  */
-  node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
-  if( !node ) 
+  /* Break out the primary key.  */
+  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+  if (!node) 
     {
-      log_error ("Oops; secret key not found anymore!\n");
+      log_error ("Oops; primary key missing in keyblock!\n");
+      err = gpg_error (GPG_ERR_BUG);
       goto leave;
     }
-  
-  /* Make a copy of the sk to keep the protected one in the keyblock. */
-  pri_sk = copy_secret_key (NULL, node->pkt->pkt.secret_key);
+  pri_psk = node->pkt->pkt.public_key;
 
-  cur_time = make_timestamp();
+  cur_time = make_timestamp ();
 
-  if (pri_sk->timestamp > cur_time)
+  if (pri_psk->timestamp > cur_time)
     {
-      ulong d = pri_sk->timestamp - cur_time;
+      ulong d = pri_psk->timestamp - cur_time;
       log_info ( d==1 ? _("key has been created %lu second "
                           "in future (time warp or clock problem)\n")
                  : _("key has been created %lu seconds "
                      "in future (time warp or clock problem)\n"), d );
       if (!opt.ignore_time_conflict)
         {
-          rc = G10ERR_TIME_CONFLICT;
+          err = gpg_error (GPG_ERR_TIME_CONFLICT);
           goto leave;
         }
     }
 
-  if (pri_sk->version < 4) 
+  if (pri_psk->version < 4) 
     {
       log_info (_("NOTE: creating subkeys for v3 keys "
                   "is not OpenPGP compliant\n"));
+      err = gpg_error (GPG_ERR_CONFLICT);
       goto leave;
     }
 
-  if (pri_sk->is_protected && pri_sk->protect.s2k.mode == 1001)
-    {
-      tty_printf (_("Secret parts of primary key are not available.\n"));
-      rc = G10ERR_NO_SECKEY;
-      goto leave;
-    }
+#warning ask gpg-agent on the availibility of the secret key
+  /* if (pri_sk->is_protected && pri_sk->protect.s2k.mode == 1001) */
+  /*   { */
+  /*     tty_printf (_("Secret parts of primary key are not available.\n")); */
+  /*     err = G10ERR_NO_SECKEY; */
+  /*     goto leave; */
+  /*   } */
 
 
-  /* Unprotect to get the passphrase.  */
-  switch (is_secret_key_protected (pri_sk) )
-    {
-    case -1:
-      rc = G10ERR_PUBKEY_ALGO;
-      break;
-    case 0:
-      tty_printf (_("This key is not protected.\n"));
-      break;
-    case -2:
-      tty_printf (_("Secret parts of primary key are stored on-card.\n"));
-      ask_pass = 1;
-      break;
-    default:
-      tty_printf (_("Key is protected.\n"));
-      rc = check_secret_key ( pri_sk, 0 );
-      if (!rc)
-        passphrase = get_last_passphrase();
-      break;
-    }
-  if (rc)
-    goto leave;
+  /* /\* Unprotect to get the passphrase.  *\/ */
+  /* switch (is_secret_key_protected (pri_sk) ) */
+  /*   { */
+  /*   case -1: */
+  /*     err = G10ERR_PUBKEY_ALGO; */
+  /*     break; */
+  /*   case 0: */
+  /*     tty_printf (_("This key is not protected.\n")); */
+  /*     break; */
+  /*   case -2: */
+  /*     tty_printf (_("Secret parts of primary key are stored on-card.\n")); */
+  /*     ask_pass = 1; */
+  /*     break; */
+  /*   default: */
+  /*     tty_printf (_("Key is protected.\n")); */
+  /*     err = check_secret_key ( pri_sk, 0 ); */
+  /*     if (!err) */
+  /*       passphrase = get_last_passphrase(); */
+  /*     break; */
+  /*   } */
+  /* if (err) */
+  /*   goto leave; */
 
   algo = ask_algo (1, NULL, &use);
   assert (algo);
@@ -3796,52 +3481,31 @@ generate_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock)
   expire = ask_expire_interval (0, NULL);
   if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
                                                _("Really create? (y/N) ")))
+    {
+      err = gpg_error (GPG_ERR_CANCELED);
+      goto leave;
+    }  
+
+  err = do_create (algo, nbits, keyblock, cur_time, expire, 1);
+  if (err)
     goto leave;
-  
-  canceled = 0;
-  if (ask_pass)
-    dek = do_ask_passphrase (&s2k, 0, &canceled);
-  else if (passphrase)
-    {
-      s2k = xmalloc_secure ( sizeof *s2k );
-      s2k->mode = opt.s2k_mode;
-      s2k->hash_algo = S2K_DIGEST_ALGO;
-      set_next_passphrase ( passphrase );
-      dek = passphrase_to_dek (NULL, 0, opt.s2k_cipher_algo, s2k, 2,
-                               NULL, NULL );
-    }
-  
-  if (canceled)
-    rc = GPG_ERR_CANCELED;
-  
-  if (!rc)
-    rc = do_create (algo, nbits, pub_keyblock, sec_keyblock,
-                    dek, s2k, &sub_sk, cur_time, expire, 1 );
-  if (!rc)
-    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, 
-                          use, cur_time);
-  if (!rc)
-    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, 
-                           use, cur_time);
-  if (!rc) 
-    {
-      okay = 1;
-      write_status_text (STATUS_KEY_CREATED, "S");
-    }
+
+  /* Get the pointer to the generated public subkey packet.  */
+  for (node = keyblock; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      sub_psk = node->pkt->pkt.public_key;
+
+  /* Write the binding signature.  */
+  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time);
+  if (err)
+    goto leave;
+
+  write_status_text (STATUS_KEY_CREATED, "S");
 
  leave:
-  if (rc)
-    log_error (_("Key generation failed: %s\n"), g10_errstr(rc) );
-  xfree (passphrase);
-  xfree (dek);
-  xfree (s2k);
-  /* Release the copy of the (now unprotected) secret keys.  */
-  if (pri_sk)
-    free_secret_key (pri_sk);
-  if (sub_sk)
-    free_secret_key (sub_sk);
-  set_next_passphrase (NULL);
-  return okay;
+  if (err)
+    log_error (_("Key generation failed: %s\n"), g10_errstr (err) );
+  return err;
 }
 
 
@@ -3851,8 +3515,9 @@ int
 generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
                           int keyno, const char *serialno)
 {
-  int okay=0, rc=0;
-  KBNODE node;
+  gpg_error_t err = 0;
+  int okay = 0;
+  kbnode_t node;
   PKT_secret_key *pri_sk = NULL, *sub_sk;
   int algo;
   unsigned int use;
@@ -3888,7 +3553,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
                          "in future (time warp or clock problem)\n"), d );
 	if (!opt.ignore_time_conflict)
           {
-	    rc = G10ERR_TIME_CONFLICT;
+	    err = G10ERR_TIME_CONFLICT;
 	    goto leave;
           }
     }
@@ -3904,19 +3569,19 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
   switch( is_secret_key_protected (pri_sk) )
     {
     case -1:
-      rc = G10ERR_PUBKEY_ALGO;
+      err = G10ERR_PUBKEY_ALGO;
       break;
     case 0:
       tty_printf("This key is not protected.\n");
       break;
     default:
       tty_printf("Key is protected.\n");
-      rc = check_secret_key( pri_sk, 0 );
-      if (!rc)
+      err = check_secret_key( pri_sk, 0 );
+      if (!err)
         passphrase = get_last_passphrase();
       break;
     }
-  if (rc)
+  if (err)
     goto leave;
 
   algo = PUBKEY_ALGO_RSA;
@@ -3936,23 +3601,22 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
 
   /* Note, that depending on the backend, the card key generation may
      update CUR_TIME.  */
-  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock,
-		     &sub_sk, &cur_time, expire, para);
-  if (!rc)
-    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, 
+  err = gen_card_key (algo, keyno, 0, pub_keyblock, &cur_time, expire, para);
+  if (!err)
+    err = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk, 
+                            use, cur_time);
+  if (!err)
+    err = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, 
                            use, cur_time);
-  if (!rc)
-    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, sub_sk, 
-                           use, cur_time);
-  if (!rc)
+  if (!err)
     {
       okay = 1;
       write_status_text (STATUS_KEY_CREATED, "S");
     }
 
  leave:
-  if (rc)
-    log_error (_("Key generation failed: %s\n"), g10_errstr(rc) );
+  if (err)
+    log_error (_("Key generation failed: %s\n"), g10_errstr(err) );
   xfree (passphrase);
   /* Release the copy of the (now unprotected) secret keys. */
   if (pri_sk)
@@ -3990,8 +3654,7 @@ write_keyblock( IOBUF out, KBNODE node )
 
 /* Note that timestamp is an in/out arg. */
 static int
-gen_card_key (int algo, int keyno, int is_primary,
-              KBNODE pub_root, KBNODE sec_root, PKT_secret_key **ret_sk,
+gen_card_key (int algo, int keyno, int is_primary, KBNODE pub_root, 
               u32 *timestamp, u32 expireval, struct para_data_s *para)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -4070,7 +3733,7 @@ gen_card_key (int algo, int keyno, int is_primary,
 
   return 0;
 #else
-  return -1;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /*!ENABLE_CARD_SUPPORT*/
 }
 
@@ -4078,8 +3741,7 @@ gen_card_key (int algo, int keyno, int is_primary,
 
 static int
 gen_card_key_with_backup (int algo, int keyno, int is_primary,
-                          KBNODE pub_root, KBNODE sec_root,
-                          u32 timestamp,
+                          KBNODE pub_root, u32 timestamp,
                           u32 expireval, struct para_data_s *para,
                           const char *backup_dir)
 {
@@ -4240,7 +3902,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
   return 0;
 #else
-  return -1;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /*!ENABLE_CARD_SUPPORT*/
 }
 

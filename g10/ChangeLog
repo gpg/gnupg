@@ -1,3 +1,38 @@
+2010-04-20  Werner Koch  <wk@g10code.com>
+
+	* keylist.c (list_keyblock_colon): Print the keygrip.
+
+	* sign.c (do_sign): Call the agent to create the signature.
+	(mpi_from_sexp): New.
+	* keyid.c (keygrip_from_pk, hexkeygrip_from_pk): New.
+	* call-agent.c (agent_pksign): New.
+	* pkglue.c (pk_sign): Remove.
+
+	* keygen.c (generate_keypair): Do not ask for a passphrase.
+
+2010-04-15  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_dsa, gen_elg, gen_rsa): Remove args SEC_ROOT, DEK,
+	S2K and RET_SK.  Change to use the gpg-agent based key generation.
+	Factor common code out to ...
+	(common_gen): New.
+	(do_create): Remove args SEC_ROOT, DEK, S2K and RET_SK.
+	(do_generate_keypair, write_selfsigs, write_direct_sig)
+	(write_keybinding, make_backsig): Adjust for above changes.
+	(generate_subkeypair): Remove arg SEC_KEYBLOCK.
+	(genhelp_protect, genhelp_factors): Remove.
+	(get_parameter_dek, get_parameter_s2k): Remove.
+
+	* call-agent.c (start_agent): Add dummy arg CTRL.
+	(agent_havekey, keyinfo_status_cb, agent_get_keyinfo)
+	(agent_genkey): New.
+
+	* seckey-cert.c (check_secret_key): Remove
+	(is_secret_key_protected): Take a public key as arg.
+	(protect_secret_key): Remove.
+
+	* seskey.c (encode_md_value): Remove SK arg.
+
 2010-04-14  Werner Koch  <wk@g10code.com>
 
 	* cpr.c (myread) [W32CE]: Do not use raise.

@@ -1,6 +1,6 @@
 /* keyid.c - key ID and fingerprint handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2006 Free Software Foundation, Inc.
+ *               2004, 2006, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -826,5 +826,92 @@ serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
     sprintf (p, "%02X", fpr[i]);
   *p = 0;
   return buffer;
+}
+
+
+
+/* Return the so called KEYGRIP which is the SHA-1 hash of the public
+   key parameters expressed as an canoncial encoded S-Exp.  ARRAY must
+   be 20 bytes long.  Returns 0 on sucess or an error code.  */
+gpg_error_t
+keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_pkey;
+  
+  if (DBG_PACKET)
+    log_debug ("get_keygrip for public key\n");
+
+  switch (pk->pubkey_algo)
+    {
+    case GCRY_PK_DSA:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+                             pk->pkey[0], pk->pkey[1],
+                             pk->pkey[2], pk->pkey[3]);
+      break;
+
+    case GCRY_PK_ELG:
+    case GCRY_PK_ELG_E:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(elg(p%m)(g%m)(y%m)))",
+                             pk->pkey[0], pk->pkey[1], pk->pkey[2]);
+      break;
+
+    case GCRY_PK_RSA:
+    case GCRY_PK_RSA_S:
+    case GCRY_PK_RSA_E:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(rsa(n%m)(e%m)))",
+                             pk->pkey[0], pk->pkey[1]);
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      break;
+    }
+  
+  if (err)
+    return err;
+
+  if (!gcry_pk_get_keygrip (s_pkey, array))
+    {
+      log_error ("error computing keygrip\n");
+      err = gpg_error (GPG_ERR_GENERAL);
+    }
+  else
+    {
+      if (DBG_PACKET)
+        log_printhex ("keygrip=", array, 20);
+      /* FIXME: Save the keygrip in PK.  */
+    }
+  gcry_sexp_release (s_pkey);
+  
+  return 0;
+}
+
+
+/* Store an allocated buffer with the keygrip of PK encoded as a
+   hexstring at r_GRIP.  Returns 0 on success.  */
+gpg_error_t
+hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
+{
+  gpg_error_t err;
+  unsigned char grip[20];
+
+  *r_grip = NULL;
+  err = keygrip_from_pk (pk, grip);
+  if (!err)
+    {
+      char * buf = xtrymalloc (20*2+1);
+      if (!buf)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          bin2hex (grip, 20, buf);
+          *r_grip = buf;
+        }
+    }
+  return err;
 }
 

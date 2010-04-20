@@ -550,7 +550,7 @@ do_export_stream( IOBUF out, strlist_t users, int secret,
                       ; /* Card key stub. */
                     else 
                       {
-                        rc = check_secret_key( sk, 0 );
+                        /* rc = check_secret_key( sk, 0 ); */
                       }
                     break;
                   }

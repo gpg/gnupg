@@ -526,7 +526,7 @@ get_seckey (PKT_secret_key * sk, u32 * keyid)
     {
       /* Check the secret key (this may prompt for a passprase to
        * unlock the secret key.  */
-      rc = check_secret_key (sk, 0);
+      /* rc = check_secret_key (sk, 0); */
     }
 
   return rc;
@@ -1111,8 +1111,8 @@ get_seckey_byname2 (GETKEY_CTX * retctx,
 
   free_strlist (namelist);
 
-  if (!rc && unprotect)
-    rc = check_secret_key (sk, 0);
+  /* if (!rc && unprotect) */
+  /*   rc = check_secret_key (sk, 0); */
 
   return rc;
 }

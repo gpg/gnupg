@@ -1063,6 +1063,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   int trustletter = 0;
   int ulti_hack = 0;
   int i;
+  char *p;
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -1128,8 +1129,15 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   if (fpr)
     print_fingerprint (pk, NULL, 0);
   if (opt.with_key_data)
-    print_key_data (pk);
-  
+    {
+      if (!hexkeygrip_from_pk (pk, &p))
+        {
+          es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
+          xfree (p);
+        }
+      print_key_data (pk);
+    }
+
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
       if (node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode)
@@ -1226,7 +1234,14 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  if (fpr > 1)
 	    print_fingerprint (pk2, NULL, 0);
 	  if (opt.with_key_data)
-	    print_key_data (pk2);
+            {
+              if (!hexkeygrip_from_pk (pk2, &p))
+                {
+                  es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
+                  xfree (p);
+                }
+              print_key_data (pk2);
+            }
 	}
       else if (opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE)
 	{
@@ -1319,7 +1334,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  else if (!opt.fast_list_mode)
 	    {
 	      size_t n;
-	      char *p = get_user_id (sig->keyid, &n);
+	      p = get_user_id (sig->keyid, &n);
 	      es_write_sanitized (es_stdout, p, n, ":", NULL);
 	      xfree (p);
 	    }

@@ -1164,9 +1164,9 @@ change_passphrase (KBNODE keyblock, int *r_err)
             keyid_from_sk (sk, keyid);
             passphrase_clear_cache (keyid, NULL, 0);
 
-	    rc = check_secret_key( sk, 0 );
-	    if( !rc )
-		passphrase = get_last_passphrase();
+	    /* rc = check_secret_key( sk, 0 ); */
+	    /* if( !rc ) */
+	    /*     passphrase = get_last_passphrase(); */
 	}
 	break;
     }
@@ -1179,9 +1179,9 @@ change_passphrase (KBNODE keyblock, int *r_err)
                    && (subsk->protect.s2k.mode == 1001 
                        || subsk->protect.s2k.mode == 1002))) {
                 set_next_passphrase( passphrase );
-                rc = check_secret_key( subsk, 0 );
-                if( !rc && !passphrase )
-                    passphrase = get_last_passphrase();
+                /* rc = check_secret_key( subsk, 0 ); */
+                /* if( !rc && !passphrase ) */
+                /*     passphrase = get_last_passphrase(); */
             }
 	}
     }
@@ -1227,7 +1227,9 @@ change_passphrase (KBNODE keyblock, int *r_err)
 		if( !no_primary_secrets ) {
 		    sk->protect.algo = dek->algo;
 		    sk->protect.s2k = *s2k;
-		    rc = protect_secret_key( sk, dek );
+#warning fixme
+                    rc = 0;
+		    /* rc = protect_secret_key( sk, dek ); */
 		}
 		for(node=keyblock; !rc && node; node = node->next ) {
 		    if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
@@ -1237,7 +1239,9 @@ change_passphrase (KBNODE keyblock, int *r_err)
                                    || subsk->protect.s2k.mode == 1002))) {
                             subsk->protect.algo = dek->algo;
                             subsk->protect.s2k = *s2k;
-                            rc = protect_secret_key( subsk, dek );
+#warning fixme
+                            rc = 0;
+                            /* rc = protect_secret_key( subsk, dek ); */
                         }
 		    }
 		}
@@ -1892,12 +1896,13 @@ keyedit_menu( const char *username, strlist_t locusr,
 	    break;
 
 	  case cmdADDKEY:
-	    if( generate_subkeypair( keyblock, sec_keyblock ) ) {
+	    if (!generate_subkeypair (keyblock))
+              {
 		redisplay = 1;
 		sec_modified = modified = 1;
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
-	    }
+              }
 	    break;
 
 #ifdef ENABLE_CARD_SUPPORT
@@ -2018,8 +2023,8 @@ keyedit_menu( const char *username, strlist_t locusr,
                     if (sk->protect.s2k.mode == 1002)
                       tty_printf (_("Secret parts of key"
                                     " are stored on-card.\n"));
-                    else
-                      check_secret_key (sk, 0);
+                    /* else */
+                    /*   check_secret_key (sk, 0); */
                   }
               }
             else /* Store it.  */

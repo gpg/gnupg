@@ -228,37 +228,55 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 }
 
 
+static gcry_mpi_t
+mpi_from_sexp (gcry_sexp_t sexp, const char * item)
+{
+  gcry_sexp_t list;
+  gcry_mpi_t data;
+  
+  list = gcry_sexp_find_token (sexp, item, 0);
+  assert (list);
+  data = gcry_sexp_nth_mpi (list, 1, 0);
+  assert (data);
+  gcry_sexp_release (list);
+  return data;
+}
+
+
 static int
 do_sign (PKT_public_key *pksk, PKT_signature *sig,
-	 gcry_md_hd_t md, int digest_algo)
+	 gcry_md_hd_t md, int mdalgo)
 {
-    gcry_mpi_t frame;
-    byte *dp;
-    int rc;
+  gpg_error_t err;
+  gcry_mpi_t frame;
+  byte *dp;
 
-    if (pksk->timestamp > sig->timestamp ) {
-	ulong d = pksk->timestamp - sig->timestamp;
-	log_info( d==1 ? _("key has been created %lu second "
-			   "in future (time warp or clock problem)\n")
-		       : _("key has been created %lu seconds "
-			   "in future (time warp or clock problem)\n"), d );
-	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT;
+  if (pksk->timestamp > sig->timestamp )
+    {
+      ulong d = pksk->timestamp - sig->timestamp;
+      log_info (d==1 ? _("key has been created %lu second "
+                         "in future (time warp or clock problem)\n")
+                : _("key has been created %lu seconds "
+                    "in future (time warp or clock problem)\n"), d );
+      if (!opt.ignore_time_conflict)
+        return gpg_error (GPG_ERR_TIME_CONFLICT);
     }
 
+  
+  print_pubkey_algo_note (pksk->pubkey_algo);
 
-    print_pubkey_algo_note (pksk->pubkey_algo);
+  if (!mdalgo)
+    mdalgo = gcry_md_get_algo (md);
 
-    if( !digest_algo )
-	digest_algo = gcry_md_get_algo (md);
+  print_digest_algo_note (mdalgo);
+  dp = gcry_md_read  (md, mdalgo);
+  sig->digest_algo = mdalgo;
+  sig->digest_start[0] = dp[0];
+  sig->digest_start[1] = dp[1];
+  sig->data[0] = NULL;
+  sig->data[1] = NULL;
 
-    print_digest_algo_note( digest_algo );
-    dp = gcry_md_read ( md, digest_algo );
-    sig->digest_algo = digest_algo;
-    sig->digest_start[0] = dp[0];
-    sig->digest_start[1] = dp[1];
-
-    /* FIXME: Use agent.  */
+#warning fixme: Use the agent for the card
 /*     if (pksk->is_protected && pksk->protect.s2k.mode == 1002)  */
 /*       {  */
 /* #ifdef ENABLE_CARD_SUPPORT */
@@ -285,57 +303,89 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 /* #endif /\* ENABLE_CARD_SUPPORT *\/ */
 /*       } */
 /*     else  */
-      {
-        frame = encode_md_value (NULL, pksk, md, digest_algo );
-        if (!frame)
-          return G10ERR_GENERAL;
-        rc = pk_sign (pksk->pubkey_algo, sig->data, frame, pksk->pkey );
-        gcry_mpi_release (frame);
-      }
-
-    if (!rc && !opt.no_sig_create_check) {
-        /* Check that the signature verification worked and nothing is
-         * fooling us e.g. by a bug in the signature create
-         * code or by deliberately introduced faults. */
-        PKT_public_key *pk = xmalloc_clear (sizeof *pk);
-
-        if( get_pubkey( pk, sig->keyid ) )
-            rc = G10ERR_NO_PUBKEY;
-        else {
-	    frame = encode_md_value (pk, NULL, md, sig->digest_algo );
-            if (!frame)
-              rc = G10ERR_GENERAL;
-            else
-              rc = pk_verify (pk->pubkey_algo, frame, sig->data, pk->pkey );
-            gcry_mpi_release (frame);
+  if (1)
+    {
+      char *hexgrip;
+      
+      err = hexkeygrip_from_pk (pksk, &hexgrip);
+      if (!err)
+        {
+          char *desc;
+          gcry_sexp_t s_sigval;
+          
+          /* FIXME: desc = gpgsm_format_keydesc (cert); */
+          desc = xtrystrdup ("FIXME: Format a decription");
+          
+          err = agent_pksign (NULL/*ctrl*/, hexgrip, desc, 
+                              dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
+                              &s_sigval);
+          
+          xfree (desc);
+     
+          if (err)
+            ;
+          else if (pksk->pubkey_algo == GCRY_PK_RSA
+                   || pksk->pubkey_algo == GCRY_PK_RSA_S)
+            sig->data[0] = mpi_from_sexp (s_sigval, "s");
+          else
+            {
+              sig->data[0] = mpi_from_sexp (s_sigval, "r");
+              sig->data[1] = mpi_from_sexp (s_sigval, "s");
+            }
+      
+          gcry_sexp_release (s_sigval);
         }
-        if (rc)
-            log_error (_("checking created signature failed: %s\n"),
-                         g10_errstr (rc));
-        free_public_key (pk);
+      xfree (hexgrip);
     }
-    if( rc )
-	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
-    else {
-	if( opt.verbose ) {
-	    char *ustr = get_user_id_string_native (sig->keyid);
-	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     gcry_pk_algo_name (pksk->pubkey_algo),
-		     gcry_md_algo_name (sig->digest_algo),
-		     ustr );
-	    xfree(ustr);
+
+  /* Check that the signature verification worked and nothing is
+   * fooling us e.g. by a bug in the signature create code or by
+   * deliberately introduced faults.  */
+  if (!err && !opt.no_sig_create_check)
+    {
+      PKT_public_key *pk = xmalloc_clear (sizeof *pk);
+
+      if (get_pubkey (pk, sig->keyid ))
+        err = gpg_error (GPG_ERR_NO_PUBKEY);
+      else 
+        {
+          frame = encode_md_value (pk, md, sig->digest_algo );
+          if (!frame)
+            err = gpg_error (GPG_ERR_GENERAL);
+          else
+            err = pk_verify (pk->pubkey_algo, frame, sig->data, pk->pkey);
+          gcry_mpi_release (frame);
+        }
+      if (err)
+        log_error (_("checking created signature failed: %s\n"),
+                   g10_errstr (err));
+      free_public_key (pk);
+    }
+
+  if (err)
+    log_error (_("signing failed: %s\n"), g10_errstr (err));
+  else 
+    {
+      if (opt.verbose)
+        {
+          char *ustr = get_user_id_string_native (sig->keyid);
+          log_info (_("%s/%s signature from: \"%s\"\n"),
+                    gcry_pk_algo_name (pksk->pubkey_algo),
+                    gcry_md_algo_name (sig->digest_algo),
+                    ustr);
+          xfree (ustr);
 	}
     }
-    return rc;
+  return err;
 }
 
 
 int
-complete_sig( PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md )
+complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md)
 {
   int rc;
 
-  if (!(rc = check_secret_key (pksk, 0)))
+  /* if (!(rc = check_secret_key (pksk, 0))) */
     rc = do_sign (pksk, sig, md, 0);
   return rc;
 }

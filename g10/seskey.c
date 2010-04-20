@@ -206,19 +206,18 @@ do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
  * bits.
  */
 gcry_mpi_t
-encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
-		 gcry_md_hd_t md, int hash_algo)
+encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 {
   gcry_mpi_t frame;
 
-  assert(hash_algo);
-  assert(pk || sk);
+  assert (hash_algo);
+  assert (pk);
 
-  if((pk?pk->pubkey_algo:sk->pubkey_algo) == GCRY_PK_DSA)
+  if (pk->pubkey_algo == GCRY_PK_DSA)
     {
       /* It's a DSA signature, so find out the size of q. */
 
-      size_t qbytes = gcry_mpi_get_nbits (pk?pk->pkey[1]:sk->skey[1]);
+      size_t qbytes = gcry_mpi_get_nbits (pk->pkey[1]);
 
       /* Make sure it is a multiple of 8 bits. */
 
@@ -237,21 +236,19 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
 	 DSA. ;) */
       if (qbytes < 160)
 	{
-	  log_error (_("DSA key %s uses an unsafe (%u bit) hash\n"),
-                     pk?keystr_from_pk(pk):keystr_from_sk(sk),
-                     (unsigned int)qbytes);
+	  log_error (_("DSA key %s uses an unsafe (%zu bit) hash\n"),
+                     keystr_from_pk (pk), qbytes);
 	  return NULL;
 	}
 
-      qbytes/=8;
+      qbytes /= 8;
 
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate. */
       if (gcry_md_get_algo_dlen (hash_algo) < qbytes)
 	{
-	  log_error (_("DSA key %s requires a %u bit or larger hash\n"),
-                     pk?keystr_from_pk(pk):keystr_from_sk(sk),
-                     (unsigned int)(qbytes*8));
+	  log_error (_("DSA key %s requires a %zu bit or larger hash\n"),
+                     keystr_from_pk(pk), qbytes*8);
 	  return NULL;
 	}
 
@@ -269,12 +266,13 @@ encode_md_value (PKT_public_key *pk, PKT_secret_key *sk,
       if (rc)
         log_fatal ("can't get OID of digest algorithm %d: %s\n",
                    hash_algo, gpg_strerror (rc));
-      asn = xmalloc (asnlen);
+      asn = xtrymalloc (asnlen);
+      if (!asn)
+        return NULL;
       if ( gcry_md_algo_info (hash_algo, GCRYCTL_GET_ASNOID, asn, &asnlen) )
         BUG();
       frame = do_encode_md (md, hash_algo, gcry_md_get_algo_dlen (hash_algo),
-                            gcry_mpi_get_nbits (pk?pk->pkey[0]:sk->skey[0]),
-                            asn, asnlen);
+                            gcry_mpi_get_nbits (pk->pkey[0]), asn, asnlen);
       xfree (asn);
     }
 

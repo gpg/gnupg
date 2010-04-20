@@ -399,9 +399,9 @@ display_online_help (const char *keyword)
  * We don't use secret keys, but getkey.c links to this
  */
 int
-check_secret_key (PKT_secret_key *sk, int n)
+check_secret_key (PKT_public_key *pk, int n)
 {
-  (void)sk;
+  (void)pk;
   (void)n;
   return G10ERR_GENERAL;
 }

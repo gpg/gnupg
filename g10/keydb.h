@@ -286,6 +286,9 @@ byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
                                 PKT_secret_key *sk);
+gpg_error_t keygrip_from_pk (PKT_public_key *pk, unsigned char *array);
+gpg_error_t hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip);
+
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
