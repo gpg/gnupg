@@ -27,6 +27,7 @@
 
 #include "util.h"
 #include "i18n.h"
+#include "gettime.h"
 
 static unsigned long timewarp;
 static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
@@ -504,6 +505,23 @@ dump_isotime (const gnupg_isotime_t t)
   else
     log_printf ("%.4s-%.2s-%.2s %.2s:%.2s:%s",
                 t, t+4, t+6, t+9, t+11, t+13);
+}
+
+
+/* Copy one ISO date to another, this is inline so that we can do a
+   minimal sanity check.  A null date (empty string) is allowed.  */
+void
+gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
+{
+  if (*s)
+    {
+      if ((strlen (s) != 15 || s[8] != 'T'))
+        BUG();
+      memcpy (d, s, 15);
+      d[15] = 0;
+    }
+  else
+    *d = 0;
 }
 
 

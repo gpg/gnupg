@@ -21,7 +21,6 @@
 #define GNUPG_COMMON_UTIL_H
 
 #include <gcrypt.h> /* We need this for the memory function protos. */
-#include <time.h>   /* We need time_t. */
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
 
@@ -43,6 +42,7 @@
 #include "../common/dynload.h"
 
 #include "init.h"
+#include "gettime.h"
 
 /* Redefine asprintf by our estream version which uses our own memory
    allocator..  */
@@ -96,46 +96,6 @@ static inline gpg_error_t
 out_of_core (void)
 {
   return gpg_error_from_syserror ();
-}
-
-/* A type to hold the ISO time.  Note that this this is the same as
-   the the KSBA type ksba_isotime_t. */
-typedef char gnupg_isotime_t[16];
-
-
-/*-- gettime.c --*/
-time_t gnupg_get_time (void);
-void   gnupg_get_isotime (gnupg_isotime_t timebuf);
-void   gnupg_set_time (time_t newtime, int freeze);
-int    gnupg_faked_time_p (void);
-u32    make_timestamp (void);
-u32    scan_isodatestr (const char *string);
-time_t isotime2epoch (const char *string);
-void   epoch2isotime (gnupg_isotime_t timebuf, time_t atime);
-u32    add_days_to_timestamp (u32 stamp, u16 days);
-const char *strtimevalue (u32 stamp);
-const char *strtimestamp (u32 stamp); /* GMT */
-const char *isotimestamp (u32 stamp); /* GMT */
-const char *asctimestamp (u32 stamp); /* localized */
-gpg_error_t add_seconds_to_isotime (gnupg_isotime_t atime, int nseconds);
-gpg_error_t add_days_to_isotime (gnupg_isotime_t atime, int ndays);
-gpg_error_t check_isotime (const gnupg_isotime_t atime);
-void dump_isotime (const gnupg_isotime_t atime);
-
-/* Copy one ISO date to another, this is inline so that we can do a
-   minimal sanity check.  A null date (empty string) is allowed.  */
-static inline void
-gnupg_copy_time (gnupg_isotime_t d, const gnupg_isotime_t s)
-{
-  if (*s)
-    {
-      if ((strlen (s) != 15 || s[8] != 'T'))
-        BUG();
-      memcpy (d, s, 15);
-      d[15] = 0;
-    }
-  else
-    *d = 0;
 }
 
 
