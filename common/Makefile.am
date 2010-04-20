@@ -68,7 +68,7 @@ common_sources = \
 	sexputil.c \
 	sysutils.c sysutils.h \
 	homedir.c \
-	gettime.c \
+	gettime.c gettime.h \
 	yesno.c \
 	b64enc.c b64dec.c \
 	convert.c \

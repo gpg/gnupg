@@ -292,7 +292,7 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
 }
 
 
-/* Return the so parameters of a public RSA key expressed as an
+/* Return the parameters of a public RSA key expressed as an
    canonical encoded S-expression.  */
 gpg_error_t
 get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
