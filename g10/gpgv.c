@@ -358,7 +358,7 @@ keyserver_import_ldap (const char *name)
 /* Stub:
  * No encryption here but mainproc links to these functions.
  */
-int
+gpg_error_t
 get_session_key (PKT_pubkey_enc *k, DEK *dek)
 {
   (void)k;
@@ -367,7 +367,7 @@ get_session_key (PKT_pubkey_enc *k, DEK *dek)
 }
 
 /* Stub: */
-int
+gpg_error_t
 get_override_session_key (DEK *dek, const char *string)
 {
   (void)dek;

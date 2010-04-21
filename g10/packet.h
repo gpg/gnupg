@@ -480,8 +480,8 @@ int signature_check2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate
 int is_secret_key_protected (PKT_public_key *pk);
 
 /*-- pubkey-enc.c --*/
-int get_session_key( PKT_pubkey_enc *k, DEK *dek );
-int get_override_session_key( DEK *dek, const char *string );
+gpg_error_t get_session_key (PKT_pubkey_enc *k, DEK *dek);
+gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/
 int handle_compressed( void *ctx, PKT_compressed *cd,
