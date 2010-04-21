@@ -1294,23 +1294,25 @@ agent_get_s2k_count (unsigned long *r_count)
 
 
 
-/* Ask the agent whether a secret key with the given keygrip is
-   known.  */
+/* Ask the agent whether a secret key for the given public key is
+   available.  Returns 0 if available.  */
 gpg_error_t
-agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
+agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
+  char *hexgrip;
 
   err = start_agent (ctrl, 0);
   if (err)
     return err;
 
-  if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return gpg_error (GPG_ERR_INV_VALUE);
+  err = hexkeygrip_from_pk (pk, &hexgrip);
+  if (err)
+    return err;
 
-  snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, sizeof line, "HAVEKEY %s", hexgrip);
+  xfree (hexgrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return err;

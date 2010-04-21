@@ -219,7 +219,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 
     afx = new_armor_context ();
 
-    kdbhd = keydb_new (0);
+    kdbhd = keydb_new ();
     rc = classify_user_id (uname, &desc);
     if (!rc)
       rc = keydb_search (kdbhd, &desc, 1);
@@ -461,7 +461,8 @@ gen_revoke (const char *uname)
   init_packet( &pkt );
 
   /* Search the userid; we don't want the whole getkey stuff here.  */
-  kdbhd = keydb_new (1);
+  log_debug ("FIXME:  This needs to be adjusted for public key based lookups\n");
+  kdbhd = keydb_new ();
   rc = classify_user_id (uname, &desc);
   if (!rc)
     rc = keydb_search (kdbhd, &desc, 1);

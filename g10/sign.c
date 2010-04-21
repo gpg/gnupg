@@ -1546,6 +1546,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 /****************
  * Create a new signature packet based on an existing one.
  * Only user ID signatures are supported for now.
+ * PK is the public key to work on.
+ * PKSK is the key used to make the signature.
+ *
  * TODO: Merge this with make_keysig_packet.
  */
 int

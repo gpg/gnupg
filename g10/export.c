@@ -306,7 +306,7 @@ do_export_stream( IOBUF out, strlist_t users, int secret,
 
     *any = 0;
     init_packet( &pkt );
-    kdbhd = keydb_new (secret);
+    kdbhd = keydb_new ();
 
     if (!users) {
         ndesc = 1;

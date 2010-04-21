@@ -800,7 +800,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	stats->skipped_new_keys++;
       }
     else if( rc ) { /* insert this key */
-        KEYDB_HANDLE hd = keydb_new (0);
+        KEYDB_HANDLE hd = keydb_new ();
 
         rc = keydb_locate_writable (hd, NULL);
 	if (rc) {
@@ -861,7 +861,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	  }
 
 	/* now read the original keyblock */
-        hd = keydb_new (0);
+        hd = keydb_new ();
         {
             byte afp[MAX_FINGERPRINT_LEN];
             size_t an;
@@ -1012,17 +1012,17 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
        need to check if a designated revocation is present or if the
        prefs are not rational so we can warn the user. */
 
-    if(mod_key)
+    if (mod_key)
       {
-	revocation_present(keyblock_orig);
-	if(!from_sk && seckey_available(keyid)==0)
-	  check_prefs(keyblock_orig);
+	revocation_present (keyblock_orig);
+	if (!from_sk && have_secret_key_with_kid (keyid))
+	  check_prefs (keyblock_orig);
       }
-    else if(new_key)
+    else if (new_key)
       {
-	revocation_present(keyblock);
-	if(!from_sk && seckey_available(keyid)==0)
-	  check_prefs(keyblock);
+	revocation_present (keyblock);
+	if (!from_sk && have_secret_key_with_kid (keyid))
+	  check_prefs (keyblock);
       }
 
     release_kbnode( keyblock_orig );
@@ -1160,11 +1160,16 @@ import_secret_one( const char *fname, KBNODE keyblock,
     clear_kbnode_flags( keyblock );
 
     /* do we have this key already in one of our secrings ? */
-    rc = seckey_available( keyid );
+    rc = -1 /* fixme seckey_available( keyid ) is not anymore
+               available and has been replaced by
+               have_secret_key_with_kid.  We need to rework the entire
+               secret key import code.  The solution I am currently
+               thinking about is to move that code into a helper
+               program.  */;
     if( rc == G10ERR_NO_SECKEY && !(opt.import_options&IMPORT_MERGE_ONLY) )
       {
 	/* simply insert this key */
-        KEYDB_HANDLE hd = keydb_new (1);
+        KEYDB_HANDLE hd = keydb_new (); /* FIXME*/
 
 	/* get default resource */
         rc = keydb_locate_writable (hd, NULL);
@@ -1265,7 +1270,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
       }
 
     /* read the original keyblock */
-    hd = keydb_new (0);
+    hd = keydb_new ();
     {
         byte afp[MAX_FINGERPRINT_LEN];
         size_t an;
@@ -1594,7 +1599,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&
 		 !(options&IMPORT_LOCAL_SIGS) &&
-		 seckey_available( node->pkt->pkt.signature->keyid ) )
+		 !have_secret_key_with_kid (node->pkt->pkt.signature->keyid))
 	  {
 	    /* here we violate the rfc a bit by still allowing
 	     * to import non-exportable signature when we have the
@@ -2395,8 +2400,9 @@ auto_create_card_key_stub ( const char *serialnostr,
     ;
   else
     return G10ERR_GENERAL;
- 
-  hd = keydb_new (1);
+
+  log_debug ("FIXME: Do we need the stub at all?\n");
+  hd = keydb_new (); /* FIXME. */
 
   /* Now check whether there is a secret keyring.  */
   {

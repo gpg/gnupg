@@ -3310,7 +3310,7 @@ do_generate_keypair (struct para_data_s *para,
     }
   else if (!err) /* Write to the standard keyrings.  */
     {
-      KEYDB_HANDLE pub_hd = keydb_new (0);
+      KEYDB_HANDLE pub_hd = keydb_new ();
 
       err = keydb_locate_writable (pub_hd, NULL);
       if (err) 

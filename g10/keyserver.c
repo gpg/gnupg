@@ -1719,7 +1719,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   *klist=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
-  kdbhd=keydb_new(0);
+  kdbhd=keydb_new ();
 
   if(!users)
     {

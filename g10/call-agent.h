@@ -140,8 +140,9 @@ gpg_error_t gpg_agent_get_confirmation (const char *desc);
 /* Return the S2K iteration count as computed by gpg-agent.  */
 gpg_error_t agent_get_s2k_count (unsigned long *r_count);
 
-/* Check whether a secret key with HEXKEYGRIP is available.  */
-gpg_error_t agent_havekey (ctrl_t ctrl, const char *hexkeygrip);
+/* Check whether a secret key for public key PK is available.  Returns
+   0 if the secret key is available. */
+gpg_error_t agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk);
 
 /* Return infos about the secret key with HEXKEYGRIP.  */
 gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
@@ -151,8 +152,8 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
 gpg_error_t agent_genkey (ctrl_t ctrl, const char *keyparms,
                           gcry_sexp_t *r_pubkey);
 
-/* Create a sigtnature.  */
-gpg_error_t agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
+/* Create a signature.  */
+gpg_error_t agent_pksign (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                           unsigned char *digest, size_t digestlen,
                           int digestalgo,
                           gcry_sexp_t *r_sigval);

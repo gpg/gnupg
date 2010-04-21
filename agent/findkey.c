@@ -1,6 +1,6 @@
 /* findkey.c - Locate the secret key
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2007  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -626,50 +626,32 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
 }
 
 
-
-/* Return the public key for the keygrip GRIP.  The result is stored
-   at RESULT.  This function extracts the public key from the private
-   key database.  On failure an error code is returned and NULL stored
-   at RESULT. */
-gpg_error_t
-agent_public_key_from_file (ctrl_t ctrl, 
-                            const unsigned char *grip,
-                            gcry_sexp_t *result)
+/* Return the string name from the S-expression S_KEY as well as a
+   string describing the names of the parameters.  ALGONAMESIZE and
+   ELEMSSIZE give the allocated size of the provided buffers.  The
+   buffers may be NULL if not required.  If R_LIST is not NULL the top
+   level list will be stored tehre; the caller needs to release it in
+   this case.  */
+static gpg_error_t
+key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
+                     char *r_algoname, size_t algonamesize,
+                     char *r_elems, size_t elemssize)
 {
-  int i, idx, rc;
-  gcry_sexp_t s_skey;
-  const char *algoname;
-  gcry_sexp_t uri_sexp, comment_sexp;
-  const char *uri, *comment;
-  size_t uri_length, comment_length;
-  char *format, *p;
-  void *args[4+2+2+1]; /* Size is max. # of elements + 2 for uri + 2
-                           for comment + end-of-list.  */
-  int argidx;
   gcry_sexp_t list, l2;
-  const char *name;
-  const char *s;
+  const char *name, *algoname, *elems;
   size_t n;
-  const char *elems;
-  gcry_mpi_t *array;
 
-  (void)ctrl;
+  if (r_list)
+    *r_list = NULL;
 
-  *result = NULL;
-
-  rc = read_key_file (grip, &s_skey);
-  if (rc)
-    return rc;
-
-  list = gcry_sexp_find_token (s_skey, "shadowed-private-key", 0 );
+  list = gcry_sexp_find_token (s_key, "shadowed-private-key", 0 );
   if (!list)
-    list = gcry_sexp_find_token (s_skey, "protected-private-key", 0 );
+    list = gcry_sexp_find_token (s_key, "protected-private-key", 0 );
   if (!list)
-    list = gcry_sexp_find_token (s_skey, "private-key", 0 );
+    list = gcry_sexp_find_token (s_key, "private-key", 0 );
   if (!list)
     {
       log_error ("invalid private key format\n");
-      gcry_sexp_release (s_skey);
       return gpg_error (GPG_ERR_BAD_SECKEY);
     }
 
@@ -696,8 +678,88 @@ agent_public_key_from_file (ctrl_t ctrl,
     {
       log_error ("unknown private key algorithm\n");
       gcry_sexp_release (list);
-      gcry_sexp_release (s_skey);
       return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
+  if (r_algoname)
+    {
+      if (strlen (algoname) >= algonamesize)
+        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
+      strcpy (r_algoname, algoname);
+    } 
+  if (r_elems)
+    {
+      if (strlen (elems) >= elemssize)
+        return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
+      strcpy (r_elems, elems);
+    }
+
+  if (r_list)
+    *r_list = list;
+  else
+    gcry_sexp_release (list);
+      
+  return 0;
+}
+
+
+/* Return true if S_KEY is a DSA style key.  */
+int 
+agent_is_dsa_key (gcry_sexp_t s_key)
+{
+  char algoname[6];
+
+  if (!s_key)
+    return 0;
+
+  if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
+    return 0; /* Error - assume it is not an DSA key.  */
+
+  return (!strcmp (algoname, "dsa") || !strcmp (algoname, "ecdsa"));
+}
+
+
+
+/* Return the public key for the keygrip GRIP.  The result is stored
+   at RESULT.  This function extracts the public key from the private
+   key database.  On failure an error code is returned and NULL stored
+   at RESULT. */
+gpg_error_t
+agent_public_key_from_file (ctrl_t ctrl, 
+                            const unsigned char *grip,
+                            gcry_sexp_t *result)
+{
+  gpg_error_t err;
+  int i, idx;
+  gcry_sexp_t s_skey;
+  char algoname[6];
+  char elems[6];
+  gcry_sexp_t uri_sexp, comment_sexp;
+  const char *uri, *comment;
+  size_t uri_length, comment_length;
+  char *format, *p;
+  void *args[4+2+2+1]; /* Size is max. # of elements + 2 for uri + 2
+                           for comment + end-of-list.  */
+  int argidx;
+  gcry_sexp_t list, l2;
+  const char *s;
+  gcry_mpi_t *array;
+
+  (void)ctrl;
+
+  *result = NULL;
+
+  err = read_key_file (grip, &s_skey);
+  if (err)
+    return err;
+
+  err = key_parms_from_sexp (s_skey, &list, 
+                            algoname, sizeof algoname,
+                            elems, sizeof elems);
+  if (err)
+    {
+      gcry_sexp_release (s_skey);
+      return err;
     }
 
   /* Allocate an array for the parameters and copy them out of the
@@ -705,10 +767,10 @@ agent_public_key_from_file (ctrl_t ctrl,
   array = xtrycalloc (strlen(elems) + 1, sizeof *array);
   if (!array)
     {
-      rc = gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
       gcry_sexp_release (list);
       gcry_sexp_release (s_skey);
-      return rc;
+      return err;
     }
 
   for (idx=0, s=elems; *s; s++, idx++ ) 
@@ -757,8 +819,8 @@ agent_public_key_from_file (ctrl_t ctrl,
 
 
   /* FIXME: The following thing is pretty ugly code; we should
-     investigate how to make it cleaner. Probably code to handle
-     canonical S-expressions in a memory buffer is better suioted for
+     investigate how to make it cleaner.  Probably code to handle
+     canonical S-expressions in a memory buffer is better suited for
      such a task.  After all that is what we do in protect.c.  Neeed
      to find common patterns and write a straightformward API to use
      them.  */
@@ -767,13 +829,13 @@ agent_public_key_from_file (ctrl_t ctrl,
   format = xtrymalloc (15+7*strlen (elems)+10+15+1+1);
   if (!format)
     {
-      rc = gpg_error_from_syserror ();
+      err = gpg_error_from_syserror ();
       for (i=0; array[i]; i++)
         gcry_mpi_release (array[i]);
       xfree (array);
       gcry_sexp_release (uri_sexp);
       gcry_sexp_release (comment_sexp);
-      return rc;
+      return err;
     }
 
   argidx = 0;
@@ -806,7 +868,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   assert (argidx < DIM (args));
   args[argidx] = NULL;
     
-  rc = gcry_sexp_build_array (&list, NULL, format, args);
+  err = gcry_sexp_build_array (&list, NULL, format, args);
   xfree (format);
   for (i=0; array[i]; i++)
     gcry_mpi_release (array[i]);
@@ -814,9 +876,9 @@ agent_public_key_from_file (ctrl_t ctrl,
   gcry_sexp_release (uri_sexp);
   gcry_sexp_release (comment_sexp);
 
-  if (!rc)
+  if (!err)
     *result = list;
-  return rc;
+  return err;
 }
 
 

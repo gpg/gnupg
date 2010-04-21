@@ -420,7 +420,7 @@ list_all (int secret)
 
   memset (&stats, 0, sizeof (stats));
 
-  hd = keydb_new (0);
+  hd = keydb_new ();
   if (!hd)
     rc = G10ERR_GENERAL;
   else
@@ -441,7 +441,7 @@ list_all (int secret)
 	  log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
 	  goto leave;
 	}
-      if (secret && have_secret_key (keyblock))
+      if (secret && !have_any_secret_key (NULL, keyblock))
         ; /* Secret key listing requested but this isn't one.  */
       else
         {

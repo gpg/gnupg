@@ -589,7 +589,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 
 
 static const char hlp_sethash[] =
-  "SETHASH --hash=<name>|<algonumber> <hexstring>\n"
+  "SETHASH (--hash=<name>)|(<algonumber>) <hexstring>\n"
   "\n"
   "The client can use this command to tell the server about the data\n"
   "(which usually is a hash) to be signed.";
@@ -642,6 +642,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
         return set_error (GPG_ERR_UNSUPPORTED_ALGORITHM, NULL);
     }
   ctrl->digest.algo = algo;
+  ctrl->digest.raw_value = 0;
 
   /* Parse the hash value. */
   n = 0;
@@ -848,7 +849,7 @@ static const char hlp_keyinfo[] =
   "\n"
   "TYPE is describes the type of the key:\n"
   "    'D' - Regular key stored on disk,\n"
-  "    'T' - Key is stored on a smartcard (token).\n"
+  "    'T' - Key is stored on a smartcard (token),\n"
   "    '-' - Unknown type.\n"
   "\n"
   "SERIALNO is an ASCII string with the serial number of the\n"

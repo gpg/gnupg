@@ -533,3 +533,10 @@ remove_lockfiles (void)
 {
 }
 
+gpg_error_t
+agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
+{
+  (void)ctrl;
+  (void)pk;
+  return gpg_error (GPG_ERR_NO_SECKEY);
+}

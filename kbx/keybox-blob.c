@@ -127,6 +127,8 @@ X.509 specific are noted like [X.509: xxx]
 #endif
 
 
+#include "../common/gettime.h"
+
 
 /* special values of the signature status */
 #define SF_NONE(a)  ( !(a) )
@@ -305,20 +307,6 @@ add_fixup (KEYBOXBLOB blob, u32 off, u32 val)
       fl->next = blob->fixups;
       blob->fixups = fl;
     }
-}
-
-
-/*
- Some wrappers
-*/
-
-static u32
-make_timestamp (void)
-{
-#ifdef __GNUC__
-#warning using time and not gnupg_get_time
-#endif
-  return time(NULL);
 }
 
 

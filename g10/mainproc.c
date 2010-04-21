@@ -395,7 +395,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
          experience if wildcard keyids are used.  */
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
                           || opt.try_all_secrets
-			  || !seckey_available( enc->keyid )) ) {
+			  || have_secret_key_with_kid (enc->keyid)) ) {
 	    if( opt.list_only )
 		result = -1;
 	    else {

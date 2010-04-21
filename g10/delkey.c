@@ -52,7 +52,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
     int rc = 0;
     KBNODE keyblock = NULL;
     KBNODE node;
-    KEYDB_HANDLE hd = keydb_new (secret);
+    KEYDB_HANDLE hd = keydb_new ();
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     u32 keyid[2];
@@ -104,15 +104,12 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 
 	if(!force)
 	  {
-	    rc = seckey_available( keyid );
-	    if( !rc )
+	    if (have_secret_key_with_kid (keyid))
 	      {
 		*r_sec_avail = 1;
 		rc = -1;
 		goto leave;
 	      }
-	    else if( rc != G10ERR_NO_SECKEY )
-	      log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
 	    else
 	      rc = 0;
 	  }

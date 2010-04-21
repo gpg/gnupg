@@ -9,6 +9,7 @@ agent/preset-passphrase.c
 agent/protect-tool.c
 agent/trustlist.c
 agent/findkey.c
+agent/pksign.c
 
 common/exechelp-posix.c
 common/exechelp-w32.c

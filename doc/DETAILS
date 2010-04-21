@@ -34,7 +34,7 @@ record; gpg2 does this by default and the option is a dummy.
             rev = revocation signature
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
-            grp = reserved for gpgsm
+            grp = keygrip
             rvk = revocation key
             tru = trust database information
             spk = signature subpacket

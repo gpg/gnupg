@@ -1,3 +1,37 @@
+2010-04-21  Werner Koch  <wk@g10code.com>
+
+	* pkclist.c (default_recipient): Change to use public keys.
+
+	* keydb.c (keydb_new): Remove arg SECRET.  Change all callers.
+
+	* getkey.c (get_seckey): Change to take a public key.
+	(have_secret_key): Rename to have_any_secret_key and make use of
+	the agent.
+	(key_byname): Rmemove unused arg SK.
+	(get_seckey_byname2): Remove and move code to
+	(get_seckey_byname): .. here.  Remove INLOCK arg.
+	(get_seckey_bynames): Remove.
+	(get_seckey_next): Remove.
+	(get_seckey_end): Remove.  Use get_pubkey_end instead.
+	(get_seckey_byfprint, get_seckeyblock_byfprint): Change to use
+	public keys.
+	(seckey_available): Rename to ..
+	(have_secret_key_with_kid): .. this and change to employ the
+	agent.  Change all callers.
+	(sk_from_block): Remove.
+
+	* call-agent.c (agent_probe_secret_key): New.
+	(agent_havekey): Remove.
+	* gpgv.c (agent_probe_secret_key): New.
+
+	* keyedit.c (keyedit_menu)
+	(sign_uids, menu_adduid, menu_deluid, menu_delkey)
+	(menu_addrevoker, menu_expire, menu_backsign)
+	(menu_set_primary_uid, menu_set_preferences)
+	(menu_set_keyserver_url, menu_set_notation, menu_revsig)
+	(menu_revuid, menu_revkey, menu_revsubkey): Remove all code to
+	manage the secret keyring.
+
 2010-04-20  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (list_keyblock_colon): Print the keygrip.
@@ -6,6 +40,7 @@
 	(mpi_from_sexp): New.
 	* keyid.c (keygrip_from_pk, hexkeygrip_from_pk): New.
 	* call-agent.c (agent_pksign): New.
+
 	* pkglue.c (pk_sign): Remove.
 
 	* keygen.c (generate_keypair): Do not ask for a passphrase.

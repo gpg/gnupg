@@ -2283,7 +2283,7 @@ validate_keys (int interactive)
   used = new_key_hash_table ();
   full_trust = new_key_hash_table ();
 
-  kdb = keydb_new (0);
+  kdb = keydb_new ();
   reset_trust_records();
 
   /* Fixme: Instead of always building a UTK list, we could just build it

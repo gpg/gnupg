@@ -348,10 +348,11 @@ keydb_add_resource (const char *url, int flags, int secret)
 
 
 KEYDB_HANDLE
-keydb_new (int secret)
+keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
+  int secret = 0; /* FIXME: Remove the secret stuff all together.  */
   
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;

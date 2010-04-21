@@ -35,6 +35,7 @@
 #include "trustdb.h"
 #include "i18n.h"
 #include "keyserver-internal.h"
+#include "call-agent.h"
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
@@ -325,18 +326,6 @@ pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock)
   copy_public_key (pk, a->pkt->pkt.public_key);
 }
 
-static void
-sk_from_block (GETKEY_CTX ctx, PKT_secret_key * sk, KBNODE keyblock)
-{
-  KBNODE a = ctx->found_key ? ctx->found_key : keyblock;
-
-  assert (a->pkt->pkttype == PKT_SECRET_KEY
-	  || a->pkt->pkttype == PKT_SECRET_SUBKEY);
-
-  copy_secret_key (sk, a->pkt->pkt.secret_key);
-}
-
-
 /* Get a public key and store it into the allocated pk can be called
  * with PK set to NULL to just read it into some internal
  * structures.  */
@@ -378,7 +367,7 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     memset (&ctx, 0, sizeof ctx);
     ctx.exact = 1; /* Use the key ID exactly as given.  */
     ctx.not_allocated = 1;
-    ctx.kr_handle = keydb_new (0);
+    ctx.kr_handle = keydb_new ();
     ctx.nitems = 1;
     ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
     ctx.items[0].u.kid[0] = keyid[0];
@@ -437,7 +426,7 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
   }
 #endif
 
-  hd = keydb_new (0);
+  hd = keydb_new ();
   rc = keydb_search_kid (hd, keyid);
   if (rc == -1)
     {
@@ -480,7 +469,7 @@ get_pubkeyblock (u32 * keyid)
   memset (&ctx, 0, sizeof ctx);
   /* No need to set exact here because we want the entire block.  */
   ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new (0);
+  ctx.kr_handle = keydb_new ();
   ctx.nitems = 1;
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
@@ -494,65 +483,41 @@ get_pubkeyblock (u32 * keyid)
 
 
 
-/****************
- * Get a secret key and store it into sk
+/*
+ * Get a public key and store it into PK.  This functions check that a
+ * corresponding secret key is available.  With no secret key it does
+ * not succeeed.
  */
-int
-get_seckey (PKT_secret_key * sk, u32 * keyid)
+gpg_error_t
+get_seckey (PKT_public_key *pk, u32 *keyid)
 {
-  int rc;
+  gpg_error_t err;
   struct getkey_ctx_s ctx;
-  KBNODE kb = NULL;
+  kbnode_t keyblock = NULL;
 
   memset (&ctx, 0, sizeof ctx);
   ctx.exact = 1; /* Use the key ID exactly as given.  */
   ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new (1);
+  ctx.kr_handle = keydb_new ();
   ctx.nitems = 1;
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
-  ctx.req_algo = sk->req_algo;
-  ctx.req_usage = sk->req_usage;
-  rc = lookup (&ctx, &kb, 1);
-  if (!rc)
+  ctx.req_algo = pk->req_algo;
+  ctx.req_usage = pk->req_usage;
+  err = lookup (&ctx, &keyblock, 1);
+  if (!err)
     {
-      sk_from_block (&ctx, sk, kb);
+      pk_from_block (&ctx, pk, keyblock);
     }
-  get_seckey_end (&ctx);
-  release_kbnode (kb);
+  get_pubkey_end (&ctx);
+  release_kbnode (keyblock);
 
-  if (!rc)
-    {
-      /* Check the secret key (this may prompt for a passprase to
-       * unlock the secret key.  */
-      /* rc = check_secret_key (sk, 0); */
-    }
+  if (!err)
+    err = agent_probe_secret_key (/*ctrl*/NULL, pk);
 
-  return rc;
+  return err;
 }
-
-
-/* Check whether the secret key is available.  This is just a fast
- * check and does not tell us whether the secret key is valid.  It
- * merely tells other whether there is some secret key.
- * Returns:
- *    0                := key is available
- *    G10ERR_NO_SECKEY := key not availabe
- */
-int
-seckey_available (u32 * keyid)
-{
-  int rc;
-  KEYDB_HANDLE hd = keydb_new (1);
-
-  rc = keydb_search_kid (hd, keyid);
-  if (rc == -1)
-    rc = G10ERR_NO_SECKEY;
-  keydb_release (hd);
-  return rc;
-}
-
 
 
 static int
@@ -599,16 +564,15 @@ leave:
 }
 
 
-/* Try to get the pubkey by the userid. This function looks for the
+/* Try to get the pubkey by the userid.  This function looks for the
  * first pubkey certificate which has the given name in a user_id.  If
- * pk/sk has the pubkey algo set, the function will only return a
- * pubkey with that algo.  If namelist is NULL, the first key is
- * returned.  The caller should provide storage for either the pk or
- * the sk.  If ret_kb is not NULL the function will return the
- * keyblock there.  */
+ * PK has the pubkey algo set, the function will only return a pubkey
+ * with that algo.  If NAMELIST is NULL, the first key is returned.
+ * The caller should provide storage for the PK.  If RET_KB is not
+ * NULL the function will return the keyblock there.  */
 static int
-key_byname (GETKEY_CTX * retctx, strlist_t namelist,
-	    PKT_public_key * pk, PKT_secret_key * sk,
+key_byname (GETKEY_CTX *retctx, strlist_t namelist,
+	    PKT_public_key *pk,
 	    int want_secret, int include_unusable,
 	    KBNODE * ret_kb, KEYDB_HANDLE * ret_kdbhd)
 {
@@ -617,8 +581,6 @@ key_byname (GETKEY_CTX * retctx, strlist_t namelist,
   strlist_t r;
   GETKEY_CTX ctx;
   KBNODE help_kb = NULL;
-
-  /* FIXME: Eventually remove the SK argument.  */
 
   if (retctx)
     {
@@ -671,7 +633,7 @@ key_byname (GETKEY_CTX * retctx, strlist_t namelist,
     }
 
   ctx->want_secret = want_secret;
-  ctx->kr_handle = keydb_new (0);
+  ctx->kr_handle = keydb_new ();
   if (!ret_kb)
     ret_kb = &help_kb;
 
@@ -680,11 +642,7 @@ key_byname (GETKEY_CTX * retctx, strlist_t namelist,
       ctx->req_algo = pk->req_algo;
       ctx->req_usage = pk->req_usage;
     }
-  else if (sk) /* FIXME:  We should remove this.  */
-    {
-      ctx->req_algo = sk->req_algo;
-      ctx->req_usage = sk->req_usage;
-    }
+
   rc = lookup (ctx, ret_kb, want_secret);
   if (!rc && pk)
     {
@@ -771,7 +729,7 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
   else
     {
       add_to_strlist (&namelist, name);
-      rc = key_byname (retctx, namelist, pk, NULL, 0,
+      rc = key_byname (retctx, namelist, pk, 0,
 		       include_unusable, ret_keyblock, ret_kdbhd);
     }
 
@@ -805,7 +763,7 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
 		}
 	      add_to_strlist (&namelist, name);
 	      rc = key_byname (anylocalfirst ? retctx : NULL,
-			       namelist, pk, NULL, 0,
+			       namelist, pk, 0,
 			       include_unusable, ret_keyblock, ret_kdbhd);
 	      break;
 
@@ -904,7 +862,7 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
 		  *retctx = NULL;
 		}
 	      rc = key_byname (anylocalfirst ? retctx : NULL,
-			       namelist, pk, NULL, 0,
+			       namelist, pk, 0,
 			       include_unusable, ret_keyblock, ret_kdbhd);
 	    }
 	  if (!rc)
@@ -943,7 +901,7 @@ int
 get_pubkey_bynames (GETKEY_CTX * retctx, PKT_public_key * pk,
 		    strlist_t names, KBNODE * ret_keyblock)
 {
-  return key_byname (retctx, names, pk, NULL, 0, 1, ret_keyblock, NULL);
+  return key_byname (retctx, names, pk, 0, 1, ret_keyblock, NULL);
 }
 
 int
@@ -991,7 +949,7 @@ get_pubkey_byfprint (PKT_public_key * pk,
       memset (&ctx, 0, sizeof ctx);
       ctx.exact = 1;
       ctx.not_allocated = 1;
-      ctx.kr_handle = keydb_new (0);
+      ctx.kr_handle = keydb_new ();
       ctx.nitems = 1;
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
@@ -1028,7 +986,7 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
   while (i < MAX_FINGERPRINT_LEN)
     fprbuf[i++] = 0;
 
-  hd = keydb_new (0);
+  hd = keydb_new ();
   rc = keydb_search_fpr (hd, fprbuf);
   if (rc == -1)
     {
@@ -1070,7 +1028,7 @@ get_keyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
 
       memset (&ctx, 0, sizeof ctx);
       ctx.not_allocated = 1;
-      ctx.kr_handle = keydb_new (0);
+      ctx.kr_handle = keydb_new ();
       ctx.nitems = 1;
       ctx.items[0].mode = (fprint_len == 16
                            ? KEYDB_SEARCH_MODE_FPR16
@@ -1086,15 +1044,15 @@ get_keyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
 }
 
 
-/* Get a secret key by name and store it into sk.
- * If NAME is NULL use the default key.   */
-static int
-get_seckey_byname2 (GETKEY_CTX * retctx,
-		    PKT_secret_key * sk, const char *name, int unprotect,
-		    KBNODE * retblock)
+/* Get a secret key by NAME and store it into PK.  If NAME is NULL use
+ * the default key.  This functions checks that a corresponding secret
+ * key is available.  With no secret key it does not succeeed. */
+gpg_error_t
+get_seckey_byname (PKT_public_key *pk, const char *name)
 {
+  gpg_error_t err;
   strlist_t namelist = NULL;
-  int rc, include_unusable = 1;
+  int include_unusable = 1;
 
   /* If we have no name, try to use the default secret key.  If we
      have no default, we'll use the first usable one. */
@@ -1106,110 +1064,73 @@ get_seckey_byname2 (GETKEY_CTX * retctx,
   else
     include_unusable = 0;
 
-  rc = key_byname (retctx, namelist, NULL, sk, 1, include_unusable,
-		   retblock, NULL);
+  err = key_byname (NULL, namelist, pk, 1, include_unusable, NULL, NULL);
 
   free_strlist (namelist);
 
-  /* if (!rc && unprotect) */
-  /*   rc = check_secret_key (sk, 0); */
-
-  return rc;
+  return err;
 }
 
-int
-get_seckey_byname (PKT_secret_key * sk, const char *name, int unlock)
-{
-  return get_seckey_byname2 (NULL, sk, name, unlock, NULL);
-}
-
-
-int
-get_seckey_bynames (GETKEY_CTX * retctx, PKT_secret_key * sk,
-		    strlist_t names, KBNODE * ret_keyblock)
-{
-  return key_byname (retctx, names, NULL, sk, 1, 1, ret_keyblock, NULL);
-}
-
-
-int
-get_seckey_next (GETKEY_CTX ctx, PKT_secret_key * sk, KBNODE * ret_keyblock)
-{
-  int rc;
-
-  rc = lookup (ctx, ret_keyblock, 1);
-  if (!rc && sk && ret_keyblock)
-    sk_from_block (ctx, sk, *ret_keyblock);
-
-  return rc;
-}
-
-
-void
-get_seckey_end (GETKEY_CTX ctx)
-{
-  get_pubkey_end (ctx);
-}
 
 
 /* Search for a key with the given fingerprint.
  * FIXME:
- * We should replace this with the _byname function.  Thiscsan be done
+ * We should replace this with the _byname function.  This can be done
  * by creating a userID conforming to the unified fingerprint style.   */
-int
-get_seckey_byfprint (PKT_secret_key * sk,
-		     const byte * fprint, size_t fprint_len)
+gpg_error_t
+get_seckey_byfprint (PKT_public_key *pk, const byte * fprint, size_t fprint_len)
 {
-  int rc;
+  gpg_error_t err;
 
   if (fprint_len == 20 || fprint_len == 16)
     {
       struct getkey_ctx_s ctx;
-      KBNODE kb = NULL;
+      kbnode_t kb = NULL;
 
       memset (&ctx, 0, sizeof ctx);
       ctx.exact = 1;
       ctx.not_allocated = 1;
-      ctx.kr_handle = keydb_new (1);
+      ctx.kr_handle = keydb_new ();
       ctx.nitems = 1;
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-      rc = lookup (&ctx, &kb, 1);
-      if (!rc && sk)
-	sk_from_block (&ctx, sk, kb);
+      err = lookup (&ctx, &kb, 1);
+      if (!err && pk)
+	pk_from_block (&ctx, pk, kb);
       release_kbnode (kb);
-      get_seckey_end (&ctx);
+      get_pubkey_end (&ctx);
     }
   else
-    rc = G10ERR_GENERAL;	/* Oops */
-  return rc;
+    err = gpg_error (GPG_ERR_BUG);
+  return err;
 }
 
 
 /* Search for a secret key with the given fingerprint and return the
-   complete keyblock which may have more than only this key. */
-int
-get_seckeyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
-			  size_t fprint_len)
+   complete keyblock which may have more than only this key.  Return
+   an error if no corresponding secret key is available.  */
+gpg_error_t
+get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
+                          const byte *fprint, size_t fprint_len)
 {
-  int rc;
+  gpg_error_t err;
   struct getkey_ctx_s ctx;
 
   if (fprint_len != 20 && fprint_len == 16)
-    return G10ERR_GENERAL;	/* Oops */
+    return gpg_error (GPG_ERR_BUG);
 
   memset (&ctx, 0, sizeof ctx);
   ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new (1);
+  ctx.kr_handle = keydb_new ();
   ctx.nitems = 1;
   ctx.items[0].mode = (fprint_len == 16
 		       ? KEYDB_SEARCH_MODE_FPR16 : KEYDB_SEARCH_MODE_FPR20);
   memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-  rc = lookup (&ctx, ret_keyblock, 1);
-  get_seckey_end (&ctx);
+  err = lookup (&ctx, ret_keyblock, 1);
+  get_pubkey_end (&ctx);
 
-  return rc;
+  return err;
 }
 
 
@@ -1220,7 +1141,7 @@ gpg_error_t
 getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
                 strlist_t names, int want_secret, kbnode_t *ret_keyblock)
 {
-  return key_byname (retctx, names, pk, NULL, want_secret, 1,
+  return key_byname (retctx, names, pk, want_secret, 1,
                      ret_keyblock, NULL);
 }
 
@@ -1238,7 +1159,7 @@ getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
  * 
  * FIXME: Explain what is up with unusable keys.
  *
- * FIXME: We also have the get_pubkey_byname fucntion which has a
+ * FIXME: We also have the get_pubkey_byname function which has a
  * different semantic.  Should be merged with this one.
  */
 gpg_error_t
@@ -1256,7 +1177,7 @@ getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
   else
     with_unusable = 0;
 
-  err = key_byname (retctx, namelist, pk, NULL, want_secret, with_unusable,
+  err = key_byname (retctx, namelist, pk, want_secret, with_unusable,
                     ret_keyblock, NULL);
   
   /* FIXME: Check that we really return GPG_ERR_NO_SECKEY if
@@ -2538,7 +2459,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 	  goto skip;
 	}
 
-      if (want_secret && have_secret_key (ctx->keyblock))
+      if (want_secret && !have_any_secret_key (NULL, ctx->keyblock))
         goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
@@ -2586,9 +2507,7 @@ found:
 /****************
  * FIXME: Replace by the generic function
  *        It does not work as it is right now - it is used at
- *        2 places:  a) to get the key for an anonyous recipient
- *                   b) to get the ultimately trusted keys.
- *        The a) usage might have some problems.
+ *        one place:  to get the key for an anonymous recipient.
  *
  * set with_subkeys true to include subkeys
  * set with_spm true to include secret-parts-missing keys
@@ -2606,6 +2525,10 @@ int
 enum_secret_keys (void **context, PKT_secret_key * sk,
 		  int with_subkeys, int with_spm)
 {
+  log_debug ("FIXME: Anonymous recipient does not yet work\n");
+  return -1;
+#if 0
+
   int rc = 0;
   struct
   {
@@ -2622,7 +2545,7 @@ enum_secret_keys (void **context, PKT_secret_key * sk,
       /* Make a new context.  */
       c = xmalloc_clear (sizeof *c);
       *context = c;
-      c->hd = keydb_new (1);
+      c->hd = keydb_new (1);  /*FIXME*/
       c->first = 1;
       c->keyblock = NULL;
       c->node = NULL;
@@ -2676,6 +2599,7 @@ enum_secret_keys (void **context, PKT_secret_key * sk,
   while (!rc);
 
   return rc; /* Error.  */
+#endif
 }
 
 
@@ -2893,37 +2817,71 @@ parse_auto_key_locate (char *options)
 }
 
 
-/* Return 0 if a secret key is available for the key described by
-   KEYBLOCK.  FIXME: How do we handel subkeys?  */
-gpg_error_t
-have_secret_key (kbnode_t keyblock)
+/* Return true if a secret key or secret subkey is available for one
+   of the public keys in KEYBLOCK.  */
+int
+have_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
+{
+  kbnode_t node;
+
+  for (node = keyblock; node; node = node->next)
+    if ((node->pkt->pkttype == PKT_PUBLIC_KEY
+         || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        && !agent_probe_secret_key (ctrl, node->pkt->pkt.public_key))
+      return 1;
+  return 0;
+}
+
+
+/* Return true if a secret key is available for the public key with
+ * the given KEYID.  This is just a fast check and does not tell us
+ * whether the secret key is valid.  It merely tells os whether there
+ * is some secret key.  */
+int
+have_secret_key_with_kid (u32 *keyid)
 {
   gpg_error_t err;
-  unsigned char fpr[MAX_FINGERPRINT_LEN];
-  size_t fprlen;
-  KEYDB_HANDLE kdh;
+  KEYDB_HANDLE kdbhd;
+  KEYDB_SEARCH_DESC desc;
+  kbnode_t keyblock;
+  kbnode_t node;
+  int result = 0;
 
-  if (!keyblock || keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
-    return gpg_error (GPG_ERR_NO_PUBKEY);  /* Should not happen.  */
+  kdbhd = keydb_new ();
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
+  desc.u.kid[0] = keyid[0];
+  desc.u.kid[1] = keyid[1];
+  while (!result && !(err = keydb_search (kdbhd, &desc, 1)))
+    {
+      desc.mode = KEYDB_SEARCH_MODE_NEXT;
+      err = keydb_get_keyblock (kdbhd, &keyblock);
+      if (err)
+        {
+          log_error (_("error reading keyblock: %s\n"), g10_errstr (err));
+          break;
+        }
 
-  fingerprint_from_pk (keyblock->pkt->pkt.public_key, fpr, &fprlen);
-  while (fprlen < MAX_FINGERPRINT_LEN) 
-    fpr[fprlen++] = 0;
+      for (node = keyblock; node; node = node->next)
+	{
+          /* Bit 0 of the flags is set if the search found the key
+             using that key or subkey.  */
+	  if ((node->flag & 1))
+            {
+              assert (node->pkt->pkttype == PKT_PUBLIC_KEY
+                      || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
-  /* FIXME: Always allocating a new handle is too slow.  However this
-     entire implementation is anyway a temporary solution until we can
-     ask gpg-agent for the secret key.  */
-  kdh = keydb_new (1);
-  if (!kdh)
-    return gpg_error (GPG_ERR_GENERAL);
-
-  err = keydb_search_fpr (kdh, fpr);
-  if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
-    err = gpg_error (GPG_ERR_NO_SECKEY);
-
-  keydb_release (kdh);
-
-  return err;
+              if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
+                {
+                  result = 1;
+                  break;
+                }
+	    }
+	}
+      release_kbnode (keyblock);
+    }
+  keydb_release (kdbhd);
+  return result;
 }
 
 

@@ -697,7 +697,7 @@ key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
 static char *
 default_recipient(void)
 {
-    PKT_secret_key *sk;
+    PKT_public_key *pk;
     byte fpr[MAX_FINGERPRINT_LEN+1];
     size_t n;
     char *p;
@@ -707,15 +707,15 @@ default_recipient(void)
 	return xstrdup( opt.def_recipient );
     if( !opt.def_recipient_self )
 	return NULL;
-    sk = xmalloc_clear( sizeof *sk );
-    i = get_seckey_byname( sk, NULL, 0 );
+    pk = xmalloc_clear( sizeof *pk );
+    i = get_seckey_byname (pk, NULL);
     if( i ) {
-	free_secret_key( sk );
+	free_public_key( pk );
 	return NULL;
     }
     n = MAX_FINGERPRINT_LEN;
-    fingerprint_from_sk( sk, fpr, &n );
-    free_secret_key( sk );
+    fingerprint_from_pk( pk, fpr, &n );
+    free_public_key( pk );
     p = xmalloc( 2*n+3 );
     *p++ = '0';
     *p++ = 'x';

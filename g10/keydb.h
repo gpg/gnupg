@@ -24,6 +24,7 @@
 #include <assuan.h>
 
 #include "types.h"
+#include "util.h"
 #include "packet.h"
 #include "cipher.h"
 
@@ -132,7 +133,7 @@ union pref_hint
   Flag 2 == default
 */
 int keydb_add_resource (const char *url, int flags, int secret);
-KEYDB_HANDLE keydb_new (int secret);
+KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 int keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
@@ -207,26 +208,22 @@ int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
 			strlist_t names, KBNODE *ret_keyblock );
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
 void get_pubkey_end( GETKEY_CTX ctx );
-int get_seckey( PKT_secret_key *sk, u32 *keyid );
-int get_primary_seckey( PKT_secret_key *sk, u32 *keyid );
+gpg_error_t get_seckey (PKT_public_key *pk, u32 *keyid);
 int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );
 int get_pubkey_byfprint_fast (PKT_public_key *pk,
                               const byte *fprint, size_t fprint_len);
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
-int get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid );
-int seckey_available( u32 *keyid );
-int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
-int get_seckey_bynames( GETKEY_CTX *rx, PKT_secret_key *sk,
-			strlist_t names, KBNODE *ret_keyblock );
-int get_seckey_next (GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock);
-void get_seckey_end( GETKEY_CTX ctx );
 
-int get_seckey_byfprint( PKT_secret_key *sk,
-			 const byte *fprint, size_t fprint_len);
-int get_seckeyblock_byfprint (KBNODE *ret_keyblock, const byte *fprint,
-                              size_t fprint_len );
+int have_secret_key_with_kid (u32 *keyid);
+
+gpg_error_t get_seckey_byname (PKT_public_key *pk, const char *name);
+
+gpg_error_t get_seckey_byfprint (PKT_public_key *pk,
+                                 const byte *fprint, size_t fprint_len);
+gpg_error_t get_seckeyblock_byfprint (kbnode_t *ret_keyblock, 
+                                      const byte *fprint, size_t fprint_len);
 
 gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
                             strlist_t names, int want_secret,
@@ -238,7 +235,7 @@ gpg_error_t getkey_next (getkey_ctx_t ctx, PKT_public_key *pk,
                          kbnode_t *ret_keyblock);
 void getkey_end (getkey_ctx_t ctx);
 
-gpg_error_t have_secret_key (kbnode_t keyblock);
+int have_any_secret_key (ctrl_t ctrl, kbnode_t keyblock);
 
 
 int enum_secret_keys( void **context, PKT_secret_key *sk,

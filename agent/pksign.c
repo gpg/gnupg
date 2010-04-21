@@ -1,5 +1,5 @@
 /* pksign.c - public key signing (well, actually using a secret key)
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 
 #include "agent.h"
+#include "i18n.h"
 
 
 static int
@@ -72,6 +73,104 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
   
   *r_hash = hash;
   return rc;   
+}
+
+
+/* Return the number of bits of the Q parameter from the DSA key
+   KEY.  */
+static unsigned int
+get_dsa_qbits (gcry_sexp_t key)
+{
+  gcry_sexp_t l1, l2;
+  gcry_mpi_t q;
+  unsigned int nbits;
+
+  l1 = gcry_sexp_find_token (key, "private-key", 0);
+  if (!l1)
+    l1 = gcry_sexp_find_token (key, "protected-private-key", 0);
+  if (!l1)
+    l1 = gcry_sexp_find_token (key, "shadowed-private-key", 0);
+  if (!l1)
+    l1 = gcry_sexp_find_token (key, "public-key", 0);
+  if (!l1)
+    return 0; /* Does not contain a key object.  */
+  l2 = gcry_sexp_cadr (l1);
+  gcry_sexp_release  (l1);
+  l1 = gcry_sexp_find_token (l2, "q", 1);
+  gcry_sexp_release (l2);
+  if (!l1)
+    return 0; /* Invalid object.  */
+  q = gcry_sexp_nth_mpi (l1, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release (l1);
+  if (!q)
+    return 0; /* Missing value.  */
+  nbits = gcry_mpi_get_nbits (q);
+  gcry_mpi_release (q);
+
+  return nbits;
+}
+
+
+/* Encode a message digest for use with an DSA algorithm. */
+static gpg_error_t
+do_encode_dsa (const byte * md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
+               gcry_sexp_t *r_hash)
+{
+  gpg_error_t err;
+  gcry_sexp_t hash;
+  unsigned int qbits;
+
+  *r_hash = NULL;
+
+  if (dsaalgo == GCRY_PK_ECDSA)
+    qbits = gcry_pk_get_nbits (pkey);
+  else if (dsaalgo == GCRY_PK_DSA)
+    qbits = get_dsa_qbits (pkey);
+  else
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+  
+  if ((qbits%8))
+    {
+      log_error (_("DSA requires the hash length to be a"
+                   " multiple of 8 bits\n"));
+      return gpg_error (GPG_ERR_INV_LENGTH);
+    }
+
+  /* Don't allow any Q smaller than 160 bits.  We don't want someone
+     to issue signatures from a key with a 16-bit Q or something like
+     that, which would look correct but allow trivial forgeries.  Yes,
+     I know this rules out using MD5 with DSA. ;) */
+  if (qbits < 160)
+    {
+      log_error (_("%s key uses an unsafe (%u bit) hash\n"),
+                 gcry_pk_algo_name (dsaalgo), qbits);
+      return gpg_error (GPG_ERR_INV_LENGTH);
+    }
+
+  /* Check if we're too short.  Too long is safe as we'll
+     automatically left-truncate.  */
+  if (mdlen < qbits/8)
+    {
+      log_error (_("a %zu bit hash is not valid for a %u bit %s key\n"),
+                 mdlen*8,
+                 gcry_pk_get_nbits (pkey), 
+                 gcry_pk_algo_name (dsaalgo));
+      /* FIXME: we need to check the requirements for ECDSA.  */
+      if (mdlen < 20 || dsaalgo == GCRY_PK_DSA)
+        return gpg_error (GPG_ERR_INV_LENGTH);
+    }
+
+  /* Truncate.  */
+  if (mdlen > qbits/8)
+    mdlen = qbits/8;
+            
+  /* Create the S-expression.  */
+  err = gcry_sexp_build (&hash, NULL,
+                        "(data (flags raw) (value %b))",
+                        (int)mdlen, md);
+  if (!err)
+    *r_hash = hash;
+  return err;   
 }
 
 
@@ -180,8 +279,8 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
   else
     {
       /* No smartcard, but a private key */
-
       gcry_sexp_t s_hash = NULL;
+      int dsaalgo;
 
       /* Put the hash into a sexp */
       if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
@@ -189,6 +288,11 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
                                   ctrl->digest.valuelen,
                                   gcry_pk_get_nbits (s_skey),
                                   &s_hash);
+      else if ( (dsaalgo = agent_is_dsa_key (s_skey)) )
+        rc = do_encode_dsa (ctrl->digest.value,
+                            ctrl->digest.valuelen,
+                            dsaalgo, s_skey,
+                            &s_hash);
       else
         rc = do_encode_md (ctrl->digest.value,
                            ctrl->digest.valuelen,

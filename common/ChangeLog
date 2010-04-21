@@ -1,5 +1,8 @@
 2010-04-20  Werner Koch  <wk@g10code.com>
 
+	* estream.c (es_deinit): New.
+	(es_init_do): Intll atexit handler to flush all streams.
+
 	* Makefile.am (common_sources): Add gettime.h.
 
 2010-04-20  Marcus Brinkmann  <marcus@g10code.de>
@@ -16,7 +19,7 @@
 
 2010-04-15  Werner Koch  <wk@g10code.com>
 
-	* util.h: Factor time related fucntions out to ...
+	* util.h: Factor time related functions out to ...
 	* gettime.h: New.
 	(gnupg_copy_time): Move to ...
 	* gettime.c (gnupg_copy_time): New.

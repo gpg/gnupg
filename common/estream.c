@@ -423,6 +423,14 @@ es_pth_write (int fd, const void *buffer, size_t size)
 
 
 
+static void
+es_deinit (void)
+{
+  /* Flush all streams. */
+  es_fflush (NULL);
+}
+
+
 /*
  * Initialization.
  */
@@ -430,17 +438,20 @@ es_pth_write (int fd, const void *buffer, size_t size)
 static int
 es_init_do (void)
 {
-#ifdef HAVE_PTH
   static int initialized;
 
   if (!initialized)
     {
+#ifdef HAVE_PTH
       if (!pth_init () && errno != EPERM )
         return -1;
       if (pth_mutex_init (&estream_list_lock))
         initialized = 1;
-    }
+#else
+      initialized = 1;
 #endif
+      atexit (es_deinit);  
+    }
   return 0;
 }
 
