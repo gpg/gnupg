@@ -48,7 +48,7 @@ if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
 endif
 if !HAVE_W32CE_SYSTEM
-bin_PROGRAMS += gpgkey2ssh gpgtar
+bin_PROGRAMS += gpgkey2ssh
 endif
 
 if !DISABLE_REGEX
@@ -114,14 +114,14 @@ gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 endif
 
-gpgtar_SOURCES = \
-	gpgtar.c gpgtar.h \
-	gpgtar-create.c \
-	gpgtar-extract.c \
-	gpgtar-list.c \
-	no-libgcrypt.c
-gpgtar_LDADD = $(common_libs)
-
+#gpgtar_SOURCES = \
+#	gpgtar.c gpgtar.h \
+#	gpgtar-create.c \
+#	gpgtar-extract.c \
+#	gpgtar-list.c \
+#	no-libgcrypt.c
+#gpgtar_LDADD = $(common_libs)
+#
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
