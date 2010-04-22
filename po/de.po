@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.14\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-03-09 09:35+0100\n"
-"PO-Revision-Date: 2010-03-09 09:36+0100\n"
+"POT-Creation-Date: 2010-03-09 09:41+0100\n"
+"PO-Revision-Date: 2010-04-22 15:24+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -34,7 +34,7 @@ msgstr "_OK"
 
 #: agent/call-pinentry.c:402
 msgid "|pinentry-label|_Cancel"
-msgstr "_Abbruch"
+msgstr "_Abbrechen"
 
 #: agent/call-pinentry.c:403
 msgid "|pinentry-label|PIN:"
