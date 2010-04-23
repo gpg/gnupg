@@ -39,7 +39,7 @@
 
 
 static gpg_error_t get_it (PKT_pubkey_enc *k,
-                           DEK *dek, PKT_secret_key *sk, u32 *keyid);
+                           DEK *dek, PKT_public_key *sk, u32 *keyid);
 
 
 /* Check that the given algo is mentioned in one of the valid user-ids. */
@@ -74,7 +74,7 @@ is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
 gpg_error_t
 get_session_key (PKT_pubkey_enc * k, DEK * dek)
 {
-  PKT_secret_key *sk = NULL;
+  PKT_public_key *sk = NULL;
   int rc;
 
   rc = openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC);
@@ -84,7 +84,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
   if ((k->keyid[0] || k->keyid[1]) && !opt.try_all_secrets)
     {
       sk = xmalloc_clear (sizeof *sk);
-      sk->pubkey_algo = k->pubkey_algo; /* We want a pubkey with this algo */
+      sk->pubkey_algo = k->pubkey_algo; /* We want a pubkey with this algo.  */
       if (!(rc = get_seckey (sk, k->keyid)))
         rc = get_it (k, dek, sk, k->keyid);
     }
@@ -99,9 +99,9 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
       for (;;)
         {
           if (sk)
-            free_secret_key (sk);
+            free_public_key (sk);
           sk = xmalloc_clear (sizeof *sk);
-          rc = enum_secret_keys (&enum_context, sk, 1, 0);
+          rc = -1; /* FIXME:enum_secret_keys (&enum_context, sk, 1, 0);*/
           if (rc)
             {
               rc = G10ERR_NO_SECKEY;
@@ -109,7 +109,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
             }
           if (sk->pubkey_algo != k->pubkey_algo)
             continue;
-          keyid_from_sk (sk, keyid);
+          keyid_from_pk (sk, keyid);
           log_info (_("anonymous recipient; trying secret key %s ...\n"),
                     keystr (keyid));
 
@@ -149,63 +149,59 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
 
 leave:
   if (sk)
-    free_secret_key (sk);
+    free_public_key (sk);
   return rc;
 }
 
 
 static gpg_error_t
-get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
+get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 {
-  int rc;
-  gcry_mpi_t plain_dek = NULL;
+  gpg_error_t err;
   byte *frame = NULL;
   unsigned int n;
   size_t nframe;
   u16 csum, csum2;
-
   int card = 0;
+  gcry_sexp_t s_data;
+  char *desc;
+  char *keygrip;
 
-  if (sk->is_protected && sk->protect.s2k.mode == 1002)
-    {   /* Note, that we only support RSA for now. */
-#ifdef ENABLE_CARD_SUPPORT
-      unsigned char *rbuf;
-      size_t rbuflen;
-      char *snbuf;
-      unsigned char *indata = NULL;
-      size_t indatalen;
+  /* Get the keygrip.  */
+  err = hexkeygrip_from_pk (sk, &keygrip);
+  if (err)
+    goto leave;
 
-      snbuf =
-        serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
-
-      if (gcry_mpi_aprint
-          (GCRYMPI_FMT_USG, &indata, &indatalen, enc->data[0]))
-        BUG ();
-
-      rc = agent_scd_pkdecrypt (snbuf, indata, indatalen, &rbuf, &rbuflen);
-      xfree (snbuf);
-      xfree (indata);
-      if (rc)
-        goto leave;
-
-      frame = rbuf;
-      nframe = rbuflen;
-      card = 1;
-#else
-      rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
-      goto leave;
-#endif /*!ENABLE_CARD_SUPPORT */
+  /* Convert the data to an S-expression.  */
+  if (sk->pubkey_algo == GCRY_PK_ELG || sk->pubkey_algo == GCRY_PK_ELG_E)
+    {
+      if (!enc->data[0] || !enc->data[1])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))", 
+                               enc->data[0], enc->data[1]);
+    }
+  else if (sk->pubkey_algo == GCRY_PK_RSA || sk->pubkey_algo == GCRY_PK_RSA_E)
+    {
+      if (!enc->data[0])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
+                               enc->data[0]);
     }
   else
-    {
-      rc = pk_decrypt (sk->pubkey_algo, &plain_dek, enc->data, sk->skey);
-      if (rc)
-        goto leave;
-      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &frame, &nframe, plain_dek))
-        BUG ();
-      gcry_mpi_release (plain_dek);
-      plain_dek = NULL;
-    }
+    err = gpg_error (GPG_ERR_BUG);
+
+  if (err)
+    goto leave;
+
+  /* Decrypt. */
+  desc = xtrystrdup ("FIXME: Format a description");
+  err = agent_pkdecrypt (NULL, keygrip, desc, s_data, &frame, &nframe);
+  xfree (desc);
+  gcry_sexp_release (s_data);
+  if (err)
+    goto leave;
 
   /* Now get the DEK (data encryption key) from the frame
    *
@@ -231,18 +227,18 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
     {
       if (n + 7 > nframe)
         {
-          rc = G10ERR_WRONG_SECKEY;
+          err = gpg_error (G10ERR_WRONG_SECKEY);
           goto leave;
         }
       if (frame[n] == 1 && frame[nframe - 1] == 2)
         {
           log_info (_("old encoding of the DEK is not supported\n"));
-          rc = G10ERR_CIPHER_ALGO;
+          err = gpg_error (G10ERR_CIPHER_ALGO);
           goto leave;
         }
-      if (frame[n] != 2) /* Somethink is wrong.  */
+      if (frame[n] != 2) /* Something went wrong.  */
         {
-          rc = G10ERR_WRONG_SECKEY;
+          err = gpg_error (G10ERR_WRONG_SECKEY);
           goto leave;
         }
       for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
@@ -252,7 +248,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
 
   if (n + 4 > nframe)
     {
-      rc = G10ERR_WRONG_SECKEY;
+      err = gpg_error (G10ERR_WRONG_SECKEY);
       goto leave;
     }
 
@@ -260,10 +256,10 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
   dek->algo = frame[n++];
   if (dek->algo == CIPHER_ALGO_IDEA)
     write_status (STATUS_RSA_OR_IDEA);
-  rc = openpgp_cipher_test_algo (dek->algo);
-  if (rc)
+  err = openpgp_cipher_test_algo (dek->algo);
+  if (err)
     {
-      if (!opt.quiet && gpg_err_code (rc) == GPG_ERR_CIPHER_ALGO)
+      if (!opt.quiet && gpg_err_code (err) == GPG_ERR_CIPHER_ALGO)
         {
           log_info (_("cipher algorithm %d%s is unknown or disabled\n"),
                     dek->algo,
@@ -276,7 +272,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
     }
   if (dek->keylen != openpgp_cipher_get_algo_keylen (dek->algo))
     {
-      rc = GPG_ERR_WRONG_SECKEY;
+      err = gpg_error (GPG_ERR_WRONG_SECKEY);
       goto leave;
     }
 
@@ -288,7 +284,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
     csum2 += dek->key[n];
   if (csum != csum2)
     {
-      rc = G10ERR_WRONG_SECKEY;
+      err = gpg_error (GPG_ERR_WRONG_SECKEY);
       goto leave;
     }
   if (DBG_CIPHER)
@@ -301,7 +297,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
 
     if (!pkb)
       {
-        rc = -1;
+        err = -1;
         log_error ("oops: public key not found for preference check\n");
       }
     else if (pkb->pkt->pkt.public_key->selfsigversion > 3
@@ -310,7 +306,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
              && !is_algo_in_prefs (pkb, PREFTYPE_SYM, dek->algo))
       log_info (_("WARNING: cipher algorithm %s not found in recipient"
                   " preferences\n"), openpgp_cipher_algo_name (dek->algo));
-    if (!rc)
+    if (!err)
       {
         KBNODE k;
 
@@ -346,14 +342,13 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid)
       }
 
     release_kbnode (pkb);
-    rc = 0;
+    err = 0;
   }
 
-
-leave:
-  gcry_mpi_release (plain_dek);
+ leave:
   xfree (frame);
-  return rc;
+  xfree (keygrip);
+  return err;
 }
 
 

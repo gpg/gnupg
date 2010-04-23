@@ -158,6 +158,10 @@ gpg_error_t agent_pksign (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                           int digestalgo,
                           gcry_sexp_t *r_sigval);
 
+/* Decrypt a ciphertext.  */
+gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
+                             gcry_sexp_t s_ciphertext,
+                             unsigned char **r_buf, size_t *r_buflen);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

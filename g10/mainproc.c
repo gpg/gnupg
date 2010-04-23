@@ -939,7 +939,7 @@ list_node( CTX c, KBNODE node )
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
 	      putchar('\n'); any=1;
 	      if( opt.fingerprint )
-		print_fingerprint( pk, NULL, 0 );
+		print_fingerprint (pk, 0);
 	      printf("rtv:1:%u:\n",
 		     node->next->pkt->pkt.ring_trust->trustval );
 	    }
@@ -976,7 +976,7 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint( pk, NULL, 0 );
+			print_fingerprint ( pk, 0 );
 		    if( opt.with_colons
                         && node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
@@ -1015,71 +1015,75 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( pk, NULL, 0 );
+	    print_fingerprint( pk, 0 );
     }
     else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
 	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	PKT_secret_key *sk = node->pkt->pkt.secret_key;
 
-	if( opt.with_colons )
-	  {
-	    u32 keyid[2];
-	    keyid_from_sk( sk, keyid );
-	    printf("%s::%u:%d:%08lX%08lX:%s:%s:::",
-		   mainkey? "sec":"ssb",
-		   nbits_from_sk( sk ),
-		   sk->pubkey_algo,
-		   (ulong)keyid[0],(ulong)keyid[1],
-		   colon_datestr_from_sk( sk ),
-		   colon_strtime (sk->expiredate)
-		   /* fixme: add LID */ );
-	  }
-	else
-	  printf("%s  %4u%c/%s %s ", mainkey? "sec":"ssb",
-		 nbits_from_sk( sk ), pubkey_letter( sk->pubkey_algo ),
-		 keystr_from_sk( sk ), datestr_from_sk( sk ));
-	if( mainkey ) {
-	    /* and now list all userids with their signatures */
-	    for( node = node->next; node; node = node->next ) {
-		if( node->pkt->pkttype == PKT_SIGNATURE ) {
-		    if( !any ) {
-			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    puts("[revoked]");
-			else
-			    putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
-		}
-		else if( node->pkt->pkttype == PKT_USER_ID ) {
-		    if( any ) {
-			if( opt.with_colons )
-			    printf("%s:::::::::",
-			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
-			else
-			    printf( "uid%*s", 28, "" );
-		    }
-		    print_userid( node->pkt );
-		    if( opt.with_colons )
-			putchar(':');
-		    putchar('\n');
-		    if( opt.fingerprint && !any )
-			print_fingerprint( NULL, sk, 0 );
-		    any=1;
-		}
-		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-		    if( !any ) {
-			putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
-		}
-	    }
-	}
-	if( !any )
-	    putchar('\n');
-	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( NULL, sk, 0 );
+      log_debug ("FIXME: No way to print secret key packets here\n");
+      /* fixme: We may use a fucntion to trun a secret key packet into
+         a public key one and use that here.  */
+	/* PKT_secret_key *sk = node->pkt->pkt.secret_key; */
+
+	/* if( opt.with_colons ) */
+	/*   { */
+	/*     u32 keyid[2]; */
+	/*     keyid_from_sk( sk, keyid ); */
+	/*     printf("%s::%u:%d:%08lX%08lX:%s:%s:::", */
+	/* 	   mainkey? "sec":"ssb", */
+	/* 	   nbits_from_sk( sk ), */
+	/* 	   sk->pubkey_algo, */
+	/* 	   (ulong)keyid[0],(ulong)keyid[1], */
+	/* 	   colon_datestr_from_sk( sk ), */
+	/* 	   colon_strtime (sk->expiredate) */
+	/* 	   /\* fixme: add LID *\/ ); */
+	/*   } */
+	/* else */
+	/*   printf("%s  %4u%c/%s %s ", mainkey? "sec":"ssb", */
+	/* 	 nbits_from_sk( sk ), pubkey_letter( sk->pubkey_algo ), */
+	/* 	 keystr_from_sk( sk ), datestr_from_sk( sk )); */
+	/* if( mainkey ) { */
+	/*     /\* and now list all userids with their signatures *\/ */
+	/*     for( node = node->next; node; node = node->next ) { */
+	/* 	if( node->pkt->pkttype == PKT_SIGNATURE ) { */
+	/* 	    if( !any ) { */
+	/* 		if( node->pkt->pkt.signature->sig_class == 0x20 ) */
+	/* 		    puts("[revoked]"); */
+	/* 		else */
+	/* 		    putchar('\n'); */
+	/* 		any = 1; */
+	/* 	    } */
+	/* 	    list_node(c,  node ); */
+	/* 	} */
+	/* 	else if( node->pkt->pkttype == PKT_USER_ID ) { */
+	/* 	    if( any ) { */
+	/* 		if( opt.with_colons ) */
+	/* 		    printf("%s:::::::::", */
+	/* 		      node->pkt->pkt.user_id->attrib_data?"uat":"uid"); */
+	/* 		else */
+	/* 		    printf( "uid%*s", 28, "" ); */
+	/* 	    } */
+	/* 	    print_userid( node->pkt ); */
+	/* 	    if( opt.with_colons ) */
+	/* 		putchar(':'); */
+	/* 	    putchar('\n'); */
+	/* 	    if( opt.fingerprint && !any ) */
+	/* 		print_fingerprint( NULL, sk, 0 ); */
+	/* 	    any=1; */
+	/* 	} */
+	/* 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) { */
+	/* 	    if( !any ) { */
+	/* 		putchar('\n'); */
+	/* 		any = 1; */
+	/* 	    } */
+	/* 	    list_node(c,  node ); */
+	/* 	} */
+	/*     } */
+	/* } */
+	/* if( !any ) */
+	/*     putchar('\n'); */
+	/* if( !mainkey && opt.fingerprint > 1 ) */
+	/*     print_fingerprint( NULL, sk, 0 ); */
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
@@ -1848,7 +1852,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		    if(opt.verify_options&VERIFY_SHOW_PHOTOS)
 		      show_photos(un->pkt->pkt.user_id->attribs,
 				  un->pkt->pkt.user_id->numattribs,
-				  pk,NULL,un->pkt->pkt.user_id);
+				  pk ,un->pkt->pkt.user_id);
 		  }
 
 		p=utf8_to_native(un->pkt->pkt.user_id->name,

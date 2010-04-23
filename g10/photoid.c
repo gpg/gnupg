@@ -161,7 +161,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
          "user" may not be able to dismiss a viewer window! */
       if(opt.command_fd==-1)
 	{
-	  show_photos(uid->attribs,uid->numattribs,pk,NULL,uid);
+	  show_photos (uid->attribs, uid->numattribs, pk, uid);
 	  switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
 					 _("Is this photo correct (y/N/q)? ")))
 	    {
@@ -285,9 +285,8 @@ static const char *get_default_photo_command(void)
 #endif
 
 void
-show_photos(const struct user_attribute *attrs,
-	    int count,PKT_public_key *pk,PKT_secret_key *sk,
-	    PKT_user_id *uid)
+show_photos(const struct user_attribute *attrs, int count,
+            PKT_public_key *pk, PKT_user_id *uid)
 {
 #ifndef DISABLE_PHOTO_VIEWER
   int i;
@@ -295,16 +294,13 @@ show_photos(const struct user_attribute *attrs,
   u32 len;
   u32 kid[2]={0,0};
 
-  memset(&args,0,sizeof(args));
-  args.pk=pk;
-  args.pksk=sk;
-  args.validity_info=get_validity_info(pk,uid);
-  args.validity_string=get_validity_string(pk,uid);
+  memset (&args, 0, sizeof(args));
+  args.pk = pk;
+  args.validity_info = get_validity_info (pk, uid);
+  args.validity_string = get_validity_string (pk, uid);
 
-  if(pk)
-    keyid_from_pk(pk,kid);
-  else if(sk)
-    keyid_from_sk(sk,kid);
+  if (pk)
+    keyid_from_pk (pk, kid);
 
   for(i=0;i<count;i++)
     if(attrs[i].type==ATTRIB_IMAGE &&

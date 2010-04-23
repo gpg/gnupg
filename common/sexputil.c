@@ -136,7 +136,7 @@ cmp_simple_canon_sexp (const unsigned char *a_orig,
 }
 
 
-/* Create a simple S-expression from the hex string at LIBNE.  Returns
+/* Create a simple S-expression from the hex string at LINE.  Returns
    a newly allocated buffer with that canonical encoded S-expression
    or NULL in case of an error.  On return the number of characters
    scanned in LINE will be stored at NSCANNED.  This fucntions stops

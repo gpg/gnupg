@@ -132,7 +132,7 @@ union pref_hint
   Flag 1 == force
   Flag 2 == default
 */
-int keydb_add_resource (const char *url, int flags, int secret);
+int keydb_add_resource (const char *url, int flags);
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
@@ -173,7 +173,7 @@ void warn_missing_aes_from_pklist (PK_LIST pk_list);
 int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );
 gpg_error_t  build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list,
-                            int unlock, unsigned use);
+                            unsigned use);
 
 /*-- passphrase.h --*/
 unsigned char encode_s2k_iterations (int iterations);

@@ -1,3 +1,33 @@
+2010-04-23  Werner Koch  <wk@g10code.com>
+
+	* pubkey-enc.c (get_it): Use the agent for decryption.
+	* call-agent.c (agent_pkdecrypt, inq_ciphertext_cb): New.
+
+2010-04-22  Werner Koch  <wk@g10code.com>
+
+	* photoid.c (show_photos): Remove arg SK.
+
+	* pubkey-enc.c (get_session_key, get_it): Change to use the public
+	key object.
+	(get_it):  Remove card related stuff.  Now automagically handled
+	by the agent.
+
+	* skclist.c (build_sk_list): Remove UNLOCK arg.
+
+	* keylist.c (print_fingerprint): Remove arg SK.
+	* mainproc.c (list_node): Disable listing of secret key packets.
+
+	* keyring.c (struct keyring_name, struct keyring_handle): Remove
+	field SECRET.
+	(keyring_register_filename, keyring_new, orename_tmp_file)
+	(do_copy): Remove arg SECRET.
+	* keydb.c (struct resource_item): Remove field SECRET.
+	(keydb_add_resource): Remove arg SECRET.
+	(keydb_new): Remove code fro secret keyrings.
+
+	* gpg.c (main): Ignore --secret-keyring.  Remove all secret
+	keyring related code.
+
 2010-04-21  Werner Koch  <wk@g10code.com>
 
 	* pkclist.c (default_recipient): Change to use public keys.

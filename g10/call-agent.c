@@ -50,8 +50,9 @@ static int did_early_card_test;
 
 struct cipher_parm_s 
 {
+  ctrl_t ctrl;
   assuan_context_t ctx;
-  const char *ciphertext;
+  unsigned char *ciphertext;
   size_t ciphertextlen;
 };
 
@@ -101,7 +102,6 @@ status_sc_op_failure (int rc)
       break;
     }
 }  
-
 
 
 
@@ -1582,3 +1582,127 @@ agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 }
 
 
+
+/* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the END. */
+static gpg_error_t
+inq_ciphertext_cb (void *opaque, const char *line)
+{
+  struct cipher_parm_s *parm = opaque; 
+  int rc;
+
+  if (!strncmp (line, "CIPHERTEXT", 10) && (line[10]==' '||!line[10]))
+    {
+      assuan_begin_confidential (parm->ctx);
+      rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
+      assuan_end_confidential (parm->ctx);
+    }
+  else
+    rc = default_inq_cb (parm->ctrl, line);
+
+  return rc; 
+}
+
+
+/* Call the agent to do a decrypt operation using the key identified
+   by the hex string KEYGRIP and the input data S_CIPHERTEXT.  On the
+   success the decoded value is stored verbatim at R_BUF and its
+   length at R_BUF; the callers needs to release it.  */
+gpg_error_t
+agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
+                 gcry_sexp_t s_ciphertext,
+                 unsigned char **r_buf, size_t *r_buflen)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t n, len;
+  char *p, *buf, *endp;
+  
+  if (!keygrip || strlen(keygrip) != 40 || !s_ciphertext || !r_buf || !r_buflen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *r_buf = NULL;
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
+
+  err = assuan_transact (agent_ctx, "RESET",
+                         NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
+
+  snprintf (line, sizeof line, "SETKEY %s", keygrip);
+  err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      line[DIM(line)-1] = 0;
+      err = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
+
+  init_membuf_secure (&data, 1024);
+  {
+    struct cipher_parm_s parm;
+    
+    parm.ctrl = ctrl;
+    parm.ctx = agent_ctx;
+    err = make_canon_sexp (s_ciphertext, &parm.ciphertext, &parm.ciphertextlen);
+    if (err)
+      return err;
+    err = assuan_transact (agent_ctx, "PKDECRYPT",
+                           membuf_data_cb, &data,
+                           inq_ciphertext_cb, &parm, NULL, NULL);
+    xfree (parm.ciphertext);
+  }
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+
+  put_membuf (&data, "", 1); /* Make sure it is 0 terminated.  */
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  assert (len); /* (we forced Nul termination.)  */
+
+  if (*buf != '(')
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+
+  if (len < 13 || memcmp (buf, "(5:value", 8) ) /* "(5:valueN:D)\0" */
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+  len -= 11;   /* Count only the data of the second part. */
+  p = buf + 8; /* Skip leading parenthesis and the value tag. */
+
+  n = strtoul (p, &endp, 10);
+  if (!n || *endp != ':')
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+  endp++;
+  if (endp-p+n > len)
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP); /* Oops: Inconsistent S-Exp. */
+    }
+  
+  memmove (buf, endp, n);
+
+  *r_buflen = n;
+  *r_buf = buf;
+  return 0;
+}

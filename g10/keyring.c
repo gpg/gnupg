@@ -1,5 +1,5 @@
 /* keyring.c - keyring file handling
- * Copyright (C) 2001, 2004, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -53,7 +53,6 @@ typedef struct keyring_name *KR_NAME;
 struct keyring_name 
 {
   struct keyring_name *next;
-  int secret;
   int read_only;
   dotlock_t lockhd;
   int is_locked;
@@ -69,9 +68,9 @@ static OffsetHashTable kr_offtbl;
 static int kr_offtbl_ready;
 
 
-struct keyring_handle {
+struct keyring_handle
+{
   CONST_KR_NAME resource;
-  int secret;             /* this is for a secret keyring */
   struct {
     CONST_KR_NAME kr;
     IOBUF iobuf;
@@ -93,7 +92,7 @@ struct keyring_handle {
 
 
 
-static int do_copy (int mode, const char *fname, KBNODE root, int secret,
+static int do_copy (int mode, const char *fname, KBNODE root,
                     off_t start_offset, unsigned int n_packets );
 
 
@@ -201,8 +200,7 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
  * if a new keyring was registered.
 */
 int
-keyring_register_filename (const char *fname, int secret, int read_only, 
-                           void **ptr)
+keyring_register_filename (const char *fname, int read_only, void **ptr)
 {
     KR_NAME kr;
 
@@ -221,12 +219,8 @@ keyring_register_filename (const char *fname, int secret, int read_only,
 	  }
       }
 
-    if (secret)
-      register_secured_file (fname);
-
     kr = xmalloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
-    kr->secret = !!secret;
     kr->read_only = read_only;
     kr->lockhd = NULL;
     kr->is_locked = 0;
@@ -254,21 +248,19 @@ keyring_is_writable (void *token)
     
 
 
-/* Create a new handle for the resource associated with TOKEN.  SECRET
-   is just just as a cross-check.
+/* Create a new handle for the resource associated with TOKEN.
    
    The returned handle must be released using keyring_release (). */
 KEYRING_HANDLE
-keyring_new (void *token, int secret)
+keyring_new (void *token)
 {
   KEYRING_HANDLE hd;
   KR_NAME resource = token;
 
-  assert (resource && !resource->secret == !secret);
+  assert (resource);
   
   hd = xmalloc_clear (sizeof *hd);
   hd->resource = resource;
-  hd->secret = !!secret;
   active_handles++;
   return hd;
 }
@@ -537,10 +529,10 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     hd->current.iobuf = NULL;
 
     /* do the update */
-    rc = do_copy (3, hd->found.kr->fname, kb, hd->secret,
+    rc = do_copy (3, hd->found.kr->fname, kb,
                   hd->found.offset, hd->found.n_packets );
     if (!rc) {
-      if (!hd->secret && kr_offtbl)
+      if (kr_offtbl)
         {
           update_offset_hash_table_from_kb (kr_offtbl, kb, 0);
         }
@@ -585,8 +577,8 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     hd->current.iobuf = NULL;
 
     /* do the insert */
-    rc = do_copy (1, fname, kb, hd->secret, 0, 0 );
-    if (!rc && !hd->secret && kr_offtbl)
+    rc = do_copy (1, fname, kb, 0, 0 );
+    if (!rc && kr_offtbl)
       {
         update_offset_hash_table_from_kb (kr_offtbl, kb, 0);
       }
@@ -625,7 +617,7 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
     hd->current.iobuf = NULL;
 
     /* do the delete */
-    rc = do_copy (2, hd->found.kr->fname, NULL, hd->secret,
+    rc = do_copy (2, hd->found.kr->fname, NULL,
                   hd->found.offset, hd->found.n_packets );
     if (!rc) {
         /* better reset the found info */
@@ -953,7 +945,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (rc)
     return rc;
 
-  use_offtbl = !hd->secret && kr_offtbl;
+  use_offtbl = !!kr_offtbl;
   if (!use_offtbl)
     ;
   else if (!kr_offtbl_ready)
@@ -1148,11 +1140,10 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         {
           KR_NAME kr;
           
-          /* First set the did_full_scan flag for this keyring (ignore
-             secret keyrings) */
+          /* First set the did_full_scan flag for this keyring.  */
           for (kr=kr_names; kr; kr = kr->next)
             {
-              if (!kr->secret && hd->resource == kr) 
+              if (hd->resource == kr) 
                 {
                   kr->did_full_scan = 1;
                   break;
@@ -1162,7 +1153,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
              offtbl ready */
           for (kr=kr_names; kr; kr = kr->next)
             {
-              if (!kr->secret && !kr->did_full_scan) 
+              if (!kr->did_full_scan) 
                 break;
             }
           if (!kr)
@@ -1247,19 +1238,9 @@ create_tmp_file (const char *template,
 
 
 static int
-rename_tmp_file (const char *bakfname, const char *tmpfname,
-                 const char *fname, int secret )
+rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
 {
   int rc = 0;
-
-  /* It's a secret keyring, so let's force a fsync just to be safe on
-     filesystems that may not sync data and metadata together
-     (e.g. ext4). */
-  if (secret && iobuf_ioctl (NULL, IOBUF_IOCTL_FSYNC, 0, (char*)tmpfname))
-    {
-      rc = gpg_error_from_syserror ();
-      goto fail;
-    }
 
   /* Invalidate close caches.  */
   if (iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)tmpfname ))
@@ -1270,27 +1251,22 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)bakfname );
   iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname );
 
-  /* first make a backup file except for secret keyrings */
-  if (!secret)
-    { 
+  /* First make a backup file. */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-      gnupg_remove (bakfname);
+  gnupg_remove (bakfname);
 #endif
-      if (rename (fname, bakfname) )
-        {
-          rc = gpg_error_from_syserror ();
-          log_error ("renaming `%s' to `%s' failed: %s\n",
-                     fname, bakfname, strerror(errno) );
-          return rc;
-	}
+  if (rename (fname, bakfname) )
+    {
+      rc = gpg_error_from_syserror ();
+      log_error ("renaming `%s' to `%s' failed: %s\n",
+                 fname, bakfname, strerror(errno) );
+      return rc;
     }
   
   /* then rename the file */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
   gnupg_remove( fname );
 #endif
-  if (secret)
-    unregister_secured_file (fname);
   if (rename (tmpfname, fname) )
     {
       rc = gpg_error_from_syserror ();
@@ -1308,9 +1284,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 
     statbuf.st_mode=S_IRUSR | S_IWUSR;
 
-    if (((secret && !opt.preserve_permissions)
-         || !stat (bakfname,&statbuf)) 
-        && !chmod (fname,statbuf.st_mode))
+    if (!stat (bakfname, &statbuf) && !chmod (fname, statbuf.st_mode))
       ;
     else
       log_error ("WARNING: unable to restore permissions to `%s': %s",
@@ -1321,13 +1295,6 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   return 0;
 
  fail:
-  if (secret)
-    {
-      log_info(_("WARNING: 2 files with confidential information exists.\n"));
-      log_info(_("%s is the unchanged one\n"), fname );
-      log_info(_("%s is the new one\n"), tmpfname );
-      log_info(_("Please fix this possible security flaw\n"));
-    }
   return rc;
 }
 
@@ -1392,7 +1359,7 @@ keyring_rebuild_cache (void *token,int noisy)
   int rc;
   ulong count = 0, sigcount = 0;
 
-  hd = keyring_new (token, 0);
+  hd = keyring_new (token);
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
 
@@ -1420,7 +1387,7 @@ keyring_rebuild_cache (void *token,int noisy)
               tmpfp = NULL;
             }
           rc = lastresname? rename_tmp_file (bakfilename, tmpfilename, 
-                                             lastresname, 0) : 0;
+                                             lastresname) : 0;
           xfree (tmpfilename);  tmpfilename = NULL;
           xfree (bakfilename);  bakfilename = NULL;
           if (rc)
@@ -1513,7 +1480,7 @@ keyring_rebuild_cache (void *token,int noisy)
       tmpfp = NULL;
     }
   rc = lastresname? rename_tmp_file (bakfilename, tmpfilename,
-                                     lastresname, 0) : 0;
+                                     lastresname) : 0;
   xfree (tmpfilename);  tmpfilename = NULL;
   xfree (bakfilename);  bakfilename = NULL;
 
@@ -1536,7 +1503,7 @@ keyring_rebuild_cache (void *token,int noisy)
  *	3 = update
  */
 static int
-do_copy (int mode, const char *fname, KBNODE root, int secret,
+do_copy (int mode, const char *fname, KBNODE root,
          off_t start_offset, unsigned int n_packets )
 {
     IOBUF fp, newfp;
@@ -1556,7 +1523,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	mode_t oldmask;
 
 	oldmask=umask(077);
-        if (!secret && is_secured_filename (fname)) {
+        if (is_secured_filename (fname)) {
             newfp = NULL;
             gpg_err_set_errno (EPERM);
         }
@@ -1602,8 +1569,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	iobuf_close(fp);
 	goto leave;
     }
-    if (secret)
-      register_secured_file (tmpfname);
 
     if( mode == 1 ) { /* insert */
 	/* copy everything to the new file */
@@ -1612,8 +1577,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: copy to `%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
-            if (secret)
-              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1627,8 +1590,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error ("%s: copy to `%s' failed: %s\n",
                        fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
-            if (secret)
-              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1639,8 +1600,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: skipping %u packets failed: %s\n",
 			    fname, n_packets, g10_errstr(rc));
 	    iobuf_close(fp);
-            if (secret)
-              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1650,8 +1609,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
         rc = write_keyblock (newfp, root);
         if (rc) {
           iobuf_close(fp);
-          if (secret)
-            unregister_secured_file (tmpfname);
           iobuf_cancel(newfp);
           goto leave;
         }
@@ -1664,8 +1621,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	    log_error("%s: copy to `%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
-            if (secret)
-              unregister_secured_file (tmpfname);
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
@@ -1684,7 +1639,7 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	goto leave;
     }
 
-    rc = rename_tmp_file (bakfname, tmpfname, fname, secret);
+    rc = rename_tmp_file (bakfname, tmpfname, fname);
 
   leave:
     xfree(bakfname);

@@ -557,7 +557,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
    * why to sign keys using a subkey.  Implementation of USAGE_CERT
    * is just a hack in getkey.c and does not mean that a subkey
    * marked as certification capable will be used. */
-  rc = build_sk_list (locusr, &sk_list, 0, PUBKEY_USAGE_CERT);
+  rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_CERT);
   if (rc)
     goto leave;
 
@@ -2686,7 +2686,7 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	    putchar ('a');
 	  putchar ('\n');
 
-	  print_fingerprint (pk, NULL, 0);
+	  print_fingerprint (pk, 0);
 	  print_revokers (pk);
 	}
     }
@@ -2970,7 +2970,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY && with_fpr)
 	    {
-	      print_fingerprint (pk, NULL, 2);
+	      print_fingerprint (pk, 2);
 	      tty_printf ("\n");
 	    }
 	}
@@ -3047,7 +3047,7 @@ show_basic_key_info (KBNODE keyblock)
 	  tty_printf ("  ");
 	  tty_printf (_("expires: %s"), expirestr_from_pk (pk));
 	  tty_printf ("\n");
-	  print_fingerprint (pk, NULL, 3);
+	  print_fingerprint (pk, 3);
 	  tty_printf ("\n");
 	}
       else if (node->pkt->pkttype == PKT_SECRET_KEY)
@@ -3061,7 +3061,8 @@ show_basic_key_info (KBNODE keyblock)
 	  tty_printf ("  ");
 	  tty_printf (_("expires: %s"), expirestr_from_sk (sk));
 	  tty_printf ("\n");
-	  print_fingerprint (NULL, sk, 3);
+          log_debug ("FIXME\n");
+	  /* print_fingerprint (NULL, sk, 3); */
 	  tty_printf ("\n");
 	}
     }
@@ -3110,7 +3111,7 @@ show_key_and_fingerprint (KBNODE keyblock)
     }
   tty_printf ("\n");
   if (pk)
-    print_fingerprint (pk, NULL, 2);
+    print_fingerprint (pk, 2);
 }
 
 
@@ -3588,7 +3589,7 @@ menu_addrevoker (KBNODE pub_keyblock, int sensitive)
 	}
 
       print_pubkey_info (NULL, revoker_pk);
-      print_fingerprint (revoker_pk, NULL, 2);
+      print_fingerprint (revoker_pk, 2);
       tty_printf ("\n");
 
       tty_printf (_("WARNING: appointing a key as a designated revoker "
@@ -5201,7 +5202,7 @@ menu_showphoto (KBNODE keyblock)
 				    "key %s (uid %d)\n"),
 				  image_type_to_string (type, 1),
 				  (ulong) size, keystr_from_pk (pk), count);
-		      show_photos (&uid->attribs[i], 1, pk, NULL, uid);
+		      show_photos (&uid->attribs[i], 1, pk, uid);
 		    }
 		}
 	    }

@@ -1890,7 +1890,7 @@ main (int argc, char **argv)
     char *username;
     int may_coredump;
     strlist_t sl, remusr= NULL, locusr=NULL;
-    strlist_t nrings=NULL, sec_nrings=NULL;
+    strlist_t nrings = NULL;
     armor_filter_context_t *afx = NULL;
     int detached_sig = 0;
     FILE *configfp = NULL;
@@ -2283,8 +2283,9 @@ main (int argc, char **argv)
             break;
 
 	  case oSecretKeyring:
-            append_to_strlist( &sec_nrings, pargs.r.ret_str);
+            /* Ignore this old option.  */
             break;
+
 	  case oOptions:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
@@ -3385,22 +3386,12 @@ main (int argc, char **argv)
     if( ALWAYS_ADD_KEYRINGS 
         || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) ) 
       {
-        if (ALWAYS_ADD_KEYRINGS
-            || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
-                && cmd != aVerify && cmd != aSym && cmd != aLocateKeys))
-          {
-            if (!sec_nrings || default_keyring) /* add default secret rings */
-              keydb_add_resource ("secring" EXTSEP_S "gpg", 4, 1);
-            for (sl = sec_nrings; sl; sl = sl->next)
-              keydb_add_resource ( sl->d, 0, 1 );
-          }
-	if( !nrings || default_keyring )  /* add default ring */
-	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 4, 0);
-	for(sl = nrings; sl; sl = sl->next )
-	    keydb_add_resource ( sl->d, sl->flags, 0 );
+	if (!nrings || default_keyring)  /* Add default ring. */
+	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 4);
+	for (sl = nrings; sl; sl = sl->next )
+          keydb_add_resource (sl->d, sl->flags);
       }
     FREE_STRLIST(nrings);
-    FREE_STRLIST(sec_nrings);
 
     if (cmd == aGPGConfTest)
       g10_exit(0);

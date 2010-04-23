@@ -305,7 +305,7 @@ void secret_key_list( strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
-void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
+void print_fingerprint (PKT_public_key *pk, int mode);
 void print_revokers(PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
 void show_keyserver_url(PKT_signature *sig,int indent,int mode);

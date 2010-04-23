@@ -314,7 +314,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
           gcry_sexp_t s_sigval;
           
           /* FIXME: desc = gpgsm_format_keydesc (cert); */
-          desc = xtrystrdup ("FIXME: Format a decription");
+          desc = xtrystrdup ("FIXME: Format a description");
           
           err = agent_pksign (NULL/*ctrl*/, hexgrip, desc, 
                               dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
@@ -811,7 +811,9 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
+    /* Note: In the old non-agent version the following call used to
+       unprotect the secret key.  This is now done on demand by the agent.  */
+    if( (rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_SIG )) )
 	goto leave;
 
     if(PGP2 && !only_old_style(sk_list))
@@ -1126,7 +1128,9 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
+    /* Note: In the old non-agent version the following call used to
+       unprotect the secret key.  This is now done on demand by the agent.  */
+    if( (rc=build_sk_list( locusr, &sk_list, PUBKEY_USAGE_SIG )) )
 	goto leave;
 
     if( !old_style && !duration )
@@ -1290,7 +1294,9 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 	  duration=parse_expire_string(opt.def_sig_expire);
       }
 
-    rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
+    /* Note: In the old non-agent version the following call used to
+       unprotect the secret key.  This is now done on demand by the agent.  */
+    rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_SIG);
     if (rc) 
 	goto leave;
 

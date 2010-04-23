@@ -115,10 +115,8 @@ is_duplicated_entry (strlist_t list, strlist_t item)
 }
 
 
-/* FIXME:  We ignore the UNLOCK flag - should not be needed anymore.  */
 gpg_error_t
-build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list,
-	       int unlock, unsigned int use)
+build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
 {
   gpg_error_t err;
   SK_LIST sk_list = NULL;
@@ -202,18 +200,6 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list,
 	      pk = NULL;
 	      log_info (_("skipped: secret key already present\n"));
 	    }
-          /* Fixme:  We could change the next test by a call to gpg-agent which
-             would then cache the passphrase.  */
-	  /* else if (unlock && (rc = check_secret_key (sk, 0))) */
-	  /*   { */
-	  /*     free_secret_key (sk); */
-	  /*     sk = NULL; */
-	  /*     log_error (_("skipped \"%s\": %s\n"), */
-	  /*       	 locusr->d, g10_errstr (rc)); */
-	  /*     write_status_text_and_buffer */
-	  /*       (STATUS_INV_SGNR, get_inv_recpsgnr_code (rc), */
-	  /*        locusr->d, strlen (locusr->d), -1); */
-	  /*   } */
 	  else if ((err = openpgp_pk_test_algo2 (pk->pubkey_algo, use)))
 	    {
 	      free_public_key (pk);

@@ -24,11 +24,10 @@
 
 typedef struct keyring_handle *KEYRING_HANDLE;
 
-int keyring_register_filename (const char *fname, int secret, int read_only,
-                               void **ptr);
+int keyring_register_filename (const char *fname, int read_only, void **ptr);
 int keyring_is_writable (void *token);
 
-KEYRING_HANDLE keyring_new (void *token, int secret);
+KEYRING_HANDLE keyring_new (void *token);
 void keyring_release (KEYRING_HANDLE hd);
 const char *keyring_get_resource_name (KEYRING_HANDLE hd);
 int keyring_lock (KEYRING_HANDLE hd, int yes);

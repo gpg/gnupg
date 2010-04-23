@@ -45,13 +45,13 @@ typedef enum {
 } KeydbResourceType;
 #define MAX_KEYDB_RESOURCES 40
 
-struct resource_item {
+struct resource_item 
+{
   KeydbResourceType type;
   union {
     KEYRING_HANDLE kr;
   } u;
   void *token;
-  int secret;
 };
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
@@ -213,9 +213,9 @@ maybe_create_keyring (char *filename, int force)
  * Flag 8   - Open as read-only.
  */
 int
-keydb_add_resource (const char *url, int flags, int secret)
+keydb_add_resource (const char *url, int flags)
 {
-    static int any_secret, any_public;
+    static int any_public;
     const char *resname = url;
     char *filename = NULL;
     int force = (flags&1);
@@ -255,7 +255,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 	filename = xstrdup (resname);
 
     if (!force && !read_only)
-	force = secret? !any_secret : !any_public;
+	force = !any_public;
 
     /* See whether we can determine the filetype.  */
     if (rt == KEYDB_RESOURCE_TYPE_NONE) {
@@ -289,7 +289,7 @@ keydb_add_resource (const char *url, int flags, int secret)
         if (rc)
           goto leave;
 
-        if(keyring_register_filename (filename, secret, read_only, &token))
+        if(keyring_register_filename (filename, read_only, &token))
 	  {
 	    if (used_resources >= MAX_KEYDB_RESOURCES)
 	      rc = G10ERR_RESOURCE_LIMIT;
@@ -300,7 +300,6 @@ keydb_add_resource (const char *url, int flags, int secret)
 		all_resources[used_resources].type = rt;
 		all_resources[used_resources].u.kr = NULL; /* Not used here */
 		all_resources[used_resources].token = token;
-		all_resources[used_resources].secret = secret;
 		used_resources++;
 	      }
 	  }
@@ -324,22 +323,9 @@ keydb_add_resource (const char *url, int flags, int secret)
 
   leave:
     if (rc)
-      {
-        /* Secret keyrings are not required in all cases.  To avoid
-           having gpg return failure we use log_info here if the
-           rewsource is a secret one and marked as default
-           resource.  */
-        if ((flags&4) && secret)
-          log_info (_("keyblock resource `%s': %s\n"),
-                    filename, g10_errstr(rc));
-        else
-          log_error (_("keyblock resource `%s': %s\n"),
-                     filename, g10_errstr(rc));
-      }
-    else if (secret)
-	any_secret = 1;
+      log_error (_("keyblock resource `%s': %s\n"), filename, g10_errstr(rc));
     else
-	any_public = 1;
+      any_public = 1;
     xfree (filename);
     return rc;
 }
@@ -352,7 +338,6 @@ keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
-  int secret = 0; /* FIXME: Remove the secret stuff all together.  */
   
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
@@ -360,8 +345,6 @@ keydb_new (void)
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
     {
-      if (!all_resources[i].secret != !secret)
-        continue;
       switch (all_resources[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
@@ -369,8 +352,7 @@ keydb_new (void)
         case KEYDB_RESOURCE_TYPE_KEYRING:
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
-          hd->active[j].secret = all_resources[i].secret;
-          hd->active[j].u.kr = keyring_new (all_resources[i].token, secret);
+          hd->active[j].u.kr = keyring_new (all_resources[i].token);
           if (!hd->active[j].u.kr) {
             xfree (hd);
             return NULL; /* fixme: release all previously allocated handles*/
@@ -706,8 +688,6 @@ keydb_rebuild_caches (int noisy)
   
   for (i=0; i < used_resources; i++)
     {
-      if (all_resources[i].secret)
-        continue;
       if (!keyring_is_writable (all_resources[i].token))
         continue;
       switch (all_resources[i].type)

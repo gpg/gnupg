@@ -196,9 +196,9 @@ main( int argc, char **argv )
 
   /* Note: We open all keyrings in read-only mode (flag value: 8).  */
   if (!nrings)  /* No keyring given: use default one. */
-    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8, 0);
+    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8);
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, 8, 0 );
+    keydb_add_resource (sl->d, 8);
    
   FREE_STRLIST (nrings);
     

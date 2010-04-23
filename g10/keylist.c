@@ -817,7 +817,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   es_fprintf (es_stdout, "\n");
 
   if (fpr)
-    print_fingerprint (pk, NULL, 0);
+    print_fingerprint (pk, 0);
 
   /* FIXME: Change this function to take a PK and ask the agent:  */
   /* if (secret) print_card_serialno (sk); */
@@ -866,7 +866,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  es_putc ('\n', es_stdout);
 
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
-	    show_photos (uid->attribs, uid->numattribs, pk, NULL, uid);
+	    show_photos (uid->attribs, uid->numattribs, pk, uid);
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
@@ -911,7 +911,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
             {
-              print_fingerprint (pk2, NULL, 0);
+              print_fingerprint (pk2, 0);
               /* FIXME: (see above) */
               /* if (secret) */
               /*   print_card_serialno (sk2); */
@@ -1127,7 +1127,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 
   print_revokers (pk);
   if (fpr)
-    print_fingerprint (pk, NULL, 0);
+    print_fingerprint (pk, 0);
   if (opt.with_key_data)
     {
       if (!hexkeygrip_from_pk (pk, &p))
@@ -1232,7 +1232,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
             }
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
-	    print_fingerprint (pk2, NULL, 0);
+	    print_fingerprint (pk2, 0);
 	  if (opt.with_key_data)
             {
               if (!hexkeygrip_from_pk (pk2, &p))
@@ -1428,15 +1428,17 @@ list_keyblock (KBNODE keyblock, int secret, int fpr, void *opaque)
 }
 
 /*
- * standard function to print the finperprint.
+ * Function to print the finperprint.
  * mode 0: as used in key listings, opt.with_colons is honored
  *      1: print using log_info ()
  *      2: direct use of tty
  *      3: direct use of tty but only primary key.
- * modes 1 and 2 will try and print both subkey and primary key fingerprints
+ *
+ * Modes 1 and 2 will try and print both subkey and primary key
+ * fingerprints.  A MODE with bit 7 set is used internally.
  */
 void
-print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
+print_fingerprint (PKT_public_key *pk, int mode)
 {
   byte array[MAX_FINGERPRINT_LEN], *p;
   size_t i, n;
@@ -1444,21 +1446,12 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
   const char *text;
   int primary = 0;
 
-  if (sk)
-    {
-      if (sk->main_keyid[0] == sk->keyid[0]
-	  && sk->main_keyid[1] == sk->keyid[1])
-	primary = 1;
-    }
-  else
-    {
-      if (pk->main_keyid[0] == pk->keyid[0]
-	  && pk->main_keyid[1] == pk->keyid[1])
-	primary = 1;
-    }
+  if (pk->main_keyid[0] == pk->keyid[0]
+      && pk->main_keyid[1] == pk->keyid[1])
+    primary = 1;
 
   /* Just to be safe */
-  if (mode & 0x80 && !primary)
+  if ((mode & 0x80) && !primary)
     {
       log_error ("primary key is not really primary!\n");
       return;
@@ -1468,20 +1461,10 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
 
   if (!primary && (mode == 1 || mode == 2))
     {
-      if (sk)
-	{
-	  PKT_secret_key *primary_sk = xmalloc_clear (sizeof (*primary_sk));
-	  get_seckey (primary_sk, sk->main_keyid);
-	  print_fingerprint (NULL, primary_sk, mode | 0x80);
-	  free_secret_key (primary_sk);
-	}
-      else
-	{
-	  PKT_public_key *primary_pk = xmalloc_clear (sizeof (*primary_pk));
-	  get_pubkey (primary_pk, pk->main_keyid);
-	  print_fingerprint (primary_pk, NULL, mode | 0x80);
-	  free_public_key (primary_pk);
-	}
+      PKT_public_key *primary_pk = xmalloc_clear (sizeof (*primary_pk));
+      get_pubkey (primary_pk, pk->main_keyid);
+      print_fingerprint (primary_pk, mode | 0x80);
+      free_public_key (primary_pk);
     }
 
   if (mode == 1)
@@ -1513,10 +1496,7 @@ print_fingerprint (PKT_public_key * pk, PKT_secret_key * sk, int mode)
       text = _("      Key fingerprint =");
     }
 
-  if (sk)
-    fingerprint_from_sk (sk, array, &n);
-  else
-    fingerprint_from_pk (pk, array, &n);
+  fingerprint_from_pk (pk, array, &n);
   p = array;
   if (opt.with_colons && !mode)
     {

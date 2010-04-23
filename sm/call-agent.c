@@ -300,7 +300,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 
 
 /* Handle a CIPHERTEXT inquiry.  Note, we only send the data,
-   assuan_transact talkes care of flushing and writing the end */
+   assuan_transact takes care of flushing and writing the end */
 static gpg_error_t
 inq_ciphertext_cb (void *opaque, const char *line)
 {
