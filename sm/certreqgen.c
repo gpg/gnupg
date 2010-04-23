@@ -294,11 +294,11 @@ read_parameters (ctrl_t ctrl, estream_t fp, ksba_writer_t writer)
       keyword = p;
       if (*keyword == '%')
         {
-          for (; *p && !spacep (p); p++)
+          for (; *p && !ascii_isspace (*p); p++)
             ;
           if (*p)
             *p++ = 0;
-          for (; spacep (p); p++)
+          for (; ascii_isspace (*p); p++)
             ;
           value = p;
           trim_trailing_spaces (value);
