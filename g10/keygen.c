@@ -315,6 +315,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	  string=opt.def_preference_list;
 	else
 	  {
+            int any_compress = 0;
 	    dummy_string[0]='\0';
 
             /* The rationale why we use the order AES256,192,128 is
@@ -375,13 +376,31 @@ keygen_set_std_prefs (const char *string,int personal)
 	      strcat (dummy_string, "H11 ");
 
 	    if(!check_compress_algo(COMPRESS_ALGO_ZLIB))
-              strcat(dummy_string,"Z2 ");
+              {
+                strcat(dummy_string,"Z2 ");
+                any_compress = 1;
+              }
 
 	    if(!check_compress_algo(COMPRESS_ALGO_BZIP2))
-	      strcat(dummy_string,"Z3 ");
+              {
+                strcat(dummy_string,"Z3 ");
+                any_compress = 1;
+              }
 
 	    if(!check_compress_algo(COMPRESS_ALGO_ZIP))
-              strcat(dummy_string,"Z1");
+              {
+                strcat(dummy_string,"Z1 ");
+                any_compress = 1;
+              }
+            
+            /* In case we have no compress algo at all, declare that
+               we prefer no compresssion.  */
+            if (!any_compress)
+              strcat(dummy_string,"Z0 ");
+
+            /* Remove the trailing space.  */
+            if (*dummy_string && dummy_string[strlen (dummy_string)-1] == ' ')
+              dummy_string[strlen (dummy_string)-1] = 0;
 
 	    string=dummy_string;
 	  }

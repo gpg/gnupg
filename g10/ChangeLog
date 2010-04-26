@@ -1,3 +1,9 @@
+2010-04-26  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (keygen_set_std_prefs): Explicitly include Z0 in the
+	default preferences if no compression algorithms are available.
+	Remove a possible trailing space in the dummy_string.
+
 2010-04-23  Werner Koch  <wk@g10code.com>
 
 	* pubkey-enc.c (get_it): Use the agent for decryption.

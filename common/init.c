@@ -73,12 +73,20 @@ init_common_subsystems (int *argcp, char ***argvp)
 # ifdef HAVE_PTH
   pth_init ();
 # else
- {
-   WSADATA wsadat;
-
-   WSAStartup (0x202, &wsadat);
- }
+  {
+    WSADATA wsadat;
+    
+    WSAStartup (0x202, &wsadat);
+  }
 # endif /*!HAVE_PTH*/
+#endif
+  
+#ifdef HAVE_W32CE_SYSTEM
+  /* Register the sleep exit function before the estream init so that
+     the sleep will be called after the estream registered atexit
+     function which flushes the left open estream streams and in
+     particular es_stdout.  */
+  atexit (sleep_on_exit);
 #endif
 
   /* Initialize the Estream library. */
@@ -87,7 +95,6 @@ init_common_subsystems (int *argcp, char ***argvp)
   /* Special hack for Windows CE: We extract some options from arg
      to setup the standard handles.  */
 #ifdef HAVE_W32CE_SYSTEM
-  atexit (sleep_on_exit);
   parse_std_file_handles (argcp, argvp);
 #else
   (void)argcp;

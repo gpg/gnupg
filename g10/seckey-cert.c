@@ -35,6 +35,7 @@
 #include "status.h"
 #include "pkglue.h"
 
+#if 0 /* Not anymore used - kept for reference.  */
 static int
 do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
           int *canceled )
@@ -256,7 +257,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
     return 0;
 }
-
+#endif /*0*/
 
 
 /****************

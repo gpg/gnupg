@@ -1,3 +1,10 @@
+2010-04-26  Werner Koch  <wk@g10code.com>
+
+	* utf8conv.c (load_libiconv) [W32CE]: No libiconv warning
+
+	* init.c (init_common_subsystems) [W32CE]: Register the sleep
+	function before es_init.
+
 2010-04-20  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_deinit): New.

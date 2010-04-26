@@ -62,6 +62,10 @@ static int     (* __stdcall iconv_close) (iconv_t cd);
 static int 
 load_libiconv (void)
 {
+#ifdef HAVE_W32CE_SYSTEM
+  return -1; /* FIXME No libiconv yet - Need to investigate whether it
+                is at all required.  */
+#else
   static int done;
   
   if (!done)
@@ -94,6 +98,7 @@ load_libiconv (void)
         }
     }
   return iconv_open? 0: -1;
+#endif
 }    
 #endif /*HAVE_W32_SYSTEM*/
 

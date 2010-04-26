@@ -132,7 +132,7 @@ decrypt_message_fd (int input_fd, int output_fd)
     }
 
 #ifdef HAVE_W32CE_SYSTEM
-#warning Ned to fix this
+#warning Need to fix this
   opt.outfp = NULL;
 #else
   opt.outfp = fdopen (dup (output_fd), "wb");
