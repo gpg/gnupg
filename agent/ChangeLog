@@ -1,3 +1,7 @@
+2010-04-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (create_server_socket) [W32]: Also check for EEXIST.
+
 2010-04-19  Werner Koch  <wk@g10code.com>
 
 	* pksign.c (get_dsa_qbits, do_encode_dsa): New.

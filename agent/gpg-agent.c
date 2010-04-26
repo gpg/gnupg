@@ -1493,7 +1493,15 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
   strcpy (serv_addr->sun_path, name);
   len = SUN_LEN (serv_addr);
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (use_standard_socket && rc == -1 && errno == EADDRINUSE)
+
+  /* Our error code mapping on W32CE returns EEXIST thus we also test
+     for this. */
+  if (use_standard_socket && rc == -1 
+      && (errno == EADDRINUSE
+#ifdef HAVE_W32_SYSTEM
+          || errno == EEXIST
+#endif
+          ))
     {
       /* Check whether a gpg-agent is already running on the standard
          socket.  We do this test only if this is not the ssh socket.
