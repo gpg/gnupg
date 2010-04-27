@@ -195,6 +195,9 @@ void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 void next_to_last_passphrase(void);
 
+char *gpg_format_keydesc (PKT_public_key *pk, int escaped);
+
+
 /*-- getkey.c --*/
 void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);

@@ -1,3 +1,9 @@
+2010-04-27  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (gpg_format_keydesc): New.
+	* pubkey-enc.c (get_it): Use it.
+	* sign.c (do_sign): Use it.
+
 2010-04-26  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (keygen_set_std_prefs): Explicitly include Z0 in the

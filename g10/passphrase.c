@@ -683,3 +683,57 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
                                 s2k, mode, tryagain_text, NULL, NULL,
                                 canceled);
 }
+
+
+/* Return an allocated utf-8 string describing the key PK.  IF ESCAPED
+   is true spaces and control characters are percent or plus
+   escaped. */
+char *
+gpg_format_keydesc (PKT_public_key *pk, int escaped)
+{
+  char *uid;
+  size_t uidlen;
+  const char *algo_name;
+  const char *timestr;
+  char *orig_codeset;
+  char *maink;
+  char *desc;
+      
+  algo_name = gcry_pk_algo_name (pk->pubkey_algo);
+  if (!algo_name)
+    algo_name = "?";
+  timestr = strtimestamp (pk->timestamp);
+  uid = get_user_id (pk->keyid, &uidlen); 
+
+  orig_codeset = i18n_switchto_utf8 ();
+
+  if (pk->main_keyid[2] && pk->main_keyid[3]
+      && pk->keyid[0] != pk->main_keyid[2] 
+      && pk->keyid[1] != pk->main_keyid[3])
+    maink = xtryasprintf (_(" (main key ID %s)"), keystr (pk->main_keyid));
+  else
+    maink = NULL;
+
+  desc = xtryasprintf (_("Please enter the passphrase to unlock the"
+                         " secret key for the OpenPGP certificate:\n"
+                         "\"%.*s\"\n"
+                         "%u-bit %s key, ID %s,\n"
+                         "created %s%s.\n"),
+                       (int)uidlen, uid,
+                       nbits_from_pk (pk), algo_name, 
+                       keystr (pk->keyid), timestr,
+                       maink?maink:"" );
+  xfree (maink);
+  xfree (uid);
+
+  i18n_switchback (orig_codeset);
+
+  if (escaped)
+    {
+      char *tmp = percent_plus_escape (desc);
+      xfree (desc); 
+      desc = tmp;
+    }
+
+  return desc;
+}

@@ -313,13 +313,10 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
           char *desc;
           gcry_sexp_t s_sigval;
           
-          /* FIXME: desc = gpgsm_format_keydesc (cert); */
-          desc = xtrystrdup ("FIXME: Format a description");
-          
+          desc = gpg_format_keydesc (pksk, 1);
           err = agent_pksign (NULL/*ctrl*/, hexgrip, desc, 
                               dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
                               &s_sigval);
-          
           xfree (desc);
      
           if (err)
