@@ -1,3 +1,16 @@
+2011-01-25  Werner Koch  <wk@g10code.com>
+
+	From 2.0 branch, 2010-03-17:
+
+	* command.c (open_card): Return GPG_ERR_NOT_OPERATIONAL if no
+	card services are available.
+	(get_reader_slot): Detect no services status.
+	(cmd_serialno): No reset if there are no services.
+	(scd_command_handler): Stop scdaemon in that case.
+	* apdu.c (pcsc_no_service): New.
+	(open_pcsc_reader_direct): Set it.
+	(apdu_open_reader): Add arg R_NO_SERVICE.
+
 2011-01-05  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (ccid_transceive_secure): Support the gnuk token.
