@@ -410,7 +410,8 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
    diagnostics. Returns 0 if the process succeeded, GPG_ERR_GENERAL
    for any failures of the spawned program or other error codes.  If
    EXITCODE is not NULL the exit code of the process is stored at this
-   address or -1 if it could not be retrieved. */
+   address or -1 if it could not be retrieved and no error message is
+   logged.  */
 gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
 {
@@ -443,9 +444,10 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status))
     {
-      log_error (_("error running `%s': exit status %d\n"), pgmname,
-                 WEXITSTATUS (status));
-      if (exitcode)
+      if (!exitcode)
+        log_error (_("error running `%s': exit status %d\n"), pgmname,
+                   WEXITSTATUS (status));
+      else
         *exitcode = WEXITSTATUS (status);
       ec = GPG_ERR_GENERAL;
     }
@@ -497,13 +499,16 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
     }
   if (!pid)
     {
+      pid_t pid2;
+
       gcry_control (GCRYCTL_TERM_SECMEM);
       if (setsid() == -1 || chdir ("/"))
         _exit (1);
-      pid = fork (); /* Double fork to let init takes over the new child. */
-      if (pid == (pid_t)(-1))
+
+      pid2 = fork (); /* Double fork to let init take over the new child. */
+      if (pid2 == (pid_t)(-1))
         _exit (1);
-      if (pid)
+      if (pid2)
         _exit (0);  /* Let the parent exit immediately. */
 
       if (envp)

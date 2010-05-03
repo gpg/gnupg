@@ -79,6 +79,7 @@ use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
 use_ccid_driver=yes
+use_standard_socket=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -266,17 +267,17 @@ if test "$use_exec" = yes ; then
 	[enable email keyserver interface only]),
       try_mailto=$enableval, try_mailto=no)
     AC_MSG_RESULT($try_mailto)
-    fi
+  fi
 
-    AC_MSG_CHECKING([whether keyserver exec-path is enabled])
-    AC_ARG_ENABLE(keyserver-path,
+  AC_MSG_CHECKING([whether keyserver exec-path is enabled])
+  AC_ARG_ENABLE(keyserver-path,
       AC_HELP_STRING([--disable-keyserver-path],
         [disable the exec-path option for keyserver helpers]),
       [if test "$enableval" = no ; then
          disable_keyserver_path=yes
       fi],enableval=yes)
-    AC_MSG_RESULT($enableval)
-  fi
+  AC_MSG_RESULT($enableval)
+fi
 
 
 #
@@ -624,6 +625,30 @@ if test "$disable_keyserver_path" = yes; then
     AC_DEFINE(DISABLE_KEYSERVER_PATH,1,
               [Defined to disable exec-path for keyserver helpers])
 fi
+
+#
+# Allows enabling the use of a standard socket by default This is
+# gpg-agent's option --[no-]use-standard-socket.  For Windows we force
+# the use of this.
+#
+AC_MSG_CHECKING([whether to use a standard socket by default])
+AC_ARG_ENABLE(standard-socket,
+              AC_HELP_STRING([--enable-standard-socket],
+                             [use a standard socket for the agent by default]),
+              use_standard_socket=$enableval)
+tmp=""
+if test "$use_standard_socket" != yes; then
+  if test "$have_w32_system" = yes; then
+    use_standard_socket=yes
+    tmp=" (forced)"
+  fi
+fi
+AC_MSG_RESULT($use_standard_socket$tmp)
+if test "$use_standard_socket" = yes; then
+  AC_DEFINE(USE_STANDARD_SOCKET,1,
+            [Use the standard socket for the agent by default])
+fi
+
 
 # (These need to go after AC_PROG_CC so that $EXEEXT is defined)
 AC_DEFINE_UNQUOTED(EXEEXT,"$EXEEXT",[The executable file extension, if any])

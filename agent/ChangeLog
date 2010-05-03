@@ -1,3 +1,12 @@
+2010-05-03  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (check_own_socket_thread): Do not release SOCKNAME
+	too early.
+
+2010-04-30  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Add command --use-standard-socket-p.
+
 2010-04-26  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (create_server_socket) [W32]: Also check for EEXIST.

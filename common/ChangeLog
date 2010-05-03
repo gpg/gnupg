@@ -1,3 +1,13 @@
+2010-05-03  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (lock_agent_spawning, unlock_agent_spawning): New.
+	(start_new_gpg_agent): Test for configured standard socket and
+	try to fire up the agent in this case.
+
+	* exechelp-posix.c (gnupg_wait_process): Do not log a message if
+	EXITCODE is given.
+	(gnupg_spawn_process_detached): Do not reuse PID for the second fork.
+
 2010-04-26  Werner Koch  <wk@g10code.com>
 
 	* utf8conv.c (load_libiconv) [W32CE]: No libiconv warning

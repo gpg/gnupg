@@ -62,6 +62,7 @@ enum cmd_and_opt_values
   oNoVerbose = 500,
   aGPGConfList,
   aGPGConfTest,
+  aUseStandardSocketP,
   oOptions,
   oDebug,
   oDebugAll,
@@ -98,6 +99,7 @@ enum cmd_and_opt_values
   oEnablePassphraseHistory,
   oUseStandardSocket,
   oNoUseStandardSocket,
+  oStandardSocketP,
   oFakedSystemTime,
 
   oIgnoreCacheForSigning,
@@ -116,6 +118,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { aGPGConfList, "gpgconf-list", 256, "@" },
   { aGPGConfTest, "gpgconf-test", 256, "@" },
+  { aUseStandardSocketP, "use-standard-socket-p", 256, "@" }, 
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -748,6 +751,7 @@ main (int argc, char **argv )
         {
         case aGPGConfList: gpgconf_list = 1; break;
         case aGPGConfTest: gpgconf_list = 2; break;
+        case aUseStandardSocketP: gpgconf_list = 3; break;
         case oBatch: opt.batch=1; break;
 
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
@@ -858,9 +862,11 @@ main (int argc, char **argv )
       log_debug ("... okay\n");
     }
   
-  if (gpgconf_list == 2)
+  if (gpgconf_list == 3)
+    agent_exit (!use_standard_socket);
+  else if (gpgconf_list == 2)
     agent_exit (0);
-  if (gpgconf_list)
+  else if (gpgconf_list)
     {
       char *filename;
       char *filename_esc;
@@ -2097,7 +2103,6 @@ check_own_socket_thread (void *arg)
   check_own_socket_running++;
 
   rc = assuan_new (&ctx);
-  xfree (sockname);
   if (rc)
     {
       log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
@@ -2133,6 +2138,7 @@ check_own_socket_thread (void *arg)
   xfree (buffer);
 
  leave:
+  xfree (sockname);
   if (ctx)
     assuan_release (ctx);
   if (rc)
@@ -2153,7 +2159,7 @@ check_own_socket_thread (void *arg)
 
 /* Check whether we are still listening on our own socket.  In case
    another gpg-agent process started after us has taken ownership of
-   our socket, we woul linger around without any real taks.  Thus we
+   our socket, we woulf linger around without any real task.  Thus we
    better check once in a while whether we are really needed.  */
 static void
 check_own_socket (void)

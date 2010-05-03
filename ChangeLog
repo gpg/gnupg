@@ -1,3 +1,8 @@
+2010-04-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --enable-standard-socket.
+	(USE_STANDARD_SOCKET): ac_define it.
+
 2010-04-14  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (keyserver) [W32CE]: Do not build for now.
