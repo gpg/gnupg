@@ -287,6 +287,9 @@ long (* DLSTDCALL pcsc_transmit) (unsigned long card,
 long (* DLSTDCALL pcsc_set_timeout) (unsigned long context,
                                      unsigned long timeout);
 
+/* Flag set if PC/SC returned the no-service error.  */
+static int pcsc_no_service;
+
 
 /*  Prototypes.  */
 static int pcsc_get_status (int slot, unsigned int *status);
@@ -1487,8 +1490,11 @@ open_pcsc_reader_direct (const char *portstr)
       log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       reader_table[slot].used = 0;
+      if (err == 0x8010001d)
+        pcsc_no_service = 1;
       return -1;
     }
+  pcsc_no_service = 0;
 
   err = pcsc_list_readers (reader_table[slot].pcsc.context,
                            NULL, NULL, &nreader);
@@ -2321,14 +2327,18 @@ unlock_slot (int slot)
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
    the first USB reader.  For PC/SC the first listed reader). */
 int
-apdu_open_reader (const char *portstr)
+apdu_open_reader (const char *portstr, int *r_no_service)
 {
   static int pcsc_api_loaded, ct_api_loaded;
+  int slot;
+
+  if (r_no_service)
+    *r_no_service = 0;
 
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     {
-      int slot, i;
+      int i;
       const char *s;
 
       slot = open_ccid_reader (portstr);
@@ -2458,7 +2468,11 @@ apdu_open_reader (const char *portstr)
       pcsc_api_loaded = 1;
     }
 
-  return open_pcsc_reader (portstr);
+  slot = open_pcsc_reader (portstr);
+  if (slot == -1 && r_no_service && pcsc_no_service)
+    *r_no_service = 1;
+
+  return slot;
 }
 
 

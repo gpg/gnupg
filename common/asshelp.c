@@ -231,25 +231,68 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                and thus there is no need for the GPG_AGENT_INFO
                envvar.  This is possible as we don't have a real unix
                domain socket but use a plain file and thus there is no
-               need to care about non-local file systems. */
+               need to care about non-local file systems.  We use a
+               named mutex to interlock the spawning.  There is just
+               one problem with that: If gpg-agent needs more than 3
+               seconds to come up and listen on the socket we might
+               still spawn another agent.  However this is no serious
+               problem because an agent detects this and handles it.
+               Thus the mutex merely helps to save resources in the
+               most common cases.  */
             const char *argv[3];
+            HANDLE mutex;
+            int waitrc;
 
             argv[0] = "--daemon";
             argv[1] = "--use-standard-socket"; 
             argv[2] = NULL;  
 
-            rc = gnupg_spawn_process_detached (agent_program, argv, NULL);
-            if (rc)
-              log_debug ("failed to start agent `%s': %s\n",
-                         agent_program, gpg_strerror (rc));
+            mutex = CreateMutex (NULL, FALSE, "GnuPG_spawn_agent_sentinel");
+            if (!mutex)
+              {
+                log_error ("failed to create the spawn_agent mutex: %s\n",
+                           w32_strerror (-1));
+                rc = gpg_error (GPG_ERR_GENERAL);
+              }
+            else if ((waitrc = WaitForSingleObject (mutex, 5000))
+                     == WAIT_OBJECT_0)
+              {
+                rc = assuan_socket_connect (&ctx, sockname, 0);
+                if (rc)
+                  {
+                    /* Still not available.  */
+                    rc = gnupg_spawn_process_detached (agent_program,
+                                                       argv, NULL);
+                    if (rc)
+                      log_debug ("failed to start agent `%s': %s\n",
+                                 agent_program, gpg_strerror (rc));
+                    else
+                      {
+                        /* Give the agent some time to prepare itself. */
+                        gnupg_sleep (3);
+                        /* Now try again to connect the agent.  */
+                        rc = assuan_socket_connect (&ctx, sockname, 0);
+                      }
+                  }
+                if (!ReleaseMutex (mutex))
+                  log_error ("failed to release the spawn_agent mutex: %s\n",
+                             w32_strerror (-1));
+              }
+            else if (waitrc == WAIT_TIMEOUT)
+              {
+                log_info ("error waiting for the spawn_agent mutex: timeout\n");
+                rc = gpg_error (GPG_ERR_GENERAL);
+              }
             else
               {
-                /* Give the agent some time to prepare itself. */
-                gnupg_sleep (3);
-                /* Now try again to connect the agent.  */
-                rc = assuan_socket_connect (ctx, sockname, 0, 0);
+                log_debug ("error waiting for the spawn_agent mutex: "
+                           "(code=%d) %s\n", waitrc, w32_strerror (-1));
+                rc = gpg_error (GPG_ERR_GENERAL);
               }
-          }
+            
+            if (mutex)
+              CloseHandle (mutex);
+        }
 #else /*!HAVE_W32_SYSTEM*/
           {
             const char *pgmname;

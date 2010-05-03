@@ -1,3 +1,8 @@
+2010-03-17  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (start_new_gpg_agent) [W32]: Use a named mutex to
+	avoid starting two agents.
+
 2010-03-12  Werner Koch  <wk@g10code.com>
 
 	* status.h (STATUS_ENTER): New.

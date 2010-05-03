@@ -2101,7 +2101,6 @@ check_own_socket_thread (void *arg)
   check_own_socket_running++;
 
   rc = assuan_new (&ctx);
-  xfree (sockname);
   if (rc)
     {
       log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
@@ -2137,6 +2136,7 @@ check_own_socket_thread (void *arg)
   xfree (buffer);
 
  leave:
+  xfree (sockname);
   if (ctx)
     assuan_release (ctx);
   if (rc)

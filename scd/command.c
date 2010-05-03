@@ -70,6 +70,10 @@
       && (c)->reader_slot == locked_session->ctrl_backlink->reader_slot)
 
 
+/* Flag indicating that the reader has been disabled.  */
+static int reader_disabled;
+
+
 /* This structure is used to keep track of open readers (slots). */
 struct slot_status_s 
 {
@@ -394,7 +398,15 @@ get_reader_slot (void)
 
   /* Try to open the reader. */
   if (ss->slot == -1)
-    ss->slot = apdu_open_reader (opt.reader_port);
+    {
+      int no_service_flag;
+      ss->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
+      if (no_service_flag)
+        {
+          log_info ("no card services - disabling scdaemon\n");
+          reader_disabled = 1;
+        }
+    }
 
   /* Return the slot_table index.  */
   return 0;
@@ -408,6 +420,9 @@ open_card (ctrl_t ctrl, const char *apptype)
 {
   gpg_error_t err;
   int slot;
+
+  if (reader_disabled)
+    return gpg_error (GPG_ERR_NOT_OPERATIONAL);
 
   /* If we ever got a card not present error code, return that.  Only
      the SERIALNO command and a reset are able to clear from that
@@ -441,7 +456,7 @@ open_card (ctrl_t ctrl, const char *apptype)
     slot = get_reader_slot ();
   ctrl->reader_slot = slot;
   if (slot == -1)
-    err = gpg_error (GPG_ERR_CARD);
+    err = gpg_error (reader_disabled? GPG_ERR_NOT_OPERATIONAL: GPG_ERR_CARD);
   else
     {
       /* Fixme: We should move the apdu_connect call to
@@ -495,7 +510,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
   time_t stamp;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
-  if (ctrl->server_local->card_removed)
+  if (!reader_disabled && ctrl->server_local->card_removed)
     {
       if ( IS_LOCKED (ctrl) )
         return gpg_error (GPG_ERR_LOCKED);
@@ -1995,7 +2010,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
           BUG ();
       sl->next_session = ctrl->server_local->next_session;
     }
-  stopme = ctrl->server_local->stopme;
+  stopme = ctrl->server_local->stopme || reader_disabled;
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 

@@ -1,3 +1,14 @@
+2010-03-17  Werner Koch  <wk@g10code.com>
+
+	* command.c (open_card): Return GPG_ERR_NOT_OPERATIONAL if no
+	card services are available.
+	(get_reader_slot): Detect no services status.
+	(cmd_serialno): No reset if there are no services.
+	(scd_command_handler): Stop scdaemon in that case.
+	* apdu.c (pcsc_no_service): New.
+	(open_pcsc_reader_direct): Set it.
+	(apdu_open_reader): Add arg R_NO_SERVICE.
+
 2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	From trunk 2009-09-23, 2009-10-16, 2009-11-02, 2009-11-04, 2009-11-05,
