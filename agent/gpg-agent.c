@@ -99,7 +99,6 @@ enum cmd_and_opt_values
   oEnablePassphraseHistory,
   oUseStandardSocket,
   oNoUseStandardSocket,
-  oStandardSocketP,
   oFakedSystemTime,
 
   oIgnoreCacheForSigning,
@@ -631,9 +630,8 @@ main (int argc, char **argv )
 
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
-#ifdef HAVE_W32_SYSTEM
-  use_standard_socket = 1;  /* Under Windows we always use a standard
-                               socket.  */
+#ifdef USE_STANDARD_SOCKET
+  use_standard_socket = 1;
 #endif
   
   shell = getenv ("SHELL");
@@ -863,7 +861,11 @@ main (int argc, char **argv )
     }
   
   if (gpgconf_list == 3)
-    agent_exit (!use_standard_socket);
+    {
+      if (use_standard_socket && !opt.quiet)
+        log_info ("configured to use the standard socket\n");
+      agent_exit (!use_standard_socket);
+    }
   else if (gpgconf_list == 2)
     agent_exit (0);
   else if (gpgconf_list)

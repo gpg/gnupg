@@ -1584,12 +1584,13 @@ echo "
         Smartcard: $build_scdaemon $build_scdaemon_extra
         G13:       $build_g13
 
-
         Protect tool:      $show_gnupg_protect_tool_pgm
         Default agent:     $show_gnupg_agent_pgm
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
+
+        Use standard socket: $use_standard_socket
 "
 if test x"$use_regex" != xyes ; then
 echo "

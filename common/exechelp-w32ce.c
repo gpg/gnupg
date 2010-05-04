@@ -334,8 +334,10 @@ copy_quoted (char *p, const char *string)
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
 static int
-build_w32_commandline (const char *pgmname, const char * const *argv,
-		       int fd0, int fd1, int fd2, int fd2_isnull,
+build_w32_commandline (const char * const *argv,
+		       int fd0, int fd0_isnull,
+                       int fd1, int fd1_isnull,
+                       int fd2, int fd2_isnull,
                        char **cmdline)
 {
   int i, n;
@@ -347,12 +349,18 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
   *p = 0;
   if (fd0)
     {
-      snprintf (p, 25, "-&S0=%d ", fd0);
+      if (fd0_isnull)
+        strcpy (p, "-&S0=null ");
+      else
+        snprintf (p, 25, "-&S0=%d ", fd0);
       p += strlen (p);
     }
   if (fd1)
     {
-      snprintf (p, 25, "-&S1=%d ", fd1);
+      if (fd1_isnull)
+        strcpy (p, "-&S1=null ");
+      else
+        snprintf (p, 25, "-&S1=%d ", fd1);
       p += strlen (p);
     }
   if (fd2)
@@ -366,7 +374,6 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
   
   *cmdline = NULL;
   n = strlen (fdbuf);
-  n += strlen (pgmname) + 1 + 2; /* (1 space, 2 quoting) */
   for (i=0; (s = argv[i]); i++)
     {
       n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting) */
@@ -381,7 +388,6 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
     return -1;
 
   p = stpcpy (p, fdbuf);
-  p = copy_quoted (p, pgmname);
   for (i = 0; argv[i]; i++) 
     {
       *p++ = ' ';
@@ -540,8 +546,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
   /* Build the command line.  */
-  err = build_w32_commandline (pgmname, argv, inpipe[0], outpipe[1], errpipe[1],
-                               0, &cmdline);
+  err = build_w32_commandline (argv,
+                               inpipe[0], 0,
+                               outpipe[1], 0,
+                               errpipe[1], 0,
+                               &cmdline);
   if (err)
     {
       CloseHandle (fd_to_handle (errpipe[0]));
@@ -601,68 +610,42 @@ gpg_error_t
 gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
                         int infd, int outfd, int errfd, pid_t *pid)
 {
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#if 0
   gpg_error_t err;
-  PROCESS_INFORMATION pi = { NULL, 0, 0, 0 };
-  STARTUPINFO si;
+  PROCESS_INFORMATION pi = {NULL};
   char *cmdline;
-  int i;
-  HANDLE stdhd[3];
 
   /* Setup return values.  */
   *pid = (pid_t)(-1);
 
+  if (infd != -1 || outfd != -1 || errfd != -1)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   /* Build the command line.  */
-  err = build_w32_commandline (pgmname, argv, &cmdline);
+  err = build_w32_commandline (argv, -1, 1, -1, 1, -1, 1, &cmdline);
   if (err)
     return err; 
 
-  /* si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW; */
-  /* stdhd[0] = infd  == -1? w32_open_null (0) : INVALID_HANDLE_VALUE; */
-  /* stdhd[1] = outfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE; */
-  /* stdhd[2] = errfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE; */
-  /* si.hStdInput  = infd  == -1? stdhd[0] : (void*)_get_osfhandle (infd); */
-  /* si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd); */
-  /* si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd); */
-
-/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      NULL,          /* Process security attributes.  */
-                      NULL,          /* Thread security attributes.  */
-                      FALSE,          /* Inherit handles.  */
-                      CREATE_SUSPENDED,
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      NULL,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  if (!create_process (pgmname, cmdline, &pi))
     {
-      log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
-      err = gpg_error (GPG_ERR_GENERAL);
+      log_error ("CreateProcess(fd) failed: %s\n", w32_strerror (-1));
+      xfree (cmdline);
+      return gpg_error (GPG_ERR_GENERAL);
     }
-  else
-    err = 0;
   xfree (cmdline);
-  for (i=0; i < 3; i++)
-    if (stdhd[i] != INVALID_HANDLE_VALUE)
-      CloseHandle (stdhd[i]);
-  if (err)
-    return err;
+  cmdline = NULL;
 
-/*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
-/*              " dwProcessID=%d dwThreadId=%d\n", */
-/*              pi.hProcess, pi.hThread, */
-/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
-
+  log_debug ("CreateProcess(fd) ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+  
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
-#endif
 }
 
 /* Wait for the process identified by PID to terminate. PGMNAME should
@@ -743,42 +726,20 @@ gpg_error_t
 gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
                               const char *envp[] )
 {
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#if 0
   gpg_error_t err;
-  PROCESS_INFORMATION pi = 
-    {
-      NULL,      /* Returns process handle.  */
-      0,         /* Returns primary thread handle.  */
-      0,         /* Returns pid.  */
-      0          /* Returns tid.  */
-    };
-  STARTUPINFO si;
   char *cmdline;
+  PROCESS_INFORMATION pi = {NULL };
 
   (void)envp;
-
-  if (access (pgmname, X_OK))
-    return gpg_error_from_syserror ();
-
+  
   /* Build the command line.  */
-  err = build_w32_commandline (pgmname, argv, &cmdline);
+  err = build_w32_commandline (argv, -1, 1, -1, 1, -1, 1, &cmdline);
   if (err)
     return err; 
 
-/*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
-/*              pgmname, cmdline); */
-  if (!CreateProcess (pgmname,       /* Program to start.  */
-                      cmdline,       /* Command line arguments.  */
-                      NULL,          /* Process security attributes.  */
-                      NULL,          /* Thread security attributes.  */
-                      FALSE,         /* Inherit handles.  */
-                      0,             /* Creation flags.  */
-                      NULL,          /* Environment.  */
-                      NULL,          /* Use current drive/directory.  */
-                      NULL,           /* Startup information. */
-                      &pi            /* Returns process information.  */
-                      ))
+  /* Note: There is no detached flag under CE.  */
+  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
@@ -787,16 +748,18 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   xfree (cmdline);
   cmdline = NULL;
 
-/*   log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p" */
-/*              " dwProcessID=%d dwThreadId=%d\n", */
-/*              pi.hProcess, pi.hThread, */
-/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
-
+  log_debug ("CreateProcess(detached) ready: hProcess=%p hThread=%p"
+             " dwProcessID=%d dwThreadId=%d\n",
+             pi.hProcess, pi.hThread,
+             (int) pi.dwProcessId, (int) pi.dwThreadId);
+  
+  /* Process has been created suspended; resume it now. */
+  ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
   return 0;
-#endif
 }
+
 
 /* Kill a process; that is send an appropriate signal to the process.
    gnupg_wait_process must be called to actually remove the process

@@ -125,6 +125,12 @@ int _setmode (int handle, int mode);
 # define _set_errno(a)  do { errno = (a); } while (0)
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+# define IS_INVALID_FD(a) ((void*)(a) == (void*)(-1))
+#else
+# define IS_INVALID_FD(a) ((a) == -1)
+#endif
+
 
 /* Generally used types.  */
 
@@ -184,9 +190,11 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 #ifdef HAVE_PTH
 # define ESTREAM_SYS_READ  es_pth_read
 # define ESTREAM_SYS_WRITE es_pth_write
+# define ESTREAM_SYS_YIELD() pth_yield (NULL)
 #else
 # define ESTREAM_SYS_READ  read
 # define ESTREAM_SYS_WRITE write
+# define ESTREAM_SYS_YIELD() do { } while (0)
 #endif
 
 /* Misc definitions.  */
@@ -777,10 +785,18 @@ es_func_fd_read (void *cookie, void *buffer, size_t size)
 {
   estream_cookie_fd_t file_cookie = cookie;
   ssize_t bytes_read;
-
-  do 
-    bytes_read = ESTREAM_SYS_READ (file_cookie->fd, buffer, size);
-  while (bytes_read == -1 && errno == EINTR);
+  
+  if (IS_INVALID_FD (file_cookie->fd))
+    {
+      ESTREAM_SYS_YIELD ();
+      bytes_read = 0;
+    }
+  else
+    {
+      do 
+        bytes_read = ESTREAM_SYS_READ (file_cookie->fd, buffer, size);
+      while (bytes_read == -1 && errno == EINTR);
+    }
 
   return bytes_read;
 }
@@ -788,14 +804,21 @@ es_func_fd_read (void *cookie, void *buffer, size_t size)
 /* Write function for fd objects.  */
 static ssize_t
 es_func_fd_write (void *cookie, const void *buffer, size_t size)
-			   
 {
   estream_cookie_fd_t file_cookie = cookie;
   ssize_t bytes_written;
 
-  do
-    bytes_written = ESTREAM_SYS_WRITE (file_cookie->fd, buffer, size);
-  while (bytes_written == -1 && errno == EINTR);
+  if (IS_INVALID_FD (file_cookie->fd))
+    {
+      ESTREAM_SYS_YIELD ();
+      bytes_written = size; /* Yeah:  Success writing to the bit bucket.  */
+    }
+  else
+    {
+      do
+        bytes_written = ESTREAM_SYS_WRITE (file_cookie->fd, buffer, size);
+      while (bytes_written == -1 && errno == EINTR);
+    }
 
   return bytes_written;
 }
@@ -808,13 +831,21 @@ es_func_fd_seek (void *cookie, off_t *offset, int whence)
   off_t offset_new;
   int err;
 
-  offset_new = lseek (file_cookie->fd, *offset, whence);
-  if (offset_new == -1)
-    err = -1;
+  if (IS_INVALID_FD (file_cookie->fd))
+    {
+      _set_errno (ESPIPE);
+      err = -1;
+    }
   else
     {
-      *offset = offset_new;
-      err = 0;
+      offset_new = lseek (file_cookie->fd, *offset, whence);
+      if (offset_new == -1)
+        err = -1;
+      else
+        {
+          *offset = offset_new;
+          err = 0;
+        }
     }
 
   return err;
@@ -829,7 +860,10 @@ es_func_fd_destroy (void *cookie)
 
   if (fd_cookie)
     {
-      err = fd_cookie->no_close? 0 : close (fd_cookie->fd);
+      if (IS_INVALID_FD (fd_cookie->fd))
+        err = 0;
+      else
+        err = fd_cookie->no_close? 0 : close (fd_cookie->fd);
       mem_free (fd_cookie);
     }
   else
@@ -2405,19 +2439,21 @@ _es_get_std_stream (int fd)
         stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
       else if (custom_std_fds_valid[2])
         stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
-    }
-  if (!stream)
-    {
-      /* Standard stream not yet created - do it now.  */
-      if (!fd)
-        stream = do_fpopen (stdin, "r", 1, 1);
-      else if (fd == 1)
-        stream = do_fpopen (stdout, "a", 1, 1);
-      else
-        stream = do_fpopen (stderr, "a", 1, 1);
-
-      if (!stream) /* Fallback: Create a bit bucket.  */
+      
+      if (!stream)
         {
+          /* Second try is to use the standard C streams.  */
+          if (!fd)
+            stream = do_fpopen (stdin, "r", 1, 1);
+          else if (fd == 1)
+            stream = do_fpopen (stdout, "a", 1, 1);
+          else
+            stream = do_fpopen (stderr, "a", 1, 1);
+        }
+      
+      if (!stream) 
+        {
+          /* Last try: Create a bit bucket.  */
           stream = do_fpopen (NULL, fd? "a":"r", 0, 1);
           if (!stream)
             {
@@ -2426,6 +2462,7 @@ _es_get_std_stream (int fd)
               abort();
             }
         }
+
       stream->intern->is_stdstream = 1;
       stream->intern->stdstream_fd = fd;
       if (fd == 2)

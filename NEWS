@@ -23,6 +23,12 @@ Noteworthy changes in version 2.1.x (under development)
 
  * Support for Windows CE.
 
+ * If the agent's --use-standard-socket option is active, all tools
+   try to start and daemonize the agent on the fly.  In the past this
+   was only supported on W32; on non-W32 systems the new configure
+   option --use-standard-socket may now be used to use this feature by
+   default.
+
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------
