@@ -1,6 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
  * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2009 Free Software Foundation, Inc.
+ *               2006, 2007, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,6 +60,7 @@ enum cmd_and_opt_values
   oNoVerbose = 500,
   aGPGConfList,
   aGPGConfTest,
+  aUseStandardSocketP,
   oOptions,
   oDebug,
   oDebugAll,
@@ -114,6 +115,7 @@ static ARGPARSE_OPTS opts[] = {
 
   { aGPGConfList, "gpgconf-list", 256, "@" },
   { aGPGConfTest, "gpgconf-test", 256, "@" },
+  { aUseStandardSocketP, "use-standard-socket-p", 256, "@" }, 
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -628,7 +630,7 @@ main (int argc, char **argv )
 
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_STANDARD_SOCKET
   use_standard_socket = 1;  /* Under Windows we always use a standard
                                socket.  */
 #endif
@@ -748,6 +750,7 @@ main (int argc, char **argv )
         {
         case aGPGConfList: gpgconf_list = 1; break;
         case aGPGConfTest: gpgconf_list = 2; break;
+        case aUseStandardSocketP: gpgconf_list = 3; break;
         case oBatch: opt.batch=1; break;
 
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
@@ -858,6 +861,8 @@ main (int argc, char **argv )
       log_debug ("... okay\n");
     }
   
+  if (gpgconf_list == 3)
+    agent_exit (!use_standard_socket);
   if (gpgconf_list == 2)
     agent_exit (0);
   if (gpgconf_list)

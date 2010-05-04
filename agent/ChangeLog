@@ -1,3 +1,7 @@
+2010-05-04  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Add command --use-standard-socket-p.
+
 2010-05-03  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (check_own_socket_thread): Do not release SOCKNAME

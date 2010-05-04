@@ -1,3 +1,13 @@
+2010-05-03  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (lock_agent_spawning, unlock_agent_spawning): New.
+	(start_new_gpg_agent): Test for configured standard socket and
+	try to fire up the agent in this case.
+
+	* exechelp.c (gnupg_spawn_process_detached): Do not reuse PID for
+	the second fork.
+	(gnupg_wait_process): Do not log a message if EXITCODE is given.
+
 2010-03-17  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (start_new_gpg_agent) [W32]: Use a named mutex to
