@@ -1,3 +1,8 @@
+2010-05-07  Werner Koch  <wk@g10code.com>
+
+	* import.test: Add test case for bug#1223.
+	* bug1223-good.asc, bug1223-bogus.asc: New.
+
 2009-12-21  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (required_pgms): New.

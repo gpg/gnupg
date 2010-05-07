@@ -521,6 +521,46 @@ fix_pks_corruption(KBNODE keyblock)
 }
 
 
+/* Versions of GnuPG before 1.4.11 and 2.0.16 allowed to import bogus
+   direct key signatures.  A side effect of this was that a later
+   import of the same good direct key signatures was not possible
+   because the cmp_signature check in merge_blocks considered them
+   equal.  Although direct key signatures are now checked during
+   import, there might still be bogus signatures sitting in a keyring.
+   We need to detect and delete them before doing a merge.  This
+   fucntion returns the number of removed sigs.  */
+static int
+fix_bad_direct_key_sigs (kbnode_t keyblock, u32 *keyid)
+{
+  gpg_error_t err;
+  kbnode_t node;
+  int count = 0;
+
+  for (node = keyblock->next; node; node=node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        break;
+      if (node->pkt->pkttype == PKT_SIGNATURE
+          && IS_KEY_SIG (node->pkt->pkt.signature))
+        {
+          err = check_key_signature (keyblock, node, NULL);
+          if (err && gpg_err_code (err) != GPG_ERR_PUBKEY_ALGO )
+            {
+              /* If we don't know the error, we can't decide; this is
+                 not a problem because cmp_signature can't compare the
+                 signature either.  */
+              log_info ("key %s: invalid direct key signature removed\n",
+                        keystr (keyid));
+              delete_kbnode (node);
+              count++;
+            }
+        }
+    }
+
+  return count;
+}
+
+
 static void
 print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
 {
@@ -887,10 +927,15 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    goto leave;
 	  }
 
+        /* Make sure the original direct key sigs are all sane.  */
+        n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
+        if (n_sigs_cleaned)
+          commit_kbnode (&keyblock_orig);
+            
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
-	n_uids = n_sigs = n_subk = n_sigs_cleaned = n_uids_cleaned = 0;
+	n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
 			   keyid, &n_uids, &n_sigs, &n_subk );
 	if( rc )
@@ -1354,8 +1399,8 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
 }
 
 
-/****************
- * loop over the keyblock and check all self signatures.
+/*
+ * Loop over the keyblock and check all self signatures.
  * Mark all user-ids with a self-signature by setting flag bit 0.
  * Mark all user-ids with an invalid self-signature by setting bit 1.
  * This works also for subkeys, here the subkey is marked.  Invalid or
@@ -1364,175 +1409,197 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
  * in this keyblock.
  */
 static int
-chk_self_sigs( const char *fname, KBNODE keyblock,
+chk_self_sigs (const char *fname, kbnode_t keyblock,
 	       PKT_public_key *pk, u32 *keyid, int *non_self )
 {
-    KBNODE n,knode=NULL;
-    PKT_signature *sig;
-    int rc;
-    u32 bsdate=0,rsdate=0;
-    KBNODE bsnode=NULL,rsnode=NULL;
+  kbnode_t n, knode = NULL;
+  PKT_signature *sig;
+  int rc;
+  u32 bsdate=0, rsdate=0;
+  kbnode_t bsnode = NULL, rsnode = NULL;
+  
+  (void)fname;
+  (void)pk;
 
-    (void)fname;
-    (void)pk;
-
-    for( n=keyblock; (n = find_next_kbnode(n, 0)); ) {
-      if(n->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+  for (n=keyblock; (n = find_next_kbnode (n, 0)); ) 
+    {
+      if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
-	  knode=n;
-	  bsdate=0;
-	  rsdate=0;
-	  bsnode=NULL;
-	  rsnode=NULL;
+	  knode = n;
+	  bsdate = 0;
+	  rsdate = 0;
+	  bsnode = NULL;
+	  rsnode = NULL;
 	  continue;
 	}
-      else if( n->pkt->pkttype != PKT_SIGNATURE )
-	    continue;
-	sig = n->pkt->pkt.signature;
-	if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 
-	    /* This just caches the sigs for later use.  That way we
-	       import a fully-cached key which speeds things up. */
-	    if(!opt.no_sig_cache)
-	      check_key_signature(keyblock,n,NULL);
+      if ( n->pkt->pkttype != PKT_SIGNATURE )
+        continue;
+      
+      sig = n->pkt->pkt.signature;
+      if ( keyid[0] != sig->keyid[0] || keyid[1] != sig->keyid[1] )
+        {
+          *non_self = 1;
+          continue;
+        }
 
-	    if( IS_UID_SIG(sig) || IS_UID_REV(sig) )
-	      {
-		KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
-		if( !unode )
-		  {
-		    log_error( _("key %s: no user ID for signature\n"),
-			       keystr(keyid));
-		    return -1;	/* the complete keyblock is invalid */
-		  }
+      /* This just caches the sigs for later use.  That way we
+         import a fully-cached key which speeds things up. */
+      if (!opt.no_sig_cache)
+        check_key_signature (keyblock, n, NULL);
+      
+      if ( IS_UID_SIG(sig) || IS_UID_REV(sig) )
+        {
+          KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
+          if ( !unode )
+            {
+              log_error( _("key %s: no user ID for signature\n"),
+                         keystr(keyid));
+              return -1;  /* The complete keyblock is invalid.  */
+            }
+          
+          /* If it hasn't been marked valid yet, keep trying.  */
+          if (!(unode->flag&1)) 
+            {
+              rc = check_key_signature (keyblock, n, NULL);
+              if ( rc )
+                {
+                  if ( opt.verbose )
+                    {
+                      char *p = utf8_to_native 
+                        (unode->pkt->pkt.user_id->name,
+                         strlen (unode->pkt->pkt.user_id->name),0);
+                      log_info (gpg_err_code(rc) == G10ERR_PUBKEY_ALGO ?
+                                _("key %s: unsupported public key "
+                                  "algorithm on user ID \"%s\"\n"):
+                                _("key %s: invalid self-signature "
+                                  "on user ID \"%s\"\n"),
+                                keystr (keyid),p);
+                      xfree (p);
+                    }
+                }
+              else
+                unode->flag |= 1; /* Mark that signature checked. */
+            }
+        }
+      else if (IS_KEY_SIG (sig))
+        {
+          rc = check_key_signature (keyblock, n, NULL);
+          if ( rc )
+            {
+              if (opt.verbose)
+                log_info (gpg_err_code (rc) == G10ERR_PUBKEY_ALGO ?
+                          _("key %s: unsupported public key algorithm\n"):
+                          _("key %s: invalid direct key signature\n"),
+                          keystr (keyid));
+              n->flag |= 4;
+            }
+        }
+      else if ( IS_SUBKEY_SIG (sig) ) 
+        {
+          /* Note that this works based solely on the timestamps like
+             the rest of gpg.  If the standard gets revocation
+             targets, this may need to be revised.  */
 
-		/* If it hasn't been marked valid yet, keep trying */
-		if(!(unode->flag&1)) {
-		  rc = check_key_signature( keyblock, n, NULL);
-		  if( rc )
-		    {
-		      if( opt.verbose )
-			{
-			  char *p=utf8_to_native(unode->pkt->pkt.user_id->name,
-				      strlen(unode->pkt->pkt.user_id->name),0);
-			  log_info( rc == G10ERR_PUBKEY_ALGO ?
-				    _("key %s: unsupported public key "
-				      "algorithm on user ID \"%s\"\n"):
-				    _("key %s: invalid self-signature "
-				      "on user ID \"%s\"\n"),
-				    keystr(keyid),p);
-			  xfree(p);
-			}
-		    }
-		  else
-		    unode->flag |= 1; /* mark that signature checked */
-		}
-	      }
-	    else if( sig->sig_class == 0x18 ) {
-	      /* Note that this works based solely on the timestamps
-		 like the rest of gpg.  If the standard gets
-		 revocation targets, this may need to be revised. */
-
-		if( !knode )
-		  {
-		    if(opt.verbose)
-		      log_info( _("key %s: no subkey for key binding\n"),
-				keystr(keyid));
-		    n->flag |= 4; /* delete this */
-		  }
-		else
-		  {
-		    rc = check_key_signature( keyblock, n, NULL);
-		    if( rc )
-		      {
-			if(opt.verbose)
-			  log_info(rc == G10ERR_PUBKEY_ALGO ?
-				   _("key %s: unsupported public key"
-				     " algorithm\n"):
-				   _("key %s: invalid subkey binding\n"),
-				   keystr(keyid));
-			n->flag|=4;
-		      }
-		    else
-		      {
-			/* It's valid, so is it newer? */
-			if(sig->timestamp>=bsdate) {
-			  knode->flag |= 1;  /* the subkey is valid */
-			  if(bsnode)
-			    {
-			      bsnode->flag|=4; /* Delete the last binding
-						  sig since this one is
-						  newer */
-			      if(opt.verbose)
-				log_info(_("key %s: removed multiple subkey"
-					   " binding\n"),keystr(keyid));
-			    }
-
-			  bsnode=n;
-			  bsdate=sig->timestamp;
-			}
-			else
-			  n->flag|=4; /* older */
-		      }
-		  }
-	    }
-	    else if( sig->sig_class == 0x28 ) {
-	      /* We don't actually mark the subkey as revoked right
-                 now, so just check that the revocation sig is the
-                 most recent valid one.  Note that we don't care if
-                 the binding sig is newer than the revocation sig.
-                 See the comment in getkey.c:merge_selfsigs_subkey for
-                 more */
-		if( !knode )
-		  {
-		    if(opt.verbose)
-		      log_info( _("key %s: no subkey for key revocation\n"),
-				keystr(keyid));
-		    n->flag |= 4; /* delete this */
-		  }
-		else
-		  {
-		    rc = check_key_signature( keyblock, n, NULL);
-		    if( rc )
-		      {
-			if(opt.verbose)
-			  log_info(rc == G10ERR_PUBKEY_ALGO ?
-				   _("key %s: unsupported public"
-				     " key algorithm\n"):
-				   _("key %s: invalid subkey revocation\n"),
-				   keystr(keyid));
-			n->flag|=4;
-		      }
-		    else
-		      {
-			/* It's valid, so is it newer? */
-			if(sig->timestamp>=rsdate)
-			  {
-			    if(rsnode)
-			      {
-				rsnode->flag|=4; /* Delete the last revocation
-						    sig since this one is
-						    newer */
-				if(opt.verbose)
-				  log_info(_("key %s: removed multiple subkey"
-					     " revocation\n"),keystr(keyid));
-			      }
-
-			    rsnode=n;
-			    rsdate=sig->timestamp;
-			  }
-			else
-			  n->flag|=4; /* older */
-		      }
-		  }
-	    }
-	}
-	else
-	  *non_self=1;
+          if ( !knode )
+            {
+              if (opt.verbose)
+                log_info (_("key %s: no subkey for key binding\n"),
+                          keystr (keyid));
+              n->flag |= 4; /* delete this */
+            }
+          else
+            {
+              rc = check_key_signature (keyblock, n, NULL);
+              if ( rc )
+                {
+                  if (opt.verbose)
+                    log_info (gpg_err_code (rc) == G10ERR_PUBKEY_ALGO ?
+                              _("key %s: unsupported public key"
+                                " algorithm\n"):
+                              _("key %s: invalid subkey binding\n"),
+                              keystr (keyid));
+                  n->flag |= 4;
+                }
+              else
+                {
+                  /* It's valid, so is it newer? */
+                  if (sig->timestamp >= bsdate) 
+                    {
+                      knode->flag |= 1;  /* The subkey is valid.  */
+                      if (bsnode)
+                        {
+                          /* Delete the last binding sig since this
+                             one is newer */
+                          bsnode->flag |= 4; 
+                          if (opt.verbose)
+                            log_info (_("key %s: removed multiple subkey"
+                                        " binding\n"),keystr(keyid));
+                        }
+                      
+                      bsnode = n;
+                      bsdate = sig->timestamp;
+                    }
+                  else
+                    n->flag |= 4; /* older */
+                }
+            }
+        }
+      else if ( IS_SUBKEY_REV (sig) )
+        {
+          /* We don't actually mark the subkey as revoked right now,
+             so just check that the revocation sig is the most recent
+             valid one.  Note that we don't care if the binding sig is
+             newer than the revocation sig.  See the comment in
+             getkey.c:merge_selfsigs_subkey for more.  */
+          if ( !knode )
+            {
+              if (opt.verbose)
+                log_info (_("key %s: no subkey for key revocation\n"),
+                          keystr(keyid));
+              n->flag |= 4; /* delete this */
+            }
+          else
+            {
+              rc = check_key_signature (keyblock, n, NULL);
+              if ( rc )
+                {
+                  if(opt.verbose)
+                    log_info (gpg_err_code (rc) == G10ERR_PUBKEY_ALGO ?
+                              _("key %s: unsupported public"
+                                " key algorithm\n"):
+                              _("key %s: invalid subkey revocation\n"),
+                              keystr(keyid));
+                  n->flag |= 4;
+                }
+              else
+                {
+                  /* It's valid, so is it newer? */
+                  if (sig->timestamp >= rsdate)
+                    {
+                      if (rsnode)
+                        {
+                          /* Delete the last revocation sig since
+                             this one is newer.  */
+                          rsnode->flag |= 4; 
+                          if (opt.verbose)
+                            log_info (_("key %s: removed multiple subkey"
+                                        " revocation\n"),keystr(keyid));
+                        }
+                      
+                      rsnode = n;
+                      rsdate = sig->timestamp;
+                    }
+                  else
+                    n->flag |= 4; /* older */
+                }
+            }
+        }
     }
 
-    return 0;
+  return 0;
 }
+
 
 /****************
  * delete all parts which are invalid and those signatures whose

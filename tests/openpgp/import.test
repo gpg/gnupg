@@ -18,6 +18,21 @@ else
 fi
 
 
+boguskey=$srcdir/bug1223-bogus.asc
+goodkey=$srcdir/bug1223-good.asc
+keyid=0xC108E83A
+info "Checking bug 1223: designated revoker sigs are not properly merged."
+$GPG --delete-key --batch --yes $keyid 2>/dev/null || true
+$GPG --import $boguskey || true
+$GPG --import $goodkey || true
+if $GPG --list-keys --with-colons $keyid \
+    | grep '^rvk:.*:0EE5BE979282D80B9F7540F1CCD2ED94D21739E9:' >/dev/null; then
+  :
+else
+  error "$goodkey: import failed (bug 1223)"
+fi
+
+
 
 
 

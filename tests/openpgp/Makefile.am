@@ -40,7 +40,8 @@ TESTS = version.test mds.test \
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc \
-             gpg.conf.tmpl bug537-test.data.asc bug894-test.asc
+             gpg.conf.tmpl bug537-test.data.asc bug894-test.asc \
+	     bug1223-good.asc bug1223-bogus.asc
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
