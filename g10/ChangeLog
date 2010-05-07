@@ -1,3 +1,10 @@
+2010-05-07  Werner Koch  <wk@g10code.com>
+
+	* import.c (chk_self_sigs): Check direct key signatures.  Fixes
+	bug#1223.
+	(fix_bad_direct_key_sigs): New.
+	(import_one): Call it.
+
 2010-03-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* plaintext.c (handle_plaintext): Make sure that the stdout flush
