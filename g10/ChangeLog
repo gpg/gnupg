@@ -2,6 +2,8 @@
 
 	* import.c (chk_self_sigs): Check direct key signatures.  Fixes
 	bug#1223.
+	(fix_bad_direct_key_sigs): New.
+	(import_one): Use it here.
 
 	* import.c (chk_self_sigs): Re-indent and slighly re-arrange code.
 	Use test macros for the sig class.

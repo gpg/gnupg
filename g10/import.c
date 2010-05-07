@@ -520,6 +520,46 @@ fix_pks_corruption(KBNODE keyblock)
 }
 
 
+/* Versions of GnuPG before 1.4.11 and 2.0.16 allowed to import bogus
+   direct key signatures.  A side effect of this was that a later
+   import of the same good direct key signatures was not possible
+   because the cmp_signature check in merge_blocks considered them
+   equal.  Although direct key signatures are now checked during
+   import, there might still be bogus signatures sitting in a keyring.
+   We need to detect and delete them before doing a merge.  This
+   fucntion returns the number of removed sigs.  */
+static int
+fix_bad_direct_key_sigs (KBNODE keyblock, u32 *keyid)
+{
+  gpg_error_t err;
+  KBNODE node;
+  int count = 0;
+
+  for (node = keyblock->next; node; node=node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        break;
+      if (node->pkt->pkttype == PKT_SIGNATURE
+          && IS_KEY_SIG (node->pkt->pkt.signature))
+        {
+          err = check_key_signature (keyblock, node, NULL);
+          if (err && gpg_err_code (err) != GPG_ERR_PUBKEY_ALGO )
+            {
+              /* If we don't know the error, we can't decide; this is
+                 not a problem because cmp_signature can't compare the
+                 signature either.  */
+              log_info ("key %s: invalid direct key signature removed\n",
+                        keystr (keyid));
+              delete_kbnode (node);
+              count++;
+            }
+        }
+    }
+
+  return count;
+}
+
+
 static void
 print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
 {
@@ -886,10 +926,15 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    goto leave;
 	  }
 
+        /* Make sure the original direct key sigs are all sane.  */
+        n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
+        if (n_sigs_cleaned)
+          commit_kbnode (&keyblock_orig);
+            
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
-	n_uids = n_sigs = n_subk = n_sigs_cleaned = n_uids_cleaned = 0;
+	n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
 			   keyid, &n_uids, &n_sigs, &n_subk );
 	if( rc )
