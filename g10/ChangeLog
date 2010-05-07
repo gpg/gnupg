@@ -1,5 +1,8 @@
 2010-05-07  Werner Koch  <wk@g10code.com>
 
+	* import.c (chk_self_sigs): Check direct key signatures.  Fixes
+	bug#1223.
+
 	* import.c (chk_self_sigs): Re-indent and slighly re-arrange code.
 	Use test macros for the sig class.
 

@@ -1431,6 +1431,19 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
                 unode->flag |= 1; /* Mark that signature checked. */
             }
         }
+      else if (IS_KEY_SIG (sig))
+        {
+          rc = check_key_signature (keyblock, n, NULL);
+          if ( rc )
+            {
+              if (opt.verbose)
+                log_info (gpg_err_code (rc) == G10ERR_PUBKEY_ALGO ?
+                          _("key %s: unsupported public key algorithm\n"):
+                          _("key %s: invalid direct key signature\n"),
+                          keystr (keyid));
+              n->flag |= 4;
+            }
+        }
       else if ( IS_SUBKEY_SIG (sig) ) 
         {
           /* Note that this works based solely on the timestamps like
