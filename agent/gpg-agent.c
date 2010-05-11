@@ -219,9 +219,6 @@ static int shutdown_pending;
 /* Counter for the currently running own socket checks.  */
 static int check_own_socket_running;
 
-/* True if we are listening on the standard socket.  */
-static int use_standard_socket;
-
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
@@ -631,7 +628,7 @@ main (int argc, char **argv )
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
 #ifdef USE_STANDARD_SOCKET
-  use_standard_socket = 1;
+  opt.use_standard_socket = 1;
 #endif
   
   shell = getenv ("SHELL");
@@ -782,8 +779,8 @@ main (int argc, char **argv )
         case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
-        case oUseStandardSocket: use_standard_socket = 1; break;
-        case oNoUseStandardSocket: use_standard_socket = 0; break;
+        case oUseStandardSocket:   opt.use_standard_socket = 1; break;
+        case oNoUseStandardSocket: opt.use_standard_socket = 0; break;
 
         case oFakedSystemTime:
           {
@@ -862,9 +859,9 @@ main (int argc, char **argv )
   
   if (gpgconf_list == 3)
     {
-      if (use_standard_socket && !opt.quiet)
+      if (opt.use_standard_socket && !opt.quiet)
         log_info ("configured to use the standard socket\n");
-      agent_exit (!use_standard_socket);
+      agent_exit (!opt.use_standard_socket);
     }
   else if (gpgconf_list == 2)
     agent_exit (0);
@@ -1438,7 +1435,7 @@ create_socket_name (char *standard_name, char *template)
 {
   char *name, *p;
 
-  if (use_standard_socket)
+  if (opt.use_standard_socket)
     name = make_filename (opt.homedir, standard_name, NULL);
   else
     {
@@ -1504,7 +1501,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
 
   /* Our error code mapping on W32CE returns EEXIST thus we also test
      for this. */
-  if (use_standard_socket && rc == -1 
+  if (opt.use_standard_socket && rc == -1 
       && (errno == EADDRINUSE
 #ifdef HAVE_W32_SYSTEM
           || errno == EEXIST
@@ -1542,7 +1539,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
                  gpg_strerror (gpg_error_from_errno (errno)));
       
       assuan_sock_close (fd);
-      if (use_standard_socket)
+      if (opt.use_standard_socket)
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
@@ -2169,7 +2166,7 @@ check_own_socket (void)
   char *sockname;
   pth_attr_t tattr;
 
-  if (!use_standard_socket)
+  if (!opt.use_standard_socket)
     return; /* This check makes only sense in standard socket mode.  */
 
   if (check_own_socket_running || shutdown_pending)

@@ -10,7 +10,7 @@
 
 . $srcdir/defs.inc || exit 3
 
-../../g10/gpg2 --quiet --batch --debug-quick-random --homedir . --gen-key <<EOF
+$GPG --quiet --batch --debug-quick-random  --gen-key <<EOF
 Key-Type: DSA
 Key-Length: 1024
 Subkey-Type: ELG
@@ -24,7 +24,7 @@ Passphrase: abc
 EOF
 
 if have_pubkey_algo "RSA"; then
-../../g10/gpg2 --quiet --batch --debug-quick-random --homedir . --gen-key <<EOF
+$GPG --quiet --batch --debug-quick-random --gen-key <<EOF
 Key-Type: RSA
 Key-Length: 1024
 Key-Usage: sign,encrypt

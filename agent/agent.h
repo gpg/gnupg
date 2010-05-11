@@ -55,6 +55,9 @@ struct
   int batch;           /* Batch mode */
   const char *homedir; /* Configuration directory name */
 
+  /* True if we are listening on the standard socket.  */
+  int use_standard_socket;
+
   /* Environment setting gathered at program start or changed using the
      Assuan command UPDATESTARTUPTTY. */
   session_env_t startup_env;

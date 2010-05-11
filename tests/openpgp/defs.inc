@@ -162,13 +162,25 @@ pgmname=`basename $0`
 [ -z "$srcdir" ] && fatal "not called from make"
 
 # Make sure we have a valid option files even with VPATH builds.
-if [ -f ./gpg.conf ]; then
-  :
-elif [ -f $srcdir/gpg.conf.tmpl ]; then
-  cat $srcdir/gpg.conf.tmpl >gpg.conf
-fi
+for f in gpg.conf gpg-agent.conf; do 
+  if [ -f ./$f ]; then
+    :
+  elif [ -f $srcdir/$f.tmpl ]; then
+    cat $srcdir/$f.tmpl >$f
+  fi
+done
 
-GPG="../../g10/gpg2 --no-permission-warning --homedir . "
+# Always work in the current directory
+GNUPGHOME=`pwd`
+export GNUPGHOME
+
+# We do not use an external info variable for gpg-agent because we use
+# a standard socket in the home directory.  This way gpg-agent will be
+# started as soon as needed.  It is terminated indirectly using a
+# Makefile rule.
+GPG_AGENT_INFO=
+
+GPG="../../g10/gpg2 --no-permission-warning "
 
 exec 5>&2 2>${pgmname}.log
 

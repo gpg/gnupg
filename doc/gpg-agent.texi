@@ -433,13 +433,14 @@ named @file{S.gpg-agent}, located in the home directory, and not create
 a random socket below a temporary directory.  Tools connecting to
 @command{gpg-agent} should first try to connect to the socket given in
 environment variable @var{GPG_AGENT_INFO} and then fall back to this
-socket.  This option may not be used if the home directory is mounted as
-a remote file system.  Note, that @option{--use-standard-socket} is the
-default on Windows systems.  The default may be changed at build time.
-It is possible to test at runtime whether the agent has been configured
-for use with the standard socket by issuing the command
-@command{gpg-agent --use-standard-socket-p} which returns success if the
-standard socket option has been enabled.
+socket.  This option may not be used if the home directory is mounted on
+a remote file system which does not support special files like fifos or
+sockets.  Note, that @option{--use-standard-socket} is the default on
+Windows systems.  The default may be changed at build time.  It is
+possible to test at runtime whether the agent has been configured for
+use with the standard socket by issuing the command @command{gpg-agent
+--use-standard-socket-p} which returns success if the standard socket
+option has been enabled.
 
 @item --display @var{string}
 @itemx --ttyname @var{string}

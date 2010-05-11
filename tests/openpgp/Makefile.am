@@ -40,16 +40,20 @@ TESTS = version.test mds.test \
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc \
-             gpg.conf.tmpl bug537-test.data.asc bug894-test.asc \
+             gpg.conf.tmpl gpg-agent.conf.tmpl \
+	     bug537-test.data.asc bug894-test.asc \
 	     bug1223-good.asc bug1223-bogus.asc
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
 EXTRA_DIST = defs.inc $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey
+
+# Note that removing S.gpg-agent forces a running gpg-agent to
+# terminate after some time.
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
-	     *.test.log gpg_dearmor gpg.conf \
+	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
 
 DISTCLEANFILES = pubring.gpg~ random_seed

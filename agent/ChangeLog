@@ -1,3 +1,12 @@
+2010-05-11  Werner Koch  <wk@g10code.com>
+
+	* agent.h (opt): Add field USE_STANDARD_SOCKET.
+	* gpg-agent.c (use_standard_socket): Remove.  Use new option instead.
+
+	* command.c (cmd_killagent, cmd_reloadagent): Provide command also
+	for non-W32 platforms.
+	(cmd_getinfo): New subcommands std_session_env and std_startup_env.
+
 2010-05-03  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (check_own_socket_thread): Do not release SOCKNAME
