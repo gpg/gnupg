@@ -1,3 +1,13 @@
+2010-05-11  Werner Koch  <wk@g10code.com>
+
+	* genkey1024.test: Use GPG macro.
+
+	* gpg-agent.conf.tmpl: New.
+	* defs.inc: Create gpg-agent.conf
+	(GNUPGHOME): Set and export.
+	(GPG_AGENT_INFO): Unset
+	* Makefile.am (CLEANFILES): Add S.gpg-agent
+
 2009-12-21  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (required_pgms): New.

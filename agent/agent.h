@@ -61,6 +61,8 @@ struct
   char *startup_lc_ctype;
   char *startup_lc_messages;
 
+  /* True if we are listening on the standard socket.  */
+  int use_standard_socket;
 
   const char *pinentry_program; /* Filename of the program to start as
                                    pinentry.  */

@@ -59,10 +59,8 @@ struct server_local_s
   char *keydesc;  /* Allocated description for the next key
                      operation. */
   int pause_io_logging; /* Used to suppress I/O logging during a command */
-#ifdef HAVE_W32_SYSTEM
   int stopme;    /* If set to true the agent will be terminated after
                     the end of this session.  */
-#endif
   int allow_pinentry_notify; /* Set if pinentry notifications should
                                 be done. */
 };
@@ -1590,18 +1588,20 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 
 
 
-#ifdef HAVE_W32_SYSTEM
 static const char hlp_killagent[] =
   "KILLAGENT\n"
   "\n"
-  "Under Windows we start the agent on the fly.  Thus it also make\n"
-  "sense to allow a client to stop the agent.";
+  "If the agent has been started using a standard socket\n"
+  "we allow a client to stop the agent.";
 static gpg_error_t
 cmd_killagent (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void)line;
+  
+  if (!opt.use_standard_socket)
+    return set_error (GPG_ERR_NOT_SUPPORTED, "no --use-standard-socket");
 
   ctrl->server_local->stopme = 1;
   return gpg_error (GPG_ERR_EOF);
@@ -1611,8 +1611,8 @@ cmd_killagent (assuan_context_t ctx, char *line)
 static const char hlp_reloadagent[] =
   "RELOADAGENT\n"
   "\n"
-  "As signals are inconvenient under Windows, we provide this command\n"
-  "to allow reloading of the configuration.";
+  "This command is an alternative to SIGHUP\n"
+  "to reload the configuration.";
 static gpg_error_t
 cmd_reloadagent (assuan_context_t ctx, char *line)
 {
@@ -1622,7 +1622,6 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
   agent_sighup_action ();
   return 0;
 }
-#endif /*HAVE_W32_SYSTEM*/
 
 
 
@@ -1637,11 +1636,14 @@ static const char hlp_getinfo[] =
   "  socket_name - Return the name of the socket.\n"
   "  ssh_socket_name - Return the name of the ssh socket.\n"
   "  scd_running - Return OK if the SCdaemon is already running.\n"
+  "  std_session_env - List the standard session environment.\n"
+  "  std_startup_env - List the standard startup environment.\n"
   "  cmd_has_option\n"
   "              - Returns OK if the command CMD implements the option OPT.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
 
   if (!strcmp (line, "version"))
@@ -1684,6 +1686,34 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
       snprintf (numbuf, sizeof numbuf, "%lu", get_standard_s2k_count ());
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "std_session_env")
+           || !strcmp (line, "std_startup_env"))
+    {
+      int iterator;
+      const char *name, *value;
+      char *string;
+      
+      iterator = 0; 
+      while ((name = session_env_list_stdenvnames (&iterator, NULL)))
+        {
+          value = session_env_getenv_or_default
+            (line[5] == 't'? opt.startup_env:ctrl->session_env, name, NULL);
+          if (value)
+            {
+              string = xtryasprintf ("%s=%s", name, value); 
+              if (!string)
+                rc = gpg_error_from_syserror ();
+              else
+                {
+                  rc = assuan_send_data (ctx, string, strlen (string)+1);
+                  if (!rc)
+                    rc = assuan_send_data (ctx, NULL, 0);
+                }
+              if (rc)
+                break;
+            }
+        }
     }
   else if (!strncmp (line, "cmd_has_option", 14)
            && (line[14] == ' ' || line[14] == '\t' || !line[14]))
@@ -1881,10 +1911,8 @@ register_commands (assuan_context_t ctx)
     { "GETVAL",         cmd_getval,    hlp_getval },
     { "PUTVAL",         cmd_putval,    hlp_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty, hlp_updatestartuptty },
-#ifdef HAVE_W32_SYSTEM
     { "KILLAGENT",      cmd_killagent,  hlp_killagent },
     { "RELOADAGENT",    cmd_reloadagent,hlp_reloadagent },
-#endif
     { "GETINFO",        cmd_getinfo,   hlp_getinfo },
     { NULL }
   };
@@ -1991,10 +2019,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   /* Cleanup.  */
   assuan_release (ctx);
-#ifdef HAVE_W32_SYSTEM
   if (ctrl->server_local->stopme)
     agent_exit (0);
-#endif
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 }

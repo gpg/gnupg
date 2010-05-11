@@ -30,7 +30,7 @@ SUBDIRS = ${openpgp} . pkits
 GPGSM = ../sm/gpgsm
 
 # Note that we need to use /bin/pwd so that we don't get into trouble
-# if the shell used for inittests would uses an internal version of
+# if the shell used for inittests would use an internal version of
 # pwd which handles symlinks differently.
 TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
                     GPGSM=$(GPGSM) $(srcdir)/runtest
