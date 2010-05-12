@@ -1,5 +1,8 @@
 2010-05-12  Werner Koch  <wk@g10code.com>
 
+	* preset-passphrase.c (forget_passphrase): Actually implement
+	this.  Fixes bug#1198.
+
 	* gpg-agent.c (handle_tick): Do not print die message with option -q.
 
 2010-05-11  Werner Koch  <wk@g10code.com>

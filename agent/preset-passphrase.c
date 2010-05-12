@@ -189,11 +189,15 @@ forget_passphrase (const char *keygrip)
 
   rc = asprintf (&line, "CLEAR_PASSPHRASE %s\n", keygrip);
   if (rc < 0)
+    rc = gpg_error_from_syserror ();
+  else
+    rc = map_spwq_error (simple_query (line));
+  if (rc)
     {
-      log_error ("clearing passphrase failed: %s\n",
-		 gpg_strerror (gpg_error_from_syserror ()));
+      log_error ("clearing passphrase failed: %s\n", gpg_strerror (rc));
       return;
     }
+
   xfree (line);
 }
 
