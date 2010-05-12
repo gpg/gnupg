@@ -1660,8 +1660,11 @@ handle_tick (void)
       if (kill (parent_pid, 0))
         {
           shutdown_pending = 2;
-          log_info ("parent process died - shutting down\n");
-          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          if (!opt.quiet)
+            {
+              log_info ("parent process died - shutting down\n");
+              log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+            }
           cleanup ();
           agent_exit (0);
         }

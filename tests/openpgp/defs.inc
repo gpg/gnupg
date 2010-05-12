@@ -1,6 +1,6 @@
 # Definitions for the OpenPGP test scripts                     -*- sh -*-
 # Copyright 1998,1999,2000,2001,2002,2003,2004,2005,2006,
-#           2007 Free Software Foundation, Inc.
+#           2007, 2010 Free Software Foundation, Inc.
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
 # modifications, as long as this notice is preserved.  This file is
@@ -162,7 +162,7 @@ pgmname=`basename $0`
 [ -z "$srcdir" ] && fatal "not called from make"
 
 # Make sure we have a valid option file even with VPATH builds.
-for f in gpg.conf gpg-agent.conf; do 
+for f in gpg.conf ; do 
   if [ -f ./$f ]; then
     :
   elif [ -f $srcdir/$f.tmpl ]; then
@@ -170,19 +170,24 @@ for f in gpg.conf gpg-agent.conf; do
   fi
 done
 
-# Always work in the current directory
-GNUPGHOME=`pwd`
-export GNUPGHOME
+# Always work in the current directory.  We set GNUPGHOME only if it
+# has not been set already.  Usually it is set through the Makefile's
+# TESTS_ENVIRONMENT macro.
+if [ -z "$GNUPGHOME" ]; then
+  GNUPGHOME=`pwd`
+  export GNUPGHOME
+elif [ "$GNUPGHOME" != `pwd` ]; then
+  echo "$pgmname: GNUPGHOME not set to the cwd" $* >&2
+  exit 1
+fi
 
-# We do not use an external info variable for gpg-agent because we use
-# a standard socket in the home directory.  This way gpg-agent will be
-# started as soon as needed.  It is terminated indirectly using a
-# Makefile rule.
-GPG_AGENT_INFO=
 
 GPG="../../g10/gpg2 --no-permission-warning "
 
-exec 5>&2 2>${pgmname}.log
+echo "Test: $pgmname"                  >  ${pgmname}.log
+echo "GNUPGHOME=$GNUPGHOME"            >> ${pgmname}.log
+echo "GPG_AGENT_INFO=$GPG_AGENT_INFO"  >> ${pgmname}.log
+exec 5>&2 2>>${pgmname}.log
 
 :
 # end

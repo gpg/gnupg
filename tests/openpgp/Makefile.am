@@ -23,6 +23,11 @@ GPG_IMPORT = ../../g10/gpg2 --homedir . \
 required_pgms = ../../g10/gpg2 ../../agent/gpg-agent \
                 ../../tools/gpg-connect-agent
 
+
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
+		    ../../agent/gpg-agent --quiet --daemon sh 
+
+
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
 	sigs.test sigs-dsa.test \
@@ -66,7 +71,9 @@ distclean-local:
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr ./gpg_dearmor $(DATA_FILES)
 	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
+	 cat $(srcdir)/gpg-agent.conf.tmpl > gpg-agent.conf
 	 echo timestamp >./prepared.stamp
+
 
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.

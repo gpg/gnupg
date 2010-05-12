@@ -46,9 +46,9 @@ EXTRA_DIST = runtest inittests $(testscripts) \
              samplekeys/cert_g10code_test1.pem \
              samplekeys/cert_g10code_theo1.pem
 
-# We used to run $(testscripts) here but tehse asschk scripts ares not
+# We used to run $(testscripts) here but these asschk scripts are not
 # completely reliable in all enviromnets and thus we better disable
-# them.  The tests are anyway way to minimal.  We will eventually
+# them.  The tests are anyway way too minimal.  We will eventually
 # write new tests based on gpg-connect-agent which has a full fledged
 # script language and thus makes it far easier to write tests than to
 # use the low--level asschk stuff.
