@@ -55,7 +55,7 @@ gpgsm_SOURCES = \
 common_libs = $(libcommon) ../kbx/libkeybox.a ../jnlib/libjnlib.a \
               ../gl/libgnu.a
 
-gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
+gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a  $(NETLIBS) \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
               $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) $(LIBICONV)
 

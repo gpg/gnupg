@@ -1,3 +1,8 @@
+2010-05-12  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgsm_LDADD): Include NETLIBS which is required for
+	Solaris.
+
 2010-03-12  Werner Koch  <wk@g10code.com>
 
 	* server.c (cmd_passwd): New.  From trunk.
