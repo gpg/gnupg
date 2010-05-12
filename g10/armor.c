@@ -775,14 +775,14 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    if( !maxlen )
 		afx->truncated++;
 	    if( !afx->buffer_len )
-		break; /* eof */
+                break; /* eof */
 	    continue;
 	}
 
       again:
 	if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
 	    continue;
-	else if( c == '=' ) { /* pad character: stop */
+	else if( c == '=' ) { /* Pad character: stop or CRC sum starts. */
 	    /* some mailers leave quoted-printable encoded characters
 	     * so we try to workaround this */
 	    if( afx->buffer_pos+2 < afx->buffer_len ) {
@@ -801,8 +801,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    goto again;
 		}
 	    }
-	    else if(n==0)
-	      onlypad=1;
+            
+	    if (!n)
+	      onlypad = 1;
 
 	    if( idx == 1 )
 		buf[n++] = val;

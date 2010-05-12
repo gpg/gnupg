@@ -44,7 +44,7 @@
 
 /* The size of the internal buffers. 
    NOTE: If you change this value you MUST also adjust the regression
-   test "armored_key_8192" in armor.test! */
+   test "armored_key_8192" and "nopad_armored_msg" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
 

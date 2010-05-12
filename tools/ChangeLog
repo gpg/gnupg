@@ -1,3 +1,7 @@
+2010-05-12  Werner Koch  <wk@g10code.com>
+
+	* mk-tdata.c (main): Add option --seq.
+
 2007-10-23  Werner Koch  <wk@g10code.com>
 
 	Switched entire package to GPLv3+.
