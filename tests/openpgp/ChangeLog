@@ -1,5 +1,7 @@
 2010-05-12  Werner Koch  <wk@g10code.com>
 
+	* armor.test: Add test for bug#1179.
+
 	* Makefile.am (TESTS_ENVIRONMENT): New.  Start all scripts udner
 	the control of the gpg-agent.
 	(prepared.stamp): Create gpg-agent.conf.

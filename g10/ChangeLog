@@ -1,5 +1,7 @@
 2010-05-12  Werner Koch  <wk@g10code.com>
 
+	* armor.c (radix64_read): Change fix 2006-04-28 to fix bug#1179.
+
 	* plaintext.c (handle_plaintext): Check return code of fflush.
 	Fixes bug#1207.
 

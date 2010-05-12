@@ -1,4 +1,4 @@
-/* armor.c - Armor flter
+/* armor.c - Armor filter
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007 Free Software Foundation, Inc.
  *
@@ -797,8 +797,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    goto again;
 		}
 	    }
-	    else if(n==0)
-	      onlypad=1;
+
+	    if (!n)
+	      onlypad = 1;
 
 	    if( idx == 1 )
 		buf[n++] = val;
