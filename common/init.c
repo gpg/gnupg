@@ -49,6 +49,23 @@ sleep_on_exit (void)
 #endif /*HAVE_W32CE_SYSTEM*/
 
 
+/* If STRING is not NULL write string to es_stdout or es_stderr.  MODE
+   must be 1 or 2.  If STRING is NULL flush the respective stream.  */
+static int
+writestring_via_estream (int mode, const char *string)
+{
+  if (mode == 1 || mode == 2)
+    {
+      if (string)
+        return es_fputs (string, mode == 1? es_stdout : es_stderr);
+      else
+        return es_fflush (mode == 1? es_stdout : es_stderr);
+    }
+  else
+    return -1;
+}
+
+
 /* This function is to be used early at program startup to make sure
    that some subsystems are initialized.  This is in particular
    important for W32 to initialize the sockets so that our socket
@@ -100,6 +117,10 @@ init_common_subsystems (int *argcp, char ***argvp)
   (void)argcp;
   (void)argvp;
 #endif
+
+  /* --version et al shall use estream as well.  */
+  argparse_register_outfnc (writestring_via_estream);
+
 }
 
 

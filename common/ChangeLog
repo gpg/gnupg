@@ -1,3 +1,12 @@
+2010-05-30  Werner Koch  <wk@g10code.com>
+
+	* init.c (writestring_via_estream): New.
+	(init_common_subsystems): Register with argparse.
+
+	* argparse.c (argparse_register_outfnc): New.
+	(writestrings, flushstrings): New.  Use them instead of stdout or
+	stderr based functions.
+
 2010-05-04  Werner Koch  <wk@g10code.com>
 
 	* estream.c (_es_get_std_stream): Re-use registered standard fds.

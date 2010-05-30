@@ -179,5 +179,6 @@ int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 void usage( int level );
 const char *strusage( int level );
 void set_strusage( const char *(*f)( int ) );
+void argparse_register_outfnc (int (*fnc)(int, const char *));
 
 #endif /*LIBJNLIB_ARGPARSE_H*/

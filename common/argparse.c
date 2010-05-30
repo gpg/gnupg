@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "libjnlib-config.h"
 #include "mischelp.h"
@@ -144,10 +145,62 @@ struct alias_def_s {
 };
 
 static const char *(*strusage_handler)( int ) = NULL;
+static int (*custom_outfnc) (int, const char *);
 
 static int  set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
 static void show_help(ARGPARSE_OPTS *opts, unsigned flags);
 static void show_version(void);
+static int writestrings (int is_error, const char *string, ...)
+#if __GNUC__ >= 4 
+  __attribute__ ((sentinel(0)))
+#endif
+  ;
+
+
+void
+argparse_register_outfnc (int (*fnc)(int, const char *))
+{
+  custom_outfnc = fnc;
+}
+
+
+/* Write STRING and all following const char * arguments either to
+   stdout or, if IS_ERROR is set, to stderr.  The list of strings must
+   be terminated by a NULL.  */
+static int
+writestrings (int is_error, const char *string, ...)
+{
+  va_list arg_ptr;
+  const char *s;
+  int count = 0;
+
+  if (string)
+    {
+      s = string;
+      va_start (arg_ptr, string);
+      do
+        {
+          if (custom_outfnc)
+            custom_outfnc (is_error? 2:1, s);
+          else
+            fputs (s, is_error? stderr : stdout);
+          count += strlen (s);
+        }
+      while ((s = va_arg (arg_ptr, const char *)));
+      va_end (arg_ptr);
+    }
+  return count;
+}
+
+
+static void
+flushstrings (int is_error)
+{
+  if (custom_outfnc)
+    custom_outfnc (is_error? 2:1, NULL);
+  else
+    fflush (is_error? stderr : stdout);
+}
 
 
 static void
@@ -630,7 +683,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	}
       else if ( i < 0 && !strcmp( "warranty", s+2))
         {
-          puts ( strusage (16) );
+          writestrings (0, strusage (16), "\n", NULL);
           exit (0);
 	}
       else if ( i < 0 && !strcmp( "dump-options", s+2) )
@@ -638,9 +691,10 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
           for (i=0; opts[i].short_opt; i++ )
             {
               if ( opts[i].long_opt )
-                printf ("--%s\n", opts[i].long_opt);
+                writestrings (0, "--", opts[i].long_opt, "\n", NULL);
 	    }
-          fputs ("--dump-options\n--help\n--version\n--warranty\n", stdout);
+          writestrings (0, "--dump-options\n--help\n--version\n--warranty\n",
+                        NULL);
           exit (0);
 	}
       
@@ -875,11 +929,12 @@ static void
 show_help (ARGPARSE_OPTS *opts, unsigned int flags)
 {
   const char *s;
+  char tmp[2];
   
   show_version ();
-  putchar ('\n');
+  writestrings (0, "\n", NULL);
   s = strusage(41);
-  puts (s);
+  writestrings (0, s, "\n", NULL);
   if ( opts[0].description )
     {
       /* Auto format the option description.  */
@@ -897,7 +952,7 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
       /* Example: " -v, --verbose   Viele Sachen ausgeben" */
       indent += 10;
       if ( *opts[0].description != '@' )
-        puts ("Options:");
+        writestrings (0, "Options:", "\n", NULL);
       for (i=0; opts[i].short_opt; i++ )
         {
           s = _( opts[i].description );
@@ -910,61 +965,76 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
                   if ( *s == '\n' )
                     {
                       if( s[1] )
-                        putchar('\n');
+                        writestrings (0, "\n", NULL);
 		    }
                   else
-                    putchar(*s);
-		}
-              putchar('\n');
+                    {
+                      tmp[0] = *s;
+                      tmp[1] = 0;
+                      writestrings (0, tmp, NULL);
+                    }
+                }
+              writestrings (0, "\n", NULL);
               continue;
 	    }
 
           j = 3;
           if ( opts[i].short_opt < 256 )
             {
-              printf (" -%c", opts[i].short_opt);
+              tmp[0] = opts[i].short_opt;
+              tmp[1] = 0;
+              writestrings (0, " -", tmp, NULL );
               if ( !opts[i].long_opt ) 
                 {
                   if (s && *s == '|' ) 
                     {
-                      putchar (' '); j++;
+                      writestrings (0, " ", NULL); j++;
                       for (s++ ; *s && *s != '|'; s++, j++ )
-                        putchar (*s);
+                        {
+                          tmp[0] = *s;
+                          tmp[1] = 0;
+                          writestrings (0, tmp, NULL);
+                        }
                       if ( *s )
                         s++;
 		    }
 		}
 	    }
           else
-            fputs("   ", stdout);
+            writestrings (0, "   ", NULL);
           if ( opts[i].long_opt ) 
             {
-              j += printf ("%c --%s", opts[i].short_opt < 256?',':' ',
-                           opts[i].long_opt );
+              tmp[0] = opts[i].short_opt < 256?',':' ';
+              tmp[1] = 0;
+              j += writestrings (0, tmp, " --", opts[i].long_opt, NULL);
               if (s && *s == '|' ) 
                 {
                   if ( *++s != '=' )
                     {
-                      putchar(' ');
+                      writestrings (0, " ", NULL);
                       j++;
 		    }
                   for ( ; *s && *s != '|'; s++, j++ )
-                    putchar(*s);
+                    {
+                      tmp[0] = *s;
+                      tmp[1] = 0;
+                      writestrings (0, tmp, NULL);
+                    }
                   if ( *s )
                     s++;
 		}
-              fputs ("   ", stdout);
+              writestrings (0, "   ", NULL);
               j += 3;
 	    }
           for (;j < indent; j++ )
-            putchar(' ');
+            writestrings (0, " ", NULL);
           if ( s )
             {
               if ( *s && j > indent )
                 {
-                  putchar('\n');
+                  writestrings (0, "\n", NULL);
                   for (j=0;j < indent; j++ )
-                    putchar (' ');
+                    writestrings (0, " ", NULL);
 		}
               for (; *s; s++ )
                 {
@@ -972,44 +1042,58 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
                     {
                       if ( s[1] ) 
                         {
-                          putchar ('\n');
+                          writestrings (0, "\n", NULL);
                           for (j=0; j < indent; j++ )
-                            putchar (' ');
+                            writestrings (0, " ", NULL);
 			}
 		    }
                   else
-                    putchar (*s);
+                    {
+                      tmp[0] = *s;
+                      tmp[1] = 0;
+                      writestrings (0, tmp, NULL);
+                    }
 		}
 	    }
-          putchar ('\n');
+          writestrings (0, "\n", NULL);
 	}
 	if ( (flags & ARGPARSE_FLAG_ONEDASH) )
-	    puts ("\n(A single dash may be used instead of the double ones)");
+          writestrings (0, "\n(A single dash may be used "
+                        "instead of the double ones)\n", NULL);
     }
   if ( (s=strusage(19)) )
     { 
       /* bug reports to ... */
       char *s2;
       
-      putchar('\n');
+      writestrings (0, "\n", NULL);
       s2 = strstr (s, "@EMAIL@");
       if (s2)
         {
           if (s2-s)
-            fwrite (s, s2-s, 1, stdout);
+            {
+              const char *s3;
+
+              for (s3=s; s3 < s2; s3++)
+                {
+                  tmp[0] = *s3;
+                  tmp[1] = 0;
+                  writestrings (0, tmp, NULL);
+                }
+            }
 #ifdef PACKAGE_BUGREPORT
-          fputs (PACKAGE_BUGREPORT, stdout);
+          writestrings (0, PACKAGE_BUGREPORT, NULL);
 #else
-          fputs ("bug@example.org", stdout);
+          writestrings (0, "bug@example.org", NULL);
 #endif
           s2 += 7;
           if (*s2)
-            fputs (s2, stdout);
+            writestrings (0, s2, NULL);
         }
       else
-        fputs(s, stdout);
+        writestrings (0, s, NULL);
     }
-  fflush(stdout);
+  flushstrings (0);
   exit(0);
 }
 
@@ -1020,31 +1104,31 @@ show_version ()
   int i;
 
   /* Version line.  */
-  fputs (strusage (11), stdout);
+  writestrings (0, strusage (11), NULL);
   if ((s=strusage (12)))
-    printf (" (%s)", s );
-  printf (" %s\n", strusage (13) );
+    writestrings (0, " (", s, ")", NULL);
+  writestrings (0, " ", strusage (13), "\n", NULL);
   /* Additional version lines. */
   for (i=20; i < 30; i++)
     if ((s=strusage (i)))
-      printf ("%s\n", s );
+      writestrings (0, s, "\n", NULL);
   /* Copyright string.  */
-  if( (s=strusage (14)) )
-    printf("%s\n", s );
+  if ((s=strusage (14)))
+    writestrings (0, s, "\n", NULL);
   /* Licence string.  */
   if( (s=strusage (10)) )
-    printf("%s\n", s );
+    writestrings (0, s, "\n", NULL);
   /* Copying conditions. */
   if ( (s=strusage(15)) )
-    fputs (s, stdout);
+    writestrings (0, s, NULL);
   /* Thanks. */
   if ((s=strusage(18)))
-    fputs (s, stdout);
+    writestrings (0, s, NULL);
   /* Additional program info. */
   for (i=30; i < 40; i++ )
     if ( (s=strusage (i)) )
-      fputs (s, stdout);
-  fflush (stdout);
+      writestrings (0, s, NULL);
+  flushstrings (0);
 }
 
 
@@ -1055,20 +1139,21 @@ usage (int level)
 
   if (!level)
     {
-      fprintf(stderr,"%s %s; %s\n", strusage(11), strusage(13), strusage (14));
-      fflush (stderr);
+      writestrings (1, strusage(11), " ", strusage(13), "; ",
+                    strusage (14), "\n", NULL);
+      flushstrings (1);
     }
   else if (level == 1)
     {
       p = strusage (40);
-      fputs (p, stderr);
+      writestrings (1, p, NULL);
       if (*p && p[strlen(p)] != '\n')
-        putc ('\n', stderr);
+        writestrings (1, "\n", NULL);
       exit (2);
     }
   else if (level == 2) 
     {
-      puts (strusage(41));
+      writestrings (0, strusage(41), "\n", NULL);
       exit (0);
     }
 }
