@@ -188,6 +188,7 @@ enum cmd_and_opt_values
     oOptions,
     oDebug,
     oDebugAll,
+    oDebugLevel,
     oDebugCCIDDriver,
     oStatusFD,
     oStatusFile,
@@ -513,6 +514,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOptions, "options", 2, "@"},
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
+    { oDebugLevel, "debug-level" ,0, "@"},
     { oStatusFD, "status-fd" ,1, "@"},
     { oStatusFile, "status-file" ,2, "@"},
     { oAttributeFD, "attribute-fd" ,1, "@" },
@@ -2202,6 +2204,7 @@ main (int argc, char **argv )
 	    break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
+          case oDebugLevel: break; /* Not supported.  */
           case oDebugCCIDDriver: 
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
             ccid_set_debug_level (ccid_set_debug_level (1)+1);
@@ -2224,7 +2227,11 @@ main (int argc, char **argv )
                              iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
 	  case oLoggerFile:
-            log_set_logfile( NULL, open_info_file (pargs.r.ret_str, 1) );
+            /* Our log code does not support the socket feature.  Thus
+               we ignore such log files to avoid problems with
+               gpg.conf files which are also used by gpg2.  */
+            if (strncmp (pargs.r.ret_str, "socket://", 9))
+              log_set_logfile( NULL, open_info_file (pargs.r.ret_str, 1) );
             break;
 
 	  case oWithFingerprint:
