@@ -845,7 +845,8 @@ key rings.
 
 @c man:.RS
 The listing shows you the key with its secondary keys and all user
-ids. Selected keys or user ids are indicated by an asterisk. The trust
+ids.  The primary user id is indicated by a dot, and selected keys or
+user ids are indicated by an asterisk.  The trust
 value is displayed with the primary key: the first is the assigned owner
 trust and the second is the calculated trust value. Letters are used for
 the values:

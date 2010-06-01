@@ -710,8 +710,15 @@ extern USItype __udiv_qrnnd ();
  **************  MIPS  *****************
  ***************************************/
 #if defined (__mips__) && W_TYPE_SIZE == 32
-#if __GNUC__ > 2 || __GNUC_MINOR__ >= 7
-#define umul_ppmm(w1, w0, u, v) \
+#if __GNUC__ > 4 || ( __GNUC__ == 4 && __GNUC_MINOR >= 4 )
+#define umul_ppmm(w1, w0, u, v)                                         \
+  do {                                                                  \
+    UDItype __ll = (UDItype)(u) * (v);                                  \
+    w1 = __ll >> 32;                                                    \
+    w0 = __ll;                                                          \
+  } while (0)
+#elif __GNUC__ > 2 || __GNUC_MINOR__ >= 7
+#define umul_ppmm(w1, w0, u, v)                                         \
   __asm__ ("multu %2,%3"                                                \
 	   : "=l" ((USItype)(w0)),                                      \
 	     "=h" ((USItype)(w1))                                       \
