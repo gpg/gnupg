@@ -1,3 +1,12 @@
+2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (TESTS_ENVIRONMENT): New.  Start all scripts under
+	the control of the gpg-agent.
+	(prepared.stamp): Create gpg-agent.conf.
+	* defs.inc: Do not create gpg-agent.conf
+	(GNUPGHOME): Check that it is set properly.
+	(GPG_AGENT_INFO): Do not change.
+
 2010-05-12  Werner Koch  <wk@g10code.com>
 
 	* armor.test (Version): Add test for bug#1179.

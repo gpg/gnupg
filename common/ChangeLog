@@ -1,5 +1,7 @@
 2010-06-07  Werner Koch  <wk@g10code.com>
 
+	* sysutils.c [W32CE]: Finish pipe creation.
+
 	* estream.c (es_fname_get, es_fname_set): New.
 	(fname_set_internal): New.
 	(struct estream_internal): Add fields printable_fname and
