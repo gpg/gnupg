@@ -40,8 +40,9 @@
 #define CONTROL_D ('D' - 'A' + 1)
 
 
-
-static FILE *statusfp;
+/* The stream to output the status information.  Output is disabled if
+   this is NULL.  */
+static estream_t statusfp;
 
 
 static void
@@ -94,39 +95,42 @@ status_currently_allowed (int no)
 
 
 void
-set_status_fd ( int fd )
+set_status_fd (int fd)
 {
-    static int last_fd = -1;
+  static int last_fd = -1;
+  
+  if (fd != -1 && last_fd == fd)
+    return;
 
-    if ( fd != -1 && last_fd == fd )
-        return;
-
-    if ( statusfp && statusfp != stdout && statusfp != stderr )
-        fclose (statusfp);
-    statusfp = NULL;
-    if ( fd == -1 ) 
-        return;
-
-    if( fd == 1 )
-	statusfp = stdout;
-    else if( fd == 2 )
-	statusfp = stderr;
-    else
-	statusfp = fdopen( fd, "w" );
-    if( !statusfp ) {
-	log_fatal("can't open fd %d for status output: %s\n",
-                  fd, strerror(errno));
+  if (statusfp && statusfp != es_stdout && statusfp != es_stderr )
+    es_fclose (statusfp);
+  statusfp = NULL;
+  if (fd == -1) 
+    return;
+  
+  if (fd == 1)
+    statusfp = es_stdout;
+  else if (fd == 2)
+    statusfp = es_stderr;
+  else
+    statusfp = es_fdopen (fd, "w");
+  if (!statusfp)
+    {
+      log_fatal ("can't open fd %d for status output: %s\n",
+                 fd, strerror (errno));
     }
-    last_fd = fd;
+  last_fd = fd;
 
-    gcry_set_progress_handler ( progress_cb, NULL );
+  gcry_set_progress_handler (progress_cb, NULL);
 }
+
 
 int
-is_status_enabled()
+is_status_enabled ()
 {
-    return !!statusfp;
+  return !!statusfp;
 }
+
 
 void
 write_status ( int no )
@@ -134,28 +138,31 @@ write_status ( int no )
     write_status_text( no, NULL );
 }
 
-void
-write_status_text ( int no, const char *text)
-{
-    if( !statusfp || !status_currently_allowed (no) )
-	return;  /* Not enabled or allowed. */
 
-    fputs ( "[GNUPG:] ", statusfp );
-    fputs ( get_status_string (no), statusfp );
-    if( text ) {
-        putc ( ' ', statusfp );
-        for (; *text; text++) {
-            if (*text == '\n')
-                fputs ( "\\n", statusfp );
-            else if (*text == '\r')
-                fputs ( "\\r", statusfp );
-            else 
-                putc ( *(const byte *)text,  statusfp );
+void
+write_status_text (int no, const char *text)
+{
+  if (!statusfp || !status_currently_allowed (no) )
+    return;  /* Not enabled or allowed. */
+
+  es_fputs ("[GNUPG:] ", statusfp);
+  es_fputs (get_status_string (no), statusfp);
+  if ( text ) 
+    {
+      es_putc ( ' ', statusfp);
+      for (; *text; text++)
+        {
+          if (*text == '\n')
+            es_fputs ("\\n", statusfp);
+          else if (*text == '\r')
+            es_fputs ("\\r", statusfp);
+          else 
+            es_fputc ( *(const byte *)text, statusfp);
         }
     }
-    putc ('\n',statusfp);
-    if ( fflush (statusfp) && opt.exit_on_status_write_error )
-      g10_exit (0);
+  es_putc ('\n', statusfp);
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
 }
 
 
@@ -166,23 +173,23 @@ write_status_error (const char *where, gpg_error_t err)
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */
 
-  fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
-           get_status_string (STATUS_ERROR), where, err);
-  if (fflush (statusfp) && opt.exit_on_status_write_error)
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+              get_status_string (STATUS_ERROR), where, err);
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
 }
 
 
-/* Same as above but only putputs the error code. */
+/* Same as above but outputs the error code only.  */
 void
 write_status_errcode (const char *where, int errcode)
 {
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */
 
-  fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
-           get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
-  if (fflush (statusfp) && opt.exit_on_status_write_error)
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+              get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
 }
 
@@ -194,73 +201,83 @@ write_status_errcode (const char *where, int errcode)
  * A wrap of -1 forces spaces not to be encoded as %20.
  */
 void
-write_status_text_and_buffer ( int no, const char *string,
-                               const char *buffer, size_t len, int wrap )
+write_status_text_and_buffer (int no, const char *string,
+                              const char *buffer, size_t len, int wrap)
 {
-    const char *s, *text;
-    int esc, first;
-    int lower_limit = ' ';
-    size_t n, count, dowrap;
+  const char *s, *text;
+  int esc, first;
+  int lower_limit = ' ';
+  size_t n, count, dowrap;
 
-    if( !statusfp || !status_currently_allowed (no) )
-	return;  /* Not enabled or allowed. */
+  if (!statusfp || !status_currently_allowed (no))
+    return;  /* Not enabled or allowed. */
     
-    if (wrap == -1) {
-        lower_limit--;
-        wrap = 0;
+  if (wrap == -1)
+    {
+      lower_limit--;
+      wrap = 0;
     }
 
-    text = get_status_string (no);
-    count = dowrap = first = 1;
-    do {
-        if (dowrap) {
-            fprintf (statusfp, "[GNUPG:] %s ", text );
-            count = dowrap = 0;
-            if (first && string) {
-                fputs (string, statusfp);
-                count += strlen (string);
-                /* Make sure that there is space after the string.  */
-                if (*string && string[strlen (string)-1] != ' ')
-                  {
-                    putc (' ', statusfp);
-                    count++;
-                  }
+  text = get_status_string (no);
+  count = dowrap = first = 1;
+  do 
+    {
+      if (dowrap)
+        {
+          es_fprintf (statusfp, "[GNUPG:] %s ", text);
+          count = dowrap = 0;
+          if (first && string)
+            {
+              es_fputs (string, statusfp);
+              count += strlen (string);
+              /* Make sure that there is a space after the string.  */
+              if (*string && string[strlen (string)-1] != ' ')
+                {
+                  es_putc (' ', statusfp);
+                  count++;
+                }
             }
-            first = 0;
+          first = 0;
         }
-        for (esc=0, s=buffer, n=len; n && !esc; s++, n-- ) {
-            if ( *s == '%' || *(const byte*)s <= lower_limit 
-                           || *(const byte*)s == 127 ) 
-                esc = 1;
-            if ( wrap && ++count > wrap ) {
-                dowrap=1;
-                break;
+      for (esc=0, s=buffer, n=len; n && !esc; s++, n--)
+        {
+          if (*s == '%' || *(const byte*)s <= lower_limit 
+              || *(const byte*)s == 127 ) 
+            esc = 1;
+          if (wrap && ++count > wrap)
+            {
+              dowrap=1;
+              break;
             }
         }
-        if (esc) {
-            s--; n++;
+      if (esc) 
+        {
+          s--; n++;
         }
-        if (s != buffer) 
-            fwrite (buffer, s-buffer, 1, statusfp );
-        if ( esc ) {
-            fprintf (statusfp, "%%%02X", *(const byte*)s );
-            s++; n--;
+      if (s != buffer) 
+        es_fwrite (buffer, s-buffer, 1, statusfp);
+      if ( esc ) 
+        {
+          es_fprintf (statusfp, "%%%02X", *(const byte*)s );
+          s++; n--;
         }
-        buffer = s;
-        len = n;
-        if ( dowrap && len )
-            putc ( '\n', statusfp );
-    } while ( len );
+      buffer = s;
+      len = n;
+      if (dowrap && len)
+        es_putc ('\n', statusfp);
+    } 
+  while (len);
 
-    putc ('\n',statusfp);
-    if ( fflush (statusfp) && opt.exit_on_status_write_error )
-      g10_exit (0);
+  es_putc ('\n',statusfp);
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
 }
 
+
 void
-write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
+write_status_buffer (int no, const char *buffer, size_t len, int wrap)
 {
-    write_status_text_and_buffer (no, NULL, buffer, len, wrap);
+  write_status_text_and_buffer (no, NULL, buffer, len, wrap);
 }
 
 
@@ -285,13 +302,13 @@ write_status_begin_signing (gcry_md_hd_t md)
       buflen = 0;
       for (i=1; i <= 11; i++)
         if (i < 4 || i > 7)
-          if ( gcry_md_is_enabled (md, i) && buflen < DIM(buf) )
+          if (gcry_md_is_enabled (md, i) && buflen < DIM(buf))
             {
               snprintf (buf+buflen, DIM(buf) - buflen - 1, 
                         "%sH%d", buflen? " ":"",i);
               buflen += strlen (buf+buflen);
             }
-      write_status_text ( STATUS_BEGIN_SIGNING, buf );
+      write_status_text (STATUS_BEGIN_SIGNING, buf);
     }
   else
     write_status ( STATUS_BEGIN_SIGNING );
@@ -301,28 +318,34 @@ write_status_begin_signing (gcry_md_hd_t md)
 static int
 myread(int fd, void *buf, size_t count)
 {
-    int rc;
-    do {
-        rc = read( fd, buf, count );
-    } while ( rc == -1 && errno == EINTR );
-    if ( !rc && count ) {
-        static int eof_emmited=0;
-        if ( eof_emmited < 3 ) {
-            *(char*)buf = CONTROL_D;
-            rc = 1;
-            eof_emmited++;
+  int rc;
+  do 
+    {
+      rc = read( fd, buf, count );
+    } 
+  while (rc == -1 && errno == EINTR);
+
+  if (!rc && count)
+    {
+      static int eof_emmited=0;
+      if ( eof_emmited < 3 )
+        {
+          *(char*)buf = CONTROL_D;
+          rc = 1;
+          eof_emmited++;
         }
-        else { /* Ctrl-D not caught - do something reasonable */
+      else /* Ctrl-D not caught - do something reasonable */
+        { 
 #ifdef HAVE_DOSISH_SYSTEM
 #ifndef HAVE_W32CE_SYSTEM
-            raise (SIGINT);  /* nothing to hangup under DOS */
+          raise (SIGINT); /* Nothing to hangup under DOS.  */
 #endif
 #else
-            raise (SIGHUP); /* no more input data */
+          raise (SIGHUP); /* No more input data.  */
 #endif
         }
     }    
-    return rc;
+  return rc;
 }
 
 
@@ -336,8 +359,8 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
   int i, len;
   char *string;
   
-  if (statusfp != stdout)
-    fflush (stdout);
+  if (statusfp != es_stdout)
+    es_fflush (es_stdout);
   
   write_status_text (getbool? STATUS_GET_BOOL :
                      hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword);

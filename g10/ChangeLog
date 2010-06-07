@@ -1,3 +1,7 @@
+2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* cpr.c: Use estream for status output.
+
 2010-05-12  Werner Koch  <wk@g10code.com>
 
 	* armor.c (radix64_read): Extended 2006-04-28 fix to fix bug#1179.
