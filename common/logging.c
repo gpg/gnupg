@@ -402,7 +402,11 @@ log_get_fd ()
 estream_t
 log_get_stream ()
 {
-  assert (logstream);
+  if (!logstream)
+    {
+      log_set_file (NULL); /* Make sure a log stream has been set.  */
+      assert (logstream);
+    }
   return logstream;
 }
 

@@ -48,7 +48,7 @@ struct runner_s
 
 
   /* We use a reference counter to know when it is safe to remove the
-     object.  Lackiong an explicit ref fucntion this counter will take
+     object.  Lacking an explicit ref function this counter will take
      only these two values:
 
      1 = Thread not running or only the thread is still running.

@@ -1,3 +1,11 @@
+2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --enable-gpgtar.
+
+2010-05-31  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for lstat.
+
 2010-04-30  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add option --enable-standard-socket.

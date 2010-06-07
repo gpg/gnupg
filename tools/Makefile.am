@@ -42,13 +42,19 @@ else
   symcryptrun =
 endif
 
+if BUILD_GPGTAR
+  gpgtar = gpgtar
+else
+  gpgtar =
+endif
+
 # Fixme: We should remove the gpgkey2ssh tool.
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
 endif
 if !HAVE_W32CE_SYSTEM
-bin_PROGRAMS += gpgkey2ssh
+bin_PROGRAMS += gpgkey2ssh ${gpgtar}
 endif
 
 if !DISABLE_REGEX
@@ -60,6 +66,7 @@ noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 endif
 
 common_libs = $(libcommon) ../gl/libgnu.a
+commonpth_libs = $(libcommonpth) ../gl/libgnu.a
 if HAVE_W32CE_SYSTEM
 pwquery_libs = 
 else
@@ -114,14 +121,15 @@ gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 endif
 
-#gpgtar_SOURCES = \
-#	gpgtar.c gpgtar.h \
-#	gpgtar-create.c \
-#	gpgtar-extract.c \
-#	gpgtar-list.c \
-#	no-libgcrypt.c
-#gpgtar_LDADD = $(common_libs)
-#
+gpgtar_SOURCES = \
+	gpgtar.c gpgtar.h \
+	gpgtar-create.c \
+	gpgtar-extract.c \
+	gpgtar-list.c \
+	no-libgcrypt.c
+gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
+gpgtar_LDADD = $(commonpth_libs) $(PTH_LIBS) $(GPG_ERROR_LIBS)
+
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

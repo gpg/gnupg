@@ -1,3 +1,7 @@
+2010-05-12  Werner Koch  <wk@g10code.com>
+
+	* armor.test (Version): Add test for bug#1179.
+
 2010-05-11  Werner Koch  <wk@g10code.com>
 
 	* genkey1024.test: Use GPG macro.

@@ -1,3 +1,22 @@
+2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_fname_get, es_fname_set): New.
+	(fname_set_internal): New.
+	(struct estream_internal): Add fields printable_fname and
+	printable_fname_inuse.
+	(_es_get_std_stream): Set stream name.
+	(es_fopen, es_freopen, es_deinitialize): Set fname.
+
+	* exechelp-posix.c (gnupg_spawn_process): Allow passing INFILE or
+	OUTFILE as NULL.
+	* exechelp-w32.c (gnupg_spawn_process): Ditto.
+	* exechelp-w32ce.c (gnupg_spawn_process): Return an error for
+	INFILE or OUTFILE passed as NULL.
+
+2010-06-01  Werner Koch  <wk@g10code.com>
+
+	* logging.c (log_get_stream): Make sture a log stream is available.
+
 2010-05-30  Werner Koch  <wk@g10code.com>
 
 	* init.c (writestring_via_estream): New.
@@ -15,7 +34,7 @@
 	(es_func_fd_destroy): Implement a dummy stream.
 
 	* exechelp-w32ce.c (build_w32_commandline): Add args FD0_ISNULL
-	and FD1_ISNULL.  Remove arg PGMNAME.  Change callers. 
+	and FD1_ISNULL.  Remove arg PGMNAME.  Change callers.
 	(gnupg_spawn_process_detached): Implement.
 	(gnupg_spawn_process_fd): Implement one special case for now.
 

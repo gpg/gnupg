@@ -501,6 +501,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   *statusfile = NULL;
   *pid = (pid_t)(-1);
 
+  /* A NULL INFILE or OUTFILE is only used by gpgtar thus we don't
+     need to implement this for CE.  */
+  if (!infile || !outfile)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
   es_fflush (infile);
   es_rewind (infile);
 

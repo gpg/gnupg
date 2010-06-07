@@ -1,3 +1,10 @@
+2010-05-12  Werner Koch  <wk@g10code.com>
+
+	* armor.c (radix64_read): Extended 2006-04-28 fix to fix bug#1179.
+
+	* plaintext.c (handle_plaintext): Check return code of fflush.
+	Fixes bug#1207.
+
 2010-05-07  Werner Koch  <wk@g10code.com>
 
 	* import.c (fix_bad_direct_key_sigs): New.

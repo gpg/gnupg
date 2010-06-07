@@ -211,6 +211,7 @@ struct estream_internal
   void *cookie;			 /* Cookie.                */
   void *opaque;			 /* Opaque data.           */
   unsigned int modeflags;	 /* Flags for the backend. */
+  char *printable_fname;         /* Malloced filename for es_fname_get.  */
   off_t offset;
   es_cookie_read_function_t func_read;
   es_cookie_write_function_t func_write;
@@ -227,6 +228,7 @@ struct estream_internal
   unsigned int is_stdstream:1;   /* This is a standard stream.  */
   unsigned int stdstream_fd:2;   /* 0, 1 or 2 for a standard stream.  */
   unsigned int print_err: 1;     /* Error in print_fun_writer.  */
+  unsigned int printable_fname_inuse: 1;  /* es_fname_get has been used.  */
   int print_errno;               /* Errno from print_fun_writer.  */
   size_t print_ntotal;           /* Bytes written from in print_fun_writer. */
   FILE *print_fp;                /* Stdio stream used by print_fun_writer.  */
@@ -266,8 +268,12 @@ static unsigned char custom_std_fds_valid[3];
 #endif
 
 
-
+/* Local prototypes.  */
+static void fname_set_internal (estream_t stream, const char *fname, int quote);
 
+
+
+
 /* Macros.  */
 
 /* Calculate array dimension.  */
@@ -1275,6 +1281,8 @@ es_initialize (estream_t stream,
   stream->intern->is_stdstream = 0;
   stream->intern->stdstream_fd = 0;
   stream->intern->deallocate_buffer = 0;
+  stream->intern->printable_fname = NULL;
+  stream->intern->printable_fname_inuse = 0;
 
   stream->data_len = 0;
   stream->data_offset = 0;
@@ -1314,7 +1322,10 @@ es_deinitialize (estream_t stream)
   if (func_close)
     SET_UNLESS_NONZERO (err, tmp_err, (*func_close) (stream->intern->cookie));
 
-  
+  mem_free (stream->intern->printable_fname);
+  stream->intern->printable_fname = NULL;
+  stream->intern->printable_fname_inuse = 0;
+
   return err;
 }
 
@@ -2190,6 +2201,9 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   if (err)
     goto out;
 
+  if (stream && path)
+    fname_set_internal (stream, path, 1);
+
  out:
   
   if (err && create_called)
@@ -2467,6 +2481,9 @@ _es_get_std_stream (int fd)
       stream->intern->stdstream_fd = fd;
       if (fd == 2)
         es_set_buffering (stream, NULL, _IOLBF, 0);
+      fname_set_internal (stream, 
+                          fd == 0? "[stdin]" :
+                          fd == 1? "[stdout]" : "[stderr]", 0);
     }
   ESTREAM_LIST_UNLOCK;
   return stream;
@@ -2515,7 +2532,11 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	  stream = NULL;
 	}
       else
-	ESTREAM_UNLOCK (stream);
+        {
+          if (stream && path)
+            fname_set_internal (stream, path, 1);
+          ESTREAM_UNLOCK (stream);
+        }
     }
   else
     {
@@ -3406,6 +3427,68 @@ es_opaque_get (estream_t stream)
 
   return opaque;
 }
+
+
+static void
+fname_set_internal (estream_t stream, const char *fname, int quote)
+{
+  if (stream->intern->printable_fname
+      && !stream->intern->printable_fname_inuse)
+    {
+      mem_free (stream->intern->printable_fname);
+      stream->intern->printable_fname = NULL;
+    }
+  if (stream->intern->printable_fname)
+    return; /* Can't change because it is in use.  */
+
+  if (*fname != '[')
+    quote = 0;
+  else
+    quote = !!quote;
+
+  stream->intern->printable_fname = mem_alloc (strlen (fname) + quote + 1);
+  if (fname)
+    {
+      if (quote)
+        stream->intern->printable_fname[0] = '\\';
+      strcpy (stream->intern->printable_fname+quote, fname);
+    }
+}
+
+
+/* Set the filename attribute of STREAM.  There is no error return.
+   as long as STREAM is valid.  This function is called internally by
+   functions which open a filename.  */
+void
+es_fname_set (estream_t stream, const char *fname)
+{
+  if (fname)
+    {
+      ESTREAM_LOCK (stream);
+      fname_set_internal (stream, fname, 1);
+      ESTREAM_UNLOCK (stream);
+    }
+}
+
+
+/* Return the filename attribute of STREAM.  In case no filename has
+   been set, "[?]" will be returned.  The returned file name is valid
+   as long as STREAM is valid.  */
+const char *
+es_fname_get (estream_t stream)
+{
+  const char *fname;
+
+  ESTREAM_LOCK (stream);
+  fname = stream->intern->printable_fname;
+  if (fname)
+    stream->intern->printable_fname_inuse = 1;
+  ESTREAM_UNLOCK (stream);
+  if (!fname)
+    fname = "[?]";
+  return fname;
+}
+
 
 /* Print a BUFFER to STREAM while replacing all control characters and
    the characters in DELIMITERS by standard C escape sequences.

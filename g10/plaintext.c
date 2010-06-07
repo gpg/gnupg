@@ -448,7 +448,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   /* Make sure that stdout gets flushed after the plaintext has been
      handled.  This is for extra security as we do a flush anyway
      before checking the signature.  */
-  fflush (stdout);
+  if (fflush (stdout))
+    {
+      /* We need to check the return code to detect errors like disk
+         full for short plaintexts.  See bug#1207.  Checking return
+         values is a good idea in any case.  */
+      if (!rc)
+        rc = gpg_error_from_syserror ();
+      log_error ("error flushing `%s': %s\n", "[stdout]", strerror (errno));
+    }
 
   if (fp && fp != stdout && fp != opt.outfp)
     fclose (fp);

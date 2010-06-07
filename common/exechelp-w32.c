@@ -382,17 +382,30 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   int cr_flags;
   char *cmdline;
   int fd, fdout, rp[2];
+  HANDLE nullhd[];
+  int i;
 
   (void)preexec;
 
   /* Setup return values.  */
   *statusfile = NULL;
   *pid = (pid_t)(-1);
-  es_fflush (infile);
-  es_rewind (infile);
-  fd = _get_osfhandle (es_fileno (infile));
-  fdout = _get_osfhandle (es_fileno (outfile));
-  if (fd == -1 || fdout == -1)
+  
+  if (infile)
+    {
+      es_fflush (infile);
+      es_rewind (infile);
+      fd = _get_osfhandle (es_fileno (infile));
+    }
+  else
+    fd = -1;
+
+  if (outfile)
+    fdout = _get_osfhandle (es_fileno (outfile));
+  else
+    fdout = -1;
+
+  if ( (infile && fd == -1) || (outfile && fdout == -1))
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
   /* Prepare security attributes.  */
@@ -414,14 +427,17 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       return err;
     }
   
+  nullhd[0] =    fd == -1? w32_open_null (0) : INVALID_HANDLE_VALUE;
+  nullhd[1] = outfd == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
+
   /* Start the process.  Note that we can't run the PREEXEC function
      because this would change our own environment. */
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
   si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-  si.hStdInput  = fd_to_handle (fd);
-  si.hStdOutput = fd_to_handle (fdout);
+  si.hStdInput  =    fd == -1? nullhd[0] : fd_to_handle (fd);
+  si.hStdOutput = outfd == -1? nullhd[1] : fd_to_handle (fdout);
   si.hStdError  = fd_to_handle (rp[1]);
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
@@ -449,6 +465,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
   xfree (cmdline);
   cmdline = NULL;
+
+  /* Close the inherited handles to /dev/null.  */
+  for (i=0; i < DIM (nullhd); i++)
+    if (nullhd[i] != INVALID_HANDLE_VALUE)
+      CloseHandle (nullhd[i]);
 
   /* Close the other end of the pipe.  */
   CloseHandle (fd_to_handle (rp[1]));

@@ -128,6 +128,8 @@
 #define es_tmpfile            _ESTREAM_PREFIX(es_tmpfile)
 #define es_opaque_set         _ESTREAM_PREFIX(es_opaque_set)
 #define es_opaque_get         _ESTREAM_PREFIX(es_opaque_get)
+#define es_fname_set          _ESTREAM_PREFIX(es_fname_set)
+#define es_fname_get          _ESTREAM_PREFIX(es_fname_get)
 #define es_write_sanitized_utf8_buffer  \
               _ESTREAM_PREFIX(es_write_sanitized_utf8_buffer)
 #endif /*_ESTREAM_EXT_SYM_PREFIX*/
@@ -357,6 +359,9 @@ estream_t es_tmpfile (void);
 
 void es_opaque_set (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque);
 void *es_opaque_get (estream_t stream);
+
+void es_fname_set (estream_t stream, const char *fname);
+const char *es_fname_get (estream_t stream);
 
 
 #ifdef GNUPG_MAJOR_VERSION

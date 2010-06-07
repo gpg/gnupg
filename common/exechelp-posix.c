@@ -313,11 +313,22 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   *statusfile = NULL;
   *pid = (pid_t)(-1);
-  es_fflush (infile);
-  es_rewind (infile);
-  fd = es_fileno (infile);
-  fdout = es_fileno (outfile);
-  if (fd == -1 || fdout == -1)
+
+  if (infile)
+    {
+      es_fflush (infile);
+      es_rewind (infile);
+      fd = es_fileno (infile);
+    }
+  else
+    fd = -1;
+
+  if (outfile)
+    fdout = es_fileno (outfile);
+  else
+    fdout = -1;
+
+  if ((infile && fd == -1) || (outfile && fdout == -1))
     log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
 
   if (pipe (rp) == -1)

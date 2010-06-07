@@ -798,8 +798,9 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    goto again;
 		}
 	    }
-	    else if(n==0)
-	      onlypad=1;
+
+	    if (!n)
+	      onlypad = 1;
 
 	    if( idx == 1 )
 		buf[n++] = val;

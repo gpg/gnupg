@@ -1360,6 +1360,8 @@ generate_card_keys (void)
     {
       char *answer;
 
+      /* FIXME: Should be something like cpr_get_bool so that a status
+         GET_BOOL will be emitted.  */
       answer = cpr_get ("cardedit.genkeys.backup_enc",
                         _("Make off-card backup of encryption key? (Y/n) "));
 

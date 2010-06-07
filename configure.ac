@@ -89,6 +89,7 @@ GNUPG_BUILD_PROGRAM(g13, yes)
 GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
+GNUPG_BUILD_PROGRAM(gpgtar, no)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(PACKAGE_GT)
@@ -1156,8 +1157,8 @@ AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r])
 AC_CHECK_FUNCS([unsetenv fcntl ftruncate])
 AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
-AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe stat getaddrinfo])
-AC_CHECK_FUNCS([ttyname rand ftello fsync])
+AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
+AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
@@ -1473,6 +1474,7 @@ AM_CONDITIONAL(BUILD_G13,   test "$build_g13" = "yes")
 AM_CONDITIONAL(BUILD_TOOLS, test "$build_tools" = "yes")
 AM_CONDITIONAL(BUILD_DOC,   test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
+AM_CONDITIONAL(BUILD_GPGTAR,test "$build_gpgtar" = "yes")
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
 	test x$cross_compiling = xno -a "$build_gpg" = yes )
@@ -1583,6 +1585,7 @@ echo "
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_extra
         G13:       $build_g13
+        Gpgtar:    $build_gpgtar
 
         Protect tool:      $show_gnupg_protect_tool_pgm
         Default agent:     $show_gnupg_agent_pgm

@@ -53,13 +53,14 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
 
 
 /* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
-   stdin, write the output to OUTFILE, return a new stream in
-   STATUSFILE for stderr and the pid of the process in PID. The
-   arguments for the process are expected in the NULL terminated array
-   ARGV.  The program name itself should not be included there.  If
-   PREEXEC is not NULL, that function will be called right before the
-   exec.  Calling gnupg_wait_process is required.  Returns 0 on
-   success or an error code.
+   stdin, write the output to OUTFILE.  INFILE or PUTFILE may be NULL
+   to connect thenm to /dev/null.  Returns a new stream in STATUSFILE
+   for stderr and the pid of the process in PID. The arguments for the
+   process are expected in the NULL terminated array ARGV.  The
+   program name itself should not be included there.  If PREEXEC is
+   not NULL, that function will be called right before the exec.
+   Calling gnupg_wait_process is required.  Returns 0 on success or an
+   error code.
 
    FLAGS is a bit vector:
 
