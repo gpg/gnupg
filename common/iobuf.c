@@ -37,6 +37,8 @@
 # include <swis.h>
 #endif /* __riscos__ */
 
+#include <assuan.h>
+
 #include "util.h"
 #include "sysutils.h"
 #include "iobuf.h"
@@ -2366,11 +2368,11 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 static int
 translate_file_handle (int fd, int for_write)
 {
-#if defined (HAVE_W32CE_SYSTEM)
+#if defined(HAVE_W32CE_SYSTEM)
   /* This is called only with one of the special filenames.  Under
      W32CE the FD here is not a file descriptor but a rendezvous id,
      thus we need to finish the pipe first.  */
-  fd = _assuan_w32ce_finish_pipe fd, for_write);
+  fd = _assuan_w32ce_finish_pipe (fd, for_write);
 #elif defined(HAVE_W32_SYSTEM)
   {
     int x;

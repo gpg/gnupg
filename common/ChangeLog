@@ -1,3 +1,12 @@
+2010-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (AM_CFLAGS): Add $(LIBASSUAN_CFLAGS).
+	(t_common_ldadd): Add $(LIBASSUAN_LIBS).
+	* sysutils.c: Include <assuan.h>.
+	(translate_sys2libc_fd_int): Cast to silence gcc warning.
+	* iobuf.c: Include <assuan.h>
+	(translate_file_handle): Fix syntax error.	
+
 2010-06-08  Werner Koch  <wk@g10code.com>
 
 	* iobuf.c (translate_file_handle) [W32CE]: Handle rendezvous ids.

@@ -51,6 +51,8 @@
 #endif
 #include <fcntl.h>
 
+#include <assuan.h>
+
 #include "setenv.h"   /* Gnulib replacement.  */
 
 #include "util.h"
@@ -306,7 +308,7 @@ int
 translate_sys2libc_fd_int (int fd, int for_write)
 {
 #if HAVE_W32CE_SYSTEM
-  fd = _assuan_w32ce_finish_pipe fd, for_write);
+  fd = (int) _assuan_w32ce_finish_pipe (fd, for_write);
   return translate_sys2libc_fd ((void*)fd, for_write);
 #elif HAVE_W32_SYSTEM
   if (fd <= 2)

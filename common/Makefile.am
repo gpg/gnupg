@@ -34,7 +34,7 @@ CLEANFILES = audit-events.h status-codes.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS)
 
 include $(top_srcdir)/am/cmacros.am
 
@@ -168,7 +168,7 @@ module_maint_tests = t-helpfile t-b64
 
 
 t_common_ldadd = libcommon.a ../gl/libgnu.a \
-                 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 # jnlib tests
 t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
