@@ -1,3 +1,7 @@
+2010-06-08  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (translate_file_handle) [W32CE]: Handle rendezvous ids.
+
 2010-06-07  Werner Koch  <wk@g10code.com>
 
 	* sysutils.c [W32CE]: Finish pipe creation.

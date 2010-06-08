@@ -497,6 +497,7 @@ check_isotime (const gnupg_isotime_t atime)
 }
 
 
+/* Dump the ISO time T to the log stream without a LF.  */
 void
 dump_isotime (const gnupg_isotime_t t)
 {

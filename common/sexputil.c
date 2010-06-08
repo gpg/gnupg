@@ -99,7 +99,7 @@ keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
 
 
 /* Compare two simple S-expressions like "(3:foo)".  Returns 0 if they
-   are identical or !0 if they are not.  Not that this function can't
+   are identical or !0 if they are not.  Note that this function can't
    be used for sorting. */
 int
 cmp_simple_canon_sexp (const unsigned char *a_orig,
