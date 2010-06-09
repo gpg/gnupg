@@ -1,0 +1,40 @@
+The old AUTHORS file from the separate dirmngr package.
+
+ Package: dirmngr
+ Maintainer: Werner Koch <wk@gnupg.org>
+ Bug reports: bug-dirmngr@gnupg.org
+ Security related bug reports: security@gnupg.org
+ License: GPLv2+
+
+
+Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+ - Initial code
+
+g10 Code GmbH <code@g10code.com>
+ - All stuff written since October 2003.
+
+Werner Koch     <wk@gnupg.org>, <wk@g10code.com>
+ - Help with initial code.
+
+Free Software Foundation <gnu@gnu.org>
+ - Code taken from GnuPG.
+
+Michael Tokarev <mjt@corpit.ru>
+ - src/cdb.h and src/cdblib.c from the public domain tinycdb 0.73.
+
+
+The actual code is under the GNU GPL, except for src/cdb.h and
+src/cdblib.h which are in the public domain.
+
+
+ Copyright 2003, 2004, 2006, 2007, 2008, 2010 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+

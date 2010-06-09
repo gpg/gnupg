@@ -1051,10 +1051,11 @@ gpg_agent_runtime_change (void)
   
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, NULL);
+    err = gnupg_wait_process (pgmname, pid, 0, NULL);
   if (err)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " reloadagent", gpg_strerror (err));
+  gnupg_release_process (pid);
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -1082,10 +1083,11 @@ scdaemon_runtime_change (void)
   
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, NULL);
+    err = gnupg_wait_process (pgmname, pid, 0, NULL);
   if (err)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " scd killscd", gpg_strerror (err));
+  gnupg_release_process (pid);
 }
 
 
@@ -1501,13 +1503,14 @@ gc_component_check_options (int component, FILE *out, const char *conf_file)
       close (filedes[1]);
       errlines = collect_error_output (filedes[0], 
 				       gc_component[component].name);
-      if (gnupg_wait_process (pgmname, pid, &exitcode))
+      if (gnupg_wait_process (pgmname, pid, 0, &exitcode))
 	{
 	  if (exitcode == -1)
 	    result |= 1; /* Program could not be run or it
 			    terminated abnormally.  */
 	  result |= 2; /* Program returned an error.  */
 	}
+      gnupg_release_process (pid);
     }
   
   /* If the program could not be run, we can't tell whether
@@ -1919,10 +1922,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   if (fclose (config) && ferror (config))
     gc_error (1, errno, "error closing %s", pgmname);
 
-  err = gnupg_wait_process (pgmname, pid, &exitcode);
+  err = gnupg_wait_process (pgmname, pid, 0, &exitcode);
   if (err)
     gc_error (1, 0, "running %s failed (exitcode=%d): %s",
               pgmname, exitcode, gpg_strerror (err));
+  gnupg_release_process (pid);
 
 
   /* At this point, we can parse the configuration file.  */

@@ -1,4 +1,22 @@
+2010-06-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (GNUPG_DIRMNGR_LDAP_PGM): Add option
+	--with-dirmngr-ldap-pgm.
+
+	* am/cmacros.am (-DGNUPG_LOCALSTATEDIR): New.
+	(GNUPG_DEFAULT_DIRMNGR_LDAP): New.
+
+2010-06-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add build support for dirmngr.
+	(try_ldap): Rename to try_ks_ldap.
+	(GNUPG_CHECK_LDAP): Also test if dirmngr is to be build.
+
+	* Makefile.am (SUBDIRS): Add dirmngr.
+
 2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* dirmngr/: New.
 
 	* configure.ac: Add option --enable-gpgtar.
 

@@ -1,3 +1,8 @@
+2010-06-09  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): s/log_set_get_tid_callback/log_set_pid_suffix_cb/.
+	(tid_log_callback): Adjust for this change.
+
 2010-03-11  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c: Include "asshelp.h".

@@ -59,8 +59,8 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
    process are expected in the NULL terminated array ARGV.  The
    program name itself should not be included there.  If PREEXEC is
    not NULL, that function will be called right before the exec.
-   Calling gnupg_wait_process is required.  Returns 0 on success or an
-   error code.
+   Calling gnupg_wait_process and gnupg_release_process is required.
+   Returns 0 on success or an error code.
 
    FLAGS is a bit vector:
 
@@ -85,27 +85,52 @@ gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
    and ERRFD to stderr (any of them may be -1 to connect them to
    /dev/null).  The arguments for the process are expected in the NULL
    terminated array ARGV.  The program name itself should not be
-   included there.  Calling gnupg_wait_process is required.  Returns 0
-   on success or an error code. */
+   included there.  Calling gnupg_wait_process and
+   gnupg_release_process is required.  Returns 0 on success or an
+   error code. */
 gpg_error_t gnupg_spawn_process_fd (const char *pgmname, 
                                     const char *argv[],
                                     int infd, int outfd, int errfd,
                                     pid_t *pid);
 
 
-/* Wait for the process identified by PID to terminate. PGMNAME should
-   be the same as supplied to the spawn fucntion and is only used for
-   diagnostics.  Returns 0 if the process succeded, GPG_ERR_GENERAL
-   for any failures of the spawned program or other error codes.  If
-   EXITCODE is not NULL the exit code of the process is stored at this
-   address or -1 if it could not be retrieved.  */
-gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode);
+/* If HANG is true, waits for the process identified by PID to exit;
+   if HANG is false, checks whether the process has terminated.
+   PGMNAME should be the same as supplied to the spawn function and is
+   only used for diagnostics.  Return values:
+
+   0
+       The process exited successful.  0 is stored at R_EXITCODE.
+
+   GPG_ERR_GENERAL
+       The process exited without success.  The exit code of process
+       is then stored at R_EXITCODE.  An exit code of -1 indicates
+       that the process terminated abnormally (e.g. due to a signal).
+
+   GPG_ERR_TIMEOUT 
+       The process is still running (returned only if HANG is false).
+
+   GPG_ERR_INV_VALUE 
+       An invalid PID has been specified.  
+
+   Other error codes may be returned as well.  Unless otherwise noted,
+   -1 will be stored at R_EXITCODE.  R_EXITCODE may be passed as NULL
+   if the exit code is not required (in that case an error messge will
+   be printed).  Note that under Windows PID is not the process id but
+   the handle of the process.  */
+gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int hang,
+                                int *r_exitcode);
 
 
 /* Kill a process; that is send an appropriate signal to the process.
    gnupg_wait_process must be called to actually remove the process
    from the system.  An invalid PID is ignored.  */
 void gnupg_kill_process (pid_t pid);
+
+/* Release the process identified by PID.  This function is actually
+   only required for Windows but it does not harm to always call it.
+   It is a nop if PID is invalid.  */
+void gnupg_release_process (pid_t pid);
 
 
 /* Spawn a new process and immediatley detach from it.  The name of

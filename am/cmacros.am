@@ -25,7 +25,8 @@ AM_CPPFLAGS += -DGNUPG_BINDIR="\"$(bindir)\""            \
                -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""    \
                -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""  \
                -DGNUPG_DATADIR="\"$(datadir)/@PACKAGE@\"" \
-               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\""
+               -DGNUPG_SYSCONFDIR="\"$(sysconfdir)/@PACKAGE@\"" \
+               -DGNUPG_LOCALSTATEDIR="\"$(localstatedir)\""
 endif
 
 
@@ -46,6 +47,9 @@ AM_CPPFLAGS += -DGNUPG_DEFAULT_DIRMNGR="\"@GNUPG_DIRMNGR_PGM@\""
 endif
 if GNUPG_PROTECT_TOOL_PGM
 AM_CPPFLAGS += -DGNUPG_DEFAULT_PROTECT_TOOL="\"@GNUPG_PROTECT_TOOL_PGM@\""
+endif
+if GNUPG_DIRMNGR_LDAP_PGM
+AM_CPPFLAGS += -DGNUPG_DEFAULT_DIRMNGR_LDAP="\"@GNUPG_DIRMNGR_LDAP_PGM@\""
 endif
 
 # Under Windows we use LockFileEx.  WindowsCE provides this only on

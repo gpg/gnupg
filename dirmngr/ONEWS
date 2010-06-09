@@ -1,0 +1,240 @@
+These are NEWS entries from the old separate dirmngr package
+
+Noteworthy changes in version 1.1.0 (unreleased)
+------------------------------------------------
+
+ * Fixed a resource problem with LDAP CRLs.
+
+ * Fixed a bad EOF detection with HTTP CRLs.
+
+ * Made "dirmngr-client --url --load-crl URL" work.
+
+ * New option --ignore-cert-extension.
+
+ * Make use of libassuan 2.0 which is available as a DSO.
+
+
+Noteworthy changes in version 1.0.3 (2009-06-17)
+------------------------------------------------
+
+ * Client based trust anchors are now supported.
+
+ * Configured certificates with the suffix ".der" are now also used.
+
+ * Libgcrypt 1.4 is now required.
+
+
+Noteworthy changes in version 1.0.2 (2008-07-31)
+------------------------------------------------
+
+ * New option --url for the LOOKUP command and dirmngr-client.
+
+ * The LOOKUP command does now also consults the local cache.  New
+   option --cache-only for it and --local for dirmngr-client.
+
+ * Port to Windows completed.
+
+ * Improved certificate chain construction.
+
+ * Support loading of PEM encoded CRLs via HTTP.
+
+
+Noteworthy changes in version 1.0.1 (2007-08-16)
+------------------------------------------------
+
+ * The option --ocsp-signer may now take a filename to allow several
+   certificates to be valid signers for the default responder.
+
+ * New option --ocsp-max-period and improved the OCSP time checks.
+
+ * New option --force-default-signer for dirmngr-client.
+
+ * Ported to Windows.
+
+
+Noteworthy changes in version 1.0.0 (2006-11-29)
+------------------------------------------------
+
+ * Bumbed the version number.
+
+ * Removed included gettext.  We now require the system to provide a
+   suitable installation.
+
+
+Noteworthy changes in version 0.9.7 (2006-11-17)
+------------------------------------------------
+
+ * Internal cleanups.
+
+ * Fixed updating of DIR.txt.  Add additional diagnostics.
+
+ * Updated gettext package.
+
+
+Noteworthy changes in version 0.9.6 (2006-09-04)
+------------------------------------------------
+
+ * A couple of bug fixes for OCSP.
+
+ * OCSP does now make use of the responder ID and optionally included
+   certificates in the response to locate certificates.
+
+ * No more lost file descriptors when loading CRLs via HTTP.
+
+ * HTTP redirection for CRL and OCSP has been implemented.
+
+ * Man pages are now build and installed from the texinfo source.
+
+
+Noteworthy changes in version 0.9.5 (2006-06-27)
+------------------------------------------------
+
+ * Fixed a problems with the CRL caching and CRL certificate
+   validation.
+
+ * Improved diagnostics.
+
+
+Noteworthy changes in version 0.9.4 (2006-05-16)
+------------------------------------------------
+
+ * Try all names of each crlDP.
+
+ * Don't shutdown the socket after sending the HTTP request.
+
+
+Noteworthy changes in version 0.9.3 (2005-10-26)
+------------------------------------------------
+
+ * Minor bug fixes.
+
+
+Noteworthy changes in version 0.9.2 (2005-04-21)
+------------------------------------------------
+
+ * Make use of authorityKeyidentifier.keyIdentifier.
+
+ * Fixed a possible hang on exit.
+
+
+Noteworthy changes in version 0.9.1 (2005-02-08)
+------------------------------------------------
+
+ * New option --pem for dirmngr-client to allow requesting service
+   using a PEM encoded certificate.
+
+ * New option --squid-mode to allow using dirmngr-client directly as a
+   Squid helper.
+
+ * Bug fixes.
+
+
+Noteworthy changes in version 0.9.0 (2004-12-17)
+------------------------------------------------
+
+ * New option --daemon to start dirmngr as a system daemon.  This
+   switches to the use of different directories and also does
+   CRL signing certificate validation on its own.
+
+ * New tool dirmngr-client.
+
+ * New options: --ldap-wrapper-program, --http-wrapper-program,
+   --disable-ldap, --disable-http, --honor-http-proxy, --http-proxy,
+   --ldap-proxy, --only-ldap-proxy, --ignore-ldap-dp and
+   --ignore-http-dp.
+
+ * Uses an external ldap wrapper to cope with timeouts and general
+   LDAP problems.
+
+ * SIGHUP may be used to reread the configuration and to flush the
+   certificate cache.
+
+ * An authorithyKeyIdentifier in a CRL is now handled correctly.
+
+
+Noteworthy changes in version 0.5.6 (2004-09-28)
+------------------------------------------------
+
+ * LDAP fix.
+ 
+ * Logging fixes.
+
+ * Updated some configuration files.
+
+
+Noteworthy changes in version 0.5.5 (2004-05-13)
+------------------------------------------------
+
+ * Fixed the growing-dir.txt bug.
+
+ * Better LDAP error logging.
+
+
+Noteworthy changes in version 0.5.4 (2004-04-29)
+------------------------------------------------
+
+ * New commands --ocsp-responder and --ocsp-signer to define a default
+   OCSP reponder if a certificate does not contain an assigned OCSP
+   responder.
+
+
+Noteworthy changes in version 0.5.3 (2004-04-06)
+------------------------------------------------
+
+ * Basic OCSP support.
+
+
+Noteworthy changes in version 0.5.2 (2004-03-06)
+------------------------------------------------
+
+ * New Assuan command LISTCRLS.
+
+ * A couple of minor bug fixes.
+
+
+Noteworthy changes in version 0.5.1 (2003-12-23)
+------------------------------------------------
+
+* New options --faked-system-time and --force.
+
+* Changed the name of the cache directory to $HOMEDIR/dirmngr-cache.d
+  and renamed the dbcontents file.  You may delete the now obsolete
+  cache/ directory and the dbcontents file.
+
+* Dropped DB2 or DB4 use.  There is no need for it because a constant
+  database fits our needs far better.
+
+* Experimental support for retrieving CRLs via http.
+
+* The --log-file option may now be used to print logs to a socket.
+  Prefix the socket name with "socket://" to enable this.  This does
+  not work on all systems and falls back to stderr if there is a
+  problem with the socket.
+
+
+Noteworthy changes in version 0.5.0 (2003-11-17)
+------------------------------------------------
+
+* Revamped the entire thing.
+
+* Does now require Libgcrypt 1.1.90 or higher, as well as the latest
+  libksba and libassuan.
+
+* Fixed a bug in the assuan inquire processing.
+
+
+Noteworthy changes as of 2002-08-21
+------------------------------------
+
+* The default home directory is now .gnupg
+
+
+ Copyright 2003, 2004, 2005 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

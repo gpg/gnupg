@@ -416,37 +416,39 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 }
 
 
-/* Wait for the process identified by PID to terminate. PGMNAME should
-   be the same as supplied to the spawn function and is only used for
-   diagnostics. Returns 0 if the process succeeded, GPG_ERR_GENERAL
-   for any failures of the spawned program or other error codes.  If
-   EXITCODE is not NULL the exit code of the process is stored at this
-   address or -1 if it could not be retrieved and no error message is
-   logged.  */
+/* See exechelp.h for the description.  */
 gpg_error_t
-gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
+gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
 {
   gpg_err_code_t ec;
-
   int i, status;
 
-  if (exitcode)
-    *exitcode = -1;
+  if (r_exitcode)
+    *r_exitcode = -1;
 
   if (pid == (pid_t)(-1))
     return gpg_error (GPG_ERR_INV_VALUE);
 
 #ifdef USE_GNU_PTH
-  i = pth_waitpid ? pth_waitpid (pid, &status, 0) : waitpid (pid, &status, 0);
-#else
-  while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
-    ;
+  if (pth_waitpid)
+    i = pth_waitpid (pid, &status, hang? 0:WNOHANG);
+  else
 #endif
+    {
+      while ((i=waitpid (pid, &status, hang? 0:WNOHANG)) == (pid_t)(-1)
+             && errno == EINTR)
+        ;
+    }
+  
   if (i == (pid_t)(-1))
     {
+      ec = gpg_err_code_from_errno (errno);
       log_error (_("waiting for process %d to terminate failed: %s\n"),
                  (int)pid, strerror (errno));
-      ec = gpg_err_code_from_errno (errno);
+    }
+  else if (!i)
+    {
+      ec = GPG_ERR_TIMEOUT; /* Still running.  */
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
     {
@@ -455,11 +457,11 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status))
     {
-      if (!exitcode)
+      if (!r_exitcode)
         log_error (_("error running `%s': exit status %d\n"), pgmname,
                    WEXITSTATUS (status));
       else
-        *exitcode = WEXITSTATUS (status);
+        *r_exitcode = WEXITSTATUS (status);
       ec = GPG_ERR_GENERAL;
     }
   else if (!WIFEXITED (status))
@@ -469,8 +471,8 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
     }
   else 
     {
-      if (exitcode)
-        *exitcode = 0;
+      if (r_exitcode)
+        *r_exitcode = 0;
       ec = 0;
     }
 
@@ -478,7 +480,14 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
 }
 
 
-/* Spawn a new process and immediatley detach from it.  The name of
+void
+gnupg_release_process (pid_t pid)
+{
+  (void)pid;
+}
+
+
+/* Spawn a new process and immediately detach from it.  The name of
    the program to exec is PGMNAME and its arguments are in ARGV (the
    programname is automatically passed as first argument).
    Environment strings in ENVP are set.  An error is returned if

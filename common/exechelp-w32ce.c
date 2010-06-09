@@ -653,14 +653,10 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   return 0;
 }
 
-/* Wait for the process identified by PID to terminate. PGMNAME should
-   be the same as supplied to the spawn function and is only used for
-   diagnostics. Returns 0 if the process succeeded, GPG_ERR_GENERAL
-   for any failures of the spawned program or other error codes.  If
-   EXITCODE is not NULL the exit code of the process is stored at this
-   address or -1 if it could not be retrieved. */
+
+/* See exechelp.h for a description.  */
 gpg_error_t
-gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
+gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *exitcode)
 {
   gpg_err_code_t ec;
   HANDLE proc = fd_to_handle (pid);
@@ -676,47 +672,62 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
   /* FIXME: We should do a pth_waitpid here.  However this has not yet
      been implemented.  A special W32 pth system call would even be
      better.  */
-  code = WaitForSingleObject (proc, INFINITE);
+  code = WaitForSingleObject (proc, hang? INFINITE : 0);
   switch (code) 
     {
-      case WAIT_FAILED:
-        log_error (_("waiting for process %d to terminate failed: %s\n"),
-                   (int)pid, w32_strerror (-1));
-        ec = GPG_ERR_GENERAL;
-        break;
+    case WAIT_TIMEOUT:
+      ec = GPG_ERR_TIMEOUT;
+      break;
+      
+    case WAIT_FAILED:
+      log_error (_("waiting for process %d to terminate failed: %s\n"),
+                 (int)pid, w32_strerror (-1));
+      ec = GPG_ERR_GENERAL;
+      break;
 
-      case WAIT_OBJECT_0:
-        if (!GetExitCodeProcess (proc, &exc))
-          {
-            log_error (_("error getting exit code of process %d: %s\n"),
-                         (int)pid, w32_strerror (-1) );
-            ec = GPG_ERR_GENERAL;
+    case WAIT_OBJECT_0:
+      if (!GetExitCodeProcess (proc, &exc))
+        {
+          log_error (_("error getting exit code of process %d: %s\n"),
+                     (int)pid, w32_strerror (-1) );
+          ec = GPG_ERR_GENERAL;
           }
-        else if (exc)
-          {
-            log_error (_("error running `%s': exit status %d\n"),
+      else if (exc)
+        {
+          log_error (_("error running `%s': exit status %d\n"),
                        pgmname, (int)exc );
-            if (exitcode)
-              *exitcode = (int)exc;
-            ec = GPG_ERR_GENERAL;
-          }
-        else
-          {
-            if (exitcode)
-              *exitcode = 0;
-            ec = 0;
-          }
-        CloseHandle (proc);
-        break;
-
-      default:
-        log_error ("WaitForSingleObject returned unexpected "
-                   "code %d for pid %d\n", code, (int)pid );
-        ec = GPG_ERR_GENERAL;
-        break;
+          if (exitcode)
+            *exitcode = (int)exc;
+          ec = GPG_ERR_GENERAL;
+        }
+      else
+        {
+          if (exitcode)
+            *exitcode = 0;
+          ec = 0;
+        }
+      break;
+      
+    default:
+      log_error ("WaitForSingleObject returned unexpected "
+                 "code %d for pid %d\n", code, (int)pid );
+      ec = GPG_ERR_GENERAL;
+      break;
     }
 
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
+}
+
+
+void
+gnupg_release_process (pid_t pid)
+{
+  if (pid != (pid_t)INVALID_HANDLE_VALUE)
+    {
+      HANDLE process = (HANDLE)pid;
+      
+      CloseHandle (process);
+    }
 }
 
 

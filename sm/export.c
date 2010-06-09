@@ -715,8 +715,9 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   es_fclose (fp);
   if (pid != -1)
     {
-      if (!gnupg_wait_process (pgmname, pid, NULL))
+      if (!gnupg_wait_process (pgmname, pid, 0, NULL))
         child_err = 0;
+      gnupg_release_process (pid);
     }
   if (!err)
     err = child_err;

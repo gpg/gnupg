@@ -44,6 +44,24 @@
 #include "sysutils.h"
 
 
+#ifdef HAVE_W32_SYSTEM
+static void
+w32_try_mkdir (const char *dir)
+{
+#ifdef HAVE_W32CE_SYSTEM
+  wchar_t *wdir = utf8_to_wchar (dir);
+  if (wdir)
+    {
+      CreateDirectory (wdir, NULL);
+      xfree (wdir);
+    }
+#else              
+  CreateDirectory (dir, NULL);
+#endif
+}
+#endif
+
+
 /* This is a helper function to load a Windows function from either of
    one DLLs. */
 #ifdef HAVE_W32_SYSTEM
@@ -114,18 +132,7 @@ standard_homedir (void)
           
           /* Try to create the directory if it does not yet exists.  */
           if (access (dir, F_OK))
-            {
-#ifdef HAVE_W32CE_SYSTEM
-              wchar_t *wdir = utf8_to_wchar (dir);
-              if (wdir)
-                {
-                  CreateDirectory (wdir, NULL);
-                  xfree (wdir);
-                }
-#else              
-              CreateDirectory (dir, NULL);
-#endif
-            }
+            w32_try_mkdir (dir);
         }
       else
         dir = GNUPG_DEFAULT_HOMEDIR;
@@ -366,6 +373,54 @@ gnupg_localedir (void)
 }
 
 
+/* Return the name of the cache directory.  The name is allocated in a
+   static area on the first use.  Windows only: If the directory does
+   not exist it is created.  */
+const char *
+gnupg_cachedir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static const char *dir;
+
+  if (!dir)
+    {
+      char path[MAX_PATH];
+      const char *s1[] = { "GNU", "cache", "gnupg", NULL };
+      int s1_len;
+      const char **comp;
+
+      s1_len = 0;
+      for (comp = s1; *comp; comp++)
+        s1_len += 1 + strlen (*comp);
+
+      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, 
+                               NULL, 0, path) >= 0) 
+        {
+          char *tmp = xmalloc (strlen (path) + s1_len + 1);
+	  char *p;
+
+	  p = stpcpy (tmp, path);
+          for (comp = s1; *comp; comp++)
+	    {
+	      p = stpcpy (p, "\\");
+	      p = stpcpy (p, *comp);
+
+	      if (access (tmp, F_OK))
+		w32_try_mkdir (tmp);
+	    }
+
+          dir = tmp;
+        }
+      else
+        dir = "c:\\temp\\cache\\dirmngr";
+    }
+  return dir;
+#else /*!HAVE_W32_SYSTEM*/
+  return GNUPG_LOCALSTATEDIR "/cache/" PACKAGE_NAME;
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
 /* Return the default socket name used by DirMngr. */
 const char *
 dirmngr_socket_name (void)
@@ -379,7 +434,10 @@ dirmngr_socket_name (void)
       const char *s2;
 
       /* We need something akin CSIDL_COMMON_PROGRAMS, but local
-	 (non-roaming).  */
+	 (non-roaming).  This is becuase the file needs to be on the
+	 local machine and makes only sense on that machine.
+	 CSIDL_WINDOWS seems to be the only location which guarantees
+	 that. */
       if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1) < 0)
 	strcpy (s1, "C:\\WINDOWS");
       s2 = DIRSEP_S "S.dirmngr";
@@ -388,7 +446,7 @@ dirmngr_socket_name (void)
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
-  return "/var/run/dirmngr/socket";
+  return GNUPG_LOCALSTATEDIR "/run/" PACKAGE_NAME "/S.dirmngr";
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -448,6 +506,13 @@ gnupg_module_name (int which)
       return GNUPG_DEFAULT_PROTECT_TOOL;
 #else 
       X(libexecdir, "gpg-protect-tool");
+#endif
+
+    case GNUPG_MODULE_NAME_DIRMNGR_LDAP:
+#ifdef GNUPG_DEFAULT_DIRMNGR_LDAP
+      return GNUPG_DEFAULT_DIRMNGR_LDAP;
+#else 
+      X(libexecdir, "dirmngr_ldap");
 #endif
 
     case GNUPG_MODULE_NAME_CHECK_PATTERN:

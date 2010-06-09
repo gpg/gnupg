@@ -1,6 +1,6 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-#               2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+#               2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -81,11 +81,14 @@ disable_keyserver_path=no
 use_ccid_driver=yes
 use_standard_socket=no
 
+try_ks_ldap=no
+
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 GNUPG_BUILD_PROGRAM(agent, yes)
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
 GNUPG_BUILD_PROGRAM(g13, yes)
+GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
@@ -154,6 +157,15 @@ AM_CONDITIONAL(GNUPG_PROTECT_TOOL_PGM, test -n "$GNUPG_PROTECT_TOOL_PGM")
 show_gnupg_protect_tool_pgm="(default)"
 test -n "$GNUPG_PROTECT_TOOL_PGM" \
       && show_gnupg_protect_tool_pgm="$GNUPG_PROTECT_TOOL_PGM"
+
+AC_ARG_WITH(dirmngr-ldap-pgm,
+    [  --with-dirmngr-ldap-pgm=PATH  Use PATH as the default for the dirmnge ldap wrapper)],
+          GNUPG_DIRMNGR_LDAP_PGM="$withval", GNUPG_DIRMNGR_LDAP_PGM="" )
+AC_SUBST(GNUPG_DIRMNGR_LDAP_PGM)
+AM_CONDITIONAL(GNUPG_DIRMNGR_LDAP_PGM, test -n "$GNUPG_DIRMNGR_LDAP_PGM")
+show_gnupg_dirmngr_ldap_pgm="(default)"
+test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
+      && show_gnupg_dirmngr_ldap_pgm="$GNUPG_DIRMNGR_LDAP_PGM"
 
 
 # Some folks want to use only the agent from this packet.  Make it
@@ -239,8 +251,8 @@ if test "$use_exec" = yes ; then
     AC_MSG_CHECKING([whether LDAP keyserver support is requested])
     AC_ARG_ENABLE(ldap,
       AC_HELP_STRING([--disable-ldap],[disable LDAP keyserver interface only]),
-      try_ldap=$enableval, try_ldap=yes)
-    AC_MSG_RESULT($try_ldap)
+      try_ks_ldap=$enableval, try_ks_ldap=yes)
+    AC_MSG_RESULT($try_ks_ldap)
 
     AC_MSG_CHECKING([whether HKP keyserver support is requested])
     AC_ARG_ENABLE(hkp,
@@ -528,6 +540,7 @@ have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
 use_simple_gettext=no
+mmap_needed=yes
 case "${host}" in
     *-mingw32*)
         # special stuff for Windoze NT
@@ -552,6 +565,7 @@ case "${host}" in
         esac
         try_gettext="no"
 	use_simple_gettext=yes
+	mmap_needed=no
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -737,6 +751,10 @@ AC_DEFINE_UNQUOTED(ENCFS,
 AC_PATH_PROG(FUSERMOUNT, fusermount, /usr/bin/fusermount)
 AC_DEFINE_UNQUOTED(FUSERMOUNT,
 	"${FUSERMOUNT}", [defines the filename of the fusermount program])
+
+
+# Checks for dirmngr
+
 
 #
 # Checks for symcryptrun:
@@ -943,7 +961,7 @@ AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 #
 # Check for LDAP
 #
-if test "$try_ldap" = yes ; then
+if test "$try_ks_ldap" = yes || test "$build_dirmngr" = "yes" ; then
    GNUPG_CHECK_LDAP($NETLIBS)
 fi
 
@@ -1152,15 +1170,20 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap])
-AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r])
-AC_CHECK_FUNCS([unsetenv fcntl ftruncate])
+AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap canonicalize_file_name])
+AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r strtoull])
+AC_CHECK_FUNCS([unsetenv fcntl ftruncate canonicalize_file_name])
 AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
 AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
 
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
+
+# Dirmngr requires mmap on Unix systems.
+if test $ac_cv_func_mmap != yes -a $mmap_needed = yes; then
+  AC_MSG_ERROR([[Sorry, the current implemenation requires mmap.]])
+fi
 
 #
 # These are needed by the jnlib parts in common.
@@ -1170,6 +1193,9 @@ AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 memrchr isascii timegm getrusage setrlimit stat setlocale   \
                 flockfile funlockfile fopencookie funopen getpwnam getpwuid \
                 getenv ])
+# end jnlib checks.
+
+
 
 #
 # gnulib checks
@@ -1466,18 +1492,19 @@ if test "$build_agent_only" = "yes" ; then
 fi
 
 
-AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
-AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
-AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
-AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
-AM_CONDITIONAL(BUILD_G13,   test "$build_g13" = "yes")
-AM_CONDITIONAL(BUILD_TOOLS, test "$build_tools" = "yes")
-AM_CONDITIONAL(BUILD_DOC,   test "$build_doc" = "yes")
+AM_CONDITIONAL(BUILD_GPG,         test "$build_gpg" = "yes")
+AM_CONDITIONAL(BUILD_GPGSM,       test "$build_gpgsm" = "yes")
+AM_CONDITIONAL(BUILD_AGENT,       test "$build_agent" = "yes")
+AM_CONDITIONAL(BUILD_SCDAEMON,    test "$build_scdaemon" = "yes")
+AM_CONDITIONAL(BUILD_G13,         test "$build_g13" = "yes")
+AM_CONDITIONAL(BUILD_DIRMNGR,     test "$build_dirmngr" = "yes")
+AM_CONDITIONAL(BUILD_TOOLS,       test "$build_tools" = "yes")
+AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
-AM_CONDITIONAL(BUILD_GPGTAR,test "$build_gpgtar" = "yes")
+AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
-	test x$cross_compiling = xno -a "$build_gpg" = yes )
+               test x$cross_compiling = xno -a "$build_gpg" = yes )
 
 
 #
@@ -1524,6 +1551,16 @@ if test "$have_ksba" = "no"; then
 *** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
 fi
+if test "$gnupg_have_ldap" = "no"; then
+    die=yes
+    AC_MSG_NOTICE([[
+***
+*** You need a LDAP library to build this program.
+*** Check out 
+***    http://www.openldap.org 
+*** for a suitable implementation. 
+***]])
+fi
 if test "$missing_pth" = "yes"; then
     AC_MSG_NOTICE([[
 ***
@@ -1562,6 +1599,7 @@ sm/Makefile
 agent/Makefile
 scd/Makefile
 g13/Makefile
+dirmngr/Makefile
 keyserver/Makefile
 keyserver/gpg2keys_mailto
 keyserver/gpg2keys_test
@@ -1585,9 +1623,11 @@ echo "
         Agent:     $build_agent $build_agent_threaded
         Smartcard: $build_scdaemon $build_scdaemon_extra
         G13:       $build_g13
+        Dirmngr:   $build_dirmngr
         Gpgtar:    $build_gpgtar
 
         Protect tool:      $show_gnupg_protect_tool_pgm
+        LDAP wrapper:      $show_gnupg_dirmngr_ldap_pgm
         Default agent:     $show_gnupg_agent_pgm
         Default pinentry:  $show_gnupg_pinentry_pgm
         Default scdaemon:  $show_gnupg_scdaemon_pgm

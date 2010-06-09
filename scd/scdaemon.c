@@ -269,14 +269,15 @@ my_strusage (int level)
 }
 
 
-static unsigned long
-tid_log_callback (void)
+static int
+tid_log_callback (unsigned long *rvalue)
 {
 #ifdef PTH_HAVE_PTH_THREAD_ID
-  return pth_thread_id ();
+  *rvalue = pth_thread_id ();
 #else
-  return (unsigned long)pth_self ();
+  *rvalue =  (unsigned long)pth_self ();
 #endif
+  return 2; /* Use use hex representation.  */
 }
 
 
@@ -551,7 +552,7 @@ main (int argc, char **argv )
           break;
         case oDebugDisableTicker: ticker_disabled = 1; break;
         case oDebugLogTid: 
-          log_set_get_tid_callback (tid_log_callback);
+          log_set_pid_suffix_cb (tid_log_callback);
           break;
 
         case oOptions:

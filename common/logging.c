@@ -63,7 +63,7 @@ static char prefix_buffer[80];
 static int with_time;
 static int with_prefix;
 static int with_pid;
-static unsigned long (*get_tid_callback)(void);
+static int (*get_pid_suffix_cb)(unsigned long *r_value);
 static int running_detached;
 static int force_prefixes;
 
@@ -336,9 +336,9 @@ log_set_fd (int fd)
 
 
 void
-log_set_get_tid_callback (unsigned long (*cb)(void))
+log_set_pid_suffix_cb (int (*cb)(unsigned long *r_value))
 {
-  get_tid_callback = cb;
+  get_pid_suffix_cb = cb;
 }
 
 
@@ -441,9 +441,12 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
         es_fputs_unlocked (prefix_buffer, logstream);
       if (with_pid || force_prefixes)
         {
-          if (get_tid_callback)
-            es_fprintf_unlocked (logstream, "[%u.%lx]", 
-                        (unsigned int)getpid (), get_tid_callback ());
+          unsigned long pidsuf;
+          int pidfmt;
+
+          if (get_pid_suffix_cb && (pidfmt=get_pid_suffix_cb (&pidsuf)))
+            es_fprintf_unlocked (logstream, pidfmt == 1? "[%u.%lu]":"[%u.%lx]",
+                                 (unsigned int)getpid (), pidsuf);
           else
             es_fprintf_unlocked (logstream, "[%u]", (unsigned int)getpid ());
         }

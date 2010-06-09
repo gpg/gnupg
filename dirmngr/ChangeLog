@@ -1,0 +1,1345 @@
+2010-06-09  Werner Koch  <wk@g10code.com>
+
+	* i18n.h: Remove.
+
+	* Makefile.am (no-libgcrypt.c): New rule.
+
+	* exechelp.h: Remove.
+	* exechelp.c: Remove.
+	(dirmngr_release_process): Change callers to use the gnupg func.
+	(dirmngr_wait_process): Likewise.
+	(dirmngr_kill_process): Likewise.  This actually implements it for
+	W32.
+	* ldap.c (ldap_wrapper): s/get_dirmngr_ldap_path/gnupg_module_name/.
+	(ldap_wrapper_thread): Use gnupg_wait_process and adjust for
+	changed semantics.
+	(ldap_wrapper): Replace xcalloc by xtrycalloc.  Replace spawn
+	mechanism.
+
+	* server.c (start_command_handler): Remove assuan_set_log_stream.
+
+	* validate.c: Remove gcrypt.h and ksba.h.
+
+	* ldapserver.c: s/util.h/dirmngr.h/.
+
+	* dirmngr.c (sleep) [W32]: Remove macro.
+	(main): s/sleep/gnupg_sleep/.
+	(pid_suffix_callback): Change arg type.
+	(my_gcry_logger): Remove.
+	(fixed_gcry_pth_init): New.
+	(main): Use it.
+	(FD2INT): Remove.
+
+2010-06-08  Werner Koch  <wk@g10code.com>
+
+	* misc.h (copy_time): Remove and replace by gnupg_copy_time which
+	allows to set a null date.
+	* misc.c (dump_isotime, get_time, get_isotime, set_time)
+	(check_isotime, add_isotime): Remove and replace all calls by the
+	versions from common/gettime.c.
+
+	* crlcache.c, misc.c, misc.h: s/dirmngr_isotime_t/gnupg_isotime_t/.
+	* server.c, ldap.c: Reorder include directives.
+	* crlcache.h, misc.h: Remove all include directives.
+
+	* certcache.c (cmp_simple_canon_sexp): Remove.
+	(compare_serialno): Rewrite using cmp_simple_canon_sexp from
+	common/sexputil.c
+
+	* error.h: Remove.
+
+	* dirmngr.c: Remove transitional option "--ignore-ocsp-servic-url".
+	(opts): Use ARGPARSE macros.
+	(i18n_init): Remove.
+	(main): Use GnuPG init functions.
+
+	* dirmngr.h: Remove duplicated stuff now taken from ../common.
+
+	* get-path.c, util.h: Remove.
+
+	* Makefile.am: Adjust to GnuPG system.
+	* estream.c, estream.h, estream-printf.c, estream-printf.h: Remove.
+
+2010-06-07  Werner Koch  <wk@g10code.com>
+
+	* OAUTHORS, ONEWS, ChangeLog.1: New.
+
+	* ChangeLog, Makefile.am, b64dec.c, b64enc.c, cdb.h, cdblib.c
+	* certcache.c, certcache.h, crlcache.c, crlcache.h, crlfetch.c
+	* crlfetch.h, dirmngr-client.c, dirmngr.c, dirmngr.h
+	* dirmngr_ldap.c, error.h, estream-printf.c, estream-printf.h
+	* estream.c, estream.h, exechelp.c, exechelp.h, get-path.c, http.c
+	* http.h, i18n.h, ldap-url.c, ldap-url.h, ldap.c, ldapserver.c
+	* ldapserver.h, misc.c, misc.h, ocsp.c, ocsp.h, server.c, util.h
+	* validate.c, validate.h: Imported from the current SVN of the
+	dirmngr package (only src/).
+
+2010-03-13  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (int_and_ptr_u): New.
+	(pid_suffix_callback): Trick out compiler.
+	(start_connection_thread): Ditto.
+	(handle_connections): Ditto.
+
+2010-03-09  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (set_debug): Allow numerical values.
+
+2009-12-15  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c: Add option --ignore-cert-extension.
+	(parse_rereadable_options): Implement.
+	* dirmngr.h (opt): Add IGNORED_CERT_EXTENSIONS.
+	* validate.c (unknown_criticals): Handle ignored extensions.
+
+2009-12-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr-client.c (start_dirmngr): Convert posix FDs to assuan fds.
+
+2009-11-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (start_command_handler): Use assuan_fd_t and
+	assuan_fdopen on fds.
+
+2009-11-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (start_command_handler): Update use of
+	assuan_init_socket_server.
+	* dirmngr-client.c (start_dirmngr): Update use of
+	assuan_pipe_connect and assuan_socket_connect.
+
+2009-11-04  Werner Koch  <wk@g10code.com>
+
+	* server.c (register_commands): Add help arg to
+	assuan_register_command.  Change all command comments to strings.
+
+2009-11-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (reset_notify): Take LINE argument, return gpg_error_t.
+
+2009-10-16  Marcus Brinkmann  <marcus@g10code.com>
+
+	* Makefile.am: (dirmngr_LDADD): Link to $(LIBASSUAN_LIBS) instead
+	of $(LIBASSUAN_PTH_LIBS).
+	* dirmngr.c: Invoke ASSUAN_SYSTEM_PTH_IMPL.
+	(main): Call assuan_set_system_hooks and assuan_sock_init.
+
+2009-09-22  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr.c (main): Update to new Assuan interface.
+	* server.c (option_handler, cmd_ldapserver, cmd_isvalid)
+	(cmd_checkcrl, cmd_checkocsp, cmd_lookup, cmd_loadcrl)
+	(cmd_listcrls, cmd_cachecert, cmd_validate): Return gpg_error_t
+	instead int.
+	(register_commands): Likewise for member HANDLER.
+	(start_command_handler): Allocate context with assuan_new before
+	starting server.  Release on error.
+	* dirmngr-client.c (main): Update to new Assuan interface.
+	(start_dirmngr): Allocate context with assuan_new before
+	connecting to server.  Release on error.
+
+2009-08-12  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c (squid_loop_body): Flush stdout.  Suggested by
+	Philip Shin.
+
+2009-08-07  Werner Koch  <wk@g10code.com>
+
+	* crlfetch.c (my_es_read): Add explicit check for EOF.
+
+	* http.c (struct http_context_s): Turn IN_DATA and IS_HTTP_0_9 to
+	bit fields.
+	(struct cookie_s): Add CONTENT_LENGTH_VALID and CONTENT_LENGTH.
+	(parse_response): Parse the Content-Length header.
+	(cookie_read): Handle content length.
+	(http_open): Make NEED_HEADER the semi-default.
+
+	* http.h (HTTP_FLAG_IGNORE_CL): New.
+
+2009-08-04  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper_thread): Factor some code out to ...
+	(read_log_data): ... new.  Close the log fd on error.
+	(ldap_wrapper_thread): Delay cleanup until the log fd is closed.
+	(SAFE_PTH_CLOSE): New.  Use it instead of pth_close.
+
+2009-07-31  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_loadcrl): Add option --url.
+	* dirmngr-client.c (do_loadcrl): Make use of --url.
+
+	* crlfetch.c (crl_fetch): Remove HTTP_FLAG_NO_SHUTDOWN.  Add
+	flag HTTP_FLAG_LOG_RESP with active DBG_LOOKUP.
+
+	* http.c: Require estream.  Remove P_ES macro.
+	(write_server): Remove.
+	(my_read_line): Remove.  Replace all callers by es_read_line.
+	(send_request): Use es_asprintf.  Always store the cookie.
+	(http_wait_response): Remove the need to dup the socket.  USe new
+	shutdown flag.
+	* http.h (HTTP_FLAG_NO_SHUTDOWN): Rename to HTTP_FLAG_SHUTDOWN.
+
+	* estream.c, estream.h, estream-printf.c, estream-printf.h: Update
+	from current libestream.  This is provide es_asprintf.
+
+2009-07-20  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (pid_suffix_callback): New.
+	(main): Use log_set_pid_suffix_cb.
+	(start_connection_thread): Put the fd into the tls.
+
+	* ldap.c (ldap_wrapper_thread): Print ldap worker stati.
+	(ldap_wrapper_release_context): Print a debug info.
+	(end_cert_fetch_ldap): Release the reader.  Might fix bug#999.
+
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	* util.h: Remove unused dotlock.h.
+
+2009-05-26  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper): Show reader object in diagnostics.
+	* crlcache.c (crl_cache_reload_crl): Ditto.  Change debug messages
+	to regular diagnostics.
+	* dirmngr_ldap.c (print_ldap_entries): Add extra diagnostics.
+
+2009-04-03  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.h (struct server_local_s): Move back to ...
+	* server.c (struct server_local_s): ... here.
+	(get_ldapservers_from_ctrl): New.
+	* ldapserver.h (ldapserver_iter_begin): Use it.
+
+2008-10-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* estream.c (es_getline): Add explicit cast to silence gcc -W
+	warning.
+	* crlcache.c (finish_sig_check): Likewise.
+
+	* dirmngr.c (opts): Add missing initializer to silence gcc
+	-W warning.
+	* server.c (register_commands): Likewise.
+	* dirmngr-client.c (opts): Likewise.
+	* dirmngr_ldap.c (opts): Likewise.
+
+	* dirmngr-client.c (status_cb, inq_cert, data_cb): Change return
+	type to gpg_error_t to silence gcc warning.
+
+2008-10-21  Werner Koch  <wk@g10code.com>
+
+	* certcache.c (load_certs_from_dir): Accept ".der" files.
+
+	* server.c (get_istrusted_from_client): New.
+	* validate.c (validate_cert_chain): Add new optional arg
+	R_TRUST_ANCHOR.  Adjust all callers
+	* crlcache.c (crl_cache_entry_s): Add fields USER_TRUST_REQ
+	and CHECK_TRUST_ANCHOR.
+	(release_one_cache_entry): Release CHECK_TRUST_ANCHOR.
+	(list_one_crl_entry): Print info about the new fields.
+	(open_dir, write_dir_line_crl): Support the new U-flag.
+	(crl_parse_insert): Add arg R_TRUST_ANCHOR and set it accordingly.
+	(crl_cache_insert): Store trust anchor in entry object.
+	(cache_isvalid): Ask client for trust is needed.
+
+	* crlcache.c (open_dir): Replace xcalloc by xtrycalloc.
+	(next_line_from_file): Ditt.  Add arg to return the gpg error.
+	Change all callers.
+	(update_dir): Replace sprintf and malloc by estream_asprintf.
+	(crl_cache_insert): Ditto.
+	(crl_cache_isvalid): Replace xmalloc by xtrymalloc.
+	(get_auth_key_id): Ditto.
+	(crl_cache_insert): Ditto.
+
+	* crlcache.c (start_sig_check): Remove HAVE_GCRY_MD_DEBUG test.
+	* validate.c (check_cert_sig): Ditto.  Remove workaround for bug
+	in libgcrypt 1.2.
+
+	* estream.c, estream.h, estream-printf.c, estream-printf.h: Update
+	from current libestream (svn rev 61).
+
+2008-09-30  Marcus Brinkmann  <marcus@g10code.com>
+
+	* get-path.c (get_dirmngr_ldap_path): Revert last change.
+	Instead, use dirmngr_libexecdir().
+	(find_program_at_standard_place): Don't define for now.
+
+2008-09-30  Marcus Brinkmann  <marcus@g10code.com>
+
+	* get-path.c (dirmngr_cachedir): Make COMP a pointer to const to
+	silence gcc warning.
+	(get_dirmngr_ldap_path): Look for dirmngr_ldap in the installation
+	directory.
+
+2008-08-06  Marcus Brinkmann  <marcus@g10code.com>
+
+	* dirmngr.c (main): Mark the ldapserverlist-file option as
+	read-only.
+
+2008-07-31  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (start_sig_check) [!HAVE_GCRY_MD_DEBUG]: Use
+	gcry_md_start_debug
+
+2008-06-16  Werner Koch  <wk@g10code.com>
+
+	* get-path.c (w32_commondir): New.
+	(dirmngr_sysconfdir): Use it here.
+	(dirmngr_datadir): Ditto.
+
+2008-06-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (dirmngr_SOURCES): Add ldapserver.h and ldapserver.c.
+	* ldapserver.h, ldapserver.c: New files.
+	* ldap.c: Include "ldapserver.h".
+	(url_fetch_ldap): Use iterator to get session servers as well.
+	(attr_fetch_ldap, start_default_fetch_ldap): Likewise.
+	* dirmngr.c: Include "ldapserver.h".
+	(free_ldapservers_list): Removed.  Change callers to
+	ldapserver_list_free.
+	(parse_ldapserver_file): Use ldapserver_parse_one.
+	* server.c: Include "ldapserver.h".
+	(cmd_ldapserver): New command.
+	(register_commands): Add new command LDAPSERVER.
+	(reset_notify): New function.
+	(start_command_handler): Register reset notify handler.
+	Deallocate session server list.
+	(lookup_cert_by_pattern): Use iterator to get session servers as well.
+	(struct server_local_s): Move to ...
+	* dirmngr.h (struct server_local_s): ... here.  Add new member
+	ldapservers.
+
+2008-06-10  Werner Koch  <wk@g10code.com>
+
+	Support PEM encoded CRLs.  Fixes bug#927.
+
+	* crlfetch.c (struct reader_cb_context_s): New.
+	(struct file_reader_map_s): Replace FP by new context.
+	(register_file_reader, get_file_reader): Adjust accordingly.
+	(my_es_read): Detect Base64 encoded CRL and decode if needed.
+	(crl_fetch): Pass new context to the callback.
+	(crl_close_reader): Cleanup the new context.
+	* b64dec.c: New.  Taken from GnuPG.
+	* util.h (struct b64state): Add new fields STOP_SEEN and
+	INVALID_ENCODING.
+
+2008-05-26  Marcus Brinkmann  <marcus@g10code.com>
+
+	* dirmngr.c (main) [HAVE_W32_SYSTEM]: Switch to system
+	configuration on gpgconf related commands, and make all options
+	unchangeable.
+
+2008-03-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr_ldap.c (print_ldap_entries): Add code alternative for
+	W32 console stdout (unused at this point).
+
+2008-03-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* estream.c (ESTREAM_MUTEX_DESTROY): New macro.
+	(es_create, es_destroy): Use it.
+
+2008-02-21  Werner Koch  <wk@g10code.com>
+
+	* validate.c (check_cert_sig) [HAVE_GCRY_MD_DEBUG]: Use new debug
+	function if available.
+
+	* crlcache.c (abort_sig_check): Mark unused arg.
+
+	* exechelp.c (dirmngr_release_process) [!W32]: Mark unsed arg.
+
+	* validate.c (is_root_cert): New.  Taken from GnuPG.
+	(validate_cert_chain): Use it in place of the simple DN compare.
+
+2008-02-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr.c (main): Reinitialize assuan log stream if necessary.
+
+	* crlcache.c (update_dir) [HAVE_W32_SYSTEM]: Remove destination
+	file before rename.
+	(crl_cache_insert) [HAVE_W32_SYSTEM]: Remove destination file
+	before rename.
+
+2008-02-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* validate.c (check_cert_policy): Use ksba_free instead of xfree.
+	(validate_cert_chain): Likewise.  Free SUBJECT on error.
+	(cert_usage_p): Likewise.
+
+	* crlcache.c (finish_sig_check): Undo last change.
+	(finish_sig_check): Close md.
+	(abort_sig_check): New function.
+	(crl_parse_insert): Use abort_sig_check to clean up.
+
+	* crlcache.c (crl_cache_insert): Clean up CDB on error.
+
+2008-02-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* crlcache.c (finish_sig_check): Call gcry_md_stop_debug.
+	* exechelp.h (dirmngr_release_process): New prototype.
+	* exechelp.c (dirmngr_release_process): New function.
+	* ldap.c (ldap_wrapper_thread): Release pid.
+	(destroy_wrapper): Likewise.
+
+	* dirmngr.c (launch_reaper_thread): Destroy tattr.
+	(handle_connections): Likewise.
+
+2008-02-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ldap.c (pth_close) [! HAVE_W32_SYSTEM]: New macro.
+	(struct wrapper_context_s): New member log_ev.
+	(destroy_wrapper): Check FDs for != -1 rather than != 0.  Use
+	pth_close instead of close.  Free CTX->log_ev.
+	(ldap_wrapper_thread): Rewritten to use pth_wait instead of
+	select.  Also use pth_read instead of read and pth_close instead
+	of close.
+	(ldap_wrapper): Initialize CTX->log_ev.
+	(reader_callback): Use pth_close instead of close.
+	* exechelp.c (create_inheritable_pipe) [HAVE_W32_SYSTEM]: Removed.
+	(dirmngr_spawn_process) [HAVE_W32_SYSTEM]: Use pth_pipe instead.
+	* dirmngr_ldap.c [HAVE_W32_SYSTEM]: Include <fcntl.h>.
+	(main) [HAVE_W32_SYSTEM]: Set mode of stdout to binary.
+
+2008-02-01  Werner Koch  <wk@g10code.com>
+
+	* ldap.c: Remove all ldap headers as they are unused.
+
+	* dirmngr_ldap.c (LDAP_DEPRECATED): New, to have OpenLDAP use the
+	old standard API.
+
+2008-01-10  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c: New option --local.
+	(do_lookup): Use it.
+
+	* server.c (lookup_cert_by_pattern): Implement local lookup.
+	(return_one_cert): New.
+	* certcache.c (hexsn_to_sexp): New.
+	(classify_pattern, get_certs_bypattern): New.
+
+	* misc.c (unhexify): Allow passing NULL for RESULT.
+	(cert_log_subject): Do not call ksba_free on an unused variable.
+
+2008-01-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (dirmngr_LDADD, dirmngr_ldap_LDADD)
+	(dirmngr_client_LDADD): Add $(LIBICONV).  Reported by Michael
+	Nottebrock.
+
+2007-12-11  Werner Koch  <wk@g10code.com>
+
+	* server.c (option_handler): New option audit-events.
+	* dirmngr.h (struct server_control_s): Add member AUDIT_EVENTS.
+
+2007-11-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* get-path.c (dirmngr_cachedir): Create intermediate directories.
+	(default_socket_name): Use CSIDL_WINDOWS.
+
+2007-11-21  Werner Koch  <wk@g10code.com>
+
+	* server.c (lookup_cert_by_pattern): Add args SINGLE and CACHE_ONLY.
+	(cmd_lookup): Add options --single and --cache-only.
+
+2007-11-16  Werner Koch  <wk@g10code.com>
+
+	* certcache.c (load_certs_from_dir): Also log the subject DN.
+	* misc.c (cert_log_subject): New.
+
+2007-11-14  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c: Replace --lookup-url by --url.
+	(main): Remove extra code for --lookup-url.
+	(do_lookup): Remove LOOKUP_URL arg and use the
+	global option OPT.URL.
+
+	* server.c (has_leading_option): New.
+	(cmd_lookup): Use it.
+
+	* crlfetch.c (fetch_cert_by_url): Use GPG_ERR_INV_CERT_OBJ.
+	(fetch_cert_by_url): Use gpg_error_from_syserror.
+
+2007-11-14  Moritz  <moritz@gnu.org>  (wk)
+
+	* dirmngr-client.c: New command: --lookup-url <URL>.
+	(do_lookup): New parameter: lookup_url.  If TRUE, include "--url"
+	switch in LOOKUP transaction.
+	(enum): New entry: oLookupUrl.
+	(opts): Likewise.
+	(main): Handle oLookupUrl.  New variable: cmd_lookup_url, set
+	during option parsing, pass to do_lookup() and substitute some
+	occurences of "cmd_lookup" with "cmd_lookup OR cmd_lookup_url".
+	* crlfetch.c (fetch_cert_by_url): New function, uses
+	url_fetch_ldap() to create a reader object and libksba functions
+	to read a single cert from that reader.
+	* server.c (lookup_cert_by_url, lookup_cert_by_pattern): New
+	functions.
+	(cmd_lookup): Moved almost complete code ...
+	(lookup_cert_by_pattern): ... here.
+	(cmd_lookup): Support new optional argument: --url.  Depending on
+	the presence of that switch, call lookup_cert_by_url() or
+	lookup_cert_by_pattern().
+	(lookup_cert_by_url): Heavily stripped down version of
+	lookup_cert_by_pattern(), using fetch_cert_by_url.
+
+2007-10-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* exechelp.c (dirmngr_spawn_process): Fix child handles.
+
+2007-10-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr.h: Include assuan.h.
+	(start_command_handler): Change type of FD to assuan_fd_t.
+	* dirmngr.c: Do not include w32-afunix.h.
+        (socket_nonce): New global variable.
+        (create_server_socket): Use assuan socket wrappers.  Remove W32
+	specific stuff.  Save the server nonce.
+        (check_nonce): New function.
+        (start_connection_thread): Call it.
+        (handle_connections): Change args to assuan_fd_t.
+	* server.c (start_command_handler): Change type of FD to assuan_fd_t.
+
+2007-09-12  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr.c (main): Percent escape pathnames in --gpgconf-list output.
+
+2007-08-27  Moritz Schulte  <moritz@g10code.com>
+
+	* src/Makefile.am (AM_CPPFLAGS): Define DIRMNGR_SOCKETDIR based on
+	$(localstatedir).
+	* src/get-path.c (default_socket_name): Use DIRMNGR_SOCKETDIR
+	instead of hard-coded "/var/run/dirmngr".
+
+2007-08-16  Werner Koch  <wk@g10code.com>
+
+	* get-path.c (get_dirmngr_ldap_path): Make PATHNAME const.
+
+	* dirmngr.c (my_ksba_hash_buffer): Mark unused arg.
+	(dirmngr_init_default_ctrl): Ditto.
+	(my_gcry_logger): Ditto.
+	* dirmngr-client.c (status_cb): Ditto.
+	* dirmngr_ldap.c (catch_alarm): Ditto.
+	* estream-printf.c (pr_bytes_so_far): Ditto.
+	* estream.c (es_func_fd_create): Ditto.
+	(es_func_fp_create): Ditto.
+	(es_write_hexstring): Ditto.
+	* server.c (cmd_listcrls): Ditto.
+	(cmd_cachecert): Ditto.
+	* crlcache.c (cache_isvalid): Ditto.
+	* ocsp.c (do_ocsp_request): Ditto.
+	* ldap.c (ldap_wrapper_thread): Ditto.
+	* http.c (http_register_tls_callback): Ditto.
+	(connect_server): Ditto.
+	(write_server) [!HTTP_USE_ESTREAM]: Don't build.
+
+2007-08-14  Werner Koch  <wk@g10code.com>
+
+	* get-path.c (dirmngr_cachedir) [W32]: Use CSIDL_LOCAL_APPDATA.
+
+2007-08-13  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (handle_connections): Use a timeout in the accept
+	function.  Block signals while creating a new thread.
+	(shutdown_pending): Needs to be volatile as also accessed bt the
+	service function.
+	(w32_service_control): Do not use the regular log fucntions here.
+	(handle_tick): New.
+	(main): With system_service in effect use aDaemon as default
+	command.
+	(main) [W32]: Only temporary redefine main for the sake of Emacs's
+	"C-x 4 a".
+
+	* dirmngr-client.c (main) [W32]: Initialize sockets.
+	(start_dirmngr): Use default_socket_name instead of a constant.
+	* Makefile.am (dirmngr_client_SOURCES): Add get-path.c
+
+2007-08-09  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (parse_ocsp_signer): New.
+	(parse_rereadable_options): Set opt.ocsp_signer to this.
+	* dirmngr.h (fingerprint_list_t): New.
+	* ocsp.c (ocsp_isvalid, check_signature, validate_responder_cert):
+	Allow for several default ocscp signers.
+	(ocsp_isvalid): Return GPG_ERR_NO_DATA for an unknwon status.
+
+	* dirmngr-client.c: New option --force-default-responder.
+
+	* server.c (has_option, skip_options): New.
+	(cmd_checkocsp): Add option --force-default-responder.
+	(cmd_isvalid): Ditto.  Also add option --only-ocsp.
+
+	* ocsp.c (ocsp_isvalid): New arg FORCE_DEFAULT_RESPONDER.
+
+	* dirmngr.c: New option --ocsp-max-period.
+	* ocsp.c (ocsp_isvalid): Implement it and take care that a missing
+	next_update is to be ignored.
+
+	* crlfetch.c (my_es_read): New.  Use it instead of es_read.
+
+	* estream.h, estream.c, estream-printf.c: Updated from current
+	libestream SVN.
+
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (crl_parse_insert): Hack to allow for a missing
+	nextUpdate.
+
+	* dirmngr_ldap.c (print_ldap_entries): Strip the extension from
+	the want_attr.
+
+	* exechelp.c (dirmngr_wait_process): Reworked for clear error
+	semantics.
+	* ldap.c (ldap_wrapper_thread): Adjust for new
+	dirmngr_wait_process semantics.
+
+2007-08-07  Werner Koch  <wk@g10code.com>
+
+	* get-path.c (default_socket_name) [!W32]: Fixed syntax error.
+
+	* ldap.c (X509CACERT, make_url, fetch_next_cert_ldap): Support
+	x509caCert as used by the Bundesnetzagentur.
+	(ldap_wrapper): Do not pass the prgtram name as the first
+	argument.  dirmngr_spawn_process takes care of that.
+
+2007-08-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* dirmngr.h (opt): Add member system_service.
+	* dirmngr.c (opts) [HAVE_W32_SYSTEM]: New entry for option
+	--service.
+	(DEFAULT_SOCKET_NAME): Removed.
+	(service_handle, service_status,
+	w32_service_control) [HAVE_W32_SYSTEM]: New symbols.
+	(main) [HAVE_W32_SYSTEM]: New entry point for --service.  Rename
+	old function to ...
+	(real_main) [HAVE_W32_SYSTEM]: ... this.  Use default_socket_name
+	instead of DEFAULT_SOCKET_NAME, and similar for other paths.
+	Allow colons in Windows socket path name, and implement --service
+	option.
+	* util.h (dirmngr_sysconfdir, dirmngr_libexecdir, dirmngr_datadir,
+	dirmngr_cachedir, default_socket_name): New prototypes.
+	* get-path.c (dirmngr_sysconfdir, dirmngr_libexecdir)
+	(dirmngr_datadir, dirmngr_cachedir, default_socket_name): New
+	functions.
+	(DIRSEP_C, DIRSEP_S): New macros.
+
+2007-08-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* get-path.c: Really add the file this time.
+
+2007-07-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* crlfetch.c: Include "estream.h".
+	(crl_fetch): Use es_read callback instead a file handle.
+	(crl_close_reader): Use es_fclose instead of fclose.
+	(struct file_reader_map_s): Change type of FP to estream_t.
+	(register_file_reader, crl_fetch, crl_close_reader): Likewise.
+	* ocsp.c: Include "estream.h".
+	(read_response): Change type of FP to estream_t.
+	(read_response, do_ocsp_request): Use es_* variants of I/O
+	functions.
+
+	* http.c: Include <pth.h>.
+	(http_wait_response) [HAVE_W32_SYSTEM]: Use DuplicateHandle.
+	(cookie_read): Use pth_read instead read.
+	(cookie_write): Use pth_write instead write.
+
+2007-07-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ldap-url.c (ldap_str2charray): Fix buglet in ldap_utf8_strchr
+	invocation.
+
+2007-07-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* estream.h, estream.c: Update from recent GnuPG.
+
+	* get-path.c: New file.
+	* Makefile.am (dirmngr_SOURCES): Add get-path.c.
+	* util.h (default_homedir, get_dirmngr_ldap_path): New prototypes.
+	* dirmngr.c (main): Use default_homedir().
+	* ldap-url.h: Remove japanese white space (sorry!).
+
+2007-07-26  Marcus Brinkmann  <marcus@g10code.de>
+
+	* ldap.c (pth_yield): Remove macro.
+
+	* ldap.c (pth_yield) [HAVE_W32_SYSTEM]: Define to Sleep(0).
+
+	* dirmngr_ldap.c [HAVE_W32_SYSTEM]: Do not include <ldap.h>, but
+	<winsock2.h>, <winldap.h> and "ldap-url.h".
+	* ldap.c [HAVE_W32_SYSTEM]: Do not include <ldap.h>, but
+	<winsock2.h> and <winldap.h>.
+
+	* ldap-url.c: Do not include <ldap.h>, but <winsock2.h>,
+	<winldap.h> and "ldap-url.h".
+	(LDAP_P): New macro.
+	* ldap-url.h: New file.
+	* Makefile.am (ldap_url): Add ldap-url.h.
+
+	* Makefile.am (ldap_url): New variable.
+	(dirmngr_ldap_SOURCES): Add $(ldap_url).
+	(dirmngr_ldap_LDADD): Add $(LIBOBJS).
+	* ldap-url.c: New file, excerpted from OpenLDAP.
+	* dirmngr.c (main) [HAVE_W32_SYSTEM]: Avoid the daemonization.
+	* dirmngr_ldap.c: Include "util.h".
+	(main) [HAVE_W32_SYSTEM]: Don't set up alarm.
+	(set_timeout) [HAVE_W32_SYSTEM]: Likewise.
+	* ldap.c [HAVE_W32_SYSTEM]: Add macros for setenv and pth_yield.
+	* no-libgcrypt.h (NO_LIBGCRYPT): Define.
+	* util.h [NO_LIBGCRYPT]: Don't include <gcrypt.h>.
+
+2007-07-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (dirmngr_SOURCES): Add exechelp.h and exechelp.c.
+	* exechelp.h, exechelp.c: New files.
+	* ldap.c: Don't include <sys/wait.h> but "exechelp.h".
+	(destroy_wrapper, ldap_wrapper_thread,
+	ldap_wrapper_connection_cleanup): Use dirmngr_kill_process instead
+	of kill.
+	(ldap_wrapper_thread): Use dirmngr_wait_process instead of
+	waitpid.
+	(ldap_wrapper): Use dirmngr_spawn_process.
+
+2007-07-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* certcache.c (cert_cache_lock): Do not initialize statically.
+	(init_cache_lock): New function.
+	(cert_cache_init): Call init_cache_lock.
+
+	* estream.h, estream.c, estream-printf.h, estream-printf.c: New
+	files.
+	* Makefile.am (dirmngr_SOURCES): Add estream.c, estream.h,
+	estream-printf.c, estream-printf.h.
+
+	* http.c: Update to latest version from GnuPG.
+
+	* Makefile.am (cdb_sources)
+	* cdblib.c: Port to windows (backport from tinycdb 0.76).
+
+	* crlcache.c [HAVE_W32_SYSTEM]: Don't include sys/utsname.h.
+	[MKDIR_TAKES_ONE_ARG]: Define mkdir as a macro for such systems.
+	(update_dir, crl_cache_insert) [HAVE_W32_SYSTEM]: Don't get uname.
+	* server.c (start_command_handler) [HAVE_W32_SYSTEM]: Don't log
+	peer credentials.
+
+	* dirmngr.c [HAVE_W32_SYSTEM]: Do not include sys/socket.h or
+	sys/un.h, but ../jnlib/w32-afunix.h.
+	(sleep) [HAVE_W32_SYSTEM]: New macro.
+	(main) [HAVE_W32_SYSTEM]: Don't mess with SIGPIPE.  Use W32 socket
+	API.
+	(handle_signal) [HAVE_W32_SYSTEM]: Deactivate the bunch of the
+	code.
+	(handle_connections) [HAVE_W32_SYSTEM]: don't handle signals.
+
+2006-11-29  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (my_strusage): Use macro for the bug report address
+	and the copyright line.
+	* dirmngr-client.c (my_strusage): Ditto.
+	* dirmngr_ldap.c (my_strusage): Ditto.
+
+	* Makefile.am: Do not link against LIBICONV.
+
+2006-11-19  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c: Include i18n.h.
+
+2006-11-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_LDADD): Use LIBASSUAN_PTH_LIBS.
+
+2006-11-16  Werner Koch  <wk@g10code.com>
+
+	* server.c (start_command_handler): Replaced
+	assuan_init_connected_socket_server by assuan_init_socket_server_ext.
+
+	* crlcache.c (update_dir): Put a diagnostic into DIR.txt.
+	(open_dir): Detect invalid and duplicate entries.
+	(update_dir): Fixed search for second field.
+
+2006-10-23  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main): New command --gpgconf-test.
+
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+	* server.c (start_command_handler): In vebose mode print
+	information about the peer.  This may later be used to restrict
+	certain commands.
+
+2006-09-12  Werner Koch  <wk@g10code.com>
+
+	* server.c (start_command_handler): Print a more informative hello
+	line.
+	* dirmngr.c: Moved config_filename into the opt struct.
+
+2006-09-11  Werner Koch  <wk@g10code.com>
+
+	Changed everything to use Assuan with gpg-error codes.
+	* maperror.c: Removed.
+	* server.c (map_to_assuan_status): Removed.
+	* dirmngr.c (main): Set assuan error source.
+	* dirmngr-client.c (main): Ditto.
+
+2006-09-04  Werner Koch  <wk@g10code.com>
+
+	* crlfetch.c (crl_fetch): Implement HTTP redirection.
+	* ocsp.c (do_ocsp_request): Ditto.
+
+	New HTTP code version taken from gnupg svn release 4236.
+	* http.c (http_get_header): New.
+	(capitalize_header_name, store_header): New.
+	(parse_response): Store headers away.
+	(send_request): Return GPG_ERR_NOT_FOUND if connect_server failed.
+	* http.h: New flag HTTP_FLAG_NEED_HEADER.
+
+2006-09-01  Werner Koch  <wk@g10code.com>
+
+	* crlfetch.c (register_file_reader, get_file_reader): New.
+	(crl_fetch): Register the file pointer for HTTP.
+	(crl_close_reader): And release it.
+
+	* http.c, http.h: Updated from GnuPG SVN trunk.  Changed all users
+	to adopt the new API.
+	* dirmngr.h: Moved inclusion of jnlib header to ...
+	* util.h: .. here.  This is required becuase http.c includes only
+	a file util.h but makes use of log_foo. Include gcrypt.h so that
+	gcry_malloc et al are declared.
+
+2006-08-31  Werner Koch  <wk@g10code.com>
+
+	* ocsp.c (check_signature): Make use of the responder id.
+
+2006-08-30  Werner Koch  <wk@g10code.com>
+
+	* validate.c (check_cert_sig): Workaround for rimemd160.
+	(allowed_ca): Always allow trusted CAs.
+
+	* dirmngr.h (cert_ref_t): New.
+	(struct server_control_s): Add field OCSP_CERTS.
+	* server.c (start_command_handler): Release new field
+	* ocsp.c (release_ctrl_ocsp_certs): New.
+	(check_signature): Store certificates in OCSP_CERTS.
+
+	* certcache.c (find_issuing_cert): Reset error if cert was found
+	by subject.
+	(put_cert): Add new arg FPR_BUFFER.  Changed callers.
+	(cache_cert_silent): New.
+
+	* dirmngr.c (parse_rereadable_options): New options
+	--ocsp-max-clock-skew and --ocsp-current-period.
+	* ocsp.c (ocsp_isvalid): Use them here.
+
+	* ocsp.c (validate_responder_cert): New optional arg signer_cert.
+	(check_signature_core): Ditto.
+	(check_signature): Use the default signer certificate here.
+
+2006-06-27  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c (inq_cert): Take care of SENDCERT_SKI.
+
+2006-06-26  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (lock_db_file): Count open files when needed.
+	(find_entry): Fixed deleted case.
+
+2006-06-23  Werner Koch  <wk@g10code.com>
+
+	* misc.c (cert_log_name): New.
+
+	* certcache.c (load_certs_from_dir): Also print certificate name.
+	(find_cert_bysn): Release ISSDN.
+
+	* validate.h: New VALIDATE_MODE_CERT.
+	* server.c (cmd_validate): Use it here so that no policy checks
+	are done.  Try to validated a cached copy of the target.
+
+	* validate.c (validate_cert_chain): Implement a validation cache.
+	(check_revocations): Print more diagnostics.  Actually use the
+	loop variable and not the head of the list.
+	(validate_cert_chain): Do not check revocations of CRL issuer
+	certificates in plain CRL check mode.
+	* ocsp.c (ocsp_isvalid): Make sure it is reset for a status of
+	revoked.
+
+2006-06-22  Werner Koch  <wk@g10code.com>
+
+	* validate.c (cert_use_crl_p): New.
+	(cert_usage_p): Add a mode 6 for CRL signing.
+	(validate_cert_chain): Check that the certificate may be used for
+	CRL signing.  Print a note when not running as system daemon.
+	(validate_cert_chain): Reduce the maximum depth from 50 to 10.
+
+	* certcache.c (find_cert_bysn): Minor restructuring
+	(find_cert_bysubject): Ditto.  Use get_cert_local when called
+	without KEYID.
+	* crlcache.c (get_crlissuer_cert_bysn): Removed.
+	(get_crlissuer_cert): Removed.
+	(crl_parse_insert): Use find_cert_bysubject and find_cert_bysn
+	instead of the removed functions.
+
+2006-06-19  Werner Koch  <wk@g10code.com>
+
+	* certcache.c (compare_serialno): Silly me. Using 0 as true is
+	that hard; tsss. Fixed call cases except for the only working one
+	which are both numbers of the same length.
+
+2006-05-15  Werner Koch  <wk@g10code.com>
+
+	* crlfetch.c (crl_fetch): Use no-shutdown flag for HTTP.  This
+	seems to be required for "IBM_HTTP_Server/2.0.47.1 Apache/2.0.47
+	(Unix)".
+
+	* http.c (parse_tuple): Set flag to to indicate no value.
+	(build_rel_path): Take care of it.
+
+	* crlcache.c (crl_cache_reload_crl): Also iterate over all names
+	within a DP.
+
+2005-09-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am (dirmngr_LDADD): Add @LIBINTL@ and @LIBICONV@.
+	(dirmngr_ldap_LDADD): Likewise.
+	(dirmngr_client_LDADD): Likewise.
+
+2005-09-12  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c: Fixed description to match the one in gpgconf.
+
+2005-06-15  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_lookup): Take care of NO_DATA which might get
+	returned also by start_cert_fetch().
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper_wait_connections): Set a shutdown flag.
+	(ldap_wrapper_thread): Handle shutdown in a special way.
+
+2005-04-19  Werner Koch  <wk@g10code.com>
+
+	* server.c (get_cert_local, get_issuing_cert_local)
+	(get_cert_local_ski): Bail out if called without a local context.
+
+2005-04-18  Werner Koch  <wk@g10code.com>
+
+	* certcache.c (find_issuing_cert): Fixed last resort method which
+	should be finding by subject and not by issuer. Try to locate it
+	also using the keyIdentifier method.  Improve error reporting.
+	(cmp_simple_canon_sexp): New.
+	(find_cert_bysubject): New.
+	(find_cert_bysn): Ask back to the caller before trying an extarnl
+	lookup.
+	* server.c (get_cert_local_ski): New.
+	* crlcache.c (crl_parse_insert): Also try to locate issuer
+	certificate using the keyIdentifier.  Improved error reporting.
+
+2005-04-14  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (start_cert_fetch_ldap): Really return ERR.
+
+2005-03-17  Werner Koch  <wk@g10code.com>
+
+	* http.c (parse_response): Changed MAXLEN and LEN to size_t to
+	match the requirement of read_line.
+	* http.h (http_context_s): Ditto for BUFFER_SIZE.
+
+2005-03-15  Werner Koch  <wk@g10code.com>
+
+	* ldap.c: Included time.h.  Reported by Bernhard Herzog.
+
+2005-03-09  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c: Add a note to the help listing check the man page for
+	other options.
+
+2005-02-01  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (crl_parse_insert): Renamed a few variables and
+	changed diagnostic strings for clarity.
+	(get_issuer_cert): Renamed to get_crlissuer_cert. Try to locate
+	the certificate from the cache using the subject name.  Use new
+	fetch function.
+	(get_crlissuer_cert_bysn): New.
+	(crl_parse_insert): Use it here.
+	* crlfetch.c (ca_cert_fetch): Changed interface.
+	(fetch_next_ksba_cert): New.
+	* ldap.c (run_ldap_wrapper): Add arg MULTI_MODE.  Changed all
+	callers.
+	(start_default_fetch_ldap): New
+	* certcache.c (get_cert_bysubject): New.
+	(clean_cache_slot, put_cert): Store the subject DN if available.
+	(MAX_EXTRA_CACHED_CERTS): Increase limit of cachable certificates
+	to 1000.
+	(find_cert_bysn): Loop until a certificate with a matching S/N has
+	been found.
+
+	* dirmngr.c (main): Add honor-http-proxy to the gpgconf list.
+
+2005-01-31  Werner Koch  <wk@g10code.com>
+
+	* ldap.c: Started to work on support for userSMIMECertificates.
+
+	* dirmngr.c (main): Make sure to always pass a server control
+	structure to the caching functions.  Reported by Neil Dunbar.
+
+2005-01-05  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c (read_pem_certificate): Skip trailing percent
+	escaped linefeeds.
+
+2005-01-03  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c (read_pem_certificate): New.
+	(read_certificate): Divert to it depending on pem option.
+	(squid_loop_body): New.
+	(main): New options --pem and --squid-mode.
+
+2004-12-17  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (launch_ripper_thread): Renamed to launch_reaper_thread.
+	(shutdown_reaper): New.  Use it for --server and --daemon.
+	* ldap.c (ldap_wrapper_wait_connections): New.
+
+2004-12-17  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_ldap_LDADD): Adjusted for new LDAP checks.
+
+2004-12-16  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper): Peek on the output to detect empty output
+	early.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper): Print a diagnostic after forking for the
+	ldap wrapper.
+	* certcache.h (find_cert_bysn): Add this prototype.
+	* crlcache.c (start_sig_check): Write CRL hash debug file.
+	(finish_sig_check): Dump the signer's certificate.
+	(crl_parse_insert): Try to get the issuing cert by authKeyId.
+	Moved certificate retrieval after item processing.
+
+2004-12-13  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c (catch_alarm, set_timeout): new.
+	(main): Install alarm handler. Add new option --only-search-timeout.
+	(print_ldap_entries, fetch_ldap): Use set_timeout ();
+	* dirmngr.h: Make LDAPTIMEOUT a simple unsigned int.  Change all
+	initializations.
+	* ldap.c (start_cert_fetch_ldap, run_ldap_wrapper): Pass timeout
+	option to the wrapper.
+	(INACTIVITY_TIMEOUT): Depend on LDAPTIMEOUT.
+	(run_ldap_wrapper): Add arg IGNORE_TIMEOUT.
+	(ldap_wrapper_thread): Check for special timeout exit code.
+
+	* dirmngr.c: Workaround a typo in gpgconf for
+	ignore-ocsp-service-url.
+
+2004-12-10  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (url_fetch_ldap): Use TMP and not a HOST which is always
+	NULL.
+	* misc.c (host_and_port_from_url): Fixed bad encoding detection.
+
+2004-12-03  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (crl_cache_load): Re-implement it.
+
+	* dirmngr-client.c: New command --load-crl
+	(do_loadcrl): New.
+
+	* dirmngr.c (parse_rereadable_options, main): Make --allow-ocsp,
+	--ocsp-responder, --ocsp-signer and --max-replies re-readable.
+
+	* ocsp.c (check_signature): try to get the cert from the cache
+	first.
+	(ocsp_isvalid): Print the next and this update times on time
+	conflict.
+
+	* certcache.c (load_certs_from_dir): Print the fingerprint for
+	trusted certificates.
+	(get_cert_byhexfpr): New.
+	* misc.c (get_fingerprint_hexstring_colon): New.
+
+2004-12-01  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_LDADD): Don't use LDAP_LIBS.
+
+	* validate.c (validate_cert_chain): Fixed test; as written in the
+	comment we want to do this only in daemon mode.  For clarity
+	reworked by using a linked list of certificates and include root
+	and tragte certificate.
+	(check_revocations): Likewise.  Introduced a recursion sentinel.
+
+2004-11-30  Werner Koch  <wk@g10code.com>
+
+	* crlfetch.c (ca_cert_fetch, crl_fetch_default): Do not use the
+	binary prefix as this will be handled in the driver.
+
+	* dirmngr_ldap.c: New option --log-with-pid.
+	(fetch_ldap): Handle LDAP_NO_SUCH_OBJECT.
+	* ldap.c (run_ldap_wrapper, start_cert_fetch_ldap): Use new log
+	option.
+
+
+2004-11-25  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_ldap_CFLAGS): Added GPG_ERROR_CFLAGS.
+	Noted by Bernhard Herzog.
+
+2004-11-24  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper): Fixed default name of the ldap wrapper.
+
+	* b64enc.c (b64enc_start, b64enc_finish): Use standard strdup/free
+	to manage memory.
+
+	* dirmngr.c: New options --ignore-http-dp, --ignore-ldap-dp and
+	--ignore-ocsp-service-url.
+	* crlcache.c (crl_cache_reload_crl): Implement them.
+	* ocsp.c (ocsp_isvalid): Ditto.
+
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* ldap.c (ldap_wrapper_thread, reader_callback, ldap_wrapper):
+	Keep a timestamp and terminate the wrapper after some time of
+	inactivity.
+
+	* dirmngr-client.c (do_lookup): New.
+	(main): New option --lookup.
+	(data_cb): New.
+	* b64enc.c: New. Taken from GnuPG 1.9.
+	* no-libgcrypt.c (gcry_strdup): Added.
+
+	* ocsp.c (ocsp_isvalid): New arg CERT and lookup the issuer
+	certificate using the standard methods.
+
+	* server.c (cmd_lookup): Truncation is now also an indication for
+	error.
+	(cmd_checkocsp): Implemented.
+
+	* dirmngr_ldap.c (fetch_ldap): Write an error marker for a
+	truncated search.
+	* ldap.c (add_server_to_servers): Reactivated.
+	(url_fetch_ldap): Call it here and try all configured servers in
+	case of a a failed lookup.
+	(fetch_next_cert_ldap): Detect the truncation error flag.
+	* misc.c (host_and_port_from_url, remove_percent_escapes): New.
+
+2004-11-22  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c (main): New option --proxy.
+	* ocsp.c (do_ocsp_request): Take care of opt.disable_http.
+	* crlfetch.c (crl_fetch): Honor the --honor-http-proxy variable.
+	(crl_fetch): Take care of  opt.disable_http and disable_ldap.
+	(crl_fetch_default, ca_cert_fetch, start_cert_fetch):
+	* ldap.c (run_ldap_wrapper): New arg PROXY.
+	(url_fetch_ldap, attr_fetch_ldap, start_cert_fetch_ldap): Pass it.
+
+	* http.c (http_open_document): Add arg PROXY.
+	(http_open): Ditto.
+	(send_request): Ditto and implement it as an override.
+
+	* ocsp.c (validate_responder_cert): Use validate_cert_chain.
+
+	* Makefile.am (AM_CPPFLAGS): Add macros for a few system
+	directories.
+	* dirmngr.h (opt): New members homedir_data, homedir_cache,
+	ldap_wrapper_program, system_daemon, honor_http_proxy, http_proxy,
+	ldap_proxy, only_ldap_proxy, disable_ldap, disable_http.
+	* dirmngr.c (main): Initialize new opt members HOMEDIR_DATA and
+	HOMEDIR_CACHE.
+	(parse_rereadable_options): New options --ldap-wrapper-program,
+	--http-wrapper-program, --disable-ldap, --disable-http,
+	--honor-http-proxy, --http-proxy, --ldap-proxy, --only-ldap-proxy.
+	(reread_configuration): New.
+
+	* ldap.c (ldap_wrapper): Use the correct name for the wrapper.
+
+	* crlcache.c (DBDIR_D): Make it depend on opt.SYSTEM_DAEMON.
+	(cleanup_cache_dir, open_dir, update_dir, make_db_file_name)
+	(crl_cache_insert, create_directory_if_needed): Use opt.HOMEDIR_CACHE
+
+	* validate.c (check_revocations): New.
+	* crlcache.c (crl_cache_isvalid): Factored most code out to
+	(cache_isvalid): .. new.
+	(crl_cache_cert_isvalid): New.
+	* server.c (cmd_checkcrl): Cleaned up by using this new function.
+	(reload_crl): Moved to ..
+	* crlcache.c (crl_cache_reload_crl): .. here and made global.
+
+	* certcache.c (cert_compute_fpr): Renamed from computer_fpr and
+	made global.
+	(find_cert_bysn): Try to lookup missing certs.
+	(cert_cache_init): Intialize using opt.HOMEDIR_DATA.
+
+
+2004-11-19  Werner Koch  <wk@g10code.com>
+
+	* dirmngr-client.c (status_cb): New.  Use it in very verbose mode.
+
+	* server.c (start_command_handler): Malloc the control structure
+	and properly release it.  Removed the primary_connection
+	hack. Cleanup running wrappers.
+	(dirmngr_status): Return an error code.
+	(dirmngr_tick): Return an error code and detect a
+	cancellation. Use wall time and not CPU time.
+	* validate.c (validate_cert_chain): Add CTRL arg and changed callers.
+	* crlcache.c (crl_cache_isvalid):
+	* crlfetch.c (ca_cert_fetch, start_cert_fetch, crl_fetch_default)
+	(crl_fetch): Ditto.
+	* ldap.c (ldap_wrapper, run_ldap_wrapper, url_fetch_ldap)
+	(attr_fetch_ldap, start_cert_fetch_ldap): Ditto.
+	(ldap_wrapper_release_context): Reset the stored CTRL.
+	(reader_callback): Periodically call dirmngr_tick.
+	(ldap_wrapper_release_context): Print an error message for read
+	errors.
+	(ldap_wrapper_connection_cleanup): New.
+
+2004-11-18  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main): Do not cd / if not running detached.
+
+	* dirmngr-client.c: New options --cache-cert and --validate.
+	(do_cache, do_validate): New.
+	* server.c (cmd_cachecert, cmd_validate): New.
+
+	* crlcache.c (get_issuer_cert): Make use of the certificate cache.
+	(crl_parse_insert): Validate the issuer certificate.
+
+	* dirmngr.c (handle_signal): Reinitialize the certificate cache on
+	a HUP.
+	(struct opts): Add --homedir to enable the already implemented code.
+	(handle_signal): Print stats on SIGUSR1.
+
+	* certcache.c (clean_cache_slot, cert_cache_init)
+	(cert_cache_deinit): New.
+	(acquire_cache_read_lock, acquire_cache_write_lock)
+	(release_cache_lock): New.  Use them where needed.
+	(put_cert): Renamed from put_loaded_cert.
+	(cache_cert): New.
+	(cert_cache_print_stats): New.
+	(compare_serialno): Fixed.
+
+2004-11-16  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AM_CPPFLAGS): Define DIRMNGR_SYSCONFDIR and
+	DIRMNGR_LIBEXECDIR.
+
+	* misc.c (dump_isotime, dump_string, dump_cert): New.  Taken from
+	gnupg 1.9.
+	(dump_serial): New.
+
+2004-11-15  Werner Koch  <wk@g10code.com>
+
+	* validate.c: New. Based on gnupg's certchain.c
+
+	* ldap.c (get_cert_ldap): Removed.
+	(read_buffer): New.
+	(start_cert_fetch_ldap, fetch_next_cert_ldap)
+	(end_cert_fetch_ldap): Rewritten to make use of the ldap wrapper.
+
+2004-11-12  Werner Koch  <wk@g10code.com>
+
+	* http.c (insert_escapes): Print the percent sign too.
+
+	* dirmngr-client.c (inq_cert): Ignore "SENDCERT" and
+	"SENDISSUERCERT".
+
+	* server.c (do_get_cert_local): Limit the length of a retruned
+	certificate.  Return NULL without an error if an empry value has
+	been received.
+
+	* crlfetch.c (ca_cert_fetch): Use the ksba_reader_object.
+	(setup_funopen, fun_reader, fun_closer): Removed.
+
+	* crlcache.c (get_issuer_cert): Adjust accordingly.
+
+	* ldap.c (attr_fetch_ldap_internal, attr_fetch_fun_closer)
+	(attr_fetch_fun_reader, url_fetch_ldap_internal)
+	(get_attr_from_result_ldap): Removed.
+	(destroy_wrapper, print_log_line, ldap_wrapper_thread)
+	(ldap_wrapper_release_context, reader_callback, ldap_wrapper)
+	(run_ldap_wrapper): New.
+	(url_fetch_ldap): Make use of the new ldap wrapper and return a
+	ksba reader object instead of a stdio stream.
+	(attr_fetch_ldap): Ditto.
+	(make_url, escape4url): New.
+
+2004-11-11  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (launch_ripper_thread): New.
+	(main): Start it wheere appropriate.  Always ignore SIGPIPE.
+	(start_connection_thread): Maintain a connection count.
+	(handle_signal, handle_connections): Use it here instead of the
+	thread count.
+
+	* crlcache.c (crl_cache_insert): Changed to use ksba reader
+	object.  Changed all callers to pass this argument.
+
+2004-11-08  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c: New.
+
+	* crlcache.c (crl_cache_init): Don't return a cache object but
+	keep it module local.  We only need one.
+	(crl_cache_deinit): Don't take cache object but work on existing
+	one.
+	(get_current_cache): New.
+	(crl_cache_insert, crl_cache_list, crl_cache_load): Use the global
+	cache object and removed the cache arg.  Changed all callers.
+
+	* dirmngr-client.c: New option --ping.
+
+	* dirmngr.c (main): New option --daemon. Initialize PTH.
+	(handle_connections, start_connection_thread): New.
+	(handle_signal): New.
+	(parse_rereadable_options): New. Changed main to make use of it.
+	(set_debug): Don't bail out on invalid debug levels.
+	(main): Init the crl_chache for server and daemon mode.
+
+	* server.c (start_command_handler): New arg FD.  Changed callers.
+
+2004-11-06  Werner Koch  <wk@g10code.com>
+
+	* server.c (map_assuan_err): Factored out to ..
+	* maperror.c: .. new file.
+	* util.h: Add prototype
+
+2004-11-05  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c: New, used as helper for dirmngr-client which
+	does not need libgcrypt proper but jnlib references the memory
+	functions.  Taken from gnupg 1.9.12.
+
+	* dirmngr.h: Factored i18n and xmalloc code out to ..
+	* i18n.h, util.h: .. New.
+
+	* dirmngr-client.c: New.  Some code taken from gnupg 1.9.12.
+	* Makefile.am (bin_PROGRAMS) Add dirmngr-client.
+
+2004-11-04  Werner Koch  <wk@g10code.com>
+
+	* src/server.c (get_fingerprint_from_line, cmd_checkcrl)
+	(cmd_checkocsp): New.
+	(register_commands): Register new commands.
+	(inquire_cert_and_load_crl): Factored most code out to ..
+	(reload_crl): .. new function.
+	* src/certcache.h, src/certcache.c: New.
+	* src/Makefile.am (dirmngr_SOURCES): Add new files.
+
+2004-11-04  Werner Koch  <wk@g10code.com>
+
+	Please note that earlier entries are found in the top level
+	ChangeLog.
+	[Update after merge with GnuPG: see ./ChangeLog.1]
+
+
+ Copyright 2004, 2005, 2006, 2007, 2008, 2009, 2010 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

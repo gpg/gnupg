@@ -1,3 +1,7 @@
+2010-06-08  Werner Koch  <wk@g10code.com>
+
+	* ldap.m4 (gnupg_have_ldap): Set variable.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* estream.m4: Update for libestream.

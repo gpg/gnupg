@@ -1,0 +1,802 @@
+There are old Dirmngr ChangeLog entries.
+
+2004-10-04  Werner Koch  <wk@g10code.com>
+
+	* src/dirmngr.c: Changed an help entry description.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* src/dirmngr.c (i18n_init): Always use LC_ALL.
+
+2004-09-28  Werner Koch  <wk@g10code.com>
+
+	Released 0.5.6.
+
+	* config.guess, config.sub: Updated.
+
+2004-06-21  Werner Koch  <wk@g10code.com>
+
+	* src/crlfetch.c (crl_fetch): Bad hack to use the right attribute.
+
+2004-05-13  Werner Koch  <wk@gnupg.org>
+
+        Released 0.5.5.
+
+	* src/ldap.c (start_cert_fetch_ldap, start_cert_fetch_ldap): More
+	detailed error messages.
+
+	* src/crlcache.c (update_dir): Handle i-records properly.
+
+2004-04-29  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.4.
+
+	* src/crlcache.h (crl_cache_result_t): Add CRL_CACHE_CANTUSE.
+	* src/server.c (cmd_isvalid): Handle it here.
+	* src/crlcache.c (crl_cache_isvalid): Issue this code if the CRL
+	cant be used.
+	(open_dir): Parse new fields 8,9 and 10 as well as the invalid flag.
+	(write_dir_line_crl): Write new fields.
+	(get_crl_number, get_auth_key_id): New.
+	(crl_cache_insert): Fill new fields.  Mark the entry invalid if
+	the CRL is too old after an update or an unknown critical
+	extension was seen.
+	(list_one_crl_entry): Print the new fields.
+
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Requires libksba 0.9.6.
+
+	* src/dirmngr.c: New option --ocsp-signer.
+	* src/dirmngr.h (opt): Renamed member OCSP_REPONDERS to
+	OCSP_RESPONDER and made ist a simple string. Add OCSP_SIGNER.
+	* src/ocsp.c (ocsp_isvalid): Changed it accordingly.
+	(ocsp_isvalid): Pass the ocsp_signer to check_signature.
+	(check_signature): New arg SIGNER_FPR.  Use it to retrieve the
+	certificate. Factored out common code to ..
+	(check_signature_core): .. New.
+
+2004-04-27  Werner Koch  <wk@gnupg.org>
+
+	* src/server.c (start_command_handler): Keep track of the first
+	connection.
+	(dirmngr_tick): New.
+	* src/ldap.c (attr_fetch_fun_reader): Call it from time to time.
+
+2004-04-23  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (main): Removed the add-servers option from the
+	gpgconf list.  It is not really useful.
+
+2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
+
+	* autogen.sh: Added ACLOCAL_FLAGS.
+
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (update_dir): Do not double close FPOUT.
+
+2004-04-09  Werner Koch  <wk@gnupg.org>
+
+	* src/cdblib.c (cdb_make_start): Wipeout the entire buffer to
+	shutup valgrind.
+	(ewrite): Fixed writing bad data on EINTR.
+
+	* src/ldap.c (get_attr_from_result_ldap): Fixed bad copy and
+	terminate of a string.
+
+	* src/crlfetch.c (crl_fetch): Fixed freeing of VALUE on error.
+
+2004-04-07  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.h (server_control_s): Add member force_crl_refresh.
+	* src/server.c (option_handler): New.
+	(start_command_handler): Register option handler
+	* src/crlcache.c (crl_cache_isvalid): Add arg FORCE_REFRESH.
+	(crl_cache_insert): Record last refresh in memory.
+
+	* src/server.c (inquire_cert_and_load_crl): Renamed from
+	inquire_cert.
+
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.3
+
+	* doc/dirmngr.texi: Updated.
+	* doc/texinfo.tex: Updated.
+
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* src/ocsp.c (ocsp_isvalid): Check THIS_UPDATE.
+
+	* src/misc.c (add_isotime): New.
+	(date2jd, jd2date, days_per_month, days_per_year): New. Taken from
+	my ancient (1988) code used in Wedit (time2.c).
+
+2004-04-02  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Check gettext version.
+	* configure.ac: Add AM_GNU_GETTEXT.
+
+2004-04-02  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add intl.
+	(EXTRA_DIST): Add config.rpath.
+	* configure.ac (AC_CONFIG_FILES): Add intl/Makefile,
+
+2004-04-02  Werner Koch  <wk@gnupg.org>
+
+	Add i18n at most places.
+
+	* src/dirmngr.c (i18n_init): New.
+	(main): Call it.
+	* src/dirmngr.h: Add i18n stuff.
+
+2004-04-01  Werner Koch  <wk@gnupg.org>
+
+	* src/misc.c (get_fingerprint_hexstring): New.
+
+	* src/server.c (dirmngr_status): New.
+
+2004-03-26  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Add AC_SYS_LARGEFILE.
+
+	* doc/dirmngr.texi: Changed the license to the GPL as per message
+	by Mathhias Kalle Dalheimer of Klaralvdalens-Datakonsult dated
+	Jan 7, 2004.
+	* doc/fdl.texi: Removed.
+
+2004-03-25  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (main): New command --fetch-crl.
+
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c: New option --allow-ocsp.
+	* src/server.c (cmd_isvalid): Make use of allow_ocsp.
+
+2004-03-17  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (main) <gpgconf>: Fixed default value quoting.
+
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (main): Add ocsp-responder to the gpgconf list.
+	Add option --debug-level.
+	(set_debug): New.
+
+2004-03-15  Werner Koch  <wk@gnupg.org>
+
+	* src/misc.c (canon_sexp_to_grcy): New.
+
+2004-03-12  Werner Koch  <wk@gnupg.org>
+
+	* src/crlfetch.c (crl_fetch): Hack to substitute http for https.
+
+2004-03-10  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (parse_ldapserver_file): Don't skip the entire
+	file on errors.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (my_ksba_hash_buffer): New.
+	(main): Initialize the internal libksba hashing.
+
+	* src/server.c (get_issuer_cert_local): Renamed to ...
+	(get_cert_local): ... this.  Changed all callers.  Allow NULL for
+	ISSUER to return the current target cert.
+	(get_issuing_cert_local): New.
+	(do_get_cert_local): Moved common code to here.
+
+2004-03-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.2.
+
+	* configure.ac: Fixed last change to check the API version of
+	libgcrypt.
+
+2004-03-05  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Also check the SONAME of libgcrypt.
+
+2004-03-03  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c: New option --ocsp-responder.
+	* src/dirmngr.h (opt): Add member OCSP_RESPONDERS.
+
+2004-02-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/server.c (start_command_handler): Corrected typo and made
+	dirmngr output it's version in the greeting message.
+
+2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* src/dirmngr.c (DEFAULT_ADD_SERVERS): Removed.  If this were
+	true, there'd be no way to disable it.
+	(main): Dump options in new gpgconf format.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (check_version): Removed bashism and simplified.
+
+2004-02-06  Moritz Schulte  <mo@g10code.com>
+
+	* src/crlfetch.c (crl_fetch_default): Do not dereference VALUE,
+	when checking for non-zero.
+
+2004-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* src/dirmngr.c (DEFAULT_ADD_SERVERS, DEFAULT_MAX_REPLIES)
+	(DEFAULT_LDAP_TIMEOUT): New macros.
+	(main): Use them.
+	(enum cmd_and_opt_values): New command aGPGConfList.
+	(main): Add handler here.
+
+2004-01-17  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Added AC_CHECK_FUNCS tests again, because the
+	other test occurrences belong to the jnlib tests block.
+
+2004-01-15  Moritz Schulte  <mo@g10code.com>
+
+	* configure.ac: Fixed funopen replacement mechanism; removed
+	unnecessary AC_CHECK_FUNCS calls.
+
+2004-01-14  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (list_one_crl_entry): Don't use putchar.
+
+	* src/server.c (cmd_listcrls): New.
+
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.1.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (CFLAGS): Add -Wformat-noliteral in gcc +
+	maintainer mode.
+	(NEED_LIBASSUAN_VERSION): Bump up to 0.6.2.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Update the tests for jnlib.
+	* src/dirmngr.c (main): Ignore SIGPIPE in server mode.
+
+2003-12-12  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (hash_dbfile): Also hash version info of the
+	cache file format.
+
+	* src/Makefile.am (dirmngr_SOURCES): Add http.h.
+
+	* configure.ac: Removed checking for DB2. Add checking for mmap.
+	* src/cdb.h, src/cdblib.h: New.  Add a few comments from the
+	original man page and fixed typos.
+	* src/cdblib.c (cdb_findinit, cdb_findnext): Modified to allow
+	walking over all entries.
+	* src/crlcache.h: Removed DB2/4 cruft.
+	(release_one_cache_entry, lock_db_file, crl_parse_insert)
+	(crl_cache_insert, crl_cache_isvalid, list_one_crl_entry): Use the
+	new CDB interface.
+
+	* src/dirmngr.c: Beautified the help messages.
+	(wrong_args): New.
+	(main): new option --force.  Revamped the command handling code.
+	Allow to pass multiple CRLS as well as stdin to --local-crl.
+	* src/crlcache.c (crl_cache_insert): Make --force work.
+
+2003-12-11  Werner Koch  <wk@gnupg.org>
+
+	* src/crlfetch.c (crl_fetch): Enhanced to allow fetching binary
+	data using HTTP.
+	* src/http.c, src/http.h: Replaced by the code from gnupg 1.3 and
+	modified acording to our needs.
+	(read_line): New. Based on the code from GnuPG's iobuf_read_line.
+	* configure.ac: Check for getaddrinfo.
+
+	* src/dirmngr.c (parse_ldapserver_file): Close the stream.
+	(main): Free ldapfile.
+
+	* src/ocsp.c, src/ocsp.h: New. Albeit not functionality.
+
+	* src/server.c (inquire_cert): Catch EOF when reading dist points.
+
+	* src/crlcache.c (hash_dbfile, check_dbfile): New.
+	(lock_db_file, crl_cache_insert): Use them here to detect
+	corrupted CRL files.
+	(open_dir): Read the new dbfile hash field.
+
+	* src/crlfetch.c (crl_fetch, crl_fetch_default): Changed to retrun
+	a stream.
+	(fun_reader, fun_closer, setup_funopen): New.
+	* src/server.c (inquire_cert): Changed to use the new stream interface
+	of crlfetch.c.
+
+2003-12-10  Werner Koch  <wk@gnupg.org>
+
+	* src/funopen.c: New.
+	* configure.ac (funopen): Add test.
+	* src/Makefile.am (dirmngr_LDADD): Add LIBOBJS.
+
+	* src/crlcache.c (next_line_from_file): Remove the limit on the
+	line length.
+	(crl_cache_new): Removed.
+	(open_dbcontent): New.
+	(crl_cache_init): Use it here.
+	(crl_cache_flush): The DB content fie is now in the cache
+	directory, so we can simplify it.
+	(make_db_file_name, lock_db_file, unlock_db_file): New.
+	(release_cache): Close the cached DB files.
+	(crl_cache_isvalid): Make use of the new lock_db_file.
+	(crl_cache_insert): Changed to take a stream as argument.
+	(crl_parse_insert): Rewritten to use a temporary DB and to avoid
+	using up large amounts of memory.
+	(db_entry_new): Removed.
+	(release_cache,release_one_cache_entry): Splitted up.
+	(find_entry): Take care of the new deleted flag.
+	(crl_cache_load): Simplified becuase we can now pass a FP to the
+	insert code.
+	(save_contents): Removed.
+	(update_dir): New.
+	(open_dbcontent_file): Renamed to open_dir_file.
+	(check_dbcontent_version): Renamed to check_dir_version.
+	(open_dbcontent): Renamed to open_dir.
+
+	* src/dirmngr.c: New option --faked-system-time.
+	* src/misc.c (faked_time_p, set_time, get_time): New.  Taken from GnuPG.
+	(check_isotime): New.
+	(unpercent_string): New.
+
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.h (DBDIR,DBCONTENTFILE): Changed value.
+
+	* autogen.sh: Reworked.
+	* README.CVS: New.
+	* configure.ac: Added min_automake_version.
+
+2003-12-03  Werner Koch  <wk@gnupg.org>
+
+	* src/server.c (cmd_lookup): Send an END line after each
+	certificate.
+
+2003-11-28  Werner Koch  <wk@gnupg.org>
+
+	* src/Makefile.am (dirmngr_LDADD): Remove DB_LIBS
+	because it never got defined and -ldb{2,4} is implictly set
+	by the AC_CHECK_LIB test in configure.
+
+	* src/crlcache.c (mydbopen): DB4 needs an extra parameter; I
+	wonder who ever tested DB4 support.  Add an error statement in
+	case no DB support is configured.
+
+	* tests/Makefile.am: Don't use AM_CPPFLAGS but AM_CFLAGS, replaced
+	variables by configure templates.
+	* src/Makefile.am: Ditto.
+
+2003-11-19  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (list_one_crl_entry): Define X to nothing for non
+	DB4 systems.  Thanks to Luca M. G. Centamore.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.0
+
+	* src/crlcache.c (crl_cache_new): Fixed eof detection.
+
+	* src/server.c (cmd_loadcrl): Do the unescaping.
+
+	* doc/dirmngr.texi: Added a history section for this modified
+	version.
+
+2003-11-14  Werner Koch  <wk@gnupg.org>
+
+	* tests/asschk.c: New.  Taken from GnuPG.
+	* tests/Makefile.am: Added asschk.
+
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* src/ldap.c (fetch_next_cert_ldap): Get the pattern switching
+	right.
+
+	* tests/test-dirmngr.c: Replaced a couple of deprecated types.
+
+	* configure.ac (GPG_ERR_SOURCE_DEFAULT): Added.
+	(fopencookie, asprintf): Removed unneeded test.
+	(PRINTABLE_OS_NAME): Updated the test from gnupg.
+	(CFLAGS): Do full warnings only in maintainer mode. Add flag
+	--enable gcc-warnings to override it and to enable even more
+	warnings.
+	* acinclude.m4: Removed the libgcrypt test.
+
+	* src/ldap.c (get_attr_from_result_ldap): Simplified the binary
+	hack and return a proper gpg error.
+	(attr_fetch_ldap_internal): Changed error handling.
+	(attr_fetch_ldap): Reworked.  Return configuration error if no
+	servers are configured.
+	(url_fetch_ldap, add_server_to_servers)
+	(url_fetch_ldap_internal): Reworked.
+	(struct cert_fetch_context_s): New to get rid of a global state.
+	(start_cert_fetch_ldap): Allocate context and do a bind with a
+	timeout.  Parse pattern.
+	(end_cert_fetch_ldap): Take context and don't return anything.
+	(find_next_pattern): Removed.
+	(parse_one_pattern): Redone.
+	(get_cert_ldap): Redone.
+	* src/server.c (cmd_lookup): Changed for changed fetch functions.
+
+	* doc/dirmngr.texi: Reworked a bit to get rid of tex errors.
+
+	* configure.ac: Enable makeinfo test.
+
+	* src/crlcache.c (crl_cache_insert): Fixed for latest KSBA API
+	changes.
+	* tests/test-dirmngr.c (main): Ditto.  Also added some more error
+	checking.
+
+2003-11-11  Werner Koch  <wk@gnupg.org>
+
+	* src/cert.c (hashify_data, hexify_data, serial_hex)
+	(serial_to_buffer): Moved all to ...
+	* src/misc.c: .. here.
+	* src/Makefile.am (cert.c, cert.h): Removed.
+	* cert.c, cert.h: Removed.
+
+	* m4/: New.
+	* configure.ac, Makefile.am: Include m4 directory support, updated
+	required library versions.
+
+	* src/cert.c (make_cert): Removed.
+
+	* src/ldap.c (fetch_next_cert_ldap): Return a gpg style error.
+
+	* src/misc.h (copy_time): New.
+	* src/misc.c (get_isotime): New.
+	(iso_string2time, iso_time2string): Removed.
+	(unhexify): New.
+
+	* src/crlcache.h (DBCONTENTSVERSION): Bumbed to 0.6.
+	* src/crlcache.c (finish_sig_check): New.  Factored out from
+	crl_parse_insert and entirely redone.
+	(do_encode_md): Removed.
+	(print_time): Removed
+	(crl_cache_isvalid): Reworked.
+
+2003-11-10  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (make_db_val, parse_db_val): Removed.
+
+	* src/cert.c (serial_to_buffer): New.
+
+	* src/server.c (get_issuer_cert_local): Rewritten.
+
+	* src/crlcache.c (crl_parse_insert): Rewritten.  Takes now a CTRL
+	instead of the Assuan context. Changed caller accordingly.
+	(get_issuer_cert): Cleaned up.
+
+	* src/crlfetch.c (crl_fetch): Changed VALUE to unsigned char* for
+	documentation reasons.  Make sure that VALUE is released on error.
+	(crl_fetch_default, ca_cert_fetch): Ditto.
+
+	* src/crlcache.c (release_cache): New.
+	(crl_cache_deinit): Use it here.
+	(crl_cache_flush): Redone.
+	(save_contents): Redone.
+	(crl_cache_list, list_one_crl_entry): Print error messages.
+
+2003-11-06  Werner Koch  <wk@gnupg.org>
+
+	* src/crlcache.c (create_directory_if_needed, cleanup_cache_dir):
+	New.  Factored out from crl_cache_new and mostly rewritten.
+	(crl_cache_new): Rewritten.
+	(next_line_from_file): New.
+	(find_entry): Cleaned up.
+	(crl_cache_deinit): Cleaned up.
+
+	* src/dirmngr.c (dirmngr_init_default_ctrl): New stub.
+	* src/dirmngr.h (ctrl_t): New.
+	(DBG_ASSUAN,...): Added the usual debug test macros.
+	* src/server.c: Removed the GET_PTR cruft, replaced it by ctrl_t.
+	Removed the recursion flag.
+	(get_issuer_cert_local): Allow for arbitary large
+	certificates. 4096 is definitely too small.
+	(inquire_cert): Ditto.
+	(start_command_handler): Set a hello line and call the default
+	init function.
+	(cmd_isvalid): Rewritten.
+	(inquire_cert): Removed unused arg LINE. General cleanup.
+	(map_assuan_err,map_to_assuan_status): New.  Taken from gnupg 1.9.
+	(cmd_lookup): Rewritten.
+	(cmd_loadcrl): Started to rewrite it.
+
+2003-10-29  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.c (parse_ldapserver_file): Entirely rewritten.
+	(cleanup): New.
+	(main): Cleaned up.
+
+2003-10-28  Werner Koch  <wk@gnupg.org>
+
+	* src/dirmngr.h: Renamed dirmngr_opt to opt.
+
+	* src/dirmngr.c (parse_ldapserver_file, free_ldapservers_list):
+	Moved with this file.  Cleaned up.  Replaced too deep recursion in
+	the free function.
+
+2003-10-21  Werner Koch  <wk@gnupg.org>
+
+	Changed all occurrences of assuan.h to use use the system provided
+	one.
+	* src/server.c (register_commands): Adjusted for Assuan API change.
+
+2003-08-14  Werner Koch  <wk@gnupg.org>
+
+	* src/Makefile.am: s/LIBKSBA_/KSBA_/. Changed for external Assuan lib.
+	* tests/Makefile.am: Ditto.
+
+	* configure.ac: Partly restructured, add standard checks for
+	required libraries, removed included libassuan.
+	* Makefile.am (SUBDIRS): Removed assuan becuase we now use the
+	libassuan package.
+
+	* src/dirmngr.c (main): Properly initialize Libgcrypt and libksba.
+
+2003-08-13  Werner Koch  <wk@gnupg.org>
+
+	* src/server.c (get_issuer_cert_local): Print error using
+	assuan_strerror.
+
+	* src/crlcache.c (do_encode_md, start_sig_check): Adjust for
+	changed Libgcrypt API.
+
+2003-06-19  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Upped version to 0.4.7-cvs.
+
+2003-06-19  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Release 0.4.6.
+
+2003-06-17  Bernhard Reiter <bernhard@intevation.de>
+
+	* src/ldap.c (url_fetch_ldap()):
+	  try other default servers when an url with hostname failed
+	* AUTHORS:  added Steffen and Werner
+	* THANKS: Thanked people in the ChangeLog and the Ägypten-Team
+
+
+2003-06-16  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac, src/crlcache.h, src/crlcache.c: Added db4 support.
+	* src/Makefile.am, tests/Makefile.am: Removed automake warning.
+	* tests/test-dirmngr.c: Removed a warning.
+
+2003-05-12  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* doc/Makefile.am: Added dirmngr.ops to DISTCLEANFILES.
+	* ChangeLog, doc/ChangeLog, src/ChangeLog: Merged dirmngr ChangeLogs
+	into one toplevel file.
+	* acinclude.m4, configure.ac: Renamed PFX to PATH for consistency.
+
+2003-05-12  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/ldap.c: Fixed end-of-certificates-list indication.
+
+2003-05-08  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/server.c: Fixed iteration over server list
+
+2003-02-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/crlcache.h, src/crlcache.c, src/dirmngr.c: Implemented --flush command.
+
+2003-02-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Release 0.4.4.
+
+2003-02-05  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/ldap.c: Try harder with and without ";binary" in the
+	attribute name when fetching certificates.
+	* src/ldap.c, src/server.c: Support multiple userCertificate attributes
+	per entry.
+
+2003-02-04  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* src/ldap.c: Include the sn attribute in the search filter.
+	Better log messages.
+
+2002-11-20  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Doc updates (fixes #1373)
+	* Fix for #1419 (crash in free_ldapservers_list())
+	* Fix for #1375. Dirmngr now asks back with an INQUIRE SENDCERT before
+	  querying the LDAP servers for an issuer certificate to validate a CRL
+
+2002-11-12  Werner Koch  <wk@gnupg.org>
+
+	* config.sub, config.guess: Updated from ftp.gnu.org/gnu/config
+	to version 2002-11-08.
+
+2002-11-12  Werner Koch  <wk@gnupg.org>
+
+	* dirmngr.c (main) <load_crl_filename>: Better pass NULL instead
+	of an unitialized Assuan context.  Let's hope that the other
+	functions can cope with this.
+
+2002-10-25  Bernhard Reiter <bernhard@intevation.de>
+
+	* src/ldap.c (get_attr_from_result_ldap()):
+        added value extraction retry for CRLs and Certs without ";binary"
+	* changed version number to reflect cvs status to "0.4.3-cvs"
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* dirmngr.c (main): Changed default homedir to .gnupg.
+
+2002-08-07  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Added configure check to examine whether db2 cursor() uses 3 or
+	4 parameters.
+
+2002-07-31  Werner Koch  <wk@gnupg.org>
+
+	* doc/dirmngr.texi: Fixed the structure and added menu entries
+	for the other nodes.
+
+2002-07-30  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Added doc dir and first steps towards manual.
+
+2002-07-29  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Got rid of the default server for CRL lookup. We now use the
+	same list of servers that we use for cert. lookup.
+
+2002-07-29  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* New option --add-servers to allow dirmngr to add LDAP servers
+	found in CRL distribution points to the list of servers it
+	searches. NOTE: The added servers are only active in the currently
+	running dirmngr -- the info isn't written to persistens storage.
+
+2002-07-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Default LDAP timeout is 100 seconds now.
+
+	* Use DB2 instead of DB1. Check for libresolv, fixed bug when
+	libldap was found in the default search path.
+
+2002-07-22  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Implemented --load-crl <filename> option. Also available as
+	LOADCRL assuan command when in server mode.
+
+2002-07-22  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Implemented new option --ldaptimeout to specify the number of seconds to
+	wait for an LDAP request before timeout.
+
+	* Added --list-crls option to print the contents of the CRL cache
+	* Added some items to the dbcontents file to make printout nicer
+	  and updated it's version number
+
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* crlcache.c (crl_parse_insert): Fixed log_debug format string.
+
+2002-07-02  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Use DB->get() return value correctly.
+
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* crlcache.c (crl_parse_insert): Keep track of newly allocated
+	ENTRY so that we don't free existing errors after a bad signature.
+
+	* dirmngr.h: Include prototype for start_command_handler.
+
+	* crlfetch.c, crlcache.c, http.c, cert.c, ldap.c: Include
+	config.h.
+
+	* crlcache.c (crl_parse_insert): Fixed format type specifiers for
+	time_t variables in log_debug.
+
+	* error.h: Use log_debug instead of dirmngr_debug.  Changed all
+	callers.
+	* Makefile.am (dirmngr_SOURCES): Removed error.c
+
+	* dirmngr.c (main): Register gcrypt malloc functions with ksba so
+	that we don't run into problems by using the wrong free function.
+	The gcrypt malloc function have the additional benefit of a
+	providing allocation sanity checks when compiled with that
+	feature.
+
+	* crlcache.c (get_issuer_cert): Use xfree instead of ksba_free.
+
+
+2002-06-27  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* ldap.c: Look for both userCertificate and caCertificate
+
+2002-06-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Upped version number to 0.3.1
+
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_lookup): Use assuan_write_status which ensures a
+	correct syntax.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* crlcache.c (crl_cache_isvalid): Started with some nicer logging.
+	However, this will need a lot more work.
+	(get_issuer_cert): Ditto.
+
+	* dirmngr.c (main): Changed required libgcrypt version and don't
+	print the prefix when using a logfile.
+
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* tests/Makefile.am (TESTS): Removed test-dirmngr because it
+	is not a proper test program.
+	(EXTRA_DIST): Removed the non-existent test certificate.
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* server.c (start_command_handler): Enable assuan debugging.
+
+2002-05-08  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Replaced gdbm check with db1 check
+
+2002-05-08  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Replaced gdbm with db1, updated file format version
+
+2002-03-01  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Added gdbm configure check
+
+2002-01-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Return ASSUAN_CRL_Too_Old if the CRL is too old
+
+
+2002-01-17  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	Added commandline options --ldapserver <host> --ldapport <port>
+	--ldapuser <user> --ldappassword <passwd>.
+
+	Cleaned up CRL parsing, signature evaluation a bit, changed
+	datetime format in config file to ISO, added version string to
+	contents format and cache file clean up code in case of mismatch.
+
+2002-01-14  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* Use dirmngr_opt.homedir for storing the db. Added Makefile.am to
+	tests, bugfixes.
+
+	* First code.
+	  Things that work:
+		Loading/saving database (paths hardcoded)
+		Fetching CRL from hardcoded server, parsing and inserting in database
+		Answer ISVALID xxx.yyy requests
+
+	  Things that are missing:
+		Some error-checking/handling
+		Proper autoconf handling of gdbm and OpenLDAP
+		Signature checking downloaded CRLs
+		Answer LOOKUP requests
+		...
+
+	  How to test:
+		cd tests
+		ldapsearch -v -x -h www.trustcenter.de -b '<some-users-DN>' userCertificate -t
+		cp /tmp/<cert-file> testcert.der
+		./test-dirmngr

@@ -17,7 +17,7 @@ AC_DEFUN([GNUPG_CHECK_LDAP],
 # OpenLDAP, circa 1999, was terrible with creating weird dependencies.
 # If all else fails, the user can play guess-the-dependency by using
 # something like ./configure LDAPLIBS="-Lfoo -lbar"
-
+gnupg_have_ldap=no
 AC_ARG_WITH(ldap,
   AC_HELP_STRING([--with-ldap=DIR],[look for the LDAP library in DIR]),
   [_ldap_with=$withval])
@@ -66,6 +66,7 @@ if test x$_ldap_with != xno ; then
         test "$gnupg_cv_func_ldaplber_init" = yes ; then
        LDAPLIBS="$LDAP_LDFLAGS $MY_LDAPLIBS"
        GPGKEYS_LDAP="gpg2keys_ldap$EXEEXT"
+       gnupg_have_ldap=yes
 
        AC_CHECK_FUNCS(ldap_get_option ldap_set_option)
        # The extra test for ldap_start_tls_sA is for W32 because 

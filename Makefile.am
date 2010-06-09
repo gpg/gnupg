@@ -61,6 +61,11 @@ g13 = g13
 else
 g13 =
 endif
+if BUILD_DIRMNGR
+dirmngr = dirmngr
+else
+dirmngr =
+endif
 if BUILD_TOOLS
 tools = tools
 else
@@ -79,7 +84,8 @@ tests = tests
 endif
 
 SUBDIRS = m4 gl include common ${kbx} \
- ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${tools} po ${doc} ${tests}
+          ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
+          ${tools} po ${doc} ${tests}
 
 dist_doc_DATA = README
 

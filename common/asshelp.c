@@ -362,12 +362,13 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           if (err)
             log_debug ("starting `%s' for testing failed: %s\n",
                        agent_program, gpg_strerror (err));
-          else if ((err = gnupg_wait_process (agent_program, pid, &excode)))
+          else if ((err = gnupg_wait_process (agent_program, pid, 0, &excode)))
             {
               if (excode == -1)
                 log_debug ("running `%s' for testing failed: %s\n",
                            agent_program, gpg_strerror (err));
             }          
+          gnupg_release_process (pid);
 
           if (!err && !excode)
             {
