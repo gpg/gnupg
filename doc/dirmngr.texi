@@ -1,0 +1,788 @@
+@c Copyright (C) 2002 Klar"alvdalens Datakonsult AB
+@c Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+@node Invoking DIRMNGR
+@chapter Invoking DIRMNGR
+@cindex DIRMNGR command options
+@cindex command options
+@cindex options, DIRMNGR command
+
+@manpage dirmngr.8
+@ifset manverb
+.B dirmngr
+\- CRL and OCSP daemon
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  dirmngr
+.RI [ options ]  
+.I command
+.RI [ args ]
+@end ifset
+
+@mansect description
+Dirmngr is a server for managing and downloading certificate revocation
+lists (CRLs) for X.509 certificates and for downloading the certificates
+themselves. Dirmngr also handles OCSP requests as an alternative to
+CRLs. Dirmngr is either invoked internally by gpgsm or when running as a
+system daemon through the @command{dirmngr-client} tool.
+
+If @command{dirmngr} is started in system daemon mode, it uses a
+directory layout as common for system daemons and does not make use of
+the default @file{~/.gnupg} directory.  
+
+
+@manpause
+@noindent
+@xref{Option Index},for an index to @command{DIRMNGR}'s commands and
+options.
+@mancont
+
+@menu
+* Dirmngr Commands::      List of all commands.
+* Dirmngr Options::       List of all options.
+* Dirmngr Configuration:: Configuration files.
+* Dirmngr Signals::       Use of signals.
+* Dirmngr Examples::      Some usage examples.
+* Dirmngr Protocol::      The protocol dirmngr uses.
+@end menu
+
+
+@node Dirmngr Commands
+@section Commands
+@mansect commands
+
+Commands are not distinguished from options except for the fact that
+only one command is allowed.
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Note that you cannot
+abbreviate this command.
+
+@item --help, -h
+@opindex help
+Print a usage message summarizing the most useful command-line options.
+Not that you cannot abbreviate this command.
+
+@item --dump-options
+@opindex dump-options
+Print a list of all available options and commands.  Note that you cannot
+abbreviate this command.
+
+@item --server
+@opindex server
+Run in server mode and wait for commands on the @code{stdin}.  The
+default mode is to create a socket and listen for commands there.
+
+@item --daemon
+@opindex daemon
+Run in background daemon mode and listen for commands on a socket.
+Note that this also changes the default home directory and enables the
+internal certificate validation code.
+
+@item --list-crls
+@opindex list-crls
+List the contents of the CRL cache on @code{stdout}. This is probably
+only useful for debugging purposes.
+
+@item --load-crl @var{file}
+@opindex load-crl
+This command requires a filename as additional argument, and it will
+make Dirmngr try to import the CRL in @var{file} into it's cache.
+Note, that this is only possible if Dirmngr is able to retrieve the
+CA's certificate directly by its own means.  In general it is better
+to use @code{gpgsm}'s @code{--call-dirmngr loadcrl filename} command
+so that @code{gpgsm} can help dirmngr.
+
+@item --fetch-crl @var{url}
+@opindex fetch-crl
+This command requires an URL as additional argument, and it will make
+dirmngr try to retrieve an import the CRL from that @var{url} into
+it's cache.  This is mainly useful for debugging purposes.  The
+@command{dirmngr-client} provides the same feature for a running dirmngr.
+
+@item --shutdown
+@opindex shutdown
+This commands shuts down an running instance of Dirmngr.  This command
+has currently no effect.
+
+@item --flush
+@opindex flush
+This command removes all CRLs from Dirmngr's cache.  Client requests
+will thus trigger reading of fresh CRLs.
+
+@end table
+
+
+@mansect options
+@node Dirmngr Options
+@section Option Summary
+
+@table @gnupgtabopt
+
+@item --options @var{file}
+@opindex options
+Reads configuration from @var{file} instead of from the default
+per-user configuration file.  The default configuration file is named
+@file{dirmngr.conf} and expected in the home directory.
+
+@item --homedir @var{dir}
+@opindex options
+Set the name of the home directory to @var{dir}.  This option is only
+effective when used on the command line.  The default depends on the
+running mode:
+
+@table @asis
+
+@item With @code{--daemon} given on the commandline
+the directory named @file{/etc/gnupg} for configuration files,
+@file{/var/lib/gnupg/} for extra data and @file{/var/cache/gnupg}
+for cached CRLs.
+
+@item Without @code{--daemon} given on the commandline
+the directory named @file{.gnupg} directly below the home directory
+of the user unless the environment variable @code{GNUPGHOME} has been set
+in which case its value will be used.  All kind of data is stored below
+this directory.
+@end table
+
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @sc{dirmngr}, such as @option{-vv}.
+
+
+@item --log-file @var{file}
+@opindex log-file
+Append all logging output to @var{file}.  This is very helpful in
+seeing what the agent actually does.
+
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems.  @var{level} may be a
+numeric value or by a keyword:
+
+@table @code
+@item none
+No debugging at all.  A value of less than 1 may be used instead of
+the keyword.
+@item basic  
+Some basic debug messages.  A value between 1 and 2 may be used
+instead of the keyword.
+@item advanced
+More verbose debug messages.  A value between 3 and 5 may be used
+instead of the keyword.
+@item expert
+Even more detailed messages.  A value between 6 and 8 may be used
+instead of the keyword.
+@item guru
+All of the debug messages you can get. A value greater than 8 may be
+used instead of the keyword.  The creation of hash tracing files is
+only enabled if the keyword is used.
+@end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releases of this program. They are
+however carefully selected to best aid in debugging.
+
+@item --debug @var{flags}
+@opindex debug
+This option is only useful for debugging and the behaviour may change at
+any time without notice.  FLAGS are bit encoded and may be given in
+usual C-Syntax.
+
+@item --debug-all
+@opindex debug-all
+Same as @code{--debug=0xffffffff}
+
+@item --debug-wait @var{n}
+@opindex debug-wait
+When running in server mode, wait @var{n} seconds before entering the
+actual processing loop and print the pid.  This gives time to attach a
+debugger.
+
+@item -s
+@itemx --sh
+@itemx -c
+@itemx --csh
+@opindex s
+@opindex sh
+@opindex c
+@opindex csh
+Format the info output in daemon mode for use with the standard Bourne
+shell respective the C-shell . The default ist to guess it based on the
+environment variable @code{SHELL} which is in almost all cases
+sufficient.
+
+@item --force
+@opindex force
+Enabling this option forces loading of expired CRLs; this is only
+useful for debugging.
+
+@item --disable-ldap
+@opindex disable-ldap
+Entirely disables the use of LDAP.
+
+@item --disable-http
+@opindex disable-http
+Entirely disables the use of HTTP.
+
+@item --ignore-http-dp
+@opindex ignore-http-dp
+When looking for the location of a CRL, the to be tested certificate
+usually contains so called @dfn{CRL Distribution Point} (DP) entries
+which are URLs describing the way to access the CRL.  The first found DP
+entry is used.  With this option all entries using the @acronym{HTTP}
+scheme are ignored when looking for a suitable DP.
+
+@item --ignore-ldap-dp
+@opindex ignore-ldap-dp
+This is similar to @option{--ignore-http-dp} but ignores entries using
+the @acronym{LDAP} scheme.  Both options may be combined resulting in 
+ignoring DPs entirely.
+
+@item --ignore-ocsp-service-url
+@opindex ignore-ocsp-service-url
+Ignore all OCSP URLs contained in the certificate.  The effect is to 
+force the use of the default responder.
+
+@item --honor-http-proxy
+@opindex honor-http-proxy
+If the environment variable @env{http_proxy} has been set, use its
+value to access HTTP servers.
+
+@item --http-proxy @var{host}[:@var{port}]
+@opindex http-proxy
+Use @var{host} and @var{port} to access HTTP servers.  The use of this
+options overrides the environment variable @env{http_proxy} regardless
+whether @option{--honor-http-proxy} has been set.
+
+
+@item --ldap-proxy @var{host}[:@var{port}]
+@opindex ldap-proxy
+Use @var{host} and @var{port} to connect to LDAP servers.  If @var{port}
+is ommitted, port 389 (standard LDAP port) is used.  This overrides any
+specified host and port part in a LDAP URL and will also be used if host
+and port have been ommitted from the URL.
+
+@item --only-ldap-proxy
+@opindex only-ldap-proxy
+Never use anything else but the LDAP "proxy" as configured with
+@option{--ldap-proxy}.  Usually @command{dirmngr} tries to use other
+configured LDAP server if the connection using the "proxy" failed.
+
+
+@item --ldapserverlist-file @var{file}
+@opindex ldapserverlist-file
+Read the list of LDAP servers to consult for CRLs and certificates from
+file instead of the default per-user ldap server list file. The default 
+value for @var{file} is @file{dirmngr_ldapservers.conf} or
+@file{ldapservers.conf} when running in @option{--daemon} mode.
+
+This server list file contains one LDAP server per line in the format
+
+@sc{hostname:port:username:password:base_dn}
+
+Lines starting with a  @samp{#} are comments.
+
+Note that as usual all strings entered are expected to be UTF-8 encoded.
+Obviously this will lead to problems if the password has orginally been
+encoded as Latin-1.  There is no other solution here than to put such a
+password in the binary encoding into the file (i.e. non-ascii characters
+won't show up readable).@footnote{The @command{gpgconf} tool might be
+helpful for frontends as it allows to edit this configuration file using
+percent escaped strings.}
+
+
+@item --ldaptimeout @var{secs}
+@opindex ldaptimeout
+Specify the number of seconds to wait for an LDAP query before timing
+out. The default is currently 100 seconds.  0 will never timeout.
+
+
+@item --add-servers
+@opindex add-servers
+This options makes dirmngr add any servers it discovers when validating
+certificates against CRLs to the internal list of servers to consult for
+certificates and CRLs.
+
+This options is useful when trying to validate a certificate that has
+a CRL distribution point that points to a server that is not already
+listed in the ldapserverlist. Dirmngr will always go to this server and
+try to download the CRL, but chances are high that the certificate used
+to sign the CRL is located on the same server. So if dirmngr doesn't add
+that new server to list, it will often not be able to verify the
+signature of the CRL unless the @code{--add-servers} option is used.
+
+Note: The current version of dirmngr has this option disabled by default.
+
+
+@item --allow-ocsp
+@opindex allow-ocsp
+This option enables OCSP support if requested by the client.  
+
+OCSP requests are rejected by default because they may violate the
+privacy of the user; for example it is possible to track the time when
+a user is reading a mail.
+
+
+@item --ocsp-responder @var{url}
+@opindex ocsp-responder
+Use @var{url} as the default OCSP Responder if the certificate does
+not contain information about an assigned responder.  Note, that
+@code{--ocsp-signer} must also be set to a valid certificate.
+
+@item --ocsp-signer @var{fpr}|@var{file}
+@opindex ocsp-signer
+Use the certificate with the fingerprint @var{fpr} to check the
+responses of the default OCSP Responder.  Alternativly a filename can be
+given in which case the respinse is expected to be signed by one of the
+certificates described in that file.  Any argument which contains a
+slash, dot or tilde is considered a filename.  Usual filename expansion
+takes place: A tilde at the start followed by a slash is replaced by the
+content of @env{HOME}, no slash at start describes a relative filename
+which will be searched at the home directory.  To make sure that the
+@var{file} is searched in the home directory, either prepend the name
+with "./" or use a name which contains a dot.
+
+If a response has been signed by a certificate described by these
+fingerprints no further check upon the validity of this certificate is
+done.
+
+The format of the @var{FILE} is a list of SHA-1 fingerprint, one per
+line with optional colons between the bytes.  Empty lines and lines
+prefix with a hash mark are ignored.
+
+
+@item --ocsp-max-clock-skew @var{n}
+@opindex ocsp-max-clock-skew
+The number of seconds a skew between the OCSP responder and them local
+clock is accepted.  Default is 600 (20 minutes).
+
+@item --ocsp-max-period @var{n}
+@opindex ocsp-max-period
+Seconds a response is at maximum considered valid after the time given
+in the thisUpdate field.  Default is 7776000 (90 days).
+
+@item --ocsp-current-period @var{n}
+@opindex ocsp-current-period
+The number of seconds an OCSP response is considered valid after the
+time given in the NEXT_UPDATE datum.  Default is 10800 (3 hours).
+
+
+@item --max-replies @var{n}
+@opindex max-replies
+Do not return more that @var{n} items in one query.  The default is
+10.
+
+@item --ignore-cert-extension @var{oid}
+@opindex ignore-cert-extension
+Add @var{oid} to the list of ignored certificate extensions.  The
+@var{oid} is expected to be in dotted decimal form, like
+@code{2.5.29.3}.  This option may be used more than once.  Critical
+flagged certificate extensions matching one of the OIDs in the list
+are treated as if they are actually handled and thus the certificate
+won't be rejected due to an unknown critical extension.  Use this
+option with care because extensions are usually flagged as critical
+for a reason.
+
+@end table
+
+
+@c 
+@c Dirmngr Configuration
+@c
+@mansect files
+@node Dirmngr Configuration
+@section Configuration
+
+Dirmngr makes use of several directories when running in daemon mode:
+
+@table @file
+
+@item /etc/gnupg
+This is where all the configuration files are expected by default.
+
+@item /etc/gnupg/trusted-certs
+This directory should be filled with certificates of Root CAs you are
+trusting in checking the CRLS and signing OCSP Reponses.  Usually
+these are the same certificates you use with the applications making
+use of dirmngr.  It is expected that each of these certificate files
+contain exactly one @acronym{DER} encoded certificate in a file with
+the suffix @file{.crt} or @file{.der}.  @command{dirmngr} reads those
+certificates on startup and when given a SIGHUP.  Certificates which
+are not readable or do not make up a proper X.509 certificate are
+ignored; see the log file for details.
+
+Note that for OCSP responses the certificate specified using the option
+@option{--ocsp-signer} is always considered valid to sign OCSP requests.
+
+
+@item /var/lib/gnupg/extra-certs
+This directory may contain extra certificates which are preloaded into
+the interal cache on startup.  This is convenient in cases you have a
+couple intermediate CA certificates or certificates ususally used to
+sign OCSP reponses.  These certificates are first tried before going out
+to the net to look for them.  These certificates must also be
+@acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
+
+@item /var/run/gnupg
+This directory keeps the socket file for accsing @command{dirmngr} services.
+The name of the socket file will be @file{S.dirmngr}.  Make sure that this
+directory has the proper permissions to let @command{dirmngr} create the
+socket file and that eligible users may read and write to that socket.
+
+@item /var/cache/gnupg/crls.d
+This directory is used to store cached CRLs.  The @file{crls.d} part
+will be created by dirmngr if it does not exists but you need to make
+sure that the upper directory exists.
+
+@end table
+@manpause
+
+To be able to see what's going on you should create the configure file
+@file{/etc/dirmngr/dirmngr.conf} with at least one line:
+
+@example
+log-file /var/log/gnupg/dirmngr.log
+@end example
+
+To be able to perform OCSP requests you probably want to add the line:
+
+@example
+allow-ocsp
+@end example
+
+Now you may start dirmngr as a system daemon using:
+
+@example
+dirmngr --daemon
+@end example
+
+Please ignore the output; it is not needed anymore.  Check the log file
+to see whether all trusted root certificates have benn loaded correctly.
+
+
+@c 
+@c Dirmngr Signals
+@c
+@mansect signals
+@node Dirmngr Signals
+@section Use of signals.
+
+A running @command{dirmngr} may be controlled by signals, i.e. using
+the @command{kill} command to send a signal to the process. 
+
+Here is a list of supported signals:
+
+@table @gnupgtabopt
+
+@item SIGHUP
+@cpindex SIGHUP
+This signals flushes all internally cached CRLs as well as any cached
+certificates.  Then the certificate cache is reinitialized as on
+startup.  Options are re-read from the configuration file.
+
+@item SIGTERM
+@cpindex SIGTERM
+Shuts down the process but waits until all current requests are
+fulfilled.  If the process has received 3 of these signals and requests
+are still pending, a shutdown is forced.
+
+@item SIGINT
+@cpindex SIGINT
+Shuts down the process immediately.
+
+
+@item SIGUSR1
+@cpindex SIGUSR1
+This prints some caching statistics to the log file.
+
+@end table
+
+
+
+@c
+@c  Examples
+@c
+@mansect examples
+@node Dirmngr Examples
+@section Examples
+
+
+The way to start the dirmngr in the foreground (as done by tools if no
+dirmngr is running in the background) is to use:
+
+@example
+  dirmngr --server -v
+@end example
+
+If a dirmngr is supposed to be used as a system wide daemon, it should
+be started like:
+
+@example 
+  dirmngr --daemon
+@end example
+
+This will force it to go into the backround, read the default
+certificates (including the trusted root certificates) and listen on a
+socket for client requests.  It does also print information about the
+socket used but they are only for compatibilty reasons with old GnuPG
+versions and may be ignored.
+
+
+@c
+@c  Assuan Protocol
+@c
+@manpause
+@node Dirmngr Protocol
+@section Dirmngr's Assuan Protocol
+
+Assuan is the IPC protocol used to access dirmngr.  This is a
+description of the commands implemented by dirmngr.
+
+@menu
+* Dirmngr LOOKUP::      Look up a certificate via LDAP
+* Dirmngr ISVALID::     Validate a certificate using a CRL or OCSP.
+* Dirmngr CHECKCRL::    Validate a certificate using a CRL.
+* Dirmngr CHECKOCSP::   Validate a certificate using OCSP.
+* Dirmngr CACHECERT::   Put a certificate into the internal cache.
+* Dirmngr VALIDATE::    Validate a certificate for debugging.
+@end menu
+
+@node Dirmngr LOOKUP
+@subsection Return the certificate(s) found
+
+Lookup certificate.  To allow multiple patterns (which are ORed)
+quoting is required: Spaces are to be translated into "+" or into
+"%20"; obviously this requires that the usual escape quoting rules
+are applied.  The server responds with:
+
+@example
+  S: D <DER encoded certificate>
+  S: END
+  S: D <second DER encoded certificate>
+  S: END
+  S: OK
+@end example
+
+In this example 2 certificates are returned.  The server may return
+any number of certificates; OK will also be returned when no
+certificates were found.  The dirmngr might return a status line
+
+@example
+  S: S TRUNCATED <n>
+@end example
+
+
+To indicate that the output was truncated to N items due to a
+limitation of the server or by an arbitrary set limit.
+
+The option @option{--url} may be used if instead of a search pattern a
+complete URL to the certificate is known:
+
+@example
+  C: LOOKUP --url CN%3DWerner%20Koch,o%3DIntevation%20GmbH,c%3DDE?userCertificate
+@end example
+
+If the option @option{--cache-only} is given, no external lookup is done
+so that only certificates from the cache are returned.
+
+With the option @option{--single}, the first and only the first match
+will be returned.  Unless option @option{--cache-only} is also used, no
+local lookup will be done in this case.
+
+
+
+@node Dirmngr ISVALID
+@subsection Validate a certificate using a CRL or OCSP
+
+@example
+  ISVALID [--only-ocsp] [--force-default-responder] @var{certid}|@var{certfpr}
+@end example
+
+Check whether the certificate described by the @var{certid} has been
+revoked.  Due to caching, the Dirmngr is able to answer immediately in
+most cases.  
+
+The @var{certid} is a hex encoded string consisting of two parts,
+delimited by a single dot.  The first part is the SHA-1 hash of the
+issuer name and the second part the serial number.
+
+Alternatively the certificate's SHA-1 fingerprint @var{certfpr} may be
+given in which case an OCSP request is done before consulting the CRL.
+If the option @option{--only-ocsp} is given, no fallback to a CRL check
+will be used.  If the option @option{--force-default-responder} is
+given, only the default OCSP responder will be used and any other
+methods of obtaining an OCSP responder URL won't be used.
+
+@noindent
+Common return values are:
+
+@table @code
+@item GPG_ERR_NO_ERROR (0)
+This is the positive answer: The certificate is not revoked and we have
+an up-to-date revocation list for that certificate.  If OCSP was used
+the responder confirmed that the certificate has not been revoked.
+
+@item GPG_ERR_CERT_REVOKED
+This is the negative answer: The certificate has been revoked.  Either
+it is in a CRL and that list is up to date or an OCSP responder informed
+us that it has been revoked.
+
+@item GPG_ERR_NO_CRL_KNOWN
+No CRL is known for this certificate or the CRL is not valid or out of
+date. 
+
+@item GPG_ERR_NO_DATA
+The OCSP responder returned an ``unknown'' status.  This means that it
+is not aware of the certificate's status.
+
+@item GPG_ERR_NOT_SUPPORTED
+This is commonly seen if OCSP support has not been enabled in the
+configuration.
+@end table
+
+If DirMngr has not enough information about the given certificate (which
+is the case for not yet cached certificates), it will will inquire the
+missing data:
+
+@example
+  S: INQUIRE SENDCERT <CertID>
+  C: D <DER encoded certificate>
+  C: END
+@end example
+
+A client should be aware that DirMngr may ask for more than one
+certificate.
+
+If Dirmngr has a certificate but the signature of the certificate
+could not been validated because the root certificate is not known to
+dirmngr as trusted, it may ask back to see whether the client trusts
+this the root certificate:
+
+@example
+  S: INQUIRE ISTRUSTED <CertHexfpr>
+  C: D 1
+  C: END
+@end example
+
+Only this answer will let Dirmngr consider the CRL as valid.
+
+
+@node Dirmngr CHECKCRL
+@subsection Validate a certificate using a CRL
+
+Check whether the certificate with FINGERPRINT (SHA-1 hash of the
+entire X.509 certificate blob) is valid or not by consulting the CRL
+responsible for this certificate.  If the fingerprint has not been
+given or the certificate is not know, the function inquires the
+certificate using:
+
+@example
+  S: INQUIRE TARGETCERT 
+  C: D <DER encoded certificate>
+  C: END
+@end example
+
+Thus the caller is expected to return the certificate for the request
+(which should match FINGERPRINT) as a binary blob.  Processing then
+takes place without further interaction; in particular dirmngr tries
+to locate other required certificate by its own mechanism which
+includes a local certificate store as well as a list of trusted root
+certificates.
+
+@noindent
+The return code is 0 for success; i.e. the certificate has not been
+revoked or one of the usual error codes from libgpg-error.
+
+@node Dirmngr CHECKOCSP
+@subsection Validate a certificate using OCSP
+
+@example
+  CHECKOCSP [--force-default-responder] [@var{fingerprint}]
+@end example
+
+Check whether the certificate with @var{fingerprint} (the SHA-1 hash of
+the entire X.509 certificate blob) is valid by consulting the appropiate
+OCSP responder.  If the fingerprint has not been given or the
+certificate is not known by Dirmngr, the function inquires the
+certificate using:
+
+@example
+  S: INQUIRE TARGETCERT 
+  C: D <DER encoded certificate>
+  C: END
+@end example
+
+Thus the caller is expected to return the certificate for the request
+(which should match @var{fingerprint}) as a binary blob.  Processing
+then takes place without further interaction; in particular dirmngr
+tries to locate other required certificates by its own mechanism which
+includes a local certificate store as well as a list of trusted root
+certificates.
+
+If the option @option{--force-default-responder} is given, only the
+default OCSP responder is used.  This option is the per-command variant
+of the global option @option{--ignore-ocsp-service-url}.
+
+
+@noindent
+The return code is 0 for success; i.e. the certificate has not been
+revoked or one of the usual error codes from libgpg-error.
+
+@node Dirmngr CACHECERT
+@subsection Put a certificate into the internal cache
+
+Put a certificate into the internal cache.  This command might be
+useful if a client knows in advance certificates required for a test and
+wnats to make sure they get added to the internal cache.  It is also
+helpful for debugging.  To get the actual certificate, this command
+immediately inquires it using
+
+@example
+  S: INQUIRE TARGETCERT 
+  C: D <DER encoded certificate>
+  C: END
+@end example
+
+Thus the caller is expected to return the certificate for the request
+as a binary blob. 
+
+@noindent
+The return code is 0 for success; i.e. the certificate has not been
+succesfully cached or one of the usual error codes from libgpg-error.
+
+@node Dirmngr VALIDATE
+@subsection Validate a certificate for debugging
+
+Validate a certificate using the certificate validation function used
+internally by dirmngr.  This command is only useful for debugging.  To
+get the actual certificate, this command immediately inquires it using
+
+@example
+  S: INQUIRE TARGETCERT 
+  C: D <DER encoded certificate>
+  C: END
+@end example
+
+Thus the caller is expected to return the certificate for the request
+as a binary blob. 
+
+
+@mansect see also
+@ifset isman
+@command{gpgsm}(1), 
+@command{dirmngr-client}(1)
+@end ifset
+@include see-also-note.texi
+

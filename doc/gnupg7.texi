@@ -23,6 +23,7 @@ daemon which may also emulate the @command{ssh-agent}.
 @command{gpgv}(1), 
 @command{gpgsm}(1), 
 @command{gpg-agent}(1), 
+@command{dirmngr}(8), 
 @command{scdaemon}(1)
 @include see-also-note.texi
 @end ifset

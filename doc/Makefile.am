@@ -52,7 +52,7 @@ dist_html_DATA = faq.html
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
-	sysnotes.texi gnupg-card-architecture.fig \
+	sysnotes.texi gnupg-card-architecture.fig dirmngr.texi \
 	howtos.texi howto-create-a-server-cert.texi
 
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
@@ -63,14 +63,14 @@ YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
-                scdaemon.texi tools.texi
-myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 gpgv2.1 \
+	        dirmngr.texi scdaemon.texi tools.texi
+myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 gpgv2.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
-		gpgsm-gencert.sh.1 applygnupgdefaults.8 gpg-zip.1
+		gpgsm-gencert.sh.1 applygnupgdefaults.8 gpg-zip.1 \
+		dirmngr-client.1
 
-man_MANS = $(myman_pages)
-noinst_MANS = gnupg.7
+man_MANS = $(myman_pages) gnupg.7
 
 watchgnupg_SOURCE = gnupg.texi
 

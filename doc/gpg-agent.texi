@@ -136,18 +136,18 @@ only one command is allowed.
 @table @gnupgtabopt
 @item --version
 @opindex version
-Print the program version and licensing information.  Not that you can
+Print the program version and licensing information.  Note that you cannot
 abbreviate this command.
 
 @item --help
 @itemx -h
 @opindex help
 Print a usage message summarizing the most useful command-line options.
-Not that you can abbreviate this command.
+Note that you cannot abbreviate this command.
 
 @item --dump-options
 @opindex dump-options
-Print a list of all available options and commands.  Not that you can
+Print a list of all available options and commands.  Note that you cannot
 abbreviate this command.
 
 @item --server

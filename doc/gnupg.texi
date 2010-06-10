@@ -50,6 +50,9 @@ section entitled ``Copying''.
 @direntry
 * gpg2: (gnupg).           OpenPGP encryption and signing tool.
 * gpgsm: (gnupg).          S/MIME encryption and signing tool.
+* gpg-agent: (gnupg).      The secret key daemon.
+* dirmngr: (gnupg).        X.509 CRL and OCSP server.
+* dirmngr-client: (gnupg). X.509 CRL and OCSP client.
 @end direntry
 
 
@@ -121,6 +124,7 @@ the administration and the architecture.
 * Installation::        A short installation guide.
 
 * Invoking GPG-AGENT::  How to launch the secret key daemon.
+* Invoking DIRMNGR::    How to launch the CRL and OCSP daemon.
 * Invoking GPG::        Using the OpenPGP protocol.
 * Invoking GPGSM::      Using the S/MIME protocol.
 * Invoking SCDAEMON::   How to handle Smartcards.
@@ -152,6 +156,7 @@ the administration and the architecture.
 @include instguide.texi
 
 @include gpg-agent.texi
+@include dirmngr.texi
 @include gpg.texi
 @include gpgsm.texi
 @include scdaemon.texi
@@ -193,6 +198,18 @@ the administration and the architecture.
 @c ---------------------------------------------------------------------
 @c Epilogue
 @c ---------------------------------------------------------------------
+
+@c @node History
+@c @unnumbered History
+@c 
+@c Here are the notices from the old dirmngr manual: 
+@c
+@c @itemize
+@c @item Using DirMngr, 2002, Steffen Hansen, Klar"alvdalens Datakonsult AB.
+@c @item Using DirMngr, 2004, 2005, 2006, 2008 Werner Koch, g10 Code GmbH.
+@c @end itemize
+@c 
+
 
 @bye
 

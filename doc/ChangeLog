@@ -1,3 +1,16 @@
+2010-06-10  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gnupg_TEXINFOS): Add dirmngr.texi.
+	(myman_sources): Ditto.
+	(myman_pages): Add dirmngr and dirmngr-client pages.
+	(noinst_MANS): Move gnupg.7 to man_MANS.
+
+	* gnupg.texi: Include dirmngr.texi and add a menu entry.
+	* dirmngr.texi: New.  Taken from the current SVN of the dirmngr
+	package and adjusted to fit into the GnuPG manual.  Moved
+	dirmngr-cleint stuff to ...
+	* tools.texi (dirmngr-client): ... new.
+
 2009-11-18  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (GPG Key related Options): Describe

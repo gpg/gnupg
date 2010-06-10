@@ -6,7 +6,6 @@
 @node Installation
 @chapter A short installation guide.
 
-
 Unfortunately the installation guide has not been finished in time.
 Instead of delaying the release of GnuPG 2.0 even further, I decided to
 release without that guide.  The chapter on gpg-agent and gpgsm do
@@ -15,6 +14,31 @@ watch the GnuPG website for updates of the documentation.  In the
 meantime you may search the GnuPG mailing list archives or ask on the
 gnupg-users mailing listsfor advise on how to solve problems or how to
 get that whole thing up and running. 
+
+** Building the software
+
+Building the software is decribed in the file @file{INSTALL}.  Given
+that you are already reading this documentation we can only give some
+extra hints
+
+To comply with the rules on GNU systems you should have build time
+configured @command{dirmngr} using:
+
+@example
+./configure --sysconfdir=/etc --localstatedir=/var
+@end example
+
+This is to make sure that system wide configuration files are searched
+in the directory @file{/etc/gnupg} and variable data below @file{/var};
+the default would be to also install them below @file{/usr/local} where
+the binaries get installed.  If you selected to use the
+@option{--prefix=/} you obviously don't need those option as they are
+the default then.
+
+
+
+** Explain how to setup a root CA key as trusted
+
 
 Such questions may also help to write a proper installation guide.
 
