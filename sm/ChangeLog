@@ -1,3 +1,8 @@
+2010-06-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (SERVER_STDIN, SERVER_STDOUT): New macros.
+	(gpgsm_server): Use them with assuan_fdopen.
+
 2010-04-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* certreqgen.c (read_parameters): Use ascii_isspace instead of

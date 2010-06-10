@@ -2452,7 +2452,7 @@ _es_get_std_stream (int fd)
       else if (fd == 1 && custom_std_fds_valid[1])
         stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
       else if (custom_std_fds_valid[2])
-        stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
+        stream = do_fdopen (custom_std_fds[2], "a", 1, 1);
       
       if (!stream)
         {
