@@ -1,3 +1,7 @@
+2010-06-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* server.c (cmd_message) [HAVE_W32CE_SYSTEM]: Finish pipe.
+
 2010-06-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (SERVER_STDIN, SERVER_STDOUT): New macros.

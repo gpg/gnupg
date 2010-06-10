@@ -163,6 +163,7 @@ close_message_fd (ctrl_t ctrl)
 {
   if (ctrl->server_local->message_fd != -1)
     {
+#warning Is this correct for W32/W32CE?
       close (ctrl->server_local->message_fd);
       ctrl->server_local->message_fd = -1;
     }
@@ -839,6 +840,14 @@ cmd_message (assuan_context_t ctx, char *line)
   rc = assuan_command_parse_fd (ctx, line, &sysfd);
   if (rc)
     return rc;
+
+#ifdef HAVE_W32CE_SYSTEM
+  sysfd = _assuan_w32ce_finish_pipe ((int)sysfd, 0);
+  if (sysfd == INVALID_HANDLE_VALUE)
+    return set_error (gpg_err_code_from_syserror (),
+		      "rvid conversion failed");
+#endif
+
   fd = translate_sys2libc_fd (sysfd, 0);
   if (fd == -1)
     return set_error (GPG_ERR_ASS_NO_INPUT, NULL);
