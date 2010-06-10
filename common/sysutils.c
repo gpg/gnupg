@@ -280,8 +280,7 @@ int
 translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 {
 #if defined(HAVE_W32CE_SYSTEM)
-  (void)for_write;
-  return (int)fd;
+  return (int) _assuan_w32ce_finish_pipe ((int)fd, for_write);
 #elif defined(HAVE_W32_SYSTEM)
   int x;
 
@@ -308,8 +307,7 @@ int
 translate_sys2libc_fd_int (int fd, int for_write)
 {
 #if HAVE_W32CE_SYSTEM
-  fd = (int) _assuan_w32ce_finish_pipe (fd, for_write);
-  return translate_sys2libc_fd ((void*)fd, for_write);
+  return (int) _assuan_w32ce_finish_pipe (fd, for_write);
 #elif HAVE_W32_SYSTEM
   if (fd <= 2)
     return fd;	/* Do not do this for error, stdin, stdout, stderr. */
