@@ -43,7 +43,6 @@
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
-#include "minip12.h"
 #include "simple-pwquery.h"
 #include "i18n.h"
 #include "sysutils.h"

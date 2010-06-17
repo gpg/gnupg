@@ -36,7 +36,7 @@
 #include "sexp-parse.h"
 
 
-/* Helper function to create a a canonical encoded S-expression from a
+/* Helper function to create a canonical encoded S-expression from a
    Libgcrypt S-expression object.  The function returns 0 on success
    and the malloced canonical S-expression is stored at R_BUFFER and
    the allocated length at R_BUFLEN.  On error an error code is
@@ -70,6 +70,36 @@ make_canon_sexp (gcry_sexp_t sexp, unsigned char **r_buffer, size_t *r_buflen)
   return 0;
 }
 
+
+/* Same as make_canon_sexp but pad the buffer to multiple of 64
+   bits.  */
+gpg_error_t
+make_canon_sexp_pad (gcry_sexp_t sexp,
+                     unsigned char **r_buffer, size_t *r_buflen)
+{
+  size_t len;
+  unsigned char *buf;
+
+  *r_buffer = NULL;
+  if (r_buflen)
+    *r_buflen = 0;;
+  
+  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
+  if (!len)
+    return gpg_error (GPG_ERR_BUG);
+  len += (8 - len % 8) % 8;
+  buf = xtrycalloc (1, len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  if (!gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, buf, len))
+    return gpg_error (GPG_ERR_BUG);
+
+  *r_buffer = buf;
+  if (r_buflen)
+    *r_buflen = len;
+
+  return 0;
+}
 
 /* Return the so called "keygrip" which is the SHA-1 hash of the
    public key parameters expressed in a way depended on the algorithm.

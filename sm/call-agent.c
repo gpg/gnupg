@@ -1,6 +1,6 @@
 /* call-agent.c - Divert GPGSM operations to the agent
  * Copyright (C) 2001, 2002, 2003, 2005, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -64,6 +64,14 @@ struct learn_parm_s
   ctrl_t ctrl;
   assuan_context_t ctx;
   membuf_t *data;
+};
+
+struct import_key_parm_s
+{
+  ctrl_t ctrl;
+  assuan_context_t ctx;
+  const void *key;
+  size_t keylen;
 };
 
 
@@ -1066,3 +1074,130 @@ gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   return err;
 }
 
+
+
+/* Ask for the passphrase (this is used for pkcs#12 import/export.  On
+   success the caller needs to free the string stored at R_PASSPHRASE.
+   On error NULL will be stored at R_PASSPHRASE and an appropriate
+   error code returned. */
+gpg_error_t
+gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg,
+                            char **r_passphrase)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char *arg4 = NULL;
+  membuf_t data;
+
+  *r_passphrase = NULL;
+
+  err = start_agent (ctrl);
+  if (err)
+    return err;
+
+  if (desc_msg && *desc_msg && !(arg4 = percent_plus_escape (desc_msg)))
+    return gpg_error_from_syserror ();
+  
+  snprintf (line, DIM(line)-1, "GET_PASSPHRASE --data -- X X X %s", arg4);
+  xfree (arg4);
+
+  init_membuf_secure (&data, 64);
+  err = assuan_transact (agent_ctx, line, 
+                         membuf_data_cb, &data,
+                         default_inq_cb, NULL, NULL, NULL);
+
+  if (err)
+    xfree (get_membuf (&data, NULL));
+  else 
+    {
+      put_membuf (&data, "", 1);
+      *r_passphrase = get_membuf (&data, NULL);
+      if (!*r_passphrase)
+        err = gpg_error_from_syserror ();
+    }
+  return err;
+}
+
+
+
+/* Retrieve a key encryption key from the agent.  With FOREXPORT true
+   the key shall be use for export, with false for import.  On success
+   the new key is stored at R_KEY and its length at R_KEKLEN.  */
+gpg_error_t
+gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
+                         void **r_kek, size_t *r_keklen)
+{
+  gpg_error_t err;
+  membuf_t data;
+  size_t len;
+  unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
+
+  *r_kek = NULL;
+  err = start_agent (ctrl);
+  if (err)
+    return err;
+
+  snprintf (line, DIM(line)-1, "KEYWRAP_KEY %s",
+            forexport? "--export":"--import");
+
+  init_membuf_secure (&data, 64);
+  err = assuan_transact (agent_ctx, line,
+                         membuf_data_cb, &data, 
+                         default_inq_cb, ctrl, NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  *r_kek = buf;
+  *r_keklen = len;
+  return 0;
+}
+
+
+
+
+/* Handle the inquiry for an IMPORT_KEY command.  */
+static gpg_error_t
+inq_import_key_parms (void *opaque, const char *line)
+{
+  struct import_key_parm_s *parm = opaque; 
+  gpg_error_t err;
+
+  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+    {
+      assuan_begin_confidential (parm->ctx);
+      err = assuan_send_data (parm->ctx, parm->key, parm->keylen);
+      assuan_end_confidential (parm->ctx);
+    }
+  else
+    err = default_inq_cb (parm->ctrl, line);
+
+  return err; 
+}
+
+
+/* Call the agent to import a key into the agent.  */
+gpg_error_t
+gpgsm_agent_import_key (ctrl_t ctrl, const void *key, size_t keylen)
+{
+  gpg_error_t err;
+  struct import_key_parm_s parm;
+
+  err = start_agent (ctrl);
+  if (err)
+    return err;
+
+  parm.ctrl   = ctrl;
+  parm.ctx    = agent_ctx;
+  parm.key    = key;
+  parm.keylen = keylen;
+
+  err = assuan_transact (agent_ctx, "IMPORT_KEY",
+                         NULL, NULL, inq_import_key_parms, &parm, NULL, NULL);
+  return err;
+}

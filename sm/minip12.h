@@ -25,7 +25,7 @@
 gcry_mpi_t *p12_parse (const unsigned char *buffer, size_t length,
                        const char *pw,
                        void (*certcb)(void*, const unsigned char*, size_t),
-                       void *certcbarg);
+                       void *certcbarg, int *r_badpass);
 
 unsigned char *p12_build (gcry_mpi_t *kparms,
                           unsigned char *cert, size_t certlen,

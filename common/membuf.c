@@ -59,7 +59,7 @@ init_membuf_secure (membuf_t *mb, int initiallen)
 void
 put_membuf (membuf_t *mb, const void *buf, size_t len)
 {
-  if (mb->out_of_core)
+  if (mb->out_of_core || !len)
     return;
 
   if (mb->len + len >= mb->size)

@@ -1,3 +1,29 @@
+2010-06-15  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_keywrap_key, cmd_import_key): New.
+
+	* genkey.c (agent_genkey, agent_protect_and_store): Factor common
+	code out to...
+	(agent_ask_new_passphrase): .. new.
+
+	* findkey.c (agent_write_private_key): Return GPG_ERR_EEXIST
+	instead of GPG_ERR_GENERAL.
+
+2010-06-14  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c: Remove commands --p12-import and --p12-export.
+	* minip12.c, minip12.h: Move to ../sm.
+	* Makefile.am (gpg_protect_tool_SOURCES): Remove them.
+	* preset-passphrase.c: Remove unneeded minip12.h.
+
+	* command.c (cmd_keywrap_key): New.
+
+	* command.c (leave_cmd): New.
+	(cmd_istrusted, cmd_listtrusted, cmd_marktrusted, cmd_pksign)
+	(cmd_pkdecrypt, cmd_genkey, cmd_readkey, cmd_keyinfo)
+	(cmd_get_passphrase, cmd_get_confirmation, cmd_learn)
+	(cmd_passwd, cmd_preset_passphrase, cmd_getval, cmd_putval): Use it.
+
 2010-05-12  Werner Koch  <wk@g10code.com>
 
 	* preset-passphrase.c (forget_passphrase): Actually implement

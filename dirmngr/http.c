@@ -38,6 +38,8 @@
     an exit handler to cleanup the socket layer.
 */
 
+#warning Duplicated code with common/http.c 
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

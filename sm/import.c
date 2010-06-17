@@ -35,6 +35,11 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
+#include "../common/membuf.h"
+#include "minip12.h"
+
+/* The arbitrary limit of one PKCS#12 object.  */
+#define MAX_P12OBJ_SIZE 128 /*kb*/
 
 
 struct stats_s {
@@ -48,8 +53,19 @@ struct stats_s {
  };
 
 
+struct rsa_secret_key_s 
+{
+  gcry_mpi_t n;	    /* public modulus */
+  gcry_mpi_t e;	    /* public exponent */
+  gcry_mpi_t d;	    /* exponent */
+  gcry_mpi_t p;	    /* prime  p. */
+  gcry_mpi_t q;	    /* prime  q. */
+  gcry_mpi_t u;	    /* inverse of p mod q. */
+};
+
+
 static gpg_error_t parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
-                              estream_t *retfp, struct stats_s *stats);
+                              struct stats_s *stats);
 
 
 
@@ -325,51 +341,11 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
             any = 1;
         }
       else if (ct == KSBA_CT_PKCS12)
-        { /* This seems to be a pkcs12 message.  We use an external
-             tool to parse the message and to store the private keys.
-             We need to use a another reader here to parse the
-             certificate we included in the p12 file; then we continue
-             to look for other pkcs12 files (works only if they are in
-             PEM format. */
-          estream_t certfp;
-          Base64Context b64p12rdr;
-          ksba_reader_t p12rdr;
-          
-          rc = parse_p12 (ctrl, reader, &certfp, stats);
+        { 
+          /* This seems to be a pkcs12 message. */
+          rc = parse_p12 (ctrl, reader, stats);
           if (!rc)
-            {
-              any = 1;
-              
-              es_rewind (certfp);
-              rc = gpgsm_create_reader (&b64p12rdr, ctrl, certfp, 1, &p12rdr);
-              if (rc)
-                {
-                  log_error ("can't create reader: %s\n", gpg_strerror (rc));
-                  es_fclose (certfp);
-                  goto leave;
-                }
-
-              do
-                {
-                  ksba_cert_release (cert); cert = NULL;
-                  rc = ksba_cert_new (&cert);
-                  if (!rc)
-                    {
-                      rc = ksba_cert_read_der (cert, p12rdr);
-                      if (!rc)
-                        check_and_store (ctrl, stats, cert, 0);
-                    }
-                  ksba_reader_clear (p12rdr, NULL, NULL);
-                }
-              while (!rc && !gpgsm_reader_eof_seen (b64p12rdr));
-
-              if (gpg_err_code (rc) == GPG_ERR_EOF)
-                rc = 0;
-              gpgsm_destroy_reader (b64p12rdr);
-              es_fclose (certfp);
-              if (rc)
-                goto leave;
-            }
+            any = 1;
         }
       else if (ct == KSBA_CT_NONE)
         { /* Failed to identify this message - assume a certificate */
@@ -578,213 +554,363 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
 }
 
 
-/* Fork and exec the protect tool, connect the file descriptor of
-   INFILE to stdin, return a new estream in STATUSFILE, write the
-   output to OUTFILE and the pid of the process in PID.  Returns 0 on
-   success or an error code. */
+/* Check that the RSA secret key SKEY is valid.  Swap parameters to
+   the libgcrypt standard.  */
 static gpg_error_t
-popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    estream_t infile, estream_t outfile, 
-                    estream_t *statusfile, pid_t *pid)
+rsa_key_check (struct rsa_secret_key_s *skey)
 {
-  const char *argv[22];
-  int i=0;
+  int err = 0;
+  gcry_mpi_t t = gcry_mpi_snew (0);
+  gcry_mpi_t t1 = gcry_mpi_snew (0);
+  gcry_mpi_t t2 = gcry_mpi_snew (0);
+  gcry_mpi_t phi = gcry_mpi_snew (0);
 
-  /* Make sure that the agent is running so that the protect tool is
-     able to ask for a passphrase.  This has only an effect under W32
-     where the agent is started on demand; sending a NOP does not harm
-     on other platforms.  This is not really necessary anymore because
-     the protect tool does this now by itself; it does not harm either. */
-  gpgsm_agent_send_nop (ctrl);
-
-  argv[i++] = "--homedir";
-  argv[i++] = opt.homedir;
-  argv[i++] = "--p12-import";
-  argv[i++] = "--store";
-  argv[i++] = "--no-fail-on-exist";
-  argv[i++] = "--enable-status-msg";
-  if (opt.fixed_passphrase)
+  /* Check that n == p * q.  */
+  gcry_mpi_mul (t, skey->p, skey->q);
+  if (gcry_mpi_cmp( t, skey->n) )
     {
-      argv[i++] = "--passphrase";
-      argv[i++] = opt.fixed_passphrase;
+      log_error ("RSA oops: n != p * q\n");
+      err++;
     }
-  if (opt.agent_program)
-    {
-      argv[i++] = "--agent-program";
-      argv[i++] = opt.agent_program;
-    }
-  argv[i++] = "--",
-  argv[i] = NULL;
-  assert (i < sizeof argv);
 
-  return gnupg_spawn_process (pgmname, argv, infile, outfile,
-                              setup_pinentry_env, (128 | 64),
-                              statusfile, pid);
+  /* Check that p is less than q.  */
+  if (gcry_mpi_cmp (skey->p, skey->q) > 0)
+    {
+      gcry_mpi_t tmp;
+
+      log_info ("swapping secret primes\n");
+      tmp = gcry_mpi_copy (skey->p);
+      gcry_mpi_set (skey->p, skey->q);
+      gcry_mpi_set (skey->q, tmp);
+      gcry_mpi_release (tmp);
+      /* Recompute u.  */
+      gcry_mpi_invm (skey->u, skey->p, skey->q);
+    }
+
+  /* Check that e divides neither p-1 nor q-1.  */
+  gcry_mpi_sub_ui (t, skey->p, 1 );
+  gcry_mpi_div (NULL, t, t, skey->e, 0);
+  if (!gcry_mpi_cmp_ui( t, 0) )
+    {
+      log_error ("RSA oops: e divides p-1\n");
+      err++;
+    }
+  gcry_mpi_sub_ui (t, skey->q, 1);
+  gcry_mpi_div (NULL, t, t, skey->e, 0);
+  if (!gcry_mpi_cmp_ui( t, 0))
+    {
+      log_info ("RSA oops: e divides q-1\n" );
+      err++;
+    }
+
+  /* Check that d is correct.  */
+  gcry_mpi_sub_ui (t1, skey->p, 1);
+  gcry_mpi_sub_ui (t2, skey->q, 1);
+  gcry_mpi_mul (phi, t1, t2);
+  gcry_mpi_invm (t, skey->e, phi);
+  if (gcry_mpi_cmp (t, skey->d))
+    { 
+      /* No: try universal exponent. */
+      gcry_mpi_gcd (t, t1, t2);
+      gcry_mpi_div (t, NULL, phi, t, 0);
+      gcry_mpi_invm (t, skey->e, t);
+      if (gcry_mpi_cmp (t, skey->d))
+        {
+          log_error ("RSA oops: bad secret exponent\n");
+          err++;
+        }
+    }
+
+  /* Check for correctness of u.  */
+  gcry_mpi_invm (t, skey->p, skey->q);
+  if (gcry_mpi_cmp (t, skey->u))
+    {
+      log_info ("RSA oops: bad u parameter\n");
+      err++;
+    }
+
+  if (err)
+    log_info ("RSA secret key check failed\n");
+
+  gcry_mpi_release (t);
+  gcry_mpi_release (t1);
+  gcry_mpi_release (t2);
+  gcry_mpi_release (phi);
+
+  return err? gpg_error (GPG_ERR_BAD_SECKEY):0;
+}
+
+
+/* Object passed to store_cert_cb.  */
+struct store_cert_parm_s
+{
+  gpg_error_t err;        /* First error seen.  */
+  struct stats_s *stats;  /* The stats object.  */
+  ctrl_t ctrl;            /* The control object.  */
+};
+
+/* Helper to store the DER encoded certificate CERTDATA of length
+   CERTDATALEN.  */ 
+static void
+store_cert_cb (void *opaque,
+               const unsigned char *certdata, size_t certdatalen)
+{
+  struct store_cert_parm_s *parm = opaque;
+  gpg_error_t err;
+  ksba_cert_t cert;
+
+  err = ksba_cert_new (&cert);
+  if (err)
+    {
+      if (!parm->err)
+        parm->err = err;
+      return;
+    }
+
+  err = ksba_cert_init_from_mem (cert, certdata, certdatalen);
+  if (err)
+    {
+      log_error ("failed to parse a certificate: %s\n", gpg_strerror (err));
+      if (!parm->err)
+        parm->err = err;
+    }
+  else
+    check_and_store (parm->ctrl, parm->stats, cert, 0);
+  ksba_cert_release (cert);
 }
 
 
 /* Assume that the reader is at a pkcs#12 message and try to import
-   certificates from that stupid format.  We will also store secret
-   keys.  All of the pkcs#12 parsing and key storing is handled by the
-   gpg-protect-tool, we merely have to take care of receiving the
-   certificates.  On success RETFP returns a stream to a temporary
-   file with certificates.  */
+   certificates from that stupid format.  We will transfer secret
+   keys to the agent.  */
 static gpg_error_t
-parse_p12 (ctrl_t ctrl, ksba_reader_t reader,
-           estream_t *retfp, struct stats_s *stats)
+parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 {
-  const char *pgmname;
-  gpg_error_t err = 0, child_err = 0;
-  int c, cont_line;
-  unsigned int pos;
-  estream_t tmpfp;
-  estream_t fp = NULL;
-  estream_t certfp = NULL;
+  gpg_error_t err = 0;
   char buffer[1024];
-  size_t nread;
-  pid_t pid = -1;
+  size_t ntotal, nread;
+  membuf_t p12mbuf;
+  char *p12buffer = NULL;
+  size_t p12buflen;
+  size_t p12bufoff;
+  gcry_mpi_t *kparms = NULL;
+  struct rsa_secret_key_s sk;
+  char *passphrase = NULL;
+  unsigned char *key = NULL;
+  size_t keylen;
+  void *kek = NULL;
+  size_t keklen;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  gcry_cipher_hd_t cipherhd = NULL;
+  gcry_sexp_t s_key = NULL;
+  unsigned char grip[20];
   int bad_pass = 0;
+  int i;
+  struct store_cert_parm_s store_cert_parm;
 
-  if (!opt.protect_tool_program || !*opt.protect_tool_program)
-    pgmname = gnupg_module_name (GNUPG_MODULE_NAME_PROTECT_TOOL);
-  else
-    pgmname = opt.protect_tool_program;
+  memset (&store_cert_parm, 0, sizeof store_cert_parm);
+  store_cert_parm.ctrl = ctrl;
+  store_cert_parm.stats = stats;
 
-  *retfp = NULL;
-
-  /* To avoid an extra feeder process or doing selects and because
-     gpg-protect-tool will anyway parse the entire pkcs#12 message in
-     memory, we simply use tempfiles here and pass them to
-     the gpg-protect-tool. */
-  tmpfp = es_tmpfile ();
-  if (!tmpfp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), strerror (errno));
-      goto cleanup;
-    }
+  init_membuf (&p12mbuf, 4096);
+  ntotal = 0;
   while (!(err = ksba_reader_read (reader, buffer, sizeof buffer, &nread)))
     {
-      if (nread && es_fwrite (buffer, nread, 1, tmpfp) != 1)
+      if (ntotal >= MAX_P12OBJ_SIZE*1024)
         {
-          err = gpg_error_from_syserror ();
-          log_error (_("error writing to temporary file: %s\n"),
-                     strerror (errno));
-          goto cleanup;
+          /* Arbitrary limit to avoid DoS attacks. */
+          err = gpg_error (GPG_ERR_TOO_LARGE);
+          log_error ("pkcs#12 object is larger than %dk\n", MAX_P12OBJ_SIZE);
+          break;
         }
+      put_membuf (&p12mbuf, buffer, nread);
+      ntotal += nread;
     }
   if (gpg_err_code (err) == GPG_ERR_EOF)
     err = 0;
+  if (!err)
+    {
+      p12buffer = get_membuf (&p12mbuf, &p12buflen);
+      if (!p12buffer)
+        err = gpg_error_from_syserror ();
+    }
   if (err)
     {
       log_error (_("error reading input: %s\n"), gpg_strerror (err));
-      goto cleanup;
+      goto leave;
     }
 
-  certfp = es_tmpfile ();
-  if (!certfp)
+  /* GnuPG 2.0.4 accidently created binary P12 files with the string
+     "The passphrase is %s encoded.\n\n" prepended to the ASN.1 data.
+     We fix that here.  */
+  if (p12buflen > 29 && !memcmp (p12buffer, "The passphrase is ", 18))
     {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), strerror (errno));
-      goto cleanup;
-    }
-
-  err = popen_protect_tool (ctrl, pgmname, tmpfp, certfp, &fp, &pid);
-  if (err)
-    {
-      pid = -1;
-      goto cleanup;
-    }
-  es_fclose (tmpfp);
-  tmpfp = NULL;
-
-  /* Read stderr of the protect tool. */
-  pos = 0;
-  cont_line = 0;
-  while ((c=es_getc (fp)) != EOF)
-    {
-      /* fixme: We could here grep for status information of the
-         protect tool to figure out better error codes for
-         CHILD_ERR. */
-      buffer[pos++] = c;
-      if (pos >= sizeof buffer - 5 || c == '\n')
-        {
-          buffer[pos - (c == '\n')] = 0;
-          if (cont_line)
-            log_printf ("%s", buffer);
-          else
-            {
-              if (!strncmp (buffer, "gpg-protect-tool: [PROTECT-TOOL:] ",34))
-                {
-                  char *p, *pend;
-
-                  p = buffer + 34;
-                  pend = strchr (p, ' ');
-                  if (pend)
-                    *pend = 0;
-                  if ( !strcmp (p, "secretkey-stored"))
-                    {
-                      stats->count++;
-                      stats->secret_read++;
-                      stats->secret_imported++;
-                    }
-                  else if ( !strcmp (p, "secretkey-exists"))
-                    {
-                      stats->count++;
-                      stats->secret_read++;
-                      stats->secret_dups++;
-                    }
-                  else if ( !strcmp (p, "bad-passphrase"))
-                    {
-
-                    }
-                }
-              else 
-                {
-                  log_info ("%s", buffer);
-                  if (!strncmp (buffer, "gpg-protect-tool: "
-                                "possibly bad passphrase given",46))
-                    bad_pass++;
-                }
-            }
-          pos = 0;
-          cont_line = (c != '\n');
-        }
-    }
-
-  if (pos)
-    {
-      buffer[pos] = 0;
-      if (cont_line)
-        log_printf ("%s\n", buffer);
-      else
-        log_info ("%s\n", buffer);
-    }
-
-
-  /* If we found no error in the output of the child, setup a suitable
-     error code, which will later be reset if the exit status of the
-     child is 0. */
-  if (!child_err)
-    child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
-
- cleanup:
-  es_fclose (tmpfp);
-  es_fclose (fp);
-  if (pid != -1)
-    {
-      if (!gnupg_wait_process (pgmname, pid, 0, NULL))
-        child_err = 0;
-      gnupg_release_process (pid);
-    }
-  if (!err)
-    err = child_err;
-  if (err)
-    {
-      es_fclose (certfp);
+      for (p12bufoff=18;
+           p12bufoff < p12buflen && p12buffer[p12bufoff] != '\n';
+           p12bufoff++)
+        ;
+      p12bufoff++;
+      if (p12bufoff < p12buflen && p12buffer[p12bufoff] == '\n')
+        p12bufoff++;
     }
   else
-    *retfp = certfp;
+    p12bufoff = 0;
+
+
+  err = gpgsm_agent_ask_passphrase
+    (ctrl, _("Please enter the passphrase to unprotect the PKCS#12 object."),
+     &passphrase);
+  if (err)
+    goto leave;
+
+  kparms = p12_parse (p12buffer + p12bufoff, p12buflen - p12bufoff,
+                      passphrase, store_cert_cb, &store_cert_parm, &bad_pass);
+
+  xfree (passphrase);
+  passphrase = NULL;
+
+  if (!kparms)
+    {
+      log_error ("error parsing or decrypting the PKCS#12 file\n");
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
+
+/*    print_mpi ("   n", kparms[0]); */
+/*    print_mpi ("   e", kparms[1]); */
+/*    print_mpi ("   d", kparms[2]); */
+/*    print_mpi ("   p", kparms[3]); */
+/*    print_mpi ("   q", kparms[4]); */
+/*    print_mpi ("dmp1", kparms[5]); */
+/*    print_mpi ("dmq1", kparms[6]); */
+/*    print_mpi ("   u", kparms[7]); */
+
+  sk.n = kparms[0];
+  sk.e = kparms[1];
+  sk.d = kparms[2];
+  sk.q = kparms[3];
+  sk.p = kparms[4];
+  sk.u = kparms[7];
+  err = rsa_key_check (&sk);
+  if (err)
+    goto leave;
+/*    print_mpi ("   n", sk.n); */
+/*    print_mpi ("   e", sk.e); */
+/*    print_mpi ("   d", sk.d); */
+/*    print_mpi ("   p", sk.p); */
+/*    print_mpi ("   q", sk.q); */
+/*    print_mpi ("   u", sk.u); */
+  
+  /* Create an S-expresion from the parameters. */
+  err = gcry_sexp_build (&s_key, NULL,
+                         "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+                         sk.n, sk.e, sk.d, sk.p, sk.q, sk.u, NULL);
+  for (i=0; i < 8; i++)
+    gcry_mpi_release (kparms[i]);
+  gcry_free (kparms);
+  kparms = NULL;
+  if (err)
+    {
+      log_error ("failed to created S-expression from key: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Compute the keygrip. */
+  if (!gcry_pk_get_keygrip (s_key, grip))
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      log_error ("can't calculate keygrip\n");
+      goto leave;
+    }
+  log_printhex ("keygrip=", grip, 20);
+
+  /* Convert to canonical encoding using a function which pads it to a
+     multiple of 64 bits.  We need this padding for AESWRAP.  */
+  err = make_canon_sexp_pad (s_key, &key, &keylen);
+  if (err)
+    {
+      log_error ("error creating canonical S-expression\n");
+      goto leave;
+    }
+  gcry_sexp_release (s_key);
+  s_key = NULL;
+
+  /* Get the current KEK.  */
+  err = gpgsm_agent_keywrap_key (ctrl, 0, &kek, &keklen);
+  if (err)
+    {
+      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Wrap the key.  */
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipherhd, kek, keklen);
+  if (err)
+    goto leave;
+  xfree (kek);
+  kek = NULL;
+
+  wrappedkeylen = keylen + 8;
+  wrappedkey = xtrymalloc (wrappedkeylen);
+  if (!wrappedkey)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_encrypt (cipherhd, wrappedkey, wrappedkeylen, key, keylen);
+  if (err)
+    goto leave;
+  xfree (key);
+  key = NULL;
+  gcry_cipher_close (cipherhd);
+  cipherhd = NULL;
+
+  /* Send the wrapped key to the agent.  */
+  err = gpgsm_agent_import_key (ctrl, wrappedkey, wrappedkeylen);
+  if (!err)
+    {
+      stats->count++;
+      stats->secret_read++;
+      stats->secret_imported++;
+    }
+  else if ( gpg_err_code (err) == GPG_ERR_EEXIST )
+    {
+      err = 0;
+      stats->count++;
+      stats->secret_read++;
+      stats->secret_dups++;
+    }
+
+  /* If we did not get an error from storing the secret key we return
+     a possible error from parsing the certificates.  We do this after
+     storing the secret keys so that a bad certificate does not
+     inhibit our chance to store the secret key.  */
+  if (!err && store_cert_parm.err)
+    err = store_cert_parm.err;
+
+ leave:
+  if (kparms)
+    {
+      for (i=0; i < 8; i++)
+        gcry_mpi_release (kparms[i]);
+      gcry_free (kparms);
+      kparms = NULL;
+    }
+  xfree (key);
+  gcry_sexp_release (s_key);
+  xfree (passphrase);
+  gcry_cipher_close (cipherhd);
+  xfree (wrappedkey);
+  xfree (kek);
+  xfree (get_membuf (&p12mbuf, NULL));
+  xfree (p12buffer);
 
   if (bad_pass)
     {

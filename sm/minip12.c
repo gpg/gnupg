@@ -608,7 +608,8 @@ static int
 parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
                           int startoffset, size_t *r_consumed, const char *pw,
                           void (*certcb)(void*, const unsigned char*, size_t),
-                          void *certcbarg, gcry_mpi_t **r_result)
+                          void *certcbarg, gcry_mpi_t **r_result,
+                          int *r_badpass)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
@@ -1003,6 +1004,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
          to check for a bad passphrase; it should therefore not be
          translated or changed. */
       log_error ("possibly bad passphrase given\n");
+      *r_badpass = 1;
     }
   return -1;
 }
@@ -1277,7 +1279,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
 gcry_mpi_t *
 p12_parse (const unsigned char *buffer, size_t length, const char *pw,
            void (*certcb)(void*, const unsigned char*, size_t),
-           void *certcbarg)
+           void *certcbarg, int *r_badpass)
 {
   struct tag_info ti;
   const unsigned char *p = buffer;
@@ -1289,6 +1291,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   gcry_mpi_t *result = NULL;
   unsigned char *cram_buffer = NULL;
 
+  *r_badpass = 0;
   where = "pfx";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -1384,7 +1387,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
           where = "bag.encryptedData";
           if (parse_bag_encrypted_data (p, n, (p - p_start), &consumed, pw,
                                         certcb, certcbarg,
-                                        result? NULL : &result))
+                                        result? NULL : &result, r_badpass))
             goto bailout;
           if (lenndef)
             len += consumed;

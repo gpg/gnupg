@@ -49,6 +49,7 @@ gpgsm_SOURCES = \
 	delete.c \
 	certreqgen.c \
 	certreqgen-ui.c \
+	minip12.c minip12.h \
 	qualified.c
 
 

@@ -786,3 +786,254 @@ as a binary blob.
 @end ifset
 @include see-also-note.texi
 
+@c 
+@c !!! UNDER CONSTRUCTION !!!
+@c 
+@c 
+@c @section Verifying a Certificate
+@c 
+@c There are several ways to request services from Dirmngr.  Almost all of
+@c them are done using the Assuan protocol.  What we describe here is the
+@c Assuan command CHECKCRL as used for example by the dirmnr-client tool if
+@c invoked as
+@c 
+@c @example
+@c   dirmngr-client foo.crt
+@c @end example
+@c 
+@c This command will send an Assuan request to an already running Dirmngr
+@c instance.  foo.crt is expected to be a standard X.509 certificate and
+@c dirmngr will receive the Assuan command
+@c 
+@c @example
+@c    CHECKCRL @var [{fingerprint}]
+@c @end example
+@c 
+@c @var{fingerprint} is optional and expected to be the SHA-1 has of the
+@c DER encoding of the certificate under question.  It is to be HEX
+@c encoded.  The rationale for sending the fingerprint is that it allows
+@c dirmngr to reply immediatly if it has already cached such a request.  If
+@c this is not the case and no certificate has been found in dirmngr's
+@c internal certificate storage, dirmngr will request the certificate using
+@c the Assuan inquiry
+@c 
+@c @example
+@c       INQUIRE TARGETCERT
+@c @end example
+@c 
+@c The caller (in our example dirmngr-client) is then expected to return
+@c the certificate for the request (which should match @var{fingerprint})
+@c as a binary blob.
+@c 
+@c Dirmngr now passes control to @code{crl_cache_cert_isvalid}.  This
+@c function checks whether a CRL item exists for target certificate.  These
+@c CRL items are kept in a database of already loaded and verified CRLs.
+@c This mechanism is called the CRL cache.  Obviously timestamps are kept
+@c there with each item to cope with the expiration date of the CRL.  The
+@c possible return values are: @code{0} to indicate that a valid CRL is
+@c available for the certificate and the certificate itself is not listed
+@c in this CRL, @code{GPG_ERR_CERT_REVOKED} to indicate that the certificate is
+@c listed in the CRL or @code{GPG_ERR_NO_CRL_KNOWN} in cases where no CRL or no
+@c information is available.  The first two codes are immediatly returned to
+@c the caller and the processing of this request has been done.
+@c 
+@c Only the @code{GPG_ERR_NO_CRL_KNOWN} needs more attention: Dirmngr now
+@c calls @code{clr_cache_reload_crl} and if this succeeds calls
+@c @code{crl_cache_cert_isvald) once more.  All further errors are
+@c immediately returned to the caller.
+@c 
+@c @code{crl_cache_reload_crl} is the actual heart of the CRL management.
+@c It locates the corresponding CRL for the target certificate, reads and
+@c verifies this CRL and stores it in the CRL cache.  It works like this:
+@c 
+@c * Loop over all crlDPs in the target certificate.
+@c     * If the crlDP is invalid immediately terminate the loop.
+@c     * Loop over all names in the current crlDP.
+@c         * If the URL scheme is unknown or not enabled 
+@c           (--ignore-http-dp, --ignore-ldap-dp) continues with
+@c           the next name.
+@c         * @code{crl_fetch} is called to actually retrieve the CRL.
+@c           In case of problems this name is ignore and we continue with
+@c           the next name.  Note that @code{crl_fetch} does only return 
+@c           a descriptor for the CRL for further reading so does the CRL
+@c           does not yet end up in memory.
+@c         * @code{crl_cache_insert} is called with that descriptor to
+@c           actually read the CRL into the cache. See below for a
+@c           description of this function.  If there is any error (e.g. read
+@c           problem, CRL not correctly signed or verification of signature
+@c           not possible), this descriptor is rejected and we continue
+@c           with the next name.  If the CRL has been successfully loaded,
+@c           the loop is terminated.
+@c * If no crlDP has been found in the previous loop use a default CRL.
+@c   Note, that if any crlDP has been found but loading of the CRL failed,
+@c   this condition is not true.
+@c     * Try to load a CRL from all configured servers (ldapservers.conf)
+@c       in turn.  The first server returning a CRL is used.
+@c     * @code(crl_cache_insert) is then used to actually insert the CRL
+@c       into the cache.  If this failed we give up immediatley without
+@c       checking the rest of the servers from the first step.
+@c * Ready. 
+@c 
+@c 
+@c The @code{crl_cache_insert} function takes care of reading the bulk of
+@c the CRL, parsing it and checking the signature.  It works like this: A
+@c new database file is created using a temporary file name.  The CRL
+@c parsing machinery is started and all items of the CRL are put into
+@c this database file.  At the end the issuer certificate of the CRL
+@c needs to be retrieved.  Three cases are to be distinguished:
+@c 
+@c  a) An authorityKeyIdentifier with an issuer and serialno exits: The
+@c     certificate is retrieved using @code{find_cert_bysn}.  If
+@c     the certificate is in the certificate cache, it is directly
+@c     returned. Then the requester (i.e. the client who requested the
+@c     CRL check) is asked via the Assuan inquiry ``SENDCERT'' whether
+@c     he can provide this certificate.  If this succeed the returned
+@c     certificate gets cached and returned.  Note, that dirmngr does not
+@c     verify in any way whether the expected certificate is returned.
+@c     It is in the interest of the client to return a useful certificate
+@c     as otherwise the service request will fail due to a bad signature.
+@c     The last way to get the certificate is by looking it up at
+@c     external resources.  This is done using the @code{ca_cert_fetch}
+@c     and @code{fetch_next_ksba_cert} and comparing the returned
+@c     certificate to match the requested issuer and seriano (This is
+@c     needed because the LDAP layer may return several certificates as
+@c     LDAP as no standard way to retrieve by serial number).
+@c 
+@c  b) An authorityKeyIdentifier with a key ID exists: The certificate is
+@c     retrieved using @code{find_cert_bysubject}.  If the certificate is
+@c     in the certificate cache, it is directly returned.  Then the
+@c     requester is asked via the Assuan inquiry ``SENDCERT_SKI'' whether
+@c     he can provide this certificate.  If this succeed the returned
+@c     certificate gets cached and returned.  Note, that dirmngr does not
+@c     verify in any way whether the expected certificate is returned.
+@c     It is in the interest of the client to return a useful certificate
+@c     as otherwise the service request will fail due to a bad signature.
+@c     The last way to get the certificate is by looking it up at
+@c     external resources.  This is done using the @code{ca_cert_fetch}
+@c     and @code{fetch_next_ksba_cert} and comparing the returned
+@c     certificate to match the requested subject and key ID.
+@c 
+@c  c) No authorityKeyIdentifier exits: The certificate is retrieved
+@c     using @code{find_cert_bysubject} without the key ID argument.  If
+@c     the certificate is in the certificate cache the first one with a
+@c     matching subject is is directly returned.  Then the requester is
+@c     asked via the Assuan inquiry ``SENDCERT'' and an exact
+@c     specification of the subject whether he can
+@c     provide this certificate.  If this succeed the returned
+@c     certificate gets cached and returned.  Note, that dirmngr does not
+@c     verify in any way whether the expected certificate is returned.
+@c     It is in the interest of the client to return a useful certificate
+@c     as otherwise the service request will fail due to a bad signature.
+@c     The last way to get the certificate is by looking it up at
+@c     external resources.  This is done using the @code{ca_cert_fetch}
+@c     and @code{fetch_next_ksba_cert} and comparing the returned
+@c     certificate to match the requested subject; the first certificate
+@c     with a matching subject is then returned.
+@c 
+@c If no certificate was found, the function returns with the error
+@c GPG_ERR_MISSING_CERT.  Now the signature is verified.  If this fails,
+@c the erro is returned.  On success the @code{validate_cert_chain} is
+@c used to verify that the certificate is actually valid. 
+@c 
+@c Here we may encounter a recursive situation:
+@c @code{validate_cert_chain} needs to look at other certificates and
+@c also at CRLs to check whether tehse other certificates and well, the
+@c CRL issuer certificate itself are not revoked.  FIXME: We need to make
+@c sure that @code{validate_cert_chain} does not try to lookup the CRL we
+@c are currently processing. This would be a catch-22 and may indicate a
+@c broken PKI.  However, due to overlapping expiring times and imprecise
+@c clocks thsi may actually happen.
+@c     
+@c For historical reasons the Assuan command ISVALID is a bit different
+@c to CHECKCRL but this is mainly due to different calling conventions.
+@c In the end the same fucntionality is used, albeit hidden by a couple
+@c of indirection and argument and result code mangling.  It furthere
+@c ingetrages OCSP checking depending on options are the way it is
+@c called.  GPGSM still uses this command but might eventuall switch over
+@c to CHECKCRL and CHECKOCSP so that ISVALID can be retired.
+@c   
+@c 
+@c @section Validating a certificate
+@c 
+@c We describe here how the internal function @code{validate_cert_chain}
+@c works. Note that mainly testing purposes this functionality may be
+@c called directly using @cmd{dirmngr-client --validate @file{foo.crt}}.
+@c 
+@c For backward compatibility this function returns success if Dirmngr is
+@c not used as a system daemon.  Thus not validating the certicates at
+@c all. FIXME:  This is definitely not correct and should be fixed ASAP.
+@c 
+@c The function takes the target certificate and a mode argument as
+@c parameters and returns an error code and optionally the closes
+@c expiration time of all certificates in the chain.
+@c 
+@c We first check that the certificate may be used for the requested
+@c purpose (i.e. OCSP or CRL signing).  If this is not the case
+@c GPG_ERR_WRONG_KEY_USAGE is returned.
+@c 
+@c The next step is to find the trust anchor (root certificate) and to
+@c assemble the chain in memory: Starting with the target certificate,
+@c the expiration time is checked against the current date, unknown
+@c critical extensions are detected and certificate policies are matched
+@c (We only allow 2.289.9.9 but I have no clue about that OID and from
+@c where I got it - it does not even seem to be assigned - debug cruft?).
+@c 
+@c Now if this certificate is a self-signed one, we have reached the
+@c trust anchor.  In this case we check that the signature is good, the
+@c certificate is allowed to act as a CA, that it is a trusted one (by
+@c checking whether it is has been put into the trusted-certs
+@c configuration directory) and finally prepend into to our list
+@c representing the certificate chain.  This steps ends then.
+@c 
+@c If it is not a self-signed certificate, we check that the chain won't
+@c get too long (current limit is 100), if this is the case we terminate
+@c with the error GPG_ERR_BAD_CERT_CHAIN.
+@c 
+@c Now the issuer's certificate is looked up: If an
+@c authorityKeyIdentifier is available, this one is used to locate the
+@c certificate either using issuer and serialnumber or subject DN
+@c (i.e. the issuer's DN) and the keyID.  The functions
+@c @code{find_cert_bysn) and @code{find_cert_bysubject} are used
+@c respectively. The have already been described above under the
+@c description of @code{crl_cache_insert}.  If no certificate was found
+@c or with no authorityKeyIdentifier, only the cache is consulted using
+@c @code{get_cert_bysubject}.  The latter is is done under the assumption
+@c that a matching certificate has explicitly been put into the
+@c certificate cache.  If the issuer's certificate could not be found,
+@c the validation terminates with the error code @code{GPG_ERR_MISSING_CERT}.
+@c 
+@c If the issuer's certificate has been found, the signature of the
+@c actual certificate is checked and in case this fails the error
+@c #code{GPG_ERR_BAD_CERT_CHAIN} is returned.  If the signature checks out, the
+@c maximum cahin length of the issueing certificate is checked as well as
+@c the capiblity of the certificate (i.e. whether he may be used for
+@c certificate signing).  Then the certificate is prepended to our list
+@c representing the certificate chain.  Finally the loop is continued now
+@c with the issuer's certificate as the current certificate.
+@c 
+@c After the end of the loop and if no error as been encountered
+@c (i.e. the certificate chain has been assempled correctly), a check is
+@c done whether any certificate expired or a critical policy has not been
+@c met.  In any of these cases the validation terminates with an
+@c appropriate error. 
+@c 
+@c Finally the function @code{check_revocations} is called to verify no
+@c certificate in the assempled chain has been revoked: This is an
+@c recursive process because a CRL has to be checked for each certificate
+@c in the chain except for the root certificate, of which we already know
+@c that it is trusted and we avoid checking a CRL here due to common
+@c setup problems and the assumption that a revoked root certifcate has
+@c been removed from the list of trusted certificates.
+@c 
+@c 
+@c 
+@c 
+@c @section Looking up certificates through LDAP.
+@c 
+@c This describes the LDAP layer to retrieve certificates.
+@c the functions @code{ca_cert_fetch} and @code{fetch_next_ksba_cert} are
+@c used for this.  The first one starts a search and the second one is
+@c used to retrieve certificate after certificate.
+@c 
+
+  

@@ -1,5 +1,5 @@
 /* genkey.c - Generate a keypair
- *	Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -286,6 +286,69 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
 }
 
 
+/* Ask the user for a new passphrase using PROMPT.  On success the
+   function returns 0 and store the passphrase at R_PASSPHRASE; if the
+   user opted not to use a passphrase NULL will be stored there.  The
+   user needs to free the returned string.  In case of an error and
+   error code is returned and NULL stored at R_PASSPHRASE.  */
+gpg_error_t
+agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
+                          char **r_passphrase)
+{
+  gpg_error_t err;
+  const char *text1 = prompt;
+  const char *text2 = _("Please re-enter this passphrase");
+  const char *initial_errtext = NULL;
+  struct pin_entry_info_s *pi, *pi2;
+  
+  *r_passphrase = NULL;
+
+  pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
+  pi2 = pi + (sizeof *pi + 100);
+  pi->max_length = 100;
+  pi->max_tries = 3;
+  pi->with_qualitybar = 1;
+  pi2->max_length = 100;
+  pi2->max_tries = 3;
+  pi2->check_cb = reenter_compare_cb;
+  pi2->check_cb_arg = pi->pin;
+
+ next_try:
+  err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
+  initial_errtext = NULL;
+  if (!err)
+    {
+      if (check_passphrase_constraints (ctrl, pi->pin, 0))
+        {
+          pi->failed_tries = 0;
+          pi2->failed_tries = 0;
+          goto next_try;
+        }
+      /* Unless the passphrase is empty, ask to confirm it.  */
+      if (pi->pin && *pi->pin)
+        {
+          err = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+          if (err == -1)
+            { /* The re-entered one did not match and the user did not
+                 hit cancel. */
+              initial_errtext = _("does not match - try again");
+              goto next_try;
+            }
+        }
+    }
+  
+  if (!err && *pi->pin)
+    {
+      /* User wants a passphrase. */
+      *r_passphrase = xtrystrdup (pi->pin);
+      if (!*r_passphrase)
+        err = gpg_error_from_syserror ();
+    }
+  xfree (pi);
+  return err;
+}
+
+
 
 /* Generate a new keypair according to the parameters given in
    KEYPARAM */
@@ -294,7 +357,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
               membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
-  struct pin_entry_info_s *pi, *pi2;
+  char *passphrase = NULL;
   int rc;
   size_t len;
   char *buf;
@@ -307,63 +370,19 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
-  {
-    const char *text1 = _("Please enter the passphrase to%0A"
-                               "to protect your new key");
-    const char *text2 = _("Please re-enter this passphrase");
-    const char *initial_errtext = NULL;
-
-    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-    pi2 = pi + (sizeof *pi + 100);
-    pi->max_length = 100;
-    pi->max_tries = 3;
-    pi->with_qualitybar = 1;
-    pi2->max_length = 100;
-    pi2->max_tries = 3;
-    pi2->check_cb = reenter_compare_cb;
-    pi2->check_cb_arg = pi->pin;
-
-  next_try:
-    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
-    initial_errtext = NULL;
-    if (!rc)
-      {
-        if (check_passphrase_constraints (ctrl, pi->pin, 0))
-          {
-            pi->failed_tries = 0;
-            pi2->failed_tries = 0;
-            goto next_try;
-          }
-        if (pi->pin && *pi->pin)
-          {
-            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
-            if (rc == -1)
-              { /* The re-entered one did not match and the user did not
-                   hit cancel. */
-                initial_errtext = _("does not match - try again");
-                goto next_try;
-              }
-          }
-      }
-    if (rc)
-      {
-        xfree (pi);
-        return rc;
-      }
-        
-    if (!*pi->pin)
-      {
-        xfree (pi);
-        pi = NULL; /* User does not want a passphrase. */
-      }
-  }
+  rc = agent_ask_new_passphrase (ctrl, 
+                                 _("Please enter the passphrase to%0A"
+                                   "to protect your new key"),
+                                 &passphrase);
+  if (rc)
+    return rc;
 
   rc = gcry_pk_genkey (&s_key, s_keyparam );
   gcry_sexp_release (s_keyparam);
   if (rc)
     {
       log_error ("key generation failed: %s\n", gpg_strerror (rc));
-      xfree (pi);
+      xfree (passphrase);
       return rc;
     }
 
@@ -373,7 +392,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     {
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
-      xfree (pi);
+      xfree (passphrase);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
@@ -382,7 +401,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
-      xfree (pi);
+      xfree (passphrase);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
@@ -390,8 +409,9 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
   /* store the secret key */
   if (DBG_CRYPTO)
     log_debug ("storing private key\n");
-  rc = store_key (s_private, pi? pi->pin:NULL, 0);
-  xfree (pi); pi = NULL;
+  rc = store_key (s_private, passphrase, 0);
+  xfree (passphrase);
+  passphrase = NULL;
   gcry_sexp_release (s_private);
   if (rc)
     {
@@ -423,65 +443,20 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
 
 
 
-/* Apply a new passpahrse to the key S_SKEY and store it. */
+/* Apply a new passphrase to the key S_SKEY and store it. */
 int
 agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey) 
 {
-  struct pin_entry_info_s *pi, *pi2;
   int rc;
+  char *passphrase;
 
-  {
-    const char *text1 = _("Please enter the new passphrase");
-    const char *text2 = _("Please re-enter this passphrase");
-    const char *initial_errtext = NULL;
-
-    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-    pi2 = pi + (sizeof *pi + 100);
-    pi->max_length = 100;
-    pi->max_tries = 3;
-    pi->with_qualitybar = 1;
-    pi2->max_length = 100;
-    pi2->max_tries = 3;
-    pi2->check_cb = reenter_compare_cb;
-    pi2->check_cb_arg = pi->pin;
-
-  next_try:
-    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
-    initial_errtext = NULL;
-    if (!rc)
-      {
-        if (check_passphrase_constraints (ctrl, pi->pin, 0))
-          {
-            pi->failed_tries = 0;
-            pi2->failed_tries = 0;
-            goto next_try;
-          }
-        /* Unless the passphrase is empty, ask to confirm it.  */
-        if (pi->pin && *pi->pin)
-          {
-            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
-            if (rc == -1)
-              { /* The re-entered one did not match and the user did not
-                   hit cancel. */
-                initial_errtext = _("does not match - try again");
-                goto next_try;
-              }
-          }
-      }
-    if (rc)
-      {
-        xfree (pi);
-        return rc;
-      }
-
-    if (!*pi->pin)
-      {
-        xfree (pi);
-        pi = NULL; /* User does not want a passphrase. */
-      }
-  }
-
-  rc = store_key (s_skey, pi? pi->pin:NULL, 1);
-  xfree (pi);
+  rc = agent_ask_new_passphrase (ctrl, 
+                                 _("Please enter the new passphrase"),
+                                 &passphrase);
+  if (!rc)
+    {
+      rc = store_key (s_skey, passphrase, 1);
+      xfree (passphrase);
+    }
   return rc;
 }

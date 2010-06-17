@@ -79,8 +79,7 @@ gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
-	protect.c \
-	minip12.c minip12.h 
+	protect.c
 
 gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \

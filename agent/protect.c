@@ -415,7 +415,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   unsigned char *p;
   gcry_md_hd_t md;
 
-  /* Create an S-expression with the procted-at timestamp.  */
+  /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
   gnupg_get_isotime (timestamp_exp+19);
   timestamp_exp[19+15] = ')';

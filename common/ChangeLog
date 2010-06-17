@@ -1,3 +1,11 @@
+2010-06-17  Werner Koch  <wk@g10code.com>
+
+	* sexputil.c (make_canon_sexp_pad): New.
+
+2010-06-14  Werner Koch  <wk@g10code.com>
+
+	* membuf.c (put_membuf): Add shortcut for !LEN.
+
 2010-06-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* sysutils.c (translate_sys2libc_fd): Revert last change.

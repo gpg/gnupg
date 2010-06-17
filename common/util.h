@@ -146,6 +146,8 @@ gpg_error_t b64dec_finish (struct b64state *state);
 /*-- sexputil.c */
 gpg_error_t make_canon_sexp (gcry_sexp_t sexp,
                              unsigned char **r_buffer, size_t *r_buflen);
+gpg_error_t make_canon_sexp_pad (gcry_sexp_t sexp,
+                                 unsigned char **r_buffer, size_t *r_buflen);
 gpg_error_t keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
                                      unsigned char *grip);
 int cmp_simple_canon_sexp (const unsigned char *a, const unsigned char *b);

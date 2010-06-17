@@ -38,10 +38,14 @@
 #include <assuan.h>
 #include "i18n.h"
 
-/* maximum allowed size of the inquired ciphertext */
+/* Maximum allowed size of the inquired ciphertext.  */
 #define MAXLEN_CIPHERTEXT 4096
-/* maximum allowed size of the key parameters */
+/* Maximum allowed size of the key parameters.  */
 #define MAXLEN_KEYPARAM 1024
+/* Maximum allowed size of key data as used in inquiries (bytes). */
+#define MAXLEN_KEYDATA 4096
+/* The size of the import/export KEK key (in bytes).  */
+#define KEYWRAP_KEYSIZE (128/8)
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -63,6 +67,8 @@ struct server_local_s
                     the end of this session.  */
   int allow_pinentry_notify; /* Set if pinentry notifications should
                                 be done. */
+  void *import_key;  /* Malloced KEK for the import_key command.  */
+  void *export_key;  /* Malloced KEK for the export_key command.  */
 };
 
 
@@ -340,6 +346,26 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
 }
 
 
+/* Helper to print a message while leaving a command.  */
+static gpg_error_t
+leave_cmd (assuan_context_t ctx, gpg_error_t err)
+{
+  if (err)
+    {
+      const char *name = assuan_get_command_name (ctx);
+      if (!name)
+        name = "?";
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
+        log_error ("command '%s' failed: %s\n", name,
+                   gpg_strerror (err));
+      else
+        log_error ("command '%s' failed: %s <%s>\n", name,
+                   gpg_strerror (err), gpg_strsource (err));
+    }
+  return err;
+}
+
+
 
 static const char hlp_geteventcounter[] = 
   "GETEVENTCOUNTER\n"
@@ -432,10 +458,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
   else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF )
     return gpg_error (GPG_ERR_NOT_TRUSTED);
   else
-    {
-      log_error ("command is_trusted failed: %s\n", gpg_strerror (rc));
-      return rc;
-    }
+    return leave_cmd (ctx, rc);
 }
 
 
@@ -451,9 +474,7 @@ cmd_listtrusted (assuan_context_t ctx, char *line)
   (void)line;
 
   rc = agent_listtrusted (ctx);
-  if (rc)
-    log_error ("command listtrusted failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -494,9 +515,7 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
     p++;
 
   rc = agent_marktrusted (ctrl, p, fpr, flag);
-  if (rc)
-    log_error ("command marktrusted failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -695,11 +714,9 @@ cmd_pksign (assuan_context_t ctx, char *line)
     clear_outbuf (&outbuf);
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
-  if (rc)
-    log_error ("command pksign failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -734,11 +751,9 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
     clear_outbuf (&outbuf);
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
-  if (rc)
-    log_error ("command pkdecrypt failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -780,9 +795,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
     clear_outbuf (&outbuf);
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
-  if (rc)
-    log_error ("command genkey failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -825,9 +838,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
       gcry_sexp_release (s_pkey);
     }
 
-  if (rc)
-    log_error ("command readkey failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -967,7 +978,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   if (dir)
     closedir (dir);
   if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
-    log_error ("command keyinfo failed: %s\n", gpg_strerror (err));
+    leave_cmd (ctx, err);
   return err;
 }
 
@@ -1167,9 +1178,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
         }
     }
 
-  if (rc)
-    log_error ("command get_passphrase failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1240,9 +1249,7 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
     plus_to_blank (desc);
 
   rc = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
-  if (rc)
-    log_error ("command get_confirmation failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1259,9 +1266,7 @@ cmd_learn (assuan_context_t ctx, char *line)
   int rc;
 
   rc = agent_handle_learn (ctrl, has_option (line, "--send")? ctx : NULL);
-  if (rc)
-    log_error ("command learn failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1304,9 +1309,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
  leave:
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
-  if (rc)
-    log_error ("command passwd failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1371,10 +1374,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   if (!rc)
     rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
 
-  if (rc)
-    log_error ("command preset_passphrase failed: %s\n", gpg_strerror (rc));
-
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1394,6 +1394,186 @@ cmd_scd (assuan_context_t ctx, char *line)
 
   return rc;
 }
+
+
+
+static const char hlp_keywrap_key[] =
+  "KEYWRAP_KEY [--clear] <mode>\n"
+  "\n"
+  "Return a key to wrap another key.  For now the key is returned\n"
+  "verbatim and and thus makes not much sense because an eavesdropper on\n"
+  "the gpg-agent connection will see the key as well as the wrapped key.\n"
+  "However, this function may either be equipped with a public key\n"
+  "mechanism or not used at all if the key is a pre-shared key.  In any\n"
+  "case wrapping the import and export of keys is a requirement for\n"
+  "certain cryptographic validations and thus useful.  The key persists\n"
+  "a RESET command but may be cleared using the option --clear.\n"
+  "\n"
+  "Supported modes are:\n"
+  "  --import  - Return a key to import a key into gpg-agent\n"
+  "  --export  - Return a key to export a key from gpg-agent";
+static gpg_error_t
+cmd_keywrap_key (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  int clearopt = has_option (line, "--clear");
+
+
+  assuan_begin_confidential (ctx);
+  if (has_option (line, "--import"))
+    {
+      xfree (ctrl->server_local->import_key);
+      if (clearopt)
+        ctrl->server_local->import_key = NULL;
+      else if (!(ctrl->server_local->import_key = 
+                 gcry_random_bytes (KEYWRAP_KEYSIZE, GCRY_STRONG_RANDOM)))
+        err = gpg_error_from_syserror ();
+      else
+        err = assuan_send_data (ctx, ctrl->server_local->import_key,
+                                KEYWRAP_KEYSIZE);
+    }
+  else if (has_option (line, "--export"))
+    {
+      xfree (ctrl->server_local->export_key);
+      if (clearopt)
+        ctrl->server_local->export_key = NULL;
+      else if (!(ctrl->server_local->export_key = 
+            gcry_random_bytes (KEYWRAP_KEYSIZE, GCRY_STRONG_RANDOM)))
+        err = gpg_error_from_syserror ();
+      else
+        err = assuan_send_data (ctx, ctrl->server_local->export_key,
+                                KEYWRAP_KEYSIZE);
+    }
+  else
+    err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for MODE");
+  assuan_end_confidential (ctx);
+  
+  return leave_cmd (ctx, err);
+}
+
+
+
+static const char hlp_import_key[] =
+  "IMPORT_KEY\n"
+  "\n"
+  "Import a secret key into the key store.  The key is expected to be\n"
+  "encrypted using the current session's key wrapping key (cf. command\n"
+  "KEYWRAP_KEY) using the AESWRAP-128 algorithm.  This function takes\n"
+  "no arguments but uses the inquiry \"KEYDATA\" to ask for the actual\n"
+  "key data.  The unwrapped key must be a canonical S-expression.";
+static gpg_error_t
+cmd_import_key (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  gcry_cipher_hd_t cipherhd = NULL;
+  unsigned char *key = NULL;
+  size_t keylen, realkeylen;
+  char *passphrase = NULL;
+  unsigned char *finalkey = NULL;
+  size_t finalkeylen;
+  unsigned char grip[20];
+  
+  (void)line;
+
+  if (!ctrl->server_local->import_key)
+    {
+      err = gpg_error (GPG_ERR_BAD_KEY);
+      goto leave;
+    }
+
+  assuan_begin_confidential (ctx);
+  err = assuan_inquire (ctx, "KEYDATA",
+                        &wrappedkey, &wrappedkeylen, MAXLEN_KEYDATA);
+  assuan_end_confidential (ctx);
+  if (err)
+    goto leave;
+  if (wrappedkeylen < 24)
+    {
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto leave;
+    }
+  keylen = wrappedkeylen - 8;
+  key = xtrymalloc_secure (keylen);
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipherhd,
+                            ctrl->server_local->import_key, KEYWRAP_KEYSIZE);
+  if (err)
+    goto leave;
+  err = gcry_cipher_decrypt (cipherhd, key, keylen, wrappedkey, wrappedkeylen);
+  if (err)
+    goto leave;
+  gcry_cipher_close (cipherhd);
+  cipherhd = NULL;
+  xfree (wrappedkey);
+  wrappedkey = NULL;
+
+  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+  if (!realkeylen)
+    goto leave; /* Invalid canonical encoded S-expression.  */
+  
+  err = keygrip_from_canon_sexp (key, realkeylen, grip);
+  if (err)
+    goto leave;
+
+  if (!agent_key_available (grip))
+    {
+      err = gpg_error (GPG_ERR_EEXIST);
+      goto leave;
+    }
+
+  err = agent_ask_new_passphrase 
+    (ctrl, _("Please enter the passphrase to protect the "
+             "imported object within the GnuPG system."),
+     &passphrase);
+  if (err)
+    goto leave;
+
+  if (passphrase)
+    {
+      err = agent_protect (key, passphrase, &finalkey, &finalkeylen);
+      if (!err)
+        err = agent_write_private_key (grip, finalkey, finalkeylen, 0);
+    }
+  else
+    err = agent_write_private_key (grip, key, realkeylen, 0);
+
+ leave:
+  xfree (finalkey);
+  xfree (passphrase);
+  xfree (key);
+  gcry_cipher_close (cipherhd);
+  xfree (wrappedkey);
+  return leave_cmd (ctx, err);
+}
+
+
+
+static const char hlp_export_key[] =
+  "EXPORT_KEY\n"
+  "\n";
+static gpg_error_t
+cmd_export_key (assuan_context_t ctx, char *line)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+
+ /* leave: */
+  return leave_cmd (ctx, err);
+}
+
 
 
 
@@ -1435,9 +1615,7 @@ cmd_getval (assuan_context_t ctx, char *line)
   else
     return gpg_error (GPG_ERR_NO_DATA);
 
-  if (rc)
-    log_error ("command getval failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1520,9 +1698,7 @@ cmd_putval (assuan_context_t ctx, char *line)
         }
     }
 
-  if (rc)
-    log_error ("command putval failed: %s\n", gpg_strerror (rc));
-  return rc;
+  return leave_cmd (ctx, rc);
 }
 
 
@@ -1641,7 +1817,7 @@ static const char hlp_getinfo[] =
   "  std_session_env - List the standard session environment.\n"
   "  std_startup_env - List the standard startup environment.\n"
   "  cmd_has_option\n"
-  "              - Returns OK if the command CMD implements the option OPT.";
+  "              - Returns OK if the command CMD implements the option OPT\n.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1910,6 +2086,9 @@ register_commands (assuan_context_t ctx)
     { "INPUT",          NULL }, 
     { "OUTPUT",         NULL }, 
     { "SCD",            cmd_scd,       hlp_scd },
+    { "KEYWRAP_KEY",    cmd_keywrap_key, hlp_keywrap_key },
+    { "IMPORT_KEY",     cmd_import_key, hlp_import_key },
+    { "EXPORT_KEY",     cmd_export_key, hlp_export_key },
     { "GETVAL",         cmd_getval,    hlp_getval },
     { "PUTVAL",         cmd_putval,    hlp_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty, hlp_updatestartuptty },
@@ -2021,6 +2200,9 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   /* Cleanup.  */
   assuan_release (ctx);
+  xfree (ctrl->server_local->keydesc);
+  xfree (ctrl->server_local->import_key);
+  xfree (ctrl->server_local->export_key);
   if (ctrl->server_local->stopme)
     agent_exit (0);
   xfree (ctrl->server_local);

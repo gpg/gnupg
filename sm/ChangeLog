@@ -1,3 +1,19 @@
+2010-06-17  Werner Koch  <wk@g10code.com>
+
+	* import.c (parse_p12): Remove arg retfp.  Use the agent's new
+	import command.
+	(import_one): Adjust call to pkcs12.
+	(store_cert_cb, rsa_key_check): New.
+	(popen_protect_tool): Remove.
+	* minip12.c (parse_bag_encrypted_data, p12_parse): Add arg
+	R_BADPASS.
+	* call-agent.c (gpgsm_agent_ask_passphrase): New.
+	(gpgsm_agent_keywrap_key): New.
+	(struct import_key_parm_s): New.
+	(gpgsm_agent_import_key): New.
+	* minip12.c, minip12.h: Move from ../agent/.
+	* Makefile.am (gpgsm_SOURCES): Add them.
+
 2010-06-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* server.c (cmd_message) [HAVE_W32CE_SYSTEM]: Finish pipe.

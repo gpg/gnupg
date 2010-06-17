@@ -40,7 +40,6 @@
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
-#include "minip12.h"
 #include "i18n.h"
 #include "get-passphrase.h"
 #include "sysutils.h"
@@ -63,8 +62,6 @@ enum cmd_and_opt_values
   oS2Kcalibration,
   oCanonical,
 
-  oP12Import,
-  oP12Export,
   oP12Charset,
   oStore,
   oForce,
@@ -116,11 +113,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (oShadow,    "shadow", "create a shadow entry for a public key"),
   ARGPARSE_c (oShowShadowInfo,  "show-shadow-info", "return the shadow info"),
   ARGPARSE_c (oShowKeygrip, "show-keygrip", "show the \"keygrip\""),
-  ARGPARSE_c (oP12Import, "p12-import", 
-              "import a pkcs#12 encoded private key"),
-  ARGPARSE_c (oP12Export, "p12-export",
-              "export a private key pkcs#12 encoded"),
-
   ARGPARSE_c (oS2Kcalibration, "s2k-calibration", "@"),
   
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
@@ -635,7 +627,7 @@ rsa_key_check (struct rsa_secret_key_s *skey)
   return err? -1:0;
 }
 
-
+#if 0
 /* A callback used by p12_parse to return a certificate.  */
 static void
 import_p12_cert_cb (void *opaque, const unsigned char *cert, size_t certlen)
@@ -793,6 +785,7 @@ import_p12_file (const char *fname)
 
   xfree (result);
 }
+#endif
 
 
 
@@ -865,6 +858,7 @@ is_keygrip (const char *string)
 }
 
 
+#if 0
 static void
 export_p12_file (const char *fname)
 {
@@ -1009,6 +1003,7 @@ export_p12_file (const char *fname)
   fwrite (key, keylen, 1, stdout);
   xfree (key);
 }
+#endif
 
 
 
@@ -1059,8 +1054,6 @@ main (int argc, char **argv )
         case oShadow: cmd = oShadow; break;
         case oShowShadowInfo: cmd = oShowShadowInfo; break;
         case oShowKeygrip: cmd = oShowKeygrip; break;
-        case oP12Import: cmd = oP12Import; break;
-        case oP12Export: cmd = oP12Export; break;
         case oP12Charset: opt_p12_charset = pargs.r.ret_str; break;
 
         case oS2Kcalibration: cmd = oS2Kcalibration; break;
@@ -1105,10 +1098,6 @@ main (int argc, char **argv )
     show_shadow_info (fname);
   else if (cmd == oShowKeygrip)
     show_keygrip (fname);
-  else if (cmd == oP12Import)
-    import_p12_file (fname);
-  else if (cmd == oP12Export)
-    export_p12_file (fname);
   else if (cmd == oS2Kcalibration)
     {
       if (!opt.verbose)

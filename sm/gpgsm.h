@@ -405,6 +405,12 @@ gpg_error_t gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc);
 gpg_error_t gpgsm_agent_send_nop (ctrl_t ctrl);
 gpg_error_t gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
                                  char **r_serialno);
+gpg_error_t gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg,
+                                        char **r_passphrase);
+gpg_error_t gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
+                                     void **r_kek, size_t *r_keklen);
+gpg_error_t gpgsm_agent_import_key (ctrl_t ctrl,
+                                    const void *key, size_t keylen);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,

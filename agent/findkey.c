@@ -69,7 +69,7 @@ agent_write_private_key (const unsigned char *grip,
     {
       log_error ("secret key file `%s' already exists\n", fname);
       xfree (fname);
-      return gpg_error (GPG_ERR_GENERAL);
+      return gpg_error (GPG_ERR_EEXIST);
     }
 
   /* FIXME: On POSIX systems we used include S_IRGRP as well.  */
@@ -883,8 +883,8 @@ agent_public_key_from_file (ctrl_t ctrl,
 
 
 
-/* Return the secret key as an S-Exp after locating it using the grip.
-   Returns NULL if key is not available. 0 = key is available */
+/* Check whether the the secret key identified by GRIP is available.
+   Returns 0 is the key is available.  */
 int
 agent_key_available (const unsigned char *grip)
 {
