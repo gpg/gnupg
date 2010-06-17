@@ -1973,11 +1973,7 @@ main (int argc, char **argv)
     opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_count = 0; /* Auto-calibrate when needed.  */
-#ifdef USE_CAST5
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
-#else
-    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-#endif
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;

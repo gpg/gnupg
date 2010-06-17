@@ -2,7 +2,7 @@
 
 	* armor.test: Add test for bug#1179.
 
-	* Makefile.am (TESTS_ENVIRONMENT): New.  Start all scripts udner
+	* Makefile.am (TESTS_ENVIRONMENT): New.  Start all scripts under
 	the control of the gpg-agent.
 	(prepared.stamp): Create gpg-agent.conf.
 	* defs.inc: Do not create gpg-agent.conf
