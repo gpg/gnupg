@@ -1,3 +1,8 @@
+2010-06-18  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (skip_packet, parse_gpg_control): Take care of
+	premature EOFs.  Backport from trunk.
+
 2010-06-01  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (main): Add dummy option --debug-level and ignore

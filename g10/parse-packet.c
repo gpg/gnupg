@@ -622,7 +622,11 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 	  else
 	    {
 	      for( ; pktlen; pktlen-- )
-		dump_hex_line(iobuf_get(inp), &i);
+                {
+                  dump_hex_line ((c=iobuf_get(inp)), &i);
+                  if (c==-1)
+                    break;
+                }
 	    }
 	  putc ('\n', listfp);
 	  return;
@@ -2441,7 +2445,11 @@ parse_gpg_control( IOBUF inp, int pkttype,
         }
         else {
             for( ; pktlen; pktlen-- )
-                dump_hex_line(iobuf_get(inp), &i);
+              {
+                dump_hex_line ((c=iobuf_get (inp)), &i);
+                if (c == -1)
+                  break;
+              }
         }
         putc ('\n', listfp);
     }
