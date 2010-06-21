@@ -1,6 +1,6 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2008, 2009  Free Software Foundation, Inc.
+ *               2006, 2008, 2009, 2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +37,8 @@
 #include "agent.h"
 #include <assuan.h>
 #include "i18n.h"
+
+
 
 /* Maximum allowed size of the inquired ciphertext.  */
 #define MAXLEN_CIPHERTEXT 4096
@@ -564,7 +566,7 @@ cmd_sigkey (assuan_context_t ctx, char *line)
 static const char hlp_setkeydesc[] = 
   "SETKEYDESC plus_percent_escaped_string\n"
   "\n"
-  "Set a description to be used for the next PKSIGN or PKDECRYPT\n"
+  "Set a description to be used for the next PKSIGN, PKDECRYPT or EXPORT_KEY\n"
   "operation if this operation requires the entry of a passphrase.  If\n"
   "this command is not used a default text will be used.  Note, that\n"
   "this description implictly selects the label used for the entry\n"
@@ -573,8 +575,8 @@ static const char hlp_setkeydesc[] =
   "\"passphrase\" is used.  The description string should not contain\n"
   "blanks unless they are percent or '+' escaped.\n"
   "\n"
-  "The description is only valid for the next PKSIGN or PKDECRYPT\n"
-  "operation.";
+  "The description is only valid for the next PKSIGN, PKDECRYPT or\n"
+  "EXPORT_KEY operation.";
 static gpg_error_t
 cmd_setkeydesc (assuan_context_t ctx, char *line)
 {
@@ -1481,7 +1483,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
   if (!ctrl->server_local->import_key)
     {
-      err = gpg_error (GPG_ERR_BAD_KEY);
+      err = gpg_error (GPG_ERR_MISSING_KEY);
       goto leave;
     }
 
@@ -1562,15 +1564,97 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export_key[] =
-  "EXPORT_KEY\n"
-  "\n";
+  "EXPORT_KEY <hexstring_with_keygrip>\n"
+  "\n"
+  "Export a secret key from the key store.  The key will be encrypted\n"
+  "using the current session's key wrapping key (cf. command KEYWRAP_KEY)\n"
+  "using the AESWRAP-128 algorithm.  The caller needs to retrieve that key\n"
+  "prior to using this command.  The function takes the keygrip as argument.\n";
 static gpg_error_t
 cmd_export_key (assuan_context_t ctx, char *line)
 {
-  gpg_error_t err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned char grip[20];
+  gcry_sexp_t s_skey = NULL;
+  unsigned char *key = NULL;
+  size_t keylen;
+  gcry_cipher_hd_t cipherhd = NULL;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
 
+  if (!ctrl->server_local->export_key)
+    {
+      err = gpg_error (GPG_ERR_MISSING_KEY);
+      goto leave;
+    }
 
- /* leave: */
+  err = parse_keygrip (ctx, line, grip);
+  if (err)
+    goto leave;
+
+  if (agent_key_available (grip))
+    {
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+
+  err = agent_key_from_file (ctrl, ctrl->server_local->keydesc, grip,
+                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey);
+  if (err)
+    goto leave;
+  if (!s_skey)
+    {
+      /* Key is on a smartcard.  Actually we should not see this here
+         because we do not pass a shadow_info variable to the above
+         function, thus it will return this error directly.  */
+      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      goto leave;
+    }
+
+  err = make_canon_sexp_pad (s_skey, 1, &key, &keylen);
+  if (err)
+    goto leave;
+  gcry_sexp_release (s_skey);
+  s_skey = NULL;
+
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipherhd,
+                            ctrl->server_local->export_key, KEYWRAP_KEYSIZE);
+  if (err)
+    goto leave;
+
+  wrappedkeylen = keylen + 8;
+  wrappedkey = xtrymalloc (wrappedkeylen);
+  if (!wrappedkey)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = gcry_cipher_encrypt (cipherhd, wrappedkey, wrappedkeylen, key, keylen);
+  if (err)
+    goto leave;
+  xfree (key);
+  key = NULL;
+  gcry_cipher_close (cipherhd);
+  cipherhd = NULL;
+
+  assuan_begin_confidential (ctx);
+  err = assuan_send_data (ctx, wrappedkey, wrappedkeylen);
+  assuan_end_confidential (ctx);
+  
+
+ leave:
+  xfree (wrappedkey);
+  gcry_cipher_close (cipherhd);
+  xfree (key);
+  gcry_sexp_release (s_skey);
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
   return leave_cmd (ctx, err);
 }
 

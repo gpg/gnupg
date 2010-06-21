@@ -435,7 +435,6 @@ static void emergency_cleanup (void);
 static int check_special_filename (const char *fname, int for_write);
 static int open_read (const char *filename);
 static estream_t open_es_fread (const char *filename, const char *mode);
-static FILE *open_fwrite (const char *filename);
 static estream_t open_es_fwrite (const char *filename);
 static void run_protect_tool (int argc, char **argv);
 
@@ -1877,14 +1876,14 @@ main ( int argc, char **argv)
 
     case aExportSecretKeyP12:
       {
-        FILE *fp = open_fwrite (opt.outfile?opt.outfile:"-");
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         if (argc == 1)
           gpgsm_p12_export (&ctrl, *argv, fp);
         else
           wrong_args ("--export-secret-key-p12 KEY-ID");
-        if (fp != stdout)
-          fclose (fp);
+        if (fp != es_stdout)
+          es_fclose (fp);
       }
       break;
       
@@ -2082,45 +2081,6 @@ open_es_fread (const char *filename, const char *mode)
       return fp;
     }
   fp = es_fopen (filename, mode);
-  if (!fp)
-    {
-      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
-      gpgsm_exit (2);
-    }
-  return fp;
-}
-
-
-/* Open FILENAME for fwrite and return the stream.  Stop with an error
-   message in case of problems.  "-" denotes stdout and if special
-   filenames are allowed the given fd is opened instead. Caller must
-   close the returned stream unless it is stdout. */
-static FILE *
-open_fwrite (const char *filename)
-{
-  int fd;
-  FILE *fp;
-
-  if (filename[0] == '-' && !filename[1])
-    {
-      set_binary (stdout);
-      return stdout;
-    }
-
-  fd = check_special_filename (filename, 1);
-  if (fd != -1)
-    {
-#warning replace the line below
-      fp = NULL; /*fdopen (dup (fd), "wb"); */
-      if (!fp)
-        {
-          log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
-          gpgsm_exit (2);
-        }
-      set_binary (fp);
-      return fp;
-    }
-  fp = fopen (filename, "wb");
   if (!fp)
     {
       log_error (_("can't open `%s': %s\n"), filename, strerror (errno));

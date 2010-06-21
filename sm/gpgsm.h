@@ -344,7 +344,7 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
 
 /*-- export.c --*/
 void gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream);
-void gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp);
+void gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream);
 
 /*-- delete.c --*/
 int gpgsm_delete (ctrl_t ctrl, strlist_t names);
@@ -406,11 +406,15 @@ gpg_error_t gpgsm_agent_send_nop (ctrl_t ctrl);
 gpg_error_t gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
                                  char **r_serialno);
 gpg_error_t gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg,
-                                        char **r_passphrase);
+                                        int repeat, char **r_passphrase);
 gpg_error_t gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
                                      void **r_kek, size_t *r_keklen);
 gpg_error_t gpgsm_agent_import_key (ctrl_t ctrl,
                                     const void *key, size_t keylen);
+gpg_error_t gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip,
+                                    const char *desc,
+                                    unsigned char **r_result,
+                                    size_t *r_resultlen);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,

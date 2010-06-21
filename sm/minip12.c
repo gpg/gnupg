@@ -2024,7 +2024,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
 
 static unsigned char *
-build_cert_sequence (unsigned char *buffer, size_t buflen, 
+build_cert_sequence (const unsigned char *buffer, size_t buflen, 
                      const unsigned char *sha1hash, const char *keyidstr,
                      size_t *r_length)
 {
@@ -2144,7 +2144,7 @@ build_cert_sequence (unsigned char *buffer, size_t buflen,
    in R_LENGTH; return NULL in case of an error.  If CHARSET is not
    NULL, re-encode PW to that character set. */
 unsigned char * 
-p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
+p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
            const char *pw, const char *charset, size_t *r_length)
 {
   unsigned char *buffer = NULL;
@@ -2298,6 +2298,7 @@ main (int argc, char **argv)
   unsigned char *buf;
   size_t buflen;
   gcry_mpi_t *result;
+  int badpass;
 
   if (argc != 3)
     {
@@ -2330,7 +2331,7 @@ main (int argc, char **argv)
     }
   fclose (fp);
 
-  result = p12_parse (buf, buflen, argv[2], cert_cb, NULL);
+  result = p12_parse (buf, buflen, argv[2], cert_cb, NULL, &badpass);
   if (result)
     {
       int i, rc;

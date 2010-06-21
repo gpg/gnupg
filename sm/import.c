@@ -759,8 +759,9 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 
 
   err = gpgsm_agent_ask_passphrase
-    (ctrl, _("Please enter the passphrase to unprotect the PKCS#12 object."),
-     &passphrase);
+    (ctrl,
+     i18n_utf8 ("Please enter the passphrase to unprotect the PKCS#12 object."),
+     0, &passphrase);
   if (err)
     goto leave;
 
@@ -812,7 +813,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
   kparms = NULL;
   if (err)
     {
-      log_error ("failed to created S-expression from key: %s\n",
+      log_error ("failed to create S-expression from key: %s\n",
                  gpg_strerror (err));
       goto leave;
     }
@@ -828,7 +829,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 
   /* Convert to canonical encoding using a function which pads it to a
      multiple of 64 bits.  We need this padding for AESWRAP.  */
-  err = make_canon_sexp_pad (s_key, &key, &keylen);
+  err = make_canon_sexp_pad (s_key, 1, &key, &keylen);
   if (err)
     {
       log_error ("error creating canonical S-expression\n");

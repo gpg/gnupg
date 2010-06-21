@@ -544,88 +544,6 @@ show_keygrip (const char *fname)
 }
 
 
-static int
-rsa_key_check (struct rsa_secret_key_s *skey)
-{
-  int err = 0;
-  gcry_mpi_t t = gcry_mpi_snew (0);
-  gcry_mpi_t t1 = gcry_mpi_snew (0);
-  gcry_mpi_t t2 = gcry_mpi_snew (0);
-  gcry_mpi_t phi = gcry_mpi_snew (0);
-
-  /* check that n == p * q */
-  gcry_mpi_mul (t, skey->p, skey->q);
-  if (gcry_mpi_cmp( t, skey->n) )
-    {
-      log_error ("RSA oops: n != p * q\n");
-      err++;
-    }
-
-  /* check that p is less than q */
-  if (gcry_mpi_cmp (skey->p, skey->q) > 0)
-    {
-      gcry_mpi_t tmp;
-
-      log_info ("swapping secret primes\n");
-      tmp = gcry_mpi_copy (skey->p);
-      gcry_mpi_set (skey->p, skey->q);
-      gcry_mpi_set (skey->q, tmp);
-      gcry_mpi_release (tmp);
-      /* and must recompute u of course */
-      gcry_mpi_invm (skey->u, skey->p, skey->q);
-    }
-
-  /* check that e divides neither p-1 nor q-1 */
-  gcry_mpi_sub_ui (t, skey->p, 1 );
-  gcry_mpi_div (NULL, t, t, skey->e, 0);
-  if (!gcry_mpi_cmp_ui( t, 0) )
-    {
-      log_error ("RSA oops: e divides p-1\n");
-      err++;
-    }
-  gcry_mpi_sub_ui (t, skey->q, 1);
-  gcry_mpi_div (NULL, t, t, skey->e, 0);
-  if (!gcry_mpi_cmp_ui( t, 0))
-    {
-      log_info ( "RSA oops: e divides q-1\n" );
-      err++;
-    }
-
-  /* check that d is correct. */
-  gcry_mpi_sub_ui (t1, skey->p, 1);
-  gcry_mpi_sub_ui (t2, skey->q, 1);
-  gcry_mpi_mul (phi, t1, t2);
-  gcry_mpi_invm (t, skey->e, phi);
-  if (gcry_mpi_cmp (t, skey->d))
-    { /* no: try universal exponent. */
-      gcry_mpi_gcd (t, t1, t2);
-      gcry_mpi_div (t, NULL, phi, t, 0);
-      gcry_mpi_invm (t, skey->e, t);
-      if (gcry_mpi_cmp (t, skey->d))
-        {
-          log_error ("RSA oops: bad secret exponent\n");
-          err++;
-        }
-    }
-
-  /* check for correctness of u */
-  gcry_mpi_invm (t, skey->p, skey->q);
-  if (gcry_mpi_cmp (t, skey->u))
-    {
-      log_info ( "RSA oops: bad u parameter\n");
-      err++;
-    }
-
-  if (err)
-    log_info ("RSA secret key check failed\n");
-
-  gcry_mpi_release (t);
-  gcry_mpi_release (t1);
-  gcry_mpi_release (t2);
-  gcry_mpi_release (phi);
-
-  return err? -1:0;
-}
 
 #if 0
 /* A callback used by p12_parse to return a certificate.  */
@@ -789,6 +707,7 @@ import_p12_file (const char *fname)
 
 
 
+#if 0
 static gcry_mpi_t *
 sexp_to_kparms (gcry_sexp_t sexp)
 {
@@ -842,20 +761,20 @@ sexp_to_kparms (gcry_sexp_t sexp)
   gcry_sexp_release (list);
   return array;
 }
-
+#endif
 
 /* Check whether STRING is a KEYGRIP, i.e has the correct length and
    does only consist of uppercase hex characters. */
-static int
-is_keygrip (const char *string)
-{
-  int i;
+/* static int */
+/* is_keygrip (const char *string) */
+/* { */
+/*   int i; */
 
-  for(i=0; string[i] && i < 41; i++) 
-    if (!strchr("01234567890ABCDEF", string[i]))
-      return 0; 
-  return i == 40;
-}
+/*   for(i=0; string[i] && i < 41; i++)  */
+/*     if (!strchr("01234567890ABCDEF", string[i])) */
+/*       return 0;  */
+/*   return i == 40; */
+/* } */
 
 
 #if 0
@@ -1195,6 +1114,7 @@ release_passphrase (char *pw)
     }
 }
 
+#if 0
 static int
 store_private_key (const unsigned char *grip,
                    const void *buffer, size_t length, int force)
@@ -1257,3 +1177,4 @@ store_private_key (const unsigned char *grip,
   xfree (fname);
   return 0;
 }
+#endif

@@ -34,8 +34,7 @@
 #include "exechelp.h"
 #include "i18n.h"
 #include "sysutils.h"
-
-
+#include "minip12.h"
 
 /* A table to store a fingerprint as used in a duplicates table.  We
    don't need to hash here because a fingerprint is already a perfect
@@ -57,11 +56,11 @@ typedef struct duptable_s *duptable_t;
 #define DUPTABLE_SIZE (1 << DUPTABLE_BITS)
 
 
-static void print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream);
+static void print_short_info (ksba_cert_t cert, estream_t stream);
 static gpg_error_t export_p12 (ctrl_t ctrl,
                                const unsigned char *certimg, size_t certimglen,
                                const char *prompt, const char *keygrip,
-                               estream_t *retfp);
+                               void **r_result, size_t *r_resultlen);
 
 
 /* Create a table used to indetify duplicated certificates. */
@@ -255,7 +254,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
             {
               if (count)
                 es_putc ('\n', stream);
-              print_short_info (cert, NULL, stream);
+              print_short_info (cert, stream);
               es_putc ('\n', stream);
             }
           count++;
@@ -317,23 +316,22 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
 }
 
 
-/* Export a certificates and its private key. */
+/* Export a certificate and its private key. */
 void
-gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
+gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
 {
+  gpg_error_t err = 0;
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC *desc = NULL;
   Base64Context b64writer = NULL;
   ksba_writer_t writer;
   ksba_cert_t cert = NULL;
-  int rc=0;
   const unsigned char *image;
   size_t imagelen;
   char *keygrip = NULL;
   char *prompt;
-  char buffer[1024];
-  int  nread;
-  estream_t datafp = NULL;
+  void *data;
+  size_t datalen;
 
 
   hd = keydb_new (0);
@@ -351,28 +349,28 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
       goto leave;
     }
 
-  rc = classify_user_id (name, desc);
-  if (rc)
+  err = classify_user_id (name, desc);
+  if (err)
     {
       log_error ("key `%s' not found: %s\n",
-                 name, gpg_strerror (rc));
+                 name, gpg_strerror (err));
       goto leave;
     }
 
   /* Lookup the certificate and make sure that it is unique. */
-  rc = keydb_search (hd, desc, 1);
-  if (!rc)
+  err = keydb_search (hd, desc, 1);
+  if (!err)
     {
-      rc = keydb_get_cert (hd, &cert);
-      if (rc) 
+      err = keydb_get_cert (hd, &cert);
+      if (err) 
         {
-          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
+          log_error ("keydb_get_cert failed: %s\n", gpg_strerror (err));
           goto leave;
         }
 
     next_ambiguous:      
-      rc = keydb_search (hd, desc, 1);
-      if (!rc)
+      err = keydb_search (hd, desc, 1);
+      if (!err)
         {
           ksba_cert_t cert2 = NULL;
 
@@ -385,14 +383,14 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
                 }
               ksba_cert_release (cert2);
             }
-          rc = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+          err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
         }
-      else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
-        rc = 0;
-      if (rc)
+      else if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
+        err = 0;
+      if (err)
         {
           log_error ("key `%s' not found: %s\n",
-                     name, gpg_strerror (rc));
+                     name, gpg_strerror (err));
           goto leave;
         }
     }
@@ -401,8 +399,8 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   if (!keygrip || gpgsm_agent_havekey (ctrl, keygrip))
     {
       /* Note, that the !keygrip case indicates a bad certificate. */
-      rc = gpg_error (GPG_ERR_NO_SECKEY);
-      log_error ("can't export key `%s': %s\n", name, gpg_strerror (rc));
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      log_error ("can't export key `%s': %s\n", name, gpg_strerror (err));
       goto leave;
     }
   
@@ -415,51 +413,44 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
 
   if (ctrl->create_pem)
     {
-      print_short_info (cert, fp, NULL);
-      putc ('\n', fp);
+      print_short_info (cert, stream);
+      es_putc ('\n', stream);
     }
 
   if (opt.p12_charset && ctrl->create_pem)
     {
-      fprintf (fp, "The passphrase is %s encoded.\n\n",
-               opt.p12_charset);
+      es_fprintf (stream, "The passphrase is %s encoded.\n\n",
+                  opt.p12_charset);
     }
 
   ctrl->pem_name = "PKCS12";
-  rc = gpgsm_create_writer (&b64writer, ctrl, fp, NULL, &writer);
-  if (rc)
+  err = gpgsm_create_writer (&b64writer, ctrl, NULL, stream, &writer);
+  if (err)
     {
-      log_error ("can't create writer: %s\n", gpg_strerror (rc));
+      log_error ("can't create writer: %s\n", gpg_strerror (err));
       goto leave;
     }
 
-
   prompt = gpgsm_format_keydesc (cert);
-  rc = export_p12 (ctrl, image, imagelen, prompt, keygrip, &datafp);
+  err = export_p12 (ctrl, image, imagelen, prompt, keygrip, &data, &datalen);
   xfree (prompt);
-  if (rc)
+  if (err)
     goto leave;
-  es_rewind (datafp);
-  while ( (nread = es_fread (buffer, 1, sizeof buffer, datafp)) > 0 )
-    if ((rc = ksba_writer_write (writer, buffer, nread)))
-      {
-        log_error ("write failed: %s\n", gpg_strerror (rc));
-        goto leave;
-      }
-  if (es_ferror (datafp))
+  err = ksba_writer_write (writer, data, datalen);
+  xfree (data);
+  if (err)
     {
-      rc = gpg_error_from_syserror ();
-      log_error ("error reading temporary file: %s\n", gpg_strerror (rc));
+      log_error ("write failed: %s\n", gpg_strerror (err));
       goto leave;
     }
 
   if (ctrl->create_pem)
     {
       /* We want one certificate per PEM block */
-      rc = gpgsm_finish_writer (b64writer);
-      if (rc) 
+      err = gpgsm_finish_writer (b64writer);
+      if (err) 
         {
-          log_error ("write failed: %s\n", gpg_strerror (rc));
+          log_error ("write failed: %s\n", gpg_strerror (err));
           goto leave;
         }
       gpgsm_destroy_writer (b64writer);
@@ -470,7 +461,6 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   cert = NULL;
 
  leave:
-  es_fclose (datafp);
   gpgsm_destroy_writer (b64writer);
   ksba_cert_release (cert);
   xfree (desc);
@@ -478,30 +468,9 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
 }
 
 
-/* Call either es_putc or the plain putc.  */
-static void
-do_putc (int value, FILE *fp, estream_t stream)
-{
-  if (stream)
-    es_putc (value, stream);
-  else
-    putc (value, fp);
-}
-
-/* Call either es_fputs or the plain fputs.  */
-static void
-do_fputs (const char *string, FILE *fp, estream_t stream)
-{
-  if (stream)
-    es_fputs (string, stream);
-  else
-    fputs (string, fp);
-}
-
-
 /* Print some info about the certifciate CERT to FP or STREAM */
 static void
-print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
+print_short_info (ksba_cert_t cert, estream_t stream)
 {
   char *p;
   ksba_sexp_t sexp;
@@ -509,18 +478,15 @@ print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
 
   for (idx=0; (p = ksba_cert_get_issuer (cert, idx)); idx++)
     {
-      do_fputs ((!idx
+      es_fputs ((!idx
                  ?   "Issuer ...: "
-                 : "\n   aka ...: "), fp, stream); 
-      if (stream)
-        gpgsm_es_print_name (stream, p);
-      else
-        gpgsm_print_name (fp, p);
+                 : "\n   aka ...: "), stream); 
+      gpgsm_es_print_name (stream, p);
       xfree (p);
     }
-  do_putc ('\n', fp, stream);
+  es_putc ('\n', stream);
 
-  do_fputs ("Serial ...: ", fp, stream); 
+  es_fputs ("Serial ...: ", stream); 
   sexp = ksba_cert_get_serial (cert);
   if (sexp)
     {
@@ -533,205 +499,224 @@ print_short_info (ksba_cert_t cert, FILE *fp, estream_t stream)
           for (len=0; *s && *s != ':' && digitp (s); s++)
             len = len*10 + atoi_1 (s);
           if (*s == ':')
-            {
-              if (stream)
-                es_write_hexstring (stream, s+1, len, 0, NULL);
-              else
-                print_hexstring (fp, s+1, len, 0);
-            }
+            es_write_hexstring (stream, s+1, len, 0, NULL);
         }
       xfree (sexp);
     }
-  do_putc ('\n', fp, stream);
+  es_putc ('\n', stream);
 
   for (idx=0; (p = ksba_cert_get_subject (cert, idx)); idx++)
     {
-      do_fputs ((!idx
+      es_fputs ((!idx
                  ?   "Subject ..: "
-                 : "\n    aka ..: "), fp, stream); 
-      if (stream)
-        gpgsm_es_print_name (stream, p);
-      else
-        gpgsm_print_name (fp, p);
+                 : "\n    aka ..: "), stream); 
+      gpgsm_es_print_name (stream, p);
       xfree (p);
     }
-  do_putc ('\n', fp, stream);
+  es_putc ('\n', stream);
 }
 
 
-static gpg_error_t
-popen_protect_tool (ctrl_t ctrl, const char *pgmname,
-                    estream_t infile, estream_t outfile, 
-                    estream_t *statusfile, 
-                    const char *prompt, const char *keygrip,
-                    pid_t *pid)
+
+/* Parse a private key S-expression and retutn a malloced array with
+   the RSA paramaters in pkcs#12 order.  The caller needs to
+   deep-release this array.  */
+static gcry_mpi_t *
+sexp_to_kparms (gcry_sexp_t sexp)
 {
-  const char *argv[22];
-  int i=0;
+  gcry_sexp_t list, l2;
+  const char *name;
+  const char *s;
+  size_t n;
+  int idx;
+  const char *elems;
+  gcry_mpi_t *array;
 
-  /* Make sure that the agent is running so that the protect tool is
-     able to ask for a passphrase.  This has only an effect under W32
-     where the agent is started on demand; sending a NOP does not harm
-     on other platforms.  This is not really necessary anymore because
-     the protect tool does this now by itself; it does not harm either.*/
-  gpgsm_agent_send_nop (ctrl);
-
-  argv[i++] = "--homedir";
-  argv[i++] = opt.homedir;
-  argv[i++] = "--p12-export";
-  argv[i++] = "--have-cert";
-  argv[i++] = "--prompt";
-  argv[i++] = prompt?prompt:"";
-  argv[i++] = "--enable-status-msg";
-  if (opt.p12_charset)
+  list = gcry_sexp_find_token (sexp, "private-key", 0 );
+  if(!list)
+    return NULL; 
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  name = gcry_sexp_nth_data (list, 0, &n);
+  if(!name || n != 3 || memcmp (name, "rsa", 3))
     {
-      argv[i++] = "--p12-charset";
-      argv[i++] = opt.p12_charset;
+      gcry_sexp_release (list);
+      return NULL;
     }
-  if (opt.agent_program)
-    {
-      argv[i++] = "--agent-program";
-      argv[i++] = opt.agent_program;
-    }
-  argv[i++] = "--",
-  argv[i++] = keygrip,
-  argv[i] = NULL;
-  assert (i < sizeof argv);
 
-  return gnupg_spawn_process (pgmname, argv, infile, outfile,
-                              setup_pinentry_env, (128|64),
-                              statusfile, pid);
+  /* Parameter names used with RSA in the pkcs#12 order. */
+  elems = "nedqp--u";
+  array = xtrycalloc (strlen(elems) + 1, sizeof *array);
+  if (!array)
+    {
+      gcry_sexp_release (list);
+      return NULL;
+    }
+  for (idx=0, s=elems; *s; s++, idx++ ) 
+    {
+      if (*s == '-')
+        continue; /* Computed below  */
+      l2 = gcry_sexp_find_token (list, s, 1);
+      if (l2)
+        {
+          array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+          gcry_sexp_release (l2);
+        }
+      if (!array[idx]) /* Required parameter not found or invalid.  */
+        {
+          for (idx=0; array[idx]; idx++)
+            gcry_mpi_release (array[idx]);
+          xfree (array);
+          gcry_sexp_release (list);
+          return NULL;
+        }
+    }
+  gcry_sexp_release (list);
+
+  array[5] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
+  gcry_mpi_sub_ui (array[5], array[3], 1);
+  gcry_mpi_mod (array[5], array[2], array[5]);   
+
+  array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
+  gcry_mpi_sub_ui (array[6], array[4], 1);
+  gcry_mpi_mod (array[6], array[3], array[6]);   
+
+  return array;
 }
 
 
 static gpg_error_t
 export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
-            const char *prompt, const char *keygrip, estream_t *retfp)
+            const char *prompt, const char *keygrip,
+            void **r_result, size_t *r_resultlen)
 {
-  const char *pgmname;
-  gpg_error_t err = 0, child_err = 0;
-  int c, cont_line;
-  unsigned int pos;
-  estream_t infp = NULL;
-  estream_t fp = NULL;
-  estream_t outfp = NULL;
-  char buffer[1024];
-  pid_t pid = -1;
-  int bad_pass = 0;
+  gpg_error_t err = 0;
+  void *kek = NULL;
+  size_t keklen;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  gcry_cipher_hd_t cipherhd = NULL;
+  gcry_sexp_t s_skey = NULL;
+  gcry_mpi_t *kparms = NULL;
+  unsigned char *key = NULL;
+  size_t keylen;
+  char *passphrase = NULL;
+  unsigned char *result = NULL;
+  size_t resultlen;
+  int i;
 
-  if (!opt.protect_tool_program || !*opt.protect_tool_program)
-    pgmname = gnupg_module_name (GNUPG_MODULE_NAME_PROTECT_TOOL);
-  else
-    pgmname = opt.protect_tool_program;
+  *r_result = NULL;
 
-  infp = es_tmpfile ();
-  if (!infp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), strerror (errno));
-      goto cleanup;
-    }
-
-  if (es_fwrite (certimg, certimglen, 1, infp) != 1)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error writing to temporary file: %s\n"),
-                 strerror (errno));
-      goto cleanup;
-    }
-
-  outfp = es_tmpfile ();
-  if (!outfp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), strerror (errno));
-      goto cleanup;
-    }
-
-  err = popen_protect_tool (ctrl, 
-                            pgmname, infp, outfp, &fp, prompt, keygrip, &pid);
+  /* Get the current KEK.  */
+  err = gpgsm_agent_keywrap_key (ctrl, 1, &kek, &keklen);
   if (err)
     {
-      pid = -1;
-      goto cleanup;
-    }
-  es_fclose (infp);
-  infp = NULL;
-
-  /* Read stderr of the protect tool. */
-  pos = 0;
-  cont_line = 0;
-  while ((c=es_getc (fp)) != EOF)
-    {
-      /* fixme: We could here grep for status information of the
-         protect tool to figure out better error codes for
-         CHILD_ERR. */
-      buffer[pos++] = c;
-      if (pos >= sizeof buffer - 5 || c == '\n')
-        {
-          buffer[pos - (c == '\n')] = 0;
-          if (cont_line)
-            log_printf ("%s", buffer);
-          else
-            {
-              if (!strncmp (buffer, "gpg-protect-tool: [PROTECT-TOOL:] ",34))
-                {
-                  char *p, *pend;
-
-                  p = buffer + 34;
-                  pend = strchr (p, ' ');
-                  if (pend)
-                    *pend = 0;
-                  if ( !strcmp (p, "bad-passphrase"))
-                    bad_pass++;
-                }
-              else 
-                log_info ("%s", buffer);
-            }
-          pos = 0;
-          cont_line = (c != '\n');
-        }
+      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
+      goto leave;
     }
 
-  if (pos)
-    {
-      buffer[pos] = 0;
-      if (cont_line)
-        log_printf ("%s\n", buffer);
-      else
-        log_info ("%s\n", buffer);
-    }
-  else if (cont_line)
-    log_printf ("\n");
-
-  /* If we found no error in the output of the child, setup a suitable
-     error code, which will later be reset if the exit status of the
-     child is 0. */
-  if (!child_err)
-    child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
-
- cleanup:
-  es_fclose (infp);
-  es_fclose (fp);
-  if (pid != -1)
-    {
-      if (!gnupg_wait_process (pgmname, pid, 0, NULL))
-        child_err = 0;
-      gnupg_release_process (pid);
-    }
-  if (!err)
-    err = child_err;
+  /* Receive the wrapped key from the agent.  */
+  err = gpgsm_agent_export_key (ctrl, keygrip, prompt, 
+                                &wrappedkey, &wrappedkeylen);
   if (err)
-    es_fclose (outfp);
-  else
-    *retfp = outfp;
-  if (bad_pass)
+    goto leave;
+
+
+  /* Unwrap the key.  */
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
+  if (err)
+    goto leave;
+  err = gcry_cipher_setkey (cipherhd, kek, keklen);
+  if (err)
+    goto leave;
+  xfree (kek);
+  kek = NULL;
+
+  if (wrappedkeylen < 24)
+    {
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto leave;
+    }
+  keylen = wrappedkeylen - 8;
+  key = xtrymalloc_secure (keylen);
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gcry_cipher_decrypt (cipherhd, key, keylen, wrappedkey, wrappedkeylen);
+  if (err)
+    goto leave;
+  xfree (wrappedkey);
+  wrappedkey = NULL;
+  gcry_cipher_close (cipherhd);
+  cipherhd = NULL;
+
+
+  /* Convert to a gcrypt S-expression.  */
+  err = gcry_sexp_create (&s_skey, key, keylen, 0, xfree_fnc);
+  if (err)
+    goto leave;
+  key = NULL; /* Key is now owned by S_KEY.  */
+
+  /* Get the parameters from the S-expression.  */
+  kparms = sexp_to_kparms (s_skey);
+  gcry_sexp_release (s_skey);
+  s_skey = NULL;
+  if (!kparms)
+    {
+      log_error ("error converting key parameters\n");
+      err = GPG_ERR_BAD_SECKEY;
+      goto leave;
+    } 
+    
+  err = gpgsm_agent_ask_passphrase
+    (ctrl,
+     i18n_utf8 ("Please enter the passphrase to protect the "
+                "new PKCS#12 object."),
+     1, &passphrase);
+  if (err)
+    goto leave;
+
+  result = p12_build (kparms, certimg, certimglen, passphrase,
+                      opt.p12_charset, &resultlen);
+  xfree (passphrase);
+  passphrase = NULL;
+  if (!result)
+    err = gpg_error (GPG_ERR_GENERAL);
+  
+ leave:
+  xfree (key);
+  gcry_sexp_release (s_skey);
+  if (kparms)
+    {
+      for (i=0; kparms[i]; i++)
+        gcry_mpi_release (kparms[i]);
+      xfree (kparms);
+    }
+  gcry_cipher_close (cipherhd);
+  xfree (wrappedkey);
+  xfree (kek);
+  
+  if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
     {
       /* During export this is the passphrase used to unprotect the
          key and not the pkcs#12 thing as in export.  Therefore we can
          issue the regular passphrase status.  FIXME: replace the all
          zero keyid by a regular one. */
       gpgsm_status (ctrl, STATUS_BAD_PASSPHRASE, "0000000000000000");
+    }
+
+  if (err)
+    {
+      xfree (result);
+    }
+  else
+    {
+      *r_result = result;
+      *r_resultlen = resultlen;
     }
   return err;
 }

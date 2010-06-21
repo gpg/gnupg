@@ -1079,9 +1079,10 @@ gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
 /* Ask for the passphrase (this is used for pkcs#12 import/export.  On
    success the caller needs to free the string stored at R_PASSPHRASE.
    On error NULL will be stored at R_PASSPHRASE and an appropriate
-   error code returned. */
+   error code returned.  If REPEAT is true the agent tries to get a
+   new passphrase (i.e. asks the user to confirm it).  */
 gpg_error_t
-gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg,
+gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
                             char **r_passphrase)
 {
   gpg_error_t err;
@@ -1098,7 +1099,9 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg,
   if (desc_msg && *desc_msg && !(arg4 = percent_plus_escape (desc_msg)))
     return gpg_error_from_syserror ();
   
-  snprintf (line, DIM(line)-1, "GET_PASSPHRASE --data -- X X X %s", arg4);
+  snprintf (line, DIM(line)-1, "GET_PASSPHRASE --data%s -- X X X %s",
+            repeat? " --repeat=1 --check --qualitybar":"",
+            arg4);
   xfree (arg4);
 
   init_membuf_secure (&data, 64);
@@ -1201,3 +1204,55 @@ gpgsm_agent_import_key (ctrl_t ctrl, const void *key, size_t keylen)
                          NULL, NULL, inq_import_key_parms, &parm, NULL, NULL);
   return err;
 }
+
+
+
+/* Receive a secret key from the agent.  KEYGRIP is the hexified
+   keygrip, DESC a prompt to be displayed with the agent's passphrase
+   question (needs to be plus+percent escaped).  On success the key is
+   stored as a canonical S-expression at R_RESULT and R_RESULTLEN. */
+gpg_error_t
+gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
+                        unsigned char **r_result, size_t *r_resultlen)
+{
+  gpg_error_t err;
+  membuf_t data;
+  size_t len;
+  unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
+
+  *r_result = NULL;
+
+  err = start_agent (ctrl);
+  if (err)
+    return err;
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      err = assuan_transact (agent_ctx, line,
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
+
+  snprintf (line, DIM(line)-1, "EXPORT_KEY %s", keygrip);
+
+  init_membuf_secure (&data, 1024);
+  err = assuan_transact (agent_ctx, line,
+                         membuf_data_cb, &data, 
+                         default_inq_cb, ctrl, NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  *r_result = buf;
+  *r_resultlen = len;
+  return 0;
+}
+
+

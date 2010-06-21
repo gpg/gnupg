@@ -72,9 +72,9 @@ make_canon_sexp (gcry_sexp_t sexp, unsigned char **r_buffer, size_t *r_buflen)
 
 
 /* Same as make_canon_sexp but pad the buffer to multiple of 64
-   bits.  */
+   bits.  If SECURE is set, secure memory will be allocated.  */
 gpg_error_t
-make_canon_sexp_pad (gcry_sexp_t sexp,
+make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
                      unsigned char **r_buffer, size_t *r_buflen)
 {
   size_t len;
@@ -88,7 +88,7 @@ make_canon_sexp_pad (gcry_sexp_t sexp,
   if (!len)
     return gpg_error (GPG_ERR_BUG);
   len += (8 - len % 8) % 8;
-  buf = xtrycalloc (1, len);
+  buf = secure? xtrycalloc_secure (1, len) : xtrycalloc (1, len);
   if (!buf)
     return gpg_error_from_syserror ();
   if (!gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, buf, len))

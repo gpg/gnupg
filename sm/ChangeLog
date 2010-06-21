@@ -1,3 +1,21 @@
+2010-06-21  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (p12_build): Change arg CERT to const void ptr.
+	(build_cert_sequence): Change arg CERT to const ptr.
+
+	* gpgsm.c (main) <aExportSecretKeyP12>: Use to estream.
+	(open_fwrite): Removed.
+
+	* export.c: Include minip12.h.
+	(popen_protect_tool): Remove.
+	(export_p12): Use gpg-agent directly.  Change calling convention.
+	(gpgsm_p12_export): Adjust for that change.  Change arg FP to an
+	estream_t.
+	(do_putc): Remove.  Change callers to es_putc.
+	(do_fputs): Likewise.
+	(print_short_info): Remove arg FP.
+	* call-agent.c (gpgsm_agent_export_key): new.
+
 2010-06-17  Werner Koch  <wk@g10code.com>
 
 	* import.c (parse_p12): Remove arg retfp.  Use the agent's new

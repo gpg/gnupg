@@ -23,6 +23,10 @@
 #include <gcrypt.h> /* We need this for the memory function protos. */
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
+/* Add error codes available only in newer versions of libgpg-error.  */
+#ifndef GPG_ERR_MISSING_KEY
+#define GPG_ERR_MISSING_KEY 181
+#endif
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -77,6 +81,7 @@ typedef char **rl_completion_func_t (const char *, int, int);
 #define xtryrealloc(a,b) gcry_realloc ((a),(b))
 #define xtrystrdup(a)    gcry_strdup ((a))
 #define xfree(a)         gcry_free ((a))
+#define xfree_fnc        gcry_free
 
 #define xmalloc(a)       gcry_xmalloc ((a))
 #define xmalloc_secure(a)  gcry_xmalloc_secure ((a))
@@ -146,7 +151,7 @@ gpg_error_t b64dec_finish (struct b64state *state);
 /*-- sexputil.c */
 gpg_error_t make_canon_sexp (gcry_sexp_t sexp,
                              unsigned char **r_buffer, size_t *r_buflen);
-gpg_error_t make_canon_sexp_pad (gcry_sexp_t sexp,
+gpg_error_t make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
                                  unsigned char **r_buffer, size_t *r_buflen);
 gpg_error_t keygrip_from_canon_sexp (const unsigned char *key, size_t keylen,
                                      unsigned char *grip);
