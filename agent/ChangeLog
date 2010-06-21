@@ -1,6 +1,12 @@
+2010-06-21  Werner Koch  <wk@g10code.com>
+
+	* protect-tool.c (export_p12_file, import_p12_cert_cb)
+	(import_p12_file, sexp_to_kparms, store_private_key): Remove
+	unused code.
+
 2010-06-18  Werner Koch  <wk@g10code.com>
 
-	* protect-tool.c (store_private_key, rsa_key_check): 
+	* protect-tool.c (store_private_key, rsa_key_check): Remove.
 
 	* command.c (cmd_export_key): New.
 
