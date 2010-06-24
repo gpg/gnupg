@@ -226,7 +226,7 @@ lock_agent_spawning (lock_agent_t *lock, const char *homedir)
 
   (void)homedir; /* Not required. */
 
-  *lock = CreateMutex (NULL, FALSE, "GnuPG_spawn_agent_sentinel");
+  *lock = CreateMutexW (NULL, FALSE, L"GnuPG_spawn_agent_sentinel");
   if (!*lock)
     {
       log_error ("failed to create the spawn_agent mutex: %s\n",
@@ -362,10 +362,10 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           if (err)
             log_debug ("starting `%s' for testing failed: %s\n",
                        agent_program, gpg_strerror (err));
-          else if ((err = gnupg_wait_process (agent_program, pid, 0, &excode)))
+          else if ((err = gnupg_wait_process (agent_program, pid, 1, &excode)))
             {
               if (excode == -1)
-                log_debug ("running `%s' for testing failed: %s\n",
+                log_debug ("running `%s' for testing failed (wait): %s\n",
                            agent_program, gpg_strerror (err));
             }          
           gnupg_release_process (pid);

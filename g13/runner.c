@@ -165,7 +165,7 @@ runner_release (runner_t runner)
           arbitrary NAME of the runner object.  However it does not
           matter because that information is only used for
           diagnostics.)  */
-      gnupg_wait_process (runner->name, runner->pid, 0, NULL);
+      gnupg_wait_process (runner->name, runner->pid, 1, NULL);
       gnupg_release_process (runner->pid);
     }
 
@@ -371,7 +371,7 @@ runner_thread (void *arg)
       int exitcode;
 
       log_debug ("runner thread waiting ...\n");
-      err = gnupg_wait_process (runner->name, runner->pid, 0, &exitcode);
+      err = gnupg_wait_process (runner->name, runner->pid, 1, &exitcode);
       gnupg_release_process (runner->pid);
       runner->pid = (pid_t)(-1);
       if (err)

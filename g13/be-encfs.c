@@ -304,7 +304,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
     close (outbound[1]);
   if (pid != (pid_t)(-1))
     {
-      gnupg_wait_process (pgmname, pid, 0, NULL);
+      gnupg_wait_process (pgmname, pid, 1, NULL);
       gnupg_release_process (pid);
     }
   runner_release (runner);

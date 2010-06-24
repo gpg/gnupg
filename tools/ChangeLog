@@ -1,3 +1,9 @@
+2010-06-24  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gpg_agent_runtime_change)
+	(scdaemon_runtime_change, retrieve_options_from_program): Use HANG
+	option for gnupg_wait_progress.  Fixes regression from 2010-06-09.
+
 2010-06-07  Werner Koch  <wk@g10code.com>
 
 	* gpgtar.c, gpgtar.h, gpgtar-list.c, gpgtar-create.c

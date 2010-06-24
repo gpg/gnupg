@@ -1,3 +1,9 @@
+2010-06-24  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (lock_agent_spawning) [W32]: Use CreateMutexW.
+	(start_new_gpg_agent): Use HANG option for gnupg_wait_progress.
+	Fixes regression from 2010-06-09.
+
 2010-06-21  Werner Koch  <wk@g10code.com>
 
 	* util.h (xfree_fnc): New.
@@ -41,7 +47,7 @@
 	* util.h (GNUPG_MODULE_NAME_DIRMNGR_LDAP): New.
 	* homedir.c (gnupg_cachedir): New.
 	(w32_try_mkdir): New.
-	(dirmngr_socket_name): Chanmge standard socket name.
+	(dirmngr_socket_name): Change standard socket name.
 	(gnupg_module_name): Support GNUPG_MODULE_NAME_DIRMNGR_LDAP.
 
 	* logging.c (log_set_get_tid_callback): Replace by ...

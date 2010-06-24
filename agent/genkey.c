@@ -129,7 +129,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
 
   if (gnupg_spawn_process_fd (pgmname, argv, fileno (infp), -1, -1, &pid))
     result = 1; /* Execute error - assume password should no be used.  */
-  else if (gnupg_wait_process (pgmname, pid, 0, NULL))
+  else if (gnupg_wait_process (pgmname, pid, 1, NULL))
     result = 1; /* Helper returned an error - probably a match.  */
   else
     result = 0; /* Success; i.e. no match.  */

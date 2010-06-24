@@ -1,3 +1,8 @@
+2010-06-24  Werner Koch  <wk@g10code.com>
+
+	* genkey.c (check_passphrase_pattern): Use HANG option for
+	gnupg_wait_progress.  Fixes regression from 2010-06-09.
+
 2010-06-21  Werner Koch  <wk@g10code.com>
 
 	* protect-tool.c (export_p12_file, import_p12_cert_cb)

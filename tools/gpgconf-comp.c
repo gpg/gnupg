@@ -1051,7 +1051,7 @@ gpg_agent_runtime_change (void)
   
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 0, NULL);
+    err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " reloadagent", gpg_strerror (err));
@@ -1083,7 +1083,7 @@ scdaemon_runtime_change (void)
   
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
-    err = gnupg_wait_process (pgmname, pid, 0, NULL);
+    err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " scd killscd", gpg_strerror (err));
@@ -1503,7 +1503,7 @@ gc_component_check_options (int component, FILE *out, const char *conf_file)
       close (filedes[1]);
       errlines = collect_error_output (filedes[0], 
 				       gc_component[component].name);
-      if (gnupg_wait_process (pgmname, pid, 0, &exitcode))
+      if (gnupg_wait_process (pgmname, pid, 1, &exitcode))
 	{
 	  if (exitcode == -1)
 	    result |= 1; /* Program could not be run or it
@@ -1922,7 +1922,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   if (fclose (config) && ferror (config))
     gc_error (1, errno, "error closing %s", pgmname);
 
-  err = gnupg_wait_process (pgmname, pid, 0, &exitcode);
+  err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
   if (err)
     gc_error (1, 0, "running %s failed (exitcode=%d): %s",
               pgmname, exitcode, gpg_strerror (err));
