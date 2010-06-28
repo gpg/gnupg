@@ -164,21 +164,6 @@ my_strusage (int level)
 }
 
 
-static void
-my_i18n_init (void)
-{
-#warning Better use common init functions
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE);
-#else
-# ifdef ENABLE_NLS
-  setlocale (LC_ALL, "" );
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
-# endif
-#endif
-}
-
 
 int
 main (int argc, char **argv )
@@ -214,7 +199,7 @@ main (int argc, char **argv )
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
 
   /* Setup I18N. */
-  my_i18n_init();
+  i18n_init();
 
   /* Parse the command line.  */
   pargs.argc = &argc;

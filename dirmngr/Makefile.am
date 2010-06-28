@@ -41,7 +41,7 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	b64dec.c cdb.h cdblib.c ldap.c http.c http.h misc.c	\
 	ocsp.c ocsp.h validate.c validate.h
 
-dirmngr_LDADD = $(libcommonpth) $(DNSLIBS) $(LIBASSUAN_LIBS)  \
+dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBINTL) $(LIBICONV)
 
 if HAVE_W32_SYSTEM
@@ -53,11 +53,11 @@ endif
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) no-libgcrypt.c
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS)
 dirmngr_ldap_LDFLAGS =
-dirmngr_ldap_LDADD = $(libcommon) $(DNSLIBS) \
+dirmngr_ldap_LDADD = $(libcommon) ../gl/libgnu.a $(DNSLIBS) \
 		     $(GPG_ERROR_LIBS) $(LDAPLIBS) $(LIBINTL) $(LIBICONV)
 
 dirmngr_client_SOURCES = dirmngr-client.c b64enc.c no-libgcrypt.c
-dirmngr_client_LDADD = $(libcommon) $(LIBASSUAN_LIBS) \
+dirmngr_client_LDADD = $(libcommon) ../gl/libgnu.a $(LIBASSUAN_LIBS) \
 	               $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 

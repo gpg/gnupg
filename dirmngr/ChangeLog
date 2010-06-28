@@ -1,3 +1,14 @@
+2010-06-28  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c (my_i18n_init): Remove.
+	(main): Call i18n_init instead of above function.
+
+	* dirmngr-client.c (my_i18n_init): Remove.
+	(main): Call i18n_init instead of above function.
+
+	* Makefile.am (dirmngr_LDADD): Add ../gl/libgnu.
+	(dirmngr_ldap_LDADD, dirmngr_client_LDADD): Ditto.
+
 2010-06-09  Werner Koch  <wk@g10code.com>
 
 	* i18n.h: Remove.

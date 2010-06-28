@@ -161,22 +161,6 @@ my_strusage (int level)
 }
 
 
-static void
-my_i18n_init (void)
-{
-#warning Better use common init functions
-#ifdef USE_SIMPLE_GETTEXT
-  set_gettext_file (PACKAGE);
-#else
-# ifdef ENABLE_NLS
-  setlocale (LC_ALL, "" );
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
-# endif
-#endif
-}
-
-
 int
 main (int argc, char **argv )
 {
@@ -194,7 +178,7 @@ main (int argc, char **argv )
   log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX); 
   
   /* Setup I18N. */
-  my_i18n_init();
+  i18n_init();
 
   /* LDAP defaults */
   opt.timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;
