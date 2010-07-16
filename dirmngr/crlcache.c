@@ -218,7 +218,7 @@ create_directory_if_needed (const char *name)
           log_error (_("error creating directory `%s': %s\n"),
                      fname, strerror (errno));
           xfree (fname);
-          errno = save_errno;
+          gpg_err_set_errno (save_errno);
           return -1;
         }
     } 
@@ -298,7 +298,7 @@ cleanup_cache_dir (int force)
    removed, the function will read the last line of a file, even if
    that is not terminated by a LF. */
 static char *
-next_line_from_file (FILE *fp, gpg_error_t *r_err)
+next_line_from_file (estream_t fp, gpg_error_t *r_err)
 {
   char buf[300];
   char *largebuf = NULL;
@@ -311,7 +311,7 @@ next_line_from_file (FILE *fp, gpg_error_t *r_err)
   *r_err = 0;
   p = buf;
   buflen = sizeof buf - 1;
-  while ((c=getc (fp)) != EOF && c != '\n')
+  while ((c=es_getc (fp)) != EOF && c != '\n')
     {
       if (len >= buflen)
         {
@@ -401,12 +401,12 @@ release_cache (crl_cache_t cache)
 
 /* Open the dir file FNAME or create a new one if it does not yet
    exist. */
-static FILE *
+static estream_t
 open_dir_file (const char *fname)
 {
-  FILE *fp;
+  estream_t fp;
 
-  fp = fopen (fname, "r");
+  fp = es_fopen (fname, "r");
   if (!fp)
     {
       log_error (_("failed to open cache dir file `%s': %s\n"),
@@ -416,22 +416,22 @@ open_dir_file (const char *fname)
       if (create_directory_if_needed (NULL) 
           || create_directory_if_needed (DBDIR_D)) 
         return NULL;
-      fp = fopen (fname, "w");
+      fp = es_fopen (fname, "w");
       if (!fp)
         {
           log_error (_("error creating new cache dir file `%s': %s\n"),
                      fname, strerror (errno));
           return NULL;
         }
-      fprintf (fp, "v:%d:\n", DBDIRVERSION);
-      if (ferror (fp))
+      es_fprintf (fp, "v:%d:\n", DBDIRVERSION);
+      if (es_ferror (fp))
         {
           log_error (_("error writing new cache dir file `%s': %s\n"),
                      fname, strerror (errno));
-          fclose (fp);
+          es_fclose (fp);
           return NULL;
         }
-      if (fclose (fp))
+      if (es_fclose (fp))
         {
           log_error (_("error closing new cache dir file `%s': %s\n"),
                      fname, strerror (errno));
@@ -440,7 +440,7 @@ open_dir_file (const char *fname)
 
       log_info (_("new cache dir file `%s' created\n"), fname);
 
-      fp = fopen (fname, "r");
+      fp = es_fopen (fname, "r");
       if (!fp)
         {
           log_error (_("failed to re-open cache dir file `%s': %s\n"),
@@ -454,13 +454,13 @@ open_dir_file (const char *fname)
 
 /* Helper for open_dir. */
 static gpg_error_t
-check_dir_version (FILE **fpadr, const char *fname,
+check_dir_version (estream_t *fpadr, const char *fname,
                          unsigned int *lineno,
                          int cleanup_on_mismatch)
 {
   char *line;
   gpg_error_t lineerr = 0;
-  FILE *fp = *fpadr;
+  estream_t fp = *fpadr;
   int created = 0;
 
  retry:
@@ -485,7 +485,7 @@ check_dir_version (FILE **fpadr, const char *fname,
       if (!created && cleanup_on_mismatch)
         {
           log_error (_("old version of cache directory - cleaning up\n"));
-          fclose (fp);
+          es_fclose (fp);
           *fpadr = NULL;
           if (!cleanup_cache_dir (1))
             {
@@ -521,7 +521,7 @@ open_dir (crl_cache_t *r_cache)
   char *fname; 
   char *line = NULL;
   gpg_error_t lineerr = 0;
-  FILE *fp;
+  estream_t fp;
   crl_cache_entry_t entry, *entrytail;
   unsigned int lineno;
   gpg_error_t err = 0;
@@ -649,7 +649,7 @@ open_dir (crl_cache_t *r_cache)
       log_error (_("error reading `%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
-  if (ferror (fp))
+  if (es_ferror (fp))
     {
       log_error (_("error reading `%s': %s\n"), fname, strerror (errno));
       err = gpg_error (GPG_ERR_CONFIGURATION);
@@ -695,8 +695,7 @@ open_dir (crl_cache_t *r_cache)
 
 
  leave:
-  if (fp)
-    fclose (fp);
+  es_fclose (fp);
   xfree (line);
   xfree (fname);
   if (err)
@@ -709,54 +708,54 @@ open_dir (crl_cache_t *r_cache)
 }
 
 static void
-write_percented_string (const char *s, FILE *fp)
+write_percented_string (const char *s, estream_t fp)
 {
   for (; *s; s++)
     if (*s == ':')
-      fputs ("%3A", fp);
+      es_fputs ("%3A", fp);
     else if (*s == '\n')
-      fputs ("%0A", fp);
+      es_fputs ("%0A", fp);
     else if (*s == '\r')
-      fputs ("%0D", fp);
+      es_fputs ("%0D", fp);
     else
-      putc (*s, fp);
+      es_putc (*s, fp);
 }
 
 
 static void
-write_dir_line_crl (FILE *fp, crl_cache_entry_t e)
+write_dir_line_crl (estream_t fp, crl_cache_entry_t e)
 {
   if (e->invalid)
-    fprintf (fp, "i%d", e->invalid);
+    es_fprintf (fp, "i%d", e->invalid);
   else if (e->user_trust_req)
-    putc ('u', fp);
+    es_putc ('u', fp);
   else
-    putc ('c', fp);
-  putc (':', fp);
-  fputs (e->issuer_hash, fp);
-  putc (':', fp);
+    es_putc ('c', fp);
+  es_putc (':', fp);
+  es_fputs (e->issuer_hash, fp);
+  es_putc (':', fp);
   write_percented_string (e->issuer, fp);
-  putc (':', fp);
+  es_putc (':', fp);
   write_percented_string (e->url, fp);
-  putc (':', fp);
-  fwrite (e->this_update, 15, 1, fp); 
-  putc (':', fp);
-  fwrite (e->next_update, 15, 1, fp); 
-  putc (':', fp);
-  fputs (e->dbfile_hash, fp);
-  putc (':', fp);
+  es_putc (':', fp);
+  es_fwrite (e->this_update, 15, 1, fp); 
+  es_putc (':', fp);
+  es_fwrite (e->next_update, 15, 1, fp); 
+  es_putc (':', fp);
+  es_fputs (e->dbfile_hash, fp);
+  es_putc (':', fp);
   if (e->crl_number)
-    fputs (e->crl_number, fp);
-  putc (':', fp);
+    es_fputs (e->crl_number, fp);
+  es_putc (':', fp);
   if (e->authority_issuer)
     write_percented_string (e->authority_issuer, fp);
-  putc (':', fp);
+  es_putc (':', fp);
   if (e->authority_serialno)
-    fputs (e->authority_serialno, fp);
-  putc (':', fp);
+    es_fputs (e->authority_serialno, fp);
+  es_putc (':', fp);
   if (e->check_trust_anchor && e->user_trust_req)
-    fputs (e->check_trust_anchor, fp);
-  putc ('\n', fp);
+    es_fputs (e->check_trust_anchor, fp);
+  es_putc ('\n', fp);
 }
 
 
@@ -768,7 +767,8 @@ update_dir (crl_cache_t cache)
   char *tmpfname = NULL;
   char *line = NULL;
   gpg_error_t lineerr = 0;
-  FILE *fp, *fpout = NULL;
+  estream_t fp;
+  estream_t fpout = NULL;
   crl_cache_entry_t e;
   unsigned int lineno;
   gpg_error_t err = 0;
@@ -781,7 +781,7 @@ update_dir (crl_cache_t cache)
     e->mark = 1;
 
   lineno = 0;
-  fp = fopen (fname, "r");
+  fp = es_fopen (fname, "r");
   if (!fp)
     {
       err = gpg_error_from_errno (errno);
@@ -792,7 +792,7 @@ update_dir (crl_cache_t cache)
   err = check_dir_version (&fp, fname, &lineno, 0);
   if (err)
     goto leave;
-  rewind (fp);
+  es_rewind (fp);
   lineno = 0;
 
   /* Create a temporary DIR file. */
@@ -827,7 +827,7 @@ update_dir (crl_cache_t cache)
     tmpfname = make_filename (opt.homedir_cache, DBDIR_D, tmpbuf, NULL);
     xfree (tmpbuf);
   }
-  fpout = fopen (tmpfname, "w");
+  fpout = es_fopen (tmpfname, "w");
   if (!fpout)
     {
       err = gpg_error_from_errno (errno);
@@ -868,30 +868,30 @@ update_dir (crl_cache_t cache)
                 { /* We ignore entries we don't have in our cache
                      because they may have been added in the meantime
                      by other instances of dirmngr. */
-                  fprintf (fpout, "# Next line added by "
-                           "another process; our pid is %lu\n", 
-                           (unsigned long)getpid ());
-                  fputs (line, fpout);
-                  putc ('\n', fpout);
+                  es_fprintf (fpout, "# Next line added by "
+                              "another process; our pid is %lu\n", 
+                              (unsigned long)getpid ());
+                  es_fputs (line, fpout);
+                  es_putc ('\n', fpout);
                 }
             }
           else
             {
-              fputs ("# Invalid line detected: ", fpout);
-              fputs (line, fpout);
-              putc ('\n', fpout);
+              es_fputs ("# Invalid line detected: ", fpout);
+              es_fputs (line, fpout);
+              es_putc ('\n', fpout);
             }
         }
       else 
         {
           /* Write out all non CRL lines as they are. */
-          fputs (line, fpout);
-          putc ('\n', fpout);
+          es_fputs (line, fpout);
+          es_putc ('\n', fpout);
         }
 
       xfree (line);
     }
-  if (!ferror (fp) && !ferror (fpout) && !lineerr)
+  if (!es_ferror (fp) && !ferror (es_fpout) && !lineerr)
     {
       /* Write out the remaining entries. */
       for (e= cache->entries; e; e = e->next)
@@ -908,12 +908,12 @@ update_dir (crl_cache_t cache)
       log_error (_("error reading `%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
-  if (ferror (fp))
+  if (es_ferror (fp))
     {
       err = gpg_error_from_errno (errno);
       log_error (_("error reading `%s': %s\n"), fname, strerror (errno));
     }
-  if (ferror (fpout))
+  if (es_ferror (fpout))
     {
       err = gpg_error_from_errno (errno);
       log_error (_("error writing `%s': %s\n"), tmpfname, strerror (errno));
@@ -922,9 +922,9 @@ update_dir (crl_cache_t cache)
     goto leave;
 
   /* Rename the files. */
-  fclose (fp);
+  es_fclose (fp);
   fp = NULL;
-  if (fclose (fpout))
+  if (es_fclose (fpout))
     {
       err = gpg_error_from_errno (errno);
       log_error (_("error closing `%s': %s\n"), tmpfname, strerror (errno));
@@ -947,14 +947,13 @@ update_dir (crl_cache_t cache)
  leave:
   /* Fixme: Relinquish update lock. */
   xfree (line);
-  if (fp)
-    fclose (fp);
+  es_fclose (fp);
   xfree (fname);
   if (fpout)
     {
-      fclose (fpout);
+      es_fclose (fpout);
       if (err && tmpfname)
-        remove (tmpfname);
+        gnupg_remove (tmpfname);
     }
   xfree (tmpfname);
   return err;
@@ -984,14 +983,14 @@ make_db_file_name (const char *issuer_hash)
 static int
 hash_dbfile (const char *fname, unsigned char *md5buffer)
 {
-  FILE *fp;
+  estream_t fp;
   char *buffer;
   size_t n;
   gcry_md_hd_t md5;
   gpg_err_code_t err;
 
   buffer = xtrymalloc (65536);
-  fp = buffer? fopen (fname, "rb") : NULL;
+  fp = buffer? es_fopen (fname, "rb") : NULL;
   if (!fp)
     {
       log_error (_("can't hash `%s': %s\n"), fname, strerror (errno));
@@ -1005,7 +1004,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
       log_error (_("error setting up MD5 hash context: %s\n"),
                  gpg_strerror (err));
       xfree (buffer);
-      fclose (fp);
+      es_fclose (fp);
       return -1;
     }
 
@@ -1015,12 +1014,12 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
     
   for (;;)
     {
-      n = fread (buffer, 1, 65536, fp);
-      if (n < 65536 && ferror (fp))
+      n = es_fread (buffer, 1, 65536, fp);
+      if (n < 65536 && es_ferror (fp))
         {
           log_error (_("error hashing `%s': %s\n"), fname, strerror (errno));
           xfree (buffer);
-          fclose (fp);
+          es_fclose (fp);
           gcry_md_close (md5);
           return -1;
         }
@@ -1028,7 +1027,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
         break;
       gcry_md_write (md5, buffer, n);
     }
-  fclose (fp);
+  es_fclose (fp);
   xfree (buffer);
   gcry_md_final (md5);
 
@@ -2017,7 +2016,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
         *p = '.';
     fname = make_filename (opt.homedir_cache, DBDIR_D, tmpfname, NULL);
     xfree (tmpfname);
-    if (!remove (fname))
+    if (!gnupg_remove (fname))
       log_info (_("removed stale temporary cache file `%s'\n"), fname);
     else if (errno != ENOENT) 
       {
@@ -2198,7 +2197,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
     close (fd_cdb);
   if (fname)
     {
-      remove (fname);
+      gnupg_remove (fname);
       xfree (fname);
     }
   xfree (newfname);
@@ -2214,7 +2213,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
 /* Print one cached entry E in a human readable format to stream
    FP. Return 0 on success. */
 static gpg_error_t
-list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, FILE *fp)
+list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
 {
   struct cdb_find cdbfp;
   struct cdb *cdb;
@@ -2222,44 +2221,46 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, FILE *fp)
   int warn = 0;
   const unsigned char *s;
 
-  fputs ("--------------------------------------------------------\n", fp );
-  fprintf (fp, _("Begin CRL dump (retrieved via %s)\n"), e->url );
-  fprintf (fp, " Issuer:\t%s\n", e->issuer );
-  fprintf (fp, " Issuer Hash:\t%s\n", e->issuer_hash );
-  fprintf (fp, " This Update:\t%s\n", e->this_update ); 
-  fprintf (fp, " Next Update:\t%s\n", e->next_update ); 
-  fprintf (fp, " CRL Number :\t%s\n", e->crl_number? e->crl_number: "none");
-  fprintf (fp, " AuthKeyId  :\t%s\n",
-           e->authority_serialno? e->authority_serialno:"none");
+  es_fputs ("--------------------------------------------------------\n", fp );
+  es_fprintf (fp, _("Begin CRL dump (retrieved via %s)\n"), e->url );
+  es_fprintf (fp, " Issuer:\t%s\n", e->issuer );
+  es_fprintf (fp, " Issuer Hash:\t%s\n", e->issuer_hash );
+  es_fprintf (fp, " This Update:\t%s\n", e->this_update ); 
+  es_fprintf (fp, " Next Update:\t%s\n", e->next_update ); 
+  es_fprintf (fp, " CRL Number :\t%s\n", e->crl_number? e->crl_number: "none");
+  es_fprintf (fp, " AuthKeyId  :\t%s\n",
+              e->authority_serialno? e->authority_serialno:"none");
   if (e->authority_serialno && e->authority_issuer)
     {
-      fputs ("             \t", fp);
+      es_fputs ("             \t", fp);
       for (s=e->authority_issuer; *s; s++)
         if (*s == '\x01')
-          fputs ("\n             \t", fp);
+          es_fputs ("\n             \t", fp);
         else
-          putc (*s, fp);
-      putc ('\n', fp);
+          es_putc (*s, fp);
+      es_putc ('\n', fp);
     }
-  fprintf (fp, " Trust Check:\t%s\n", 
-           !e->user_trust_req? "[system]" :
-           e->check_trust_anchor? e->check_trust_anchor:"[missing]");
+  es_fprintf (fp, " Trust Check:\t%s\n", 
+              !e->user_trust_req? "[system]" :
+              e->check_trust_anchor? e->check_trust_anchor:"[missing]");
 
   if ((e->invalid & 1))
-    fprintf (fp, _(" ERROR: The CRL will not be used because it was still too old after an update!\n"));
+    es_fprintf (fp, _(" ERROR: The CRL will not be used "
+                      "because it was still too old after an update!\n"));
   if ((e->invalid & 2))
-    fprintf (fp, _(" ERROR: The CRL will not be used due to an unknown critical extension!\n"));
+    es_fprintf (fp, _(" ERROR: The CRL will not be used "
+                      "due to an unknown critical extension!\n"));
   if ((e->invalid & ~3))
-    fprintf (fp, _(" ERROR: The CRL will not be used\n"));
+    es_fprintf (fp, _(" ERROR: The CRL will not be used\n"));
 
   cdb = lock_db_file (cache, e);
   if (!cdb)
     return gpg_error (GPG_ERR_GENERAL);
 
   if (!e->dbfile_checked)
-    fprintf (fp, _(" ERROR: This cached CRL may has been tampered with!\n"));
+    es_fprintf (fp, _(" ERROR: This cached CRL may has been tampered with!\n"));
 
-  putc ('\n', fp);
+  es_putc ('\n', fp);
 
   rc = cdb_findinit (&cdbfp, cdb, NULL, 0);
   while (!rc && (rc=cdb_findnext (&cdbfp)) > 0 )
@@ -2299,36 +2300,36 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, FILE *fp)
         }
 
       reason = *record;
-      fputs ("  ", fp);
+      es_fputs ("  ", fp);
       for (i = 0; i < n; i++)
-        fprintf (fp, "%02X", keyrecord[i]);
-      fputs (":\t reasons( ", fp);
+        es_fprintf (fp, "%02X", keyrecord[i]);
+      es_fputs (":\t reasons( ", fp);
     
       if (reason & KSBA_CRLREASON_UNSPECIFIED)
-        fputs( "unspecified ", fp ), any = 1;
+        es_fputs( "unspecified ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_KEY_COMPROMISE )
-        fputs( "key_compromise ", fp ), any = 1; 
+        es_fputs( "key_compromise ", fp ), any = 1; 
       if (reason & KSBA_CRLREASON_CA_COMPROMISE )
-        fputs( "ca_compromise ", fp ), any = 1; 
+        es_fputs( "ca_compromise ", fp ), any = 1; 
       if (reason & KSBA_CRLREASON_AFFILIATION_CHANGED )
-        fputs( "affiliation_changed ", fp ), any = 1; 
+        es_fputs( "affiliation_changed ", fp ), any = 1; 
       if (reason & KSBA_CRLREASON_SUPERSEDED )
-        fputs( "superseeded", fp ), any = 1; 
+        es_fputs( "superseeded", fp ), any = 1; 
       if (reason & KSBA_CRLREASON_CESSATION_OF_OPERATION )
-        fputs( "cessation_of_operation", fp ), any = 1; 
+        es_fputs( "cessation_of_operation", fp ), any = 1; 
       if (reason & KSBA_CRLREASON_CERTIFICATE_HOLD )
-        fputs( "certificate_hold", fp ), any = 1; 
+        es_fputs( "certificate_hold", fp ), any = 1; 
       if (reason && !any)
-        fputs( "other", fp ); 
+        es_fputs( "other", fp ); 
       
-      fprintf (fp, ") rdate: %.15s\n", record+1);
+      es_fprintf (fp, ") rdate: %.15s\n", record+1);
     } 
   if (rc)
     log_error (_("error reading cache entry from db: %s\n"), strerror (rc));
 
   unlock_db_file (cache, e);
-  fprintf (fp, _("End CRL dump\n") );
-  putc ('\n', fp);
+  es_fprintf (fp, _("End CRL dump\n") );
+  es_putc ('\n', fp);
 
   return (rc||warn)? gpg_error (GPG_ERR_GENERAL) : 0;
 }
@@ -2337,7 +2338,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, FILE *fp)
 /* Print the contents of the CRL CACHE in a human readable format to
    stream FP. */
 gpg_error_t 
-crl_cache_list (FILE *fp) 
+crl_cache_list (estream_t fp) 
 {
   crl_cache_t cache = get_current_cache ();
   crl_cache_entry_t entry;
@@ -2357,10 +2358,10 @@ gpg_error_t
 crl_cache_load (ctrl_t ctrl, const char *filename)
 {
   gpg_error_t err;
-  FILE *fp;
+  estream_t fp;
   ksba_reader_t reader;
 
-  fp = fopen (filename, "r");
+  fp = es_fopen (filename, "r");
   if (!fp)
     {
       err = gpg_error_from_errno (errno);
@@ -2380,7 +2381,7 @@ crl_cache_load (ctrl_t ctrl, const char *filename)
     }
   err = crl_cache_insert (ctrl, filename, reader);
   ksba_reader_release (reader);
-  fclose (fp);
+  es_fclose (fp);
   return err;
 }
 

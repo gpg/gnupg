@@ -103,13 +103,13 @@ if [ "$myhost" = "w32" ]; then
           w32root="$w32ce_root"
           [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="--disable-scdaemon --disable-zip --disable-ldap --disable-dirmngr $w32ce_extraoptions"
+          extraoptions="--disable-scdaemon --disable-zip $w32ce_extraoptions"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
           toolprefixes="$w32_toolprefixes i586-mingw32msvc"
           toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
-          extraoptions="$w32_extraoptions"
+          extraoptions="--enable-gpgtar $w32_extraoptions"
           ;;
     esac
     echo "Using $w32root as standard install directory" >&2

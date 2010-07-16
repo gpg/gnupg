@@ -27,8 +27,9 @@ struct
 {
   int verbose;
   int quiet;
-  char *outfile;
+  const char *outfile;
   int symmetric;
+  const char *filename;
 } opt;
 
 

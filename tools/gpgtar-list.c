@@ -89,8 +89,7 @@ parse_header (const void *record, const char *filename)
   for (namelen=0; namelen < sizeof raw->name && raw->name[namelen]; namelen++)
     ;
   if (namelen == sizeof raw->name)
-    log_info ("%s: warning: name not terminated by a nul byte\n",
-              filename);
+    log_info ("%s: warning: name not terminated by a nul byte\n", filename);
   for (n=namelen+1; n < sizeof raw->name; n++)
     if (raw->name[n])
       {

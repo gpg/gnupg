@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -57,6 +57,16 @@
 # include <netdb.h>
 #endif /*!HAVE_W32_SYSTEM*/
 
+#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
+# undef HAVE_PTH
+# undef USE_GNU_PTH
+#endif
+
+#ifdef HAVE_PTH
+# include <pth.h>
+#endif
+
+
 #ifdef HTTP_USE_GNUTLS
 # include <gnutls/gnutls.h>
 /* For non-understandable reasons GNUTLS dropped the _t suffix from
@@ -75,13 +85,13 @@ typedef gnutls_transport_ptr gnutls_transport_ptr_t;
 #include "i18n.h"
 #include "http.h"
 #ifdef USE_DNS_SRV
-#include "srv.h"
+# include "srv.h"
 #else /*!USE_DNS_SRV*/
-/* If we are not compiling with SRV record support we provide stub
-   data structures. */
-#ifndef MAXDNAME
-#define MAXDNAME 1025
-#endif
+  /* If we are not compiling with SRV record support we provide stub
+     data structures. */
+# ifndef MAXDNAME
+#  define MAXDNAME 1025
+# endif
 struct srventry
 {
   unsigned short priority;
@@ -109,6 +119,15 @@ struct srventry
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"   \
                         "01234567890@"                 \
                         "!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
+
+/* A long counter type.  */
+#ifdef HAVE_STRTOULL
+typedef unsigned long long longcounter_t;
+# define counter_strtoul(a) strtoull ((a), NULL, 10)
+#else
+typedef unsigned long longcounter_t;
+# define counter_strtoul(a) strtoul ((a), NULL, 10)
+#endif
 
 /* Define a prefix to map stream functions to the estream library. */
 #ifdef HTTP_USE_ESTREAM
@@ -152,9 +171,19 @@ static es_cookie_io_functions_t cookie_functions =
 
 struct cookie_s 
 {
-  int fd;  /* File descriptor or -1 if already closed. */
-  gnutls_session_t tls_session;  /* TLS session context or NULL if not used. */
-  int keep_socket; /* Flag to communicate with teh close handler. */
+  /* File descriptor or -1 if already closed. */
+  int fd;
+
+  /* TLS session context or NULL if not used. */
+  gnutls_session_t tls_session; 
+
+  /* The remaining content length and a flag telling whether to use
+     the content length.  */
+  longcounter_t content_length;  
+  unsigned int content_length_valid:1;
+
+  /* Flag to communicate with the close handler. */
+  unsigned int keep_socket:1; 
 };
 typedef struct cookie_s *cookie_t;
 
@@ -180,17 +209,18 @@ struct http_context_s
 {
   unsigned int status_code;
   int sock;
-  int in_data;
+  unsigned int in_data:1;
+  unsigned int is_http_0_9:1;
 #ifdef HTTP_USE_ESTREAM
   estream_t fp_read;
   estream_t fp_write;
   void *write_cookie;
+  void *read_cookie;
 #else /*!HTTP_USE_ESTREAM*/
   FILE *fp_read;
   FILE *fp_write;
 #endif /*!HTTP_USE_ESTREAM*/
   void *tls_context;
-  int is_http_0_9;
   parsed_uri_t uri;
   http_req_t req_type;
   char *buffer;          /* Line buffer. */
@@ -417,7 +447,10 @@ http_wait_response (http_t hd)
   hd->write_cookie = NULL;
 #endif
 
-  if (!(hd->flags & HTTP_FLAG_NO_SHUTDOWN))
+  /* Shutdown one end of the socket is desired.  As per HTTP/1.0 this
+     is not required but some very old servers (e.g. the original pksd
+     key server didn't worked without it.  */
+  if ((hd->flags & HTTP_FLAG_SHUTDOWN))
     shutdown (hd->sock, 1);
   hd->in_data = 0;
 
@@ -537,7 +570,9 @@ http_get_status_code (http_t hd)
 gpg_error_t
 http_parse_uri (parsed_uri_t * ret_uri, const char *uri)
 {
-  *ret_uri = xcalloc (1, sizeof **ret_uri + strlen (uri));
+  *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
+  if (!*ret_uri)
+    return gpg_error_from_syserror ();
   strcpy ((*ret_uri)->buffer, uri);
   return do_parse_uri (*ret_uri, 0);
 }
@@ -980,29 +1015,16 @@ send_request (http_t hd, const char *auth,
   if (!p)
     return gpg_error_from_syserror ();
 
-  request = xtrymalloc (2 * strlen (server) 
-                        + strlen (p)
-                        + (authstr?strlen(authstr):0)
-                        + (proxy_authstr?strlen(proxy_authstr):0)
-                        + 100);
-  if (!request)
-    {
-      err = gpg_error_from_syserror ();
-      xfree (p);
-      xfree (authstr);
-      xfree (proxy_authstr);
-      return err;
-    }
-
   if (http_proxy && *http_proxy)
     {
-      sprintf (request, "%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
-	       hd->req_type == HTTP_REQ_GET ? "GET" :
-	       hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-	       hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-	       server, port, *p == '/' ? "" : "/", p,
-	       authstr ? authstr : "",
-               proxy_authstr ? proxy_authstr : "");
+      request = xtryasprintf 
+        ("%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
+         hd->req_type == HTTP_REQ_GET ? "GET" :
+         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+         server, port, *p == '/' ? "" : "/", p,
+         authstr ? authstr : "",
+         proxy_authstr ? proxy_authstr : "");
     }
   else
     {
@@ -1011,16 +1033,24 @@ send_request (http_t hd, const char *auth,
       if (port == 80)
         *portstr = 0;
       else
-        sprintf (portstr, ":%u", port);
+        snprintf (portstr, sizeof portstr, ":%u", port);
 
-      sprintf (request, "%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
-	       hd->req_type == HTTP_REQ_GET ? "GET" :
-	       hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
-	       hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-	       *p == '/' ? "" : "/", p, server, portstr,
-               authstr? authstr:"");
+      request = xtryasprintf 
+        ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
+         hd->req_type == HTTP_REQ_GET ? "GET" :
+         hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
+         hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
+         *p == '/' ? "" : "/", p, server, portstr,
+         authstr? authstr:"");
     }
   xfree (p);
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (authstr);
+      xfree (proxy_authstr);
+      return err;
+    }
 
 
 #ifdef HTTP_USE_ESTREAM
@@ -1072,18 +1102,16 @@ send_request (http_t hd, const char *auth,
      function and only then assign a stdio stream.  This allows for
      better error reporting that through standard stdio means. */
   err = write_server (hd->sock, request, strlen (request));
-
-  if(err==0)
-    for(;headers;headers=headers->next)
+  if (!err)
+    for (;headers;headers=headers->next)
       {
-	err = write_server( hd->sock, headers->d, strlen(headers->d) );
-	if(err)
+	err = write_server (hd->sock, headers->d, strlen(headers->d));
+	if (err)
 	  break;
-	err = write_server( hd->sock, "\r\n", 2 );
-	if(err)
+	err = write_server (hd->sock, "\r\n", 2);
+	if (err)
 	  break;
       }
-
   if (!err)
     {
       hd->fp_write = fdopen (hd->sock, "w");
@@ -1351,9 +1379,7 @@ store_header (http_t hd, char *line)
    is valid as along as HD has not been closed and no othe request has
    been send. If the header was not found, NULL is returned.  Name
    must be canonicalized, that is the first letter of each dash
-   delimited part must be uppercase and all other letters lowercase.
-   Note that the context must have been opened with the
-   HTTP_FLAG_NEED_HEADER. */
+   delimited part must be uppercase and all other letters lowercase.  */
 const char *
 http_get_header (http_t hd, const char *name)
 {
@@ -1376,6 +1402,8 @@ parse_response (http_t hd)
 {
   char *line, *p, *p2;
   size_t maxlen, len;
+  cookie_t cookie = hd->read_cookie;
+  const char *s;
 
   /* Delete old header lines.  */
   while (hd->headers)
@@ -1447,7 +1475,7 @@ parse_response (http_t hd)
       if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
         log_info ("RESP: `%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
-      if ( (hd->flags & HTTP_FLAG_NEED_HEADER) && *line )
+      if (*line)
         {
           gpg_error_t err = store_header (hd, line);
           if (err)
@@ -1455,6 +1483,17 @@ parse_response (http_t hd)
         }
     }
   while (len && *line);
+
+  cookie->content_length_valid = 0;
+  if (!(hd->flags & HTTP_FLAG_IGNORE_CL))
+    {
+      s = http_get_header (hd, "Content-Length");
+      if (s)
+        {
+          cookie->content_length_valid = 1;
+          cookie->content_length = counter_strtoul (s);
+        }
+    }
 
   return 0;
 }
@@ -1601,6 +1640,7 @@ connect_server (const char *server, unsigned short port,
 	}
     }
 #else
+  (void)flags;
   (void)srvtag;
 #endif /*USE_DNS_SRV*/
 
@@ -1739,6 +1779,7 @@ write_server (int sock, const char *data, size_t length)
 {
   int nleft;
 
+  /* FIXME: We would better use pth I/O functions.  */
   nleft = length;
   while (nleft > 0)
     {
@@ -1787,6 +1828,14 @@ cookie_read (void *cookie, void *buffer, size_t size)
   cookie_t c = cookie;
   int nread;
 
+  if (c->content_length_valid)
+    {
+      if (!c->content_length)
+        return 0; /* EOF */
+      if (c->content_length < size)
+        size = c->content_length;
+    }
+
 #ifdef HTTP_USE_GNUTLS
   if (c->tls_session)
     {
@@ -1817,7 +1866,9 @@ cookie_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_W32_SYSTEM
+#ifdef HAVE_PTH
+          nread = pth_read (c->fd, buffer, size);
+#elif defined(HAVE_W32_SYSTEM)
           /* Under Windows we need to use recv for a socket.  */
           nread = recv (c->fd, buffer, size, 0);
 #else          
@@ -1825,6 +1876,14 @@ cookie_read (void *cookie, void *buffer, size_t size)
 #endif
         }
       while (nread == -1 && errno == EINTR);
+    }
+
+  if (c->content_length_valid && nread > 0)
+    {
+      if (nread < c->content_length)
+        c->content_length -= nread;
+      else
+        c->content_length = 0;          
     }
 
   return nread;
@@ -2028,9 +2087,7 @@ main (int argc, char **argv)
   http_release_parsed_uri (uri);
   uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL, 
-                           HTTP_FLAG_NO_SHUTDOWN | HTTP_FLAG_NEED_HEADER,
-                           NULL, tls_session);
+  rc = http_open_document (&hd, *argv, NULL, 0, NULL, tls_session);
   if (rc)
     {
       log_error ("can't get `%s': %s\n", *argv, gpg_strerror (rc));

@@ -27,6 +27,9 @@
 #ifndef GPG_ERR_MISSING_KEY
 #define GPG_ERR_MISSING_KEY 181
 #endif
+#ifndef GPG_ERR_LIMIT_REACHED
+#define GPG_ERR_LIMIT_REACHED 183
+#endif
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -128,6 +131,7 @@ struct b64state
   int idx;
   int quad_count;
   FILE *fp;
+  estream_t stream;
   char *title;
   unsigned char radbuf[4];
   u32 crc;
@@ -136,6 +140,8 @@ struct b64state
 };
 
 gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);
+gpg_error_t b64enc_start_es (struct b64state *state, estream_t fp,
+                             const char *title);
 gpg_error_t b64enc_write (struct b64state *state,
                           const void *buffer, size_t nbytes);
 gpg_error_t b64enc_finish (struct b64state *state);

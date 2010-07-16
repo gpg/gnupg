@@ -485,7 +485,7 @@ start_dirmngr (int only_daemon)
       i=0;
       if (log_get_fd () != -1)
         no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
+      no_close_list[i++] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
       no_close_list[i] = -1;
 
       /* Connect to the agent and perform initial handshaking.  */

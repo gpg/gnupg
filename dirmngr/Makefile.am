@@ -38,7 +38,7 @@ noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	ldapserver.h ldapserver.c certcache.c certcache.h \
-	b64dec.c cdb.h cdblib.c ldap.c http.c http.h misc.c	\
+	cdb.h cdblib.c ldap.c misc.c dirmngr-err.h \
 	ocsp.c ocsp.h validate.c validate.h
 
 dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
@@ -56,7 +56,7 @@ dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) ../gl/libgnu.a $(DNSLIBS) \
 		     $(GPG_ERROR_LIBS) $(LDAPLIBS) $(LIBINTL) $(LIBICONV)
 
-dirmngr_client_SOURCES = dirmngr-client.c b64enc.c no-libgcrypt.c
+dirmngr_client_SOURCES = dirmngr-client.c no-libgcrypt.c
 dirmngr_client_LDADD = $(libcommon) ../gl/libgnu.a $(LIBASSUAN_LIBS) \
 	               $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 

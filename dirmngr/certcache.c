@@ -328,7 +328,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
   struct dirent *ep;
   char *p;
   size_t n;
-  FILE *fp;
+  estream_t fp;
   ksba_reader_t reader;
   ksba_cert_t cert;
   char *fname = NULL;
@@ -353,7 +353,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
       
       xfree (fname);
       fname = make_filename (dirname, p, NULL);
-      fp = fopen (fname, "rb");
+      fp = es_fopen (fname, "rb");
       if (!fp)
         {
           log_error (_("can't open `%s': %s\n"),
@@ -367,7 +367,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
         {
           log_error (_("can't setup KSBA reader: %s\n"), gpg_strerror (err));
           ksba_reader_release (reader);
-          fclose (fp);
+          es_fclose (fp);
           continue;
         }
 
@@ -375,7 +375,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
       if (!err)
         err = ksba_cert_read_der (cert, reader);
       ksba_reader_release (reader);
-      fclose (fp);
+      es_fclose (fp);
       if (err)
         {
           log_error (_("can't parse certificate `%s': %s\n"),

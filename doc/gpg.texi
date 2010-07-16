@@ -527,12 +527,13 @@ Print message digest of algorithm ALGO for all given files or STDIN.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
-@item --gen-random @code{0|1|2}
+@item --gen-random @code{0|1|2} @code{count}
 @opindex gen-random
-Emit @var{count} random bytes of the given quality level. If count is
-not given or zero, an endless sequence of random bytes will be emitted.
-PLEASE, don't use this command unless you know what you are doing; it
-may remove precious entropy from the system!
+Emit @var{count} random bytes of the given quality level 0, 1 or 2. If
+@var{count} is not given or zero, an endless sequence of random bytes
+will be emitted.  If used with @option{--armor} the output will be
+base64 encoded.  PLEASE, don't use this command unless you know what
+you are doing; it may remove precious entropy from the system!
 
 @item --gen-prime @code{mode}  @code{bits}
 @opindex gen-prime

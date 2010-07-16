@@ -59,6 +59,7 @@ enum cmd_and_opt_values
 
     aSignEncrypt,
     oSkipCrypto,
+    oSetFilename,
     aList
   };
 
@@ -82,6 +83,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSkipCrypto, "skip-crypto", N_("skip the crypto processing")),
+  ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
 
   ARGPARSE_end ()
 };
@@ -175,6 +177,7 @@ main (int argc, char **argv)
       switch (pargs.r_opt)
         {
         case oOutput:    opt.outfile = pargs.r.ret_str; break;
+        case oSetFilename: opt.filename = pargs.r.ret_str; break;
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
@@ -208,6 +211,8 @@ main (int argc, char **argv)
       if (argc > 1)
         usage (1);
       fname = argc ? *argv : NULL;
+      if (opt.filename)
+        log_info ("note: ignoring option --set-filename\n");
       if (skip_crypto)
         gpgtar_list (fname);
       else
@@ -217,6 +222,8 @@ main (int argc, char **argv)
     case aEncrypt:
       if (!argc)
         usage (1);
+      if (opt.filename)
+        log_info ("note: ignoring option --set-filename\n");
       if (skip_crypto)
         gpgtar_create (argv);
       else
@@ -298,6 +305,7 @@ write_record (estream_t stream, const void *record)
 
 /* Return true if FP is an unarmored OpenPGP message.  Note that this
    fucntion reads a few bytes from FP but pushes them back.  */
+#if 0
 static int
 openpgp_message_p (estream_t fp)
 {
@@ -332,7 +340,7 @@ openpgp_message_p (estream_t fp)
     }
   return 0;
 }
-
+#endif
 
 
 
@@ -340,7 +348,8 @@ openpgp_message_p (estream_t fp)
 static void
 tar_and_encrypt (char **inpattern)
 {
-   
+  (void)inpattern;
+  log_error ("tar_and_encrypt has not yet been implemented\n");
 }
 
 
@@ -348,8 +357,8 @@ tar_and_encrypt (char **inpattern)
 static void
 decrypt_and_untar (const char *fname)
 {
-  
-  
+  (void)fname;
+  log_error ("decrypt_and_untar has not yet been implemented\n");
 }
 
 
@@ -357,5 +366,6 @@ decrypt_and_untar (const char *fname)
 static void
 decrypt_and_list (const char *fname)
 {
-
+  (void)fname;
+  log_error ("decrypt_and_list has not yet been implemented\n");
 }

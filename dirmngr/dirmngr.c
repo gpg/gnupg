@@ -37,7 +37,9 @@
 #endif
 #include <sys/stat.h>
 #include <unistd.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <pth.h>
 
 
@@ -52,6 +54,16 @@
 #include "misc.h"
 #include "ldapserver.h"
 #include "asshelp.h"
+
+/* The plain Windows version uses the windows service system.  For
+   example to start the service you may use "sc start dirmngr".
+   WindowsCE does not support this; the service system over there is
+   based on a single process with all services being DLLs - we can't
+   support this easily.  */
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
+# define USE_W32_SERVICE 1
+#endif
+
 
 enum cmd_and_opt_values {
   aNull = 0,
@@ -119,7 +131,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
   ARGPARSE_c (aService,  "service", N_("run as windows service (background)")),
 #endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
@@ -374,9 +386,9 @@ set_debug (void)
 static void
 wrong_args (const char *text)
 {
-  fputs (_("usage: dirmngr [options] "), stderr);
-  fputs (text, stderr);
-  putc ('\n', stderr);
+  es_fputs (_("usage: dirmngr [options] "), es_stderr);
+  es_fputs (text, es_stderr);
+  es_putc ('\n', es_stderr);
   dirmngr_exit (2);
 }
 
@@ -514,7 +526,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
 /* The global status of our service.  */
 SERVICE_STATUS_HANDLE service_handle;
 SERVICE_STATUS service_status;
@@ -544,7 +556,7 @@ w32_service_control (DWORD control, DWORD event_type, LPVOID event_data,
     }
   return 0;
 }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*USE_W32_SERVICE*/
 
 #ifndef HAVE_W32_SYSTEM
 static int
@@ -559,14 +571,14 @@ pid_suffix_callback (unsigned long *r_suffix)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
-#ifdef HAVE_W32_SYSTEM
-#define main real_main
+#ifdef USE_W32_SERVICE
+# define main real_main
 #endif
 int
 main (int argc, char **argv)
 {
-#ifdef HAVE_W32_SYSTEM
-#undef main
+#ifdef USE_W32_SERVICE
+# undef main
 #endif
   enum cmd_and_opt_values cmd = 0;
   ARGPARSE_ARGS pargs;
@@ -589,7 +601,7 @@ main (int argc, char **argv)
   int homedir_seen = 0;
   struct assuan_malloc_hooks malloc_hooks;
 
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
   /* The option will be set by main() below if we should run as a
      system daemon.  */
   if (opt.system_service)
@@ -610,7 +622,7 @@ main (int argc, char **argv)
       service_status.dwWaitHint = 10000; /* 10 seconds timeout.  */
       SetServiceStatus (service_handle, &service_status); 
     }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*USE_W32_SERVICE*/
 
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr", 1|4); 
@@ -833,7 +845,7 @@ main (int argc, char **argv)
     }
   if (configfp)
     {
-      fclose( configfp );
+      fclose (configfp);
       configfp = NULL;
       /* Keep a copy of the name so that it can be read on SIGHUP. */
       opt.config_filename = configname;
@@ -854,15 +866,22 @@ main (int argc, char **argv)
 
   if (greeting)
     {
-      fprintf (stderr, "%s %s; %s\n",
-               strusage(11), strusage(13), strusage(14) );
-      fprintf (stderr, "%s\n", strusage(15) );
+      es_fprintf (es_stderr, "%s %s; %s\n",
+                  strusage(11), strusage(13), strusage(14) );
+      es_fprintf (es_stderr, "%s\n", strusage(15) );
     }
 
 #ifdef IS_DEVELOPMENT_VERSION
   log_info ("NOTE: this is a development version!\n");
 #endif
 
+  if (!access ("/etc/dirmngr", F_OK) && !strncmp (opt.homedir, "/etc/", 5))
+    log_info 
+      ("NOTE: DirMngr is now a proper part of GnuPG.  The configuration and"
+       " other directory names changed.  Please check that no other version"
+       " of dirmngr is still installed.  To disable this warning, remove the"
+       " directory `/etc/dirmngr'.\n");
+  
   if (gnupg_faked_time_p ())
     {
       gnupg_isotime_t tbuf;
@@ -975,7 +994,7 @@ main (int argc, char **argv)
       rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
       if (rc == -1 && errno == EADDRINUSE)
 	{
-	  remove (socket_name);
+	  gnupg_remove (socket_name);
 	  rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
 	}
       if (rc != -1 
@@ -1000,7 +1019,7 @@ main (int argc, char **argv)
       if (opt.verbose)
         log_info (_("listening on socket `%s'\n"), socket_name );
 
-      fflush (NULL);
+      es_fflush (NULL);
 
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
@@ -1085,7 +1104,7 @@ main (int argc, char **argv)
       launch_reaper_thread ();
       cert_cache_init ();
       crl_cache_init ();
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
       if (opt.system_service)
 	{
 	  service_status.dwCurrentState = SERVICE_RUNNING;
@@ -1095,7 +1114,7 @@ main (int argc, char **argv)
       handle_connections (fd);
       assuan_sock_close (fd);
       shutdown_reaper ();
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
       if (opt.system_service)
 	{
 	  service_status.dwCurrentState = SERVICE_STOPPED;
@@ -1110,7 +1129,7 @@ main (int argc, char **argv)
         wrong_args ("--list-crls");
       launch_reaper_thread ();
       crl_cache_init ();
-      crl_cache_list (stdout);
+      crl_cache_list (es_stdout);
     }
   else if (cmd == aLoadCRL)
     {
@@ -1260,7 +1279,7 @@ main (int argc, char **argv)
 }
 
 
-#ifdef HAVE_W32_SYSTEM
+#ifdef USE_W32_SERVICE
 int
 main (int argc, char *argv[])
 {
@@ -1291,7 +1310,7 @@ main (int argc, char *argv[])
       return 0;
     }
 }
-#endif
+#endif /*USE_W32_SERVICE*/
 
 
 static void
@@ -1307,7 +1326,7 @@ cleanup (void)
     {
       cleanup_socket = 0;
       if (socket_name && *socket_name)
-        remove (socket_name);
+        gnupg_remove (socket_name);
     }
 }
 
@@ -1351,9 +1370,9 @@ parse_ldapserver_file (const char* filename)
   ldap_server_t server, serverstart, *serverend;
   int c;
   unsigned int lineno = 0;
-  FILE *fp;
+  estream_t fp;
 
-  fp = fopen (filename, "r");
+  fp = es_fopen (filename, "r");
   if (!fp)
     {
       log_error (_("error opening `%s': %s\n"), filename, strerror (errno));
@@ -1362,18 +1381,18 @@ parse_ldapserver_file (const char* filename)
 
   serverstart = NULL;
   serverend = &serverstart;
-  while (fgets (buffer, sizeof buffer, fp))
+  while (es_fgets (buffer, sizeof buffer, fp))
     {
       lineno++;
       if (!*buffer || buffer[strlen(buffer)-1] != '\n')
         {
-          if (*buffer && feof (fp))
+          if (*buffer && es_feof (fp))
             ; /* Last line not terminated - continue. */
           else
             {
               log_error (_("%s:%u: line too long - skipped\n"),
                          filename, lineno);
-              while ( (c=fgetc (fp)) != EOF && c != '\n')
+              while ( (c=es_fgetc (fp)) != EOF && c != '\n')
                 ; /* Skip until end of line. */
               continue;
             }
@@ -1393,9 +1412,9 @@ parse_ldapserver_file (const char* filename)
         }
     } 
   
-  if (ferror (fp))
+  if (es_ferror (fp))
     log_error (_("error reading `%s': %s\n"), filename, strerror (errno));
-  fclose (fp);
+  es_fclose (fp);
 
   return serverstart;
 }
@@ -1406,7 +1425,7 @@ parse_ocsp_signer (const char *string)
 {
   gpg_error_t err;
   char *fname;
-  FILE *fp;
+  estream_t fp;
   char line[256];
   char *p;
   fingerprint_list_t list, *list_tail, item;
@@ -1444,7 +1463,7 @@ parse_ocsp_signer (const char *string)
       fname = make_filename (opt.homedir, string, NULL);
     }
 
-  fp = fopen (fname, "r");
+  fp = es_fopen (fname, "r");
   if (!fp)
     {
       err = gpg_error_from_syserror ();
@@ -1457,16 +1476,16 @@ parse_ocsp_signer (const char *string)
   list_tail = &list;
   for (;;)
     {
-      if (!fgets (line, DIM(line)-1, fp) )
+      if (!es_fgets (line, DIM(line)-1, fp) )
         {
-          if (!feof (fp))
+          if (!es_feof (fp))
             {
               err = gpg_error_from_syserror ();
               log_error (_("%s:%u: read error: %s\n"),
                          fname, lnr, gpg_strerror (err));
               errflag = 1;
             }
-          fclose (fp);
+          es_fclose (fp);
           if (errflag)
             {
               while (list)
@@ -1484,7 +1503,7 @@ parse_ocsp_signer (const char *string)
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line. */
-          while ( (c=getc (fp)) != EOF && c != '\n')
+          while ( (c=es_getc (fp)) != EOF && c != '\n')
             ;
           err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                            /* */: GPG_ERR_INCOMPLETE_LINE);

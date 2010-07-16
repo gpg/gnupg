@@ -73,6 +73,8 @@
 # endif
 #endif
 #include <sys/stat.h>
+
+#include "dirmngr-err.h"
 #include "cdb.h"
 
 #ifndef EPROTO
@@ -123,13 +125,17 @@ cdb_init(struct cdb *cdbp, int fd)
     return -1;
   /* trivial sanity check: at least toc should be here */
   if (st.st_size < 2048) {
-    errno = EPROTO;
+    gpg_err_set_errno (EPROTO);
     return -1;
   }
   fsize = (unsigned)(st.st_size & 0xffffffffu);
   /* memory-map file */
 #ifdef _WIN32
+# ifdef __MINGW32CE__
+  hFile = fd;
+# else
   hFile = (HANDLE) _get_osfhandle(fd);
+#endif
   if (hFile == (HANDLE) -1)
     return -1;
   hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
@@ -177,7 +183,11 @@ cdb_free(struct cdb *cdbp)
     HANDLE hFile, hMapping;
 #endif
 #ifdef _WIN32
+#ifdef __MINGW32CE__
+    hFile = cdbp->cdb_fd;
+#else
     hFile = (HANDLE) _get_osfhandle(cdbp->cdb_fd);
+#endif
     hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
     UnmapViewOfFile((void*) cdbp->cdb_mem);
     CloseHandle(hMapping);
@@ -199,7 +209,7 @@ int
 cdb_read(const struct cdb *cdbp, void *buf, unsigned len, cdbi_t pos)
 {
   if (pos > cdbp->cdb_fsize || cdbp->cdb_fsize - pos < len) {
-    errno = EPROTO;
+    gpg_err_set_errno (EPROTO);
     return -1;
   }
   memcpy(buf, cdbp->cdb_mem + pos, len);
@@ -243,7 +253,7 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
       || pos > cdbp->cdb_fsize /* htab start within file ? */
       || httodo > cdbp->cdb_fsize - pos) /* entrie htab within file ? */
   {
-    errno = EPROTO;
+    gpg_err_set_errno (EPROTO);
     return -1;
   }
 
@@ -258,19 +268,19 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
       return 0;
     if (cdb_unpack(htp) == hval) {
       if (pos > cdbp->cdb_fsize - 8) { /* key+val lengths */
-	errno = EPROTO;
+	gpg_err_set_errno (EPROTO);
 	return -1;
       }
       if (cdb_unpack(cdbp->cdb_mem + pos) == klen) {
 	if (cdbp->cdb_fsize - klen < pos + 8) {
-	  errno = EPROTO;
+	  gpg_err_set_errno (EPROTO);
 	  return -1;
 	}
 	if (memcmp(key, cdbp->cdb_mem + pos + 8, klen) == 0) {
 	  n = cdb_unpack(cdbp->cdb_mem + pos + 4);
 	  pos += 8 + klen;
 	  if (cdbp->cdb_fsize < n || cdbp->cdb_fsize - n < pos) {
-	    errno = EPROTO;
+	    gpg_err_set_errno (EPROTO);
 	    return -1;
 	  }
 	  cdbp->cdb_vpos = pos;
@@ -331,7 +341,7 @@ cdb_findinit(struct cdb_find *cdbfp, struct cdb *cdbp,
           || pos > cdbp->cdb_fsize
           || cdbfp->cdb_httodo > cdbp->cdb_fsize - pos)
         {
-          errno = EPROTO;
+          gpg_err_set_errno (EPROTO);
           return -1;
         }
 
@@ -368,12 +378,12 @@ cdb_findnext(struct cdb_find *cdbfp)
         cdbfp->cdb_httodo -= 8;
         if (n) {
           if (pos > cdbp->cdb_fsize - 8) {
-            errno = EPROTO;
+            gpg_err_set_errno (EPROTO);
             return -1;
           }
           if (cdb_unpack(cdbp->cdb_mem + pos) == cdbfp->cdb_klen) {
             if (cdbp->cdb_fsize - cdbfp->cdb_klen < pos + 8) {
-              errno = EPROTO;
+              gpg_err_set_errno (EPROTO);
               return -1;
             }
             if (memcmp(cdbfp->cdb_key,
@@ -381,7 +391,7 @@ cdb_findnext(struct cdb_find *cdbfp)
               n = cdb_unpack(cdbp->cdb_mem + pos + 4);
               pos += 8 + cdbfp->cdb_klen;
               if (cdbp->cdb_fsize < n || cdbp->cdb_fsize - n < pos) {
-                errno = EPROTO;
+                gpg_err_set_errno (EPROTO);
                 return -1;
               }
               cdbp->cdb_vpos = pos;
@@ -410,7 +420,7 @@ cdb_findnext(struct cdb_find *cdbfp)
                   || pos > cdbp->cdb_fsize
                   || cdbfp->cdb_httodo > cdbp->cdb_fsize - pos)
                 {
-                  errno = EPROTO;
+                  gpg_err_set_errno (EPROTO);
                   return -1;
                 }
               
@@ -425,7 +435,7 @@ cdb_findnext(struct cdb_find *cdbfp)
       while (!pos);
       if (pos > cdbp->cdb_fsize - 8)
         {
-          errno = EPROTO;
+          gpg_err_set_errno (EPROTO);
           return -1;
         }
       
@@ -436,7 +446,7 @@ cdb_findnext(struct cdb_find *cdbfp)
       n = 8 + cdbp->cdb_klen + cdbp->cdb_vlen;
       if ( pos > cdbp->cdb_fsize || pos > cdbp->cdb_fsize - n)
         {
-          errno = EPROTO;
+          gpg_err_set_errno (EPROTO);
           return -1;
         }
       return 1; /* Found. */
@@ -454,7 +464,7 @@ cdb_bread(int fd, void *buf, int len)
     while(l < 0 && errno == EINTR);
     if (l <= 0) {
       if (!l)
-        errno = EIO;
+        gpg_err_set_errno (EIO);
       return -1;
     }
     buf = (char*)buf + l;
@@ -555,7 +565,7 @@ cdb_make_add(struct cdb_make *cdbmp,
   struct cdb_rl *rl;
   if (klen > 0xffffffff - (cdbmp->cdb_dpos + 8) ||
       vlen > 0xffffffff - (cdbmp->cdb_dpos + klen + 8)) {
-    errno = ENOMEM;
+    gpg_err_set_errno (ENOMEM);
     return -1;
   }
   hval = cdb_hash(key, klen);
@@ -563,7 +573,7 @@ cdb_make_add(struct cdb_make *cdbmp,
   if (!rl || rl->cnt >= sizeof(rl->rec)/sizeof(rl->rec[0])) {
     rl = (struct cdb_rl*)malloc(sizeof(struct cdb_rl));
     if (!rl) {
-      errno = ENOMEM;
+      gpg_err_set_errno (ENOMEM);
       return -1;
     }
     rl->cnt = 0;
@@ -603,7 +613,7 @@ cdb_make_put(struct cdb_make *cdbmp,
 	return -1;
       if (c) {
 	if (flags == CDB_PUT_INSERT) {
-	  errno = EEXIST;
+	  gpg_err_set_errno (EEXIST);
 	  return 1;
 	}
 	else if (flags == CDB_PUT_REPLACE) {
@@ -621,7 +631,7 @@ cdb_make_put(struct cdb_make *cdbmp,
       if (!rl || rl->cnt >= sizeof(rl->rec)/sizeof(rl->rec[0])) {
  	rl = (struct cdb_rl*)malloc(sizeof(struct cdb_rl));
 	if (!rl) {
-	  errno = ENOMEM;
+	  gpg_err_set_errno (ENOMEM);
 	  return -1;
 	}
 	rl->cnt = 0;
@@ -633,13 +643,13 @@ cdb_make_put(struct cdb_make *cdbmp,
       break;
 
     default:
-      errno = EINVAL;
+      gpg_err_set_errno (EINVAL);
       return -1;
   }
 
   if (klen > 0xffffffff - (cdbmp->cdb_dpos + 8) ||
       vlen > 0xffffffff - (cdbmp->cdb_dpos + klen + 8)) {
-    errno = ENOMEM;
+    gpg_err_set_errno (ENOMEM);
     return -1;
   }
   rl->rec[c].hval = hval;
@@ -812,7 +822,7 @@ cdb_make_finish_internal(struct cdb_make *cdbmp)
   unsigned t, i;
 
   if (((0xffffffff - cdbmp->cdb_dpos) >> 3) < cdbmp->cdb_rcnt) {
-    errno = ENOMEM;
+    gpg_err_set_errno (ENOMEM);
     return -1;
   }
 
@@ -837,7 +847,7 @@ cdb_make_finish_internal(struct cdb_make *cdbmp)
   /* allocate memory to hold max htable */
   htab = (struct cdb_rec*)malloc((hsize + 2) * sizeof(struct cdb_rec));
   if (!htab) {
-    errno = ENOENT;
+    gpg_err_set_errno (ENOENT);
     return -1;
   }
   p = (unsigned char *)htab;

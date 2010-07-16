@@ -1143,7 +1143,7 @@ static gpg_error_t
 cmd_listcrls (assuan_context_t ctx, char *line)
 {
   gpg_error_t err;
-  FILE *fp = assuan_get_data_fp (ctx);
+  estream_t fp = assuan_get_data_fp (ctx);
 
   (void)line;
 

@@ -1,3 +1,11 @@
+2010-07-16  Werner Koch  <wk@g10code.com>
+
+	* gpgtar-create.c: Rewrite to better support W32.
+
+2010-07-01  Werner Koch  <wk@g10code.com>
+
+	* gpgtar.c: Add option --set-filename.
+
 2010-06-24  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gpg_agent_runtime_change)

@@ -1,5 +1,5 @@
 /* b64enc.c - Simple Base64 encoder.
- * Copyright (C) 2001, 2003, 2004, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2008, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -136,20 +136,13 @@ static const u32 crc_table[256] = {
 };
 
 
-/* Prepare for base-64 writing to the stream FP.  If TITLE is not NULL
-   and not an empty string, this string will be used as the title for
-   the armor lines, with TITLE being an empty string, we don't write
-   the header lines and furthermore even don't write any linefeeds.
-   If TITLE starts with "PGP " the OpenPGP CRC checksum will be
-   written as well.  With TITLE beeing NULL, we merely don't write
-   header but make sure that lines are not too long. Note, that we
-   don't write any output unless at least one byte get written using
-   b64enc_write. */
-gpg_error_t
-b64enc_start (struct b64state *state, FILE *fp, const char *title)
+static gpg_error_t
+enc_start (struct b64state *state, FILE *fp, estream_t stream,
+           const char *title)
 {
   memset (state, 0, sizeof *state);
   state->fp = fp;
+  state->stream = stream;
   if (title && !*title)
     state->flags |= B64ENC_NO_LINEFEEDS;
   else if (title)
@@ -167,6 +160,39 @@ b64enc_start (struct b64state *state, FILE *fp, const char *title)
 }
 
 
+/* Prepare for base-64 writing to the stream FP.  If TITLE is not NULL
+   and not an empty string, this string will be used as the title for
+   the armor lines, with TITLE being an empty string, we don't write
+   the header lines and furthermore even don't write any linefeeds.
+   If TITLE starts with "PGP " the OpenPGP CRC checksum will be
+   written as well.  With TITLE beeing NULL, we merely don't write
+   header but make sure that lines are not too long. Note, that we
+   don't write any output unless at least one byte get written using
+   b64enc_write. */
+gpg_error_t
+b64enc_start (struct b64state *state, FILE *fp, const char *title)
+{
+  return enc_start (state, fp, NULL, title);
+}
+
+/* Same as b64enc_start but takes an estream.  */
+gpg_error_t
+b64enc_start_es (struct b64state *state, estream_t fp, const char *title)
+{
+  return enc_start (state, NULL, fp, title);
+}
+
+
+static int
+my_fputs (const char *string, struct b64state *state)
+{
+  if (state->stream)
+    return es_fputs (string, state->stream);
+  else
+    return fputs (string, state->fp);
+}
+
+
 /* Write NBYTES from BUFFER to the Base 64 stream identified by
    STATE. With BUFFER and NBYTES being 0, merely do a fflush on the
    stream. */
@@ -176,13 +202,13 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
   unsigned char radbuf[4];
   int idx, quad_count;
   const unsigned char *p;
-  FILE *fp = state->fp;
 
 
   if (!nbytes)
     {
-      if (buffer && fflush (fp))
-        goto write_error;
+      if (buffer)
+        if (state->stream? es_fflush (state->stream) : fflush (state->fp))
+          goto write_error;
       return 0;
     }
 
@@ -190,12 +216,12 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
     {
       if (state->title)
         {
-          if ( fputs ("-----BEGIN ", fp) == EOF
-               || fputs (state->title, fp) == EOF
-               || fputs ("-----\n", fp) == EOF)
+          if ( my_fputs ("-----BEGIN ", state) == EOF
+               || my_fputs (state->title, state) == EOF
+               || my_fputs ("-----\n", state) == EOF)
             goto write_error;
           if ( (state->flags & B64ENC_USE_PGPCRC) 
-               && fputs ("\n", fp) == EOF)
+               && my_fputs ("\n", state) == EOF)
             goto write_error;
         }
         
@@ -228,16 +254,27 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
           tmp[1] = bintoasc[(((*radbuf<<4)&060)|((radbuf[1] >> 4)&017))&077];
           tmp[2] = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
           tmp[3] = bintoasc[radbuf[2]&077];
-          for (idx=0; idx < 4; idx++)
-            putc (tmp[idx], fp);
-          idx = 0;
-          if (ferror (fp))
-            goto write_error;
+          if (state->stream)
+            {
+              for (idx=0; idx < 4; idx++)
+                es_putc (tmp[idx], state->stream);
+              idx = 0;
+              if (es_ferror (state->stream))
+                goto write_error;
+            }
+          else
+            {
+              for (idx=0; idx < 4; idx++)
+                putc (tmp[idx], state->fp);
+              idx = 0;
+              if (ferror (state->fp))
+                goto write_error;
+            }
           if (++quad_count >= (64/4)) 
             {
               quad_count = 0;
               if (!(state->flags & B64ENC_NO_LINEFEEDS)
-                  && fputs ("\n", fp) == EOF)
+                  && my_fputs ("\n", state) == EOF)
                 goto write_error;
             }
         }
@@ -251,20 +288,19 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
   return gpg_error_from_syserror ();
 }
 
+
 gpg_error_t
 b64enc_finish (struct b64state *state)
 {
   gpg_error_t err = 0;
   unsigned char radbuf[4];
   int idx, quad_count;
-  FILE *fp;
   char tmp[4];
 
   if (!(state->flags & B64ENC_DID_HEADER))
     goto cleanup;
 
   /* Flush the base64 encoding */
-  fp = state->fp;
   idx = state->idx;
   quad_count = state->quad_count;
   assert (idx < 4);
@@ -285,17 +321,28 @@ b64enc_finish (struct b64state *state)
           tmp[2] = bintoasc[((radbuf[1] << 2) & 074) & 077];
           tmp[3] = '=';
         }
-      for (idx=0; idx < 4; idx++)
-        putc (tmp[idx], fp);
-      idx = 0;
-      if (ferror (fp))
-        goto write_error;
-      
+      if (state->stream)
+        {
+          for (idx=0; idx < 4; idx++)
+            es_putc (tmp[idx], state->stream);
+          idx = 0;
+          if (es_ferror (state->stream))
+            goto write_error;
+        }
+      else
+        {
+          for (idx=0; idx < 4; idx++)
+            putc (tmp[idx], state->fp);
+          idx = 0;
+          if (ferror (state->fp))
+            goto write_error;
+        }
+
       if (++quad_count >= (64/4)) 
         {
           quad_count = 0;
           if (!(state->flags & B64ENC_NO_LINEFEEDS)
-              && fputs ("\n", fp) == EOF)
+              && my_fputs ("\n", state) == EOF)
             goto write_error;
         }
     }
@@ -303,13 +350,13 @@ b64enc_finish (struct b64state *state)
   /* Finish the last line and write the trailer. */
   if (quad_count
       && !(state->flags & B64ENC_NO_LINEFEEDS)
-      && fputs ("\n", fp) == EOF)
+      && my_fputs ("\n", state) == EOF)
     goto write_error;
   
   if ( (state->flags & B64ENC_USE_PGPCRC) )
     {
       /* Write the CRC.  */
-      putc ('=', fp);
+      my_fputs ("=", state);
       radbuf[0] = state->crc >>16;
       radbuf[1] = state->crc >> 8;
       radbuf[2] = state->crc;
@@ -317,20 +364,30 @@ b64enc_finish (struct b64state *state)
       tmp[1] = bintoasc[(((*radbuf<<4)&060)|((radbuf[1]>>4)&017))&077];
       tmp[2] = bintoasc[(((radbuf[1]<<2)&074)|((radbuf[2]>>6)&03))&077];
       tmp[3] = bintoasc[radbuf[2]&077];
-      for (idx=0; idx < 4; idx++)
-        putc (tmp[idx], fp);
-      if (ferror (fp))
-        goto write_error;
+      if (state->stream)
+        {
+          for (idx=0; idx < 4; idx++)
+            es_putc (tmp[idx], state->stream);
+          if (es_ferror (state->stream))
+            goto write_error;
+        }
+      else
+        {
+          for (idx=0; idx < 4; idx++)
+            putc (tmp[idx], state->fp);
+          if (ferror (state->fp))
+            goto write_error;
+        }
       if (!(state->flags & B64ENC_NO_LINEFEEDS)
-          && fputs ("\n", fp) == EOF)
+          && my_fputs ("\n", state) == EOF)
         goto write_error;
     }
 
   if (state->title)
     {
-      if ( fputs ("-----END ", fp) == EOF
-           || fputs (state->title, fp) == EOF
-           || fputs ("-----\n", fp) == EOF)
+      if ( my_fputs ("-----END ", state) == EOF
+           || my_fputs (state->title, state) == EOF
+           || my_fputs ("-----\n", state) == EOF)
         goto write_error;
     }
 
@@ -346,6 +403,7 @@ b64enc_finish (struct b64state *state)
       state->title = NULL;
     }
   state->fp = NULL;
+  state->stream = NULL;
   return err;
 }
 

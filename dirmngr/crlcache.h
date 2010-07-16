@@ -60,7 +60,7 @@ gpg_error_t crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
 gpg_error_t crl_cache_insert (ctrl_t ctrl, const char *url,
                               ksba_reader_t reader);
 
-gpg_error_t crl_cache_list (FILE* fp);
+gpg_error_t crl_cache_list (estream_t fp);
 
 gpg_error_t crl_cache_load (ctrl_t ctrl, const char *filename);
 

@@ -1,3 +1,32 @@
+2010-07-16  Werner Koch  <wk@g10code.com>
+
+	* http.h (HTTP_FLAG_IGNORE_CL): Add flag .
+	* http.c (WITHOUT_GNU_PTH): Test macro for Pth support.
+	(http_parse_uri): s/xcalloc/xtrycalloc/.
+	(send_request): Replace of discrete allocation and sprintf by
+	xtryasprintf.
+	(http_wait_response): Replace HTTP_FLAG_NO_SHUTDOWN by
+	HTTP_FLAG_SHUTDOWN to change the default to no shutdown.
+	(cookie_read) [HAVE_PTH]: Use pth_read.
+	(longcounter_t): New.
+	(struct cookie_s): Add support for content length.  Turn flag
+	fields into bit types.
+	(parse_response): Parse content length header.
+	(cookie_read): Take care of the content length.
+
+2010-07-08  Werner Koch  <wk@g10code.com>
+
+	* estream.c (estream_functions_file): Remove and replace by
+	identical estream_functions_fd.
+
+2010-07-06  Werner Koch  <wk@g10code.com>
+
+	* util.h (b64state): Add field STREAM.
+	* b64enc.c (b64enc_start): Factor code out to ..
+	(enc_start): new.
+	(b64enc_start_es, my_fputs): New.
+	(b64enc_write, b64enc_finish): Support estream.
+
 2010-06-24  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (lock_agent_spawning) [W32]: Use CreateMutexW.

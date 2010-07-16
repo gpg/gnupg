@@ -83,7 +83,7 @@ else
   pkgrep = ftp://ftp.gnupg.org/gcrypt
   speedo_pkg_libgpg_error_tar = $(pkgrep)/libgpg-error/libgpg-error-1.8.tar.bz2
   speedo_pkg_libassuan_tar = $(pkgrep)/libassuan/libassuan-2.0.0.tar.bz2
-  speedo_pkg_libgcrypt_tar = $(pkgrep)/libgcrypt/libgcrypt-1.4.5.tar.bz2
+  speedo_pkg_libgcrypt_tar = $(pkgrep)/libgcrypt/libgcrypt-1.4.6.tar.bz2
   speedo_pkg_libksba_tar = $(pkgrep)/libksba/libksba-1.0.7.tar.bz2
   speedo_pkg_gpgme_tar = $(pkgrep)/gpgme/gpgme-1.3.0.tar.bz2
 endif

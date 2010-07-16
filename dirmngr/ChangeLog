@@ -1,3 +1,26 @@
+2010-07-16  Werner Koch  <wk@g10code.com>
+
+	* http.c, http.h: Remove.
+
+	* dirmngr-err.h: New.
+	* dirmngr.h: Include dirmngr-err.h instead of gpg-error.h
+
+	* cdblib.c: Replace assignments to ERRNO by a call to
+	gpg_err_set_errno.  Include dirmngr-err.h.
+	(cdb_free) [__MINGW32CE__]: Do not use get_osfhandle.
+
+	* dirmngr.c [!HAVE_SIGNAL_H]: Don't include signal.h.
+	(USE_W32_SERVICE): New.  Use this to control the use of the W32
+	service system.
+
+2010-07-06  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main): Print note on directory name changes.
+
+	Replace almost all uses of stdio by estream.
+
+	* b64dec.c, b64enc.c: Remove.  They are duplicated in ../common/.
+
 2010-06-28  Werner Koch  <wk@g10code.com>
 
 	* dirmngr_ldap.c (my_i18n_init): Remove.

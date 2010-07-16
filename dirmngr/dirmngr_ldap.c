@@ -25,7 +25,9 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <string.h>
-#include <signal.h>
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
 #include <errno.h>
 #include <assert.h>
 #include <sys/time.h>
@@ -171,6 +173,7 @@ main (int argc, char **argv )
 
 #ifdef HAVE_W32_SYSTEM
   /* Yeah, right.  Sigh.  */
+#error  FIXME
   _setmode (_fileno (stdout), _O_BINARY);
 #endif
 
@@ -313,7 +316,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 
       if (opt.multi)
         { /*  Write item marker. */
-          if (fwrite ("I\0\0\0\0", 5, 1, stdout) != 1)
+          if (es_fwrite ("I\0\0\0\0", 5, 1, es_stdout) != 1)
             {
               log_error (_("error writing to stdout: %s\n"),
                          strerror (errno));
@@ -390,8 +393,8 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
               tmp[2] = (n >> 16);
               tmp[3] = (n >> 8);
               tmp[4] = (n);
-              if (fwrite (tmp, 5, 1, stdout) != 1 
-                  || fwrite (attr, n, 1, stdout) != 1)
+              if (es_fwrite (tmp, 5, 1, es_stdout) != 1 
+                  || es_fwrite (attr, n, 1, es_stdout) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -415,7 +418,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
                   tmp[3] = (n >> 8);
                   tmp[4] = (n);
 
-                  if (fwrite (tmp, 5, 1, stdout) != 1)
+                  if (es_fwrite (tmp, 5, 1, es_stdout) != 1)
                     {
                       log_error (_("error writing to stdout: %s\n"),
                                  strerror (errno));
@@ -429,8 +432,9 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 	      /* Note: this does not work for STDOUT on a Windows
 		 console, where it fails with "Not enough space" for
 		 CRLs which are 52 KB or larger.  */
-	      if (fwrite (values[0]->bv_val, values[0]->bv_len,
-			  1, stdout) != 1)
+#warning still true - implement in estream
+	      if (es_fwrite (values[0]->bv_val, values[0]->bv_len,
+                             1, es_stdout) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -452,8 +456,8 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 		    if (cnt > MAX_CNT)
 		      cnt = MAX_CNT;
 		    
-		    if (fwrite (((char *) values[0]->bv_val) + n, cnt, 1,
-				stdout) != 1)
+		    if (es_fwrite (((char *) values[0]->bv_val) + n, cnt, 1,
+                                   es_stdout) != 1)
 		      {
 			log_error (_("error writing to stdout: %s\n"),
 				   strerror (errno));
@@ -572,7 +576,7 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
                        &opt.timeout, &msg);
   if (rc == LDAP_SIZELIMIT_EXCEEDED && opt.multi)
     {
-      if (fwrite ("E\0\0\0\x09truncated", 14, 1, stdout) != 1)
+      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, es_stdout) != 1)
         {
           log_error (_("error writing to stdout: %s\n"),
                      strerror (errno));

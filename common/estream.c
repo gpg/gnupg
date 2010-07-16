@@ -994,7 +994,7 @@ es_func_fp_seek (void *cookie, off_t *offset, int whence)
   return 0;
 }
 
-/* Destroy function for fd objects.  */
+/* Destroy function for FILE* objects.  */
 static int
 es_func_fp_destroy (void *cookie)
 {
@@ -1075,14 +1075,6 @@ es_func_file_create (void **cookie, int *filedes,
 
   return err;
 }
-
-static es_cookie_io_functions_t estream_functions_file =
-  {
-    es_func_fd_read,
-    es_func_fd_write,
-    es_func_fd_seek,
-    es_func_fd_destroy
-  };
 
 
 static int
@@ -2197,7 +2189,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
     goto out;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_file, modeflags, 0);
+  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags, 0);
   if (err)
     goto out;
 
@@ -2207,7 +2199,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
  out:
   
   if (err && create_called)
-    (*estream_functions_file.func_close) (cookie);
+    (*estream_functions_fd.func_close) (cookie);
 
   return stream;
 }
@@ -2519,7 +2511,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	goto leave;
 
       create_called = 1;
-      es_initialize (stream, cookie, fd, estream_functions_file, modeflags);
+      es_initialize (stream, cookie, fd, estream_functions_fd, modeflags);
 
     leave:
 

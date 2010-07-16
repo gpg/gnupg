@@ -32,7 +32,6 @@
 #include "gpgtar.h"
 
 
-
 static gpg_error_t
 extract_regular (estream_t stream, const char *dirname,
                  tar_header_t hdr)
@@ -79,6 +78,8 @@ extract_regular (estream_t stream, const char *dirname,
   /* Fixme: Set permissions etc.  */
 
  leave:
+  if (!err && opt.verbose)
+    log_info ("extracted `%s/'\n", fname);
   es_fclose (outfp);
   if (err && fname && outfp)
     {
@@ -96,7 +97,9 @@ extract_directory (const char *dirname, tar_header_t hdr)
 {
   gpg_error_t err;
   char *fname;
-
+  size_t prefixlen;
+  
+  prefixlen = strlen (dirname) + 1;
   fname = strconcat (dirname, "/", hdr->name, NULL);
   if (!fname)
     {
@@ -107,14 +110,40 @@ extract_directory (const char *dirname, tar_header_t hdr)
   else
     err = 0;
 
+  if (fname[strlen (fname)-1] == '/')
+    fname[strlen (fname)-1] = 0;
+
+ /* Note that we don't need to care about EEXIST because we always
+     extract into a new hierarchy.  */
   if (gnupg_mkdir (fname, "-rwx------"))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error creating directory `%s': %s\n",
-                 fname, gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        {
+          /* Try to create the directory with parents but keep the
+             original error code in case of a failure.  */
+          char *p;
+          int rc = 0;
+          
+          for (p = fname+prefixlen; (p = strchr (p, '/')); p++)
+            {
+              *p = 0;
+              rc = gnupg_mkdir (fname, "-rwx------");
+              *p = '/';
+              if (rc)
+                break;
+            }
+          if (!rc && !gnupg_mkdir (fname, "-rwx------"))
+            err = 0;
+        }
+      if (err)
+        log_error ("error creating directory `%s': %s\n",
+                   fname, gpg_strerror (err));
     }
 
  leave:
+  if (!err && opt.verbose)
+    log_info ("created   `%s/'\n", fname);
   xfree (fname);
   return err;
 }
@@ -155,7 +184,8 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
     {
       char record[RECORDSIZE];
 
-      log_info ("unsupported file type for `%s' - skipped\n", hdr->name);
+      log_info ("unsupported file type %d for `%s' - skipped\n",
+                (int)hdr->typeflag, hdr->name);
       for (err = 0, n=0; !err && n < hdr->nrecords; n++)
         err = read_record (stream, record);
     }
@@ -171,8 +201,30 @@ static char *
 create_directory (const char *dirprefix)
 {
   gpg_error_t err = 0;
+  char *prefix_buffer = NULL;
   char *dirname = NULL;
+  size_t n;
   int idx;
+
+  /* Remove common suffixes.  */
+  n = strlen (dirprefix);
+  if (n > 4 && (!compare_filenames    (dirprefix + n - 4, EXTSEP_S "gpg")
+                || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pgp")
+                || !compare_filenames (dirprefix + n - 4, EXTSEP_S "asc")
+                || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pem")
+                || !compare_filenames (dirprefix + n - 4, EXTSEP_S "p7e")))
+    {
+      prefix_buffer = xtrystrdup (dirprefix);
+      if (!prefix_buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      prefix_buffer[n-4] = 0;
+      dirprefix = prefix_buffer;
+    }
+
+
 
   for (idx=1; idx < 5000; idx++)
     {
@@ -184,14 +236,14 @@ create_directory (const char *dirprefix)
           goto leave;
         }
       if (!gnupg_mkdir (dirname, "-rwx------"))
-        goto leave;
+        goto leave; /* Ready.  */
       if (errno != EEXIST && errno != ENOTDIR)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
     }
-  err = gpg_error_from_syserror ();
+  err = gpg_error (GPG_ERR_LIMIT_REACHED);
 
  leave:
   if (err)
@@ -201,6 +253,7 @@ create_directory (const char *dirprefix)
       xfree (dirname);
       dirname = NULL;
     }
+  xfree (prefix_buffer);
   return dirname;
 }
 
@@ -217,9 +270,6 @@ gpgtar_extract (const char *filename)
 
   if (filename)
     {
-      dirprefix = strrchr (filename, '/');
-      if (dirprefix)
-        dirprefix++;
       stream = es_fopen (filename, "rb");
       if (!stream)
         {
@@ -230,6 +280,20 @@ gpgtar_extract (const char *filename)
     }
   else
     stream = es_stdin;  /* FIXME:  How can we enforce binary mode?  */
+
+
+  if (filename)
+    {
+      dirprefix = strrchr (filename, '/');
+      if (dirprefix)
+        dirprefix++;
+    }
+  else if (opt.filename)
+    {
+      dirprefix = strrchr (opt.filename, '/');
+      if (dirprefix)
+        dirprefix++;
+    }
 
   if (!dirprefix || !*dirprefix)
     dirprefix = "GPGARCH";

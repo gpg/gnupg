@@ -25,14 +25,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-/* #ifdef HAVE_W32_SYSTEM */
-/* # define WIN32_LEAN_AND_MEAN */
-/* # include <windows.h> */
-/* #else /\*!HAVE_W32_SYSTEM*\/ */
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#else /*!HAVE_W32_SYSTEM*/
 # include <unistd.h>
 # include <pwd.h>
 # include <grp.h>
-/* #endif /\*!HAVE_W32_SYSTEM*\/ */
+#endif /*!HAVE_W32_SYSTEM*/
 #include <assert.h>
 
 #include "i18n.h"
@@ -58,9 +58,83 @@ struct scanctrl_s
 
 
 /* Given a fresh header object HDR with only the name field set, try
-   to gather all available info.  */
+   to gather all available info.  This is the W32 version.  */
+#ifdef HAVE_W32_SYSTEM
 static gpg_error_t
-fillup_entry (tar_header_t hdr)
+fillup_entry_w32 (tar_header_t hdr)
+{
+  char *p;
+  wchar_t *wfname;
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  DWORD attr;
+
+  for (p=hdr->name; *p; p++)
+    if (*p == '/')
+      *p = '\\';
+  wfname = utf8_to_wchar (hdr->name);
+  for (p=hdr->name; *p; p++)
+    if (*p == '\\')
+      *p = '/';
+  if (!wfname)
+    {
+      log_error ("error utf8-ing `%s': %s\n", hdr->name, w32_strerror (-1));
+      return gpg_error_from_syserror ();
+    }
+  if (!GetFileAttributesExW (wfname, GetFileExInfoStandard, &fad))
+    {
+      log_error ("error stat-ing `%s': %s\n", hdr->name, w32_strerror (-1));
+      xfree (wfname);
+      return gpg_error_from_syserror ();
+    }
+  xfree (wfname);
+
+  attr = fad.dwFileAttributes;
+
+  if ((attr & FILE_ATTRIBUTE_NORMAL))
+    hdr->typeflag = TF_REGULAR;
+  else if ((attr & FILE_ATTRIBUTE_DIRECTORY))
+    hdr->typeflag = TF_DIRECTORY;
+  else if ((attr & FILE_ATTRIBUTE_DEVICE))
+    hdr->typeflag = TF_NOTSUP;
+  else if ((attr & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY)))
+    hdr->typeflag = TF_NOTSUP;
+  else
+    hdr->typeflag = TF_REGULAR;
+
+  /* Map some attributes to  USTAR defined mode bits.  */
+  hdr->mode = 0640;      /* User may read and write, group only read.  */
+  if ((attr & FILE_ATTRIBUTE_DIRECTORY))
+    hdr->mode |= 0110;   /* Dirs are user and group executable.  */
+  if ((attr & FILE_ATTRIBUTE_READONLY))
+    hdr->mode &= ~0200;  /* Clear the user write bit.  */
+  if ((attr & FILE_ATTRIBUTE_HIDDEN))
+    hdr->mode &= ~0707;  /* Clear all user and other bits.  */ 
+  if ((attr & FILE_ATTRIBUTE_SYSTEM))
+    hdr->mode |= 0004;   /* Make it readable by other.  */ 
+
+  /* Only set the size for a regular file.  */
+  if (hdr->typeflag == TF_REGULAR)
+    hdr->size = (fad.nFileSizeHigh * (unsigned long long)(MAXDWORD+1)
+                 + fad.nFileSizeLow);
+
+  hdr->mtime = (((unsigned long long)fad.ftLastWriteTime.dwHighDateTime << 32)
+                | fad.ftLastWriteTime.dwLowDateTime);
+  if (!hdr->mtime)
+    hdr->mtime = (((unsigned long long)fad.ftCreationTime.dwHighDateTime << 32)
+                  | fad.ftCreationTime.dwLowDateTime);
+  hdr->mtime -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
+  hdr->mtime /= 10000000;  /* Convert from 0.1us to seconds. */
+
+  return 0;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Given a fresh header obje`<ct HDR with only the name field set, try
+   to gather all available info.  This is the POSIX version.  */
+#ifndef HAVE_W32_SYSTEM
+static gpg_error_t
+fillup_entry_posix (tar_header_t hdr)
 {
   gpg_error_t err;
   struct stat sbuf;
@@ -132,38 +206,36 @@ fillup_entry (tar_header_t hdr)
 
   hdr->mtime = sbuf.st_mtime;
   
-
   return 0;
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
-
+/* Add a new entry.  The name of a director entry is ENTRYNAME; if
+   that is NULL, DNAME is the name of the directory itself.  Under
+   Windows ENTRYNAME shall have backslashes replaced by standard
+   slashes.  */
 static gpg_error_t
-add_entry (const char *dname, size_t dnamelen, struct dirent *de,
-           scanctrl_t scanctrl)
+add_entry (const char *dname, const char *entryname, scanctrl_t scanctrl)
 {
   gpg_error_t err;
   tar_header_t hdr;
   char *p;
+  size_t dnamelen = strlen (dname);
 
   assert (dnamelen);
 
   hdr = xtrycalloc (1, sizeof *hdr + dnamelen + 1
-                    + (de? strlen (de->d_name) : 0));
+                    + (entryname? strlen (entryname) : 0) + 1);
   if (!hdr)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error reading directory `%s': %s\n"),
-                 dname, gpg_strerror (err));
-      return err;
-    }
+    return gpg_error_from_syserror ();
 
   p = stpcpy (hdr->name, dname);
-  if (de)
+  if (entryname)
     {
       if (dname[dnamelen-1] != '/')
         *p++ = '/';
-      strcpy (p, de->d_name);
+      strcpy (p, entryname);
     }
   else
     {
@@ -171,11 +243,10 @@ add_entry (const char *dname, size_t dnamelen, struct dirent *de,
         hdr->name[dnamelen-1] = 0;
     }
 #ifdef HAVE_DOSISH_SYSTEM
-  for (p=hdr->name; *p; p++)
-    if (*p == '\\')
-      *p = '/';
+  err = fillup_entry_w32 (hdr);
+#else
+  err = fillup_entry_posix (hdr);
 #endif
-  err = fillup_entry (hdr);
   if (err)
     xfree (hdr);
   else
@@ -194,12 +265,101 @@ static gpg_error_t
 scan_directory (const char *dname, scanctrl_t scanctrl)
 {
   gpg_error_t err = 0;
-  size_t dnamelen;
+
+#ifdef HAVE_W32_SYSTEM
+  WIN32_FIND_DATAW fi;
+  HANDLE hd = INVALID_HANDLE_VALUE;
+  char *p;
+
+  if (!*dname)
+    return 0;  /* An empty directory name has no entries.  */
+
+  {
+    char *fname;
+    wchar_t *wfname;
+
+    fname = xtrymalloc (strlen (dname) + 2 + 2 + 1);
+    if (!fname)
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+    if (!strcmp (dname, "/"))
+      strcpy (fname, "/*"); /* Trailing slash is not allowed.  */
+    else if (!strcmp (dname, "."))
+      strcpy (fname, "*");
+    else if (*dname && dname[strlen (dname)-1] == '/')
+      strcpy (stpcpy (fname, dname), "*");
+    else if (*dname && dname[strlen (dname)-1] != '*')
+      strcpy (stpcpy (fname, dname), "/*");
+    else
+      strcpy (fname, dname);
+
+    for (p=fname; *p; p++)
+      if (*p == '/')
+        *p = '\\';
+    wfname = utf8_to_wchar (fname);
+    xfree (fname);
+    if (!wfname)
+      {
+        err = gpg_error_from_syserror ();
+        log_error (_("error reading directory `%s': %s\n"),
+                   dname, gpg_strerror (err));
+        goto leave;
+      }
+    hd = FindFirstFileW (wfname, &fi);
+    if (hd == INVALID_HANDLE_VALUE)
+      {
+        err = gpg_error_from_syserror ();
+        log_error (_("error reading directory `%s': %s\n"),
+                   dname, w32_strerror (-1));
+        xfree (wfname);
+        goto leave;
+      }
+    xfree (wfname);
+  }
+
+  do 
+    {
+      char *fname = wchar_to_utf8 (fi.cFileName);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error utf8-ing filename: %s\n", w32_strerror (-1));
+          break;
+        }
+      for (p=fname; *p; p++)
+        if (*p == '\\')
+          *p = '/';
+      if (!strcmp (fname, "." ) || !strcmp (fname, ".."))
+        err = 0; /* Skip self and parent dir entry.  */
+      else if (!strncmp (dname, "./", 2) && dname[2])
+        err = add_entry (dname+2, fname, scanctrl);
+      else
+        err = add_entry (dname, fname, scanctrl);
+      xfree (fname);
+    }
+  while (!err && FindNextFileW (hd, &fi));
+  if (err)
+    ;
+  else if (GetLastError () == ERROR_NO_MORE_FILES)
+    err = 0;
+  else
+    {
+      err = gpg_error_from_syserror (); 
+      log_error (_("error reading directory `%s': %s\n"),
+                 dname, w32_strerror (-1));
+    }
+  
+ leave:
+  if (hd != INVALID_HANDLE_VALUE)
+    FindClose (hd);
+
+#else /*!HAVE_W32_SYSTEM*/
   DIR *dir;
   struct dirent *de;
 
-  dnamelen = strlen (dname);
-  if (!dnamelen)
+  if (!*dname)
     return 0;  /* An empty directory name has no entries.  */
 
   dir = opendir (dname);
@@ -216,13 +376,14 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
       if (!strcmp (de->d_name, "." ) || !strcmp (de->d_name, ".."))
         continue; /* Skip self and parent dir entry.  */
       
-      err = add_entry (dname, dnamelen, de, scanctrl);
+      err = add_entry (dname, de->d_name, scanctrl);
       if (err)
         goto leave;
      }
 
  leave:
   closedir (dir);
+#endif /*!HAVE_W32_SYSTEM*/
   return err;
 }
 
@@ -343,6 +504,9 @@ store_uname (char *buffer, size_t length, unsigned long uid)
 
   if (!initialized || uid != lastuid)
     {
+#ifdef HAVE_W32_SYSTEM
+      mem2str (lastuname, uid? "user":"root", sizeof lastuname); 
+#else
       struct passwd *pw = getpwuid (uid);
 
       lastuid = uid;
@@ -354,6 +518,7 @@ store_uname (char *buffer, size_t length, unsigned long uid)
           log_info ("failed to get name for uid %lu\n", uid);
           *lastuname = 0;
         }
+#endif
     }
   mem2str (buffer, lastuname, length);
 }
@@ -368,6 +533,9 @@ store_gname (char *buffer, size_t length, unsigned long gid)
 
   if (!initialized || gid != lastgid)
     {
+#ifdef HAVE_W32_SYSTEM
+      mem2str (lastgname, gid? "users":"root", sizeof lastgname); 
+#else
       struct group *gr = getgrgid (gid);
 
       lastgid = gid;
@@ -379,6 +547,7 @@ store_gname (char *buffer, size_t length, unsigned long gid)
           log_info ("failed to get name for gid %lu\n", gid);
           *lastgname = 0;
         }
+#endif
     }
   mem2str (buffer, lastgname, length);
 }
@@ -446,6 +615,7 @@ build_header (void *record, tar_header_t hdr)
   store_uname (raw->uname, sizeof raw->uname, hdr->uid);
   store_gname (raw->gname, sizeof raw->gname, hdr->gid);
 
+#ifndef HAVE_W32_SYSTEM
   if (hdr->typeflag == TF_SYMLINK)
     {
       int nread;
@@ -460,7 +630,7 @@ build_header (void *record, tar_header_t hdr)
         }
       raw->linkname[nread] = 0;
     }
-  
+#endif /*HAVE_W32_SYSTEM*/
 
   /* Compute the checksum.  */
   memset (raw->checksum, ' ', sizeof raw->checksum);
@@ -520,6 +690,8 @@ write_file (estream_t stream, tar_header_t hdr)
       while (hdr->nrecords--)
         {
           nbytes = hdr->nrecords? RECORDSIZE : (hdr->size % RECORDSIZE);
+          if (!nbytes)
+            nbytes = RECORDSIZE;
           nread = es_fread (record, 1, nbytes, infp);
           if (nread != nbytes)
             {
@@ -572,24 +744,40 @@ gpgtar_create (char **inpattern)
   struct scanctrl_s scanctrl_buffer;
   scanctrl_t scanctrl = &scanctrl_buffer;
   tar_header_t hdr, *start_tail;
-  estream_t outstream;
+  estream_t outstream = NULL;
 
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
 
   for (; (pattern = *inpattern); inpattern++)
     {
+      char *pat, *p;
+
       if (!*pattern)
         continue;
+
+      pat = xtrystrdup (pattern);
+      if (!pat)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("memory allocation problem: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      for (p=pat; *p; p++)
+        if (*p == '\\')
+          *p = '/';
+
       if (opt.verbose > 1)
-        log_info ("scanning `%s'\n", pattern);
+        log_info ("scanning `%s'\n", pat);
 
       start_tail = scanctrl->flist_tail;
-      if (!pattern_valid_p (pattern))
-        log_error ("skipping invalid name `%s'\n", pattern);
-      else if (!add_entry (pattern, strlen (pattern), NULL, scanctrl)
+      if (!pattern_valid_p (pat))
+        log_error ("skipping invalid name `%s'\n", pat);
+      else if (!add_entry (pat, NULL, scanctrl)
                && *start_tail && ((*start_tail)->typeflag & TF_DIRECTORY))
-        scan_recursive (pattern, scanctrl);
+        scan_recursive (pat, scanctrl);
+
+      xfree (pat);
     }
 
   if (opt.outfile)
