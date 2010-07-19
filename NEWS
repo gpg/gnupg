@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.16 (unreleased)
+Noteworthy changes in version 2.0.16 (2010-07-19)
 -------------------------------------------------
 
  * If the agent's --use-standard-socket option is active, all tools

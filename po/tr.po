@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-03-09 09:35+0100\n"
+"POT-Creation-Date: 2010-07-19 08:57+0200\n"
 "PO-Revision-Date: 2008-12-14 23:25+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
@@ -121,7 +121,7 @@ msgstr "\"%s\" oluşturulamıyor: %s\n"
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:70 g10/encode.c:194
 #: g10/encode.c:504 g10/gpg.c:1123 g10/import.c:193 g10/keygen.c:2877
 #: g10/keyring.c:1595 g10/openfile.c:192 g10/openfile.c:353
-#: g10/plaintext.c:503 g10/sign.c:783 g10/sign.c:978 g10/sign.c:1094
+#: g10/plaintext.c:511 g10/sign.c:783 g10/sign.c:978 g10/sign.c:1094
 #: g10/sign.c:1250 g10/tdbdump.c:142 g10/tdbdump.c:150 g10/tdbio.c:552
 #: g10/tdbio.c:616 g10/verify.c:99 g10/verify.c:162 sm/gpgsm.c:2047
 #: sm/gpgsm.c:2077 sm/gpgsm.c:2115 sm/gpgsm.c:2153 sm/qualified.c:66
@@ -331,7 +331,7 @@ msgstr "Yeni anahtarınızı korumak için Lütfen%0AAnahtar Parolanızı girini
 msgid "Please enter the new passphrase"
 msgstr "Lütfen yeni anahtar parolasını girin"
 
-#: agent/gpg-agent.c:118 agent/preset-passphrase.c:72 scd/scdaemon.c:103
+#: agent/gpg-agent.c:120 agent/preset-passphrase.c:72 scd/scdaemon.c:103
 #: tools/gpg-check-pattern.c:70
 msgid ""
 "@Options:\n"
@@ -340,102 +340,102 @@ msgstr ""
 "@Seçenekler:\n"
 " "
 
-#: agent/gpg-agent.c:120 scd/scdaemon.c:105
+#: agent/gpg-agent.c:122 scd/scdaemon.c:105
 msgid "run in server mode (foreground)"
 msgstr "sunucu olarak (önalanda) çalışır"
 
-#: agent/gpg-agent.c:121 scd/scdaemon.c:108
+#: agent/gpg-agent.c:123 scd/scdaemon.c:108
 msgid "run in daemon mode (background)"
 msgstr "artalan süreci olarak çalışır"
 
-#: agent/gpg-agent.c:122 g10/gpg.c:488 g10/gpgv.c:71 kbx/kbxutil.c:88
+#: agent/gpg-agent.c:124 g10/gpg.c:488 g10/gpgv.c:71 kbx/kbxutil.c:88
 #: scd/scdaemon.c:109 sm/gpgsm.c:281 tools/gpg-connect-agent.c:69
 #: tools/gpgconf.c:80 tools/symcryptrun.c:163
 msgid "verbose"
 msgstr "ayrıntılı"
 
-#: agent/gpg-agent.c:123 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:110
+#: agent/gpg-agent.c:125 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:110
 #: sm/gpgsm.c:282
 msgid "be somewhat more quiet"
 msgstr "biraz daha sessiz olur"
 
-#: agent/gpg-agent.c:124 scd/scdaemon.c:111
+#: agent/gpg-agent.c:126 scd/scdaemon.c:111
 msgid "sh-style command output"
 msgstr "sh tarzı komut çıktısı"
 
-#: agent/gpg-agent.c:125 scd/scdaemon.c:112
+#: agent/gpg-agent.c:127 scd/scdaemon.c:112
 msgid "csh-style command output"
 msgstr "csh tarzı komut çıktısı"
 
-#: agent/gpg-agent.c:126 scd/scdaemon.c:113 sm/gpgsm.c:312
+#: agent/gpg-agent.c:128 scd/scdaemon.c:113 sm/gpgsm.c:312
 #: tools/symcryptrun.c:166
 msgid "|FILE|read options from FILE"
 msgstr "|DOSYA|seçenekler DOSYAdan okunur"
 
-#: agent/gpg-agent.c:131 scd/scdaemon.c:123
+#: agent/gpg-agent.c:133 scd/scdaemon.c:123
 msgid "do not detach from the console"
 msgstr "konsoldan kopulmaz"
 
-#: agent/gpg-agent.c:132
+#: agent/gpg-agent.c:134
 msgid "do not grab keyboard and mouse"
 msgstr "klavye ve fare gaspedilmez"
 
-#: agent/gpg-agent.c:133 tools/symcryptrun.c:165
+#: agent/gpg-agent.c:135 tools/symcryptrun.c:165
 msgid "use a log file for the server"
 msgstr "sunucu için bir günlük dosyası kullanılır"
 
-#: agent/gpg-agent.c:135
+#: agent/gpg-agent.c:137
 msgid "use a standard location for the socket"
 msgstr "soket için standart bir yer kullanılır"
 
-#: agent/gpg-agent.c:138
+#: agent/gpg-agent.c:140
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|UYG|PIN girme uygulaması olarak UYG kullanılır"
 
-#: agent/gpg-agent.c:141
+#: agent/gpg-agent.c:143
 msgid "|PGM|use PGM as the SCdaemon program"
 msgstr "[UYG|Akıllı kart uygulaması olarak UYG kullanılır"
 
-#: agent/gpg-agent.c:142
+#: agent/gpg-agent.c:144
 msgid "do not use the SCdaemon"
 msgstr "Akıllı kart süreci kullanılmaz"
 
-#: agent/gpg-agent.c:154
+#: agent/gpg-agent.c:156
 msgid "ignore requests to change the TTY"
 msgstr "TTY değiştirme istekleri yoksayılır"
 
-#: agent/gpg-agent.c:156
+#: agent/gpg-agent.c:158
 msgid "ignore requests to change the X display"
 msgstr "X birimi değiştirme istekleri yoksayılır"
 
-#: agent/gpg-agent.c:159
+#: agent/gpg-agent.c:161
 msgid "|N|expire cached PINs after N seconds"
 msgstr "|N|arabellekteki PINler N saniyede zamanaşımına uğrar"
 
-#: agent/gpg-agent.c:172
+#: agent/gpg-agent.c:174
 msgid "do not use the PIN cache when signing"
 msgstr "imzalarken PIN arabelleği kullanılmaz"
 
-#: agent/gpg-agent.c:174
+#: agent/gpg-agent.c:176
 msgid "allow clients to mark keys as \"trusted\""
 msgstr "istemcilerin anahtarları \"güvenilir\" olarak imlemesine izin verilir"
 
-#: agent/gpg-agent.c:176
+#: agent/gpg-agent.c:178
 msgid "allow presetting passphrase"
 msgstr "anahtar parolasının önceden atanmasına izin verilir"
 
-#: agent/gpg-agent.c:177
+#: agent/gpg-agent.c:179
 msgid "enable ssh-agent emulation"
 msgstr "ssh-agent öykünümü etkinleşir"
 
-#: agent/gpg-agent.c:179
+#: agent/gpg-agent.c:181
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
 #. reporting address without breaking the translations.
-#: agent/gpg-agent.c:333 agent/preset-passphrase.c:94 agent/protect-tool.c:163
+#: agent/gpg-agent.c:332 agent/preset-passphrase.c:94 agent/protect-tool.c:163
 #: g10/gpg.c:814 g10/gpgv.c:114 kbx/kbxutil.c:113 scd/scdaemon.c:246
 #: sm/gpgsm.c:519 tools/gpg-connect-agent.c:181 tools/gpgconf.c:102
 #: tools/symcryptrun.c:203 tools/gpg-check-pattern.c:141
@@ -443,11 +443,11 @@ msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "Yazılım hatalarını lütfen <"
 
-#: agent/gpg-agent.c:342
+#: agent/gpg-agent.c:341
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Kullanımı: gpg [seçenekler] (yardım için -h)"
 
-#: agent/gpg-agent.c:344
+#: agent/gpg-agent.c:343
 msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
@@ -455,144 +455,144 @@ msgstr ""
 "Sözdizimi: gpg-agent [seçenekler] [komut [arg ...]]\n"
 "GnuPG için gizli anahtar yönetimi\n"
 
-#: agent/gpg-agent.c:390 g10/gpg.c:1007 scd/scdaemon.c:318 sm/gpgsm.c:669
+#: agent/gpg-agent.c:389 g10/gpg.c:1007 scd/scdaemon.c:318 sm/gpgsm.c:669
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
 
-#: agent/gpg-agent.c:611 agent/protect-tool.c:1033 kbx/kbxutil.c:428
+#: agent/gpg-agent.c:610 agent/protect-tool.c:1033 kbx/kbxutil.c:428
 #: scd/scdaemon.c:425 sm/gpgsm.c:912 sm/gpgsm.c:915 tools/symcryptrun.c:995
 #: tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s çok eski (gereken %s, sizinki %s)\n"
 
-#: agent/gpg-agent.c:726 g10/gpg.c:2115 scd/scdaemon.c:511 sm/gpgsm.c:1011
+#: agent/gpg-agent.c:725 g10/gpg.c:2111 scd/scdaemon.c:511 sm/gpgsm.c:1011
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "BİLGİ: \"%s\" öntanımlı seçenek dosyası yok\n"
 
-#: agent/gpg-agent.c:731 agent/gpg-agent.c:1333 g10/gpg.c:2119
+#: agent/gpg-agent.c:730 agent/gpg-agent.c:1335 g10/gpg.c:2115
 #: scd/scdaemon.c:516 sm/gpgsm.c:1015 tools/symcryptrun.c:928
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "seçenek dosyası \"%s\": %s\n"
 
-#: agent/gpg-agent.c:739 g10/gpg.c:2126 scd/scdaemon.c:524 sm/gpgsm.c:1022
+#: agent/gpg-agent.c:738 g10/gpg.c:2122 scd/scdaemon.c:524 sm/gpgsm.c:1022
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "\"%s\"den seçenekler okunuyor\n"
 
-#: agent/gpg-agent.c:1102 g10/plaintext.c:140 g10/plaintext.c:145
+#: agent/gpg-agent.c:1104 g10/plaintext.c:140 g10/plaintext.c:145
 #: g10/plaintext.c:162
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "`%s' oluşturulurken hata: %s\n"
 
-#: agent/gpg-agent.c:1446 agent/gpg-agent.c:1564 agent/gpg-agent.c:1568
-#: agent/gpg-agent.c:1609 agent/gpg-agent.c:1613 g10/exec.c:188
+#: agent/gpg-agent.c:1448 agent/gpg-agent.c:1566 agent/gpg-agent.c:1570
+#: agent/gpg-agent.c:1611 agent/gpg-agent.c:1615 g10/exec.c:188
 #: g10/openfile.c:429 scd/scdaemon.c:1021
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "`%s' dizini oluşturulamıyor: %s\n"
 
-#: agent/gpg-agent.c:1460 scd/scdaemon.c:1035
+#: agent/gpg-agent.c:1462 scd/scdaemon.c:1035
 msgid "name of socket too long\n"
 msgstr "soketin ismi çok uzun\n"
 
-#: agent/gpg-agent.c:1483 scd/scdaemon.c:1058
+#: agent/gpg-agent.c:1485 scd/scdaemon.c:1058
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "soket oluşturulamıyor: %s\n"
 
-#: agent/gpg-agent.c:1492
+#: agent/gpg-agent.c:1494
 #, c-format
 msgid "socket name `%s' is too long\n"
 msgstr "soketin ismi `%s' çok uzun\n"
 
-#: agent/gpg-agent.c:1510
+#: agent/gpg-agent.c:1512
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "çalışan bir gpg-agent zaten var - bir yenisi başlatılmayacak\n"
 
-#: agent/gpg-agent.c:1521 scd/scdaemon.c:1077
+#: agent/gpg-agent.c:1523 scd/scdaemon.c:1077
 msgid "error getting nonce for the socket\n"
 msgstr "soket için tuz alınırken hata\n"
 
-#: agent/gpg-agent.c:1526 scd/scdaemon.c:1080
+#: agent/gpg-agent.c:1528 scd/scdaemon.c:1080
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "soket `%s'e bağlanırken hata: %s\n"
 
-#: agent/gpg-agent.c:1538 scd/scdaemon.c:1089
+#: agent/gpg-agent.c:1540 scd/scdaemon.c:1089
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "soket dinleme başarısız: %s\n"
 
-#: agent/gpg-agent.c:1544 scd/scdaemon.c:1096
+#: agent/gpg-agent.c:1546 scd/scdaemon.c:1096
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "`%s' soketi dinlemede\n"
 
-#: agent/gpg-agent.c:1572 agent/gpg-agent.c:1619 g10/openfile.c:432
+#: agent/gpg-agent.c:1574 agent/gpg-agent.c:1621 g10/openfile.c:432
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "dizin `%s' oluşturuldu\n"
 
-#: agent/gpg-agent.c:1625
+#: agent/gpg-agent.c:1627
 #, c-format
 msgid "stat() failed for `%s': %s\n"
 msgstr "%s için stat() başarısız oldu: %s\n"
 
-#: agent/gpg-agent.c:1629
+#: agent/gpg-agent.c:1631
 #, c-format
 msgid "can't use `%s' as home directory\n"
 msgstr "`%s' ev dizini olarak kullanılamıyor\n"
 
-#: agent/gpg-agent.c:1759 scd/scdaemon.c:1112
+#: agent/gpg-agent.c:1764 scd/scdaemon.c:1112
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "fd %d üzerinde tuz okunurken hata: %s\n"
 
-#: agent/gpg-agent.c:1781
+#: agent/gpg-agent.c:1786
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
 msgstr "tutamak 0x%lx, fd %d için başlatıldı\n"
 
-#: agent/gpg-agent.c:1786
+#: agent/gpg-agent.c:1791
 #, c-format
 msgid "handler 0x%lx for fd %d terminated\n"
 msgstr "tutamak 0x%lx, fd %d için sonlandırıldı\n"
 
-#: agent/gpg-agent.c:1806
+#: agent/gpg-agent.c:1811
 #, c-format
 msgid "ssh handler 0x%lx for fd %d started\n"
 msgstr "ssh tutamağı 0x%lx, fd %d için başlatıldı\n"
 
-#: agent/gpg-agent.c:1811
+#: agent/gpg-agent.c:1816
 #, c-format
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "ssh tutamağı 0x%lx, fd %d için sonlandırıldı\n"
 
-#: agent/gpg-agent.c:1951 scd/scdaemon.c:1249
+#: agent/gpg-agent.c:1956 scd/scdaemon.c:1249
 #, c-format
 msgid "pth_select failed: %s - waiting 1s\n"
 msgstr "pth_select başarısız: %s - 1s bekliyor\n"
 
-#: agent/gpg-agent.c:2074 scd/scdaemon.c:1316
+#: agent/gpg-agent.c:2079 scd/scdaemon.c:1316
 #, c-format
 msgid "%s %s stopped\n"
 msgstr "%s %s durdu\n"
 
-#: agent/gpg-agent.c:2210
+#: agent/gpg-agent.c:2215
 msgid "no gpg-agent running in this session\n"
 msgstr "bu oturumda çalışan gpg-agent yok\n"
 
-#: agent/gpg-agent.c:2221 common/simple-pwquery.c:352 common/asshelp.c:291
+#: agent/gpg-agent.c:2226 common/simple-pwquery.c:352 common/asshelp.c:403
 #: tools/gpg-connect-agent.c:2168
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO çevre değişkeni hatalı\n"
 
-#: agent/gpg-agent.c:2234 common/simple-pwquery.c:364 common/asshelp.c:303
+#: agent/gpg-agent.c:2239 common/simple-pwquery.c:364 common/asshelp.c:415
 #: tools/gpg-connect-agent.c:2179
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -808,7 +808,7 @@ msgstr "boru oluşturulurken hata: %s\n"
 msgid "can't fdopen pipe for reading: %s\n"
 msgstr "okumak için boruya fdopen yapılamadı: %s\n"
 
-#: common/exechelp.c:637 common/exechelp.c:765 common/exechelp.c:1000
+#: common/exechelp.c:637 common/exechelp.c:765 common/exechelp.c:1002
 #, c-format
 msgid "error forking process: %s\n"
 msgstr "süreç çatallanırken hata: %s\n"
@@ -823,7 +823,7 @@ msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "süreç %d çıkış kodu alınırken hata: %s\n"
 
-#: common/exechelp.c:825 common/exechelp.c:875
+#: common/exechelp.c:825 common/exechelp.c:877
 #, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
@@ -833,7 +833,7 @@ msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
 msgid "error running `%s': probably not installed\n"
 msgstr "`%s' çalıştırılırken hata: muhtemelen kurulu değil\n"
 
-#: common/exechelp.c:883
+#: common/exechelp.c:885
 #, c-format
 msgid "error running `%s': terminated\n"
 msgstr "`%s' çalışırken hata: sonlandırıldı\n"
@@ -942,11 +942,16 @@ msgstr "%lu bayt ayrılırken güvenli bellekte nüve dışına çıkıldı"
 msgid "out of core while allocating %lu bytes"
 msgstr "%lu bayt ayrılırken nüve dışına çıkıldı"
 
-#: common/asshelp.c:208 tools/gpg-connect-agent.c:2129
+#: common/asshelp.c:293 tools/gpg-connect-agent.c:2129
 msgid "no running gpg-agent - starting one\n"
 msgstr "çalışan gpg-agent yok - bir tane başlatılıyor\n"
 
-#: common/asshelp.c:314
+#: common/asshelp.c:349
+#, c-format
+msgid "waiting %d seconds for the agent to come up\n"
+msgstr ""
+
+#: common/asshelp.c:426
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "aracıya bağlanılamıyor - son çareye başvuruluyor\n"
 
@@ -1178,46 +1183,46 @@ msgstr "beklenmeyen zırh: "
 msgid "invalid dash escaped line: "
 msgstr "araçizgisi escape'lı satır geçersiz: "
 
-#: g10/armor.c:809 g10/armor.c:1419
+#: g10/armor.c:810 g10/armor.c:1420
 #, c-format
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "geçersiz radix64 karakteri %02X atlandı\n"
 
-#: g10/armor.c:852
+#: g10/armor.c:853
 msgid "premature eof (no CRC)\n"
 msgstr "dosya sonu belirsiz (CRC yok)\n"
 
-#: g10/armor.c:886
+#: g10/armor.c:887
 msgid "premature eof (in CRC)\n"
 msgstr "dosya sonu belirsiz (CRC içinde)\n"
 
-#: g10/armor.c:894
+#: g10/armor.c:895
 msgid "malformed CRC\n"
 msgstr "CRC bozulmuş\n"
 
-#: g10/armor.c:898 g10/armor.c:1456
+#: g10/armor.c:899 g10/armor.c:1457
 #, c-format
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "CRC hatası; %06lX - %06lX\n"
 
-#: g10/armor.c:918
+#: g10/armor.c:919
 msgid "premature eof (in trailer)\n"
 msgstr "dosya sonu belirsiz (kuyruk içinde)\n"
 
-#: g10/armor.c:922
+#: g10/armor.c:923
 msgid "error in trailer line\n"
 msgstr "kuyruk satırında hata\n"
 
-#: g10/armor.c:1233
+#: g10/armor.c:1234
 msgid "no valid OpenPGP data found.\n"
 msgstr "geçerli OpenPGP verisi yok\n"
 
-#: g10/armor.c:1238
+#: g10/armor.c:1239
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "geçersiz zırh: satır %d karakterden uzun\n"
 
-#: g10/armor.c:1242
+#: g10/armor.c:1243
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1262,7 +1267,7 @@ msgstr "OpenPGP anahtarı kullanılabilir değil: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "%s numaralı OpenPGP kartı saptandı\n"
 
-#: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1549
+#: g10/card-util.c:98 g10/card-util.c:1770 g10/delkey.c:126 g10/keyedit.c:1551
 #: g10/keygen.c:3068 g10/revoke.c:216 g10/revoke.c:455
 msgid "can't do this in batch mode\n"
 msgstr "bu önceden betik kipinde yapılamaz\n"
@@ -1528,7 +1533,7 @@ msgstr "gizli anahtar zaten bir kartın üzerinde saklı\n"
 msgid "error writing key to card: %s\n"
 msgstr "anahtarı yazarken hata: %s\n"
 
-#: g10/card-util.c:1679 g10/keyedit.c:1380
+#: g10/card-util.c:1679 g10/keyedit.c:1382
 msgid "quit this menu"
 msgstr "bu menüden çık"
 
@@ -1536,7 +1541,7 @@ msgstr "bu menüden çık"
 msgid "show admin commands"
 msgstr "yönetici komutlarını gösterir"
 
-#: g10/card-util.c:1682 g10/keyedit.c:1383
+#: g10/card-util.c:1682 g10/keyedit.c:1385
 msgid "show this help"
 msgstr "bunu gösterir"
 
@@ -1608,7 +1613,7 @@ msgstr "Yönetici komutlarına izin verilir\n"
 msgid "Admin commands are not allowed\n"
 msgstr "Yönetici komutlarına izin verilmez\n"
 
-#: g10/card-util.c:1985 g10/keyedit.c:2290
+#: g10/card-util.c:1985 g10/keyedit.c:2292
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 
@@ -1616,18 +1621,18 @@ msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output seçeneği bu komutla çalışmaz\n"
 
-#: g10/decrypt.c:166 g10/gpg.c:4023 g10/keyring.c:387 g10/keyring.c:698
+#: g10/decrypt.c:166 g10/gpg.c:4019 g10/keyring.c:387 g10/keyring.c:698
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "`%s' açılamadı\n"
 
-#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3514 g10/keyserver.c:1737
+#: g10/delkey.c:73 g10/export.c:324 g10/keyedit.c:3515 g10/keyserver.c:1737
 #: g10/revoke.c:226
 #, c-format
 msgid "key \"%s\" not found: %s\n"
 msgstr "anahtar \"%s\" yok: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2417 g10/keyserver.c:1751
+#: g10/delkey.c:81 g10/export.c:354 g10/import.c:2483 g10/keyserver.c:1751
 #: g10/revoke.c:232 g10/revoke.c:477
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1907,7 +1912,7 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Geçersiz %s anahtarı --allow-non-selfsigned-uid kullanılarak geçerli oldu\n"
 
-#: g10/getkey.c:2533 g10/keyedit.c:3839
+#: g10/getkey.c:2533 g10/keyedit.c:3840
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
@@ -2143,7 +2148,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "GenAnah: "
 
-#: g10/gpg.c:860 g10/keyedit.c:2422
+#: g10/gpg.c:860 g10/keyedit.c:2423
 msgid "Cipher: "
 msgstr "Şifre: "
 
@@ -2151,7 +2156,7 @@ msgstr "Şifre: "
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/gpg.c:874 g10/keyedit.c:2467
+#: g10/gpg.c:874 g10/keyedit.c:2468
 msgid "Compression: "
 msgstr "Sıkıştırma: "
 
@@ -2294,399 +2299,399 @@ msgstr "BİLGİ: eski öntanımlı seçenekler dosyası `%s' yoksayıldı\n"
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt çok eski (%s lazım, sizinki %s)\n"
 
-#: g10/gpg.c:2350 g10/gpg.c:3041 g10/gpg.c:3053
+#: g10/gpg.c:2346 g10/gpg.c:3037 g10/gpg.c:3049
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "BİLGİ: %s normal kullanım için değil!\n"
 
-#: g10/gpg.c:2534 g10/gpg.c:2546
+#: g10/gpg.c:2530 g10/gpg.c:2542
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
 msgstr "'%s' geçerli bir imza zamanaşımı değil\n"
 
-#: g10/gpg.c:2628
+#: g10/gpg.c:2624
 #, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "'%s' geçerli bir karakter kümesi değil\n"
 
-#: g10/gpg.c:2651 g10/gpg.c:2846 g10/keyedit.c:4197
+#: g10/gpg.c:2647 g10/gpg.c:2842 g10/keyedit.c:4198
 msgid "could not parse keyserver URL\n"
 msgstr "anahtar sunucusunun adresi çözümlenemedi\n"
 
-#: g10/gpg.c:2663
+#: g10/gpg.c:2659
 #, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: anahtar sunucusu seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2666
+#: g10/gpg.c:2662
 msgid "invalid keyserver options\n"
 msgstr "anahtar sunucusu seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2673
+#: g10/gpg.c:2669
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: geçersiz içselleştirme seçenekleri\n"
 
-#: g10/gpg.c:2676
+#: g10/gpg.c:2672
 msgid "invalid import options\n"
 msgstr "içselleştirme seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2683
+#: g10/gpg.c:2679
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d geçersiz dışsallaştırma seçenekleri\n"
 
-#: g10/gpg.c:2686
+#: g10/gpg.c:2682
 msgid "invalid export options\n"
 msgstr "dışsallaştırma seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2693
+#: g10/gpg.c:2689
 #, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: liste seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2696
+#: g10/gpg.c:2692
 msgid "invalid list options\n"
 msgstr "liste seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2704
+#: g10/gpg.c:2700
 msgid "display photo IDs during signature verification"
 msgstr "imza doğrulaması sırasında foto kimliklerini gösterir"
 
-#: g10/gpg.c:2706
+#: g10/gpg.c:2702
 msgid "show policy URLs during signature verification"
 msgstr "imza doğrulaması sırasında poliçe adreslerini gösterir"
 
-#: g10/gpg.c:2708
+#: g10/gpg.c:2704
 msgid "show all notations during signature verification"
 msgstr "imza doğrulaması sırasında tüm simgelemi gösterir"
 
-#: g10/gpg.c:2710
+#: g10/gpg.c:2706
 msgid "show IETF standard notations during signature verification"
 msgstr "imza doğrulaması sırasında IETF standart simgelemlerini gösterir"
 
-#: g10/gpg.c:2714
+#: g10/gpg.c:2710
 msgid "show user-supplied notations during signature verification"
 msgstr "imza doğrulaması sırasında kullanıcı kaynaklı simgelemleri gösterir"
 
-#: g10/gpg.c:2716
+#: g10/gpg.c:2712
 msgid "show preferred keyserver URLs during signature verification"
 msgstr ""
 "imza doğrulaması sırasında tercih edilen anahtar sunucusu adresleri "
 "gösterilir"
 
-#: g10/gpg.c:2718
+#: g10/gpg.c:2714
 msgid "show user ID validity during signature verification"
 msgstr "imza doğrulaması sırasında kullanıcı kimliği geçerliliğini gösterir"
 
-#: g10/gpg.c:2720
+#: g10/gpg.c:2716
 msgid "show revoked and expired user IDs in signature verification"
 msgstr ""
 "imza doğrulamasında yürürlükten kaldırılan ve zamanaşımına uğrayan kullanıcı "
 "kimlikleri gösterilir"
 
-#: g10/gpg.c:2722
+#: g10/gpg.c:2718
 msgid "show only the primary user ID in signature verification"
 msgstr "imza doğrulamasında sadece birincil kullanıcı kimlik gösterilir"
 
-#: g10/gpg.c:2724
+#: g10/gpg.c:2720
 msgid "validate signatures with PKA data"
 msgstr "imzaları PKA verisi ile doğrular"
 
-#: g10/gpg.c:2726
+#: g10/gpg.c:2722
 msgid "elevate the trust of signatures with valid PKA data"
 msgstr "imzaların güvenilirliğini geçerli PKA verisi ile yükseltir"
 
-#: g10/gpg.c:2733
+#: g10/gpg.c:2729
 #, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d doğrulama seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2736
+#: g10/gpg.c:2732
 msgid "invalid verify options\n"
 msgstr "doğrulama seçenekleri geçersiz\n"
 
-#: g10/gpg.c:2743
+#: g10/gpg.c:2739
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "çalıştırılabilirlerin patikası %s yapılamıyor\n"
 
-#: g10/gpg.c:2929
+#: g10/gpg.c:2925
 #, c-format
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: özdevinimli anahtar konumlama listesi geçersiz\n"
 
-#: g10/gpg.c:2932
+#: g10/gpg.c:2928
 msgid "invalid auto-key-locate list\n"
 msgstr "özdevinimli anahtar konumlama listesi geçersiz\n"
 
-#: g10/gpg.c:3030 sm/gpgsm.c:1440
+#: g10/gpg.c:3026 sm/gpgsm.c:1440
 msgid "WARNING: program may create a core file!\n"
 msgstr "UYARI: program bir \"core\" dosyası oluşturabilir!\n"
 
-#: g10/gpg.c:3034
+#: g10/gpg.c:3030
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "UYARI: %s %s'i aşıyor\n"
 
-#: g10/gpg.c:3043
+#: g10/gpg.c:3039
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ile %s birlikte kullanılmaz!\n"
 
-#: g10/gpg.c:3046
+#: g10/gpg.c:3042
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s, %s ile etkisiz olur!\n"
 
-#: g10/gpg.c:3061
+#: g10/gpg.c:3057
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "%s olmasından dolayı güvensiz bellekle çalıştırılmayacak\n"
 
-#: g10/gpg.c:3075
+#: g10/gpg.c:3071
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "--pgp2 kipindeyken sadece ayrık veya sade imzalar yapabilirsiniz\n"
 
-#: g10/gpg.c:3081
+#: g10/gpg.c:3077
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "--pgp2 kipinde aynı anda hem imzalama hem de şifreleme yapamazsınız\n"
 
-#: g10/gpg.c:3087
+#: g10/gpg.c:3083
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "--pgp2 ile çalışırken veri yolu yerine dosyaları kullanmalısınız.\n"
 
-#: g10/gpg.c:3100
+#: g10/gpg.c:3096
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "--pgp2 kipinde ileti şifrelemesi IDEA şifresi gerektirir\n"
 
-#: g10/gpg.c:3167 g10/gpg.c:3191 sm/gpgsm.c:1512
+#: g10/gpg.c:3163 g10/gpg.c:3187 sm/gpgsm.c:1512
 msgid "selected cipher algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
 
-#: g10/gpg.c:3173 g10/gpg.c:3197 sm/gpgsm.c:1518 sm/gpgsm.c:1524
+#: g10/gpg.c:3169 g10/gpg.c:3193 sm/gpgsm.c:1518 sm/gpgsm.c:1524
 msgid "selected digest algorithm is invalid\n"
 msgstr "seçilen özet algoritması geçersiz\n"
 
-#: g10/gpg.c:3179
+#: g10/gpg.c:3175
 msgid "selected compression algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
 
-#: g10/gpg.c:3185
+#: g10/gpg.c:3181
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "seçilen sertifikalama özet algoritması geçersiz\n"
 
-#: g10/gpg.c:3200
+#: g10/gpg.c:3196
 msgid "completes-needed must be greater than 0\n"
 msgstr "\"completes-needed\" 0 dan büyük olmalı\n"
 
-#: g10/gpg.c:3202
+#: g10/gpg.c:3198
 msgid "marginals-needed must be greater than 1\n"
 msgstr "\"marginals-needed\" 1 den büyük olmalı\n"
 
-#: g10/gpg.c:3204
+#: g10/gpg.c:3200
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "\"max-cert-depth\" 1 ile 255 arasında olmalı\n"
 
-#: g10/gpg.c:3206
+#: g10/gpg.c:3202
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "öntanımlı sertifika seviyesi geçersiz; 0, 1, 2, ya da 3 olabilir\n"
 
-#: g10/gpg.c:3208
+#: g10/gpg.c:3204
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "asgari sertifika seviyesi geçersiz; 1, 2, ya da 3 olabilir\n"
 
-#: g10/gpg.c:3211
+#: g10/gpg.c:3207
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "BİLGİ: basit S2K kipi (0) kesinlikle tavsiye edilmez\n"
 
-#: g10/gpg.c:3215
+#: g10/gpg.c:3211
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "S2K kipi geçersiz; 0, 1 veya 3 olmalı\n"
 
-#: g10/gpg.c:3222
+#: g10/gpg.c:3218
 msgid "invalid default preferences\n"
 msgstr "öntanımlı tercihler geçersiz\n"
 
-#: g10/gpg.c:3226
+#: g10/gpg.c:3222
 msgid "invalid personal cipher preferences\n"
 msgstr "kişisel şifre tercihleri geçersiz\n"
 
-#: g10/gpg.c:3230
+#: g10/gpg.c:3226
 msgid "invalid personal digest preferences\n"
 msgstr "kişisel özet tercihleri geçersiz\n"
 
-#: g10/gpg.c:3234
+#: g10/gpg.c:3230
 msgid "invalid personal compress preferences\n"
 msgstr "kişisel sıkıştırma tercihleri geçersiz\n"
 
-#: g10/gpg.c:3267
+#: g10/gpg.c:3263
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
 
-#: g10/gpg.c:3314
+#: g10/gpg.c:3310
 #, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
 
-#: g10/gpg.c:3319
+#: g10/gpg.c:3315
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' özet algoritması kullanılamaz\n"
 
-#: g10/gpg.c:3324
+#: g10/gpg.c:3320
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' sıkıştırma algoritması kullanılamaz\n"
 
-#: g10/gpg.c:3410
+#: g10/gpg.c:3406
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "\"TrustDB\" güvence veritabanı başlangıç aşamasında başarısız: %s\n"
 
-#: g10/gpg.c:3421
+#: g10/gpg.c:3417
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "UYARI: alıcılar (-r) genel anahtar şifrelemesi kullanılmadan belirtilmiş\n"
 
-#: g10/gpg.c:3442
+#: g10/gpg.c:3438
 msgid "--store [filename]"
 msgstr "--store [dosyaismi]"
 
-#: g10/gpg.c:3449
+#: g10/gpg.c:3445
 msgid "--symmetric [filename]"
 msgstr "--symmetric [dosyaismi]"
 
-#: g10/gpg.c:3451
+#: g10/gpg.c:3447
 #, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "`%s' için simetrik şifreleme başarısız: %s\n"
 
-#: g10/gpg.c:3461
+#: g10/gpg.c:3457
 msgid "--encrypt [filename]"
 msgstr "--encrypt [dosyaismi]"
 
-#: g10/gpg.c:3474
+#: g10/gpg.c:3470
 msgid "--symmetric --encrypt [filename]"
 msgstr "--symmetric --encrypt [dosyaismi]"
 
-#: g10/gpg.c:3476
+#: g10/gpg.c:3472
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile  --symmetric --encrypt kullanamazsınız\n"
 
-#: g10/gpg.c:3479
+#: g10/gpg.c:3475
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "%s kipindeyken  --symmetric --encrypt kullanamazsınız\n"
 
-#: g10/gpg.c:3497
+#: g10/gpg.c:3493
 msgid "--sign [filename]"
 msgstr "--sign [dosyaismi]"
 
-#: g10/gpg.c:3510
+#: g10/gpg.c:3506
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [dosyaismi]"
 
-#: g10/gpg.c:3525
+#: g10/gpg.c:3521
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [dosyaismi]"
 
-#: g10/gpg.c:3527
+#: g10/gpg.c:3523
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile --symmetric --sign --encrypt kullanamazsınız\n"
 
-#: g10/gpg.c:3530
+#: g10/gpg.c:3526
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "%s kipindeyken --symmetric --sign --encrypt kullanamazsınız.\n"
 
-#: g10/gpg.c:3550
+#: g10/gpg.c:3546
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [DOSYA]"
 
-#: g10/gpg.c:3559
+#: g10/gpg.c:3555
 msgid "--clearsign [filename]"
 msgstr "--clearsign [dosyaismi]"
 
-#: g10/gpg.c:3584
+#: g10/gpg.c:3580
 msgid "--decrypt [filename]"
 msgstr "--decrypt [dosyaismi]"
 
-#: g10/gpg.c:3592
+#: g10/gpg.c:3588
 msgid "--sign-key user-id"
 msgstr "--sign-key kullanıcı-kimliği"
 
-#: g10/gpg.c:3596
+#: g10/gpg.c:3592
 msgid "--lsign-key user-id"
 msgstr "--lsign-key kullanıcı-kimliği"
 
-#: g10/gpg.c:3617
+#: g10/gpg.c:3613
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key kullanıcı-kimliği [komutlar]"
 
-#: g10/gpg.c:3633
+#: g10/gpg.c:3629
 #, fuzzy
 msgid "--passwd <user-id>"
 msgstr "--sign-key kullanıcı-kimliği"
 
-#: g10/gpg.c:3720
+#: g10/gpg.c:3716
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "anahtar sunucusuna gönderim başarısızlığa uğradı: %s\n"
 
-#: g10/gpg.c:3722
+#: g10/gpg.c:3718
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "anahtar sunucusundan alım başarısızlığa uğradı: %s\n"
 
-#: g10/gpg.c:3724
+#: g10/gpg.c:3720
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "anahtar ihracı başarısızlığa uğradı: %s\n"
 
-#: g10/gpg.c:3735
+#: g10/gpg.c:3731
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "anahtar sunucusunda arama başarısız: %s\n"
 
-#: g10/gpg.c:3745
+#: g10/gpg.c:3741
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "anahtar sunucusunda tazeleme başarısız: %s\n"
 
-#: g10/gpg.c:3796
+#: g10/gpg.c:3792
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "zırhın kaldırılması başarısız: %s\n"
 
-#: g10/gpg.c:3804
+#: g10/gpg.c:3800
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "zırhlama başarısız: %s\n"
 
-#: g10/gpg.c:3894
+#: g10/gpg.c:3890
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "`%s' çittirim algoritması geçersiz\n"
 
-#: g10/gpg.c:4009
+#: g10/gpg.c:4005
 msgid "[filename]"
 msgstr "[dosyaismi]"
 
-#: g10/gpg.c:4013
+#: g10/gpg.c:4009
 msgid "Go ahead and type your message ...\n"
 msgstr "İletinizi yazın ...\n"
 
-#: g10/gpg.c:4327
+#: g10/gpg.c:4323
 msgid "the given certification policy URL is invalid\n"
 msgstr "belirtilen sertifika güvence adresi geçersiz\n"
 
-#: g10/gpg.c:4329
+#: g10/gpg.c:4325
 msgid "the given signature policy URL is invalid\n"
 msgstr "belirtilen imza güvence adresi geçersiz\n"
 
-#: g10/gpg.c:4362
+#: g10/gpg.c:4358
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "belirtilen anahtar sunucusu adresi geçersiz\n"
 
@@ -2837,7 +2842,7 @@ msgstr "    temizlenen imzalar: %lu\n"
 msgid "      user IDs cleaned: %lu\n"
 msgstr "     temizlenen kullanıcı kimlikleri: %lu\n"
 
-#: g10/import.c:569
+#: g10/import.c:609
 #, c-format
 msgid ""
 "WARNING: key %s contains preferences for unavailable\n"
@@ -2846,337 +2851,342 @@ msgstr ""
 "UYARI: anahtar %s bu kullanıcı kimliklerde kullanışsız algoritmalar için "
 "tercihler içeriyor:\n"
 
-#: g10/import.c:610
+#: g10/import.c:650
 #, c-format
 msgid "         \"%s\": preference for cipher algorithm %s\n"
 msgstr "         \"%s\": şifreleme algoritması %s için tercih edilir\n"
 
-#: g10/import.c:625
+#: g10/import.c:665
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
 msgstr "         \"%s\": özet algoritması %s için tercih edilir\n"
 
-#: g10/import.c:637
+#: g10/import.c:677
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 "         \"%s\": sıkıştırma algoritması %s için tercih edilir\n"
 "\n"
 
-#: g10/import.c:650
+#: g10/import.c:690
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr "tercihlerinizi güncellemenizi ve\n"
 
-#: g10/import.c:652
+#: g10/import.c:692
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 "olası algoritma uyuşmazlığı sorunlarından kaçınmak için bu anahtarı\n"
 "tekrar dağıtmanızı şiddetle öneririz.\n"
 
-#: g10/import.c:676
+#: g10/import.c:716
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr ""
 "tercihlerinizi böyle güncelleyemezsiniz: gpg --edit-key %s updpref save\n"
 
-#: g10/import.c:729 g10/import.c:1137
+#: g10/import.c:769 g10/import.c:1182
 #, c-format
 msgid "key %s: no user ID\n"
 msgstr "anahtar %s: kullanıcı kimliği yok\n"
 
-#: g10/import.c:758
+#: g10/import.c:798
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "anahtar %s: PKS yardımcı anahtar bozulması giderildi\n"
 
-#: g10/import.c:773
+#: g10/import.c:813
 #, c-format
 msgid "key %s: accepted non self-signed user ID \"%s\"\n"
 msgstr "anahtar %s: öz-imzalı olmayan kullanıcı kimliği \"%s\" kabul edildi\n"
 
-#: g10/import.c:779
+#: g10/import.c:819
 #, c-format
 msgid "key %s: no valid user IDs\n"
 msgstr "anahtar %s: geçerli kullanıcı kimliği yok\n"
 
-#: g10/import.c:781
+#: g10/import.c:821
 msgid "this may be caused by a missing self-signature\n"
 msgstr "bu kayıp bir öz-imza yüzünden meydana gelebilir\n"
 
-#: g10/import.c:791 g10/import.c:1261
+#: g10/import.c:831 g10/import.c:1306
 #, c-format
 msgid "key %s: public key not found: %s\n"
 msgstr "anahtar %s: genel anahtar yok: %s\n"
 
-#: g10/import.c:797
+#: g10/import.c:837
 #, c-format
 msgid "key %s: new key - skipped\n"
 msgstr "anahtar %s: yeni anahtar - atlandı\n"
 
-#: g10/import.c:806
+#: g10/import.c:846
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "yazılabilir bir anahtar zinciri yok: %s\n"
 
-#: g10/import.c:811 g10/openfile.c:278 g10/sign.c:805 g10/sign.c:1114
+#: g10/import.c:851 g10/openfile.c:278 g10/sign.c:805 g10/sign.c:1114
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "\"%s\"e yazıyor\n"
 
-#: g10/import.c:815 g10/import.c:910 g10/import.c:1177 g10/import.c:1322
-#: g10/import.c:2431 g10/import.c:2453
+#: g10/import.c:855 g10/import.c:955 g10/import.c:1222 g10/import.c:1367
+#: g10/import.c:2497 g10/import.c:2519
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "\"%s\" anahtarlığına yazarken hata oluştu: %s\n"
 
-#: g10/import.c:834
+#: g10/import.c:874
 #, c-format
 msgid "key %s: public key \"%s\" imported\n"
 msgstr "anahtar %s: genel anahtar \"%s\" alındı\n"
 
-#: g10/import.c:858
+#: g10/import.c:898
 #, c-format
 msgid "key %s: doesn't match our copy\n"
 msgstr "anahtar %s: bizim kopyamızla eşleşmiyor\n"
 
-#: g10/import.c:875 g10/import.c:1279
+#: g10/import.c:915 g10/import.c:1324
 #, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
 msgstr "anahtar %s: özgün anahtar bloku bulunamadı: %s\n"
 
-#: g10/import.c:883 g10/import.c:1286
+#: g10/import.c:923 g10/import.c:1331
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
 msgstr "anahtar %s: özgün anahtar bloku okunamadı: %s\n"
 
-#: g10/import.c:920
+#: g10/import.c:965
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "anahtar %s: \"%s\" 1 yeni kullanıcı kimliği\n"
 
-#: g10/import.c:923
+#: g10/import.c:968
 #, c-format
 msgid "key %s: \"%s\" %d new user IDs\n"
 msgstr "anahtar %s: \"%s\" %d yeni kullanıcı kimliği\n"
 
-#: g10/import.c:926
+#: g10/import.c:971
 #, c-format
 msgid "key %s: \"%s\" 1 new signature\n"
 msgstr "anahtar %s: \"%s\" 1 yeni imza\n"
 
-#: g10/import.c:929
+#: g10/import.c:974
 #, c-format
 msgid "key %s: \"%s\" %d new signatures\n"
 msgstr "anahtar %s: \"%s\" %d yeni imza\n"
 
-#: g10/import.c:932
+#: g10/import.c:977
 #, c-format
 msgid "key %s: \"%s\" 1 new subkey\n"
 msgstr "anahtar %s: %s 1 yeni yardımcı anahtar\n"
 
-#: g10/import.c:935
+#: g10/import.c:980
 #, c-format
 msgid "key %s: \"%s\" %d new subkeys\n"
 msgstr "anahtar %s: \"%s\" %d yeni yardımcı anahtar\n"
 
-#: g10/import.c:938
+#: g10/import.c:983
 #, c-format
 msgid "key %s: \"%s\" %d signature cleaned\n"
 msgstr "anahtar %s: \"%s\" %d imza temizlendi\n"
 
-#: g10/import.c:941
+#: g10/import.c:986
 #, c-format
 msgid "key %s: \"%s\" %d signatures cleaned\n"
 msgstr "anahtar %s: \"%s\" %d imza temizlendi\n"
 
-#: g10/import.c:944
+#: g10/import.c:989
 #, c-format
 msgid "key %s: \"%s\" %d user ID cleaned\n"
 msgstr "anahtar %s: \"%s\" %d kullanıcı kimliği temizlendi\n"
 
-#: g10/import.c:947
+#: g10/import.c:992
 #, c-format
 msgid "key %s: \"%s\" %d user IDs cleaned\n"
 msgstr "anahtar %s: \"%s\" %d kullanıcı kimliği temizlendi\n"
 
-#: g10/import.c:971
+#: g10/import.c:1016
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "anahtar %s: \"%s\" değişmedi\n"
 
-#: g10/import.c:1143
+#: g10/import.c:1188
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "anahtar %s: geçersiz şifreli (%d) gizli anahtar - atlandı\n"
 
-#: g10/import.c:1154
+#: g10/import.c:1199
 msgid "importing secret keys not allowed\n"
 msgstr "gizli anahtarı alımına izin verilmez\n"
 
-#: g10/import.c:1171 g10/import.c:2446
+#: g10/import.c:1216 g10/import.c:2512
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "öntanımlı gizli anahtar zinciri yok: %s\n"
 
-#: g10/import.c:1182
+#: g10/import.c:1227
 #, c-format
 msgid "key %s: secret key imported\n"
 msgstr "anahtar %s: gizli anahtar alındı\n"
 
-#: g10/import.c:1212
+#: g10/import.c:1257
 #, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "anahtar %s: zaten gizli anahtar zincirinde\n"
 
-#: g10/import.c:1222
+#: g10/import.c:1267
 #, c-format
 msgid "key %s: secret key not found: %s\n"
 msgstr "anahtar %s: gizli anahtar yok: %s\n"
 
-#: g10/import.c:1254
+#: g10/import.c:1299
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "anahtar %s: genel anahtar değil - yürürlükten kaldırma sertifikası "
 "uygulanamaz\n"
 
-#: g10/import.c:1297
+#: g10/import.c:1342
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
 msgstr ""
 "anahtar %s: yürürlükten kaldırma sertifikası geçersiz: %s - reddedildi\n"
 
-#: g10/import.c:1329
+#: g10/import.c:1374
 #, c-format
 msgid "key %s: \"%s\" revocation certificate imported\n"
 msgstr "anahtar %s: \"%s\" yürürlükten kaldırma sertifikası alındı\n"
 
-#: g10/import.c:1398
+#: g10/import.c:1450
 #, c-format
 msgid "key %s: no user ID for signature\n"
 msgstr "anahtar %s: imza için kullanıcı kimliği yok\n"
 
-#: g10/import.c:1413
+#: g10/import.c:1467
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
 "anahtar %s: genel anahtar algoritması, kullanıcı kimliği \"%s\" için "
 "desteklenmiyor\n"
 
-#: g10/import.c:1415
+#: g10/import.c:1469
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "anahtar %s: kullanıcı kimliği \"%s\" için öz-imza geçersiz\n"
 
-#: g10/import.c:1433
-#, c-format
-msgid "key %s: no subkey for key binding\n"
-msgstr "anahtar %s: anahtarı garantilemek için yardımcı anahtar yok\n"
-
-#: g10/import.c:1444 g10/import.c:1494
+#: g10/import.c:1486 g10/import.c:1512 g10/import.c:1563
 #, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "anahtar %s: genel anahtar algoritması desteklenmiyor\n"
 
-#: g10/import.c:1446
+#: g10/import.c:1487
+#, fuzzy, c-format
+msgid "key %s: invalid direct key signature\n"
+msgstr "anahtar %s: doğrudan anahtar imzası eklendi\n"
+
+#: g10/import.c:1501
+#, c-format
+msgid "key %s: no subkey for key binding\n"
+msgstr "anahtar %s: anahtarı garantilemek için yardımcı anahtar yok\n"
+
+#: g10/import.c:1514
 #, c-format
 msgid "key %s: invalid subkey binding\n"
 msgstr "anahtar %s: yardımcı anahtar garantileme geçersiz\n"
 
-#: g10/import.c:1461
+#: g10/import.c:1530
 #, c-format
 msgid "key %s: removed multiple subkey binding\n"
 msgstr "anahtar %s: çok sayıda yardımcı anahtar bağlantısı silindi\n"
 
-#: g10/import.c:1483
+#: g10/import.c:1552
 #, c-format
 msgid "key %s: no subkey for key revocation\n"
 msgstr "anahtar %s: anahtarı yürürlükten kaldırılacak yardımcı anahtar yok\n"
 
-#: g10/import.c:1496
+#: g10/import.c:1565
 #, c-format
 msgid "key %s: invalid subkey revocation\n"
 msgstr "anahtar %s: yardımcı anahtar yürürlükten kaldırması geçersiz\n"
 
-#: g10/import.c:1511
+#: g10/import.c:1580
 #, c-format
 msgid "key %s: removed multiple subkey revocation\n"
 msgstr ""
 "anahtar %s: çok sayıda yardımcı anahtar yürürlükten kaldırması silindi\n"
 
-#: g10/import.c:1555
+#: g10/import.c:1621
 #, c-format
 msgid "key %s: skipped user ID \"%s\"\n"
 msgstr "anahtar %s: kullanıcı kimliği \"%s\" atlandı\n"
 
-#: g10/import.c:1576
+#: g10/import.c:1642
 #, c-format
 msgid "key %s: skipped subkey\n"
 msgstr "anahtar %s: yardımcı anahtar atlandı\n"
 
-#: g10/import.c:1603
+#: g10/import.c:1669
 #, c-format
 msgid "key %s: non exportable signature (class 0x%02X) - skipped\n"
 msgstr "anahtar %s: imza gönderilebilir değil (0x%02X sınıfı) - atlandı\n"
 
-#: g10/import.c:1613
+#: g10/import.c:1679
 #, c-format
 msgid "key %s: revocation certificate at wrong place - skipped\n"
 msgstr "anahtar %s: yürürlükten kaldırma sertifikası yanlış yerde - atlandı\n"
 
-#: g10/import.c:1630
+#: g10/import.c:1696
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - skipped\n"
 msgstr "anahtar %s: yürürlükten kaldırma sertifikası geçersiz: %s - atlandı\n"
 
-#: g10/import.c:1644
+#: g10/import.c:1710
 #, c-format
 msgid "key %s: subkey signature in wrong place - skipped\n"
 msgstr "anahtar %s: yardımcı anahtar imzası yanlış yerde - atlandı\n"
 
-#: g10/import.c:1652
+#: g10/import.c:1718
 #, c-format
 msgid "key %s: unexpected signature class (0x%02X) - skipped\n"
 msgstr "anahtar %s: umulmayan imza sınıfı (0x%02X) - atlandı\n"
 
-#: g10/import.c:1781
+#: g10/import.c:1847
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
 msgstr "anahtar %s: çift kullanıcı kimliği saptandı - birleştirildi\n"
 
-#: g10/import.c:1843
+#: g10/import.c:1909
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
 "UYARI: anahtar %s yürürlükten kaldırılmış olmalı: yürürlükten kaldırma "
 "anahtarı %s alınıyor\n"
 
-#: g10/import.c:1857
+#: g10/import.c:1923
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
 msgstr ""
 "UYARI: anahtar %s yürürlükten kaldırılmış olabilir: yürürlükten kaldırma "
 "anahtarı %s mevcut değil.\n"
 
-#: g10/import.c:1916
+#: g10/import.c:1982
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
 msgstr "anahtar %s: \"%s\" yürürlükten kaldırma sertifikası eklendi\n"
 
-#: g10/import.c:1950
+#: g10/import.c:2016
 #, c-format
 msgid "key %s: direct key signature added\n"
 msgstr "anahtar %s: doğrudan anahtar imzası eklendi\n"
 
-#: g10/import.c:2351
+#: g10/import.c:2417
 msgid "NOTE: a key's S/N does not match the card's one\n"
 msgstr "BİLGİ: bir anahtarın seri numarası kartlardan biriyle uyuşmuyor\n"
 
-#: g10/import.c:2359
+#: g10/import.c:2425
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "BİLGİ: asıl anahtar kart üzerinde saklı ve kullanılabilir\n"
 
-#: g10/import.c:2361
+#: g10/import.c:2427
 msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "BİLGİ: ikincil anahtar kart üzerinde saklı ve kullanılabilir\n"
 
@@ -3285,12 +3295,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "Kullanıcı kimliği \"%s\" yürürlükten kaldırıldı."
 
 #: g10/keyedit.c:607 g10/keyedit.c:635 g10/keyedit.c:662 g10/keyedit.c:830
-#: g10/keyedit.c:895 g10/keyedit.c:1783
+#: g10/keyedit.c:895 g10/keyedit.c:1785
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Onu yine de imzalamak istiyor musunuz? (e/H veya y/N) "
 
 #: g10/keyedit.c:621 g10/keyedit.c:649 g10/keyedit.c:676 g10/keyedit.c:836
-#: g10/keyedit.c:1789
+#: g10/keyedit.c:1791
 msgid "  Unable to sign.\n"
 msgstr "  İmzalanamıyor.\n"
 
@@ -3481,8 +3491,8 @@ msgstr "Bu anahtarı çok dikkatle sınadım.\n"
 msgid "Really sign? (y/N) "
 msgstr "Gerçekten imzalayacak mısınız? (e/H veya y/N) "
 
-#: g10/keyedit.c:1066 g10/keyedit.c:4965 g10/keyedit.c:5056 g10/keyedit.c:5120
-#: g10/keyedit.c:5181 g10/sign.c:316
+#: g10/keyedit.c:1066 g10/keyedit.c:4966 g10/keyedit.c:5057 g10/keyedit.c:5121
+#: g10/keyedit.c:5182 g10/sign.c:316
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "imzalama başarısız: %s\n"
@@ -3540,190 +3550,190 @@ msgstr ""
 msgid "Do you really want to do this? (y/N) "
 msgstr "Gerçekten bunu yapmak istiyor musunuz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:1296
+#: g10/keyedit.c:1298
 msgid "moving a key signature to the correct place\n"
 msgstr "bir anahtar imzası doğru yere taşınıyor\n"
 
-#: g10/keyedit.c:1382
+#: g10/keyedit.c:1384
 msgid "save and quit"
 msgstr "kaydet ve çık"
 
-#: g10/keyedit.c:1385
+#: g10/keyedit.c:1387
 msgid "show key fingerprint"
 msgstr "parmakizini gösterir"
 
-#: g10/keyedit.c:1386
+#: g10/keyedit.c:1388
 msgid "list key and user IDs"
 msgstr "anahtarı ve kullanıcı kimliğini gösterir"
 
-#: g10/keyedit.c:1388
+#: g10/keyedit.c:1390
 msgid "select user ID N"
 msgstr "N kullanıcı kimliğini seçer"
 
-#: g10/keyedit.c:1389
+#: g10/keyedit.c:1391
 msgid "select subkey N"
 msgstr "N yardımcı anahtarını"
 
-#: g10/keyedit.c:1390
+#: g10/keyedit.c:1392
 msgid "check signatures"
 msgstr "imzaları sınar"
 
-#: g10/keyedit.c:1395
+#: g10/keyedit.c:1397
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr ""
 "seçilen kullanıcı kimliği imzalar [* ilgili komutlar için aşağıya bakın]"
 
-#: g10/keyedit.c:1400
+#: g10/keyedit.c:1402
 msgid "sign selected user IDs locally"
 msgstr "kullanıcı kimlikleri yerel olarak imzalar"
 
-#: g10/keyedit.c:1402
+#: g10/keyedit.c:1404
 msgid "sign selected user IDs with a trust signature"
 msgstr "seçili kullanıcı kimlikleri bir güvence imzasıyla imzalar"
 
-#: g10/keyedit.c:1404
+#: g10/keyedit.c:1406
 msgid "sign selected user IDs with a non-revocable signature"
 msgstr ""
 "seçili kullanıcı kimlikleri yürürlükten kaldırılamayan bir imzayla imzalar"
 
-#: g10/keyedit.c:1408
+#: g10/keyedit.c:1410
 msgid "add a user ID"
 msgstr "bir kullanıcı kimliği ekler"
 
-#: g10/keyedit.c:1410
+#: g10/keyedit.c:1412
 msgid "add a photo ID"
 msgstr "bir foto kimliği ekler"
 
-#: g10/keyedit.c:1412
+#: g10/keyedit.c:1414
 msgid "delete selected user IDs"
 msgstr "seçili kullanıcı kimlikleri siler"
 
-#: g10/keyedit.c:1417
+#: g10/keyedit.c:1419
 msgid "add a subkey"
 msgstr "bir yardımcı anahtar ekler"
 
-#: g10/keyedit.c:1421
+#: g10/keyedit.c:1423
 msgid "add a key to a smartcard"
 msgstr "bir akıllı karta bir anahtar ekler"
 
-#: g10/keyedit.c:1423
+#: g10/keyedit.c:1425
 msgid "move a key to a smartcard"
 msgstr "bir akıllı karttan bir anahtarı taşır"
 
-#: g10/keyedit.c:1425
+#: g10/keyedit.c:1427
 msgid "move a backup key to a smartcard"
 msgstr "bir akıllı karttan bir yedekleme anahtarını taşır"
 
-#: g10/keyedit.c:1429
+#: g10/keyedit.c:1431
 msgid "delete selected subkeys"
 msgstr "seçili yardımcı anahtarları siler"
 
-#: g10/keyedit.c:1431
+#: g10/keyedit.c:1433
 msgid "add a revocation key"
 msgstr "bir yürürlükten kaldırma anahtarı ekler"
 
-#: g10/keyedit.c:1433
+#: g10/keyedit.c:1435
 msgid "delete signatures from the selected user IDs"
 msgstr "seçili kullanıcı kimliklerden imzaları siler"
 
-#: g10/keyedit.c:1435
+#: g10/keyedit.c:1437
 msgid "change the expiration date for the key or selected subkeys"
 msgstr ""
 "anahtar için ya da seçili yardımcı anahtarlar için zamanaşımı tarihini "
 "değiştirir"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1439
 msgid "flag the selected user ID as primary"
 msgstr "seçili kullanıcı kimliğini asıl olarak imler"
 
-#: g10/keyedit.c:1439
+#: g10/keyedit.c:1441
 msgid "toggle between the secret and public key listings"
 msgstr "genel ve gizli anahtar listeleri arasında yer değiştirir"
 
-#: g10/keyedit.c:1442
+#: g10/keyedit.c:1444
 msgid "list preferences (expert)"
 msgstr "tercihleri listeler (uzman)"
 
-#: g10/keyedit.c:1444
+#: g10/keyedit.c:1446
 msgid "list preferences (verbose)"
 msgstr "tercihleri listeler (ayrıntılı)"
 
-#: g10/keyedit.c:1446
+#: g10/keyedit.c:1448
 msgid "set preference list for the selected user IDs"
 msgstr "Seçili kullanıcı kimlikler için tercih listesini belirler "
 
-#: g10/keyedit.c:1451
+#: g10/keyedit.c:1453
 msgid "set the preferred keyserver URL for the selected user IDs"
 msgstr ""
 "seçili kullanıcı kimlikler için tercih edilen anahtar sunucu adresini "
 "belirler"
 
-#: g10/keyedit.c:1453
+#: g10/keyedit.c:1455
 msgid "set a notation for the selected user IDs"
 msgstr "seçili kullanıcı kimlikleri için bir simgelem belirler"
 
-#: g10/keyedit.c:1455
+#: g10/keyedit.c:1457
 msgid "change the passphrase"
 msgstr "anahtar parolasını değiştirir"
 
-#: g10/keyedit.c:1459
+#: g10/keyedit.c:1461
 msgid "change the ownertrust"
 msgstr "sahibiningüvencesini değiştirir"
 
-#: g10/keyedit.c:1461
+#: g10/keyedit.c:1463
 msgid "revoke signatures on the selected user IDs"
 msgstr "Seçili tüm kullanıcı kimliklerdeki imzaları yürürlükten kaldırır"
 
-#: g10/keyedit.c:1463
+#: g10/keyedit.c:1465
 msgid "revoke selected user IDs"
 msgstr "Seçili tüm kullanıcı kimlikleri yürürlükten kaldırır"
 
-#: g10/keyedit.c:1468
+#: g10/keyedit.c:1470
 msgid "revoke key or selected subkeys"
 msgstr "anahtarı ya da seçili yardımcı anahtarları yürürlükten kaldırır"
 
-#: g10/keyedit.c:1469
+#: g10/keyedit.c:1471
 msgid "enable key"
 msgstr "anahtarı kullanıma sokar"
 
-#: g10/keyedit.c:1470
+#: g10/keyedit.c:1472
 msgid "disable key"
 msgstr "anahtarı iptal eder"
 
-#: g10/keyedit.c:1471
+#: g10/keyedit.c:1473
 msgid "show selected photo IDs"
 msgstr "seçili foto kimlikleri gösterir"
 
-#: g10/keyedit.c:1473
+#: g10/keyedit.c:1475
 msgid "compact unusable user IDs and remove unusable signatures from key"
 msgstr ""
 "kullanışsız kullanıcı kimlikleri sıkıştırır ve kullanışsız imzaları "
 "anahtardan kaldırır"
 
-#: g10/keyedit.c:1475
+#: g10/keyedit.c:1477
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 "kullanışsız kullanıcı kimlikleri sıkıştırır ve tüm imzaları anahtardan "
 "kaldırır"
 
-#: g10/keyedit.c:1599
+#: g10/keyedit.c:1601
 #, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "gizli anahtar bloğu \"%s\" okunurken hata oluştu: %s\n"
 
-#: g10/keyedit.c:1617
+#: g10/keyedit.c:1619
 msgid "Secret key is available.\n"
 msgstr "Gizli anahtar mevcut.\n"
 
-#: g10/keyedit.c:1700
+#: g10/keyedit.c:1702
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
 
-#: g10/keyedit.c:1708
+#: g10/keyedit.c:1710
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
-#: g10/keyedit.c:1727
+#: g10/keyedit.c:1729
 msgid ""
 "* The `sign' command may be prefixed with an `l' for local signatures "
 "(lsign),\n"
@@ -3735,240 +3745,240 @@ msgstr ""
 "  için 'nr', yerel imzalar için 'l' (lsign) veya buların karışımı   olarak "
 "(ltsign, tnrsign gibi).\n"
 
-#: g10/keyedit.c:1777
+#: g10/keyedit.c:1779
 msgid "Key is revoked."
 msgstr "Anahtar yürürlükten kaldırıldı."
 
-#: g10/keyedit.c:1796
+#: g10/keyedit.c:1798
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Tüm kullanıcı kimlikler gerçekten imzalanacak mı? (e/H ya da y/N)"
 
-#: g10/keyedit.c:1803
+#: g10/keyedit.c:1805
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "İpucu: İmzalamak için bir kullanıcı kimliği seçiniz\n"
 
-#: g10/keyedit.c:1812
+#: g10/keyedit.c:1814
 #, c-format
 msgid "Unknown signature type `%s'\n"
 msgstr "imza türü `%s' bilinmiyor\n"
 
-#: g10/keyedit.c:1835
+#: g10/keyedit.c:1837
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "%s kipindeyken bu komut kullanılamaz.\n"
 
-#: g10/keyedit.c:1857 g10/keyedit.c:1877 g10/keyedit.c:2046
+#: g10/keyedit.c:1859 g10/keyedit.c:1879 g10/keyedit.c:2048
 msgid "You must select at least one user ID.\n"
 msgstr "En az bir kullanıcı kimliği seçmelisiniz.\n"
 
-#: g10/keyedit.c:1859
+#: g10/keyedit.c:1861
 msgid "You can't delete the last user ID!\n"
 msgstr "Son kullanıcı kimliğini silemezsiniz!\n"
 
-#: g10/keyedit.c:1861
+#: g10/keyedit.c:1863
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr ""
 "Seçilen tüm kullanıcı kimlikler gerçekten silinecek mi? (e/H ya da y/N) "
 
-#: g10/keyedit.c:1862
+#: g10/keyedit.c:1864
 msgid "Really remove this user ID? (y/N) "
 msgstr "Bu kullanıcı kimliği gerçekten silinecek mi? (e/H ya da y/N) "
 
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
-#: g10/keyedit.c:1915
+#: g10/keyedit.c:1917
 msgid "Really move the primary key? (y/N) "
 msgstr "Bu öz-imza gerçekten taşınacak mı?  (e/H ya da y/N) "
 
-#: g10/keyedit.c:1927
+#: g10/keyedit.c:1929
 msgid "You must select exactly one key.\n"
 msgstr "Sadece ve sadece bir anahtar seçmelisiniz.\n"
 
-#: g10/keyedit.c:1955
+#: g10/keyedit.c:1957
 msgid "Command expects a filename argument\n"
 msgstr "Komut değiştirge olarak bir dosya ismi gerektiriyor\n"
 
-#: g10/keyedit.c:1969
+#: g10/keyedit.c:1971
 #, c-format
 msgid "Can't open `%s': %s\n"
 msgstr "`%s' açılamıyor: %s\n"
 
-#: g10/keyedit.c:1986
+#: g10/keyedit.c:1988
 #, c-format
 msgid "Error reading backup key from `%s': %s\n"
 msgstr "yedekleme anahtarı `%s' den okunurken hata oluştu: %s\n"
 
-#: g10/keyedit.c:2010
+#: g10/keyedit.c:2012
 msgid "You must select at least one key.\n"
 msgstr "En az bir anahtar seçmelisiniz.\n"
 
-#: g10/keyedit.c:2013
+#: g10/keyedit.c:2015
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2014
+#: g10/keyedit.c:2016
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Bu anahtarı gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2049
+#: g10/keyedit.c:2051
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr ""
 "Seçilen tüm kullanıcı kimlikleri gerçekten yürülükten kaldırılacak mı? (e/H "
 "ya da y/N) "
 
-#: g10/keyedit.c:2050
+#: g10/keyedit.c:2052
 msgid "Really revoke this user ID? (y/N) "
 msgstr ""
 "Bu kullanıcı kimliği gerçekten yürürlükten kaldırılacak mı? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2068
+#: g10/keyedit.c:2070
 msgid "Do you really want to revoke the entire key? (y/N) "
 msgstr ""
 "Anahtarın tamamını yürürlükten kaldırmayı gerçekten istiyor musunuz? (e/H ya "
 "da y/N) "
 
-#: g10/keyedit.c:2079
+#: g10/keyedit.c:2081
 msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgstr ""
 "Seçili yardımcı anahtarları gerçekten yürürlükten kaldırmak istiyor musunuz? "
 "(e/H ya da y/N) "
 
-#: g10/keyedit.c:2081
+#: g10/keyedit.c:2083
 msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr ""
 "Bu yardımcı anahtarı gerçekten yürürlükten kaldırmak istiyor musunuz? (e/H "
 "ya da y/N) "
 
-#: g10/keyedit.c:2131
+#: g10/keyedit.c:2133
 msgid "Owner trust may not be set while using a user provided trust database\n"
 msgstr ""
 "Kullanıcı taraından sağlanmış bir güvence veritabanı kullanılarak "
 "sahibiningüvencesi belirlenemez\n"
 
-#: g10/keyedit.c:2173
+#: g10/keyedit.c:2175
 msgid "Set preference list to:\n"
 msgstr "Belirlenecek tercih listesi:\n"
 
-#: g10/keyedit.c:2179
+#: g10/keyedit.c:2181
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr ""
 "Seçili kullanıcı kimlikler için tercihleri gerçekten güncellemek istiyor "
 "musunuz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2181
+#: g10/keyedit.c:2183
 msgid "Really update the preferences? (y/N) "
 msgstr "Tercihleri gerçekten güncellemek istiyor musunuz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2251
+#: g10/keyedit.c:2253
 msgid "Save changes? (y/N) "
 msgstr "Değişiklikler kaydedilecek mi? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2254
+#: g10/keyedit.c:2256
 msgid "Quit without saving? (y/N) "
 msgstr "Kaydetmeden çıkılsın mı? (e/H ya da y/N) "
 
-#: g10/keyedit.c:2264
+#: g10/keyedit.c:2266
 #, c-format
 msgid "update failed: %s\n"
 msgstr "güncelleme başarısız: %s\n"
 
-#: g10/keyedit.c:2271 g10/keyedit.c:2352
+#: g10/keyedit.c:2273 g10/keyedit.c:2351
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "gizliyi güncelleme başarısız: %s\n"
 
-#: g10/keyedit.c:2278
+#: g10/keyedit.c:2280
 msgid "Key not changed so no update needed.\n"
 msgstr "Güncelleme gereği olmadığından anahtar değişmedi.\n"
 
-#: g10/keyedit.c:2445
+#: g10/keyedit.c:2446
 msgid "Digest: "
 msgstr "Özet: "
 
-#: g10/keyedit.c:2496
+#: g10/keyedit.c:2497
 msgid "Features: "
 msgstr "Özellikler: "
 
-#: g10/keyedit.c:2507
+#: g10/keyedit.c:2508
 msgid "Keyserver no-modify"
 msgstr "Anahtar sunucusu değişmez"
 
-#: g10/keyedit.c:2522 g10/keylist.c:314
+#: g10/keyedit.c:2523 g10/keylist.c:314
 msgid "Preferred keyserver: "
 msgstr "Tercih edilen anahtar sunucusu: "
 
-#: g10/keyedit.c:2530 g10/keyedit.c:2531
+#: g10/keyedit.c:2531 g10/keyedit.c:2532
 msgid "Notations: "
 msgstr "Simgelemler: "
 
-#: g10/keyedit.c:2752
+#: g10/keyedit.c:2753
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Bir PGP 2.x tarzı kullanıcı kimliğine uygun tercih yok.\n"
 
-#: g10/keyedit.c:2811
+#: g10/keyedit.c:2812
 #, c-format
 msgid "This key was revoked on %s by %s key %s\n"
 msgstr ""
 "Bu anahtar %2$s tarafından %3$s anahtarıyla %1$s üzerinde yürürlükten "
 "kaldırılmış\n"
 
-#: g10/keyedit.c:2832
+#: g10/keyedit.c:2833
 #, c-format
 msgid "This key may be revoked by %s key %s"
 msgstr ""
 "Bu anahtar %s tarafından %s anahtarıyla yürürlükten kaldırılmış olabilir"
 
-#: g10/keyedit.c:2838
+#: g10/keyedit.c:2839
 msgid "(sensitive)"
 msgstr "(duyarlı)"
 
-#: g10/keyedit.c:2854 g10/keyedit.c:2910 g10/keyedit.c:2971 g10/keyedit.c:2986
+#: g10/keyedit.c:2855 g10/keyedit.c:2911 g10/keyedit.c:2972 g10/keyedit.c:2987
 #: g10/keylist.c:200 g10/keyserver.c:532
 #, c-format
 msgid "created: %s"
 msgstr "oluşturuldu: %s"
 
-#: g10/keyedit.c:2857 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
+#: g10/keyedit.c:2858 g10/keylist.c:832 g10/keylist.c:926 g10/mainproc.c:996
 #, c-format
 msgid "revoked: %s"
 msgstr "yürürlükten kaldırıldı: %s"
 
-#: g10/keyedit.c:2859 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
+#: g10/keyedit.c:2860 g10/keylist.c:803 g10/keylist.c:838 g10/keylist.c:932
 #, c-format
 msgid "expired: %s"
 msgstr "son kullanma tarihi: %s"
 
-#: g10/keyedit.c:2861 g10/keyedit.c:2912 g10/keyedit.c:2973 g10/keyedit.c:2988
+#: g10/keyedit.c:2862 g10/keyedit.c:2913 g10/keyedit.c:2974 g10/keyedit.c:2989
 #: g10/keylist.c:202 g10/keylist.c:809 g10/keylist.c:844 g10/keylist.c:938
 #: g10/keylist.c:959 g10/keyserver.c:538 g10/mainproc.c:1002
 #, c-format
 msgid "expires: %s"
 msgstr "son kullanma tarihi: %s"
 
-#: g10/keyedit.c:2863
+#: g10/keyedit.c:2864
 #, c-format
 msgid "usage: %s"
 msgstr "kullanımı: %s"
 
-#: g10/keyedit.c:2878
+#: g10/keyedit.c:2879
 #, c-format
 msgid "trust: %s"
 msgstr "güvencesi: %s"
 
-#: g10/keyedit.c:2882
+#: g10/keyedit.c:2883
 #, c-format
 msgid "validity: %s"
 msgstr "geçerliliği: %s"
 
-#: g10/keyedit.c:2889
+#: g10/keyedit.c:2890
 msgid "This key has been disabled"
 msgstr "Bu anahtar iptal edilmişti"
 
-#: g10/keyedit.c:2917 g10/keylist.c:206
+#: g10/keyedit.c:2918 g10/keylist.c:206
 msgid "card-no: "
 msgstr "kart-no: "
 
-#: g10/keyedit.c:2941
+#: g10/keyedit.c:2942
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3976,17 +3986,17 @@ msgstr ""
 "Gösterilen anahtarın, uygulamayı yeniden başlatıncaya kadar, gerekli\n"
 "doğrulukta olmayacağını lütfen gözönüne alınız.\n"
 
-#: g10/keyedit.c:3005 g10/keyedit.c:3351 g10/keyserver.c:542
+#: g10/keyedit.c:3006 g10/keyedit.c:3352 g10/keyserver.c:542
 #: g10/mainproc.c:1849 g10/trustdb.c:1200 g10/trustdb.c:1728
 msgid "revoked"
 msgstr "yürürlükten kaldırıldı"
 
-#: g10/keyedit.c:3007 g10/keyedit.c:3353 g10/keyserver.c:546
+#: g10/keyedit.c:3008 g10/keyedit.c:3354 g10/keyserver.c:546
 #: g10/mainproc.c:1851 g10/trustdb.c:547 g10/trustdb.c:1730
 msgid "expired"
 msgstr "zamanaşımına uğradı"
 
-#: g10/keyedit.c:3072
+#: g10/keyedit.c:3073
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3995,7 +4005,7 @@ msgstr ""
 "       farklı bir kullanıcı kimliğin birincil kullanıcı kimlik olarak\n"
 "       kabul edilmesini sağlayabilirsiniz.\n"
 
-#: g10/keyedit.c:3133
+#: g10/keyedit.c:3134
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4004,74 +4014,74 @@ msgstr ""
 "UYARI: Bu PGP-2 tarzı bir anahtar. Bir foto kimliği eklenmesi bu anahtarın\n"
 "       bazı PGP sürümleri tarafından reddedilmesi ile sonuçlanabilir.\n"
 
-#: g10/keyedit.c:3138 g10/keyedit.c:3473
+#: g10/keyedit.c:3139 g10/keyedit.c:3474
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Onu yine de eklemek istiyor musunuz? (e/H veya y/N) "
 
-#: g10/keyedit.c:3144
+#: g10/keyedit.c:3145
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "PGP2 tarzı bir anahtara bir foto kimliği ekleyemeyebilirsiniz.\n"
 
-#: g10/keyedit.c:3284
+#: g10/keyedit.c:3285
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Bu doğru imza silinsin mi? (e/H/k veya y/N/k)"
 
-#: g10/keyedit.c:3294
+#: g10/keyedit.c:3295
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Bu geçersiz imza silinsin mi? (e/H/k veya y/N/k)"
 
-#: g10/keyedit.c:3298
+#: g10/keyedit.c:3299
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Bu bilinmeyen imza silinsin mi? (e/H/k veya y/N/k)"
 
-#: g10/keyedit.c:3304
+#: g10/keyedit.c:3305
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Bu öz-imza gerçekten silinecek mi? (e/H veya y/N)"
 
-#: g10/keyedit.c:3318
+#: g10/keyedit.c:3319
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d imza silindi.\n"
 
-#: g10/keyedit.c:3319
+#: g10/keyedit.c:3320
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d imza silindi.\n"
 
-#: g10/keyedit.c:3322
+#: g10/keyedit.c:3323
 msgid "Nothing deleted.\n"
 msgstr "Hiçbir şey silinmedi.\n"
 
-#: g10/keyedit.c:3355 g10/trustdb.c:1732
+#: g10/keyedit.c:3356 g10/trustdb.c:1732
 msgid "invalid"
 msgstr "geçersiz"
 
-#: g10/keyedit.c:3357
+#: g10/keyedit.c:3358
 #, c-format
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "kullanıcı kimliği \"%s\" yoğun: %s\n"
 
-#: g10/keyedit.c:3364
+#: g10/keyedit.c:3365
 #, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgstr "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
 
-#: g10/keyedit.c:3365
+#: g10/keyedit.c:3366
 #, c-format
 msgid "User ID \"%s\": %d signatures removed\n"
 msgstr "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
 
-#: g10/keyedit.c:3373
+#: g10/keyedit.c:3374
 #, c-format
 msgid "User ID \"%s\": already minimized\n"
 msgstr "kullanıcı kimliği \"%s\": zaten küçük\n"
 
-#: g10/keyedit.c:3374
+#: g10/keyedit.c:3375
 #, c-format
 msgid "User ID \"%s\": already clean\n"
 msgstr "kullanıcı kimliği \"%s\": zaten temiz\n"
 
-#: g10/keyedit.c:3468
+#: g10/keyedit.c:3469
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -4081,208 +4091,208 @@ msgstr ""
 "       eklenmesi bu anahtarın bazı PGP sürümleri tarafından reddedilmesi\n"
 "       ile sonuçlanabilir.\n"
 
-#: g10/keyedit.c:3479
+#: g10/keyedit.c:3480
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr ""
 "PGP2 tarzı bir anahtara tasarlanmış bir yürürlükten kaldırıcı "
 "ekleyemeyebilirsiniz.\n"
 
-#: g10/keyedit.c:3499
+#: g10/keyedit.c:3500
 msgid "Enter the user ID of the designated revoker: "
 msgstr ""
 "Tasarlanmış yürürlükten kaldırma anahtarının kullanıcı kimliğini giriniz: "
 
-#: g10/keyedit.c:3524
+#: g10/keyedit.c:3525
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "bir PGP 2.x tarzı anahtar bir tasarlanmış yürürlükten kaldırma anahtarı "
 "olarak atanamaz\n"
 
-#: g10/keyedit.c:3539
+#: g10/keyedit.c:3540
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 "bir anahtarı kendisini yürürlükten kaldıracak anahtar olarak "
 "kullanamazsınız\n"
 
-#: g10/keyedit.c:3561
+#: g10/keyedit.c:3562
 msgid "this key has already been designated as a revoker\n"
 msgstr "bu anahtar zaten onu üreten tarafından yürürlükten kaldırılmıştı\n"
 
-#: g10/keyedit.c:3580
+#: g10/keyedit.c:3581
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "UYARI: yürürlükten kaldıran olarak tasarlanmış bir anahtar başka amaçla\n"
 "       kullanılamaz!\n"
 
-#: g10/keyedit.c:3586
+#: g10/keyedit.c:3587
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Bu anahtarın, yürürlükten kaldıran anahtar olmasını istediğinizden emin "
 "misiniz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:3647
+#: g10/keyedit.c:3648
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Lütfen gizli anahtarlardan seçilenleri silin.\n"
 
-#: g10/keyedit.c:3653
+#: g10/keyedit.c:3654
 msgid "Please select at most one subkey.\n"
 msgstr "Lütfen en fazla bir yardımcı anahtar seçin.\n"
 
-#: g10/keyedit.c:3657
+#: g10/keyedit.c:3658
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Bir yardımcı anahtar için son kullanma tarihi değiştiriliyor.\n"
 
-#: g10/keyedit.c:3660
+#: g10/keyedit.c:3661
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Asıl anahtar için son kullanma tarihi değiştiriliyor.\n"
 
-#: g10/keyedit.c:3706
+#: g10/keyedit.c:3707
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
 
-#: g10/keyedit.c:3722
+#: g10/keyedit.c:3723
 msgid "No corresponding signature in secret ring\n"
 msgstr "Gizli anahtar demetinde uygun/benzer imza yok\n"
 
-#: g10/keyedit.c:3800
+#: g10/keyedit.c:3801
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "yardımcı imzalama anahtarı %s zaten çapraz sertifikalı\n"
 
-#: g10/keyedit.c:3806
+#: g10/keyedit.c:3807
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr ""
 "yardımcı anahtar %s imzalamıyor, dolayısıyla çapraz sertifikalı olması "
 "gerekmiyor\n"
 
-#: g10/keyedit.c:3969
+#: g10/keyedit.c:3970
 msgid "Please select exactly one user ID.\n"
 msgstr "Lütfen sadece ve sadece bir kullanıcı kimlik seçiniz.\n"
 
-#: g10/keyedit.c:4008 g10/keyedit.c:4118 g10/keyedit.c:4238 g10/keyedit.c:4379
+#: g10/keyedit.c:4009 g10/keyedit.c:4119 g10/keyedit.c:4239 g10/keyedit.c:4380
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "kullanıcı kimliği \"%s\" için v3 öz-imzası atlanıyor\n"
 
-#: g10/keyedit.c:4179
+#: g10/keyedit.c:4180
 msgid "Enter your preferred keyserver URL: "
 msgstr "Tercih ettiğiniz sunucunun adresini girin: "
 
-#: g10/keyedit.c:4259
+#: g10/keyedit.c:4260
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Onu değiştirmek istediğinizden emin misiniz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:4260
+#: g10/keyedit.c:4261
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Onu silmek istediğinizden emin misiniz? (e/H ya da y/N) "
 
-#: g10/keyedit.c:4322
+#: g10/keyedit.c:4323
 msgid "Enter the notation: "
 msgstr "Simgelemi giriniz: "
 
-#: g10/keyedit.c:4471
+#: g10/keyedit.c:4472
 msgid "Proceed? (y/N) "
 msgstr "Devam? (e/H ya da y/N) "
 
-#: g10/keyedit.c:4543
+#: g10/keyedit.c:4544
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "%d endeksine sahip kullanıcı kimliği yok\n"
 
-#: g10/keyedit.c:4604
+#: g10/keyedit.c:4605
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "%s çittirmeli kullanıcı kimliği yok\n"
 
-#: g10/keyedit.c:4639
+#: g10/keyedit.c:4640
 #, c-format
 msgid "No subkey with index %d\n"
 msgstr "%d indisli bir yardımcı anahtar yok\n"
 
-#: g10/keyedit.c:4774
+#: g10/keyedit.c:4775
 #, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "Kullanıcı kimliği: \"%s\"\n"
 
-#: g10/keyedit.c:4777 g10/keyedit.c:4871 g10/keyedit.c:4914
+#: g10/keyedit.c:4778 g10/keyedit.c:4872 g10/keyedit.c:4915
 #, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "%s anahtarınızla %s%s%s de imzalandı\n"
 
-#: g10/keyedit.c:4779 g10/keyedit.c:4873 g10/keyedit.c:4916
+#: g10/keyedit.c:4780 g10/keyedit.c:4874 g10/keyedit.c:4917
 msgid " (non-exportable)"
 msgstr " (dışarda geçersiz)"
 
-#: g10/keyedit.c:4783
+#: g10/keyedit.c:4784
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Bu anahtarın geçerliliği %s de bitti.\n"
 
-#: g10/keyedit.c:4787
+#: g10/keyedit.c:4788
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Onu yine de yürürlükten kaldırmak istiyor musunuz? (e/H veya y/N) "
 
-#: g10/keyedit.c:4791
+#: g10/keyedit.c:4792
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr ""
 "Bu imza için bir yürürlükten kaldırma sertifikası oluşturulsun mu? (e/H veya "
 "y/N) "
 
-#: g10/keyedit.c:4842
+#: g10/keyedit.c:4843
 msgid "Not signed by you.\n"
 msgstr ""
 
-#: g10/keyedit.c:4848
+#: g10/keyedit.c:4849
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Bu kullanıcı kimliklerini %s anahtarı üzerinde imzalamışsınız:\n"
 
-#: g10/keyedit.c:4874
+#: g10/keyedit.c:4875
 msgid " (non-revocable)"
 msgstr " (yürülükten kaldırılmaz)"
 
-#: g10/keyedit.c:4881
+#: g10/keyedit.c:4882
 #, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "%s tarafından %s de yürürlükten kaldırılmış\n"
 
-#: g10/keyedit.c:4903
+#: g10/keyedit.c:4904
 msgid "You are about to revoke these signatures:\n"
 msgstr "Bu imzaları yürürlükten kaldırmak üzeresiniz:\n"
 
-#: g10/keyedit.c:4923
+#: g10/keyedit.c:4924
 msgid "Really create the revocation certificates? (y/N) "
 msgstr ""
 "Bu yürürlükten kaldırma sertifikalarını gerçekten oluşturacak mısınız? (e/H "
 "veya y/N) "
 
-#: g10/keyedit.c:4953
+#: g10/keyedit.c:4954
 msgid "no secret key\n"
 msgstr "gizli anahtar yok\n"
 
-#: g10/keyedit.c:5023
+#: g10/keyedit.c:5024
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "kullanıcı kimliği \"%s\" zaten iptal edilmişti\n"
 
-#: g10/keyedit.c:5040
+#: g10/keyedit.c:5041
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "UYARI: bir kullanıcı kimliği imzası %d saniye gelecekte oluşturuldu\n"
 
-#: g10/keyedit.c:5104
+#: g10/keyedit.c:5105
 #, c-format
 msgid "Key %s is already revoked.\n"
 msgstr "Anahtar %s zaten yürürlükten kaldırılmış.\n"
 
-#: g10/keyedit.c:5166
+#: g10/keyedit.c:5167
 #, c-format
 msgid "Subkey %s is already revoked.\n"
 msgstr "Yardımcı anahtar %s zaten yürürlükten kaldırılmış.\n"
 
-#: g10/keyedit.c:5261
+#: g10/keyedit.c:5262
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -5426,11 +5436,11 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "%d genel anahtar algoritması kullanılamadı\n"
 
-#: g10/parse-packet.c:818
+#: g10/parse-packet.c:822
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "UYARI: simetrik şifreli oturum anahtarı potansiyel olarak güvensiz\n"
 
-#: g10/parse-packet.c:1269
+#: g10/parse-packet.c:1273
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d tipi alt paket kritik bit kümesine sahip\n"
@@ -5815,28 +5825,28 @@ msgstr "Bilginize: anahtar %s %s için bir tercihe sahip değil\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "veri kaydedilmedi; kaydetmek için \"--output\" seçeneğini kullanın\n"
 
-#: g10/plaintext.c:472
+#: g10/plaintext.c:480
 msgid "Detached signature.\n"
 msgstr "Bağımsız imza.\n"
 
-#: g10/plaintext.c:479
+#: g10/plaintext.c:487
 msgid "Please enter name of data file: "
 msgstr "Lütfen veri dosyasının ismini girin: "
 
-#: g10/plaintext.c:511
+#: g10/plaintext.c:519
 msgid "reading stdin ...\n"
 msgstr "standart girdiden okuyor ...\n"
 
-#: g10/plaintext.c:549
+#: g10/plaintext.c:557
 msgid "no signed data\n"
 msgstr "imzalı veri yok\n"
 
-#: g10/plaintext.c:565
+#: g10/plaintext.c:573
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "imzalı veri '%s'  açılamadı\n"
 
-#: g10/plaintext.c:599
+#: g10/plaintext.c:607
 #, c-format
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "imzalı veri fd=%d açılamadı: %s\n"
