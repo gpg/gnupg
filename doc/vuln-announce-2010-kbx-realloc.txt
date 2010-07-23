@@ -1,0 +1,92 @@
+             Realloc Bug with X.509 certificates in GnuPG
+            ==============================================
+                              2010-07-23
+
+
+Summary
+=======
+
+While trying to import a server certificate for a CDN service, a segv
+bug was found in GnuPG's GPGSM tool.  It is likely that this bug is
+exploitable by sending a special crafted signed message and having a
+user verify the signature.
+
+[ Please do not send private mail in response to this message.  The
+  mailing list gnupg-devel is the best place to discuss this problem
+  (please subscribe first so you don't need moderator approval [1]). ]
+
+
+Impact
+======
+
+All applications using GnuPG's GPGSM tool to process S/MIME messages
+or manage X.509 certificates are affected.  The bug exists in all
+versions of GnuPG including the recently released GnuPG 2.0.16.
+
+GnuPG 1.x is not affected because it does not come with the GPGSM
+tool.
+
+An exploit is not yet known but it can't be ruled out for sure that
+the problem has not already been identified by some dark forces.
+
+
+Description
+===========
+
+Importing a certificate with more than 98 Subject Alternate Names [2]
+via GPGSM's import command or implicitly while verifying a signature
+causes GPGSM to reallocate an array with the names.  The bug is that
+the reallocation code misses assigning the reallocated array to the
+old array variable and thus the old and freed array will be used.
+Usually this leads to a segv.
+
+It might be possible to use one of the techniques to exploit
+assignments to malloced and freed memory.  Such an exploit won't be
+easy to write because the attack vector must fit into a valid ASN.1
+DER encoded DN.  To further complicate the task, that DN is not used
+directly but after a transformation to RFC-2253 format.
+
+
+
+Solution
+========
+
+Apply the following patch.  The patch is required for all GnuPG
+versions < 2.0.17.  It applies to 2.0.16 but should apply to many
+older versions as well.
+
+
+--- kbx/keybox-blob.c   (revision 5367)
++++ kbx/keybox-blob.c   (working copy)
+@@ -898,6 +898,7 @@
+               rc = gpg_error_from_syserror ();
+               goto leave;
+             }
++          names = tmp;
+         }
+       names[blob->nuids++] = p;
+       if (!i && (p=x509_email_kludge (p)))
+
+
+
+
+Support 
+=======
+
+g10 Code GmbH [3], a Duesseldorf based company owned and headed by
+GnuPG's principal author, is currently funding GnuPG development.
+Support contracts or other financial backing will greatly help us to
+improve the quality of GnuPG.
+
+
+Thanks
+======
+
+Peter Gutmann for his "A mighty fortress is our PKI" mail to the
+cryptography ML which contained a pointer to a certificate to exhibit
+the problem.  This bug was created, found and fixed by Werner Koch.
+
+
+[1] See http://lists.gnupg.org/mailman/listinfo/gnupg-devel
+[2] <http://cvs.gnupg.org/cgi-bin/viewcvs.cgi/*checkout*/trunk/tests/samplekeys/cert-with-117-akas.pem>
+[3] See http://www.gnupg.org/service.html
