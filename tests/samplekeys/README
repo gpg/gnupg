@@ -15,6 +15,7 @@ webdeca.der        trust.web.de CA certificate [2004-02-17]
 
 gte.pem            GTE CyberTrust Global Root
 
+cert-with-117-akas.pem  A certificate with 117 subjectAltNames.
 
 
 		  
