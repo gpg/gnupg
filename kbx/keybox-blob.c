@@ -889,6 +889,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
               rc = gpg_error_from_syserror ();
               goto leave;
             }
+          names = tmp;
         }
       names[blob->nuids++] = p;
       if (!i && (p=x509_email_kludge (p)))
