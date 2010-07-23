@@ -1,3 +1,7 @@
+2010-07-23  Werner Koch  <wk@g10code.com>
+
+	* keybox-blob.c (_keybox_create_x509_blob): Fix reallocation bug.
+
 2008-12-09  Werner Koch  <wk@g10code.com>
 
 	* kbxutil.c (main): Call i18n_init before init_common_subsystems.
