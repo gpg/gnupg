@@ -54,6 +54,7 @@
 #include "misc.h"
 #include "ldapserver.h"
 #include "asshelp.h"
+#include "ldap-wrapper.h"
 
 /* The plain Windows version uses the windows service system.  For
    example to start the service you may use "sc start dirmngr".
@@ -390,32 +391,6 @@ wrong_args (const char *text)
   es_fputs (text, es_stderr);
   es_putc ('\n', es_stderr);
   dirmngr_exit (2);
-}
-
-
-/* Helper to start the reaper thread for the ldap wrapper.  */
-static void
-launch_reaper_thread (void)
-{
-  static int done;
-  pth_attr_t tattr;
-
-  if (done)
-    return;
-  done = 1;
-
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "ldap-reaper");
-
-  if (!pth_spawn (tattr, ldap_wrapper_thread, NULL))
-    {
-      log_error (_("error spawning ldap wrapper reaper thread: %s\n"),
-                 strerror (errno) );
-      dirmngr_exit (1);
-    }
-  pth_attr_destroy (tattr);
 }
 
 
@@ -938,7 +913,7 @@ main (int argc, char **argv)
           log_debug ("... okay\n");
         }
 
-      launch_reaper_thread ();
+      ldap_wrapper_launch_thread ();
       cert_cache_init ();
       crl_cache_init ();
       start_command_handler (ASSUAN_INVALID_FD);
@@ -1101,7 +1076,7 @@ main (int argc, char **argv)
         }
 #endif
 
-      launch_reaper_thread ();
+      ldap_wrapper_launch_thread ();
       cert_cache_init ();
       crl_cache_init ();
 #ifdef USE_W32_SERVICE
@@ -1127,7 +1102,7 @@ main (int argc, char **argv)
       /* Just list the CRL cache and exit. */
       if (argc)
         wrong_args ("--list-crls");
-      launch_reaper_thread ();
+      ldap_wrapper_launch_thread ();
       crl_cache_init ();
       crl_cache_list (es_stdout);
     }
@@ -1138,7 +1113,7 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-      launch_reaper_thread ();
+      ldap_wrapper_launch_thread ();
       cert_cache_init ();
       crl_cache_init ();
       if (!argc)
@@ -1160,7 +1135,7 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-      launch_reaper_thread ();
+      ldap_wrapper_launch_thread ();
       cert_cache_init ();
       crl_cache_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);

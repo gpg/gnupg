@@ -802,7 +802,7 @@ utf8_to_wchar (const char *string)
       jnlib_set_errno (ENOMEM);
       return NULL;
     }
-  result = malloc (nbytes);
+  result = jnlib_malloc (nbytes);
   if (!result)
     return NULL;
 

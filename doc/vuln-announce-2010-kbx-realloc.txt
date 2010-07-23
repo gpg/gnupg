@@ -23,7 +23,9 @@ All applications using GnuPG's GPGSM tool to process S/MIME messages
 or manage X.509 certificates are affected.  The bug exists in all
 versions of GnuPG including the recently released GnuPG 2.0.16.
 
-GnuPG 1.x is not affected because it does not come with the GPGSM
+GPG (i.e. OpenPGP) is NOT affected.
+
+GnuPG 1.x is NOT affected because it does not come with the GPGSM
 tool.
 
 An exploit is not yet known but it can't be ruled out for sure that

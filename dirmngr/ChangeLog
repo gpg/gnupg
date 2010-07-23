@@ -1,3 +1,23 @@
+2010-07-19  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c: Include ldap-wrapper.h.
+	(launch_reaper_thread): Move code to ...
+	* ldap-wrapper.c (ldap_wrapper_launch_thread): .. here.  Change
+	callers.
+	(ldap_wrapper_thread): Rename to ...
+	(wrapper_thread): this and make local.
+
+	* ldap.c (destroy_wrapper, print_log_line)
+	(read_log_data, ldap_wrapper_thread)
+	(ldap_wrapper_wait_connections, ldap_wrapper_release_context)
+	(ldap_wrapper_connection_cleanup, reader_callback, ldap_wrapper):
+	Factor code out to ...
+	* ldap-wrapper.c: new.
+	(ldap_wrapper): Make public.
+	(read_buffer): Copy from ldap.c.
+	* ldap-wrapper.h: New.
+	* Makefile.am (dirmngr_SOURCES): Add new files.
+
 2010-07-16  Werner Koch  <wk@g10code.com>
 
 	* http.c, http.h: Remove.

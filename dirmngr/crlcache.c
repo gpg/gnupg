@@ -891,7 +891,7 @@ update_dir (crl_cache_t cache)
 
       xfree (line);
     }
-  if (!es_ferror (fp) && !ferror (es_fpout) && !lineerr)
+  if (!es_ferror (fp) && !es_ferror (fpout) && !lineerr)
     {
       /* Write out the remaining entries. */
       for (e= cache->entries; e; e = e->next)

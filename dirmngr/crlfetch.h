@@ -61,11 +61,6 @@ void crl_close_reader (ksba_reader_t reader);
 
 
 /*-- ldap.c --*/
-void *ldap_wrapper_thread (void*);
-void ldap_wrapper_wait_connections (void);
-void ldap_wrapper_release_context (ksba_reader_t reader);
-void ldap_wrapper_connection_cleanup (ctrl_t);
-
 gpg_error_t url_fetch_ldap (ctrl_t ctrl,
                             const char *url, const char *host, int port,
                             ksba_reader_t *reader);
