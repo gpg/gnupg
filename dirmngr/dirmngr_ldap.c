@@ -171,17 +171,16 @@ main (int argc, char **argv )
   char *p;
   int only_search_timeout = 0;
 
-#ifdef HAVE_W32_SYSTEM
-  /* Yeah, right.  Sigh.  */
-#error  FIXME
-  _setmode (_fileno (stdout), _O_BINARY);
-#endif
-
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX); 
   
-  /* Setup I18N. */
+  /* Setup I18N and common subsystems. */
   i18n_init();
+
+  init_common_subsystems (&argc, &argv);
+
+  es_set_binary (es_stdout);
+
 
   /* LDAP defaults */
   opt.timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;

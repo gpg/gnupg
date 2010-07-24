@@ -125,6 +125,7 @@
 #define es_vfprintf_unlocked  _ESTREAM_PREFIX(es_vfprint_unlocked)
 #define es_setvbuf            _ESTREAM_PREFIX(es_setvbuf)
 #define es_setbuf             _ESTREAM_PREFIX(es_setbuf)
+#define es_set_binary         _ESTREAM_PREFIX(es_set_binary)
 #define es_tmpfile            _ESTREAM_PREFIX(es_tmpfile)
 #define es_opaque_set         _ESTREAM_PREFIX(es_opaque_set)
 #define es_opaque_get         _ESTREAM_PREFIX(es_opaque_get)
@@ -354,6 +355,9 @@ int es_vfprintf_unlocked (estream_t ES__RESTRICT stream,
 int es_setvbuf (estream_t ES__RESTRICT stream,
 		char *ES__RESTRICT buf, int mode, size_t size);
 void es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf);
+
+void es_set_binary (estream_t stream);
+
 
 estream_t es_tmpfile (void);
 

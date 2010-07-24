@@ -3399,6 +3399,39 @@ es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf)
   ESTREAM_UNLOCK (stream);
 }
 
+
+/* Put a stream into binary mode.  This is only needed for the
+   standard streams if they are to be used in a binary way.  On Unix
+   systems it is never needed but MSDOS based systems require such a
+   call.  It needs to be called before any I/O is done on STREAM.  */
+void
+es_set_binary (estream_t stream)
+{
+  ESTREAM_LOCK (stream);
+  if (!(stream->intern->modeflags & O_BINARY))
+    {
+      stream->intern->modeflags |= O_BINARY;
+#ifdef HAVE_DOSISH_SYSTEM
+      if (stream->intern->func_dest.func_read == es_func_fd_read)
+        {
+          estream_cookie_fd_t fd_cookie;
+
+          if (!IS_INVALID_FD (fd_cookie->fd))
+            setmode (fd, O_BINARY);
+        }
+      else if (stream->intern->func_dest.func_read == es_func_fp_read)
+        {
+          estream_cookie_fp_t fp_cookie;
+
+          if (fp_cookie->fd)
+            setmode (fileno (fp_cookie->fp), O_BINARY);
+        }
+#endif
+    }
+  ESTREAM_UNLOCK (stream);
+}
+
+
 void
 es_opaque_set (estream_t stream, void *opaque)
 {
