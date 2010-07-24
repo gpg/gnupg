@@ -1,3 +1,9 @@
+2010-07-24  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (agent_scd_pksign): Allow more hash algorithms when
+	using with scdaemon.
+	* cardglue.h (GCRY_MD_MD5): New.
+
 2010-06-18  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (skip_packet, parse_gpg_control): Take care of

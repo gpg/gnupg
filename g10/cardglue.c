@@ -1323,7 +1323,13 @@ agent_scd_pksign (const char *serialno, int hashalgo,
         {
           init_membuf (&data, 1024);
           snprintf (line, DIM(line)-1, "SCD PKSIGN %s%s",
-                    hashalgo == GCRY_MD_RMD160? "--hash=rmd160 ": "",
+                    hashalgo == GCRY_MD_SHA1?   "--hash=sha1 ":
+                    hashalgo == GCRY_MD_SHA224? "--hash=sha224 ":
+                    hashalgo == GCRY_MD_SHA256? "--hash=sha256 ":
+                    hashalgo == GCRY_MD_SHA384? "--hash=sha384 ":
+                    hashalgo == GCRY_MD_SHA512? "--hash=sha512 ":
+                    hashalgo == GCRY_MD_RMD160? "--hash=rmd160 ":
+                    hashalgo == GCRY_MD_MD5?    "--hash=md5 "   : "",
                     serialno);
           line[DIM(line)-1] = 0;
           rc = test_transact (assuan_transact (app->assuan_ctx, line,

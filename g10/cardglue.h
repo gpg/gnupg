@@ -181,6 +181,7 @@ void log_printhex (const char *text, const void *buffer, size_t length);
 #define GCRY_MD_SHA384 DIGEST_ALGO_SHA384
 #define GCRY_MD_SHA512 DIGEST_ALGO_SHA512
 #define GCRY_MD_SHA224 DIGEST_ALGO_SHA224
+#define GCRY_MD_MD5    DIGEST_ALGO_MD5
 
 void gcry_mpi_release (MPI a);
 MPI  gcry_mpi_set_opaque (MPI a, void *p, unsigned int len);
