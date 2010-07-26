@@ -135,7 +135,7 @@ struct my_opt_s
   char *filter;/* Override filter.  */
   char *attr;  /* Override attribute.  */
 };
-typedef struct my_opt_s my_opt_t;
+typedef struct my_opt_s *my_opt_t;
 
 
 /* Prototypes.  */
@@ -357,7 +357,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 
       if (myopt->multi)
         { /*  Write item marker. */
-          if (es_fwrite ("I\0\0\0\0", 5, 1, myopt->oustream) != 1)
+          if (es_fwrite ("I\0\0\0\0", 5, 1, myopt->outstream) != 1)
             {
               log_error (_("error writing to stdout: %s\n"),
                          strerror (errno));
@@ -434,8 +434,8 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
               tmp[2] = (n >> 16);
               tmp[3] = (n >> 8);
               tmp[4] = (n);
-              if (es_fwrite (tmp, 5, 1, myopt->oustream) != 1 
-                  || es_fwrite (attr, n, 1, myopt->oustream) != 1)
+              if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1 
+                  || es_fwrite (attr, n, 1, myopt->outstream) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -459,7 +459,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                   tmp[3] = (n >> 8);
                   tmp[4] = (n);
 
-                  if (es_fwrite (tmp, 5, 1, myopt->oustream) != 1)
+                  if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1)
                     {
                       log_error (_("error writing to stdout: %s\n"),
                                  strerror (errno));
@@ -475,7 +475,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 		 CRLs which are 52 KB or larger.  */
 #warning still true - implement in estream
 	      if (es_fwrite (values[0]->bv_val, values[0]->bv_len,
-                             1, myopt->oustream) != 1)
+                             1, myopt->outstream) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -498,7 +498,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 		      cnt = MAX_CNT;
 		    
 		    if (es_fwrite (((char *) values[0]->bv_val) + n, cnt, 1,
-                                   myopt->oustream) != 1)
+                                   myopt->outstream) != 1)
 		      {
 			log_error (_("error writing to stdout: %s\n"),
 				   strerror (errno));
@@ -617,7 +617,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
                        &myopt->timeout, &msg);
   if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
     {
-      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->oustream) != 1)
+      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->outstream) != 1)
         {
           log_error (_("error writing to stdout: %s\n"), strerror (errno));
           return -1;

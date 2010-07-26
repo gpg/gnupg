@@ -3412,18 +3412,18 @@ es_set_binary (estream_t stream)
     {
       stream->intern->modeflags |= O_BINARY;
 #ifdef HAVE_DOSISH_SYSTEM
-      if (stream->intern->func_dest.func_read == es_func_fd_read)
+      if (stream->intern->func_read == es_func_fd_read)
         {
-          estream_cookie_fd_t fd_cookie;
+          estream_cookie_fd_t fd_cookie = stream->intern->cookie;
 
           if (!IS_INVALID_FD (fd_cookie->fd))
-            setmode (fd, O_BINARY);
+            setmode (fd_cookie->fd, O_BINARY);
         }
-      else if (stream->intern->func_dest.func_read == es_func_fp_read)
+      else if (stream->intern->func_read == es_func_fp_read)
         {
-          estream_cookie_fp_t fp_cookie;
+          estream_cookie_fp_t fp_cookie = stream->intern->cookie;
 
-          if (fp_cookie->fd)
+          if (fp_cookie->fp)
             setmode (fileno (fp_cookie->fp), O_BINARY);
         }
 #endif
