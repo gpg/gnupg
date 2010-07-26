@@ -55,6 +55,12 @@
 #include "i18n.h"
 #include "util.h"
 
+/* If we are not using the ldap wrapper process we need to include the
+   prototype for our module's main function.  */
+#ifndef USE_LDAPWRAPPER
+#include "./ldap-wrapper.h"
+#endif
+
 #define DEFAULT_LDAP_TIMEOUT 100 /* Arbitrary long timeout. */
 
 
@@ -105,14 +111,18 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
-/* The usual structure for the program flags.  */
-static struct
+/* A structure with module options.  This is not a static variable
+   because if we are not build as a standalone binary, each thread
+   using this module needs to handle its own values.  */
+struct my_opt_s
 {
   int quiet;
   int verbose;
   struct timeval timeout; /* Timeout for the LDAP search functions.  */
   unsigned int alarm_timeout; /* And for the alarm based timeout.  */
   int multi;
+
+  estream_t outstream;    /* Send output to thsi stream.  */
 
   /* Note that we can't use const for the strings because ldap_* are
      not defined that way.  */
@@ -124,12 +134,13 @@ static struct
   char *dn;    /* Override DN.  */
   char *filter;/* Override filter.  */
   char *attr;  /* Override attribute.  */
-} opt;
+};
+typedef struct my_opt_s my_opt_t;
 
 
 /* Prototypes.  */
 static void catch_alarm (int dummy);
-static int process_url (const char *url);
+static int process_url (my_opt_t myopt, const char *url);
 
 
 
@@ -164,13 +175,25 @@ my_strusage (int level)
 
 
 int
-main (int argc, char **argv )
+#ifdef USE_LDAPWRAPPER
+main (int argc, char **argv)
+#else
+ldap_wrapper_main (char **argv, estream_t outstream)
+#endif
 {
+#ifndef USE_LDAPWRAPPER
+  int argc;
+#endif
   ARGPARSE_ARGS pargs;
   int any_err = 0;
   char *p;
   int only_search_timeout = 0;
+  struct my_opt_s my_opt_buffer;
+  my_opt_t myopt = &my_opt_buffer;
+  
+  memset (&my_opt_buffer, 0, sizeof my_opt_buffer);
 
+#ifdef USE_LDAPWRAPPER
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX); 
   
@@ -180,12 +203,17 @@ main (int argc, char **argv )
   init_common_subsystems (&argc, &argv);
 
   es_set_binary (es_stdout);
-
+  myopt->outstream = es_stdout;
+#else /*!USE_LDAPWRAPPER*/
+  myopt->outstream = outstream;
+  for (argc=0; argv[argc]; argc++)
+    ;
+#endif /*!USE_LDAPWRAPPER*/
 
   /* LDAP defaults */
-  opt.timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;
-  opt.timeout.tv_usec = 0;
-  opt.alarm_timeout = 0;
+  myopt->timeout.tv_sec = DEFAULT_LDAP_TIMEOUT;
+  myopt->timeout.tv_usec = 0;
+  myopt->alarm_timeout = 0;
 
   /* Parse the command line.  */
   pargs.argc = &argc;
@@ -195,26 +223,26 @@ main (int argc, char **argv )
     {
       switch (pargs.r_opt)
         {
-        case oVerbose: opt.verbose++; break;
-        case oQuiet: opt.quiet++; break;
+        case oVerbose: myopt->verbose++; break;
+        case oQuiet: myopt->quiet++; break;
 	case oTimeout: 
-	  opt.timeout.tv_sec = pargs.r.ret_int; 
-	  opt.timeout.tv_usec = 0;
-          opt.alarm_timeout = pargs.r.ret_int;
+	  myopt->timeout.tv_sec = pargs.r.ret_int; 
+	  myopt->timeout.tv_usec = 0;
+          myopt->alarm_timeout = pargs.r.ret_int;
 	  break;
         case oOnlySearchTimeout: only_search_timeout = 1; break;
-        case oMulti: opt.multi = 1; break;
-        case oUser: opt.user = pargs.r.ret_str; break;
-        case oPass: opt.pass = pargs.r.ret_str; break;
+        case oMulti: myopt->multi = 1; break;
+        case oUser: myopt->user = pargs.r.ret_str; break;
+        case oPass: myopt->pass = pargs.r.ret_str; break;
         case oEnvPass:
-          opt.pass = getenv ("DIRMNGR_LDAP_PASS");
+          myopt->pass = getenv ("DIRMNGR_LDAP_PASS");
           break;
-        case oProxy: opt.proxy = pargs.r.ret_str; break;
-        case oHost: opt.host = pargs.r.ret_str; break;
-        case oPort: opt.port = pargs.r.ret_int; break;
-        case oDN:   opt.dn = pargs.r.ret_str; break;
-        case oFilter: opt.filter = pargs.r.ret_str; break;
-        case oAttr: opt.attr = pargs.r.ret_str; break;
+        case oProxy: myopt->proxy = pargs.r.ret_str; break;
+        case oHost: myopt->host = pargs.r.ret_str; break;
+        case oPort: myopt->port = pargs.r.ret_int; break;
+        case oDN:   myopt->dn = pargs.r.ret_str; break;
+        case oFilter: myopt->filter = pargs.r.ret_str; break;
+        case oAttr: myopt->attr = pargs.r.ret_str; break;
         case oLogWithPID:
           {
             unsigned int oldflags;
@@ -223,36 +251,47 @@ main (int argc, char **argv )
           }
           break;
 
-        default : pargs.err = 2; break;
+        default :
+#ifdef USE_LDAPWRAPPER
+          pargs.err = ARGPARSE_PRINT_ERROR;
+#else
+          pargs.err = ARGPARSE_PRINT_WARNING;  /* No exit() please.  */
+#endif
+          break;
 	}
     }
 
   if (only_search_timeout)
-    opt.alarm_timeout = 0;
+    myopt->alarm_timeout = 0;
 
-  if (opt.proxy)
+  if (myopt->proxy)
     {
-      opt.host = xstrdup (opt.proxy);
-      p = strchr (opt.host, ':');
+      myopt->host = xstrdup (myopt->proxy);
+      p = strchr (myopt->host, ':');
       if (p)
         {
           *p++ = 0;
-          opt.port = atoi (p);
+          myopt->port = atoi (p);
         }
-      if (!opt.port)
-        opt.port = 389;  /* make sure ports gets overridden.  */
+      if (!myopt->port)
+        myopt->port = 389;  /* make sure ports gets overridden.  */
     }
         
-  if (opt.port < 0 || opt.port > 65535)
-    log_error (_("invalid port number %d\n"), opt.port);
+  if (myopt->port < 0 || myopt->port > 65535)
+    log_error (_("invalid port number %d\n"), myopt->port);
 
+#ifdef USE_LDAPWRAPPER
   if (log_get_errorcount (0))
     exit (2);
-
   if (argc < 1)
     usage (1);
+#else
+  /* All passed arguments should be fine in this case.  */
+  assert (argc);
+#endif
 
-  if (opt.alarm_timeout)
+#ifdef USE_LDAPWRAPPER
+  if (myopt->alarm_timeout)
     {
 #ifndef HAVE_W32_SYSTEM
 # if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
@@ -268,11 +307,14 @@ main (int argc, char **argv )
           log_fatal ("unable to register timeout handler\n");
 #endif
     }
+#endif /*USE_LDAPWRAPPER*/
 
   for (; argc; argc--, argv++)
-    if (process_url (*argv))
+    if (process_url (myopt, *argv))
       any_err = 1;
 
+
+  /* FIXME: Do we need to release stuff?  */
   return any_err;
 }
 
@@ -286,19 +328,19 @@ catch_alarm (int dummy)
 
 
 static void
-set_timeout (void)
+set_timeout (my_opt_t myopt)
 {
 #ifndef HAVE_W32_SYSTEM
   /* FIXME for W32.  */
-  if (opt.alarm_timeout)
-    alarm (opt.alarm_timeout);
+  if (myopt->alarm_timeout)
+    alarm (myopt->alarm_timeout);
 #endif
 }
 
 
 /* Helper for fetch_ldap().  */
 static int
-print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
+print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 {
   LDAPMessage *item;
   int any = 0;
@@ -309,13 +351,13 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
       BerElement *berctx;
       char *attr;
 
-      if (opt.verbose > 1)
+      if (myopt->verbose > 1)
         log_info (_("scanning result for attribute `%s'\n"),
                   want_attr? want_attr : "[all]");
 
-      if (opt.multi)
+      if (myopt->multi)
         { /*  Write item marker. */
-          if (es_fwrite ("I\0\0\0\0", 5, 1, es_stdout) != 1)
+          if (es_fwrite ("I\0\0\0\0", 5, 1, myopt->oustream) != 1)
             {
               log_error (_("error writing to stdout: %s\n"),
                          strerror (errno));
@@ -330,10 +372,10 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
           struct berval **values;
           int idx;
 
-          if (opt.verbose > 1)
+          if (myopt->verbose > 1)
             log_info (_("          available attribute `%s'\n"), attr);
           
-          set_timeout ();
+          set_timeout (myopt);
 
           /* I case we want only one attribute we do a case
              insensitive compare without the optional extension
@@ -366,23 +408,23 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
   
           if (!values)
             {
-              if (opt.verbose)
+              if (myopt->verbose)
                 log_info (_("attribute `%s' not found\n"), attr);
               ldap_memfree (attr);
               continue;
             }
 
-          if (opt.verbose)
+          if (myopt->verbose)
             {
               log_info (_("found attribute `%s'\n"), attr);
-              if (opt.verbose > 1)
+              if (myopt->verbose > 1)
                 for (idx=0; values[idx]; idx++)
                   log_info ("         length[%d]=%d\n",
                             idx, (int)values[0]->bv_len);
               
             }
 
-          if (opt.multi)
+          if (myopt->multi)
             { /*  Write attribute marker. */
               unsigned char tmp[5];
               size_t n = strlen (attr);
@@ -392,8 +434,8 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
               tmp[2] = (n >> 16);
               tmp[3] = (n >> 8);
               tmp[4] = (n);
-              if (es_fwrite (tmp, 5, 1, es_stdout) != 1 
-                  || es_fwrite (attr, n, 1, es_stdout) != 1)
+              if (es_fwrite (tmp, 5, 1, myopt->oustream) != 1 
+                  || es_fwrite (attr, n, 1, myopt->oustream) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -406,7 +448,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 
           for (idx=0; values[idx]; idx++)
             {
-              if (opt.multi)
+              if (myopt->multi)
                 { /* Write value marker.  */
                   unsigned char tmp[5];
                   size_t n = values[0]->bv_len;
@@ -417,7 +459,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
                   tmp[3] = (n >> 8);
                   tmp[4] = (n);
 
-                  if (es_fwrite (tmp, 5, 1, es_stdout) != 1)
+                  if (es_fwrite (tmp, 5, 1, myopt->oustream) != 1)
                     {
                       log_error (_("error writing to stdout: %s\n"),
                                  strerror (errno));
@@ -433,7 +475,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 		 CRLs which are 52 KB or larger.  */
 #warning still true - implement in estream
 	      if (es_fwrite (values[0]->bv_val, values[0]->bv_len,
-                             1, es_stdout) != 1)
+                             1, myopt->oustream) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
@@ -456,7 +498,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 		      cnt = MAX_CNT;
 		    
 		    if (es_fwrite (((char *) values[0]->bv_val) + n, cnt, 1,
-                                   es_stdout) != 1)
+                                   myopt->oustream) != 1)
 		      {
 			log_error (_("error writing to stdout: %s\n"),
 				   strerror (errno));
@@ -470,18 +512,18 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 	      }
 #endif
               any = 1;
-              if (!opt.multi)
+              if (!myopt->multi)
                 break; /* Print only the first value.  */
             }
           ldap_value_free_len (values);
           ldap_memfree (attr);
-          if (want_attr || !opt.multi)
+          if (want_attr || !myopt->multi)
             break; /* We only want to return the first attribute.  */
         }
       ber_free (berctx, 0);
     } 
 
-  if (opt.verbose > 1 && any)
+  if (myopt->verbose > 1 && any)
     log_info ("result has been printed\n");
 
   return any?0:-1;
@@ -491,7 +533,7 @@ print_ldap_entries (LDAP *ld, LDAPMessage *msg, char *want_attr)
 
 /* Helper for the URL based LDAP query. */
 static int
-fetch_ldap (const char *url, const LDAPURLDesc *ludp)
+fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 {
   LDAP *ld;
   LDAPMessage *msg;
@@ -499,24 +541,24 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
   char *host, *dn, *filter, *attrs[2], *attr;
   int port;
 
-  host     = opt.host?   opt.host   : ludp->lud_host;
-  port     = opt.port?   opt.port   : ludp->lud_port;
-  dn       = opt.dn?     opt.dn     : ludp->lud_dn;
-  filter   = opt.filter? opt.filter : ludp->lud_filter;
-  attrs[0] = opt.attr?   opt.attr   : ludp->lud_attrs? ludp->lud_attrs[0]:NULL;
+  host     = myopt->host?   myopt->host   : ludp->lud_host;
+  port     = myopt->port?   myopt->port   : ludp->lud_port;
+  dn       = myopt->dn?     myopt->dn     : ludp->lud_dn;
+  filter   = myopt->filter? myopt->filter : ludp->lud_filter;
+  attrs[0] = myopt->attr?   myopt->attr   : ludp->lud_attrs? ludp->lud_attrs[0]:NULL;
   attrs[1] = NULL;
   attr = attrs[0];
 
   if (!port)
     port = (ludp->lud_scheme && !strcmp (ludp->lud_scheme, "ldaps"))? 636:389;
 
-  if (opt.verbose)
+  if (myopt->verbose)
     {
       log_info (_("processing url `%s'\n"), url);
-      if (opt.user)
-        log_info (_("          user `%s'\n"), opt.user);
-      if (opt.pass)
-        log_info (_("          pass `%s'\n"), *opt.pass?"*****":"");
+      if (myopt->user)
+        log_info (_("          user `%s'\n"), myopt->user);
+      if (myopt->pass)
+        log_info (_("          pass `%s'\n"), *myopt->pass?"*****":"");
       if (host)
         log_info (_("          host `%s'\n"), host);
       log_info (_("          port %d\n"), port);
@@ -524,7 +566,7 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
         log_info (_("            DN `%s'\n"), dn);
       if (filter)
         log_info (_("        filter `%s'\n"), filter);
-      if (opt.multi && !opt.attr && ludp->lud_attrs)
+      if (myopt->multi && !myopt->attr && ludp->lud_attrs)
         {
           int i;
           for (i=0; ludp->lud_attrs[i]; i++)
@@ -540,18 +582,18 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
       log_error (_("no host name in `%s'\n"), url);
       return -1;
     }
-  if (!opt.multi && !attr)
+  if (!myopt->multi && !attr)
     {
       log_error (_("no attribute given for query `%s'\n"), url);
       return -1;
     }
 
-  if (!opt.multi && !opt.attr
+  if (!myopt->multi && !myopt->attr
       && ludp->lud_attrs && ludp->lud_attrs[0] && ludp->lud_attrs[1])
     log_info (_("WARNING: using first attribute only\n"));
 
 
-  set_timeout ();
+  set_timeout (myopt);
   ld = ldap_init (host, port);
   if (!ld)
     {
@@ -559,7 +601,7 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
                  host, port, strerror (errno));
       return -1;
     }
-  if (ldap_simple_bind_s (ld, opt.user, opt.pass))
+  if (ldap_simple_bind_s (ld, myopt->user, myopt->pass))
     {
       log_error (_("binding to `%s:%d' failed: %s\n"), 
                  host, port, strerror (errno));
@@ -567,18 +609,17 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
       return -1;
     }
 
-  set_timeout ();
+  set_timeout (myopt);
   rc = ldap_search_st (ld, dn, ludp->lud_scope, filter,
-                       opt.multi && !opt.attr && ludp->lud_attrs?
+                       myopt->multi && !myopt->attr && ludp->lud_attrs?
                        ludp->lud_attrs:attrs,
                        0,
-                       &opt.timeout, &msg);
-  if (rc == LDAP_SIZELIMIT_EXCEEDED && opt.multi)
+                       &myopt->timeout, &msg);
+  if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
     {
-      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, es_stdout) != 1)
+      if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->oustream) != 1)
         {
-          log_error (_("error writing to stdout: %s\n"),
-                     strerror (errno));
+          log_error (_("error writing to stdout: %s\n"), strerror (errno));
           return -1;
         }
     }
@@ -594,7 +635,7 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
         }
     }
 
-  rc = print_ldap_entries (ld, msg, opt.multi? NULL:attr);
+  rc = print_ldap_entries (myopt, ld, msg, myopt->multi? NULL:attr);
 
   ldap_msgfree (msg);
   /* FIXME: Need deinit (ld)?  */
@@ -607,7 +648,7 @@ fetch_ldap (const char *url, const LDAPURLDesc *ludp)
 /* Main processing.  Take the URL and run the LDAP query. The result
    is printed to stdout, errors are logged to the log stream. */
 static int
-process_url (const char *url)
+process_url (my_opt_t myopt, const char *url)
 {
   int rc;
   LDAPURLDesc *ludp = NULL;
@@ -625,7 +666,7 @@ process_url (const char *url)
       return -1;
     }
 
-  rc = fetch_ldap (url, ludp);
+  rc = fetch_ldap (myopt, url, ludp);
 
   ldap_free_urldesc (ludp);
   return rc;

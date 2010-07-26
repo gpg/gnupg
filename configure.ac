@@ -540,6 +540,7 @@ have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
 use_simple_gettext=no
+use_ldapwrapper=yes
 mmap_needed=yes
 case "${host}" in
     *-mingw32*)
@@ -554,6 +555,7 @@ case "${host}" in
         disable_keyserver_path=yes
         have_dosish_system=yes
         have_w32_system=yes
+        use_ldapwrapper=no  # Fixme: Do this only for CE.
         case "${host}" in 
           *-mingw32ce*)
             have_w32ce_system=yes
@@ -635,6 +637,11 @@ if test "$have_w32_system" = yes; then
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
+
+if test "$use_ldapwrapper" = yes; then
+   AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])
+fi
+AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
 
 if test "$disable_keyserver_path" = yes; then
     AC_DEFINE(DISABLE_KEYSERVER_PATH,1,

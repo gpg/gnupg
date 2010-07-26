@@ -20,6 +20,7 @@
 #ifndef LDAP_WRAPPER_H
 #define LDAP_WRAPPER_H
 
+/* ldap-wrapper.c or ldap-wrapper-ce.c */
 void ldap_wrapper_launch_thread (void);
 void ldap_wrapper_wait_connections (void);
 void ldap_wrapper_release_context (ksba_reader_t reader);
@@ -28,6 +29,10 @@ gpg_error_t ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader,
                           const char *argv[]);
 
 
+/* dirmngr_ldap.c  */
+#ifndef USE_LDAPWRAPPER
+int ldap_wrapper_main (int argc, char **argv, estream_t outstream);
+#endif
 
 
 #endif /*LDAP_WRAPPER_H*/

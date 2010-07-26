@@ -267,7 +267,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
           else
             jnlib_log_error (_("invalid option \"%.50s\"\n"), s);
 	}
-      if ( arg->err != 1 )
+      if (arg->err != ARGPARSE_PRINT_WARNING)
         exit (2);
       arg->err = 0;
     }

@@ -1,3 +1,7 @@
+2010-07-25  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (USE_LDAPWRAPPER): AC_DEFINE and AM_CONDITIONAL it.
+
 2010-06-09  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (GNUPG_DIRMNGR_LDAP_PGM): Add option

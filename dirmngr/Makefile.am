@@ -23,7 +23,9 @@ EXTRA_DIST = OAUTHORS ONEWS ChangeLog.1
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
+if USE_LDAPWRAPPER
 libexec_PROGRAMS = dirmngr_ldap
+endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
@@ -39,7 +41,14 @@ noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	ldapserver.h ldapserver.c certcache.c certcache.h \
 	cdb.h cdblib.c ldap.c misc.c dirmngr-err.h \
-	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.c ldap-wrapper.h 
+	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h 
+
+if USE_LDAPWRAPPER
+dirmngr_SOURCES += ldap-wrapper.c 
+else
+dirmngr_SOURCES += ldap-wrapper-ce.c  dirmngr_ldap.c
+endif
+
 
 dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBINTL) $(LIBICONV)
@@ -50,11 +59,13 @@ else
 ldap_url =
 endif
 
+if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) no-libgcrypt.c
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) ../gl/libgnu.a $(DNSLIBS) \
 		     $(GPG_ERROR_LIBS) $(LDAPLIBS) $(LIBINTL) $(LIBICONV)
+endif
 
 dirmngr_client_SOURCES = dirmngr-client.c no-libgcrypt.c
 dirmngr_client_LDADD = $(libcommon) ../gl/libgnu.a $(LIBASSUAN_LIBS) \

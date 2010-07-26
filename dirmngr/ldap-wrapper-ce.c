@@ -41,6 +41,9 @@
 #include "misc.h"
 #include "ldap-wrapper.h"
 
+#ifdef USE_LDAPWRAPPER
+# error This module is not expected to be build.
+#endif
 
 
 /* To keep track of the LDAP wrapper state we use this structure.  */
@@ -169,19 +172,9 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
       }
 }
 
-/* Fork and exec the LDAP wrapper and returns a new libksba reader
+/* Start a new LDAP thread and returns a new libksba reader
    object at READER.  ARGV is a NULL terminated list of arguments for
-   the wrapper.  The function returns 0 on success or an error code.
-
-   Special hack to avoid passing a password through the command line
-   which is globally visible: If the first element of ARGV is "--pass"
-   it will be removed and instead the environment variable
-   DIRMNGR_LDAP_PASS will be set to the next value of ARGV.  On modern
-   OSes the environment is not visible to other users.  For those old
-   systems where it can't be avoided, we don't want to go into the
-   hassle of passing the password via stdin; it's just too complicated
-   and an LDAP password used for public directory lookups should not
-   be that confidential.  */
+   the wrapper.  The function returns 0 on success or an error code.  */
 gpg_error_t
 ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
 {

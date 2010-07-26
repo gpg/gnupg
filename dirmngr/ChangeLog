@@ -1,3 +1,16 @@
+2010-07-25  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_SOURCES) [!USE_LDAPWRAPPER]: Build
+	ldap-wrapper-ce.
+	* ldap-wrapper-ce.c: New.
+
+	* dirmngr_ldap.c (opt): Remove global variable ...
+	(my_opt_t): ... and declare a type instead.
+	(main): Define a MY_OPT variable and change all references to OPT
+	to this.
+	(set_timeout, print_ldap_entries, fetch_ldap, process_url): Pass
+	MYOPT arg.
+
 2010-07-24  Werner Koch  <wk@g10code.com>
 
 	* dirmngr_ldap.c (main): Init common subsystems.  Call
