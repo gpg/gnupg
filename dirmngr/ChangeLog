@@ -1,3 +1,8 @@
+2010-07-26  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c (print_ldap_entries): Remove special fwrite case
+	for W32 because that is now handles by estream.
+
 2010-07-25  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dirmngr_SOURCES) [!USE_LDAPWRAPPER]: Build

@@ -1,3 +1,12 @@
+2010-08-02  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libksba 1.1.0 due to the use of
+	ksba_reader_set_release_notify.
+
+2010-07-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (GNUPG_PTH_PATH) [W32]: Require version 2.0.3.
+
 2010-07-25  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (USE_LDAPWRAPPER): AC_DEFINE and AM_CONDITIONAL it.

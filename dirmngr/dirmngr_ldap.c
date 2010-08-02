@@ -32,6 +32,9 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
+#ifndef USE_LDAPWRAPPER
+# include <pth.h>
+#endif
 
 #ifdef HAVE_W32_SYSTEM
 #include <winsock2.h>
@@ -55,10 +58,15 @@
 #include "i18n.h"
 #include "util.h"
 
-/* If we are not using the ldap wrapper process we need to include the
-   prototype for our module's main function.  */
-#ifndef USE_LDAPWRAPPER
-#include "./ldap-wrapper.h"
+/* With the ldap wrapper, there is no need for the pth_enter and leave
+   functions; thus we redefine them to nops.  If we are not using the
+   ldap wrapper process we need to include the prototype for our
+   module's main function.  */
+#ifdef USE_LDAPWRAPPER
+# define pth_enter() do { } while (0)
+# define pth_leave() do { } while (0)
+#else
+# include "./ldap-wrapper.h"
 #endif
 
 #define DEFAULT_LDAP_TIMEOUT 100 /* Arbitrary long timeout. */
@@ -145,6 +153,7 @@ static int process_url (my_opt_t myopt, const char *url);
 
 
 /* Function called by argparse.c to display information.  */
+#ifndef USE_LDAPWRAPPER
 static const char *
 my_strusage (int level)
 {
@@ -172,6 +181,7 @@ my_strusage (int level)
     }
   return p;
 }
+#endif /*!USE_LDAPWRAPPER*/
 
 
 int
@@ -330,8 +340,10 @@ catch_alarm (int dummy)
 static void
 set_timeout (my_opt_t myopt)
 {
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
   /* FIXME for W32.  */
+  (void)myopt;
+#else
   if (myopt->alarm_timeout)
     alarm (myopt->alarm_timeout);
 #endif
@@ -345,8 +357,9 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
   LDAPMessage *item;
   int any = 0;
 
-  for (item = ldap_first_entry (ld, msg); item;
-       item = ldap_next_entry (ld, item))
+  for (pth_enter (), item = ldap_first_entry (ld, msg), pth_leave ();
+       item;
+       pth_enter (), item = ldap_next_entry (ld, item), pth_leave ())
     {
       BerElement *berctx;
       char *attr;
@@ -366,8 +379,11 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
         }
 
           
-      for (attr = ldap_first_attribute (ld, item, &berctx); attr;
-           attr = ldap_next_attribute (ld, item, berctx))
+      for (pth_enter (), attr = ldap_first_attribute (ld, item, &berctx),
+             pth_leave ();
+           attr;
+           pth_enter (), attr = ldap_next_attribute (ld, item, berctx),
+             pth_leave ())
         {
           struct berval **values;
           int idx;
@@ -404,8 +420,10 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 }
             }
 
+          pth_enter ();
           values = ldap_get_values_len (ld, item, attr);
-  
+          pth_leave ();
+
           if (!values)
             {
               if (myopt->verbose)
@@ -469,11 +487,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                       return -1;
                     }
                 }
-#if 1
-	      /* Note: this does not work for STDOUT on a Windows
-		 console, where it fails with "Not enough space" for
-		 CRLs which are 52 KB or larger.  */
-#warning still true - implement in estream
+
 	      if (es_fwrite (values[0]->bv_val, values[0]->bv_len,
                              1, myopt->outstream) != 1)
                 {
@@ -484,33 +498,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                   ber_free (berctx, 0);
                   return -1;
                 }
-#else
-	      /* On Windows console STDOUT, we have to break up the
-		 writes into small parts.  */
-	      {
-		int n = 0;
-		while (n < values[0]->bv_len)
-		  {
-		    int cnt = values[0]->bv_len - n;
-		    /* The actual limit is (52 * 1024 - 1) on Windows XP SP2.  */
-#define MAX_CNT (32*1024)
-		    if (cnt > MAX_CNT)
-		      cnt = MAX_CNT;
-		    
-		    if (es_fwrite (((char *) values[0]->bv_val) + n, cnt, 1,
-                                   myopt->outstream) != 1)
-		      {
-			log_error (_("error writing to stdout: %s\n"),
-				   strerror (errno));
-			ldap_value_free_len (values);
-			ldap_memfree (attr);
-			ber_free (berctx, 0);
-			return -1;
-		      }
-		    n += cnt;
-		  }
-	      }
-#endif
+
               any = 1;
               if (!myopt->multi)
                 break; /* Print only the first value.  */
@@ -540,6 +528,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   int rc = 0;
   char *host, *dn, *filter, *attrs[2], *attr;
   int port;
+  int ret;
 
   host     = myopt->host?   myopt->host   : ludp->lud_host;
   port     = myopt->port?   myopt->port   : ludp->lud_port;
@@ -594,14 +583,19 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 
 
   set_timeout (myopt);
+  pth_enter ();
   ld = ldap_init (host, port);
+  pth_leave ();
   if (!ld)
     {
       log_error (_("LDAP init to `%s:%d' failed: %s\n"), 
                  host, port, strerror (errno));
       return -1;
     }
-  if (ldap_simple_bind_s (ld, myopt->user, myopt->pass))
+  pth_enter ();
+  ret = ldap_simple_bind_s (ld, myopt->user, myopt->pass);
+  pth_leave ();
+  if (ret)
     {
       log_error (_("binding to `%s:%d' failed: %s\n"), 
                  host, port, strerror (errno));
@@ -610,11 +604,13 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
     }
 
   set_timeout (myopt);
+  pth_enter ();
   rc = ldap_search_st (ld, dn, ludp->lud_scope, filter,
                        myopt->multi && !myopt->attr && ludp->lud_attrs?
                        ludp->lud_attrs:attrs,
                        0,
                        &myopt->timeout, &msg);
+  pth_leave ();
   if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
     {
       if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->outstream) != 1)

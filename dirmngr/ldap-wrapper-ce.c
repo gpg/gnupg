@@ -36,6 +36,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <pth.h>
+#include <assert.h>
 
 #include "dirmngr.h"
 #include "misc.h"
@@ -46,37 +47,25 @@
 #endif
 
 
-/* To keep track of the LDAP wrapper state we use this structure.  */
-struct wrapper_context_s
+
+/* Read a fixed amount of data from READER into BUFFER.  */
+static gpg_error_t
+read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
 {
-  struct wrapper_context_s *next;
+  gpg_error_t err;
+  size_t nread;
+  
+  while (count)
+    {
+      err = ksba_reader_read (reader, buffer, count, &nread);
+      if (err)
+        return err;
+      buffer += nread;
+      count -= nread;
+    }
+  return 0;
+}
 
-  pid_t pid;    /* The pid of the wrapper process. */
-  int printable_pid; /* Helper to print diagnostics after the process has
-                        been cleaned up. */
-  int fd;       /* Connected with stdout of the ldap wrapper.  */
-  gpg_error_t fd_error; /* Set to the gpg_error of the last read error
-                           if any.  */
-  int log_fd;   /* Connected with stderr of the ldap wrapper.  */
-  pth_event_t log_ev;
-  ctrl_t ctrl;  /* Connection data. */
-  int ready;    /* Internally used to mark to be removed contexts. */
-  ksba_reader_t reader; /* The ksba reader object or NULL. */
-  char *line;     /* Used to print the log lines (malloced). */
-  size_t linesize;/* Allocated size of LINE.  */
-  size_t linelen; /* Use size of LINE.  */
-  time_t stamp;   /* The last time we noticed ativity.  */
-};
-
-
-
-/* We keep a global list of spawed wrapper process.  A separate thread
-   makes use of this list to log error messages and to watch out for
-   finished processes. */
-static struct wrapper_context_s *wrapper_list;
-
-/* We need to know whether we are shutting down the process.  */
-static int shutting_down;
 
 
 
@@ -84,25 +73,7 @@ static int shutting_down;
 void
 ldap_wrapper_launch_thread (void)
 {
-  static int done;
-  pth_attr_t tattr;
-
-  if (done)
-    return;
-  done = 1;
-
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "ldap-reaper");
-
-  if (!pth_spawn (tattr, ldap_wrapper_thread, NULL))
-    {
-      log_error (_("error spawning ldap wrapper reaper thread: %s\n"),
-                 strerror (errno) );
-      dirmngr_exit (1);
-    }
-  pth_attr_destroy (tattr);
+  /* Not required.  */
 }
 
 
@@ -114,191 +85,360 @@ ldap_wrapper_launch_thread (void)
 void
 ldap_wrapper_wait_connections ()
 {
-  shutting_down = 1;
-  while (wrapper_list)
-    pth_yield (NULL);
+  /* Not required.  */
 }
 
-
-/* This function is to be used to release a context associated with the
-   given reader object. */
-void
-ldap_wrapper_release_context (ksba_reader_t reader)
-{
-  if (!reader )
-    return;
-    
-  for (ctx=wrapper_list; ctx; ctx=ctx->next)
-    if (ctx->reader == reader)
-      {
-        if (DBG_LOOKUP)
-          log_info ("releasing ldap worker c=%p pid=%d/%d rdr=%p ctrl=%p/%d\n",
-                    ctx, 
-                    (int)ctx->pid, (int)ctx->printable_pid,
-                    ctx->reader,
-                    ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
-
-        ctx->reader = NULL;
-        SAFE_PTH_CLOSE (ctx->fd);
-        if (ctx->ctrl)
-          {
-            ctx->ctrl->refcount--;
-            ctx->ctrl = NULL;
-          }
-        if (ctx->fd_error)
-          log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fd_error));
-        break;
-      }
-}
 
 /* Cleanup all resources held by the connection associated with
    CTRL.  This is used after a cancel to kill running wrappers.  */
 void
 ldap_wrapper_connection_cleanup (ctrl_t ctrl)
 {
-  struct wrapper_context_s *ctx;
+  (void)ctrl;
 
-  for (ctx=wrapper_list; ctx; ctx=ctx->next)
-    if (ctx->ctrl && ctx->ctrl == ctrl)
-      {
-        ctx->ctrl->refcount--;
-        ctx->ctrl = NULL;
-        if (ctx->pid != (pid_t)(-1))
-          gnupg_kill_process (ctx->pid);
-        if (ctx->fd_error)
-          log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fd_error));
-      }
+  /* Not required.  */
 }
+
+
+
+/* The cookie we use to implement the outstream of the wrapper thread.  */
+struct outstream_cookie_s
+{
+  int refcount; /* Reference counter - possible values are 1 and 2.  */
+
+  int eof_seen;       /* EOF indicator.  */
+  size_t buffer_len;  /* The valid length of the BUFFER.  */
+  size_t buffer_pos;  /* The next read position of the BUFFER.  */
+  char buffer[4000];  /* Data buffer.  */
+};
+
+
+/* The writer function for the outstream.  This is used to transfer
+   the output of the ldap wrapper thread to the ksba reader object.  */
+static ssize_t
+outstream_cookie_writer (void *cookie_arg, const void *buffer, size_t size)
+{
+  struct outstream_cookie_s *cookie = cookie_arg;
+  const char *src;
+  char *dst;
+  ssize_t nwritten = 0;
+
+  src = buffer;
+  do
+    {
+      /* Wait for free space.  */
+      while (cookie->buffer_len == DIM (cookie->buffer))
+        {
+          /* Buffer is full:  Wait for space.  */
+          pth_yield (NULL);
+        }
+      
+      /* Copy data.  */
+      dst = cookie->buffer + cookie->buffer_len;
+      while (size && cookie->buffer_len < DIM (cookie->buffer))
+        {
+          *dst++ = *src++;
+          size--;
+          cookie->buffer_len++;
+          nwritten++;
+        }
+    }
+  while (size);  /* Until done.  */
+
+  if (nwritten)
+    {
+      /* Signal data is available - a pth_yield is sufficient because
+         the test is explicit.  To increase performance we could do a
+         pth_yield to the other thread and only fall back to yielding
+         to any thread if that returns an error (i.e. the other thread
+         is not runnable).  However our w32pth does not yet support
+         yielding to a specific thread, thus this won't help. */
+      pth_yield (NULL);
+    }
+
+  return nwritten;
+}
+
+
+static void
+outstream_release_cookie (struct outstream_cookie_s *cookie)
+{
+  cookie->refcount--;
+  if (!cookie->refcount)
+    xfree (cookie);
+}
+
+
+/* Closer function for the outstream.  This deallocates the cookie if
+   it won't be used anymore.  */
+static int
+outstream_cookie_closer (void *cookie_arg)
+{
+  struct outstream_cookie_s *cookie = cookie_arg;
+
+  if (!cookie)
+    return 0;  /* Nothing to do.  */
+
+  cookie->eof_seen = 1; /* (only useful if refcount > 1)  */
+
+  assert (cookie->refcount > 0);
+  outstream_release_cookie (cookie);
+  return 0;
+}
+
+
+/* The KSBA reader callback which takes the output of the ldap thread
+   form the outstream_cookie_writer and make it available to the ksba
+   reader.  */
+static int
+outstream_reader_cb (void *cb_value, char *buffer, size_t count,
+                     size_t *r_nread)
+{
+  struct outstream_cookie_s *cookie = cb_value;
+  char *dst;
+  const char *src;
+  size_t nread = 0;
+
+  if (!buffer && !count && !nread)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Rewind is not supported.  */
+
+  *r_nread = 0;
+  dst = buffer;
+
+  while (cookie->buffer_pos == cookie->buffer_len)
+    {
+      if (cookie->eof_seen)
+        return gpg_error (GPG_ERR_EOF);
+
+      /* Wait for data to become available.  */
+      pth_yield (NULL);
+    }
+  
+  src = cookie->buffer + cookie->buffer_pos;
+  while (count && cookie->buffer_pos < cookie->buffer_len)
+    {
+      *dst++ = *src++;
+      count--;
+      cookie->buffer_pos++;
+      nread++;
+    }
+
+  if (cookie->buffer_pos == cookie->buffer_len)
+    cookie->buffer_pos = cookie->buffer_len = 0;
+  
+  /* Now there should be some space available.  We do this even if
+     COUNT was zero so to give the writer end a chance to continue.  */
+  pth_yield (NULL);
+
+  *r_nread = nread;
+  return 0; /* Success.  */
+}
+
+
+/* This function is called by ksba_reader_release.  */
+static void
+outstream_reader_released (void *cb_value, ksba_reader_t r)
+{
+  struct outstream_cookie_s *cookie = cb_value;
+
+  (void)r;
+
+  assert (cookie->refcount > 0);
+  outstream_release_cookie (cookie);
+}
+
+
+
+/* This function is to be used to release a context associated with the
+   given reader object.  This does not release the reader object, though. */
+void
+ldap_wrapper_release_context (ksba_reader_t reader)
+{
+  (void)reader;
+  /* Nothing to do.  */
+}
+
+
+
+/* Free a NULL terminated array of malloced strings and the array
+   itself.  */
+static void
+free_arg_list (char **arg_list)
+{
+  int i;
+
+  if (arg_list)
+    {
+      for (i=0; arg_list[i]; i++)
+        xfree (arg_list[i]);
+      xfree (arg_list);
+    }
+}
+
+
+/* Copy ARGV into a new array and prepend one element as name of the
+   program (which is more or less a stub).  We need to allocate all
+   the strings to get ownership of them.  */
+static gpg_error_t
+create_arg_list (const char *argv[], char ***r_arg_list)
+{
+  gpg_error_t err;
+  char **arg_list;
+  int i, j;
+
+  for (i = 0; argv[i]; i++)
+    ;
+  arg_list = xtrycalloc (i + 2, sizeof *arg_list);
+  if (!arg_list)
+    goto outofcore;
+
+  i = 0;
+  arg_list[i] = xtrystrdup ("<ldap-wrapper-thread>");
+  if (!arg_list[i])
+    goto outofcore;
+  i++;
+  for (j=0; argv[j]; j++)
+    {
+      arg_list[i] = xtrystrdup (argv[j]);
+      if (!arg_list[i])
+        goto outofcore;
+      i++;
+    }
+  arg_list[i] = NULL;
+  *r_arg_list = arg_list;
+  return 0;
+
+ outofcore:
+  err = gpg_error_from_syserror ();
+  log_error (_("error allocating memory: %s\n"), strerror (errno));
+  free_arg_list (arg_list);
+  *r_arg_list = NULL;
+  return err;
+
+}
+
+
+/* Parameters passed to the wrapper thread. */
+struct ldap_wrapper_thread_parms
+{
+  char **arg_list;
+  estream_t outstream;
+};
+
+/* The thread which runs the LDAP wrapper.  */
+static void *
+ldap_wrapper_thread (void *opaque)
+{
+  struct ldap_wrapper_thread_parms *parms = opaque;
+  
+  /*err =*/ ldap_wrapper_main (parms->arg_list, parms->outstream);
+
+  /* FIXME: Do we need to return ERR?  */
+
+  free_arg_list (parms->arg_list);
+  es_fclose (parms->outstream);
+  xfree (parms);
+  return NULL;
+}
+
+
 
 /* Start a new LDAP thread and returns a new libksba reader
    object at READER.  ARGV is a NULL terminated list of arguments for
    the wrapper.  The function returns 0 on success or an error code.  */
 gpg_error_t
-ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
+ldap_wrapper (ctrl_t ctrl, ksba_reader_t *r_reader, const char *argv[])
 {
   gpg_error_t err;
-  pid_t pid;
-  struct wrapper_context_s *ctx;
-  int i;
-  int j;
-  const char **arg_list;
-  const char *pgmname;
-  int outpipe[2], errpipe[2];
+  struct ldap_wrapper_thread_parms *parms;
+  pth_attr_t tattr;
+  es_cookie_io_functions_t outstream_func = { NULL };
+  struct outstream_cookie_s *outstream_cookie;
+  ksba_reader_t reader;
 
-  /* It would be too simple to connect stderr just to our logging
-     stream.  The problem is that if we are running multi-threaded
-     everything gets intermixed.  Clearly we don't want this.  So the
-     only viable solutions are either to have another thread
-     responsible for logging the messages or to add an option to the
-     wrapper module to do the logging on its own.  Given that we anyway
-     need a way to rip the child process and this is best done using a
-     general ripping thread, that thread can do the logging too. */
+  (void)ctrl;
 
-  *reader = NULL;
+  *r_reader = NULL;
 
-  /* Files: We need to prepare stdin and stdout.  We get stderr from
-     the function.  */
-  if (!opt.ldap_wrapper_program || !*opt.ldap_wrapper_program)
-    pgmname = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR_LDAP);
-  else
-    pgmname = opt.ldap_wrapper_program;
+  parms = xtrycalloc (1, sizeof *parms);
+  if (!parms)
+    return gpg_error_from_syserror ();
 
-  /* Create command line argument array.  */
-  for (i = 0; argv[i]; i++)
-    ;
-  arg_list = xtrycalloc (i + 2, sizeof *arg_list);
-  if (!arg_list)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error allocating memory: %s\n"), strerror (errno));
-      return err;
-    }
-  for (i = j = 0; argv[i]; i++, j++)
-    if (!i && argv[i + 1] && !strcmp (*argv, "--pass"))
-      {
-	arg_list[j] = "--env-pass";
-	setenv ("DIRMNGR_LDAP_PASS", argv[1], 1);
-	i++;
-      }
-    else
-      arg_list[j] = (char*) argv[i];
-
-  ctx = xtrycalloc (1, sizeof *ctx);
-  if (!ctx)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("error allocating memory: %s\n"), strerror (errno));
-      xfree (arg_list);
-      return err;
-    }
-
-  err = gnupg_create_inbound_pipe (outpipe);
-  if (!err)
-    {
-      err = gnupg_create_inbound_pipe (errpipe);
-      if (err)
-        {
-          close (outpipe[0]);
-          close (outpipe[1]);
-        }
-    }
+  err = create_arg_list (argv, &parms->arg_list);
   if (err)
     {
-      log_error (_("error creating pipe: %s\n"), gpg_strerror (err));
-      xfree (arg_list);
-      xfree (ctx);
+      xfree (parms);
       return err;
     }
 
-  err = gnupg_spawn_process_fd (pgmname, arg_list,
-                                -1, outpipe[1], errpipe[1], &pid);
-  xfree (arg_list);
-  close (outpipe[1]);
-  close (errpipe[1]);
-  if (err)
+  outstream_cookie = xtrycalloc (1, sizeof *outstream_cookie);
+  if (!outstream_cookie)
     {
-      close (outpipe[0]);
-      close (errpipe[0]);
-      xfree (ctx);
+      err = gpg_error_from_syserror ();
+      free_arg_list (parms->arg_list);
+      xfree (parms);
       return err;
     }
+  outstream_cookie->refcount++;
 
-  ctx->pid = pid;
-  ctx->printable_pid = (int) pid;
-  ctx->fd = outpipe[0];
-  ctx->log_fd = errpipe[0];
-  ctx->log_ev = pth_event (PTH_EVENT_FD | PTH_UNTIL_FD_READABLE, ctx->log_fd);
-  if (! ctx->log_ev)
-    {
-      xfree (ctx);
-      return gpg_error_from_syserror ();
-    }
-  ctx->ctrl = ctrl;
-  ctrl->refcount++;
-  ctx->stamp = time (NULL);
-
-  err = ksba_reader_new (reader);
+  err = ksba_reader_new (&reader);
   if (!err)
-    err = ksba_reader_set_cb (*reader, reader_callback, ctx);
+    err = ksba_reader_set_release_notify (reader,
+                                          outstream_reader_released,
+                                          outstream_cookie);
+  if (!err)
+    err = ksba_reader_set_cb (reader,
+                              outstream_reader_cb, outstream_cookie);
   if (err)
     {
       log_error (_("error initializing reader object: %s\n"),
                  gpg_strerror (err));
-      destroy_wrapper (ctx);
-      ksba_reader_release (*reader);
-      *reader = NULL;
+      ksba_reader_release (reader);
+      outstream_release_cookie (outstream_cookie);
+      free_arg_list (parms->arg_list);
+      xfree (parms);
       return err;
     }
 
-  /* Hook the context into our list of running wrappers.  */
-  ctx->reader = *reader;
-  ctx->next = wrapper_list;
-  wrapper_list = ctx;
-  if (opt.verbose)
-    log_info ("ldap wrapper %d started (reader %p)\n",
-              (int)ctx->pid, ctx->reader);
+
+  outstream_func.func_write = outstream_cookie_writer;
+  outstream_func.func_close = outstream_cookie_closer;
+  parms->outstream = es_fopencookie (outstream_cookie, "wb", outstream_func);
+  if (!parms->outstream)
+    {
+      err = gpg_error_from_syserror ();
+      free_arg_list (parms->arg_list);
+      outstream_release_cookie (outstream_cookie);
+      xfree (parms);
+      return err;
+    }
+  outstream_cookie->refcount++;
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 128*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "ldap-wrapper");
+  
+  if (pth_spawn (tattr, ldap_wrapper_thread, parms))
+    parms = NULL; /* Now owned by the thread.  */
+  else
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error spawning ldap wrapper thread: %s\n",
+                 strerror (errno) );
+    }
+  pth_attr_destroy (tattr);
+  if (parms)
+    {
+      free_arg_list (parms->arg_list);
+      es_fclose (parms->outstream);
+      xfree (parms);
+    }
+  if (err)
+    {
+      ksba_reader_release (reader);
+      return err;
+    }
 
   /* Need to wait for the first byte so we are able to detect an empty
      output and not let the consumer see an EOF without further error
@@ -308,19 +448,20 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   {
     unsigned char c;
 
-    err = read_buffer (*reader, &c, 1);
+    err = read_buffer (reader, &c, 1);
     if (err)
       {
-        ldap_wrapper_release_context (*reader);
-        ksba_reader_release (*reader);
-        *reader = NULL;
+        ksba_reader_release (reader);
+        reader = NULL;
         if (gpg_err_code (err) == GPG_ERR_EOF)
           return gpg_error (GPG_ERR_NO_DATA);
         else
           return err;
       }
-    ksba_reader_unread (*reader, &c, 1);
+    ksba_reader_unread (reader, &c, 1);
   }
+
+  *r_reader = reader;
 
   return 0;
 }

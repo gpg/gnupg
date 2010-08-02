@@ -36,12 +36,18 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) \
 
 BUILT_SOURCES = no-libgcrypt.c
 
+if HAVE_W32_SYSTEM
+ldap_url = ldap-url.h ldap-url.c
+else
+ldap_url =
+endif
+
 noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	ldapserver.h ldapserver.c certcache.c certcache.h \
 	cdb.h cdblib.c ldap.c misc.c dirmngr-err.h \
-	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h 
+	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h $(ldap_url)
 
 if USE_LDAPWRAPPER
 dirmngr_SOURCES += ldap-wrapper.c 
@@ -52,12 +58,10 @@ endif
 
 dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBINTL) $(LIBICONV)
-
-if HAVE_W32_SYSTEM
-ldap_url = ldap-url.h ldap-url.c
-else
-ldap_url =
+if !USE_LDAPWRAPPER
+dirmngr_LDADD += $(LDAPLIBS)
 endif
+
 
 if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) no-libgcrypt.c

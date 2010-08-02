@@ -955,7 +955,28 @@ es_func_fp_write (void *cookie, const void *buffer, size_t size)
 
 
   if (file_cookie->fp)
-    bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
+    {
+#ifdef HAVE_W32_SYSTEM
+      /* Using an fwrite to stdout connected to the console fails with
+	 the error "Not enough space" for an fwrite size of >= 52KB
+	 (tested on Windows XP SP2).  To solve this we always chunk
+	 the writes up into smaller blocks.  */
+      bytes_written = 0;
+      while (bytes_written < size)
+        {
+          size_t cnt = size - bytes_written;
+
+          if (cnt > 32*1024)
+            cnt = 32*1024;
+          if (fwrite ((const char*)buffer + bytes_written,
+                      cnt, 1, file_cookie->fp) != 1)
+            break; /* Write error.  */
+          bytes_written += cnt;
+        }
+#else
+      bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
+#endif
+    }
   else
     bytes_written = size; /* Successfully written to the bit bucket.  */
   if (bytes_written != size)

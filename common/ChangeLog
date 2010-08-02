@@ -1,3 +1,7 @@
+2010-07-26  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_func_fp_write) [W32]: Write smaller chunks.
+
 2010-07-25  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (initialize): Use ARGPARSE_PRINT_WARNING constant.

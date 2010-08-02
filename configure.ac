@@ -49,7 +49,7 @@ NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.0
 
 NEED_KSBA_API=1
-NEED_KSBA_VERSION=1.0.2
+NEED_KSBA_VERSION=1.1.0
 
 
 PACKAGE=$PACKAGE_NAME
@@ -785,7 +785,11 @@ AC_DEFINE_UNQUOTED(SHRED,
 # Check whether the GNU Pth library is available
 # Note, that we include a Pth emulation for W32.
 #
-GNUPG_PATH_PTH
+if test "$have_w32_system" = yes; then
+  GNUPG_PATH_PTH([2.0.4])
+else
+  GNUPG_PATH_PTH
+fi
 if test "$have_pth" = "yes"; then
   AC_DEFINE(USE_GNU_PTH, 1,
               [Defined if the GNU Portable Thread Library should be used])
