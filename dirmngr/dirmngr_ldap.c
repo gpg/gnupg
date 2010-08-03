@@ -63,8 +63,8 @@
    ldap wrapper process we need to include the prototype for our
    module's main function.  */
 #ifdef USE_LDAPWRAPPER
-# define pth_enter() do { } while (0)
-# define pth_leave() do { } while (0)
+static void pth_enter (void) { }
+static void pth_leave (void) { }
 #else
 # include "./ldap-wrapper.h"
 #endif
@@ -153,7 +153,7 @@ static int process_url (my_opt_t myopt, const char *url);
 
 
 /* Function called by argparse.c to display information.  */
-#ifndef USE_LDAPWRAPPER
+#ifdef USE_LDAPWRAPPER
 static const char *
 my_strusage (int level)
 {
