@@ -264,7 +264,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
           }
           break;
   
-        case 99999: /* Made up status code foer error reporting.  */
+        case 99999: /* Made up status code for error reporting.  */
           log_error (_("error retrieving `%s': %s\n"),
                      url, gpg_strerror (err));
           break;
