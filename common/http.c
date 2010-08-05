@@ -21,11 +21,13 @@
 /* Simple HTTP client implementation.  We try to keep the code as
    self-contained as possible.  There are some contraints however:
 
+  - estream is required.  We now require estream because it provides a
+    very useful and portable asprintf implementation and the fopencookie
+    function.
   - stpcpy is required
   - fixme: list other requirements.
 
 
-  - With HTTP_USE_ESTREAM defined, all I/O is done through estream.
   - With HTTP_USE_GNUTLS support for https is provided (this also
     requires estream).
   - With HTTP_NO_WSASTARTUP the socket initialization is not done
@@ -129,17 +131,12 @@ typedef unsigned long longcounter_t;
 # define counter_strtoul(a) strtoul ((a), NULL, 10)
 #endif
 
-/* Define a prefix to map stream functions to the estream library. */
-#ifdef HTTP_USE_ESTREAM
-#define P_ES(a)  es_ ## a
-#else
-#define P_ES(a)  a
+#if defined(HTTP_USE_ESTREAM) && defined (__GNUC__)
+# warning HTTP_USE_ESTREAM is an obsolete macro
 #endif
+
 #ifndef HTTP_USE_GNUTLS
 typedef void * gnutls_session_t;
-#endif
-#if defined(HTTP_USE_GNUTLS) && !defined(HTTP_USE_ESTREAM)
-#error Use of GNUTLS also requires support for Estream
 #endif
 
 static gpg_error_t do_parse_uri (parsed_uri_t uri, int only_local_part);
@@ -156,7 +153,6 @@ static int connect_server (const char *server, unsigned short port,
                            unsigned int flags, const char *srvtag);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
-#ifdef HTTP_USE_ESTREAM
 static ssize_t cookie_read (void *cookie, void *buffer, size_t size);
 static ssize_t cookie_write (void *cookie, const void *buffer, size_t size);
 static int cookie_close (void *cookie);
@@ -187,8 +183,6 @@ struct cookie_s
 };
 typedef struct cookie_s *cookie_t;
 
-#endif /*HTTP_USE_ESTREAM*/
-
 #ifdef HTTP_USE_GNUTLS
 static gpg_error_t (*tls_callback) (http_t, gnutls_session_t, int);
 #endif /*HTTP_USE_GNUTLS*/
@@ -211,15 +205,10 @@ struct http_context_s
   int sock;
   unsigned int in_data:1;
   unsigned int is_http_0_9:1;
-#ifdef HTTP_USE_ESTREAM
   estream_t fp_read;
   estream_t fp_write;
   void *write_cookie;
   void *read_cookie;
-#else /*!HTTP_USE_ESTREAM*/
-  FILE *fp_read;
-  FILE *fp_write;
-#endif /*!HTTP_USE_ESTREAM*/
   void *tls_context;
   parsed_uri_t uri;
   http_req_t req_type;
@@ -375,9 +364,9 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
       if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
         sock_close (hd->sock);
       if (hd->fp_read)
-        P_ES(fclose) (hd->fp_read);
+        es_fclose (hd->fp_read);
       if (hd->fp_write)
-        P_ES(fclose) (hd->fp_write);
+        es_fclose (hd->fp_write);
       http_release_parsed_uri (hd->uri);
       xfree (hd);
     }
@@ -392,17 +381,12 @@ http_start_data (http_t hd)
 {
   if (!hd->in_data)
     {
-#ifdef HTTP_USE_ESTREAM
       es_fputs ("\r\n", hd->fp_write);
       es_fflush (hd->fp_write);
-#else
-      fflush (hd->fp_write);
-      write_server (hd->sock, "\r\n", 2);
-#endif
       hd->in_data = 1;
     }
   else
-    P_ES(fflush) (hd->fp_write);
+    es_fflush (hd->fp_write);
 }
 
 
@@ -410,42 +394,21 @@ gpg_error_t
 http_wait_response (http_t hd)
 {
   gpg_error_t err;
+  cookie_t cookie;
 
   /* Make sure that we are in the data. */
   http_start_data (hd);	
 
-  /* We dup the socket, to cope with the fact that fclose closes the
-     underlying socket. In TLS mode we don't do that because we can't
-     close the socket gnutls is working on; instead we make sure that
-     the fclose won't close the socket in this case. */
-#ifdef HTTP_USE_ESTREAM
-  if (hd->write_cookie)
-    {
-      /* The write cookie is only set in the TLS case. */
-      cookie_t cookie = hd->write_cookie;
-      cookie->keep_socket = 1;
-    }
-  else
-#endif /*HTTP_USE_ESTREAM*/
-    {
-#ifdef HAVE_W32_SYSTEM
-      HANDLE handle = (HANDLE)hd->sock;
-      if (!DuplicateHandle (GetCurrentProcess(), handle,
-			    GetCurrentProcess(), &handle, 0,
-			    TRUE, DUPLICATE_SAME_ACCESS ))
-	return gpg_error_from_syserror ();
-      hd->sock = (int)handle;
-#else
-      hd->sock = dup (hd->sock);
-#endif
-      if (hd->sock == -1)
-        return gpg_error_from_syserror ();
-    }
-  P_ES(fclose) (hd->fp_write);
+  /* Close the write stream but keep the socket open.  */
+  cookie = hd->write_cookie;
+  if (!cookie)
+    return gpg_error (GPG_ERR_INTERNAL);
+
+  cookie->keep_socket = 1;
+  es_fclose (hd->fp_write);
   hd->fp_write = NULL;
-#ifdef HTTP_USE_ESTREAM
+  /* The close has released the cookie and thus we better set it to NULL.  */
   hd->write_cookie = NULL;
-#endif
 
   /* Shutdown one end of the socket is desired.  As per HTTP/1.0 this
      is not required but some very old servers (e.g. the original pksd
@@ -454,29 +417,22 @@ http_wait_response (http_t hd)
     shutdown (hd->sock, 1);
   hd->in_data = 0;
 
-#ifdef HTTP_USE_ESTREAM
-  {
-    cookie_t cookie;
-
-    cookie = xtrycalloc (1, sizeof *cookie);
-    if (!cookie)
-      return gpg_error_from_syserror ();
-    cookie->fd = hd->sock;
-    if (hd->uri->use_tls)
-      cookie->tls_session = hd->tls_context;
-
-    hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
-    if (!hd->fp_read)
-      {
-        xfree (cookie);
-        return gpg_error_from_syserror ();
-      }
-  }
-#else /*!HTTP_USE_ESTREAM*/
-  hd->fp_read = fdopen (hd->sock, "r");
-  if (!hd->fp_read)
+  /* Create a new cookie and a stream for reading.  */
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
     return gpg_error_from_syserror ();
-#endif /*!HTTP_USE_ESTREAM*/
+  cookie->fd = hd->sock;
+  if (hd->uri->use_tls)
+    cookie->tls_session = hd->tls_context;
+
+  hd->read_cookie = cookie;
+  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
+  if (!hd->fp_read)
+    {
+      xfree (cookie);
+      hd->read_cookie = NULL;
+      return gpg_error_from_syserror ();
+    }
 
   err = parse_response (hd);
   return err;
@@ -515,9 +471,9 @@ http_close (http_t hd, int keep_read_stream)
   if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
     sock_close (hd->sock);
   if (hd->fp_read && !keep_read_stream)
-    P_ES(fclose) (hd->fp_read);
+    es_fclose (hd->fp_read);
   if (hd->fp_write)
-    P_ES(fclose) (hd->fp_write);
+    es_fclose (hd->fp_write);
   http_release_parsed_uri (hd->uri);
   while (hd->headers)
     {
@@ -531,29 +487,18 @@ http_close (http_t hd, int keep_read_stream)
 }
 
 
-#ifdef HTTP_USE_ESTREAM
 estream_t
 http_get_read_ptr (http_t hd)
 {
   return hd?hd->fp_read:NULL;
 }
+
 estream_t
 http_get_write_ptr (http_t hd)
 {
   return hd?hd->fp_write:NULL;
 }
-#else /*!HTTP_USE_ESTREAM*/
-FILE *
-http_get_read_ptr (http_t hd)
-{
-  return hd?hd->fp_read:NULL;
-}
-FILE *
-http_get_write_ptr (http_t hd)
-{
-  return hd?hd->fp_write:NULL;
-}
-#endif /*!HTTP_USE_ESTREAM*/
+
 unsigned int
 http_get_status_code (http_t hd)
 {
@@ -794,7 +739,7 @@ insert_escapes (char *buffer, const char *string,
 	{
 	  if (buffer)
 	    {
-	      sprintf (buffer, "%%%02X", *s);
+	      snprintf (buffer, 4, "%%%02X", *s);
 	      buffer += 3;
 	    }
 	  n += 3;
@@ -1017,7 +962,7 @@ send_request (http_t hd, const char *auth,
 
   if (http_proxy && *http_proxy)
     {
-      request = xtryasprintf 
+      request = es_asprintf 
         ("%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
@@ -1035,7 +980,7 @@ send_request (http_t hd, const char *auth,
       else
         snprintf (portstr, sizeof portstr, ":%u", port);
 
-      request = xtryasprintf 
+      request = es_asprintf 
         ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
@@ -1053,7 +998,6 @@ send_request (http_t hd, const char *auth,
     }
 
 
-#ifdef HTTP_USE_ESTREAM
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
   {
@@ -1066,16 +1010,15 @@ send_request (http_t hd, const char *auth,
         goto leave;
       }
     cookie->fd = hd->sock;
+    hd->write_cookie = cookie;
     if (hd->uri->use_tls)
-      {
-        cookie->tls_session = tls_session;
-        hd->write_cookie = cookie;
-      }
+      cookie->tls_session = tls_session;
 
     hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
     if (!hd->fp_write)
       {
         xfree (cookie);
+        hd->write_cookie = NULL;
         err = gpg_error_from_syserror ();
       }
     else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
@@ -1083,45 +1026,22 @@ send_request (http_t hd, const char *auth,
     else
       err = 0;
 
-  if(err==0)
-    for(;headers;headers=headers->next)
-      {
-	if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
-	    || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
-	  {
-	    err = gpg_error_from_syserror ();
-	    break;
-	  }
-      }
-  }
-
- leave:
-
-#else /*!HTTP_USE_ESTREAM*/
-  /* We send out the start of the request through our own send
-     function and only then assign a stdio stream.  This allows for
-     better error reporting that through standard stdio means. */
-  err = write_server (hd->sock, request, strlen (request));
-  if (!err)
-    for (;headers;headers=headers->next)
-      {
-	err = write_server (hd->sock, headers->d, strlen(headers->d));
-	if (err)
-	  break;
-	err = write_server (hd->sock, "\r\n", 2);
-	if (err)
-	  break;
-      }
   if (!err)
     {
-      hd->fp_write = fdopen (hd->sock, "w");
-      if (!hd->fp_write)
-        err = gpg_error_from_syserror ();
+      for (;headers; headers=headers->next)
+        {
+          if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
+              || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
+            {
+              err = gpg_error_from_syserror ();
+              break;
+            }
+        }
     }
-
-#endif /*!HTTP_USE_ESTREAM*/
-
-  xfree (request);
+  }
+  
+ leave:
+  es_free (request);
   xfree (authstr);
   xfree (proxy_authstr);
 
@@ -1178,97 +1098,6 @@ build_rel_path (parsed_uri_t uri)
     }
   *p = 0;
   return rel_path;
-}
-
-
-
-/*
-   Same as fgets() but if the buffer is too short a larger one will be
-   allocated up to some limit *MAX_LENGTH.  A line is considered a
-   byte stream ending in a LF.  Returns the length of the line. EOF is
-   indicated by a line of length zero. The last LF may be missing due
-   to an EOF.  If MAX_LENGTH is zero on return, the line has been
-   truncated.  If the returned buffer is NULL, not enough memory was
-   enable to increase it, the return value will also be 0 and some
-   bytes might have been lost which should be no problem becuase
-   out-of-memory is pretty fatal for most applications.
-
-   If a line has been truncated, the file pointer is internally moved
-   forward to the end of the line.
-
-   Note: The returned buffer is allocated with enough extra space to
-   append a CR,LF,Nul
- */
-static size_t
-my_read_line (
-#ifdef HTTP_USE_ESTREAM
-              estream_t fp,
-#else
-              FILE *fp,
-#endif
-              char **addr_of_buffer,
-              size_t *length_of_buffer, size_t *max_length)
-{
-  int c;
-  char *buffer = *addr_of_buffer;
-  size_t length = *length_of_buffer;
-  size_t nbytes = 0;
-  size_t maxlen = *max_length;
-  char *p;
-
-  if (!buffer) /* Must allocate a new buffer. */
-    {		
-      length = 256;
-      buffer = xtrymalloc (length);
-      *addr_of_buffer = buffer;
-      if (!buffer)
-	{
-	  *length_of_buffer = *max_length = 0;
-	  return 0;
-	}
-      *length_of_buffer = length;
-    }
-
-  length -= 3; /* Reserve 3 bytes (cr,lf,eol). */
-  p = buffer;
-  while ((c = P_ES(getc) (fp)) != EOF)
-    {
-      if (nbytes == length) /* Increase the buffer. */
-	{			
-	  if (length > maxlen) /* Limit reached. */
-	    {
-	      /* Skip the rest of the line. */
-	      while (c != '\n' && (c = P_ES(getc) (fp)) != EOF)
-		;
-	      *p++ = '\n'; /* Always append a LF (we reserved some space). */
-	      nbytes++;
-	      *max_length = 0; /* Indicate truncation */
-	      break; /*(the while loop)*/
-	    }
-	  length += 3; /* Adjust for the reserved bytes. */
-	  length += length < 1024 ? 256 : 1024;
-	  *addr_of_buffer = xtryrealloc (buffer, length);
-	  if (!*addr_of_buffer)
-	    {
-	      int save_errno = errno;
-	      xfree (buffer);
-	      *length_of_buffer = *max_length = 0;
-	      gpg_err_set_errno (save_errno);
-	      return 0;
-	    }
-	  buffer = *addr_of_buffer;
-	  *length_of_buffer = length;
-	  length -= 3; /* And re-adjust for the reservation. */
-	  p = buffer + nbytes;
-	}
-      *p++ = c;
-      nbytes++;
-      if (c == '\n')
-	break;
-    }
-  *p = 0; /* Make sure the line is a string. */
-
-  return nbytes;
 }
 
 
@@ -1418,7 +1247,7 @@ parse_response (http_t hd)
   do
     {
       maxlen = MAX_LINELEN;
-      len = my_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
+      len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
 	return gpg_error_from_syserror (); /* Out of core. */
@@ -1462,7 +1291,7 @@ parse_response (http_t hd)
   do
     {
       maxlen = MAX_LINELEN;
-      len = my_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
+      len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
 	return gpg_error_from_syserror (); /* Out of core. */
@@ -1664,7 +1493,7 @@ connect_server (const char *server, unsigned short port,
       struct addrinfo hints, *res, *ai;
       char portstr[35];
 
-      sprintf (portstr, "%hu", port);
+      snprintf (portstr, sizeof portstr, "%hu", port);
       memset (&hints, 0, sizeof (hints));
       hints.ai_socktype = SOCK_STREAM;
       if (getaddrinfo (serverlist[srv].target, portstr, &hints, &res))
@@ -1778,22 +1607,25 @@ static gpg_error_t
 write_server (int sock, const char *data, size_t length)
 {
   int nleft;
+  int nwritten;
 
   /* FIXME: We would better use pth I/O functions.  */
   nleft = length;
   while (nleft > 0)
     {
-#ifdef HAVE_W32_SYSTEM
-      int nwritten;
-      
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_PTH)
       nwritten = send (sock, data, nleft, 0);
       if ( nwritten == SOCKET_ERROR ) 
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
           return gpg_error (GPG_ERR_NETWORK);
         }
-#else /*!HAVE_W32_SYSTEM*/
-      int nwritten = write (sock, data, nleft);
+#else /*!HAVE_W32_SYSTEM || HAVE_PTH*/
+# ifdef HAVE_PTH
+      nwritten = pth_write (sock, data, nleft);
+# else
+      nwritten = write (sock, data, nleft);
+# endif
       if (nwritten == -1)
 	{
 	  if (errno == EINTR)
@@ -1810,7 +1642,7 @@ write_server (int sock, const char *data, size_t length)
 	  log_info ("network write failed: %s\n", strerror (errno));
 	  return gpg_error_from_syserror ();
 	}
-#endif /*!HAVE_W32_SYSTEM*/
+#endif /*!HAVE_W32_SYSTEM || HAVE_PTH*/
       nleft -= nwritten;
       data += nwritten;
     }
@@ -1820,7 +1652,6 @@ write_server (int sock, const char *data, size_t length)
 
 
 
-#ifdef HTTP_USE_ESTREAM
 /* Read handler for estream.  */
 static ssize_t
 cookie_read (void *cookie, void *buffer, size_t size)
@@ -1961,7 +1792,6 @@ cookie_close (void *cookie)
   xfree (c);
   return 0;
 }
-#endif /*HTTP_USE_ESTREAM*/
 
 
 
@@ -1999,9 +1829,7 @@ main (int argc, char **argv)
 #endif /*HTTP_USE_GNUTLS*/
   header_t hdr;
 
-#ifdef HTTP_USE_ESTREAM
   es_init ();
-#endif
   log_set_prefix ("http-test", 1 | 4);
   if (argc == 1)
     {
@@ -2100,7 +1928,7 @@ main (int argc, char **argv)
   switch (http_get_status_code (hd))
     {
     case 200:
-      while ((c = P_ES(getc) (http_get_read_ptr (hd))) != EOF)
+      while ((c = es_getc (http_get_read_ptr (hd))) != EOF)
         putchar (c);
       break;
     case 301:

@@ -352,6 +352,11 @@ int es_vfprintf_unlocked (estream_t ES__RESTRICT stream,
                           const char *ES__RESTRICT format, va_list ap)
      _ESTREAM_GCC_A_PRINTF(2,0);
 
+char *es_asprintf (const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(1,2);
+char *es_vasprintf (const char *ES__RESTRICT format, va_list ap)
+     _ESTREAM_GCC_A_PRINTF(1,0);
+
 int es_setvbuf (estream_t ES__RESTRICT stream,
 		char *ES__RESTRICT buf, int mode, size_t size);
 void es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf);

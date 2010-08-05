@@ -1,3 +1,17 @@
+2010-08-05  Werner Koch  <wk@g10code.com>
+
+	* estream.h (es_asprintf, es_vasprintf): Add lost prototyps.
+
+	* http.c: Require estream and make HTTP_USE_ESTREAM obsolete.  It
+	make the code unreadable and we require estream anyway for GnuPG.
+	(http_wait_response): Get use of cookies right.
+	(send_request): s/xtryasprintf/es_asprintf/ to allow standalone
+	use of the code.
+	(insert_escapes, connect_server): s/sprintf/snprintf/.
+	(parse_response): s/my_read_line/es_read_line/.
+	(my_read_line): Remove.
+	(write_server): Use pth_write.
+
 2010-07-26  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_func_fp_write) [W32]: Write smaller chunks.

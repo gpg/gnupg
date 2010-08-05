@@ -21,9 +21,7 @@
 #define GNUPG_COMMON_HTTP_H 
 
 #include <gpg-error.h>
-#ifdef HTTP_USE_ESTREAM
 #include "../common/estream.h"
-#endif
 
 struct uri_tuple_s {
   struct uri_tuple_s *next;
@@ -100,13 +98,8 @@ gpg_error_t http_open_document (http_t *r_hd,
 				const char *srvtag,
 				strlist_t headers);
 
-#ifdef HTTP_USE_ESTREAM
 estream_t http_get_read_ptr (http_t hd);
 estream_t http_get_write_ptr (http_t hd);
-#else /*!HTTP_USE_ESTREAM*/
-FILE *http_get_read_ptr (http_t hd);
-FILE *http_get_write_ptr (http_t hd);
-#endif /*!HTTP_USE_ESTREAM*/
 unsigned int http_get_status_code (http_t hd);
 const char *http_get_header (http_t hd, const char *name);
 
