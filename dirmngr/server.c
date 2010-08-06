@@ -40,6 +40,7 @@
 #include "certcache.h"
 #include "validate.h"
 #include "misc.h"
+#include "ldap-wrapper.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -47,6 +48,7 @@
 
 #define PARM_ERROR(t) assuan_set_error (ctx, \
                                         gpg_error (GPG_ERR_ASS_PARAMETER), (t))
+#define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
 
@@ -61,6 +63,20 @@ struct server_local_s
 };
 
 
+/* Cookie definition for assuan data line output.  */
+static ssize_t data_line_cookie_write (void *cookie,
+                                       const void *buffer, size_t size);
+static int data_line_cookie_close (void *cookie);
+static es_cookie_io_functions_t data_line_cookie_functions =
+  {
+    NULL,
+    data_line_cookie_write,
+    NULL,
+    data_line_cookie_close
+  };
+
+
+
 
 
 /* Accessor for the local ldapservers variable. */
@@ -73,6 +89,55 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
     return NULL;
 }
 
+
+/* Helper to print a message while leaving a command.  */
+static gpg_error_t
+leave_cmd (assuan_context_t ctx, gpg_error_t err)
+{
+  if (err)
+    {
+      const char *name = assuan_get_command_name (ctx);
+      if (!name)
+        name = "?";
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
+        log_error ("command '%s' failed: %s\n", name,
+                   gpg_strerror (err));
+      else
+        log_error ("command '%s' failed: %s <%s>\n", name,
+                   gpg_strerror (err), gpg_strsource (err));
+    }
+  return err;
+}
+
+/* A write handler used by es_fopencookie to write assuan data
+   lines.  */
+static ssize_t
+data_line_cookie_write (void *cookie, const void *buffer, size_t size)
+{
+  assuan_context_t ctx = cookie;
+
+  if (assuan_send_data (ctx, buffer, size))
+    {
+      gpg_err_set_errno (EIO);
+      return -1;
+    }
+
+  return size;
+}
+
+static int
+data_line_cookie_close (void *cookie)
+{
+  assuan_context_t ctx = cookie;
+
+  if (assuan_send_data (ctx, NULL, 0))
+    {
+      gpg_err_set_errno (EIO);
+      return -1;
+    }
+
+  return 0;
+}
 
 
 /* Copy the % and + escaped string S into the buffer D and replace the
@@ -452,17 +517,17 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
   while (spacep (line))
     line++;
   if (*line == '\0')
-    return PARM_ERROR (_("ldapserver missing"));
+    return leave_cmd (ctx, PARM_ERROR (_("ldapserver missing")));
 
   server = ldapserver_parse_one (line, "", 0);
   if (! server)
-    return gpg_error (GPG_ERR_INV_ARG);
+    return leave_cmd (ctx, gpg_error (GPG_ERR_INV_ARG));
 
   last_next_p = &ctrl->server_local->ldapservers;
   while (*last_next_p)
     last_next_p = &(*last_next_p)->next;
   *last_next_p = server;
-  return 0;
+  return leave_cmd (ctx, 0);
 }
 
 
@@ -522,7 +587,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
       if (strlen (issuerhash) != 40)
         {
           xfree (issuerhash);
-          return PARM_ERROR (_("serialno missing in cert ID"));
+          return leave_cmd (ctx, PARM_ERROR (_("serialno missing in cert ID")));
         }
       ocsp_mode = 1;
     }
@@ -574,10 +639,8 @@ cmd_isvalid (assuan_context_t ctx, char *line)
         }
     }
 
-  if (err)
-    log_error (_("command %s failed: %s\n"), "ISVALID", gpg_strerror (err));
   xfree (issuerhash);
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -688,10 +751,8 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
     }
 
  leave:
-  if (err)
-    log_error (_("command %s failed: %s\n"), "CHECKCRL", gpg_strerror (err));
   ksba_cert_release (cert);
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -773,10 +834,8 @@ cmd_checkocsp (assuan_context_t ctx, char *line)
     err = ocsp_isvalid (ctrl, cert, NULL, force_default_responder);
 
  leave:
-  if (err)
-    log_error (_("command %s failed: %s\n"), "CHECKOCSP", gpg_strerror (err));
   ksba_cert_release (cert);
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1066,10 +1125,7 @@ cmd_lookup (assuan_context_t ctx, char *line)
   else
     err = lookup_cert_by_pattern (ctx, line, single, cache_only);
 
-  if (err)
-    log_error (_("command %s failed: %s\n"), "LOOKUP", gpg_strerror (err));
-
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1126,9 +1182,7 @@ cmd_loadcrl (assuan_context_t ctx, char *line)
         }
     }
 
-  if (err)
-    log_error (_("command %s failed: %s\n"), "LOADCRL", gpg_strerror (err));
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1143,17 +1197,19 @@ static gpg_error_t
 cmd_listcrls (assuan_context_t ctx, char *line)
 {
   gpg_error_t err;
-  estream_t fp = assuan_get_data_fp (ctx);
+  estream_t fp;
 
   (void)line;
 
+  fp = es_fopencookie (ctx, "w", data_line_cookie_functions);
   if (!fp)
-    return PARM_ERROR (_("no data stream"));
-
-  err = crl_cache_list (fp);
-  if (err)
-    log_error (_("command %s failed: %s\n"), "LISTCRLS", gpg_strerror (err));
-  return err;
+    err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+  else
+    {
+      err = crl_cache_list (fp);
+      es_fclose (fp);
+    }
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1204,10 +1260,8 @@ cmd_cachecert (assuan_context_t ctx, char *line)
   err = cache_cert (cert);
 
  leave:
-  if (err)
-    log_error (_("command %s failed: %s\n"), "CACHECERT", gpg_strerror (err));
   ksba_cert_release (cert);
-  return err;
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1273,14 +1327,57 @@ cmd_validate (assuan_context_t ctx, char *line)
   err = validate_cert_chain (ctrl, cert, NULL, VALIDATE_MODE_CERT, NULL);
 
  leave:
-  if (err)
-    log_error (_("command %s failed: %s\n"), "VALIDATE", gpg_strerror (err));
   ksba_cert_release (cert);
-  return err;
+  return leave_cmd (ctx, err);
+}
+
+
+
+static const char hlp_getinfo[] = 
+  "GETINFO <what>\n"
+  "\n"
+  "Multi purpose command to return certain information.  \n"
+  "Supported values of WHAT are:\n"
+  "\n"
+  "version     - Return the version of the program.\n"
+  "pid         - Return the process id of the server.\n"
+  "\n"
+  "socket_name - Return the name of the socket.\n";
+static gpg_error_t
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  gpg_error_t err;
+
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      err = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      err = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "socket_name"))
+    {
+      const char *s = dirmngr_socket_name ();
+
+      if (s)
+        err = assuan_send_data (ctx, s, strlen (s));
+      else
+        err = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else
+    err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
+
+  return leave_cmd (ctx, err);
 }
 
 
 
+
 /* Tell the assuan library about our commands. */
 static int
 register_commands (assuan_context_t ctx)
@@ -1299,8 +1396,7 @@ register_commands (assuan_context_t ctx)
     { "LISTCRLS",   cmd_listcrls,   hlp_listcrls },
     { "CACHECERT",  cmd_cachecert,  hlp_cachecert },
     { "VALIDATE",   cmd_validate,   hlp_validate },
-    { "INPUT",      NULL },
-    { "OUTPUT",     NULL },
+    { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { NULL, NULL }
   };
   int i, j, rc;

@@ -73,15 +73,9 @@ void dump_cert (const char *text, ksba_cert_t cert);
    URL.  */
 char *host_and_port_from_url (const char *url, int *port);
 
+/* Create a KSBA reader object and connect it to the estream FP.  */
+gpg_error_t create_estream_ksba_reader (ksba_reader_t *r_reader, estream_t fp);
 
-#ifdef HAVE_FOPENCOOKIE
-/* We have to implement funopen in terms of glibc's fopencookie. */
-FILE *funopen(void *cookie,
-              int (*readfn)(void *, char *, int),
-              int (*writefn)(void *, const char *, int),
-              fpos_t (*seekfn)(void *, fpos_t, int),
-              int (*closefn)(void *));
-#endif /*HAVE_FOPENCOOKIE*/
 
 
 #endif /* MISC_H */

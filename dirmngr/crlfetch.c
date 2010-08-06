@@ -30,6 +30,7 @@
 #include "http.h"
 
 #include "estream.h"
+#include "ldap-wrapper.h"
 
 
 /* For detecting armored CRLs received via HTTP (yes, such CRLS really
@@ -228,7 +229,8 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
                    pointer (or well the callback context) with the
                    reader.  It is only required when closing the
                    reader thus there is no performance issue doing it
-                   this way.  */
+                   this way.  FIXME: We now have a close notification
+                   which might be used here. */
                 register_file_reader (*reader, cb_ctx);
                 http_close (hd, 1);
               }

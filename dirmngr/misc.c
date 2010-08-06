@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous
  *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *      Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+ *      Copyright (C) 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
  *
  * This file is part of DirMngr.
  *
@@ -484,3 +484,48 @@ host_and_port_from_url (const char *url, int *port)
   return buf;
 }
 
+
+/* A KSBA reader callback to read from an estream.  */
+static int
+my_estream_ksba_reader_cb (void *cb_value, char *buffer, size_t count,
+                           size_t *r_nread)
+{
+  estream_t fp = cb_value;
+  
+  if (!fp)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!buffer && !count && !r_nread)
+    {
+      es_rewind (fp);
+      return 0;
+    }
+
+  *r_nread = es_fread (buffer, 1, count, fp);
+  if (!*r_nread)
+    return -1; /* EOF or error.  */
+  return 0; /* Success.  */
+}
+
+
+/* Create a KSBA reader object and connect it to the estream FP.  */
+gpg_error_t
+create_estream_ksba_reader (ksba_reader_t *r_reader, estream_t fp)
+{
+  gpg_error_t err;
+  ksba_reader_t reader;
+
+  *r_reader = NULL;
+  err = ksba_reader_new (&reader);
+  if (!err)
+    err = ksba_reader_set_cb (reader, my_estream_ksba_reader_cb, fp);
+  if (err)
+    {
+      log_error (_("error initializing reader object: %s\n"),
+                 gpg_strerror (err));
+      ksba_reader_release (reader);
+      return err;
+    }
+  *r_reader = reader;
+  return 0;
+}

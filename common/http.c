@@ -131,21 +131,18 @@ typedef unsigned long longcounter_t;
 # define counter_strtoul(a) strtoul ((a), NULL, 10)
 #endif
 
-#if defined(HTTP_USE_ESTREAM) && defined (__GNUC__)
-# warning HTTP_USE_ESTREAM is an obsolete macro
-#endif
-
 #ifndef HTTP_USE_GNUTLS
 typedef void * gnutls_session_t;
 #endif
 
-static gpg_error_t do_parse_uri (parsed_uri_t uri, int only_local_part);
+static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part);
 static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
 static gpg_error_t send_request (http_t hd, const char *auth,const char *proxy,
-				 const char *srvtag,strlist_t headers);
+				 const char *srvtag,strlist_t headers,
+                                 gpg_err_source_t errsource);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
@@ -334,9 +331,10 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
    pointer for completing the the request and to wait for the
    response. */
 gpg_error_t
-http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
-           const char *auth, unsigned int flags, const char *proxy,
-           void *tls_context, const char *srvtag,strlist_t headers)
+_http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
+            const char *auth, unsigned int flags, const char *proxy,
+            void *tls_context, const char *srvtag, strlist_t headers,
+            gpg_err_source_t errsource)
 {
   gpg_error_t err;
   http_t hd;
@@ -344,7 +342,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   *r_hd = NULL;
 
   if (!(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST))
-    return gpg_error (GPG_ERR_INV_ARG);
+    return gpg_err_make (errsource, GPG_ERR_INV_ARG);
 
   /* Create the handle. */
   hd = xtrycalloc (1, sizeof *hd);
@@ -355,9 +353,9 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd->flags = flags;
   hd->tls_context = tls_context;
 
-  err = http_parse_uri (&hd->uri, url);
+  err = _http_parse_uri (&hd->uri, url, errsource);
   if (!err)
-    err = send_request (hd, auth, proxy, srvtag, headers);
+    err = send_request (hd, auth, proxy, srvtag, headers, errsource);
   
   if (err)
     {
@@ -391,7 +389,7 @@ http_start_data (http_t hd)
 
 
 gpg_error_t
-http_wait_response (http_t hd)
+_http_wait_response (http_t hd, gpg_err_source_t errsource)
 {
   gpg_error_t err;
   cookie_t cookie;
@@ -402,7 +400,7 @@ http_wait_response (http_t hd)
   /* Close the write stream but keep the socket open.  */
   cookie = hd->write_cookie;
   if (!cookie)
-    return gpg_error (GPG_ERR_INTERNAL);
+    return gpg_err_make (errsource, GPG_ERR_INTERNAL);
 
   cookie->keep_socket = 1;
   es_fclose (hd->fp_write);
@@ -420,7 +418,7 @@ http_wait_response (http_t hd)
   /* Create a new cookie and a stream for reading.  */
   cookie = xtrycalloc (1, sizeof *cookie);
   if (!cookie)
-    return gpg_error_from_syserror ();
+    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
   cookie->fd = hd->sock;
   if (hd->uri->use_tls)
     cookie->tls_session = hd->tls_context;
@@ -431,7 +429,7 @@ http_wait_response (http_t hd)
     {
       xfree (cookie);
       hd->read_cookie = NULL;
-      return gpg_error_from_syserror ();
+      return gpg_err_make (errsource, gpg_err_code_from_syserror ());
     }
 
   err = parse_response (hd);
@@ -444,18 +442,19 @@ http_wait_response (http_t hd)
    be used as an HTTP proxy and any enabled $http_proxy gets
    ignored. */
 gpg_error_t
-http_open_document (http_t *r_hd, const char *document, 
-                    const char *auth, unsigned int flags, const char *proxy,
-                    void *tls_context, const char *srvtag,strlist_t headers)
+_http_open_document (http_t *r_hd, const char *document, 
+                     const char *auth, unsigned int flags, const char *proxy,
+                     void *tls_context, const char *srvtag, strlist_t headers,
+                     gpg_err_source_t errsource)
 {
   gpg_error_t err;
 
-  err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                   proxy, tls_context, srvtag, headers);
+  err = _http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
+                    proxy, tls_context, srvtag, headers, errsource);
   if (err)
     return err;
 
-  err = http_wait_response (*r_hd);
+  err = _http_wait_response (*r_hd, errsource);
   if (err)
     http_close (*r_hd, 0);
 
@@ -513,13 +512,14 @@ http_get_status_code (http_t hd)
  * resources (even on error).
  */
 gpg_error_t
-http_parse_uri (parsed_uri_t * ret_uri, const char *uri)
+_http_parse_uri (parsed_uri_t * ret_uri, const char *uri,
+                 gpg_err_source_t errsource)
 {
   *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
   if (!*ret_uri)
-    return gpg_error_from_syserror ();
+    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
   strcpy ((*ret_uri)->buffer, uri);
-  return do_parse_uri (*ret_uri, 0);
+  return gpg_err_make (errsource, do_parse_uri (*ret_uri, 0));
 }
 
 void
@@ -539,7 +539,7 @@ http_release_parsed_uri (parsed_uri_t uri)
 }
 
 
-static gpg_error_t
+static gpg_err_code_t
 do_parse_uri (parsed_uri_t uri, int only_local_part)
 {
   uri_tuple_t *tail;
@@ -557,13 +557,13 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
-    return gpg_error (GPG_ERR_BAD_URI);	/* Invalid characters found. */
+    return GPG_ERR_BAD_URI;	/* Invalid characters found. */
 
   if (!only_local_part)
     {
       /* Find the scheme. */
       if (!(p2 = strchr (p, ':')) || p2 == p)
-	return gpg_error (GPG_ERR_BAD_URI); /* No scheme. */
+	return GPG_ERR_BAD_URI; /* No scheme. */
       *p2++ = 0;
       for (pp=p; *pp; pp++)
        *pp = tolower (*(unsigned char*)pp);
@@ -578,13 +578,13 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
         }
 #endif
       else
-	return gpg_error (GPG_ERR_INV_URI); /* Unsupported scheme */
+	return GPG_ERR_INV_URI; /* Unsupported scheme */
 
       p = p2;
 
       /* Find the hostname */
       if (*p != '/')
-	return gpg_error (GPG_ERR_INV_URI); /* Does not start with a slash. */
+	return GPG_ERR_INV_URI; /* Does not start with a slash. */
 
       p++;
       if (*p == '/') /* There seems to be a hostname. */
@@ -622,9 +622,9 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
 	    }
 
 	  if ((n = remove_escapes (uri->host)) < 0)
-	    return gpg_error (GPG_ERR_BAD_URI);
+	    return GPG_ERR_BAD_URI;
 	  if (n != strlen (uri->host))
-	    return gpg_error (GPG_ERR_BAD_URI);	/* Hostname incudes a Nul. */
+	    return GPG_ERR_BAD_URI;	/* Hostname incudes a Nul. */
 	  p = p2 ? p2 : NULL;
 	}
     } /* End global URI part. */
@@ -641,9 +641,9 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
 
   uri->path = p;
   if ((n = remove_escapes (p)) < 0)
-    return gpg_error (GPG_ERR_BAD_URI);
+    return GPG_ERR_BAD_URI;
   if (n != strlen (p))
-    return gpg_error (GPG_ERR_BAD_URI);	/* Path includes a Nul. */
+    return GPG_ERR_BAD_URI;	/* Path includes a Nul. */
   p = p2 ? p2 : NULL;
 
   if (!p || !*p)	
@@ -658,7 +658,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
       if ((p2 = strchr (p, '&')))
 	*p2++ = 0;
       if (!(elem = parse_tuple (p)))
-	return gpg_error (GPG_ERR_BAD_URI);
+	return GPG_ERR_BAD_URI;
       *tail = elem;
       tail = &elem->next;
 
@@ -816,7 +816,8 @@ parse_tuple (char *string)
  */
 static gpg_error_t
 send_request (http_t hd, const char *auth,
-	      const char *proxy,const char *srvtag,strlist_t headers)
+	      const char *proxy, const char *srvtag, strlist_t headers,
+              gpg_err_source_t errsource)
 {
   gnutls_session_t tls_session;
   gpg_error_t err;
@@ -832,7 +833,7 @@ send_request (http_t hd, const char *auth,
   if (hd->uri->use_tls && !tls_session)
     {
       log_error ("TLS requested but no GNUTLS context provided\n");
-      return gpg_error (GPG_ERR_INTERNAL);
+      return gpg_err_make (errsource, GPG_ERR_INTERNAL);
     }
 
   server = *hd->uri->host ? hd->uri->host : "localhost";
@@ -848,14 +849,13 @@ send_request (http_t hd, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = http_parse_uri (&uri, http_proxy);
+      err = _http_parse_uri (&uri, http_proxy, errsource);
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
 		     http_proxy, gpg_strerror (err));
 	  http_release_parsed_uri (uri);
-	  return gpg_error (GPG_ERR_CONFIGURATION);
-
+	  return gpg_err_make (errsource, GPG_ERR_CONFIGURATION);
 	}
 
       if (uri->auth)
@@ -866,7 +866,7 @@ send_request (http_t hd, const char *auth,
                                             uri->auth, strlen(uri->auth));
           if (!proxy_authstr)
             {
-              err = gpg_error_from_syserror ();
+              err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
               http_release_parsed_uri (uri);
               return err;
             }
@@ -887,9 +887,9 @@ send_request (http_t hd, const char *auth,
   if (hd->sock == -1)
     {
       xfree (proxy_authstr);
-      return (save_errno 
-              ? gpg_error_from_errno (save_errno)
-              : gpg_error (GPG_ERR_NOT_FOUND));
+      return gpg_err_make (errsource, (save_errno 
+                                       ? gpg_err_code_from_errno (save_errno)
+                                       : GPG_ERR_NOT_FOUND));
     }
 
 #ifdef HTTP_USE_GNUTLS
@@ -907,7 +907,7 @@ send_request (http_t hd, const char *auth,
         {
           log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
           xfree (proxy_authstr);
-          return gpg_error (GPG_ERR_NETWORK);
+          return gpg_err_make (errsource, GPG_ERR_NETWORK);
         }
 
       if (tls_callback)
@@ -934,7 +934,7 @@ send_request (http_t hd, const char *auth,
           if (!myauth)
             {
               xfree (proxy_authstr);
-              return gpg_error_from_syserror ();
+              return gpg_err_make (errsource, gpg_err_code_from_syserror ());
             }
           remove_escapes (myauth);
         }
@@ -952,13 +952,13 @@ send_request (http_t hd, const char *auth,
       if (!authstr)
         {
           xfree (proxy_authstr);
-          return gpg_error_from_syserror ();
+          return gpg_err_make (errsource, gpg_err_code_from_syserror ());
         }
     }
   
   p = build_rel_path (hd->uri);
   if (!p)
-    return gpg_error_from_syserror ();
+    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
 
   if (http_proxy && *http_proxy)
     {
@@ -991,7 +991,7 @@ send_request (http_t hd, const char *auth,
   xfree (p);
   if (!request)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
       xfree (authstr);
       xfree (proxy_authstr);
       return err;
@@ -1006,7 +1006,7 @@ send_request (http_t hd, const char *auth,
     cookie = xtrycalloc (1, sizeof *cookie);
     if (!cookie)
       {
-        err = gpg_error_from_syserror ();
+        err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
         goto leave;
       }
     cookie->fd = hd->sock;
@@ -1017,12 +1017,12 @@ send_request (http_t hd, const char *auth,
     hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
     if (!hd->fp_write)
       {
+        err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
         xfree (cookie);
         hd->write_cookie = NULL;
-        err = gpg_error_from_syserror ();
       }
     else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-      err = gpg_error_from_syserror ();
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
     else
       err = 0;
 
@@ -1033,7 +1033,7 @@ send_request (http_t hd, const char *auth,
           if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
               || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
             {
-              err = gpg_error_from_syserror ();
+              err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
               break;
             }
         }
@@ -1128,7 +1128,7 @@ capitalize_header_name (char *name)
 /* Store an HTTP header line in LINE away.  Line continuation is
    supported as well as merging of headers with the same name. This
    function may modify LINE. */
-static gpg_error_t
+static gpg_err_code_t
 store_header (http_t hd, char *line)
 {
   size_t n;
@@ -1143,17 +1143,17 @@ store_header (http_t hd, char *line)
         line[--n] = 0;
     }
   if (!n)  /* we are never called to hit this. */
-    return gpg_error (GPG_ERR_BUG);
+    return GPG_ERR_BUG;
   if (*line == ' ' || *line == '\t')
     {
       /* Continuation. This won't happen too often as it is not
          recommended.  We use a straightforward implementaion. */
       if (!hd->headers)
-        return gpg_error (GPG_ERR_PROTOCOL_VIOLATION);
+        return GPG_ERR_PROTOCOL_VIOLATION;
       n += strlen (hd->headers->value);
       p = xtrymalloc (n+1);
       if (!p)
-        return gpg_error_from_syserror ();
+        return gpg_err_code_from_syserror ();
       strcpy (stpcpy (p, hd->headers->value), line);
       xfree (hd->headers->value);
       hd->headers->value = p;
@@ -1163,7 +1163,7 @@ store_header (http_t hd, char *line)
   capitalize_header_name (line);
   p = strchr (line, ':');
   if (!p)
-    return gpg_error (GPG_ERR_PROTOCOL_VIOLATION);
+    return GPG_ERR_PROTOCOL_VIOLATION;
   *p++ = 0;
   while (*p == ' ' || *p == '\t')
     p++;
@@ -1178,7 +1178,7 @@ store_header (http_t hd, char *line)
          it is a comma separated list and merge them.  */
       p = xtrymalloc (strlen (h->value) + 1 + strlen (value)+ 1);
       if (!p)
-        return gpg_error_from_syserror ();
+        return gpg_err_code_from_syserror ();
       strcpy (stpcpy (stpcpy (p, h->value), ","), value);
       xfree (h->value);
       h->value = p;
@@ -1188,13 +1188,13 @@ store_header (http_t hd, char *line)
   /* Append a new header. */
   h = xtrymalloc (sizeof *h + strlen (line));
   if (!h)
-    return gpg_error_from_syserror ();
+    return gpg_err_code_from_syserror ();
   strcpy (h->name, line);
   h->value = xtrymalloc (strlen (value)+1);
   if (!h->value)
     {
       xfree (h);
-      return gpg_error_from_syserror ();
+      return gpg_err_code_from_syserror ();
     }
   strcpy (h->value, value);
   h->next = hd->headers;
@@ -1226,7 +1226,7 @@ http_get_header (http_t hd, const char *name)
  * Parse the response from a server.
  * Returns: Errorcode and sets some files in the handle
  */
-static gpg_error_t
+static gpg_err_code_t
 parse_response (http_t hd)
 {
   char *line, *p, *p2;
@@ -1250,12 +1250,13 @@ parse_response (http_t hd)
       len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_error_from_syserror (); /* Out of core. */
+	return gpg_err_code_from_syserror (); /* Out of core. */
       if (!maxlen)
-	return gpg_error (GPG_ERR_TRUNCATED); /* Line has been truncated. */
+	return GPG_ERR_TRUNCATED; /* Line has been truncated. */
       if (!len)
-	return gpg_error (GPG_ERR_EOF);
-      if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
+	return GPG_ERR_EOF;
+
+      if ((hd->flags & HTTP_FLAG_LOG_RESP))
         log_info ("RESP: `%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
     }
@@ -1294,21 +1295,21 @@ parse_response (http_t hd)
       len = es_read_line (hd->fp_read, &hd->buffer, &hd->buffer_size, &maxlen);
       line = hd->buffer;
       if (!line)
-	return gpg_error_from_syserror (); /* Out of core. */
+	return gpg_err_code_from_syserror (); /* Out of core. */
       /* Note, that we can silently ignore truncated lines. */
       if (!len)
-	return gpg_error (GPG_ERR_EOF);
+	return GPG_ERR_EOF;
       /* Trim line endings of empty lines. */
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
-      if ( (hd->flags & HTTP_FLAG_LOG_RESP) )
+      if ((hd->flags & HTTP_FLAG_LOG_RESP))
         log_info ("RESP: `%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
       if (*line)
         {
-          gpg_error_t err = store_header (hd, line);
-          if (err)
-            return err;
+          gpg_err_code_t ec = store_header (hd, line);
+          if (ec)
+            return ec;
         }
     }
   while (len && *line);

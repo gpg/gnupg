@@ -1,3 +1,24 @@
+2010-08-06  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (JNLIB_NEED_AFLOCAL): Define macro.
+	(main): Use SUN_LEN macro.
+	(main) [W32]: Allow EEXIST in addition to EADDRINUSE.
+	(JNLIB_NEED_AFLOCAL): 
+
+2010-08-05  Werner Koch  <wk@g10code.com>
+
+	* server.c (set_error, leave_cmd): New.
+	(cmd_validate, cmd_ldapserver, cmd_isvalid, cmd_checkcrl)
+	(cmd_checkocsp, cmd_lookup, cmd_listcrls, cmd_cachecert): Use
+	leave_cmd.
+	(cmd_getinfo): New.
+	(data_line_cookie_write, data_line_cookie_close): New.
+	(cmd_listcrls): Replace assuan_get_data_fp by es_fopencookie.
+
+	* misc.c (create_estream_ksba_reader, my_estream_ksba_reader_cb): New.
+	* certcache.c (load_certs_from_dir): Use create_estream_ksba_reader.
+	* crlcache.c (crl_cache_load): Ditto.
+
 2010-08-03  Werner Koch  <wk@g10code.com>
 
 	* dirmngr_ldap.c (pth_enter, pth_leave) [USE_LDAPWRAPPER]: Turn

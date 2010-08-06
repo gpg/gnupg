@@ -412,7 +412,12 @@ gnupg_cachedir (void)
           dir = tmp;
         }
       else
-        dir = "c:\\temp\\cache\\dirmngr";
+        {
+          dir = "c:\\temp\\cache\\gnupg";
+#ifdef HAVE_W32CE_SYSTEM
+          dir += 2;
+#endif
+        }
     }
   return dir;
 #else /*!HAVE_W32_SYSTEM*/
@@ -430,6 +435,12 @@ dirmngr_socket_name (void)
 
   if (!name)
     {
+      char *p;
+# ifdef HAVE_W32CE_SYSTEM
+      const char *s1, *s2;
+
+      s1 = default_homedir ();
+# else
       char s1[MAX_PATH];
       const char *s2;
 
@@ -440,9 +451,13 @@ dirmngr_socket_name (void)
 	 that. */
       if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1) < 0)
 	strcpy (s1, "C:\\WINDOWS");
+# endif
       s2 = DIRSEP_S "S.dirmngr";
       name = xmalloc (strlen (s1) + strlen (s2) + 1);
       strcpy (stpcpy (name, s1), s2);
+      for (p=name; *p; p++)
+        if (*p == '/')
+          *p = '\\';
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/

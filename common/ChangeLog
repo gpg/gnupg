@@ -1,3 +1,17 @@
+2010-08-06  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (dirmngr_socket_name) [W32CE]: Base on default homedir.
+	(gnupg_cachedir) [W32CE]: Drop drive letter.
+
+	* http.c (http_open_document): Rename to _http_open_document and
+	add arg ERRSOURCE.  Pass ERRSOURCE to all called funcs.
+	(http_wait_response, http_open, http_parse_uri): Likewise.
+	(do_parse_uri, parse_response, store_header): Change to return an
+	gpg_err_code_t.  Change callers.
+	(send_request): Add arg ERRSOURCE.  Change callers.
+	* http.h (http_open_document, http_wait_response, http_open)
+	(http_parse_uri): Define as macro.
+
 2010-08-05  Werner Koch  <wk@g10code.com>
 
 	* estream.h (es_asprintf, es_vasprintf): Add lost prototyps.

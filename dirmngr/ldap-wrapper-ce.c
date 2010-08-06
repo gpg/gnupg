@@ -199,7 +199,7 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
   const char *src;
   size_t nread = 0;
 
-  if (!buffer && !count && !nread)
+  if (!buffer && !count && !r_nread)
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Rewind is not supported.  */
 
   *r_nread = 0;

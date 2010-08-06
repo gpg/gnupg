@@ -360,13 +360,10 @@ load_certs_from_dir (const char *dirname, int are_trusted)
                      fname, strerror (errno));
           continue;
         }
-      err = ksba_reader_new (&reader);
-      if (!err)
-        err = ksba_reader_set_file (reader, fp);
+
+      err = create_estream_ksba_reader (&reader, fp);
       if (err)
         {
-          log_error (_("can't setup KSBA reader: %s\n"), gpg_strerror (err));
-          ksba_reader_release (reader);
           es_fclose (fp);
           continue;
         }

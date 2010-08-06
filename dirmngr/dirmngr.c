@@ -44,6 +44,7 @@
 
 
 #define JNLIB_NEED_LOG_LOGV
+#define JNLIB_NEED_AFLOCAL
 #include "dirmngr.h"
 
 #include <assuan.h> 
@@ -963,12 +964,17 @@ main (int argc, char **argv)
       memset (&serv_addr, 0, sizeof serv_addr);
       serv_addr.sun_family = AF_UNIX;
       strcpy (serv_addr.sun_path, socket_name);
-      len = (offsetof (struct sockaddr_un, sun_path)
-             + strlen (serv_addr.sun_path) + 1);
+      len = SUN_LEN (&serv_addr);
 
       rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
-      if (rc == -1 && errno == EADDRINUSE)
+      if (rc == -1 
+          && (errno == EADDRINUSE
+#ifdef HAVE_W32_SYSTEM
+              || errno == EEXIST
+#endif
+              ))
 	{
+          /* Fixme: We should test whether a dirmngr is already running. */
 	  gnupg_remove (socket_name);
 	  rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
 	}

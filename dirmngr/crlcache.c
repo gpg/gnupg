@@ -2369,18 +2369,12 @@ crl_cache_load (ctrl_t ctrl, const char *filename)
       return err;
     }
 
-  err = ksba_reader_new (&reader);
+  err = create_estream_ksba_reader (&reader, fp);
   if (!err)
-    err = ksba_reader_set_file (reader, fp);
-  if (err)
     {
-      log_error (_("error initializing reader object: %s\n"),
-                 gpg_strerror (err));
+      err = crl_cache_insert (ctrl, filename, reader);
       ksba_reader_release (reader);
-      return err;
     }
-  err = crl_cache_insert (ctrl, filename, reader);
-  ksba_reader_release (reader);
   es_fclose (fp);
   return err;
 }
