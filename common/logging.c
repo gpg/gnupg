@@ -29,14 +29,17 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#else /*!HAVE_W32_SYSTEM*/
 # include <sys/socket.h>
 # include <sys/un.h>
-#endif /*HAVE_W32_SYSTEM*/
+# include <netinet/in.h>
+# include <arpa/inet.h>
+#endif /*!HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <fcntl.h>
 #include <assert.h>
-
 
 
 #define JNLIB_NEED_LOG_LOGV 1
@@ -54,6 +57,22 @@
 
 #ifdef HAVE_W32CE_SYSTEM
 # define isatty(a)  (0)
+#endif
+
+#undef WITH_IPV6
+#if defined (AF_INET6) && defined(PF_INET) \
+    && defined (INET6_ADDRSTRLEN) && defined(HAVE_INET_PTON)
+# define WITH_IPV6 1
+#endif
+
+#ifndef EAFNOSUPPORT
+# define EAFNOSUPPORT EINVAL
+#endif
+
+#ifdef HAVE_W32_SYSTEM
+#define sock_close(a)  closesocket(a)
+#else
+#define sock_close(a)  close(a)
 #endif
 
 
@@ -109,7 +128,11 @@ writen (int fd, const void *buffer, size_t nbytes)
   
   while (nleft > 0)
     {
+#ifdef HAVE_W32_SYSTEM
+      nwritten = send (fd, buf, nleft, 0);
+#else
       nwritten = write (fd, buf, nleft);
+#endif
       if (nwritten < 0 && errno == EINTR)
         continue;
       if (nwritten < 0)
@@ -119,6 +142,27 @@ writen (int fd, const void *buffer, size_t nbytes)
     }
   
   return 0;
+}
+
+
+/* Returns true if STR represents a valid port number in decimal
+   notation and no garbage is following.  */
+static int 
+parse_portno (const char *str, unsigned short *r_port)
+{
+  unsigned int value;
+
+  for (value=0; *str && (*str >= '0' && *str <= '9'); str++)
+    {
+      value = value * 10 + (*str - '0');
+      if (value > 65535)
+        return 0;
+    }
+  if (*str || !value)
+    return 0;
+
+  *r_port = value;
+  return 1;
 }
 
 
@@ -134,12 +178,129 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
      processes often close stderr and by writing to file descriptor 2
      we might send the log message to a file not intended for logging
      (e.g. a pipe or network connection). */
-#ifndef HAVE_W32_SYSTEM
   if (cookie->want_socket && cookie->fd == -1)
     {
+#ifdef WITH_IPV6
+      struct sockaddr_in6 srvr_addr_in6;
+#endif
+      struct sockaddr_in srvr_addr_in;
+#ifndef HAVE_W32_SYSTEM
+      struct sockaddr_un srvr_addr_un;
+#endif
+      size_t addrlen;
+      struct sockaddr *srvr_addr = NULL;
+      unsigned short port = 0;
+      int af = AF_LOCAL;
+      int pf = PF_LOCAL;
+      const char *name = cookie->name;
+
       /* Not yet open or meanwhile closed due to an error. */
       cookie->is_socket = 0;
-      cookie->fd = socket (PF_LOCAL, SOCK_STREAM, 0);
+
+      /* Check whether this is a TCP socket or a local socket.  */
+      if (!strncmp (name, "tcp://", 6) && name[6])
+        {
+          name += 6;
+          af = AF_INET;
+          pf = PF_INET;
+        }
+#ifndef HAVE_W32_SYSTEM
+      else if (!strncmp (name, "socket://", 9) && name[9])
+        name += 9;
+#endif
+      
+      if (af == AF_LOCAL)
+        {
+#ifdef HAVE_W32_SYSTEM
+          addrlen = 0;
+#else
+          memset (&srvr_addr, 0, sizeof srvr_addr);
+          srvr_addr_un.sun_family = af;
+          strncpy (srvr_addr_un.sun_path,
+                   name, sizeof (srvr_addr_un.sun_path)-1);
+          srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path)-1] = 0;
+          srvr_addr = (struct sockaddr *)&srvr_addr_un;
+          addrlen = SUN_LEN (&srvr_addr_un);
+#endif
+        }
+      else
+        {
+          char *addrstr, *p;
+          void *addrbuf = NULL;
+
+          addrstr = jnlib_malloc (strlen (name) + 1);
+          if (!addrstr)
+            addrlen = 0; /* This indicates an error.  */
+          else if (*name == '[')
+            {
+              /* Check for IPv6 literal address.  */
+              strcpy (addrstr, name+1);
+              p = strchr (addrstr, ']');
+              if (!p || p[1] != ':' || !parse_portno (p+2, &port))
+                {
+                  jnlib_set_errno (EINVAL);
+                  addrlen = 0;
+                }
+              else 
+                {
+                  *p = 0;
+#ifdef WITH_IPV6
+                  af = AF_INET6;
+                  pf = PF_INET6;
+                  memset (&srvr_addr_in6, 0, sizeof srvr_addr_in6);
+                  srvr_addr_in6.sin6_family = af;
+                  srvr_addr_in6.sin6_port = htons (port);
+                  addrbuf = &srvr_addr_in6.sin6_addr;
+                  srvr_addr = (struct sockaddr *)&srvr_addr_in6;
+                  addrlen = sizeof srvr_addr_in6;
+#else
+                  jnlib_set_errno (EAFNOSUPPORT);
+                  addrlen = 0;
+#endif
+                }
+            }
+          else
+            {
+              /* Check for IPv4 literal address.  */
+              strcpy (addrstr, name);
+              p = strchr (addrstr, ':');
+              if (!p || !parse_portno (p+1, &port))
+                {
+                  jnlib_set_errno (EINVAL);
+                  addrlen = 0;
+                }
+              else
+                {
+                  *p = 0;
+                  memset (&srvr_addr_in, 0, sizeof srvr_addr_in);
+                  srvr_addr_in.sin_family = af;
+                  srvr_addr_in.sin_port = htons (port);
+                  addrbuf = &srvr_addr_in.sin_addr;
+                  srvr_addr = (struct sockaddr *)&srvr_addr_in;
+                  addrlen = sizeof srvr_addr_in;
+                }
+            }
+
+          if (addrlen)
+            {
+#ifdef HAVE_INET_PTON
+              if (inet_pton (af, addrstr, addrbuf) != 1)
+                addrlen = 0;
+#else /*!HAVE_INET_PTON*/
+              /* We need to use the old function.  If we are here v6
+                 support isn't enabled anyway and thus we can do fine
+                 without.  Note that Windows has a compatible inet_pton
+                 function named inetPton, but only since Vista.  */
+              srvr_addr_in.sin_addr.s_addr = inet_addr (addrstr);
+              if (srvr_addr_in.sin_addr.s_addr == INADDR_NONE)
+                addrlen = 0;
+#endif /*!HAVE_INET_PTON*/
+            }
+      
+          jnlib_free (addrstr);
+        }
+
+      cookie->fd = addrlen? socket (pf, SOCK_STREAM, 0) : -1;
       if (cookie->fd == -1)
         {
           if (!cookie->quiet && !running_detached
@@ -149,22 +310,13 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
         }
       else
         {
-          struct sockaddr_un addr;
-          size_t addrlen;
-          
-          memset (&addr, 0, sizeof addr);
-          addr.sun_family = PF_LOCAL;
-          strncpy (addr.sun_path, cookie->name, sizeof (addr.sun_path)-1);
-          addr.sun_path[sizeof (addr.sun_path)-1] = 0;
-          addrlen = SUN_LEN (&addr);
-      
-          if (connect (cookie->fd, (struct sockaddr *) &addr, addrlen) == -1)
+          if (connect (cookie->fd, srvr_addr, addrlen) == -1)
             {
               if (!cookie->quiet && !running_detached
                   && isatty (es_fileno (es_stderr)))
                 es_fprintf (es_stderr, "can't connect to `%s': %s\n",
                             cookie->name, strerror(errno));
-              close (cookie->fd);
+              sock_close (cookie->fd);
               cookie->fd = -1;
             }
         }
@@ -174,9 +326,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           if (!running_detached)
             {
               /* Due to all the problems with apps not running
-                 detached but being called with stderr closed or
-                 used for a different purposes, it does not make
-                 sense to switch to stderr.  We therefore disable it. */
+                 detached but being called with stderr closed or used
+                 for a different purposes, it does not make sense to
+                 switch to stderr.  We therefore disable it. */
               if (!cookie->quiet)
                 {
                   /* fputs ("switching logging to stderr\n", stderr);*/
@@ -191,12 +343,11 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           cookie->is_socket = 1;
         }
     }
-#endif /*HAVE_W32_SYSTEM*/
-
+  
   log_socket = cookie->fd;
   if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
     return (ssize_t)size; /* Okay. */ 
-
+  
   if (!running_detached && cookie->fd != -1
       && isatty (es_fileno (es_stderr)))
     {
@@ -209,11 +360,11 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
     }
   if (cookie->is_socket && cookie->fd != -1)
     {
-      close (cookie->fd);
+      sock_close (cookie->fd);
       cookie->fd = -1;
       log_socket = -1;
     }
-
+  
   return (ssize_t)size;
 }
 
@@ -224,7 +375,7 @@ fun_closer (void *cookie_arg)
   struct fun_cookie_s *cookie = cookie_arg;
 
   if (cookie->fd != -1 && cookie->fd != 2)
-    close (cookie->fd);
+    sock_close (cookie->fd);
   jnlib_free (cookie);
   log_socket = -1;
   return 0;
@@ -254,18 +405,13 @@ set_file_fd (const char *name, int fd)
       fd = es_fileno (es_stderr);
     }
 
+  want_socket = 0;
+  if (name && !strncmp (name, "tcp://", 6) && name[6])
+    want_socket = 1;
 #ifndef HAVE_W32_SYSTEM
-  if (name)
-    {
-      want_socket = (!strncmp (name, "socket://", 9) && name[9]);
-      if (want_socket)
-        name += 9;
-    }
-  else
+  else if (name && !strncmp (name, "socket://", 9) && name[9])
+    want_socket = 2;
 #endif /*HAVE_W32_SYSTEM*/
-    {
-      want_socket = 0;
-    }
 
   /* Setup a new stream.  */
 

@@ -30,6 +30,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <time.h>
 
@@ -40,7 +42,7 @@
 #define MYVERSION_LINE PGM " (GnuPG) " VERSION
 #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
 #else
-#define MYVERSION_LINE PGM 
+#define MYVERSION_LINE PGM " (standalone build) " __DATE__
 #define BUGREPORT_LINE ""
 #endif
 #if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
@@ -189,17 +191,19 @@ print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
          "Copyright (C) 2004 Free Software Foundation, Inc.\n"
-         "This program comes with ABSOLUTELY NO WARRANTY.\n"
-         "This is free software, and you are welcome to redistribute it\n"
-         "under certain conditions. See the file COPYING for details.\n",
+         "License GPLv3+: "
+         "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+         "This is free software: you are free to change and redistribute it.\n"
+         "There is NO WARRANTY, to the extent permitted by law.\n",
          stdout);
-        
   if (with_help)
     fputs ("\n"
-          "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
-          "Open the local socket SOCKETNAME and display log messages\n"
+          "Usage: " PGM " [OPTIONS] SOCKETNAME|PORT\n"
+          "Open the local socket SOCKETNAME (or the TCP port PORT)\n"
+          "and display log messages\n"
           "\n"
           "  --force     delete an already existing socket file\n"
+          "  --tcp       listen on a TCP port instead of a local socket\n"
           "  --verbose   enable extra informational output\n"
           "  --version   print version of the program and exit\n"
           "  --help      display this help and exit\n"
@@ -213,9 +217,13 @@ main (int argc, char **argv)
 {
   int last_argc = -1;
   int force = 0;
+  int tcp = 0;
 
-  struct sockaddr_un srvr_addr;
+  struct sockaddr_un srvr_addr_un;
+  struct sockaddr_in srvr_addr_in;
+  struct sockaddr *srvr_addr = NULL;
   socklen_t addrlen;
+  unsigned short port;
   int server;
   int flags;
   client_t client_list = NULL;
@@ -246,6 +254,11 @@ main (int argc, char **argv)
           force = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--tcp"))
+        {
+          tcp = 1;
+          argc--; argv++;
+        }
     }          
  
   if (argc != 1)
@@ -254,13 +267,19 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  port = tcp? atoi (*argv) : 0;
 
   if (verbose)
-    fprintf (stderr, "opening socket `%s'\n", *argv);
+    {
+      if (tcp)
+        fprintf (stderr, "listening on port %hu\n", port);
+      else
+        fprintf (stderr, "opening socket `%s'\n", *argv);
+    }
 
   setvbuf (stdout, NULL, _IOLBF, 0);
 
-  server = socket (PF_LOCAL, SOCK_STREAM, 0);
+  server = socket (tcp? PF_INET : PF_LOCAL, SOCK_STREAM, 0);
   if (server == -1)
     die ("socket() failed: %s\n", strerror (errno));
 
@@ -273,24 +292,38 @@ main (int argc, char **argv)
   if ( fcntl (server, F_SETFL, (flags | O_NONBLOCK)) == -1)
     die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
   
-
-  memset (&srvr_addr, 0, sizeof srvr_addr);
-  srvr_addr.sun_family = AF_LOCAL;
-  strncpy (srvr_addr.sun_path, *argv, sizeof (srvr_addr.sun_path) - 1);
-  srvr_addr.sun_path[sizeof (srvr_addr.sun_path) - 1] = 0;
-  addrlen = SUN_LEN (&srvr_addr);
-
+  if (tcp)
+    {
+      memset (&srvr_addr_in, 0, sizeof srvr_addr_in);
+      srvr_addr_in.sin_family = AF_INET;
+      srvr_addr_in.sin_port = htons (port);
+      srvr_addr_in.sin_addr.s_addr = htonl (INADDR_ANY);
+      srvr_addr = (struct sockaddr *)&srvr_addr_in;
+      addrlen = sizeof srvr_addr_in;
+    }
+  else
+    {
+      memset (&srvr_addr_un, 0, sizeof srvr_addr_un);
+      srvr_addr_un.sun_family = AF_LOCAL;
+      strncpy (srvr_addr_un.sun_path, *argv, sizeof (srvr_addr_un.sun_path)-1);
+      srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path) - 1] = 0;
+      srvr_addr = (struct sockaddr *)&srvr_addr_un;
+      addrlen = SUN_LEN (&srvr_addr_un);
+    }
   
  again:
-  if (bind (server, (struct sockaddr *) &srvr_addr, addrlen))
+  if (bind (server, srvr_addr, addrlen))
     { 
-      if (errno == EADDRINUSE && force)
+      if (!tcp && errno == EADDRINUSE && force)
         {
           force = 0;
-          remove (srvr_addr.sun_path);
+          remove (srvr_addr_un.sun_path);
           goto again;
         }
-      die ("bind to `%s' failed: %s\n", *argv, strerror (errno));
+      if (tcp)
+        die ("bind to port %hu failed: %s\n", port, strerror (errno));
+      else
+        die ("bind to `%s' failed: %s\n", *argv, strerror (errno));
     }
 
   if (listen (server, 5))

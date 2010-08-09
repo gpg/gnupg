@@ -1203,7 +1203,7 @@ AC_CHECK_HEADERS([signal.h])
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 memrchr isascii timegm getrusage setrlimit stat setlocale   \
                 flockfile funlockfile fopencookie funopen getpwnam getpwuid \
-                getenv ])
+                getenv inet_pton])
 # end jnlib checks.
 
 

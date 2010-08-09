@@ -1,5 +1,8 @@
 2010-08-09  Werner Koch  <wk@g10code.com>
 
+	* watchgnupg.c: Inlcude in.h and inet.h.
+	(main): Support tcp connections.
+
 	* gpgtar.c (main): Add options -T and --null.
 	* gpgtar-create.c (gpgtar_create): Implement option --null.
 

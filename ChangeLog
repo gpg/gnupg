@@ -1,3 +1,7 @@
+2010-08-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (inet_pton): Check for it.
+
 2010-08-05  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AH_BOTTOM): Remove HTTP_USE_ESTREAM.
