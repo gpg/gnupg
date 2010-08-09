@@ -60,6 +60,8 @@ enum cmd_and_opt_values
 
     aSignEncrypt,
     oSkipCrypto,
+    oOpenPGP,
+    oCMS,
     oSetFilename,
     aList,
     oNull
@@ -89,7 +91,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oFilesFrom, "files-from",
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
-
+  ARGPARSE_s_n (oOpenPGP, "--openpgp", "@"),
+  ARGPARSE_s_n (oCMS, "--cms", "@"),
 
   ARGPARSE_end ()
 };
@@ -207,6 +210,9 @@ main (int argc, char **argv)
         case oSkipCrypto:
           skip_crypto = 1;
           break;
+
+        case oOpenPGP: /* Dummy option for now.  */ break;
+        case oCMS:     /* Dummy option for now.  */ break;
 
         default: pargs.err = 2; break;
 	}
