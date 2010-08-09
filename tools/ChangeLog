@@ -1,3 +1,8 @@
+2010-08-09  Werner Koch  <wk@g10code.com>
+
+	* gpgtar.c (main): Add options -T and --null.
+	* gpgtar-create.c (gpgtar_create): Implement option --null.
+
 2010-07-16  Werner Koch  <wk@g10code.com>
 
 	* gpgtar-create.c: Rewrite to better support W32.

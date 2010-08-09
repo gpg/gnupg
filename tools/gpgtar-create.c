@@ -736,27 +736,88 @@ write_eof_mark (estream_t stream)
 
 
 
+/* Create a new tarball using the names in the array INPATTERN.  If
+   INPATTERN is NULL take the pattern as null terminated strings from
+   stdin.  */
 void
 gpgtar_create (char **inpattern)
 {
   gpg_error_t err = 0;
-  const char *pattern;
   struct scanctrl_s scanctrl_buffer;
   scanctrl_t scanctrl = &scanctrl_buffer;
   tar_header_t hdr, *start_tail;
   estream_t outstream = NULL;
+  int eof_seen = 0;
+
+  if (!inpattern)
+    es_set_binary (es_stdin);
 
   memset (scanctrl, 0, sizeof *scanctrl);
   scanctrl->flist_tail = &scanctrl->flist;
 
-  for (; (pattern = *inpattern); inpattern++)
+  while (!eof_seen)
     {
       char *pat, *p;
+      int skip_this = 0;
 
-      if (!*pattern)
-        continue;
+      if (inpattern)
+        {
+          const char *pattern = *inpattern;
 
-      pat = xtrystrdup (pattern);
+          if (!pattern)
+            break; /* End of array.  */
+          inpattern++;
+          
+          if (!*pattern)
+            continue;
+
+          pat = xtrystrdup (pattern);
+        }
+      else /* Read null delimited pattern from stdin.  */
+        {
+          int c;
+          char namebuf[4096];
+          size_t n = 0;
+          
+          for (;;)
+            {
+              if ((c = es_getc (es_stdin)) == EOF)
+                {
+                  if (es_ferror (es_stdin))
+                    {
+                      err = gpg_error_from_syserror ();
+                      log_error ("error reading `%s': %s\n",
+                                 "[stdin]", strerror (errno));
+                      goto leave;
+                    }
+                  /* Note: The Nul is a delimiter and not a terminator.  */
+                  c = 0;
+                  eof_seen = 1;
+                }
+              if (n >= sizeof namebuf - 1)
+                {
+                  if (!skip_this)
+                    {
+                      skip_this = 1;
+                      log_error ("error reading `%s': %s\n",
+                                 "[stdin]", "filename too long");
+                    }
+                }
+              else
+                namebuf[n++] = c;
+              if (!c)
+                {
+                  namebuf[n] = 0;
+                  break;
+                }
+            }
+          
+          if (skip_this || n < 2)
+            continue;
+
+          pat = xtrystrdup (namebuf);
+        }
+
       if (!pat)
         {
           err = gpg_error_from_syserror ();
@@ -771,7 +832,7 @@ gpgtar_create (char **inpattern)
         log_info ("scanning `%s'\n", pat);
 
       start_tail = scanctrl->flist_tail;
-      if (!pattern_valid_p (pat))
+      if (skip_this || !pattern_valid_p (pat))
         log_error ("skipping invalid name `%s'\n", pat);
       else if (!add_entry (pat, NULL, scanctrl)
                && *start_tail && ((*start_tail)->typeflag & TF_DIRECTORY))

@@ -55,12 +55,14 @@ enum cmd_and_opt_values
     oOutput	= 'o',
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oFilesFrom  = 'T',
     oNoVerbose	= 500,
 
     aSignEncrypt,
     oSkipCrypto,
     oSetFilename,
-    aList
+    aList,
+    oNull
   };
 
 
@@ -84,6 +86,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSkipCrypto, "skip-crypto", N_("skip the crypto processing")),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
+  ARGPARSE_s_s (oFilesFrom, "files-from",
+                N_("|FILE|get names to create from FILE")),
+  ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
+
 
   ARGPARSE_end ()
 };
@@ -157,6 +163,8 @@ main (int argc, char **argv)
   int no_more_options = 0;
   enum cmd_and_opt_values cmd = 0;
   int skip_crypto = 0;
+  const char *files_from = NULL;
+  int null_names = 0;
 
   assert (sizeof (struct ustar_raw_header) == 512);
 
@@ -181,6 +189,8 @@ main (int argc, char **argv)
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
+        case oFilesFrom: files_from = pargs.r.ret_str; break;
+        case oNull: null_names = 1; break;
           
 	case aList:
         case aDecrypt:
@@ -202,6 +212,11 @@ main (int argc, char **argv)
 	}
     }
   
+  if ((files_from && !null_names) || (!files_from && null_names))
+    log_error ("--files-from and --null may only be used in conjunction\n");
+  if (files_from && strcmp (files_from, "-"))
+    log_error ("--files-from only supports argument \"-\"\n");
+
   if (log_get_errorcount (0))
     exit (2);
 
@@ -213,6 +228,8 @@ main (int argc, char **argv)
       fname = argc ? *argv : NULL;
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
+      if (files_from)
+        log_info ("note: ignoring option --files-from\n");
       if (skip_crypto)
         gpgtar_list (fname);
       else
@@ -220,14 +237,15 @@ main (int argc, char **argv)
       break;
 
     case aEncrypt:
-      if (!argc)
+      if ((!argc && !null_names)
+          || (argc && null_names))
         usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
       if (skip_crypto)
-        gpgtar_create (argv);
+        gpgtar_create (null_names? NULL :argv);
       else
-        tar_and_encrypt (argv);
+        tar_and_encrypt (null_names? NULL : argv);
       break;
 
     case aDecrypt:
@@ -235,6 +253,8 @@ main (int argc, char **argv)
         usage (1);
       if (opt.outfile)
         log_info ("note: ignoring option --output\n");
+      if (files_from)
+        log_info ("note: ignoring option --files-from\n");
       fname = argc ? *argv : NULL;
       if (skip_crypto)
         gpgtar_extract (fname);
