@@ -1569,8 +1569,16 @@ if test "$gnupg_have_ldap" = "no"; then
 *** You need a LDAP library to build this program.
 *** Check out 
 ***    http://www.openldap.org 
-*** for a suitable implementation. 
+*** for a suitable implementation.
 ***]])
+   if test "$have_w32ce_system" = yes; then
+    AC_MSG_NOTICE([[
+*** Note that CeGCC might be broken, a package fixing this is:
+***    http://files.kolab.org/local/windows-ce/ 
+***                           source/wldap32_0.1-mingw32ce.orig.tar.gz
+***                           binary/wldap32-ce-arm-dev_0.1-1_all.deb
+***]])
+   fi
 fi
 if test "$missing_pth" = "yes"; then
     AC_MSG_NOTICE([[
