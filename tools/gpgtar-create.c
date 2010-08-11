@@ -843,7 +843,10 @@ gpgtar_create (char **inpattern)
 
   if (opt.outfile)
     {
-      outstream = es_fopen (opt.outfile, "wb");
+      if (!strcmp (opt.outfile, "-"))
+        outstream = es_stdout;
+      else
+        outstream = es_fopen (opt.outfile, "wb");
       if (!outstream)
         {
           err = gpg_error_from_syserror ();
@@ -856,6 +859,9 @@ gpgtar_create (char **inpattern)
     {
       outstream = es_stdout;
     }
+
+  if (outstream == es_stdout)
+    es_set_binary (es_stdout);
 
   for (hdr = scanctrl->flist; hdr; hdr = hdr->next)
     {

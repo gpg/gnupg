@@ -1,3 +1,8 @@
+2010-08-11  Werner Koch  <wk@g10code.com>
+
+	* gpgtar-create.c (gpgtar_create): Allow "-" for stdout in
+	opt.outfile.  Switch es_stdout to binary mode.
+
 2010-08-09  Werner Koch  <wk@g10code.com>
 
 	* watchgnupg.c: Inlcude in.h and inet.h.
