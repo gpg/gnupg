@@ -1,3 +1,9 @@
+2010-08-11  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (agent_card_scd): Pass assuan comment lines to the
+	caller.
+	(ASSUAN_CONVEY_COMMENTS): Provide replacement if needed.
+
 2010-05-12  Werner Koch  <wk@g10code.com>
 
 	* preset-passphrase.c (forget_passphrase): Actually implement
