@@ -1,5 +1,8 @@
 2010-08-11  Werner Koch  <wk@g10code.com>
 
+	* call-pinentry.c (agent_askpin, agent_get_passphrase): Fix
+	setting of confidential flag.
+
 	* call-scd.c (agent_card_scd): Pass assuan comment lines to the
 	caller.
 	(ASSUAN_CONVEY_COMMENTS): Provide replacement if needed.

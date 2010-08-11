@@ -1,3 +1,8 @@
+2010-07-20  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (print_pkenc_list): Print a STATUS_ERROR.  Fixes
+	bug#1255.
+
 2010-06-18  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (skip_packet, parse_gpg_control): Take care of
