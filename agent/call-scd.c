@@ -44,6 +44,15 @@
 #define MAX_OPEN_FDS 20
 #endif
 
+/* This Assuan flag is only available since libassuan 2.0.2.  Because
+   comments lines are comments anyway we can use a replacement which
+   might not do anything.  assuan_{g,s}et_flag don't return an error
+   thus there won't be any ABI problem.  */
+#ifndef ASSUAN_CONVEY_COMMENTS
+#define ASSUAN_CONVEY_COMMENTS 4
+#endif
+
+
 /* Definition of module local data of the CTRL structure.  */
 struct scd_local_s
 {
@@ -1121,6 +1130,7 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
 {
   int rc;
   struct inq_needpin_s inqparm;
+  int saveflag;
 
   rc = start_scd (ctrl);
   if (rc)
@@ -1130,10 +1140,13 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = assuan_context;
+  saveflag = assuan_get_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS);
+  assuan_set_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS, 1);
   rc = assuan_transact (ctrl->scd_local->ctx, cmdline,
                         pass_data_thru, assuan_context,
                         inq_needpin, &inqparm,
                         pass_status_thru, assuan_context);
+  assuan_set_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS, saveflag);
   if (rc)
     {
       return unlock_scd (ctrl, rc);

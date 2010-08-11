@@ -1,3 +1,9 @@
+2010-08-11  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (agent_card_scd): Pass assuan comment lines to the
+	caller.
+	(ASSUAN_CONVEY_COMMENTS): Provide replacement if needed.
+
 2010-08-09  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (t_common_ldadd): Add NETLIBS for sake of the TCP
