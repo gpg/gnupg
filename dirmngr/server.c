@@ -1404,7 +1404,7 @@ cmd_killdirmngr (assuan_context_t ctx, char *line)
         assuan_peercred_t cred;
 
         ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
-        if (!ec && cred.uid)
+        if (!ec && cred->uid)
           ec = GPG_ERR_EPERM; /* Only root may terminate.  */
         if (ec)
           return set_error (ec, "no permission to kill this process");
@@ -1436,7 +1436,7 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
         assuan_peercred_t cred;
 
         ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
-        if (!ec && cred.uid)
+        if (!ec && cred->uid)
           ec = GPG_ERR_EPERM; /* Only root may terminate.  */
         if (ec)
           return set_error (ec, "no permission to reload this process");
