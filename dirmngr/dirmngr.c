@@ -1578,6 +1578,21 @@ reread_configuration (void)
 }
 
 
+/* A global function which allows us to trigger the reload stuff from
+   other places.  */
+void
+dirmngr_sighup_action (void)
+{
+  log_info (_("SIGHUP received - "
+              "re-reading configuration and flushing caches\n"));
+  reread_configuration ();
+  cert_cache_deinit (0);
+  crl_cache_deinit ();
+  cert_cache_init ();
+  crl_cache_init ();
+}
+
+
 
 /* The signal handler. */
 static void
@@ -1587,13 +1602,7 @@ handle_signal (int signo)
     {
 #ifndef HAVE_W32_SYSTEM
     case SIGHUP:
-      log_info (_("SIGHUP received - "
-                  "re-reading configuration and flushing caches\n"));
-      reread_configuration ();
-      cert_cache_deinit (0);
-      crl_cache_deinit ();
-      cert_cache_init ();
-      crl_cache_init ();
+      dirmngr_sighup_action ();
       break;
       
     case SIGUSR1:

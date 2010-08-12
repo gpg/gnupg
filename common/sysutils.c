@@ -530,8 +530,8 @@ gnupg_remove (const char *fname)
       xfree (wfname);
     }
   if (!rc)
-    gpg_err_set_errno (EIO);
-  return !rc;
+    return -1; /* ERRNO is automagically provided by gpg-error.h.  */
+  return 0;
 #else
   return remove (fname);
 #endif

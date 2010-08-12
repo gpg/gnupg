@@ -1,9 +1,18 @@
+2010-08-12  Werner Koch  <wk@g10code.com>
+
+	* crlcache.c (update_dir, crl_cache_insert): s/unlink/gnupg_remove/.
+
+	* dirmngr.c (dirmngr_sighup_action): New.
+
+	* server.c (cmd_killdirmngr, cmd_reloaddirmngr): New.
+	(struct server_local_s): Add field STOPME.
+	(start_command_handler): Act on STOPME.
+
 2010-08-06  Werner Koch  <wk@g10code.com>
 
 	* dirmngr.c (JNLIB_NEED_AFLOCAL): Define macro.
 	(main): Use SUN_LEN macro.
 	(main) [W32]: Allow EEXIST in addition to EADDRINUSE.
-	(JNLIB_NEED_AFLOCAL): 
 
 2010-08-05  Werner Koch  <wk@g10code.com>
 

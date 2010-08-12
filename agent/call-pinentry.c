@@ -705,6 +705,7 @@ agent_askpin (ctrl_t ctrl,
   struct entry_parm_s parm;
   const char *errtext = NULL;
   int is_pin = 0;
+  int saveflag;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -782,8 +783,11 @@ agent_askpin (ctrl_t ctrl,
           errtext = NULL;
         }
       
+      saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
+      assuan_begin_confidential (entry_ctx);
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             inq_quality, entry_ctx, NULL, NULL);
+      assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
       /* Most pinentries out in the wild return the old Assuan error code
          for canceled which gets translated to an assuan Cancel error and
          not to the code for a user cancel.  Fix this here. */
@@ -845,6 +849,7 @@ agent_get_passphrase (ctrl_t ctrl,
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
+  int saveflag;
 
   *retpass = NULL;
   if (opt.batch)
@@ -895,9 +900,11 @@ agent_get_passphrase (ctrl_t ctrl,
   if (!parm.buffer)
     return unlock_pinentry (out_of_core ());
 
+  saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                         inq_quality, entry_ctx, NULL, NULL);
+  assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
      not to the code for a user cancel.  Fix this here. */

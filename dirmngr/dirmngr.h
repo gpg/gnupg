@@ -169,6 +169,7 @@ struct server_control_s
 /*-- dirmngr.c --*/
 void dirmngr_exit( int );  /* Wrapper for exit() */
 void dirmngr_init_default_ctrl (ctrl_t ctrl);
+void dirmngr_sighup_action (void);
 
 /*-- server.c --*/
 ldap_server_t get_ldapservers_from_ctrl (ctrl_t ctrl);

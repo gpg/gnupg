@@ -1,3 +1,7 @@
+2010-08-12  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (gnupg_remove) [W32CE]: Fix returned error.
+
 2010-08-09  Werner Koch  <wk@g10code.com>
 
 	* logging.c (WITH_IPV6): New macro.

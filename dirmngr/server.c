@@ -60,6 +60,10 @@ struct server_local_s
 
   /* Per-session LDAP serfver.  */
   ldap_server_t ldapservers;
+
+  /* If this flag is set to true this dirmngr process will be
+     terminated after the end of this session.  */
+  int stopme;
 };
 
 
@@ -1218,7 +1222,7 @@ static const char hlp_cachecert[] =
   "\n"
   "Put a certificate into the internal cache.  This command might be\n"
   "useful if a client knows in advance certificates required for a\n"
-  "test and wnats to make sure they get added to the internal cache.\n"
+  "test and wants to make sure they get added to the internal cache.\n"
   "It is also helpful for debugging.  To get the actual certificate,\n"
   "this command immediately inquires it using\n"
   "\n"
@@ -1376,6 +1380,75 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
+
+static const char hlp_killdirmngr[] =
+  "KILLDIRMNGR\n"
+  "\n"
+  "This command allows a user - given sufficient permissions -\n"
+  "to kill this dirmngr process.\n";
+static gpg_error_t
+cmd_killdirmngr (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)line;
+  
+  if (opt.system_daemon)
+    {
+      if (opt.system_service)
+        return set_error (GPG_ERR_NOT_SUPPORTED,
+                          "can't do that whilst running as system service");
+#ifndef HAVE_W32_SYSTEM
+      {
+        gpg_err_code_t ec;
+        assuan_peercred_t cred;
+
+        ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
+        if (!ec && cred.uid)
+          ec = GPG_ERR_EPERM; /* Only root may terminate.  */
+        if (ec)
+          return set_error (ec, "no permission to kill this process");
+      }
+#endif
+    }
+
+  ctrl->server_local->stopme = 1;
+  return gpg_error (GPG_ERR_EOF);
+}
+
+
+static const char hlp_reloaddirmngr[] =
+  "RELOADDIRMNGR\n"
+  "\n"
+  "This command is an alternative to SIGHUP\n"
+  "to reload the configuration.";
+static gpg_error_t
+cmd_reloaddirmngr (assuan_context_t ctx, char *line)
+{
+  (void)ctx;
+  (void)line;
+
+ if (opt.system_daemon)
+    {
+#ifndef HAVE_W32_SYSTEM
+      {
+        gpg_err_code_t ec;
+        assuan_peercred_t cred;
+
+        ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
+        if (!ec && cred.uid)
+          ec = GPG_ERR_EPERM; /* Only root may terminate.  */
+        if (ec)
+          return set_error (ec, "no permission to reload this process");
+      }
+#endif
+    }
+
+  dirmngr_sighup_action ();
+  return 0;
+}
+
+
 
 
 /* Tell the assuan library about our commands. */
@@ -1397,6 +1470,8 @@ register_commands (assuan_context_t ctx)
     { "CACHECERT",  cmd_cachecert,  hlp_cachecert },
     { "VALIDATE",   cmd_validate,   hlp_validate },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
+    { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
+    { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
     { NULL, NULL }
   };
   int i, j, rc;
@@ -1551,6 +1626,9 @@ start_command_handler (assuan_fd_t fd)
 
   ctrl->server_local->assuan_ctx = NULL;
   assuan_release (ctx);
+
+  if (ctrl->server_local->stopme)
+    dirmngr_exit (0);
 
   if (ctrl->refcount)
     log_error ("oops: connection control structure still referenced (%d)\n",

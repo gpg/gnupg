@@ -274,7 +274,7 @@ cleanup_cache_dir (int force)
           if (okay)
             {
               log_info (_("removing cache file `%s'\n"), cdbname);
-              if (unlink (cdbname))
+              if (gnupg_remove (cdbname))
                 {
                   log_error ("failed to remove `%s': %s\n",
                              cdbname, strerror (errno));
@@ -934,7 +934,7 @@ update_dir (crl_cache_t cache)
 
 #ifdef HAVE_W32_SYSTEM
   /* No atomic mv on W32 systems.  */
-  unlink (fname);
+  gnupg_remove (fname);
 #endif
   if (rename (tmpfname, fname))
     {
@@ -2166,7 +2166,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   if (opt.verbose)
     log_info (_("creating cache file `%s'\n"), newfname);
 #ifdef HAVE_W32_SYSTEM
-  unlink (newfname);
+  gnupg_remove (newfname);
 #endif
   if (rename (fname, newfname))
     {
