@@ -139,16 +139,16 @@ if MAINTAINER_MODE
 # is a distributed built source.  If we would not do that we may end
 # up with two files and then it is not clear which version of the
 # files will be picked up.
-audit-events.h: Makefile mkstrtable.awk exaudit.awk audit.h
+audit-events.h: Makefile.am mkstrtable.awk exaudit.awk audit.h
 	$(AWK) -f $(srcdir)/exaudit.awk $(srcdir)/audit.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=eventstr_  > $(srcdir)/$@
+		   -v namespace=eventstr_  > $(srcdir)/audit-events.h
 
 # Create the status-codes.h include file from status.h
-status-codes.h: Makefile mkstrtable.awk exstatus.awk status.h
+status-codes.h: Makefile.am mkstrtable.awk exstatus.awk status.h
 	$(AWK) -f $(srcdir)/exstatus.awk $(srcdir)/status.h \
 	  | $(AWK) -f $(srcdir)/mkstrtable.awk -v textidx=3 -v nogettext=1 \
-		   -v namespace=statusstr_  > $(srcdir)/$@
+		   -v namespace=statusstr_  > $(srcdir)/status-codes.h
 endif
 
 #

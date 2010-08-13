@@ -79,14 +79,15 @@ endif
 
 gpgsplit_LDADD = $(common_libs) \
 	         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		 $(ZLIBS) $(LIBINTL) $(LIBICONV)
+		 $(ZLIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(common_libs) $(opt_libassuan_libs) \
-                $(LIBINTL) $(GPG_ERROR_LIBS) $(LIBICONV) $(W32SOCKLIBS)
+                $(LIBINTL) $(GPG_ERROR_LIBS) $(NETLIBS) \
+	        $(LIBICONV) $(W32SOCKLIBS)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 
@@ -94,7 +95,7 @@ gpgparsemail_LDADD =
 symcryptrun_SOURCES = symcryptrun.c
 symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
                     $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) \
-                    $(LIBICONV) $(W32SOCKLIBS)
+                    $(LIBICONV) $(NETLIBS) $(W32SOCKLIBS)
 
 watchgnupg_SOURCES = watchgnupg.c 
 watchgnupg_LDADD = $(NETLIBS)
@@ -111,14 +112,15 @@ gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 # common via use of BUG() in an inline function, which
 # some compilers do not eliminate.
 gpgkey2ssh_LDADD = $(common_libs) \
-                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) \
+		   $(NETLIBS)
 endif
 
 if !DISABLE_REGEX
 gpg_check_pattern_SOURCES = gpg-check-pattern.c
 gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-                          $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
+                          $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
 endif
 
 gpgtar_SOURCES = \
@@ -129,7 +131,7 @@ gpgtar_SOURCES = \
 	no-libgcrypt.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
 #gpgtar_LDADD = $(commonpth_libs) $(PTH_LIBS) $(GPG_ERROR_LIBS)
-gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(W32SOCKLIBS)
+gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(W32SOCKLIBS)
 
 
 # Make sure that all libs are build before we use them.  This is

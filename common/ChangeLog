@@ -1,3 +1,8 @@
+2010-08-13  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (audit-events.h, status-codes.h): Fix srcdir problem
+	amd depend on Makefile.am instead of Makefile.
+
 2010-08-12  Werner Koch  <wk@g10code.com>
 
 	* sysutils.c (gnupg_remove) [W32CE]: Fix returned error.

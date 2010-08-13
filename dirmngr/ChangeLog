@@ -1,5 +1,7 @@
 2010-08-13  Werner Koch  <wk@g10code.com>
 
+	* Makefile.am (dirmngr_SOURCES): Add w32-ldap-help.h.
+
 	* dirmngr_ldap.c (fetch_ldap): Call ldap_unbind.
 
 	* w32-ldap-help.h: New.

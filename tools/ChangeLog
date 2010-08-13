@@ -1,3 +1,7 @@
+2010-08-13  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpgkey2ssh_LDADD): Add NETLIBS.
+
 2010-08-11  Werner Koch  <wk@g10code.com>
 
 	* gpgtar-create.c (gpgtar_create): Allow "-" for stdout in
