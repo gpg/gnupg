@@ -1,21 +1,21 @@
 /* dirmngr-ldap.c  -  The LDAP helper for dirmngr.
- *	Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2010 Free Software Foundation, Inc.
  *
- * This file is part of DirMngr.
+ * This file is part of GnuPG.
  *
- * DirMngr is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DirMngr is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -67,6 +67,33 @@ static void pth_enter (void) { }
 static void pth_leave (void) { }
 #else
 # include "./ldap-wrapper.h"
+#endif
+
+#ifdef HAVE_W32CE_SYSTEM
+# include "w32-ldap-help.h"
+# define my_ldap_init(a,b)                      \
+  _dirmngr_ldap_init ((a), (b))
+# define my_ldap_simple_bind_s(a,b,c)           \
+  _dirmngr_ldap_simple_bind_s ((a),(b),(c))
+# define my_ldap_search_st(a,b,c,d,e,f,g,h)     \
+  _dirmngr_ldap_search_st ((a), (b), (c), (d), (e), (f), (g), (h))
+# define my_ldap_first_attribute(a,b,c)         \
+  _dirmngr_ldap_first_attribute ((a),(b),(c))
+# define my_ldap_next_attribute(a,b,c)          \
+  _dirmngr_ldap_next_attribute ((a),(b),(c))
+# define my_ldap_get_values_len(a,b,c)          \
+  _dirmngr_ldap_get_values_len ((a),(b),(c))
+# define my_ldap_free_attr(a)                   \
+  xfree ((a))
+#else
+# define my_ldap_init(a,b)              ldap_init ((a), (b))
+# define my_ldap_simple_bind_s(a,b,c)   ldap_simple_bind_s ((a), (b), (c))
+# define my_ldap_search_st(a,b,c,d,e,f,g,h)     \
+  ldap_search_st ((a), (b), (c), (d), (e), (f), (g), (h))
+# define my_ldap_first_attribute(a,b,c) ldap_first_attribute ((a),(b),(c))
+# define my_ldap_next_attribute(a,b,c)  ldap_next_attribute ((a),(b),(c))
+# define my_ldap_get_values_len(a,b,c)  ldap_get_values_len ((a),(b),(c))
+# define my_ldap_free_attr(a)           ldap_memfree ((a))
 #endif
 
 #define DEFAULT_LDAP_TIMEOUT 100 /* Arbitrary long timeout. */
@@ -147,7 +174,9 @@ typedef struct my_opt_s *my_opt_t;
 
 
 /* Prototypes.  */
+#ifndef HAVE_W32_SYSTEM
 static void catch_alarm (int dummy);
+#endif
 static int process_url (my_opt_t myopt, const char *url);
 
 
@@ -200,6 +229,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
   int only_search_timeout = 0;
   struct my_opt_s my_opt_buffer;
   my_opt_t myopt = &my_opt_buffer;
+  char *malloced_buffer1 = NULL;
   
   memset (&my_opt_buffer, 0, sizeof my_opt_buffer);
 
@@ -276,7 +306,13 @@ ldap_wrapper_main (char **argv, estream_t outstream)
 
   if (myopt->proxy)
     {
-      myopt->host = xstrdup (myopt->proxy);
+      malloced_buffer1 = xtrystrdup (myopt->proxy);
+      if (!malloced_buffer1)
+        {
+          log_error ("error copying string: %s\n", strerror (errno));
+          return 1;
+        }
+      myopt->host = malloced_buffer1;
       p = strchr (myopt->host, ':');
       if (p)
         {
@@ -323,19 +359,18 @@ ldap_wrapper_main (char **argv, estream_t outstream)
     if (process_url (myopt, *argv))
       any_err = 1;
 
-
-  /* FIXME: Do we need to release stuff?  */
+  xfree (malloced_buffer1);
   return any_err;
 }
 
-
+#ifndef HAVE_W32_SYSTEM
 static void
 catch_alarm (int dummy)
 {
   (void)dummy;
   _exit (10);
 }
-
+#endif
 
 static void
 set_timeout (my_opt_t myopt)
@@ -379,10 +414,10 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
         }
 
           
-      for (pth_enter (), attr = ldap_first_attribute (ld, item, &berctx),
+      for (pth_enter (), attr = my_ldap_first_attribute (ld, item, &berctx),
              pth_leave ();
            attr;
-           pth_enter (), attr = ldap_next_attribute (ld, item, berctx),
+           pth_enter (), attr = my_ldap_next_attribute (ld, item, berctx),
              pth_leave ())
         {
           struct berval **values;
@@ -415,20 +450,20 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 *cp2 = ';';
               if (cmpres)
                 {
-                  ldap_memfree (attr);
+                  my_ldap_free_attr (attr);
                   continue; /* Not found:  Try next attribute.  */
                 }
             }
 
           pth_enter ();
-          values = ldap_get_values_len (ld, item, attr);
+          values = my_ldap_get_values_len (ld, item, attr);
           pth_leave ();
 
           if (!values)
             {
               if (myopt->verbose)
                 log_info (_("attribute `%s' not found\n"), attr);
-              ldap_memfree (attr);
+              my_ldap_free_attr (attr);
               continue;
             }
 
@@ -458,7 +493,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
                   ldap_value_free_len (values);
-                  ldap_memfree (attr);
+                  my_ldap_free_attr (attr);
                   ber_free (berctx, 0);
                   return -1;
                 }
@@ -482,7 +517,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                       log_error (_("error writing to stdout: %s\n"),
                                  strerror (errno));
                       ldap_value_free_len (values);
-                      ldap_memfree (attr);
+                      my_ldap_free_attr (attr);
                       ber_free (berctx, 0);
                       return -1;
                     }
@@ -494,7 +529,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                   log_error (_("error writing to stdout: %s\n"),
                              strerror (errno));
                   ldap_value_free_len (values);
-                  ldap_memfree (attr);
+                  my_ldap_free_attr (attr);
                   ber_free (berctx, 0);
                   return -1;
                 }
@@ -504,7 +539,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 break; /* Print only the first value.  */
             }
           ldap_value_free_len (values);
-          ldap_memfree (attr);
+          my_ldap_free_attr (attr);
           if (want_attr || !myopt->multi)
             break; /* We only want to return the first attribute.  */
         }
@@ -584,7 +619,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 
   set_timeout (myopt);
   pth_enter ();
-  ld = ldap_init (host, port);
+  ld = my_ldap_init (host, port);
   pth_leave ();
   if (!ld)
     {
@@ -593,23 +628,24 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
       return -1;
     }
   pth_enter ();
-  ret = ldap_simple_bind_s (ld, myopt->user, myopt->pass);
+  /* Fixme:  Can we use MYOPT->user or is it shared with other theeads?.  */
+  ret = my_ldap_simple_bind_s (ld, myopt->user, myopt->pass);
   pth_leave ();
   if (ret)
     {
       log_error (_("binding to `%s:%d' failed: %s\n"), 
                  host, port, strerror (errno));
-      /* FIXME: Need deinit (ld)?  */
+      ldap_unbind (ld);
       return -1;
     }
 
   set_timeout (myopt);
   pth_enter ();
-  rc = ldap_search_st (ld, dn, ludp->lud_scope, filter,
-                       myopt->multi && !myopt->attr && ludp->lud_attrs?
-                       ludp->lud_attrs:attrs,
-                       0,
-                       &myopt->timeout, &msg);
+  rc = my_ldap_search_st (ld, dn, ludp->lud_scope, filter,
+                          myopt->multi && !myopt->attr && ludp->lud_attrs?
+                          ludp->lud_attrs:attrs,
+                          0,
+                          &myopt->timeout, &msg);
   pth_leave ();
   if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
     {
@@ -621,8 +657,12 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
     }
   else if (rc)
     {
+#ifdef HAVE_W32CE_SYSTEM
+      log_error ("searching `%s' failed: %d\n", url, rc);
+#else
       log_error (_("searching `%s' failed: %s\n"), 
                  url, ldap_err2string (rc));
+#endif
       if (rc != LDAP_NO_SUCH_OBJECT)
         {
           /* FIXME: Need deinit (ld)?  */
@@ -634,7 +674,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   rc = print_ldap_entries (myopt, ld, msg, myopt->multi? NULL:attr);
 
   ldap_msgfree (msg);
-  /* FIXME: Need deinit (ld)?  */
+  ldap_unbind (ld);
   return rc;
 }
 

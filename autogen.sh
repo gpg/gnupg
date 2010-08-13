@@ -40,6 +40,8 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
 DIE=no
 FORCE=
+tmp=`dirname $0`
+tsdir=`cd "$tmp"; pwd`
 if test x"$1" = x"--force"; then
   FORCE=" --force"
   shift
@@ -89,8 +91,6 @@ esac
 # ***** W32 build script *******
 # Used to cross-compile for Windows.
 if [ "$myhost" = "w32" ]; then
-    tmp=`dirname $0`
-    tsdir=`cd "$tmp"; pwd`
     shift
     if [ ! -f $tsdir/scripts/config.guess ]; then
         echo "$tsdir/scripts/config.guess not found" >&2
@@ -140,7 +140,7 @@ if [ "$myhost" = "w32" ]; then
         fi
     fi
 
-    ./configure --enable-maintainer-mode --prefix=${w32root}  \
+    $tsdir/configure --enable-maintainer-mode --prefix=${w32root}  \
              --host=${host} --build=${build} \
              --with-gpg-error-prefix=${w32root} \
 	     --with-ksba-prefix=${w32root} \
@@ -159,8 +159,6 @@ fi
 # ***** AMD64 cross build script *******
 # Used to cross-compile for AMD64 (for testing)
 if [ "$myhost" = "amd64" ]; then
-    tmp=`dirname $0`
-    tsdir=`cd "$tmp"; pwd`
     shift
     if [ ! -f $tsdir/scripts/config.guess ]; then
         echo "$tsdir/scripts/config.guess not found" >&2

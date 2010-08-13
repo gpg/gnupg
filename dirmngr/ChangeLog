@@ -1,3 +1,11 @@
+2010-08-13  Werner Koch  <wk@g10code.com>
+
+	* dirmngr_ldap.c (fetch_ldap): Call ldap_unbind.
+
+	* w32-ldap-help.h: New.
+	* dirmngr_ldap.c [W32CE]: Include w32-ldap-help.h and use the
+	mapped ldap functions.
+
 2010-08-12  Werner Koch  <wk@g10code.com>
 
 	* crlcache.c (update_dir, crl_cache_insert): s/unlink/gnupg_remove/.
