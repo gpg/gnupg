@@ -240,8 +240,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
 
-  ARGPARSE_s_n (oPreferSystemDirmngr,"prefer-system-dirmngr",
-                N_("use system's dirmngr if available")),
+  ARGPARSE_s_n (oPreferSystemDirmngr,"prefer-system-dirmngr", "@"),
 
   ARGPARSE_s_n (oDisableCRLChecks, "disable-crl-checks", 
                 N_("never consult a CRL")),
@@ -941,10 +940,6 @@ main ( int argc, char **argv)
 
   opt.homedir = default_homedir ();
 
-#ifdef HAVE_W32CE_SYSTEM
-  opt.disable_dirmngr = 1;
-  opt.no_crl_check = 1;
-#endif
  
   /* First check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -1280,7 +1275,7 @@ main ( int argc, char **argv)
 
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
-        case oPreferSystemDirmngr: opt.prefer_system_dirmngr = 1; break;
+        case oPreferSystemDirmngr: /* Obsolete */; break;
         case oProtectToolProgram:
           opt.protect_tool_program = pargs.r.ret_str; 
           break;
@@ -1659,9 +1654,6 @@ main ( int argc, char **argv)
         printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
         printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
-#ifndef HAVE_W32_SYSTEM
-        printf ("prefer-system-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
-#endif
         printf ("cipher-algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
                 DEFAULT_CIPHER_ALGO);
         printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);

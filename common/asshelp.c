@@ -37,9 +37,9 @@
 
 /* The type we use for lock_agent_spawning.  */
 #ifdef HAVE_W32_SYSTEM
-# define lock_agent_t HANDLE
+# define lock_spawn_t HANDLE
 #else
-# define lock_agent_t dotlock_t
+# define lock_spawn_t dotlock_t
 #endif
 
 
@@ -216,21 +216,26 @@ send_pinentry_environment (assuan_context_t ctx,
 }
 
 
-/* Lock the agent spawning process.  The caller needs to provide the
-   address of a variable to store the lock information.  */
+/* Lock a spawning process.  The caller needs to provide the address
+   of a variable to store the lock information and the name or the
+   process.  */
 static gpg_error_t
-lock_agent_spawning (lock_agent_t *lock, const char *homedir)
+lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name)
 {
 #ifdef HAVE_W32_SYSTEM
   int waitrc;
-
+  
   (void)homedir; /* Not required. */
 
-  *lock = CreateMutexW (NULL, FALSE, L"GnuPG_spawn_agent_sentinel");
+  *lock = CreateMutexW 
+    (NULL, FALSE,
+     !strcmp (name, "agent")?   L"GnuPG_spawn_agent_sentinel":
+     !strcmp (name, "dirmngr")? L"GnuPG_spawn_dirmngr_sentinel":
+     /*                    */   L"GnuPG_spawn_unknown_sentinel");
   if (!*lock)
     {
-      log_error ("failed to create the spawn_agent mutex: %s\n",
-                 w32_strerror (-1));
+      log_error ("failed to create the spawn_%s mutex: %s\n",
+                 name, w32_strerror (-1));
       return gpg_error (GPG_ERR_GENERAL);
     }
 
@@ -239,17 +244,22 @@ lock_agent_spawning (lock_agent_t *lock, const char *homedir)
     return 0;
 
   if (waitrc == WAIT_TIMEOUT)
-    log_info ("error waiting for the spawn_agent mutex: timeout\n");
+    log_info ("error waiting for the spawn_%s mutex: timeout\n", name);
   else
-    log_info ("error waiting for the spawn_agent mutex: "
-              "(code=%d) %s\n", waitrc, w32_strerror (-1));
+    log_info ("error waiting for the spawn_%s mutex: (code=%d) %s\n", 
+              name, waitrc, w32_strerror (-1));
   return gpg_error (GPG_ERR_GENERAL);
 #else /*!HAVE_W32_SYSTEM*/
   char *fname;
 
   *lock = NULL;
 
-  fname = make_filename (homedir, "gnupg_spawn_agent_sentinel", NULL);
+  fname = make_filename
+    (homedir,
+     !strcmp (name, "agent")?   "gnupg_spawn_agent_sentinel":
+     !strcmp (name, "dirmngr")? "gnupg_spawn_dirmngr_sentinel":
+     /*                    */   "gnupg_spawn_unknown_sentinel",
+     NULL);
   if (!fname)
     return gpg_error_from_syserror ();
 
@@ -270,20 +280,36 @@ lock_agent_spawning (lock_agent_t *lock, const char *homedir)
 
 /* Unlock the spawning process.  */
 static void
-unlock_agent_spawning (lock_agent_t *lock)
+unlock_spawning (lock_spawn_t *lock, const char *name)
 {
   if (*lock)
     {
 #ifdef HAVE_W32_SYSTEM
       if (!ReleaseMutex (*lock))
-        log_error ("failed to release the spawn_agent mutex: %s\n",
-                   w32_strerror (-1));
+        log_error ("failed to release the spawn_%s mutex: %s\n",
+                   name, w32_strerror (-1));
       CloseHandle (*lock);
 #else /*!HAVE_W32_SYSTEM*/
+      (void)name;
       destroy_dotlock (*lock);
 #endif /*!HAVE_W32_SYSTEM*/
       *lock = NULL;
     }
+}
+
+/* Lock the agent spawning process.  The caller needs to provide the
+   address of a variable to store the lock information.  */
+static gpg_error_t
+lock_agent_spawning (lock_spawn_t *lock, const char *homedir)
+{
+  return lock_spawning (lock, homedir, "agent");
+}
+
+
+static void
+unlock_agent_spawning (lock_spawn_t *lock)
+{
+  unlock_spawning (lock, "agent");
 }
 
 
@@ -336,8 +362,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       if (err)
         {
           /* With no success start a new server.  */
+          if (!agent_program || !*agent_program)
+            agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
+
           if (verbose)
-            log_info (_("no running gpg-agent - starting one\n"));
+            log_info (_("no running %s - starting `%s'\n"),
+                      "gpg-agent",  agent_program);
           
           if (status_cb)
             status_cb (status_cb_arg, STATUS_PROGRESS, 
@@ -345,7 +375,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           
           if (fflush (NULL))
             {
-              gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
+              gpg_error_t tmperr = gpg_err_make (errsource,
+                                                 gpg_err_code_from_syserror ());
               log_error ("error flushing pending output: %s\n",
                          strerror (errno));
               xfree (sockname);
@@ -353,9 +384,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               return tmperr;
             }
           
-          if (!agent_program || !*agent_program)
-            agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
-
           argv[0] = "--use-standard-socket-p"; 
           argv[1] = NULL;  
           err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
@@ -376,7 +404,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                  standard socket, an environment variable is not
                  required and thus we we can savely start the agent
                  here.  */
-              lock_agent_t lock;
+              lock_spawn_t lock;
 
               argv[0] = "--daemon";
               argv[1] = "--use-standard-socket"; 
@@ -394,8 +422,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                       int i;
 
                       if (verbose)
-                        log_info (_("waiting %d seconds for the agent "
-                                    "to come up\n"), 5);
+                        log_info (_("waiting %d seconds for the %s "
+                                    "to come up\n"), 5, "agent" );
                       for (i=0; i < 5; i++)
                         {
                           gnupg_sleep (1);
@@ -481,7 +509,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     {
       log_error ("can't connect to the agent: %s\n", gpg_strerror (err));
       assuan_release (ctx);
-      return gpg_error (GPG_ERR_NO_AGENT);
+      return gpg_err_make (errsource, GPG_ERR_NO_AGENT);
     }
 
   if (debug)
@@ -498,6 +526,110 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       assuan_release (ctx);
       return err;
     }
+
+  *r_ctx = ctx;
+  return 0;
+}
+
+
+/* Try to connect to the dirmngr via a socket.  On platforms
+   supporting it, start it up if needed.  Returns a new assuan context
+   at R_CTX or an error code. */
+gpg_error_t
+start_new_dirmngr (assuan_context_t *r_ctx,
+                   gpg_err_source_t errsource,
+                   const char *homedir,
+                   const char *dirmngr_program,
+                   int verbose, int debug,
+                   gpg_error_t (*status_cb)(ctrl_t, int, ...),
+                   ctrl_t status_cb_arg)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  const char *sockname;
+  lock_spawn_t lock;
+      
+  *r_ctx = NULL;
+
+  err = assuan_new (&ctx);
+  if (err)
+    {
+      log_error ("error allocating assuan context: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  sockname = dirmngr_socket_name ();
+  err = assuan_socket_connect (ctx, sockname, 0, 0);
+  if (err)
+    {
+      const char *argv[2];
+
+      /* With no success try start a new Dirmngr.  On most systems
+         this will fail because the Dirmngr is expected to be a system
+         service.  However on Wince we don't distinguish users and
+         thus we can start it.  A future extension might be to use the
+         userv system to start the Dirmngr as a system service.  */
+      if (!dirmngr_program || !*dirmngr_program)
+        dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
+
+      if (verbose)
+        log_info (_("no running %s - starting `%s'\n"),
+                  "dirmngr", dirmngr_program);
+          
+      if (status_cb)
+        status_cb (status_cb_arg, STATUS_PROGRESS, 
+                   "starting_dirmngr ? 0 0", NULL);
+          
+      if (fflush (NULL))
+        {
+          gpg_error_t tmperr = gpg_err_make (errsource,
+                                             gpg_err_code_from_syserror ());
+          log_error ("error flushing pending output: %s\n",
+                     strerror (errno));
+          assuan_release (ctx);
+          return tmperr;
+        }
+          
+      argv[0] = "--daemon";
+      argv[1] = NULL;  
+      
+      if (!(err = lock_spawning (&lock, homedir, "dirmngr"))
+          && assuan_socket_connect (ctx, sockname, 0, 0))
+        {
+          err = gnupg_spawn_process_detached (dirmngr_program, argv,NULL);
+          if (err)
+            log_error ("failed to start the dirmngr `%s': %s\n",
+                       dirmngr_program, gpg_strerror (err));
+          else
+            {
+              int i;
+              
+              if (verbose)
+                log_info (_("waiting %d seconds for the %s to come up\n"),
+                          5, "dirmngr" );
+              for (i=0; i < 5; i++)
+                {
+                  gnupg_sleep (1);
+                  err = assuan_socket_connect (ctx, sockname, 0, 0);
+                  if (!err)
+                    break;
+                }
+            }
+        }
+      
+      unlock_spawning (&lock, "dirmngr");
+    }
+ 
+  if (err)
+    {
+      log_error ("connecting dirmngr at `%s' failed: %s\n",
+                 sockname, gpg_strerror (err));
+      assuan_release (ctx);
+      return gpg_err_make (errsource, GPG_ERR_NO_DIRMNGR);
+    }
+
+  if (debug)
+    log_debug ("connection to the dirmngr established\n");
 
   *r_ctx = ctx;
   return 0;

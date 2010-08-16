@@ -1293,7 +1293,6 @@ gpgsm_server (certlist_t default_recplist)
     {
       char *tmp = NULL;
       const char *s1 = getenv ("GPG_AGENT_INFO");
-      const char *s2 = getenv ("DIRMNGR_INFO");
 
       if (asprintf (&tmp,
                     "Home: %s\n"
@@ -1304,7 +1303,7 @@ gpgsm_server (certlist_t default_recplist)
                     opt.homedir,
                     opt.config_filename,
                     s1?s1:"[not set]",
-                    s2?s2:"[not set]",
+                    dirmngr_socket_name (),
                     hello) > 0)
         {
           assuan_set_hello_line (ctx, tmp);

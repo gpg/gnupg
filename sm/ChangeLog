@@ -1,3 +1,16 @@
+2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (start_dirmngr_ext): Use new start_new_dirmngr
+	function.
+
+	* gpgsm.c: Mark option --prefer-system-dirmngr obsolete.
+	(main): Enable dirmngr by default.
+
+	* gpgsm.h (struct opt): Remove field PREFER_SYSTEM_DIRMNGR.
+
+	* server.c (gpgsm_server): Use dirmngr_socket_name instead of the
+	envvar for the hello line info.
+
 2010-06-21  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (p12_build): Change arg CERT to const void ptr.

@@ -1,3 +1,11 @@
+2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (lock_agent_t): Rename to lock_spawn_t.
+	(lock_agent_spawning, unlock_agent_spawning): Factor code out to ...
+	(lock_spawning, unlock_spawning): .. new.
+	(start_new_gpg_agent): Make more use of ERRSOURCE.
+	(start_new_dirmngr): New.
+
 2010-08-13  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (audit-events.h, status-codes.h): Fix srcdir problem

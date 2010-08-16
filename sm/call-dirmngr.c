@@ -1,5 +1,6 @@
-/* call-dirmngr.c - communication with the dromngr 
- * Copyright (C) 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+/* call-dirmngr.c - Communication with the dirmngr 
+ * Copyright (C) 2002, 2003, 2005, 2007, 2008,
+ *               2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +34,7 @@
 
 #include "i18n.h"
 #include "keydb.h"
+#include "asshelp.h"
 
 
 struct membuf {
@@ -51,8 +53,6 @@ static assuan_context_t dirmngr2_ctx = NULL;
 
 static int dirmngr_ctx_locked;
 static int dirmngr2_ctx_locked;
-
-static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
   ctrl_t ctrl;
@@ -184,15 +184,12 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 
 
 
-/* Try to connect to the agent via socket or fork it off and work by
-   pipes.  Handle the server's initial greeting */
-static int
+/* Return a new assuan context for a Dirmngr connection.  */
+static gpg_error_t
 start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 {
-  int rc;
-  char *infostr, *p;
-  assuan_context_t ctx = NULL;
-  int try_default = 0;
+  gpg_error_t err;
+  assuan_context_t ctx;
 
   if (opt.disable_dirmngr)
     return gpg_error (GPG_ERR_NO_DIRMNGR);
@@ -203,129 +200,15 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
   /* Note: if you change this to multiple connections, you also need
      to take care of the implicit option sending caching. */
 
-#ifdef HAVE_W32_SYSTEM
-  infostr = NULL;
-  opt.prefer_system_dirmngr = 1;
-#else
-  infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
-#endif /*HAVE_W32_SYSTEM*/
-  if (infostr && !*infostr)
-    infostr = NULL;
-  else if (infostr)
-    infostr = xstrdup (infostr);
+  err = start_new_dirmngr (&ctx, GPG_ERR_SOURCE_DEFAULT,
+                           opt.homedir, opt.dirmngr_program, 
+                           opt.verbose, DBG_ASSUAN,
+                           gpgsm_status2, ctrl);
+  prepare_dirmngr (ctrl, ctx, err);
+  if (err)
+    return err;
 
-  if (opt.prefer_system_dirmngr && !force_pipe_server && !infostr)
-    {
-      infostr = xstrdup (dirmngr_socket_name ());
-      try_default = 1;
-    }
-
-  rc = assuan_new (&ctx);
-  if (rc)
-    {
-      log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
-      return rc;
-    }
-
-  if (!infostr)
-    {
-      const char *pgmname;
-      const char *argv[3];
-      int no_close_list[3];
-      int i;
-
-      if (!opt.dirmngr_program || !*opt.dirmngr_program)
-        opt.dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
-      if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
-        pgmname = opt.dirmngr_program;
-      else
-        pgmname++;
-
-      if (opt.verbose)
-        log_info (_("no running dirmngr - starting `%s'\n"),
-                  opt.dirmngr_program);
-      
-      if (fflush (NULL))
-        {
-          gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-          log_error ("error flushing pending output: %s\n", strerror (errno));
-          return tmperr;
-        }
-
-      argv[0] = pgmname;
-      argv[1] = "--server";
-      argv[2] = NULL;
-
-      i=0;
-      if (log_get_fd () != -1)
-        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
-      no_close_list[i] = -1;
-
-      /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (ctx, opt.dirmngr_program, argv,
-                                no_close_list, NULL, NULL, 0);
-    }
-  else
-    {
-      int prot;
-      int pid;
-
-      if (!try_default)
-        {
-          if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
-            {
-              log_error (_("malformed DIRMNGR_INFO environment variable\n"));
-              xfree (infostr);
-              force_pipe_server = 1;
-              return start_dirmngr_ext (ctrl, ctx_r);
-            }
-          *p++ = 0;
-          pid = atoi (p);
-          while (*p && *p != PATHSEP_C)
-            p++;
-          prot = *p? atoi (p+1) : 0;
-          if (prot != 1)
-            {
-              log_error (_("dirmngr protocol version %d is not supported\n"),
-                         prot);
-              xfree (infostr);
-              force_pipe_server = 1;
-              return start_dirmngr_ext (ctrl, ctx_r);
-            }
-        }
-      else
-        pid = -1;
-
-      rc = assuan_socket_connect (ctx, infostr, pid, 0);
-#ifdef HAVE_W32_SYSTEM
-      if (rc)
-        log_debug ("connecting dirmngr at `%s' failed\n", infostr);
-#endif
-
-      xfree (infostr);
-#ifndef HAVE_W32_SYSTEM
-      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
-        {
-          log_info (_("can't connect to the dirmngr - trying fall back\n"));
-          force_pipe_server = 1;
-          return start_dirmngr_ext (ctrl, ctx_r);
-        }
-#endif /*!HAVE_W32_SYSTEM*/
-    }
-
-  prepare_dirmngr (ctrl, ctx, rc);
-
-  if (rc)
-    {
-      assuan_release (ctx);
-      log_error ("can't connect to the dirmngr: %s\n", gpg_strerror (rc));
-      return gpg_error (GPG_ERR_NO_DIRMNGR);
-    }
   *ctx_r = ctx;
-
-  if (DBG_ASSUAN)
-    log_debug ("connection to dirmngr established\n");
   return 0;
 }
 

@@ -194,7 +194,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oMaxReplies, "max-replies", 
                 N_("|N|do not return more than N items in one query")),
 
-  ARGPARSE_s_s (oSocketName, "socket-name", N_("|FILE|listen on socket FILE")),
+  ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
   ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
   ARGPARSE_p_u (oDebug,    "debug", "@"),
@@ -897,6 +897,7 @@ main (int argc, char **argv)
 
   if (cmd == aServer)
     {
+      /* Note that this server mode is maily useful for debugging.  */
       if (argc)
         wrong_args ("--server");
 
@@ -1002,6 +1003,9 @@ main (int argc, char **argv)
 
       es_fflush (NULL);
 
+      /* Note: We keep the dirmngr_info output only for the sake of
+         existing scripts which might use this to detect a successful
+         start of the dirmngr.  */
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
       printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
@@ -1032,7 +1036,7 @@ main (int argc, char **argv)
               dirmngr_exit (1);
             }
           /* Print the environment string, so that the caller can use
-             shell's eval to set it */
+             shell's eval to set it.  But see above.  */
           if (csh_style)
             {
               *strchr (infostr, '=') = ' ';
