@@ -994,7 +994,9 @@ do_open (char *line)
   if (fd >= 0 && fd < DIM (open_fd_table))
     {
       open_fd_table[fd].inuse = 1;
-#warning fixme: implement our pipe emulation.
+#ifdef HAVE_W32CE_SYSTEM
+# warning fixme: implement our pipe emulation.
+#endif
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
       {
         HANDLE prochandle, handle, newhandle;
@@ -1246,11 +1248,11 @@ main (int argc, char **argv)
 
   if (opt.exec)
     {
-      int no_close[3];
+      assuan_fd_t no_close[3];
 
-      no_close[0] = assuan_fd_from_posix_fd (fileno (stderr));
+      no_close[0] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
       no_close[1] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close[2] = -1;
+      no_close[2] = ASSUAN_INVALID_FD;
 
       rc = assuan_new (&ctx);
       if (rc)

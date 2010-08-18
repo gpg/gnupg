@@ -617,9 +617,9 @@ main (int argc, char **argv )
 
   if (greeting)
     {
-      fprintf (stderr, "%s %s; %s\n",
-                 strusage(11), strusage(13), strusage(14) );
-      fprintf (stderr, "%s\n", strusage(15) );
+      es_fprintf (es_stderr, "%s %s; %s\n",
+                  strusage(11), strusage(13), strusage(14) );
+      es_fprintf (es_stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
   log_info ("NOTE: this is a development version!\n");
@@ -651,30 +651,30 @@ main (int argc, char **argv )
         filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
       filename_esc = percent_escape (filename, NULL);
 
-      printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, filename_esc);
+      es_printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
+                 GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename_esc);
       xfree (filename);
 
-      printf ("verbose:%lu:\n"
-              "quiet:%lu:\n"
-              "debug-level:%lu:\"none:\n"
-              "log-file:%lu:\n",
-              GC_OPT_FLAG_NONE,
-              GC_OPT_FLAG_NONE,
-              GC_OPT_FLAG_DEFAULT,
-              GC_OPT_FLAG_NONE );
+      es_printf ("verbose:%lu:\n"
+                 "quiet:%lu:\n"
+                 "debug-level:%lu:\"none:\n"
+                 "log-file:%lu:\n",
+                 GC_OPT_FLAG_NONE,
+                 GC_OPT_FLAG_NONE,
+                 GC_OPT_FLAG_DEFAULT,
+                 GC_OPT_FLAG_NONE );
 
-      printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("ctapi-driver:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("pcsc-driver:%lu:\"%s:\n",
+      es_printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("ctapi-driver:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("pcsc-driver:%lu:\"%s:\n",
               GC_OPT_FLAG_DEFAULT, DEFAULT_PCSC_DRIVER );
 #ifdef HAVE_LIBUSB
-      printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
 #endif
-      printf ("deny-admin:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
+      es_printf ("deny-admin:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
+      es_printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
 
       scd_exit (0);
     }
@@ -831,11 +831,11 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  printf ( "setenv %s\n", infostr);
+                  es_printf ( "setenv %s\n", infostr);
                 }
               else
                 {
-                  printf ( "%s; export SCDAEMON_INFO;\n", infostr);
+                  es_printf ( "%s; export SCDAEMON_INFO;\n", infostr);
                 }
               xfree (infostr);
               exit (0); 

@@ -908,7 +908,7 @@ main ( int argc, char **argv)
   log_set_prefix ("gpgsm", 1);
 
   /* Make sure that our subsystems are ready.  */
-  i18n_init();
+  i18n_init ();
   init_common_subsystems (&argc, &argv);
 
   /* Check that the libraries are suitable.  Do it here because the
@@ -1429,9 +1429,9 @@ main ( int argc, char **argv)
   
   if (greeting)
     {
-      fprintf(stderr, "%s %s; %s\n",
-              strusage(11), strusage(13), strusage(14) );
-      fprintf(stderr, "%s\n", strusage(15) );
+      es_fprintf (es_stderr, "%s %s; %s\n",
+                  strusage(11), strusage(13), strusage(14) );
+      es_fprintf (es_stderr, "%s\n", strusage(15) );
     }
 #  ifdef IS_DEVELOPMENT_VERSION
   if (!opt.batch)
@@ -1638,33 +1638,33 @@ main ( int argc, char **argv)
       { /* List options and default values in the GPG Conf format.  */
 	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
 
-        printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
-                GC_OPT_FLAG_DEFAULT, config_filename_esc);
+        es_printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
+                   GC_OPT_FLAG_DEFAULT, config_filename_esc);
         xfree (config_filename_esc);
 
-        printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
-	printf ("quiet:%lu:\n", GC_OPT_FLAG_NONE);
-	printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
-	printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
-                DEFAULT_INCLUDE_CERTS);
-        printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
-        printf ("cipher-algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
-                DEFAULT_CIPHER_ALGO);
-        printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
-        printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
-        printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
-	printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
+	es_printf ("quiet:%lu:\n", GC_OPT_FLAG_NONE);
+	es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
+	es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
+                   DEFAULT_INCLUDE_CERTS);
+        es_printf ("disable-policy-checks:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("auto-issuer-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("cipher-algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+                   DEFAULT_CIPHER_ALGO);
+        es_printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
+        es_printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
+        es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
+	es_printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
 
         /* The next one is an info only item and should match what
            proc_parameters actually implements.  */
-        printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
-                "RSA-2048");
+        es_printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+                   "RSA-2048");
 
       }
       break;

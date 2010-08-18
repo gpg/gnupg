@@ -1,3 +1,7 @@
+2010-08-18  Werner Koch  <wk@g10code.com>
+
+	* tools.texi (watchgnupg): Add examples section.
+
 2010-06-10  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gnupg_TEXINFOS): Add dirmngr.texi.

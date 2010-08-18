@@ -118,19 +118,19 @@ my_strusage( int level )
 /* Return the fp for the output.  This is usually stdout unless
    --output has been used.  In the latter case this function opens
    that file.  */
-static FILE *
-get_outfp (FILE **fp)
+static estream_t
+get_outfp (estream_t *fp)
 {
   if (!*fp)
     {
       if (opt.outfile)
         {
-          *fp = fopen (opt.outfile, "w");
+          *fp = es_fopen (opt.outfile, "w");
           if (!*fp)
             gc_error (1, errno, "can not open `%s'", opt.outfile);
         }
       else
-        *fp = stdout;
+        *fp = es_stdout;
     }
   return *fp;
 }
@@ -144,7 +144,7 @@ main (int argc, char **argv)
   const char *fname;
   int no_more_options = 0;
   enum cmd_and_opt_values cmd = 0;
-  FILE *outfp = NULL;
+  estream_t outfp = NULL;
 
   gnupg_reopen_std ("gpgconf");
   set_strusage (my_strusage);
@@ -211,10 +211,10 @@ main (int argc, char **argv)
     case aCheckOptions:
       if (!fname)
 	{
-	  fputs (_("usage: gpgconf [options] "), stderr);
-	  putc ('\n',stderr);
-	  fputs (_("Need one component argument"), stderr);
-	  putc ('\n',stderr);
+	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_putc ('\n', es_stderr);
+	  es_fputs (_("Need one component argument"), es_stderr);
+	  es_putc ('\n', es_stderr);
 	  exit (2);
 	}
       else
@@ -222,8 +222,8 @@ main (int argc, char **argv)
 	  int idx = gc_component_find (fname);
 	  if (idx < 0)
 	    {
-	      fputs (_("Component not found"), stderr);
-	      putc ('\n', stderr);
+	      es_fputs (_("Component not found"), es_stderr);
+	      es_putc ('\n', es_stderr);
 	      exit (1);
 	    }
 	  gc_component_retrieve_options (idx);
@@ -232,7 +232,7 @@ main (int argc, char **argv)
 	  if (cmd == aListOptions)
 	    gc_component_list_options (idx, get_outfp (&outfp));
 	  else if (cmd == aChangeOptions)
-            gc_component_change_options (idx, stdin, get_outfp (&outfp));
+            gc_component_change_options (idx, es_stdin, get_outfp (&outfp));
 	  else
 	    gc_component_check_options (idx, get_outfp (&outfp), NULL);
 	}
@@ -252,8 +252,8 @@ main (int argc, char **argv)
           idx = gc_component_find (fname);
           if (idx < 0)
             {
-              fputs (_("Component not found"), stderr);
-              putc ('\n', stderr);
+              es_fputs (_("Component not found"), es_stderr);
+              es_putc ('\n', es_stderr);
               exit (1);
             }
           else
@@ -276,10 +276,10 @@ main (int argc, char **argv)
     case aApplyDefaults:
       if (fname)
 	{
-	  fputs (_("usage: gpgconf [options] "), stderr);
-	  putc ('\n',stderr);
-	  fputs (_("No argument allowed"), stderr);
-	  putc ('\n',stderr);
+	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_putc ('\n', es_stderr);
+	  es_fputs (_("No argument allowed"), es_stderr);
+	  es_putc ('\n', es_stderr);
 	  exit (2);
 	}
       gc_component_retrieve_options (-1);
@@ -290,20 +290,20 @@ main (int argc, char **argv)
     case aListDirs:
       /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
-      fprintf (outfp, "sysconfdir:%s\n",
-	       gc_percent_escape (gnupg_sysconfdir ()));
-      fprintf (outfp, "bindir:%s\n",
-	       gc_percent_escape (gnupg_bindir ()));
-      fprintf (outfp, "libexecdir:%s\n",
-	       gc_percent_escape (gnupg_libexecdir ()));
-      fprintf (outfp, "libdir:%s\n",
-	       gc_percent_escape (gnupg_libdir ()));
-      fprintf (outfp, "datadir:%s\n",
-	       gc_percent_escape (gnupg_datadir ()));
-      fprintf (outfp, "localedir:%s\n",
-	       gc_percent_escape (gnupg_localedir ()));
-      fprintf (outfp, "dirmngr-socket:%s\n",
-	       gc_percent_escape (dirmngr_socket_name ()));
+      es_fprintf (outfp, "sysconfdir:%s\n",
+                  gc_percent_escape (gnupg_sysconfdir ()));
+      es_fprintf (outfp, "bindir:%s\n",
+                  gc_percent_escape (gnupg_bindir ()));
+      es_fprintf (outfp, "libexecdir:%s\n",
+                  gc_percent_escape (gnupg_libexecdir ()));
+      es_fprintf (outfp, "libdir:%s\n",
+                  gc_percent_escape (gnupg_libdir ()));
+      es_fprintf (outfp, "datadir:%s\n",
+                  gc_percent_escape (gnupg_datadir ()));
+      es_fprintf (outfp, "localedir:%s\n",
+                  gc_percent_escape (gnupg_localedir ()));
+      es_fprintf (outfp, "dirmngr-socket:%s\n",
+                  gc_percent_escape (dirmngr_socket_name ()));
       {
         char *infostr = getenv ("GPG_AGENT_INFO");
 
@@ -323,21 +323,21 @@ main (int argc, char **argv)
             else
               *tmp = 0;
           }
-        fprintf (outfp, "agent-socket:%s\n",
-                 infostr? gc_percent_escape (infostr) : "");
+        es_fprintf (outfp, "agent-socket:%s\n",
+                    infostr? gc_percent_escape (infostr) : "");
         xfree (infostr);
       }
       {
         /* We need to use make_filename to expand a possible "~/".  */
         char *tmp = make_filename (default_homedir (), NULL);
-        fprintf (outfp, "homedir:%s\n", gc_percent_escape (tmp));
+        es_fprintf (outfp, "homedir:%s\n", gc_percent_escape (tmp));
         xfree (tmp);
       }
       break;
     }
 
-  if (outfp && outfp != stdout)
-    if (fclose (outfp))
+  if (outfp != es_stdout)
+    if (es_fclose (outfp))
       gc_error (1, errno, "error closing `%s'", opt.outfile);
 
   return 0; 

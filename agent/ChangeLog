@@ -1,3 +1,7 @@
+2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Repalce remaining printf by es_printf.
+
 2010-08-11  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_get_passphrase, agent_askpin): Fix

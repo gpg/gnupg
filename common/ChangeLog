@@ -1,4 +1,15 @@
+2010-08-18  Werner Koch  <wk@g10code.com>
+
+	* logging.c (writen): Add arg IS_SOCKET.
+	(fun_writer): Pass the is_socket flag.
+	(do_logv) [W32]: Allow for a default log stream
+
+	* estream.c (struct estream_internal): Remove obsolete fields
+	PRINT_FP, PRINT_ERRNO, PRINT_ERR and all remaining code cruft.
+
 2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_printf_unlocked, es_printf): New.
 
 	* asshelp.c (lock_agent_t): Rename to lock_spawn_t.
 	(lock_agent_spawning, unlock_agent_spawning): Factor code out to ...

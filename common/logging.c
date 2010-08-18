@@ -120,19 +120,24 @@ struct fun_cookie_s
 
 /* Write NBYTES of BUFFER to file descriptor FD. */
 static int
-writen (int fd, const void *buffer, size_t nbytes)
+writen (int fd, const void *buffer, size_t nbytes, int is_socket)
 {
   const char *buf = buffer;
   size_t nleft = nbytes;
   int nwritten;
+#ifndef HAVE_W32_SYSTEM
+  (void)is_socket; /* Not required.  */
+#endif
   
   while (nleft > 0)
     {
 #ifdef HAVE_W32_SYSTEM
-      nwritten = send (fd, buf, nleft, 0);
-#else
-      nwritten = write (fd, buf, nleft);
+      if (is_socket)
+        nwritten = send (fd, buf, nleft, 0);
+      else
 #endif
+        nwritten = write (fd, buf, nleft);
+
       if (nwritten < 0 && errno == EINTR)
         continue;
       if (nwritten < 0)
@@ -170,6 +175,9 @@ static ssize_t
 fun_writer (void *cookie_arg, const void *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
+
+  /* FIXME: Use only estream with a callback for socket writing.  This
+     avoids the ugly mix of fd and estream code.  */
 
   /* Note that we always try to reconnect to the socket but print
      error messages only the first time an error occured.  If
@@ -345,7 +353,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
     }
   
   log_socket = cookie->fd;
-  if (cookie->fd != -1 && !writen (cookie->fd, buffer, size))
+  if (cookie->fd != -1 && !writen (cookie->fd, buffer, size, cookie->is_socket))
     return (ssize_t)size; /* Okay. */ 
   
   if (!running_detached && cookie->fd != -1
@@ -561,7 +569,16 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 {
   if (!logstream)
     {
+#ifdef HAVE_W32_SYSTEM
+      char *tmp;
+
+      tmp = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
+                                            "DefaultLogFile");
+      log_set_file (tmp);
+      jnlib_free (tmp);
+#else
       log_set_file (NULL); /* Make sure a log stream has been set.  */
+#endif
       assert (logstream);
     }
 

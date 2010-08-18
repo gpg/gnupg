@@ -823,9 +823,9 @@ main (int argc, char **argv )
 
   if (greeting)
     {
-      fprintf (stderr, "%s %s; %s\n",
-                 strusage(11), strusage(13), strusage(14) );
-      fprintf (stderr, "%s\n", strusage(15) );
+      es_fprintf (es_stderr, "%s %s; %s\n",
+                  strusage(11), strusage(13), strusage(14) );
+      es_fprintf (es_stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
   /* We don't want to print it here because gpg-agent is useful of its
@@ -874,12 +874,12 @@ main (int argc, char **argv )
       filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
       filename_esc = percent_escape (filename, NULL);
 
-      printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
+      es_printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
               GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename);
       xfree (filename_esc);
 
-      printf ("verbose:%lu:\n"
+      es_printf ("verbose:%lu:\n"
               "quiet:%lu:\n"
               "debug-level:%lu:\"none:\n"
               "log-file:%lu:\n",
@@ -887,35 +887,35 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME );
-      printf ("default-cache-ttl:%lu:%d:\n",
+      es_printf ("default-cache-ttl:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL );
-      printf ("default-cache-ttl-ssh:%lu:%d:\n",
+      es_printf ("default-cache-ttl-ssh:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL_SSH );
-      printf ("max-cache-ttl:%lu:%d:\n",
+      es_printf ("max-cache-ttl:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL );
-      printf ("max-cache-ttl-ssh:%lu:%d:\n",
+      es_printf ("max-cache-ttl-ssh:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL_SSH );
-      printf ("enforce-passphrase-constraints:%lu:\n", 
+      es_printf ("enforce-passphrase-constraints:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("min-passphrase-len:%lu:%d:\n",
+      es_printf ("min-passphrase-len:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MIN_PASSPHRASE_LEN );
-      printf ("min-passphrase-nonalpha:%lu:%d:\n",
+      es_printf ("min-passphrase-nonalpha:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
               MIN_PASSPHRASE_NONALPHA);
-      printf ("check-passphrase-pattern:%lu:\n",
+      es_printf ("check-passphrase-pattern:%lu:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
-      printf ("max-passphrase-days:%lu:%d:\n",
+      es_printf ("max-passphrase-days:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
               MAX_PASSPHRASE_DAYS);
-      printf ("enable-passphrase-history:%lu:\n", 
+      es_printf ("enable-passphrase-history:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("no-grab:%lu:\n", 
+      es_printf ("no-grab:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("ignore-cache-for-signing:%lu:\n",
+      es_printf ("ignore-cache-for-signing:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("allow-mark-trusted:%lu:\n",
+      es_printf ("allow-mark-trusted:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("disable-scdaemon:%lu:\n",
+      es_printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
@@ -1026,7 +1026,7 @@ main (int argc, char **argv )
       fflush (NULL);
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
-      printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
+      es_printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1) 
@@ -1098,24 +1098,24 @@ main (int argc, char **argv )
 
           if (env_file_name)
             {
-              FILE *fp;
+              estream_t fp;
               
-              fp = fopen (env_file_name, "w");
+              fp = es_fopen (env_file_name, "w");
               if (!fp)
                 log_error (_("error creating `%s': %s\n"),
                              env_file_name, strerror (errno));
               else
                 {
-                  fputs (infostr, fp);
-                  putc ('\n', fp);
+                  es_fputs (infostr, fp);
+                  es_putc ('\n', fp);
                   if (opt.ssh_support)
                     {
-                      fputs (infostr_ssh_sock, fp);
-                      putc ('\n', fp);
-                      fputs (infostr_ssh_pid, fp);
-                      putc ('\n', fp);
+                      es_fputs (infostr_ssh_sock, fp);
+                      es_putc ('\n', fp);
+                      es_fputs (infostr_ssh_pid, fp);
+                      es_putc ('\n', fp);
                     }
-                  fclose (fp);
+                  es_fclose (fp);
                 }
             }
 
@@ -1163,22 +1163,24 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  printf ("setenv %s\n", infostr);
+                  es_printf ("setenv %s\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
-		      printf ("setenv %s\n", infostr_ssh_sock);
+		      es_printf ("setenv %s\n", infostr_ssh_sock);
 		      *strchr (infostr_ssh_pid, '=') = ' ';
-		      printf ("setenv %s\n", infostr_ssh_pid);
+		      es_printf ("setenv %s\n", infostr_ssh_pid);
 		    }
                 }
               else
                 {
-                  printf ( "%s; export GPG_AGENT_INFO;\n", infostr);
+                  es_printf ( "%s; export GPG_AGENT_INFO;\n", infostr);
 		  if (opt.ssh_support)
 		    {
-		      printf ("%s; export SSH_AUTH_SOCK;\n", infostr_ssh_sock);
-		      printf ("%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
+		      es_printf ("%s; export SSH_AUTH_SOCK;\n",
+                                 infostr_ssh_sock);
+		      es_printf ("%s; export SSH_AGENT_PID;\n",
+                                 infostr_ssh_pid);
 		    }
                 }
               xfree (infostr); 

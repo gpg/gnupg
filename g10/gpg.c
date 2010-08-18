@@ -1449,8 +1449,8 @@ print_algo_numbers(int (*checker)(int))
 	  if(first)
 	    first=0;
 	  else
-	    printf(";");
-	  printf("%d",i);
+	    es_printf (";");
+	  es_printf ("%d",i);
 	}
     }
 }
@@ -1468,8 +1468,8 @@ print_algo_names(int (*checker)(int),const char *(*mapper)(int))
 	  if(first)
 	    first=0;
 	  else
-	    printf(";");
-	  printf("%s",mapper(i));
+	    es_printf (";");
+	  es_printf ("%s",mapper(i));
 	}
     }
 }
@@ -1508,10 +1508,10 @@ list_config(char *items)
 		{
 		  print_sanitized_string2 (stdout, sl->d, ':',';');
 		  if(sl->next)
-		    printf(";");
+                    es_printf(";");
 		}
 
-	      printf("\n");
+              es_printf("\n");
 	    }
 
 	  any=1;
@@ -1519,33 +1519,33 @@ list_config(char *items)
 
       if(show_all || ascii_strcasecmp(name,"version")==0)
 	{
-	  printf("cfg:version:");
+	  es_printf("cfg:version:");
 	  es_write_sanitized (es_stdout, VERSION, strlen(VERSION), ":", NULL);
-	  printf("\n");
+          es_printf ("\n");
 	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"pubkey")==0)
 	{
-	  printf("cfg:pubkey:");
+	  es_printf ("cfg:pubkey:");
 	  print_algo_numbers (openpgp_pk_test_algo);
-	  printf("\n");
+	  es_printf ("\n");
 	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"cipher")==0)
 	{
-	  printf("cfg:cipher:");
+	  es_printf ("cfg:cipher:");
 	  print_algo_numbers(openpgp_cipher_test_algo);
-	  printf("\n");
+	  es_printf ("\n");
 	  any=1;
 	}
 
       if (show_all || !ascii_strcasecmp (name,"ciphername"))
 	{
-	  printf ("cfg:ciphername:");
+	  es_printf ("cfg:ciphername:");
 	  print_algo_names (openpgp_cipher_test_algo,openpgp_cipher_algo_name);
-	  printf ("\n");
+	  es_printf ("\n");
 	  any = 1;
 	}
 
@@ -1553,9 +1553,9 @@ list_config(char *items)
 	 || ascii_strcasecmp(name,"digest")==0
 	 || ascii_strcasecmp(name,"hash")==0)
 	{
-	  printf("cfg:digest:");
+	  es_printf ("cfg:digest:");
 	  print_algo_numbers(openpgp_md_test_algo);
-	  printf("\n");
+	  es_printf ("\n");
 	  any=1;
 	}
 
@@ -1563,17 +1563,17 @@ list_config(char *items)
           || !ascii_strcasecmp(name,"digestname")
           || !ascii_strcasecmp(name,"hashname"))
 	{
-	  printf ("cfg:digestname:");
+	  es_printf ("cfg:digestname:");
 	  print_algo_names (openpgp_md_test_algo, gcry_md_algo_name);
-	  printf("\n");
+	  es_printf ("\n");
 	  any=1;
 	}
       
       if(show_all || ascii_strcasecmp(name,"compress")==0)
 	{
-	  printf("cfg:compress:");
+	  es_printf ("cfg:compress:");
 	  print_algo_numbers(check_compress_algo);
-	  printf("\n");
+	  es_printf ("\n");
 	  any=1;
 	}
 
@@ -1587,7 +1587,7 @@ list_config(char *items)
           for (p=list; p && (p2 = strchr (p, '\n')); p = p2+1)
             {
               *p2 = 0;
-              printf("cfg:ccid-reader-id:%s\n", p);
+              es_printf ("cfg:ccid-reader-id:%s\n", p);
             }
           free (list);
 #endif
@@ -1613,23 +1613,24 @@ gpgconf_list (const char *configfile)
 {
   char *configfile_esc = percent_escape (configfile, NULL);
 
-  printf ("gpgconf-gpg.conf:%lu:\"%s\n",
-          GC_OPT_FLAG_DEFAULT, configfile_esc ? configfile_esc : "/dev/null");
-  printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
-  printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
-  printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
-  printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("gpgconf-gpg.conf:%lu:\"%s\n",
+             GC_OPT_FLAG_DEFAULT,
+             configfile_esc ? configfile_esc : "/dev/null");
+  es_printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
+  es_printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
+  es_printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
 
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */
-  printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
-          "RSA-2048");
+  es_printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
+             "RSA-2048");
 
   xfree (configfile_esc);
 }
@@ -2992,11 +2993,12 @@ main (int argc, char **argv)
     if( nogreeting )
 	greeting = 0;
 
-    if( greeting ) {
-	fprintf(stderr, "%s %s; %s\n",
-			strusage(11), strusage(13), strusage(14) );
-	fprintf(stderr, "%s\n", strusage(15) );
-    }
+    if( greeting )
+      {
+	es_fprintf (es_stderr, "%s %s; %s\n",
+                    strusage(11), strusage(13), strusage(14) );
+	es_fprintf (es_stderr, "%s\n", strusage(15) );
+      }
 #ifdef IS_DEVELOPMENT_VERSION
     if (!opt.batch)
       {
@@ -4092,33 +4094,33 @@ g10_exit( int rc )
    display, but there are a few other similar assumptions in the
    display code. */
 static void
-print_hex( gcry_md_hd_t md, int algo, const char *fname )
+print_hex (gcry_md_hd_t md, int algo, const char *fname)
 {
   int i,n,count,indent=0;
   const byte *p;
 
-  if(fname)
-    indent=printf("%s: ",fname);
+  if (fname)
+    indent = es_printf("%s: ",fname);
 
-  if(indent>40)
+  if (indent>40)
     {
       printf("\n");
       indent=0;
     }
 
-  if(algo==DIGEST_ALGO_RMD160)
-    indent+=printf("RMD160 = ");
-  else if(algo>0)
-    indent+=printf("%6s = ", gcry_md_algo_name (algo));
+  if (algo==DIGEST_ALGO_RMD160)
+    indent += es_printf("RMD160 = ");
+  else if (algo>0)
+    indent += es_printf("%6s = ", gcry_md_algo_name (algo));
   else
-    algo=abs(algo);
+    algo = abs(algo);
 
-  count=indent;
+  count = indent;
 
   p = gcry_md_read (md, algo);
   n = gcry_md_get_algo_dlen (algo);
 
-  count += printf ("%02X",*p++);
+  count += es_printf ("%02X",*p++);
 
   for(i=1;i<n;i++,p++)
     {
@@ -4126,14 +4128,14 @@ print_hex( gcry_md_hd_t md, int algo, const char *fname )
 	{
 	  if(count+2>79)
 	    {
-	      printf("\n%*s",indent," ");
-	      count=indent;
+	      es_printf ("\n%*s",indent," ");
+	      count = indent;
 	    }
 	  else
-	    count+=printf(" ");
+	    count += es_printf(" ");
 
-	  if(!(i%8))
-	    count+=printf(" ");
+	  if (!(i%8))
+	    count += es_printf(" ");
 	}
       else if (n==20)
 	{
@@ -4141,58 +4143,59 @@ print_hex( gcry_md_hd_t md, int algo, const char *fname )
 	    {
 	      if(count+4>79)
 		{
-		  printf("\n%*s",indent," ");
+		  es_printf ("\n%*s",indent," ");
 		  count=indent;
 		}
 	      else
-		count+=printf(" ");
+		count += es_printf(" ");
 	    }
 
-	  if(!(i%10))
-	    count+=printf(" ");
+	  if (!(i%10))
+	    count += es_printf(" ");
 	}
       else
 	{
 	  if(!(i%4))
 	    {
-	      if(count+8>79)
+	      if (count+8>79)
 		{
-		  printf("\n%*s",indent," ");
+		  es_printf ("\n%*s",indent," ");
 		  count=indent;
 		}
 	      else
-		count+=printf(" ");
+		count += es_printf(" ");
 	    }
 	}
 
-      count+=printf("%02X",*p);
+      count += es_printf("%02X",*p);
     }
 
-  printf("\n");
+  es_printf ("\n");
 }
 
 static void
 print_hashline( gcry_md_hd_t md, int algo, const char *fname )
 {
-    int i, n;
-    const byte *p;
+  int i, n;
+  const byte *p;
     
-    if ( fname ) {
-        for (p = fname; *p; p++ ) {
-            if ( *p <= 32 || *p > 127 || *p == ':' || *p == '%' )
-                printf("%%%02X", *p );
-            else 
-                putchar( *p );
+  if ( fname )
+    {
+      for (p = fname; *p; p++ ) 
+        {
+          if ( *p <= 32 || *p > 127 || *p == ':' || *p == '%' )
+            es_printf ("%%%02X", *p );
+          else 
+            es_putc (*p, es_stdout);
         }
     }
-    putchar(':');
-    printf("%d:", algo );
-    p = gcry_md_read (md, algo);
-    n = gcry_md_get_algo_dlen (algo);
-    for(i=0; i < n ; i++, p++ ) 
-        printf("%02X", *p );
-    putchar(':');
-    putchar('\n');
+  es_putc (':', es_stdout);
+  es_printf ("%d:", algo);
+  p = gcry_md_read (md, algo);
+  n = gcry_md_get_algo_dlen (algo);
+  for(i=0; i < n ; i++, p++ ) 
+    es_printf ("%02X", *p);
+  es_fputs (":\n", es_stdout);
 }
 
 static void

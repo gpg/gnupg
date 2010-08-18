@@ -1,3 +1,13 @@
+2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c (get_outfp): Change to use estream.
+	(main): Replace fprintf by es_fprintf.
+	* gpgconf-comp.c (gc_component_list_components)
+	(gc_check_programs, gc_component_list_options)
+	(gc_component_change_options, gc_component_check_options)
+	(list_one_option, gc_process_gpgconf_conf): Replace FILE* args by
+	estream_t.
+
 2010-08-13  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpgkey2ssh_LDADD): Add NETLIBS.

@@ -48,10 +48,10 @@ void gc_error (int status, int errnum, const char *fmt, ...);
 void gc_component_reload (int component);
 
 /* List all components that are available.  */
-void gc_component_list_components (FILE *out);
+void gc_component_list_components (estream_t out);
 
 /* List all programs along with their status.  */
-void gc_check_programs (FILE *out);
+void gc_check_programs (estream_t out);
 
 /* Find the component with the name NAME.  Returns -1 if not
    found.  */
@@ -62,19 +62,19 @@ int gc_component_find (const char *name);
 void gc_component_retrieve_options (int component);
 
 /* List all options of the component COMPONENT.  */
-void gc_component_list_options (int component, FILE *out);
+void gc_component_list_options (int component, estream_t out);
 
 /* Read the modifications from IN and apply them.  */
-void gc_component_change_options (int component, FILE *in, FILE *out);
+void gc_component_change_options (int component, estream_t in, estream_t out);
 
 /* Check the options of a single component.  Returns 0 if everything
    is OK.  */
-int gc_component_check_options (int component, FILE *out,
+int gc_component_check_options (int component, estream_t out,
 				const char *conf_file);
 
 /* Process global configuration file.  */
 int gc_process_gpgconf_conf (const char *fname, int update, int defaults,
-                             FILE *listfp);
+                             estream_t listfp);
 
 
 #endif /*GPGCONF_H*/

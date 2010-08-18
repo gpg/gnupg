@@ -218,7 +218,7 @@ struct estream_internal
   es_cookie_seek_function_t func_seek;
   es_cookie_close_function_t func_close;
   int strategy;
-  int fd;
+  int fd;                        /* Value to return by es_fileno().  */
   struct
   {
     unsigned int err: 1;
@@ -227,11 +227,8 @@ struct estream_internal
   unsigned int deallocate_buffer: 1;
   unsigned int is_stdstream:1;   /* This is a standard stream.  */
   unsigned int stdstream_fd:2;   /* 0, 1 or 2 for a standard stream.  */
-  unsigned int print_err: 1;     /* Error in print_fun_writer.  */
   unsigned int printable_fname_inuse: 1;  /* es_fname_get has been used.  */
-  int print_errno;               /* Errno from print_fun_writer.  */
-  size_t print_ntotal;           /* Bytes written from in print_fun_writer. */
-  FILE *print_fp;                /* Stdio stream used by print_fun_writer.  */
+  size_t print_ntotal;           /* Bytes written from in print_writer. */
 };
 
 
@@ -899,7 +896,8 @@ typedef struct estream_cookie_fp
   int no_close;  /* If set we won't close the file pointer.  */
 } *estream_cookie_fp_t;
 
-/* Create function for fd objects.  */
+
+/* Create function for FILE objects.  */
 static int
 es_func_fp_create (void **cookie, FILE *fp, 
                    unsigned int modeflags, int no_close)
@@ -924,7 +922,7 @@ es_func_fp_create (void **cookie, FILE *fp,
       *cookie = fp_cookie;
       err = 0;
     }
-  
+
   return err;
 }
 
@@ -948,11 +946,9 @@ es_func_fp_read (void *cookie, void *buffer, size_t size)
 /* Write function for FILE* objects.  */
 static ssize_t
 es_func_fp_write (void *cookie, const void *buffer, size_t size)
-			   
 {
   estream_cookie_fp_t file_cookie = cookie;
   size_t bytes_written;
-
 
   if (file_cookie->fp)
     {
@@ -1285,10 +1281,7 @@ es_initialize (estream_t stream,
   stream->intern->func_close = functions.func_close;
   stream->intern->strategy = _IOFBF;
   stream->intern->fd = fd;
-  stream->intern->print_err = 0;
-  stream->intern->print_errno = 0;
   stream->intern->print_ntotal = 0;
-  stream->intern->print_fp = NULL;
   stream->intern->indicators.err = 0;
   stream->intern->indicators.eof = 0;
   stream->intern->is_stdstream = 0;
@@ -1318,14 +1311,6 @@ es_deinitialize (estream_t stream)
 {
   es_cookie_close_function_t func_close;
   int err, tmp_err;
-
-  if (stream->intern->print_fp)
-    {
-      int save_errno = errno;
-      fclose (stream->intern->print_fp);
-      stream->intern->print_fp = NULL;
-      _set_errno (save_errno);
-    }
 
   func_close = stream->intern->func_close;
 
@@ -3204,6 +3189,38 @@ es_fprintf (estream_t ES__RESTRICT stream,
 
   return ret;
 }
+
+
+int
+es_printf_unlocked (const char *ES__RESTRICT format, ...)
+{
+  int ret;
+  
+  va_list ap;
+  va_start (ap, format);
+  ret = es_print (es_stdout, format, ap);
+  va_end (ap);
+
+  return ret;
+}
+
+
+int
+es_printf (const char *ES__RESTRICT format, ...)
+{
+  int ret;
+  estream_t stream = es_stdout;
+  
+  va_list ap;
+  va_start (ap, format);
+  ESTREAM_LOCK (stream);
+  ret = es_print (stream, format, ap);
+  ESTREAM_UNLOCK (stream);
+  va_end (ap);
+
+  return ret;
+}
+
 
 /* A variant of asprintf.  The function returns the allocated buffer
    or NULL on error; ERRNO is set in the error case.  The caller

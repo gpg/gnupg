@@ -1284,7 +1284,7 @@ percent_deescape (const char *src)
 
 /* List all components that are available.  */
 void
-gc_component_list_components (FILE *out)
+gc_component_list_components (estream_t out)
 {
   gc_component_t component;
   gc_option_t *option;
@@ -1320,9 +1320,9 @@ gc_component_list_components (FILE *out)
 
           desc = gc_component[component].desc;
           desc = my_dgettext (gc_component[component].desc_domain, desc);
-          fprintf (out, "%s:%s:",
-                   gc_component[component].name,  gc_percent_escape (desc));
-          fprintf (out, "%s\n",  gc_percent_escape (pgmname));
+          es_fprintf (out, "%s:%s:",
+                      gc_component[component].name,  gc_percent_escape (desc));
+          es_fprintf (out, "%s\n",  gc_percent_escape (pgmname));
         }
     }
 }
@@ -1432,7 +1432,7 @@ collect_error_output (int fd, const char *tag)
 /* Check the options of a single component.  Returns 0 if everything
    is OK.  */
 int
-gc_component_check_options (int component, FILE *out, const char *conf_file)
+gc_component_check_options (int component, estream_t out, const char *conf_file)
 {
   gpg_error_t err;
   unsigned int result;
@@ -1525,24 +1525,24 @@ gc_component_check_options (int component, FILE *out, const char *conf_file)
 
       desc = gc_component[component].desc;
       desc = my_dgettext (gc_component[component].desc_domain, desc);
-      fprintf (out, "%s:%s:",
-	       gc_component[component].name, gc_percent_escape (desc));
-      fputs (gc_percent_escape (pgmname), out);
-      fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
+      es_fprintf (out, "%s:%s:",
+                  gc_component[component].name, gc_percent_escape (desc));
+      es_fputs (gc_percent_escape (pgmname), out);
+      es_fprintf (out, ":%d:%d:", !(result & 1), !(result & 2));
       for (errptr = errlines; errptr; errptr = errptr->next)
 	{
 	  if (errptr != errlines)
-	    fputs ("\n:::::", out); /* Continuation line.  */
+	    es_fputs ("\n:::::", out); /* Continuation line.  */
 	  if (errptr->fname)
-	    fputs (gc_percent_escape (errptr->fname), out);
-	  putc (':', out);
+	    es_fputs (gc_percent_escape (errptr->fname), out);
+	  es_putc (':', out);
 	  if (errptr->fname)
-	    fprintf (out, "%u", errptr->lineno);
-	  putc (':', out);
-	  fputs (gc_percent_escape (errptr->errtext), out);
-	  putc (':', out);
+	    es_fprintf (out, "%u", errptr->lineno);
+	  es_putc (':', out);
+	  es_fputs (gc_percent_escape (errptr->errtext), out);
+	  es_putc (':', out);
 	}
-      putc ('\n', out);
+      es_putc ('\n', out);
     }
 
   while (errlines)
@@ -1558,7 +1558,7 @@ gc_component_check_options (int component, FILE *out, const char *conf_file)
 
 /* Check all components that are available.  */
 void
-gc_check_programs (FILE *out)
+gc_check_programs (estream_t out)
 {
   gc_component_t component;
 
@@ -1587,7 +1587,7 @@ gc_component_find (const char *name)
 
 /* List the option OPTION.  */
 static void
-list_one_option (const gc_option_t *option, FILE *out)
+list_one_option (const gc_option_t *option, estream_t out)
 {
   const char *desc = NULL;
   char *arg_name = NULL;
@@ -1617,16 +1617,16 @@ list_one_option (const gc_option_t *option, FILE *out)
      FIELDS.  */
 
   /* The name field.  */
-  fprintf (out, "%s", option->name);
+  es_fprintf (out, "%s", option->name);
 
   /* The flags field.  */
-  fprintf (out, ":%lu", option->flags);
+  es_fprintf (out, ":%lu", option->flags);
   if (opt.verbose)
     {
-      putc (' ', out);
+      es_putc (' ', out);
 	  
       if (!option->flags)
-	fprintf (out, "none");
+	es_fprintf (out, "none");
       else
 	{
 	  unsigned long flags = option->flags;
@@ -1640,8 +1640,8 @@ list_one_option (const gc_option_t *option, FILE *out)
 		  if (first)
 		    first = 0;
 		  else
-		    putc (',', out);
-		  fprintf (out, "%s", gc_flag[flag].name);
+		    es_putc (',', out);
+		  es_fprintf (out, "%s", gc_flag[flag].name);
 		}
 	      flags >>= 1;
 	      flag++;
@@ -1650,34 +1650,33 @@ list_one_option (const gc_option_t *option, FILE *out)
     }
 
   /* The level field.  */
-  fprintf (out, ":%u", option->level);
+  es_fprintf (out, ":%u", option->level);
   if (opt.verbose)
-    fprintf (out, " %s", gc_level[option->level].name);
+    es_fprintf (out, " %s", gc_level[option->level].name);
 
   /* The description field.  */
-  fprintf (out, ":%s", desc ? gc_percent_escape (desc) : "");
+  es_fprintf (out, ":%s", desc ? gc_percent_escape (desc) : "");
   
   /* The type field.  */
-  fprintf (out, ":%u", option->arg_type);
+  es_fprintf (out, ":%u", option->arg_type);
   if (opt.verbose)
-    fprintf (out, " %s", gc_arg_type[option->arg_type].name);
+    es_fprintf (out, " %s", gc_arg_type[option->arg_type].name);
 
   /* The alternate type field.  */
-  fprintf (out, ":%u", gc_arg_type[option->arg_type].fallback);
+  es_fprintf (out, ":%u", gc_arg_type[option->arg_type].fallback);
   if (opt.verbose)
-    fprintf (out, " %s",
-	     gc_arg_type[gc_arg_type[option->arg_type].fallback].name);
+    es_fprintf (out, " %s",
+                gc_arg_type[gc_arg_type[option->arg_type].fallback].name);
 
   /* The argument name field.  */
-  fprintf (out, ":%s", arg_name ? gc_percent_escape (arg_name) : "");
-  if (arg_name)
-    xfree (arg_name);
+  es_fprintf (out, ":%s", arg_name ? gc_percent_escape (arg_name) : "");
+  xfree (arg_name);
 
   /* The default value field.  */
-  fprintf (out, ":%s", option->default_value ? option->default_value : "");
+  es_fprintf (out, ":%s", option->default_value ? option->default_value : "");
 
   /* The default argument field.  */
-  fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
+  es_fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
 
   /* The value field.  */
   if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
@@ -1685,19 +1684,19 @@ list_one_option (const gc_option_t *option, FILE *out)
       && option->value)
     /* The special format "1,1,1,1,...,1" is converted to a number
        here.  */
-    fprintf (out, ":%u", (unsigned int)((strlen (option->value) + 1) / 2));
+    es_fprintf (out, ":%u", (unsigned int)((strlen (option->value) + 1) / 2));
   else
-    fprintf (out, ":%s", option->value ? option->value : "");
+    es_fprintf (out, ":%s", option->value ? option->value : "");
 
   /* ADD NEW FIELDS HERE.  */
 
-  putc ('\n', out);
+  es_putc ('\n', out);
 }
 
 
 /* List all options of the component COMPONENT.  */
 void
-gc_component_list_options (int component, FILE *out)
+gc_component_list_options (int component, estream_t out)
 {  
   const gc_option_t *option = gc_component[component].options;
 
@@ -2980,7 +2979,7 @@ change_one_value (gc_option_t *option, int *runtime,
    modifications are expected to already have been set to the global
    table. */
 void
-gc_component_change_options (int component, FILE *in, FILE *out)
+gc_component_change_options (int component, estream_t in, estream_t out)
 {
   int err = 0;
   int runtime[GC_BACKEND_NR];
@@ -3004,7 +3003,7 @@ gc_component_change_options (int component, FILE *in, FILE *out)
   if (in)
     {
       /* Read options from the file IN.  */
-      while ((length = read_line (in, &line, &line_len, NULL)) > 0)
+      while ((length = es_read_line (in, &line, &line_len, NULL)) > 0)
         {
           char *linep;
           unsigned long flags = 0;
@@ -3347,7 +3346,7 @@ key_matches_user_or_group (char *user)
    returned on error. */
 int
 gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
-                         FILE *listfp)
+                         estream_t listfp)
 {
   int result = 0;
   char *line = NULL;
@@ -3560,19 +3559,19 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
                     *p = 0; /* We better strip any extra stuff. */
                 }                    
               
-              fprintf (listfp, "k:%s:", gc_percent_escape (key));
-              fprintf (listfp, "%s\n", group? gc_percent_escape (group):"");
+              es_fprintf (listfp, "k:%s:", gc_percent_escape (key));
+              es_fprintf (listfp, "%s\n", group? gc_percent_escape (group):"");
             }
 
           /* All other lines are rule records.  */
-          fprintf (listfp, "r:::%s:%s:%s:",
-                   gc_component[component_id].name,                     
-                   option_info->name? option_info->name : "",
-                   flags? flags : "");
+          es_fprintf (listfp, "r:::%s:%s:%s:",
+                      gc_component[component_id].name,                     
+                      option_info->name? option_info->name : "",
+                      flags? flags : "");
           if (value != empty)
-            fprintf (listfp, "\"%s", gc_percent_escape (value));
+            es_fprintf (listfp, "\"%s", gc_percent_escape (value));
           
-          putc ('\n', listfp);
+          es_putc ('\n', listfp);
         }
 
       /* Check whether the key matches but do this only if we are not

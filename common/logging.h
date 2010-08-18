@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include "estream.h"
 #include "mischelp.h"
+#include "w32help.h"
 
 /* Flag values for log_set_prefix. */
 #define JNLIB_LOG_WITH_PREFIX  1

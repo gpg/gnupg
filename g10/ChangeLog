@@ -1,3 +1,9 @@
+2010-08-16  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (list_config, gpgconf_list): Use es_printf.
+	(print_hex, print_hashline, print_algo_numbers)
+	(print_algo_names): Use es_printf.
+
 2010-07-20  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (print_pkenc_list): Write a STATUS_ERROR.  Fixes

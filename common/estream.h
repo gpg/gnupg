@@ -121,6 +121,8 @@
 #define es_free               _ESTREAM_PREFIX(es_free)
 #define es_fprintf            _ESTREAM_PREFIX(es_fprintf)
 #define es_fprintf_unlocked   _ESTREAM_PREFIX(es_fprintf_unlocked)
+#define es_printf             _ESTREAM_PREFIX(es_printf)
+#define es_printf_unlocked    _ESTREAM_PREFIX(es_printf_unlocked)
 #define es_vfprintf           _ESTREAM_PREFIX(es_vfprint)
 #define es_vfprintf_unlocked  _ESTREAM_PREFIX(es_vfprint_unlocked)
 #define es_setvbuf            _ESTREAM_PREFIX(es_setvbuf)
@@ -344,6 +346,11 @@ int es_fprintf (estream_t ES__RESTRICT stream,
 int es_fprintf_unlocked (estream_t ES__RESTRICT stream,
                          const char *ES__RESTRICT format, ...)
      _ESTREAM_GCC_A_PRINTF(2,3);
+
+int es_printf (const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(1,2);
+int es_printf_unlocked (const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(1,2);
 
 int es_vfprintf (estream_t ES__RESTRICT stream,
 		 const char *ES__RESTRICT format, va_list ap)

@@ -1,5 +1,7 @@
 2010-08-16  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c (main) <aGPGConfList>: Use es_printf.
+
 	* call-dirmngr.c (start_dirmngr_ext): Use new start_new_dirmngr
 	function.
 
