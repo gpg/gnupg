@@ -133,11 +133,14 @@ typedef enum
     /* The GnuPG SCDaemon.  */
     GC_BACKEND_SCDAEMON,
 
-    /* The Aegypten directory manager.  */
+    /* The GnuPG directory manager.  */
     GC_BACKEND_DIRMNGR,
 
-    /* The LDAP server list file for the Aegypten director manager.  */
+    /* The LDAP server list file for the director manager.  */
     GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST,
+
+    /* The Pinentry (not a part of GnuPG, proper).  */
+    GC_BACKEND_PINENTRY,
 
     /* The number of the above entries.  */
     GC_BACKEND_NR
@@ -158,7 +161,7 @@ static struct
 
   /* The module name (GNUPG_MODULE_NAME_foo) as defined by
      ../common/util.h.  This value is used to get the actual installed
-     path of the program.  0 is used if no backedn program is
+     path of the program.  0 is used if no backend program is
      available. */
   char module_name;
 
@@ -189,6 +192,8 @@ static struct
       NULL, "gpgconf-dirmngr.conf" },
     { "DirMngr LDAP Server List", NULL, 0, 
       NULL, "ldapserverlist-file", "LDAP Server" },
+    { "Pinentry", "pinentry", GNUPG_MODULE_NAME_PINENTRY,
+      NULL, "gpgconf-pinentry.conf" },
   };
 
 
@@ -939,6 +944,19 @@ static gc_option_t gc_options_dirmngr[] =
    GC_OPTION_NULL
  };
 
+
+/* The options of the GC_COMPONENT_PINENTRY component.  */
+static gc_option_t gc_options_pinentry[] =
+ {
+   /* A dummy option to allow gc_component_list_components to find the
+      pinentry backend.  Needs to be a conf file. */
+   { "gpgconf-pinentry.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+     NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_PINENTRY },
+
+   GC_OPTION_NULL
+ };
+
+
 
 /* Component system.  Each component is a set of options that can be
    configured at the same time.  If you change this, don't forget to
@@ -959,6 +977,9 @@ typedef enum
 
     /* The LDAP Directory Manager for CRLs.  */
     GC_COMPONENT_DIRMNGR,
+
+    /* The external Pinentry.  */
+    GC_COMPONENT_PINENTRY,
 
     /* The number of components.  */
     GC_COMPONENT_NR
@@ -988,7 +1009,8 @@ static struct
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
-    { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr }
+    { "dirmngr", NULL, "Directory Manager", gc_options_dirmngr },
+    { "pinentry", NULL, "PIN and Passphrase Entry", gc_options_pinentry }
   };
 
 
@@ -1482,7 +1504,10 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
       argv[i++] = "--options";
       argv[i++] = conf_file;
     }
-  argv[i++] = "--gpgconf-test";
+  if (component == GC_COMPONENT_PINENTRY)
+    argv[i++] = "--version";
+  else
+    argv[i++] = "--gpgconf-test";
   argv[i++] = NULL;
   
   err = gnupg_create_inbound_pipe (filedes);
@@ -1554,6 +1579,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   return result;
 }
+
 
 
 /* Check all components that are available.  */
@@ -2116,6 +2142,9 @@ gc_component_retrieve_options (int component)
   int backend_seen[GC_BACKEND_NR];
   gc_backend_t backend;
   gc_option_t *option;
+
+  if (component == GC_COMPONENT_PINENTRY)
+    return; /* Dummy module for now.  */
 
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     backend_seen[backend] = 0;
@@ -2991,6 +3020,9 @@ gc_component_change_options (int component, estream_t in, estream_t out)
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
+
+  if (component == GC_COMPONENT_PINENTRY)
+    return; /* Dummy component for now.  */
 
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     {

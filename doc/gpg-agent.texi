@@ -399,7 +399,7 @@ This option does nothing yet.
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is installation
-dependent and can be shown with the @code{--version} command.
+dependent.
 
 @item --pinentry-touch-file @var{filename}
 @opindex pinentry-touch-file
@@ -415,7 +415,7 @@ modification and access time.
 @item --scdaemon-program @var{filename}
 @opindex scdaemon-program
 Use program @var{filename} as the Smartcard daemon.  The default is
-installation dependent and can be shown with the @code{--version}
+installation dependent and can be shown with the @command{gpgconf}
 command.
 
 @item --disable-scdaemon
