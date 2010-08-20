@@ -257,7 +257,7 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
 /* Create pipe where one end is inheritable: With an INHERIT_IDX of 0
    the read end is inheritable, with 1 the write end is inheritable.  */
 static int
-create_inheritable_pipe (int filedes[2], int inherit_idx)
+create_inheritable_pipe (HANDLE filedes[2], int inherit_idx)
 {
   HANDLE r, w, h;
   SECURITY_ATTRIBUTES sec_attr;
@@ -290,8 +290,8 @@ create_inheritable_pipe (int filedes[2], int inherit_idx)
       r = h;
     }
 
-  filedes[0] = handle_to_fd (r);
-  filedes[1] = handle_to_fd (w);
+  filedes[0] = r;
+  filedes[1] = w;
   return 0;
 }
 
@@ -315,27 +315,27 @@ static gpg_error_t
 do_create_pipe (int filedes[2], int inherit_idx)
 {
   gpg_error_t err = 0;
-  int fds[2];
+  HANDLE fds[2];
 
   filedes[0] = filedes[1] = -1;
   err = gpg_error (GPG_ERR_GENERAL);
   if (!create_inheritable_pipe (fds, inherit_idx))
     {
-      filedes[0] = _open_osfhandle (fds[0], 0);
+      filedes[0] = _open_osfhandle (handle_to_fd (fds[0]), 0);
       if (filedes[0] == -1)
         {
-          log_error ("failed to translate osfhandle %p\n", (void*)fds[0]);
-          CloseHandle (fd_to_handle (fds[1]));
+          log_error ("failed to translate osfhandle %p\n", fds[0]);
+          CloseHandle (fds[1]);
         }
       else 
         {
-          filedes[1] = _open_osfhandle (fds[1], 1);
+          filedes[1] = _open_osfhandle (handle_to_fd (fds[1]), 1);
           if (filedes[1] == -1)
             {
-              log_error ("failed to translate osfhandle %p\n", (void*)fds[1]);
+              log_error ("failed to translate osfhandle %p\n", fds[1]);
               close (filedes[0]);
               filedes[0] = -1;
-              CloseHandle (fd_to_handle (fds[1]));
+              CloseHandle (fds[1]);
             }
           else
             err = 0;
@@ -365,9 +365,12 @@ gnupg_create_outbound_pipe (int filedes[2])
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     estream_t infile, estream_t outfile,
+                     gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t *statusfile, pid_t *pid)
+                     estream_t infp,
+                     estream_t *r_outfp,
+                     estream_t *r_errfp,
+                     pid_t *pid)
 {
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
@@ -381,32 +384,103 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   STARTUPINFO si;
   int cr_flags;
   char *cmdline;
-  int fd, fdout, rp[2];
-  HANDLE nullhd[2];
+  HANDLE inhandle = INVALID_HANDLE_VALUE;
+  HANDLE outpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
+  HANDLE errpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
+  estream_t outfp = NULL;
+  estream_t errfp = NULL;
+  HANDLE nullhd[3] = {INVALID_HANDLE_VALUE,
+                      INVALID_HANDLE_VALUE,
+                      INVALID_HANDLE_VALUE};
   int i;
+  es_syshd_t syshd;
 
-  (void)preexec;
-
-  /* Setup return values.  */
-  *statusfile = NULL;
-  *pid = (pid_t)(-1);
+  if (r_outfp)
+    *r_outfp = NULL;
+  if (r_errfp)
+    *r_errfp = NULL;
+  *pid = (pid_t)(-1); /* Always required.  */
   
-  if (infile)
+  if (infp)
     {
-      es_fflush (infile);
-      es_rewind (infile);
-      fd = _get_osfhandle (es_fileno (infile));
+      es_fflush (infp);
+      es_rewind (infp);
+      es_syshd (infp, &syshd);
+      switch (syshd.type)
+        {
+        case ES_SYSHD_FD:
+          inhandle = (HANDLE)_get_osfhandle (syshd.u.fd);
+          break;
+        case ES_SYSHD_SOCK:
+          inhandle = (HANDLE)_get_osfhandle (syshd.u.sock);
+          break;
+        case ES_SYSHD_HANDLE:
+          inhandle = syshd.u.handle;
+          break;
+        default:
+          inhandle = INVALID_HANDLE_VALUE;
+          break;
+        }      
+      if (inhandle == INVALID_HANDLE_VALUE)
+        return gpg_err_make (errsource, GPG_ERR_INV_VALUE);
+      /* FIXME: In case we can't get a system handle (e.g. due to
+         es_fopencookie we should create a piper and a feeder
+         thread.  */
     }
-  else
-    fd = -1;
 
-  if (outfile)
-    fdout = _get_osfhandle (es_fileno (outfile));
-  else
-    fdout = -1;
+  if (r_outfp)
+    {
+      if (create_inheritable_pipe (outpipe, 1))
+        {
+          err = gpg_err_make (errsource, GPG_ERR_GENERAL);
+          log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+          return err;
+        }
 
-  if ( (infile && fd == -1) || (outfile && fdout == -1))
-    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = outpipe[0];
+      outfp = es_sysopen (&syshd, "r");
+      if (!outfp)
+        {
+          err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          log_error (_("error creating a stream for a pipe: %s\n"),
+                     gpg_strerror (err));
+          CloseHandle (outpipe[0]);
+          CloseHandle (outpipe[1]);
+          outpipe[0] = outpipe[1] = INVALID_HANDLE_VALUE;
+          return err;
+        }
+    }
+
+  if (r_errfp)
+    {
+      if (create_inheritable_pipe (errpipe, 1))
+        {
+          err = gpg_err_make (errsource, GPG_ERR_GENERAL);
+          log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+          return err;
+        }
+
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = errpipe[0];
+      errfp = es_sysopen (&syshd, "r");
+      if (!errfp)
+        {
+          err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          log_error (_("error creating a stream for a pipe: %s\n"),
+                     gpg_strerror (err));
+          CloseHandle (errpipe[0]);
+          CloseHandle (errpipe[1]);
+          errpipe[0] = errpipe[1] = INVALID_HANDLE_VALUE;
+          if (outfp)
+            es_fclose (outfp);
+          else if (outpipe[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (outpipe[0]);
+          if (outpipe[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (outpipe[1]);
+          return err;
+        }
+    }
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -418,27 +492,24 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (err)
     return err; 
 
-  /* Create a pipe.  */
-  if (create_inheritable_pipe (rp, 1))
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      xfree (cmdline);
-      return err;
-    }
-  
-  nullhd[0] =    fd == -1? w32_open_null (0) : INVALID_HANDLE_VALUE;
-  nullhd[1] = fdout == -1? w32_open_null (1) : INVALID_HANDLE_VALUE;
+  if (inhandle != INVALID_HANDLE_VALUE)
+    nullhd[0] = w32_open_null (0);
+  if (outpipe[1] != INVALID_HANDLE_VALUE)
+    nullhd[1] = w32_open_null (0);
+  if (errpipe[1] != INVALID_HANDLE_VALUE)
+    nullhd[2] = w32_open_null (0);
 
   /* Start the process.  Note that we can't run the PREEXEC function
-     because this would change our own environment. */
+     because this might change our own environment. */
+  (void)preexec;
+
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
   si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-  si.hStdInput  =    fd == -1? nullhd[0] : fd_to_handle (fd);
-  si.hStdOutput = fdout == -1? nullhd[1] : fd_to_handle (fdout);
-  si.hStdError  = fd_to_handle (rp[1]);
+  si.hStdInput  =   inhandle == INVALID_HANDLE_VALUE? nullhd[0] : inhandle;
+  si.hStdOutput = outpipe[1] == INVALID_HANDLE_VALUE? nullhd[1] : outpipe[1];
+  si.hStdError  = errpipe[1] == INVALID_HANDLE_VALUE? nullhd[2] : errpipe[1];
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | ((flags & 128)? DETACHED_PROCESS : 0)
@@ -459,9 +530,19 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
-      CloseHandle (fd_to_handle (rp[0]));
-      CloseHandle (fd_to_handle (rp[1]));
-      return gpg_error (GPG_ERR_GENERAL);
+      if (outfp)
+        es_fclose (outfp);
+      else if (outpipe[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (outpipe[0]);
+      if (outpipe[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (outpipe[1]);
+      if (errfp)
+        es_fclose (errfp);
+      else if (errpipe[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (errpipe[0]);
+      if (errpipe[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (errpipe[1]);
+      return gpg_err_make (errsource, GPG_ERR_GENERAL);
     }
   xfree (cmdline);
   cmdline = NULL;
@@ -471,17 +552,21 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     if (nullhd[i] != INVALID_HANDLE_VALUE)
       CloseHandle (nullhd[i]);
 
-  /* Close the other end of the pipe.  */
-  CloseHandle (fd_to_handle (rp[1]));
+  /* Close the inherited ends of the pipes.  */
+  if (outpipe[1] != INVALID_HANDLE_VALUE)
+    CloseHandle (outpipe[1]);
+  if (errpipe[1] != INVALID_HANDLE_VALUE)
+    CloseHandle (errpipe[1]);
   
-/*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
-/*              " dwProcessID=%d dwThreadId=%d\n", */
-/*              pi.hProcess, pi.hThread, */
-/*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
-  
+  /* log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
+  /*            " dwProcessID=%d dwThreadId=%d\n", */
+  /*            pi.hProcess, pi.hThread, */
+  /*            (int) pi.dwProcessId, (int) pi.dwThreadId); */
+  /* log_debug ("                     outfp=%p errfp=%p\n", outfp, errfp); */
+
   /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
-     invalid argument error if we pass the correct processID to
-     it.  As a workaround we use -1 (ASFW_ANY).  */
+     invalid argument error if we pass it the correct processID.  As a
+     workaround we use -1 (ASFW_ANY).  */
   if ( (flags & 64) )
     gnupg_allow_set_foregound_window ((pid_t)(-1)/*pi.dwProcessId*/);
 
@@ -489,22 +574,10 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
-  {
-    int x;
-
-    x = _open_osfhandle (rp[0], 0);
-    if (x == -1)
-      log_error ("failed to translate osfhandle %p\n", (void*)rp[0] );
-    else 
-      *statusfile = es_fdopen (x, "r");
-  }
-  if (!*statusfile)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("can't fdopen pipe for reading: %s\n"), gpg_strerror (err));
-      CloseHandle (pi.hProcess);
-      return err;
-    }
+  if (r_outfp)
+    *r_outfp = outfp;
+  if (r_errfp)
+    *r_errfp = errfp;
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;

@@ -1,3 +1,7 @@
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define GPG_ERR_ENABLE_ERRNO_MACROS.
+
 2010-08-09  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (inet_pton): Check for it.

@@ -83,7 +83,7 @@ struct feeder_thread_parms
 };
 
 
-/* The thread started by start_feeded.  */
+/* The thread started by start_feede3.  */
 static void *
 feeder_thread (void *arg)
 {
@@ -485,10 +485,14 @@ create_process (const char *pgmname, const char *cmdline,
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     estream_t infile, estream_t outfile,
+                     gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t *statusfile, pid_t *pid)
+                     estream_t infp,
+                     estream_t *r_outfp,
+                     estream_t *r_errfp,
+                     pid_t *pid)
 {
+#if 0
   gpg_error_t err;
   PROCESS_INFORMATION pi = {NULL };
   char *cmdline;
@@ -598,7 +602,9 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
-
+#else
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 

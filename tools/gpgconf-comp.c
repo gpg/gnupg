@@ -1363,14 +1363,12 @@ all_digits_p (const char *p, size_t len)
 }
 
 
-/* Collect all error lines from file descriptor FD. Only lines
-   prefixed with TAG are considered.  Close that file descriptor
-   then.  Returns a list of error line items (which may be empty).
-   There is no error return.  */
+/* Collect all error lines from stream FP. Only lines prefixed with
+   TAG are considered.  Returns a list of error line items (which may
+   be empty).  There is no error return.  */
 static error_line_t
-collect_error_output (int fd, const char *tag)
+collect_error_output (estream_t fp, const char *tag)
 {
-  FILE *fp;
   char buffer[1024];
   char *p, *p2, *p3;
   int c, cont_line;
@@ -1378,15 +1376,11 @@ collect_error_output (int fd, const char *tag)
   error_line_t eitem, errlines, *errlines_tail;
   size_t taglen = strlen (tag);
 
-  fp = fdopen (fd, "r");
-  if (!fp)
-    gc_error (1, errno, "can't fdopen pipe for reading");
-
   errlines = NULL;
   errlines_tail = &errlines;
   pos = 0;
   cont_line = 0;
-  while ((c=getc (fp)) != EOF)
+  while ((c=es_getc (fp)) != EOF)
     {
       buffer[pos++] = c;
       if (pos >= sizeof buffer - 5 || c == '\n')
@@ -1401,6 +1395,7 @@ collect_error_output (int fd, const char *tag)
               p = buffer + taglen + 1;
               while (*p == ' ' || *p == '\t')
                 p++;
+              trim_trailing_spaces (p); /* Get rid of extra CRs.  */
               if (!*p)
                 ; /* Empty lines are ignored.  */
               else if ( (p2 = strchr (p, ':')) && (p3 = strchr (p2+1, ':'))
@@ -1445,8 +1440,6 @@ collect_error_output (int fd, const char *tag)
     }
   
   /* We ignore error lines not terminated by a LF.  */
-
-  fclose (fp);
   return errlines;
 }
 
@@ -1466,13 +1459,8 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
   int i;
   pid_t pid;
   int exitcode;
-  int filedes[2];
+  estream_t errfp;
   error_line_t errlines;
-
-  /* We use a temporary file to collect the error output.  It would be
-     better to use a pipe here but as of now we have no suitable
-     fucntion to create a portable pipe outside of exechelp.  Thus it
-     is easier to use the tempfile approach.  */
 
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     backend_seen[backend] = 0;
@@ -1510,23 +1498,15 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
     argv[i++] = "--gpgconf-test";
   argv[i++] = NULL;
   
-  err = gnupg_create_inbound_pipe (filedes);
-  if (err)
-    gc_error (1, 0, _("error creating a pipe: %s\n"), 
-	      gpg_strerror (err));
-  
   result = 0;
   errlines = NULL;
-  if (gnupg_spawn_process_fd (pgmname, argv, -1, -1, filedes[1], &pid))
-    {
-      close (filedes[0]);
-      close (filedes[1]);
-      result |= 1; /* Program could not be run.  */
-    }
+  err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT, NULL, 0,
+                             NULL, NULL, &errfp, &pid);
+  if (err)
+    result |= 1; /* Program could not be run.  */
   else 
     {
-      close (filedes[1]);
-      errlines = collect_error_output (filedes[0], 
+      errlines = collect_error_output (errfp, 
 				       gc_component[component].name);
       if (gnupg_wait_process (pgmname, pid, 1, &exitcode))
 	{
@@ -1536,6 +1516,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 	  result |= 2; /* Program returned an error.  */
 	}
       gnupg_release_process (pid);
+      es_fclose (errfp);
     }
   
   /* If the program could not be run, we can't tell whether
@@ -1839,20 +1820,16 @@ static void
 retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 {
   gpg_error_t err;
-  int filedes[2];
   const char *pgmname;
   const char *argv[2];
+  estream_t outfp;
   int exitcode;
   pid_t pid;
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
-  FILE *config;
+  estream_t config;
   char *config_filename;
-
-  err = gnupg_create_inbound_pipe (filedes);
-  if (err)
-    gc_error (1, 0, _("error creating a pipe: %s\n"), gpg_strerror (err));
 
   pgmname = (gc_backend[backend].module_name 
              ? gnupg_module_name (gc_backend[backend].module_name) 
@@ -1860,20 +1837,15 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, filedes[1], -1, &pid);
+  err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT, NULL, 0,
+                             NULL, &outfp, NULL, &pid);
   if (err)
     {
-      close (filedes[0]);
-      close (filedes[1]);
       gc_error (1, 0, "could not gather active options from `%s': %s",
                 pgmname, gpg_strerror (err));
     }
-  close (filedes[1]);
-  config = fdopen (filedes[0], "r");
-  if (!config)
-    gc_error (1, errno, "can't fdopen pipe for reading");
 
-  while ((length = read_line (config, &line, &line_len, NULL)) > 0)
+  while ((length = es_read_line (outfp, &line, &line_len, NULL)) > 0)
     {
       gc_option_t *option;
       char *linep;
@@ -1942,9 +1914,9 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	    option->default_value = xstrdup (default_value);
 	}
     }
-  if (length < 0 || ferror (config))
-    gc_error (1, errno, "error reading from %s",pgmname);
-  if (fclose (config) && ferror (config))
+  if (length < 0 || es_ferror (outfp))
+    gc_error (1, errno, "error reading from %s", pgmname);
+  if (es_fclose (outfp) && es_ferror (outfp))
     gc_error (1, errno, "error closing %s", pgmname);
 
   err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
@@ -1957,13 +1929,13 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   /* At this point, we can parse the configuration file.  */
   config_filename = get_config_filename (component, backend);
 
-  config = fopen (config_filename, "r");
+  config = es_fopen (config_filename, "r");
   if (!config)
     gc_error (0, errno, "warning: can not open config file %s",
 	      config_filename);
   else
     {
-      while ((length = read_line (config, &line, &line_len, NULL)) > 0)
+      while ((length = es_read_line (config, &line, &line_len, NULL)) > 0)
 	{
 	  char *name;
 	  char *value;
@@ -2044,9 +2016,9 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	    }
 	}
 
-      if (length < 0 || ferror (config))
+      if (length < 0 || es_ferror (config))
 	gc_error (1, errno, "error reading from %s", config_filename);
-      if (fclose (config) && ferror (config))
+      if (es_fclose (config) && es_ferror (config))
 	gc_error (1, errno, "error closing %s", config_filename);
     }
 

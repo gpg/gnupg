@@ -16,7 +16,7 @@ INTRODUCTION
 GnuPG is GNU's tool for secure communication and data storage.  It can
 be used to encrypt data and to create digital signatures.  It includes
 an advanced key management facility and is compliant with the proposed
-OpenPGP Internet standard as described in RFC2440 and the S/MIME
+OpenPGP Internet standard as described in RFC4880 and the S/MIME
 standard as described by several RFCs.
 
 GnuPG is distributed under the terms of the GNU General Public

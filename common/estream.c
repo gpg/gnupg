@@ -126,9 +126,9 @@ int _setmode (int handle, int mode);
 #endif
 
 #ifdef HAVE_W32_SYSTEM
-# define IS_INVALID_FD(a) ((void*)(a) == (void*)(-1))
+# define IS_INVALID_FD(a)    ((void*)(a) == (void*)(-1)) /* ?? FIXME.  */
 #else
-# define IS_INVALID_FD(a) ((a) == -1)
+# define IS_INVALID_FD(a)    ((a) == -1)
 #endif
 
 
@@ -197,6 +197,7 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 # define ESTREAM_SYS_YIELD() do { } while (0)
 #endif
 
+
 /* Misc definitions.  */
 
 #define ES_DEFAULT_OPEN_MODE (S_IRUSR | S_IWUSR)
@@ -218,7 +219,7 @@ struct estream_internal
   es_cookie_seek_function_t func_seek;
   es_cookie_close_function_t func_close;
   int strategy;
-  int fd;                        /* Value to return by es_fileno().  */
+  es_syshd_t syshd;              /* A copy of the sytem handle.  */
   struct
   {
     unsigned int err: 1;
@@ -317,7 +318,39 @@ mem_free (void *p)
     free (p);
 }
 
+#ifdef HAVE_W32_SYSTEM
+static int
+map_w32_to_errno (DWORD w32_err)
+{
+  switch (w32_err)
+    {
+    case 0:
+      return 0;
 
+    case ERROR_FILE_NOT_FOUND:
+      return ENOENT;
+
+    case ERROR_PATH_NOT_FOUND:
+      return ENOENT;
+
+    case ERROR_ACCESS_DENIED:
+      return EPERM;
+
+    case ERROR_INVALID_HANDLE:
+    case ERROR_INVALID_BLOCK:
+      return EINVAL;
+
+    case ERROR_NOT_ENOUGH_MEMORY:
+      return ENOMEM;
+      
+    case ERROR_NO_DATA:
+      return EPIPE;
+
+    default:
+      return EIO;
+    }
+}
+#endif /*HAVE_W32_SYSTEM*/
 
 /*
  * List manipulation.
@@ -744,7 +777,7 @@ static es_cookie_io_functions_t estream_functions_mem =
 
 
 
-/* Implementation of fd I/O.  */
+/* Implementation of file descriptor based I/O.  */
 
 /* Cookie for fd objects.  */
 typedef struct estream_cookie_fd
@@ -883,6 +916,217 @@ static es_cookie_io_functions_t estream_functions_fd =
     es_func_fd_seek,
     es_func_fd_destroy
   };
+
+
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Implementation of W32 handle based I/O.  */
+
+/* Cookie for fd objects.  */
+typedef struct estream_cookie_w32
+{
+  HANDLE hd;     /* The handle we are using for actual output.  */
+  int no_close;  /* If set we won't close the handle.  */
+} *estream_cookie_w32_t;
+
+
+/* Create function for w32 handle objects.  */
+static int
+es_func_w32_create (void **cookie, HANDLE hd,
+                    unsigned int modeflags, int no_close)
+{
+  estream_cookie_w32_t w32_cookie;
+  int err;
+
+  w32_cookie = mem_alloc (sizeof (*w32_cookie));
+  if (!w32_cookie)
+    err = -1;
+  else
+    {
+      /* CR/LF translations are not supported when using the bare W32
+         API.  If that is really required we need to implemented that
+         in the upper layer.  */
+      (void)modeflags;
+
+      w32_cookie->hd = hd;
+      w32_cookie->no_close = no_close;
+      *cookie = w32_cookie;
+      err = 0;
+    }
+  
+  return err;
+}
+
+/* Read function for W32 handle objects.  */
+static ssize_t
+es_func_w32_read (void *cookie, void *buffer, size_t size)
+{
+  estream_cookie_w32_t w32_cookie = cookie;
+  ssize_t bytes_read;
+  
+  if (w32_cookie->hd == INVALID_HANDLE_VALUE)
+    {
+      ESTREAM_SYS_YIELD ();
+      bytes_read = 0;
+    }
+  else
+    {
+      do
+        {
+#ifdef HAVE_PTH
+          /* Note: Our pth_read actually uses HANDLE! */
+          bytes_read = pth_read ((int)w32_cookie->hd, buffer, size);
+#else
+          DWORD nread, ec;
+          
+          if (!ReadFile (w32_cookie->hd, buffer, size, &nread, NULL))
+            {
+              ec = GetLastError ();
+              if (ec == ERROR_BROKEN_PIPE)
+                bytes_read = 0; /* Like our pth_read we handle this as EOF.  */
+              else
+                {
+                  _set_errno (map_w32_to_errno (ec));
+                  log_debug ("estream: ReadFile returned %d\n",
+                             (int)GetLastError ());
+                  bytes_read = -1;
+                }
+            }
+          else
+            bytes_read = (int)nread;
+#endif
+        }
+      while (bytes_read == -1 && errno == EINTR);
+    }
+
+  return bytes_read;
+}
+
+/* Write function for W32 handle objects.  */
+static ssize_t
+es_func_w32_write (void *cookie, const void *buffer, size_t size)
+{
+  estream_cookie_w32_t w32_cookie = cookie;
+  ssize_t bytes_written;
+
+  if (w32_cookie->hd == INVALID_HANDLE_VALUE)
+    {
+      ESTREAM_SYS_YIELD ();
+      bytes_written = size; /* Yeah:  Success writing to the bit bucket.  */
+    }
+  else
+    {
+      do
+        {
+#ifdef HAVE_PTH
+          /* Note: Our pth_write actually uses HANDLE! */
+          bytes_written = pth_write ((int)w32_cookie->hd, buffer, size);
+#else
+          DWORD nwritten;
+
+	  if (!WriteFile (w32_cookie->hd, buffer, size, &nwritten, NULL))
+	    {
+	      _set_errno (map_w32_to_errno (GetLastError ()));
+	      bytes_written = -1;
+	    }
+	  else
+	    bytes_written = (int)nwritten;
+#endif
+        }
+      while (bytes_written == -1 && errno == EINTR);
+    }
+
+  return bytes_written;
+}
+
+/* Seek function for W32 handle objects.  */
+static int
+es_func_w32_seek (void *cookie, off_t *offset, int whence)
+{
+  estream_cookie_w32_t w32_cookie = cookie;
+  DWORD method;
+  LARGE_INTEGER distance, newoff;
+
+  if (w32_cookie->hd == INVALID_HANDLE_VALUE)
+    {
+      _set_errno (ESPIPE);
+      return -1;
+    }
+
+  if (whence == SEEK_SET)
+    {
+      method = FILE_BEGIN;
+      distance.QuadPart = (unsigned long long)(*offset);
+    }
+  else if (whence == SEEK_CUR)
+    {
+      method = FILE_CURRENT;
+      distance.QuadPart = (long long)(*offset);
+    }
+  else if (whence == SEEK_END)
+    {
+      method = FILE_END;
+      distance.QuadPart = (long long)(*offset);
+    }
+  else
+    {
+      _set_errno (EINVAL);
+      return -1;
+    }
+#ifdef HAVE_W32CE_SYSTEM
+# warning need to use SetFilePointer
+#else
+  if (!SetFilePointerEx (w32_cookie->hd, distance, &newoff, method))
+    {
+      _set_errno (map_w32_to_errno (GetLastError ()));
+      return -1;
+    }
+#endif
+  *offset = (unsigned long long)newoff.QuadPart;
+  return 0;
+}
+
+/* Destroy function for W32 handle objects.  */
+static int
+es_func_w32_destroy (void *cookie)
+{
+  estream_cookie_w32_t w32_cookie = cookie;
+  int err;
+
+  if (w32_cookie)
+    {
+      if (w32_cookie->hd == INVALID_HANDLE_VALUE)
+        err = 0;
+      else if (w32_cookie->no_close)
+        err = 0;
+      else
+        { 
+          if (!CloseHandle (w32_cookie->hd))
+            {
+	      _set_errno (map_w32_to_errno (GetLastError ()));
+              err = -1;
+            }
+          else
+            err = 0;
+        }
+      mem_free (w32_cookie);
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
+static es_cookie_io_functions_t estream_functions_w32 =
+  {
+    es_func_w32_read,
+    es_func_w32_write,
+    es_func_w32_seek,
+    es_func_w32_destroy
+  };
+#endif /*HAVE_W32_SYSTEM*/
 
 
 
@@ -1049,7 +1293,7 @@ static es_cookie_io_functions_t estream_functions_fp =
 
 /* Implementation of file I/O.  */
 
-/* Create function for file objects.  */
+/* Create function for fd objects.  */
 static int
 es_func_file_create (void **cookie, int *filedes,
 		     const char *path, unsigned int modeflags)
@@ -1269,7 +1513,8 @@ es_empty (estream_t stream)
 /* Initialize STREAM.  */
 static void
 es_initialize (estream_t stream,
-	       void *cookie, int fd, es_cookie_io_functions_t functions,
+	       void *cookie, es_syshd_t *syshd,
+               es_cookie_io_functions_t functions,
                unsigned int modeflags)
 {
   stream->intern->cookie = cookie;
@@ -1280,7 +1525,7 @@ es_initialize (estream_t stream,
   stream->intern->func_seek = functions.func_seek;
   stream->intern->func_close = functions.func_close;
   stream->intern->strategy = _IOFBF;
-  stream->intern->fd = fd;
+  stream->intern->syshd = *syshd;
   stream->intern->print_ntotal = 0;
   stream->intern->indicators.err = 0;
   stream->intern->indicators.eof = 0;
@@ -1329,7 +1574,7 @@ es_deinitialize (estream_t stream)
 
 /* Create a new stream object, initialize it.  */
 static int
-es_create (estream_t *stream, void *cookie, int fd,
+es_create (estream_t *stream, void *cookie, es_syshd_t *syshd,
 	   es_cookie_io_functions_t functions, unsigned int modeflags,
            int with_locked_list)
 {
@@ -1361,7 +1606,7 @@ es_create (estream_t *stream, void *cookie, int fd,
   stream_new->intern = stream_internal_new;
 
   ESTREAM_MUTEX_INITIALIZE (stream_new->intern->lock);
-  es_initialize (stream_new, cookie, fd, functions, modeflags);
+  es_initialize (stream_new, cookie, syshd, functions, modeflags);
 
   err = es_list_add (stream_new, with_locked_list);
   if (err)
@@ -1385,9 +1630,9 @@ es_create (estream_t *stream, void *cookie, int fd,
 
 /* Deinitialize a stream object and destroy it.  */
 static int
-es_destroy (estream_t stream, int with_locked_list)
+do_close (estream_t stream, int with_locked_list)
 {
-  int err = 0;
+  int err;
 
   if (stream)
     {
@@ -1396,6 +1641,8 @@ es_destroy (estream_t stream, int with_locked_list)
       mem_free (stream->intern);
       mem_free (stream);
     }
+  else
+    err = 0;
 
   return err;
 }
@@ -1897,6 +2144,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   unsigned char *data;
   size_t data_len;
   int err;
+  es_syshd_t syshd;
 
   line_new = NULL;
   line_stream = NULL;
@@ -1910,7 +2158,8 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   if (err)
     goto out;
 
-  err = es_create (&line_stream, line_stream_cookie, -1,
+  memset (&syshd, 0, sizeof syshd);
+  err = es_create (&line_stream, line_stream_cookie, &syshd,
 		   estream_functions_mem, O_RDWR, 0);
   if (err)
     goto out;
@@ -1996,7 +2245,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
  out:
 
   if (line_stream)
-    es_destroy (line_stream, 0);
+    do_close (line_stream, 0);
   else if (line_stream_cookie)
     es_func_mem_destroy (line_stream_cookie);
 
@@ -2152,12 +2401,6 @@ es_opaque_ctrl (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque_new,
 }
 
 
-static int
-es_get_fd (estream_t stream)
-{
-  return stream->intern->fd;
-}
-
 
 
 /* API.  */
@@ -2172,6 +2415,8 @@ es_init (void)
   return err;
 }
 
+
+
 estream_t
 es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 {
@@ -2181,6 +2426,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   void *cookie;
   int err;
   int fd;
+  es_syshd_t syshd;
 
   stream = NULL;
   cookie = NULL;
@@ -2193,9 +2439,12 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   err = es_func_file_create (&cookie, &fd, path, modeflags);
   if (err)
     goto out;
+  
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = fd;
 
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags, 0);
   if (err)
     goto out;
 
@@ -2211,6 +2460,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 }
 
 
+
 estream_t
 es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 	  unsigned int grow,
@@ -2222,6 +2472,7 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
   estream_t stream;
   void *cookie;
   int err;
+  es_syshd_t syshd;
 
   cookie = 0;
   stream = NULL;
@@ -2237,8 +2488,10 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
   if (err)
     goto out;
   
+  memset (&syshd, 0, sizeof syshd);
   create_called = 1;
-  err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd,
+                   estream_functions_mem, modeflags, 0);
 
  out:
 
@@ -2249,12 +2502,14 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 }
 
 
+
 estream_t
 es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
 {
   unsigned int modeflags;
   estream_t stream = NULL;
   void *cookie = NULL;
+  es_syshd_t syshd;
 
   /* Memory streams are always read/write.  We use MODE only to get
      the append flag.  */
@@ -2269,14 +2524,15 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
                           memlimit))
     return NULL;
   
-  if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0))
+  memset (&syshd, 0, sizeof syshd);
+  if (es_create (&stream, cookie, &syshd, estream_functions_mem, modeflags, 0))
     (*estream_functions_mem.func_close) (cookie);
 
   return stream;
 }
 
 
-
+
 estream_t
 es_fopencookie (void *ES__RESTRICT cookie,
 		const char *ES__RESTRICT mode,
@@ -2285,6 +2541,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
   unsigned int modeflags;
   estream_t stream;
   int err;
+  es_syshd_t syshd;
 
   stream = NULL;
   modeflags = 0;
@@ -2293,16 +2550,17 @@ es_fopencookie (void *ES__RESTRICT cookie,
   if (err)
     goto out;
 
-  err = es_create (&stream, cookie, -1, functions, modeflags, 0);
+  memset (&syshd, 0, sizeof syshd);
+  err = es_create (&stream, cookie, &syshd, functions, modeflags, 0);
   if (err)
     goto out;
 
  out:
-
   return stream;
 }
 
 
+
 estream_t
 do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
 {
@@ -2311,6 +2569,7 @@ do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
   estream_t stream;
   void *cookie;
   int err;
+  es_syshd_t syshd;
 
   stream = NULL;
   cookie = NULL;
@@ -2324,12 +2583,13 @@ do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
   if (err)
     goto out;
 
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = filedes;
   create_called = 1;
-  err = es_create (&stream, cookie, filedes, estream_functions_fd,
+  err = es_create (&stream, cookie, &syshd, estream_functions_fd,
                    modeflags, with_locked_list);
 
  out:
-
   if (err && create_called)
     (*estream_functions_fd.func_close) (cookie);
 
@@ -2350,6 +2610,7 @@ es_fdopen_nc (int filedes, const char *mode)
 }
 
 
+
 estream_t
 do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
 {
@@ -2358,6 +2619,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   estream_t stream;
   void *cookie;
   int err;
+  es_syshd_t syshd;
 
   stream = NULL;
   cookie = NULL;
@@ -2372,9 +2634,11 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   err = es_func_fp_create (&cookie, fp, modeflags, no_close);
   if (err)
     goto out;
-  
+
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = fp? fileno (fp): -1;
   create_called = 1;
-  err = es_create (&stream, cookie, fp? fileno (fp):-1, estream_functions_fp,
+  err = es_create (&stream, cookie, &syshd, estream_functions_fp,
                    modeflags, with_locked_list);
 
  out:
@@ -2407,6 +2671,87 @@ es_fpopen_nc (FILE *fp, const char *mode)
 {
   return do_fpopen (fp, mode, 1, 0);
 }
+
+
+
+#ifdef HAVE_W32_SYSTEM
+estream_t
+do_w32open (HANDLE hd, const char *mode,
+            int no_close, int with_locked_list)
+{
+  unsigned int modeflags;
+  int create_called = 0;
+  estream_t stream = NULL;
+  void *cookie = NULL;
+  int err;
+  es_syshd_t syshd;
+
+  err = es_convert_mode (mode, &modeflags);
+  if (err)
+    goto leave;
+
+  err = es_func_w32_create (&cookie, hd, modeflags, no_close);
+  if (err)
+    goto leave;
+
+  syshd.type = ES_SYSHD_HANDLE;
+  syshd.u.handle = hd;
+  create_called = 1;
+  err = es_create (&stream, cookie, &syshd, estream_functions_w32,
+                   modeflags, with_locked_list);
+
+ leave:
+  if (err && create_called)
+    (*estream_functions_w32.func_close) (cookie);
+
+  return stream;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+static estream_t
+do_sysopen (es_syshd_t *syshd, const char *mode, int no_close)
+{
+  estream_t stream;
+
+  switch (syshd->type)
+    {
+    case ES_SYSHD_FD:
+    case ES_SYSHD_SOCK:
+      stream = do_fdopen (syshd->u.fd, mode, no_close, 0);
+      break;
+      
+#ifdef HAVE_W32_SYSTEM
+    case ES_SYSHD_HANDLE:
+      stream = do_w32open (syshd->u.handle, mode, no_close, 0);
+      break;
+#endif
+
+    /* FIXME: Support RVIDs under Wince?  */
+
+    default:
+      _set_errno (EINVAL);
+      stream = NULL;
+    }
+  return stream;
+}
+
+/* On POSIX systems this function is an alias for es_fdopen.  Under
+   Windows it uses the bare W32 API and thus a HANDLE instead of a
+   file descriptor.  */
+estream_t
+es_sysopen (es_syshd_t *syshd, const char *mode)
+{
+  return do_sysopen (syshd, mode, 0);
+}
+
+/* Same as es_sysopen but the handle/fd will not be closed by
+   es_fclose.  */
+estream_t
+es_sysopen_nc (es_syshd_t *syshd, const char *mode)
+{
+  return do_sysopen (syshd, mode, 1);
+}
+
 
 
 /* Set custom standard descriptors to be used for stdin, stdout and
@@ -2500,6 +2845,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       int create_called;
       void *cookie;
       int fd;
+      es_syshd_t syshd;
 
       cookie = NULL;
       create_called = 0;
@@ -2516,8 +2862,10 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       if (err)
 	goto leave;
 
+      syshd.type = ES_SYSHD_FD;
+      syshd.u.fd = fd;
       create_called = 1;
-      es_initialize (stream, cookie, fd, estream_functions_fd, modeflags);
+      es_initialize (stream, cookie, &syshd, estream_functions_fd, modeflags);
 
     leave:
 
@@ -2526,7 +2874,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	  if (create_called)
 	    es_func_fd_destroy (cookie);
       
-	  es_destroy (stream, 0);
+	  do_close (stream, 0);
 	  stream = NULL;
 	}
       else
@@ -2541,7 +2889,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       /* FIXME?  We don't support re-opening at the moment.  */
       _set_errno (EINVAL);
       es_deinitialize (stream);
-      es_destroy (stream, 0);
+      do_close (stream, 0);
       stream = NULL;
     }
 
@@ -2554,15 +2902,47 @@ es_fclose (estream_t stream)
 {
   int err;
 
-  err = es_destroy (stream, 0);
+  err = do_close (stream, 0);
 
   return err;
 }
 
+
 int
 es_fileno_unlocked (estream_t stream)
 {
-  return es_get_fd (stream);
+  es_syshd_t syshd;
+
+  if (es_syshd (stream, &syshd))
+    return -1;
+  switch (syshd.type)
+    {
+    case ES_SYSHD_FD:   return syshd.u.fd;
+    case ES_SYSHD_SOCK: return syshd.u.sock;
+    default: 
+      _set_errno (EINVAL);
+      return -1;
+    }
+}
+
+
+/* Return the handle of a stream which has been opened by es_sysopen.
+   The caller needs to pass a structure which will be filled with the
+   sys handle.  Return 0 on success or true on error and sets errno.
+   This is the unlocked version.  */
+int
+es_syshd_unlocked (estream_t stream, es_syshd_t *syshd)
+{
+  if (!stream || !syshd || stream->intern->syshd.type == ES_SYSHD_NONE)
+    {
+      if (syshd)
+        syshd->type = ES_SYSHD_NONE;
+      _set_errno (EINVAL);
+      return -1;
+    }
+  
+  *syshd = stream->intern->syshd;
+  return 0;
 }
 
 
@@ -2594,6 +2974,23 @@ es_fileno (estream_t stream)
 
   ESTREAM_LOCK (stream);
   ret = es_fileno_unlocked (stream);
+  ESTREAM_UNLOCK (stream);
+
+  return ret;
+}
+
+
+/* Return the handle of a stream which has been opened by es_sysopen.
+   The caller needs to pass a structure which will be filled with the
+   sys handle.  Return 0 on success or true on error and sets errno.
+   This is the unlocked version.  */
+int
+es_syshd (estream_t stream, es_syshd_t *syshd)
+{
+  int ret;
+
+  ESTREAM_LOCK (stream);
+  ret = es_syshd_unlocked (stream, syshd);
   ESTREAM_UNLOCK (stream);
 
   return ret;
@@ -3371,6 +3768,7 @@ es_tmpfile (void)
   void *cookie;
   int err;
   int fd;
+  es_syshd_t syshd;
 
   create_called = 0;
   stream = NULL;
@@ -3388,11 +3786,12 @@ es_tmpfile (void)
   if (err)
     goto out;
 
+  syshd.type = ES_SYSHD_FD;
+  syshd.u.fd = fd;
   create_called = 1;
-  err = es_create (&stream, cookie, fd, estream_functions_fd, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags, 0);
 
  out:
-
   if (err)
     {
       if (create_called)

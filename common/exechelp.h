@@ -52,15 +52,24 @@ gpg_error_t gnupg_create_inbound_pipe (int filedes[2]);
 gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
 
 
-/* Fork and exec the PGMNAME, connect the file descriptor of INFILE to
-   stdin, write the output to OUTFILE.  INFILE or PUTFILE may be NULL
-   to connect thenm to /dev/null.  Returns a new stream in STATUSFILE
-   for stderr and the pid of the process in PID. The arguments for the
-   process are expected in the NULL terminated array ARGV.  The
-   program name itself should not be included there.  If PREEXEC is
-   not NULL, that function will be called right before the exec.
-   Calling gnupg_wait_process and gnupg_release_process is required.
-   Returns 0 on success or an error code.
+/* Fork and exec the PGMNAME.  If INFP is NULL connect /dev/null to
+   stdin of the new process; if it is not NULL connect the file
+   descriptor retrieved from INFP to stdin.  If R_OUTFP is NULL
+   connect stdout of the new process to /dev/null; if it is not NULL
+   store the address of a pointer to a new estream there.  If R_ERRFP
+   is NULL connect stderr of the new process to /dev/null; if it is
+   not NULL store the address of a pointer to a new estream there.  On
+   success the pid of the new process is stored at PID.  On error -1
+   is stored at PID and if R_OUTFP or R_ERRFP are not NULL, NULL is
+   stored there.
+
+   The arguments for the process are expected in the NULL terminated
+   array ARGV.  The program name itself should not be included there.
+   If PREEXEC is not NULL, the given function will be called right
+   before the exec. 
+
+   Returns 0 on success or an error code.  Calling gnupg_wait_process
+   and gnupg_release_process is required if the function succeeded.
 
    FLAGS is a bit vector:
 
@@ -74,10 +83,14 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
           allows SetForegroundWindow for all childs of this process.
 
  */
-gpg_error_t gnupg_spawn_process (const char *pgmname, const char *argv[],
-                                 estream_t infile, estream_t outfile,
-                                 void (*preexec)(void), unsigned int flags,
-                                 estream_t *statusfile, pid_t *pid);
+gpg_error_t
+gnupg_spawn_process (const char *pgmname, const char *argv[],
+                     gpg_err_source_t errsource,
+                     void (*preexec)(void), unsigned int flags,
+                     estream_t infp,
+                     estream_t *r_outfp,
+                     estream_t *r_errfp,
+                     pid_t *pid);
 
 
 /* Simplified version of gnupg_spawn_process.  This function forks and

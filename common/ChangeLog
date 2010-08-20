@@ -1,3 +1,31 @@
+2010-08-20  Werner Koch  <wk@g10code.com>
+
+	* exechelp-w32.c (create_inheritable_pipe): Change arg to HANDLE.
+
+	* estream.h (es_sysopen_t): New.
+	* estream.c (es_func_w32_create, es_func_w32_read)
+	(es_func_w32_write, es_func_w32_seek, es_func_w32_destroy)
+	(estream_functions_w32, estream_cookie_fd): New.  Only for W32.
+	(es_sysopen, es_sysopen_nc): New.
+	(do_w32open, do_sysopen): New.
+	(es_syshd, es_syshd_unlocked): New.
+	(struct estream_internal): Replace filed FD by SYSHD.
+	(es_initialize): Clear SYSHD_VALID.
+	(map_w32_to_errno): New.
+	(es_get_fd): Remove.
+	(es_fileno_unlocked): Re-implement using es_syshd.
+	(es_initialize, es_create): Replace arg FD by SYSHD.
+	(es_fopen, es_mopen, es_fopenmem, do_fdopen, do_fpopen)
+	(es_tmpfile): Use SYSHD instead of FD.
+	(es_destroy): Rename to do_close.
+
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* exechelp-posix.c (create_pipe_and_estream): New.
+	(gnupg_spawn_process): Rework this function and its calling
+	convention; it is not used anyway.
+	* exechelp-w32.c (gnupg_spawn_process): Ditto.
+
 2010-08-18  Werner Koch  <wk@g10code.com>
 
 	* logging.c (writen): Add arg IS_SOCKET.

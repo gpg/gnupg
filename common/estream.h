@@ -78,6 +78,8 @@
 #define es_fopenmem           _ESTREAM_PREFIX(es_fopenmem)
 #define es_fdopen             _ESTREAM_PREFIX(es_fdopen)
 #define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
+#define es_sysopen            _ESTREAM_PREFIX(es_sysopen)
+#define es_sysopen_nc         _ESTREAM_PREFIX(es_sysopen_nc)
 #define es_fpopen             _ESTREAM_PREFIX(es_fpopen)
 #define es_fpopen_nc          _ESTREAM_PREFIX(es_fpopen_nc)
 #define _es_set_std_fd        _ESTREAM_PREFIX(_es_set_std_fd)
@@ -211,6 +213,29 @@ typedef struct es_cookie_io_functions
   es_cookie_close_function_t func_close;
 } es_cookie_io_functions_t;
 
+
+enum es_syshd_types 
+  {
+    ES_SYSHD_NONE,  /* No system handle available.  */
+    ES_SYSHD_FD,    /* A file descriptor as returned by open().  */
+    ES_SYSHD_SOCK,  /* A socket as returned by socket().        */
+    ES_SYSHD_RVID,  /* A rendevous id (see libassuan's gpgcedev.c).  */
+    ES_SYSHD_HANDLE /* A HANDLE object (Windows).  */
+  };
+
+typedef struct
+{
+  enum es_syshd_types type;
+  union {
+    int fd;
+    int sock;
+    int rvid;
+    void *handle;
+  } u;
+} es_syshd_t;
+
+
+
 
 #ifndef _ESTREAM_GCC_A_PRINTF
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
@@ -245,6 +270,8 @@ estream_t es_mopen (unsigned char *ES__RESTRICT data,
 estream_t es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode);
 estream_t es_fdopen (int filedes, const char *mode);
 estream_t es_fdopen_nc (int filedes, const char *mode);
+estream_t es_sysopen (es_syshd_t *syshd, const char *mode);
+estream_t es_sysopen_nc (es_syshd_t *syshd, const char *mode);
 estream_t es_fpopen (FILE *fp, const char *mode);
 estream_t es_fpopen_nc (FILE *fp, const char *mode);
 estream_t es_freopen (const char *ES__RESTRICT path,
@@ -256,6 +283,8 @@ estream_t es_fopencookie (void *ES__RESTRICT cookie,
 int es_fclose (estream_t stream);
 int es_fileno (estream_t stream);
 int es_fileno_unlocked (estream_t stream);
+int es_syshd (estream_t stream, es_syshd_t *syshd);
+int es_syshd_unlocked (estream_t stream, es_syshd_t *syshd);
 
 void _es_set_std_fd (int no, int fd);
 estream_t _es_get_std_stream (int fd);

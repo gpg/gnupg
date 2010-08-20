@@ -226,15 +226,18 @@ main (int argc, char **argv)
 	      es_putc ('\n', es_stderr);
 	      exit (1);
 	    }
-	  gc_component_retrieve_options (idx);
-          if (gc_process_gpgconf_conf (NULL, 1, 0, NULL))
-            exit (1);
-	  if (cmd == aListOptions)
-	    gc_component_list_options (idx, get_outfp (&outfp));
-	  else if (cmd == aChangeOptions)
-            gc_component_change_options (idx, es_stdin, get_outfp (&outfp));
-	  else
+          if (cmd == aCheckOptions)
 	    gc_component_check_options (idx, get_outfp (&outfp), NULL);
+          else
+            {
+              gc_component_retrieve_options (idx);
+              if (gc_process_gpgconf_conf (NULL, 1, 0, NULL))
+                exit (1);
+              if (cmd == aListOptions)
+                gc_component_list_options (idx, get_outfp (&outfp));
+              else if (cmd == aChangeOptions)
+                gc_component_change_options (idx, es_stdin, get_outfp (&outfp));
+            }
 	}
       break;
 

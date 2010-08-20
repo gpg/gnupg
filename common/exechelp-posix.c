@@ -299,44 +299,94 @@ gnupg_create_outbound_pipe (int filedes[2])
 }
 
 
+
+static gpg_error_t
+create_pipe_and_estream (int filedes[2], estream_t *r_fp,
+                         gpg_err_source_t errsource)
+{
+  gpg_error_t err;
+
+  if (pipe (filedes) == -1)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      filedes[0] = filedes[1] = -1;
+      *r_fp = NULL;
+      return err;
+    }
+
+  *r_fp = es_fdopen (filedes[0], "r");
+  if (!*r_fp)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      log_error (_("error creating a stream for a pipe: %s\n"),
+                 gpg_strerror (err));
+      close (filedes[0]);
+      close (filedes[1]);
+      filedes[0] = filedes[1] = -1;
+      return err;
+    }
+  return 0;
+}
+  
+
+
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     estream_t infile, estream_t outfile,
+                     gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t *statusfile, pid_t *pid)
+                     estream_t infp,
+                     estream_t *r_outfp,
+                     estream_t *r_errfp,
+                     pid_t *pid)
 {
   gpg_error_t err;
-  int fd, fdout, rp[2];
+  int infd = -1;
+  int outpipe[2] = {-1, -1};
+  int errpipe[2] = {-1, -1};
+  estream_t outfp = NULL;
+  estream_t errfp = NULL;
 
   (void)flags; /* Currently not used.  */
 
-  *statusfile = NULL;
-  *pid = (pid_t)(-1);
+  if (r_outfp)
+    *r_outfp = NULL;
+  if (r_errfp)
+    *r_errfp = NULL;
+  *pid = (pid_t)(-1); /* Always required.  */
 
-  if (infile)
+  if (infp)
     {
-      es_fflush (infile);
-      es_rewind (infile);
-      fd = es_fileno (infile);
+      es_fflush (infp);
+      es_rewind (infp);
+      infd = es_fileno (infp);
+      if (infd == -1)
+        return gpg_err_make (errsource, GPG_ERR_INV_VALUE);
     }
-  else
-    fd = -1;
 
-  if (outfile)
-    fdout = es_fileno (outfile);
-  else
-    fdout = -1;
-
-  if ((infile && fd == -1) || (outfile && fdout == -1))
-    log_fatal ("no file descriptor for file passed to gnupg_spawn_process\n");
-
-  if (pipe (rp) == -1)
+  if (r_outfp)
     {
-      err = gpg_error_from_syserror ();
-      log_error (_("error creating a pipe: %s\n"), strerror (errno));
-      return err;
+      err = create_pipe_and_estream (outpipe, &outfp, errsource);
+      if (err)
+        return err;
     }
+
+  if (r_errfp)
+    {
+      err = create_pipe_and_estream (errpipe, &errfp, errsource);
+      if (err)
+        {
+          if (outfp)
+            es_fclose (outfp);
+          else if (outpipe[0] != -1)
+            close (outpipe[0]);
+          if (outpipe[1] != -1)
+            close (outpipe[1]);
+          return err;
+        }
+    }
+
 
 #ifdef USE_GNU_PTH      
   *pid = pth_fork? pth_fork () : fork ();
@@ -345,33 +395,45 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 #endif
   if (*pid == (pid_t)(-1))
     {
-      err = gpg_error_from_syserror ();
-      log_error (_("error forking process: %s\n"), strerror (errno));
-      close (rp[0]);
-      close (rp[1]);
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      log_error (_("error forking process: %s\n"), gpg_strerror (err));
+
+      if (outfp)
+        es_fclose (outfp);
+      else if (outpipe[0] != -1)
+        close (outpipe[0]);
+      if (outpipe[1] != -1)
+        close (outpipe[1]);
+
+      if (errfp)
+        es_fclose (errfp);
+      else if (errpipe[0] != -1)
+        close (errpipe[0]);
+      if (errpipe[1] != -1)
+        close (errpipe[1]);
       return err;
     }
 
   if (!*pid)
     { 
+      /* This is the child. */
       gcry_control (GCRYCTL_TERM_SECMEM);
-      /* Run child. */
-      do_exec (pgmname, argv, fd, fdout, rp[1], preexec);
+      es_fclose (outfp);
+      es_fclose (errfp);
+      do_exec (pgmname, argv, infd, outpipe[1], errpipe[1], preexec);
       /*NOTREACHED*/
     }
 
-  /* Parent. */
-  close (rp[1]);
+  /* This is the parent. */
+  if (outpipe[1] != -1)
+    close (outpipe[1]);
+  if (errpipe[1] != -1)
+    close (errpipe[1]);
 
-  *statusfile = es_fdopen (rp[0], "r");
-  if (!*statusfile)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("can't fdopen pipe for reading: %s\n"), strerror (errno));
-      kill (*pid, SIGTERM);
-      *pid = (pid_t)(-1);
-      return err;
-    }
+  if (r_outfp)
+    *r_outfp = outfp;
+  if (r_errfp)
+    *r_errfp = errfp;
 
   return 0;
 }
