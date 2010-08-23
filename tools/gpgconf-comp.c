@@ -1903,7 +1903,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
     }
   if (length < 0 || ferror (config))
     gc_error (1, errno, "error reading from %s",pgmname);
-  if (fclose (config) && ferror (config))
+  if (fclose (config))
     gc_error (1, errno, "error closing %s", pgmname);
 
   err = gnupg_wait_process (pgmname, pid, &exitcode);
@@ -2004,7 +2004,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
       if (length < 0 || ferror (config))
 	gc_error (1, errno, "error reading from %s", config_filename);
-      if (fclose (config) && ferror (config))
+      if (fclose (config))
 	gc_error (1, errno, "error closing %s", config_filename);
     }
 
@@ -2084,7 +2084,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   if (config_option->flags & GC_OPT_FLAG_NO_CHANGE)
     list_option->flags |= GC_OPT_FLAG_NO_CHANGE;
 
-  if (list_file && fclose (list_file) && ferror (list_file))
+  if (list_file && fclose (list_file))
     gc_error (1, errno, "error closing %s", list_filename);
   xfree (line);
 }
@@ -2305,9 +2305,9 @@ copy_file (const char *src_name, const char *dst_name)
       return -1;
     }
 
-  if (fclose (dst) && ferror (dst))
+  if (fclose (dst))
     gc_error (1, errno, "error closing %s", dst_name);
-  if (fclose (src) && ferror (src))
+  if (fclose (src))
     gc_error (1, errno, "error closing %s", src_name);
 
   return 0;
