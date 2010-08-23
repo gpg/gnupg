@@ -94,43 +94,12 @@ get_max_fds (void)
 }
 
 
-/* Close all file descriptors starting with descriptor FIRST.  If
-   EXCEPT is not NULL, it is expected to be a list of file descriptors
-   which shall not be closed.  This list shall be sorted in ascending
-   order with the end marked by -1.  */
+/* Under Windows this is a dummy function.  */
 void
 close_all_fds (int first, int *except)
 {
-  int max_fd = get_max_fds ();
-  int fd, i, except_start;
-
-  if (except)
-    {
-      except_start = 0;
-      for (fd=first; fd < max_fd; fd++)
-        {
-          for (i=except_start; except[i] != -1; i++)
-            {
-              if (except[i] == fd)
-                {
-                  /* If we found the descriptor in the exception list
-                     we can start the next compare run at the next
-                     index because the exception list is ordered.  */
-                except_start = i + 1;
-                break;
-                }
-            }
-          if (except[i] == -1)
-            close (fd);
-        }
-    }
-  else
-    {
-      for (fd=first; fd < max_fd; fd++)
-        close (fd);
-    }
-
-  gpg_err_set_errno (0);
+  (void)first;
+  (void)except;
 }
 
 

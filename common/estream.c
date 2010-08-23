@@ -202,8 +202,16 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 
 #define ES_DEFAULT_OPEN_MODE (S_IRUSR | S_IWUSR)
 
-/* An internal stream object.  */
+/* A linked list to hold notification functions. */
+struct notify_list_s
+{
+  struct notify_list_s *next;
+  void (*fnc) (estream_t, void*); /* The notification function.  */
+  void *fnc_value;                /* The value to be passed to FNC.  */
+};
+typedef struct notify_list_s *notify_list_t;
 
+/* An internal stream object.  */
 struct estream_internal
 {
   unsigned char buffer[BUFFER_BLOCK_SIZE];
@@ -230,6 +238,7 @@ struct estream_internal
   unsigned int stdstream_fd:2;   /* 0, 1 or 2 for a standard stream.  */
   unsigned int printable_fname_inuse: 1;  /* es_fname_get has been used.  */
   size_t print_ntotal;           /* Bytes written from in print_writer. */
+  notify_list_t onclose;         /* On close notify function list.  */
 };
 
 
@@ -1534,6 +1543,7 @@ es_initialize (estream_t stream,
   stream->intern->deallocate_buffer = 0;
   stream->intern->printable_fname = NULL;
   stream->intern->printable_fname_inuse = 0;
+  stream->intern->onclose = NULL;
 
   stream->data_len = 0;
   stream->data_offset = 0;
@@ -1568,6 +1578,12 @@ es_deinitialize (estream_t stream)
   mem_free (stream->intern->printable_fname);
   stream->intern->printable_fname = NULL;
   stream->intern->printable_fname_inuse = 0;
+  while (stream->intern->onclose)
+    {
+      notify_list_t tmp = stream->intern->onclose->next;
+      mem_free (stream->intern->onclose);
+      stream->intern->onclose = tmp;
+    }
 
   return err;
 }
@@ -1637,6 +1653,16 @@ do_close (estream_t stream, int with_locked_list)
   if (stream)
     {
       es_list_remove (stream, with_locked_list);
+      while (stream->intern->onclose)
+        {
+          notify_list_t tmp = stream->intern->onclose->next;
+
+          if (stream->intern->onclose->fnc)
+            stream->intern->onclose->fnc (stream,
+                                          stream->intern->onclose->fnc_value);
+          mem_free (stream->intern->onclose);
+          stream->intern->onclose = tmp;
+        }
       err = es_deinitialize (stream);
       mem_free (stream->intern);
       mem_free (stream);
@@ -1646,6 +1672,34 @@ do_close (estream_t stream, int with_locked_list)
 
   return err;
 }
+
+
+/* This worker function is called with a locked stream.  */
+static int
+do_onclose (estream_t stream, int mode,
+            void (*fnc) (estream_t, void*), void *fnc_value)
+{
+  notify_list_t item;
+
+  if (!mode)
+    {
+      for (item = stream->intern->onclose; item; item = item->next)
+        if (item->fnc && item->fnc == fnc && item->fnc_value == fnc_value)
+          item->fnc = NULL; /* Disable this notification.  */
+    }
+  else
+    {
+      item = mem_alloc (sizeof *item);
+      if (!item)
+        return -1;
+      item->fnc = fnc;
+      item->fnc_value = fnc_value;
+      item->next = stream->intern->onclose;
+      stream->intern->onclose = item;
+    }
+  return 0;
+}
+
 
 /* Try to read BYTES_TO_READ bytes FROM STREAM into BUFFER in
    unbuffered-mode, storing the amount of bytes read in
@@ -2760,6 +2814,7 @@ es_sysopen_nc (es_syshd_t *syshd, const char *mode)
 void
 _es_set_std_fd (int no, int fd)
 {
+  fprintf (stderr, "es_set_std_fd(%d, %d)\n", no, fd);
   ESTREAM_LIST_LOCK;
   if (no >= 0 && no < 3 && !custom_std_fds_valid[no])
     {
@@ -2904,6 +2959,34 @@ es_fclose (estream_t stream)
 
   err = do_close (stream, 0);
 
+  return err;
+}
+
+
+/* Register or unregister a close notification function for STREAM.
+   FNC is the function to call and FNC_VALUE the value passed as
+   second argument.  To register the notification the value for MODE
+   must be 1.  If mode is 0 the function tries to remove or disable an
+   already registered notification; for this to work the value of FNC
+   and FNC_VALUE must be the same as with the registration and
+   FNC_VALUE must be a unique value.  No error will be returned if
+   MODE is 0.  Unregistered should only be used in the error case
+   because it may not remove memory internall allocated for the
+   onclose handler.
+
+   The notification will be called right before the stream is closed.
+   It may not call any estream function for STREAM, neither direct nor
+   indirectly. */
+int
+es_onclose (estream_t stream, int mode,
+            void (*fnc) (estream_t, void*), void *fnc_value)
+{
+  int err;
+
+  ESTREAM_LOCK (stream);
+  err = do_onclose (stream, mode, fnc, fnc_value);
+  ESTREAM_UNLOCK (stream);
+  
   return err;
 }
 

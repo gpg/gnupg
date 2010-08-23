@@ -118,9 +118,18 @@ init_common_subsystems (int *argcp, char ***argvp)
   (void)argvp;
 #endif
 
+  /* Access the standard estreams as early as possible.  If we don't
+     do this the original stdio streams may have been closed when
+     _es_get_std_stream is first use and in turn it would connect to
+     the bit bucket.  */
+  {
+    int i;
+    for (i=0; i < 3; i++)
+      (void)_es_get_std_stream (i);
+  }
+
   /* --version et al shall use estream as well.  */
   argparse_register_outfnc (writestring_via_estream);
-
 }
 
 
@@ -191,6 +200,6 @@ parse_std_file_handles (int *argcp, char ***argvp)
         argv[i] = NULL;
     }
 
-
+  
 }
 #endif /*HAVE_W32CE_SYSTEM*/

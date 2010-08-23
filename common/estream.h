@@ -87,6 +87,7 @@
 #define es_freopen            _ESTREAM_PREFIX(es_freopen)
 #define es_fopencookie        _ESTREAM_PREFIX(es_fopencookie)
 #define es_fclose             _ESTREAM_PREFIX(es_fclose)
+#define es_onclose            _ESTREAM_PREFIX(es_onclose)
 #define es_fileno             _ESTREAM_PREFIX(es_fileno)
 #define es_fileno_unlocked    _ESTREAM_PREFIX(es_fileno_unlocked)
 #define es_flockfile          _ESTREAM_PREFIX(es_flockfile)
@@ -281,6 +282,8 @@ estream_t es_fopencookie (void *ES__RESTRICT cookie,
 			  const char *ES__RESTRICT mode,
 			  es_cookie_io_functions_t functions);
 int es_fclose (estream_t stream);
+int es_onclose (estream_t stream, int mode,
+                void (*fnc) (estream_t, void*), void *fnc_value);
 int es_fileno (estream_t stream);
 int es_fileno_unlocked (estream_t stream);
 int es_syshd (estream_t stream, es_syshd_t *syshd);

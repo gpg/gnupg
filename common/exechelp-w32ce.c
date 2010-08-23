@@ -78,7 +78,8 @@
 struct feeder_thread_parms
 {
   estream_t stream;
-  int fd;
+  volatile int stream_valid;
+  HANDLE hd;
   int direction;
 };
 
@@ -89,62 +90,97 @@ feeder_thread (void *arg)
 {
   struct feeder_thread_parms *parm = arg;
   char buffer[4096];
+  int rc;
 
   if (parm->direction)
     {
-      size_t nread;
+      size_t nread = 0;
       DWORD nwritten;
 
-      while (!es_read (parm->stream, buffer, sizeof buffer, &nread))
+      log_debug ("feeder_thread estream->pipe: stream=%p pipe=%p\n",
+                 parm->stream, parm->hd);
+      while (parm->stream_valid
+             && !es_read (parm->stream, buffer, sizeof buffer, &nread))
         {
           do
             {
-              if (!WriteFile (fd_to_handle (parm->fd), 
-                              buffer, nread, &nwritten, NULL))
+              pth_enter ();
+              rc = WriteFile (parm->hd, buffer, nread, &nwritten, NULL);
+              pth_leave ();
+              if (!rc)
                 {
-                  log_debug ("feeder(%d): WriteFile error: rc=%d\n",
-                             parm->fd, (int)GetLastError ());
+                  log_debug ("feeder(%p): WriteFile error: rc=%d\n",
+                             parm->hd, (int)GetLastError ());
                   goto leave;
                 }
               nread -= nwritten;
             }
           while (nread);
         }
-      if (nread)
-        log_debug ("feeder(%d): es_read error: %s\n",
-                   parm->fd, strerror (errno));
+      if (!parm->stream_valid)
+        log_debug ("feeder(%p): closed by other thread\n", parm->hd);
+      else if (nread)
+        log_debug ("feeder(%p): es_read error: %s\n",
+                   parm->hd, strerror (errno));
     }
   else
     {
-      DWORD nread;
+      DWORD nread = 0;
       size_t nwritten;
 
-      while (ReadFile (fd_to_handle (parm->fd),
-                       buffer, sizeof buffer, &nread, NULL) && nread)
+      log_debug ("feeder_thread pipe->estream: stream=%p pipe=%p\n",
+                 parm->stream, parm->hd);
+      while ( (pth_enter (),
+               (rc = ReadFile (parm->hd, buffer, sizeof buffer, &nread, NULL)),
+               pth_leave (),
+               rc) && nread)
         {
-          do 
+          log_debug ("feeder_thread pipe->estream: read %d bytes\n",
+                     (int)nread);
+          do
             {
-              if (es_write (parm->stream, buffer, nread, &nwritten))
+              if (parm->stream_valid
+                  && es_write (parm->stream, buffer, nread, &nwritten))
                 {
-                  log_debug ("feeder(%d): es_write error: %s\n",
-                             parm->fd, strerror (errno));
+                  log_debug ("feeder(%p): es_write error: %s\n",
+                             parm->hd, strerror (errno));
                   goto leave;
                 }
+              log_debug ("feeder_thread pipe->estream: es_wrote %d bytes\n",
+                         (int)nwritten);
               nread -= nwritten;
             }
-          while (nread);
+          while (nread && parm->stream_valid);
         }
-      if (nread)
-        log_debug ("feeder(%d): ReadFile error: rc=%d\n",
-                   parm->fd, (int)GetLastError ());
+      if (!parm->stream_valid)
+        log_debug ("feeder(%p): closed by other thread\n", parm->hd);
+      else if (nread)
+        log_debug ("feeder(%p): ReadFile error: rc=%d\n",
+                   parm->hd, (int)GetLastError ());
       else
-        log_debug ("feeder(%d): eof\n", parm->fd);
+        log_debug ("feeder(%p): eof\n", parm->hd);
     }
 
 leave:
-  CloseHandle (fd_to_handle (parm->fd));
+  log_debug ("feeder(%p): waiting for es_fclose\n", parm->hd);
+  while (parm->stream_valid)
+    pth_yield (NULL);
+  log_debug ("feeder(%p): about to close the pipe handle\n", parm->hd);
+  CloseHandle (parm->hd);
+  log_debug ("feeder(%p): pipe handle closed\n", parm->hd);
   xfree (parm);
   return NULL;
+}
+#endif /*USE_GNU_PTH*/
+
+#ifdef USE_GNU_PTH      
+static void
+feeder_onclose_notification (estream_t stream, void *opaque)
+{
+  struct feeder_thread_parms *parm = opaque;
+  (void)stream;
+  log_debug ("feeder(%p): received onclose note\n", parm->hd);
+  parm->stream_valid = 0;
 }
 #endif /*USE_GNU_PTH*/
 
@@ -153,7 +189,7 @@ leave:
    from the stream to the pipe, otherwise from the pipe to the
    stream.  */
 static gpg_error_t
-start_feeder (estream_t stream, int fd, int direction)
+start_feeder (estream_t stream, HANDLE hd, int direction)
 {
 #ifdef USE_GNU_PTH      
   gpg_error_t err;
@@ -164,19 +200,27 @@ start_feeder (estream_t stream, int fd, int direction)
   if (!parm)
     return gpg_error_from_syserror ();
   parm->stream = stream;
-  parm->fd = fd;
+  parm->stream_valid = 1;
+  parm->hd = hd;
   parm->direction = direction;
+
+  if (es_onclose (stream, 1, feeder_onclose_notification, parm))
+    {
+      err = gpg_error_from_syserror ();
+      xfree (parm);
+      return err;
+    }
   
   tattr = pth_attr_new ();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "exec-feeder");
   
-  log_error ("spawning new feeder(%p, %d, %d)\n", stream, fd, direction);
+  log_debug ("spawning new feeder(%p, %p, %d)\n", stream, hd, direction);
   if(!pth_spawn (tattr, feeder_thread, parm))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error spawning feeder: %s\n", gpg_strerror (err));
+      es_onclose (stream, 0, feeder_onclose_notification, parm);
       xfree (parm);
     }
   else
@@ -186,7 +230,7 @@ start_feeder (estream_t stream, int fd, int direction)
   return err;
 #else
   (void)stream;
-  (void)fd;
+  (void)hd;
   (void)direction;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* No Pth.  */
 #endif
@@ -214,50 +258,19 @@ get_max_fds (void)
 }
 
 
-/* Close all file descriptors starting with descriptor FIRST.  If
-   EXCEPT is not NULL, it is expected to be a list of file descriptors
-   which shall not be closed.  This list shall be sorted in ascending
-   order with the end marked by -1.  */
+/* Under Windows this is a dummy function.  */
 void
 close_all_fds (int first, int *except)
 {
-  int max_fd = get_max_fds ();
-  int fd, i, except_start;
-
-  if (except)
-    {
-      except_start = 0;
-      for (fd=first; fd < max_fd; fd++)
-        {
-          for (i=except_start; except[i] != -1; i++)
-            {
-              if (except[i] == fd)
-                {
-                  /* If we found the descriptor in the exception list
-                     we can start the next compare run at the next
-                     index because the exception list is ordered.  */
-                except_start = i + 1;
-                break;
-                }
-            }
-          if (except[i] == -1)
-            close (fd);
-        }
-    }
-  else
-    {
-      for (fd=first; fd < max_fd; fd++)
-        close (fd);
-    }
-
-  gpg_err_set_errno (0);
+  (void)first;
+  (void)except;
 }
 
 
 /* Returns an array with all currently open file descriptors.  The end
    of the array is marked by -1.  The caller needs to release this
    array using the *standard free* and not with xfree.  This allow the
-   use of this fucntion right at startup even before libgcrypt has
+   use of this function right at startup even before libgcrypt has
    been initialized.  Returns NULL on error and sets ERRNO
    accordingly.  */
 int *
@@ -335,9 +348,7 @@ copy_quoted (char *p, const char *string)
    CMDLINE gets the address of a newly allocated string.  */
 static int
 build_w32_commandline (const char * const *argv,
-		       int fd0, int fd0_isnull,
-                       int fd1, int fd1_isnull,
-                       int fd2, int fd2_isnull,
+		       int rvid0, int rvid1, int rvid2,
                        char **cmdline)
 {
   int i, n;
@@ -347,30 +358,24 @@ build_w32_commandline (const char * const *argv,
 
   p = fdbuf;
   *p = 0;
-  if (fd0)
-    {
-      if (fd0_isnull)
-        strcpy (p, "-&S0=null ");
-      else
-        snprintf (p, 25, "-&S0=%d ", fd0);
-      p += strlen (p);
-    }
-  if (fd1)
-    {
-      if (fd1_isnull)
-        strcpy (p, "-&S1=null ");
-      else
-        snprintf (p, 25, "-&S1=%d ", fd1);
-      p += strlen (p);
-    }
-  if (fd2)
-    {
-      if (fd2_isnull)
-        strcpy (p, "-&S2=null ");
-      else
-        snprintf (p, 25, "-&S2=%d ", fd2);
-      p += strlen (p);
-    }
+
+  if (rvid0)
+    snprintf (p, 25, "-&S0=%d ", rvid0);
+  else
+    strcpy (p, "-&S0=null ");
+  p += strlen (p);
+
+  if (rvid1)
+    snprintf (p, 25, "-&S1=%d ", rvid1);
+  else
+    strcpy (p, "-&S1=null ");
+  p += strlen (p);
+
+  if (rvid2)
+    snprintf (p, 25, "-&S2=%d ", rvid2);
+  else
+    strcpy (p, "-&S2=null ");
+  p += strlen (p);
   
   *cmdline = NULL;
   n = strlen (fdbuf);
@@ -492,94 +497,149 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
                      estream_t *r_errfp,
                      pid_t *pid)
 {
-#if 0
   gpg_error_t err;
   PROCESS_INFORMATION pi = {NULL };
   char *cmdline;
-  int inpipe[2], outpipe[2], errpipe[2];
+  es_syshd_t syshd;
+  struct {
+    HANDLE hd;
+    int rvid;
+  } inpipe = {INVALID_HANDLE_VALUE, 0};
+  struct {
+    HANDLE hd;
+    int rvid;
+  } outpipe = {INVALID_HANDLE_VALUE, 0};
+  struct {
+    HANDLE hd;
+    int rvid;
+  } errpipe = {INVALID_HANDLE_VALUE, 0};
+  estream_t outfp = NULL;
+  estream_t errfp = NULL;
 
   (void)preexec;
   (void)flags;
   
   /* Setup return values.  */
-  *statusfile = NULL;
-  *pid = (pid_t)(-1);
+  if (r_outfp)
+    *r_outfp = NULL;
+  if (r_errfp)
+    *r_errfp = NULL;
+  *pid = (pid_t)(-1); /* Always required.  */
 
-  /* A NULL INFILE or OUTFILE is only used by gpgtar thus we don't
-     need to implement this for CE.  */
-  if (!infile || !outfile)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  log_debug ("%s: enter\n", __func__);
+  if (infp)
+    {
+      es_fflush (infp);
+      es_rewind (infp);
 
-  es_fflush (infile);
-  es_rewind (infile);
-
-  /* Create a pipe to copy our infile to the stdin of the child
-     process.  On success inpipe[1] is owned by the feeder.  */
-  err = create_inheritable_pipe (inpipe, 0);
-  if (err)
-    {
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      return err;
-    }
-  err = start_feeder (infile, inpipe[1], 1);
-  if (err)
-    {
-      log_error (_("error spawning feeder: %s\n"), gpg_strerror (err));
-      CloseHandle (fd_to_handle (inpipe[1]));
-      return err;
-    }
-
-  /* Create a pipe to copy stdout of the child process to our
-     outfile. On success outpipe[0] is owned by the feeded.  */
-  err = create_inheritable_pipe (outpipe, 1);
-  if (err)
-    {
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      return err;
-    }
-  err = start_feeder (outfile, outpipe[0], 0);
-  if (err)
-    {
-      log_error (_("error spawning feeder: %s\n"), gpg_strerror (err));
-      CloseHandle (fd_to_handle (outpipe[0]));
-      return err;
+      /* Create a pipe to copy our infile to the stdin of the child
+         process.  On success inpipe.hd is owned by the feeder.  */
+      inpipe.hd = _assuan_w32ce_prepare_pipe (&inpipe.rvid, 1);
+      if (inpipe.hd == INVALID_HANDLE_VALUE)
+        {
+          log_error ("_assuan_w32ce_prepare_pipe failed: %s\n",
+                     w32_strerror (-1));
+          gpg_err_set_errno (EIO);
+          return gpg_error_from_syserror ();
+        }
+      log_debug ("%s: inpipe %p created; hd=%p rvid=%d\n", __func__,
+                 infp, inpipe.hd, inpipe.rvid);
+      err = start_feeder (infp, inpipe.hd, 1);
+      if (err)
+        {
+          log_error ("error spawning feeder: %s\n", gpg_strerror (err));
+          CloseHandle (inpipe.hd);
+          return err;
+        }
+      inpipe.hd = INVALID_HANDLE_VALUE; /* Now owned by the feeder.  */
+      log_debug ("%s: inpipe %p created; feeder started\n", __func__,
+                 infp);
     }
 
-
-  /* Create a pipe for use with stderr of the child process.  */
-  err = create_inheritable_pipe (errpipe, 1);
-  if (err)
+  if (r_outfp)
     {
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      return err;
+      /* Create a pipe to make the stdout of the child process
+         available as a stream.  */
+      outpipe.hd = _assuan_w32ce_prepare_pipe (&outpipe.rvid, 0);
+      if (outpipe.hd == INVALID_HANDLE_VALUE)
+        {
+          log_error ("_assuan_w32ce_prepare_pipe failed: %s\n",
+                     w32_strerror (-1));
+          gpg_err_set_errno (EIO);
+          /* Fixme release other stuff/kill feeder.  */
+          return gpg_error_from_syserror ();
+        }
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = outpipe.hd;
+      err = 0;
+      outfp = es_sysopen (&syshd, "r");
+      if (!outfp)
+        {
+          err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          log_error ("error opening pipe stream: %s\n", gpg_strerror (err));
+          CloseHandle (outpipe.hd);
+          return err;
+        }
+      log_debug ("%s: outpipe %p created; hd=%p rvid=%d\n", __func__,
+                 outfp, outpipe.hd, outpipe.rvid);
+      outpipe.hd = INVALID_HANDLE_VALUE; /* Now owned by the OUTFP.  */
     }
+
+  if (r_errfp)
+    {
+      /* Create a pipe to make the stderr of the child process
+         available as a stream.  */
+      errpipe.hd = _assuan_w32ce_prepare_pipe (&errpipe.rvid, 0);
+      if (errpipe.hd == INVALID_HANDLE_VALUE)
+        {
+          log_error ("_assuan_w32ce_prepare_pipe failed: %s\n",
+                     w32_strerror (-1));
+          gpg_err_set_errno (EIO);
+          /* Fixme release other stuff/kill feeder.  */
+          return gpg_error_from_syserror ();
+        }
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = errpipe.hd;
+      err = 0;
+      errfp = es_sysopen (&syshd, "r");
+      if (!errfp)
+        {
+          err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          log_error ("error opening pipe stream: %s\n", gpg_strerror (err));
+          CloseHandle (errpipe.hd);
+          return err;
+        }
+      log_debug ("%s: errpipe %p created; hd=%p rvid=%d\n", __func__,
+                 errfp, errpipe.hd, errpipe.rvid);
+      errpipe.hd = INVALID_HANDLE_VALUE; /* Now owned by the ERRFP.  */
+    }
+
+
 
   /* Build the command line.  */
-  err = build_w32_commandline (argv,
-                               inpipe[0], 0,
-                               outpipe[1], 0,
-                               errpipe[1], 0,
+  err = build_w32_commandline (argv, inpipe.rvid, outpipe.rvid, errpipe.rvid,
                                &cmdline);
   if (err)
     {
-      CloseHandle (fd_to_handle (errpipe[0]));
+      /* Fixme release other stuff/kill feeder.  */
+      CloseHandle (errpipe.hd);
       return err; 
     }
 
-  
   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
   if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
-      CloseHandle (fd_to_handle (errpipe[0]));
+      /* Fixme release other stuff/kill feeder.  */
+      CloseHandle (errpipe.hd);
       return gpg_error (GPG_ERR_GENERAL);
     }
   xfree (cmdline);
   cmdline = NULL;
 
   /* Note: The other end of the pipe is a rendezvous id and thus there
-     is no need to close.  */
+     is no need for a close.  */
 
   log_debug ("CreateProcess ready: hProcess=%p hThread=%p"
              " dwProcessID=%d dwThreadId=%d\n",
@@ -591,20 +651,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread); 
 
-  *statusfile = es_fdopen (handle_to_fd (errpipe[0]), "r");
-  if (!*statusfile)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("can't fdopen pipe for reading: %s\n"), gpg_strerror (err));
-      CloseHandle (pi.hProcess);
-      return err;
-    }
-
+  if (r_outfp)
+    *r_outfp = outfp;
+  if (r_errfp)
+    *r_errfp = errfp;
   *pid = handle_to_pid (pi.hProcess);
   return 0;
-#else
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-#endif
 }
 
 
@@ -632,7 +684,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* Build the command line.  */
-  err = build_w32_commandline (argv, -1, 1, -1, 1, -1, 1, &cmdline);
+  err = build_w32_commandline (argv, 0, 0, 0, &cmdline);
   if (err)
     return err; 
 
@@ -755,7 +807,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   (void)envp;
   
   /* Build the command line.  */
-  err = build_w32_commandline (argv, -1, 1, -1, 1, -1, 1, &cmdline);
+  err = build_w32_commandline (argv, 0, 0, 0, &cmdline);
   if (err)
     return err; 
 

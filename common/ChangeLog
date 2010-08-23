@@ -1,3 +1,15 @@
+2010-08-23  Werner Koch  <wk@g10code.com>
+
+	* exechelp-w32ce.c: Rewrite all spawn stuff.
+
+	* exechelp-w32.c (close_all_fds) [W32]: Make it a dummy function.
+
+	* estream.c (es_onclose): New.
+	(notify_list_t, onclose): New.
+	(struct estream_internal): Add field ONCLOSE.
+	(es_initialize, es_deinitialize): Manage new field.
+	(do_close): Call onclose notify functions.
+
 2010-08-20  Werner Koch  <wk@g10code.com>
 
 	* exechelp-w32.c (create_inheritable_pipe): Change arg to HANDLE.

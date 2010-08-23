@@ -1,3 +1,17 @@
+2010-08-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (GPGNAME) [W32CE]: s/gpg2/gpg/.
+	(get_config_filename) [W32CE]: Adjust absolute file name check.
+
+	* gpgconf-comp.c (retrieve_options_from_program)
+	(retrieve_options_from_file, retrieve_options_from_program)
+	(copy_file, gc_process_gpgconf_conf): Do not use es_ferror after a
+	failed es_fclose.  Note that the stream is in any case invalid
+	after calling es_fclose and that es_fclose does set ERRNO.
+
+	* Makefile.am (maybe_commonpth_libs): New.
+	(gpgconf_LDADD): Use it.
+
 2010-08-20  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (collect_error_output): Remove extra CRs.

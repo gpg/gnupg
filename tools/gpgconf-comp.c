@@ -54,9 +54,8 @@
 
 /* There is a problem with gpg 1.4 under Windows: --gpgconf-list
    returns a plain filename without escaping.  As long as we have not
-   fixed that we need to use gpg2 - it might actually be better to use
-   gpg2 in any case.  */
-#ifdef HAVE_W32_SYSTEM
+   fixed that we need to use gpg2.  */
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
 #define GPGNAME "gpg2"
 #else
 #define GPGNAME "gpg"
@@ -1799,7 +1798,9 @@ get_config_filename (gc_component_t component, gc_backend_t backend)
   else
     filename = "";
 
-#ifdef HAVE_DOSISH_SYSTEM
+#if HAVE_W32CE_SYSTEM
+  if (!(filename[0] == '/' || filename[0] == '\\'))
+#elif defined(HAVE_DOSISH_SYSTEM)
   if (!(filename[0] 
         && filename[1] == ':'
         && (filename[2] == '/' || filename[2] == '\\')))
@@ -1916,7 +1917,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
     }
   if (length < 0 || es_ferror (outfp))
     gc_error (1, errno, "error reading from %s", pgmname);
-  if (es_fclose (outfp) && es_ferror (outfp))
+  if (es_fclose (outfp))
     gc_error (1, errno, "error closing %s", pgmname);
 
   err = gnupg_wait_process (pgmname, pid, 1, &exitcode);
@@ -2018,7 +2019,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
       if (length < 0 || es_ferror (config))
 	gc_error (1, errno, "error reading from %s", config_filename);
-      if (es_fclose (config) && es_ferror (config))
+      if (es_fclose (config))
 	gc_error (1, errno, "error closing %s", config_filename);
     }
 
@@ -2098,7 +2099,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   if (config_option->flags & GC_OPT_FLAG_NO_CHANGE)
     list_option->flags |= GC_OPT_FLAG_NO_CHANGE;
 
-  if (list_file && fclose (list_file) && ferror (list_file))
+  if (list_file && fclose (list_file))
     gc_error (1, errno, "error closing %s", list_filename);
   xfree (line);
 }
@@ -2328,9 +2329,9 @@ copy_file (const char *src_name, const char *dst_name)
       return -1;
     }
 
-  if (fclose (dst) && ferror (dst))
+  if (fclose (dst))
     gc_error (1, errno, "error closing %s", dst_name);
-  if (fclose (src) && ferror (src))
+  if (fclose (src))
     gc_error (1, errno, "error closing %s", src_name);
 
   return 0;
@@ -3623,7 +3624,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
       gc_error (0, errno, "error reading from `%s'", fname);
       result = -1;
     }
-  if (fclose (config) && ferror (config))
+  if (fclose (config))
     gc_error (0, errno, "error closing `%s'", fname);
 
   xfree (line);
