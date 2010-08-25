@@ -1,3 +1,15 @@
+2010-08-25  Werner Koch  <wk@g10code.com>
+
+	* gpgtar.c: Add -t as short option for --list-archive.
+
+	* gpgtar-extract.c (gpgtar_extract): Use filename "-" for stdin.
+	Fix dirprefix setting.
+	* gpgtar-list.c (gpgtar_list): Ditto.
+
+2010-08-24  Werner Koch  <wk@g10code.com>
+
+	* gpgtar.c (opts): Fix --cms and --openpgp names.
+
 2010-08-23  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (GPGNAME) [W32CE]: s/gpg2/gpg/.

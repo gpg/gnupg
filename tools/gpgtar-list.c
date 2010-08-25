@@ -275,7 +275,10 @@ gpgtar_list (const char *filename)
 
   if (filename)
     {
-      stream = es_fopen (filename, "rb");
+      if (!strcmp (filename, "-"))
+        stream = es_stdout;
+      else
+        stream = es_fopen (filename, "rb");
       if (!stream)
         {
           err = gpg_error_from_syserror ();
@@ -284,7 +287,10 @@ gpgtar_list (const char *filename)
         }
     }
   else
-    stream = es_stdin;  /* FIXME:  How can we enforce binary mode?  */
+    stream = es_stdin;
+
+  if (stream == es_stdin)
+    es_set_binary (es_stdin);
 
   for (;;)
     {
@@ -303,7 +309,7 @@ gpgtar_list (const char *filename)
 
  leave:
   xfree (header);
-  if (filename)
+  if (stream != es_stdin)
     es_fclose (stream);
   return;
 }

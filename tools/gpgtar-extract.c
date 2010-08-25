@@ -79,7 +79,7 @@ extract_regular (estream_t stream, const char *dirname,
 
  leave:
   if (!err && opt.verbose)
-    log_info ("extracted `%s/'\n", fname);
+    log_info ("extracted `%s'\n", fname);
   es_fclose (outfp);
   if (err && fname && outfp)
     {
@@ -270,7 +270,10 @@ gpgtar_extract (const char *filename)
 
   if (filename)
     {
-      stream = es_fopen (filename, "rb");
+      if (!strcmp (filename, "-"))
+        stream = es_stdout;
+      else
+        stream = es_fopen (filename, "rb");
       if (!stream)
         {
           err = gpg_error_from_syserror ();
@@ -279,20 +282,26 @@ gpgtar_extract (const char *filename)
         }
     }
   else
-    stream = es_stdin;  /* FIXME:  How can we enforce binary mode?  */
+    stream = es_stdin; 
 
+  if (stream == es_stdin)
+    es_set_binary (es_stdin);
 
   if (filename)
     {
       dirprefix = strrchr (filename, '/');
       if (dirprefix)
         dirprefix++;
+      else
+        dirprefix = filename;
     }
   else if (opt.filename)
     {
       dirprefix = strrchr (opt.filename, '/');
       if (dirprefix)
         dirprefix++;
+      else
+        dirprefix = opt.filename;
     }
 
   if (!dirprefix || !*dirprefix)

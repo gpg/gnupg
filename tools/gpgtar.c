@@ -48,6 +48,7 @@ enum cmd_and_opt_values
     aEncrypt    = 'e',
     aDecrypt    = 'd',
     aSign       = 's',
+    aList       = 't',
 
     oSymmetric  = 'c',
     oRecipient	= 'r',
@@ -63,7 +64,6 @@ enum cmd_and_opt_values
     oOpenPGP,
     oCMS,
     oSetFilename,
-    aList,
     oNull
   };
 
@@ -91,8 +91,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oFilesFrom, "files-from",
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
-  ARGPARSE_s_n (oOpenPGP, "--openpgp", "@"),
-  ARGPARSE_s_n (oCMS, "--cms", "@"),
+  ARGPARSE_s_n (oOpenPGP, "openpgp", "@"),
+  ARGPARSE_s_n (oCMS, "cms", "@"),
 
   ARGPARSE_end ()
 };
