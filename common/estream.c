@@ -121,6 +121,8 @@ void *memrchr (const void *block, int c, size_t size);
 # define S_IROTH S_IRUSR
 # define S_IWGRP S_IWUSR
 # define S_IWOTH S_IWUSR
+# define S_IXGRP S_IXUSR
+# define S_IXOTH S_IXUSR
 #endif
 
 
