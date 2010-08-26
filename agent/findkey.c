@@ -72,8 +72,7 @@ agent_write_private_key (const unsigned char *grip,
       return gpg_error (GPG_ERR_EEXIST);
     }
 
-  /* FIXME: On POSIX systems we used include S_IRGRP as well.  */
-  fp = es_fopen (fname, force? "wb" : "wbx");
+  fp = es_fopen (fname, force? "wb,mode=-rw" : "wbx,mode=-rw");
   if (!fp) 
     { 
       gpg_error_t tmperr = gpg_error_from_syserror ();

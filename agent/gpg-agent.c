@@ -1100,7 +1100,7 @@ main (int argc, char **argv )
             {
               estream_t fp;
               
-              fp = es_fopen (env_file_name, "w");
+              fp = es_fopen (env_file_name, "w,mode=-rw");
               if (!fp)
                 log_error (_("error creating `%s': %s\n"),
                              env_file_name, strerror (errno));

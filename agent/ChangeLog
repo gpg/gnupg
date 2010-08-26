@@ -1,6 +1,16 @@
+2010-08-26  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (open_control_file): Use estream to create the file.
+
+	* findkey.c (agent_write_private_key): Explicitly create file with
+	mode 600.
+	* gpg-agent.c (main): Ditto.
+	* trustlist.c (agent_marktrusted): Explicitly create file with
+	mode 640.
+
 2010-08-16  Werner Koch  <wk@g10code.com>
 
-	* gpg-agent.c: Repalce remaining printf by es_printf.
+	* gpg-agent.c: Replace remaining printf by es_printf.
 
 2010-08-11  Werner Koch  <wk@g10code.com>
 

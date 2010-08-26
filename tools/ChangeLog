@@ -1,7 +1,9 @@
 2010-08-25  Werner Koch  <wk@g10code.com>
 
-	* gpgtar.c: Add -t as short option for --list-archive.
+	* gpgtar-extract.c (create_directory): Add .p7m as known
+	extension.
 
+	* gpgtar.c: Add -t as short option for --list-archive.
 	* gpgtar-extract.c (gpgtar_extract): Use filename "-" for stdin.
 	Fix dirprefix setting.
 	* gpgtar-list.c (gpgtar_list): Ditto.

@@ -691,7 +691,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
   if ( access (fname, F_OK) && errno == ENOENT)
     {
-      fp = es_fopen (fname, "wx");
+      fp = es_fopen (fname, "wx,mode=-rw-r");
       if (!fp)
         {
           err = gpg_error_from_syserror ();
@@ -705,7 +705,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       es_fputs (headerblurb, fp);
       es_fclose (fp);
     }
-  fp = es_fopen (fname, "a+");
+  fp = es_fopen (fname, "a+,mode=-rw-r");
   if (!fp)
     {
       err = gpg_error_from_syserror ();

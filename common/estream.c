@@ -116,6 +116,14 @@ void *memrchr (const void *block, int c, size_t size);
 #define O_BINARY 0
 #endif
 
+#ifdef HAVE_W32_SYSTEM
+# define S_IRGRP S_IRUSR
+# define S_IROTH S_IRUSR
+# define S_IWGRP S_IWUSR
+# define S_IWOTH S_IWUSR
+#endif
+
+
 #ifdef HAVE_W32CE_SYSTEM
 # define _set_errno(a)  gpg_err_set_errno ((a))
 /* Setmode is missing in cegcc but available since CE 5.0.  */
@@ -188,8 +196,8 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 /* Primitive system I/O.  */
 
 #ifdef HAVE_PTH
-# define ESTREAM_SYS_READ  es_pth_read
-# define ESTREAM_SYS_WRITE es_pth_write
+# define ESTREAM_SYS_READ  do_pth_read
+# define ESTREAM_SYS_WRITE do_pth_write
 # define ESTREAM_SYS_YIELD() pth_yield (NULL)
 #else
 # define ESTREAM_SYS_READ  read
@@ -197,10 +205,6 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 # define ESTREAM_SYS_YIELD() do { } while (0)
 #endif
 
-
-/* Misc definitions.  */
-
-#define ES_DEFAULT_OPEN_MODE (S_IRUSR | S_IWUSR)
 
 /* A linked list to hold notification functions. */
 struct notify_list_s
@@ -369,7 +373,7 @@ map_w32_to_errno (DWORD w32_err)
    WITH_LOCKED_LIST is true we assumed that the list of streams is
    already locked.  */
 static int
-es_list_add (estream_t stream, int with_locked_list)
+do_list_add (estream_t stream, int with_locked_list)
 {
   estream_list_t list_obj;
   int ret;
@@ -397,7 +401,7 @@ es_list_add (estream_t stream, int with_locked_list)
 
 /* Remove STREAM from the list of registered stream objects.  */
 static void
-es_list_remove (estream_t stream, int with_locked_list)
+do_list_remove (estream_t stream, int with_locked_list)
 {
   estream_list_t list_obj;
   
@@ -422,7 +426,7 @@ typedef int (*estream_iterator_t) (estream_t stream);
 /* Iterate over list of registered streams, calling ITERATOR for each
    of them.  */
 static int
-es_list_iterate (estream_iterator_t iterator)
+do_list_iterate (estream_iterator_t iterator)
 {
   estream_list_t list_obj;
   int ret = 0;
@@ -448,7 +452,7 @@ es_list_iterate (estream_iterator_t iterator)
  */
 #ifdef HAVE_PTH
 static int
-es_pth_read (int fd, void *buffer, size_t size)
+do_pth_read (int fd, void *buffer, size_t size)
 {
 # ifdef HAVE_W32_SYSTEM
   int rc = pth_read (fd, buffer, size);
@@ -461,7 +465,7 @@ es_pth_read (int fd, void *buffer, size_t size)
 }
 
 static int
-es_pth_write (int fd, const void *buffer, size_t size)
+do_pth_write (int fd, const void *buffer, size_t size)
 {
 # ifdef HAVE_W32_SYSTEM
   int rc = pth_write (fd, buffer, size);
@@ -477,7 +481,7 @@ es_pth_write (int fd, const void *buffer, size_t size)
 
 
 static void
-es_deinit (void)
+do_deinit (void)
 {
   /* Flush all streams. */
   es_fflush (NULL);
@@ -489,7 +493,7 @@ es_deinit (void)
  */
 
 static int
-es_init_do (void)
+do_init (void)
 {
   static int initialized;
 
@@ -503,7 +507,7 @@ es_init_do (void)
 #else
       initialized = 1;
 #endif
-      atexit (es_deinit);  
+      atexit (do_deinit);  
     }
   return 0;
 }
@@ -541,13 +545,13 @@ typedef struct estream_cookie_mem
    not NULL, DATA_N gives the allocated size of DATA and DATA_LEN the
    used length in DATA.  */
 static int
-es_func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
-		    unsigned char *ES__RESTRICT data, size_t data_n,
-		    size_t data_len,
-		    size_t block_size, unsigned int grow,
-		    func_realloc_t func_realloc, func_free_t func_free,
-		    unsigned int modeflags,
-                    size_t memory_limit)
+func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
+                 unsigned char *ES__RESTRICT data, size_t data_n,
+                 size_t data_len,
+                 size_t block_size, unsigned int grow,
+                 func_realloc_t func_realloc, func_free_t func_free,
+                 unsigned int modeflags,
+                 size_t memory_limit)
 {
   estream_cookie_mem_t mem_cookie;
   int err;
@@ -795,9 +799,9 @@ typedef struct estream_cookie_fd
   int no_close;  /* If set we won't close the file descriptor.  */
 } *estream_cookie_fd_t;
 
-/* Create function for fd objects.  */
+/* Create function for objects indentified by a libc file descriptor.  */
 static int
-es_func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
+func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
 {
   estream_cookie_fd_t fd_cookie;
   int err;
@@ -1152,8 +1156,8 @@ typedef struct estream_cookie_fp
 
 /* Create function for FILE objects.  */
 static int
-es_func_fp_create (void **cookie, FILE *fp, 
-                   unsigned int modeflags, int no_close)
+func_fp_create (void **cookie, FILE *fp, 
+                unsigned int modeflags, int no_close)
 {
   estream_cookie_fp_t fp_cookie;
   int err;
@@ -1302,10 +1306,10 @@ static es_cookie_io_functions_t estream_functions_fp =
 
 /* Implementation of file I/O.  */
 
-/* Create function for fd objects.  */
+/* Create function for objects identified by a file name.  */
 static int
-es_func_file_create (void **cookie, int *filedes,
-		     const char *path, unsigned int modeflags)
+func_file_create (void **cookie, int *filedes,
+                  const char *path, unsigned int modeflags, unsigned int cmode)
 {
   estream_cookie_fd_t file_cookie;
   int err;
@@ -1321,7 +1325,7 @@ es_func_file_create (void **cookie, int *filedes,
       goto out;
     }
 
-  fd = open (path, modeflags, ES_DEFAULT_OPEN_MODE);
+  fd = open (path, modeflags, cmode);
   if (fd == -1)
     {
       err = -1;
@@ -1346,13 +1350,36 @@ es_func_file_create (void **cookie, int *filedes,
   return err;
 }
 
-
-static int
-es_convert_mode (const char *mode, unsigned int *modeflags)
-{
-  unsigned int omode, oflags;
 
-  switch (*mode)
+
+/* Parse the mode flags of fopen et al.  In addition to the POSIX
+   defined mode flags keyword parameters are supported.  These are
+   key/value pairs delimited by comma and optional white spaces.
+   Keywords and values may not contain a comma or white space; unknown
+   keyword are skipped.  The only supported keyword is mode; for
+   example:
+
+     "wb,mode=-rw-r--"
+
+   Creates a file and gives the new file read and write permissions
+   for the user and read permission for the group.  The format of the
+   string is the same as shown by the -l option of the ls(1) command.
+   However the first letter must be a dash and it is allowed to leave
+   out trailing dashes.  If this keyword parameter is not given the
+   default mode for creating files is "-rw-rw-r--" (664).  Note that
+   the system still applies the current umask to the mode when crating
+   a file.
+
+   Note: R_CMODE is optional because is only required by functions
+   which are able to creat a file.  */
+static int
+parse_mode (const char *modestr,
+            unsigned int *modeflags, unsigned int *r_cmode)
+{
+  unsigned int omode, oflags, cmode;
+  int got_cmode = 0;
+
+  switch (*modestr)
     {
     case 'r':
       omode = O_RDONLY;
@@ -1370,9 +1397,9 @@ es_convert_mode (const char *mode, unsigned int *modeflags)
       _set_errno (EINVAL);
       return -1;
     }
-  for (mode++; *mode; mode++)
+  for (modestr++; *modestr; modestr++)
     {
-      switch (*mode)
+      switch (*modestr)
         {
         case '+':
           omode = O_RDWR;
@@ -1383,12 +1410,54 @@ es_convert_mode (const char *mode, unsigned int *modeflags)
         case 'x':
           oflags |= O_EXCL;
           break;
+        case ',':
+          goto keyvalue;
         default: /* Ignore unknown flags.  */
           break; 
         }
     }
 
+ keyvalue:
+  /* Parse key/value pairs (similar to fopen on mainframes).  */
+  for (cmode=0; *modestr == ','; modestr += strcspn (modestr, ","))
+    {
+      modestr++;
+      modestr += strspn (modestr, " \t");
+      if (!strncmp (modestr, "mode=", 5))
+        {
+          static struct {
+            char letter;
+            unsigned int value;
+          } table[] = { { '-', 0 },
+                        { 'r', S_IRUSR }, { 'w', S_IWUSR }, { 'x', S_IXUSR },
+                        { 'r', S_IRGRP }, { 'w', S_IWGRP }, { 'x', S_IXGRP },
+                        { 'r', S_IROTH }, { 'w', S_IWOTH }, { 'x', S_IXOTH }};
+          int idx;
+
+          got_cmode = 1;
+          modestr += 5;
+          /* For now we only support a string as used by ls(1) and no
+             octal numbers.  The first character must be a dash.  */
+          for (idx=0; idx < 10 && *modestr; idx++, modestr++)
+            {
+              if (*modestr == table[idx].letter)
+                cmode |= table[idx].value;
+              else if (*modestr != '-')
+                break;
+            }
+          if (*modestr && !strchr (" \t,", *modestr))
+            {
+              _set_errno (EINVAL);
+              return -1;
+            }
+        }
+    }
+  if (!got_cmode)
+    cmode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+
   *modeflags = (omode | oflags);
+  if (r_cmode)
+    *r_cmode = cmode;
   return 0;
 }
 
@@ -1624,7 +1693,7 @@ es_create (estream_t *stream, void *cookie, es_syshd_t *syshd,
   ESTREAM_MUTEX_INITIALIZE (stream_new->intern->lock);
   es_initialize (stream_new, cookie, syshd, functions, modeflags);
 
-  err = es_list_add (stream_new, with_locked_list);
+  err = do_list_add (stream_new, with_locked_list);
   if (err)
     goto out;
 
@@ -1652,7 +1721,7 @@ do_close (estream_t stream, int with_locked_list)
 
   if (stream)
     {
-      es_list_remove (stream, with_locked_list);
+      do_list_remove (stream, with_locked_list);
       while (stream->intern->onclose)
         {
           notify_list_t tmp = stream->intern->onclose->next;
@@ -2204,11 +2273,11 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
   line_stream = NULL;
   line_stream_cookie = NULL;
 
-  err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0,
-                            BUFFER_BLOCK_SIZE, 1,
-                            mem_realloc, mem_free, 
-                            O_RDWR,
-                            0);
+  err = func_mem_create (&line_stream_cookie, NULL, 0, 0,
+                         BUFFER_BLOCK_SIZE, 1,
+                         mem_realloc, mem_free, 
+                         O_RDWR,
+                         0);
   if (err)
     goto out;
 
@@ -2464,7 +2533,7 @@ es_init (void)
 {
   int err;
 
-  err = es_init_do ();
+  err = do_init ();
 
   return err;
 }
@@ -2474,7 +2543,7 @@ es_init (void)
 estream_t
 es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 {
-  unsigned int modeflags;
+  unsigned int modeflags, cmode;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -2486,11 +2555,11 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   cookie = NULL;
   create_called = 0;
 
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, &cmode);
   if (err)
     goto out;
   
-  err = es_func_file_create (&cookie, &fd, path, modeflags);
+  err = func_file_create (&cookie, &fd, path, modeflags, cmode);
   if (err)
     goto out;
   
@@ -2532,13 +2601,13 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
   stream = NULL;
   create_called = 0;
   
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, NULL);
   if (err)
     goto out;
 
-  err = es_func_mem_create (&cookie, data, data_n, data_len,
-			    BUFFER_BLOCK_SIZE, grow, 
-			    func_realloc, func_free, modeflags, 0);
+  err = func_mem_create (&cookie, data, data_n, data_len,
+                         BUFFER_BLOCK_SIZE, grow, 
+                         func_realloc, func_free, modeflags, 0);
   if (err)
     goto out;
   
@@ -2567,15 +2636,15 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
 
   /* Memory streams are always read/write.  We use MODE only to get
      the append flag.  */
-  if (es_convert_mode (mode, &modeflags))
+  if (parse_mode (mode, &modeflags, NULL))
     return NULL;
   modeflags |= O_RDWR;
 
   
-  if (es_func_mem_create (&cookie, NULL, 0, 0,
-                          BUFFER_BLOCK_SIZE, 1,
-                          mem_realloc, mem_free, modeflags,
-                          memlimit))
+  if (func_mem_create (&cookie, NULL, 0, 0,
+                       BUFFER_BLOCK_SIZE, 1,
+                       mem_realloc, mem_free, modeflags,
+                       memlimit))
     return NULL;
   
   memset (&syshd, 0, sizeof syshd);
@@ -2600,7 +2669,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
   stream = NULL;
   modeflags = 0;
   
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, NULL);
   if (err)
     goto out;
 
@@ -2629,11 +2698,11 @@ do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
   cookie = NULL;
   create_called = 0;
 
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, NULL);
   if (err)
     goto out;
 
-  err = es_func_fd_create (&cookie, filedes, modeflags, no_close);
+  err = func_fd_create (&cookie, filedes, modeflags, no_close);
   if (err)
     goto out;
 
@@ -2668,7 +2737,7 @@ es_fdopen_nc (int filedes, const char *mode)
 estream_t
 do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
 {
-  unsigned int modeflags;
+  unsigned int modeflags, cmode;
   int create_called;
   estream_t stream;
   void *cookie;
@@ -2679,13 +2748,13 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   cookie = NULL;
   create_called = 0;
 
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, &cmode);
   if (err)
     goto out;
 
   if (fp)
     fflush (fp);
-  err = es_func_fp_create (&cookie, fp, modeflags, no_close);
+  err = func_fp_create (&cookie, fp, modeflags, no_close);
   if (err)
     goto out;
 
@@ -2733,14 +2802,14 @@ estream_t
 do_w32open (HANDLE hd, const char *mode,
             int no_close, int with_locked_list)
 {
-  unsigned int modeflags;
+  unsigned int modeflags, cmode;
   int create_called = 0;
   estream_t stream = NULL;
   void *cookie = NULL;
   int err;
   es_syshd_t syshd;
 
-  err = es_convert_mode (mode, &modeflags);
+  err = parse_mode (mode, &modeflags, &cmode);
   if (err)
     goto leave;
 
@@ -2896,7 +2965,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 
   if (path)
     {
-      unsigned int modeflags;
+      unsigned int modeflags, cmode;
       int create_called;
       void *cookie;
       int fd;
@@ -2909,11 +2978,11 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 
       es_deinitialize (stream);
 
-      err = es_convert_mode (mode, &modeflags);
+      err = parse_mode (mode, &modeflags, &cmode);
       if (err)
 	goto leave;
       
-      err = es_func_file_create (&cookie, &fd, path, modeflags);
+      err = func_file_create (&cookie, &fd, path, modeflags, cmode);
       if (err)
 	goto leave;
 
@@ -3165,7 +3234,7 @@ es_fflush (estream_t stream)
       ESTREAM_UNLOCK (stream);
     }
   else
-    err = es_list_iterate (do_fflush);
+    err = do_list_iterate (do_fflush);
 
   return err ? EOF : 0;
 }
@@ -3865,7 +3934,7 @@ es_tmpfile (void)
       goto out;
     }
 
-  err = es_func_fd_create (&cookie, fd, modeflags, 0);
+  err = func_fd_create (&cookie, fd, modeflags, 0);
   if (err)
     goto out;
 

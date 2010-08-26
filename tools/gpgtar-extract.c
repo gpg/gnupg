@@ -212,6 +212,7 @@ create_directory (const char *dirprefix)
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pgp")
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "asc")
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pem")
+                || !compare_filenames (dirprefix + n - 4, EXTSEP_S "p7m")
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "p7e")))
     {
       prefix_buffer = xtrystrdup (dirprefix);

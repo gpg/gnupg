@@ -1,3 +1,22 @@
+2010-08-26  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_convert_mode): Rename to parse_mode.
+	(parse_mode): Add arg R_CMODE and parse key value pairs.  Use Use
+	664 as the default mode.  Change callers.
+	(ES_DEFAULT_OPEN_MODE): Remove.
+	(es_fopen, do_fpopen, do_w32open, es_freopen): Support a creation
+	mode.
+	(es_func_file_create): Rename to func_file_create and add arg CMODE.
+	(es_func_fd_create): Rename to func_fd_create.
+	(es_func_fp_create): Rename to func_fp_create.
+	(es_list_add): Rename to do_list_add.
+	(es_list_remove): Rename to do_list_remove.
+	(es_list_iterate): Rename to do_list_iterate.
+	(es_pth_read): Rename to do_pth_read.
+	(es_deinit): Rename to do_deinit.
+	(es_init_do): Rename to do_init.
+	(es_func_mem_create): Rename to func_mem_create.
+
 2010-08-23  Werner Koch  <wk@g10code.com>
 
 	* exechelp-w32ce.c: Rewrite all spawn stuff.
