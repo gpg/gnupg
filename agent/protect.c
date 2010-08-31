@@ -73,6 +73,8 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  const unsigned char *s2ksalt, unsigned long s2kcount,
                  unsigned char *key, size_t keylen);
 
+
+
 /* Get the process time and store it in DATA.  */
 static void
 calibrate_get_time (struct calibrate_time_s *data)
@@ -1073,6 +1075,19 @@ hash_passphrase (const char *passphrase, int hashalgo,
     }
   gcry_md_close(md);
   return 0;
+}
+
+
+gpg_error_t
+s2k_hash_passphrase (const char *passphrase, int hashalgo,
+                     int s2kmode,
+                     const unsigned char *s2ksalt,
+                     unsigned int s2kcount,
+                     unsigned char *key, size_t keylen)
+{
+  return hash_passphrase (passphrase, hashalgo, s2kmode, s2ksalt, 
+                          (16ul + (s2kcount & 15)) << ((s2kcount >> 4) + 6),
+                          key, keylen);
 }
 
 

@@ -1494,9 +1494,10 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	     gpg complain about "no valid OpenPGP data found".  One
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
-
-	  import_keys_stream(spawn->fromchild,stats_handle,fpr,fpr_len,
-			     opt.keyserver_options.import_options);
+          
+          /* FIXME: Pass CTRL.  */
+	  import_keys_stream (NULL, spawn->fromchild,stats_handle,fpr,fpr_len,
+			      opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);
@@ -2037,8 +2038,9 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
       /* CERTs are always in binary format */
       opt.no_armor=1;
 
-      rc=import_keys_stream(key,NULL,fpr,fpr_len,
-			    opt.keyserver_options.import_options);
+      /* FIXME: Pass CTRL.  */
+      rc = import_keys_stream (NULL, key, NULL, fpr, fpr_len,
+                               opt.keyserver_options.import_options);
 
       opt.no_armor=armor_status;
 

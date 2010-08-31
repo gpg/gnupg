@@ -37,6 +37,10 @@ Noteworthy changes in version 2.1.x (under development)
 
  * Fixed output of "gpgconf --check-options".
 
+ * GPG does not anymore use secring.gpg but delegates all secret key
+   operations to gpg-agent.  The import command moves secret keys to
+   the agent.
+
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------

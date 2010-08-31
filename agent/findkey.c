@@ -702,7 +702,8 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
 }
 
 
-/* Return true if S_KEY is a DSA style key.  */
+/* Return the public key algorithm number if S_KEY is a DSA style key.
+   If it is not a DSA style key, return 0.  */
 int 
 agent_is_dsa_key (gcry_sexp_t s_key)
 {
@@ -714,7 +715,12 @@ agent_is_dsa_key (gcry_sexp_t s_key)
   if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
     return 0; /* Error - assume it is not an DSA key.  */
 
-  return (!strcmp (algoname, "dsa") || !strcmp (algoname, "ecdsa"));
+  if (!strcmp (algoname, "dsa"))
+    return GCRY_PK_DSA;
+  else if (!strcmp (algoname, "ecdsa"))
+    return GCRY_PK_ECDSA;
+  else
+    return 0;
 }
 
 

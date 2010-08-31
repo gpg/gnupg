@@ -1,3 +1,32 @@
+2010-08-30  Werner Koch  <wk@g10code.com>
+
+	* keyid.c (KEYID_STR_SIZE): New
+	(keystr): Use snprintf and new macro.
+	(keystr_with_sub): New.
+	(keystr_from_sk_with_sub): New.
+	(keystr_from_pk_with_sub): New.
+
+2010-08-27  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Change scope of CTRL to the entire function.
+
+	* import.c (import_secret_one, import, import_keys_internal)
+	(import_keys, import_keys_stream): Add arg CTRL.
+	* call-agent.c (agent_keywrap_key): New.
+	(agent_import_key, inq_import_key_parms): New.
+
+2010-08-26  Werner Koch  <wk@g10code.com>
+
+	* misc.c (openpgp_pk_algo_name): New.
+	(openpgp_md_algo_name): New.
+
+2010-08-24  Werner Koch  <wk@g10code.com>
+
+	* options.h (IMPORT_SK2PK): Remove.
+	* import.c (parse_import_options): Turn convert-sk-to-pk into a
+	dummy option.
+	(sec_to_pub_keyblock): Use modern functions.
+
 2010-08-16  Werner Koch  <wk@g10code.com>
 
 	* gpg.c (list_config, gpgconf_list): Use es_printf.

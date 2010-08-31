@@ -1925,6 +1925,7 @@ main (int argc, char **argv)
     int any_explicit_recipient = 0;
     int require_secmem=0,got_secmem=0;
     struct assuan_malloc_hooks malloc_hooks;
+    ctrl_t ctrl;
 
 #ifdef __riscos__
     opt.lock_once = 1;
@@ -1984,23 +1985,24 @@ main (int argc, char **argv)
     opt.pgp2_workarounds = 1;
     opt.escape_from = 1;
     opt.flags.require_cross_cert = 1;
-    opt.import_options=IMPORT_SK2PK;
-    opt.export_options=EXPORT_ATTRIBUTES;
-    opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
-    opt.keyserver_options.export_options=EXPORT_ATTRIBUTES;
-    opt.keyserver_options.options=
-      KEYSERVER_HONOR_KEYSERVER_URL|KEYSERVER_HONOR_PKA_RECORD;
-    opt.verify_options=
-      VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_STD_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
-    opt.trust_model=TM_AUTO;
-    opt.mangle_dos_filenames=0;
-    opt.min_cert_level=2;
-    set_screen_dimensions();
-    opt.keyid_format=KF_SHORT;
-    opt.def_sig_expire="0";
-    opt.def_cert_expire="0";
-    set_homedir ( default_homedir () );
-    opt.passphrase_repeat=1;
+    opt.import_options = 0;
+    opt.export_options = EXPORT_ATTRIBUTES;
+    opt.keyserver_options.import_options = IMPORT_REPAIR_PKS_SUBKEY_BUG;
+    opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
+    opt.keyserver_options.options = (KEYSERVER_HONOR_KEYSERVER_URL
+                                     | KEYSERVER_HONOR_PKA_RECORD );
+    opt.verify_options = (VERIFY_SHOW_POLICY_URLS
+                          | VERIFY_SHOW_STD_NOTATIONS
+                          | VERIFY_SHOW_KEYSERVER_URLS);
+    opt.trust_model = TM_AUTO;
+    opt.mangle_dos_filenames = 0;
+    opt.min_cert_level = 2;
+    set_screen_dimensions ();
+    opt.keyid_format = KF_SHORT;
+    opt.def_sig_expire = "0";
+    opt.def_cert_expire = "0";
+    set_homedir (default_homedir ());
+    opt.passphrase_repeat = 1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -3403,6 +3405,9 @@ main (int argc, char **argv)
     if(fname && utf8_strings)
       opt.flags.utf8_filename=1;
 
+    ctrl = xtrycalloc (1, sizeof *ctrl);
+    gpg_init_default_ctrl (ctrl);
+
     switch( cmd ) {
       case aPrimegen:
       case aPrintMD:
@@ -3438,13 +3443,7 @@ main (int argc, char **argv)
     switch( cmd )
       {
       case aServer:
-        {
-          ctrl_t ctrl = xtrycalloc (1, sizeof *ctrl);
-          gpg_init_default_ctrl (ctrl);
-          gpg_server (ctrl);
-          gpg_deinit_default_ctrl (ctrl);
-          xfree (ctrl);
-        }
+        gpg_server (ctrl);
         break;
 
       case aStore: /* only store the file */
@@ -3704,7 +3703,7 @@ main (int argc, char **argv)
       case aFastImport:
         opt.import_options |= IMPORT_FAST;
       case aImport:
-	import_keys( argc? argv:NULL, argc, NULL, opt.import_options );
+	import_keys (ctrl, argc? argv:NULL, argc, NULL, opt.import_options);
 	break;
 
 	/* TODO: There are a number of command that use this same
@@ -4055,6 +4054,8 @@ main (int argc, char **argv)
       }
 
     /* cleanup */
+    gpg_deinit_default_ctrl (ctrl);
+    xfree (ctrl);
     release_armor_context (afx);
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);

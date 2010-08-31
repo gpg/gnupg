@@ -46,6 +46,7 @@ gpg_agent_SOURCES = \
 	protect.c \
 	trustlist.c \
 	divert-scd.c \
+	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
 	learncard.c
 

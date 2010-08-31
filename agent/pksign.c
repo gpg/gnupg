@@ -164,10 +164,22 @@ do_encode_dsa (const byte * md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   if (mdlen > qbits/8)
     mdlen = qbits/8;
             
-  /* Create the S-expression.  */
-  err = gcry_sexp_build (&hash, NULL,
-                        "(data (flags raw) (value %b))",
-                        (int)mdlen, md);
+  /* Create the S-expression.  We need to convert to an MPI first
+     because we want an unsigned integer.  Using %b directly is not
+     possible because libgcrypt assumes an mpi and uses
+     GCRYMPI_FMT_STD for parsing and thus possible yielding a negative
+     value.  */
+  {
+    gcry_mpi_t mpi;
+      
+    err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
+    if (!err)
+      {
+        err = gcry_sexp_build (&hash, NULL,
+                               "(data (flags raw) (value %m))", mpi);
+        gcry_mpi_release (mpi);
+      }
+  }
   if (!err)
     *r_hash = hash;
   return err;   
@@ -304,8 +316,10 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
 
       if (DBG_CRYPTO)
         {
-          log_debug ("skey: ");
+          log_debug ("skey:\n");
           gcry_sexp_dump (s_skey);
+          log_debug ("hash:\n");
+          gcry_sexp_dump (s_hash);
         }
 
       /* sign */
@@ -319,7 +333,7 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
 
       if (DBG_CRYPTO)
         {
-          log_debug ("result: ");
+          log_debug ("result:\n");
           gcry_sexp_dump (s_sig);
         }
     }

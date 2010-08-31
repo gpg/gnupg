@@ -259,8 +259,13 @@ u32 v3_keyid (gcry_mpi_t a, u32 *ki);
 void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
 size_t keystrlen(void);
 const char *keystr(u32 *keyid);
+const char *keystr_with_sub (u32 *main_kid, u32 *sub_kid);
 const char *keystr_from_pk(PKT_public_key *pk);
+const char *keystr_from_pk_with_sub (PKT_public_key *main_pk,
+                                     PKT_public_key *sub_pk);
 const char *keystr_from_sk(PKT_secret_key *sk);
+const char *keystr_from_sk_with_sub (PKT_secret_key *main_sk,
+                                     PKT_secret_key *sub_sk);
 const char *keystr_from_desc(KEYDB_SEARCH_DESC *desc);
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );

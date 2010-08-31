@@ -96,7 +96,9 @@ const char *openpgp_cipher_algo_name (int algo);
 int openpgp_pk_test_algo( int algo );
 int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
+const char *openpgp_pk_algo_name (int algo);
 int openpgp_md_test_algo( int algo );
+const char *openpgp_md_algo_name (int algo);
 
 #ifdef USE_IDEA
 void idea_cipher_warn( int show );
@@ -263,10 +265,11 @@ gcry_mpi_t encode_md_value (PKT_public_key *pk,
 
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options,int noisy);
-void import_keys( char **fnames, int nnames,
-		  void *stats_hd, unsigned int options );
-int import_keys_stream( iobuf_t inp,void *stats_hd,unsigned char **fpr,
-			size_t *fpr_len,unsigned int options );
+void import_keys (ctrl_t ctrl, char **fnames, int nnames,
+		  void *stats_hd, unsigned int options);
+int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd, 
+                        unsigned char **fpr,
+			size_t *fpr_len, unsigned int options);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);

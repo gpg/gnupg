@@ -163,6 +163,14 @@ gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                              gcry_sexp_t s_ciphertext,
                              unsigned char **r_buf, size_t *r_buflen);
 
+/* Retrieve a key encryption key.  */
+gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
+                               void **r_kek, size_t *r_keklen);
+
+/* Send a key to the agent.  */
+gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
+                              const void *key, size_t keylen);
+
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/
 

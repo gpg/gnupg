@@ -171,8 +171,8 @@ struct pin_entry_info_s
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
-  const char *cb_errtext; /* used by the cb to displaye a specific error */
-  size_t max_length; /* allocated length of the buffer */
+  const char *cb_errtext; /* used by the cb to display a specific error */
+  size_t max_length;      /* allocated length of the buffer */
   char pin[1];
 };
 
@@ -306,6 +306,11 @@ int agent_get_shadow_info (const unsigned char *shadowkey,
                            unsigned char const **shadow_info);
 gpg_error_t parse_shadow_info (const unsigned char *shadow_info, 
                                char **r_hexsn, char **r_idstr);
+gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
+                                 int s2kmode,
+                                 const unsigned char *s2ksalt,
+                                 unsigned int s2kcount,
+                                 unsigned char *key, size_t keylen);
 
 
 /*-- trustlist.c --*/

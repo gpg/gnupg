@@ -37,7 +37,7 @@
 #include "agent.h"
 #include <assuan.h>
 #include "i18n.h"
-
+#include "cvt-openpgp.h"
 
 
 /* Maximum allowed size of the inquired ciphertext.  */
@@ -357,6 +357,12 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
       const char *name = assuan_get_command_name (ctx);
       if (!name)
         name = "?";
+
+      /* Most code from common/ does not know the error source, thus
+         we fix this here.  */
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_UNKNOWN)
+        err = gpg_err_make (GPG_ERR_SOURCE_DEFAULT, gpg_err_code (err));
+
       if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
         log_error ("command '%s' failed: %s\n", name,
                    gpg_strerror (err));
@@ -566,8 +572,8 @@ cmd_sigkey (assuan_context_t ctx, char *line)
 static const char hlp_setkeydesc[] = 
   "SETKEYDESC plus_percent_escaped_string\n"
   "\n"
-  "Set a description to be used for the next PKSIGN, PKDECRYPT or EXPORT_KEY\n"
-  "operation if this operation requires the entry of a passphrase.  If\n"
+  "Set a description to be used for the next PKSIGN, PKDECRYPT, IMPORT_KEY\n"
+  "or EXPORT_KEY operation if this operation requires a passphrase.  If\n"
   "this command is not used a default text will be used.  Note, that\n"
   "this description implictly selects the label used for the entry\n"
   "box; if the string contains the string PIN (which in general will\n"
@@ -575,8 +581,8 @@ static const char hlp_setkeydesc[] =
   "\"passphrase\" is used.  The description string should not contain\n"
   "blanks unless they are percent or '+' escaped.\n"
   "\n"
-  "The description is only valid for the next PKSIGN, PKDECRYPT or\n"
-  "EXPORT_KEY operation.";
+  "The description is only valid for the next PKSIGN, PKDECRYPT,\n"
+  "IMPORT_KEY or EXPORT_KEY operation.";
 static gpg_error_t
 cmd_setkeydesc (assuan_context_t ctx, char *line)
 {
@@ -1478,6 +1484,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   unsigned char *finalkey = NULL;
   size_t finalkeylen;
   unsigned char grip[20];
+  gcry_sexp_t openpgp_sexp = NULL;
   
   (void)line;
 
@@ -1528,20 +1535,58 @@ cmd_import_key (assuan_context_t ctx, char *line)
   
   err = keygrip_from_canon_sexp (key, realkeylen, grip);
   if (err)
-    goto leave;
-
-  if (!agent_key_available (grip))
     {
-      err = gpg_error (GPG_ERR_EEXIST);
-      goto leave;
+      /* This might be due to an unsupported S-expression format.
+         Check whether this is openpgp-private-key and trigger that
+         import code.  */
+      if (!gcry_sexp_sscan (&openpgp_sexp, NULL, key, realkeylen))
+        {
+          const char *tag;
+          size_t taglen;
+          
+          tag = gcry_sexp_nth_data (openpgp_sexp, 0, &taglen);
+          if (tag && taglen == 19 && !memcmp (tag, "openpgp-private-key", 19))
+            ;
+          else
+            {
+              gcry_sexp_release (openpgp_sexp);
+              openpgp_sexp = NULL;
+            }
+        }
+      if (!openpgp_sexp)
+        goto leave; /* Note that ERR is still set.  */
     }
 
-  err = agent_ask_new_passphrase 
-    (ctrl, _("Please enter the passphrase to protect the "
-             "imported object within the GnuPG system."),
-     &passphrase);
-  if (err)
-    goto leave;
+
+  if (openpgp_sexp)
+    {
+      /* In most cases the key is encrypted and thus the conversion
+         function from the OpenPGP format to our internal format will
+         ask for a passphrase.  That passphrase will be returned and
+         used to protect the key using the same code as for regular
+         key import. */
+      
+      err = convert_openpgp (ctrl, openpgp_sexp, grip,
+                             ctrl->server_local->keydesc,
+                             &key, &passphrase);
+      if (err)
+        goto leave;
+      realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+      if (!realkeylen)
+        goto leave; /* Invalid canonical encoded S-expression.  */
+    }
+  else
+    {
+      if (!agent_key_available (grip))
+        err = gpg_error (GPG_ERR_EEXIST);
+      else
+        err = agent_ask_new_passphrase 
+          (ctrl, _("Please enter the passphrase to protect the "
+                   "imported object within the GnuPG system."),
+           &passphrase);
+      if (err)
+        goto leave;
+    }
 
   if (passphrase)
     {
@@ -1553,11 +1598,14 @@ cmd_import_key (assuan_context_t ctx, char *line)
     err = agent_write_private_key (grip, key, realkeylen, 0);
 
  leave:
+  gcry_sexp_release (openpgp_sexp);
   xfree (finalkey);
   xfree (passphrase);
   xfree (key);
   gcry_cipher_close (cipherhd);
   xfree (wrappedkey);
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
   return leave_cmd (ctx, err);
 }
 

@@ -478,6 +478,28 @@ openpgp_pk_algo_usage ( int algo )
     return use;
 }
 
+/* Map the OpenPGP pubkey algorithm whose ID is contained in ALGO to a
+   string representation of the algorithm name.  For unknown algorithm
+   IDs this function returns "?".  */
+const char *
+openpgp_pk_algo_name (int algo) 
+{
+  switch (algo)
+    {    
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S: return "rsa";
+
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E: return "elg";
+
+    case PUBKEY_ALGO_DSA:  return "dsa";
+
+    default: return "?";
+    }
+}
+
+
 int
 openpgp_md_test_algo( int algo )
 {
@@ -490,6 +512,19 @@ openpgp_md_test_algo( int algo )
     return gpg_error (GPG_ERR_DIGEST_ALGO);
   return gcry_md_test_algo (algo);
 }
+
+
+/* Map the OpenPGP digest algorithm whose ID is contained in ALGO to a
+   string representation of the algorithm name.  For unknown algorithm
+   IDs this function returns "?".  */
+const char *
+openpgp_md_algo_name (int algo) 
+{
+  if (algo < 0 || algo > 110)
+    return "?";
+  return gcry_md_algo_name (algo);
+}
+
 
 #ifdef USE_IDEA
 /* Special warning for the IDEA cipher */

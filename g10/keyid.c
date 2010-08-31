@@ -35,6 +35,9 @@
 #include "i18n.h"
 #include "rmd160.h"
 
+#define KEYID_STR_SIZE 19
+
+
 int
 pubkey_letter( int algo )
 {
@@ -204,41 +207,59 @@ keystrlen(void)
     }
 }
 
-const char *
-keystr(u32 *keyid)
-{  
-  static char keyid_str[19];
 
-  switch(opt.keyid_format)
+const char *
+keystr (u32 *keyid)
+{  
+  static char keyid_str[KEYID_STR_SIZE];
+
+  switch (opt.keyid_format)
     {
     case KF_SHORT:
-      sprintf(keyid_str,"%08lX",(ulong)keyid[1]);
+      snprintf (keyid_str, sizeof keyid_str, "%08lX", (ulong)keyid[1]);
       break;
 
     case KF_LONG:
-      if(keyid[0])
-	sprintf(keyid_str,"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      if (keyid[0])
+	snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX", 
+                  (ulong)keyid[0], (ulong)keyid[1]);
       else
-	sprintf(keyid_str,"%08lX",(ulong)keyid[1]);
+	snprintf (keyid_str, sizeof keyid_str, "%08lX", (ulong)keyid[1]);
       break;
 
     case KF_0xSHORT:
-      sprintf(keyid_str,"0x%08lX",(ulong)keyid[1]);
+      snprintf (keyid_str, sizeof keyid_str, "0x%08lX", (ulong)keyid[1]);
       break;
 
     case KF_0xLONG:
       if(keyid[0])
-	sprintf(keyid_str,"0x%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+	snprintf (keyid_str, sizeof keyid_str, "0x%08lX%08lX", 
+                  (ulong)keyid[0],(ulong)keyid[1]);
       else
-	sprintf(keyid_str,"0x%08lX",(ulong)keyid[1]);
+	snprintf (keyid_str, sizeof keyid_str, "0x%08lX", (ulong)keyid[1]);
       break;
-
+      
     default:
       BUG();
     }
 
   return keyid_str;
 }
+
+
+const char *
+keystr_with_sub (u32 *main_kid, u32 *sub_kid)
+{  
+  static char buffer[KEYID_STR_SIZE+1+KEYID_STR_SIZE];
+  char *p;
+
+  mem2str (buffer, keystr (main_kid), KEYID_STR_SIZE);
+  p = buffer + strlen (buffer);
+  *p++ = '/';
+  mem2str (p, keystr (sub_kid), KEYID_STR_SIZE);
+  return buffer;
+}
+
 
 const char *
 keystr_from_pk(PKT_public_key *pk)
@@ -248,13 +269,35 @@ keystr_from_pk(PKT_public_key *pk)
   return keystr(pk->keyid);
 }
 
+
+const char *
+keystr_from_pk_with_sub (PKT_public_key *main_pk, PKT_public_key *sub_pk)
+{
+  keyid_from_pk (main_pk, NULL);
+  keyid_from_pk (sub_pk, NULL);
+
+  return keystr_with_sub (main_pk->keyid, sub_pk->keyid);
+}
+
+
 const char *
 keystr_from_sk(PKT_secret_key *sk)
 {
-  keyid_from_sk(sk,NULL);
+  keyid_from_sk (sk,NULL);
 
   return keystr(sk->keyid);
 }
+
+
+const char *
+keystr_from_sk_with_sub (PKT_secret_key *main_sk, PKT_secret_key *sub_sk)
+{
+  keyid_from_sk (main_sk, NULL);
+  keyid_from_sk (sub_sk, NULL);
+
+  return keystr_with_sub (main_sk->keyid, sub_sk->keyid);
+}
+
 
 const char *
 keystr_from_desc(KEYDB_SEARCH_DESC *desc)

@@ -1,3 +1,18 @@
+2010-08-31  Werner Koch  <wk@g10code.com>
+
+	* pksign.c (do_encode_dsa): Fix sign problem.
+	* findkey.c (agent_is_dsa_key): Adjust to actual usage.
+
+2010-08-30  Werner Koch  <wk@g10code.com>
+
+	* protect.c (s2k_hash_passphrase): New public function.
+
+2010-08-27  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_import_key): Support OpenPGP keys.
+	* cvt-openpgp.h, cvt-openpgp.c: New.  Some of the code is based on
+	code taken from g10/seckey-cert.c.
+
 2010-08-26  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (open_control_file): Use estream to create the file.
