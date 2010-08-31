@@ -1,3 +1,8 @@
+2010-08-31  Werner Koch  <wk@g10code.com>
+
+	* mainproc.c (print_pkenc_list): Print a STATUS_ERROR.  Fixes
+	bug#1255.
+
 2010-07-24  Werner Koch  <wk@g10code.com>
 
 	* cardglue.c (agent_scd_pksign): Allow more hash algorithms when

@@ -477,6 +477,10 @@ slow_gatherer_windowsNT( void (*add)(const void*, size_t, int), int requester )
      * worst-case estimate which is usually nowhere near the actual amount
      * required.  For example it may report that 128K of memory is required,
      * but only return 64K of data */
+#warning How shall we disable get performacne data 
+    if (0) 
+      log_debug ("Warning: get performance data disabled\n");
+    else
     {	pPerfData =  xmalloc (cbPerfData);
 	for (;;) {
 	    dwSize = cbPerfData;

@@ -23,7 +23,7 @@
     GnuPG is GNU's tool for secure communication and data storage.
     It can be used to encrypt data and to create digital signatures.
     It includes an advanced key management facility and is compliant
-    with the proposed OpenPGP Internet standard as described in RFC2440.
+    with the proposed OpenPGP Internet standard as described in RFC4880.
 
     GnuPG works best on GNU/Linux or *BSD systems.  Most other Unices
     are also supported but are not as well tested as the Free Unices.
