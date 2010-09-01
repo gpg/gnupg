@@ -13,6 +13,7 @@
 	* agent.h (CACHE_MODE_NONCE): New.
 	* pksign.c (agent_pksign_do, agent_pksign): Add arg CACHE_NONCE.
 	* findkey.c (agent_key_from_file): Ditto.
+	(unprotect): Implement it.
 
 2010-08-31  Werner Koch  <wk@g10code.com>
 

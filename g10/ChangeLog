@@ -1,12 +1,25 @@
 2010-09-01  Werner Koch  <wk@g10code.com>
 
+	* sign.c (do_sign, write_signature_packets, complete_sig): Add arg
+	CACHE_NONCE.
+	(make_keysig_packet): Ditto.
+	* keygen.c (make_backsig, write_direct_sig, write_selfsigs)
+	(write_keybinding): Add arg CACHE_NONCE.
+	(do_generate_keypair): Use cache_nonce to avoid a pinentry for the
+	self-signatures.
+
+	* passphrase.c (gpg_format_keydesc): Remove now superfluous
+	algo_name fallback.
+
 	* keygen.c (gen_elg, gen_dsa, gen_rsa, do_create, common_gen): Add
 	arg CACHE_NONCE_ADDR.
 	(generate_subkeypair): Pass NULL for CACHE_NONCE_ADDR.
 	(do_generate_keypair): Add cache nonce handling.
+
 	* import.c (transfer_secret_keys): Support a cache nonce.
 	* call-agent.c (cache_nonce_status_cb): New.
 	(agent_genkey, agent_import_key): Add arg CACHE_NONCE_ADDR.
+	(agent_pksign): Ditto.
 
 2010-08-30  Werner Koch  <wk@g10code.com>
 

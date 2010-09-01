@@ -1549,9 +1549,11 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
    the hex string KEYGRIP.  DESC is a description of the key to be
    displayed if the agent needs to ask for the PIN.  DIGEST and
    DIGESTLEN is the hash value to sign and DIGESTALGO the algorithm id
-   used to compute the digest.  */
+   used to compute the digest.  If CACHE_NONCE is used the agent is
+   advised to firts try a passphrase associated with that nonce. */
 gpg_error_t
-agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
+agent_pksign (ctrl_t ctrl, const char *cache_nonce,
+              const char *keygrip, const char *desc,
               unsigned char *digest, size_t digestlen, int digestalgo,
               gcry_sexp_t *r_sigval)
 {
@@ -1598,7 +1600,11 @@ agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
     return err;
 
   init_membuf (&data, 1024);
-  err = assuan_transact (agent_ctx, "PKSIGN",
+
+  snprintf (line, sizeof line, "PKSIGN%s%s",
+            cache_nonce? " -- ":"",
+            cache_nonce? cache_nonce:"");
+  err = assuan_transact (agent_ctx, line,
                         membuf_data_cb, &data, default_inq_cb, ctrl,
                         NULL, NULL);
   if (err)

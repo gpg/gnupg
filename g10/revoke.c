@@ -339,7 +339,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    /* create it */
 	    rc = make_keysig_packet( &sig, pk, NULL, NULL, pk2, 0x20, 0,
 				     0, 0, 0,
-				     revocation_reason_build_cb, reason );
+				     revocation_reason_build_cb, reason,
+                                     NULL);
 	    if( rc ) {
 	      log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
 	      goto leave;
@@ -525,7 +526,7 @@ gen_revoke (const char *uname)
   /* create it */
   rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
                            opt.force_v4_certs?4:0, 0, 0,
-                           revocation_reason_build_cb, reason );
+                           revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
       log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));

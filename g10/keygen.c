@@ -824,7 +824,7 @@ keygen_add_revkey (PKT_signature *sig, void *opaque)
 gpg_error_t
 make_backsig (PKT_signature *sig, PKT_public_key *pk,
               PKT_public_key *sub_pk, PKT_public_key *sub_psk,
-              u32 timestamp)
+              u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PKT_signature *backsig;
@@ -832,7 +832,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
   cache_public_key (sub_pk);
 
   err = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_psk, 0x19,
-                            0, 0, timestamp, 0, NULL, NULL);
+                            0, 0, timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n", g10_errstr(err));
   else
@@ -918,7 +918,8 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
    the timestamp to set on the signature.  */
 static gpg_error_t
 write_direct_sig (KBNODE root, PKT_public_key *psk,
-                  struct revocation_key *revkey, u32 timestamp)
+                  struct revocation_key *revkey, u32 timestamp,
+                  const char *cache_nonce)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -942,7 +943,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
   /* Make the signature.  */
   err = make_keysig_packet (&sig, pk, NULL,NULL, psk, 0x1F,
                             0, 0, timestamp, 0,
-                            keygen_add_revkey, revkey);
+                            keygen_add_revkey, revkey, cache_nonce);
   if (err)
     {
       log_error ("make_keysig_packet failed: %s\n", g10_errstr (err) );
@@ -963,7 +964,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
    signature.  */
 static gpg_error_t
 write_selfsigs (KBNODE root, PKT_public_key *psk,
-		unsigned int use, u32 timestamp)
+		unsigned int use, u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -997,7 +998,7 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
   /* Make the signature.  */
   err = make_keysig_packet (&sig, pk, uid, NULL, psk, 0x13,
                             0, 0, timestamp, 0,
-                            keygen_add_std_prefs, pk);
+                            keygen_add_std_prefs, pk, cache_nonce);
   if (err) 
     {
       log_error ("make_keysig_packet failed: %s\n", g10_errstr (err));
@@ -1019,7 +1020,7 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
    used if USE has the PUBKEY_USAGE_SIG capability.  */
 static int
 write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
-                  unsigned int use, u32 timestamp)
+                  unsigned int use, u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -1056,7 +1057,8 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   oduap.pk = sub_pk;
   err = make_keysig_packet (&sig, pri_pk, NULL, sub_pk, pri_psk, 0x18, 
                             0, 0, timestamp, 0,
-                            keygen_add_key_flags_and_expire, &oduap);
+                            keygen_add_key_flags_and_expire, &oduap,
+                            cache_nonce);
   if (err) 
     {
       log_error ("make_keysig_packet failed: %s\n", g10_errstr (err));
@@ -1066,7 +1068,7 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   /* Make a backsig.  */
   if (use & PUBKEY_USAGE_SIG)
     {
-      err = make_backsig (sig, pri_pk, sub_pk, sub_psk, timestamp);
+      err = make_backsig (sig, pri_pk, sub_pk, sub_psk, timestamp, cache_nonce);
       if (err)
         return err;
     }
@@ -3254,13 +3256,14 @@ do_generate_keypair (struct para_data_s *para,
     }
 
   if (!err && (revkey = get_parameter_revkey (para, pREVOKER)))
-    err = write_direct_sig (pub_root, pri_psk, revkey, timestamp);
+    err = write_direct_sig (pub_root, pri_psk, revkey, timestamp, cache_nonce);
 
   if (!err && (s = get_parameter_value (para, pUSERID)))
     {
       write_uid (pub_root, s );
       err = write_selfsigs (pub_root, pri_psk,
-                            get_parameter_uint (para, pKEYUSAGE), timestamp);
+                            get_parameter_uint (para, pKEYUSAGE), timestamp,
+                            cache_nonce);
     }
 
   /* Write the auth key to the card before the encryption key.  This
@@ -3277,7 +3280,7 @@ do_generate_keypair (struct para_data_s *para,
                           get_parameter_u32 (para, pKEYEXPIRE), para);
       if (!err)
         err = write_keybinding (pub_root, pri_psk, NULL,
-                                PUBKEY_USAGE_AUTH, timestamp);
+                                PUBKEY_USAGE_AUTH, timestamp, cache_nonce);
     }
 
   if (!err && get_parameter (para, pSUBKEYTYPE))
@@ -3327,7 +3330,7 @@ do_generate_keypair (struct para_data_s *para,
       if (!err)
         err = write_keybinding (pub_root, pri_psk, sub_psk,
                                 get_parameter_uint (para, pSUBKEYUSAGE),
-                                timestamp);
+                                timestamp, cache_nonce);
       did_sub = 1;
     }
 
@@ -3526,7 +3529,7 @@ generate_subkeypair (KBNODE keyblock)
       sub_psk = node->pkt->pkt.public_key;
 
   /* Write the binding signature.  */
-  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time);
+  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time, NULL);
   if (err)
     goto leave;
 

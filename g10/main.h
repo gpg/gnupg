@@ -201,7 +201,8 @@ int encrypt_filter (void *opaque, int control,
 
 
 /*-- sign.c --*/
-int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md);
+int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
+                  const char *cache_nonce);
 int sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
 int clearsign_file( const char *fname, strlist_t locusr, const char *outfile );
@@ -241,7 +242,7 @@ int keygen_add_notations(PKT_signature *sig,void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
                           PKT_public_key *sub_pk, PKT_public_key *sub_psk,
-                          u32 timestamp);
+                          u32 timestamp, const char *cache_nonce);
 gpg_error_t generate_subkeypair (kbnode_t pub_keyblock);
 #ifdef ENABLE_CARD_SUPPORT
 int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,

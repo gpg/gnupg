@@ -700,8 +700,6 @@ gpg_format_keydesc (PKT_public_key *pk, int escaped)
   char *desc;
       
   algo_name = gcry_pk_algo_name (pk->pubkey_algo);
-  if (!algo_name)
-    algo_name = "?";
   timestr = strtimestamp (pk->timestamp);
   uid = get_user_id (pk->keyid, &uidlen); 
 

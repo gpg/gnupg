@@ -275,7 +275,7 @@ modify_description (const char *in, const char *comment, char **result)
    description used for the pinentry.  If LOOKUP_TTL is given this
    function is used to lookup the default ttl. */
 static int
-unprotect (ctrl_t ctrl, const char *desc_text,
+unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
            unsigned char **keybuf, const unsigned char *grip, 
            cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
 {
@@ -287,6 +287,26 @@ unprotect (ctrl_t ctrl, const char *desc_text,
   char hexgrip[40+1];
   
   bin2hex (grip, 20, hexgrip);
+
+  /* Initially try to get it using a cache nonce.  */
+  if (cache_nonce)
+    {
+      void *cache_marker;
+      const char *pw;
+      
+      pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE, &cache_marker);
+      if (pw)
+        {
+          rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
+          agent_unlock_cache_entry (&cache_marker);
+          if (!rc)
+            {
+              xfree (*keybuf);
+              *keybuf = result;
+              return 0;
+            }
+        }
+    }
 
   /* First try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
@@ -560,7 +580,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 
 	if (!rc)
 	  {
-	    rc = unprotect (ctrl, desc_text_final, &buf, grip,
+	    rc = unprotect (ctrl, cache_nonce, desc_text_final, &buf, grip,
                             cache_mode, lookup_ttl);
 	    if (rc)
 	      log_error ("failed to unprotect the secret key: %s\n",

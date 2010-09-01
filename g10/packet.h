@@ -502,7 +502,8 @@ int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_public_key *pksk, int sigclass, int digest_algo,
 			int sigversion, u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
-			void *opaque  );
+			void *opaque,
+                        const char *cache_nonce);
 int update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,

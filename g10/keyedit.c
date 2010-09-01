@@ -1083,7 +1083,8 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 					 NULL,
 					 pk,
 					 0x13, 0, force_v4 ? 4 : 0, 0, 0,
-					 keygen_add_std_prefs, primary_pk);
+					 keygen_add_std_prefs, primary_pk,
+                                         NULL);
 	      else
 		rc = make_keysig_packet (&sig, primary_pk,
 					 node->pkt->pkt.user_id,
@@ -1091,7 +1092,8 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 					 pk,
 					 class, 0, force_v4 ? 4 : 0,
 					 timestamp, duration,
-					 sign_mk_attrib, &attrib);
+					 sign_mk_attrib, &attrib,
+                                         NULL);
 	      if (rc)
 		{
 		  log_error (_("signing failed: %s\n"), g10_errstr (rc));
@@ -3222,7 +3224,7 @@ menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
     return 0;
 
   err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0, 0,
-                            keygen_add_std_prefs, pk);
+                            keygen_add_std_prefs, pk, NULL);
   if (err)
     {
       log_error ("signing failed: %s\n", g10_errstr (err));
@@ -3610,7 +3612,7 @@ menu_addrevoker (KBNODE pub_keyblock, int sensitive)
   /* The 1F signature must be at least v4 to carry the revocation key
      subpacket. */
   rc = make_keysig_packet (&sig, pk, NULL, NULL, pk, 0x1F, 0, 4, 0, 0,
-			   keygen_add_revkey, &revkey);
+			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
       log_error ("signing failed: %s\n", g10_errstr (rc));
@@ -3810,7 +3812,7 @@ menu_backsign (KBNODE pub_keyblock)
       /* Now we can get to work.  */
 
       rc = make_backsig (sig_pk->pkt->pkt.signature, main_pk, sub_pk, sub_pk,
-			 timestamp);
+			 timestamp, NULL);
       if (!rc)
 	{
 	  PKT_signature *newsig;
@@ -4901,7 +4903,7 @@ reloop:			/* (must use this, because we are modifing the list) */
       rc = make_keysig_packet (&sig, primary_pk,
 			       unode->pkt->pkt.user_id,
 			       NULL, signerkey, 0x30, 0, 0, 0, 0,
-                               sign_mk_attrib, &attrib);
+                               sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
 	{
@@ -4993,7 +4995,7 @@ menu_revuid (KBNODE pub_keyblock)
 
 	    rc = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x30, 0,
 				     (reason == NULL) ? 3 : 0, timestamp, 0,
-				     sign_mk_attrib, &attrib);
+				     sign_mk_attrib, &attrib, NULL);
 	    if (rc)
 	      {
 		log_error (_("signing failed: %s\n"), g10_errstr (rc));
@@ -5055,7 +5057,7 @@ menu_revkey (KBNODE pub_keyblock)
 
   rc = make_keysig_packet (&sig, pk, NULL, NULL, pk,
 			   0x20, 0, opt.force_v4_certs ? 4 : 0, 0, 0,
-			   revocation_reason_build_cb, reason);
+			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
       log_error (_("signing failed: %s\n"), g10_errstr (rc));
@@ -5115,7 +5117,8 @@ menu_revsubkey (KBNODE pub_keyblock)
 
 	  node->flag &= ~NODFLG_SELKEY;
 	  rc = make_keysig_packet (&sig, mainpk, NULL, subpk, mainpk,
-				   0x28, 0, 0, 0, 0, sign_mk_attrib, &attrib);
+				   0x28, 0, 0, 0, 0, sign_mk_attrib, &attrib,
+                                   NULL);
 	  if (rc)
 	    {
 	      log_error (_("signing failed: %s\n"), g10_errstr (rc));

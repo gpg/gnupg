@@ -154,7 +154,8 @@ gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
                           gcry_sexp_t *r_pubkey);
 
 /* Create a signature.  */
-gpg_error_t agent_pksign (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
+                          const char *hexkeygrip, const char *desc,
                           unsigned char *digest, size_t digestlen,
                           int digestalgo,
                           gcry_sexp_t *r_sigval);

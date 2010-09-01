@@ -1243,7 +1243,10 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
         size_t uidlen;
         u32 keyid[2];
         char *orig_codeset;
-        
+
+        /* FIXME: We should use gpg_format_keydesc, however that
+           requires a public key structure.  It might be useful to
+           merge the secret and public key structures. */
         keyid_from_sk (sk, keyid);
         uid = get_user_id (keyid, &uidlen); 
         orig_codeset = i18n_switchto_utf8 ();
