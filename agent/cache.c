@@ -1,5 +1,5 @@
 /* cache.c - keep a cache of passphrases
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -131,9 +131,9 @@ housekeeping (void)
         {
           if (r->lockcount)
             {
-              log_error ("can't remove unused cache entry `%s' due to"
+              log_error ("can't remove unused cache entry `%s' (mode %d) due to"
                          " lockcount=%d\n",
-                         r->key, r->lockcount);
+                         r->key, r->cache_mode, r->lockcount);
               r->accessed += 60*10; /* next error message in 10 minutes */
               rprev = r;
               r = r->next;
@@ -142,7 +142,8 @@ housekeeping (void)
             {
               ITEM r2 = r->next;
               if (DBG_CACHE)
-                log_debug ("  removed `%s' (slot not used for 30m)\n", r->key);
+                log_debug ("  removed `%s' (mode %d) (slot not used for 30m)\n",
+                           r->key, r->cache_mode);
               xfree (r);
               if (!rprev)
                 thecache = r2;
@@ -203,8 +204,8 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
   ITEM r;
 
   if (DBG_CACHE)
-    log_debug ("agent_put_cache `%s' requested ttl=%d mode=%d\n",
-               key, ttl, cache_mode);
+    log_debug ("agent_put_cache `%s' (mode %d) requested ttl=%d\n",
+               key, cache_mode, ttl);
   housekeeping ();
 
   if (!ttl)
@@ -220,7 +221,11 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
 
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && !strcmp (r->key, key))
+      if (!r->lockcount
+          && ((cache_mode != CACHE_MODE_USER
+               && cache_mode != CACHE_MODE_IMPGEN)
+              || r->cache_mode == cache_mode)
+          && !strcmp (r->key, key))
         break;
     }
   if (r)
@@ -269,7 +274,8 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
 
 
 /* Try to find an item in the cache.  Note that we currently don't
-   make use of CACHE_MODE.  */
+   make use of CACHE_MODE except for CACHE_MODE_IMPGEN and
+   CACHE_MODE_USER.  */
 const char *
 agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
 {
@@ -279,7 +285,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
     return NULL;
 
   if (DBG_CACHE)
-    log_debug ("agent_get_cache `%s'...\n", key);
+    log_debug ("agent_get_cache `%s' (mode %d) ...\n", key, cache_mode);
   housekeeping ();
 
   /* first try to find one with no locks - this is an updated cache
@@ -287,7 +293,11 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
      lockcount. */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw && !strcmp (r->key, key))
+      if (!r->lockcount && r->pw
+          && ((cache_mode != CACHE_MODE_USER
+               && cache_mode != CACHE_MODE_IMPGEN)
+              || r->cache_mode == cache_mode)
+          && !strcmp (r->key, key))
         {
           /* put_cache does only put strings into the cache, so we
              don't need the lengths */
@@ -302,7 +312,11 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
   /* again, but this time get even one with a lockcount set */
   for (r=thecache; r; r = r->next)
     {
-      if (r->pw && !strcmp (r->key, key))
+      if (r->pw 
+          && ((cache_mode != CACHE_MODE_USER
+               && cache_mode != CACHE_MODE_IMPGEN)
+              || r->cache_mode == cache_mode)
+          && !strcmp (r->key, key))
         {
           r->accessed = gnupg_get_time ();
           if (DBG_CACHE)

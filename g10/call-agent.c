@@ -1392,6 +1392,32 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   return err;
 }
 
+
+/* Status callback for agent_import_key and agent_genkey.  */
+static gpg_error_t
+cache_nonce_status_cb (void *opaque, const char *line)
+{
+  char **cache_nonce = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 11 && !memcmp (keyword, "CACHE_NONCE", keywordlen))
+    {
+      if (cache_nonce)
+        {
+          xfree (*cache_nonce);
+          *cache_nonce = xtrystrdup (line);
+        }
+    }
+
+  return 0;
+}
+
 
 
 /* Handle a KEYPARMS inquiry.  Note, we only send the data,
@@ -1418,13 +1444,15 @@ inq_genkey_parms (void *opaque, const char *line)
    S-expression giving the parameters of the key.  gpg-agent passes it
    gcry_pk_genkey.  */
 gpg_error_t
-agent_genkey (ctrl_t ctrl, const char *keyparms, gcry_sexp_t *r_pubkey)
+agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
+              const char *keyparms, gcry_sexp_t *r_pubkey)
 {
   gpg_error_t err;
   struct genkey_parm_s gk_parm;
   membuf_t data;
   size_t len;
   unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
 
   *r_pubkey = NULL;
   err = start_agent (ctrl, 0);
@@ -1440,9 +1468,13 @@ agent_genkey (ctrl_t ctrl, const char *keyparms, gcry_sexp_t *r_pubkey)
   gk_parm.ctrl     = ctrl;
   gk_parm.ctx      = agent_ctx;
   gk_parm.keyparms = keyparms;
-  err = assuan_transact (agent_ctx, "GENKEY",
+  snprintf (line, sizeof line, "GENKEY%s%s",
+            cache_nonce_addr && *cache_nonce_addr? " ":"",
+            cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
+  err = assuan_transact (agent_ctx, line,
                          membuf_data_cb, &data, 
-                         inq_genkey_parms, &gk_parm, NULL, NULL);
+                         inq_genkey_parms, &gk_parm, 
+                         cache_nonce_status_cb, cache_nonce_addr);
   if (err)
     {
       xfree (get_membuf (&data, &len));
@@ -1775,10 +1807,12 @@ inq_import_key_parms (void *opaque, const char *line)
 
 /* Call the agent to import a key into the agent.  */
 gpg_error_t
-agent_import_key (ctrl_t ctrl, const char *desc, const void *key, size_t keylen)
+agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
+                  const void *key, size_t keylen)
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
 
   err = start_agent (ctrl, 0);
   if (err)
@@ -1786,8 +1820,6 @@ agent_import_key (ctrl_t ctrl, const char *desc, const void *key, size_t keylen)
 
   if (desc)
     {
-      char line[ASSUAN_LINELENGTH];
-
       snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
       line[DIM(line)-1] = 0;
       err = assuan_transact (agent_ctx, line,
@@ -1801,8 +1833,12 @@ agent_import_key (ctrl_t ctrl, const char *desc, const void *key, size_t keylen)
   parm.key    = key;
   parm.keylen = keylen;
 
-  err = assuan_transact (agent_ctx, "IMPORT_KEY",
-                         NULL, NULL, inq_import_key_parms, &parm, NULL, NULL);
+  snprintf (line, sizeof line, "IMPORT_KEY%s%s",
+            cache_nonce_addr && *cache_nonce_addr? " ":"",
+            cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, inq_import_key_parms, &parm,
+                         cache_nonce_status_cb, cache_nonce_addr);
   return err;
 }
 

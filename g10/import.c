@@ -1105,6 +1105,7 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
   gcry_cipher_hd_t cipherhd = NULL;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
+  char *cache_nonce = NULL;
 
   /* Get the current KEK.  */
   err = agent_keywrap_key (ctrl, 0, &kek, &keklen);
@@ -1266,7 +1267,8 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
             xfree (desc);
             desc = uid;
           }
-        err = agent_import_key (ctrl, desc, wrappedkey, wrappedkeylen);
+        err = agent_import_key (ctrl, desc, &cache_nonce, 
+                                wrappedkey, wrappedkeylen);
         xfree (desc);
       }
       if (!err)
@@ -1305,6 +1307,7 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
     }
 
  leave:
+  xfree (cache_nonce);
   xfree (wrappedkey);
   xfree (transferkey);
   gcry_cipher_close (cipherhd);
@@ -1409,7 +1412,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                 pubkey_letter (sk->pubkey_algo),
                 keystr_from_sk (sk), datestr_from_sk (sk));
       if (uidnode)
-        print_utf8_buffer (es_stderr, uidnode->pkt->pkt.user_id->name,
+        print_utf8_buffer (log_get_stream (), uidnode->pkt->pkt.user_id->name,
                            uidnode->pkt->pkt.user_id->len);
       log_printf ("\n");
     }

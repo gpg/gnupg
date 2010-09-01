@@ -316,6 +316,12 @@ start_pinentry (ctrl_t ctrl)
       log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
       return rc;
     }
+  /* We don't want to log the pinentry communication to make the logs
+     easier to read.  We might want to add a new debug option to enable
+     pinentry logging.  */
+#ifdef ASSUAN_NO_LOGGING
+  assuan_set_flag (ctx, ASSUAN_NO_LOGGING, 1);
+#endif
 
   /* Connect to the pinentry and perform initial handshaking.  Note
      that atfork is used to change the environment for pinentry.  We

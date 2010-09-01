@@ -497,7 +497,8 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
   gpg_error_t err;
   struct try_do_unprotect_arg_s *arg = pi->check_cb_arg;
 
-  err = do_unprotect (pi->pin, arg->is_v4? 4:3,
+  err = do_unprotect (pi->pin,
+                      arg->is_v4? 4:3,
                       arg->pubkey_algo, arg->is_protected,
                       arg->skey, arg->skeysize,
                       arg->protect_algo, arg->iv, arg->ivlen,
@@ -507,15 +508,16 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
   /* SKEY may be modified now, thus we need to re-compute SKEYIDX.  */
   for (arg->skeyidx = 0; (arg->skeyidx < arg->skeysize
                           && arg->skey[arg->skeyidx]); arg->skeyidx++)
-         ;
+    ;
   return err;
 }
 
 
 /* Convert an OpenPGP transfer key into our internal format.  Before
    asking for a passphrase we check whether the key already exists in
-   our key storage.  S_PGP is the OpenPGP key in transfer format.  On
-   success R_KEY will receive a canonical encoded S-expression with
+   our key storage.  S_PGP is the OpenPGP key in transfer format.  If
+   CACHE_NONCE is given the passphrase will be looked up in the cache.
+   On success R_KEY will receive a canonical encoded S-expression with
    the unprotected key in our internal format; the caller needs to
    release that memory.  The passphrase used to decrypt the OpenPGP
    key will be returned at R_PASSPHRASE; the caller must release this
@@ -525,6 +527,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
 gpg_error_t
 convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp, 
                  unsigned char *grip, const char *prompt,
+                 const char *cache_nonce,
                  unsigned char **r_key, char **r_passphrase)
 {
   gpg_error_t err;
@@ -759,7 +762,26 @@ convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   pi_arg.skeysize = DIM (skey);
   pi_arg.skeyidx = skeyidx;
   pi_arg.r_key = &s_skey;
-  err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
+
+  err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+  if (cache_nonce)
+    {
+      void *cache_marker = NULL;
+      const char *cache_value;
+
+      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_IMPGEN,
+                                     &cache_marker);
+      if (cache_value)
+        {
+          if (strlen (cache_value) < pi->max_length)
+            strcpy (pi->pin, cache_value);
+          agent_unlock_cache_entry (&cache_marker);
+        }
+      if (*pi->pin)
+        err = try_do_unprotect_cb (pi);
+    }
+  if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
+    err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
   skeyidx = pi_arg.skeyidx;
   if (!err)
     {

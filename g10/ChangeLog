@@ -1,3 +1,13 @@
+2010-09-01  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_elg, gen_dsa, gen_rsa, do_create, common_gen): Add
+	arg CACHE_NONCE_ADDR.
+	(generate_subkeypair): Pass NULL for CACHE_NONCE_ADDR.
+	(do_generate_keypair): Add cache nonce handling.
+	* import.c (transfer_secret_keys): Support a cache nonce.
+	* call-agent.c (cache_nonce_status_cb): New.
+	(agent_genkey, agent_import_key): Add arg CACHE_NONCE_ADDR.
+
 2010-08-30  Werner Koch  <wk@g10code.com>
 
 	* keyid.c (KEYID_STR_SIZE): New

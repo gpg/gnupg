@@ -149,7 +149,8 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
                                char **r_serialno);
 
 /* Generate a new key.  */
-gpg_error_t agent_genkey (ctrl_t ctrl, const char *keyparms,
+gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
+                          const char *keyparms,
                           gcry_sexp_t *r_pubkey);
 
 /* Create a signature.  */
@@ -169,6 +170,7 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 
 /* Send a key to the agent.  */
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
+                              char **cache_nonce_addr,
                               const void *key, size_t keylen);
 
 

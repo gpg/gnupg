@@ -193,7 +193,9 @@ typedef enum
     CACHE_MODE_ANY,        /* Any mode except ignore matches. */
     CACHE_MODE_NORMAL,     /* Normal cache (gpg-agent). */
     CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
-    CACHE_MODE_SSH         /* SSH related cache. */
+    CACHE_MODE_SSH,        /* SSH related cache. */
+    CACHE_MODE_IMPGEN      /* Used for import and genkey.  This is a
+                              non-predictable nonce.  */
   }
 cache_mode_t;
 
@@ -286,7 +288,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
-int agent_genkey (ctrl_t ctrl, 
+int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 

@@ -766,7 +766,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] = 
-  "GENKEY\n"
+  "GENKEY [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
@@ -787,8 +787,15 @@ cmd_genkey (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
-
-  (void)line;
+  char *cache_nonce = NULL;
+  char *p;
+  
+  p = line;
+  for (p=line; *p && *p != ' ' && *p != '\t'; p++)
+    ;
+  *p = '\0';
+  if (*line)
+    cache_nonce = xtrystrdup (line);
 
   /* First inquire the parameters */
   rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
@@ -797,12 +804,13 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_genkey (ctrl, (char*)value, valuelen, &outbuf);
+  rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, &outbuf);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
+  xfree (cache_nonce);
   return leave_cmd (ctx, rc);
 }
 
@@ -1463,7 +1471,7 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_import_key[] =
-  "IMPORT_KEY\n"
+  "IMPORT_KEY [<cache_nonce>]\n"
   "\n"
   "Import a secret key into the key store.  The key is expected to be\n"
   "encrypted using the current session's key wrapping key (cf. command\n"
@@ -1485,14 +1493,21 @@ cmd_import_key (assuan_context_t ctx, char *line)
   size_t finalkeylen;
   unsigned char grip[20];
   gcry_sexp_t openpgp_sexp = NULL;
+  char *cache_nonce = NULL;
+  char *p;
   
-  (void)line;
-
   if (!ctrl->server_local->import_key)
     {
       err = gpg_error (GPG_ERR_MISSING_KEY);
       goto leave;
     }
+
+  p = line;
+  for (p=line; *p && *p != ' ' && *p != '\t'; p++)
+    ;
+  *p = '\0';
+  if (*line)
+    cache_nonce = xtrystrdup (line);
 
   assuan_begin_confidential (ctx);
   err = assuan_inquire (ctx, "KEYDATA",
@@ -1567,13 +1582,26 @@ cmd_import_key (assuan_context_t ctx, char *line)
          key import. */
       
       err = convert_openpgp (ctrl, openpgp_sexp, grip,
-                             ctrl->server_local->keydesc,
+                             ctrl->server_local->keydesc, cache_nonce,
                              &key, &passphrase);
       if (err)
         goto leave;
       realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
       if (!realkeylen)
         goto leave; /* Invalid canonical encoded S-expression.  */
+      if (passphrase)
+        {
+          if (!cache_nonce)
+            {
+              char buf[12];
+              gcry_create_nonce (buf, 12);
+              cache_nonce = bin2hex (buf, 12, NULL);
+            }
+          if (cache_nonce 
+              && !agent_put_cache (cache_nonce, CACHE_MODE_IMPGEN,
+                                   passphrase, 120 /*seconds*/))
+            assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
+        }
     }
   else
     {
@@ -1604,6 +1632,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   xfree (key);
   gcry_cipher_close (cipherhd);
   xfree (wrappedkey);
+  xfree (cache_nonce);
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
   return leave_cmd (ctx, err);

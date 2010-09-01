@@ -351,9 +351,11 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 
 
 /* Generate a new keypair according to the parameters given in
-   KEYPARAM */
+   KEYPARAM.  If CACHE_NONCE is given first try to lookup a passphrase
+   using the cache nonce. */
 int
-agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
+agent_genkey (ctrl_t ctrl, const char *cache_nonce,
+              const char *keyparam, size_t keyparamlen,
               membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
@@ -370,10 +372,28 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
-  rc = agent_ask_new_passphrase (ctrl, 
-                                 _("Please enter the passphrase to%0A"
-                                   "to protect your new key"),
-                                 &passphrase);
+  if (cache_nonce)
+    {
+      void *cache_marker = NULL;
+      const char *cache_value;
+
+      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_IMPGEN,
+                                     &cache_marker);
+      if (cache_value)
+        {
+          passphrase = xtrymalloc_secure (strlen (cache_value)+1);
+          if (passphrase)
+            strcpy (passphrase, cache_value);
+          agent_unlock_cache_entry (&cache_marker);
+        }
+    }
+  if (passphrase)
+    rc = 0;
+  else
+    rc = agent_ask_new_passphrase (ctrl, 
+                                   _("Please enter the passphrase to%0A"
+                                     "to protect your new key"),
+                                   &passphrase);
   if (rc)
     return rc;
 
@@ -410,6 +430,19 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
   if (DBG_CRYPTO)
     log_debug ("storing private key\n");
   rc = store_key (s_private, passphrase, 0);
+  if (!rc)
+    {
+      if (!cache_nonce)
+        {
+          char tmpbuf[12];
+          gcry_create_nonce (tmpbuf, 12);
+          cache_nonce = bin2hex (tmpbuf, 12, NULL);
+        }
+      if (cache_nonce 
+          && !agent_put_cache (cache_nonce, CACHE_MODE_IMPGEN,
+                               passphrase, 900 /*seconds*/))
+        agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
+    }
   xfree (passphrase);
   passphrase = NULL;
   gcry_sexp_release (s_private);

@@ -1134,14 +1134,15 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 /* Common code for the key generation fucntion gen_xxx.  */
 static int
 common_gen (const char *keyparms, int algo, const char *algoelem,
-            kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey)
+            kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,
+            char **cache_nonce_addr)
 {
   int err;
   PACKET *pkt;
   PKT_public_key *pk;
   gcry_sexp_t s_key;
   
-  err = agent_genkey (NULL, keyparms, &s_key);
+  err = agent_genkey (NULL, cache_nonce_addr, keyparms, &s_key);
   if (err)
     {
       log_error ("agent_genkey failed: %s\n", gpg_strerror (err) );
@@ -1193,7 +1194,7 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
  */
 static int
 gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
-         u32 timestamp, u32 expireval, int is_subkey)
+         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1223,7 +1224,8 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
   else
     {
       err = common_gen (keyparms, algo, "pgy", 
-                        pub_root, timestamp, expireval, is_subkey);
+                        pub_root, timestamp, expireval, is_subkey,
+                        cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1236,7 +1238,7 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
  */
 static gpg_error_t
 gen_dsa (unsigned int nbits, KBNODE pub_root, 
-         u32 timestamp, u32 expireval, int is_subkey)
+         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
 {
   int err;
   unsigned int qbits;
@@ -1305,7 +1307,8 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
   else
     {
       err = common_gen (keyparms, PUBKEY_ALGO_DSA, "pqgy", 
-                        pub_root, timestamp, expireval, is_subkey);
+                        pub_root, timestamp, expireval, is_subkey,
+                        cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1318,7 +1321,7 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
  */
 static int
 gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
-         u32 timestamp, u32 expireval, int is_subkey)
+         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1349,7 +1352,8 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
   else
     {
       err = common_gen (keyparms, algo, "ne", 
-                        pub_root, timestamp, expireval, is_subkey);
+                        pub_root, timestamp, expireval, is_subkey,
+                        cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -2146,7 +2150,8 @@ do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
    routines based on the requested algorithm.  */
 static int
 do_create (int algo, unsigned int nbits, KBNODE pub_root,
-           u32 timestamp, u32 expiredate, int is_subkey )
+           u32 timestamp, u32 expiredate, int is_subkey,
+           char **cache_nonce_addr)
 {
   gpg_error_t err;
 
@@ -2160,11 +2165,14 @@ do_create (int algo, unsigned int nbits, KBNODE pub_root,
 "generator a better chance to gain enough entropy.\n") );
 
   if (algo == PUBKEY_ALGO_ELGAMAL_E)
-    err = gen_elg (algo, nbits, pub_root, timestamp, expiredate, is_subkey);
+    err = gen_elg (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
+                   cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_DSA)
-    err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey);
+    err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
+                   cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)
-    err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey);
+    err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
+                   cache_nonce_addr);
   else
     BUG();
 
@@ -3161,6 +3169,7 @@ do_generate_keypair (struct para_data_s *para,
   struct revocation_key *revkey;
   int did_sub = 0;
   u32 timestamp;
+  char *cache_nonce = NULL;
 
   if (outctrl->dryrun)
     {
@@ -3231,7 +3240,7 @@ do_generate_keypair (struct para_data_s *para,
                      get_parameter_uint( para, pKEYLENGTH ),
                      pub_root,
                      timestamp,
-                     get_parameter_u32( para, pKEYEXPIRE ), 0 );
+                     get_parameter_u32( para, pKEYEXPIRE ), 0, &cache_nonce);
   else
     err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
                         &timestamp,
@@ -3280,7 +3289,8 @@ do_generate_keypair (struct para_data_s *para,
                            get_parameter_uint (para, pSUBKEYLENGTH),
                            pub_root, 
                            timestamp,
-                           get_parameter_u32 (para, pSUBKEYEXPIRE), 1 );
+                           get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
+                           &cache_nonce);
           /* Get the pointer to the generated public subkey packet.  */
           if (!err)
             {
@@ -3410,6 +3420,7 @@ do_generate_keypair (struct para_data_s *para,
     }
   
   release_kbnode (pub_root);
+  xfree (cache_nonce);
 }
 
 
@@ -3505,7 +3516,7 @@ generate_subkeypair (KBNODE keyblock)
       goto leave;
     }  
 
-  err = do_create (algo, nbits, keyblock, cur_time, expire, 1);
+  err = do_create (algo, nbits, keyblock, cur_time, expire, 1, NULL);
   if (err)
     goto leave;
 
