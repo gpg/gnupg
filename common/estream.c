@@ -2885,7 +2885,7 @@ es_sysopen_nc (es_syshd_t *syshd, const char *mode)
 void
 _es_set_std_fd (int no, int fd)
 {
-  fprintf (stderr, "es_set_std_fd(%d, %d)\n", no, fd);
+  /* fprintf (stderr, "es_set_std_fd(%d, %d)\n", no, fd); */
   ESTREAM_LIST_LOCK;
   if (no >= 0 && no < 3 && !custom_std_fds_valid[no])
     {
