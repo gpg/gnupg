@@ -223,7 +223,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
     {
       if (!r->lockcount
           && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_IMPGEN)
+               && cache_mode != CACHE_MODE_NONCE)
               || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         break;
@@ -274,7 +274,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
 
 
 /* Try to find an item in the cache.  Note that we currently don't
-   make use of CACHE_MODE except for CACHE_MODE_IMPGEN and
+   make use of CACHE_MODE except for CACHE_MODE_NONCE and
    CACHE_MODE_USER.  */
 const char *
 agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
@@ -295,7 +295,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
     {
       if (!r->lockcount && r->pw
           && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_IMPGEN)
+               && cache_mode != CACHE_MODE_NONCE)
               || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         {
@@ -314,7 +314,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
     {
       if (r->pw 
           && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_IMPGEN)
+               && cache_mode != CACHE_MODE_NONCE)
               || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         {

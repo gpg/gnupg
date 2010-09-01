@@ -377,7 +377,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
       void *cache_marker = NULL;
       const char *cache_value;
 
-      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_IMPGEN,
+      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE,
                                      &cache_marker);
       if (cache_value)
         {
@@ -439,7 +439,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
           cache_nonce = bin2hex (tmpbuf, 12, NULL);
         }
       if (cache_nonce 
-          && !agent_put_cache (cache_nonce, CACHE_MODE_IMPGEN,
+          && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                passphrase, 900 /*seconds*/))
         agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
     }

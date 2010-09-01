@@ -2,14 +2,17 @@
 
 	* call-pinentry.c (start_pinentry): Disable pinentry logging.
 
-	* command.c (cmd_import_key, cmd_genkey): Add CACHE handling.
+	* command.c (cmd_import_key, cmd_genkey, cmd_pksign): Add CACHE
+	handling.
 	* cvt-openpgp.c (convert_openpgp): Add arg CACHE_NONCE and try the
 	cached nonce first.
 	* genkey.c (agent_genkey): Add arg CACHE_NONCE.
-	* cache.c (agent_get_cache): Require user and impgen cache modes
+	* cache.c (agent_get_cache): Require user and nonce cache modes
 	to match the requested mode.
 	(agent_put_cache): Ditto.
-	* agent.h (CACHE_MODE_IMPGEN): New.
+	* agent.h (CACHE_MODE_NONCE): New.
+	* pksign.c (agent_pksign_do, agent_pksign): Add arg CACHE_NONCE.
+	* findkey.c (agent_key_from_file): Ditto.
 
 2010-08-31  Werner Koch  <wk@g10code.com>
 

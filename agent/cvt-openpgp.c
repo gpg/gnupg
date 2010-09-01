@@ -769,7 +769,7 @@ convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
       void *cache_marker = NULL;
       const char *cache_value;
 
-      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_IMPGEN,
+      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE,
                                      &cache_marker);
       if (cache_value)
         {

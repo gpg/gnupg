@@ -2049,7 +2049,7 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   *sig_n = 0;
 
   ctrl->use_auth_call = 1;
-  err = agent_pksign_do (ctrl,
+  err = agent_pksign_do (ctrl, NULL,
                          _("Please enter the passphrase "
                            "for the ssh key%0A  %c"), &signature_sexp,
                          CACHE_MODE_SSH, ttl_from_sshcontrol);

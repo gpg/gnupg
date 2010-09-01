@@ -695,7 +695,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
 
 
 static const char hlp_pksign[] = 
-  "PKSIGN [options]\n"
+  "PKSIGN [<options>] [<cache_nonce>]\n"
   "\n"
   "Perform the actual sign operation.  Neither input nor output are\n"
   "sensitive to eavesdropping.";
@@ -706,9 +706,18 @@ cmd_pksign (assuan_context_t ctx, char *line)
   cache_mode_t cache_mode = CACHE_MODE_NORMAL;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   membuf_t outbuf;
+  char *cache_nonce = NULL;
+  char *p;
   
-  (void)line;
+  line = skip_options (line);
   
+  p = line;
+  for (p=line; *p && *p != ' ' && *p != '\t'; p++)
+    ;
+  *p = '\0';
+  if (*line)
+    cache_nonce = xtrystrdup (line);
+
   if (opt.ignore_cache_for_signing)
     cache_mode = CACHE_MODE_IGNORE;
   else if (!ctrl->server_local->use_cache_for_signing)
@@ -716,12 +725,14 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_pksign (ctrl, ctrl->server_local->keydesc,
+  rc = agent_pksign (ctrl, cache_nonce, ctrl->server_local->keydesc,
                      &outbuf, cache_mode);
   if (rc)
     clear_outbuf (&outbuf);
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
+
+  xfree (cache_nonce);
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
   return leave_cmd (ctx, rc);
@@ -729,7 +740,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
 
 static const char hlp_pkdecrypt[] = 
-  "PKDECRYPT <options>\n"
+  "PKDECRYPT [<options>]\n"
   "\n"
   "Perform the actual decrypt operation.  Input is not\n"
   "sensitive to eavesdropping.";
@@ -1305,7 +1316,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
     goto leave;
 
   ctrl->in_passwd++;
-  rc = agent_key_from_file (ctrl, ctrl->server_local->keydesc,
+  rc = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc,
                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
                             &s_skey);
   if (rc)
@@ -1598,7 +1609,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
               cache_nonce = bin2hex (buf, 12, NULL);
             }
           if (cache_nonce 
-              && !agent_put_cache (cache_nonce, CACHE_MODE_IMPGEN,
+              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, 120 /*seconds*/))
             assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
         }
@@ -1676,7 +1687,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  err = agent_key_from_file (ctrl, ctrl->server_local->keydesc, grip,
+  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
                              NULL, CACHE_MODE_IGNORE, NULL, &s_skey);
   if (err)
     goto leave;

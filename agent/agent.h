@@ -194,8 +194,7 @@ typedef enum
     CACHE_MODE_NORMAL,     /* Normal cache (gpg-agent). */
     CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
     CACHE_MODE_SSH,        /* SSH related cache. */
-    CACHE_MODE_IMPGEN      /* Used for import and genkey.  This is a
-                              non-predictable nonce.  */
+    CACHE_MODE_NONCE       /* This is a non-predictable nonce.  */
   }
 cache_mode_t;
 
@@ -228,6 +227,7 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
 gpg_error_t agent_key_from_file (ctrl_t ctrl, 
+                                 const char *cache_nonce,
                                  const char *desc_text,
                                  const unsigned char *grip,
                                  unsigned char **shadow_info,
@@ -273,10 +273,12 @@ void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
-int agent_pksign_do (ctrl_t ctrl, const char *desc_text,
+int agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
+                     const char *desc_text,
 		     gcry_sexp_t *signature_sexp,
                      cache_mode_t cache_mode, lookup_ttl_t lookup_ttl);
-int agent_pksign (ctrl_t ctrl, const char *desc_text,
+int agent_pksign (ctrl_t ctrl, const char *cache_nonce,
+                  const char *desc_text,
                   membuf_t *outbuf, cache_mode_t cache_mode);
 
 /*-- pkdecrypt.c --*/

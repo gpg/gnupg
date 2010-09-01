@@ -237,9 +237,12 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
 
 /* SIGN whatever information we have accumulated in CTRL and return
    the signature S-expression.  LOOKUP is an optional function to
-   provide a way for lower layers to ask for the caching TTL. */
+   provide a way for lower layers to ask for the caching TTL.  If a
+   CACHE_NONCE is given that cache item is first tried to get a
+   passphrase.  */
 int
-agent_pksign_do (ctrl_t ctrl, const char *desc_text,
+agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
+                 const char *desc_text,
 		 gcry_sexp_t *signature_sexp,
                  cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
 {
@@ -250,7 +253,7 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
   if (! ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  rc = agent_key_from_file (ctrl, desc_text, ctrl->keygrip,
+  rc = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
                             &shadow_info, cache_mode, lookup_ttl,
                             &s_skey);
   if (rc)
@@ -349,9 +352,10 @@ agent_pksign_do (ctrl_t ctrl, const char *desc_text,
 }
 
 /* SIGN whatever information we have accumulated in CTRL and write it
-   back to OUTFP. */
+   back to OUTFP.  If a CACHE_NONCE is given that cache item is first
+   tried to get a passphrase.  */
 int
-agent_pksign (ctrl_t ctrl, const char *desc_text,
+agent_pksign (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               membuf_t *outbuf, cache_mode_t cache_mode) 
 {
   gcry_sexp_t s_sig = NULL;
@@ -359,7 +363,7 @@ agent_pksign (ctrl_t ctrl, const char *desc_text,
   size_t len = 0;
   int rc = 0;
 
-  rc = agent_pksign_do (ctrl, desc_text, &s_sig, cache_mode, NULL);
+  rc = agent_pksign_do (ctrl, cache_nonce, desc_text, &s_sig, cache_mode, NULL);
   if (rc)
     goto leave;
 

@@ -480,11 +480,13 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
    CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
    set to present a custom description for the pinentry.  LOOKUP_TTL
    is an optional function to convey a TTL to the cache manager; we do
-   not simply pass the TTL value because the value is only needed if an
-   unprotect action was needed and looking up the TTL may have some
-   overhead (e.g. scanning the sshcontrol file). */
+   not simply pass the TTL value because the value is only needed if
+   an unprotect action was needed and looking up the TTL may have some
+   overhead (e.g. scanning the sshcontrol file).  If a CACHE_NONCE is
+   given that cache item is first tried to get a passphrase.  */
 gpg_error_t
-agent_key_from_file (ctrl_t ctrl, const char *desc_text,
+agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
+                     const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
                      cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
                      gcry_sexp_t *result)

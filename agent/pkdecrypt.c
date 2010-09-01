@@ -64,7 +64,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
       log_printhex ("keygrip:", ctrl->keygrip, 20);
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
-  rc = agent_key_from_file (ctrl, desc_text,
+  rc = agent_key_from_file (ctrl, NULL, desc_text,
                             ctrl->keygrip, &shadow_info,
                             CACHE_MODE_NORMAL, NULL, &s_skey);
   if (rc)
