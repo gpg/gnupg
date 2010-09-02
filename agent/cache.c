@@ -24,13 +24,31 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <pth.h>
 
 #include "agent.h"
 
+/* The size of the encryption key in bytes.  */
+#define ENCRYPTION_KEYSIZE (128/8)
+
+/* A mutex used to protect the encryption.  This is required because
+   we use one context to do all encryption and decryption.  */
+static pth_mutex_t encryption_lock;
+/* The encryption context.  This is the only place where the
+   encryption key for all cached entries is available.  It would nice
+   to keep this (or just the key) in some hardware device, for example
+   a TPM.  Libgcrypt could be extended to provide such a service.
+   With the current scheme it is easy to retrieve the cached entries
+   if access to Libgcrypt's memory is available.  The encryption
+   merely avoids grepping for clear texts in the memory.  Nevertheless
+   the encryption provides the necessary infrastructure to make it
+   more secure.  */
+static gcry_cipher_hd_t encryption_handle;
+
+
 struct secret_data_s {
-  int  totallen; /* this includes the padding */
-  int  datalen;  /* actual data length */
-  char data[1];
+  int  totallen; /* This includes the padding and space for AESWRAP. */
+  char data[1];  /* A string.  */
 };
 
 typedef struct cache_item_s *ITEM;
@@ -39,14 +57,53 @@ struct cache_item_s {
   time_t created;
   time_t accessed;
   int ttl;  /* max. lifetime given in seconds, -1 one means infinite */
-  int lockcount;
   struct secret_data_s *pw;
   cache_mode_t cache_mode;
   char key[1];
 };
 
-
+/* The cache himself.  */
 static ITEM thecache;
+
+
+/* This function must be called once to initialize this module. It
+   has to be done before a second thread is spawned.  */
+void
+initialize_module_cache (void)
+{
+  static int initialized;
+  gpg_error_t err;
+  void *key;
+
+  if (!pth_mutex_init (&encryption_lock))
+    err = gpg_error_from_syserror ();
+  else
+    err = gcry_cipher_open (&encryption_handle, GCRY_CIPHER_AES128,
+                            GCRY_CIPHER_MODE_AESWRAP, GCRY_CIPHER_SECURE);
+  if (!err)
+    {
+      key = gcry_random_bytes (ENCRYPTION_KEYSIZE, GCRY_STRONG_RANDOM);
+      if (!key)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          err = gcry_cipher_setkey (encryption_handle, key, ENCRYPTION_KEYSIZE);
+          xfree (key);
+        }
+    }
+  if (err)
+    log_fatal ("error initializing cache encryption context: %s\n",
+             gpg_strerror (err));
+  initialized = 1;
+}
+
+
+void
+deinitialize_module_cache (void)
+{
+  gcry_cipher_close (encryption_handle);
+  encryption_handle = NULL;
+}
 
 
 static void
@@ -55,31 +112,61 @@ release_data (struct secret_data_s *data)
    xfree (data);
 }
 
-static struct secret_data_s *
-new_data (const void *data, size_t length)
+static gpg_error_t
+new_data (const char *string, struct secret_data_s **r_data)
 {
-  struct secret_data_s *d;
+  gpg_error_t err;
+  struct secret_data_s *d, *d_enc;
+  size_t length;
   int total;
+  
+  *r_data = NULL;
 
-  /* we pad the data to 32 bytes so that it get more complicated
+  if (!encryption_handle)
+    return gpg_error (GPG_ERR_NOT_INITIALIZED);
+
+  length = strlen (string) + 1;
+
+  /* We pad the data to 32 bytes so that it get more complicated
      finding something out by watching allocation patterns.  This is
-     usally not possible but we better assume nothing about our
-     secure storage provider*/
-  total = length + 32 - (length % 32);
+     usally not possible but we better assume nothing about our secure
+     storage provider.  To support the AESWRAP mode we need to add 8
+     extra bytes as well. */
+  total = (length + 8) + 32 - ((length+8) % 32);
 
-  d = gcry_malloc_secure (sizeof *d + total - 1);
-  if (d)
+  d = xtrymalloc_secure (sizeof *d + total - 1);
+  if (!d)
+    return gpg_error_from_syserror ();
+  memcpy (d->data, string, length);
+
+  d_enc = xtrymalloc (sizeof *d_enc + total - 1);
+  if (!d_enc)
     {
-      d->totallen = total;
-      d->datalen  = length;
-      memcpy (d->data, data, length);
+      err = gpg_error_from_syserror ();
+      xfree (d);
+      return err;
     }
-  return d;
+
+  d_enc->totallen = total;
+  if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
+    log_fatal ("failed to acquire cache encryption mutex\n");
+  err = gcry_cipher_encrypt (encryption_handle, d_enc->data, total,
+                             d->data, total - 8);
+  xfree (d);
+  if (!pth_mutex_release (&encryption_lock))
+    log_fatal ("failed to release cache encryption mutex\n");
+  if (err)
+    {
+      xfree (d_enc);
+      return err;
+    }
+  *r_data = d_enc;
+  return 0;
 }
 
 
 
-/* check whether there are items to expire */
+/* Check whether there are items to expire.  */
 static void
 housekeeping (void)
 {
@@ -89,8 +176,7 @@ housekeeping (void)
   /* First expire the actual data */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw
-	  && r->ttl >= 0 && r->accessed + r->ttl < current)
+      if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (%ds after last access)\n",
@@ -112,7 +198,7 @@ housekeeping (void)
         case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
         default: maxttl = opt.max_cache_ttl; break;
         }
-      if (!r->lockcount && r->pw && r->created + maxttl < current)
+      if (r->pw && r->created + maxttl < current)
         {
           if (DBG_CACHE)
             log_debug ("  expired `%s' (%lus after creation)\n",
@@ -129,28 +215,16 @@ housekeeping (void)
     {
       if (!r->pw && r->ttl >= 0 && r->accessed + 60*30 < current)
         {
-          if (r->lockcount)
-            {
-              log_error ("can't remove unused cache entry `%s' (mode %d) due to"
-                         " lockcount=%d\n",
-                         r->key, r->cache_mode, r->lockcount);
-              r->accessed += 60*10; /* next error message in 10 minutes */
-              rprev = r;
-              r = r->next;
-            }
+          ITEM r2 = r->next;
+          if (DBG_CACHE)
+            log_debug ("  removed `%s' (mode %d) (slot not used for 30m)\n",
+                       r->key, r->cache_mode);
+          xfree (r);
+          if (!rprev)
+            thecache = r2;
           else
-            {
-              ITEM r2 = r->next;
-              if (DBG_CACHE)
-                log_debug ("  removed `%s' (mode %d) (slot not used for 30m)\n",
-                           r->key, r->cache_mode);
-              xfree (r);
-              if (!rprev)
-                thecache = r2;
-              else
-                rprev->next = r2;
-              r = r2;
-            }
+            rprev->next = r2;
+          r = r2;
         }
       else
         {
@@ -171,7 +245,7 @@ agent_flush_cache (void)
 
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw)
+      if (r->pw)
         {
           if (DBG_CACHE)
             log_debug ("  flushing `%s'\n", r->key);
@@ -179,28 +253,22 @@ agent_flush_cache (void)
           r->pw = NULL;
           r->accessed = 0;
         }
-      else if (r->lockcount && r->pw)
-        {
-          if (DBG_CACHE)
-            log_debug ("    marked `%s' for flushing\n", r->key);
-          r->accessed = 0;
-          r->ttl = 0;
-        }
     }
 }
 
 
 
-/* Store DATA of length DATALEN in the cache under KEY and mark it
-   with a maximum lifetime of TTL seconds.  If there is already data
-   under this key, it will be replaced.  Using a DATA of NULL deletes
-   the entry.  A TTL of 0 is replaced by the default TTL and a TTL of
-   -1 set infinite timeout.  CACHE_MODE is stored with the cache entry
+/* Store the string DATA in the cache under KEY and mark it with a
+   maximum lifetime of TTL seconds.  If there is already data under
+   this key, it will be replaced.  Using a DATA of NULL deletes the
+   entry.  A TTL of 0 is replaced by the default TTL and a TTL of -1
+   set infinite timeout.  CACHE_MODE is stored with the cache entry
    and used to select different timeouts.  */
 int
 agent_put_cache (const char *key, cache_mode_t cache_mode,
                  const char *data, int ttl)
 {
+  gpg_error_t err = 0;
   ITEM r;
 
   if (DBG_CACHE)
@@ -221,15 +289,14 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
 
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount
-          && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_NONCE)
-              || r->cache_mode == cache_mode)
+      if (((cache_mode != CACHE_MODE_USER
+            && cache_mode != CACHE_MODE_NONCE)
+           || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         break;
     }
-  if (r)
-    { /* replace */
+  if (r) /* Replace.  */
+    {
       if (r->pw)
         {
           release_data (r->pw);
@@ -240,46 +307,47 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
           r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
           r->cache_mode = cache_mode;
-          r->pw = new_data (data, strlen (data)+1);
-          if (!r->pw)
-            log_error ("out of core while allocating new cache item\n");
+          err = new_data (data, &r->pw);
+          if (err)
+            log_error ("error replacing cache item: %s\n", gpg_strerror (err));
         }
     }
-  else if (data)
-    { /* simply insert */
+  else if (data) /* Insert.  */
+    {
       r = xtrycalloc (1, sizeof *r + strlen (key));
       if (!r)
-        log_error ("out of core while allocating new cache control\n");
+        err = gpg_error_from_syserror ();
       else
         {
           strcpy (r->key, key);
           r->created = r->accessed = gnupg_get_time (); 
           r->ttl = ttl;
           r->cache_mode = cache_mode;
-          r->pw = new_data (data, strlen (data)+1);
-          if (!r->pw)
-            {
-              log_error ("out of core while allocating new cache item\n");
-              xfree (r);
-            }
+          err = new_data (data, &r->pw);
+          if (err)
+            xfree (r);
           else
             {
               r->next = thecache;
               thecache = r;
             }
         }
+      if (err)
+        log_error ("error inserting cache item: %s\n", gpg_strerror (err));
     }
-  return 0;
+  return err;
 }
 
 
 /* Try to find an item in the cache.  Note that we currently don't
    make use of CACHE_MODE except for CACHE_MODE_NONCE and
    CACHE_MODE_USER.  */
-const char *
-agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
+char *
+agent_get_cache (const char *key, cache_mode_t cache_mode)
 {
+  gpg_error_t err;
   ITEM r;
+  char *value = NULL;
 
   if (cache_mode == CACHE_MODE_IGNORE)
     return NULL;
@@ -288,67 +356,46 @@ agent_get_cache (const char *key, cache_mode_t cache_mode, void **cache_id)
     log_debug ("agent_get_cache `%s' (mode %d) ...\n", key, cache_mode);
   housekeeping ();
 
-  /* first try to find one with no locks - this is an updated cache
-     entry: We might have entries with a lockcount and without a
-     lockcount. */
   for (r=thecache; r; r = r->next)
     {
-      if (!r->lockcount && r->pw
+      if (r->pw
           && ((cache_mode != CACHE_MODE_USER
                && cache_mode != CACHE_MODE_NONCE)
               || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         {
-          /* put_cache does only put strings into the cache, so we
-             don't need the lengths */
           r->accessed = gnupg_get_time ();
           if (DBG_CACHE)
             log_debug ("... hit\n");
-          r->lockcount++;
-          *cache_id = r;
-          return r->pw->data;
-        }
-    }
-  /* again, but this time get even one with a lockcount set */
-  for (r=thecache; r; r = r->next)
-    {
-      if (r->pw 
-          && ((cache_mode != CACHE_MODE_USER
-               && cache_mode != CACHE_MODE_NONCE)
-              || r->cache_mode == cache_mode)
-          && !strcmp (r->key, key))
-        {
-          r->accessed = gnupg_get_time ();
-          if (DBG_CACHE)
-            log_debug ("... hit (locked)\n");
-          r->lockcount++;
-          *cache_id = r;
-          return r->pw->data;
+          if (r->pw->totallen < 32)
+            err = gpg_error (GPG_ERR_INV_LENGTH);
+          else if (!encryption_handle)
+            err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+          else if (!(value = xtrymalloc_secure (r->pw->totallen - 8)))
+            err = gpg_error_from_syserror ();
+          else
+            {
+              if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
+                log_fatal ("failed to acquire cache encryption mutex\n");
+              err = gcry_cipher_decrypt (encryption_handle,
+                                         value, r->pw->totallen - 8,
+                                         r->pw->data, r->pw->totallen);
+              if (!pth_mutex_release (&encryption_lock))
+                log_fatal ("failed to release cache encryption mutex\n");
+            }
+          if (err)
+            {
+              xfree (value);
+              value = NULL;
+              log_error ("retrieving cache entry `%s' failed: %s\n",
+                         key, gpg_strerror (err));
+            }
+          return value;
         }
     }
   if (DBG_CACHE)
     log_debug ("... miss\n");
 
-  *cache_id = NULL;
   return NULL;
 }
 
-
-void
-agent_unlock_cache_entry (void **cache_id)
-{
-  ITEM r;
-
-  for (r=thecache; r; r = r->next)
-    {
-      if (r == *cache_id)
-        {
-          if (!r->lockcount)
-            log_error ("trying to unlock non-locked cache entry `%s'\n",
-                       r->key);
-          else
-            r->lockcount--;
-          return;
-        }
-    }
-}

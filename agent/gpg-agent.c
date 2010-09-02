@@ -440,6 +440,7 @@ remove_socket (char *name)
 static void
 cleanup (void)
 {
+  deinitialize_module_cache ();
   remove_socket (socket_name);
   remove_socket (socket_name_ssh);
 }
@@ -842,6 +843,7 @@ main (int argc, char **argv )
       exit (1);
     }
 
+  initialize_module_cache ();
   initialize_module_call_pinentry ();
   initialize_module_call_scd ();
   initialize_module_trustlist ();

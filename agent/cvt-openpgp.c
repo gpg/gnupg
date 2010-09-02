@@ -766,16 +766,14 @@ convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
   if (cache_nonce)
     {
-      void *cache_marker = NULL;
-      const char *cache_value;
+      char *cache_value;
 
-      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE,
-                                     &cache_marker);
+      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
       if (cache_value)
         {
           if (strlen (cache_value) < pi->max_length)
             strcpy (pi->pin, cache_value);
-          agent_unlock_cache_entry (&cache_marker);
+          xfree (cache_value);
         }
       if (*pi->pin)
         err = try_do_unprotect_cb (pi);

@@ -30,6 +30,10 @@
 #ifndef GPG_ERR_LIMIT_REACHED
 #define GPG_ERR_LIMIT_REACHED 183
 #endif
+#ifndef GPG_ERR_NOT_INITIALIZED
+#define GPG_ERR_NOT_INITIALIZED 184
+#endif
+
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)

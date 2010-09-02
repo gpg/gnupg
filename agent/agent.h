@@ -264,12 +264,12 @@ void agent_popup_message_stop (ctrl_t ctrl);
 
 
 /*-- cache.c --*/
+void initialize_module_cache (void);
+void deinitialize_module_cache (void);
 void agent_flush_cache (void);
 int agent_put_cache (const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);
-const char *agent_get_cache (const char *key, cache_mode_t cache_mode,
-                             void **cache_id);
-void agent_unlock_cache_entry (void **cache_id);
+char *agent_get_cache (const char *key, cache_mode_t cache_mode);
 
 
 /*-- pksign.c --*/

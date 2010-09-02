@@ -1069,12 +1069,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-  const char *pw;
+  char *pw;
   char *response;
   char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
   const char *desc2 = _("Please re-enter this passphrase");
   char *p;
-  void *cache_marker;
   int opt_data, opt_check, opt_no_ask, opt_qualbar;
   int opt_repeat = 0;
   char *repeat_errtext = NULL;
@@ -1135,12 +1134,11 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (!strcmp (desc, "X"))
     desc = NULL;
 
-  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_NORMAL, &cache_marker)
-               : NULL;
+  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_NORMAL) : NULL;
   if (pw)
     {
       rc = send_back_passphrase (ctx, opt_data, pw);
-      agent_unlock_cache_entry (&cache_marker);
+      xfree (pw);
     }
   else if (opt_no_ask)
     rc = gpg_error (GPG_ERR_NO_DATA);

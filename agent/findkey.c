@@ -291,14 +291,13 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   /* Initially try to get it using a cache nonce.  */
   if (cache_nonce)
     {
-      void *cache_marker;
-      const char *pw;
+      char *pw;
       
-      pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE, &cache_marker);
+      pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
       if (pw)
         {
           rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
-          agent_unlock_cache_entry (&cache_marker);
+          xfree (pw);
           if (!rc)
             {
               xfree (*keybuf);
@@ -312,15 +311,14 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
      unprotect it, we fall back to ask the user */
   if (cache_mode != CACHE_MODE_IGNORE)
     {
-      void *cache_marker;
-      const char *pw;
+      char *pw;
       
     retry:
-      pw = agent_get_cache (hexgrip, cache_mode, &cache_marker);
+      pw = agent_get_cache (hexgrip, cache_mode);
       if (pw)
         {
           rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
-          agent_unlock_cache_entry (&cache_marker);
+          xfree (pw);
           if (!rc)
             {
               xfree (*keybuf);

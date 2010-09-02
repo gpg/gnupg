@@ -359,7 +359,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
               membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
-  char *passphrase = NULL;
+  char *passphrase;
   int rc;
   size_t len;
   char *buf;
@@ -372,21 +372,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
-  if (cache_nonce)
-    {
-      void *cache_marker = NULL;
-      const char *cache_value;
-
-      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE,
-                                     &cache_marker);
-      if (cache_value)
-        {
-          passphrase = xtrymalloc_secure (strlen (cache_value)+1);
-          if (passphrase)
-            strcpy (passphrase, cache_value);
-          agent_unlock_cache_entry (&cache_marker);
-        }
-    }
+  passphrase = cache_nonce? agent_get_cache (cache_nonce, CACHE_MODE_NONCE):NULL;
   if (passphrase)
     rc = 0;
   else

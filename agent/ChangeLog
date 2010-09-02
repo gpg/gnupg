@@ -1,3 +1,21 @@
+2010-09-02  Werner Koch  <wk@g10code.com>
+
+	* cache.c (new_data): Change arg and callers to use a string and
+	explicity return an error code.  We never used raw binary data and
+	thus it is easier to use a string.  Adjust callers.
+	(initialize_module_cache, deinitialize_module_cache): New.
+	(new_data): Encrypt the cached data.
+	(struct cache_item_s): Remove field LOCKCOUNT.  Change all users
+	accordingly.
+	(agent_unlock_cache_entry): Remove.
+	(agent_get_cache): Return an allocated string and remove CACHE_ID.
+	* genkey.c (agent_genkey): Remove cache marker stuff.
+	* findkey.c (unprotect): Ditto.
+	* cvt-openpgp.c (convert_openpgp): Ditto.
+	* command.c (cmd_get_passphrase): Ditto.
+	* gpg-agent.c (main, cleanup): Initialize and deinitialize the
+	cache module.
+
 2010-09-01  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (start_pinentry): Disable pinentry logging.
