@@ -112,7 +112,8 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"import-unusable-sigs",0,NULL,NULL},
       {"import-clean-sigs",0,NULL,NULL},
       {"import-clean-uids",0,NULL,NULL},
-      {"convert-sk-to-pk",0, NULL,NULL},
+      {"convert-sk-to-pk",0, NULL,NULL}, /* Not anymore needed due to
+                                            the new design.  */
       {NULL,0,NULL,NULL}
     };
 
@@ -1084,7 +1085,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 /* Transfer all the secret keys in SEC_KEYBLOCK to the gpg-agent.  The
    function prints diagnostics and returns an error code. */
 static gpg_error_t
-transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
+transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
 {
   gpg_error_t err = 0;
   void *kek = NULL;
@@ -1134,6 +1135,9 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
       sk = node->pkt->pkt.secret_key;
       if (!main_sk)
         main_sk = sk;
+
+      stats->count++;
+      stats->secret_read++;
 
       /* Convert our internal secret key object into an S-expression.  */
       nskey = pubkey_get_nskey (sk->pubkey_algo);
@@ -1279,9 +1283,7 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
           if (opt.verbose)
             log_info (_("key %s: secret key imported\n"),
                       keystr_from_sk_with_sub (main_sk, sk));
-          /* stats->count++; */
-          /* stats->secret_read++; */
-          /* stats->secret_imported++; */
+          stats->secret_imported++;
         }
       else if ( gpg_err_code (err) == GPG_ERR_EEXIST )
         {
@@ -1289,9 +1291,7 @@ transfer_secret_keys (ctrl_t ctrl, kbnode_t sec_keyblock)
             log_info (_("key %s: secret key already exists\n"),
                       keystr_from_sk_with_sub (main_sk, sk));
           err = 0;
-          /* stats->count++; */
-          /* stats->secret_read++; */
-          /* stats->secret_dups++; */
+          stats->secret_dups++;
         }
       else
         {
@@ -1449,21 +1449,16 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
     
   clear_kbnode_flags( keyblock );
   
-  have_seckey = have_secret_key_with_kid (keyid);
-
-  if (!have_seckey && !(opt.import_options&IMPORT_MERGE_ONLY) )
+  if ( !(opt.import_options&IMPORT_MERGE_ONLY) )
     {
       /* We don't have this key, insert as a new key.  */
       kbnode_t pub_keyblock;
 
-      stats->secret_imported++;
-      if (is_status_enabled ()) 
-        print_import_ok (NULL, sk, 1|16);
-
       /* Make a public key out of this. */
       pub_keyblock = sec_to_pub_keyblock (keyblock);
       if (!pub_keyblock)
-        log_error ("oops: FIXME (bad error message)\n");
+        log_error ("key %s: failed to create public key from secret key\n",
+                   keystr_from_sk (sk));
       else
         {
           import_one (fname, pub_keyblock, stats,
@@ -1478,36 +1473,31 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
              keyblock.  */
           node = get_pubkeyblock (keyid);
           if (!node)
-            log_error ("oops: error getting public keyblock again\n");
+            log_error ("key %s: failed to re-lookup public key\n",
+                       keystr_from_sk (sk));
           else
             {
-              if (!transfer_secret_keys (ctrl, keyblock))
+              if (!transfer_secret_keys (ctrl, stats, keyblock))
                 {
                   if (!opt.quiet)
                     log_info (_("key %s: secret key imported\n"),
                               keystr_from_sk (sk));
+                  if (is_status_enabled ()) 
+                    print_import_ok (NULL, sk, 1|16);
                   check_prefs (node);
                 }
               release_kbnode (node);
             }
         }
     }
-  else if (have_seckey)
+  else if (have_secret_key_with_kid (keyid))
     { 
-      /* We can't yet merge secret keys. - Well, with the new system
-         we can => FIXME  */
+      /* We don't want to merge the secret keys. */
       log_error( _("key %s: secret key part already available\n"),
                  keystr_from_sk(sk));
-      stats->secret_dups++;
       if (is_status_enabled ()) 
         print_import_ok (NULL, sk, 16);
-        
-      /* TODO: if we ever do merge secret keys, make sure to handle
-         the sec_to_pub_keyblock feature as well. */
     }
-  else
-    log_error( _("key %s: secret key not found: %s\n"),
-               keystr_from_sk(sk), g10_errstr(rc));
 
   return rc;
 }

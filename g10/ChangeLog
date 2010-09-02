@@ -1,3 +1,8 @@
+2010-09-02  Werner Koch  <wk@g10code.com>
+
+	* import.c (transfer_secret_keys, import_secret_one): Enable stats.
+	(import_secret_one): Enable secret key merging.
+
 2010-09-01  Werner Koch  <wk@g10code.com>
 
 	* sign.c (do_sign, write_signature_packets, complete_sig): Add arg

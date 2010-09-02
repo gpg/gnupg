@@ -41,6 +41,8 @@ Noteworthy changes in version 2.1.x (under development)
    operations to gpg-agent.  The import command moves secret keys to
    the agent.
 
+ * The OpenPGP import command is now able to merge secret keys.
+
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
 -------------------------------------------------
