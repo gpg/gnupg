@@ -1,3 +1,7 @@
+2010-09-02  Werner Koch  <wk@g10code.com>
+
+	* de.po: Insert missing spaces.  Fixes Debian-Bug#594489.
+
 2009-09-03  Jedi Lin  <Jedi@Jedi.org>  (wk)
 
 	* zh_TW.po: Update.
