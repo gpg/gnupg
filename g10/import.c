@@ -567,19 +567,16 @@ fix_bad_direct_key_sigs (kbnode_t keyblock, u32 *keyid)
 
 
 static void
-print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
+print_import_ok (PKT_public_key *pk, unsigned int reason)
 {
   byte array[MAX_FINGERPRINT_LEN], *s;
   char buf[MAX_FINGERPRINT_LEN*2+30], *p;
   size_t i, n;
 
-  sprintf (buf, "%u ", reason);
+  snprintf (buf, sizeof buf, "%u ", reason);
   p = buf + strlen (buf);
 
-  if (pk)
-    fingerprint_from_pk (pk, array, &n);
-  else
-    fingerprint_from_sk (sk, array, &n);
+  fingerprint_from_pk (pk, array, &n);
   s = array;
   for (i=0; i < n ; i++, s++, p += 2)
     sprintf (p, "%02X", *s);
@@ -886,7 +883,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    char *us = get_long_user_id_string( keyid );
 	    write_status_text( STATUS_IMPORTED, us );
 	    xfree(us);
-            print_import_ok (pk,NULL, 1);
+            print_import_ok (pk, 1);
 	  }
 	stats->imported++;
 	if( is_RSA( pk->pubkey_algo ) )
@@ -1007,14 +1004,13 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    stats->n_uids_cleaned +=n_uids_cleaned;
 
             if (is_status_enabled ()) 
-                 print_import_ok (pk, NULL,
-                                  ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
+              print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
 	else
 	  {
             same_key = 1;
             if (is_status_enabled ()) 
-	      print_import_ok (pk, NULL, 0);
+	      print_import_ok (pk, 0);
 
 	    if( !opt.quiet )
 	      {
@@ -1092,7 +1088,8 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   size_t keklen;
   kbnode_t ctx = NULL;
   kbnode_t node;
-  PKT_secret_key *main_sk, *sk;
+  PKT_public_key *main_pk, *pk;
+  struct seckey_info *ski;
   int nskey;
   membuf_t mbuf;
   int i, j;
@@ -1126,21 +1123,25 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   xfree (kek);
   kek = NULL;
 
-  main_sk = NULL;
+  main_pk = NULL;
   while ((node = walk_kbnode (sec_keyblock, &ctx, 0)))
     {
       if (node->pkt->pkttype != PKT_SECRET_KEY
           && node->pkt->pkttype != PKT_SECRET_SUBKEY)
         continue;
-      sk = node->pkt->pkt.secret_key;
-      if (!main_sk)
-        main_sk = sk;
+      pk = node->pkt->pkt.public_key;
+      if (!main_pk)
+        main_pk = pk;
+
+      ski = pk->seckey_info;
+      if (!ski)
+        BUG ();
 
       stats->count++;
       stats->secret_read++;
 
       /* Convert our internal secret key object into an S-expression.  */
-      nskey = pubkey_get_nskey (sk->pubkey_algo);
+      nskey = pubkey_get_nskey (pk->pubkey_algo);
       if (!nskey || nskey > PUBKEY_MAX_NSKEY)
         {
           err = gpg_error (GPG_ERR_BAD_SECKEY);
@@ -1152,10 +1153,10 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       put_membuf_str (&mbuf, "(skey");
       for (i=j=0; i < nskey; i++)
         {
-          if (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE))
+          if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
               put_membuf_str (&mbuf, " e %b");
-              format_args_buf_ptr[i] = gcry_mpi_get_opaque (sk->skey[i], &n);
+              format_args_buf_ptr[i] = gcry_mpi_get_opaque (pk->pkey[i], &n);
               format_args_buf_int[i] = (n+7)/8;
               format_args[j++] = format_args_buf_int + i;
               format_args[j++] = format_args_buf_ptr + i;
@@ -1163,7 +1164,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
           else
             {
               put_membuf_str (&mbuf, " _ %m");
-              format_args[j++] = sk->skey + i;
+              format_args[j++] = pk->pkey + i;
             }
         }
       put_membuf_str (&mbuf, ")\n");
@@ -1182,21 +1183,21 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
           goto leave;
         }
 
-      if (sk->is_protected)
+      if (ski->is_protected)
         {
           char countbuf[35];
 
           snprintf (countbuf, sizeof countbuf, "%lu",
-                    (unsigned long)sk->protect.s2k.count);
+                    (unsigned long)ski->s2k.count);
           err = gcry_sexp_build
             (&prot, NULL,
              " (protection %s %s %b %d %s %b %s)\n",
-             sk->protect.sha1chk? "sha1":"sum",
-             openpgp_cipher_algo_name (sk->protect.algo),
-             (int)sk->protect.ivlen, sk->protect.iv,
-             sk->protect.s2k.mode,
-             openpgp_md_algo_name (sk->protect.s2k.hash_algo),
-             (int)sizeof (sk->protect.s2k.salt), sk->protect.s2k.salt,
+             ski->sha1chk? "sha1":"sum",
+             openpgp_cipher_algo_name (ski->algo),
+             (int)ski->ivlen, ski->iv,
+             ski->s2k.mode,
+             openpgp_md_algo_name (ski->s2k.hash_algo),
+             (int)sizeof (ski->s2k.salt), ski->s2k.salt,
              countbuf);
         }
       else
@@ -1213,9 +1214,9 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
                                " %S\n"
                                " (csum %d)\n"
                                " %S)\n",
-                               sk->version,
-                               openpgp_pk_algo_name (sk->pubkey_algo),
-                               skey, (int)(unsigned long)sk->csum, prot);
+                               pk->version,
+                               openpgp_pk_algo_name (pk->pubkey_algo),
+                               skey, (int)(unsigned long)ski->csum, prot);
       gcry_sexp_release (skey);
       gcry_sexp_release (prot);
       if (!err)
@@ -1243,37 +1244,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
 
       /* Send the wrapped key to the agent.  */
       { 
-        char *uid, *desc;
-        size_t uidlen;
-        u32 keyid[2];
-        char *orig_codeset;
-
-        /* FIXME: We should use gpg_format_keydesc, however that
-           requires a public key structure.  It might be useful to
-           merge the secret and public key structures. */
-        keyid_from_sk (sk, keyid);
-        uid = get_user_id (keyid, &uidlen); 
-        orig_codeset = i18n_switchto_utf8 ();
-        desc = xtryasprintf (_("Please enter the passphrase to import the"
-                             " secret key for the OpenPGP certificate:\n"
-                               "\"%.*s\"\n"             \
-                               "%u-bit %s key, ID %s,\n"       
-                               "created %s.\n"),
-                             (int)uidlen, uid,
-                             nbits_from_sk (sk),
-                             openpgp_pk_algo_name (sk->pubkey_algo),
-                             (main_sk == sk
-                              ? keystr_from_sk (sk)
-                              : keystr_from_sk_with_sub (main_sk, sk)),
-                             strtimestamp (sk->timestamp));
-        i18n_switchback (orig_codeset);
-        xfree (uid);
-        if (desc)
-          {
-            uid = percent_plus_escape (desc);
-            xfree (desc);
-            desc = uid;
-          }
+        char *desc = gpg_format_keydesc (pk, 1, 1);
         err = agent_import_key (ctrl, desc, &cache_nonce, 
                                 wrappedkey, wrappedkeylen);
         xfree (desc);
@@ -1282,23 +1253,23 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
         {
           if (opt.verbose)
             log_info (_("key %s: secret key imported\n"),
-                      keystr_from_sk_with_sub (main_sk, sk));
+                      keystr_from_pk_with_sub (main_pk, pk));
           stats->secret_imported++;
         }
       else if ( gpg_err_code (err) == GPG_ERR_EEXIST )
         {
           if (opt.verbose)
             log_info (_("key %s: secret key already exists\n"),
-                      keystr_from_sk_with_sub (main_sk, sk));
+                      keystr_from_pk_with_sub (main_pk, pk));
           err = 0;
           stats->secret_dups++;
         }
       else
         {
           log_error (_("key %s: error sending to agent: %s\n"),
-                     keystr_from_sk_with_sub (main_sk, sk),
+                     keystr_from_pk_with_sub (main_pk, pk),
                      gpg_strerror (err));
-          if (sk->protect.algo == GCRY_CIPHER_IDEA
+          if (ski->algo == GCRY_CIPHER_IDEA
               && gpg_err_code (err) == GPG_ERR_CIPHER_ALGO)
             {
               write_status (STATUS_RSA_OR_IDEA);
@@ -1333,40 +1304,24 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
       if (secnode->pkt->pkttype == PKT_SECRET_KEY
           || secnode->pkt->pkttype == PKT_SECRET_SUBKEY)
 	{
-	  /* Make a public key.  We only need to convert enough to
-	     write the keyblock out. */
+	  /* Make a public key.  */
 	  PACKET *pkt;
-	  PKT_secret_key *sk;
-	  PKT_public_key *pk;
-	  int n, i;
+          PKT_public_key *pk;
 
-	  pkt = xcalloc (1, sizeof *pkt);
-	  sk = secnode->pkt->pkt.secret_key;
-	  pk = xcalloc (1, sizeof *pk);
-
+	  pkt = xtrycalloc (1, sizeof *pkt);
+          pk = pkt? copy_public_key (NULL, secnode->pkt->pkt.public_key): NULL;
+          if (!pk)
+            {
+              xfree (pkt);
+	      release_kbnode (pub_keyblock);
+              return NULL;
+            }
 	  if (secnode->pkt->pkttype == PKT_SECRET_KEY)
 	    pkt->pkttype = PKT_PUBLIC_KEY;
 	  else
 	    pkt->pkttype = PKT_PUBLIC_SUBKEY;
-
 	  pkt->pkt.public_key = pk;
 
-	  pk->version     = sk->version;
-	  pk->timestamp   = sk->timestamp;
-	  pk->expiredate  = sk->expiredate;
-	  pk->pubkey_algo = sk->pubkey_algo;
-
-	  n = pubkey_get_npkey (pk->pubkey_algo);
-	  if (!n)
-	    {
-	      /* We can't properly extract the pubkey without knowing
-		 the number of MPIs */
-	      release_kbnode (pub_keyblock);
-	      return NULL;
-	    }
-
-          for (i=0; i < n; i++)
-            pk->pkey[i] = mpi_copy (sk->skey[i]);
 	  pubnode = new_kbnode (pkt);
 	}
       else
@@ -1393,10 +1348,10 @@ static int
 import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock, 
                    struct stats_s *stats, unsigned int options)
 {
-  PKT_secret_key *sk;
+  PKT_public_key *pk;
+  struct seckey_info *ski;
   KBNODE node, uidnode;
   u32 keyid[2];
-  int have_seckey;
   int rc = 0;
     
   /* Get the key and print some info about it */
@@ -1404,16 +1359,17 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
   if (!node)
     BUG ();
   
-  sk = node->pkt->pkt.secret_key;
-  keyid_from_sk (sk, keyid);
+  pk = node->pkt->pkt.public_key;
+
+  keyid_from_pk (pk, keyid);
   uidnode = find_next_kbnode (keyblock, PKT_USER_ID);
   
   if (opt.verbose)
     {
       log_info ("sec  %4u%c/%s %s   ",
-                nbits_from_sk (sk),
-                pubkey_letter (sk->pubkey_algo),
-                keystr_from_sk (sk), datestr_from_sk (sk));
+                nbits_from_pk (pk),
+                pubkey_letter (pk->pubkey_algo),
+                keystr_from_pk (pk), datestr_from_pk (pk));
       if (uidnode)
         print_utf8_buffer (log_get_stream (), uidnode->pkt->pkt.user_id->name,
                            uidnode->pkt->pkt.user_id->len);
@@ -1423,16 +1379,24 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
   
   if (!uidnode)
     {
-      log_error( _("key %s: no user ID\n"), keystr_from_sk(sk));
+      log_error( _("key %s: no user ID\n"), keystr_from_pk (pk));
       return 0;
     }
-    
+
+  ski = pk->seckey_info;
+  if (!ski)
+    {
+      /* Actually an internal error.  */
+      log_error ("key %s: secret key info missing\n", keystr_from_pk (pk));
+      return 0;
+    }
+
   /* A quick check to not import keys with an invalid protection
      cipher algorithm (only checks the primary key, though).  */
-  if (sk->protect.algo > 110)
+  if (ski->algo > 110)
     {
       log_error (_("key %s: secret key with invalid cipher %d"
-                   " - skipped\n"),keystr_from_sk(sk),sk->protect.algo);
+                   " - skipped\n"), keystr_from_pk (pk), ski->algo);
       return 0;
     }
 
@@ -1447,9 +1411,9 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
     }
 #endif 
     
-  clear_kbnode_flags( keyblock );
+  clear_kbnode_flags (keyblock);
   
-  if ( !(opt.import_options&IMPORT_MERGE_ONLY) )
+  if (!(options&IMPORT_MERGE_ONLY) || !have_secret_key_with_kid (keyid) )
     {
       /* We don't have this key, insert as a new key.  */
       kbnode_t pub_keyblock;
@@ -1458,7 +1422,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
       pub_keyblock = sec_to_pub_keyblock (keyblock);
       if (!pub_keyblock)
         log_error ("key %s: failed to create public key from secret key\n",
-                   keystr_from_sk (sk));
+                   keystr_from_pk (pk));
       else
         {
           import_one (fname, pub_keyblock, stats,
@@ -1474,29 +1438,29 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
           node = get_pubkeyblock (keyid);
           if (!node)
             log_error ("key %s: failed to re-lookup public key\n",
-                       keystr_from_sk (sk));
+                       keystr_from_pk (pk));
           else
             {
               if (!transfer_secret_keys (ctrl, stats, keyblock))
                 {
                   if (!opt.quiet)
                     log_info (_("key %s: secret key imported\n"),
-                              keystr_from_sk (sk));
+                              keystr_from_pk (pk));
                   if (is_status_enabled ()) 
-                    print_import_ok (NULL, sk, 1|16);
+                    print_import_ok (pk, 1|16);
                   check_prefs (node);
                 }
               release_kbnode (node);
             }
         }
     }
-  else if (have_secret_key_with_kid (keyid))
+  else
     { 
       /* We don't want to merge the secret keys. */
-      log_error( _("key %s: secret key part already available\n"),
-                 keystr_from_sk(sk));
+      log_error (_("key %s: secret key part already available\n"),
+                 keystr_from_pk (pk));
       if (is_status_enabled ()) 
-        print_import_ok (NULL, sk, 16);
+        print_import_ok (pk, 16);
     }
 
   return rc;
@@ -2072,12 +2036,12 @@ collapse_uids( KBNODE *keyblock )
     {
       const char *key="???";
 
-      if( (uid1=find_kbnode( *keyblock, PKT_PUBLIC_KEY )) )
-	key=keystr_from_pk(uid1->pkt->pkt.public_key);
-      else if( (uid1 = find_kbnode( *keyblock, PKT_SECRET_KEY )) )
-	key=keystr_from_sk(uid1->pkt->pkt.secret_key);
+      if ((uid1 = find_kbnode (*keyblock, PKT_PUBLIC_KEY)) )
+	key = keystr_from_pk (uid1->pkt->pkt.public_key);
+      else if ((uid1 = find_kbnode( *keyblock, PKT_SECRET_KEY)) )
+	key = keystr_from_pk (uid1->pkt->pkt.public_key);
 
-      log_info(_("key %s: duplicated user ID detected - merged\n"),key);
+      log_info (_("key %s: duplicated user ID detected - merged\n"), key);
     }
 
   return any;
@@ -2308,8 +2272,8 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	    /* do we have this in the original keyblock? */
 	    for(onode=keyblock_orig->next; onode; onode=onode->next )
 		if( onode->pkt->pkttype == PKT_SECRET_SUBKEY
-		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
-					 node->pkt->pkt.secret_key ) )
+		    && !cmp_public_keys (onode->pkt->pkt.public_key,
+					 node->pkt->pkt.public_key) )
 		    break;
 	    if( !onode ) { /* this is a new subkey: append */
 		rc = append_key( keyblock_orig, node, n_sigs, fname, keyid);
@@ -2327,13 +2291,10 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		 || onode->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
 	    /* find the subkey in the imported keyblock */
 	    for(node=keyblock->next; node; node=node->next ) {
-		if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                if ((node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                     || node->pkt->pkttype == PKT_SECRET_SUBKEY)
 		    && !cmp_public_keys( onode->pkt->pkt.public_key,
 					  node->pkt->pkt.public_key ) )
-		    break;
-		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY
-		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
-					  node->pkt->pkt.secret_key ) )
 		    break;
 	    }
 	    if( node ) { /* found: merge */
@@ -2497,8 +2458,9 @@ merge_keysigs (KBNODE dst, KBNODE src, int *n_sigs,
     return 0;
 }
 
-/****************
- * append the subkey starting with NODE and all signatures to KEYBLOCK.
+
+/*
+ * Append the subkey starting with NODE and all signatures to KEYBLOCK.
  * Mark all new and copied packets by setting flag bit 0.
  */
 static int
@@ -2529,234 +2491,4 @@ append_key (KBNODE keyblock, KBNODE node, int *n_sigs,
     }
 
     return 0;
-}
-
-
-
-/* Walk a public keyblock and produce a secret keyblock out of it.
-   Instead of inserting the secret key parameters (which we don't
-   have), we insert a stub.  */
-static KBNODE
-pub_to_sec_keyblock (KBNODE pub_keyblock)
-{
-  KBNODE pubnode, secnode;
-  KBNODE sec_keyblock = NULL;
-  KBNODE walkctx = NULL;
-
-  while((pubnode = walk_kbnode (pub_keyblock,&walkctx,0)))
-    {
-      if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY
-          || pubnode->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-	  /* Make a secret key.  We only need to convert enough to
-	     write the keyblock out. */
-	  PKT_public_key *pk = pubnode->pkt->pkt.public_key;
-	  PACKET *pkt = xmalloc_clear (sizeof *pkt);
-	  PKT_secret_key *sk = xmalloc_clear (sizeof *sk);
-          int i, n;
-          
-          if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY)
-	    pkt->pkttype = PKT_SECRET_KEY;
-	  else
-	    pkt->pkttype = PKT_SECRET_SUBKEY;
-          
-	  pkt->pkt.secret_key = sk;
-
-          copy_public_parts_to_secret_key ( pk, sk );
-	  sk->version     = pk->version;
-	  sk->timestamp   = pk->timestamp;
-        
-          n = pubkey_get_npkey (pk->pubkey_algo);
-          if (!n)
-            n = 1; /* Unknown number of parameters, however the data
-                      is stored in the first mpi. */
-          for (i=0; i < n; i++ )
-            sk->skey[i] = mpi_copy (pk->pkey[i]);
-  
-          sk->is_protected = 1;
-          sk->protect.s2k.mode = 1001;
-  
-  	  secnode = new_kbnode (pkt);
-        }
-      else
-	{
-	  secnode = clone_kbnode (pubnode);
-	}
-      
-      if(!sec_keyblock)
-	sec_keyblock = secnode;
-      else
-	add_kbnode (sec_keyblock, secnode);
-    }
-
-  return sec_keyblock;
-}
-
-
-/* Walk over the secret keyring SEC_KEYBLOCK and update any simple
-   stub keys with the serial number SNNUM of the card if one of the
-   fingerprints FPR1, FPR2 or FPR3 match.  Print a note if the key is
-   a duplicate (may happen in case of backed uped keys). 
-   
-   Returns: True if anything changed.
-*/
-static int
-update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock, 
-                                   const unsigned char *fpr1,
-                                   const unsigned char *fpr2,
-                                   const unsigned char *fpr3,
-                                   const char *serialnostr)
-{
-  KBNODE node;
-  KBNODE walkctx = NULL;
-  PKT_secret_key *sk;
-  byte array[MAX_FINGERPRINT_LEN];
-  size_t n;
-  int result = 0;
-  const char *s;
-
-  while((node = walk_kbnode (sec_keyblock, &walkctx, 0)))
-    {
-      if (node->pkt->pkttype != PKT_SECRET_KEY
-          && node->pkt->pkttype != PKT_SECRET_SUBKEY)
-        continue;
-      sk = node->pkt->pkt.secret_key;
-      
-      fingerprint_from_sk (sk, array, &n);
-      if (n != 20)
-        continue; /* Can't be a card key.  */
-      if ( !((fpr1 && !memcmp (array, fpr1, 20))
-             || (fpr2 && !memcmp (array, fpr2, 20))
-             || (fpr3 && !memcmp (array, fpr3, 20))) )
-        continue;  /* No match.  */
-
-      if (sk->is_protected == 1 && sk->protect.s2k.mode == 1001)
-        {
-          /* Standard case: migrate that stub to a key stub.  */
-          sk->protect.s2k.mode = 1002;
-          s = serialnostr;
-          for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
-               sk->protect.ivlen++, s += 2)
-            sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
-          result = 1;
-        }
-      else if (sk->is_protected == 1 && sk->protect.s2k.mode == 1002)
-        {
-          s = serialnostr;
-          for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
-               sk->protect.ivlen++, s += 2)
-            if (sk->protect.iv[sk->protect.ivlen] != xtoi_2 (s))
-              {
-                log_info (_("NOTE: a key's S/N does not "
-                            "match the card's one\n"));
-                break;
-              }
-        }
-      else
-        {
-          if (node->pkt->pkttype != PKT_SECRET_KEY)
-            log_info (_("NOTE: primary key is online and stored on card\n"));
-          else
-            log_info (_("NOTE: secondary key is online and stored on card\n"));
-        }
-    }
-
-  return result;
-}
-
-
-
-/* Check whether a secret key stub exists for the public key PK.  If
-   not create such a stub key and store it into the secring.  If it
-   exists, add appropriate subkey stubs and update the secring.
-   Return 0 if the key could be created. */
-int
-auto_create_card_key_stub ( const char *serialnostr, 
-                            const unsigned char *fpr1,
-                            const unsigned char *fpr2,
-                            const unsigned char *fpr3)
-{
-  KBNODE pub_keyblock;
-  KBNODE sec_keyblock;
-  KEYDB_HANDLE hd;
-  int rc;
-
-  /* We only want to do this for an OpenPGP card.  */
-  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12) 
-      || strlen (serialnostr) != 32 )
-    return G10ERR_GENERAL;
-
-  /* First get the public keyring from any of the provided fingerprints. */
-  if ( (fpr1 && !get_keyblock_byfprint (&pub_keyblock, fpr1, 20))
-       || (fpr2 && !get_keyblock_byfprint (&pub_keyblock, fpr2, 20))
-       || (fpr3 && !get_keyblock_byfprint (&pub_keyblock, fpr3, 20)))
-    ;
-  else
-    return G10ERR_GENERAL;
-
-  log_debug ("FIXME: Do we need the stub at all?\n");
-  hd = keydb_new (); /* FIXME. */
-
-  /* Now check whether there is a secret keyring.  */
-  {
-    PKT_public_key *pk = pub_keyblock->pkt->pkt.public_key;
-    byte afp[MAX_FINGERPRINT_LEN];
-    size_t an;
-
-    fingerprint_from_pk (pk, afp, &an);
-    if (an < MAX_FINGERPRINT_LEN)
-      memset (afp+an, 0, MAX_FINGERPRINT_LEN-an);
-    rc = keydb_search_fpr (hd, afp);
-  }
-
-  if (!rc)
-    {
-      rc = keydb_get_keyblock (hd, &sec_keyblock);
-      if (rc)
-        {
-          log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
-          rc = G10ERR_GENERAL;
-        }
-      else
-        {
-          merge_keys_and_selfsig (sec_keyblock);
-          
-          /* FIXME: We need to add new subkeys first.  */
-          if (update_sec_keyblock_with_cardinfo (sec_keyblock,
-                                                 fpr1, fpr2, fpr3,
-                                                 serialnostr))
-            {
-              rc = keydb_update_keyblock (hd, sec_keyblock );
-              if (rc)
-                log_error (_("error writing keyring `%s': %s\n"),
-                           keydb_get_resource_name (hd), g10_errstr(rc) );
-            }
-        }
-    }
-  else  /* A secret key does not exists - create it.  */
-    {
-      sec_keyblock = pub_to_sec_keyblock (pub_keyblock);
-      update_sec_keyblock_with_cardinfo (sec_keyblock,
-                                         fpr1, fpr2, fpr3,
-                                         serialnostr);
-
-      rc = keydb_locate_writable (hd, NULL);
-      if (rc)
-        {
-          log_error (_("no default secret keyring: %s\n"), g10_errstr (rc));
-          rc = G10ERR_GENERAL;
-        }
-      else
-        {
-          rc = keydb_insert_keyblock (hd, sec_keyblock );
-          if (rc)
-            log_error (_("error writing keyring `%s': %s\n"),
-                       keydb_get_resource_name (hd), g10_errstr(rc) );
-        }
-    }
-    
-  release_kbnode (sec_keyblock);
-  release_kbnode (pub_keyblock);
-  keydb_release (hd);
-  return rc;
 }

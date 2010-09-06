@@ -1,6 +1,6 @@
 /* free-packet.c - cleanup stuff for packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2005  Free Software Foundation, Inc.
+ *               2005, 2010  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -76,37 +76,51 @@ free_seckey_enc( PKT_signature *sig )
 
 
 void
-release_public_key_parts( PKT_public_key *pk )
+release_public_key_parts (PKT_public_key *pk)
 {
-    int n, i;
-    n = pubkey_get_npkey( pk->pubkey_algo );
-    if( !n )
-	mpi_release(pk->pkey[0]);
-    for(i=0; i < n; i++ ) {
-	mpi_release( pk->pkey[i] );
-	pk->pkey[i] = NULL;
+  int n, i;
+  
+  if (pk->seckey_info)
+    n = pubkey_get_nskey (pk->pubkey_algo);
+  else
+    n = pubkey_get_npkey (pk->pubkey_algo);
+  if (!n)
+    mpi_release (pk->pkey[0]);
+  for (i=0; i < n; i++ )
+    {
+      mpi_release (pk->pkey[i]);
+      pk->pkey[i] = NULL;
     }
-    if (pk->prefs) {
-        xfree (pk->prefs);
-        pk->prefs = NULL;
+  if (pk->seckey_info)
+    {
+      xfree (pk->seckey_info);
+      pk->seckey_info = NULL;
     }
-    if (pk->user_id) {
-        free_user_id (pk->user_id);
-        pk->user_id = NULL;
+  if (pk->prefs)
+    {
+      xfree (pk->prefs);
+      pk->prefs = NULL;
     }
-    if (pk->revkey) {
-        xfree(pk->revkey);
-	pk->revkey=NULL;
-	pk->numrevkeys=0;
+  if (pk->user_id)
+    {
+      free_user_id (pk->user_id);
+      pk->user_id = NULL;
     }
+  if (pk->revkey)
+    {
+      xfree(pk->revkey);
+      pk->revkey=NULL;
+      pk->numrevkeys=0;
+    }
+
 }
 
 
 void
-free_public_key( PKT_public_key *pk )
+free_public_key (PKT_public_key *pk)
 {
-    release_public_key_parts( pk );
-    xfree(pk);
+  release_public_key_parts (pk);
+  xfree(pk);
 }
 
 
@@ -150,55 +164,45 @@ copy_prefs (const prefitem_t *prefs)
 }
 
 
+/* Copy the public key S to D.  If D is NULL allocate a new public key
+   structure.  If S has seckret key infos, only the public stuff is
+   copied.  */
 PKT_public_key *
-copy_public_key ( PKT_public_key *d, PKT_public_key *s)
+copy_public_key (PKT_public_key *d, PKT_public_key *s)
 {
-    int n, i;
+  int n, i;
+  
+  if (!d)
+    d = xmalloc (sizeof *d);
+  memcpy (d, s, sizeof *d);
+  d->seckey_info = NULL; 
+  d->user_id = scopy_user_id (s->user_id);
+  d->prefs = copy_prefs (s->prefs);
 
-    if( !d )
-	d = xmalloc(sizeof *d);
-    memcpy( d, s, sizeof *d );
-    d->user_id = scopy_user_id (s->user_id);
-    d->prefs = copy_prefs (s->prefs);
-    n = pubkey_get_npkey( s->pubkey_algo );
-    if( !n )
-	d->pkey[0] = mpi_copy(s->pkey[0]);
-    else {
-	for(i=0; i < n; i++ )
-	    d->pkey[i] = mpi_copy( s->pkey[i] );
+  n = pubkey_get_npkey (s->pubkey_algo);
+  i = 0;
+  if (!n)
+    d->pkey[i++] = mpi_copy (s->pkey[0]);
+  else 
+    {
+      for (; i < n; i++ )
+        d->pkey[i] = mpi_copy( s->pkey[i] );
     }
-    if( !s->revkey && s->numrevkeys )
-        BUG();
-    if( s->numrevkeys ) {
-        d->revkey = xmalloc(sizeof(struct revocation_key)*s->numrevkeys);
-        memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
+  for (; i < PUBKEY_MAX_NSKEY; i++)
+    d->pkey[i] = NULL;
+
+  if (!s->revkey && s->numrevkeys)
+    BUG();
+  if (s->numrevkeys)
+    {
+      d->revkey = xmalloc(sizeof(struct revocation_key)*s->numrevkeys);
+      memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
     }
-    else
-        d->revkey = NULL;
-    return d;
+  else
+    d->revkey = NULL;
+  return d;
 }
 
-/****************
- * Replace all common parts of a sk by the one from the public key.
- * This is a hack and a better solution will be to just store the real secret
- * parts somewhere and don't duplicate all the other stuff.
- */
-void
-copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
-{
-    sk->expiredate  = pk->expiredate;     
-    sk->pubkey_algo = pk->pubkey_algo;    
-    sk->pubkey_usage= pk->pubkey_usage;
-    sk->req_usage   = pk->req_usage;
-    sk->req_algo    = pk->req_algo;
-    sk->has_expired = pk->has_expired;    
-    sk->is_revoked  = pk->is_revoked;     
-    sk->is_valid    = pk->is_valid;    
-    sk->main_keyid[0]= pk->main_keyid[0];
-    sk->main_keyid[1]= pk->main_keyid[1];
-    sk->keyid[0]    = pk->keyid[0];
-    sk->keyid[1]    = pk->keyid[1];
-}
 
 
 static pka_info_t *
@@ -255,48 +259,6 @@ scopy_user_id (PKT_user_id *s)
 }
 
 
-
-void
-release_secret_key_parts( PKT_secret_key *sk )
-{
-    int n, i;
-
-    n = pubkey_get_nskey( sk->pubkey_algo );
-    if( !n )
-	mpi_release(sk->skey[0]);
-    for(i=0; i < n; i++ ) {
-	mpi_release( sk->skey[i] );
-	sk->skey[i] = NULL;
-    }
-}
-
-void
-free_secret_key( PKT_secret_key *sk )
-{
-    release_secret_key_parts( sk );
-    xfree(sk);
-}
-
-PKT_secret_key *
-copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
-{
-    int n, i;
-
-    if( !d )
-	d = xmalloc_secure(sizeof *d);
-    else
-        release_secret_key_parts (d);
-    memcpy( d, s, sizeof *d );
-    n = pubkey_get_nskey( s->pubkey_algo );
-    if( !n )
-  	d->skey[0] = mpi_copy(s->skey[0]);
-    else {
-	for(i=0; i < n; i++ )
-  	    d->skey[i] = mpi_copy( s->skey[i] );
-    }
-
-    return d;
-}
 
 void
 free_comment( PKT_comment *rem )
@@ -407,11 +369,9 @@ free_packet( PACKET *pkt )
 	break;
       case PKT_PUBLIC_KEY:
       case PKT_PUBLIC_SUBKEY:
-	free_public_key( pkt->pkt.public_key );
-	break;
       case PKT_SECRET_KEY:
       case PKT_SECRET_SUBKEY:
-	free_secret_key( pkt->pkt.secret_key );
+	free_public_key (pkt->pkt.public_key);
 	break;
       case PKT_COMMENT:
 	free_comment( pkt->pkt.comment );
@@ -459,59 +419,6 @@ cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 	    return -1;
     }
 
-    return 0;
-}
-
-/****************
- * Returns 0 if they match.
- * We only compare the public parts.
- */
-int
-cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b )
-{
-    int n, i;
-
-    log_debug ("FIXME: %s Should not be used\n", __func__);
-    if( a->timestamp != b->timestamp )
-	return -1;
-    if( a->version < 4 && a->expiredate != b->expiredate )
-	return -1;
-    if( a->pubkey_algo != b->pubkey_algo )
-	return -1;
-
-    n = pubkey_get_npkey( b->pubkey_algo );
-    if( !n )
-	return -1; /* can't compare due to unknown algorithm */
-    for(i=0; i < n; i++ ) {
-	if( mpi_cmp( a->skey[i], b->skey[i] ) )
-	    return -1;
-    }
-
-    return 0;
-}
-
-/****************
- * Returns 0 if they match.
- */
-int
-cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
-{
-    int n, i;
-
-    if( pk->timestamp != sk->timestamp )
-	return -1;
-    if( pk->version < 4 && pk->expiredate != sk->expiredate )
-	return -1;
-    if( pk->pubkey_algo != sk->pubkey_algo )
-	return -1;
-
-    n = pubkey_get_npkey( pk->pubkey_algo );
-    if( !n )
-	return -1; /* can't compare due to unknown algorithm */
-    for(i=0; i < n; i++ ) {
-	if( mpi_cmp( pk->pkey[i] , sk->skey[i] ) )
-	    return -1;
-    }
     return 0;
 }
 

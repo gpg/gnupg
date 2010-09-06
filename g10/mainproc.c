@@ -58,7 +58,6 @@ struct mainproc_context
 {
   struct mainproc_context *anchor;  /* May be useful in the future. */
   PKT_public_key *last_pubkey;
-  PKT_secret_key *last_seckey;
   PKT_user_id     *last_user_id;
   md_filter_context_t mfx;
   int sigs_only;    /* Process only signatures and reject all other stuff. */
@@ -1118,15 +1117,13 @@ list_node( CTX c, KBNODE node )
 	    u32 keyid[2];
 
 	    if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
-		|| c->list->pkt->pkttype == PKT_SECRET_KEY ) {
-		if( c->list->pkt->pkttype == PKT_PUBLIC_KEY )
-		    keyid_from_pk( c->list->pkt->pkt.public_key, keyid );
-		else
-		    keyid_from_sk( c->list->pkt->pkt.secret_key, keyid );
-
-		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
-		    is_selfsig = 1;
-	    }
+		|| c->list->pkt->pkttype == PKT_SECRET_KEY )
+              {
+                keyid_from_pk (c->list->pkt->pkt.public_key, keyid);
+                
+                if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+                  is_selfsig = 1;
+              }
 	}
 	if( opt.with_colons ) {
 	    putchar(':');

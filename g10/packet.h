@@ -53,11 +53,12 @@ typedef struct {
     byte value;
 } prefitem_t;
 
-typedef struct {
-    int  mode;
-    byte hash_algo;
-    byte salt[8];
-    u32  count;
+typedef struct 
+{
+  int  mode;      /* Must be an integer due to the GNU modes 1001 et al.  */
+  byte hash_algo;
+  byte salt[8];
+  u32  count;
 } STRING2KEY;
 
 typedef struct {
@@ -204,11 +205,35 @@ struct revoke_info
   byte algo;
 };
 
+
+/* Information pertaining to secret keys. */
+struct seckey_info
+{
+  int is_protected:1;	/* The secret info is protected and must */
+			/* be decrypted before use, the protected */
+			/* MPIs are simply (void*) pointers to memory */
+			/* and should never be passed to a mpi_xxx() */
+  int sha1chk:1;        /* SHA1 is used instead of a 16 bit checksum */ 
+  u16 csum;		/* Checksum for old protection modes.  */
+  byte algo;            /* Cipher used to protect the secret information. */
+  STRING2KEY s2k;       /* S2K parameter.  */
+  byte ivlen;           /* Used length of the IV.  */
+  byte iv[16];          /* Initialization vector for CFB mode.  */
+};
+
+
 /****************
- * Note about the pkey/skey elements:  We assume that the secret keys
- * has the same elements as the public key at the begin of the array, so
- * that npkey < nskey and it is possible to compare the secret and
- * public keys by comparing the first npkey elements of pkey againts skey.
+ * We assume that secret keys have the same number of parameters as
+ * the public key and that the public parameters are the first items
+ * in the PKEY array.  Thus NPKEY is always less than NSKEY and it is
+ * possible to compare the secret and public keys by comparing the
+ * first NPKEY elements of the PKEY array.  Note that since GnuPG 2.1
+ * we don't use secret keys anymore directly because they are managed
+ * by gpg-agent.  However for parsing OpenPGP key files we need a way
+ * to temporary store those secret keys.  We do this by putting them
+ * into the public key structure and extending the PKEY field to NSKEY
+ * elements; the extra secret key information are stored in the
+ * SECKEY_INFO field.
  */
 typedef struct {
     u32     timestamp;	    /* key made */
@@ -243,43 +268,15 @@ typedef struct {
     byte    trust_depth;
     byte    trust_value;
     const byte *trust_regexp;
-    gcry_mpi_t     pkey[PUBKEY_MAX_NPKEY];
+    struct seckey_info *seckey_info;  /* If not NULL this malloced
+                                         structure describes a secret
+                                         key.  */
+    gcry_mpi_t  pkey[PUBKEY_MAX_NSKEY]; /* Right, NSKEY elements.  */
 } PKT_public_key;
 
 /* Evaluates as true if the pk is disabled, and false if it isn't.  If
    there is no disable value cached, fill one in. */
 #define pk_is_disabled(a) (((a)->is_disabled)?((a)->is_disabled==2):(cache_disabled_value((a))))
-
-typedef struct {
-    u32     timestamp;	    /* key made */
-    u32     expiredate;     /* expires at this date or 0 if not at all */
-    u32     max_expiredate; /* must not expire past this date */
-    byte    hdrbytes;	    /* number of header bytes */
-    byte    version;
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte    pubkey_usage;
-    byte    req_usage;
-    byte    req_algo;
-    u32     has_expired;    /* set to the expiration date if expired */ 
-    int     is_revoked;     /* key has been revoked */
-    int     is_valid;       /* key (especially subkey) is valid */
-    u32     main_keyid[2];  /* keyid of the primary key */
-    u32     keyid[2];   
-    byte is_primary;
-    byte is_protected;	/* The secret info is protected and must */
-			/* be decrypted before use, the protected */
-			/* MPIs are simply (void*) pointers to memory */
-			/* and should never be passed to a mpi_xxx() */
-    struct {
-	byte algo;  /* cipher used to protect the secret information*/
-        byte sha1chk;  /* SHA1 is used instead of a 16 bit checksum */ 
-	STRING2KEY s2k;
-	byte ivlen;  /* used length of the iv */
-	byte iv[16]; /* initialization vector for CFB mode */
-    } protect;
-    gcry_mpi_t skey[PUBKEY_MAX_NSKEY];
-    u16 csum;		/* checksum */
-} PKT_secret_key;
 
 
 typedef struct {
@@ -339,7 +336,7 @@ struct packet_struct {
 	PKT_onepass_sig *onepass_sig;	/* PKT_ONEPASS_SIG */
 	PKT_signature	*signature;	/* PKT_SIGNATURE */
 	PKT_public_key	*public_key;	/* PKT_PUBLIC_[SUB)KEY */
-	PKT_secret_key	*secret_key;	/* PKT_SECRET_[SUB]KEY */
+	PKT_public_key	*secret_key;	/* PKT_SECRET_[SUB]KEY */
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
@@ -452,22 +449,16 @@ void free_seckey_enc( PKT_signature *enc );
 int  digest_algo_from_sig( PKT_signature *sig );
 void release_public_key_parts( PKT_public_key *pk );
 void free_public_key( PKT_public_key *key );
-void release_secret_key_parts( PKT_secret_key *sk );
-void free_secret_key( PKT_secret_key *sk );
 void free_attributes(PKT_user_id *uid);
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
 prefitem_t *copy_prefs (const prefitem_t *prefs);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
-void copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
-PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *scopy_user_id (PKT_user_id *sd );
 int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
-int cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b );
 int cmp_signatures( PKT_signature *a, PKT_signature *b );
-int cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 

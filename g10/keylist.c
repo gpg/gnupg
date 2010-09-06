@@ -44,7 +44,7 @@
 static void list_all (int);
 static void list_one (strlist_t names, int secret);
 static void locate_one (strlist_t names);
-static void print_card_serialno (PKT_secret_key * sk);
+static void print_card_serialno (PKT_public_key *sk);
 
 struct sig_stats
 {
@@ -174,52 +174,53 @@ print_pubkey_info (estream_t fp, PKT_public_key * pk)
 /* Print basic information of a secret key including the card serial
    number information.  */
 void
-print_card_key_info (estream_t fp, KBNODE keyblock)
+print_card_key_info (estream_t fp, kbnode_t keyblock)
 {
-  KBNODE node;
-  int i;
+  /* KBNODE node; */
+  /* int i; */
 
-  for (node = keyblock; node; node = node->next)
-    {
-      if (node->pkt->pkttype == PKT_SECRET_KEY
-	  || (node->pkt->pkttype == PKT_SECRET_SUBKEY))
-	{
-	  PKT_secret_key *sk = node->pkt->pkt.secret_key;
+  log_debug ("Fixme: Needs to be adjusted to gpg-agent\n");
+  /* for (node = keyblock; node; node = node->next) */
+  /*   { */
+  /*     if (node->pkt->pkttype == PKT_SECRET_KEY */
+  /*         || (node->pkt->pkttype == PKT_SECRET_SUBKEY)) */
+  /*       { */
+  /*         PKT_public_key *pk = node->pkt->pkt.public_key; */
 
-	  tty_fprintf (fp, "%s%c  %4u%c/%s  ",
-		       node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
-		       (sk->protect.s2k.mode == 1001) ? '#' :
-		       (sk->protect.s2k.mode == 1002) ? '>' : ' ',
-		       nbits_from_sk (sk),
-		       pubkey_letter (sk->pubkey_algo), keystr_from_sk (sk));
-	  tty_fprintf (fp, _("created: %s"), datestr_from_sk (sk));
-	  tty_fprintf (fp, "  ");
-	  tty_fprintf (fp, _("expires: %s"), expirestr_from_sk (sk));
-	  if (sk->is_protected && sk->protect.s2k.mode == 1002)
-	    {
-	      tty_fprintf (fp, "\n                      ");
-	      tty_fprintf (fp, _("card-no: "));
-	      if (sk->protect.ivlen == 16
-		  && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
-		{
-		  /* This is an OpenPGP card. */
-		  for (i = 8; i < 14; i++)
-		    {
-		      if (i == 10)
-			tty_fprintf (fp, " ");
-		      tty_fprintf (fp, "%02X", sk->protect.iv[i]);
-		    }
-		}
-	      else
-		{
-                  /* Something is wrong: Print all. */
-		  for (i = 0; i < sk->protect.ivlen; i++)
-		    tty_fprintf (fp, "%02X", sk->protect.iv[i]);
-		}
-	    }
-	  tty_fprintf (fp, "\n");
-	}
-    }
+  /*         tty_fprintf (fp, "%s%c  %4u%c/%s  ", */
+  /*       	       node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb", */
+  /*       	       (sk->protect.s2k.mode == 1001) ? '#' : */
+  /*       	       (sk->protect.s2k.mode == 1002) ? '>' : ' ', */
+  /*       	       nbits_from_sk (sk), */
+  /*       	       pubkey_letter (sk->pubkey_algo), keystr_from_sk (sk)); */
+  /*         tty_fprintf (fp, _("created: %s"), datestr_from_sk (sk)); */
+  /*         tty_fprintf (fp, "  "); */
+  /*         tty_fprintf (fp, _("expires: %s"), expirestr_from_sk (sk)); */
+  /*         if (sk->is_protected && sk->protect.s2k.mode == 1002) */
+  /*           { */
+  /*             tty_fprintf (fp, "\n                      "); */
+  /*             tty_fprintf (fp, _("card-no: ")); */
+  /*             if (sk->protect.ivlen == 16 */
+  /*       	  && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6)) */
+  /*       	{ */
+  /*       	  /\* This is an OpenPGP card. *\/ */
+  /*       	  for (i = 8; i < 14; i++) */
+  /*       	    { */
+  /*       	      if (i == 10) */
+  /*       		tty_fprintf (fp, " "); */
+  /*       	      tty_fprintf (fp, "%02X", sk->protect.iv[i]); */
+  /*       	    } */
+  /*       	} */
+  /*             else */
+  /*       	{ */
+  /*                 /\* Something is wrong: Print all. *\/ */
+  /*       	  for (i = 0; i < sk->protect.ivlen; i++) */
+  /*       	    tty_fprintf (fp, "%02X", sk->protect.iv[i]); */
+  /*       	} */
+  /*           } */
+  /*         tty_fprintf (fp, "\n"); */
+  /*       } */
+  /*   } */
 }
 
 
@@ -1524,37 +1525,38 @@ print_fingerprint (PKT_public_key *pk, int mode)
 
 /* Print the serial number of an OpenPGP card if available.  */
 static void
-print_card_serialno (PKT_secret_key * sk)
+print_card_serialno (PKT_public_key *pk)
 {
-  int i;
+  log_debug ("Fixme: Needs to be adjusted to gpg-agent\n");
+  /* int i; */
 
-  if (!sk)
-    return;
-  if (!sk->is_protected || sk->protect.s2k.mode != 1002)
-    return; /* Not a card. */
-  if (opt.with_colons)
-    return; /* Handled elsewhere. */
+  /* if (!sk) */
+  /*   return; */
+  /* if (!sk->is_protected || sk->protect.s2k.mode != 1002) */
+  /*   return; /\* Not a card. *\/ */
+  /* if (opt.with_colons) */
+  /*   return; /\* Handled elsewhere. *\/ */
 
-  es_fputs (_("      Card serial no. ="), es_stdout);
-  es_putc (' ', es_stdout);
-  if (sk->protect.ivlen == 16
-      && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
-    {		
-      /* This is an OpenPGP card. Just print the relevant part.  */
-      for (i = 8; i < 14; i++)
-	{
-	  if (i == 10)
-	    es_putc (' ', es_stdout);
-	  es_fprintf (es_stdout, "%02X", sk->protect.iv[i]);
-	}
-    }
-  else
-    {
-      /* Something is wrong: Print all.  */
-      for (i = 0; i < sk->protect.ivlen; i++)
-	es_fprintf (es_stdout, "%02X", sk->protect.iv[i]);
-    }
-  es_putc ('\n', es_stdout);
+  /* es_fputs (_("      Card serial no. ="), es_stdout); */
+  /* es_putc (' ', es_stdout); */
+  /* if (sk->protect.ivlen == 16 */
+  /*     && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6)) */
+  /*   {		 */
+  /*     /\* This is an OpenPGP card. Just print the relevant part.  *\/ */
+  /*     for (i = 8; i < 14; i++) */
+  /*       { */
+  /*         if (i == 10) */
+  /*           es_putc (' ', es_stdout); */
+  /*         es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
+  /*       } */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     /\* Something is wrong: Print all.  *\/ */
+  /*     for (i = 0; i < sk->protect.ivlen; i++) */
+  /*       es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
+  /*   } */
+  /* es_putc ('\n', es_stdout); */
 }
 
 

@@ -565,12 +565,9 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
     {
     case PKT_PUBLIC_KEY:
     case PKT_PUBLIC_SUBKEY:
-      pkt->pkt.public_key = xmalloc_clear (sizeof *pkt->pkt.public_key);
-      rc = parse_key (inp, pkttype, pktlen, hdr, hdrlen, pkt);
-      break;
     case PKT_SECRET_KEY:
     case PKT_SECRET_SUBKEY:
-      pkt->pkt.secret_key = xmalloc_clear (sizeof *pkt->pkt.secret_key);
+      pkt->pkt.public_key = xmalloc_clear (sizeof *pkt->pkt.public_key);
       rc = parse_key (inp, pkttype, pktlen, hdr, hdrlen, pkt);
       break;
     case PKT_SYMKEY_ENC:
@@ -627,6 +624,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
     }
 
  leave:
+  /* FIXME: Do we leak in case of an error?  */
   if (!rc && iobuf_error (inp))
     rc = G10ERR_INV_KEYRING;
   return rc;
@@ -1815,6 +1813,7 @@ static int
 parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	   byte * hdr, int hdrlen, PACKET * pkt)
 {
+  gpg_error_t err = 0;
   int i, version, algorithm;
   unsigned n;
   unsigned long timestamp, expiredate, max_expiredate;
@@ -1822,8 +1821,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   int is_v4 = 0;
   int rc = 0;
   u32 keyid[2];
+  PKT_public_key *pk;
 
   (void) hdr;
+
+  pk = pkt->pkt.public_key; /* PK has been cleared. */
 
   version = iobuf_get_noeof (inp);
   pktlen--;
@@ -1853,14 +1855,14 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   else if (version != 2 && version != 3)
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
-      rc = gpg_error (GPG_ERR_INV_PACKET);
+      err = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
 
   if (pktlen < 11)
     {
       log_error ("packet(%d) too short\n", pkttype);
-      rc = gpg_error (GPG_ERR_INV_PACKET);
+      err = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
 
@@ -1894,38 +1896,14 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                 pkttype == PKT_SECRET_SUBKEY ? "secret sub" : "??",
                 version, algorithm, timestamp, expiredate);
 
-  if (pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY)
-    {
-      PKT_secret_key *sk = pkt->pkt.secret_key;
+  pk->timestamp = timestamp;
+  pk->expiredate = expiredate;
+  pk->max_expiredate = max_expiredate;
+  pk->hdrbytes = hdrlen;
+  pk->version = version;
+  pk->is_primary = (pkttype == PKT_PUBLIC_KEY || pkttype == PKT_SECRET_KEY);
+  pk->pubkey_algo = algorithm;
 
-      sk->timestamp = timestamp;
-      sk->expiredate = expiredate;
-      sk->max_expiredate = max_expiredate;
-      sk->hdrbytes = hdrlen;
-      sk->version = version;
-      sk->is_primary = pkttype == PKT_SECRET_KEY;
-      sk->pubkey_algo = algorithm;
-      sk->req_usage = 0;
-      sk->pubkey_usage = 0;	/* not yet used */
-    }
-  else
-    {
-      PKT_public_key *pk = pkt->pkt.public_key;
-
-      pk->timestamp = timestamp;
-      pk->expiredate = expiredate;
-      pk->max_expiredate = max_expiredate;
-      pk->hdrbytes = hdrlen;
-      pk->version = version;
-      pk->is_primary = pkttype == PKT_PUBLIC_KEY;
-      pk->pubkey_algo = algorithm;
-      pk->req_usage = 0;
-      pk->pubkey_usage = 0;	/* not yet used */
-      pk->is_revoked = 0;
-      pk->is_disabled = 0;
-      pk->keyid[0] = 0;
-      pk->keyid[1] = 0;
-    }
   nskey = pubkey_get_nskey (algorithm);
   npkey = pubkey_get_npkey (algorithm);
   if (!npkey)
@@ -1936,62 +1914,77 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
 
-  if (pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY)
+  if (!npkey)
     {
-      PKT_secret_key *sk = pkt->pkt.secret_key;
-      byte temp[16];
-      size_t snlen = 0;
-
-      if (!npkey)
-	{
-	  sk->skey[0] = gcry_mpi_set_opaque (NULL, read_rest (inp, pktlen, 0),
-					     pktlen * 8);
-	  pktlen = 0;
-	  goto leave;
-	}
-
+      /* Unknown algorithm - put data into an opaque MPI.  */
+      pk->pkey[0] = gcry_mpi_set_opaque (NULL,
+                                         read_rest (inp, pktlen, 0),
+                                         pktlen * 8);
+      pktlen = 0;
+      goto leave;
+    }
+  else
+    {
+      /* Fill in public key parameters.  */
       for (i = 0; i < npkey; i++)
 	{
 	  n = pktlen;
-	  sk->skey[i] = mpi_read (inp, &n, 0);
+	  pk->pkey[i] = mpi_read (inp, &n, 0);
 	  pktlen -= n;
 	  if (list_mode)
 	    {
-	      es_fprintf (listfp, "\tskey[%d]: ", i);
-	      mpi_print (listfp, sk->skey[i], mpi_print_mode);
+	      es_fprintf (listfp, "\tpkey[%d]: ", i);
+	      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
 	      es_putc ('\n', listfp);
 	    }
-	  if (!sk->skey[i])
-	    rc = G10ERR_INVALID_PACKET;
+	  if (!pk->pkey[i])
+	    err = gpg_error (GPG_ERR_INV_PACKET);
 	}
-      if (rc)  /* One of the MPIs were bad.  */
+      if (err)
 	goto leave;
-      sk->protect.algo = iobuf_get_noeof (inp);
+    }
+
+  if (list_mode)
+    keyid_from_pk (pk, keyid);
+
+  if (pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY)
+    {
+      struct seckey_info *ski;
+      byte temp[16];
+      size_t snlen = 0;
+
+      pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+      if (!pk->seckey_info)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      ski->algo = iobuf_get_noeof (inp);
       pktlen--;
-      sk->protect.sha1chk = 0;
-      if (sk->protect.algo)
+      if (ski->algo)
 	{
-	  sk->is_protected = 1;
-	  sk->protect.s2k.count = 0;
-	  if (sk->protect.algo == 254 || sk->protect.algo == 255)
+	  ski->is_protected = 1;
+	  ski->s2k.count = 0;
+	  if (ski->algo == 254 || ski->algo == 255)
 	    {
 	      if (pktlen < 3)
 		{
-		  rc = G10ERR_INVALID_PACKET;
+		  err = gpg_error (GPG_ERR_INV_PACKET);
 		  goto leave;
 		}
-	      sk->protect.sha1chk = (sk->protect.algo == 254);
-	      sk->protect.algo = iobuf_get_noeof (inp);
+	      ski->sha1chk = (ski->algo == 254);
+	      ski->algo = iobuf_get_noeof (inp);
 	      pktlen--;
-	      /* Note that a sk->protect.algo > 110 is illegal, but
-	         I'm not erroring on it here as otherwise there would
-	         be no way to delete such a key.  */
-	      sk->protect.s2k.mode = iobuf_get_noeof (inp);
+	      /* Note that a ski->algo > 110 is illegal, but I'm not
+	         erroring on it here as otherwise there would be no
+	         way to delete such a key.  */
+	      ski->s2k.mode = iobuf_get_noeof (inp);
 	      pktlen--;
-	      sk->protect.s2k.hash_algo = iobuf_get_noeof (inp);
+	      ski->s2k.hash_algo = iobuf_get_noeof (inp);
 	      pktlen--;
-	      /* check for the special GNU extension */
-	      if (is_v4 && sk->protect.s2k.mode == 101)
+	      /* Check for the special GNU extension.  */
+	      if (is_v4 && ski->s2k.mode == 101)
 		{
 		  for (i = 0; i < 4 && pktlen; i++, pktlen--)
 		    temp[i] = iobuf_get_noeof (inp);
@@ -1999,26 +1992,30 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		    {
 		      if (list_mode)
 			es_fprintf (listfp, "\tunknown S2K %d\n",
-                                    sk->protect.s2k.mode);
-		      rc = G10ERR_INVALID_PACKET;
+                                    ski->s2k.mode);
+		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
 		  /* Here we know that it is a GNU extension.  What
 		   * follows is the GNU protection mode: All values
 		   * have special meanings and they are mapped to MODE
 		   * with a base of 1000.  */
-		  sk->protect.s2k.mode = 1000 + temp[3];
+		  ski->s2k.mode = 1000 + temp[3];
 		}
-	      switch (sk->protect.s2k.mode)
+
+              /* Read the salt.  */
+	      switch (ski->s2k.mode)
 		{
 		case 1:
 		case 3:
 		  for (i = 0; i < 8 && pktlen; i++, pktlen--)
 		    temp[i] = iobuf_get_noeof (inp);
-		  memcpy (sk->protect.s2k.salt, temp, 8);
+		  memcpy (ski->s2k.salt, temp, 8);
 		  break;
 		}
-	      switch (sk->protect.s2k.mode)
+
+              /* Check the mode.  */
+	      switch (ski->s2k.mode)
 		{
 		case 0:
 		  if (list_mode)
@@ -2043,202 +2040,163 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		default:
 		  if (list_mode)
 		    es_fprintf (listfp, "\tunknown %sS2K %d\n",
-                                sk->protect.s2k.mode < 1000 ? "" : "GNU ",
-                                sk->protect.s2k.mode);
-		  rc = G10ERR_INVALID_PACKET;
+                                ski->s2k.mode < 1000 ? "" : "GNU ",
+                                ski->s2k.mode);
+		  err = gpg_error (GPG_ERR_INV_PACKET);
 		  goto leave;
 		}
 
+              /* Print some info.  */
 	      if (list_mode)
 		{
 		  es_fprintf (listfp, ", algo: %d,%s hash: %d",
-                              sk->protect.algo,
-                              sk->protect.sha1chk ? " SHA1 protection,"
-                              : " simple checksum,", sk->protect.s2k.hash_algo);
-		  if (sk->protect.s2k.mode == 1 || sk->protect.s2k.mode == 3)
+                              ski->algo,
+                              ski->sha1chk ? " SHA1 protection,"
+                              : " simple checksum,", ski->s2k.hash_algo);
+		  if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
 		    {
 		      es_fprintf (listfp, ", salt: ");
-                      es_write_hexstring (listfp, sk->protect.s2k.salt, 8,
-                                          0, NULL);
+                      es_write_hexstring (listfp, ski->s2k.salt, 8, 0, NULL);
 		    }
 		  es_putc ('\n', listfp);
 		}
 
-	      if (sk->protect.s2k.mode == 3)
+              /* Read remaining protection parameters.  */
+	      if (ski->s2k.mode == 3)
 		{
 		  if (pktlen < 1)
 		    {
-		      rc = G10ERR_INVALID_PACKET;
+		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
-		  sk->protect.s2k.count = iobuf_get (inp);
+		  ski->s2k.count = iobuf_get (inp);
 		  pktlen--;
 		  if (list_mode)
 		    es_fprintf (listfp, "\tprotect count: %lu\n",
-                                (ulong) sk->protect.s2k.count);
+                                (ulong) ski->s2k.count);
 		}
-	      else if (sk->protect.s2k.mode == 1002)
+	      else if (ski->s2k.mode == 1002)
 		{
 		  /* Read the serial number. */
 		  if (pktlen < 1)
 		    {
-		      rc = G10ERR_INVALID_PACKET;
+		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
 		  snlen = iobuf_get (inp);
 		  pktlen--;
 		  if (pktlen < snlen || snlen == -1)
 		    {
-		      rc = G10ERR_INVALID_PACKET;
+		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
 		}
 	    }
 	  else /* Old version; no S2K, so we set mode to 0, hash MD5.  */
 	    { 
-              /* Note that a sk->protect.algo > 110 is illegal, but
-                 I'm not erroring on it here as otherwise there would
-                 be no way to delete such a key.  */
-	      sk->protect.s2k.mode = 0;
-	      sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
+              /* Note that a ski->algo > 110 is illegal, but I'm not
+                 erroring on it here as otherwise there would be no
+                 way to delete such a key.  */
+	      ski->s2k.mode = 0;
+	      ski->s2k.hash_algo = DIGEST_ALGO_MD5;
 	      if (list_mode)
 		es_fprintf (listfp, "\tprotect algo: %d  (hash algo: %d)\n",
-                            sk->protect.algo, sk->protect.s2k.hash_algo);
+                            ski->algo, ski->s2k.hash_algo);
 	    }
           
 	  /* It is really ugly that we don't know the size
 	   * of the IV here in cases we are not aware of the algorithm.
 	   * so a
-	   *   sk->protect.ivlen = cipher_get_blocksize(sk->protect.algo);
+	   *   ski->ivlen = cipher_get_blocksize (ski->algo);
 	   * won't work.  The only solution I see is to hardwire it.
 	   * NOTE: if you change the ivlen above 16, don't forget to
 	   * enlarge temp.  */
-	  sk->protect.ivlen = openpgp_cipher_blocklen (sk->protect.algo);
-	  assert (sk->protect.ivlen <= sizeof (temp));
+	  ski->ivlen = openpgp_cipher_blocklen (ski->algo);
+	  assert (ski->ivlen <= sizeof (temp));
 
-	  if (sk->protect.s2k.mode == 1001)
-	    sk->protect.ivlen = 0;
-	  else if (sk->protect.s2k.mode == 1002)
-	    sk->protect.ivlen = snlen < 16 ? snlen : 16;
+	  if (ski->s2k.mode == 1001)
+	    ski->ivlen = 0;
+	  else if (ski->s2k.mode == 1002)
+	    ski->ivlen = snlen < 16 ? snlen : 16;
 
-	  if (pktlen < sk->protect.ivlen)
+	  if (pktlen < ski->ivlen)
 	    {
-	      rc = G10ERR_INVALID_PACKET;
+              err = gpg_error (GPG_ERR_INV_PACKET);
 	      goto leave;
 	    }
-	  for (i = 0; i < sk->protect.ivlen && pktlen; i++, pktlen--)
+	  for (i = 0; i < ski->ivlen && pktlen; i++, pktlen--)
 	    temp[i] = iobuf_get_noeof (inp);
 	  if (list_mode)
 	    {
 	      es_fprintf (listfp,
-		       sk->protect.s2k.mode == 1002 ? "\tserial-number: "
-		       : "\tprotect IV: ");
-	      for (i = 0; i < sk->protect.ivlen; i++)
+                          ski->s2k.mode == 1002 ? "\tserial-number: "
+                          : "\tprotect IV: ");
+	      for (i = 0; i < ski->ivlen; i++)
 		es_fprintf (listfp, " %02x", temp[i]);
 	      es_putc ('\n', listfp);
 	    }
-	  memcpy (sk->protect.iv, temp, sk->protect.ivlen);
+	  memcpy (ski->iv, temp, ski->ivlen);
 	}
-      else
-	sk->is_protected = 0;
 
       /* It does not make sense to read it into secure memory.
        * If the user is so careless, not to protect his secret key,
        * we can assume, that he operates an open system :=(.
        * So we put the key into secure memory when we unprotect it. */
-      if (sk->protect.s2k.mode == 1001 || sk->protect.s2k.mode == 1002)
+      if (ski->s2k.mode == 1001 || ski->s2k.mode == 1002)
 	{
 	  /* Better set some dummy stuff here.  */
-	  sk->skey[npkey] = gcry_mpi_set_opaque (NULL,
+	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
 						 xstrdup ("dummydata"),
 						 10 * 8);
 	  pktlen = 0;
 	}
-      else if (is_v4 && sk->is_protected)
+      else if (is_v4 && ski->is_protected)
 	{
 	  /* Ugly: The length is encrypted too, so we read all stuff
 	   * up to the end of the packet into the first SKEY
 	   * element.  */
-	  sk->skey[npkey] = gcry_mpi_set_opaque (NULL,
+	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
 						 read_rest (inp, pktlen, 0),
 						 pktlen * 8);
 	  pktlen = 0;
 	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tencrypted stuff follows\n");
-	    }
+            es_fprintf (listfp, "\tskey[%d]: [v4 protected]\n", npkey);
 	}
-      else /* The v3 method: The mpi length is not encrypted.  */
+      else 
 	{	
+          /* The v3 method: The mpi length is not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
-	      if (sk->is_protected)
+	      if (ski->is_protected)
 		{
-		  sk->skey[i] = read_protected_v3_mpi (inp, &pktlen);
+		  pk->pkey[i] = read_protected_v3_mpi (inp, &pktlen);
 		  if (list_mode)
-		    es_fprintf (listfp, "\tskey[%d]: [encrypted]\n", i);
+		    es_fprintf (listfp, "\tskey[%d]: [v3 protected]\n", i);
 		}
 	      else
 		{
 		  n = pktlen;
-		  sk->skey[i] = mpi_read (inp, &n, 0);
+		  pk->pkey[i] = mpi_read (inp, &n, 0);
 		  pktlen -= n;
 		  if (list_mode)
 		    {
 		      es_fprintf (listfp, "\tskey[%d]: ", i);
-		      mpi_print (listfp, sk->skey[i], mpi_print_mode);
+		      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
 		      es_putc ('\n', listfp);
 		    }
 		}
 
-	      if (!sk->skey[i])
-		rc = G10ERR_INVALID_PACKET;
+	      if (!pk->pkey[i])
+		err = gpg_error (GPG_ERR_INV_PACKET);
 	    }
-	  if (rc)
+	  if (err)
 	    goto leave;
 
-	  sk->csum = read_16 (inp);
+	  ski->csum = read_16 (inp);
 	  pktlen -= 2;
 	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tchecksum: %04hx\n", sk->csum);
-	    }
+            es_fprintf (listfp, "\tchecksum: %04hx\n", ski->csum);
 	}
-
-      if (list_mode)
-	keyid_from_sk (sk, keyid);
-    }
-  else
-    {
-      PKT_public_key *pk = pkt->pkt.public_key;
-
-      if (!npkey)
-	{
-	  pk->pkey[0] = gcry_mpi_set_opaque (NULL,
-					     read_rest (inp, pktlen, 0),
-					     pktlen * 8);
-	  pktlen = 0;
-	  goto leave;
-	}
-
-      for (i = 0; i < npkey; i++)
-	{
-	  n = pktlen;
-	  pk->pkey[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
-	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tpkey[%d]: ", i);
-	      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
-	      es_putc ('\n', listfp);
-	    }
-	  if (!pk->pkey[i])
-	    rc = G10ERR_INVALID_PACKET;
-	}
-      if (rc)
-	goto leave;
-      if (list_mode)
-	keyid_from_pk (pk, keyid);
     }
 
   if (list_mode)

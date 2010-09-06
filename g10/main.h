@@ -277,10 +277,6 @@ void import_print_stats (void *hd);
 
 int collapse_uids( KBNODE *keyblock );
 
-int auto_create_card_key_stub ( const char *serialnostr, 
-                                const unsigned char *fpr1,
-                                const unsigned char *fpr2,
-                                const unsigned char *fpr3);
 
 /*-- export.c --*/
 int parse_export_options(char *str,unsigned int *options,int noisy);

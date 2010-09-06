@@ -190,10 +190,7 @@ subkey_in_list_p (subkey_list_t list, KBNODE node)
     {
       u32 kid[2];
 
-      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-        keyid_from_pk (node->pkt->pkt.public_key, kid);
-      else
-        keyid_from_sk (node->pkt->pkt.secret_key, kid);
+      keyid_from_pk (node->pkt->pkt.public_key, kid);
       
       for (; list; list = list->next)
         if (list->kid[0] == kid[0] && list->kid[1] == kid[1])
@@ -208,10 +205,9 @@ new_subkey_list_item (KBNODE node)
 {
   subkey_list_t list = xcalloc (1, sizeof *list);
 
-  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+      || node->pkt->pkttype == PKT_SECRET_SUBKEY)
     keyid_from_pk (node->pkt->pkt.public_key, list->kid);
-  else if (node->pkt->pkttype == PKT_SECRET_SUBKEY)
-    keyid_from_sk (node->pkt->pkt.secret_key, list->kid);
 
   return list;
 }
@@ -235,19 +231,13 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
     case KEYDB_SEARCH_MODE_LONG_KID:
-      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-        keyid_from_pk (node->pkt->pkt.public_key, kid);
-      else
-        keyid_from_sk (node->pkt->pkt.secret_key, kid);
+      keyid_from_pk (node->pkt->pkt.public_key, kid);
       break;
       
     case KEYDB_SEARCH_MODE_FPR16:
     case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-        fingerprint_from_pk (node->pkt->pkt.public_key, fpr,&fprlen);
-      else
-        fingerprint_from_sk (node->pkt->pkt.secret_key, fpr,&fprlen);
+      fingerprint_from_pk (node->pkt->pkt.public_key, fpr,&fprlen);
       break;
       
     default:
@@ -287,451 +277,466 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
 
 /* If keyblock_out is non-NULL, AND the exit code is zero, then it
    contains a pointer to the first keyblock found and exported.  No
-   other keyblocks are exported.  The caller must free it. */
+   other keyblocks are exported.  The caller must free it.  */
 static int
-do_export_stream( IOBUF out, strlist_t users, int secret,
-		  KBNODE *keyblock_out, unsigned int options, int *any )
+do_export_stream (iobuf_t out, strlist_t users, int secret,
+		  kbnode_t *keyblock_out, unsigned int options, int *any)
 {
-    int rc = 0;
-    gpg_error_t err;
-    PACKET pkt;
-    KBNODE keyblock = NULL;
-    KBNODE kbctx, node;
-    size_t ndesc, descindex;
-    KEYDB_SEARCH_DESC *desc = NULL;
-    subkey_list_t subkey_list = NULL;  /* Track alreay processed subkeys. */
-    KEYDB_HANDLE kdbhd;
-    strlist_t sl;
-    int indent = 0;
+  gpg_error_t err = 0;
+  PACKET pkt;
+  KBNODE keyblock = NULL;
+  KBNODE kbctx, node;
+  size_t ndesc, descindex;
+  KEYDB_SEARCH_DESC *desc = NULL;
+  subkey_list_t subkey_list = NULL;  /* Track already processed subkeys. */
+  KEYDB_HANDLE kdbhd;
+  strlist_t sl;
+  int indent = 0;
 
-    *any = 0;
-    init_packet( &pkt );
-    kdbhd = keydb_new ();
+  *any = 0;
+  init_packet (&pkt);
+  kdbhd = keydb_new ();
 
-    if (!users) {
-        ndesc = 1;
-        desc = xcalloc ( ndesc, sizeof *desc );
-        desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+  if (!users) 
+    {
+      ndesc = 1;
+      desc = xcalloc (ndesc, sizeof *desc);
+      desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
-    else {
-        for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
-            ;
-        desc = xmalloc ( ndesc * sizeof *desc);
+  else
+    {
+      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+        ;
+      desc = xmalloc ( ndesc * sizeof *desc);
         
-        for (ndesc=0, sl=users; sl; sl = sl->next) {
-            if (!(err=classify_user_id (sl->d, desc+ndesc)))
-                ndesc++;
-            else
-                log_error (_("key \"%s\" not found: %s\n"),
-                           sl->d, gpg_strerror (err));
+      for (ndesc=0, sl=users; sl; sl = sl->next)
+        {
+          if (!(err=classify_user_id (sl->d, desc+ndesc)))
+            ndesc++;
+          else
+            log_error (_("key \"%s\" not found: %s\n"),
+                       sl->d, gpg_strerror (err));
         }
 
-        /* It would be nice to see which of the given users did
-           actually match one in the keyring.  To implement this we
-           need to have a found flag for each entry in desc and to set
-           this we must check all those entries after a match to mark
-           all matched one - currently we stop at the first match.  To
-           do this we need an extra flag to enable this feature so */
+      /* It would be nice to see which of the given users did actually
+         match one in the keyring.  To implement this we need to have
+         a found flag for each entry in desc.  To set this flag we
+         must check all those entries after a match to mark all
+         matched one - currently we stop at the first match.  To do
+         this we need an extra flag to enable this feature.  */
     }
 
 #ifdef ENABLE_SELINUX_HACKS
-    if (secret) {
-        log_error (_("exporting secret keys not allowed\n"));
-        rc = G10ERR_GENERAL;
-        goto leave;
+  if (secret)
+    {
+      log_error (_("exporting secret keys not allowed\n"));
+      err = G10ERR_GENERAL;
+      goto leave;
     }
 #endif
 
-    while (!(rc = keydb_search2 (kdbhd, desc, ndesc, &descindex))) {
-        int sha1_warned=0,skip_until_subkey=0;
-	u32 sk_keyid[2];
+  while (!(err = keydb_search2 (kdbhd, desc, ndesc, &descindex))) 
+    {
+      int sha1_warned = 0;
+      int skip_until_subkey = 0;
+      u32 keyid[2];
 
-	if (!users) 
-            desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+      if (!users) 
+        desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
-        /* Read the keyblock. */
-        rc = keydb_get_keyblock (kdbhd, &keyblock );
-	if( rc ) {
-            log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
-	    goto leave;
+      /* Read the keyblock. */
+      err = keydb_get_keyblock (kdbhd, &keyblock);
+      if (err) 
+        {
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+          goto leave;
 	}
 
-	if((node=find_kbnode(keyblock,PKT_SECRET_KEY)))
-	  {
-	    PKT_secret_key *sk=node->pkt->pkt.secret_key;
+      if ((node=find_kbnode(keyblock, PKT_SECRET_KEY)))
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
 
-	    keyid_from_sk(sk,sk_keyid);
+          keyid_from_pk (pk, keyid);
 
-	    /* We can't apply GNU mode 1001 on an unprotected key. */
-	    if( secret == 2 && !sk->is_protected )
-	      {
-		log_info(_("key %s: not protected - skipped\n"),
-			 keystr(sk_keyid));
-		continue;
-	      }
-
-	    /* No v3 keys with GNU mode 1001. */
-	    if( secret == 2 && sk->version == 3 )
-	      {
-		log_info(_("key %s: PGP 2.x style key - skipped\n"),
-			 keystr(sk_keyid));
-		continue;
-	      }
-
-            /* It does not make sense to export a key with a primary
-               key on card using a non-key stub.  We simply skip those
-               keys when used with --export-secret-subkeys. */
-            if (secret == 2 && sk->is_protected
-                && sk->protect.s2k.mode == 1002 ) 
-              {
-		log_info(_("key %s: key material on-card - skipped\n"),
-			 keystr(sk_keyid));
-		continue;
-              }
-	  }
-	else
-	  {
-	    /* It's a public key export, so do the cleaning if
-	       requested.  Note that both export-clean and
-	       export-minimal only apply to UID sigs (0x10, 0x11,
-	       0x12, and 0x13).  A designated revocation is never
-	       stripped, even with export-minimal set. */
-
-	    if(options&EXPORT_CLEAN)
-	      clean_key(keyblock,opt.verbose,options&EXPORT_MINIMAL,NULL,NULL);
-	  }
-
-	/* And write it. */
-	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
-	    if( skip_until_subkey )
-	      {
-		if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY
-		   || node->pkt->pkttype==PKT_SECRET_SUBKEY)
-		  skip_until_subkey=0;
-		else
-		  continue;
-	      }
-
-	    /* We used to use comment packets, but not any longer.  In
-	       case we still have comments on a key, strip them here
-	       before we call build_packet(). */
-	    if( node->pkt->pkttype == PKT_COMMENT )
-	      continue;
-
-            /* Make sure that ring_trust packets never get exported. */
-            if (node->pkt->pkttype == PKT_RING_TRUST)
+          /* We can't apply GNU mode 1001 on an unprotected key. */
+          if( secret == 2
+              && pk->seckey_info && !pk->seckey_info->is_protected )
+            {
+              log_info (_("key %s: not protected - skipped\n"),
+                        keystr (keyid));
               continue;
+            }
 
-	    /* If exact is set, then we only export what was requested
-	       (plus the primary key, if the user didn't specifically
-	       request it). */
-	    if(desc[descindex].exact
-	       && (node->pkt->pkttype==PKT_PUBLIC_SUBKEY
-		   || node->pkt->pkttype==PKT_SECRET_SUBKEY))
-	      {
-                if (!exact_subkey_match_p (desc+descindex, node))
-                  {
-                    /* Before skipping this subkey, check whether any
-                       other description wants an exact match on a
-                       subkey and include that subkey into the output
-                       too.  Need to add this subkey to a list so that
-                       it won't get processed a second time.
-                   
-                       So the first step here is to check that list and
-                       skip in any case if the key is in that list.
+          /* No v3 keys with GNU mode 1001. */
+          if( secret == 2 && pk->version == 3 )
+            {
+              log_info(_("key %s: PGP 2.x style key - skipped\n"),
+                       keystr (keyid));
+              continue;
+            }
 
-                       We need this whole mess because the import
-                       function is not able to merge secret keys and
-                       thus it is useless to output them as two
-                       separate keys and have import merge them.  */
-                    if (subkey_in_list_p (subkey_list, node))  
-                      skip_until_subkey = 1; /* Already processed this one. */
-                    else
-                      {
-                        size_t j;
+          /* It does not make sense to export a key with a primary
+             key on card using a non-key stub.  We simply skip those
+             keys when used with --export-secret-subkeys. */
+          if (secret == 2
+              && pk->seckey_info && pk->seckey_info->is_protected
+              && pk->seckey_info->s2k.mode == 1002 ) 
+            {
+              log_info(_("key %s: key material on-card - skipped\n"),
+                       keystr (keyid));
+              continue;
+            }
+        }
+      else
+        {
+          /* It's a public key export, so do the cleaning if
+             requested.  Note that both export-clean and
+             export-minimal only apply to UID sigs (0x10, 0x11, 0x12,
+             and 0x13).  A designated revocation is never stripped,
+             even with export-minimal set.  */
+          if ( (options & EXPORT_CLEAN) )
+            clean_key (keyblock, opt.verbose, options&EXPORT_MINIMAL,
+                       NULL, NULL);
+        }
 
-                        for (j=0; j < ndesc; j++)
-                          if (j != descindex && desc[j].exact
-                              && exact_subkey_match_p (desc+j, node))
-                            break;
-                        if (!(j < ndesc))
-                          skip_until_subkey = 1; /* No other one matching. */ 
-                      }
-                  }
+      /* And write it. */
+      for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); ) 
+        {
+          if (skip_until_subkey)
+            {
+              if (node->pkt->pkttype==PKT_PUBLIC_SUBKEY
+                  || node->pkt->pkttype==PKT_SECRET_SUBKEY)
+                skip_until_subkey = 0;
+              else
+                continue;
+            }
 
-		if(skip_until_subkey)
-		  continue;
+          /* We used to use comment packets, but not any longer.  In
+             case we still have comments on a key, strip them here
+             before we call build_packet(). */
+          if (node->pkt->pkttype == PKT_COMMENT)
+            continue;
 
-                /* Mark this one as processed. */
+          /* Make sure that ring_trust packets never get exported. */
+          if (node->pkt->pkttype == PKT_RING_TRUST)
+            continue;
+
+          /* If exact is set, then we only export what was requested
+             (plus the primary key, if the user didn't specifically
+             request it). */
+          if (desc[descindex].exact
+              && (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                  || node->pkt->pkttype == PKT_SECRET_SUBKEY))
+            {
+              if (!exact_subkey_match_p (desc+descindex, node))
                 {
-                  subkey_list_t tmp = new_subkey_list_item (node);
-                  tmp->next = subkey_list;
-                  subkey_list = tmp;
+                  /* Before skipping this subkey, check whether any
+                     other description wants an exact match on a
+                     subkey and include that subkey into the output
+                     too.  Need to add this subkey to a list so that
+                     it won't get processed a second time.
+                   
+                     So the first step here is to check that list and
+                     skip in any case if the key is in that list.
+
+                     We need this whole mess because the import
+                     function is not able to merge secret keys and
+                     thus it is useless to output them as two separate
+                     keys and have import merge them.  */
+                  if (subkey_in_list_p (subkey_list, node))  
+                    skip_until_subkey = 1; /* Already processed this one. */
+                  else
+                    {
+                      size_t j;
+
+                      for (j=0; j < ndesc; j++)
+                        if (j != descindex && desc[j].exact
+                            && exact_subkey_match_p (desc+j, node))
+                          break;
+                      if (!(j < ndesc))
+                        skip_until_subkey = 1; /* No other one matching. */ 
+                    }
                 }
-	      }
 
-	    if(node->pkt->pkttype==PKT_SIGNATURE)
-	      {
-		/* do not export packets which are marked as not
-		   exportable */
-		if(!(options&EXPORT_LOCAL_SIGS)
-		   && !node->pkt->pkt.signature->flags.exportable)
-		  continue; /* not exportable */
+              if(skip_until_subkey)
+                continue;
 
-		/* Do not export packets with a "sensitive" revocation
-		   key unless the user wants us to.  Note that we do
-		   export these when issuing the actual revocation
-		   (see revoke.c). */
-		if(!(options&EXPORT_SENSITIVE_REVKEYS)
-		   && node->pkt->pkt.signature->revkey)
-		  {
-		    int i;
+              /* Mark this one as processed. */
+              {
+                subkey_list_t tmp = new_subkey_list_item (node);
+                tmp->next = subkey_list;
+                subkey_list = tmp;
+              }
+            }
 
-		    for(i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
-		      if(node->pkt->pkt.signature->revkey[i]->class & 0x40)
-			break;
+          if (node->pkt->pkttype == PKT_SIGNATURE)
+            {
+              /* Do not export packets which are marked as not
+                 exportable.  */
+              if (!(options&EXPORT_LOCAL_SIGS)
+                  && !node->pkt->pkt.signature->flags.exportable)
+                continue; /* not exportable */
 
-		    if(i<node->pkt->pkt.signature->numrevkeys)
-		      continue;
-		  }
-	      }
+              /* Do not export packets with a "sensitive" revocation
+                 key unless the user wants us to.  Note that we do
+                 export these when issuing the actual revocation
+                 (see revoke.c). */
+              if (!(options&EXPORT_SENSITIVE_REVKEYS)
+                  && node->pkt->pkt.signature->revkey)
+                {
+                  int i;
+                  
+                  for (i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
+                    if ( (node->pkt->pkt.signature->revkey[i]->class & 0x40))
+                      break;
 
-	    /* Don't export attribs? */
-	    if( !(options&EXPORT_ATTRIBUTES) &&
-		node->pkt->pkttype == PKT_USER_ID &&
-		node->pkt->pkt.user_id->attrib_data ) {
+                  if (i < node->pkt->pkt.signature->numrevkeys)
+                    continue;
+                }
+            }
+
+          /* Don't export attribs? */
+          if (!(options&EXPORT_ATTRIBUTES)
+              && node->pkt->pkttype == PKT_USER_ID
+              && node->pkt->pkt.user_id->attrib_data )
+            {
 	      /* Skip until we get to something that is not an attrib
 		 or a signature on an attrib */
-	      while(kbctx->next && kbctx->next->pkt->pkttype==PKT_SIGNATURE) {
-		kbctx=kbctx->next;
-	      }
+	      while (kbctx->next && kbctx->next->pkt->pkttype==PKT_SIGNATURE)
+                kbctx = kbctx->next;
  
 	      continue;
 	    }
 
-	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY )
-	      {
-		/* We don't want to export the secret parts of the
-		 * primary key, this is done by using GNU protection mode 1001
-		 */
-		int save_mode = node->pkt->pkt.secret_key->protect.s2k.mode;
-		node->pkt->pkt.secret_key->protect.s2k.mode = 1001;
-                if ((options&EXPORT_SEXP_FORMAT))
-                  rc = build_sexp (out, node->pkt, &indent);
-                else
-                  rc = build_packet (out, node->pkt);
-		node->pkt->pkt.secret_key->protect.s2k.mode = save_mode;
-	      }
-	    else if (secret == 2 && node->pkt->pkttype == PKT_SECRET_SUBKEY
-                     && (opt.export_options&EXPORT_RESET_SUBKEY_PASSWD))
-              {
-                /* If the subkey is protected reset the passphrase to
-                   export an unprotected subkey.  This feature is
-                   useful in cases of a subkey copied to an unattended
-                   machine where a passphrase is not required. */
-                PKT_secret_key *sk_save, *sk;
+          if (secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY)
+            {
+              /* We don't want to export the secret parts of the
+               * primary key, this is done by temporary switching to
+               * GNU protection mode 1001.  */
+              int save_mode = node->pkt->pkt.public_key->seckey_info->s2k.mode;
+              node->pkt->pkt.public_key->seckey_info->s2k.mode = 1001;
+              if ((options&EXPORT_SEXP_FORMAT))
+                err = build_sexp (out, node->pkt, &indent);
+              else
+                err = build_packet (out, node->pkt);
+              node->pkt->pkt.public_key->seckey_info->s2k.mode = save_mode;
+            }
+          else if (secret == 2 && node->pkt->pkttype == PKT_SECRET_SUBKEY
+                   && (opt.export_options&EXPORT_RESET_SUBKEY_PASSWD))
+            {
+              /* If the subkey is protected reset the passphrase to
+                 export an unprotected subkey.  This feature is useful
+                 in cases of a subkey copied to an unattended machine
+                 where a passphrase is not required. */
+              err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+              goto leave;
+#warning We need to implement this              
+              /* PKT_secret_key *sk_save, *sk; */
 
-                sk_save = node->pkt->pkt.secret_key;
-                sk = copy_secret_key (NULL, sk_save);
-                node->pkt->pkt.secret_key = sk;
+              /* sk_save = node->pkt->pkt.secret_key; */
+              /* sk = copy_secret_key (NULL, sk_save); */
+              /* node->pkt->pkt.secret_key = sk; */
 
-                log_info (_("about to export an unprotected subkey\n"));
-                switch (is_secret_key_protected (sk))
-                  {
-                  case -1:
-                    rc = G10ERR_PUBKEY_ALGO;
-                    break;
-                  case 0:
-                    break;
-                  default:
-                    if (sk->protect.s2k.mode == 1001)
-                      ; /* No secret parts. */
-                    else if( sk->protect.s2k.mode == 1002 ) 
-                      ; /* Card key stub. */
-                    else 
-                      {
-                        /* rc = check_secret_key( sk, 0 ); */
-                      }
-                    break;
-                  }
-                if (rc)
-                  {
-                    node->pkt->pkt.secret_key = sk_save;
-                    free_secret_key (sk);
-                    log_error (_("failed to unprotect the subkey: %s\n"),
-                               g10_errstr (rc));
-                    goto leave;
-                  }
+              /* log_info (_("about to export an unprotected subkey\n")); */
+              /* switch (is_secret_key_protected (sk)) */
+              /*   { */
+              /*   case -1: */
+              /*     err = gpg_error (GPG_ERR_PUBKEY_ALGO); */
+              /*     break; */
+              /*   case 0: */
+              /*     break; */
+              /*   default: */
+              /*     if (sk->protect.s2k.mode == 1001) */
+              /*       ; /\* No secret parts. *\/ */
+              /*     else if( sk->protect.s2k.mode == 1002 )  */
+              /*       ; /\* Card key stub. *\/ */
+              /*     else  */
+              /*       { */
+              /*         /\* err = check_secret_key( sk, 0 ); *\/ */
+              /*       } */
+              /*     break; */
+              /*   } */
+              /* if (err) */
+              /*   { */
+              /*     node->pkt->pkt.secret_key = sk_save; */
+              /*     free_secret_key (sk); */
+              /*     log_error (_("failed to unprotect the subkey: %s\n"), */
+              /*                g10_errstr (rc)); */
+              /*     goto leave; */
+              /*   } */
 
-                if ((options&EXPORT_SEXP_FORMAT))
-                  rc = build_sexp (out, node->pkt, &indent);
-                else
-                  rc = build_packet (out, node->pkt);
+              /* if ((options&EXPORT_SEXP_FORMAT)) */
+              /*   err = build_sexp (out, node->pkt, &indent); */
+              /* else */
+              /*   err = build_packet (out, node->pkt); */
 
-                node->pkt->pkt.secret_key = sk_save;
-                free_secret_key (sk);
-              }
-	    else
-	      {
-		/* Warn the user if the secret key or any of the secret
-		   subkeys are protected with SHA1 and we have
-		   simple_sk_checksum set. */
-		if(!sha1_warned && opt.simple_sk_checksum &&
-		   (node->pkt->pkttype==PKT_SECRET_KEY ||
-		    node->pkt->pkttype==PKT_SECRET_SUBKEY) &&
-		   node->pkt->pkt.secret_key->protect.sha1chk)
-		  {
-		    /* I hope this warning doesn't confuse people. */
-		    log_info(_("WARNING: secret key %s does not have a "
-			       "simple SK checksum\n"),keystr(sk_keyid));
+              /* node->pkt->pkt.secret_key = sk_save; */
+              /* free_secret_key (sk); */
+            }
+          else
+            {
+              /* Warn the user if the secret key or any of the secret
+                 subkeys are protected with SHA1 and we have
+                 simple_sk_checksum set. */
+              if (!sha1_warned && opt.simple_sk_checksum &&
+                  (node->pkt->pkttype == PKT_SECRET_KEY
+                   || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+                  && node->pkt->pkt.public_key->seckey_info->sha1chk)
+                {
+                  /* I hope this warning doesn't confuse people. */
+                  log_info(_("WARNING: secret key %s does not have a "
+                             "simple SK checksum\n"), keystr (keyid));
 
-		    sha1_warned=1;
-		  }
+                  sha1_warned = 1;
+                }
 
-                if ((options&EXPORT_SEXP_FORMAT))
-                  rc = build_sexp (out, node->pkt, &indent);
-                else
-                  rc = build_packet (out, node->pkt);
-	      }
+              if ((options&EXPORT_SEXP_FORMAT))
+                err = build_sexp (out, node->pkt, &indent);
+              else
+                err = build_packet (out, node->pkt);
+            }
 
-	    if( rc ) {
-		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
-		goto leave;
+          if (err)
+            {
+              log_error ("build_packet(%d) failed: %s\n",
+                         node->pkt->pkttype, gpg_strerror (err));
+              goto leave;
 	    }
 	}
 
-        if ((options&EXPORT_SEXP_FORMAT) && indent)
-          {
-            for (; indent; indent--)
-              iobuf_put (out, ')');
-            iobuf_put (out, '\n');
-          }
+      if ((options&EXPORT_SEXP_FORMAT) && indent)
+        {
+          for (; indent; indent--)
+            iobuf_put (out, ')');
+          iobuf_put (out, '\n');
+        }
 
-	++*any;
-	if(keyblock_out)
-	  {
-	    *keyblock_out=keyblock;
-	    break;
-	  }
+      ++*any;
+      if(keyblock_out)
+        {
+          *keyblock_out=keyblock;
+          break;
+        }
     }
-    if ((options&EXPORT_SEXP_FORMAT) && indent)
-      {
-        for (; indent; indent--)
-          iobuf_put (out, ')');
-        iobuf_put (out, '\n');
-      }
-    if( rc == -1 )
-	rc = 0;
+  if ((options&EXPORT_SEXP_FORMAT) && indent)
+    {
+      for (; indent; indent--)
+        iobuf_put (out, ')');
+      iobuf_put (out, '\n');
+    }
+  if( err == -1 )
+    err = 0;
 
-  leave:
-    release_subkey_list (subkey_list);
-    xfree(desc);
-    keydb_release (kdbhd);
-    if(rc || keyblock_out==NULL)
-      release_kbnode( keyblock );
-    if( !*any )
-	log_info(_("WARNING: nothing exported\n"));
-    return rc;
+ leave:
+  release_subkey_list (subkey_list);
+  xfree(desc);
+  keydb_release (kdbhd);
+  if (err || !keyblock_out)
+    release_kbnode( keyblock );
+  if( !*any )
+    log_info(_("WARNING: nothing exported\n"));
+  return err;
 }
 
 
 
-static int
-write_sexp_line (iobuf_t out, int *indent, const char *text)
-{
-  int i;
+/* static int */
+/* write_sexp_line (iobuf_t out, int *indent, const char *text) */
+/* { */
+/*   int i; */
 
-  for (i=0; i < *indent; i++)
-    iobuf_put (out, ' ');
-  iobuf_writestr (out, text);
-  return 0;
-}
+/*   for (i=0; i < *indent; i++) */
+/*     iobuf_put (out, ' '); */
+/*   iobuf_writestr (out, text); */
+/*   return 0; */
+/* } */
 
-static int
-write_sexp_keyparm (iobuf_t out, int *indent, const char *name, gcry_mpi_t a)
-{
-  int rc;
-  unsigned char *buffer;
+/* static int */
+/* write_sexp_keyparm (iobuf_t out, int *indent, const char *name, gcry_mpi_t a) */
+/* { */
+/*   int rc; */
+/*   unsigned char *buffer; */
 
-  write_sexp_line (out, indent, "(");
-  iobuf_writestr (out, name);
-  iobuf_writestr (out, " #");
+/*   write_sexp_line (out, indent, "("); */
+/*   iobuf_writestr (out, name); */
+/*   iobuf_writestr (out, " #"); */
 
-  rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a);
-  assert (!rc);
-  iobuf_writestr (out, buffer);
-  iobuf_writestr (out, "#)");
-  gcry_free (buffer);
-  return 0;
-}
+/*   rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a); */
+/*   assert (!rc); */
+/*   iobuf_writestr (out, buffer); */
+/*   iobuf_writestr (out, "#)"); */
+/*   gcry_free (buffer); */
+/*   return 0; */
+/* } */
 
 static int
 build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
 {
-  PKT_secret_key *sk = pkt->pkt.secret_key;
-  char tmpbuf[100];
+  /* FIXME: Not yet implemented.  */
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  /* PKT_secret_key *sk = pkt->pkt.secret_key; */
+  /* char tmpbuf[100]; */
 
-  if (pkt->pkttype == PKT_SECRET_KEY)
-    {
-      iobuf_writestr (out, "(openpgp-key\n");
-      (*indent)++;
-    }
-  else
-    {
-      iobuf_writestr (out, " (subkey\n");
-      (*indent)++;
-    }
-  (*indent)++;
-  write_sexp_line (out, indent, "(private-key\n");
-  (*indent)++;
-  if (is_RSA (sk->pubkey_algo) && !sk->is_protected)
-    {
-      write_sexp_line (out, indent, "(rsa\n");
-      (*indent)++;
-      write_sexp_keyparm (out, indent, "n", sk->skey[0]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "e", sk->skey[1]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "d", sk->skey[2]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "p", sk->skey[3]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "q", sk->skey[4]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "u", sk->skey[5]); 
-      iobuf_put (out,')'); iobuf_put (out,'\n');
-      (*indent)--;
-    }
-  else if (sk->pubkey_algo == PUBKEY_ALGO_DSA && !sk->is_protected)
-    {
-      write_sexp_line (out, indent, "(dsa\n");
-      (*indent)++;
-      write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "q", sk->skey[1]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "x", sk->skey[4]);
-      iobuf_put (out,')'); iobuf_put (out,'\n');
-      (*indent)--;
-    }
-  else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected)
-    {
-      write_sexp_line (out, indent, "(elg\n");
-      (*indent)++;
-      write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n');
-      write_sexp_keyparm (out, indent, "x", sk->skey[4]);
-      iobuf_put (out,')'); iobuf_put (out,'\n');
-      (*indent)--;
-    }
-  write_sexp_line (out, indent,  "(attrib\n"); (*indent)++;
-  sprintf (tmpbuf, "(created \"%lu\"", (unsigned long)sk->timestamp);
-  write_sexp_line (out, indent, tmpbuf);
-  iobuf_put (out,')'); (*indent)--; /* close created */
-  iobuf_put (out,')'); (*indent)--; /* close attrib */
-  iobuf_put (out,')'); (*indent)--; /* close private-key */
-  if (pkt->pkttype != PKT_SECRET_KEY)
-    iobuf_put (out,')'), (*indent)--; /* close subkey */
-  iobuf_put (out,'\n');
+  /* if (pkt->pkttype == PKT_SECRET_KEY) */
+  /*   { */
+  /*     iobuf_writestr (out, "(openpgp-key\n"); */
+  /*     (*indent)++; */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     iobuf_writestr (out, " (subkey\n"); */
+  /*     (*indent)++; */
+  /*   } */
+  /* (*indent)++; */
+  /* write_sexp_line (out, indent, "(private-key\n"); */
+  /* (*indent)++; */
+  /* if (is_RSA (sk->pubkey_algo) && !sk->is_protected) */
+  /*   { */
+  /*     write_sexp_line (out, indent, "(rsa\n"); */
+  /*     (*indent)++; */
+  /*     write_sexp_keyparm (out, indent, "n", sk->skey[0]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "e", sk->skey[1]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "d", sk->skey[2]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "p", sk->skey[3]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "q", sk->skey[4]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "u", sk->skey[5]);  */
+  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
+  /*     (*indent)--; */
+  /*   } */
+  /* else if (sk->pubkey_algo == PUBKEY_ALGO_DSA && !sk->is_protected) */
+  /*   { */
+  /*     write_sexp_line (out, indent, "(dsa\n"); */
+  /*     (*indent)++; */
+  /*     write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "q", sk->skey[1]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "x", sk->skey[4]); */
+  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
+  /*     (*indent)--; */
+  /*   } */
+  /* else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected) */
+  /*   { */
+  /*     write_sexp_line (out, indent, "(elg\n"); */
+  /*     (*indent)++; */
+  /*     write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "x", sk->skey[4]); */
+  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
+  /*     (*indent)--; */
+  /*   } */
+  /* write_sexp_line (out, indent,  "(attrib\n"); (*indent)++; */
+  /* sprintf (tmpbuf, "(created \"%lu\"", (unsigned long)sk->timestamp); */
+  /* write_sexp_line (out, indent, tmpbuf); */
+  /* iobuf_put (out,')'); (*indent)--; /\* close created *\/ */
+  /* iobuf_put (out,')'); (*indent)--; /\* close attrib *\/ */
+  /* iobuf_put (out,')'); (*indent)--; /\* close private-key *\/ */
+  /* if (pkt->pkttype != PKT_SECRET_KEY) */
+  /*   iobuf_put (out,')'), (*indent)--; /\* close subkey *\/ */
+  /* iobuf_put (out,'\n'); */
 
-  return 0;
+  /* return 0; */
 }
 
 

@@ -54,7 +54,6 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
     KBNODE node;
     KEYDB_HANDLE hd = keydb_new ();
     PKT_public_key *pk = NULL;
-    PKT_secret_key *sk = NULL;
     u32 keyid[2];
     int okay=0;
     int yes;
@@ -91,28 +90,19 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 	goto leave;
     }
 
-    if( secret )
+    pk = node->pkt->pkt.public_key;
+    keyid_from_pk( pk, keyid );
+    
+    if (!force)
       {
-	sk = node->pkt->pkt.secret_key;
-	keyid_from_sk( sk, keyid );
-      }
-    else
-      {
-	/* public */
-	pk = node->pkt->pkt.public_key;
-	keyid_from_pk( pk, keyid );
-
-	if(!force)
-	  {
-	    if (have_secret_key_with_kid (keyid))
-	      {
-		*r_sec_avail = 1;
-		rc = -1;
-		goto leave;
-	      }
-	    else
-	      rc = 0;
-	  }
+        if (have_secret_key_with_kid (keyid))
+          {
+            *r_sec_avail = 1;
+            rc = -1;
+            goto leave;
+          }
+        else
+          rc = 0;
       }
 
     if( rc )
@@ -133,9 +123,9 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
       }
     else {
         if( secret )
-            print_seckey_info( sk );
+            print_seckey_info (pk);
         else
-            print_pubkey_info(NULL, pk );
+            print_pubkey_info (NULL, pk );
 	tty_printf( "\n" );
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"

@@ -899,7 +899,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   int use_offtbl;
   PKT_user_id *uid = NULL;
   PKT_public_key *pk = NULL;
-  PKT_secret_key *sk = NULL;
   u32 aki[2];
 
   /* figure out what information we need */
@@ -1017,10 +1016,11 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
 	
       pk = NULL;
-      sk = NULL;
       uid = NULL;
       if (   pkt.pkttype == PKT_PUBLIC_KEY
-             || pkt.pkttype == PKT_PUBLIC_SUBKEY)
+             || pkt.pkttype == PKT_PUBLIC_SUBKEY
+             || pkt.pkttype == PKT_SECRET_KEY
+             || pkt.pkttype == PKT_SECRET_SUBKEY) 
         {
           pk = pkt.pkt.public_key;
           ++pk_no;
@@ -1040,21 +1040,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         {
           uid = pkt.pkt.user_id;
           ++uid_no;
-        }
-      else if (    pkt.pkttype == PKT_SECRET_KEY
-                   || pkt.pkttype == PKT_SECRET_SUBKEY) 
-        {
-          sk = pkt.pkt.secret_key;
-          ++pk_no;
-
-          if (need_fpr) {
-            fingerprint_from_sk (sk, afp, &an);
-            while (an < 20) /* fill up to 20 bytes */
-              afp[an++] = 0;
-          }
-          if (need_keyid)
-            keyid_from_sk (sk, aki);
-            
         }
 
       for (n=0; n < ndesc; n++) 
@@ -1076,29 +1061,29 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
             break;
                 
           case KEYDB_SEARCH_MODE_SHORT_KID: 
-            if ((pk||sk) && desc[n].u.kid[1] == aki[1])
+            if (pk && desc[n].u.kid[1] == aki[1])
               goto found;
             break;
           case KEYDB_SEARCH_MODE_LONG_KID:
-            if ((pk||sk) && desc[n].u.kid[0] == aki[0]
+            if (pk && desc[n].u.kid[0] == aki[0]
                 && desc[n].u.kid[1] == aki[1])
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FPR16:
-            if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 16))
+            if (pk && !memcmp (desc[n].u.fpr, afp, 16))
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FPR20:
           case KEYDB_SEARCH_MODE_FPR: 
-            if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 20))
+            if (pk && !memcmp (desc[n].u.fpr, afp, 20))
               goto found;
             break;
           case KEYDB_SEARCH_MODE_FIRST: 
-            if (pk||sk)
+            if (pk)
               goto found;
             break;
           case KEYDB_SEARCH_MODE_NEXT: 
-            if (pk||sk)
+            if (pk)
               goto found;
             break;
           default: 
@@ -1128,7 +1113,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       hd->found.offset = main_offset;
       hd->found.kr = hd->current.kr;
-      hd->found.pk_no = (pk||sk)? pk_no : 0;
+      hd->found.pk_no = pk? pk_no : 0;
       hd->found.uid_no = uid? uid_no : 0;
     }
   else if (rc == -1)

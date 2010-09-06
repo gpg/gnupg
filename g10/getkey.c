@@ -2522,7 +2522,7 @@ found:
  *     so that can free it's context.
  */
 int
-enum_secret_keys (void **context, PKT_secret_key * sk,
+enum_secret_keys (void **context, PKT_public_key * sk,
 		  int with_subkeys, int with_spm)
 {
   log_debug ("FIXME: Anonymous recipient does not yet work\n");

@@ -2924,7 +2924,9 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 
 	  keyid_from_pk (pk, NULL);
 	  tty_printf ("%s%c %4u%c/%s  ",
-		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" : "sub",
+		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
+		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
+		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
 		      (node->flag & NODFLG_SELKEY) ? '*' : ' ',
 		      nbits_from_pk (pk),
 		      pubkey_letter (pk->pubkey_algo), keystr (pk->keyid));
@@ -2941,7 +2943,35 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	  tty_printf (_("usage: %s"), usagestr_from_pk (pk));
 	  tty_printf ("\n");
 
-	  if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+	  if (pk->seckey_info
+              && pk->seckey_info->is_protected
+              && pk->seckey_info->s2k.mode == 1002)
+	    {
+	      tty_printf ("                     ");
+	      tty_printf (_("card-no: "));
+	      if (pk->seckey_info->ivlen == 16
+		  && !memcmp (pk->seckey_info->iv,
+                              "\xD2\x76\x00\x01\x24\x01", 6))
+		{	
+                  /* This is an OpenPGP card. */
+		  for (i = 8; i < 14; i++)
+		    {
+		      if (i == 10)
+			tty_printf (" ");
+		      tty_printf ("%02X", pk->seckey_info->iv[i]);
+		    }
+		}
+	      else
+		{ 
+                  /* Unknown card: Print all. */
+		  for (i = 0; i < pk->seckey_info->ivlen; i++)
+		    tty_printf ("%02X", pk->seckey_info->iv[i]);
+		}
+	      tty_printf ("\n");
+	    }
+
+	  if (node->pkt->pkttype == PKT_PUBLIC_KEY
+              || node->pkt->pkttype == PKT_SECRET_KEY)
 	    {
 	      if (opt.trust_model != TM_ALWAYS)
 		{
@@ -2970,44 +3000,10 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		}
 	    }
 
-	  if (node->pkt->pkttype == PKT_PUBLIC_KEY && with_fpr)
+	  if ((node->pkt->pkttype == PKT_PUBLIC_KEY
+               || node->pkt->pkttype == PKT_SECRET_KEY) && with_fpr)
 	    {
 	      print_fingerprint (pk, 2);
-	      tty_printf ("\n");
-	    }
-	}
-      else if (node->pkt->pkttype == PKT_SECRET_KEY
-	       || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY))
-	{
-	  PKT_secret_key *sk = node->pkt->pkt.secret_key;
-	  tty_printf ("%s%c %4u%c/%s  ",
-		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
-		      (node->flag & NODFLG_SELKEY) ? '*' : ' ',
-		      nbits_from_sk (sk),
-		      pubkey_letter (sk->pubkey_algo), keystr_from_sk (sk));
-	  tty_printf (_("created: %s"), datestr_from_sk (sk));
-	  tty_printf ("  ");
-	  tty_printf (_("expires: %s"), expirestr_from_sk (sk));
-	  tty_printf ("\n");
-	  if (sk->is_protected && sk->protect.s2k.mode == 1002)
-	    {
-	      tty_printf ("                     ");
-	      tty_printf (_("card-no: "));
-	      if (sk->protect.ivlen == 16
-		  && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
-		{		/* This is an OpenPGP card. */
-		  for (i = 8; i < 14; i++)
-		    {
-		      if (i == 10)
-			tty_printf (" ");
-		      tty_printf ("%02X", sk->protect.iv[i]);
-		    }
-		}
-	      else
-		{		/* Something is wrong: Print all. */
-		  for (i = 0; i < sk->protect.ivlen; i++)
-		    tty_printf ("%02X", sk->protect.iv[i]);
-		}
 	      tty_printf ("\n");
 	    }
 	}
@@ -3035,14 +3031,17 @@ show_basic_key_info (KBNODE keyblock)
   /* The primary key */
   for (node = keyblock; node; node = node->next)
     {
-      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_SECRET_KEY)
 	{
 	  PKT_public_key *pk = node->pkt->pkt.public_key;
 
 	  /* Note, we use the same format string as in other show
 	     functions to make the translation job easier. */
 	  tty_printf ("%s  %4u%c/%s  ",
-		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" : "sub",
+		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
+		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
+		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" :"ssb",
 		      nbits_from_pk (pk),
 		      pubkey_letter (pk->pubkey_algo), keystr_from_pk (pk));
 	  tty_printf (_("created: %s"), datestr_from_pk (pk));
@@ -3050,21 +3049,6 @@ show_basic_key_info (KBNODE keyblock)
 	  tty_printf (_("expires: %s"), expirestr_from_pk (pk));
 	  tty_printf ("\n");
 	  print_fingerprint (pk, 3);
-	  tty_printf ("\n");
-	}
-      else if (node->pkt->pkttype == PKT_SECRET_KEY)
-	{
-	  PKT_secret_key *sk = node->pkt->pkt.secret_key;
-	  tty_printf ("%s  %4u%c/%s",
-		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
-		      nbits_from_sk (sk),
-		      pubkey_letter (sk->pubkey_algo), keystr_from_sk (sk));
-	  tty_printf (_("created: %s"), datestr_from_sk (sk));
-	  tty_printf ("  ");
-	  tty_printf (_("expires: %s"), expirestr_from_sk (sk));
-	  tty_printf ("\n");
-          log_debug ("FIXME\n");
-	  /* print_fingerprint (NULL, sk, 3); */
 	  tty_printf ("\n");
 	}
     }

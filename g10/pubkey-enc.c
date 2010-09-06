@@ -196,7 +196,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     goto leave;
 
   /* Decrypt. */
-  desc = gpg_format_keydesc (sk, 1);
+  desc = gpg_format_keydesc (sk, 0, 1);
   err = agent_pkdecrypt (NULL, keygrip, desc, s_data, &frame, &nframe);
   xfree (desc);
   gcry_sexp_release (s_data);

@@ -195,7 +195,7 @@ void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 void next_to_last_passphrase(void);
 
-char *gpg_format_keydesc (PKT_public_key *pk, int escaped);
+char *gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped);
 
 
 /*-- getkey.c --*/
@@ -241,8 +241,8 @@ void getkey_end (getkey_ctx_t ctx);
 int have_any_secret_key (ctrl_t ctrl, kbnode_t keyblock);
 
 
-int enum_secret_keys( void **context, PKT_secret_key *sk,
-		      int with_subkeys, int with_spm );
+//int enum_secret_keys( void **context, PKT_secret_key *sk,
+//		      int with_subkeys, int with_spm );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_native( u32 *keyid );
@@ -263,34 +263,23 @@ const char *keystr_with_sub (u32 *main_kid, u32 *sub_kid);
 const char *keystr_from_pk(PKT_public_key *pk);
 const char *keystr_from_pk_with_sub (PKT_public_key *main_pk,
                                      PKT_public_key *sub_pk);
-const char *keystr_from_sk(PKT_secret_key *sk);
-const char *keystr_from_sk_with_sub (PKT_secret_key *main_sk,
-                                     PKT_secret_key *sub_sk);
 const char *keystr_from_desc(KEYDB_SEARCH_DESC *desc);
-u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
 u32 keyid_from_fingerprint(const byte *fprint, size_t fprint_len, u32 *keyid);
 byte *namehash_from_uid(PKT_user_id *uid);
 unsigned nbits_from_pk( PKT_public_key *pk );
-unsigned nbits_from_sk( PKT_secret_key *sk );
 const char *datestr_from_pk( PKT_public_key *pk );
-const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
-const char *expirestr_from_sk( PKT_secret_key *sk );
 const char *expirestr_from_sig( PKT_signature *sig );
 const char *revokestr_from_pk( PKT_public_key *pk );
 const char *usagestr_from_pk( PKT_public_key *pk );
 const char *colon_strtime (u32 t);
 const char *colon_datestr_from_pk (PKT_public_key *pk);
-const char *colon_datestr_from_sk (PKT_secret_key *sk);
 const char *colon_datestr_from_sig (PKT_signature *sig);
 const char *colon_expirestr_from_sig (PKT_signature *sig);
-byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf, size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
-char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
-                                PKT_secret_key *sk);
 gpg_error_t keygrip_from_pk (PKT_public_key *pk, unsigned char *array);
 gpg_error_t hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip);
 

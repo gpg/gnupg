@@ -686,10 +686,10 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 
 
 /* Return an allocated utf-8 string describing the key PK.  IF ESCAPED
-   is true spaces and control characters are percent or plus
-   escaped. */
+   is true spaces and control characters are percent or plus escaped.
+   MODE 0 is for the common prompt, MODE 1 for the import prompt. */
 char *
-gpg_format_keydesc (PKT_public_key *pk, int escaped)
+gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
 {
   char *uid;
   size_t uidlen;
@@ -698,6 +698,7 @@ gpg_format_keydesc (PKT_public_key *pk, int escaped)
   char *orig_codeset;
   char *maink;
   char *desc;
+  const char *prompt;
       
   algo_name = gcry_pk_algo_name (pk->pubkey_algo);
   timestr = strtimestamp (pk->timestamp);
@@ -712,11 +713,26 @@ gpg_format_keydesc (PKT_public_key *pk, int escaped)
   else
     maink = NULL;
 
-  desc = xtryasprintf (_("Please enter the passphrase to unlock the"
-                         " secret key for the OpenPGP certificate:\n"
+  switch (mode)
+    {
+    case 0:
+      prompt = _("Please enter the passphrase to unlock the"
+                 " secret key for the OpenPGP certificate:");
+      break;
+    case 1:
+      prompt = _("Please enter the passphrase to import the"
+                 " secret key for the OpenPGP certificate:");
+      break;
+    default:
+      prompt = "?";
+      break;
+    }
+
+  desc = xtryasprintf (_("%s\n"
                          "\"%.*s\"\n"
                          "%u-bit %s key, ID %s,\n"
                          "created %s%s.\n"),
+                       prompt,
                        (int)uidlen, uid,
                        nbits_from_pk (pk), algo_name, 
                        keystr (pk->keyid), timestr,
