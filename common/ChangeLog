@@ -1,3 +1,12 @@
+2010-09-13  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (gnupg_bindir) [W32CE]: Change to bin/.
+	(gnupg_libexecdir) [W32]: Call gnupg_bindir.
+	(gnupg_libdir, gnupg_datadir, gnupg_localedir) [W32]: Simplify by
+	using xstrconcat.
+	(gnupg_module_name): Ditto.
+	(w32_rootdir): Strip a trailing "bin".
+
 2010-09-02  Werner Koch  <wk@g10code.com>
 
 	* util.h (GPG_ERR_NOT_INITIALIZED): Define if not defined.

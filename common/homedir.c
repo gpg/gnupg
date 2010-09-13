@@ -217,8 +217,15 @@ w32_rootdir (void)
       got_dir = 1;
       p = strrchr (dir, DIRSEP_C);
       if (p)
-        *p = 0;
-      else
+        {
+          *p = 0;
+          /* If we are installed below "bin" we strip that and use
+             the top directory instead.  */
+          p = strrchr (dir, DIRSEP_C);
+          if (p && !strcmp (p+1, "bin"))
+            *p = 0;
+        }
+      if (!p)
         {
           log_debug ("bad filename `%s' returned for this process\n", dir);
           *dir = 0; 
@@ -291,7 +298,13 @@ gnupg_sysconfdir (void)
 const char *
 gnupg_bindir (void)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined (HAVE_W32CE_SYSTEM)
+  static char *name;
+
+  if (!name)
+    name = xstrconcat (w32_rootdir (), DIRSEP_S "bin", NULL);
+  return name;
+#elif defined(HAVE_W32_SYSTEM)
   return w32_rootdir ();
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_BINDIR;
@@ -305,7 +318,7 @@ const char *
 gnupg_libexecdir (void)
 {
 #ifdef HAVE_W32_SYSTEM
-  return w32_rootdir ();
+  return gnupg_bindir ();
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBEXECDIR;
 #endif /*!HAVE_W32_SYSTEM*/
@@ -318,13 +331,7 @@ gnupg_libdir (void)
   static char *name;
 
   if (!name)
-    {
-      const char *s1, *s2;
-      s1 = w32_rootdir ();
-      s2 = DIRSEP_S "lib" DIRSEP_S "gnupg";
-      name = xmalloc (strlen (s1) + strlen (s2) + 1);
-      strcpy (stpcpy (name, s1), s2);
-    }
+    name = xstrconcat (w32_rootdir (), DIRSEP_S "lib" DIRSEP_S "gnupg", NULL);
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBDIR;
@@ -338,13 +345,7 @@ gnupg_datadir (void)
   static char *name;
 
   if (!name)
-    {
-      const char *s1, *s2;
-      s1 = w32_rootdir ();
-      s2 = DIRSEP_S "share" DIRSEP_S "gnupg";
-      name = xmalloc (strlen (s1) + strlen (s2) + 1);
-      strcpy (stpcpy (name, s1), s2);
-    }
+    name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "gnupg", NULL);
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_DATADIR;
@@ -359,13 +360,8 @@ gnupg_localedir (void)
   static char *name;
 
   if (!name)
-    {
-      const char *s1, *s2;
-      s1 = w32_rootdir ();
-      s2 = DIRSEP_S "share" DIRSEP_S "locale";
-      name = xmalloc (strlen (s1) + strlen (s2) + 1);
-      strcpy (stpcpy (name, s1), s2);
-    }
+    name = xstrconcat (w32_rootdir (), DIRSEP_S "share" DIRSEP_S "locale",
+                       NULL);
   return name;
 #else /*!HAVE_W32_SYSTEM*/
   return LOCALEDIR;
@@ -472,20 +468,13 @@ dirmngr_socket_name (void)
 const char *
 gnupg_module_name (int which)
 {
-  const char *s, *s2;
-
-#define X(a,b) do {                                          \
-        static char *name;                                   \
-        if (!name)                                           \
-          {                                                  \
-            s = gnupg_ ## a ();                              \
-            s2 = DIRSEP_S b EXEEXT_S;                        \
-            name = xmalloc (strlen (s) + strlen (s2) + 1);   \
-            strcpy (stpcpy (name, s), s2);                   \
-          }                                                  \
-        return name;                                         \
-      } while (0)                                                     
-
+#define X(a,b) do {                                                     \
+    static char *name;                                                  \
+    if (!name)                                                          \
+      name = xstrconcat (gnupg_ ## a (), DIRSEP_S b EXEEXT_S, NULL);    \
+    return name;                                                        \
+  } while (0)                                                     
+  
   switch (which)
     {
     case GNUPG_MODULE_NAME_AGENT:

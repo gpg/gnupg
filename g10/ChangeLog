@@ -1,7 +1,6 @@
 2010-09-06  Werner Koch  <wk@g10code.com>
 
-
-	* card-util.c (card_status): Remove stub creation fro GnuPG >= 2.
+	* card-util.c (card_status): Remove stub creation for GnuPG >= 2.
 	(card_store_subkey): Temporary disable this code.
 
 	* keyedit.c (show_key_with_all_names): Merge secret and public key
@@ -10,12 +9,10 @@
 	* delkey.c (do_delete_key): Ditto.
 	* export.c (subkey_in_list_p, exact_subkey_match_p): Ditto.
 	(new_subkey_list_item): Ditto.
-
 	* keyid.c (keystr_from_sk, keystr_from_sk_with_sub)
 	(keyid_from_sk, nbits_from_sk, datestr_from_sk)
 	(expirestr_from_sk, colon_datestr_from_sk, fingerprint_from_sk)
 	(serialno_and_fpr_from_sk, do_fingerprint_md_sk): Remove.
-
 	* import.c (print_import_ok): Remove arg SK.
 	(import_secret_one): Adjust for seckey_info format.
 	(transfer_secret_keys): Ditto.  Use gpg_format_keydesc.
@@ -24,11 +21,9 @@
 	(auto_create_card_key_stub): Remove - not anymore needed.
 	(update_sec_keyblock_with_cardinfo): Remove.
 	(import_secret_one): Use arg option instead of the global option.
-
 	* free-packet.c (copy_public_key): Adjust for seckey_info format.
 	(copy_public_parts_to_secret_key, copy_secret_key)
 	(cmp_secret_keys, cmp_public_secret_key): Remove.
-
 	* passphrase.c (gpg_format_keydesc): Add arg MODE and change all
 	callers.
 	* keyring.c (keyring_search): Remove special case for secret keys.

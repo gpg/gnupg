@@ -35,7 +35,7 @@
    we use one context to do all encryption and decryption.  */
 static pth_mutex_t encryption_lock;
 /* The encryption context.  This is the only place where the
-   encryption key for all cached entries is available.  It would nice
+   encryption key for all cached entries is available.  It would be nice
    to keep this (or just the key) in some hardware device, for example
    a TPM.  Libgcrypt could be extended to provide such a service.
    With the current scheme it is easy to retrieve the cached entries
