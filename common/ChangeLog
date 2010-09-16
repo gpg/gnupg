@@ -1,3 +1,8 @@
+2010-09-16  Werner Koch  <wk@g10code.com>
+
+	* util.h: Add GPG_ERR_MISSING_ISSUER_CERT.
+	* status.c (get_inv_recpsgnr_code): Ditto.
+
 2010-05-03  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (lock_agent_spawning, unlock_agent_spawning): New.

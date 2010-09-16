@@ -29,6 +29,9 @@
 #ifndef GPG_ERR_NOT_ENABLED
 #define GPG_ERR_NOT_ENABLED 179
 #endif
+#ifndef GPG_ERR_MISSING_ISSUER_CERT
+#define GPG_ERR_MISSING_ISSUER_CERT 185
+#endif
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
