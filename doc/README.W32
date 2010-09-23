@@ -81,7 +81,7 @@ How to build GnuPG from the source:
 
 Until recently all official GnuPG versions have been build using the
 Mingw32/CPD kit as available at
-ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cqpd-0.3.2.tar.gz .
+ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cpd-0.3.2.tar.gz .
 However, for maintenance reasons we switched to Debian's mingw32 cross
 compiler package and that is now the recommended way of building GnuPG
 for W32 platforms.  It might be possible to build it nativly on a W32

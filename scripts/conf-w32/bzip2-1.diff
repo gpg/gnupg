@@ -1,5 +1,5 @@
 To include support for BZIP2 compression in GunPG for W32, the patch
-below should be applied to a stock bzip2-1.0.2 source.  The Build as
+below should be applied to a stock bzip2-1.0.6 source.  The Build as
 usual using the mingw32 cross compiler package from Debian and install
 the library and header file on top of the cross compiler installation
 (/usr/i586-mingw32msvc/lib/).  Note that for ease of maintenance we
