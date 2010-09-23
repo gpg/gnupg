@@ -2,6 +2,9 @@
 
 	Release 1.4.11rc1.
 
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Remove
+	--enable-selinux-support option.
+
 2009-09-02  Werner Koch  <wk@g10code.com>
 
 	Release 1.4.10.

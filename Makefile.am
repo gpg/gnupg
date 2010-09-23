@@ -17,7 +17,10 @@
 ## Process this file with automake to produce Makefile.in
 
 ACLOCAL_AMFLAGS = -I m4
-DISTCHECK_CONFIGURE_FLAGS = --enable-selinux-support --enable-mailto
+# We can't use --enable-selinux-support because some of our regression
+# tests are importing secret keys and that is not allowed if
+# selinux-support is enabled.
+DISTCHECK_CONFIGURE_FLAGS = --enable-mailto
 AUTOMAKE_OPTIONS = dist-bzip2 filename-length-max=99
 
 if CROSS_COMPILING
