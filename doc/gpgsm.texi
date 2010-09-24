@@ -31,7 +31,7 @@
 @command{gpgsm} is a tool similar to @command{gpg} to provide digital
 encryption and signing services on X.509 certificates and the CMS
 protocol.  It is mainly used as a backend for S/MIME mail processing.
-@command{gpgsm} includes a full features certificate management and
+@command{gpgsm} includes a full featured certificate management and
 complies with all rules defined for the German Sphinx project.
 
 @manpause
@@ -286,7 +286,7 @@ smartcard is not yet supported.
 @node GPGSM Options
 @section Option Summary
 
-@command{GPGSM} comes features a bunch of options to control the exact behaviour
+@command{GPGSM} features a bunch of options to control the exact behaviour
 and to change the default configuration.
 
 @menu 

@@ -1,3 +1,9 @@
+2010-09-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main, reread_configuration): Always test whether
+	the default configuration file has been created in the meantime.
+	Fixes bug#1285.
+
 2010-08-11  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_askpin, agent_get_passphrase): Fix

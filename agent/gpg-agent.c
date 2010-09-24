@@ -724,6 +724,12 @@ main (int argc, char **argv )
               if( parse_debug )
                 log_info (_("NOTE: no default option file `%s'\n"),
                           configname );
+              /* Save the default conf file name so that
+                 reread_configuration is able to test whether the
+                 config file has been created in the meantime.  */
+              xfree (config_filename);
+              config_filename = configname;
+              configname = NULL;
 	    }
           else
             {
@@ -811,10 +817,15 @@ main (int argc, char **argv )
       fclose( configfp );
       configfp = NULL;
       /* Keep a copy of the name so that it can be read on SIGHUP. */
-      config_filename = configname;
+      if (config_filename != configname)
+        {
+          xfree (config_filename);
+          config_filename = configname;
+        }
       configname = NULL;
       goto next_pass;
     }
+    
   xfree (configname);
   configname = NULL;
   if (log_get_errorcount(0))
@@ -1332,8 +1343,8 @@ reread_configuration (void)
   fp = fopen (config_filename, "r");
   if (!fp)
     {
-      log_error (_("option file `%s': %s\n"),
-                 config_filename, strerror(errno) );
+      log_info (_("option file `%s': %s\n"),
+                config_filename, strerror(errno) );
       return;
     }
 
