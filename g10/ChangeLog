@@ -1,3 +1,8 @@
+2010-09-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Make the example for force-v3-sigs match
+	reality (it has defaulted to off since 2007-10-22).
+
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See
