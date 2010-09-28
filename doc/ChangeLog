@@ -1,3 +1,9 @@
+2010-09-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.texi (OpenPGP Options): Clarify that --force-v3-sigs
+	disables (not enables) v4 options.  --force-v3-sigs defaults to
+	no.
+
 2010-08-18  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (watchgnupg): Add examples section.
@@ -796,7 +802,7 @@
 
 	* Makefile.am, gpgsm.texi: New.
 	
- Copyright 2002, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+ Copyright 2002, 2004, 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
