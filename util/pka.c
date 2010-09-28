@@ -24,15 +24,22 @@
 #include <string.h>
 
 #ifdef USE_DNS_PKA
-#include <sys/types.h>
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <netinet/in.h>
-#include <arpa/nameser.h>
-#include <arpa/inet.h>
-#include <resolv.h>
-#endif
+# include <sys/types.h>
+# ifdef _WIN32
+#  include <windows.h>
+# else
+#  include <netinet/in.h>
+#  include <arpa/nameser.h>
+#  include <arpa/inet.h>
+#  include <resolv.h>
+   /* Not every installation has gotten around to supporting CERTs yet... */
+#  ifndef T_CERT
+#   define T_CERT 37
+#   ifdef __VMS
+#    include "cert_vms.h"
+#   endif /* def __VMS */
+#  endif
+# endif
 #endif /* USE_DNS_PKA */
 
 #include "memory.h"

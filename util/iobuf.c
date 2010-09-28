@@ -41,6 +41,11 @@
 #include "util.h"
 #include "dynload.h"
 #include "iobuf.h"
+ 
+#ifdef __VMS
+# include "vms.h"
+# define open open_vms
+#endif /* def __VMS */
 
 /* The size of the internal buffers. 
    NOTE: If you change this value you MUST also adjust the regression
@@ -1916,13 +1921,24 @@ iobuf_get_filelength (IOBUF a, int *overflow )
     if (overflow)
       *overflow = 0;
 
-    if( a->directfp )  {
+    if (a->directfp) 
+      {
 	FILE *fp = a->directfp;
 
-       if( !fstat(fileno(fp), &st) )
+#ifdef __VMS
+        /* 2009-02-19 SMS.
+         * On VMS, use a VMS-specific method to determine file size.
+         * For some non-UNIX-like file formats, the fstat() result
+         * will not agree with the C Standard I/O functions such as
+         * getc() and fread(), so these must be detected and handled
+         * specially. */
+        return vms_file_size (fileno( fp));
+#else /*!__VMS */
+        if( !fstat(fileno(fp), &st) )
            return st.st_size;
 	log_error("fstat() failed: %s\n", strerror(errno) );
 	return 0;
+#endif /*!__VMS */
     }
 
     /* Hmmm: file_filter may have already been removed */
@@ -1975,6 +1991,8 @@ iobuf_get_filelength (IOBUF a, int *overflow )
               }
             log_error ("GetFileSize for handle %p failed: %s\n",
                        fp, w32_strerror (0));
+#elif defined(__VMS)
+            return vms_file_size (my_fileno (fp));
 #else
             if( !fstat(my_fileno(fp), &st) )
 		return st.st_size;

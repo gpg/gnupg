@@ -27,6 +27,11 @@
 #include "util.h"
 #include "i18n.h"
 
+#ifdef __VMS
+# include <unistd.h>
+# include "ttyio.h"
+#endif /* def __VMS */
+
 static char pidstring[15];
 static char *pgm_name;
 static int errorcount;

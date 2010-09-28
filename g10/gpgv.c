@@ -418,6 +418,10 @@ void tty_kill_prompt(void) {}
 int tty_get_answer_is_yes( const char *prompt ) {return 0;}
 int tty_no_terminal(int onoff) {return 0;}
 void tty_cleanup_after_signal (void) {}
+#ifdef __VMS
+FILE *ttyfp_is (void) { return stderr; }
+void init_ttyfp (void) { }
+#endif /*__VMS*/
 #ifdef HAVE_LIBREADLINE
 void tty_enable_completion(rl_completion_func_t *completer) {}
 void tty_disable_completion(void) {}

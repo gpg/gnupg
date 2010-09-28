@@ -1012,7 +1012,9 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
 		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
       strcpy(command,libexecdir);
-      strcat(command,DIRSEP_S);
+#ifndef __VMS
+      strcat (command, DIRSEP_S);
+#endif
     }
 
   end=command+strlen(command);

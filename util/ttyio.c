@@ -50,6 +50,10 @@
 #include <readline/history.h>
 #endif
 
+#ifdef __VMS
+# include "vms.h"
+#endif /* __VMS */
+
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -130,7 +134,23 @@ tty_cleanup_after_signal (void)
 #endif
 }
 
-static void
+#ifdef __VMS
+/* 2006-08-10 SMS.
+   Interface function needed for VMS (unless someone
+   wishes to make "ttyfp" global).  See g10_log_print_prefix() in
+   util/logger.c.  */
+FILE *
+ttyfp_is (void)
+{
+  return ttyfp;
+}
+#endif /* def __VMS */
+
+
+#ifndef __VMS
+static
+#endif
+       void
 init_ttyfp(void)
 {
     if( initialized )
@@ -507,6 +527,11 @@ do_get( const char *prompt, int hidden )
 	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
 	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
 #endif
+# ifdef __VMS
+        /* Disable terminal echo. */
+        if (vms_set_term_echo (0))
+          log_fatal ("error disabling terminal echo: %s\n", strerror (errno));
+# endif /* __VMS */
     }
 
     tty_printf( "%s", prompt );
@@ -539,11 +564,16 @@ do_get( const char *prompt, int hidden )
 
 
     if( hidden ) {
-#ifdef HAVE_TCGETATTR
+# ifdef HAVE_TCGETATTR
 	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
 	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
 	restore_termios = 0;
-#endif
+# endif
+# ifdef __VMS
+        /* Restore (most likely enable) terminal echo. */
+        if (vms_set_term_echo( -1))
+          log_fatal ("error enabling terminal echo: %s\n", strerror (errno));
+# endif /* __VMS */
     }
 #endif /* end unix version */
     buf[i] = 0;

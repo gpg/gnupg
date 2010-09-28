@@ -54,6 +54,10 @@
 #include "dynload.h"
 #endif /*_WIN32*/
 
+#ifdef __VMS
+# include <time.h>
+#endif /* def __VMS */
+
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
@@ -106,7 +110,7 @@ trap_unaligned(void)
 int
 disable_core_dumps()
 {
-#ifdef HAVE_DOSISH_SYSTEM
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__VMS)
     return 0;
 #else
 #ifdef HAVE_SETRLIMIT
@@ -1333,7 +1337,11 @@ get_libexecdir (void)
   return GNUPG_LIBEXECDIR;
 }
 
-/* Similar to access(2), but uses PATH to find the file. */
+/* Similar to access(2), but uses PATH to find the file.
+
+   (2006-07-08 SMS: See "vmslib/vms.c" for a VMS-specific replacement
+   function) */
+#ifndef __VMS
 int
 path_access(const char *file,int mode)
 {
@@ -1376,3 +1384,5 @@ path_access(const char *file,int mode)
 
   return ret;
 }
+#endif /*ndef __VMS*/
+

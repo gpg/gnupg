@@ -39,6 +39,13 @@
 #include "status.h"
 #include "i18n.h"
 
+#ifdef __VMS
+# include "vms.h"  /* Not part of the standard GnuPG tarball.  See
+                      http://antinode.info/dec/sw/gnupg.html */
+# define fopen fopen_vms
+#endif /* def __VMS */
+
+
 
 /****************
  * Handle a plaintext packet.  If MFX is not NULL, update the MDs

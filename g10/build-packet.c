@@ -491,9 +491,14 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     wipememory(buf,1000); /* burn the buffer */
     if( (ctb&0x40) && !pt->len )
       iobuf_set_partial_block_mode(out, 0 ); /* turn off partial */
+
+    /* On VMS, byte counts will not match for some file record
+     * formats, so it's best to disable the following error.  */
+#ifndef __VMS
     if( pt->len && n != pt->len )
       log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
 		(ulong)n, (ulong)pt->len );
+#endif
 
     return rc;
 }

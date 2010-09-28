@@ -1,3 +1,21 @@
+2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
+
+	Changes to help the VMS port. See
+    	http://antinode.info/dec/sw/gnupg.html .
+
+	* cert.c [__VMS]: Include cert_vms.h.
+	* ttyio.c [__VMS]: Include vms.h.
+	(init_ttyfp) [__VMS]: Make global.
+	(ttyfp_is) [__VMS]: New.
+	(do_get) [__VMS]: Disable terminal echo.
+	* srv.c [__VMS]: Include cert_vms.h.
+	* secmem.c (lock_pool) [__VMS]: Use log_warning.
+	* pka.c [USE_DNS_PKA]: Define T_CERT.
+	* logger.c [__VMS]: Include unistd.h and ttyio.h.
+	(g10_log_print_prefix) [__VMS]: Init logfp.
+	* iobuf.c [__VMS]: Include vms.h.
+	(iobuf_get_filelength) [__VMS]: Use VMS specific method.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* ttyio.c (tty_printf) [_WIN32]: s/xtryasprintf/xtryvasprint/

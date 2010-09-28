@@ -46,7 +46,7 @@ if [ "$1" = "--build-number" -a -n "$2" ]; then
    shift 
    shift
 else
-   build_number=$(date -u '+%j%k' | sed 's/^0*\(.*\)/\1/')
+   build_number=$(date -u '+%j%H' | sed 's/^0*\(.*\)/\1/')
 fi
 
 

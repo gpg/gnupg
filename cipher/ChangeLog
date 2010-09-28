@@ -1,3 +1,15 @@
+2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
+
+	Changes to help the VMS port. See
+    	http://antinode.info/dec/sw/gnupg.html .
+
+	* random.c [__VMS]: Include rmsdef.h and vms.h.
+	(LOCK_SEED_FILE) [__VMS]: Set to 0.
+	(getfnc_gather_random) [USE_RNDVMS]: Call rndvms_gather_random.
+	(read_seed_file) [__VMS]: Allow reading by others.
+	(update_random_seed_file) [__VMS]: Use VMS specific open call.
+	* rand-internal.h (rndvms_gather_random): New.
+
 2008-04-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* camellia-glue.c (selftest, camellia_get_info), cipher.c

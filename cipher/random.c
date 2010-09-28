@@ -63,13 +63,23 @@
 #include "rand-internal.h"
 #include "algorithms.h"
 
+#ifdef __VMS
+# include <rmsdef.h>
+# include "vms.h"
+#endif /* def __VMS */
+
 #ifndef RAND_MAX   /* for SunOS */
 #define RAND_MAX 32767
 #endif
 
+/* 2008-03-31  SMS.
+ * VMS C RTL before V8.3 lacks byte-range file locking, but by default,
+ * a file opened for write access is not shared, so mutual exclusion can
+ * most generally be handled at the open().  */
 
 /* Check whether we can lock the seed file read write. */
-#if defined(HAVE_FCNTL) && defined(HAVE_FTRUNCATE) && !defined(HAVE_W32_SYSTEM)
+#if defined(HAVE_FCNTL) && defined(HAVE_FTRUNCATE)      \
+  && !defined(HAVE_W32_SYSTEM) && !defined(__VMS)
 #define LOCK_SEED_FILE 1
 #else
 #define LOCK_SEED_FILE 0
@@ -176,6 +186,9 @@ getfnc_gather_random (void))(void (*)(const void*, size_t, int), int,
 # endif
 # ifdef USE_RNDUNIX
   return rndunix_gather_random;
+# endif
+# ifdef USE_RNDVMS
+  return rndvms_gather_random;
 # endif
 # ifdef USE_RNDEGD
   return rndegd_gather_random;
@@ -402,7 +415,7 @@ lock_seed_file (int fd, const char *fname, int for_write)
           return -1;
         }
 
-      if (backoff > 2) /* Show the first message after ~2.25 seconds. */
+      if (backoff > 2) /* Show the first message after ~3.75 seconds. */
         log_info( _("waiting for lock on `%s'...\n"), fname);
       
       tv.tv_sec = backoff;
@@ -434,6 +447,9 @@ read_seed_file(void)
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
     fd = open( seed_file_name, O_RDONLY | O_BINARY );
+#elif defined( __VMS)
+    /* We're only reading, so allow others to do anything. */
+    fd = open( seed_file_name, O_RDONLY, 0777, "shr=get,put,upd" );
 #else
     fd = open( seed_file_name, O_RDONLY );
 #endif
@@ -535,11 +551,40 @@ update_random_seed_file()
 # if LOCK_SEED_FILE
     fd = open( seed_file_name, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR );
 # else
+#  ifdef __VMS
+    /* Open the seed file for exclusive write access, but allow other
+     * readers.  Loop until success.  Complain after a few failures.  */
+    {
+        int backoff = 0;
+
+        while ((fd = open( seed_file_name,
+                           O_WRONLY|O_CREAT,
+                           S_IRUSR|S_IWUSR,
+                           "shr=get")) == -1 )
+        {
+          if ((errno != EVMSERR) || (vaxc$errno != RMS$_FLK))
+            {
+              /* Some unexpected open failure. */
+              log_info (_("can't lock `%s': %s\n"),
+                        seed_file_name, strerror (errno));
+              return;
+            }
+          
+          if (backoff > 2) /* Show the first message after ~3.75 seconds. */
+            log_info( _("waiting for lock on `%s'...\n"), seed_file_name);
+          
+          wait_vms( backoff+ 0.25);
+          if (backoff < 10)
+            backoff++ ;
+        }
+    }
+#  else /* !def __VMS */
     fd = open( seed_file_name, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR );
+#  endif /* !def __VMS */
 # endif
 #endif
     if( fd == -1 ) {
-	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno) );
+	log_info(_("can't create `%s': %s\n"), seed_file_name, strerror(errno));
 	return;
     }
 

@@ -1,3 +1,29 @@
+2010-09-28  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c (ttyfp_is, init_ttyfp) [__VMS]: Add subs.
+
+2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
+
+	Changes to help the VMS port. See
+	http://antinode.info/dec/sw/gnupg.html .
+
+	* build-packet.c (do_plaintext) [__VMS]: Disable error message.
+	* keyserver.c (keyserver_spawn) [__VMS]: Do not add the DIRSEP_S.
+	* misc.c [__VMS]: Include <time.h>.
+	* signal.c [__VMS]: Include vms.h.
+	(got_fatal_signal) [__VMS]: Restore terminal echo.
+	* plaintext.c [__VMS]: Include vms.h.
+	* openfile.c (make_outfile_name): __VMS] Do not use.
+	(open_outfile) [__VMS]: Use vms_append_ext.
+	(try_make_homedir) [__VMS]: chmod directory.
+	* misc.c (disable_core_dumps) [__VMS]: Disable.
+	(path_access) [__VMS]: Do not use.
+
+2010-09-28  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c [!ENABLE_AGENT_SUPPORT]: Do not include
+	sys/socket.h to help the VMS port.
+
 2010-08-31  Werner Koch  <wk@g10code.com>
 
 	* mainproc.c (print_pkenc_list): Print a STATUS_ERROR.  Fixes

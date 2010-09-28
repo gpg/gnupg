@@ -98,7 +98,11 @@ overwrite_filep( const char *fname )
 /****************
  * Strip know extensions from iname and return a newly allocated
  * filename.  Return NULL if we can't do that.
+ *
+ * (See vmslib/vms.c for the VMS-specific replacement function,
+ * vms_make_outfile_name())
  */
+#ifndef __VMS
 char *
 make_outfile_name( const char *iname )
 {
@@ -125,6 +129,7 @@ make_outfile_name( const char *iname )
     log_info(_("%s: unknown suffix\n"), iname );
     return NULL;
 }
+#endif /* ndef __VMS */
 
 
 /****************
