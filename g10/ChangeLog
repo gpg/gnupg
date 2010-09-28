@@ -1,12 +1,9 @@
-2010-09-28  Werner Koch  <wk@g10code.com>
-
-	* gpgv.c (ttyfp_is, init_ttyfp) [__VMS]: Add subs.
-
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See
 	http://antinode.info/dec/sw/gnupg.html .
 
+	* gpgv.c (ttyfp_is, init_ttyfp) [__VMS]: Add stubs.
 	* build-packet.c (do_plaintext) [__VMS]: Disable error message.
 	* keyserver.c (keyserver_spawn) [__VMS]: Do not add the DIRSEP_S.
 	* misc.c [__VMS]: Include <time.h>.

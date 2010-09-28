@@ -470,7 +470,7 @@ is intended for making fat binary builds on OS X. */
 # define GNUPG_HOMEDIR     "c:\\\\gnupg"
 #else
 # ifdef __VMS
-#  define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
+#  define GNUPG_HOMEDIR "/SYS$LOGIN/gnupg" 
 # else
 #  define GNUPG_HOMEDIR "~/.gnupg" 
 # endif

@@ -189,7 +189,11 @@ lock_pool( void *p, size_t n )
             && errno != ENOMEM
 #endif
 	  )
-	    log_error("can't lock memory: %s\n", strerror(err));
+#ifdef __VMS
+	    log_warning ("can't lock memory: %s\n", strerror(err));
+#else
+	    log_error ("can't lock memory: %s\n", strerror(err));
+#endif
 	show_warning = 1;
     }
 

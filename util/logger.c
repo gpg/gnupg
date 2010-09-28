@@ -123,6 +123,28 @@ log_set_strict(int val)
 void
 g10_log_print_prefix(const char *text)
 {
+#ifdef __VMS
+    /* 2006-08-10 SMS.
+       VMS terminal carriage control differs from that on UNIX, and one
+       result is overwritten messages when terminal output is done
+       through multiple file pointers (like logfp and ttyfp), even when
+       they both are connected to the same terminal.  The accomodation
+       attempted here is to initialize ttyfp before logfp, and if stderr
+       and ttyfp are both terminals (presumably the same one), to set an
+       unset logfp to ttyfp instead of to stderr.  */
+    if (!logfp )
+      {
+        FILE *ttyfp_local;
+        
+        init_ttyfp();
+        ttyfp_local = ttyfp_is ();
+        if (isatty (fileno (stderr)) && isatty (fileno (ttyfp_local)))
+          {
+            logfp = ttyfp_local;
+          }
+      }
+#endif /* def __VMS */
+
     if( !logfp )
 	logfp = stderr;
     if( pgm_name )

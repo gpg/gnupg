@@ -25,9 +25,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-#if !defined(HAVE_DOSISH_SYSTEM) && !defined(__riscos__)
-#include <sys/socket.h>
-#include <sys/un.h>
+#ifdef ENABLE_AGENT_SUPPORT
+# if !defined(HAVE_DOSISH_SYSTEM) && !defined(__riscos__)
+#  include <sys/socket.h>
+#  include <sys/un.h>
+# endif
 #endif
 #if defined (_WIN32)
 #include <windows.h>

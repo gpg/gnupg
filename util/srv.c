@@ -36,7 +36,10 @@
 /* Not every installation has gotten around to supporting SRVs
    yet... */
 #ifndef T_SRV
-#define T_SRV 33
+# define T_SRV 33
+# ifdef __VMS
+#  include "cert_vms.h"
+# endif /* def __VMS */
 #endif
 
 static int

@@ -38,6 +38,10 @@
 #include "main.h"
 #include "ttyio.h"
 
+#ifdef __VMS
+# include "vms.h"
+#endif /* __VMS */
+
 #ifdef HAVE_DOSISH_SYSTEM
 void init_signals(void) {}
 void pause_on_sigusr(int which) {}
@@ -109,6 +113,12 @@ got_fatal_signal( int sig )
     }
 #endif
     write(2, " caught ... exiting\n", 20 );
+
+#ifdef __VMS
+    /* 2006-08-10 SMS.
+       Restore terminal echo, if needed, before exiting.  */
+    vms_set_term_echo (-1);
+#endif /* def __VMS */
 
     /* Reset action to default action and raise signal again. */
     init_one_signal (sig, SIG_DFL, 0);
