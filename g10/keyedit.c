@@ -2809,7 +2809,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      {
 		char *user=get_user_id_string_native(pk->revoked.keyid);
 		const char *algo = gcry_pk_algo_name (pk->revoked.algo);
-		tty_printf(_("This key was revoked on %s by %s key %s\n"),
+		tty_printf (_("The following key was revoked on"
+                              " %s by %s key %s\n"),
 			   revokestr_from_pk(pk),algo?algo:"?",user);
 		xfree(user);
 	      }
