@@ -5,6 +5,8 @@ Noteworthy changes in version 2.0.17 (unreleased)
 
  * gpg-agent now tests for a newly created gpg-agent.conf after a HUP.
 
+ * Allow more hash algorithms with the OpenPGP v2 card.
+
 
 Noteworthy changes in version 2.0.16 (2010-07-19)
 -------------------------------------------------

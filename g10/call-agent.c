@@ -892,6 +892,25 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
   return 0;
 }
   
+
+/* Helper returning a command option to describe the used hash
+   algorithm.  See scd/command.c:cmd_pksign.  */
+static const char *
+hash_algo_option (int algo)
+{
+  switch (algo)
+    {
+    case GCRY_MD_RMD160: return "--hash=rmd160";
+    case GCRY_MD_SHA1  : return "--hash=sha1";
+    case GCRY_MD_SHA224: return "--hash=sha224";
+    case GCRY_MD_SHA256: return "--hash=sha256";
+    case GCRY_MD_SHA384: return "--hash=sha384";
+    case GCRY_MD_SHA512: return "--hash=sha512";
+    case GCRY_MD_MD5   : return "--hash=md5";
+    default:             return "";
+    }
+}
+
 /* Send a sign command to the scdaemon via gpg-agent's pass thru
    mechanism. */
 int
@@ -938,8 +957,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   else
 #endif
     snprintf (line, DIM(line)-1, "SCD PKSIGN %s%s",
-              hashalgo == GCRY_MD_RMD160? "--hash=rmd160 " : "",
-              serialno);
+              hash_algo_option (hashalgo), serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
                         default_inq_cb, NULL, NULL, NULL);
