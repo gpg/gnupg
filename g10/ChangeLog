@@ -1,3 +1,8 @@
+2010-09-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Make the example for force-v3-sigs match
+	reality (it has defaulted to off since 2007-10-25).
+
 2010-09-06  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (card_status): Remove stub creation for GnuPG >= 2.
