@@ -1098,7 +1098,7 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
     {
       for (i=0; i<idx; i++)
         {
-          xfree (array[i]);
+          gcry_mpi_release (array[i]);
           array[i] = NULL;
         }
       gcry_sexp_release (list);
