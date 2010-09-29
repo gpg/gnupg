@@ -2,7 +2,8 @@
 # the users home directory.
 # $Id$
 # Options for GnuPG
-# Copyright 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+#           2010 Free Software Foundation, Inc.
 # 
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -39,12 +40,12 @@
 #default-recipient some-user-id
 #default-recipient-self
 
-# By default GnuPG creates version 3 signatures for data files.  This
-# is not strictly OpenPGP compliant but PGP 6 and most versions of PGP
-# 7 require them.  To disable this behavior, you may use this option
-# or --openpgp.
+# By default GnuPG creates version 4 signatures for data files as
+# specified by OpenPGP.  Some earlier (PGP 6, PGP 7) versions of PGP
+# require the older version 3 signatures.  Setting this option forces
+# GnuPG to create version 3 signatures.
 
-#no-force-v3-sigs
+#force-v3-sigs
 
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating

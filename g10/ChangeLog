@@ -1,7 +1,16 @@
+2010-09-29  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_scd_pksign): Add missing space.
+
+2010-09-28  David Shaw  <dshaw@jabberwocky.com>  (wk)
+
+	* options.skel: Make the example for force-v3-sigs match
+	reality (it has defaulted to off since 2007-10-25).
+
 2010-09-28  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (show_key_with_all_names): Make revocation hint
-	cleared.  Fixes bug#1234.
+	more clear.  Fixes bug#1234.
 
 	* call-agent.c (hash_algo_option): New.
 	(agent_scd_pksign): Use it.
