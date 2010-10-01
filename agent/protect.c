@@ -191,14 +191,16 @@ get_standard_s2k_count (void)
 
 
 
-/* Calculate the MIC for a private key S-Exp. SHA1HASH should point to
-   a 20 byte buffer.  This function is suitable for any algorithms. */
+/* Calculate the MIC for a private key or shared secret S-expression.
+   SHA1HASH should point to a 20 byte buffer.  This function is
+   suitable for all algorithms. */
 static int 
 calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 {
   const unsigned char *hash_begin, *hash_end;
   const unsigned char *s;
   size_t n;
+  int is_shared_secret;
 
   s = plainkey;
   if (*s != '(')
@@ -207,16 +209,23 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP); 
-  if (!smatch (&s, n, "private-key"))
+  if (smatch (&s, n, "private-key"))
+    is_shared_secret = 0;
+  else if (smatch (&s, n, "shared-secret"))
+    is_shared_secret = 1;
+  else
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   hash_begin = s;
-  s++;
-  n = snext (&s);
-  if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP); 
-  s += n; /* skip over the algorithm name */
+  if (!is_shared_secret)
+    {
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP); 
+      s += n; /* Skip the algorithm name.  */
+    }
 
   while (*s == '(')
     {
@@ -955,7 +964,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
       xfree (final);
       return rc;
     }
-  /* Now remove tha part which is included in the MIC but should not
+  /* Now remove the part which is included in the MIC but should not
      go into the final thing.  */
   if (cutlen)
     {

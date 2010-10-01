@@ -33,6 +33,12 @@
 #ifndef GPG_ERR_NOT_INITIALIZED
 #define GPG_ERR_NOT_INITIALIZED 184
 #endif
+#ifndef GPG_ERR_MISSING_ISSUER_CERT
+#define GPG_ERR_MISSING_ISSUER_CERT 185
+#endif
+#ifndef GPG_ERR_FULLY_CANCELED
+#define GPG_ERR_FULLY_CANCELED 198
+#endif
 
 
 /* Hash function used with libksba. */

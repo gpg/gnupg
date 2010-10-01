@@ -300,7 +300,7 @@ release_context (compress_filter_context_t *ctx)
  * Handle a compressed packet
  */
 int
-handle_compressed( void *procctx, PKT_compressed *cd,
+handle_compressed (ctrl_t ctrl, void *procctx, PKT_compressed *cd,
 		   int (*callback)(IOBUF, void *), void *passthru )
 {
     compress_filter_context_t *cfx;
@@ -315,7 +315,7 @@ handle_compressed( void *procctx, PKT_compressed *cd,
     if( callback )
 	rc = callback(cd->buf, passthru );
     else
-	rc = proc_packets(procctx, cd->buf);
+      rc = proc_packets (ctrl,procctx, cd->buf);
     cd->buf = NULL;
     return rc;
 }

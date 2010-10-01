@@ -82,7 +82,7 @@ sskip (unsigned char const **buf, int *depth)
 
 /* Check whether the the string at the address BUF points to matches
    the token.  Return true on match and update BUF to point behind the
-   token.  Return false and dont update tha buffer if it does not
+   token.  Return false and do not update the buffer if it does not
    match. */
 static inline int
 smatch (unsigned char const **buf, size_t buflen, const char *token)

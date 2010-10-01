@@ -289,6 +289,13 @@ test_agent_get_shadow_info (void)
 }
 
 
+static void
+test_agent_protect_shared_secret (void)
+{
+
+}
+
+
 
 
 int
@@ -305,6 +312,7 @@ main (int argc, char **argv)
   test_make_shadow_info ();
   test_agent_shadow_key ();
   test_agent_get_shadow_info ();
+  test_agent_protect_shared_secret ();
 
   return 0;
 }

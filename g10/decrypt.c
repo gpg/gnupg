@@ -43,7 +43,7 @@
  * rejects files which don't begin with an encrypted message.
  */
 int
-decrypt_message (const char *filename)
+decrypt_message (ctrl_t ctrl, const char *filename)
 {
   IOBUF fp;
   armor_filter_context_t *afx = NULL;
@@ -86,7 +86,7 @@ decrypt_message (const char *filename)
       no_out = 1;
       opt.outfile = "-";
     }
-  rc = proc_encryption_packets ( NULL, fp );
+  rc = proc_encryption_packets (ctrl, NULL, fp );
   if (no_out)
     opt.outfile = NULL;
 
@@ -100,7 +100,7 @@ decrypt_message (const char *filename)
 /* Same as decrypt_message but takes a file descriptor for input and
    output.  */
 gpg_error_t
-decrypt_message_fd (int input_fd, int output_fd)
+decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
 {
   gpg_error_t err;
   IOBUF fp;
@@ -158,7 +158,7 @@ decrypt_message_fd (int input_fd, int output_fd)
 	}
     }
 
-  err = proc_encryption_packets ( NULL, fp );
+  err = proc_encryption_packets (ctrl, NULL, fp );
 
   iobuf_close (fp);
   fclose (opt.outfp);
@@ -170,7 +170,7 @@ decrypt_message_fd (int input_fd, int output_fd)
 
 
 void
-decrypt_messages (int nfiles, char *files[])
+decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
 {
   IOBUF fp;
   armor_filter_context_t *afx = NULL;  
@@ -251,7 +251,7 @@ decrypt_messages (int nfiles, char *files[])
               push_armor_filter ( afx, fp );
             }
         }
-      rc = proc_packets(NULL, fp);
+      rc = proc_packets (ctrl,NULL, fp);
       iobuf_close(fp);
       if (rc)
         log_error("%s: decryption failed: %s\n", print_fname_stdin(filename),

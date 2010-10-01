@@ -1,3 +1,7 @@
+2010-09-16  Werner Koch  <wk@g10code.com>
+
+	* validate.c (validate_cert_chain): Use GPG_ERR_MISSING_ISSUER_CERT.
+
 2010-08-13  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dirmngr_SOURCES): Add w32-ldap-help.h.

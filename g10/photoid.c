@@ -29,11 +29,11 @@
 #endif
 
 #include "gpg.h"
+#include "util.h"
 #include "packet.h"
 #include "status.h"
 #include "exec.h"
 #include "keydb.h"
-#include "util.h"
 #include "i18n.h"
 #include "iobuf.h"
 #include "options.h"

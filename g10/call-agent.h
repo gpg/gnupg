@@ -144,6 +144,11 @@ gpg_error_t agent_get_s2k_count (unsigned long *r_count);
    0 if the secret key is available. */
 gpg_error_t agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk);
 
+/* Ask the agent whether a secret key is availabale for any of the
+   keys (primary or sub) in KEYBLOCK.  Returns 0 if available.  */
+gpg_error_t agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock);
+
+
 /* Return infos about the secret key with HEXKEYGRIP.  */
 gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
                                char **r_serialno);
@@ -173,6 +178,11 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
                               char **cache_nonce_addr,
                               const void *key, size_t keylen);
+
+/* Receive a key from the agent.  */
+gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
+                              const char *desc, char **cache_nonce_addr,
+                              unsigned char **r_result, size_t *r_resultlen);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

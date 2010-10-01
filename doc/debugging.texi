@@ -194,7 +194,7 @@ or other purposes and don't have a corresponding certificate.
 @item A root certificate does not verify
 
 A common problem is that the root certificate misses the required
-basicConstrains attribute and thus @command{gpgsm} rejects this
+basicConstraints attribute and thus @command{gpgsm} rejects this
 certificate.  An error message indicating ``no value'' is a sign for
 such a certificate.  You may use the @code{relax} flag in
 @file{trustlist.txt} to accept the certificate anyway.  Note that the

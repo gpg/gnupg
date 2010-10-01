@@ -242,9 +242,12 @@ keystr_with_sub (u32 *main_kid, u32 *sub_kid)
   char *p;
 
   mem2str (buffer, keystr (main_kid), KEYID_STR_SIZE);
-  p = buffer + strlen (buffer);
-  *p++ = '/';
-  mem2str (p, keystr (sub_kid), KEYID_STR_SIZE);
+  if (sub_kid)
+    {
+      p = buffer + strlen (buffer);
+      *p++ = '/';
+      mem2str (p, keystr (sub_kid), KEYID_STR_SIZE);
+    }
   return buffer;
 }
 
@@ -262,9 +265,10 @@ const char *
 keystr_from_pk_with_sub (PKT_public_key *main_pk, PKT_public_key *sub_pk)
 {
   keyid_from_pk (main_pk, NULL);
-  keyid_from_pk (sub_pk, NULL);
+  if (sub_pk)
+    keyid_from_pk (sub_pk, NULL);
 
-  return keystr_with_sub (main_pk->keyid, sub_pk->keyid);
+  return keystr_with_sub (main_pk->keyid, sub_pk? sub_pk->keyid:NULL);
 }
 
 

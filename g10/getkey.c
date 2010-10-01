@@ -676,7 +676,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
    to import the key via the online mechanisms defined by
    --auto-key-locate.  */
 int
-get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
+get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 		   const char *name, KBNODE * ret_keyblock,
 		   KEYDB_HANDLE * ret_kdbhd, int include_unusable, int no_akl)
 {
@@ -770,21 +770,21 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
 	    case AKL_CERT:
 	      mechanism = "DNS CERT";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_cert (name, &fpr, &fpr_len);
+	      rc = keyserver_import_cert (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_PKA:
 	      mechanism = "PKA";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_pka (name, &fpr, &fpr_len);
+	      rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_LDAP:
 	      mechanism = "LDAP";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_ldap (name, &fpr, &fpr_len);
+	      rc = keyserver_import_ldap (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
@@ -797,9 +797,8 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
 		{
 		  mechanism = opt.keyserver->uri;
 		  glo_ctrl.in_auto_key_retrieve++;
-		  rc =
-		    keyserver_import_name (name, &fpr, &fpr_len,
-					   opt.keyserver);
+		  rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
+                                              opt.keyserver);
 		  glo_ctrl.in_auto_key_retrieve--;
 		}
 	      else
@@ -816,7 +815,8 @@ get_pubkey_byname (GETKEY_CTX * retctx, PKT_public_key * pk,
 		mechanism = akl->spec->uri;
 		keyserver = keyserver_match (akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
-		rc = keyserver_import_name (name, &fpr, &fpr_len, keyserver);
+		rc = keyserver_import_name (ctrl,
+                                            name, &fpr, &fpr_len, keyserver);
 		glo_ctrl.in_auto_key_retrieve--;
 	      }
 	      break;

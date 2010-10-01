@@ -623,7 +623,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             log_error (_("issuer certificate not found: %s\n"),
                          gpg_strerror (err));
           /* Use a better understandable error code.  */
-          err = gpg_error (GPG_ERR_MISSING_CERT);
+          err = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
           goto leave;
         }
 

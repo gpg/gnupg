@@ -50,7 +50,7 @@
  */
 
 int
-verify_signatures( int nfiles, char **files )
+verify_signatures (ctrl_t ctrl, int nfiles, char **files )
 {
     IOBUF fp;
     armor_filter_context_t *afx = NULL;
@@ -110,7 +110,7 @@ verify_signatures( int nfiles, char **files )
     sl = NULL;
     for(i=nfiles-1 ; i > 0 ; i-- )
 	add_to_strlist( &sl, files[i] );
-    rc = proc_signature_packets( NULL, fp, sl, sigfile );
+    rc = proc_signature_packets (ctrl, NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
     if( (afx && afx->no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
@@ -139,7 +139,7 @@ print_file_status( int status, const char *name, int what )
 
 
 static int
-verify_one_file( const char *name )
+verify_one_file (ctrl_t ctrl, const char *name )
 {
     IOBUF fp;
     armor_filter_context_t *afx = NULL;
@@ -172,7 +172,7 @@ verify_one_file( const char *name )
 	}
     }
 
-    rc = proc_signature_packets( NULL, fp, NULL, name );
+    rc = proc_signature_packets (ctrl, NULL, fp, NULL, name );
     iobuf_close(fp);
     write_status( STATUS_FILE_DONE );
 
@@ -190,7 +190,7 @@ verify_one_file( const char *name )
  * Note:  This function can not handle detached signatures.
  */
 int
-verify_files( int nfiles, char **files )
+verify_files (ctrl_t ctrl, int nfiles, char **files )
 {
     int i;
 
@@ -208,13 +208,13 @@ verify_files( int nfiles, char **files )
 	     * also no script languages available.  We don't strip any
 	     * spaces, so that we can process nearly all filenames */
 	    line[strlen(line)-1] = 0;
-	    verify_one_file( line );
+	    verify_one_file (ctrl, line );
 	}
 
     }
     else {  /* take filenames from the array */
 	for(i=0; i < nfiles; i++ )
-	    verify_one_file( files[i] );
+            verify_one_file (ctrl, files[i] );
     }
     return 0;
 }
@@ -262,7 +262,7 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp)
       push_armor_filter (afx, fp);
     }
 
-  rc = proc_signature_packets_by_fd (NULL, fp, data_fd);
+  rc = proc_signature_packets_by_fd (ctrl, NULL, fp, data_fd);
 
   if ( afx && afx->no_openpgp_data
        && (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF) )

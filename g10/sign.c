@@ -762,7 +762,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
  * uncompressed, non-armored and in binary mode.
  */
 int
-sign_file( strlist_t filenames, int detached, strlist_t locusr,
+sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	   int encryptflag, strlist_t remusr, const char *outfile )
 {
     const char *fname;
@@ -822,7 +822,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	compliance_failure();
       }
 
-    if(encryptflag && (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )))
+    if (encryptflag
+        && (rc=build_pk_list (ctrl, remusr, &pk_list, PUBKEY_USAGE_ENC)))
       goto leave;
 
     /* prepare iobufs */

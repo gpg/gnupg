@@ -26,10 +26,10 @@
 #include <time.h>
 
 #include "gpg.h"
+#include "util.h"
 #include "packet.h"
 #include "iobuf.h"
 #include "options.h"
-#include "util.h"
 #include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
@@ -56,6 +56,7 @@ struct kidlist_item {
 typedef struct mainproc_context *CTX;
 struct mainproc_context
 {
+  ctrl_t ctrl;
   struct mainproc_context *anchor;  /* May be useful in the future. */
   PKT_public_key *last_pubkey;
   PKT_user_id     *last_user_id;
@@ -563,8 +564,8 @@ proc_encrypted( CTX c, PACKET *pkt )
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
-    if( !result )
-	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
+    if (!result)
+      result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
 
     if( result == -1 )
 	;
@@ -757,18 +758,19 @@ proc_compressed_cb( IOBUF a, void *info )
 {
   if ( ((CTX)info)->signed_data.used
        && ((CTX)info)->signed_data.data_fd != -1)
-    return proc_signature_packets_by_fd (info, a,
+    return proc_signature_packets_by_fd (((CTX)info)->ctrl, info, a,
                                          ((CTX)info)->signed_data.data_fd);
   else
-    return proc_signature_packets (info, a,
+    return proc_signature_packets (((CTX)info)->ctrl, info, a,
                                    ((CTX)info)->signed_data.data_names,
                                    ((CTX)info)->sigfilename );
 }
 
 static int
-proc_encrypt_cb( IOBUF a, void *info )
+proc_encrypt_cb (IOBUF a, void *info )
 {
-    return proc_encryption_packets( info, a );
+  CTX c = info;
+  return proc_encryption_packets (c->ctrl, info, a );
 }
 
 static void
@@ -781,11 +783,11 @@ proc_compressed( CTX c, PACKET *pkt )
     if( !zd->algorithm )
       rc=G10ERR_COMPR_ALGO;
     else if( c->sigs_only )
-	rc = handle_compressed( c, zd, proc_compressed_cb, c );
+      rc = handle_compressed (c->ctrl, c, zd, proc_compressed_cb, c );
     else if( c->encrypt_only )
-	rc = handle_compressed( c, zd, proc_encrypt_cb, c );
+      rc = handle_compressed (c->ctrl, c, zd, proc_encrypt_cb, c );
     else
-	rc = handle_compressed( c, zd, NULL, NULL );
+      rc = handle_compressed (c->ctrl, c, zd, NULL, NULL );
     if( rc )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
@@ -1174,11 +1176,12 @@ list_node( CTX c, KBNODE node )
 
 
 int
-proc_packets( void *anchor, IOBUF a )
+proc_packets (ctrl_t ctrl, void *anchor, IOBUF a )
 {
     int rc;
     CTX c = xmalloc_clear( sizeof *c );
 
+    c->ctrl = ctrl;
     c->anchor = anchor;
     rc = do_proc_packets( c, a );
     xfree( c );
@@ -1188,12 +1191,13 @@ proc_packets( void *anchor, IOBUF a )
 
 
 int
-proc_signature_packets( void *anchor, IOBUF a,
+proc_signature_packets (ctrl_t ctrl, void *anchor, IOBUF a,
 			strlist_t signedfiles, const char *sigfilename )
 {
     CTX c = xmalloc_clear( sizeof *c );
     int rc;
 
+    c->ctrl = ctrl;
     c->anchor = anchor;
     c->sigs_only = 1;
 
@@ -1228,7 +1232,8 @@ proc_signature_packets( void *anchor, IOBUF a,
 
 
 int
-proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
+proc_signature_packets_by_fd (ctrl_t ctrl,
+                              void *anchor, IOBUF a, int signed_data_fd )
 {
   int rc;
   CTX c;
@@ -1237,6 +1242,7 @@ proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
   if (!c)
     return gpg_error_from_syserror ();
 
+  c->ctrl = ctrl;
   c->anchor = anchor;
   c->sigs_only = 1;
 
@@ -1269,11 +1275,12 @@ proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
 
 
 int
-proc_encryption_packets( void *anchor, IOBUF a )
+proc_encryption_packets (ctrl_t ctrl, void *anchor, IOBUF a )
 {
     CTX c = xmalloc_clear( sizeof *c );
     int rc;
 
+    c->ctrl = ctrl;
     c->anchor = anchor;
     c->encrypt_only = 1;
     rc = do_proc_packets( c, a );
@@ -1652,7 +1659,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		    int res;
 
 		    glo_ctrl.in_auto_key_retrieve++;
-		    res=keyserver_import_keyid(sig->keyid,spec);
+		    res = keyserver_import_keyid (c->ctrl, sig->keyid,spec);
 		    glo_ctrl.in_auto_key_retrieve--;
 		    if(!res)
 		      rc=do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
@@ -1684,7 +1691,7 @@ check_sig_and_print( CTX c, KBNODE node )
             if (spec)
               {
                 glo_ctrl.in_auto_key_retrieve++;
-                res = keyserver_import_keyid (sig->keyid, spec);
+                res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
                 glo_ctrl.in_auto_key_retrieve--;
                 free_keyserver_spec (spec);
                 if (!res)
@@ -1702,7 +1709,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	int res;
 
 	glo_ctrl.in_auto_key_retrieve++;
-	res=keyserver_import_keyid ( sig->keyid, opt.keyserver );
+	res=keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
 	glo_ctrl.in_auto_key_retrieve--;
 	if(!res)
 	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );

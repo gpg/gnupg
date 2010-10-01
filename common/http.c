@@ -114,6 +114,9 @@ struct srventry
 #ifndef EAGAIN
 #define EAGAIN  EWOULDBLOCK
 #endif
+#ifndef INADDR_NONE  /* Slowaris is missing that.  */
+#define INADDR_NONE  ((unsigned long)(-1))
+#endif /*INADDR_NONE*/
 
 #define HTTP_PROXY_ENV           "http_proxy"
 #define MAX_LINELEN 20000  /* Max. length of a HTTP header line. */

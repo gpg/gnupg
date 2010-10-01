@@ -231,7 +231,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
     remusr = rcpts;
   */
 
-  err = find_and_check_key (line, PUBKEY_USAGE_ENC, hidden, 
+  err = find_and_check_key (ctrl, line, PUBKEY_USAGE_ENC, hidden, 
                             &ctrl->server_local->recplist);
   
   if (err)
@@ -324,7 +324,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
   /* fixme: err = ctrl->audit? 0 : start_audit_session (ctrl);*/
     
-  err = encrypt_crypt (inp_fd, NULL, NULL, 0,
+  err = encrypt_crypt (ctrl, inp_fd, NULL, NULL, 0,
                        ctrl->server_local->recplist,
                        out_fd);
 
@@ -368,7 +368,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_ASS_NO_OUTPUT, NULL);
 
   glo_ctrl.lasterr = 0;
-  err = decrypt_message_fd (inp_fd, out_fd);
+  err = decrypt_message_fd (ctrl, inp_fd, out_fd);
   if (!err)
     err = glo_ctrl.lasterr;
 

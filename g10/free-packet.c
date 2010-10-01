@@ -25,9 +25,9 @@
 #include <assert.h>
 
 #include "gpg.h"
+#include "util.h"
 #include "packet.h"
 #include "../common/iobuf.h"
-#include "util.h"
 #include "cipher.h"
 #include "options.h" 
 

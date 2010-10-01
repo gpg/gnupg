@@ -887,7 +887,8 @@ learn_cb (void *opaque, const void *buffer, size_t length)
      because we can assume that the --learn-card command has been used
      on purpose.  */
   rc = gpgsm_basic_cert_check (parm->ctrl, cert);
-  if (rc && gpg_err_code (rc) != GPG_ERR_MISSING_CERT)
+  if (rc && gpg_err_code (rc) != GPG_ERR_MISSING_CERT
+      && gpg_err_code (rc) != GPG_ERR_MISSING_ISSUER_CERT)
     log_error ("invalid certificate: %s\n", gpg_strerror (rc));
   else
     {

@@ -26,10 +26,10 @@
 #include <ctype.h>
 
 #include "gpg.h"
+#include "util.h"
 #include "packet.h"
 #include "status.h"
 #include "iobuf.h"
-#include "util.h"
 #include "cipher.h"
 #include "i18n.h"
 #include "options.h"
@@ -71,8 +71,16 @@ build_packet( IOBUF out, PACKET *pkt )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( (pkttype = pkt->pkttype) )
+    switch ((pkttype = pkt->pkttype))
       {
+      case PKT_PUBLIC_KEY:
+        if (pkt->pkt.public_key->seckey_info)
+          pkttype = PKT_SECRET_KEY;
+        break;
+      case PKT_PUBLIC_SUBKEY:
+        if (pkt->pkt.public_key->seckey_info)
+          pkttype = PKT_SECRET_SUBKEY;
+        break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;

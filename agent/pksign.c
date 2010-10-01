@@ -255,7 +255,9 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
   rc = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
                             &shadow_info, cache_mode, lookup_ttl,
-                            &s_skey);
+                            &s_skey, NULL);
+  if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
   if (rc)
     {
       log_error ("failed to read the secret key\n");

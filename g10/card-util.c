@@ -721,7 +721,7 @@ change_url (void)
 /* Fetch the key from the URL given on the card or try to get it from
    the default keyserver.  */
 static int
-fetch_url(void)
+fetch_url (ctrl_t ctrl)
 {
   int rc;
   struct agent_card_info_s info;
@@ -751,13 +751,13 @@ fetch_url(void)
 		 event, the fpr/keyid is not meaningful for straight
 		 HTTP fetches, but using it allows the card to point
 		 to HKP and LDAP servers as well. */
-	      rc=keyserver_import_fprint(info.fpr1,20,spec);
+	      rc = keyserver_import_fprint (ctrl, info.fpr1, 20, spec);
 	      free_keyserver_spec(spec);
 	    }
 	}
       else if (info.fpr1valid)
 	{
-          rc = keyserver_import_fprint (info.fpr1, 20, opt.keyserver);
+          rc = keyserver_import_fprint (ctrl, info.fpr1, 20, opt.keyserver);
 	}
     }
 
@@ -1765,7 +1765,7 @@ card_edit_completion(const char *text, int start, int end)
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
 void
-card_edit (strlist_t commands)
+card_edit (ctrl_t ctrl, strlist_t commands)
 {
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
@@ -1924,7 +1924,7 @@ card_edit (strlist_t commands)
           break;
 
 	case cmdFETCH:
-	  fetch_url();
+	  fetch_url (ctrl);
 	  break;
 
         case cmdLOGIN:

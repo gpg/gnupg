@@ -64,10 +64,11 @@ static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
-static void revocation_present(KBNODE keyblock);
-static int import_one(const char *fname, KBNODE keyblock,struct stats_s *stats,
-		      unsigned char **fpr,size_t *fpr_len,
-		      unsigned int options,int from_sk);
+static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
+static int import_one (ctrl_t ctrl,
+                       const char *fname, KBNODE keyblock,struct stats_s *stats,
+                       unsigned char **fpr,size_t *fpr_len,
+                       unsigned int options,int from_sk);
 static int import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                               struct stats_s *stats, unsigned int options);
 static int import_revoke_cert( const char *fname, KBNODE node,
@@ -265,7 +266,8 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options, 0);
+          rc = import_one (ctrl, fname, keyblock,
+                           stats, fpr, fpr_len, options, 0);
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
           rc = import_secret_one (ctrl, fname, keyblock, stats, options);
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -614,9 +616,9 @@ check_prefs_warning(PKT_public_key *pk)
 }
 
 static void
-check_prefs(KBNODE keyblock)
+check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 {
-  KBNODE node;
+  kbnode_t node;
   PKT_public_key *pk;
   int problem=0;
   
@@ -711,7 +713,7 @@ check_prefs(KBNODE keyblock)
 	  append_to_strlist(&sl,"updpref");
 	  append_to_strlist(&sl,"save");
 
-	  keyedit_menu( username, locusr, sl, 1, 1 );
+	  keyedit_menu (ctrl, username, locusr, sl, 1, 1 );
 	  free_strlist(sl);
 	  free_strlist(locusr);
 	}
@@ -728,7 +730,8 @@ check_prefs(KBNODE keyblock)
  * which called gpg.
  */
 static int
-import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
+import_one (ctrl_t ctrl,
+            const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    unsigned char **fpr,size_t *fpr_len,unsigned int options,
 	    int from_sk )
 {
@@ -1060,15 +1063,15 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 
     if (mod_key)
       {
-	revocation_present (keyblock_orig);
+	revocation_present (ctrl, keyblock_orig);
 	if (!from_sk && have_secret_key_with_kid (keyid))
-	  check_prefs (keyblock_orig);
+	  check_prefs (ctrl, keyblock_orig);
       }
     else if (new_key)
       {
-	revocation_present (keyblock);
+	revocation_present (ctrl, keyblock);
 	if (!from_sk && have_secret_key_with_kid (keyid))
-	  check_prefs (keyblock);
+	  check_prefs (ctrl, keyblock);
       }
 
     release_kbnode( keyblock_orig );
@@ -1425,7 +1428,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                    keystr_from_pk (pk));
       else
         {
-          import_one (fname, pub_keyblock, stats,
+          import_one (ctrl, fname, pub_keyblock, stats,
                       NULL, NULL, opt.import_options, 1);
           /* Fixme: We should check for an invalid keyblock and
              cancel the secret key import in this case.  */
@@ -1448,7 +1451,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                               keystr_from_pk (pk));
                   if (is_status_enabled ()) 
                     print_import_ok (pk, 1|16);
-                  check_prefs (node);
+                  check_prefs (ctrl, node);
                 }
               release_kbnode (node);
             }
@@ -2051,10 +2054,10 @@ collapse_uids( KBNODE *keyblock )
    present.  This may be called without the benefit of merge_xxxx so
    you can't rely on pk->revkey and friends. */
 static void
-revocation_present(KBNODE keyblock)
+revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 {
-  KBNODE onode,inode;
-  PKT_public_key *pk=keyblock->pkt->pkt.public_key;
+  kbnode_t onode, inode;
+  PKT_public_key *pk = keyblock->pkt->pkt.public_key;
 
   for(onode=keyblock->next;onode;onode=onode->next)
     {
@@ -2106,9 +2109,10 @@ revocation_present(KBNODE keyblock)
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),
 				       tempkeystr,keystr(keyid));
-			      keyserver_import_fprint(sig->revkey[idx]->fpr,
-						      MAX_FINGERPRINT_LEN,
-						      opt.keyserver);
+			      keyserver_import_fprint (ctrl,
+                                                       sig->revkey[idx]->fpr,
+                                                       MAX_FINGERPRINT_LEN,
+                                                       opt.keyserver);
 
 			      /* Do we have it now? */
 			      rc=get_pubkey_byfprint_fast (NULL,

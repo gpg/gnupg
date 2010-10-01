@@ -14,7 +14,8 @@ the ~/.gnupg home directory.  This directory is named
 and should have permissions 700.
 
 The secret keys are stored in files with a name matching the
-hexadecimal representation of the keygrip[2].
+hexadecimal representation of the keygrip[2] and suffixed with ".key".
+
 
 Unprotected Private Key Format
 ==============================
@@ -166,27 +167,128 @@ This format is used to transfer keys between gpg and gpg-agent.
 
 (openpgp-private-key
   (version V)
-  (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT)
   (algo PUBKEYALGO)
-  (skey CSUM c P1 c P2 c P3 ... e PN))
+  (skey _ P1 _ P2 _ P3 ... e PN)
+  (csum n)
+  (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT))
 
 
 * V is the packet version number (3 or 4).
 * PUBKEYALGO is a Libgcrypt algo name 
-* CSUM is the 16 bit checksum as defined by OpenPGP.
 * P1 .. PN are the parameters; the public parameters are never encrypted
   the secrect key parameters are encrypted if the "protection" list is
   given.  To make this more explicit each parameter is preceded by a
   flag "_" for cleartext or "e" for encrypted text.
+* CSUM is the depreciated 16 bit checksum as defined by OpenPGP.  This
+  is an optional element.
 * If PROTTYPE is "sha1" the new style SHA1 checksum is used if it is "sum"
-  the old 16 bit checksum is used and if it is "none" no protection at
-  all is used.
+  the old 16 bit checksum (above) is used and if it is "none" no
+  protection at all is used.
 * PROTALGO is a Libgcrypt style cipher algorithm name
 * IV is the initialization verctor.
 * S2KMODE is the value from RFC-4880.
 * S2KHASH is a a libgcrypt style hash algorithm identifier.
 * S2KSALT is the 8 byte salt
 * S2KCOUNT is the count value from RFC-4880.
+
+
+Persistent Passphrase Format
+============================
+
+To allow persistent storage of cached passphrases we use a scheme
+similar to the private-key storage format.  This is a master
+passphrase format where each file may protect several secrets under
+one master passphrase.  It is possible to have several of those files
+each protected by a dedicated master passphrase.  Clear text keywords
+allow to list the available protected passphrases.
+
+The name of the files with these protected secrets have this form:
+pw-<string>.dat.  STRING may be an arbitrary string, as a default name
+for the passphrase storage the name "pw-default.dat" is suggested.
+
+
+(protected-shared-secret
+   ((desc descriptive_text)
+    (key [key_1] (keyword_1 keyword_2 keyword_n))
+    (key [key_2] (keyword_21 keyword_22 keyword_2n))
+    (key [key_n] (keyword_n1 keyword_n2 keyword_nn))
+    (protected mode (parms) encrypted_octet_string)
+    (protected-at <isotimestamp>)
+   )
+)  
+
+After decryption the encrypted_octet_string yields this S-expression:
+
+(
+ (
+  (value key_1 value_1)
+  (value key_2 value_2)
+  (value key_n value_n)
+ ) 
+ (hash sha1 #...[hashvalue]...#)
+)
+
+The "descriptive_text" is displayed with the prompt to enter the
+unprotection passphrase.
+
+KEY_1 to KEY_N are unique identifiers for the shared secret, for
+example an URI.  In case this information should be kept confidential
+as well, they may not appear in the unprotected part; however they are
+mandatory in the encrypted_octet_string.  The list of keywords is
+optional.  The oder of the "key" lists and the order of the "value"
+lists mut match, that is the first "key"-list is associated with the
+first "value" list in the encrypted_octet_string.
+
+The protection mode etc. is indentical to the protection mode as
+decribed for the private key format.
+
+list of the secret key parameters.  The protected-at expression is
+optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").
+
+The "hash" in the encrypted_octet_string is calculated on the
+concatenation of the key list and value lists: i.e it is required to
+hash the concatenation of all these lists, including the
+parenthesis and (if used) the protected-at list.
+
+Example:
+
+(protected-shared-secret
+   ((desc "List of system passphrases")
+    (key "uid-1002" ("Knuth" "Donald Ervin Knuth"))
+    (key "uid-1001" ("Dijkstra" "Edsgar Wybe Dijkstra"))
+    (key)
+    (protected mode (parms) encrypted_octet_string)
+    (protected-at "20100915T111722")
+   )
+)  
+
+with "encrypted_octet_string" decoding to:
+
+(
+ (
+  (value 4:1002 "signal flags at the lock")
+  (value 4:1001 "taocp")
+  (value 1:0    "premature optimization is the root of all evil")
+ ) 
+ (hash sha1 #0102030405060708091011121314151617181920#)
+)
+
+To compute the hash this S-expression (in canoncical format) was
+hashed:
+
+   ((desc "List of system passphrases")
+    (key "uid-1002" ("Knuth" "Donald Ervin Knuth"))
+    (key "uid-1001" ("Dijkstra" "Edsgar Wybe Dijkstra"))
+    (key)
+    (value 4:1002 "signal flags at the lock")
+    (value 4:1001 "taocp")
+    (value 1:0    "premature optimization is the root of all evil")
+    (protected-at "20100915T111722")
+   )
+
+
+
+
 
 
 

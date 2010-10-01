@@ -918,12 +918,13 @@ parse_ccid_descriptor (ccid_driver_t handle,
         
   DEBUGOUT_1 ("  bMaxCCIDBusySlots   %5u\n", buf[53]);
 
-  if (buf[0] > 54) {
-    DEBUGOUT ("  junk             ");
-    for (i=54; i < buf[0]-54; i++)
-      DEBUGOUT_CONT_1 (" %02X", buf[i]);
-    DEBUGOUT_LF ();
-  }
+  if (buf[0] > 54)
+    {
+      DEBUGOUT ("  junk             ");
+      for (i=54; i < buf[0]-54; i++)
+        DEBUGOUT_CONT_1 (" %02X", buf[i]);
+      DEBUGOUT_LF ();
+    }
 
   if (!have_t1 || !(have_tpdu  || handle->apdu_level) || !have_auto_conf)
     {

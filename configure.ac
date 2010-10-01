@@ -396,7 +396,7 @@ AH_BOTTOM([
 #  define GNUPG_DEFAULT_HOMEDIR "/gnupg"
 # endif
 #elif defined(__VMS)
-#define GNUPG_DEFAULT_HOMEDIR "/SYS\$LOGIN/gnupg" 
+#define GNUPG_DEFAULT_HOMEDIR "/SYS$LOGIN/gnupg" 
 #else
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
 #endif 

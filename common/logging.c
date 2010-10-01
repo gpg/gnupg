@@ -68,6 +68,9 @@
 #ifndef EAFNOSUPPORT
 # define EAFNOSUPPORT EINVAL
 #endif
+#ifndef INADDR_NONE  /* Slowaris is missing that.  */
+#define INADDR_NONE  ((unsigned long)(-1))
+#endif /*INADDR_NONE*/
 
 #ifdef HAVE_W32_SYSTEM
 #define sock_close(a)  closesocket(a)

@@ -461,7 +461,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
  * PROVIDED_PKS; if not the function builds a list of keys on its own.
  */
 int
-encrypt_crypt (int filefd, const char *filename,
+encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                strlist_t remusr, int use_symkey, pk_list_t provided_keys,
                int outputfd)
 {
@@ -503,7 +503,7 @@ encrypt_crypt (int filefd, const char *filename,
     pk_list = provided_keys;
   else
     {
-      if ((rc = build_pk_list (remusr, &pk_list, PUBKEY_USAGE_ENC)))
+      if ((rc = build_pk_list (ctrl, remusr, &pk_list, PUBKEY_USAGE_ENC)))
         {
           release_progress_context (pfx);
           return rc;
@@ -939,7 +939,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
 
 
 void
-encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
+encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
 {
   int rc = 0;
 
@@ -963,7 +963,7 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
             }
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
-          rc = encrypt_crypt (-1, line, remusr, 0, NULL, -1);
+          rc = encrypt_crypt (ctrl, -1, line, remusr, 0, NULL, -1);
           if (rc)
             log_error ("encryption of `%s' failed: %s\n",
                        print_fname_stdin(line), g10_errstr(rc) );
@@ -975,7 +975,7 @@ encrypt_crypt_files (int nfiles, char **files, strlist_t remusr)
       while (nfiles--)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
-          if ( (rc = encrypt_crypt (-1, *files, remusr, 0, NULL, -1)) )
+          if ( (rc = encrypt_crypt (ctrl, -1, *files, remusr, 0, NULL, -1)) )
             log_error("encryption of `%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );

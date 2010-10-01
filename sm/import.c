@@ -194,7 +194,8 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
   if (!rc && ctrl->with_validation)
     rc = gpgsm_validate_chain (ctrl, cert, "", NULL, 0, NULL, 0, NULL);
   if (!rc || (!ctrl->with_validation
-              && gpg_err_code (rc) == GPG_ERR_MISSING_CERT) )
+              && (gpg_err_code (rc) == GPG_ERR_MISSING_CERT
+                  || gpg_err_code (rc) == GPG_ERR_MISSING_ISSUER_CERT)))
     {
       int existed;
 
@@ -253,9 +254,14 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
       log_error (_("basic certificate checks failed - not imported\n"));
       if (stats)
         stats->not_imported++;
-      print_import_problem (ctrl, cert,
-                            gpg_err_code (rc) == GPG_ERR_MISSING_CERT? 2 :
-                            gpg_err_code (rc) == GPG_ERR_BAD_CERT?     1 : 0);
+      /* We keep the test for GPG_ERR_MISSING_CERT only in case
+         GPG_ERR_MISSING_CERT has been used instead of the newer
+         GPG_ERR_MISSING_ISSUER_CERT.  */
+      print_import_problem 
+        (ctrl, cert,
+         gpg_err_code (rc) == GPG_ERR_MISSING_ISSUER_CERT? 2 :
+         gpg_err_code (rc) == GPG_ERR_MISSING_CERT? 2 :
+         gpg_err_code (rc) == GPG_ERR_BAD_CERT?     1 : 0);
     }
 }
 

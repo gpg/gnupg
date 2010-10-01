@@ -317,8 +317,12 @@ should in general not be used to avoid X-sniffing attacks.
 
 @item --log-file @var{file}
 @opindex log-file
-Append all logging output to @var{file}.  This is very helpful in
-seeing what the agent actually does.
+Append all logging output to @var{file}.  This is very helpful in seeing
+what the agent actually does.  If neither a log file nor a log file
+descriptor has been set on a Windows platform, the Registry entry
+@var{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
+the logging output.
+
 
 @anchor{option --allow-mark-trusted}
 @item --allow-mark-trusted
@@ -1148,11 +1152,13 @@ This can be used to see whether a secret key is available.  It does
 not return any information on whether the key is somehow protected.
 
 @example
-  HAVEKEY @var{keygrip}
+  HAVEKEY @var{keygrips}
 @end example
 
-The Agent answers either with OK or @code{No_Secret_Key} (208).  The
-caller may want to check for other error codes as well.
+The agent answers either with OK or @code{No_Secret_Key} (208).  The
+caller may want to check for other error codes as well.  More than one
+keygrip may be given.  In this case the command returns success if at
+least one of the keygrips corresponds to an available secret key.
 
 
 @node Agent LEARN

@@ -43,7 +43,7 @@
 
 static void list_all (int);
 static void list_one (strlist_t names, int secret);
-static void locate_one (strlist_t names);
+static void locate_one (ctrl_t ctrl, strlist_t names);
 static void print_card_serialno (PKT_public_key *sk);
 
 struct sig_stats
@@ -61,7 +61,7 @@ static estream_t attrib_fp;
    With LOCATE_MODE set the locate algorithm is used to find a
    key.  */
 void
-public_key_list (strlist_t list, int locate_mode)
+public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 {
   if (opt.with_colons)
     {
@@ -107,7 +107,7 @@ public_key_list (strlist_t list, int locate_mode)
   check_trustdb_stale ();
 
   if (locate_mode)
-    locate_one (list);
+    locate_one (ctrl, list);
   else if (!list)
     list_all (0);
   else
@@ -116,8 +116,10 @@ public_key_list (strlist_t list, int locate_mode)
 
 
 void
-secret_key_list (strlist_t list)
+secret_key_list (ctrl_t ctrl, strlist_t list)
 {
+  (void)ctrl;
+
   check_trustdb_stale ();
 
   if (!list)
@@ -533,7 +535,7 @@ list_one (strlist_t names, int secret)
 
 
 static void
-locate_one (strlist_t names)
+locate_one (ctrl_t ctrl, strlist_t names)
 {
   int rc = 0;
   strlist_t sl;
@@ -545,7 +547,7 @@ locate_one (strlist_t names)
 
   for (sl = names; sl; sl = sl->next)
     {
-      rc = get_pubkey_byname (&ctx, NULL, sl->d, &keyblock, NULL, 1, 0);
+      rc = get_pubkey_byname (ctrl, &ctx, NULL, sl->d, &keyblock, NULL, 1, 0);
       if (rc)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)

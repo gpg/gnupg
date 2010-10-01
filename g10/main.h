@@ -192,10 +192,11 @@ void display_online_help( const char *keyword );
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );
-int encrypt_crypt (int filefd, const char *filename,
+int encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                    strlist_t remusr, int use_symkey, pk_list_t provided_keys,
                    int outputfd);
-void encrypt_crypt_files (int nfiles, char **files, strlist_t remusr);
+void encrypt_crypt_files (ctrl_t ctrl,
+                          int nfiles, char **files, strlist_t remusr);
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 
@@ -203,7 +204,7 @@ int encrypt_filter (void *opaque, int control,
 /*-- sign.c --*/
 int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
                   const char *cache_nonce);
-int sign_file( strlist_t filenames, int detached, strlist_t locusr,
+int sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
 int clearsign_file( const char *fname, strlist_t locusr, const char *outfile );
 int sign_symencrypt_file (const char *fname, strlist_t locusr);
@@ -221,7 +222,7 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 int delete_keys( strlist_t names, int secret, int allow_both );
 
 /*-- keyedit.c --*/
-void keyedit_menu( const char *username, strlist_t locusr,
+void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		   strlist_t commands, int quiet, int seckey_check );
 void keyedit_passwd (const char *username);
 void show_basic_key_info (KBNODE keyblock);
@@ -280,11 +281,11 @@ int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
 int parse_export_options(char *str,unsigned int *options,int noisy);
-int export_pubkeys( strlist_t users, unsigned int options );
-int export_pubkeys_stream( iobuf_t out, strlist_t users,
-			   KBNODE *keyblock_out, unsigned int options );
-int export_seckeys( strlist_t users );
-int export_secsubkeys( strlist_t users );
+int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options );
+int export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
+			   kbnode_t *keyblock_out, unsigned int options );
+int export_seckeys (ctrl_t ctrl, strlist_t users);
+int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 
 /* dearmor.c --*/
 int dearmor_file( const char *fname );
@@ -300,8 +301,8 @@ struct revocation_reason_info *
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
-void public_key_list( strlist_t list, int locate_mode );
-void secret_key_list( strlist_t list );
+void public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode );
+void secret_key_list (ctrl_t ctrl, strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
@@ -318,14 +319,14 @@ void print_card_key_info (estream_t fp, KBNODE keyblock);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );
-int verify_signatures( int nfiles, char **files );
-int verify_files( int nfiles, char **files );
+int verify_signatures (ctrl_t ctrl, int nfiles, char **files );
+int verify_files (ctrl_t ctrl, int nfiles, char **files );
 int gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp);
 
 /*-- decrypt.c --*/
-int decrypt_message( const char *filename );
-gpg_error_t decrypt_message_fd (int input_fd, int output_fd);
-void decrypt_messages(int nfiles, char *files[]);
+int decrypt_message (ctrl_t ctrl, const char *filename );
+gpg_error_t decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd);
+void decrypt_messages (ctrl_t ctrl, int nfiles, char *files[]);
 
 /*-- plaintext.c --*/
 int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
@@ -346,7 +347,7 @@ int gpg_server (ctrl_t);
 /*-- card-util.c --*/
 void change_pin (int no, int allow_admin);
 void card_status (estream_t fp, char *serialno, size_t serialnobuflen);
-void card_edit (strlist_t commands);
+void card_edit (ctrl_t ctrl, strlist_t commands);
 int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);
 int  card_store_subkey (KBNODE node, int use);
 #endif

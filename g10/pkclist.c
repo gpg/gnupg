@@ -778,7 +778,7 @@ expand_group(strlist_t input)
    of the key. USE the requested usage and a set MARK_HIDDEN will mark
    the key in the updated list as a hidden recipient. */
 gpg_error_t
-find_and_check_key (const char *name, unsigned int use, 
+find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use, 
                     int mark_hidden, pk_list_t *pk_list_addr)
 {
   int rc;
@@ -793,7 +793,7 @@ find_and_check_key (const char *name, unsigned int use,
     return gpg_error_from_syserror ();
   pk->req_usage = use;
 
-  rc = get_pubkey_byname (NULL, pk, name, NULL, NULL, 0, 0);
+  rc = get_pubkey_byname (ctrl, NULL, pk, name, NULL, NULL, 0, 0);
   if (rc)
     {
       /* Key not found or other error. */
@@ -883,7 +883,8 @@ find_and_check_key (const char *name, unsigned int use,
    not changed.
  */
 int
-build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
+build_pk_list (ctrl_t ctrl,
+               strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
 {
   PK_LIST pk_list = NULL;
   PKT_public_key *pk=NULL;
@@ -929,7 +930,8 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
           /* We explicitly allow encrypt-to to an disabled key; thus
              we pass 1for the second last argument and 1 as the last
              argument to disable AKL. */
-          if ( (rc = get_pubkey_byname (NULL, pk, rov->d, NULL, NULL, 1, 1)) ) 
+          if ( (rc = get_pubkey_byname (ctrl,
+                                        NULL, pk, rov->d, NULL, NULL, 1, 1)) ) 
             {
               free_public_key ( pk ); pk = NULL;
               log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
@@ -1066,7 +1068,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
             free_public_key (pk);
           pk = xmalloc_clear( sizeof *pk );
           pk->req_usage = use;
-          rc = get_pubkey_byname (NULL, pk, answer, NULL, NULL, 0, 0 );
+          rc = get_pubkey_byname (ctrl, NULL, pk, answer, NULL, NULL, 0, 0 );
           if (rc)
             tty_printf(_("No such user ID.\n"));
           else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) ) 
@@ -1140,7 +1142,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
 
       /* The default recipient is allowed to be disabled; thus pass 1
          as second last argument.  We also don't want an AKL. */
-      rc = get_pubkey_byname (NULL, pk, def_rec, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (ctrl, NULL, pk, def_rec, NULL, NULL, 1, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
       else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use)) ) 
@@ -1178,7 +1180,7 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
           if ( (remusr->flags & 1) )
             continue; /* encrypt-to keys are already handled. */
 
-          rc = find_and_check_key (remusr->d, use, !!(remusr->flags&2),
+          rc = find_and_check_key (ctrl, remusr->d, use, !!(remusr->flags&2),
                                    &pk_list);
           if (rc)
             goto fail;

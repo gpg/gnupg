@@ -157,8 +157,10 @@ void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 
 void release_pk_list (PK_LIST pk_list);
-int  build_pk_list (strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use);
-gpg_error_t find_and_check_key (const char *name, unsigned int use, 
+int  build_pk_list (ctrl_t ctrl,
+                    strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use);
+gpg_error_t find_and_check_key (ctrl_t ctrl,
+                                const char *name, unsigned int use, 
                                 int mark_hidden, pk_list_t *pk_list_addr);
 
 int  algo_available( preftype_t preftype, int algo,
@@ -204,7 +206,8 @@ void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_fast ( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );
-int get_pubkey_byname (GETKEY_CTX *rx, PKT_public_key *pk,  const char *name,
+int get_pubkey_byname (ctrl_t ctrl,
+                       GETKEY_CTX *rx, PKT_public_key *pk,  const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
 		       int include_unusable, int no_akl );
 int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,

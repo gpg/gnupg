@@ -3,6 +3,11 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@c Note that we use this texinfo file for all versions of GnuPG: 1.4.x,
+@c 2.0 and 2.1.  The macro "gpgone" controls parts which are only valid
+@c for GnuPG 1.4, the macro "gpgtwoone" controls parts which are only
+@c valid for GnupG 2.1 and later.
+
 @node Invoking GPG
 @chapter Invoking GPG
 @cindex GPG command options
@@ -68,18 +73,19 @@ implementation.
 
 @ifset gpgone
 This is the standalone version of @command{gpg}.  For desktop use you
-should consider using @command{gpg2}.
+should consider using @command{gpg2} @footnote{On some platforms gpg2 is
+installed under the name @command{gpg}}.
 @end ifset
 
 @ifclear gpgone
 In contrast to the standalone version @command{gpg}, which is more
-suited for server and embedded platforms, this version is installed
-under the name @command{gpg2} and more targeted to the desktop as it
-requires several other modules to be installed.  The standalone version
-will be kept maintained and it is possible to install both versions on
-the same system.  If you need to use different configuration files, you
-should make use of something like @file{gpg.conf-2} instead of just
-@file{gpg.conf}.
+suited for server and embedded platforms, this version is commonly
+installed under the name @command{gpg2} and more targeted to the desktop
+as it requires several other modules to be installed.  The standalone
+version will be kept maintained and it is possible to install both
+versions on the same system.  If you need to use different configuration
+files, you should make use of something like @file{gpg.conf-2} instead
+of just @file{gpg.conf}.
 @end ifclear
 
 @manpause
@@ -415,8 +421,10 @@ normally not very useful and a security risk.  The second form of the
 command has the special property to render the secret part of the
 primary key useless; this is a GNU extension to OpenPGP and other
 implementations can not be expected to successfully import such a key.
+@ifclear gpgtwoone
 See the option @option{--simple-sk-checksum} if you want to import such
 an exported key with an older OpenPGP implementation.
+@end ifclear
 
 @item --import
 @itemx --fast-import
@@ -1550,6 +1558,7 @@ key signer (defaults to 3)
 @item --max-cert-depth @code{n}
 Maximum depth of a certification chain (default is 5).
 
+@ifclear gpgtwoone
 @item --simple-sk-checksum
 Secret keys are integrity protected by using a SHA-1 checksum. This
 method is part of the upcoming enhanced OpenPGP specification but
@@ -1560,6 +1569,7 @@ a security risk. Note that using this option only takes effect when
 the secret key is encrypted - the simplest way to make this happen is
 to change the passphrase on the key (even changing it to the same
 value is acceptable).
+@end ifclear
 
 @item --no-sig-cache
 Do not cache the verification status of key signatures.
@@ -1884,11 +1894,17 @@ program that does not accept attribute user IDs. Defaults to yes.
 Include designated revoker information that was marked as
 "sensitive". Defaults to no.
 
+@c Since GnuPG 2.1 gpg-agent manages the secret key and thus the
+@c export-reset-subkey-passwd hack is not anymore justified.  Such use
+@c cases need to be implemented using a specialized secret key export
+@c tool.
+@ifclear gpgtwoone
 @item export-reset-subkey-passwd
 When using the @option{--export-secret-subkeys} command, this option resets
 the passphrases for all exported subkeys to empty. This is useful
 when the exported subkey is to be used on an unattended machine where
 a passphrase doesn't necessarily make sense. Defaults to no.
+@end ifclear
 
 @item export-clean
 Compact (remove all signatures from) user IDs on the key being

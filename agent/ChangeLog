@@ -1,3 +1,47 @@
+2010-09-30  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (agent_exit): Run cleanup.
+	(cleanup): Run only once.
+
+	* call-pinentry.c (close_button_status_cb): New.
+	(agent_askpin): Add arg R_CANCEL_ALL.  Change all callers.
+	* genkey.c (agent_ask_new_passphrase): Ditto.
+	* findkey.c (unprotect): Return GPG_ERR_FULLY_CANCELED if needed.
+
+	* command.c (cmd_export_key): Add support for OpenPGP keys.
+	* findkey.c (unprotect): Add optional arg R_PASSPHRASE.
+	(agent_key_from_file): Ditto.  Change all callers.
+
+	* findkey.c (unprotect): Do not put the passphrase into the cache
+	if it has been changed.
+
+	* cvt-openpgp.c (convert_to_openpgp, apply_protection)
+	(key_from_sexp): New.
+
+2010-09-29  Werner Koch  <wk@g10code.com>
+
+	* cvt-openpgp.c (convert_openpgp): Rename to convert_from_openpgp.
+
+	* command.c (has_option): Stop at "--".
+	(has_option_name, option_value): Ditto.
+	(skip_options): Skip initial spaces.
+
+2010-09-24  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main, reread_configuration): Always test whether
+	the default configuration file has been created in the meantime.
+	Fixes bug#1285.
+
+2010-09-17  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_havekey): Allow testing of several keygrips.
+
+2010-09-15  Werner Koch  <wk@g10code.com>
+
+	* protect.c (calculate_mic): Take care of shared secret format.
+
+	* agent.h (PROTECTED_SHARED_SECRET): New.
+
 2010-09-02  Werner Koch  <wk@g10code.com>
 
 	* cache.c (new_data): Change arg and callers to use a string and

@@ -586,7 +586,8 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
-         11 := "Missing certificate"  (e.g. intermediate or root cert.)
+         11 := "Missing certificate" 
+         12 := "Missing issuer certificate"
 
         Note that for historical reasons the INV_RECP status is also
         used for gpgsm's SIGNER command where it relates to signer's

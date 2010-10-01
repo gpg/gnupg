@@ -60,7 +60,7 @@ static void menu_deluid (KBNODE pub_keyblock);
 static int menu_delsig (KBNODE pub_keyblock);
 static int menu_clean (KBNODE keyblock, int self_only);
 static void menu_delkey (KBNODE pub_keyblock);
-static int menu_addrevoker (KBNODE pub_keyblock, int sensitive);
+static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
 static int menu_expire (KBNODE pub_keyblock);
 static int menu_backsign (KBNODE pub_keyblock);
 static int menu_set_primary_uid (KBNODE pub_keyblock);
@@ -1586,7 +1586,7 @@ keyedit_completion (const char *text, int start, int end)
 
 /* Main function of the menu driven key editor.  */
 void
-keyedit_menu (const char *username, strlist_t locusr,
+keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      strlist_t commands, int quiet, int seckey_check)
 {
   enum cmdids cmd = 0;
@@ -1599,7 +1599,6 @@ keyedit_menu (const char *username, strlist_t locusr,
   int modified = 0;
   int toggle;
   int have_commands = !!commands;
-  ctrl_t ctrl = NULL; /* Dummy for now.  */
 
   if (opt.command_fd != -1)
     ;
@@ -1623,7 +1622,7 @@ keyedit_menu (const char *username, strlist_t locusr,
 #endif
 
   /* Get the public key */
-  err = get_pubkey_byname (NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
+  err = get_pubkey_byname (ctrl, NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
   if (err)
     goto leave;
   if (fix_keyblock (keyblock))
@@ -2095,7 +2094,7 @@ keyedit_menu (const char *username, strlist_t locusr,
 
 	    if (ascii_strcasecmp (arg_string, "sensitive") == 0)
 	      sensitive = 1;
-	    if (menu_addrevoker (keyblock, sensitive))
+	    if (menu_addrevoker (ctrl, keyblock, sensitive))
 	      {
 		redisplay = 1;
 		modified = 1;
@@ -2886,9 +2885,10 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	  if (pk->is_revoked)
 	    {
 	      char *user = get_user_id_string_native (pk->revoked.keyid);
-	      const char *algo = gcry_pk_algo_name (pk->revoked.algo);
-	      tty_printf (_("This key was revoked on %s by %s key %s\n"),
-			  revokestr_from_pk (pk), algo ? algo : "?", user);
+              tty_printf (_("The following key was revoked on"
+                            " %s by %s key %s\n"),
+			  revokestr_from_pk (pk),
+                          gcry_pk_algo_name (pk->revoked.algo), user);
 	      xfree (user);
 	    }
 
@@ -3444,7 +3444,7 @@ menu_delkey (KBNODE pub_keyblock)
  * the keyblock.  Returns true if there is a new revoker.
  */
 static int
-menu_addrevoker (KBNODE pub_keyblock, int sensitive)
+menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 {
   PKT_public_key *pk = NULL;
   PKT_public_key *revoker_pk = NULL;
@@ -3508,7 +3508,7 @@ menu_addrevoker (KBNODE pub_keyblock, int sensitive)
          primary keys only, but some casual testing shows that PGP and
          GnuPG both can handle a designated revocation from a subkey. */
       revoker_pk->req_usage = PUBKEY_USAGE_CERT;
-      rc = get_pubkey_byname (NULL, revoker_pk, answer, NULL, NULL, 1, 1);
+      rc = get_pubkey_byname (ctrl, NULL, revoker_pk, answer, NULL, NULL, 1, 1);
       if (rc)
 	{
 	  log_error (_("key \"%s\" not found: %s\n"), answer,

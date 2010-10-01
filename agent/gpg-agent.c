@@ -440,6 +440,11 @@ remove_socket (char *name)
 static void
 cleanup (void)
 {
+  static int done;
+
+  if (done)
+    return;
+  done = 1;  
   deinitialize_module_cache ();
   remove_socket (socket_name);
   remove_socket (socket_name_ssh);
@@ -724,6 +729,12 @@ main (int argc, char **argv )
               if( parse_debug )
                 log_info (_("NOTE: no default option file `%s'\n"),
                           configname );
+              /* Save the default conf file name so that
+                 reread_configuration is able to test whether the
+                 config file has been created in the meantime.  */
+              xfree (config_filename);
+              config_filename = configname;
+              configname = NULL;
 	    }
           else
             {
@@ -811,10 +822,15 @@ main (int argc, char **argv )
       fclose( configfp );
       configfp = NULL;
       /* Keep a copy of the name so that it can be read on SIGHUP. */
-      config_filename = configname;
+      if (config_filename != configname)
+        {
+          xfree (config_filename);
+          config_filename = configname;
+        }
       configname = NULL;
       goto next_pass;
     }
+    
   xfree (configname);
   configname = NULL;
   if (log_get_errorcount(0))
@@ -1262,6 +1278,12 @@ void
 agent_exit (int rc)
 {
   /*FIXME: update_random_seed_file();*/
+
+  /* We run our cleanup handler because that may close cipher contexts
+     stored in secure memory and thus this needs to be done before we
+     explicitly terminate secure memory.  */
+  cleanup ();
+
 #if 1
   /* at this time a bit annoying */
   if (opt.debug & DBG_MEMSTAT_VALUE)
@@ -1337,8 +1359,8 @@ reread_configuration (void)
   fp = fopen (config_filename, "r");
   if (!fp)
     {
-      log_error (_("option file `%s': %s\n"),
-                 config_filename, strerror(errno) );
+      log_info (_("option file `%s': %s\n"),
+                config_filename, strerror(errno) );
       return;
     }
 

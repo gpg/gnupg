@@ -169,6 +169,23 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
+/* Skip over options.  
+   Blanks after the options are also removed. */
+static char *
+skip_options (const char *line)
+{
+  while (spacep (line))
+    line++;
+  while ( *line == '-' && line[1] == '-' )
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return (char*)line;
+}
+
 /* Check whether the option NAME appears in LINE */
 static int
 has_option (const char *line, const char *name)
@@ -177,6 +194,8 @@ has_option (const char *line, const char *name)
   int n = strlen (name);
 
   s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return 0;
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
@@ -190,6 +209,8 @@ has_option_name (const char *line, const char *name)
   int n = strlen (name);
 
   s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return 0;
   return (s && (s == line || spacep (s-1))
           && (!s[n] || spacep (s+n) || s[n] == '='));
 }
@@ -203,6 +224,8 @@ option_value (const char *line, const char *name)
   int n = strlen (name);
 
   s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return NULL;
   if (s && (s == line || spacep (s-1))
       && s[n] && (spacep (s+n) || s[n] == '='))
     {
@@ -212,23 +235,6 @@ option_value (const char *line, const char *name)
         return s;
     }
   return NULL;
-}
-
-
-/* Skip over options.  It is assumed that leading spaces have been
-   removed (this is the case for lines passed to a handler from
-   assuan).  Blanks after the options are also removed. */
-static char *
-skip_options (char *line)
-{
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return line;
 }
 
 
@@ -530,23 +536,35 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
 
 
 static const char hlp_havekey[] =
-  "HAVEKEY <hexstring_with_keygrip>\n"
+  "HAVEKEY <hexstrings_with_keygrips>\n"
   "\n"
-  "Return success when the secret key is available.";
+  "Return success if at least one of the secret keys with the given\n"
+  "keygrips is available.";
 static gpg_error_t
 cmd_havekey (assuan_context_t ctx, char *line)
 {
-  int rc;
+  gpg_error_t err;
   unsigned char buf[20];
 
-  rc = parse_keygrip (ctx, line, buf);
-  if (rc)
-    return rc;
+  do 
+    {
+      err = parse_keygrip (ctx, line, buf);
+      if (err)
+        return err;
+      
+      if (!agent_key_available (buf))
+        return 0; /* Found.  */
 
-  if (agent_key_available (buf))
-    return gpg_error (GPG_ERR_NO_SECKEY);
-
-  return 0;
+      while (*line && *line != ' ' && *line != '\t')
+        line++;
+      while (*line == ' ' || *line == '\t')
+        line++;
+    }
+  while (*line);
+    
+  /* No leave_cmd() here because errors are expected and would clutter
+     the log.  */
+  return gpg_error (GPG_ERR_NO_SECKEY);
 }
 
 
@@ -1316,9 +1334,14 @@ cmd_passwd (assuan_context_t ctx, char *line)
   ctrl->in_passwd++;
   rc = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc,
                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
-                            &s_skey);
+                            &s_skey, NULL);
   if (rc)
-    ;
+    {
+      /* Not all users of gpg-agent know about fully cancled; thus we
+         map it back.  */
+      if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
+        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+    }
   else if (!s_skey)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
@@ -1590,9 +1613,9 @@ cmd_import_key (assuan_context_t ctx, char *line)
          used to protect the key using the same code as for regular
          key import. */
       
-      err = convert_openpgp (ctrl, openpgp_sexp, grip,
-                             ctrl->server_local->keydesc, cache_nonce,
-                             &key, &passphrase);
+      err = convert_from_openpgp (ctrl, openpgp_sexp, grip,
+                                  ctrl->server_local->keydesc, cache_nonce,
+                                  &key, &passphrase);
       if (err)
         goto leave;
       realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
@@ -1620,7 +1643,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         err = agent_ask_new_passphrase 
           (ctrl, _("Please enter the passphrase to protect the "
                    "imported object within the GnuPG system."),
-           &passphrase);
+           &passphrase, NULL);
       if (err)
         goto leave;
     }
@@ -1650,7 +1673,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export_key[] =
-  "EXPORT_KEY <hexstring_with_keygrip>\n"
+  "EXPORT_KEY [--cache-nonce=<nonce>] [--openpgp] <hexstring_with_keygrip>\n"
   "\n"
   "Export a secret key from the key store.  The key will be encrypted\n"
   "using the current session's key wrapping key (cf. command KEYWRAP_KEY)\n"
@@ -1668,6 +1691,26 @@ cmd_export_key (assuan_context_t ctx, char *line)
   gcry_cipher_hd_t cipherhd = NULL;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
+  int openpgp;
+  char *cache_nonce;
+  char *passphrase = NULL;
+  
+  openpgp = has_option (line, "--openpgp");
+  cache_nonce = option_value (line, "--cache-nonce");
+  if (cache_nonce)
+    {
+      for (; *line && !spacep (line); line++)
+        ;
+      if (*line)
+        *line++ = '\0';
+      cache_nonce = xtrystrdup (cache_nonce);
+      if (!cache_nonce)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  line = skip_options (line);
 
   if (!ctrl->server_local->export_key)
     {
@@ -1685,8 +1728,11 @@ cmd_export_key (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  /* Get the key from the file.  With the openpgp flag we also ask for
+     the passphrase so that we can use it to re-encrypt it.  */
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
-                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey);
+                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey,
+                             openpgp ? &passphrase : NULL);
   if (err)
     goto leave;
   if (!s_skey)
@@ -1697,8 +1743,33 @@ cmd_export_key (assuan_context_t ctx, char *line)
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
     }
-
-  err = make_canon_sexp_pad (s_skey, 1, &key, &keylen);
+  
+  if (openpgp)
+    {
+      /* The openpgp option changes the key format into the OpenPGP
+         key transfer format.  The result is already a padded
+         canonical S-expression.  */
+      if (!passphrase)
+        {
+          int fully_canceled;
+          err = agent_ask_new_passphrase 
+            (ctrl, _("This key (or subkey) is not protected with a passphrase."
+                     "  Please enter a new passphrase to export it."),
+             &passphrase, &fully_canceled);
+          if (err)
+            {
+              if (fully_canceled)
+                err = gpg_error (GPG_ERR_FULLY_CANCELED);
+              goto leave;
+            }
+        }
+      err = convert_to_openpgp (ctrl, s_skey, passphrase, &key, &keylen);
+    }
+  else
+    {
+      /* Convert into a canonical S-expression and wrap that.  */
+      err = make_canon_sexp_pad (s_skey, 1, &key, &keylen);
+    }
   if (err)
     goto leave;
   gcry_sexp_release (s_skey);
@@ -1735,12 +1806,18 @@ cmd_export_key (assuan_context_t ctx, char *line)
   
 
  leave:
+  xfree (passphrase);
   xfree (wrappedkey);
   gcry_cipher_close (cipherhd);
   xfree (key);
   gcry_sexp_release (s_skey);
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
+
+  /* Not all users of gpg-agent know about fully cancled; thus we map
+     it back unless we know that it is okay.  */
+  if (!openpgp && gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+    err = gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED);
   return leave_cmd (ctx, err);
 }
 

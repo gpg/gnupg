@@ -1,3 +1,13 @@
+2010-09-16  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (gpgsm_walk_cert_chain): Use GPG_ERR_MISSING_ISSUER_CERT.
+	(do_validate_chain): Ditto.
+	(gpgsm_basic_cert_check): Ditto.
+	* call-agent.c (learn_cb): Take care of new
+	GPG_ERR_MISSING_ISSUER_CERT.
+	* import.c (check_and_store): Ditto.
+	(check_and_store): Ditto.
+
 2010-08-16  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main) <aGPGConfList>: Use es_printf.

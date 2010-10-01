@@ -104,7 +104,7 @@ agent_write_private_key (const unsigned char *grip,
 }
 
 
-/* Callback function to try the unprotection from the passpharse query
+/* Callback function to try the unprotection from the passphrase query
    code. */
 static int
 try_unprotect_cb (struct pin_entry_info_s *pi)
@@ -273,11 +273,16 @@ modify_description (const char *in, const char *comment, char **result)
    should be the hex encoded keygrip of that key to be used with the
    caching mechanism. DESC_TEXT may be set to override the default
    description used for the pinentry.  If LOOKUP_TTL is given this
-   function is used to lookup the default ttl. */
+   function is used to lookup the default ttl.  If R_PASSPHRASE is not
+   NULL, the function succeeded and the key was protected the used
+   passphrase (entered or from the cache) is stored there; if not NULL
+   will be stored.  The caller needs to free the returned
+   passphrase. */
 static int
 unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
            unsigned char **keybuf, const unsigned char *grip, 
-           cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
+           cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
+           char **r_passphrase)
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
@@ -285,6 +290,10 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   unsigned char *result;
   size_t resultlen;
   char hexgrip[40+1];
+  int fully_canceled;
+
+  if (r_passphrase)
+    *r_passphrase = NULL;
   
   bin2hex (grip, 20, hexgrip);
 
@@ -297,13 +306,17 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       if (pw)
         {
           rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
-          xfree (pw);
           if (!rc)
             {
+              if (r_passphrase)
+                *r_passphrase = pw;
+              else
+                xfree (pw);
               xfree (*keybuf);
               *keybuf = result;
               return 0;
             }
+          xfree (pw);
         }
     }
 
@@ -318,13 +331,17 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       if (pw)
         {
           rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
-          xfree (pw);
           if (!rc)
             {
+              if (r_passphrase)
+                *r_passphrase = pw;
+              else
+                xfree (pw);
               xfree (*keybuf);
               *keybuf = result;
               return 0;
             }
+          xfree (pw);
           rc  = 0;
         }
 
@@ -366,7 +383,9 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   arg.change_required = 0;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi);
+  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi, &fully_canceled);
+  if (gpg_err_code (rc) == GPG_ERR_CANCELED && fully_canceled)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
   if (!rc)
     {
       assert (arg.unprotected_key);
@@ -400,8 +419,13 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               return rc;
             }
         }
-      agent_put_cache (hexgrip, cache_mode, pi->pin, 
-                       lookup_ttl? lookup_ttl (hexgrip) : 0);
+      else
+        {
+          agent_put_cache (hexgrip, cache_mode, pi->pin, 
+                           lookup_ttl? lookup_ttl (hexgrip) : 0);
+          if (r_passphrase && *pi->pin)
+            *r_passphrase = xtrystrdup (pi->pin);
+        }
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;
     }
@@ -501,13 +525,17 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
    not simply pass the TTL value because the value is only needed if
    an unprotect action was needed and looking up the TTL may have some
    overhead (e.g. scanning the sshcontrol file).  If a CACHE_NONCE is
-   given that cache item is first tried to get a passphrase.  */
+   given that cache item is first tried to get a passphrase.  If
+   R_PASSPHRASE is not NULL, the function succeeded and the key was
+   protected the used passphrase (entered or from the cache) is stored
+   there; if not NULL will be stored.  The caller needs to free the
+   returned passphrase.   */
 gpg_error_t
 agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                      const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
                      cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
-                     gcry_sexp_t *result)
+                     gcry_sexp_t *result, char **r_passphrase)
 {
   int rc;
   unsigned char *buf;
@@ -518,6 +546,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   *result = NULL;
   if (shadow_info)
     *shadow_info = NULL;
+  if (r_passphrase)
+    *r_passphrase = NULL;
 
   rc = read_key_file (grip, &s_skey);
   if (rc)
@@ -579,7 +609,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 	if (!rc)
 	  {
 	    rc = unprotect (ctrl, cache_nonce, desc_text_final, &buf, grip,
-                            cache_mode, lookup_ttl);
+                            cache_mode, lookup_ttl, r_passphrase);
 	    if (rc)
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));
@@ -626,6 +656,11 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   if (rc || got_shadow_info)
     {
       xfree (buf);
+      if (r_passphrase)
+        {
+          xfree (*r_passphrase);
+          *r_passphrase = NULL;
+        }
       return rc;
     }
 
@@ -637,6 +672,11 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     {
       log_error ("failed to build S-Exp (off=%u): %s\n",
                  (unsigned int)erroff, gpg_strerror (rc));
+      if (r_passphrase)
+        {
+          xfree (*r_passphrase);
+          *r_passphrase = NULL;
+        }
       return rc;
     }
 

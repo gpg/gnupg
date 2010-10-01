@@ -287,7 +287,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oAuditLog, "audit-log", 
                 N_("|FILE|write an audit log to FILE")),
-  ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", ""),
+  ARGPARSE_s_s (oHtmlAuditLog, "html-audit-log", "@"),
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_n (oBatch, "batch", N_("batch mode: never ask")),
   ARGPARSE_s_n (oAnswerYes, "yes", N_("assume yes on most questions")),

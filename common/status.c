@@ -58,6 +58,7 @@ get_inv_recpsgnr_code (gpg_error_t err)
 
     case GPG_ERR_NOT_TRUSTED:     errstr = "10"; break;
     case GPG_ERR_MISSING_CERT:    errstr = "11"; break;
+    case GPG_ERR_MISSING_ISSUER_CERT: errstr = "12"; break;
     default:                      errstr = "0"; break;
     }
 

@@ -901,7 +901,27 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
     put_membuf (data, buffer, length);
   return 0;
 }
-  
+ 
+
+/* Helper returning a command option to describe the used hash
+   algorithm.  See scd/command.c:cmd_pksign.  */
+static const char *
+hash_algo_option (int algo)
+{
+  switch (algo)
+    {
+    case GCRY_MD_RMD160: return "--hash=rmd160";
+    case GCRY_MD_SHA1  : return "--hash=sha1";
+    case GCRY_MD_SHA224: return "--hash=sha224";
+    case GCRY_MD_SHA256: return "--hash=sha256";
+    case GCRY_MD_SHA384: return "--hash=sha384";
+    case GCRY_MD_SHA512: return "--hash=sha512";
+    case GCRY_MD_MD5   : return "--hash=md5";
+    default:             return "";
+    }
+}
+
+
 /* Send a sign command to the scdaemon via gpg-agent's pass thru
    mechanism. */
 int
@@ -942,14 +962,11 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     return rc;
 
   init_membuf (&data, 1024);
-#if 0
-  if (!hashalgo) /* Temporary test hack. */
-    snprintf (line, DIM(line)-1, "SCD PKAUTH %s", serialno);
-  else
-#endif
-    snprintf (line, DIM(line)-1, "SCD PKSIGN %s%s",
-              hashalgo == GCRY_MD_RMD160? "--hash=rmd160 " : "",
-              serialno);
+  /* if (!hashalgo) /\* Temporary test hack. *\/ */
+  /*   snprintf (line, DIM(line)-1, "SCD PKAUTH %s", serialno); */
+  /* else */
+  snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s",
+            hash_algo_option (hashalgo), serialno);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
                         default_inq_cb, NULL, NULL, NULL);
@@ -1325,6 +1342,57 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   return err;
 }
 
+/* Ask the agent whether a secret key is availabale for any of the
+   keys (primary or sub) in KEYBLOCK.  Returns 0 if available.  */
+gpg_error_t
+agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char *p;
+  kbnode_t kbctx, node;
+  int nkeys;
+  unsigned char grip[20];
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
+
+  err = gpg_error (GPG_ERR_NO_SECKEY); /* Just in case no key was
+                                          found in KEYBLOCK.  */
+  p = stpcpy (line, "HAVEKEY");
+  for (kbctx=NULL, nkeys=0; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+    if (node->pkt->pkttype == PKT_PUBLIC_KEY
+        || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+        || node->pkt->pkttype == PKT_SECRET_KEY
+        || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+      {
+        if (nkeys && ((p - line) + 41) > (ASSUAN_LINELENGTH - 2))
+          {
+            err = assuan_transact (agent_ctx, line,
+                                   NULL, NULL, NULL, NULL, NULL, NULL);
+            if (err != gpg_err_code (GPG_ERR_NO_SECKEY))
+              break; /* Seckey available or unexpected error - ready.  */
+            p = stpcpy (line, "HAVEKEY");
+            nkeys = 0;
+          }
+
+        err = keygrip_from_pk (node->pkt->pkt.public_key, grip);
+        if (err)
+          return err;
+        *p++ = ' ';
+        bin2hex (grip, 20, p);
+        p += 40;
+        nkeys++;
+      }
+
+  if (!err && nkeys)
+    err = assuan_transact (agent_ctx, line,
+                           NULL, NULL, NULL, NULL, NULL, NULL);
+
+  return err;
+}
+
 
 
 static gpg_error_t
@@ -1393,7 +1461,8 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
 }
 
 
-/* Status callback for agent_import_key and agent_genkey.  */
+/* Status callback for agent_import_key, agent_export_key and
+   agent_genkey.  */
 static gpg_error_t
 cache_nonce_status_cb (void *opaque, const char *line)
 {
@@ -1849,3 +1918,56 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 }
 
 
+
+/* Receive a secret key from the agent.  HEXKEYGRIP is the hexified
+   keygrip, DESC a prompt to be displayed with the agent's passphrase
+   question (needs to be plus+percent escaped).  On success the key is
+   stored as a canonical S-expression at R_RESULT and R_RESULTLEN.  */
+gpg_error_t
+agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+                  char **cache_nonce_addr,
+                  unsigned char **r_result, size_t *r_resultlen)
+{
+  gpg_error_t err;
+  membuf_t data;
+  size_t len;
+  unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
+
+  *r_result = NULL;
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      err = assuan_transact (agent_ctx, line,
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
+
+  snprintf (line, DIM(line)-1, "EXPORT_KEY --openpgp %s%s %s", 
+            cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
+            cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
+            hexkeygrip);
+
+  init_membuf_secure (&data, 1024);
+  err = assuan_transact (agent_ctx, line,
+                         membuf_data_cb, &data, 
+                         default_inq_cb, ctrl,
+                         cache_nonce_status_cb, cache_nonce_addr);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  *r_result = buf;
+  *r_resultlen = len;
+  return 0;
+}

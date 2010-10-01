@@ -33,20 +33,23 @@ struct keyserver_spec *parse_keyserver_uri(const char *string,
 					   const char *configname,
 					   unsigned int configlineno);
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
-int keyserver_export(strlist_t users);
-int keyserver_import(strlist_t users);
-int keyserver_import_fprint(const byte *fprint,size_t fprint_len,
-			    struct keyserver_spec *keyserver);
-int keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver);
-int keyserver_refresh(strlist_t users);
-int keyserver_search(strlist_t tokens);
-int keyserver_fetch(strlist_t urilist);
-int keyserver_import_cert(const char *name,
-			  unsigned char **fpr,size_t *fpr_len);
-int keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len);
-int keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
-			  struct keyserver_spec *keyserver);
-int keyserver_import_ldap(const char *name,
-			  unsigned char **fpr,size_t *fpr_len);
+int keyserver_export (ctrl_t ctrl, strlist_t users);
+int keyserver_import (ctrl_t ctrl, strlist_t users);
+int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+                             struct keyserver_spec *keyserver);
+int keyserver_import_keyid (ctrl_t ctrl, u32 *keyid,
+                            struct keyserver_spec *keyserver);
+int keyserver_refresh (ctrl_t ctrl, strlist_t users);
+int keyserver_search (ctrl_t ctrl, strlist_t tokens);
+int keyserver_fetch (ctrl_t ctrl, strlist_t urilist);
+int keyserver_import_cert (ctrl_t ctrl, const char *name,
+                           unsigned char **fpr,size_t *fpr_len);
+int keyserver_import_pka (ctrl_t ctrl,
+                          const char *name,unsigned char **fpr,size_t *fpr_len);
+int keyserver_import_name (ctrl_t ctrl,
+                           const char *name,unsigned char **fpr,size_t *fpr_len,
+                           struct keyserver_spec *keyserver);
+int keyserver_import_ldap (ctrl_t ctrl, const char *name,
+                           unsigned char **fpr,size_t *fpr_len);
 
 #endif /* !_KEYSERVER_INTERNAL_H_ */

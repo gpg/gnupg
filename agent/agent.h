@@ -182,7 +182,8 @@ enum
     PRIVATE_KEY_UNKNOWN = 0,
     PRIVATE_KEY_CLEAR = 1,
     PRIVATE_KEY_PROTECTED = 2,
-    PRIVATE_KEY_SHADOWED = 3
+    PRIVATE_KEY_SHADOWED = 3,
+    PROTECTED_SHARED_SECRET = 4
   };
 
 
@@ -233,7 +234,8 @@ gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  unsigned char **shadow_info,
                                  cache_mode_t cache_mode,
                                  lookup_ttl_t lookup_ttl,
-                                 gcry_sexp_t *result);
+                                 gcry_sexp_t *result,
+                                 char **r_passphrase);
 gpg_error_t agent_public_key_from_file (ctrl_t ctrl, 
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
@@ -251,7 +253,7 @@ int pinentry_active_p (ctrl_t ctrl, int waitseconds);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,
-                  struct pin_entry_info_s *pininfo);
+                  struct pin_entry_info_s *pininfo, int *r_cancelall);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext, int with_qualitybar);
@@ -289,7 +291,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 /*-- genkey.c --*/
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
-                                      char **r_passphrase);
+                                      char **r_passphrase, int *r_cancelall);
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);

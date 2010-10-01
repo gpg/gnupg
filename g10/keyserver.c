@@ -89,10 +89,10 @@ static struct parse_options keyserver_opts[]=
     {NULL,0,NULL,NULL}
   };
 
-static int keyserver_work(enum ks_action action,strlist_t list,
-			  KEYDB_SEARCH_DESC *desc,int count,
-			  unsigned char **fpr,size_t *fpr_len,
-			  struct keyserver_spec *keyserver);
+static int keyserver_work (ctrl_t ctrl, enum ks_action action,strlist_t list,
+                           KEYDB_SEARCH_DESC *desc,int count,
+                           unsigned char **fpr,size_t *fpr_len,
+                           struct keyserver_spec *keyserver);
 
 /* Reasonable guess */
 #define DEFAULT_MAX_CERT_SIZE 16384
@@ -732,7 +732,8 @@ parse_keyrec(char *keystring)
    (cosmetics, really) and to better take advantage of the keyservers
    that can do multiple fetches in one go (LDAP). */
 static int
-show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
+show_prompt (ctrl_t ctrl,
+             KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 {
   char *answer;
 
@@ -765,8 +766,8 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
       while((num=strsep(&split," ,"))!=NULL)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work(KS_GET,NULL,&desc[atoi(num)-1],1,
-			 NULL,NULL,opt.keyserver);
+	  keyserver_work (ctrl, KS_GET,NULL,&desc[atoi(num)-1],1,
+                          NULL,NULL,opt.keyserver);
 
       xfree(answer);
       return 1;
@@ -779,7 +780,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
    small, it will grow safely.  If negative it disables the "Key x-y
    of z" messages.  searchstr should be UTF-8 (rather than native). */
 static void
-keyserver_search_prompt(IOBUF buffer,const char *searchstr)
+keyserver_search_prompt (ctrl_t ctrl, IOBUF buffer,const char *searchstr)
 {
   int i=0,validcount=0,started=0,header=0,count=1;
   unsigned int maxlen,buflen,numlines=0;
@@ -872,7 +873,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
                 
 	      for(;;)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,localstr))
+		  if (show_prompt (ctrl, desc, i, validcount?count:0, localstr))
 		    break;
 		  validcount=0;
 		}
@@ -901,7 +902,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	      /* screen_lines - 1 for the prompt. */
 	      if(numlines+keyrec->lines>opt.screen_lines-1)
 		{
-		  if(show_prompt(desc,i,validcount?count:0,localstr))
+		  if (show_prompt (ctrl, desc, i, validcount?count:0, localstr))
 		    break;
 		  else
 		    numlines=0;
@@ -977,9 +978,10 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
-		struct keyserver_spec *keyserver)
+keyserver_spawn (ctrl_t ctrl,
+                 enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
+                 int count,int *prog,unsigned char **fpr,size_t *fpr_len,
+                 struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
   strlist_t temp;
@@ -1243,8 +1245,8 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	    /* TODO: Remove Comment: lines from keys exported this
 	       way? */
 
-	    if(export_pubkeys_stream(buffer,temp,&block,
-				     opt.keyserver_options.export_options)==-1)
+	    if(export_pubkeys_stream (ctrl, buffer,temp,&block,
+                                      opt.keyserver_options.export_options)==-1)
 	      iobuf_close(buffer);
 	    else
 	      {
@@ -1510,7 +1512,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	break;
 
       case KS_SEARCH:
-	keyserver_search_prompt(spawn->fromchild,searchstr);
+	keyserver_search_prompt (ctrl, spawn->fromchild,searchstr);
 	break;
 
       default:
@@ -1529,9 +1531,10 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 }
 
 static int 
-keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-	       int count,unsigned char **fpr,size_t *fpr_len,
-	       struct keyserver_spec *keyserver)
+keyserver_work (ctrl_t ctrl,
+                enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
+                int count,unsigned char **fpr,size_t *fpr_len,
+                struct keyserver_spec *keyserver)
 {
   int rc=0,ret=0;
 
@@ -1549,7 +1552,8 @@ keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 #else
   /* Spawn a handler */
 
-  rc=keyserver_spawn(action,list,desc,count,&ret,fpr,fpr_len,keyserver);
+  rc = keyserver_spawn (ctrl, action, list, desc, count,
+                        &ret, fpr, fpr_len, keyserver);
   if(ret)
     {
       switch(ret)
@@ -1599,7 +1603,7 @@ keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 }
 
 int 
-keyserver_export(strlist_t users)
+keyserver_export (ctrl_t ctrl, strlist_t users)
 {
   gpg_error_t err;
   strlist_t sl=NULL;
@@ -1624,7 +1628,7 @@ keyserver_export(strlist_t users)
 
   if(sl)
     {
-      rc=keyserver_work(KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
+      rc = keyserver_work (ctrl, KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
       free_strlist(sl);
     }
 
@@ -1632,7 +1636,7 @@ keyserver_export(strlist_t users)
 }
 
 int 
-keyserver_import(strlist_t users)
+keyserver_import (ctrl_t ctrl, strlist_t users)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC *desc;
@@ -1663,7 +1667,8 @@ keyserver_import(strlist_t users)
     }
 
   if(count>0)
-    rc=keyserver_work(KS_GET,NULL,desc,count,NULL,NULL,opt.keyserver);
+    rc=keyserver_work (ctrl, KS_GET, NULL, desc, count,
+                       NULL, NULL, opt.keyserver);
 
   xfree(desc);
 
@@ -1671,8 +1676,8 @@ keyserver_import(strlist_t users)
 }
 
 int
-keyserver_import_fprint(const byte *fprint,size_t fprint_len,
-			struct keyserver_spec *keyserver)
+keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+			 struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1689,11 +1694,12 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len,
 
   /* TODO: Warn here if the fingerprint we got doesn't match the one
      we asked for? */
-  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
+  return keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, keyserver);
 }
 
 int 
-keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
+keyserver_import_keyid (ctrl_t ctrl,
+                        u32 *keyid,struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1703,7 +1709,7 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
+  return keyserver_work (ctrl, KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1865,7 +1871,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
    usernames to refresh only part of the keyring. */
 
 int
-keyserver_refresh(strlist_t users)
+keyserver_refresh (ctrl_t ctrl, strlist_t users)
 {
   int rc,count,numdesc,fakev3=0;
   KEYDB_SEARCH_DESC *desc;
@@ -1908,7 +1914,8 @@ keyserver_refresh(strlist_t users)
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
 
-	      rc=keyserver_work(KS_GET,NULL,&desc[i],1,NULL,NULL,keyserver);
+	      rc = keyserver_work (ctrl, KS_GET, NULL, &desc[i], 1,
+                                   NULL, NULL, keyserver);
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
@@ -1938,7 +1945,8 @@ keyserver_refresh(strlist_t users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work(KS_GET,NULL,desc,numdesc,NULL,NULL,opt.keyserver);
+      rc=keyserver_work (ctrl, KS_GET, NULL, desc, numdesc,
+                         NULL, NULL, opt.keyserver);
     }
 
   xfree(desc);
@@ -1954,16 +1962,16 @@ keyserver_refresh(strlist_t users)
 }
 
 int
-keyserver_search(strlist_t tokens)
+keyserver_search (ctrl_t ctrl, strlist_t tokens)
 {
-  if(tokens)
-    return keyserver_work(KS_SEARCH,tokens,NULL,0,NULL,NULL,opt.keyserver);
-  else
-    return 0;
+  if (tokens)
+    return keyserver_work (ctrl, KS_SEARCH, tokens, NULL, 0,
+                           NULL, NULL, opt.keyserver);
+  return 0;
 }
 
 int
-keyserver_fetch(strlist_t urilist)
+keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 {
   KEYDB_SEARCH_DESC desc;
   strlist_t sl;
@@ -1988,7 +1996,7 @@ keyserver_fetch(strlist_t urilist)
 	{
 	  int rc;
 
-	  rc=keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,spec);
+	  rc = keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, spec);
 	  if(rc)
 	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
 		     sl->d,g10_errstr(rc));
@@ -2011,7 +2019,8 @@ keyserver_fetch(strlist_t urilist)
 
 /* Import key in a CERT or pointed to by a CERT */
 int
-keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
+keyserver_import_cert (ctrl_t ctrl,
+                       const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain,*look,*url;
   IOBUF key;
@@ -2058,7 +2067,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  spec=parse_keyserver_uri(url,1,NULL,0);
 	  if(spec)
 	    {
-	      rc=keyserver_import_fprint(*fpr,*fpr_len,spec);
+	      rc = keyserver_import_fprint (ctrl, *fpr,*fpr_len,spec);
 	      free_keyserver_spec(spec);
 	    }
 	}
@@ -2067,7 +2076,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  /* If only a fingerprint is provided, try and fetch it from
 	     our --keyserver */
 
-	  rc=keyserver_import_fprint(*fpr,*fpr_len,opt.keyserver);
+	  rc = keyserver_import_fprint (ctrl, *fpr,*fpr_len,opt.keyserver);
 	}
       else
 	log_info(_("no keyserver known (use option --keyserver)\n"));
@@ -2087,7 +2096,8 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 /* Import key pointed to by a PKA record. Return the requested
    fingerprint in fpr. */
 int
-keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
+keyserver_import_pka (ctrl_t ctrl,
+                      const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *uri;
   int rc = G10ERR_NO_PUBKEY;
@@ -2103,7 +2113,7 @@ keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
       spec = parse_keyserver_uri (uri, 1, NULL, 0);
       if (spec)
 	{
-	  rc = keyserver_import_fprint (*fpr, 20, spec);
+	  rc = keyserver_import_fprint (ctrl, *fpr, 20, spec);
 	  free_keyserver_spec (spec);
 	}
       xfree (uri);
@@ -2120,15 +2130,17 @@ keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
 
 /* Import all keys that match name */
 int
-keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
-		      struct keyserver_spec *keyserver)
+keyserver_import_name (ctrl_t ctrl, const char *name,
+                       unsigned char **fpr, size_t *fpr_len,
+                       struct keyserver_spec *keyserver)
 {
   strlist_t list=NULL;
   int rc;
 
   append_to_strlist(&list,name);
 
-  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
+  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
+                       0, fpr, fpr_len, keyserver);
 
   free_strlist(list);
 
@@ -2137,7 +2149,8 @@ keyserver_import_name(const char *name,unsigned char **fpr,size_t *fpr_len,
 
 /* Import a key by name using LDAP */
 int
-keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
+keyserver_import_ldap (ctrl_t ctrl,
+                       const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *domain;
   struct keyserver_spec *keyserver;
@@ -2200,7 +2213,8 @@ keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
 
   append_to_strlist(&list,name);
     
-  rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
+  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
+                       0, fpr, fpr_len, keyserver);
 
   free_strlist(list);
 

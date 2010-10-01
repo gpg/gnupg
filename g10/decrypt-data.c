@@ -74,7 +74,7 @@ release_dfx_context (decode_filter_ctx_t dfx)
  * Decrypt the data, specified by ED with the key DEK.
  */
 int
-decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
+decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 {
   decode_filter_ctx_t dfx;
   byte *p;
@@ -191,7 +191,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
   else
     iobuf_push_filter ( ed->buf, decode_filter, dfx );
 
-  proc_packets ( procctx, ed->buf );
+  proc_packets (ctrl, procctx, ed->buf );
   ed->buf = NULL;
   if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);

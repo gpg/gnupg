@@ -1,3 +1,67 @@
+2010-10-01  Werner Koch  <wk@g10code.com>
+
+	* export.c (do_export_stream): Rewrite to take the secret keys
+	from the agent.
+	(canon_pubkey_algo, transfer_format_to_openpgp): New.
+
+2010-09-29  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (key_from_sexp): Fix memory leak in the error case.
+
+	* call-agent.c (agent_export_key): New.
+
+2010-09-29  Werner Koch  <wk@g10code.com>
+
+	* build-packet.c (build_packet): Fix up the pkttype.
+
+	* keyid.c (keystr_with_sub): Make SUB_KID optional.
+	(keystr_from_pk_with_sub): Ditto.
+
+	* call-agent.c (agent_scd_pksign): Add missing space.
+
+	* mainproc.c (struct mainproc_context): Add field CTRL.
+	(proc_packets): Add arg CTRL.  Change all callers.
+	(proc_signature_packets, proc_signature_packets_by_fd)
+	(proc_encryption_packets): Add arg CTRL.  Change all callers.
+	* compress.c (handle_compressed): Ditto.
+	* getkey.c (get_pubkey_byname): Ditto.
+	* keyserver.c (keyserver_spawn, keyserver_work): Ditto.
+	(show_prompt, keyserver_export, keyserver_import)
+	(keyserver_import_fprint, keyserver_import_keyid)
+	(keyserver_refresh, keyserver_search, keyserver_fetch)
+	(keyserver_import_name, keyserver_search_prompt)
+	(keyserver_import_pka, keyserver_import_cert): Ditto.
+	callers.
+	* verify.c (verify_signatures, verify_files): Ditto.
+	* sign.c (sign_file): Ditto.
+	* encrypt.c (encrypt_crypt, encrypt_crypt_files): Ditto.
+	* pkclist.c (find_and_check_key, build_pk_list): Ditto.
+	* keylist.c (locate_one, public_key_list, secret_key_list): Ditto.
+	* card-util.c (fetch_url, card_edit): Ditto.
+	* import.c (check_prefs, import_one, revocation_present): Ditto.
+	* keyedit.c (menu_addrevoker, keyedit_menu): Ditto.
+	* decrypt-data.c (decrypt_data): Ditto.
+	* decrypt.c (decrypt_message, decrypt_messages)
+	(decrypt_message_fd): Ditto.
+	* gpgv.c (main): Add CTRL structure.
+
+2010-09-28  Werner Koch  <wk@g10code.com>
+
+	* options.h (struct opt): Remove SIMPLE_SK_CHECKSUM.
+
+	* export.c (parse_export_options): Remove option
+	export-resert-subkey-passwd.
+	(do_export_stream, do_export, export_pubkeys)
+	(export_pubkeys_stream, export_seckeys, export_secsubkeys): Add
+	arg CTRL.  Change all callers.
+
+	* call-agent.c (hash_algo_option): New.
+	(agent_scd_pksign): Use it.
+
+2010-09-17  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_probe_any_secret_key): New.
+
 2010-09-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: Make the example for force-v3-sigs match

@@ -1,6 +1,6 @@
-/* export.c
+/* export.c - Export keys in the OpenPGP defined format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,7 +34,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "trustdb.h"
-
+#include "call-agent.h"
 
 /* An object to keep track of subkeys. */
 struct subkey_list_s
@@ -45,10 +45,12 @@ struct subkey_list_s
 typedef struct subkey_list_s *subkey_list_t;
 
 
-static int do_export( strlist_t users, int secret, unsigned int options );
-static int do_export_stream( IOBUF out, strlist_t users, int secret,
-			     KBNODE *keyblock_out, unsigned int options,
-			     int *any );
+static int do_export (ctrl_t ctrl,
+                      strlist_t users, int secret, unsigned int options );
+static int do_export_stream (ctrl_t ctrl, iobuf_t out,
+                             strlist_t users, int secret,
+                             kbnode_t *keyblock_out, unsigned int options,
+			     int *any);
 static int build_sexp (iobuf_t out, PACKET *pkt, int *indent);
 
 
@@ -63,8 +65,6 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("export attribute user IDs (generally photo IDs)")},
       {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL,
        N_("export revocation keys marked as \"sensitive\"")},
-      {"export-reset-subkey-passwd",EXPORT_RESET_SUBKEY_PASSWD,NULL,
-       N_("remove the passphrase from exported subkeys")},
       {"export-clean",EXPORT_CLEAN,NULL,
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
@@ -93,9 +93,9 @@ parse_export_options(char *str,unsigned int *options,int noisy)
  * options are defined in main.h.
  * If USERS is NULL, the complete ring will be exported.  */
 int
-export_pubkeys( strlist_t users, unsigned int options )
+export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options )
 {
-    return do_export( users, 0, options );
+  return do_export (ctrl, users, 0, options );
 }
 
 /****************
@@ -103,35 +103,41 @@ export_pubkeys( strlist_t users, unsigned int options )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, strlist_t users,
-		       KBNODE *keyblock_out, unsigned int options )
+export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
+		       kbnode_t *keyblock_out, unsigned int options )
 {
-    int any, rc;
-
-    rc = do_export_stream( out, users, 0, keyblock_out, options, &any );
-    if( !rc && !any )
-	rc = -1;
-    return rc;
+  int any, rc;
+  
+  rc = do_export_stream (ctrl, out, users, 0, keyblock_out, options, &any);
+  if (!rc && !any)
+    rc = -1;
+  return rc;
 }
 
 int
-export_seckeys( strlist_t users )
+export_seckeys (ctrl_t ctrl, strlist_t users )
 {
   /* Use only relevant options for the secret key. */
   unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
-  return do_export( users, 1, options );
+  return do_export (ctrl, users, 1, options);
 }
 
 int
-export_secsubkeys( strlist_t users )
+export_secsubkeys (ctrl_t ctrl, strlist_t users )
 {
   /* Use only relevant options for the secret key. */
   unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
-  return do_export( users, 2, options );
+  return do_export (ctrl, users, 2, options);
 }
 
+
+/* Export the keys identified by the list of strings in USERS.  If
+   Secret is false public keys will be exported.  With secret true
+   secret keys will be exported; in this case 1 means the entire
+   secret keyblock and 2 only the subkeys.  OPTIONS are the export
+   options to apply.  */
 static int
-do_export( strlist_t users, int secret, unsigned int options )
+do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
 {
   IOBUF out = NULL;
   int any, rc;
@@ -156,7 +162,7 @@ do_export( strlist_t users, int secret, unsigned int options )
         push_compress_filter (out,&zfx,default_compress_algo());
     }
 
-  rc = do_export_stream ( out, users, secret, NULL, options, &any );
+  rc = do_export_stream (ctrl, out, users, secret, NULL, options, &any );
 
   if ( rc || !any )
     iobuf_cancel (out);
@@ -275,11 +281,324 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
 }
 
 
-/* If keyblock_out is non-NULL, AND the exit code is zero, then it
-   contains a pointer to the first keyblock found and exported.  No
-   other keyblocks are exported.  The caller must free it.  */
+/* Return a canonicalized public key algoithms.  This is used to
+   compare different flavors of algorithms (e.g. ELG and ELG_E are
+   considered the same).  */
 static int
-do_export_stream (iobuf_t out, strlist_t users, int secret,
+canon_pubkey_algo (int algo)
+{
+  switch (algo)
+    {
+    case GCRY_PK_RSA:
+    case GCRY_PK_RSA_E:
+    case GCRY_PK_RSA_S: return GCRY_PK_RSA;
+    case GCRY_PK_ELG:   
+    case GCRY_PK_ELG_E: return GCRY_PK_ELG;
+    default: return algo;
+    }
+}
+
+
+/* Use the key transfer format given in S_PGP to create the secinfo
+   structure in PK and chnage the parameter array in PK to include the
+   secret parameters.  */
+static gpg_error_t
+transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
+{
+  gpg_error_t err;
+  gcry_sexp_t top_list;
+  gcry_sexp_t list = NULL;
+  const char *value;
+  size_t valuelen;
+  char *string;
+  int  idx;
+  int  is_v4, is_protected;
+  int  pubkey_algo;
+  int  protect_algo = 0;
+  char iv[16];
+  int  ivlen = 0;
+  int  s2k_mode = 0;
+  int  s2k_algo = 0;
+  byte s2k_salt[8];
+  u32  s2k_count = 0;
+  size_t npkey, nskey;
+  gcry_mpi_t skey[10];  /* We support up to 9 parameters.  */
+  u16 desired_csum;
+  int skeyidx = 0;
+  struct seckey_info *ski;
+
+  top_list = gcry_sexp_find_token (s_pgp, "openpgp-private-key", 0);
+  if (!top_list)
+    goto bad_seckey;
+
+  list = gcry_sexp_find_token (top_list, "version", 0);
+  if (!list)
+    goto bad_seckey;
+  value = gcry_sexp_nth_data (list, 1, &valuelen);
+  if (!value || valuelen != 1 || !(value[0] == '3' || value[0] == '4'))
+    goto bad_seckey;
+  is_v4 = (value[0] == '4');
+
+  gcry_sexp_release (list);
+  list = gcry_sexp_find_token (top_list, "protection", 0);
+  if (!list)
+    goto bad_seckey;
+  value = gcry_sexp_nth_data (list, 1, &valuelen);
+  if (!value)
+    goto bad_seckey;
+  if (valuelen == 4 && !memcmp (value, "sha1", 4))
+    is_protected = 2;
+  else if (valuelen == 3 && !memcmp (value, "sum", 3))
+    is_protected = 1;
+  else if (valuelen == 4 && !memcmp (value, "none", 4))
+    is_protected = 0;
+  else
+    goto bad_seckey;
+  if (is_protected)
+    {
+      string = gcry_sexp_nth_string (list, 2);
+      if (!string)
+        goto bad_seckey;
+      protect_algo = gcry_cipher_map_name (string);
+      xfree (string);
+      
+      value = gcry_sexp_nth_data (list, 3, &valuelen);
+      if (!value || !valuelen || valuelen > sizeof iv)
+        goto bad_seckey;
+      memcpy (iv, value, valuelen);
+      ivlen = valuelen;
+
+      string = gcry_sexp_nth_string (list, 4);
+      if (!string)
+        goto bad_seckey;
+      s2k_mode = strtol (string, NULL, 10);
+      xfree (string);
+
+      string = gcry_sexp_nth_string (list, 5);
+      if (!string)
+        goto bad_seckey;
+      s2k_algo = gcry_md_map_name (string);
+      xfree (string);
+
+      value = gcry_sexp_nth_data (list, 6, &valuelen);
+      if (!value || !valuelen || valuelen > sizeof s2k_salt)
+        goto bad_seckey;
+      memcpy (s2k_salt, value, valuelen);
+
+      string = gcry_sexp_nth_string (list, 7);
+      if (!string)
+        goto bad_seckey;
+      s2k_count = strtoul (string, NULL, 10);
+      xfree (string);
+    }
+
+  gcry_sexp_release (list);
+  list = gcry_sexp_find_token (top_list, "algo", 0);
+  if (!list)
+    goto bad_seckey;
+  string = gcry_sexp_nth_string (list, 1);
+  if (!string)
+    goto bad_seckey;
+  pubkey_algo = gcry_pk_map_name (string);
+  xfree (string);
+
+  if (gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
+      || gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
+      || !npkey || npkey >= nskey || nskey > PUBKEY_MAX_NSKEY)
+    goto bad_seckey;
+
+  gcry_sexp_release (list);
+  list = gcry_sexp_find_token (top_list, "skey", 0);
+  if (!list)
+    goto bad_seckey;
+  for (idx=0;;)
+    {
+      int is_enc;
+
+      value = gcry_sexp_nth_data (list, ++idx, &valuelen);
+      if (!value && skeyidx >= npkey)
+        break;  /* Ready.  */
+
+      /* Check for too many parameters.  Note that depending on the
+         protection mode and version number we may see less than NSKEY
+         (but at least NPKEY+1) parameters.  */
+      if (idx >= 2*nskey)
+        goto bad_seckey;
+      if (skeyidx >= DIM (skey)-1)
+        goto bad_seckey;
+
+      if (!value || valuelen != 1 || !(value[0] == '_' || value[0] == 'e'))
+        goto bad_seckey;
+      is_enc = (value[0] == 'e');
+      value = gcry_sexp_nth_data (list, ++idx, &valuelen);
+      if (!value || !valuelen)
+        goto bad_seckey;
+      if (is_enc)
+        {
+          void *p = xtrymalloc (valuelen);
+          if (!p)
+            goto outofmem;
+          memcpy (p, value, valuelen);
+          skey[skeyidx] = gcry_mpi_set_opaque (NULL, p, valuelen*8);
+          if (!skey[skeyidx])
+            goto outofmem;
+        }
+      else
+        {
+          if (gcry_mpi_scan (skey + skeyidx, GCRYMPI_FMT_STD,
+                             value, valuelen, NULL))
+            goto bad_seckey;
+        }
+      skeyidx++;
+    }
+  skey[skeyidx++] = NULL;
+
+  gcry_sexp_release (list);
+  list = gcry_sexp_find_token (top_list, "csum", 0);
+  if (list)
+    {
+      string = gcry_sexp_nth_string (list, 1);
+      if (!string)
+        goto bad_seckey;
+      desired_csum = strtoul (string, NULL, 10);
+      xfree (string);
+    }
+  else
+    desired_csum = 0;
+
+
+  gcry_sexp_release (list); list = NULL;
+  gcry_sexp_release (top_list); top_list = NULL;
+
+  /* log_debug ("XXX is_v4=%d\n", is_v4); */
+  /* log_debug ("XXX pubkey_algo=%d\n", pubkey_algo); */
+  /* log_debug ("XXX is_protected=%d\n", is_protected); */
+  /* log_debug ("XXX protect_algo=%d\n", protect_algo); */
+  /* log_printhex ("XXX iv", iv, ivlen); */
+  /* log_debug ("XXX ivlen=%d\n", ivlen); */
+  /* log_debug ("XXX s2k_mode=%d\n", s2k_mode); */
+  /* log_debug ("XXX s2k_algo=%d\n", s2k_algo); */
+  /* log_printhex ("XXX s2k_salt", s2k_salt, sizeof s2k_salt); */
+  /* log_debug ("XXX s2k_count=%lu\n", (unsigned long)s2k_count); */
+  /* for (idx=0; skey[idx]; idx++) */
+  /*   { */
+  /*     int is_enc = gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE); */
+  /*     log_info ("XXX skey[%d]%s:", idx, is_enc? " (enc)":""); */
+  /*     if (is_enc) */
+  /*       { */
+  /*         void *p; */
+  /*         unsigned int nbits; */
+  /*         p = gcry_mpi_get_opaque (skey[idx], &nbits); */
+  /*         log_printhex (NULL, p, (nbits+7)/8); */
+  /*       } */
+  /*     else */
+  /*       gcry_mpi_dump (skey[idx]); */
+  /*     log_printf ("\n"); */
+  /*   } */
+
+  if (!is_v4 || is_protected != 2 )
+    {
+      /* We only support the v4 format and a SHA-1 checksum.  */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
+
+  /* Do some sanity checks.  */
+  if (s2k_count <= 1024)
+    {
+      /* The count must be larger so that encode_s2k_iterations does
+         not fall into a backward compatibility mode.  */
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  if (canon_pubkey_algo (pubkey_algo) != canon_pubkey_algo (pk->pubkey_algo))
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+  err = openpgp_cipher_test_algo (protect_algo);
+  if (err)
+    goto leave;
+  err = openpgp_md_test_algo (s2k_algo);
+  if (err)
+    goto leave;
+  
+  /* Check that the public key parameters match.  */
+  for (idx=0; idx < npkey; idx++)
+    if (gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
+        || gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE)
+        || gcry_mpi_cmp (pk->pkey[idx], skey[idx]))
+      {
+        err = gpg_error (GPG_ERR_BAD_PUBKEY);
+        goto leave;
+      }
+
+  /* Check that the first secret key parameter in SKEY is encrypted
+     and that there are no more secret key parameters.  The latter is
+     guaranteed by the v4 packet format.  */
+  if (!gcry_mpi_get_flag (skey[npkey], GCRYMPI_FLAG_OPAQUE))
+    goto bad_seckey;
+  if (npkey+1 < DIM (skey) && skey[npkey+1])
+    goto bad_seckey;
+
+  /* Check that the secret key parameters in PK are all set to NULL. */
+  for (idx=npkey; idx < nskey; idx++)
+    if (pk->pkey[idx])
+      goto bad_seckey;
+
+  /* Now build the protection info. */
+  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+  if (!ski)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  
+  ski->is_protected = 1;
+  ski->sha1chk = 1;
+  ski->algo = protect_algo;
+  ski->s2k.mode = s2k_mode;
+  ski->s2k.hash_algo = s2k_algo;
+  assert (sizeof ski->s2k.salt == sizeof s2k_salt);
+  memcpy (ski->s2k.salt, s2k_salt, sizeof s2k_salt);
+  ski->s2k.count = encode_s2k_iterations (s2k_count);
+  assert (ivlen <= sizeof ski->iv);
+  memcpy (ski->iv, iv, ivlen);
+  ski->ivlen = ivlen;
+
+  /* Store the protected secret key parameter.  */
+  pk->pkey[npkey] = skey[npkey];
+  skey[npkey] = NULL;
+
+  /* That's it.  */
+
+ leave:
+  gcry_sexp_release (list);
+  gcry_sexp_release (top_list);
+  for (idx=0; idx < skeyidx; idx++)
+    gcry_mpi_release (skey[idx]);
+  return err;
+
+ bad_seckey:
+  err = gpg_error (GPG_ERR_BAD_SECKEY);
+  goto leave;
+  
+ outofmem:
+  err = gpg_error (GPG_ERR_ENOMEM);
+  goto leave;
+}
+
+/* Export the keys identified by the list of strings in USERS to the
+   stream OUT.  If Secret is false public keys will be exported.  With
+   secret true secret keys will be exported; in this case 1 means the
+   entire secret keyblock and 2 only the subkeys.  OPTIONS are the
+   export options to apply.  If KEYBLOCK_OUT is not NULL, AND the exit
+   code is zero, a pointer to the first keyblock found and exported
+   will be stored at this address; no other keyblocks are exported in
+   this case.  The caller must free it the returned keyblock.  If any
+   key has been exported true is stored at ANY. */
+static int
+do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 		  kbnode_t *keyblock_out, unsigned int options, int *any)
 {
   gpg_error_t err = 0;
@@ -292,6 +611,7 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
   KEYDB_HANDLE kdbhd;
   strlist_t sl;
   int indent = 0;
+  gcry_cipher_hd_t cipherhd = NULL;
 
   *any = 0;
   init_packet (&pkt);
@@ -330,21 +650,51 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
   if (secret)
     {
       log_error (_("exporting secret keys not allowed\n"));
-      err = G10ERR_GENERAL;
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
 #endif
+  
+  /* For secret key export we need to setup a decryption context.  */
+  if (secret)
+    {
+      void *kek = NULL;
+      size_t keklen;
+
+      err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
+      if (err)
+        {
+          log_error ("error getting the KEK: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      
+      /* Prepare a cipher context.  */
+      err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                              GCRY_CIPHER_MODE_AESWRAP, 0);
+      if (!err)
+        err = gcry_cipher_setkey (cipherhd, kek, keklen);
+      if (err)
+        {
+          log_error ("error setting up an encryption context: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      xfree (kek);
+      kek = NULL;
+    }
 
   while (!(err = keydb_search2 (kdbhd, desc, ndesc, &descindex))) 
     {
-      int sha1_warned = 0;
       int skip_until_subkey = 0;
       u32 keyid[2];
+      PKT_public_key *pk;
 
       if (!users) 
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       /* Read the keyblock. */
+      release_kbnode (keyblock);
+      keyblock = NULL;
       err = keydb_get_keyblock (kdbhd, &keyblock);
       if (err) 
         {
@@ -352,60 +702,57 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
           goto leave;
 	}
 
-      if ((node=find_kbnode(keyblock, PKT_SECRET_KEY)))
+      node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+      if (!node)
         {
-          PKT_public_key *pk = node->pkt->pkt.public_key;
+          log_error ("public key packet not found in keyblock - skipped\n");
+          continue;
+        }
+      pk = node->pkt->pkt.public_key;
+      keyid_from_pk (pk, keyid);
 
-          keyid_from_pk (pk, keyid);
+      /* If a secret key export is required we need to check whether
+         we have a secret key at all and if so create the seckey_info
+         structure.  */
+      if (secret)
+        {
+          if (agent_probe_any_secret_key (ctrl, keyblock))
+            continue;  /* No secret key (neither primary nor subkey).  */
 
-          /* We can't apply GNU mode 1001 on an unprotected key. */
-          if( secret == 2
-              && pk->seckey_info && !pk->seckey_info->is_protected )
+          /* No v3 keys with GNU mode 1001. */
+          if (secret == 2 && pk->version == 3)
             {
-              log_info (_("key %s: not protected - skipped\n"),
+              log_info (_("key %s: PGP 2.x style key - skipped\n"),
                         keystr (keyid));
               continue;
             }
 
-          /* No v3 keys with GNU mode 1001. */
-          if( secret == 2 && pk->version == 3 )
+          /* The agent does not yet allow to export v3 packets.  It is
+             actually questionable whether we should allow them at
+             all.  */
+          if (pk->version == 3)
             {
-              log_info(_("key %s: PGP 2.x style key - skipped\n"),
-                       keystr (keyid));
+              log_info ("key %s: PGP 2.x style key (v3) export "
+                        "not yet supported - skipped\n", keystr (keyid));
               continue;
             }
+        }
 
-          /* It does not make sense to export a key with a primary
-             key on card using a non-key stub.  We simply skip those
-             keys when used with --export-secret-subkeys. */
-          if (secret == 2
-              && pk->seckey_info && pk->seckey_info->is_protected
-              && pk->seckey_info->s2k.mode == 1002 ) 
-            {
-              log_info(_("key %s: key material on-card - skipped\n"),
-                       keystr (keyid));
-              continue;
-            }
-        }
-      else
-        {
-          /* It's a public key export, so do the cleaning if
-             requested.  Note that both export-clean and
-             export-minimal only apply to UID sigs (0x10, 0x11, 0x12,
-             and 0x13).  A designated revocation is never stripped,
-             even with export-minimal set.  */
-          if ( (options & EXPORT_CLEAN) )
-            clean_key (keyblock, opt.verbose, options&EXPORT_MINIMAL,
-                       NULL, NULL);
-        }
+      /* Always do the cleaning on the public key part if requested.
+         Note that we don't yet set this option if we are exporting
+         secret keys.  Note that both export-clean and export-minimal
+         only apply to UID sigs (0x10, 0x11, 0x12, and 0x13).  A
+         designated revocation is never stripped, even with
+         export-minimal set.  */
+      if ((options & EXPORT_CLEAN))
+        clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
 
       /* And write it. */
       for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); ) 
         {
           if (skip_until_subkey)
             {
-              if (node->pkt->pkttype==PKT_PUBLIC_SUBKEY
-                  || node->pkt->pkttype==PKT_SECRET_SUBKEY)
+              if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
                 skip_until_subkey = 0;
               else
                 continue;
@@ -425,8 +772,7 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
              (plus the primary key, if the user didn't specifically
              request it). */
           if (desc[descindex].exact
-              && (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-                  || node->pkt->pkttype == PKT_SECRET_SUBKEY))
+              && node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
             {
               if (!exact_subkey_match_p (desc+descindex, node))
                 {
@@ -440,9 +786,9 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
                      skip in any case if the key is in that list.
 
                      We need this whole mess because the import
-                     function is not able to merge secret keys and
-                     thus it is useless to output them as two separate
-                     keys and have import merge them.  */
+                     function of GnuPG < 2.1 is not able to merge
+                     secret keys and thus it is useless to output them
+                     as two separate keys and have import merge them.  */
                   if (subkey_in_list_p (subkey_list, node))  
                     skip_until_subkey = 1; /* Already processed this one. */
                   else
@@ -508,88 +854,181 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
 	      continue;
 	    }
 
-          if (secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY)
+          if (secret && (node->pkt->pkttype == PKT_PUBLIC_KEY
+                         || node->pkt->pkttype == PKT_PUBLIC_SUBKEY))
             {
-              /* We don't want to export the secret parts of the
-               * primary key, this is done by temporary switching to
-               * GNU protection mode 1001.  */
-              int save_mode = node->pkt->pkt.public_key->seckey_info->s2k.mode;
-              node->pkt->pkt.public_key->seckey_info->s2k.mode = 1001;
-              if ((options&EXPORT_SEXP_FORMAT))
-                err = build_sexp (out, node->pkt, &indent);
+              u32 subkidbuf[2], *subkid;
+              char *hexgrip, *serialno;
+              
+              pk = node->pkt->pkt.public_key;
+              if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+                subkid = NULL;
               else
-                err = build_packet (out, node->pkt);
-              node->pkt->pkt.public_key->seckey_info->s2k.mode = save_mode;
-            }
-          else if (secret == 2 && node->pkt->pkttype == PKT_SECRET_SUBKEY
-                   && (opt.export_options&EXPORT_RESET_SUBKEY_PASSWD))
-            {
-              /* If the subkey is protected reset the passphrase to
-                 export an unprotected subkey.  This feature is useful
-                 in cases of a subkey copied to an unattended machine
-                 where a passphrase is not required. */
-              err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-              goto leave;
-#warning We need to implement this              
-              /* PKT_secret_key *sk_save, *sk; */
+                {
+                  keyid_from_pk (pk, subkidbuf);
+                  subkid = subkidbuf;
+                }
 
-              /* sk_save = node->pkt->pkt.secret_key; */
-              /* sk = copy_secret_key (NULL, sk_save); */
-              /* node->pkt->pkt.secret_key = sk; */
+              if (pk->seckey_info)
+                {
+                  log_error ("key %s: oops: seckey_info already set"
+                             " - skipped\n", keystr_with_sub (keyid, subkid));
+                  skip_until_subkey = 1;
+                  continue;
+                }
+              
+              err = hexkeygrip_from_pk (pk, &hexgrip);
+              if (err)
+                {
+                  log_error ("key %s: error computing keygrip: %s"
+                             " - skipped\n", keystr_with_sub (keyid, subkid),
+                             gpg_strerror (err));
+                  skip_until_subkey = 1;
+                  err = 0;
+                  continue;
+                }
 
-              /* log_info (_("about to export an unprotected subkey\n")); */
-              /* switch (is_secret_key_protected (sk)) */
-              /*   { */
-              /*   case -1: */
-              /*     err = gpg_error (GPG_ERR_PUBKEY_ALGO); */
-              /*     break; */
-              /*   case 0: */
-              /*     break; */
-              /*   default: */
-              /*     if (sk->protect.s2k.mode == 1001) */
-              /*       ; /\* No secret parts. *\/ */
-              /*     else if( sk->protect.s2k.mode == 1002 )  */
-              /*       ; /\* Card key stub. *\/ */
-              /*     else  */
-              /*       { */
-              /*         /\* err = check_secret_key( sk, 0 ); *\/ */
-              /*       } */
-              /*     break; */
-              /*   } */
-              /* if (err) */
-              /*   { */
-              /*     node->pkt->pkt.secret_key = sk_save; */
-              /*     free_secret_key (sk); */
-              /*     log_error (_("failed to unprotect the subkey: %s\n"), */
-              /*                g10_errstr (rc)); */
-              /*     goto leave; */
-              /*   } */
+              if (secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                {
+                  /* We are asked not to export the secret parts of
+                     the primary key.  Make up an error code to create
+                     the stub.  */
+                  err = GPG_ERR_NOT_FOUND;
+                  serialno = NULL;
+                }
+              else
+                err = agent_get_keyinfo (ctrl, hexgrip, &serialno);
 
-              /* if ((options&EXPORT_SEXP_FORMAT)) */
-              /*   err = build_sexp (out, node->pkt, &indent); */
-              /* else */
-              /*   err = build_packet (out, node->pkt); */
+              if ((!err && serialno)
+                  && secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                {
+                  /* It does not make sense to export a key with its
+                     primary key on card using a non-key stub.  Thus
+                     we skip those keys when used with
+                     --export-secret-subkeys. */
+                  log_info (_("key %s: key material on-card - skipped\n"),
+                            keystr_with_sub (keyid, subkid));
+                  skip_until_subkey = 1;
+                }
+              else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+                       || (!err && serialno))
+                {
+                  /* Create a key stub.  */
+                  struct seckey_info *ski;
+                  const char *s;
+                  
+                  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+                  if (!ski)
+                    {
+                      err = gpg_error_from_syserror ();
+                      xfree (hexgrip);
+                      goto leave;
+                    }
 
-              /* node->pkt->pkt.secret_key = sk_save; */
-              /* free_secret_key (sk); */
+                  ski->is_protected = 1;
+                  if (err)
+                    ski->s2k.mode = 1001; /* GNU dummy (no secret key).  */
+                  else
+                    {
+                      ski->s2k.mode = 1002; /* GNU-divert-to-card.  */
+                      for (s=serialno; sizeof (ski->ivlen) && *s && s[1];
+                           ski->ivlen++, s += 2)
+                        ski->iv[ski->ivlen] = xtoi_2 (s);
+                    }
+                  
+                  if ((options&EXPORT_SEXP_FORMAT))
+                    err = build_sexp (out, node->pkt, &indent);
+                  else
+                    err = build_packet (out, node->pkt);
+                }
+              else if (!err)
+                {
+                  /* FIXME: Move this spaghetti code into a separate
+                     function.  */
+                  unsigned char *wrappedkey = NULL;
+                  size_t wrappedkeylen;
+                  unsigned char *key = NULL;
+                  size_t keylen, realkeylen;
+                  gcry_sexp_t s_skey;
+
+                  if (opt.verbose)
+                    log_info ("key %s: asking agent for the secret parts\n",
+                              keystr_with_sub (keyid, subkid));
+
+                  err = agent_export_key (ctrl, hexgrip, "Key foo", NULL,
+                                          &wrappedkey, &wrappedkeylen);
+                  if (err)
+                    goto unwraperror;
+                  if (wrappedkeylen < 24)
+                    {
+                      err = gpg_error (GPG_ERR_INV_LENGTH);
+                      goto unwraperror;
+                    }
+                  keylen = wrappedkeylen - 8;
+                  key = xtrymalloc_secure (keylen);
+                  if (!key)
+                    {
+                      err = gpg_error_from_syserror ();
+                      goto unwraperror;
+                    }
+                  err = gcry_cipher_decrypt (cipherhd, key, keylen,
+                                             wrappedkey, wrappedkeylen);
+                  if (err)
+                    goto unwraperror;
+                  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+                  if (!realkeylen)
+                    goto unwraperror; /* Invalid csexp.  */
+                  
+                  err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
+                  xfree (key);
+                  key = NULL;
+                  if (err)
+                    goto unwraperror;
+                  err = transfer_format_to_openpgp (s_skey, pk);
+                  gcry_sexp_release (s_skey);
+                  if (err)
+                    goto unwraperror;
+
+                  if ((options&EXPORT_SEXP_FORMAT))
+                    err = build_sexp (out, node->pkt, &indent);
+                  else
+                    err = build_packet (out, node->pkt);
+                  goto unwraperror_leave;
+
+                unwraperror:
+                  xfree (wrappedkey);
+                  xfree (key);
+                  if (err)
+                    {
+                      log_error ("key %s: error receiving key from agent:"
+                                 " %s%s\n",
+                                 keystr_with_sub (keyid, subkid),
+                                 gpg_strerror (err),
+                                 gpg_err_code (err) == GPG_ERR_FULLY_CANCELED?
+                                 "":_(" - skipped"));
+                      if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+                        goto leave;
+                      skip_until_subkey = 1;
+                      err = 0;
+                    }
+                unwraperror_leave:
+                  ;
+                }
+              else
+                {
+                  log_error ("key %s: error getting keyinfo from agent: %s"
+                             " - skipped\n", keystr_with_sub (keyid, subkid),
+                             gpg_strerror (err));
+                  skip_until_subkey = 1;
+                  err = 0;
+                }
+
+              xfree (pk->seckey_info);
+              pk->seckey_info = NULL;
+              xfree (hexgrip);
             }
           else
             {
-              /* Warn the user if the secret key or any of the secret
-                 subkeys are protected with SHA1 and we have
-                 simple_sk_checksum set. */
-              if (!sha1_warned && opt.simple_sk_checksum &&
-                  (node->pkt->pkttype == PKT_SECRET_KEY
-                   || node->pkt->pkttype == PKT_SECRET_SUBKEY)
-                  && node->pkt->pkt.public_key->seckey_info->sha1chk)
-                {
-                  /* I hope this warning doesn't confuse people. */
-                  log_info(_("WARNING: secret key %s does not have a "
-                             "simple SK checksum\n"), keystr (keyid));
-
-                  sha1_warned = 1;
-                }
-
               if ((options&EXPORT_SEXP_FORMAT))
                 err = build_sexp (out, node->pkt, &indent);
               else
@@ -602,6 +1041,9 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
                          node->pkt->pkttype, gpg_strerror (err));
               goto leave;
 	    }
+
+          if (!skip_until_subkey)
+            *any = 1;
 	}
 
       if ((options&EXPORT_SEXP_FORMAT) && indent)
@@ -611,10 +1053,9 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
           iobuf_put (out, '\n');
         }
 
-      ++*any;
-      if(keyblock_out)
+      if (keyblock_out)
         {
-          *keyblock_out=keyblock;
+          *keyblock_out = keyblock;
           break;
         }
     }
@@ -624,10 +1065,11 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
         iobuf_put (out, ')');
       iobuf_put (out, '\n');
     }
-  if( err == -1 )
+  if (err == -1)
     err = 0;
 
  leave:
+  gcry_cipher_close (cipherhd);
   release_subkey_list (subkey_list);
   xfree(desc);
   keydb_release (kdbhd);
@@ -672,6 +1114,10 @@ do_export_stream (iobuf_t out, strlist_t users, int secret,
 static int
 build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
 {
+  (void)out;
+  (void)pkt;
+  (void)indent;
+
   /* FIXME: Not yet implemented.  */
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
   /* PKT_secret_key *sk = pkt->pkt.secret_key; */
@@ -759,4 +1205,3 @@ build_sexp (iobuf_t out, PACKET *pkt, int *indent)
     }
   return rc;
 }
-

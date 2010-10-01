@@ -525,10 +525,10 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
    pointed to by GRIP.  On error NULL is stored at all return
    arguments.  */
 gpg_error_t
-convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp, 
-                 unsigned char *grip, const char *prompt,
-                 const char *cache_nonce,
-                 unsigned char **r_key, char **r_passphrase)
+convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp, 
+                      unsigned char *grip, const char *prompt,
+                      const char *cache_nonce,
+                      unsigned char **r_key, char **r_passphrase)
 {
   gpg_error_t err;
   gcry_sexp_t top_list;
@@ -779,7 +779,7 @@ convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
         err = try_do_unprotect_cb (pi);
     }
   if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
-    err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
+    err = agent_askpin (ctrl, prompt, NULL, NULL, pi, NULL);
   skeyidx = pi_arg.skeyidx;
   if (!err)
     {
@@ -824,4 +824,267 @@ convert_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
 }
 
 
+
+static gpg_error_t
+key_from_sexp (gcry_sexp_t sexp, const char *elems, gcry_mpi_t *array)
+{
+  gpg_error_t err = 0;
+  gcry_sexp_t l2;
+  int idx;
+
+  for (idx=0; *elems; elems++, idx++)
+    {
+      l2 = gcry_sexp_find_token (sexp, elems, 1);
+      if (!l2)
+        {
+          err = gpg_error (GPG_ERR_NO_OBJ); /* Required parameter not found.  */
+          goto leave;
+        }
+      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+      gcry_sexp_release (l2);
+      if (!array[idx]) 
+        {
+          err = gpg_error (GPG_ERR_INV_OBJ); /* Required parameter invalid.  */
+          goto leave;
+        }
+    }
+  
+ leave:
+  if (err)
+    {
+      int i;
+
+      for (i=0; i < idx; i++)
+        {
+          gcry_mpi_release (array[i]);
+          array[i] = NULL;
+        }
+    }
+  return err;
+}
+
+
+/* Given an ARRAY of mpis with the key parameters, protect the secret
+   parameters in that array and replace them by one opaque encoded
+   mpi.  NPKEY is the number of public key parameters and NSKEY is
+   the number of secret key parameters (including the public ones).
+   On success the array will have NPKEY+1 elements.  */
+static gpg_error_t
+apply_protection (gcry_mpi_t *array, int npkey, int nskey,
+                  const char *passphrase,
+                  int protect_algo, void *protect_iv, size_t protect_ivlen,
+                  int s2k_mode, int s2k_algo, byte *s2k_salt, u32 s2k_count)
+{
+  gpg_error_t err;
+  int i, j;
+  gcry_cipher_hd_t cipherhd;
+  unsigned char *bufarr[10];
+  size_t narr[10];
+  unsigned int nbits[10];
+  int ndata;
+  unsigned char *p, *data;
+
+  assert (npkey < nskey);
+  assert (nskey < DIM (bufarr));
+
+  /* Collect only the secret key parameters into BUFARR et al and
+     compute the required size of the data buffer.  */
+  ndata = 20; /* Space for the SHA-1 checksum.  */
+  for (i = npkey, j = 0; i < nskey; i++, j++ )
+    {
+      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
+      if (err)
+        {
+          err = gpg_error_from_syserror ();
+          for (i = 0; i < j; i++)
+            xfree (bufarr[i]);
+          return err;
+        }
+      nbits[j] = gcry_mpi_get_nbits (array[i]);
+      ndata += 2 + narr[j];
+    }
+
+  /* Allocate data buffer and stuff it with the secret key parameters.  */
+  data = xtrymalloc_secure (ndata);
+  if (!data)
+    {
+      err = gpg_error_from_syserror ();
+      for (i = 0; i < (nskey-npkey); i++ )
+        xfree (bufarr[i]);
+      return err;
+    }
+  p = data;
+  for (i = 0; i < (nskey-npkey); i++ )
+    {
+      *p++ = nbits[i] >> 8 ;
+      *p++ = nbits[i];
+      memcpy (p, bufarr[i], narr[i]);
+      p += narr[i];
+      xfree (bufarr[i]);
+      bufarr[i] = NULL;
+    }
+  assert (p == data + ndata - 20);
+
+  /* Append a hash of the secret key parameters.  */
+  gcry_md_hash_buffer (GCRY_MD_SHA1, p, data, ndata - 20);
+
+  /* Encrypt it.  */
+  err = gcry_cipher_open (&cipherhd, protect_algo,
+                          GCRY_CIPHER_MODE_CFB, GCRY_CIPHER_SECURE);
+  if (!err)
+    err = hash_passphrase_and_set_key (passphrase, cipherhd, protect_algo,
+                                       s2k_mode, s2k_algo, s2k_salt, s2k_count);
+  if (!err)
+    err = gcry_cipher_setiv (cipherhd, protect_iv, protect_ivlen);
+  if (!err)
+    err = gcry_cipher_encrypt (cipherhd, data, ndata, NULL, 0);
+  gcry_cipher_close (cipherhd);
+  if (err)
+    {
+      xfree (data);
+      return err;
+    }
+
+  /* Replace the secret key parameters in the array by one opaque value.  */
+  for (i = npkey; i < nskey; i++ )
+    {
+      gcry_mpi_release (array[i]);
+      array[i] = NULL;
+    }
+  array[npkey] = gcry_mpi_set_opaque (NULL, data, ndata*8);
+  return 0;
+}
+
+
+/* Convert our key S_KEY into an OpenPGP key transfer format.  On
+   success a canonical encoded S-expression is stored at R_TRANSFERKEY
+   and its length at R_TRANSFERKEYLEN; this S-expression is also
+   padded to a multiple of 64 bits.  */
+gpg_error_t
+convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
+                    unsigned char **r_transferkey, size_t *r_transferkeylen)
+{
+  gpg_error_t err;
+  gcry_sexp_t list, l2;
+  char *name;
+  int algo;
+  const char *algoname;
+  const char *elems;
+  int npkey, nskey;
+  gcry_mpi_t array[10];
+  char protect_iv[16];
+  char salt[8];
+  unsigned long s2k_count;
+  int i, j;
+
+  (void)ctrl;
+
+  *r_transferkey = NULL;
+
+  for (i=0; i < DIM (array); i++)
+    array[i] = NULL;
+
+  list = gcry_sexp_find_token (s_key, "private-key", 0);
+  if (!list)
+    return gpg_error (GPG_ERR_NO_OBJ); /* Does not contain a key object.  */
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  name = gcry_sexp_nth_string (list, 0);
+  if (!name)
+    {
+      gcry_sexp_release (list);
+      return gpg_error (GPG_ERR_INV_OBJ); /* Invalid structure of object. */
+    }
+  
+  algo = gcry_pk_map_name (name);
+  xfree (name);
+
+  switch (algo)
+    {
+    case GCRY_PK_RSA:   algoname = "rsa";   npkey = 2; elems = "nedpqu";  break;
+    case GCRY_PK_ELG:   algoname = "elg";   npkey = 3; elems = "pgyx";    break;
+    case GCRY_PK_ELG_E: algoname = "elg";   npkey = 3; elems = "pgyx";    break;
+    case GCRY_PK_DSA:   algoname = "dsa";   npkey = 4; elems = "pqgyx";   break;
+    case GCRY_PK_ECDSA: algoname = "ecdsa"; npkey = 6; elems = "pabgnqd"; break;
+    default:            algoname = "";      npkey = 0; elems = NULL;      break;
+    }
+  assert (!elems || strlen (elems) < DIM (array) );
+  nskey = elems? strlen (elems) : 0;
+
+  if (!elems)
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+  else
+    err = key_from_sexp (list, elems, array);
+  gcry_sexp_release (list);
+  if (err)
+    return err;
+
+  gcry_create_nonce (protect_iv, sizeof protect_iv);
+  gcry_create_nonce (salt, sizeof salt);
+  s2k_count = get_standard_s2k_count ();
+  err = apply_protection (array, npkey, nskey, passphrase,
+                          GCRY_CIPHER_AES, protect_iv, sizeof protect_iv,
+                          3, GCRY_MD_SHA1, salt, s2k_count);
+  /* Turn it into the transfer key S-expression.  Note that we always
+     return a protected key.  */
+  if (!err)
+    {
+      char countbuf[35];
+      membuf_t mbuf;
+      void *format_args_buf_ptr[1];
+      int   format_args_buf_int[1];
+      void *format_args[10+2];
+      size_t n;
+      gcry_sexp_t tmpkey, tmpsexp;
+      
+      snprintf (countbuf, sizeof countbuf, "%lu", s2k_count);
+      
+      init_membuf (&mbuf, 50);
+      put_membuf_str (&mbuf, "(skey");
+      for (i=j=0; i < npkey; i++)
+        {
+          put_membuf_str (&mbuf, " _ %m");
+          format_args[j++] = array + i;
+        }
+      put_membuf_str (&mbuf, " e %b");
+      format_args_buf_ptr[0] = gcry_mpi_get_opaque (array[npkey], &n);
+      format_args_buf_int[0] = (n+7)/8;
+      format_args[j++] = format_args_buf_int;
+      format_args[j++] = format_args_buf_ptr;
+      put_membuf_str (&mbuf, ")\n");
+      put_membuf (&mbuf, "", 1);
+
+      tmpkey = NULL;
+      {
+        char *format = get_membuf (&mbuf, NULL);
+        if (!format)
+          err = gpg_error_from_syserror ();
+        else
+          err = gcry_sexp_build_array (&tmpkey, NULL, format, format_args);
+        xfree (format);
+      }
+      if (!err)
+        err = gcry_sexp_build (&tmpsexp, NULL,
+                               "(openpgp-private-key\n"
+                               " (version 1:4)\n"
+                               " (algo %s)\n"
+                               " %S\n"
+                               " (protection sha1 aes %b 1:3 sha1 %b %s))\n",
+                               algoname,
+                               tmpkey, 
+                               (int)sizeof protect_iv, protect_iv,
+                               (int)sizeof salt, salt,
+                               countbuf);
+      gcry_sexp_release (tmpkey);
+      if (!err)
+        err = make_canon_sexp_pad (tmpsexp, 0, r_transferkey, r_transferkeylen);
+      gcry_sexp_release (tmpsexp);
+    }
+
+  for (i=0; i < DIM (array); i++)
+    gcry_mpi_release (array[i]);
+  
+  return err;
+}
 

@@ -124,8 +124,6 @@ struct
   int s2k_cipher_algo;
   unsigned char s2k_count; /* This is the encoded form, not the raw
 			      count */
-  int simple_sk_checksum; /* create the deprecated rfc2440 secret key
-			     protection */
   int not_dash_escaped;
   int escape_from;
   int lock_once;

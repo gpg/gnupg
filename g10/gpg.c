@@ -37,9 +37,9 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
 #include <assuan.h>
-#include "packet.h"
 #include "../common/iobuf.h"
 #include "util.h"
+#include "packet.h"
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
@@ -273,7 +273,6 @@ enum cmd_and_opt_values
     oS2KDigest,
     oS2KCipher,
     oS2KCount,
-    oSimpleSKChecksum,                          
     oDisplayCharset,
     oNotDashEscaped,
     oEscapeFrom,
@@ -565,7 +564,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oS2KDigest, "s2k-digest-algo", "@"),
   ARGPARSE_s_s (oS2KCipher, "s2k-cipher-algo", "@"),
   ARGPARSE_s_i (oS2KCount, "s2k-count", "@"),
-  ARGPARSE_s_n (oSimpleSKChecksum, "simple-sk-checksum", "@"),
   ARGPARSE_s_s (oCipherAlgo, "cipher-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
@@ -2504,7 +2502,6 @@ main (int argc, char **argv)
             else
               opt.s2k_count = 0;  /* Auto-calibrate when needed.  */
 	    break;
-          case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
@@ -2966,8 +2963,8 @@ main (int argc, char **argv)
 	  }
       }
 
-
-    if( configfp ) {
+    if (configfp)
+      {
 	fclose( configfp );
 	configfp = NULL;
         /* Remember the first config file name. */
@@ -2977,10 +2974,10 @@ main (int argc, char **argv)
           xfree(configname);
         configname = NULL;
 	goto next_pass;
-    }
-    xfree( configname ); configname = NULL;
-    if( log_get_errorcount(0) )
-	g10_exit(2);
+      }
+    xfree(configname); configname = NULL;
+    if (log_get_errorcount (0))
+      g10_exit(2);
 
     /* The command --gpgconf-list is pretty simple and may be called
        directly after the option parsing. */
@@ -3405,7 +3402,7 @@ main (int argc, char **argv)
     if(fname && utf8_strings)
       opt.flags.utf8_filename=1;
 
-    ctrl = xtrycalloc (1, sizeof *ctrl);
+    ctrl = xcalloc (1, sizeof *ctrl);
     gpg_init_default_ctrl (ctrl);
 
     switch( cmd ) {
@@ -3463,12 +3460,12 @@ main (int argc, char **argv)
 
       case aEncr: /* encrypt the given file */
 	if(multifile)
-	  encrypt_crypt_files(argc, argv, remusr);
+	  encrypt_crypt_files (ctrl, argc, argv, remusr);
 	else
 	  {
 	    if( argc > 1 )
 	      wrong_args(_("--encrypt [filename]"));
-	    if( (rc = encrypt_crypt (-1, fname, remusr, 0, NULL, -1)) )
+	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 0, NULL, -1)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }
@@ -3489,7 +3486,7 @@ main (int argc, char **argv)
 		      " while in %s mode\n"),compliance_option_string());
 	else
 	  {
-	    if( (rc = encrypt_crypt (-1, fname, remusr, 1, NULL, -1)) )
+	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 1, NULL, -1)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }
@@ -3509,7 +3506,7 @@ main (int argc, char **argv)
 		strcpy(sl->d, fname);
 	    }
 	}
-	if( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
+	if( (rc = sign_file (ctrl, sl, detached_sig, locusr, 0, NULL, NULL)) )
 	    log_error("signing failed: %s\n", g10_errstr(rc) );
 	free_strlist(sl);
 	break;
@@ -3523,7 +3520,7 @@ main (int argc, char **argv)
 	}
 	else
 	    sl = NULL;
-	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
+	if ((rc = sign_file (ctrl, sl, detached_sig, locusr, 1, remusr, NULL)))
 	    log_error("%s: sign+encrypt failed: %s\n",
 		      print_fname_stdin(fname), g10_errstr(rc) );
 	free_strlist(sl);
@@ -3547,7 +3544,8 @@ main (int argc, char **argv)
 	      }
 	    else
 	      sl = NULL;
-	    if( (rc = sign_file(sl, detached_sig, locusr, 2, remusr, NULL)) )
+	    if ((rc = sign_file (ctrl, sl, detached_sig, locusr,
+                                 2, remusr, NULL)))
 	      log_error("%s: symmetric+sign+encrypt failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	    free_strlist(sl);
@@ -3572,26 +3570,26 @@ main (int argc, char **argv)
 	break;
 
       case aVerify:
-	if(multifile)
+	if (multifile)
 	  {
-	    if( (rc = verify_files( argc, argv ) ))
+	    if ((rc = verify_files (ctrl, argc, argv)))
 	      log_error("verify files failed: %s\n", g10_errstr(rc) );
 	  }
 	else
 	  {
-	    if( (rc = verify_signatures( argc, argv ) ))
+	    if ((rc = verify_signatures (ctrl, argc, argv)))
 	      log_error("verify signatures failed: %s\n", g10_errstr(rc) );
 	  }
 	break;
 
       case aDecrypt:
-        if(multifile)
-	  decrypt_messages(argc, argv);
+        if (multifile)
+	  decrypt_messages (ctrl, argc, argv);
 	else
 	  {
 	    if( argc > 1 )
 	      wrong_args(_("--decrypt [filename]"));
-	    if( (rc = decrypt_message( fname ) ))
+	    if( (rc = decrypt_message (ctrl, fname) ))
 	      log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
 	  }
 	break;
@@ -3616,7 +3614,7 @@ main (int argc, char **argv)
 
 	append_to_strlist( &sl, "save" );
 	username = make_username( fname );
-	keyedit_menu (username, locusr, sl, 0, 0 );
+	keyedit_menu (ctrl, username, locusr, sl, 0, 0 );
 	xfree(username);
 	free_strlist(sl);
 	break;
@@ -3629,11 +3627,11 @@ main (int argc, char **argv)
 	    sl = NULL;
 	    for( argc--, argv++ ; argc; argc--, argv++ )
 		append_to_strlist( &sl, *argv );
-	    keyedit_menu( username, locusr, sl, 0, 1 );
+	    keyedit_menu (ctrl, username, locusr, sl, 0, 1 );
 	    free_strlist(sl);
 	}
 	else
-	    keyedit_menu(username, locusr, NULL, 0, 1 );
+            keyedit_menu (ctrl, username, locusr, NULL, 0, 1 );
 	xfree(username);
 	break;
 
@@ -3669,21 +3667,21 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	public_key_list( sl, 0 );
+	public_key_list (ctrl, sl, 0);
 	free_strlist(sl);
 	break;
       case aListSecretKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	secret_key_list( sl );
+	secret_key_list (ctrl, sl);
 	free_strlist(sl);
 	break;
       case aLocateKeys:
 	sl = NULL;
 	for (; argc; argc--, argv++)
           add_to_strlist2( &sl, *argv, utf8_strings );
-	public_key_list (sl, 1);
+	public_key_list (ctrl, sl, 1);
 	free_strlist (sl);
 	break;
 
@@ -3718,11 +3716,11 @@ main (int argc, char **argv)
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
-	    rc=keyserver_export( sl );
+            rc = keyserver_export (ctrl, sl );
 	else if( cmd == aRecvKeys )
-	    rc=keyserver_import( sl );
+            rc = keyserver_import (ctrl, sl );
 	else
-	    rc=export_pubkeys( sl, opt.export_options );
+            rc = export_pubkeys (ctrl, sl, opt.export_options);
 	if(rc)
 	  {
 	    if(cmd==aSendKeys)
@@ -3739,7 +3737,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	  append_to_strlist2( &sl, *argv, utf8_strings );
-	rc=keyserver_search( sl );
+	rc = keyserver_search (ctrl, sl);
 	if(rc)
 	  log_error(_("keyserver search failed: %s\n"),g10_errstr(rc));
 	free_strlist(sl);
@@ -3749,7 +3747,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
-	rc=keyserver_refresh(sl);
+	rc = keyserver_refresh (ctrl, sl);
 	if(rc)
 	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
 	free_strlist(sl);
@@ -3759,7 +3757,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
-	rc=keyserver_fetch(sl);
+	rc = keyserver_fetch (ctrl, sl);
 	if(rc)
 	  log_error("key fetch failed: %s\n",g10_errstr(rc));
 	free_strlist(sl);
@@ -3769,7 +3767,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	export_seckeys( sl );
+	export_seckeys (ctrl, sl);
 	free_strlist(sl);
 	break;
 
@@ -3777,7 +3775,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	export_secsubkeys( sl );
+	export_secsubkeys (ctrl, sl);
 	free_strlist(sl);
 	break;
 
@@ -3987,11 +3985,11 @@ main (int argc, char **argv)
             sl = NULL;
             for (argc--, argv++ ; argc; argc--, argv++)
                 append_to_strlist (&sl, *argv);
-            card_edit (sl);
+            card_edit (ctrl, sl);
             free_strlist (sl);
 	}
         else
-            card_edit (NULL);
+          card_edit (ctrl, NULL);
         break;
 
       case aChangePIN:
@@ -4045,7 +4043,7 @@ main (int argc, char **argv)
 		set_packet_list_mode(1);
 		opt.list_packets=1;
 	    }
-	    rc = proc_packets(NULL, a );
+	    rc = proc_packets (ctrl, NULL, a );
 	    if( rc )
 		log_error("processing message failed: %s\n", g10_errstr(rc) );
 	    iobuf_close(a);

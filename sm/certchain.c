@@ -789,7 +789,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
          print an error here.  */
       if (rc != -1 && opt.verbose > 1)
         log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-      rc = gpg_error (GPG_ERR_MISSING_CERT);
+      rc = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
       goto leave;
     }
 
@@ -1496,7 +1496,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
             }
           else
             log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-          rc = gpg_error (GPG_ERR_MISSING_CERT);
+          rc = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
           goto leave;
         }
 
@@ -1897,7 +1897,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
             }
           else
             log_error ("failed to find issuer's certificate: rc=%d\n", rc);
-          rc = gpg_error (GPG_ERR_MISSING_CERT);
+          rc = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
           goto leave;
         }
       

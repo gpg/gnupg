@@ -370,11 +370,12 @@ struct notation
 
 /*-- mainproc.c --*/
 void reset_literals_seen(void);
-int proc_packets( void *ctx, iobuf_t a );
-int proc_signature_packets( void *ctx, iobuf_t a,
+int proc_packets (ctrl_t ctrl, void *ctx, iobuf_t a );
+int proc_signature_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
-int proc_signature_packets_by_fd ( void *anchor, IOBUF a, int signed_data_fd );
-int proc_encryption_packets( void *ctx, iobuf_t a );
+int proc_signature_packets_by_fd (ctrl_t ctrl,
+                                  void *anchor, IOBUF a, int signed_data_fd );
+int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
 int list_packets( iobuf_t a );
 
 /*-- parse-packet.c --*/
@@ -475,11 +476,11 @@ gpg_error_t get_session_key (PKT_pubkey_enc *k, DEK *dek);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/
-int handle_compressed( void *ctx, PKT_compressed *cd,
+int handle_compressed (ctrl_t ctrl, void *ctx, PKT_compressed *cd,
 		       int (*callback)(iobuf_t, void *), void *passthru );
 
 /*-- encr-data.c --*/
-int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
+int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,

@@ -35,9 +35,9 @@
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
+#include "util.h"
 #include "packet.h"
 #include "iobuf.h"
-#include "util.h"
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
@@ -140,8 +140,9 @@ main( int argc, char **argv )
   ARGPARSE_ARGS pargs;
   int rc=0;
   strlist_t sl;
-  strlist_t nrings=NULL;
+  strlist_t nrings = NULL;
   unsigned configlineno;
+  ctrl_t ctrl;
   
   set_strusage (my_strusage);
   log_set_prefix ("gpgv", 1);
@@ -201,10 +202,14 @@ main( int argc, char **argv )
     keydb_add_resource (sl->d, 8);
    
   FREE_STRLIST (nrings);
+
+  ctrl = xcalloc (1, sizeof *ctrl);
     
-  if ( (rc = verify_signatures( argc, argv ) ))
+  if ((rc = verify_signatures (ctrl, argc, argv)))
     log_error("verify signatures failed: %s\n", g10_errstr(rc) );
   
+  xfree (ctrl);
+
   /* cleanup */
   g10_exit (0);
   return 8; /*NOTREACHED*/
@@ -377,8 +382,9 @@ get_override_session_key (DEK *dek, const char *string)
 
 /* Stub: */
 int
-decrypt_data (void *procctx, PKT_encrypted *ed, DEK *dek)
+decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 {
+  (void)ctrl;
   (void)procctx;
   (void)ed;
   (void)dek;
