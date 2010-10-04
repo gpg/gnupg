@@ -32,12 +32,12 @@ EXTRA_DIST = samplekeys.asc \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png \
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
-             faq.raw FAQ faq.html gnupg7.texi \
+             FAQ gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
 	     gpgv.texi texi.css  yat2m.c
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
-                gnupg-card-architecture.pdf FAQ faq.html
+                gnupg-card-architecture.pdf
 
 info_TEXINFOS = gnupg.texi
 
@@ -46,7 +46,7 @@ dist_pkgdata_DATA = qualified.txt com-certs.pem $(helpfiles)
 nobase_dist_doc_DATA = FAQ DETAILS HACKING TRANSLATE OpenPGP KEYSERVER \
                        $(examples)	
 
-dist_html_DATA = faq.html 
+#dist_html_DATA = 
 
 
 gnupg_TEXINFOS = \
@@ -75,7 +75,7 @@ man_MANS = $(myman_pages) gnupg.7
 watchgnupg_SOURCE = gnupg.texi
 
 
-CLEANFILES = faq.raw.xref yat2m
+CLEANFILES = yat2m
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
@@ -95,25 +95,6 @@ yat2m: yat2m.c
 
 .fig.pdf:
 	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
-
-
-FAQ : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
-endif
-
-faq.html : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
-endif
 
 
 yat2m-stamp: $(myman_sources)

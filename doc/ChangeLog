@@ -1,3 +1,10 @@
+2010-10-04  Werner Koch  <wk@g10code.com>
+
+	* faq.org: New.
+	* FAQ: Make it a static file with a pointer to the online location.
+	* Makefile.am (EXTRA_DIST): Remove faq.raw and faq.html.
+	(FAQ, faq.html): Remove these targets
+
 2010-09-28  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (AM_MAKEINFOFLAGS): Add define gpgtwoone.

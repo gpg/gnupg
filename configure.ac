@@ -518,7 +518,6 @@ AC_CHECK_TOOL(WINDRES, windres, :)
 AC_ISC_POSIX
 gl_EARLY
 AC_SYS_LARGEFILE
-GNUPG_CHECK_FAQPROG
 GNUPG_CHECK_USTAR
 
 # We need to compile and run a program on the build machine.  A

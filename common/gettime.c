@@ -330,41 +330,46 @@ isotimestamp (u32 stamp)
  * Note: this function returns local time
  */
 const char *
-asctimestamp( u32 stamp )
+asctimestamp (u32 stamp)
 {
-    static char buffer[50];
+  static char buffer[50];
 #if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
-      static char fmt[50];
+  static char fmt[50];
 #endif
-    struct tm *tp;
-    time_t atime = stamp;
+  struct tm *tp;
+  time_t atime = stamp;
 
-    if (atime < 0) {
-        strcpy (buffer, "????" "-??" "-??");
-        return buffer;
+  if (atime < 0)
+    {
+      strcpy (buffer, "????" "-??" "-??");
+      return buffer;
     }
 
-    tp = localtime( &atime );
+  tp = localtime( &atime );
 #ifdef HAVE_STRFTIME
-#if defined(HAVE_NL_LANGINFO)
-      mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
-      if( strstr( fmt, "%Z" ) == NULL )
-	strcat( fmt, " %Z");
-      /* NOTE: gcc -Wformat-noliteral will complain here.  I have
-         found no way to suppress this warning .*/
-      strftime (buffer, DIM(buffer)-1, fmt, tp);
+# if defined(HAVE_NL_LANGINFO)
+  mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
+  if (!strstr( fmt, "%Z" ))
+    strcat( fmt, " %Z");
+  /* NOTE: gcc -Wformat-noliteral will complain here.  I have found no
+     way to suppress this warning.  */
+  strftime (buffer, DIM(buffer)-1, fmt, tp);
+# elif defined(HAVE_W32CE_SYSTEM) 
+  /* tzset is not available but %Z nevertheless prints a default
+     nonsense timezone ("WILDABBR").  Thus we don't print the time
+     zone at all.  */
+  strftime (buffer, DIM(buffer)-1, "%c", tp);
+# else
+   /* FIXME: we should check whether the locale appends a " %Z" These
+    * locales from glibc don't put the " %Z": fi_FI hr_HR ja_JP lt_LT
+    * lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN.  */
+  strftime (buffer, DIM(buffer)-1, "%c %Z", tp);
+# endif
+  buffer[DIM(buffer)-1] = 0;
 #else
-      /* FIXME: we should check whether the locale appends a " %Z"
-       * These locales from glibc don't put the " %Z":
-       * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
-       */
-      strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
+  mem2str( buffer, asctime(tp), DIM(buffer) );
 #endif
-    buffer[DIM(buffer)-1] = 0;
-#else
-    mem2str( buffer, asctime(tp), DIM(buffer) );
-#endif
-    return buffer;
+  return buffer;
 }
 
 
