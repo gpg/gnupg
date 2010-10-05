@@ -16,7 +16,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS faq.raw FAQ faq.html \
+EXTRA_DIST = DETAILS FAQ \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
              TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt \
              gpg.texi gpgv.texi specify-user-id.texi see-also-note.texi \
@@ -39,13 +39,12 @@ gnupg1_TEXINFOS = gnupg1.texi
 # Need this to avoid building of dvis with automake 1.4
 DVIS =
 
-pkgdata_DATA = FAQ faq.html
+pkgdata_DATA = FAQ
 
-BUILT_SOURCES = FAQ faq.html 
 # we can't add gpg.texi gpgv.texi here because automake does not like them to
 # be built files. 
 
-CLEANFILES = faq.raw.xref gpg.xml gpgv.xml gpg.ru.xml 
+CLEANFILES = gpg.xml gpgv.xml gpg.ru.xml 
 DISTCLEANFILES = yat2m yat2m-stamp.tmp yat2m-stamp $(myman_pages)
 
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css -D gpgone
@@ -87,24 +86,6 @@ else
 	: Warning: missing docbook-to-man, cannot make $@
 	echo ".TH $< 1"   >$@
 	echo "No man page due to missing docbook-to-man" >>$@
-endif
-
-FAQ : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
-endif
-
-faq.html : faq.raw
-if WORKING_FAQPROG
-	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
-else
-	: Warning: missing faqprog.pl, cannot make $@
-	echo "No $@ due to missing faqprog.pl" > $@
-	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
 endif
 
 dist-hook:
