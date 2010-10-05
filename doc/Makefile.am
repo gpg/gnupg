@@ -75,7 +75,7 @@ man_MANS = $(myman_pages) gnupg.7
 watchgnupg_SOURCE = gnupg.texi
 
 
-CLEANFILES = yat2m
+CLEANFILES = yat2m faq.txt faq.html
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
@@ -139,4 +139,25 @@ online: gnupg.html gnupg.pdf
 	cd gnupg.html ; \
         rsync -vr --exclude='.svn' .  \
 	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/ 
+
+# Note that you need a recent version of emacs23 with org-mode 7.01h
+faq.txt faq.html: faq.org
+	@set -e; expopt="t nil nil nil \"$$(pwd)\""; \
+	 emacs  --batch \
+	  --eval "(require 'org)" \
+	  --visit "$(srcdir)/faq.org" \
+          --eval "(setq org-export-ascii-entities 'utf8)" \
+          --eval "(org-export-as-ascii org-export-headline-levels $${expopt})"\
+	  --visit "$(srcdir)/faq.org" \
+          --eval "(setq org-export-html-style-include-default nil)" \
+          --eval "(setq org-export-html-style-include-scripts nil)" \
+          --eval "(org-export-as-html org-export-headline-levels $${expopt})"
+
+faq-online: faq.txt faq.html
+	set -e; \
+        user=werner ; \
+	echo "Uploading current FAQ to {www,ftp}.gnupg.org ..."; \
+	scp faq.html $${user}@ftp.gnupg.org:webspace/manuals/GnuPG-FAQ.html ; \
+	scp faq.txt  $${user}@ftp.gnupg.org:gcrypt/gnupg/GnuPG-FAQ.txt ; \
+	echo "...ready"
 
