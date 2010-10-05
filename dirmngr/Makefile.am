@@ -64,15 +64,16 @@ endif
 
 
 if USE_LDAPWRAPPER
-dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) no-libgcrypt.c
+dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) 
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS)
 dirmngr_ldap_LDFLAGS =
-dirmngr_ldap_LDADD = $(libcommon) ../gl/libgnu.a $(DNSLIBS) \
+dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o ../gl/libgnu.a $(DNSLIBS) \
 		     $(GPG_ERROR_LIBS) $(LDAPLIBS) $(LIBINTL) $(LIBICONV)
 endif
 
-dirmngr_client_SOURCES = dirmngr-client.c no-libgcrypt.c
-dirmngr_client_LDADD = $(libcommon) ../gl/libgnu.a $(LIBASSUAN_LIBS) \
+dirmngr_client_SOURCES = dirmngr-client.c
+dirmngr_client_LDADD = $(libcommon) no-libgcrypt.o \
+	                ../gl/libgnu.a $(LIBASSUAN_LIBS) \
 	               $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 
