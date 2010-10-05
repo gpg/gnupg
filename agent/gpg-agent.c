@@ -1054,7 +1054,7 @@ main (int argc, char **argv )
         }
       else if (pid) 
         { /* We are the parent */
-          char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
+          char *infostr, *infostr_ssh_sock;
 
           /* Close the socket FD. */
           close (fd);
@@ -1100,13 +1100,6 @@ main (int argc, char **argv )
 		  kill (pid, SIGTERM);
 		  exit (1);
 		}
-	      if (asprintf (&infostr_ssh_pid, "SSH_AGENT_PID=%u",
-			    pid) < 0)
-		{
-		  log_error ("out of core\n");
-		  kill (pid, SIGTERM);
-		  exit (1);
-		}
 	    }
 
           *socket_name = 0; /* Don't let cleanup() remove the socket -
@@ -1130,8 +1123,6 @@ main (int argc, char **argv )
                     {
                       es_fputs (infostr_ssh_sock, fp);
                       es_putc ('\n', fp);
-                      es_fputs (infostr_ssh_pid, fp);
-                      es_putc ('\n', fp);
                     }
                   es_fclose (fp);
                 }
@@ -1148,13 +1139,6 @@ main (int argc, char **argv )
                   exit (1);
                 }
               if (opt.ssh_support && putenv (infostr_ssh_sock))
-                {
-                  log_error ("failed to set environment: %s\n",
-                             strerror (errno) );
-                  kill (pid, SIGTERM );
-                  exit (1);
-                }
-              if (opt.ssh_support && putenv (infostr_ssh_pid))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
@@ -1186,8 +1170,6 @@ main (int argc, char **argv )
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
 		      es_printf ("setenv %s\n", infostr_ssh_sock);
-		      *strchr (infostr_ssh_pid, '=') = ' ';
-		      es_printf ("setenv %s\n", infostr_ssh_pid);
 		    }
                 }
               else
@@ -1197,15 +1179,12 @@ main (int argc, char **argv )
 		    {
 		      es_printf ("%s; export SSH_AUTH_SOCK;\n",
                                  infostr_ssh_sock);
-		      es_printf ("%s; export SSH_AGENT_PID;\n",
-                                 infostr_ssh_pid);
 		    }
                 }
               xfree (infostr); 
 	      if (opt.ssh_support)
 		{
 		  xfree (infostr_ssh_sock);
-		  xfree (infostr_ssh_pid);
 		}
               exit (0); 
             }

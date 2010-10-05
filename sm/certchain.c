@@ -274,7 +274,7 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
 /* Check whether CERT is an allowed certificate.  This requires that
    CERT matches all requirements for such a CA, i.e. the
    BasicConstraints extension.  The function returns 0 on success and
-   the awlloed length of the chain at CHAINLEN. */
+   the allowed length of the chain at CHAINLEN. */
 static int
 allowed_ca (ctrl_t ctrl, 
             ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)

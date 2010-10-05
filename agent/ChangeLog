@@ -1,3 +1,8 @@
+2010-10-05  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Don't set SSH_AGENT_PID so that ssh-agent -k
+	won't kill out gpg-agent.
+
 2010-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (agent_exit): Run cleanup.

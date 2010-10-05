@@ -71,19 +71,19 @@ die (const char *format, ...)
 }
 
 
-/* static void */
-/* err (const char *format, ...) */
-/* { */
-/*   va_list arg_ptr; */
+static void
+err (const char *format, ...)
+{
+  va_list arg_ptr;
 
-/*   fflush (stdout); */
-/*   fprintf (stderr, "%s: ", PGM); */
+  fflush (stdout);
+  fprintf (stderr, "%s: ", PGM);
 
-/*   va_start (arg_ptr, format); */
-/*   vfprintf (stderr, format, arg_ptr); */
-/*   va_end (arg_ptr); */
-/*   putc ('\n', stderr); */
-/* } */
+  va_start (arg_ptr, format);
+  vfprintf (stderr, format, arg_ptr);
+  va_end (arg_ptr);
+  putc ('\n', stderr);
+}
 
 static void *
 xmalloc (size_t n)
@@ -122,6 +122,10 @@ struct client_s {
   
 };
 typedef struct client_s *client_t;
+
+/* The list of all connected peers.  */
+static client_t client_list;
+
 
 
 
@@ -187,6 +191,57 @@ print_line (client_t c, const char *line)
 
 
 static void
+setup_client (int server_fd, int is_un)
+{ 
+  struct sockaddr_un addr_un;
+  struct sockaddr_in addr_in;
+  struct sockaddr *addr;
+  socklen_t addrlen;
+  int fd;
+  client_t client;
+
+  if (is_un)
+    {
+      addr = (struct sockaddr *)&addr_un;
+      addrlen = sizeof addr_un;
+    }
+  else
+    {
+      addr = (struct sockaddr *)&addr_in;
+      addrlen = sizeof addr_in;
+    }
+
+  fd = accept (server_fd, addr, &addrlen);
+  if (fd == -1)
+    {
+      printf ("[accepting %s connection failed: %s]\n",
+              is_un? "local":"tcp", strerror (errno));
+    }
+  else if (fd >= FD_SETSIZE)
+    {
+      close (fd);
+      printf ("[connection request denied: too many connections]\n");
+    }
+  else 
+    {
+      for (client = client_list; client && client->fd != -1;
+           client = client->next)
+        ;
+      if (!client)
+        {
+          client = xcalloc (1, sizeof *client);
+          client->next = client_list;
+          client_list = client;
+        }
+      client->fd = fd;
+      printf ("[client at fd %d connected (%s)]\n",
+              client->fd, is_un? "local":"tcp");
+    }
+}
+
+
+
+static void
 print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
@@ -197,17 +252,19 @@ print_version (int with_help)
          "There is NO WARRANTY, to the extent permitted by law.\n",
          stdout);
   if (with_help)
-    fputs ("\n"
-          "Usage: " PGM " [OPTIONS] SOCKETNAME|PORT\n"
-          "Open the local socket SOCKETNAME (or the TCP port PORT)\n"
-          "and display log messages\n"
-          "\n"
-          "  --force     delete an already existing socket file\n"
-          "  --tcp       listen on a TCP port instead of a local socket\n"
-          "  --verbose   enable extra informational output\n"
-          "  --version   print version of the program and exit\n"
-          "  --help      display this help and exit\n"
-          BUGREPORT_LINE, stdout );
+    fputs 
+      ("\n"
+       "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
+       "       " PGM " [OPTIONS] PORT [SOCKETNAME]\n"
+       "Open the local socket SOCKETNAME (or the TCP port PORT)\n"
+       "and display log messages\n"
+       "\n"
+       "  --tcp       listen on a TCP port and optionally on a local socket\n"
+       "  --force     delete an already existing socket file\n"
+       "  --verbose   enable extra informational output\n"
+       "  --version   print version of the program and exit\n"
+       "  --help      display this help and exit\n"
+       BUGREPORT_LINE, stdout );
   
   exit (0);
 }
@@ -221,12 +278,12 @@ main (int argc, char **argv)
 
   struct sockaddr_un srvr_addr_un;
   struct sockaddr_in srvr_addr_in;
-  struct sockaddr *srvr_addr = NULL;
-  socklen_t addrlen;
+  struct sockaddr *addr_in = NULL;
+  struct sockaddr *addr_un = NULL;
+  socklen_t addrlen_in, addrlen_un;
   unsigned short port;
-  int server;
+  int server_un, server_in;
   int flags;
-  client_t client_list = NULL;
  
   if (argc)
     {
@@ -261,36 +318,70 @@ main (int argc, char **argv)
         }
     }          
  
-  if (argc != 1)
+  if (!((!tcp && argc == 1) || (tcp && (argc == 1 || argc == 2))))
     {
-      fprintf (stderr, "usage: " PGM " socketname\n");
+      fprintf (stderr, "usage: " PGM " socketname\n"
+                       "       " PGM " --tcp port [socketname]\n");
       exit (1);
     }
-
-  port = tcp? atoi (*argv) : 0;
-
-  if (verbose)
+  
+  if (tcp)
     {
-      if (tcp)
-        fprintf (stderr, "listening on port %hu\n", port);
-      else
-        fprintf (stderr, "opening socket `%s'\n", *argv);
+      port = atoi (*argv);
+      argc--; argv++;
+    }
+  else
+    {
+      port = 0;
     }
 
   setvbuf (stdout, NULL, _IOLBF, 0);
 
-  server = socket (tcp? PF_INET : PF_LOCAL, SOCK_STREAM, 0);
-  if (server == -1)
-    die ("socket() failed: %s\n", strerror (errno));
+  if (tcp)
+    {
+      int i = 1;
+      server_in = socket (PF_INET, SOCK_STREAM, 0);
+      if (server_in == -1)
+        die ("socket(PF_INET) failed: %s\n", strerror (errno));
+      if (setsockopt (server_in, SOL_SOCKET, SO_REUSEADDR, 
+                      (unsigned char *)&i, sizeof (i)))
+        err ("setsockopt(SO_REUSEADDR) failed: %s\n", strerror (errno));
+      if (verbose)
+        fprintf (stderr, "listening on port %hu\n", port);
+    }
+  else
+    server_in = -1;
+
+  if (argc)
+    {
+      server_un = socket (PF_LOCAL, SOCK_STREAM, 0);
+      if (server_un == -1)
+        die ("socket(PF_LOCAL) failed: %s\n", strerror (errno));
+      if (verbose)
+        fprintf (stderr, "listening on socket `%s'\n", *argv);
+    }
+  else
+    server_un = -1;
 
   /* We better set the listening socket to non-blocking so that we
      don't get bitten by race conditions in accept.  The should not
      happen for Unix Domain sockets but well, shit happens. */
-  flags = fcntl (server, F_GETFL, 0);
-  if (flags == -1)
-    die ("fcntl (F_GETFL) failed: %s\n", strerror (errno));
-  if ( fcntl (server, F_SETFL, (flags | O_NONBLOCK)) == -1)
-    die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
+  if (server_in != -1)
+    {
+      flags = fcntl (server_in, F_GETFL, 0);
+      if (flags == -1)
+        die ("fcntl (F_GETFL) failed: %s\n", strerror (errno));
+      if ( fcntl (server_in, F_SETFL, (flags | O_NONBLOCK)) == -1)
+        die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
+    }
+  if (server_un != -1)
+    {
+      flags = fcntl (server_un, F_GETFL, 0);
+      if (flags == -1)
+        die ("fcntl (F_GETFL) failed: %s\n", strerror (errno));
+      if ( fcntl (server_un, F_SETFL, (flags | O_NONBLOCK)) == -1)
+        die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
+    }
   
   if (tcp)
     {
@@ -298,36 +389,41 @@ main (int argc, char **argv)
       srvr_addr_in.sin_family = AF_INET;
       srvr_addr_in.sin_port = htons (port);
       srvr_addr_in.sin_addr.s_addr = htonl (INADDR_ANY);
-      srvr_addr = (struct sockaddr *)&srvr_addr_in;
-      addrlen = sizeof srvr_addr_in;
+      addr_in = (struct sockaddr *)&srvr_addr_in;
+      addrlen_in = sizeof srvr_addr_in;
     }
-  else
+  if (argc)
     {
       memset (&srvr_addr_un, 0, sizeof srvr_addr_un);
       srvr_addr_un.sun_family = AF_LOCAL;
       strncpy (srvr_addr_un.sun_path, *argv, sizeof (srvr_addr_un.sun_path)-1);
       srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path) - 1] = 0;
-      srvr_addr = (struct sockaddr *)&srvr_addr_un;
-      addrlen = SUN_LEN (&srvr_addr_un);
+      addr_un = (struct sockaddr *)&srvr_addr_un;
+      addrlen_un = SUN_LEN (&srvr_addr_un);
     }
+  else
+    addrlen_un = 0;  /* Silent gcc.  */
   
+  if (server_in != -1 && bind (server_in, addr_in, addrlen_in))
+    die ("bind to port %hu failed: %s\n", port, strerror (errno));
+
  again:
-  if (bind (server, srvr_addr, addrlen))
+  if (server_un != -1 && bind (server_un, addr_un, addrlen_un))
     { 
-      if (!tcp && errno == EADDRINUSE && force)
+      if (errno == EADDRINUSE && force)
         {
           force = 0;
           remove (srvr_addr_un.sun_path);
           goto again;
         }
-      if (tcp)
-        die ("bind to port %hu failed: %s\n", port, strerror (errno));
       else
         die ("bind to `%s' failed: %s\n", *argv, strerror (errno));
     }
 
-  if (listen (server, 5))
-    die ("listen failed: %s\n", strerror (errno));
+  if (server_in != -1 && listen (server_in, 5))
+    die ("listen on inet failed: %s\n", strerror (errno));
+  if (server_un != -1 && listen (server_un, 5))
+    die ("listen on local failed: %s\n", strerror (errno));
 
   for (;;)
     {
@@ -339,8 +435,18 @@ main (int argc, char **argv)
          to set them allways from scratch and don't maintain an active
          fd_set. */
       FD_ZERO (&rfds);
-      FD_SET (server, &rfds);
-      max_fd = server;
+      max_fd = -1;
+      if (server_in != -1)
+        {
+          FD_SET (server_in, &rfds);
+          max_fd = server_in;
+        }
+      if (server_un != -1)
+        {
+          FD_SET (server_un, &rfds);
+          if (server_un > max_fd)
+            max_fd = server_un;
+        }
       for (client = client_list; client; client = client->next)
         if (client->fd != -1)
           {
@@ -352,37 +458,11 @@ main (int argc, char **argv)
       if (select (max_fd + 1, &rfds, NULL, NULL, NULL) <= 0)
         continue;  /* Ignore any errors. */
 
-      if (FD_ISSET (server, &rfds)) /* New connection. */
-        { 
-          struct sockaddr_un clnt_addr;
-          int fd;
+      if (server_in != -1 && FD_ISSET (server_in, &rfds))
+        setup_client (server_in, 0);
+      if (server_un != -1 && FD_ISSET (server_un, &rfds))
+        setup_client (server_un, 1);
 
-          addrlen = sizeof clnt_addr;
-          fd = accept (server, (struct sockaddr *) &clnt_addr, &addrlen);
-          if (fd == -1)
-            {
-              printf ("[accepting connection failed: %s]\n", strerror (errno));
-            }
-          else if (fd >= FD_SETSIZE)
-            {
-              close (fd);
-              printf ("[connection request denied: too many connections]\n");
-            }
-          else 
-            {
-              for (client = client_list; client && client->fd != -1;
-                   client = client->next)
-                ;
-              if (!client)
-                {
-                  client = xcalloc (1, sizeof *client);
-                  client->next = client_list;
-                  client_list = client;
-                }
-              client->fd = fd;
-              printf ("[client at fd %d connected]\n", client->fd);
-            }
-        }
       for (client = client_list; client; client = client->next)
         if (client->fd != -1 && FD_ISSET (client->fd, &rfds))
           {

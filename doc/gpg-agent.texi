@@ -83,7 +83,6 @@ if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
   . "$@{HOME@}/.gpg-agent-info"
   export GPG_AGENT_INFO
   export SSH_AUTH_SOCK
-  export SSH_AGENT_PID
 fi
 @end smallexample
 
@@ -576,10 +575,13 @@ It is possible to add further flags after the @code{S} for use by the
 caller:
 
 @table @code
+
 @item relax
-Relax checking of some root certificate requirements.  This is for
-example required if the certificate is missing the basicConstraints
-attribute (despite that it is a MUST for CA certificates).
+@cindex relax
+Relax checking of some root certificate requirements.  As of now this
+flag allows the use of root certificates with a missing basicConstraints
+attribute (despite that it is a MUST for CA certificates) and disables
+CRL checking for the root certificate.
 
 @item cm
 If validation of a certificate finally issued by a CA with this flag set
@@ -589,7 +591,7 @@ fails, try again using the chain validation model.
 
   
 @item sshcontrol
-
+@cindex sshcontrol
 This file is used when support for the secure shell agent protocol has
 been enabled (@pxref{option --enable-ssh-support}). Only keys present in
 this file are used in the SSH protocol.  You should backup this file.
@@ -712,7 +714,6 @@ and add something like (for Bourne shells)
     . "$@{HOME@}/.gpg-agent-info"
     export GPG_AGENT_INFO
     export SSH_AUTH_SOCK
-    export SSH_AGENT_PID
   fi
 @end example
 @end cartouche
