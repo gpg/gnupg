@@ -1,3 +1,7 @@
+2010-10-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Make --enable-standard-socket the default.
+
 2010-10-04  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (GNUPG_CHECK_FAQPROG): Remove.

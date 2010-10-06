@@ -2,6 +2,11 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@c Note that we use this texinfo file for all versions of GnuPG: 
+@c 2.0 and 2.1.  The macro "gpgtwoone" controls parts which are only
+@c valid for GnuPG 2.1 and later.
+
+
 @node Invoking GPG-AGENT
 @chapter Invoking GPG-AGENT
 @cindex GPG-AGENT command options
@@ -438,8 +443,16 @@ a random socket below a temporary directory.  Tools connecting to
 environment variable @var{GPG_AGENT_INFO} and then fall back to this
 socket.  This option may not be used if the home directory is mounted on
 a remote file system which does not support special files like fifos or
-sockets.  Note, that @option{--use-standard-socket} is the default on
-Windows systems.  The default may be changed at build time.  It is
+sockets.
+@ifset gpgtwoone
+Note, that @option{--use-standard-socket} is the default on all
+systems since GnuPG 2.1.
+@end ifset
+@ifclear gpgtwoone
+Note, that @option{--use-standard-socket} is the default on
+Windows systems.
+@end ifclear
+The default may be changed at build time.  It is
 possible to test at runtime whether the agent has been configured for
 use with the standard socket by issuing the command @command{gpg-agent
 --use-standard-socket-p} which returns success if the standard socket

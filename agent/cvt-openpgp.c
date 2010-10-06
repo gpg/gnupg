@@ -126,6 +126,7 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
                              "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
                              skey[0], skey[1], skey[2], skey[3], skey[4],
                              skey[5]);
+      break;
 
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);

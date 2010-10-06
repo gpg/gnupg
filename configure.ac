@@ -79,7 +79,7 @@ use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
 use_ccid_driver=yes
-use_standard_socket=no
+use_standard_socket=yes
 
 try_ks_ldap=no
 
@@ -657,8 +657,8 @@ fi
 #
 AC_MSG_CHECKING([whether to use a standard socket by default])
 AC_ARG_ENABLE(standard-socket,
-              AC_HELP_STRING([--enable-standard-socket],
-                             [use a standard socket for the agent by default]),
+              AC_HELP_STRING([--disable-standard-socket],
+                             [don't use a standard socket by default]),
               use_standard_socket=$enableval)
 tmp=""
 if test "$use_standard_socket" != yes; then

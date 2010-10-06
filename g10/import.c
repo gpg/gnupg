@@ -1122,8 +1122,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   if (!err)
     err = gcry_cipher_setkey (cipherhd, kek, keklen);
   if (err)
-    goto leave;
-  xfree (kek);
+    goto leave;  xfree (kek);
   kek = NULL;
 
   main_pk = NULL;
@@ -1143,6 +1142,11 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       stats->count++;
       stats->secret_read++;
 
+      /* For now we ignore the stub keys becuase we don't have real
+         support for them in gpg-agent.  */
+      if (ski->s2k.mode == 1001 || ski->s2k.mode == 1002)
+        continue;
+
       /* Convert our internal secret key object into an S-expression.  */
       nskey = pubkey_get_nskey (pk->pubkey_algo);
       if (!nskey || nskey > PUBKEY_MAX_NSKEY)
@@ -1156,7 +1160,9 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       put_membuf_str (&mbuf, "(skey");
       for (i=j=0; i < nskey; i++)
         {
-          if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+          if (!pk->pkey[i])
+            ; /* Protected keys only have NPKEY+1 elements.  */
+          else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
               put_membuf_str (&mbuf, " e %b");
               format_args_buf_ptr[i] = gcry_mpi_get_opaque (pk->pkey[i], &n);
@@ -1189,7 +1195,10 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       if (ski->is_protected)
         {
           char countbuf[35];
-
+          
+          /* Note that the IVLEN may be zero if we are working on a
+             dummy key.  We can't express that in an S-expression and
+             thus we send dummy data for the IV.  */
           snprintf (countbuf, sizeof countbuf, "%lu",
                     (unsigned long)ski->s2k.count);
           err = gcry_sexp_build
@@ -1197,7 +1206,8 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
              " (protection %s %s %b %d %s %b %s)\n",
              ski->sha1chk? "sha1":"sum",
              openpgp_cipher_algo_name (ski->algo),
-             (int)ski->ivlen, ski->iv,
+             ski->ivlen? (int)ski->ivlen:1,
+             ski->ivlen? ski->iv: (const unsigned char*)"X",
              ski->s2k.mode,
              openpgp_md_algo_name (ski->s2k.hash_algo),
              (int)sizeof (ski->s2k.salt), ski->s2k.salt,

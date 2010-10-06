@@ -1,3 +1,8 @@
+2010-10-06  Werner Koch  <wk@g10code.com>
+
+	* import.c (transfer_secret_keys): Ignore missing key parameters.
+	Provide dummy IV.  Ignore stub keys.
+
 2010-10-01  Werner Koch  <wk@g10code.com>
 
 	* export.c (do_export_stream): Rewrite to take the secret keys

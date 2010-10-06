@@ -52,7 +52,7 @@
 
 
 static int verbose;
-
+static int time_only;
 
 static void
 die (const char *format, ...)
@@ -136,10 +136,15 @@ print_fd_and_time (int fd)
   time_t atime = time (NULL);
   
   tp = localtime (&atime);
-  printf ("%3d - %04d-%02d-%02d %02d:%02d:%02d ",
-          fd,
-          1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-          tp->tm_hour, tp->tm_min, tp->tm_sec );
+  if (time_only)  
+    printf ("%3d - %02d:%02d:%02d ",
+            fd,
+            tp->tm_hour, tp->tm_min, tp->tm_sec );
+  else
+    printf ("%3d - %04d-%02d-%02d %02d:%02d:%02d ",
+            fd,
+            1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+            tp->tm_hour, tp->tm_min, tp->tm_sec );
 }
 
 
@@ -262,6 +267,7 @@ print_version (int with_help)
        "  --tcp       listen on a TCP port and optionally on a local socket\n"
        "  --force     delete an already existing socket file\n"
        "  --verbose   enable extra informational output\n"
+       "  --time-only print only the time; not a full timestamp\n"
        "  --version   print version of the program and exit\n"
        "  --help      display this help and exit\n"
        BUGREPORT_LINE, stdout );
@@ -304,6 +310,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--time-only"))
+        {
+          time_only = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--force"))

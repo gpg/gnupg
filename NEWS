@@ -26,8 +26,8 @@ Noteworthy changes in version 2.1.x (under development)
  * If the agent's --use-standard-socket option is active, all tools
    try to start and daemonize the agent on the fly.  In the past this
    was only supported on W32; on non-W32 systems the new configure
-   option --enable-standard-socket may now be used to use this feature
-   by default.
+   option --disable-standard-socket may now be used to disable this
+   new default.
 
  * Dirmngr is now a part of this package.  Dirmngr is now also
    expected to run as a system service and the configuration
