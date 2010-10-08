@@ -1,3 +1,9 @@
+2010-10-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --enable-dirmngr-auto-start.
+	(USE_DIRMNGR_AUTO_START): New ac_define.
+	* autogen.sh <--build-w32ce>: Use new option.
+
 2010-10-06  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Make --enable-standard-socket the default.

@@ -80,6 +80,7 @@ use_exec=yes
 disable_keyserver_path=no
 use_ccid_driver=yes
 use_standard_socket=yes
+dirmngr_auto_start=no
 
 try_ks_ldap=no
 
@@ -338,6 +339,22 @@ AC_ARG_ENABLE(ccid-driver,
                              [disable the internal CCID driver]),
               use_ccid_driver=$enableval)
 AC_MSG_RESULT($use_ccid_driver)
+
+# 
+# Dirmngr is nowadays a system service and thus it usually does no
+# make sense to start it as needed.  However on some systems this is
+# possible; this option enable the feature.
+#
+AC_MSG_CHECKING([whether to auto start dirmngr])
+AC_ARG_ENABLE(dirmngr-auto-start,
+              AC_HELP_STRING([--enable-dirmngr-auto-start],
+                             [enable auto starting of the dirmngr]),
+              dirmngr_auto_start=$enableval)
+AC_MSG_RESULT($dirmngr_auto_start)
+if test "$dirmngr_auto_start" = yes ; then
+    AC_DEFINE(USE_DIRMNGR_AUTO_START,1,
+              [Define to enable auto starting of the dirmngr])
+fi
 
 
 #
@@ -1655,6 +1672,7 @@ echo "
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
         Use standard socket: $use_standard_socket
+        Dirmngr auto start:  $dirmngr_auto_start
 "
 if test x"$use_regex" != xyes ; then
 echo "

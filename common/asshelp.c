@@ -547,7 +547,6 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   gpg_error_t err;
   assuan_context_t ctx;
   const char *sockname;
-  lock_spawn_t lock;
       
   *r_ctx = NULL;
 
@@ -560,8 +559,10 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 
   sockname = dirmngr_socket_name ();
   err = assuan_socket_connect (ctx, sockname, 0, 0);
+#ifdef USE_DIRMNGR_AUTO_START
   if (err)
     {
+      lock_spawn_t lock;
       const char *argv[2];
 
       /* With no success try start a new Dirmngr.  On most systems
@@ -619,6 +620,13 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       
       unlock_spawning (&lock, "dirmngr");
     }
+#else
+  (void)homedir;
+  (void)dirmngr_program;
+  (void)verbose;
+  (void)status_cb;
+  (void)status_cb_arg;
+#endif /*USE_DIRMNGR_AUTO_START*/
  
   if (err)
     {
