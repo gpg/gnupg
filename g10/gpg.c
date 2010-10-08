@@ -166,6 +166,7 @@ enum cmd_and_opt_values
     oNoAskCertLevel,
     oFingerprint,
     oWithFingerprint,
+    oWithKeygrip,
     oAnswerYes,
     oAnswerNo,
     oKeyring,
@@ -669,6 +670,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oUtf8Strings,      "utf8-strings", "@"),
   ARGPARSE_s_n (oNoUtf8Strings, "no-utf8-strings", "@"),
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
+  ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_s (oDisableCipherAlgo,  "disable-cipher-algo", "@"),
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oAllowNonSelfsignedUID,      "allow-non-selfsigned-uid", "@"),
@@ -2277,6 +2279,10 @@ main (int argc, char **argv)
 	  case oFingerprint:
             opt.fingerprint++;
             fpr_maybe_cmd = 1;
+            break;
+
+	  case oWithKeygrip:
+            opt.with_keygrip = 1;
             break;
 
 	  case oSecretKeyring:

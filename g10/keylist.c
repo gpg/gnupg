@@ -822,6 +822,17 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   if (fpr)
     print_fingerprint (pk, 0);
 
+  if (opt.with_keygrip)
+    {
+      char *p;
+
+      if (!hexkeygrip_from_pk (pk, &p))
+        {
+          es_fprintf (es_stdout, "      Keygrip = %s\n", p);
+          xfree (p);
+        }
+    }
+
   /* FIXME: Change this function to take a PK and ask the agent:  */
   /* if (secret) print_card_serialno (sk); */
 
@@ -918,6 +929,16 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
               /* FIXME: (see above) */
               /* if (secret) */
               /*   print_card_serialno (sk2); */
+            }
+          if (opt.with_keygrip)
+            {
+              char *p;
+              
+              if (!hexkeygrip_from_pk (pk2, &p))
+                {
+                  es_fprintf (es_stdout, "      Keygrip = %s\n", p);
+                  xfree (p);
+                }
             }
 	  if (opt.with_key_data)
 	    print_key_data (pk2);
@@ -1131,14 +1152,15 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   print_revokers (pk);
   if (fpr)
     print_fingerprint (pk, 0);
-  if (opt.with_key_data)
+  if (opt.with_key_data || opt.with_keygrip)
     {
       if (!hexkeygrip_from_pk (pk, &p))
         {
           es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
           xfree (p);
         }
-      print_key_data (pk);
+      if (opt.with_key_data)
+        print_key_data (pk);
     }
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
@@ -1236,14 +1258,15 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
 	    print_fingerprint (pk2, 0);
-	  if (opt.with_key_data)
+	  if (opt.with_key_data || opt.with_keygrip)
             {
               if (!hexkeygrip_from_pk (pk2, &p))
                 {
                   es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
                   xfree (p);
                 }
-              print_key_data (pk2);
+              if (opt.with_key_data)
+                print_key_data (pk2);
             }
 	}
       else if (opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE)

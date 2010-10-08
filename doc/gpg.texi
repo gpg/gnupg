@@ -1945,6 +1945,11 @@ obsolete; it does not harm to use it though.
 Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
 
+@ifset gpgtwoone
+@item --with-keygrip
+@opindex with-keygrip
+Include the keygrip in the key listings.
+@end ifset
 
 @end table
 

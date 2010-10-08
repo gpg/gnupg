@@ -1,3 +1,9 @@
+2010-10-08  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: Add option --with-keygrip.
+	* gpgsm.h (struct opt): Add WITH_KEYGRIP.
+	* keylist.c (list_cert_std): Implement option.
+
 2010-09-16  Werner Koch  <wk@g10code.com>
 
 	* certchain.c (gpgsm_walk_cert_chain): Use GPG_ERR_MISSING_ISSUER_CERT.

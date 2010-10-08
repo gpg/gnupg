@@ -1,3 +1,10 @@
+2010-10-08  Werner Koch  <wk@g10code.com>
+
+	* gpg.c: Add option --with-keygrip.
+	* options.h (struct opt): Add WITH_KEYGRIP.
+	* keylist.c (list_keyblock_print, list_keyblock_colon): Implement
+	new option.
+
 2010-10-06  Werner Koch  <wk@g10code.com>
 
 	* import.c (transfer_secret_keys): Ignore missing key parameters.

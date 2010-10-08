@@ -1216,6 +1216,16 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
   es_fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
   xfree (dn);
 
+  if (opt.with_keygrip)
+    {
+      dn = gpgsm_get_keygrip_hexstring (cert);
+      if (dn)
+        {
+          es_fprintf (fp, "      keygrip: %s\n", dn);
+          xfree (dn);
+        }
+    }      
+
   if (have_secret)
     {
       char *cardsn;

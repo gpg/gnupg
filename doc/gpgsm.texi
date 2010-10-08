@@ -554,6 +554,10 @@ This option is therefore useful to simply verify a certificate.
 For standard key listings, also print the MD5 fingerprint of the
 certificate.
 
+@item --with-keygrip
+Include the keygrip in standard key listings.  Note that the keygrip is
+always listed in --with-colons mode.
+
 @end table
 
 @c *******************************************
