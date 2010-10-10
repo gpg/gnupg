@@ -1182,11 +1182,11 @@ create_tmp_file (const char *template,
 	strcpy (stpcpy(tmpfname, template), EXTSEP_S "tmp");
     }
 # else /* Posix file names */
-    bakfname = xmalloc (strlen( template ) + 2);
-    strcpy (stpcpy (bakfname,template),"~");
+    bakfname = xmalloc (strlen (template) + sizeof (GNUPG_BAK_SFX) + 1);
+    strcpy (stpcpy (bakfname, template), GNUPG_BAK_SFX);
 
-    tmpfname = xmalloc (strlen( template ) + 5);
-    strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
+    tmpfname = xmalloc (strlen (template) + sizeof (GNUPG_TMP_SFX) + 1 );
+    strcpy (stpcpy(tmpfname, template), GNUPG_TMP_SFX);
 # endif /* Posix filename */
 
     /* Create the temp file with limited access */

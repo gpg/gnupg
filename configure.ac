@@ -25,8 +25,8 @@ min_automake_version="1.9.3"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh --force" right before creating a distribution.
-m4_define([my_version], [1.4.11rc1])
-m4_define([my_issvn], [no])
+m4_define([my_version], [1.4.11])
+m4_define([my_issvn], [yes])
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
           | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
 AC_INIT([gnupg], 
@@ -460,6 +460,14 @@ is intended for making fat binary builds on OS X. */
 # define PATHSEP_S ":"
 #endif
 
+#ifdef __VMS
+# define GNUPG_BAK_SFX "_bak"
+# define GNUPG_TMP_SFX "_tmp"
+#else /*!def __VMS */
+# define GNUPG_BAK_SFX "~"
+# define GNUPG_TMP_SFX EXTSEP_S "tmp" 
+#endif /* def __VMS [else] */
+
 
 /* For some OSes we need to use fixed strings for certain directories.  */
 #ifdef HAVE_DRIVE_LETTERS
@@ -470,7 +478,10 @@ is intended for making fat binary builds on OS X. */
 # define GNUPG_HOMEDIR     "c:\\\\gnupg"
 #else
 # ifdef __VMS
-#  define GNUPG_HOMEDIR "/SYS$LOGIN/gnupg" 
+#  define GNUPG_DATADIR     "/SYS$MANAGER/gnupg_share"
+#  define GNUPG_HOMEDIR     "/SYS$LOGIN/gnupg"
+#  define GNUPG_LIBDIR      "/SYS$MANAGER/gnupg_share"
+#  define GNUPG_LIBEXECDIR  ""
 # else
 #  define GNUPG_HOMEDIR "~/.gnupg" 
 # endif
