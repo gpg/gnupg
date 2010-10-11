@@ -1141,6 +1141,9 @@ same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
 for the key fingerprint, "%t" for the extension of the image type
 (e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+"%v" for the single-character calculated validity of the image being
+viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
+"full"),
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
