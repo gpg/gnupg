@@ -253,7 +253,7 @@ int pinentry_active_p (ctrl_t ctrl, int waitseconds);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,
-                  struct pin_entry_info_s *pininfo, int *r_cancelall);
+                  struct pin_entry_info_s *pininfo);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext, int with_qualitybar);
@@ -291,7 +291,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 /*-- genkey.c --*/
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
-                                      char **r_passphrase, int *r_cancelall);
+                                      char **r_passphrase);
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);

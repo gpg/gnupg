@@ -2425,7 +2425,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   pi2->check_cb_arg = pi->pin;
 
  next_try:
-  err = agent_askpin (ctrl, description, NULL, initial_errtext, pi, NULL);
+  err = agent_askpin (ctrl, description, NULL, initial_errtext, pi);
   initial_errtext = NULL;
   if (err)
     goto out;
@@ -2433,7 +2433,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   /* Unless the passphrase is empty, ask to confirm it.  */
   if (pi->pin && *pi->pin)
     {
-      err = agent_askpin (ctrl, description2, NULL, NULL, pi2, NULL);
+      err = agent_askpin (ctrl, description2, NULL, NULL, pi2);
       if (err == -1)
 	{ /* The re-entered one did not match and the user did not
 	     hit cancel. */

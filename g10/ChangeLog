@@ -1,3 +1,33 @@
+2010-10-13  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (start_agent): Send option agent-awareness.
+	(status_sc_op_failure): Take care of GPG_ERR_FULLY_CANCELED.
+	* passphrase.c (passphrase_get): Ditto.
+	* import.c (transfer_secret_keys): Ditto.
+	* card-util.c (write_sc_op_status): Ditto.
+
+	* getkey.c (enum_secret_keys): Rewrite.
+
+	* pubkey-enc.c (get_session_key): Skip keys without an encryption
+	capability.  Handle GPG_ERR_FULLY_CANCELED.
+	* gpg.c: Add option --try-secret-key.
+	* options.h (struct opt): Add field secret_keys_to_try.
+
+	* passphrase.c (next_to_last_passphrase): Remove.
+
+2010-10-12  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (generate_subkeypair): Check availibility of secret parts.
+
+	* keylist.c (print_card_serialno): Change to take a hexified serialno.
+	(list_keyblock_print): Print serialno and stub key indicators.
+	(list_keyblock_colon): Ditto.
+
+	* getkey.c (have_any_secret_key): Remove.  Replace all calls by
+	agent_probe_any_secret_key.
+	* gpgv.c (agent_probe_any_secret_key): New.
+	(agent_get_keyinfo): New.
+
 2010-10-08  Werner Koch  <wk@g10code.com>
 
 	* gpg.c: Add option --with-keygrip.

@@ -546,3 +546,21 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   (void)pk;
   return gpg_error (GPG_ERR_NO_SECKEY);
 }
+
+gpg_error_t
+agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
+{
+  (void)ctrl;
+  (void)keyblock;
+  return gpg_error (GPG_ERR_NO_SECKEY);
+}
+
+gpg_error_t
+agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
+{
+  (void)ctrl;
+  (void)hexkeygrip;
+  *r_serialno = NULL;
+  return gpg_error (GPG_ERR_NO_SECKEY);
+}
+  

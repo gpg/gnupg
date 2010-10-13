@@ -704,7 +704,8 @@ get_passphrase (int promptno)
                               repeat, repeat, 1, &pw);
   if (err)
     {
-      if (gpg_err_code (err) == GPG_ERR_CANCELED)
+      if (gpg_err_code (err) == GPG_ERR_CANCELED
+          || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
         log_info (_("cancelled\n"));
       else
         log_error (_("error while asking for the passphrase: %s\n"),

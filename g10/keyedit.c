@@ -1638,7 +1638,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   /* See whether we have a matching secret key.  */
   if (seckey_check)
     { 
-      have_seckey = have_any_secret_key (ctrl, keyblock);
+      have_seckey = !agent_probe_any_secret_key (ctrl, keyblock);
       if (have_seckey && !quiet)
 	tty_printf (_("Secret key is available.\n"));
     }

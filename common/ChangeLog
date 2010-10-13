@@ -1,3 +1,8 @@
+2010-10-13  Werner Koch  <wk@g10code.com>
+
+	* miscellaneous.c (parse_version_number, parse_version_string)
+	(gnupg_compare_version): New.
+
 2010-10-04  Werner Koch  <wk@g10code.com>
 
 	* gettime.c (asctimestamp) [W32CE]: Do not print the timezone.

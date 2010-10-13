@@ -94,14 +94,13 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
     {
       void *enum_context = NULL;
       u32 keyid[2];
-      char *p;
 
       for (;;)
         {
           if (sk)
             free_public_key (sk);
           sk = xmalloc_clear (sizeof *sk);
-          rc = -1; /* FIXME:enum_secret_keys (&enum_context, sk, 1, 0);*/
+          rc = enum_secret_keys (&enum_context, sk);
           if (rc)
             {
               rc = G10ERR_NO_SECKEY;
@@ -109,42 +108,22 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
             }
           if (sk->pubkey_algo != k->pubkey_algo)
             continue;
+          if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
+            continue;
           keyid_from_pk (sk, keyid);
           log_info (_("anonymous recipient; trying secret key %s ...\n"),
                     keystr (keyid));
 
-          if (!opt.try_all_secrets && !is_status_enabled ())
-            {
-              p = get_last_passphrase ();
-              set_next_passphrase (p);
-              xfree (p);
-            }
-
-          /* rc = check_secret_key( sk, opt.try_all_secrets?1:-1 ); /\* ask */
-          /*                                                        only */
-          /*                                                        once *\/ */
-          /* if( !rc ) */
-          {
-            rc = get_it (k, dek, sk, keyid);
-            /* Successfully checked the secret key (either it was a
-               card, had no passphrase, or had the right passphrase)
-               but couldn't decrypt the session key, so thus that key
-               is not the anonymous recipient.  Move the next
-               passphrase into last for the next round.  We only do
-               this if the secret key was successfully checked as in
-               the normal case, check_secret_key handles this for us
-               via passphrase_to_dek.  */
-            if (rc)
-              next_to_last_passphrase ();
-          }
-
+          rc = get_it (k, dek, sk, keyid);
           if (!rc)
             {
               log_info (_("okay, we are the anonymous recipient.\n"));
               break;
             }
+          else if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
+            break; /* Don't try any more secret keys.  */
         }
-      enum_secret_keys (&enum_context, NULL, 0, 0);     /* free context */
+      enum_secret_keys (&enum_context, NULL);  /* free context */
     }
 
 leave:

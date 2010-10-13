@@ -211,17 +211,6 @@ get_last_passphrase()
   return p;
 }
 
-/* As if we had used the passphrase - make it the last_pw. */
-void
-next_to_last_passphrase(void)
-{
-  if (next_pw)
-    {
-      last_pw=next_pw;
-      next_pw=NULL;
-    }
-}
-
 /* Here's an interesting question: since this passphrase was passed in
    on the command line, is there really any point in using secure
    memory for it?  I'm going with 'yes', since it doesn't hurt, and
@@ -407,7 +396,8 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
 
   if (!rc)
     ;
-  else if ( gpg_err_code (rc) == GPG_ERR_CANCELED )
+  else if (gpg_err_code (rc) == GPG_ERR_CANCELED 
+            || gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
     {
       log_info (_("cancelled by user\n") );
       if (canceled)

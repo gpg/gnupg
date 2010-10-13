@@ -177,6 +177,7 @@ enum cmd_and_opt_values
     oDefRecipient,
     oDefRecipientSelf,
     oNoDefRecipient,
+    oTrySecretKey,
     oOptions,
     oDebug,
     oDebugLevel,
@@ -459,6 +460,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHiddenEncryptTo, "hidden-encrypt-to", "@"),
   ARGPARSE_s_s (oLocalUser, "local-user",
                 N_("|USER-ID|use USER-ID to sign or decrypt")),
+
+  ARGPARSE_s_s (oTrySecretKey, "try-secret-key", "@"),
 
   ARGPARSE_s_i (oCompress, NULL,
                 N_("|N|set compress level to N (0 disables)")),
@@ -1622,6 +1625,7 @@ gpgconf_list (const char *configfile)
   es_printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("default-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
@@ -2526,6 +2530,12 @@ main (int argc, char **argv)
 	    sl->flags = 2;
             any_explicit_recipient = 1;
 	    break;
+
+	  case oTrySecretKey: 
+	    add_to_strlist2 (&opt.secret_keys_to_try,
+                             pargs.r.ret_str, utf8_strings);
+	    break;
+
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
 	  case oNoTextmode: opt.textmode=0;  break;

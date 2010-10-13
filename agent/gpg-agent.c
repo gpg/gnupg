@@ -1523,6 +1523,8 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
          a hang.  */
       if (!is_ssh && !check_for_running_agent (1, 1))
         {
+          log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
+          log_set_file (NULL);
           log_error (_("a gpg-agent is already running - "
                        "not starting a new one\n"));
           *name = 0; /* Inhibit removal of the socket by cleanup(). */

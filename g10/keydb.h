@@ -241,11 +241,8 @@ gpg_error_t getkey_next (getkey_ctx_t ctx, PKT_public_key *pk,
                          kbnode_t *ret_keyblock);
 void getkey_end (getkey_ctx_t ctx);
 
-int have_any_secret_key (ctrl_t ctrl, kbnode_t keyblock);
+gpg_error_t enum_secret_keys (void **context, PKT_public_key *pk);
 
-
-//int enum_secret_keys( void **context, PKT_secret_key *sk,
-//		      int with_subkeys, int with_spm );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_native( u32 *keyid );

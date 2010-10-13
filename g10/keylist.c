@@ -40,11 +40,12 @@
 #include "main.h"
 #include "i18n.h"
 #include "status.h"
+#include "call-agent.h"
 
 static void list_all (int);
 static void list_one (strlist_t names, int secret);
 static void locate_one (ctrl_t ctrl, strlist_t names);
-static void print_card_serialno (PKT_public_key *sk);
+static void print_card_serialno (const char *serialno);
 
 struct sig_stats
 {
@@ -175,6 +176,7 @@ print_pubkey_info (estream_t fp, PKT_public_key * pk)
 
 /* Print basic information of a secret key including the card serial
    number information.  */
+#ifdef ENABLE_CARD_SUPPORT
 void
 print_card_key_info (estream_t fp, kbnode_t keyblock)
 {
@@ -224,7 +226,7 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
   /*       } */
   /*   } */
 }
-
+#endif /*ENABLE_CARD_SUPPORT*/
 
 
 /* Flags = 0x01 hashed 0x02 critical.  */
@@ -444,7 +446,7 @@ list_all (int secret)
 	  log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
 	  goto leave;
 	}
-      if (secret && !have_any_secret_key (NULL, keyblock))
+      if (secret && agent_probe_any_secret_key (NULL, keyblock))
         ; /* Secret key listing requested but this isn't one.  */
       else
         {
@@ -757,13 +759,15 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 static void
 list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 {
-  int rc = 0;
+  int rc;
   KBNODE kbctx;
   KBNODE node;
   PKT_public_key *pk;
   struct sig_stats *stats = opaque;
   int skip_sigs = 0;
   int s2k_char;
+  char *hexgrip = NULL;
+  char *serialno = NULL;
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -775,10 +779,23 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
     }
 
   pk = node->pkt->pkt.public_key;
-  
-  /* Fixme: Get s2k mode from the agent.  */
-  s2k_char = (/*(sk->protect.s2k.mode == 1001)? '#' :
-                (sk->protect.s2k.mode == 1002)? '>' : */' ');
+
+  if (secret || opt.with_keygrip)
+    {
+      rc = hexkeygrip_from_pk (pk, &hexgrip);
+      if (rc)
+        log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
+    }
+
+  if (secret)
+    {
+      if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
+        s2k_char = serialno? '>':' ';
+      else
+        s2k_char = '#';  /* Key not found.  */
+    }
+  else
+    s2k_char = ' ';
   
   check_trustdb_stale ();
 
@@ -822,19 +839,11 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   if (fpr)
     print_fingerprint (pk, 0);
 
-  if (opt.with_keygrip)
-    {
-      char *p;
+  if (opt.with_keygrip && hexgrip)
+    es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
 
-      if (!hexkeygrip_from_pk (pk, &p))
-        {
-          es_fprintf (es_stdout, "      Keygrip = %s\n", p);
-          xfree (p);
-        }
-    }
-
-  /* FIXME: Change this function to take a PK and ask the agent:  */
-  /* if (secret) print_card_serialno (sk); */
+  if (serialno)
+    print_card_serialno (serialno);
 
   if (opt.with_key_data)
     print_key_data (pk);
@@ -895,10 +904,25 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  else
 	    skip_sigs = 0;
 
-          /* Fixme: Get s2k mode from the agent.  */
-          s2k_char = (/*(sk->protect.s2k.mode == 1001)? '#' :
-                        (sk->protect.s2k.mode == 1002)? '>' : */' ');
-
+          xfree (serialno); serialno = NULL;
+          xfree (hexgrip); hexgrip = NULL;
+          if (secret || opt.with_keygrip)
+            {
+              rc = hexkeygrip_from_pk (pk2, &hexgrip);
+              if (rc)
+                log_error ("error computing a keygrip: %s\n",
+                           gpg_strerror (rc));
+            }
+          if (secret)
+            {
+              if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
+                s2k_char = serialno? '>':' ';
+              else
+                s2k_char = '#';  /* Key not found.  */
+            }
+          else
+            s2k_char = ' ';
+          
 	  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
                   secret? "ssb":"sub",
                   s2k_char,
@@ -926,20 +950,11 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  if (fpr > 1)
             {
               print_fingerprint (pk2, 0);
-              /* FIXME: (see above) */
-              /* if (secret) */
-              /*   print_card_serialno (sk2); */
+              if (serialno)
+                print_card_serialno (serialno);
             }
-          if (opt.with_keygrip)
-            {
-              char *p;
-              
-              if (!hexkeygrip_from_pk (pk2, &p))
-                {
-                  es_fprintf (es_stdout, "      Keygrip = %s\n", p);
-                  xfree (p);
-                }
-            }
+          if (opt.with_keygrip && hexgrip)
+            es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
 	  if (opt.with_key_data)
 	    print_key_data (pk2);
 	}
@@ -1050,6 +1065,8 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	}
     }
   es_putc ('\n', es_stdout);
+  xfree (serialno);
+  xfree (hexgrip);
 }
 
 void
@@ -1079,7 +1096,7 @@ print_revokers (PKT_public_key * pk)
 static void
 list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 {
-  int rc = 0;
+  int rc;
   KBNODE kbctx;
   KBNODE node;
   PKT_public_key *pk;
@@ -1088,6 +1105,9 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   int ulti_hack = 0;
   int i;
   char *p;
+  char *hexgrip = NULL;
+  char *serialno = NULL;
+  int stubkey;
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -1099,6 +1119,15 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
     }
 
   pk = node->pkt->pkt.public_key;
+  if (secret || opt.with_keygrip || opt.with_key_data)
+    {
+      rc = hexkeygrip_from_pk (pk, &hexgrip);
+      if (rc)
+        log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
+    }
+  stubkey = 0;
+  if (secret && agent_get_keyinfo (NULL, hexgrip, &serialno))
+    stubkey = 1;  /* Key not found.  */
 
   keyid_from_pk (pk, keyid);
   es_fputs (secret? "sec:":"pub:", es_stdout);
@@ -1135,16 +1164,10 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
     {
       es_putc (':', es_stdout);		/* End of field 13. */
       es_putc (':', es_stdout);		/* End of field 14. */
-      if (/*FIXME sk->protect.s2k.mode*/1 == 1001)
-	es_putc ('#', es_stdout);		/* Key is just a stub. */
-      else if (/*FIXME sk->protect.s2k.mode*/1 == 1002)
-	{
-	  /* Key is stored on an external token (card) or handled by
-	     the gpg-agent.  Print the serial number of that token
-	     here. */
-	  /* FIXME: for (i = 0; i < sk->protect.ivlen; i++) */
-	  /*   es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
-	}
+      if (stubkey)
+	es_putc ('#', es_stdout);
+      else if (serialno)
+        es_fputs(serialno, es_stdout);
       es_putc (':', es_stdout);		/* End of field 15. */
     }
   es_putc ('\n', es_stdout);
@@ -1154,11 +1177,8 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
     print_fingerprint (pk, 0);
   if (opt.with_key_data || opt.with_keygrip)
     {
-      if (!hexkeygrip_from_pk (pk, &p))
-        {
-          es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
-          xfree (p);
-        }
+      if (hexgrip)
+        es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
       if (opt.with_key_data)
         print_key_data (pk);
     }
@@ -1213,7 +1233,21 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  u32 keyid2[2];
-	  PKT_public_key *pk2 = node->pkt->pkt.public_key;
+	  PKT_public_key *pk2;
+
+          pk2 = node->pkt->pkt.public_key;
+          xfree (hexgrip); hexgrip = NULL;
+          xfree (serialno); serialno = NULL;
+          if (secret || opt.with_keygrip || opt.with_key_data)
+            {
+              rc = hexkeygrip_from_pk (pk2, &hexgrip);
+              if (rc)
+                log_error ("error computing a keygrip: %s\n",
+                           gpg_strerror (rc));
+            }
+          stubkey = 0;
+          if (secret && agent_get_keyinfo (NULL, hexgrip, &serialno))
+            stubkey = 1;  /* Key not found.  */
 
 	  keyid_from_pk (pk2, keyid2);
 	  es_fputs (secret? "ssb:":"sub:", es_stdout);
@@ -1243,16 +1277,10 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
             {
               es_putc (':', es_stdout);	/* End of field 13. */
               es_putc (':', es_stdout);	/* End of field 14. */
-              if (/*FIXME:sk2->protect.s2k.mode*/1 == 1001)
-                es_putc ('#', es_stdout);	/* Key is just a stub. */
-              else if (/*FIXME: sk2->protect.s2k.mode*/1 == 1002)
-                {
-                  /* Key is stored on an external token (card) or
-                     handled by the gpg-agent.  Print the serial
-                     number of that token here. */
-                  /* FIXME: for (i = 0; i < sk2->protect.ivlen; i++)
-                     es_fprintf (es_stdout, "%02X", sk2->protect.iv[i]); */
-                }
+              if (stubkey)
+                es_putc ('#', es_stdout);
+              else if (serialno)
+                es_fputs (serialno, es_stdout);
               es_putc (':', es_stdout);	/* End of field 15. */
             }
 	  es_putc ('\n', es_stdout);
@@ -1260,11 +1288,8 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	    print_fingerprint (pk2, 0);
 	  if (opt.with_key_data || opt.with_keygrip)
             {
-              if (!hexkeygrip_from_pk (pk2, &p))
-                {
-                  es_fprintf (es_stdout, "grp:::::::::%s:\n", p);
-                  xfree (p);
-                }
+              if (hexgrip)
+                es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
               if (opt.with_key_data)
                 print_key_data (pk2);
             }
@@ -1385,6 +1410,9 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  /* fixme: check or list other sigs here */
 	}
     }
+
+  xfree (hexgrip);
+  xfree (serialno);
 }
 
 /*
@@ -1550,38 +1578,25 @@ print_fingerprint (PKT_public_key *pk, int mode)
 
 /* Print the serial number of an OpenPGP card if available.  */
 static void
-print_card_serialno (PKT_public_key *pk)
+print_card_serialno (const char *serialno)
 {
-  log_debug ("Fixme: Needs to be adjusted to gpg-agent\n");
-  /* int i; */
+  if (!serialno)
+    return;
+  if (opt.with_colons)
+    return; /* Handled elsewhere. */
 
-  /* if (!sk) */
-  /*   return; */
-  /* if (!sk->is_protected || sk->protect.s2k.mode != 1002) */
-  /*   return; /\* Not a card. *\/ */
-  /* if (opt.with_colons) */
-  /*   return; /\* Handled elsewhere. *\/ */
-
-  /* es_fputs (_("      Card serial no. ="), es_stdout); */
-  /* es_putc (' ', es_stdout); */
-  /* if (sk->protect.ivlen == 16 */
-  /*     && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6)) */
-  /*   {		 */
-  /*     /\* This is an OpenPGP card. Just print the relevant part.  *\/ */
-  /*     for (i = 8; i < 14; i++) */
-  /*       { */
-  /*         if (i == 10) */
-  /*           es_putc (' ', es_stdout); */
-  /*         es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
-  /*       } */
-  /*   } */
-  /* else */
-  /*   { */
-  /*     /\* Something is wrong: Print all.  *\/ */
-  /*     for (i = 0; i < sk->protect.ivlen; i++) */
-  /*       es_fprintf (es_stdout, "%02X", sk->protect.iv[i]); */
-  /*   } */
-  /* es_putc ('\n', es_stdout); */
+  es_fputs (_("      Card serial no. ="), es_stdout);
+  es_putc (' ', es_stdout);
+  if (strlen (serialno) == 32 && !strncmp (serialno, "D27600012401", 12))
+    {
+      /* This is an OpenPGP card.  Print the relevant part.  */
+      /* Example: D2760001240101010001000003470000 */
+      /*                          xxxxyyyyyyyy     */
+      es_fprintf (es_stdout, "%.*s %.*s", 4, serialno+16, 8, serialno+20);
+    }
+ else
+   es_fputs (serialno, es_stdout);
+  es_putc ('\n', es_stdout);
 }
 
 

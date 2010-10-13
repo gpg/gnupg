@@ -267,6 +267,8 @@ int is_file_compressed (const char *s, int *ret_rc);
 
 int match_multistr (const char *multistr,const char *match);
 
+int gnupg_compare_version (const char *a, const char *b);
+
 
 /*-- Simple replacement functions. */
 #ifndef HAVE_TTYNAME

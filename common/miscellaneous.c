@@ -236,3 +236,81 @@ match_multistr (const char *multistr,const char *match)
 }
 
 
+
+/* Parse the first portion of the version number S and store it at
+   NUMBER.  On success, the function returns a pointer into S starting
+   with the first character, which is not part of the initial number
+   portion; on failure, NULL is returned.  */
+static const char*
+parse_version_number (const char *s, int *number)
+{
+  int val = 0;
+  
+  if (*s == '0' && digitp (s+1))
+    return NULL; /* Leading zeros are not allowed.  */
+  for (; digitp (s); s++ )
+    {
+      val *= 10;
+      val += *s - '0';
+    }
+  *number = val;
+  return val < 0? NULL : s;
+}
+
+/* Break up the complete string representation of the version number S,
+   which is expected to have this format:
+
+      <major number>.<minor number>.<micro number><patch level>.
+
+   The major, minor and micro number components will be stored at
+   MAJOR, MINOR and MICRO. On success, a pointer to the last
+   component, the patch level, will be returned; on failure, NULL will
+   be returned.  */
+static const char *
+parse_version_string (const char *s, int *major, int *minor, int *micro)
+{
+  s = parse_version_number (s, major);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, minor);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, micro);
+  if (!s)
+    return NULL;
+  return s; /* Patchlevel.  */
+}
+
+/* Return true if version string is at least version B. */
+int
+gnupg_compare_version (const char *a, const char *b)
+{
+  int a_major, a_minor, a_micro;
+  int b_major, b_minor, b_micro;
+  const char *a_plvl, *b_plvl;
+
+  if (!a || !b)
+    return 0;
+
+  /* Parse version A.  */
+  a_plvl = parse_version_string (a, &a_major, &a_minor, &a_micro);
+  if (!a_plvl )
+    return 0; /* Invalid version number.  */
+
+  /* Parse version B.  */
+  b_plvl = parse_version_string (b, &b_major, &b_minor, &b_micro);
+  if (!b_plvl )
+    return 0; /* Invalid version number.  */
+
+  /* Compare version numbers.  */
+  return (a_major > b_major
+          || (a_major == b_major && a_minor > b_minor)
+          || (a_major == b_major && a_minor == b_minor
+              && a_micro > b_micro)
+          || (a_major == b_major && a_minor == b_minor
+              && a_micro == b_micro
+              && strcmp (a_plvl, b_plvl) >= 0));
+}
+

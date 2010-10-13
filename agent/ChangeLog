@@ -1,3 +1,24 @@
+2010-10-13  Werner Koch  <wk@g10code.com>
+
+	* call-pinentry.c (agent_get_passphrase): Support the close_button.
+
+	* gpg-agent.c (create_server_socket): Switch back to stderr
+	logging if we are not starting a agent.
+
+	* command.c (cmd_passwd, cmd_export_key): Move mapping of
+	GPG_ERR_FULLY_CANCELED to ..
+	(leave_cmd): .. here.
+	(option_handler): Add option agent-awareness.
+	* protect-tool.c (get_passphrase): Take care of
+	GPG_ERR_FULLY_CANCELED.
+	* findkey.c (try_unprotect_cb): Ditto.
+	(unprotect): Remove the fully_canceled hack.
+	* call-pinentry.c (start_pinentry): Ditto.
+	(agent_askpin): Ditto.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto
+	* pksign.c (agent_pksign_do): Ditto.
+	* genkey.c (agent_ask_new_passphrase): Remove arg CANCEL_ALL.
+
 2010-10-06  Werner Koch  <wk@g10code.com>
 
 	* cvt-openpgp.c (convert_secret_key): Add missing break.

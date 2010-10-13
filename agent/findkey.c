@@ -169,7 +169,8 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
                                         _("I'll change it later"), 0);
           if (!err)
             arg->change_required = 1;
-          else if (gpg_err_code (err) == GPG_ERR_CANCELED)
+          else if (gpg_err_code (err) == GPG_ERR_CANCELED
+                   || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
             err = 0;
         }
       xfree (desc);
@@ -290,7 +291,6 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   unsigned char *result;
   size_t resultlen;
   char hexgrip[40+1];
-  int fully_canceled;
 
   if (r_passphrase)
     *r_passphrase = NULL;
@@ -383,9 +383,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   arg.change_required = 0;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi, &fully_canceled);
-  if (gpg_err_code (rc) == GPG_ERR_CANCELED && fully_canceled)
-    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi);
   if (!rc)
     {
       assert (arg.unprotected_key);

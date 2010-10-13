@@ -58,6 +58,7 @@ write_sc_op_status (gpg_error_t err)
       break;
 #if GNUPG_MAJOR_VERSION != 1
     case GPG_ERR_CANCELED:
+    case GPG_ERR_FULLY_CANCELED:
       write_status_text (STATUS_SC_OP_FAILURE, "1");
       break;
     case GPG_ERR_BAD_PIN:

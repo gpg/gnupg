@@ -79,6 +79,8 @@ struct
   const char *def_secret_key;
   char *def_recipient;
   int def_recipient_self;
+  strlist_t secret_keys_to_try;
+
   int def_cert_level;
   int min_cert_level;
   int ask_cert_level;

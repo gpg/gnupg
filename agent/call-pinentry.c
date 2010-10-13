@@ -467,8 +467,10 @@ start_pinentry (ctrl_t ctrl)
   else
     {
       rc = agent_inq_pinentry_launched (ctrl, pinentry_pid);
-      if (gpg_err_code (rc) == GPG_ERR_CANCELED)
-        return unlock_pinentry (gpg_error (GPG_ERR_CANCELED));
+      if (gpg_err_code (rc) == GPG_ERR_CANCELED
+          || gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
+        return unlock_pinentry (gpg_err_make (GPG_ERR_SOURCE_DEFAULT,
+                                              gpg_err_code (rc)));
       rc = 0;
     }
 
@@ -727,7 +729,7 @@ int
 agent_askpin (ctrl_t ctrl,
               const char *desc_text, const char *prompt_text,
               const char *initial_errtext,
-              struct pin_entry_info_s *pininfo, int *r_cancel_all)
+              struct pin_entry_info_s *pininfo)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -737,9 +739,6 @@ agent_askpin (ctrl_t ctrl,
   int saveflag;
   int close_button;
   
-  if (r_cancel_all)
-    *r_cancel_all = 0;
-
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
 
@@ -830,10 +829,10 @@ agent_askpin (ctrl_t ctrl,
           && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
-      /* Set a flag in case the window close button was clicked to
-         cancel the operation.  */
-      if (close_button && r_cancel_all && gpg_err_code (rc) == GPG_ERR_CANCELED)
-        *r_cancel_all = 1;
+      /* Change error code in case the window close button was clicked
+         to cancel the operation.  */
+      if (close_button && gpg_err_code (rc) == GPG_ERR_CANCELED)
+        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
         errtext = is_pin? _("PIN too long")
@@ -890,6 +889,7 @@ agent_get_passphrase (ctrl_t ctrl,
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   int saveflag;
+  int close_button;
 
   *retpass = NULL;
   if (opt.batch)
@@ -942,14 +942,21 @@ agent_get_passphrase (ctrl_t ctrl,
 
   saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
+  close_button = 0;
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                        inq_quality, entry_ctx, NULL, NULL);
+                        inq_quality, entry_ctx,
+                        close_button_status_cb, &close_button);
   assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
      not to the code for a user cancel.  Fix this here. */
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+  /* Change error code in case the window close button was clicked
+     to cancel the operation.  */
+  if (close_button && gpg_err_code (rc) == GPG_ERR_CANCELED)
+    rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
+
   if (rc)
     xfree (parm.buffer);
   else

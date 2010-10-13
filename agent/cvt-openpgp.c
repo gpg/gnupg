@@ -780,7 +780,7 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
         err = try_do_unprotect_cb (pi);
     }
   if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
-    err = agent_askpin (ctrl, prompt, NULL, NULL, pi, NULL);
+    err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
   skeyidx = pi_arg.skeyidx;
   if (!err)
     {

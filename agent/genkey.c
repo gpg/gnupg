@@ -290,12 +290,10 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
    function returns 0 and store the passphrase at R_PASSPHRASE; if the
    user opted not to use a passphrase NULL will be stored there.  The
    user needs to free the returned string.  In case of an error and
-   error code is returned and NULL stored at R_PASSPHRASE.  If
-   R_CANCEL_ALL is not NULL and the user canceled by directly closing
-   the window true will be stored at this address.  */
+   error code is returned and NULL stored at R_PASSPHRASE.  */
 gpg_error_t
 agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
-                          char **r_passphrase, int *r_cancel_all)
+                          char **r_passphrase)
 {
   gpg_error_t err;
   const char *text1 = prompt;
@@ -316,7 +314,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   pi2->check_cb_arg = pi->pin;
 
  next_try:
-  err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, r_cancel_all);
+  err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
   initial_errtext = NULL;
   if (!err)
     {
@@ -329,7 +327,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
       /* Unless the passphrase is empty, ask to confirm it.  */
       if (pi->pin && *pi->pin)
         {
-          err = agent_askpin (ctrl, text2, NULL, NULL, pi2, NULL);
+          err = agent_askpin (ctrl, text2, NULL, NULL, pi2);
           if (err == -1)
             { /* The re-entered one did not match and the user did not
                  hit cancel. */
@@ -381,7 +379,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
     rc = agent_ask_new_passphrase (ctrl, 
                                    _("Please enter the passphrase to%0A"
                                      "to protect your new key"),
-                                   &passphrase, NULL);
+                                   &passphrase);
   if (rc)
     return rc;
 
@@ -473,7 +471,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
 
   rc = agent_ask_new_passphrase (ctrl, 
                                  _("Please enter the new passphrase"),
-                                 &passphrase, NULL);
+                                 &passphrase);
   if (!rc)
     {
       rc = store_key (s_skey, passphrase, 1);

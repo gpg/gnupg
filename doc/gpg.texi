@@ -1782,13 +1782,27 @@ Remove all entries from the @option{--group} list.
 Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
+@ifset gpgtwoone
+@item --try-secret-key @var{name}
+@opindex try-secret-key
+For hidden recipients GPG needs to know the keys to use for trial
+decryption.  The key set with @option{--default-key} is always tried
+first, but this is often not sufficient.  This option allows to set more
+keys to be used for trial decryption.  Although any valid user-id
+specification may be used for @var{name} it makes sense to use at least
+the long keyid to avoid ambiguities.  Note that gpg-agent might pop up a
+pinentry for a lot keys to do the trial decryption.  If you want to stop
+all further trial decryption you may use close-window button instead of
+the cancel button.
+@end ifset
+
 @item --try-all-secrets
 @opindex try-all-secrets
 Don't look at the key ID as stored in the message but try all secret
 keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
-@option{--throw-keyids}) and might come handy in case where an encrypted
-message contains a bogus key ID.
+@option{--throw-keyids} or @option{--hidden-recipient}) and might come
+handy in case where an encrypted message contains a bogus key ID.
 
 @item --skip-hidden-recipients
 @itemx --no-skip-hidden-recipients

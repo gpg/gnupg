@@ -568,8 +568,9 @@ leave:
  * first pubkey certificate which has the given name in a user_id.  If
  * PK has the pubkey algo set, the function will only return a pubkey
  * with that algo.  If NAMELIST is NULL, the first key is returned.
- * The caller should provide storage for the PK.  If RET_KB is not
- * NULL the function will return the keyblock there.  */
+ * The caller should provide storage for the PK or pass NULL if it is
+ * not needed.  If RET_KB is not NULL the function stores the entire
+ * keyblock at that address.  */
 static int
 key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 	    PKT_public_key *pk,
@@ -1146,12 +1147,13 @@ getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
 }
 
 
-/* Get a key by name and store it into PK.  If RETCTX is not NULL
- * return the search context which needs to be released by the caller
- * using getkey_end.  If NAME is NULL use the default key (see below).
- * On success and if RET_KEYBLOCK is not NULL the found keyblock is
- * stored at this address.  WANT_SECRET passed as true requires that a
- * secret key is available for the selected key.
+/* Get a key by name and store it into PK if that is not NULL.  If
+ * RETCTX is not NULL return the search context which needs to be
+ * released by the caller using getkey_end.  If NAME is NULL use the
+ * default key (see below).  On success and if RET_KEYBLOCK is not
+ * NULL the found keyblock is stored at this address.  WANT_SECRET
+ * passed as true requires that a secret key is available for the
+ * selected key.
  * 
  * If WANT_SECRET is true and NAME is NULL and a default key has been
  * defined that defined key is used.  In all other cases the first
@@ -2459,7 +2461,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 	  goto skip;
 	}
 
-      if (want_secret && !have_any_secret_key (NULL, ctx->keyblock))
+      if (want_secret && agent_probe_any_secret_key (NULL, ctx->keyblock))
         goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
@@ -2504,57 +2506,42 @@ found:
 
 
 
-/****************
- * FIXME: Replace by the generic function
- *        It does not work as it is right now - it is used at
- *        one place:  to get the key for an anonymous recipient.
- *
- * set with_subkeys true to include subkeys
- * set with_spm true to include secret-parts-missing keys
- *
- * Enumerate all primary secret keys.  Caller must use these procedure:
+/*
+ * Enumerate certain secret keys.  Caller must use these procedure:
  *  1) create a void pointer and initialize it to NULL
  *  2) pass this void pointer by reference to this function
  *     and provide space for the secret key (pass a buffer for sk)
- *  3) call this function as long as it does not return -1
- *     to indicate EOF.
+ *  3) call this function as long as it does not return an error.
+ *     The error code GPG_ERR_EOF indicates the end of the listing.
  *  4) Always call this function a last time with SK set to NULL,
  *     so that can free it's context.
  */
-int
-enum_secret_keys (void **context, PKT_public_key * sk,
-		  int with_subkeys, int with_spm)
+gpg_error_t
+enum_secret_keys (void **context, PKT_public_key *sk)
 {
-  log_debug ("FIXME: Anonymous recipient does not yet work\n");
-  return -1;
-#if 0
-
-  int rc = 0;
+  gpg_error_t err = 0;
+  const char *name;
   struct
   {
     int eof;
-    int first;
-    KEYDB_HANDLE hd;
-    KBNODE keyblock;
-    KBNODE node;
+    int state;
+    strlist_t sl;
+    kbnode_t keyblock;
+    kbnode_t node;
   } *c = *context;
-
 
   if (!c)
     {
       /* Make a new context.  */
-      c = xmalloc_clear (sizeof *c);
+      c = xtrycalloc (1, sizeof *c);
+      if (!c)
+        return gpg_error_from_syserror ();
       *context = c;
-      c->hd = keydb_new (1);  /*FIXME*/
-      c->first = 1;
-      c->keyblock = NULL;
-      c->node = NULL;
     }
 
   if (!sk)
     {
       /* Free the context.  */
-      keydb_release (c->hd);
       release_kbnode (c->keyblock);
       xfree (c);
       *context = NULL;
@@ -2562,48 +2549,79 @@ enum_secret_keys (void **context, PKT_public_key * sk,
     }
 
   if (c->eof)
-    return -1;
+    return gpg_error (GPG_ERR_EOF);
 
-  do
+  for (;;)
     {
-      /* Get the next secret key from the current keyblock.  */
+      /* Loop until we have a keyblock.  */
+      while (!c->keyblock)
+        {
+          /* Loop over the list of secret keys.  */
+          do 
+            {
+              name = NULL;
+              switch (c->state)
+                {
+                case 0: /* First try to use the --default-key.  */
+                  if (opt.def_secret_key && *opt.def_secret_key)
+                    name = opt.def_secret_key;
+                  c->state = 1;
+                  break;
+                  
+                case 1: /* Init list of keys to try.  */
+                  c->sl = opt.secret_keys_to_try;
+                  c->state++;
+                  break;
+                  
+                case 2: /* Get next item from list.  */
+                  if (c->sl)
+                    {
+                      name = c->sl->d;
+                      c->sl = c->sl->next;
+                    }
+                  else
+                    c->state++;
+                  break;
+
+                default: /* No more names to check - stop.  */  
+                  c->eof = 1;
+                  return gpg_error (GPG_ERR_EOF);
+                }
+            }
+          while (!name || !*name);
+
+          err = getkey_byname (NULL, NULL, name, 1, &c->keyblock);
+          if (err)
+            {
+              /* getkey_byname might return a keyblock even in the
+                 error case - I have not checked.  Thus better release
+                 it.  */
+              release_kbnode (c->keyblock);
+              c->keyblock = NULL;
+            }
+          else
+            c->node = c->keyblock;
+        }
+      
+      /* Get the next key from the current keyblock.  */
       for (; c->node; c->node = c->node->next)
 	{
-	  if ((c->node->pkt->pkttype == PKT_SECRET_KEY
-	       || (with_subkeys
-		   && c->node->pkt->pkttype == PKT_SECRET_SUBKEY))
-	      && !(c->node->pkt->pkt.secret_key->protect.s2k.mode == 1001
-		   && !with_spm))
+	  if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
+              || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	    {
-	      copy_secret_key (sk, c->node->pkt->pkt.secret_key);
+	      copy_public_key (sk, c->node->pkt->pkt.public_key);
 	      c->node = c->node->next;
 	      return 0;	/* Found.  */
 	    }
-	}
+        }
+
+      /* Dispose the keyblock and continue.  */
       release_kbnode (c->keyblock);
-      c->keyblock = c->node = NULL;
-
-      rc = c->first ? keydb_search_first (c->hd) : keydb_search_next (c->hd);
-      c->first = 0;
-      if (rc)
-	{
-	  keydb_release (c->hd);
-	  c->hd = NULL;
-	  c->eof = 1;
-	  return -1; /* eof */
-	}
-
-      rc = keydb_get_keyblock (c->hd, &c->keyblock);
-      c->node = c->keyblock;
+      c->keyblock = NULL;
     }
-  while (!rc);
-
-  return rc; /* Error.  */
-#endif
 }
+
 
-
-
 /*********************************************
  ***********  User ID printing helpers *******
  *********************************************/

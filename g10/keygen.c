@@ -3441,6 +3441,8 @@ generate_subkeypair (KBNODE keyblock)
   u32 expire;
   unsigned int nbits;
   u32 cur_time;
+  char *hexgrip = NULL;
+  char *serialno = NULL;
 
   /* Break out the primary key.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -3476,37 +3478,16 @@ generate_subkeypair (KBNODE keyblock)
       goto leave;
     }
 
-#warning ask gpg-agent on the availibility of the secret key
-  /* if (pri_sk->is_protected && pri_sk->protect.s2k.mode == 1001) */
-  /*   { */
-  /*     tty_printf (_("Secret parts of primary key are not available.\n")); */
-  /*     err = G10ERR_NO_SECKEY; */
-  /*     goto leave; */
-  /*   } */
-
-
-  /* /\* Unprotect to get the passphrase.  *\/ */
-  /* switch (is_secret_key_protected (pri_sk) ) */
-  /*   { */
-  /*   case -1: */
-  /*     err = G10ERR_PUBKEY_ALGO; */
-  /*     break; */
-  /*   case 0: */
-  /*     tty_printf (_("This key is not protected.\n")); */
-  /*     break; */
-  /*   case -2: */
-  /*     tty_printf (_("Secret parts of primary key are stored on-card.\n")); */
-  /*     ask_pass = 1; */
-  /*     break; */
-  /*   default: */
-  /*     tty_printf (_("Key is protected.\n")); */
-  /*     err = check_secret_key ( pri_sk, 0 ); */
-  /*     if (!err) */
-  /*       passphrase = get_last_passphrase(); */
-  /*     break; */
-  /*   } */
-  /* if (err) */
-  /*   goto leave; */
+  err = hexkeygrip_from_pk (pri_psk, &hexgrip);
+  if (err)
+    goto leave;
+  if (agent_get_keyinfo (NULL, hexgrip, &serialno))
+    {
+      tty_printf (_("Secret parts of primary key are not available.\n"));
+      goto leave;
+    }
+  if (serialno)
+    tty_printf (_("Secret parts of primary key are stored on-card.\n"));
 
   algo = ask_algo (1, NULL, &use);
   assert (algo);
@@ -3536,6 +3517,8 @@ generate_subkeypair (KBNODE keyblock)
   write_status_text (STATUS_KEY_CREATED, "S");
 
  leave:
+  xfree (hexgrip);
+  xfree (serialno);
   if (err)
     log_error (_("Key generation failed: %s\n"), g10_errstr (err) );
   return err;

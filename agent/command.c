@@ -71,6 +71,7 @@ struct server_local_s
                                 be done. */
   void *import_key;  /* Malloced KEK for the import_key command.  */
   void *export_key;  /* Malloced KEK for the export_key command.  */
+  int allow_fully_canceled; /* Client is aware of GPG_ERR_FULLY_CANCELED.  */
 };
 
 
@@ -363,6 +364,16 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
       const char *name = assuan_get_command_name (ctx);
       if (!name)
         name = "?";
+
+      /* Not all users of gpg-agent know about the fully canceled
+         error code; map it back if needed.  */
+      if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+        {
+          ctrl_t ctrl = assuan_get_pointer (ctx);
+
+          if (!ctrl->server_local->allow_fully_canceled)
+            err = gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED);
+        }
 
       /* Most code from common/ does not know the error source, thus
          we fix this here.  */
@@ -1336,12 +1347,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
                             &s_skey, NULL);
   if (rc)
-    {
-      /* Not all users of gpg-agent know about fully cancled; thus we
-         map it back.  */
-      if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
-        rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
-    }
+    ;
   else if (!s_skey)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
@@ -1643,7 +1649,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         err = agent_ask_new_passphrase 
           (ctrl, _("Please enter the passphrase to protect the "
                    "imported object within the GnuPG system."),
-           &passphrase, NULL);
+           &passphrase);
       if (err)
         goto leave;
     }
@@ -1751,17 +1757,12 @@ cmd_export_key (assuan_context_t ctx, char *line)
          canonical S-expression.  */
       if (!passphrase)
         {
-          int fully_canceled;
           err = agent_ask_new_passphrase 
             (ctrl, _("This key (or subkey) is not protected with a passphrase."
                      "  Please enter a new passphrase to export it."),
-             &passphrase, &fully_canceled);
+             &passphrase);
           if (err)
-            {
-              if (fully_canceled)
-                err = gpg_error (GPG_ERR_FULLY_CANCELED);
-              goto leave;
-            }
+            goto leave;
         }
       err = convert_to_openpgp (ctrl, s_skey, passphrase, &key, &keylen);
     }
@@ -1814,10 +1815,6 @@ cmd_export_key (assuan_context_t ctx, char *line)
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
 
-  /* Not all users of gpg-agent know about fully cancled; thus we map
-     it back unless we know that it is okay.  */
-  if (!openpgp && gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
-    err = gpg_err_make (gpg_err_source (err), GPG_ERR_CANCELED);
   return leave_cmd (ctx, err);
 }
 
@@ -2185,7 +2182,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
 
-  if (!strcmp (key, "putenv"))
+  if (!strcmp (key, "agent-awareness"))
+    {
+      /* The value is a version string telling us of which agent
+         version the caller is aware of.  */
+      ctrl->server_local->allow_fully_canceled = 
+        gnupg_compare_version (value, "2.1.0");
+    }
+  else if (!strcmp (key, "putenv"))
     {
       /* Change the session's environment to be used for the
          Pinentry.  Valid values are:

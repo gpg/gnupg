@@ -555,11 +555,10 @@ get_signature_count (PKT_public_key *pk)
   /*     if(agent_scd_getattr("SIG-COUNTER",&info)==0) */
   /*       return info.sig_counter; */
   /*   }   */
-#endif
-
-  /* How to do this without a card? */
-
+#else
+  (void)pk;
   return 0;
+#endif
 }
 
 /* Expand %-strings.  Returns a string which must be xfreed.  Returns

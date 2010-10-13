@@ -43,9 +43,12 @@ Noteworthy changes in version 2.1.x (under development)
 
  * The OpenPGP import command is now able to merge secret keys.
 
- * Removed options:
+ * Removed GPG options:
     --export-options: export-secret-subkey-passwd
     --simple-sk-checksum
+
+ * New GPG options:
+    --try-secret-key
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
