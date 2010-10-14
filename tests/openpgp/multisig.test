@@ -132,7 +132,7 @@ cnksIEkgY2FuJ3QgZG8gdGhhdAo=
 
 
 for i in  sig_sl_valid ; do
-    eval "(IFS=; echo \"\$$i\")" | ./gpg_dearmor >x
+    eval "(IFS=; echo \"\$$i\")" | $GPG --dearmor >x
     $GPG --verify x 2>/dev/null || error "valid is invalid ($i)"
     linefeed
 done
@@ -145,7 +145,7 @@ done
 for i in sig_1ls1ls_valid sig_ls_valid \
          sig_1lsls_invalid sig_lsls_invalid \
          sig_lss_invalid sig_slsl_invalid ; do
-    eval "(IFS=; echo \"\$$i\")" | ./gpg_dearmor >x
+    eval "(IFS=; echo \"\$$i\")" | $GPG --dearmor >x
     $GPG --verify <x 2>/dev/null && error "invalid is valid ($i)"
     linefeed
 done

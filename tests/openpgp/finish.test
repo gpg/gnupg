@@ -1,6 +1,5 @@
 #!/bin/sh
-# Copyright 1998,1999,2000,2001,2002,2003,2004,2005,2006,
-#           2007 Free Software Foundation, Inc.
+# Copyright 2010 Free Software Foundation, Inc.
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
 # modifications, as long as this notice is preserved.  This file is
@@ -10,9 +9,9 @@
 
 . $srcdir/defs.inc || exit 3
 
-#info Checking decryption of supplied files
-for i in $plain_files ; do
-    $GPG -o y --yes $srcdir/$i.asc
-    cmp $i y || error "$i: mismatch"
-done
+if $GPG_AGENT --quiet; then
+  $GPG_CONNECT_AGENT killagent /bye >/dev/null
+fi
+
+exit 0
 

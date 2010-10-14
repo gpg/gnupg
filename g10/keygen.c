@@ -49,6 +49,9 @@
 #define DEFAULT_STD_ALGO    GCRY_PK_RSA
 #define DEFAULT_STD_KEYSIZE 2048
 
+#define KEYGEN_FLAG_NO_PROTECTION 1
+#define KEYGEN_FLAG_TRANSIENT_KEY 2
+
 
 #define MAX_PREFS 30 
 
@@ -99,6 +102,7 @@ struct output_control_s {
     int lnr;
     int dryrun;
     int ask_passphrase;
+    unsigned int keygen_flags;
     int use_files;
     struct {
 	char  *fname;
@@ -1137,14 +1141,15 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 static int
 common_gen (const char *keyparms, int algo, const char *algoelem,
             kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,
-            char **cache_nonce_addr)
+            int keygen_flags, char **cache_nonce_addr)
 {
   int err;
   PACKET *pkt;
   PKT_public_key *pk;
   gcry_sexp_t s_key;
   
-  err = agent_genkey (NULL, cache_nonce_addr, keyparms, &s_key);
+  err = agent_genkey (NULL, cache_nonce_addr, keyparms,
+                      !!(keygen_flags & KEYGEN_FLAG_NO_PROTECTION), &s_key);
   if (err)
     {
       log_error ("agent_genkey failed: %s\n", gpg_strerror (err) );
@@ -1196,7 +1201,8 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
  */
 static int
 gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
-         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
+         u32 timestamp, u32 expireval, int is_subkey,
+         int keygen_flags, char **cache_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1216,18 +1222,23 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
       log_info (_("keysize rounded up to %u bits\n"), nbits );
     }
 
+  /* Note that we use transient-key only if no-protection has also
+     been enabled.  */
   snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
-  keyparms = xtryasprintf ("(genkey(%s(nbits %zu:%s)))",
+  keyparms = xtryasprintf ("(genkey(%s(nbits %zu:%s)%s))",
                            algo == GCRY_PK_ELG_E ? "openpgp-elg" :
                            algo == GCRY_PK_ELG	 ? "elg" : "x-oops" ,
-                           strlen (nbitsstr), nbitsstr);
+                           strlen (nbitsstr), nbitsstr,
+                           ((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                            && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+                           "(transient-key)" : "" );
   if (!keyparms)
     err = gpg_error_from_syserror ();
   else
     {
       err = common_gen (keyparms, algo, "pgy", 
                         pub_root, timestamp, expireval, is_subkey,
-                        cache_nonce_addr);
+                        keygen_flags, cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1240,7 +1251,8 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
  */
 static gpg_error_t
 gen_dsa (unsigned int nbits, KBNODE pub_root, 
-         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
+         u32 timestamp, u32 expireval, int is_subkey,
+         int keygen_flags, char **cache_nonce_addr)
 {
   int err;
   unsigned int qbits;
@@ -1301,16 +1313,19 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
 
   snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
   snprintf (qbitsstr, sizeof qbitsstr, "%u", qbits);
-  keyparms = xtryasprintf ("(genkey(dsa(nbits %zu:%s)(qbits %zu:%s)))",
+  keyparms = xtryasprintf ("(genkey(dsa(nbits %zu:%s)(qbits %zu:%s)%s))",
                            strlen (nbitsstr), nbitsstr,
-                           strlen (qbitsstr), qbitsstr);
+                           strlen (qbitsstr), qbitsstr,
+                           ((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                            && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+                           "(transient-key)" : "" );
   if (!keyparms)
     err = gpg_error_from_syserror ();
   else
     {
       err = common_gen (keyparms, PUBKEY_ALGO_DSA, "pqgy", 
                         pub_root, timestamp, expireval, is_subkey,
-                        cache_nonce_addr);
+                        keygen_flags, cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1323,7 +1338,8 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
  */
 static int
 gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
-         u32 timestamp, u32 expireval, int is_subkey, char **cache_nonce_addr)
+         u32 timestamp, u32 expireval, int is_subkey,
+         int keygen_flags, char **cache_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1347,15 +1363,18 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
     }
 
   snprintf (nbitsstr, sizeof nbitsstr, "%u", nbits);
-  keyparms = xtryasprintf ("(genkey(rsa(nbits %zu:%s)))", 
-                           strlen (nbitsstr), nbitsstr);
+  keyparms = xtryasprintf ("(genkey(rsa(nbits %zu:%s)%s))", 
+                           strlen (nbitsstr), nbitsstr,
+                           ((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                            && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+                           "(transient-key)" : "" );
   if (!keyparms)
     err = gpg_error_from_syserror ();
   else
     {
       err = common_gen (keyparms, algo, "ne", 
                         pub_root, timestamp, expireval, is_subkey,
-                        cache_nonce_addr);
+                        keygen_flags, cache_nonce_addr);
       xfree (keyparms);
     }
 
@@ -2153,7 +2172,7 @@ do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
 static int
 do_create (int algo, unsigned int nbits, KBNODE pub_root,
            u32 timestamp, u32 expiredate, int is_subkey,
-           char **cache_nonce_addr)
+           int keygen_flags, char **cache_nonce_addr)
 {
   gpg_error_t err;
 
@@ -2168,13 +2187,13 @@ do_create (int algo, unsigned int nbits, KBNODE pub_root,
 
   if (algo == PUBKEY_ALGO_ELGAMAL_E)
     err = gen_elg (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
-                   cache_nonce_addr);
+                   keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_DSA)
     err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
-                   cache_nonce_addr);
+                   keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)
     err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
-                   cache_nonce_addr);
+                   keygen_flags, cache_nonce_addr);
   else
     BUG();
 
@@ -2742,6 +2761,10 @@ read_parameter_file( const char *fname )
 		outctrl.ask_passphrase = 1;
 	    else if( !ascii_strcasecmp( keyword, "%no-ask-passphrase" ) )
 		outctrl.ask_passphrase = 0;
+	    else if( !ascii_strcasecmp( keyword, "%no-protection" ) )
+                outctrl.keygen_flags |= KEYGEN_FLAG_NO_PROTECTION;
+	    else if( !ascii_strcasecmp( keyword, "%transient-key" ) )
+                outctrl.keygen_flags |= KEYGEN_FLAG_TRANSIENT_KEY;
 	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
 		if (proc_parameter_file( para, fname, &outctrl, 0 ))
@@ -3242,7 +3265,8 @@ do_generate_keypair (struct para_data_s *para,
                      get_parameter_uint( para, pKEYLENGTH ),
                      pub_root,
                      timestamp,
-                     get_parameter_u32( para, pKEYEXPIRE ), 0, &cache_nonce);
+                     get_parameter_u32( para, pKEYEXPIRE ), 0, 
+                     outctrl->keygen_flags, &cache_nonce);
   else
     err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
                         &timestamp,
@@ -3293,7 +3317,7 @@ do_generate_keypair (struct para_data_s *para,
                            pub_root, 
                            timestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
-                           &cache_nonce);
+                           outctrl->keygen_flags, &cache_nonce);
           /* Get the pointer to the generated public subkey packet.  */
           if (!err)
             {
@@ -3500,7 +3524,7 @@ generate_subkeypair (KBNODE keyblock)
       goto leave;
     }  
 
-  err = do_create (algo, nbits, keyblock, cur_time, expire, 1, NULL);
+  err = do_create (algo, nbits, keyblock, cur_time, expire, 1, 0, NULL);
   if (err)
     goto leave;
 

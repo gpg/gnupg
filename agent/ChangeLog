@@ -1,3 +1,8 @@
+2010-10-14  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_genkey): Add option --no-protection.
+	* genkey.c (agent_genkey): Add arg NO_PROTECTION.
+
 2010-10-13  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (agent_get_passphrase): Support the close_button.

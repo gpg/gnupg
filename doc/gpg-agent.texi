@@ -485,7 +485,7 @@ pinentry to pop up at the @code{tty} or display you started the agent.
 @item --enable-ssh-support
 @opindex enable-ssh-support
 
-Enable emulation of the OpenSSH Agent protocol.
+Enable the OpenSSH Agent protocol.
 
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH
@@ -512,10 +512,20 @@ has been started.  To switch this display to the current one, the
 following command may be used:
 
 @smallexample
-echo UPDATESTARTUPTTY | gpg-connect-agent
+gpg-connect-agent updatestartuptty /bye
 @end smallexample
 
+Although all GnuPG components try to start the gpg-agent as needed, this
+is not possible for the ssh support because ssh does not know about it.
+Thus if no GnuPG tool which accesses the agent has been run, there is no
+guarantee that ssh is abale to use gpg-agent for authentication.  To fix
+this you may start gpg-agent if needed using this simple command:
 
+@smallexample
+gpg-connect-agent /bye
+@end smallexample
+
+Adding the @option{--verbose} shows the progress of starting the agent.
 
 @end table
 

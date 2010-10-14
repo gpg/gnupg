@@ -4,7 +4,7 @@ set -e
 
 # We need to use --no-options so that a gpg.conf from an older version
 # of gpg is not used.
-GPG="../g10/gpg2 --no-options --batch --quiet
+GPG="../../g10/gpg2 --no-options --batch --quiet
      --no-secmem-warning --allow-secret-key-import"
 
 NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India

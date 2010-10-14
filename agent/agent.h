@@ -293,7 +293,8 @@ int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
-                  const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
+                  const char *keyparam, size_t keyparmlen,
+                  int no_protection, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 
 /*-- protect.c --*/

@@ -56,6 +56,7 @@ enum cmd_and_opt_values
 
     oNoVerbose	= 500,
     oHomedir,
+    oAgentProgram,
     oHex,
     oDecode,
     oNoExtConnect
@@ -85,6 +86,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@" ),   
+  ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
 
   ARGPARSE_end ()
 };
@@ -96,6 +98,7 @@ struct
   int verbose;		/* Verbosity level.  */
   int quiet;		/* Be extra quiet.  */
   const char *homedir;  /* Configuration directory name */
+  const char *agent_program;  /* Value of --agent-program.  */
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
@@ -1186,6 +1189,7 @@ main (int argc, char **argv)
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
+        case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
@@ -2168,7 +2172,7 @@ start_agent (void)
   err = start_new_gpg_agent (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
                              opt.homedir,
-                             NULL,
+                             opt.agent_program,
                              NULL, NULL,
                              session_env,
                              !opt.quiet, 0,

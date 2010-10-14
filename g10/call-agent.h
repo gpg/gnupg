@@ -155,7 +155,7 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
 
 /* Generate a new key.  */
 gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
-                          const char *keyparms,
+                          const char *keyparms, int no_protection,
                           gcry_sexp_t *r_pubkey);
 
 /* Create a signature.  */

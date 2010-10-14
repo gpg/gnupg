@@ -826,6 +826,19 @@ The format of this file is as follows:
         entry code.  This is a global option.
     %no-ask-passphrase
         Disable the ask-passphrase mode.        
+    %no-protection
+        With GnuPG 2.1 it is not anymore possible to specify a
+        passphrase for unattended key generation.  The passphrase
+        command is simply ignored and %ask-passpharse is thus
+        implicitly enabled.  Using this option allows to the creation
+        of keys without any passphrases.  This option is mainly
+        intended for regression tests.
+    %transient-key
+        If given the keys are created using a faster and a somewhat
+        less secure random number generator.  This option may be used
+        for keys which are only used for a short time and do not
+        require full cryptographic strength.  It takes only effect if
+        used together with the option no-protection.
 
    o The order of the parameters does not matter except for "Key-Type"
      which must be the first parameter.  The parameters are only for the

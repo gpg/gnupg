@@ -806,7 +806,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] = 
-  "GENKEY [<cache_nonce>]\n"
+  "GENKEY [--no-protection] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
@@ -824,12 +824,16 @@ cmd_genkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
+  int no_protection;
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
   char *cache_nonce = NULL;
   char *p;
   
+  no_protection = has_option (line, "--no-protection");
+  line = skip_options (line);
+
   p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
@@ -844,7 +848,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, &outbuf);
+  rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
+                     &outbuf);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);

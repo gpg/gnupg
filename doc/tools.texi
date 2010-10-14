@@ -296,6 +296,12 @@ List the global configuration file in a colon separated format.  If
 Run a syntax check on the global configuration file.  If @var{filename}
 is given, check that file instead.
 
+@item --reload [@var{component}]
+@opindex reload
+Reload all or the given component. This is basically the sam as sending
+a SIGHUP to the component.  Components which don't support reloading are
+ignored.
+
 @end table
 
 
@@ -1169,6 +1175,11 @@ Output additional information while running.
 Try to be as quiet as possible.
 
 @include opt-homedir.texi
+
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.
+
 
 @item -S
 @itemx --raw-socket @var{name}

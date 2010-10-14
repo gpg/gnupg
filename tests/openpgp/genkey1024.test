@@ -10,10 +10,7 @@
 
 . $srcdir/defs.inc || exit 3
 
-# FIXME: Skip this test for now
-exit 77
-
-$GPG --quiet --batch --debug-quick-random  --gen-key <<EOF
+$GPG --quiet --batch --gen-key <<EOF
 Key-Type: DSA
 Key-Length: 1024
 Subkey-Type: ELG
@@ -22,12 +19,13 @@ Name-Real: Harry H.
 Name-Comment: test key 
 Name-Email: hh@@ddorf.de
 Expire-Date: 1
-Passphrase: abc
+%no-protection
+%transient-key
 %commit
 EOF
 
 if have_pubkey_algo "RSA"; then
-$GPG --quiet --batch --debug-quick-random --gen-key <<EOF
+$GPG --quiet --batch --gen-key <<EOF
 Key-Type: RSA
 Key-Length: 1024
 Key-Usage: sign,encrypt
@@ -35,7 +33,8 @@ Name-Real: Harry A.
 Name-Comment: RSA test key 
 Name-Email: hh@@ddorf.de
 Expire-Date: 2
-Passphrase: abc
+%no-protection
+%transient-key
 %commit
 EOF
 fi

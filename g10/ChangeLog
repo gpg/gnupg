@@ -1,3 +1,12 @@
+2010-10-14  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_genkey): Add arg NO_PROTECTION.
+	* keygen.c (do_create, gen_elg, gen_dsa, gen_rsa, common_gen): Add
+	arg KEYGEN_FLAGS.
+	(read_parameter_file): Add options no-protection and transient-key.
+	(KEYGEN_FLAG_NO_PROTECTION, KEYGEN_FLAG_TRANSIENT_KEY): New.
+	(gen_rsa, gen_dsa, gen_elg): Use transient-key.
+
 2010-10-13  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (start_agent): Send option agent-awareness.

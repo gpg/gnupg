@@ -1517,10 +1517,11 @@ inq_genkey_parms (void *opaque, const char *line)
 
 /* Call the agent to generate a new key.  KEYPARMS is the usual
    S-expression giving the parameters of the key.  gpg-agent passes it
-   gcry_pk_genkey.  */
+   gcry_pk_genkey.  If NO_PROTECTION is true the agent is advised not
+   to protect the generated key. */
 gpg_error_t
 agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
-              const char *keyparms, gcry_sexp_t *r_pubkey)
+              const char *keyparms, int no_protection, gcry_sexp_t *r_pubkey)
 {
   gpg_error_t err;
   struct genkey_parm_s gk_parm;
@@ -1543,7 +1544,8 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
   gk_parm.ctrl     = ctrl;
   gk_parm.ctx      = agent_ctx;
   gk_parm.keyparms = keyparms;
-  snprintf (line, sizeof line, "GENKEY%s%s",
+  snprintf (line, sizeof line, "GENKEY%s%s%s",
+            no_protection? " --no-protection":"",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
   err = assuan_transact (agent_ctx, line,

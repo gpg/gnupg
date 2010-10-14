@@ -352,10 +352,11 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 
 /* Generate a new keypair according to the parameters given in
    KEYPARAM.  If CACHE_NONCE is given first try to lookup a passphrase
-   using the cache nonce. */
+   using the cache nonce.  If NO_PROTECTION is true the key will not
+   be protected by a passphrase.  */
 int
 agent_genkey (ctrl_t ctrl, const char *cache_nonce,
-              const char *keyparam, size_t keyparamlen,
+              const char *keyparam, size_t keyparamlen, int no_protection,
               membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
@@ -372,8 +373,12 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
-  passphrase = cache_nonce? agent_get_cache (cache_nonce, CACHE_MODE_NONCE):NULL;
-  if (passphrase)
+  if (no_protection || !cache_nonce)
+    passphrase = NULL;
+  else 
+    passphrase = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
+
+  if (passphrase || no_protection)
     rc = 0;
   else
     rc = agent_ask_new_passphrase (ctrl, 
@@ -424,7 +429,8 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
           gcry_create_nonce (tmpbuf, 12);
           cache_nonce = bin2hex (tmpbuf, 12, NULL);
         }
-      if (cache_nonce 
+      if (cache_nonce
+          && !no_protection
           && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                passphrase, 900 /*seconds*/))
         agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
