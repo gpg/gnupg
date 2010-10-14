@@ -1,3 +1,11 @@
+2010-10-14  Werner Koch  <wk@g10code.com>
+
+	* gpg-connect-agent.c (start_agent): Rewrite using the
+	start_new_gpg_agent function.
+
+	* gpgconf-comp.c (gpg_agent_runtime_change): Use gpg-connect-agent
+	on all platforms.
+
 2010-10-06  Werner Koch  <wk@g10code.com>
 
 	* watchgnupg.c (print_version): Add option --time-only.

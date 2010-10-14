@@ -50,7 +50,6 @@ enum cmd_and_opt_values
     aCheckConfig,
     aListDirs,
     aReload
-
   };
 
 
@@ -72,7 +71,7 @@ static ARGPARSE_OPTS opts[] =
       N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
-    { aReload,        "reload", 256, "@" },
+    { aReload,        "reload", 256, N_("reload all or a given component")},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
     

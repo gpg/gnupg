@@ -1032,35 +1032,6 @@ struct error_line_s
 static void
 gpg_agent_runtime_change (void)
 {
-#ifndef HAVE_W32_SYSTEM
-  char *agent = getenv ("GPG_AGENT_INFO");
-  char *pid_str;
-  unsigned long pid_long;
-  char *tail;
-  pid_t pid;
-
-  if (!agent)
-    return;
-
-  pid_str = strchr (agent, ':');
-  if (!pid_str)
-    return;
-
-  pid_str++;
-  errno = 0;
-  pid_long = strtoul (pid_str, &tail, 0);
-  if (errno || (*tail != ':' && *tail != '\0'))
-    return;
-
-  pid = (pid_t) pid_long;
-
-  /* Check for overflow.  */
-  if (pid_long != (unsigned long) pid)
-    return;
-
-  /* Ignore any errors here.  */
-  kill (pid, SIGHUP);
-#else
   gpg_error_t err;
   const char *pgmname;
   const char *argv[2];
@@ -1077,7 +1048,6 @@ gpg_agent_runtime_change (void)
     gc_error (0, 0, "error running `%s%s': %s",
               pgmname, " reloadagent", gpg_strerror (err));
   gnupg_release_process (pid);
-#endif /*!HAVE_W32_SYSTEM*/
 }
 
 

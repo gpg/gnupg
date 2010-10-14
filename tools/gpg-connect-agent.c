@@ -2156,131 +2156,28 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
 static assuan_context_t
 start_agent (void)
 {
-  int rc = 0;
-  char *infostr, *p;
+  gpg_error_t err;
   assuan_context_t ctx;
   session_env_t session_env;
-
-  infostr = getenv ("GPG_AGENT_INFO");
-  if (!infostr || !*infostr)
-    {
-      char *sockname;
-
-      rc = assuan_new (&ctx);
-      if (rc)
-	{
-          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
-	  exit (1);
-	}
-
-      /* Check whether we can connect at the standard socket.  */
-      sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
-      rc = assuan_socket_connect (ctx, sockname, 0, 0);
-
-#ifdef HAVE_W32_SYSTEM
-      /* If we failed to connect under Windows, we fire up the agent.  */
-      if (gpg_err_code (rc) == GPG_ERR_ASS_CONNECT_FAILED)
-        {
-          const char *agent_program;
-          const char *argv[3];
-          int save_rc = rc;
-          
-          if (opt.verbose)
-            log_info (_("no running gpg-agent - starting one\n"));
-          agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
-          
-          argv[0] = "--daemon";
-          argv[1] = "--use-standard-socket"; 
-          argv[2] = NULL;  
-
-          rc = gnupg_spawn_process_detached (agent_program, argv, NULL);
-          if (rc)
-            log_debug ("failed to start agent `%s': %s\n",
-                       agent_program, gpg_strerror (rc));
-          else
-            {
-              /* Give the agent some time to prepare itself. */
-              gnupg_sleep (3);
-              /* Now try again to connect the agent.  */
-	      rc = assuan_new (&ctx);
-	      if (rc)
-		{
-		  log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
-		  exit (1);
-		}
-
-              rc = assuan_socket_connect (ctx, sockname, 0, 0);
-            }
-          if (rc)
-            rc = save_rc;
-        }
-#endif /*HAVE_W32_SYSTEM*/
-      xfree (sockname);
-    }
-  else
-    {
-      int prot;
-      int pid;
-
-      infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
-        {
-          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
-          xfree (infostr);
-          exit (1);
-        }
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != PATHSEP_C)
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          log_error (_("gpg-agent protocol version %d is not supported\n"),
-                     prot);
-          xfree (infostr);
-          exit (1);
-        }
-
-      rc = assuan_new (&ctx);
-      if (rc)
-	{
-          log_error ("assuan_new failed: %s\n", gpg_strerror (rc));
-	  exit (1);
-	}
-
-      rc = assuan_socket_connect (ctx, infostr, pid, 0);
-      xfree (infostr);
-    }
-
-  if (rc)
-    {
-      log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
-      exit (1);
-    }
-
-  if (opt.verbose)
-    log_info ("connection to agent established\n");
-
-  rc = assuan_transact (ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    {
-      log_error (_("error sending %s command: %s\n"), "RESET", 
-                 gpg_strerror (rc));
-      exit (1);
-    }
 
   session_env = session_env_new ();
   if (!session_env)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  rc = send_pinentry_environment (ctx, GPG_ERR_SOURCE_DEFAULT,
-                                  NULL, NULL, session_env);
+  err = start_new_gpg_agent (&ctx,
+                             GPG_ERR_SOURCE_DEFAULT,
+                             opt.homedir,
+                             NULL,
+                             NULL, NULL,
+                             session_env,
+                             !opt.quiet, 0,
+                             NULL, NULL);
+
   session_env_release (session_env);
-  if (rc)
+  if (err)
     {
-      log_error (_("error sending standard options: %s\n"), gpg_strerror (rc));
+      log_error (_("error sending standard options: %s\n"), gpg_strerror (err));
       exit (1);
     }
 

@@ -1,3 +1,9 @@
+2010-10-14  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (start_new_gpg_agent): Print a notice once the agent
+	has been started.
+	(start_new_dirmngr): Likewise.
+
 2010-10-13  Werner Koch  <wk@g10code.com>
 
 	* miscellaneous.c (parse_version_number, parse_version_string)

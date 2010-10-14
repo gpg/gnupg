@@ -422,14 +422,19 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                       int i;
 
                       if (verbose)
-                        log_info (_("waiting %d seconds for the %s "
-                                    "to come up\n"), 5, "agent" );
+                        log_info (_("waiting %d seconds for the agent "
+                                    "to come up\n"), 5);
                       for (i=0; i < 5; i++)
                         {
                           gnupg_sleep (1);
                           err = assuan_socket_connect (ctx, sockname, 0, 0);
                           if (!err)
-                            break;
+                            {
+                              if (verbose && !debug)
+                                log_info (_("connection to agent"
+                                            " established\n"));
+                              break;
+                            }
                         }
                     }
                 }
@@ -513,7 +518,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     }
 
   if (debug)
-    log_debug ("connection to agent established\n");
+    log_debug (_("connection to agent established\n"));
 
   err = assuan_transact (ctx, "RESET",
                         NULL, NULL, NULL, NULL, NULL, NULL);
@@ -606,14 +611,19 @@ start_new_dirmngr (assuan_context_t *r_ctx,
               int i;
               
               if (verbose)
-                log_info (_("waiting %d seconds for the %s to come up\n"),
-                          5, "dirmngr" );
+                log_info (_("waiting %d seconds for the dirmngr to come up\n"),
+                          5);
               for (i=0; i < 5; i++)
                 {
                   gnupg_sleep (1);
                   err = assuan_socket_connect (ctx, sockname, 0, 0);
                   if (!err)
-                    break;
+                    {
+                      if (verbose && !debug)
+                        log_info (_("connection to the dirmngr"
+                                     " established\n"));
+                      break;
+                    }
                 }
             }
         }
@@ -637,7 +647,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
     }
 
   if (debug)
-    log_debug ("connection to the dirmngr established\n");
+    log_debug (_("connection to the dirmngr established\n"));
 
   *r_ctx = ctx;
   return 0;

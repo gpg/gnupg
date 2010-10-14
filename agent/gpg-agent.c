@@ -850,8 +850,31 @@ main (int argc, char **argv )
   /*log_info ("NOTE: this is a development version!\n");*/
 #endif
 
+#ifdef ENABLE_NLS
+  /* gpg-agent usually does not output any messages because it runs in
+     the background.  For log files it is acceptable to have messages
+     always encoded in utf-8.  We switch here to utf-8, so that
+     commands like --help still give native messages.  It is far
+     easier to switch only once instead of for every message and it
+     actually helps when more then one thread is active (avoids an
+     extra copy step). */
+    bind_textdomain_codeset (PACKAGE_GT, "UTF-8");
+#endif
+
+  if (!pipe_server && !is_daemon && !gpgconf_list)
+    {
+     /* We have been called without any options and thus we merely
+        check whether an agent is already running.  We do this right
+        here so that we don't clobber a logfile with this check but
+        print the status directly to stderr. */
+      opt.debug = 0;
+      set_debug ();
+      check_for_running_agent (0, 0);
+      agent_exit (0);
+    }
+
   set_debug ();
-  
+
   if (atexit (cleanup))
     {
       log_error ("atexit failed\n");
@@ -938,27 +961,6 @@ main (int argc, char **argv )
 
       agent_exit (0);
     }
-
-  /* If this has been called without any options, we merely check
-     whether an agent is already running.  We do this here so that we
-     don't clobber a logfile but print it directly to stderr. */
-  if (!pipe_server && !is_daemon)
-    {
-      log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
-      check_for_running_agent (0, 0);
-      agent_exit (0);
-    }
-  
-#ifdef ENABLE_NLS
-  /* gpg-agent usually does not output any messages because it runs in
-     the background.  For log files it is acceptable to have messages
-     always encoded in utf-8.  We switch here to utf-8, so that
-     commands like --help still give native messages.  It is far
-     easier to switch only once instead of for every message and it
-     actually helps when more then one thread is active (avoids an
-     extra copy step). */
-    bind_textdomain_codeset (PACKAGE_GT, "UTF-8");
-#endif
 
   /* Now start with logging to a file if this is desired. */
   if (logfile)
