@@ -1,3 +1,7 @@
+2010-10-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (CLEANFILES): Add no-libgcrypt.c.
+
 2010-09-16  Werner Koch  <wk@g10code.com>
 
 	* validate.c (validate_cert_chain): Use GPG_ERR_MISSING_ISSUER_CERT.

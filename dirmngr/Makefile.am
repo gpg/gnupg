@@ -36,6 +36,8 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) \
 
 BUILT_SOURCES = no-libgcrypt.c
 
+CLEANFILES = no-libgcrypt.c
+
 if HAVE_W32_SYSTEM
 ldap_url = ldap-url.h ldap-url.c
 else

@@ -68,14 +68,14 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
 	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr \
-	     gnupg-test.stop
+	     gnupg-test.stop pubring.gpg~ random_seed
 
-DISTCLEANFILES = pubring.gpg~ random_seed
+clean-local:
+	-rm -rf private-keys-v1.d
+
 
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.
 all-local: $(required_pgms)
 
-distclean-local:
-	$(srcdir)/mkdemodirs --clean
 

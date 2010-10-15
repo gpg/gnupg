@@ -1,3 +1,7 @@
+2010-10-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (clean-local): New.
+
 2010-10-14  Werner Koch  <wk@g10code.com>
 
 	* genkey1024.test: Use the new no-protection option.
