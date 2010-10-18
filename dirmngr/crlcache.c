@@ -1943,7 +1943,19 @@ get_auth_key_id (ksba_crl_t crl, char **serialno)
 
 /* Insert the CRL retrieved using URL into the cache specified by
    CACHE.  The CRL itself will be read from the stream FP and is
-   expected in binary format. */
+   expected in binary format.
+
+   Called by:
+      crl_cache_load
+         cmd_loadcrl
+         --load-crl
+      crl_cache_reload_crl
+         cmd_isvalid
+         cmd_checkcrl
+      cmd_loadcrl
+      --fetch-crl
+      
+ */
 gpg_error_t
 crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
 {

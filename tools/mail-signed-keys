@@ -81,7 +81,7 @@ function myflush()
          print "Hi,"                                        | sendmail
          print ""                                           | sendmail
          print "Here you get back the signed key."          | sendmail
-	 print "Please send it yourself to a keyserver."    | sendmail
+	 print "I already sent them to the keyservers."     | sendmail
          print ""                                           | sendmail
          print "Peace,"                                     | sendmail
          print "      " signame                             | sendmail

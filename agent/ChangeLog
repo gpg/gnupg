@@ -1,3 +1,8 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (agent_card_pksign): Make sure to return an unsigned
+	number.
+
 2010-10-14  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_genkey): Add option --no-protection.

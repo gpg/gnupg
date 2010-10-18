@@ -1,5 +1,5 @@
 /* call-scd.c - fork of the scdaemon to do SC operations
- *	Copyright (C) 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005, 2007, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -812,6 +812,7 @@ agent_card_pksign (ctrl_t ctrl,
   size_t len;
   unsigned char *sigbuf;
   size_t sigbuflen;
+  int prepend_nul;
 
   *r_buf = NULL;
   rc = start_scd (ctrl);
@@ -850,15 +851,20 @@ agent_card_pksign (ctrl_t ctrl,
   sigbuf = get_membuf (&data, &sigbuflen);
 
   /* Create an S-expression from it which is formatted like this:
-     "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))" */
-  *r_buflen = 21 + 11 + sigbuflen + 4;
+     "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))".  We better make sure
+     that this won't be interpreted as a negative number.  */
+  prepend_nul = (sigbuflen && (*sigbuf & 0x80));
+
+  *r_buflen = 21 + 11 + prepend_nul + sigbuflen + 4;
   p = xtrymalloc (*r_buflen);
   *r_buf = (unsigned char*)p;
   if (!p)
     return unlock_scd (ctrl, out_of_core ());
   p = stpcpy (p, "(7:sig-val(3:rsa(1:s" );
-  sprintf (p, "%u:", (unsigned int)sigbuflen);
+  sprintf (p, "%u:", (unsigned int)sigbuflen + prepend_nul);
   p += strlen (p);
+  if (prepend_nul)
+    *p++ = 0;
   memcpy (p, sigbuf, sigbuflen);
   p += sigbuflen;
   strcpy (p, ")))");

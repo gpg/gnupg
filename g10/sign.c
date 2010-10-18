@@ -251,6 +251,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
   gpg_error_t err;
   gcry_mpi_t frame;
   byte *dp;
+  char *hexgrip;
 
   if (pksk->timestamp > sig->timestamp )
     {
@@ -277,64 +278,33 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
   sig->data[0] = NULL;
   sig->data[1] = NULL;
 
-#warning fixme: Use the agent for the card
-/*     if (pksk->is_protected && pksk->protect.s2k.mode == 1002)  */
-/*       {  */
-/* #ifdef ENABLE_CARD_SUPPORT */
-/*         unsigned char *rbuf; */
-/*         size_t rbuflen; */
-/*         char *snbuf; */
-        
-/*         snbuf = serialno_and_fpr_from_sk (sk->protect.iv, */
-/*                                           sk->protect.ivlen, sk); */
-/*         rc = agent_scd_pksign (snbuf, digest_algo, */
-/*                                gcry_md_read (md, digest_algo), */
-/*                                gcry_md_get_algo_dlen (digest_algo), */
-/*                                &rbuf, &rbuflen); */
-/*         xfree (snbuf); */
-/*         if (!rc) */
-/*           { */
-/*             if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, */
-/*                                rbuf, rbuflen, NULL)) */
-/*               BUG (); */
-/*             xfree (rbuf); */
-/*           } */
-/* #else */
-/*         return gpg_error (GPG_ERR_NOT_SUPPORTED); */
-/* #endif /\* ENABLE_CARD_SUPPORT *\/ */
-/*       } */
-/*     else  */
-  if (1)
+  
+  err = hexkeygrip_from_pk (pksk, &hexgrip);
+  if (!err)
     {
-      char *hexgrip;
+      char *desc;
+      gcry_sexp_t s_sigval;
       
-      err = hexkeygrip_from_pk (pksk, &hexgrip);
-      if (!err)
+      desc = gpg_format_keydesc (pksk, 0, 1);
+      err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc, 
+                          dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
+                          &s_sigval);
+      xfree (desc);
+      
+      if (err)
+        ;
+      else if (pksk->pubkey_algo == GCRY_PK_RSA
+               || pksk->pubkey_algo == GCRY_PK_RSA_S)
+        sig->data[0] = mpi_from_sexp (s_sigval, "s");
+      else
         {
-          char *desc;
-          gcry_sexp_t s_sigval;
-          
-          desc = gpg_format_keydesc (pksk, 0, 1);
-          err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc, 
-                              dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
-                              &s_sigval);
-          xfree (desc);
-     
-          if (err)
-            ;
-          else if (pksk->pubkey_algo == GCRY_PK_RSA
-                   || pksk->pubkey_algo == GCRY_PK_RSA_S)
-            sig->data[0] = mpi_from_sexp (s_sigval, "s");
-          else
-            {
-              sig->data[0] = mpi_from_sexp (s_sigval, "r");
-              sig->data[1] = mpi_from_sexp (s_sigval, "s");
-            }
-      
-          gcry_sexp_release (s_sigval);
+          sig->data[0] = mpi_from_sexp (s_sigval, "r");
+          sig->data[1] = mpi_from_sexp (s_sigval, "s");
         }
-      xfree (hexgrip);
+      
+      gcry_sexp_release (s_sigval);
     }
+  xfree (hexgrip);
 
   /* Check that the signature verification worked and nothing is
    * fooling us e.g. by a bug in the signature create code or by

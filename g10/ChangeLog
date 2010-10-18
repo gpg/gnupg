@@ -1,3 +1,7 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* sign.c (do_sign): Remove warning and commented old code.
+
 2010-10-14  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (agent_genkey): Add arg NO_PROTECTION.
