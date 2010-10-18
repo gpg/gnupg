@@ -10,6 +10,7 @@ agent/protect-tool.c
 agent/trustlist.c
 agent/findkey.c
 agent/pksign.c
+agent/cvt-openpgp.c
 
 common/exechelp-posix.c
 common/exechelp-w32.c

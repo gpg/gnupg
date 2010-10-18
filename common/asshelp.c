@@ -366,8 +366,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
 
           if (verbose)
-            log_info (_("no running %s - starting `%s'\n"),
-                      "gpg-agent",  agent_program);
+            log_info (_("no running gpg-agent - starting `%s'\n"),
+                      agent_program);
           
           if (status_cb)
             status_cb (status_cb_arg, STATUS_PROGRESS, 
@@ -579,8 +579,8 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
 
       if (verbose)
-        log_info (_("no running %s - starting `%s'\n"),
-                  "dirmngr", dirmngr_program);
+        log_info (_("no running Dirmngr - starting `%s'\n"),
+                  dirmngr_program);
           
       if (status_cb)
         status_cb (status_cb_arg, STATUS_PROGRESS, 

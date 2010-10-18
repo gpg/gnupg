@@ -332,8 +332,8 @@ start_pinentry (ctrl_t ctrl)
 			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
-      log_error ("can't connect to the PIN entry module: %s\n",
-                 gpg_strerror (rc));
+      log_error ("can't connect to the PIN entry module `%s': %s\n",
+                 opt.pinentry_program, gpg_strerror (rc));
       assuan_release (ctx);
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
