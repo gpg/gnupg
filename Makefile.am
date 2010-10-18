@@ -22,7 +22,7 @@ ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto
 
-EXTRA_DIST = scripts/config.rpath autogen.sh README.SVN
+EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.SVN
 DISTCLEANFILES = g10defs.h 
 
 if BUILD_GPGSM
@@ -93,7 +93,19 @@ dist_doc_DATA = README
 dist-hook:
 	echo "$(VERSION)" > $(distdir)/VERSION
 
+if HAVE_W32_SYSTEM
+install-data-hook:
+	set -e; \
+	for i in $$($(top_srcdir)/scripts/potomo \
+                     --get-linguas $(top_srcdir)/po) ; do \
+           $(MKDIR_P) "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES" || true; \
+           rm -f "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES/gnupg2.mo" \
+                                                 2>/dev/null || true; \
+           $(top_srcdir)/scripts/potomo $(top_srcdir)/po/$$i.po \
+              "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES/gnupg2.mo" ; \
+	done
+endif
+
 stowinstall: 
 	$(MAKE) $(AM_MAKEFLAGS) install prefix=/usr/local/stow/gnupg
-
 
