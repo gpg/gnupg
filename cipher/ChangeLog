@@ -1,3 +1,7 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* rndw32.c (slow_gatherer_windowsNT): Add GNUPG_RNDW32_NOPERF envvar.
+
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See
