@@ -935,8 +935,8 @@ agent_scd_pksign (const char *serialno, int hashalgo,
                   const unsigned char *indata, size_t indatalen,
                   unsigned char **r_buf, size_t *r_buflen)
 {
-  int rc, i;
-  char *p, line[ASSUAN_LINELENGTH];
+  int rc;
+  char line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t len;
 
@@ -959,10 +959,9 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (rc)
     return rc;
 
-  sprintf (line, "SCD SETDATA ");
-  p = line + strlen (line);
-  for (i=0; i < indatalen ; i++, p += 2 )
-    sprintf (p, "%02X", indata[i]);
+  strcpy (line, "SCD SETDATA ");
+  bin2hex (indata, indatalen, line + strlen (line));
+
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
@@ -999,8 +998,8 @@ agent_scd_pkdecrypt (const char *serialno,
                      const unsigned char *indata, size_t indatalen,
                      unsigned char **r_buf, size_t *r_buflen)
 {
-  int rc, i;
-  char *p, line[ASSUAN_LINELENGTH];
+  int rc;
+  char line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t len;
 
@@ -1020,10 +1019,9 @@ agent_scd_pkdecrypt (const char *serialno,
   if (rc)
     return rc;
   
-  sprintf (line, "SCD SETDATA ");
-  p = line + strlen (line);
-  for (i=0; i < indatalen ; i++, p += 2 )
-    sprintf (p, "%02X", indata[i]);
+  strcpy (line, "SCD SETDATA ");
+  bin2hex (indata, indatalen, line + strlen (line));
+
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
@@ -1635,8 +1633,7 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce,
               gcry_sexp_t *r_sigval)
 {
   gpg_error_t err;
-  int i;
-  char *p, line[ASSUAN_LINELENGTH];
+  char line[ASSUAN_LINELENGTH];
   membuf_t data;
 
   *r_sigval = NULL;
@@ -1669,9 +1666,7 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce,
     }
 
   snprintf (line, sizeof line, "SETHASH %d ", digestalgo);
-  p = line + strlen (line);
-  for (i=0; i < digestlen ; i++, p += 2 )
-    sprintf (p, "%02X", digest[i]);
+  bin2hex (digest, digestlen, line + strlen (line));
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (err)
     return err;
