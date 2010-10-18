@@ -465,7 +465,8 @@ more arguments in future versions.
           4 := "Error storing certificate".
 
     IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
-	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups> <not_imported>
+	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported>
+        <sec_dups> <skipped_new_keys> <not_imported>
 	Final statistics on import process (this is one long line)
 
     FILE_START <what> <filename>

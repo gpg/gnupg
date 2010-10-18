@@ -1,3 +1,7 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* DETAILS: Fix description of IMPORT_RES.  Reported by Nicholas Cole.
+
 2010-10-11  Daniel Kahn Gillmor  <dkg@fifthhorseman.net>  (wk)
 
 	* gpg.texi (GPG Configuration Options) <photo-viewer>: Describe %v
