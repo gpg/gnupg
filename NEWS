@@ -1,9 +1,9 @@
-Noteworthy changes in version 1.4.11 (unreleased)
+Noteworthy changes in version 1.4.11 (2010-10-18)
 -------------------------------------------------
 
-    * Bug fixes.
+    * Bug fixes and portability changes.
     
-    * Ignore some GnuPG-2 options.
+    * Minor changes for better interoperability with GnuPG-2.
 
 
 Noteworthy changes in version 1.4.10 (2009-09-02)

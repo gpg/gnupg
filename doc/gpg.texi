@@ -1,7 +1,12 @@
 @c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-@c               2008, 2009 Free Software Foundation, Inc.
+@c               2008, 2009, 2010 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
+
+@c Note that we use this texinfo file for all versions of GnuPG: 1.4.x,
+@c 2.0 and 2.1.  The macro "gpgone" controls parts which are only valid
+@c for GnuPG 1.4, the macro "gpgtwoone" controls parts which are only
+@c valid for GnupG 2.1 and later.
 
 @node Invoking GPG
 @chapter Invoking GPG
@@ -68,18 +73,19 @@ implementation.
 
 @ifset gpgone
 This is the standalone version of @command{gpg}.  For desktop use you
-should consider using @command{gpg2}.
+should consider using @command{gpg2} @footnote{On some platforms gpg2 is
+installed under the name @command{gpg}}.
 @end ifset
 
 @ifclear gpgone
 In contrast to the standalone version @command{gpg}, which is more
-suited for server and embedded platforms, this version is installed
-under the name @command{gpg2} and more targeted to the desktop as it
-requires several other modules to be installed.  The standalone version
-will be kept maintained and it is possible to install both versions on
-the same system.  If you need to use different configuration files, you
-should make use of something like @file{gpg.conf-2} instead of just
-@file{gpg.conf}.
+suited for server and embedded platforms, this version is commonly
+installed under the name @command{gpg2} and more targeted to the desktop
+as it requires several other modules to be installed.  The standalone
+version will be kept maintained and it is possible to install both
+versions on the same system.  If you need to use different configuration
+files, you should make use of something like @file{gpg.conf-2} instead
+of just @file{gpg.conf}.
 @end ifclear
 
 @manpause
@@ -415,8 +421,10 @@ normally not very useful and a security risk.  The second form of the
 command has the special property to render the secret part of the
 primary key useless; this is a GNU extension to OpenPGP and other
 implementations can not be expected to successfully import such a key.
+@ifclear gpgtwoone
 See the option @option{--simple-sk-checksum} if you want to import such
 an exported key with an older OpenPGP implementation.
+@end ifclear
 
 @item --import
 @itemx --fast-import
@@ -527,12 +535,13 @@ Print message digest of algorithm ALGO for all given files or STDIN.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
-@item --gen-random @code{0|1|2}
+@item --gen-random @code{0|1|2} @code{count}
 @opindex gen-random
-Emit @var{count} random bytes of the given quality level. If count is
-not given or zero, an endless sequence of random bytes will be emitted.
-PLEASE, don't use this command unless you know what you are doing; it
-may remove precious entropy from the system!
+Emit @var{count} random bytes of the given quality level 0, 1 or 2. If
+@var{count} is not given or zero, an endless sequence of random bytes
+will be emitted.  If used with @option{--armor} the output will be
+base64 encoded.  PLEASE, don't use this command unless you know what
+you are doing; it may remove precious entropy from the system!
 
 @item --gen-prime @code{mode}  @code{bits}
 @opindex gen-prime
@@ -592,12 +601,12 @@ line.
 @item uid @code{n}
 @opindex keyedit:uid
 Toggle selection of user ID or photographic user ID with index @code{n}.
-Use 0 to deselect all.
+Use @code{*} to select all and @code{0} to deselect all.
 
 @item key @code{n}
 @opindex keyedit:key
 Toggle selection of subkey with index @code{n}.
-Use 0 to deselect all.
+Use @code{*} to select all and @code{0} to deselect all.
 
 @item sign
 @opindex keyedit:sign
@@ -889,6 +898,13 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
+@ifclear gpgone
+@item --passwd @var{user_id}
+@opindex passwd
+Change the passphrase of the secret key belonging to the certificate
+specified as @var{user_id}.  This is a shortcut for the sub-command
+@code{passwd} of the edit key menu.
+@end ifclear
 
 @end table
 
@@ -902,7 +918,7 @@ from @option{--edit-key}.
 @node GPG Options
 @section Option Summary
 
-@command{@gpgname} comes features a bunch of options to control the exact
+@command{@gpgname} features a bunch of options to control the exact
 behaviour and to change the default configuration.
 
 @menu
@@ -1125,6 +1141,9 @@ same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
 for the key fingerprint, "%t" for the extension of the image type
 (e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+"%v" for the single-character calculated validity of the image being
+viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
+"full"),
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
@@ -1523,10 +1542,12 @@ Enable certificate checking if the keyserver presents one (for hkps or
 ldaps).  Defaults to on.
 
 @item ca-cert-file
-Provide a certificate file to override the system default.  Only
+Provide a certificate store to override the system default.  Only
 necessary if check-cert is enabled, and the keyserver is using a
 certificate that is not present in a system default certificate list.
 
+Note that depending on the SSL library that the keyserver helper is
+built with, this may actually be a directory or a file.
 @end table
 
 @item --completes-needed @code{n}
@@ -1540,6 +1561,7 @@ key signer (defaults to 3)
 @item --max-cert-depth @code{n}
 Maximum depth of a certification chain (default is 5).
 
+@ifclear gpgtwoone
 @item --simple-sk-checksum
 Secret keys are integrity protected by using a SHA-1 checksum. This
 method is part of the upcoming enhanced OpenPGP specification but
@@ -1550,6 +1572,7 @@ a security risk. Note that using this option only takes effect when
 the secret key is encrypted - the simplest way to make this happen is
 to change the passphrase on the key (even changing it to the same
 value is acceptable).
+@end ifclear
 
 @item --no-sig-cache
 Do not cache the verification status of key signatures.
@@ -1759,15 +1782,39 @@ Remove all entries from the @option{--group} list.
 Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
+@ifset gpgtwoone
+@item --try-secret-key @var{name}
+@opindex try-secret-key
+For hidden recipients GPG needs to know the keys to use for trial
+decryption.  The key set with @option{--default-key} is always tried
+first, but this is often not sufficient.  This option allows to set more
+keys to be used for trial decryption.  Although any valid user-id
+specification may be used for @var{name} it makes sense to use at least
+the long keyid to avoid ambiguities.  Note that gpg-agent might pop up a
+pinentry for a lot keys to do the trial decryption.  If you want to stop
+all further trial decryption you may use close-window button instead of
+the cancel button.
+@end ifset
+
 @item --try-all-secrets
+@opindex try-all-secrets
 Don't look at the key ID as stored in the message but try all secret
 keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
-@option{--throw-keyids}) and might come handy in case where an encrypted
-message contains a bogus key ID.
+@option{--throw-keyids} or @option{--hidden-recipient}) and might come
+handy in case where an encrypted message contains a bogus key ID.
 
-
-
+@item --skip-hidden-recipients
+@itemx --no-skip-hidden-recipients
+@opindex skip-hidden-recipients
+@opindex no-skip-hidden-recipients
+During decryption skip all anonymous recipients.  This option helps in
+the case that people use the hidden recipients feature to hide there
+own encrypt-to key from others.  If oneself has many secret keys this
+may lead to a major annoyance because all keys are tried in turn to
+decrypt soemthing which was not really intended for it.  The drawback
+of this option is that it is currently not possible to decrypt a
+message which includes real anonymous recipients.
 
 
 @end table
@@ -1864,11 +1911,17 @@ program that does not accept attribute user IDs. Defaults to yes.
 Include designated revoker information that was marked as
 "sensitive". Defaults to no.
 
+@c Since GnuPG 2.1 gpg-agent manages the secret key and thus the
+@c export-reset-subkey-passwd hack is not anymore justified.  Such use
+@c cases need to be implemented using a specialized secret key export
+@c tool.
+@ifclear gpgtwoone
 @item export-reset-subkey-passwd
 When using the @option{--export-secret-subkeys} command, this option resets
 the passphrases for all exported subkeys to empty. This is useful
 when the exported subkey is to be used on an unattended machine where
 a passphrase doesn't necessarily make sense. Defaults to no.
+@end ifclear
 
 @item export-clean
 Compact (remove all signatures from) user IDs on the key being
@@ -1909,6 +1962,11 @@ obsolete; it does not harm to use it though.
 Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
 
+@ifset gpgtwoone
+@item --with-keygrip
+@opindex with-keygrip
+Include the keygrip in the key listings.
+@end ifset
 
 @end table
 
@@ -1944,10 +2002,11 @@ the type of the signature.
 OpenPGP states that an implementation should generate v4 signatures
 but PGP versions 5 through 7 only recognize v4 signatures on key
 material. This option forces v3 signatures for signatures on data.
-Note that this option implies @option{--ask-sig-expire},
+Note that this option implies @option{--no-ask-sig-expire}, and unsets
 @option{--sig-policy-url}, @option{--sig-notation}, and
 @option{--sig-keyserver-url}, as these features cannot be used with v3
 signatures.  @option{--no-force-v3-sigs} disables this option.
+Defaults to no.
 
 @item --force-v4-certs
 @itemx --no-force-v4-certs
@@ -2135,6 +2194,34 @@ therefore enables a fast listing of the encryption keys.
 @opindex interactive
 Prompt before overwriting any files.
 
+@item --debug-level @var{level}
+@opindex debug-level
+Select the debug level for investigating problems. @var{level} may be
+a numeric value or by a keyword:
+
+@table @code
+@item none
+No debugging at all.  A value of less than 1 may be used instead of
+the keyword.
+@item basic  
+Some basic debug messages.  A value between 1 and 2 may be used
+instead of the keyword.
+@item advanced
+More verbose debug messages.  A value between 3 and 5 may be used
+instead of the keyword.
+@item expert
+Even more detailed messages.  A value between 6 and 8 may be used
+instead of the keyword.
+@item guru
+All of the debug messages you can get. A value greater than 8 may be
+used instead of the keyword.  The creation of hash tracing files is
+only enabled if the keyword is used.
+@end table
+
+How these messages are mapped to the actual debugging flags is not
+specified and may change with newer releases of this program. They are
+however carefully selected to best aid in debugging.
+
 @item --debug @var{flags}
 @opindex debug
 Set debugging flags. All flags are or-ed and @var{flags} may
@@ -2148,6 +2235,13 @@ Set all useful debugging flags.
 Enable debug output from the included CCID driver for smartcards.
 Note that this option is only available on some system.
 @end ifset
+
+@item --faked-system-time @var{epoch}
+@opindex faked-system-time
+This option is only useful for testing; it sets the system time back or
+forth to @var{epoch} which is the number of seconds elapsed since the year
+1970.  Alternatively @var{epoch} may be given as a full ISO time string
+(e.g. "20070924T154812").
 
 @item --enable-progress-filter
 Enable certain PROGRESS status outputs. This option allows frontends
@@ -2486,10 +2580,7 @@ secret key.
 When making a data signature, prompt for an expiration time. If this
 option is not specified, the expiration time set via
 @option{--default-sig-expire} is used. @option{--no-ask-sig-expire}
-disables this option. Note that by default, @option{--force-v3-sigs} is
-set which also disables this option. If you want signature expiration,
-you must set @option{--no-force-v3-sigs} as well as turning
-@option{--ask-sig-expire} on.
+disables this option.
 
 @item --default-sig-expire
 The default expiration time to use for signature expiration. Valid
@@ -2853,7 +2944,7 @@ violation of OpenPGP, but rather reduce the available algorithms to a
 @mansect bugs
 @chapheading BUGS
 
-On many systems this program should be installed as setuid(root). This
+On older systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
 operating system from writing memory pages (which may contain
 passphrases or other sensitive material) to disk. If you get no
@@ -2867,6 +2958,10 @@ This writes all memory to disk before going into a low power or even
 powered off mode.  Unless measures are taken in the operating system
 to protect the saved memory, passphrases or other sensitive material
 may be recoverable from it later.
+
+Before you report a bug you should first search the mailing list
+archives for similar problems and second check whether such a bug has
+already been reported to our bug tracker at http://bugs.gnupg.org .
 
 @mansect see also
 @ifset isman

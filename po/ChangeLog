@@ -1,3 +1,15 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* de.po: Two updates.
+
+2010-10-18  Laurențiu Buzdugan <lbuz@rolix.org>  (wk)
+
+	* ro.po: Update.
+
+2010-10-18  Jakub Bogusz  <qboosh@pld-linux.org>  (wk)
+
+	* pl.po: Update.
+
 2010-09-02  Werner Koch  <wk@g10code.com>
 
 	* de.po: Insert missing spaces.  Fixes Debian-Bug#594489.
@@ -705,7 +717,7 @@ Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
  Copyright 1998, 1999, 2000, 2001, 2004,
-	   2005, 2007 Free Software Foundation, Inc.
+	   2005, 2007, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

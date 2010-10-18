@@ -1,3 +1,8 @@
+2010-10-18  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (parse_algorithm_attribute): Remove extra const in
+	definition of DESC.
+
 2010-10-10  Werner Koch  <wk@g10code.com>
 
 	* keyring.c (create_tmp_file): Use GNUPG_TMP_SFX anf GNUPG_BAK_SFX.
