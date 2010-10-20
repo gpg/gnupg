@@ -1,3 +1,8 @@
+2010-10-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.test: Tweak the bug 1179 test to only run if Twofish is
+	included in the program.  The sample message requires Twofish.
+
 2010-05-12  Werner Koch  <wk@g10code.com>
 
 	* armor.test: Extend to test bug 1179.
