@@ -134,7 +134,7 @@ cache_public_key (PKT_public_key * pk)
   if (pk_cache_disabled)
     return;
 
-  if (pk->dont_cache)
+  if (pk->flags.dont_cache)
     return;
 
   if (is_ELGAMAL (pk->pubkey_algo)
@@ -1411,6 +1411,8 @@ sig_to_revoke_info (PKT_signature * sig, struct revoke_info *rinfo)
   rinfo->keyid[1] = sig->keyid[1];
 }
 
+
+/* Note that R_REVOKED may be set to 0, 1 or 2.  */
 static void
 merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		     struct revoke_info *rinfo)
@@ -1571,7 +1573,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 
       /* Mark that key as valid: One direct key signature should
        * render a key as valid.  */
-      pk->is_valid = 1;
+      pk->flags.valid = 1;
     }
 
   /* Pass 1.5: Look for key revocation signatures that were not made
@@ -1599,7 +1601,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		    break;
 		  }
 		else if (rc == G10ERR_NO_PUBKEY)
-		  pk->maybe_revoked = 1;
+		  pk->flags.maybe_revoked = 1;
 
 		/* A failure here means the sig did not verify, was
 		   not issued by a revocation key, or a revocation
@@ -1623,7 +1625,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 	  if (uidnode && signode)
 	    {
 	      fixup_uidnode (uidnode, signode, keytimestamp);
-	      pk->is_valid = 1;
+	      pk->flags.valid = 1;
 	    }
 	  uidnode = k;
 	  signode = NULL;
@@ -1659,22 +1661,22 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
   if (uidnode && signode)
     {
       fixup_uidnode (uidnode, signode, keytimestamp);
-      pk->is_valid = 1;
+      pk->flags.valid = 1;
     }
 
   /* If the key isn't valid yet, and we have
      --allow-non-selfsigned-uid set, then force it valid. */
-  if (!pk->is_valid && opt.allow_non_selfsigned_uid)
+  if (!pk->flags.valid && opt.allow_non_selfsigned_uid)
     {
       if (opt.verbose)
 	log_info (_("Invalid key %s made valid by"
 		    " --allow-non-selfsigned-uid\n"), keystr_from_pk (pk));
-      pk->is_valid = 1;
+      pk->flags.valid = 1;
     }
 
   /* The key STILL isn't valid, so try and find an ultimately
      trusted signature. */
-  if (!pk->is_valid)
+  if (!pk->flags.valid)
     {
       uidnode = NULL;
 
@@ -1705,7 +1707,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		      && get_ownertrust (ultimate_pk) == TRUST_ULTIMATE)
 		    {
 		      free_public_key (ultimate_pk);
-		      pk->is_valid = 1;
+		      pk->flags.valid = 1;
 		      break;
 		    }
 
@@ -1942,7 +1944,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
   subpk = subnode->pkt->pkt.public_key;
   keytimestamp = subpk->timestamp;
 
-  subpk->is_valid = 0;
+  subpk->flags.valid = 0;
   subpk->main_keyid[0] = mainpk->main_keyid[0];
   subpk->main_keyid[1] = mainpk->main_keyid[1];
 
@@ -1969,7 +1971,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
 		     subkeys rather than re-sign old ones as the
 		     problem is in the distribution.  Plus, PGP (7)
 		     does this the same way.  */
-		  subpk->is_revoked = 1;
+		  subpk->flags.revoked = 1;
 		  sig_to_revoke_info (sig, &subpk->revoked);
 		  /* Although we could stop now, we continue to
 		   * figure out other information like the old expiration
@@ -2025,10 +2027,10 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
   if (openpgp_pk_test_algo (subpk->pubkey_algo))
     return;
 
-  subpk->is_valid = 1;
+  subpk->flags.valid = 1;
 
   /* Find the most recent 0x19 embedded signature on our self-sig. */
-  if (subpk->backsig == 0)
+  if (!subpk->flags.backsig)
     {
       int seq = 0;
       size_t n;
@@ -2093,9 +2095,9 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
 
 	  /* 2==valid, 1==invalid, 0==didn't check */
 	  if (check_backsig (mainpk, subpk, backsig) == 0)
-	    subpk->backsig = 2;
+	    subpk->flags.backsig = 2;
 	  else
-	    subpk->backsig = 1;
+	    subpk->flags.backsig = 1;
 
 	  free_seckey_enc (backsig);
 	}
@@ -2123,7 +2125,7 @@ merge_selfsigs (KBNODE keyblock)
   struct revoke_info rinfo;
   PKT_public_key *main_pk;
   prefitem_t *prefs;
-  int mdc_feature;
+  unsigned int mdc_feature;
 
   if (keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
     {
@@ -2151,7 +2153,7 @@ merge_selfsigs (KBNODE keyblock)
     }
 
   main_pk = keyblock->pkt->pkt.public_key;
-  if (revoked || main_pk->has_expired || !main_pk->is_valid)
+  if (revoked || main_pk->has_expired || !main_pk->flags.valid)
     {
       /* If the primary key is revoked, expired, or invalid we
        * better set the appropriate flags on that key and all
@@ -2162,11 +2164,11 @@ merge_selfsigs (KBNODE keyblock)
 	      || k->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	    {
 	      PKT_public_key *pk = k->pkt->pkt.public_key;
-	      if (!main_pk->is_valid)
-		pk->is_valid = 0;
-	      if (revoked && !pk->is_revoked)
+	      if (!main_pk->flags.valid)
+		pk->flags.valid = 0;
+	      if (revoked && !pk->flags.revoked)
 		{
-		  pk->is_revoked = revoked;
+		  pk->flags.revoked = revoked;
 		  memcpy (&pk->revoked, &rinfo, sizeof (rinfo));
 		}
 	      if (main_pk->has_expired)
@@ -2206,7 +2208,7 @@ merge_selfsigs (KBNODE keyblock)
 	  if (pk->prefs)
 	    xfree (pk->prefs);
 	  pk->prefs = copy_prefs (prefs);
-	  pk->mdc_feature = mdc_feature;
+	  pk->flags.mdc = mdc_feature;
 	}
     }
 }
@@ -2313,13 +2315,13 @@ finish_lookup (GETKEY_CTX ctx)
 	  if (DBG_CACHE)
 	    log_debug ("\tchecking subkey %08lX\n",
 		       (ulong) keyid_from_pk (pk, NULL));
-	  if (!pk->is_valid)
+	  if (!pk->flags.valid)
 	    {
 	      if (DBG_CACHE)
 		log_debug ("\tsubkey not valid\n");
 	      continue;
 	    }
-	  if (pk->is_revoked)
+	  if (pk->flags.revoked)
 	    {
 	      if (DBG_CACHE)
 		log_debug ("\tsubkey has been revoked\n");
@@ -2368,12 +2370,12 @@ finish_lookup (GETKEY_CTX ctx)
       if (DBG_CACHE && !foundk && !req_prim)
 	log_debug ("\tno suitable subkeys found - trying primary\n");
       pk = keyblock->pkt->pkt.public_key;
-      if (!pk->is_valid)
+      if (!pk->flags.valid)
 	{
 	  if (DBG_CACHE)
 	    log_debug ("\tprimary key not valid\n");
 	}
-      else if (pk->is_revoked)
+      else if (pk->flags.revoked)
 	{
 	  if (DBG_CACHE)
 	    log_debug ("\tprimary key has been revoked\n");

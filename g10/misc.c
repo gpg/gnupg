@@ -657,7 +657,7 @@ pct_expando(const char *string,struct expando_args *args)
 
 		if((*(ch+1))=='p' && args->pksk)
 		  {
-		    if(args->pksk->is_primary)
+		    if(args->pksk->flags.primary)
 		      fingerprint_from_pk (args->pksk, array, &len);
 		    else if (args->pksk->main_keyid[0]
                              || args->pksk->main_keyid[1])

@@ -112,7 +112,11 @@ release_public_key_parts (PKT_public_key *pk)
       pk->revkey=NULL;
       pk->numrevkeys=0;
     }
-
+  if (pk->serialno)
+    {
+      xfree (pk->serialno);
+      pk->serialno = NULL;
+    }
 }
 
 

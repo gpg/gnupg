@@ -1901,7 +1901,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   pk->max_expiredate = max_expiredate;
   pk->hdrbytes = hdrlen;
   pk->version = version;
-  pk->is_primary = (pkttype == PKT_PUBLIC_KEY || pkttype == PKT_SECRET_KEY);
+  pk->flags.primary = (pkttype == PKT_PUBLIC_KEY || pkttype == PKT_SECRET_KEY);
   pk->pubkey_algo = algorithm;
 
   nskey = pubkey_get_nskey (algorithm);
@@ -2085,7 +2085,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		    }
 		  snlen = iobuf_get (inp);
 		  pktlen--;
-		  if (pktlen < snlen || snlen == -1)
+		  if (pktlen < snlen || snlen == (size_t)(-1))
 		    {
 		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;

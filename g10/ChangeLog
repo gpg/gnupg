@@ -1,3 +1,28 @@
+2010-10-20  Werner Koch  <wk@g10code.com>
+
+	* packet.h (PKT_public_key): s/mdc_feature/flags.mdc/.  Change all
+	users.
+	(PKT_public_key): Split is_disabled into flags.disabled_valid and
+	flags.disabled.  Change all users.
+	(pk_is_disabled): Adjust for change.
+	(PKT_public_key): s/is_primary/flags.primary/. Change all users.
+	(PKT_public_key): s/is_revoked/flags.revoked/. Change all users.
+	(PKT_public_key): s/maybe_revoked/flags.maybe_revoked/. Change all
+	users.
+	(PKT_public_key): s/is_valid/flags.valid/. Change all users.
+	(PKT_public_key): s/dont_cache/flags.dont_cache/. Change all users.
+	(PKT_public_key): s/backsig/flags.backsig/. Change all users.
+
+	* sign.c (openpgp_card_v1_p): New.
+	(hash_for): Re-implement test for v1 cards.
+	* packet.h (PKT_public_key): Add field serialno and
+	flags.serialno_valid.
+	* free-packet.c (release_public_key_parts): Free serialno.
+
+	* parse-packet.c (parse_key): Cast -1 to size_t.
+	* trustdb.c (validate_keys): Cast -1 to size_t.  Suggested by
+	Steven M. Schweda.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (agent_scd_pksign): Replace sprintf by bin2hex.

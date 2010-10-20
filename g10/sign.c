@@ -360,6 +360,48 @@ complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
 }
 
 
+/* Return true if the key seems to be on a version 1 OpenPGP card.
+   This works by asking the agent and may fail if the card has not yet
+   been used with the agent.  */
+static int
+openpgp_card_v1_p (PKT_public_key *pk)
+{
+  gpg_error_t err;
+  int result;
+
+  /* Shortcut if we are not using RSA: The v1 cards only support RSA
+     thus there is no point in looking any further.  */
+  if (!is_RSA (pk->pubkey_algo))
+    return 0;
+
+  if (!pk->flags.serialno_valid)
+    {
+      char *hexgrip;
+
+      err = hexkeygrip_from_pk (pk, &hexgrip);
+      if (err)
+        {
+          log_error ("error computing a keygrip: %s\n", gpg_strerror (err));
+          return 0; /* Ooops.  */
+        }
+
+      xfree (pk->serialno);
+      agent_get_keyinfo (NULL, hexgrip, &pk->serialno);
+      xfree (hexgrip);
+      pk->flags.serialno_valid = 1;
+    }
+
+  if (!pk->serialno)
+    result = 0; /* Error from a past agent_get_keyinfo or no card.  */
+  else
+    {
+      /* The version number of the card is included in the serialno.  */
+      result = !strncmp (pk->serialno, "D2760001240101", 14);
+    }
+  return result;
+}
+
+
 
 static int
 match_dsa_hash (unsigned int qbytes)
@@ -440,10 +482,7 @@ hash_for (PKT_public_key *pk)
 
       return match_dsa_hash(qbytes);
     }
-  else if (0 
-           /* FIXME: call agent sk->is_protected && sk->protect.s2k.mode == 1002
-           && sk->protect.ivlen == 16
-           && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01\x01", 7)*/)
+  else if (openpgp_card_v1_p (pk))
     {
       /* The sk lives on a smartcard, and old smartcards only handle
 	 SHA-1 and RIPEMD/160.  Newer smartcards (v2.0) don't have
@@ -851,7 +890,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
       gcry_md_start_debug (mfx.md, "sign");
 
     /* If we're encrypting and signing, it is reasonable to pick the
-       hash algorithm to use out of the recepient key prefs.  This is
+       hash algorithm to use out of the recipient key prefs.  This is
        best effort only, as in a DSA2 and smartcard world there are
        cases where we cannot please everyone with a single hash (DSA2
        wants >160 and smartcards want =160).  In the future this could

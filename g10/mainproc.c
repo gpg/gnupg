@@ -1002,7 +1002,7 @@ list_node( CTX c, KBNODE node )
 	else
 	  {
 	    /* of subkey */
-	    if( pk->is_revoked )
+	    if( pk->flags.revoked )
 	      {
 		printf(" [");
 		printf(_("revoked: %s"),revokestr_from_pk(pk));
@@ -1930,7 +1930,7 @@ check_sig_and_print( CTX c, KBNODE node )
 			sig->version,sig->pubkey_algo,sig->digest_algo,
 			sig->sig_class);
                 bufp = bufp + strlen (bufp);
-                if (!vpk->is_primary) {
+                if (!vpk->flags.primary) {
                    u32 akid[2];
  
                    akid[0] = vpk->main_keyid[0];

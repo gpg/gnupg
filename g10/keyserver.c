@@ -1282,7 +1282,7 @@ keyserver_spawn (ctrl_t ctrl,
 				  pk->timestamp,
 				  pk->expiredate);
 
-			  if(pk->is_revoked)
+			  if(pk->flags.revoked)
 			    fprintf(spawn->tochild,"r");
 			  if(pk->has_expired)
 			    fprintf(spawn->tochild,"e");

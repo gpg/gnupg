@@ -527,7 +527,7 @@ check_signatures_trust( PKT_signature *sig )
       goto leave;
     }
 
-  if(pk->maybe_revoked && !pk->is_revoked)
+  if(pk->flags.maybe_revoked && !pk->flags.revoked)
     log_info(_("WARNING: this key might be revoked (revocation key"
 	       " not present)\n"));
 
@@ -536,7 +536,7 @@ check_signatures_trust( PKT_signature *sig )
   if ( (trustlevel & TRUST_FLAG_REVOKED) ) 
     {
       write_status( STATUS_KEYREVOKED );
-      if(pk->is_revoked==2)
+      if(pk->flags.revoked == 2)
 	log_info(_("WARNING: This key has been revoked by its"
 		   " designated revoker!\n"));
       else
@@ -1491,7 +1491,7 @@ select_mdc_from_pklist (PK_LIST pk_list)
       if (pkr->pk->user_id) /* selected by user ID */
         mdc = pkr->pk->user_id->flags.mdc;
       else
-        mdc = pkr->pk->mdc_feature;
+        mdc = pkr->pk->flags.mdc;
       if (!mdc)
         return 0;  /* At least one recipient does not support it. */
     }
@@ -1512,7 +1512,7 @@ warn_missing_mdc_from_pklist (PK_LIST pk_list)
       if (pkr->pk->user_id) /* selected by user ID */
         mdc = pkr->pk->user_id->flags.mdc;
       else
-        mdc = pkr->pk->mdc_feature;
+        mdc = pkr->pk->flags.mdc;
       if (!mdc)
         log_info (_("Note: key %s has no %s feature\n"),
                   keystr_from_pk (pkr->pk), "MDC");

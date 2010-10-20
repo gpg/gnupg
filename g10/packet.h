@@ -235,48 +235,61 @@ struct seckey_info
  * elements; the extra secret key information are stored in the
  * SECKEY_INFO field.
  */
-typedef struct {
-    u32     timestamp;	    /* key made */
-    u32     expiredate;     /* expires at this date or 0 if not at all */
-    u32     max_expiredate; /* must not expire past this date */
-    struct revoke_info revoked;
-    byte    hdrbytes;	    /* number of header bytes */
-    byte    version;
-    byte    selfsigversion; /* highest version of all of the self-sigs */
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte    pubkey_usage;   /* for now only used to pass it to getkey() */
-    byte    req_usage;      /* hack to pass a request to getkey() */
-    byte    req_algo;       /* Ditto */
-    u32     has_expired;    /* set to the expiration date if expired */ 
-    int     is_revoked;     /* key has been revoked, 1 if by the
-			       owner, 2 if by a designated revoker */
-    int     maybe_revoked;  /* a designated revocation is present, but
-			       without the key to check it */
-    int     is_valid;       /* key (especially subkey) is valid */
-    int     dont_cache;     /* do not cache this */
-    byte    backsig;        /* 0=none, 1=bad, 2=good */
-    u32     main_keyid[2];  /* keyid of the primary key */
-    u32     keyid[2];	    /* calculated by keyid_from_pk() */
-    byte    is_primary;
-    byte    is_disabled;    /* 0 for unset, 1 for enabled, 2 for disabled. */
-    prefitem_t *prefs;      /* list of preferences (may be NULL) */
-    int     mdc_feature;    /* mdc feature set */
-    PKT_user_id *user_id;   /* if != NULL: found by that uid */
-    struct revocation_key *revkey;
-    int     numrevkeys;
-    u32     trust_timestamp;
-    byte    trust_depth;
-    byte    trust_value;
-    const byte *trust_regexp;
-    struct seckey_info *seckey_info;  /* If not NULL this malloced
-                                         structure describes a secret
-                                         key.  */
-    gcry_mpi_t  pkey[PUBKEY_MAX_NSKEY]; /* Right, NSKEY elements.  */
+typedef struct
+{
+  u32     timestamp;	    /* key made */
+  u32     expiredate;     /* expires at this date or 0 if not at all */
+  u32     max_expiredate; /* must not expire past this date */
+  struct revoke_info revoked;
+  byte    hdrbytes;	    /* number of header bytes */
+  byte    version;
+  byte    selfsigversion; /* highest version of all of the self-sigs */
+  byte    pubkey_algo;    /* algorithm used for public key scheme */
+  byte    pubkey_usage;   /* for now only used to pass it to getkey() */
+  byte    req_usage;      /* hack to pass a request to getkey() */
+  byte    req_algo;       /* Ditto */
+  u32     has_expired;    /* set to the expiration date if expired */ 
+  u32     main_keyid[2];  /* keyid of the primary key */
+  u32     keyid[2];	    /* calculated by keyid_from_pk() */
+  prefitem_t *prefs;      /* list of preferences (may be NULL) */
+  struct
+  {
+    unsigned int mdc:1;           /* MDC feature set.  */
+    unsigned int disabled_valid:1;/* The next flag is valid.  */
+    unsigned int disabled:1;      /* The key has been disabled.  */
+    unsigned int primary:1;       /* This is a primary key.  */ 
+    unsigned int revoked:2;       /* Key has been revoked.
+                                     1 = revoked by the owner
+                                     2 = revoked by designated revoker.  */
+    unsigned int maybe_revoked:1; /* A designated revocation is
+                                     present, but without the key to
+                                     check it.  */
+    unsigned int valid:1;         /* Key (especially subkey) is valid.  */
+    unsigned int dont_cache:1;    /* Do not cache this key.  */
+    unsigned int backsig:2;       /* 0=none, 1=bad, 2=good.  */
+    unsigned int serialno_valid:1;/* SERIALNO below is valid.  */
+  } flags;
+  PKT_user_id *user_id;   /* If != NULL: found by that uid. */
+  struct revocation_key *revkey;
+  int     numrevkeys;
+  u32     trust_timestamp;
+  byte    trust_depth;
+  byte    trust_value;
+  const byte *trust_regexp;
+  char    *serialno;      /* Malloced hex string or NULL if it is
+                             likely not on a card.  See also
+                             flags.serialno_valid.  */  
+  struct seckey_info *seckey_info;  /* If not NULL this malloced
+                                       structure describes a secret
+                                       key.  */
+  gcry_mpi_t  pkey[PUBKEY_MAX_NSKEY]; /* Right, NSKEY elements.  */
 } PKT_public_key;
 
 /* Evaluates as true if the pk is disabled, and false if it isn't.  If
    there is no disable value cached, fill one in. */
-#define pk_is_disabled(a) (((a)->is_disabled)?((a)->is_disabled==2):(cache_disabled_value((a))))
+#define pk_is_disabled(a)                                       \
+  (((a)->flags.disabled_valid)?                                 \
+   ((a)->flags.disabled):(cache_disabled_value((a))))
 
 
 typedef struct {

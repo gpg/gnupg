@@ -76,10 +76,11 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	  }
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
-	if( !sk->is_primary ) {
+	if (!sk->flags.primary)
+          {
             keyid[2] = sk->main_keyid[0];
             keyid[3] = sk->main_keyid[1];
-	}
+          }
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, mode,
                                  tryagain_text, canceled );
@@ -269,6 +270,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 int
 is_secret_key_protected (PKT_public_key *pk)
 {
+#warning do we need this
   return 0; /* FIXME:  use agent_get_keyinfo?*/
     /* return sk->is_protected? */
     /*            sk->protect.s2k.mode == 1002? -2 : */

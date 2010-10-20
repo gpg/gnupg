@@ -1807,7 +1807,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  {
 	    int localsig = 0, nonrevokesig = 0, trustsig = 0, interactive = 0;
 
-	    if (pk->is_revoked)
+	    if (pk->flags.revoked)
 	      {
 		tty_printf (_("Key is revoked."));
 
@@ -2651,9 +2651,9 @@ show_key_with_all_names_colon (KBNODE keyblock)
 
 	  fputs (node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub:" : "sub:",
 		 stdout);
-	  if (!pk->is_valid)
+	  if (!pk->flags.valid)
 	    putchar ('i');
-	  else if (pk->is_revoked)
+	  else if (pk->flags.revoked)
 	    putchar ('r');
 	  else if (pk->has_expired)
 	    putchar ('e');
@@ -2882,7 +2882,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	      primary = pk;
 	    }
 
-	  if (pk->is_revoked)
+	  if (pk->flags.revoked)
 	    {
 	      char *user = get_user_id_string_native (pk->revoked.keyid);
               tty_printf (_("The following key was revoked on"
@@ -2933,7 +2933,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 
 	  tty_printf (_("created: %s"), datestr_from_pk (pk));
 	  tty_printf ("  ");
-	  if (pk->is_revoked)
+	  if (pk->flags.revoked)
 	    tty_printf (_("revoked: %s"), revokestr_from_pk (pk));
 	  else if (pk->has_expired)
 	    tty_printf (_("expired: %s"), expirestr_from_pk (pk));
@@ -3754,7 +3754,7 @@ menu_backsign (KBNODE pub_keyblock)
 	{
 	  if (node->pkt->pkt.public_key->pubkey_usage & PUBKEY_USAGE_SIG)
 	    {
-	      if (node->pkt->pkt.public_key->backsig)
+	      if (node->pkt->pkt.public_key->flags.backsig)
 		tty_printf (_
 			    ("signing subkey %s is already cross-certified\n"),
 			    keystr_from_pk (node->pkt->pkt.public_key));
@@ -5028,7 +5028,7 @@ menu_revkey (KBNODE pub_keyblock)
   PACKET *pkt;
   PKT_signature *sig;
 
-  if (pk->is_revoked)
+  if (pk->flags.revoked)
     {
       tty_printf (_("Key %s is already revoked.\n"), keystr_from_pk (pk));
       return 0;
@@ -5089,7 +5089,7 @@ menu_revsubkey (KBNODE pub_keyblock)
 	  PKT_public_key *subpk = node->pkt->pkt.public_key;
 	  struct sign_attrib attrib;
 
-	  if (subpk->is_revoked)
+	  if (subpk->flags.revoked)
 	    {
 	      tty_printf (_("Subkey %s is already revoked.\n"),
 			  keystr_from_pk (subpk));

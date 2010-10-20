@@ -82,7 +82,7 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
       }
     else if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
-    else if(!pk->is_valid && !pk->is_primary)
+    else if(!pk->flags.valid && !pk->flags.primary)
         rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
 				 invalid subkey */
     else
@@ -98,9 +98,9 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	   them as their own.  The attacker couldn't actually use the
 	   subkey, but they could try and claim ownership of any
 	   signaures issued by it. */
-	if(rc==0 && !pk->is_primary && pk->backsig<2)
+	if(rc==0 && !pk->flags.primary && pk->flags.backsig < 2)
 	  {
-	    if(pk->backsig==0)
+	    if (!pk->flags.backsig)
 	      {
 		log_info(_("WARNING: signing subkey %s is not"
 			   " cross-certified\n"),keystr_from_pk(pk));
@@ -112,7 +112,7 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		if(opt.flags.require_cross_cert)
 		  rc=G10ERR_GENERAL;
 	      }
-	    else if(pk->backsig==1)
+	    else if(pk->flags.backsig == 1)
 	      {
 		log_info(_("WARNING: signing subkey %s has an invalid"
 			   " cross-certification\n"),keystr_from_pk(pk));
@@ -246,7 +246,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 	  *r_expired = 1;
     }
 
-    if (pk->is_revoked)
+    if (pk->flags.revoked)
       {
         if (opt.verbose)
 	  log_info (_("NOTE: signature key %s has been revoked\n"),
@@ -412,13 +412,12 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   assert(IS_KEY_REV(sig));
   assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
 
-  if(busy)
+  if (busy)
     {
-      /* return an error (i.e. not revoked), but mark the pk as
+      /* Return an error (i.e. not revoked), but mark the pk as
          uncacheable as we don't really know its revocation status
-         until it is checked directly. */
-
-      pk->dont_cache=1;
+         until it is checked directly.  */
+      pk->flags.dont_cache = 1;
       return rc;
     }
 

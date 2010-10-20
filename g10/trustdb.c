@@ -520,7 +520,7 @@ uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
 {
   if(!key && !uid)
     return _("10 translator see trustdb.c:uid_trust_string_fixed");
-  else if(uid->is_revoked || (key && key->is_revoked))
+  else if(uid->is_revoked || (key && key->flags.revoked))
     return                         _("[ revoked]");
   else if(uid->is_expired)
     return                         _("[ expired]");
@@ -994,16 +994,17 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
  *********  Query trustdb values  **************
  ***********************************************/
 
-/* Return true if key is disabled */
+/* Return true if key is disabled.  Note that this is usually used via
+   the pk_is_disabled macro.  */
 int
-cache_disabled_value(PKT_public_key *pk)
+cache_disabled_value (PKT_public_key *pk)
 {
   int rc;
   TRUSTREC trec;
-  int disabled=0;
+  int disabled = 0;
 
-  if(pk->is_disabled)
-    return (pk->is_disabled==2);
+  if (pk->flags.disabled_valid)
+    return pk->flags.disabled;
 
   init_trustdb();
 
@@ -1016,15 +1017,13 @@ cache_disabled_value(PKT_public_key *pk)
   if (rc == -1) /* no record found, so assume not disabled */
     goto leave;
  
-  if(trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
-    disabled=1;
+  if (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
+    disabled = 1;
  
   /* Cache it for later so we don't need to look at the trustdb every
      time */
-  if(disabled)
-    pk->is_disabled=2;
-  else
-    pk->is_disabled=1;
+  pk->flags.disabled = disabled;
+  pk->flags.disabled_valid = 1;
 
  leave:
    return disabled;
@@ -1151,16 +1150,17 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
     {
       validity |= TRUST_FLAG_DISABLED;
-      pk->is_disabled=2;
+      pk->flags.disabled = 1;
     }
   else
-    pk->is_disabled=1;
+    pk->flags.disabled = 0;
+  pk->flags.disabled_valid = 1;
 
  leave:
   /* set some flags direct from the key */
-  if (main_pk->is_revoked)
+  if (main_pk->flags.revoked)
     validity |= TRUST_FLAG_REVOKED;
-  if (main_pk != pk && pk->is_revoked)
+  if (main_pk != pk && pk->flags.revoked)
     validity |= TRUST_FLAG_SUB_REVOKED;
   /* Note: expiration is a trust value and not a flag - don't know why
    * I initially designed it that way */
@@ -2145,7 +2145,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       merge_keys_and_selfsig (keyblock); 
       clear_kbnode_flags (keyblock);
       pk = keyblock->pkt->pkt.public_key;
-      if (pk->has_expired || pk->is_revoked)
+      if (pk->has_expired || pk->flags.revoked)
         {
           /* it does not make sense to look further at those keys */
           mark_keyblock_seen (full_trust, keyblock);
@@ -2355,7 +2355,7 @@ validate_keys (int interactive)
 	    {
 	      k->ownertrust = ask_ownertrust (k->kid,min);
 
-	      if (k->ownertrust == -1)
+	      if (k->ownertrust == (unsigned int)(-1))
 		{
 		  quit=1;
 		  goto leave;

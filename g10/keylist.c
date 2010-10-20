@@ -601,7 +601,7 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
   if (use & PUBKEY_USAGE_SIG)
     {
       es_putc ('s', es_stdout);
-      if (pk->is_primary)
+      if (pk->flags.primary)
         {
           es_putc ('c', es_stdout);
           /* The PUBKEY_USAGE_CERT flag was introduced later and we
@@ -631,17 +631,17 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
 	    {
 	      pk = k->pkt->pkt.public_key;
 
-	      if (pk->is_primary)
+	      if (pk->flags.primary)
 		disabled = pk_is_disabled (pk);
 
-	      if (pk->is_valid && !pk->is_revoked && !pk->has_expired)
+	      if (pk->flags.valid && !pk->flags.revoked && !pk->has_expired)
 		{
 		  if (pk->pubkey_usage & PUBKEY_USAGE_ENC)
 		    enc = 1;
 		  if (pk->pubkey_usage & PUBKEY_USAGE_SIG)
 		    {
 		      sign = 1;
-		      if (pk->is_primary)
+		      if (pk->flags.primary)
 			cert = 1;
 		    }
 		  if (pk->pubkey_usage & PUBKEY_USAGE_CERT)
@@ -805,7 +805,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
           nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
           keystr_from_pk (pk), datestr_from_pk (pk));
 
-  if (pk->is_revoked)
+  if (pk->flags.revoked)
     {
       es_fprintf (es_stdout, " [");
       es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk));
@@ -895,7 +895,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	{
 	  PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
-	  if ((pk2->is_revoked || pk2->has_expired)
+	  if ((pk2->flags.revoked || pk2->has_expired)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_SUBKEYS))
 	    {
 	      skip_sigs = 1;
@@ -928,7 +928,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
                   s2k_char,
 		  nbits_from_pk (pk2), pubkey_letter (pk2->pubkey_algo),
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
-	  if (pk2->is_revoked)
+	  if (pk2->flags.revoked)
 	    {
 	      es_fprintf (es_stdout, " [");
 	      es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk2));
@@ -1131,9 +1131,9 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 
   keyid_from_pk (pk, keyid);
   es_fputs (secret? "sec:":"pub:", es_stdout);
-  if (!pk->is_valid)
+  if (!pk->flags.valid)
     es_putc ('i', es_stdout);
-  else if (pk->is_revoked)
+  else if (pk->flags.revoked)
     es_putc ('r', es_stdout);
   else if (pk->has_expired)
     es_putc ('e', es_stdout);
@@ -1193,7 +1193,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  if (attrib_fp && node->pkt->pkt.user_id->attrib_data != NULL)
 	    dump_attribs (node->pkt->pkt.user_id, pk);
 	  /*
-	   * Fixme: We need a is_valid flag here too 
+	   * Fixme: We need a valid flag here too 
 	   */
 	  str = uid->attrib_data ? "uat" : "uid";
 	  if (uid->is_revoked)
@@ -1251,9 +1251,9 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 
 	  keyid_from_pk (pk2, keyid2);
 	  es_fputs (secret? "ssb:":"sub:", es_stdout);
-	  if (!pk2->is_valid)
+	  if (!pk2->flags.valid)
 	    es_putc ('i', es_stdout);
-	  else if (pk2->is_revoked)
+	  else if (pk2->flags.revoked)
 	    es_putc ('r', es_stdout);
 	  else if (pk2->has_expired)
 	    es_putc ('e', es_stdout);

@@ -396,9 +396,9 @@ dump_kbnode (KBNODE node)
                       (ulong)keyid_from_pk( pk, NULL ),
                       pk->pubkey_algo, pk->pubkey_usage,
                       pk->has_expired? 'e':'.',  
-                      pk->is_revoked?  'r':'.',  
-                      pk->is_valid?    'v':'.',
-                      pk->mdc_feature? 'm':'.');
+                      pk->flags.revoked? 'r':'.',  
+                      pk->flags.valid?    'v':'.',
+                      pk->flags.mdc?   'm':'.');
         }
       
       log_flush ();
