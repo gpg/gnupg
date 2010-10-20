@@ -1,3 +1,7 @@
+2010-10-20  Werner Koch  <wk@g10code.com>
+
+	* i18n.c (i18n_init) [USE_SIMPLE_GETTEXT]: Call textdomain.
+
 2010-10-14  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (start_new_gpg_agent): Print a notice once the agent

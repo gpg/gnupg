@@ -96,7 +96,7 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
     if( !fp ) {
         rc = gpg_error_from_syserror ();
 	log_error(_("can't open `%s': %s\n"),
-                  print_fname_stdin(sigfile), strerror (errno));
+                  print_fname_stdin(sigfile), gpg_strerror (rc));
         goto leave;
     }
     handle_progress (pfx, fp, sigfile);

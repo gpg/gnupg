@@ -1,5 +1,8 @@
 2010-10-20  Werner Koch  <wk@g10code.com>
 
+	* verify.c (verify_signatures): Use gpg_strerror on open failure
+	for consistency of error messages.
+
 	* packet.h (PKT_public_key): s/mdc_feature/flags.mdc/.  Change all
 	users.
 	(PKT_public_key): Split is_disabled into flags.disabled_valid and
