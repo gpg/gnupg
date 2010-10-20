@@ -1842,7 +1842,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    }
 		    snlen = iobuf_get (inp);
 		    pktlen--;
-                    if (pktlen < snlen || snlen == -1) {
+                    if (pktlen < snlen || snlen == (size_t)(-1)) {
 			rc = G10ERR_INVALID_PACKET;
 			goto leave;
                     }

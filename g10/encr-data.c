@@ -298,7 +298,8 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert(a);
 	n = iobuf_read( a, buf, size );
-	if( n == -1 ) n = 0;
+	if (n == (size_t)(-1))
+          n = 0;
 	if( n ) {
             if (fc->cipher_hd)
                 cipher_decrypt( fc->cipher_hd, buf, buf, n);

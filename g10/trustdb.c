@@ -2343,7 +2343,7 @@ validate_keys (int interactive)
 	    {
 	      k->ownertrust = ask_ownertrust (k->kid,min);
 
-	      if (k->ownertrust == -1)
+	      if (k->ownertrust == (unsigned int)(-1))
 		{
 		  quit=1;
 		  goto leave;

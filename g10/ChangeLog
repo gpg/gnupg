@@ -1,3 +1,10 @@
+2010-10-20  Werner Koch  <wk@g10code.com>
+
+	* encr-data.c (decode_filter): Cast -1 to size_t.  Reported by
+	Steven M. Schweda.
+	* parse-packet.c (parse_key): Ditto.
+	* trustdb.c (validate_keys): Likewise to unsigned int.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (parse_algorithm_attribute): Remove extra const in

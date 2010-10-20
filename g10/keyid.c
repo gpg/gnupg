@@ -444,6 +444,10 @@ mk_datestr (char *buffer, time_t atime)
 {
     struct tm *tp;
 
+    /* Note: VMS uses an unsigned time_t thus the compiler yields a
+       warning here.  You may ignore this warning or def out this test
+       for VMS.  The proper way to handle this would be a configure
+       test to a detect properly implemented unsigned time_t.  */
     if ( atime < 0 ) /* 32 bit time_t and after 2038-01-19 */
         strcpy (buffer, "????" "-??" "-??"); /* mark this as invalid */
     else {
