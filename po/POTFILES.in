@@ -104,6 +104,21 @@ sm/qualified.c
 sm/sign.c
 sm/verify.c
 
+dirmngr/certcache.c
+dirmngr/crlcache.c
+dirmngr/crlfetch.c
+dirmngr/dirmngr-client.c
+dirmngr/dirmngr.c
+dirmngr/dirmngr_ldap.c
+dirmngr/ldap-wrapper-ce.c
+dirmngr/ldap-wrapper.c
+dirmngr/ldap.c
+dirmngr/ldapserver.c
+dirmngr/misc.c
+dirmngr/ocsp.c
+dirmngr/server.c
+dirmngr/validate.c
+
 tools/gpg-connect-agent.c
 tools/gpgconf-comp.c
 tools/gpgconf.c

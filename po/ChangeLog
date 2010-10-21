@@ -1,3 +1,8 @@
+2010-10-21  Werner Koch  <wk@g10code.com>
+
+	* POTFILES.in: Add files in dirmngr/.
+	* de.po: Translate the dirmngr strings.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* de.po: Update.

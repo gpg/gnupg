@@ -1,3 +1,7 @@
+2010-10-21  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main): Changed faked system time warning
+
 2010-10-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (CLEANFILES): Add no-libgcrypt.c.

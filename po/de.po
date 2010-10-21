@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-10-18 16:25+0200\n"
-"PO-Revision-Date: 2010-10-18 16:27+0200\n"
+"POT-Creation-Date: 2010-10-21 10:11+0200\n"
+"PO-Revision-Date: 2010-10-21 10:10+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -115,8 +115,8 @@ msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 
 #: agent/command-ssh.c:685 common/dotlock.c:326 g10/card-util.c:839
 #: g10/exec.c:481 g10/gpg.c:1128 g10/keygen.c:3227 g10/keyring.c:1213
-#: g10/keyring.c:1521 g10/openfile.c:290 g10/openfile.c:383 g10/sign.c:831
-#: g10/sign.c:1142 g10/tdbio.c:548
+#: g10/keyring.c:1521 g10/openfile.c:290 g10/openfile.c:383 g10/sign.c:870
+#: g10/sign.c:1181 g10/tdbio.c:548
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "'%s' kann nicht erzeugt werden: %s\n"
@@ -125,11 +125,12 @@ msgstr "'%s' kann nicht erzeugt werden: %s\n"
 #: g10/dearmor.c:60 g10/dearmor.c:107 g10/decrypt.c:67 g10/decrypt.c:129
 #: g10/decrypt.c:146 g10/encrypt.c:198 g10/encrypt.c:547 g10/gpg.c:1129
 #: g10/import.c:197 g10/keygen.c:2724 g10/keyring.c:1547 g10/openfile.c:197
-#: g10/openfile.c:211 g10/openfile.c:368 g10/plaintext.c:569 g10/sign.c:813
-#: g10/sign.c:1008 g10/sign.c:1126 g10/sign.c:1284 g10/tdbdump.c:142
+#: g10/openfile.c:211 g10/openfile.c:368 g10/plaintext.c:569 g10/sign.c:852
+#: g10/sign.c:1047 g10/sign.c:1165 g10/sign.c:1323 g10/tdbdump.c:142
 #: g10/tdbdump.c:150 g10/tdbio.c:552 g10/tdbio.c:616 g10/verify.c:98
 #: g10/verify.c:161 sm/gpgsm.c:2054 sm/gpgsm.c:2084 sm/gpgsm.c:2122
-#: sm/qualified.c:66
+#: sm/qualified.c:66 dirmngr/certcache.c:359 dirmngr/crlcache.c:2380
+#: dirmngr/dirmngr.c:1456
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
@@ -348,39 +349,41 @@ msgstr ""
 "@Optionen:\n"
 " "
 
-#: agent/gpg-agent.c:124 scd/scdaemon.c:106
+#: agent/gpg-agent.c:124 scd/scdaemon.c:106 dirmngr/dirmngr.c:134
 msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
 
-#: agent/gpg-agent.c:125 scd/scdaemon.c:109
+#: agent/gpg-agent.c:125 scd/scdaemon.c:109 dirmngr/dirmngr.c:135
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
 
 #: agent/gpg-agent.c:126 g10/gpg.c:493 g10/gpgv.c:71 kbx/kbxutil.c:88
-#: scd/scdaemon.c:110 sm/gpgsm.c:281 tools/gpg-connect-agent.c:71
-#: tools/gpgconf.c:79 tools/symcryptrun.c:163
+#: scd/scdaemon.c:110 sm/gpgsm.c:281 dirmngr/dirmngr-client.c:68
+#: dirmngr/dirmngr.c:149 dirmngr/dirmngr_ldap.c:127
+#: tools/gpg-connect-agent.c:71 tools/gpgconf.c:79 tools/symcryptrun.c:163
 msgid "verbose"
 msgstr "Detaillierte Informationen"
 
 #: agent/gpg-agent.c:127 g10/gpgv.c:72 kbx/kbxutil.c:89 scd/scdaemon.c:111
-#: sm/gpgsm.c:282
+#: sm/gpgsm.c:282 dirmngr/dirmngr-client.c:69 dirmngr/dirmngr.c:150
+#: dirmngr/dirmngr_ldap.c:128
 msgid "be somewhat more quiet"
 msgstr "Reduzierte Informationen"
 
-#: agent/gpg-agent.c:128 scd/scdaemon.c:112
+#: agent/gpg-agent.c:128 scd/scdaemon.c:112 dirmngr/dirmngr.c:151
 msgid "sh-style command output"
 msgstr "Ausgabe für /bin/sh"
 
-#: agent/gpg-agent.c:129 scd/scdaemon.c:113
+#: agent/gpg-agent.c:129 scd/scdaemon.c:113 dirmngr/dirmngr.c:152
 msgid "csh-style command output"
 msgstr "Ausgabe für /bin/csh"
 
 #: agent/gpg-agent.c:130 scd/scdaemon.c:114 sm/gpgsm.c:312
-#: tools/symcryptrun.c:166
+#: dirmngr/dirmngr.c:153 tools/symcryptrun.c:166
 msgid "|FILE|read options from FILE"
 msgstr "|DATEI|Konfigurationsoptionen aus DATEI lesen"
 
-#: agent/gpg-agent.c:135 scd/scdaemon.c:124
+#: agent/gpg-agent.c:135 scd/scdaemon.c:124 dirmngr/dirmngr.c:156
 msgid "do not detach from the console"
 msgstr "Im Vordergrund laufen lassen"
 
@@ -445,8 +448,9 @@ msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
 #. reporting address without breaking the translations.
 #: agent/gpg-agent.c:334 agent/preset-passphrase.c:93 agent/protect-tool.c:148
 #: g10/gpg.c:820 g10/gpgv.c:114 kbx/kbxutil.c:113 scd/scdaemon.c:247
-#: sm/gpgsm.c:529 tools/gpg-connect-agent.c:188 tools/gpgconf.c:101
-#: tools/symcryptrun.c:203 tools/gpg-check-pattern.c:141
+#: sm/gpgsm.c:529 dirmngr/dirmngr-client.c:147 dirmngr/dirmngr.c:298
+#: dirmngr/dirmngr_ldap.c:197 tools/gpg-connect-agent.c:188
+#: tools/gpgconf.c:101 tools/symcryptrun.c:203 tools/gpg-check-pattern.c:141
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr ""
 "Berichte über Programmfehler bitte in englisch an <@EMAIL@>.\n"
@@ -465,29 +469,33 @@ msgstr ""
 "Verwaltung von geheimen Schlüsseln für GnuPG\n"
 
 #: agent/gpg-agent.c:391 g10/gpg.c:1013 scd/scdaemon.c:320 sm/gpgsm.c:679
+#: dirmngr/dirmngr.c:367
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:616 agent/protect-tool.c:561 kbx/kbxutil.c:428
-#: scd/scdaemon.c:427 sm/gpgsm.c:919 sm/gpgsm.c:922 tools/symcryptrun.c:995
-#: tools/gpg-check-pattern.c:177
+#: scd/scdaemon.c:427 sm/gpgsm.c:919 sm/gpgsm.c:922 dirmngr/dirmngr.c:625
+#: dirmngr/dirmngr.c:628 tools/symcryptrun.c:995 tools/gpg-check-pattern.c:177
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
 #: agent/gpg-agent.c:730 g10/gpg.c:2121 scd/scdaemon.c:513 sm/gpgsm.c:1019
+#: dirmngr/dirmngr.c:743
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
 #: agent/gpg-agent.c:741 agent/gpg-agent.c:1343 g10/gpg.c:2125
-#: scd/scdaemon.c:518 sm/gpgsm.c:1023 tools/symcryptrun.c:928
+#: scd/scdaemon.c:518 sm/gpgsm.c:1023 dirmngr/dirmngr.c:748
+#: dirmngr/dirmngr.c:1562 tools/symcryptrun.c:928
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Optionendatei '%s': %s\n"
 
 #: agent/gpg-agent.c:749 g10/gpg.c:2132 scd/scdaemon.c:526 sm/gpgsm.c:1030
+#: dirmngr/dirmngr.c:756
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus '%s' gelesen\n"
@@ -504,11 +512,11 @@ msgstr "Fehler beim Erstellen von `%s': %s\n"
 msgid "can't create directory `%s': %s\n"
 msgstr "Verzeichnis `%s' kann nicht erzeugt werden: %s\n"
 
-#: agent/gpg-agent.c:1470 scd/scdaemon.c:1043
+#: agent/gpg-agent.c:1470 scd/scdaemon.c:1043 dirmngr/dirmngr.c:954
 msgid "name of socket too long\n"
 msgstr "Der Name des Sockets ist zu lang\n"
 
-#: agent/gpg-agent.c:1493 scd/scdaemon.c:1066
+#: agent/gpg-agent.c:1493 scd/scdaemon.c:1066 dirmngr/dirmngr.c:961
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "Socket kann nicht erzeugt werden: %s\n"
@@ -522,21 +530,21 @@ msgstr "Der Name des Sockets `%s' ist zu lang\n"
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "Ein gpg-agent läuft bereits - ein weiterer wird nicht gestartet\n"
 
-#: agent/gpg-agent.c:1541 scd/scdaemon.c:1085
+#: agent/gpg-agent.c:1541 scd/scdaemon.c:1085 dirmngr/dirmngr.c:985
 msgid "error getting nonce for the socket\n"
 msgstr "Fehler beim Ermitteln der \"Nonce\" dieses Sockets\n"
 
-#: agent/gpg-agent.c:1546 scd/scdaemon.c:1088
+#: agent/gpg-agent.c:1546 scd/scdaemon.c:1088 dirmngr/dirmngr.c:988
 #, c-format
 msgid "error binding socket to `%s': %s\n"
 msgstr "Der Socket kann nicht an `%s' gebunden werden: %s\n"
 
-#: agent/gpg-agent.c:1558 scd/scdaemon.c:1097
+#: agent/gpg-agent.c:1558 scd/scdaemon.c:1097 dirmngr/dirmngr.c:997
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
-#: agent/gpg-agent.c:1564 scd/scdaemon.c:1104
+#: agent/gpg-agent.c:1564 scd/scdaemon.c:1104 dirmngr/dirmngr.c:1003
 #, c-format
 msgid "listening on socket `%s'\n"
 msgstr "Es wird auf Socket `%s' gehört\n"
@@ -556,7 +564,7 @@ msgstr "stat()-Aufruf für `%s' fehlgeschlagen: %s\n"
 msgid "can't use `%s' as home directory\n"
 msgstr "Die Datei `%s' kann nicht als Home-Verzeichnis benutzt werden\n"
 
-#: agent/gpg-agent.c:1769 scd/scdaemon.c:1120
+#: agent/gpg-agent.c:1769 scd/scdaemon.c:1120 dirmngr/dirmngr.c:1679
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr "Fehler beim Lesen der \"Nonce\" von FD %d: %s\n"
@@ -617,7 +625,7 @@ msgstr ""
 "Kennwortpuffer-Pflege\n"
 
 #: agent/protect-tool.c:105 g10/gpg.c:376 kbx/kbxutil.c:71 sm/gpgsm.c:187
-#: tools/gpgconf.c:59
+#: dirmngr/dirmngr.c:132 tools/gpgconf.c:59
 msgid ""
 "@Commands:\n"
 " "
@@ -626,8 +634,8 @@ msgstr ""
 " "
 
 #: agent/protect-tool.c:114 g10/gpg.c:444 g10/gpgv.c:69 kbx/kbxutil.c:81
-#: sm/gpgsm.c:227 tools/gpg-connect-agent.c:69 tools/gpgconf.c:76
-#: tools/symcryptrun.c:156
+#: sm/gpgsm.c:227 dirmngr/dirmngr.c:147 tools/gpg-connect-agent.c:69
+#: tools/gpgconf.c:76 tools/symcryptrun.c:156
 msgid ""
 "@\n"
 "Options:\n"
@@ -687,7 +695,7 @@ msgstr "Vom Benutzer abgebrochen\n"
 msgid "error while asking for the passphrase: %s\n"
 msgstr "Fehler bei der Abfrage der Passphrase: %s\n"
 
-#: agent/trustlist.c:135 agent/trustlist.c:332
+#: agent/trustlist.c:135 agent/trustlist.c:332 dirmngr/dirmngr.c:1364
 #, c-format
 msgid "error opening `%s': %s\n"
 msgstr "Fehler beim Öffnen von `%s': %s\n"
@@ -841,7 +849,7 @@ msgid "protection hash algorithm %d (%s) is not supported\n"
 msgstr "Schutzverfahrenshash %d (%s) wird nicht unterstützt\n"
 
 #: common/exechelp-posix.c:312 common/exechelp-w32.c:405
-#: common/exechelp-w32.c:429
+#: common/exechelp-w32.c:429 dirmngr/ldap-wrapper.c:673
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
@@ -853,7 +861,7 @@ msgid "error creating a stream for a pipe: %s\n"
 msgstr "Fehler beim Erzeugen eines \"streams\" zu einer \"pipe\": %s\n"
 
 #: common/exechelp-posix.c:399 common/exechelp-posix.c:465
-#: common/exechelp-posix.c:579
+#: common/exechelp-posix.c:579 dirmngr/dirmngr.c:1017
 #, c-format
 msgid "error forking process: %s\n"
 msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
@@ -1266,7 +1274,7 @@ msgstr "Option \"%.50s\" ist mehrdeutig\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "Befehl \"%.50s\" ist mehrdeutig\n"
 
-#: common/argparse.c:266
+#: common/argparse.c:266 dirmngr/dirmngr.c:1035
 msgid "out of core\n"
 msgstr "Nicht genügend Speicher\n"
 
@@ -1543,12 +1551,14 @@ msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
 msgid "error allocating enough memory: %s\n"
 msgstr "Fehler beim Zuteilen genügenden Speichers: %s\n"
 
-#: g10/card-util.c:812 g10/import.c:291
+#: g10/card-util.c:812 g10/import.c:291 dirmngr/crlcache.c:649
+#: dirmngr/crlcache.c:654 dirmngr/crlcache.c:908 dirmngr/crlcache.c:914
+#: dirmngr/dirmngr.c:1402
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "Fehler beim Lesen von `%s': %s\n"
 
-#: g10/card-util.c:845
+#: g10/card-util.c:845 dirmngr/crlcache.c:919
 #, c-format
 msgid "error writing `%s': %s\n"
 msgstr "Fehler beim Schreiben von %s: %s\n"
@@ -1812,7 +1822,7 @@ msgstr "'%s' kann nicht geöffnet werden\n"
 msgid "key \"%s\" not found: %s\n"
 msgstr "Schlüssel \"%s\" nicht gefunden: %s\n"
 
-#: g10/delkey.c:81 g10/export.c:701 g10/getkey.c:2879 g10/keyserver.c:1763
+#: g10/delkey.c:81 g10/export.c:701 g10/getkey.c:2881 g10/keyserver.c:1763
 #: g10/revoke.c:233 g10/revoke.c:479
 #, c-format
 msgid "error reading keyblock: %s\n"
@@ -1855,7 +1865,7 @@ msgstr ""
 "Verwenden Sie zunächst den Befehl \"--delete-secret-key\", um ihn zu "
 "entfernen.\n"
 
-#: g10/encrypt.c:232 g10/sign.c:1303
+#: g10/encrypt.c:232 g10/sign.c:1342
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "Fehler beim Erzeugen der Passphrase: %s\n"
@@ -1876,7 +1886,7 @@ msgstr "benutze Cipher %s\n"
 msgid "`%s' already compressed\n"
 msgstr "`%s' ist bereits komprimiert\n"
 
-#: g10/encrypt.c:320 g10/encrypt.c:662 g10/sign.c:588
+#: g10/encrypt.c:320 g10/encrypt.c:662 g10/sign.c:627
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
@@ -1907,7 +1917,7 @@ msgstr ""
 "WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %"
 "s (%d) verletzt die Empfängervoreinstellungen\n"
 
-#: g10/encrypt.c:709 g10/sign.c:969
+#: g10/encrypt.c:709 g10/sign.c:1008
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -2077,18 +2087,18 @@ msgstr "Fehler beim automatischen holen von `%s' über `%s': %s\n"
 msgid "No fingerprint"
 msgstr "Kein Fingerabdruck vorhanden"
 
-#: g10/getkey.c:1670
+#: g10/getkey.c:1672
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Ungültiger Schlüssel %s, gültig gemacht per --allow-non-selfsigned-uid\n"
 
-#: g10/getkey.c:2427
+#: g10/getkey.c:2429
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "der Unterschlüssel %s wird anstelle des Hauptschlüssels %s verwendet\n"
 
-#: g10/getkey.c:3021
+#: g10/getkey.c:3023
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
 msgstr ""
@@ -2615,7 +2625,7 @@ msgstr "%s kann nicht zusammen mit %s verwendet werden!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s zusammen mit %s ist nicht sinnvoll!\n"
 
-#: g10/gpg.c:3085 sm/gpgsm.c:1469
+#: g10/gpg.c:3085 sm/gpgsm.c:1469 dirmngr/dirmngr.c:863
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
@@ -3104,8 +3114,8 @@ msgstr "Schlüssel %s: neuer Schlüssel - übersprungen\n"
 msgid "no writable keyring found: %s\n"
 msgstr "kein schreibbarer Schlüsselbund gefunden: %s\n"
 
-#: g10/import.c:857 g10/openfile.c:202 g10/openfile.c:293 g10/sign.c:835
-#: g10/sign.c:1146
+#: g10/import.c:857 g10/openfile.c:202 g10/openfile.c:293 g10/sign.c:874
+#: g10/sign.c:1185
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "Schreiben nach '%s'\n"
@@ -4136,6 +4146,7 @@ msgstr ""
 
 #: g10/keyedit.c:3066 g10/keyedit.c:3378 g10/keyserver.c:543
 #: g10/mainproc.c:1874 g10/trustdb.c:1202 g10/trustdb.c:1731
+#: dirmngr/ocsp.c:699
 msgid "revoked"
 msgstr "widerrufen"
 
@@ -4925,7 +4936,7 @@ msgstr "Sicherungsdatei '%s' kann nicht erzeugt werden: %s\n"
 msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "Hinweis: Sicherung des Kartenschlüssels wurde auf `%s' gespeichert\n"
 
-#: g10/keyid.c:493 g10/keyid.c:506 g10/keyid.c:519
+#: g10/keyid.c:497 g10/keyid.c:510 g10/keyid.c:523
 msgid "never     "
 msgstr "niemals   "
 
@@ -5372,7 +5383,7 @@ msgstr "Binäre"
 msgid "textmode"
 msgstr "Textmodus"
 
-#: g10/mainproc.c:1975 g10/trustdb.c:548
+#: g10/mainproc.c:1975 g10/trustdb.c:548 dirmngr/ocsp.c:700
 msgid "unknown"
 msgstr "unbekannt"
 
@@ -6222,14 +6233,14 @@ msgstr ""
 "Vermutlich eine FALSCHE Signatur von Schlüssel %s, wegen unbekanntem "
 "\"critical bit\"\n"
 
-#: g10/sig-check.c:594
+#: g10/sig-check.c:593
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
 msgstr ""
 "Schlüssel %s: Kein Unterschlüssel für die Unterschlüsselwiderruf-"
 "Beglaubigung\n"
 
-#: g10/sig-check.c:621
+#: g10/sig-check.c:620
 #, c-format
 msgid "key %s: no subkey for subkey binding signature\n"
 msgstr ""
@@ -6270,13 +6281,13 @@ msgstr "Prüfung der erstellten Signatur ist fehlgeschlagen: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s Signatur von: \"%s\"\n"
 
-#: g10/sign.c:790
+#: g10/sign.c:829
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlüsseln eine abgetrennte "
 "Signatur erzeugt werden\n"
 
-#: g10/sign.c:868
+#: g10/sign.c:907
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -6284,17 +6295,17 @@ msgstr ""
 "WARNUNG: Erzwingen des Hashverfahrens %s (%d) verstößt gegen die "
 "Empfängervoreinstellungen\n"
 
-#: g10/sign.c:994
+#: g10/sign.c:1033
 msgid "signing:"
 msgstr "signiere:"
 
-#: g10/sign.c:1111
+#: g10/sign.c:1150
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "Im --pgp2-Modus können Sie Klartextsignaturen nur mit PGP-2.x-artigen "
 "Schlüssel machen\n"
 
-#: g10/sign.c:1297
+#: g10/sign.c:1336
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "%s Verschlüsselung wird verwendet\n"
@@ -6648,11 +6659,11 @@ msgstr "\"Trust-DB\"-Änderung ist beim `%s'-Vertrauensmodell nicht nötig\n"
 msgid "public key %s not found: %s\n"
 msgstr "Öffentlicher Schlüssel %s nicht gefunden: %s\n"
 
-#: g10/trustdb.c:1051
+#: g10/trustdb.c:1050
 msgid "please do a --check-trustdb\n"
 msgstr "Bitte ein --check-trustdb durchführen\n"
 
-#: g10/trustdb.c:1055
+#: g10/trustdb.c:1054
 msgid "checking the trustdb\n"
 msgstr "\"Trust-DB\" wird überprüft\n"
 
@@ -7009,7 +7020,7 @@ msgstr "|N|Erstmalige neue PIN"
 msgid "run in multi server mode (foreground)"
 msgstr "Im Multiserver Modus ausführen"
 
-#: scd/scdaemon.c:118 sm/gpgsm.c:316
+#: scd/scdaemon.c:118 sm/gpgsm.c:316 dirmngr/dirmngr.c:155
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|NAME|Die Debugstufe auf NAME setzen"
 
@@ -7063,12 +7074,12 @@ msgstr ""
 "Bitte die Option `--daemon' nutzen, um das Programm im Hintergund "
 "auszuführen\n"
 
-#: scd/scdaemon.c:1129
+#: scd/scdaemon.c:1129 dirmngr/dirmngr.c:1708
 #, c-format
 msgid "handler for fd %d started\n"
 msgstr "Handhabungsroutine für fd %d gestartet\n"
 
-#: scd/scdaemon.c:1141
+#: scd/scdaemon.c:1141 dirmngr/dirmngr.c:1713
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "Handhabungsroutine für den fd %d beendet\n"
@@ -7096,12 +7107,12 @@ msgstr "Kette"
 msgid "shell"
 msgstr "Schale"
 
-#: sm/certchain.c:258
+#: sm/certchain.c:258 dirmngr/validate.c:107
 #, c-format
 msgid "critical certificate extension %s is not supported"
 msgstr "Die kritische Zertifikaterweiterung %s wird nicht unterstützt"
 
-#: sm/certchain.c:297
+#: sm/certchain.c:297 dirmngr/validate.c:205
 msgid "issuer certificate is not marked as a CA"
 msgstr "Das Herausgeberzertifikat ist nicht für eine CA gekennzeichnet"
 
@@ -7114,11 +7125,11 @@ msgstr "entscheidende Richtlinie ohne konfigurierte Richtlinien"
 msgid "failed to open `%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
 
-#: sm/certchain.c:353 sm/certchain.c:382
+#: sm/certchain.c:353 sm/certchain.c:382 dirmngr/validate.c:167
 msgid "note: non-critical certificate policy not allowed"
 msgstr "Notiz: Die unkritische Zertifikatsrichtlinie ist nicht erlaubt"
 
-#: sm/certchain.c:357 sm/certchain.c:386
+#: sm/certchain.c:357 sm/certchain.c:386 dirmngr/validate.c:172
 msgid "certificate policy not allowed"
 msgstr "Die Zertifikatsrichtlinie ist nicht erlaubt"
 
@@ -7168,12 +7179,12 @@ msgstr ""
 msgid "checking the CRL failed: %s"
 msgstr "Die CRL konnte nicht geprüft werden: %s"
 
-#: sm/certchain.c:982 sm/certchain.c:1050
+#: sm/certchain.c:982 sm/certchain.c:1050 dirmngr/validate.c:473
 #, c-format
 msgid "certificate with invalid validity: %s"
 msgstr "Zertifikat mit unzulässiger Gültigkeit: %s"
 
-#: sm/certchain.c:997 sm/certchain.c:1082
+#: sm/certchain.c:997 sm/certchain.c:1082 dirmngr/validate.c:491
 msgid "certificate not yet valid"
 msgstr "Das Zertifikat ist noch nicht gültig"
 
@@ -7185,7 +7196,7 @@ msgstr "Das Wurzelzertifikat ist noch nicht gültig"
 msgid "intermediate certificate not yet valid"
 msgstr "Das Zwischenzertifikat ist noch nicht gültig"
 
-#: sm/certchain.c:1012
+#: sm/certchain.c:1012 dirmngr/validate.c:502
 msgid "certificate has expired"
 msgstr "Das Zertifikat ist abgelaufen"
 
@@ -7238,7 +7249,7 @@ msgstr "  (  Zertifikat gültig von "
 msgid "  (     issuer valid from "
 msgstr "  ( Herausgeber gültig von "
 
-#: sm/certchain.c:1144
+#: sm/certchain.c:1144 dirmngr/validate.c:552
 #, c-format
 msgid "fingerprint=%s\n"
 msgstr "Fingerprint=%s\n"
@@ -7271,7 +7282,7 @@ msgstr "Im Zertifikat ist kein Herausgeber enthalten"
 msgid "self-signed certificate has a BAD signature"
 msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
-#: sm/certchain.c:1435
+#: sm/certchain.c:1435 dirmngr/validate.c:550
 msgid "root certificate is not marked trusted"
 msgstr "Das Wurzelzertifikat ist nicht als vertrauenswürdig markiert"
 
@@ -7280,30 +7291,30 @@ msgstr "Das Wurzelzertifikat ist nicht als vertrauenswürdig markiert"
 msgid "checking the trust list failed: %s\n"
 msgstr "Fehler beim Prüfen der vertrauenswürdigen Zertifikate: %s\n"
 
-#: sm/certchain.c:1477 sm/import.c:176
+#: sm/certchain.c:1477 sm/import.c:176 dirmngr/validate.c:605
 msgid "certificate chain too long\n"
 msgstr "Der Zertifikatkette ist zu lang\n"
 
-#: sm/certchain.c:1489
+#: sm/certchain.c:1489 dirmngr/validate.c:617
 msgid "issuer certificate not found"
 msgstr "Herausgeberzertifikat nicht gefunden"
 
-#: sm/certchain.c:1522
+#: sm/certchain.c:1522 dirmngr/validate.c:643
 msgid "certificate has a BAD signature"
 msgstr "Das Zertifikat hat eine FALSCHE Signatur"
 
-#: sm/certchain.c:1553
+#: sm/certchain.c:1553 dirmngr/validate.c:667
 msgid "found another possible matching CA certificate - trying again"
 msgstr ""
 "Eine anderes möglicherweise passendes CA-Zertifikat gefunden - versuche "
 "nochmal"
 
-#: sm/certchain.c:1604
+#: sm/certchain.c:1604 dirmngr/validate.c:692
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "Die Zertifikatkette ist länger als von der CA erlaubt (%d)"
 
-#: sm/certchain.c:1644 sm/certchain.c:1927
+#: sm/certchain.c:1644 sm/certchain.c:1927 dirmngr/validate.c:722
 msgid "certificate is good\n"
 msgstr "Das Zertifikat ist korrekt\n"
 
@@ -7334,7 +7345,7 @@ msgstr ""
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(Dies ist der MD2 Algorithmus)\n"
 
-#: sm/certdump.c:60 sm/certdump.c:143
+#: sm/certdump.c:60 sm/certdump.c:143 dirmngr/ocsp.c:701
 msgid "none"
 msgstr "keine"
 
@@ -7370,39 +7381,39 @@ msgstr ""
 "gültig von %s bis %s\n"
 "zu entsperren.\n"
 
-#: sm/certlist.c:122
+#: sm/certlist.c:122 dirmngr/validate.c:1079
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 "Schlüsselverwendungszweck nicht vorhanden - für alle Zwecke akzeptiert\n"
 
-#: sm/certlist.c:132 sm/keylist.c:272
+#: sm/certlist.c:132 sm/keylist.c:272 dirmngr/validate.c:1089
 #, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
 
-#: sm/certlist.c:142
+#: sm/certlist.c:142 dirmngr/validate.c:1099
 msgid "certificate should have not been used for certification\n"
 msgstr "Das Zertifikat hätte nicht zum Zertifizieren benutzt werden sollen\n"
 
-#: sm/certlist.c:154
+#: sm/certlist.c:154 dirmngr/validate.c:1111
 msgid "certificate should have not been used for OCSP response signing\n"
 msgstr ""
 "Das Zertifikat hätte nicht zum Signieren von OCSP Antworten benutzt werden "
 "sollen\n"
 
-#: sm/certlist.c:165
+#: sm/certlist.c:165 dirmngr/validate.c:1131
 msgid "certificate should have not been used for encryption\n"
 msgstr "Das Zertifikat hätte nicht zum Verschlüsseln benutzt werden sollen\n"
 
-#: sm/certlist.c:166
+#: sm/certlist.c:166 dirmngr/validate.c:1133
 msgid "certificate should have not been used for signing\n"
 msgstr "Das Zertifikat hätte nicht zum Signieren benutzt werden sollen\n"
 
-#: sm/certlist.c:167
+#: sm/certlist.c:167 dirmngr/validate.c:1134
 msgid "certificate is not usable for encryption\n"
 msgstr "Das Zertifikat kann nicht zum Verschlüsseln benutzt werden\n"
 
-#: sm/certlist.c:168
+#: sm/certlist.c:168 dirmngr/validate.c:1135
 msgid "certificate is not usable for signing\n"
 msgstr "Das Zertifikat kann nicht zum Signieren benutzt werden\n"
 
@@ -7760,17 +7771,17 @@ msgstr "Hinweis: Verschlüsselung für `%s' wird nicht möglich sein: %s\n"
 msgid "unknown validation model `%s'\n"
 msgstr "Unbekanntes Gültigkeitsmodell '%s'\n"
 
-#: sm/gpgsm.c:811
+#: sm/gpgsm.c:811 dirmngr/ldapserver.c:86
 #, c-format
 msgid "%s:%u: no hostname given\n"
 msgstr "%s:%u: Kein Server-Name angegeben\n"
 
-#: sm/gpgsm.c:830
+#: sm/gpgsm.c:830 dirmngr/ldapserver.c:105
 #, c-format
 msgid "%s:%u: password given without user\n"
 msgstr "%s:%u: Passwort ohne Benutzer\n"
 
-#: sm/gpgsm.c:851
+#: sm/gpgsm.c:851 dirmngr/ldapserver.c:126
 #, c-format
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: Zeile wird übersprungen\n"
@@ -7974,6 +7985,1566 @@ msgstr "                alias"
 msgid "This is a qualified signature\n"
 msgstr "Dies ist eine qualifizierte Signatur.\n"
 
+#: dirmngr/certcache.c:103
+#, c-format
+msgid "can't initialize certificate cache lock: %s\n"
+msgstr ""
+"Sperre für den Zertifikatzwischenspeicher kann nicht initialisiert werden: %"
+"s\n"
+
+#: dirmngr/certcache.c:111
+#, c-format
+msgid "can't acquire read lock on the certificate cache: %s\n"
+msgstr ""
+"Lesesperre für den Zertifikatzwischenspeicher kann nicht gesetzt werden: %s\n"
+
+#: dirmngr/certcache.c:119
+#, c-format
+msgid "can't acquire write lock on the certificate cache: %s\n"
+msgstr ""
+"Schreibsperre für den Zertifikatzwischenspeicher kann nicht gesetzt werden: %"
+"s\n"
+
+#: dirmngr/certcache.c:127
+#, c-format
+msgid "can't release lock on the certificate cache: %s\n"
+msgstr ""
+"Sperre für den Zertifikatzwischenspeicher kann nicht freigegeben werden: %s\n"
+
+#: dirmngr/certcache.c:255
+#, c-format
+msgid "dropping %u certificates from the cache\n"
+msgstr "%u Zertifikate werden aus dem Zertifikatzwischenspeicher entfernt\n"
+
+#: dirmngr/certcache.c:340
+#, c-format
+msgid "can't access directory `%s': %s\n"
+msgstr "Fehler beim Zugriff auf das Verzeichnis `%s': %s\n"
+
+#: dirmngr/certcache.c:378
+#, c-format
+msgid "can't parse certificate `%s': %s\n"
+msgstr "Zertifikat `%s' kann nicht zerlegt werden: %s\n"
+
+#: dirmngr/certcache.c:386
+#, c-format
+msgid "certificate `%s' already cached\n"
+msgstr "Zertifikat `%s' ist bereits im Zwischenspeicher\n"
+
+#: dirmngr/certcache.c:390
+#, c-format
+msgid "trusted certificate `%s' loaded\n"
+msgstr "Vertrauenswürdiges Zertifikat `%s' wurde geladen\n"
+
+#: dirmngr/certcache.c:392
+#, c-format
+msgid "certificate `%s' loaded\n"
+msgstr "Zertifikat `%s' wurde geladen\n"
+
+#: dirmngr/certcache.c:396
+#, c-format
+msgid "  SHA1 fingerprint = %s\n"
+msgstr "  SHA1 Fingerabdruck=%s\n"
+
+#: dirmngr/certcache.c:399
+msgid "   issuer ="
+msgstr "   Issuer ="
+
+#: dirmngr/certcache.c:400
+msgid "  subject ="
+msgstr "  Subjekt ="
+
+#: dirmngr/certcache.c:404
+#, c-format
+msgid "error loading certificate `%s': %s\n"
+msgstr "Fehler beim Laden des Zertifikats `%s': %s\n"
+
+#: dirmngr/certcache.c:480
+#, c-format
+msgid "permanently loaded certificates: %u\n"
+msgstr "   dauerhaft geladene Zertifikate: %u\n"
+
+#: dirmngr/certcache.c:482
+#, c-format
+msgid "    runtime cached certificates: %u\n"
+msgstr "zur Laufzeit zwischengespeicherte Zertifikate: %u\n"
+
+#: dirmngr/certcache.c:497 dirmngr/dirmngr-client.c:368
+msgid "certificate already cached\n"
+msgstr "Zertifikat ist bereits im Zwischenspeicher\n"
+
+#: dirmngr/certcache.c:499
+msgid "certificate cached\n"
+msgstr "Zertifikat wurde zwischengespeichert\n"
+
+#: dirmngr/certcache.c:501 dirmngr/certcache.c:521
+#: dirmngr/dirmngr-client.c:372
+#, c-format
+msgid "error caching certificate: %s\n"
+msgstr "Fehler beim Zwischenspeichern des Zertifikats: %s\n"
+
+#: dirmngr/certcache.c:584
+#, c-format
+msgid "invalid SHA1 fingerprint string `%s'\n"
+msgstr "ungültiger SHA1 Fingerabdruck `%s'\n"
+
+#: dirmngr/certcache.c:1028 dirmngr/certcache.c:1037
+#, c-format
+msgid "error fetching certificate by S/N: %s\n"
+msgstr "Fehler beim Holen des Zertifikats mittels Seriennummer: %s\n"
+
+#: dirmngr/certcache.c:1191 dirmngr/certcache.c:1200
+#, c-format
+msgid "error fetching certificate by subject: %s\n"
+msgstr "Fehler beim Holen des Zertifikats mittels Subject: %s\n"
+
+#: dirmngr/certcache.c:1304 dirmngr/validate.c:459
+msgid "no issuer found in certificate\n"
+msgstr "Im Zertifikat ist kein Herausgeber enthalten\n"
+
+#: dirmngr/certcache.c:1314
+#, c-format
+msgid "error getting authorityKeyIdentifier: %s\n"
+msgstr "Fehler beim Holen des \"authorityKeyIdentifier\": %s\n"
+
+#: dirmngr/crlcache.c:214
+#, c-format
+msgid "creating directory `%s'\n"
+msgstr "Das Verzeichnis `%s' wird erzeugt\n"
+
+#: dirmngr/crlcache.c:218
+#, c-format
+msgid "error creating directory `%s': %s\n"
+msgstr "Fehler beim Erzeugen des Verzeichnis '%s': %s\n"
+
+#: dirmngr/crlcache.c:246
+#, c-format
+msgid "ignoring database dir `%s'\n"
+msgstr "Das DB-Verzeichnis `%s' wird ignoriert\n"
+
+#: dirmngr/crlcache.c:255
+#, c-format
+msgid "error reading directory `%s': %s\n"
+msgstr "Fehler beim Lesen des Verzeichnis `%s': %s\n"
+
+#: dirmngr/crlcache.c:276
+#, c-format
+msgid "removing cache file `%s'\n"
+msgstr "Die Zwischenspeicherdatei `%s' wird entfernt\n"
+
+#: dirmngr/crlcache.c:285
+#, c-format
+msgid "not removing file `%s'\n"
+msgstr "Die Datei `%s' wird nicht gelöscht\n"
+
+#: dirmngr/crlcache.c:374 dirmngr/crlcache.c:1112
+#, c-format
+msgid "error closing cache file: %s\n"
+msgstr "Fehler beim Schließen der Zwischenspeicherdatei: %s\n"
+
+#: dirmngr/crlcache.c:412 dirmngr/crlcache.c:788
+#, c-format
+msgid "failed to open cache dir file `%s': %s\n"
+msgstr ""
+"Die Zwischenspeicherverzeichnisdatei `%s' konnte nicht geöffnet werden: %s\n"
+
+#: dirmngr/crlcache.c:422
+#, c-format
+msgid "error creating new cache dir file `%s': %s\n"
+msgstr ""
+"Fehler beim Erzeugen der neuen Zwischenspeicherverzeichnisdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:429
+#, c-format
+msgid "error writing new cache dir file `%s': %s\n"
+msgstr ""
+"Fehler beim Schreiben der neuen Zwischenspeicherverzeichnisdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:436
+#, c-format
+msgid "error closing new cache dir file `%s': %s\n"
+msgstr ""
+"Fehler beim Schließen der neuen Zwischenspeicherverzeichnisdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:441
+#, c-format
+msgid "new cache dir file `%s' created\n"
+msgstr "Neue Zwischenspeicherverzeichnisdatei `%s' wurde erzeugt\n"
+
+#: dirmngr/crlcache.c:446
+#, c-format
+msgid "failed to re-open cache dir file `%s': %s\n"
+msgstr ""
+"Fehler beim Wiederöffnen der Zwischenspeicherverzeichnisdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:474
+#, c-format
+msgid "first record of `%s' is not the version\n"
+msgstr "Der erste Datensatz von `%s' enthält nicht die Version\n"
+
+#: dirmngr/crlcache.c:487
+msgid "old version of cache directory - cleaning up\n"
+msgstr "Alte Version des Zwischenspeicherverzeichnisses - räume auf\n"
+
+#: dirmngr/crlcache.c:503
+msgid "old version of cache directory - giving up\n"
+msgstr "Alte Version des Zwischenspeicherverzeichnisses - gebe auf\n"
+
+#: dirmngr/crlcache.c:608
+#, c-format
+msgid "extra field detected in crl record of `%s' line %u\n"
+msgstr "Weiteres Feld im CRL Datensatz von `%s', Zeile %u festgestellt\n"
+
+#: dirmngr/crlcache.c:616
+#, c-format
+msgid "invalid line detected in `%s' line %u\n"
+msgstr "Ungültige Zeile in `%s', Zeile %u\n"
+
+#: dirmngr/crlcache.c:625
+#, c-format
+msgid "duplicate entry detected in `%s' line %u\n"
+msgstr "Doppelter Eintrag in `%s', Zeile %u festgestellt\n"
+
+#: dirmngr/crlcache.c:640
+#, c-format
+msgid "unsupported record type in `%s' line %u skipped\n"
+msgstr "Nicht unterstützter Datensatztyp in `%s', Zeile %u übergangen\n"
+
+#: dirmngr/crlcache.c:666
+#, c-format
+msgid "invalid issuer hash in `%s' line %u\n"
+msgstr "Ungültiger Issuer Hashwert in `%s', Zeile %u\n"
+
+#: dirmngr/crlcache.c:672
+#, c-format
+msgid "no issuer DN in `%s' line %u\n"
+msgstr "Kein Issuer DN in `%s', Zeile %u\n"
+
+#: dirmngr/crlcache.c:679
+#, c-format
+msgid "invalid timestamp in `%s' line %u\n"
+msgstr "Ungültiger Zeitstempel in `%s', Zeile %u\n"
+
+#: dirmngr/crlcache.c:685
+#, c-format
+msgid "WARNING: invalid cache file hash in `%s' line %u\n"
+msgstr "WARNUNG: Ungültiger Zwischenspeicherdatei Hashwert in `%s', Zeile %u\n"
+
+#: dirmngr/crlcache.c:691
+msgid "detected errors in cache dir file\n"
+msgstr "Id der Zwischenspeicherverzeichnisdatei wurden Fehler erkannt\n"
+
+#: dirmngr/crlcache.c:692
+msgid "please check the reason and manually delete that file\n"
+msgstr ""
+"Bitte ermitteln sie die Ursache und löschen sie die Datei dann manuell\n"
+
+#: dirmngr/crlcache.c:820 dirmngr/crlcache.c:834
+#, c-format
+msgid "failed to create temporary cache dir file `%s': %s\n"
+msgstr ""
+"Die temporäre Zwischenspeicherverzeichnisdatei `%s' konnte nicht erzeugt "
+"werden: %s\n"
+
+#: dirmngr/crlcache.c:930
+#, c-format
+msgid "error closing `%s': %s\n"
+msgstr "Fehler beim Schließen von `%s': %s\n"
+
+#: dirmngr/crlcache.c:942
+#, c-format
+msgid "error renaming `%s' to `%s': %s\n"
+msgstr "Fehler beim Umbenennen von `%s` nach `%s': %s\n"
+
+#: dirmngr/crlcache.c:996
+#, c-format
+msgid "can't hash `%s': %s\n"
+msgstr "Hashwert von `%s' kann nicht gebildet werden: %s\n"
+
+#: dirmngr/crlcache.c:1004
+#, c-format
+msgid "error setting up MD5 hash context: %s\n"
+msgstr "Fehler beim Vorbereiten des MD5 Hashkontext: %s\n"
+
+#: dirmngr/crlcache.c:1020
+#, c-format
+msgid "error hashing `%s': %s\n"
+msgstr "Fehler beim Hashen von `%s': %s\n"
+
+#: dirmngr/crlcache.c:1048
+#, c-format
+msgid "invalid formatted checksum for `%s'\n"
+msgstr "Ungültig formatierte Prüfsumme für `%s'\n"
+
+#: dirmngr/crlcache.c:1101
+msgid "too many open cache files; can't open anymore\n"
+msgstr ""
+"Zu viele geöffnete Zwischenspeicherdateien; weitere kann nicht geöffnet "
+"werden\n"
+
+#: dirmngr/crlcache.c:1119
+#, c-format
+msgid "opening cache file `%s'\n"
+msgstr "Die Zwischenspeicherdatei `%s' wird geöffnet\n"
+
+#: dirmngr/crlcache.c:1138
+#, c-format
+msgid "error opening cache file `%s': %s\n"
+msgstr "Fehler beim Öffnen der Zwischenspeicherdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:1147
+#, c-format
+msgid "error initializing cache file `%s' for reading: %s\n"
+msgstr ""
+"Fehler beim Initialisieren der Zwischenspeicherdatei `%s' zum Lesen: %s\n"
+
+#: dirmngr/crlcache.c:1168
+msgid "calling unlock_db_file on a closed file\n"
+msgstr "unlock_db_file wird für eine geschlossene Datei aufgerufen\n"
+
+#: dirmngr/crlcache.c:1170
+msgid "calling unlock_db_file on an unlocked file\n"
+msgstr "unlock_db_file wird für eine nicht gesperrte Datei aufgerufen\n"
+
+#: dirmngr/crlcache.c:1224
+#, c-format
+msgid "failed to create a new cache object: %s\n"
+msgstr "Ein neues Zwischenspeicherobjekt konnte nicht erzeugt werden: %s\n"
+
+#: dirmngr/crlcache.c:1279
+#, c-format
+msgid "no CRL available for issuer id %s\n"
+msgstr "Es ist keine CRL für den Issuer mit der ID %s vorhanden\n"
+
+#: dirmngr/crlcache.c:1286
+#, c-format
+msgid "cached CRL for issuer id %s too old; update required\n"
+msgstr ""
+"Die zwischengespeicherte CRL für den Issuer mit der ID %s ist zu alt; ein "
+"Update wird benötigt\n"
+
+#: dirmngr/crlcache.c:1300
+#, c-format
+msgid ""
+"force-crl-refresh active and %d minutes passed for issuer id %s; update "
+"required\n"
+msgstr ""
+"\"force-crl-refresh\" ist aktiviert und %d Minuten für den Issuer mit Id %s "
+"sind vorbei; Update wird benötigt\n"
+
+#: dirmngr/crlcache.c:1308
+#, c-format
+msgid "force-crl-refresh active for issuer id %s; update required\n"
+msgstr ""
+"\"force-crl-refresh\" ist für den Issuer mit der Id %s aktiviert; Update "
+"wird benötigt\n"
+
+#: dirmngr/crlcache.c:1317
+#, c-format
+msgid "available CRL for issuer ID %s can't be used\n"
+msgstr ""
+"Die vorhandene CRL für den Issuer mit der ID %s kann nicht benutzt werden\n"
+
+#: dirmngr/crlcache.c:1328
+#, c-format
+msgid "cached CRL for issuer id %s tampered; we need to update\n"
+msgstr ""
+"Die zwischengespeicherte CRL für den Issuer mit der ID %s wurde verändert; "
+"eine Update wird benötigt\n"
+
+#: dirmngr/crlcache.c:1340
+msgid "WARNING: invalid cache record length for S/N "
+msgstr "WARNUNG: Ungültige Länge des Zwischenspeicherdateisatzes für S/N "
+
+#: dirmngr/crlcache.c:1349
+#, c-format
+msgid "problem reading cache record for S/N %s: %s\n"
+msgstr "Problem beim Lesen des Zwischenspeicherdatensatzes für S/N %s: %s\n"
+
+#: dirmngr/crlcache.c:1352
+#, c-format
+msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+msgstr "S/N %s ist nicht gültig; Grund=%02X  Datum=%.15s\n"
+
+#: dirmngr/crlcache.c:1363
+#, c-format
+msgid "S/N %s is valid, it is not listed in the CRL\n"
+msgstr "S/N %s ist gültig; sie ist nicht in der CRL enthalten\n"
+
+#: dirmngr/crlcache.c:1371
+#, c-format
+msgid "error getting data from cache file: %s\n"
+msgstr "Fehler beim Holen der Daten aus der Zwischenspeicherdatei: %s\n"
+
+#: dirmngr/crlcache.c:1533 dirmngr/validate.c:882
+#, c-format
+msgid "unknown hash algorithm `%s'\n"
+msgstr "Ungültige Hashmethode `%s'\n"
+
+#: dirmngr/crlcache.c:1540
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr "gcry_md_open für Methode %d fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1577 dirmngr/crlcache.c:1596
+msgid "got an invalid S-expression from libksba\n"
+msgstr "Ungültige S-Expression von Libksba erhalten\n"
+
+#: dirmngr/crlcache.c:1584 dirmngr/crlcache.c:1603 dirmngr/misc.c:168
+#, c-format
+msgid "converting S-expression failed: %s\n"
+msgstr "Konvertierung der S-Expression fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1618 dirmngr/ocsp.c:417
+#, c-format
+msgid "creating S-expression failed: %s\n"
+msgstr "Erzeugen der S-Expression fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1690
+#, c-format
+msgid "ksba_crl_parse failed: %s\n"
+msgstr "ksba_crl_parse fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1704
+#, c-format
+msgid "error getting update times of CRL: %s\n"
+msgstr "Die \"Update Times\" konnte nicht aus der CRL bestimmt werden: %s\n"
+
+#: dirmngr/crlcache.c:1711
+#, c-format
+msgid "update times of this CRL: this=%s next=%s\n"
+msgstr "Die \"Update Times\" dieser CRL sind: this=%s next=%s\n"
+
+#: dirmngr/crlcache.c:1715
+msgid "nextUpdate not given; assuming a validity period of one day\n"
+msgstr "\"nextUpdate\" fehlt; wir nehmen eine Gültigkeit von einem Tag an\n"
+
+#: dirmngr/crlcache.c:1735
+#, c-format
+msgid "error getting CRL item: %s\n"
+msgstr "Fehler beim Holen eines CRL Items: %s\n"
+
+#: dirmngr/crlcache.c:1750
+#, c-format
+msgid "error inserting item into temporary cache file: %s\n"
+msgstr ""
+"Fehler beim Einfügen eines Items in die temporäre Zwischenspeicherdatei: %s\n"
+
+#: dirmngr/crlcache.c:1777
+#, c-format
+msgid "no CRL issuer found in CRL: %s\n"
+msgstr "In der CRL wurde kein CRL Herausgeber gefunden: %s\n"
+
+#: dirmngr/crlcache.c:1792
+msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+msgstr ""
+"CRL Herausgeberzertifikat wird über \"authorityKeyIdentifier\" geholt\n"
+
+#: dirmngr/crlcache.c:1837
+#, c-format
+msgid "CRL signature verification failed: %s\n"
+msgstr "Signaturprüfung der CRL ist fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1848
+#, c-format
+msgid "error checking validity of CRL issuer certificate: %s\n"
+msgstr "Fehler beim Püfen des CRL Herausgeberzertifikats: %s\n"
+
+#: dirmngr/crlcache.c:1991
+#, c-format
+msgid "ksba_crl_new failed: %s\n"
+msgstr "ksba_crl_new fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:1998
+#, c-format
+msgid "ksba_crl_set_reader failed: %s\n"
+msgstr "ksba_crl_set_reader fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:2032
+#, c-format
+msgid "removed stale temporary cache file `%s'\n"
+msgstr "Die alte temporäre Zwischenspeicherdatei `%s' wurde entfernt\n"
+
+#: dirmngr/crlcache.c:2036
+#, c-format
+msgid "problem removing stale temporary cache file `%s': %s\n"
+msgstr ""
+"Problem beim Löschen der alten temporären Zwischenspeicherdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:2046
+#, c-format
+msgid "error creating temporary cache file `%s': %s\n"
+msgstr "Fehler beim Erzeugen der temporären Zwischenspeicherdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:2056
+#, c-format
+msgid "crl_parse_insert failed: %s\n"
+msgstr "crl_parse_insert fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:2066
+#, c-format
+msgid "error finishing temporary cache file `%s': %s\n"
+msgstr ""
+"Fehler beim Fertigstellen der temporären Zwischenspeicherdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:2073
+#, c-format
+msgid "error closing temporary cache file `%s': %s\n"
+msgstr "Fehler beim Schließen der temporären Zwischenspeicherdatei `%s': %s\n"
+
+#: dirmngr/crlcache.c:2098
+#, c-format
+msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+msgstr ""
+"WARNUNG: Neue CRL ist immer noch zu alt; sie verfiel am %s - wird trotzdem "
+"geladen\n"
+
+#: dirmngr/crlcache.c:2102
+#, c-format
+msgid "new CRL still too old; it expired on %s\n"
+msgstr "Neue CRL ist immer noch zu alt; sie verviel am %s\n"
+
+#: dirmngr/crlcache.c:2118
+#, c-format
+msgid "unknown critical CRL extension %s\n"
+msgstr "Unbekannte kritische CRL Erweiterung %s\n"
+
+#: dirmngr/crlcache.c:2128
+#, c-format
+msgid "error reading CRL extensions: %s\n"
+msgstr "Fehler beim Lesen einer CRL Erweiterung: %s\n"
+
+#: dirmngr/crlcache.c:2179
+#, c-format
+msgid "creating cache file `%s'\n"
+msgstr "Zwischenspeicherdatei `%s' wird erzeugt\n"
+
+#: dirmngr/crlcache.c:2186
+#, c-format
+msgid "problem renaming `%s' to `%s': %s\n"
+msgstr "Problem beim Umbenennen von `%s' nach `%s': %s\n"
+
+#: dirmngr/crlcache.c:2200
+msgid ""
+"updating the DIR file failed - cache entry will get lost with the next "
+"program start\n"
+msgstr ""
+"Update der Zwischenspeicherverzeichnisdatei fehlgeschlagen - "
+"Zwischenspeichereintrag wird mit dem nächste Programmstart verloren gehen\n"
+
+#: dirmngr/crlcache.c:2237
+#, c-format
+msgid "Begin CRL dump (retrieved via %s)\n"
+msgstr "Anfang CRL Ausgabe (geholt via %s)\n"
+
+#: dirmngr/crlcache.c:2260
+msgid ""
+" ERROR: The CRL will not be used because it was still too old after an "
+"update!\n"
+msgstr ""
+" FEHLER: Die CRL wird nicht benutzt, da sie trotz eines Updates zu alt war!\n"
+
+#: dirmngr/crlcache.c:2263
+msgid ""
+" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgstr ""
+" FEHLER: Die CRL wird nicht benutzt, da sie eine unbekannte kritische CRL "
+"Erweiterung trägt!\n"
+
+#: dirmngr/crlcache.c:2266
+msgid " ERROR: The CRL will not be used\n"
+msgstr " FEHLER: Die CRL wird nicht benutzt\n"
+
+#: dirmngr/crlcache.c:2273
+msgid " ERROR: This cached CRL may has been tampered with!\n"
+msgstr ""
+" FEHLER: Diese zwischengespeicherte CRL ist möglicherweise abgeändert "
+"worden!\n"
+
+#: dirmngr/crlcache.c:2291
+msgid " WARNING: invalid cache record length\n"
+msgstr " WARNUNG: Ungültige Länge eines Zwischenspeicherdatensatzes\n"
+
+#: dirmngr/crlcache.c:2298
+#, c-format
+msgid "problem reading cache record: %s\n"
+msgstr "Problem beim Lesen eines Zwischenspeicherdatensatzes: %s\n"
+
+#: dirmngr/crlcache.c:2309
+#, c-format
+msgid "problem reading cache key: %s\n"
+msgstr "Problem beim Lesen eines Zwischenspeicherschlüssels: %s\n"
+
+#: dirmngr/crlcache.c:2340
+#, c-format
+msgid "error reading cache entry from db: %s\n"
+msgstr "Fehler beim Lesen eine Zwischenspeichereintrags aus der DB: %s\n"
+
+#: dirmngr/crlcache.c:2343
+msgid "End CRL dump\n"
+msgstr "Ende CRL Ausgabe\n"
+
+#: dirmngr/crlcache.c:2464
+#, c-format
+msgid "crl_fetch via DP failed: %s\n"
+msgstr "crl_fetch über den DP fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:2475
+#, c-format
+msgid "crl_cache_insert via DP failed: %s\n"
+msgstr "crl_cache_insert über den DP fehlgeschlagen: %s\n"
+
+#: dirmngr/crlcache.c:2535
+#, c-format
+msgid "crl_cache_insert via issuer failed: %s\n"
+msgstr "crl_cache_insert über den Issuer fehlgeschlagen: %s\n"
+
+#: dirmngr/crlfetch.c:74
+msgid "reader to file mapping table full - waiting\n"
+msgstr "\"reader to file\" Zuordnungstabelle ist voll - warte\n"
+
+#: dirmngr/crlfetch.c:179
+msgid "using \"http\" instead of \"https\"\n"
+msgstr "Es wird \"HTTP\" anstatt \"HTTPS\" verwendet\n"
+
+#: dirmngr/crlfetch.c:190 dirmngr/crlfetch.c:285 dirmngr/crlfetch.c:305
+#: dirmngr/crlfetch.c:323
+#, c-format
+msgid "CRL access not possible due to disabled %s\n"
+msgstr "CRL Zugriff nicht möglich da %s abgeschaltet ist\n"
+
+#: dirmngr/crlfetch.c:219 dirmngr/ldap-wrapper-ce.c:394
+#: dirmngr/ldap-wrapper.c:711 dirmngr/misc.c:524
+#, c-format
+msgid "error initializing reader object: %s\n"
+msgstr "Fehler beim Initialisieren des \"reader\" Objekts: %s\n"
+
+#: dirmngr/crlfetch.c:245 dirmngr/ocsp.c:210
+#, c-format
+msgid "URL `%s' redirected to `%s' (%u)\n"
+msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
+
+#: dirmngr/crlfetch.c:264 dirmngr/ocsp.c:227
+msgid "too many redirections\n"
+msgstr "zu viele verschachtelte Umleitungen\n"
+
+#: dirmngr/crlfetch.c:270
+#, c-format
+msgid "error retrieving `%s': %s\n"
+msgstr "Fehler beim Holen von `%s': %s\n"
+
+#: dirmngr/crlfetch.c:275
+#, c-format
+msgid "error retrieving `%s': http status %u\n"
+msgstr "Fehler beim Holen von `%s': HTTP Status %u\n"
+
+#: dirmngr/crlfetch.c:337
+#, c-format
+msgid "certificate search not possible due to disabled %s\n"
+msgstr "Zertifikatsuche ist nicht möglich da %s abgeschaltet ist\n"
+
+#: dirmngr/dirmngr-client.c:70
+msgid "use OCSP instead of CRLs"
+msgstr "OCSP anstatt CRL benutzen"
+
+#: dirmngr/dirmngr-client.c:71
+msgid "check whether a dirmngr is running"
+msgstr "Teste ob der dirmngr noch läuft"
+
+#: dirmngr/dirmngr-client.c:72
+msgid "add a certificate to the cache"
+msgstr "Ein Zertifikat dem Zwischenspeicher zufügen"
+
+#: dirmngr/dirmngr-client.c:73
+msgid "validate a certificate"
+msgstr "Zertifikat prüfen"
+
+#: dirmngr/dirmngr-client.c:74
+msgid "lookup a certificate"
+msgstr "Zertifikat auffinden"
+
+#: dirmngr/dirmngr-client.c:75
+msgid "lookup only locally stored certificates"
+msgstr "Nur lokal gespeicherte Zertifikate auffinden"
+
+#: dirmngr/dirmngr-client.c:76
+msgid "expect an URL for --lookup"
+msgstr "Eine URL wird für --lookup erwartet"
+
+#: dirmngr/dirmngr-client.c:77
+msgid "load a CRL into the dirmngr"
+msgstr "CRL in den Dirmngr laden"
+
+#: dirmngr/dirmngr-client.c:78
+msgid "special mode for use by Squid"
+msgstr "Sondermodus für Squid"
+
+#: dirmngr/dirmngr-client.c:79
+msgid "certificates are expected in PEM format"
+msgstr "Zertifikate werden im PEM Format erwartet"
+
+#: dirmngr/dirmngr-client.c:81
+msgid "force the use of the default OCSP responder"
+msgstr "Die Nutzung des voreingestellten OCSP Responder erzwingen"
+
+#: dirmngr/dirmngr-client.c:151
+msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+msgstr ""
+"Gebrauch: dirmngr-client [Optionen] [Zertdatei|Muster] (-h für Hilfe)\n"
+
+#: dirmngr/dirmngr-client.c:155
+msgid ""
+"Syntax: dirmngr-client [options] [certfile|pattern]\n"
+"Test an X.509 certificate against a CRL or do an OCSP check\n"
+"The process returns 0 if the certificate is valid, 1 if it is\n"
+"not valid and other error codes for general failures\n"
+msgstr ""
+"Gebrauch: dirmngr-client [Optionen]  [Zertdatei|Muster]\n"
+"Teste ein X.509 Zertifikat gegen eine CRL oder führe eine OCSP Prüfung "
+"durch\n"
+"The Prozess gibt 0 zurück wenn das Zertifikat gültig ist, 1 wenn es nicht\n"
+"gültig ist und weitere Werte bei anderen Fehlern.\n"
+
+#: dirmngr/dirmngr-client.c:268 dirmngr/dirmngr-client.c:997
+#, c-format
+msgid "error reading certificate from stdin: %s\n"
+msgstr "Fehler beim Lesen des Zertifikats von der Standardeingabe: %s\n"
+
+#: dirmngr/dirmngr-client.c:275
+#, c-format
+msgid "error reading certificate from `%s': %s\n"
+msgstr "Fehler beim Lesen des Zertifikats von `%s': %s\n"
+
+#: dirmngr/dirmngr-client.c:289
+msgid "certificate too large to make any sense\n"
+msgstr "Zertifikat ist zu groß um Sinnvoll zu sein\n"
+
+#: dirmngr/dirmngr-client.c:315
+#, c-format
+msgid "lookup failed: %s\n"
+msgstr "Aufsuchen fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr-client.c:330
+#, c-format
+msgid "loading CRL `%s' failed: %s\n"
+msgstr "Laden der CRL von `%s' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr-client.c:358
+msgid "a dirmngr daemon is up and running\n"
+msgstr "Ein dirmngr ist vorhanden und aktiv\n"
+
+#: dirmngr/dirmngr-client.c:380
+#, c-format
+msgid "validation of certificate failed: %s\n"
+msgstr "Prüfung des Zertifikats fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr-client.c:387 dirmngr/dirmngr-client.c:1008
+msgid "certificate is valid\n"
+msgstr "Zertifikat ist gültig\n"
+
+#: dirmngr/dirmngr-client.c:393 dirmngr/dirmngr-client.c:1016
+msgid "certificate has been revoked\n"
+msgstr "Zertifikat wurde widerrufen\n"
+
+#: dirmngr/dirmngr-client.c:398 dirmngr/dirmngr-client.c:1018
+#, c-format
+msgid "certificate check failed: %s\n"
+msgstr "Zertifikatprüfung fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr-client.c:411
+#, c-format
+msgid "got status: `%s'\n"
+msgstr "Erhielt Status: `%s'\n"
+
+#: dirmngr/dirmngr-client.c:426
+#, c-format
+msgid "error writing base64 encoding: %s\n"
+msgstr "Fehler beim Schreiben der Base-64 Darstellung: %s\n"
+
+#: dirmngr/dirmngr-client.c:453 dirmngr/server.c:1529
+#, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "Fehler beim Bereitstellen eines Assuan Kontext: %s\n"
+
+#: dirmngr/dirmngr-client.c:467
+msgid "apparently no running dirmngr\n"
+msgstr "Offensichtlich ist kein Dirmngr vorhanden\n"
+
+#: dirmngr/dirmngr-client.c:472
+msgid "no running dirmngr - starting one\n"
+msgstr "Dirmngr läuft nicht - ein neuer wird gestartet\n"
+
+#: dirmngr/dirmngr-client.c:505
+msgid "malformed DIRMNGR_INFO environment variable\n"
+msgstr "Fehlerhafte DIRMNGR_INFO Variable\n"
+
+#: dirmngr/dirmngr-client.c:520
+#, c-format
+msgid "dirmngr protocol version %d is not supported\n"
+msgstr "Dirmngr Protocol Version %d wird nicht unterstützt\n"
+
+#: dirmngr/dirmngr-client.c:536
+msgid "can't connect to the dirmngr - trying fall back\n"
+msgstr "Verbindung zum Dirmngr nicht möglich - Rückfallmethode wird versucht\n"
+
+#: dirmngr/dirmngr-client.c:545
+#, c-format
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "Verbindung zum Dirmngr nicht möglich: %s\n"
+
+#: dirmngr/dirmngr-client.c:794
+#, c-format
+msgid "unsupported inquiry `%s'\n"
+msgstr "Nicht unterstützte INQUIRY `%s'\n"
+
+#: dirmngr/dirmngr-client.c:896
+msgid "absolute file name expected\n"
+msgstr "Absoluter Dateiname erwartet\n"
+
+#: dirmngr/dirmngr-client.c:941
+#, c-format
+msgid "looking up `%s'\n"
+msgstr "Auffinden von `%s'\n"
+
+#: dirmngr/dirmngr.c:137
+msgid "run as windows service (background)"
+msgstr "Als Windows-Service ausführen (Hintergrund)"
+
+#: dirmngr/dirmngr.c:139
+msgid "list the contents of the CRL cache"
+msgstr "Den Inhalt des CRL Zwischenspeichers anzeigen"
+
+#: dirmngr/dirmngr.c:140
+msgid "|FILE|load CRL from FILE into cache"
+msgstr "|DATEI|Lade die CRL aus der DATEI in den Zwischenspeicher"
+
+#: dirmngr/dirmngr.c:141
+msgid "|URL|fetch a CRL from URL"
+msgstr "|URL|Hole eine CRL von dieser URL"
+
+#: dirmngr/dirmngr.c:142
+msgid "shutdown the dirmngr"
+msgstr "Den Dirmngr herunterfahren"
+
+#: dirmngr/dirmngr.c:143
+msgid "flush the cache"
+msgstr "Den Zwischenspeicher löschen"
+
+#: dirmngr/dirmngr.c:158 tools/gpgconf-comp.c:507 tools/gpgconf-comp.c:689
+#: tools/gpgconf-comp.c:772 tools/gpgconf-comp.c:854
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
+
+#: dirmngr/dirmngr.c:159
+msgid "run without asking a user"
+msgstr "Ausführung ohne Benutzernachfrage"
+
+#: dirmngr/dirmngr.c:160
+msgid "force loading of outdated CRLs"
+msgstr "Laden von abgelaufenen CRLs erzwingen"
+
+#: dirmngr/dirmngr.c:161
+msgid "allow sending OCSP requests"
+msgstr "OCSP Anfragen erlauben"
+
+#: dirmngr/dirmngr.c:162
+msgid "inhibit the use of HTTP"
+msgstr "Sperre die Benutzung von HTTP"
+
+#: dirmngr/dirmngr.c:163
+msgid "inhibit the use of LDAP"
+msgstr "Sperre die Benutzung von LDAP"
+
+#: dirmngr/dirmngr.c:165
+msgid "ignore HTTP CRL distribution points"
+msgstr "Übergehe HTTP CRL Distribution Points"
+
+#: dirmngr/dirmngr.c:167
+msgid "ignore LDAP CRL distribution points"
+msgstr "Übergehe LDAP CRL Distribution Points"
+
+#: dirmngr/dirmngr.c:169
+msgid "ignore certificate contained OCSP service URLs"
+msgstr "Übergehe im Zertifikat enthaltene OCSP Service URLs"
+
+#: dirmngr/dirmngr.c:172
+msgid "|URL|redirect all HTTP requests to URL"
+msgstr "|URL|Leite alle HTTP Anfragen über URL"
+
+#: dirmngr/dirmngr.c:174
+msgid "|HOST|use HOST for LDAP queries"
+msgstr "|HOST|Benutze HOST für LDAP Anfragen"
+
+#: dirmngr/dirmngr.c:176
+msgid "do not use fallback hosts with --ldap-proxy"
+msgstr "Keine Benutzung der Rückgriffshosts mit --ldap-proxy"
+
+#: dirmngr/dirmngr.c:179
+msgid "|FILE|read LDAP server list from FILE"
+msgstr "|DATEI|Lese die LDAP Serverliste aus DATEI"
+
+#: dirmngr/dirmngr.c:181
+msgid "add new servers discovered in CRL distribution points to serverlist"
+msgstr "Füge neue Server aus den CRL Distribution Points der Serverliste hinzu"
+
+#: dirmngr/dirmngr.c:184 dirmngr/dirmngr_ldap.c:129
+msgid "|N|set LDAP timeout to N seconds"
+msgstr "|N|Setze das LDAP Timeout auf N Sekunden"
+
+#: dirmngr/dirmngr.c:187
+msgid "|URL|use OCSP responder at URL"
+msgstr "|URL|Benutze den OCSP Responder mit dieser URL"
+
+#: dirmngr/dirmngr.c:189
+msgid "|FPR|OCSP response signed by FPR"
+msgstr "|FPR|OCSP Antwort ist durch FPR signiert"
+
+#: dirmngr/dirmngr.c:195
+msgid "|N|do not return more than N items in one query"
+msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
+
+#: dirmngr/dirmngr.c:210
+msgid ""
+"@\n"
+"(See the \"info\" manual for a complete listing of all commands and "
+"options)\n"
+msgstr ""
+"@\n"
+"(Im \"info\"-Handbuch findet sich eine vollständige Liste aller Kommandos "
+"und Optionen)\n"
+
+#: dirmngr/dirmngr.c:301
+msgid "Usage: dirmngr [options] (-h for help)"
+msgstr "Gebrauch: dirmnr [Optionen] [Kommando [Argumente]]"
+
+#: dirmngr/dirmngr.c:303
+msgid ""
+"Syntax: dirmngr [options] [command [args]]\n"
+"LDAP and OCSP access for GnuPG\n"
+msgstr ""
+"Syntax: dirmngr [Optionen] [Kommando [Argumente]]\n"
+"LDAP und OCSP Zugriff für GnuPG\n"
+
+#: dirmngr/dirmngr.c:368
+#, c-format
+msgid "valid debug levels are: %s\n"
+msgstr "Gültige Debugebenen sind: %s\n"
+
+#: dirmngr/dirmngr.c:391
+msgid "usage: dirmngr [options] "
+msgstr "Gebrauch: dirmngr [Optionen] "
+
+#: dirmngr/dirmngr.c:948
+msgid "colons are not allowed in the socket name\n"
+msgstr "Doppelpunkte sind im Namen des Sockets nicht erlaubt\n"
+
+#: dirmngr/dirmngr.c:1154 dirmngr/server.c:1163
+#, c-format
+msgid "fetching CRL from `%s' failed: %s\n"
+msgstr "Holen der CRL von `%s' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr.c:1160 dirmngr/server.c:1169
+#, c-format
+msgid "processing CRL from `%s' failed: %s\n"
+msgstr "Verarbeitung der CRL von `%s' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr.c:1379
+#, c-format
+msgid "%s:%u: line too long - skipped\n"
+msgstr "%s:%u: Zeile ist zu lang - übergangen\n"
+
+#: dirmngr/dirmngr.c:1434 dirmngr/dirmngr.c:1518
+#, c-format
+msgid "%s:%u: invalid fingerprint detected\n"
+msgstr "%s:%u: ungültiger Fingerabdruck erkannt\n"
+
+#: dirmngr/dirmngr.c:1470 dirmngr/dirmngr.c:1496
+#, c-format
+msgid "%s:%u: read error: %s\n"
+msgstr "%s:%u: Lesefehler: %s\n"
+
+#: dirmngr/dirmngr.c:1525
+#, c-format
+msgid "%s:%u: garbage at end of line ignored\n"
+msgstr "%s:%u: Müll am Ende der Zeile wird ignoriert\n"
+
+#: dirmngr/dirmngr.c:1591
+msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+msgstr ""
+"SIGHUP empfangen - lese die Konfiguration erneut und lösche die "
+"Zwischenspeicher\n"
+
+#: dirmngr/dirmngr.c:1618
+msgid "SIGUSR2 received - no action defined\n"
+msgstr "SIGUSR2 empfangen - keine Aktion definiert\n"
+
+#: dirmngr/dirmngr.c:1623 dirmngr/dirmngr.c:1660
+msgid "SIGTERM received - shutting down ...\n"
+msgstr "SIGTERM empfangen - wird heruntergefahren ...\n"
+
+#: dirmngr/dirmngr.c:1625
+#, c-format
+msgid "SIGTERM received - still %d active connections\n"
+msgstr "SIGTERM empfangen - immer noch %d Verbindungen aktiv\n"
+
+#: dirmngr/dirmngr.c:1630 dirmngr/dirmngr.c:1663
+msgid "shutdown forced\n"
+msgstr "Herunterfahren wurde erzwungen\n"
+
+#: dirmngr/dirmngr.c:1638
+msgid "SIGINT received - immediate shutdown\n"
+msgstr "SIGINT empfangen - wird sofort heruntergefahren\n"
+
+#: dirmngr/dirmngr.c:1645
+#, c-format
+msgid "signal %d received - no action defined\n"
+msgstr "Signal %d empfangen - keine Aktion definiert\n"
+
+#: dirmngr/dirmngr.c:1797
+#, c-format
+msgid "accept failed: %s - waiting 1s\n"
+msgstr "accept() fehlgeschlagen: %s - warte 1s\n"
+
+#: dirmngr/dirmngr.c:1827
+#, c-format
+msgid "error spawning connection handler: %s\n"
+msgstr "Fehler beim Starten des Verbindungshandler: %s\n"
+
+#: dirmngr/dirmngr_ldap.c:130
+msgid "return all values in a record oriented format"
+msgstr "Alle Werte in einem Record Format zurückgeben"
+
+#: dirmngr/dirmngr_ldap.c:133
+msgid "|NAME|ignore host part and connect through NAME"
+msgstr "|NAME|Host Teil ignorieren und über NAME verbinden"
+
+#: dirmngr/dirmngr_ldap.c:134
+msgid "|NAME|connect to host NAME"
+msgstr "|NAME|Verbinde mit dem Host NAME"
+
+#: dirmngr/dirmngr_ldap.c:135
+msgid "|N|connect to port N"
+msgstr "|N|Verbinde mit dem Port N"
+
+#: dirmngr/dirmngr_ldap.c:136
+msgid "|NAME|use user NAME for authentication"
+msgstr "|NAME|Benutze NAME zur Authentifizierung"
+
+#: dirmngr/dirmngr_ldap.c:137
+msgid "|PASS|use password PASS for authentication"
+msgstr "Benutze Passwort PASS zur Authentifizierung"
+
+#: dirmngr/dirmngr_ldap.c:139
+msgid "take password from $DIRMNGR_LDAP_PASS"
+msgstr "Nimm das Passwort von $DIRMNGR_LDAP_PASS"
+
+#: dirmngr/dirmngr_ldap.c:140
+msgid "|STRING|query DN STRING"
+msgstr "|STRING|Frage den DN STRING ab"
+
+#: dirmngr/dirmngr_ldap.c:141
+msgid "|STRING|use STRING as filter expression"
+msgstr "|STRING|Benutze STRING als Filterausdruck"
+
+#: dirmngr/dirmngr_ldap.c:142
+msgid "|STRING|return the attribute STRING"
+msgstr "|STRING|Gib das Attribut STRING zurück"
+
+#: dirmngr/dirmngr_ldap.c:201
+msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+msgstr "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
+
+#: dirmngr/dirmngr_ldap.c:204
+msgid ""
+"Syntax: dirmngr_ldap [options] [URL]\n"
+"Internal LDAP helper for Dirmngr.\n"
+"Interface and options may change without notice.\n"
+msgstr ""
+"Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
+"Internes LDAP-Hilfsprogramm für Dirmngr.\n"
+"Interface und Optionen können sich mit jedem Release ändern.\n"
+
+#: dirmngr/dirmngr_ldap.c:327
+#, c-format
+msgid "invalid port number %d\n"
+msgstr "Ungültige Portnummer %d\n"
+
+#: dirmngr/dirmngr_ldap.c:403
+#, c-format
+msgid "scanning result for attribute `%s'\n"
+msgstr "Absuchen des Ergebnisses nach Attribut `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:410 dirmngr/dirmngr_ldap.c:493
+#: dirmngr/dirmngr_ldap.c:517 dirmngr/dirmngr_ldap.c:529
+#: dirmngr/dirmngr_ldap.c:654
+#, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "Fehler beim Schreiben auf Standardausgabe: %s\n"
+
+#: dirmngr/dirmngr_ldap.c:427
+#, c-format
+msgid "          available attribute `%s'\n"
+msgstr "        verfügbare Attribute `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:465
+#, c-format
+msgid "attribute `%s' not found\n"
+msgstr "Attribut `%s' nicht gefunden\n"
+
+#: dirmngr/dirmngr_ldap.c:472
+#, c-format
+msgid "found attribute `%s'\n"
+msgstr "Attribut `%s' gefunden\n"
+
+#: dirmngr/dirmngr_ldap.c:581
+#, c-format
+msgid "processing url `%s'\n"
+msgstr "Verarbeiten der URL `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:583
+#, c-format
+msgid "          user `%s'\n"
+msgstr "           Benutzer `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:585
+#, c-format
+msgid "          pass `%s'\n"
+msgstr "           Passwort `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:587
+#, c-format
+msgid "          host `%s'\n"
+msgstr "               Host `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:588
+#, c-format
+msgid "          port %d\n"
+msgstr "               Port %d\n"
+
+#: dirmngr/dirmngr_ldap.c:590
+#, c-format
+msgid "            DN `%s'\n"
+msgstr "                 DN `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:592
+#, c-format
+msgid "        filter `%s'\n"
+msgstr "             Filter `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:597 dirmngr/dirmngr_ldap.c:600
+#, c-format
+msgid "          attr `%s'\n"
+msgstr "           Attribut `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:606
+#, c-format
+msgid "no host name in `%s'\n"
+msgstr "Kein Hostname in `%s'\n"
+
+#: dirmngr/dirmngr_ldap.c:611
+#, c-format
+msgid "no attribute given for query `%s'\n"
+msgstr "Kein Attribut für Abfrage `%s' angegeben\n"
+
+#: dirmngr/dirmngr_ldap.c:617
+msgid "WARNING: using first attribute only\n"
+msgstr "WARNUNG: Es wird nur das erste Attribut benutzt\n"
+
+#: dirmngr/dirmngr_ldap.c:626
+#, c-format
+msgid "LDAP init to `%s:%d' failed: %s\n"
+msgstr "LDAP Initialisierung von `%s:%d' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr_ldap.c:636
+#, c-format
+msgid "binding to `%s:%d' failed: %s\n"
+msgstr "Anbindung an `%s:%d' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr_ldap.c:663
+#, c-format
+msgid "searching `%s' failed: %s\n"
+msgstr "Suche mit `%s' fehlgeschlagen: %s\n"
+
+#: dirmngr/dirmngr_ldap.c:695
+#, c-format
+msgid "`%s' is not an LDAP URL\n"
+msgstr "`%s' ist kein LDAP URL\n"
+
+#: dirmngr/dirmngr_ldap.c:701
+#, c-format
+msgid "`%s' is an invalid LDAP URL\n"
+msgstr "`%s' ist ein ungültiger LDAP URL\n"
+
+#: dirmngr/ldap-wrapper-ce.c:313 dirmngr/ldap-wrapper.c:639
+#: dirmngr/ldap-wrapper.c:656
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Fehler beim Allozieren von Speicher: %s\n"
+
+#: dirmngr/ldap-wrapper.c:210
+#, c-format
+msgid "error printing log line: %s\n"
+msgstr "Fehler beim Schreiben einer Logzeile: %s\n"
+
+#: dirmngr/ldap-wrapper.c:239
+#, c-format
+msgid "error reading log from ldap wrapper %d: %s\n"
+msgstr "Fehler beim Lesen des Logs vom LDAP Wrapper %d: %s\n"
+
+#: dirmngr/ldap-wrapper.c:276
+#, c-format
+msgid "pth_event failed: %s\n"
+msgstr "pth_event() fehlgeschlagen: %s\n"
+
+#: dirmngr/ldap-wrapper.c:296
+#, c-format
+msgid "pth_wait failed: %s\n"
+msgstr "pth_wait() fehlgeschlagen: %s\n"
+
+#: dirmngr/ldap-wrapper.c:333
+#, c-format
+msgid "ldap wrapper %d ready"
+msgstr "LDAP Wrapper %d fertig"
+
+#: dirmngr/ldap-wrapper.c:342
+#, c-format
+msgid "ldap wrapper %d ready: timeout\n"
+msgstr "LDAP Wrapper %d fertig: Zeitüberschreitung\n"
+
+#: dirmngr/ldap-wrapper.c:345
+#, c-format
+msgid "ldap wrapper %d ready: exitcode=%d\n"
+msgstr "LDAP Wrapper %d fertig: Exitcode=%d\n"
+
+#: dirmngr/ldap-wrapper.c:354
+#, c-format
+msgid "waiting for ldap wrapper %d failed: %s\n"
+msgstr "Warten auf den LDAP Wrapper %d fehlgeschlagen: %s\n"
+
+#: dirmngr/ldap-wrapper.c:366
+#, c-format
+msgid "ldap wrapper %d stalled - killing\n"
+msgstr "LDAP Wrapper %d versackt - abgeschossen\n"
+
+#: dirmngr/ldap-wrapper.c:433
+#, c-format
+msgid "error spawning ldap wrapper reaper thread: %s\n"
+msgstr "Fehler beim Starten des LDAP Wrapper Kontrollthreads: %s\n"
+
+#: dirmngr/ldap-wrapper.c:483 dirmngr/ldap-wrapper.c:504
+#, c-format
+msgid "reading from ldap wrapper %d failed: %s\n"
+msgstr "Lesen vom LDAP Wrapper %d fehlgeschlagen: %s\n"
+
+#: dirmngr/ldap.c:90
+#, c-format
+msgid "invalid char 0x%02x in host name - not added\n"
+msgstr "Ungültiges Zeichen 0x%02X im Hostnamen - nicht hinzugefügt\n"
+
+#: dirmngr/ldap.c:94
+#, c-format
+msgid "adding `%s:%d' to the ldap server list\n"
+msgstr "`%s:%d' wird der LDAP Serverliste hinzugefügt\n"
+
+#: dirmngr/ldap.c:97 dirmngr/misc.c:463
+#, c-format
+msgid "malloc failed: %s\n"
+msgstr "malloc() fehlgeschlagen: %s\n"
+
+#: dirmngr/ldap.c:602
+#, c-format
+msgid "start_cert_fetch: invalid pattern `%s'\n"
+msgstr "start_cert_fetch: Ungültiges Muster `%s'\n"
+
+#: dirmngr/ldap.c:808
+msgid "ldap_search hit the size limit of the server\n"
+msgstr "ldap_search erreichte die Größengrenze des Servers\n"
+
+#: dirmngr/misc.c:164
+msgid "invalid canonical S-expression found\n"
+msgstr "Ungültige kanonische S-Expression gefunden\n"
+
+#: dirmngr/misc.c:188 dirmngr/misc.c:222
+#, c-format
+msgid "gcry_md_open failed: %s\n"
+msgstr "gcry_md_open fehlgeschlagen: %s\n"
+
+#: dirmngr/misc.c:193 dirmngr/misc.c:227
+#, c-format
+msgid "oops: ksba_cert_hash failed: %s\n"
+msgstr "Nanu: ksba_cert_hash fehlgeschlagen: %s\n"
+
+#: dirmngr/misc.c:479
+msgid "bad URL encoding detected\n"
+msgstr "Fehlerhafte URL Kodierung erkannt\n"
+
+#: dirmngr/ocsp.c:81
+#, c-format
+msgid "error reading from responder: %s\n"
+msgstr "Fehler beim Lesen vom Responder: %s\n"
+
+#: dirmngr/ocsp.c:99
+#, c-format
+msgid "response from server too large; limit is %d bytes\n"
+msgstr "Antwort vom Server zu lang; die Grenze sind %d Bytes\n"
+
+#: dirmngr/ocsp.c:138
+msgid "OCSP request not possible due to disabled HTTP\n"
+msgstr "OCSP Anfrage nicht möglich da HTTP abgeschaltet ist\n"
+
+#: dirmngr/ocsp.c:145
+#, c-format
+msgid "error setting OCSP target: %s\n"
+msgstr "Fehler beim Setzen des OCSP Ziels: %s\n"
+
+#: dirmngr/ocsp.c:163
+#, c-format
+msgid "error building OCSP request: %s\n"
+msgstr "Fehler beim Aufbauen der OCSP Anfrage: %s\n"
+
+#: dirmngr/ocsp.c:173
+#, c-format
+msgid "error connecting to `%s': %s\n"
+msgstr "Fehler beim Verbinden mit '%s': %s\n"
+
+#: dirmngr/ocsp.c:199 dirmngr/ocsp.c:247
+#, c-format
+msgid "error reading HTTP response for `%s': %s\n"
+msgstr "Fehler beim Lesen der HTTP Antwort von `%s': %s\n"
+
+#: dirmngr/ocsp.c:232
+#, c-format
+msgid "error accessing `%s': http status %u\n"
+msgstr "Fehler beim Zugreifen auf `%s': HTTP Status %u\n"
+
+#: dirmngr/ocsp.c:257
+#, c-format
+msgid "error parsing OCSP response for `%s': %s\n"
+msgstr "Fehler beim Zerlegen der OCSP Antwort für `%s': %s\n"
+
+#: dirmngr/ocsp.c:280 dirmngr/ocsp.c:290
+#, c-format
+msgid "OCSP responder at `%s' status: %s\n"
+msgstr "OCSP Responder `%s' Status: %s\n"
+
+#: dirmngr/ocsp.c:285
+#, c-format
+msgid "hashing the OCSP response for `%s' failed: %s\n"
+msgstr "Hashen der OCSP Antwort für `%s' fehlgeschlagen: %s\n"
+
+#: dirmngr/ocsp.c:320
+msgid "not signed by a default OCSP signer's certificate"
+msgstr "Nicht durch voreingestelltes OCSP \"Signer-Zertifikat\" signiert"
+
+#: dirmngr/ocsp.c:409
+msgid "only SHA-1 is supported for OCSP responses\n"
+msgstr "Lediglich SHA-1 wird bei OCSP Antworten unterstützt\n"
+
+#: dirmngr/ocsp.c:460
+#, c-format
+msgid "allocating list item failed: %s\n"
+msgstr "malloc() fehlgeschlagen: %s\n"
+
+#: dirmngr/ocsp.c:475
+#, c-format
+msgid "error getting responder ID: %s\n"
+msgstr "Fehler beim Holen der Responder-ID: %s\n"
+
+#: dirmngr/ocsp.c:510
+msgid "no suitable certificate found to verify the OCSP response\n"
+msgstr ""
+"Kein benutzbares Zertifikat zur Überprüfung der OCSP Antwort gefunden\n"
+
+#: dirmngr/ocsp.c:549 dirmngr/validate.c:623
+#, c-format
+msgid "issuer certificate not found: %s\n"
+msgstr "Herausgeberzertifikat nicht gefunden: %s\n"
+
+#: dirmngr/ocsp.c:559
+msgid "caller did not return the target certificate\n"
+msgstr "Aufrufer gab das Ziel Zertifikat nicht zurück\n"
+
+#: dirmngr/ocsp.c:566
+msgid "caller did not return the issuing certificate\n"
+msgstr "Aufrufer gab das Issuer Zertifikat nicht zurück\n"
+
+#: dirmngr/ocsp.c:576
+#, c-format
+msgid "failed to allocate OCSP context: %s\n"
+msgstr "Fehler beim Bereitstellen eines OCSP Kontext: %s\n"
+
+#: dirmngr/ocsp.c:610
+#, c-format
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "authorityInfoAccess kann nicht geholt werden: %s\n"
+
+#: dirmngr/ocsp.c:617
+msgid "no default OCSP responder defined\n"
+msgstr "Kein  voreingestellter OCSP Responder definiert\n"
+
+#: dirmngr/ocsp.c:623
+msgid "no default OCSP signer defined\n"
+msgstr "Kein voreingestellter OCSP \"Signer\" definiert\n"
+
+#: dirmngr/ocsp.c:630
+#, c-format
+msgid "using default OCSP responder `%s'\n"
+msgstr "Der voreingestellte OCSP Responder `%s' wird benutzt\n"
+
+#: dirmngr/ocsp.c:635
+#, c-format
+msgid "using OCSP responder `%s'\n"
+msgstr "Der OCSP Responder `%s' wird benutzt\n"
+
+#: dirmngr/ocsp.c:642
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr "Kontext zum Hashen von OCSP kann nicht erzeugt werden: %s\n"
+
+#: dirmngr/ocsp.c:672
+#, c-format
+msgid "error getting OCSP status for target certificate: %s\n"
+msgstr "Fehler beim Holen des OCSP Status für das Zielzertifikat: %s\n"
+
+#: dirmngr/ocsp.c:697
+#, c-format
+msgid "certificate status is: %s  (this=%s  next=%s)\n"
+msgstr "Zertifikatstatus ist: %s  (this=%s  next=%s)\n"
+
+#: dirmngr/ocsp.c:698
+msgid "good"
+msgstr "Gut"
+
+#: dirmngr/ocsp.c:704
+#, c-format
+msgid "certificate has been revoked at: %s due to: %s\n"
+msgstr "Zertifikat wurde widerrufen am: %s wegen: %s\n"
+
+#: dirmngr/ocsp.c:739
+msgid "OCSP responder returned a status in the future\n"
+msgstr "OCSP Responder gab einen Status in der Zukunft zurück\n"
+
+#: dirmngr/ocsp.c:751
+msgid "OCSP responder returned a non-current status\n"
+msgstr "OCSP Responder gab einen nicht aktuellen Status zurück\n"
+
+#: dirmngr/ocsp.c:766
+msgid "OCSP responder returned an too old status\n"
+msgstr "OCSP Responder gab einen zu alten Status zurück\n"
+
+#: dirmngr/server.c:269 dirmngr/server.c:381 dirmngr/server.c:427
+#, c-format
+msgid "assuan_inquire(%s) failed: %s\n"
+msgstr "assuan_inquire(%s) fehlgeschlagen: %s\n"
+
+#: dirmngr/server.c:524
+msgid "ldapserver missing"
+msgstr "LDAP Server fehlt"
+
+#: dirmngr/server.c:594
+msgid "serialno missing in cert ID"
+msgstr "Seriennummer fehlt in der Cert-ID"
+
+#: dirmngr/server.c:730 dirmngr/server.c:816 dirmngr/server.c:1248
+#: dirmngr/server.c:1299
+#, c-format
+msgid "assuan_inquire failed: %s\n"
+msgstr "assuan_inquire fehlgeschlagen: %s\n"
+
+#: dirmngr/server.c:859
+#, c-format
+msgid "fetch_cert_by_url failed: %s\n"
+msgstr "fetch_cert_by_url() fehlgeschlagen: %s\n"
+
+#: dirmngr/server.c:871 dirmngr/server.c:902 dirmngr/server.c:1058
+#, c-format
+msgid "error sending data: %s\n"
+msgstr "Fehler beim Senden der Daten: %s\n"
+
+#: dirmngr/server.c:1006
+#, c-format
+msgid "start_cert_fetch failed: %s\n"
+msgstr "start_cert_fetch fehlgeschlagen: %s\n"
+
+#: dirmngr/server.c:1039
+#, c-format
+msgid "fetch_next_cert failed: %s\n"
+msgstr "fetch_next_cert fehlgeschlagen: %s\n"
+
+#: dirmngr/server.c:1066
+#, c-format
+msgid "max_replies %d exceeded\n"
+msgstr "max_replies %d überschritten\n"
+
+#: dirmngr/server.c:1518
+#, c-format
+msgid "can't allocate control structure: %s\n"
+msgstr "Fehler beim Erzeugen der Kontrollstruktur: %s\n"
+
+#: dirmngr/server.c:1550
+#, c-format
+msgid "failed to initialize the server: %s\n"
+msgstr "Fehler beim Initialisieren des Servers: %s\n"
+
+#: dirmngr/server.c:1558
+#, c-format
+msgid "failed to the register commands with Assuan: %s\n"
+msgstr "Fehler beim Registrieren der Kommandos gegen Assuan: %s\n"
+
+#: dirmngr/server.c:1598
+#, c-format
+msgid "Assuan accept problem: %s\n"
+msgstr "Assuan accept Problem: %s\n"
+
+#: dirmngr/server.c:1617
+#, c-format
+msgid "Assuan processing failed: %s\n"
+msgstr "Assuan Verarbeitung fehlgeschlagen: %s\n"
+
+#: dirmngr/validate.c:201
+msgid "accepting root CA not marked as a CA"
+msgstr ""
+"Herausgeberzertifikat akzeptiert obgleich nicht für eine CA gekennzeichnet"
+
+#: dirmngr/validate.c:227
+msgid "CRL checking too deeply nested\n"
+msgstr "CRL Überprüfung ist zu tief geschachtelt\n"
+
+#: dirmngr/validate.c:245
+msgid "not checking CRL for"
+msgstr "keine Prüfung der CRL für"
+
+#: dirmngr/validate.c:250
+msgid "checking CRL for"
+msgstr "Prüfen der CRL für"
+
+#: dirmngr/validate.c:388
+msgid "running in compatibility mode - certificate chain not checked!\n"
+msgstr "Kompatibilitätsmodus - Zertifikatkette nicht geprüft!\n"
+
+#: dirmngr/validate.c:532
+msgid "selfsigned certificate has a BAD signature"
+msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
+
+#: dirmngr/validate.c:565
+#, c-format
+msgid "checking trustworthiness of root certificate failed: %s\n"
+msgstr ""
+"Prüfung der Vertrauenswürdigkeit des Wurzelzertifikats fehlgeschlagen: %s\n"
+
+#: dirmngr/validate.c:742
+msgid "certificate chain is good\n"
+msgstr "Der Zertifikatkette ist gültig\n"
+
+#: dirmngr/validate.c:972
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr "DSA benötigt eine 160 Bit Hashmethode\n"
+
+#: dirmngr/validate.c:1120
+msgid "certificate should have not been used for CRL signing\n"
+msgstr ""
+"Das Zertifikat hätte nicht zum Signieren einer CRL benutzt werden sollen\n"
+
 #: tools/gpg-connect-agent.c:72 tools/gpgconf.c:80 tools/symcryptrun.c:164
 msgid "quiet"
 msgstr "Reduzierte Informationen"
@@ -8075,11 +9646,6 @@ msgstr "Optionen zur Einstellung der Konfiguration"
 #: tools/gpgconf-comp.c:767 tools/gpgconf-comp.c:846
 msgid "Options useful for debugging"
 msgstr "Nützliche Optionen zur Fehlersuche"
-
-#: tools/gpgconf-comp.c:507 tools/gpgconf-comp.c:689 tools/gpgconf-comp.c:772
-#: tools/gpgconf-comp.c:854
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
 
 #: tools/gpgconf-comp.c:515 tools/gpgconf-comp.c:631 tools/gpgconf-comp.c:780
 msgid "Options controlling the security"
@@ -8264,19 +9830,19 @@ msgstr ""
 "Syntax: gpgconf {Optionen]\n"
 "Verwalte Konfigurationsoptionen für Programme des GnuPG Systems\n"
 
-#: tools/gpgconf.c:213 tools/gpgconf.c:281
+#: tools/gpgconf.c:216 tools/gpgconf.c:284
 msgid "usage: gpgconf [options] "
 msgstr "Aufruf: gpgconf [Optionen] "
 
-#: tools/gpgconf.c:215
+#: tools/gpgconf.c:218
 msgid "Need one component argument"
 msgstr "Benötige ein Komponentenargument"
 
-#: tools/gpgconf.c:224 tools/gpgconf.c:257
+#: tools/gpgconf.c:227 tools/gpgconf.c:260
 msgid "Component not found"
 msgstr "Komponente nicht gefunden"
 
-#: tools/gpgconf.c:283
+#: tools/gpgconf.c:286
 msgid "No argument allowed"
 msgstr "Argumente sind nicht erlaubt"
 
@@ -8460,6 +10026,18 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "can't setup KSBA reader: %s\n"
+#~ msgstr "KSAB Reader Objekt kann nicht erstellt werden: %s\n"
+
+#~ msgid "|FILE|listen on socket FILE"
+#~ msgstr "|DATEI|Anfragen auf Socket DATEI annehmen"
+
+#~ msgid "command %s failed: %s\n"
+#~ msgstr "Kommando %s fehlgeschlagen: %s\n"
+
+#~ msgid "no data stream"
+#~ msgstr "Kein Datenstrom"
+
 #~ msgid "can't fdopen pipe for reading: %s\n"
 #~ msgstr "Pipe kann nicht zum Lesen \"fdopen\"t werden: %s\n"
 
@@ -8581,12 +10159,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Die mißbilligte 16-bit Prüfsumme wird zum Schutz des geheimen Schlüssels "
 #~ "benutzt\n"
-
-#~ msgid "malformed DIRMNGR_INFO environment variable\n"
-#~ msgstr "Die Variable DIRMNGR_INFO ist fehlerhaft\n"
-
-#~ msgid "dirmngr protocol version %d is not supported\n"
-#~ msgstr "Die Dirmngr Protokollversion %d wird nicht unterstützt\n"
 
 #~ msgid "use system's dirmngr if available"
 #~ msgstr "Benutze den System Dirmngr falls verfügbar"
@@ -9040,6 +10612,3 @@ msgstr ""
 #~ msgstr ""
 #~ "Verschlüsselungserweiterung `%s' wurde wegen unsicherer Zugriffsrechte "
 #~ "nicht geladen\n"
-
-#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
-#~ msgstr "DSA benötigt einen 160-bit Hash Algorithmus\n"

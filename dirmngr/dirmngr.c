@@ -860,9 +860,10 @@ main (int argc, char **argv)
   
   if (gnupg_faked_time_p ())
     {
-      gnupg_isotime_t tbuf;
+      log_info (_("WARNING: running with faked system time: "));
       gnupg_get_isotime (tbuf);
-      log_info (_("WARNING: running with faked system time %s\n"), tbuf);
+      dump_isotime (tbuf);
+      log_printf ("\n");
     }
 
   set_debug ();
@@ -1013,7 +1014,7 @@ main (int argc, char **argv)
       pid = pth_fork ();
       if (pid == (pid_t)-1) 
         {
-          log_fatal (_("fork failed: %s\n"), strerror (errno) );
+          log_fatal (_("error forking process: %s\n"), strerror (errno));
           dirmngr_exit (1);
         }
 
@@ -1070,7 +1071,7 @@ main (int argc, char **argv)
             }
           if (setsid() == -1)
             {
-              log_error (_("setsid() failed: %s\n"), strerror(errno) );
+              log_error ("setsid() failed: %s\n", strerror(errno) );
               dirmngr_exit (1);
             }
 
@@ -1080,7 +1081,7 @@ main (int argc, char **argv)
 
           if (chdir("/"))
             {
-              log_error (_("chdir to / failed: %s\n"), strerror (errno));
+              log_error ("chdir to / failed: %s\n", strerror (errno));
               dirmngr_exit (1);
             }
         }

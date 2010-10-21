@@ -670,7 +670,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
     }
   if (err)
     {
-      log_error (_("error creating pipe: %s\n"), gpg_strerror (err));
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
       xfree (arg_list);
       xfree (ctx);
       return err;
