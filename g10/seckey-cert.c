@@ -1,4 +1,4 @@
-/* seckey-cert.c -  secret key certificate packet handling
+/* seckey-cert.c - Not anymore used
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
  *               2006, 2009 Free Software Foundation, Inc.
  *
@@ -18,6 +18,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#error Not anymore used - only kept for reference in the repository.
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,10 +37,9 @@
 #include "status.h"
 #include "pkglue.h"
 
-#if 0 /* Not anymore used - kept for reference.  */
 static int
-do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
-          int *canceled )
+xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
+               int *canceled )
 {
     gpg_error_t err;
     byte *buffer;
@@ -258,21 +259,6 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
     return 0;
 }
-#endif /*0*/
 
 
-/****************
- * check whether the secret key is protected.
- * Returns: 0 not protected, -1 on error or the protection algorithm
- *                           -2 indicates a card stub.
- *                           -3 indicates a not-online stub.
- */
-int
-is_secret_key_protected (PKT_public_key *pk)
-{
-#warning do we need this
-  return 0; /* FIXME:  use agent_get_keyinfo?*/
-    /* return sk->is_protected? */
-    /*            sk->protect.s2k.mode == 1002? -2 : */
-    /*            sk->protect.s2k.mode == 1001? -3 : sk->protect.algo : 0; */
-}
+

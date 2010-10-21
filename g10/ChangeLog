@@ -1,3 +1,10 @@
+2010-10-21  Werner Koch  <wk@g10code.com>
+
+	* seckey-cert.c: Remove.
+	* Makefile.am (gpg2_SOURCES): Remove seckey-cert.c
+
+	* revoke.c (gen_revoke): Check that the secret key is available.
+
 2010-10-20  Werner Koch  <wk@g10code.com>
 
 	* verify.c (verify_signatures): Use gpg_strerror on open failure

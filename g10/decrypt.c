@@ -132,7 +132,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
     }
 
 #ifdef HAVE_W32CE_SYSTEM
-#warning Need to fix this
+#warning Need to fix this if we want to use g13
   opt.outfp = NULL;
 #else
   opt.outfp = fdopen (dup (output_fd), "wb");

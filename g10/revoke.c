@@ -36,7 +36,7 @@
 #include "ttyio.h"
 #include "status.h"
 #include "i18n.h"
-
+#include "call-agent.h"
 
 struct revocation_reason_info {
     int code;
@@ -462,7 +462,6 @@ gen_revoke (const char *uname)
   init_packet( &pkt );
 
   /* Search the userid; we don't want the whole getkey stuff here.  */
-  log_debug ("FIXME:  This needs to be adjusted for public key based lookups\n");
   kdbhd = keydb_new ();
   rc = classify_user_id (uname, &desc);
   if (!rc)
@@ -475,23 +474,28 @@ gen_revoke (const char *uname)
     }
 
   rc = keydb_get_keyblock (kdbhd, &keyblock );
-  if( rc ) {
-    log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
-    goto leave;
-  }
+  if (rc)
+    {
+      log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+      goto leave;
+    }
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
   if (!node) 
     BUG ();
 
-  /* fixme: should make a function out of this stuff,
-   * it's used all over the source */
   psk = node->pkt->pkt.public_key;
+  rc = agent_probe_secret_key (NULL, psk);
+  if (rc)
+    {
+      log_error (_("secret key \"%s\" not found: %s\n"),
+                 uname, gpg_strerror (rc));
+      goto leave;
+    }
+
   keyid_from_pk (psk, keyid );
   print_seckey_info (psk);
-
-#warning add code to check that the secret key is available
 
   tty_printf("\n");
   if (!cpr_get_answer_is_yes ("gen_revoke.okay",

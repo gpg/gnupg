@@ -481,8 +481,6 @@ int signature_check( PKT_signature *sig, gcry_md_hd_t digest );
 int signature_check2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
-/*-- seckey-cert.c --*/
-int is_secret_key_protected (PKT_public_key *pk);
 
 /*-- pubkey-enc.c --*/
 gpg_error_t get_session_key (PKT_pubkey_enc *k, DEK *dek);

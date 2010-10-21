@@ -81,7 +81,6 @@ gpg2_SOURCES  = gpg.c		\
 	      skclist.c 	\
 	      pubkey-enc.c	\
 	      passphrase.c	\
-	      seckey-cert.c	\
 	      decrypt.c 	\
 	      decrypt-data.c	\
 	      cipher.c		\
