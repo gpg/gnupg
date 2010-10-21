@@ -860,6 +860,8 @@ main (int argc, char **argv)
   
   if (gnupg_faked_time_p ())
     {
+      gnupg_isotime_t tbuf;
+
       log_info (_("WARNING: running with faked system time: "));
       gnupg_get_isotime (tbuf);
       dump_isotime (tbuf);
