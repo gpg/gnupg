@@ -1,3 +1,8 @@
+2010-10-22  Jason Woodward  <jason.woodward@timesys.com>  (wk)
+
+	* longlong.h (umul_ppmm) [mips32]: Fix typo.
+	(umul_ppmm) [mips64]: Don't use =h with gcc >= 4.4.
+
 2010-06-01  Werner Koch  <wk@g10code.com>
 
 	* longlong.h (umul_ppmm) <__mips__>: Add code for gcc 4.4.  This
