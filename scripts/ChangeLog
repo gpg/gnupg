@@ -1,6 +1,11 @@
+2010-10-26  Werner Koch  <wk@g10code.com>
+
+	* config.guess: Update to version 2010-09-24.
+        * config.sub: Update to version 2010-09-11.
+
 2007-12-14  Werner Koch  <wk@g10code.com>
 
-	* config.guess, config.sub: Update to version 2007-11-19. 
+	* config.guess, config.sub: Update to version 2007-11-19.
 
 2007-07-04  Werner Koch  <wk@g10code.com>
 
@@ -22,7 +27,7 @@
 	* config.guess, config.sub: Updated.
 
 
- Copyright 2004, 2007 Free Software Foundation, Inc.
+ Copyright 2004, 2007, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
@@ -31,5 +36,4 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	
 

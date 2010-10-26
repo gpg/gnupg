@@ -52,13 +52,24 @@ independently from any protocol.  It is used as a backend for
 @command{gpg} and @command{gpgsm} as well as for a couple of other
 utilities.
 
+@ifset gpgtwoone
+The agent is usualy started on demand by @command{gpg}, @command{gpgsm},
+@command{gpgconf} or @command{gpg-connect-agent}.  Thus there is no
+reason to start it manually.  In case you want to use the included
+Secure Shell Agent you may start the agent using:
+
+@example
+gpg-connect-agent /bye
+@end example
+@end ifset
+
+@ifclear gpgtwoone
 @noindent
 The usual way to run the agent is from the @code{~/.xsession} file:
 
 @example
 eval $(gpg-agent --daemon)
 @end example
-
 @noindent
 If you don't use an X server, you can also put this into your regular
 startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
@@ -94,6 +105,7 @@ fi
 @noindent
 It reads the data out of the file and exports the variables.  If you
 don't use Secure Shell, you don't need the last two export statements.
+@end ifclear
  
 @noindent
 You should always add the following lines to your @code{.bashrc} or

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2010-10-26 10:57+0200\n"
+"POT-Creation-Date: 2010-10-26 13:14+0200\n"
 "PO-Revision-Date: 2010-10-26 10:58+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -829,7 +829,7 @@ msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 "Ein %zu-Bit Hashverfahren ist für einen %u-Bit %s Schlüssel nicht möglich\n"
 
-#: agent/cvt-openpgp.c:216 g10/seckey-cert.c:57
+#: agent/cvt-openpgp.c:216
 msgid "secret key parts are not available\n"
 msgstr "Teile des geheimen Schlüssels sind nicht vorhanden\n"
 
@@ -6120,16 +6120,6 @@ msgstr "(Keine Beschreibung angegeben)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Ist das OK? (j/N) "
 
-#: g10/seckey-cert.c:63
-#, c-format
-msgid "protection algorithm %d%s is not supported\n"
-msgstr "Schutzverfahren %d%s wird nicht unterstützt\n"
-
-#: g10/seckey-cert.c:74
-#, c-format
-msgid "protection digest %d is not supported\n"
-msgstr "Hashschutzverfahren %d wird nicht unterstützt\n"
-
 #: g10/seskey.c:61 sm/encrypt.c:123
 msgid "weak key created - retrying\n"
 msgstr "Unsicherer Schlüssel erzeugt - neuer Versuch\n"
@@ -10000,6 +9990,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "protection algorithm %d%s is not supported\n"
+#~ msgstr "Schutzverfahren %d%s wird nicht unterstützt\n"
+
+#~ msgid "protection digest %d is not supported\n"
+#~ msgstr "Hashschutzverfahren %d wird nicht unterstützt\n"
 
 #~ msgid "Can't edit this key: %s\n"
 #~ msgstr "Dieser Schlüssel kann nicht editiert werden: %s\n"

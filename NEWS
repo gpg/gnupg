@@ -1,5 +1,5 @@
-Noteworthy changes in version 2.1.x (under development)
--------------------------------------------------------
+Noteworthy changes in version 2.1.0beta1 (2010-10-26)
+-----------------------------------------------------
 
  * Encrypted OpenPGP messages with trailing data (e.g. other OpenPGP
    packets) are now correctly parsed.

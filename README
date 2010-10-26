@@ -2,12 +2,10 @@
                       =========================
                              Version 2.1
 
-      Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-        2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
 
-   THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
-   THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
-   THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
+      Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+     2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 
 INTRODUCTION
@@ -27,7 +25,6 @@ are not as well tested as the Free Unices.
 GnuPG 2.0 is the stable version of GnuPG integrating support for
 OpenPGP and S/MIME.  It does not conflict with an installed 1.4
 OpenPGP-only version.
-
 
 
 BUILD INSTRUCTIONS
@@ -68,7 +65,51 @@ behaves just like gpg.
 In case of problem please ask on gnupg-users@gnupg.org for advise.
 
 Note that the PKITS tests are always skipped unless you copy the PKITS
-test data file into the tests/pkits directory.
+test data file into the tests/pkits directory.  There is no need to
+run these test and some of them may even fail because the test scripts
+are not yet complete.
+
+You may run
+
+  gpgconf --list-dirs 
+
+to view the default directories used by GnuPG.
+
+
+MIGRATION FROM 1.4 or 2.0
+=========================
+
+The major change in 2.1 is that gpg-agent now takes care of the
+OpenPGP secret keys (those managed by GPG).  The former secring.gpg
+will not be used anymore.  Newly generated keys are generated and
+stored in the agent's key store (~/.gnupg/private-keys-v1.d/).  To
+migrate your existing keys to the agent you should run this command
+
+  gpg2 --import ~/.gnupg/secring.gpg
+
+The agent will you ask for the passphrase of each key.  You may use
+the Cancel button of the Pinentry to skip importing this key.  If you
+want to stop the import process and you use one of the latest
+pinentries, you should close the pinentry window instead of hitting
+the cancel button.  Secret keys already imported are skipped by the
+import command.  It is advisable to keep the secring.gpg for use with
+older versions of GPG.
+
+Note that gpg-agent now uses a fixed socket by default.  All tools
+will start the gpg-agent as needed.  In general there is no more need
+to set the GPG_AGENT_INFO environment variable.  The SSH_AUTH_SOCK
+environment variable should be set to a fixed value.
+
+GPG's smartcard commands --card-edit and --card-status as well as the
+card related sub-commands of --edit-key are not yet supported.
+However, signing and decryption with a smartcard does work.
+
+The Dirmngr is now part of GnuPG proper.  Thus there is no more need
+to install the separate dirmngr package.  The directroy layout of
+Dirmngr changed to make use of the GnuPG directories; for example you
+use /etc/gnupg/trusted-certs and /var/lib/gnupg/extra-certs.  Dirmngr
+needs to be started as a system daemon.
+
 
 
 DOCUMENTATION

@@ -1,3 +1,7 @@
+2010-10-26  Werner Koch  <wk@g10code.com>
+
+	Release 2.1.0beta1.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (install-data-hook): Add W32 specific hook.

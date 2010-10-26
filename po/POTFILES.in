@@ -64,7 +64,6 @@ g10/pkclist.c
 g10/plaintext.c
 g10/pubkey-enc.c
 g10/revoke.c
-g10/seckey-cert.c
 g10/seskey.c
 g10/sig-check.c
 g10/sign.c
