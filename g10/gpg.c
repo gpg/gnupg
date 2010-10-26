@@ -3657,7 +3657,7 @@ main (int argc, char **argv)
         else
           {
             username = make_username (fname);
-            keyedit_passwd (username);
+            keyedit_passwd (ctrl, username);
             xfree (username);
           }
         break;

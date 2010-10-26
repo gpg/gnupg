@@ -405,7 +405,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               xfree (pi);
               return rc;
             }
-          rc = agent_protect_and_store (ctrl, s_skey);
+          rc = agent_protect_and_store (ctrl, s_skey, NULL);
           gcry_sexp_release (s_skey);
           if (rc)
             {

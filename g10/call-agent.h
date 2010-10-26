@@ -184,6 +184,9 @@ gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
                               const char *desc, char **cache_nonce_addr,
                               unsigned char **r_result, size_t *r_resultlen);
 
+/* Change the passphrase of a key.  */
+gpg_error_t agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+                          char **cache_nonce_addr, char **passwd_nonce_addr);
+
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/
-

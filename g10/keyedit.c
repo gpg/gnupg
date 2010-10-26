@@ -30,6 +30,7 @@
 # include <readline/readline.h>
 #endif
 
+#define JNLIB_NEED_LOG_LOGV
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
@@ -1124,44 +1125,63 @@ leave:
 
 
 /*
- * Change the passphrase of the primary and all secondary keys.
- * We use only one passphrase for all keys.
+ * Change the passphrase of the primary and all secondary keys.  Note
+ * that it is common to use only one passphrase for the primary and
+ * all subkeys.  However, this is now (since GnuPG 2.1) all up to the
+ * gpg-agent.  Returns 0 on success or an error code.
  */
-static int
-change_passphrase (KBNODE keyblock, int *r_err)
+static gpg_error_t
+change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
 {
-  int rc = 0;
-  int changed = 0;
-  KBNODE node;
-  PKT_public_key *pksk;
-  char *passphrase = NULL;
-  int no_primary_secrets = 0;
+  gpg_error_t err;
+  kbnode_t node;
+  PKT_public_key *pk;
   int any;
+  u32 keyid[2], subid[2];
+  char *hexgrip = NULL;
+  char *cache_nonce = NULL;
+  char *passwd_nonce = NULL;
 
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
   if (!node)
     {
       log_error ("Oops; public key missing!\n");
+      err = gpg_error (GPG_ERR_INTERNAL);
       goto leave;
     }
-  pksk = node->pkt->pkt.public_key;
+  pk = node->pkt->pkt.public_key;
+  keyid_from_pk (pk, keyid);
 
+  /* Check whether it is likely that we will be able to change the
+     passphrase for any subkey.  */
   for (any = 0, node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	  || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
-          log_debug ("FIXME\n");
-	  /* PKT_public_key *tmpsk = node->pkt->pkt.public_key; */
-	  /* if (!(tmpsk->is_protected */
-	  /*       && (tmpsk->protect.s2k.mode == 1001 */
-	  /*           || tmpsk->protect.s2k.mode == 1002))) */
-	  /*   { */
-	  /*     any = 1; */
-	  /*     break; */
-	  /*   } */
+          char *serialno;
+
+          pk = node->pkt->pkt.public_key;
+          keyid_from_pk (pk, subid);
+          
+          xfree (hexgrip);
+          err = hexkeygrip_from_pk (pk, &hexgrip);
+          if (err)
+            goto leave;
+          err = agent_get_keyinfo (ctrl, hexgrip, &serialno);
+          if (!err && serialno)
+            ; /* Key on card.  */
+          else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+            ; /* Maybe stub key. */
+          else if (!err)
+            any = 1; /* Key is known.  */
+          else
+            log_error ("key %s: error getting keyinfo from agent: %s\n",
+                       keystr_with_sub (keyid, subid), gpg_strerror (err));
+          xfree (serialno);
 	}
     }
+  err = 0;
   if (!any)
     {
       tty_printf (_("Key has only stub or on-card key items - "
@@ -1169,162 +1189,43 @@ change_passphrase (KBNODE keyblock, int *r_err)
       goto leave;
     }
 
-          log_debug ("FIXME\n");
-  /* See how to handle this key.  */
-  /* switch (is_secret_key_protected (pksk)) */
-  /*   { */
-  /*   case -1: */
-  /*     rc = G10ERR_PUBKEY_ALGO; */
-  /*     break; */
-  /*   case 0: */
-  /*     tty_printf (_("This key is not protected.\n")); */
-  /*     break; */
-  /*   default: */
-  /*     if (sk->protect.s2k.mode == 1001) */
-  /*       { */
-  /*         tty_printf (_("Secret parts of key are not available.\n")); */
-  /*         no_primary_secrets = 1; */
-  /*       } */
-  /*     else if (sk->protect.s2k.mode == 1002) */
-  /*       { */
-  /*         tty_printf (_("Secret parts of key are stored on-card.\n")); */
-  /*         no_primary_secrets = 1; */
-  /*       } */
-  /*     else */
-  /*       { */
-  /*         u32 keyid[2]; */
-
-  /*         tty_printf (_("Key is protected.\n")); */
-
-  /*         /\* Clear the passphrase cache so that the user is required */
-  /*            to enter the old passphrase.  *\/ */
-  /*         keyid_from_pk (pksk, keyid); */
-  /*         passphrase_clear_cache (keyid, NULL, 0); */
-
-  /*         /\* rc = check_secret_key( sk, 0 ); *\/ */
-  /*         /\* if( !rc ) *\/ */
-  /*         /\*     passphrase = get_last_passphrase(); *\/ */
-  /*       } */
-  /*     break; */
-  /*   } */
-
-  /* Unprotect all subkeys (use the supplied passphrase or ask) */
-  for (node = keyblock; !rc && node; node = node->next)
+  /* Change the passphrase for all keys.  */
+  for (any = 0, node = keyblock; node; node = node->next)
     {
-      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	{
-          log_debug ("FIXME\n");
-	  /* PKT_pubic_key *subsk = node->pkt->pkt.public_key; */
-	  /* if (!(subsk->is_protected */
-	  /*       && (subsk->protect.s2k.mode == 1001 */
-	  /*           || subsk->protect.s2k.mode == 1002))) */
-	  /*   { */
-	  /*     set_next_passphrase (passphrase); */
-	  /*     /\* rc = check_secret_key( subsk, 0 ); *\/ */
-	  /*     /\* if( !rc && !passphrase ) *\/ */
-	  /*     /\*     passphrase = get_last_passphrase(); *\/ */
-	  /*   } */
-	}
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+	  || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        { 
+          char *desc;
+
+          pk = node->pkt->pkt.public_key;
+          keyid_from_pk (pk, subid);
+
+          xfree (hexgrip);
+          err = hexkeygrip_from_pk (pk, &hexgrip);
+          if (err)
+            goto leave;
+          
+          desc = gpg_format_keydesc (pk, 0, 1);
+          err = agent_passwd (ctrl, hexgrip, desc, &cache_nonce, &passwd_nonce);
+          xfree (desc);
+        
+          if (err)
+            log_log ((gpg_err_code (err) == GPG_ERR_CANCELED
+                      || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+                     ? JNLIB_LOG_INFO : JNLIB_LOG_ERROR,
+                     _("key %s: error changing passphrase: %s\n"),
+                       keystr_with_sub (keyid, subid),
+                       gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+            break;
+        }
     }
 
-  if (rc)
-    tty_printf (_("Can't edit this key: %s\n"), g10_errstr (rc));
-  else
-    {
-      DEK *dek = NULL;
-      STRING2KEY *s2k = xmalloc_secure (sizeof *s2k);
-      const char *errtext = NULL;
-
-      tty_printf (_("Enter the new passphrase for this secret key.\n\n"));
-
-      set_next_passphrase (NULL);
-      for (;;)
-	{
-	  int canceled;
-
-	  s2k->mode = opt.s2k_mode;
-	  s2k->hash_algo = S2K_DIGEST_ALGO;
-	  dek = passphrase_to_dek (NULL, 0, opt.s2k_cipher_algo,
-				   s2k, 2, errtext, &canceled);
-	  if (!dek && canceled)
-	    {
-	      rc = GPG_ERR_CANCELED;
-	      break;
-	    }
-	  else if (!dek)
-	    {
-	      errtext = N_("passphrase not correctly repeated; try again");
-	      tty_printf ("%s.\n", _(errtext));
-	    }
-	  else if (!dek->keylen)
-	    {
-	      rc = 0;
-	      tty_printf (_("You don't want a passphrase -"
-			    " this is probably a *bad* idea!\n\n"));
-	      if (cpr_get_answer_is_yes 
-                  ("change_passwd.empty.okay",
-                   _("Do you really want to do this? (y/N) ")))
-		{
-		  changed++;
-		  break;
-		}
-	    }
-	  else
-	    {			/* okay */
-	      rc = 0;
-	      if (!no_primary_secrets)
-		{
-		  /* sk->protect.algo = dek->algo; */
-		  /* sk->protect.s2k = *s2k; */
-		  rc = 0;
-		  /* rc = protect_secret_key( sk, dek ); */
-		}
-	      for (node = keyblock; !rc && node; node = node->next)
-		{
-		  if (node->pkt->pkttype == PKT_SECRET_SUBKEY)
-		    {
-                      log_debug ("FIXME\n");
-/* 		      PKT_secret_key *subsk = node->pkt->pkt.secret_key; */
-/* 		      if (!(subsk->is_protected */
-/* 			    && (subsk->protect.s2k.mode == 1001 */
-/* 				|| subsk->protect.s2k.mode == 1002))) */
-/* 			{ */
-/* 			  subsk->protect.algo = dek->algo; */
-/* 			  subsk->protect.s2k = *s2k; */
-/* #warning fixme */
-/* 			  rc = 0; */
-/* 			  /\* rc = protect_secret_key( subsk, dek ); *\/ */
-/* 			} */
-		    }
-		}
-	      if (rc)
-		log_error ("protect_secret_key failed: %s\n",
-			   g10_errstr (rc));
-	      else
-		{
-		  u32 keyid[2];
-
-		  /* Clear the cahce again so that the user is
-		     required to enter the new passphrase at the
-		     next operation.  */
-		  /* FIXME keyid_from_sk (sk, keyid); */
-		  passphrase_clear_cache (keyid, NULL, 0);
-
-		  changed++;
-		}
-	      break;
-	    }
-	}
-      xfree (s2k);
-      xfree (dek);
-    }
-
-leave:
-  xfree (passphrase);
-  set_next_passphrase (NULL);
-  if (r_err)
-    *r_err = rc;
-  return changed && !rc;
+ leave:
+  xfree (hexgrip);
+  xfree (cache_nonce);
+  xfree (passwd_nonce);
+  return err;
 }
 
 
@@ -2184,7 +2085,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdPASSWD:
-	  change_passphrase (keyblock, NULL);
+	  change_passphrase (ctrl, keyblock);
 	  break;
 
 	case cmdTRUST:
@@ -2361,13 +2262,10 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 /* Change the passphrase of the secret key identified by USERNAME.  */
 void
-keyedit_passwd (const char *username)
+keyedit_passwd (ctrl_t ctrl, const char *username)
 {
   gpg_error_t err;
   PKT_public_key *pk;
-  unsigned char fpr[MAX_FINGERPRINT_LEN];
-  size_t fprlen;
-  KEYDB_HANDLE kdh = NULL;
   kbnode_t keyblock = NULL;
 
   pk = xtrycalloc (1, sizeof *pk);
@@ -2376,44 +2274,16 @@ keyedit_passwd (const char *username)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  err = getkey_byname (NULL, pk, username, 1, NULL);
-  if (err)
-    goto leave;
-  fingerprint_from_pk (pk, fpr, &fprlen);
-  while (fprlen < MAX_FINGERPRINT_LEN)
-    fpr[fprlen++] = 0;
-
-  /* FIXME: Call an agent function instead.  */
-
-  kdh = NULL /*keydb_new (1)*/;
-   if (!kdh)
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
-
-  err = keydb_search_fpr (kdh, fpr);
-  if (err == -1 || gpg_err_code (err) == GPG_ERR_EOF)
-    err = gpg_error (GPG_ERR_NO_SECKEY);
+  err = getkey_byname (NULL, pk, username, 1, &keyblock);
   if (err)
     goto leave;
 
-  err = keydb_get_keyblock (kdh, &keyblock);
-  if (err)
-    goto leave;
-
-  if (!change_passphrase (keyblock, &err))
-    goto leave;
-
-  err = keydb_update_keyblock (kdh, keyblock);
-  if (err)
-    log_error (_("update secret failed: %s\n"), gpg_strerror (err));
+  err = change_passphrase (ctrl, keyblock);
 
 leave:
   release_kbnode (keyblock);
   if (pk)
     free_public_key (pk);
-  keydb_release (kdh);
   if (err)
     {
       log_info ("error changing the passphrase for `%s': %s\n",

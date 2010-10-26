@@ -86,6 +86,13 @@ struct import_key_parm_s
 };
 
 
+struct cache_nonce_parm_s
+{
+  char **cache_nonce_addr;
+  char **passwd_nonce_addr;
+};
+
+
 static gpg_error_t learn_status_cb (void *opaque, const char *line);
 
 
@@ -1470,7 +1477,7 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
 static gpg_error_t
 cache_nonce_status_cb (void *opaque, const char *line)
 {
-  char **cache_nonce = opaque;
+  struct cache_nonce_parm_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
 
@@ -1481,10 +1488,18 @@ cache_nonce_status_cb (void *opaque, const char *line)
 
   if (keywordlen == 11 && !memcmp (keyword, "CACHE_NONCE", keywordlen))
     {
-      if (cache_nonce)
+      if (parm->cache_nonce_addr)
         {
-          xfree (*cache_nonce);
-          *cache_nonce = xtrystrdup (line);
+          xfree (*parm->cache_nonce_addr);
+          *parm->cache_nonce_addr = xtrystrdup (line);
+        }
+    }
+  else if (keywordlen == 12 && !memcmp (keyword, "PASSWD_NONCE", keywordlen))
+    {
+      if (parm->passwd_nonce_addr)
+        {
+          xfree (*parm->passwd_nonce_addr);
+          *parm->passwd_nonce_addr = xtrystrdup (line);
         }
     }
 
@@ -1523,6 +1538,7 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
 {
   gpg_error_t err;
   struct genkey_parm_s gk_parm;
+  struct cache_nonce_parm_s cn_parm;
   membuf_t data;
   size_t len;
   unsigned char *buf;
@@ -1546,10 +1562,12 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
             no_protection? " --no-protection":"",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
+  cn_parm.cache_nonce_addr = cache_nonce_addr;
+  cn_parm.passwd_nonce_addr = NULL;
   err = assuan_transact (agent_ctx, line,
                          membuf_data_cb, &data, 
                          inq_genkey_parms, &gk_parm, 
-                         cache_nonce_status_cb, cache_nonce_addr);
+                         cache_nonce_status_cb, &cn_parm);
   if (err)
     {
       xfree (get_membuf (&data, &len));
@@ -1625,7 +1643,7 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
    displayed if the agent needs to ask for the PIN.  DIGEST and
    DIGESTLEN is the hash value to sign and DIGESTALGO the algorithm id
    used to compute the digest.  If CACHE_NONCE is used the agent is
-   advised to firts try a passphrase associated with that nonce. */
+   advised to first try a passphrase associated with that nonce. */
 gpg_error_t
 agent_pksign (ctrl_t ctrl, const char *cache_nonce,
               const char *keygrip, const char *desc,
@@ -1890,6 +1908,7 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
+  struct cache_nonce_parm_s cn_parm;
   char line[ASSUAN_LINELENGTH];
 
   err = start_agent (ctrl, 0);
@@ -1914,9 +1933,11 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
   snprintf (line, sizeof line, "IMPORT_KEY%s%s",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
+  cn_parm.cache_nonce_addr = cache_nonce_addr;
+  cn_parm.passwd_nonce_addr = NULL;
   err = assuan_transact (agent_ctx, line,
                          NULL, NULL, inq_import_key_parms, &parm,
-                         cache_nonce_status_cb, cache_nonce_addr);
+                         cache_nonce_status_cb, &cn_parm);
   return err;
 }
 
@@ -1932,6 +1953,7 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                   unsigned char **r_result, size_t *r_resultlen)
 {
   gpg_error_t err;
+  struct cache_nonce_parm_s cn_parm;
   membuf_t data;
   size_t len;
   unsigned char *buf;
@@ -1958,10 +1980,12 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
             hexkeygrip);
 
   init_membuf_secure (&data, 1024);
+  cn_parm.cache_nonce_addr = cache_nonce_addr;
+  cn_parm.passwd_nonce_addr = NULL;
   err = assuan_transact (agent_ctx, line,
                          membuf_data_cb, &data, 
                          default_inq_cb, ctrl,
-                         cache_nonce_status_cb, cache_nonce_addr);
+                         cache_nonce_status_cb, &cn_parm);
   if (err)
     {
       xfree (get_membuf (&data, &len));
@@ -1973,4 +1997,50 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   *r_result = buf;
   *r_resultlen = len;
   return 0;
+}
+
+
+
+/* Ask the agent to change the passphrase of the key identified by
+   HEXKEYGRIP.  If DESC is not NULL, display DESC instead of the
+   default description message.  If CACHE_NONCE_ADDR is not NULL the
+   agent is advised to first try a passphrase associated with that
+   nonce.  If PASSWD_NONCE_ADDR is not NULL the agent will try to use
+   the passphrase associated with that nonce.  */
+gpg_error_t
+agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+              char **cache_nonce_addr, char **passwd_nonce_addr)
+{
+  gpg_error_t err;
+  struct cache_nonce_parm_s cn_parm;
+  char line[ASSUAN_LINELENGTH];
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
+
+  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      err = assuan_transact (agent_ctx, line,
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
+
+  snprintf (line, DIM(line)-1, "PASSWD %s%s %s%s %s",
+            cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
+            cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
+            passwd_nonce_addr && *passwd_nonce_addr? "--passwd-nonce=":"",
+            passwd_nonce_addr && *passwd_nonce_addr? *passwd_nonce_addr:"",
+            hexkeygrip);
+  cn_parm.cache_nonce_addr = cache_nonce_addr;
+  cn_parm.passwd_nonce_addr = passwd_nonce_addr;
+  err = assuan_transact (agent_ctx, line, NULL, NULL,
+                         default_inq_cb, ctrl,
+                         cache_nonce_status_cb, &cn_parm);
+  return err;
 }

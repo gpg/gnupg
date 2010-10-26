@@ -1,4 +1,23 @@
+2010-10-26  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (change_passphrase): Handle the passwd_nonce.
+	* call-agent.c (cache_nonce_parm_s): New.
+	(cache_nonce_status_cb): Use that new struct.
+	(agent_genkey, agent_import_key, agent_export_key, agent_passwd):
+	Adjust for that change.
+
+2010-10-25  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (gpg_format_keydesc): Fix printing of main keyid.
+
+	* keyedit.c (JNLIB_NEED_LOG_LOGV): Define.
+	* call-agent.c (agent_passwd): New.
+
 2010-10-21  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (keyedit_passwd): Simplify.
+	(change_passphrase): Return an error code and not the change
+	flag.  Remove editing of the keyring.
 
 	* seckey-cert.c: Remove.
 	* Makefile.am (gpg2_SOURCES): Remove seckey-cert.c

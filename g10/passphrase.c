@@ -675,7 +675,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 }
 
 
-/* Return an allocated utf-8 string describing the key PK.  IF ESCAPED
+/* Return an allocated utf-8 string describing the key PK.  If ESCAPED
    is true spaces and control characters are percent or plus escaped.
    MODE 0 is for the common prompt, MODE 1 for the import prompt. */
 char *
@@ -696,9 +696,9 @@ gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
 
   orig_codeset = i18n_switchto_utf8 ();
 
-  if (pk->main_keyid[2] && pk->main_keyid[3]
-      && pk->keyid[0] != pk->main_keyid[2] 
-      && pk->keyid[1] != pk->main_keyid[3])
+  if (pk->main_keyid[0] && pk->main_keyid[1]
+      && pk->keyid[0] != pk->main_keyid[0] 
+      && pk->keyid[1] != pk->main_keyid[1])
     maink = xtryasprintf (_(" (main key ID %s)"), keystr (pk->main_keyid));
   else
     maink = NULL;

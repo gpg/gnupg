@@ -163,7 +163,9 @@ close_message_fd (ctrl_t ctrl)
 {
   if (ctrl->server_local->message_fd != -1)
     {
+#ifdef HAVE_W32CE_SYSTEM
 #warning Is this correct for W32/W32CE?
+#endif
       close (ctrl->server_local->message_fd);
       ctrl->server_local->message_fd = -1;
     }

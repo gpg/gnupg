@@ -295,7 +295,8 @@ gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
                   const char *keyparam, size_t keyparmlen,
                   int no_protection, membuf_t *outbuf);
-int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
+gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
+                                     char **passphrase_addr);
 
 /*-- protect.c --*/
 unsigned long get_standard_s2k_count (void);

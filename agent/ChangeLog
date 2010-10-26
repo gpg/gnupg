@@ -1,3 +1,20 @@
+2010-10-26  Werner Koch  <wk@g10code.com>
+
+	* cache.c (agent_put_cache): Allow deletion even if TTL is passwd
+	as 0.
+
+	* genkey.c (agent_protect_and_store): Add arg PASSPHRASE_ADDR.
+	* command.c (cmd_passwd): Add option --passwd-nonce.
+	(struct server_local_s): Add LAST_CACHE_NONCE and LAST_PASSWD_NONCE.
+	(clear_nonce_cache): New.
+	(reset_notify): Clear the nonce cache.
+	(start_command_handler): Ditto.
+
+2010-10-25  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_export_key): Free CACHE_NONCE.
+	(cmd_passwd): Add option --cache-nonce.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* call-pinentry.c (start_pinentry): Print name of pinentry on

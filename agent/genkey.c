@@ -468,20 +468,40 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
 
 
 
-/* Apply a new passphrase to the key S_SKEY and store it. */
-int
-agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey) 
+/* Apply a new passphrase to the key S_SKEY and store it.  If
+   PASSPHRASE_ADDR and *PASSPHRASE_ADDR are not NULL, use that
+   passphrase.  If PASSPHRASE_ADDR is not NULL store a newly entered
+   passphrase at that address. */
+gpg_error_t
+agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
+                         char **passphrase_addr) 
 {
-  int rc;
-  char *passphrase;
+  gpg_error_t err;
 
-  rc = agent_ask_new_passphrase (ctrl, 
-                                 _("Please enter the new passphrase"),
-                                 &passphrase);
-  if (!rc)
+  if (passphrase_addr && *passphrase_addr)
     {
-      rc = store_key (s_skey, passphrase, 1);
-      xfree (passphrase);
+      /* Take an empty string as request not to protect the key.  */
+      err = store_key (s_skey, **passphrase_addr? *passphrase_addr:NULL, 1);
     }
-  return rc;
+  else
+    {
+      char *pass = NULL;
+
+      if (passphrase_addr)
+        {
+          xfree (*passphrase_addr);
+          *passphrase_addr = NULL;
+        }
+      err = agent_ask_new_passphrase (ctrl, 
+                                      _("Please enter the new passphrase"),
+                                      &pass);
+      if (!err)
+        err = store_key (s_skey, pass, 1);
+      if (!err && passphrase_addr)
+        *passphrase_addr = pass;
+      else
+        xfree (pass);
+    }
+  
+  return err;
 }

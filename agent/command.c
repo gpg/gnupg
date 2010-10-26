@@ -72,6 +72,8 @@ struct server_local_s
   void *import_key;  /* Malloced KEK for the import_key command.  */
   void *export_key;  /* Malloced KEK for the export_key command.  */
   int allow_fully_canceled; /* Client is aware of GPG_ERR_FULLY_CANCELED.  */
+  char *last_cache_nonce;   /* Last CACHE_NOCNE sent as status (malloced).  */
+  char *last_passwd_nonce;  /* Last PASSWD_NOCNE sent as status (malloced). */
 };
 
 
@@ -153,6 +155,26 @@ write_and_clear_outbuf (assuan_context_t ctx, membuf_t *mb)
 }
 
 
+static void
+clear_nonce_cache (ctrl_t ctrl)
+{
+  if (ctrl->server_local->last_cache_nonce)
+    {
+      agent_put_cache (ctrl->server_local->last_cache_nonce,
+                       CACHE_MODE_NONCE, NULL, 0);
+      xfree (ctrl->server_local->last_cache_nonce);
+      ctrl->server_local->last_cache_nonce = NULL;
+    }
+  if (ctrl->server_local->last_passwd_nonce)
+    {
+      agent_put_cache (ctrl->server_local->last_passwd_nonce,
+                       CACHE_MODE_NONCE, NULL, 0);
+      xfree (ctrl->server_local->last_passwd_nonce);
+      ctrl->server_local->last_passwd_nonce = NULL;
+    }
+}
+
+
 static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
 {
@@ -166,6 +188,9 @@ reset_notify (assuan_context_t ctx, char *line)
 
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
+
+  clear_nonce_cache (ctrl);
+
   return 0;
 }
 
@@ -1331,44 +1356,135 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] = 
-  "PASSWD <hexstring_with_keygrip>\n"
+  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] <hexstring_with_keygrip>\n"
   "\n"
   "Change the passphrase/PIN for the key identified by keygrip in LINE.";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
+  int c;
+  char *cache_nonce = NULL;
+  char *passwd_nonce = NULL;
   unsigned char grip[20];
   gcry_sexp_t s_skey = NULL;
   unsigned char *shadow_info = NULL;
+  char *passphrase = NULL;
+  char *pend;
 
-  rc = parse_keygrip (ctx, line, grip);
-  if (rc)
+  cache_nonce = option_value (line, "--cache-nonce");
+  if (cache_nonce)
+    {
+      for (pend = cache_nonce; *pend && !spacep (pend); pend++)
+        ;
+      c = *pend;
+      *pend = '\0';
+      cache_nonce = xtrystrdup (cache_nonce);
+      *pend = c;
+      if (!cache_nonce)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  passwd_nonce = option_value (line, "--passwd-nonce");
+  if (passwd_nonce)
+    {
+      for (pend = passwd_nonce; *pend && !spacep (pend); pend++)
+        ;
+      c = *pend;
+      *pend = '\0';
+      passwd_nonce = xtrystrdup (passwd_nonce);
+      *pend = c;
+      if (!passwd_nonce)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  line = skip_options (line);
+
+  err = parse_keygrip (ctx, line, grip);
+  if (err)
     goto leave;
 
   ctrl->in_passwd++;
-  rc = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc,
-                            grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
-                            &s_skey, NULL);
-  if (rc)
+  err = agent_key_from_file (ctrl, cache_nonce, ctrl->server_local->keydesc,
+                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
+                             &s_skey, &passphrase);
+  if (err)
     ;
   else if (!s_skey)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
-      rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
   else
-    rc = agent_protect_and_store (ctrl, s_skey);
+    {
+      char *newpass = NULL;
+
+      if (passwd_nonce)
+        newpass = agent_get_cache (passwd_nonce, CACHE_MODE_NONCE);
+      err = agent_protect_and_store (ctrl, s_skey, &newpass);
+      if (!err && passphrase)
+        {
+          /* A passphrase existed on the old key and the change was
+             successful.  Return a nonce for that old passphrase to
+             let the caller try to unprotect the other subkeys with
+             the same key.  */
+          if (!cache_nonce)
+            {
+              char buf[12];
+              gcry_create_nonce (buf, 12);
+              cache_nonce = bin2hex (buf, 12, NULL);
+            }
+          if (cache_nonce 
+              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
+                                   passphrase, 120 /*seconds*/))
+            {
+              assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
+              xfree (ctrl->server_local->last_cache_nonce);
+              ctrl->server_local->last_cache_nonce = cache_nonce;
+              cache_nonce = NULL;
+            }
+          if (newpass)
+            {
+              /* If we have a new passphrase (which might be empty) we
+                 store it under a passwd nonce so that the caller may
+                 send that nonce again to use it for another key. */
+              if (!passwd_nonce)
+                {
+                  char buf[12];
+                  gcry_create_nonce (buf, 12);
+                  passwd_nonce = bin2hex (buf, 12, NULL);
+                }
+              if (passwd_nonce 
+                  && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
+                                       newpass, 120 /*seconds*/))
+                {
+                  assuan_write_status (ctx, "PASSWD_NONCE", passwd_nonce);
+                  xfree (ctrl->server_local->last_passwd_nonce);
+                  ctrl->server_local->last_passwd_nonce = passwd_nonce;
+                  passwd_nonce = NULL;
+                }
+            }
+        }
+      xfree (newpass);
+    }
   ctrl->in_passwd--;
 
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
 
  leave:
+  xfree (passphrase);
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
-  return leave_cmd (ctx, rc);
+  xfree (cache_nonce);
+  return leave_cmd (ctx, err);
 }
 
 
@@ -1812,6 +1928,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   
 
  leave:
+  xfree (cache_nonce);
   xfree (passphrase);
   xfree (wrappedkey);
   gcry_cipher_close (cipherhd);
@@ -2447,6 +2564,9 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
           continue;
         }
     }
+
+  /* Reset the nonce caches.  */
+  clear_nonce_cache (ctrl);
 
   /* Reset the SCD if needed. */
   agent_reset_scd (ctrl);

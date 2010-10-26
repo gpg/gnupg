@@ -670,8 +670,8 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 }
 
 
-static void
-do_log (int level, const char *fmt, ...)
+void
+log_log (int level, const char *fmt, ...)
 {
   va_list arg_ptr ;
   
@@ -812,14 +812,14 @@ log_printhex (const char *text, const void *buffer, size_t length)
 void
 bug_at( const char *file, int line, const char *func )
 {
-  do_log (JNLIB_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
+  log_log (JNLIB_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #else
 void
 bug_at( const char *file, int line )
 {
-  do_log (JNLIB_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
+  log_log (JNLIB_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif

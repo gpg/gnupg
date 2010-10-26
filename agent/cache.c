@@ -284,7 +284,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
         default: ttl = opt.def_cache_ttl; break;
         }
     }
-  if (!ttl || cache_mode == CACHE_MODE_IGNORE)
+  if ((!ttl && data) || cache_mode == CACHE_MODE_IGNORE)
     return 0;
 
   for (r=thecache; r; r = r->next)
