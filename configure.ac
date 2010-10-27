@@ -956,6 +956,7 @@ AC_CHECK_SIZEOF(unsigned short)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
 AC_CHECK_SIZEOF(unsigned long long)
+AC_HEADER_TIME
 AC_CHECK_SIZEOF(time_t,,[[
 #include <stdio.h>
 #if TIME_WITH_SYS_TIME
@@ -969,6 +970,7 @@ AC_CHECK_SIZEOF(time_t,,[[
 # endif
 #endif
 ]])
+GNUPG_TIME_T_UNSIGNED
 
 # Ensure that we have UINT64_C before we bother to check for uint64_t
 AC_CHECK_HEADERS([inttypes.h])

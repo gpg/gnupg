@@ -1,3 +1,10 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_expire_interval): Print 2038 warning only for 32
+	bit signed time_t.
+	* keyid.c (mk_datestr): Do the y2038 test only for a signed time_t.
+	(INVALID_TIME_CHECK): New.
+
 2010-10-20  Werner Koch  <wk@g10code.com>
 
 	* encr-data.c (decode_filter): Cast -1 to size_t.  Reported by

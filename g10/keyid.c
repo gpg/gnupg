@@ -33,6 +33,14 @@
 #include "keydb.h"
 #include "i18n.h"
 
+#ifdef HAVE_UNSIGNED_TIME_T
+# define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
+#else 
+  /* Error or 32 bit time_t and value after 2038-01-19.  */
+# define INVALID_TIME_CHECK(a) ((a) < 0)
+#endif
+
+
 int
 pubkey_letter( int algo )
 {
@@ -444,12 +452,8 @@ mk_datestr (char *buffer, time_t atime)
 {
     struct tm *tp;
 
-    /* Note: VMS uses an unsigned time_t thus the compiler yields a
-       warning here.  You may ignore this warning or def out this test
-       for VMS.  The proper way to handle this would be a configure
-       test to a detect properly implemented unsigned time_t.  */
-    if ( atime < 0 ) /* 32 bit time_t and after 2038-01-19 */
-        strcpy (buffer, "????" "-??" "-??"); /* mark this as invalid */
+    if (INVALID_TIME_CHECK (atime))
+      strcpy (buffer, "????" "-??" "-??"); /* Mark this as invalid.  */
     else {
         tp = gmtime (&atime);
         sprintf (buffer,"%04d-%02d-%02d",

@@ -31,6 +31,13 @@
 #include "util.h"
 #include "i18n.h"
 
+#ifdef HAVE_UNSIGNED_TIME_T
+# define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
+#else 
+  /* Error or 32 bit time_t and value after 2038-01-19.  */
+# define INVALID_TIME_CHECK(a) ((a) < 0)
+#endif
+
 /****************
  * I know that the OpenPGP protocol has a Y2106 problem ;-)
  */
@@ -117,8 +124,8 @@ strtimestamp( u32 stamp )
     static char buffer[11+5];
     struct tm *tp;
     time_t atime = stamp;
-    
-    if (atime < 0) {
+
+    if (INVALID_TIME_CHECK (atime)) {
         strcpy (buffer, "????" "-??" "-??");
     }
     else {
@@ -140,7 +147,7 @@ isotimestamp (u32 stamp)
     struct tm *tp;
     time_t atime = stamp;
     
-    if (atime < 0) {
+    if (INVALID_TIME_CHECK (atime)) {
         strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
     }
     else {
@@ -216,10 +223,11 @@ asctimestamp( u32 stamp )
     struct tm *tp;
     time_t atime = stamp;
 
-    if (atime < 0) {
+    if (INVALID_TIME_CHECK (atime))
+      {
         strcpy (buffer, "????" "-??" "-??");
         return buffer;
-    }
+      }
 
     tp = localtime( &atime );
 #ifdef HAVE_STRFTIME

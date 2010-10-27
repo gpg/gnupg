@@ -1,3 +1,8 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* miscutil.c (INVALID_TIME_CHECK): New.
+	(strtimestamp, isotimestamp, asctimestamp): Use it.
+
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See

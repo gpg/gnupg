@@ -1,3 +1,8 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_TIME_T_UNSIGNED): New.
+	* configure.ac: Call AC_HEADER_TIME and GNUPG_TIME_T_UNSIGNED.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	Release 1.4.11.
