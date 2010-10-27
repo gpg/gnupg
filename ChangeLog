@@ -1,3 +1,9 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_TIME_T_UNSIGNED): New.
+	* configure.ac (AC_HEADER_TIME): Include before checking time_t.
+	(GNUPG_TIME_T_UNSIGNED): Add.
+
 2010-10-26  Werner Koch  <wk@g10code.com>
 
 	Release 2.1.0beta1.

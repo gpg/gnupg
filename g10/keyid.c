@@ -37,6 +37,13 @@
 
 #define KEYID_STR_SIZE 19
 
+#ifdef HAVE_UNSIGNED_TIME_T
+# define IS_INVALID_TIME_T(a) ((a) == (time_t)(-1))
+#else 
+  /* Error or 32 bit time_t and value after 2038-01-19.  */
+# define IS_INVALID_TIME_T(a) ((a) < 0)
+#endif
+
 
 /* Return a letter describing the public key algorithms.  */
 int
@@ -446,12 +453,8 @@ mk_datestr (char *buffer, time_t atime)
 {
   struct tm *tp;
 
-  /* Note: VMS uses an unsigned time_t thus the compiler yields a
-     warning here.  You may ignore this warning or def out this test
-     for VMS.  The proper way to handle this would be a configure test
-     to a detect properly implemented unsigned time_t.  */
-  if ( atime < 0 ) /* 32 bit time_t and after 2038-01-19 */
-    strcpy (buffer, "????" "-??" "-??"); /* mark this as invalid */
+  if (IS_INVALID_TIME_T (atime))
+    strcpy (buffer, "????" "-??" "-??"); /* Mark this as invalid. */
   else 
     {
       tp = gmtime (&atime);

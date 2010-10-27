@@ -1,3 +1,10 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_expire_interval): Do not print the y2038 if we
+	have an unsigned time_t.
+	* keyid.c (IS_INVALID_TIME_T): New.
+	(mk_datestr): Use it to detect the y2038 problem.
+
 2010-10-26  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (change_passphrase): Handle the passwd_nonce.

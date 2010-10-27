@@ -29,6 +29,14 @@
 #include "i18n.h"
 #include "gettime.h"
 
+#ifdef HAVE_UNSIGNED_TIME_T
+# define IS_INVALID_TIME_T(a) ((a) == (time_t)(-1))
+#else 
+  /* Error or 32 bit time_t and value after 2038-01-19.  */
+# define IS_INVALID_TIME_T(a) ((a) < 0)
+#endif
+
+
 static unsigned long timewarp;
 static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
 
@@ -59,7 +67,7 @@ gnupg_get_isotime (gnupg_isotime_t timebuf)
 {
   time_t atime = gnupg_get_time ();
     
-  if (atime < 0)
+  if (atime == (time_t)(-1))
     *timebuf = 0;
   else 
     {
@@ -223,7 +231,7 @@ isotime2epoch (const char *string)
 void
 epoch2isotime (gnupg_isotime_t timebuf, time_t atime)
 {
-  if (atime < 0)
+  if (atime == (time_t)(-1))
     *timebuf = 0;
   else 
     {
@@ -283,21 +291,23 @@ strtimevalue( u32 value )
  * Note: this function returns GMT
  */
 const char *
-strtimestamp( u32 stamp )
+strtimestamp (u32 stamp)
 {
-    static char buffer[11+5];
-    struct tm *tp;
-    time_t atime = stamp;
+  static char buffer[11+5];
+  struct tm *tp;
+  time_t atime = stamp;
     
-    if (atime < 0) {
-        strcpy (buffer, "????" "-??" "-??");
+  if (IS_INVALID_TIME_T (atime))
+    {
+      strcpy (buffer, "????" "-??" "-??");
     }
-    else {
-        tp = gmtime( &atime );
-        sprintf(buffer,"%04d-%02d-%02d",
+  else
+    {
+      tp = gmtime( &atime );
+      snprintf (buffer, sizeof buffer, "%04d-%02d-%02d",
                 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     }
-    return buffer;
+  return buffer;
 }
 
 
@@ -311,16 +321,16 @@ isotimestamp (u32 stamp)
   struct tm *tp;
   time_t atime = stamp;
   
-  if (atime < 0)
+  if (IS_INVALID_TIME_T (atime))
     {
       strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
     }
   else
     {
       tp = gmtime ( &atime );
-      sprintf (buffer,"%04d-%02d-%02d %02d:%02d:%02d",
-               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-               tp->tm_hour, tp->tm_min, tp->tm_sec);
+      snprintf (buffer, sizeof buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                tp->tm_hour, tp->tm_min, tp->tm_sec);
     }
   return buffer;
 }
@@ -339,7 +349,7 @@ asctimestamp (u32 stamp)
   struct tm *tp;
   time_t atime = stamp;
 
-  if (atime < 0)
+  if (IS_INVALID_TIME_T (atime))
     {
       strcpy (buffer, "????" "-??" "-??");
       return buffer;

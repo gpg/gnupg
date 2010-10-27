@@ -1854,7 +1854,7 @@ ask_expire_interval(int object,const char *def_expire)
 		       ? _("Key expires at %s\n")
 		       : _("Signature expires at %s\n"),
 		       asctimestamp((ulong)(curtime + interval) ) );
-#if SIZEOF_TIME_T <= 4
+#if SIZEOF_TIME_T <= 4 && !defined (HAVE_UNSIGNED_TIME_T)
 	    if ( (time_t)((ulong)(curtime+interval)) < 0 )
 	      tty_printf (_("Your system can't display dates beyond 2038.\n"
                             "However, it will be correctly handled up to"

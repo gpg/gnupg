@@ -1,3 +1,11 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* gettime.c (gnupg_get_isotime): Compare to (time_t)-1.
+	(epoch2isotime): Ditto.
+	(IS_INVALID_TIME_T): New.
+	(asctimestamp): Use lNew macro.
+	(strtimestamp, isotimestamp): Ditto.  Use snprintf.
+
 2010-10-25  Werner Koch  <wk@g10code.com>
 
 	* logging.c (do_log): Rename to log_log and make global.
