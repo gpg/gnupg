@@ -1,3 +1,7 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* symcryptrun.c (confucius_mktmpdir): Use TMPDIR.
+
 2010-10-14  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c: Add option --agent-program.

@@ -303,9 +303,15 @@ remove_file (char *name, int shred)
 static char *
 confucius_mktmpdir (void)
 {
-  char *name;
+  char *name, *p;
 
-  name = strdup ("/tmp/gpg-XXXXXX");
+  p = getenv ("TMPDIR");
+  if (!p || !*p)
+    p = "/tmp";
+  if (p[strlen (p) - 1] == '/')
+    name = xstrconcat (p, "gpg-XXXXXX", NULL);
+  else
+    name = xstrconcat (p, "/", "gpg-XXXXXX", NULL);
   if (!name || !mkdtemp (name))
     {
       log_error (_("can't create temporary directory `%s': %s\n"),

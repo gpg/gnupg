@@ -1,3 +1,7 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (create_socket_name): Use TMPDIR.  Change callers.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (parse_algorithm_attribute): Remove extra const in

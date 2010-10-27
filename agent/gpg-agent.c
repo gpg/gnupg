@@ -1026,10 +1026,10 @@ main (int argc, char **argv )
 
       /* Create the sockets.  */
       socket_name = create_socket_name 
-        ("S.gpg-agent", "/tmp/gpg-XXXXXX/S.gpg-agent");
+        ("S.gpg-agent", "gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
 	socket_name_ssh = create_socket_name 
-          ("S.gpg-agent.ssh", "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
+          ("S.gpg-agent.ssh", "gpg-XXXXXX/S.gpg-agent.ssh");
 
       fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
@@ -1446,7 +1446,15 @@ create_socket_name (char *standard_name, char *template)
     name = make_filename (opt.homedir, standard_name, NULL);
   else
     {
-      name = xstrdup (template);
+      /* Prepend the tmp directory to the template.  */
+      p = getenv ("TMPDIR");
+      if (!p || !*p)
+        p = "/tmp";
+      if (p[strlen (p) - 1] == '/')
+        name = xstrconcat (p, template, NULL);
+      else
+        name = xstrconcat (p, "/", template, NULL);
+
       p = strrchr (name, '/');
       if (!p)
 	BUG ();

@@ -1,3 +1,7 @@
+2010-10-27  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (create_socket_name): Use TMPDIR.  Change callers.
+
 2010-10-26  Werner Koch  <wk@g10code.com>
 
 	* cache.c (agent_put_cache): Allow deletion even if TTL is passwd

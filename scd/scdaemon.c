@@ -731,7 +731,7 @@ main (int argc, char **argv )
         {
           socket_name = create_socket_name (standard_socket,
                                             "S.scdaemon",
-                                            "/tmp/gpg-XXXXXX/S.scdaemon");
+                                            "gpg-XXXXXX/S.scdaemon");
           
           fd = FD2INT(create_server_socket (standard_socket,
                                             socket_name, &socket_nonce));
@@ -780,7 +780,7 @@ main (int argc, char **argv )
       /* Create the socket.  */
       socket_name = create_socket_name (standard_socket,
                                         "S.scdaemon",
-                                        "/tmp/gpg-XXXXXX/S.scdaemon");
+                                        "gpg-XXXXXX/S.scdaemon");
 
       fd = FD2INT (create_server_socket (standard_socket,
                                          socket_name, &socket_nonce));
@@ -1019,7 +1019,15 @@ create_socket_name (int use_standard_socket,
     name = make_filename (opt.homedir, standard_name, NULL);
   else
     {
-      name = xstrdup (template);
+      /* Prepend the tmp directory to the template.  */
+      p = getenv ("TMPDIR");
+      if (!p || !*p)
+        p = "/tmp";
+      if (p[strlen (p) - 1] == '/')
+        name = xstrconcat (p, template, NULL);
+      else
+        name = xstrconcat (p, "/", template, NULL);
+
       p = strrchr (name, '/');
       if (!p)
 	BUG ();
