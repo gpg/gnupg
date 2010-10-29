@@ -1,6 +1,6 @@
 /* pkclist.c - create a list of public keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1303,9 +1303,8 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
   u32 bits[8];
   const prefitem_t *prefs;
   int result=-1,i;
-  unsigned int best=-1;    
-  byte scores[256];
-    
+  u16 scores[256];
+
   if( !pk_list )
     return -1;
 
@@ -1367,7 +1366,13 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	    {
 	      if( prefs[i].type == preftype )
 		{
-		  scores[prefs[i].value]+=rank;
+		  /* Make sure all scores don't add up past 0xFFFF
+		     (and roll around) */
+		  if(rank+scores[prefs[i].value]<=0xFFFF)
+		    scores[prefs[i].value]+=rank;
+		  else
+		    scores[prefs[i].value]=0xFFFF;
+
 		  mask[prefs[i].value/32] |= 1<<(prefs[i].value%32);
 
 		  rank++;
@@ -1434,9 +1439,30 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 
   if(result==-1)
     {
+      unsigned int best=-1;    
+
       /* At this point, we have not selected an algorithm due to a
 	 special request or via personal prefs.  Pick the highest
 	 ranked algorithm (i.e. the one with the lowest score). */
+
+      if(preftype==PREFTYPE_HASH && scores[DIGEST_ALGO_MD5])
+	{
+	  /* "If you are building an authentication system, the recipient
+	     may specify a preferred signing algorithm. However, the
+	     signer would be foolish to use a weak algorithm simply
+	     because the recipient requests it." (RFC4880:14).  If any
+	     other hash algorithm is available, pretend that MD5 isn't.
+	     Note that if the user intentionally chose MD5 by putting it
+	     in their personal prefs, then we do what the user said (as we
+	     never reach this code). */
+
+	  for(i=DIGEST_ALGO_MD5+1;i<256;i++)
+	    if(scores[i])
+	      {
+		scores[DIGEST_ALGO_MD5]=0;
+		break;
+	      }
+	}
 
       for(i=0;i<256;i++)
 	{
@@ -1455,18 +1481,6 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	      result=i;
 	    }
 	}
-
-      /* "If you are building an authentication system, the recipient
-	 may specify a preferred signing algorithm. However, the
-	 signer would be foolish to use a weak algorithm simply
-	 because the recipient requests it." (RFC4880:14).  If we
-	 settle on MD5, and SHA1 is also available, use SHA1 instead.
-	 Note that if the user intentionally chose MD5 by putting it
-	 in their personal prefs, then we do what the user said (as we
-	 never reach this code). */
-      if(preftype==PREFTYPE_HASH && result==DIGEST_ALGO_MD5
-	 && (bits[0] & (1<<DIGEST_ALGO_SHA1)))
-	result=DIGEST_ALGO_SHA1;
     }
 
   return result;
