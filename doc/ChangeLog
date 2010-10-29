@@ -1,3 +1,9 @@
+2010-10-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.texi (GPG Configuration Options): Clarify that show-photos
+	doesn't work with --with-colons.  --personal-digest-preferences
+	does not have a default any longer.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* DETAILS: Fix description of IMPORT_RES.  Reported by Nicholas Cole.
