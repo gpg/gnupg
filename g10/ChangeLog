@@ -1,3 +1,15 @@
+2010-10-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (select_algo_from_prefs): Make sure the scores can't
+	overflow when picking an algorithm (not a security issue since we
+	can't pick something not present in all preference lists, but we
+	might pick something that isn't scored first choice).
+
+	* pkclist.c (select_algo_from_prefs): Slightly improve the
+	handling of MD5 in preference lists.  Instead of replacing MD5
+	with SHA-1, just remove MD5 from the list altogether, and let the
+	next-highest ranked algorithm be chosen.
+
 2010-09-29  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (key_from_sexp): Fix memory leak in the error case.
@@ -10973,7 +10985,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
-	   2006,2007,2008,2009 Free Software Foundation, Inc.
+	   2006,2007,2008,2009,2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
