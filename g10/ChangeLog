@@ -5,6 +5,11 @@
 	can't pick something not present in all preference lists, but we
 	might pick something that isn't scored first choice).
 
+	* pkclist.c (select_algo_from_prefs): Slightly improve the
+	handling of MD5 in preference lists.  Instead of replacing MD5
+	with SHA-1, just remove MD5 from the list altogether, and let the
+	next-highest ranked algorithm be chosen.
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_expire_interval): Print 2038 warning only for 32
