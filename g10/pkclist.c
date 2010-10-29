@@ -1,6 +1,6 @@
 /* pkclist.c
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1267,8 +1267,8 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
   const prefitem_t *prefs;
   int result=-1,i;
   unsigned int best=-1;    
-  byte scores[256];
-    
+  u16 scores[256];
+
   if( !pk_list )
     return -1;
 
@@ -1330,7 +1330,13 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	    {
 	      if( prefs[i].type == preftype )
 		{
-		  scores[prefs[i].value]+=rank;
+		  /* Make sure all scores don't add up past 0xFFFF
+		     (and roll around) */
+		  if(rank+scores[prefs[i].value]<=0xFFFF)
+		    scores[prefs[i].value]+=rank;
+		  else
+		    scores[prefs[i].value]=0xFFFF;
+
 		  mask[prefs[i].value/32] |= 1<<(prefs[i].value%32);
 
 		  rank++;
