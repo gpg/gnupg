@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2008, 2009 Free Software Foundation, Inc.
+ *               2007, 2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -3147,11 +3147,6 @@ main (int argc, char **argv )
     if(opt.def_preference_list &&
 	keygen_set_std_prefs(opt.def_preference_list,0))
       log_error(_("invalid default preferences\n"));
-
-    /* We provide defaults for the personal digest list.  This is
-       SHA-1. */
-    if(!pers_digest_list)
-      pers_digest_list="h2";
 
     if(pers_cipher_list &&
        keygen_set_std_prefs(pers_cipher_list,PREFTYPE_SYM))

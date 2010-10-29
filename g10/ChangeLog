@@ -1,5 +1,9 @@
 2010-10-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.c (main): Do not provide a default for
+	--personal-digest-preferences.  This allows the usual digest
+	selection algorithm to pick a digest based on recipient keys.
+
 	* pkclist.c (select_algo_from_prefs): Make sure the scores can't
 	overflow when picking an algorithm (not a security issue since we
 	can't pick something not present in all preference lists, but we
