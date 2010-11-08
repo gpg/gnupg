@@ -577,7 +577,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 
       tmp = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
                                             "DefaultLogFile");
-      log_set_file (tmp);
+      log_set_file (tmp && *tmp? tmp : NULL);
       jnlib_free (tmp);
 #else
       log_set_file (NULL); /* Make sure a log stream has been set.  */
