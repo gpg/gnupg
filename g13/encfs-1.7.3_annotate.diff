@@ -1,0 +1,249 @@
+2010-11-10  Werner Koch  <wk@gnupg.org>
+
+        Port my patch for 1.5 dated 2009-10-14 to 1.7.3.
+
+	* encfs/main.cpp (processArgs): Add option --annotate.
+	(EncFS_Args, processArgs): Support annotate option.
+	(main): Print status messages.
+	* encfs/FileUtils.h (EncFS_Opts): Add field ANNOTATE.
+	* encfs/FileUtils.cpp (userAllowMkdir): Add arg PROMPTNO.
+	(createV6Config): Make use of ANNOTATE option.
+	(initFS): Ditto.
+	* encfs/encfsctl.cpp (cmd_export): Adjust call to userAllowMkdir.
+	(do_chpasswd): Add arg ANNOTATE.
+	(chpasswd, chpasswdAutomaticly): Pass false for ANNOTATE.
+
+
+diff -urpN orig/encfs-1.7.3/encfs/FileUtils.cpp encfs-1.7.3/encfs/FileUtils.cpp
+--- orig/encfs-1.7.3/encfs/FileUtils.cpp	2010-11-04 04:28:54.000000000 +0100
++++ encfs-1.7.3/encfs/FileUtils.cpp	2010-11-10 11:43:32.000000000 +0100
+@@ -314,14 +314,27 @@ std::string parentDirectory( const std::
+ 	return path.substr(0, last);
+ }
+ 
+-bool userAllowMkdir( const char *path, mode_t mode )
++bool userAllowMkdir(int promptno, const char *path, mode_t mode )
+ {
+     // TODO: can we internationalize the y/n names?  Seems strange to prompt in
+     // their own language but then have to respond 'y' or 'n'.
+     // xgroup(setup)
+     cerr << autosprintf( _("The directory \"%s\" does not exist. Should it be created? (y,n) "), path );
+     char answer[10];
+-    char *res = fgets( answer, sizeof(answer), stdin );
++    char *res;
++
++    switch (promptno)
++    {
++      case 1:
++        cerr << endl << "$PROMPT$ create_root_dir" << endl;
++        break;
++      case 2:
++        cerr << endl << "$PROMPT$ create_mount_point" << endl;
++        break;
++      default:
++        break;
++    }
++    res = fgets( answer, sizeof(answer), stdin );
+ 
+     if(res != 0 && toupper(answer[0]) == 'Y')
+     {
+@@ -976,6 +989,7 @@ RootPtr createV6Config( EncFS_Context *c
+     bool useStdin = opts->useStdin;
+     bool reverseEncryption = opts->reverseEncryption;
+     ConfigMode configMode = opts->configMode;
++    bool annotate = opts->annotate;
+     
+     RootPtr rootInfo;
+ 
+@@ -994,6 +1008,9 @@ RootPtr createV6Config( EncFS_Context *c
+                 " anything else, or an empty line will select standard mode.\n"
+                 "?> ");
+     
++        if (annotate)
++            cerr << "$PROMPT$ config_option" << endl;
++
+         char *res = fgets( answer, sizeof(answer), stdin );
+ 	(void)res;
+         cout << "\n";
+@@ -1179,7 +1196,11 @@ RootPtr createV6Config( EncFS_Context *c
+     CipherKey userKey;
+     rDebug( "useStdin: %i", useStdin );
+     if(useStdin)
++    {
++        if (annotate)
++            cerr << "$PROMPT$ new_passwd" << endl;
+         userKey = config->getUserKey( useStdin );
++    }
+     else if(!passwordProgram.empty())
+         userKey = config->getUserKey( passwordProgram, rootDir );
+     else
+@@ -1618,6 +1639,8 @@ RootPtr initFS( EncFS_Context *ctx, cons
+         if(opts->passwordProgram.empty())
+         {
+             rDebug( "useStdin: %i", opts->useStdin );
++            if (opts->annotate)
++                cerr << "$PROMPT$ passwd" << endl;
+             userKey = config->getUserKey( opts->useStdin );
+         } else
+             userKey = config->getUserKey( opts->passwordProgram, opts->rootDir );
+diff -urpN orig/encfs-1.7.3/encfs/FileUtils.h encfs-1.7.3/encfs/FileUtils.h
+--- orig/encfs-1.7.3/encfs/FileUtils.h	2010-09-05 22:47:01.000000000 +0200
++++ encfs-1.7.3/encfs/FileUtils.h	2010-11-10 11:45:16.000000000 +0100
+@@ -36,7 +36,7 @@ std::string parentDirectory( const std::
+ 
+ // ask the user for permission to create the directory.  If they say ok, then
+ // do it and return true.
+-bool userAllowMkdir( const char *dirPath, mode_t mode );
++bool userAllowMkdir(int promptno, const char *dirPath, mode_t mode );
+ 
+ class Cipher;
+ class DirNode;
+@@ -72,6 +72,7 @@ struct EncFS_Opts
+ 
+     std::string passwordProgram; // path to password program (or empty)
+     bool useStdin; // read password from stdin rather then prompting
++    bool annotate; // print annotation line prompt to stderr.
+ 
+     bool ownerCreate; // set owner of new files to caller
+ 
+@@ -87,6 +88,7 @@ struct EncFS_Opts
+         checkKey = true;
+         forceDecode = false;
+         useStdin = false;
++        annotate = false;
+         ownerCreate = false;
+         reverseEncryption = false;
+         configMode = Config_Prompt;
+diff -urpN orig/encfs-1.7.3/encfs/encfsctl.cpp encfs-1.7.3/encfs/encfsctl.cpp
+--- orig/encfs-1.7.3/encfs/encfsctl.cpp	2010-08-30 08:27:49.000000000 +0200
++++ encfs-1.7.3/encfs/encfsctl.cpp	2010-11-10 11:53:36.000000000 +0100
+@@ -616,7 +616,7 @@ static int cmd_export( int argc, char **
+ 
+     string destDir = argv[2];
+     // if the dir doesn't exist, then create it (with user permission)
+-    if(!checkDir(destDir) && !userAllowMkdir(destDir.c_str(), 0700))
++    if(!checkDir(destDir) && !userAllowMkdir(0, destDir.c_str(), 0700))
+ 	return EXIT_FAILURE;
+ 
+     return traverseDirs(rootInfo, "/", destDir);
+@@ -693,7 +693,7 @@ static int cmd_showcruft( int argc, char
+     return EXIT_SUCCESS;
+ }
+ 
+-static int do_chpasswd( bool useStdin, int argc, char **argv )
++static int do_chpasswd( bool useStdin, bool annotate, int argc, char **argv )
+ {
+     (void)argc;
+     string rootDir = argv[1];
+@@ -721,6 +721,8 @@ static int do_chpasswd( bool useStdin, i
+ 
+     // ask for existing password
+     cout << _("Enter current Encfs password\n");
++    if (annotate)
++        cerr << "$PROMPT$ passwd" << endl;
+     CipherKey userKey = config->getUserKey( useStdin );
+     if(!userKey)
+ 	return EXIT_FAILURE;
+@@ -742,7 +744,11 @@ static int do_chpasswd( bool useStdin, i
+     config->kdfIterations = 0; // generate new
+ 
+     if( useStdin )
++    {
++        if (annotate)
++            cerr << "$PROMPT$ new_passwd" << endl;
+         userKey = config->getUserKey( true );
++    }
+     else
+         userKey = config->getNewUserKey();
+ 
+@@ -781,12 +787,12 @@ static int do_chpasswd( bool useStdin, i
+ 
+ static int chpasswd( int argc, char **argv )
+ {
+-    return do_chpasswd( false, argc, argv );
++    return do_chpasswd( false, false, argc, argv );
+ }
+ 
+ static int chpasswdAutomaticly( int argc, char **argv )
+ {
+-    return do_chpasswd( true, argc, argv );
++    return do_chpasswd( true, false, argc, argv );
+ }
+ 
+ 
+diff -urpN orig/encfs-1.7.3/encfs/main.cpp encfs-1.7.3/encfs/main.cpp
+--- orig/encfs-1.7.3/encfs/main.cpp	2009-11-29 23:04:12.000000000 +0100
++++ encfs-1.7.3/encfs/main.cpp	2010-11-10 11:58:59.000000000 +0100
+@@ -104,6 +104,7 @@ struct EncFS_Args
+ 	if(opts->forceDecode) ss << "(forceDecode) ";
+ 	if(opts->ownerCreate) ss << "(ownerCreate) ";
+ 	if(opts->useStdin) ss << "(useStdin) ";
++        if(opts->annotate) ss << "(annotate) ";
+ 	if(opts->reverseEncryption) ss << "(reverseEncryption) ";
+ 	if(opts->mountOnDemand) ss << "(mountOnDemand) ";
+ 	for(int i=0; i<fuseArgc; ++i)
+@@ -196,6 +197,7 @@ bool processArgs(int argc, char *argv[],
+     out->opts->forceDecode = false;
+     out->opts->ownerCreate = false;
+     out->opts->useStdin = false;
++    out->opts->annotate = false;
+     out->opts->reverseEncryption = false;
+  
+     bool useDefaultFlags = true;
+@@ -223,6 +225,7 @@ bool processArgs(int argc, char *argv[],
+ 	{"extpass", 1, 0, 'p'}, // external password program
+ 	// {"single-thread", 0, 0, 's'}, // single-threaded mode
+ 	{"stdinpass", 0, 0, 'S'}, // read password from stdin
++        {"annotate", 0, 0, 513}, // Print annotation lines to stderr
+ 	{"verbose", 0, 0, 'v'}, // verbose mode
+ 	{"version", 0, 0, 'V'}, //version
+ 	{"reverse", 0, 0, 'r'}, // reverse encryption
+@@ -263,6 +266,9 @@ bool processArgs(int argc, char *argv[],
+ 	case 'S':
+ 	    out->opts->useStdin = true;
+ 	    break;
++        case 513:
++            out->opts->annotate = true;
++            break;
+ 	case 'f':
+ 	    out->isDaemon = false;
+ 	    // this option was added in fuse 2.x
+@@ -411,13 +417,15 @@ bool processArgs(int argc, char *argv[],
+ 
+     // check that the directories exist, or that we can create them..
+     if(!isDirectory( out->opts->rootDir.c_str() ) && 
+-	    !userAllowMkdir( out->opts->rootDir.c_str() ,0700))
++       !userAllowMkdir(out->opts->annotate? 1:0,
++                       out->opts->rootDir.c_str() ,0700))
+     {
+ 	rWarning(_("Unable to locate root directory, aborting."));
+ 	return false;
+     }
+     if(!isDirectory( out->mountPoint.c_str() ) && 
+-	    !userAllowMkdir( out->mountPoint.c_str(),0700))
++       !userAllowMkdir(out->opts->annotate? 2:0,
++                       out->mountPoint.c_str(),0700))
+     {
+ 	rWarning(_("Unable to locate mount point, aborting."));
+ 	return false;
+@@ -631,6 +639,9 @@ int main(int argc, char *argv[])
+ 	{
+ 	    time_t startTime, endTime;
+ 	   
++            if (encfsArgs->opts->annotate)
++                cerr << "$STATUS$ fuse_main_start" << endl;
++
+ 	    // FIXME: workaround for fuse_main returning an error on normal
+ 	    // exit.  Only print information if fuse_main returned
+ 	    // immediately..
+@@ -643,6 +654,9 @@ int main(int argc, char *argv[])
+ 	    
+ 	    time( &endTime );
+ 
++            if (encfsArgs->opts->annotate)
++                cerr << "$STATUS$ fuse_main_end" << endl;
++
+ 	    if(res == 0)
+ 		returnCode = EXIT_SUCCESS;
+ 
+
