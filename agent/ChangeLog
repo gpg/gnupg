@@ -1,3 +1,9 @@
+2010-11-11  Werner Koch  <wk@g10code.com>
+
+	* agent.h (opt): Add field SIGUSR2_ENABLED.
+	* gpg-agent.c (handle_connections): Set that flag.
+	* call-scd.c (start_scd): Enable events depending on this flag.
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (create_socket_name): Use TMPDIR.  Change callers.

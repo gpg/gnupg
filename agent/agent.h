@@ -58,6 +58,9 @@ struct
   /* True if we are listening on the standard socket.  */
   int use_standard_socket;
 
+  /* True if we handle sigusr2.  */
+  int sigusr2_enabled;
+
   /* Environment setting gathered at program start or changed using the
      Assuan command UPDATESTARTUPTTY. */
   session_env_t startup_env;

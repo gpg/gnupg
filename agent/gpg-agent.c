@@ -1894,6 +1894,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 #endif
   time_ev = NULL;
 
+  /* Set a flag to tell call-scd.c that it may enable event
+     notifications.  */
+  opt.sigusr2_enabled = 1;
+
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2INT (listen_fd);

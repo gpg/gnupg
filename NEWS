@@ -4,6 +4,9 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
  * TMPDIR is now also honored when creating a socket using
    --no-standard-socket and with symcryptrun's temp files.
 
+ * Fixed a bug where Scdaemon sends a signal to Gpg-agent running in
+   non-daemon mode.
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------
