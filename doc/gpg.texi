@@ -1,5 +1,5 @@
 @c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-@c               2008, 2009 Free Software Foundation, Inc.
+@c               2008, 2009, 2010 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
@@ -415,8 +415,10 @@ normally not very useful and a security risk.  The second form of the
 command has the special property to render the secret part of the
 primary key useless; this is a GNU extension to OpenPGP and other
 implementations can not be expected to successfully import such a key.
+@ifclear gpgtwoone
 See the option @option{--simple-sk-checksum} if you want to import such
 an exported key with an older OpenPGP implementation.
+@end ifclear
 
 @item --import
 @itemx --fast-import
@@ -527,12 +529,13 @@ Print message digest of algorithm ALGO for all given files or STDIN.
 With the second form (or a deprecated "*" as algo) digests for all
 available algorithms are printed.
 
-@item --gen-random @code{0|1|2}
+@item --gen-random @code{0|1|2} @code{count}
 @opindex gen-random
-Emit @var{count} random bytes of the given quality level. If count is
-not given or zero, an endless sequence of random bytes will be emitted.
-PLEASE, don't use this command unless you know what you are doing; it
-may remove precious entropy from the system!
+Emit @var{count} random bytes of the given quality level 0, 1 or 2. If
+@var{count} is not given or zero, an endless sequence of random bytes
+will be emitted.  If used with @option{--armor} the output will be
+base64 encoded.  PLEASE, don't use this command unless you know what
+you are doing; it may remove precious entropy from the system!
 
 @item --gen-prime @code{mode}  @code{bits}
 @opindex gen-prime
@@ -1044,7 +1047,7 @@ Show any preferred keyserver URL in the @option{--list-sigs} or
 @option{--check-sigs} listings. Defaults to no.
 
 @item show-uid-validity
-Display the calculated validity of user IDs during public key listings.
+Display the calculated validity of user IDs during key listings.
 Defaults to no.
 
 @item show-unusable-uids
@@ -1549,6 +1552,7 @@ key signer (defaults to 3)
 @item --max-cert-depth @code{n}
 Maximum depth of a certification chain (default is 5).
 
+@ifclear gpgtwoone
 @item --simple-sk-checksum
 Secret keys are integrity protected by using a SHA-1 checksum. This
 method is part of the upcoming enhanced OpenPGP specification but
@@ -1559,6 +1563,7 @@ a security risk. Note that using this option only takes effect when
 the secret key is encrypted - the simplest way to make this happen is
 to change the passphrase on the key (even changing it to the same
 value is acceptable).
+@end ifclear
 
 @item --no-sig-cache
 Do not cache the verification status of key signatures.
@@ -1883,11 +1888,17 @@ program that does not accept attribute user IDs. Defaults to yes.
 Include designated revoker information that was marked as
 "sensitive". Defaults to no.
 
+@c Since GnuPG 2.1 gpg-agent manages the secret key and thus the
+@c export-reset-subkey-passwd hack is not anymore justified.  Such use
+@c cases need to be implemented using a specialized secret key export
+@c tool.
+@ifclear gpgtwoone
 @item export-reset-subkey-passwd
 When using the @option{--export-secret-subkeys} command, this option resets
 the passphrases for all exported subkeys to empty. This is useful
 when the exported subkey is to be used on an unattended machine where
 a passphrase doesn't necessarily make sense. Defaults to no.
+@end ifclear
 
 @item export-clean
 Compact (remove all signatures from) user IDs on the key being
@@ -1963,10 +1974,11 @@ the type of the signature.
 OpenPGP states that an implementation should generate v4 signatures
 but PGP versions 5 through 7 only recognize v4 signatures on key
 material. This option forces v3 signatures for signatures on data.
-Note that this option implies @option{--ask-sig-expire},
+Note that this option implies @option{--no-ask-sig-expire}, and unsets
 @option{--sig-policy-url}, @option{--sig-notation}, and
 @option{--sig-keyserver-url}, as these features cannot be used with v3
 signatures.  @option{--no-force-v3-sigs} disables this option.
+Defaults to no.
 
 @item --force-v4-certs
 @itemx --no-force-v4-certs
@@ -2195,6 +2207,13 @@ Set all useful debugging flags.
 Enable debug output from the included CCID driver for smartcards.
 Note that this option is only available on some system.
 @end ifset
+
+@item --faked-system-time @var{epoch}
+@opindex faked-system-time
+This option is only useful for testing; it sets the system time back or
+forth to @var{epoch} which is the number of seconds elapsed since the year
+1970.  Alternatively @var{epoch} may be given as a full ISO time string
+(e.g. "20070924T154812").
 
 @item --enable-progress-filter
 Enable certain PROGRESS status outputs. This option allows frontends
@@ -2533,10 +2552,7 @@ secret key.
 When making a data signature, prompt for an expiration time. If this
 option is not specified, the expiration time set via
 @option{--default-sig-expire} is used. @option{--no-ask-sig-expire}
-disables this option. Note that by default, @option{--force-v3-sigs} is
-set which also disables this option. If you want signature expiration,
-you must set @option{--no-force-v3-sigs} as well as turning
-@option{--ask-sig-expire} on.
+disables this option.
 
 @item --default-sig-expire
 The default expiration time to use for signature expiration. Valid

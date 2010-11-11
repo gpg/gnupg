@@ -64,6 +64,9 @@ struct
   /* True if we are listening on the standard socket.  */
   int use_standard_socket;
 
+  /* True if we handle sigusr2.  */
+  int sigusr2_enabled;
+
   const char *pinentry_program; /* Filename of the program to start as
                                    pinentry.  */
   const char *scdaemon_program; /* Filename of the program to handle

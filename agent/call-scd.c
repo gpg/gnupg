@@ -408,17 +408,18 @@ start_scd (ctrl_t ctrl)
   }
 
   /* Tell the scdaemon we want him to send us an event signal. */
-  {
-    char buf[100];
-
+  if (opt.sigusr2_enabled)
+    {
+      char buf[100];
+      
 #ifdef HAVE_W32_SYSTEM
-    snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
-              (unsigned long)get_agent_scd_notify_event ());
+      snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
+                (unsigned long)get_agent_scd_notify_event ());
 #else
-    snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
+      snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
 #endif
-    assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+      assuan_transact (ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
 
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;

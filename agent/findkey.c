@@ -407,8 +407,9 @@ unprotect (ctrl_t ctrl, const char *desc_text,
               return rc;
             }
         }
-      agent_put_cache (hexgrip, cache_mode, pi->pin, 
-                       lookup_ttl? lookup_ttl (hexgrip) : 0);
+      else 
+        agent_put_cache (hexgrip, cache_mode, pi->pin, 
+                         lookup_ttl? lookup_ttl (hexgrip) : 0);
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;
     }
