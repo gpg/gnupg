@@ -20,8 +20,7 @@
 *WARNING: This FAQ is heavily outdated*.  Mentioned versions of GnuPG
 have reached end of life many years ago.  Almost all bugs and problems
 have been fixed in the now current versions of GnuPG.  We will try to
-update this FAQ in the next month.
-
+update this FAQ in the next month.  See the section "Changes" for recent updates.
 
 
 * Welcome
@@ -919,7 +918,33 @@ update this FAQ in the next month.
    :CUSTOM_ID: why-do-i-get-gpg_warning_using_insecure_memory
    :END:
 
-   On many systems this program should be installed as setuid(root).
+   You see this warning if GPG is not able to lock pages against being
+   swapped out to disk.
+
+   However, on most modern system you should not see this message
+   anymore because these systems allow any process to prevent a small
+   number of memory pages from being swapped out to disk (using the
+   mlock system call).  Other (mostly older) systems don't allow this
+   unless you install GPG as setuid(root).
+
+   Locking pages against being swapped out is not necessary if your
+   system uses an encrypted swap partition.  In fact that is the best
+   way to protect sensitive data from ending up on a disk.  If your
+   system allows for encrypted swap partitions, please make use of
+   that feature.  Note that GPG does not know about encrypted swap
+   partitions and might print the warning; thus you should disabled
+   the warning if your swap partition is encrypted.  You may also want
+   to disable this warning if you can't or don't want to install GnuPG
+   setuid(root).  To disable the warning you put a line
+
+   : no-secmem-warning
+
+   into your ~/.gnupg/gpg.conf file.
+
+   What follows is a short description on how to install GPG
+   setuid(root); for those who need this.
+
+   On some systems this program should be installed as setuid(root).
    This is necessary to lock memory pages. Locking memory pages
    prevents the operating system from writing them to disk and thereby
    keeping your secret keys really secret. If you get no warning
@@ -943,14 +968,6 @@ update this FAQ in the next month.
    privilege to get the same effect:
 
    : $ filepriv -f plock /path/to/gpg
-
-   If you can't or don't want to install GnuPG setuid(root), you can
-   use the option "--no-secmem-warning" or put:
-
-   : no-secmem-warning
-
-   in your ~/.gnupg/options or ~/.gnupg/gpg.conf file (this disables
-   the warning).
 
    On some systems (e.g., Windows) GnuPG does not lock memory pages
    and older GnuPG versions (<=1.0.4) issue the warning:
@@ -1455,6 +1472,13 @@ update this FAQ in the next month.
   This file is free software; as a special exception the author gives
   unlimited permission to copy and/or distribute it, with or without
   modifications, as long as this notice is preserved.
+
+* Changes
+
+  - 2010-11-14: Update "gpg: Warning: using insecure memory!"
+
+
+
 
 * COMMENT HTML style specifications
 
