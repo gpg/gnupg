@@ -817,7 +817,8 @@ The format of this file is as follows:
 	The filename is used until a new filename is used (at commit points)
 	and all keys are written to that file.	If a new filename is given,
 	this file is created (and overwrites an existing one).
-	Both control statements must be given.
+        GnuPG < 2.1:  Both control statements must be given.
+        GnuPG >= 2.1: "%secring" is now a no-op.
     %ask-passphrase
         Enable a mode where the command "passphrase" is ignored and
         instead the usual passphrase dialog is used.  This does not

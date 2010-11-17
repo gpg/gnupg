@@ -548,13 +548,12 @@ static unsigned long
 get_signature_count (PKT_public_key *pk)
 {
 #ifdef ENABLE_CARD_SUPPORT
-  /* FIXME: Need to call the agent.  */
-  /* if(sk && sk->is_protected && sk->protect.s2k.mode==1002) */
-  /*   { */
-  /*     struct agent_card_info_s info; */
-  /*     if(agent_scd_getattr("SIG-COUNTER",&info)==0) */
-  /*       return info.sig_counter; */
-  /*   }   */
+  struct agent_card_info_s info;
+#warning fixme: We should check that the correct card has been inserted
+  if (!agent_scd_getattr ("SIG-COUNTER",&info))
+    return info.sig_counter;
+  else
+    return 0;
 #else
   (void)pk;
   return 0;

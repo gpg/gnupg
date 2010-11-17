@@ -1,3 +1,7 @@
+2010-11-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (ENABLE_CARD_SUPPORT): Define. 
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* acinclude.m4 (GNUPG_TIME_T_UNSIGNED): New.

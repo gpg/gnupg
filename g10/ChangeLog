@@ -1,3 +1,24 @@
+2010-11-17  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (find_pk_from_sknode): Remove.
+	* misc.c (get_signature_count): Call agent.
+	* keygen.c (gen_card_key): Rework.  Remove arg PARA.
+	(generate_keypair): Change arg BACKUP_ENCRYPTION_DIR to the flag
+	CARD_BACKUP_KEY.
+	(pBACKUPENCDIR): Change to pCARDBACKUPKEY.
+	(struct output_control_s): Remove struct SEC.  Remove all usages
+	of it.
+	(gen_card_key_with_backup): Remove arg BACKUP_DIR.
+
+	* call-agent.c (agent_scd_genkey): Remove extra memset.
+
+2010-11-16  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (generate_card_subkeypair): Remove arg SEC_KEYBLOCK and
+	change to return an error code.  Rework for removed secring code.
+	* card-util.c (card_generate_subkey): Remove arg SEC_KEYBLOCK.
+	Return an error code instead of a success flag. Change caller.
+
 2010-10-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (select_algo_from_prefs): Make sure the scores can't

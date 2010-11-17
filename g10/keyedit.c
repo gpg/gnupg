@@ -108,35 +108,6 @@ struct sign_attrib
 };
 
 
-#ifdef ENABLE_CARD_SUPPORT
-/* Given a node SEC_NODE with a secret key or subkey, locate the
-   corresponding public key from pub_keyblock. */
-static PKT_public_key *
-find_pk_from_sknode (KBNODE pub_keyblock, KBNODE sec_node)
-{
-  KBNODE node = pub_keyblock;
-  PKT_secret_key *sk;
-  PKT_public_key *pk;
-
-#warning:  This is not anymore needed.
-  if (sec_node->pkt->pkttype == PKT_SECRET_KEY
-      && node->pkt->pkttype == PKT_PUBLIC_KEY)
-    return node->pkt->pkt.public_key;
-  if (sec_node->pkt->pkttype != PKT_SECRET_SUBKEY)
-    return NULL;
-  sk = sec_node->pkt->pkt.secret_key;
-  for (; node; node = node->next)
-    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-      {
-	pk = node->pkt->pkt.public_key;
-	if (pk->keyid[0] == sk->keyid[0] && pk->keyid[1] == sk->keyid[1])
-	  return pk;
-      }
-
-  return NULL;
-}
-#endif /* ENABLE_CARD_SUPPORT */
-
 
 /* TODO: Fix duplicated code between here and the check-sigs/list-sigs
    code in keylist.c. */
@@ -1833,7 +1804,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 #ifdef ENABLE_CARD_SUPPORT
 	case cmdADDCARDKEY:
-	  if (card_generate_subkey (keyblock))
+	  if (!card_generate_subkey (keyblock))
 	    {
 	      redisplay = 1;
 	      modified = 1;
@@ -1868,7 +1839,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      }
 	    if (node)
 	      {
-		PKT_public_key *xxpk = find_pk_from_sknode (keyblock, node);
+		PKT_public_key *xxpk = node->pkt->pkt.public_key;
 		if (card_store_subkey (node, xxpk ? xxpk->pubkey_usage : 0))
 		  {
 		    redisplay = 1;
@@ -1934,25 +1905,25 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	    if (cmd == cmdCHECKBKUPKEY)
 	      {
-		PKT_secret_key *sk = node->pkt->pkt.secret_key;
-		switch (is_secret_key_protected (sk))
-		  {
-		  case 0:	/* Not protected. */
-		    tty_printf (_("This key is not protected.\n"));
-		    break;
-		  case -1:
-		    log_error (_("unknown key protection algorithm\n"));
-		    break;
-		  default:
-		    if (sk->protect.s2k.mode == 1001)
-		      tty_printf (_("Secret parts of key"
-				    " are not available.\n"));
-		    if (sk->protect.s2k.mode == 1002)
-		      tty_printf (_("Secret parts of key"
-				    " are stored on-card.\n"));
+		/* PKT_public_key *sk = node->pkt->pkt.secret_key; */
+		/* switch (is_secret_key_protected (sk)) */
+		/*   { */
+		/*   case 0:	/\* Not protected. *\/ */
+		/*     tty_printf (_("This key is not protected.\n")); */
+		/*     break; */
+		/*   case -1: */
+		/*     log_error (_("unknown key protection algorithm\n")); */
+		/*     break; */
+		/*   default: */
+		/*     if (sk->protect.s2k.mode == 1001) */
+		/*       tty_printf (_("Secret parts of key" */
+		/* 		    " are not available.\n")); */
+		/*     if (sk->protect.s2k.mode == 1002) */
+		/*       tty_printf (_("Secret parts of key" */
+		/* 		    " are stored on-card.\n")); */
 		    /* else */
 		    /*   check_secret_key (sk, 0); */
-		  }
+		  /* } */
 	      }
 	    else		/* Store it.  */
 	      {

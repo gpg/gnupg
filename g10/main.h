@@ -231,8 +231,8 @@ void show_basic_key_info (KBNODE keyblock);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
-void generate_keypair( const char *fname, const char *card_serialno,
-                       const char *backup_encryption_dir );
+void generate_keypair (const char *fname, const char *card_serialno,
+                       int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
@@ -246,9 +246,9 @@ gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
                           u32 timestamp, const char *cache_nonce);
 gpg_error_t generate_subkeypair (kbnode_t pub_keyblock);
 #ifdef ENABLE_CARD_SUPPORT
-int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
-                              int keyno, const char *serialno);
-int save_unprotected_key_to_card (PKT_secret_key *sk, int keyno);
+gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
+                                      int keyno, const char *serialno);
+int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 #endif
 
 /*-- openfile.c --*/
@@ -348,7 +348,7 @@ int gpg_server (ctrl_t);
 void change_pin (int no, int allow_admin);
 void card_status (estream_t fp, char *serialno, size_t serialnobuflen);
 void card_edit (ctrl_t ctrl, strlist_t commands);
-int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);
+gpg_error_t  card_generate_subkey (KBNODE pub_keyblock);
 int  card_store_subkey (KBNODE node, int use);
 #endif
 

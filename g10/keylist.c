@@ -182,8 +182,7 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
 {
   /* KBNODE node; */
   /* int i; */
-
-  log_debug ("Fixme: Needs to be adjusted to gpg-agent\n");
+#warning Fixme: Needs to be adjusted to gpg-agent
   /* for (node = keyblock; node; node = node->next) */
   /*   { */
   /*     if (node->pkt->pkttype == PKT_SECRET_KEY */

@@ -485,7 +485,7 @@ AH_BOTTOM([
 #define HTTP_NO_WSASTARTUP
 
 /* We always include support for the OpenPGP card.  */
-/* Disabled for now ENABLE_CARD_SUPPORT 1 */
+#define ENABLE_CARD_SUPPORT 1
 
 /* We explicitly need to disable PTH's soft mapping as Debian
    currently enables it by default for no reason. */

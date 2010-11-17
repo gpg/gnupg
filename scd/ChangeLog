@@ -1,3 +1,8 @@
+2010-11-16  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (PCSC_UNKNOWN) [W32]: Fix all these values which don't
+	match those of libpcsc.  Reported by Michael Petig.
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (create_socket_name): Use TMPDIR.  Change callers.

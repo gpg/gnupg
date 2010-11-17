@@ -771,10 +771,9 @@ scd_genkey_cb (void *opaque, const char *line)
 }
 
 /* Send a GENKEY command to the SCdaemon.  SERIALNO is not used in
-   this implementation.  If CREATEDATE has been given, it will be
-   passed to SCDAEMON so that the key can be created with this
-   timestamp; note the user needs to use the returned timestamp as old
-   versions of scddaemon don't support this option.  */
+   this implementation.  If CREATEDATE is not 0, it will be passed to
+   SCDAEMON so that the key is created with this timestamp.  INFO will
+   receive information about the generated key.  */
 int
 agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
                   const char *serialno, u32 createtime)
@@ -794,7 +793,6 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
   else
     *tbuf = 0;
 
-  memset (info, 0, sizeof *info);
   snprintf (line, DIM(line)-1, "SCD GENKEY %s%s %s %d",
             *tbuf? "--timestamp=":"", tbuf,
             force? "--force":"", 

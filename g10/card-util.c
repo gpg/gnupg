@@ -581,29 +581,31 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
       if ( thefpr && !fpr_is_ff (thefpr) 
            && !get_pubkey_byfprint (pk, thefpr, 20))
         {
-          KBNODE keyblock = NULL;
-
           print_pubkey_info (fp, pk);
 
 #if GNUPG_MAJOR_VERSION == 1
-          if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
-            print_card_key_info (fp, keyblock);
-          else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
-            {
-              release_kbnode (keyblock);
-              keyblock = NULL;
-              
-              if (!auto_create_card_key_stub (info.serialno,
-                                              info.fpr1valid? info.fpr1:NULL,
-                                              info.fpr2valid? info.fpr2:NULL,
-                                              info.fpr3valid? info.fpr3:NULL))
-                {
-                  if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
-                    print_card_key_info (fp, keyblock);
-                }
-            }
-
-          release_kbnode (keyblock);
+          {
+            kbnode_t keyblock = NULL;
+            
+            if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+              print_card_key_info (fp, keyblock);
+            else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
+              {
+                release_kbnode (keyblock);
+                keyblock = NULL;
+                
+                if (!auto_create_card_key_stub (info.serialno,
+                                                info.fpr1valid? info.fpr1:NULL,
+                                                info.fpr2valid? info.fpr2:NULL,
+                                                info.fpr3valid? info.fpr3:NULL))
+                  {
+                    if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+                      print_card_key_info (fp, keyblock);
+                  }
+              }
+            
+            release_kbnode (keyblock);
+          }
 #endif /* GNUPG_MAJOR_VERSION == 1 */
         }
       else
@@ -1431,7 +1433,7 @@ generate_card_keys (void)
          the serialnumber and thus it won't harm.  */
     }
      
-  generate_keypair (NULL, info.serialno, want_backup? opt.homedir:NULL);
+  generate_keypair (NULL, info.serialno, want_backup);
 
  leave:
   agent_release_card_info (&info);
@@ -1441,17 +1443,18 @@ generate_card_keys (void)
 
 /* This function is used by the key edit menu to generate an arbitrary
    subkey. */
-int
-card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
+gpg_error_t
+card_generate_subkey (KBNODE pub_keyblock)
 {
+  gpg_error_t err;
   struct agent_card_info_s info;
-  int okay = 0;
   int forced_chv1 = 0;
   int keyno;
-
-  if (get_info_for_key_operation (&info))
-    return 0;
-
+  
+  err = get_info_for_key_operation (&info);
+  if (err)
+    return err;
+  
   show_card_key_info (&info);
 
   tty_printf (_("Please select the type of key to generate:\n"));
@@ -1468,6 +1471,7 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
       if (*answer == CONTROL_D)
         {
           xfree (answer);
+          err = gpg_error (GPG_ERR_CANCELED);
           goto leave;
         }
       keyno = *answer? atoi(answer): 0;
@@ -1476,40 +1480,44 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
         break; /* Okay. */
       tty_printf(_("Invalid selection.\n"));
     }
-
+  
   if (replace_existing_key_p (&info, keyno))
+    {
+      err = gpg_error (GPG_ERR_CANCELED);
+      goto leave;
+    }
+  
+  err = check_pin_for_key_operation (&info, &forced_chv1);
+  if (err)
     goto leave;
-
-  if (check_pin_for_key_operation (&info, &forced_chv1))
-    goto leave;
-
+  
   /* If the cards features changeable key attributes, we ask for the
      key size.  */
   if (info.is_v2 && info.extcap.aac)
     {
       unsigned int nbits;
-
+      
     ask_again:
       nbits = ask_card_keysize (keyno-1, info.key_attr[keyno-1].nbits);
       if (nbits && do_change_keysize (keyno-1, nbits))
         {
           /* Error: Better read the default key size again.  */
           agent_release_card_info (&info);
-          if (get_info_for_key_operation (&info))
+          err = get_info_for_key_operation (&info);
+          if (err)
             goto leave;
           goto ask_again;
         }
       /* Note that INFO has not be synced.  However we will only use
          the serialnumber and thus it won't harm.  */
     }
-
-  /* xxx = generate_card_subkeypair (pub_keyblock, sec_keyblock, */
-  /*                                  keyno, info.serialno); */
-
+  
+  err = generate_card_subkeypair (pub_keyblock, keyno, info.serialno);
+  
  leave:
   agent_release_card_info (&info);
   restore_forced_chv1 (&forced_chv1);
-  return okay;
+  return err;
 }
 
 
@@ -1520,6 +1528,7 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 int 
 card_store_subkey (KBNODE node, int use)
 {
+  log_info ("FIXME: card_store_subkey has not yet been implemented\n");
 /*   struct agent_card_info_s info; */
 /*   int okay = 0; */
 /*   int rc; */

@@ -1,5 +1,5 @@
 /* apdu.c - ISO 7816 APDU functions and low level I/O
- * Copyright (C) 2003, 2004, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -165,7 +165,11 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 
 #define PCSC_PROTOCOL_T0     1
 #define PCSC_PROTOCOL_T1     2
-#define PCSC_PROTOCOL_RAW    4
+#ifdef HAVE_W32_SYSTEM
+# define PCSC_PROTOCOL_RAW   0x00010000  /* The active protocol.  */
+#else
+# define PCSC_PROTOCOL_RAW   4
+#endif
 
 #define PCSC_SHARE_EXCLUSIVE 1
 #define PCSC_SHARE_SHARED    2
@@ -176,13 +180,23 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_UNPOWER_CARD    2
 #define PCSC_EJECT_CARD      3
 
-#define PCSC_UNKNOWN    0x0001
-#define PCSC_ABSENT     0x0002  /* Card is absent.  */
-#define PCSC_PRESENT    0x0004  /* Card is present.  */
-#define PCSC_SWALLOWED  0x0008  /* Card is present and electrical connected. */
-#define PCSC_POWERED    0x0010  /* Card is powered.  */
-#define PCSC_NEGOTIABLE 0x0020  /* Card is awaiting PTS.  */
-#define PCSC_SPECIFIC   0x0040  /* Card is ready for use.  */
+#ifdef HAVE_W32_SYSTEM
+# define PCSC_UNKNOWN    0x0000  /* The driver is not aware of the status.  */
+# define PCSC_ABSENT     0x0001  /* Card is absent.  */
+# define PCSC_PRESENT    0x0002  /* Card is present.  */
+# define PCSC_SWALLOWED  0x0003  /* Card is present and electrical connected. */
+# define PCSC_POWERED    0x0004  /* Card is powered.  */
+# define PCSC_NEGOTIABLE 0x0005  /* Card is awaiting PTS.  */
+# define PCSC_SPECIFIC   0x0006  /* Card is ready for use.  */
+#else
+# define PCSC_UNKNOWN    0x0001
+# define PCSC_ABSENT     0x0002  /* Card is absent.  */
+# define PCSC_PRESENT    0x0004  /* Card is present.  */
+# define PCSC_SWALLOWED  0x0008  /* Card is present and electrical connected. */
+# define PCSC_POWERED    0x0010  /* Card is powered.  */
+# define PCSC_NEGOTIABLE 0x0020  /* Card is awaiting PTS.  */
+# define PCSC_SPECIFIC   0x0040  /* Card is ready for use.  */
+#endif
 
 #define PCSC_STATE_UNAWARE     0x0000  /* Want status.  */
 #define PCSC_STATE_IGNORE      0x0001  /* Ignore this reader.  */
@@ -195,6 +209,9 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_STATE_EXCLUSIVE   0x0080  /* Exclusive Mode.  */
 #define PCSC_STATE_INUSE       0x0100  /* Shared mode.  */
 #define PCSC_STATE_MUTE	       0x0200  /* Unresponsive card.  */
+#ifdef HAVE_W32_SYSTEM
+# define PCSC_STATE_UNPOWERED  0x0400  /* Card not powerred up.  */
+#endif
 
 /* Some PC/SC error codes.  */
 #define PCSC_E_CANCELLED               0x80100002
