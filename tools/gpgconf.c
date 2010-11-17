@@ -189,9 +189,6 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
-
-  fprintf (stderr, "My error: %d (%s)\n", GPG_ERR_ENOENT,
-           gpg_strerror (GPG_ERR_ENOENT));
   
   fname = argc ? *argv : NULL;
   

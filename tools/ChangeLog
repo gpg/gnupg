@@ -1,3 +1,7 @@
+2010-11-17  Marcus Brinkmann  <mb@g10code.com>
+
+	* gogconf.c: Revert accidental debug output commit.
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c (confucius_mktmpdir): Use TMPDIR.
