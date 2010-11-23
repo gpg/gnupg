@@ -1,3 +1,13 @@
+2010-11-23  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg2_LDFLAGS, gpgv2_LDFLAGS): Add extra_bin_ldflags.
+
+	* plaintext.c (handle_plaintext): Change to use estream.
+	s/rc/err/.  Replace some xmalloc by xtrymalloc.  Use more
+	gpg_strerror.
+	* options.h (struct): Change type of OUTFP to estream_t.
+	* decrypt.c (decrypt_message_fd): Adjust accordingly.
+
 2010-11-17  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (find_pk_from_sknode): Remove.

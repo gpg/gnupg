@@ -49,9 +49,9 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		  int nooutput, int clearsig)
 {
   char *fname = NULL;
-  FILE *fp = NULL;
+  estream_t fp = NULL;
   static off_t count = 0;
-  int rc = 0;
+  int err = 0;
   int c;
   int convert = (pt->mode == 't' || pt->mode == 'u');
 #ifdef __riscos__
@@ -69,7 +69,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
          output will be written to it.  This is to make sure that no
          not-yet-flushed stuff will be written after the plaintext
          status message.  */
-      fflush (stdout);
+      es_fflush (es_stdout);
 
       snprintf (status, sizeof status, 
                 "%X %lu ", (byte) pt->mode, (ulong) pt->timestamp);
@@ -78,7 +78,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       
       if (!pt->is_partial)
 	{
-	  sprintf (status, "%lu", (ulong) pt->len);
+	  snprintf (status, sizeof status, "%lu", (ulong) pt->len);
 	  write_status_text (STATUS_PLAINTEXT_LENGTH, status);
 	}
     }
@@ -88,11 +88,21 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     ;
   else if (opt.outfp)
     {
-      fname = xstrdup ("[FP]");
+      fname = xtrystrdup ("[FP]");
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
   else if (opt.outfile)
     {
-      fname = xstrdup (opt.outfile);
+      fname = xtrystrdup (opt.outfile);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
   else if (pt->namelen == 8 && !memcmp (pt->name, "_CONSOLE", 8))
     {
@@ -106,7 +116,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	fname = ask_outfile_name (pt->name, pt->namelen);
       if (!fname)
 	{
-	  rc = gpg_error (GPG_ERR_GENERAL);	/* Can't create file. */
+	  err = gpg_error (GPG_ERR_GENERAL);	/* Can't create file. */
 	  goto leave;
 	}
     }
@@ -118,17 +128,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   else if (opt.outfp)
     {
       fp = opt.outfp;
-#ifdef HAVE_DOSISH_SYSTEM
-      setmode (fileno (fp), O_BINARY);
-#endif
+      es_set_binary (fp);
     }
   else if (iobuf_is_pipe_filename (fname) || !*fname)
     {
       /* No filename or "-" given; write to stdout. */
-      fp = stdout;
-#ifdef HAVE_DOSISH_SYSTEM
-      setmode (fileno (fp), O_BINARY);
-#endif
+      fp = es_stdout;
+      es_set_binary (fp);
     }
   else
     {
@@ -139,7 +145,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	    {
 	      xfree (tmp);
               /* FIXME: Below used to be G10ERR_CREATE_FILE */
-	      rc = gpg_error (GPG_ERR_GENERAL);	
+	      err = gpg_error (GPG_ERR_GENERAL);	
 	      goto leave;
 	    }
 	  xfree (fname);
@@ -148,10 +154,10 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     }
   
 #ifndef __riscos__
-  if (opt.outfp && is_secured_file (fileno (opt.outfp)))
+  if (opt.outfp && is_secured_file (es_fileno (opt.outfp)))
     {
-      rc = gpg_error (GPG_ERR_EPERM);
-      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (rc));
+      err = gpg_error (GPG_ERR_EPERM);
+      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
   else if (fp || nooutput)
@@ -159,14 +165,14 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   else if (is_secured_filename (fname))
     {
       gpg_err_set_errno (EPERM);
-      rc = gpg_error_from_syserror ();
-      log_error (_("error creating `%s': %s\n"), fname, strerror (errno));
+      err = gpg_error_from_syserror ();
+      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
-  else if (!(fp = fopen (fname, "wb")))
+  else if (!(fp = es_fopen (fname, "wb")))
     {
-      rc = gpg_error_from_syserror ();
-      log_error (_("error creating `%s': %s\n"), fname, strerror (errno));
+      err = gpg_error_from_syserror ();
+      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
 #else /* __riscos__ */
@@ -182,11 +188,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     ;
   else
     {
+      /* Note: riscos stuff is not expected to wrok anymore.  If we
+         want to port it again to riscos we should do most of the suff
+         in estream.  FIXME: Consider to remove all riscos special
+         cases.  */
       fp = fopen (fname, "wb");
       if (!fp)
 	{
-	  log_error (_("error creating `%s': %s\n"), fname, strerror (errno));
-	  rc = G10ERR_CREATE_FILE;
+	  log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
+	  err = G10ERR_CREATE_FILE;
 	  if (errno == 106)
 	    log_info ("Do output file and input file have the same name?\n");
 	  goto leave;
@@ -210,7 +220,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       if (clearsig)
 	{
 	  log_error ("clearsig encountered while not expected\n");
-	  rc = G10ERR_UNEXPECTED;
+	  err = gpg_error (GPG_ERR_UNEXPECTED);
 	  goto leave;
 	}
 
@@ -220,7 +230,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	    {
 	      if ((c = iobuf_get (pt->buf)) == -1)
 		{
-		  rc = gpg_error_from_syserror ();
+		  err = gpg_error_from_syserror ();
 		  log_error ("problem reading source (%u bytes remaining)\n",
 			     (unsigned) pt->len);
 		  goto leave;
@@ -237,17 +247,17 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		    {
 		      log_error ("error writing to `%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
-		      rc = gpg_error (GPG_ERR_TOO_LARGE);
+		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      goto leave;
 		    }
-		  else if (putc (c, fp) == EOF)
+		  else if (es_putc (c, fp) == EOF)
 		    {
-		      if (ferror (fp))
-			rc = gpg_error_from_syserror ();
+		      if (es_ferror (fp))
+			err = gpg_error_from_syserror ();
 		      else
-			rc = gpg_error (GPG_ERR_EOF);
+			err = gpg_error (GPG_ERR_EOF);
 		      log_error ("error writing to `%s': %s\n",
-				 fname, strerror (errno));
+				 fname, gpg_strerror (err));
 		      goto leave;
 		    }
 		}
@@ -262,7 +272,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	      len = iobuf_read (pt->buf, buffer, len);
 	      if (len == -1)
 		{
-		  rc = gpg_error_from_syserror ();
+		  err = gpg_error_from_syserror ();
 		  log_error ("problem reading source (%u bytes remaining)\n",
 			     (unsigned) pt->len);
 		  xfree (buffer);
@@ -276,15 +286,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		    {
 		      log_error ("error writing to `%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
-		      rc = gpg_error (GPG_ERR_TOO_LARGE);
+		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      xfree (buffer);
 		      goto leave;
 		    }
-		  else if (fwrite (buffer, 1, len, fp) != len)
+		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
-		      rc = gpg_error_from_syserror ();
+		      err = gpg_error_from_syserror ();
 		      log_error ("error writing to `%s': %s\n",
-				 fname, strerror (errno));
+				 fname, gpg_strerror (err));
 		      xfree (buffer);
 		      goto leave;
 		    }
@@ -312,17 +322,17 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		    {
 		      log_error ("Error writing to `%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
-		      rc = gpg_error (GPG_ERR_TOO_LARGE);
+		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      goto leave;
 		    }
-		  else if (putc (c, fp) == EOF)
+		  else if (es_putc (c, fp) == EOF)
 		    {
-		      if (ferror (fp))
-			rc = gpg_error_from_syserror ();
+		      if (es_ferror (fp))
+			err = gpg_error_from_syserror ();
 		      else
-			rc = gpg_error (GPG_ERR_EOF);
+			err = gpg_error (GPG_ERR_EOF);
 		      log_error ("error writing to `%s': %s\n",
-				 fname, strerror (errno));
+				 fname, gpg_strerror (err));
 		      goto leave;
 		    }
 		}
@@ -330,8 +340,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	}
       else
 	{			/* binary mode */
-	  byte *buffer = xmalloc (32768);
+	  byte *buffer;
 	  int eof_seen = 0;
+
+          buffer = xtrymalloc (32768);
+          if (!buffer)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
 
 	  while (!eof_seen)
 	    {
@@ -354,16 +371,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		    {
 		      log_error ("error writing to `%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
-		      rc = gpg_error (GPG_ERR_TOO_LARGE);
+		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      xfree (buffer);
 		      goto leave;
 		    }
-		  else if (fwrite (buffer, 1, len, fp) != len)
+		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
-		      rc = (errno ? gpg_error_from_syserror ()
-			    : gpg_error (GPG_ERR_INTERNAL));
+		      err = gpg_error_from_syserror ();
 		      log_error ("error writing to `%s': %s\n",
-				 fname, strerror (errno));
+				 fname, gpg_strerror (err));
 		      xfree (buffer);
 		      goto leave;
 		    }
@@ -385,15 +401,14 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  log_error ("error writing to `%s': %s\n",
 			     fname, "exceeded --max-output limit\n");
-		  rc = gpg_error (GPG_ERR_TOO_LARGE);
+		  err = gpg_error (GPG_ERR_TOO_LARGE);
 		  goto leave;
 		}
-	      else if (putc (c, fp) == EOF)
+	      else if (es_putc (c, fp) == EOF)
 		{
-		  rc = (errno ? gpg_error_from_syserror ()
-			: gpg_error (GPG_ERR_INTERNAL));
+		  err = gpg_error_from_syserror ();
 		  log_error ("error writing to `%s': %s\n",
-			     fname, strerror (errno));
+			     fname, gpg_strerror (err));
 		  goto leave;
 		}
 	    }
@@ -434,11 +449,10 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       pt->buf = NULL;
     }
 
-  if (fp && fp != stdout && fp != opt.outfp && fclose (fp))
+  if (fp && fp != es_stdout && fp != opt.outfp && es_fclose (fp))
     {
-      rc = (errno ? gpg_error_from_syserror ()
-	    : gpg_error (GPG_ERR_INTERNAL));
-      log_error ("error closing `%s': %s\n", fname, strerror (errno));
+      err = gpg_error_from_syserror ();
+      log_error ("error closing `%s': %s\n", fname, gpg_strerror (err));
       fp = NULL;
       goto leave;
     }
@@ -448,20 +462,21 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   /* Make sure that stdout gets flushed after the plaintext has been
      handled.  This is for extra security as we do a flush anyway
      before checking the signature.  */
-  if (fflush (stdout))
+  if (es_fflush (es_stdout))
     {
       /* We need to check the return code to detect errors like disk
          full for short plaintexts.  See bug#1207.  Checking return
          values is a good idea in any case.  */
-      if (!rc)
-        rc = gpg_error_from_syserror ();
-      log_error ("error flushing `%s': %s\n", "[stdout]", strerror (errno));
+      if (!err)
+        err = gpg_error_from_syserror ();
+      log_error ("error flushing `%s': %s\n", "[stdout]",
+                 gpg_strerror (err));
     }
 
-  if (fp && fp != stdout && fp != opt.outfp)
-    fclose (fp);
+  if (fp && fp != es_stdout && fp != opt.outfp)
+    es_fclose (fp);
   xfree (fname);
-  return rc;
+  return err;
 }
 
 

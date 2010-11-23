@@ -123,8 +123,10 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg2_LDADD =  $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(extra_sys_libs)
+gpg2_LDFLAGS = $(extra_bin_ldflags)
 gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(extra_sys_libs)
+gpgv2_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd = 
 module_tests = t-rmd160

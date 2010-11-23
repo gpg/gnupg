@@ -96,6 +96,7 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
                 $(LIBINTL) $(GPG_ERROR_LIBS) $(PTH_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS)
+gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
 gpgparsemail_LDADD = 

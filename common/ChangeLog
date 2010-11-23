@@ -1,3 +1,10 @@
+2010-11-23  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (SECS_TO_WAIT_FOR_AGENT, SECS_TO_WAIT_FOR_DIRMNGR):
+	Use these constants.  For W32CE increase them to 30 seconds.
+	(start_new_gpg_agent): Print time to startup agent.
+	(start_new_dirmngr): Ditto.
+
 2010-11-04  Werner Koch  <wk@g10code.com>
 
 	* logging.c (do_logv) [W32]: Don't set a default log stream if the

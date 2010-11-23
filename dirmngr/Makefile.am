@@ -63,7 +63,7 @@ dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 if !USE_LDAPWRAPPER
 dirmngr_LDADD += $(LDAPLIBS)
 endif
-
+dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
 if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) 
@@ -76,7 +76,9 @@ endif
 dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) no-libgcrypt.o \
 	                ../gl/libgnu.a $(LIBASSUAN_LIBS) \
-	               $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+	               $(GPG_ERROR_LIBS) $(LIBINTL) \
+                       $(LIBICONV)
+dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
 
 
 no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c

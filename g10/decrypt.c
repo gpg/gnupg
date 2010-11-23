@@ -135,7 +135,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
 #warning Need to fix this if we want to use g13
   opt.outfp = NULL;
 #else
-  opt.outfp = fdopen (dup (output_fd), "wb");
+  opt.outfp = es_fdopen_nc (output_fd, "wb");
 #endif
   if (!opt.outfp)
     {
@@ -161,7 +161,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
   err = proc_encryption_packets (ctrl, NULL, fp );
 
   iobuf_close (fp);
-  fclose (opt.outfp);
+  es_fclose (opt.outfp);
   opt.outfp = NULL;
   release_armor_context (afx);
   release_progress_context (pfx);

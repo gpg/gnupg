@@ -1,3 +1,8 @@
+2010-11-23  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_LDFLAGS): Add extra_bin_ldflags.
+	(dirmngr_client_LDFLAGS): Ditto.
+
 2010-10-21  Werner Koch  <wk@g10code.com>
 
 	* dirmngr.c (main): Changed faked system time warning

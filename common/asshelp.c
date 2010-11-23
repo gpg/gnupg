@@ -42,6 +42,15 @@
 # define lock_spawn_t dotlock_t
 #endif
 
+/* The time we wait until the agent or the dirmngr are ready for
+   operation after we started them before giving up.  */ 
+#ifdef HAVE_W32CE_SYSTEM
+# define SECS_TO_WAIT_FOR_AGENT 30
+# define SECS_TO_WAIT_FOR_DIRMNGR 30
+#else
+# define SECS_TO_WAIT_FOR_AGENT 5
+# define SECS_TO_WAIT_FOR_DIRMNGR 5
+#endif
 
 /* A bitfield that specifies the assuan categories to log.  This is
    identical to the default log handler of libassuan.  We need to do
@@ -335,6 +344,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   gpg_error_t err = 0;
   char *infostr, *p;
   assuan_context_t ctx;
+  int did_success_msg = 0;
 
   *r_ctx = NULL;
 
@@ -423,16 +433,19 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
                       if (verbose)
                         log_info (_("waiting %d seconds for the agent "
-                                    "to come up\n"), 5);
-                      for (i=0; i < 5; i++)
+                                    "to come up\n"), SECS_TO_WAIT_FOR_AGENT);
+                      for (i=0; i < SECS_TO_WAIT_FOR_AGENT; i++)
                         {
                           gnupg_sleep (1);
                           err = assuan_socket_connect (ctx, sockname, 0, 0);
                           if (!err)
                             {
-                              if (verbose && !debug)
-                                log_info (_("connection to agent"
-                                            " established\n"));
+                              if (verbose)
+                                {
+                                  log_info (_("connection to agent "
+                                              "established (%ds)\n"), i+1);
+                                  did_success_msg = 1;
+                                }
                               break;
                             }
                         }
@@ -517,7 +530,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       return gpg_err_make (errsource, GPG_ERR_NO_AGENT);
     }
 
-  if (debug)
+  if (debug && !did_success_msg)
     log_debug (_("connection to agent established\n"));
 
   err = assuan_transact (ctx, "RESET",
@@ -552,6 +565,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   gpg_error_t err;
   assuan_context_t ctx;
   const char *sockname;
+  int did_success_msg = 0;
       
   *r_ctx = NULL;
 
@@ -612,16 +626,19 @@ start_new_dirmngr (assuan_context_t *r_ctx,
               
               if (verbose)
                 log_info (_("waiting %d seconds for the dirmngr to come up\n"),
-                          5);
-              for (i=0; i < 5; i++)
+                          SECS_TO_WAIT_FOR_DIRMNGR);
+              for (i=0; i < SECS_TO_WAIT_FOR_DIRMNGR; i++)
                 {
                   gnupg_sleep (1);
                   err = assuan_socket_connect (ctx, sockname, 0, 0);
                   if (!err)
                     {
-                      if (verbose && !debug)
-                        log_info (_("connection to the dirmngr"
-                                     " established\n"));
+                      if (verbose)
+                        {
+                          log_info (_("connection to the dirmngr"
+                                      " established (%ds)\n"), i+1);
+                          did_success_msg = 1;
+                        }
                       break;
                     }
                 }
@@ -646,7 +663,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       return gpg_err_make (errsource, GPG_ERR_NO_DIRMNGR);
     }
 
-  if (debug)
+  if (debug && !did_success_msg)
     log_debug (_("connection to the dirmngr established\n"));
 
   *r_ctx = ctx;

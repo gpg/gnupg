@@ -59,6 +59,7 @@ gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
               $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) \
 	      $(LIBICONV) $(extra_sys_libs)
+gpgsm_LDFLAGS = $(extra_bin_ldflags)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

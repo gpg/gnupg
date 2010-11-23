@@ -1,3 +1,7 @@
+2010-11-23  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (gpg_agent_LDFLAGS): Add extra_bin_ldflags.
+
 2010-11-11  Werner Koch  <wk@g10code.com>
 
 	* agent.h (opt): Add field SIGUSR2_ENABLED.

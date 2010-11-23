@@ -1,3 +1,8 @@
+2010-11-23  Werner Koch  <wk@g10code.com>
+
+	* am/cmacros.am (extra_bin_ldflags): New.  For W32CE set the stack
+	size to 256k.
+
 2010-11-17  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (ENABLE_CARD_SUPPORT): Define. 
