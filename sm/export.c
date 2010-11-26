@@ -262,8 +262,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
           if (!b64writer)
             {
               ctrl->pem_name = "CERTIFICATE";
-              rc = gpgsm_create_writer (&b64writer, ctrl,
-                                        NULL, stream, &writer);
+              rc = gpgsm_create_writer (&b64writer, ctrl, stream, &writer);
               if (rc)
                 {
                   log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -424,7 +423,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
     }
 
   ctrl->pem_name = "PKCS12";
-  err = gpgsm_create_writer (&b64writer, ctrl, NULL, stream, &writer);
+  err = gpgsm_create_writer (&b64writer, ctrl, stream, &writer);
   if (err)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (err));

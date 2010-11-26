@@ -134,7 +134,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
   if (out_fp)
     {
-      rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_fp, &writer);
+      rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
       if (rc)
         {
           log_error ("can't create writer: %s\n", gpg_strerror (rc));

@@ -1,3 +1,8 @@
+2010-11-25  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (start_new_gpg_agent): Change style of startup info.
+	(start_new_dirmngr): Ditto.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (SECS_TO_WAIT_FOR_AGENT, SECS_TO_WAIT_FOR_DIRMNGR):

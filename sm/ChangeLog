@@ -1,3 +1,11 @@
+2010-11-25  Werner Koch  <wk@g10code.com>
+
+	* base64.c (gpgsm_create_writer): Remove arg FP which is not used
+	by any caller.  Change all callers.
+	(struct writer_cb_parm_s): Remove field FP.
+	(do_putc, do_fputs): Remove and replace callers by direct calls to
+	es_ functions.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpgsm_LDADD): Add extra_bin_ldflags.

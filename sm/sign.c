@@ -340,7 +340,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
 
   ctrl->pem_name = "SIGNED MESSAGE";
-  rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_fp, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));

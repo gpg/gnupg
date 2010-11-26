@@ -431,11 +431,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                     {
                       int i;
 
-                      if (verbose)
-                        log_info (_("waiting %d seconds for the agent "
-                                    "to come up\n"), SECS_TO_WAIT_FOR_AGENT);
                       for (i=0; i < SECS_TO_WAIT_FOR_AGENT; i++)
                         {
+                          if (verbose)
+                            log_info (_("waiting for the agent "
+                                        "to come up ... (%ds)\n"),
+                                      SECS_TO_WAIT_FOR_AGENT - i);
                           gnupg_sleep (1);
                           err = assuan_socket_connect (ctx, sockname, 0, 0);
                           if (!err)
@@ -443,7 +444,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                               if (verbose)
                                 {
                                   log_info (_("connection to agent "
-                                              "established (%ds)\n"), i+1);
+                                              "established\n"));
                                   did_success_msg = 1;
                                 }
                               break;
@@ -624,11 +625,12 @@ start_new_dirmngr (assuan_context_t *r_ctx,
             {
               int i;
               
-              if (verbose)
-                log_info (_("waiting %d seconds for the dirmngr to come up\n"),
-                          SECS_TO_WAIT_FOR_DIRMNGR);
               for (i=0; i < SECS_TO_WAIT_FOR_DIRMNGR; i++)
                 {
+                  if (verbose)
+                    log_info (_("waiting for the dirmngr "
+                                "to come up ... (%ds)\n"),
+                              SECS_TO_WAIT_FOR_DIRMNGR - i);
                   gnupg_sleep (1);
                   err = assuan_socket_connect (ctx, sockname, 0, 0);
                   if (!err)
@@ -636,7 +638,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
                       if (verbose)
                         {
                           log_info (_("connection to the dirmngr"
-                                      " established (%ds)\n"), i+1);
+                                      " established\n"));
                           did_success_msg = 1;
                         }
                       break;

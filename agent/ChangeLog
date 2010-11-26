@@ -1,3 +1,7 @@
+2010-11-26  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (CHECK_OWN_SOCKET_INTERVAL): New.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpg_agent_LDFLAGS): Add extra_bin_ldflags.

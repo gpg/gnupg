@@ -202,6 +202,14 @@ static ARGPARSE_OPTS opts[] = {
 #define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
 #endif
 
+/* How often shall we check our own socket in standard socket mode.
+   For WindowsCE be use a longer interval because we don't expect any
+   problems and resources are anyway scare.  */
+#ifdef HAVE_W32_SYSTEM
+# define CHECK_OWN_SOCKET_INTERVAL  (300)
+#else
+# define CHECK_OWN_SOCKET_INTERVAL  (60)  /* Seconds.  */
+#endif
 
 /* The list of open file descriptors at startup.  Note that this list
    has been allocated using the standard malloc.  */
@@ -1682,8 +1690,8 @@ handle_tick (void)
     }
 #endif /*HAVE_W32_SYSTEM*/
   
-  /* Code to be run every minute.  */
-  if (last_minute + 60 <= time (NULL))
+  /* Code to be run from time to time.  */
+  if (last_minute + CHECK_OWN_SOCKET_INTERVAL <= time (NULL))
     {
       check_own_socket ();
       last_minute = time (NULL);
@@ -2179,7 +2187,7 @@ check_own_socket_thread (void *arg)
 
 /* Check whether we are still listening on our own socket.  In case
    another gpg-agent process started after us has taken ownership of
-   our socket, we woulf linger around without any real task.  Thus we
+   our socket, we would linger around without any real task.  Thus we
    better check once in a while whether we are really needed.  */
 static void
 check_own_socket (void)

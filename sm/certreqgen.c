@@ -854,7 +854,7 @@ gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream)
   ksba_writer_t writer;
 
   ctrl->pem_name = "CERTIFICATE REQUEST";
-  rc = gpgsm_create_writer (&b64writer, ctrl, NULL, out_stream, &writer);
+  rc = gpgsm_create_writer (&b64writer, ctrl, out_stream, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
