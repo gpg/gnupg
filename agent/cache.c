@@ -71,15 +71,42 @@ static ITEM thecache;
 void
 initialize_module_cache (void)
 {
-  static int initialized;
+  if (!pth_mutex_init (&encryption_lock))
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      log_fatal ("error initializing cache module: %s\n", gpg_strerror (err));
+    }
+}
+
+
+void
+deinitialize_module_cache (void)
+{
+  gcry_cipher_close (encryption_handle);
+  encryption_handle = NULL;
+}
+
+
+/* We do the encryption init on the fly.  We can't do it in the module
+   init code because that is run before we listen for connections and
+   in case we are started on demand by gpg etc. it will only wait for
+   a few seconds to decide whether the agent may now accept
+   connections.  Thus we should get into listen state as soon as
+   possible.  */
+static gpg_error_t
+init_encryption (void)
+{
   gpg_error_t err;
   void *key;
 
-  if (!pth_mutex_init (&encryption_lock))
-    err = gpg_error_from_syserror ();
-  else
-    err = gcry_cipher_open (&encryption_handle, GCRY_CIPHER_AES128,
-                            GCRY_CIPHER_MODE_AESWRAP, GCRY_CIPHER_SECURE);
+  if (encryption_handle)
+    return 0; /* Shortcut - Already initialized.  */
+
+  if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
+    log_fatal ("failed to acquire cache encryption mutex\n");
+
+  err = gcry_cipher_open (&encryption_handle, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, GCRY_CIPHER_SECURE);
   if (!err)
     {
       key = gcry_random_bytes (ENCRYPTION_KEYSIZE, GCRY_STRONG_RANDOM);
@@ -90,20 +117,22 @@ initialize_module_cache (void)
           err = gcry_cipher_setkey (encryption_handle, key, ENCRYPTION_KEYSIZE);
           xfree (key);
         }
+      if (err)
+        {
+          gcry_cipher_close (encryption_handle);
+          encryption_handle = NULL;
+        }
     }
   if (err)
-    log_fatal ("error initializing cache encryption context: %s\n",
-             gpg_strerror (err));
-  initialized = 1;
+    log_error ("error initializing cache encryption context: %s\n",
+               gpg_strerror (err));
+  
+  if (!pth_mutex_release (&encryption_lock))
+    log_fatal ("failed to release cache encryption mutex\n");
+
+  return err? gpg_error (GPG_ERR_NOT_INITIALIZED) : 0;
 }
 
-
-void
-deinitialize_module_cache (void)
-{
-  gcry_cipher_close (encryption_handle);
-  encryption_handle = NULL;
-}
 
 
 static void
@@ -122,8 +151,9 @@ new_data (const char *string, struct secret_data_s **r_data)
   
   *r_data = NULL;
 
-  if (!encryption_handle)
-    return gpg_error (GPG_ERR_NOT_INITIALIZED);
+  err = init_encryption ();
+  if (err)
+    return err;
 
   length = strlen (string) + 1;
 
@@ -369,8 +399,8 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
             log_debug ("... hit\n");
           if (r->pw->totallen < 32)
             err = gpg_error (GPG_ERR_INV_LENGTH);
-          else if (!encryption_handle)
-            err = gpg_error (GPG_ERR_NOT_INITIALIZED);
+          else if ((err = init_encryption ()))
+            ;
           else if (!(value = xtrymalloc_secure (r->pw->totallen - 8)))
             err = gpg_error_from_syserror ();
           else

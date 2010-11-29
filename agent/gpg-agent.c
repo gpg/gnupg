@@ -203,10 +203,9 @@ static ARGPARSE_OPTS opts[] = {
 #endif
 
 /* How often shall we check our own socket in standard socket mode.
-   For WindowsCE be use a longer interval because we don't expect any
-   problems and resources are anyway scare.  */
+   If that value is 0 we don't check at all.  */
 #ifdef HAVE_W32_SYSTEM
-# define CHECK_OWN_SOCKET_INTERVAL  (300)
+# define CHECK_OWN_SOCKET_INTERVAL  (0)
 #else
 # define CHECK_OWN_SOCKET_INTERVAL  (60)  /* Seconds.  */
 #endif
@@ -1691,11 +1690,13 @@ handle_tick (void)
 #endif /*HAVE_W32_SYSTEM*/
   
   /* Code to be run from time to time.  */
+#if CHECK_OWN_SOCKET_INTERVAL > 0
   if (last_minute + CHECK_OWN_SOCKET_INTERVAL <= time (NULL))
     {
       check_own_socket ();
       last_minute = time (NULL);
     }
+#endif
 
 }
 
@@ -1799,8 +1800,13 @@ start_connection_thread (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (opt.verbose)
+    log_debug ("handler 0x%lx checking nonce\n", pth_thread_id ());
   if (check_nonce (ctrl, &socket_nonce))
-    return NULL;
+    {
+      log_debug ("handler 0x%lx nonce check FAILED\n", pth_thread_id ());
+      return NULL;
+    }
 
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
@@ -1918,6 +1924,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
   for (;;)
     {
+      log_debug ("%s: Begin main loop\n", __func__);
       /* Make sure that our signals are not blocked.  */
       pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
 
@@ -1927,6 +1934,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
             break; /* ready */
 
+          log_debug ("%s: shutdown pending\n", __func__);
           /* Do not accept new connections but keep on running the
              loop to cope with the timer events.  */
           FD_ZERO (&fdset);
@@ -1945,6 +1953,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
               nexttick.tv_usec = 0;
             }
           time_ev = pth_event (PTH_EVENT_TIME, nexttick);
+          log_debug ("%s: time event created\n", __func__);
         }
 
       /* POSIX says that fd_set should be implemented as a structure,
@@ -1953,7 +1962,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
       if (time_ev)
         pth_event_concat (ev, time_ev, NULL);
+
+      log_debug ("%s: Pre-select\n", __func__);
       ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
+      log_debug ("%s: Post-select res=%d\n", __func__, ret);
       if (time_ev)
         pth_event_isolate (time_ev);
 
@@ -1984,8 +1996,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           continue;
 	}
 
+      log_debug ("%s: Checking events\n", __func__);
       if (pth_event_occurred (ev))
         {
+          log_debug ("%s: Got event\n", __func__);
 #if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
           agent_sigusr2_action ();
 #else
@@ -1995,12 +2009,14 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
       if (time_ev && pth_event_occurred (time_ev))
         {
+          log_debug ("%s: Got tick event\n", __func__);
           pth_event_free (time_ev, PTH_FREE_ALL);
           time_ev = NULL;
           handle_tick ();
         }
 
 
+      log_debug ("%s: Restore mask\n", __func__);
       /* We now might create new threads and because we don't want any
          signals (as we are handling them here) to be delivered to a
          new thread.  Thus we need to block those signals. */
@@ -2010,9 +2026,11 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	{
           ctrl_t ctrl;
 
+          log_debug ("%s: Pre-accept\n", __func__);
           plen = sizeof paddr;
 	  fd = INT2FD (pth_accept (FD2INT(listen_fd),
                                    (struct sockaddr *)&paddr, &plen));
+          log_debug ("%s: Post-accept fd=%d\n", __func__, fd);
 	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
@@ -2034,6 +2052,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             {
               char threadname[50];
 
+              log_debug ("%s: Spawning handler\n", __func__);
               snprintf (threadname, sizeof threadname-1,
                         "conn fd=%d (gpg)", FD2INT(fd));
               threadname[sizeof threadname -1] = 0;
@@ -2046,6 +2065,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
                   assuan_sock_close (fd);
                   xfree (ctrl);
                 }
+              log_debug ("%s: handler spawned\n", __func__);
             }
           fd = GNUPG_INVALID_FD;
 	}
@@ -2055,6 +2075,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	{
           ctrl_t ctrl;
 
+          log_debug ("%s: SSH STUFF!\n", __func__);
           plen = sizeof paddr;
 	  fd = INT2FD(pth_accept (FD2INT(listen_fd_ssh),
                                   (struct sockaddr *)&paddr, &plen));
@@ -2095,8 +2116,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             }
           fd = GNUPG_INVALID_FD;
 	}
+      log_debug ("%s: End main loop\n", __func__);
     }
 
+  log_debug ("%s: main loop terminated\n", __func__);
   pth_event_free (ev, PTH_FREE_ALL);
   if (time_ev)
     pth_event_free (time_ev, PTH_FREE_ALL);

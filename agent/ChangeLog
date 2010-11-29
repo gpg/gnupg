@@ -1,6 +1,13 @@
+2010-11-29  Werner Koch  <wk@g10code.com>
+
+	* cache.c (initialize_module_cache): Factor code out to ...
+	(init_encryption): new.
+	(new_data, agent_get_cache): Init encryption on on the fly.
+
 2010-11-26  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (CHECK_OWN_SOCKET_INTERVAL): New.
+	(handle_tick) [W32CE]: Don't check own socket.
 
 2010-11-23  Werner Koch  <wk@g10code.com>
 
