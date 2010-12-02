@@ -71,6 +71,7 @@ This starts it on the current terminal for listening on the socket
 @opindex force
 Delete an already existing socket file.
 
+@anchor{option watchgnupg --tcp}
 @item --tcp @var{n}
 Instead of reading from a local socket, listen for connects on TCP port
 @var{n}.

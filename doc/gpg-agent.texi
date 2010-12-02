@@ -331,12 +331,13 @@ eval $(cut -d= -f 1 < @var{file} | xargs echo export)
 Tell the pinentry not to grab the keyboard and mouse.  This option
 should in general not be used to avoid X-sniffing attacks.
 
+@anchor{option --log-file}
 @item --log-file @var{file}
 @opindex log-file
 Append all logging output to @var{file}.  This is very helpful in seeing
 what the agent actually does.  If neither a log file nor a log file
 descriptor has been set on a Windows platform, the Registry entry
-@var{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
+@code{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
 the logging output.
 
 
