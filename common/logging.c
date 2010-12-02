@@ -117,6 +117,9 @@ struct fun_cookie_s
   int quiet;
   int want_socket;
   int is_socket;
+#ifdef HAVE_W32CE_SYSTEM
+  int use_writefile;
+#endif
   char name[1];
 };
 
@@ -356,9 +359,21 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
     }
   
   log_socket = cookie->fd;
-  if (cookie->fd != -1 && !writen (cookie->fd, buffer, size, cookie->is_socket))
-    return (ssize_t)size; /* Okay. */ 
-  
+  if (cookie->fd != -1)
+    { 
+#ifdef HAVE_W32CE_SYSTEM
+      if (cookie->use_writefile)
+        {
+          DWORD nwritten;
+          
+          WriteFile ((HANDLE)cookie->fd, buffer, size, &nwritten, NULL);
+          return (ssize_t)size; /* Okay.  */
+        }
+#endif
+      if (!writen (cookie->fd, buffer, size, cookie->is_socket))
+        return (ssize_t)size; /* Okay. */ 
+    }
+
   if (!running_detached && cookie->fd != -1
       && isatty (es_fileno (es_stderr)))
     {
@@ -400,6 +415,9 @@ set_file_fd (const char *name, int fd)
 {
   estream_t fp;
   int want_socket;
+#ifdef HAVE_W32CE_SYSTEM
+  int use_writefile = 0;
+#endif
   struct fun_cookie_s *cookie;
 
   /* Close an open log stream.  */
@@ -423,6 +441,23 @@ set_file_fd (const char *name, int fd)
   else if (name && !strncmp (name, "socket://", 9) && name[9])
     want_socket = 2;
 #endif /*HAVE_W32_SYSTEM*/
+#ifdef HAVE_W32CE_SYSTEM
+  else if (name && !strcmp (name, "GPG2:"))
+    {
+      HANDLE hd;
+
+      ActivateDevice (L"Drivers\\GnuPG_Log", 0);
+      /* Ignore a filename and write the debug output to the GPG2:
+         device.  */
+      hd = CreateFile (L"GPG2:", GENERIC_WRITE,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE,
+                       NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+      fd = (hd == INVALID_HANDLE_VALUE)? -1 : (int)hd;
+      name = NULL;
+      force_prefixes = 1;
+      use_writefile = 1;
+    }
+#endif /*HAVE_W32CE_SYSTEM*/
 
   /* Setup a new stream.  */
 
@@ -434,6 +469,9 @@ set_file_fd (const char *name, int fd)
   cookie->quiet = 0;
   cookie->is_socket = 0;
   cookie->want_socket = want_socket;
+#ifdef HAVE_W32CE_SYSTEM
+  cookie->use_writefile = use_writefile;
+#endif
   if (!name)
     cookie->fd = fd;
   else if (want_socket)
