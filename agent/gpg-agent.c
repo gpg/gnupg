@@ -195,20 +195,20 @@ static ARGPARSE_OPTS opts[] = {
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
    longer period as the SetWaitableTimer seems to signal earlier than
-   the 2 seconds.  */
-#ifdef HAVE_W32_SYSTEM
-#define TIMERTICK_INTERVAL    (4)
+   the 2 seconds.  CHECK_OWN_SOCKET_INTERVAL defines how often we
+   check our own socket in standard socket mode.  If that value is 0
+   we don't check at all.   All values are in seconds. */
+#if defined(HAVE_W32CE_SYSTEM)
+# define TIMERTICK_INTERVAL         (60)
+# define CHECK_OWN_SOCKET_INTERVAL   (0)  /* Never */
+#elif defined(HAVE_W32_SYSTEM)
+# define TIMERTICK_INTERVAL          (4)
+# define CHECK_OWN_SOCKET_INTERVAL  (60)  
 #else
-#define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
+# define TIMERTICK_INTERVAL          (2)
+# define CHECK_OWN_SOCKET_INTERVAL  (60)
 #endif
 
-/* How often shall we check our own socket in standard socket mode.
-   If that value is 0 we don't check at all.  */
-#ifdef HAVE_W32_SYSTEM
-# define CHECK_OWN_SOCKET_INTERVAL  (0)
-#else
-# define CHECK_OWN_SOCKET_INTERVAL  (60)  /* Seconds.  */
-#endif
 
 /* The list of open file descriptors at startup.  Note that this list
    has been allocated using the standard malloc.  */
