@@ -86,7 +86,7 @@ init_dek (DEK dek)
     case GCRY_CIPHER_DES:
     case GCRY_CIPHER_RFC2268_40:
       log_error ("cipher algorithm `%s' not allowed: too weak\n",
-                 gcry_cipher_algo_name (dek->algo));
+                 gnupg_cipher_algo_name (dek->algo));
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     default:
       break;

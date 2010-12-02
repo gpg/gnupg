@@ -283,7 +283,7 @@ do_unprotect (const char *passphrase,
          the OpenPGP algorithm numbers map one-to-one to the Libgcrypt
          numbers.  */
       log_info (_("protection algorithm %d (%s) is not supported\n"),
-                protect_algo, gcry_cipher_algo_name (protect_algo));
+                protect_algo, gnupg_cipher_algo_name (protect_algo));
       return gpg_error (GPG_ERR_CIPHER_ALGO);
     }
 

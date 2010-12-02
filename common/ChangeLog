@@ -1,5 +1,8 @@
 2010-12-02  Werner Koch  <wk@g10code.com>
 
+	* miscellaneous.c (gnupg_cipher_algo_name): New.  Replace all
+	users of gcry_cipher_algo_name by this one.
+
 	* logging.c (fun_cookie_s) [W32CE]: Add field USE_WRITEFILE.
 	(fun_writer) [W32CE]: Make use of it.
 	(set_file_fd) [W32CE]: Implement special filename "GPG2:".

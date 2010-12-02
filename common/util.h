@@ -255,6 +255,9 @@ char *xasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
 /* This is now an alias to estream_asprintf.  */
 char *xtryasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
 
+/* Replacement for gcry_cipher_algo_name.  */
+const char *gnupg_cipher_algo_name (int algo);
+
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);
 void print_utf8_buffer2 (estream_t fp, const void *p, size_t n, int delim);

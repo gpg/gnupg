@@ -769,7 +769,7 @@ proc_type_encrypt (audit_ctx_t ctx)
     {
       algo = gcry_cipher_map_name (item->string);
       if (algo)
-        writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+        writeout_rem (ctx, _("algorithm: %s"), gnupg_cipher_algo_name (algo));
       else if (item->string && !strcmp (item->string, "1.2.840.113549.3.2"))
         writeout_rem (ctx, _("unsupported algorithm: %s"), "RC2");
       else if (item->string)
@@ -909,14 +909,14 @@ proc_type_decrypt (audit_ctx_t ctx)
   algo = item? item->intvalue : 0;
   writeout_li (ctx, algo?"Yes":"No", "%s", _("Encryption algorithm supported"));
   if (algo)
-    writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+    writeout_rem (ctx, _("algorithm: %s"), gnupg_cipher_algo_name (algo));
 
   item = find_log_item (ctx, AUDIT_BAD_DATA_CIPHER_ALGO, 0);
   if (item && item->string)
     {
       algo = gcry_cipher_map_name (item->string);
       if (algo)
-        writeout_rem (ctx, _("algorithm: %s"), gcry_cipher_algo_name (algo));
+        writeout_rem (ctx, _("algorithm: %s"), gnupg_cipher_algo_name (algo));
       else if (item->string && !strcmp (item->string, "1.2.840.113549.3.2"))
         writeout_rem (ctx, _("unsupported algorithm: %s"), "RC2");
       else if (item->string)

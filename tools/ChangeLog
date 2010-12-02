@@ -1,3 +1,7 @@
+2010-12-02  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_cipher_algo_name): New.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpgconf_LDFLAGS): Add extra_bin_ldflags.
@@ -1218,7 +1222,7 @@
 2004-01-10  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Use GPG_ERROR_CFLAGS
-	
+
 2004-01-05  Werner Koch  <wk@gnupg.org>
 
 	* Manifest: New.

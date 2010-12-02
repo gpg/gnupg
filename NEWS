@@ -7,6 +7,11 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
  * Fixed a bug where SCdaemon sends a signal to Gpg-agent running in
    non-daemon mode.
 
+ * Print "AES128" instead of "AES".  This change introduces a little
+   incompatibility for tools using "gpg --list-config".  We hope that
+   these tools are written robust enough to accept this new algorithm
+   name as well.
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------

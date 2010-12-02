@@ -409,7 +409,7 @@ openpgp_cipher_test_algo( int algo )
 const char *
 openpgp_cipher_algo_name (int algo) 
 {
-  return gcry_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
+  return gnupg_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
 }
 
 int

@@ -1,3 +1,7 @@
+2010-12-02  Werner Koch  <wk@g10code.com>
+
+	* misc.c (openpgp_cipher_algo_name): Use gnupg_cipher_algo_name.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpg2_LDFLAGS, gpgv2_LDFLAGS): Add extra_bin_ldflags.

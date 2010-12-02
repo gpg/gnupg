@@ -152,3 +152,10 @@ gcry_create_nonce (void *buffer, size_t length)
   
   log_fatal ("unexpected call to gcry_create_nonce\n");
 }
+
+
+const char *
+gcry_cipher_algo_name (int algo)
+{
+  return "?";
+}

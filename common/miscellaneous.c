@@ -95,6 +95,23 @@ setup_libgcrypt_logging (void)
   gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
 }
 
+/* A wrapper around gcry_cipher_algo_name to return the string
+   "AES-128" instead of "AES".  Given that we have an alias in
+   libgcrypt for it, it does not harm to too much to return this other
+   string.  Some users complained that we print "AES" but "AES192"
+   and "AES256".  We can't fix that in libgcrypt but it is pretty
+   safe to do it in an application. */
+const char *
+gnupg_cipher_algo_name (int algo) 
+{
+  const char *s;
+
+  s = gcry_cipher_algo_name (algo);
+  if (!strcmp (s, "AES"))
+    s = "AES128";
+  return s;
+}
+
 
 /* Decide whether the filename is stdout or a real filename and return
  * an appropriate string.  */

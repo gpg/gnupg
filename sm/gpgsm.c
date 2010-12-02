@@ -553,7 +553,7 @@ my_strusage( int level )
     case 33: p = _("\nSupported algorithms:\n"); break;
     case 34:
       if (!ciphers)
-        ciphers = build_list ("Cipher: ", gcry_cipher_algo_name,
+        ciphers = build_list ("Cipher: ", gnupg_cipher_algo_name,
                               our_cipher_test_algo );
       p = ciphers;
       break;
