@@ -615,22 +615,37 @@ open_db()
   if (make_dotlock( lockhandle, -1 ) )
     log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
+#ifdef HAVE_W32CE_SYSTEM
+  {
+    DWORD prevrc = 0;
+    wchar_t *wname = utf8_to_wchar (db_name);
+    if (wname)
+      {
+        db_fd = (int)CreateFile (wname, GENERIC_READ|GENERIC_WRITE,
+                                 FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+                                 OPEN_EXISTING, 0, NULL);
+        xfree (wname);
+      }
+    if (db_fd == -1)
+      log_fatal ("can't open `%s': %d, %d\n", db_name,
+                 (int)prevrc, (int)GetLastError ());
+  }
+#else /*!HAVE_W32CE_SYSTEM*/
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
                       || errno == EROFS
 #endif
-#ifdef HAVE_W32CE_SYSTEM
-                      || 1 /* cegcc's open does not set ERRNO. */
-#endif
                       )
       ) {
+      /* Take care of read-only trustdbs.  */
       db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
       if (db_fd != -1)
           log_info (_("NOTE: trustdb not writable\n"));
   }
   if ( db_fd == -1 )
     log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
+#endif /*!HAVE_W32CE_SYSTEM*/
   register_secured_file (db_name);
 
   /* Read the version record. */

@@ -2,7 +2,7 @@
 
 	* tdbio.c (tdbio_set_dbname) [W32CE]: Take care of missing errno.
 	(strerror) [W32CE]: Dummy replacement.
-	(open_db) [W32CE]: Fall back to read-only on any error.
+	(open_db) [W32CE]: Use CreateFile.
 
 2010-12-02  Werner Koch  <wk@g10code.com>
 
