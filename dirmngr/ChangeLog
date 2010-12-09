@@ -1,3 +1,7 @@
+2010-12-07  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (TIMERTICK_INTERVAL) [W32CE]: Change to 60s.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dirmngr_LDFLAGS): Add extra_bin_ldflags.

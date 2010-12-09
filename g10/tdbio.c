@@ -48,6 +48,13 @@
 #define MY_O_BINARY  0
 #endif
 
+/* We use ERRNO despite that the cegcc provided open/read/write
+   functions don't set ERRNO - at least show that ERRNO does not make
+   sense.  */
+#ifdef HAVE_W32CE_SYSTEM
+#undef strerror
+#define strerror(a) ("[errno not available]")
+#endif
 
 /****************
  * Yes, this is a very simple implementation. We should really
@@ -494,6 +501,13 @@ tdbio_set_dbname( const char *new_dbname, int create )
       fname = xstrdup (new_dbname);
 
     if( access( fname, R_OK ) ) {
+#ifdef HAVE_W32CE_SYSTEM
+      /* We know how the cegcc implementation of access works ;-). */
+      if (GetLastError () == ERROR_FILE_NOT_FOUND)
+        gpg_err_set_errno (ENOENT);
+      else
+        gpg_err_set_errno (EIO);
+#endif /*HAVE_W32CE_SYSTEM*/
 	if( errno != ENOENT ) {
 	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
 	    xfree(fname);
@@ -605,6 +619,9 @@ open_db()
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
                       || errno == EROFS
+#endif
+#ifdef HAVE_W32CE_SYSTEM
+                      || 1 /* cegcc's open does not set ERRNO. */
 #endif
                       )
       ) {
