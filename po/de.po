@@ -9756,7 +9756,7 @@ msgstr "Wende die gobalen Voreinstellungen an"
 
 #: tools/gpgconf.c:69
 msgid "get the configuration directories for gpgconf"
-msgstr "Hole die Einstelungsverzeichnisse von gpgconf"
+msgstr "Hole die Einstellungsverzeichnisse von gpgconf"
 
 #: tools/gpgconf.c:71
 msgid "list global configuration file"
