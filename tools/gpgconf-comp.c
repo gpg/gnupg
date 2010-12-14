@@ -51,7 +51,6 @@
 #include "gc-opt-flags.h"
 #include "gpgconf.h"
 
-
 /* There is a problem with gpg 1.4 under Windows: --gpgconf-list
    returns a plain filename without escaping.  As long as we have not
    fixed that we need to use gpg2.  */
@@ -467,6 +466,9 @@ typedef struct gc_option gc_option_t;
 #define GC_OPTION_NULL { NULL }
 
 
+#ifndef BUILD_WITH_AGENT
+#define gc_options_gpg_agent NULL
+#else
 /* The options of the GC_COMPONENT_GPG_AGENT component.  */
 static gc_option_t gc_options_gpg_agent[] =
  {
@@ -569,8 +571,12 @@ static gc_option_t gc_options_gpg_agent[] =
 
    GC_OPTION_NULL
  };
+#endif /*BUILD_WITH_AGENT*/
 
 
+#ifndef BUILD_WITH_SCDAEMON
+#define gc_options_scdaemon NULL
+#else
 /* The options of the GC_COMPONENT_SCDAEMON component.  */
 static gc_option_t gc_options_scdaemon[] =
  {
@@ -636,8 +642,11 @@ static gc_option_t gc_options_scdaemon[] =
 
    GC_OPTION_NULL
  };
+#endif /*BUILD_WITH_SCDAEMON*/
 
-
+#ifndef BUILD_WITH_GPG
+#define gc_options_gpg NULL
+#else
 /* The options of the GC_COMPONENT_GPG component.  */
 static gc_option_t gc_options_gpg[] =
  {
@@ -710,9 +719,12 @@ static gc_option_t gc_options_gpg[] =
 
    GC_OPTION_NULL
  };
+#endif /*BUILD_WITH_GPG*/
 
 
-
+#ifndef BUILD_WITH_GPGSM
+#define gc_options_gpgsm NULL
+#else
 /* The options of the GC_COMPONENT_GPGSM component.  */
 static gc_option_t gc_options_gpgsm[] =
  {
@@ -802,8 +814,12 @@ static gc_option_t gc_options_gpgsm[] =
 
    GC_OPTION_NULL
  };
+#endif /*BUILD_WITH_GPGSM*/
 
 
+#ifndef BUILD_WITH_DIRMNGR
+#define gc_options_dirmngr NULL
+#else
 /* The options of the GC_COMPONENT_DIRMNGR component.  */
 static gc_option_t gc_options_dirmngr[] =
  {
@@ -942,6 +958,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    GC_OPTION_NULL
  };
+#endif /*BUILD_WITH_DIRMNGR*/
 
 
 /* The options of the GC_COMPONENT_PINENTRY component.  */

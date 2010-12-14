@@ -135,7 +135,7 @@ cdb_init(struct cdb *cdbp, int fd)
   hFile = fd;
 # else
   hFile = (HANDLE) _get_osfhandle(fd);
-#endif
+# endif
   if (hFile == (HANDLE) -1)
     return -1;
   hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
@@ -144,6 +144,7 @@ cdb_init(struct cdb *cdbp, int fd)
   mem = (unsigned char *)MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
   if (!mem)
     return -1;
+  cdbp->cdb_mapping = hMapping;
 #else
   mem = (unsigned char*)mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0);
   if (mem == MAP_FAILED)
@@ -180,17 +181,9 @@ cdb_free(struct cdb *cdbp)
 {
   if (cdbp->cdb_mem) {
 #ifdef _WIN32
-    HANDLE hFile, hMapping;
-#endif
-#ifdef _WIN32
-#ifdef __MINGW32CE__
-    hFile = cdbp->cdb_fd;
-#else
-    hFile = (HANDLE) _get_osfhandle(cdbp->cdb_fd);
-#endif
-    hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-    UnmapViewOfFile((void*) cdbp->cdb_mem);
-    CloseHandle(hMapping);
+    UnmapViewOfFile ((void*) cdbp->cdb_mem);
+    CloseHandle (cdbp->cdb_mapping);
+    cdbp->cdb_mapping = NULL;
 #else
     munmap((void*)cdbp->cdb_mem, cdbp->cdb_fsize);
 #endif /* _WIN32 */

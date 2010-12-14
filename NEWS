@@ -12,6 +12,8 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
    these tools are written robust enough to accept this new algorithm
    name as well.
 
+ * Fixed CRL loading under W32 (bug#1010).
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------

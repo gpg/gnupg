@@ -20,6 +20,9 @@ void cdb_pack(cdbi_t num, unsigned char buf[4]);
 struct cdb {
   int cdb_fd;			/* file descriptor */
   /* private members */
+#ifdef HAVE_W32_SYSTEM
+  void *cdb_mapping;            /* Mapping handle.  */
+#endif
   cdbi_t cdb_fsize;		/* datafile size */
   const unsigned char *cdb_mem; /* mmap'ed file memory */
   cdbi_t cdb_vpos, cdb_vlen;	/* found data */

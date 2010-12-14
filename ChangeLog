@@ -1,3 +1,9 @@
+2010-12-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (BUILD_WITH_GPG, BUILD_WITH_GPGSM)
+	(BUILD_WITH_AGENT, BUILD_WITH_SCDAEMON, BUILD_WITH_DIRMNGR)
+	(BUILD_WITH_G13): New defines.
+
 2010-11-23  Werner Koch  <wk@g10code.com>
 
 	* am/cmacros.am (extra_bin_ldflags): New.  For W32CE set the stack

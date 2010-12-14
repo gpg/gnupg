@@ -178,7 +178,7 @@ static crl_cache_entry_t find_entry (crl_cache_entry_t first,
 
 
 
-/* The currently loaded cache object.  This isi usually initialized
+/* The currently loaded cache object.  This is usually initialized
    right at startup.  */
 static crl_cache_t current_cache;
 
@@ -393,7 +393,7 @@ release_cache (crl_cache_t cache)
     {
       entry2 = entry->next;
       release_one_cache_entry (entry);
-  }
+    }
   cache->entries = NULL;
   xfree (cache);
 }
@@ -1189,6 +1189,7 @@ unlock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
         cache->entries = enext;
       else
         eprev->next = enext;
+      /* FIXME: Do we leak ENTRY? */
     }
 }
 
@@ -1202,7 +1203,6 @@ find_entry (crl_cache_entry_t first, const char *issuer_hash)
     first = first->next;
   return first;    
 }
-
 
 
 /* Create a new CRL cache. This fucntion is usually called only once.
@@ -2177,6 +2177,31 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   newfname = make_db_file_name (entry->issuer_hash);
   if (opt.verbose)
     log_info (_("creating cache file `%s'\n"), newfname);
+
+  /* Just in case close unused matching files.  Actually we need this
+     only under Windows but saving file descriptors is never bad.  */
+  {
+    int any;
+    do 
+      {
+        any = 0;
+        for (e = cache->entries; e; e = e->next)
+          if (!e->cdb_use_count && e->cdb
+              && !strcmp (e->issuer_hash, entry->issuer_hash))
+            {
+              int fd = cdb_fileno (e->cdb);
+              cdb_free (e->cdb);
+              xfree (e->cdb);
+              e->cdb = NULL;
+              if (close (fd))
+                log_error (_("error closing cache file: %s\n"),
+                           strerror(errno));
+              any = 1;
+              break;
+            }
+      }
+    while (any);
+  }
 #ifdef HAVE_W32_SYSTEM
   gnupg_remove (newfname);
 #endif

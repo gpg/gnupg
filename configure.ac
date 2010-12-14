@@ -1523,7 +1523,9 @@ if test "$build_agent_only" = "yes" ; then
   build_doc=no
 fi
 
-
+#
+# Set variables for use by th automake makefile.
+#
 AM_CONDITIONAL(BUILD_GPG,         test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM,       test "$build_gpgsm" = "yes")
 AM_CONDITIONAL(BUILD_AGENT,       test "$build_agent" = "yes")
@@ -1537,6 +1539,29 @@ AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
                test x$cross_compiling = xno -a "$build_gpg" = yes )
+
+# 
+# Set some defines for use gpgconf.
+#
+if test "$build_gpg" = yes ; then
+    AC_DEFINE(BUILD_WITH_GPG,1,[Defined if GPG is to be build])
+fi
+if test "$build_gpgsm" = yes ; then
+    AC_DEFINE(BUILD_WITH_GPGSM,1,[Defined if GPGSM is to be build])
+fi
+if test "$build_agent" = yes ; then
+    AC_DEFINE(BUILD_WITH_AGENT,1,[Defined if GPG-AGENT is to be build])
+fi
+if test "$build_scdaemon" = yes ; then
+    AC_DEFINE(BUILD_WITH_SCDAEMON,1,[Defined if SCDAEMON is to be build])
+fi
+if test "$build_dirmngr" = yes ; then
+    AC_DEFINE(BUILD_WITH_DIRMNGR,1,[Defined if SCDAEMON is to be build])
+fi
+if test "$build_g13" = yes ; then
+    AC_DEFINE(BUILD_WITH_G13,1,[Defined if G13 is to be build])
+fi
+
 
 
 #

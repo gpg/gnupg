@@ -1,3 +1,9 @@
+2010-12-14  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_options_gpg_agent, gc_options_scdaemon)
+	(gc_options_gpg, gc_options_gpgsm, gc_options_dirmngr): Define to
+	NULL if corresponding BUILD_WITH_foo is not defined.
+
 2010-12-02  Werner Koch  <wk@g10code.com>
 
 	* no-libgcrypt.c (gcry_cipher_algo_name): New.

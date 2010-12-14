@@ -1,5 +1,12 @@
 2010-12-14  Werner Koch  <wk@g10code.com>
 
+	* cdb.h (struct cdb) [W32]: Add field CDB_MAPPING.
+	* cdblib.c (cdb_init) [W32]: Save mapping handle.
+	(cdb_free) [W32]: Don't leak the mapping handle from cdb_init by
+	using the saved one.
+
+	* crlcache.c (crl_cache_insert): Close unused matching files.
+
 	* dirmngr.c (main) [W32CE]: Change homedir in daemon mode to /gnupg.
 
 2010-12-07  Werner Koch  <wk@g10code.com>
