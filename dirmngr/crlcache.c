@@ -53,7 +53,7 @@
                  A "c" or "u" indicate a valid cache entry, however
                  "u" requires that a user root certificate check needs
                  to be done.
-                 An "i" indicates an invalid Cache entry which should
+                 An "i" indicates an invalid cache entry which should
                  not be used but still exists so that it can be
                  updated at NEXT_UPDATE. 
         Field 2: Hexadecimal encoded SHA-1 hash of the issuer DN using

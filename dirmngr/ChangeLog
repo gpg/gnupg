@@ -1,3 +1,7 @@
+2010-12-14  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main) [W32CE]: Change homedir in daemon mode to /gnupg.
+
 2010-12-07  Werner Koch  <wk@g10code.com>
 
 	* dirmngr.c (TIMERTICK_INTERVAL) [W32CE]: Change to 60s.

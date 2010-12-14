@@ -721,7 +721,11 @@ main (int argc, char **argv)
      this also overrides the GNUPGHOME environment variable.  */
   if (opt.system_daemon && !homedir_seen)
     {
+#ifdef HAVE_W32CE_SYSTEM
+      opt.homedir == DIRSEP_S "gnupg";
+#else
       opt.homedir = gnupg_sysconfdir ();
+#endif
       opt.homedir_data = gnupg_datadir ();
       opt.homedir_cache = gnupg_cachedir ();
     }
