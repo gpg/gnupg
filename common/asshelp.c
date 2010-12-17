@@ -229,11 +229,15 @@ send_pinentry_environment (assuan_context_t ctx,
    of a variable to store the lock information and the name or the
    process.  */
 static gpg_error_t
-lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name)
+lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
+               int verbose)
 {
 #ifdef HAVE_W32_SYSTEM
   int waitrc;
-  
+  int timeout = (!strcmp (name, "agent")
+                 ? SECS_TO_WAIT_FOR_AGENT
+                 : SECS_TO_WAIT_FOR_DIRMNGR);
+
   (void)homedir; /* Not required. */
 
   *lock = CreateMutexW 
@@ -248,10 +252,19 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  waitrc = WaitForSingleObject (*lock, 5000);
+ retry:
+  waitrc = WaitForSingleObject (*lock, 1000);
   if (waitrc == WAIT_OBJECT_0)
     return 0;
-
+  
+  if (waitrc == WAIT_TIMEOUT && timeout)
+    {
+      timeout--;
+      if (verbose)
+        log_info ("another process is trying to start the %s ... (%ds)\n",
+                  name, timeout);
+      goto retry;
+    }
   if (waitrc == WAIT_TIMEOUT)
     log_info ("error waiting for the spawn_%s mutex: timeout\n", name);
   else
@@ -260,6 +273,8 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name)
   return gpg_error (GPG_ERR_GENERAL);
 #else /*!HAVE_W32_SYSTEM*/
   char *fname;
+
+  (void)verbose;
 
   *lock = NULL;
 
@@ -305,22 +320,6 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
       *lock = NULL;
     }
 }
-
-/* Lock the agent spawning process.  The caller needs to provide the
-   address of a variable to store the lock information.  */
-static gpg_error_t
-lock_agent_spawning (lock_spawn_t *lock, const char *homedir)
-{
-  return lock_spawning (lock, homedir, "agent");
-}
-
-
-static void
-unlock_agent_spawning (lock_spawn_t *lock)
-{
-  unlock_spawning (lock, "agent");
-}
-
 
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting.  Returns a new assuan
@@ -420,7 +419,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               argv[1] = "--use-standard-socket"; 
               argv[2] = NULL;  
 
-              if (!(err = lock_agent_spawning (&lock, homedir))
+              if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
                   && assuan_socket_connect (ctx, sockname, 0, 0))
                 {
                   err = gnupg_spawn_process_detached (agent_program, argv,NULL);
@@ -453,7 +452,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                     }
                 }
 
-              unlock_agent_spawning (&lock);
+              unlock_spawning (&lock, "agent");
             }
           else
             {
@@ -614,7 +613,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       argv[0] = "--daemon";
       argv[1] = NULL;  
       
-      if (!(err = lock_spawning (&lock, homedir, "dirmngr"))
+      if (!(err = lock_spawning (&lock, homedir, "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
           err = gnupg_spawn_process_detached (dirmngr_program, argv,NULL);

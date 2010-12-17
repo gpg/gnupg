@@ -1,3 +1,10 @@
+2010-12-17  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (lock_spawning): Add arg VERBOSE.  Improve timeout
+	management.  Make callers pass a value for VERBOSE.
+	(lock_agent_spawning, unlock_agent_spawning): Remove.  Change
+	callers to use lock_spawning and unlock_spawning.
+
 2010-12-17  Marcus Brinkmann  <mb@g10code.com>
 
 	* homedir.c (gnupg_cachedir): Create /temp subdirectories.
@@ -33,7 +40,7 @@
 	* gettime.c (gnupg_get_isotime): Compare to (time_t)-1.
 	(epoch2isotime): Ditto.
 	(IS_INVALID_TIME_T): New.
-	(asctimestamp): Use lNew macro.
+	(asctimestamp): Use new macro.
 	(strtimestamp, isotimestamp): Ditto.  Use snprintf.
 
 2010-10-25  Werner Koch  <wk@g10code.com>
