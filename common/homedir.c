@@ -412,6 +412,8 @@ gnupg_cachedir (void)
           dir = "c:\\temp\\cache\\gnupg";
 #ifdef HAVE_W32CE_SYSTEM
           dir += 2;
+	  w32_try_mkdir ("\\temp\\cache");
+	  w32_try_mkdir ("\\temp\\cache\\gnupg");
 #endif
         }
     }
