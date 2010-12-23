@@ -1,3 +1,8 @@
+2010-10-28  Werner Koch  <wk@g10code.com>
+
+	* longlong.h: Revert last two changes and replace by code from
+	libgcrypt 1.4.6.
+
 2010-10-22  Jason Woodward  <jason.woodward@timesys.com>  (wk)
 
 	* longlong.h (umul_ppmm) [mips32]: Fix typo.

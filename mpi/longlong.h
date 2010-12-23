@@ -710,12 +710,13 @@ extern USItype __udiv_qrnnd ();
  **************  MIPS  *****************
  ***************************************/
 #if defined (__mips__) && W_TYPE_SIZE == 32
-#if __GNUC__ > 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
-#define umul_ppmm(w1, w0, u, v)                                         \
+#if (__GNUC__ >= 5) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+#define umul_ppmm(w1, w0, u, v) \
   do {                                                                  \
-    UDItype __ll = (UDItype)(u) * (v);                                  \
-    w1 = __ll >> 32;                                                    \
-    w0 = __ll;                                                          \
+    UDItype _r;                                                         \
+    _r = (UDItype) u * v;                                               \
+    (w1) = _r >> 32;                                                    \
+    (w0) = (USItype) _r;                                                \
   } while (0)
 #elif __GNUC__ > 2 || __GNUC_MINOR__ >= 7
 #define umul_ppmm(w1, w0, u, v)                                         \
@@ -742,14 +743,15 @@ extern USItype __udiv_qrnnd ();
  **************  MIPS/64  **************
  ***************************************/
 #if (defined (__mips) && __mips >= 3) && W_TYPE_SIZE == 64
-# if __GNUC__ > 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
+# if (__GNUC__ >= 5) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+   typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #  define umul_ppmm(w1, w0, u, v)                                       \
-     do {                                                               \
-       typedef unsigned int __ll_UTItype __attribute__((mode(TI)));     \
-       __ll_UTItype __ll = (__ll_UTItype)(u) * (v);                     \
-       w1 = __ll >> 64;                                                 \
-       w0 = __ll;                                                       \
-     } while (0)
+  do {                                                                  \
+    UTItype _r;                                                         \
+    _r = (UTItype) u * v;                                               \
+    (w1) = _r >> 64;                                                    \
+    (w0) = (UDItype) _r;                                                \
+  } while (0)
 # elif if __GNUC__ > 2 || __GNUC_MINOR__ >= 7
 #  define umul_ppmm(w1, w0, u, v)                                       \
      __asm__ ("dmultu %2,%3"                                            \
