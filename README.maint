@@ -1,4 +1,4 @@
-            Notes for the GnuPG maintainer  (SVN only)
+            Notes for the GnuPG maintainer  (GIT only)
            ============================================
 
 Here are some notes on how to maintain GnuPG.
@@ -28,8 +28,7 @@ Release process:
   * Write NEWS entries and set the release date in NEWS.
   * In configure.ac set "my_issvn" to "no".
   * Put a "Release <version>" line into the top level ChangeLog.
-  * Commit all changes to the SVN.
-  * Update the SVN then (to sync the release number of all files).
+  * Commit all changes to GIT and push them.
   * Run "./autogen.sh --force"
     (--force is required for the svn magic in configure.ac and a good
     idea in any case)
@@ -42,11 +41,7 @@ Release process:
   * Get the previous tarball and run "mkdiff gnupg".  
     You might need to set a different signature key than mine.  mkdiff
     has an option for this.
-  * If you are satisfied with the result tag the release.  Use "svn
-    info" to get the current URL and use an svn cp command similar to
-    "svn cp svn+ssh://host/gnupg/trunk  svn+ssh://host/gnupg/tags/gnupg-2.n.m"
-    (for 1.4 you should see "branches/STABLE-BRANCH-1-4" instead of "trunk",
-     however tags are all below tags).
+  * If you are satisfied with the result commit a tag for the release.
   * Copy the files to the FTP server
   * Update the webpages - at least the file swdb.wml needs an update.
   * Add a new headline to NEWS.
