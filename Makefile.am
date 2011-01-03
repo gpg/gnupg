@@ -1,5 +1,5 @@
-# Makefile.am - main makefile for NewPG/GnuPG
-#     	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+# Makefile.am - main makefile for GnuPG
+#     	Copyright (C) 2001, 2004, 2010 Free Software Foundation, Inc.
 # 
 # This file is part of GnuPG.
 # 
@@ -22,7 +22,7 @@ ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto
 
-EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.SVN
+EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT
 DISTCLEANFILES = g10defs.h 
 
 if BUILD_GPGSM

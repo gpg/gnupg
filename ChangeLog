@@ -1,3 +1,8 @@
+2011-01-03  Werner Koch  <wk@g10code.com>
+
+	* README.SVN:  Rename to README.GIT.
+	* Makefile.am (EXTRA_DIST): Adjust for that change.
+
 2010-12-14  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (BUILD_WITH_GPG, BUILD_WITH_GPGSM)
