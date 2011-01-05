@@ -209,7 +209,8 @@ enum {
   VENDOR_SCM    = 0x04e6,
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
-  VENDOR_KAAN   = 0x0d46
+  VENDOR_KAAN   = 0x0d46,
+  VENDOR_FSIJ	= 0x234B
 };
 
 /* A list and a table with special transport descriptions. */
@@ -3072,6 +3073,7 @@ ccid_transceive_secure (ccid_driver_t handle,
     {
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
+    case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
       break;
     case VENDOR_CHERRY:
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
