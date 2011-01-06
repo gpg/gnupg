@@ -1466,7 +1466,7 @@ AC_ARG_ENABLE(optimization,
    AC_HELP_STRING([--disable-optimization],
                   [disable compiler optimization]),
                   [if test $enableval = no ; then
-                      CFLAGS=`echo $CFLAGS | sed s%-O[[1-9]]%-O0\ %g`
+                      CFLAGS=`echo $CFLAGS | sed s/-O[[1-9]]\ /-O0\ /g`
                    fi])
 
 #

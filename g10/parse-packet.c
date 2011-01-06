@@ -967,7 +967,7 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 			es_fprintf (listfp, "\tdata: ");
 			mpi_print(listfp, k->data[0], mpi_print_mode );
 			es_putc ('\n', listfp);
-			es_fprintf (listfp, "\tdata: [% 3d bytes] ", encr_buf[0]);
+			es_fprintf (listfp, "\tdata: [% 3d bytes] ", encr_buf[0]+1);
 			mpi_print(listfp, k->data[1], mpi_print_mode );
 			es_putc ('\n', listfp);
 		}
