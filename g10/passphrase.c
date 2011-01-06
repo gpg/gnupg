@@ -323,7 +323,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
     { 
       char *uid;
       size_t uidlen;
-      const char *algo_name = gcry_pk_algo_name ( pk->pubkey_algo );
+      const char *algo_name = openpgp_pk_algo_name ( pk->pubkey_algo );
       const char *timestr;
       char *maink;
       
@@ -585,7 +585,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
       if ( !get_pubkey( pk, keyid ) )
         {
-          const char *s = gcry_pk_algo_name ( pk->pubkey_algo );
+          const char *s = openpgp_pk_algo_name ( pk->pubkey_algo );
           
           tty_printf (_("%u-bit %s key, ID %s, created %s"),
                       nbits_from_pk( pk ), s?s:"?", keystr(keyid),
@@ -690,7 +690,7 @@ gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
   char *desc;
   const char *prompt;
       
-  algo_name = gcry_pk_algo_name (pk->pubkey_algo);
+  algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
   timestr = strtimestamp (pk->timestamp);
   uid = get_user_id (pk->keyid, &uidlen); 
 

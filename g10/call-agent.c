@@ -1744,6 +1744,7 @@ inq_ciphertext_cb (void *opaque, const char *line)
 gpg_error_t
 agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                  gcry_sexp_t s_ciphertext,
+			const byte sk_fp[MAX_FINGERPRINT_LEN],
                  unsigned char **r_buf, size_t *r_buflen)
 {
   gpg_error_t err;
@@ -1751,6 +1752,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   membuf_t data;
   size_t n, len;
   char *p, *buf, *endp;
+
+  /*TODO: use sk_fp */
   
   if (!keygrip || strlen(keygrip) != 40 || !s_ciphertext || !r_buf || !r_buflen)
     return gpg_error (GPG_ERR_INV_VALUE);

@@ -52,6 +52,8 @@ static struct {
   { "rsa",  "nedpqu", 2, 5 },
   { "dsa",  "pqgyx", 4, 4 },
   { "elg",  "pgyx", 3, 3 },
+  { "ecdsa","cqd", 2, 2 },
+  { "ecdh", "cqpd", 3, 3 },
   { NULL }
 };
 
@@ -426,6 +428,9 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   unsigned char *p;
   gcry_md_hd_t md;
 
+  if (opt.debug & DBG_CRYPTO_VALUE)
+   log_info ("Protecting key=%s, passphrase=%s\n", plainkey, passphrase);
+
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
   gnupg_get_isotime (timestamp_exp+19);
@@ -454,37 +459,51 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   for (infidx=0; protect_info[infidx].algo
               && !smatch (&s, n, protect_info[infidx].algo); infidx++)
     ;
-  if (!protect_info[infidx].algo)
+  if (!protect_info[infidx].algo)  {
+    log_info ("Unsupported alg %d for protection\n", protect_info[infidx].algo);
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
+  }
 
   prot_begin = prot_end = NULL;
   for (i=0; (c=protect_info[infidx].parmlist[i]); i++)
     {
       if (i == protect_info[infidx].prot_from)
         prot_begin = s;
-      if (*s != '(')
+      if (*s != '(')  {
+        log_info ("Unbalanced bracket in S-expression #1\n");
         return gpg_error (GPG_ERR_INV_SEXP);
+      }
       depth++;
       s++;
       n = snext (&s);
-      if (!n)
+      if (!n)  {
+        log_info ("Cannot get the length of S-expression field\n");
         return gpg_error (GPG_ERR_INV_SEXP); 
-      if (n != 1 || c != *s)
+      }
+      if (n != 1 || c != *s)  {
+        log_info ("Invalid length in S-expression field\n");
         return gpg_error (GPG_ERR_INV_SEXP); 
-      s += n;
+     } 
+     s += n;
       n = snext (&s);
-      if (!n)
+      if (!n)  {
+        log_info ("Invalid fieled in S-expression field\n");
         return gpg_error (GPG_ERR_INV_SEXP); 
+      }
       s +=n; /* skip value */
-      if (*s != ')')
+      if (*s != ')')  {
+        log_info ("Unbalanced bracket in S-expression #2\n");
         return gpg_error (GPG_ERR_INV_SEXP); 
+      }
       depth--;
       if (i == protect_info[infidx].prot_to)
         prot_end = s;
       s++;
     }
-  if (*s != ')' || !prot_begin || !prot_end )
+  if (*s != ')' || !prot_begin || !prot_end )  {
+    log_info ("Unbalanced bracket in S-expression #3\n");
     return gpg_error (GPG_ERR_INV_SEXP); 
+  }
   depth--;
   hash_end = s;
   s++;

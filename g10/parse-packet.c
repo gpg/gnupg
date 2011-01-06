@@ -939,20 +939,40 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     {
-      for (i = 0; i < ndata; i++)
-	{
-	  n = pktlen;
-	  k->data[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
-	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tdata: ");
-	      mpi_print (listfp, k->data[i], mpi_print_mode);
-	      es_putc ('\n', listfp);
-	    }
-	  if (!k->data[i])
-	    rc = gpg_error (GPG_ERR_INV_PACKET);
-	}
+      if( k->pubkey_algo != PUBKEY_ALGO_ECDH )  {
+        for (i = 0; i < ndata; i++)
+	  {
+	    n = pktlen;
+	    k->data[i] = mpi_read (inp, &n, 0);
+	    pktlen -= n;
+	    if (list_mode)
+	      {
+	        es_fprintf (listfp, "\tdata: ");
+	        mpi_print (listfp, k->data[i], mpi_print_mode);
+	        es_putc ('\n', listfp);
+	      }
+	    if (!k->data[i])
+	      rc = gpg_error (GPG_ERR_INV_PACKET);
+	  }
+      }
+      else  
+        {
+		byte encr_buf[255];
+		assert( ndata == 2 );
+		n = pktlen; k->data[0] = mpi_read(inp, &n, 0); pktlen -=n;
+	        rc = iobuf_read_size_body( inp, encr_buf, sizeof(encr_buf), pktlen, k->data+1 );
+		if( rc )
+			goto leave;
+		if( list_mode ) {
+			es_fprintf (listfp, "\tdata: ");
+			mpi_print(listfp, k->data[0], mpi_print_mode );
+			es_putc ('\n', listfp);
+			es_fprintf (listfp, "\tdata: [% 3d bytes] ", encr_buf[0]);
+			mpi_print(listfp, k->data[1], mpi_print_mode );
+			es_putc ('\n', listfp);
+		}
+		pktlen -= (encr_buf[0]+1);
+      }
     }
 
  leave:
@@ -1926,20 +1946,61 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   else
     {
       /* Fill in public key parameters.  */
-      for (i = 0; i < npkey; i++)
-	{
-	  n = pktlen;
-	  pk->pkey[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
-	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tpkey[%d]: ", i);
-	      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
-	      es_putc ('\n', listfp);
+      if( algorithm != PUBKEY_ALGO_ECDSA && algorithm != PUBKEY_ALGO_ECDH )  {
+        for (i = 0; i < npkey; i++)
+	  {
+	    n = pktlen;
+	    pk->pkey[i] = mpi_read (inp, &n, 0);
+	    pktlen -= n;
+	    if (list_mode)
+	      {
+	        es_fprintf (listfp, "\tpkey[%d]: ", i);
+	        mpi_print (listfp, pk->pkey[i], mpi_print_mode);
+	        es_putc ('\n', listfp);
+	      }
+	    if (!pk->pkey[i])
+	      err = gpg_error (GPG_ERR_INV_PACKET);
+	  }
+      }
+      else  {
+            /* note that the code in this function ignores the errors */
+	    byte name_oid[256];
+	    err = iobuf_read_size_body( inp, name_oid, sizeof(name_oid), pktlen, pk->pkey+0 );
+	    if( err )
+	        goto leave;
+	    n = name_oid[0];
+	    if( list_mode )
+	       es_fprintf (listfp,   "\tpkey[0]: curve OID [%d] ...%02x %02x\n", 
+	       		n, name_oid[1+n-2], name_oid[1+n-1] );
+	    pktlen -= (n+1);
+	    /* set item [1], which corresponds to the public key; these two fields are all we need to uniquely define the key */
+	    // log_debug("Parsing ecc public key in the public packet, pktlen=%lu\n", pktlen);
+	    n = pktlen; pk->pkey[1] = mpi_read( inp, &n, 0 ); pktlen -=n;
+	    if( pk->pkey[1]==NULL )
+		err = gpg_error(G10ERR_INVALID_PACKET);
+	    else if( list_mode ) {
+		es_fprintf (listfp,   "\tpkey[1]: ");
+		mpi_print(listfp, pk->pkey[1], mpi_print_mode);
+		es_putc ('\n', listfp);
 	    }
-	  if (!pk->pkey[i])
-	    err = gpg_error (GPG_ERR_INV_PACKET);
-	}
+	    /* One more field for ECDH */
+	    if( algorithm == PUBKEY_ALGO_ECDH )  {
+#define kek_params name_oid
+	       err = iobuf_read_size_body( inp, kek_params, sizeof(kek_params), pktlen, pk->pkey+2 );
+	       if( err )
+	         goto leave;
+	       n = kek_params[0];
+	       if( kek_params[1] != 1 ) {
+			log_error("invalid ecdh KEK parameters field type in private key: understand type 1, but found 0x%02x\n", kek_params[1]);
+	       		err = gpg_error(G10ERR_INVALID_PACKET);
+			goto leave;
+	       }
+	       if( list_mode )
+	         es_fprintf (listfp,   "\tpkey[2]: KEK params type=01 hash:%d sym-algo:%d\n", kek_params[1+n-2], kek_params[1+n-1] );
+	       pktlen -= (n+1);
+#undef kek_params
+           }
+     }
       if (err)
 	goto leave;
     }

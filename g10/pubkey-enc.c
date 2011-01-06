@@ -145,6 +145,8 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   gcry_sexp_t s_data;
   char *desc;
   char *keygrip;
+  byte fp[MAX_FINGERPRINT_LEN]; 
+  size_t fpn;
 
   /* Get the keygrip.  */
   err = hexkeygrip_from_pk (sk, &keygrip);
@@ -174,9 +176,12 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (err)
     goto leave;
 
+  fingerprint_from_pk( sk, fp, &fpn );
+  assert( fpn == 20 );
+
   /* Decrypt. */
   desc = gpg_format_keydesc (sk, 0, 1);
-  err = agent_pkdecrypt (NULL, keygrip, desc, s_data, &frame, &nframe);
+  err = agent_pkdecrypt (NULL, keygrip, desc, s_data, fp, &frame, &nframe);
   xfree (desc);
   gcry_sexp_release (s_data);
   if (err)
@@ -202,28 +207,41 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (DBG_CIPHER)
     log_printhex ("DEK frame:", frame, nframe);
   n = 0;
-  if (!card)
-    {
-      if (n + 7 > nframe)
-        {
-          err = gpg_error (G10ERR_WRONG_SECKEY);
-          goto leave;
-        }
-      if (frame[n] == 1 && frame[nframe - 1] == 2)
-        {
-          log_info (_("old encoding of the DEK is not supported\n"));
-          err = gpg_error (G10ERR_CIPHER_ALGO);
-          goto leave;
-        }
-      if (frame[n] != 2) /* Something went wrong.  */
-        {
-          err = gpg_error (G10ERR_WRONG_SECKEY);
-          goto leave;
-        }
-      for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
-        ;
-      n++; /* Skip the zero byte.  */
+
+  if( sk->pubkey_algo != PUBKEY_ALGO_ECDH )  {
+    if (!card)
+      {
+        if (n + 7 > nframe)
+          {
+            err = gpg_error (G10ERR_WRONG_SECKEY);
+            goto leave;
+          }
+        if (frame[n] == 1 && frame[nframe - 1] == 2)
+          {
+            log_info (_("old encoding of the DEK is not supported\n"));
+            err = gpg_error (G10ERR_CIPHER_ALGO);
+            goto leave;
+          }
+        if (frame[n] != 2) /* Something went wrong.  */
+          {
+            err = gpg_error (G10ERR_WRONG_SECKEY);
+            goto leave;
+          }
+        for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
+          ;
+        n++; /* Skip the zero byte.  */
+      }
+  }
+  else  {
+    /* Allow double padding for the benefit of DEK size concealment.
+     * Higher than this is wasteful.  
+     */
+    if( frame[nframe-1] > 8*2 || nframe <= 8 )  {
+      err = G10ERR_WRONG_SECKEY; goto leave; 
     }
+    nframe -= frame[nframe-1];	/* remove padding */
+    assert( n==0 );	/* used just bellow */
+  }
 
   if (n + 4 > nframe)
     {

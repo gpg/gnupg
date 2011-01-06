@@ -1079,7 +1079,7 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a,afx->eol);
 	    if( !opt.no_version )
 	      {
-		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
+		iobuf_writestr(a, "Version: GnuPG v"  VERSION "-ecc ("
 			       PRINTABLE_OS_NAME ")" );
 		iobuf_writestr(a,afx->eol);
 	      }

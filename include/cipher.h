@@ -56,6 +56,8 @@
 #define PUBKEY_ALGO_RSA_S        /*  3 */ GCRY_PK_RSA_S /* RSA sign only.    */
 #define PUBKEY_ALGO_ELGAMAL_E    /* 16 */ GCRY_PK_ELG_E /* Elgamal encr only */
 #define PUBKEY_ALGO_DSA          /* 17 */ GCRY_PK_DSA                          
+#define PUBKEY_ALGO_ECDH         18 	/* corresponds to GCRY_PK_ECDH   ECC DH; encrypt only */
+#define PUBKEY_ALGO_ECDSA        19 	/* corresponds to GCRY_PK_ECDSA  ECC DSA; sign only */
 #define PUBKEY_ALGO_ELGAMAL      /* 20 */ GCRY_PK_ELG   /* Elgamal encr+sign */
 
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */

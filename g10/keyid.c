@@ -57,6 +57,8 @@ pubkey_letter( int algo )
     case PUBKEY_ALGO_ELGAMAL_E: return 'g';
     case PUBKEY_ALGO_ELGAMAL:   return 'G' ;
     case PUBKEY_ALGO_DSA:	return 'D' ;
+    case PUBKEY_ALGO_ECDSA:	return 'E' ;	// ECC DSA (sign only)
+    case PUBKEY_ALGO_ECDH:	return 'e' ;	// ECC DH (encrypt only)
     default: return '?';
     }
 }
@@ -74,6 +76,8 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
   unsigned int nbits;
   size_t nbytes;
   int npkey = pubkey_get_npkey (pk->pubkey_algo);
+  /* name OID, MPI of public point, [for ECDH only: KEK params] */
+  enum gcry_mpi_format ecc_pub_format[3] = {GCRYMPI_FMT_USG, GCRYMPI_FMT_PGP, GCRYMPI_FMT_USG};
 
   /* Two extra bytes for the expiration date in v3 */
   if(pk->version<4)
@@ -90,11 +94,13 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
     {
       for(i=0; i < npkey; i++ )
         {
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, pk->pkey[i]))
+	  const enum gcry_mpi_format fmt = 
+            ((pk->pubkey_algo==PUBKEY_ALGO_ECDSA || pk->pubkey_algo==PUBKEY_ALGO_ECDH) ? ecc_pub_format[i] : GCRYMPI_FMT_PGP);
+
+          if (gcry_mpi_print (fmt, NULL, 0, &nbytes, pk->pkey[i]))
             BUG ();
           pp[i] = xmalloc (nbytes);
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, pp[i], nbytes,
-                              &nbytes, pk->pkey[i]))
+          if (gcry_mpi_print (fmt, pp[i], nbytes, &nbytes, pk->pkey[i]))
             BUG ();
           nn[i] = nbytes;
           n += nn[i];
@@ -711,6 +717,20 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                              "(public-key(rsa(n%m)(e%m)))",
                              pk->pkey[0], pk->pkey[1]);
       break;
+
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_ECDH:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(c%m)(q%m)))",
+                             pk->pkey[0], pk->pkey[1]);
+      break;
+/* 
+   case PUBKEY_ALGO_ECDH:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecdh(c%m)(q%m)(p%m)))",
+                             pk->pkey[0], pk->pkey[1], pk->pkey[2]);
+      break;
+*/
 
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);

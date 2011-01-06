@@ -227,21 +227,6 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
     }
 }
 
-
-static gcry_mpi_t
-mpi_from_sexp (gcry_sexp_t sexp, const char * item)
-{
-  gcry_sexp_t list;
-  gcry_mpi_t data;
-  
-  list = gcry_sexp_find_token (sexp, item, 0);
-  assert (list);
-  data = gcry_sexp_nth_mpi (list, 1, 0);
-  assert (data);
-  gcry_sexp_release (list);
-  return data;
-}
-
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
    advised to use that cached passphrase fro the key.  */
 static int
@@ -418,7 +403,7 @@ match_dsa_hash (unsigned int qbytes)
   if (qbytes <= 48)
     return DIGEST_ALGO_SHA384;
 
-  if (qbytes <= 64)
+  if (qbytes <= 66 )	/* 66 corresponds to 521 (64 to 512) */
     return DIGEST_ALGO_SHA512;
 
   return DEFAULT_DIGEST_ALGO;
@@ -451,9 +436,13 @@ hash_for (PKT_public_key *pk)
     {
       return recipient_digest_algo;
     }
-  else if (pk->pubkey_algo == PUBKEY_ALGO_DSA)
+  else if(pk->pubkey_algo==PUBKEY_ALGO_DSA || pk->pubkey_algo==PUBKEY_ALGO_ECDSA )
     {
-      unsigned int qbytes = gcry_mpi_get_nbits (pk->pkey[1]) / 8;
+      unsigned int qbytes = gcry_mpi_get_nbits (pk->pkey[1]);
+
+      if( pk->pubkey_algo==PUBKEY_ALGO_ECDSA )
+        qbytes = ecdsa_qbits_from_Q(qbytes);
+      qbytes = qbytes/8;
 
       /* It's a DSA key, so find a hash that is the same size as q or
 	 larger.  If q is 160, assume it is an old DSA key and use a
@@ -935,10 +924,13 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
-		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA)
+		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA )
 		  {
-		    int temp_hashlen = gcry_mpi_get_nbits
-                      (sk_rover->pk->pkey[1])+7/8;
+		    int temp_hashlen = gcry_mpi_get_nbits(sk_rover->pk->pkey[1]);
+
+		    if( sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA )
+		      temp_hashlen = ecdsa_qbits_from_Q( temp_hashlen );
+		    temp_hashlen = (temp_hashlen+7)/8;
 
 		    /* Pick a hash that is large enough for our
 		       largest q */
@@ -1494,7 +1486,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
 	else if(pksk->pubkey_algo==PUBKEY_ALGO_DSA)
-	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
+	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8 );
+        else if(pksk->pubkey_algo==PUBKEY_ALGO_ECDSA )
+	  digest_algo = match_dsa_hash (ecdsa_qbits_from_Q( gcry_mpi_get_nbits (pksk->pkey[1]) ) / 8);
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }

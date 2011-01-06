@@ -1161,6 +1161,18 @@ build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
   /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
   /*     (*indent)--; */
   /*   } */
+/*
+  else if (sk->pubkey_algo == PUBKEY_ALGO_ECDSA && !sk->is_protected)
+    {
+      write_sexp_line (out, indent, "(ecdsa\n");
+      (*indent)++; 
+      write_sexp_keyparm (out, indent, "c", sk->skey[0]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "q", sk->skey[6]); iobuf_put (out,'\n');
+      write_sexp_keyparm (out, indent, "d", sk->skey[7]);
+      iobuf_put (out,')'); iobuf_put (out,'\n');
+      (*indent)--;
+    }
+*/
   /* else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected) */
   /*   { */
   /*     write_sexp_line (out, indent, "(elg\n"); */

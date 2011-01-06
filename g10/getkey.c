@@ -138,7 +138,10 @@ cache_public_key (PKT_public_key * pk)
     return;
 
   if (is_ELGAMAL (pk->pubkey_algo)
-      || pk->pubkey_algo == PUBKEY_ALGO_DSA || is_RSA (pk->pubkey_algo))
+      || pk->pubkey_algo == PUBKEY_ALGO_DSA
+      || pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_ECDH
+      || is_RSA (pk->pubkey_algo))
     {
       keyid_from_pk (pk, keyid);
     }

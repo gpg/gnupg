@@ -813,7 +813,7 @@ my_strusage( int level )
   const char *p;
 
     switch( level ) {
-      case 11: p = "gpg (GnuPG)";
+      case 11: p = "gpg (GnuPG) ecc";
 	break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
@@ -857,7 +857,7 @@ my_strusage( int level )
       case 34:
 	if (!pubkeys)
             pubkeys = build_list (_("Pubkey: "), 0,
-                                  gcry_pk_algo_name,
+                                  openpgp_pk_algo_name,
                                   openpgp_pk_test_algo );
 	p = pubkeys;
 	break;

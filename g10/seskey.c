@@ -27,6 +27,7 @@
 #include "gpg.h"
 #include "util.h"
 #include "cipher.h"
+#include "options.h"
 #include "main.h"
 #include "i18n.h"
 
@@ -73,14 +74,47 @@ make_session_key( DEK *dek )
  * returns: A mpi with the session key (caller must free)
  */
 gcry_mpi_t
-encode_session_key (DEK *dek, unsigned int nbits)
+encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
 {
     size_t nframe = (nbits+7) / 8;
     byte *p;
     byte *frame;
     int i,n;
-    u16 csum;
+    u16 csum = 0;
     gcry_mpi_t a;
+
+    if( DBG_CIPHER )
+       log_debug("encode_session_key: encoding %d byte DEK", dek->keylen);
+
+    for( p = dek->key, i=0; i < dek->keylen; i++ )
+	csum += *p++;
+
+    /* Shortcut for ECDH. It's padding is minimal to simply make the output be a multiple of 8 bytes. */
+    if( openpgp_pk_algo == PUBKEY_ALGO_ECDH )  {
+	/* pad to 8 byte granulatiry; the padding byte is the number of padded bytes.
+	 * A  DEK(k bytes)  CSUM(2 bytes) 0x 0x 0x 0x ... 0x
+	 *                                +---- x times ---+
+ 	 */
+	nframe = ( 1 + dek->keylen + 2 /* the value so far is always odd */ + 7 ) & (~7);
+	assert( !(nframe%8) && nframe > 1 + dek->keylen + 2 );	/* alg+key+csum fit and the size is congruent to 8 */
+	frame = xmalloc_secure( nframe );
+	n = 0;
+	frame[n++] = dek->algo;
+	memcpy( frame+n, dek->key, dek->keylen ); n += dek->keylen;
+	frame[n++] = csum >>8;
+	frame[n++] = csum;
+	i = nframe - n;		/* number padded bytes */
+	memset( frame+n, i, i );/* use it as the value of each padded byte */
+	assert( n+i == nframe );
+
+	if( DBG_CIPHER )
+		log_debug("encode_session_key: [%d] %02x  %02x %02x ...  %02x %02x %02x", nframe, frame[0],frame[1],frame[2], frame[nframe-3],frame[nframe-2],frame[nframe-1]);
+
+	if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, nframe, &nframe))
+		BUG();
+	xfree(frame);
+	return a;
+    }
 
     /* The current limitation is that we can only use a session key
      * whose length is a multiple of BITS_PER_MPI_LIMB
@@ -103,9 +137,6 @@ encode_session_key (DEK *dek, unsigned int nbits)
      *	   cipher algorithm (20 is used with blowfish160).
      * CSUM is the 16 bit checksum over the DEK
      */
-    csum = 0;
-    for( p = dek->key, i=0; i < dek->keylen; i++ )
-	csum += *p++;
 
     frame = xmalloc_secure( nframe );
     n = 0;
@@ -161,8 +192,8 @@ do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
     gcry_mpi_t a;
 
     if( len + asnlen + 4  > nframe )
-	log_bug("can't encode a %d bit MD into a %d bits frame\n",
-		    (int)(len*8), (int)nbits);
+	log_bug("can't encode a %d bit MD into a %d bits frame, algo=%d\n",
+		    (int)(len*8), (int)nbits, algo);
 
     /* We encode the MD in this way:
      *
@@ -209,15 +240,22 @@ gcry_mpi_t
 encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 {
   gcry_mpi_t frame;
+  int gcry_pkalgo;
 
   assert (hash_algo);
   assert (pk);
 
-  if (pk->pubkey_algo == GCRY_PK_DSA)
+  gcry_pkalgo = map_pk_openpgp_to_gcry( pk->pubkey_algo );
+
+  if (gcry_pkalgo == GCRY_PK_DSA || gcry_pkalgo == GCRY_PK_ECDSA )
     {
       /* It's a DSA signature, so find out the size of q. */
 
       size_t qbytes = gcry_mpi_get_nbits (pk->pkey[1]);
+
+      /* pkey[1] is Q for ECDSA, which is an uncompressed point, i.e.  04 <x> <y> */
+      if( gcry_pkalgo==GCRY_PK_ECDSA )
+	  qbytes = ecdsa_qbits_from_Q( qbytes );
 
       /* Make sure it is a multiple of 8 bits. */
 
@@ -236,7 +274,8 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	 DSA. ;) */
       if (qbytes < 160)
 	{
-	  log_error (_("DSA key %s uses an unsafe (%zu bit) hash\n"),
+	  log_error (_("%s key %s uses an unsafe (%zu bit) hash\n"),
+			gcry_pk_algo_name( gcry_pkalgo ),
                      keystr_from_pk (pk), qbytes);
 	  return NULL;
 	}
@@ -245,10 +284,16 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate. */
-      if (gcry_md_get_algo_dlen (hash_algo) < qbytes)
+      /* This checks would require the use of SHA512 with ECDSA 512. I think this is overkill to fail in this case.
+       * Therefore, relax the check, but only for ECDSA keys. We may need to adjust it later for general case.
+       * ( Note that the check will never pass for ECDSA 521 anyway as the only hash that intended to match it is SHA 512, but 512 < 521 ).
+       */
+      //if (gcry_md_get_algo_dlen (hash_algo) < qbytes )
+      if (gcry_md_get_algo_dlen (hash_algo) < ((gcry_pkalgo==GCRY_PK_ECDSA && qbytes>(521)/8) ? 512/8 : qbytes) )
 	{
-	  log_error (_("DSA key %s requires a %zu bit or larger hash\n"),
-                     keystr_from_pk(pk), qbytes*8);
+	  log_error (_("%s key %s requires a %zu bit or larger hash, used hash-algo=%d\n"),
+			gcry_pk_algo_name( gcry_pkalgo ),
+                     keystr_from_pk(pk), qbytes*8, hash_algo);
 	  return NULL;
 	}
 

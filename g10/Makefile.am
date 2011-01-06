@@ -72,7 +72,8 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
-	      pkglue.c pkglue.h 
+	      pkglue.c pkglue.h \
+	      ecdh.c
 
 gpg2_SOURCES  = gpg.c		\
 	      server.c          \
@@ -109,7 +110,8 @@ gpg2_SOURCES  = gpg.c		\
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
-	      verify.c          
+	      verify.c          \
+	      verify-stubs.c
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
