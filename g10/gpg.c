@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+ *               2008, 2009, 2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,6 +54,7 @@
 #include "exec.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
+#include "call-dirmngr.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -1822,7 +1823,7 @@ gpg_init_default_ctrl (ctrl_t ctrl)
 static void
 gpg_deinit_default_ctrl (ctrl_t ctrl)
 {
-  (void)ctrl;
+  gpg_dirmngr_deinit_session_data (ctrl);
 }
 
 
@@ -2658,15 +2659,15 @@ main (int argc, char **argv)
             break;
 	  case oKeyServer:
 	    {
-	      struct keyserver_spec *keyserver;
-	      keyserver=parse_keyserver_uri(pargs.r.ret_str,0,
-					    configname,configlineno);
-	      if(!keyserver)
-		log_error(_("could not parse keyserver URL\n"));
+	      keyserver_spec_t keyserver;
+	      keyserver = parse_keyserver_uri (pargs.r.ret_str,0,
+                                               configname,configlineno);
+	      if (!keyserver)
+		log_error (_("could not parse keyserver URL\n"));
 	      else
 		{
-		  keyserver->next=opt.keyserver;
-		  opt.keyserver=keyserver;
+		  keyserver->next = opt.keyserver;
+		  opt.keyserver = keyserver;
 		}
 	    }
 	    break;
@@ -2853,14 +2854,14 @@ main (int argc, char **argv)
 	    break;
 	  case oDefaultKeyserverURL:
 	    {
-	      struct keyserver_spec *keyserver;
-	      keyserver=parse_keyserver_uri(pargs.r.ret_str,1,
-					    configname,configlineno);
-	      if(!keyserver)
-		log_error(_("could not parse keyserver URL\n"));
+	      keyserver_spec_t keyserver;
+	      keyserver = parse_keyserver_uri (pargs.r.ret_str,1,
+                                               configname,configlineno);
+	      if (!keyserver)
+		log_error (_("could not parse keyserver URL\n"));
 	      else
-		free_keyserver_spec(keyserver);
-
+		free_keyserver_spec (keyserver);
+              
 	      opt.def_keyserver_url = pargs.r.ret_str;
 	    }
 	    break;

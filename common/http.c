@@ -138,7 +138,8 @@ typedef unsigned long longcounter_t;
 typedef void * gnutls_session_t;
 #endif
 
-static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part);
+static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part,
+                                    int no_scheme_check);
 static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
@@ -356,7 +357,7 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd->flags = flags;
   hd->tls_context = tls_context;
 
-  err = _http_parse_uri (&hd->uri, url, errsource);
+  err = _http_parse_uri (&hd->uri, url, 0, errsource);
   if (!err)
     err = send_request (hd, auth, proxy, srvtag, headers, errsource);
   
@@ -368,7 +369,6 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
         es_fclose (hd->fp_read);
       if (hd->fp_write)
         es_fclose (hd->fp_write);
-      http_release_parsed_uri (hd->uri);
       xfree (hd);
     }
   else
@@ -511,18 +511,27 @@ http_get_status_code (http_t hd)
 
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
- * The caller must always use release_parsed_uri() to releases the
- * resources (even on error).
+ * On success the caller must use release_parsed_uri() to releases the
+ * resources.  If NO_SCHEME_CHECK is set, the function tries to parse
+ * the URL in the same way it would do for an HTTP style URI.
  */
 gpg_error_t
-_http_parse_uri (parsed_uri_t * ret_uri, const char *uri,
-                 gpg_err_source_t errsource)
+_http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
+                 int no_scheme_check, gpg_err_source_t errsource)
 {
+  gpg_err_code_t ec;
+
   *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
   if (!*ret_uri)
     return gpg_err_make (errsource, gpg_err_code_from_syserror ());
   strcpy ((*ret_uri)->buffer, uri);
-  return gpg_err_make (errsource, do_parse_uri (*ret_uri, 0));
+  ec = do_parse_uri (*ret_uri, 0, no_scheme_check);
+  if (ec)
+    {
+      xfree (*ret_uri);
+      *ret_uri = NULL;
+    }
+  return gpg_err_make (errsource, ec);
 }
 
 void
@@ -543,7 +552,7 @@ http_release_parsed_uri (parsed_uri_t uri)
 
 
 static gpg_err_code_t
-do_parse_uri (parsed_uri_t uri, int only_local_part)
+do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 {
   uri_tuple_t *tail;
   char *p, *p2, *p3, *pp;
@@ -557,6 +566,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
   uri->port = 0;
   uri->params = uri->query = NULL;
   uri->use_tls = 0;
+  uri->is_http = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -572,15 +582,24 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
        *pp = tolower (*(unsigned char*)pp);
       uri->scheme = p;
       if (!strcmp (uri->scheme, "http"))
-        uri->port = 80;
+        {
+          uri->port = 80;
+          uri->is_http = 1;
+        }
+      else if (!strcmp (uri->scheme, "hkp"))
+        {
+          uri->port = 11371;
+          uri->is_http = 1;
+        }
 #ifdef HTTP_USE_GNUTLS
-      else if (!strcmp (uri->scheme, "https"))
+      else if (!strcmp (uri->scheme, "https") || !strcmp (uri->scheme,"hkps"))
         {
           uri->port = 443;
+          uri->is_http = 1;
           uri->use_tls = 1;
         }
 #endif
-      else
+      else if (!no_scheme_check)
 	return GPG_ERR_INV_URI; /* Unsupported scheme */
 
       p = p2;
@@ -852,12 +871,11 @@ send_request (http_t hd, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = _http_parse_uri (&uri, http_proxy, errsource);
+      err = _http_parse_uri (&uri, http_proxy, 0, errsource);
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
 		     http_proxy, gpg_strerror (err));
-	  http_release_parsed_uri (uri);
 	  return gpg_err_make (errsource, GPG_ERR_CONFIGURATION);
 	}
 
@@ -1882,11 +1900,10 @@ main (int argc, char **argv)
   http_register_tls_callback (verify_callback);
 #endif /*HTTP_USE_GNUTLS*/
 
-  rc = http_parse_uri (&uri, *argv);
+  rc = http_parse_uri (&uri, *argv, 0);
   if (rc)
     {
       log_error ("`%s': %s\n", *argv, gpg_strerror (rc));
-      http_release_parsed_uri (uri);
       return 1;
     }
 

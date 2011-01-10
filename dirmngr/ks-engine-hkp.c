@@ -1,0 +1,258 @@
+/* ks-engine-hkp.c - HKP keyserver engine
+ * Copyright (C) 2011 Free Software Foundation, Inc.
+ *
+ * This file is part of GnuPG.
+ *
+ * GnuPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GnuPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <config.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#include "dirmngr.h"
+#include "misc.h"
+#include "userids.h"
+#include "ks-engine.h"
+
+/* To match the behaviour of our old gpgkeys helper code we escape
+   more characters than actually needed. */
+#define EXTRA_ESCAPE_CHARS "@!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
+
+/* How many redirections do we allow.  */
+#define MAX_REDIRECTS 2
+
+
+/* Search the keyserver identified by URI for keys matching PATTERN.
+   On success R_FP has an open stream to read the data.  */
+gpg_error_t
+ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
+               estream_t *r_fp)
+{
+  gpg_error_t err;
+  KEYDB_SEARCH_DESC desc;
+  char fprbuf[2+40+1];
+  const char *scheme;
+  char portstr[10];
+  http_t http = NULL;
+  char *hostport = NULL;
+  char *request = NULL;
+  int redirects_left = MAX_REDIRECTS;
+  estream_t fp = NULL;
+
+  *r_fp = NULL;
+
+  /* Remove search type indicator and adjust PATTERN accordingly.
+     Note that HKP keyservers like the 0x to be present when searching
+     by keyid.  We need to re-format the fingerprint and keyids so to
+     remove the gpg specific force-use-of-this-key flag ("!").  */
+  err = classify_user_id (pattern, &desc);
+  if (err)
+    return err;
+  switch (desc.mode)
+    {
+    case KEYDB_SEARCH_MODE_EXACT:
+    case KEYDB_SEARCH_MODE_SUBSTR:
+    case KEYDB_SEARCH_MODE_MAIL:
+    case KEYDB_SEARCH_MODE_MAILSUB:
+      pattern = desc.u.name;
+      break;
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      snprintf (fprbuf, sizeof fprbuf, "0x%08lX", (ulong)desc.u.kid[1]);
+      pattern = fprbuf;
+      break;
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      snprintf (fprbuf, sizeof fprbuf, "0x%08lX%08lX", 
+                (ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
+      pattern = fprbuf;
+      break;
+    case KEYDB_SEARCH_MODE_FPR16:
+      bin2hex (desc.u.fpr, 16, fprbuf);
+      pattern = fprbuf;
+      break;
+    case KEYDB_SEARCH_MODE_FPR20:
+    case KEYDB_SEARCH_MODE_FPR:
+      bin2hex (desc.u.fpr, 20, fprbuf);
+      pattern = fprbuf;
+      break;
+    default:
+      return gpg_error (GPG_ERR_INV_USER_ID);
+    }
+  
+  /* Map scheme and port.  */
+  if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
+    {
+      scheme = "https";
+      strcpy (portstr, "443");
+    }
+  else /* HKP or HTTP.  */
+    {
+      scheme = "http";
+      strcpy (portstr, "11371");
+    }
+  if (uri->port)
+    snprintf (portstr, sizeof portstr, "%hu", uri->port);
+  else
+    {} /*fixme_do_srv_lookup ()*/
+
+  /* Build the request string.  */
+  {
+    char *searchkey;
+
+    hostport = strconcat (scheme, "://", 
+                          *uri->host? uri->host: "localhost",
+                          ":", portstr, NULL);
+    if (!hostport)
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+
+    searchkey = http_escape_string (pattern, EXTRA_ESCAPE_CHARS);
+    if (!searchkey)
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+
+    request = strconcat (hostport,
+                         "/pks/lookup?op=index&options=mr&search=",
+                         searchkey,
+                         NULL);
+    xfree (searchkey);
+    if (!request)
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+  }
+  
+  /* Send the request.  */
+ once_more:
+  err = http_open (&http, HTTP_REQ_GET, request,
+                   /* fixme: AUTH */ NULL,
+                   0,
+                   /* fixme: proxy*/ NULL,
+                   NULL, NULL,
+                   /*FIXME curl->srvtag*/NULL);
+  if (!err)
+    {
+      fp = http_get_write_ptr (http);
+      /* Avoid caches to get the most recent copy of the key.  We set
+         both the Pragma and Cache-Control versions of the header, so
+         we're good with both HTTP 1.0 and 1.1.  */
+      es_fputs ("Pragma: no-cache\r\n"
+                "Cache-Control: no-cache\r\n", fp);
+      http_start_data (http);
+      if (es_ferror (fp))
+        err = gpg_error_from_syserror ();
+    }
+  if (err)
+    {
+      /* Fixme: After a redirection we show the old host name.  */
+      log_error (_("error connecting to `%s': %s\n"),
+                 hostport, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Wait for the response.  */
+  dirmngr_tick (ctrl);
+  err = http_wait_response (http);
+  if (err)
+    {
+      log_error (_("error reading HTTP response for `%s': %s\n"),
+                 hostport, gpg_strerror (err));
+      goto leave;
+    }
+
+  switch (http_get_status_code (http))
+    {
+    case 200:
+      break; /* Success.  */
+
+    case 301:
+    case 302:
+      {
+        const char *s = http_get_header (http, "Location");
+        
+        log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+                  request, s?s:"[none]", http_get_status_code (http));
+        if (s && *s && redirects_left-- )
+          {
+            xfree (request);
+            request = xtrystrdup (s);
+            if (request)
+              {
+                http_close (http, 0);
+                http = NULL;
+                goto once_more;
+              }
+            err = gpg_error_from_syserror ();
+          }
+        else
+          err = gpg_error (GPG_ERR_NO_DATA);
+        log_error (_("too many redirections\n"));
+      }
+      goto leave;
+
+    default:
+      log_error (_("error accessing `%s': http status %u\n"),
+                 request, http_get_status_code (http));
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+
+  /* Start reading the response.  */
+  fp = http_get_read_ptr (http);
+  if (!fp)
+    {
+      err = gpg_error (GPG_ERR_BUG);
+      goto leave;
+    }
+  {
+    int c = es_getc (fp);
+    if (c == -1)
+      {
+        err = es_ferror (fp)?gpg_error_from_syserror ():gpg_error (GPG_ERR_EOF);
+        log_error ("error reading response: %s\n", gpg_strerror (err));
+        goto leave;
+      }
+    if (c == '<')
+      {
+        /* The document begins with a '<', assume it's a HTML
+           response, which we don't support.  */
+        err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
+        goto leave;
+      }
+    es_ungetc (c, fp);
+  }
+
+  /* Return the read stream and close the HTTP context.  */
+  *r_fp = fp;
+  fp = NULL;
+  http_close (http, 1);
+  http = NULL;
+
+ leave:
+  es_fclose (fp);
+  http_close (http, 0);
+  xfree (request);
+  xfree (hostport);
+  return err;
+}
+
+

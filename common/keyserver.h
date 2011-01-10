@@ -1,5 +1,5 @@
 /* keyserver.h - Public definitions for gpg keyserver helpers.
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,5 +38,27 @@
 
 /* Must be 127 due to shell internal magic. */
 #define KEYSERVER_SCHEME_NOT_FOUND 127
+
+/* Object to hold information pertaining to a keyserver; it further
+   allows to build a list of keyservers.  Note that g10/options.h has
+   a typedef for this.  FIXME: We should make use of the
+   parse_uri_t. */
+struct keyserver_spec
+{
+  struct keyserver_spec *next;
+  char *uri;
+  char *scheme;
+  char *auth;
+  char *host;
+  char *port;
+  char *path;
+  char *opaque;
+  strlist_t options;
+  struct
+  {
+    unsigned int direct_uri:1;
+  } flags;
+};
+
 
 #endif /*GNUPG_COMMON_KEYSERVER_H*/

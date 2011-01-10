@@ -1,3 +1,20 @@
+2011-01-06  Werner Koch  <wk@g10code.com>
+
+	* server.c (release_ctrl_keyservers): New.
+	(cmd_keyserver): New.
+
+	* dirmngr.h (uri_item_t): New.
+	(struct server_control_s): Add field KEYSERVERS.
+
+2011-01-04  Werner Koch  <wk@g10code.com>
+
+	* ks-engine-hkp.c: New.
+	* ks-engine.h: New.
+	* ks-action.c, ks-action.h: New.
+	* server.c: Include ks-action.h.
+	(cmd_ks_search): New.
+	* Makefile.am (dirmngr_SOURCES): Add new files.
+
 2010-12-14  Werner Koch  <wk@g10code.com>
 
 	* cdb.h (struct cdb) [W32]: Add field CDB_MAPPING.
@@ -1488,7 +1505,8 @@
 	[Update after merge with GnuPG: see ./ChangeLog.1]
 
 
- Copyright 2004, 2005, 2006, 2007, 2008, 2009, 2010 g10 Code GmbH
+ Copyright 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+	   2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -1,3 +1,15 @@
+2011-01-07  Werner Koch  <wk@g10code.com>
+
+	* util.h (GPG_ERR_NO_KEYSERVER): New.
+
+	* keyserver.h (keyserver_spec): Move from ../g10/options.h to here.
+
+	* http.c (do_parse_uri): Add arg NO_SCHEME_CHECK.  Change all
+	callers.  Support HKP and HKPS.
+	(_http_parse_uri): Do proper error management.
+	* http.h (parsed_uri_s): Add field IS_HTTP.
+	(http_parse_uri): Support NO_SCHEME_CHECK arg.
+
 2010-12-17  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (lock_spawning): Add arg VERBOSE.  Improve timeout
@@ -2251,7 +2263,7 @@
 
 
  Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-	   2009, 2010 Free Software Foundation, Inc.
+	   2009, 2010, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

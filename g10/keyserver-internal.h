@@ -40,7 +40,7 @@ int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 int keyserver_import_keyid (ctrl_t ctrl, u32 *keyid,
                             struct keyserver_spec *keyserver);
 int keyserver_refresh (ctrl_t ctrl, strlist_t users);
-int keyserver_search (ctrl_t ctrl, strlist_t tokens);
+gpg_error_t keyserver_search (ctrl_t ctrl, strlist_t tokens);
 int keyserver_fetch (ctrl_t ctrl, strlist_t urilist);
 int keyserver_import_cert (ctrl_t ctrl, const char *name,
                            unsigned char **fpr,size_t *fpr_len);

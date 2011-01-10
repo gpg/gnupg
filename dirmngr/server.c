@@ -1,6 +1,6 @@
 /* dirmngr.c - LDAP access
  *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *      Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 g10 Code GmbH
+ *      Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011 g10 Code GmbH
  *
  * This file is part of DirMngr.
  *
@@ -41,6 +41,7 @@
 #include "validate.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
+#include "ks-action.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -58,7 +59,7 @@ struct server_local_s
   /* Data used to associate an Assuan context with local server data */
   assuan_context_t assuan_ctx;
 
-  /* Per-session LDAP serfver.  */
+  /* Per-session LDAP servers.  */
   ldap_server_t ldapservers;
 
   /* If this flag is set to true this dirmngr process will be
@@ -92,6 +93,21 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
   else
     return NULL;
 }
+
+
+/* Release all configured keyserver info from CTRL.  */
+void
+release_ctrl_keyservers (ctrl_t ctrl)
+{
+  while (ctrl->keyservers)
+    {
+      uri_item_t tmp = ctrl->keyservers->next;
+      http_release_parsed_uri (ctrl->keyservers->parsed_uri);
+      xfree (ctrl->keyservers);
+      ctrl->keyservers = tmp;
+    }
+}
+
 
 
 /* Helper to print a message while leaving a command.  */
@@ -147,7 +163,7 @@ data_line_cookie_close (void *cookie)
 /* Copy the % and + escaped string S into the buffer D and replace the
    escape sequences.  Note, that it is sufficient to allocate the
    target string D as long as the source string S, i.e.: strlen(s)+1.
-   NOte further that If S contains an escaped binary nul the resulting
+   Note further that if S contains an escaped binary Nul the resulting
    string D will contain the 0 as well as all other characters but it
    will be impossible to know whether this is the original EOS or a
    copied Nul. */
@@ -1335,6 +1351,130 @@ cmd_validate (assuan_context_t ctx, char *line)
   return leave_cmd (ctx, err);
 }
 
+
+static const char hlp_keyserver[] =
+  "KEYSERVER [--clear] [<uri>]\n"
+  "\n"
+  "If called without arguments list all configured keyserver URLs.\n"
+  "If called with option \"--clear\" remove all configured keyservers\n"
+  "If called with an URI add this as keyserver.  Note that keyservers\n"
+  "are configured on a per-session base.  A default keyserver may already be\n"
+  "present, thus the \"--clear\" option must be used to get full control.\n"
+  "If \"--clear\" and an URI are used together the clear command is\n"
+  "obviously executed first.  A RESET command does not change the list\n"
+  "of configured keyservers.";
+static gpg_error_t
+cmd_keyserver (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  int clear_flag, add_flag;
+  uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
+                             is always initialized.  */
+      
+  clear_flag = has_option (line, "--clear");
+  line = skip_options (line);
+  add_flag = !!*line;
+
+  if (add_flag)
+    {
+      item = xtrymalloc (sizeof *item + strlen (line));
+      if (!item)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      item->next = NULL;
+      item->parsed_uri = NULL;
+      strcpy (item->uri, line);
+
+      err = http_parse_uri (&item->parsed_uri, line, 1);
+      if (err)
+        {
+          xfree (item);
+          goto leave;
+        }
+    }
+  if (clear_flag)
+    release_ctrl_keyservers (ctrl);
+  if (add_flag)
+    {
+      item->next = ctrl->keyservers;
+      ctrl->keyservers = item;
+    }
+  
+  if (!add_flag && !clear_flag) /* List  configured keyservers.  */
+    {
+      uri_item_t u;
+      
+      for (u=ctrl->keyservers; u; u = u->next)
+        dirmngr_status (ctrl, "KEYSERVER", u->uri, NULL);
+    }
+  err = 0;
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+
+static const char hlp_ks_search[] =
+  "KS_SEARCH {<pattern>}\n"
+  "\n"
+  "Search the configured OpenPGP keyservers (see command KEYSERVER)\n"
+  "for keys matching PATTERN";
+static gpg_error_t
+cmd_ks_search (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  strlist_t list, sl;
+  char *p;
+  estream_t outfp;
+
+  /* No options for now.  */
+  line = skip_options (line);
+
+  /* Break the line down into an strlist.  Each pattern is
+     percent-plus escaped. */
+  list = NULL;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              err = gpg_error_from_syserror ();
+              free_strlist (list);
+              goto leave;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
+
+  /* Setup an output stream and perform the search.  */
+  outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+  if (!outfp)
+    err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+  else
+    {
+      err = ks_action_search (ctrl, list, outfp);
+      es_fclose (outfp);
+    }
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
 
 
 static const char hlp_getinfo[] = 
@@ -1469,6 +1609,8 @@ register_commands (assuan_context_t ctx)
     { "LISTCRLS",   cmd_listcrls,   hlp_listcrls },
     { "CACHECERT",  cmd_cachecert,  hlp_cachecert },
     { "VALIDATE",   cmd_validate,   hlp_validate },
+    { "KEYSERVER",  cmd_keyserver,  hlp_keyserver },
+    { "KS_SEARCH",  cmd_ks_search,  hlp_ks_search },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
@@ -1487,6 +1629,7 @@ register_commands (assuan_context_t ctx)
 }
 
 
+/* Note that we do not reset the list of configured keyservers.  */
 static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
 {
@@ -1681,8 +1824,8 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
-/* Note, that we ignore CTRL for now but use the first connection to
-   send the progress info back. */
+/* Send a tick progress indicator back.  Fixme: This is only does for
+   the currently active channel.  */
 gpg_error_t
 dirmngr_tick (ctrl_t ctrl)
 {

@@ -45,6 +45,7 @@
 #ifdef USE_DNS_SRV
 #include "srv.h"
 #endif
+#include "membuf.h"
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -236,9 +237,9 @@ keyserver_match(struct keyserver_spec *spec)
    parser any longer so it can be removed, or at least moved to
    keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
 
-struct keyserver_spec *
-parse_keyserver_uri(const char *string,int require_scheme,
-		    const char *configname,unsigned int configlineno)
+keyserver_spec_t
+parse_keyserver_uri (const char *string,int require_scheme,
+		     const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
   struct keyserver_spec *keyserver;
@@ -1530,6 +1531,7 @@ keyserver_spawn (ctrl_t ctrl,
   return ret;
 }
 
+
 static int 
 keyserver_work (ctrl_t ctrl,
                 enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
@@ -1538,23 +1540,16 @@ keyserver_work (ctrl_t ctrl,
 {
   int rc=0,ret=0;
 
-  if(!keyserver)
+  if (!keyserver)
     {
-      log_error(_("no keyserver known (use option --keyserver)\n"));
-      return G10ERR_BAD_URI;
+      log_error (_("no keyserver known (use option --keyserver)\n"));
+      return gpg_error (GPG_ERR_BAD_URI);
     }
 
-#ifdef DISABLE_KEYSERVER_HELPERS
-
-  log_error(_("external keyserver calls are not supported in this build\n"));
-  return G10ERR_KEYSERVER;
-
-#else
-  /* Spawn a handler */
 
   rc = keyserver_spawn (ctrl, action, list, desc, count,
                         &ret, fpr, fpr_len, keyserver);
-  if(ret)
+  if (ret)
     {
       switch(ret)
 	{
@@ -1591,15 +1586,14 @@ keyserver_work (ctrl_t ctrl,
       return G10ERR_KEYSERVER;
     }
 
-  if(rc)
+  if (rc)
     {
-      log_error(_("keyserver communications error: %s\n"),g10_errstr(rc));
+      log_error (_("keyserver communications error: %s\n"),g10_errstr(rc));
 
       return rc;
     }
 
   return 0;
-#endif /* ! DISABLE_KEYSERVER_HELPERS*/
 }
 
 int 
@@ -1961,14 +1955,99 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
   return rc;
 }
 
-int
+/* Search for keys on the keyservers.  The patterns are given in the
+   string list TOKENS.  */
+gpg_error_t
 keyserver_search (ctrl_t ctrl, strlist_t tokens)
 {
-  if (tokens)
-    return keyserver_work (ctrl, KS_SEARCH, tokens, NULL, 0,
-                           NULL, NULL, opt.keyserver);
-  return 0;
+  gpg_error_t err;
+  int rc=0,ret=0;
+  char *searchstr;
+
+  /* FIXME:  WORK IN PROGRESS */
+  if (!tokens)
+    return 0;  /* Return success if no patterns are given.  */
+
+  if (!opt.keyserver)
+    {
+      log_error (_("no keyserver known (use option --keyserver)\n"));
+      return gpg_error (GPG_ERR_NO_KEYSERVER);
+    }
+
+      /* switch(ret) */
+      /*   { */
+      /*   case KEYSERVER_SCHEME_NOT_FOUND: */
+      /*     log_error(_("no handler for keyserver scheme `%s'\n"), */
+      /*   	    opt.keyserver->scheme); */
+      /*     break; */
+
+      /*   case KEYSERVER_NOT_SUPPORTED: */
+      /*     log_error(_("action `%s' not supported with keyserver " */
+      /*   	      "scheme `%s'\n"), "search", opt.keyserver->scheme); */
+      /*     break; */
+
+      /*   case KEYSERVER_TIMEOUT: */
+      /*     log_error(_("keyserver timed out\n")); */
+      /*     break; */
+
+      /*   case KEYSERVER_INTERNAL_ERROR: */
+      /*   default: */
+      /*     log_error(_("keyserver internal error\n")); */
+      /*     break; */
+      /*   } */
+
+      /* return gpg_error (GPG_ERR_KEYSERVER); */
+
+
+  /* Write global options */
+
+  /* for(temp=opt.keyserver_options.other;temp;temp=temp->next) */
+  /*   fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
+
+  /* Write per-keyserver options */
+
+  /* for(temp=keyserver->options;temp;temp=temp->next) */
+  /*   fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
+
+  /* Which keys do we want?  Remember that the gpgkeys_ program
+     is going to lump these together into a search string. */
+  {
+    membuf_t mb;
+    strlist_t item;
+
+    init_membuf (&mb, 1024);
+    for (item = tokens; item; item = item->next)
+    {
+      if (item != tokens)
+        put_membuf (&mb, " ", 1);
+      put_membuf_str (&mb, item->d);
+    }
+    put_membuf (&mb, "", 1); /* Append Nul.  */
+    searchstr = get_membuf (&mb, NULL);
+    if (!searchstr)
+      {
+        err = gpg_error_from_syserror ();
+      }
+  }
+  log_info (_("searching for \"%s\" from %s\n"), searchstr, keyserver->uri);
+
+  {
+    estream_t fp;
+    err = gpg_dirmngr_ks_search (ctrl, searchstr, &fp);
+    
+    keyserver_search_prompt (ctrl, fp,searchstr);
+  }
+
+ leave:
+  xfree(line);
+  xfree(searchstr);
+
+
+  *prog=exec_finish(spawn);
+
+  return ret;
 }
+
 
 int
 keyserver_fetch (ctrl_t ctrl, strlist_t urilist)

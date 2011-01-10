@@ -1,3 +1,18 @@
+2011-01-07  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c, call-dirmngr.h: New.
+	* gpg.h (server_control_s): Add DIRMNGR_LOCAL.
+	* gpg.c: Include call-dirmngr.h.
+	(gpg_deinit_default_ctrl): Call gpg_dirmngr_deinit_session_data.
+
+2011-01-06  Werner Koch  <wk@g10code.com>
+
+	* gpg.c (main): Use keyserver_spec_t.
+
+	* options.h (struct opt): Factor definition of struct keyserver
+	out to ../common/keyserver.h.
+	(keyserver_spec_t): New.
+
 2010-12-09  Werner Koch  <wk@g10code.com>
 
 	* tdbio.c (tdbio_set_dbname) [W32CE]: Take care of missing errno.

@@ -23,7 +23,8 @@
 #include <gpg-error.h>
 #include "../common/estream.h"
 
-struct uri_tuple_s {
+struct uri_tuple_s 
+{
   struct uri_tuple_s *next;
   const char *name;	/* A pointer into name. */
   char  *value;         /* A pointer to value (a Nul is always appended). */
@@ -36,8 +37,9 @@ typedef struct uri_tuple_s *uri_tuple_t;
 struct parsed_uri_s 
 {
   /* All these pointers point into BUFFER; most stuff is not escaped. */
-  char *scheme;	        /* Pointer to the scheme string (lowercase). */
-  int use_tls;          /* Whether TLS should be used. */
+  char *scheme;	        /* Pointer to the scheme string (always lowercase). */
+  unsigned int is_http:1; /* This is a HTTP style URI.   */
+  unsigned int use_tls:1; /* Whether TLS should be used. */
   char *auth;           /* username/password for basic auth */
   char *host; 	        /* Host (converted to lowercase). */
   unsigned short port;  /* Port (always set if the host is set). */
@@ -71,9 +73,9 @@ typedef struct http_context_s *http_t;
 void http_register_tls_callback (gpg_error_t (*cb) (http_t, void *, int));
 
 gpg_error_t _http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
-                             gpg_err_source_t errsource);
-#define http_parse_uri(a,b) \
-  _http_parse_uri ((a), (b), GPG_ERR_SOURCE_DEFAULT)
+                             int no_scheme_check, gpg_err_source_t errsource);
+#define http_parse_uri(a,b,c)                                    \
+  _http_parse_uri ((a), (b), (c), GPG_ERR_SOURCE_DEFAULT)
 
 void http_release_parsed_uri (parsed_uri_t uri);
 

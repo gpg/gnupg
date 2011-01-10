@@ -1,0 +1,8 @@
+Makefile.in
+aclocal.m4
+autom4te.cache/
+configure
+config.h.in
+config.h
+common/audit-events.h
+common/status-codes.h

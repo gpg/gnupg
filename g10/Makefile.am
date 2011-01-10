@@ -102,6 +102,7 @@ gpg2_SOURCES  = gpg.c		\
 	      helptext.c        \
 	      keyserver.c       \
 	      keyserver-internal.h \
+	      call-dirmngr.c call-dirmngr.h \
 	      photoid.c photoid.h \
 	      call-agent.c call-agent.h \
 	      card-util.c \

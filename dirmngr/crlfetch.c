@@ -160,7 +160,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
   *reader = NULL;
 
  once_more:
-  err = http_parse_uri (&uri, url);
+  err = http_parse_uri (&uri, url, 0);
   http_release_parsed_uri (uri);
   if (err && url && !strncmp (url, "https:", 6))
     {
@@ -172,7 +172,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
       if (free_this)
         {
           strcpy (stpcpy (free_this,"http:"), url+6);
-          err = http_parse_uri (&uri, free_this);
+          err = http_parse_uri (&uri, free_this, 0);
           http_release_parsed_uri (uri);
           if (!err)
             {

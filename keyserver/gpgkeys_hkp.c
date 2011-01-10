@@ -687,7 +687,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  if(ks_strcasecmp(opt->scheme,"hkps")==0)
+  if(ascii_strcasecmp(opt->scheme,"hkps")==0)
     {
       proto="https";
       port="443";
