@@ -1,3 +1,14 @@
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (ask_user_id): Fix duplicate test for AMAIL by correct
+	ANAME.  See bug#1307.  Reported by Steve Grubb.
+
+	* import.c (import_keys_internal): Make loop code a bit more
+	readable.  See bug#1307.  Reported by Steve Grubb.
+
+	* sign.c (sign_file): Fix TEMP_HASHLEN computation.  See bug#1307.
+	Reported by Steve Grubb.
+
 2010-10-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (select_algo_from_prefs): Make sure the scores can't

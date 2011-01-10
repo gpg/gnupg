@@ -173,7 +173,11 @@ get_pka_info (const char *address, unsigned char *fpr)
   return buffer;
 
 #else /*!USE_ADNS*/
-  unsigned char answer[PACKETSZ];
+  union
+    {
+      signed char p[PACKETSZ];
+      HEADER h;
+    } answer;
   int anslen;
   int qdcount, ancount, nscount, arcount;
   int rc;
@@ -192,11 +196,11 @@ get_pka_info (const char *address, unsigned char *fpr)
   memcpy (name, address, domain - address);
   strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
 
-  anslen = res_query (name, C_IN, T_TXT, answer, PACKETSZ);
+  anslen = res_query (name, C_IN, T_TXT, answer.p, PACKETSZ);
   xfree (name);
   if (anslen < sizeof(HEADER))
     return NULL; /* DNS resolver returned a too short answer. */
-  if ( (rc=((HEADER*)answer)->rcode) != NOERROR )
+  if ( (rc=answer.h.rcode) != NOERROR )
     return NULL; /* DNS resolver returned an error. */
 
   /* We assume that PACKETSZ is large enough and don't do dynmically
@@ -204,16 +208,16 @@ get_pka_info (const char *address, unsigned char *fpr)
   if (anslen > PACKETSZ)
     return NULL; /* DNS resolver returned a too long answer */
 
-  qdcount = ntohs (((HEADER*)answer)->qdcount);
-  ancount = ntohs (((HEADER*)answer)->ancount);
-  nscount = ntohs (((HEADER*)answer)->nscount);
-  arcount = ntohs (((HEADER*)answer)->arcount);
+  qdcount = ntohs (answer.h.qdcount);
+  ancount = ntohs (answer.h.ancount);
+  nscount = ntohs (answer.h.nscount);
+  arcount = ntohs (answer.h.arcount);
 
   if (!ancount)
     return NULL; /* Got no answer. */
 
-  p = answer + sizeof (HEADER);
-  pend = answer + anslen; /* Actually points directly behind the buffer. */
+  p = answer.p + sizeof (HEADER);
+  pend = answer.p + anslen; /* Actually points directly behind the buffer. */
 
   while (qdcount-- && p < pend)
     {

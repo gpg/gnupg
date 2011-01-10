@@ -175,10 +175,9 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         rc = import( inp, "[stream]", stats, fpr, fpr_len, options);
     }
     else {
-        if( !fnames && !nnames )
-	    nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+        int once = (!fnames && !nnames);
 
-	for(i=0; i < nnames; i++ ) {
+	for(i=0; once || i < nnames; once=0, i++ ) {
 	    const char *fname = fnames? fnames[i] : NULL;
 	    IOBUF inp2 = iobuf_open(fname);
 	    if( !fname )
@@ -201,8 +200,6 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 		  log_error("import from `%s' failed: %s\n", fname,
 			    g10_errstr(rc) );
 	      }
-	    if( !fname )
-	        break;
 	}
     }
     if (!stats_handle) {

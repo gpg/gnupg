@@ -867,8 +867,8 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	      {
 		if (sk_rover->sk->pubkey_algo == PUBKEY_ALGO_DSA)
 		  {
-		    int temp_hashlen = gcry_mpi_get_nbits
-                      (sk_rover->sk->skey[1])+7/8;
+		    int temp_hashlen = (gcry_mpi_get_nbits
+                      (sk_rover->sk->skey[1])+7)/8;
 
 		    /* Pick a hash that is large enough for our
 		       largest q */

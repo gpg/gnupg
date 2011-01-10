@@ -2247,7 +2247,7 @@ ask_user_id (int mode, KBNODE keyblock)
 	    xfree(answer);
 	}
 	xfree(answer);
-	if( !amail && !acomment && !amail )
+	if( !aname && !acomment && !amail )
 	    break;
 	xfree(uid); uid = NULL;
     }
