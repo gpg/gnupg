@@ -1,3 +1,8 @@
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* session-env.c (update_var): Fix same value detection.  Fixes
+	bug#1311.
+
 2010-12-17  Werner Koch  <wk@g10code.com>
 
 	* asshelp.c (lock_spawning): Add arg VERBOSE.  Improve timeout

@@ -14,6 +14,9 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
 
  * Fixed CRL loading under W32 (bug#1010).
 
+ * Fixed TTY management for pinentries and session variable update
+   problem.
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------
