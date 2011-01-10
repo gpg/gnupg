@@ -1,0 +1,12 @@
+Makefile.in
+aclocal.m4
+autom4te.cache/
+configure
+config.h.in
+config.h
+common/audit-events.h
+common/status-codes.h
+doc/gnupg.info*
+doc/stamp-vti
+doc/version.texi
+po/gnupg2.pot
