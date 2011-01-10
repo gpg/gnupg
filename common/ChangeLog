@@ -1,3 +1,8 @@
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* session-env.c (update_var): Fix same value test.  Fixes
+	bug#1311.
+
 2010-09-16  Werner Koch  <wk@g10code.com>
 
 	* util.h: Add GPG_ERR_MISSING_ISSUER_CERT.

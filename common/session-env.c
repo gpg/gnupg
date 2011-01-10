@@ -183,10 +183,11 @@ update_var (session_env_t se, const char *string, size_t namelen,
       else if (!strncmp (se->array[idx]->name, string, namelen)
                && strlen (se->array[idx]->name) == namelen)
         {
-          /* Check if the value is the same; no need to update it,
-             except for updating the default flag.  */
           if (strlen (se->array[idx]->value) == valuelen)
             {
+              /* The new value has the same length.  We can update it
+                 in-place.  */
+              memcpy (se->array[idx]->value, value, valuelen);
               se->array[idx]->is_default = !!set_default;
               return 0;
             }

@@ -10,6 +10,9 @@ Noteworthy changes in version 2.0.17 (unreleased)
  * Fixed a bug where Scdaemon sends a signal to Gpg-agent running in
    non-daemon mode.
 
+ * Fixed TTY management for pinentries and session variable update
+   problem.
+
 
 Noteworthy changes in version 2.0.16 (2010-07-19)
 -------------------------------------------------
