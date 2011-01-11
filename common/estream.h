@@ -1,5 +1,5 @@
 /* estream.h - Extended stream I/O Library
- * Copyright (C) 2004, 2005, 2006, 2007 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007, 2010 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -15,6 +15,40 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Libestream; if not, see <http://www.gnu.org/licenses/>.
+ *
+ * ALTERNATIVELY, Libestream may be distributed under the terms of the
+ * following license, in which case the provisions of this license are
+ * required INSTEAD OF the GNU General Public License. If you wish to
+ * allow use of your version of this file only under the terms of the
+ * GNU General Public License, and not to allow others to use your
+ * version of this file under the terms of the following license,
+ * indicate your decision by deleting this paragraph and the license
+ * below.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, and the entire permission notice in its entirety,
+ *    including the disclaimer of warranties.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote
+ *    products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef ESTREAM_H
@@ -46,6 +80,8 @@
 #define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
 #define es_fpopen             _ESTREAM_PREFIX(es_fpopen)
 #define es_fpopen_nc          _ESTREAM_PREFIX(es_fpopen_nc)
+#define _es_set_std_fd        _ESTREAM_PREFIX(_es_set_std_fd)
+#define _es_get_std_stream    _ESTREAM_PREFIX(_es_get_std_stream)
 #define es_freopen            _ESTREAM_PREFIX(es_freopen)
 #define es_fopencookie        _ESTREAM_PREFIX(es_fopencookie)
 #define es_fclose             _ESTREAM_PREFIX(es_fclose)
@@ -79,16 +115,21 @@
 #define es_fwrite             _ESTREAM_PREFIX(es_fwrite)
 #define es_fgets              _ESTREAM_PREFIX(es_fgets)
 #define es_fputs              _ESTREAM_PREFIX(es_fputs)
+#define es_fputs_unlocked     _ESTREAM_PREFIX(es_fputs_unlocked)
 #define es_getline            _ESTREAM_PREFIX(es_getline)
 #define es_read_line          _ESTREAM_PREFIX(es_read_line)
 #define es_free               _ESTREAM_PREFIX(es_free)
-#define es_fprf               _ESTREAM_PREFIX(es_fprf)
-#define es_vfprf              _ESTREAM_PREFIX(es_vfprf)
+#define es_fprintf            _ESTREAM_PREFIX(es_fprintf)
+#define es_fprintf_unlocked   _ESTREAM_PREFIX(es_fprintf_unlocked)
+#define es_vfprintf           _ESTREAM_PREFIX(es_vfprint)
+#define es_vfprintf_unlocked  _ESTREAM_PREFIX(es_vfprint_unlocked)
 #define es_setvbuf            _ESTREAM_PREFIX(es_setvbuf)
 #define es_setbuf             _ESTREAM_PREFIX(es_setbuf)
 #define es_tmpfile            _ESTREAM_PREFIX(es_tmpfile)
 #define es_opaque_set         _ESTREAM_PREFIX(es_opaque_set)
 #define es_opaque_get         _ESTREAM_PREFIX(es_opaque_get)
+#define es_fname_set          _ESTREAM_PREFIX(es_fname_set)
+#define es_fname_get          _ESTREAM_PREFIX(es_fname_get)
 #define es_write_sanitized_utf8_buffer  \
               _ESTREAM_PREFIX(es_write_sanitized_utf8_buffer)
 #endif /*_ESTREAM_EXT_SYM_PREFIX*/
@@ -213,6 +254,14 @@ int es_fclose (estream_t stream);
 int es_fileno (estream_t stream);
 int es_fileno_unlocked (estream_t stream);
 
+void _es_set_std_fd (int no, int fd);
+estream_t _es_get_std_stream (int fd);
+
+#define es_stdin  _es_get_std_stream (0)
+#define es_stdout _es_get_std_stream (1)
+#define es_stderr _es_get_std_stream (2)
+
+
 void es_flockfile (estream_t stream);
 int es_ftrylockfile (estream_t stream);
 void es_funlockfile (estream_t stream);
@@ -277,6 +326,8 @@ size_t es_fwrite (const void *ES__RESTRICT ptr, size_t size, size_t memb,
 
 char *es_fgets (char *ES__RESTRICT s, int n, estream_t ES__RESTRICT stream);
 int es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream);
+int es_fputs_unlocked (const char *ES__RESTRICT s,
+                       estream_t ES__RESTRICT stream);
 
 ssize_t es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr,
 		    size_t *ES__RESTRICT n,
@@ -289,9 +340,17 @@ void es_free (void *a);
 int es_fprintf (estream_t ES__RESTRICT stream,
 		const char *ES__RESTRICT format, ...)
      _ESTREAM_GCC_A_PRINTF(2,3);
+int es_fprintf_unlocked (estream_t ES__RESTRICT stream,
+                         const char *ES__RESTRICT format, ...)
+     _ESTREAM_GCC_A_PRINTF(2,3);
+
 int es_vfprintf (estream_t ES__RESTRICT stream,
 		 const char *ES__RESTRICT format, va_list ap)
      _ESTREAM_GCC_A_PRINTF(2,0);
+int es_vfprintf_unlocked (estream_t ES__RESTRICT stream,
+                          const char *ES__RESTRICT format, va_list ap)
+     _ESTREAM_GCC_A_PRINTF(2,0);
+
 int es_setvbuf (estream_t ES__RESTRICT stream,
 		char *ES__RESTRICT buf, int mode, size_t size);
 void es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf);
@@ -301,6 +360,9 @@ estream_t es_tmpfile (void);
 void es_opaque_set (estream_t ES__RESTRICT stream, void *ES__RESTRICT opaque);
 void *es_opaque_get (estream_t stream);
 
+void es_fname_set (estream_t stream, const char *fname);
+const char *es_fname_get (estream_t stream);
+
 
 #ifdef GNUPG_MAJOR_VERSION
 int es_write_sanitized_utf8_buffer (estream_t stream,
@@ -308,7 +370,6 @@ int es_write_sanitized_utf8_buffer (estream_t stream,
                                     const char *delimiters,
                                     size_t *bytes_written);
 #endif /*GNUPG_MAJOR_VERSION*/
-
 
 #ifdef __cplusplus
 }

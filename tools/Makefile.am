@@ -42,7 +42,14 @@ else
   symcryptrun =
 endif
 
-bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun}
+if BUILD_GPGTAR
+  gpgtar = gpgtar
+else
+  gpgtar =
+endif
+
+
+bin_PROGRAMS = gpgconf gpg-connect-agent gpgkey2ssh ${symcryptrun} ${gpgtar}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
 endif
@@ -98,6 +105,15 @@ gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 endif
+
+gpgtar_SOURCES = \
+	gpgtar.c gpgtar.h \
+	gpgtar-create.c \
+	gpgtar-extract.c \
+	gpgtar-list.c \
+	no-libgcrypt.c
+gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
+gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(W32SOCKLIBS)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.

@@ -20,7 +20,7 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
-DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto
+DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
 EXTRA_DIST = scripts/config.rpath autogen.sh README.SVN
 DISTCLEANFILES = g10defs.h 

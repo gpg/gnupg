@@ -1,11 +1,11 @@
 Noteworthy changes in version 2.0.17 (unreleased)
 -------------------------------------------------
 
- * Fixed output of "gpgconf --check-options".
-
- * gpg-agent now tests for a newly created gpg-agent.conf after a HUP.
-
  * Allow more hash algorithms with the OpenPGP v2 card.
+
+ * The gpg-agent now tests for a new gpg-agent.conf on a HUP.
+
+ * Fixed output of "gpgconf --check-options".
 
  * Fixed a bug where Scdaemon sends a signal to Gpg-agent running in
    non-daemon mode.

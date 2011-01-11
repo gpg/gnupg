@@ -1,5 +1,8 @@
 2011-01-11  Werner Koch  <wk@g10code.com>
 
+	* configure.ac: Add option --enable-gpgtar.
+	(AC_CHECK_FUNCS): Add stat.
+
 	* autogen.sh <w32>: Remove superfluous --without-included-gettext.
 
 2011-01-10  Werner Koch  <wk@g10code.com>

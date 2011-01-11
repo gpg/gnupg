@@ -133,3 +133,4 @@ tools/make-dns-cert
 tools/mk-tdata
 tools/symcryptrun
 tools/watchgnupg
+tools/gpgtar

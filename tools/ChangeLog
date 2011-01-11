@@ -1,3 +1,11 @@
+2011-01-11  Werner Koch  <wk@g10code.com>
+
+        * gpgtar.c, gpgtar.h, gpgtar-create.c, gpgtar-extract.c
+        * gpgtar-list.c: New.  Take from GnuPG master and add missing
+	functions.
+	* Makefile.am (bin_PROGRAMS): Add gpgtar.
+	(gpgtar_SOURCES, gpgtar_CFLAGS, gpgtar_LDADD): New.
+
 2010-08-23  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (retrieve_options_from_program)
