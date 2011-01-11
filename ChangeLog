@@ -1,3 +1,7 @@
+2011-01-11  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh <w32>: Remove superfluous --without-included-gettext.
+
 2011-01-10  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Support a git_revision string.

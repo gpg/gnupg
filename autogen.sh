@@ -93,8 +93,7 @@ if test "$1" = "--build-w32"; then
 	     --with-zlib=${w32root} \
 	     --with-regex=${w32root} \
              --with-pth-prefix=${w32root} \
-             --with-adns=${w32root} \
-             --without-included-gettext "$@"
+             --with-adns=${w32root} "$@"
     rc=$?
     exit $rc
 fi
