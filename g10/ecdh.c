@@ -76,8 +76,6 @@ pk_ecdh_default_params_to_mpi( int qbits )  {
  */
 byte *
 pk_ecdh_default_params( int qbits, size_t *sizeout )  {
-  gpg_error_t err;
-  gcry_mpi_t result;
   /* Defaults are the strongest possible choices. Performance is not an issue here, only interoperability. */
   byte kek_params[4] = { 
 	3	/*size of following field*/, 
@@ -370,6 +368,29 @@ pk_ecdh_encrypt_with_shared_point ( int is_encrypt, gcry_mpi_t shared_mpi,
   return rc;
 }
 
+
+static gcry_mpi_t
+gen_k (unsigned nbits)
+{
+  gcry_mpi_t k;
+
+  k = gcry_mpi_snew (nbits);
+  if (DBG_CIPHER)
+    log_debug ("choosing a random k of %u bits\n", nbits);
+
+  gcry_mpi_randomize (k, nbits-1, GCRY_STRONG_RANDOM);
+
+  if( DBG_CIPHER )  {
+	unsigned char *buffer;
+	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, k))
+          BUG ();
+        log_debug("ephemeral scalar MPI #0: %s\n", buffer);
+	gcry_free( buffer );
+  }
+
+  return k;
+}
+
 /* Perform ECDH encryption, which involves ECDH key generation.
  */
 int
@@ -377,25 +398,17 @@ pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcr
 {
   gcry_sexp_t s_ciph, s_data, s_pkey;
 
-  PKT_public_key *pk_eph;
   int nbits;
   int rc;
+  gcry_mpi_t k;
 
   nbits = pubkey_nbits( PUBKEY_ALGO_ECDH, pkey );
- 
-  /*** Generate an ephemeral key ***/
 
-  rc = pk_ecc_keypair_gen( &pk_eph, PUBKEY_ALGO_ECDH, KEYGEN_FLAG_TRANSIENT_KEY | KEYGEN_FLAG_NO_PROTECTION /*this is ephemeral*/, "", nbits );
-  if( rc )
-    return rc;
-  if( DBG_CIPHER )  {
-	unsigned char *buffer;
-	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, pk_eph->pkey[1]))
-          BUG ();
-        log_debug("ephemeral key MPI #0: %s\n", buffer);
-	gcry_free( buffer );
-  }
-  free_public_key (pk_eph);
+  /*** Generate an ephemeral key, actually, a scalar ***/
+
+  k = gen_k (nbits);
+  if( k == NULL )
+    BUG ();
 
   /*** Done with ephemeral key generation. 
    * Now use ephemeral secret to get the shared secret. ***/
@@ -406,7 +419,7 @@ pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcr
     BUG ();
  
   /* put the data into a simple list */
-  if (gcry_sexp_build (&s_data, NULL, "%m", pk_eph->pkey[3]))	/* ephemeral scalar goes as data */
+  if (gcry_sexp_build (&s_data, NULL, "%m", k))	/* ephemeral scalar goes as data */
     BUG ();
 
   /* pass it to libgcrypt */
@@ -421,7 +434,7 @@ pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcr
   {
     gcry_mpi_t shared = mpi_from_sexp (s_ciph, "a");		/* ... and get the shared point */
     gcry_sexp_release (s_ciph);
-    resarr[0] = pk_eph->pkey[1];	/* ephemeral public key */
+    resarr[0] = mpi_from_sexp (s_ciph, "b");			/* ephemeral public key */
 
     if( DBG_CIPHER )  {
 	unsigned char *buffer;
@@ -441,37 +454,10 @@ pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcr
 /* Perform ECDH decryption. 
  */
 int
-pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t *data, gcry_mpi_t * skey)  {
-  gcry_sexp_t s_skey, s_data, s_ciph;
-  int rc;
-
-  if (!data[0] || !data[1])
+pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t data, gcry_mpi_t shared, gcry_mpi_t * skey)  {
+  if (!data)
     return gpg_error (GPG_ERR_BAD_MPI);
-
-  rc = gcry_sexp_build (&s_skey, NULL,
-			    "(public-key(ecdh(c%m)(q%m)(p%m)))",
- 			    skey[0]/*curve*/, data[0]/*ephemeral key*/, skey[2]/*KDF params*/);
-  if (rc)
-    BUG ();
-
-  /* put the data into a simple list */
-  if (gcry_sexp_build (&s_data, NULL, "%m", skey[3]))	/* static private key (scalar) goes as data */
-    BUG ();
-
-  rc = gcry_pk_encrypt (&s_ciph, s_data, s_skey);	/* encrypting ephemeral key with our private scalar yields the shared point */
-  gcry_sexp_release (s_skey);
-  gcry_sexp_release (s_data);
-  if (rc)
-    return rc;
-
-  {
-    gcry_mpi_t shared = mpi_from_sexp (s_ciph, "a");		/* get the shared point */
-    gcry_sexp_release (s_ciph);
-    rc = pk_ecdh_encrypt_with_shared_point ( 0 /*=decryption*/, shared, sk_fp, data[1]/*encr data as an MPI*/, skey, result );
-    mpi_release( shared );
-  }
-
-  return rc;
+  return pk_ecdh_encrypt_with_shared_point ( 0 /*=decryption*/, shared, sk_fp, data/*encr data as an MPI*/, skey, result );
 }
 
 

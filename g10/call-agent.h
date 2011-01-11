@@ -168,7 +168,6 @@ gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
 /* Decrypt a ciphertext.  */
 gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                              gcry_sexp_t s_ciphertext,
-				const byte sk_fp[MAX_FINGERPRINT_LEN],
                              unsigned char **r_buf, size_t *r_buflen);
 
 /* Retrieve a key encryption key.  */

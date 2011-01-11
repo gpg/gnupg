@@ -33,8 +33,8 @@ int pk_decrypt (int algo, gcry_mpi_t *result, const byte fp[MAX_FINGERPRINT_LEN]
                 gcry_mpi_t *skey);
 int pk_check_secret_key (int algo, gcry_mpi_t *skey);
 
-int pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t  data, gcry_mpi_t * pkey);
-int pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t *data, gcry_mpi_t * skey);
+int pk_ecdh_encrypt (gcry_mpi_t * resarr, const byte pk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t data, gcry_mpi_t * pkey);
+int pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t data, gcry_mpi_t shared, gcry_mpi_t * skey);
 
 gcry_mpi_t pk_ecdh_default_params_to_mpi( int qbits );
 byte *pk_ecdh_default_params( int qbits, size_t *sizeout );

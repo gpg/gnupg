@@ -147,14 +147,16 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   char *keygrip;
   byte fp[MAX_FINGERPRINT_LEN]; 
   size_t fpn;
+  const int gcry_pkalgo = map_pk_openpgp_to_gcry( sk->pubkey_algo );
 
   /* Get the keygrip.  */
   err = hexkeygrip_from_pk (sk, &keygrip);
   if (err)
     goto leave;
 
+
   /* Convert the data to an S-expression.  */
-  if (sk->pubkey_algo == GCRY_PK_ELG || sk->pubkey_algo == GCRY_PK_ELG_E)
+  if (gcry_pkalgo == GCRY_PK_ELG ||gcry_pkalgo == GCRY_PK_ELG_E)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -162,13 +164,21 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))", 
                                enc->data[0], enc->data[1]);
     }
-  else if (sk->pubkey_algo == GCRY_PK_RSA || sk->pubkey_algo == GCRY_PK_RSA_E)
+  else if (gcry_pkalgo == GCRY_PK_RSA || gcry_pkalgo == GCRY_PK_RSA_E)
     {
       if (!enc->data[0])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
                                enc->data[0]);
+    }
+  else if (gcry_pkalgo == GCRY_PK_ECDH )
+    {
+      if (!enc->data[0] || !enc->data[1])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(a%m)(b%m)))", 
+                               enc->data[0], enc->data[1]);
     }
   else
     err = gpg_error (GPG_ERR_BUG);
@@ -181,7 +191,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 
   /* Decrypt. */
   desc = gpg_format_keydesc (sk, 0, 1);
-  err = agent_pkdecrypt (NULL, keygrip, desc, s_data, fp, &frame, &nframe);
+  err = agent_pkdecrypt (NULL, keygrip, desc, s_data, &frame, &nframe);
   xfree (desc);
   gcry_sexp_release (s_data);
   if (err)
@@ -233,6 +243,30 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
       }
   }
   else  {
+    gcry_mpi_t shared_mpi;
+    gcry_mpi_t decoded;
+
+    /* at the beginning the frame is the bytes of shared point MPI */
+     
+    err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
+    if (err)  {
+      log_fatal ("mpi_scan failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+    err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/, shared_mpi, sk->pkey);
+    mpi_release( shared_mpi );
+    if( err )
+      goto leave;
+
+    /* reuse nframe, which size is sufficient to include the session key */
+    err = gcry_mpi_print (GCRYMPI_FMT_USG, frame, nframe, &nframe, decoded);
+    mpi_release( decoded );
+    if( err )
+      goto leave;
+
+    /* Now the frame is the bytes decrypted but padded session key  */
+
     /* Allow double padding for the benefit of DEK size concealment.
      * Higher than this is wasteful.  
      */
