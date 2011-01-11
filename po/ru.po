@@ -3024,8 +3024,8 @@ msgstr "Примечания: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Не может быть предпочтений в PGP 2.x-стиле User ID.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Данный ключ был отозван %s - %s ключом %s\n"
 
 #, c-format

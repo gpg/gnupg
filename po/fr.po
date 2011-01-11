@@ -3199,8 +3199,8 @@ msgstr ""
 "Il n'y a pas de préférences dans un nom d'utilisateur du style de\n"
 "PGP 2.x.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Cette clé a été révoquée le %s par la clé %s %s\n"
 
 #, c-format

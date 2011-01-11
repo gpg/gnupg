@@ -3192,7 +3192,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "U¾ívateµské ID vo formáte PGP 2.x nemá ¾iadne predvoµby\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Tento kµúè mô¾e by» revokovaný kµúèom %s "
 
 #, fuzzy, c-format

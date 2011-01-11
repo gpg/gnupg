@@ -3102,8 +3102,8 @@ msgstr "Adnotacje: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Klucze PGP 2.x nie zawieraj± opisu ustawieñ.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Ten klucz zosta³ uniewa¿niony %s przez klucz %s u¿ytkownika %s\n"
 
 #, c-format

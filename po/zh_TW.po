@@ -54,10 +54,14 @@ msgstr ""
 "輸入在上面的文字的品質.\n"
 "關於此規範的細節, 請洽你的系統管理者."
 
-msgid "Please enter your PIN, so that the secret key can be unlocked for this session"
+msgid ""
+"Please enter your PIN, so that the secret key can be unlocked for this "
+"session"
 msgstr "請輸入你的個人識別碼 (PIN) 以便在此階段作業中解開密鑰"
 
-msgid "Please enter your passphrase, so that the secret key can be unlocked for this session"
+msgid ""
+"Please enter your passphrase, so that the secret key can be unlocked for "
+"this session"
 msgstr "請輸入你的密語以便在此階段作業中解開私鑰"
 
 #, c-format
@@ -129,7 +133,9 @@ msgid "Please re-enter this passphrase"
 msgstr "請再次輸入密語"
 
 #, c-format
-msgid "Please enter a passphrase to protect the received secret key%%0A   %s%%0Awithin gpg-agent's key storage"
+msgid ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%"
+"0Awithin gpg-agent's key storage"
 msgstr "請輸入密語以保護收到的私鑰%%0A   %s%%0A於 gpg-agent 的金鑰存放處"
 
 msgid "does not match - try again"
@@ -197,26 +203,44 @@ msgid "Take this one anyway"
 msgstr "無論如何還是要用這個"
 
 #, c-format
-msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase should be at least %u character long."
-msgid_plural "Warning: You have entered an insecure passphrase.%%0AA passphrase should be at least %u characters long."
+msgid ""
+"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
+"at least %u character long."
+msgid_plural ""
+"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
+"at least %u characters long."
 msgstr[0] "警告: 你輸入了不安全的密語.%%0A密語至少得要有 %u 個字符長."
 
 #, c-format
-msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase should contain at least %u digit or%%0Aspecial character."
-msgid_plural "Warning: You have entered an insecure passphrase.%%0AA passphrase should contain at least %u digits or%%0Aspecial characters."
-msgstr[0] "警告: 你輸入了不安全的密語.%%0A密語至少得要含有 %u 個數字或特別字符."
+msgid ""
+"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+"contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+"contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"警告: 你輸入了不安全的密語.%%0A密語至少得要含有 %u 個數字或特別字符."
 
 #, c-format
-msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase may not be a known term or match%%0Acertain pattern."
-msgstr "警告: 你輸入了不安全的密語.%%0A密語不得含有已知的詞彙, 亦不得與確知的樣式吻合."
+msgid ""
+"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
+"a known term or match%%0Acertain pattern."
+msgstr ""
+"警告: 你輸入了不安全的密語.%%0A密語不得含有已知的詞彙, 亦不得與確知的樣式吻"
+"合."
 
 #, c-format
-msgid "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
+msgid ""
+"You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr "你還沒有輸入密語!%0A空密語是不行的."
 
 #, c-format
-msgid "You have not entered a passphrase - this is in general a bad idea!%0APlease confirm that you do not want to have any protection on your key."
-msgstr "你還沒有輸入密語 - 通常這可不是個好主意!%0A請確認你不想要對你的金鑰做任何保護."
+msgid ""
+"You have not entered a passphrase - this is in general a bad idea!%0APlease "
+"confirm that you do not want to have any protection on your key."
+msgstr ""
+"你還沒有輸入密語 - 通常這可不是個好主意!%0A請確認你不想要對你的金鑰做任何保"
+"護."
 
 msgid "Yes, protection is not needed"
 msgstr "是, 不需要任何保護"
@@ -466,7 +490,9 @@ msgstr "請輸入密語來取消 PKCS#12 物件的保護."
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "請輸入密語來保護新的 PKCS#12 物件."
 
-msgid "Please enter the passphrase to protect the imported object within the GnuPG system."
+msgid ""
+"Please enter the passphrase to protect the imported object within the GnuPG "
+"system."
 msgstr "請輸入密語以保護匯入至 GnuPG 系統內的物件."
 
 msgid ""
@@ -526,7 +552,9 @@ msgstr "讀取已信任根憑證清單時出錯\n"
 #. "%s" gets replaced by the name as stored in the
 #. certificate.
 #, c-format
-msgid "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user certificates?"
+msgid ""
+"Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
+"certificates?"
 msgstr "請問你是否徹底信任%%0A  \"%s\"%%0A正確驗證使用者憑證的能力?"
 
 msgid "Yes"
@@ -544,7 +572,9 @@ msgstr "No"
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
-msgid "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the fingerprint:%%0A  %s"
+msgid ""
+"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
+"fingerprint:%%0A  %s"
 msgstr "請驗證憑證與此完全相同:%%0A  \"%s\"%%0A其指紋為:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
@@ -561,7 +591,9 @@ msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr "請注意: 密語從未變更過.%0A請現在就變更."
 
 #, c-format
-msgid "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change it now."
+msgid ""
+"This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
+"it now."
 msgstr "密語從下列時刻起就沒有變更過:%%0A%.4s-%.2s-%.2s.  請現在就變更."
 
 msgid "Change passphrase"
@@ -891,10 +923,13 @@ msgstr "找不到有效的 OpenPGP 資料.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "無效的封裝: 列長超出 %d 字符\n"
 
-msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
+msgid ""
+"quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr "封裝裡出現被引號括住的可列印字符 - 可能是有瑕疵的送信程式造成的\n"
 
-msgid "a notation name must have only printable characters or spaces, and end with an '='\n"
+msgid ""
+"a notation name must have only printable characters or spaces, and end with "
+"an '='\n"
 msgstr "標記名稱一定要採用可印出的字符或空白, 並以一個 '=' 來結尾\n"
 
 msgid "a user notation name must contain the '@' character\n"
@@ -1254,15 +1289,19 @@ msgstr "在 --pgp2 模式中, 你祇能以 2048 位元以下的 RSA 金鑰加密
 msgid "reading from `%s'\n"
 msgstr "正在從 `%s' 讀取中\n"
 
-msgid "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+msgid ""
+"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr "你正要用來加密的所有金鑰都不能使用 IDEA 編密法.\n"
 
 #, c-format
-msgid "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 對稱式編密法會違反收件者偏好設定\n"
 
 #, c-format
-msgid "WARNING: forcing compression algorithm %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing compression algorithm %s (%d) violates recipient "
+"preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 壓縮演算法會違反收件者偏好設定\n"
 
 #, c-format
@@ -1285,7 +1324,8 @@ msgstr "%s 已加密的資料\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "以 %d 未知演算法所加密\n"
 
-msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
+msgid ""
+"WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr "警告: 訊息已用對稱式編密法的弱金鑰加密了.\n"
 
 msgid "problem handling encrypted packet\n"
@@ -1294,7 +1334,8 @@ msgstr "處理已加密封包有問題\n"
 msgid "no remote program execution supported\n"
 msgstr "沒有支援的遠端程式執行\n"
 
-msgid "external program calls are disabled due to unsafe options file permissions\n"
+msgid ""
+"external program calls are disabled due to unsafe options file permissions\n"
 msgstr "因為不安全的檔案權限選項, 而禁用了外部程式叫用\n"
 
 msgid "this platform requires temporary files when calling external programs\n"
@@ -1633,7 +1674,8 @@ msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+msgid ""
+"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
@@ -1645,7 +1687,8 @@ msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+msgid ""
+"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
@@ -2430,8 +2473,10 @@ msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "偵測到 %d 個沒有有效自我簽章的使用者 ID\n"
 
 msgid ""
-"Please decide how far you trust this user to correctly verify other users' keys\n"
-"(by looking at passports, checking fingerprints from different sources, etc.)\n"
+"Please decide how far you trust this user to correctly verify other users' "
+"keys\n"
+"(by looking at passports, checking fingerprints from different sources, "
+"etc.)\n"
 msgstr ""
 "請判斷你有多信任這位使用者確實驗證其他使用者的金鑰\n"
 "(像是查對身份證, 或從不同的來源檢查指紋等...）的能力\n"
@@ -2539,14 +2584,17 @@ msgstr "這把金鑰將在 %s 過期.\n"
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "你想要讓你的簽章也在同一個時候過期嗎? (Y/n) "
 
-msgid "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 mode.\n"
+msgid ""
+"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+"mode.\n"
 msgstr "你不能在 --pgp2 模式下, 拿 PGP 2.x 金鑰做出 OpenPGP 簽章.\n"
 
 msgid "This would make the key unusable in PGP 2.x.\n"
 msgstr "這會讓這把金鑰在 PGP 2.x 模式下無法使用.\n"
 
 msgid ""
-"How carefully have you verified the key you are about to sign actually belongs\n"
+"How carefully have you verified the key you are about to sign actually "
+"belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
 "你有多謹慎檢查正要簽署的金鑰確實屬於上面那個人的名字呢?\n"
@@ -2780,7 +2828,8 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "請先使用 \"toggle\" 指令.\n"
 
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures (lsign),\n"
+"* The `sign' command may be prefixed with an `l' for local signatures "
+"(lsign),\n"
 "  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
@@ -2907,8 +2956,8 @@ msgstr "註記: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x 型態的使用者 ID 沒有偏好設定.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "這把金鑰已經在 %s 時被 %s 金鑰 %s 所撤銷\n"
 
 #, c-format
@@ -2975,7 +3024,8 @@ msgstr ""
 "      導致不同的使用者 ID 被當成主要 ID.\n"
 
 msgid ""
-"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some versions\n"
+"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
+"versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
 "警告: 這是一把 PGP2 型態的金鑰.\n"
@@ -3034,7 +3084,8 @@ msgid "User ID \"%s\": already clean\n"
 msgstr "使用者 ID \"%s\": 已經是乾淨的了\n"
 
 msgid ""
-"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may cause\n"
+"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
+"cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
 "警告: 這是一把 PGP2 型態的金鑰.\n"
@@ -3061,7 +3112,8 @@ msgstr "已指定這把金鑰為撤銷者了\n"
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "警告: 一旦把某把金鑰指派為指定撤銷者後, 就無法反悔了!\n"
 
-msgid "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid ""
+"Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "你確定要指派這把金鑰為指定撤銷者嗎? (y/N) "
 
 msgid "Please remove selections from the secret keys.\n"
@@ -3222,7 +3274,8 @@ msgstr "金鑰尺寸無效; 改用 %u 位元\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "金鑰尺寸增大到 %u 位元\n"
 
-msgid "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
+msgid ""
+"WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr "警告: 某些 OpenPGP 程式無法處理具有此摘要尺寸的 DSA 金鑰\n"
 
 msgid "Sign"
@@ -3403,7 +3456,8 @@ msgstr ""
 #. be used.
 msgid ""
 "\n"
-"You need a user ID to identify your key; the software constructs the user ID\n"
+"You need a user ID to identify your key; the software constructs the user "
+"ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
@@ -3488,7 +3542,9 @@ msgstr ""
 "你需要一個密語來保護你的私鑰.\n"
 "\n"
 
-msgid "Please enter a passphrase to protect the off-card backup of the new encryption key."
+msgid ""
+"Please enter a passphrase to protect the off-card backup of the new "
+"encryption key."
 msgstr "請輸入密語以保護新加密金鑰的卡片外備份."
 
 #, c-format
@@ -3562,11 +3618,13 @@ msgid "Key generation failed: %s\n"
 msgstr "產生金鑰失敗: %s\n"
 
 #, c-format
-msgid "key has been created %lu second in future (time warp or clock problem)\n"
+msgid ""
+"key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "金鑰已經在 %lu 秒後的未來製妥 (可能是因為時光旅行或時鐘的問題)\n"
 
 #, c-format
-msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
+msgid ""
+"key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "金鑰已經在 %lu 秒後的未來製妥 (可能是因為時光旅行或時鐘的問題)\n"
 
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
@@ -3950,7 +4008,8 @@ msgstr "無法檢查簽章: %s\n"
 msgid "not a detached signature\n"
 msgstr "不是一份分離的簽章\n"
 
-msgid "WARNING: multiple signatures detected.  Only the first will be checked.\n"
+msgid ""
+"WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "警告: 偵測到多重簽章. 祇有第一個簽章纔會被核選.\n"
 
 #, c-format
@@ -4090,7 +4149,8 @@ msgstr " (主要金鑰 ID %s)"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP certificate:\n"
+"Please enter the passphrase to unlock the secret key for the OpenPGP "
+"certificate:\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
@@ -4191,7 +4251,8 @@ msgstr "下列項目沒有對應的信任值:\n"
 msgid "  aka \"%s\"\n"
 msgstr "  亦即 \"%s\"\n"
 
-msgid "How much do you trust that this key actually belongs to the named user?\n"
+msgid ""
+"How much do you trust that this key actually belongs to the named user?\n"
 msgstr "你有多信任這把金鑰真的屬於叫這個名字的使用者?\n"
 
 #, c-format
@@ -4299,7 +4360,8 @@ msgstr "請注意: 這把金鑰已經過期了!\n"
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "警告: 這把金鑰並非以受信任的簽章所認證!\n"
 
-msgid "         There is no indication that the signature belongs to the owner.\n"
+msgid ""
+"         There is no indication that the signature belongs to the owner.\n"
 msgstr "         沒有證據指出這個簽章屬於這個持有者.\n"
 
 msgid "WARNING: We do NOT trust this key!\n"
@@ -4308,7 +4370,8 @@ msgstr "警告: 我們 *不* 信任這把金鑰!\n"
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         這個簽章很有可能是 *偽造的*.\n"
 
-msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgid ""
+"WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr "警告: 這把金鑰並非以足夠信任的簽章所認證!\n"
 
 msgid "         It is not certain that the signature belongs to the owner.\n"
@@ -4568,11 +4631,13 @@ msgid "public key %s is %lu seconds newer than the signature\n"
 msgstr "公鑰 %s 比簽章還要新了 %lu 秒\n"
 
 #, c-format
-msgid "key %s was created %lu second in the future (time warp or clock problem)\n"
+msgid ""
+"key %s was created %lu second in the future (time warp or clock problem)\n"
 msgstr "金鑰 %s 已經在 %lu 秒後的未來製妥 (可能是因為時光旅行或時鐘的問題)\n"
 
 #, c-format
-msgid "key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgid ""
+"key %s was created %lu seconds in the future (time warp or clock problem)\n"
 msgstr "金鑰 %s 已經在 %lu 秒後的未來製妥 (可能是因為時光旅行或時鐘的問題)\n"
 
 #, c-format
@@ -4600,11 +4665,14 @@ msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
 msgstr "警告: 註記 %% 無法擴張 (太大了). 現在使用未擴張的.\n"
 
 #, c-format
-msgid "WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
+msgid ""
+"WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
 msgstr "警告: 原則 URL 的 %% 無法擴張 (太大了). 現在使用未擴張的.\n"
 
 #, c-format
-msgid "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using unexpanded.\n"
+msgid ""
+"WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
+"unexpanded.\n"
 msgstr "警告: 偏好金鑰伺服器 URL 的 %% 無法擴張 (太大了). 現在使用未擴張的.\n"
 
 #, c-format
@@ -4619,7 +4687,8 @@ msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "你在 --pgp2 模式下祇能夠使用 PGP 2.x 型態的金鑰來做分離簽署\n"
 
 #, c-format
-msgid "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
+msgid ""
+"WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "警告: 強迫使用 %s (%d) 摘要演算法會違反收件者偏好設定\n"
 
 msgid "signing:"
@@ -4920,7 +4989,8 @@ msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
 msgstr "%d 個勉強信任以及 %d 個完全信任是 %s 信任模型的最小需求\n"
 
 #, c-format
-msgid "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
+msgid ""
+"depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr "深度: %d  有效: %3d  已簽署: %3d  信任: %d-, %dq, %dn, %dm, %df, %du\n"
 
 #, c-format
@@ -5094,10 +5164,14 @@ msgstr "|N|請輸入金鑰的新個人識別碼 (PIN) 以建立完善的簽章."
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||請輸入金鑰的個人識別碼 (PIN) 以建立完善的簽章."
 
-msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create qualified signatures."
+msgid ""
+"|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
+"qualified signatures."
 msgstr "|NP|請輸入金鑰的新 PIN 重設碼 (PUK) 以建立完善的簽章."
 
-msgid "|P|Please enter the PIN Unblocking Code (PUK) for the key to create qualified signatures."
+msgid ""
+"|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
+"qualified signatures."
 msgstr "|P|請輸入金鑰的 PIN 重設碼 (PUK) 以建立完善的簽章."
 
 #, c-format
@@ -5239,7 +5313,8 @@ msgstr "卡片不支援 %s 摘要演算法\n"
 msgid "signatures created so far: %lu\n"
 msgstr "目前建立的簽章: %lu\n"
 
-msgid "verification of Admin PIN is currently prohibited through this command\n"
+msgid ""
+"verification of Admin PIN is currently prohibited through this command\n"
 msgstr "目前在此指令中的管理者 PIN 驗證被禁止了\n"
 
 #, c-format
@@ -5531,7 +5606,8 @@ msgstr "[錯誤 - 無效的 DN]"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the X.509 certificate:\n"
+"Please enter the passphrase to unlock the secret key for the X.509 "
+"certificate:\n"
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
@@ -5602,7 +5678,9 @@ msgstr "第 %d 列: 以金鑰鑰柄 `%s' 取得金鑰時出錯: %s\n"
 msgid "line %d: key generation failed: %s <%s>\n"
 msgstr "第 %d 列: 金鑰產生失敗: %s <%s>\n"
 
-msgid "To complete this certificate request please enter the passphrase for the key you just created once more.\n"
+msgid ""
+"To complete this certificate request please enter the passphrase for the key "
+"you just created once more.\n"
 msgstr "如欲完成此憑證請求, 請再輸入一次你剛才建立的金鑰密語.\n"
 
 #, c-format
@@ -5947,7 +6025,8 @@ msgstr "無效的國家代碼於 `%s', 第 %d 列\n"
 msgid ""
 "You are about to create a signature using your certificate:\n"
 "\"%s\"\n"
-"This will create a qualified signature by law equated to a handwritten signature.\n"
+"This will create a qualified signature by law equated to a handwritten "
+"signature.\n"
 "\n"
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
@@ -5957,7 +6036,9 @@ msgstr ""
 "\n"
 "%s%s請問你是否真的確定要這樣做了?"
 
-msgid "Note, that this software is not officially approved to create or verify such signatures.\n"
+msgid ""
+"Note, that this software is not officially approved to create or verify such "
+"signatures.\n"
 msgstr "請注意, 本軟體並未正式被認可來建立或驗證這樣的簽章.\n"
 
 #, c-format
@@ -5992,7 +6073,8 @@ msgstr "[   未給定日期  ]"
 msgid " using certificate ID 0x%08lX\n"
 msgstr " 以憑證 ID 0x%08lX\n"
 
-msgid "invalid signature: message digest attribute does not match computed one\n"
+msgid ""
+"invalid signature: message digest attribute does not match computed one\n"
 msgstr "無效的簽章: 訊息摘要屬性與計算而得的不吻合\n"
 
 msgid "Good signature from"
@@ -6261,10 +6343,12 @@ msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "用法: symcryptrun [選項] (或用 -h 求助)"
 
 msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE [options...] COMMAND [inputfile]\n"
+"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
+"[options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
-"語法: symcryptrun --class 型別 --program 程式 --keyfile 金鑰檔案 [選項...] 指令 [輸入檔案]\n"
+"語法: symcryptrun --class 型別 --program 程式 --keyfile 金鑰檔案 [選項...] 指"
+"令 [輸入檔案]\n"
 "叫用單純對稱式加密工具\n"
 
 #, c-format
@@ -6374,77 +6458,113 @@ msgstr ""
 
 #~ msgid "Command> "
 #~ msgstr "指令> "
+
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr ""
 #~ "請向 <gnupg-bugs@gnu.org> 回報程式瑕疵, 向 <Jedi@Jedi.org> 回報翻譯瑕疵.\n"
+
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr "信任資料庫已損毀; 請執行 \"gpg --fix-trustdb\".\n"
+
 #~ msgid "Please report bugs to "
 #~ msgstr "翻譯瑕疵請回報給 Jedi@Jedi.org ; 程式瑕疵則請回報給"
+
 #~ msgid "DSA keypair will have %u bits.\n"
 #~ msgstr "DSA 金鑰對會有 %u 位元長.\n"
+
 #~ msgid "this command has not yet been implemented\n"
 #~ msgstr "這個指令尚未實做完成\n"
+
 #~ msgid "Repeat passphrase\n"
 #~ msgstr "請再輸入一次密語\n"
+
 #~ msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
 #~ msgstr "||請在讀卡機鍵盤上輸入你的 PIN%%0A[簽署完成: %lu]"
+
 #~ msgid "|A|Admin PIN"
 #~ msgstr "|A|管理者 PIN"
+
 #~ msgid "read options from file"
 #~ msgstr "從檔案中讀取選項"
+
 #~ msgid "Used libraries:"
 #~ msgstr "已使用的函示庫:"
+
 #~ msgid "generate PGP 2.x compatible messages"
 #~ msgstr "產生 PGP 2.x 相容性訊息"
+
 #~ msgid "|[FILE]|make a signature"
 #~ msgstr "|[檔案]|做出簽章"
+
 #~ msgid "|[FILE]|make a clear text signature"
 #~ msgstr "|[檔案]|做出明文簽章"
+
 #~ msgid "|NAME|use NAME as default recipient"
 #~ msgstr "|名字|使用「名字」做為預設收件者"
+
 #~ msgid "use the default key as default recipient"
 #~ msgstr "使用預設的金鑰做為預設的收件者"
+
 #~ msgid "force v3 signatures"
 #~ msgstr "強迫使用第三版簽章"
+
 #~ msgid "always use a MDC for encryption"
 #~ msgstr "總是使用 MDC 來加密"
+
 #~ msgid "add this secret keyring to the list"
 #~ msgstr "將此私鑰鑰匙圈加到清單中"
+
 #~ msgid "|NAME|set terminal charset to NAME"
 #~ msgstr "|名稱|將終端機字元集設為「名稱」"
+
 #~ msgid "|FILE|load extension module FILE"
 #~ msgstr "|檔案|載入延伸模組「檔案」"
+
 #~ msgid "|N|use compress algorithm N"
 #~ msgstr "|N|使用壓縮演算法 N"
+
 #~ msgid "remove key from the public keyring"
 #~ msgstr "從公鑰鑰匙圈裡移除金鑰"
+
 #~ msgid "can't gen prime with pbits=%u qbits=%u\n"
 #~ msgstr "無法以 %u 位元長的 p 及 %u 位元長的 q 產生質數\n"
+
 #~ msgid "can't generate a prime with less than %d bits\n"
 #~ msgstr "無法產生少於 %d 位元的質數\n"
+
 #~ msgid "no entropy gathering module detected\n"
 #~ msgstr "偵測不到亂數蒐集模組\n"
+
 #~ msgid "can't lock `%s': %s\n"
 #~ msgstr "無法鎖定 `%s': %s\n"
+
 #~ msgid "can't stat `%s': %s\n"
 #~ msgstr "無法取得檔案 `%s' 的資訊: %s\n"
+
 #~ msgid "`%s' is not a regular file - ignored\n"
 #~ msgstr "`%s' 不是一個標準的檔案 - 已略過\n"
+
 #~ msgid "note: random_seed file is empty\n"
 #~ msgstr "請注意: random_seed 檔案是空的\n"
+
 #~ msgid "WARNING: invalid size of random_seed file - not used\n"
 #~ msgstr "警告: random_seed 檔案大小無效 - 不予採用\n"
+
 #~ msgid "can't read `%s': %s\n"
 #~ msgstr "無法讀取 `%s': %s\n"
+
 #~ msgid "note: random_seed file not updated\n"
 #~ msgstr "請注意: random_seed 檔案未更新\n"
+
 #~ msgid "can't write `%s': %s\n"
 #~ msgstr "無法寫入 `%s': %s\n"
+
 #~ msgid "can't close `%s': %s\n"
 #~ msgstr "無法關閉 `%s': %s\n"
+
 #~ msgid "WARNING: using insecure random number generator!!\n"
 #~ msgstr "警告: 正在使用不安全的隨機數字產生器!!\n"
+
 #~ msgid ""
 #~ "The random number generator is only a kludge to let\n"
 #~ "it run - it is in no way a strong RNG!\n"
@@ -6457,6 +6577,7 @@ msgstr ""
 #~ "\n"
 #~ "*** 絕對不要把這個程式產生的任何資料拿來用!! ***\n"
 #~ "\n"
+
 #~ msgid ""
 #~ "Please wait, entropy is being gathered. Do some work if it would\n"
 #~ "keep you from getting bored, because it will improve the quality\n"
@@ -6464,6 +6585,7 @@ msgstr ""
 #~ msgstr ""
 #~ "請稍待片刻, 系統此時正在蒐集亂數. 如果你會覺得無聊的話,\n"
 #~ "不妨做些別的事, 這樣子甚至能夠讓亂數的品質更好.\n"
+
 #~ msgid ""
 #~ "\n"
 #~ "Not enough random bytes available.  Please do some other work to give\n"
@@ -6472,24 +6594,34 @@ msgstr ""
 #~ "\n"
 #~ "隨機位元組不夠多. 請多做一些有的沒的事情, \n"
 #~ "這樣作業系統纔能蒐集到更多的亂數! (還需要 %d 位元組)\n"
+
 #~ msgid "card reader not available\n"
 #~ msgstr "沒有讀卡機可用\n"
+
 #~ msgid "Please insert the card and hit return or enter 'c' to cancel: "
 #~ msgstr "請插入卡片並按下 [Enter], 或者輸入 'c' 取消: "
+
 #~ msgid "Hit return when ready or enter 'c' to cancel: "
 #~ msgstr "準備好時請按下 [Enter], 或者輸入 'c' 取消: "
+
 #~ msgid "Enter New Admin PIN: "
 #~ msgstr "請輸入新的管理者 PIN: "
+
 #~ msgid "Enter New PIN: "
 #~ msgstr "請輸入新的 PIN: "
+
 #~ msgid "Enter Admin PIN: "
 #~ msgstr "請輸入管理者 PIN: "
+
 #~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 #~ msgstr "編密法延伸模組 `%s' 因為權限不安全而未載入\n"
+
 #~ msgid "NOTE: %s is not available in this version\n"
 #~ msgstr "請注意: %s 在本版中無法使用\n"
+
 #~ msgid "-k[v][v][v][c] [user-id] [keyring]"
 #~ msgstr "-k[v][v][v][c] [使用者ID] [鑰匙圈]"
+
 #~ msgid ""
 #~ "It's up to you to assign a value here; this value will never be exported\n"
 #~ "to any 3rd party.  We need it to implement the web-of-trust; it has "
@@ -6498,6 +6630,7 @@ msgstr ""
 #~ msgstr ""
 #~ "在這裡指派的數值完全是看你自己決定; 這些數值永遠不會匯出給其他人.\n"
 #~ "我們需要它來實施信任網絡; 這跟 (自動建立起的) 憑證網絡一點關係也沒有."
+
 #~ msgid ""
 #~ "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
 #~ "ultimately trusted - those are usually the keys for which you have\n"
@@ -6507,11 +6640,14 @@ msgstr ""
 #~ "要建立起信任網絡, GnuPG 需要知道哪些金鑰是被徹底信任的 -\n"
 #~ "那些金鑰通常就是你有辦法存取到私鑰的. 回答 \"yes\" 來將這些\n"
 #~ "金鑰設成徹底信任\n"
+
 #~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 #~ msgstr "如果你無論如何都想要用這把未被信任的金鑰, 請回答 \"yes\"."
+
 #~ msgid ""
 #~ "Enter the user ID of the addressee to whom you want to send the message."
 #~ msgstr "輸入你要遞送的訊息接收者的使用者 ID."
+
 #~ msgid ""
 #~ "Select the algorithm to use.\n"
 #~ "\n"
@@ -6534,6 +6670,7 @@ msgstr ""
 #~ "RSA 可以被用來簽署及加密.\n"
 #~ "\n"
 #~ "第一把 (主要的) 金鑰一定要含有能用於簽署的金鑰."
+
 #~ msgid ""
 #~ "In general it is not a good idea to use the same key for signing and\n"
 #~ "encryption.  This algorithm should only be used in certain domains.\n"
@@ -6542,10 +6679,13 @@ msgstr ""
 #~ "通常來說用同一把金鑰簽署及加密並不是個好主意.\n"
 #~ "這個演算法應該祇被用於特定的情況下.\n"
 #~ "請先聯絡你的安全專家."
+
 #~ msgid "Enter the size of the key"
 #~ msgstr "請輸入金鑰尺寸"
+
 #~ msgid "Answer \"yes\" or \"no\""
 #~ msgstr "請回答 \"yes\" 或 \"no\""
+
 #~ msgid ""
 #~ "Enter the required value as shown in the prompt.\n"
 #~ "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
@@ -6555,12 +6695,16 @@ msgstr ""
 #~ "請輸入提示裡所要求的數值.\n"
 #~ "你可以輸入 ISO 日期格式 (YYYY-MM-DD), 但是不會得到良好的錯誤回應 -\n"
 #~ "反之, 系統會試著把給定的數值中斷成若干片段."
+
 #~ msgid "Enter the name of the key holder"
 #~ msgstr "請輸入金鑰持有人的名字"
+
 #~ msgid "please enter an optional but highly suggested email address"
 #~ msgstr "請輸入選用 (但強烈建議使用) 的電子郵件位址"
+
 #~ msgid "Please enter an optional comment"
 #~ msgstr "請輸入選用的註釋"
+
 #~ msgid ""
 #~ "N  to change the name.\n"
 #~ "C  to change the comment.\n"
@@ -6573,9 +6717,11 @@ msgstr ""
 #~ "E  修改電子郵件位址.\n"
 #~ "O  繼續產生金鑰.\n"
 #~ "Q  中止產生金鑰."
+
 #~ msgid ""
 #~ "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
 #~ msgstr "如果你覺得可以產生子鑰的話, 就回答 \"yes\" (或者祇 \"y\" 就好)."
+
 #~ msgid ""
 #~ "When you sign a user ID on a key, you should first verify that the key\n"
 #~ "belongs to the person named in the user ID.  It is useful for others to\n"
@@ -6647,16 +6793,20 @@ msgstr ""
 #~ "甚麼是 \"漫不經心\", 而甚麼是 \"超級謹慎\".\n"
 #~ "\n"
 #~ "如果你不知道應該選甚麼答案的話, 就選 \"0\"."
+
 #~ msgid "Answer \"yes\" if you want to sign ALL the user IDs"
 #~ msgstr "如果你想要簽署 *所有* 使用者 ID 的話就回答 \"yes\""
+
 #~ msgid ""
 #~ "Answer \"yes\" if you really want to delete this user ID.\n"
 #~ "All certificates are then also lost!"
 #~ msgstr ""
 #~ "如果你真的想要刪除這個使用者 ID 的話就回答 \"yes\".\n"
 #~ "所有的憑證在那之後也都會失去!"
+
 #~ msgid "Answer \"yes\" if it is okay to delete the subkey"
 #~ msgstr "如果可以刪除這把子鑰的話就回答 \"yes\""
+
 #~ msgid ""
 #~ "This is a valid signature on the key; you normally don't want\n"
 #~ "to delete this signature because it may be important to establish a\n"
@@ -6665,6 +6815,7 @@ msgstr ""
 #~ "這是一份在這把金鑰上的有效簽章; 通常你不會想要刪除這份簽章,\n"
 #~ "因為要跟這把金鑰或其他由這把金鑰所驗證的金鑰建立起信任連結\n"
 #~ "時, 會相當重要."
+
 #~ msgid ""
 #~ "This signature can't be checked because you don't have the\n"
 #~ "corresponding key.  You should postpone its deletion until you\n"
@@ -6674,10 +6825,12 @@ msgstr ""
 #~ "這份簽章無法被檢驗, 因為你沒有符合的金鑰. 你應該延緩刪除它,\n"
 #~ "直到你知道哪一把金鑰被使用了; 因為這把來簽署的金鑰可能透過\n"
 #~ "其他已經驗證的金鑰建立了一個信任連結."
+
 #~ msgid ""
 #~ "The signature is not valid.  It does make sense to remove it from\n"
 #~ "your keyring."
 #~ msgstr "這份簽章無效. 從你的鑰匙圈中將它移除相當合理."
+
 #~ msgid ""
 #~ "This is a signature which binds the user ID to the key. It is\n"
 #~ "usually not a good idea to remove such a signature.  Actually\n"
@@ -6690,6 +6843,7 @@ msgstr ""
 #~ "可能從此就不能再使用這把金鑰了. 所以祇有在這\n"
 #~ "把金鑰的第一個自我簽章因某些原因無效, 而第二\n"
 #~ "個還可用的情況下纔這麼做."
+
 #~ msgid ""
 #~ "Change the preferences of all user IDs (or just of the selected ones)\n"
 #~ "to the current list of preferences.  The timestamp of all affected\n"
@@ -6697,19 +6851,24 @@ msgstr ""
 #~ msgstr ""
 #~ "變更所有 (或祇有被選取的那幾個) 使用者 ID 的偏好成現用的偏好清單.\n"
 #~ "所有受到影響的自我簽章的時間戳記都會增加一秒鐘.\n"
+
 #~ msgid ""
 #~ "Please repeat the last passphrase, so you are sure what you typed in."
 #~ msgstr "請再次輸入最後的密語, 以確定你到底鍵入了些甚麼."
+
 #~ msgid "Give the name of the file to which the signature applies"
 #~ msgstr "請給定簽章所要套用的檔案名稱"
+
 #~ msgid "Answer \"yes\" if it is okay to overwrite the file"
 #~ msgstr "如果可以覆寫這個檔案的話就回答 \"yes\""
+
 #~ msgid ""
 #~ "Please enter a new filename. If you just hit RETURN the default\n"
 #~ "file (which is shown in brackets) will be used."
 #~ msgstr ""
 #~ "請輸入一個新的檔名. 如果你直接按下 Enter, 那麼就\n"
 #~ "會使用預設的檔案 (顯示在括號中)."
+
 #~ msgid ""
 #~ "You should specify a reason for the certification.  Depending on the\n"
 #~ "context you have the ability to choose from this list:\n"
@@ -6736,6 +6895,7 @@ msgstr ""
 #~ "  \"使用者 ID 不再有效了\"\n"
 #~ "      如果這個使用者 ID 不再被使用了, 就選這個;\n"
 #~ "      這通常用來表示某個電子郵件位址不再有效了.\n"
+
 #~ msgid ""
 #~ "If you like, you can enter a text describing why you issue this\n"
 #~ "revocation certificate.  Please keep this text concise.\n"
@@ -6744,127 +6904,187 @@ msgstr ""
 #~ "你也可以輸入一串文字來描述為甚麼發佈這份撤銷憑證的理由.\n"
 #~ "請讓這段文字保持簡明扼要.\n"
 #~ "用空白列來結束這段文字.\n"
+
 #~ msgid "         algorithms on these user IDs:\n"
 #~ msgstr "         無法使用:\n"
+
 #~ msgid "can't query passphrase in batch mode\n"
 #~ msgstr "無法在批次模式中查詢密語\n"
+
 #~ msgid "Enter passphrase: "
 #~ msgstr "請輸入密語: "
+
 #~ msgid "Repeat passphrase: "
 #~ msgstr "請再輸入一次密語: "
+
 #~ msgid "no photo viewer set\n"
 #~ msgstr "沒有設定照片檢視程式\n"
+
 #~ msgid "general error"
 #~ msgstr "一般性錯誤"
+
 #~ msgid "unknown packet type"
 #~ msgstr "未知的封包型態"
+
 #~ msgid "unknown pubkey algorithm"
 #~ msgstr "未知的公鑰演算法"
+
 #~ msgid "unknown digest algorithm"
 #~ msgstr "未知的摘要演算法"
+
 #~ msgid "bad public key"
 #~ msgstr "損壞的公鑰"
+
 #~ msgid "bad secret key"
 #~ msgstr "損壞的私鑰"
+
 #~ msgid "bad signature"
 #~ msgstr "損壞的簽章"
+
 #~ msgid "checksum error"
 #~ msgstr "加總檢查錯誤"
+
 #~ msgid "can't open the keyring"
 #~ msgstr "沒辦法開啟鑰匙圈"
+
 #~ msgid "invalid packet"
 #~ msgstr "無效的封包"
+
 #~ msgid "invalid armor"
 #~ msgstr "無效的封裝"
+
 #~ msgid "no such user id"
 #~ msgstr "沒有這個使用者 ID"
+
 #~ msgid "wrong secret key used"
 #~ msgstr "用了錯誤的私鑰"
+
 #~ msgid "not supported"
 #~ msgstr "未支援"
+
 #~ msgid "bad key"
 #~ msgstr "損壞的金鑰"
+
 #~ msgid "file write error"
 #~ msgstr "檔案寫入錯誤"
+
 #~ msgid "file open error"
 #~ msgstr "檔案開啟錯誤"
+
 #~ msgid "file create error"
 #~ msgstr "檔案建立錯誤"
+
 #~ msgid "invalid passphrase"
 #~ msgstr "無效的密語"
+
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "尚未實做的公鑰演算法"
+
 #~ msgid "unimplemented cipher algorithm"
 #~ msgstr "尚未實做的編密演算法"
+
 #~ msgid "unknown signature class"
 #~ msgstr "未知的簽章層級"
+
 #~ msgid "trust database error"
 #~ msgstr "信任資料庫錯誤"
+
 #~ msgid "resource limit"
 #~ msgstr "資源限制"
+
 #~ msgid "invalid keyring"
 #~ msgstr "無效的鑰匙圈"
+
 #~ msgid "malformed user id"
 #~ msgstr "變造過的使用者 ID"
+
 #~ msgid "file close error"
 #~ msgstr "檔案關閉錯誤"
+
 #~ msgid "file rename error"
 #~ msgstr "檔案更名錯誤"
+
 #~ msgid "file delete error"
 #~ msgstr "檔案刪除錯誤"
+
 #~ msgid "unexpected data"
 #~ msgstr "未預期的資料"
+
 #~ msgid "timestamp conflict"
 #~ msgstr "時間戳印有矛盾"
+
 #~ msgid "unusable pubkey algorithm"
 #~ msgstr "無法使用的公鑰演算法"
+
 #~ msgid "file exists"
 #~ msgstr "檔案已存在"
+
 #~ msgid "weak key"
 #~ msgstr "金鑰薄弱"
+
 #~ msgid "bad URI"
 #~ msgstr "損壞的 URI"
+
 #~ msgid "unsupported URI"
 #~ msgstr "未支援的 URI"
+
 #~ msgid "network error"
 #~ msgstr "網路錯誤"
+
 #~ msgid "not processed"
 #~ msgstr "未處理"
+
 #~ msgid "unusable public key"
 #~ msgstr "不可用的公鑰"
+
 #~ msgid "unusable secret key"
 #~ msgstr "不可用的私鑰"
+
 #~ msgid "keyserver error"
 #~ msgstr "金鑰伺服器錯誤"
+
 #~ msgid "no card"
 #~ msgstr "沒有卡片"
+
 #~ msgid "no data"
 #~ msgstr "沒有資料"
+
 #~ msgid "ERROR: "
 #~ msgstr "錯誤: "
+
 #~ msgid "WARNING: "
 #~ msgstr "警告: "
+
 #~ msgid "... this is a bug (%s:%d:%s)\n"
 #~ msgstr "... 這是個瑕疵 (%s:%d:%s)\n"
+
 #~ msgid "WARNING: using insecure memory!\n"
 #~ msgstr "警告: 正在使用不安全的記憶體!\n"
+
 #~ msgid "please see http://www.gnupg.org/faq.html for more information\n"
 #~ msgstr "請參考 http://www.gnupg.org/faq.html 上進一步的資訊\n"
+
 #~ msgid "operation is not possible without initialized secure memory\n"
 #~ msgstr "尚未啟用安全的記憶體時, 不可能進行操作\n"
+
 #~ msgid "(you may have used the wrong program for this task)\n"
 #~ msgstr "(也許你選錯程式來做這件事了)\n"
+
 #~ msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
 #~ msgstr "無法在 v3 (PGP 2.x 型態) 的簽章內放入標記資料\n"
+
 #~ msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
 #~ msgstr "無法在 v3 (PGP 2.x 型態) 的金鑰簽章內放入標記資料\n"
+
 #~ msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
 #~ msgstr "無法在 v3 (PGP 2.x 型態) 的簽章內放入原則 URL\n"
+
 #~ msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
 #~ msgstr "無法在 v3 (PGP 2.x 型態) 的金鑰簽章內放入原則 URL\n"
+
 #~ msgid ""
 #~ "please see http://www.gnupg.org/why-not-idea.html for more information\n"
 #~ msgstr "請參考 http://www.gnupg.org/why-not-idea.html 取得更多資訊\n"
+
 #~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
 #~ msgstr "DSA 要求使用 160 位元的雜湊演算法\n"
-

@@ -3181,7 +3181,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Tidak ada preferensi pada user ID bergaya PGP 2.x.\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Kunci ini dapat dibatalkan oleh kunci %s"
 
 #, fuzzy, c-format

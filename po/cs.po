@@ -3061,8 +3061,8 @@ msgstr "Poznámky: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Uživatelský ID formátu PGP 2.x nemá žádné předvolby\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "V %s tento klíč revokoval %s klíčem %s\n"
 
 #, c-format

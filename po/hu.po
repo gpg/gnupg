@@ -3170,7 +3170,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Nincsenek preferenciák egy PGP 2.x felhasználóazonosítón!\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Ezt a kulcsot a következõ %s kulcs visszavonhatja: "
 
 #, fuzzy, c-format

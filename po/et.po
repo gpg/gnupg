@@ -3170,7 +3170,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x stiilis kasutaja ID ei oma seadeid.\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Selle võtme võib olla tühistanud %s võti "
 
 #, fuzzy, c-format

@@ -3067,8 +3067,8 @@ msgstr "Simgelemler: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Bir PGP 2.x tarzı kullanıcı kimliğine uygun tercih yok.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr ""
 "Bu anahtar %2$s tarafından %3$s anahtarıyla %1$s üzerinde yürürlükten "
 "kaldırılmış\n"

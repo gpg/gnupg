@@ -3282,7 +3282,7 @@ msgstr "No hi ha preferències en un ID d'usuari d'estil PGP 2.x.\n"
 # Potser %s haja d'anar darrere de «clau».  ivb
 # És cert. Nova funcionalitat de 1.2.0, IIRC. jm
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Aquesta clau pot ser revocada per la clau %s "
 
 # Potser %s haja d'anar darrere de «clau».  ivb

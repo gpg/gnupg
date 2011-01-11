@@ -3121,8 +3121,8 @@ msgstr ""
 "Du kan inte ange några inställningar för en användaridentitet av PGP 2.x-"
 "typ.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Den här nyckeln blev spärrad den %s av %s nyckel %s\n"
 
 #, c-format

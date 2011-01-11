@@ -3184,7 +3184,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Não há preferências no ID de utilizador tipo PGP 2.x.\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Esta chave pode ser revogada pela chave %s "
 
 #, fuzzy, c-format

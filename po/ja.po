@@ -3090,7 +3090,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x形式ユーザーIDの選好が、ありません。\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "この鍵は、%s鍵%sによって失効されたようです"
 
 #, c-format

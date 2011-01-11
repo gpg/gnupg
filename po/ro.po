@@ -3119,8 +3119,8 @@ msgstr "Notaþie:"
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Nu existã nici o preferinþã pentru un ID utilizator stil PGP 2.x.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Aceastã cheie a fost revocatã pe %s de %s cheia %s\n"
 
 #, c-format

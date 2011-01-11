@@ -3202,7 +3202,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Δεν υπάρχουν προεπιλογές σε ένα user ID τύπου PGP 2.x.\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Αυτό το κλειδί μπορεί να ανακληθεί από %s κλειδί "
 
 #, fuzzy, c-format

@@ -3031,8 +3031,8 @@ msgstr "注记："
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x 样式的用户标识没有首选项。\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "此密钥已于 %s 被 %s 密钥 %s 所吊销\n"
 
 #, c-format

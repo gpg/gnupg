@@ -3035,8 +3035,8 @@ msgstr "Notasjoner: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Det er ingen preferanser for en PGP 2.x-aktig brukerid.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Denne nøkkelen ble opphevet den %s av %s med nøkkelen %s\n"
 
 #, c-format
