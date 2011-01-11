@@ -2,7 +2,7 @@
 # mail a compressed version of the current translation to the Last-Translator
 #
 
-# remove the colon to armor this script.
+# Remove the colon to armor this script.
 SENDMAIL=": /usr/sbin/sendmail"
 
 LC_ALL=C
@@ -25,7 +25,7 @@ for file in *.po; do
         continue;
     fi
 
-    echo "$file: sending to $addr"
+    echo "$file: sending to $addr" >&2
     ( cat <<EOF
 From: translations@gnupg.org
 To: $addr
@@ -40,7 +40,8 @@ Content-Type: multipart/mixed; boundary="=-=-="
 Hi!
 
 We are preparing for a new 2.0 release of GnuPG and like you to ask to
-update your translation. 
+update your translation.  Unfortunately there is not much time left;
+we can only include updates we receive by XXXXXXXXXXXXXX UTC.
 
 Please find attached the very latest version of the PO file for your
 GnuPG translation ($file).
@@ -51,10 +52,10 @@ security problems.  Furthermore the TP Robot is not able to handle
 more than one version of a project (we maintain 1.4 and 2.0) and thus
 I'd ask you *not to use the TP Robot* for GnuPG.
 
-The release candidate for 2.0.10 is available at:
+A release candidate for 2.0.xx is available at:
 
-  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-2.0.10rc1.tar.bz2
-  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-2.0.10rc1.tar.bz2.sig
+  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/
+  ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/
 
 Output of msgfmt is:
 $(msgfmt --check --statistics $file 2>&1 | head)
