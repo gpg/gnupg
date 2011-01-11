@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2010-09-03 11:08+0200\n"
+"PO-Revision-Date: 2011-01-11 17:28+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -3100,9 +3100,9 @@ msgstr "\"Notationen\": "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "PGP 2.x-artige Schlüssel haben keine Voreinstellungen.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "The following key was revoked on %s by %s key %s\n"
-msgstr "Dieser Schlüssel wurde am %s von %s Schlüssel %s widerrufen\n"
+msgstr "Der folgende Schlüssel wurde am %s von %s Schlüssel %s widerrufen\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
