@@ -6,6 +6,8 @@
 #  I also got inspiration from it.po by Marco d'Itri <md@linux.it>
 #
 # Jaime Suárez <jsuarez@mundocripto.com>, 2001-2008.
+#              !--- Address rejected (2011-01-11)
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""

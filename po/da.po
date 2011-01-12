@@ -1,8 +1,11 @@
 # Dansk oversættelse af: / Danish translation of: GnuPG
 # Copyright (C) 2000 Free Software Foundation, Inc.
 # Birger Langkjer <birger.langkjer@image.dk>, 2000.
+#                 !-- user unknown (2011-01-11)
 # Kenneth Christiansen -- kenneth@ripen.dk, 2000.
 # -- puh'ha denne er lang...nå men det går da fremad ;-)
+#
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""

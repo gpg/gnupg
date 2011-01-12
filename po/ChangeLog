@@ -1,3 +1,19 @@
+2011-01-12  Jakub Bogusz <qboosh@pld-linux.org>  (wk)
+
+	* pl.po: Update.
+
+2011-01-12  Petr Pisar  <petr.pisar@atlas.cz>  (wk)
+
+	* cs.po: Update.
+
+2011-01-12  Jedi  <JediLin@Gmail.com>  (wk)
+
+	* zh_TW.po: Update.
+
+2011-01-12  Daniel Nylander  <po@danielnylander.se>  (wk)
+
+	* sv.po: Update.
+
 2010-09-03  Werner Koch  <wk@g10code.com>
 
 	* de.po: Insert missing spaces.  Fixes Debian-Bug#594489.

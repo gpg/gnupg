@@ -1,6 +1,8 @@
 # Greek Translation of GnuPG.
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # Dokianakis Theofanis <madf@hellug.gr>, 2002.
+#                      !-- psbl.surriel.com rejected (2011-01-11)
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""

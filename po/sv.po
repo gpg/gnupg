@@ -1,8 +1,8 @@
 # Swedish messages for gnupg
-# Copyright (C) 1999-2008 Free Software Foundation, Inc.
-# Daniel Nylander <po@danielnylander.se>, 2006, 2007, 2008.
+# Copyright (C) 1999-2011 Free Software Foundation, Inc.
 # Per Tunedal <info@clipanish.com>, 2004.
 # Daniel Resare <daniel@resare.com>, 1999-2002.
+# Daniel Nylander <po@danielnylander.se>, 2006, 2007, 2008, 2011.
 #
 # ===================================================
 # This a completely revised and extended translation.
@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg trunk\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2008-07-21 09:04+0200\n"
+"PO-Revision-Date: 2011-01-12 14:53+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -42,13 +42,13 @@ msgstr "misslyckades med att ta kontroll över PIN-inmatningslåset: %s\n"
 #. a literal one.  The actual to be translated text starts after
 #. the second vertical bar.
 msgid "|pinentry-label|_OK"
-msgstr ""
+msgstr "_OK"
 
 msgid "|pinentry-label|_Cancel"
-msgstr ""
+msgstr "_Avbryt"
 
 msgid "|pinentry-label|PIN:"
-msgstr ""
+msgstr "PIN-kod:"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -69,18 +69,11 @@ msgstr ""
 "och specialtecken. Fråga din administratör om mer exakt information hur\n"
 "man anger säkra lösenfraser."
 
-msgid ""
-"Please enter your PIN, so that the secret key can be unlocked for this "
-"session"
-msgstr ""
-"Ange din PIN-kod så att den hemliga nyckeln kan låsas upp för den här "
-"sessionen"
+msgid "Please enter your PIN, so that the secret key can be unlocked for this session"
+msgstr "Ange din PIN-kod så att den hemliga nyckeln kan låsas upp för den här sessionen"
 
-msgid ""
-"Please enter your passphrase, so that the secret key can be unlocked for "
-"this session"
-msgstr ""
-"Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
+msgid "Please enter your passphrase, so that the secret key can be unlocked for this session"
+msgstr "Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
 
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
@@ -154,12 +147,8 @@ msgid "Please re-enter this passphrase"
 msgstr "Ange denna lösenfras igen"
 
 #, c-format
-msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
-"Ange en lösenfras för att skydda den mottagna hemliga nyckeln%%0A   %s%%0Ai  "
-"gpg-agents nyckellager"
+msgid "Please enter a passphrase to protect the received secret key%%0A   %s%%0Awithin gpg-agent's key storage"
+msgstr "Ange en lösenfras för att skydda den mottagna hemliga nyckeln%%0A   %s%%0Ai  gpg-agents nyckellager"
 
 msgid "does not match - try again"
 msgstr "stämmer inte överens - försök igen"
@@ -169,10 +158,10 @@ msgid "failed to create stream from socket: %s\n"
 msgstr "misslyckades med att skapa flöde från uttag: %s\n"
 
 msgid "Please insert the card with serial number"
-msgstr ""
+msgstr "Mata in kortet med serienummer"
 
 msgid "Please remove the current card and insert the one with serial number"
-msgstr ""
+msgstr "Ta bort det aktuella kortet och mata in det med serienummer"
 
 msgid "Admin PIN"
 msgstr "Admin PIN-kod"
@@ -180,33 +169,29 @@ msgstr "Admin PIN-kod"
 #. TRANSLATORS: A PUK is the Personal Unblocking Code
 #. used to unblock a PIN.
 msgid "PUK"
-msgstr ""
+msgstr "PUK-kod"
 
 msgid "Reset Code"
-msgstr ""
+msgstr "Nollställ kod"
 
 #, c-format
 msgid "%s%%0A%%0AUse the reader's keypad for input."
-msgstr ""
+msgstr "%s%%0A%%0AAnvänd läsarens knappsats för inmatning."
 
-#, fuzzy
 msgid "Repeat this Reset Code"
-msgstr "Upprepa denna PIN-kod"
+msgstr "Upprepa denna nollställningskod"
 
-#, fuzzy
 msgid "Repeat this PUK"
-msgstr "Upprepa denna PIN-kod"
+msgstr "Upprepa denna PUK-kod"
 
 msgid "Repeat this PIN"
 msgstr "Upprepa denna PIN-kod"
 
-#, fuzzy
 msgid "Reset Code not correctly repeated; try again"
-msgstr "PIN-kod repeterades inte korrekt; försök igen"
+msgstr "Nollställningskoden repeterades inte korrekt; försök igen"
 
-#, fuzzy
 msgid "PUK not correctly repeated; try again"
-msgstr "PIN-kod repeterades inte korrekt; försök igen"
+msgstr "PUK-koden repeterades inte korrekt; försök igen"
 
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN-kod repeterades inte korrekt; försök igen"
@@ -230,53 +215,28 @@ msgid "Take this one anyway"
 msgstr "Ta den här ändå"
 
 #, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska "
-"vara minst %u tecken lång."
-msgstr[1] ""
-"Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska "
-"vara minst %u tecken lång."
+msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase should be at least %u character long."
+msgid_plural "Warning: You have entered an insecure passphrase.%%0AA passphrase should be at least %u characters long."
+msgstr[0] "Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska vara minst %u tecken lång."
+msgstr[1] "Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska vara minst %u tecken lång."
 
 #, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska "
-"innehålla minst %u tecken eller%%0Aspecialtecken."
-msgstr[1] ""
-"Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska "
-"innehålla minst %u tecken eller%%0Aspecialtecken."
+msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural "Warning: You have entered an insecure passphrase.%%0AA passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] "Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska innehålla minst %u tecken eller%%0Aspecialtecken."
+msgstr[1] "Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras ska innehålla minst %u tecken eller%%0Aspecialtecken."
 
 #, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras får "
-"inte vara ett känd ord eller matcha%%0Avissa mönster."
+msgid "Warning: You have entered an insecure passphrase.%%0AA passphrase may not be a known term or match%%0Acertain pattern."
+msgstr "Varning:  Du har angivit en lösenfras som inte är säker.%%0AEn lösenfras får inte vara ett känd ord eller matcha%%0Avissa mönster."
 
 #, c-format
-msgid ""
-"You have not entered a passphrase!%0AAn empty passphrase is not allowed."
+msgid "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr "Du har inte angivit en lösenfras!%0AEn tom lösenfras tillåts inte."
 
 #, c-format
-msgid ""
-"You have not entered a passphrase - this is in general a bad idea!%0APlease "
-"confirm that you do not want to have any protection on your key."
-msgstr ""
-"Du har inte angivet en lösenfras - det här är oftast en dålig idé!%"
-"0ABekräfta att du inte vill ha något som helst skydd för din nyckel."
+msgid "You have not entered a passphrase - this is in general a bad idea!%0APlease confirm that you do not want to have any protection on your key."
+msgstr "Du har inte angivet en lösenfras - det här är oftast en dålig idé!%0ABekräfta att du inte vill ha något som helst skydd för din nyckel."
 
 msgid "Yes, protection is not needed"
 msgstr "Ja, skydd behövs inte"
@@ -362,14 +322,15 @@ msgid "enable ssh-agent emulation"
 msgstr "aktivera ssh-agent-emulering"
 
 msgid "|FILE|write environment settings also to FILE"
-msgstr "|FIL|skriv miljöinställningar även till FIL"
+msgstr "|FIL|skriv även miljöinställningar till FIL"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
 #. reporting address without breaking the translations.
-#, fuzzy
 msgid "Please report bugs to <@EMAIL@>.\n"
-msgstr "Rapportera fel till <"
+msgstr ""
+"Rapportera fel till <@EMAIL@>.\n"
+"Skicka synpunkter på översättningen till <tp-sv@listor.tp-sv.se>.\n"
 
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Användning: gpg-agent [flaggor] (-h för hjälp)"
@@ -491,8 +452,7 @@ msgstr "GPG-Agent protokoll version %d stöds inte\n"
 
 # KEYGRIP är ett hexadecimalt värde som representerar hashen för den publika nyckeln
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
-msgstr ""
-"Användning: gpg-preset-passphrase [flaggor] NYCKELHASH (-h för hjälp)\n"
+msgstr "Användning: gpg-preset-passphrase [flaggor] NYCKELHASH (-h för hjälp)\n"
 
 msgid ""
 "Syntax: gpg-preset-passphrase [options] KEYGRIP\n"
@@ -534,11 +494,8 @@ msgstr "Ange lösenfrasen för att avskydda PKCS#12-objektet."
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "Ange lösenfrasen för att skydda det nya PKCS#12-objektet."
 
-msgid ""
-"Please enter the passphrase to protect the imported object within the GnuPG "
-"system."
-msgstr ""
-"Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
+msgid "Please enter the passphrase to protect the imported object within the GnuPG system."
+msgstr "Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
 
 msgid ""
 "Please enter the passphrase or the PIN\n"
@@ -597,12 +554,8 @@ msgstr "fel vid inläsning av betrodda rotcertifikat\n"
 #. "%s" gets replaced by the name as stored in the
 #. certificate.
 #, c-format
-msgid ""
-"Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
-"certificates?"
-msgstr ""
-"Litar du förbehållslöst på%%0A  \"%s\"%%0Aatt korrekt certifiera "
-"användarcertifikat?"
+msgid "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user certificates?"
+msgstr "Litar du förbehållslöst på%%0A  \"%s\"%%0Aatt korrekt certifiera användarcertifikat?"
 
 msgid "Yes"
 msgstr "Ja"
@@ -619,12 +572,8 @@ msgstr "Nej"
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
-msgid ""
-"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
-"fingerprint:%%0A  %s"
-msgstr ""
-"Validera att certifikatet identifierat som:%%0A  \"%s\"%%0Ahar "
-"fingeravtrycket:%%0A  %s"
+msgid "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the fingerprint:%%0A  %s"
+msgstr "Validera att certifikatet identifierat som:%%0A  \"%s\"%%0Ahar fingeravtrycket:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
@@ -633,21 +582,15 @@ msgid "Correct"
 msgstr "Korrekt"
 
 msgid "Wrong"
-msgstr ""
+msgstr "Fel"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
-msgstr ""
-"Observera: Den här lösenfrasen har aldrig blivit ändrad.%0ADu bör ändra den "
-"nu."
+msgstr "Observera: Den här lösenfrasen har aldrig blivit ändrad.%0ADu bör ändra den nu."
 
 #, c-format
-msgid ""
-"This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
-"it now."
-msgstr ""
-"Den här lösenfrasen har inte ändrats%%0Asedan %.4s-%.2s-%.2s.  Du bör ändra "
-"den nu."
+msgid "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change it now."
+msgstr "Den här lösenfrasen har inte ändrats%%0Asedan %.4s-%.2s-%.2s.  Du bör ändra den nu."
 
 msgid "Change passphrase"
 msgstr "ändra lösenfras"
@@ -775,7 +718,7 @@ msgstr "ingen körande gpg-agent - startar en\n"
 
 #, c-format
 msgid "waiting %d seconds for the agent to come up\n"
-msgstr ""
+msgstr "väntar %d sekunder för att agenten ska komma igång\n"
 
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "kan inte ansluta till agenten - försöker falla tillbaka\n"
@@ -783,40 +726,34 @@ msgstr "kan inte ansluta till agenten - försöker falla tillbaka\n"
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
 msgid "|audit-log-result|Good"
-msgstr ""
+msgstr "|audit-log-result|Bra"
 
 msgid "|audit-log-result|Bad"
-msgstr ""
+msgstr "|audit-log-result|Dålig"
 
 msgid "|audit-log-result|Not supported"
-msgstr ""
+msgstr "|audit-log-result|Stöds inte"
 
-#, fuzzy
 msgid "|audit-log-result|No certificate"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Inget certifikat"
 
-#, fuzzy
 msgid "|audit-log-result|Not enabled"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Inte aktiverat"
 
 msgid "|audit-log-result|Error"
-msgstr ""
+msgstr "|audit-log-result|Fel"
 
-#, fuzzy
 msgid "|audit-log-result|Not used"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Används inte"
 
-#, fuzzy
 msgid "|audit-log-result|Okay"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Okej"
 
-#, fuzzy
 msgid "|audit-log-result|Skipped"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Hoppades över"
 
-#, fuzzy
 msgid "|audit-log-result|Some"
-msgstr "importera certifikat"
+msgstr "|audit-log-result|Några"
 
 msgid "Certificate chain available"
 msgstr "Certifikatkedja tillgänglig"
@@ -854,24 +791,23 @@ msgstr "Mottagare %d"
 msgid "Data signing succeeded"
 msgstr "Datasignering lyckades"
 
-#, fuzzy, c-format
+#, c-format
 msgid "data hash algorithm: %s"
-msgstr "Felaktig hashalgoritm: %s"
+msgstr "hashalgoritm för data: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Signer %d"
-msgstr "Signatur %d"
+msgstr "Signerare %d"
 
-#, fuzzy, c-format
+#, c-format
 msgid "attr hash algorithm: %s"
-msgstr "Felaktig hashalgoritm: %s"
+msgstr "hashalgoritm för attr: %s"
 
 msgid "Data decryption succeeded"
 msgstr "Datadekryptering lyckades"
 
-#, fuzzy
 msgid "Encryption algorithm supported"
-msgstr "skyddsalgoritmen %d%s stöds inte\n"
+msgstr "Krypteringsalgoritmen stöds"
 
 msgid "Data verification succeeded"
 msgstr "Datavalidering lyckades"
@@ -879,13 +815,12 @@ msgstr "Datavalidering lyckades"
 msgid "Signature available"
 msgstr "Signatur tillgänglig"
 
-#, fuzzy
 msgid "Parsing data succeeded"
-msgstr "Tolkning av signatur lyckades"
+msgstr "Tolkning av data lyckades"
 
-#, fuzzy, c-format
+#, c-format
 msgid "bad data hash algorithm: %s"
-msgstr "Felaktig hashalgoritm: %s"
+msgstr "felaktig hashalgoritm för data: %s"
 
 #, c-format
 msgid "Signature %d"
@@ -989,20 +924,13 @@ msgstr "hittade ingen giltig OpenPGP-data.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "ogiltigt ASCII-skal: raden är längre än %d tecken\n"
 
-msgid ""
-"quoted printable character in armor - probably a buggy MTA has been used\n"
+msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
-"tecken kodade enligt \"quoted printable\"-standarden hittades i skalet - "
-"detta\n"
-"beror sannolikt på att en felaktig e-postserver eller e-postklient har "
-"använts\n"
+"tecken kodade enligt \"quoted printable\"-standarden hittades i skalet - detta\n"
+"beror sannolikt på att en felaktig e-postserver eller e-postklient har använts\n"
 
-msgid ""
-"a notation name must have only printable characters or spaces, and end with "
-"an '='\n"
-msgstr ""
-"ett notationsnamn får endast innehålla skrivbara tecken eller blanksteg, och "
-"sluta med ett \"'=\"\n"
+msgid "a notation name must have only printable characters or spaces, and end with an '='\n"
+msgstr "ett notationsnamn får endast innehålla skrivbara tecken eller blanksteg, och sluta med ett \"'=\"\n"
 
 msgid "a user notation name must contain the '@' character\n"
 msgstr "en användares notationsnamn måste innehåller tecknet \"@\"\n"
@@ -1030,13 +958,11 @@ msgstr "OpenPGP-kort nr. %s identifierades\n"
 msgid "can't do this in batch mode\n"
 msgstr "kan inte göra detta i satsläge\n"
 
-#, fuzzy
 msgid "This command is only available for version 2 cards\n"
-msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
+msgstr "Detta kommando är endast tillgängligt för kort av version 2\n"
 
-#, fuzzy
 msgid "Reset Code not or not anymore available\n"
-msgstr "de hemliga nyckeldelarna är inte tillgängliga\n"
+msgstr "Återställningskoden är inte tillgänglig längre\n"
 
 msgid "Your selection? "
 msgstr "Vad väljer du? "
@@ -1093,7 +1019,7 @@ msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
 msgid "error reading `%s': %s\n"
 msgstr "fel vid läsning av \"%s\": %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error writing `%s': %s\n"
 msgstr "fel vid skrivning till \"%s\": %s\n"
 
@@ -1151,18 +1077,22 @@ msgid ""
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
+"OBSERVERA: Det finns ingen garanti för att kortet har stöd för den\n"
+"      begärda storleken. Om nyckelgenereringen inte lyckas så bör du\n"
+"      kontrollera dokumentationen för ditt kort för att se vilka storlekar\n"
+"      som tillåts.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Vilken nyckelstorlek vill du ha? (%u) "
+msgstr "Vilken nyckelstorlek vill du använda för signaturnyckeln? (%u) "
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Vilken nyckelstorlek vill du ha? (%u) "
+msgstr "Vilken nyckelstorlek vill du använda för krypteringsnyckeln? (%u) "
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Vilken nyckelstorlek vill du ha? (%u) "
+msgstr "Vilken nyckelstorlek vill du använda för autentiseringsnyckeln? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1174,18 +1104,17 @@ msgstr "%s nyckelstorlekar måste vara inom intervallet %u-%u\n"
 
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgstr ""
+msgstr "Kortet kommer nu att konfigureras om för att generera en nyckel med %u bitar\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "fel när \"%s\" bands till uttag: %s\n"
+msgstr "fel vid ändring av storlek för nyckel %d till %u bitar: %s\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Skapa säkerhetskopia av krypteringsnyckel utanför kortet? (J/n) "
 
-#, fuzzy
 msgid "NOTE: keys are already stored on the card!\n"
-msgstr "hemlig nyckel redan lagrad på ett kort\n"
+msgstr "OBSERVERA: nycklar har redan lagrats på kortet!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Ersätt existerande nycklar? (j/N) "
@@ -1227,9 +1156,9 @@ msgstr "hemliga delar av nyckeln är inte tillgängliga.\n"
 msgid "secret key already stored on a card\n"
 msgstr "hemlig nyckel redan lagrad på ett kort\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error writing key to card: %s\n"
-msgstr "fel vid skrivning av nyckel: %s\n"
+msgstr "fel vid skrivning av nyckel till kort: %s\n"
 
 msgid "quit this menu"
 msgstr "avsluta denna meny"
@@ -1279,10 +1208,10 @@ msgid "verify the PIN and list all data"
 msgstr "validera PIN-koden och lista allt data"
 
 msgid "unblock the PIN using a Reset Code"
-msgstr ""
+msgstr "lås upp PIN-koden med en nollställningskod"
 
 msgid "gpg/card> "
-msgstr ""
+msgstr "gpg/kort> "
 
 msgid "Admin-only command\n"
 msgstr "Kommandon endast för administratör\n"
@@ -1358,37 +1287,26 @@ msgid "WARNING: `%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"du kan endast kryptera till RSA-nycklar som är högst 2048 bitar långa i --"
-"pgp2-läge\n"
+msgstr "du kan endast kryptera till RSA-nycklar som är högst 2048 bitar långa i --pgp2-läge\n"
 
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "läser från \"%s\"\n"
 
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+msgid "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
 msgstr "kan inte använda IDEA-chiffer för alla nycklar du krypterar till.\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
-"mottagarinställningarna\n"
+msgid "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing compression algorithm %s (%d) violates recipient "
-"preferences\n"
-msgstr ""
-"VARNING: tvinga komprimeringsalgoritmen %s (%d) strider mot "
-"mottagarinställningarna\n"
+msgid "WARNING: forcing compression algorithm %s (%d) violates recipient preferences\n"
+msgstr "VARNING: tvinga komprimeringsalgoritmen %s (%d) strider mot mottagarinställningarna\n"
 
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
+msgstr "tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
 
 #, c-format
 msgid "you may not use %s while in %s mode\n"
@@ -1407,8 +1325,7 @@ msgid "encrypted with unknown algorithm %d\n"
 msgstr "krypterad med en okänd algoritm %d\n"
 
 # I vissa algoritmer kan svaga nycklar förekomma. Dessa ska inte användas.
-msgid ""
-"WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
+msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "VARNING: meddelandet krypterades med en svag nyckel\n"
 "i det symmetriska chiffret.\n"
@@ -1420,8 +1337,7 @@ msgid "no remote program execution supported\n"
 msgstr "ingen körning av fjärrprogram stöds\n"
 
 # Behörighet att komma åt inställningarna, tror jag. Inte behörigheter i inställningsfilen.
-msgid ""
-"external program calls are disabled due to unsafe options file permissions\n"
+msgid "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "anrop av externa program är inaktiverat pga osäkra behörigheter för\n"
 "inställningsfilen\n"
@@ -1528,8 +1444,7 @@ msgstr "Inget fingeravtryck"
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
-msgstr ""
-"Ogiltiga nyckeln %s tvingades till giltig med --allow-non-selfsigned-uid\n"
+msgstr "Ogiltiga nyckeln %s tvingades till giltig med --allow-non-selfsigned-uid\n"
 
 #, c-format
 msgid "no secret subkey for public subkey %s - ignoring\n"
@@ -1543,13 +1458,11 @@ msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
 msgid "key %s: secret key without public key - skipped\n"
 msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
-#, fuzzy
 msgid "make a signature"
-msgstr "|[fil]|skapa en signatur"
+msgstr "skapa en signatur"
 
-#, fuzzy
 msgid "make a clear text signature"
-msgstr "|[fil]|skapa en klartextsignatur"
+msgstr "skapa en klartextsignatur"
 
 msgid "make a detached signature"
 msgstr "skapa signatur i en separat fil"
@@ -1636,9 +1549,8 @@ msgstr "ändra PIN-kod för ett kort"
 msgid "update the trust database"
 msgstr "uppdatera tillitsdatabasen"
 
-#, fuzzy
 msgid "print message digests"
-msgstr "|algo [filer]|skriv ut kontrollsummor"
+msgstr "skriv ut kontrollsummor"
 
 msgid "run in server mode"
 msgstr "kör i serverläge"
@@ -1646,15 +1558,12 @@ msgstr "kör i serverläge"
 msgid "create ascii armored output"
 msgstr "skapa utdata med ett ascii-skal"
 
-#, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|NAMN|kryptera för NAMN"
+msgstr "|ANVÄNDAR-ID|kryptera för ANVÄNDAR-ID"
 
-#, fuzzy
 msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "använd denna användaridentitet för att signera eller dekryptera"
+msgstr "|ANVÄNDAR-ID|använd ANVÄNDAR-ID för att signera eller dekryptera"
 
-#, fuzzy
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|ställ in komprimeringsnivån till N (0 för att inaktivera)"
 
@@ -1771,37 +1680,27 @@ msgstr "VARNING: osäkra rättigheter på tillägget \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
-msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för hemkatalogen \"%s\"\n"
+msgstr "VARNING: osäkert ägarskap på inneslutande katalog för hemkatalogen \"%s\"\n"
 
 #, c-format
-msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
-msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen \"%"
-"s\"\n"
+msgid "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+msgstr "VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för tillägget \"%s\"\n"
+msgstr "VARNING: osäkert ägarskap på inneslutande katalog för tillägget \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
-msgstr ""
-"VARNING: osäkra rättigheter på inneslutande katalog för hemkatalogen \"%s\"\n"
+msgstr "VARNING: osäkra rättigheter på inneslutande katalog för hemkatalogen \"%s\"\n"
 
 #, c-format
-msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr ""
-"VARNING: osäkra rättigheter på inneslutande katalog för konfigurationsfilen "
-"\"%s\"\n"
+msgid "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+msgstr "VARNING: osäkra rättigheter på inneslutande katalog för konfigurationsfilen \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"VARNING: osäkra rättigheter på inneslutande katalog för tillägget \"%s\"\n"
+msgstr "VARNING: osäkra rättigheter på inneslutande katalog för tillägget \"%s\"\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -2003,8 +1902,7 @@ msgstr "max-cert-depth måste vara inom intervallet från 1 till 255\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
-msgstr ""
-"ogiltigt standardvärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
+msgstr "ogiltigt standardvärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
 
 # Det är nivån för hurväl du har kontrollerat att nyckeln tillhör innehavaren.
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
@@ -2040,21 +1938,18 @@ msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n
 
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgstr ""
-"du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
+msgstr "du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgstr ""
-"du får inte använda komprimeringsalgoritmen \"%s\" när du är i %s-läget\n"
+msgstr "du får inte använda komprimeringsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
-msgstr ""
-"VARNING: mottagare (-r) angivna utan att använda publik nyckel-kryptering\n"
+msgstr "VARNING: mottagare (-r) angivna utan att använda publik nyckel-kryptering\n"
 
 msgid "--store [filename]"
 msgstr "--store [filnamn]"
@@ -2093,8 +1988,7 @@ msgstr "du kan inte använda --symmetric --sign --encrypt med --s2k-mode 0\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
-msgstr ""
-"du kan inte använda --symmetric --sign --encrypt när du är i %s-läget\n"
+msgstr "du kan inte använda --symmetric --sign --encrypt när du är i %s-läget\n"
 
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [filnamn]"
@@ -2114,9 +2008,8 @@ msgstr "--lsign-key användaridentitet"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key användaridentitet [kommandon]"
 
-#, fuzzy
 msgid "--passwd <user-id>"
-msgstr "--sign-key användaridentitet"
+msgstr "--passwd <användaridentitet>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2165,9 +2058,8 @@ msgstr "den angivna URL som beskriver signaturpolicy är ogiltig\n"
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angivna föredragna nyckelserver-url:n är ogiltig\n"
 
-#, fuzzy
 msgid "|FILE|take the keys from the keyring FILE"
-msgstr "ta nycklarna från denna nyckelring "
+msgstr "|FIL|ta nycklarna från nyckelringen FIL "
 
 # Med detta kommando ger gnupg enbart en varning när ett meddelande är tidsstämplat i framtiden. Annars avslutas gnupg med ett felmeddelande.
 # Kommandot är avsett att användas i "near online system".
@@ -2181,13 +2073,12 @@ msgstr "|FD|skriv statusinformation till denna FD"
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Användning: gpgv [flaggor] [filer] (-h för hjälp)"
 
-#, fuzzy
 msgid ""
 "Syntax: gpgv [options] [files]\n"
 "Check signatures against known trusted keys\n"
 msgstr ""
-"Syntax: gpg [flaggor] [filer]\n"
-"Kontrollera signaturerna mot kända nycklar\n"
+"Syntax: gpgv [flaggor] [filer]\n"
+"Kontrollera signaturer mot kända, pålitliga nycklar\n"
 
 msgid "No help available"
 msgstr "Det finns ingen hjälp tillgänglig"
@@ -2315,8 +2206,7 @@ msgstr ""
 
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
-msgstr ""
-"du kan uppdatera dina inställningar med: gpg --edit-key %s updpref save\n"
+msgstr "du kan uppdatera dina inställningar med: gpg --edit-key %s updpref save\n"
 
 #, c-format
 msgid "key %s: no user ID\n"
@@ -2462,9 +2352,7 @@ msgstr "nyckel %s: ingen användaridentitet för signaturen\n"
 # fixme: I appended the %s -wk
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
-msgstr ""
-"nyckel %s: algoritmen för publika nycklar stöds inte för "
-"användaridentiteten  \"%s\"\n"
+msgstr "nyckel %s: algoritmen för publika nycklar stöds inte för användaridentiteten  \"%s\"\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -2474,9 +2362,9 @@ msgstr "nyckel %s: ogiltig självsignatur på användaridentiteten \"%s\"\n"
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: invalid direct key signature\n"
-msgstr "nyckel %s: lade till direkt nyckelsignatur\n"
+msgstr "nyckel %s: ogiltig direkt nyckelsignatur\n"
 
 #, c-format
 msgid "key %s: no subkey for key binding\n"
@@ -2534,8 +2422,7 @@ msgstr "nyckel %s: oväntad signaturklass  (0x%02X) - hoppade över\n"
 
 #, c-format
 msgid "key %s: duplicated user ID detected - merged\n"
-msgstr ""
-"nyckel %s: dubblett av användaridentiteten hittades - slog samman dem\n"
+msgstr "nyckel %s: dubblett av användaridentiteten hittades - slog samman dem\n"
 
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
@@ -2554,8 +2441,7 @@ msgid "key %s: direct key signature added\n"
 msgstr "nyckel %s: lade till direkt nyckelsignatur\n"
 
 msgid "NOTE: a key's S/N does not match the card's one\n"
-msgstr ""
-"OBSERVERA: serienumret för en nyckel stämmer inte med kortets serienummer\n"
+msgstr "OBSERVERA: serienumret för en nyckel stämmer inte med kortets serienummer\n"
 
 msgid "NOTE: primary key is online and stored on card\n"
 msgstr "OBSERVERA: primärnyckeln är ansluten och lagrad på kort\n"
@@ -2614,10 +2500,8 @@ msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "%d användaridentiteter utan giltiga självsignaturer hittades\n"
 
 msgid ""
-"Please decide how far you trust this user to correctly verify other users' "
-"keys\n"
-"(by looking at passports, checking fingerprints from different sources, "
-"etc.)\n"
+"Please decide how far you trust this user to correctly verify other users' keys\n"
+"(by looking at passports, checking fingerprints from different sources, etc.)\n"
 msgstr ""
 "Bestäm hur mycket du litar på denna användare när det gäller att\n"
 "korrekt validera andra användares nycklar (genom att undersöka pass,\n"
@@ -2641,8 +2525,7 @@ msgstr ""
 "skapa tillitssignaturer åt dig.\n"
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
-msgstr ""
-"Ange en domän för att begränsa denna signatur. eller Enter för ingen.\n"
+msgstr "Ange en domän för att begränsa denna signatur. eller Enter för ingen.\n"
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -2689,9 +2572,7 @@ msgstr ""
 "har gått ut.\n"
 
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
-msgstr ""
-"Vill du skapa en ny signatur som ersätter den vars giltighetstid gått ut? (J/"
-"n) "
+msgstr "Vill du skapa en ny signatur som ersätter den vars giltighetstid gått ut? (J/n) "
 
 #, c-format
 msgid ""
@@ -2727,22 +2608,16 @@ msgid "This key is due to expire on %s.\n"
 msgstr "Denna nyckels giltighetstid går ut vid %s.\n"
 
 msgid "Do you want your signature to expire at the same time? (Y/n) "
-msgstr ""
-"Vill du att giltighetstiden för signaturen ska upphöra vid samma tid? (J/n) "
+msgstr "Vill du att giltighetstiden för signaturen ska upphöra vid samma tid? (J/n) "
 
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"Du kan inte göra en OpenPGP-signatur på en PGP 2.x-nyckel när du är i --pgp2-"
-"läge\n"
+msgid "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 mode.\n"
+msgstr "Du kan inte göra en OpenPGP-signatur på en PGP 2.x-nyckel när du är i --pgp2-läge\n"
 
 msgid "This would make the key unusable in PGP 2.x.\n"
 msgstr "Detta skulle göra nyckeln oanvändbar i PGP 2.x.\n"
 
 msgid ""
-"How carefully have you verified the key you are about to sign actually "
-"belongs\n"
+"How carefully have you verified the key you are about to sign actually belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
 "Hur noga har du kontrollerat att nyckeln du ska signera verkligen tillhör\n"
@@ -2807,9 +2682,7 @@ msgid "signing failed: %s\n"
 msgstr "signeringen misslyckades: %s\n"
 
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
-msgstr ""
-"Nyckeln har endast en stump eller nyckelobjekt på kortet - ingen lösenfras "
-"att ändra.\n"
+msgstr "Nyckeln har endast en stump eller nyckelobjekt på kortet - ingen lösenfras att ändra.\n"
 
 msgid "This key is not protected.\n"
 msgstr "Denna nyckel är inte skyddad.\n"
@@ -2869,8 +2742,7 @@ msgid "check signatures"
 msgstr "kontrollera signaturer"
 
 msgid "sign selected user IDs [* see below for related commands]"
-msgstr ""
-"signera valda användaridentiteter [* se nedan för relaterade kommandon]"
+msgstr "signera valda användaridentiteter [* se nedan för relaterade kommandon]"
 
 msgid "sign selected user IDs locally"
 msgstr "signera valda användaridentiteter lokalt"
@@ -2930,8 +2802,7 @@ msgid "set preference list for the selected user IDs"
 msgstr "ställ in inställningslista för valda användaridentiteter"
 
 msgid "set the preferred keyserver URL for the selected user IDs"
-msgstr ""
-"ställ in url till föredragen nyckelserver för valda användaridentiteter"
+msgstr "ställ in url till föredragen nyckelserver för valda användaridentiteter"
 
 msgid "set a notation for the selected user IDs"
 msgstr "ställ in en notation för valda användaridentiteter"
@@ -2962,14 +2833,10 @@ msgid "show selected photo IDs"
 msgstr "visa valda foto-id:n"
 
 msgid "compact unusable user IDs and remove unusable signatures from key"
-msgstr ""
-"komprimera oanvändbara användaridentiteter och ta bort oanvändbara "
-"signaturer från nyckeln"
+msgstr "komprimera oanvändbara användaridentiteter och ta bort oanvändbara signaturer från nyckeln"
 
 msgid "compact unusable user IDs and remove all signatures from key"
-msgstr ""
-"komprimera oanvändbara användaridentiteter och ta bort alla signaturer från "
-"nyckeln"
+msgstr "komprimera oanvändbara användaridentiteter och ta bort alla signaturer från nyckeln"
 
 #, c-format
 msgid "error reading secret keyblock \"%s\": %s\n"
@@ -2985,15 +2852,12 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "Använd kommandot \"toggle\" först.\n"
 
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures "
-"(lsign),\n"
+"* The `sign' command may be prefixed with an `l' for local signatures (lsign),\n"
 "  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Kommandot \"sign\" kan inledas med ett \"l\" för lokal signaturer "
-"(lsign),\n"
-"  ett \"t\" för tillitssignaturer (tsign), ett \"nr\" för icke-sprärrbara "
-"signaturer\n"
+"* Kommandot \"sign\" kan inledas med ett \"l\" för lokal signaturer (lsign),\n"
+"  ett \"t\" för tillitssignaturer (tsign), ett \"nr\" för icke-sprärrbara signaturer\n"
 "  (nrsign), eller en kombination av dessa (ltsign, tnrsign, etc.).\n"
 
 msgid "Key is revoked."
@@ -3069,17 +2933,13 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Vill du verkligen spärra denna undernyckel? (j/N) "
 
 msgid "Owner trust may not be set while using a user provided trust database\n"
-msgstr ""
-"Ägartillit får inte ställas in när en tillitsdatabas används som användaren "
-"tillhandahåller\n"
+msgstr "Ägartillit får inte ställas in när en tillitsdatabas används som användaren tillhandahåller\n"
 
 msgid "Set preference list to:\n"
 msgstr "Ställ in inställningslista till:\n"
 
 msgid "Really update the preferences for the selected user IDs? (y/N) "
-msgstr ""
-"Vill du verkligen uppdatera inställningarna för valda användaridentiteter? "
-"(j/N) "
+msgstr "Vill du verkligen uppdatera inställningarna för valda användaridentiteter? (j/N) "
 
 msgid "Really update the preferences? (y/N) "
 msgstr "Vill du verkligen uppdatera inställningarna? (j/N) "
@@ -3117,13 +2977,11 @@ msgid "Notations: "
 msgstr "Notationer: "
 
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
-msgstr ""
-"Du kan inte ange några inställningar för en användaridentitet av PGP 2.x-"
-"typ.\n"
+msgstr "Du kan inte ange några inställningar för en användaridentitet av PGP 2.x-typ.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "The following key was revoked on %s by %s key %s\n"
-msgstr "Den här nyckeln blev spärrad den %s av %s nyckel %s\n"
+msgstr "Följande nyckel blev spärrad den %s av %s nyckel %s\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
@@ -3188,8 +3046,7 @@ msgstr ""
 "vara den primära identiteten.\n"
 
 msgid ""
-"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
-"versions\n"
+"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
 "VARNING: Detta är en nyckel av PGP2-typ.  Om du lägger till ett foto-id kan\n"
@@ -3249,12 +3106,10 @@ msgid "User ID \"%s\": already clean\n"
 msgstr "Användaridentitet \"%s\": redan rensad\n"
 
 msgid ""
-"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
-"cause\n"
+"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
-"VARNING: Detta är en PGP 2.x-nyckel. Om du lägger till en spärrnyckel kan "
-"denna\n"
+"VARNING: Detta är en PGP 2.x-nyckel. Om du lägger till en spärrnyckel kan denna\n"
 "         nyckel inte användas i vissa versioner av PGP.\n"
 
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
@@ -3276,10 +3131,8 @@ msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "VARNING: det går aldrig att ångra om du utser en spärrnyckel!\n"
 
 # designated = angiven (utnämnd, utpekad, bestämd, utsedd, avsedd, angiven, designerad)
-msgid ""
-"Are you sure you want to appoint this key as a designated revoker? (y/N) "
-msgstr ""
-"Är du säker på att du vill använda den här nyckeln för spärrning? (j/N) "
+msgid "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgstr "Är du säker på att du vill använda den här nyckeln för spärrning? (j/N) "
 
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Tag bort markeringar från de hemliga nycklarna.\n"
@@ -3367,7 +3220,7 @@ msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vill du skapa ett spärrcertifikat för denna signatur? (j/N)"
 
 msgid "Not signed by you.\n"
-msgstr ""
+msgstr "Inte signerad av dig.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
@@ -3395,9 +3248,7 @@ msgstr "användaridentiteten \"%s\" är redan spärrad\n"
 
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
-msgstr ""
-"VARNING: en signatur på en användaridentitet är daterad %d sekunder in i "
-"framtiden\n"
+msgstr "VARNING: en signatur på en användaridentitet är daterad %d sekunder in i framtiden\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -3445,11 +3296,8 @@ msgstr "ogiltig nyckelstorlek; använder %u bitar\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "nyckelstorleken avrundad uppåt till %u bitar\n"
 
-msgid ""
-"WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
-msgstr ""
-"VARNING: vissa OpenPGP-program kan inte hantera en DSA-nyckel med den här "
-"sammandragsstorleken\n"
+msgid "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
+msgstr "VARNING: vissa OpenPGP-program kan inte hantera en DSA-nyckel med den här sammandragsstorleken\n"
 
 msgid "Sign"
 msgstr "Signera"
@@ -3506,13 +3354,13 @@ msgstr "   (%c) Färdig\n"
 msgid "Please select what kind of key you want:\n"
 msgstr "Välj vilken typ av nyckel du vill ha:\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA and RSA (default)\n"
-msgstr "   (%d) DSA och Elgamal (standard)\n"
+msgstr "   (%d) RSA och RSA (standard)\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) DSA and Elgamal\n"
-msgstr "   (%d) DSA och Elgamal (standard)\n"
+msgstr "   (%d) DSA och Elgamal\n"
 
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
@@ -3542,9 +3390,9 @@ msgstr "   (%d) RSA (ställ in dina egna förmågor)\n"
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-nycklar kan vara mellan %u och %u bitar långa.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "Vilken nyckelstorlek vill du ha? (%u) "
+msgstr "Vilken nyckelstorlek vill du använda för undernyckeln? (%u) "
 
 #, c-format
 msgid "What keysize do you want? (%u) "
@@ -3626,8 +3474,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"GnuPG behöver konstruera en användaridentitet för att identifiera din "
-"nyckel.\n"
+"GnuPG behöver konstruera en användaridentitet för att identifiera din nyckel.\n"
 "\n"
 
 #. TRANSLATORS: This string is in general not anymore used
@@ -3636,17 +3483,14 @@ msgstr ""
 #. be used.
 msgid ""
 "\n"
-"You need a user ID to identify your key; the software constructs the user "
-"ID\n"
+"You need a user ID to identify your key; the software constructs the user ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 msgstr ""
 "\n"
-"Du behöver en användaridentitet för att identifiera din nyckel; "
-"programvaran\n"
-"konstruerar en användaridentitet från verkligt namn, kommentar och e-"
-"postadress\n"
+"Du behöver en användaridentitet för att identifiera din nyckel; programvaran\n"
+"konstruerar en användaridentitet från verkligt namn, kommentar och e-postadress\n"
 "enligt följande format: \n"
 "    \"Gustav Vasa (Brutal kung) <gustav@trekronor.se>\"\n"
 "\n"
@@ -3685,7 +3529,7 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
-"Du valde följande användaridentitet:\n"
+"Du valde följande ANVÄNDAR-ID:\n"
 "    \"%s\"\n"
 "\n"
 
@@ -3693,7 +3537,7 @@ msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Ange inte e-postadressen som namn eller kommentar\n"
 
 msgid "Such a user ID already exists on this key!\n"
-msgstr ""
+msgstr "En sådan användaridentitet finns redan på denna nyckel!\n"
 
 # Ej solklart vad förkortningarna står för
 #. TRANSLATORS: These are the allowed answers in
@@ -3727,12 +3571,8 @@ msgstr ""
 "Du behöver en lösenfras för att skydda din hemliga nyckel\n"
 "\n"
 
-#, fuzzy
-msgid ""
-"Please enter a passphrase to protect the off-card backup of the new "
-"encryption key."
-msgstr ""
-"Ange lösenfrasen för att skydda det importerade objektet inom GnuPG-systemet."
+msgid "Please enter a passphrase to protect the off-card backup of the new encryption key."
+msgstr "Ange en lösenfras för att skydda säkerhetskopian av den nya krypteringsnyckeln."
 
 #, c-format
 msgid "%s.\n"
@@ -3800,8 +3640,7 @@ msgid ""
 "the command \"--edit-key\" to generate a subkey for this purpose.\n"
 msgstr ""
 "Observera att denna nyckel inte kan användas för kryptering. Du kanske\n"
-"vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta "
-"syfte.\n"
+"vill använda flaggan \"--edit-key\" för att skapa en undernyckel för detta syfte.\n"
 
 #, c-format
 msgid "Key generation failed: %s\n"
@@ -3809,15 +3648,13 @@ msgstr "Nyckelgenereringen misslyckades: %s\n"
 
 # c-format behövs inte i singularis
 #, c-format
-msgid ""
-"key has been created %lu second in future (time warp or clock problem)\n"
+msgid "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 "nyckeln är skapad %lu sekund in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
 
 #, c-format
-msgid ""
-"key has been created %lu seconds in future (time warp or clock problem)\n"
+msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
 "nyckeln är skapad %lu sekunder in i framtiden (problemet är\n"
 "relaterat till tidsresande eller en felställd klocka)\n"
@@ -3923,8 +3760,7 @@ msgid "include subkeys when searching by key ID"
 msgstr "inkludera undernycklar vid sökning efter nyckel-id"
 
 msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-"använd temporärfiler för att skicka data till nyckelserverns hjälpprogram"
+msgstr "använd temporärfiler för att skicka data till nyckelserverns hjälpprogram"
 
 msgid "do not delete temporary files after using them"
 msgstr "ta inte bort temporärfiler efter de använts"
@@ -3940,8 +3776,7 @@ msgstr "respektera PKA-posten inställd på en nyckel när nycklar hämtas"
 
 #, c-format
 msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgstr ""
-"VARNING: nyckelserverflaggan \"%s\" används inte på den här plattformen\n"
+msgstr "VARNING: nyckelserverflaggan \"%s\" används inte på den här plattformen\n"
 
 msgid "disabled"
 msgstr "inaktiverad"
@@ -4104,9 +3939,7 @@ msgstr "antar att %s krypterade data\n"
 
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
-msgstr ""
-"IDEA-chiffer är inte tillgängligt. Försöker optimistiskt att använda %s "
-"istället\n"
+msgstr "IDEA-chiffer är inte tillgängligt. Försöker optimistiskt att använda %s istället\n"
 
 msgid "decryption okay\n"
 msgstr "dekrypteringen lyckades\n"
@@ -4121,7 +3954,7 @@ msgstr "VARNING: det krypterade meddelandet har ändrats!\n"
 
 #, c-format
 msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
+msgstr "tömde mellanlagrad lösenfras med ID: %s\n"
 
 #, c-format
 msgid "decryption failed: %s\n"
@@ -4215,11 +4048,8 @@ msgstr "Kan inte kontrollera signaturen: %s\n"
 msgid "not a detached signature\n"
 msgstr "detta är inte någon signatur i en separat fil\n"
 
-msgid ""
-"WARNING: multiple signatures detected.  Only the first will be checked.\n"
-msgstr ""
-"VARNING: multipla signaturer upptäckta. Endast den första kommer att "
-"kontrolleras.\n"
+msgid "WARNING: multiple signatures detected.  Only the first will be checked.\n"
+msgstr "VARNING: multipla signaturer upptäckta. Endast den första kommer att kontrolleras.\n"
 
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
@@ -4335,8 +4165,7 @@ msgstr "ny konfigurationsfil \"%s\" skapad\n"
 
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgstr ""
-"VARNING: inställningar i \"%s\" är ännu inte aktiva under denna körning\n"
+msgstr "VARNING: inställningar i \"%s\" är ännu inte aktiva under denna körning\n"
 
 #, c-format
 msgid "can't handle public key algorithm %d\n"
@@ -4359,14 +4188,12 @@ msgstr " (primära nyckelns id %s)"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
+"Please enter the passphrase to unlock the secret key for the OpenPGP certificate:\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
 msgstr ""
-"Ange lösenfrasen för att låsa upp den hemliga nyckeln för OpenPGP-"
-"certifikatet:\n"
+"Ange lösenfrasen för att låsa upp den hemliga nyckeln för OpenPGP-certifikatet:\n"
 "\"%.*s\"\n"
 "%u-bitars %s-nyckel, ID %s,\n"
 "skapad %s%s.\n"
@@ -4465,10 +4292,8 @@ msgstr "Inget tillitsvärde tilldelat till:\n"
 msgid "  aka \"%s\"\n"
 msgstr "  även känd som \"%s\"\n"
 
-msgid ""
-"How much do you trust that this key actually belongs to the named user?\n"
-msgstr ""
-"Hur mycket litar du på att nyckeln faktiskt tillhör den angivna användaren?\n"
+msgid "How much do you trust that this key actually belongs to the named user?\n"
+msgstr "Hur mycket litar du på att nyckeln faktiskt tillhör den angivna användaren?\n"
 
 #, c-format
 msgid "  %d = I don't know or won't say\n"
@@ -4510,14 +4335,11 @@ msgstr "Certifikat som leder till en nyckel med förbehållslöst förtroende:\n
 
 #, c-format
 msgid "%s: There is no assurance this key belongs to the named user\n"
-msgstr ""
-"%s: Det finns inget som säger att nyckeln tillhör den angivna användaren\n"
+msgstr "%s: Det finns inget som säger att nyckeln tillhör den angivna användaren\n"
 
 #, c-format
 msgid "%s: There is limited assurance this key belongs to the named user\n"
-msgstr ""
-"%s: Det finns viss information om att nyckeln tillhör den angivna "
-"användaren\n"
+msgstr "%s: Det finns viss information om att nyckeln tillhör den angivna användaren\n"
 
 msgid "This key probably belongs to the named user\n"
 msgstr "Den här nyckel tillhör antagligen den namngivna användaren\n"
@@ -4578,10 +4400,8 @@ msgstr "Obs: Giltighetstiden för denna nyckel har gått ut!\n"
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "VARNING: Denna nyckel är inte certifierad med en pålitlig signatur!\n"
 
-msgid ""
-"         There is no indication that the signature belongs to the owner.\n"
-msgstr ""
-"         Det finns inget som indikerar att signaturen tillhör ägaren.\n"
+msgid "         There is no indication that the signature belongs to the owner.\n"
+msgstr "         Det finns inget som indikerar att signaturen tillhör ägaren.\n"
 
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "VARNING: Vi litar INTE på denna nyckel!\n"
@@ -4589,8 +4409,7 @@ msgstr "VARNING: Vi litar INTE på denna nyckel!\n"
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Signaturen är sannolikt en FÖRFALSKNING.\n"
 
-msgid ""
-"WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "VARNING: Denna nyckel är inte certifierad med signaturer med ett\n"
 "tillräckligt högt tillitsvärde!\n"
@@ -4624,8 +4443,7 @@ msgid "No such user ID.\n"
 msgstr "Ingen sådan användaridentitet.\n"
 
 msgid "skipped: public key already set as default recipient\n"
-msgstr ""
-"hoppade över: den publika nyckeln är redan inställd som standardmottagare\n"
+msgstr "hoppade över: den publika nyckeln är redan inställd som standardmottagare\n"
 
 msgid "Public key is disabled.\n"
 msgstr "Den publika nyckeln är inaktiverad.\n"
@@ -4696,8 +4514,7 @@ msgstr "chifferalgoritmen %d%s är okänd eller inaktiverad\n"
 
 #, c-format
 msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
-msgstr ""
-"VARNING: chifferalgoritmen %s hittades inte i mottagarinställningarna\n"
+msgstr "VARNING: chifferalgoritmen %s hittades inte i mottagarinställningarna\n"
 
 #, c-format
 msgid "NOTE: secret key %s expired at %s\n"
@@ -4829,9 +4646,7 @@ msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "VARNING: Upptäckte en svag nyckel - byt lösenfras igen.\n"
 
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
-"skapar den föråldrade 16-bit kontrollsumman för skydd av den hemliga "
-"nyckeln\n"
+msgstr "skapar den föråldrade 16-bit kontrollsumman för skydd av den hemliga nyckeln\n"
 
 msgid "weak key created - retrying\n"
 msgstr "skapade en svag nyckel - försöker igen\n"
@@ -4877,18 +4692,12 @@ msgstr "den publika nyckeln %s är %lu sekunder nyare än signaturen\n"
 
 # c-format behövs inte i singularis
 #, c-format
-msgid ""
-"key %s was created %lu second in the future (time warp or clock problem)\n"
-msgstr ""
-"nyckeln %s skapades %lu sekund in i framtiden (tidsresande eller felinställd "
-"klocka)\n"
+msgid "key %s was created %lu second in the future (time warp or clock problem)\n"
+msgstr "nyckeln %s skapades %lu sekund in i framtiden (tidsresande eller felinställd klocka)\n"
 
 #, c-format
-msgid ""
-"key %s was created %lu seconds in the future (time warp or clock problem)\n"
-msgstr ""
-"nyckeln %s skapades %lu sekunder in i framtiden (tidsresande eller "
-"felinställd klocka)\n"
+msgid "key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgstr "nyckeln %s skapades %lu sekunder in i framtiden (tidsresande eller felinställd klocka)\n"
 
 #, c-format
 msgid "NOTE: signature key %s expired %s\n"
@@ -4900,8 +4709,7 @@ msgstr "OBSERVERA: signaturnyckeln %s har spärrats\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
-msgstr ""
-"antar felaktig signatur från nyckeln %s på grund av en okänd kritisk bit\n"
+msgstr "antar felaktig signatur från nyckeln %s på grund av en okänd kritisk bit\n"
 
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
@@ -4913,24 +4721,15 @@ msgstr "nyckeln %s: ingen undernyckel för signaturbindning av undernyckel\n"
 
 #, c-format
 msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
-msgstr ""
-"VARNING: kan inte %%-expandera anteckning (för stor).  Använder den utan "
-"expansion.\n"
+msgstr "VARNING: kan inte %%-expandera anteckning (för stor).  Använder den utan expansion.\n"
 
 #, c-format
-msgid ""
-"WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
-msgstr ""
-"VARNING: kunde inte %%-expandera policy-url (för stor).  Använder "
-"oexpanderad.\n"
+msgid "WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
+msgstr "VARNING: kunde inte %%-expandera policy-url (för stor).  Använder oexpanderad.\n"
 
 #, c-format
-msgid ""
-"WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
-"unexpanded.\n"
-msgstr ""
-"VARNING: kunde inte %%-expandera url för föredragen nyckelserver (för "
-"stor).  Använder oexpanderad.\n"
+msgid "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using unexpanded.\n"
+msgstr "VARNING: kunde inte %%-expandera url för föredragen nyckelserver (för stor).  Använder oexpanderad.\n"
 
 #, c-format
 msgid "checking created signature failed: %s\n"
@@ -4946,11 +4745,8 @@ msgstr ""
 "när du är i --pgp2-läge\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
-msgstr ""
-"VARNING: tvinga sammandragsalgoritmen %s (%d) strider mot "
-"mottagarinställningarna\n"
+msgid "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
+msgstr "VARNING: tvinga sammandragsalgoritmen %s (%d) strider mot mottagarinställningarna\n"
 
 msgid "signing:"
 msgstr "signerar:"
@@ -4966,9 +4762,7 @@ msgstr "krypteringen %s kommer att användas\n"
 
 # Slumptalsgenerator: Random Number Generator
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
-msgstr ""
-"nyckeln är inte markerad som osäker - det går inte att använda den med "
-"fejkad slumptalsgenerator!\n"
+msgstr "nyckeln är inte markerad som osäker - det går inte att använda den med fejkad slumptalsgenerator!\n"
 
 #, c-format
 msgid "skipped \"%s\": duplicated\n"
@@ -4982,8 +4776,7 @@ msgid "skipped: secret key already present\n"
 msgstr "hoppade över: hemlig nyckel finns redan\n"
 
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
-msgstr ""
-"det här är en PGP-genererad Elgamal-nyckel som inte är säker för signaturer!"
+msgstr "det här är en PGP-genererad Elgamal-nyckel som inte är säker för signaturer!"
 
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
@@ -5124,9 +4917,8 @@ msgstr "%s: misslyckades med att nollställa en post: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: misslyckades med att lägga till en post: %s\n"
 
-#, fuzzy
 msgid "Error: The trustdb is corrupted.\n"
-msgstr "%s: tillitsdatabas skapad\n"
+msgstr "Fel: Tillitsdatabasen är skadad.\n"
 
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
@@ -5169,15 +4961,14 @@ msgid "trust record %lu is not of requested type %d\n"
 msgstr "tillitsvärdet %lu är inte av begärd typ %d\n"
 
 msgid "You may try to re-create the trustdb using the commands:\n"
-msgstr ""
+msgstr "Du kan försöka att skapa tillitsdatabasen igen med dessa kommandon:\n"
 
 msgid "If that does not work, please consult the manual\n"
-msgstr ""
+msgstr "Referera till handboken om detta inte fungerar för dig\n"
 
 #, c-format
 msgid "unable to use unknown trust model (%d) - assuming %s trust model\n"
-msgstr ""
-"kunde inte använda okänd tillitsmodell (%d) - antar tillitsmodellen %s\n"
+msgstr "kunde inte använda okänd tillitsmodell (%d) - antar tillitsmodellen %s\n"
 
 #, c-format
 msgid "using %s trust model\n"
@@ -5240,13 +5031,11 @@ msgstr "nästa kontroll av tillitsdatabasen kommer att äga rum %s\n"
 
 #, c-format
 msgid "no need for a trustdb check with `%s' trust model\n"
-msgstr ""
-"det behövs ingen kontroll av tillitsdatabasen med tillitsmodellen \"%s\"\n"
+msgstr "det behövs ingen kontroll av tillitsdatabasen med tillitsmodellen \"%s\"\n"
 
 #, c-format
 msgid "no need for a trustdb update with `%s' trust model\n"
-msgstr ""
-"det behövs ingen uppdatering av tillitsdatabasen med tillitsmodellen \"%s\"\n"
+msgstr "det behövs ingen uppdatering av tillitsdatabasen med tillitsmodellen \"%s\"\n"
 
 #, c-format
 msgid "public key %s not found: %s\n"
@@ -5276,16 +5065,12 @@ msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
 msgstr "%d marginal(er) behövs, %d fullständig(a) behövs, tillitsmodell %s\n"
 
 #, c-format
-msgid ""
-"depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
-msgstr ""
-"djup: %d  giltig: %3d  signerad: %3d  tillit: %d-, %dq, %dn, %dm, %df, %du\n"
+msgid "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
+msgstr "djup: %d  giltig: %3d  signerad: %3d  tillit: %d-, %dq, %dn, %dm, %df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
-msgstr ""
-"kunde inte uppdatera versionspost i tillitsdatabasen: skrivning "
-"misslyckades: %s\n"
+msgstr "kunde inte uppdatera versionspost i tillitsdatabasen: skrivning misslyckades: %s\n"
 
 msgid ""
 "the signature could not be verified.\n"
@@ -5322,9 +5107,8 @@ msgstr "ogiltigt kommando"
 msgid "invalid alias definition"
 msgstr "ogiltig aliasdefinition"
 
-#, fuzzy
 msgid "out of core"
-msgstr "[Fel - slut på kärna]"
+msgstr "slut på minne"
 
 msgid "invalid option"
 msgstr "ogiltig flagga"
@@ -5349,9 +5133,8 @@ msgstr "flagga \"%.50s\" är tvetydig\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "kommandot \"%.50s\" är tvetydigt\n"
 
-#, fuzzy
 msgid "out of core\n"
-msgstr "[Fel - slut på kärna]"
+msgstr "slut på minne\n"
 
 #, c-format
 msgid "invalid option \"%.50s\"\n"
@@ -5438,37 +5221,29 @@ msgstr "PIN-återanrop returnerade fel: %s\n"
 msgid "the NullPIN has not yet been changed\n"
 msgstr "NullPIN har ännu inte ändrats\n"
 
-#, fuzzy
 msgid "|N|Please enter a new PIN for the standard keys."
-msgstr "||Knappa in din PIN-kod på läsarens knappsats"
+msgstr "|N|Ange en ny PIN-kod för standardnycklarna."
 
-#, fuzzy
 msgid "||Please enter the PIN for the standard keys."
-msgstr "|A|Ange administratörens PIN-kod på läsarens knappsats"
+msgstr "||Ange PIN-koden för standardnycklarna."
 
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Ange PIN-koden%s%s%s för att låsa upp kortet"
+msgstr "|NP|Ange en ny upplåsningskod (PUK-kod) för standardnycklarna."
 
-#, fuzzy
 msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "Ange PIN-koden%s%s%s för att låsa upp kortet"
+msgstr "|P|Ange upplåsningskoden (PUK-kod) för standardnycklarna."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
+msgstr "|N|Ange en ny PIN-kod för nyckeln att skapa kvalificerade signaturer med."
 
 msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
+msgstr "||Ange PIN-koden för nyckeln att skapa kvalificerade signaturer med."
 
-msgid ""
-"|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
-"qualified signatures."
-msgstr ""
+msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create qualified signatures."
+msgstr "|NP|Ange en ny upplåsningskod (PUK-kod) för nyckeln att skapa kvalificerade signaturer med."
 
-msgid ""
-"|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
-"qualified signatures."
-msgstr ""
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the key to create qualified signatures."
+msgstr "|P|Ange upplåsningskoden (PUK-koden) för nyckeln att skapa kvalificerade signaturer med."
 
 #, c-format
 msgid "error getting new PIN: %s\n"
@@ -5501,17 +5276,14 @@ msgstr "använder standard-PIN som %s\n"
 
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
-msgstr ""
-"misslyckades med att använda standard-PIN som %s: %s - inaktiverar "
-"ytterligare standardanvändning\n"
+msgstr "misslyckades med att använda standard-PIN som %s: %s - inaktiverar ytterligare standardanvändning\n"
 
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
 
-#, fuzzy
 msgid "||Please enter the PIN"
-msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
+msgstr "||Ange PIN-koden"
 
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
@@ -5533,29 +5305,25 @@ msgstr "%d försök för Admin PIN-koden återstår innan kortet låses permanen
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
+#, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr ""
-"|A|Ange administratörens PIN-kod på läsarens knappsats%%0A[återstående "
-"försök: %d]"
+msgstr "|A|Ange administratörens PIN-kod%%0A[återstående försök: %d]"
 
-#, fuzzy
 msgid "|A|Please enter the Admin PIN"
-msgstr "||Ange PIN-koden%%0A[signaturer kvar: %lu]"
+msgstr "|A|Ange administratörens PIN-kod"
 
 msgid "access to admin commands is not configured\n"
 msgstr "åtkomst till administrationskommandon är inte konfigurerat\n"
 
-#, fuzzy
 msgid "||Please enter the Reset Code for the card"
-msgstr "Ange PIN-koden%s%s%s för att låsa upp kortet"
+msgstr "||Ange nollställningskoden för kortet"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Reset Code is too short; minimum length is %d\n"
-msgstr "PIN-kod för CHV%d är för kort; minimumlängd är %d\n"
+msgstr "Nollställningskoden är för kort; minimumlängd är %d\n"
 
 msgid "|RN|New Reset Code"
-msgstr ""
+msgstr "|RN|Ny nollställningskod"
 
 msgid "|AN|New Admin PIN"
 msgstr "|AN|Ny Admin PIN-kod"
@@ -5578,9 +5346,8 @@ msgstr "befintlig nyckel kommer att ersättas\n"
 msgid "generating new key\n"
 msgstr "genererar ny nyckel\n"
 
-#, fuzzy
 msgid "writing new key\n"
-msgstr "genererar ny nyckel\n"
+msgstr "skriver ny nyckel\n"
 
 msgid "creation timestamp missing\n"
 msgstr "tidsstämpel för skapandet saknas\n"
@@ -5617,11 +5384,8 @@ msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "signaturer skapade hittills: %lu\n"
 
-msgid ""
-"verification of Admin PIN is currently prohibited through this command\n"
-msgstr ""
-"validering av Admin PIN-kod är för närvarande förbjudet genom detta "
-"kommando\n"
+msgid "verification of Admin PIN is currently prohibited through this command\n"
+msgstr "validering av Admin PIN-kod är för närvarande förbjudet genom detta kommando\n"
 
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
@@ -5642,9 +5406,8 @@ msgstr "kör i multiserverläge (förgrund)"
 msgid "|LEVEL|set the debugging level to LEVEL"
 msgstr "|NIVÅ|ställ in felsökningsnivån till NIVÅ"
 
-#, fuzzy
 msgid "|FILE|write a log to FILE"
-msgstr "|FIL|skriv en granskningslogg till FIL"
+msgstr "|FIL|skriv en logg till FIL"
 
 msgid "|N|connect to reader at port N"
 msgstr "|N|anslut till läsare på port N"
@@ -5659,14 +5422,13 @@ msgid "do not use the internal CCID driver"
 msgstr "använd inte den interna CCID-drivrutinen"
 
 msgid "|N|disconnect the card after N seconds of inactivity"
-msgstr ""
+msgstr "|N|koppla från kortet efter N sekunder inaktivitet"
 
 msgid "do not use a reader's keypad"
 msgstr "använd inte läsarens knappsats"
 
-#, fuzzy
 msgid "deny the use of admin card commands"
-msgstr "tillåt användning av administratörskommandon för kort"
+msgstr "neka användning av administratörskommandon för kort"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Användning: scdaemon [flaggor] (-h för hjälp)"
@@ -5840,8 +5602,7 @@ msgid "interactive marking as trusted disabled for this session\n"
 msgstr "interaktiv markering som betrodd inaktiverad för den här sessionen\n"
 
 msgid "WARNING: creation time of signature not known - assuming current time"
-msgstr ""
-"VARNING: tid för skapandet av signaturen är inte känd - antar aktuell tid"
+msgstr "VARNING: tid för skapandet av signaturen är inte känd - antar aktuell tid"
 
 msgid "no issuer found in certificate"
 msgstr "ingen utfärdare hittades i certifikatet"
@@ -5916,14 +5677,12 @@ msgstr "[Fel - ogiltigt DN]"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the X.509 "
-"certificate:\n"
+"Please enter the passphrase to unlock the secret key for the X.509 certificate:\n"
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Ange lösenfrasen för att låsa upp den hemliga nyckeln för X.509-"
-"certifikatet:\n"
+"Ange lösenfrasen för att låsa upp den hemliga nyckeln för X.509-certifikatet:\n"
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
 "skapad %s, går ut %s.\n"
@@ -5991,10 +5750,8 @@ msgstr "rad %d: fel vid hämtning av nyckelhashen \"%s\": %s\n"
 msgid "line %d: key generation failed: %s <%s>\n"
 msgstr "rad %d: nyckelgenerering misslyckades: %s <%s>\n"
 
-msgid ""
-"To complete this certificate request please enter the passphrase for the key "
-"you just created once more.\n"
-msgstr ""
+msgid "To complete this certificate request please enter the passphrase for the key you just created once more.\n"
+msgstr "Ange lösenfrasen en gång till för nyckeln som du just skapade för att färdigställa denna certifikatbegäran.\n"
 
 #, c-format
 msgid "   (%d) RSA\n"
@@ -6008,28 +5765,25 @@ msgstr "   (%d) Befintlig nyckel\n"
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Befintlig nyckel från kort\n"
 
-#, fuzzy
 msgid "Enter the keygrip: "
-msgstr "Ange notationen: "
+msgstr "Ange nyckelhashen: "
 
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
+msgstr "Inte en giltig nyckelhash (förväntade 40 hexadecimala siffror)\n"
 
-#, fuzzy
 msgid "No key with this keygrip\n"
-msgstr "Ingen undernyckel med indexet %d\n"
+msgstr "Ingen nyckel med denna nyckelhash\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error reading the card: %s\n"
-msgstr "%s: fel vid läsning av ledig post: %s\n"
+msgstr "fel vid läsning av kortet: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Serial number of the card: %s\n"
-msgstr "fel när serienumret hämtades från kortet: %s\n"
+msgstr "Serienummer för kortet: %s\n"
 
-#, fuzzy
 msgid "Available keys:\n"
-msgstr "inaktivera nyckel"
+msgstr "Tillgängliga nycklar:\n"
 
 #, c-format
 msgid "Possible actions for a %s key:\n"
@@ -6091,12 +5845,10 @@ msgid "Now creating certificate request.  This may take a while ...\n"
 msgstr "Skapar nu en certifikatbegäran.  Det kan ta en stund ...\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
-msgstr ""
-"Färdig.  Du bör nu skicka denna begäran till din certifikatutfärdare.\n"
+msgstr "Färdig.  Du bör nu skicka denna begäran till din certifikatutfärdare.\n"
 
-#, fuzzy
 msgid "resource problem: out of core\n"
-msgstr "resursproblem: out or core\n"
+msgstr "resursproblem: slut på minne\n"
 
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(det här är RC2-algoritmen)\n"
@@ -6199,13 +5951,11 @@ msgstr "anta ja på de flesta frågorna"
 msgid "assume no on most questions"
 msgstr "anta nej på de flesta frågorna"
 
-#, fuzzy
 msgid "|FILE|add keyring to the list of keyrings"
-msgstr "lägg till denna nyckelring till listan över nyckelringar"
+msgstr "|FIL|lägg till nyckelring till listan över nyckelringar"
 
-#, fuzzy
 msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|NAMN|använd NAMN som förvald hemlig nyckel"
+msgstr "|ANVÄNDAR-ID|använd ANVÄNDAR-ID som förvald hemlig nyckel"
 
 msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|SPEC|använd denna nyckelserver för att slå upp nycklar"
@@ -6214,7 +5964,7 @@ msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAMN|använd chifferalgoritmen NAMN"
 
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAMN|använd sammandragsalgoritmen NAMN"
+msgstr "|NAMN|använd algoritmen NAMN för kontrollsummor"
 
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Användning: gpgsm [flaggor] [filer] (-h för hjälp)"
@@ -6332,8 +6082,7 @@ msgid "Error - "
 msgstr "Fel - "
 
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
-msgstr ""
-"GPG_TTY har inte ställts in - använder kanske felaktigt standardvärde\n"
+msgstr "GPG_TTY har inte ställts in - använder kanske felaktigt standardvärde\n"
 
 #, c-format
 msgid "invalid formatted fingerprint in `%s', line %d\n"
@@ -6347,24 +6096,18 @@ msgstr "ogiltig landskod i \"%s\", rad %d\n"
 msgid ""
 "You are about to create a signature using your certificate:\n"
 "\"%s\"\n"
-"This will create a qualified signature by law equated to a handwritten "
-"signature.\n"
+"This will create a qualified signature by law equated to a handwritten signature.\n"
 "\n"
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 "Du är på väg att skapa en signatur med ditt certifikat:\n"
 "\"%s\"\n"
-"Det här kommer att skapa en kvalificerad signatur som kan likställas med en "
-"handskriven signatur.\n"
+"Det här kommer att skapa en kvalificerad signatur som kan likställas med en handskriven signatur.\n"
 "\n"
 "%s%sÄr du säker på att du vill göra det här?"
 
-msgid ""
-"Note, that this software is not officially approved to create or verify such "
-"signatures.\n"
-msgstr ""
-"Observera att den här programvaran inte officiellt godkänts för att skapa "
-"eller validera sådana signaturer.\n"
+msgid "Note, that this software is not officially approved to create or verify such signatures.\n"
+msgstr "Observera att den här programvaran inte officiellt godkänts för att skapa eller validera sådana signaturer.\n"
 
 #, c-format
 msgid ""
@@ -6374,8 +6117,7 @@ msgid ""
 msgstr ""
 "Du är på väg att skapa en signatur med ditt certifikat:\n"
 "\"%s\"\n"
-"Observera att det här certifikatet INTE kommer att skapa en kvalificerad "
-"signatur!"
+"Observera att det här certifikatet INTE kommer att skapa en kvalificerad signatur!"
 
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
@@ -6399,10 +6141,8 @@ msgstr "[datum inte angivet]"
 msgid " using certificate ID 0x%08lX\n"
 msgstr " använder certifikat-id 0x%08lX\n"
 
-msgid ""
-"invalid signature: message digest attribute does not match computed one\n"
-msgstr ""
-"ogiltig signatur: meddelandesammandragsattribut matchar inte den beräknade\n"
+msgid "invalid signature: message digest attribute does not match computed one\n"
+msgstr "ogiltig signatur: attribut för kontrollsumma matchar inte den beräknade\n"
 
 msgid "Good signature from"
 msgstr "Korrekt signatur från"
@@ -6670,12 +6410,10 @@ msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "Användning: symcryptrun [flaggor] (-h för hjälp)"
 
 msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
+"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE [options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
-"Syntax: symcryptrun --class KLASS --program PROGRAM --keyfile NYCKELFIL "
-"[flaggor...] KOMMANDO [inmatningsfil]\n"
+"Syntax: symcryptrun --class KLASS --program PROGRAM --keyfile NYCKELFIL [flaggor...] KOMMANDO [inmatningsfil]\n"
 "Anropa ett enkelt symmetriskt krypteringsverktyg\n"
 
 #, c-format
@@ -6787,76 +6525,53 @@ msgstr ""
 
 #~ msgid "Command> "
 #~ msgstr "Kommando> "
-
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr "tillitsdatabasen är trasig, kör \"gpg --fix-trustdb\".\n"
-
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr ""
 #~ "Rapportera fel till <gnupg-bugs@gnu.org>\n"
 #~ "Skicka synpunkter på översättningen till <tp-sv@listor.tp-sv.se>\n"
-
 #~ msgid "Please report bugs to "
 #~ msgstr "Rapportera fel till "
-
 #~ msgid "DSA keypair will have %u bits.\n"
 #~ msgstr "DSA-nyckelparet kommer att ha %u bitar.\n"
-
 #~ msgid "this command has not yet been implemented\n"
 #~ msgstr "det här kommandot har ännu inte implementerats\n"
-
 #~ msgid "Repeat passphrase\n"
 #~ msgstr "Repetera lösenfrasen\n"
-
 #~ msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
 #~ msgstr ""
 #~ "||Ange din PIN-kod på läsarens knappsats%%0A[signaturer gjorda: %lu]"
-
 #~ msgid "|A|Admin PIN"
 #~ msgstr "|A|Admin PIN-kod"
-
 #~ msgid "read options from file"
 #~ msgstr "läs inställningar från fil"
-
 #~ msgid "Used libraries:"
 #~ msgstr "Använda bibliotek:"
-
 #~ msgid "generate PGP 2.x compatible messages"
 #~ msgstr "generera PGP 2.x-kompatibla meddelanden"
-
 #~ msgid "|[FILE]|make a signature"
 #~ msgstr "|[FIL]|skapa en signatur"
-
 #~ msgid "|[FILE]|make a clear text signature"
 #~ msgstr "|[FIL]|skapa en klartext-signatur"
-
 #~ msgid "|NAME|use NAME as default recipient"
 #~ msgstr "|NAMN|använd NAMN som standardmottagare"
-
 #~ msgid "use the default key as default recipient"
 #~ msgstr "använd standardnyckeln som standardmottagare"
-
 #~ msgid "force v3 signatures"
 #~ msgstr "tvinga v3-signaturer"
-
 #~ msgid "always use a MDC for encryption"
 #~ msgstr "använd alltid en MDC för kryptering"
-
 #~ msgid "add this secret keyring to the list"
 #~ msgstr "lägg till denna hemliga nyckelring till listan"
-
 #~ msgid "|NAME|set terminal charset to NAME"
 #~ msgstr "|NAMN|ställ in terminalteckentabell till NAMN"
-
 #~ msgid "|FILE|load extension module FILE"
 #~ msgstr "|FIL|läs in tilläggsmodulen FIL"
-
 #~ msgid "|N|use compress algorithm N"
 #~ msgstr "|N|använd komprimeringsalgoritmen N"
-
 #~ msgid "remove key from the public keyring"
 #~ msgstr "ta bort nyckel från den publika nyckelringen"
-
 #~ msgid ""
 #~ "It's up to you to assign a value here; this value will never be exported\n"
 #~ "to any 3rd party.  We need it to implement the web-of-trust; it has "
@@ -6868,7 +6583,6 @@ msgstr ""
 #~ "exporteras till någon tredje part. Vi behöver det för att implementera\n"
 #~ "\"Web of trust\". Det har inget att göra med det (implicit skapade)\n"
 #~ "nätet av certifikat."
-
 #~ msgid ""
 #~ "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
 #~ "ultimately trusted - those are usually the keys for which you have\n"
@@ -6880,15 +6594,12 @@ msgstr ""
 #~ "- det är vanligen de nycklar som du disponerar den hemliga nyckeln för.\n"
 #~ "Svara  \"ja\" för att markera att du litar förbehållslöst på denna "
 #~ "nyckel.\n"
-
 #~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 #~ msgstr "Om du vill använda denna otillförlitliga nyckel ändå, svara \"ja\"."
-
 #~ msgid ""
 #~ "Enter the user ID of the addressee to whom you want to send the message."
 #~ msgstr ""
 #~ "Ange användaridentiteten för den adressat du vill skicka meddelandet till."
-
 #~ msgid ""
 #~ "Select the algorithm to use.\n"
 #~ "\n"
@@ -6912,7 +6623,6 @@ msgstr ""
 #~ "\n"
 #~ "Första (primär) nyckel måste alltid vara en nyckel som är kapabel att "
 #~ "signera."
-
 #~ msgid ""
 #~ "In general it is not a good idea to use the same key for signing and\n"
 #~ "encryption.  This algorithm should only be used in certain domains.\n"
@@ -6921,13 +6631,10 @@ msgstr ""
 #~ "Som regel är det ingen bra idé att använda samma nyckel för signering\n"
 #~ "och kryptering. Denna algoritm ska endast användas inom särskilda\n"
 #~ "områden. Rådgör med din egen säkerhetsexpert först!"
-
 #~ msgid "Enter the size of the key"
 #~ msgstr "Ange storleken på nyckeln"
-
 #~ msgid "Answer \"yes\" or \"no\""
 #~ msgstr "Svara \"ja\" eller \"nej\""
-
 #~ msgid ""
 #~ "Enter the required value as shown in the prompt.\n"
 #~ "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
@@ -6938,16 +6645,12 @@ msgstr ""
 #~ "Det är möjligt att ange ett ISO-datum (ÅÅÅÅ-MM-DD) men du kommer\n"
 #~ "inte att få något vettigt felmeddelande - istället kommer systemet\n"
 #~ "att försöka tolka det angivna värdet som ett intervall."
-
 #~ msgid "Enter the name of the key holder"
 #~ msgstr "Ange namnet på nyckelns ägare"
-
 #~ msgid "please enter an optional but highly suggested email address"
 #~ msgstr "ange en e-postadress. Detta är frivilligt, men rekommenderas varmt"
-
 #~ msgid "Please enter an optional comment"
 #~ msgstr "Ange en kommentar (frivilligt)"
-
 #~ msgid ""
 #~ "N  to change the name.\n"
 #~ "C  to change the comment.\n"
@@ -6960,12 +6663,10 @@ msgstr ""
 #~ "E  för att ändra e-postadressen.\n"
 #~ "O  för att fortsätta med nyckelgenerering.\n"
 #~ "Q  för att avsluta nyckelgenereringen."
-
 #~ msgid ""
 #~ "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
 #~ msgstr ""
 #~ "Svara \"ja\" (eller bara \"j\") om du vill generera denna undernyckel."
-
 #~ msgid ""
 #~ "When you sign a user ID on a key, you should first verify that the key\n"
 #~ "belongs to the person named in the user ID.  It is useful for others to\n"
@@ -7050,3 +6751,4 @@ msgstr ""
 #~ "betyder när du signerar andras nycklar.\n"
 #~ "\n"
 #~ "Om du inte vet vad du ska svara, så svara \"0\"."
+

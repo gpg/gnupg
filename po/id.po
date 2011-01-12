@@ -2,6 +2,9 @@
 # gnupg 1.2.4 (Indonesian)
 # Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 # Tedi Heriyanto <tedi_h@gmx.net>, 1999, 2000, 2001, 2002, 2003, 2004.
+#                !-- user is unknown (2011-01-11)
+#
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""

@@ -1,8 +1,12 @@
 # Copyright (C)2006 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxim.britov@gmail.com>, 2006.
+#              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
+#
+# Designated-Translator: none
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.10\n"

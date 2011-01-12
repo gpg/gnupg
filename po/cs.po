@@ -3,7 +3,7 @@
 #               2005 Free Software Foundation, Inc.
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
-# Petr Pisar <petr.pisar@atlas.cz>, 2009.
+# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
@@ -11,7 +11,7 @@
 #
 # „armor“ překládat jako „ASCII“
 #
-# „keybox“ je jednotné úložiště pro X.509 a PGP certifikáty/klíče
+# „keybox“ je jednotné úložiště pro X.509 a PGP certifikáty/klíče
 # <http://www.gnupg.org/documentation/manuals/gnupg/kbxutil.html>
 # Občas je třeba rozlišovat mezi keybox (překládám jako schránka) a keyring
 # (překládám jako klíčenka nebo soubor klíčů).
@@ -25,11 +25,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.0.11-r5164\n"
+"Project-Id-Version: gnupg2 2.0.17-git56b2bc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2009-09-29 15:47+0200\n"
+"PO-Revision-Date: 2011-01-11 22:55+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -45,13 +46,13 @@ msgstr "získání zámku pinetry se nezdařilo: %s\n"
 #. a literal one.  The actual to be translated text starts after
 #. the second vertical bar.
 msgid "|pinentry-label|_OK"
-msgstr ""
+msgstr "|pinentry-label|_OK"
 
 msgid "|pinentry-label|_Cancel"
-msgstr ""
+msgstr "|pinentry-label|_Zrušit"
 
 msgid "|pinentry-label|PIN:"
-msgstr ""
+msgstr "|pinentry-label|PIN:"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -129,8 +130,8 @@ msgstr "nalezena karta se sériovým číslem: %s\n"
 #, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr ""
-"chyba při získání identifikátoru implicitního autentizačního klíče karty: %"
-"s\n"
+"chyba při získání identifikátoru implicitního autentizačního klíče karty: "
+"%s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -153,11 +154,11 @@ msgstr "Prosím, vložte toto heslo znovu"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s"
+"%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s%%"
-"0Auvnitř úložiště klíčů gpg-agenta"
+"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s"
+"%%0Auvnitř úložiště klíčů gpg-agenta"
 
 msgid "does not match - try again"
 msgstr "neshodují se – zkuste to znovu"
@@ -248,14 +249,14 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
 "contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslici nebo %%0Azvláštní znak."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslici nebo %%0Azvláštní znak."
 msgstr[1] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslice nebo %%0Azvláštní znaky."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslice nebo %%0Azvláštní znaky."
 msgstr[2] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslic nebo %%0Azvláštních znaků."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslic nebo %%0Azvláštních znaků."
 
 #, c-format
 msgid ""
@@ -332,7 +333,7 @@ msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PROGRAM|použít PROGRAM jako PIN-Entry program"
 
 msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PROGRAM|použít PROGRAM jako SCdaemon program"
+msgstr "|PROGRAM|použít PROGRAM jako SCdaemon program"
 
 msgid "do not use the SCdaemon"
 msgstr "nepoužívat SCdémona"
@@ -763,9 +764,10 @@ msgstr "při pokusu alokovat %lu bajtů došla paměť"
 msgid "no running gpg-agent - starting one\n"
 msgstr "gpg-agent neběží – spouštím jej\n"
 
+# TODO: Plurals
 #, c-format
 msgid "waiting %d seconds for the agent to come up\n"
-msgstr ""
+msgstr "čeká se na agenta %d sekund\n"
 
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "k agentu se nelze připojit – zkouším náhradní způsob\n"
@@ -790,21 +792,17 @@ msgstr "|audit-log-result|Není zapnuto"
 msgid "|audit-log-result|Error"
 msgstr "|audit-log-result|Chyba"
 
-#, fuzzy
 msgid "|audit-log-result|Not used"
-msgstr "|audit-log-result|Není podporováno"
+msgstr "|audit-log-result|Není použito"
 
-#, fuzzy
 msgid "|audit-log-result|Okay"
-msgstr "|audit-log-result|Špatný"
-
-#, fuzzy
-msgid "|audit-log-result|Skipped"
-msgstr "|audit-log-result|Špatný"
-
-#, fuzzy
-msgid "|audit-log-result|Some"
 msgstr "|audit-log-result|V pořádku"
+
+msgid "|audit-log-result|Skipped"
+msgstr "|audit-log-result|Přeskočeno"
+
+msgid "|audit-log-result|Some"
+msgstr "|audit-log-result|Některý"
 
 msgid "Certificate chain available"
 msgstr "Je k dispozici řetěz certifikátů"
@@ -842,24 +840,23 @@ msgstr "Příjemce %d"
 msgid "Data signing succeeded"
 msgstr "Podepisování dat uspělo"
 
-#, fuzzy, c-format
+#, c-format
 msgid "data hash algorithm: %s"
-msgstr "Chybný hashovací algoritmus: %s"
+msgstr "hashovací algoritmus dat: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Signer %d"
-msgstr "Podpis %d"
+msgstr "Podepisovatel %d"
 
-#, fuzzy, c-format
+#, c-format
 msgid "attr hash algorithm: %s"
-msgstr "Chybný hashovací algoritmus: %s"
+msgstr "hashovací algoritmus atributu: %s"
 
 msgid "Data decryption succeeded"
 msgstr "Dešifrování dat uspělo"
 
-#, fuzzy
 msgid "Encryption algorithm supported"
-msgstr "ochranný algoritmus %d%s není podporován\n"
+msgstr "Šifrovací algoritmus podporován"
 
 msgid "Data verification succeeded"
 msgstr "Ověření dat uspělo"
@@ -867,13 +864,12 @@ msgstr "Ověření dat uspělo"
 msgid "Signature available"
 msgstr "Podpis je k dispozici"
 
-#, fuzzy
 msgid "Parsing data succeeded"
-msgstr "Rozebírání podpisu uspělo"
+msgstr "Rozebírání dat uspělo"
 
-#, fuzzy, c-format
+#, c-format
 msgid "bad data hash algorithm: %s"
-msgstr "Chybný hashovací algoritmus: %s"
+msgstr "chybný hashovací algoritmus dat: %s"
 
 #, c-format
 msgid "Signature %d"
@@ -1264,7 +1260,7 @@ msgid "unblock the PIN using a Reset Code"
 msgstr "odblokovat PIN pomocí resetačního kódu"
 
 msgid "gpg/card> "
-msgstr ""
+msgstr "gpg/karta> "
 
 msgid "Admin-only command\n"
 msgstr "pouze administrátorské příkazy\n"
@@ -2078,9 +2074,8 @@ msgstr "--lsign-key id uživatele"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id uživatele [příkazy]"
 
-#, fuzzy
 msgid "--passwd <user-id>"
-msgstr "--sign-key id uživatele"
+msgstr "--passwd <id-uživatele>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2428,9 +2423,9 @@ msgstr "klíč %s neplatný podpis klíče jím samým u uživatelského ID „%
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "klíč %s: nepodporovaný algoritmus veřejného klíče\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: invalid direct key signature\n"
-msgstr "klíč %s: podpis klíče jím samým (direct key signature) přidán\n"
+msgstr "klíč %s: neplatný podpis klíče jím samým (direct key signature)\n"
 
 #, c-format
 msgid "key %s: no subkey for key binding\n"
@@ -3061,9 +3056,9 @@ msgstr "Poznámky: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Uživatelský ID formátu PGP 2.x nemá žádné předvolby\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "The following key was revoked on %s by %s key %s\n"
-msgstr "V %s tento klíč revokoval %s klíčem %s\n"
+msgstr "V %s byl následující klíč revokován %s klíčem %s\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
@@ -3438,7 +3433,7 @@ msgstr "   (%d) RSA a RSA (implicitní)\n"
 
 #, c-format
 msgid "   (%d) DSA and Elgamal\n"
-msgstr "   (%d) DSA a ElGamal\n"
+msgstr "   (%d) DSA a Elgamal\n"
 
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
@@ -3450,7 +3445,7 @@ msgstr "   (%d) RSA (pouze pro podpis)\n"
 
 #, c-format
 msgid "   (%d) Elgamal (encrypt only)\n"
-msgstr "   (%d) ElGamal (pouze pro šifrování)\n"
+msgstr "   (%d) Elgamal (pouze pro šifrování)\n"
 
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
@@ -5146,8 +5141,8 @@ msgstr "požadováno %d částečné důvěry a %d úplné důvěry, model %s\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"hloubka: %d  platných: %3d  podepsaných: %3d  důvěra: %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"hloubka: %d  platných: %3d  podepsaných: %3d  důvěra: %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5809,7 +5804,7 @@ msgid "certificate is not usable for encryption\n"
 msgstr "certifikát není použitelný pro šifrování\n"
 
 msgid "certificate is not usable for signing\n"
-msgstr "certifikát není použitelný prot podepisování\n"
+msgstr "certifikát není použitelný pro podepisování\n"
 
 #, c-format
 msgid "line %d: invalid algorithm\n"
@@ -5931,7 +5926,7 @@ msgid " (end with an empty line):\n"
 msgstr " (ukončete prázdným řádkem):\n"
 
 msgid "Enter DNS names"
-msgstr "Zadejte DNS jména"
+msgstr "Zadejte DNS jména"
 
 msgid " (optional; end with an empty line):\n"
 msgstr " (volitelné; ukončete prázdným řádkem):\n"
@@ -6254,10 +6249,10 @@ msgstr ""
 "neplatný podpis: atribut otisku zprávy se neshoduje s vypočteným otiskem\n"
 
 msgid "Good signature from"
-msgstr "Dobrý podpis od "
+msgstr "Dobrý podpis od"
 
 msgid "                aka"
-msgstr "              alias"
+msgstr "          alias"
 
 msgid "This is a qualified signature\n"
 msgstr "Toto je kvalifikovaný podpis\n"

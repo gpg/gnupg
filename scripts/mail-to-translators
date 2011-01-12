@@ -48,9 +48,7 @@ GnuPG translation ($file).
 
 It is important to have a basic understanding of GnuPG's functionality
 to do a correct translation.  A false translation might lead to
-security problems.  Furthermore the TP Robot is not able to handle
-more than one version of a project (we maintain 1.4 and 2.0) and thus
-I'd ask you *not to use the TP Robot* for GnuPG.
+security problems.  Please do *not to use the TP Robot* for GnuPG.
 
 A release candidate for 2.0.xx is available at:
 

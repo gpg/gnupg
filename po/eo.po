@@ -1,6 +1,8 @@
 # Mesaøoj por la programo GnuPG
 # Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 # Edmund GRIMLEY EVANS <edmundo@rano.org>, 2000-2002.
+#                      !--- psbl.surriel.com rejected (2011-01-11)
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""

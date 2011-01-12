@@ -1,6 +1,10 @@
 # GnuPG Slovak translation
 # Copyright (C) 1998 - 2004 Free Software Foundation, Inc.
 # Michal Majer <mmajer@econ.umb.sk>, 2002 - 2004
+#               !-- bounces (2011-01-11)
+# 
+# Designated-Translator: none
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.5\n"
