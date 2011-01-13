@@ -3136,8 +3136,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
     msg[17] |= 0x01; /* Max size reached.  */
   msg[18] = 0xff; /* bNumberMessage: Default. */
-  msg[19] = 0x04; /* wLangId-High. */
-  msg[20] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
+  msg[19] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
+  msg[20] = 0x04; /* wLangId-High. */
   msg[21] = 0;    /* bMsgIndex. */
   /* bTeoProlog follows: */
   msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
