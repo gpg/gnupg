@@ -1,3 +1,7 @@
+2011-01-13  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.17.
+
 2011-01-11  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Add option --enable-gpgtar.

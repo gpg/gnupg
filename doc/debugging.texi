@@ -103,6 +103,17 @@ used.  Using the keyserver debug option as in
 is thus often helpful.  Note that the actual output depends on the
 backend and may change from release to release.
 
+@ifset gpgtwoone
+@item Logging on WindowsCE
+
+For development, the best logging method on WindowsCE is the use of
+remote debugging using a log file name of @file{tcp://<ip-addr>:<port>}.
+The command @command{watchgnupg} may be used on the remote host to listen
+on the given port. (@pxref{option watchgnupg --tcp}).  For in the field
+tests it is better to make use of the logging facility provided by the
+@command{gpgcedev} driver (part of libassuan); this is enabled by using
+a log file name of @file{GPG2:}. (@pxref{option --log-file}).
+@end ifset
 
 @end itemize
 
@@ -194,7 +205,7 @@ or other purposes and don't have a corresponding certificate.
 @item A root certificate does not verify
 
 A common problem is that the root certificate misses the required
-basicConstrains attribute and thus @command{gpgsm} rejects this
+basicConstraints attribute and thus @command{gpgsm} rejects this
 certificate.  An error message indicating ``no value'' is a sign for
 such a certificate.  You may use the @code{relax} flag in
 @file{trustlist.txt} to accept the certificate anyway.  Note that the

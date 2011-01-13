@@ -16,6 +16,9 @@ GnuPG comes with a couple of smaller tools:
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
+@ifset gpgtwoone
+* dirmngr-client::        How to use the Dirmngr client tool.
+@end ifset
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 * gpg-zip::               Encrypt or sign files into an archive.
@@ -41,11 +44,12 @@ GnuPG comes with a couple of smaller tools:
 @end ifset
 
 @mansect description
-Most of the main utilities are able to write their log files to a
-Unix Domain socket if configured that way.  @command{watchgnupg} is a simple
-listener for such a socket.  It ameliorates the output with a time
-stamp and makes sure that long lines are not interspersed with log
-output from other utilities.
+Most of the main utilities are able to write their log files to a Unix
+Domain socket if configured that way.  @command{watchgnupg} is a simple
+listener for such a socket.  It ameliorates the output with a time stamp
+and makes sure that long lines are not interspersed with log output from
+other utilities.  This tool is not available for Windows.
+
 
 @noindent
 @command{watchgnupg} is commonly invoked as
@@ -69,6 +73,11 @@ This starts it on the current terminal for listening on the socket
 @opindex force
 Delete an already existing socket file.
 
+@anchor{option watchgnupg --tcp}
+@item --tcp @var{n}
+Instead of reading from a local socket, listen for connects on TCP port
+@var{n}.
+
 @item --verbose
 @opindex verbose
 Enable extra informational output.
@@ -82,6 +91,41 @@ Print version of the program and exit.
 Display a brief help page and exit.
 
 @end table
+
+@noindent
+@mansect examples
+@chapheading Examples
+
+@example
+$ watchgnupg --force /home/foo/.gnupg/S.log
+@end example
+
+This waits for connections on the local socket
+@file{/home/foo/.gnupg/S.log} and shows all log entries.  To make this
+work the option @option{log-file} needs to be used with all modules
+which logs are to be shown.  The value for that option must be given
+with a special prefix (e.g. in the conf file):
+
+@example
+log-file socket:///home/foo/.gnupg/S.log
+@end example
+
+For debugging purposes it is also possible to do remote logging.  Take
+care if you use this feature because the information is send in the
+clear over the network.  Use this syntax in the conf files:
+
+@example
+log-file tcp://192.168.1.1:4711
+@end example
+
+You may use any port and not just 4711 as shown above; only IP addresses
+are supported (v4 and v6) and no host names.  You need to start
+@command{watchgnupg} with the @option{tcp} option.  Note that under
+Windows the registry entry @var{HKCU\Software\GNU\GnuPG:DefaultLogFile}
+can be used to change the default log output from @code{stderr} to
+whatever is given by that entry.  However the only useful entry is a TCP
+name for remote debugging.
+
 
 @mansect see also
 @ifset isman
@@ -254,6 +298,12 @@ List the global configuration file in a colon separated format.  If
 @item --check-config [@var{filename}]
 Run a syntax check on the global configuration file.  If @var{filename}
 is given, check that file instead.
+
+@item --reload [@var{component}]
+@opindex reload
+Reload all or the given component. This is basically the sam as sending
+a SIGHUP to the component.  Components which don't support reloading are
+ignored.
 
 @end table
 
@@ -1129,6 +1179,11 @@ Try to be as quiet as possible.
 
 @include opt-homedir.texi
 
+@item --agent-program @var{file}
+@opindex agent-program
+Specify the agent program to be started if none is running.
+
+
 @item -S
 @itemx --raw-socket @var{name}
 @opindex S        
@@ -1381,6 +1436,168 @@ Print a list of available control commands.
 @include see-also-note.texi
 @end ifset
 
+@ifset gpgtwoone
+@c
+@c   DIRMNGR-CLIENT
+@c
+@node dirmngr-client
+@section The Dirmngr Client Tool
+
+@manpage dirmngr-client.1
+@ifset manverb
+.B dirmngr-client
+\- Tool to access the Dirmngr services
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  dirmngr-client
+.RI [ options ]  
+.RI [ certfile | pattern ]  
+@end ifset
+
+@mansect description
+The @command{dirmngr-client} is a simple tool to contact a running
+dirmngr and test whether a certificate has been revoked --- either by
+being listed in the corresponding CRL or by running the OCSP protocol.
+If no dirmngr is running, a new instances will be started but this is
+in general not a good idea due to the huge performance overhead.
+
+@noindent
+The usual way to run this tool is either:
+
+@example
+dirmngr-client @var{acert}
+@end example
+
+@noindent
+or
+
+@example
+dirmngr-client <@var{acert}
+@end example
+
+Where @var{acert} is one DER encoded (binary) X.509 certificates to be
+tested. 
+@ifclear isman
+The return value of this command is
+@end ifclear
+
+@mansect return value
+@ifset isman
+@command{dirmngr-client} returns these values:
+@end ifset
+@table @code
+
+@item 0 
+The certificate under question is valid; i.e. there is a valid CRL
+available and it is not listed tehre or teh OCSP request returned that
+that certificate is valid.
+
+@item 1
+The certificate has been revoked
+
+@item 2 (and other values)
+There was a problem checking the revocation state of the certificate.
+A message to stderr has given more detailed information.  Most likely
+this is due to a missing or expired CRL or due to a network problem.
+
+@end table
+
+@mansect options
+@noindent
+@command{dirmngr-client} may be called with the following options:
+
+
+@table @gnupgtabopt
+@item --version
+@opindex version
+Print the program version and licensing information.  Note that you cannot
+abbreviate this command.
+
+@item --help, -h
+@opindex help
+Print a usage message summarizing the most useful command-line options.
+Note that you cannot abbreviate this command.
+
+@item --quiet, -q
+@opindex quiet
+Make the output extra brief by suppressing any informational messages.
+
+@item -v
+@item --verbose
+@opindex v
+@opindex verbose
+Outputs additional information while running.
+You can increase the verbosity by giving several
+verbose commands to @sc{dirmngr}, such as @samp{-vv}.
+
+@item --pem
+@opindex pem
+Assume that the given certificate is in PEM (armored) format.
+
+@item --ocsp
+@opindex ocsp
+Do the check using the OCSP protocol and ignore any CRLs.
+
+@item --force-default-responder
+@opindex force-default-responder
+When checking using the OCSP protocl, force the use of the default OCSP
+responder.  That is not to use the Reponder as given by the certificate.
+
+@item --ping
+@opindex ping
+Check whether the dirmngr daemon is up and running.
+
+@item --cache-cert
+@opindex cache-cert
+Put the given certificate into the cache of a running dirmngr.  This is
+mainly useful for debugging.
+
+@item --validate
+@opindex validate
+Validate the given certificate using dirmngr's internal validation code.
+This is mainly useful for debugging.
+
+@item --load-crl
+@opindex load-crl
+This command expects a list of filenames with DER encoded CRL files.
+With the option @option{--url} URLs are expected in place of filenames
+and they are loaded directly from the given location.  All CRLs will be
+validated and then loaded into dirmngr's cache.
+
+@item --lookup
+@opindex lookup
+Take the remaining arguments and run a lookup command on each of them.
+The results are Base-64 encoded outputs (without header lines).  This
+may be used to retrieve certificates from a server. However the output
+format is not very well suited if more than one certificate is returned.
+
+@item --url
+@itemx -u
+@opindex url
+Modify the @command{lookup} and @command{load-crl} commands to take an URL.
+
+@item --local
+@itemx -l
+@opindex url
+Let the @command{lookup} command only search the local cache.
+
+@item --squid-mode
+@opindex squid-mode
+Run @sc{dirmngr-client} in a mode suitable as a helper program for
+Squid's @option{external_acl_type} option.
+
+
+@end table
+
+@ifset isman
+@mansect see also
+@command{dirmngr}(8),
+@command{gpgsm}(1)
+@include see-also-note.texi
+@end ifset
+@end ifset
 
 @c
 @c   GPGPARSEMAIL

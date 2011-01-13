@@ -1,3 +1,9 @@
+2011-01-13  Werner Koch  <wk@g10code.com>
+
+	* FAQ: Make it a static file with a pointer to the online location.
+	* Makefile.am (EXTRA_DIST): Remove faq.raw and faq.html.
+	(FAQ, faq.html): Remove these targets
+
 2010-03-05  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi (GPG Configuration Options): Mention that

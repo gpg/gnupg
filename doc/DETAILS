@@ -34,7 +34,7 @@ record; gpg2 does this by default and the option is a dummy.
             rev = revocation signature
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
-            grp = reserved for gpgsm
+            grp = keygrip
             rvk = revocation key
             tru = trust database information
             spk = signature subpacket
@@ -221,12 +221,13 @@ more arguments in future versions.
 
     GOODSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good.  For each signature only
-        one of the three codes GOODSIG, BADSIG or ERRSIG will be
-        emitted and they may be used as a marker for a new signature.
-        The username is the primary one encoded in UTF-8 and %XX
-        escaped. The fingerprint may be used instead of the long keyid
-        if it is available.  This is the case with CMS and might
-        eventually also be available for OpenPGP.
+        one of the codes GOODSIG, BADSIG, EXPSIG, EXPKEYSIG, REVKEYSIG
+        or ERRSIG will be emitted.  In the past they were used as a
+        marker for a new signature; new code should use the NEWSIG
+        status instead.  The username is the primary one encoded in
+        UTF-8 and %XX escaped. The fingerprint may be used instead of
+        the long keyid if it is available.  This is the case with CMS
+        and might eventually also be available for OpenPGP.
 
     EXPSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good, but the signature is
@@ -464,7 +465,8 @@ more arguments in future versions.
           4 := "Error storing certificate".
 
     IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
-	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups> <not_imported>
+	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported>
+        <sec_dups> <skipped_new_keys> <not_imported>
 	Final statistics on import process (this is one long line)
 
     FILE_START <what> <filename>
@@ -585,7 +587,8 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
-         11 := "Missing certificate"  (e.g. intermediate or root cert.)
+         11 := "Missing certificate" 
+         12 := "Missing issuer certificate"
 
         Note that for historical reasons the INV_RECP status is also
         used for gpgsm's SIGNER command where it relates to signer's
@@ -615,6 +618,12 @@ more arguments in future versions.
         a either a string commencing with a letter or such a string
         prefixed with a numerical error code and an underscore; e.g.:
         "151011327_EOF".
+
+    SUCCESS [<location>]
+        Postive confirimation that an operation succeeded.  <location>
+        is optional but if given should not contain spaces. 
+        Used only with a few commands.
+            
 
     ATTRIBUTE <fpr> <octets> <type> <index> <count>
 	      <timestamp> <expiredate> <flags>
@@ -680,6 +689,11 @@ more arguments in future versions.
         A backup key named FNAME has been created for the key with
         KEYID.
 
+    MOUNTPOINT <name>
+        NAME is a percent-plus escaped filename describing the
+        mountpoint for the current operation (e.g. g13 --mount).  This
+        may either be the specified mountpoint or one randomly choosen
+        by g13.
 
 
 Format of the "--attribute-fd" output
@@ -724,7 +738,9 @@ version: the third field contains the version of GnuPG.
 
 pubkey: the third field contains the public key algorithmdcaiphers
 	this version of GnuPG supports, separated by semicolons.  The
-	algorithm numbers are as specified in RFC-4880.
+	algorithm numbers are as specified in RFC-4880.  Note that in
+	contrast to the --status-fd interface these are _not_ the
+	Libgcrypt identifiers.
 
    cfg:pubkey:1;2;3;16;17
 
@@ -801,7 +817,8 @@ The format of this file is as follows:
 	The filename is used until a new filename is used (at commit points)
 	and all keys are written to that file.	If a new filename is given,
 	this file is created (and overwrites an existing one).
-	Both control statements must be given.
+        GnuPG < 2.1:  Both control statements must be given.
+        GnuPG >= 2.1: "%secring" is now a no-op.
     %ask-passphrase
         Enable a mode where the command "passphrase" is ignored and
         instead the usual passphrase dialog is used.  This does not
@@ -811,6 +828,19 @@ The format of this file is as follows:
         entry code.  This is a global option.
     %no-ask-passphrase
         Disable the ask-passphrase mode.        
+    %no-protection
+        With GnuPG 2.1 it is not anymore possible to specify a
+        passphrase for unattended key generation.  The passphrase
+        command is simply ignored and %ask-passpharse is thus
+        implicitly enabled.  Using this option allows to the creation
+        of keys without any passphrases.  This option is mainly
+        intended for regression tests.
+    %transient-key
+        If given the keys are created using a faster and a somewhat
+        less secure random number generator.  This option may be used
+        for keys which are only used for a short time and do not
+        require full cryptographic strength.  It takes only effect if
+        used together with the option no-protection.
 
    o The order of the parameters does not matter except for "Key-Type"
      which must be the first parameter.  The parameters are only for the

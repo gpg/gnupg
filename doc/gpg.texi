@@ -3,6 +3,11 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@c Note that we use this texinfo file for all versions of GnuPG: 1.4.x,
+@c 2.0 and 2.1.  The macro "gpgone" controls parts which are only valid
+@c for GnuPG 1.4, the macro "gpgtwoone" controls parts which are only
+@c valid for GnupG 2.1 and later.
+
 @node Invoking GPG
 @chapter Invoking GPG
 @cindex GPG command options
@@ -68,18 +73,19 @@ implementation.
 
 @ifset gpgone
 This is the standalone version of @command{gpg}.  For desktop use you
-should consider using @command{gpg2}.
+should consider using @command{gpg2} @footnote{On some platforms gpg2 is
+installed under the name @command{gpg}}.
 @end ifset
 
 @ifclear gpgone
 In contrast to the standalone version @command{gpg}, which is more
-suited for server and embedded platforms, this version is installed
-under the name @command{gpg2} and more targeted to the desktop as it
-requires several other modules to be installed.  The standalone version
-will be kept maintained and it is possible to install both versions on
-the same system.  If you need to use different configuration files, you
-should make use of something like @file{gpg.conf-2} instead of just
-@file{gpg.conf}.
+suited for server and embedded platforms, this version is commonly
+installed under the name @command{gpg2} and more targeted to the desktop
+as it requires several other modules to be installed.  The standalone
+version will be kept maintained and it is possible to install both
+versions on the same system.  If you need to use different configuration
+files, you should make use of something like @file{gpg.conf-2} instead
+of just @file{gpg.conf}.
 @end ifclear
 
 @manpause
@@ -1023,9 +1029,11 @@ give the opposite meaning.  The options are:
 @item show-photos
 @opindex list-options:show-photos
 Causes @option{--list-keys}, @option{--list-sigs},
-@option{--list-public-keys}, and @option{--list-secret-keys} to display
-any photo IDs attached to the key.  Defaults to no. See also
-@option{--photo-viewer}.
+@option{--list-public-keys}, and @option{--list-secret-keys} to
+display any photo IDs attached to the key.  Defaults to no. See also
+@option{--photo-viewer}.  Does not work with @option{--with-colons}:
+see @option{--attribute-fd} for the appropriate way to get photo data
+for scripts and other frontends.
 
 @item show-policy-urls
 @opindex list-options:show-policy-urls
@@ -1135,6 +1143,9 @@ same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
 for the key fingerprint, "%t" for the extension of the image type
 (e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+"%v" for the single-character calculated validity of the image being
+viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
+"full"),
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
@@ -1773,13 +1784,27 @@ Remove all entries from the @option{--group} list.
 Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
+@ifset gpgtwoone
+@item --try-secret-key @var{name}
+@opindex try-secret-key
+For hidden recipients GPG needs to know the keys to use for trial
+decryption.  The key set with @option{--default-key} is always tried
+first, but this is often not sufficient.  This option allows to set more
+keys to be used for trial decryption.  Although any valid user-id
+specification may be used for @var{name} it makes sense to use at least
+the long keyid to avoid ambiguities.  Note that gpg-agent might pop up a
+pinentry for a lot keys to do the trial decryption.  If you want to stop
+all further trial decryption you may use close-window button instead of
+the cancel button.
+@end ifset
+
 @item --try-all-secrets
 @opindex try-all-secrets
 Don't look at the key ID as stored in the message but try all secret
 keys in turn to find the right decryption key. This option forces the
 behaviour as used by anonymous recipients (created by using
-@option{--throw-keyids}) and might come handy in case where an encrypted
-message contains a bogus key ID.
+@option{--throw-keyids} or @option{--hidden-recipient}) and might come
+handy in case where an encrypted message contains a bogus key ID.
 
 @item --skip-hidden-recipients
 @itemx --no-skip-hidden-recipients
@@ -1939,6 +1964,11 @@ obsolete; it does not harm to use it though.
 Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
 
+@ifset gpgtwoone
+@item --with-keygrip
+@opindex with-keygrip
+Include the keygrip in the key listings.
+@end ifset
 
 @end table
 
@@ -2014,8 +2044,7 @@ to safely override the algorithm chosen by the recipient key
 preferences, as GPG will only select an algorithm that is usable by
 all recipients.  The most highly ranked digest algorithm in this list
 is also used when signing without encryption
-(e.g. @option{--clearsign} or @option{--sign}). The default value is
-SHA-1.
+(e.g. @option{--clearsign} or @option{--sign}).
 
 @item --personal-compress-preferences @code{string}
 Set the list of personal compression preferences to @code{string}.

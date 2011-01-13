@@ -2,6 +2,11 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@c Note that we use this texinfo file for all versions of GnuPG: 
+@c 2.0 and 2.1.  The macro "gpgtwoone" controls parts which are only
+@c valid for GnuPG 2.1 and later.
+
+
 @node Invoking GPG-AGENT
 @chapter Invoking GPG-AGENT
 @cindex GPG-AGENT command options
@@ -47,13 +52,24 @@ independently from any protocol.  It is used as a backend for
 @command{gpg} and @command{gpgsm} as well as for a couple of other
 utilities.
 
+@ifset gpgtwoone
+The agent is usualy started on demand by @command{gpg}, @command{gpgsm},
+@command{gpgconf} or @command{gpg-connect-agent}.  Thus there is no
+reason to start it manually.  In case you want to use the included
+Secure Shell Agent you may start the agent using:
+
+@example
+gpg-connect-agent /bye
+@end example
+@end ifset
+
+@ifclear gpgtwoone
 @noindent
 The usual way to run the agent is from the @code{~/.xsession} file:
 
 @example
 eval $(gpg-agent --daemon)
 @end example
-
 @noindent
 If you don't use an X server, you can also put this into your regular
 startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
@@ -83,13 +99,13 @@ if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
   . "$@{HOME@}/.gpg-agent-info"
   export GPG_AGENT_INFO
   export SSH_AUTH_SOCK
-  export SSH_AGENT_PID
 fi
 @end smallexample
 
 @noindent
 It reads the data out of the file and exports the variables.  If you
 don't use Secure Shell, you don't need the last two export statements.
+@end ifclear
  
 @noindent
 You should always add the following lines to your @code{.bashrc} or
@@ -136,18 +152,18 @@ only one command is allowed.
 @table @gnupgtabopt
 @item --version
 @opindex version
-Print the program version and licensing information.  Not that you can
+Print the program version and licensing information.  Note that you cannot
 abbreviate this command.
 
 @item --help
 @itemx -h
 @opindex help
 Print a usage message summarizing the most useful command-line options.
-Not that you can abbreviate this command.
+Note that you cannot abbreviate this command.
 
 @item --dump-options
 @opindex dump-options
-Print a list of all available options and commands.  Not that you can
+Print a list of all available options and commands.  Note that you cannot
 abbreviate this command.
 
 @item --server
@@ -315,10 +331,15 @@ eval $(cut -d= -f 1 < @var{file} | xargs echo export)
 Tell the pinentry not to grab the keyboard and mouse.  This option
 should in general not be used to avoid X-sniffing attacks.
 
+@anchor{option --log-file}
 @item --log-file @var{file}
 @opindex log-file
-Append all logging output to @var{file}.  This is very helpful in
-seeing what the agent actually does.
+Append all logging output to @var{file}.  This is very helpful in seeing
+what the agent actually does.  If neither a log file nor a log file
+descriptor has been set on a Windows platform, the Registry entry
+@code{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
+the logging output.
+
 
 @anchor{option --allow-mark-trusted}
 @item --allow-mark-trusted
@@ -399,7 +420,7 @@ This option does nothing yet.
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is installation
-dependent and can be shown with the @code{--version} command.
+dependent.
 
 @item --pinentry-touch-file @var{filename}
 @opindex pinentry-touch-file
@@ -415,7 +436,7 @@ modification and access time.
 @item --scdaemon-program @var{filename}
 @opindex scdaemon-program
 Use program @var{filename} as the Smartcard daemon.  The default is
-installation dependent and can be shown with the @code{--version}
+installation dependent and can be shown with the @command{gpgconf}
 command.
 
 @item --disable-scdaemon
@@ -435,13 +456,20 @@ a random socket below a temporary directory.  Tools connecting to
 environment variable @var{GPG_AGENT_INFO} and then fall back to this
 socket.  This option may not be used if the home directory is mounted on
 a remote file system which does not support special files like fifos or
-sockets.  Note, that @option{--use-standard-socket} is the
-default on Windows systems.  The default may be changed at build time.
-It is possible to test at runtime whether the agent has been configured
-for use with the standard socket by issuing the command
-@command{gpg-agent --use-standard-socket-p} which returns success if the
-standard socket option has been enabled.
-
+sockets.
+@ifset gpgtwoone
+Note, that @option{--use-standard-socket} is the default on all
+systems since GnuPG 2.1.
+@end ifset
+@ifclear gpgtwoone
+Note, that @option{--use-standard-socket} is the default on
+Windows systems.
+@end ifclear
+The default may be changed at build time.  It is
+possible to test at runtime whether the agent has been configured for
+use with the standard socket by issuing the command @command{gpg-agent
+--use-standard-socket-p} which returns success if the standard socket
+option has been enabled.
 
 @item --display @var{string}
 @itemx --ttyname @var{string}
@@ -470,7 +498,7 @@ pinentry to pop up at the @code{tty} or display you started the agent.
 @item --enable-ssh-support
 @opindex enable-ssh-support
 
-Enable emulation of the OpenSSH Agent protocol.
+Enable the OpenSSH Agent protocol.
 
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH
@@ -497,10 +525,20 @@ has been started.  To switch this display to the current one, the
 following command may be used:
 
 @smallexample
-echo UPDATESTARTUPTTY | gpg-connect-agent
+gpg-connect-agent updatestartuptty /bye
 @end smallexample
 
+Although all GnuPG components try to start the gpg-agent as needed, this
+is not possible for the ssh support because ssh does not know about it.
+Thus if no GnuPG tool which accesses the agent has been run, there is no
+guarantee that ssh is abale to use gpg-agent for authentication.  To fix
+this you may start gpg-agent if needed using this simple command:
 
+@smallexample
+gpg-connect-agent /bye
+@end smallexample
+
+Adding the @option{--verbose} shows the progress of starting the agent.
 
 @end table
 
@@ -573,10 +611,13 @@ It is possible to add further flags after the @code{S} for use by the
 caller:
 
 @table @code
+
 @item relax
-Relax checking of some root certificate requirements.  This is for
-example required if the certificate is missing the basicConstraints
-attribute (despite that it is a MUST for CA certificates).
+@cindex relax
+Relax checking of some root certificate requirements.  As of now this
+flag allows the use of root certificates with a missing basicConstraints
+attribute (despite that it is a MUST for CA certificates) and disables
+CRL checking for the root certificate.
 
 @item cm
 If validation of a certificate finally issued by a CA with this flag set
@@ -586,7 +627,7 @@ fails, try again using the chain validation model.
 
   
 @item sshcontrol
-
+@cindex sshcontrol
 This file is used when support for the secure shell agent protocol has
 been enabled (@pxref{option --enable-ssh-support}). Only keys present in
 this file are used in the SSH protocol.  You should backup this file.
@@ -709,7 +750,6 @@ and add something like (for Bourne shells)
     . "$@{HOME@}/.gpg-agent-info"
     export GPG_AGENT_INFO
     export SSH_AUTH_SOCK
-    export SSH_AGENT_PID
   fi
 @end example
 @end cartouche
@@ -1149,11 +1189,13 @@ This can be used to see whether a secret key is available.  It does
 not return any information on whether the key is somehow protected.
 
 @example
-  HAVEKEY @var{keygrip}
+  HAVEKEY @var{keygrips}
 @end example
 
-The Agent answers either with OK or @code{No_Secret_Key} (208).  The
-caller may want to check for other error codes as well.
+The agent answers either with OK or @code{No_Secret_Key} (208).  The
+caller may want to check for other error codes as well.  More than one
+keygrip may be given.  In this case the command returns success if at
+least one of the keygrips corresponds to an available secret key.
 
 
 @node Agent LEARN

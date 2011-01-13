@@ -44,7 +44,6 @@ common/t-percent
 common/t-session-env
 common/t-sexputil
 common/t-sysutils
-doc/FAQ
 doc/addgnupghome.8
 doc/applygnupgdefaults.8
 doc/faq.html

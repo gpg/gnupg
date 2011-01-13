@@ -47,7 +47,9 @@ msgstr "Jako¶æ:"
 #. translate this entry, a default english text (see source)
 #. will be used.
 msgid "pinentry.qualitybar.tooltip"
-msgstr "Jako¶æ wpisanego wy¿ej tekstu.\nKryteria jako¶ci mo¿na uzyskaæ od administratora."
+msgstr ""
+"Jako¶æ wpisanego wy¿ej tekstu.\n"
+"Kryteria jako¶ci mo¿na uzyskaæ od administratora."
 
 msgid ""
 "Please enter your PIN, so that the secret key can be unlocked for this "
@@ -1593,7 +1595,9 @@ msgid "|USER-ID|encrypt for USER-ID"
 msgstr "|U¯YTKOWNIK|szyfrowanie dla odbiorcy o tym identyfikatorze"
 
 msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|U¯YTKOWNIK|u¿ycie tego identyfikatora u¿ytkownika do podpisania lub odszyfrowania"
+msgstr ""
+"|U¯YTKOWNIK|u¿ycie tego identyfikatora u¿ytkownika do podpisania lub "
+"odszyfrowania"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|ustawienie poziomu kompresji N (0 - bez)"
@@ -3654,7 +3658,8 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr ""
-"Proszê wprowadziæ has³o do zabezpieczenia kopii zapasowej poza kart± nowego klucza szyfruj±cego."
+"Proszê wprowadziæ has³o do zabezpieczenia kopii zapasowej poza kart± nowego "
+"klucza szyfruj±cego."
 
 #, c-format
 msgid "%s.\n"
@@ -5327,26 +5332,34 @@ msgid "||Please enter the PIN for the standard keys."
 msgstr "||Proszê wprowadziæ PIN dla zwyk³ych kluczy."
 
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "|NP|Proszê wprowadziæ nowy kod oblokowuj±cy PIN (PUK) dla zwyk³ych kluczy."
+msgstr ""
+"|NP|Proszê wprowadziæ nowy kod oblokowuj±cy PIN (PUK) dla zwyk³ych kluczy."
 
 msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
 msgstr "|P|Proszê wprowadziæ kod odblokowuj±cy PIN (PUK) dla zwyk³ych kluczy."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr "|N|Proszê wprowadziæ nowy PIN dla klucza do tworzenia podpisów kwalifikowanych."
+msgstr ""
+"|N|Proszê wprowadziæ nowy PIN dla klucza do tworzenia podpisów "
+"kwalifikowanych."
 
 msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr "||Proszê wprowadziæ PIN PIN dla klucza do tworzenia podpisów kwalifikowanych."
+msgstr ""
+"||Proszê wprowadziæ PIN PIN dla klucza do tworzenia podpisów kwalifikowanych."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
-msgstr "|NP|Proszê wprowadziæ nowy kod odblokowuj±cy PIN (PUK) dla klucza do tworzenia podpisów kwalifikowanych."
+msgstr ""
+"|NP|Proszê wprowadziæ nowy kod odblokowuj±cy PIN (PUK) dla klucza do "
+"tworzenia podpisów kwalifikowanych."
 
 msgid ""
 "|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
-msgstr "|P|Proszê wprowadziæ kod odblokowuj±cy PIN (PUK) dla klucza do tworzenia podpisów kwalifikowanych."
+msgstr ""
+"|P|Proszê wprowadziæ kod odblokowuj±cy PIN (PUK) dla klucza do tworzenia "
+"podpisów kwalifikowanych."
 
 #, c-format
 msgid "error getting new PIN: %s\n"
@@ -5379,7 +5392,9 @@ msgstr "u¿ycie domy¶lnego PIN-u jako %s\n"
 
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
-msgstr "nie uda³o siê u¿yæ domy¶lnego PIN-u jako %s: %s - wy³±czenie dalszego domy¶lnego u¿ycia\n"
+msgstr ""
+"nie uda³o siê u¿yæ domy¶lnego PIN-u jako %s: %s - wy³±czenie dalszego "
+"domy¶lnego u¿ycia\n"
 
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
@@ -5404,7 +5419,8 @@ msgstr "karta zosta³a trwale zablokowana!\n"
 
 #, c-format
 msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
-msgstr "Zosta³o %d prób PIN-u administracyjnego do trwa³ego zablokowania karty\n"
+msgstr ""
+"Zosta³o %d prób PIN-u administracyjnego do trwa³ego zablokowania karty\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
@@ -5490,7 +5506,8 @@ msgstr "dotychczas stworzono podpisów: %lu\n"
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
-"weryfikacja PIN-u administracyjnego tym poleceniem jest aktualnie zabroniona\n"
+"weryfikacja PIN-u administracyjnego tym poleceniem jest aktualnie "
+"zabroniona\n"
 
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
@@ -5624,7 +5641,8 @@ msgstr "liczba pasuj±cych certyfikatów: %d\n"
 
 #, c-format
 msgid "dirmngr cache-only key lookup failed: %s\n"
-msgstr "wyszukiwanie klucza tylko w pamiêci podrêcznej dirmngr nie powiod³o siê: %s\n"
+msgstr ""
+"wyszukiwanie klucza tylko w pamiêci podrêcznej dirmngr nie powiod³o siê: %s\n"
 
 msgid "failed to allocated keyDB handle\n"
 msgstr "nie uda³o siê przydzieliæ uchwytu keyDB\n"
@@ -5857,7 +5875,9 @@ msgstr "linia %d: generowanie klucza nie powiod³o siê: %s <%s>\n"
 msgid ""
 "To complete this certificate request please enter the passphrase for the key "
 "you just created once more.\n"
-msgstr "Aby zakoñczyæ to ¿±danie certyfikatu proszê wprowadziæ jeszcze raz has³o dla utworzonego klucza.\n"
+msgstr ""
+"Aby zakoñczyæ to ¿±danie certyfikatu proszê wprowadziæ jeszcze raz has³o dla "
+"utworzonego klucza.\n"
 
 #, c-format
 msgid "   (%d) RSA\n"
@@ -5951,7 +5971,8 @@ msgid "Now creating certificate request.  This may take a while ...\n"
 msgstr "Tworzenie ¿±dania certyfikatu. Mo¿e to chwilê potrwaæ...\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
-msgstr "Gotowe. Teraz nale¿y wys³aæ to ¿±danie do w³asnego centrum certyfikacji.\n"
+msgstr ""
+"Gotowe. Teraz nale¿y wys³aæ to ¿±danie do w³asnego centrum certyfikacji.\n"
 
 msgid "resource problem: out of core\n"
 msgstr "problem z zasobami: brak pamiêci\n"
@@ -6234,7 +6255,9 @@ msgstr ""
 
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
-msgstr "algorytm skrótu %d (%s) dla podpisuj±cego %d nie jest obs³ugiwany; u¿ycie %s\n"
+msgstr ""
+"algorytm skrótu %d (%s) dla podpisuj±cego %d nie jest obs³ugiwany; u¿ycie %"
+"s\n"
 
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"
@@ -6256,8 +6279,7 @@ msgstr " przy u¿yciu certyfikatu o ID 0x%08lX\n"
 
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
-msgstr ""
-"b³êdny podpis: atrybut skrótu wiadomo¶ci nie zgadza siê z obliczonym\n"
+msgstr "b³êdny podpis: atrybut skrótu wiadomo¶ci nie zgadza siê z obliczonym\n"
 
 msgid "Good signature from"
 msgstr "Poprawny podpis z³o¿ony przez"
@@ -6401,7 +6423,9 @@ msgid "allow PKA lookups (DNS requests)"
 msgstr "zezwolenie na wyszukiwania PKA (¿±dania DNS)"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
-msgstr "|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie adresów e-mail"
+msgstr ""
+"|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
+"adresów e-mail"
 
 msgid "disable all access to the dirmngr"
 msgstr "zablokuj dostêp do dirmngr"
