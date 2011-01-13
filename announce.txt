@@ -5,7 +5,7 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release:  Version 2.0.16.
+release:  Version 2.0.17.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -14,7 +14,7 @@ framework for public key cryptography.  It includes an advanced key
 management facility and is compliant with the OpenPGP and S/MIME
 standards.
 
-GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.10) in
+GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.11) in
 that it splits up functionality into several modules.  However, both
 versions may be installed alongside without any conflict.  In fact,
 the gpg version from GnuPG-1 is able to make use of the gpg-agent as
@@ -31,14 +31,17 @@ GnuPG is distributed under the terms of the GNU General Public License
 What's New
 ===========
 
- * If the agent's --use-standard-socket option is active, all tools
-   try to start and daemonize the agent on the fly.  In the past this
-   was only supported on W32; on non-W32 systems the new configure
-   option --use-standard-socket may now be used to use this feature by
-   default.
+ * Allow more hash algorithms with the OpenPGP v2 card.
 
- * The gpg-agent commands KILLAGENT and RELOADAGENT are now available
-   on all platforms.
+ * The gpg-agent now tests for a new gpg-agent.conf on a HUP.
+
+ * Fixed output of "gpgconf --check-options".
+
+ * Fixed a bug where Scdaemon sends a signal to Gpg-agent running in
+   non-daemon mode.
+
+ * Fixed TTY management for pinentries and session variable update
+   problem.
 
  * Minor bug fixes.
 
@@ -49,7 +52,7 @@ Getting the Software
 Please follow the instructions found at http://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.16 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.17 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
 can be found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG
 is not available at ftp.gnu.org.
@@ -57,14 +60,14 @@ is not available at ftp.gnu.org.
 On the FTP server and its mirrors you should find the following files
 in the gnupg/ directory:
 
-  gnupg-2.0.16.tar.bz2 (3910k)
-  gnupg-2.0.16.tar.bz2.sig
+  gnupg-2.0.17.tar.bz2 (3904k)
+  gnupg-2.0.17.tar.bz2.sig
 
       GnuPG source compressed using BZIP2 and OpenPGP signature.
 
-  gnupg-2.0.15-2.0.16.diff.bz2 (51k)
+  gnupg-2.0.16-2.0.17.diff.bz2 (75k)
 
-      A patch file to upgrade a 2.0.15 GnuPG source tree.  This patch
+      A patch file to upgrade a 2.0.16 GnuPG source tree.  This patch
       does not include updates of the language files.
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2. 
@@ -79,9 +82,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.16.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.17.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.16.tar.bz2.sig
+     gpg --verify gnupg-2.0.17.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -94,36 +97,35 @@ the following ways:
 
    or using a keyserver like
 
-     gpg --recv-key 1CE0C630
+     gpg --keyserver keys.gnupg.net --recv-key 4F25E3B6
 
-   The distribution key 1CE0C630 is signed by the well known key
-   5B0358A2.  If you get an key expired message, you should retrieve a
-   fresh copy as the expiration date might have been prolonged.
+   The distribution key 4F25E3B6 is signed by the well known key
+   1E42B367.
 
    NEVER USE A GNUPG VERSION YOU JUST DOWNLOADED TO CHECK THE
    INTEGRITY OF THE SOURCE - USE AN EXISTING GNUPG INSTALLATION!
 
  * If you are not able to use an old version of GnuPG, you have to verify
    the SHA-1 checksum.  Assuming you downloaded the file
-   gnupg-2.0.16.tar.bz2, you would run the sha1sum command like this:
+   gnupg-2.0.17.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.16.tar.bz2
+     sha1sum gnupg-2.0.17.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-e7eb4f60026884bd90803b531472bc518804b95d  gnupg-2.0.16.tar.bz2
-be77c0ba597b9ad9e38941e85ba1750890067227  gnupg-2.0.15-2.0.16.diff.bz2
+41ef5460417ca0a1131fc730849fe3afd49ad2de  gnupg-2.0.17.tar.bz2
+ba49d5ab2659bfe6403d52df58722f439e393bbb  gnupg-2.0.16-2.0.17.diff.bz2
 
 
 Internationalization
 ====================
 
 GnuPG comes with support for 27 languages.  Due to a lot of new and
-changed strings many translations are not entirely complete.  Jedi,
-Maxim Britov, Jaime Suárez and Nilgün Belma Bugüner have been kind
-enough to go over their translations and thus the Chinese, German,
-Russian, Spanish, and Turkish translations are pretty much complete.
+changed strings many translations are not entirely complete.  Jakub
+Bogusz, Petr Pisar, Jedi and Daniel Nylander have been kind enough to
+update their translations on short notice.  Thus the Chinese, Czech,
+German, Polish and Swedish translations are complete.
 
 
 Documentation
