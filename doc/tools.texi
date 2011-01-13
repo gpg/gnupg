@@ -16,7 +16,9 @@ GnuPG comes with a couple of smaller tools:
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
+@ifset gpgtwoone
 * dirmngr-client::        How to use the Dirmngr client tool.
+@end ifset
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 * gpg-zip::               Encrypt or sign files into an archive.
@@ -1434,6 +1436,7 @@ Print a list of available control commands.
 @include see-also-note.texi
 @end ifset
 
+@ifset gpgtwoone
 @c
 @c   DIRMNGR-CLIENT
 @c
@@ -1594,7 +1597,7 @@ Squid's @option{external_acl_type} option.
 @command{gpgsm}(1)
 @include see-also-note.texi
 @end ifset
-
+@end ifset
 
 @c
 @c   GPGPARSEMAIL
