@@ -119,12 +119,15 @@ do_encode_dsa (const byte * md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   gpg_error_t err;
   gcry_sexp_t hash;
   unsigned int qbits;
+  int gcry_pkalgo;
 
   *r_hash = NULL;
 
-  if (dsaalgo == GCRY_PK_ECDSA)
+  gcry_pkalgo = map_pk_openpgp_to_gcry( dsaalgo );
+
+  if (gcry_pkalgo == GCRY_PK_ECDSA)
     qbits = gcry_pk_get_nbits (pkey);
-  else if (dsaalgo == GCRY_PK_DSA)
+  else if (gcry_pkalgo == GCRY_PK_DSA)
     qbits = get_dsa_qbits (pkey);
   else
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
@@ -143,20 +146,25 @@ do_encode_dsa (const byte * md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   if (qbits < 160)
     {
       log_error (_("%s key uses an unsafe (%u bit) hash\n"),
-                 gcry_pk_algo_name (dsaalgo), qbits);
+                 gcry_pk_algo_name (gcry_pkalgo), qbits);
       return gpg_error (GPG_ERR_INV_LENGTH);
     }
 
   /* Check if we're too short.  Too long is safe as we'll
      automatically left-truncate.  */
-  if (mdlen < qbits/8)
+
+  /* This check would require the use of SHA512 with ECDSA 512. I think this is overkill to fail in this case.
+   * Therefore, relax the check, but only for ECDSA keys. We may need to adjust it later for general case.
+   * ( Note that the check is really a bug for ECDSA 521 as the only hash that matches it is SHA 512, but 512 < 521 ).
+   */
+  if( mdlen < ((gcry_pkalgo==GCRY_PK_ECDSA && qbits>521) ? 512 : qbits) )
     {
       log_error (_("a %zu bit hash is not valid for a %u bit %s key\n"),
-                 mdlen*8,
+                 mdlen,
                  gcry_pk_get_nbits (pkey), 
-                 gcry_pk_algo_name (dsaalgo));
+                 gcry_pk_algo_name (gcry_pkalgo));
       /* FIXME: we need to check the requirements for ECDSA.  */
-      if (mdlen < 20 || dsaalgo == GCRY_PK_DSA)
+      if (mdlen < 20 || gcry_pkalgo == GCRY_PK_DSA)
         return gpg_error (GPG_ERR_INV_LENGTH);
     }
 

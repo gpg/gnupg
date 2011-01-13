@@ -27,7 +27,6 @@
 #include "agent.h"
 #include "i18n.h"
 #include "cvt-openpgp.h"
-#include "../include/cipher.h"	/* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
 
 
 /* Helper to pass data via the callback to do_unprotect. */
@@ -50,12 +49,7 @@ struct try_do_unprotect_arg_s
   gcry_sexp_t *r_key;
 };
 
-/* TODO: it is also in misc, which is not linked with the agent */
-static int
-map_pk_openpgp_to_gcry (int algo)
-{
-  return (algo==PUBKEY_ALGO_ECDSA ? GCRY_PK_ECDSA : (algo==PUBKEY_ALGO_ECDH ? GCRY_PK_ECDH : algo));
-}
+
 
 /* Compute the keygrip from the public key and store it at GRIP.  */
 static gpg_error_t

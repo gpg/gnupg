@@ -288,7 +288,6 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
        * Therefore, relax the check, but only for ECDSA keys. We may need to adjust it later for general case.
        * ( Note that the check will never pass for ECDSA 521 anyway as the only hash that intended to match it is SHA 512, but 512 < 521 ).
        */
-      //if (gcry_md_get_algo_dlen (hash_algo) < qbytes )
       if (gcry_md_get_algo_dlen (hash_algo) < ((gcry_pkalgo==GCRY_PK_ECDSA && qbytes>(521)/8) ? 512/8 : qbytes) )
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash, used hash-algo=%d\n"),
@@ -297,8 +296,9 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	  return NULL;
 	}
 
+      /* Note that in case of ECDSA 521 hash is always smaller than the key size */
       if (gcry_mpi_scan (&frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo), qbytes, &qbytes))
+                         gcry_md_read (md, hash_algo), gcry_md_get_algo_dlen (hash_algo), &qbytes))
         BUG();
     }
   else
