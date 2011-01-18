@@ -23,6 +23,7 @@
 
 #include "../include/types.h" /* fixme: should be moved elsewhere. */
 #include "../common/sysutils.h"
+#include "../common/estream.h"
 
 #define DBG_IOBUF   iobuf_debug_mode
 
@@ -102,6 +103,7 @@ iobuf_t iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname,
 iobuf_t iobuf_open (const char *fname);
 iobuf_t iobuf_fdopen (int fd, const char *mode);
 iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
+iobuf_t iobuf_esopen (estream_t estream, const char *mode, int keep_open);
 iobuf_t iobuf_sockopen (int fd, const char *mode);
 iobuf_t iobuf_create (const char *fname);
 iobuf_t iobuf_append (const char *fname);

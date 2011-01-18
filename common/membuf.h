@@ -39,9 +39,10 @@ typedef struct private_membuf_s membuf_t;
 
 void init_membuf (membuf_t *mb, int initiallen);
 void init_membuf_secure (membuf_t *mb, int initiallen);
+void clear_membuf (membuf_t *mb, size_t amount);
 void put_membuf  (membuf_t *mb, const void *buf, size_t len);
 void put_membuf_str (membuf_t *mb, const char *string);
 void *get_membuf (membuf_t *mb, size_t *len);
-
+const void *peek_membuf (membuf_t *mb, size_t *len);
 
 #endif /*GNUPG_COMMON_MEMBUF_H*/

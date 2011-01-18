@@ -1,4 +1,12 @@
-2011-01-07  Werner Koch  <wk@g10code.com>
+2011-01-18  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (file_es_filter_ctx_t): New.
+	(file_es_filter): New.
+	(iobuf_esopen): New.
+
+	* estream.c (es_func_mem_write): Fix computation of NEWSIZE.
+
+	* membuf.c (clear_membuf, peek_membuf): New.
 
 	* util.h (GPG_ERR_NO_KEYSERVER): New.
 
@@ -9,6 +17,11 @@
 	(_http_parse_uri): Do proper error management.
 	* http.h (parsed_uri_s): Add field IS_HTTP.
 	(http_parse_uri): Support NO_SCHEME_CHECK arg.
+
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* session-env.c (update_var): Fix same value detection.  Fixes
+	bug#1311.
 
 2010-12-17  Werner Koch  <wk@g10code.com>
 
@@ -2263,7 +2276,7 @@
 
 
  Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-	   2009, 2010, 2011 Free Software Foundation, Inc.
+	   2009, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
