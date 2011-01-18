@@ -3752,12 +3752,12 @@ main (int argc, char **argv)
 
      case aSearchKeys:
 	sl = NULL;
-	for( ; argc; argc--, argv++ )
-	  append_to_strlist2( &sl, *argv, utf8_strings );
+	for (; argc; argc--, argv++)
+	  append_to_strlist2 (&sl, *argv, utf8_strings);
 	rc = keyserver_search (ctrl, sl);
-	if(rc)
-	  log_error(_("keyserver search failed: %s\n"),g10_errstr(rc));
-	free_strlist(sl);
+	if (rc)
+	  log_error (_("keyserver search failed: %s\n"), gpg_strerror (rc));
+	free_strlist (sl);
 	break;
 
       case aRefreshKeys:

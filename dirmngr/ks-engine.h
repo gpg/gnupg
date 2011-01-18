@@ -26,6 +26,8 @@
 /*-- ks-engine-hkp.c --*/
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                            estream_t *r_fp);
+gpg_error_t ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri,
+                        const char *keyspec, estream_t *r_fp);
 
 
 

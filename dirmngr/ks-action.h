@@ -21,6 +21,7 @@
 #define DIRMNGR_KS_ACTION_H 1
 
 gpg_error_t ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp);
+gpg_error_t ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp);
 
 
 #endif /*DIRMNGR_KS_ACTION_H*/

@@ -79,12 +79,72 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
             {
               err = copy_stream (infp, outfp);
               es_fclose (infp);
+              break;
             }
         }
     }
 
   if (!any)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
+  return err;
+}
+
+
+/* Get the requested keys (macthing PATTERNS) using all configured
+   keyservers and write the result to the provided output stream.  */
+gpg_error_t
+ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
+{
+  gpg_error_t err = 0;
+  gpg_error_t first_err = 0;
+  int any = 0;
+  strlist_t sl;
+  uri_item_t uri;
+  estream_t infp;
+
+  if (!patterns)
+    return gpg_error (GPG_ERR_NO_USER_ID);
+
+  /* FIXME: We only take care of the first keyserver.  To fully
+     support multiple keyservers we need to track the result for each
+     pattern and use the next keyserver if one key was not found.  The
+     keyservers might not all be fully synced thus it is not clear
+     whether the first keyserver has the freshest copy of the key.
+     Need to think about a better strategy.  */
+  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+    {
+      if (uri->parsed_uri->is_http)
+        {
+          any = 1;
+          for (sl = patterns; !err && sl; sl = sl->next)
+            {
+              err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
+              if (err)
+                {
+                  /* It is possible that a server does not carry a
+                     key, thus we only save the error and continue
+                     with the next pattern.  FIXME: It is an open
+                     question how to return such an error condition to
+                     the caller.  */
+                  first_err = err;
+                  err = 0;
+                }
+              else
+                {
+                  err = copy_stream (infp, outfp);
+                  /* Reading from the keyserver should nver fail, thus
+                     return this error.  */
+                  es_fclose (infp);
+                  infp = NULL;
+                }
+            }
+        }
+    }
+
+  if (!any)
+    err = gpg_error (GPG_ERR_NO_KEYSERVER);
+  else if (!err && first_err)
+    err = first_err; /* fixme: Do we really want to do that?  */
   return err;
 }
 

@@ -1,3 +1,11 @@
+2011-01-18  Werner Koch  <wk@g10code.com>
+
+	* import.c (import_keys_es_stream): New.
+
+2011-01-14  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (parse_keyrec): Use trim_trailing_ws.
+
 2011-01-07  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c, call-dirmngr.h: New.

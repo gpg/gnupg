@@ -272,6 +272,9 @@ void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd, 
                         unsigned char **fpr,
 			size_t *fpr_len, unsigned int options);
+int import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
+                           unsigned char **fpr, size_t *fpr_len,
+                           unsigned int options);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);

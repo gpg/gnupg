@@ -36,7 +36,27 @@
 #include "options.h"
 #include "i18n.h"
 #include "asshelp.h"
+#include "keyserver.h"
 #include "call-dirmngr.h"
+
+
+/* Parameter structure used with the KS_SEARCH command.  */
+struct ks_search_parm_s
+{
+  gpg_error_t lasterr;  /* Last error code.  */
+  membuf_t saveddata;   /* Buffer to build complete lines.  */
+  char *helpbuf;        /* NULL or malloced buffer.  */
+  size_t helpbufsize;   /* Allocated size of HELPBUF.  */
+  gpg_error_t (*data_cb)(void*, char*);  /* Callback.  */
+  void *data_cb_value;  /* First argument for DATA_CB.  */
+};
+
+
+/* Parameter structure used with the KS_GET command.  */
+struct ks_get_parm_s
+{
+  estream_t memfp;
+};
 
 
 /* Data used to associate an session with dirmngr contexts.  We can't
@@ -53,7 +73,7 @@ struct dirmngr_local_s
   struct dirmngr_local_s *next;
 
   /* The active Assuan context. */
-  static assuan_context_t ctx;
+  assuan_context_t ctx;
 
   /* Flag set to true while an operation is running on CTX.  */
   int is_active;
@@ -106,12 +126,12 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
       /* Set all configured keyservers.  We clear existing keyservers
          so that any keyserver configured in GPG overrides keyservers
          possibly configured in Dirmngr. */
-      if (ksi = opt.keyservers; !err && ksi; ksi = ksi->next)
+      for (ksi = opt.keyserver; !err && ksi; ksi = ksi->next)
         {
           char *line;
           
           line = xtryasprintf ("KEYSERVER%s %s",
-                               ksi == opt.keyservers? " --clear":"", ksi->uri);
+                               ksi == opt.keyserver? " --clear":"", ksi->uri);
           if (!line)
             err = gpg_error_from_syserror ();
           else
@@ -156,7 +176,8 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           /* Found an inactive local session - return that.  */
           assert (!dml->is_active);
           dml->is_active = 1;
-          return dml;
+          *r_ctx = dml->ctx;
+          return 0;
         }
       
       dml = xtrycalloc (1, sizeof *dml);
@@ -192,9 +213,9 @@ close_context (ctrl_t ctrl, assuan_context_t ctx)
     {
       if (dml->ctx == ctx)
         {
-          if (!ctx->is_active)
+          if (!dml->is_active)
             log_fatal ("closing inactive dirmngr context %p\n", ctx);
-          ctx->is_active = 0;
+          dml->is_active = 0;
           return;
         }
     }
@@ -203,54 +224,215 @@ close_context (ctrl_t ctrl, assuan_context_t ctx)
 
 
 
+/* Data callback for the KS_SEARCH command. */
+static gpg_error_t
+ks_search_data_cb (void *opaque, const void *data, size_t datalen)
+{
+  gpg_error_t err = 0;
+  struct ks_search_parm_s *parm = opaque;
+  const char *line, *s;
+  size_t rawlen, linelen;
+  char fixedbuf[256];
 
-int 
-gpg_dirmngr_ks_search (ctrl_t ctrl, strlist_t names,
-                       void (*cb)(void*, ksba_cert_t), void *cb_value)
+  if (parm->lasterr)
+    return 0;
+
+  if (!data)
+    return 0;  /* Ignore END commands.  */
+
+  put_membuf (&parm->saveddata, data, datalen);
+
+ again:
+  line = peek_membuf (&parm->saveddata, &rawlen);
+  if (!line)
+    {
+      parm->lasterr = gpg_error_from_syserror ();
+      return parm->lasterr; /* Tell the server about our problem.  */
+    }
+  if ((s = memchr (line, '\n', rawlen)))
+    {
+      linelen = s - line;  /* That is the length excluding the LF.  */
+      if (linelen + 1 < sizeof fixedbuf)
+        {
+          /* We can use the static buffer.  */
+          memcpy (fixedbuf, line, linelen);
+          fixedbuf[linelen] = 0;
+          if (linelen && fixedbuf[linelen-1] == '\r')
+            fixedbuf[linelen-1] = 0;
+          err = parm->data_cb (parm->data_cb_value, fixedbuf);
+        }
+      else 
+        {
+          if (linelen + 1 >= parm->helpbufsize)
+            {
+              xfree (parm->helpbuf);
+              parm->helpbufsize = linelen + 1 + 1024;
+              parm->helpbuf = xtrymalloc (parm->helpbufsize);
+              if (!parm->helpbuf)
+                {
+                  parm->lasterr = gpg_error_from_syserror ();
+                  return parm->lasterr;
+                }
+            }
+          memcpy (parm->helpbuf, line, linelen);
+          parm->helpbuf[linelen] = 0;
+          if (linelen && parm->helpbuf[linelen-1] == '\r')
+            parm->helpbuf[linelen-1] = 0;
+          err = parm->data_cb (parm->data_cb_value, parm->helpbuf);
+        }
+      if (err)
+        parm->lasterr = err;
+      else
+        {
+          clear_membuf (&parm->saveddata, linelen+1);
+          goto again;  /* There might be another complete line.  */
+        }
+    }
+
+  return err;
+}
+
+
+/* Run the KS_SEARCH command using the search string SEARCHSTR.  All
+   data lines are passed to the CB function.  That function is called
+   with CB_VALUE as its first argument and the decoded data line as
+   second argument.  The callback function may modify the data line
+   and it is guaranteed that this data line is a complete line with a
+   terminating 0 character but without the linefeed.  NULL is passed
+   to the callback to indicate EOF.  */
+gpg_error_t
+gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
+                       gpg_error_t (*cb)(void*, char *), void *cb_value)
 { 
   gpg_error_t err;
   assuan_context_t ctx;
-  char *pattern;
+  struct ks_search_parm_s parm;
   char line[ASSUAN_LINELENGTH];
 
   err = open_context (ctrl, &ctx);
   if (err)
     return err;
 
-  pattern = pattern_from_strlist (names);
-  if (!pattern)
-    {
-      if (ctx == dirmngr_ctx)
-	release_dirmngr (ctrl);
-      else
-	release_dirmngr2 (ctrl);
+  {
+    char *escsearchstr = percent_plus_escape (searchstr);
+    if (!escsearchstr)
+      {
+        err = gpg_error_from_syserror ();
+        close_context (ctrl, ctx);
+        return err;
+      }
+    snprintf (line, sizeof line, "KS_SEARCH -- %s", escsearchstr);
+    xfree (escsearchstr);
+  }
 
-      return out_of_core ();
-    }
-  snprintf (line, DIM(line)-1, "LOOKUP%s %s", 
-            cache_only? " --cache-only":"", pattern);
-  line[DIM(line)-1] = 0;
-  xfree (pattern);
+  memset (&parm, 0, sizeof parm);
+  init_membuf (&parm.saveddata, 1024);
+  parm.data_cb = cb;
+  parm.data_cb_value = cb_value;
 
-  parm.ctrl = ctrl;
-  parm.ctx = ctx;
-  parm.cb = cb;
-  parm.cb_value = cb_value;
-  parm.error = 0;
-  init_membuf (&parm.data, 4096);
+  err = assuan_transact (ctx, line, ks_search_data_cb, &parm,
+                        NULL, NULL, NULL, NULL);
+  if (!err)
+    err = cb (cb_value, NULL);  /* Send EOF.  */
 
-  rc = assuan_transact (ctx, line, lookup_cb, &parm,
-                        NULL, NULL, lookup_status_cb, &parm);
-  xfree (get_membuf (&parm.data, &len));
-
-  if (ctx == dirmngr_ctx)
-    release_dirmngr (ctrl);
-  else
-    release_dirmngr2 (ctrl);
-
-  if (rc)
-      return rc;
+  xfree (get_membuf (&parm.saveddata, NULL));
+  xfree (parm.helpbuf);
 
   close_context (ctrl, ctx);
-  return parm.error;
+  return err;
+}
+
+
+
+/* Data callback for the KS_GET command. */
+static gpg_error_t
+ks_get_data_cb (void *opaque, const void *data, size_t datalen)
+{
+  gpg_error_t err = 0;
+  struct ks_get_parm_s *parm = opaque;
+  size_t nwritten;
+
+  if (!data)
+    return 0;  /* Ignore END commands.  */
+
+  if (es_write (parm->memfp, data, datalen, &nwritten))
+    err = gpg_error_from_syserror ();
+
+  return err;
+}
+
+
+/* Run the KS_GET command using the patterns in the array PATTERN.  On
+   success an estream object is returned to retrieve the keys.  On
+   error an error code is returned and NULL stored at R_FP.
+
+   The pattern may only use search specification which a keyserver can
+   use to retriev keys.  Because we know the format of the pattern we
+   don't need to escape the patterns before sending them to the
+   server.
+
+   If there are too many patterns the function returns an error.  That
+   could be fixed by issuing several search commands or by
+   implementing a different interface.  However with long keyids we
+   are able to ask for (1000-10-1)/(2+8+1) = 90 keys at once.  */
+gpg_error_t
+gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
+{ 
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct ks_get_parm_s parm;
+  char *line = NULL;
+  size_t linelen;
+  membuf_t mb;
+  int idx;
+
+  memset (&parm, 0, sizeof parm);
+
+  *r_fp = NULL;
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  /* Lump all patterns into one string.  */
+  init_membuf (&mb, 1024);
+  put_membuf_str (&mb, "KS_GET --");
+  for (idx=0; pattern[idx]; idx++)
+    {
+      put_membuf (&mb, " ", 1); /* Append Delimiter.  */
+      put_membuf_str (&mb, pattern[idx]);
+    }
+  put_membuf (&mb, "", 1); /* Append Nul.  */
+  line = get_membuf (&mb, &linelen);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (linelen + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_MANY);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, ks_get_data_cb, &parm,
+                         NULL, NULL, NULL, NULL);
+  if (err)
+    goto leave;
+
+  es_rewind (parm.memfp);
+  *r_fp = parm.memfp;
+  parm.memfp = NULL;
+
+ leave:
+  es_fclose (parm.memfp);
+  xfree (line);
+  close_context (ctrl, ctx);
+  return err;
 }

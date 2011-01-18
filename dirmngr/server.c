@@ -1475,6 +1475,66 @@ cmd_ks_search (assuan_context_t ctx, char *line)
 }
 
 
+
+static const char hlp_ks_get[] =
+  "KS_GET {<pattern>}\n"
+  "\n"
+  "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
+  "(see command KEYSERVER).  Each pattern should be a keyid or a fingerprint";
+static gpg_error_t
+cmd_ks_get (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  strlist_t list, sl;
+  char *p;
+  estream_t outfp;
+
+  /* No options for now.  */
+  line = skip_options (line);
+
+  /* Break the line down into an strlist.  Each pattern is by
+     definition percent-plus escaped.  However we only support keyids
+     and fingerprints and thus the client has no need to apply the
+     escaping.  */
+  list = NULL;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              err = gpg_error_from_syserror ();
+              free_strlist (list);
+              goto leave;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
+
+  /* Setup an output stream and perform the get.  */
+  outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+  if (!outfp)
+    err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+  else
+    {
+      err = ks_action_get (ctrl, list, outfp);
+      es_fclose (outfp);
+    }
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
 
 
 static const char hlp_getinfo[] = 
@@ -1611,6 +1671,7 @@ register_commands (assuan_context_t ctx)
     { "VALIDATE",   cmd_validate,   hlp_validate },
     { "KEYSERVER",  cmd_keyserver,  hlp_keyserver },
     { "KS_SEARCH",  cmd_ks_search,  hlp_ks_search },
+    { "KS_GET",     cmd_ks_get,     hlp_ks_get },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },

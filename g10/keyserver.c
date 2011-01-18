@@ -1,6 +1,6 @@
 /* keyserver.c - generic keyserver code
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
+
+/* !!! FIXME: Replace all printf by es_printf.  FIXME !!! */
+
 
 #include <config.h>
 #include <ctype.h>
@@ -46,7 +49,7 @@
 #include "srv.h"
 #endif
 #include "membuf.h"
-
+#include "call-dirmngr.h"
 
 #ifdef HAVE_W32_SYSTEM
 /* It seems Vista doesn't grok X_OK and so fails access() tests.
@@ -65,6 +68,24 @@ struct keyrec
   IOBUF uidbuf;
   unsigned int lines;
 };
+
+/* Parameters for the search line handler.  */
+struct search_line_handler_parm_s
+{
+  ctrl_t ctrl;     /* The session control structure.  */
+  char *searchstr_disp;  /* Native encoded search string or NULL.  */
+  KEYDB_SEARCH_DESC *desc; /* Array with search descriptions.  */
+  int count;      /* Number of keys we are currently prepared to
+                     handle.  This is the size of the DESC array.  If
+                     it is too small, it will grow safely.  */
+  int validcount; /* Enable the "Key x-y of z" messages. */
+  int nkeys;      /* Number of processed records.  */
+  int any_lines;  /* At least one line has been processed.  */
+  unsigned int numlines;  /* Counter for displayed lines.  */
+  int eof_seen;   /* EOF encountered.  */
+  int not_found;  /* Set if no keys have been found.  */
+};
+
 
 enum ks_action {KS_UNKNOWN=0,KS_GET,KS_GETNAME,KS_SEND,KS_SEARCH};
 
@@ -94,6 +115,10 @@ static int keyserver_work (ctrl_t ctrl, enum ks_action action,strlist_t list,
                            KEYDB_SEARCH_DESC *desc,int count,
                            unsigned char **fpr,size_t *fpr_len,
                            struct keyserver_spec *keyserver);
+static gpg_error_t keyserver_get (ctrl_t ctrl,
+                                  KEYDB_SEARCH_DESC *desc, int ndesc,
+                                  struct keyserver_spec *keyserver);
+
 
 /* Reasonable guess */
 #define DEFAULT_MAX_CERT_SIZE 16384
@@ -556,6 +581,8 @@ print_keyrec(int number,struct keyrec *keyrec)
 static struct keyrec *
 parse_keyrec(char *keystring)
 {
+  /* FIXME: Remove the static and put the data into the parms we use
+     for the caller anyway.  */
   static struct keyrec *work=NULL;
   struct keyrec *ret=NULL;
   char *record;
@@ -584,12 +611,7 @@ parse_keyrec(char *keystring)
       work->uidbuf=iobuf_temp();
     }
 
-  /* Remove trailing whitespace */
-  for(i=strlen(keystring);i>0;i--)
-    if(ascii_isspace(keystring[i-1]))
-      keystring[i-1]='\0';
-    else
-      break;
+  trim_trailing_ws (keystring, strlen (keystring));
 
   if((record=strsep(&keystring,":"))==NULL)
     return ret;
@@ -665,7 +687,7 @@ parse_keyrec(char *keystring)
 	  case 'R':
 	    work->flags|=1;
 	    break;
-	    
+
 	  case 'd':
 	  case 'D':
 	    work->flags|=2;
@@ -728,220 +750,244 @@ parse_keyrec(char *keystring)
   return ret;
 }
 
-/* TODO: do this as a list sent to keyserver_work rather than calling
-   it once for each key to get the correct counts after the import
-   (cosmetics, really) and to better take advantage of the keyservers
-   that can do multiple fetches in one go (LDAP). */
-static int
-show_prompt (ctrl_t ctrl,
-             KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
+/* Show a prompt and allow the user to select keys for retrieval.  */
+static gpg_error_t
+show_prompt (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int numdesc,
+             int count, const char *search)
 {
-  char *answer;
+  gpg_error_t err;
+  char *answer = NULL;
 
   fflush (stdout);
 
-  if(count && opt.command_fd==-1)
+  if (count && opt.command_fd == -1)
     {
-      static int from=1;
-      tty_printf("Keys %d-%d of %d for \"%s\".  ",from,numdesc,count,search);
-      from=numdesc+1;
+      static int from = 1;
+      tty_printf ("Keys %d-%d of %d for \"%s\".  ",
+                  from, numdesc, count, search);
+      from = numdesc + 1;
     }
 
-  answer=cpr_get_no_help("keysearch.prompt",
-			 _("Enter number(s), N)ext, or Q)uit > "));
+ again:
+  err = 0;
+  xfree (answer);
+  answer = cpr_get_no_help ("keysearch.prompt",
+                            _("Enter number(s), N)ext, or Q)uit > "));
   /* control-d */
-  if(answer[0]=='\x04')
+  if (answer[0]=='\x04')
     {
-      printf("Q\n");
-      answer[0]='q';
+      tty_printf ("Q\n");
+      answer[0] = 'q';
     }
 
-  if(answer[0]=='q' || answer[0]=='Q')
+  if (answer[0]=='q' || answer[0]=='Q')
+    err = gpg_error (GPG_ERR_CANCELED);
+  else if (atoi (answer) >= 1 && atoi (answer) <= numdesc)
     {
-      xfree(answer);
-      return 1;
+      char *split = answer;
+      char *num;
+      int numarray[50];
+      int numidx = 0;
+      int idx;
+
+      while ((num = strsep (&split, " ,")))
+	if (atoi (num) >= 1 && atoi (num) <= numdesc)
+          {
+            if (numidx >= DIM (numarray))
+              {
+                tty_printf ("Too many keys selected\n");
+                goto again;
+              }
+            numarray[numidx++] = atoi (num);
+          }
+
+      if (!numidx)
+        goto again;
+
+      {
+        KEYDB_SEARCH_DESC *selarray;
+
+        selarray = xtrymalloc (numidx * sizeof *selarray);
+        if (!selarray)
+          {
+            err = gpg_error_from_syserror ();
+            goto leave;
+          }
+        for (idx = 0; idx < numidx; idx++)
+          selarray[idx] = desc[numarray[idx]-1];
+        err = keyserver_get (ctrl, selarray, numidx, NULL);
+        xfree (selarray);
+      }
     }
-  else if(atoi(answer)>=1 && atoi(answer)<=numdesc)
+
+ leave:
+  xfree (answer);
+  return err;
+}
+
+
+/* This is a callback used by call-dirmngr.c to process the result of
+   KS_SEARCH command.  LINE is the actual data line received with all
+   escaping removed and guaranteed to be exactly one line with
+   stripped LF; an EOF is indicated by LINE passed as NULL.  LINE may
+   be modified after return.  */
+static gpg_error_t
+search_line_handler (void *opaque, char *line)
+{
+  struct search_line_handler_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  struct keyrec *keyrec;
+
+  if (parm->eof_seen && line)
     {
-      char *split=answer,*num;
+      log_debug ("ooops: unexpected data after EOF\n");
+      line = NULL;
+    }
 
-      while((num=strsep(&split," ,"))!=NULL)
-	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work (ctrl, KS_GET,NULL,&desc[atoi(num)-1],1,
-                          NULL,NULL,opt.keyserver);
+  /* Print the received line.  */
+  if (opt.with_colons && line)
+    {
+      log_debug ("%s\n",line);
+    }
 
-      xfree(answer);
-      return 1;
+  /* Look for an info: line.  The only current info: values defined
+     are the version and key count. */
+  if (line && !parm->any_lines && !ascii_strncasecmp ("info:", line, 5))
+    {
+      char *str = line + 5;
+      char *tok;
+
+      if ((tok = strsep (&str, ":")))
+        {
+          int version;
+
+          if (sscanf (tok, "%d", &version) !=1 )
+            version = 1;
+
+          if (version !=1 )
+            {
+              log_error (_("invalid keyserver protocol "
+                           "(us %d!=handler %d)\n"), 1, version);
+              return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+            }
+        }
+
+      if ((tok = strsep (&str, ":"))
+          && sscanf (tok, "%d", &parm->count) == 1)
+        {
+          if (!parm->count)
+            parm->not_found = 1;/* Server indicated that no items follow.  */
+          else if (parm->count < 0)
+            parm->count = 10;   /* Bad value - assume something reasonable.  */
+          else
+            parm->validcount = 1; /* COUNT seems to be okay.  */
+        }
+
+      parm->any_lines = 1;
+      return 0; /* Line processing finished.  */
+    }
+
+ again:
+  if (line)
+    keyrec = parse_keyrec (line);
+  else
+    {
+      /* Received EOF - flush data */
+      parm->eof_seen = 1;
+      keyrec = parse_keyrec (NULL);
+      if (!keyrec)
+        {
+          if (!parm->nkeys)
+            parm->not_found = 1;  /* No keys at all.  */
+          else
+            {
+              if (parm->nkeys != parm->count)
+                parm->validcount = 0;
+
+              if (!(opt.with_colons && opt.batch))
+                {
+                  err = show_prompt (parm->ctrl, parm->desc, parm->nkeys,
+                                     parm->validcount? parm->count : 0,
+                                     parm->searchstr_disp);
+                  return err;
+                }
+            }
+        }
+    }
+
+  /* Save the key in the key array.  */
+  if (keyrec)
+    {
+      /* Allocate or enlarge the key array if needed.  */
+      if (!parm->desc)
+        {
+          if (parm->count < 1)
+            {
+              parm->count = 10;
+              parm->validcount = 0;
+            }
+          parm->desc = xtrymalloc (parm->count * sizeof *parm->desc);
+          if (!parm->desc)
+            {
+              err = gpg_error_from_syserror ();
+              iobuf_close (keyrec->uidbuf);
+              xfree (keyrec);
+              return err;
+            }
+        }
+      else if (parm->nkeys == parm->count)
+        {
+          /* Keyserver sent more keys than claimed in the info: line. */
+          KEYDB_SEARCH_DESC *tmp;
+          int newcount = parm->count + 10;
+
+          tmp = xtryrealloc (parm->desc, newcount * sizeof *parm->desc);
+          if (!tmp)
+            {
+              err = gpg_error_from_syserror ();
+              iobuf_close (keyrec->uidbuf);
+              xfree (keyrec);
+              return err;
+            }
+          parm->count = newcount;
+          parm->desc = tmp;
+          parm->validcount = 0;
+        }
+
+      parm->desc[parm->nkeys] = keyrec->desc;
+
+      if (!opt.with_colons)
+        {
+          /* SCREEN_LINES - 1 for the prompt. */
+          if (parm->numlines + keyrec->lines > opt.screen_lines - 1)
+            {
+              err = show_prompt (parm->ctrl, parm->desc, parm->nkeys,
+                                 parm->validcount ? parm->count:0,
+                                 parm->searchstr_disp);
+              if (err)
+                return err;
+              parm->numlines = 0;
+            }
+
+          print_keyrec (parm->nkeys+1, keyrec);
+        }
+
+      parm->numlines += keyrec->lines;
+      iobuf_close (keyrec->uidbuf);
+      xfree (keyrec);
+
+      parm->any_lines = 1;
+      parm->nkeys++;
+
+      /* If we are here due to a flush after the EOF, run again for
+         the last prompt.  Fixme: Make this code better readable. */
+      if (parm->eof_seen)
+        goto again;
     }
 
   return 0;
 }
 
-/* Count and searchstr are just for cosmetics.  If the count is too
-   small, it will grow safely.  If negative it disables the "Key x-y
-   of z" messages.  searchstr should be UTF-8 (rather than native). */
-static void
-keyserver_search_prompt (ctrl_t ctrl, IOBUF buffer,const char *searchstr)
-{
-  int i=0,validcount=0,started=0,header=0,count=1;
-  unsigned int maxlen,buflen,numlines=0;
-  KEYDB_SEARCH_DESC *desc;
-  byte *line=NULL;
-  char *localstr=NULL;
-
-  if(searchstr)
-    localstr=utf8_to_native(searchstr,strlen(searchstr),0);
-
-  desc=xmalloc(count*sizeof(KEYDB_SEARCH_DESC));
-
-  for(;;)
-    {
-      struct keyrec *keyrec;
-      int rl;
-
-      maxlen=1024;
-      rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
-
-      if(opt.with_colons)
-	{
-	  if(!header && ascii_strncasecmp("SEARCH ",line,7)==0
-	     && ascii_strncasecmp(" BEGIN",&line[strlen(line)-7],6)==0)
-	    {
-	      header=1;
-	      continue;
-	    }
-	  else if(ascii_strncasecmp("SEARCH ",line,7)==0
-		  && ascii_strncasecmp(" END",&line[strlen(line)-5],4)==0)
-	    continue;
-
-	  printf("%s",line);
-	}
-
-      /* Look for an info: line.  The only current info: values
-	 defined are the version and key count. */
-      if(!started && rl>0 && ascii_strncasecmp("info:",line,5)==0)
-	{
-	  char *tok,*str=&line[5];
-
-	  if((tok=strsep(&str,":"))!=NULL)
-	    {
-	      int version;
-
-	      if(sscanf(tok,"%d",&version)!=1)
-		version=1;
-
-	      if(version!=1)
-		{
-		  log_error(_("invalid keyserver protocol "
-			      "(us %d!=handler %d)\n"),1,version);
-		  break;
-		}
-	    }
-
-	  if((tok=strsep(&str,":"))!=NULL && sscanf(tok,"%d",&count)==1)
-	    {
-	      if(count==0)
-		goto notfound;
-	      else if(count<0)
-		count=10;
-	      else
-		validcount=1;
-
-	      desc=xrealloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
-	    }
-
-	  started=1;
-	  continue;
-	}
-
-      if(rl==0)
-	{
-	  keyrec=parse_keyrec(NULL);
-
-	  if(keyrec==NULL)
-	    {
-	      if(i==0)
-		{
-		  count=0;
-		  break;
-		}
-
-	      if(i!=count)
-		validcount=0;
-
-              if (opt.with_colons && opt.batch)
-                break;
-                
-	      for(;;)
-		{
-		  if (show_prompt (ctrl, desc, i, validcount?count:0, localstr))
-		    break;
-		  validcount=0;
-		}
-
-	      break;
-	    }
-	}
-      else
-	keyrec=parse_keyrec(line);
-
-      if(i==count)
-	{
-	  /* keyserver helper sent more keys than they claimed in the
-	     info: line. */
-	  count+=10;
-	  desc=xrealloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
-	  validcount=0;
-	}
-
-      if(keyrec)
-	{
-	  desc[i]=keyrec->desc;
-
-	  if(!opt.with_colons)
-	    {
-	      /* screen_lines - 1 for the prompt. */
-	      if(numlines+keyrec->lines>opt.screen_lines-1)
-		{
-		  if (show_prompt (ctrl, desc, i, validcount?count:0, localstr))
-		    break;
-		  else
-		    numlines=0;
-		}
-
-	      print_keyrec(i+1,keyrec);
-	    }
-
-	  numlines+=keyrec->lines;
-	  iobuf_close(keyrec->uidbuf);
-	  xfree(keyrec);
-
-	  started=1;
-	  i++;
-	}
-    }
-
- notfound:
-  /* Leave this commented out or now, and perhaps for a very long
-     time.  All HKPish servers return HTML error messages for
-     no-key-found. */
-  /* 
-     if(!started)
-     log_info(_("keyserver does not support searching\n"));
-     else
-  */
-  if(count==0)
-    {
-      if(localstr)
-	log_info(_("key \"%s\" not found on keyserver\n"),localstr);
-      else
-	log_info(_("key not found on keyserver\n"));
-    }
-
-  xfree(localstr);
-  xfree(desc);
-  xfree(line);
-}
 
 /* We sometimes want to use a different gpgkeys_xxx for a given
    protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
@@ -978,7 +1024,7 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
-static int 
+static int
 keyserver_spawn (ctrl_t ctrl,
                  enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
                  int count,int *prog,unsigned char **fpr,size_t *fpr_len,
@@ -1019,7 +1065,7 @@ keyserver_spawn (ctrl_t ctrl,
      the program of this process lives.  Fortunately Windows provides
      a way to retrieve this and our gnupg_libexecdir function has been
      modified to return just this.  Setting the exec-path is not
-     anymore required.  
+     anymore required.
        set_exec_path(libexecdir);
  */
 #else
@@ -1049,7 +1095,7 @@ keyserver_spawn (ctrl_t ctrl,
      fetcher that can speak that protocol (this is a problem for
      LDAP). */
 
-  strcat(command,GPGKEYS_PREFIX); 
+  strcat(command,GPGKEYS_PREFIX);
   strcat(command,scheme);
 
   /* This "_uri" thing is in case we need to call a direct handler
@@ -1079,7 +1125,7 @@ keyserver_spawn (ctrl_t ctrl,
 	{
 	  command=xrealloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_NOKEEP)+1);
-	  strcat(command,KEYSERVER_ARGS_NOKEEP);  
+	  strcat(command,KEYSERVER_ARGS_NOKEEP);
 	}
 
       ret=exec_write(&spawn,NULL,command,NULL,0,0);
@@ -1497,7 +1543,7 @@ keyserver_spawn (ctrl_t ctrl,
 	     gpg complain about "no valid OpenPGP data found".  One
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
-          
+
           /* FIXME: Pass CTRL.  */
 	  import_keys_stream (NULL, spawn->fromchild,stats_handle,fpr,fpr_len,
 			      opt.keyserver_options.import_options);
@@ -1513,7 +1559,7 @@ keyserver_spawn (ctrl_t ctrl,
 	break;
 
       case KS_SEARCH:
-	keyserver_search_prompt (ctrl, spawn->fromchild,searchstr);
+	//keyserver_search_prompt (ctrl, spawn->fromchild,searchstr);
 	break;
 
       default:
@@ -1532,7 +1578,9 @@ keyserver_spawn (ctrl_t ctrl,
 }
 
 
-static int 
+
+
+static int
 keyserver_work (ctrl_t ctrl,
                 enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
                 int count,unsigned char **fpr,size_t *fpr_len,
@@ -1596,7 +1644,11 @@ keyserver_work (ctrl_t ctrl,
   return 0;
 }
 
-int 
+
+
+
+
+int
 keyserver_export (ctrl_t ctrl, strlist_t users)
 {
   gpg_error_t err;
@@ -1629,7 +1681,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
   return rc;
 }
 
-int 
+int
 keyserver_import (ctrl_t ctrl, strlist_t users)
 {
   gpg_error_t err;
@@ -1661,8 +1713,7 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
     }
 
   if(count>0)
-    rc=keyserver_work (ctrl, KS_GET, NULL, desc, count,
-                       NULL, NULL, opt.keyserver);
+    rc=keyserver_get (ctrl, desc, count, NULL);
 
   xfree(desc);
 
@@ -1688,10 +1739,10 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 
   /* TODO: Warn here if the fingerprint we got doesn't match the one
      we asked for? */
-  return keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, keyserver);
+  return keyserver_get (ctrl, &desc, 1, keyserver);
 }
 
-int 
+int
 keyserver_import_keyid (ctrl_t ctrl,
                         u32 *keyid,struct keyserver_spec *keyserver)
 {
@@ -1703,11 +1754,11 @@ keyserver_import_keyid (ctrl_t ctrl,
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work (ctrl, KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
+  return keyserver_get (ctrl, &desc,1, keyserver);
 }
 
 /* code mostly stolen from do_export_stream */
-static int 
+static int
 keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
   int rc=0,ndesc,num=100;
@@ -1730,13 +1781,13 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
     }
   else
     {
-      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++)
 	;
       desc = xmalloc ( ndesc * sizeof *desc);
-        
+
       for (ndesc=0, sl=users; sl; sl = sl->next)
 	{
-          gpg_error_t err; 
+          gpg_error_t err;
 	  if (!(err = classify_user_id (sl->d, desc+ndesc)))
 	    ndesc++;
 	  else
@@ -1747,7 +1798,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   while (!(rc = keydb_search (kdbhd, desc, ndesc)))
     {
-      if (!users) 
+      if (!users)
 	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       /* read the keyblock */
@@ -1850,7 +1901,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   if(rc==-1)
     rc=0;
-  
+
  leave:
   if(rc)
     xfree(*klist);
@@ -1907,9 +1958,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	      /* We use the keyserver structure we parsed out before.
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
-
-	      rc = keyserver_work (ctrl, KS_GET, NULL, &desc[i], 1,
-                                   NULL, NULL, keyserver);
+	      rc = keyserver_get (ctrl, &desc[i], 1, keyserver);
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
@@ -1939,8 +1988,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work (ctrl, KS_GET, NULL, desc, numdesc,
-                         NULL, NULL, opt.keyserver);
+      rc=keyserver_get (ctrl, desc, numdesc, NULL);
     }
 
   xfree(desc);
@@ -1955,16 +2003,18 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
   return rc;
 }
 
+
 /* Search for keys on the keyservers.  The patterns are given in the
    string list TOKENS.  */
 gpg_error_t
 keyserver_search (ctrl_t ctrl, strlist_t tokens)
 {
   gpg_error_t err;
-  int rc=0,ret=0;
   char *searchstr;
+  struct search_line_handler_parm_s parm;
 
-  /* FIXME:  WORK IN PROGRESS */
+  memset (&parm, 0, sizeof parm);
+
   if (!tokens)
     return 0;  /* Return success if no patterns are given.  */
 
@@ -1973,31 +2023,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
       log_error (_("no keyserver known (use option --keyserver)\n"));
       return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
-
-      /* switch(ret) */
-      /*   { */
-      /*   case KEYSERVER_SCHEME_NOT_FOUND: */
-      /*     log_error(_("no handler for keyserver scheme `%s'\n"), */
-      /*   	    opt.keyserver->scheme); */
-      /*     break; */
-
-      /*   case KEYSERVER_NOT_SUPPORTED: */
-      /*     log_error(_("action `%s' not supported with keyserver " */
-      /*   	      "scheme `%s'\n"), "search", opt.keyserver->scheme); */
-      /*     break; */
-
-      /*   case KEYSERVER_TIMEOUT: */
-      /*     log_error(_("keyserver timed out\n")); */
-      /*     break; */
-
-      /*   case KEYSERVER_INTERNAL_ERROR: */
-      /*   default: */
-      /*     log_error(_("keyserver internal error\n")); */
-      /*     break; */
-      /*   } */
-
-      /* return gpg_error (GPG_ERR_KEYSERVER); */
-
 
   /* Write global options */
 
@@ -2009,8 +2034,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
   /* for(temp=keyserver->options;temp;temp=temp->next) */
   /*   fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
 
-  /* Which keys do we want?  Remember that the gpgkeys_ program
-     is going to lump these together into a search string. */
   {
     membuf_t mb;
     strlist_t item;
@@ -2027,26 +2050,224 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
     if (!searchstr)
       {
         err = gpg_error_from_syserror ();
+        goto leave;
       }
   }
-  log_info (_("searching for \"%s\" from %s\n"), searchstr, keyserver->uri);
+  /* FIXME: Enable the next line */
+  /* log_info (_("searching for \"%s\" from %s\n"), searchstr, keyserver->uri); */
 
-  {
-    estream_t fp;
-    err = gpg_dirmngr_ks_search (ctrl, searchstr, &fp);
-    
-    keyserver_search_prompt (ctrl, fp,searchstr);
-  }
+  parm.ctrl = ctrl;
+  if (searchstr)
+    parm.searchstr_disp = utf8_to_native (searchstr, strlen (searchstr), 0);
+
+  err = gpg_dirmngr_ks_search (ctrl, searchstr, search_line_handler, &parm);
+
+  if (parm.not_found)
+    {
+      if (parm.searchstr_disp)
+        log_info (_("key \"%s\" not found on keyserver\n"),
+                  parm.searchstr_disp);
+      else
+        log_info (_("key not found on keyserver\n"));
+    }
+
+  if (gpg_err_code (err) == GPG_ERR_NO_KEYSERVER)
+    log_error (_("no keyserver known (use option --keyserver)\n"));
+  else if (err)
+    log_error ("error searching keyserver: %s\n", gpg_strerror (err));
+
+  /* switch(ret) */
+  /*   { */
+  /*   case KEYSERVER_SCHEME_NOT_FOUND: */
+  /*     log_error(_("no handler for keyserver scheme `%s'\n"), */
+  /*   	    opt.keyserver->scheme); */
+  /*     break; */
+
+  /*   case KEYSERVER_NOT_SUPPORTED: */
+  /*     log_error(_("action `%s' not supported with keyserver " */
+  /*   	      "scheme `%s'\n"), "search", opt.keyserver->scheme); */
+  /*     break; */
+
+  /*   case KEYSERVER_TIMEOUT: */
+  /*     log_error(_("keyserver timed out\n")); */
+  /*     break; */
+
+  /*   case KEYSERVER_INTERNAL_ERROR: */
+  /*   default: */
+  /*     log_error(_("keyserver internal error\n")); */
+  /*     break; */
+  /*   } */
+
+  /* return gpg_error (GPG_ERR_KEYSERVER); */
+
 
  leave:
-  xfree(line);
+  xfree (parm.desc);
+  xfree (parm.searchstr_disp);
   xfree(searchstr);
 
-
-  *prog=exec_finish(spawn);
-
-  return ret;
+  return err;
 }
+
+
+
+/* Called using:
+
+show_prompt:
+import:
+import_foo:
+refresh:
+    rc=keyserver_work (ctrl, KS_GET, NULL, desc, count,
+                       NULL, NULL, opt.keyserver);
+
+
+fetch:
+	  rc = keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, spec);
+	  if(rc)
+	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
+		     sl->d,g10_errstr(rc));
+
+
+export:
+      rc = keyserver_work (ctrl, KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
+
+
+
+import_name:
+  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
+                       0, fpr, fpr_len, keyserver);
+
+import_ldap:
+  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
+                       0, fpr, fpr_len, keyserver);
+
+ */
+
+static gpg_error_t
+keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
+               struct keyserver_spec *keyserver)
+
+{
+  gpg_error_t err = 0;
+  char **pattern;
+  int idx, npat;
+  estream_t datastream;
+
+  /* Create an array filled with a search pattern for each key.  The
+     array is delimited by a NULL entry.  */
+  pattern = xtrycalloc (ndesc+1, sizeof *pattern);
+  if (!pattern)
+    return gpg_error_from_syserror ();
+  for (npat=idx=0; idx < ndesc; idx++)
+    {
+      int quiet = 0;
+
+      if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
+          || desc[idx].mode == KEYDB_SEARCH_MODE_FPR16)
+        {
+          pattern[npat] = xtrymalloc (2+2*20+1);
+          if (!pattern[npat])
+            err = gpg_error_from_syserror ();
+          else
+            {
+              strcpy (pattern[npat], "0x");
+              bin2hex (desc[idx].u.fpr,
+                       desc[idx].mode == KEYDB_SEARCH_MODE_FPR20? 20 : 16,
+                       pattern[npat]+2);
+              npat++;
+            }
+        }
+      else if(desc[idx].mode == KEYDB_SEARCH_MODE_LONG_KID)
+        {
+          pattern[npat] = xtryasprintf ("0x%08lX%08lX",
+                                        (ulong)desc[idx].u.kid[0],
+                                        (ulong)desc[idx].u.kid[1]);
+          if (!pattern[npat])
+            err = gpg_error_from_syserror ();
+          else
+            npat++;
+        }
+      else if(desc[idx].mode == KEYDB_SEARCH_MODE_SHORT_KID)
+        {
+          pattern[npat] = xtryasprintf ("0x%08lX", (ulong)desc[idx].u.kid[1]);
+          if (!pattern[npat])
+            err = gpg_error_from_syserror ();
+          else
+            npat++;
+        }
+      else if(desc[idx].mode == KEYDB_SEARCH_MODE_EXACT)
+        {
+          /* FIXME: We don't need this.  It is used as a dummy by
+             keyserver_fetch which passes an entire URL.  Better use a
+             separate function here. */
+          pattern[npat] = xtrystrdup ("0x0000000000000000");
+          if (!pattern[npat])
+            err = gpg_error_from_syserror ();
+          else
+            {
+              npat++;
+              quiet = 1;
+            }
+        }
+      else if (desc[idx].mode == KEYDB_SEARCH_MODE_NONE)
+        continue;
+      else
+        BUG();
+
+      if (err)
+        {
+          for (idx=0; idx < npat; idx++)
+            xfree (pattern[idx]);
+          xfree (pattern);
+          return err;
+        }
+
+      if (!quiet && keyserver)
+        {
+          if (keyserver->host)
+            log_info (_("requesting key %s from %s server %s\n"),
+                      keystr_from_desc (&desc[idx]),
+                      keyserver->scheme, keyserver->host);
+          else
+            log_info (_("requesting key %s from %s\n"),
+                      keystr_from_desc (&desc[idx]), keyserver->uri);
+        }
+    }
+
+
+  err = gpg_dirmngr_ks_get (ctrl, pattern, &datastream);
+  for (idx=0; idx < npat; idx++)
+    xfree (pattern[idx]);
+  xfree (pattern);
+  if (!err)
+    {
+      void *stats_handle;
+
+      stats_handle = import_new_stats_handle();
+
+      /* FIXME: Check whether this comment should be moved to dirmngr.
+
+         Slurp up all the key data.  In the future, it might be nice
+         to look for KEY foo OUTOFBAND and FAILED indicators.  It's
+         harmless to ignore them, but ignoring them does make gpg
+         complain about "no valid OpenPGP data found".  One way to do
+         this could be to continue parsing this line-by-line and make
+         a temp iobuf for each key. */
+
+      import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
+                             opt.keyserver_options.import_options);
+
+      import_print_stats (stats_handle);
+      import_release_stats_handle (stats_handle);
+    }
+  es_fclose (datastream);
+
+
+  return err;
+}
+
+
+
 
 
 int
@@ -2075,7 +2296,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 	{
 	  int rc;
 
-	  rc = keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, spec);
+	  rc = keyserver_get (ctrl, &desc, 1, spec);
 	  if(rc)
 	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
 		     sl->d,g10_errstr(rc));
@@ -2275,7 +2496,7 @@ keyserver_import_ldap (ctrl_t ctrl,
 	  snprintf(port,7,":%u",srvlist[i].port);
 	  strcat(keyserver->host,port);
 	}
-	
+
       strcat(keyserver->host," ");
     }
 
@@ -2291,7 +2512,7 @@ keyserver_import_ldap (ctrl_t ctrl,
   strcat(keyserver->host,domain);
 
   append_to_strlist(&list,name);
-    
+
   rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
                        0, fpr, fpr_len, keyserver);
 

@@ -35,7 +35,7 @@ endif
 if BUILD_GPG
 gpg = g10
 if !HAVE_W32CE_SYSTEM
-keyserver = keyserver
+keyserver = 
 endif
 else
 gpg =
