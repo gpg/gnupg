@@ -1019,7 +1019,7 @@ main (int argc, char **argv)
          start of the dirmngr.  */
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
-      printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
+      es_printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
 #else
       pid = pth_fork ();
       if (pid == (pid_t)-1) 
@@ -1051,11 +1051,11 @@ main (int argc, char **argv)
           if (csh_style)
             {
               *strchr (infostr, '=') = ' ';
-              printf ( "setenv %s\n", infostr);
+              es_printf ( "setenv %s\n", infostr);
             }
           else
             {
-              printf ( "%s; export DIRMNGR_INFO;\n", infostr);
+              es_printf ( "%s; export DIRMNGR_INFO;\n", infostr);
             }
           free (infostr);
           exit (0); 
@@ -1220,15 +1220,15 @@ main (int argc, char **argv)
                                              "dirmngr.conf", NULL );
 
       filename = percent_escape (opt.config_filename, NULL);
-      printf ("gpgconf-dirmngr.conf:%lu:\"%s\n",
+      es_printf ("gpgconf-dirmngr.conf:%lu:\"%s\n",
               GC_OPT_FLAG_DEFAULT, filename);
       xfree (filename);
 
-      printf ("verbose:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("quiet:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("debug-level:%lu:\"none\n", flags | GC_OPT_FLAG_DEFAULT);
-      printf ("log-file:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("force:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("verbose:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("quiet:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("debug-level:%lu:\"none\n", flags | GC_OPT_FLAG_DEFAULT);
+      es_printf ("log-file:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("force:%lu:\n", flags | GC_OPT_FLAG_NONE);
 
       /* --csh and --sh are mutually exclusive, something we can not
          express in GPG Conf.  --options is only usable from the
@@ -1241,34 +1241,34 @@ main (int argc, char **argv)
                                 "ldapservers.conf":"dirmngr_ldapservers.conf",
                                 NULL);
       filename_esc = percent_escape (filename, NULL);
-      printf ("ldapserverlist-file:%lu:\"%s\n", flags | GC_OPT_FLAG_DEFAULT,
+      es_printf ("ldapserverlist-file:%lu:\"%s\n", flags | GC_OPT_FLAG_DEFAULT,
 	      filename_esc);
       xfree (filename_esc);
       xfree (filename);
 
-      printf ("ldaptimeout:%lu:%u\n",
+      es_printf ("ldaptimeout:%lu:%u\n",
               flags | GC_OPT_FLAG_DEFAULT, DEFAULT_LDAP_TIMEOUT);
-      printf ("max-replies:%lu:%u\n",
+      es_printf ("max-replies:%lu:%u\n",
               flags | GC_OPT_FLAG_DEFAULT, DEFAULT_MAX_REPLIES);
-      printf ("allow-ocsp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ocsp-responder:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ocsp-signer:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("allow-ocsp:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ocsp-responder:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ocsp-signer:%lu:\n", flags | GC_OPT_FLAG_NONE);
 
-      printf ("faked-system-time:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("no-greeting:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("faked-system-time:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("no-greeting:%lu:\n", flags | GC_OPT_FLAG_NONE);
 
-      printf ("disable-http:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("disable-ldap:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("honor-http-proxy:%lu\n", flags | GC_OPT_FLAG_NONE);
-      printf ("http-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("only-ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ignore-ldap-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ignore-http-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      printf ("ignore-ocsp-service-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("disable-http:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("disable-ldap:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("honor-http-proxy:%lu\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("http-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("only-ldap-proxy:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ignore-ldap-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ignore-http-dp:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ignore-ocsp-service-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
       /* Note: The next one is to fix a typo in gpgconf - should be
          removed eventually. */
-      printf ("ignore-ocsp-servic-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("ignore-ocsp-servic-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
     }
   cleanup ();
   return !!rc;
