@@ -139,8 +139,9 @@ read_one_trustfile (const char *fname, int allow_include,
   while (es_fgets (line, DIM(line)-1, fp))
     {
       lnr++;
-      
-      if (!*line || line[strlen(line)-1] != '\n')
+
+      n = strlen (line);
+      if (!n || line[n-1] != '\n')
         {
           /* Eat until end of line. */
           while ( (c=es_getc (fp)) != EOF && c != '\n')
@@ -151,7 +152,9 @@ read_one_trustfile (const char *fname, int allow_include,
                      fname, lnr, gpg_strerror (err));
           continue;
         }
-      line[strlen(line)-1] = 0; /* Chop the LF. */
+      line[--n] = 0; /* Chop the LF. */
+      if (n && line[n-1] == '\r')
+        line[--n] = 0; /* Chop an optional CR. */
       
       /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
