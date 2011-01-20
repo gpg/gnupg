@@ -105,6 +105,16 @@ struct srventry
 #endif/*!USE_DNS_SRV*/
 
 
+#ifdef HAVE_PTH
+# define my_select(a,b,c,d,e)  pth_select ((a), (b), (c), (d), (e))
+# define my_connect(a,b,c)     pth_connect ((a), (b), (c))
+# define my_accept(a,b,c)      pth_accept ((a), (b), (c))
+#else
+# define my_select(a,b,c,d,e)  select ((a), (b), (c), (d), (e))
+# define my_connect(a,b,c)     connect ((a), (b), (c))
+# define my_accept(a,b,c)      accept ((a), (b), (c))
+#endif
+
 #ifdef HAVE_W32_SYSTEM
 #define sock_close(a)  closesocket(a)
 #else
@@ -1421,14 +1431,14 @@ start_server ()
       FD_ZERO (&rfds);
       FD_SET (fd, &rfds);
 
-      if (select (fd + 1, &rfds, NULL, NULL, NULL) <= 0)
+      if (my_select (fd + 1, &rfds, NULL, NULL, NULL) <= 0)
 	continue;		/* ignore any errors */
 
       if (!FD_ISSET (fd, &rfds))
 	continue;
 
       addrlen = sizeof peer;
-      client = accept (fd, (struct sockaddr *) &peer, &addrlen);
+      client = my_accept (fd, (struct sockaddr *) &peer, &addrlen);
       if (client == -1)
 	continue;		/* oops */
 
@@ -1498,7 +1508,7 @@ connect_server (const char *server, unsigned short port,
       addr.sin_port = htons(port);
       memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));      
 
-      if (!connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
+      if (!my_connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
 	return sock;
       sock_close(sock);
       return -1;
@@ -1566,7 +1576,7 @@ connect_server (const char *server, unsigned short port,
               return -1;
             }
           
-          if (connect (sock, ai->ai_addr, ai->ai_addrlen))
+          if (my_connect (sock, ai->ai_addr, ai->ai_addrlen))
             last_errno = errno;
           else
             connected = 1;
@@ -1620,7 +1630,7 @@ connect_server (const char *server, unsigned short port,
       for (i = 0; host->h_addr_list[i] && !connected; i++)
         {
           memcpy (&addr.sin_addr, host->h_addr_list[i], host->h_length);
-          if (connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
+          if (my_connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
             last_errno = errno;
           else
             {
@@ -1660,7 +1670,6 @@ write_server (int sock, const char *data, size_t length)
   int nleft;
   int nwritten;
 
-  /* FIXME: We would better use pth I/O functions.  */
   nleft = length;
   while (nleft > 0)
     {
@@ -1687,7 +1696,7 @@ write_server (int sock, const char *data, size_t length)
 
 	      tv.tv_sec = 0;
 	      tv.tv_usec = 50000;
-	      select (0, NULL, NULL, NULL, &tv);
+	      my_select (0, NULL, NULL, NULL, &tv);
 	      continue;
 	    }
 	  log_info ("network write failed: %s\n", strerror (errno));
@@ -1733,7 +1742,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
               
               tv.tv_sec = 0;
               tv.tv_usec = 50000;
-              select (0, NULL, NULL, NULL, &tv);
+              my_select (0, NULL, NULL, NULL, &tv);
               goto again;
             }
           if (nread == GNUTLS_E_REHANDSHAKE)
@@ -1795,7 +1804,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
                   
                   tv.tv_sec = 0;
                   tv.tv_usec = 50000;
-                  select (0, NULL, NULL, NULL, &tv);
+                  my_select (0, NULL, NULL, NULL, &tv);
                   continue;
                 }
               log_info ("TLS network write failed: %s\n",

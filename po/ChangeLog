@@ -1,3 +1,7 @@
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	* de.po: Fix two fuzzies.
+
 2010-10-21  Werner Koch  <wk@g10code.com>
 
 	* POTFILES.in: Add files in dirmngr/.

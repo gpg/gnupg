@@ -17,6 +17,9 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
  * Fixed TTY management for pinentries and session variable update
    problem.
 
+ * Dirmngr has taken over the function of the keyserver helpers.  Thus
+   we now have a specified direct interface to keyservers via Dirmngr.
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------
