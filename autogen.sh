@@ -104,7 +104,8 @@ if [ "$myhost" = "w32" ]; then
           [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
           extraoptions="--enable-dirmngr-auto-start --disable-scdaemon "
-          extraoptions="$extraoptions --disable-zip $w32ce_extraoptions"
+          extraoptions="$extraoptions --disable-zip --enable-gpg2-is-gpg"
+          extraoptions="$extraoptions $w32ce_extraoptions"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"

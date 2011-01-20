@@ -528,7 +528,7 @@ gnupg_module_name (int which)
       X(bindir, "gpgsm");
 
     case GNUPG_MODULE_NAME_GPG:
-      X(bindir, "gpg2");
+      X(bindir, NAME_OF_INSTALLED_GPG);
 
     case GNUPG_MODULE_NAME_CONNECT_AGENT:
       X(bindir, "gpg-connect-agent");

@@ -1,3 +1,7 @@
+2011-01-19  Werner Koch  <wk@g10code.com>
+
+	* trustlist.c (read_one_trustfile): Also chop an CR.
+
 2010-12-02  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (CHECK_OWN_SOCKET_INTERVAL) [W32CE]: Set to 60

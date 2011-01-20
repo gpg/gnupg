@@ -9,13 +9,16 @@
 	(insert_escapes): Implement using escape_data.
 	(http_escape_data): New.
 
+2011-01-19  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (gnupg_module_name): Use NAME_OF_INSTALLED_GPG instead
+	of "gpg2".
+
 2011-01-18  Werner Koch  <wk@g10code.com>
 
 	* iobuf.c (file_es_filter_ctx_t): New.
 	(file_es_filter): New.
 	(iobuf_esopen): New.
-
-	* estream.c (es_func_mem_write): Fix computation of NEWSIZE.
 
 	* membuf.c (clear_membuf, peek_membuf): New.
 
@@ -28,6 +31,8 @@
 	(_http_parse_uri): Do proper error management.
 	* http.h (parsed_uri_s): Add field IS_HTTP.
 	(http_parse_uri): Support NO_SCHEME_CHECK arg.
+
+	* estream.c (es_func_mem_write): Fix computation of NEWSIZE.
 
 2011-01-10  Werner Koch  <wk@g10code.com>
 

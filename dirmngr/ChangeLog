@@ -11,6 +11,10 @@
 	(cmd_ks_search): New.
 	* Makefile.am (dirmngr_SOURCES): Add new files.
 
+2011-01-19  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (main): Use es_printf for --gpgconf-list.
+
 2010-12-14  Werner Koch  <wk@g10code.com>
 
 	* cdb.h (struct cdb) [W32]: Add field CDB_MAPPING.

@@ -168,6 +168,24 @@ show_gnupg_dirmngr_ldap_pgm="(default)"
 test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
       && show_gnupg_dirmngr_ldap_pgm="$GNUPG_DIRMNGR_LDAP_PGM"
 
+# 
+# On some platforms gpg2 is usually installed as gpg without using a
+# symlink.  For correct operation of gpgconf it needs to know the
+# installed name of gpg.  This option sets "gpg2"'s installed name to
+# just "gpg".  Note that it might be required to rename gpg2 to gpg
+# manually after the build process.
+# 
+AC_ARG_ENABLE(gpg2-is-gpg,
+    AC_HELP_STRING([--enable-gpg2-is-gpg],[Set installed name of gpg2 to gpg]),
+    gpg2_is_gpg=$enableval)
+if test "$gpg2_is_gpg" = "yes"; then
+   name_of_installed_gpg=gpg
+else
+   name_of_installed_gpg=gpg2
+fi
+AC_DEFINE_UNQUOTED(NAME_OF_INSTALLED_GPG, "$name_of_installed_gpg",
+                   [The name of the installed GPG tool])
+
 
 # Some folks want to use only the agent from this packet.  Make it
 # easier for them by providing the configure option
