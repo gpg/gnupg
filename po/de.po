@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2011-01-20 14:32+0100\n"
+"POT-Creation-Date: 2011-01-20 15:15+0100\n"
 "PO-Revision-Date: 2011-01-20 15:10+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -894,12 +894,12 @@ msgstr "Fehler bei Ausführung von `%s': beendet\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
 
-#: common/http.c:1597
+#: common/http.c:1607
 #, c-format
 msgid "error creating socket: %s\n"
 msgstr "Fehler beim Erstellen des Sockets: %s\n"
 
-#: common/http.c:1641
+#: common/http.c:1651
 msgid "host not found"
 msgstr "Host nicht gefunden"
 

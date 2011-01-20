@@ -1683,9 +1683,6 @@ agent/Makefile
 scd/Makefile
 g13/Makefile
 dirmngr/Makefile
-keyserver/Makefile
-keyserver/gpg2keys_mailto
-keyserver/gpg2keys_test
 tools/gpg-zip
 tools/Makefile
 doc/Makefile
@@ -1693,6 +1690,11 @@ tests/Makefile
 tests/openpgp/Makefile
 tests/pkits/Makefile
 ])
+#keyserver/Makefile
+#keyserver/gpg2keys_mailto
+#keyserver/gpg2keys_test
+
+
 AC_OUTPUT
 
 
