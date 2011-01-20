@@ -1,6 +1,10 @@
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	* estream.c (es_func_mem_write): Fix computation of NEWSIZE.
+
 2011-01-11  Werner Koch  <wk@g10code.com>
 
-        Estream changes as used gnupg master from 2010-07-19.
+        Estream changes as used by gnupg master from 2010-07-19.
 
 	* estream.c (es_fname_get, es_fname_set): New.
 	(fname_set_internal): New.

@@ -497,7 +497,7 @@ typedef struct estream_cookie_mem
 
 
 /* Create function for memory objects.  DATA is either NULL or a user
-   supplied buffer with the initial conetnt of the memory buffer.  If
+   supplied buffer with the initial content of the memory buffer.  If
    DATA is NULL, DATA_N and DATA_LEN need to be 0 as well.  If DATA is
    not NULL, DATA_N gives the allocated size of DATA and DATA_LEN the
    used length in DATA.  */
@@ -596,7 +596,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       if (!mem_cookie->memory_size)
         newsize = size;  /* Not yet allocated.  */
       else
-        newsize = mem_cookie->memory_size + (nleft - size);
+        newsize = mem_cookie->memory_size + (size - nleft);
       if (newsize < mem_cookie->offset)
         {
           _set_errno (EINVAL);
