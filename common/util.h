@@ -150,6 +150,7 @@ struct b64state
   u32 crc;
   int stop_seen:1;
   int invalid_encoding:1;
+  gpg_error_t lasterr;
 };
 
 gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);

@@ -1,12 +1,11 @@
-2011-01-18  Werner Koch  <wk@g10code.com>
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c: Rewrite most stuff for use with dirmngr.  Get rid
+	of all spawn code.  Work work pending.
+
+	* export.c (export_pubkeys_buffer): New.
 
 	* import.c (import_keys_es_stream): New.
-
-2011-01-14  Werner Koch  <wk@g10code.com>
-
-	* keyserver.c (parse_keyrec): Use trim_trailing_ws.
-
-2011-01-07  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c, call-dirmngr.h: New.
 	* gpg.h (server_control_s): Add DIRMNGR_LOCAL.
@@ -11671,7 +11670,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998,1999,2000,2001,2002,2003,2004,2005,
-	   2006,2007,2008,2009,2010 Free Software Foundation, Inc.
+	   2006,2007,2008,2009,2010,2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

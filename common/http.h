@@ -117,6 +117,7 @@ unsigned int http_get_status_code (http_t hd);
 const char *http_get_header (http_t hd, const char *name);
 
 char *http_escape_string (const char *string, const char *specials);
+char *http_escape_data (const void *data, size_t datalen, const char *specials);
 
 
 #endif /*GNUPG_COMMON_HTTP_H*/

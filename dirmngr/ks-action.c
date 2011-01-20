@@ -90,7 +90,7 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
 }
 
 
-/* Get the requested keys (macthing PATTERNS) using all configured
+/* Get the requested keys (matching PATTERNS) using all configured
    keyservers and write the result to the provided output stream.  */
 gpg_error_t
 ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
@@ -141,6 +141,39 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
         }
     }
 
+  if (!any)
+    err = gpg_error (GPG_ERR_NO_KEYSERVER);
+  else if (!err && first_err)
+    err = first_err; /* fixme: Do we really want to do that?  */
+  return err;
+}
+
+
+
+/* Send an OpenPGP key to all keyservers.  The key in {DATA,DATALEN}
+   is expected in OpenPGP binary transport format.  */
+gpg_error_t
+ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
+{
+  gpg_error_t err = 0;
+  gpg_error_t first_err = 0;
+  int any = 0;
+  uri_item_t uri;
+
+  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+    {
+      if (uri->parsed_uri->is_http)
+        {
+          any = 1;
+          err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
+          if (err)
+            {
+              first_err = err;
+              err = 0;
+            }
+        }
+    }
+  
   if (!any)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   else if (!err && first_err)

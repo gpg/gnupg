@@ -59,6 +59,16 @@ struct ks_get_parm_s
 };
 
 
+/* Parameter structure used with the KS_PUT command.  */
+struct ks_put_parm_s
+{
+  assuan_context_t ctx;
+  kbnode_t keyblock;  /* The optional keyblock.  */
+  const void *data;   /* The key in OpenPGP binary format.  */
+  size_t datalen;     /* The length of DATA.  */
+};
+
+
 /* Data used to associate an session with dirmngr contexts.  We can't
    use a simple one to one mapping because we sometimes need two
    connection s to the dirmngr; for example while doing a listing and
@@ -433,6 +443,169 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
  leave:
   es_fclose (parm.memfp);
   xfree (line);
+  close_context (ctrl, ctx);
+  return err;
+}
+
+
+
+/* Handle the KS_PUT inquiries. */
+static gpg_error_t
+ks_put_inq_cb (void *opaque, const char *line)
+{
+  struct ks_put_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+
+  if (!strncmp (line, "KEYBLOCK", 8) && (line[8] == ' ' || !line[8]))
+    {
+      if (parm->data)
+        err = assuan_send_data (parm->ctx, parm->data, parm->datalen);
+    }
+  else if (!strncmp (line, "KEYBLOCK_INFO", 13) && (line[13]==' ' || !line[13]))
+    {
+      kbnode_t node;
+      estream_t fp;
+
+      /* Parse the keyblock and send info lines back to the server.  */
+      fp = es_fopenmem (0, "rw");
+      if (!fp)
+        err = gpg_error_from_syserror ();
+
+      for (node = parm->keyblock; !err && node; node=node->next)
+        {
+          switch(node->pkt->pkttype)
+            {
+            case PKT_PUBLIC_KEY:
+            case PKT_PUBLIC_SUBKEY:
+              {
+                PKT_public_key *pk = node->pkt->pkt.public_key;
+                
+                keyid_from_pk (pk, NULL);
+                
+                es_fprintf (fp, "%s:%08lX%08lX:%u:%u:%u:%u:%s%s:\n",
+                            node->pkt->pkttype==PKT_PUBLIC_KEY? "pub" : "sub",
+                            (ulong)pk->keyid[0], (ulong)pk->keyid[1],
+                            pk->pubkey_algo,
+                            nbits_from_pk (pk),
+                            pk->timestamp,
+                            pk->expiredate,
+                            pk->flags.revoked? "r":"",
+                            pk->has_expired? "e":"");
+              }
+              break;
+
+            case PKT_USER_ID:
+              {
+                PKT_user_id *uid = node->pkt->pkt.user_id;
+                int r;
+
+                if (!uid->attrib_data)
+                  {
+                    es_fprintf (fp, "uid:");
+                    
+                    /* Quote ':', '%', and any 8-bit characters.  */
+                    for (r=0; r < uid->len; r++)
+                      {
+                        if (uid->name[r] == ':' 
+                            || uid->name[r]== '%'
+                            || (uid->name[r]&0x80))
+                          es_fprintf (fp, "%%%02X", (byte)uid->name[r]);
+                        else
+                          es_putc (uid->name[r], fp);
+                      }
+                    
+                    es_fprintf (fp, ":%u:%u:%s%s:\n",
+                                uid->created,uid->expiredate,
+                                uid->is_revoked? "r":"",
+                                uid->is_expired? "e":"");
+                  }
+              }
+              break;
+
+              /* This bit is really for the benefit of people who
+                 store their keys in LDAP servers.  It makes it easy
+                 to do queries for things like "all keys signed by
+                 Isabella".  */
+            case PKT_SIGNATURE:
+              {
+                PKT_signature *sig = node->pkt->pkt.signature;
+
+                if (IS_UID_SIG (sig))
+                  {
+                    es_fprintf (fp, "sig:%08lX%08lX:%X:%u:%u:\n",
+                                (ulong)sig->keyid[0],(ulong)sig->keyid[1],
+                                sig->sig_class, sig->timestamp,
+                                sig->expiredate);
+                  }
+              }
+              break;
+
+            default:
+              continue;
+            }
+          /* Given that the last operation was an es_fprintf we should
+             get the correct ERRNO if ferror indicates an error.  */
+          if (es_ferror (fp))
+            err = gpg_error_from_syserror ();
+        }
+
+      /* Without an error and if we have an keyblock at all, send the
+         data back.  */
+      if (!err && parm->keyblock)
+        {
+          int rc;
+          char buffer[512];
+          size_t nread;
+
+          es_rewind (fp);
+          while (!(rc=es_read (fp, buffer, sizeof buffer, &nread)) && nread)
+            {
+              err = assuan_send_data (parm->ctx, buffer, nread);
+              if (err)
+                break;
+            }
+          if (!err && rc)
+            err = gpg_error_from_syserror ();
+        }
+      es_fclose (fp);
+    }
+  else
+    return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
+
+  return err; 
+}
+
+
+/* Send a key to the configured server.  {DATA,DATLEN} contains the
+   key in OpenPGP binary transport format.  If KEYBLOCK is not NULL it
+   has the internal representaion of that key; this is for example
+   used to convey meta data to LDAP keyservers.  */
+gpg_error_t
+gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)
+{ 
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct ks_put_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+
+  /* We are going to parse the keyblock, thus we better make sure the
+     all information is readily available.  */
+  if (keyblock)
+    merge_keys_and_selfsig (keyblock);
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  parm.ctx = ctx;
+  parm.keyblock = keyblock;
+  parm.data = data;
+  parm.datalen = datalen;
+
+  err = assuan_transact (ctx, "KS_PUT", NULL, NULL,
+                         ks_put_inq_cb, &parm, NULL, NULL);
+
   close_context (ctrl, ctx);
   return err;
 }

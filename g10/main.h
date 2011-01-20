@@ -287,6 +287,10 @@ int parse_export_options(char *str,unsigned int *options,int noisy);
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options );
 int export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
 			   kbnode_t *keyblock_out, unsigned int options );
+gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
+                                  unsigned int options, 
+                                  kbnode_t *r_keyblock,
+                                  void **r_data, size_t *r_datalen);
 int export_seckeys (ctrl_t ctrl, strlist_t users);
 int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 

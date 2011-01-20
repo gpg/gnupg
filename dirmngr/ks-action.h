@@ -22,6 +22,7 @@
 
 gpg_error_t ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp);
 gpg_error_t ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp);
+gpg_error_t ks_action_put (ctrl_t ctrl, const void *data, size_t datalen);
 
 
 #endif /*DIRMNGR_KS_ACTION_H*/

@@ -38,9 +38,12 @@
 
 
 /* Send an HTTP request.  On success returns an estream object at
-   R_FP.  HOSTPORTSTR is only used for diagnostics. */
+   R_FP.  HOSTPORTSTR is only used for diagnostics.  If POST_CB is not
+   NULL a post request is used and that callback is called to allow
+   writing the post data.  */
 static gpg_error_t
 send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
+              gpg_error_t (*post_cb)(void *, http_t), void *post_cb_value,
               estream_t *r_fp)
 {
   gpg_error_t err;
@@ -51,7 +54,9 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 
   *r_fp = NULL;
  once_more:
-  err = http_open (&http, HTTP_REQ_GET, request,
+  err = http_open (&http,
+                   post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
+                   request,
                    /* fixme: AUTH */ NULL,
                    0,
                    /* fixme: proxy*/ NULL,
@@ -65,9 +70,14 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
          we're good with both HTTP 1.0 and 1.1.  */
       es_fputs ("Pragma: no-cache\r\n"
                 "Cache-Control: no-cache\r\n", fp);
-      http_start_data (http);
-      if (es_ferror (fp))
-        err = gpg_error_from_syserror ();
+      if (post_cb)
+        err = post_cb (post_cb_value, http);
+      if (!err)
+        {
+          http_start_data (http);
+          if (es_ferror (fp))
+            err = gpg_error_from_syserror ();
+        }
     }
   if (err)
     {
@@ -135,19 +145,76 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 
   /* Return the read stream and close the HTTP context.  */
   *r_fp = fp;
-  fp = NULL;
   http_close (http, 1);
   http = NULL;
 
  leave:
-  es_fclose (fp);
   http_close (http, 0);
   xfree (request_buffer);
   return err;
 }
 
 
+static gpg_error_t
+armor_data (char **r_string, const void *data, size_t datalen)
+{
+  gpg_error_t err;
+  struct b64state b64state;
+  estream_t fp;
+  long length;
+  char *buffer;
+  size_t nread;
 
+  *r_string = NULL;
+
+  fp = es_fopenmem (0, "rw");
+  if (!fp)
+    return gpg_error_from_syserror ();
+
+  if ((err=b64enc_start_es (&b64state, fp, "PGP PUBLIC KEY BLOCK"))
+      || (err=b64enc_write (&b64state, data, datalen))
+      || (err = b64enc_finish (&b64state)))
+    {
+      es_fclose (fp);
+      return err;
+    }
+
+  /* FIXME: To avoid the extra buffer allocation estream should
+     provide a function to snatch the internal allocated memory from
+     such a memory stream.  */
+  length = es_ftell (fp);
+  if (length < 0)
+    {
+      err = gpg_error_from_syserror ();
+      es_fclose (fp);
+      return err;
+    }
+
+  buffer = xtrymalloc (length+1);
+  if (!buffer)
+    {
+      err = gpg_error_from_syserror ();
+      es_fclose (fp);
+      return err;
+    }
+  
+  es_rewind (fp);
+  if (es_read (fp, buffer, length, &nread))
+    {
+      err = gpg_error_from_syserror ();
+      es_fclose (fp);
+      return err;
+    }
+  buffer[nread] = 0;
+  es_fclose (fp);
+  
+  *r_string = buffer;
+  return 0;
+}
+
+
+
+
 /* Search the keyserver identified by URI for keys matching PATTERN.
    On success R_FP has an open stream to read the data.  */
 gpg_error_t
@@ -251,7 +318,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   }
   
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, &fp);
+  err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
   if (err)
     goto leave;
 
@@ -368,7 +435,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   }
   
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, &fp);
+  err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
   if (err)
     goto leave;
 
@@ -384,3 +451,108 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 }
 
 
+
+
+/* Callback parameters for put_post_cb.  */
+struct put_post_parm_s
+{
+  char *datastring;
+};
+
+
+/* Helper for ks_hkp_put.  */
+static gpg_error_t
+put_post_cb (void *opaque, http_t http)
+{
+  struct put_post_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  estream_t fp;
+  size_t len;
+
+  fp = http_get_write_ptr (http);
+  len = strlen (parm->datastring);
+
+  es_fprintf (fp,
+              "Content-Type: application/x-www-form-urlencoded\r\n"
+              "Content-Length: %zu\r\n", len+8 /* 8 is for "keytext" */);
+  http_start_data (http);
+  if (es_fputs ("keytext=", fp) || es_write (fp, parm->datastring, len, NULL))
+    err = gpg_error_from_syserror ();
+  return err;
+}
+
+
+/* Send the key in {DATA,DATALEN} to the keyserver identified by  URI.  */
+gpg_error_t
+ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
+{
+  gpg_error_t err;
+  const char *scheme;
+  char portstr[10];
+  char *hostport = NULL;
+  char *request = NULL;
+  estream_t fp = NULL;
+  struct put_post_parm_s parm;
+  char *armored = NULL;
+
+  parm.datastring = NULL;
+
+  /* Map scheme and port.  */
+  if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
+    {
+      scheme = "https";
+      strcpy (portstr, "443");
+    }
+  else /* HKP or HTTP.  */
+    {
+      scheme = "http";
+      strcpy (portstr, "11371");
+    }
+  if (uri->port)
+    snprintf (portstr, sizeof portstr, "%hu", uri->port);
+  else
+    {} /*fixme_do_srv_lookup ()*/
+
+  err = armor_data (&armored, data, datalen);
+  if (err)
+    goto leave;
+
+  parm.datastring = http_escape_string (armored, EXTRA_ESCAPE_CHARS);
+  if (!parm.datastring)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  xfree (armored);
+  armored = NULL;
+
+  /* Build the request string.  */
+  hostport = strconcat (scheme, "://", 
+                        *uri->host? uri->host: "localhost",
+                        ":", portstr, NULL);
+  if (!hostport)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  request = strconcat (hostport, "/pks/add", NULL);
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  
+  /* Send the request.  */
+  err = send_request (ctrl, request, hostport, put_post_cb, &parm, &fp);
+  if (err)
+    goto leave;
+
+ leave:
+  es_fclose (fp);
+  xfree (parm.datastring);
+  xfree (armored);
+  xfree (request);
+  xfree (hostport);
+  return err;
+}

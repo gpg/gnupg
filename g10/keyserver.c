@@ -111,12 +111,10 @@ static struct parse_options keyserver_opts[]=
     {NULL,0,NULL,NULL}
   };
 
-static int keyserver_work (ctrl_t ctrl, enum ks_action action,strlist_t list,
-                           KEYDB_SEARCH_DESC *desc,int count,
-                           unsigned char **fpr,size_t *fpr_len,
-                           struct keyserver_spec *keyserver);
 static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   KEYDB_SEARCH_DESC *desc, int ndesc,
+                                  struct keyserver_spec *keyserver);
+static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
                                   struct keyserver_spec *keyserver);
 
 
@@ -989,664 +987,6 @@ search_line_handler (void *opaque, char *line)
 }
 
 
-/* We sometimes want to use a different gpgkeys_xxx for a given
-   protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
-   these here. */
-static const char *
-keyserver_typemap(const char *type)
-{
-  if(strcmp(type,"ldaps")==0)
-    return "ldap";
-  else if(strcmp(type,"hkps")==0)
-    return "hkp";
-  else
-    return type;
-}
-
-/* The PGP LDAP and the curl fetch-a-LDAP-object methodologies are
-   sufficiently different that we can't use curl to do LDAP. */
-static int
-direct_uri_map(const char *scheme,unsigned int is_direct)
-{
-  if(is_direct && strcmp(scheme,"ldap")==0)
-    return 1;
-
-  return 0;
-}
-
-#if GNUPG_MAJOR_VERSION == 2
-#define GPGKEYS_PREFIX "gpg2keys_"
-#else
-#define GPGKEYS_PREFIX "gpgkeys_"
-#endif
-#define GPGKEYS_CURL GPGKEYS_PREFIX "curl" EXEEXT
-#define GPGKEYS_PREFIX_LEN (strlen(GPGKEYS_CURL))
-#define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
-#define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
-
-static int
-keyserver_spawn (ctrl_t ctrl,
-                 enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-                 int count,int *prog,unsigned char **fpr,size_t *fpr_len,
-                 struct keyserver_spec *keyserver)
-{
-  int ret=0,i,gotversion=0,outofband=0;
-  strlist_t temp;
-  unsigned int maxlen,buflen;
-  char *command,*end,*searchstr=NULL;
-  byte *line=NULL;
-  struct exec_info *spawn;
-  const char *scheme;
-  const char *libexecdir = gnupg_libexecdir ();
-
-  assert(keyserver);
-
-#ifdef EXEC_TEMPFILE_ONLY
-  opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
-#endif
-
-  /* Build the filename for the helper to execute */
-  scheme=keyserver_typemap(keyserver->scheme);
-
-#ifdef DISABLE_KEYSERVER_PATH
-  /* Destroy any path we might have.  This is a little tricky,
-     portability-wise.  It's not correct to delete the PATH
-     environment variable, as that may fall back to a system built-in
-     PATH.  Similarly, it is not correct to set PATH to the null
-     string (PATH="") since this actually deletes the PATH environment
-     variable under MinGW.  The safest thing to do here is to force
-     PATH to be GNUPG_LIBEXECDIR.  All this is not that meaningful on
-     Unix-like systems (since we're going to give a full path to
-     gpgkeys_foo), but on W32 it prevents loading any DLLs from
-     directories in %PATH%.
-
-     After some more thinking about this we came to the conclusion
-     that it is better to load the helpers from the directory where
-     the program of this process lives.  Fortunately Windows provides
-     a way to retrieve this and our gnupg_libexecdir function has been
-     modified to return just this.  Setting the exec-path is not
-     anymore required.
-       set_exec_path(libexecdir);
- */
-#else
-  if(opt.exec_path_set)
-    {
-      /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
-	 undefined, then don't specify a full path to gpgkeys_foo, so
-	 that the PATH can work. */
-      command=xmalloc(GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
-      command[0]='\0';
-    }
-  else
-#endif
-    {
-      /* Specify a full path to gpgkeys_foo. */
-      command=xmalloc(strlen(libexecdir)+strlen(DIRSEP_S)+
-		      GPGKEYS_PREFIX_LEN+strlen(scheme)+3+strlen(EXEEXT)+1);
-      strcpy(command,libexecdir);
-      strcat(command,DIRSEP_S);
-    }
-
-  end=command+strlen(command);
-
-  /* Build a path for the keyserver helper.  If it is direct_uri
-     (i.e. an object fetch and not a keyserver), then add "_uri" to
-     the end to distinguish the keyserver helper from an object
-     fetcher that can speak that protocol (this is a problem for
-     LDAP). */
-
-  strcat(command,GPGKEYS_PREFIX);
-  strcat(command,scheme);
-
-  /* This "_uri" thing is in case we need to call a direct handler
-     instead of the keyserver handler.  This lets us use gpgkeys_curl
-     or gpgkeys_ldap_uri (we don't provide it, but a user might)
-     instead of gpgkeys_ldap to fetch things like
-     ldap://keyserver.pgp.com/o=PGP%20keys?pgpkey?sub?pgpkeyid=99242560 */
-
-  if(direct_uri_map(scheme,keyserver->flags.direct_uri))
-    strcat(command,"_uri");
-
-  strcat(command,EXEEXT);
-
-  /* Can we execute it?  If not, try curl as our catchall. */
-  if(path_access(command,X_OK)!=0)
-    strcpy(end,GPGKEYS_CURL);
-
-  if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
-    {
-      if(opt.keyserver_options.options&KEYSERVER_KEEP_TEMP_FILES)
-	{
-	  command=xrealloc(command,strlen(command)+
-			    strlen(KEYSERVER_ARGS_KEEP)+1);
-	  strcat(command,KEYSERVER_ARGS_KEEP);
-	}
-      else
-	{
-	  command=xrealloc(command,strlen(command)+
-			    strlen(KEYSERVER_ARGS_NOKEEP)+1);
-	  strcat(command,KEYSERVER_ARGS_NOKEEP);
-	}
-
-      ret=exec_write(&spawn,NULL,command,NULL,0,0);
-    }
-  else
-    ret=exec_write(&spawn,command,NULL,NULL,0,0);
-
-  xfree(command);
-
-  if(ret)
-    return ret;
-
-  fprintf(spawn->tochild,
-	  "# This is a GnuPG %s keyserver communications file\n",VERSION);
-  fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
-  fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
-  fprintf(spawn->tochild,"SCHEME %s\n",keyserver->scheme);
-
-  if(keyserver->opaque)
-    fprintf(spawn->tochild,"OPAQUE %s\n",keyserver->opaque);
-  else
-    {
-      if(keyserver->auth)
-	fprintf(spawn->tochild,"AUTH %s\n",keyserver->auth);
-
-      if(keyserver->host)
-	fprintf(spawn->tochild,"HOST %s\n",keyserver->host);
-
-      if(keyserver->port)
-	fprintf(spawn->tochild,"PORT %s\n",keyserver->port);
-
-      if(keyserver->path)
-	fprintf(spawn->tochild,"PATH %s\n",keyserver->path);
-    }
-
-  /* Write global options */
-
-  for(temp=opt.keyserver_options.other;temp;temp=temp->next)
-    fprintf(spawn->tochild,"OPTION %s\n",temp->d);
-
-  /* Write per-keyserver options */
-
-  for(temp=keyserver->options;temp;temp=temp->next)
-    fprintf(spawn->tochild,"OPTION %s\n",temp->d);
-
-  switch(action)
-    {
-    case KS_GET:
-      {
-	fprintf(spawn->tochild,"COMMAND GET\n\n");
-
-	/* Which keys do we want? */
-
-	for(i=0;i<count;i++)
-	  {
-	    int quiet=0;
-
-	    if(desc[i].mode==KEYDB_SEARCH_MODE_FPR20)
-	      {
-		int f;
-
-		fprintf(spawn->tochild,"0x");
-
-		for(f=0;f<MAX_FINGERPRINT_LEN;f++)
-		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
-
-		fprintf(spawn->tochild,"\n");
-	      }
-	    else if(desc[i].mode==KEYDB_SEARCH_MODE_FPR16)
-	      {
-		int f;
-
-		fprintf(spawn->tochild,"0x");
-
-		for(f=0;f<16;f++)
-		  fprintf(spawn->tochild,"%02X",desc[i].u.fpr[f]);
-
-		fprintf(spawn->tochild,"\n");
-	      }
-	    else if(desc[i].mode==KEYDB_SEARCH_MODE_LONG_KID)
-	      fprintf(spawn->tochild,"0x%08lX%08lX\n",
-		      (ulong)desc[i].u.kid[0],
-		      (ulong)desc[i].u.kid[1]);
-	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
-	      fprintf(spawn->tochild,"0x%08lX\n",
-		      (ulong)desc[i].u.kid[1]);
-	    else if(desc[i].mode==KEYDB_SEARCH_MODE_EXACT)
-	      {
-		fprintf(spawn->tochild,"0x0000000000000000\n");
-		quiet=1;
-	      }
-	    else if(desc[i].mode==KEYDB_SEARCH_MODE_NONE)
-	      continue;
-	    else
-	      BUG();
-
-	    if(!quiet)
-	      {
-		if(keyserver->host)
-		  log_info(_("requesting key %s from %s server %s\n"),
-			   keystr_from_desc(&desc[i]),
-			   keyserver->scheme,keyserver->host);
-		else
-		  log_info(_("requesting key %s from %s\n"),
-			   keystr_from_desc(&desc[i]),keyserver->uri);
-	      }
-	  }
-
-	fprintf(spawn->tochild,"\n");
-
-	break;
-      }
-
-    case KS_GETNAME:
-      {
-	strlist_t key;
-
-	fprintf(spawn->tochild,"COMMAND GETNAME\n\n");
-
-	/* Which names do we want? */
-
-	for(key=list;key!=NULL;key=key->next)
-	  fprintf(spawn->tochild,"%s\n",key->d);
-
-	fprintf(spawn->tochild,"\n");
-
-	if(keyserver->host)
-	  log_info(_("searching for names from %s server %s\n"),
-		   keyserver->scheme,keyserver->host);
-	else
-	  log_info(_("searching for names from %s\n"),keyserver->uri);
-
-	break;
-      }
-
-    case KS_SEND:
-      {
-	strlist_t key;
-
-	/* Note the extra \n here to send an empty keylist block */
-	fprintf(spawn->tochild,"COMMAND SEND\n\n\n");
-
-	for(key=list;key!=NULL;key=key->next)
-	  {
-	    armor_filter_context_t *afx;
-	    IOBUF buffer = iobuf_temp ();
-	    KBNODE block;
-
-	    temp=NULL;
-	    add_to_strlist(&temp,key->d);
-
-	    afx = new_armor_context ();
-	    afx->what = 1;
-	    /* Tell the armor filter to use Unix-style \n line
-	       endings, since we're going to fprintf this to a file
-	       that (on Win32) is open in text mode.  The win32 stdio
-	       will transform the \n to \r\n and we'll end up with the
-	       proper line endings on win32.  This is a no-op on
-	       Unix. */
-	    afx->eol[0] = '\n';
-	    push_armor_filter (afx, buffer);
-            release_armor_context (afx);
-
-	    /* TODO: Remove Comment: lines from keys exported this
-	       way? */
-
-	    if(export_pubkeys_stream (ctrl, buffer,temp,&block,
-                                      opt.keyserver_options.export_options)==-1)
-	      iobuf_close(buffer);
-	    else
-	      {
-		KBNODE node;
-
-		iobuf_flush_temp(buffer);
-
-		merge_keys_and_selfsig(block);
-
-		fprintf(spawn->tochild,"INFO %08lX%08lX BEGIN\n",
-			(ulong)block->pkt->pkt.public_key->keyid[0],
-			(ulong)block->pkt->pkt.public_key->keyid[1]);
-
-		for(node=block;node;node=node->next)
-		  {
-		    switch(node->pkt->pkttype)
-		      {
-		      default:
-			continue;
-
-		      case PKT_PUBLIC_KEY:
-		      case PKT_PUBLIC_SUBKEY:
-			{
-			  PKT_public_key *pk=node->pkt->pkt.public_key;
-
-			  keyid_from_pk(pk,NULL);
-
-			  fprintf(spawn->tochild,"%sb:%08lX%08lX:%u:%u:%u:%u:",
-				  node->pkt->pkttype==PKT_PUBLIC_KEY?"pu":"su",
-				  (ulong)pk->keyid[0],(ulong)pk->keyid[1],
-				  pk->pubkey_algo,
-				  nbits_from_pk(pk),
-				  pk->timestamp,
-				  pk->expiredate);
-
-			  if(pk->flags.revoked)
-			    fprintf(spawn->tochild,"r");
-			  if(pk->has_expired)
-			    fprintf(spawn->tochild,"e");
-
-			  fprintf(spawn->tochild,"\n");
-			}
-			break;
-
-		      case PKT_USER_ID:
-			{
-			  PKT_user_id *uid=node->pkt->pkt.user_id;
-			  int r;
-
-			  if(uid->attrib_data)
-			    continue;
-
-			  fprintf(spawn->tochild,"uid:");
-
-			  /* Quote ':', '%', and any 8-bit
-			     characters */
-			  for(r=0;r<uid->len;r++)
-			    {
-			      if(uid->name[r]==':' || uid->name[r]=='%'
-				 || uid->name[r]&0x80)
-				fprintf(spawn->tochild,"%%%02X",
-					(byte)uid->name[r]);
-			      else
-				fprintf(spawn->tochild,"%c",uid->name[r]);
-			    }
-
-			  fprintf(spawn->tochild,":%u:%u:",
-				  uid->created,uid->expiredate);
-
-			  if(uid->is_revoked)
-			    fprintf(spawn->tochild,"r");
-			  if(uid->is_expired)
-			    fprintf(spawn->tochild,"e");
-
-			  fprintf(spawn->tochild,"\n");
-			}
-			break;
-
-			/* This bit is really for the benefit of
-			   people who store their keys in LDAP
-			   servers.  It makes it easy to do queries
-			   for things like "all keys signed by
-			   Isabella". */
-		      case PKT_SIGNATURE:
-			{
-			  PKT_signature *sig=node->pkt->pkt.signature;
-
-			  if(!IS_UID_SIG(sig))
-			    continue;
-
-			  fprintf(spawn->tochild,"sig:%08lX%08lX:%X:%u:%u\n",
-				  (ulong)sig->keyid[0],(ulong)sig->keyid[1],
-				  sig->sig_class,sig->timestamp,
-				  sig->expiredate);
-			}
-			break;
-		      }
-		  }
-
-		fprintf(spawn->tochild,"INFO %08lX%08lX END\n",
-			(ulong)block->pkt->pkt.public_key->keyid[0],
-			(ulong)block->pkt->pkt.public_key->keyid[1]);
-
-		fprintf(spawn->tochild,"KEY %08lX%08lX BEGIN\n",
-			(ulong)block->pkt->pkt.public_key->keyid[0],
-			(ulong)block->pkt->pkt.public_key->keyid[1]);
-		fwrite(iobuf_get_temp_buffer(buffer),
-		       iobuf_get_temp_length(buffer),1,spawn->tochild);
-		fprintf(spawn->tochild,"KEY %08lX%08lX END\n",
-			(ulong)block->pkt->pkt.public_key->keyid[0],
-			(ulong)block->pkt->pkt.public_key->keyid[1]);
-
-		iobuf_close(buffer);
-
-		if(keyserver->host)
-		  log_info(_("sending key %s to %s server %s\n"),
-			   keystr(block->pkt->pkt.public_key->keyid),
-			   keyserver->scheme,keyserver->host);
-		else
-		  log_info(_("sending key %s to %s\n"),
-			   keystr(block->pkt->pkt.public_key->keyid),
-			   keyserver->uri);
-
-		release_kbnode(block);
-	      }
-
-	    free_strlist(temp);
-	  }
-
-	break;
-      }
-
-    case KS_SEARCH:
-      {
-	strlist_t key;
-
-	fprintf(spawn->tochild,"COMMAND SEARCH\n\n");
-
-	/* Which keys do we want?  Remember that the gpgkeys_ program
-           is going to lump these together into a search string. */
-
-	for(key=list;key!=NULL;key=key->next)
-	  {
-	    fprintf(spawn->tochild,"%s\n",key->d);
-	    if(key!=list)
-	      {
-		searchstr=xrealloc(searchstr,
-				    strlen(searchstr)+strlen(key->d)+2);
-		strcat(searchstr," ");
-	      }
-	    else
-	      {
-		searchstr=xmalloc(strlen(key->d)+1);
-		searchstr[0]='\0';
-	      }
-
-	    strcat(searchstr,key->d);
-	  }
-
-	fprintf(spawn->tochild,"\n");
-
-	if(keyserver->host)
-	  log_info(_("searching for \"%s\" from %s server %s\n"),
-		   searchstr,keyserver->scheme,keyserver->host);
-	else
-	  log_info(_("searching for \"%s\" from %s\n"),
-		   searchstr,keyserver->uri);
-
-	break;
-      }
-
-    default:
-      log_fatal(_("no keyserver action!\n"));
-      break;
-    }
-
-  /* Done sending, so start reading. */
-  ret=exec_read(spawn);
-  if(ret)
-    goto fail;
-
-  /* Now handle the response */
-
-  for(;;)
-    {
-      int plen;
-      char *ptr;
-
-      maxlen=1024;
-      if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
-	{
-	  ret = gpg_error_from_syserror ();
-	  goto fail; /* i.e. EOF */
-	}
-
-      ptr=line;
-
-      /* remove trailing whitespace */
-      plen=strlen(ptr);
-      while(plen>0 && ascii_isspace(ptr[plen-1]))
-	plen--;
-      plen[ptr]='\0';
-
-      if(*ptr=='\0')
-	break;
-
-      if(ascii_strncasecmp(ptr,"VERSION ",8)==0)
-	{
-	  gotversion=1;
-
-	  if(atoi(&ptr[8])!=KEYSERVER_PROTO_VERSION)
-	    {
-	      log_error(_("invalid keyserver protocol (us %d!=handler %d)\n"),
-			KEYSERVER_PROTO_VERSION,atoi(&ptr[8]));
-	      goto fail;
-	    }
-	}
-      else if(ascii_strncasecmp(ptr,"PROGRAM ",8)==0)
-	{
-	  if(ascii_strncasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
-	    log_info(_("WARNING: keyserver handler from a different"
-		       " version of GnuPG (%s)\n"),&ptr[8]);
-	}
-      else if(ascii_strncasecmp(ptr,"OPTION OUTOFBAND",16)==0)
-	outofband=1; /* Currently the only OPTION */
-    }
-
-  if(!gotversion)
-    {
-      log_error(_("keyserver did not send VERSION\n"));
-      goto fail;
-    }
-
-  if(!outofband)
-    switch(action)
-      {
-      case KS_GET:
-      case KS_GETNAME:
-	{
-	  void *stats_handle;
-
-	  stats_handle=import_new_stats_handle();
-
-	  /* Slurp up all the key data.  In the future, it might be
-	     nice to look for KEY foo OUTOFBAND and FAILED indicators.
-	     It's harmless to ignore them, but ignoring them does make
-	     gpg complain about "no valid OpenPGP data found".  One
-	     way to do this could be to continue parsing this
-	     line-by-line and make a temp iobuf for each key. */
-
-          /* FIXME: Pass CTRL.  */
-	  import_keys_stream (NULL, spawn->fromchild,stats_handle,fpr,fpr_len,
-			      opt.keyserver_options.import_options);
-
-	  import_print_stats(stats_handle);
-	  import_release_stats_handle(stats_handle);
-
-	  break;
-	}
-
-	/* Nothing to do here */
-      case KS_SEND:
-	break;
-
-      case KS_SEARCH:
-	//keyserver_search_prompt (ctrl, spawn->fromchild,searchstr);
-	break;
-
-      default:
-	log_fatal(_("no keyserver action!\n"));
-	break;
-      }
-
- fail:
-  xfree(line);
-  xfree(searchstr);
-
-
-  *prog=exec_finish(spawn);
-
-  return ret;
-}
-
-
-
-
-static int
-keyserver_work (ctrl_t ctrl,
-                enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-                int count,unsigned char **fpr,size_t *fpr_len,
-                struct keyserver_spec *keyserver)
-{
-  int rc=0,ret=0;
-
-  if (!keyserver)
-    {
-      log_error (_("no keyserver known (use option --keyserver)\n"));
-      return gpg_error (GPG_ERR_BAD_URI);
-    }
-
-
-  rc = keyserver_spawn (ctrl, action, list, desc, count,
-                        &ret, fpr, fpr_len, keyserver);
-  if (ret)
-    {
-      switch(ret)
-	{
-	case KEYSERVER_SCHEME_NOT_FOUND:
-	  log_error(_("no handler for keyserver scheme `%s'\n"),
-		    keyserver->scheme);
-	  break;
-
-	case KEYSERVER_NOT_SUPPORTED:
-	  log_error(_("action `%s' not supported with keyserver "
-		      "scheme `%s'\n"),
-		    action==KS_GET?"get":action==KS_SEND?"send":
-		    action==KS_SEARCH?"search":"unknown",
-		    keyserver->scheme);
-	  break;
-
-	case KEYSERVER_VERSION_ERROR:
-	  log_error(_(GPGKEYS_PREFIX "%s does not support"
-		      " handler version %d\n"),
-		    keyserver_typemap(keyserver->scheme),
-		    KEYSERVER_PROTO_VERSION);
-	  break;
-
-	case KEYSERVER_TIMEOUT:
-	  log_error(_("keyserver timed out\n"));
-	  break;
-
-	case KEYSERVER_INTERNAL_ERROR:
-	default:
-	  log_error(_("keyserver internal error\n"));
-	  break;
-	}
-
-      return G10ERR_KEYSERVER;
-    }
-
-  if (rc)
-    {
-      log_error (_("keyserver communications error: %s\n"),g10_errstr(rc));
-
-      return rc;
-    }
-
-  return 0;
-}
-
-
-
-
 
 int
 keyserver_export (ctrl_t ctrl, strlist_t users)
@@ -1674,7 +1014,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
 
   if(sl)
     {
-      rc = keyserver_work (ctrl, KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
+      rc = keyserver_put (ctrl, sl, opt.keyserver);
       free_strlist(sl);
     }
 
@@ -2113,26 +1453,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 
 /* Called using:
 
-show_prompt:
-import:
-import_foo:
-refresh:
-    rc=keyserver_work (ctrl, KS_GET, NULL, desc, count,
-                       NULL, NULL, opt.keyserver);
-
-
-fetch:
-	  rc = keyserver_work (ctrl, KS_GET, NULL, &desc, 1, NULL, NULL, spec);
-	  if(rc)
-	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
-		     sl->d,g10_errstr(rc));
-
-
-export:
-      rc = keyserver_work (ctrl, KS_SEND,sl,NULL,0,NULL,NULL,opt.keyserver);
-
-
-
 import_name:
   rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
                        0, fpr, fpr_len, keyserver);
@@ -2267,6 +1587,58 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 }
 
 
+/* Send all keys specified by KEYSPECS to the KEYSERVERS.  */
+static gpg_error_t
+keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
+               struct keyserver_spec *keyserver)
+
+{
+  gpg_error_t err;
+  strlist_t kspec;
+
+  if (!keyspecs)
+    return 0;  /* Return success if the list is empty.  */
+
+  if (!opt.keyserver)
+    {
+      log_error (_("no keyserver known (use option --keyserver)\n"));
+      return gpg_error (GPG_ERR_NO_KEYSERVER);
+    }
+
+  for (kspec = keyspecs; kspec; kspec = kspec->next)
+    {
+      void *data;
+      size_t datalen;
+      kbnode_t keyblock;
+
+      err = export_pubkey_buffer (ctrl, kspec->d,
+                                  opt.keyserver_options.export_options,
+                                  &keyblock, &data, &datalen);
+      if (err)
+        log_error (_("skipped \"%s\": %s\n"), kspec->d, gpg_strerror (err));
+      else
+        {
+          if (keyserver->host)
+            log_info (_("sending key %s to %s server %s\n"),
+                      keystr (keyblock->pkt->pkt.public_key->keyid),
+                      keyserver->scheme, keyserver->host);
+          else
+            log_info (_("sending key %s to %s\n"),
+                      keystr (keyblock->pkt->pkt.public_key->keyid),
+                      keyserver->uri);
+
+          err = gpg_dirmngr_ks_put (ctrl, data, datalen, keyblock);
+          release_kbnode (keyblock);
+          xfree (data);
+          if (err)
+            log_error (_("keyserver send failed: %s\n"), gpg_strerror (err));
+        }
+    }
+
+
+  return err;
+
+}
 
 
 
@@ -2439,8 +1811,9 @@ keyserver_import_name (ctrl_t ctrl, const char *name,
 
   append_to_strlist(&list,name);
 
-  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
-                       0, fpr, fpr_len, keyserver);
+  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
+       /* keyserver_work (ctrl, KS_GETNAME, list, NULL, */
+       /*                 0, fpr, fpr_len, keyserver); */
 
   free_strlist(list);
 
@@ -2513,8 +1886,9 @@ keyserver_import_ldap (ctrl_t ctrl,
 
   append_to_strlist(&list,name);
 
-  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
-                       0, fpr, fpr_len, keyserver);
+  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
+       /* keyserver_work (ctrl, KS_GETNAME, list, NULL, */
+       /*                 0, fpr, fpr_len, keyserver); */
 
   free_strlist(list);
 

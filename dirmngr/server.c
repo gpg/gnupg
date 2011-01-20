@@ -47,6 +47,12 @@
    something reasonable. */
 #define MAX_CERT_LENGTH (8*1024)
 
+/* The same goes for OpenPGP keyblocks, but here we need to allow for
+   much longer blocks; a 200k keyblock is not too unusual for keys
+   with a lot of signatures (e.g. 0x5b0358a2).  */
+#define MAX_KEYBLOCK_LENGTH (512*1024)
+
+
 #define PARM_ERROR(t) assuan_set_error (ctx, \
                                         gpg_error (GPG_ERR_ASS_PARAMETER), (t))
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
@@ -1535,6 +1541,70 @@ cmd_ks_get (assuan_context_t ctx, char *line)
 }
 
 
+
+static const char hlp_ks_put[] =
+  "KS_PUT\n"
+  "\n"
+  "Send a key to the configured OpenPGP keyservers.  The actual key material\n"
+  "is then requested by Dirmngr using\n"
+  "\n"
+  "  INQUIRE KEYBLOCK\n"
+  "\n"
+  "The client shall respond with a binary version of the keyblock.  For LDAP\n"
+  "keyservers Dirmngr may ask for meta information of the provided keyblock\n"
+  "using:\n"
+  "\n"
+  "  INQUIRE KEYBLOCK_INFO\n"
+  "\n"
+  "The client shall respond with a colon delimited info lines";
+static gpg_error_t
+cmd_ks_put (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned char *value = NULL;
+  size_t valuelen; 
+  unsigned char *info = NULL;
+  size_t infolen;
+
+  /* No options for now.  */
+  line = skip_options (line);
+
+  /* Ask for the key material.  */
+  err = assuan_inquire (ctx, "KEYBLOCK",
+                        &value, &valuelen, MAX_KEYBLOCK_LENGTH);
+  if (err)
+    {
+      log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+  
+  if (!valuelen) /* No data returned; return a comprehensible error. */
+    {
+      err = gpg_error (GPG_ERR_MISSING_CERT);
+      goto leave;
+    }
+
+  /* Ask for the key meta data. Not actually needed for HKP servers
+     but we do it anyway test the client implementaion.  */
+  err = assuan_inquire (ctx, "KEYBLOCK_INFO",
+                        &info, &infolen, MAX_KEYBLOCK_LENGTH);
+  if (err)
+    {
+      log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Send the key.  */
+  err = ks_action_put (ctrl, value, valuelen);
+  
+ leave:
+  xfree (info);
+  xfree (value);
+  return leave_cmd (ctx, err);
+}
+
+
 
 
 static const char hlp_getinfo[] = 
@@ -1672,6 +1742,7 @@ register_commands (assuan_context_t ctx)
     { "KEYSERVER",  cmd_keyserver,  hlp_keyserver },
     { "KS_SEARCH",  cmd_ks_search,  hlp_ks_search },
     { "KS_GET",     cmd_ks_get,     hlp_ks_get },
+    { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },

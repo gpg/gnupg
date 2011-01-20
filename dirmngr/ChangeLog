@@ -1,13 +1,9 @@
-2011-01-06  Werner Koch  <wk@g10code.com>
+2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* server.c (release_ctrl_keyservers): New.
-	(cmd_keyserver): New.
-
+	(cmd_keyserver, cmd_ks_seach, cmd_ks_get, cmd_ks_put): New.
 	* dirmngr.h (uri_item_t): New.
 	(struct server_control_s): Add field KEYSERVERS.
-
-2011-01-04  Werner Koch  <wk@g10code.com>
-
 	* ks-engine-hkp.c: New.
 	* ks-engine.h: New.
 	* ks-action.c, ks-action.h: New.

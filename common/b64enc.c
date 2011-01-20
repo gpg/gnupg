@@ -1,5 +1,6 @@
 /* b64enc.c - Simple Base64 encoder.
- * Copyright (C) 2001, 2003, 2004, 2008, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2008, 2010,
+ *               2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -143,6 +144,7 @@ enc_start (struct b64state *state, FILE *fp, estream_t stream,
   memset (state, 0, sizeof *state);
   state->fp = fp;
   state->stream = stream;
+  state->lasterr = 0;
   if (title && !*title)
     state->flags |= B64ENC_NO_LINEFEEDS;
   else if (title)
@@ -154,9 +156,9 @@ enc_start (struct b64state *state, FILE *fp, estream_t stream,
         }
       state->title = xtrystrdup (title);
       if (!state->title)
-        return gpg_error_from_syserror ();
+        state->lasterr = gpg_error_from_syserror ();
     }
-  return 0;
+  return state->lasterr;
 }
 
 
@@ -203,6 +205,8 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
   int idx, quad_count;
   const unsigned char *p;
 
+  if (state->lasterr)
+    return state->lasterr;
 
   if (!nbytes)
     {
@@ -285,7 +289,13 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
   return 0;
 
  write_error:
-  return gpg_error_from_syserror ();
+  state->lasterr = gpg_error_from_syserror ();
+  if (state->title)
+    {
+      xfree (state->title);
+      state->title = NULL;
+    }
+  return state->lasterr;
 }
 
 
@@ -296,6 +306,9 @@ b64enc_finish (struct b64state *state)
   unsigned char radbuf[4];
   int idx, quad_count;
   char tmp[4];
+
+  if (state->lasterr)
+    return state->lasterr;
 
   if (!(state->flags & B64ENC_DID_HEADER))
     goto cleanup;
@@ -404,6 +417,7 @@ b64enc_finish (struct b64state *state)
     }
   state->fp = NULL;
   state->stream = NULL;
+  state->lasterr = err;
   return err;
 }
 

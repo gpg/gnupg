@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
- *               2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
+ *               2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -742,14 +742,14 @@ remove_escapes (char *string)
 }
 
 
-static int
-insert_escapes (char *buffer, const char *string,
-		const char *special)
+static size_t
+escape_data (char *buffer, const void *data, size_t datalen,
+             const char *special)
 {
-  const unsigned char *s = (const unsigned char*)string;
-  int n = 0;
+  const unsigned char *s;
+  size_t n = 0;
 
-  for (; *s; s++)
+  for (s = data; datalen; s++, datalen--)
     {
       if (strchr (VALID_URI_CHARS, *s) && !strchr (special, *s))
 	{
@@ -771,6 +771,14 @@ insert_escapes (char *buffer, const char *string,
 }
 
 
+static int
+insert_escapes (char *buffer, const char *string,
+		const char *special)
+{
+  return escape_data (buffer, string, strlen (string), special);
+}
+
+
 /* Allocate a new string from STRING using standard HTTP escaping as
    well as escaping of characters given in SPECIALS.  A common pattern
    for SPECIALS is "%;?&=". However it depends on the needs, for
@@ -787,6 +795,27 @@ http_escape_string (const char *string, const char *specials)
   if (buf)
     {
       insert_escapes (buf, string, specials);
+      buf[n] = 0;
+    }
+  return buf;
+}
+
+/* Allocate a new string from {DATA,DATALEN} using standard HTTP
+   escaping as well as escaping of characters given in SPECIALS.  A
+   common pattern for SPECIALS is "%;?&=".  However it depends on the
+   needs, for example "+" and "/: often needs to be escaped too.
+   Returns NULL on failure and sets ERRNO. */
+char *
+http_escape_data (const void *data, size_t datalen, const char *specials)
+{
+  int n;
+  char *buf;
+
+  n = escape_data (NULL, data, datalen, specials);
+  buf = xtrymalloc (n+1);
+  if (buf)
+    {
+      escape_data (buf, data, datalen, specials);
       buf[n] = 0;
     }
   return buf;

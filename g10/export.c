@@ -114,6 +114,60 @@ export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
   return rc;
 }
 
+
+/*
+ * Export a single key into a memory buffer.
+ */
+gpg_error_t
+export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
+                      kbnode_t *r_keyblock, void **r_data, size_t *r_datalen)
+{
+  gpg_error_t err;
+  iobuf_t iobuf;
+  int any;
+  strlist_t helplist;
+
+  *r_keyblock = NULL;
+  *r_data = NULL;
+  *r_datalen = 0;
+
+  helplist = NULL;
+  if (!add_to_strlist_try (&helplist, keyspec))
+    return gpg_error_from_syserror ();
+
+  iobuf = iobuf_temp ();
+  err = do_export_stream (ctrl, iobuf, helplist, 0, r_keyblock, options, &any);
+  if (!err && !any)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (!err)
+    {
+      const void *src;
+      size_t datalen;
+
+      iobuf_flush_temp (iobuf);
+      src = iobuf_get_temp_buffer (iobuf);
+      datalen = iobuf_get_temp_length (iobuf);
+      if (!datalen)
+        err = gpg_error (GPG_ERR_NO_PUBKEY);
+      else if (!(*r_data = xtrymalloc (datalen)))
+        err = gpg_error_from_syserror ();
+      else
+        {
+          memcpy (*r_data, src, datalen);
+          *r_datalen = datalen;
+        }
+    }
+  iobuf_close (iobuf);
+  free_strlist (helplist);
+  if (err && *r_keyblock)
+    {
+      release_kbnode (*r_keyblock);
+      *r_keyblock = NULL;
+    }
+  return err;
+}
+
+
 int
 export_seckeys (ctrl_t ctrl, strlist_t users )
 {
