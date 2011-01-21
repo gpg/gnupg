@@ -319,11 +319,13 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	  return NULL;
 	}
 
-      /* Note that in case of ECDSA 521 hash is always smaller than
-         the key size.  */
+      /* By passing QBYTES as length to mpi_scan, we do the truncation
+         of the hash.
+
+         Note that in case of ECDSA 521 the hash is always smaller
+         than the key size.  */
       if (gcry_mpi_scan (&frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo),
-                         gcry_md_get_algo_dlen (hash_algo), &qbytes))
+                         gcry_md_read (md, hash_algo), qbytes, &qbytes))
         BUG();
     }
   else

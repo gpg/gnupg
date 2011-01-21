@@ -298,9 +298,6 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
     {
       PKT_public_key *pk = xmalloc_clear (sizeof *pk);
 
-      log_debug ("checking created signature algo=%d\n", mdalgo);
-      log_printhex ("md:", dp, gcry_md_get_algo_dlen (mdalgo));
-
       if (get_pubkey (pk, sig->keyid ))
         err = gpg_error (GPG_ERR_NO_PUBKEY);
       else 

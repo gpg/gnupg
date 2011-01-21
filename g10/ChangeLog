@@ -1,5 +1,7 @@
 2011-01-21  Werner Koch  <wk@g10code.com>
 
+	* seskey.c (encode_md_value): Truncate the DSA hash again.
+
 	* misc.c (openpgp_pk_algo_name): Always use the gcrypt function.
 
 2010-12-09  Werner Koch  <wk@g10code.com>
