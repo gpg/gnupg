@@ -1,6 +1,5 @@
 /* To satisfy the linker for the gpgv target 
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006,
- *               2007 Free Software Foundation, Inc.
+ * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +24,8 @@
 #include "main.h"
 
 int
-pk_ecc_keypair_gen( PKT_public_key **pk_out, int algo, int keygen_flags, char **cache_nonce_addr, unsigned nbits)  {
-	return GPG_ERR_NOT_IMPLEMENTED;
+pk_ecc_keypair_gen (PKT_public_key **pk_out, int algo, int keygen_flags,
+                    char **cache_nonce_addr, unsigned nbits)
+{
+  return GPG_ERR_NOT_IMPLEMENTED;
 }

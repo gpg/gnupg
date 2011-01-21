@@ -23,7 +23,7 @@
 #include <ctype.h>
 
 #include "util.h"
-#include "gcrypt.h"
+#include "gcrypt.h"  /* FIXME: really needed?  */
 
 
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
@@ -250,7 +250,10 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
  * caller must free with xfree 
  * Returns NULL on error, never throws
  */
-char *mpi2hex( gcry_mpi_t m )  {
+char *
+mpi2hex( gcry_mpi_t m )
+{
+#warning we have code for this in libcrypt
   size_t nbytes;
   size_t nbytes2;
   int rc;
@@ -270,7 +273,9 @@ char *mpi2hex( gcry_mpi_t m )  {
 
   bin2hex( p+2*nbytes+1, nbytes2, p );
   p[nbytes2*2] = '\0';
-//printf("%s:%d>>>> Created the string %s from %d bytes %02x %02x ..., MPI was %d bytes\n", __FILE__, __LINE__, p, nbytes2, p[2*nbytes+1], p[2*nbytes+2], nbytes);
+  /*printf("%s:%d>>>> Created the string %s from %d bytes %02x %02x
+    ..., MPI was %d bytes\n", __FILE__, __LINE__, p, nbytes2,
+    p[2*nbytes+1], p[2*nbytes+2], nbytes); */
   return p;
 }    
 

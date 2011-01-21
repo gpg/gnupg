@@ -28,6 +28,13 @@
 #include "i18n.h"
 #include "cvt-openpgp.h"
 
+/* Macros for compatibility with older libgcrypt versions. */
+#ifndef HAVE_GCRY_PK_ECDSA
+# define GCRY_PK_ECDH  302
+#endif
+
+
+
 
 /* Helper to pass data via the callback to do_unprotect. */
 struct try_do_unprotect_arg_s 
@@ -100,8 +107,8 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
 
 
 /* Convert a secret key given as algorithm id and an array of key
-   parameters into our s-expression based format. 
-   pubkey_algo is a libgcrypt ID
+   parameters into our s-expression based format.  Note that
+   PUBKEY_ALGO is a standard id and not an OpenPGP id.
  */
 static gpg_error_t
 convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
@@ -111,7 +118,8 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
 
   *r_key = NULL;
 
-  pubkey_algo = map_pk_openpgp_to_gcry( pubkey_algo );
+  /* FIXME: This is not consistent with the above comment.  */
+  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
 
   switch (pubkey_algo)
     {
@@ -224,9 +232,9 @@ do_unprotect (const char *passphrase,
 
   *r_key = NULL;
 
- /* Unfortunately, the OpenPGP PK algorithm numbers need to be re-mapped for Libgcrypt
-  */
-  pubkey_algo = map_pk_openpgp_to_gcry( pubkey_algo );
+ /* Unfortunately, the OpenPGP PK algorithm numbers need to be
+    re-mapped for Libgcrypt.    */
+  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
 
   /* Count the actual number of MPIs is in the array and set the
      remainder to NULL for easier processing later on.  */
@@ -655,7 +663,7 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   string = gcry_sexp_nth_string (list, 1);
   if (!string)
     goto bad_seckey;
-  pubkey_algo = gcry_pk_map_name (string);	/* ligcrypt IDs */
+  pubkey_algo = gcry_pk_map_name (string);
   xfree (string);
 
   if (gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
@@ -1022,7 +1030,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     }
   
   algo = gcry_pk_map_name (name);
-  log_debug ( "convert to openpgp begin for algo=%s\n", name );
   xfree (name);
 
   switch (algo)
@@ -1052,7 +1059,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   err = apply_protection (array, npkey, nskey, passphrase,
                           GCRY_CIPHER_AES, protect_iv, sizeof protect_iv,
                           3, GCRY_MD_SHA1, salt, s2k_count);
-  ///log_debug ( "convert to openpgp: after applying protection, err = %d\n", err );
   /* Turn it into the transfer key S-expression.  Note that we always
      return a protected key.  */
   if (!err)
@@ -1082,8 +1088,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       put_membuf_str (&mbuf, ")\n");
       put_membuf (&mbuf, "", 1);
 
-      ///log_debug ( "convert to openpgp: calling gcry_sexp_build\n" );
-
       tmpkey = NULL;
       {
         char *format = get_membuf (&mbuf, NULL);
@@ -1093,7 +1097,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
           err = gcry_sexp_build_array (&tmpkey, NULL, format, format_args);
         xfree (format);
       }
-      ///log_debug ( "convert to openpgp: calling gcry_sexp_build before err=%d\n", err );
       if (!err)
         err = gcry_sexp_build (&tmpsexp, NULL,
                                "(openpgp-private-key\n"
@@ -1106,7 +1109,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
                                (int)sizeof protect_iv, protect_iv,
                                (int)sizeof salt, salt,
                                countbuf);
-      ///log_debug ( "convert to openpgp: after gcry_sexp_build, err = %d\n", err );
       gcry_sexp_release (tmpkey);
       if (!err)
         err = make_canon_sexp_pad (tmpsexp, 0, r_transferkey, r_transferkeylen);
@@ -1116,8 +1118,5 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   for (i=0; i < DIM (array); i++)
     gcry_mpi_release (array[i]);
 
-  log_debug ( "convert to openpgp end with err=%d\n", err );
-  
   return err;
 }
-

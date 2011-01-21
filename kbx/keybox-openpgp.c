@@ -245,6 +245,7 @@ parse_key (const unsigned char *data, size_t datalen,
       break;
     case 18: /* ECDH */
       npkey = 3;
+      break;
     case 19: /* ECDSA */
       npkey = 2;
       break;

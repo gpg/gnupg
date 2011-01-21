@@ -178,21 +178,20 @@ mpi_write (iobuf_t out, gcry_mpi_t a)
   return rc;
 }
 
-/*
- * Write the name OID, encoded as an mpi, to OUT. The format of the content of the MPI is
- * one byte LEN, following by LEN bytes that are DER representation of an ASN.1 OID. 
- * This is true for each of the 3 following functions.
- */
+/* Write the name OID, encoded as an mpi, to OUT. The format of the
+ * content of the MPI is one byte LEN, following by LEN bytes that are
+ * DER representation of an ASN.1 OID.  This is true for each of the 3
+ * following functions.   */
 #define iobuf_name_oid_write iobuf_write_size_body_mpi
+
 /* Write the value of KEK fields for ECDH.  */
 #define ecdh_kek_params_write iobuf_write_size_body_mpi
-/* Write the value of encrypted filed for ECDH. */
+
+/* Write the value of encrypted filed for ECDH.  */
 #define ecdh_esk_write iobuf_write_size_body_mpi
 
 
-/****************
- * calculate the length of a packet described by PKT
- */
+/* Calculate the length of a packet described by PKT.  */
 u32
 calc_packet_length( PACKET *pkt )
 {
@@ -300,24 +299,35 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
     }
   assert (npkey < nskey);
 
-  if( pk->pubkey_algo != PUBKEY_ALGO_ECDSA && pk->pubkey_algo != PUBKEY_ALGO_ECDH )  {
-    /* Writing the public parameters is easy, */
-    for (i=0; i < npkey; i++ )
-      if ((err = mpi_write (a, pk->pkey[i])))
-        goto leave;
-  }
-  else  {
-     /* ... except we do an adjustment for ECC OID and possibly KEK params for ECDH */
-    if( (err=iobuf_name_oid_write(a, pk->pkey[0])) || /* DER of OID with preceeding length byte */
-        (err = mpi_write (a, pk->pkey[1])) )    /* point Q, the public key */
+  /* Writing the public parameters is easy.  Except if we do an
+     adjustment for ECC OID and possibly KEK params for ECDH.  */
+  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-       goto leave;
+      /* Write DER of OID with preceeding length byte.  */
+      err = iobuf_name_oid_write (a, pk->pkey[0]);
+      if (err)
+        goto leave;
+      /* Write point Q, the public key.  */
+      err = mpi_write (a, pk->pkey[1]);
+      if (err)
+        goto leave;
+
+      /* Write one more public field for ECDH.  */
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+        {
+          err = ecdh_kek_params_write(a,pk->pkey[2]);
+          if (err)
+            goto leave;
+        }
     }
-    if( pk->pubkey_algo == PUBKEY_ALGO_ECDH && (err=ecdh_kek_params_write(a,pk->pkey[2])))  {	/* one more public field for ECDH */
-       goto leave;
+  else
+    {
+      for (i=0; i < npkey; i++ )
+        if ((err = mpi_write (a, pk->pkey[i])))
+          goto leave;
     }
-    /* followed by possibly protected private scalar */
-  }
+
   
   if (pk->seckey_info)
     {
@@ -483,22 +493,25 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   if ( !n )
     write_fake_data( a, enc->data[0] );
 
-  if( enc->pubkey_algo != PUBKEY_ALGO_ECDH )  {
-    for (i=0; i < n && !rc ; i++ )
-      rc = mpi_write(a, enc->data[i] );
-  }
-  else  {
-    /* the second field persists as a LEN+field structure, even though it is 
-     * stored for uniformity as an MPI internally */
-    assert( n==2 );
-    rc = mpi_write(a, enc->data[0] );
-    if( !rc ) rc = ecdh_esk_write(a, enc->data[1] ); 
-  }
+  if (enc->pubkey_algo == PUBKEY_ALGO_ECDH )
+    {
+      /* The second field persists as a LEN+field structure, even
+       * though it is stored for uniformity as an MPI internally.  */
+      assert (n == 2);
+      rc = mpi_write (a, enc->data[0]);
+      if (!rc)
+        rc = ecdh_esk_write (a, enc->data[1]); 
+    }
+  else
+    {
+      for (i=0; i < n && !rc ; i++ )
+        rc = mpi_write(a, enc->data[i] );
+    }
 
   if (!rc)
     {
-      write_header(out, ctb, iobuf_get_temp_length(a) );
-      rc = iobuf_write_temp( out, a );
+      write_header (out, ctb, iobuf_get_temp_length(a) );
+      rc = iobuf_write_temp (out, a);
     }
   iobuf_close(a);
   return rc;

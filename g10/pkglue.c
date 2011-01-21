@@ -1,5 +1,5 @@
 /* pkglue.c - public key operations glue code
- *	Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,7 +29,8 @@
 #include "pkglue.h"
 #include "main.h"
 
-
+/* FIXME: Better chnage the fucntion name because mpi_ is used by
+   gcrypt macros.  */
 gcry_mpi_t
 mpi_from_sexp (gcry_sexp_t sexp, const char * item)
 {
@@ -45,101 +46,37 @@ mpi_from_sexp (gcry_sexp_t sexp, const char * item)
 }
 
 
-/****************
- * Emulate our old PK interface here - sometime in the future we might
- * change the internal design to directly fit to libgcrypt.
- */
-int
-pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
-{
-  gcry_sexp_t s_sig, s_hash, s_skey;
-  int rc;
-  int gcry_pkalgo = map_pk_openpgp_to_gcry( algo );
-
-  /* make a sexp from skey */
-  if (gcry_pkalgo == GCRY_PK_DSA)
-    {
-      rc = gcry_sexp_build (&s_skey, NULL,
-			    "(private-key(dsa(p%m)(q%m)(g%m)(y%m)(x%m)))",
-			    skey[0], skey[1], skey[2], skey[3], skey[4]);
-    }
-  else if (gcry_pkalgo == GCRY_PK_RSA || gcry_pkalgo == GCRY_PK_RSA_S)
-    {
-      rc = gcry_sexp_build (&s_skey, NULL,
-			    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
-			    skey[0], skey[1], skey[2], skey[3], skey[4],
-			    skey[5]);
-    }
-  else if (gcry_pkalgo == GCRY_PK_ELG || gcry_pkalgo == GCRY_PK_ELG_E)
-    {
-      rc = gcry_sexp_build (&s_skey, NULL,
-			    "(private-key(elg(p%m)(g%m)(y%m)(x%m)))",
-			    skey[0], skey[1], skey[2], skey[3]);
-    }
-  else if (gcry_pkalgo == GCRY_PK_ECDSA)
-    {
-      rc = gcry_sexp_build (&s_skey, NULL,
-			    "(private-key(ecdsa(c%m)(q%m)(d%m)))",
-			    skey[0], skey[1], skey[2] );
-    }
-  else
-    return GPG_ERR_PUBKEY_ALGO;
-
-  if (rc)
-    BUG ();
-
-  /* put hash into a S-Exp s_hash */
-  if (gcry_sexp_build (&s_hash, NULL, "%m", hash))
-    BUG ();
-
-  rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
-  gcry_sexp_release (s_hash);
-  gcry_sexp_release (s_skey);
-
-  if (rc)
-    ;
-  else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_S)
-    data[0] = mpi_from_sexp (s_sig, "s");
-  else
-    {
-      data[0] = mpi_from_sexp (s_sig, "r");
-      data[1] = mpi_from_sexp (s_sig, "s");
-    }
-
-  gcry_sexp_release (s_sig);
-  return rc;
-}
 
 /****************
  * Emulate our old PK interface here - sometime in the future we might
  * change the internal design to directly fit to libgcrypt.
  */
 int
-pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
+pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
 {
   gcry_sexp_t s_sig, s_hash, s_pkey;
   int rc;
-  const int gcry_pkalgo = map_pk_openpgp_to_gcry( algo );
+  const int pkalgo = map_pk_openpgp_to_gcry (algo);
 
-  /* make a sexp from pkey */
-  if (gcry_pkalgo == GCRY_PK_DSA)
+  /* Make a sexp from pkey.  */
+  if (pkalgo == GCRY_PK_DSA)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2], pkey[3]);
     }
-  else if (gcry_pkalgo == GCRY_PK_ELG || gcry_pkalgo == GCRY_PK_ELG_E)
+  else if (pkalgo == GCRY_PK_ELG || pkalgo == GCRY_PK_ELG_E)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
     }
-  else if (gcry_pkalgo == GCRY_PK_RSA || gcry_pkalgo == GCRY_PK_RSA_S)
+  else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_S)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(rsa(n%m)(e%m)))", pkey[0], pkey[1]);
     }
-  else if (gcry_pkalgo == GCRY_PK_ECDSA)	/* same as GCRY_PK_ECDH */
+  else if (pkalgo == GCRY_PK_ECDSA) /* Same as GCRY_PK_ECDH */
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(ecdsa(c%m)(q%m)))", pkey[0], pkey[1]);
@@ -150,13 +87,13 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
   if (rc)
     BUG ();  /* gcry_sexp_build should never fail.  */
 
-  /* put hash into a S-Exp s_hash */
+  /* Put hash into a S-Exp s_hash. */
   if (gcry_sexp_build (&s_hash, NULL, "%m", hash))
     BUG (); /* gcry_sexp_build should never fail.  */
 
   /* Put data into a S-Exp s_sig. */
   s_sig = NULL;
-  if (gcry_pkalgo == GCRY_PK_DSA)
+  if (pkalgo == GCRY_PK_DSA)
     {
       if (!data[0] || !data[1])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -164,7 +101,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
         rc = gcry_sexp_build (&s_sig, NULL,
                               "(sig-val(dsa(r%m)(s%m)))", data[0], data[1]);
     }
-  else if (gcry_pkalgo == GCRY_PK_ECDSA)
+  else if (pkalgo == GCRY_PK_ECDSA)
     {
       if (!data[0] || !data[1])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -172,7 +109,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
         rc = gcry_sexp_build (&s_sig, NULL,
                               "(sig-val(ecdsa(r%m)(s%m)))", data[0], data[1]);
     }
-  else if (gcry_pkalgo == GCRY_PK_ELG || gcry_pkalgo == GCRY_PK_ELG_E)
+  else if (pkalgo == GCRY_PK_ELG || pkalgo == GCRY_PK_ELG_E)
     {
       if (!data[0] || !data[1])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -180,7 +117,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
         rc = gcry_sexp_build (&s_sig, NULL,
                               "(sig-val(elg(r%m)(s%m)))", data[0], data[1]);
     }
-  else if (gcry_pkalgo == GCRY_PK_RSA || gcry_pkalgo == GCRY_PK_RSA_S)
+  else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_S)
     {
       if (!data[0])
         rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -207,12 +144,13 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
  * change the internal design to directly fit to libgcrypt.
  */
 int
-pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, const byte pk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t * pkey)
+pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
+            const byte pk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t *pkey)
 {
   gcry_sexp_t s_ciph, s_data, s_pkey;
   int rc;
 
-  /* make a sexp from pkey */
+  /* Make a sexp from pkey.  */
   if (algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
@@ -227,7 +165,7 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, const byte pk_fp[MAX
     }
   else if (algo == PUBKEY_ALGO_ECDH)	
     {
-      return pk_ecdh_encrypt( resarr, pk_fp, data, pkey );
+      return pk_ecdh_encrypt (resarr, pk_fp, data, pkey);
     }
   else
     return GPG_ERR_PUBKEY_ALGO;
@@ -235,11 +173,11 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, const byte pk_fp[MAX
   if (rc)
     BUG ();
 
-  /* put the data into a simple list */
+  /* Put the data into a simple list.  */
   if (gcry_sexp_build (&s_data, NULL, "%m", data))
     BUG ();
 
-  /* pass it to libgcrypt */
+  /* Pass it to libgcrypt. */
   rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
   gcry_sexp_release (s_data);
   gcry_sexp_release (s_pkey);
@@ -247,15 +185,18 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, const byte pk_fp[MAX
   if (rc)
     ;
   else
-    { /* add better error handling or make gnupg use S-Exp directly */
+    { /* Add better error handling or make gnupg use S-Exp directly.  */
       resarr[0] = mpi_from_sexp (s_ciph, "a");
-      if (algo != GCRY_PK_RSA && algo != GCRY_PK_RSA_E && algo != PUBKEY_ALGO_ECDH)
+      if (algo != GCRY_PK_RSA 
+          && algo != GCRY_PK_RSA_E
+          && algo != PUBKEY_ALGO_ECDH)
         resarr[1] = mpi_from_sexp (s_ciph, "b");
     }
 
   gcry_sexp_release (s_ciph);
   return rc;
 }
+
 
 /* Check whether SKEY is a suitable secret key. */
 int

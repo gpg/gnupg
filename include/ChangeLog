@@ -1,3 +1,9 @@
+2011-01-21  Werner Koch  <wk@g10code.com>
+
+	* cipher.h (GCRY_PK_USAGE_CERT): Remove comaptibility macros
+	because we now require libgcrypt 1.4.6.
+	(GCRY_PK_ECDH): Add replacement.
+
 2009-08-20  Daiki Ueno  <ueno@unixuser.org>  (wk)
 
 	* cipher.h (struct DEK): Add field S2K_CACHEID.

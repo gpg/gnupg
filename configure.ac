@@ -24,7 +24,7 @@ min_automake_version="1.10"
 # Remember to change the version number immediately *after* a release.
 # Set my_issvn to "yes" for non-released code.  Remember to run an
 # "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.2.0])
+m4_define([my_version], [2.1.0])
 m4_define([my_issvn], [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
@@ -43,7 +43,7 @@ development_version=no
 NEED_GPG_ERROR_VERSION=1.8
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.6.0
+NEED_LIBGCRYPT_VERSION=1.4.6
 
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.0
@@ -723,6 +723,20 @@ AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
 #
 AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
+
+AC_CACHE_CHECK([whether Libgcrypt support ECDH], gnupg_cv_gcry_pk_ecdh,
+               [ _gnupg_gcry_save_cflags=$CFLAGS
+                 CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
+                 AC_TRY_COMPILE(
+                   [#include <gcrypt>],
+                   [ return GCRY_PK_ECDH; ],
+                   gnupg_cv_gcry_pk_ecdh=yes,
+                   gnupg_cv_gcry_pk_ecdh=no)
+                 CFLAGS=$_gnupg_gcry_save_cflags])
+if test "$gnupg_cv_gcry_pk_ecdh" = yes; then
+  AC_DEFINE([HAVE_GCRY_PK_ECDH], 1,
+            [Define if gcrypt.h has the enum value for ECDH.])
+fi
 
 
 #

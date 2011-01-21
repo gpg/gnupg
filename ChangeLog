@@ -1,3 +1,8 @@
+2011-01-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Need Libgcrypt 1.4.6 due to AESWRAP.
+	(HAVE_GCRY_PK_ECDH): Add new test.
+
 2011-01-03  Werner Koch  <wk@g10code.com>
 
 	* README.SVN:  Rename to README.GIT.

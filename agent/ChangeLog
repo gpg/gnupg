@@ -1,3 +1,7 @@
+2011-01-21  Werner Koch  <wk@g10code.com>
+
+	* cvt-openpgp.c (GCRY_PK_ECDH) [!HAVE_GCRY_PK_ECDH]: New.
+
 2010-12-02  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (CHECK_OWN_SOCKET_INTERVAL) [W32CE]: Set to 60

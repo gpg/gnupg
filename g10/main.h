@@ -87,9 +87,12 @@ u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
 int map_cipher_openpgp_to_gcry (int algo);
-#define openpgp_cipher_open(_a,_b,_c,_d) gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
-#define openpgp_cipher_get_algo_keylen(_a) gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
-#define openpgp_cipher_get_algo_blklen(_a) gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
+#define openpgp_cipher_open(_a,_b,_c,_d) \
+  gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
+#define openpgp_cipher_get_algo_keylen(_a) \
+  gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
+#define openpgp_cipher_get_algo_blklen(_a) \
+  gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
 int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);
@@ -159,7 +162,8 @@ int pubkey_get_nenc( int algo );
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 int iobuf_write_size_body_mpi (iobuf_t out, gcry_mpi_t a);
-int iobuf_read_size_body(iobuf_t inp, byte *body, int body_max_size, int pktlen, gcry_mpi_t *out);
+int iobuf_read_size_body (iobuf_t inp, byte *body, int body_max_size,
+                          int pktlen, gcry_mpi_t *out);
 
 int ecdsa_qbits_from_Q( int qbits );
 
@@ -258,7 +262,9 @@ int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 
 #define KEYGEN_FLAG_NO_PROTECTION 1
 #define KEYGEN_FLAG_TRANSIENT_KEY 2
-int pk_ecc_keypair_gen( PKT_public_key **pk_out, int algo, int keygen_flags, char **cache_nonce_addr, unsigned nbits);
+int pk_ecc_keypair_gen (PKT_public_key **pk_out, int algo,
+                        int keygen_flags, char **cache_nonce_addr,
+                        unsigned nbits);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

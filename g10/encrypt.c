@@ -894,8 +894,8 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
           compliance_failure();
         }
 
-      fingerprint_from_pk( pk, fp, &fpn );
-      assert( fpn == 20 );
+      fingerprint_from_pk (pk, fp, &fpn);
+      assert (fpn == 20);
 
       /* Okay, what's going on: We have the session key somewhere in
        * the structure DEK and want to encode this session key in an

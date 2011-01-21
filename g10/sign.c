@@ -436,14 +436,15 @@ hash_for (PKT_public_key *pk)
     {
       return recipient_digest_algo;
     }
-  else if(pk->pubkey_algo==PUBKEY_ALGO_DSA || pk->pubkey_algo==PUBKEY_ALGO_ECDSA )
+  else if (pk->pubkey_algo == PUBKEY_ALGO_DSA
+           || pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
     {
       unsigned int qbytes = gcry_mpi_get_nbits (pk->pkey[1]);
 
-      if( pk->pubkey_algo==PUBKEY_ALGO_ECDSA )
-        qbytes = ecdsa_qbits_from_Q(qbytes);
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+        qbytes = ecdsa_qbits_from_Q (qbytes);
       qbytes = qbytes/8;
-
+      
       /* It's a DSA key, so find a hash that is the same size as q or
 	 larger.  If q is 160, assume it is an old DSA key and use a
 	 160-bit hash unless --enable-dsa2 is set, in which case act
@@ -924,12 +925,14 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
-		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA )
+		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
+                    || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
 		  {
-		    int temp_hashlen = gcry_mpi_get_nbits(sk_rover->pk->pkey[1]);
+		    int temp_hashlen = (gcry_mpi_get_nbits
+                                        (sk_rover->pk->pkey[1]));
 
-		    if( sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA )
-		      temp_hashlen = ecdsa_qbits_from_Q( temp_hashlen );
+		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+		      temp_hashlen = ecdsa_qbits_from_Q (temp_hashlen);
 		    temp_hashlen = (temp_hashlen+7)/8;
 
 		    /* Pick a hash that is large enough for our
@@ -1482,13 +1485,14 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
 	if(opt.cert_digest_algo)
 	  digest_algo=opt.cert_digest_algo;
-	else if(pksk->pubkey_algo==PUBKEY_ALGO_RSA
+	else if(pksk->pubkey_algo == PUBKEY_ALGO_RSA
 		&& pk->version<4 && sigversion<4)
 	  digest_algo = DIGEST_ALGO_MD5;
-	else if(pksk->pubkey_algo==PUBKEY_ALGO_DSA)
-	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8 );
-        else if(pksk->pubkey_algo==PUBKEY_ALGO_ECDSA )
-	  digest_algo = match_dsa_hash (ecdsa_qbits_from_Q( gcry_mpi_get_nbits (pksk->pkey[1]) ) / 8);
+	else if(pksk->pubkey_algo == PUBKEY_ALGO_DSA)
+	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
+        else if(pksk->pubkey_algo == PUBKEY_ALGO_ECDSA )
+	  digest_algo = match_dsa_hash (ecdsa_qbits_from_Q
+                                        (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }

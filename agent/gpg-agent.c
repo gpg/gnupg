@@ -2304,6 +2304,8 @@ check_for_running_agent (int silent, int mode)
 }
 
 /* TODO: it is also in misc, which is not linked with the agent */
+/* FIXME: The agent should not know about openpgp internals - weel
+   except for some stuff in cvt-openpgp.  */
 int
 map_pk_openpgp_to_gcry (int algo)
 {

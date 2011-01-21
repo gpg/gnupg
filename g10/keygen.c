@@ -18,6 +18,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning wk: check these changes.
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +44,6 @@
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "pkglue.h"
-#include "gcrypt.h"
 
 /* The default algorithms.  If you change them remember to change them
    also in gpg.c:gpgconf_list.  You should also check that the value

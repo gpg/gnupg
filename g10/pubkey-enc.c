@@ -218,68 +218,72 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     log_printhex ("DEK frame:", frame, nframe);
   n = 0;
 
-  if( sk->pubkey_algo != PUBKEY_ALGO_ECDH )  {
-    if (!card)
-      {
-        if (n + 7 > nframe)
-          {
-            err = gpg_error (G10ERR_WRONG_SECKEY);
-            goto leave;
-          }
-        if (frame[n] == 1 && frame[nframe - 1] == 2)
-          {
-            log_info (_("old encoding of the DEK is not supported\n"));
-            err = gpg_error (G10ERR_CIPHER_ALGO);
-            goto leave;
-          }
-        if (frame[n] != 2) /* Something went wrong.  */
-          {
-            err = gpg_error (G10ERR_WRONG_SECKEY);
-            goto leave;
-          }
-        for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
-          ;
-        n++; /* Skip the zero byte.  */
-      }
-  }
-  else  {
-    gcry_mpi_t shared_mpi;
-    gcry_mpi_t decoded;
+  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      gcry_mpi_t shared_mpi;
+      gcry_mpi_t decoded;
+      
+      /* At the beginning the frame are the bytes of shared point MPI.  */
+      err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
+      if (err)
+        {
+          log_fatal ("mpi_scan failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
 
-    /* at the beginning the frame is the bytes of shared point MPI */
-     
-    err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
-    if (err)  {
-      log_fatal ("mpi_scan failed: %s\n", gpg_strerror (err));
-      goto leave;
+      err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
+                             shared_mpi, sk->pkey);
+      mpi_release (shared_mpi);
+      if(err)
+        goto leave;
+
+      /* Reuse NFRAME, which size is sufficient to include the session key.  */
+      err = gcry_mpi_print (GCRYMPI_FMT_USG, frame, nframe, &nframe, decoded);
+      mpi_release (decoded);
+      if (err)
+        goto leave;
+
+      /* Now the frame are the bytes decrypted but padded session key.  */
+
+      /* Allow double padding for the benefit of DEK size concealment.
+         Higher than this is wasteful. */
+      if (frame[nframe-1] > 8*2 || nframe <= 8)
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          goto leave; 
+        }
+      nframe -= frame[nframe-1]; /* Remove padding.  */
+      assert (n); /* (used just below) */
     }
-
-    err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/, shared_mpi, sk->pkey);
-    mpi_release( shared_mpi );
-    if( err )
-      goto leave;
-
-    /* reuse nframe, which size is sufficient to include the session key */
-    err = gcry_mpi_print (GCRYMPI_FMT_USG, frame, nframe, &nframe, decoded);
-    mpi_release( decoded );
-    if( err )
-      goto leave;
-
-    /* Now the frame is the bytes decrypted but padded session key  */
-
-    /* Allow double padding for the benefit of DEK size concealment.
-     * Higher than this is wasteful.  
-     */
-    if( frame[nframe-1] > 8*2 || nframe <= 8 )  {
-      err = G10ERR_WRONG_SECKEY; goto leave; 
+  else
+    {
+      if (!card)
+        {
+          if (n + 7 > nframe)
+            {
+              err = gpg_error (GPG_ERR_WRONG_SECKEY);
+              goto leave;
+            }
+          if (frame[n] == 1 && frame[nframe - 1] == 2)
+            {
+              log_info (_("old encoding of the DEK is not supported\n"));
+              err = gpg_error (GPG_ERR_CIPHER_ALGO);
+              goto leave;
+            }
+          if (frame[n] != 2) /* Something went wrong.  */
+            {
+              err = gpg_error (GPG_ERR_WRONG_SECKEY);
+              goto leave;
+            }
+          for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
+            ;
+          n++; /* Skip the zero byte.  */
+        }
     }
-    nframe -= frame[nframe-1];	/* remove padding */
-    assert( n==0 );	/* used just bellow */
-  }
 
   if (n + 4 > nframe)
     {
-      err = gpg_error (G10ERR_WRONG_SECKEY);
+      err = gpg_error (GPG_ERR_WRONG_SECKEY);
       goto leave;
     }
 
