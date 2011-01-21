@@ -503,25 +503,7 @@ openpgp_pk_algo_usage ( int algo )
 const char *
 openpgp_pk_algo_name (int algo) 
 {
-  /* We use fixed strings to have pretty names instead of those from
-     libgcrypt.  */
-  switch (algo)
-    {    
-    case PUBKEY_ALGO_RSA:
-    case PUBKEY_ALGO_RSA_E:
-    case PUBKEY_ALGO_RSA_S: return "rsa";
-
-    case PUBKEY_ALGO_ELGAMAL:
-    case PUBKEY_ALGO_ELGAMAL_E: return "elg";
-
-    case PUBKEY_ALGO_DSA:  return "dsa";
-
-    case PUBKEY_ALGO_ECDSA:return "ecdsa";
-
-    case PUBKEY_ALGO_ECDH: return "ecdh";
-
-    default: gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo));
-    }
+  return gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo));
 }
 
 

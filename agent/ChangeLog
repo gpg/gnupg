@@ -1,5 +1,7 @@
 2011-01-21  Werner Koch  <wk@g10code.com>
 
+	* pksign.c (do_encode_dsa): Compare MDLEN to bytes.
+
 	* cvt-openpgp.c (GCRY_PK_ECDH) [!HAVE_GCRY_PK_ECDH]: New.
 
 2010-12-02  Werner Koch  <wk@g10code.com>
