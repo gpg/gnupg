@@ -287,6 +287,9 @@ void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd, 
                         unsigned char **fpr,
 			size_t *fpr_len, unsigned int options);
+int import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
+                           unsigned char **fpr, size_t *fpr_len,
+                           unsigned int options);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);
@@ -299,6 +302,10 @@ int parse_export_options(char *str,unsigned int *options,int noisy);
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options );
 int export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
 			   kbnode_t *keyblock_out, unsigned int options );
+gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
+                                  unsigned int options, 
+                                  kbnode_t *r_keyblock,
+                                  void **r_data, size_t *r_datalen);
 int export_seckeys (ctrl_t ctrl, strlist_t users);
 int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 

@@ -1,3 +1,9 @@
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	* gpgkeys_hkp.c (get_name): Remove test for KS_GETNAME.  It is
+	always true.
+	(search_key): Remove test for KS_GETNAME.  It is always false.
+
 2009-08-26  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_hkp.c: Include util.h.

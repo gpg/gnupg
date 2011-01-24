@@ -1,5 +1,5 @@
 /* membuf.c - A simple implementation of a dynamic buffer.
- * Copyright (C) 2001, 2003, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -53,6 +53,26 @@ init_membuf_secure (membuf_t *mb, int initiallen)
   mb->buf = xtrymalloc_secure (initiallen);
   if (!mb->buf)
     mb->out_of_core = errno;
+}
+
+
+/* Shift the the content of the membuf MB by AMOUNT bytes.  The next
+   operation will then behave as if AMOUNT bytes had not been put into
+   the buffer.  If AMOUNT is greater than the actual accumulated
+   bytes, the membuf is basically reset to its initial state.  */
+void
+clear_membuf (membuf_t *mb, size_t amount)
+{
+  /* No need to clear if we are already out of core.  */
+  if (mb->out_of_core)
+    return;
+  if (amount >= mb->len)
+    mb->len = 0;
+  else
+    {
+      mb->len -= amount;
+      memmove (mb->buf, mb->buf+amount, mb->len);
+    }
 }
 
 
@@ -116,3 +136,26 @@ get_membuf (membuf_t *mb, size_t *len)
   mb->out_of_core = ENOMEM; /* hack to make sure it won't get reused. */
   return p;
 }
+
+
+/* Peek at the membuf MB.  On success a pointer to the buffer is
+   returned which is valid until the next operation on MB.  If LEN is
+   not NULL the current LEN of the buffer is stored there.  On error
+   NULL is returned and ERRNO is set.  */
+const void *
+peek_membuf (membuf_t *mb, size_t *len)
+{
+  const char *p;
+
+  if (mb->out_of_core)
+    {
+      gpg_err_set_errno (mb->out_of_core);
+      return NULL;
+    }
+
+  p = mb->buf;
+  if (len)
+    *len = mb->len;
+  return p;
+}
+

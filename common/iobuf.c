@@ -1,6 +1,6 @@
 /* iobuf.c  -  File Handling for OpenPGP.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006, 2007, 2008,
- *               2009, 2010  Free Software Foundation, Inc.
+ *               2009, 2010, 2011  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -77,6 +77,17 @@ typedef struct
   int print_only_name; /* Flags indicating that fname is not a real file.  */
   char fname[1];       /* Name of the file.  */
 } file_filter_ctx_t;
+
+/* The context used by the estream filter.  */
+typedef struct
+{
+  estream_t fp;        /* Open estream handle.  */
+  int keep_open;
+  int no_cache;
+  int eof_seen;
+  int print_only_name; /* Flags indicating that fname is not a real file.  */
+  char fname[1];       /* Name of the file.  */
+} file_es_filter_ctx_t;
 
 
 /* Object to control the "close cache".  */
@@ -570,6 +581,96 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	    fd_cache_close (a->no_cache ? NULL : a->fname, f);
 	}
       f = GNUPG_INVALID_FD;
+      xfree (a); /* We can free our context now. */
+    }
+
+  return rc;
+}
+
+
+/* Similar to file_filter but using the estream system.  */
+static int
+file_es_filter (void *opaque, int control, iobuf_t chain, byte * buf,
+                size_t * ret_len)
+{
+  file_es_filter_ctx_t *a = opaque;
+  estream_t f = a->fp;
+  size_t size = *ret_len;
+  size_t nbytes = 0;
+  int rc = 0;
+
+  (void)chain; /* Not used.  */
+
+  if (control == IOBUFCTRL_UNDERFLOW)
+    {
+      assert (size); /* We need a buffer.  */
+      if (a->eof_seen)
+	{
+	  rc = -1;
+	  *ret_len = 0;
+	}
+      else
+	{
+          nbytes = 0;
+          rc = es_read (f, buf, size, &nbytes);
+	  if (rc == -1)
+	    {			/* error */
+              rc = gpg_error_from_syserror ();
+              log_error ("%s: read error: %s\n", a->fname, strerror (errno));
+	    }
+	  else if (!nbytes)
+	    {			/* eof */
+	      a->eof_seen = 1;
+	      rc = -1;
+	    }
+	  *ret_len = nbytes;
+	}
+    }
+  else if (control == IOBUFCTRL_FLUSH)
+    {
+      if (size)
+	{
+	  byte *p = buf;
+	  size_t nwritten;
+
+	  nbytes = size;
+	  do
+	    {
+              nwritten = 0;
+              if (es_write (f, p, nbytes, &nwritten))
+                {
+                  rc = gpg_error_from_syserror ();
+                  log_error ("%s: write error: %s\n",
+                             a->fname, strerror (errno));
+                  break;
+                }
+              p += nwritten;
+              nbytes -= nwritten;
+	    }
+	  while (nbytes);
+	  nbytes = p - buf;
+	}
+      *ret_len = nbytes;
+    }
+  else if (control == IOBUFCTRL_INIT)
+    {
+      a->eof_seen = 0;
+      a->no_cache = 0;
+    }
+  else if (control == IOBUFCTRL_DESC)
+    {
+      *(char **) buf = "estream_filter";
+    }
+  else if (control == IOBUFCTRL_FREE)
+    {
+      if (f != es_stdin && f != es_stdout)
+	{
+	  if (DBG_IOBUF)
+	    log_debug ("%s: es_fclose %p\n", a->fname, f);
+	  if (!a->keep_open)
+	    es_fclose (f);
+	}
+      f = NULL;
       xfree (a); /* We can free our context now. */
     }
 
@@ -1254,6 +1355,30 @@ iobuf_t
 iobuf_fdopen_nc (int fd, const char *mode)
 {
   return do_iobuf_fdopen (fd, mode, 1);
+}
+
+
+iobuf_t
+iobuf_esopen (estream_t estream, const char *mode, int keep_open)
+{
+  iobuf_t a;
+  file_es_filter_ctx_t *fcx;
+  size_t len;
+
+  a = iobuf_alloc (strchr (mode, 'w') ? 2 : 1, IOBUF_BUFFER_SIZE);
+  fcx = xtrymalloc (sizeof *fcx + 30);
+  fcx->fp = estream;
+  fcx->print_only_name = 1;
+  fcx->keep_open = keep_open;
+  sprintf (fcx->fname, "[fd %p]", estream);
+  a->filter = file_es_filter;
+  a->filter_ov = fcx;
+  file_es_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
+  file_es_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
+  if (DBG_IOBUF)
+    log_debug ("iobuf-%d.%d: esopen%s `%s'\n",
+               a->no, a->subno, keep_open? "_nc":"", fcx->fname);
+  return a;
 }
 
 

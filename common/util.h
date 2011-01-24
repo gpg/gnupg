@@ -36,6 +36,9 @@
 #ifndef GPG_ERR_MISSING_ISSUER_CERT
 #define GPG_ERR_MISSING_ISSUER_CERT 185
 #endif
+#ifndef GPG_ERR_NO_KEYSERVER
+#define GPG_ERR_NO_KEYSERVER 186
+#endif
 #ifndef GPG_ERR_FULLY_CANCELED
 #define GPG_ERR_FULLY_CANCELED 198
 #endif
@@ -147,6 +150,7 @@ struct b64state
   u32 crc;
   int stop_seen:1;
   int invalid_encoding:1;
+  gpg_error_t lasterr;
 };
 
 gpg_error_t b64enc_start (struct b64state *state, FILE *fp, const char *title);

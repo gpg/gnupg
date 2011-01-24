@@ -1,5 +1,5 @@
 /* b64dec.c - Simple Base64 decoder.
- * Copyright (C) 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2008, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -72,16 +72,19 @@ b64dec_start (struct b64state *state, const char *title)
   if (title)
     {
       if (!strncmp (title, "PGP", 3) && (!title[3] || title[3] == ' '))
-        return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-
-      state->title = xtrystrdup (title);
-      if (!state->title)
-        return gpg_error_from_syserror ();
-      state->idx = s_init;
+        state->lasterr = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      else
+        {
+          state->title = xtrystrdup (title);
+          if (!state->title)
+            state->lasterr = gpg_error_from_syserror ();
+          else
+            state->idx = s_init;
+        }
     }
   else
     state->idx = s_b64_0;
-  return 0;
+  return state->lasterr;
 }
 
 
@@ -96,12 +99,18 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
   int pos = state->quad_count; 
   char *d, *s;
 
+  if (state->lasterr)
+    return state->lasterr;
+
   if (state->stop_seen)
     {
       *r_nbytes = 0;
-      return gpg_error (GPG_ERR_EOF);
+      state->lasterr = gpg_error (GPG_ERR_EOF);
+      xfree (state->title);
+      state->title = NULL;
+      return state->lasterr;
     }
-
+  
   for (s=d=buffer; length && !state->stop_seen; length--, s++)
     {
       switch (ds)
@@ -210,6 +219,9 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
 gpg_error_t
 b64dec_finish (struct b64state *state)
 {
+  if (state->lasterr)
+    return state->lasterr;
+
   xfree (state->title);
   state->title = NULL;
   return state->invalid_encoding? gpg_error(GPG_ERR_BAD_DATA): 0;

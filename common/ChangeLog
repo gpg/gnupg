@@ -1,3 +1,55 @@
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	Fix bug#1313.
+
+	* http.c (my_select): New.  Define to pth_select if building with Pth.
+	(start_server, write_server, cookie_read, cookie_write): Use it.
+	(my_connect): New.  Define to pth_connect if building with Pth.
+	(connect_server): Use it.
+	(my_accept): New.  Define to pth_accept if building with Pth.
+	(start_server): Use it.
+
+2011-01-20  Werner Koch  <wk@g10code.com>
+
+	* util.h (struct b64state): Add field LASTERR.
+	* b64enc.c (enc_start, b64enc_write, b64enc_finish): Handle
+	LASTERR.  This is to make sure that we don't leak strduped data.
+	* b64dec.c (b64dec_start, b64dec_proc, b64dec_finish): Ditto.
+
+	* http.c (escape_data): New.
+	(insert_escapes): Implement using escape_data.
+	(http_escape_data): New.
+
+2011-01-19  Werner Koch  <wk@g10code.com>
+
+	* homedir.c (gnupg_module_name): Use NAME_OF_INSTALLED_GPG instead
+	of "gpg2".
+
+2011-01-18  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (file_es_filter_ctx_t): New.
+	(file_es_filter): New.
+	(iobuf_esopen): New.
+
+	* membuf.c (clear_membuf, peek_membuf): New.
+
+	* util.h (GPG_ERR_NO_KEYSERVER): New.
+
+	* keyserver.h (keyserver_spec): Move from ../g10/options.h to here.
+
+	* http.c (do_parse_uri): Add arg NO_SCHEME_CHECK.  Change all
+	callers.  Support HKP and HKPS.
+	(_http_parse_uri): Do proper error management.
+	* http.h (parsed_uri_s): Add field IS_HTTP.
+	(http_parse_uri): Support NO_SCHEME_CHECK arg.
+
+	* estream.c (es_func_mem_write): Fix computation of NEWSIZE.
+
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* session-env.c (update_var): Fix same value detection.  Fixes
+	bug#1311.
+
 2011-01-10  Werner Koch  <wk@g10code.com>
 
 	* session-env.c (update_var): Fix same value detection.  Fixes

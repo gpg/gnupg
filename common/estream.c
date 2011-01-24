@@ -641,7 +641,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
       if (!mem_cookie->memory_size)
         newsize = size;  /* Not yet allocated.  */
       else
-        newsize = mem_cookie->memory_size + (nleft - size);
+        newsize = mem_cookie->memory_size + (size - nleft);
       if (newsize < mem_cookie->offset)
         {
           _set_errno (EINVAL);

@@ -32,7 +32,7 @@
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/i18n.h"
-
+#include "../common/http.h"     /* (parsed_uri_t) */
 
 /* This objects keeps information about a particular LDAP server and
    is used as item of a single linked list of servers. */
@@ -47,6 +47,17 @@ struct ldap_server_s
   char *base;
 };
 typedef struct ldap_server_s *ldap_server_t;
+
+
+/* This objects is used to build a list of URI consisting of the
+   original and the parsed URI.  */
+struct uri_item_s
+{
+  struct uri_item_s *next;
+  parsed_uri_t parsed_uri;  /* The broken down URI.  */
+  char uri[1];              /* The original URI.  */
+};
+typedef struct uri_item_s *uri_item_t;
 
 
 /* A list of fingerprints.  */
@@ -163,6 +174,7 @@ struct server_control_s
                             response. */
 
   int audit_events;  /* Send audit events to client.  */
+  uri_item_t keyservers; /* List of keyservers.  */
 };
 
 

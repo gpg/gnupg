@@ -48,6 +48,10 @@
 /* Object used to keep state locally to server.c . */
 struct server_local_s;
 
+/* Object used to keep state locally to call-dirmngr.c .  */
+struct dirmngr_local_s;
+typedef struct dirmngr_local_s *dirmngr_local_t;
+
 /* Object used to describe a keyblok node.  */
 typedef struct kbnode_struct *KBNODE;
 typedef struct kbnode_struct *kbnode_t;
@@ -58,7 +62,11 @@ typedef struct kbnode_struct *kbnode_t;
    gpg_init_default_ctrl(). */
 struct server_control_s
 {
+  /* Local data for server.c  */
   struct server_local_s *server_local;
+
+  /* Local data for call-dirmngr.c  */
+  dirmngr_local_t dirmngr_local;
 };
 
 

@@ -49,7 +49,8 @@ noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	ldapserver.h ldapserver.c certcache.c certcache.h \
 	cdb.h cdblib.c ldap.c misc.c dirmngr-err.h w32-ldap-help.h \
-	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h $(ldap_url)
+	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h $(ldap_url) \
+	ks-action.c ks-action.h ks-engine.h ks-engine-hkp.c
 
 if USE_LDAPWRAPPER
 dirmngr_SOURCES += ldap-wrapper.c 

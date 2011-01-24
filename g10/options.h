@@ -1,6 +1,6 @@
 /* options.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2010 Free Software Foundation, Inc.
+ *               2007, 2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,13 @@
 #endif
 #endif
 
+/* Declaration of a keyserver spec type.  The definition is found in
+   ../common/keyserver.h.  */
+struct keyserver_spec;
+typedef struct keyserver_spec *keyserver_spec_t;
+
+
+/* Global options for GPG.  */
 EXTERN_UNLESS_MAIN_MODULE
 struct
 {
@@ -130,22 +137,7 @@ struct
   int not_dash_escaped;
   int escape_from;
   int lock_once;
-  struct keyserver_spec
-  {
-    char *uri;
-    char *scheme;
-    char *auth;
-    char *host;
-    char *port;
-    char *path;
-    char *opaque;
-    strlist_t options;
-    struct
-    {
-      unsigned int direct_uri:1;
-    } flags;
-    struct keyserver_spec *next;
-  } *keyserver;
+  keyserver_spec_t keyserver;  /* The list of configured keyservers.  */
   struct
   {
     unsigned int options;
@@ -245,7 +237,7 @@ struct
       AKL_KEYSERVER,
       AKL_SPEC
     } type;
-    struct keyserver_spec *spec;
+    keyserver_spec_t spec;
     struct akl *next;
   } *auto_key_locate;
 

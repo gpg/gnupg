@@ -340,7 +340,7 @@ get_name(const char *getkey)
      opt->path,
      appendable_path (opt->path,"/pks/lookup?op=get&options=mr&search="),
      searchkey_encoded,
-     opt->action == KS_GETNAME? "&exact=on":"",
+     "&exact=on",
      NULL);
   if(!request)
     {
@@ -429,7 +429,6 @@ search_key(const char *searchkey)
      appendable_path (opt->path, "/pks/lookup?op=index&options=mr&search="),
      hexprefix,
      searchkey_encoded,
-     opt->action == KS_GETNAME? "&exact=on":"",
      NULL);
   if(!request)
     {
@@ -687,7 +686,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  if(ks_strcasecmp(opt->scheme,"hkps")==0)
+  if(ascii_strcasecmp(opt->scheme,"hkps")==0)
     {
       proto="https";
       port="443";

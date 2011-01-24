@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
- * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
- *               2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
+ *               2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -105,6 +105,16 @@ struct srventry
 #endif/*!USE_DNS_SRV*/
 
 
+#ifdef HAVE_PTH
+# define my_select(a,b,c,d,e)  pth_select ((a), (b), (c), (d), (e))
+# define my_connect(a,b,c)     pth_connect ((a), (b), (c))
+# define my_accept(a,b,c)      pth_accept ((a), (b), (c))
+#else
+# define my_select(a,b,c,d,e)  select ((a), (b), (c), (d), (e))
+# define my_connect(a,b,c)     connect ((a), (b), (c))
+# define my_accept(a,b,c)      accept ((a), (b), (c))
+#endif
+
 #ifdef HAVE_W32_SYSTEM
 #define sock_close(a)  closesocket(a)
 #else
@@ -138,7 +148,8 @@ typedef unsigned long longcounter_t;
 typedef void * gnutls_session_t;
 #endif
 
-static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part);
+static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part,
+                                    int no_scheme_check);
 static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
@@ -356,7 +367,7 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd->flags = flags;
   hd->tls_context = tls_context;
 
-  err = _http_parse_uri (&hd->uri, url, errsource);
+  err = _http_parse_uri (&hd->uri, url, 0, errsource);
   if (!err)
     err = send_request (hd, auth, proxy, srvtag, headers, errsource);
   
@@ -368,7 +379,6 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
         es_fclose (hd->fp_read);
       if (hd->fp_write)
         es_fclose (hd->fp_write);
-      http_release_parsed_uri (hd->uri);
       xfree (hd);
     }
   else
@@ -511,18 +521,27 @@ http_get_status_code (http_t hd)
 
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
- * The caller must always use release_parsed_uri() to releases the
- * resources (even on error).
+ * On success the caller must use release_parsed_uri() to releases the
+ * resources.  If NO_SCHEME_CHECK is set, the function tries to parse
+ * the URL in the same way it would do for an HTTP style URI.
  */
 gpg_error_t
-_http_parse_uri (parsed_uri_t * ret_uri, const char *uri,
-                 gpg_err_source_t errsource)
+_http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
+                 int no_scheme_check, gpg_err_source_t errsource)
 {
+  gpg_err_code_t ec;
+
   *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
   if (!*ret_uri)
     return gpg_err_make (errsource, gpg_err_code_from_syserror ());
   strcpy ((*ret_uri)->buffer, uri);
-  return gpg_err_make (errsource, do_parse_uri (*ret_uri, 0));
+  ec = do_parse_uri (*ret_uri, 0, no_scheme_check);
+  if (ec)
+    {
+      xfree (*ret_uri);
+      *ret_uri = NULL;
+    }
+  return gpg_err_make (errsource, ec);
 }
 
 void
@@ -543,7 +562,7 @@ http_release_parsed_uri (parsed_uri_t uri)
 
 
 static gpg_err_code_t
-do_parse_uri (parsed_uri_t uri, int only_local_part)
+do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 {
   uri_tuple_t *tail;
   char *p, *p2, *p3, *pp;
@@ -557,6 +576,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
   uri->port = 0;
   uri->params = uri->query = NULL;
   uri->use_tls = 0;
+  uri->is_http = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -572,15 +592,24 @@ do_parse_uri (parsed_uri_t uri, int only_local_part)
        *pp = tolower (*(unsigned char*)pp);
       uri->scheme = p;
       if (!strcmp (uri->scheme, "http"))
-        uri->port = 80;
+        {
+          uri->port = 80;
+          uri->is_http = 1;
+        }
+      else if (!strcmp (uri->scheme, "hkp"))
+        {
+          uri->port = 11371;
+          uri->is_http = 1;
+        }
 #ifdef HTTP_USE_GNUTLS
-      else if (!strcmp (uri->scheme, "https"))
+      else if (!strcmp (uri->scheme, "https") || !strcmp (uri->scheme,"hkps"))
         {
           uri->port = 443;
+          uri->is_http = 1;
           uri->use_tls = 1;
         }
 #endif
-      else
+      else if (!no_scheme_check)
 	return GPG_ERR_INV_URI; /* Unsupported scheme */
 
       p = p2;
@@ -723,14 +752,14 @@ remove_escapes (char *string)
 }
 
 
-static int
-insert_escapes (char *buffer, const char *string,
-		const char *special)
+static size_t
+escape_data (char *buffer, const void *data, size_t datalen,
+             const char *special)
 {
-  const unsigned char *s = (const unsigned char*)string;
-  int n = 0;
+  const unsigned char *s;
+  size_t n = 0;
 
-  for (; *s; s++)
+  for (s = data; datalen; s++, datalen--)
     {
       if (strchr (VALID_URI_CHARS, *s) && !strchr (special, *s))
 	{
@@ -752,6 +781,14 @@ insert_escapes (char *buffer, const char *string,
 }
 
 
+static int
+insert_escapes (char *buffer, const char *string,
+		const char *special)
+{
+  return escape_data (buffer, string, strlen (string), special);
+}
+
+
 /* Allocate a new string from STRING using standard HTTP escaping as
    well as escaping of characters given in SPECIALS.  A common pattern
    for SPECIALS is "%;?&=". However it depends on the needs, for
@@ -768,6 +805,27 @@ http_escape_string (const char *string, const char *specials)
   if (buf)
     {
       insert_escapes (buf, string, specials);
+      buf[n] = 0;
+    }
+  return buf;
+}
+
+/* Allocate a new string from {DATA,DATALEN} using standard HTTP
+   escaping as well as escaping of characters given in SPECIALS.  A
+   common pattern for SPECIALS is "%;?&=".  However it depends on the
+   needs, for example "+" and "/: often needs to be escaped too.
+   Returns NULL on failure and sets ERRNO. */
+char *
+http_escape_data (const void *data, size_t datalen, const char *specials)
+{
+  int n;
+  char *buf;
+
+  n = escape_data (NULL, data, datalen, specials);
+  buf = xtrymalloc (n+1);
+  if (buf)
+    {
+      escape_data (buf, data, datalen, specials);
       buf[n] = 0;
     }
   return buf;
@@ -852,12 +910,11 @@ send_request (http_t hd, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = _http_parse_uri (&uri, http_proxy, errsource);
+      err = _http_parse_uri (&uri, http_proxy, 0, errsource);
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
 		     http_proxy, gpg_strerror (err));
-	  http_release_parsed_uri (uri);
 	  return gpg_err_make (errsource, GPG_ERR_CONFIGURATION);
 	}
 
@@ -1374,14 +1431,14 @@ start_server ()
       FD_ZERO (&rfds);
       FD_SET (fd, &rfds);
 
-      if (select (fd + 1, &rfds, NULL, NULL, NULL) <= 0)
+      if (my_select (fd + 1, &rfds, NULL, NULL, NULL) <= 0)
 	continue;		/* ignore any errors */
 
       if (!FD_ISSET (fd, &rfds))
 	continue;
 
       addrlen = sizeof peer;
-      client = accept (fd, (struct sockaddr *) &peer, &addrlen);
+      client = my_accept (fd, (struct sockaddr *) &peer, &addrlen);
       if (client == -1)
 	continue;		/* oops */
 
@@ -1451,7 +1508,7 @@ connect_server (const char *server, unsigned short port,
       addr.sin_port = htons(port);
       memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));      
 
-      if (!connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
+      if (!my_connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
 	return sock;
       sock_close(sock);
       return -1;
@@ -1519,7 +1576,7 @@ connect_server (const char *server, unsigned short port,
               return -1;
             }
           
-          if (connect (sock, ai->ai_addr, ai->ai_addrlen))
+          if (my_connect (sock, ai->ai_addr, ai->ai_addrlen))
             last_errno = errno;
           else
             connected = 1;
@@ -1573,7 +1630,7 @@ connect_server (const char *server, unsigned short port,
       for (i = 0; host->h_addr_list[i] && !connected; i++)
         {
           memcpy (&addr.sin_addr, host->h_addr_list[i], host->h_length);
-          if (connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
+          if (my_connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
             last_errno = errno;
           else
             {
@@ -1613,7 +1670,6 @@ write_server (int sock, const char *data, size_t length)
   int nleft;
   int nwritten;
 
-  /* FIXME: We would better use pth I/O functions.  */
   nleft = length;
   while (nleft > 0)
     {
@@ -1640,7 +1696,7 @@ write_server (int sock, const char *data, size_t length)
 
 	      tv.tv_sec = 0;
 	      tv.tv_usec = 50000;
-	      select (0, NULL, NULL, NULL, &tv);
+	      my_select (0, NULL, NULL, NULL, &tv);
 	      continue;
 	    }
 	  log_info ("network write failed: %s\n", strerror (errno));
@@ -1686,7 +1742,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
               
               tv.tv_sec = 0;
               tv.tv_usec = 50000;
-              select (0, NULL, NULL, NULL, &tv);
+              my_select (0, NULL, NULL, NULL, &tv);
               goto again;
             }
           if (nread == GNUTLS_E_REHANDSHAKE)
@@ -1748,7 +1804,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
                   
                   tv.tv_sec = 0;
                   tv.tv_usec = 50000;
-                  select (0, NULL, NULL, NULL, &tv);
+                  my_select (0, NULL, NULL, NULL, &tv);
                   continue;
                 }
               log_info ("TLS network write failed: %s\n",
@@ -1882,11 +1938,10 @@ main (int argc, char **argv)
   http_register_tls_callback (verify_callback);
 #endif /*HTTP_USE_GNUTLS*/
 
-  rc = http_parse_uri (&uri, *argv);
+  rc = http_parse_uri (&uri, *argv, 0);
   if (rc)
     {
       log_error ("`%s': %s\n", *argv, gpg_strerror (rc));
-      http_release_parsed_uri (uri);
       return 1;
     }
 
