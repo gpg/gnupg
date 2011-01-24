@@ -746,7 +746,7 @@ AC_CACHE_CHECK([whether Libgcrypt support ECDH], gnupg_cv_gcry_pk_ecdh,
                [ _gnupg_gcry_save_cflags=$CFLAGS
                  CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
                  AC_TRY_COMPILE(
-                   [#include <gcrypt>],
+                   [#include <gcrypt.h>],
                    [ return GCRY_PK_ECDH; ],
                    gnupg_cv_gcry_pk_ecdh=yes,
                    gnupg_cv_gcry_pk_ecdh=no)
