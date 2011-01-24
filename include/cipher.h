@@ -23,7 +23,7 @@
 #include <gcrypt.h>
 
 /* Macros for compatibility with older libgcrypt versions. */
-#ifndef HAVE_GCRY_PK_ECDSA
+#ifndef HAVE_GCRY_PK_ECDH
 # define GCRY_PK_ECDH  302
 #endif
 
