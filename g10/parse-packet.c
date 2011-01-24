@@ -1953,7 +1953,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   else
     {
       /* Fill in public key parameters.  */
-      if (algorithm == PUBKEY_ALGO_ECDSA && algorithm == PUBKEY_ALGO_ECDH)
+      if (algorithm == PUBKEY_ALGO_ECDSA || algorithm == PUBKEY_ALGO_ECDH)
         {
           /* FIXME: The code in this function ignores the errors.  */
           byte name_oid[256];
