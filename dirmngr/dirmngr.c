@@ -729,7 +729,7 @@ main (int argc, char **argv)
   if (opt.system_daemon && !homedir_seen)
     {
 #ifdef HAVE_W32CE_SYSTEM
-      opt.homedir == DIRSEP_S "gnupg";
+      opt.homedir = DIRSEP_S "gnupg";
 #else
       opt.homedir = gnupg_sysconfdir ();
 #endif

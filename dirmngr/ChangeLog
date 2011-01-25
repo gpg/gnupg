@@ -3,6 +3,8 @@
 	* dirmngr.c (handle_connections): Rewrite loop to use pth-select
 	so to sync timeouts to the full second.
 	(pth_thread_id): New.
+	(main) [W32CE]: Fix setting of default homedir.
+
 	* ldap-wrapper.c (ldap_wrapper_thread): Sync to the full second.
 	Increate pth_wait timeout from 1 to 2 seconds.
 
