@@ -1,6 +1,6 @@
 /* dirmngr.c - LDAP access
  *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *      Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010 g10 Code GmbH
+ *      Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011 g10 Code GmbH
  *
  * This file is part of DirMngr.
  *
@@ -47,7 +47,7 @@
 #define JNLIB_NEED_AFLOCAL
 #include "dirmngr.h"
 
-#include <assuan.h> 
+#include <assuan.h>
 
 #include "certcache.h"
 #include "crlcache.h"
@@ -74,7 +74,7 @@ enum cmd_and_opt_values {
   oSh		  = 's',
   oVerbose	  = 'v',
   oNoVerbose = 500,
-  
+
   aServer,
   aDaemon,
   aService,
@@ -128,7 +128,7 @@ enum cmd_and_opt_values {
 
 
 static ARGPARSE_OPTS opts[] = {
-  
+
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
@@ -185,13 +185,13 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oOCSPResponder, "ocsp-responder",
                 N_("|URL|use OCSP responder at URL")),
-  ARGPARSE_s_s (oOCSPSigner, "ocsp-signer", 
-                N_("|FPR|OCSP response signed by FPR")), 
+  ARGPARSE_s_s (oOCSPSigner, "ocsp-signer",
+                N_("|FPR|OCSP response signed by FPR")),
   ARGPARSE_s_i (oOCSPMaxClockSkew, "ocsp-max-clock-skew", "@"),
   ARGPARSE_s_i (oOCSPMaxPeriod,    "ocsp-max-period", "@"),
   ARGPARSE_s_i (oOCSPCurrentPeriod, "ocsp-current-period", "@"),
 
-  ARGPARSE_s_i (oMaxReplies, "max-replies", 
+  ARGPARSE_s_i (oMaxReplies, "max-replies",
                 N_("|N|do not return more than N items in one query")),
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
@@ -201,7 +201,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"),  
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
   ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy", "@"),
@@ -286,11 +286,18 @@ static int fixed_gcry_pth_init (void)
   return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
 }
 
+#ifndef PTH_HAVE_PTH_THREAD_ID
+static unsigned long pth_thread_id (void)
+{
+  return (unsigned long)pth_self ();
+}
+#endif
+
 static const char *
 my_strusage( int level )
 {
   const char *p;
-  switch ( level ) 
+  switch ( level )
     {
     case 11: p = "dirmngr (GnuPG)";
       break;
@@ -307,7 +314,7 @@ my_strusage( int level )
     case 41: p = _("Syntax: dirmngr [options] [command [args]]\n"
                    "LDAP and OCSP access for GnuPG\n");
       break;
-      
+
     default: p = NULL;
     }
   return p;
@@ -318,18 +325,18 @@ my_strusage( int level )
    implementation does only allow SHA-1 for hashing. This may be
    extended by mapping the name, testing for algorithm availibility
    and adjust the length checks accordingly. */
-static gpg_error_t 
+static gpg_error_t
 my_ksba_hash_buffer (void *arg, const char *oid,
                      const void *buffer, size_t length, size_t resultsize,
                      unsigned char *result, size_t *resultlen)
 {
   (void)arg;
 
-  if (oid && strcmp (oid, "1.3.14.3.2.26")) 
-    return gpg_error (GPG_ERR_NOT_SUPPORTED); 
+  if (oid && strcmp (oid, "1.3.14.3.2.26"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
   if (resultsize < 20)
     return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
-  gcry_md_hash_buffer (2, result, buffer, length); 
+  gcry_md_hash_buffer (2, result, buffer, length);
   *resultlen = 20;
   return 0;
 }
@@ -362,7 +369,7 @@ set_debug (void)
       /* Unless the "guru" string has been used we don't want to allow
          hashing debugging.  The rationale is that people tend to
          select the highest debug value and would then clutter their
-         disk with debug files which may reveal confidential data.  */ 
+         disk with debug files which may reveal confidential data.  */
       if (numok)
         opt.debug &= ~(DBG_HASHING_VALUE);
     }
@@ -387,7 +394,7 @@ set_debug (void)
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
 }
- 
+
 
 static void
 wrong_args (const char *text)
@@ -422,10 +429,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.debug = 0;
       opt.ldap_wrapper_program = NULL;
       opt.disable_http = 0;
-      opt.disable_ldap = 0; 
-      opt.honor_http_proxy = 0; 
-      opt.http_proxy = NULL; 
-      opt.ldap_proxy = NULL; 
+      opt.disable_ldap = 0;
+      opt.honor_http_proxy = 0;
+      opt.http_proxy = NULL;
+      opt.ldap_proxy = NULL;
       opt.only_ldap_proxy = 0;
       opt.ignore_http_dp = 0;
       opt.ignore_ldap_dp = 0;
@@ -485,7 +492,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oAllowOCSP: opt.allow_ocsp = 1; break;
     case oOCSPResponder: opt.ocsp_responder = pargs->r.ret_str; break;
-    case oOCSPSigner: 
+    case oOCSPSigner:
       opt.ocsp_signer = parse_ocsp_signer (pargs->r.ret_str);
       break;
     case oOCSPMaxClockSkew: opt.ocsp_max_clock_skew = pargs->r.ret_int; break;
@@ -521,13 +528,13 @@ w32_service_control (DWORD control, DWORD event_type, LPVOID event_data,
     case SERVICE_CONTROL_SHUTDOWN:
       /* For shutdown we will try to force termination.  */
       service_status.dwCurrentState = SERVICE_STOP_PENDING;
-      SetServiceStatus (service_handle, &service_status); 
+      SetServiceStatus (service_handle, &service_status);
       shutdown_pending = 3;
       break;
 
     case SERVICE_CONTROL_STOP:
       service_status.dwCurrentState = SERVICE_STOP_PENDING;
-      SetServiceStatus (service_handle, &service_status); 
+      SetServiceStatus (service_handle, &service_status);
       shutdown_pending = 1;
       break;
 
@@ -600,12 +607,12 @@ main (int argc, char **argv)
       service_status.dwServiceSpecificExitCode = NO_ERROR;
       service_status.dwCheckPoint = 0;
       service_status.dwWaitHint = 10000; /* 10 seconds timeout.  */
-      SetServiceStatus (service_handle, &service_status); 
+      SetServiceStatus (service_handle, &service_status);
     }
 #endif /*USE_W32_SERVICE*/
 
   set_strusage (my_strusage);
-  log_set_prefix ("dirmngr", 1|4); 
+  log_set_prefix ("dirmngr", 1|4);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -621,7 +628,7 @@ main (int argc, char **argv)
                  gpg_strerror (rc));
     }
   gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
- 
+
  /* Check that the libraries are suitable.  Do it here because
     the option parsing may need services of the libraries. */
 
@@ -664,9 +671,9 @@ main (int argc, char **argv)
     if (pth_key_setdata (my_tlskey_current_fd, NULL))
       log_set_pid_suffix_cb (pid_suffix_callback);
 #endif /*!HAVE_W32_SYSTEM*/
-  
+
   /* Reset rereadable options to default values. */
-  parse_rereadable_options (NULL, 0); 
+  parse_rereadable_options (NULL, 0);
 
   /* LDAP defaults.  */
   opt.add_new_ldapservers = 0;
@@ -732,7 +739,7 @@ main (int argc, char **argv)
 
   if (default_config)
     configname = make_filename (opt.homedir, "dirmngr.conf", NULL );
-  
+
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
@@ -757,7 +764,7 @@ main (int argc, char **argv)
                          configname, strerror(errno) );
               exit(2);
 	    }
-          xfree (configname); 
+          xfree (configname);
           configname = NULL;
 	}
       if (parse_debug && configname )
@@ -771,13 +778,13 @@ main (int argc, char **argv)
         continue; /* Already handled */
       switch (pargs.r_opt)
         {
-        case aServer: 
+        case aServer:
         case aDaemon:
         case aService:
-        case aShutdown: 
-        case aFlush: 
-	case aListCRLs: 
-	case aLoadCRL: 
+        case aShutdown:
+        case aFlush:
+	case aListCRLs:
+	case aLoadCRL:
         case aFetchCRL:
 	case aGPGConfList:
 	case aGPGConfTest:
@@ -812,8 +819,8 @@ main (int argc, char **argv)
         case oSh: csh_style = 0; break;
 	case oLDAPFile: ldapfile = pargs.r.ret_str; break;
 	case oLDAPAddServers: opt.add_new_ldapservers = 1; break;
-	case oLDAPTimeout: 
-	  opt.ldaptimeout = pargs.r.ret_int; 
+	case oLDAPTimeout:
+	  opt.ldaptimeout = pargs.r.ret_int;
 	  break;
 
         case oFakedSystemTime:
@@ -860,12 +867,12 @@ main (int argc, char **argv)
 #endif
 
   if (!access ("/etc/dirmngr", F_OK) && !strncmp (opt.homedir, "/etc/", 5))
-    log_info 
+    log_info
       ("NOTE: DirMngr is now a proper part of GnuPG.  The configuration and"
        " other directory names changed.  Please check that no other version"
        " of dirmngr is still installed.  To disable this warning, remove the"
        " directory `/etc/dirmngr'.\n");
-  
+
   if (gnupg_faked_time_p ())
     {
       gnupg_isotime_t tbuf;
@@ -879,7 +886,7 @@ main (int argc, char **argv)
   set_debug ();
 
   /* Get LDAP server list from file. */
-  if (!ldapfile) 
+  if (!ldapfile)
     {
       ldapfile = make_filename (opt.homedir,
                                 opt.system_daemon?
@@ -917,7 +924,7 @@ main (int argc, char **argv)
           log_set_file (logfile);
           log_set_prefix (NULL, 2|4);
         }
-       
+
       if (debug_wait)
         {
           log_debug ("waiting for debugger - my pid is %u .....\n",
@@ -941,7 +948,7 @@ main (int argc, char **argv)
 
       if (argc)
         wrong_args ("--daemon");
-      
+
       /* Now start with logging to a file if this is desired. */
       if (logfile)
         {
@@ -959,12 +966,12 @@ main (int argc, char **argv)
           dirmngr_exit (1);
         }
 #endif
-      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path ) 
+      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path )
         {
           log_error (_("name of socket too long\n"));
           dirmngr_exit (1);
         }
-    
+
       fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
       if (fd == ASSUAN_INVALID_FD)
         {
@@ -979,7 +986,7 @@ main (int argc, char **argv)
       len = SUN_LEN (&serv_addr);
 
       rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
-      if (rc == -1 
+      if (rc == -1
           && (errno == EADDRINUSE
 #ifdef HAVE_W32_SYSTEM
               || errno == EEXIST
@@ -990,7 +997,7 @@ main (int argc, char **argv)
 	  gnupg_remove (socket_name);
 	  rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
 	}
-      if (rc != -1 
+      if (rc != -1
 	  && (rc = assuan_sock_get_nonce ((struct sockaddr*) &serv_addr, len, &socket_nonce)))
 	log_error (_("error getting nonce for the socket\n"));
       if (rc == -1)
@@ -1001,7 +1008,7 @@ main (int argc, char **argv)
           dirmngr_exit (1);
         }
       cleanup_socket = 1;
-  
+
       if (listen (FD2INT (fd), 5) == -1)
         {
           log_error (_("listen() failed: %s\n"), strerror (errno));
@@ -1022,22 +1029,22 @@ main (int argc, char **argv)
       es_printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
 #else
       pid = pth_fork ();
-      if (pid == (pid_t)-1) 
+      if (pid == (pid_t)-1)
         {
           log_fatal (_("error forking process: %s\n"), strerror (errno));
           dirmngr_exit (1);
         }
 
-      if (pid) 
+      if (pid)
         { /* We are the parent */
           char *infostr;
-          
+
           /* Don't let cleanup() remove the socket - the child is
              responsible for doing that.  */
           cleanup_socket = 0;
 
           close (fd);
-          
+
           /* Create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "DIRMNGR_INFO=%s:%lu:1",
                         socket_name, (ulong)pid ) < 0)
@@ -1058,18 +1065,18 @@ main (int argc, char **argv)
               es_printf ( "%s; export DIRMNGR_INFO;\n", infostr);
             }
           free (infostr);
-          exit (0); 
+          exit (0);
           /*NEVER REACHED*/
         } /* end parent */
-      
-      
-      /* 
+
+
+      /*
          This is the child
        */
 
       /* Detach from tty and put process into a new session */
       if (!nodetach )
-        { 
+        {
           int i;
           unsigned int oldflags;
 
@@ -1165,7 +1172,7 @@ main (int argc, char **argv)
                      argv[0], gpg_strerror (rc));
       else
         {
-          rc = crl_cache_insert (&ctrlbuf, argv[0], reader); 
+          rc = crl_cache_insert (&ctrlbuf, argv[0], reader);
           if (rc)
             log_error (_("processing CRL from `%s' failed: %s\n"),
                        argv[0], gpg_strerror (rc));
@@ -1236,7 +1243,7 @@ main (int argc, char **argv)
          and having both of them is thus problematic.  --no-detach is
          also only usable on the command line.  --batch is unused.  */
 
-      filename = make_filename (opt.homedir, 
+      filename = make_filename (opt.homedir,
                                 opt.system_daemon?
                                 "ldapservers.conf":"dirmngr_ldapservers.conf",
                                 NULL);
@@ -1327,7 +1334,7 @@ cleanup (void)
 }
 
 
-void 
+void
 dirmngr_exit (int rc)
 {
   cleanup ();
@@ -1345,7 +1352,7 @@ dirmngr_init_default_ctrl (ctrl_t ctrl)
 
 
 /* Create a list of LDAP servers from the file FILENAME. Returns the
-   list or NULL in case of errors. 
+   list or NULL in case of errors.
 
    The format fo such a file is line oriented where empty lines and
    lines starting with a hash mark are ignored.  All other lines are
@@ -1353,7 +1360,7 @@ dirmngr_init_default_ctrl (ctrl_t ctrl)
 
    1. field: Hostname
    2. field: Portnumber
-   3. field: Username 
+   3. field: Username
    4. field: Password
    5. field: Base DN
 
@@ -1406,8 +1413,8 @@ parse_ldapserver_file (const char* filename)
           *serverend = server;
           serverend = &server->next;
         }
-    } 
-  
+    }
+
   if (es_ferror (fp))
     log_error (_("error reading `%s': %s\n"), filename, strerror (errno));
   es_fclose (fp);
@@ -1441,14 +1448,14 @@ parse_ocsp_signer (const char *string)
       item->hexfpr[j] = 0;
       if (j != 40 || !(spacep (string+i) || !string[i]))
         {
-          log_error (_("%s:%u: invalid fingerprint detected\n"), 
+          log_error (_("%s:%u: invalid fingerprint detected\n"),
                      "--ocsp-signer", 0);
           xfree (item);
           return NULL;
         }
       return item;
     }
-  
+
   /* Well, it is a filename.  */
   if (*string == '/' || (*string == '~' && string[1] == '/'))
     fname = make_filename (string, NULL);
@@ -1503,7 +1510,7 @@ parse_ocsp_signer (const char *string)
             ;
           err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                            /* */: GPG_ERR_INCOMPLETE_LINE);
-          log_error (_("%s:%u: read error: %s\n"), 
+          log_error (_("%s:%u: read error: %s\n"),
                      fname, lnr, gpg_strerror (err));
           errflag = 1;
           continue;
@@ -1541,14 +1548,14 @@ parse_ocsp_signer (const char *string)
 
 
 /*
-   Stuff used in daemon mode.  
+   Stuff used in daemon mode.
  */
 
 
 
 /* Reread parts of the configuration.  Note, that this function is
    obviously not thread-safe and should only be called from the PTH
-   signal handler. 
+   signal handler.
 
    Fixme: Due to the way the argument parsing works, we create a
    memory leak here for all string type arguments.  There is currently
@@ -1619,11 +1626,11 @@ handle_signal (int signo)
     case SIGHUP:
       dirmngr_sighup_action ();
       break;
-      
+
     case SIGUSR1:
       cert_cache_print_stats ();
       break;
-      
+
     case SIGUSR2:
       log_info (_("SIGUSR2 received - no action defined\n"));
       break;
@@ -1643,7 +1650,7 @@ handle_signal (int signo)
           dirmngr_exit (0);
 	}
       break;
-        
+
     case SIGINT:
       log_info (_("SIGINT received - immediate shutdown\n"));
       log_info( "%s %s stopped\n", strusage(11), strusage(13));
@@ -1681,12 +1688,12 @@ handle_tick (void)
 
 /* Check the nonce on a new connection.  This is a NOP unless we we
    are using our Unix domain socket emulation under Windows.  */
-static int 
+static int
 check_nonce (assuan_fd_t fd, assuan_sock_nonce_t *nonce)
 {
   if (assuan_sock_check_nonce (fd, nonce))
     {
-      log_info (_("error reading nonce on fd %d: %s\n"), 
+      log_info (_("error reading nonce on fd %d: %s\n"),
                 FD2INT (fd), strerror (errno));
       assuan_sock_close (fd);
       return -1;
@@ -1701,13 +1708,16 @@ static void *
 start_connection_thread (void *arg)
 {
   union int_and_ptr_u argval;
-  assuan_fd_t fd;
+  gnupg_fd_t fd;
 
   argval.aptr = arg;
   fd = argval.afd;
 
   if (check_nonce (fd, &socket_nonce))
-    return NULL;
+    {
+      log_error ("handler 0x%lx nonce check FAILED\n", pth_thread_id ());
+      return NULL;
+    }
 
 #ifndef HAVE_W32_SYSTEM
   pth_key_setdata (my_tlskey_current_fd, argval.aptr);
@@ -1727,7 +1737,7 @@ start_connection_thread (void *arg)
   argval.afd = ASSUAN_INVALID_FD;
   pth_key_setdata (my_tlskey_current_fd, argval.aptr);
 #endif
-  
+
   return NULL;
 }
 
@@ -1738,11 +1748,13 @@ handle_connections (assuan_fd_t listen_fd)
 {
   pth_attr_t tattr;
   pth_event_t ev, time_ev;
-  sigset_t sigs, oldsigs;
+  sigset_t sigs;
   int signo;
   struct sockaddr_un paddr;
   socklen_t plen = sizeof( paddr );
-  assuan_fd_t fd;
+  gnupg_fd_t fd;
+  int nfd, ret;
+  fd_set fdset, read_fdset;
 
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
@@ -1750,46 +1762,89 @@ handle_connections (assuan_fd_t listen_fd)
   pth_attr_set (tattr, PTH_ATTR_NAME, "dirmngr");
 
 #ifndef HAVE_W32_SYSTEM /* FIXME */
+  /* Make sure that the signals we are going to handle are not blocked
+     and create an event object for them.  We also set the default
+     action to ignore because we use an Pth event to get notified
+     about signals.  This avoids that the default action is taken in
+     case soemthing goes wrong within Pth.  The problem might also be
+     a Pth bug.  */
   sigemptyset (&sigs );
-  sigaddset (&sigs, SIGHUP);
-  sigaddset (&sigs, SIGUSR1);
-  sigaddset (&sigs, SIGUSR2);
-  sigaddset (&sigs, SIGINT);
-  sigaddset (&sigs, SIGTERM);
+  {
+    static const int mysigs[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGINT, SIGTERM };
+    struct sigaction sa;
+    int i;
+
+    for (i=0; i < DIM (mysigs); i++)
+      {
+        sigemptyset (&sa.sa_mask);
+        sa.sa_handler = SIG_IGN;
+        sa.sa_flags = 0;
+        sigaction (mysigs[i], &sa, NULL);
+
+        sigaddset (&sigs, mysigs[i]);
+      }
+  }
+
+  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #else
+  /* Use a dummy event.  */
   sigs = 0;
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 #endif
   time_ev = NULL;
 
+  /* Setup the fdset.  It has only one member.  This is because we use
+     pth_select instead of pth_accept to properly sync timeouts with
+     to full second.  */
+  FD_ZERO (&fdset);
+  FD_SET (FD2INT (listen_fd), &fdset);
+  nfd = FD2INT (listen_fd);
+
+  /* Main loop.  */
   for (;;)
     {
+      /* Make sure that our signals are not blocked.  */
+      pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
+
+      /* Shutdown test.  */
       if (shutdown_pending)
         {
           if (!active_connections)
             break; /* ready */
 
-          /* Do not accept anymore connections but wait for existing
-             connections to terminate.  */
-          signo = 0;
-          pth_wait (ev);
-          if (pth_event_occurred (ev) && signo)
-            handle_signal (signo);
-          continue;
+          /* Do not accept new connections but keep on running the
+             loop to cope with the timer events.  */
+          FD_ZERO (&fdset);
 	}
 
+      /* Create a timeout event if needed.  To help with power saving
+         we syncronize the ticks to the next full second.  */
       if (!time_ev)
-        time_ev = pth_event (PTH_EVENT_TIME, 
-                             pth_timeout (TIMERTICK_INTERVAL, 0));
+        {
+          pth_time_t nexttick;
+
+          nexttick = pth_timeout (TIMERTICK_INTERVAL, 0);
+          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
+            {
+              nexttick.tv_sec++;
+              nexttick.tv_usec = 0;
+            }
+          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
+        }
+
+      /* Take a copy of the fdset.  */
+      read_fdset = fdset;
 
       if (time_ev)
         pth_event_concat (ev, time_ev, NULL);
-      fd = (assuan_fd_t) pth_accept_ev (FD2INT (listen_fd), (struct sockaddr *)&paddr, &plen, ev);
+
+      ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
+
       if (time_ev)
         pth_event_isolate (time_ev);
 
-      if (fd == ASSUAN_INVALID_FD)
+      if (ret == -1)
         {
           if (pth_event_occurred (ev)
               || (time_ev && pth_event_occurred (time_ev)) )
@@ -1804,7 +1859,8 @@ handle_connections (assuan_fd_t listen_fd)
                 }
               continue;
 	    }
-          log_error (_("accept failed: %s - waiting 1s\n"), strerror (errno));
+          log_error (_("pth_select failed: %s - waiting 1s\n"),
+                     strerror (errno));
           pth_sleep (1);
           continue;
 	}
@@ -1825,25 +1881,38 @@ handle_connections (assuan_fd_t listen_fd)
       /* We now might create a new thread and because we don't want
          any signals (as we are handling them here) to be delivered to
          a new thread we need to block those signals. */
-      pth_sigmask (SIG_BLOCK, &sigs, &oldsigs);
+      pth_sigmask (SIG_BLOCK, &sigs, NULL);
 
-      /* Create thread to handle this connection.  */
-      {
-        union int_and_ptr_u argval;
+      if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
+	{
+          plen = sizeof paddr;
+	  fd = INT2FD (pth_accept (FD2INT(listen_fd),
+                                   (struct sockaddr *)&paddr, &plen));
+	  if (fd == GNUPG_INVALID_FD)
+	    {
+	      log_error ("accept failed: %s\n", strerror (errno));
+	    }
+          else
+            {
+              char threadname[50];
+              union int_and_ptr_u argval;
 
-        argval.afd = fd;
-        if (!pth_spawn (tattr, start_connection_thread, argval.aptr))
-          {
-            log_error (_("error spawning connection handler: %s\n"),
-                       strerror (errno) );
-            assuan_sock_close (fd);
-          }
-      }
-
-      /* Restore the signal mask. */
-      pth_sigmask (SIG_SETMASK, &oldsigs, NULL);
+              argval.afd = fd;
+              snprintf (threadname, sizeof threadname-1,
+                        "conn fd=%d", FD2INT(fd));
+              threadname[sizeof threadname -1] = 0;
+              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
+              if (!pth_spawn (tattr, start_connection_thread, argval.aptr))
+                {
+                  log_error ("error spawning connection handler: %s\n",
+                             strerror (errno) );
+                  assuan_sock_close (fd);
+                }
+            }
+          fd = GNUPG_INVALID_FD;
+	}
     }
-  
+
   pth_event_free (ev, PTH_FREE_ALL);
   if (time_ev)
     pth_event_free (time_ev, PTH_FREE_ALL);

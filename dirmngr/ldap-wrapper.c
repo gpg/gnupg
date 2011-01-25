@@ -269,8 +269,17 @@ ldap_wrapper_thread (void *dummy)
     {
       pth_event_t timeout_ev;
       int any_action = 0;
+      pth_time_t nexttick;
 
-      timeout_ev = pth_event (PTH_EVENT_TIME, pth_timeout (1, 0));
+      /* We timeout the pth_wait every 2 seconds.  To help with power
+         saving we syncronize the timeouts to the next full second.  */
+      nexttick = pth_timeout (2, 0);
+      if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
+        {
+          nexttick.tv_sec++;
+          nexttick.tv_usec = 0;
+        }
+      timeout_ev = pth_event (PTH_EVENT_TIME, nexttick);
       if (! timeout_ev)
 	{
           log_error (_("pth_event failed: %s\n"), strerror (errno));

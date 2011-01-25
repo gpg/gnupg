@@ -1,3 +1,11 @@
+2011-01-25  Werner Koch  <wk@g10code.com>
+
+	* dirmngr.c (handle_connections): Rewrite loop to use pth-select
+	so to sync timeouts to the full second.
+	(pth_thread_id): New.
+	* ldap-wrapper.c (ldap_wrapper_thread): Sync to the full second.
+	Increate pth_wait timeout from 1 to 2 seconds.
+
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* server.c (release_ctrl_keyservers): New.
