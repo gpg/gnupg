@@ -1,3 +1,10 @@
+2011-01-25  NIIBE Yutaka <gniibe@fsij.org>,
+	    Grant Olson <kgo@grant-olson.net>  (wk)
+
+	* command.c (do_reset, get_reader_slot)
+	(update_reader_status_file): Fix handling of the VALID flag for
+	unplugged readers.
+
 2011-01-25  Werner Koch  <wk@g10code.com>
 
 	From 2.0 branch, 2010-03-17:

@@ -309,7 +309,7 @@ do_reset (ctrl_t ctrl, int send_reset)
     {
       if (apdu_reset (slot)) 
         {
-          slot_table[slot].reset_failed = 1;
+          slot_table[slot].valid = 0;
         }
       application_notify_card_reset (slot);
     }
@@ -401,6 +401,14 @@ get_reader_slot (void)
     {
       int no_service_flag;
       ss->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
+
+      /* If we still don't have a slot, we have no readers.
+	 Invalidate for now until a reader is attached. */
+      if(ss->slot == -1)
+	{
+	  ss->valid = 0;
+	}
+
       if (no_service_flag)
         {
           log_info ("no card services - disabling scdaemon\n");
@@ -2190,6 +2198,8 @@ update_reader_status_file (int set_card_removed_flag)
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
+	  apdu_close_reader(ss->slot);
+	  ss->valid = 0;
           status = 0;
           changed = ss->changed;
         }
