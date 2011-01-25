@@ -260,11 +260,6 @@ gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
 int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 #endif
 
-#define KEYGEN_FLAG_NO_PROTECTION 1
-#define KEYGEN_FLAG_TRANSIENT_KEY 2
-int pk_ecc_keypair_gen (PKT_public_key **pk_out, int algo,
-                        int keygen_flags, char **cache_nonce_addr,
-                        unsigned nbits);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

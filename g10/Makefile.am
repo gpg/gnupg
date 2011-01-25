@@ -111,8 +111,7 @@ gpg2_SOURCES  = gpg.c		\
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
-	      verify.c          \
-	      verify-stubs.c
+	      verify.c
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \

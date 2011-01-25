@@ -1,3 +1,21 @@
+2011-01-25  Werner Koch  <wk@g10code.com>
+
+	* pubkey-enc.c (get_it): Fix assertion.
+	Use GPG_ERR_WRONG_SECKEY instead of log_fatal.  Add safety checks
+	for NFRAME.
+
+	* main.h (KEYGEN_FLAG_NO_PROTECTION, KEYGEN_FLAG_TRANSIENT_KEY):
+	Move back to ..
+	* keygen.c: .. here.
+	(pk_ecc_keypair_gen): Make static.
+	(common_key_gen): Fold back into ..
+	(common_gen): .. this.
+	(delme__pk_ecc_build_sexp): Remove unused function.
+	(pk_ecc_keypair_gen): Fold it into ..
+	(gen_ecc): .. this.
+	(ask_keysize): Use proper rounding for ECC.
+	* verify-stubs.c: Remove.
+
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c: Rewrite most stuff for use with dirmngr.  Get rid

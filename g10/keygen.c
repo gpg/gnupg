@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+ *               2007, 2009, 2010, 2011  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,7 +18,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning wk: check these changes.
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +50,11 @@
 #define DEFAULT_STD_ALGO    GCRY_PK_RSA
 #define DEFAULT_STD_KEYSIZE 2048
 
+/* Flag bits used during key generation.  */
+#define KEYGEN_FLAG_NO_PROTECTION 1
+#define KEYGEN_FLAG_TRANSIENT_KEY 2
+
+/* Maximum number of supported algorithm preferences.  */
 #define MAX_PREFS 30 
 
 enum para_name {
@@ -1128,16 +1132,17 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 }
 
 
+/* Common code for the key generation fucntion gen_xxx.  */
 static int
-common_key_gen (const char *keyparms, int algo, const char *algoelem,
-            int keygen_flags, char **cache_nonce_addr, PKT_public_key **pk_out)
+common_gen (const char *keyparms, int algo, const char *algoelem,
+            kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,
+            int keygen_flags, char **cache_nonce_addr)
 {
   int err;
+  PACKET *pkt;
   PKT_public_key *pk;
   gcry_sexp_t s_key;
 
-  *pk_out = NULL;
-  
   err = agent_genkey (NULL, cache_nonce_addr, keyparms,
                       !!(keygen_flags & KEYGEN_FLAG_NO_PROTECTION), &s_key);
   if (err)
@@ -1154,7 +1159,10 @@ common_key_gen (const char *keyparms, int algo, const char *algoelem,
       return err;
     }
 
+  pk->timestamp = timestamp;
   pk->version = 4;
+  if (expireval) 
+    pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
   err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
@@ -1167,45 +1175,21 @@ common_key_gen (const char *keyparms, int algo, const char *algoelem,
     }
   gcry_sexp_release (s_key);
   
-  *pk_out = pk;
+  pkt = xtrycalloc (1, sizeof *pkt);
+  if (!pkt)
+    {
+      err = gpg_error_from_syserror ();
+      free_public_key (pk);
+      return err;
+    }
+
+  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
+  pkt->pkt.public_key = pk;
+  add_kbnode (pub_root, new_kbnode (pkt));
 
   return 0;
 }
 
-/* Common code for the key generation fucntion gen_xxx.  */
-static int
-common_gen (const char *keyparms, int algo, const char *algoelem,
-            kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,
-            int keygen_flags, char **cache_nonce_addr)
-{
-  PKT_public_key *pk;  
-  int err; 
-
-  err = common_key_gen( keyparms, algo, algoelem, keygen_flags, cache_nonce_addr, &pk );
-
-  if( !err )  {
-    PACKET *pkt;
-
-    pk->timestamp = timestamp;
-    if (expireval) 
-      pk->expiredate = pk->timestamp + expireval;
-
-    pkt = xtrycalloc (1, sizeof *pkt);
-    if (!pkt)
-      {
-        err = gpg_error_from_syserror ();
-        free_public_key (pk);
-        return err;
-      }
-
-    pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
-    pkt->pkt.public_key = pk;
-
-    add_kbnode (pub_root, new_kbnode (pkt));
-  }
-
-  return err;
-}
 
 /*
  * Generate an Elgamal key.
@@ -1343,40 +1327,14 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
   return err;
 }
 
-/* Returns allocated ECC key generation S-explression 
-   call gcry_sexp_release ( out ) to free it.
- */
-static int 
-delme__pk_ecc_build_sexp( int qbits, int algo, int is_long_term, gcry_sexp_t *out )  {
-  gcry_mpi_t kek_params;
-  char *kek_params_s;
-  int rc;
 
-  if( is_long_term && algo == PUBKEY_ALGO_ECDH )
-    kek_params = pk_ecdh_default_params_to_mpi( qbits );
-  else
-    kek_params = NULL;
 
-  if( kek_params )  {
-    kek_params_s = mpi2hex( kek_params );
-    mpi_release( kek_params );
-  }
-
-  rc = gcry_sexp_build (out, NULL,
-			algo == PUBKEY_ALGO_ECDSA ? 
-                        "(genkey(ecdsa(nbits %d)(qbits %d)))" : 
-                        "(genkey(ecdh(nbits %d)(qbits %d)(transient-key %d)(kek-params %s)))",
-                        (int)qbits, (int)qbits, (int)(is_long_term==0), kek_params_s);
-  xfree( kek_params_s );
-  if (rc)  {
-    log_debug("ec gen gcry_sexp_build failed: %s\n", gpg_strerror (rc));
-    return rc;
-  }
-  return 0;
-}
-
-static char * 
-pk_ecc_build_key_params( int qbits, int algo, int transient )  {
+/* Create an S-expression string out QBITS, ALGO and the TRANSIENT
+   flag.  On success a malloced string is returned, on failure NULL
+   and ERRNO is set.  */
+static char *
+pk_ecc_build_key_params (int qbits, int algo, int transient)
+{
   byte *kek_params = NULL;
   size_t kek_params_size;
   char nbitsstr[35];
@@ -1384,141 +1342,104 @@ pk_ecc_build_key_params( int qbits, int algo, int transient )  {
   char *keyparms;
   int n;
 
-  /* KEK parameters are only needed for long term key generation */
-  if( !transient && algo == PUBKEY_ALGO_ECDH )
-    kek_params = pk_ecdh_default_params( qbits, &kek_params_size );
+  /* KEK parameters are only needed for long term key generation.  */
+  if (!transient && algo == PUBKEY_ALGO_ECDH)
+    kek_params = pk_ecdh_default_params (qbits, &kek_params_size);
   else
     kek_params = NULL;
 
   snprintf (nbitsstr, sizeof nbitsstr, "%u", qbits);
   snprintf (qbitsstr, sizeof qbitsstr, "%u", qbits);
-  if( algo == PUBKEY_ALGO_ECDSA || kek_params == NULL )
-    keyparms = xtryasprintf (
-		"(genkey(%s(nbits %zu:%s)(qbits %zu:%s)(transient-key 1:%d)))", 
-			   algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
-                           strlen (nbitsstr), nbitsstr,
-                           strlen (qbitsstr), qbitsstr,
-			   transient );
-  else  {
-    assert( kek_params != NULL );
-    keyparms = xtryasprintf (
-		"(genkey(ecdh(nbits %zu:%s)(qbits %zu:%s)(transient-key 1:%d)(kek-params %u:",
-                           strlen (nbitsstr), nbitsstr,
-                           strlen (qbitsstr), qbitsstr,
-			   transient,
-			   (unsigned)kek_params_size );
-    if( keyparms != NULL )  {
-       n = strlen(keyparms);
-       keyparms = xtryrealloc( keyparms, n + kek_params_size + 4 );
+  if (algo == PUBKEY_ALGO_ECDSA || !kek_params)
+    {
+      keyparms = xtryasprintf ("(genkey(%s(nbits %zu:%s)"
+                               /**/      "(qbits %zu:%s)"
+                               /**/      "(transient-key 1:%d)))",
+                               algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
+                               strlen (nbitsstr), nbitsstr,
+                               strlen (qbitsstr), qbitsstr,
+                               transient);
     }
-    if( keyparms == NULL )  {
-      xfree( kek_params );
-      return NULL;
+  else
+    {
+      assert (kek_params);
+
+      keyparms = xtryasprintf ("(genkey(ecdh(nbits %zu:%s)"
+                               /**/        "(qbits %zu:%s)"
+                               /**/        "(transient-key 1:%d)"
+                               /**/        "(kek-params %zu:",
+                               strlen (nbitsstr), nbitsstr,
+                               strlen (qbitsstr), qbitsstr,
+                               transient,
+                               kek_params_size);
+      if (keyparms)
+        {
+          n = strlen (keyparms);
+          keyparms = xtryrealloc (keyparms, n + kek_params_size + 4);
+        }
+      if (!keyparms)
+        {
+          xfree (kek_params);
+          return NULL;
+        }
+      memcpy (keyparms+n, kek_params, kek_params_size);
+      xfree (kek_params);
+      memcpy (keyparms+n+kek_params_size, ")))", 4);
     }
-    memcpy( keyparms+n, kek_params, kek_params_size );
-    xfree( kek_params );
-    memcpy( keyparms+n+kek_params_size, ")))", 4 );
-  }
   return keyparms;
 }
 
-/* This common function is used in this file and also to generate ephemeral keys for ECDH.
- * Caller must call free_public_key and free_secret_key */
-int
-pk_ecc_keypair_gen( PKT_public_key **pk_out, int algo, int keygen_flags, char **cache_nonce_addr, unsigned nbits)  {
-  int err;
-  unsigned int qbits;
-  char *keyparms;
-  // PUBKEY_ALGO_ECDH, PUBKEY_ALGO_ECDSA
-  static const char * const ec_pub_params[2] =  { "cqp",  "cq" };
-  //static const char * const ec_priv_params[2] = { "cqpd", "cqd" };
 
-  assert( algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH );
-  assert( PUBKEY_ALGO_ECDSA == PUBKEY_ALGO_ECDH + 1 );
-
-  *pk_out = NULL;
-
-  if( pubkey_get_npkey (PUBKEY_ALGO_ECDSA) != 2 || pubkey_get_nskey (PUBKEY_ALGO_ECDSA) != 3 ||
-      pubkey_get_npkey (PUBKEY_ALGO_ECDH)  != 3 || pubkey_get_nskey (PUBKEY_ALGO_ECDH)  != 4 )  
-  {
-    log_info(_("incompatible version of gcrypt library (expect named curve logic for ECC)\n") );
-    return GPG_ERR_EPROGMISMATCH;
-  }
-
-  if ( nbits != 256 && nbits != 384 && nbits != 521 ) 
-    {
-      log_info(_("keysize invalid; using 256 bits instead of passed in %d\n"), nbits );
-    }
-
-  /*
-    Figure out a q size based on the key size. See gen_dsa for more details.
-    Due to 8-bit rounding we may get 528 here instead of 521
-  */
-  nbits = qbits = (nbits < 521 ? nbits : 521 );
-
-  keyparms = pk_ecc_build_key_params(qbits, algo, !!((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY) && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION)) );
-  if (!keyparms)  {
-    err = gpg_error_from_syserror ();
-      log_error ("ec pk_ecc_build_key_params failed: %s\n", gpg_strerror (err) );
-  }
-  else
-    {
-      err = common_key_gen (keyparms, algo, ec_pub_params[algo-PUBKEY_ALGO_ECDH],
-                        keygen_flags, cache_nonce_addr, pk_out);
-      xfree (keyparms);
-    }
-
-#if 0
-  /* always allocase seckey_info for EC keys. TODO: is this needed? */
-  if( *pk_out )  {
-    struct seckey_info *ski;
-
-    (*pk_out)->seckey_info = ski = xtrycalloc (1, sizeof *ski);
-    if (!(*pk_out)->seckey_info)  {
-      free_public_key(*pk_out);
-      *pk_out = NULL;
-      return gpg_error_from_syserror ();
-    }
-
-    ski->is_protected = 0;
-    ski->algo = 0;
-  }
-#endif
-
-  return err;
-}
-
-
-/****************
- * Generate an ECC OpenPGP key
+/*
+ * Generate an ECC key
  */
 static gpg_error_t
 gen_ecc (int algo, unsigned int nbits, KBNODE pub_root,
-         u32 timestamp, u32 expireval, int is_subkey, 
+         u32 timestamp, u32 expireval, int is_subkey,
          int keygen_flags, char **cache_nonce_addr)
 {
-  int rc;
-  PACKET *pkt;
-  PKT_public_key *pk;
+  int err;
+  unsigned int qbits;
+  char *keyparms;
 
-  rc = pk_ecc_keypair_gen( &pk, algo, keygen_flags, cache_nonce_addr, nbits );
-  if( rc )
-    return rc;
+  assert (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH);
 
-  /* the rest is very similar to common_gen */
+  if (pubkey_get_npkey (PUBKEY_ALGO_ECDSA) != 2
+      || pubkey_get_nskey (PUBKEY_ALGO_ECDSA) != 3
+      || pubkey_get_npkey (PUBKEY_ALGO_ECDH)  != 3
+      || pubkey_get_nskey (PUBKEY_ALGO_ECDH)  != 4)
+    {
+      log_error ("broken version of Libgcrypt\n");
+      return gpg_error (GPG_ERR_INTERNAL);  /* ABI silently changed.  */
+    }
 
-  pk->timestamp = timestamp;
-  if (expireval) 
-    pk->expiredate = pk->timestamp + expireval;
+  if (nbits != 256 && nbits != 384 && nbits != 521)
+    {
+      log_info (_("keysize invalid; using %u bits\n"), 256);
+      /* FIXME:  Where do we set it to 256?  */
+    }
 
-  //assert( pk->seckey_info != NULL );
-  /// TODO: the new agent-based model doesn't return private portion here (the pkey array is allocated, but private MPIs are NULL, so this will cause a crash... )
-  ///pk->seckey_info->csum = checksum_mpi ( pk->pkey[algo==PUBKEY_ALGO_ECDSA ? 2 : 3] );	/* corresponds to 'd' in 'cqd' or 'cqpd' */
+  /* Figure out a Q size based on the key size.  See gen_dsa for more
+     details.  Due to 8-bit rounding we may get 528 here instead of 521. */
+  nbits = qbits = (nbits < 521 ? nbits : 521 );
 
-  pkt = xmalloc_clear(sizeof *pkt);
-  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
-  pkt->pkt.public_key = pk;
-  add_kbnode(pub_root, new_kbnode( pkt ));
+  keyparms = pk_ecc_build_key_params
+    (qbits, algo,  !!( (keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                       && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION)) );
+  if (!keyparms)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("ecc pk_ecc_build_key_params failed: %s\n",
+                 gpg_strerror (err));
+    }
+  else
+    {
+      err = common_gen (keyparms, algo,
+                        algo == PUBKEY_ALGO_ECDSA? "cq" : "cqp",
+                        pub_root, timestamp, expireval, is_subkey,
+                        keygen_flags, cache_nonce_addr);
+      xfree (keyparms);
+    }
 
   return 0;
 }
@@ -1755,7 +1676,7 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
     }
   
   tty_printf (_("   (%d) ECDSA and ECDH\n"), 9 );
-  
+
   for(;;)
     {
       *r_usage = 0;
@@ -1877,7 +1798,7 @@ ask_keysize (int algo, unsigned int primary_keysize)
   tty_printf(_("%s keys may be between %u and %u bits long.\n"),
 	     openpgp_pk_algo_name (algo), min, max);
 
-  for(;;)
+  for (;;)
     {
       char *prompt, *answer;
 
@@ -1899,28 +1820,34 @@ ask_keysize (int algo, unsigned int primary_keysize)
 	break;
     }
 
-  tty_printf(_("Requested keysize is %u bits\n"), nbits );
+  tty_printf (_("Requested keysize is %u bits\n"), nbits);
 
  leave:
-  if( algo == PUBKEY_ALGO_DSA && (nbits % 64) )
+  if (algo == PUBKEY_ALGO_DSA && (nbits % 64))
     {
-      if( !(algo == PUBKEY_ALGO_ECDSA && nbits==521) )  {
-        nbits = ((nbits + 63) / 64) * 64;
-        if (!autocomp)
-          tty_printf(_("rounded up to %u bits\n"), nbits );
-      }
+      nbits = ((nbits + 63) / 64) * 64;
+      if (!autocomp)
+        tty_printf (_("rounded up to %u bits\n"), nbits);
     }
-  else if( algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA )  {
-     if( nbits != 256 && nbits != 384 && nbits != 521 )  {
-        nbits = min;
-        tty_printf(_("unsupported ECDH value, corrected to the minimum %u bits\n"), nbits );
-     }
-  }
-  else if( (nbits % 32) )
+  else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
+    {
+      if (nbits != 256 && nbits != 384 && nbits != 521)
+        {
+          if (nbits < 256)
+            nbits = 256;
+          else if (nbits < 384)
+            nbits = 384;
+          else
+            nbits = 521;
+          if (!autocomp)
+            tty_printf (_("rounded to %u bits\n"), nbits);
+        }
+    }
+  else if ((nbits % 32))
     {
       nbits = ((nbits + 31) / 32) * 32;
       if (!autocomp)
-        tty_printf(_("rounded up to %u bits\n"), nbits );
+        tty_printf (_("rounded up to %u bits\n"), nbits );
     }
 
   return nbits;
@@ -2405,7 +2332,7 @@ do_create (int algo, unsigned int nbits, KBNODE pub_root,
   else if (algo == PUBKEY_ALGO_DSA)
     err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
-  else if( algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH )
+  else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
     err = gen_ecc (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)

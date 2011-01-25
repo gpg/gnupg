@@ -145,18 +145,17 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   gcry_sexp_t s_data;
   char *desc;
   char *keygrip;
-  byte fp[MAX_FINGERPRINT_LEN]; 
+  byte fp[MAX_FINGERPRINT_LEN];
   size_t fpn;
-  const int gcry_pkalgo = map_pk_openpgp_to_gcry( sk->pubkey_algo );
+  const int pkalgo = map_pk_openpgp_to_gcry (sk->pubkey_algo);
 
   /* Get the keygrip.  */
   err = hexkeygrip_from_pk (sk, &keygrip);
   if (err)
     goto leave;
 
-
   /* Convert the data to an S-expression.  */
-  if (gcry_pkalgo == GCRY_PK_ELG ||gcry_pkalgo == GCRY_PK_ELG_E)
+  if (pkalgo == GCRY_PK_ELG || pkalgo == GCRY_PK_ELG_E)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -164,7 +163,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))", 
                                enc->data[0], enc->data[1]);
     }
-  else if (gcry_pkalgo == GCRY_PK_RSA || gcry_pkalgo == GCRY_PK_RSA_E)
+  else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_E)
     {
       if (!enc->data[0])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -172,12 +171,12 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
                                enc->data[0]);
     }
-  else if (gcry_pkalgo == GCRY_PK_ECDH )
+  else if (pkalgo == GCRY_PK_ECDH)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
-        err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(a%m)(b%m)))", 
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(a%m)(b%m)))",
                                enc->data[0], enc->data[1]);
     }
   else
@@ -186,8 +185,9 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (err)
     goto leave;
 
-  fingerprint_from_pk( sk, fp, &fpn );
-  assert( fpn == 20 );
+  /* fixme: only needed for ECDH.  Don't compute always. */
+  fingerprint_from_pk (sk, fp, &fpn);
+  assert (fpn == 20);
 
   /* Decrypt. */
   desc = gpg_format_keydesc (sk, 0, 1);
@@ -222,12 +222,12 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     {
       gcry_mpi_t shared_mpi;
       gcry_mpi_t decoded;
-      
+
       /* At the beginning the frame are the bytes of shared point MPI.  */
       err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
       if (err)
         {
-          log_fatal ("mpi_scan failed: %s\n", gpg_strerror (err));
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
           goto leave;
         }
 
@@ -247,13 +247,14 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 
       /* Allow double padding for the benefit of DEK size concealment.
          Higher than this is wasteful. */
-      if (frame[nframe-1] > 8*2 || nframe <= 8)
+      if (!nframe || frame[nframe-1] > 8*2 || nframe <= 8
+          || frame[nframe-1] > nframe)
         {
           err = gpg_error (GPG_ERR_WRONG_SECKEY);
-          goto leave; 
+          goto leave;
         }
       nframe -= frame[nframe-1]; /* Remove padding.  */
-      assert (n); /* (used just below) */
+      assert (!n); /* (used just below) */
     }
   else
     {
