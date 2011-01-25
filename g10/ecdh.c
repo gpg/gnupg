@@ -87,20 +87,26 @@ pk_ecdh_default_params (unsigned int qbits, size_t *sizeout)
 }
 
 
-/* Encrypts/decrypts 'data' with a key derived from shared_mpi ECC
- * point using FIPS SP 800-56A compliant method, which is key
- * derivation + key wrapping. The direction is determined by the first
- * parameter (is_encrypt=1 --> this is encryption).  The result is
- * returned in out as a size+value MPI.
- *
- * TODO: memory leaks (x_secret).
+/* Encrypts/decrypts DATA using a key derived from the ECC shared
+   point SHARED_MPI using the FIPS SP 800-56A compliant method
+   key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
+   encrypts; if false, it decrypts.  On success the result is stored
+   at R_RESULT; on failure NULL is stored at R_RESULT and an error
+   code returned. 
+
+   FIXME: explain PKEY and PK_FP.
  */
-static int
+ 
+/*
+   TODO: memory leaks (x_secret).
+*/
+gpg_error_t
 pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi, 
                                    const byte pk_fp[MAX_FINGERPRINT_LEN],
                                    gcry_mpi_t data, gcry_mpi_t *pkey,
-                                   gcry_mpi_t *out)
+                                   gcry_mpi_t *r_result)
 {
+  gpg_error_t err;
   byte *secret_x;
   int secret_x_size;
   byte kdf_params[256];
@@ -108,47 +114,54 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   int nbits;
   int kdf_hash_algo;
   int kdf_encr_algo;
-  int rc;
 
-  *out = NULL;
+  *r_result = NULL;
 
-  nbits = pubkey_nbits( PUBKEY_ALGO_ECDH, pkey );
+  nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
+  if (!nbits)
+    return gpg_error (GPG_ERR_TOO_SHORT);
 
   {
     size_t nbytes;
+
     /* Extract x component of the shared point: this is the actual
-       shared secret */
+       shared secret. */
     nbytes = (mpi_get_nbits (pkey[1] /* public point */)+7)/8;
-    secret_x = xmalloc_secure( nbytes );
-    rc = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, nbytes,
-                         &nbytes, shared_mpi);
-    if (rc)
+    secret_x = xtrymalloc_secure (nbytes);
+    if (!secret_x)
+      return gpg_error_from_syserror ();
+
+    err = gcry_mpi_print (GCRYMPI_FMT_USG, secret_x, nbytes,
+                          &nbytes, shared_mpi);
+    if (err)
       {
         xfree (secret_x);
-        log_error ("ec ephemeral export of shared point failed: %s\n",
-                   gpg_strerror (rc));
-        return rc;
+        log_error ("ECDH ephemeral export of shared point failed: %s\n",
+                   gpg_strerror (err));
+        return err;
       }
+
+    /* fixme: explain what we are doing.  */
     secret_x_size = (nbits+7)/8; 
     assert (nbytes > secret_x_size);
     memmove (secret_x, secret_x+1, secret_x_size);
     memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
 
     if (DBG_CIPHER)
-      log_printhex ("ecdh shared secret X is:", secret_x, secret_x_size );
+      log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
   }
 
   /*** We have now the shared secret bytes in secret_x. ***/
 
   /* At this point we are done with PK encryption and the rest of the
    * function uses symmetric key encryption techniques to protect the
-   * input 'data'.  The following two sections will simply replace
+   * input DATA.  The following two sections will simply replace
    * current secret_x with a value derived from it.  This will become
    * a KEK.
    */
   {
     IOBUF obuf = iobuf_temp(); 
-    rc = iobuf_write_size_body_mpi ( obuf, pkey[2]  );	/* KEK params */
+    err = iobuf_write_size_body_mpi ( obuf, pkey[2]  );	/* KEK params */
     
     kdf_params_size = iobuf_temp_to_buffer (obuf,
                                             kdf_params, sizeof(kdf_params));
@@ -185,11 +198,11 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
     obuf = iobuf_temp();
     /* variable-length field 1, curve name OID */
-    rc = iobuf_write_size_body_mpi ( obuf, pkey[0] );
+    err = iobuf_write_size_body_mpi ( obuf, pkey[0] );
     /* fixed-length field 2 */
     iobuf_put (obuf, PUBKEY_ALGO_ECDH);
     /* variable-length field 3, KDF params */
-    rc = (rc ? rc : iobuf_write_size_body_mpi ( obuf, pkey[2] ));
+    err = (err ? err : iobuf_write_size_body_mpi ( obuf, pkey[2] ));
     /* fixed-length field 4 */
     iobuf_write (obuf, "Anonymous Sender    ", 20);
     /* fixed-length field 5, recipient fp */
@@ -198,8 +211,8 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     kdf_params_size = iobuf_temp_to_buffer (obuf,
                                             kdf_params, sizeof(kdf_params));
     iobuf_close (obuf);
-    if (rc)
-      return rc;
+    if (err)
+      return err;
 
     if(DBG_CIPHER)
       log_printhex ("ecdh KDF message params are:",
@@ -211,10 +224,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     gcry_md_hd_t h;
     int old_size;
 
-    rc = gcry_md_open (&h, kdf_hash_algo, 0);
-    if(rc)
+    err = gcry_md_open (&h, kdf_hash_algo, 0);
+    if(err)
   	log_bug ("gcry_md_open failed for algo %d: %s",
-			kdf_hash_algo, gpg_strerror (gcry_error(rc)));
+			kdf_hash_algo, gpg_strerror (gcry_error(err)));
     gcry_md_write(h, "\x00\x00\x00\x01", 4);	/* counter = 1 */
     gcry_md_write(h, secret_x, secret_x_size);	/* x of the point X */
     gcry_md_write(h, kdf_params, kdf_params_size);	/* KDF parameters */
@@ -248,22 +261,22 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
     gcry_mpi_t result;
 
-    rc = gcry_cipher_open (&hd, kdf_encr_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
-    if (rc)
+    err = gcry_cipher_open (&hd, kdf_encr_algo, GCRY_CIPHER_MODE_AESWRAP, 0);
+    if (err)
       {
         log_error ("ecdh failed to initialize AESWRAP: %s\n",
-                   gpg_strerror (rc));
-        return rc;
+                   gpg_strerror (err));
+        return err;
       }
 
-    rc = gcry_cipher_setkey (hd, secret_x, secret_x_size);
+    err = gcry_cipher_setkey (hd, secret_x, secret_x_size);
     xfree( secret_x );
-    if (rc)
+    if (err)
       {
         gcry_cipher_close (hd);
         log_error ("ecdh failed in gcry_cipher_setkey: %s\n",
-                   gpg_strerror (rc));
-        return rc;
+                   gpg_strerror (err));
+        return err;
       }
 
     data_buf_size = (gcry_mpi_get_nbits(data)+7)/8;
@@ -282,52 +295,52 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         
         /* Write data MPI into the end of data_buf. data_buf is size
            aeswrap data.  */
-        rc = gcry_mpi_print (GCRYMPI_FMT_USG, in,
+        err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
                              data_buf_size, &nbytes, data/*in*/);
-        if (rc)
+        if (err)
           {
-            log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (rc));
+            log_error ("ecdh failed to export DEK: %s\n", gpg_strerror (err));
             gcry_cipher_close (hd);
             xfree (data_buf);
-            return rc;
+            return err;
           }
         
         if (DBG_CIPHER)
           log_printhex ("ecdh encrypting  :", in, data_buf_size );
 
-        rc = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
+        err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
                                   in, data_buf_size);
         memset (in, 0, data_buf_size);
         gcry_cipher_close (hd);
-        if (rc)
+        if (err)
           {
             log_error ("ecdh failed in gcry_cipher_encrypt: %s\n",
-                       gpg_strerror (rc));
+                       gpg_strerror (err));
             xfree (data_buf);
-            return rc;
+            return err;
           }
         data_buf[0] = data_buf_size+8;
 
         if (DBG_CIPHER)
          log_printhex ("ecdh encrypted to:", data_buf+1, data_buf[0] );
 
-        rc = gcry_mpi_scan (&result, GCRYMPI_FMT_USG,
+        err = gcry_mpi_scan (&result, GCRYMPI_FMT_USG,
                             data_buf, 1+data_buf[0], NULL); 
         /* (byte)size + aeswrap of DEK */
         xfree( data_buf );
-        if (rc)
+        if (err)
           {
-            log_error ("ecdh failed to create an MPI: %s\n", gpg_strerror (rc));
-            return rc;
+            log_error ("ecdh failed to create an MPI: %s\n", gpg_strerror (err));
+            return err;
           }
         
-        *out = result;
+        *r_result = result;
       }
     else
       {
         byte *in;
         
-        rc = gcry_mpi_print (GCRYMPI_FMT_USG, data_buf, data_buf_size,
+        err = gcry_mpi_print (GCRYMPI_FMT_USG, data_buf, data_buf_size,
                              &nbytes, data/*in*/);
       if (nbytes != data_buf_size || data_buf[0] != data_buf_size-1)
         {
@@ -341,15 +354,15 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       if (DBG_CIPHER)
         log_printhex ("ecdh decrypting :", data_buf+1, data_buf_size);
       
-      rc = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
+      err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
                                 data_buf_size);
       gcry_cipher_close (hd);
-      if (rc)
+      if (err)
         {
           log_error ("ecdh failed in gcry_cipher_decrypt: %s\n",
-                     gpg_strerror (rc));
+                     gpg_strerror (err));
           xfree (data_buf);
-          return rc;
+          return err;
         }
 
       data_buf_size -= 8;
@@ -365,20 +378,20 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       /*     return GPG_ERR_BAD_KEY; */
       /*   } */
  
-      rc = gcry_mpi_scan ( &result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
+      err = gcry_mpi_scan ( &result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
       xfree (data_buf);
-      if (rc)
+      if (err)
         {
           log_error ("ecdh failed to create a plain text MPI: %s\n",
-                     gpg_strerror (rc));
-          return rc;
+                     gpg_strerror (err));
+          return err;
         }
       
-      *out = result;
+      *r_result = result;
       }
   }
   
-  return rc;
+  return err;
 }
 
 
@@ -405,74 +418,29 @@ gen_k (unsigned nbits)
   return k;
 }
 
-/* Perform ECDH encryption, which involves ECDH key generation.  */
-int
-pk_ecdh_encrypt (gcry_mpi_t *resarr, const byte pk_fp[MAX_FINGERPRINT_LEN],
-                 gcry_mpi_t data, gcry_mpi_t * pkey)
-{
-  gcry_sexp_t s_ciph, s_data, s_pkey;
 
-  int nbits;
-  int rc;
+/* Generate an ephemeral key for the public ECDH key in PKEY.  On
+   success the generated key is stored at R_K; on failure NULL is
+   stored at R_K and an error code returned.  */
+gpg_error_t
+pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k)
+{
+  unsigned int nbits;
   gcry_mpi_t k;
 
+  *r_k = NULL;
+
   nbits = pubkey_nbits (PUBKEY_ALGO_ECDH, pkey);
-
-  /*** Generate an ephemeral key, actually, a scalar. ***/
-
+  if (!nbits)
+    return gpg_error (GPG_ERR_TOO_SHORT);
   k = gen_k (nbits);
-  if( k == NULL )
+  if (!k)
     BUG ();
 
-  /*** Done with ephemeral key generation. 
-   * Now use ephemeral secret to get the shared secret. ***/
-
-  rc = gcry_sexp_build (&s_pkey, NULL,
-                        "(public-key(ecdh(c%m)(q%m)(p%m)))",
-                        pkey[0], pkey[1], pkey[2]);
-  if (rc)
-    BUG ();
- 
-  /* Put the data into a simple list. */
-  /* Ephemeral scalar goes as data.  */
-  if (gcry_sexp_build (&s_data, NULL, "%m", k))
-    BUG ();
-
-  /* Pass it to libgcrypt. */
-  rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
-  gcry_sexp_release (s_data);
-  gcry_sexp_release (s_pkey);
-  if (rc)
-    return rc;
-
-  /* Finally, perform encryption.  */
-
-  {
-    /* ... and get the shared point/ */
-    gcry_mpi_t shared;
-
-    shared = mpi_from_sexp (s_ciph, "a"); 
-    gcry_sexp_release (s_ciph);
-    /* Ephemeral public key. */
-    resarr[0] = mpi_from_sexp (s_ciph, "b");
-
-    if (DBG_CIPHER)
-      {
-	unsigned char *buffer;
-
-	if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, resarr[0]))
-          BUG ();
-        log_debug("ephemeral key MPI: %s\n", buffer);
-	gcry_free( buffer );
-      }
-    
-    rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
-                                            pk_fp, data, pkey, resarr+1);
-    mpi_release (shared);
-  }
-  
-  return rc;
+  *r_k = k;
+  return 0;
 }
+
 
 
 /* Perform ECDH decryption.   */

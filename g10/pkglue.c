@@ -28,6 +28,7 @@
 #include "util.h"
 #include "pkglue.h"
 #include "main.h"
+#include "options.h"
 
 /* FIXME: Better chnage the fucntion name because mpi_ is used by
    gcrypt macros.  */
@@ -156,26 +157,39 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
+      /* Put DATA into a simplified S-expression.  */
+      if (rc || gcry_sexp_build (&s_data, NULL, "%m", data))
+        BUG ();
+
     }
   else if (algo == GCRY_PK_RSA || algo == GCRY_PK_RSA_E)
     {
       rc = gcry_sexp_build (&s_pkey, NULL,
 			    "(public-key(rsa(n%m)(e%m)))",
 			    pkey[0], pkey[1]);
+      /* Put DATA into a simplified S-expression.  */
+      if (rc || gcry_sexp_build (&s_data, NULL, "%m", data))
+        BUG ();
     }
   else if (algo == PUBKEY_ALGO_ECDH)	
     {
-      return pk_ecdh_encrypt (resarr, pk_fp, data, pkey);
+      gcry_mpi_t k;
+
+      rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
+      if (rc)
+        return rc;
+      
+      /* Now use the ephemeral secret to compute the shared point.  */
+      rc = gcry_sexp_build (&s_pkey, NULL,
+                            "(public-key(ecdh(c%m)(q%m)(p%m)))",
+                            pkey[0], pkey[1], pkey[2]);
+      /* Put K into a simplified S-expression.  */
+      if (rc || gcry_sexp_build (&s_data, NULL, "%m", k))
+        BUG ();
     }
   else
-    return GPG_ERR_PUBKEY_ALGO;
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  if (rc)
-    BUG ();
-
-  /* Put the data into a simple list.  */
-  if (gcry_sexp_build (&s_data, NULL, "%m", data))
-    BUG ();
 
   /* Pass it to libgcrypt. */
   rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
@@ -184,12 +198,42 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 
   if (rc)
     ;
-  else
-    { /* Add better error handling or make gnupg use S-Exp directly.  */
+  else if (algo == PUBKEY_ALGO_ECDH)	
+    {
+      gcry_mpi_t shared, public, result;
+
+      /* Get the shared point and the ephemeral public key.  */
+      shared = mpi_from_sexp (s_ciph, "a"); 
+      public = mpi_from_sexp (s_ciph, "b");
+      gcry_sexp_release (s_ciph);
+      s_ciph = NULL;
+      if (DBG_CIPHER)
+        {
+          log_debug ("ECDH ephemeral key:");
+          gcry_mpi_dump (public);
+          log_printf ("\n");
+        }
+    
+      result = NULL;
+      rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
+                                              pk_fp, data, pkey, &result);
+      gcry_mpi_release (shared);
+      if (!rc)
+        {
+          resarr[0] = public;
+          resarr[1] = result;
+        }
+      else
+        {
+          gcry_mpi_release (public);
+          gcry_mpi_release (result);
+        }
+    }
+  else /* Elgamal or RSA case.  */
+    { /* Fixme: Add better error handling or make gnupg use
+         S-expressions directly.  */
       resarr[0] = mpi_from_sexp (s_ciph, "a");
-      if (algo != GCRY_PK_RSA 
-          && algo != GCRY_PK_RSA_E
-          && algo != PUBKEY_ALGO_ECDH)
+      if (algo != GCRY_PK_RSA && algo != GCRY_PK_RSA_E)
         resarr[1] = mpi_from_sexp (s_ciph, "b");
     }
 

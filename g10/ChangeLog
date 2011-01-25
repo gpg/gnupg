@@ -3,6 +3,9 @@
 	* ecdh.c (pk_ecdh_default_params_to_mpi): Remove.
 	(pk_ecdh_default_params): Rewrite.  Factor KEK table out to ..
 	(kek_params_table): .. here.
+	(pk_ecdh_generate_ephemeral_key): New.
+	(pk_ecdh_encrypt): Remove.
+	(pk_ecdh_encrypt_with_shared_point): Make public.
 
 	* pubkey-enc.c (get_it): Fix assertion.
 	Use GPG_ERR_WRONG_SECKEY instead of log_fatal.  Add safety checks

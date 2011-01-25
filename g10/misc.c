@@ -1423,7 +1423,7 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
     int rc, nbits;
     gcry_sexp_t sexp;
 
-#warning Why this assert
+#warning FIXME:  We are mixing OpenPGP And CGrypt Ids
     assert( algo != GCRY_PK_ECDSA && algo != GCRY_PK_ECDH );
 
     if( algo == GCRY_PK_DSA ) {
