@@ -1,5 +1,9 @@
 2011-01-25  Werner Koch  <wk@g10code.com>
 
+	* ecdh.c (pk_ecdh_default_params_to_mpi): Remove.
+	(pk_ecdh_default_params): Rewrite.  Factor KEK table out to ..
+	(kek_params_table): .. here.
+
 	* pubkey-enc.c (get_it): Fix assertion.
 	Use GPG_ERR_WRONG_SECKEY instead of log_fatal.  Add safety checks
 	for NFRAME.
@@ -14,6 +18,8 @@
 	(pk_ecc_keypair_gen): Fold it into ..
 	(gen_ecc): .. this.
 	(ask_keysize): Use proper rounding for ECC.
+	(pk_ecc_build_key_params): Remove NBITSSTR.
+
 	* verify-stubs.c: Remove.
 
 2011-01-20  Werner Koch  <wk@g10code.com>

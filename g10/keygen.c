@@ -1329,7 +1329,7 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
 
 
 
-/* Create an S-expression string out QBITS, ALGO and the TRANSIENT
+/* Create an S-expression string out of QBITS, ALGO and the TRANSIENT
    flag.  On success a malloced string is returned, on failure NULL
    and ERRNO is set.  */
 static char *
@@ -1337,56 +1337,63 @@ pk_ecc_build_key_params (int qbits, int algo, int transient)
 {
   byte *kek_params = NULL;
   size_t kek_params_size;
-  char nbitsstr[35];
   char qbitsstr[35];
-  char *keyparms;
-  int n;
+  char *result;
+  size_t n;
 
   /* KEK parameters are only needed for long term key generation.  */
   if (!transient && algo == PUBKEY_ALGO_ECDH)
-    kek_params = pk_ecdh_default_params (qbits, &kek_params_size);
+    {
+      kek_params = pk_ecdh_default_params (qbits, &kek_params_size);
+      if (!kek_params)
+        return NULL;
+    }
   else
     kek_params = NULL;
 
-  snprintf (nbitsstr, sizeof nbitsstr, "%u", qbits);
   snprintf (qbitsstr, sizeof qbitsstr, "%u", qbits);
   if (algo == PUBKEY_ALGO_ECDSA || !kek_params)
     {
-      keyparms = xtryasprintf ("(genkey(%s(nbits %zu:%s)"
+      result = xtryasprintf ("(genkey(%s(nbits %zu:%s)"
                                /**/      "(qbits %zu:%s)"
                                /**/      "(transient-key 1:%d)))",
                                algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
-                               strlen (nbitsstr), nbitsstr,
+                               strlen (qbitsstr), qbitsstr,
                                strlen (qbitsstr), qbitsstr,
                                transient);
     }
   else
     {
-      assert (kek_params);
+      char *tmpstr;
 
-      keyparms = xtryasprintf ("(genkey(ecdh(nbits %zu:%s)"
-                               /**/        "(qbits %zu:%s)"
-                               /**/        "(transient-key 1:%d)"
-                               /**/        "(kek-params %zu:",
-                               strlen (nbitsstr), nbitsstr,
-                               strlen (qbitsstr), qbitsstr,
-                               transient,
-                               kek_params_size);
-      if (keyparms)
-        {
-          n = strlen (keyparms);
-          keyparms = xtryrealloc (keyparms, n + kek_params_size + 4);
-        }
-      if (!keyparms)
+      assert (kek_params);
+      tmpstr = xtryasprintf ("(genkey(ecdh(nbits %zu:%s)"
+                             /**/        "(qbits %zu:%s)"
+                             /**/        "(transient-key 1:%d)"
+                             /**/        "(kek-params %zu:",
+                             strlen (qbitsstr), qbitsstr,
+                             strlen (qbitsstr), qbitsstr,
+                             transient,
+                             kek_params_size);
+      if (!tmpstr)
         {
           xfree (kek_params);
           return NULL;
         }
-      memcpy (keyparms+n, kek_params, kek_params_size);
-      xfree (kek_params);
-      memcpy (keyparms+n+kek_params_size, ")))", 4);
+      /* Append the binary KEK parmas.  */
+      n = strlen (tmpstr);
+      result = xtryrealloc (tmpstr, n + kek_params_size + 4);
+      if (!result)
+        {
+          xfree (tmpstr);
+          xfree (kek_params);
+          return NULL;
+        }
+      memcpy (result + n, kek_params, kek_params_size);
+      strcpy (result + n + kek_params_size, ")))");
     }
-  return keyparms;
+  xfree (kek_params);
+  return result;
 }
 
 

@@ -30,26 +30,15 @@
 #include "main.h"
 #include "options.h"
 
-gcry_mpi_t
-pk_ecdh_default_params_to_mpi (int qbits)
+/* A table with the default KEK parameters used by GnuPG.  */
+static const struct
 {
-  gpg_error_t err;
-  gcry_mpi_t result;
-  /* Defaults are the strongest possible choices. Performance is not
-     an issue here, only interoperability.  */
-  byte kek_params[4] = { 
-	3	/*size of following field*/, 
-	1	/*fixed version for KDF+AESWRAP*/, 
-	DIGEST_ALGO_SHA512	/* KEK MD */, 
-	CIPHER_ALGO_AES256 	/*KEK AESWRAP alg*/
-  };
-  int i;
-
-  static const struct {
-    int qbits;
-    int openpgp_hash_id;
-    int openpgp_cipher_id;
-  } kek_params_table[] = {
+  unsigned int qbits;
+  int openpgp_hash_id;   /* KEK digest algorithm. */
+  int openpgp_cipher_id; /* KEK cipher algorithm. */
+} kek_params_table[] = 
+  /* Note: Must be sorted by ascending values for QBITS.  */
+  {
     { 256, DIGEST_ALGO_SHA256, CIPHER_ALGO_AES    },
     { 384, DIGEST_ALGO_SHA384, CIPHER_ALGO_AES256 },
 
@@ -57,77 +46,44 @@ pk_ecdh_default_params_to_mpi (int qbits)
     { 528, DIGEST_ALGO_SHA512, CIPHER_ALGO_AES256 }
   };
 
-  for (i=0; i<sizeof(kek_params_table)/sizeof(kek_params_table[0]); i++)
-    {
-      if (kek_params_table[i].qbits >= qbits)
-        {
-          kek_params[2] = kek_params_table[i].openpgp_hash_id;
-          kek_params[3] = kek_params_table[i].openpgp_cipher_id;
-          break;
-        }
-    }
-  if (DBG_CIPHER)
-    log_printhex ("ecdh kek params are", kek_params, sizeof(kek_params) );
-
-  err = gcry_mpi_scan (&result, GCRYMPI_FMT_USG,
-                       kek_params, sizeof(kek_params), NULL);
-  if (err)
-    log_fatal ("mpi_scan failed: %s\n", gpg_strerror (err));
-
-  return result;
-}
 
 
 /* Returns allocated (binary) KEK parameters; the size is returned in
- * sizeout.  The caller must free the returned value with xfree.
- * Returns NULL on error.
- */
+   sizeout.  The caller must free the returned value.  Returns NULL
+   and sets ERRNO on error.  */
 byte *
-pk_ecdh_default_params (int qbits, size_t *sizeout)
+pk_ecdh_default_params (unsigned int qbits, size_t *sizeout)
 {
-  /* Defaults are the strongest possible choices. Performance is not
-     an issue here, only interoperability. */
-  byte kek_params[4] = { 
-	3	/*size of following field*/, 
-	1	/*fixed version for KDF+AESWRAP*/, 
-	DIGEST_ALGO_SHA512	/* KEK MD */, 
-	CIPHER_ALGO_AES256 	/* KEK AESWRAP alg */
-  };
+  byte kek_params[4];
   int i;
-  
-  static const struct {
-    int qbits;
-    int openpgp_hash_id;
-    int openpgp_cipher_id;
-  } kek_params_table[] = {
-    { 256, DIGEST_ALGO_SHA256, CIPHER_ALGO_AES    },
-    { 384, DIGEST_ALGO_SHA384, CIPHER_ALGO_AES256 },
-    /* Note: 528 is 521 rounded to the 8 bit boundary  */
-    { 528, DIGEST_ALGO_SHA512, CIPHER_ALGO_AES256 }	
-  };
+  byte *buffer;
 
-  byte *p;
-
-  *sizeout = 0;
+  kek_params[0] = 3; /* Number of bytes to follow. */
+  kek_params[1] = 1; /* Version for KDF+AESWRAP.   */ 
   
-  for (i=0; i<sizeof(kek_params_table)/sizeof(kek_params_table[0]); i++)
+  /* Search for matching KEK parameter.  Defaults to the strongest
+     possible choices.  Performance is not an issue here, only
+     interoperability.  */
+  for (i=0; i < DIM (kek_params_table); i++)
     {
-      if (kek_params_table[i].qbits >= qbits)
+      if (kek_params_table[i].qbits >= qbits
+          || i+1 == DIM (kek_params_table))
         {
           kek_params[2] = kek_params_table[i].openpgp_hash_id;
           kek_params[3] = kek_params_table[i].openpgp_cipher_id;
           break;
         }
     }
-  if (DBG_CIPHER )
-    log_printhex ("ecdh kek params are", kek_params, sizeof(kek_params));
-
-  p = xtrymalloc (sizeof(kek_params));
-  if (!p)
+  assert (i < DIM (kek_params_table));
+  if (DBG_CIPHER)
+    log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
+  
+  buffer = xtrymalloc (sizeof(kek_params));
+  if (!buffer)
     return NULL;
-  memcpy (p, kek_params, sizeof(kek_params));
-  *sizeout = sizeof(kek_params);
-  return p;
+  memcpy (buffer, kek_params, sizeof (kek_params));
+  *sizeout = sizeof (kek_params);
+  return buffer;
 }
 
 
