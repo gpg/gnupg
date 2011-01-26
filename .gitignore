@@ -44,6 +44,8 @@ common/t-percent
 common/t-session-env
 common/t-sexputil
 common/t-sysutils
+common/t-stringhelp
+common/t-timestuff
 doc/addgnupghome.8
 doc/applygnupgdefaults.8
 doc/faq.html
@@ -63,6 +65,8 @@ doc/gpgsm-gencert.sh.1
 doc/gpgsm.1
 doc/gpgv2.1
 doc/scdaemon.1
+doc/dirmngr-client.1
+doc/dirmngr.8
 doc/symcryptrun.1
 doc/watchgnupg.1
 doc/yat2m
@@ -84,6 +88,10 @@ keyserver/gpg2keys_ldap
 scd/gnupg-pcsc-wrapper
 scd/scdaemon
 sm/gpgsm
+dirmngr/dirmngr
+dirmngr/dirmngr-client
+dirmngr/dirmngr_ldap
+dirmngr/no-libgcrypt.c
 tests/asschk
 tests/gpg-agent.conf
 tests/gpgsm.conf
@@ -133,3 +141,4 @@ tools/mk-tdata
 tools/symcryptrun
 tools/watchgnupg
 tools/gpgtar
+g13/g13
