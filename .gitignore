@@ -10,3 +10,5 @@ doc/gnupg.info*
 doc/stamp-vti
 doc/version.texi
 po/gnupg2.pot
+*.o
+*.a
