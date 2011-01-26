@@ -1459,7 +1459,6 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 
 
 
-/* FIXME: Use gcry_mpi_print directly. */
 int
 mpi_print (estream_t fp, gcry_mpi_t a, int mode)
 {
@@ -1487,98 +1486,15 @@ mpi_print (estream_t fp, gcry_mpi_t a, int mode)
 }
 
 
-/*
- * Write a special size+body mpi A, to OUT.  The format of the content
- * of the MPI is one byte LEN, following by LEN bytes.
- */
-/* FIXME: Rename this function: it is not in iobuf.c */
-int
-iobuf_write_size_body_mpi (iobuf_t out, gcry_mpi_t a)
-{
-  byte buffer[256]; /* Fixed buffer for a public parameter, max possible */
-  size_t nbytes = (mpi_get_nbits (a)+7)/8;
-  int rc;
-
-  if( nbytes > sizeof(buffer) )  {
-      log_error("mpi with size+body is too large (%u bytes)\n", nbytes);
-      return gpg_error (GPG_ERR_TOO_LARGE);
-  }
-  
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, sizeof(buffer), &nbytes, a);
-  if( rc )  {
-    log_error("Failed to exported size+body mpi\n");
-    return rc;
-  }
-  if( nbytes < 2 || buffer[0] != nbytes-1 )  {
-    if( nbytes > 2 )
-      log_error("Internal size mismatch in mpi size+body: %02x != %02x (other bytes: %02x %02x ... %02x %02x)\n", 
-	buffer[0], nbytes-1, buffer[1], buffer[2], buffer[nbytes-2], buffer[nbytes-1]);
-    else 
-      log_error("Internal size mismatch in mpi size+body: only %d bytes\n", nbytes );
-    return gpg_error (GPG_ERR_INV_DATA);
-  }
-  return iobuf_write( out, buffer, nbytes );
-}
-
-
-/*
- * Read a special size+body from inp into body[body_max_size] and
- * return it in a buffer and as MPI.  On success the number of
- * consumed bytes will body[0]+1.  The format of the content of the
- * returned MPI is one byte LEN, following by LEN bytes.  Caller is
- * expected to pre-allocate fixed-size 255 byte buffer (or smaller
- * when appropriate).
- */
-/* FIXME: Rename this function: it is not in iobuf.c */
-int
-iobuf_read_size_body (iobuf_t inp, byte *body, int body_max_size,
-                      int pktlen, gcry_mpi_t *out )
-{
-  unsigned n;
-  int rc;
-  gcry_mpi_t result;
-
-  *out = NULL;
-
-  if( (n = iobuf_readbyte(inp)) == -1 )
-    {
-      return G10ERR_INVALID_PACKET;
-    }
-  if ( n >= body_max_size || n < 2)
-    {
-      log_error("invalid size+body field\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  body[0] = n;	
-  if ((n = iobuf_read(inp, body+1, n)) == -1)
-    {
-      log_error("invalid size+body field\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  if (n+1 > pktlen)
-    {
-      log_error("size+body field is larger than the packet\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  rc = gcry_mpi_scan (&result, GCRYMPI_FMT_USG, body, n+1, NULL);
-  if (rc)
-    log_fatal ("mpi_scan failed: %s\n", gpg_strerror (rc));
-  
-  *out = result;
-  
-  return rc;
-}
-
-
 /* pkey[1] or skey[1] is Q for ECDSA, which is an uncompressed point,
    i.e.  04 <x> <y> */
-int 
-ecdsa_qbits_from_Q (int qbits )
+unsigned int 
+ecdsa_qbits_from_Q (unsigned int qbits)
 {
   if ((qbits%8) > 3)
     {
-      log_error(_("ECDSA public key is expected to be in SEC encoding "
-                  "multiple of 8 bits\n"));
+      log_error (_("ECDSA public key is expected to be in SEC encoding "
+                   "multiple of 8 bits\n"));
       return 0;
     }
   qbits -= qbits%8;

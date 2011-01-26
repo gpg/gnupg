@@ -161,7 +161,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
    */
   {
     IOBUF obuf = iobuf_temp(); 
-    err = iobuf_write_size_body_mpi ( obuf, pkey[2]  );	/* KEK params */
+    err = write_size_body_mpi (obuf, pkey[2]);	/* KEK params */
     
     kdf_params_size = iobuf_temp_to_buffer (obuf,
                                             kdf_params, sizeof(kdf_params));
@@ -198,11 +198,11 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
     obuf = iobuf_temp();
     /* variable-length field 1, curve name OID */
-    err = iobuf_write_size_body_mpi ( obuf, pkey[0] );
+    err = write_size_body_mpi (obuf, pkey[0]);
     /* fixed-length field 2 */
     iobuf_put (obuf, PUBKEY_ALGO_ECDH);
     /* variable-length field 3, KDF params */
-    err = (err ? err : iobuf_write_size_body_mpi ( obuf, pkey[2] ));
+    err = (err ? err : write_size_body_mpi ( obuf, pkey[2] ));
     /* fixed-length field 4 */
     iobuf_write (obuf, "Anonymous Sender    ", 20);
     /* fixed-length field 5, recipient fp */

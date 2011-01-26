@@ -161,11 +161,7 @@ int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
-int iobuf_write_size_body_mpi (iobuf_t out, gcry_mpi_t a);
-int iobuf_read_size_body (iobuf_t inp, byte *body, int body_max_size,
-                          int pktlen, gcry_mpi_t *out);
-
-int ecdsa_qbits_from_Q( int qbits );
+unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

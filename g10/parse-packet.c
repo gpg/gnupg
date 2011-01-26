@@ -741,6 +741,55 @@ read_rest (IOBUF inp, size_t pktlen, int partial)
 }
 
 
+/*
+ * Read a special size+body from inp into body[body_max_size] and
+ * return it in a buffer and as MPI.  On success the number of
+ * consumed bytes will body[0]+1.  The format of the content of the
+ * returned MPI is one byte LEN, following by LEN bytes.  Caller is
+ * expected to pre-allocate fixed-size 255 byte buffer (or smaller
+ * when appropriate).
+ */
+static int
+read_size_body (iobuf_t inp, byte *body, int body_max_size,
+                int pktlen, gcry_mpi_t *out )
+{
+  unsigned int n;
+  int rc;
+  gcry_mpi_t result;
+
+  *out = NULL;
+
+  if( (n = iobuf_readbyte(inp)) == -1 )
+    {
+      return G10ERR_INVALID_PACKET;
+    }
+  if ( n >= body_max_size || n < 2)
+    {
+      log_error("invalid size+body field\n");
+      return G10ERR_INVALID_PACKET;
+    }
+  body[0] = n;
+  if ((n = iobuf_read(inp, body+1, n)) == -1)
+    {
+      log_error("invalid size+body field\n");
+      return G10ERR_INVALID_PACKET;
+    }
+  if (n+1 > pktlen)
+    {
+      log_error("size+body field is larger than the packet\n");
+      return G10ERR_INVALID_PACKET;
+    }
+  rc = gcry_mpi_scan (&result, GCRYMPI_FMT_USG, body, n+1, NULL);
+  if (rc)
+    log_fatal ("mpi_scan failed: %s\n", gpg_strerror (rc));
+
+  *out = result;
+
+  return rc;
+}
+
+
+/* Parse a marker packet.  */
 static int
 parse_marker (IOBUF inp, int pkttype, unsigned long pktlen)
 {
@@ -947,8 +996,8 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
           n = pktlen;
           k->data[0] = mpi_read (inp, &n, 0);
           pktlen -= n;
-          rc = iobuf_read_size_body (inp, encr_buf, sizeof(encr_buf),
-                                     pktlen, k->data+1);
+          rc = read_size_body (inp, encr_buf, sizeof(encr_buf),
+                               pktlen, k->data+1);
           if (rc)
             goto leave;
 
@@ -1958,8 +2007,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           /* FIXME: The code in this function ignores the errors.  */
           byte name_oid[256];
           
-          err = iobuf_read_size_body (inp, name_oid, sizeof(name_oid),
-                                      pktlen, pk->pkey+0);
+          err = read_size_body (inp, name_oid, sizeof(name_oid),
+                                pktlen, pk->pkey+0);
           if (err)
             goto leave;
           n = name_oid[0];
@@ -1984,8 +2033,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           if (algorithm == PUBKEY_ALGO_ECDH)
             {
               /* (NAMEOID holds the KEK params.)  */
-              err = iobuf_read_size_body (inp, name_oid, sizeof(name_oid),
-                                          pktlen, pk->pkey+2);
+              err = read_size_body (inp, name_oid, sizeof(name_oid),
+                                    pktlen, pk->pkey+2);
               if (err)
                 goto leave;
               n = name_oid[0];

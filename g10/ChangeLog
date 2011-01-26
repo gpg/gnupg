@@ -1,3 +1,15 @@
+2011-01-26  Werner Koch  <wk@g10code.com>
+
+	* misc.c (ecdsa_qbits_from_Q): Use unsigned int.
+
+	* misc.c (iobuf_read_size_body): Move and rename to ..
+	* parse-packet.c (read_size_body): .. here.  Make static.
+	* misc.c (iobuf_write_size_body_mpi): Move and rename to ..
+	* build-packet.c (write_size_body_mpi): .. here.
+	(iobuf_name_oid_write, ecdh_kek_params_write, ecdh_esk_write):
+	Remove macros.  Replace users by direct calls to
+	write_size_body_mpi.
+
 2011-01-25  Werner Koch  <wk@g10code.com>
 
 	* ecdh.c (pk_ecdh_default_params_to_mpi): Remove.

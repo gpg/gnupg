@@ -178,17 +178,44 @@ mpi_write (iobuf_t out, gcry_mpi_t a)
   return rc;
 }
 
-/* Write the name OID, encoded as an mpi, to OUT. The format of the
- * content of the MPI is one byte LEN, following by LEN bytes that are
- * DER representation of an ASN.1 OID.  This is true for each of the 3
- * following functions.   */
-#define iobuf_name_oid_write iobuf_write_size_body_mpi
 
-/* Write the value of KEK fields for ECDH.  */
-#define ecdh_kek_params_write iobuf_write_size_body_mpi
+/*
+ * Write a special size+body mpi A, to OUT.  The format of the content
+ * of the MPI is one byte LEN, following by LEN bytes.
+ */
+gpg_error_t
+write_size_body_mpi (iobuf_t out, gcry_mpi_t a)
+{
+  gpg_error_t err;
+  byte buffer[256]; /* Fixed buffer for a public parameter, max possible */
+  size_t nbytes = (mpi_get_nbits (a)+7)/8;
 
-/* Write the value of encrypted filed for ECDH.  */
-#define ecdh_esk_write iobuf_write_size_body_mpi
+  if (nbytes > sizeof(buffer))
+    {
+      log_error("mpi with size+body is too large (%u bytes)\n", nbytes);
+      return gpg_error (GPG_ERR_TOO_LARGE);
+    }
+
+  err = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, sizeof(buffer), &nbytes, a);
+  if (err)
+    {
+      log_error ("failed to exported size+body mpi\n");
+      return err;
+    }
+  if (nbytes < 2 || buffer[0] != nbytes-1)
+    {
+      if (nbytes > 2)
+        log_error ("internal size mismatch in mpi size+body: "
+                   "%02x != %02x (other bytes: %02x %02x ... %02x %02x)\n",
+                   buffer[0], nbytes-1, buffer[1], buffer[2], buffer[nbytes-2],
+                   buffer[nbytes-1]);
+      else
+        log_error ("internal size mismatch in mpi size+body: "
+                   "only %d bytes\n", nbytes);
+      return gpg_error (GPG_ERR_INV_DATA);
+  }
+  return iobuf_write (out, buffer, nbytes);
+}
 
 
 /* Calculate the length of a packet described by PKT.  */
@@ -228,11 +255,11 @@ calc_packet_length( PACKET *pkt )
 static void
 write_fake_data (IOBUF out, gcry_mpi_t a)
 {
-  if (a) 
+  if (a)
     {
       unsigned int n;
       void *p;
-      
+
       p = gcry_mpi_get_opaque ( a, &n );
       iobuf_write (out, p, (n+7)/8 );
     }
@@ -281,18 +308,18 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
         ndays = 0;
       write_16(a, ndays);
     }
-  
+
   iobuf_put (a, pk->pubkey_algo );
-  
+
   /* Get number of secret and public parameters.  They are held in one
      array first the public ones, then the secret ones.  */
   nskey = pubkey_get_nskey (pk->pubkey_algo);
   npkey = pubkey_get_npkey (pk->pubkey_algo);
-  
+
   /* If we don't have any public parameters - which is the case if we
      don't know the algorithm used - the parameters are stored as one
      blob in a faked (opaque) MPI. */
-  if (!npkey) 
+  if (!npkey)
     {
       write_fake_data (a, pk->pkey[0]);
       goto leave;
@@ -305,7 +332,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       /* Write DER of OID with preceeding length byte.  */
-      err = iobuf_name_oid_write (a, pk->pkey[0]);
+      err = write_size_body_mpi (a, pk->pkey[0]);
       if (err)
         goto leave;
       /* Write point Q, the public key.  */
@@ -316,7 +343,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       /* Write one more public field for ECDH.  */
       if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
-          err = ecdh_kek_params_write(a,pk->pkey[2]);
+          err = write_size_body_mpi (a, pk->pkey[2]);
           if (err)
             goto leave;
         }
@@ -328,14 +355,14 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           goto leave;
     }
 
-  
+
   if (pk->seckey_info)
     {
       /* This is a secret key packet.  */
       struct seckey_info *ski = pk->seckey_info;
 
       /* Build the header for protected (encrypted) secret parameters.  */
-      if (ski->is_protected) 
+      if (ski->is_protected)
         {
           if ( is_RSA (pk->pubkey_algo) && pk->version < 4 && !ski->s2k.mode )
             {
@@ -355,12 +382,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
                      viewed as a private/experimental extension (this
                      is not specified in rfc2440 but the same scheme
                      is used for all other algorithm identifiers). */
-                  iobuf_put (a, 101); 
+                  iobuf_put (a, 101);
                   iobuf_put (a, ski->s2k.hash_algo);
                   iobuf_write (a, "GNU", 3 );
                   iobuf_put (a, ski->s2k.mode - 1000);
                 }
-              else 
+              else
                 {
                   iobuf_put (a, ski->s2k.mode);
                   iobuf_put (a, ski->s2k.hash_algo);
@@ -370,7 +397,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
                 iobuf_write (a, ski->s2k.salt, 8);
 
               if (ski->s2k.mode == 3)
-                iobuf_put (a, ski->s2k.count); 
+                iobuf_put (a, ski->s2k.count);
 
               /* For our special modes 1001, 1002 we do not need an IV. */
               if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
@@ -381,10 +408,10 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
         iobuf_put (a, 0 );
 
       if (ski->s2k.mode == 1001)
-        ; /* GnuPG extension - don't write a secret key at all. */ 
+        ; /* GnuPG extension - don't write a secret key at all. */
       else if (ski->s2k.mode == 1002)
-        { 
-          /* GnuPG extension - divert to OpenPGP smartcard. */ 
+        {
+          /* GnuPG extension - divert to OpenPGP smartcard. */
           /* Length of the serial number or 0 for no serial number. */
           iobuf_put (a, ski->ivlen );
           /* The serial number gets stored in the IV field.  */
@@ -395,19 +422,19 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           /* The secret key is protected - write it out as it is.  */
           byte *p;
           unsigned int ndatabits;
-      
+
           assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
           iobuf_write (a, p, (ndatabits+7)/8 );
         }
-      else if (ski->is_protected) 
+      else if (ski->is_protected)
         {
           /* The secret key is protected the old v4 way. */
-          for ( ; i < nskey; i++ ) 
+          for ( ; i < nskey; i++ )
             {
               byte *p;
               unsigned int ndatabits;
-          
+
               assert (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE));
               p = gcry_mpi_get_opaque (pk->pkey[i], &ndatabits);
               iobuf_write (a, p, (ndatabits+7)/8);
@@ -476,9 +503,9 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   int rc = 0;
   int n, i;
   IOBUF a = iobuf_temp();
-  
+
   write_version( a, ctb );
-  if ( enc->throw_keyid ) 
+  if ( enc->throw_keyid )
     {
       write_32(a, 0 );  /* Don't tell Eve who can decrypt the message.  */
       write_32(a, 0 );
@@ -500,7 +527,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
       assert (n == 2);
       rc = mpi_write (a, enc->data[0]);
       if (!rc)
-        rc = ecdh_esk_write (a, enc->data[1]); 
+        rc = write_size_body_mpi (a, enc->data[1]);
     }
   else
     {
@@ -545,7 +572,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
     rc = write_32(out, pt->timestamp );
-    if (rc) 
+    if (rc)
       return rc;
 
     n = 0;
@@ -661,7 +688,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 	}
 	if( buflen < n )
 	    break;
-        
+
 	type = *buffer & 0x7f;
 	if( type == reqtype ) {
 	    buffer++;
@@ -695,7 +722,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
  * Note: All pointers into sig->[un]hashed (e.g. returned by
  * parse_sig_subpkt) are not valid after a call to this function.  The
  * data to put into the subpaket should be in a buffer with a length
- * of buflen. 
+ * of buflen.
  */
 void
 build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
@@ -798,7 +825,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_SIGNATURE:
         hashed = 0;
         break;
-      default: 
+      default:
         hashed = 1;
         break;
       }
@@ -849,7 +876,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	memcpy (p, buffer, buflen);
     }
 
-    if (hashed) 
+    if (hashed)
 	sig->hashed = newarea;
     else
 	sig->unhashed = newarea;
@@ -1135,7 +1162,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   if ( sig->version < 4 )
     iobuf_put (a, 5 ); /* Constant */
   iobuf_put (a, sig->sig_class );
-  if ( sig->version < 4 ) 
+  if ( sig->version < 4 )
     {
       write_32(a, sig->timestamp );
       write_32(a, sig->keyid[0] );
@@ -1143,7 +1170,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     }
   iobuf_put(a, sig->pubkey_algo );
   iobuf_put(a, sig->digest_algo );
-  if ( sig->version >= 4 ) 
+  if ( sig->version >= 4 )
     {
       size_t nn;
       /* Timestamp and keyid must have been packed into the subpackets
