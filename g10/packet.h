@@ -444,7 +444,7 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
 
 /*-- build-packet.c --*/
 int build_packet( iobuf_t inp, PACKET *pkt );
-gpg_error_t write_size_body_mpi (iobuf_t out, gcry_mpi_t a);
+gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );

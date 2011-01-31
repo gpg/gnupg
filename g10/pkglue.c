@@ -220,8 +220,8 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       gcry_mpi_t shared, public, result;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = mpi_from_sexp (s_ciph, "a"); 
-      public = mpi_from_sexp (s_ciph, "b");
+      shared = mpi_from_sexp (s_ciph, "s"); 
+      public = mpi_from_sexp (s_ciph, "e");
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
       if (DBG_CIPHER)

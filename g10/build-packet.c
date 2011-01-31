@@ -157,8 +157,8 @@ build_packet( IOBUF out, PACKET *pkt )
 /*
  * Write the mpi A to OUT.
  */
-static int
-mpi_write (iobuf_t out, gcry_mpi_t a)
+gpg_error_t
+gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
 {
   int rc;
 
@@ -188,45 +188,6 @@ mpi_write (iobuf_t out, gcry_mpi_t a)
     }
 
   return rc;
-}
-
-
-/*
- * Write a special size+body mpi A, to OUT.  The format of the content
- * of the MPI is one byte LEN, following by LEN bytes.
- */
-gpg_error_t
-write_size_body_mpi (iobuf_t out, gcry_mpi_t a)
-{
-  gpg_error_t err;
-  byte buffer[256]; /* Fixed buffer for a public parameter, max possible */
-  size_t nbytes = (mpi_get_nbits (a)+7)/8;
-
-  if (nbytes > sizeof(buffer))
-    {
-      log_error("mpi with size+body is too large (%u bytes)\n", nbytes);
-      return gpg_error (GPG_ERR_TOO_LARGE);
-    }
-
-  err = gcry_mpi_print (GCRYMPI_FMT_USG, buffer, sizeof(buffer), &nbytes, a);
-  if (err)
-    {
-      log_error ("failed to exported size+body mpi\n");
-      return err;
-    }
-  if (nbytes < 2 || buffer[0] != nbytes-1)
-    {
-      if (nbytes > 2)
-        log_error ("internal size mismatch in mpi size+body: "
-                   "%02x != %02x (other bytes: %02x %02x ... %02x %02x)\n",
-                   buffer[0], nbytes-1, buffer[1], buffer[2], buffer[nbytes-2],
-                   buffer[nbytes-1]);
-      else
-        log_error ("internal size mismatch in mpi size+body: "
-                   "only %d bytes\n", nbytes);
-      return gpg_error (GPG_ERR_INV_DATA);
-  }
-  return iobuf_write (out, buffer, nbytes);
 }
 
 
@@ -341,7 +302,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
   for (i=0; i < npkey; i++ )
     {
-      err = mpi_write (a, pk->pkey[i]);
+      err = gpg_mpi_write (a, pk->pkey[i]);
       if (err)
         goto leave;
     }
@@ -436,7 +397,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
         {
           /* Non-protected key. */
           for ( ; i < nskey; i++ )
-            if ( (err = mpi_write (a, pk->pkey[i])))
+            if ( (err = gpg_mpi_write (a, pk->pkey[i])))
               goto leave;
           write_16 (a, ski->csum );
         }
@@ -512,7 +473,7 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     write_fake_data( a, enc->data[0] );
 
   for (i=0; i < n && !rc ; i++ )
-    rc = mpi_write (a, enc->data[i]);
+    rc = gpg_mpi_write (a, enc->data[i]);
 
   if (!rc)
     {
@@ -1170,7 +1131,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   if ( !n )
     write_fake_data( a, sig->data[0] );
   for (i=0; i < n && !rc ; i++ )
-    rc = mpi_write(a, sig->data[i] );
+    rc = gpg_mpi_write (a, sig->data[i] );
 
   if (!rc)
     {

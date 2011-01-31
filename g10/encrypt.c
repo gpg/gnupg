@@ -921,7 +921,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
             {
               char *ustr = get_user_id_string_native (enc->keyid);
               log_info (_("%s/%s encrypted for: \"%s\"\n"),
-                        gcry_pk_algo_name (enc->pubkey_algo),
+                        openpgp_pk_algo_name (enc->pubkey_algo),
                         openpgp_cipher_algo_name (dek->algo),
                         ustr );
               xfree (ustr);

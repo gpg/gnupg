@@ -1,3 +1,10 @@
+2011-01-31  Werner Koch  <wk@g10code.com>
+
+	* ecdh.c (pk_ecdh_encrypt_with_shared_point): Return an opaque MPI.
+
+	* build-packet.c (mpi_write): Rename to gpg_mpi_write and make global.
+	(write_size_body_mpi): Remove.
+
 2011-01-30  Werner Koch  <wk@g10code.com>
 
 
