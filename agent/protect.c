@@ -52,8 +52,9 @@ static struct {
   { "rsa",  "nedpqu", 2, 5 },
   { "dsa",  "pqgyx", 4, 4 },
   { "elg",  "pgyx", 3, 3 },
-  { "ecdsa","cqd", 2, 2 },
-  { "ecdh", "cqpd", 3, 3 },
+  { "ecdsa","pabgnqd", 6, 6 },
+  { "ecdh", "pabgnqd", 6, 6 },
+  { "ecc",  "pabgnqd", 6, 6 },
   { NULL }
 };
 

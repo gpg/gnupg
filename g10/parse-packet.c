@@ -741,51 +741,57 @@ read_rest (IOBUF inp, size_t pktlen, int partial)
 }
 
 
-/*
- * Read a special size+body from inp into body[body_max_size] and
- * return it in a buffer and as MPI.  On success the number of
- * consumed bytes will body[0]+1.  The format of the content of the
- * returned MPI is one byte LEN, following by LEN bytes.  Caller is
- * expected to pre-allocate fixed-size 255 byte buffer (or smaller
- * when appropriate).
- */
-static int
-read_size_body (iobuf_t inp, byte *body, int body_max_size,
-                int pktlen, gcry_mpi_t *out )
+/* Read a special size+body from INP.  On success store an opaque MPI
+   with it at R_DATA.  On error return an error code and store NULL at
+   R_DATA.  Even in the error case store the number of read bytes at
+   R_NREAD.  The caller shall pass the remaining size of the packet in
+   PKTLEN.  */
+static gpg_error_t
+read_size_body (iobuf_t inp, int pktlen, size_t *r_nread,
+                gcry_mpi_t *r_data)
 {
-  unsigned int n;
-  int rc;
-  gcry_mpi_t result;
+  char buffer[256];
+  char *tmpbuf;
+  int i, c, nbytes;
 
-  *out = NULL;
+  *r_nread = 0;
+  *r_data = NULL;
 
-  if( (n = iobuf_readbyte(inp)) == -1 )
-    {
-      return G10ERR_INVALID_PACKET;
-    }
-  if ( n >= body_max_size || n < 2)
-    {
-      log_error("invalid size+body field\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  body[0] = n;
-  if ((n = iobuf_read(inp, body+1, n)) == -1)
-    {
-      log_error("invalid size+body field\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  if (n+1 > pktlen)
-    {
-      log_error("size+body field is larger than the packet\n");
-      return G10ERR_INVALID_PACKET;
-    }
-  rc = gcry_mpi_scan (&result, GCRYMPI_FMT_USG, body, n+1, NULL);
-  if (rc)
-    log_fatal ("mpi_scan failed: %s\n", gpg_strerror (rc));
+  if (!pktlen)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  c = iobuf_readbyte (inp);
+  if (c < 0)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  pktlen--;
+  ++*r_nread;
+  nbytes = c;
+  if (nbytes < 2 || nbytes > 254)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  if (nbytes > pktlen)
+    return gpg_error (GPG_ERR_INV_PACKET);
 
-  *out = result;
+  buffer[0] = nbytes;
 
-  return rc;
+  for (i = 0; i < nbytes; i++)
+    {
+      c = iobuf_get (inp);
+      if (c < 0)
+        return gpg_error (GPG_ERR_INV_PACKET);
+      ++*r_nread;
+      buffer[1+i] = c;
+    }
+
+  tmpbuf = xtrymalloc (1 + nbytes);
+  if (!tmpbuf)
+    return gpg_error_from_syserror ();
+  memcpy (tmpbuf, buffer, 1 + nbytes);
+  *r_data = gcry_mpi_set_opaque (NULL, tmpbuf, 8 * (1 + nbytes));
+  if (!*r_data)
+    {
+      xfree (tmpbuf);
+      return gpg_error_from_syserror ();
+    }
+  return 0;
 }
 
 
@@ -988,45 +994,28 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     {
-      if (k->pubkey_algo == PUBKEY_ALGO_ECDH)
+      for (i = 0; i < ndata; i++)
         {
-          byte encr_buf[255];
-          
-          assert (ndata == 2);
-          n = pktlen;
-          k->data[0] = mpi_read (inp, &n, 0);
-          pktlen -= n;
-          rc = read_size_body (inp, encr_buf, sizeof(encr_buf),
-                               pktlen, k->data+1);
-          if (rc)
-            goto leave;
-
-          if (list_mode)
+          if (k->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
             {
-              es_fprintf (listfp, "\tdata: ");
-              mpi_print (listfp, k->data[0], mpi_print_mode );
-              es_putc ('\n', listfp);
-              es_fprintf (listfp, "\tdata: [% 3d bytes] ", encr_buf[0]+1);
-              mpi_print (listfp, k->data[1], mpi_print_mode );
-              es_putc ('\n', listfp);
+              rc = read_size_body (inp, pktlen, &n, k->data+i);
+              pktlen -= n;
             }
-          pktlen -= (encr_buf[0]+1);
-        }
-      else
-        {
-          for (i = 0; i < ndata; i++)
+          else
             {
               n = pktlen;
               k->data[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
-              if (list_mode)
-                {
-                  es_fprintf (listfp, "\tdata: ");
-                  mpi_print (listfp, k->data[i], mpi_print_mode);
-                  es_putc ('\n', listfp);
-                }
               if (!k->data[i])
                 rc = gpg_error (GPG_ERR_INV_PACKET);
+            }
+          if (rc)
+            goto leave;
+          if (list_mode)
+            {
+              es_fprintf (listfp, "\tdata: ");
+              mpi_print (listfp, k->data[i], mpi_print_mode);
+              es_putc ('\n', listfp);
             }
         }
     }
@@ -1989,7 +1978,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       unknown_pubkey_warning (algorithm);
     }
 
-
   if (!npkey)
     {
       /* Unknown algorithm - put data into an opaque MPI.  */
@@ -2001,79 +1989,32 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     {
-      /* Fill in public key parameters.  */
-      if (algorithm == PUBKEY_ALGO_ECDSA || algorithm == PUBKEY_ALGO_ECDH)
+      for (i = 0; i < npkey; i++)
         {
-          /* FIXME: The code in this function ignores the errors.  */
-          byte name_oid[256];
-          
-          err = read_size_body (inp, name_oid, sizeof(name_oid),
-                                pktlen, pk->pkey+0);
-          if (err)
-            goto leave;
-          n = name_oid[0];
-          if (list_mode)
-            es_fprintf (listfp, "\tpkey[0]: curve OID [%d] ...%02x %02x\n", 
-	       		n, name_oid[1+n-2], name_oid[1+n-1]);
-          pktlen -= (n+1);
-          /* Set item [1], which corresponds to the public key; these
-             two fields are all we need to uniquely define the key/ */
-          n = pktlen;
-          pk->pkey[1] = mpi_read( inp, &n, 0 );
-          pktlen -=n;
-          if (!pk->pkey[1])
-            err = gpg_error (GPG_ERR_INV_PACKET);
-          else if (list_mode)
+          if ((algorithm == PUBKEY_ALGO_ECDSA
+               || algorithm == PUBKEY_ALGO_ECDH) && (i==0 || i == 2))
             {
-              es_fprintf (listfp, "\tpkey[1]: ");
-              mpi_print (listfp, pk->pkey[1], mpi_print_mode);
-              es_putc ('\n', listfp);
-	    }
-          /* One more field for ECDH. */
-          if (algorithm == PUBKEY_ALGO_ECDH)
-            {
-              /* (NAMEOID holds the KEK params.)  */
-              err = read_size_body (inp, name_oid, sizeof(name_oid),
-                                    pktlen, pk->pkey+2);
-              if (err)
-                goto leave;
-              n = name_oid[0];
-              if (name_oid[1] != 1)
-                {
-                  log_error ("invalid ecdh KEK parameters field type in "
-                             "private key: understand type 1, "
-                             "but found 0x%02x\n", name_oid[1]);
-                  err = gpg_error (GPG_ERR_INV_PACKET);
-                  goto leave;
-                }
-              if (list_mode)
-                es_fprintf (listfp, "\tpkey[2]: KEK params type=01 "
-                            "hash:%d sym-algo:%d\n",
-                            name_oid[1+n-2], name_oid[1+n-1]);
-              pktlen -= (n+1);
+              err = read_size_body (inp, pktlen, &n, pk->pkey+i);
+              pktlen -= n;
             }
-        }
-      else
-        {
-          for (i = 0; i < npkey; i++)
+          else
             {
               n = pktlen;
               pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
-              if (list_mode)
-                {
-                  es_fprintf (listfp, "\tpkey[%d]: ", i);
-                  mpi_print (listfp, pk->pkey[i], mpi_print_mode);
-                  es_putc ('\n', listfp);
-                }
               if (!pk->pkey[i])
                 err = gpg_error (GPG_ERR_INV_PACKET);
             }
+          if (err)
+            goto leave;
+          if (list_mode)
+            {
+              es_fprintf (listfp, "\tpkey[%d]: ", i);
+              mpi_print (listfp, pk->pkey[i], mpi_print_mode);
+              es_putc ('\n', listfp);
+            }
         }
-      if (err)
-	goto leave;
     }
-
   if (list_mode)
     keyid_from_pk (pk, keyid);
 

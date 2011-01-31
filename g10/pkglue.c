@@ -79,8 +79,16 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
     }
   else if (pkalgo == GCRY_PK_ECDSA) /* Same as GCRY_PK_ECDH */
     {
-      rc = gcry_sexp_build (&s_pkey, NULL,
-			    "(public-key(ecdsa(c%m)(q%m)))", pkey[0], pkey[1]);
+      char *curve = openpgp_oid_to_str (pkey[0]);
+      if (!curve)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          rc = gcry_sexp_build (&s_pkey, NULL,
+                                "(public-key(ecdsa(curve %s)(q%m)))",
+                                curve, pkey[1]);
+          xfree (curve);
+        }
     }
   else
     return GPG_ERR_PUBKEY_ALGO;
@@ -174,18 +182,27 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
   else if (algo == PUBKEY_ALGO_ECDH)	
     {
       gcry_mpi_t k;
+      char *curve;
 
       rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
       if (rc)
         return rc;
       
-      /* Now use the ephemeral secret to compute the shared point.  */
-      rc = gcry_sexp_build (&s_pkey, NULL,
-                            "(public-key(ecdh(c%m)(q%m)(p%m)))",
-                            pkey[0], pkey[1], pkey[2]);
-      /* Put K into a simplified S-expression.  */
-      if (rc || gcry_sexp_build (&s_data, NULL, "%m", k))
-        BUG ();
+      curve = openpgp_oid_to_str (pkey[0]);
+      if (!curve)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          /* Now use the ephemeral secret to compute the shared point.  */
+          rc = gcry_sexp_build (&s_pkey, NULL,
+                                "(public-key(ecdh(curve%s)(q%m)))",
+                                curve, pkey[1]);
+          xfree (curve);
+          /* FIXME: Take care of RC.  */
+          /* Put K into a simplified S-expression.  */
+          if (rc || gcry_sexp_build (&s_data, NULL, "%m", k))
+            BUG ();
+        }
     }
   else
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -272,9 +289,16 @@ pk_check_secret_key (int algo, gcry_mpi_t *skey)
     }
   else if (gcry_pkalgo == GCRY_PK_ECDSA || gcry_pkalgo == GCRY_PK_ECDH)
     {
-      rc = gcry_sexp_build (&s_skey, NULL,
-			    "(private-key(ecdsa(c%m)(q%m)(d%m)))",
-			    skey[0], skey[1], skey[2] );
+      char *curve = openpgp_oid_to_str (skey[0]);
+      if (!curve)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          rc = gcry_sexp_build (&s_skey, NULL,
+                                "(private-key(ecdsa(curve%s)(q%m)(d%m)))",
+                                curve, skey[1], skey[2]);
+          xfree (curve);
+        }
     }
   else
     return GPG_ERR_PUBKEY_ALGO;

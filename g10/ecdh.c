@@ -48,16 +48,17 @@ static const struct
 
 
 
-/* Returns allocated (binary) KEK parameters; the size is returned in
-   sizeout.  The caller must free the returned value.  Returns NULL
-   and sets ERRNO on error.  */
-byte *
-pk_ecdh_default_params (unsigned int qbits, size_t *sizeout)
+/* Return KEK parameters as an opaque MPI The caller must free the
+   returned value.  Returns NULL and sets ERRNO on error.  */
+gcry_mpi_t
+pk_ecdh_default_params (unsigned int qbits)
 {
-  byte kek_params[4];
+  byte *kek_params;
   int i;
-  byte *buffer;
 
+  kek_params = xtrymalloc (4);
+  if (!kek_params)
+    return NULL;
   kek_params[0] = 3; /* Number of bytes to follow. */
   kek_params[1] = 1; /* Version for KDF+AESWRAP.   */ 
   
@@ -78,12 +79,7 @@ pk_ecdh_default_params (unsigned int qbits, size_t *sizeout)
   if (DBG_CIPHER)
     log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
   
-  buffer = xtrymalloc (sizeof(kek_params));
-  if (!buffer)
-    return NULL;
-  memcpy (buffer, kek_params, sizeof (kek_params));
-  *sizeout = sizeof (kek_params);
-  return buffer;
+  return gcry_mpi_set_opaque (NULL, kek_params, 4 * 8);
 }
 
 
@@ -411,8 +407,8 @@ gen_k (unsigned nbits)
       unsigned char *buffer;
       if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, k))
         BUG ();
-      log_debug("ephemeral scalar MPI #0: %s\n", buffer);
-      gcry_free( buffer );
+      log_debug ("ephemeral scalar MPI #0: %s\n", buffer);
+      gcry_free (buffer);
     }
 
   return k;

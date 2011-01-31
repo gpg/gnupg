@@ -1,6 +1,6 @@
 /* build-packet.c - assemble packets and write them
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
- *               2006, 2010 Free Software Foundation, Inc.
+ *               2006, 2010, 2011  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -160,19 +160,31 @@ build_packet( IOBUF out, PACKET *pkt )
 static int
 mpi_write (iobuf_t out, gcry_mpi_t a)
 {
-  char buffer[(MAX_EXTERN_MPI_BITS+7)/8+2]; /* 2 is for the mpi length. */
-  size_t nbytes;
   int rc;
 
-  nbytes = DIM(buffer);
-  rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
-  if( !rc )
-    rc = iobuf_write( out, buffer, nbytes );
-  else if (gpg_err_code(rc) == GPG_ERR_TOO_SHORT )
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
     {
-      log_info ("mpi too large (%u bits)\n", gcry_mpi_get_nbits (a));
-      /* The buffer was too small. We better tell the user about the MPI. */
-      rc = gpg_error (GPG_ERR_TOO_LARGE);
+      size_t nbits;
+      const void *p;
+
+      p = gcry_mpi_get_opaque (a, &nbits);
+      rc = iobuf_write (out, p, (nbits+7)/8);
+    }
+  else
+    {
+      char buffer[(MAX_EXTERN_MPI_BITS+7)/8+2]; /* 2 is for the mpi length. */
+      size_t nbytes;
+
+      nbytes = DIM(buffer);
+      rc = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes, &nbytes, a );
+      if( !rc )
+        rc = iobuf_write( out, buffer, nbytes );
+      else if (gpg_err_code(rc) == GPG_ERR_TOO_SHORT )
+        {
+          log_info ("mpi too large (%u bits)\n", gcry_mpi_get_nbits (a));
+          /* The buffer was too small. We better tell the user about the MPI. */
+          rc = gpg_error (GPG_ERR_TOO_LARGE);
+        }
     }
 
   return rc;
@@ -252,18 +264,19 @@ calc_packet_length( PACKET *pkt )
     return n;
 }
 
-static void
+
+static gpg_error_t
 write_fake_data (IOBUF out, gcry_mpi_t a)
 {
-  if (a)
-    {
-      unsigned int n;
-      void *p;
+  unsigned int n;
+  void *p;
 
-      p = gcry_mpi_get_opaque ( a, &n );
-      iobuf_write (out, p, (n+7)/8 );
-    }
+  if (!a)
+    return 0;
+  p = gcry_mpi_get_opaque ( a, &n);
+  return iobuf_write (out, p, (n+7)/8 );
 }
+
 
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
@@ -326,33 +339,11 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
     }
   assert (npkey < nskey);
 
-  /* Writing the public parameters is easy.  Except if we do an
-     adjustment for ECC OID and possibly KEK params for ECDH.  */
-  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
-      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+  for (i=0; i < npkey; i++ )
     {
-      /* Write DER of OID with preceeding length byte.  */
-      err = write_size_body_mpi (a, pk->pkey[0]);
+      err = mpi_write (a, pk->pkey[i]);
       if (err)
         goto leave;
-      /* Write point Q, the public key.  */
-      err = mpi_write (a, pk->pkey[1]);
-      if (err)
-        goto leave;
-
-      /* Write one more public field for ECDH.  */
-      if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
-        {
-          err = write_size_body_mpi (a, pk->pkey[2]);
-          if (err)
-            goto leave;
-        }
-    }
-  else
-    {
-      for (i=0; i < npkey; i++ )
-        if ((err = mpi_write (a, pk->pkey[i])))
-          goto leave;
     }
 
 
@@ -520,20 +511,8 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   if ( !n )
     write_fake_data( a, enc->data[0] );
 
-  if (enc->pubkey_algo == PUBKEY_ALGO_ECDH )
-    {
-      /* The second field persists as a LEN+field structure, even
-       * though it is stored for uniformity as an MPI internally.  */
-      assert (n == 2);
-      rc = mpi_write (a, enc->data[0]);
-      if (!rc)
-        rc = write_size_body_mpi (a, enc->data[1]);
-    }
-  else
-    {
-      for (i=0; i < n && !rc ; i++ )
-        rc = mpi_write(a, enc->data[i] );
-    }
+  for (i=0; i < n && !rc ; i++ )
+    rc = mpi_write (a, enc->data[i]);
 
   if (!rc)
     {

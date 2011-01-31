@@ -1081,7 +1081,107 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
 }
 
 
+static gpg_error_t
+ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
+{
+  gpg_error_t err;
+  gcry_sexp_t list, l2;
+  char *curve;
+  int i;
+  const char *oidstr;
+  unsigned int nbits;
 
+  array[0] = NULL;
+  array[1] = NULL;
+  array[2] = NULL;
+
+  list = gcry_sexp_find_token (sexp, "public-key", 0);
+  if (!list)
+    return gpg_error (GPG_ERR_INV_OBJ);
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  if (!list)
+    return gpg_error (GPG_ERR_NO_OBJ);
+
+  l2 = gcry_sexp_find_token (list, "curve", 0);
+  if (!l2)
+    {
+      err = gpg_error (GPG_ERR_NO_OBJ);
+      goto leave;
+    }
+  curve = gcry_sexp_nth_string (l2, 1);
+  if (!curve)
+    {
+      err = gpg_error (GPG_ERR_NO_OBJ);
+      goto leave;
+    }
+  gcry_sexp_release (l2);
+  if (!strcmp (curve, "NIST P-256"))
+    {
+      oidstr = "1.2.840.10045.3.1.7";
+      nbits = 256;
+    }
+  else if (!strcmp (curve, "NIST P-384"))
+    {
+      oidstr = "1.3.132.0.34";
+      nbits = 384;
+    }
+  else if (!strcmp (curve, "NIST P-521"))
+    {
+      oidstr = "1.3.132.0.35";
+      nbits = 521;
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
+  err = openpgp_oid_from_str (oidstr, &array[0]);
+  if (err)
+    goto leave;
+
+  l2 = gcry_sexp_find_token (list, "q", 0);
+  if (!l2)
+    {
+      err = gpg_error (GPG_ERR_NO_OBJ);
+      goto leave;
+    }
+  array[1] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release (l2);
+  if (!array[1])
+    {
+      err = gpg_error (GPG_ERR_INV_OBJ);
+      goto leave;
+    }
+  gcry_sexp_release (list);
+
+  if (algo == PUBKEY_ALGO_ECDH)
+    {
+      array[2] = pk_ecdh_default_params (nbits);
+      if (!array[2])
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+ leave:
+  if (err)
+    {
+      for (i=0; i < 3; i++)
+        {
+          gcry_mpi_release (array[i]);
+          array[i] = NULL;
+        }
+    }
+  return 0;
+}
+
+
+/* Extract key parameters from SEXP and store them in ARRAY.  ELEMS is
+   a string where each character denotes a parameter name.  TOPNAME is
+   the name of the top element above the elements.  */ 
 static int
 key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
                const char *topname, const char *elems)
@@ -1165,7 +1265,10 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
-  err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
+  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+    err = ecckey_from_sexp (pk->pkey, s_key, algo);
+  else
+    err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
   if (err) 
     {
       log_error ("key_from_sexp failed: %s\n", gpg_strerror (err) );
@@ -1173,7 +1276,6 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
       free_public_key (pk);
       return err;
     }
-  gcry_sexp_release (s_key);
   
   pkt = xtrycalloc (1, sizeof *pkt);
   if (!pkt)
@@ -1329,126 +1431,45 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
 
 
 
-/* Create an S-expression string out of QBITS, ALGO and the TRANSIENT
-   flag.  On success a malloced string is returned, on failure NULL
-   and ERRNO is set.  */
-static char *
-pk_ecc_build_key_params (int qbits, int algo, int transient)
-{
-  byte *kek_params = NULL;
-  size_t kek_params_size;
-  char qbitsstr[35];
-  char *result;
-  size_t n;
-
-  /* KEK parameters are only needed for long term key generation.  */
-  if (!transient && algo == PUBKEY_ALGO_ECDH)
-    {
-      kek_params = pk_ecdh_default_params (qbits, &kek_params_size);
-      if (!kek_params)
-        return NULL;
-    }
-  else
-    kek_params = NULL;
-
-  snprintf (qbitsstr, sizeof qbitsstr, "%u", qbits);
-  if (algo == PUBKEY_ALGO_ECDSA || !kek_params)
-    {
-      result = xtryasprintf ("(genkey(%s(nbits %zu:%s)"
-                               /**/      "(qbits %zu:%s)"
-                               /**/      "(transient-key 1:%d)))",
-                               algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
-                               strlen (qbitsstr), qbitsstr,
-                               strlen (qbitsstr), qbitsstr,
-                               transient);
-    }
-  else
-    {
-      char *tmpstr;
-
-      assert (kek_params);
-      tmpstr = xtryasprintf ("(genkey(ecdh(nbits %zu:%s)"
-                             /**/        "(qbits %zu:%s)"
-                             /**/        "(transient-key 1:%d)"
-                             /**/        "(kek-params %zu:",
-                             strlen (qbitsstr), qbitsstr,
-                             strlen (qbitsstr), qbitsstr,
-                             transient,
-                             kek_params_size);
-      if (!tmpstr)
-        {
-          xfree (kek_params);
-          return NULL;
-        }
-      /* Append the binary KEK parmas.  */
-      n = strlen (tmpstr);
-      result = xtryrealloc (tmpstr, n + kek_params_size + 4);
-      if (!result)
-        {
-          xfree (tmpstr);
-          xfree (kek_params);
-          return NULL;
-        }
-      memcpy (result + n, kek_params, kek_params_size);
-      strcpy (result + n + kek_params_size, ")))");
-    }
-  xfree (kek_params);
-  return result;
-}
-
-
 /*
  * Generate an ECC key
  */
 static gpg_error_t
-gen_ecc (int algo, unsigned int nbits, KBNODE pub_root,
+gen_ecc (int algo, unsigned int nbits, kbnode_t pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
          int keygen_flags, char **cache_nonce_addr)
 {
-  int err;
-  unsigned int qbits;
+  gpg_error_t err;
+  const char *curve;
   char *keyparms;
 
   assert (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH);
 
-  if (pubkey_get_npkey (PUBKEY_ALGO_ECDSA) != 2
-      || pubkey_get_nskey (PUBKEY_ALGO_ECDSA) != 3
-      || pubkey_get_npkey (PUBKEY_ALGO_ECDH)  != 3
-      || pubkey_get_nskey (PUBKEY_ALGO_ECDH)  != 4)
-    {
-      log_error ("broken version of Libgcrypt\n");
-      return gpg_error (GPG_ERR_INTERNAL);  /* ABI silently changed.  */
-    }
+  /* For now we may only use one of the 3 NISY curves.  */
+  if (nbits <= 256)
+    curve = "NIST P-256";
+  else if (nbits <= 384)
+    curve = "NIST P-384";
+  else 
+    curve = "NIST P-521";
 
-  if (nbits != 256 && nbits != 384 && nbits != 521)
-    {
-      log_info (_("keysize invalid; using %u bits\n"), 256);
-      /* FIXME:  Where do we set it to 256?  */
-    }
-
-  /* Figure out a Q size based on the key size.  See gen_dsa for more
-     details.  Due to 8-bit rounding we may get 528 here instead of 521. */
-  nbits = qbits = (nbits < 521 ? nbits : 521 );
-
-  keyparms = pk_ecc_build_key_params
-    (qbits, algo,  !!( (keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
-                       && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION)) );
+  keyparms = xtryasprintf ("(genkey(%s(curve %zu:%s)%s))", 
+                           algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
+                           strlen (curve), curve,
+                           ((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                            && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+                           "(transient-key)" : "" );
   if (!keyparms)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("ecc pk_ecc_build_key_params failed: %s\n",
-                 gpg_strerror (err));
-    }
+    err = gpg_error_from_syserror ();
   else
     {
-      err = common_gen (keyparms, algo,
-                        algo == PUBKEY_ALGO_ECDSA? "cq" : "cqp",
+      err = common_gen (keyparms, algo, "",
                         pub_root, timestamp, expireval, is_subkey,
                         keygen_flags, cache_nonce_addr);
       xfree (keyparms);
     }
 
-  return 0;
+  return err;
 }
 
 
@@ -2428,7 +2449,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
            || !strcmp (r->u.value, "ELG"))
     i = GCRY_PK_ELG_E;
   else
-    i = gcry_pk_map_name (r->u.value);
+    i = map_pk_gcry_to_openpgp (gcry_pk_map_name (r->u.value));
 
   if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
     i = 0; /* we don't want to allow generation of these algorithms */

@@ -724,16 +724,19 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_ECDH:
-      err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(c%m)(q%m)))",
-                             pk->pkey[0], pk->pkey[1]);
+      {
+        char *curve = openpgp_oid_to_str (pk->pkey[0]);
+        if (!curve)
+          err = gpg_error_from_syserror ();
+        else
+          {
+            err = gcry_sexp_build (&s_pkey, NULL,
+                                   "(public-key(ecc(curve%s)(q%m)))",
+                                   curve, pk->pkey[1]);
+            xfree (curve);
+          }
+      }
       break;
-
-   /* case PUBKEY_ALGO_ECDH: */
-   /*    err = gcry_sexp_build (&s_pkey, NULL, */
-   /*                           "(public-key(ecdh(c%m)(q%m)(p%m)))", */
-   /*                           pk->pkey[0], pk->pkey[1], pk->pkey[2]); */
-   /*    break; */
 
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);

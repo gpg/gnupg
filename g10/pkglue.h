@@ -32,7 +32,7 @@ int pk_check_secret_key (int algo, gcry_mpi_t *skey);
 
 
 /*-- ecdh.c --*/
-byte *pk_ecdh_default_params (unsigned int qbits, size_t *sizeout);
+gcry_mpi_t  pk_ecdh_default_params (unsigned int qbits);
 gpg_error_t pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k);
 gpg_error_t pk_ecdh_encrypt_with_shared_point
 /*         */  (int is_encrypt, gcry_mpi_t shared_mpi, 

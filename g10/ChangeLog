@@ -1,3 +1,37 @@
+2011-01-30  Werner Koch  <wk@g10code.com>
+
+
+	* keyid.c (keygrip_from_pk): Adjust ECC cases.
+	* pkglue.c (pk_verify): Ditto.
+
+	* parse-packet.c (read_size_body): Rewrite.
+	(parse_key): Simply ECC case.
+	(parse_pubkeyenc): Ditto.
+
+	* misc.c (pubkey_get_npkey): Special case ECC.
+	(pubkey_get_nskey): Ditto.
+	(mpi_print): Support printfing of opaque values.
+	(openpgp_oid_to_str): New.
+	(pubkey_nbits): For ECC pass curve parameter.
+
+	* ecdh.c (pk_ecdh_default_params): Change to return an opaque MPI.
+
+	* build-packet.c (do_key): Automatically handle real and opaque
+	key parameters.
+	(write_fake_data): Return an error code.
+	(mpi_write): Support writing opaque MPIs.
+	(do_pubkey_enc): Simplify ECC handling.
+
+2011-01-28  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (gen_ecc): Rewrite.  Select a named curve and create a
+	keyspec based on that.
+	(pk_ecc_build_key_params): Remove.
+	(get_parameter_algo): Map algo number.
+	(ecckey_from_sexp): New.
+	* misc.c (map_pk_gcry_to_openpgp): New.
+	(openpgp_oid_from_str): New.  Based on libksba code.
+
 2011-01-26  Werner Koch  <wk@g10code.com>
 
 	* misc.c (ecdsa_qbits_from_Q): Use unsigned int.

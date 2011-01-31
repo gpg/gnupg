@@ -97,6 +97,7 @@ int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);
 int map_pk_openpgp_to_gcry (int algo);
+int map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo( int algo );
 int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
@@ -154,14 +155,20 @@ int is_valid_mailbox (const char *name);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
 
-/* Temporary helpers. */
 int pubkey_get_npkey( int algo );
 int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
+
+/* Temporary helpers. */
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
+
+/* Other stuff */
+gpg_error_t openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi);
+char *openpgp_oid_to_str (gcry_mpi_t a);
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -300,7 +307,7 @@ gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
 int export_seckeys (ctrl_t ctrl, strlist_t users);
 int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 
-/* dearmor.c --*/
+/*-- dearmor.c --*/
 int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );
 
