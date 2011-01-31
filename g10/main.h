@@ -165,10 +165,6 @@ unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
 
-/* Other stuff */
-gpg_error_t openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi);
-char *openpgp_oid_to_str (gcry_mpi_t a);
-
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

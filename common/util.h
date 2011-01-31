@@ -196,7 +196,6 @@ gpg_error_t get_pk_algo_from_canon_sexp (const unsigned char *keydata,
 int hex2bin (const char *string, void *buffer, size_t length);
 int hexcolon2bin (const char *string, void *buffer, size_t length);
 char *bin2hex (const void *buffer, size_t length, char *stringbuf);
-char *mpi2hex (gcry_mpi_t m);
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 const char *hex2str (const char *hexstring,
                      char *buffer, size_t bufsize, size_t *buflen);
@@ -209,6 +208,11 @@ char *percent_unescape (const char *string, int nulrepl);
 
 size_t percent_plus_unescape_inplace (char *string, int nulrepl);
 size_t percent_unescape_inplace (char *string, int nulrepl);
+
+/*-- openpgp-oid.c --*/
+gpg_error_t openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi);
+char *openpgp_oid_to_str (gcry_mpi_t a);
+
 
 
 /*-- homedir.c --*/

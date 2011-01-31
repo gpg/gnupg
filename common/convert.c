@@ -245,37 +245,3 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
     BUG ();
   return result;
 }
-
-/* returns hex representation of the MPI; 
- * caller must free with xfree 
- * Returns NULL on error, never throws
- */
-char *
-mpi2hex( gcry_mpi_t m )
-{
-#warning we have code for this in libcrypt
-  size_t nbytes;
-  size_t nbytes2;
-  int rc;
-  byte *p;
-
-  nbytes = (mpi_get_nbits ( m )+7)/8;
-  if( nbytes == 0 )
-    return NULL;
-  p = xtrymalloc( nbytes*3+1 );
-  if( p==NULL )
-    return NULL;
-  rc = gcry_mpi_print (GCRYMPI_FMT_USG, p+2*nbytes+1, nbytes, &nbytes2, m);
-  if( rc )  {
-      xfree( p );
-      return NULL;
-  }
-
-  bin2hex( p+2*nbytes+1, nbytes2, p );
-  p[nbytes2*2] = '\0';
-  /*printf("%s:%d>>>> Created the string %s from %d bytes %02x %02x
-    ..., MPI was %d bytes\n", __FILE__, __LINE__, p, nbytes2,
-    p[2*nbytes+1], p[2*nbytes+2], nbytes); */
-  return p;
-}    
-
