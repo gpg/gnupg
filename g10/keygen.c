@@ -1080,6 +1080,40 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   return err;
 }
 
+/* Map the Libgcrypt ECC curve NAME to an OID.  If R_NBITS is not NULL
+   store the bit size of the curve there.  Returns NULL for unknown
+   curve names.  */
+const char *
+gpg_curve_to_oid (const char *name, unsigned int *r_nbits)
+{
+  unsigned int nbits = 0;
+  const char *oidstr;
+
+  if (!name)
+    oidstr = NULL;
+  else if (!strcmp (name, "NIST P-256"))
+    {
+      oidstr = "1.2.840.10045.3.1.7";
+      nbits = 256;
+    }
+  else if (!strcmp (name, "NIST P-384"))
+    {
+      oidstr = "1.3.132.0.34";
+      nbits = 384;
+    }
+  else if (!strcmp (name, "NIST P-521"))
+    {
+      oidstr = "1.3.132.0.35";
+      nbits = 521;
+    }
+  else
+    oidstr = NULL;
+
+  if (r_nbits)
+    *r_nbits = nbits;
+  return oidstr;
+}
+
 
 static gpg_error_t
 ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
@@ -1117,23 +1151,11 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
       goto leave;
     }
   gcry_sexp_release (l2);
-  if (!strcmp (curve, "NIST P-256"))
+  oidstr = gpg_curve_to_oid (curve, &nbits);
+  if (!oidstr)
     {
-      oidstr = "1.2.840.10045.3.1.7";
-      nbits = 256;
-    }
-  else if (!strcmp (curve, "NIST P-384"))
-    {
-      oidstr = "1.3.132.0.34";
-      nbits = 384;
-    }
-  else if (!strcmp (curve, "NIST P-521"))
-    {
-      oidstr = "1.3.132.0.35";
-      nbits = 521;
-    }
-  else
-    {
+      /* That can't happen because we used one of the curves
+         gpg_curve_to_oid knows about.  */
       err = gpg_error (GPG_ERR_INV_OBJ);
       goto leave;
     }
@@ -1445,7 +1467,8 @@ gen_ecc (int algo, unsigned int nbits, kbnode_t pub_root,
 
   assert (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH);
 
-  /* For now we may only use one of the 3 NISY curves.  */
+  /* For now we may only use one of the 3 NIST curves.  See also
+     gpg_curve_to_oid.  */
   if (nbits <= 256)
     curve = "NIST P-256";
   else if (nbits <= 384)

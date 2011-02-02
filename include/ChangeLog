@@ -1,3 +1,8 @@
+2011-02-01  Werner Koch  <wk@g10code.com>
+
+	* cipher.h (PUBKEY_MAX_NPKEY, PUBKEY_MAX_NSKEY): Bump up to
+	accommodate gcrypt ECC keys.
+
 2011-01-21  Werner Koch  <wk@g10code.com>
 
 	* cipher.h (GCRY_PK_USAGE_CERT): Remove compatibility macros

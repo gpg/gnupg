@@ -1,3 +1,7 @@
+2011-02-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_GCRY_PK_GET_CURVE): Define if availabale.
+
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (AC_CONFIG_FILES): Remove keyserver/.

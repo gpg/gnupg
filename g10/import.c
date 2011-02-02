@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2010 Free Software Foundation, Inc.
+ *               2007, 2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -200,7 +200,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 	        rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options);
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
-                iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 
+                iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
                              0, (char*)fname);
 	        if( rc )
 		  log_error("import from `%s' failed: %s\n", fname,
@@ -294,7 +294,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
           rc = import_one (ctrl, fname, keyblock,
                            stats, fpr, fpr_len, options, 0);
-	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
+	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
           rc = import_secret_one (ctrl, fname, keyblock, stats, options);
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
@@ -647,7 +647,7 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
   kbnode_t node;
   PKT_public_key *pk;
   int problem=0;
-  
+
   merge_keys_and_selfsig(keyblock);
   pk=keyblock->pkt->pkt.public_key;
 
@@ -672,9 +672,9 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 		{
 		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
-		      const char *algo = 
+		      const char *algo =
                         (openpgp_cipher_test_algo (prefs->value)
-                         ? num 
+                         ? num
                          : openpgp_cipher_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
@@ -689,7 +689,7 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 		    {
 		      const char *algo =
                         (gcry_md_test_algo (prefs->value)
-                         ? num 
+                         ? num
                          : gcry_md_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
@@ -801,7 +801,7 @@ import_one (ctrl_t ctrl,
 	log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
 	return 0;
       }
-    
+
     if (opt.interactive) {
         if(is_status_enabled())
 	  print_import_check (pk, uidnode->pkt->pkt.user_id);
@@ -938,7 +938,7 @@ import_one (ctrl_t ctrl,
             size_t an;
 
             fingerprint_from_pk (pk_orig, afp, &an);
-            while (an < MAX_FINGERPRINT_LEN) 
+            while (an < MAX_FINGERPRINT_LEN)
                 afp[an++] = 0;
             rc = keydb_search_fpr (hd, afp);
         }
@@ -962,7 +962,7 @@ import_one (ctrl_t ctrl,
         n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
         if (n_sigs_cleaned)
           commit_kbnode (&keyblock_orig);
-            
+
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
@@ -1032,13 +1032,13 @@ import_one (ctrl_t ctrl,
 	    stats->n_sigs_cleaned +=n_sigs_cleaned;
 	    stats->n_uids_cleaned +=n_uids_cleaned;
 
-            if (is_status_enabled ()) 
+            if (is_status_enabled ())
               print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
 	else
 	  {
             same_key = 1;
-            if (is_status_enabled ()) 
+            if (is_status_enabled ())
 	      print_import_ok (pk, 0);
 
 	    if( !opt.quiet )
@@ -1107,6 +1107,37 @@ import_one (ctrl_t ctrl,
 }
 
 
+/* Extract one MPI value from the S-expression PKEY which is expected
+   to hold a "public-key".  Returns NULL on error.  */
+static gcry_mpi_t
+one_mpi_from_pkey (gcry_sexp_t pkey, const char *name, size_t namelen)
+{
+  gcry_sexp_t list, l2;
+  gcry_mpi_t a;
+
+  list = gcry_sexp_find_token (pkey, "public-key", 0);
+  if (!list)
+    return NULL;
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  if (!list)
+    return NULL;
+
+  l2 = gcry_sexp_find_token (list, name, namelen);
+  if (!l2)
+    {
+      gcry_sexp_release (list);
+      return NULL;
+    }
+  a = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release (l2);
+  gcry_sexp_release (list);
+
+  return a;
+}
+
+
 /* Transfer all the secret keys in SEC_KEYBLOCK to the gpg-agent.  The
    function prints diagnostics and returns an error code. */
 static gpg_error_t
@@ -1133,6 +1164,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   char *cache_nonce = NULL;
+  gcry_mpi_t ecc_params[5] = {NULL, NULL, NULL, NULL, NULL};
 
   /* Get the current KEK.  */
   err = agent_keywrap_key (ctrl, 0, &kek, &keklen);
@@ -1148,7 +1180,8 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   if (!err)
     err = gcry_cipher_setkey (cipherhd, kek, keklen);
   if (err)
-    goto leave;  xfree (kek);
+    goto leave;
+  xfree (kek);
   kek = NULL;
 
   main_pk = NULL;
@@ -1160,6 +1193,20 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       pk = node->pkt->pkt.public_key;
       if (!main_pk)
         main_pk = pk;
+
+      /* Make sure the keyids are available.  */
+      keyid_from_pk (pk, NULL);
+      if (node->pkt->pkttype == PKT_SECRET_KEY)
+        {
+          pk->main_keyid[0] = pk->keyid[0];
+          pk->main_keyid[1] = pk->keyid[1];
+        }
+      else
+        {
+          pk->main_keyid[0] = main_pk->keyid[0];
+          pk->main_keyid[1] = main_pk->keyid[1];
+        }
+
 
       ski = pk->seckey_info;
       if (!ski)
@@ -1191,34 +1238,109 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
 
       init_membuf (&mbuf, 50);
       put_membuf_str (&mbuf, "(skey");
-      for (i=j=0; i < nskey; i++)
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+          || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
-          if (!pk->pkey[i])
-            ; /* Protected keys only have NPKEY+1 elements.  */
-          else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
-            {
-              put_membuf_str (&mbuf, " e %b");
-              format_args_buf_ptr[i] = gcry_mpi_get_opaque (pk->pkey[i], &n);
-              format_args_buf_int[i] = (n+7)/8;
-              format_args[j++] = format_args_buf_int + i;
-              format_args[j++] = format_args_buf_ptr + i;
-            }
+          /* We need special treatment for ECC algorithms.  OpenPGP
+             stores only the curve name but the agent expects a full
+             key.  This is so that we can keep all curve name
+             validation code out of gpg-agent.  */
+#if PUBKEY_MAX_NSKEY < 7
+#error  PUBKEY_MAX_NSKEY too low for ECC
+#endif
+          char *curve = openpgp_oid_to_str (pk->pkey[0]);
+          if (!curve)
+            err = gpg_error_from_syserror ();
           else
             {
-              put_membuf_str (&mbuf, " _ %m");
-              format_args[j++] = pk->pkey + i;
+#ifdef HAVE_GCRY_PK_GET_CURVE /* Also ensures availability of get_param.  */
+              gcry_sexp_t cparam = gcry_pk_get_param (GCRY_PK_ECDSA, curve);
+#else
+              gcry_sexp_t cparam = NULL;
+#endif
+              xfree (curve);
+              if (!cparam)
+                err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+              else
+                {
+                  const char *s;
+
+                  /* Append the curve parameters P, A, B, G and N.  */
+                  for (i=j=0; !err && *(s = "pabgn"+i); i++)
+                    {
+                      ecc_params[i] = one_mpi_from_pkey (cparam, s, 1);
+                      if (!ecc_params[i])
+                        err = gpg_error (GPG_ERR_INV_CURVE);
+                      else
+                        {
+                          put_membuf_str (&mbuf, " _ %m");
+                          format_args[j++] = ecc_params+i;
+                        }
+                    }
+                  gcry_sexp_release (cparam);
+                  if (!err)
+                    {
+                      /* Append the public key element Q.  */
+                      put_membuf_str (&mbuf, " _ %m");
+                      format_args[j++] = pk->pkey + 1;
+
+                      /* Append the secret key element D.  Note that
+                         for ECDH we need to skip PKEY[2] because this
+                         holds the KEK which is not needed.  */
+                      i = pk->pubkey_algo == PUBKEY_ALGO_ECDH? 3 : 2;
+                      if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+                        {
+                          put_membuf_str (&mbuf, " e %b");
+                          format_args_buf_ptr[i]
+                            = gcry_mpi_get_opaque (pk->pkey[i],&n);
+                          format_args_buf_int[i] = (n+7)/8;
+                          format_args[j++] = format_args_buf_int + i;
+                          format_args[j++] = format_args_buf_ptr + i;
+                        }
+                      else
+                        {
+                          put_membuf_str (&mbuf, " _ %m");
+                          format_args[j++] = pk->pkey + i;
+                        }
+                    }
+                }
+            }
+        }
+      else
+        {
+          /* Standard case for the old (non-ECC) algorithms.  */
+          for (i=j=0; i < nskey; i++)
+            {
+              if (!pk->pkey[i])
+                ; /* Protected keys only have NPKEY+1 elements.  */
+              else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+                {
+                  put_membuf_str (&mbuf, " e %b");
+                  format_args_buf_ptr[i] = gcry_mpi_get_opaque (pk->pkey[i],&n);
+                  format_args_buf_int[i] = (n+7)/8;
+                  format_args[j++] = format_args_buf_int + i;
+                  format_args[j++] = format_args_buf_ptr + i;
+                }
+              else
+                {
+                  put_membuf_str (&mbuf, " _ %m");
+                  format_args[j++] = pk->pkey + i;
+                }
             }
         }
       put_membuf_str (&mbuf, ")\n");
       put_membuf (&mbuf, "", 1);
-      {
-        char *format = get_membuf (&mbuf, NULL);
-        if (!format)
-          err = gpg_error_from_syserror ();
-        else
-          err = gcry_sexp_build_array (&skey, NULL, format, format_args);
-        xfree (format);
-      }
+      if (err)
+        xfree (get_membuf (&mbuf, NULL));
+      else
+        {
+          char *format = get_membuf (&mbuf, NULL);
+          if (!format)
+            err = gpg_error_from_syserror ();
+          else
+            err = gcry_sexp_build_array (&skey, NULL, format, format_args);
+          xfree (format);
+        }
       if (err)
         {
           log_error ("error building skey array: %s\n", gpg_strerror (err));
@@ -1228,7 +1350,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       if (ski->is_protected)
         {
           char countbuf[35];
-          
+
           /* Note that the IVLEN may be zero if we are working on a
              dummy key.  We can't express that in an S-expression and
              thus we send dummy data for the IV.  */
@@ -1289,9 +1411,9 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       transferkey = NULL;
 
       /* Send the wrapped key to the agent.  */
-      { 
+      {
         char *desc = gpg_format_keydesc (pk, 1, 1);
-        err = agent_import_key (ctrl, desc, &cache_nonce, 
+        err = agent_import_key (ctrl, desc, &cache_nonce,
                                 wrappedkey, wrappedkeylen);
         xfree (desc);
       }
@@ -1328,6 +1450,8 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
     }
 
  leave:
+  for (i=0; i < DIM (ecc_params); i++)
+    gcry_mpi_release (ecc_params[i]);
   xfree (cache_nonce);
   xfree (wrappedkey);
   xfree (transferkey);
@@ -1392,7 +1516,7 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
  * with the trust calculation.
  */
 static int
-import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock, 
+import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                    struct stats_s *stats, unsigned int options)
 {
   PKT_public_key *pk;
@@ -1400,17 +1524,17 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
   KBNODE node, uidnode;
   u32 keyid[2];
   int rc = 0;
-    
+
   /* Get the key and print some info about it */
   node = find_kbnode (keyblock, PKT_SECRET_KEY);
   if (!node)
     BUG ();
-  
+
   pk = node->pkt->pkt.public_key;
 
   keyid_from_pk (pk, keyid);
   uidnode = find_next_kbnode (keyblock, PKT_USER_ID);
-  
+
   if (opt.verbose)
     {
       log_info ("sec  %4u%c/%s %s   ",
@@ -1423,7 +1547,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
       log_printf ("\n");
     }
   stats->secret_read++;
-  
+
   if (!uidnode)
     {
       log_error( _("key %s: no user ID\n"), keystr_from_pk (pk));
@@ -1456,10 +1580,10 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
       log_error (_("importing secret keys not allowed\n"));
       return 0;
     }
-#endif 
-    
+#endif
+
   clear_kbnode_flags (keyblock);
-  
+
   if (!(options&IMPORT_MERGE_ONLY) || !have_secret_key_with_kid (keyid) )
     {
       /* We don't have this key, insert as a new key.  */
@@ -1477,7 +1601,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
           /* Fixme: We should check for an invalid keyblock and
              cancel the secret key import in this case.  */
           release_kbnode (pub_keyblock);
-            
+
           /* Read the keyblock again to get the effects of a merge.  */
           /* Fixme: we should do this based on the fingerprint or
              even better let import_one return the merged
@@ -1493,7 +1617,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                   if (!opt.quiet)
                     log_info (_("key %s: secret key imported\n"),
                               keystr_from_pk (pk));
-                  if (is_status_enabled ()) 
+                  if (is_status_enabled ())
                     print_import_ok (pk, 1|16);
                   check_prefs (ctrl, node);
                 }
@@ -1502,11 +1626,11 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
         }
     }
   else
-    { 
+    {
       /* We don't want to merge the secret keys. */
       log_error (_("key %s: secret key part already available\n"),
                  keystr_from_pk (pk));
-      if (is_status_enabled ()) 
+      if (is_status_enabled ())
         print_import_ok (pk, 16);
     }
 
@@ -1556,9 +1680,9 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     {
         byte afp[MAX_FINGERPRINT_LEN];
         size_t an;
-        
+
         fingerprint_from_pk (pk, afp, &an);
-        while (an < MAX_FINGERPRINT_LEN) 
+        while (an < MAX_FINGERPRINT_LEN)
             afp[an++] = 0;
         rc = keydb_search_fpr (hd, afp);
     }
@@ -1654,11 +1778,11 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
   int rc;
   u32 bsdate=0, rsdate=0;
   kbnode_t bsnode = NULL, rsnode = NULL;
-  
+
   (void)fname;
   (void)pk;
 
-  for (n=keyblock; (n = find_next_kbnode (n, 0)); ) 
+  for (n=keyblock; (n = find_next_kbnode (n, 0)); )
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
@@ -1672,7 +1796,7 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
 
       if ( n->pkt->pkttype != PKT_SIGNATURE )
         continue;
-      
+
       sig = n->pkt->pkt.signature;
       if ( keyid[0] != sig->keyid[0] || keyid[1] != sig->keyid[1] )
         {
@@ -1684,7 +1808,7 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
          import a fully-cached key which speeds things up. */
       if (!opt.no_sig_cache)
         check_key_signature (keyblock, n, NULL);
-      
+
       if ( IS_UID_SIG(sig) || IS_UID_REV(sig) )
         {
           KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
@@ -1694,16 +1818,16 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
                          keystr(keyid));
               return -1;  /* The complete keyblock is invalid.  */
             }
-          
+
           /* If it hasn't been marked valid yet, keep trying.  */
-          if (!(unode->flag&1)) 
+          if (!(unode->flag&1))
             {
               rc = check_key_signature (keyblock, n, NULL);
               if ( rc )
                 {
                   if ( opt.verbose )
                     {
-                      char *p = utf8_to_native 
+                      char *p = utf8_to_native
                         (unode->pkt->pkt.user_id->name,
                          strlen (unode->pkt->pkt.user_id->name),0);
                       log_info (gpg_err_code(rc) == G10ERR_PUBKEY_ALGO ?
@@ -1732,7 +1856,7 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
               n->flag |= 4;
             }
         }
-      else if ( IS_SUBKEY_SIG (sig) ) 
+      else if ( IS_SUBKEY_SIG (sig) )
         {
           /* Note that this works based solely on the timestamps like
              the rest of gpg.  If the standard gets revocation
@@ -1761,19 +1885,19 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
               else
                 {
                   /* It's valid, so is it newer? */
-                  if (sig->timestamp >= bsdate) 
+                  if (sig->timestamp >= bsdate)
                     {
                       knode->flag |= 1;  /* The subkey is valid.  */
                       if (bsnode)
                         {
                           /* Delete the last binding sig since this
                              one is newer */
-                          bsnode->flag |= 4; 
+                          bsnode->flag |= 4;
                           if (opt.verbose)
                             log_info (_("key %s: removed multiple subkey"
                                         " binding\n"),keystr(keyid));
                         }
-                      
+
                       bsnode = n;
                       bsdate = sig->timestamp;
                     }
@@ -1818,12 +1942,12 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
                         {
                           /* Delete the last revocation sig since
                              this one is newer.  */
-                          rsnode->flag |= 4; 
+                          rsnode->flag |= 4;
                           if (opt.verbose)
                             log_info (_("key %s: removed multiple subkey"
                                         " revocation\n"),keystr(keyid));
                         }
-                      
+
                       rsnode = n;
                       rsdate = sig->timestamp;
                     }

@@ -1959,6 +1959,9 @@ main (int argc, char **argv)
                     NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
       }
 
+    /* Use our own logging handler for Libcgrypt.  */
+    setup_libgcrypt_logging ();
+
     /* Put random number into secure memory */
     gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 

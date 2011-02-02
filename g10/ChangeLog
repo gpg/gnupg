@@ -1,3 +1,18 @@
+2011-02-02  Werner Koch  <wk@g10code.com>
+
+	* import.c (transfer_secret_keys): Make sure keyids are available.
+
+	* keyid.c (hash_public_key): Adjust for the ECC case.
+
+2011-02-01  Werner Koch  <wk@g10code.com>
+
+	* import.c (transfer_secret_keys): Implement ECC case.
+
+	* gpg.c (main): Call setup_libgcrypt_logging.
+
+	* keygen.c (gpg_curve_to_oid): New.
+	(ecckey_from_sexp): Factor curve name mapping out to new function.
+
 2011-01-31  Werner Koch  <wk@g10code.com>
 
 	* misc.c (make_flagged_int, openpgp_oid_from_str)

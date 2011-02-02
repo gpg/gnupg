@@ -236,6 +236,7 @@ void keyedit_passwd (ctrl_t ctrl, const char *username);
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
+const char *gpg_curve_to_oid (const char *name, unsigned int *r_nbits);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);

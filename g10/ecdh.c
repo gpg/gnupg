@@ -36,7 +36,7 @@ static const struct
   unsigned int qbits;
   int openpgp_hash_id;   /* KEK digest algorithm. */
   int openpgp_cipher_id; /* KEK cipher algorithm. */
-} kek_params_table[] = 
+} kek_params_table[] =
   /* Note: Must be sorted by ascending values for QBITS.  */
   {
     { 256, DIGEST_ALGO_SHA256, CIPHER_ALGO_AES    },
@@ -60,8 +60,8 @@ pk_ecdh_default_params (unsigned int qbits)
   if (!kek_params)
     return NULL;
   kek_params[0] = 3; /* Number of bytes to follow. */
-  kek_params[1] = 1; /* Version for KDF+AESWRAP.   */ 
-  
+  kek_params[1] = 1; /* Version for KDF+AESWRAP.   */
+
   /* Search for matching KEK parameter.  Defaults to the strongest
      possible choices.  Performance is not an issue here, only
      interoperability.  */
@@ -78,7 +78,7 @@ pk_ecdh_default_params (unsigned int qbits)
   assert (i < DIM (kek_params_table));
   if (DBG_CIPHER)
     log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
-  
+
   return gcry_mpi_set_opaque (NULL, kek_params, 4 * 8);
 }
 
@@ -88,16 +88,16 @@ pk_ecdh_default_params (unsigned int qbits)
    key_derivation+key_wrapping.  If IS_ENCRYPT is true the function
    encrypts; if false, it decrypts.  On success the result is stored
    at R_RESULT; on failure NULL is stored at R_RESULT and an error
-   code returned. 
+   code returned.
 
    FIXME: explain PKEY and PK_FP.
  */
- 
+
 /*
    TODO: memory leaks (x_secret).
 */
 gpg_error_t
-pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi, 
+pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
                                    const byte pk_fp[MAX_FINGERPRINT_LEN],
                                    gcry_mpi_t data, gcry_mpi_t *pkey,
                                    gcry_mpi_t *r_result)
@@ -106,8 +106,8 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   byte *secret_x;
   int secret_x_size;
   unsigned int nbits;
-  const unsigned char *kdf_params;
-  size_t kdf_params_size;
+  const unsigned char *kek_params;
+  size_t kek_params_size;
   int kdf_hash_algo;
   int kdf_encr_algo;
   unsigned char message[256];
@@ -139,11 +139,11 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
 
-    secret_x_size = (nbits+7)/8; 
+    secret_x_size = (nbits+7)/8;
     assert (nbytes > secret_x_size);
     memmove (secret_x, secret_x+1, secret_x_size);
     memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
-    
+
     if (DBG_CIPHER)
       log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
   }
@@ -158,24 +158,24 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
    */
   if (!gcry_mpi_get_flag (pkey[2], GCRYMPI_FLAG_OPAQUE))
     return GPG_ERR_BUG;
-  kdf_params = gcry_mpi_get_opaque (pkey[2], &nbits);
-  kdf_params_size = (nbits+7)/8;
-  
+  kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
+  kek_params_size = (nbits+7)/8;
+
   if (DBG_CIPHER)
-    log_printhex ("ecdh KDF params:", kdf_params, kdf_params_size);
-  
+    log_printhex ("ecdh KDF params:", kek_params, kek_params_size);
+
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
-  if (kdf_params_size != 4 || kdf_params[0] != 3 || kdf_params[1] != 1)	
+  if (kek_params_size != 4 || kek_params[0] != 3 || kek_params[1] != 1)
     return GPG_ERR_BAD_PUBKEY;
-  
-  kdf_hash_algo = kdf_params[2];
-  kdf_encr_algo = kdf_params[3];
-  
+
+  kdf_hash_algo = kek_params[2];
+  kdf_encr_algo = kek_params[3];
+
   if (DBG_CIPHER)
     log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
                openpgp_md_algo_name (kdf_hash_algo),
                openpgp_cipher_algo_name (kdf_encr_algo));
-  
+
   if (kdf_hash_algo != GCRY_MD_SHA256
       && kdf_hash_algo != GCRY_MD_SHA384
       && kdf_hash_algo != GCRY_MD_SHA512)
@@ -199,7 +199,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* fixed-length field 4 */
     iobuf_write (obuf, "Anonymous Sender    ", 20);
     /* fixed-length field 5, recipient fp */
-    iobuf_write (obuf, pk_fp, 20);	
+    iobuf_write (obuf, pk_fp, 20);
 
     message_size = iobuf_temp_to_buffer (obuf, message, sizeof message);
     iobuf_close (obuf);
@@ -207,11 +207,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       return err;
 
     if(DBG_CIPHER)
-      log_printhex ("ecdh KDF message params are:",
-                    kdf_params, kdf_params_size );
+      log_printhex ("ecdh KDF message params are:", message, message_size);
   }
 
-  /* Derive a KEK (key wrapping key) using kdf_params and secret_x. */
+  /* Derive a KEK (key wrapping key) using MESSAGE and SECRET_X. */
   {
     gcry_md_hd_t h;
     int old_size;
@@ -222,7 +221,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
                  kdf_hash_algo, gpg_strerror (err));
     gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
     gcry_md_write(h, secret_x, secret_x_size);	  /* x of the point X */
-    gcry_md_write(h, kdf_params, kdf_params_size);/* KDF parameters */
+    gcry_md_write(h, message, message_size);/* KDF parameters */
 
     gcry_md_final (h);
 
@@ -242,7 +241,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     if (DBG_CIPHER)
       log_printhex ("ecdh KEK is:", secret_x, secret_x_size );
   }
-  
+
   /* And, finally, aeswrap with key secret_x.  */
   {
     gcry_cipher_hd_t hd;
@@ -284,7 +283,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     if (is_encrypt)
       {
         byte *in = data_buf+1+data_buf_size+8;
-        
+
         /* Write data MPI into the end of data_buf. data_buf is size
            aeswrap data.  */
         err = gcry_mpi_print (GCRYMPI_FMT_USG, in,
@@ -296,7 +295,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
             xfree (data_buf);
             return err;
           }
-        
+
         if (DBG_CIPHER)
           log_printhex ("ecdh encrypting  :", in, data_buf_size );
 
@@ -325,14 +324,14 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
                        gpg_strerror (err));
             return err;
           }
-        
+
         *r_result = result;
       }
     else
       {
         byte *in;
         const void *p;
-        
+
         p = gcry_mpi_get_opaque (data, &nbits);
         nbytes = (nbits+7)/8;
         if (!p || nbytes > data_buf_size || !nbytes)
@@ -349,10 +348,10 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         }
         in = data_buf+data_buf_size;
         data_buf_size = data_buf[0];
-        
+
         if (DBG_CIPHER)
           log_printhex ("ecdh decrypting :", data_buf+1, data_buf_size);
-        
+
         err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
                                    data_buf_size);
         gcry_cipher_close (hd);
@@ -363,12 +362,12 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
             xfree (data_buf);
             return err;
           }
-        
+
         data_buf_size -= 8;
-        
+
         if (DBG_CIPHER)
           log_printhex ("ecdh decrypted to :", in, data_buf_size);
-        
+
         /* Padding is removed later.  */
         /* if (in[data_buf_size-1] > 8 ) */
         /*   { */
@@ -376,7 +375,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         /*               in[data_buf_size-1] ); */
         /*     return GPG_ERR_BAD_KEY; */
         /*   } */
- 
+
         err = gcry_mpi_scan (&result, GCRYMPI_FMT_USG, in, data_buf_size, NULL);
         xfree (data_buf);
         if (err)
@@ -385,11 +384,11 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
                        gpg_strerror (err));
             return err;
           }
-        
+
         *r_result = result;
       }
   }
-  
+
   return err;
 }
 
@@ -453,5 +452,3 @@ pk_ecdh_decrypt (gcry_mpi_t * result, const byte sk_fp[MAX_FINGERPRINT_LEN],
                                             sk_fp, data/*encr data as an MPI*/,
                                             skey, result);
 }
-
-

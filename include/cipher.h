@@ -100,8 +100,8 @@ typedef struct
 
 
 /* Constants to allocate static MPI arrays. */
-#define PUBKEY_MAX_NPKEY  4
-#define PUBKEY_MAX_NSKEY  6
+#define PUBKEY_MAX_NPKEY  5
+#define PUBKEY_MAX_NSKEY  7
 #define PUBKEY_MAX_NSIG   2
 #define PUBKEY_MAX_NENC   2
 

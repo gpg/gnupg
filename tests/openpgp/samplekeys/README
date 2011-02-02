@@ -1,4 +1,5 @@
 
 no-creation-time.gpg   A key with a zero creation time.
-
+ecc-sample-1-pub.asc   The first ECC sample key.
+ecc-sample-1-sec.asc   The first ECC sample key (secret).
 
