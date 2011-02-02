@@ -1,5 +1,11 @@
 2011-02-02  Werner Koch  <wk@g10code.com>
 
+	* encrypt.c (write_pubkey_enc_from_list): Don't compute the
+	fingerprint.
+	* pkglue.c (pk_encrypt): Replace PK_FP by PK and compute the
+	fingerprint only when needed.
+	* pkglue.h: Include packet.h.
+
 	* import.c (transfer_secret_keys): Make sure keyids are available.
 
 	* keyid.c (hash_public_key): Adjust for the ECC case.

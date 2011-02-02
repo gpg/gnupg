@@ -37,7 +37,7 @@ mpi_from_sexp (gcry_sexp_t sexp, const char * item)
 {
   gcry_sexp_t list;
   gcry_mpi_t data;
-  
+
   list = gcry_sexp_find_token (sexp, item, 0);
   assert (list);
   data = gcry_sexp_nth_mpi (list, 1, 0);
@@ -151,10 +151,11 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
 /****************
  * Emulate our old PK interface here - sometime in the future we might
  * change the internal design to directly fit to libgcrypt.
+ * PK is only required to compute the fingerprint for ECDH.
  */
 int
 pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
-            const byte pk_fp[MAX_FINGERPRINT_LEN], gcry_mpi_t *pkey)
+            PKT_public_key *pk, gcry_mpi_t *pkey)
 {
   gcry_sexp_t s_ciph, s_data, s_pkey;
   int rc;
@@ -179,15 +180,17 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       if (rc || gcry_sexp_build (&s_data, NULL, "%m", data))
         BUG ();
     }
-  else if (algo == PUBKEY_ALGO_ECDH)	
+  else if (algo == PUBKEY_ALGO_ECDH)
     {
       gcry_mpi_t k;
       char *curve;
+      byte fp[MAX_FINGERPRINT_LEN];
+      size_t fpn;
 
       rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
       if (rc)
         return rc;
-      
+
       curve = openpgp_oid_to_str (pkey[0]);
       if (!curve)
         rc = gpg_error_from_syserror ();
@@ -215,12 +218,14 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 
   if (rc)
     ;
-  else if (algo == PUBKEY_ALGO_ECDH)	
+  else if (algo == PUBKEY_ALGO_ECDH)
     {
       gcry_mpi_t shared, public, result;
+      byte fp[MAX_FINGERPRINT_LEN];
+      size_t fpn;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = mpi_from_sexp (s_ciph, "s"); 
+      shared = mpi_from_sexp (s_ciph, "s");
       public = mpi_from_sexp (s_ciph, "e");
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
@@ -230,10 +235,14 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
           gcry_mpi_dump (public);
           log_printf ("\n");
         }
-    
+
       result = NULL;
-      rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
-                                              pk_fp, data, pkey, &result);
+      fingerprint_from_pk (pk, fp, &fpn);
+      if (fpn != 20)
+        rc = gpg_error (GPG_ERR_INV_LENGTH);
+      else
+        rc = pk_ecdh_encrypt_with_shared_point (1 /*=encrypton*/, shared,
+                                                fp, data, pkey, &result);
       gcry_mpi_release (shared);
       if (!rc)
         {

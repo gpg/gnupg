@@ -20,14 +20,15 @@
 #ifndef GNUPG_G10_PKGLUE_H
 #define GNUPG_G10_PKGLUE_H
 
+#include "packet.h"  /* For PKT_public_key.  */
+
 /*-- pkglue.c --*/
 gcry_mpi_t mpi_from_sexp (gcry_sexp_t sexp, const char * item);
 
 int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);
 int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
-		const byte fp[MAX_FINGERPRINT_LEN],
-                gcry_mpi_t *pkey);
+		PKT_public_key *pk, gcry_mpi_t *pkey);
 int pk_check_secret_key (int algo, gcry_mpi_t *skey);
 
 
@@ -35,7 +36,7 @@ int pk_check_secret_key (int algo, gcry_mpi_t *skey);
 gcry_mpi_t  pk_ecdh_default_params (unsigned int qbits);
 gpg_error_t pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k);
 gpg_error_t pk_ecdh_encrypt_with_shared_point
-/*         */  (int is_encrypt, gcry_mpi_t shared_mpi, 
+/*         */  (int is_encrypt, gcry_mpi_t shared_mpi,
                 const byte pk_fp[MAX_FINGERPRINT_LEN],
                 gcry_mpi_t data, gcry_mpi_t *pkey,
                 gcry_mpi_t *out);
