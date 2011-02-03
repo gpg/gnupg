@@ -1,5 +1,8 @@
 2011-02-03  Werner Koch  <wk@g10code.com>
 
+	* misc.c (has_invalid_email_chars): Relax mailbox name checking.
+	Fixes bug#1315.
+
 	* sign.c (do_sign): Use openpgp_pk_algo_name.
 
 	* keygen.c (ask_algo): Show ECC algos only in expert mode.  Add
