@@ -1,3 +1,7 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* watchgnupg.c (print_version): Update copyright year.
+
 2010-12-14  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_options_gpg_agent, gc_options_scdaemon)
@@ -334,7 +338,7 @@
 	* gpgconf-comp.c (my_percent_escape): Make non-static and rename
 	to ...
 	(gc_percent_escape): ... this.  Change all callers.
-	
+
 2008-05-26  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gpg_agent_runtime_change) [W32]: Issue
@@ -456,7 +460,7 @@
 	(handle_inquire): Implement new command.
 	(substitute_line_copy): New.
 	(unescape_string, unpercent_string): New.
-	* no-libgcrypt.c (gcry_set_outofcore_handler) 
+	* no-libgcrypt.c (gcry_set_outofcore_handler)
 	(gcry_set_fatalerror_handler, gcry_set_log_handler): New.
 	* Makefile.am (gpg_connect_agent_LDADD): Link to libreadline.
 
@@ -678,7 +682,7 @@
 	min-passphrase-length.  Apply new flag to some of them.
 	(gc_process_gpgconf_conf, key_matches_user_or_group): New.
 	(gc_component_change_options): Factor some code out to ..
-	(change_one_value): .. new. 
+	(change_one_value): .. new.
 	(gc_component_retrieve_options): Allow -1 for COMPONENT to iterate
 	over al components.
 	* gpgconf.c (main): New commands --check-config and
@@ -721,7 +725,7 @@
 
 2006-10-20  Werner Koch  <wk@g10code.com>
 
-	* gpgsm-gencert.sh: Enhanced the main menu. 
+	* gpgsm-gencert.sh: Enhanced the main menu.
 
 2006-10-12  Werner Koch  <wk@g10code.com>
 
@@ -853,7 +857,7 @@
 
 2005-06-01  Werner Koch  <wk@g10code.com>
 
-	* symcryptrun.c: Include mkdtemp.h. 
+	* symcryptrun.c: Include mkdtemp.h.
 
 2005-05-31  Werner Koch  <wk@g10code.com>
 
@@ -907,7 +911,7 @@
 2005-04-11  Marcus Brinkmann  <marcus@g10code.de>
 
 	* symcryptrun.c: Implement config file parsing.
-	
+
 	* Makefile.am (bin_PROGRAMS): Add symcryptrun.
 	(symcryptrun_SOURCES, symcryptrun_LDADD): New variables.
 	* symcryptrun.c: New file.
@@ -927,7 +931,7 @@
 2005-02-24  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c: New.
-	* Makefile.am: Add it. 
+	* Makefile.am: Add it.
 
 2004-12-21  Werner Koch  <wk@g10code.com>
 
@@ -971,7 +975,7 @@
 2004-10-01  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c: Made all strings for --log-file read the same.
-	
+
 2004-10-01  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (my_dgettext): Also switch codeset and directory
@@ -1003,8 +1007,8 @@
 
 	* no-libgcrypt.c (gcry_realloc, gcry_xmalloc, gcry_xcalloc): New.
 
-	* gpgconf-comp.c (retrieve_options_from_program) 
-	(retrieve_options_from_file, change_options_file) 
+	* gpgconf-comp.c (retrieve_options_from_program)
+	(retrieve_options_from_file, change_options_file)
 	(change_options_program, gc_component_change_options): Replaced
 	getline by read_line and test for allocation failure.
 
@@ -1072,7 +1076,7 @@
 	(gc_component_change_options): New variable runtime.  Initialize
 	it.  If an option is changed that has the GC_OPT_FLAG_RUNTIME bit
 	set, also set the corresponding runtime variable.  Finally, call
-	the runtime_change callback of the backend if needed.	
+	the runtime_change callback of the backend if needed.
 
 2004-03-16  Werner Koch  <wk@gnupg.org>
 
@@ -1163,7 +1167,7 @@
 	quote in pathname.
 	(change_options_program): Percent deescape string before writing
 	it out.
-	
+
 	* gpgconf-comp.c (gc_component_list_options): Do not skip groups
 	on output.
 
@@ -1197,10 +1201,10 @@
 	* gpgconf-comp.c: Use xmalloc, libcommon's asctimestamp and
 	gnupg_get_time, fix error() invocation and use getline()
 	consistently.
-	
+
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
-	* addgnupghome: Also set the group of copied files. 
+	* addgnupghome: Also set the group of copied files.
 
 2004-01-30  Werner Koch  <wk@gnupg.org>
 

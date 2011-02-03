@@ -1,3 +1,7 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* argparse.c (strusage): Update copyright year.
+
 2011-01-31  Werner Koch  <wk@g10code.com>
 
 	* openpgp-oid.c: New.

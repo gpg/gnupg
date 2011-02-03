@@ -1,5 +1,5 @@
 /* watchgnupg.c - Socket server for GnuPG logs
- *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -111,7 +111,7 @@ xrealloc (void *old, size_t n)
     die ("out of core");
   return p;
 }
-    
+
 
 struct client_s {
   struct client_s *next;
@@ -119,7 +119,7 @@ struct client_s {
   size_t size;  /* Allocated size of buffer. */
   size_t len;   /* Current length of buffer. */
   unsigned char *buffer; /* Buffer to with data already read. */
-  
+
 };
 typedef struct client_s *client_t;
 
@@ -134,9 +134,9 @@ print_fd_and_time (int fd)
 {
   struct tm *tp;
   time_t atime = time (NULL);
-  
+
   tp = localtime (&atime);
-  if (time_only)  
+  if (time_only)
     printf ("%3d - %02d:%02d:%02d ",
             fd,
             tp->tm_hour, tp->tm_min, tp->tm_sec );
@@ -161,7 +161,7 @@ print_line (client_t c, const char *line)
       if (c->buffer && c->len)
         {
           print_fd_and_time (c->fd);
-          fwrite (c->buffer, c->len, 1, stdout); 
+          fwrite (c->buffer, c->len, 1, stdout);
           putc ('\n', stdout);
           c->len = 0;
         }
@@ -173,10 +173,10 @@ print_line (client_t c, const char *line)
       print_fd_and_time (c->fd);
       if (c->buffer && c->len)
         {
-          fwrite (c->buffer, c->len, 1, stdout); 
+          fwrite (c->buffer, c->len, 1, stdout);
           c->len = 0;
         }
-      fwrite (line, s - line + 1, 1, stdout); 
+      fwrite (line, s - line + 1, 1, stdout);
       line = s + 1;
     }
   n = strlen (line);
@@ -197,7 +197,7 @@ print_line (client_t c, const char *line)
 
 static void
 setup_client (int server_fd, int is_un)
-{ 
+{
   struct sockaddr_un addr_un;
   struct sockaddr_in addr_in;
   struct sockaddr *addr;
@@ -227,7 +227,7 @@ setup_client (int server_fd, int is_un)
       close (fd);
       printf ("[connection request denied: too many connections]\n");
     }
-  else 
+  else
     {
       for (client = client_list; client && client->fd != -1;
            client = client->next)
@@ -250,14 +250,14 @@ static void
 print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
-         "Copyright (C) 2004 Free Software Foundation, Inc.\n"
+         "Copyright (C) 2010 Free Software Foundation, Inc.\n"
          "License GPLv3+: "
          "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
          "This is free software: you are free to change and redistribute it.\n"
          "There is NO WARRANTY, to the extent permitted by law.\n",
          stdout);
   if (with_help)
-    fputs 
+    fputs
       ("\n"
        "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
        "       " PGM " [OPTIONS] PORT [SOCKETNAME]\n"
@@ -271,11 +271,11 @@ print_version (int with_help)
        "  --version   print version of the program and exit\n"
        "  --help      display this help and exit\n"
        BUGREPORT_LINE, stdout );
-  
+
   exit (0);
 }
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -290,7 +290,7 @@ main (int argc, char **argv)
   unsigned short port;
   int server_un, server_in;
   int flags;
- 
+
   if (argc)
     {
       argc--; argv++;
@@ -327,15 +327,15 @@ main (int argc, char **argv)
           tcp = 1;
           argc--; argv++;
         }
-    }          
- 
+    }
+
   if (!((!tcp && argc == 1) || (tcp && (argc == 1 || argc == 2))))
     {
       fprintf (stderr, "usage: " PGM " socketname\n"
                        "       " PGM " --tcp port [socketname]\n");
       exit (1);
     }
-  
+
   if (tcp)
     {
       port = atoi (*argv);
@@ -354,7 +354,7 @@ main (int argc, char **argv)
       server_in = socket (PF_INET, SOCK_STREAM, 0);
       if (server_in == -1)
         die ("socket(PF_INET) failed: %s\n", strerror (errno));
-      if (setsockopt (server_in, SOL_SOCKET, SO_REUSEADDR, 
+      if (setsockopt (server_in, SOL_SOCKET, SO_REUSEADDR,
                       (unsigned char *)&i, sizeof (i)))
         err ("setsockopt(SO_REUSEADDR) failed: %s\n", strerror (errno));
       if (verbose)
@@ -393,7 +393,7 @@ main (int argc, char **argv)
       if ( fcntl (server_un, F_SETFL, (flags | O_NONBLOCK)) == -1)
         die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
     }
-  
+
   if (tcp)
     {
       memset (&srvr_addr_in, 0, sizeof srvr_addr_in);
@@ -414,13 +414,13 @@ main (int argc, char **argv)
     }
   else
     addrlen_un = 0;  /* Silent gcc.  */
-  
+
   if (server_in != -1 && bind (server_in, addr_in, addrlen_in))
     die ("bind to port %hu failed: %s\n", port, strerror (errno));
 
  again:
   if (server_un != -1 && bind (server_un, addr_un, addrlen_un))
-    { 
+    {
       if (errno == EADDRINUSE && force)
         {
           force = 0;
@@ -479,7 +479,7 @@ main (int argc, char **argv)
           {
             char line[256];
             int n;
-            
+
             n = read (client->fd, line, sizeof line - 1);
             if (n < 0)
               {
@@ -490,7 +490,7 @@ main (int argc, char **argv)
                 close (client->fd);
                 client->fd = -1;
               }
-            else if (!n) 
+            else if (!n)
               {
                 print_line (client, NULL); /* flush */
                 close (client->fd);
