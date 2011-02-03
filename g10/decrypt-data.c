@@ -30,6 +30,7 @@
 #include "cipher.h"
 #include "options.h"
 #include "i18n.h"
+#include "status.h"
 
 
 static int mdc_decode_filter ( void *opaque, int control, IOBUF a,
@@ -82,7 +83,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   byte temp[32];
   unsigned blocksize;
   unsigned nprefix;
-  
+
   dfx = xtrycalloc (1, sizeof *dfx);
   if (!dfx)
     return gpg_error_from_syserror ();
@@ -91,12 +92,20 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if ( opt.verbose && !dek->algo_info_printed )
     {
       if (!openpgp_cipher_test_algo (dek->algo))
-        log_info (_("%s encrypted data\n"), 
+        log_info (_("%s encrypted data\n"),
                   openpgp_cipher_algo_name (dek->algo));
       else
         log_info (_("encrypted with unknown algorithm %d\n"), dek->algo );
       dek->algo_info_printed = 1;
     }
+
+  {
+    char buf[20];
+
+    snprintf (buf, sizeof buf, "%d %d", ed->mdc_method, dek->algo);
+    write_status_text (STATUS_DECRYPTION_INFO, buf);
+  }
+
   rc = openpgp_cipher_test_algo (dek->algo);
   if (rc)
     goto leave;
@@ -107,7 +116,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if ( ed->len && ed->len < (nprefix+2) )
     BUG();
 
-  if ( ed->mdc_method ) 
+  if ( ed->mdc_method )
     {
       if (gcry_md_open (&dfx->mdc_hash, ed->mdc_method, 0 ))
         BUG ();
@@ -142,7 +151,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       goto leave;
     }
 
-  if (!ed->buf) 
+  if (!ed->buf)
     {
       log_error(_("problem handling encrypted packet\n"));
       goto leave;
@@ -152,7 +161,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
   if ( ed->len )
     {
-      for (i=0; i < (nprefix+2) && ed->len; i++, ed->len-- ) 
+      for (i=0; i < (nprefix+2) && ed->len; i++, ed->len-- )
         {
           if ( (c=iobuf_get(ed->buf)) == -1 )
             break;
@@ -160,7 +169,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
             temp[i] = c;
         }
     }
-  else 
+  else
     {
       for (i=0; i < (nprefix+2); i++ )
         if ( (c=iobuf_get(ed->buf)) == -1 )
@@ -168,7 +177,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
         else
           temp[i] = c;
     }
-  
+
   gcry_cipher_decrypt (dfx->cipher_hd, temp, nprefix+2, NULL, 0);
   gcry_cipher_sync (dfx->cipher_hd);
   p = temp;
@@ -179,7 +188,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       rc = gpg_error (GPG_ERR_BAD_KEY);
       goto leave;
     }
-  
+
   if ( dfx->mdc_hash )
     gcry_md_write (dfx->mdc_hash, temp, nprefix+2);
 
@@ -196,7 +205,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
   else if ( ed->mdc_method )
-    { 
+    {
       /* We used to let parse-packet.c handle the MDC packet but this
          turned out to be a problem with compressed packets: With old
          style packets there is no length information available and
@@ -230,8 +239,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       /* log_printhex("MDC message:", dfx->defer, 22); */
       /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
     }
-  
-  
+
+
  leave:
   release_dfx_context (dfx);
   return rc;
@@ -255,7 +264,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
      looking for the EOF on fixed data works only if the encrypted
      packet is not followed by other data.  This used to be a long
      standing bug which was fixed on 2009-10-02.  */
-  
+
   if ( control == IOBUFCTRL_UNDERFLOW && dfx->eof_seen )
     {
       *ret_len = 0;
@@ -265,7 +274,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
     {
       assert (a);
       assert (size > 44); /* Our code requires at least this size.  */
-      
+
       /* Get at least 22 bytes and put it ahead in the buffer.  */
       if (dfx->partial)
         {
@@ -286,7 +295,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
               buf[n] = c;
             }
         }
-      if (n == 44) 
+      if (n == 44)
         {
           /* We have enough stuff - flush the deferred stuff.  */
           if ( !dfx->defer_filled )  /* First time. */
@@ -301,7 +310,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
           /* Fill up the buffer. */
           if (dfx->partial)
             {
-              for (; n < size; n++ ) 
+              for (; n < size; n++ )
                 {
                   if ( (c = iobuf_get(a)) == -1 )
                     {
@@ -313,7 +322,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
             }
           else
             {
-              for (; n < size && dfx->length; n++, dfx->length--) 
+              for (; n < size && dfx->length; n++, dfx->length--)
                 {
                   c = iobuf_get(a);
                   if (c == -1)
@@ -326,7 +335,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
               if (!dfx->length)
                 dfx->eof_seen = 1; /* Normal EOF.  */
             }
-          
+
           /* Move the trailing 22 bytes back to the defer buffer.  We
              have at least 44 bytes thus a memmove is not needed.  */
           n -= 22;
@@ -362,11 +371,11 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 	}
       *ret_len = n;
     }
-  else if ( control == IOBUFCTRL_FREE ) 
+  else if ( control == IOBUFCTRL_FREE )
     {
       release_dfx_context (dfx);
     }
-  else if ( control == IOBUFCTRL_DESC ) 
+  else if ( control == IOBUFCTRL_DESC )
     {
       *(char**)buf = "mdc_decode_filter";
     }
@@ -388,13 +397,13 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
       *ret_len = 0;
       rc = -1;
     }
-  else if ( control == IOBUFCTRL_UNDERFLOW ) 
+  else if ( control == IOBUFCTRL_UNDERFLOW )
     {
       assert(a);
-      
+
       if (fc->partial)
         {
-          for (n=0; n < size; n++ ) 
+          for (n=0; n < size; n++ )
             {
               c = iobuf_get(a);
               if (c == -1)
@@ -407,7 +416,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
         }
       else
         {
-          for (n=0; n < size && fc->length; n++, fc->length--) 
+          for (n=0; n < size && fc->length; n++, fc->length--)
             {
               c = iobuf_get(a);
               if (c == -1)
@@ -433,7 +442,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
         }
       *ret_len = n;
     }
-  else if ( control == IOBUFCTRL_FREE ) 
+  else if ( control == IOBUFCTRL_FREE )
     {
       release_dfx_context (fc);
     }
@@ -443,4 +452,3 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     }
   return rc;
 }
-
