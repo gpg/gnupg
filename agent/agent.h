@@ -215,6 +215,7 @@ const char *get_agent_ssh_socket_name (void);
 void *get_agent_scd_notify_event (void);
 #endif
 void agent_sighup_action (void);
+int map_pk_openpgp_to_gcry (int openpgp_algo);
 
 /*-- command.c --*/
 gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid);

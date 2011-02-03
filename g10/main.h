@@ -87,17 +87,22 @@ u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
 int map_cipher_openpgp_to_gcry (int algo);
-#define openpgp_cipher_open(_a,_b,_c,_d) gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
-#define openpgp_cipher_get_algo_keylen(_a) gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
-#define openpgp_cipher_get_algo_blklen(_a) gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
+#define openpgp_cipher_open(_a,_b,_c,_d) \
+  gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
+#define openpgp_cipher_get_algo_keylen(_a) \
+  gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
+#define openpgp_cipher_get_algo_blklen(_a) \
+  gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
 int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);
+int map_pk_openpgp_to_gcry (int algo);
+int map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo( int algo );
 int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
-const char *openpgp_pk_algo_name (int algo);
 int openpgp_md_test_algo( int algo );
+const char *openpgp_pk_algo_name (int algo);
 const char *openpgp_md_algo_name (int algo);
 
 #ifdef USE_IDEA
@@ -150,13 +155,16 @@ int is_valid_mailbox (const char *name);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
 
-/* Temporary helpers. */
 int pubkey_get_npkey( int algo );
 int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
+
+/* Temporary helpers. */
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
+unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
@@ -228,6 +236,7 @@ void keyedit_passwd (ctrl_t ctrl, const char *username);
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
+const char *gpg_curve_to_oid (const char *name, unsigned int *r_nbits);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
@@ -251,6 +260,7 @@ gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
 int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 #endif
 
+
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
@@ -261,7 +271,7 @@ void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
-gcry_mpi_t encode_session_key( DEK *dek, unsigned nbits );
+gcry_mpi_t encode_session_key( int openpgp_pk_algo, DEK *dek, unsigned nbits );
 gcry_mpi_t encode_md_value (PKT_public_key *pk, 
                             gcry_md_hd_t md, int hash_algo );
 
@@ -294,7 +304,7 @@ gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
 int export_seckeys (ctrl_t ctrl, strlist_t users);
 int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 
-/* dearmor.c --*/
+/*-- dearmor.c --*/
 int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );
 

@@ -43,7 +43,7 @@ development_version=no
 NEED_GPG_ERROR_VERSION=1.8
 
 NEED_LIBGCRYPT_API=1
-NEED_LIBGCRYPT_VERSION=1.4.0
+NEED_LIBGCRYPT_VERSION=1.4.6
 
 NEED_LIBASSUAN_API=2
 NEED_LIBASSUAN_VERSION=2.0.0
@@ -741,6 +741,36 @@ AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
 #
 AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
+
+# fixme:  We can remove the next two checks if we require libgcrypt 1.5.
+AC_CACHE_CHECK([whether Libgcrypt support ECDH], gnupg_cv_gcry_pk_ecdh,
+               [ _gnupg_gcry_save_cflags=$CFLAGS
+                 CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
+                 AC_TRY_COMPILE(
+                   [#include <gcrypt.h>],
+                   [ return GCRY_PK_ECDH; ],
+                   gnupg_cv_gcry_pk_ecdh=yes,
+                   gnupg_cv_gcry_pk_ecdh=no)
+                 CFLAGS=$_gnupg_gcry_save_cflags])
+if test "$gnupg_cv_gcry_pk_ecdh" = yes; then
+  AC_DEFINE([HAVE_GCRY_PK_ECDH], 1,
+            [Define if gcrypt.h has the enum value for ECDH.])
+fi
+
+AC_CACHE_CHECK([whether Libgcrypt has gcry_pk_get_curve],
+                gnupg_cv_gcry_pk_get_curve,
+               [ _gnupg_gcry_save_cflags=$CFLAGS
+                 CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
+                 AC_TRY_COMPILE(
+                   [#include <gcrypt.h>],
+                   [ return gcry_pk_get_curve (NULL, 0, NULL); ],
+                   gnupg_cv_gcry_pk_get_curve=yes,
+                   gnupg_cv_gcry_pk_get_curve=no)
+                 CFLAGS=$_gnupg_gcry_save_cflags])
+if test "$gnupg_cv_gcry_pk_get_curve" = yes; then
+  AC_DEFINE([HAVE_GCRY_PK_GET_CURVE], 1,
+            [Define if gcrypt.h has gcry_pk_get_curve.])
+fi
 
 
 #
@@ -1484,7 +1514,7 @@ AC_ARG_ENABLE(optimization,
    AC_HELP_STRING([--disable-optimization],
                   [disable compiler optimization]),
                   [if test $enableval = no ; then
-                      CFLAGS=`echo $CFLAGS | sed 's/-O[[0-9]]//'`
+                      CFLAGS=`echo $CFLAGS | sed s/-O[[1-9]]\ /-O0\ /g`
                    fi])
 
 #

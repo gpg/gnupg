@@ -107,7 +107,7 @@ export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
 		       kbnode_t *keyblock_out, unsigned int options )
 {
   int any, rc;
-  
+
   rc = do_export_stream (ctrl, out, users, 0, keyblock_out, options, &any);
   if (!rc && !any)
     rc = -1;
@@ -197,9 +197,9 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
   int any, rc;
   armor_filter_context_t *afx = NULL;
   compress_filter_context_t zfx;
-  
+
   memset( &zfx, 0, sizeof zfx);
-  
+
   rc = open_outfile (GNUPG_INVALID_FD, NULL, 0, &out );
   if (rc)
     return rc;
@@ -251,7 +251,7 @@ subkey_in_list_p (subkey_list_t list, KBNODE node)
       u32 kid[2];
 
       keyid_from_pk (node->pkt->pkt.public_key, kid);
-      
+
       for (; list; list = list->next)
         if (list->kid[0] == kid[0] && list->kid[1] == kid[1])
           return 1;
@@ -293,17 +293,17 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
     case KEYDB_SEARCH_MODE_LONG_KID:
       keyid_from_pk (node->pkt->pkt.public_key, kid);
       break;
-      
+
     case KEYDB_SEARCH_MODE_FPR16:
     case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
       fingerprint_from_pk (node->pkt->pkt.public_key, fpr,&fprlen);
       break;
-      
+
     default:
       break;
     }
-  
+
   switch(desc->mode)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
@@ -346,7 +346,7 @@ canon_pubkey_algo (int algo)
     case GCRY_PK_RSA:
     case GCRY_PK_RSA_E:
     case GCRY_PK_RSA_S: return GCRY_PK_RSA;
-    case GCRY_PK_ELG:   
+    case GCRY_PK_ELG:
     case GCRY_PK_ELG_E: return GCRY_PK_ELG;
     default: return algo;
     }
@@ -354,7 +354,7 @@ canon_pubkey_algo (int algo)
 
 
 /* Use the key transfer format given in S_PGP to create the secinfo
-   structure in PK and chnage the parameter array in PK to include the
+   structure in PK and change the parameter array in PK to include the
    secret parameters.  */
 static gpg_error_t
 transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
@@ -415,7 +415,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
         goto bad_seckey;
       protect_algo = gcry_cipher_map_name (string);
       xfree (string);
-      
+
       value = gcry_sexp_nth_data (list, 3, &valuelen);
       if (!value || !valuelen || valuelen > sizeof iv)
         goto bad_seckey;
@@ -460,6 +460,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       || gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
       || !npkey || npkey >= nskey || nskey > PUBKEY_MAX_NSKEY)
     goto bad_seckey;
+  pubkey_algo = map_pk_gcry_to_openpgp (pubkey_algo);
 
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "skey", 0);
@@ -557,6 +558,77 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       goto leave;
     }
 
+  /* We need to change the received parameters for ECC algorithms.
+     The transfer format has all parameters but OpenPGP defines that
+     only the OID of the curve is to be used.  */
+  if (pubkey_algo == PUBKEY_ALGO_ECDSA || pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      gcry_sexp_t s_pubkey;
+      const char *curvename, *curveoidstr;
+      gcry_mpi_t mpi;
+
+      /* We build an S-expression with the public key parameters and
+         ask Libgcrypt to return the matching curve name.  */
+      if (npkey != 6 || !skey[0] || !skey[1] || !skey[2]
+          || !skey[3] || !skey[4] || !skey[5]
+          || !skey[6] || skey[7])
+        {
+          err = gpg_error (GPG_ERR_INTERNAL);
+          goto leave;
+        }
+      err = gcry_sexp_build (&s_pubkey, NULL,
+                             "(public-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)))",
+                             skey[0], skey[1], skey[2], skey[3], skey[4]);
+      if (err)
+        goto leave;
+#ifdef HAVE_GCRY_PK_GET_CURVE
+      curvename = gcry_pk_get_curve (s_pubkey, 0, NULL);
+#else
+      curvename = "?";
+#endif
+      gcry_sexp_release (s_pubkey);
+      curveoidstr = gpg_curve_to_oid (curvename, NULL);
+      if (!curveoidstr)
+        {
+          log_error ("no OID known for curve `%s'\n", curvename);
+          err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+          goto leave;
+        }
+      err = openpgp_oid_from_str (curveoidstr, &mpi);
+      if (err)
+        goto leave;
+
+      /* Now replace the curve parameters by the OID and shift the
+         rest of the parameters.  */
+      gcry_mpi_release (skey[0]);
+      skey[0] = mpi;
+      for (idx=1; idx <= 4; idx++)
+        gcry_mpi_release (skey[idx]);
+      skey[1] = skey[5];
+      skey[2] = skey[6];
+      for (idx=3; idx <= 6; idx++)
+        skey[idx] = NULL;
+
+      /* Fixup the NPKEY and NSKEY to match OpenPGP reality.  */
+      npkey = 2;
+      nskey = 3;
+
+      /* for (idx=0; skey[idx]; idx++) */
+      /*   { */
+      /*     log_info ("YYY skey[%d]:", idx); */
+      /*     if (gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE)) */
+      /*       { */
+      /*         void *p; */
+      /*         unsigned int nbits; */
+      /*         p = gcry_mpi_get_opaque (skey[idx], &nbits); */
+      /*         log_printhex (NULL, p, (nbits+7)/8); */
+      /*       } */
+      /*     else */
+      /*       gcry_mpi_dump (skey[idx]); */
+      /*     log_printf ("\n"); */
+      /*   } */
+    }
+
   /* Do some sanity checks.  */
   if (s2k_count <= 1024)
     {
@@ -576,11 +648,17 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   err = openpgp_md_test_algo (s2k_algo);
   if (err)
     goto leave;
-  
-  /* Check that the public key parameters match.  */
+
+  /* Check that the public key parameters match.  Since Libgcrypt 1.5
+     and the gcry_pk_get_curve function, gcry_mpi_cmp handles opaque
+     MPI correctly and thus we don't need to to do the extra
+     opaqueness checks.  */
   for (idx=0; idx < npkey; idx++)
-    if (gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
+    if (0
+#ifndef HAVE_GCRY_PK_GET_CURVE
+        gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
         || gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE)
+#endif
         || gcry_mpi_cmp (pk->pkey[idx], skey[idx]))
       {
         err = gpg_error (GPG_ERR_BAD_PUBKEY);
@@ -607,7 +685,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  
+
   ski->is_protected = 1;
   ski->sha1chk = 1;
   ski->algo = protect_algo;
@@ -636,7 +714,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
  bad_seckey:
   err = gpg_error (GPG_ERR_BAD_SECKEY);
   goto leave;
-  
+
  outofmem:
   err = gpg_error (GPG_ERR_ENOMEM);
   goto leave;
@@ -671,7 +749,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   init_packet (&pkt);
   kdbhd = keydb_new ();
 
-  if (!users) 
+  if (!users)
     {
       ndesc = 1;
       desc = xcalloc (ndesc, sizeof *desc);
@@ -679,10 +757,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
     }
   else
     {
-      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++)
         ;
       desc = xmalloc ( ndesc * sizeof *desc);
-        
+
       for (ndesc=0, sl=users; sl; sl = sl->next)
         {
           if (!(err=classify_user_id (sl->d, desc+ndesc)))
@@ -708,7 +786,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       goto leave;
     }
 #endif
-  
+
   /* For secret key export we need to setup a decryption context.  */
   if (secret)
     {
@@ -721,7 +799,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           log_error ("error getting the KEK: %s\n", gpg_strerror (err));
           goto leave;
         }
-      
+
       /* Prepare a cipher context.  */
       err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
                               GCRY_CIPHER_MODE_AESWRAP, 0);
@@ -737,20 +815,20 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       kek = NULL;
     }
 
-  while (!(err = keydb_search2 (kdbhd, desc, ndesc, &descindex))) 
+  while (!(err = keydb_search2 (kdbhd, desc, ndesc, &descindex)))
     {
       int skip_until_subkey = 0;
       u32 keyid[2];
       PKT_public_key *pk;
 
-      if (!users) 
+      if (!users)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       /* Read the keyblock. */
       release_kbnode (keyblock);
       keyblock = NULL;
       err = keydb_get_keyblock (kdbhd, &keyblock);
-      if (err) 
+      if (err)
         {
           log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
           goto leave;
@@ -802,7 +880,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
 
       /* And write it. */
-      for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); ) 
+      for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
         {
           if (skip_until_subkey)
             {
@@ -835,7 +913,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                      subkey and include that subkey into the output
                      too.  Need to add this subkey to a list so that
                      it won't get processed a second time.
-                   
+
                      So the first step here is to check that list and
                      skip in any case if the key is in that list.
 
@@ -843,7 +921,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                      function of GnuPG < 2.1 is not able to merge
                      secret keys and thus it is useless to output them
                      as two separate keys and have import merge them.  */
-                  if (subkey_in_list_p (subkey_list, node))  
+                  if (subkey_in_list_p (subkey_list, node))
                     skip_until_subkey = 1; /* Already processed this one. */
                   else
                     {
@@ -854,7 +932,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                             && exact_subkey_match_p (desc+j, node))
                           break;
                       if (!(j < ndesc))
-                        skip_until_subkey = 1; /* No other one matching. */ 
+                        skip_until_subkey = 1; /* No other one matching. */
                     }
                 }
 
@@ -885,7 +963,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   && node->pkt->pkt.signature->revkey)
                 {
                   int i;
-                  
+
                   for (i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
                     if ( (node->pkt->pkt.signature->revkey[i]->class & 0x40))
                       break;
@@ -904,7 +982,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 		 or a signature on an attrib */
 	      while (kbctx->next && kbctx->next->pkt->pkttype==PKT_SIGNATURE)
                 kbctx = kbctx->next;
- 
+
 	      continue;
 	    }
 
@@ -913,7 +991,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
             {
               u32 subkidbuf[2], *subkid;
               char *hexgrip, *serialno;
-              
+
               pk = node->pkt->pkt.public_key;
               if (node->pkt->pkttype == PKT_PUBLIC_KEY)
                 subkid = NULL;
@@ -930,7 +1008,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   skip_until_subkey = 1;
                   continue;
                 }
-              
+
               err = hexkeygrip_from_pk (pk, &hexgrip);
               if (err)
                 {
@@ -970,7 +1048,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   /* Create a key stub.  */
                   struct seckey_info *ski;
                   const char *s;
-                  
+
                   pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
                   if (!ski)
                     {
@@ -989,7 +1067,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                            ski->ivlen++, s += 2)
                         ski->iv[ski->ivlen] = xtoi_2 (s);
                     }
-                  
+
                   if ((options&EXPORT_SEXP_FORMAT))
                     err = build_sexp (out, node->pkt, &indent);
                   else
@@ -1032,7 +1110,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
                   if (!realkeylen)
                     goto unwraperror; /* Invalid csexp.  */
-                  
+
                   err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
                   xfree (key);
                   key = NULL;
@@ -1215,6 +1293,16 @@ build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
   /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
   /*     (*indent)--; */
   /*   } */
+  /* else if (sk->pubkey_algo == PUBKEY_ALGO_ECDSA && !sk->is_protected) */
+  /*   { */
+  /*     write_sexp_line (out, indent, "(ecdsa\n"); */
+  /*     (*indent)++;  */
+  /*     write_sexp_keyparm (out, indent, "c", sk->skey[0]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "q", sk->skey[6]); iobuf_put (out,'\n'); */
+  /*     write_sexp_keyparm (out, indent, "d", sk->skey[7]); */
+  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
+  /*     (*indent)--; */
+  /*   } */
   /* else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected) */
   /*   { */
   /*     write_sexp_line (out, indent, "(elg\n"); */
@@ -1242,7 +1330,7 @@ build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
 
 /* For some packet types we write them in a S-expression format.  This
    is still EXPERIMENTAL and subject to change.  */
-static int 
+static int
 build_sexp (iobuf_t out, PACKET *pkt, int *indent)
 {
   int rc;

@@ -51,6 +51,7 @@
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 #include "asshelp.h"
+#include "../include/cipher.h"	/* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
 
 enum cmd_and_opt_values 
 { aNull = 0,
@@ -2300,4 +2301,13 @@ check_for_running_agent (int silent, int mode)
 
   assuan_release (ctx);
   return 0;
+}
+
+/* TODO: it is also in misc, which is not linked with the agent */
+/* FIXME: The agent should not know about openpgp internals - weel
+   except for some stuff in cvt-openpgp.  */
+int
+map_pk_openpgp_to_gcry (int algo)
+{
+  return (algo==PUBKEY_ALGO_ECDSA ? GCRY_PK_ECDSA : (algo==PUBKEY_ALGO_ECDH ? GCRY_PK_ECDH : algo));
 }

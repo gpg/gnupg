@@ -145,6 +145,9 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   gcry_sexp_t s_data;
   char *desc;
   char *keygrip;
+  byte fp[MAX_FINGERPRINT_LEN];
+  size_t fpn;
+  const int pkalgo = map_pk_openpgp_to_gcry (sk->pubkey_algo);
 
   /* Get the keygrip.  */
   err = hexkeygrip_from_pk (sk, &keygrip);
@@ -152,15 +155,15 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     goto leave;
 
   /* Convert the data to an S-expression.  */
-  if (sk->pubkey_algo == GCRY_PK_ELG || sk->pubkey_algo == GCRY_PK_ELG_E)
+  if (pkalgo == GCRY_PK_ELG || pkalgo == GCRY_PK_ELG_E)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
-        err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))", 
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))",
                                enc->data[0], enc->data[1]);
     }
-  else if (sk->pubkey_algo == GCRY_PK_RSA || sk->pubkey_algo == GCRY_PK_RSA_E)
+  else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_E)
     {
       if (!enc->data[0])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -168,11 +171,25 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
                                enc->data[0]);
     }
+  else if (pkalgo == GCRY_PK_ECDH)
+    {
+      if (!enc->data[0] || !enc->data[1])
+        err = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(s%m)(e%m)))",
+                               enc->data[0], enc->data[1]);
+    }
   else
     err = gpg_error (GPG_ERR_BUG);
 
   if (err)
     goto leave;
+
+  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      fingerprint_from_pk (sk, fp, &fpn);
+      assert (fpn == 20);
+    }
 
   /* Decrypt. */
   desc = gpg_format_keydesc (sk, 0, 1);
@@ -202,32 +219,74 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (DBG_CIPHER)
     log_printhex ("DEK frame:", frame, nframe);
   n = 0;
-  if (!card)
+
+  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      if (n + 7 > nframe)
+      gcry_mpi_t shared_mpi;
+      gcry_mpi_t decoded;
+
+      /* At the beginning the frame are the bytes of shared point MPI.  */
+      err = gcry_mpi_scan (&shared_mpi, GCRYMPI_FMT_USG, frame, nframe, NULL);
+      if (err)
         {
-          err = gpg_error (G10ERR_WRONG_SECKEY);
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
           goto leave;
         }
-      if (frame[n] == 1 && frame[nframe - 1] == 2)
+
+      err = pk_ecdh_decrypt (&decoded, fp, enc->data[1]/*encr data as an MPI*/,
+                             shared_mpi, sk->pkey);
+      mpi_release (shared_mpi);
+      if(err)
+        goto leave;
+
+      /* Reuse NFRAME, which size is sufficient to include the session key.  */
+      err = gcry_mpi_print (GCRYMPI_FMT_USG, frame, nframe, &nframe, decoded);
+      mpi_release (decoded);
+      if (err)
+        goto leave;
+
+      /* Now the frame are the bytes decrypted but padded session key.  */
+
+      /* Allow double padding for the benefit of DEK size concealment.
+         Higher than this is wasteful. */
+      if (!nframe || frame[nframe-1] > 8*2 || nframe <= 8
+          || frame[nframe-1] > nframe)
         {
-          log_info (_("old encoding of the DEK is not supported\n"));
-          err = gpg_error (G10ERR_CIPHER_ALGO);
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
           goto leave;
         }
-      if (frame[n] != 2) /* Something went wrong.  */
+      nframe -= frame[nframe-1]; /* Remove padding.  */
+      assert (!n); /* (used just below) */
+    }
+  else
+    {
+      if (!card)
         {
-          err = gpg_error (G10ERR_WRONG_SECKEY);
-          goto leave;
+          if (n + 7 > nframe)
+            {
+              err = gpg_error (GPG_ERR_WRONG_SECKEY);
+              goto leave;
+            }
+          if (frame[n] == 1 && frame[nframe - 1] == 2)
+            {
+              log_info (_("old encoding of the DEK is not supported\n"));
+              err = gpg_error (GPG_ERR_CIPHER_ALGO);
+              goto leave;
+            }
+          if (frame[n] != 2) /* Something went wrong.  */
+            {
+              err = gpg_error (GPG_ERR_WRONG_SECKEY);
+              goto leave;
+            }
+          for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
+            ;
+          n++; /* Skip the zero byte.  */
         }
-      for (n++; n < nframe && frame[n]; n++) /* Skip the random bytes.  */
-        ;
-      n++; /* Skip the zero byte.  */
     }
 
   if (n + 4 > nframe)
     {
-      err = gpg_error (G10ERR_WRONG_SECKEY);
+      err = gpg_error (GPG_ERR_WRONG_SECKEY);
       goto leave;
     }
 

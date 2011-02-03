@@ -1,5 +1,5 @@
 /* pkglue.h - public key operations definitions
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,13 +20,31 @@
 #ifndef GNUPG_G10_PKGLUE_H
 #define GNUPG_G10_PKGLUE_H
 
+#include "packet.h"  /* For PKT_public_key.  */
+
+/*-- pkglue.c --*/
+gcry_mpi_t mpi_from_sexp (gcry_sexp_t sexp, const char * item);
+
 int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);
 int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
-                gcry_mpi_t *pkey);
-int pk_decrypt (int algo, gcry_mpi_t *result, gcry_mpi_t *data,
-                gcry_mpi_t *skey);
+		PKT_public_key *pk, gcry_mpi_t *pkey);
 int pk_check_secret_key (int algo, gcry_mpi_t *skey);
+
+
+/*-- ecdh.c --*/
+gcry_mpi_t  pk_ecdh_default_params (unsigned int qbits);
+gpg_error_t pk_ecdh_generate_ephemeral_key (gcry_mpi_t *pkey, gcry_mpi_t *r_k);
+gpg_error_t pk_ecdh_encrypt_with_shared_point
+/*         */  (int is_encrypt, gcry_mpi_t shared_mpi,
+                const byte pk_fp[MAX_FINGERPRINT_LEN],
+                gcry_mpi_t data, gcry_mpi_t *pkey,
+                gcry_mpi_t *out);
+
+int pk_ecdh_encrypt (gcry_mpi_t *resarr, const byte pk_fp[MAX_FINGERPRINT_LEN],
+                     gcry_mpi_t data, gcry_mpi_t * pkey);
+int pk_ecdh_decrypt (gcry_mpi_t *result, const byte sk_fp[MAX_FINGERPRINT_LEN],
+                     gcry_mpi_t data, gcry_mpi_t shared, gcry_mpi_t * skey);
 
 
 #endif /*GNUPG_G10_PKGLUE_H*/

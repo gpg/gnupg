@@ -20,6 +20,8 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
  * Dirmngr has taken over the function of the keyserver helpers.  Thus
    we now have a specified direct interface to keyservers via Dirmngr.
 
+ * ECC support for GPG as described by draft-jivsov-openpgp-ecc-06.txt.
+
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)
 -----------------------------------------------------
@@ -183,7 +185,7 @@ Noteworthy changes in version 2.0.10 (2009-01-12)
    the installation directory to %CSIDL_COMMON_APPDATA%/GNU/etc/gnupg.
 
  * [w32] The gnupg2.nls directory is not anymore used.  The standard
-   locale directory is now used.  
+   locale directory is now used.
 
  * [w32] Fixed a race condition between gpg and gpgsm in the use of
    temporary file names.
@@ -235,7 +237,7 @@ Noteworthy changes in version 2.0.8 (2007-12-20)
  * The envvars XAUTHORITY and PINENTRY_USER_DATA are now passed to the
    Pinentry.
 
- * Fixed the auto creation of the key stub for smartcards.  
+ * Fixed the auto creation of the key stub for smartcards.
 
  * Fixed a rare bug in decryption using the OpenPGP card.
 
@@ -277,7 +279,7 @@ Noteworthy changes in version 2.0.6 (2007-08-16)
 
  * GPGSM does now grok --default-key.
 
- * GPGCONF is now aware of --default-key and --encrypt-to. 
+ * GPGCONF is now aware of --default-key and --encrypt-to.
 
  * GPGSM does again correctly print the serial number as well the the
    various keyids.  This was broken since 2.0.4.
@@ -286,7 +288,7 @@ Noteworthy changes in version 2.0.6 (2007-08-16)
 
  * Improved Windows support.
 
- 
+
 Noteworthy changes in version 2.0.5 (2007-07-05)
 ------------------------------------------------
 
@@ -326,7 +328,7 @@ Noteworthy changes in version 2.0.3 (2007-03-08)
    such messages by default which makes those programs safe again.
    --allow-multiple-messages returns to the old behavior. [CVE-2007-1263].
 
- * New --verify-option show-primary-uid-only. 
+ * New --verify-option show-primary-uid-only.
 
  * gpgconf may now reads a global configuration file to select which
    options are changeable by a frontend.  The new applygnupgdefaults
@@ -490,7 +492,7 @@ Noteworthy changes in version 1.9.21 (2006-06-20)
 
  * Support for the CardMan 4040 PCMCIA reader (Linux 2.6.15 required).
 
- * Scdaemon does not anymore reset cards at the end of a connection. 
+ * Scdaemon does not anymore reset cards at the end of a connection.
 
  * Kludge to allow use of Bundesnetzagentur issued X.509 certificates.
 
@@ -510,7 +512,7 @@ Noteworthy changes in version 1.9.20 (2005-12-20)
 
  * Basic support for qualified signatures.
 
- * New debug tool gpgparsemail. 
+ * New debug tool gpgparsemail.
 
 
 Noteworthy changes in version 1.9.19 (2005-09-12)
@@ -794,7 +796,7 @@ Noteworthy changes in version 1.9.0 (2003-08-05)
 
 
  Copyright 2002, 2003, 2004, 2005, 2006, 2007,
-           2008, 2009  Free Software Foundation, Inc.
+           2008, 2009, 2010, 2011  Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -186,7 +186,7 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
 }
 
 
-/* Parse a key packet and store the ionformation in KI. */
+/* Parse a key packet and store the information in KI. */
 static gpg_error_t
 parse_key (const unsigned char *data, size_t datalen,
            struct _keybox_openpgp_key_info *ki)
@@ -242,6 +242,12 @@ parse_key (const unsigned char *data, size_t datalen,
       break;
     case 17: /* DSA */
       npkey = 4;
+      break;
+    case 18: /* ECDH */
+      npkey = 3;
+      break;
+    case 19: /* ECDSA */
+      npkey = 2;
       break;
     default: /* Unknown algorithm. */
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);

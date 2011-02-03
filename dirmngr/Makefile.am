@@ -62,7 +62,7 @@ endif
 dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBINTL) $(LIBICONV)
 if !USE_LDAPWRAPPER
-dirmngr_LDADD += $(LDAPLIBS)
+dirmngr_LDADD += $(LDAPLIBS) -llber  #FIXME:  Test for liblber first.
 endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 

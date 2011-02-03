@@ -28,9 +28,16 @@
 #include "i18n.h"
 #include "cvt-openpgp.h"
 
+/* Macros for compatibility with older libgcrypt versions. */
+#ifndef HAVE_GCRY_PK_ECDSA
+# define GCRY_PK_ECDH  302
+#endif
+
+
+
 
 /* Helper to pass data via the callback to do_unprotect. */
-struct try_do_unprotect_arg_s 
+struct try_do_unprotect_arg_s
 {
   int  is_v4;
   int  is_protected;
@@ -80,6 +87,14 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
                              "(public-key(rsa(n%m)(e%m)))", pkey[0], pkey[1]);
       break;
 
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)))",
+                             pkey[0], pkey[1], pkey[2], pkey[3], pkey[4],
+                             pkey[5]);
+      break;
+
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       break;
@@ -94,7 +109,8 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
 
 
 /* Convert a secret key given as algorithm id and an array of key
-   parameters into our s-expression based format.  */
+   parameters into our s-expression based format.  Note that
+   PUBKEY_ALGO has an gcrypt algorithm number. */
 static gpg_error_t
 convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
 {
@@ -128,6 +144,18 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
                              skey[5]);
       break;
 
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+      /* Although our code would work with "ecc" we explicitly use
+         "ecdh" or "ecdsa" to implicitly set the key capabilities.  */
+      err = gcry_sexp_build (&s_skey, NULL,
+                             "(private-key(%s(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
+                             "(d%m)))",
+                             pubkey_algo == GCRY_PK_ECDSA?"ecdsa":"ecdh",
+                             skey[0], skey[1], skey[2], skey[3], skey[4],
+                             skey[5], skey[6]);
+      break;
+
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       break;
@@ -154,7 +182,7 @@ hash_passphrase_and_set_key (const char *passphrase,
   keylen = gcry_cipher_get_algo_keylen (protect_algo);
   if (!keylen)
     return gpg_error (GPG_ERR_INTERNAL);
-  
+
   key = xtrymalloc_secure (keylen);
   if (!key)
     return gpg_error_from_syserror ();
@@ -174,7 +202,7 @@ static u16
 checksum (const unsigned char *p, unsigned int n)
 {
   u16 a;
-  
+
   for (a=0; n; n-- )
     a += *p++;
   return a;
@@ -202,6 +230,10 @@ do_unprotect (const char *passphrase,
 
   *r_key = NULL;
 
+ /* Unfortunately, the OpenPGP PK algorithm numbers need to be
+    re-mapped for Libgcrypt.    */
+  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
+
   /* Count the actual number of MPIs is in the array and set the
      remainder to NULL for easier processing later on.  */
   for (skeylen = 0; skey[skeylen]; skeylen++)
@@ -219,9 +251,6 @@ do_unprotect (const char *passphrase,
 
   if (gcry_pk_test_algo (pubkey_algo))
     {
-      /* The algorithm numbers are Libgcrypt numbers but fortunately
-         the OpenPGP algorithm numbers map one-to-one to the Libgcrypt
-         numbers.  */
       log_info (_("public key algorithm %d (%s) is not supported\n"),
                 pubkey_algo, gcry_pk_algo_name (pubkey_algo));
       return gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -241,7 +270,7 @@ do_unprotect (const char *passphrase,
     return gpg_error (GPG_ERR_MISSING_VALUE);
   if (nskey+1 >= skeysize)
     return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
-  
+
   /* Check whether SKEY is at all protected.  If it is not protected
      merely verify the checksum.  */
   if (!is_protected)
@@ -253,7 +282,7 @@ do_unprotect (const char *passphrase,
         {
           if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
             return gpg_error (GPG_ERR_BAD_SECKEY);
-          
+
           err = gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, skey[i]);
           if (!err)
             {
@@ -270,7 +299,7 @@ do_unprotect (const char *passphrase,
           if (err)
             return err;
         }
-      
+
       if (actual_csum != desired_csum)
         return gpg_error (GPG_ERR_CHECKSUM);
       return 0;
@@ -293,7 +322,7 @@ do_unprotect (const char *passphrase,
                 s2k_algo, gcry_md_algo_name (s2k_algo));
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
-  
+
   err = gcry_cipher_open (&cipher_hd, protect_algo,
                           GCRY_CIPHER_MODE_CFB,
                           (GCRY_CIPHER_SECURE
@@ -312,10 +341,10 @@ do_unprotect (const char *passphrase,
     {
       gcry_cipher_close (cipher_hd);
       return err;
-    }  
+    }
 
   gcry_cipher_setiv (cipher_hd, protect_iv, protect_ivlen);
-  
+
   actual_csum = 0;
   if (pkt_version >= 4)
     {
@@ -348,15 +377,15 @@ do_unprotect (const char *passphrase,
         {
           /* This is the new SHA1 checksum method to detect tampering
              with the key as used by the Klima/Rosa attack.  */
-          desired_csum = 0; 
+          desired_csum = 0;
           actual_csum = 1;  /* Default to bad checksum.  */
 
-          if (ndata < 20) 
+          if (ndata < 20)
             log_error ("not enough bytes for SHA-1 checksum\n");
-          else 
+          else
             {
               gcry_md_hd_t h;
-              
+
               if (gcry_md_open (&h, GCRY_MD_SHA1, 1))
                 BUG(); /* Algo not available. */
               gcry_md_write (h, data, ndata - 20);
@@ -366,13 +395,13 @@ do_unprotect (const char *passphrase,
               gcry_md_close (h);
             }
         }
-      else 
+      else
         {
           /* Old 16 bit checksum method.  */
           if (ndata < 2)
             {
               log_error ("not enough bytes for checksum\n");
-              desired_csum = 0; 
+              desired_csum = 0;
               actual_csum = 1;  /* Mark checksum bad.  */
             }
           else
@@ -386,7 +415,7 @@ do_unprotect (const char *passphrase,
                 }
             }
         }
-      
+
       /* Better check it here.  Otherwise the gcry_mpi_scan would fail
          because the length may have an arbitrary value.  */
       if (desired_csum == actual_csum)
@@ -437,7 +466,7 @@ do_unprotect (const char *passphrase,
               gcry_cipher_close (cipher_hd);
               return gpg_error (GPG_ERR_BAD_SECKEY);
             }
-          
+
           buffer = xtrymalloc_secure (ndata);
           if (!buffer)
             {
@@ -445,7 +474,7 @@ do_unprotect (const char *passphrase,
               gcry_cipher_close (cipher_hd);
               return err;
             }
-              
+
           gcry_cipher_sync (cipher_hd);
           buffer[0] = p[0];
           buffer[1] = p[1];
@@ -526,7 +555,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
    pointed to by GRIP.  On error NULL is stored at all return
    arguments.  */
 gpg_error_t
-convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp, 
+convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
                       unsigned char *grip, const char *prompt,
                       const char *cache_nonce,
                       unsigned char **r_key, char **r_passphrase)
@@ -594,7 +623,7 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
       if (!protect_algo && !!strcmp (string, "IDEA"))
         protect_algo = GCRY_CIPHER_IDEA;
       xfree (string);
-      
+
       value = gcry_sexp_nth_data (list, 3, &valuelen);
       if (!value || !valuelen || valuelen > sizeof iv)
         goto bad_seckey;
@@ -817,7 +846,7 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
  bad_seckey:
   err = gpg_error (GPG_ERR_BAD_SECKEY);
   goto leave;
-  
+
  outofmem:
   err = gpg_error (GPG_ERR_ENOMEM);
   goto leave;
@@ -843,13 +872,13 @@ key_from_sexp (gcry_sexp_t sexp, const char *elems, gcry_mpi_t *array)
         }
       array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
       gcry_sexp_release (l2);
-      if (!array[idx]) 
+      if (!array[idx])
         {
           err = gpg_error (GPG_ERR_INV_OBJ); /* Required parameter invalid.  */
           goto leave;
         }
     }
-  
+
  leave:
   if (err)
     {
@@ -997,7 +1026,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       gcry_sexp_release (list);
       return gpg_error (GPG_ERR_INV_OBJ); /* Invalid structure of object. */
     }
-  
+
   algo = gcry_pk_map_name (name);
   xfree (name);
 
@@ -1008,6 +1037,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     case GCRY_PK_ELG_E: algoname = "elg";   npkey = 3; elems = "pgyx";    break;
     case GCRY_PK_DSA:   algoname = "dsa";   npkey = 4; elems = "pqgyx";   break;
     case GCRY_PK_ECDSA: algoname = "ecdsa"; npkey = 6; elems = "pabgnqd"; break;
+    case GCRY_PK_ECDH:  algoname = "ecdh";  npkey = 6; elems = "pabgnqd"; break;
     default:            algoname = "";      npkey = 0; elems = NULL;      break;
     }
   assert (!elems || strlen (elems) < DIM (array) );
@@ -1037,10 +1067,10 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       int   format_args_buf_int[1];
       void *format_args[10+2];
       size_t n;
-      gcry_sexp_t tmpkey, tmpsexp;
-      
+      gcry_sexp_t tmpkey, tmpsexp = NULL;
+
       snprintf (countbuf, sizeof countbuf, "%lu", s2k_count);
-      
+
       init_membuf (&mbuf, 50);
       put_membuf_str (&mbuf, "(skey");
       for (i=j=0; i < npkey; i++)
@@ -1073,7 +1103,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
                                " %S\n"
                                " (protection sha1 aes %b 1:3 sha1 %b %s))\n",
                                algoname,
-                               tmpkey, 
+                               tmpkey,
                                (int)sizeof protect_iv, protect_iv,
                                (int)sizeof salt, salt,
                                countbuf);
@@ -1085,7 +1115,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
 
   for (i=0; i < DIM (array); i++)
     gcry_mpi_release (array[i]);
-  
+
   return err;
 }
-

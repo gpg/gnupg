@@ -90,6 +90,7 @@ common_sources = \
 	localename.c \
 	session-env.c session-env.h \
 	userids.c userids.h \
+	openpgp-oid.c \
 	helpfile.c
 
 # To make the code easier to read we have split home some code into
@@ -160,7 +161,7 @@ if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
-	       t-session-env
+	       t-session-env t-openpgp-oid
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -192,6 +193,7 @@ t_sexputil_LDADD = $(t_common_ldadd)
 t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
+t_openpgp_oid_LDADD = $(t_common_ldadd)
 
 
 

@@ -858,7 +858,7 @@ my_strusage( int level )
       case 34:
 	if (!pubkeys)
             pubkeys = build_list (_("Pubkey: "), 0,
-                                  gcry_pk_algo_name,
+                                  openpgp_pk_algo_name,
                                   openpgp_pk_test_algo );
 	p = pubkeys;
 	break;
@@ -1958,6 +1958,9 @@ main (int argc, char **argv)
         log_fatal ( _("libgcrypt is too old (need %s, have %s)\n"),
                     NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
       }
+
+    /* Use our own logging handler for Libcgrypt.  */
+    setup_libgcrypt_logging ();
 
     /* Put random number into secure memory */
     gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

@@ -84,7 +84,7 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
   /* The encrypted session key is prefixed with a one-octet algorithm id.  */
   buf[0] = (*seskey)->algo;
   memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
-    
+
   /* We only pass already checked values to the following fucntion,
      thus we consider any failure as fatal.  */
   if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
@@ -119,7 +119,7 @@ use_mdc(PK_LIST pk_list,int algo)
 
   if(select_mdc_from_pklist(pk_list))
     return 1;
-  
+
   /* The keys don't support MDC, so now we do a bit of a hack - if any
      of the AESes or TWOFISH are in the prefs, we assume that the user
      can handle a MDC.  This is valid for PGP 7, which can handle MDCs
@@ -181,7 +181,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   memset( &zfx, 0, sizeof zfx);
   memset( &tfx, 0, sizeof tfx);
   init_packet(&pkt);
-    
+
   /* Prepare iobufs. */
   inp = iobuf_open(filename);
   if (inp)
@@ -200,23 +200,23 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       release_progress_context (pfx);
       return rc;
     }
-  
+
   handle_progress (pfx, inp, filename);
-  
+
   if (opt.textmode)
     iobuf_push_filter( inp, text_filter, &tfx );
-  
+
   /* Due the the fact that we use don't use an IV to encrypt the
      session key we can't use the new mode with RFC1991 because it has
      no S2K salt.  RFC1991 always uses simple S2K. */
   if ( RFC1991 && use_seskey )
     use_seskey = 0;
-    
+
   cfx.dek = NULL;
-  if ( mode ) 
+  if ( mode )
     {
       int canceled;
-      
+
       s2k = xmalloc_clear( sizeof *s2k );
       s2k->mode = RFC1991? 0:opt.s2k_mode;
       s2k->hash_algo = S2K_DIGEST_ALGO;
@@ -233,37 +233,37 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
           release_progress_context (pfx);
           return rc;
         }
-      if (use_seskey && s2k->mode != 1 && s2k->mode != 3) 
+      if (use_seskey && s2k->mode != 1 && s2k->mode != 3)
         {
           use_seskey = 0;
           log_info (_("can't use a symmetric ESK packet "
                       "due to the S2K mode\n"));
         }
-      
+
       if ( use_seskey )
         {
           DEK *dek = NULL;
-        
+
           seskeylen = openpgp_cipher_get_algo_keylen (default_cipher_algo ());
           encrypt_seskey( cfx.dek, &dek, enckey );
           xfree( cfx.dek ); cfx.dek = dek;
         }
-      
+
       if (opt.verbose)
         log_info(_("using cipher %s\n"),
                  openpgp_cipher_algo_name (cfx.dek->algo));
-      
+
       cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
-  
+
   if (do_compress && cfx.dek && cfx.dek->use_mdc
       && is_file_compressed(filename, &rc))
     {
       if (opt.verbose)
         log_info(_("`%s' already compressed\n"), filename);
-      do_compress = 0;        
+      do_compress = 0;
     }
-  
+
   if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, &out )))
     {
       iobuf_cancel (inp);
@@ -272,7 +272,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       release_progress_context (pfx);
       return rc;
     }
-  
+
   if ( opt.armor )
     {
       afx = new_armor_context ();
@@ -296,7 +296,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
         log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
       xfree (enc);
     }
-  
+
   if (!opt.no_literal)
     pt = setup_plaintext_name (filename, inp);
 
@@ -347,7 +347,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       pkt.pkttype = 0;
       pkt.pkt.generic = NULL;
     }
-  
+
   /* Register the cipher filter. */
   if (mode)
     iobuf_push_filter ( out, cipher_filter, &cfx );
@@ -359,14 +359,14 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
         zfx.new_ctb = 1;
       push_compress_filter (out, &zfx, default_compress_algo());
     }
-  
+
   /* Do the work. */
   if (!opt.no_literal)
     {
       if ( (rc = build_packet( out, &pkt )) )
         log_error("build_packet failed: %s\n", g10_errstr(rc) );
     }
-  else 
+  else
     {
       /* User requested not to create a literal packet, so we copy the
          plain data.  */
@@ -380,12 +380,12 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       }
     wipememory (copy_buffer, 4096); /* burn buffer */
     }
-  
+
   /* Finish the stuff.  */
   iobuf_close (inp);
   if (rc)
     iobuf_cancel(out);
-  else 
+  else
     {
       iobuf_close (out); /* fixme: check returncode */
       if (mode)
@@ -425,7 +425,7 @@ setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek)
 
 
 static int
-write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek, 
+write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
                   iobuf_t out)
 {
   int rc, seskeylen = openpgp_cipher_get_algo_keylen (dek->algo);
@@ -492,7 +492,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   memset( &tfx, 0, sizeof tfx);
   init_packet(&pkt);
 
-  if (use_symkey 
+  if (use_symkey
       && (rc=setup_symkey(&symkey_s2k,&symkey_dek)))
     {
       release_progress_context (pfx);
@@ -509,7 +509,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
           return rc;
         }
     }
-  
+
   if(PGP2)
     {
       for (work_list=pk_list; work_list; work_list=work_list->next)
@@ -560,17 +560,17 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   rc = open_outfile (outputfd, filename, opt.armor? 1:0, &out);
   if (rc)
     goto leave;
-  
+
   if (opt.armor)
     {
       afx = new_armor_context ();
       push_armor_filter (afx, out);
     }
-  
+
   /* Create a session key. */
   cfx.dek = xmalloc_secure_clear (sizeof *cfx.dek);
   if (!opt.def_cipher_algo)
-    { 
+    {
       /* Try to get it from the prefs.  */
       cfx.dek->algo = select_algo_from_prefs (pk_list, PREFTYPE_SYM, -1, NULL);
       /* The only way select_algo_from_prefs can fail here is when
@@ -582,7 +582,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       if (cfx.dek->algo == -1)
         {
           cfx.dek->algo = CIPHER_ALGO_3DES;
-          
+
           if (PGP2)
             {
               log_info(_("unable to use the IDEA cipher for all of the keys "
@@ -610,12 +610,12 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                    openpgp_cipher_algo_name (opt.def_cipher_algo),
                    opt.def_cipher_algo);
         }
-      
+
       cfx.dek->algo = opt.def_cipher_algo;
     }
-  
+
   cfx.dek->use_mdc = use_mdc (pk_list,cfx.dek->algo);
-  
+
   /* Only do the is-file-already-compressed check if we are using a
      MDC.  This forces compressed files to be re-compressed if we do
      not have a MDC to give some protection against chosen ciphertext
@@ -625,7 +625,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     {
       if (opt.verbose)
         log_info(_("`%s' already compressed\n"), filename);
-      do_compress = 0;        
+      do_compress = 0;
     }
   if (rc2)
     {
@@ -636,7 +636,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   make_session_key (cfx.dek);
   if (DBG_CIPHER)
     log_printhex ("DEK is: ", cfx.dek->key, cfx.dek->keylen );
-  
+
   rc = write_pubkey_enc_from_list (pk_list, cfx.dek, out);
   if (rc)
     goto leave;
@@ -647,16 +647,16 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
      secret key needed to decrypt.  */
   if(use_symkey && (rc = write_symkey_enc(symkey_s2k,symkey_dek,cfx.dek,out)))
     goto leave;
-  
+
   if (!opt.no_literal)
     pt = setup_plaintext_name (filename, inp);
-  
+
   if (filefd != -1
       && !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
     {
       off_t tmpsize;
       int overflow;
-      
+
       if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
            && !overflow && opt.verbose)
         log_info(_("WARNING: `%s' is an empty file\n"), filename );
@@ -672,7 +672,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   else
     filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
 
-  if (!opt.no_literal) 
+  if (!opt.no_literal)
     {
       pt->timestamp = make_timestamp();
       pt->mode = opt.textmode ? 't' : 'b';
@@ -693,7 +693,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (do_compress)
     {
       int compr_algo = opt.compress_algo;
-      
+
       if (compr_algo == -1)
         {
           compr_algo = select_algo_from_prefs (pk_list, PREFTYPE_ZIP, -1, NULL);
@@ -702,7 +702,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
           /* Theoretically impossible to get here since uncompressed
              is implicit.  */
         }
-      else if (!opt.expert 
+      else if (!opt.expert
                && select_algo_from_prefs(pk_list, PREFTYPE_ZIP,
                                          compr_algo, NULL) != compr_algo)
         {
@@ -710,7 +710,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                       " violates recipient preferences\n"),
                     compress_algo_to_string(compr_algo), compr_algo);
         }
-      
+
       /* Algo 0 means no compression. */
       if (compr_algo)
         {
@@ -719,7 +719,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
           push_compress_filter (out,&zfx,compr_algo);
         }
     }
-  
+
   /* Do the work. */
   if (!opt.no_literal)
     {
@@ -750,7 +750,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   iobuf_close (inp);
   if (rc)
     iobuf_cancel (out);
-  else 
+  else
     {
       iobuf_close (out); /* fixme: check returncode */
       write_status (STATUS_END_ENCRYPTION);
@@ -779,7 +779,7 @@ encrypt_filter (void *opaque, int control,
   size_t size = *ret_len;
   encrypt_filter_context_t *efx = opaque;
   int rc = 0;
-  
+
   if (control == IOBUFCTRL_UNDERFLOW) /* decrypt */
     {
       BUG(); /* not used */
@@ -789,19 +789,19 @@ encrypt_filter (void *opaque, int control,
       if ( !efx->header_okay )
         {
           efx->cfx.dek = xmalloc_secure_clear ( sizeof *efx->cfx.dek );
-          if ( !opt.def_cipher_algo  ) 
+          if ( !opt.def_cipher_algo  )
             {
               /* Try to get it from the prefs. */
               efx->cfx.dek->algo =
                 select_algo_from_prefs (efx->pk_list, PREFTYPE_SYM, -1, NULL);
-              if (efx->cfx.dek->algo == -1 ) 
+              if (efx->cfx.dek->algo == -1 )
                 {
                   /* Because 3DES is implicitly in the prefs, this can
                      only happen if we do not have any public keys in
                      the list.  */
                   efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
                 }
-              
+
               /* In case 3DES has been selected, print a warning if
                  any key does not have a preference for AES.  This
                  should help to indentify why encrypting to several
@@ -810,7 +810,7 @@ encrypt_filter (void *opaque, int control,
                   && efx->cfx.dek->algo == CIPHER_ALGO_3DES)
                 warn_missing_aes_from_pklist (efx->pk_list);
 	    }
-          else 
+          else
             {
 	      if (!opt.expert
                   && select_algo_from_prefs (efx->pk_list,PREFTYPE_SYM,
@@ -820,12 +820,12 @@ encrypt_filter (void *opaque, int control,
 			   "violates recipient preferences\n"),
 			 openpgp_cipher_algo_name (opt.def_cipher_algo),
 			 opt.def_cipher_algo);
-              
+
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
 	    }
-          
+
           efx->cfx.dek->use_mdc = use_mdc (efx->pk_list,efx->cfx.dek->algo);
-          
+
           make_session_key ( efx->cfx.dek );
           if (DBG_CIPHER)
             log_printhex ("DEK is: ", efx->cfx.dek->key, efx->cfx.dek->keylen);
@@ -841,13 +841,13 @@ encrypt_filter (void *opaque, int control,
 		if(rc)
 		  return rc;
 	      }
-            
+
 	    iobuf_push_filter (a, cipher_filter, &efx->cfx);
-            
+
 	    efx->header_okay = 1;
 	}
       rc = iobuf_write (a, buf, size);
-      
+
     }
   else if (control == IOBUFCTRL_FREE)
     {
@@ -876,9 +876,9 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
   for ( ; pk_list; pk_list = pk_list->next )
     {
       gcry_mpi_t frame;
-      
+
       pk = pk_list->pk;
-      
+
       print_pubkey_algo_note ( pk->pubkey_algo );
       enc = xmalloc_clear ( sizeof *enc );
       enc->pubkey_algo = pk->pubkey_algo;
@@ -904,9 +904,9 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
        * for Elgamal).  We don't need frame anymore because we have
        * everything now in enc->data which is the passed to
        * build_packet().  */
-      frame = encode_session_key (dek, 
+      frame = encode_session_key (pk->pubkey_algo, dek,
                                   pubkey_nbits (pk->pubkey_algo, pk->pkey));
-      rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk->pkey);
+      rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk, pk->pkey);
       gcry_mpi_release (frame);
       if (rc)
         log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
@@ -916,7 +916,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
             {
               char *ustr = get_user_id_string_native (enc->keyid);
               log_info (_("%s/%s encrypted for: \"%s\"\n"),
-                        gcry_pk_algo_name (enc->pubkey_algo),
+                        openpgp_pk_algo_name (enc->pubkey_algo),
                         openpgp_cipher_algo_name (dek->algo),
                         ustr );
               xfree (ustr);
@@ -927,7 +927,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
           pkt.pkt.pubkey_enc = enc;
           rc = build_packet (out, &pkt);
           if (rc)
-            log_error ("build_packet(pubkey_enc) failed: %s\n", 
+            log_error ("build_packet(pubkey_enc) failed: %s\n",
                        g10_errstr (rc));
 	}
       free_pubkey_enc(enc);
@@ -946,9 +946,9 @@ encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
   if (opt.outfile)
     {
       log_error(_("--output doesn't work for this command\n"));
-      return;        
+      return;
     }
-    
+
   if (!nfiles)
     {
       char line[2048];

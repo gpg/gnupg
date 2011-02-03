@@ -726,6 +726,16 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
       algoname = "dsa";
       elems = "pqgy";
     }
+  else if (n==5 && !memcmp (name, "ecdsa", 5))
+    {
+      algoname = "ecdsa";
+      elems = "pabgnq";
+    }
+  else if (n==4 && !memcmp (name, "ecdh", 4))
+    {
+      algoname = "ecdh";
+      elems = "pabgnq";
+    }
   else if (n==3 && !memcmp (name, "elg", 3))
     {
       algoname = "elg";

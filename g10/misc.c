@@ -1,6 +1,6 @@
 /* misc.c - miscellaneous functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -64,6 +64,7 @@
 #include "call-agent.h"
 #include "i18n.h"
 
+#include <assert.h>
 
 static int
 string_count_chr (const char *string, int c)
@@ -294,7 +295,7 @@ print_pubkey_algo_note( int algo )
 	{
 	  warn=1;
 	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
-		    gcry_pk_algo_name (algo));
+		    openpgp_cipher_algo_name (algo));
 	}
     }
   else if (algo == 20)
@@ -365,6 +366,32 @@ map_cipher_gcry_to_openpgp (int algo)
     }
 }
 
+/* Map OpenPGP public key algorithm numbers to those used by
+   Libgcrypt.  */
+int
+map_pk_openpgp_to_gcry (int algo)
+{
+  switch (algo)
+    {
+    case PUBKEY_ALGO_ECDSA: return GCRY_PK_ECDSA;
+    case PUBKEY_ALGO_ECDH:  return GCRY_PK_ECDH;
+    default: return algo;
+    }
+}
+
+/* Map Gcrypt public key algorithm numbers to those used by
+   OpenPGP.  */
+int
+map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
+{
+  switch (algo)
+    {
+    case GCRY_PK_ECDSA:  return PUBKEY_ALGO_ECDSA;
+    case GCRY_PK_ECDH:   return PUBKEY_ALGO_ECDH;
+    default: return algo < 110 ? algo : 0;
+    }
+}
+
 
 /* Return the block length of an OpenPGP cipher algorithm.  */
 int 
@@ -424,7 +451,8 @@ openpgp_pk_test_algo( int algo )
 
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
-  return gcry_pk_test_algo (algo);
+
+  return gcry_pk_test_algo (map_pk_openpgp_to_gcry (algo));
 }
 
 int
@@ -442,7 +470,8 @@ openpgp_pk_test_algo2( int algo, unsigned int use )
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &use_buf);
+  return gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                            GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
 int 
@@ -457,6 +486,7 @@ openpgp_pk_algo_usage ( int algo )
                  | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
           break;
       case PUBKEY_ALGO_RSA_E:
+      case PUBKEY_ALGO_ECDH:
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_RSA_S:
@@ -472,6 +502,8 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_DSA:  
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
+      case PUBKEY_ALGO_ECDSA:
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
       default:
           break;
     }
@@ -484,19 +516,7 @@ openpgp_pk_algo_usage ( int algo )
 const char *
 openpgp_pk_algo_name (int algo) 
 {
-  switch (algo)
-    {    
-    case PUBKEY_ALGO_RSA:
-    case PUBKEY_ALGO_RSA_E:
-    case PUBKEY_ALGO_RSA_S: return "rsa";
-
-    case PUBKEY_ALGO_ELGAMAL:
-    case PUBKEY_ALGO_ELGAMAL_E: return "elg";
-
-    case PUBKEY_ALGO_DSA:  return "dsa";
-
-    default: return "?";
-    }
+  return gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo));
 }
 
 
@@ -1340,27 +1360,44 @@ path_access(const char *file,int mode)
 
 
 
-/* Temporary helper. */
+/* Return the number of public key parameters as used by OpenPGP.  */
 int
-pubkey_get_npkey( int algo )
+pubkey_get_npkey (int algo)
 {
   size_t n;
 
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 2;
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 3;
+
+  /* All other algorithms match those of Libgcrypt.  */
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
+
+  if (gcry_pk_algo_info (algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
     n = 0;
   return n;
 }
 
-/* Temporary helper. */
+
+/* Return the number of secret key parameters as used by OpenPGP.  */
 int
-pubkey_get_nskey( int algo )
+pubkey_get_nskey (int algo)
 {
   size_t n;
 
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 3;
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 4;
+
+  /* All other algorithms match those of Libgcrypt.  */
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
     n = 0;
   return n;
@@ -1368,25 +1405,40 @@ pubkey_get_nskey( int algo )
 
 /* Temporary helper. */
 int
-pubkey_get_nsig( int algo )
+pubkey_get_nsig (int algo)
 {
   size_t n;
 
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 2;
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 0;
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
     n = 0;
   return n;
 }
 
+
 /* Temporary helper. */
 int
-pubkey_get_nenc( int algo )
+pubkey_get_nenc (int algo)
 {
   size_t n;
   
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 0;
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 2;
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
     n = 0;
   return n;
@@ -1399,6 +1451,9 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 {
     int rc, nbits;
     gcry_sexp_t sexp;
+
+#warning FIXME:  We are mixing OpenPGP And CGrypt Ids
+    assert( algo != GCRY_PK_ECDSA && algo != GCRY_PK_ECDH );
 
     if( algo == GCRY_PK_DSA ) {
 	rc = gcry_sexp_build ( &sexp, NULL,
@@ -1415,6 +1470,18 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 			      "(public-key(rsa(n%m)(e%m)))",
 				  key[0], key[1] );
     }
+    else if( algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH ) {
+        char *curve = openpgp_oid_to_str (key[0]);
+        if (!curve)
+          rc = gpg_error_from_syserror ();
+        else
+          {
+            rc = gcry_sexp_build (&sexp, NULL,
+                                  "(public-key(ecc(curve%s)(q%m)))",
+				  curve, key[1]);
+            xfree (curve);
+          }
+    }
     else
 	return 0;
 
@@ -1428,7 +1495,6 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 
 
 
-/* FIXME: Use gcry_mpi_print directly. */
 int
 mpi_print (estream_t fp, gcry_mpi_t a, int mode)
 {
@@ -1442,6 +1508,19 @@ mpi_print (estream_t fp, gcry_mpi_t a, int mode)
       n1 = gcry_mpi_get_nbits(a);
       n += es_fprintf (fp, "[%u bits]", n1);
     }
+  else if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      unsigned int nbits;
+      unsigned char *p = gcry_mpi_get_opaque (a, &nbits);
+      if (!p)
+        n += es_fprintf (fp, "[invalid opaque value]");
+      else
+        {
+          nbits = (nbits + 7)/8;
+          for (; nbits; nbits--, p++)
+            n += es_fprintf (fp, "%02X", *p);
+        }
+    }
   else
     {
       unsigned char *buffer;
@@ -1454,4 +1533,22 @@ mpi_print (estream_t fp, gcry_mpi_t a, int mode)
     }
   return n;
 }
+
+
+/* pkey[1] or skey[1] is Q for ECDSA, which is an uncompressed point,
+   i.e.  04 <x> <y> */
+unsigned int 
+ecdsa_qbits_from_Q (unsigned int qbits)
+{
+  if ((qbits%8) > 3)
+    {
+      log_error (_("ECDSA public key is expected to be in SEC encoding "
+                   "multiple of 8 bits\n"));
+      return 0;
+    }
+  qbits -= qbits%8;
+  qbits /= 2;
+  return qbits;
+}
+
 

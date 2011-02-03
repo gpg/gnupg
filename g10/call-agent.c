@@ -1751,7 +1751,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   membuf_t data;
   size_t n, len;
   char *p, *buf, *endp;
-  
+
   if (!keygrip || strlen(keygrip) != 40 || !s_ciphertext || !r_buf || !r_buflen)
     return gpg_error (GPG_ERR_INV_VALUE);
   *r_buf = NULL;

@@ -39,7 +39,7 @@
 
 #ifdef HAVE_UNSIGNED_TIME_T
 # define IS_INVALID_TIME_T(a) ((a) == (time_t)(-1))
-#else 
+#else
   /* Error or 32 bit time_t and value after 2038-01-19.  */
 # define IS_INVALID_TIME_T(a) ((a) < 0)
 #endif
@@ -54,9 +54,11 @@ pubkey_letter( int algo )
     case PUBKEY_ALGO_RSA:	return 'R' ;
     case PUBKEY_ALGO_RSA_E:	return 'r' ;
     case PUBKEY_ALGO_RSA_S:	return 's' ;
-    case PUBKEY_ALGO_ELGAMAL_E: return 'g';
+    case PUBKEY_ALGO_ELGAMAL_E: return 'g' ;
     case PUBKEY_ALGO_ELGAMAL:   return 'G' ;
     case PUBKEY_ALGO_DSA:	return 'D' ;
+    case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
+    case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
     default: return '?';
     }
 }
@@ -79,6 +81,11 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
   if(pk->version<4)
     n+=2;
 
+  /* FIXME: We can avoid the extra malloc by calling only the first
+     mpi_print here which computes the required length and calling the
+     real mpi_print only at the end.  The speed advantage would only be
+     for ECC (opaque MPIs) or if we could implement an mpi_print
+     variant with a callback handler to do the hashing.  */
   if (npkey==0 && pk->pkey[0]
       && gcry_mpi_get_flag (pk->pkey[0], GCRYMPI_FLAG_OPAQUE))
     {
@@ -88,16 +95,31 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
     }
   else
     {
-      for(i=0; i < npkey; i++ )
+      for (i=0; i < npkey; i++ )
         {
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, pk->pkey[i]))
-            BUG ();
-          pp[i] = xmalloc (nbytes);
-          if (gcry_mpi_print (GCRYMPI_FMT_PGP, pp[i], nbytes,
-                              &nbytes, pk->pkey[i]))
-            BUG ();
-          nn[i] = nbytes;
-          n += nn[i];
+          if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+            {
+              size_t nbits;
+              const void *p;
+
+              p = gcry_mpi_get_opaque (pk->pkey[i], &nbits);
+              pp[i] = xmalloc ((nbits+7)/8);
+              memcpy (pp[i], p, (nbits+7)/8);
+              nn[i] = (nbits+7)/8;
+              n += nn[i];
+            }
+          else
+            {
+              if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0,
+                                  &nbytes, pk->pkey[i]))
+                BUG ();
+              pp[i] = xmalloc (nbytes);
+              if (gcry_mpi_print (GCRYMPI_FMT_PGP, pp[i], nbytes,
+                                  &nbytes, pk->pkey[i]))
+                BUG ();
+              nn[i] = nbytes;
+              n += nn[i];
+            }
         }
     }
 
@@ -117,7 +139,7 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
       u16 days=0;
       if(pk->expiredate)
 	days=(u16)((pk->expiredate - pk->timestamp) / 86400L);
- 
+
       gcry_md_putc ( md, days >> 8 );
       gcry_md_putc ( md, days );
     }
@@ -168,7 +190,7 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
     BUG ();
   if (nbytes < 8) /* oops */
     ki[0] = ki[1] = 0;
-  else 
+  else
     {
       p = buffer + nbytes - 8;
       ki[0] = (p[0] << 24) | (p[1] <<16) | (p[2] << 8) | p[3];
@@ -205,7 +227,7 @@ keystrlen(void)
 
 const char *
 keystr (u32 *keyid)
-{  
+{
   static char keyid_str[KEYID_STR_SIZE];
 
   switch (opt.keyid_format)
@@ -216,7 +238,7 @@ keystr (u32 *keyid)
 
     case KF_LONG:
       if (keyid[0])
-	snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX", 
+	snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX",
                   (ulong)keyid[0], (ulong)keyid[1]);
       else
 	snprintf (keyid_str, sizeof keyid_str, "%08lX", (ulong)keyid[1]);
@@ -228,12 +250,12 @@ keystr (u32 *keyid)
 
     case KF_0xLONG:
       if(keyid[0])
-	snprintf (keyid_str, sizeof keyid_str, "0x%08lX%08lX", 
+	snprintf (keyid_str, sizeof keyid_str, "0x%08lX%08lX",
                   (ulong)keyid[0],(ulong)keyid[1]);
       else
 	snprintf (keyid_str, sizeof keyid_str, "0x%08lX", (ulong)keyid[1]);
       break;
-      
+
     default:
       BUG();
     }
@@ -244,7 +266,7 @@ keystr (u32 *keyid)
 
 const char *
 keystr_with_sub (u32 *main_kid, u32 *sub_kid)
-{  
+{
   static char buffer[KEYID_STR_SIZE+1+KEYID_STR_SIZE];
   char *p;
 
@@ -398,7 +420,7 @@ keyid_from_fingerprint( const byte *fprint, size_t fprint_len, u32 *keyid )
       else
         keyid_from_pk (&pk, keyid);
     }
-  else 
+  else
     {
       const byte *dp = fprint;
       keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
@@ -412,7 +434,7 @@ keyid_from_fingerprint( const byte *fprint, size_t fprint_len, u32 *keyid )
 u32
 keyid_from_sig (PKT_signature *sig, u32 *keyid)
 {
-  if( keyid ) 
+  if( keyid )
     {
       keyid[0] = sig->keyid[0];
       keyid[1] = sig->keyid[1];
@@ -427,13 +449,13 @@ namehash_from_uid (PKT_user_id *uid)
   if (!uid->namehash)
     {
       uid->namehash = xmalloc (20);
-      
+
       if (uid->attrib_data)
 	rmd160_hash_buffer (uid->namehash, uid->attrib_data, uid->attrib_len);
       else
 	rmd160_hash_buffer (uid->namehash, uid->name, uid->len);
     }
-  
+
   return uid->namehash;
 }
 
@@ -455,7 +477,7 @@ mk_datestr (char *buffer, time_t atime)
 
   if (IS_INVALID_TIME_T (atime))
     strcpy (buffer, "????" "-??" "-??"); /* Mark this as invalid. */
-  else 
+  else
     {
       tp = gmtime (&atime);
       sprintf (buffer,"%04d-%02d-%02d",
@@ -475,7 +497,7 @@ datestr_from_pk (PKT_public_key *pk)
 {
   static char buffer[11+5];
   time_t atime = pk->timestamp;
-  
+
   return mk_datestr (buffer, atime);
 }
 
@@ -508,7 +530,7 @@ expirestr_from_sig (PKT_signature *sig)
 {
   static char buffer[11+5];
   time_t atime;
-  
+
   if (!sig->expiredate)
     return _("never     ");
   atime=sig->expiredate;
@@ -581,7 +603,7 @@ const char *
 colon_datestr_from_sig (PKT_signature *sig)
 {
   static char buf[20];
-  
+
   snprintf (buf, sizeof buf, "%lu", (ulong)sig->timestamp);
   return buf;
 }
@@ -611,21 +633,21 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
   const byte *dp;
   size_t len, nbytes;
   int i;
-  
+
   if ( pk->version < 4 )
     {
       if ( is_RSA(pk->pubkey_algo) )
         {
           /* RSA in version 3 packets is special. */
           gcry_md_hd_t md;
-          
+
           if (gcry_md_open (&md, DIGEST_ALGO_MD5, 0))
             BUG ();
-          if ( pubkey_get_npkey (pk->pubkey_algo) > 1 ) 
+          if ( pubkey_get_npkey (pk->pubkey_algo) > 1 )
             {
               for (i=0; i < 2; i++)
                 {
-                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, 
+                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0,
                                       &nbytes, pk->pkey[i]))
                     BUG ();
                   /* fixme: Better allocate BUF on the stack */
@@ -652,10 +674,10 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
           memset (array,0,16);
         }
     }
-  else 
+  else
     {
       gcry_md_hd_t md;
-      
+
       md = do_fingerprint_md(pk);
       dp = gcry_md_read( md, 0 );
       len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
@@ -667,7 +689,7 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
       pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
       gcry_md_close( md);
     }
-  
+
   *ret_len = len;
   return array;
 }
@@ -684,7 +706,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey;
-  
+
   if (DBG_PACKET)
     log_debug ("get_keygrip for public key\n");
 
@@ -712,11 +734,27 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                              pk->pkey[0], pk->pkey[1]);
       break;
 
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_ECDH:
+      {
+        char *curve = openpgp_oid_to_str (pk->pkey[0]);
+        if (!curve)
+          err = gpg_error_from_syserror ();
+        else
+          {
+            err = gcry_sexp_build (&s_pkey, NULL,
+                                   "(public-key(ecc(curve%s)(q%m)))",
+                                   curve, pk->pkey[1]);
+            xfree (curve);
+          }
+      }
+      break;
+
     default:
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       break;
     }
-  
+
   if (err)
     return err;
 
@@ -732,7 +770,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
       /* FIXME: Save the keygrip in PK.  */
     }
   gcry_sexp_release (s_pkey);
-  
+
   return 0;
 }
 
@@ -760,4 +798,3 @@ hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
     }
   return err;
 }
-

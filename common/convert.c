@@ -106,14 +106,14 @@ do_bin2hex (const void *buffer, size_t length, char *stringbuf, int with_colon)
 {
   const unsigned char *s;
   char *p;
-  
+
   if (!stringbuf)
     {
       /* Not really correct for with_colon but we don't care about the
          one wasted byte. */
-      size_t n = with_colon? 3:2; 
-      size_t nbytes = n * length + 1; 
-      if (length &&  (nbytes-1) / n != length) 
+      size_t n = with_colon? 3:2;
+      size_t nbytes = n * length + 1;
+      if (length &&  (nbytes-1) / n != length)
         {
           gpg_err_set_errno (ENOMEM);
           return NULL;
@@ -122,7 +122,7 @@ do_bin2hex (const void *buffer, size_t length, char *stringbuf, int with_colon)
       if (!stringbuf)
         return NULL;
     }
-  
+
   for (s = buffer, p = stringbuf; length; length--, s++)
     {
       if (with_colon && s != buffer)
@@ -171,7 +171,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    buffer, the function returns NULL and won't change the existing
    conent of buffer.  In-place conversion is possible as long as
    BUFFER points to HEXSTRING.
-   
+
    If BUFFER is NULL and bufsize is 0 the function scans HEXSTRING but
    does not store anything.  This may be used to find the end of
    hexstring.
@@ -204,7 +204,7 @@ hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
     {
       if (count > bufsize)
         return NULL; /* Too long.  */
-      
+
       for (s=hexstring, idx=0; hexdigitp (s) && hexdigitp (s+1); s += 2)
         ((unsigned char*)buffer)[idx++] = xtoi_2 (s);
       if (need_nul)
@@ -244,6 +244,3 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
     BUG ();
   return result;
 }
-
-
-

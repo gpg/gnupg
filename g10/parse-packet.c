@@ -741,6 +741,61 @@ read_rest (IOBUF inp, size_t pktlen, int partial)
 }
 
 
+/* Read a special size+body from INP.  On success store an opaque MPI
+   with it at R_DATA.  On error return an error code and store NULL at
+   R_DATA.  Even in the error case store the number of read bytes at
+   R_NREAD.  The caller shall pass the remaining size of the packet in
+   PKTLEN.  */
+static gpg_error_t
+read_size_body (iobuf_t inp, int pktlen, size_t *r_nread,
+                gcry_mpi_t *r_data)
+{
+  char buffer[256];
+  char *tmpbuf;
+  int i, c, nbytes;
+
+  *r_nread = 0;
+  *r_data = NULL;
+
+  if (!pktlen)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  c = iobuf_readbyte (inp);
+  if (c < 0)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  pktlen--;
+  ++*r_nread;
+  nbytes = c;
+  if (nbytes < 2 || nbytes > 254)
+    return gpg_error (GPG_ERR_INV_PACKET);
+  if (nbytes > pktlen)
+    return gpg_error (GPG_ERR_INV_PACKET);
+
+  buffer[0] = nbytes;
+
+  for (i = 0; i < nbytes; i++)
+    {
+      c = iobuf_get (inp);
+      if (c < 0)
+        return gpg_error (GPG_ERR_INV_PACKET);
+      ++*r_nread;
+      buffer[1+i] = c;
+    }
+
+  tmpbuf = xtrymalloc (1 + nbytes);
+  if (!tmpbuf)
+    return gpg_error_from_syserror ();
+  memcpy (tmpbuf, buffer, 1 + nbytes);
+  *r_data = gcry_mpi_set_opaque (NULL, tmpbuf, 8 * (1 + nbytes));
+  if (!*r_data)
+    {
+      xfree (tmpbuf);
+      return gpg_error_from_syserror ();
+    }
+  return 0;
+}
+
+
+/* Parse a marker packet.  */
 static int
 parse_marker (IOBUF inp, int pkttype, unsigned long pktlen)
 {
@@ -940,19 +995,29 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   else
     {
       for (i = 0; i < ndata; i++)
-	{
-	  n = pktlen;
-	  k->data[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
-	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tdata: ");
-	      mpi_print (listfp, k->data[i], mpi_print_mode);
-	      es_putc ('\n', listfp);
-	    }
-	  if (!k->data[i])
-	    rc = gpg_error (GPG_ERR_INV_PACKET);
-	}
+        {
+          if (k->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
+            {
+              rc = read_size_body (inp, pktlen, &n, k->data+i);
+              pktlen -= n;
+            }
+          else
+            {
+              n = pktlen;
+              k->data[i] = mpi_read (inp, &n, 0);
+              pktlen -= n;
+              if (!k->data[i])
+                rc = gpg_error (GPG_ERR_INV_PACKET);
+            }
+          if (rc)
+            goto leave;
+          if (list_mode)
+            {
+              es_fprintf (listfp, "\tdata: ");
+              mpi_print (listfp, k->data[i], mpi_print_mode);
+              es_putc ('\n', listfp);
+            }
+        }
     }
 
  leave:
@@ -1913,7 +1978,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       unknown_pubkey_warning (algorithm);
     }
 
-
   if (!npkey)
     {
       /* Unknown algorithm - put data into an opaque MPI.  */
@@ -1925,25 +1989,32 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     {
-      /* Fill in public key parameters.  */
       for (i = 0; i < npkey; i++)
-	{
-	  n = pktlen;
-	  pk->pkey[i] = mpi_read (inp, &n, 0);
-	  pktlen -= n;
-	  if (list_mode)
-	    {
-	      es_fprintf (listfp, "\tpkey[%d]: ", i);
-	      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
-	      es_putc ('\n', listfp);
-	    }
-	  if (!pk->pkey[i])
-	    err = gpg_error (GPG_ERR_INV_PACKET);
-	}
-      if (err)
-	goto leave;
+        {
+          if ((algorithm == PUBKEY_ALGO_ECDSA
+               || algorithm == PUBKEY_ALGO_ECDH) && (i==0 || i == 2))
+            {
+              err = read_size_body (inp, pktlen, &n, pk->pkey+i);
+              pktlen -= n;
+            }
+          else
+            {
+              n = pktlen;
+              pk->pkey[i] = mpi_read (inp, &n, 0);
+              pktlen -= n;
+              if (!pk->pkey[i])
+                err = gpg_error (GPG_ERR_INV_PACKET);
+            }
+          if (err)
+            goto leave;
+          if (list_mode)
+            {
+              es_fprintf (listfp, "\tpkey[%d]: ", i);
+              mpi_print (listfp, pk->pkey[i], mpi_print_mode);
+              es_putc ('\n', listfp);
+            }
+        }
     }
-
   if (list_mode)
     keyid_from_pk (pk, keyid);
 

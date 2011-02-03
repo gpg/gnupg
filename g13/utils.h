@@ -40,6 +40,5 @@ const void *next_tuple (tupledesc_t tupledesc,
                         unsigned int *r_tag, size_t *r_length);
 
 
-
 #endif /*G13_UTILS_H*/
 
