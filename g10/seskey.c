@@ -49,10 +49,10 @@ make_session_key( DEK *dek )
 				 0 : GCRY_CIPHER_ENABLE_SYNC))) )
       BUG();
     gcry_randomize (dek->key, dek->keylen, GCRY_STRONG_RANDOM );
-    for (i=0; i < 16; i++ ) 
+    for (i=0; i < 16; i++ )
       {
 	rc = gcry_cipher_setkey (chd, dek->key, dek->keylen);
-	if (!rc) 
+	if (!rc)
           {
 	    gcry_cipher_close (chd);
 	    return;
@@ -82,7 +82,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   int i,n;
   u16 csum;
   gcry_mpi_t a;
-  
+
   if (DBG_CIPHER)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
 
@@ -102,10 +102,10 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
        */
       nframe = (( 1 + dek->keylen + 2 /* The value so far is always odd. */
                   + 7 ) & (~7));
-      
+
       /* alg+key+csum fit and the size is congruent to 8.  */
       assert (!(nframe%8) && nframe > 1 + dek->keylen + 2 );
-      
+
       frame = xmalloc_secure (nframe);
       n = 0;
       frame[n++] = dek->algo;
@@ -122,13 +122,13 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
                    "[%d] %02x  %02x %02x ...  %02x %02x %02x\n",
                    nframe, frame[0], frame[1], frame[2],
                    frame[nframe-3], frame[nframe-2], frame[nframe-1]);
-      
+
       if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, nframe, &nframe))
         BUG();
       xfree(frame);
       return a;
     }
-  
+
   /* The current limitation is that we can only use a session key
    * whose length is a multiple of BITS_PER_MPI_LIMB
    * I think we can live with that.
@@ -136,7 +136,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   if (dek->keylen + 7 > nframe || !nframe)
     log_bug ("can't encode a %d bit key in a %d bits frame\n",
              dek->keylen*8, nbits );
-  
+
   /* We encode the session key in this way:
    *
    *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
@@ -163,7 +163,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
     {
       int j, k;
       byte *pp;
-      
+
       /* Count the zero bytes. */
       for (j=k=0; j < i; j++ )
         if (!p[j])
@@ -273,9 +273,9 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
          i.e.  04 <x> <y>  */
       if (pkalgo == GCRY_PK_ECDSA)
         qbytes = ecdsa_qbits_from_Q (qbytes);
-      
+
       /* Make sure it is a multiple of 8 bits. */
-      
+
       if (qbytes%8)
 	{
 	  log_error(_("DSA requires the hash length to be a"
@@ -295,11 +295,11 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
                      gcry_pk_algo_name (pkalgo), keystr_from_pk (pk), qbytes);
 	  return NULL;
 	}
-      
+
       qbytes /= 8;
 
       /* Check if we're too short.  Too long is safe as we'll
-	 automatically left-truncate. 
+	 automatically left-truncate.
 
          FIXME:  Check against FIPS.
          This checks would require the use of SHA512 with ECDSA 512.  I
@@ -308,7 +308,7 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
          adjust it later for general case.  (Note that the check will
          never pass for ECDSA 521 anyway as the only hash that
          intended to match it is SHA 512, but 512 < 521).  */
-      if (gcry_md_get_algo_dlen (hash_algo) 
+      if (gcry_md_get_algo_dlen (hash_algo)
           < ((pkalgo == GCRY_PK_ECDSA && qbytes > (521)/8) ? 512/8 : qbytes))
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash "

@@ -3,8 +3,6 @@
 	* openpgp-oid.c: New.
 	* t-openpgp-oid.c: New.
 
-	* convert.c (mpi2hex): Remove.
-
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	Fix bug#1313.

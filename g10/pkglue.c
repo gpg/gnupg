@@ -184,8 +184,6 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
     {
       gcry_mpi_t k;
       char *curve;
-      byte fp[MAX_FINGERPRINT_LEN];
-      size_t fpn;
 
       rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
       if (rc)

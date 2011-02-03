@@ -1,3 +1,19 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* protect.c (protect_info): Support ECC algos.
+
+	* pksign.c (do_encode_dsa): Map public key algo number.  Extend
+	DSA size check for ECDSA.
+
+	* gpg-agent.c: Include cipher.h.
+	(map_pk_openpgp_to_gcry): New.
+
+	* findkey.c (key_parms_from_sexp): Support ECDH.
+
+	* cvt-openpgp.c (get_keygrip): Support ECC algorithms.
+	(convert_secret_key): Ditto.
+	(do_unprotect): Ditto.
+
 2011-02-02  Werner Koch  <wk@g10code.com>
 
 	* cvt-openpgp.c (convert_secret_key): Remove algo mapping.

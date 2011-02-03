@@ -160,7 +160,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
-        err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))", 
+        err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))",
                                enc->data[0], enc->data[1]);
     }
   else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_E)
@@ -185,9 +185,11 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (err)
     goto leave;
 
-  /* fixme: only needed for ECDH.  Don't compute always. */
-  fingerprint_from_pk (sk, fp, &fpn);
-  assert (fpn == 20);
+  if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      fingerprint_from_pk (sk, fp, &fpn);
+      assert (fpn == 20);
+    }
 
   /* Decrypt. */
   desc = gpg_format_keydesc (sk, 0, 1);

@@ -11,6 +11,9 @@ Authors
 
 Ales Nyakhaychyk <nyakhaychyk@i1fn.linux.by> Translations [be]
 
+Andrey Jivsov <openpgp@brainhub.org>  Assigns past and future changes for ECC.
+    (g10/ecdh.c.  other changes to support ECC)
+
 Birger Langkjer <birger.langkjer@image.dk> Translations [da]
 
 Maxim Britov <maxim.britov@gmail.com> Translations [ru]
@@ -174,4 +177,3 @@ name gpg2keys_*.
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-

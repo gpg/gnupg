@@ -1,3 +1,8 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	Finished ECC integration.
+	Wrote change description for 2011-01-13.
+
 2011-02-02  Werner Koch  <wk@g10code.com>
 
 	* encrypt.c (write_pubkey_enc_from_list): Don't compute the
@@ -12,36 +17,31 @@
 
 2011-02-01  Werner Koch  <wk@g10code.com>
 
-	* import.c (transfer_secret_keys): Implement ECC case.
-
 	* gpg.c (main): Call setup_libgcrypt_logging.
 
+	* import.c (transfer_secret_keys): Implement ECC case.
+	(one_mpi_from_pkey): New.
+	* export.c (transfer_format_to_openpgp): Ditto.
 	* keygen.c (gpg_curve_to_oid): New.
 	(ecckey_from_sexp): Factor curve name mapping out to new function.
 
 2011-01-31  Werner Koch  <wk@g10code.com>
 
-	* misc.c (make_flagged_int, openpgp_oid_from_str)
-	(openpgp_oid_to_str): Move to ../common/openpgp-oids.c.
-
 	* ecdh.c (pk_ecdh_encrypt_with_shared_point): Return an opaque MPI.
 
 	* build-packet.c (mpi_write): Rename to gpg_mpi_write and make global.
-	(write_size_body_mpi): Remove.
 
 2011-01-30  Werner Koch  <wk@g10code.com>
-
 
 	* keyid.c (keygrip_from_pk): Adjust ECC cases.
 	* pkglue.c (pk_verify): Ditto.
 
-	* parse-packet.c (read_size_body): Rewrite.
-	(parse_key): Simply ECC case.
+	* parse-packet.c (parse_key): Simply ECC case.
 	(parse_pubkeyenc): Ditto.
 
 	* misc.c (pubkey_get_npkey): Special case ECC.
 	(pubkey_get_nskey): Ditto.
-	(mpi_print): Support printfing of opaque values.
+	(mpi_print): Support printing of opaque values.
 	(openpgp_oid_to_str): New.
 	(pubkey_nbits): For ECC pass curve parameter.
 
@@ -61,19 +61,6 @@
 	(get_parameter_algo): Map algo number.
 	(ecckey_from_sexp): New.
 	* misc.c (map_pk_gcry_to_openpgp): New.
-	(openpgp_oid_from_str): New.  Based on libksba code.
-
-2011-01-26  Werner Koch  <wk@g10code.com>
-
-	* misc.c (ecdsa_qbits_from_Q): Use unsigned int.
-
-	* misc.c (iobuf_read_size_body): Move and rename to ..
-	* parse-packet.c (read_size_body): .. here.  Make static.
-	* misc.c (iobuf_write_size_body_mpi): Move and rename to ..
-	* build-packet.c (write_size_body_mpi): .. here.
-	(iobuf_name_oid_write, ecdh_kek_params_write, ecdh_esk_write):
-	Remove macros.  Replace users by direct calls to
-	write_size_body_mpi.
 
 2011-01-25  Werner Koch  <wk@g10code.com>
 
@@ -84,28 +71,17 @@
 	(pk_ecdh_encrypt): Remove.
 	(pk_ecdh_encrypt_with_shared_point): Make public.
 
-	* pubkey-enc.c (get_it): Fix assertion.
-	Use GPG_ERR_WRONG_SECKEY instead of log_fatal.  Add safety checks
-	for NFRAME.
+	* pubkey-enc.c (get_it): Fix assertion.  Use GPG_ERR_WRONG_SECKEY
+	instead of log_fatal.  Add safety checks for NFRAME.
 
-	* main.h (KEYGEN_FLAG_NO_PROTECTION, KEYGEN_FLAG_TRANSIENT_KEY):
-	Move back to ..
-	* keygen.c: .. here.
-	(pk_ecc_keypair_gen): Make static.
-	(common_key_gen): Fold back into ..
-	(common_gen): .. this.
-	(delme__pk_ecc_build_sexp): Remove unused function.
-	(pk_ecc_keypair_gen): Fold it into ..
-	(gen_ecc): .. this.
+	* keygen.c (pk_ecc_keypair_gen): Make static.
 	(ask_keysize): Use proper rounding for ECC.
 	(pk_ecc_build_key_params): Remove NBITSSTR.
-
-	* verify-stubs.c: Remove.
 
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c: Rewrite most stuff for use with dirmngr.  Get rid
-	of all spawn code.  Work work pending.
+	of all spawn code.  More work pending.
 
 	* export.c (export_pubkeys_buffer): New.
 
@@ -115,6 +91,57 @@
 	* gpg.h (server_control_s): Add DIRMNGR_LOCAL.
 	* gpg.c: Include call-dirmngr.h.
 	(gpg_deinit_default_ctrl): Call gpg_dirmngr_deinit_session_data.
+
+2011-01-13  Andrey Jivsov  <openpgp@brainhub.org>  (wk)
+
+	Integrated ECC support.  Below are the changes finally merged into
+	the git master after some cleanup by wk until 2011-02-03.
+
+	* ecdh.c: New.
+
+	* sign.c (mpi_from_sexp): Remove.
+	(match_dsa_hash): Uses SHA-512 for ECDSA with 521 bits.
+	(hash_for): Support ECDSA.
+	(make_keysig_packet): Ditto.
+
+	* seskey.c (encode_session_key): Add arg OPENPGP_PK_ALGO.  Support
+	ECDH.
+	(encode_md_value): Map pkalgo.  Extend size checks to ECDSA.
+
+	* pubkey-enc.c (get_it): Support ECDH.
+
+	* pkglue.c (mpi_from_sexp): Make global.
+	(pk_verify, pk_encrypt, pk_check_secret_key): Support ECC.
+
+	* parse-packet.c (read_size_body): New.
+	(parse_pubkeyenc): Support ECC.
+	(parse_key): Ditto.
+
+	* misc.c (map_pk_openpgp_to_gcry, map_pk_gcry_to_openpgp): New.
+	(openpgp_pk_test_algo, openpgp_pk_test_algo2): Map algo numbers.
+	(openpgp_pk_algo_usage): Support ECDH and ECDSA.
+	(openpgp_pk_algo_name): Simplify.
+	(ecdsa_qbits_from_Q): New.
+
+	* mainproc.c (proc_pubkey_enc): Support ECC.
+
+	* keyid.c (pubkey_letter): Add 'E' and 'e'.
+	(keygrip_from_pk): Supporf ECC.
+
+	* keygen.c: Include pkglue.h.
+	(ask_algo): Add option 9 for ECDSA and ECDH.
+	(ask_keysize): Support ECDSA and ECDH.
+	(do_create): Ditto.
+	(gen_ecc): New.
+	(pk_ecc_build_key_params): New.
+
+	* getkey.c (cache_public_key): Support ECC.
+
+	* encrypt.c (write_pubkey_enc_from_list): Pass PK to PK_ENCRYPT
+	and the pkalgo to encode_session_key.
+
+	* build-packet.c (do_key, do_pubkey_enc): Support ECC.
+	(write_size_body_mpi): New.
 
 2011-01-06  Werner Koch  <wk@g10code.com>
 
