@@ -1,5 +1,8 @@
 2011-02-03  Werner Koch  <wk@g10code.com>
 
+	* export.c (transfer_format_to_openpgp) [!HAVE_GCRY_PK_GET_CURVE]:
+	Fix syntax error.
+
 	* decrypt-data.c: Include status.h.
 	(decrypt_data): Emit a DECRYPTION_INFO status line.
 

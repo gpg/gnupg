@@ -1,19 +1,19 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
 #               2008, 2009, 2010, 2011 Free Software Foundation, Inc.
-# 
+#
 # This file is part of GnuPG.
-# 
+#
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -31,7 +31,7 @@ m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
           | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-AC_INIT([gnupg], 
+AC_INIT([gnupg],
         [my_version[]m4_if(my_issvn,[yes],
         [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
         [http://bugs.gnupg.org])
@@ -67,7 +67,7 @@ AC_GNU_SOURCE
 
 # Some status variables.
 have_gpg_error=no
-have_libgcrypt=no 
+have_libgcrypt=no
 have_libassuan=no
 have_ksba=no
 have_pth=no
@@ -168,13 +168,13 @@ show_gnupg_dirmngr_ldap_pgm="(default)"
 test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
       && show_gnupg_dirmngr_ldap_pgm="$GNUPG_DIRMNGR_LDAP_PGM"
 
-# 
+#
 # On some platforms gpg2 is usually installed as gpg without using a
 # symlink.  For correct operation of gpgconf it needs to know the
 # installed name of gpg.  This option sets "gpg2"'s installed name to
 # just "gpg".  Note that it might be required to rename gpg2 to gpg
 # manually after the build process.
-# 
+#
 AC_ARG_ENABLE(gpg2-is-gpg,
     AC_HELP_STRING([--enable-gpg2-is-gpg],[Set installed name of gpg2 to gpg]),
     gpg2_is_gpg=$enableval)
@@ -358,7 +358,7 @@ AC_ARG_ENABLE(ccid-driver,
               use_ccid_driver=$enableval)
 AC_MSG_RESULT($use_ccid_driver)
 
-# 
+#
 # Dirmngr is nowadays a system service and thus it usually does no
 # make sense to start it as needed.  However on some systems this is
 # possible; this option enable the feature.
@@ -431,10 +431,10 @@ AH_BOTTOM([
 #  define GNUPG_DEFAULT_HOMEDIR "/gnupg"
 # endif
 #elif defined(__VMS)
-#define GNUPG_DEFAULT_HOMEDIR "/SYS$LOGIN/gnupg" 
+#define GNUPG_DEFAULT_HOMEDIR "/SYS$LOGIN/gnupg"
 #else
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
-#endif 
+#endif
 #define GNUPG_PRIVATE_KEYS_DIR "private-keys-v1.d"
 
 /* For some systems (DOS currently), we hardcode the path here.  For
@@ -593,7 +593,7 @@ case "${host}" in
         have_dosish_system=yes
         have_w32_system=yes
         use_ldapwrapper=no  # Fixme: Do this only for CE.
-        case "${host}" in 
+        case "${host}" in
           *-mingw32ce*)
             have_w32ce_system=yes
             ;;
@@ -657,7 +657,7 @@ esac
 
 if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
-             [Defined if we run on some of the PCDOS like systems 
+             [Defined if we run on some of the PCDOS like systems
               (DOS, Windoze. OS/2) with special properties like
               no file modes, case insensitive file names and preferred
               use of backslashes as directory name separators.])
@@ -760,12 +760,15 @@ fi
 AC_CACHE_CHECK([whether Libgcrypt has gcry_pk_get_curve],
                 gnupg_cv_gcry_pk_get_curve,
                [ _gnupg_gcry_save_cflags=$CFLAGS
+                 _gnupg_gcry_save_libs=$LIBS
                  CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
-                 AC_TRY_COMPILE(
+                 LIBS="$LIBS $LIBGCRYPT_LIBS"
+                 AC_TRY_LINK(
                    [#include <gcrypt.h>],
                    [ return gcry_pk_get_curve (NULL, 0, NULL); ],
                    gnupg_cv_gcry_pk_get_curve=yes,
                    gnupg_cv_gcry_pk_get_curve=no)
+                 LIBS=$_gnupg_gcry_save_libs
                  CFLAGS=$_gnupg_gcry_save_cflags])
 if test "$gnupg_cv_gcry_pk_get_curve" = yes; then
   AC_DEFINE([HAVE_GCRY_PK_GET_CURVE], 1,
@@ -866,7 +869,7 @@ else
 *** To support concurrent access to the gpg-agent and the SCdaemon
 *** we need the support of the GNU Portable Threads Library.
 *** Download it from ftp://ftp.gnu.org/gnu/pth/
-*** On a Debian GNU/Linux system you might want to try 
+*** On a Debian GNU/Linux system you might want to try
 ***   apt-get install libpth-dev
 ***]])
 fi
@@ -906,7 +909,7 @@ if test "$with_adns" != "no"; then
                 [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
 fi
 if test "$have_adns" = "yes"; then
-  ADNSLIBS="-ladns" 
+  ADNSLIBS="-ladns"
 fi
 AC_SUBST(ADNSLIBS)
 # Newer adns versions feature a free function to be used under W32.
@@ -961,7 +964,7 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
 #include <resolv.h>],
 [[unsigned char answer[PACKETSZ];
   res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);
-  dn_skipname(0,0); 
+  dn_skipname(0,0);
   dn_expand(0,0,0,0,0);
 ]])],have_resolver=yes,have_resolver=no)
     AC_MSG_RESULT($have_resolver)
@@ -1311,7 +1314,7 @@ if test "$use_regex" = yes ; then
         CPPFLAGS="${CPPFLAGS} -I$withval/include"
         LDFLAGS="${LDFLAGS} -L$withval/lib"
       fi
-      ],withval="")     
+      ],withval="")
 
   # Does the system have regex functions at all?
   AC_SEARCH_LIBS([regcomp], [regex])
@@ -1363,20 +1366,20 @@ if test "$use_zip" = yes ; then
         LDFLAGS="${LDFLAGS} -L$withval/lib"
       fi
     ])
-  
+
   AC_CHECK_HEADER(zlib.h,
         AC_CHECK_LIB(z, deflateInit2_,
          ZLIBS="-lz",
          CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
          CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
-         
+
   AC_DEFINE(HAVE_ZIP,1, [Defined if ZIP and ZLIB are supported])
 fi
 
 
 #
 # Check whether we can support bzip2
-# 
+#
 if test "$use_bzip2" = yes ; then
   _cppflags="${CPPFLAGS}"
   _ldflags="${LDFLAGS}"
@@ -1390,7 +1393,7 @@ if test "$use_bzip2" = yes ; then
       ],withval="")
 
   # Checking alongside stdio.h as an early version of bzip2 (1.0)
-  # required stdio.h to be included before bzlib.h, and Solaris 9 is 
+  # required stdio.h to be included before bzlib.h, and Solaris 9 is
   # woefully out of date.
   if test "$withval" != no ; then
      AC_CHECK_HEADER(bzlib.h,
@@ -1415,7 +1418,7 @@ GNUPG_CHECK_READLINE
 #
 # Allow users to append something to the version string without
 # flagging it as development version.  The user version parts is
-# considered everything after a dash. 
+# considered everything after a dash.
 #
 if test "$development_version" != yes; then
   changequote(,)dnl
@@ -1588,7 +1591,7 @@ AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 AM_CONDITIONAL(RUN_GPG_TESTS,
                test x$cross_compiling = xno -a "$build_gpg" = yes )
 
-# 
+#
 # Set some defines for use gpgconf.
 #
 if test "$build_gpg" = yes ; then
@@ -1620,7 +1623,7 @@ die=no
 if test "$have_gpg_error" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
-***  
+***
 *** You need libgpg-error to build this program.
 **  This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/libgpg-error
@@ -1630,7 +1633,7 @@ fi
 if test "$have_libgcrypt" = "no"; then
    die=yes
    AC_MSG_NOTICE([[
-***  
+***
 *** You need libgcrypt to build this program.
 **  This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/libgcrypt/
@@ -1661,14 +1664,14 @@ if test "$gnupg_have_ldap" = "no"; then
     AC_MSG_NOTICE([[
 ***
 *** You need a LDAP library to build this program.
-*** Check out 
-***    http://www.openldap.org 
+*** Check out
+***    http://www.openldap.org
 *** for a suitable implementation.
 ***]])
    if test "$have_w32ce_system" = yes; then
     AC_MSG_NOTICE([[
 *** Note that CeGCC might be broken, a package fixing this is:
-***    http://files.kolab.org/local/windows-ce/ 
+***    http://files.kolab.org/local/windows-ce/
 ***                           source/wldap32_0.1-mingw32ce.orig.tar.gz
 ***                           binary/wldap32-ce-arm-dev_0.1-1_all.deb
 ***]])
@@ -1681,7 +1684,7 @@ if test "$missing_pth" = "yes"; then
 *** GNU Portable Threads Library (Pth). Please install this
 *** library first.  The library is for example available at
 ***   ftp://ftp.gnu.org/gnu/pth/
-*** On a Debian GNU/Linux system you can install it using 
+*** On a Debian GNU/Linux system you can install it using
 ***   apt-get install libpth-dev
 *** To build GnuPG for Windows you need to use the W32PTH
 *** package; available at:
@@ -1700,7 +1703,7 @@ fi
 
 
 
-AC_CONFIG_FILES([ m4/Makefile 
+AC_CONFIG_FILES([ m4/Makefile
 Makefile
 po/Makefile.in
 gl/Makefile
@@ -1730,7 +1733,7 @@ AC_OUTPUT
 
 echo "
         GnuPG v${VERSION} has been configured as follows:
-        
+
         Platform:  $PRINTABLE_OS_NAME ($host)
 
         OpenPGP:   $build_gpg

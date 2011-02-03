@@ -1,3 +1,7 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_GCRY_PK_GET_CURVE): Use AC_TRY_LINK.
+
 2011-02-01  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (HAVE_GCRY_PK_GET_CURVE): Define if availabale.
@@ -1339,5 +1343,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

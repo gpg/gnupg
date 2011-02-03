@@ -1,3 +1,7 @@
+2011-02-03  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dirmngr_LDADD): Remove -llber.
+
 2011-01-25  Werner Koch  <wk@g10code.com>
 
 	* dirmngr.c (handle_connections): Rewrite loop to use pth-select

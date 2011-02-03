@@ -656,7 +656,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   for (idx=0; idx < npkey; idx++)
     if (0
 #ifndef HAVE_GCRY_PK_GET_CURVE
-        gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
+        || gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
         || gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE)
 #endif
         || gcry_mpi_cmp (pk->pkey[idx], skey[idx]))
