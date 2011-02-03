@@ -1629,7 +1629,7 @@ ask_key_flags(int algo,int subkey)
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for a %s key: "),
-		 gcry_pk_algo_name (algo));
+		 openpgp_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
@@ -1727,9 +1727,16 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
       tty_printf (_("   (%d) RSA (set your own capabilities)\n"), 8 );
     }
 
-  tty_printf (_("   (%d) ECDSA and ECDH\n"), 9 );
+  if (opt.expert && !addmode)
+    tty_printf (_("   (%d) ECDSA and ECDH\n"), 9 );
+  if (opt.expert)
+    tty_printf (_("  (%d) ECDSA (sign only)\n"), 10 );
+  if (opt.expert)
+    tty_printf (_("  (%d) ECDSA (set your own capabilities)\n"), 11 );
+  if (opt.expert && addmode)
+    tty_printf (_("  (%d) ECDH (encrypt only)\n"), 12 );
 
-  for(;;)
+  for (;;)
     {
       *r_usage = 0;
       *r_subkey_algo = 0;
@@ -1785,10 +1792,28 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
           *r_usage = ask_key_flags (algo, addmode);
           break;
 	}
-      else if (algo == 9)
+      else if (algo == 9 && opt.expert && !addmode)
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_subkey_algo = PUBKEY_ALGO_ECDH;
+          break;
+	}
+      else if (algo == 10 && opt.expert)
+        {
+          algo = PUBKEY_ALGO_ECDSA;
+          *r_usage = PUBKEY_USAGE_SIG;
+          break;
+	}
+      else if (algo == 11 && opt.expert)
+        {
+          algo = PUBKEY_ALGO_ECDSA;
+          *r_usage = ask_key_flags (algo, addmode);
+          break;
+	}
+      else if (algo == 12 && opt.expert && addmode)
+        {
+          algo = PUBKEY_ALGO_ECDH;
+          *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
       else

@@ -1,5 +1,13 @@
 2011-02-03  Werner Koch  <wk@g10code.com>
 
+	* sign.c (do_sign): Use openpgp_pk_algo_name.
+
+	* keygen.c (ask_algo): Show ECC algos only in expert mode.  Add
+	non-combined menu entries for ECDSA and ECDH.
+	(ask_key_flags): Use openpgp_pk_algo_name.
+
+2011-02-03  Werner Koch  <wk@g10code.com>
+
 	Finished ECC integration.
 	Wrote change description for 2011-01-13.
 

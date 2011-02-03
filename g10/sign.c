@@ -150,7 +150,7 @@ mk_notation_policy_etc (PKT_signature *sig,
 
 
 /*
- * Helper to hash a user ID packet.  
+ * Helper to hash a user ID packet.
  */
 static void
 hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
@@ -188,7 +188,7 @@ hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 static void
 hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
-    if (sig->version >= 4) 
+    if (sig->version >= 4)
         gcry_md_putc (md, sig->version);
     gcry_md_putc (md, sig->sig_class);
     if (sig->version < 4) {
@@ -201,7 +201,7 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
     else {
         byte buf[6];
         size_t n;
-        
+
         gcry_md_putc (md, sig->pubkey_algo);
         gcry_md_putc (md, sig->digest_algo);
         if (sig->hashed) {
@@ -249,7 +249,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
         return gpg_error (GPG_ERR_TIME_CONFLICT);
     }
 
-  
+
   print_pubkey_algo_note (pksk->pubkey_algo);
 
   if (!mdalgo)
@@ -263,19 +263,19 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
   sig->data[0] = NULL;
   sig->data[1] = NULL;
 
-  
+
   err = hexkeygrip_from_pk (pksk, &hexgrip);
   if (!err)
     {
       char *desc;
       gcry_sexp_t s_sigval;
-      
+
       desc = gpg_format_keydesc (pksk, 0, 1);
-      err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc, 
+      err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc,
                           dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
                           &s_sigval);
       xfree (desc);
-      
+
       if (err)
         ;
       else if (pksk->pubkey_algo == GCRY_PK_RSA
@@ -286,7 +286,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
           sig->data[0] = mpi_from_sexp (s_sigval, "r");
           sig->data[1] = mpi_from_sexp (s_sigval, "s");
         }
-      
+
       gcry_sexp_release (s_sigval);
     }
   xfree (hexgrip);
@@ -300,7 +300,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 
       if (get_pubkey (pk, sig->keyid ))
         err = gpg_error (GPG_ERR_NO_PUBKEY);
-      else 
+      else
         {
           frame = encode_md_value (pk, md, sig->digest_algo );
           if (!frame)
@@ -317,14 +317,14 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 
   if (err)
     log_error (_("signing failed: %s\n"), g10_errstr (err));
-  else 
+  else
     {
       if (opt.verbose)
         {
           char *ustr = get_user_id_string_native (sig->keyid);
           log_info (_("%s/%s signature from: \"%s\"\n"),
-                    gcry_pk_algo_name (pksk->pubkey_algo),
-                    gcry_md_algo_name (sig->digest_algo),
+                    openpgp_pk_algo_name (pksk->pubkey_algo),
+                    openpgp_md_algo_name (sig->digest_algo),
                     ustr);
           xfree (ustr);
 	}
@@ -444,7 +444,7 @@ hash_for (PKT_public_key *pk)
       if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
         qbytes = ecdsa_qbits_from_Q (qbytes);
       qbytes = qbytes/8;
-      
+
       /* It's a DSA key, so find a hash that is the same size as q or
 	 larger.  If q is 160, assume it is an old DSA key and use a
 	 160-bit hash unless --enable-dsa2 is set, in which case act
@@ -513,7 +513,7 @@ only_old_style (SK_LIST sk_list)
 {
   SK_LIST sk_rover = NULL;
   int old_style = 0;
-  
+
   for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
     {
       PKT_public_key *pk = sk_rover->pk;
@@ -533,13 +533,13 @@ print_status_sig_created (PKT_public_key *pk, PKT_signature *sig, int what)
   byte array[MAX_FINGERPRINT_LEN];
   char buf[100+MAX_FINGERPRINT_LEN*2];
   size_t n;
-  
+
   snprintf (buf, sizeof buf - 2*MAX_FINGERPRINT_LEN, "%c %d %d %02x %lu ",
             what, sig->pubkey_algo, sig->digest_algo, sig->sig_class,
             (ulong)sig->timestamp );
   fingerprint_from_pk (pk, array, &n);
   bin2hex (array, n, buf + strlen (buf));
-  
+
   write_status_text( STATUS_SIG_CREATED, buf );
 }
 
@@ -548,7 +548,7 @@ print_status_sig_created (PKT_public_key *pk, PKT_signature *sig, int what)
  * Loop over the secret certificates in SK_LIST and build the one pass
  * signature packets.  OpenPGP says that the data should be bracket by
  * the onepass-sig and signature-packet; so we build these onepass
- * packet here in reverse order 
+ * packet here in reverse order
  */
 static int
 write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
@@ -564,7 +564,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         PKT_onepass_sig *ops;
         PACKET pkt;
         int i, rc;
-        
+
         for (i=0, sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
             if (++i == skcount)
                 break;
@@ -577,7 +577,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         ops->pubkey_algo = pk->pubkey_algo;
         keyid_from_pk (pk, ops->keyid);
         ops->last = (skcount == 1);
-        
+
         init_packet(&pkt);
         pkt.pkttype = PKT_ONEPASS_SIG;
         pkt.pkt.onepass_sig = ops;
@@ -665,7 +665,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         wipememory(copy_buffer,4096); /* burn buffer */
     }
     /* fixme: it seems that we never freed pt/pkt */
-    
+
     return rc;
 }
 
@@ -679,7 +679,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 			 int status_letter, const char *cache_nonce)
 {
   SK_LIST sk_rover;
-  
+
   /* Loop over the certificates with secret keys. */
   for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
     {
@@ -713,23 +713,23 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 
       if (gcry_md_copy (&md, hash))
         BUG ();
-      
+
       if (sig->version >= 4)
         {
           build_sig_subpkt_from_sig (sig);
           mk_notation_policy_etc (sig, pk, NULL);
         }
-      
+
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
 
       rc = do_sign (pk, sig, md, hash_for (pk), cache_nonce);
       gcry_md_close (md);
       if (!rc)
-        { 
+        {
           /* Write the packet.  */
           PACKET pkt;
-          
+
           init_packet (&pkt);
           pkt.pkttype = PKT_SIGNATURE;
           pkt.pkt.signature = sig;
@@ -743,7 +743,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
       if (rc)
         return rc;
     }
-  
+
   return 0;
 }
 
@@ -836,7 +836,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
           inp = NULL;
           gpg_err_set_errno (EPERM);
         }
-      if( !inp ) 
+      if( !inp )
         {
           rc = gpg_error_from_syserror ();
           log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
@@ -992,7 +992,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       there is an assumed preference for uncompressed data.
 	       Still, if it did fail, we'll also end up with the
 	       default. */
- 
+
 	    if((compr_algo=
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=default_compress_algo();
@@ -1157,7 +1157,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"), 
+	log_error (_("can't open `%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
@@ -1168,7 +1168,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
             outfile = NULL;
             gpg_err_set_errno (EPERM);
         }
-        else 
+        else
             out = iobuf_create( outfile );
 	if( !out )
 	  {
@@ -1188,7 +1188,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       {
 	if (hash_for (sk_rover->pk) == DIGEST_ALGO_MD5)
           only_md5 = 1;
-	else 
+	else
           {
 	    only_md5 = 0;
 	    break;
@@ -1256,7 +1256,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     gcry_md_close ( textmd );
     release_sk_list( sk_list );
     release_progress_context (pfx);
-    release_armor_context (afx); 
+    release_armor_context (afx);
     return rc;
 }
 
@@ -1302,7 +1302,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
     rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_SIG);
-    if (rc) 
+    if (rc)
 	goto leave;
 
     /* prepare iobufs */
@@ -1315,7 +1315,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"), 
+	log_error (_("can't open `%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
@@ -1404,7 +1404,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
     if (rc)
 	goto leave;
-    
+
     /* Write the signatures */
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
@@ -1569,7 +1569,7 @@ int
 update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
-                      PKT_user_id *uid, 
+                      PKT_user_id *uid,
                       PKT_public_key *subpk,
                       PKT_public_key *pksk,
                       int (*mksubpkt)(PKT_signature *, void *),
@@ -1597,7 +1597,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
- 
+
     /* We need to create a new timestamp so that new sig expiration
        calculations are done correctly... */
     sig->timestamp=make_timestamp();
