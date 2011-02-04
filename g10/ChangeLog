@@ -1,3 +1,8 @@
+2011-02-04  Werner Koch  <wk@g10code.com>
+
+	* sig-check.c (do_check_messages): Remove the long deprecated
+	SIGEXPIRED status line.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* export.c (transfer_format_to_openpgp) [!HAVE_GCRY_PK_GET_CURVE]:

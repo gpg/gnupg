@@ -238,10 +238,8 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
         if (opt.verbose)
 	  log_info(_("NOTE: signature key %s expired %s\n"),
 		   keystr_from_pk(pk), asctimestamp( pk->expiredate ) );
-	/* SIGEXPIRED is deprecated.  Use KEYEXPIRED. */
 	sprintf(buf,"%lu",(ulong)pk->expiredate);
 	write_status_text(STATUS_KEYEXPIRED,buf);
-	write_status(STATUS_SIGEXPIRED);
 	if(r_expired)
 	  *r_expired = 1;
     }

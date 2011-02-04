@@ -328,8 +328,8 @@ more arguments in future versions.
 
     UNEXPECTED <what>
         Unexpected data has been encountered
-            0 - not further specified               1       
-  
+            0 - not further specified
+
 
     TRUST_UNDEFINED <error token>
     TRUST_NEVER     <error token>
@@ -356,9 +356,6 @@ more arguments in future versions.
         Depending on the outcome of the PKA check one of the above
         status codes is emitted in addition to a TRUST_* status.
         Without PKA info available or
-
-    SIGEXPIRED
-	This is deprecated in favor of KEYEXPIRED.
 
     KEYEXPIRED <expire-timestamp>
 	The key has expired.  expire-timestamp is the expiration time
@@ -699,6 +696,14 @@ more arguments in future versions.
         mountpoint for the current operation (e.g. g13 --mount).  This
         may either be the specified mountpoint or one randomly choosen
         by g13.
+
+
+Status lines which are not anymore used:
+
+    SIGEXPIRED removed on 2011-02-04.
+	This is deprecated in favor of KEYEXPIRED.
+
+
 
 
 Format of the "--attribute-fd" output
