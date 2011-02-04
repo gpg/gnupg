@@ -1,3 +1,8 @@
+2011-02-04  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Ensure that the git pre-commit hoom has been
+	enabled.  Add a cleanpo filter if not yet set.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (HAVE_GCRY_PK_GET_CURVE): Use AC_TRY_LINK.
