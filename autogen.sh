@@ -199,6 +199,29 @@ EOF
 fi
 
 
+# Check the git setup.
+if [ -d .git ]; then
+  if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
+    cat <<EOF >&2
+*** Activating trailing whitespace git pre-commit hook. ***
+    For more information see this thread:
+      http://mail.gnome.org/archives/desktop-devel-list/2009-May/msg00084html
+    To deactivate this pre-commit hook again move .git/hooks/pre-commit
+    and .git/hooks/pre-commit.sample out of the way.
+EOF
+      cp -av .git/hooks/pre-commit.sample .git/hooks/pre-commit
+      chmod -c +x  .git/hooks/pre-commit
+  fi
+  tmp=$(git config --get filter.cleanpo.clean)
+  if [ "$tmp" != "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'" ]
+  then
+    echo "*** Adding GIT filter.cleanpo.clean configuration." >&2
+    git config --add filter.cleanpo.clean \
+        "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
+  fi
+fi
+
+
 echo "Running aclocal -I m4 -I gl/m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
 $ACLOCAL -I m4 -I gl/m4 $ACLOCAL_FLAGS
 echo "Running autoheader..."
