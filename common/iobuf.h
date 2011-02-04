@@ -38,7 +38,7 @@
 
 
 /* Command codes for iobuf_ioctl.  */
-typedef enum 
+typedef enum
   {
     IOBUF_IOCTL_KEEP_OPEN        = 1, /* Uses intval.  */
     IOBUF_IOCTL_INVALIDATE_CACHE = 2, /* Uses ptrval.  */

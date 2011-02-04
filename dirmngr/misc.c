@@ -54,7 +54,7 @@ unhexify (unsigned char *result, const char *string)
 }
 
 
-char* 
+char*
 hashify_data( const char* data, size_t len )
 {
   unsigned char buf[20];
@@ -62,7 +62,7 @@ hashify_data( const char* data, size_t len )
   return hexify_data( buf, 20 );
 }
 
-char* 
+char*
 hexify_data( const unsigned char* data, size_t len )
 {
   int i;
@@ -136,7 +136,7 @@ unpercent_string (char *string)
   while (*s)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *d++ = xtoi_2 ( s);
           s += 2;
@@ -144,7 +144,7 @@ unpercent_string (char *string)
       else
         *d++ = *s++;
     }
-  *d = 0; 
+  *d = 0;
   return string;
 }
 
@@ -159,7 +159,7 @@ canon_sexp_to_gcry (const unsigned char *canon, gcry_sexp_t *r_sexp)
 
   *r_sexp = NULL;
   n = gcry_sexp_canon_len (canon, 0, NULL, NULL);
-  if (!n) 
+  if (!n)
     {
       log_error (_("invalid canonical S-expression found\n"));
       err = gpg_error (GPG_ERR_INV_SEXP);
@@ -284,7 +284,7 @@ dump_string (const char *string)
 
 /* Dump an KSBA cert object to the log stream. Prefix the output with
    TEXT.  This is used for debugging. */
-void 
+void
 dump_cert (const char *text, ksba_cert_t cert)
 {
   ksba_sexp_t sexp;
@@ -314,7 +314,7 @@ dump_cert (const char *text, ksba_cert_t cert)
       dump_string (p);
       ksba_free (p);
       log_printf ("\n");
-    
+
       p = ksba_cert_get_subject (cert, 0);
       log_debug ("    subject: ");
       dump_string (p);
@@ -334,7 +334,7 @@ dump_cert (const char *text, ksba_cert_t cert)
 
 /* Log the certificate's name in "#SN/ISSUERDN" format along with
    TEXT. */
-void 
+void
 cert_log_name (const char *text, ksba_cert_t cert)
 {
   log_info ("%s", text? text:"certificate" );
@@ -362,7 +362,7 @@ cert_log_name (const char *text, ksba_cert_t cert)
 
 
 /* Log the certificate's subject DN along with TEXT. */
-void 
+void
 cert_log_subject (const char *text, ksba_cert_t cert)
 {
   log_info ("%s", text? text:"subject" );
@@ -491,7 +491,7 @@ my_estream_ksba_reader_cb (void *cb_value, char *buffer, size_t count,
                            size_t *r_nread)
 {
   estream_t fp = cb_value;
-  
+
   if (!fp)
     return gpg_error (GPG_ERR_INV_VALUE);
 

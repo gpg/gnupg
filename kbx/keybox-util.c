@@ -1,4 +1,4 @@
-/* keybox-util.c - Utility functions for Keybox 
+/* keybox-util.c - Utility functions for Keybox
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -68,4 +68,3 @@ _keybox_free (void *p)
   if (p)
     free_func (p);
 }
-

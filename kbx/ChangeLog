@@ -79,7 +79,7 @@
 
 	* keybox-init.c (keybox_new, keybox_release): Track used handles.
 	(_keybox_close_file): New.
-	* keybox-update.c (keybox_insert_cert, keybox_set_flags) 
+	* keybox-update.c (keybox_insert_cert, keybox_set_flags)
 	(keybox_delete, keybox_compress): Use the new close function.
 
 2008-03-13  Werner Koch  <wk@g10code.com>
@@ -162,7 +162,7 @@
 2005-06-15  Werner Koch  <wk@g10code.com>
 
 	* keybox-file.c (_keybox_read_blob2): Make IMAGE unsigned.
-	(_keybox_write_blob): 
+	(_keybox_write_blob):
 
 	* keybox-blob.c (create_blob_finish, _keybox_create_x509_blob):
 	Fixed warnings about signed/unsigned pointer mismatches.
@@ -219,7 +219,7 @@
 	* keybox-blob.c (_keybox_update_header_blob): New.
 	* keybox-update.c (blob_filecopy): Handle header blob.
 	* keybox-file.c (_keybox_read_blob2): New. Moved code from
-	_keybox_read_blob to there. 
+	_keybox_read_blob to there.
 	* keybox-dump.c (dump_header_blob): Print header info.
 
 2004-04-21  Werner Koch  <wk@gnupg.org>
@@ -228,11 +228,11 @@
 	KEYBOX_FLAG_CREATED_AT.
 	* keybox-update.c (keybox_compress): New.
 
-	* keybox-search.c (get32, get16, blob_get_type) 
-	(blob_get_blob_flags, has_short_kid, has_long_kid) 
-	(has_fingerprint, has_issuer, has_issuer_sn, has_sn, has_subject) 
+	* keybox-search.c (get32, get16, blob_get_type)
+	(blob_get_blob_flags, has_short_kid, has_long_kid)
+	(has_fingerprint, has_issuer, has_issuer_sn, has_sn, has_subject)
 	(has_subject_or_alt, has_mail): inline them.
-	
+
 	* keybox-update.c (blob_filecopy): Fixed an error/eof check
 	(s/if(fread)/if(nread)/).
 
@@ -256,17 +256,17 @@
 	* keybox-blob.c: Include time.h
 
 2003-06-03  Werner Koch  <wk@gnupg.org>
-	
+
 	Changed all error codes in all files to the new libgpg-error scheme.
 
 	* keybox-defs.h: Include gpg-error.h .
-	(KeyboxError): Removed. 
+	(KeyboxError): Removed.
 	* Makefile.am: Removed keybox-error.c stuff.
 
 2002-11-14  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_name) <compare all names>: Fixed
-	length compare; there is no 0 stored since nearly a year.  
+	length compare; there is no 0 stored since nearly a year.
 
 2002-10-31  Neal H. Walfield  <neal@g10code.de>
 

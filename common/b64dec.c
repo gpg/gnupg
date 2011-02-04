@@ -29,7 +29,7 @@
 
 
 /* The reverse base-64 list used for base-64 decoding. */
-static unsigned char const asctobin[128] = 
+static unsigned char const asctobin[128] =
   {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -49,7 +49,7 @@ static unsigned char const asctobin[128] =
     0x31, 0x32, 0x33, 0xff, 0xff, 0xff, 0xff, 0xff
   };
 
-enum decoder_states 
+enum decoder_states
   {
     s_init, s_idle, s_lfseen, s_begin,
     s_b64_0, s_b64_1, s_b64_2, s_b64_3,
@@ -62,7 +62,7 @@ enum decoder_states
    plain base64 decoding is done.  If it is the empty string the
    decoder will skip everything until a "-----BEGIN " line has been
    seen, decoding ends at a "----END " line.
-   
+
    Not yet implemented: If TITLE is either "PGP" or begins with "PGP "
    the PGP armor lines are skipped as well.  */
 gpg_error_t
@@ -96,7 +96,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
 {
   enum decoder_states ds = state->idx;
   unsigned char val = state->radbuf[0];
-  int pos = state->quad_count; 
+  int pos = state->quad_count;
   char *d, *s;
 
   if (state->lasterr)
@@ -110,7 +110,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
       state->title = NULL;
       return state->lasterr;
     }
-  
+
   for (s=d=buffer; length && !state->stop_seen; length--, s++)
     {
       switch (ds)
@@ -143,7 +143,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
           {
             int c;
 
-            if (*s == '-' && state->title) 
+            if (*s == '-' && state->title)
               {
                 /* Not a valid Base64 character: assume end
                    header.  */
@@ -158,7 +158,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
               }
             else if (*s == '\n' || *s == ' ' || *s == '\r' || *s == '\t')
               ; /* Skip white spaces. */
-            else if ( (*s & 0x80) 
+            else if ( (*s & 0x80)
                       || (c = asctobin[*(unsigned char *)s]) == 255)
               {
                 /* Skip invalid encodings.  */
@@ -198,8 +198,8 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
         case s_waitend:
           if ( *s == '\n')
             state->stop_seen = 1;
-          break; 
-        default: 
+          break;
+        default:
           BUG();
         }
     }
@@ -207,7 +207,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
 
   state->idx = ds;
   state->radbuf[0] = val;
-  state->quad_count = pos; 
+  state->quad_count = pos;
   *r_nbytes = (d -(char*) buffer);
   return 0;
 }
@@ -226,4 +226,3 @@ b64dec_finish (struct b64state *state)
   state->title = NULL;
   return state->invalid_encoding? gpg_error(GPG_ERR_BAD_DATA): 0;
 }
-

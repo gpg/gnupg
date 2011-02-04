@@ -59,7 +59,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -89,7 +89,7 @@ struct cdb_rec {
   cdbi_t hval;
   cdbi_t rpos;
 };
-  
+
 struct cdb_rl {
   struct cdb_rl *next;
   cdbi_t cnt;
@@ -306,7 +306,7 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
    result), use cdb_datapos() and cdb_datalen() macros with cdbp
    pointer.  It is error to use cdb_findnext() after it returned 0 or
    error condition.  These routines is a bit slower than
-   cdb_find(). 
+   cdb_find().
 
    Setting KEY to NULL will start a sequential search through the
    entire DB.
@@ -344,7 +344,7 @@ cdb_findinit(struct cdb_find *cdbfp, struct cdb *cdbp,
     }
   else /* Walk over all entries. */
     {
-      cdbfp->cdb_hval = 0; 
+      cdbfp->cdb_hval = 0;
       /* Force stepping in findnext. */
       cdbfp->cdb_htp = cdbfp->cdb_htend = cdbp->cdb_mem;
     }
@@ -353,7 +353,7 @@ cdb_findinit(struct cdb_find *cdbfp, struct cdb *cdbp,
 
 
 /* See cdb_findinit. */
-int 
+int
 cdb_findnext(struct cdb_find *cdbfp)
 {
   cdbi_t pos, n;
@@ -403,7 +403,7 @@ cdb_findnext(struct cdb_find *cdbfp)
             {
               if (cdbfp->cdb_hval > 255)
                 return 0; /* No more items. */
-              
+
               cdbfp->cdb_htp = cdbp->cdb_mem + cdbfp->cdb_hval * 8;
               cdbfp->cdb_hval++; /* Advance for next round. */
               pos = cdb_unpack (cdbfp->cdb_htp);     /* Offset of table. */
@@ -416,22 +416,22 @@ cdb_findnext(struct cdb_find *cdbfp)
                   gpg_err_set_errno (EPROTO);
                   return -1;
                 }
-              
+
               cdbfp->cdb_htab  = cdbp->cdb_mem + pos;
               cdbfp->cdb_htend = cdbfp->cdb_htab + cdbfp->cdb_httodo;
               cdbfp->cdb_htp   = cdbfp->cdb_htab;
             }
-          
+
           pos = cdb_unpack (cdbfp->cdb_htp + 4); /* Offset of record. */
           cdbfp->cdb_htp += 8;
-        } 
+        }
       while (!pos);
       if (pos > cdbp->cdb_fsize - 8)
         {
           gpg_err_set_errno (EPROTO);
           return -1;
         }
-      
+
       cdbp->cdb_kpos = pos + 8;
       cdbp->cdb_klen = cdb_unpack(cdbp->cdb_mem + pos);
       cdbp->cdb_vpos = pos + 8 + cdbp->cdb_klen;

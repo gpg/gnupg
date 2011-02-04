@@ -1,4 +1,4 @@
-/* keybox-init.c - Initalization of the library 
+/* keybox-init.c - Initalization of the library
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -59,7 +59,7 @@ keybox_register_file (const char *fname, int secret)
   /* keep a list of all issued pointers */
   kr->next = kb_names;
   kb_names = kr;
-  
+
   /* create the offset table the first time a function here is used */
 /*      if (!kb_offtbl) */
 /*        kb_offtbl = new_offset_hash_table (); */
@@ -75,11 +75,11 @@ keybox_is_writable (void *token)
   return r? !access (r->fname, W_OK) : 0;
 }
 
-    
+
 
 /* Create a new handle for the resource associated with TOKEN.  SECRET
    is just a cross-check.
-   
+
    The returned handle must be released using keybox_release (). */
 KEYBOX_HANDLE
 keybox_new (void *token, int secret)
@@ -118,7 +118,7 @@ keybox_new (void *token, int secret)
           size_t newsize;
 
           newsize = resource->handle_table_size + 5;
-          tmptbl = xtryrealloc (resource->handle_table, 
+          tmptbl = xtryrealloc (resource->handle_table,
                                 newsize * sizeof (*tmptbl));
           if (!tmptbl)
             {
@@ -135,7 +135,7 @@ keybox_new (void *token, int secret)
   return hd;
 }
 
-void 
+void
 keybox_release (KEYBOX_HANDLE hd)
 {
   if (!hd)
@@ -171,7 +171,7 @@ int
 keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
 {
   if (!hd)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   hd->ephemeral = yes;
   return 0;
 }
@@ -180,7 +180,7 @@ keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
 /* Close the file of the resource identified by HD.  For consistent
    results this fucntion closes the files of all handles pointing to
    the resource identified by HD.  */
-void 
+void
 _keybox_close_file (KEYBOX_HANDLE hd)
 {
   int idx;

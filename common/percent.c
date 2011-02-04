@@ -46,13 +46,13 @@ percent_plus_escape (const char *string)
 
   for (length=1, s=string; *s; s++)
     {
-      if (*s == '+' || *s == '\"' || *s == '%' 
+      if (*s == '+' || *s == '\"' || *s == '%'
           || *(const unsigned char *)s < 0x20)
         length += 3;
       else
         length++;
     }
-  
+
   buffer = p = xtrymalloc (length);
   if (!buffer)
     return NULL;
@@ -82,7 +82,7 @@ percent_plus_escape (const char *string)
    done if WITHPLUS is true.  An escaped Nul character will be
    replaced by NULREPL.  */
 static size_t
-do_unescape (unsigned char *buffer, const unsigned char *string, 
+do_unescape (unsigned char *buffer, const unsigned char *string,
              int withplus, int nulrepl)
 {
   unsigned char *p = buffer;
@@ -90,7 +90,7 @@ do_unescape (unsigned char *buffer, const unsigned char *string,
   while (*string)
     {
       if (*string == '%' && string[1] && string[2])
-        { 
+        {
           string++;
           *p = xtoi_2 (string);
           if (!*p)
@@ -119,7 +119,7 @@ count_unescape (const unsigned char *string)
   while (*string)
     {
       if (*string == '%' && string[1] && string[2])
-        { 
+        {
           string++;
           string++;
         }
@@ -181,7 +181,7 @@ do_unescape_inplace (char *string, int withplus, int nulrepl)
   while (*string)
     {
       if (*string == '%' && string[1] && string[2])
-        { 
+        {
           string++;
           *p = xtoi_2 (string);
           if (!*p)
@@ -226,4 +226,3 @@ percent_unescape_inplace (char *string, int nulrepl)
 {
   return do_unescape_inplace (string, 0, nulrepl);
 }
-

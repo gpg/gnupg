@@ -55,7 +55,7 @@ rol (u32 x, int n)
 #endif
 
 /* Structure holding the context for the RIPE-MD160 computation.  */
-typedef struct 
+typedef struct
 {
   u32 h0, h1, h2, h3, h4;
   u32 nblocks;
@@ -88,10 +88,10 @@ transform (rmd160_context_t *hd, const unsigned char *data)
   u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
 #ifdef BIG_ENDIAN_HOST
   u32 x[16];
-  { 
+  {
     int i;
     unsigned char *p2, *p1;
-    for (i=0, p1=data, p2=(unsigned char*)x; i < 16; i++, p2 += 4 ) 
+    for (i=0, p1=data, p2=(unsigned char*)x; i < 16; i++, p2 += 4 )
       {
         p2[3] = *p1++;
         p2[2] = *p1++;
@@ -315,8 +315,8 @@ transform (rmd160_context_t *hd, const unsigned char *data)
 static void
 rmd160_write (rmd160_context_t *hd, const unsigned char *inbuf, size_t inlen)
 {
-  if( hd->count == 64 ) 
-    { 
+  if( hd->count == 64 )
+    {
       /* Flush the buffer.  */
       transform (hd, hd->buf);
       hd->count = 0;
@@ -371,7 +371,7 @@ rmd160_final( rmd160_context_t *hd )
   msb |= t >> 29;
 
   if (hd->count < 56)
-    { 
+    {
       /* Enough room.  */
       hd->buf[hd->count++] = 0x80; /* Pad character. */
       while (hd->count < 56)
@@ -396,7 +396,7 @@ rmd160_final( rmd160_context_t *hd )
   hd->buf[62] = msb >> 16;
   hd->buf[63] = msb >> 24;
   transform (hd, hd->buf);
-  
+
   p = hd->buf;
 #define X(a) do { *p++ = hd->h##a;       *p++ = hd->h##a >> 8;	\
                   *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
@@ -417,7 +417,7 @@ void
 rmd160_hash_buffer (void *outbuf, const void *buffer, size_t length)
 {
   rmd160_context_t hd;
-  
+
   rmd160_init (&hd);
   rmd160_write (&hd, buffer, length);
   rmd160_final (&hd);

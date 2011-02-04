@@ -188,7 +188,7 @@
 
 	* app-openpgp.c (change_keyattr): New.
 	(do_writekey): Call it.
-	
+
 	* app-openpgp.c (does_key_exist): Add arg GENERATING.  Change
 	callers.
 
@@ -291,7 +291,7 @@
 	* app-nks.c (do_decipher): Make it work for TCOS 3.
 	* iso7816.c (iso7816_decipher): Add arg EXTENDED_MODE.
 	* apdu.c (apdu_send): Add arg EXTENDED_MODE and change all callers.
-	(apdu_send_le):  Ditto. 
+	(apdu_send_le):  Ditto.
 	(apdu_send_direct): Ditto, but not yet functional.
 	(send_le): Fix command chaining.  Implement extended length option.
 	* ccid-driver.c (ccid_transceive): Remove restriction on apdu length.
@@ -375,7 +375,7 @@
 	(aid_nks): .. new.
 	(aid_sigg): New.
 	(switch_application): New.
-	(do_getattr, do_learn_status, do_readcert, do_sign, do_decipher) 
+	(do_getattr, do_learn_status, do_readcert, do_sign, do_decipher)
 	(do_change_pin, do_check_pin): Make sure we are in NKS mode.
 
 2009-03-03  Werner Koch  <wk@g10code.com>
@@ -407,22 +407,22 @@
 	* ccid-driver.c (ccid_get_atr): Move debug output to ..
 	(print_r2p_parameters): .. new.
 	(print_r2p_header, print_pr_data, print_r2p_unknown)
-	(print_r2p_datablock, print_r2p_slotstatus, print_r2p_escape) 
+	(print_r2p_datablock, print_r2p_slotstatus, print_r2p_escape)
 	(print_r2p_datarate): New.
 	(bulk_in): Call parameter printing.
 	(ccid_set_debug_level): Add debug level 3.
 	(convert_le_u16): New.
-	(print_p2r_header, print_p2r_iccpoweron, print_p2r_iccpoweroff) 
-	(print_p2r_getslotstatus, print_p2r_xfrblock) 
-	(print_p2r_getparameters, print_p2r_resetparameters) 
-	(print_p2r_setparameters, print_p2r_escape, print_p2r_iccclock) 
-	(print_p2r_to0apdu, print_p2r_secure, print_p2r_mechanical) 
+	(print_p2r_header, print_p2r_iccpoweron, print_p2r_iccpoweroff)
+	(print_p2r_getslotstatus, print_p2r_xfrblock)
+	(print_p2r_getparameters, print_p2r_resetparameters)
+	(print_p2r_setparameters, print_p2r_escape, print_p2r_iccclock)
+	(print_p2r_to0apdu, print_p2r_secure, print_p2r_mechanical)
 	(print_p2r_abort, print_p2r_setdatarate, print_r2p_unknown): New.
 	(bulk_out): Add arg NO_DEBUG and change all callers to pass 0.
 	Call parameter printing.
 	(ccid_slot_status): Call with NO_DEBUG set.
-	(abort_cmd, send_escape_cmd, ccid_get_atr, ccid_get_atr) 
-	(ccid_transceive_apdu_level, ccid_transceive) 
+	(abort_cmd, send_escape_cmd, ccid_get_atr, ccid_get_atr)
+	(ccid_transceive_apdu_level, ccid_transceive)
 	(ccid_transceive_secure): Remove old debug print code.
 
 2009-02-12  Werner Koch  <wk@g10code.com>
@@ -473,7 +473,7 @@
 
 2008-12-18  Werner Koch  <wk@g10code.com>
 
-	* ccid-driver.c (abort_cmd): New. 
+	* ccid-driver.c (abort_cmd): New.
 	(bulk_in): Call abort_cmd after severe errors.
 
 	* apdu.c (reader_table_s): Add field ANY_STATUS.
@@ -520,7 +520,7 @@
 	(update_reader_status_file): Disconnect if allowed.
 
 	* app-common.h (app_ctx_s): Remove INITIALIZED.  Make REF_COUNT
-	unsigned. 
+	unsigned.
 	* app.c (select_application): Remove INITIALIZED.
 	(app_write_learn_status, app_readcert, app_readkey, app_getattr)
 	(app_setattr, app_sign, app_decipher, app_writecert)
@@ -537,7 +537,7 @@
 	* app.c (app_get_serial_and_stamp): Use bin2hex.
 	* app-help.c (app_help_get_keygrip_string): Ditto.
 	* app-p15.c (send_certinfo, send_keypairinfo, do_getattr): Ditto.
-	* app-openpgp.c (send_fpr_if_not_null, send_key_data) 
+	* app-openpgp.c (send_fpr_if_not_null, send_key_data)
 	(retrieve_fpr_from_card, send_keypair_info): Ditto.
 	* app-nks.c (keygripstr_from_pk_file): Ditto.
 	* command.c (cmd_apdu): Ditto.
@@ -644,7 +644,7 @@
 	(do_change_pin): Do not change CHV2. Add reset code logic for v2
 	cards.
 	* iso7816.c (iso7816_reset_retry_counter_with_rc): New.
-	
+
 	* app-openpgp.c (add_tlv, build_privkey_template): New.
 	(do_writekey): Support v2 keys and other key lengths than 1024.
 	* iso7816.c (iso7816_put_data_odd): New.
@@ -762,7 +762,7 @@
 
 	* scdaemon.c (main): Pass STANDARD_SOCKET flag to
 	create_server_socket.
-	
+
 2007-11-13  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (start_connection_thread): Do not call
@@ -1003,7 +1003,7 @@
 
 2006-09-06  Werner Koch  <wk@g10code.com>
 
-	* apdu.c (pcsc_end_transaction): 
+	* apdu.c (pcsc_end_transaction):
 	* pcsc-wrapper.c (pcsc_end_transaction: Fixed dclaration.
 	Reported by Bob Dunlop.
 
@@ -1012,7 +1012,7 @@
 
 	Replaced all Assuan error codes by libgpg-error codes.  Removed
 	all map_to_assuan_status and map_assuan_err.
-	
+
 	* scdaemon.c (main): Call assuan_set_assuan_err_source to have Assuan
 	switch to gpg-error codes.
 	* command.c (set_error): Adjusted.
@@ -1091,7 +1091,7 @@
 
 2006-02-09  Werner Koch  <wk@g10code.com>
 
-	* command.c (get_reader_slot, do_reset) 
+	* command.c (get_reader_slot, do_reset)
 	(scd_update_reader_status_file): Rewrote.
 
 	* app.c (release_application): Factored code out to ..
@@ -1156,12 +1156,12 @@
 	* iso7816.h (struct iso7816_pininfo_s): New.
 	* iso7816.c (map_sw): Support new code.
 	(iso7816_check_keypad): New.
-	(iso7816_verify_kp, iso7816_change_reference_data_kp) 
+	(iso7816_verify_kp, iso7816_change_reference_data_kp)
 	(iso7816_reset_retry_counter_kp): New.  Extended versions of the
 	original functions.
-	* apdu.c (host_sw_string): Support new code. 
+	* apdu.c (host_sw_string): Support new code.
 	(reader_table_s): New field CHECK_KEYPAD.
-	(new_reader_slot, open_ct_reader, open_pcsc_reader) 
+	(new_reader_slot, open_ct_reader, open_pcsc_reader)
 	(open_ccid_reader, open_rapdu_reader): Initialize it.
 	(check_ccid_keypad): New.
 	(apdu_check_keypad): New.
@@ -1170,7 +1170,7 @@
 	of the orginal function to use this one with a NULL for the new
 	arg.
 	(apdu_send_simple_kp): New.
-	(ct_send_apdu, pcsc_send_apdu, my_rapdu_send_apdu) 
+	(ct_send_apdu, pcsc_send_apdu, my_rapdu_send_apdu)
 	(send_apdu_ccid): New arg PININFO.
 	(send_apdu_ccid): Use the new arg.
 
@@ -1226,7 +1226,7 @@
 	* iso7816.c (iso7816_read_binary): Use Le=0 when reading all
 	data.  Handle 6C00 error and take 6B00 as indication for EOF.
 	* apdu.h (SW_EXACT_LENGTH_P): New.
-	* apdu.c (new_reader_slot, reset_pcsc_reader, pcsc_get_status) 
+	* apdu.c (new_reader_slot, reset_pcsc_reader, pcsc_get_status)
 	(open_pcsc_reader): Set new reader state IS_T0.
 	(apdu_send_le): When doing T=0 make sure not to send Lc and Le.
 	Problem reported by Carl Meijer.
@@ -1253,7 +1253,7 @@
 
 2005-06-06  Werner Koch  <wk@g10code.com>
 
-	* scdaemon.c (main): New option --debug-allow-core-dump. 
+	* scdaemon.c (main): New option --debug-allow-core-dump.
 
 2005-06-03  Werner Koch  <wk@g10code.com>
 
@@ -1399,9 +1399,9 @@
 	variant.
 	* app-openpgp.c (get_one_do, dump_all_do): Ditto.
 
-	
+
 	Removal of the old OpenSC based code.
-	
+
 	* app-p15.c: New.  Basic support for pkcs15 cards without OpenSC.
 	There are quite a couple of things missing but at least I can use
 	my old TCOS cards from the Aegypten-1 development for signing.
@@ -1409,7 +1409,7 @@
 	* Makefile.am (scdaemon_SOURCES): Removed card.c, card-common.h
 	and card-p15.c because they are now obsolete. Added app-p15.c.
 	Removed all OpenSC stuff.
-	* command.c (do_reset, open_card, cmd_serialno, cmd_learn) 
+	* command.c (do_reset, open_card, cmd_serialno, cmd_learn)
 	(cmd_readcert, cmd_readkey, cmd_pksign, cmd_pkdecrypt): Removed
 	all special cases for the old card.c based mechanisms.
 	* scdaemon.c, apdu.c: Removed all special cases for OpenSC.
@@ -1430,7 +1430,7 @@
 2005-04-12  Werner Koch  <wk@g10code.com>
 
 	Basic support for several sessions.
-	
+
 	* command.c (scd_command_handler): Replace the primary_connection
 	stuff by a real connection list.  Release the local context on
 	exit.
@@ -1438,7 +1438,7 @@
 	to all connections who registered an event signal.
 	(cmd_lock, cmd_unlock, register_commands): New commands LOCK and
 	UNLOCK.
-	(cmd_setdata, cmd_pksign, cmd_pkauth, cmd_pkdecrypt, cmd_setattr) 
+	(cmd_setdata, cmd_pksign, cmd_pkauth, cmd_pkdecrypt, cmd_setattr)
 	(cmd_genkey, cmd_passwd, cmd_checkpin): Return an error if reader
 	is locked.
 	(do_reset): Handle locking.
@@ -1508,7 +1508,7 @@
 
 	* apdu.c: Added some PCSC error codes.
 	(pcsc_error_to_sw): New.
-	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu) 
+	(reset_pcsc_reader, pcsc_get_status, pcsc_send_apdu)
 	(open_pcsc_reader): Do proper error code mapping.
 
 2005-03-16  Werner Koch  <wk@g10code.com>
@@ -1589,7 +1589,7 @@
 	* apdu.c [W32]: Disable use of pcsc_wrapper.
 
 	* Makefile.am (scdaemon_LDADD): Reorder libs.
-	(sc_copykeys_LDADD): Add libassuan because it is needed for W32. 
+	(sc_copykeys_LDADD): Add libassuan because it is needed for W32.
 
 2004-12-06  Werner Koch  <wk@g10code.com>
 
@@ -1606,17 +1606,17 @@
 	This avoids problems with missing vasprintf implementations in
 	gnupg 1.4.
 
-	* app-common.h (app_openpgp_storekey: Add prototype. 
+	* app-common.h (app_openpgp_storekey: Add prototype.
 
 2004-10-20  Werner Koch  <wk@g10code.com>
 
 	* sc-investigate: Removed.
 	* Makefile.am (sc_investigate): Removed.
-	
+
 	* pcsc-wrapper.c (load_pcsc_driver): Load get_status_change func.
 	(handle_open): Succeed even without a present card.
 	(handle_status, handle_reset): New.
-	
+
 	* apdu.c (apdu_open_reader): Load pcsc_get_status_change fucntion.
 	(pcsc_get_status): Implemented.
 	(reset_pcsc_reader): Implemented.
@@ -1631,7 +1631,7 @@
 
 2004-10-14  Werner Koch  <wk@g10code.com>
 
-	* app-openpgp.c (parse_login_data): New. 
+	* app-openpgp.c (parse_login_data): New.
 	(app_select_openpgp): Call it.
 	(do_setattr): Reparse it after change.
 
@@ -1658,7 +1658,7 @@
 
 	* app-openpgp.c: Made all strings translatable.
 	(verify_chv3) [GNUPG_MAJOR_VERSION]: Make opt.allow_admin
-	available for use in gnupg 2. 
+	available for use in gnupg 2.
 	(verify_chv3): Reimplemented countdown showing to use only
 	functions from this module.  Flush the CVH status cache on a
 	successful read.
@@ -1669,7 +1669,7 @@
 	(get_cached_data): Move local data initialization to ..
 	(app_select_openpgp): .. here. Read some flags for later use.
 	(do_getattr): New read-only attribute EXTCAP.
-	
+
 	* apdu.c (open_pcsc_reader): Do not print empty reader string.
 
 	* ccid-driver.c (do_close_reader): Factored some code out from ...
@@ -1754,21 +1754,21 @@
 	* Makefile.am: Make OpenSC lib link after libgcrypt. Do not link
 	to pth.
 	* apdu.c: Don't use Pth if we use OpenSC.
-	* sc-investigate.c, scdaemon.c: Disable use of pth if OpenSC is used. 
+	* sc-investigate.c, scdaemon.c: Disable use of pth if OpenSC is used.
 
 	* scdaemon.c (main): Bumbed thread stack size up to 512k.
 
 2004-07-16  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (reader_table_s):  Add function pointers for the backends.
-	(apdu_close_reader, apdu_get_status, apdu_activate) 
+	(apdu_close_reader, apdu_get_status, apdu_activate)
 	(send_apdu): Make use of them.
 	(new_reader_slot): Intialize them to NULL.
 	(dump_ccid_reader_status, ct_dump_reader_status): New.
 	(dump_pcsc_reader_status): New.
-	(open_ct_reader, open_pcsc_reader, open_ccid_reader) 
+	(open_ct_reader, open_pcsc_reader, open_ccid_reader)
 	(open_osc_reader, open_rapdu_reader): Intialize function pointers.
-	(ct_activate_card, ct_send_apdu, pcsc_send_apdu, osc_send_apdu) 
+	(ct_activate_card, ct_send_apdu, pcsc_send_apdu, osc_send_apdu)
 	(error_string): Removed.  Replaced by apdu_strerror.
 	(get_ccid_error_string): Removed.
 	(ct_activate_card): Remove the unused loop.
@@ -1899,7 +1899,7 @@
 	* apdu.h: New pseudo stati SW_HOST_NOT_SUPPORTED,
 	SW_HOST_LOCKING_FAILED and SW_HOST_BUSY.
 	* iso7816.c (map_sw): Map it.
-	
+
 	* ccid-driver.c (ccid_slot_status): Add arg STATUSBITS.
 	* apdu.c (apdu_get_status): New.
 	(ct_get_status, pcsc_get_status, ocsc_get_status): New stubs.
@@ -1908,7 +1908,7 @@
 	(reset_ct_reader, reset_pcsc_reader, reset_osc_reader): New stubs.
 	(reset_ccid_reader): New.
 	(apdu_enum_reader): New.
-	
+
 	* apdu.c (lock_slot, trylock_slot, unlock_slot): New helpers.
 	(new_reader_slot) [USE_GNU_PTH]: Init mutex.
 	(apdu_reset, apdu_get_status, apdu_send_le): Run functions
@@ -2001,7 +2001,7 @@
 	(cmd_serialno): Allow optional argument to select the desired
 	application.
 
-	* app-nks.c: New. 
+	* app-nks.c: New.
 
 	* scdaemon.h (opt): Add READER_PORT.
 	* scdaemon.c (main): Set it here.
@@ -2172,12 +2172,12 @@
 	* ccid-driver.c, ccid-driver.h: New but far from being useful.
 	* Makefile.am: Add above.
 	* apdu.c: Add support for that ccid driver.
-	
+
 2003-08-26  Timo Schulz  <twoaday@freakmail.de>
 
 	* apdu.c (new_reader_slot): Only set 'is_osc' when OpenSC
 	is used.
-	
+
 2003-08-25  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_setattr): Use a copy of LINE.
@@ -2193,7 +2193,7 @@
 
 2003-08-18  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Add OPENSC_LIBS to all programs. 
+	* Makefile.am: Add OPENSC_LIBS to all programs.
 
 	* scdaemon.c, scdaemon.h: New option --disable-opensc.
 	* card.c (card_open): Implement it.
@@ -2233,7 +2233,7 @@
 
 	* scdaemon.c, scdaemon.h: New option --ctapi-driver.
 	* sc-investigate.c, sc-copykeys.c: Ditto.
-	
+
 2003-07-31  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (scdaemon_LDADD): Added INTLLIBS.
@@ -2309,7 +2309,7 @@
 
 	* app-openpgp.c (get_sig_counter): New.
 	(do_sign): Print the signature counter and enable the PIN callback.
-	(do_genkey): Implement the PIN callback. 
+	(do_genkey): Implement the PIN callback.
 
 2003-07-01  Werner Koch  <wk@gnupg.org>
 
@@ -2380,7 +2380,7 @@
 	* apdu.c, apdu.h: New
 
 	* card.c, card-p15.c, card-dinsig.c: Allow build without OpenSC.
-	
+
 	* Makefile.am (LDFLAGS): Removed.
 
 	* command.c (register_commands): Adjusted for new Assuan semantics.
@@ -2413,7 +2413,7 @@
 2002-07-30  Werner Koch  <wk@gnupg.org>
 
         Changes to cope with OpenSC 0.7.0:
-	
+
 	* card.c: Removed the check for the packed opensc version.
 	Changed include file names of opensc.
 	(map_sc_err): Adjusted error codes for new opensc version.
@@ -2421,7 +2421,7 @@
 	* card-dinsig.c: Ditto.
 
 	* card-p15.c (p15_decipher): Add flags argument to OpenSC call.
-	
+
 2002-07-24  Werner Koch  <wk@gnupg.org>
 
 	* card.c (find_simple_tlv, find_iccsn): New.
@@ -2467,7 +2467,7 @@
 	* scdaemon.c scdaemon.h, command.c: New. Based on the code from
 	the gpg-agent.
 
-	
+
  Copyright 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives

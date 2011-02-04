@@ -78,7 +78,7 @@ destroy_duptable (duptable_t *table)
 
   if (table)
     {
-      for (idx=0; idx < DUPTABLE_SIZE; idx++) 
+      for (idx=0; idx < DUPTABLE_SIZE; idx++)
         for (t = table[idx]; t; t = t2)
           {
             t2 = t->next;
@@ -95,15 +95,15 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 {
   size_t idx;
   duptable_t t;
-  
+
   *exists = 0;
   idx = fpr[0];
 #if DUPTABLE_BITS > 16 || DUPTABLE_BITS < 8
 #error cannot handle a table larger than 16 bits or smaller than 8 bits
 #elif DUPTABLE_BITS > 8
-  idx <<= (DUPTABLE_BITS - 8);  
-  idx |= (fpr[1] & ~(~0 << 4)); 
-#endif  
+  idx <<= (DUPTABLE_BITS - 8);
+  idx |= (fpr[1] & ~(~0 << 4));
+#endif
 
   for (t = table[idx]; t; t = t->next)
     if (!memcmp (t->fpr, fpr+1, 19))
@@ -141,7 +141,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
   int i;
   duptable_t *dtable;
 
-  
+
   dtable = create_duptable ();
   if (!dtable)
     {
@@ -160,7 +160,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
     ndesc = 1;
   else
     {
-      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++) 
+      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++)
         ;
     }
 
@@ -174,9 +174,9 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
 
   if (!names)
     desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
-  else 
+  else
     {
-      for (ndesc=0, sl=names; sl; sl = sl->next) 
+      for (ndesc=0, sl=names; sl; sl = sl->next)
         {
           rc = classify_user_id (sl->d, desc+ndesc);
           if (rc)
@@ -204,17 +204,17 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
       if (i == ndesc)
         keydb_set_ephemeral (hd, 1);
     }
-      
+
   while (!(rc = keydb_search (hd, desc, ndesc)))
     {
       unsigned char fpr[20];
       int exists;
 
-      if (!names) 
+      if (!names)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       rc = keydb_get_cert (hd, &cert);
-      if (rc) 
+      if (rc)
         {
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
@@ -281,7 +281,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
             {
               /* We want one certificate per PEM block */
               rc = gpgsm_finish_writer (b64writer);
-              if (rc) 
+              if (rc)
                 {
                   log_error ("write failed: %s\n", gpg_strerror (rc));
                   goto leave;
@@ -291,7 +291,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
             }
         }
 
-      ksba_cert_release (cert); 
+      ksba_cert_release (cert);
       cert = NULL;
     }
   if (rc && rc != -1)
@@ -299,13 +299,13 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
   else if (b64writer)
     {
       rc = gpgsm_finish_writer (b64writer);
-      if (rc) 
+      if (rc)
         {
           log_error ("write failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
     }
-  
+
  leave:
   gpgsm_destroy_writer (b64writer);
   ksba_cert_release (cert);
@@ -361,13 +361,13 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
   if (!err)
     {
       err = keydb_get_cert (hd, &cert);
-      if (err) 
+      if (err)
         {
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (err));
           goto leave;
         }
 
-    next_ambiguous:      
+    next_ambiguous:
       err = keydb_search (hd, desc, 1);
       if (!err)
         {
@@ -393,7 +393,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
           goto leave;
         }
     }
-      
+
   keygrip = gpgsm_get_keygrip_hexstring (cert);
   if (!keygrip || gpgsm_agent_havekey (ctrl, keygrip))
     {
@@ -402,7 +402,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
       log_error ("can't export key `%s': %s\n", name, gpg_strerror (err));
       goto leave;
     }
-  
+
   image = ksba_cert_get_image (cert, &imagelen);
   if (!image)
     {
@@ -447,7 +447,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
     {
       /* We want one certificate per PEM block */
       err = gpgsm_finish_writer (b64writer);
-      if (err) 
+      if (err)
         {
           log_error ("write failed: %s\n", gpg_strerror (err));
           goto leave;
@@ -455,8 +455,8 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
       gpgsm_destroy_writer (b64writer);
       b64writer = NULL;
     }
-  
-  ksba_cert_release (cert); 
+
+  ksba_cert_release (cert);
   cert = NULL;
 
  leave:
@@ -479,19 +479,19 @@ print_short_info (ksba_cert_t cert, estream_t stream)
     {
       es_fputs ((!idx
                  ?   "Issuer ...: "
-                 : "\n   aka ...: "), stream); 
+                 : "\n   aka ...: "), stream);
       gpgsm_es_print_name (stream, p);
       xfree (p);
     }
   es_putc ('\n', stream);
 
-  es_fputs ("Serial ...: ", stream); 
+  es_fputs ("Serial ...: ", stream);
   sexp = ksba_cert_get_serial (cert);
   if (sexp)
     {
       int len;
       const unsigned char *s = sexp;
-      
+
       if (*s == '(')
         {
           s++;
@@ -508,7 +508,7 @@ print_short_info (ksba_cert_t cert, estream_t stream)
     {
       es_fputs ((!idx
                  ?   "Subject ..: "
-                 : "\n    aka ..: "), stream); 
+                 : "\n    aka ..: "), stream);
       gpgsm_es_print_name (stream, p);
       xfree (p);
     }
@@ -533,7 +533,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
   if(!list)
-    return NULL; 
+    return NULL;
   l2 = gcry_sexp_cadr (list);
   gcry_sexp_release (list);
   list = l2;
@@ -552,7 +552,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
       gcry_sexp_release (list);
       return NULL;
     }
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       if (*s == '-')
         continue; /* Computed below  */
@@ -575,11 +575,11 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
   array[5] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
   gcry_mpi_sub_ui (array[5], array[3], 1);
-  gcry_mpi_mod (array[5], array[2], array[5]);   
+  gcry_mpi_mod (array[5], array[2], array[5]);
 
   array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
   gcry_mpi_sub_ui (array[6], array[4], 1);
-  gcry_mpi_mod (array[6], array[3], array[6]);   
+  gcry_mpi_mod (array[6], array[3], array[6]);
 
   return array;
 }
@@ -616,7 +616,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     }
 
   /* Receive the wrapped key from the agent.  */
-  err = gpgsm_agent_export_key (ctrl, keygrip, prompt, 
+  err = gpgsm_agent_export_key (ctrl, keygrip, prompt,
                                 &wrappedkey, &wrappedkeylen);
   if (err)
     goto leave;
@@ -669,8 +669,8 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       log_error ("error converting key parameters\n");
       err = GPG_ERR_BAD_SECKEY;
       goto leave;
-    } 
-    
+    }
+
   err = gpgsm_agent_ask_passphrase
     (ctrl,
      i18n_utf8 ("Please enter the passphrase to protect the "
@@ -685,7 +685,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   passphrase = NULL;
   if (!result)
     err = gpg_error (GPG_ERR_GENERAL);
-  
+
  leave:
   xfree (key);
   gcry_sexp_release (s_skey);
@@ -698,7 +698,7 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
   gcry_cipher_close (cipherhd);
   xfree (wrappedkey);
   xfree (kek);
-  
+
   if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
     {
       /* During export this is the passphrase used to unprotect the
@@ -719,4 +719,3 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
     }
   return err;
 }
-

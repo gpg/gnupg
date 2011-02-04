@@ -53,13 +53,13 @@ int
 same_file_p (const char *name1, const char *name2)
 {
   int yes;
-      
+
   /* First try a shortcut.  */
   if (!compare_filenames (name1, name2))
     yes = 1;
   else
     {
-#ifdef HAVE_W32_SYSTEM  
+#ifdef HAVE_W32_SYSTEM
       HANDLE file1, file2;
       BY_HANDLE_FILE_INFORMATION info1, info2;
 
@@ -72,7 +72,7 @@ same_file_p (const char *name1, const char *name2)
           file1 = INVALID_HANDLE_VALUE;
         jnlib_free (wname);
       }
-#else      
+#else
       file1 = CreateFile (name1, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
 #endif
       if (file1 == INVALID_HANDLE_VALUE)
@@ -106,7 +106,7 @@ same_file_p (const char *name1, const char *name2)
         }
 #else /*!HAVE_W32_SYSTEM*/
       struct stat info1, info2;
-      
+
       yes = (!stat (name1, &info1) && !stat (name2, &info2)
              && info1.st_dev == info2.st_dev && info1.st_ino == info2.st_ino);
 #endif /*!HAVE_W32_SYSTEM*/
@@ -180,7 +180,7 @@ timegm (struct tm *tm)
             }
 	}
       if (old_zone)
-        putenv (old_zone);	
+        putenv (old_zone);
     }
   else
     gnupg_unsetenv("TZ");
@@ -190,4 +190,3 @@ timegm (struct tm *tm)
 #endif
 }
 #endif /*!HAVE_TIMEGM*/
-

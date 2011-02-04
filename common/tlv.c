@@ -45,7 +45,7 @@ do_find_tlv (const unsigned char *buffer, size_t length,
   size_t len;
   int this_tag;
   int composite;
-    
+
   for (;;)
     {
       buffer = s;
@@ -97,7 +97,7 @@ do_find_tlv (const unsigned char *buffer, size_t length,
              nesting. */
           const unsigned char *tmp_s;
           size_t tmp_len;
-          
+
           tmp_s = do_find_tlv (s, len, tag, &tmp_len, nestlevel+1);
           if (tmp_s)
             {
@@ -152,7 +152,7 @@ find_tlv_unchecked (const unsigned char *buffer, size_t length,
    on success. */
 gpg_error_t
 _parse_ber_header (unsigned char const **buffer, size_t *size,
-                   int *r_class, int *r_tag, 
+                   int *r_class, int *r_tag,
                    int *r_constructed, int *r_ndef,
                    size_t *r_length, size_t *r_nhdr,
                    gpg_err_source_t errsource)
@@ -220,11 +220,11 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
         }
       *r_length = len;
     }
-  
+
   /* Without this kludge some example certs can't be parsed. */
   if (*r_class == CLASS_UNIVERSAL && !*r_tag)
     *r_length = 0;
-  
+
   *buffer = buf;
   *size = length;
   return 0;
@@ -251,7 +251,7 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
    while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
           && depth)
      process_token (tok, toklen);
-   if (err)  
+   if (err)
      handle_error ();
  */
 gpg_error_t
@@ -302,4 +302,3 @@ _parse_sexp (unsigned char const **buf, size_t *buflen,
   *buflen = n;
   return 0;
 }
-

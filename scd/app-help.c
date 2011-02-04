@@ -120,7 +120,7 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
                  fid, gpg_strerror (err));
       return 0;
     }
-  
+
   if (!buflen || *buffer == 0xff)
     {
       log_info ("no certificate contained in FID 0x%04X\n", fid);
@@ -178,5 +178,3 @@ app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff)
 
   return resultlen;
 }
-
-

@@ -88,7 +88,7 @@ typedef struct keyblock_pos_struct KBPOS;
 /* Structure to hold a couple of public key certificates. */
 typedef struct pk_list *PK_LIST;  /* Deprecated. */
 typedef struct pk_list *pk_list_t;
-struct pk_list 
+struct pk_list
 {
   PK_LIST next;
   PKT_public_key *pk;
@@ -97,7 +97,7 @@ struct pk_list
 
 /* Structure to hold a list of secret key certificates.  */
 typedef struct sk_list *SK_LIST;
-struct sk_list 
+struct sk_list
 {
   SK_LIST next;
   PKT_public_key *pk;
@@ -160,7 +160,7 @@ void release_pk_list (PK_LIST pk_list);
 int  build_pk_list (ctrl_t ctrl,
                     strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use);
 gpg_error_t find_and_check_key (ctrl_t ctrl,
-                                const char *name, unsigned int use, 
+                                const char *name, unsigned int use,
                                 int mark_hidden, pk_list_t *pk_list_addr);
 
 int  algo_available( preftype_t preftype, int algo,
@@ -228,7 +228,7 @@ gpg_error_t get_seckey_byname (PKT_public_key *pk, const char *name);
 
 gpg_error_t get_seckey_byfprint (PKT_public_key *pk,
                                  const byte *fprint, size_t fprint_len);
-gpg_error_t get_seckeyblock_byfprint (kbnode_t *ret_keyblock, 
+gpg_error_t get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
                                       const byte *fprint, size_t fprint_len);
 
 gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,

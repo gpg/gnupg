@@ -57,7 +57,7 @@ enum cmd_and_opt_values {
   oVerbose	  = 'v',
   oBatch	  = 500,
   oKeyring,
-  oIgnoreTimeConflict,                      
+  oIgnoreTimeConflict,
   oStatusFD,
   oLoggerFD,
   oHomedir,
@@ -67,10 +67,10 @@ enum cmd_and_opt_values {
 
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, N_("@\nOptions:\n ")),
-  
+
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,   "quiet",   N_("be somewhat more quiet")),
-  ARGPARSE_s_s (oKeyring, "keyring", 
+  ARGPARSE_s_s (oKeyring, "keyring",
                 N_("|FILE|take the keys from the keyring FILE")),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict",
                 N_("make timestamp conflicts only a warning")),
@@ -92,7 +92,7 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
   const char *s;
   char *result;
-  
+
   s = getfnc (NULL);
   result = xmalloc (strlen (libname) + 1 + strlen (s) + 1);
   strcpy (stpcpy (stpcpy (result, libname), " "), s);
@@ -143,14 +143,14 @@ main( int argc, char **argv )
   strlist_t nrings = NULL;
   unsigned configlineno;
   ctrl_t ctrl;
-  
+
   set_strusage (my_strusage);
   log_set_prefix ("gpgv", 1);
-  
+
   /* Make sure that our subsystems are ready.  */
   i18n_init();
   init_common_subsystems (&argc, &argv);
-  
+
   gnupg_init_signals (0, NULL);
 
   opt.command_fd = -1; /* no command fd */
@@ -164,7 +164,7 @@ main( int argc, char **argv )
   tty_no_terminal(1);
   tty_batchmode(1);
   disable_dotlock();
-  
+
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* do not remove the args */
@@ -173,14 +173,14 @@ main( int argc, char **argv )
       switch (pargs.r_opt)
         {
         case oQuiet: opt.quiet = 1; break;
-        case oVerbose: 
-          opt.verbose++; 
+        case oVerbose:
+          opt.verbose++;
           opt.list_sigs=1;
           gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
           break;
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
         case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
-        case oLoggerFD: 
+        case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
@@ -188,7 +188,7 @@ main( int argc, char **argv )
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
-  
+
   if (log_get_errorcount (0))
     g10_exit(2);
 
@@ -200,14 +200,14 @@ main( int argc, char **argv )
     keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8);
   for (sl = nrings; sl; sl = sl->next)
     keydb_add_resource (sl->d, 8);
-   
+
   FREE_STRLIST (nrings);
 
   ctrl = xcalloc (1, sizeof *ctrl);
-    
+
   if ((rc = verify_signatures (ctrl, argc, argv)))
     log_error("verify signatures failed: %s\n", g10_errstr(rc) );
-  
+
   xfree (ctrl);
 
   /* cleanup */
@@ -225,7 +225,7 @@ g10_exit( int rc )
 
 
 /* Stub:
- * We have to override the trustcheck from pkclist.c becuase 
+ * We have to override the trustcheck from pkclist.c becuase
  * this utility assumes that all keys in the keyring are trustworthy
  */
 int
@@ -237,7 +237,7 @@ check_signatures_trust( PKT_signature *sig )
 
 void
 read_trust_options(byte *trust_model, ulong *created, ulong *nextcheck,
-		   byte *marginals, byte *completes, byte *cert_depth) 
+		   byte *marginals, byte *completes, byte *cert_depth)
 {
   (void)trust_model;
   (void)created;
@@ -247,7 +247,7 @@ read_trust_options(byte *trust_model, ulong *created, ulong *nextcheck,
   (void)cert_depth;
 }
 
-/* Stub: 
+/* Stub:
  * We don't have the trustdb , so we have to provide some stub functions
  * instead
  */
@@ -260,7 +260,7 @@ cache_disabled_value(PKT_public_key *pk)
 }
 
 void
-check_trustdb_stale(void) 
+check_trustdb_stale(void)
 {
 }
 
@@ -319,7 +319,7 @@ struct keyserver_spec *
 keyserver_match (struct keyserver_spec *spec)
 {
   (void)spec;
-  return NULL; 
+  return NULL;
 }
 
 int
@@ -334,7 +334,7 @@ int
 keyserver_import_cert (const char *name)
 {
   (void)name;
-  return -1; 
+  return -1;
 }
 
 int
@@ -413,7 +413,7 @@ check_secret_key (PKT_public_key *pk, int n)
 }
 
 /* Stub:
- * No secret key, so no passphrase needed 
+ * No secret key, so no passphrase needed
  */
 DEK *
 passphrase_to_dek (u32 *keyid, int pubkey_algo,
@@ -441,7 +441,7 @@ passphrase_clear_cache (u32 *keyid, const char *cacheid, int algo)
 }
 
 struct keyserver_spec *
-parse_preferred_keyserver(PKT_signature *sig) 
+parse_preferred_keyserver(PKT_signature *sig)
 {
   (void)sig;
   return NULL;
@@ -458,14 +458,14 @@ parse_keyserver_uri (const char *uri, int require_scheme,
   return NULL;
 }
 
-void 
+void
 free_keyserver_spec (struct keyserver_spec *keyserver)
 {
   (void)keyserver;
 }
 
 /* Stubs to avoid linking to photoid.c */
-void 
+void
 show_photos (const struct user_attribute *attrs, int count, PKT_public_key *pk)
 {
   (void)attrs;
@@ -473,7 +473,7 @@ show_photos (const struct user_attribute *attrs, int count, PKT_public_key *pk)
   (void)pk;
 }
 
-int 
+int
 parse_image_header (const struct user_attribute *attr, byte *type, u32 *len)
 {
   (void)attr;
@@ -491,7 +491,7 @@ image_type_to_string (byte type, int string)
 }
 
 #ifdef ENABLE_CARD_SUPPORT
-int 
+int
 agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 {
   (void)name;
@@ -501,19 +501,19 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 #endif /* ENABLE_CARD_SUPPORT */
 
 /* We do not do any locking, so use these stubs here */
-void 
+void
 disable_dotlock (void)
 {
 }
 
-dotlock_t 
+dotlock_t
 create_dotlock (const char *file_to_lock)
 {
   (void)file_to_lock;
   return NULL;
 }
 
-void 
+void
 destroy_dotlock (dotlock_t h)
 {
   (void)h;
@@ -534,7 +534,7 @@ release_dotlock (dotlock_t h)
   return 0;
 }
 
-void 
+void
 remove_lockfiles (void)
 {
 }
@@ -563,4 +563,3 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   *r_serialno = NULL;
   return gpg_error (GPG_ERR_NO_SECKEY);
 }
-  

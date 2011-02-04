@@ -85,7 +85,3 @@ gnupg_rl_initialize (void)
   rl_readline_name = "GnuPG";
 #endif
 }
-
-
-
-

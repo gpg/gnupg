@@ -47,7 +47,7 @@
 /* Parse the TXT resource record. Format is:
 
    v=pka1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
-   
+
    For simplicity white spaces are not allowed.  Because we expect to
    use a new RRTYPE for this in the future we define the TXT really
    strict for simplicity: No white spaces, case sensitivity of the
@@ -70,7 +70,7 @@ parse_txt_record (char *buffer, unsigned char *fpr)
   *pend++ = 0;
   if (strcmp (p, "v=pka1"))
     return -1; /* Wrong or missing version. */
-  
+
   p = pend;
   pend = strchr (p, ';');
   if (pend)
@@ -82,11 +82,11 @@ parse_txt_record (char *buffer, unsigned char *fpr)
     fpr[i] = xtoi_2 (p);
   if (i != 20)
     return -1; /* Fingerprint consists not of exactly 40 hexbytes. */
-    
+
   p = pend;
   if (!p || !*p)
     {
-      *buffer = 0;  
+      *buffer = 0;
       return 0; /* Success (no URI given). */
     }
   if (strncmp (p, "uri=", 4))
@@ -119,7 +119,7 @@ get_pka_info (const char *address, unsigned char *fpr)
   char *name;
   adns_answer *answer = NULL;
   char *buffer = NULL;
-  
+
   domain = strrchr (address, '@');
   if (!domain || domain == address || !domain[1])
     return NULL; /* Invalid mail address given.  */
@@ -146,7 +146,7 @@ get_pka_info (const char *address, unsigned char *fpr)
       adns_finish (state);
       return NULL;
     }
-  if (answer->status != adns_s_ok 
+  if (answer->status != adns_s_ok
       || answer->type != adns_r_txt || !answer->nrrs)
     {
       log_error ("DNS query returned an error: %s (%s)\n",
@@ -209,7 +209,7 @@ get_pka_info (const char *address, unsigned char *fpr)
      expansion of the buffer. */
   if (anslen > PACKETSZ)
     return NULL; /* DNS resolver returned a too long answer */
-  
+
   qdcount = ntohs (header.qdcount);
   ancount = ntohs (header.ancount);
   nscount = ntohs (header.nscount);
@@ -226,7 +226,7 @@ get_pka_info (const char *address, unsigned char *fpr)
       rc = dn_skipname (p, pend);
       if (rc == -1)
         return NULL;
-      p += rc + QFIXEDSZ; 
+      p += rc + QFIXEDSZ;
     }
 
   if (ancount > 1)

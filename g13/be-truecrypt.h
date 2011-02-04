@@ -26,4 +26,3 @@ gpg_error_t be_truecrypt_create_new_keys (membuf_t *mb);
 
 
 #endif /*G13_BE_TRUECRYPT_H*/
-

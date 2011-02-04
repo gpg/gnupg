@@ -42,14 +42,14 @@ gethome (void)
   if (!home_buffer)
     {
       char *home = getenv("HOME");
-      
+
       if(home)
         home_buffer = xstrdup (home);
 #if defined(HAVE_GETPWUID) && defined(HAVE_PWD_H)
       else
         {
           struct passwd *pwd;
-          
+
           pwd = getpwuid (getuid());
           if (pwd)
             home_buffer = xstrdup (pwd->pw_dir);
@@ -65,10 +65,10 @@ test_percent_escape (void)
 {
   char *result;
   static struct {
-    const char *extra; 
-    const char *value; 
+    const char *extra;
+    const char *value;
     const char *expected;
-  } tests[] = 
+  } tests[] =
     {
       { NULL, "", "" },
       { NULL, "%", "%25" },
@@ -183,7 +183,7 @@ test_strconcat (void)
     fail (0);
   else if (errno != EINVAL)
     fail (0);
-  
+
 #if __GNUC__ < 4 /* gcc 4.0 has a sentinel attribute.  */
   out = strconcat (NULL);
   if (!out || *out)
@@ -322,10 +322,10 @@ test_make_filename_try (void)
                            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
                            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
                            "1", "2", NULL);
-  if (!out || strcmp (out, 
-                      "1/2/3/4/5/6/7/8/9/10/" 
-                      "1/2/3/4/5/6/7/8/9/10/" 
-                      "1/2/3/4/5/6/7/8/9/10/" 
+  if (!out || strcmp (out,
+                      "1/2/3/4/5/6/7/8/9/10/"
+                      "1/2/3/4/5/6/7/8/9/10/"
+                      "1/2/3/4/5/6/7/8/9/10/"
                       "1/2"))
     fail (0);
   xfree (out);
@@ -411,4 +411,3 @@ main (int argc, char **argv)
   xfree (home_buffer);
   return 0;
 }
-

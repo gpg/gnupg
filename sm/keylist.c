@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -37,7 +37,7 @@
 #include "i18n.h"
 #include "tlv.h"
 
-struct list_external_parm_s 
+struct list_external_parm_s
 {
   ctrl_t ctrl;
   estream_t fp;
@@ -56,18 +56,18 @@ struct
   const char *name;
 } key_purpose_map[] = {
   { "1.3.6.1.5.5.7.3.1",  "serverAuth" },
-  { "1.3.6.1.5.5.7.3.2",  "clientAuth" },          
-  { "1.3.6.1.5.5.7.3.3",  "codeSigning" },      
-  { "1.3.6.1.5.5.7.3.4",  "emailProtection" },     
-  { "1.3.6.1.5.5.7.3.5",  "ipsecEndSystem" }, 
-  { "1.3.6.1.5.5.7.3.6",  "ipsecTunnel" },  
-  { "1.3.6.1.5.5.7.3.7",  "ipsecUser" },     
-  { "1.3.6.1.5.5.7.3.8",  "timeStamping" },       
-  { "1.3.6.1.5.5.7.3.9",  "ocspSigning" },    
-  { "1.3.6.1.5.5.7.3.10", "dvcs" },      
+  { "1.3.6.1.5.5.7.3.2",  "clientAuth" },
+  { "1.3.6.1.5.5.7.3.3",  "codeSigning" },
+  { "1.3.6.1.5.5.7.3.4",  "emailProtection" },
+  { "1.3.6.1.5.5.7.3.5",  "ipsecEndSystem" },
+  { "1.3.6.1.5.5.7.3.6",  "ipsecTunnel" },
+  { "1.3.6.1.5.5.7.3.7",  "ipsecUser" },
+  { "1.3.6.1.5.5.7.3.8",  "timeStamping" },
+  { "1.3.6.1.5.5.7.3.9",  "ocspSigning" },
+  { "1.3.6.1.5.5.7.3.10", "dvcs" },
   { "1.3.6.1.5.5.7.3.11", "sbgpCertAAServerAuth" },
   { "1.3.6.1.5.5.7.3.13", "eapOverPPP" },
-  { "1.3.6.1.5.5.7.3.14", "wlanSSID" },       
+  { "1.3.6.1.5.5.7.3.14", "wlanSSID" },
 
   { "2.16.840.1.113730.4.1", "serverGatedCrypto.ns" }, /* Netscape. */
   { "1.3.6.1.4.1.311.10.3.3", "serverGatedCrypto.ms"}, /* Microsoft. */
@@ -82,10 +82,10 @@ struct
    for oids which are already available via ksba fucntions. */
 #define OID_FLAG_SKIP 1
 /* The extension is a simple UTF8String and should be printed.  */
-#define OID_FLAG_UTF8 2 
+#define OID_FLAG_UTF8 2
 
 /* A table mapping OIDs to a descriptive string. */
-static struct 
+static struct
 {
   char *oid;
   char *name;
@@ -155,7 +155,7 @@ static struct
   { "2.5.29.20", "cRLNumber" },
   { "2.5.29.21", "cRLReason" },
   { "2.5.29.22", "expirationDate" },
-  { "2.5.29.23", "instructionCode" }, 
+  { "2.5.29.23", "instructionCode" },
   { "2.5.29.24", "invalidityDate" },
   { "2.5.29.27", "deltaCRLIndicator" },
   { "2.5.29.28", "issuingDistributionPoint" },
@@ -194,7 +194,7 @@ static struct
 };
 
 
-/* Return the description for OID; if no description is available 
+/* Return the description for OID; if no description is available
    NULL is returned. */
 static const char *
 get_oid_desc (const char *oid, unsigned int *flag)
@@ -218,11 +218,11 @@ get_oid_desc (const char *oid, unsigned int *flag)
 static void
 print_key_data (ksba_cert_t cert, estream_t fp)
 {
-#if 0  
+#if 0
   int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
   int i;
 
-  for(i=0; i < n; i++ ) 
+  for(i=0; i < n; i++ )
     {
       es_fprintf (fp, "pkd:%d:%u:", i, mpi_get_nbits( pk->pkey[i] ) );
       mpi_print(stdout, pk->pkey[i], 1 );
@@ -243,18 +243,18 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
   size_t buflen;
   char buffer[1];
 
-  err = ksba_cert_get_user_data (cert, "is_qualified", 
+  err = ksba_cert_get_user_data (cert, "is_qualified",
                                  &buffer, sizeof (buffer), &buflen);
   if (!err && buflen)
     {
       if (*buffer)
         es_putc ('q', fp);
-    }    
+    }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     ; /* Don't know - will not get marked as 'q' */
   else
     log_debug ("get_user_data(is_qualified) failed: %s\n",
-               gpg_strerror (err)); 
+               gpg_strerror (err));
 
   err = ksba_cert_get_key_usage (cert, &use);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -268,11 +268,11 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
       return;
     }
   if (err)
-    { 
+    {
       log_error (_("error getting key usage information: %s\n"),
                  gpg_strerror (err));
       return;
-    } 
+    }
 
   if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
     es_putc ('e', fp);
@@ -296,7 +296,7 @@ print_time (gnupg_isotime_t t, estream_t fp)
 {
   if (!t || !*t)
     ;
-  else 
+  else
     es_fputs (t, fp);
 }
 
@@ -406,13 +406,13 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     *truststring = 'r';
   else if (gpg_err_code (valerr) == GPG_ERR_CERT_EXPIRED)
     *truststring = 'e';
-  else 
+  else
     {
       /* Lets also check whether the certificate under question
          expired.  This is merely a hack until we found a proper way
          to store the expiration flag in the keybox. */
       ksba_isotime_t current_time, not_after;
-  
+
       gnupg_get_isotime (current_time);
       if (!opt.ignore_expiration
           && !ksba_cert_get_validity (cert, 1, not_after)
@@ -438,7 +438,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
         *truststring = 'n';  /* No, we do not trust this one. */
       /* (in case of an error we can't tell anything.) */
     }
-  
+
   if (*truststring)
     es_fputs (truststring, fp);
 
@@ -457,7 +457,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     {
       int len;
       const unsigned char *s = sexp;
-      
+
       if (*s == '(')
         {
           s++;
@@ -479,9 +479,9 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       xfree (p);
     }
   es_putc (':', fp);
-  /* Field 11, signature class - not used */ 
+  /* Field 11, signature class - not used */
   es_putc (':', fp);
-  /* Field 12, capabilities: */ 
+  /* Field 12, capabilities: */
   print_capabilities (cert, fp);
   /* Field 13, not used: */
   es_putc (':', fp);
@@ -584,7 +584,7 @@ print_names_raw (estream_t fp, int indent, ksba_name_t name)
       es_fputs ("none\n", fp);
       return;
     }
-  
+
   for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
     {
       char *p = ksba_name_get_uri (name, idx);
@@ -597,7 +597,7 @@ print_names_raw (estream_t fp, int indent, ksba_name_t name)
 
 
 static void
-print_utf8_extn_raw (estream_t fp, int indent, 
+print_utf8_extn_raw (estream_t fp, int indent,
                      const unsigned char *der, size_t derlen)
 {
   gpg_error_t err;
@@ -621,7 +621,7 @@ print_utf8_extn_raw (estream_t fp, int indent,
 
 
 static void
-print_utf8_extn (estream_t fp, int indent, 
+print_utf8_extn (estream_t fp, int indent,
                  const unsigned char *der, size_t derlen)
 {
   gpg_error_t err;
@@ -800,21 +800,21 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
             es_fputs (" digitalSignature", fp);
-          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
+          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))
             es_fputs (" nonRepudiation", fp);
-          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
+          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
             es_fputs (" keyEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
             es_fputs (" dataEncipherment", fp);
-          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
+          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))
             es_fputs (" keyAgreement", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
             es_fputs (" certSign", fp);
-          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
+          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))
             es_fputs (" crlSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
             es_fputs (" encipherOnly", fp);
-          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
+          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))
             es_fputs (" decipherOnly", fp);
         }
       es_putc ('\n', fp);
@@ -825,7 +825,7 @@ list_cert_raw (ctrl_t ctrl, KEYDB_HANDLE hd,
   es_fputs ("  extKeyUsage: ", fp);
   err = ksba_cert_get_ext_key_usages (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
-    { 
+    {
       if (err)
         es_fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
@@ -1106,21 +1106,21 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
             es_fputs (" digitalSignature", fp);
-          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
+          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))
             es_fputs (" nonRepudiation", fp);
-          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
+          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
             es_fputs (" keyEncipherment", fp);
           if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
             es_fputs (" dataEncipherment", fp);
-          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
+          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))
             es_fputs (" keyAgreement", fp);
           if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
             es_fputs (" certSign", fp);
-          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
+          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))
             es_fputs (" crlSign", fp);
           if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
             es_fputs (" encipherOnly", fp);
-          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
+          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))
             es_fputs (" decipherOnly", fp);
         }
       es_putc ('\n', fp);
@@ -1128,7 +1128,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 
   err = ksba_cert_get_ext_key_usages (cert, &string);
   if (gpg_err_code (err) != GPG_ERR_NO_DATA)
-    { 
+    {
       es_fputs ("ext key usage: ", fp);
       if (err)
         es_fprintf (fp, "[error: %s]", gpg_strerror (err));
@@ -1224,7 +1224,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
           es_fprintf (fp, "      keygrip: %s\n", dn);
           xfree (dn);
         }
-    }      
+    }
 
   if (have_secret)
     {
@@ -1242,20 +1242,20 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
       gpg_error_t tmperr;
       size_t buflen;
       char buffer[1];
-      
+
       err = gpgsm_validate_chain (ctrl, cert, "", NULL, 1, fp, 0, NULL);
-      tmperr = ksba_cert_get_user_data (cert, "is_qualified", 
+      tmperr = ksba_cert_get_user_data (cert, "is_qualified",
                                         &buffer, sizeof (buffer), &buflen);
       if (!tmperr && buflen)
         {
           if (*buffer)
             es_fputs ("  [qualified]\n", fp);
-        }    
+        }
       else if (gpg_err_code (tmperr) == GPG_ERR_NOT_FOUND)
         ; /* Don't know - will not get marked as 'q' */
       else
         log_debug ("get_user_data(is_qualified) failed: %s\n",
-                   gpg_strerror (tmperr)); 
+                   gpg_strerror (tmperr));
 
       if (!err)
         es_fprintf (fp, "  [certificate is good]\n");
@@ -1326,7 +1326,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
     ndesc = 1;
   else
     {
-      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++) 
+      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++)
         ;
     }
 
@@ -1340,9 +1340,9 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
 
   if (!names)
     desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
-  else 
+  else
     {
-      for (ndesc=0, sl=names; sl; sl = sl->next) 
+      for (ndesc=0, sl=names; sl; sl = sl->next)
         {
           rc = classify_user_id (sl->d, desc+ndesc);
           if (rc)
@@ -1354,7 +1354,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
           else
             ndesc++;
         }
-      
+
     }
 
   /* If all specifications are done by fingerprint or keygrip, we
@@ -1390,7 +1390,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
     {
       unsigned int validity;
 
-      if (!names) 
+      if (!names)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       rc = keydb_get_flags (hd, KEYBOX_FLAG_VALIDITY, 0, &validity);
@@ -1400,7 +1400,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
           goto leave;
         }
       rc = keydb_get_cert (hd, &cert);
-      if (rc) 
+      if (rc)
         {
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           goto leave;
@@ -1416,11 +1416,11 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
 	}
 
       resname = keydb_get_resource_name (hd);
-      
-      if (lastresname != resname ) 
+
+      if (lastresname != resname )
         {
           int i;
-          
+
           if (ctrl->no_server)
             {
               es_fprintf (fp, "%s\n", resname );
@@ -1437,7 +1437,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
           char *p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
             {
-              rc = gpgsm_agent_havekey (ctrl, p); 
+              rc = gpgsm_agent_havekey (ctrl, p);
               if (!rc)
                 have_secret = 1;
               else if ( gpg_err_code (rc) != GPG_ERR_NO_SECKEY)
@@ -1468,7 +1468,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
             }
         }
 
-      ksba_cert_release (lastcert); 
+      ksba_cert_release (lastcert);
       lastcert = cert;
       cert = NULL;
     }
@@ -1476,10 +1476,10 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
     rc = 0;
   if (rc)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
-  
+
  leave:
   ksba_cert_release (cert);
-  ksba_cert_release (lastcert); 
+  ksba_cert_release (lastcert);
   xfree (desc);
   keydb_release (hd);
   return rc;
@@ -1539,7 +1539,7 @@ list_external_keys (ctrl_t ctrl, strlist_t names, estream_t fp, int raw_mode)
   parm.raw_mode  = raw_mode;
 
   rc = gpgsm_dirmngr_lookup (ctrl, names, 0, list_external_cb, &parm);
-  if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1 
+  if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1
       || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = 0; /* "Not found" is not an error here. */
   if (rc)
@@ -1548,7 +1548,7 @@ list_external_keys (ctrl_t ctrl, strlist_t names, estream_t fp, int raw_mode)
 }
 
 /* List all keys or just the key given as NAMES.
-   MODE controls the operation mode: 
+   MODE controls the operation mode:
     Bit 0-2:
       0 = list all public keys but don't flag secret ones
       1 = list only public keys
@@ -1567,6 +1567,6 @@ gpgsm_list_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   if ((mode & (1<<6)))
     err = list_internal_keys (ctrl, names, fp, (mode & 3), (mode&256));
   if (!err && (mode & (1<<7)))
-    err = list_external_keys (ctrl, names, fp, (mode&256)); 
+    err = list_external_keys (ctrl, names, fp, (mode&256));
   return err;
 }

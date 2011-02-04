@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GNUPG_G10_CALL_DIRMNGR_H
-#define GNUPG_G10_CALL_DIRMNGR_H 
+#define GNUPG_G10_CALL_DIRMNGR_H
 
 void gpg_dirmngr_deinit_session_data (ctrl_t ctrl);
 

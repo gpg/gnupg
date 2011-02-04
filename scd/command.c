@@ -75,7 +75,7 @@ static int reader_disabled;
 
 
 /* This structure is used to keep track of open readers (slots). */
-struct slot_status_s 
+struct slot_status_s
 {
   int valid;  /* True if the other objects are valid. */
   int slot;   /* Slot number of the reader or -1 if not open. */
@@ -92,11 +92,11 @@ struct slot_status_s
 
 /* Data used to associate an Assuan context with local server data.
    This object describes the local properties of one session.  */
-struct server_local_s 
+struct server_local_s
 {
   /* We keep a list of all active sessions with the anchor at
      SESSION_LIST (see below).  This field is used for linking. */
-  struct server_local_s *next_session; 
+  struct server_local_s *next_session;
 
   /* This object is usually assigned to a CTRL object (which is
      globally visible).  While enumerating all sessions we sometimes
@@ -112,10 +112,10 @@ struct server_local_s
 #else
   int event_signal;             /* Or 0 if not used. */
 #endif
-  
+
   /* True if the card has been removed and a reset is required to
      continue operation. */
-  int card_removed;        
+  int card_removed;
 
   /* Flag indicating that the application context needs to be released
      at the next opportunity.  */
@@ -126,7 +126,7 @@ struct server_local_s
 
   /* If set to true we will be terminate ourself at the end of the
      this session.  */
-  int stopme;  
+  int stopme;
 
 };
 
@@ -256,7 +256,7 @@ hex_to_buffer (const char *string, size_t *r_length)
     return NULL;
   for (s=string, n=0; *s; s++)
     {
-      if (spacep (s) || *s == ':') 
+      if (spacep (s) || *s == ':')
         continue;
       if (hexdigitp (s) && hexdigitp (s+1))
         {
@@ -293,7 +293,7 @@ do_reset (ctrl_t ctrl, int send_reset)
       if (send_reset)
         {
           struct server_local_s *sl;
-          
+
           for (sl=session_list; sl; sl = sl->next_session)
             if (sl->ctrl_backlink
                 && sl->ctrl_backlink->reader_slot == slot)
@@ -307,7 +307,7 @@ do_reset (ctrl_t ctrl, int send_reset)
      tell the application layer about it.  */
   if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
-      if (apdu_reset (slot)) 
+      if (apdu_reset (slot))
         {
           slot_table[slot].valid = 0;
         }
@@ -345,7 +345,7 @@ do_reset (ctrl_t ctrl, int send_reset)
 static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx); 
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void) line;
 
@@ -489,7 +489,7 @@ open_card (ctrl_t ctrl, const char *apptype)
 }
 
 
-static const char hlp_serialno[] = 
+static const char hlp_serialno[] =
   "SERIALNO [<apptype>]\n"
   "\n"
   "Return the serial number of the card using a status reponse.  This\n"
@@ -544,7 +544,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_learn[] = 
+static const char hlp_learn[] =
   "LEARN [--force] [--keypairinfo]\n"
   "\n"
   "Learn all useful information of the currently inserted card.  When\n"
@@ -632,7 +632,7 @@ cmd_learn (assuan_context_t ctx, char *line)
       char *serial_and_stamp;
       char *serial;
       time_t stamp;
-      
+
       rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
       if (rc)
         return rc;
@@ -643,11 +643,11 @@ cmd_learn (assuan_context_t ctx, char *line)
         return out_of_core ();
       rc = 0;
       assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
-      
+
       if (!has_option (line, "--force"))
         {
           char *command;
-          
+
           rc = estream_asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
           if (rc < 0)
             {
@@ -655,7 +655,7 @@ cmd_learn (assuan_context_t ctx, char *line)
               return out_of_core ();
             }
           rc = 0;
-          rc = assuan_inquire (ctx, command, NULL, NULL, 0); 
+          rc = assuan_inquire (ctx, command, NULL, NULL, 0);
           xfree (command);
           if (rc)
             {
@@ -663,13 +663,13 @@ cmd_learn (assuan_context_t ctx, char *line)
                 log_error ("inquire KNOWNCARDP failed: %s\n",
                            gpg_strerror (rc));
               xfree (serial_and_stamp);
-              return rc; 
+              return rc;
             }
           /* Not canceled, so we have to proceeed.  */
         }
       xfree (serial_and_stamp);
     }
-  
+
   /* Let the application print out its collection of useful status
      information. */
   if (!rc)
@@ -715,7 +715,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_readkey[] = 
+static const char hlp_readkey[] =
   "READKEY <keyid>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
@@ -753,7 +753,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
   if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
     log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
-  else  
+  else
     {
       rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
       if (rc)
@@ -763,7 +763,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   line = NULL;
   if (rc)
     goto leave;
-      
+
   rc = ksba_cert_new (&kc);
   if (rc)
     {
@@ -798,7 +798,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_setdata[] = 
+static const char hlp_setdata[] =
   "SETDATA <hexstring> \n"
   "\n"
   "The client should use this command to tell us the data he want to sign.";
@@ -837,7 +837,7 @@ cmd_setdata (assuan_context_t ctx, char *line)
 
 
 
-static gpg_error_t 
+static gpg_error_t
 pin_cb (void *opaque, const char *info, char **retstr)
 {
   assuan_context_t ctx = opaque;
@@ -857,14 +857,14 @@ pin_cb (void *opaque, const char *info, char **retstr)
           rc = estream_asprintf (&command, "POPUPKEYPADPROMPT %s", info);
           if (rc < 0)
             return gpg_error (gpg_err_code_from_errno (errno));
-          rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
-          xfree (command);  
+          rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+          xfree (command);
         }
       else
         {
           log_debug ("dismiss keypad entry prompt\n");
           rc = assuan_inquire (ctx, "DISMISSKEYPADPROMPT",
-                               &value, &valuelen, MAXLEN_PIN); 
+                               &value, &valuelen, MAXLEN_PIN);
         }
       if (!rc)
         xfree (value);
@@ -880,8 +880,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
   /* Fixme: Write an inquire function which returns the result in
      secure memory and check all further handling of the PIN. */
-  rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN); 
-  xfree (command);  
+  rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
+  xfree (command);
   if (rc)
     return rc;
 
@@ -896,7 +896,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
 }
 
 
-static const char hlp_pksign[] = 
+static const char hlp_pksign[] =
   "PKSIGN [--hash=[rmd160|sha{1,224,256,384,512}|md5]] <hexified_id>\n"
   "\n"
   "The --hash option is optional; the default is SHA1.";
@@ -925,7 +925,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   else if (has_option (line, "--hash=md5"))
     hash_algo = GCRY_MD_MD5;
   else if (!strstr (line, "--"))
-    hash_algo = GCRY_MD_SHA1; 
+    hash_algo = GCRY_MD_SHA1;
   else
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid hash algorithm");
 
@@ -943,7 +943,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return out_of_core ();
-  
+
   rc = app_sign (ctrl->app_ctx,
                  keyidstr, hash_algo,
                  pin_cb, ctx,
@@ -968,7 +968,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_pkauth[] = 
+static const char hlp_pkauth[] =
   "PKAUTH <hexified_id>";
 static gpg_error_t
 cmd_pkauth (assuan_context_t ctx, char *line)
@@ -994,7 +994,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return out_of_core ();
-  
+
   rc = app_auth (ctrl->app_ctx,
                  keyidstr,
                  pin_cb, ctx,
@@ -1018,7 +1018,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_pkdecrypt[] = 
+static const char hlp_pkdecrypt[] =
   "PKDECRYPT <hexified_id>";
 static gpg_error_t
 cmd_pkdecrypt (assuan_context_t ctx, char *line)
@@ -1039,7 +1039,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
   rc = app_decipher (ctrl->app_ctx,
-                     keyidstr, 
+                     keyidstr,
                      pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen);
@@ -1062,7 +1062,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_getattr[] = 
+static const char hlp_getattr[] =
   "GETATTR <name>\n"
   "\n"
   "This command is used to retrieve data from a smartcard.  The\n"
@@ -1101,7 +1101,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_setattr[] = 
+static const char hlp_setattr[] =
   "SETATTR <name> <value> \n"
   "\n"
   "This command is used to store data on a a smartcard.  The allowed\n"
@@ -1154,7 +1154,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
 }
 
 
-static const char hlp_writecert[] = 
+static const char hlp_writecert[] =
   "WRITECERT <hexified_certid>\n"
   "\n"
   "This command is used to store a certifciate on a smartcard.  The\n"
@@ -1206,7 +1206,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
     }
 
   /* Write the certificate to the card. */
-  rc = app_writecert (ctrl->app_ctx, ctrl, certid, 
+  rc = app_writecert (ctrl->app_ctx, ctrl, certid,
                       pin_cb, ctx, certdata, certdatalen);
   xfree (certid);
   xfree (certdata);
@@ -1216,7 +1216,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_writekey[] = 
+static const char hlp_writekey[] =
   "WRITEKEY [--force] <keyid> \n"
   "\n"
   "This command is used to store a secret key on a a smartcard.  The\n"
@@ -1283,7 +1283,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_genkey[] = 
+static const char hlp_genkey[] =
   "GENKEY [--force] [--timestamp=<isodate>] <no>\n"
   "\n"
   "Generate a key on-card identified by NO, which is application\n"
@@ -1357,7 +1357,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_random[] = 
+static const char hlp_random[] =
   "RANDOM <nbytes>\n"
   "\n"
   "Get NBYTES of random from the card and send them back as data.\n"
@@ -1374,7 +1374,7 @@ cmd_random (assuan_context_t ctx, char *line)
   unsigned char *buffer;
 
   if (!*line)
-    return set_error (GPG_ERR_ASS_PARAMETER, 
+    return set_error (GPG_ERR_ASS_PARAMETER,
                       "number of requested bytes missing");
   nbytes = strtoul (line, NULL, 0);
 
@@ -1440,7 +1440,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  
+
   chvnostr = xtrystrdup (chvnostr);
   if (!chvnostr)
     return out_of_core ();
@@ -1454,7 +1454,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_checkpin[] = 
+static const char hlp_checkpin[] =
   "CHECKPIN <idstr>\n"
   "\n"
   "Perform a VERIFY operation without doing anything else.  This may\n"
@@ -1508,7 +1508,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   idstr = xtrystrdup (line);
   if (!idstr)
     return out_of_core ();
-  
+
   rc = app_check_pin (ctrl->app_ctx, idstr, pin_cb, ctx);
   xfree (idstr);
   if (rc)
@@ -1519,7 +1519,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_lock[] = 
+static const char hlp_lock[] =
   "LOCK [--wait]\n"
   "\n"
   "Grant exclusive card access to this session.  Note that there is\n"
@@ -1556,14 +1556,14 @@ cmd_lock (assuan_context_t ctx, char *line)
       goto retry;
     }
 #endif /*USE_GNU_PTH*/
-  
+
   if (rc)
     log_error ("cmd_lock failed: %s\n", gpg_strerror (rc));
   return rc;
 }
 
 
-static const char hlp_unlock[] = 
+static const char hlp_unlock[] =
   "UNLOCK\n"
   "\n"
   "Release exclusive card access.";
@@ -1591,7 +1591,7 @@ cmd_unlock (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_getinfo[] = 
+static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
   "Multi purpose command to return certain information.  \n"
@@ -1653,7 +1653,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       if (!ctrl->server_local->card_removed && slot != -1)
 	{
 	  struct slot_status_s *ss;
-	  
+
 	  if (!(slot >= 0 && slot < DIM(slot_table)))
 	    BUG ();
 
@@ -1674,7 +1674,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 #else
       char *s = NULL;
 #endif
-      
+
       if (s)
         rc = assuan_send_data (ctx, s, strlen (s));
       else
@@ -1698,7 +1698,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_restart[] = 
+static const char hlp_restart[] =
   "RESTART\n"
   "\n"
   "Restart the current connection; this is a kind of warm reset.  It\n"
@@ -1729,7 +1729,7 @@ cmd_restart (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_disconnect[] = 
+static const char hlp_disconnect[] =
   "DISCONNECT\n"
   "\n"
   "Disconnect the card if it is not any longer used by other\n"
@@ -1740,14 +1740,14 @@ cmd_disconnect (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void)line;
-  
+
   ctrl->server_local->disconnect_allowed = 1;
   return 0;
 }
 
 
 
-static const char hlp_apdu[] = 
+static const char hlp_apdu[] =
   "APDU [--atr] [--more] [--exlen[=N]] [hexstring]\n"
   "\n"
   "Send an APDU to the current reader.  This command bypasses the high\n"
@@ -1804,7 +1804,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *atr;
       size_t atrlen;
       char hexbuf[400];
-      
+
       atr = apdu_get_atr (ctrl->reader_slot, &atrlen);
       if (!atr || atrlen > sizeof hexbuf - 2 )
         {
@@ -1846,7 +1846,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_killscd[] = 
+static const char hlp_killscd[] =
   "KILLSCD\n"
   "\n"
   "Commit suicide.";
@@ -1880,8 +1880,8 @@ register_commands (assuan_context_t ctx)
     { "PKSIGN",       cmd_pksign,   hlp_pksign },
     { "PKAUTH",       cmd_pkauth,   hlp_pkauth },
     { "PKDECRYPT",    cmd_pkdecrypt,hlp_pkdecrypt },
-    { "INPUT",        NULL }, 
-    { "OUTPUT",       NULL }, 
+    { "INPUT",        NULL },
+    { "OUTPUT",       NULL },
     { "GETATTR",      cmd_getattr,  hlp_getattr },
     { "SETATTR",      cmd_setattr,  hlp_setattr },
     { "WRITECERT",    cmd_writecert,hlp_writecert },
@@ -1907,7 +1907,7 @@ register_commands (assuan_context_t ctx)
                                     table[i].help);
       if (rc)
         return rc;
-    } 
+    }
   assuan_set_hello_line (ctx, "GNU Privacy Guard's Smartcard server ready");
 
   assuan_register_reset_notify (ctx, reset_notify);
@@ -1925,7 +1925,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
   int rc;
   assuan_context_t ctx = NULL;
   int stopme;
-  
+
   rc = assuan_new (&ctx);
   if (rc)
     {
@@ -1990,7 +1990,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
           log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
-      
+
       rc = assuan_process (ctx);
       if (rc)
         {
@@ -2000,7 +2000,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
     }
 
   /* Cleanup.  We don't send an explicit reset to the card.  */
-  do_reset (ctrl, 0); 
+  do_reset (ctrl, 0);
 
   /* Release the server object.  */
   if (session_list == ctrl->server_local)
@@ -2008,7 +2008,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
   else
     {
       struct server_local_s *sl;
-      
+
       for (sl=session_list; sl->next_session; sl = sl->next_session)
         if (sl->next_session == ctrl->server_local)
           break;
@@ -2043,10 +2043,10 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
   char buf[950], *p;
   size_t n;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
-  
+
   va_start (arg_ptr, keyword);
 
-  p = buf; 
+  p = buf;
   n = 0;
   while ( (value = va_arg (arg_ptr, const unsigned char *)) )
     {
@@ -2096,17 +2096,17 @@ static void
 send_client_notifications (void)
 {
   struct {
-    pid_t pid; 
+    pid_t pid;
 #ifdef HAVE_W32_SYSTEM
     HANDLE handle;
 #else
-    int signo; 
+    int signo;
 #endif
   } killed[50];
   int killidx = 0;
   int kidx;
   struct server_local_s *sl;
-  
+
   for (sl=session_list; sl; sl = sl->next_session)
     {
       if (sl->event_signal && sl->assuan_ctx)
@@ -2114,9 +2114,9 @@ send_client_notifications (void)
           pid_t pid = assuan_get_pid (sl->assuan_ctx);
 #ifdef HAVE_W32_SYSTEM
           HANDLE handle = (void *)sl->event_signal;
-          
+
           for (kidx=0; kidx < killidx; kidx++)
-            if (killed[kidx].pid == pid 
+            if (killed[kidx].pid == pid
                 && killed[kidx].handle == handle)
               break;
           if (kidx < killidx)
@@ -2138,11 +2138,11 @@ send_client_notifications (void)
             }
 #else /*!HAVE_W32_SYSTEM*/
           int signo = sl->event_signal;
-          
+
           if (pid != (pid_t)(-1) && pid && signo > 0)
             {
               for (kidx=0; kidx < killidx; kidx++)
-                if (killed[kidx].pid == pid 
+                if (killed[kidx].pid == pid
                     && killed[kidx].signo == signo)
                   break;
               if (kidx < killidx)
@@ -2193,7 +2193,7 @@ update_reader_status_file (int set_card_removed_flag)
 
       if (!ss->valid || ss->slot == -1)
         continue; /* Not valid or reader not yet open. */
-      
+
       sw_apdu = apdu_get_status (ss->slot, 0, &status, &changed);
       if (sw_apdu == SW_HOST_NO_READER)
         {
@@ -2206,7 +2206,7 @@ update_reader_status_file (int set_card_removed_flag)
       else if (sw_apdu)
         {
           /* Get status failed.  Ignore that.  */
-          continue; 
+          continue;
         }
 
       if (!ss->any || ss->status != status || ss->changed != changed )
@@ -2235,14 +2235,14 @@ update_reader_status_file (int set_card_removed_flag)
               fclose (fp);
             }
           xfree (fname);
-            
+
           /* If a status script is executable, run it. */
           {
             const char *args[9], *envs[2];
             char numbuf1[30], numbuf2[30], numbuf3[30];
             char *homestr, *envstr;
             gpg_error_t err;
-            
+
             homestr = make_filename (opt.homedir, NULL);
             if (estream_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
               log_error ("out of core while building environment\n");
@@ -2255,16 +2255,16 @@ update_reader_status_file (int set_card_removed_flag)
                 sprintf (numbuf2, "0x%04X", ss->status);
                 sprintf (numbuf3, "0x%04X", status);
                 args[0] = "--reader-port";
-                args[1] = numbuf1; 
+                args[1] = numbuf1;
                 args[2] = "--old-code";
-                args[3] = numbuf2;  
+                args[3] = numbuf2;
                 args[4] = "--new-code";
-                args[5] = numbuf3; 
+                args[5] = numbuf3;
                 args[6] = "--status";
                 args[7] = ((status & 1)? "USABLE":
                            (status & 4)? "ACTIVE":
                            (status & 2)? "PRESENT": "NOCARD");
-                args[8] = NULL;  
+                args[8] = NULL;
 
                 fname = make_filename (opt.homedir, "scd-event", NULL);
                 err = gnupg_spawn_process_detached (fname, args, envs);
@@ -2282,19 +2282,19 @@ update_reader_status_file (int set_card_removed_flag)
              SERIALNO request must be done in any case.  */
           if (ss->any && set_card_removed_flag)
             update_card_removed (idx, 1);
-          
+
           ss->any = 1;
 
           /* Send a signal to all clients who applied for it.  */
           send_client_notifications ();
         }
-      
+
       /* Check whether a disconnect is pending.  */
       if (opt.card_timeout)
         {
           for (sl=session_list; sl; sl = sl->next_session)
             if (!sl->disconnect_allowed)
-              break; 
+              break;
           if (session_list && !sl)
             {
               /* FIXME: Use a real timeout.  */
@@ -2303,7 +2303,7 @@ update_reader_status_file (int set_card_removed_flag)
               apdu_disconnect (ss->slot);
             }
         }
-      
+
     }
 }
 

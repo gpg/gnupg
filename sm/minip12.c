@@ -111,14 +111,14 @@ static unsigned char const oid_rsaEncryption[9] = {
 
 static unsigned char const data_3desiter2048[30] = {
   0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
-  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0E, 
+  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0E,
   0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
   0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
 #define DATA_3DESITER2048_SALT_OFF  18
 
 static unsigned char const data_rc2iter2048[30] = {
   0x30, 0x1C, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86,
-  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06, 0x30, 0x0E, 
+  0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06, 0x30, 0x0E,
   0x04, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
   0xFF, 0xFF, 0x02, 0x02, 0x08, 0x00 };
 #define DATA_RC2ITER2048_SALT_OFF  18
@@ -130,7 +130,7 @@ static unsigned char const data_mactemplate[51] = {
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff, 0x04, 0x08, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x02,
-  0x02, 0x08, 0x00 }; 
+  0x02, 0x08, 0x00 };
 #define DATA_MACTEMPLATE_MAC_OFF 17
 #define DATA_MACTEMPLATE_SALT_OFF 39
 
@@ -151,14 +151,14 @@ static unsigned char const data_attrtemplate[106] = {
   0x04, 0x14 }; /* Need to append SHA-1 digest. */
 #define DATA_ATTRTEMPLATE_KEYID_OFF 73
 
-struct buffer_s 
+struct buffer_s
 {
   unsigned char *buffer;
   size_t length;
-};  
+};
 
 
-struct tag_info 
+struct tag_info
 {
   int class;
   int is_constructed;
@@ -173,7 +173,7 @@ struct tag_info
    the tag and the length part from the TLV triplet.  Update BUFFER
    and SIZE on success.  Checks that the encoded length does not
    exhaust the length of the provided buffer. */
-static int 
+static int
 parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
 {
   int c;
@@ -239,13 +239,13 @@ parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
         }
       ti->length = len;
     }
-  
+
   if (ti->class == UNIVERSAL && !ti->tag)
     ti->length = 0;
 
   if (ti->length > length)
     return -1; /* data larger than buffer. */
-  
+
   *buffer = buf;
   *size = length;
   return 0;
@@ -262,9 +262,9 @@ parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
           [...]
      04    2:         OCTET STRING
             :           00 00
-            :         } -- This denotes a Null tag and are the last 
+            :         } -- This denotes a Null tag and are the last
                         -- two bytes in INPUT.
-   
+
    Create a new buffer with the content of that octet string.  INPUT
    is the orginal buffer with a length as stored at LENGTH.  Returns
    NULL on error or a new malloced buffer with the length of this new
@@ -291,7 +291,7 @@ cram_octet_string (const unsigned char *input, size_t *length,
     {
       if (parse_tag (&s, &n, &ti))
         goto bailout;
-      if (ti.class == UNIVERSAL && ti.tag == TAG_OCTET_STRING 
+      if (ti.class == UNIVERSAL && ti.tag == TAG_OCTET_STRING
           && !ti.ndef && !ti.is_constructed)
         {
           memcpy (d, s, ti.length);
@@ -300,7 +300,7 @@ cram_octet_string (const unsigned char *input, size_t *length,
           n -= ti.length;
         }
       else if (ti.class == UNIVERSAL && !ti.tag && !ti.is_constructed)
-        break; /* Ready */ 
+        break; /* Ready */
       else
         goto bailout;
     }
@@ -320,7 +320,7 @@ cram_octet_string (const unsigned char *input, size_t *length,
 
 
 
-static int 
+static int
 string_to_key (int id, char *salt, size_t saltlen, int iter, const char *pw,
                int req_keylen, unsigned char *keybuf)
 {
@@ -345,7 +345,7 @@ string_to_key (int id, char *salt, size_t saltlen, int iter, const char *pw,
       log_error ("salt too short\n");
       return -1;
     }
-  
+
   /* Store salt and password in BUF_I */
   p = buf_i;
   for(i=0; i < 64; i++)
@@ -381,7 +381,7 @@ string_to_key (int id, char *salt, size_t saltlen, int iter, const char *pw,
           gcry_mpi_release (num_b1);
           return 0; /* ready */
         }
-      
+
       /* need more bytes. */
       for(i=0; i < 64; i++)
         buf_b[i] = hash[i % 20];
@@ -418,7 +418,7 @@ string_to_key (int id, char *salt, size_t saltlen, int iter, const char *pw,
 }
 
 
-static int 
+static int
 set_key_iv (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
             const char *pw, int keybytes)
 {
@@ -454,7 +454,7 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
   gcry_cipher_hd_t chd;
   int rc;
 
-  rc = gcry_cipher_open (&chd, cipher_algo, GCRY_CIPHER_MODE_CBC, 0); 
+  rc = gcry_cipher_open (&chd, cipher_algo, GCRY_CIPHER_MODE_CBC, 0);
   if (rc)
     {
       log_error ( "gcry_cipher_open failed: %s\n", gpg_strerror(rc));
@@ -481,7 +481,7 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
  leave:
   gcry_cipher_close (chd);
 }
-  
+
 
 /* Decrypt a block of data and try several encodings of the key.
    CIPHERTEXT is the encrypted data of size LENGTH bytes; PLAINTEXT is
@@ -555,7 +555,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
           outptr = convertedpw;
           outbytes = convertedpwsize - 1;
           if ( jnlib_iconv (cd, (const char **)&inptr, &inbytes,
-                      &outptr, &outbytes) == (size_t)-1) 
+                      &outptr, &outbytes) == (size_t)-1)
             {
               jnlib_iconv_close (cd);
               continue;
@@ -591,7 +591,7 @@ bag_decrypted_data_p (const void *plaintext, size_t length)
   /*       exit (2); */
   /*     fclose (fp); */
   /*   } */
-  
+
   if (parse_tag (&p, &n, &ti))
     return 0;
   if (ti.class || ti.tag != TAG_SEQUENCE)
@@ -599,7 +599,7 @@ bag_decrypted_data_p (const void *plaintext, size_t length)
   if (parse_tag (&p, &n, &ti))
     return 0;
 
-  return 1; 
+  return 1;
 }
 
 /* Note: If R_RESULT is passed as NULL, a key object as already be
@@ -666,7 +666,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (!ti.class && ti.tag == TAG_OBJECT_ID 
+  if (!ti.class && ti.tag == TAG_OBJECT_ID
       && ti.length == DIM(oid_pbeWithSHAAnd40BitRC2_CBC)
       && !memcmp (p, oid_pbeWithSHAAnd40BitRC2_CBC,
                   DIM(oid_pbeWithSHAAnd40BitRC2_CBC)))
@@ -674,7 +674,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       p += DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
       n -= DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
     }
-  else if (!ti.class && ti.tag == TAG_OBJECT_ID 
+  else if (!ti.class && ti.tag == TAG_OBJECT_ID
       && ti.length == DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)
       && !memcmp (p, oid_pbeWithSHAAnd3_KeyTripleDES_CBC,
                   DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)))
@@ -707,10 +707,10 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   for (iter=0; ti.length; ti.length--)
     {
       iter <<= 8;
-      iter |= (*p++) & 0xff; 
+      iter |= (*p++) & 0xff;
       n--;
     }
-  
+
   where = "rc2or3des-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -734,7 +734,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
     ;
   else
     goto bailout;
-  
+
   log_info ("%lu bytes of %s encrypted text\n",ti.length,is_3des?"3DES":"RC2");
 
   plain = gcry_malloc_secure (ti.length);
@@ -743,8 +743,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw, 
-                 is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40, 
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw,
+                 is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40,
                  bag_decrypted_data_p);
   n = ti.length;
   startoffset = 0;
@@ -891,7 +891,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
               len -= ti.length;
               if (!result_count && ti.length == 1 && !*p)
                 ; /* ignore the very first one if it is a 0 */
-              else 
+              else
                 {
                   int rc;
 
@@ -927,7 +927,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
             goto bailout;
           p += DIM(oid_x509Certificate_for_pkcs_12);
           n -= DIM(oid_x509Certificate_for_pkcs_12);
-          
+
           where = "certbag.before.octetstring";
           if (parse_tag (&p, &n, &ti))
             goto bailout;
@@ -937,11 +937,11 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
             goto bailout;
           if (ti.class || ti.tag != TAG_OCTET_STRING || ti.ndef)
             goto bailout;
-          
+
           /* Return the certificate. */
           if (certcb)
             certcb (certcbarg, p, ti.length);
-   
+
           p += ti.length;
           n -= ti.length;
         }
@@ -951,7 +951,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
          reasonable assume that all valid data will be longer than
          just one block. */
       if (n <= 8)
-        n = 0;  
+        n = 0;
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
       if (n)
@@ -974,7 +974,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
             goto bailout;
         }
     }
-  
+
   if (r_consumed)
     *r_consumed = consumed;
   gcry_free (plain);
@@ -1033,7 +1033,7 @@ bag_data_p (const void *plaintext, size_t length)
       || ti.length != 1 || *p)
     return 0;
 
-  return 1; 
+  return 1;
 }
 
 
@@ -1081,7 +1081,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
         *r_consumed = consumed;
       r_consumed = NULL; /* Ugly hack to not update that value any further. */
     }
-  
+
 
   where = "data.outerseqs";
   if (parse_tag (&p, &n, &ti))
@@ -1148,18 +1148,18 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   for (iter=0; ti.length; ti.length--)
     {
       iter <<= 8;
-      iter |= (*p++) & 0xff; 
+      iter |= (*p++) & 0xff;
       n--;
     }
-  
+
   where = "3des-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_OCTET_STRING || !ti.length )
     goto bailout;
-  
+
   log_info ("%lu bytes of 3DES encrypted text\n", ti.length);
-  
+
   plain = gcry_malloc_secure (ti.length);
   if (!plain)
     {
@@ -1167,8 +1167,8 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       goto bailout;
     }
   consumed += p - p_start + ti.length;
-  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw, 
-                 GCRY_CIPHER_3DES, 
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw,
+                 GCRY_CIPHER_3DES,
                  bag_data_p);
   n = ti.length;
   startoffset = 0;
@@ -1230,7 +1230,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       len -= ti.length;
       if (!result_count && ti.length == 1 && !*p)
         ; /* ignore the very first one if it is a 0 */
-      else 
+      else
         {
           rc = gcry_mpi_scan (result+result_count, GCRYMPI_FMT_USG, p,
                               ti.length, NULL);
@@ -1304,7 +1304,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
   if (ti.tag != TAG_INTEGER || ti.length != 1 || *p != 3)
     goto bailout;
   p++; n--;
-  
+
   where = "authSave";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
@@ -1352,7 +1352,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
       if (parse_tag (&p, &n, &ti))
         goto bailout;
       if (bagseqndef && ti.class == UNIVERSAL && !ti.tag && !ti.is_constructed)
-        break; /* Ready */ 
+        break; /* Ready */
       if (ti.class != UNIVERSAL || ti.tag != TAG_SEQUENCE)
         goto bailout;
 
@@ -1371,9 +1371,9 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
       if (parse_tag (&p, &n, &ti))
         goto bailout;
       if (lenndef)
-        len = ti.nhdr; 
+        len = ti.nhdr;
       else
-        len -= ti.nhdr; 
+        len -= ti.nhdr;
 
       if (ti.tag == TAG_OBJECT_ID && ti.length == DIM(oid_encryptedData)
           && !memcmp (p, oid_encryptedData, DIM(oid_encryptedData)))
@@ -1436,7 +1436,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
             goto bailout;
         }
     }
-  
+
   gcry_free (cram_buffer);
   return result;
  bailout:
@@ -1458,7 +1458,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw,
 
 static size_t
 compute_tag_length (size_t n)
-{     
+{
   int needed = 0;
 
   if (n < 128)
@@ -1477,7 +1477,7 @@ compute_tag_length (size_t n)
 
 static unsigned char *
 store_tag_length (unsigned char *p, int tag, size_t n)
-{     
+{
   if (tag == TAG_SEQUENCE)
     tag |= 0x20; /* constructed */
 
@@ -1576,7 +1576,7 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
 
   /* 1. Store the version integer 3. */
   *p++ = TAG_INTEGER;
-  *p++ = 1; 
+  *p++ = 1;
   *p++ = 3;
 
   /* 2. Store another sequence. */
@@ -1584,8 +1584,8 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
 
   /* 3. Store the data OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
-  memcpy (p, oid_data, DIM (oid_data)); 
-  p += DIM (oid_data); 
+  memcpy (p, oid_data, DIM (oid_data));
+  p += DIM (oid_data);
 
   /* 4. Next comes a context tag. */
   p = store_tag_length (p, 0xa0, len[4]);
@@ -1662,7 +1662,7 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
        SEQUENCE {
          INTEGER 0
          INTEGER
-         INTEGER 
+         INTEGER
          INTEGER
          INTEGER
          INTEGER
@@ -1672,9 +1672,9 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
          }
        }
      }
-*/  
-  
-static unsigned char * 
+*/
+
+static unsigned char *
 build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
 {
   int rc, i;
@@ -1727,7 +1727,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
   if (!n)
     return NULL;
   needed += n;
-  
+
   /* allocate 8 extra bytes for padding */
   plain = gcry_malloc_secure (needed+8);
   if (!plain)
@@ -1735,7 +1735,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
       log_error ("error allocating encryption buffer\n");
       return NULL;
     }
-  
+
   /* And now fill the plaintext buffer. */
   p = plain;
   p = store_tag_length (p, TAG_SEQUENCE, outseqlen);
@@ -1746,8 +1746,8 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
   /* Store object identifier sequence. */
   p = store_tag_length (p, TAG_SEQUENCE, oidseqlen);
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_rsaEncryption));
-  memcpy (p, oid_rsaEncryption, DIM (oid_rsaEncryption)); 
-  p += DIM (oid_rsaEncryption); 
+  memcpy (p, oid_rsaEncryption, DIM (oid_rsaEncryption));
+  p += DIM (oid_rsaEncryption);
   *p++ = TAG_NULL;
   *p++ = 0;
   /* Start with the octet string. */
@@ -1769,7 +1769,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
           return NULL;
         }
       p = store_tag_length (p, TAG_INTEGER, n);
-      
+
       n = plain + needed - p;
       rc = gcry_mpi_print (GCRYMPI_FMT_STD, p, n, &n, kparms[i]);
       if (rc)
@@ -1864,8 +1864,8 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
 
   /* 1. Store the data OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
-  memcpy (p, oid_data, DIM (oid_data)); 
-  p += DIM (oid_data); 
+  memcpy (p, oid_data, DIM (oid_data));
+  p += DIM (oid_data);
 
   /* 2. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[2]);
@@ -1881,8 +1881,8 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   p = store_tag_length (p, TAG_OBJECT_ID,
                         DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag));
   memcpy (p, oid_pkcs_12_pkcs_8ShroudedKeyBag,
-          DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag)); 
-  p += DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag); 
+          DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag));
+  p += DIM (oid_pkcs_12_pkcs_8ShroudedKeyBag);
 
   /* 7. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[7]);
@@ -1918,7 +1918,7 @@ build_key_bag (unsigned char *buffer, size_t buflen, char *salt,
   if (needed != keybaglen)
     log_debug ("length mismatch: %lu, %lu\n",
                (unsigned long)needed, (unsigned long)keybaglen);
-  
+
   *r_length = keybaglen;
   return keybag;
 }
@@ -1981,8 +1981,8 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
   /* 1. Store the encryptedData OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_encryptedData));
-  memcpy (p, oid_encryptedData, DIM (oid_encryptedData)); 
-  p += DIM (oid_encryptedData); 
+  memcpy (p, oid_encryptedData, DIM (oid_encryptedData));
+  p += DIM (oid_encryptedData);
 
   /* 2. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[2]);
@@ -1992,7 +1992,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
   /* 4. Store the integer 0. */
   *p++ = TAG_INTEGER;
-  *p++ = 1; 
+  *p++ = 1;
   *p++ = 0;
 
   /* 5. Store a sequence. */
@@ -2000,8 +2000,8 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
   /* 6. Store the data OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_data));
-  memcpy (p, oid_data, DIM (oid_data)); 
-  p += DIM (oid_data); 
+  memcpy (p, oid_data, DIM (oid_data));
+  p += DIM (oid_data);
 
   /* 7. Now for the pre-encoded algorithm identifier and the salt. */
   memcpy (p, data_rc2iter2048, DIM (data_rc2iter2048));
@@ -2013,7 +2013,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
   memcpy (p, buffer, buflen);
   p += buflen;
   certbaglen = p - certbag;
-  
+
   if (needed != certbaglen)
     log_debug ("length mismatch: %lu, %lu\n",
                (unsigned long)needed, (unsigned long)certbaglen);
@@ -2024,7 +2024,7 @@ build_cert_bag (unsigned char *buffer, size_t buflen, char *salt,
 
 
 static unsigned char *
-build_cert_sequence (const unsigned char *buffer, size_t buflen, 
+build_cert_sequence (const unsigned char *buffer, size_t buflen,
                      const unsigned char *sha1hash, const char *keyidstr,
                      size_t *r_length)
 {
@@ -2089,8 +2089,8 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
 
   /* 2. Store the pkcs12-cert-bag OID. */
   p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_pkcs_12_CertBag));
-  memcpy (p, oid_pkcs_12_CertBag, DIM (oid_pkcs_12_CertBag)); 
-  p += DIM (oid_pkcs_12_CertBag); 
+  memcpy (p, oid_pkcs_12_CertBag, DIM (oid_pkcs_12_CertBag));
+  p += DIM (oid_pkcs_12_CertBag);
 
   /* 3. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[3]);
@@ -2102,8 +2102,8 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   p = store_tag_length (p, TAG_OBJECT_ID,
                         DIM (oid_x509Certificate_for_pkcs_12));
   memcpy (p, oid_x509Certificate_for_pkcs_12,
-          DIM (oid_x509Certificate_for_pkcs_12)); 
-  p += DIM (oid_x509Certificate_for_pkcs_12); 
+          DIM (oid_x509Certificate_for_pkcs_12));
+  p += DIM (oid_x509Certificate_for_pkcs_12);
 
   /* 6. Store a [0] tag. */
   p = store_tag_length (p, 0xa0, len[6]);
@@ -2112,7 +2112,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   p = store_tag_length (p, TAG_OCTET_STRING, buflen);
   memcpy (p, buffer, buflen);
   p += buflen;
-  
+
   /* Append the attributes whose length we calculated at step 2b. */
   if (sha1hash)
     {
@@ -2133,7 +2133,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
   n = 8 - certseqlen % 8;
   for (i=0; i < n; i++, certseqlen++)
     *p++ = n;
-  
+
   *r_length = certseqlen;
   return certseq;
 }
@@ -2143,7 +2143,7 @@ build_cert_sequence (const unsigned char *buffer, size_t buflen,
    Create a PKCS structure from it and return it as well as the length
    in R_LENGTH; return NULL in case of an error.  If CHARSET is not
    NULL, re-encode PW to that character set. */
-unsigned char * 
+unsigned char *
 p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
            const char *pw, const char *charset, size_t *r_length)
 {
@@ -2193,7 +2193,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       outptr = pwbuf;
       outbytes = pwbufsize - 1;
       if ( jnlib_iconv (cd, (const char **)&inptr, &inbytes,
-                      &outptr, &outbytes) == (size_t)-1) 
+                      &outptr, &outbytes) == (size_t)-1)
         {
           log_error ("error converting passphrase to"
                      " requested charset `%s': %s\n",
@@ -2225,7 +2225,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, pw,
                    GCRY_CIPHER_RFC2268_40, 1);
-      
+
       /* Encode the encrypted stuff into a bag. */
       seqlist[seqlistidx].buffer = build_cert_bag (buffer, buflen, salt, &n);
       seqlist[seqlistidx].length = n;
@@ -2243,14 +2243,14 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       buffer = build_key_sequence (kparms, &buflen);
       if (!buffer)
         goto failure;
-      
+
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
       crypt_block (buffer, buflen, salt, 8, 2048, pw, GCRY_CIPHER_3DES, 1);
 
       /* Encode the encrypted stuff into a bag. */
       if (cert && certlen)
-        seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt, 
+        seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
                                                     sha1hash, keyidstr, &n);
       else
         seqlist[seqlistidx].buffer = build_key_bag (buffer, buflen, salt,
@@ -2284,7 +2284,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
 
 #ifdef TEST
 
-static void 
+static void
 cert_cb (void *opaque, const unsigned char *cert, size_t certlen)
 {
   printf ("got a certificate of %u bytes length\n", certlen);
@@ -2315,7 +2315,7 @@ main (int argc, char **argv)
       fprintf (stderr, "can't open `%s': %s\n", argv[1], strerror (errno));
       return 1;
     }
-  
+
   if (fstat (fileno(fp), &st))
     {
       fprintf (stderr, "can't stat `%s': %s\n", argv[1], strerror (errno));

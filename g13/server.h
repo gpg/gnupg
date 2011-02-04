@@ -26,4 +26,3 @@ gpg_error_t g13_server (ctrl_t ctrl);
 gpg_error_t g13_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line);
 
 #endif /*G13_SERVER_H*/
-

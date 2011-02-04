@@ -50,7 +50,7 @@
    If ERRORCODE is not NULL it should point a variable receiving an
    errorcode; this errocode might be 0 if the user canceled the
    operation.  The function returns NULL to indicate an error. */
-char *simple_pwquery (const char *cacheid, 
+char *simple_pwquery (const char *cacheid,
                       const char *tryagain,
                       const char *prompt,
                       const char *description,
@@ -71,7 +71,7 @@ int simple_pw_set_socket (const char *name);
 
 #define SPWQ_OUT_OF_CORE 1
 #define SPWQ_IO_ERROR 2
-#define SPWQ_PROTOCOL_ERROR 3 
+#define SPWQ_PROTOCOL_ERROR 3
 #define SPWQ_ERR_RESPONSE 4
 #define SPWQ_NO_AGENT 5
 #define SPWQ_SYS_ERROR 6
@@ -108,8 +108,8 @@ int simple_pw_set_socket (const char *name);
            default:                                         \
              return gpg_error (GPG_ERR_GENERAL);            \
            }                                                \
-       }                                                      
-/* End of MAP_SPWQ_ERROR_IMPL.  */       
+       }
+/* End of MAP_SPWQ_ERROR_IMPL.  */
 
 
 #endif /*SIMPLE_PWQUERY_H*/

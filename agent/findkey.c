@@ -39,7 +39,7 @@
 #endif
 
 /* Helper to pass data to the check callback of the unprotect function. */
-struct try_unprotect_arg_s 
+struct try_unprotect_arg_s
 {
   ctrl_t ctrl;
   const unsigned char *protected_key;
@@ -59,7 +59,7 @@ agent_write_private_key (const unsigned char *grip,
   char *fname;
   estream_t fp;
   char hexgrip[40+4+1];
-  
+
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
@@ -73,8 +73,8 @@ agent_write_private_key (const unsigned char *grip,
     }
 
   fp = es_fopen (fname, force? "wb,mode=-rw" : "wbx,mode=-rw");
-  if (!fp) 
-    { 
+  if (!fp)
+    {
       gpg_error_t tmperr = gpg_error_from_syserror ();
       log_error ("can't create `%s': %s\n", fname, gpg_strerror (tmperr));
       xfree (fname);
@@ -143,7 +143,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
       if (strcmp (now, tmptime) > 0 )
         {
           /* Passphrase "expired".  */
-          desc = xtryasprintf 
+          desc = xtryasprintf
             (_("This passphrase has not been changed%%0A"
                "since %.4s-%.2s-%.2s.  Please change it now."),
              protected_at, protected_at+4, protected_at+6);
@@ -254,7 +254,7 @@ modify_description (const char *in, const char *comment, char **result)
                 out_len++;
             }
         }
-      
+
       if (!pass)
         {
           *result = out = xtrymalloc (out_len + 1);
@@ -268,7 +268,7 @@ modify_description (const char *in, const char *comment, char **result)
   return 0;
 }
 
-  
+
 
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
@@ -281,7 +281,7 @@ modify_description (const char *in, const char *comment, char **result)
    passphrase. */
 static int
 unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
-           unsigned char **keybuf, const unsigned char *grip, 
+           unsigned char **keybuf, const unsigned char *grip,
            cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
            char **r_passphrase)
 {
@@ -294,14 +294,14 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
 
   if (r_passphrase)
     *r_passphrase = NULL;
-  
+
   bin2hex (grip, 20, hexgrip);
 
   /* Initially try to get it using a cache nonce.  */
   if (cache_nonce)
     {
       char *pw;
-      
+
       pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
       if (pw)
         {
@@ -325,7 +325,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   if (cache_mode != CACHE_MODE_IGNORE)
     {
       char *pw;
-      
+
     retry:
       pw = agent_get_cache (hexgrip, cache_mode);
       if (pw)
@@ -362,7 +362,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
             {
               /* We need to give the other thread a chance to actually put
                  it into the cache. */
-              pth_sleep (1); 
+              pth_sleep (1);
               goto retry;
             }
           /* Timeout - better call pinentry now the plain way. */
@@ -391,7 +391,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
         {
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
-          
+
           assert (arg.unprotected_key);
           canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
           rc = gcry_sexp_sscan (&s_skey, &erroff,
@@ -409,7 +409,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
           gcry_sexp_release (s_skey);
           if (rc)
             {
-              log_error ("changing the passphrase failed: %s\n", 
+              log_error ("changing the passphrase failed: %s\n",
                          gpg_strerror (rc));
               wipememory (arg.unprotected_key, canlen);
               xfree (arg.unprotected_key);
@@ -419,7 +419,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
         }
       else
         {
-          agent_put_cache (hexgrip, cache_mode, pi->pin, 
+          agent_put_cache (hexgrip, cache_mode, pi->pin,
                            lookup_ttl? lookup_ttl (hexgrip) : 0);
           if (r_passphrase && *pi->pin)
             *r_passphrase = xtrystrdup (pi->pin);
@@ -446,7 +446,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
-  
+
   *result = NULL;
 
   bin2hex (grip, 20, hexgrip);
@@ -462,7 +462,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       xfree (fname);
       return rc;
     }
-  
+
   if (fstat (es_fileno (fp), &st))
     {
       rc = gpg_error_from_syserror ();
@@ -489,7 +489,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (es_fread (buf, buflen, 1, fp) != 1)
     {
       rc = gpg_error_from_syserror ();
-      log_error ("error reading %zu bytes from `%s': %s\n", 
+      log_error ("error reading %zu bytes from `%s': %s\n",
                  buflen, fname, strerror (errno));
       xfree (fname);
       es_fclose (fp);
@@ -540,7 +540,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
   int got_shadow_info = 0;
-  
+
   *result = NULL;
   if (shadow_info)
     *shadow_info = NULL;
@@ -612,7 +612,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));
 	  }
-        
+
 	gcry_sexp_release (comment_sexp);
 	xfree (desc_text_final);
       }
@@ -753,7 +753,7 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
       if (strlen (algoname) >= algonamesize)
         return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
       strcpy (r_algoname, algoname);
-    } 
+    }
   if (r_elems)
     {
       if (strlen (elems) >= elemssize)
@@ -765,14 +765,14 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
     *r_list = list;
   else
     gcry_sexp_release (list);
-      
+
   return 0;
 }
 
 
 /* Return the public key algorithm number if S_KEY is a DSA style key.
    If it is not a DSA style key, return 0.  */
-int 
+int
 agent_is_dsa_key (gcry_sexp_t s_key)
 {
   char algoname[6];
@@ -798,7 +798,7 @@ agent_is_dsa_key (gcry_sexp_t s_key)
    key database.  On failure an error code is returned and NULL stored
    at RESULT. */
 gpg_error_t
-agent_public_key_from_file (ctrl_t ctrl, 
+agent_public_key_from_file (ctrl_t ctrl,
                             const unsigned char *grip,
                             gcry_sexp_t *result)
 {
@@ -826,7 +826,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   if (err)
     return err;
 
-  err = key_parms_from_sexp (s_skey, &list, 
+  err = key_parms_from_sexp (s_skey, &list,
                             algoname, sizeof algoname,
                             elems, sizeof elems);
   if (err)
@@ -846,7 +846,7 @@ agent_public_key_from_file (ctrl_t ctrl,
       return err;
     }
 
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
@@ -913,7 +913,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   argidx = 0;
   p = stpcpy (stpcpy (format, "(public-key("), algoname);
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       *p++ = '(';
       *p++ = *s;
@@ -940,7 +940,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   *p = 0;
   assert (argidx < DIM (args));
   args[argidx] = NULL;
-    
+
   err = gcry_sexp_build_array (&list, NULL, format, args);
   xfree (format);
   for (i=0; array[i]; i++)
@@ -964,7 +964,7 @@ agent_key_available (const unsigned char *grip)
   int result;
   char *fname;
   char hexgrip[40+4+1];
-  
+
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
@@ -990,7 +990,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   int keytype;
 
   (void)ctrl;
-  
+
   if (r_keytype)
     *r_keytype = PRIVATE_KEY_UNKNOWN;
   if (r_shadow_info)
@@ -998,7 +998,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   {
     gcry_sexp_t sexp;
-    
+
     err = read_key_file (grip, &sexp);
     if (err)
       {
@@ -1012,12 +1012,12 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
     if (err)
       return err;
   }
-  
+
   keytype = agent_private_key_type (buf);
   switch (keytype)
     {
     case PRIVATE_KEY_CLEAR:
-      break; 
+      break;
     case PRIVATE_KEY_PROTECTED:
       /* If we ever require it we could retrieve the comment fields
          from such a key. */

@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -21,13 +21,13 @@
 EXTRA_DIST = options.skel
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
-              -I$(top_srcdir)/include -I$(top_srcdir)/intl 
+              -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = $(libcommon) ../gl/libgnu.a 
+needed_libs = $(libcommon) ../gl/libgnu.a
 
 bin_PROGRAMS = gpg2
 if !HAVE_W32CE_SYSTEM
@@ -130,7 +130,7 @@ gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(extra_sys_libs)
 gpgv2_LDFLAGS = $(extra_bin_ldflags)
 
-t_common_ldadd = 
+t_common_ldadd =
 module_tests = t-rmd160
 t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
@@ -144,7 +144,7 @@ install-data-local:
 				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
 uninstall-local:
-	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel        
+	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
 
 # There has never been a gpg for WindowsCE, thus we don't need a gpg2 here

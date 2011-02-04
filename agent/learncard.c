@@ -32,7 +32,7 @@
 
 /* Structures used by the callback mechanism to convey information
    pertaining to key pairs.  */
-struct keypair_info_s 
+struct keypair_info_s
 {
   struct keypair_info_s *next;
   int no_cert;
@@ -44,7 +44,7 @@ struct keypair_info_s
 };
 typedef struct keypair_info_s *KEYPAIR_INFO;
 
-struct kpinfo_cb_parm_s 
+struct kpinfo_cb_parm_s
 {
   ctrl_t ctrl;
   int error;
@@ -56,13 +56,13 @@ struct kpinfo_cb_parm_s
    pertaining to certificates.  */
 struct certinfo_s {
   struct certinfo_s *next;
-  int type;  
+  int type;
   int done;
   char id[1];
 };
 typedef struct certinfo_s *CERTINFO;
 
-struct certinfo_cb_parm_s 
+struct certinfo_cb_parm_s
 {
   ctrl_t ctrl;
   int error;
@@ -75,9 +75,9 @@ struct certinfo_cb_parm_s
 struct sinfo_s {
   struct sinfo_s *next;
   char *data;       /* Points into keyword. */
-  char keyword[1];  
+  char keyword[1];
 };
-typedef struct sinfo_s *SINFO;  
+typedef struct sinfo_s *SINFO;
 
 struct sinfo_cb_parm_s {
   int error;
@@ -172,7 +172,7 @@ kpinfo_cb (void *opaque, const char *line)
       return;
     }
   *p = 0; /* ignore trailing stuff */
-  
+
   /* store it */
   item->next = parm->info;
   parm->info = item;
@@ -202,7 +202,7 @@ certinfo_cb (void *opaque, const char *line)
   for (pend = p; *pend && !spacep (pend); pend++)
     ;
   if (p == pend || !*p)
-    { 
+    {
       parm->error = gpg_error (GPG_ERR_INV_RESPONSE);
       return;
     }
@@ -258,7 +258,7 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
   int rc;
   char *derbuf;
   size_t derbuflen;
-  
+
   rc = agent_card_readcert (ctrl, id, &derbuf, &derbuflen);
   if (rc)
     {
@@ -312,7 +312,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
   unsigned char grip[20];
   char *p;
   int i;
-  static int certtype_list[] = { 
+  static int certtype_list[] = {
     111, /* Root CA */
     101, /* trusted */
     102, /* useful */
@@ -344,7 +344,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
       log_debug ("agent_card_learn failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
-  
+
   log_info ("card has S/N: %s\n", serialno);
 
   /* Pass on all the collected status information. */
@@ -368,7 +368,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
           if (opt.verbose)
             log_info ("          id: %s    (type=%d)\n",
                       citem->id, citem->type);
-          
+
           if (assuan_context)
             {
               rc = send_cert_back (ctrl, citem->id, assuan_context);
@@ -378,7 +378,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
             }
         }
     }
-  
+
   for (item = parm.info; item; item = item->next)
     {
       unsigned char *pubkey, *shdkey;
@@ -398,10 +398,10 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
 
       for (p=item->hexgrip, i=0; i < 20; p += 2, i++)
         grip[i] = xtoi_2 (p);
-      
+
       if (!agent_key_available (grip))
         continue; /* The key is already available. */
-      
+
       /* Unknown key - store it. */
       rc = agent_card_readkey (ctrl, item->id, &pubkey);
       if (rc)
@@ -440,11 +440,11 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
 
       if (opt.verbose)
         log_info ("stored\n");
-      
+
       if (assuan_context)
         {
           CERTINFO citem;
-          
+
           /* only send the certificate if we have not done so before */
           for (citem = cparm.info; citem; citem = citem->next)
             {
@@ -460,7 +460,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
         }
     }
 
-  
+
  leave:
   xfree (serialno);
   release_keypair_info (parm.info);
@@ -468,5 +468,3 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
   release_sinfo (sparm.info);
   return rc;
 }
-
-

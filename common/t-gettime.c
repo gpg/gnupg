@@ -68,7 +68,7 @@ test_isotime2epoch (void)
           fail (idx);
           if (verbose)
             fprintf (stderr, "string `%s' exp: %ld got: %ld\n",
-                     array[idx].string, (long)array[idx].expected, 
+                     array[idx].string, (long)array[idx].expected,
                      (long)val);
         }
       if (array[idx].expected != INVALID)
@@ -100,4 +100,3 @@ main (int argc, char **argv)
 
   return !!errcount;
 }
-

@@ -66,7 +66,7 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
    The arguments for the process are expected in the NULL terminated
    array ARGV.  The program name itself should not be included there.
    If PREEXEC is not NULL, the given function will be called right
-   before the exec. 
+   before the exec.
 
    Returns 0 on success or an error code.  Calling gnupg_wait_process
    and gnupg_release_process is required if the function succeeded.
@@ -77,7 +77,7 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
           This flag is only useful under W32 (but not W32CE) systems,
           so that no new console is created and pops up a console
           window when starting the server.  Does not work on W32CE.
- 
+
    Bit 6: On W32 (but not on W32CE) run AllowSetForegroundWindow for
           the child.  Note that due to unknown problems this actually
           allows SetForegroundWindow for all childs of this process.
@@ -101,7 +101,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
    included there.  Calling gnupg_wait_process and
    gnupg_release_process is required.  Returns 0 on success or an
    error code. */
-gpg_error_t gnupg_spawn_process_fd (const char *pgmname, 
+gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
                                     const char *argv[],
                                     int infd, int outfd, int errfd,
                                     pid_t *pid);
@@ -120,11 +120,11 @@ gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
        is then stored at R_EXITCODE.  An exit code of -1 indicates
        that the process terminated abnormally (e.g. due to a signal).
 
-   GPG_ERR_TIMEOUT 
+   GPG_ERR_TIMEOUT
        The process is still running (returned only if HANG is false).
 
-   GPG_ERR_INV_VALUE 
-       An invalid PID has been specified.  
+   GPG_ERR_INV_VALUE
+       An invalid PID has been specified.
 
    Other error codes may be returned as well.  Unless otherwise noted,
    -1 will be stored at R_EXITCODE.  R_EXITCODE may be passed as NULL

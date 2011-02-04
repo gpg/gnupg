@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -53,7 +53,7 @@ gpg_agent_SOURCES = \
 common_libs = $(libcommon) ../gl/libgnu.a
 commonpth_libs = $(libcommonpth) ../gl/libgnu.a
 if HAVE_W32CE_SYSTEM
-pwquery_libs = 
+pwquery_libs =
 else
 pwquery_libs = ../common/libsimple-pwquery.a
 endif
@@ -109,9 +109,5 @@ TESTS = t-protect
 t_common_ldadd = $(common_libs)  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 	          $(LIBINTL) $(LIBICONV) $(NETLIBS)
 
-t_protect_SOURCES = t-protect.c protect.c 
+t_protect_SOURCES = t-protect.c protect.c
 t_protect_LDADD = $(t_common_ldadd)
-
-
-
-

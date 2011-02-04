@@ -52,7 +52,7 @@ findkey_fname (const char *key, const char *fname)
   while (fgets (line, DIM(line)-1, fp))
     {
       lnr++;
-      
+
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line. */
@@ -65,7 +65,7 @@ findkey_fname (const char *key, const char *fname)
         }
       else
         line[strlen(line)-1] = 0; /* Chop the LF. */
-      
+
     again:
       if (!in_item)
         {
@@ -96,7 +96,7 @@ findkey_fname (const char *key, const char *fname)
       if (*line == '#')
         continue;
       if (*line == '.')
-        { 
+        {
           if (spacep(line+1))
             p = line + 2;
           else
@@ -126,7 +126,7 @@ findkey_fname (const char *key, const char *fname)
       log_error (_("error reading `%s', line %d: %s\n"),
                  fname, lnr, gpg_strerror (err));
     }
-  
+
   fclose (fp);
   if (is_membuf_ready (&mb))
     {
@@ -182,7 +182,7 @@ findkey_locale (const char *key, const char *locname,
       else
         result = NULL;
     }
-  
+
   if (!result && (!only_current_locale || !*locname) )
     {
       /* Last try: Search in file without any locale info.  ("help.txt") */
@@ -204,18 +204,18 @@ findkey_locale (const char *key, const char *locname,
      /etc/gnupg/help.txt
      /usr/share/gnupg/help.LL.txt
      /usr/share/gnupg/help.txt
-     
+
    Here LL denotes the two digit language code of the current locale.
    If ONLY_CURRENT_LOCALE is set, the fucntion won;t fallback to the
    english valiant ("help.txt") unless that locale has been requested.
-   
+
    The help file needs to be encoded in UTF-8, lines with a '#' in the
    first column are comment lines and entirely ignored.  Help keys are
    identified by a key consisting of a single word with a single dot
    as the first character.  All key lines listed without any
    intervening lines (except for comment lines) lead to the same help
    text.  Lines following the key lines make up the actual hep texts.
-   
+
 */
 
 char *
@@ -249,7 +249,7 @@ gnupg_get_help_string (const char *key, int only_current_locale)
   if (!key || !*key)
     return NULL;
 
-  result = findkey_locale (key, locname, only_current_locale, 
+  result = findkey_locale (key, locname, only_current_locale,
                            gnupg_sysconfdir ());
   if (!result)
     result = findkey_locale (key, locname, only_current_locale,

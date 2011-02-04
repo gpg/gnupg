@@ -6,12 +6,12 @@
 
 /**
  * keybox_strerror:
- * @err:  Error code 
- * 
+ * @err:  Error code
+ *
  * This function returns a textual representaion of the given
  * errorcode. If this is an unknown value, a string with the value
  * is returned (Beware: it is hold in a static buffer).
- * 
+ *
  * Return value: String with the error description.
  **/
 const char *
@@ -44,4 +44,3 @@ keybox_strerror (KeyboxError err)
 
   return s;
 }
-

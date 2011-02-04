@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -61,7 +61,7 @@ static void
 register_file_reader (ksba_reader_t reader, struct reader_cb_context_s *cb_ctx)
 {
   int i;
-  
+
   for (;;)
     {
       for (i=0; i < MAX_FILE_READER; i++)
@@ -72,7 +72,7 @@ register_file_reader (ksba_reader_t reader, struct reader_cb_context_s *cb_ctx)
             return;
           }
       log_info (_("reader to file mapping table full - waiting\n"));
-      pth_sleep (2); 
+      pth_sleep (2);
     }
 }
 
@@ -97,7 +97,7 @@ get_file_reader (ksba_reader_t reader)
 
 
 
-static int 
+static int
 my_es_read (void *opaque, char *buffer, size_t nbytes, size_t *nread)
 {
   struct reader_cb_context_s *cb_ctx = opaque;
@@ -144,7 +144,7 @@ my_es_read (void *opaque, char *buffer, size_t nbytes, size_t *nread)
 
   return result;
 }
-           
+
 
 /* Fetch CRL from URL and return the entire CRL using new ksba reader
    object in READER.  Note that this reader object should be closed
@@ -194,7 +194,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
       else
         err = http_open_document (&hd, url, NULL,
                                   (opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
-                                  |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0), 
+                                  |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0),
                                   opt.http_proxy, NULL, NULL, NULL);
 
       switch ( err? 99999 : http_get_status_code (hd) )
@@ -236,7 +236,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
               }
           }
           break;
-        
+
         case 301: /* Redirection (perm.). */
         case 302: /* Redirection (temp.). */
           {
@@ -265,7 +265,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
             http_close (hd, 0);
           }
           break;
-  
+
         case 99999: /* Made up status code for error reporting.  */
           log_error (_("error retrieving `%s': %s\n"),
                      url, gpg_strerror (err));
@@ -359,7 +359,7 @@ fetch_next_ksba_cert (cert_fetch_context_t context, ksba_cert_t *r_cert)
   unsigned char *value;
   size_t valuelen;
   ksba_cert_t cert;
-  
+
   *r_cert = NULL;
 
   err = fetch_next_cert_ldap (context, &value, &valuelen);
@@ -445,7 +445,7 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
   ksba_cert_release (cert);
   ldap_wrapper_release_context (reader);
 
-  return err;  
+  return err;
 }
 
 /* This function is to be used to close the reader object.  In
@@ -464,7 +464,7 @@ crl_close_reader (ksba_reader_t reader)
   if (cb_ctx)
     {
       /* This is an HTTP context. */
-      if (cb_ctx->fp) 
+      if (cb_ctx->fp)
         es_fclose (cb_ctx->fp);
       /* Release the base64 decoder state.  */
       if (cb_ctx->is_pem)

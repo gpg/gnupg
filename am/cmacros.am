@@ -7,18 +7,18 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 localedir = $(datadir)/locale
 
-AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\" 
+AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\"
 
 if ! HAVE_DOSISH_SYSTEM
 AM_CPPFLAGS += -DGNUPG_BINDIR="\"$(bindir)\""            \
@@ -59,14 +59,13 @@ endif
 # we use with pth.
 if HAVE_W32CE_SYSTEM
 extra_sys_libs = -lcoredll6
-extra_bin_ldflags = -Wl,--stack=0x40000 
+extra_bin_ldflags = -Wl,--stack=0x40000
 else
-extra_sys_libs = 
-extra_bin_ldflags = 
+extra_sys_libs =
+extra_bin_ldflags =
 endif
 
 
 # Convenience macros
 libcommon = ../common/libcommon.a
 libcommonpth = ../common/libcommonpth.a
-

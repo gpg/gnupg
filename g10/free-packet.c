@@ -29,7 +29,7 @@
 #include "packet.h"
 #include "../common/iobuf.h"
 #include "cipher.h"
-#include "options.h" 
+#include "options.h"
 
 
 void
@@ -79,7 +79,7 @@ void
 release_public_key_parts (PKT_public_key *pk)
 {
   int n, i;
-  
+
   if (pk->seckey_info)
     n = pubkey_get_nskey (pk->pubkey_algo);
   else
@@ -143,7 +143,7 @@ cp_subpktarea (subpktarea_t *s )
 }
 
 /*
- * Return a copy of the preferences 
+ * Return a copy of the preferences
  */
 prefitem_t *
 copy_prefs (const prefitem_t *prefs)
@@ -153,7 +153,7 @@ copy_prefs (const prefitem_t *prefs)
 
     if (!prefs)
         return NULL;
-    
+
     for (n=0; prefs[n].type; n++)
         ;
     new = xmalloc ( sizeof (*new) * (n+1));
@@ -175,11 +175,11 @@ PKT_public_key *
 copy_public_key (PKT_public_key *d, PKT_public_key *s)
 {
   int n, i;
-  
+
   if (!d)
     d = xmalloc (sizeof *d);
   memcpy (d, s, sizeof *d);
-  d->seckey_info = NULL; 
+  d->seckey_info = NULL;
   d->user_id = scopy_user_id (s->user_id);
   d->prefs = copy_prefs (s->prefs);
 
@@ -187,7 +187,7 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
   i = 0;
   if (!n)
     d->pkey[i++] = mpi_copy (s->pkey[0]);
-  else 
+  else
     {
       for (; i < n; i++ )
         d->pkey[i] = mpi_copy( s->pkey[i] );
@@ -213,7 +213,7 @@ static pka_info_t *
 cp_pka_info (const pka_info_t *s)
 {
   pka_info_t *d = xmalloc (sizeof *s + strlen (s->email));
-  
+
   d->valid = s->valid;
   d->checked = s->checked;
   d->uri = s->uri? xstrdup (s->uri):NULL;

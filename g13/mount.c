@@ -41,7 +41,7 @@
 
 /* Parse the header prefix and return the length of the entire header.  */
 static gpg_error_t
-parse_header (const char *filename, 
+parse_header (const char *filename,
               const unsigned char *packet, size_t packetlen,
               size_t *r_headerlen)
 {
@@ -65,7 +65,7 @@ parse_header (const char *filename,
       return gpg_error (GPG_ERR_INV_OBJ);
     }
   if (packet[17] || packet[18]
-      || packet[26] || packet[27] || packet[28] || packet[29] 
+      || packet[26] || packet[27] || packet[28] || packet[29]
       || packet[30] || packet[31])
     log_info ("WARNING: unknown meta information in `%s'\n", filename);
   if (packet[19])
@@ -85,7 +85,7 @@ parse_header (const char *filename,
       log_error ("bad length given in container `%s'\n", filename);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
-     
+
   *r_headerlen = len;
   return 0;
 }
@@ -100,7 +100,7 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
   gpg_error_t err;
   estream_t fp;
   unsigned char packet[32];
-  
+
   *r_fp = NULL;
 
   fp = es_fopen (filename, "rb");
@@ -110,7 +110,7 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
       log_error ("error reading `%s': %s\n", filename, gpg_strerror (err));
       return err;
     }
-  
+
   /* Read the header.  It is defined as 32 bytes thus we read it in one go.  */
   if (es_fread (packet, 32, 1, fp) != 1)
     {
@@ -120,7 +120,7 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
       es_fclose (fp);
       return err;
     }
-  
+
   err = parse_header (filename, packet, 32, r_headerlen);
   if (err)
     es_fclose (fp);
@@ -134,21 +134,21 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
 /* Read the keyblob at FILENAME.  The caller should have acquired a
    lockfile and checked that the file exists.  */
 static gpg_error_t
-read_keyblob (const char *filename, 
+read_keyblob (const char *filename,
               void **r_enckeyblob, size_t *r_enckeybloblen)
 {
   gpg_error_t err;
   estream_t fp = NULL;
   size_t headerlen, msglen;
   void *msg = NULL;
-  
+
   *r_enckeyblob = NULL;
   *r_enckeybloblen = 0;
 
   err = read_keyblob_prefix (filename, &fp, &headerlen);
   if (err)
     goto leave;
-  
+
   if (opt.verbose)
     log_info ("header length of `%s' is %zu\n", filename, headerlen);
 
@@ -291,7 +291,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   /* Check again that the file exists.  */
   {
     struct stat sb;
-    
+
     if (stat (filename, &sb))
       {
         err = gpg_error_from_syserror ();
@@ -381,7 +381,7 @@ g13_umount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   err = mountinfo_find_mount (filename, mountpoint, &rid);
   if (err)
     return err;
-  
+
   runner = runner_find_by_rid (rid);
   if (!runner)
     {
@@ -391,7 +391,7 @@ g13_umount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
 
   runner_cancel (runner);
   runner_release (runner);
-  
+
   return 0;
 }
 
@@ -414,5 +414,3 @@ g13_is_container (ctrl_t ctrl, const char *filename)
     es_fclose (fp);
   return err;
 }
-
-

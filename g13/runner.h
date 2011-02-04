@@ -25,7 +25,7 @@ struct runner_s;
 typedef struct runner_s *runner_t;
 
 /* Prototypes for the handler functions provided by the engine.  */
-typedef gpg_error_t (*engine_handler_fnc_t) (void *opaque, 
+typedef gpg_error_t (*engine_handler_fnc_t) (void *opaque,
                                              runner_t runner,
                                              const char *statusline);
 typedef void (*engine_handler_cleanup_fnc_t) (void *opaque);
@@ -41,7 +41,7 @@ gpg_error_t runner_new (runner_t *r_runner, const char *name);
 void runner_release (runner_t runner);
 
 /* Return the identifier of RUNNER.  */
-unsigned int runner_get_rid (runner_t runner); 
+unsigned int runner_get_rid (runner_t runner);
 
 /* Find a runner by its rid.  */
 runner_t runner_find_by_rid (unsigned int rid);
@@ -53,8 +53,8 @@ void runner_set_pid (runner_t runner, pid_t pid);
 
 /* Register the handler functions with a runner.  */
 void runner_set_handler (runner_t runner,
-                         engine_handler_fnc_t handler, 
-                         engine_handler_cleanup_fnc_t handler_cleanup, 
+                         engine_handler_fnc_t handler,
+                         engine_handler_cleanup_fnc_t handler_cleanup,
                          void *handler_data);
 
 /* Start the runner.  */
@@ -74,4 +74,3 @@ gpg_error_t runner_send_line (runner_t runner,
 
 
 #endif /*G13_RUNNER_H*/
-

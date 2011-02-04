@@ -30,7 +30,7 @@
    considered a byte stream ending in a LF.
 
    If MAX_LENGTH is not NULL, it shall point to a value with the
-   maximum allowed allocation.  
+   maximum allowed allocation.
 
    Returns the length of the line. EOF is indicated by a line of
    length zero. A truncated line is indicated by setting the value at
@@ -45,7 +45,7 @@
    append a CR,LF,Nul
  */
 ssize_t
-read_line (FILE *fp, 
+read_line (FILE *fp,
            char **addr_of_buffer, size_t *length_of_buffer,
            size_t *max_length)
 {
@@ -94,7 +94,7 @@ read_line (FILE *fp,
           if (!*addr_of_buffer)
             {
               int save_errno = errno;
-              xfree (buffer); 
+              xfree (buffer);
               *length_of_buffer = 0;
               if (max_length)
                 *max_length = 0;
@@ -103,7 +103,7 @@ read_line (FILE *fp,
             }
           buffer = *addr_of_buffer;
           *length_of_buffer = length;
-          length -= 3; 
+          length -= 3;
           p = buffer + nbytes;
 	}
       *p++ = c;

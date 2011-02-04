@@ -132,7 +132,7 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                    attack */
                 sk->csum = 0;
                 csum = 1;
-                if( ndata < 20 ) 
+                if( ndata < 20 )
                     log_error("not enough bytes for SHA-1 checksum\n");
                 else {
                     gcry_md_hd_t h;
@@ -142,7 +142,7 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                     gcry_md_write (h, data, ndata - 20);
                     gcry_md_final (h);
                     if (!memcmp (gcry_md_read (h, DIGEST_ALGO_SHA1),
-                                 data + ndata - 20, 20) ) 
+                                 data + ndata - 20, 20) )
                       {
                         /* Digest does match.  We have to keep the old
                            style checksum in sk->csum, so that the
@@ -150,7 +150,7 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                            This test gets used when we are adding new
                            keys. */
                         sk->csum = csum = checksum (data, ndata-20);
-                      } 
+                      }
                     gcry_md_close (h);
                 }
             }
@@ -259,6 +259,3 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
     return 0;
 }
-
-
-

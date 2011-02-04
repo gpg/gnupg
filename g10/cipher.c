@@ -66,7 +66,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 
     {
         char buf[20];
-        
+
         sprintf (buf, "%d %d", ed.mdc_method, cfx->dek->algo);
         write_status_text (STATUS_BEGIN_ENCRYPTION, buf);
     }
@@ -81,7 +81,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    err = openpgp_cipher_open (&cfx->cipher_hd, 
+    err = openpgp_cipher_open (&cfx->cipher_hd,
 			       cfx->dek->algo,
 			       GCRY_CIPHER_MODE_CFB,
 			       (GCRY_CIPHER_SECURE

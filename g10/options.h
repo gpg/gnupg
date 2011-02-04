@@ -31,7 +31,7 @@
 #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
 #define EXTERN_UNLESS_MAIN_MODULE extern
 #else
-#define EXTERN_UNLESS_MAIN_MODULE 
+#define EXTERN_UNLESS_MAIN_MODULE
 #endif
 #endif
 
@@ -96,7 +96,7 @@ struct
   int completes_needed;
   int max_cert_depth;
   const char *homedir;
-  const char *agent_program; 
+  const char *agent_program;
 
   /* Options to be passed to the gpg-agent */
   session_env_t session_env;
@@ -202,7 +202,7 @@ struct
 
   /* If > 0, limit the number of card insertion prompts to this
      value. */
-  int limit_card_insert_tries; 
+  int limit_card_insert_tries;
 
 #ifdef ENABLE_CARD_SUPPORT
   /* FIXME: We don't needs this here as it is done in scdaemon. */
@@ -231,8 +231,8 @@ struct
     enum {
       AKL_NODEFAULT,
       AKL_LOCAL,
-      AKL_CERT, 
-      AKL_PKA, 
+      AKL_CERT,
+      AKL_PKA,
       AKL_LDAP,
       AKL_KEYSERVER,
       AKL_SPEC

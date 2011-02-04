@@ -43,13 +43,13 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
       const char *s;
       char tmp[16+1];
       int i;
-      
+
       s = gcry_md_algo_name (algo);
       if (s && strlen (s) < 16)
 	{
 	  for (i=0; i < strlen (s); i++)
 	    tmp[i] = tolower (s[i]);
-	  tmp[i] = '\0';   
+	  tmp[i] = '\0';
 	}
 
       rc = gcry_sexp_build (&hash, NULL,
@@ -59,7 +59,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
   else
     {
       gcry_mpi_t mpi;
-      
+
       rc = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
       if (! rc)
 	{
@@ -68,11 +68,11 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
 				mpi);
 	  gcry_mpi_release (mpi);
 	}
-	  
+
     }
-  
+
   *r_hash = hash;
-  return rc;   
+  return rc;
 }
 
 
@@ -131,7 +131,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
     qbits = get_dsa_qbits (pkey);
   else
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
-  
+
   if ((qbits%8))
     {
       log_error (_("DSA requires the hash length to be a"
@@ -164,7 +164,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
     {
       log_error (_("a %zu bit hash is not valid for a %u bit %s key\n"),
                  mdlen*8,
-                 gcry_pk_get_nbits (pkey), 
+                 gcry_pk_get_nbits (pkey),
                  gcry_pk_algo_name (pkalgo));
       /* FIXME: we need to check the requirements for ECDSA.  */
       if (mdlen < 20 || pkalgo == GCRY_PK_DSA)
@@ -174,7 +174,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   /* Truncate.  */
   if (mdlen > qbits/8)
     mdlen = qbits/8;
-            
+
   /* Create the S-expression.  We need to convert to an MPI first
      because we want an unsigned integer.  Using %b directly is not
      possible because libgcrypt assumes an mpi and uses
@@ -182,7 +182,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
      value.  */
   {
     gcry_mpi_t mpi;
-      
+
     err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
     if (!err)
       {
@@ -193,7 +193,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   }
   if (!err)
     *r_hash = hash;
-  return err;   
+  return err;
 }
 
 
@@ -209,7 +209,7 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   gcry_sexp_t hash;
   unsigned char *frame;
   size_t i, n, nframe;
-            
+
   nframe = (nbits+7) / 8;
   if ( !mdlen || mdlen + 8 + 4 > nframe )
     {
@@ -220,7 +220,7 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   frame = xtrymalloc (nframe);
   if (!frame)
     return gpg_error_from_syserror ();
-  
+
   /* Assemble the pkcs#1 block type 1. */
   n = 0;
   frame[n++] = 0;
@@ -233,7 +233,7 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   memcpy (frame+n, md, mdlen );
   n += mdlen;
   assert (n == nframe);
-  
+
   /* Create the S-expression.  */
   rc = gcry_sexp_build (&hash, NULL,
                         "(data (flags raw) (value %b))",
@@ -241,7 +241,7 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
   xfree (frame);
 
   *r_hash = hash;
-  return rc;   
+  return rc;
 }
 
 
@@ -280,8 +280,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       unsigned char *buf = NULL;
       size_t len = 0;
 
-      rc = divert_pksign (ctrl, 
-                          ctrl->digest.value, 
+      rc = divert_pksign (ctrl,
+                          ctrl->digest.value,
                           ctrl->digest.valuelen,
                           ctrl->digest.algo,
                           shadow_info, &buf);
@@ -367,7 +367,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
    tried to get a passphrase.  */
 int
 agent_pksign (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
-              membuf_t *outbuf, cache_mode_t cache_mode) 
+              membuf_t *outbuf, cache_mode_t cache_mode)
 {
   gcry_sexp_t s_sig = NULL;
   char *buf = NULL;

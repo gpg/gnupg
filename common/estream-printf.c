@@ -93,7 +93,7 @@
 #if defined(HAVE_INTMAX_T) || defined(HAVE_UINTMAX_T)
 # ifdef HAVE_STDINT_H
 #  include <stdint.h>
-# endif 
+# endif
 #endif
 #ifdef HAVE_LANGINFO_THOUSANDS_SEP
 #include <langinfo.h>
@@ -111,12 +111,12 @@
 
 /* Allow redefinition of asprintf used malloc functions.  */
 #if defined(_ESTREAM_PRINTF_MALLOC)
-#define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))  
+#define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))
 #else
 #define my_printf_malloc(a) malloc((a))
 #endif
 #if defined(_ESTREAM_PRINTF_FREE)
-#define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))  
+#define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))
 #else
 #define my_printf_free(a)   free((a))
 #endif
@@ -233,7 +233,7 @@ typedef enum
 
 
 /* A union used to store the actual values. */
-typedef union 
+typedef union
 {
   char a_char;
   signed char a_schar;
@@ -317,7 +317,7 @@ dump_argspecs (argspec_t arg, size_t argcount)
   int idx;
 
   for (idx=0; argcount; argcount--, arg++, idx++)
-    fprintf (stderr, 
+    fprintf (stderr,
              "%2d: len=%u flags=%u width=%d prec=%d mod=%d "
              "con=%d vt=%d pos=%d-%d-%d\n",
              idx,
@@ -341,8 +341,8 @@ compute_type (argspec_t arg)
 {
   switch (arg->conspec)
     {
-    case CONSPEC_UNKNOWN: 
-      arg->vt = VALTYPE_UNSUPPORTED; 
+    case CONSPEC_UNKNOWN:
+      arg->vt = VALTYPE_UNSUPPORTED;
       break;
 
     case CONSPEC_DECIMAL:
@@ -353,7 +353,7 @@ compute_type (argspec_t arg)
         case LENMOD_LONG: arg->vt = VALTYPE_LONG; break;
         case LENMOD_LONGLONG: arg->vt = VALTYPE_LONGLONG; break;
         case LENMOD_INTMAX: arg->vt = VALTYPE_INTMAX; break;
-        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE; break;   
+        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE; break;
         case LENMOD_PTRDIFF: arg->vt = VALTYPE_PTRDIFF; break;
         default: arg->vt = VALTYPE_INT; break;
         }
@@ -370,12 +370,12 @@ compute_type (argspec_t arg)
         case LENMOD_LONG: arg->vt = VALTYPE_ULONG; break;
         case LENMOD_LONGLONG: arg->vt = VALTYPE_ULONGLONG; break;
         case LENMOD_INTMAX: arg->vt = VALTYPE_UINTMAX; break;
-        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE; break;   
+        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE; break;
         case LENMOD_PTRDIFF: arg->vt = VALTYPE_PTRDIFF; break;
         default: arg->vt = VALTYPE_UINT; break;
         }
       break;
-      
+
     case CONSPEC_FLOAT:
     case CONSPEC_FLOAT_UP:
     case CONSPEC_EXP:
@@ -391,9 +391,9 @@ compute_type (argspec_t arg)
         default: arg->vt = VALTYPE_DOUBLE; break;
         }
       break;
-      
+
     case CONSPEC_CHAR:
-      arg->vt = VALTYPE_INT; 
+      arg->vt = VALTYPE_INT;
       break;
 
     case CONSPEC_STRING:
@@ -416,12 +416,12 @@ compute_type (argspec_t arg)
         case LENMOD_LONG: arg->vt = VALTYPE_LONG_PTR; break;
         case LENMOD_LONGLONG: arg->vt = VALTYPE_LONGLONG_PTR; break;
         case LENMOD_INTMAX: arg->vt = VALTYPE_INTMAX_PTR; break;
-        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE_PTR; break;   
+        case LENMOD_SIZET: arg->vt = VALTYPE_SIZE_PTR; break;
         case LENMOD_PTRDIFF: arg->vt = VALTYPE_PTRDIFF_PTR; break;
         default: arg->vt = VALTYPE_INT_PTR; break;
         }
       break;
-      
+
     }
 }
 
@@ -446,7 +446,7 @@ parse_format (const char *format,
 
   if (!format)
     goto leave_einval;
-      
+
   for (; *format; format++)
     {
       unsigned int flags;
@@ -454,7 +454,7 @@ parse_format (const char *format,
       lenmod_t lenmod;
       conspec_t conspec;
       int arg_pos, width_pos, precision_pos;
-      
+
       if (*format != '%')
         continue;
       s = ++format;
@@ -468,7 +468,7 @@ parse_format (const char *format,
       if (*s >= '1' && *s <= '9')
         {
           const char *save_s = s;
-          
+
           arg_pos = (*s++ - '0');
           for (; *s >= '0' && *s <= '9'; s++)
             arg_pos = 10*arg_pos + (*s - '0');
@@ -482,7 +482,7 @@ parse_format (const char *format,
               s = save_s;
             }
         }
-         
+
       /* Parse the flags.  */
       flags = 0;
       for ( ; *s; s++)
@@ -500,7 +500,7 @@ parse_format (const char *format,
             }
         }
     flags_parsed:
-      
+
       /* Parse the field width.  */
       width_pos = 0;
       if (*s == '*')
@@ -583,11 +583,11 @@ parse_format (const char *format,
           if (ignore_value)
             precision = NO_FIELD_VALUE;
         }
-      
+
       /* Parse the length modifiers.  */
       switch (*s)
         {
-        case 'h': 
+        case 'h':
           if (s[1] == 'h')
             {
               lenmod = LENMOD_CHAR;
@@ -613,7 +613,7 @@ parse_format (const char *format,
         case 'L': lenmod = LENMOD_LONGDBL; s++; break;
         default:  lenmod = LENMOD_NONE; break;
         }
-      
+
       /* Parse the conversion specifier.  */
       switch (*s)
         {
@@ -683,7 +683,7 @@ parse_format (const char *format,
   *argspecs_addr = argspecs;
   *r_argspecs_count = argcount;
   return 0; /* Success.  */
-  
+
  leave_einval:
   _set_errno (EINVAL);
  leave:
@@ -714,14 +714,14 @@ read_values (valueitem_t valuetable, size_t valuetable_len, va_list vaargs)
           value->a_char_ptr = va_arg (vaargs, char *);
           break;
         case VALTYPE_SCHAR: value->a_schar = va_arg (vaargs, int); break;
-        case VALTYPE_SCHAR_PTR: 
-          value->a_schar_ptr = va_arg (vaargs, signed char *); 
+        case VALTYPE_SCHAR_PTR:
+          value->a_schar_ptr = va_arg (vaargs, signed char *);
           break;
         case VALTYPE_UCHAR: value->a_uchar = va_arg (vaargs, int); break;
         case VALTYPE_SHORT: value->a_short = va_arg (vaargs, int); break;
         case VALTYPE_USHORT: value->a_ushort = va_arg (vaargs, int); break;
-        case VALTYPE_SHORT_PTR: 
-          value->a_short_ptr = va_arg (vaargs, short *); 
+        case VALTYPE_SHORT_PTR:
+          value->a_short_ptr = va_arg (vaargs, short *);
           break;
         case VALTYPE_INT:
           value->a_int = va_arg (vaargs, int);
@@ -735,20 +735,20 @@ read_values (valueitem_t valuetable, size_t valuetable_len, va_list vaargs)
         case VALTYPE_LONG:
           value->a_long = va_arg (vaargs, long);
           break;
-        case VALTYPE_ULONG: 
+        case VALTYPE_ULONG:
           value->a_ulong = va_arg (vaargs, unsigned long);
           break;
-        case VALTYPE_LONG_PTR: 
-          value->a_long_ptr = va_arg (vaargs, long *); 
+        case VALTYPE_LONG_PTR:
+          value->a_long_ptr = va_arg (vaargs, long *);
           break;
 #ifdef HAVE_LONG_LONG_INT
         case VALTYPE_LONGLONG:
           value->a_longlong = va_arg (vaargs, long long int);
           break;
-        case VALTYPE_ULONGLONG: 
-          value->a_ulonglong = va_arg (vaargs, unsigned long long int); 
+        case VALTYPE_ULONGLONG:
+          value->a_ulonglong = va_arg (vaargs, unsigned long long int);
           break;
-        case VALTYPE_LONGLONG_PTR: 
+        case VALTYPE_LONGLONG_PTR:
           value->a_longlong_ptr = va_arg (vaargs, long long *);
           break;
 #endif
@@ -763,31 +763,31 @@ read_values (valueitem_t valuetable, size_t valuetable_len, va_list vaargs)
         case VALTYPE_STRING:
           value->a_string = va_arg (vaargs, const char *);
           break;
-        case VALTYPE_POINTER: 
+        case VALTYPE_POINTER:
           value->a_void_ptr = va_arg (vaargs, void *);
           break;
 #ifdef HAVE_INTMAX_T
         case VALTYPE_INTMAX:
           value->a_intmax = va_arg (vaargs, intmax_t);
           break;
-        case VALTYPE_INTMAX_PTR: 
-          value->a_intmax_ptr = va_arg (vaargs, intmax_t *); 
+        case VALTYPE_INTMAX_PTR:
+          value->a_intmax_ptr = va_arg (vaargs, intmax_t *);
           break;
 #endif
 #ifdef HAVE_UINTMAX_T
-        case VALTYPE_UINTMAX: 
-          value->a_uintmax = va_arg (vaargs, uintmax_t); 
+        case VALTYPE_UINTMAX:
+          value->a_uintmax = va_arg (vaargs, uintmax_t);
           break;
 #endif
         case VALTYPE_SIZE:
           value->a_size = va_arg (vaargs, size_t);
           break;
-        case VALTYPE_SIZE_PTR: 
-          value->a_size_ptr = va_arg (vaargs, size_t *); 
+        case VALTYPE_SIZE_PTR:
+          value->a_size_ptr = va_arg (vaargs, size_t *);
           break;
 #ifdef HAVE_PTRDIFF_T
         case VALTYPE_PTRDIFF:
-          value->a_ptrdiff = va_arg (vaargs, ptrdiff_t); 
+          value->a_ptrdiff = va_arg (vaargs, ptrdiff_t);
           break;
         case VALTYPE_PTRDIFF_PTR:
           value->a_ptrdiff_ptr = va_arg (vaargs, ptrdiff_t *);
@@ -822,7 +822,7 @@ pad_out (estream_printf_out_t outfnc, void *outfncarg,
       *nbytes += n;
       count -= n;
     }
-  
+
   return 0;
 }
 
@@ -859,18 +859,18 @@ pr_integer (estream_printf_out_t outfnc, void *outfncarg,
         {
         case VALTYPE_SHORT: along = value.a_short; break;
         case VALTYPE_INT: along = value.a_int; break;
-        case VALTYPE_LONG: along = value.a_long; break;  
+        case VALTYPE_LONG: along = value.a_long; break;
 #ifdef HAVE_LONG_LONG_INT
-        case VALTYPE_LONGLONG: along = value.a_longlong; break;  
-        case VALTYPE_SIZE: along = value.a_size; break;  
+        case VALTYPE_LONGLONG: along = value.a_longlong; break;
+        case VALTYPE_SIZE: along = value.a_size; break;
 # ifdef HAVE_INTMAX_T
-        case VALTYPE_INTMAX: along = value.a_intmax; break;  
+        case VALTYPE_INTMAX: along = value.a_intmax; break;
 # endif
 # ifdef HAVE_PTRDIFF_T
-        case VALTYPE_PTRDIFF: along = value.a_ptrdiff; break;  
+        case VALTYPE_PTRDIFF: along = value.a_ptrdiff; break;
 # endif
 #endif /*HAVE_LONG_LONG_INT*/
-        default: 
+        default:
           return -1;
         }
       if (along < 0)
@@ -887,18 +887,18 @@ pr_integer (estream_printf_out_t outfnc, void *outfncarg,
         {
         case VALTYPE_USHORT: aulong = value.a_ushort; break;
         case VALTYPE_UINT: aulong = value.a_uint; break;
-        case VALTYPE_ULONG: aulong = value.a_ulong; break;  
+        case VALTYPE_ULONG: aulong = value.a_ulong; break;
 #ifdef HAVE_LONG_LONG_INT
-        case VALTYPE_ULONGLONG: aulong = value.a_ulonglong; break;  
-        case VALTYPE_SIZE: aulong = value.a_size; break;  
+        case VALTYPE_ULONGLONG: aulong = value.a_ulonglong; break;
+        case VALTYPE_SIZE: aulong = value.a_size; break;
 # ifdef HAVE_UINTMAX_T
-        case VALTYPE_UINTMAX: aulong = value.a_uintmax; break;  
+        case VALTYPE_UINTMAX: aulong = value.a_uintmax; break;
 # endif
 # ifdef HAVE_PTRDIFF_T
-        case VALTYPE_PTRDIFF: aulong = value.a_ptrdiff; break;  
+        case VALTYPE_PTRDIFF: aulong = value.a_ptrdiff; break;
 # endif
 #endif /*HAVE_LONG_LONG_INT*/
-        default: 
+        default:
           return -1;
         }
     }
@@ -929,7 +929,7 @@ pr_integer (estream_printf_out_t outfnc, void *outfncarg,
 
       do
         {
-          if ((arg->flags & FLAG_GROUPING) 
+          if ((arg->flags & FLAG_GROUPING)
               && (++grouping == 3) && *grouping_string)
             {
               *--p = *grouping_string;
@@ -964,7 +964,7 @@ pr_integer (estream_printf_out_t outfnc, void *outfncarg,
       if ((arg->flags & FLAG_ALT_CONV))
         n_extra += 2;
     }
-  
+
   n = pend - p;
 
   if ((arg->flags & FLAG_ZERO_PAD)
@@ -1009,7 +1009,7 @@ pr_integer (estream_printf_out_t outfnc, void *outfncarg,
       if (rc)
         return rc;
     }
-      
+
   rc = outfnc (outfncarg, p, pend - p);
   if (rc)
     return rc;
@@ -1062,7 +1062,7 @@ pr_float (estream_printf_out_t outfnc, void *outfncarg,
       adblfloat = value.a_longdouble;
       use_dbl=1; break;
 #endif
-    default: 
+    default:
       return -1;
     }
 
@@ -1173,7 +1173,7 @@ pr_char (estream_printf_out_t outfnc, void *outfncarg,
   if(rc)
     return rc;
   *nbytes += 1;
-  
+
   return 0;
 }
 
@@ -1194,7 +1194,7 @@ pr_string (estream_printf_out_t outfnc, void *outfncarg,
     string = "(null)";
   if (arg->precision >= 0)
     {
-      for (n=0,s=string; *s && n < arg->precision; s++) 
+      for (n=0,s=string; *s && n < arg->precision; s++)
         n++;
     }
   else
@@ -1220,7 +1220,7 @@ pr_string (estream_printf_out_t outfnc, void *outfncarg,
       if (rc)
         return rc;
     }
-  
+
   return 0;
 }
 
@@ -1261,7 +1261,7 @@ pr_pointer (estream_printf_out_t outfnc, void *outfncarg,
     *--p = '0';
   *--p = 'x';
   *--p = '0';
-  
+
   rc = outfnc (outfncarg, p, pend - p);
   if (rc)
     return rc;
@@ -1280,14 +1280,14 @@ pr_bytes_so_far (estream_printf_out_t outfnc, void *outfncarg,
 
   switch (arg->vt)
     {
-    case VALTYPE_SCHAR_PTR: 
-      *value.a_schar_ptr = (signed char)(unsigned int)(*nbytes); 
+    case VALTYPE_SCHAR_PTR:
+      *value.a_schar_ptr = (signed char)(unsigned int)(*nbytes);
       break;
-    case VALTYPE_SHORT_PTR:  
+    case VALTYPE_SHORT_PTR:
       *value.a_short_ptr = (short)(unsigned int)(*nbytes);
       break;
-    case VALTYPE_LONG_PTR:     
-      *value.a_long_ptr = (long)(*nbytes); 
+    case VALTYPE_LONG_PTR:
+      *value.a_long_ptr = (long)(*nbytes);
       break;
 #ifdef HAVE_LONG_LONG_INT
     case VALTYPE_LONGLONG_PTR:
@@ -1295,12 +1295,12 @@ pr_bytes_so_far (estream_printf_out_t outfnc, void *outfncarg,
       break;
 #endif
 #ifdef HAVE_INTMAX_T
-    case VALTYPE_INTMAX_PTR:   
+    case VALTYPE_INTMAX_PTR:
       *value.a_intmax_ptr = (intmax_t)(*nbytes);
       break;
 #endif
     case VALTYPE_SIZE_PTR:
-      *value.a_size_ptr = (*nbytes); 
+      *value.a_size_ptr = (*nbytes);
       break;
 #ifdef HAVE_PTRDIFF_T
     case VALTYPE_PTRDIFF_PTR:
@@ -1325,8 +1325,8 @@ pr_bytes_so_far (estream_printf_out_t outfnc, void *outfncarg,
    holds the values and may be directly addressed using the position
    arguments given by ARGSPECS.  MYERRNO is used for the "%m"
    conversion. NBYTES well be updated to reflect the number of bytes
-   send to the output function. */ 
-static int 
+   send to the output function. */
+static int
 do_format (estream_printf_out_t outfnc, void *outfncarg,
            const char *format, argspec_t argspecs, size_t argspecs_len,
            valueitem_t valuetable, int myerrno, size_t *nbytes)
@@ -1370,7 +1370,7 @@ do_format (estream_printf_out_t outfnc, void *outfncarg,
       /* Save the next start.  */
       s += arg->length;
       format = s;
- 
+
       assert (argidx < argspecs_len);
       argidx++;
 
@@ -1438,9 +1438,9 @@ do_format (estream_printf_out_t outfnc, void *outfncarg,
         }
       if (rc)
         return rc;
-      arg++;    
+      arg++;
     }
-  
+
   /* Print out any trailing stuff. */
   n = s - format;
   rc = n? outfnc (outfncarg, format, n) : 0;
@@ -1458,7 +1458,7 @@ do_format (estream_printf_out_t outfnc, void *outfncarg,
    output of the formatted stuff.  FORMAT is the format specification
    and VAARGS a variable argumemt list matching the arguments of
    FORMAT.  */
-int 
+int
 estream_format (estream_printf_out_t outfnc,
                 void *outfncarg,
                 const char *format, va_list vaargs)
@@ -1493,7 +1493,7 @@ estream_format (estream_printf_out_t outfnc,
   /* Check that all ARG_POS fields are set.  */
   for (argidx=0,max_pos=0; argidx < argspecs_len; argidx++)
     {
-      if (argspecs[argidx].arg_pos != -1 
+      if (argspecs[argidx].arg_pos != -1
           && argspecs[argidx].arg_pos > max_pos)
         max_pos = argspecs[argidx].arg_pos;
       if (argspecs[argidx].width_pos > max_pos)
@@ -1574,13 +1574,13 @@ estream_format (estream_printf_out_t outfnc,
           valuetable[validx].vt = VALTYPE_INT;
         }
     }
-  
+
   /* Read all the arguments.  This will error out for unsupported
      types and for not given positional arguments. */
   rc = read_values (valuetable, max_pos, vaargs);
   if (rc)
-    goto leave_einval;  
-  
+    goto leave_einval;
+
 /*   for (validx=0; validx < max_pos; validx++) */
 /*     fprintf (stderr, "%2d: vt=%d\n", validx, valuetable[validx].vt); */
 
@@ -1589,7 +1589,7 @@ estream_format (estream_printf_out_t outfnc,
                   argspecs, argspecs_len, valuetable, myerrno, &nbytes);
 
   goto leave;
-  
+
  leave_einval:
   _set_errno (EINVAL);
  leave_error:
@@ -1623,11 +1623,11 @@ estream_printf (const char *format, ...)
 {
   int rc;
   va_list arg_ptr;
-  
+
   va_start (arg_ptr, format);
   rc = estream_format (plain_stdio_out, stderr, format, arg_ptr);
   va_end (arg_ptr);
-  
+
   return rc;
 }
 
@@ -1637,16 +1637,16 @@ estream_fprintf (FILE *fp, const char *format, ...)
 {
   int rc;
   va_list arg_ptr;
-  
+
   va_start (arg_ptr, format);
   rc = estream_format (plain_stdio_out, fp, format, arg_ptr);
   va_end (arg_ptr);
-  
+
   return rc;
 }
 
 /* A replacement for vfprintf.  */
-int 
+int
 estream_vfprintf (FILE *fp, const char *format, va_list arg_ptr)
 {
   return estream_format (plain_stdio_out, fp, format, arg_ptr);
@@ -1693,7 +1693,7 @@ fixed_buffer_out (void *outfncarg, const char *buf, size_t buflen)
 
 
 /* A replacement for vsnprintf. */
-int 
+int
 estream_vsnprintf (char *buf, size_t bufsize,
                    const char *format, va_list arg_ptr)
 {
@@ -1718,7 +1718,7 @@ estream_vsnprintf (char *buf, size_t bufsize,
 }
 
 /* A replacement for snprintf.  */
-int 
+int
 estream_snprintf (char *buf, size_t bufsize, const char *format, ...)
 {
   int rc;
@@ -1727,7 +1727,7 @@ estream_snprintf (char *buf, size_t bufsize, const char *format, ...)
   va_start (arg_ptr, format);
   rc = estream_vsnprintf (buf, bufsize, format, arg_ptr);
   va_end (arg_ptr);
-    
+
   return rc;
 }
 
@@ -1737,7 +1737,7 @@ estream_snprintf (char *buf, size_t bufsize, const char *format, ...)
    dynamic_buffer_out.  */
 struct dynamic_buffer_parm_s
 {
-  int error_flag; /* Internal helper.  */ 
+  int error_flag; /* Internal helper.  */
   size_t alloced; /* Allocated size of the buffer.  */
   size_t used;    /* Used size of the buffer.  */
   char *buffer;   /* Malloced buffer.  */
@@ -1760,7 +1760,7 @@ dynamic_buffer_out (void *outfncarg, const char *buf, size_t buflen)
   if (parm->used + buflen >= parm->alloced)
     {
       char *p;
-      
+
       parm->alloced += buflen + 512;
       p = realloc (parm->buffer, parm->alloced);
       if (!p)
@@ -1783,7 +1783,7 @@ dynamic_buffer_out (void *outfncarg, const char *buf, size_t buflen)
 /* A replacement for vasprintf.  As with the BSD of vasprintf version -1
    will be returned on error and NULL stored at BUFP.  On success the
    number of bytes printed will be returned. */
-int 
+int
 estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
 {
   struct dynamic_buffer_parm_s parm;
@@ -1798,7 +1798,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
       *bufp = NULL;
       return -1;
     }
-  
+
   rc = estream_format (dynamic_buffer_out, &parm, format, arg_ptr);
   if (!rc)
     rc = dynamic_buffer_out (&parm, "", 1); /* Print terminating Nul.  */
@@ -1823,7 +1823,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
 /* A replacement for asprintf.  As with the BSD of asprintf version -1
    will be returned on error and NULL stored at BUFP.  On success the
    number of bytes printed will be returned. */
-int 
+int
 estream_asprintf (char **bufp, const char *format, ...)
 {
   int rc;
@@ -1832,8 +1832,6 @@ estream_asprintf (char **bufp, const char *format, ...)
   va_start (arg_ptr, format);
   rc = estream_vasprintf (bufp, format, arg_ptr);
   va_end (arg_ptr);
-    
+
   return rc;
 }
-
-

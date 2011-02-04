@@ -121,7 +121,7 @@ typedef struct {
     unsigned long last;		/* last amount reported */
     unsigned long offset;	/* current amount */
     unsigned long total;	/* total amount */
-    int  refcount;              
+    int  refcount;
 } progress_filter_context_t;
 
 /* encrypt_filter_context_t defined in main.h */

@@ -28,7 +28,7 @@ Daiki Ueno <ueno@unixuser.org>  Assigns Past and Future Changes.
 David Shaw <dshaw@jabberwocky.com> Assigns past and future changes.
     (all in keyserver/,
      a lot of changes in g10/ see the ChangeLog,
-     bug fixes here and there)           
+     bug fixes here and there)
 
 Dokianakis Theofanis <madf@hellug.gr> Translations [el]
 
@@ -76,7 +76,7 @@ Marcus Brinkmann  <marcus@g10code.de>
 Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
     (wrote cipher/twofish.c)
 
-Moritz Schulte  <moritz@g10code.com>  
+Moritz Schulte  <moritz@g10code.com>
    (ssh support gpg-agent)
 
 Niklas Hernaeus <nh@df.lth.se> Disclaimer
@@ -84,11 +84,11 @@ Niklas Hernaeus <nh@df.lth.se> Disclaimer
 
 Nilgun Belma Buguner <nilgun@technologist.com> Translations [tr]
 
-Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de> 
+Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de>
                                       Assigns past and future changes
     (configure.in, cipher/rndlinux.c, FAQ)
 
-Paul Eggert <eggert@twinsun.com> 
+Paul Eggert <eggert@twinsun.com>
     (configuration macros for LFS)
 
 Pavel I. Shajdo <pshajdo@gmail.com> Translations [ru]

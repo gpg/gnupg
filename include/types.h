@@ -48,7 +48,7 @@
 #undef byte	    /* maybe there is a macro with this name */
 #ifndef __riscos__
 typedef unsigned char byte;
-#else 
+#else
 /* Norcroft treats char  = unsigned char  as legal assignment
                but char* = unsigned char* as illegal assignment
    and the same applies to the signed variants as well  */

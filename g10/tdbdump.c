@@ -68,16 +68,16 @@ void
 list_trustdb( const char *username )
 {
   TRUSTREC rec;
-  
+
   (void)username;
-  
+
   init_trustdb();
   /* For now we ignore the user ID. */
   if (1)
     {
       ulong recnum;
       int i;
-      
+
       printf("TrustDB: %s\n", tdbio_get_dbname() );
       for(i=9+strlen(tdbio_get_dbname()); i > 0; i-- )
         putchar('-');
@@ -187,7 +187,7 @@ import_ownertrust( const char *fname )
 	    fpr[fprlen++] = HEXTOBIN(p[0]) * 16 + HEXTOBIN(p[1]);
 	while (fprlen < 20)
 	    fpr[fprlen++] = 0;
-        
+
 	rc = tdbio_search_trust_byfpr (fpr, &rec);
 	if( !rc ) { /* found: update */
 	    if (rec.r.trust.ownertrust != otrust)
@@ -220,7 +220,7 @@ import_ownertrust( const char *fname )
 	log_error ( _("read error in `%s': %s\n"), fname, strerror(errno) );
     if( !is_stdin )
 	fclose(fp);
-    
+
     if (any)
       {
         revalidation_mark ();
@@ -228,7 +228,5 @@ import_ownertrust( const char *fname )
         if (rc)
           log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
       }
-    
+
 }
-
-

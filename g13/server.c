@@ -39,7 +39,7 @@ static FILE *statusfp;
 
 /* Local data for this server module.  A pointer to this is stored in
    the CTRL object of each connection.  */
-struct server_local_s 
+struct server_local_s
 {
   /* The Assuan contect we are working on.  */
   assuan_context_t assuan_ctx;
@@ -59,7 +59,7 @@ static int command_has_option (const char *cmd, const char *cmdopt);
 
 
 /*
-   Helper functions. 
+   Helper functions.
  */
 
 /* Set an error and a description.  */
@@ -202,7 +202,7 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_open[] = 
+static const char hlp_open[] =
   "OPEN [<options>] <filename>\n"
   "\n"
   "Open the container FILENAME.  FILENAME must be percent-plus\n"
@@ -255,14 +255,14 @@ cmd_open (assuan_context_t ctx, char *line)
   ctrl->server_local->containername = xtrystrdup (line);
   if (!ctrl->server_local->containername)
     err = gpg_error_from_syserror ();
-  
-  
+
+
  leave:
   return leave_cmd (ctx, err);
 }
 
 
-static const char hlp_mount[] = 
+static const char hlp_mount[] =
   "MOUNT [options] [<mountpoint>]\n"
   "\n"
   "Mount the currently open file onto MOUNTPOINT.  If MOUNTPOINT is not\n"
@@ -305,7 +305,7 @@ cmd_mount (assuan_context_t ctx, char *line)
     }
 
   /* Perform the mount.  */
-  err = g13_mount_container (ctrl, ctrl->server_local->containername, 
+  err = g13_mount_container (ctrl, ctrl->server_local->containername,
                              *line? line : NULL);
 
  leave:
@@ -313,7 +313,7 @@ cmd_mount (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_umount[] = 
+static const char hlp_umount[] =
   "UMOUNT [options] [<mountpoint>]\n"
   "\n"
   "Unmount the currently open file or the one opened at MOUNTPOINT.\n"
@@ -350,7 +350,7 @@ cmd_umount (assuan_context_t ctx, char *line)
     }
 
   /* Perform the unmount.  */
-  err = g13_umount_container (ctrl, ctrl->server_local->containername, 
+  err = g13_umount_container (ctrl, ctrl->server_local->containername,
                               *line? line : NULL);
 
  leave:
@@ -358,7 +358,7 @@ cmd_umount (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_recipient[] = 
+static const char hlp_recipient[] =
   "RECIPIENT <userID>\n"
   "\n"
   "Add USERID to the list of recipients to be used for the next CREATE\n"
@@ -443,7 +443,7 @@ cmd_create (assuan_context_t ctx, char *line)
   if (!err)
     {
       FREE_STRLIST (ctrl->server_local->recipients);
-  
+
       /* Store the filename.  */
       ctrl->server_local->containername = xtrystrdup (line);
       if (!ctrl->server_local->containername)
@@ -455,7 +455,7 @@ cmd_create (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_getinfo[] = 
+static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
   "Multipurpose function to return a variety of information.\n"
@@ -528,7 +528,7 @@ command_has_option (const char *cmd, const char *cmdopt)
 {
   (void)cmd;
   (void)cmdopt;
-      
+
   return 0;
 }
 
@@ -548,8 +548,8 @@ register_commands (assuan_context_t ctx)
     { "RECIPIENT",     cmd_recipient, hlp_recipient },
     { "SIGNER",        cmd_signer, hlp_signer },
     { "CREATE",        cmd_create, hlp_create },
-    { "INPUT",         NULL }, 
-    { "OUTPUT",        NULL }, 
+    { "INPUT",         NULL },
+    { "OUTPUT",        NULL },
     { "GETINFO",       cmd_getinfo,hlp_getinfo },
     { NULL }
   };
@@ -562,7 +562,7 @@ register_commands (assuan_context_t ctx)
                                      table[i].help);
       if (err)
         return err;
-    } 
+    }
   return 0;
 }
 
@@ -652,7 +652,7 @@ g13_server (ctrl_t ctrl)
     err = 0;
   else
     log_info ("Assuan accept problem: %s\n", gpg_strerror (err));
-  
+
  leave:
   reset_notify (ctx, NULL);  /* Release all items hold by SERVER_LOCAL.  */
   if (ctrl->server_local)
@@ -689,17 +689,17 @@ g13_status (ctrl_t ctrl, int no, ...)
             statusfp = stderr;
           else
             statusfp = fdopen (ctrl->status_fd, "w");
-          
+
           if (!statusfp)
             {
               log_fatal ("can't open fd %d for status output: %s\n",
                          ctrl->status_fd, strerror(errno));
             }
         }
-      
+
       fputs ("[GNUPG:] ", statusfp);
       fputs (get_status_string (no), statusfp);
-    
+
       while ( (text = va_arg (arg_ptr, const char*) ))
         {
           putc ( ' ', statusfp );
@@ -752,5 +752,3 @@ g13_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
     return 0;
   return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
-
-

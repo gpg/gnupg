@@ -72,4 +72,3 @@ free_md_filter_context( md_filter_context_t *mfx )
     mfx->md2 = NULL;
     mfx->maxbuf_size = 0;
 }
-

@@ -20,7 +20,7 @@
 #ifndef G13_MOUNT_H
 #define G13_MOUNT_H
 
-gpg_error_t g13_mount_container (ctrl_t ctrl, 
+gpg_error_t g13_mount_container (ctrl_t ctrl,
                                  const char *filename,
                                  const char *mountpoint);
 gpg_error_t g13_umount_container (ctrl_t ctrl,
@@ -31,4 +31,3 @@ gpg_error_t g13_is_container (ctrl_t ctrl, const char *filename);
 
 
 #endif /*G13_MOUNT_H*/
-

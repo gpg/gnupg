@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -40,7 +40,7 @@ ask_mb_lines (membuf_t *mb, const char *prefix)
 {
   char *answer = NULL;
 
-  do 
+  do
     {
       xfree (answer);
       answer = tty_get ("> ");
@@ -88,7 +88,7 @@ store_mb_lines (membuf_t *mb, membuf_t *lines)
 
 /* Chech whether we have a key for the key with HEXGRIP.  Returns NULL
    if not or a string describing the type of the key (RSA, ELG, DSA,
-   etc..).  */ 
+   etc..).  */
 static const char *
 check_keygrip (ctrl_t ctrl, const char *hexgrip)
 {
@@ -202,7 +202,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
           answer = tty_get (_("Enter the keygrip: "));
           tty_kill_prompt ();
           trim_spaces (answer);
-          
+
           if (!*answer)
             goto again;
           else if (strlen (answer) != 40 &&

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -51,7 +51,7 @@ hash_data (int fd, gcry_md_hd_t md)
       return -1;
     }
 
-  do 
+  do
     {
       nread = es_fread (buffer, 1, DIM(buffer), fp);
       gcry_md_write (md, buffer, nread);
@@ -85,7 +85,7 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
       return tmperr;
     }
 
-  do 
+  do
     {
       nread = es_fread (buffer, 1, DIM(buffer), fp);
       if (nread)
@@ -154,7 +154,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
   do
     {
       rc = keydb_get_cert (hd, &cert);
-      if (rc) 
+      if (rc)
         {
           log_error ("keydb_get_cert failed: %s\n", gpg_strerror (rc));
           keydb_release (hd);
@@ -177,13 +177,13 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
             }
         }
 
-      ksba_cert_release (cert); 
+      ksba_cert_release (cert);
       cert = NULL;
     }
   while (!(rc = keydb_search_next (hd)));
   if (rc && rc != -1)
     log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
-  
+
   ksba_cert_release (cert);
   keydb_release (hd);
   return rc;
@@ -227,7 +227,7 @@ get_default_signer (ctrl_t ctrl)
     {
       log_debug ("failed to find default certificate: rc=%d\n", rc);
     }
-  else 
+  else
     {
       rc = keydb_get_cert (kh, &cert);
       if (rc)
@@ -243,7 +243,7 @@ get_default_signer (ctrl_t ctrl)
 /* Depending on the options in CTRL add the certificate CERT as well as
    other certificate up in the chain to the Root-CA to the CMS
    object. */
-static int 
+static int
 add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
 {
   gpg_error_t err;
@@ -304,7 +304,7 @@ add_certificate_list (ctrl_t ctrl, ksba_cms_t cms, ksba_cert_t cert)
 
 
 
-/* Perform a sign operation.  
+/* Perform a sign operation.
 
    Sign the data received on DATA-FD in embedded mode or in detached
    mode when DETACHED is true.  Write the signature to OUT_FP.  The
@@ -382,7 +382,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       if (!cert)
         {
           log_error ("no default signer found\n");
-          gpgsm_status2 (ctrl, STATUS_INV_SGNR, 
+          gpgsm_status2 (ctrl, STATUS_INV_SGNR,
                          get_inv_recpsgnr_code (GPG_ERR_NO_SECKEY), NULL);
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
@@ -398,7 +398,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           char *tmpfpr;
 
           tmpfpr = gpgsm_get_fingerprint_hexstring (cert, 0);
-          gpgsm_status2 (ctrl, STATUS_INV_SGNR, 
+          gpgsm_status2 (ctrl, STATUS_INV_SGNR,
                          get_inv_recpsgnr_code (rc), tmpfpr, NULL);
           xfree (tmpfpr);
           goto leave;
@@ -444,13 +444,13 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         case GCRY_MD_SHA384: oid = "2.16.840.1.101.3.4.2.2"; break;
         case GCRY_MD_SHA512: oid = "2.16.840.1.101.3.4.2.3"; break;
 /*         case GCRY_MD_WHIRLPOOL: oid = "No OID yet"; break; */
-              
+
         case GCRY_MD_MD5:  /* We don't want to use MD5.  */
         case 0:            /* No algorithm found in cert.  */
         default:           /* Other algorithms.  */
           log_info (_("hash algorithm %d (%s) for signer %d not supported;"
                       " using %s\n"),
-                    cl->hash_algo, oid? oid: "?", i, 
+                    cl->hash_algo, oid? oid: "?", i,
                     gcry_md_algo_name (GCRY_MD_SHA1));
           cl->hash_algo = GCRY_MD_SHA1;
           oid = "1.3.14.3.2.26";
@@ -462,7 +462,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   if (opt.verbose)
     {
       for (i=0, cl=signerlist; cl; cl = cl->next, i++)
-        log_info (_("hash algorithm used for signer %d: %s (%s)\n"), 
+        log_info (_("hash algorithm used for signer %d: %s (%s)\n"),
                   i, gcry_md_algo_name (cl->hash_algo), cl->hash_algo_oid);
     }
 
@@ -473,7 +473,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       rc = gpgsm_cert_use_sign_p (cl->cert);
       if (rc)
         goto leave;
-      
+
       err = ksba_cms_add_signer (cms, cl->cert);
       if (err)
         {
@@ -509,13 +509,13 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         {
           size_t buflen;
           char buffer[1];
-          
-          err = ksba_cert_get_user_data (cl->cert, "is_qualified", 
+
+          err = ksba_cert_get_user_data (cl->cert, "is_qualified",
                                          &buffer, sizeof (buffer), &buflen);
           if (err || !buflen)
             {
               log_error (_("checking for qualified certificate failed: %s\n"),
-                         gpg_strerror (err)); 
+                         gpg_strerror (err));
               rc = err;
               goto leave;
             }
@@ -619,7 +619,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 
 
   /* Main building loop. */
-  do 
+  do
     {
       err = ksba_cms_build (cms, &stopreason);
       if (err)
@@ -630,7 +630,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         }
 
       if (stopreason == KSBA_SR_BEGIN_DATA)
-        { 
+        {
           /* Hash the data and store the message digest. */
           unsigned char *digest;
           size_t digest_len;
@@ -663,7 +663,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
             }
         }
       else if (stopreason == KSBA_SR_NEED_SIG)
-        { 
+        {
           /* Compute the signature for all signers.  */
           gcry_md_hd_t md;
 
@@ -690,7 +690,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 for (cl_tmp=signerlist; cl_tmp; cl_tmp = cl_tmp->next)
                   {
                     gcry_md_enable (md, cl_tmp->hash_algo);
-                    audit_log_i (ctrl->audit, AUDIT_ATTR_HASH_ALGO, 
+                    audit_log_i (ctrl->audit, AUDIT_ATTR_HASH_ALGO,
                                  cl_tmp->hash_algo);
                   }
               }
@@ -703,7 +703,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                   gcry_md_close (md);
                   goto leave;
                 }
-            
+
               rc = gpgsm_create_cms_signature (ctrl, cl->cert,
                                                md, cl->hash_algo, &sigval);
               if (rc)
@@ -738,8 +738,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
                 int pkalgo = gpgsm_get_key_algo_info (cl->cert, NULL);
                 buf = xtryasprintf ("%c %d %d 00 %s %s",
                                     detached? 'D':'S',
-                                    pkalgo, 
-                                    cl->hash_algo, 
+                                    pkalgo,
+                                    cl->hash_algo,
                                     signed_at,
                                     fpr);
                 if (!buf)
@@ -758,10 +758,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           gcry_md_close (md);
         }
     }
-  while (stopreason != KSBA_SR_READY);   
+  while (stopreason != KSBA_SR_READY);
 
   rc = gpgsm_finish_writer (b64writer);
-  if (rc) 
+  if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
@@ -779,7 +779,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     gpgsm_release_certlist (signerlist);
   ksba_cms_release (cms);
   gpgsm_destroy_writer (b64writer);
-  keydb_release (kh); 
+  keydb_release (kh);
   gcry_md_close (data_md);
   return rc;
 }

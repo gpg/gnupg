@@ -33,7 +33,7 @@
 static void
 run_test (void)
 {
-  static struct 
+  static struct
   {
     const char *data;
     const char *expect;
@@ -71,7 +71,7 @@ run_test (void)
 
   for (idx=0; testtbl[idx].data; idx++)
     {
-      rmd160_hash_buffer (digest, 
+      rmd160_hash_buffer (digest,
                           testtbl[idx].data, strlen(testtbl[idx].data));
       if (memcmp (digest, testtbl[idx].expect, 20))
         fail (idx);
@@ -84,9 +84,8 @@ main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
-  
+
   run_test ();
 
   return 0;
 }
-

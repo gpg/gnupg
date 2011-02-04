@@ -106,5 +106,3 @@ make_mpi_comment_node( const char *s, gcry_mpi_t a )
     xfree (buf);
     return new_kbnode( pkt );
 }
-
-

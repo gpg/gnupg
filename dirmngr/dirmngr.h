@@ -36,10 +36,10 @@
 
 /* This objects keeps information about a particular LDAP server and
    is used as item of a single linked list of servers. */
-struct ldap_server_s 
+struct ldap_server_s
 {
   struct ldap_server_s* next;
-  
+
   char *host;
   int   port;
   char *user;
@@ -71,7 +71,7 @@ struct fingerprint_list_s
 
 
 /* A large struct named "opt" to keep global flags.  */
-struct 
+struct
 {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
   int verbose;        /* verbosity level */
@@ -116,18 +116,18 @@ struct
 
   int max_replies;
   unsigned int ldaptimeout;
-  
+
   ldap_server_t ldapservers;
   int add_new_ldapservers;
 
   const char *ocsp_responder;     /* Standard OCSP responder's URL. */
   fingerprint_list_t ocsp_signer; /* The list of fingerprints with allowed
                                      standard OCSP signer certificates.  */
-  
+
   unsigned int ocsp_max_clock_skew; /* Allowed seconds of clocks skew. */
   unsigned int ocsp_max_period;     /* Seconds a response is at maximum
                                        considered valid after thisUpdate. */
-  unsigned int ocsp_current_period; /* Seconds a response is considered 
+  unsigned int ocsp_current_period; /* Seconds a response is considered
                                        current after nextUpdate. */
 } opt;
 
@@ -168,7 +168,7 @@ struct server_control_s
   int status_fd;     /* Only for non-server mode. */
   struct server_local_s *server_local;
   int force_crl_refresh; /* Always load a fresh CRL. */
-  
+
   int check_revocations_nest_level; /* Internal to check_revovations.  */
   cert_ref_t ocsp_certs; /* Certificates from the current OCSP
                             response. */

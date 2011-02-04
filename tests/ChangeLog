@@ -12,7 +12,7 @@
 2008-10-20  Werner Koch  <wk@g10code.com>
 
 	* asschk.c (cmd_echo): Mark unused arg.
-	(cmd_send, cmd_expect_ok, cmd_expect_err, cmd_pipeserver) 
+	(cmd_send, cmd_expect_ok, cmd_expect_err, cmd_pipeserver)
 	(cmd_quit_if, cmd_fail_if): Ditto.
 
 2008-09-29  Werner Koch  <wk@g10code.com>
@@ -108,7 +108,7 @@
 
 	* Makefile.am: Fixes for make dist.
 	* samplekets/Makefile.am: New.
-	
+
 2002-08-08  Werner Koch  <wk@gnupg.org>
 
 	* asschk.c: Added some new features.
@@ -123,7 +123,7 @@
 
 	* Makefile.am, asschk.c: New.
 
-	
+
  Copyright 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
@@ -133,5 +133,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	
-

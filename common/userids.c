@@ -43,8 +43,8 @@
  *   must be in the range 0..9), this is considered a fingerprint.
  * - If the username starts with a left angle, we assume it is a complete
  *   email address and look only at this part.
- * - If the username starts with a colon we assume it is a unified 
- *   key specfification. 
+ * - If the username starts with a colon we assume it is a unified
+ *   key specfification.
  * - If the username starts with a '.', we assume it is the ending
  *   part of an email address
  * - If the username starts with an '@', we assume it is a part of an
@@ -66,12 +66,12 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
   const char *s;
   int hexprefix = 0;
   int hexlength;
-  int mode = 0;   
+  int mode = 0;
   KEYDB_SEARCH_DESC dummy_desc;
 
   if (!desc)
     desc = &dummy_desc;
-    
+
   /* Clear the structure so that the mode field is set to zero unless
      we set it to the correct value right at the end of this
      function. */
@@ -81,7 +81,7 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
   for(s = name; *s && spacep (s); s++ )
     ;
 
-  switch (*s) 
+  switch (*s)
     {
     case 0:  /* Empty string is an error.  */
       return gpg_error (GPG_ERR_INV_USER_ID);
@@ -133,19 +133,19 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
       break;
 
     case '#': /* S/N with optional issuer id or just issuer id.  */
-      { 
+      {
         const char *si;
-        
+
         s++;
         if ( *s == '/')
           { /* "#/" indicates an issuer's DN.  */
             s++;
             if (!*s || spacep (s)) /* No DN or prefixed with a space.  */
-              return gpg_error (GPG_ERR_INV_USER_ID); 
+              return gpg_error (GPG_ERR_INV_USER_ID);
             desc->u.name = s;
             mode = KEYDB_SEARCH_MODE_ISSUER;
           }
-        else 
+        else
           { /* Serialnumber + optional issuer ID.  */
             for (si=s; *si && *si != '/'; si++)
               {
@@ -170,10 +170,10 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
       break;
 
     case ':': /* Unified fingerprint. */
-      {  
+      {
         const char *se, *si;
         int i;
-        
+
         se = strchr (++s,':');
         if (!se)
           return gpg_error (GPG_ERR_INV_USER_ID);
@@ -184,21 +184,21 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
           }
         if (i != 32 && i != 40)
           return gpg_error (GPG_ERR_INV_USER_ID); /* Invalid length of fpr.  */
-        for (i=0,si=s; si < se; i++, si +=2) 
+        for (i=0,si=s; si < se; i++, si +=2)
           desc->u.fpr[i] = hextobyte(si);
         for (; i < 20; i++)
           desc->u.fpr[i]= 0;
         s = se + 1;
         mode = KEYDB_SEARCH_MODE_FPR;
-      } 
+      }
       break;
 
     case '&': /* Keygrip*/
-      {  
+      {
         if (hex2bin (s+1, desc->u.grip, 20) < 0)
           return gpg_error (GPG_ERR_INV_USER_ID); /* Invalid. */
         mode = KEYDB_SEARCH_MODE_KEYGRIP;
-      } 
+      }
       break;
 
     default:
@@ -214,33 +214,33 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
           desc->exact = 1;
           hexlength++; /* Just for the following check.  */
         }
-      
+
       /* Check if a hexadecimal number is terminated by EOS or blank.  */
-      if (hexlength && s[hexlength] && !spacep (s+hexlength)) 
+      if (hexlength && s[hexlength] && !spacep (s+hexlength))
         {
           if (hexprefix) /* A "0x" prefix without a correct
                             termination is an error.  */
-            return gpg_error (GPG_ERR_INV_USER_ID); 
+            return gpg_error (GPG_ERR_INV_USER_ID);
           /* The first characters looked like a hex number, but the
              entire string is not.  */
-          hexlength = 0;  
+          hexlength = 0;
         }
-      
+
       if (desc->exact)
         hexlength--; /* Remove the bang.  */
 
       if (hexlength == 8
           || (!hexprefix && hexlength == 9 && *s == '0'))
-        { 
+        {
           /* Short keyid.  */
           if (hexlength == 9)
-            s++; 
+            s++;
           desc->u.kid[1] = strtoul( s, NULL, 16 );
           mode = KEYDB_SEARCH_MODE_SHORT_KID;
         }
       else if (hexlength == 16
                || (!hexprefix && hexlength == 17 && *s == '0'))
-        { 
+        {
           /* Long keyid.  */
           char buf[9];
           if (hexlength == 17)
@@ -252,13 +252,13 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
         }
       else if (hexlength == 32
                || (!hexprefix && hexlength == 33 && *s == '0'))
-        { 
+        {
           /* MD5 fingerprint.  */
           int i;
           if (hexlength == 33)
             s++;
-          memset (desc->u.fpr+16, 0, 4); 
-          for (i=0; i < 16; i++, s+=2) 
+          memset (desc->u.fpr+16, 0, 4);
+          for (i=0; i < 16; i++, s+=2)
             {
               int c = hextobyte(s);
               if (c == -1)
@@ -269,12 +269,12 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
         }
       else if (hexlength == 40
                || (!hexprefix && hexlength == 41 && *s == '0'))
-        { 
+        {
           /* SHA1/RMD160 fingerprint.  */
           int i;
           if (hexlength == 41)
             s++;
-          for (i=0; i < 20; i++, s+=2) 
+          for (i=0; i < 20; i++, s+=2)
             {
               int c = hextobyte(s);
               if (c == -1)
@@ -284,16 +284,16 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
           mode = KEYDB_SEARCH_MODE_FPR20;
         }
       else if (!hexprefix)
-        { 
+        {
           /* The fingerprint in an X.509 listing is often delimited by
              colons, so we try to single this case out. */
           mode = 0;
           hexlength = strspn (s, ":0123456789abcdefABCDEF");
-          if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength))) 
+          if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength)))
             {
               int i;
 
-              for (i=0; i < 20; i++, s += 3) 
+              for (i=0; i < 20; i++, s += 3)
                 {
                   int c = hextobyte(s);
                   if (c == -1 || (i < 19 && s[2] != ':'))
@@ -304,19 +304,19 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
                 mode = KEYDB_SEARCH_MODE_FPR20;
             }
           if (!mode) /* Default to substring search.  */
-            { 
+            {
               desc->exact = 0;
               desc->u.name = s;
-              mode = KEYDB_SEARCH_MODE_SUBSTR; 
+              mode = KEYDB_SEARCH_MODE_SUBSTR;
             }
         }
       else
-	{ 
+	{
           /* Hex number with a prefix but with a wrong length.  */
           return gpg_error (GPG_ERR_INV_USER_ID);
         }
     }
-  
+
   desc->mode = mode;
   return 0;
 }

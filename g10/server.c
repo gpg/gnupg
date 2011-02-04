@@ -40,12 +40,12 @@
 
 
 /* Data used to associate an Assuan context with local server data.  */
-struct server_local_s 
+struct server_local_s
 {
   /* Our current Assuan context. */
-  assuan_context_t assuan_ctx;  
+  assuan_context_t assuan_ctx;
   /* File descriptor as set by the MESSAGE command. */
-  gnupg_fd_t message_fd;               
+  gnupg_fd_t message_fd;
 
   /* List of prepared recipients.  */
   pk_list_t recplist;
@@ -55,14 +55,14 @@ struct server_local_s
 
 
 /* Helper to close the message fd if it is open. */
-static void 
+static void
 close_message_fd (ctrl_t ctrl)
 {
   if (ctrl->server_local->message_fd != GNUPG_INVALID_FD)
     {
       assuan_sock_close (ctrl->server_local->message_fd);
       ctrl->server_local->message_fd = GNUPG_INVALID_FD;
-    } 
+    }
 }
 
 
@@ -89,7 +89,7 @@ has_option (const char *line, const char *name)
 {
   const char *s;
   int n = strlen (name);
-  
+
   s = strstr (line, name);
   if (s && s >= skip_options (line))
     return 0;
@@ -188,7 +188,7 @@ static gpg_error_t
 output_notify (assuan_context_t ctx, char *line)
 {
 /*   ctrl_t ctrl = assuan_get_pointer (ctx); */
-  
+
   (void)ctx;
 
   if (strstr (line, "--armor"))
@@ -231,9 +231,9 @@ cmd_recipient (assuan_context_t ctx, char *line)
     remusr = rcpts;
   */
 
-  err = find_and_check_key (ctrl, line, PUBKEY_USAGE_ENC, hidden, 
+  err = find_and_check_key (ctrl, line, PUBKEY_USAGE_ENC, hidden,
                             &ctrl->server_local->recplist);
-  
+
   if (err)
     log_error ("command '%s' failed: %s\n", "RECIPIENT", gpg_strerror (err));
   return err;
@@ -266,7 +266,7 @@ cmd_signer (assuan_context_t ctx, char *line)
 
 
 
-/*  ENCRYPT 
+/*  ENCRYPT
 
    Do the actual encryption process.  Takes the plaintext from the
    INPUT command, writes the ciphertext to the file descriptor set
@@ -294,7 +294,7 @@ cmd_encrypt (assuan_context_t ctx, char *line)
 
   (void)line; /* LINE is not used.  */
 
-  if ( !ctrl->server_local->recplist ) 
+  if ( !ctrl->server_local->recplist )
     {
       write_status_text (STATUS_NO_RECP, "0");
       err = gpg_error (GPG_ERR_NO_USER_ID);
@@ -318,12 +318,12 @@ cmd_encrypt (assuan_context_t ctx, char *line)
      PGP-2 mode.  Do all the other checks we do in gpg.c for aEncr.
      Maybe we should drop the PGP2 compatibility. */
 
-  
+
   /* FIXME: GPGSM does this here: Add all encrypt-to marked recipients
      from the default list. */
 
   /* fixme: err = ctrl->audit? 0 : start_audit_session (ctrl);*/
-    
+
   err = encrypt_crypt (ctrl, inp_fd, NULL, NULL, 0,
                        ctrl->server_local->recplist,
                        out_fd);
@@ -389,7 +389,7 @@ cmd_decrypt (assuan_context_t ctx, char *line)
    This does a verify operation on the message send to the input-FD.
    The result is written out using status lines.  If an output FD was
    given, the signed text will be written to that.
-  
+
    If the signature is a detached one, the server will inquire about
    the signed material and the client must provide it.
  */
@@ -404,7 +404,7 @@ cmd_verify (assuan_context_t ctx, char *line)
 
   /* FIXME: Revamp this code it is nearly to 3 years old and was only
      intended as a quick test.  */
-  
+
   (void)line;
 
   if (fd == GNUPG_INVALID_FD)
@@ -620,7 +620,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 static int
 register_commands (assuan_context_t ctx)
 {
-  static struct 
+  static struct
   {
     const char *name;
     assuan_handler_t handler;
@@ -634,8 +634,8 @@ register_commands (assuan_context_t ctx)
     { "SIGN",          cmd_sign      },
     { "IMPORT",        cmd_import    },
     { "EXPORT",        cmd_export    },
-    { "INPUT",         NULL          }, 
-    { "OUTPUT",        NULL          }, 
+    { "INPUT",         NULL          },
+    { "OUTPUT",        NULL          },
     { "MESSAGE",       cmd_message   },
     { "LISTKEYS",      cmd_listkeys  },
     { "LISTSECRETKEYS",cmd_listsecretkeys },
@@ -653,7 +653,7 @@ register_commands (assuan_context_t ctx)
                                     table[i].handler, table[i].help);
       if (rc)
         return rc;
-    } 
+    }
   return 0;
 }
 
@@ -683,7 +683,7 @@ gpg_server (ctrl_t ctrl)
 		 gpg_strerror (rc));
       goto leave;
     }
-  
+
   rc = assuan_init_pipe_server (ctx, filedes);
   if (rc)
     {
@@ -748,7 +748,7 @@ gpg_server (ctrl_t ctrl)
           log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
-      
+
       rc = assuan_process (ctx);
       if (rc)
         {
@@ -768,4 +768,3 @@ gpg_server (ctrl_t ctrl)
   assuan_release (ctx);
   return rc;
 }
-

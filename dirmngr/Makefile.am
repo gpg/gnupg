@@ -8,12 +8,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -53,7 +53,7 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	ks-action.c ks-action.h ks-engine.h ks-engine-hkp.c
 
 if USE_LDAPWRAPPER
-dirmngr_SOURCES += ldap-wrapper.c 
+dirmngr_SOURCES += ldap-wrapper.c
 else
 dirmngr_SOURCES += ldap-wrapper-ce.c  dirmngr_ldap.c
 endif
@@ -67,7 +67,7 @@ endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
 if USE_LDAPWRAPPER
-dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url) 
+dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o ../gl/libgnu.a $(DNSLIBS) \

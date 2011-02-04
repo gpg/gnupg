@@ -35,5 +35,3 @@ be_truecrypt_create_new_keys (membuf_t *mb)
   (void)mb;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
-
-

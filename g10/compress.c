@@ -35,7 +35,7 @@
 # include <zlib.h>
 # if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 #  include "zlib-riscos.h"
-# endif 
+# endif
 #endif
 
 #include "gpg.h"
@@ -48,7 +48,7 @@
 
 #ifdef __riscos__
 #define BYTEF_CAST(a) ((Bytef *)(a))
-#else 
+#else
 #define BYTEF_CAST(a) (a)
 #endif
 
@@ -140,7 +140,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
      * PGP uses a windowsize of 13 bits. Using a negative value for
      * it forces zlib not to expect a zlib header.  This is a
      * undocumented feature Peter Gutmann told me about.
-     *    
+     *
      * We must use 15 bits for the inflator because CryptoEx uses 15
      * bits thus the output would get scrambled w/o error indication
      * if we would use 13 bits.  For the uncompressing this does not

@@ -60,7 +60,7 @@ libjnlib_a_SOURCES = \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \
 	types.h mischelp.c mischelp.h dynload.h w32help.h \
-        xmalloc.c xmalloc.h       
+        xmalloc.c xmalloc.h
 
 if HAVE_W32_SYSTEM
 libjnlib_a_SOURCES += w32-reg.c w32-afunix.c w32-afunix.h
@@ -79,7 +79,7 @@ if HAVE_W32_SYSTEM
 module_tests += t-w32-reg
 endif
 
-t_jnlib_src = t-support.c t-support.h 
+t_jnlib_src = t-support.c t-support.h
 t_jnlib_ldadd = libjnlib.a $(LIBINTL) $(LIBICONV)
 # For W32 we need libgpg-error because it provides gettext.
 if HAVE_W32_SYSTEM
@@ -97,5 +97,3 @@ t_w32_reg_SOURCES = t-w32-reg.c $(t_jnlib_src)
 t_w32_reg_LDADD   = $(t_jnlib_ldadd)
 endif
 ==>8===================================================
-
-

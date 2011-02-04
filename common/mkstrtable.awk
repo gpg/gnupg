@@ -1,6 +1,6 @@
 # mkstrtable.awk
 # Copyright (C) 2003, 2004 g10 Code GmbH
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation; either version 2 of
@@ -181,5 +181,5 @@ END {
     print "  : " stop + 1 " - " skip ")";
   else
     print "  : -1)";
-    
+
  }

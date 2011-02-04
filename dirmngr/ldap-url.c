@@ -92,7 +92,7 @@ software is provided ``as is'' without express or implied warranty.  */
 #define LDAP_REALLOC		realloc
 #define ldap_utf8_strchr	strchr
 #define ldap_utf8_strtok(n,d,s) strtok (n,d)
-#define Debug(a,b,c,d,e)	
+#define Debug(a,b,c,d,e)
 void ldap_pvt_hex_unescape( char *s );
 
 
@@ -336,7 +336,7 @@ char * ldap_charray2str( char **a, const char *sep )
 	s = LDAP_MALLOC ( len + 1 );
 
 	if ( s == NULL ) {
-		return NULL;	
+		return NULL;
 	}
 
 	p = s;
@@ -636,7 +636,7 @@ ldap_url_parse_ext( LDAP_CONST char *url_in, LDAPURLDesc **ludpp )
 	 * anything real.
 	 */
 	if( (p == NULL) && (q != NULL) && ((q = strchr( q, '?')) != NULL)) {
-		q++;		
+		q++;
 		/* ? immediately followed by question */
 		if( *q == '?') {
 			q++;
@@ -866,7 +866,7 @@ ldap_free_urldesc( LDAPURLDesc *ludp )
 	if ( ludp == NULL ) {
 		return;
 	}
-	
+
 	if ( ludp->lud_scheme != NULL ) {
 		LDAP_FREE( ludp->lud_scheme );
 	}
@@ -929,4 +929,3 @@ ldap_pvt_hex_unescape( char *s )
 
 	*p = '\0';
 }
-

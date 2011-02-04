@@ -72,7 +72,7 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE 1024   
+#define DBG_ASSUAN_VALUE 1024
 #define DBG_CARD_IO_VALUE 2048
 
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
@@ -86,19 +86,19 @@ struct
 struct server_local_s;
 struct app_ctx_s;
 
-struct server_control_s 
+struct server_control_s
 {
   /* Private data used to fire up the connection thread.  We use this
      structure do avoid an extra allocation for just a few bytes. */
   struct {
     gnupg_fd_t fd;
   } thread_startup;
-  
+
   /* Local data of the server; used only in command.c. */
   struct server_local_s *server_local;
 
   /* Slot of the open reader or -1 if not open. */
-  int reader_slot; 
+  int reader_slot;
 
   /* The application context used with this connection or NULL if none
      associated.  Note that this is shared with the other connections:
@@ -107,11 +107,11 @@ struct server_control_s
   struct app_ctx_s *app_ctx;
 
   /* Helper to store the value we are going to sign */
-  struct 
+  struct
   {
-    unsigned char *value;  
+    unsigned char *value;
     int valuelen;
-  } in_data;  
+  } in_data;
 };
 
 typedef struct app_ctx_s *app_t;

@@ -39,7 +39,7 @@
 static const char oidstr_ocsp[] = "1.3.6.1.5.5.7.48.1";
 
 
-/* Telesec attribute used to implement a positive confirmation. 
+/* Telesec attribute used to implement a positive confirmation.
 
    CertHash ::= SEQUENCE {
       HashAlgorithm    AlgorithmIdentifier,
@@ -177,7 +177,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
 
   es_fprintf (http_get_write_ptr (http),
 	      "Content-Type: application/ocsp-request\r\n"
-	      "Content-Length: %lu\r\n", 
+	      "Content-Length: %lu\r\n",
 	      (unsigned long)requestlen );
   http_start_data (http);
   if (es_fwrite (request, requestlen, 1, http_get_write_ptr (http)) != 1)
@@ -206,7 +206,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
             case 302:
               {
                 const char *s = http_get_header (http, "Location");
-                
+
                 log_info (_("URL `%s' redirected to `%s' (%u)\n"),
                           url, s?s:"[none]", http_get_status_code (http));
                 if (s && *s && redirects_left-- )
@@ -264,13 +264,13 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   switch (response_status)
     {
     case KSBA_OCSP_RSPSTATUS_SUCCESS:      t = "success"; break;
-    case KSBA_OCSP_RSPSTATUS_MALFORMED:    t = "malformed"; break;  
-    case KSBA_OCSP_RSPSTATUS_INTERNAL:     t = "internal error"; break;  
-    case KSBA_OCSP_RSPSTATUS_TRYLATER:     t = "try later"; break;      
-    case KSBA_OCSP_RSPSTATUS_SIGREQUIRED:  t = "must sign request"; break;  
-    case KSBA_OCSP_RSPSTATUS_UNAUTHORIZED: t = "unauthorized"; break;  
-    case KSBA_OCSP_RSPSTATUS_REPLAYED:     t = "replay detected"; break;  
-    case KSBA_OCSP_RSPSTATUS_OTHER:        t = "other (unknown)"; break;  
+    case KSBA_OCSP_RSPSTATUS_MALFORMED:    t = "malformed"; break;
+    case KSBA_OCSP_RSPSTATUS_INTERNAL:     t = "internal error"; break;
+    case KSBA_OCSP_RSPSTATUS_TRYLATER:     t = "try later"; break;
+    case KSBA_OCSP_RSPSTATUS_SIGREQUIRED:  t = "must sign request"; break;
+    case KSBA_OCSP_RSPSTATUS_UNAUTHORIZED: t = "unauthorized"; break;
+    case KSBA_OCSP_RSPSTATUS_REPLAYED:     t = "replay detected"; break;
+    case KSBA_OCSP_RSPSTATUS_OTHER:        t = "other (unknown)"; break;
     case KSBA_OCSP_RSPSTATUS_NONE:         t = "no status"; break;
     default:                               t = "[unknown status]"; break;
     }
@@ -280,7 +280,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
         log_info (_("OCSP responder at `%s' status: %s\n"), url, t);
 
       err = ksba_ocsp_hash_response (ocsp, response, responselen,
-                                     HASH_FNC, md);  
+                                     HASH_FNC, md);
       if (err)
         log_error (_("hashing the OCSP response for `%s' failed: %s\n"),
                    url, gpg_strerror (err));
@@ -301,7 +301,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
    SIGNER_FPR_LIST is not NULL we simply check that CERT matches one
    of the fingerprints in this list. */
 static gpg_error_t
-validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert, 
+validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
                          fingerprint_list_t signer_fpr_list)
 {
   gpg_error_t err;
@@ -310,7 +310,7 @@ validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
   if (signer_fpr_list)
     {
       fpr = get_fingerprint_hexstring (cert);
-      for (; signer_fpr_list && strcmp (signer_fpr_list->hexfpr, fpr); 
+      for (; signer_fpr_list && strcmp (signer_fpr_list->hexfpr, fpr);
            signer_fpr_list = signer_fpr_list->next)
         ;
       if (signer_fpr_list)
@@ -409,10 +409,10 @@ check_signature (ctrl_t ctrl,
       log_error (_("only SHA-1 is supported for OCSP responses\n"));
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
-  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash sha1 %b))", 
+  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash sha1 %b))",
                          gcry_md_get_algo_dlen (algo),
                          gcry_md_read (md, algo));
-  if (err) 
+  if (err)
     {
       log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
       return err;
@@ -546,7 +546,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       err = find_issuing_cert (ctrl, cert, &issuer_cert);
       if (err)
         {
-          log_error (_("issuer certificate not found: %s\n"), 
+          log_error (_("issuer certificate not found: %s\n"),
                      gpg_strerror (err));
           goto leave;
         }
@@ -580,7 +580,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
 
 
 
-  /* Figure out the OCSP responder to use. 
+  /* Figure out the OCSP responder to use.
      1. Try to get the reponder from the certificate.
         We do only take http and https style URIs into account.
      2. If this fails use the default responder, if any.
@@ -606,10 +606,10 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       ksba_free (oid);
     }
   if (err && gpg_err_code (err) != GPG_ERR_EOF)
-    { 
+    {
       log_error (_("can't get authorityInfoAccess: %s\n"), gpg_strerror (err));
       goto leave;
-    } 
+    }
   if (!url)
     {
       if (!opt.ocsp_responder || !*opt.ocsp_responder)
@@ -684,14 +684,14 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       if (err)
         {
           log_error ("set_user_data(validated_at) failed: %s\n",
-                     gpg_strerror (err)); 
+                     gpg_strerror (err));
           err = 0; /* The certificate is anyway revoked, and that is a
                       more important message than the failure of our
                       cache. */
         }
     }
 
-  
+
   if (opt.verbose)
     {
       log_info (_("certificate status is: %s  (this=%s  next=%s)\n"),
@@ -710,9 +710,9 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
                                                       "affiliation changed":
                   reason == KSBA_CRLREASON_SUPERSEDED?   "superseeded":
                   reason == KSBA_CRLREASON_CESSATION_OF_OPERATION?
-                                                  "cessation of operation": 
+                                                  "cessation of operation":
                   reason == KSBA_CRLREASON_CERTIFICATE_HOLD?
-                                                  "certificate on hold":   
+                                                  "certificate on hold":
                   reason == KSBA_CRLREASON_REMOVE_FROM_CRL?
                                                   "removed from CRL":
                   reason == KSBA_CRLREASON_PRIVILEGE_WITHDRAWN?
@@ -749,7 +749,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
   if (!*tmp_time || strcmp (tmp_time, current_time) < 0 )
     {
       log_error (_("OCSP responder returned a non-current status\n"));
-      log_info ("used now: %s  this_update: %s\n", 
+      log_info ("used now: %s  this_update: %s\n",
                 current_time, this_update);
       if (!err)
         err = gpg_error (GPG_ERR_TIME_CONFLICT);
@@ -764,7 +764,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       if (!*tmp_time && strcmp (tmp_time, current_time) < 0 )
         {
           log_error (_("OCSP responder returned an too old status\n"));
-          log_info ("used now: %s  next_update: %s\n", 
+          log_info ("used now: %s  next_update: %s\n",
                     current_time, next_update);
           if (!err)
             err = gpg_error (GPG_ERR_TIME_CONFLICT);

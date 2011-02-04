@@ -40,7 +40,7 @@
    information which are to be stored encrypted in the crypto
    container header.  On success the malloced blob is stored at R_BLOB
    and its length at R_BLOBLEN.  On error an error code is returned
-   and (R_BLOB,R_BLOBLEN) are set to (NULL,0). 
+   and (R_BLOB,R_BLOBLEN) are set to (NULL,0).
 
    The format of this blob is a sequence of tag-length-value tuples.
    All tuples have this format:
@@ -123,7 +123,7 @@ encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
    appropriate header.  This fucntion is called with a lock file in
    place and after checking that the filename does not exists.  */
 static gpg_error_t
-write_keyblob (const char *filename, 
+write_keyblob (const char *filename,
                const void *keyblob, size_t keybloblen)
 {
   gpg_error_t err;
@@ -135,7 +135,7 @@ write_keyblob (const char *filename,
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error creating new container `%s': %s\n", 
+      log_error ("error creating new container `%s': %s\n",
                  filename, gpg_strerror (err));
       return err;
     }
@@ -197,18 +197,18 @@ write_keyblob (const char *filename,
   if (es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error closing `%s': %s\n", 
+      log_error ("error closing `%s': %s\n",
                  filename, gpg_strerror (err));
       remove (filename);
       return err;
     }
 
   return 0;
-  
+
 
  writeerr:
   err = gpg_error_from_syserror ();
-  log_error ("error writing header to `%s': %s\n", 
+  log_error ("error writing header to `%s': %s\n",
              filename, gpg_strerror (err));
   es_fclose (fp);
   remove (filename);
@@ -301,7 +301,7 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   keyblob = NULL;
   /* if (opt.verbose) */
   /*   dump_keyblob (tuples); */
-  
+
   /* Write out the header, the encrypted keyblob and some padding. */
   err = write_keyblob (filename, enckeyblob, enckeybloblen);
   if (err)

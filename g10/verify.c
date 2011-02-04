@@ -80,9 +80,9 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
      * case 4 with a file2 of "-".
      *
      * Actually we don't have to change anything here but can handle
-     * that all quite easily in mainproc.c 
+     * that all quite easily in mainproc.c
      */
-     
+
     sigfile = nfiles? *files : NULL;
 
     /* open the signature file */
@@ -225,7 +225,7 @@ verify_files (ctrl_t ctrl, int nfiles, char **files )
 /* Perform a verify operation.  To verify detached signatures, DATA_FD
    shall be the descriptor of the signed data; for regular signatures
    it needs to be -1.  If OUT_FP is not NULL and DATA_FD is not -1 the
-   the signed material gets written that stream. 
+   the signed material gets written that stream.
 
    FIXME: OUTFP is not yet implemented.
 */
@@ -268,10 +268,9 @@ gpg_verify (ctrl_t ctrl, int sig_fd, int data_fd, estream_t out_fp)
        && (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF) )
     rc = gpg_error (GPG_ERR_NO_DATA);
 
- leave:  
+ leave:
   iobuf_close (fp);
   release_progress_context (pfx);
   release_armor_context (afx);
   return rc;
 }
-

@@ -156,7 +156,7 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
 	rc = -1; /* eof */
       else if( zrc != BZ_OK && zrc != BZ_PARAM_ERROR )
 	log_fatal("bz2lib inflate problem: rc=%d\n", zrc );
-      else if (zrc == BZ_OK && eofseen 
+      else if (zrc == BZ_OK && eofseen
                && !bzs->avail_in && bzs->avail_out > 0)
         {
           log_error ("unexpected EOF in bz2lib\n");

@@ -49,11 +49,11 @@ typedef enum {
 } preftype_t;
 
 typedef struct {
-    byte type; 
+    byte type;
     byte value;
 } prefitem_t;
 
-typedef struct 
+typedef struct
 {
   int  mode;      /* Must be an integer due to the GNU modes 1001 et al.  */
   byte hash_algo;
@@ -114,9 +114,9 @@ typedef struct
 
 
 /* Object to keep information pertaining to a signature. */
-typedef struct 
+typedef struct
 {
-  struct 
+  struct
   {
     unsigned checked:1;         /* Signature has been checked. */
     unsigned valid:1;           /* Signature is good (if checked is set). */
@@ -213,7 +213,7 @@ struct seckey_info
 			/* be decrypted before use, the protected */
 			/* MPIs are simply (void*) pointers to memory */
 			/* and should never be passed to a mpi_xxx() */
-  int sha1chk:1;        /* SHA1 is used instead of a 16 bit checksum */ 
+  int sha1chk:1;        /* SHA1 is used instead of a 16 bit checksum */
   u16 csum;		/* Checksum for old protection modes.  */
   byte algo;            /* Cipher used to protect the secret information. */
   STRING2KEY s2k;       /* S2K parameter.  */
@@ -248,7 +248,7 @@ typedef struct
   byte    pubkey_usage;   /* for now only used to pass it to getkey() */
   byte    req_usage;      /* hack to pass a request to getkey() */
   byte    req_algo;       /* Ditto */
-  u32     has_expired;    /* set to the expiration date if expired */ 
+  u32     has_expired;    /* set to the expiration date if expired */
   u32     main_keyid[2];  /* keyid of the primary key */
   u32     keyid[2];	    /* calculated by keyid_from_pk() */
   prefitem_t *prefs;      /* list of preferences (may be NULL) */
@@ -257,7 +257,7 @@ typedef struct
     unsigned int mdc:1;           /* MDC feature set.  */
     unsigned int disabled_valid:1;/* The next flag is valid.  */
     unsigned int disabled:1;      /* The key has been disabled.  */
-    unsigned int primary:1;       /* This is a primary key.  */ 
+    unsigned int primary:1;       /* This is a primary key.  */
     unsigned int revoked:2;       /* Key has been revoked.
                                      1 = revoked by the owner
                                      2 = revoked by designated revoker.  */
@@ -278,7 +278,7 @@ typedef struct
   const byte *trust_regexp;
   char    *serialno;      /* Malloced hex string or NULL if it is
                              likely not on a card.  See also
-                             flags.serialno_valid.  */  
+                             flags.serialno_valid.  */
   struct seckey_info *seckey_info;  /* If not NULL this malloced
                                        structure describes a secret
                                        key.  */

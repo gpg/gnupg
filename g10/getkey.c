@@ -1139,7 +1139,7 @@ get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
 
 
 
-/* The new function to return a key.  
+/* The new function to return a key.
    FIXME: Document it.  */
 gpg_error_t
 getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
@@ -1157,11 +1157,11 @@ getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
  * NULL the found keyblock is stored at this address.  WANT_SECRET
  * passed as true requires that a secret key is available for the
  * selected key.
- * 
+ *
  * If WANT_SECRET is true and NAME is NULL and a default key has been
  * defined that defined key is used.  In all other cases the first
- * available key is used. 
- * 
+ * available key is used.
+ *
  * FIXME: Explain what is up with unusable keys.
  *
  * FIXME: We also have the get_pubkey_byname function which has a
@@ -1184,7 +1184,7 @@ getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
 
   err = key_byname (retctx, namelist, pk, want_secret, with_unusable,
                     ret_keyblock, NULL);
-  
+
   /* FIXME: Check that we really return GPG_ERR_NO_SECKEY if
      WANT_SECRET has been used.  */
 
@@ -2486,7 +2486,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
       release_kbnode (ctx->keyblock);
       ctx->keyblock = NULL;
     }
-  
+
 found:
   if (rc && rc != -1)
     log_error ("keydb_search failed: %s\n", g10_errstr (rc));
@@ -2562,7 +2562,7 @@ enum_secret_keys (void **context, PKT_public_key *sk)
       while (!c->keyblock)
         {
           /* Loop over the list of secret keys.  */
-          do 
+          do
             {
               name = NULL;
               switch (c->state)
@@ -2572,12 +2572,12 @@ enum_secret_keys (void **context, PKT_public_key *sk)
                     name = opt.def_secret_key;
                   c->state = 1;
                   break;
-                  
+
                 case 1: /* Init list of keys to try.  */
                   c->sl = opt.secret_keys_to_try;
                   c->state++;
                   break;
-                  
+
                 case 2: /* Get next item from list.  */
                   if (c->sl)
                     {
@@ -2588,7 +2588,7 @@ enum_secret_keys (void **context, PKT_public_key *sk)
                     c->state++;
                   break;
 
-                default: /* No more names to check - stop.  */  
+                default: /* No more names to check - stop.  */
                   c->eof = 1;
                   return gpg_error (GPG_ERR_EOF);
                 }
@@ -2607,7 +2607,7 @@ enum_secret_keys (void **context, PKT_public_key *sk)
           else
             c->node = c->keyblock;
         }
-      
+
       /* Get the next key from the current keyblock.  */
       for (; c->node; c->node = c->node->next)
 	{

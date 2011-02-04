@@ -32,7 +32,7 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#include <unistd.h> 
+#include <unistd.h>
 #include <fcntl.h>
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
@@ -40,7 +40,7 @@
 #undef USE_GNU_PTH
 #endif
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
 #include <pth.h>
 #endif
 
@@ -73,8 +73,8 @@
 #define handle_to_pid(a) ((int)(a))
 
 
-#ifdef USE_GNU_PTH      
-/* The data passed to the feeder_thread.  */ 
+#ifdef USE_GNU_PTH
+/* The data passed to the feeder_thread.  */
 struct feeder_thread_parms
 {
   estream_t stream;
@@ -173,7 +173,7 @@ leave:
 }
 #endif /*USE_GNU_PTH*/
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
 static void
 feeder_onclose_notification (estream_t stream, void *opaque)
 {
@@ -191,11 +191,11 @@ feeder_onclose_notification (estream_t stream, void *opaque)
 static gpg_error_t
 start_feeder (estream_t stream, HANDLE hd, int direction)
 {
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   gpg_error_t err;
   struct feeder_thread_parms *parm;
   pth_attr_t tattr;
-  
+
   parm = xtrymalloc (sizeof *parm);
   if (!parm)
     return gpg_error_from_syserror ();
@@ -210,12 +210,12 @@ start_feeder (estream_t stream, HANDLE hd, int direction)
       xfree (parm);
       return err;
     }
-  
+
   tattr = pth_attr_new ();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "exec-feeder");
-  
+
   log_debug ("spawning new feeder(%p, %p, %d)\n", stream, hd, direction);
   if(!pth_spawn (tattr, feeder_thread, parm))
     {
@@ -291,7 +291,7 @@ get_all_open_fds (void)
   array = calloc (narray, sizeof *array);
   if (!array)
     return NULL;
-  
+
   /* Note:  The list we return is ordered.  */
   for (idx=0, fd=0; fd < max_fd; fd++)
     if (!(fstat (fd, &statbuf) == -1 && errno == EBADF))
@@ -376,7 +376,7 @@ build_w32_commandline (const char * const *argv,
   else
     strcpy (p, "-&S2=null ");
   p += strlen (p);
-  
+
   *cmdline = NULL;
   n = strlen (fdbuf);
   for (i=0; (s = argv[i]); i++)
@@ -393,7 +393,7 @@ build_w32_commandline (const char * const *argv,
     return -1;
 
   p = stpcpy (p, fdbuf);
-  for (i = 0; argv[i]; i++) 
+  for (i = 0; argv[i]; i++)
     {
       *p++ = ' ';
       p = copy_quoted (p, argv[i]);
@@ -518,7 +518,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   (void)preexec;
   (void)flags;
-  
+
   /* Setup return values.  */
   if (r_outfp)
     *r_outfp = NULL;
@@ -623,7 +623,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     {
       /* Fixme release other stuff/kill feeder.  */
       CloseHandle (errpipe.hd);
-      return err; 
+      return err;
     }
 
   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
@@ -645,11 +645,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
              " dwProcessID=%d dwThreadId=%d\n",
              pi.hProcess, pi.hThread,
              (int) pi.dwProcessId, (int) pi.dwThreadId);
-  
+
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   if (r_outfp)
     *r_outfp = outfp;
@@ -686,7 +686,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   /* Build the command line.  */
   err = build_w32_commandline (argv, 0, 0, 0, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
   if (!create_process (pgmname, cmdline, &pi))
@@ -702,10 +702,10 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
              " dwProcessID=%d dwThreadId=%d\n",
              pi.hProcess, pi.hThread,
              (int) pi.dwProcessId, (int) pi.dwThreadId);
-  
+
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
@@ -731,12 +731,12 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *exitcode)
      been implemented.  A special W32 pth system call would even be
      better.  */
   code = WaitForSingleObject (proc, hang? INFINITE : 0);
-  switch (code) 
+  switch (code)
     {
     case WAIT_TIMEOUT:
       ec = GPG_ERR_TIMEOUT;
       break;
-      
+
     case WAIT_FAILED:
       log_error (_("waiting for process %d to terminate failed: %s\n"),
                  (int)pid, w32_strerror (-1));
@@ -765,7 +765,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *exitcode)
           ec = 0;
         }
       break;
-      
+
     default:
       log_error ("WaitForSingleObject returned unexpected "
                  "code %d for pid %d\n", code, (int)pid );
@@ -783,7 +783,7 @@ gnupg_release_process (pid_t pid)
   if (pid != (pid_t)INVALID_HANDLE_VALUE)
     {
       HANDLE process = (HANDLE)pid;
-      
+
       CloseHandle (process);
     }
 }
@@ -805,11 +805,11 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   PROCESS_INFORMATION pi = {NULL };
 
   (void)envp;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (argv, 0, 0, 0, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   /* Note: There is no detached flag under CE.  */
   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
@@ -826,10 +826,10 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
              " dwProcessID=%d dwThreadId=%d\n",
              pi.hProcess, pi.hThread,
              (int) pi.dwProcessId, (int) pi.dwThreadId);
-  
+
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   return 0;
 }
@@ -844,7 +844,7 @@ gnupg_kill_process (pid_t pid)
   if (pid != (pid_t) INVALID_HANDLE_VALUE)
     {
       HANDLE process = (HANDLE) pid;
-      
+
       /* Arbitrary error code.  */
       TerminateProcess (process, 1);
     }

@@ -103,7 +103,7 @@ void *memrchr (const void *buffer, int c, size_t n);
 
 
 #ifndef HAVE_ISASCII
-static inline int 
+static inline int
 isascii (int c)
 {
   return (((c) & ~0x7f) == 0);

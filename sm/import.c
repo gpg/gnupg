@@ -53,7 +53,7 @@ struct stats_s {
  };
 
 
-struct rsa_secret_key_s 
+struct rsa_secret_key_s
 {
   gcry_mpi_t n;	    /* public modulus */
   gcry_mpi_t e;	    /* public exponent */
@@ -73,12 +73,12 @@ static void
 print_imported_status (ctrl_t ctrl, ksba_cert_t cert, int new_cert)
 {
   char *fpr;
-     
+
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   if (new_cert)
     gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, "[X.509]", NULL);
 
-  gpgsm_status2 (ctrl, STATUS_IMPORT_OK, 
+  gpgsm_status2 (ctrl, STATUS_IMPORT_OK,
                  new_cert? "1":"0",  fpr, NULL);
 
   xfree (fpr);
@@ -125,7 +125,7 @@ print_imported_summary (ctrl_t ctrl, struct stats_s *stats)
   if (!opt.quiet)
     {
       log_info (_("total number processed: %lu\n"), stats->count);
-      if (stats->imported) 
+      if (stats->imported)
         {
           log_info (_("              imported: %lu"), stats->imported );
           log_printf ("\n");
@@ -186,8 +186,8 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
      to be different but because gpgsm_verify even imports
      certificates without any checks, it doesn't matter much and the
      code gets much cleaner.  A housekeeping function to remove
-     certificates w/o an anchor would be nice, though. 
-     
+     certificates w/o an anchor would be nice, though.
+
      Optionally we do a full validation in addition to the basic test.
   */
   rc = gpgsm_basic_cert_check (ctrl, cert);
@@ -215,7 +215,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
               if (stats)
                 stats->unchanged++;
             }
-            
+
           if (opt.verbose > 1 && existed)
             {
               if (depth)
@@ -257,7 +257,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
       /* We keep the test for GPG_ERR_MISSING_CERT only in case
          GPG_ERR_MISSING_CERT has been used instead of the newer
          GPG_ERR_MISSING_ISSUER_CERT.  */
-      print_import_problem 
+      print_import_problem
         (ctrl, cert,
          gpg_err_code (rc) == GPG_ERR_MISSING_ISSUER_CERT? 2 :
          gpg_err_code (rc) == GPG_ERR_MISSING_CERT? 2 :
@@ -294,25 +294,25 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       log_error ("can't create reader: %s\n", gpg_strerror (rc));
       goto leave;
     }
-  
-  
+
+
   /* We need to loop here to handle multiple PEM objects in one
      file. */
   do
     {
       ksba_cms_release (cms); cms = NULL;
       ksba_cert_release (cert); cert = NULL;
-      
+
       ct = ksba_cms_identify (reader);
       if (ct == KSBA_CT_SIGNED_DATA)
         { /* This is probably a signed-only message - import the certs */
           ksba_stop_reason_t stopreason;
           int i;
-          
+
           rc = ksba_cms_new (&cms);
           if (rc)
             goto leave;
-          
+
           rc = ksba_cms_set_reader_writer (cms, reader, NULL);
           if (rc)
             {
@@ -321,7 +321,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
               goto leave;
             }
 
-          do 
+          do
             {
               rc = ksba_cms_parse (cms, &stopreason);
               if (rc)
@@ -333,12 +333,12 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
               if (stopreason == KSBA_SR_BEGIN_DATA)
                 log_info ("not a certs-only message\n");
             }
-          while (stopreason != KSBA_SR_READY);   
-      
+          while (stopreason != KSBA_SR_READY);
+
           for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
             {
               check_and_store (ctrl, stats, cert, 0);
-              ksba_cert_release (cert); 
+              ksba_cert_release (cert);
               cert = NULL;
             }
           if (!i)
@@ -347,7 +347,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
             any = 1;
         }
       else if (ct == KSBA_CT_PKCS12)
-        { 
+        {
           /* This seems to be a pkcs12 message. */
           rc = parse_p12 (ctrl, reader, stats);
           if (!rc)
@@ -372,7 +372,7 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
           log_error ("can't extract certificates from input\n");
           rc = gpg_error (GPG_ERR_NO_DATA);
         }
-      
+
       ksba_reader_clear (reader, NULL, NULL);
     }
   while (!gpgsm_reader_eof_seen (b64reader));
@@ -411,7 +411,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       goto leave;
     }
   keydb_set_ephemeral (kh, 1);
-   
+
   fp = es_fdopen_nc (in_fd, "r");
   if (!fp)
     {
@@ -430,7 +430,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       trim_spaces (line);
       if (!*line)
         continue;
-    
+
       stats->count++;
 
       err = classify_user_id (line, &desc);
@@ -481,7 +481,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       if (err)
         {
           log_error ("clearing ephemeral flag failed: %s\n",
-                     gpg_strerror (err)); 
+                     gpg_strerror (err));
           print_import_problem (ctrl, cert, 0);
           stats->not_imported++;
           continue;
@@ -536,7 +536,7 @@ gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
   struct stats_s stats;
 
   memset (&stats, 0, sizeof stats);
-  
+
   if (!nfiles)
     rc = import_one (ctrl, &stats, 0);
   else
@@ -615,7 +615,7 @@ rsa_key_check (struct rsa_secret_key_s *skey)
   gcry_mpi_mul (phi, t1, t2);
   gcry_mpi_invm (t, skey->e, phi);
   if (gcry_mpi_cmp (t, skey->d))
-    { 
+    {
       /* No: try universal exponent. */
       gcry_mpi_gcd (t, t1, t2);
       gcry_mpi_div (t, NULL, phi, t, 0);
@@ -656,7 +656,7 @@ struct store_cert_parm_s
 };
 
 /* Helper to store the DER encoded certificate CERTDATA of length
-   CERTDATALEN.  */ 
+   CERTDATALEN.  */
 static void
 store_cert_cb (void *opaque,
                const unsigned char *certdata, size_t certdatalen)
@@ -808,7 +808,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 /*    print_mpi ("   p", sk.p); */
 /*    print_mpi ("   q", sk.q); */
 /*    print_mpi ("   u", sk.u); */
-  
+
   /* Create an S-expresion from the parameters. */
   err = gcry_sexp_build (&s_key, NULL,
                          "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
@@ -929,6 +929,6 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
       gpgsm_status_with_err_code (ctrl, STATUS_ERROR,
                                   "import.parsep12", GPG_ERR_BAD_PASSPHRASE);
     }
-  
+
   return err;
 }

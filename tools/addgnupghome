@@ -1,4 +1,4 @@
-#!/bin/sh                                               
+#!/bin/sh
 # Add a new .gnupg home directory for a list of users         -*- sh -*-
 #
 # Copyright 2004 Free Software Foundation, Inc.
@@ -89,7 +89,7 @@ one_user () {
 
 }
 
-if [ -z "$1" ]; then 
+if [ -z "$1" ]; then
     echo "usage: $PGM userids"
     exit 1
 fi

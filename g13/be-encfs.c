@@ -53,14 +53,14 @@ struct encfs_parm_s
 typedef struct encfs_parm_s *encfs_parm_t;
 
 
-static gpg_error_t 
+static gpg_error_t
 send_cmd_bin (runner_t runner, const void *data, size_t datalen)
 {
   return runner_send_line (runner, data, datalen);
 }
 
 
-static gpg_error_t 
+static gpg_error_t
 send_cmd (runner_t runner, const char *string)
 {
   log_debug ("sending command  -->%s<--\n", string);
@@ -75,7 +75,7 @@ run_umount_helper (const char *mountpoint)
   gpg_error_t err;
   const char pgmname[] = FUSERMOUNT;
   const char *args[3];
-  
+
   args[0] = "-u";
   args[1] = mountpoint;
   args[2] = NULL;
@@ -126,13 +126,13 @@ handle_status_line (runner_t runner, const char *line,
             {
               size_t n;
               const void *value;
-          
+
               value = find_tuple (tuples, KEYBLOB_TAG_ENCKEY, &n);
               if (!value)
                 err = gpg_error (GPG_ERR_INV_SESSION_KEY);
               else if ((err = send_cmd_bin (runner, value, n)))
                 {
-                  if (gpg_err_code (err) == GPG_ERR_BUG 
+                  if (gpg_err_code (err) == GPG_ERR_BUG
                       && gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
                     err = gpg_error (GPG_ERR_INV_SESSION_KEY);
                 }
@@ -337,7 +337,7 @@ be_encfs_get_detached_name (const char *fname, char **r_name, int *r_isdir)
 
 
 /* Create a new session key and append it as a tuple to the memory
-   buffer MB.  
+   buffer MB.
 
    The EncFS daemon takes a passphrase from stdin and internally
    mangles it by means of some KDF from OpenSSL.  We want to store a
@@ -365,7 +365,7 @@ be_encfs_create_new_keys (membuf_t *mb)
      good compromise between security and performance.  The
      anticipated usage of this tool is the quite often creation of new
      containers and thus this should not deplete the system's entropy
-     tool too much.  */ 
+     tool too much.  */
   gcry_randomize (buffer, 32+8, GCRY_STRONG_RANDOM);
   for (i=j=0; i < 32; i++)
     {
@@ -425,7 +425,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
 
   err = run_encfs_tool (ctrl, ENCFS_CMD_CREATE, containername, mountpoint,
                         tuples, r_id);
-  
+
   /* In any case remove the temporary mount point.  */
   if (rmdir (mountpoint))
     log_error ("error removing temporary mount point `%s': %s\n",
@@ -442,7 +442,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
 /* Mount the container described by the filename FNAME and the keyblob
    information in TUPLES.  On success the runner id is stored at R_ID. */
 gpg_error_t
-be_encfs_mount_container (ctrl_t ctrl, 
+be_encfs_mount_container (ctrl_t ctrl,
                           const char *fname, const char *mountpoint,
                           tupledesc_t tuples, unsigned int *r_id)
 {
@@ -463,7 +463,7 @@ be_encfs_mount_container (ctrl_t ctrl,
 
   err = run_encfs_tool (ctrl, ENCFS_CMD_MOUNT, containername, mountpoint,
                         tuples, r_id);
-  
+
  leave:
   xfree (containername);
   return err;

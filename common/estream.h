@@ -215,7 +215,7 @@ typedef struct es_cookie_io_functions
 } es_cookie_io_functions_t;
 
 
-enum es_syshd_types 
+enum es_syshd_types
   {
     ES_SYSHD_NONE,  /* No system handle available.  */
     ES_SYSHD_FD,    /* A file descriptor as returned by open().  */

@@ -73,7 +73,7 @@ ksba_cert_t get_cert_bysubject (const char *subject_dn, unsigned int seq);
 /* Given PATTERN, which is a string as used by GnuPG to specify a
    certificate, return all matching certificates by calling the
    supplied function RETFNC.  */
-gpg_error_t get_certs_bypattern (const char *pattern, 
+gpg_error_t get_certs_bypattern (const char *pattern,
                                  gpg_error_t (*retfnc)(void*,ksba_cert_t),
                                  void *retfnc_data);
 

@@ -1,5 +1,5 @@
 /* logging.c - Useful logging functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
  *               2009, 2010 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
@@ -134,7 +134,7 @@ writen (int fd, const void *buffer, size_t nbytes, int is_socket)
 #ifndef HAVE_W32_SYSTEM
   (void)is_socket; /* Not required.  */
 #endif
-  
+
   while (nleft > 0)
     {
 #ifdef HAVE_W32_SYSTEM
@@ -151,14 +151,14 @@ writen (int fd, const void *buffer, size_t nbytes, int is_socket)
       nleft -= nwritten;
       buf = buf + nwritten;
     }
-  
+
   return 0;
 }
 
 
 /* Returns true if STR represents a valid port number in decimal
    notation and no garbage is following.  */
-static int 
+static int
 parse_portno (const char *str, unsigned short *r_port)
 {
   unsigned int value;
@@ -177,7 +177,7 @@ parse_portno (const char *str, unsigned short *r_port)
 }
 
 
-static ssize_t 
+static ssize_t
 fun_writer (void *cookie_arg, const void *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
@@ -222,7 +222,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       else if (!strncmp (name, "socket://", 9) && name[9])
         name += 9;
 #endif
-      
+
       if (af == AF_LOCAL)
         {
 #ifdef HAVE_W32_SYSTEM
@@ -255,7 +255,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
                   jnlib_set_errno (EINVAL);
                   addrlen = 0;
                 }
-              else 
+              else
                 {
                   *p = 0;
 #ifdef WITH_IPV6
@@ -310,7 +310,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
                 addrlen = 0;
 #endif /*!HAVE_INET_PTON*/
             }
-      
+
           jnlib_free (addrstr);
         }
 
@@ -334,7 +334,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
               cookie->fd = -1;
             }
         }
-      
+
       if (cookie->fd == -1)
         {
           if (!running_detached)
@@ -357,21 +357,21 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           cookie->is_socket = 1;
         }
     }
-  
+
   log_socket = cookie->fd;
   if (cookie->fd != -1)
-    { 
+    {
 #ifdef HAVE_W32CE_SYSTEM
       if (cookie->use_writefile)
         {
           DWORD nwritten;
-          
+
           WriteFile ((HANDLE)cookie->fd, buffer, size, &nwritten, NULL);
           return (ssize_t)size; /* Okay.  */
         }
 #endif
       if (!writen (cookie->fd, buffer, size, cookie->is_socket))
-        return (ssize_t)size; /* Okay. */ 
+        return (ssize_t)size; /* Okay. */
     }
 
   if (!running_detached && cookie->fd != -1
@@ -390,7 +390,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       cookie->fd = -1;
       log_socket = -1;
     }
-  
+
   return (ssize_t)size;
 }
 
@@ -411,7 +411,7 @@ fun_closer (void *cookie_arg)
 /* Common function to either set the logging to a file or a file
    descriptor. */
 static void
-set_file_fd (const char *name, int fd) 
+set_file_fd (const char *name, int fd)
 {
   estream_t fp;
   int want_socket;
@@ -489,7 +489,7 @@ set_file_fd (const char *name, int fd)
     es_cookie_io_functions_t io = { NULL };
     io.func_write = fun_writer;
     io.func_close = fun_closer;
-    
+
     fp = es_fopencookie (cookie, "w", io);
   }
 
@@ -498,7 +498,7 @@ set_file_fd (const char *name, int fd)
     fp = es_stderr;
 
   es_setvbuf (fp, NULL, _IOLBF, 0);
-  
+
   logstream = fp;
 
   /* We always need to print the prefix and the pid for socket mode,
@@ -518,7 +518,7 @@ set_file_fd (const char *name, int fd)
    tries the next time again to connect the socket.
   */
 void
-log_set_file (const char *name) 
+log_set_file (const char *name)
 {
   set_file_fd (name? name: "-", -1);
 }
@@ -545,7 +545,7 @@ log_set_prefix (const char *text, unsigned int flags)
       strncpy (prefix_buffer, text, sizeof (prefix_buffer)-1);
       prefix_buffer[sizeof (prefix_buffer)-1] = 0;
     }
-  
+
   with_prefix = (flags & JNLIB_LOG_WITH_PREFIX);
   with_time = (flags & JNLIB_LOG_WITH_TIME);
   with_pid  = (flags & JNLIB_LOG_WITH_PID);
@@ -635,7 +635,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
         {
           struct tm *tp;
           time_t atime = time (NULL);
-          
+
           tp = localtime (&atime);
           es_fprintf_unlocked (logstream, "%04d-%02d-%02d %02d:%02d:%02d ",
                                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
@@ -674,7 +674,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
     case JNLIB_LOG_FATAL: es_fputs_unlocked ("Fatal: ",logstream ); break;
     case JNLIB_LOG_BUG:   es_fputs_unlocked ("Ohhhh jeeee: ", logstream); break;
     case JNLIB_LOG_DEBUG: es_fputs_unlocked ("DBG: ", logstream ); break;
-    default: 
+    default:
       es_fprintf_unlocked (logstream,"[Unknown log level %d]: ", level);
       break;
     }
@@ -712,7 +712,7 @@ void
 log_log (int level, const char *fmt, ...)
 {
   va_list arg_ptr ;
-  
+
   va_start (arg_ptr, fmt) ;
   do_logv (level, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -750,7 +750,7 @@ void
 log_info (const char *fmt, ...)
 {
   va_list arg_ptr ;
-  
+
   va_start (arg_ptr, fmt);
   do_logv (JNLIB_LOG_INFO, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -761,7 +761,7 @@ void
 log_error (const char *fmt, ...)
 {
   va_list arg_ptr ;
-  
+
   va_start (arg_ptr, fmt);
   do_logv (JNLIB_LOG_ERROR, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -775,7 +775,7 @@ void
 log_fatal (const char *fmt, ...)
 {
   va_list arg_ptr ;
-  
+
   va_start (arg_ptr, fmt);
   do_logv (JNLIB_LOG_FATAL, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -799,7 +799,7 @@ void
 log_debug (const char *fmt, ...)
 {
   va_list arg_ptr ;
-  
+
   va_start (arg_ptr, fmt);
   do_logv (JNLIB_LOG_DEBUG, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -810,7 +810,7 @@ void
 log_printf (const char *fmt, ...)
 {
   va_list arg_ptr;
-  
+
   va_start (arg_ptr, fmt);
   do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, 0, fmt, arg_ptr);
   va_end (arg_ptr);
@@ -861,4 +861,3 @@ bug_at( const char *file, int line )
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif
-

@@ -4,17 +4,17 @@
    Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
 
    This file is part of DirMngr.
-  
+
    DirMngr is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-  
+
    DirMngr is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-  
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -45,10 +45,10 @@
 #ifdef HAVE_W32_SYSTEM
 #define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
 #elif defined(__VMS)
-#define GNUPG_DEFAULT_HOMEDIR "/SYS\$LOGIN/gnupg" 
+#define GNUPG_DEFAULT_HOMEDIR "/SYS\$LOGIN/gnupg"
 #else
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
-#endif 
+#endif
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define DIRSEP_C '\\'
@@ -91,7 +91,7 @@ dlclose (void * hd)
       return 0;
     }
   return -1;
-}  
+}
 
 
 /* Return a string from the W32 Registry or NULL in case of error.
@@ -103,7 +103,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   HKEY root_key, key_handle;
   DWORD n1, nbytes, type;
   char *result = NULL;
-	
+
   if ( !root )
     root_key = HKEY_CURRENT_USER;
   else if ( !strcmp( root, "HKEY_CLASSES_ROOT" ) )
@@ -120,7 +120,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
     root_key = HKEY_CURRENT_CONFIG;
   else
     return NULL;
-	
+
   if ( RegOpenKeyEx ( root_key, dir, 0, KEY_READ, &key_handle ) )
     {
       if (root)
@@ -151,10 +151,10 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
       goto leave;
     }
   result[nbytes] = 0; /* Make sure it is really a string.  */
-  if (type == REG_EXPAND_SZ && strchr (result, '%')) 
+  if (type == REG_EXPAND_SZ && strchr (result, '%'))
     {
       char *tmp;
-        
+
       n1 += 1000;
       tmp = malloc (n1+1);
       if (!tmp)
@@ -183,7 +183,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           result = malloc (strlen (tmp)+1);
           if (!result)
             result = tmp;
-          else 
+          else
             {
               strcpy (result, tmp);
               free (tmp);
@@ -276,8 +276,8 @@ find_program_at_standard_place (const char *name)
 {
   char path[MAX_PATH];
   char *result = NULL;
-      
-  if (w32_shgetfolderpath (NULL, CSIDL_PROGRAM_FILES, NULL, 0, path) >= 0) 
+
+  if (w32_shgetfolderpath (NULL, CSIDL_PROGRAM_FILES, NULL, 0, path) >= 0)
     {
       result = malloc (strlen (path) + 1 + strlen (name) + 1);
       if (result)
@@ -348,7 +348,7 @@ standard_homedir (void)
   if (!dir)
     {
       char path[MAX_PATH];
-      
+
       /* It might be better to use LOCAL_APPDATA because this is
          defined as "non roaming" and thus more likely to be kept
          locally.  For private keys this is desired.  However, given
@@ -356,13 +356,13 @@ standard_homedir (void)
          using a system roaming services might be better than to let
          them do it manually.  A security conscious user will anyway
          use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + 6 +1);
           strcpy (stpcpy (tmp, path), "\\gnupg");
           dir = tmp;
-          
+
           /* Try to create the directory if it does not yet exists.  */
           if (access (dir, F_OK))
             CreateDirectory (dir, NULL);
@@ -388,7 +388,7 @@ default_homedir (void)
   if (!dir || !*dir)
     {
       static const char *saved_dir;
-      
+
       if (!saved_dir)
         {
           if (!dir || !*dir)
@@ -405,7 +405,7 @@ default_homedir (void)
                if (tmp)
                 saved_dir = tmp;
             }
-          
+
           if (!saved_dir)
             saved_dir = standard_homedir ();
         }
@@ -442,7 +442,7 @@ w32_rootdir (void)
       else
         {
           log_debug ("bad filename `%s' returned for this process\n", dir);
-          *dir = 0; 
+          *dir = 0;
         }
     }
 
@@ -461,8 +461,8 @@ w32_commondir (void)
     {
       char path[MAX_PATH];
 
-      if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + 4 +1);
           strcpy (stpcpy (tmp, path), "\\GNU");
@@ -477,7 +477,7 @@ w32_commondir (void)
           dir = xstrdup (w32_rootdir ());
         }
     }
-  
+
   return dir;
 }
 #endif /*HAVE_W32_SYSTEM*/
@@ -563,8 +563,8 @@ dirmngr_cachedir (void)
 	  s1_len += 1 + strlen (*comp);
 	}
 
-      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + s1_len + 1);
 	  char *p;

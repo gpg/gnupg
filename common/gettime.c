@@ -31,7 +31,7 @@
 
 #ifdef HAVE_UNSIGNED_TIME_T
 # define IS_INVALID_TIME_T(a) ((a) == (time_t)(-1))
-#else 
+#else
   /* Error or 32 bit time_t and value after 2038-01-19.  */
 # define IS_INVALID_TIME_T(a) ((a) < 0)
 #endif
@@ -46,8 +46,8 @@ static enum { NORMAL = 0, FROZEN, FUTURE, PAST } timemode;
 
 /* Wrapper for the time(3).  We use this here so we can fake the time
    for tests */
-time_t 
-gnupg_get_time () 
+time_t
+gnupg_get_time ()
 {
   time_t current = time (NULL);
   if (timemode == NORMAL)
@@ -66,15 +66,15 @@ void
 gnupg_get_isotime (gnupg_isotime_t timebuf)
 {
   time_t atime = gnupg_get_time ();
-    
+
   if (atime == (time_t)(-1))
     *timebuf = 0;
-  else 
+  else
     {
       struct tm *tp;
 #ifdef HAVE_GMTIME_R
       struct tm tmbuf;
-      
+
       tp = gmtime_r (&atime, &tmbuf);
 #else
       tp = gmtime (&atime);
@@ -128,7 +128,7 @@ gnupg_faked_time_p (void)
 
 /* This function is used by gpg because OpenPGP defines the timestamp
    as an unsigned 32 bit value. */
-u32 
+u32
 make_timestamp (void)
 {
   time_t t = gnupg_get_time ();
@@ -233,12 +233,12 @@ epoch2isotime (gnupg_isotime_t timebuf, time_t atime)
 {
   if (atime == (time_t)(-1))
     *timebuf = 0;
-  else 
+  else
     {
       struct tm *tp;
 #ifdef HAVE_GMTIME_R
       struct tm tmbuf;
-      
+
       tp = gmtime_r (&atime, &tmbuf);
 #else
       tp = gmtime (&atime);
@@ -296,7 +296,7 @@ strtimestamp (u32 stamp)
   static char buffer[11+5];
   struct tm *tp;
   time_t atime = stamp;
-    
+
   if (IS_INVALID_TIME_T (atime))
     {
       strcpy (buffer, "????" "-??" "-??");
@@ -320,7 +320,7 @@ isotimestamp (u32 stamp)
   static char buffer[25+5];
   struct tm *tp;
   time_t atime = stamp;
-  
+
   if (IS_INVALID_TIME_T (atime))
     {
       strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
@@ -364,7 +364,7 @@ asctimestamp (u32 stamp)
   /* NOTE: gcc -Wformat-noliteral will complain here.  I have found no
      way to suppress this warning.  */
   strftime (buffer, DIM(buffer)-1, fmt, tp);
-# elif defined(HAVE_W32CE_SYSTEM) 
+# elif defined(HAVE_W32CE_SYSTEM)
   /* tzset is not available but %Z nevertheless prints a default
      nonsense timezone ("WILDABBR").  Thus we don't print the time
      zone at all.  */
@@ -400,7 +400,7 @@ static int
 days_per_month (int y, int m)
 {
   int s;
-    
+
   switch(m)
     {
     case 1: case 3: case 5: case 7: case 8: case 10: case 12:
@@ -460,19 +460,19 @@ jd2date (unsigned long jd, int *year, int *month, int *day)
   m = (delta / 31) + 1;
   while( (delta = jd - date2jd (y, m, d)) > days_per_month (y,m))
     if (++m > 12)
-      { 
+      {
         m = 1;
         y++;
       }
 
   d = delta + 1 ;
   if (d > days_per_month (y, m))
-    { 
+    {
       d = 1;
       m++;
     }
   if (m > 12)
-    { 
+    {
       m = 1;
       y++;
     }
@@ -499,7 +499,7 @@ check_isotime (const gnupg_isotime_t atime)
 
   if (!*atime)
     return gpg_error (GPG_ERR_NO_VALUE);
-  
+
   for (s=atime, i=0; i < 8; i++, s++)
     if (!digitp (s))
       return gpg_error (GPG_ERR_INV_TIME);
@@ -566,7 +566,7 @@ add_seconds_to_isotime (gnupg_isotime_t atime, int nseconds)
   sec   = atoi_2 (atime+13);
 
   if (year <= 1582) /* The julian date functions don't support this. */
-    return gpg_error (GPG_ERR_INV_VALUE); 
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   sec    += nseconds;
   minute += sec/60;
@@ -575,14 +575,14 @@ add_seconds_to_isotime (gnupg_isotime_t atime, int nseconds)
   minute %= 60;
   ndays  = hour/24;
   hour   %= 24;
-  
+
   jd = date2jd (year, month, day) + ndays;
   jd2date (jd, &year, &month, &day);
 
   if (year > 9999 || month > 12 || day > 31
       || year < 0 || month < 1 || day < 1)
-    return gpg_error (GPG_ERR_INV_VALUE); 
-    
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   snprintf (atime, 16, "%04d%02d%02dT%02d%02d%02d",
             year, month, day, hour, minute, sec);
   return 0;
@@ -611,15 +611,15 @@ add_days_to_isotime (gnupg_isotime_t atime, int ndays)
   sec   = atoi_2 (atime+13);
 
   if (year <= 1582) /* The julian date functions don't support this. */
-    return gpg_error (GPG_ERR_INV_VALUE); 
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   jd = date2jd (year, month, day) + ndays;
   jd2date (jd, &year, &month, &day);
 
   if (year > 9999 || month > 12 || day > 31
       || year < 0 || month < 1 || day < 1)
-    return gpg_error (GPG_ERR_INV_VALUE); 
-    
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   snprintf (atime, 16, "%04d%02d%02dT%02d%02d%02d",
             year, month, day, hour, minute, sec);
   return 0;

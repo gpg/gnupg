@@ -50,8 +50,8 @@ struct trustitem_s
 typedef struct trustitem_s trustitem_t;
 
 /* Malloced table and its allocated size with all trust items. */
-static trustitem_t *trusttable; 
-static size_t trusttablesize; 
+static trustitem_t *trusttable;
+static size_t trusttablesize;
 /* A mutex used to protect the table. */
 static pth_mutex_t trusttable_lock;
 
@@ -111,7 +111,7 @@ unlock_trusttable (void)
 
 static gpg_error_t
 read_one_trustfile (const char *fname, int allow_include,
-                    trustitem_t **addr_of_table, 
+                    trustitem_t **addr_of_table,
                     size_t *addr_of_tablesize,
                     int *addr_of_tableidx)
 {
@@ -123,7 +123,7 @@ read_one_trustfile (const char *fname, int allow_include,
   int tableidx;
   size_t tablesize;
   int lnr = 0;
-  
+
   table = *addr_of_table;
   tablesize = *addr_of_tablesize;
   tableidx = *addr_of_tableidx;
@@ -155,13 +155,13 @@ read_one_trustfile (const char *fname, int allow_include,
       line[--n] = 0; /* Chop the LF. */
       if (n && line[n-1] == '\r')
         line[--n] = 0; /* Chop an optional CR. */
-      
+
       /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
         ;
       if (!*p || *p == '#')
         continue;
-  
+
       if (!strncmp (p, "include-default", 15)
           && (!p[15] || spacep (p+15)))
         {
@@ -194,7 +194,7 @@ read_one_trustfile (const char *fname, int allow_include,
                 err = err2;
             }
           xfree (etcname);
-          
+
           continue;
         }
 
@@ -202,7 +202,7 @@ read_one_trustfile (const char *fname, int allow_include,
         {
           trustitem_t *tmp;
           size_t tmplen;
-          
+
           tmplen = tablesize + 20;
           tmp = xtryrealloc (table, tmplen * sizeof *table);
           if (!tmp)
@@ -229,13 +229,13 @@ read_one_trustfile (const char *fname, int allow_include,
       if (n < 0)
         {
           log_error (_("bad fingerprint in `%s', line %d\n"), fname, lnr);
-          err = gpg_error (GPG_ERR_BAD_DATA); 
+          err = gpg_error (GPG_ERR_BAD_DATA);
           continue;
         }
       p += n;
       for (; spacep (p); p++)
         ;
-      
+
       /* Process the first flag which needs to be the first for
          backward compatibility. */
       if (!*p || *p == '*' )
@@ -379,7 +379,7 @@ read_trustfiles (void)
 
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
-gpg_error_t 
+gpg_error_t
 agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
 {
   gpg_error_t err;
@@ -414,7 +414,7 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
             if (ti->flags.relax)
               {
                 err = agent_write_status (ctrl,
-                                          "TRUSTLISTFLAG", "relax", 
+                                          "TRUSTLISTFLAG", "relax",
                                           NULL);
                 if (err)
                   return err;
@@ -422,7 +422,7 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
             else if (ti->flags.cm)
               {
                 err = agent_write_status (ctrl,
-                                          "TRUSTLISTFLAG", "cm", 
+                                          "TRUSTLISTFLAG", "cm",
                                           NULL);
                 if (err)
                   return err;
@@ -435,7 +435,7 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
 
 
 /* Write all trust entries to FP. */
-gpg_error_t 
+gpg_error_t
 agent_listtrusted (void *assuan_context)
 {
   trustitem_t *ti;
@@ -532,7 +532,7 @@ reformat_name (const char *name, const char *replstring)
       count++;
   newname = xtrymalloc (strlen (name) + count*replstringlen + 1);
   if (!newname)
-    return NULL; 
+    return NULL;
   for (s=name+1, d=newname; *s; s++)
     if (*s == '/')
       d = stpcpy (d, replstring);
@@ -571,7 +571,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     {
       xfree (fname);
       return gpg_error (GPG_ERR_EPERM);
-    }    
+    }
   xfree (fname);
 
   if (!agent_istrusted (ctrl, fpr, &is_disabled))
@@ -579,7 +579,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       return 0; /* We already got this fingerprint.  Silently return
                    success. */
     }
-  
+
   /* This feature must explicitly been enabled. */
   if (!opt.allow_mark_trusted)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -629,7 +629,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       xfree (nameformatted);
       return err;
     }
-    
+
 
   fprformatted = insert_colons (fpr);
   if (!fprformatted)
@@ -642,7 +642,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      fingerprint of course.  */
   if (yes_i_trust)
     {
-      desc = xtryasprintf 
+      desc = xtryasprintf
         (
          /* TRANSLATORS: This prompt is shown by the Pinentry and has
             one special property: A "%%0A" is used by Pinentry to
@@ -662,7 +662,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
           xfree (nameformatted);
           return out_of_core ();
         }
-      
+
       /* TRANSLATORS: "Correct" is the label of a button and intended
          to be hit if the fingerprint matches the one of the CA.  The
          other button is "the default "Cancel" of the Pinentry. */
@@ -688,7 +688,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       unlock_trusttable ();
       xfree (fprformatted);
       xfree (nameformatted);
-      return is_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0; 
+      return is_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0;
     }
 
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
@@ -735,7 +735,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   es_fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
   if (es_ferror (fp))
     err = gpg_error_from_syserror ();
-  
+
   if (es_fclose (fp))
     err = gpg_error_from_syserror ();
 

@@ -57,7 +57,7 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
     sigemptyset (&nact.sa_mask);
     nact.sa_flags = 0;
     sigaction ( sig, &nact, NULL);
-#else 
+#else
     RETSIGTYPE (*ohandler)(int);
 
     ohandler = signal (sig, handler);

@@ -69,7 +69,7 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
    never shares a reader (while performing one command).  Returns 0 on
    success; only then the unlock_reader function must be called after
    returning from the handler. */
-static gpg_error_t 
+static gpg_error_t
 lock_reader (int slot, ctrl_t ctrl)
 {
   gpg_error_t err;
@@ -89,7 +89,7 @@ lock_reader (int slot, ctrl_t ctrl)
       lock_table[slot].app = NULL;
       lock_table[slot].last_app = NULL;
     }
-  
+
   if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
     {
       err = gpg_error_from_syserror ();
@@ -188,7 +188,7 @@ application_notify_card_reset (int slot)
     return;
 
   /* FIXME: We are ignoring any error value here.  */
-  lock_reader (slot, NULL); 
+  lock_reader (slot, NULL);
 
   /* Mark application as non-reusable.  */
   if (lock_table[slot].app)
@@ -204,10 +204,10 @@ application_notify_card_reset (int slot)
       lock_table[slot].last_app = NULL;
       deallocate_app (app);
     }
-  unlock_reader (slot); 
+  unlock_reader (slot);
 }
 
- 
+
 /* This function is used by the serialno command to check for an
    application conflict which may appear if the serialno command is
    used to request a specific application and the connection has
@@ -287,7 +287,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
           lock_table[slot].app = app;
           lock_table[slot].last_app = NULL;
         }
-      else 
+      else
         {
           /* No, this saved application can't be used - deallocate it. */
           lock_table[slot].last_app = NULL;
@@ -309,7 +309,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       unlock_reader (slot);
       return 0; /* Okay: We share that one. */
     }
-  
+
   /* Need to allocate a new one.  */
   app = xtrycalloc (1, sizeof *app);
   if (!app)
@@ -370,7 +370,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   if (gpg_err_code (err) == GPG_ERR_CARD_NOT_PRESENT
       || gpg_err_code (err) == GPG_ERR_ENODEV)
     goto leave;
-  
+
   /* Figure out the application to use.  */
   err = gpg_error (GPG_ERR_NOT_FOUND);
 
@@ -426,10 +426,10 @@ get_supported_applications (void)
   int idx;
   size_t nbytes;
   char *buffer, *p;
-  
+
   for (nbytes=1, idx=0; list[idx]; idx++)
     nbytes += strlen (list[idx]) + 1 + 1;
-  
+
   buffer = xtrymalloc (nbytes);
   if (!buffer)
     return NULL;
@@ -506,22 +506,22 @@ release_application (app_t app)
 
 /* The serial number may need some cosmetics.  Do it here.  This
    function shall only be called once after a new serial number has
-   been put into APP->serialno. 
+   been put into APP->serialno.
 
    Prefixes we use:
-   
+
      FF 00 00 = For serial numbers starting with an FF
      FF 01 00 = Some german p15 cards return an empty serial number so the
                 serial number from the EF(TokenInfo) is used instead.
      FF 7F 00 = No serialno.
-     
+
      All other serial number not starting with FF are used as they are.
 */
 gpg_error_t
 app_munge_serialno (app_t app)
 {
   if (app->serialnolen && app->serialno[0] == 0xff)
-    { 
+    {
       /* The serial number starts with our special prefix.  This
          requires that we put our default prefix "FF0000" in front. */
       unsigned char *p = xtrymalloc (app->serialnolen + 3);
@@ -534,7 +534,7 @@ app_munge_serialno (app_t app)
       app->serialno = p;
     }
   else if (!app->serialnolen)
-    { 
+    {
       unsigned char *p = xtrymalloc (3);
       if (!p)
         return gpg_error_from_syserror ();
@@ -554,7 +554,7 @@ app_munge_serialno (app_t app)
    no update time is available the returned value is 0.  Caller must
    free SERIAL unless the function returns an error.  If STAMP is not
    of interest, NULL may be passed. */
-gpg_error_t 
+gpg_error_t
 app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
   char *buf;
@@ -637,7 +637,7 @@ app_readcert (app_t app, const char *certid,
    code returned.
 
    This function might not be supported by all applications.  */
-gpg_error_t 
+gpg_error_t
 app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
@@ -663,7 +663,7 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
 
 
 /* Perform a GETATTR operation.  */
-gpg_error_t 
+gpg_error_t
 app_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
@@ -684,7 +684,7 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
       char *serial;
       time_t stamp;
       int rc;
-      
+
       rc = app_get_serial_and_stamp (app, &serial, &stamp);
       if (rc)
         return rc;
@@ -704,7 +704,7 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 /* Perform a SETATTR operation.  */
-gpg_error_t 
+gpg_error_t
 app_setattr (app_t app, const char *name,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
@@ -729,7 +729,7 @@ app_setattr (app_t app, const char *name,
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-gpg_error_t 
+gpg_error_t
 app_sign (app_t app, const char *keyidstr, int hashalgo,
           gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
@@ -761,7 +761,7 @@ app_sign (app_t app, const char *keyidstr, int hashalgo,
    return the allocated result in OUTDATA.  If a PIN is required the
    PINCB will be used to ask for the PIN; it should return the PIN in
    an allocated buffer and put it into PIN.  */
-gpg_error_t 
+gpg_error_t
 app_auth (app_t app, const char *keyidstr,
           gpg_error_t (*pincb)(void*, const char *, char **),
           void *pincb_arg,
@@ -793,7 +793,7 @@ app_auth (app_t app, const char *keyidstr,
 /* Decrypt the data in INDATA and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-gpg_error_t 
+gpg_error_t
 app_decipher (app_t app, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
@@ -879,7 +879,7 @@ app_writekey (app_t app, ctrl_t ctrl,
 
 
 /* Perform a SETATTR operation.  */
-gpg_error_t 
+gpg_error_t
 app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
             time_t createtime,
             gpg_error_t (*pincb)(void*, const char *, char **),
@@ -896,7 +896,7 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
   err = lock_reader (app->slot, ctrl);
   if (err)
     return err;
-  err = app->fnc.genkey (app, ctrl, keynostr, flags, 
+  err = app->fnc.genkey (app, ctrl, keynostr, flags,
                          createtime, pincb, pincb_arg);
   unlock_reader (app->slot);
   if (opt.verbose)
@@ -928,7 +928,7 @@ app_get_challenge (app_t app, size_t nbytes, unsigned char *buffer)
 
 
 /* Perform a CHANGE REFERENCE DATA or RESET RETRY COUNTER operation.  */
-gpg_error_t 
+gpg_error_t
 app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
@@ -956,7 +956,7 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
 /* Perform a VERIFY operation without doing anything lese.  This may
    be used to initialze a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
-gpg_error_t 
+gpg_error_t
 app_check_pin (app_t app, const char *keyidstr,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
@@ -978,4 +978,3 @@ app_check_pin (app_t app, const char *keyidstr,
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));
   return err;
 }
-

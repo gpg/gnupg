@@ -78,7 +78,3 @@ void keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names);
 
 
 #endif /*GNUPG_KEYDB_H*/
-
-
-
-

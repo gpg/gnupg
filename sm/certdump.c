@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 #ifdef HAVE_LOCALE_H
@@ -175,7 +175,7 @@ gpgsm_dump_string (const char *string)
 
 
 /* This simple dump function is mainly used for debugging purposes. */
-void 
+void
 gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 {
   ksba_sexp_t sexp;
@@ -206,7 +206,7 @@ gpgsm_dump_cert (const char *text, ksba_cert_t cert)
       gpgsm_dump_string (dn);
       ksba_free (dn);
       log_printf ("\n");
-    
+
       dn = ksba_cert_get_subject (cert, 0);
       log_debug ("    subject: ");
       gpgsm_dump_string (dn);
@@ -256,7 +256,7 @@ gpgsm_format_sn_issuer (ksba_sexp_t sn, const char *issuer)
 
 /* Log the certificate's name in "#SN/ISSUERDN" format along with
    TEXT. */
-void 
+void
 gpgsm_cert_log_name (const char *text, ksba_cert_t cert)
 {
   log_info ("%s", text? text:"certificate" );
@@ -301,7 +301,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
     {"T",            "2.5.4.12" },
     {"GN",           "2.5.4.42" },
     {"SN",           "2.5.4.4" },
-    {"NameDistinguisher", "0.2.262.1.10.7.20"}, 
+    {"NameDistinguisher", "0.2.262.1.10.7.20"},
     {"ADDR",         "2.5.4.16" },
     {"BC",           "2.5.4.15" },
     {"D",            "2.5.4.13" },
@@ -329,7 +329,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
   array->key = p = xtrymalloc (n+10);
   if (!array->key)
     return NULL;
-  memcpy (p, string, n); 
+  memcpy (p, string, n);
   p[n] = 0;
   trim_trailing_spaces (p);
 
@@ -373,7 +373,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
             { /* pair */
               s++;
               if (*s == ',' || *s == '=' || *s == '+'
-                  || *s == '<' || *s == '>' || *s == '#' || *s == ';' 
+                  || *s == '<' || *s == '>' || *s == '#' || *s == ';'
                   || *s == '\\' || *s == '\"' || *s == ' ')
                 n++;
               else if (hexdigitp (s) && hexdigitp (s+1))
@@ -388,7 +388,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
             return NULL; /* invalid encoding */
           else if (*s == ',' || *s == '=' || *s == '+'
                    || *s == '<' || *s == '>' || *s == ';' )
-            break; 
+            break;
           else
             n++;
         }
@@ -399,7 +399,7 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
       for (s=string; n; s++, n--)
         {
           if (*s == '\\')
-            { 
+            {
               s++;
               if (hexdigitp (s))
                 {
@@ -440,7 +440,7 @@ parse_dn (const unsigned char *string)
       if (!*string)
         break; /* ready */
       if (arrayidx >= arraysize)
-        { 
+        {
           struct dn_array_s *a2;
 
           arraysize += 5;
@@ -537,10 +537,10 @@ print_dn_parts (FILE *fp, estream_t stream,
                 struct dn_array_s *dn, int translate)
 {
   const char *stdpart[] = {
-    "CN", "OU", "O", "STREET", "L", "ST", "C", "EMail", NULL 
+    "CN", "OU", "O", "STREET", "L", "ST", "C", "EMail", NULL
   };
   int i;
-  
+
   for (i=0; stdpart[i]; i++)
       print_dn_part (fp, stream, dn, stdpart[i], translate);
 
@@ -677,9 +677,9 @@ gpgsm_print_name2 (FILE *fp, const char *name, int translate)
       struct dn_array_s *dn = parse_dn (s);
       if (!dn)
         fputs (_("[Error - invalid DN]"), fp);
-      else 
+      else
         {
-          print_dn_parts (fp, NULL, dn, translate);          
+          print_dn_parts (fp, NULL, dn, translate);
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);
@@ -736,9 +736,9 @@ gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
 
       if (!dn)
         es_fputs (_("[Error - invalid DN]"), fp);
-      else 
+      else
         {
-          print_dn_parts (NULL, fp, dn, translate);          
+          print_dn_parts (NULL, fp, dn, translate);
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);
@@ -758,7 +758,7 @@ gpgsm_es_print_name (estream_t fp, const char *name)
 
 
 /* A cookie structure used for the memory stream. */
-struct format_name_cookie 
+struct format_name_cookie
 {
   char *buffer;         /* Malloced buffer with the data to deliver. */
   size_t size;          /* Allocated size of this buffer. */
@@ -809,7 +809,7 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
     }
   memcpy (p + c->len, buffer, size);
   c->len += size;
-  p[c->len] = 0; /* Terminate string. */ 
+  p[c->len] = 0; /* Terminate string. */
 
   return (ssize_t)size;
 }
@@ -869,7 +869,7 @@ gpgsm_fpr_and_name_for_status (ksba_cert_t cert)
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   if (!fpr)
     return NULL;
-  
+
   name = ksba_cert_get_subject (cert, 0);
   if (!name)
     {
@@ -954,21 +954,20 @@ gpgsm_format_keydesc (ksba_cert_t cert)
                        sn? sn: "?",
                        gpgsm_get_short_fingerprint (cert, NULL),
                        created, expires);
-  
+
   i18n_switchback (orig_codeset);
-  
+
   if (!name)
     {
       xfree (subject);
       xfree (sn);
       return NULL;
     }
-  
+
   xfree (subject);
   xfree (sn);
 
   buffer = percent_plus_escape (name);
-  xfree (name); 
+  xfree (name);
   return buffer;
 }
-

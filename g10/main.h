@@ -124,7 +124,7 @@ char *pct_expando(const char *string,struct expando_args *args);
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 void deprecated_command (const char *name);
-void obsolete_option (const char *configname, unsigned int configlineno, 
+void obsolete_option (const char *configname, unsigned int configlineno,
                       const char *name);
 
 int string_to_cipher_algo (const char *string);
@@ -272,14 +272,14 @@ void try_make_homedir( const char *fname );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 gcry_mpi_t encode_session_key( int openpgp_pk_algo, DEK *dek, unsigned nbits );
-gcry_mpi_t encode_md_value (PKT_public_key *pk, 
+gcry_mpi_t encode_md_value (PKT_public_key *pk,
                             gcry_md_hd_t md, int hash_algo );
 
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 		  void *stats_hd, unsigned int options);
-int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd, 
+int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd,
                         unsigned char **fpr,
 			size_t *fpr_len, unsigned int options);
 int import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
@@ -298,7 +298,7 @@ int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options );
 int export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
 			   kbnode_t *keyblock_out, unsigned int options );
 gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
-                                  unsigned int options, 
+                                  unsigned int options,
                                   kbnode_t *r_keyblock,
                                   void **r_data, size_t *r_datalen);
 int export_seckeys (ctrl_t ctrl, strlist_t users);

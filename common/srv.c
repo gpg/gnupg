@@ -72,7 +72,7 @@ getsrv (const char *name,struct srventry **list)
   {
     adns_state state;
     adns_answer *answer = NULL;
-    
+
     rc = adns_init (&state, adns_if_noerrprint, NULL);
     if (rc)
       {
@@ -88,7 +88,7 @@ getsrv (const char *name,struct srventry **list)
         adns_finish (state);
         return -1;
       }
-    if (answer->status != adns_s_ok 
+    if (answer->status != adns_s_ok
         || answer->type != adns_r_srv || !answer->nrrs)
       {
         log_error ("DNS query returned an error or no records: %s (%s)\n",
@@ -109,7 +109,7 @@ getsrv (const char *name,struct srventry **list)
             log_info ("hostname in SRV record too long - skipped\n");
             continue;
           }
-      
+
         newlist = xtryrealloc (*list, (srvcount+1)*sizeof(struct srventry));
         if (!newlist)
           goto fail;
@@ -117,7 +117,7 @@ getsrv (const char *name,struct srventry **list)
         memset (&(*list)[srvcount], 0, sizeof(struct srventry));
         srv = &(*list)[srvcount];
         srvcount++;
-      
+
         srv->priority = answer->rrs.srvha[count].priority;
         srv->weight   = answer->rrs.srvha[count].weight;
         srv->port     = answer->rrs.srvha[count].port;
@@ -134,29 +134,29 @@ getsrv (const char *name,struct srventry **list)
     unsigned char *pt, *emsg;
     int r;
     u16 dlen;
-    
+
     r = res_query (name, C_IN, T_SRV, answer, sizeof answer);
     if (r < sizeof (HEADER) || r > sizeof answer)
       return -1;
     if (header->rcode != NOERROR || !(count=ntohs (header->ancount)))
       return 0; /* Error or no record found.  */
-    
+
     emsg = &answer[r];
     pt = &answer[sizeof(HEADER)];
-  
+
     /* Skip over the query */
     rc = dn_skipname (pt, emsg);
     if (rc == -1)
       goto fail;
-  
+
     pt += rc + QFIXEDSZ;
-  
+
     while (count-- > 0 && pt < emsg)
       {
         struct srventry *srv=NULL;
         u16 type,class;
         struct srventry *newlist;
-      
+
         newlist = xtryrealloc (*list, (srvcount+1)*sizeof(struct srventry));
         if (!newlist)
           goto fail;
@@ -164,28 +164,28 @@ getsrv (const char *name,struct srventry **list)
         memset(&(*list)[srvcount],0,sizeof(struct srventry));
         srv=&(*list)[srvcount];
         srvcount++;
-      
+
         rc = dn_skipname(pt,emsg); /* the name we just queried for */
         if (rc == -1)
           goto fail;
         pt+=rc;
-      
+
         /* Truncated message? */
         if((emsg-pt)<16)
           goto fail;
-      
+
         type=*pt++ << 8;
         type|=*pt++;
         /* We asked for SRV and got something else !? */
         if(type!=T_SRV)
           goto fail;
-      
+
         class=*pt++ << 8;
         class|=*pt++;
         /* We asked for IN and got something else !? */
         if(class!=C_IN)
           goto fail;
-      
+
         pt+=4; /* ttl */
         dlen=*pt++ << 8;
         dlen|=*pt++;
@@ -195,7 +195,7 @@ getsrv (const char *name,struct srventry **list)
         srv->weight|=*pt++;
         srv->port=*pt++ << 8;
         srv->port|=*pt++;
-      
+
         /* Get the name.  2782 doesn't allow name compression, but
            dn_expand still works to pull the name out of the
            packet. */
@@ -215,17 +215,17 @@ getsrv (const char *name,struct srventry **list)
       }
   }
 #endif /*!USE_ADNS*/
-  
+
   /* Now we have an array of all the srv records. */
-  
+
   /* Order by priority */
   qsort(*list,srvcount,sizeof(struct srventry),priosort);
-  
+
   /* For each priority, move the zero-weighted items first. */
   for (i=0; i < srvcount; i++)
     {
       int j;
-      
+
       for (j=i;j < srvcount && (*list)[i].priority == (*list)[j].priority; j++)
         {
           if((*list)[j].weight==0)
@@ -234,12 +234,12 @@ getsrv (const char *name,struct srventry **list)
               if(j!=i)
                 {
                   struct srventry temp;
-                  
+
                   memcpy (&temp,&(*list)[j],sizeof(struct srventry));
                   memcpy (&(*list)[j],&(*list)[i],sizeof(struct srventry));
                   memcpy (&(*list)[i],&temp,sizeof(struct srventry));
                 }
-              
+
               break;
             }
         }
@@ -255,15 +255,15 @@ getsrv (const char *name,struct srventry **list)
     {
       int j;
       float prio_count=0,chose;
-      
+
       for (j=i; j < srvcount && (*list)[i].priority == (*list)[j].priority; j++)
         {
           prio_count+=(*list)[j].weight;
           (*list)[j].run_count=prio_count;
         }
-      
+
       chose=prio_count*rand()/RAND_MAX;
-      
+
       for (j=i;j<srvcount && (*list)[i].priority==(*list)[j].priority;j++)
         {
           if (chose<=(*list)[j].run_count)
@@ -272,7 +272,7 @@ getsrv (const char *name,struct srventry **list)
               if(j!=i)
                 {
                   struct srventry temp;
-                  
+
                   memcpy(&temp,&(*list)[j],sizeof(struct srventry));
                   memcpy(&(*list)[j],&(*list)[i],sizeof(struct srventry));
                   memcpy(&(*list)[i],&temp,sizeof(struct srventry));
@@ -281,7 +281,7 @@ getsrv (const char *name,struct srventry **list)
             }
         }
     }
-  
+
   return srvcount;
 
  fail:

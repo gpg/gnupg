@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
    FIXME: We should replace most code in this module by our
    spawn implementation from common/exechelp.c.
  */
@@ -50,7 +50,7 @@
 #include "exec.h"
 
 #ifdef NO_EXEC
-int 
+int
 exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
@@ -71,7 +71,7 @@ set_exec_path(const char *path) { return G10ERR_GENERAL; }
 /* This is a nicer system() for windows that waits for programs to
    return before returning control to the caller.  I hate helpful
    computers. */
-static int 
+static int
 w32_system(const char *command)
 {
 #ifdef HAVE_W32CE_SYSTEM
@@ -107,7 +107,7 @@ w32_system(const char *command)
 #endif
 
 /* Replaces current $PATH */
-int 
+int
 set_exec_path(const char *path)
 {
 #ifdef HAVE_W32CE_SYSTEM
@@ -134,7 +134,7 @@ set_exec_path(const char *path)
 }
 
 /* Makes a temp directory and filenames */
-static int 
+static int
 make_tempdir(struct exec_info *info)
 {
   char *tmp=opt.temp_dir,*namein=info->name,*nameout;
@@ -216,7 +216,7 @@ make_tempdir(struct exec_info *info)
 
 /* Expands %i and %o in the args to the full temp files within the
    temp directory. */
-static int 
+static int
 expand_args(struct exec_info *info,const char *args_in)
 {
   const char *ch = args_in;
@@ -305,7 +305,7 @@ expand_args(struct exec_info *info,const char *args_in)
    If there are args, but no tempfiles, then it's a fork/exec/pipe via
    shell -c.  If there are tempfiles, then it's a system. */
 
-int 
+int
 exec_write(struct exec_info **info,const char *program,
            const char *args_in,const char *name,int writeonly,int binary)
 {
@@ -607,7 +607,7 @@ exec_finish(struct exec_info *info)
 	    log_info(_("WARNING: unable to remove tempfile (%s) `%s': %s\n"),
 		     "in",info->tempfile_in,strerror(errno));
 	}
-  
+
       if(info->tempfile_out)
 	{
 	  if(unlink(info->tempfile_out)==-1)

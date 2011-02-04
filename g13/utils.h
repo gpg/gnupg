@@ -30,15 +30,14 @@ void append_tuple (membuf_t *membuf,
 struct tupledesc_s;
 typedef struct tupledesc_s *tupledesc_t;
 
-gpg_error_t create_tupledesc (tupledesc_t *r_tupledesc, 
+gpg_error_t create_tupledesc (tupledesc_t *r_tupledesc,
                               void *data, size_t datalen);
 void destroy_tupledesc (tupledesc_t tupledesc);
 tupledesc_t ref_tupledesc (tupledesc_t tupledesc);
-const void *find_tuple (tupledesc_t tupledesc, 
+const void *find_tuple (tupledesc_t tupledesc,
                         unsigned int tag, size_t *r_length);
-const void *next_tuple (tupledesc_t tupledesc, 
+const void *next_tuple (tupledesc_t tupledesc,
                         unsigned int *r_tag, size_t *r_length);
 
 
 #endif /*G13_UTILS_H*/
-

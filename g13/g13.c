@@ -148,10 +148,10 @@ static ARGPARSE_OPTS opts[] = {
 
   /* Hidden options. */
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
-  ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"), 
+  ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_n (oNoOptions, "no-options", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"),   
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oGpgProgram, "gpg-program", "@"),
   ARGPARSE_s_s (oDisplay,    "display", "@"),
@@ -235,7 +235,7 @@ my_strusage( int level )
 
     case 31: p = "\nHome: "; break;
     case 32: p = opt.homedir; break;
-     
+
     default: p = NULL; break;
     }
   return p;
@@ -297,13 +297,13 @@ set_debug (void)
 
   if (opt.debug)
     log_info ("enabled debug flags:%s%s%s%s%s\n",
-              (opt.debug & DBG_MOUNT_VALUE  )? " mount":"",    
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
+              (opt.debug & DBG_MOUNT_VALUE  )? " mount":"",
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
               (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
 }
- 
+
 
 
 static void
@@ -313,7 +313,7 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
 
   if (!cmd || cmd == new_cmd)
     cmd = new_cmd;
-  else 
+  else
     {
       log_error (_("conflicting commands\n"));
       g13_exit (2);
@@ -373,16 +373,16 @@ main ( int argc, char **argv)
 
   /* Check that the Libgcrypt is suitable.  */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt", 
+    log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
                NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
 
   /* Take extra care of the random pool.  */
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
   may_coredump = disable_core_dumps ();
-  
+
   gnupg_init_signals (0, emergency_cleanup);
-  
+
   create_dotlock (NULL); /* Register locking cleanup.  */
 
   opt.session_env = session_env_new ();
@@ -418,8 +418,8 @@ main ( int argc, char **argv)
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
   maybe_setuid = 0;
 
-  /* 
-     Now we are now working under our real uid 
+  /*
+     Now we are now working under our real uid
   */
 
   /* Setup malloc hooks. */
@@ -431,7 +431,7 @@ main ( int argc, char **argv)
     malloc_hooks.free = gcry_free;
     assuan_set_malloc_hooks (&malloc_hooks);
   }
-  
+
   /* Prepare libassuan.  */
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
@@ -446,7 +446,7 @@ main ( int argc, char **argv)
   /* Set the default option file */
   if (default_config )
     configname = make_filename (opt.homedir, "g13.conf", NULL);
-  
+
   argc        = orig_argc;
   argv        = orig_argv;
   pargs.argc  = &argc;
@@ -465,9 +465,9 @@ main ( int argc, char **argv)
               if (parse_debug)
                 log_info (_("NOTE: no default option file `%s'\n"), configname);
             }
-          else 
+          else
             {
-              log_error (_("option file `%s': %s\n"), 
+              log_error (_("option file `%s': %s\n"),
                          configname, strerror(errno));
               g13_exit(2);
             }
@@ -478,14 +478,14 @@ main ( int argc, char **argv)
         log_info (_("reading options from `%s'\n"), configname);
       default_config = 0;
     }
-  
-  while (!no_more_options 
+
+  while (!no_more_options
          && optfile_parse (configfp, configname, &configlineno, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
-	case aGPGConfList: 
-	case aGPGConfTest: 
+	case aGPGConfList:
+	case aGPGConfTest:
           set_cmd (&cmd, pargs.r_opt);
           nogreeting = 1;
           nokeysetup = 1;
@@ -517,7 +517,7 @@ main ( int argc, char **argv)
           break;
 
         case oLogFile: logfile = pargs.r.ret_str; break;
-        case oNoLogFile: logfile = NULL; break;          
+        case oNoLogFile: logfile = NULL; break;
 
         case oNoDetach: nodetach = 1; break;
 
@@ -554,10 +554,10 @@ main ( int argc, char **argv)
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oXauthority: opt.xauthority = xstrdup (pargs.r.ret_str); break;
-          
+
         case oFakedSystemTime:
           {
-            time_t faked_time = isotime2epoch (pargs.r.ret_str); 
+            time_t faked_time = isotime2epoch (pargs.r.ret_str);
             if (faked_time == (time_t)(-1))
               faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
             gnupg_set_time (faked_time, 0);
@@ -573,8 +573,8 @@ main ( int argc, char **argv)
           break;
 
 
-        default: 
-          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR; 
+        default:
+          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
           break;
 	}
     }
@@ -603,7 +603,7 @@ main ( int argc, char **argv)
 
   if (nogreeting)
     greeting = 0;
-  
+
   if (greeting)
     {
       fprintf (stderr, "%s %s; %s\n",
@@ -647,38 +647,38 @@ main ( int argc, char **argv)
   /* Terminate if we found any error until now.  */
   if (log_get_errorcount(0))
     g13_exit (2);
-  
+
   /* Set the standard GnuPG random seed file.  */
-  if (use_random_seed) 
+  if (use_random_seed)
     {
       char *p = make_filename (opt.homedir, "random_seed", NULL);
       gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
       xfree(p);
     }
-  
+
   /* Store given filename into FNAME. */
   fname = argc? *argv : NULL;
 
   /* Parse all given encryption keys.  This does a lookup of the keys
      and stops if any of the given keys was not found. */
-#if 0 /* Currently not implemented.  */  
+#if 0 /* Currently not implemented.  */
   if (!nokeysetup)
     {
       strlist_t sl;
       int failed = 0;
-      
+
       for (sl = recipients; sl; sl = sl->next)
         if (check_encryption_key ())
           failed = 1;
       if (failed)
         g13_exit (1);
     }
-#endif /*0*/ 
- 
+#endif /*0*/
+
   /* Dispatch command.  */
   switch (cmd)
     {
-    case aGPGConfList: 
+    case aGPGConfList:
       { /* List options and default values in the GPG Conf format.  */
 	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
 
@@ -712,7 +712,7 @@ main ( int argc, char **argv)
 
     case aCreate: /* Create a new container. */
       {
-        if (argc != 1) 
+        if (argc != 1)
           wrong_args ("--create filename");
         start_idle_task ();
         err = g13_create_container (&ctrl, argv[0], recipients);
@@ -726,7 +726,7 @@ main ( int argc, char **argv)
 
     case aMount: /* Mount a container. */
       {
-        if (argc != 1 && argc != 2 ) 
+        if (argc != 1 && argc != 2 )
           wrong_args ("--mount filename [mountpoint]");
         start_idle_task ();
         err = g13_mount_container (&ctrl, argv[0], argc == 2?argv[1]:NULL);
@@ -796,7 +796,7 @@ handle_signal (int signo)
       log_info ("SIGHUP received - re-reading configuration\n");
       /* Fixme:  Not yet implemented.  */
       break;
-      
+
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       /* Fixme: We need to see how to integrate pth dumping into our
@@ -823,14 +823,14 @@ handle_signal (int signo)
           g13_exit (0);
 	}
       break;
-      
+
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");
       log_info( "%s %s stopped\n", strusage(11), strusage(13));
       g13_exit (0);
       break;
 #endif /*!HAVE_W32_SYSTEM*/
-      
+
     default:
       log_info ("signal %d received - no action defined\n", signo);
     }
@@ -932,16 +932,16 @@ start_idle_task (void)
 {
   pth_attr_t tattr;
   pth_t tid;
-  
+
   tattr = pth_attr_new ();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "idle-task");
-  
+
   tid = pth_spawn (tattr, idle_task, NULL);
   if (!tid)
     {
-      log_fatal ("error starting idle task: %s\n", 
+      log_fatal ("error starting idle task: %s\n",
                  gpg_strerror (gpg_error_from_syserror ()));
       return; /*NOTREACHED*/
     }
@@ -961,4 +961,3 @@ join_idle_task (void)
                    gpg_strerror (gpg_error_from_syserror ()));
     }
 }
-

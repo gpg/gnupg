@@ -1,18 +1,18 @@
 # Makefile.am - Tools directory
 #     	Copyright (C) 2003, 2007 Free Software Foundation, Inc.
-# 
+#
 # This file is part of GnuPG.
-# 
+#
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -76,7 +76,7 @@ maybe_commonpth_libs = $(common_libs)
 endif
 
 if HAVE_W32CE_SYSTEM
-pwquery_libs = 
+pwquery_libs =
 else
 pwquery_libs = ../common/libsimple-pwquery.a
 endif
@@ -99,14 +99,14 @@ gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
 gpgparsemail_SOURCES = gpgparsemail.c rfc822parse.c rfc822parse.h
-gpgparsemail_LDADD = 
+gpgparsemail_LDADD =
 
 symcryptrun_SOURCES = symcryptrun.c
 symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
                     $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) \
                     $(LIBICONV) $(NETLIBS) $(W32SOCKLIBS)
 
-watchgnupg_SOURCES = watchgnupg.c 
+watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
@@ -146,4 +146,3 @@ gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(W32SOCKLIBS)
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
 $(PROGRAMS): $(common_libs) $(pwquery_libs) ../common/libgpgrl.a
-

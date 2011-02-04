@@ -115,9 +115,9 @@ progress_filter (void *opaque, int control,
 	  || timestamp - pfx->last_time > 0)
 	{
 	  char buffer[50];
-	  
+
 	  sprintf (buffer, "%.20s ? %lu %lu",
-                   pfx->what? pfx->what : "?", 
+                   pfx->what? pfx->what : "?",
                    pfx->offset,
 		   pfx->total);
 	  write_status_text (STATUS_PROGRESS, buffer);

@@ -32,7 +32,7 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#include <unistd.h> 
+#include <unistd.h>
 #include <fcntl.h>
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
@@ -40,7 +40,7 @@
 #undef USE_GNU_PTH
 #endif
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
 #include <pth.h>
 #endif
 
@@ -127,7 +127,7 @@ get_all_open_fds (void)
   array = calloc (narray, sizeof *array);
   if (!array)
     return NULL;
-  
+
   /* Note:  The list we return is ordered.  */
   for (idx=0, fd=0; fd < max_fd; fd++)
     if (!(fstat (fd, &statbuf) == -1 && errno == EBADF))
@@ -184,7 +184,7 @@ build_w32_commandline_copy (char *buffer, const char *string)
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
 static gpg_error_t
-build_w32_commandline (const char *pgmname, const char * const *argv, 
+build_w32_commandline (const char *pgmname, const char * const *argv,
                        char **cmdline)
 {
   int i, n;
@@ -212,7 +212,7 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
     return gpg_error_from_syserror ();
 
   p = build_w32_commandline_copy (p, pgmname);
-  for (i=0; argv[i]; i++) 
+  for (i=0; argv[i]; i++)
     {
       *p++ = ' ';
       p = build_w32_commandline_copy (p, argv[i]);
@@ -234,7 +234,7 @@ create_inheritable_pipe (HANDLE filedes[2], int inherit_idx)
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-    
+
   if (!CreatePipe (&r, &w, &sec_attr, 0))
     return -1;
 
@@ -296,7 +296,7 @@ do_create_pipe (int filedes[2], int inherit_idx)
           log_error ("failed to translate osfhandle %p\n", fds[0]);
           CloseHandle (fds[1]);
         }
-      else 
+      else
         {
           filedes[1] = _open_osfhandle (handle_to_fd (fds[1]), 1);
           if (filedes[1] == -1)
@@ -343,7 +343,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 {
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
-  PROCESS_INFORMATION pi = 
+  PROCESS_INFORMATION pi =
     {
       NULL,      /* Returns process handle.  */
       0,         /* Returns primary thread handle.  */
@@ -369,7 +369,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (r_errfp)
     *r_errfp = NULL;
   *pid = (pid_t)(-1); /* Always required.  */
-  
+
   if (infp)
     {
       es_fflush (infp);
@@ -389,7 +389,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
         default:
           inhandle = INVALID_HANDLE_VALUE;
           break;
-        }      
+        }
       if (inhandle == INVALID_HANDLE_VALUE)
         return gpg_err_make (errsource, GPG_ERR_INV_VALUE);
       /* FIXME: In case we can't get a system handle (e.g. due to
@@ -455,11 +455,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   if (inhandle != INVALID_HANDLE_VALUE)
     nullhd[0] = w32_open_null (0);
@@ -483,7 +483,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | ((flags & 128)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
-              | CREATE_SUSPENDED); 
+              | CREATE_SUSPENDED);
 /*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
@@ -526,7 +526,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     CloseHandle (outpipe[1]);
   if (errpipe[1] != INVALID_HANDLE_VALUE)
     CloseHandle (errpipe[1]);
-  
+
   /* log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
   /*            " dwProcessID=%d dwThreadId=%d\n", */
   /*            pi.hProcess, pi.hThread, */
@@ -541,7 +541,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   if (r_outfp)
     *r_outfp = outfp;
@@ -582,11 +582,11 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
@@ -633,7 +633,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
@@ -660,7 +660,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
      been implemented.  A special W32 pth system call would even be
      better.  */
   code = WaitForSingleObject (proc, hang? INFINITE : 0);
-  switch (code) 
+  switch (code)
     {
     case WAIT_TIMEOUT:
       ec = GPG_ERR_TIMEOUT;
@@ -694,14 +694,14 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
           ec = 0;
         }
       break;
-      
+
     default:
       log_error ("WaitForSingleObject returned unexpected "
                  "code %d for pid %d\n", code, (int)pid );
       ec = GPG_ERR_GENERAL;
       break;
     }
-  
+
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 }
 
@@ -713,7 +713,7 @@ gnupg_release_process (pid_t pid)
   if (pid != (pid_t)INVALID_HANDLE_VALUE)
     {
       HANDLE process = (HANDLE)pid;
-      
+
       CloseHandle (process);
     }
 }
@@ -732,7 +732,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 {
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
-  PROCESS_INFORMATION pi = 
+  PROCESS_INFORMATION pi =
     {
       NULL,      /* Returns process handle.  */
       0,         /* Returns primary thread handle.  */
@@ -757,11 +757,11 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   /* Start the process.  */
   memset (&si, 0, sizeof si);
@@ -772,7 +772,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_NEW_PROCESS_GROUP
-              | DETACHED_PROCESS); 
+              | DETACHED_PROCESS);
 /*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
 /*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
@@ -799,7 +799,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 /*              pi.hProcess, pi.hThread, */
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   return 0;
 }
@@ -814,7 +814,7 @@ gnupg_kill_process (pid_t pid)
   if (pid != (pid_t) INVALID_HANDLE_VALUE)
     {
       HANDLE process = (HANDLE) pid;
-      
+
       /* Arbitrary error code.  */
       TerminateProcess (process, 1);
     }

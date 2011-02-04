@@ -144,7 +144,7 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
       else
 	{
 	  SK_LIST r;
-          
+
 	  if (random_is_faked () && !is_insecure (pk))
 	    {
 	      log_info (_("key is not flagged as insecure - "
@@ -212,7 +212,7 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
 	  else
 	    {
 	      SK_LIST r;
-              
+
 	      if (pk->version == 4 && (use & PUBKEY_USAGE_SIG)
 		  && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E)
 		{
@@ -256,7 +256,7 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
       write_status_text (STATUS_NO_SGNR, "0");
       err = gpg_error (GPG_ERR_NO_USER_ID);
     }
-  
+
   if (err)
     release_sk_list (sk_list);
   else

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -105,7 +105,7 @@ length_sans_trailing_ws (const unsigned char *line, size_t len)
 {
   const unsigned char *p, *mark;
   size_t n;
-  
+
   for (mark=NULL, p=line, n=0; n < len; n++, p++)
     {
       if (strchr (" \t\r\n", *p ))
@@ -116,8 +116,8 @@ length_sans_trailing_ws (const unsigned char *line, size_t len)
       else
         mark = NULL;
     }
-  
-  if (mark) 
+
+  if (mark)
     return mark - line;
   return len;
 }
@@ -160,7 +160,7 @@ stpcpy (char *a,const char *b)
   while (*b)
     *a++ = *b++;
   *a = 0;
-  
+
   return (char*)a;
 }
 #endif
@@ -356,10 +356,10 @@ transition_to_body (rfc822parse_t msg)
                 {
                   assert (!msg->current_part->boundary);
                   msg->current_part->boundary = malloc (strlen (s) + 1);
-                  if (msg->current_part->boundary) 
+                  if (msg->current_part->boundary)
                     {
                       part_t part;
-                  
+
                       strcpy (msg->current_part->boundary, s);
                       msg->boundary = msg->current_part->boundary;
                       part = new_part ();
@@ -428,7 +428,7 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
   hdr->cont = (*line == ' ' || *line == '\t');
   memcpy (hdr->line, line, length);
   hdr->line[length] = 0; /* Make it a string. */
-  
+
   /* Transform a field name into canonical format. */
   if (!hdr->cont && strchr (line, ':'))
      capitalize_header_name (hdr->line);
@@ -490,7 +490,7 @@ insert_body (rfc822parse_t msg, const unsigned char *line, size_t length)
 int
 rfc822parse_insert (rfc822parse_t msg, const unsigned char *line, size_t length)
 {
-  return (msg->in_body 
+  return (msg->in_body
           ? insert_body (msg, line, length)
           : insert_header (msg, line, length));
 }
@@ -516,11 +516,11 @@ rfc822parse_finish (rfc822parse_t msg)
  * WHICH gives the mode:
  *  -1 := Take the last occurence
  *   n := Take the n-th  one.
- * 
+ *
  * Returns a newly allocated buffer or NULL on error.  errno is set in
  * case of a memory failure or set to 0 if the requested field is not
  * available.
- * 
+ *
  * If VALUEOFF is not NULL it will receive the offset of the first non
  * space character in the value part of the line (i.e. after the first
  * colon).
@@ -589,7 +589,7 @@ rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
   HDR_LINE l;
 
   if (!msg) /* Close. */
-    return NULL;	
+    return NULL;
 
   if (*context == msg || !msg->current_part)
     return NULL;
@@ -760,7 +760,7 @@ parse_field (HDR_LINE hdr)
   static const char tspecials[] = "/?=<>@,;:\\[]\"()";
   static const char tspecials2[] = "/?=<>@.,;:";  /* FIXME: really
                                                      include '.'?*/
-  static struct 
+  static struct
   {
     const unsigned char *name;
     size_t namelen;
@@ -871,13 +871,13 @@ parse_field (HDR_LINE hdr)
 		  else if (*s2 == '\\' && s2[1]) /* what about continuation? */
 		    s2++;
 		}
-              
+
 	      t = (t
                    ? append_to_token (t, s, s2 - s)
                    : new_token (term == '\"'? tQUOTED : tDOMAINLIT, s, s2 - s));
               if (!t)
                 goto failure;
-                   
+
 	      if (*s2 || !hdr->next || !hdr->next->cont)
 		break;
 	      hdr = hdr->next;
@@ -1007,10 +1007,10 @@ is_parameter (TOKEN t)
    Returns a pointer to the value which is valid as long as the
    parse context is valid; NULL is returned in case that attr is not
    defined in the header, a missing value is reppresented by an empty string.
- 
+
    With LOWER_VALUE set to true, a matching field valuebe be
    lowercased.
- 
+
    Note, that ATTR should be lowercase.
  */
 const char *
@@ -1115,7 +1115,7 @@ dump_structure (rfc822parse_t msg, part_t part, int indent)
       part_t save_part; /* ugly hack - we should have a function to
                            get part inforation. */
       const char *s;
-      
+
       save_part = msg->current_part;
       msg->current_part = part;
       ctx = rfc822parse_parse_field (msg, "Content-Type", -1);
@@ -1141,7 +1141,7 @@ dump_structure (rfc822parse_t msg, part_t part, int indent)
       if (part->down)
         dump_structure (msg, part->down, indent + 1);
     }
-  
+
 }
 
 
@@ -1211,7 +1211,7 @@ msg_cb (void *dummy_arg, rfc822parse_event_t event, rfc822parse_t msg)
         }
       else
         printf ("***   media: text/plain [assumed]\n");
-      
+
     }
 
 

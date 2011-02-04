@@ -22,9 +22,9 @@
 #define CRLCACHE_H
 
 
-typedef enum 
+typedef enum
   {
-    CRL_CACHE_VALID = 0, 
+    CRL_CACHE_VALID = 0,
     CRL_CACHE_INVALID,
     CRL_CACHE_DONTKNOW,
     CRL_CACHE_CANTUSE
@@ -32,11 +32,11 @@ typedef enum
 crl_cache_result_t;
 
 typedef enum foo
-  { 
+  {
     CRL_SIG_OK = 0,
     CRL_SIG_NOT_OK,
     CRL_TOO_OLD,
-    CRL_SIG_ERROR, 
+    CRL_SIG_ERROR,
     CRL_GENERAL_ERROR
   }
 crl_sig_result_t;

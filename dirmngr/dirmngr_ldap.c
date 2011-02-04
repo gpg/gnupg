@@ -100,7 +100,7 @@ static void pth_leave (void) { }
 
 
 /* Constants for the options.  */
-enum 
+enum
   {
     oQuiet	  = 'q',
     oVerbose	  = 'v',
@@ -187,7 +187,7 @@ static const char *
 my_strusage (int level)
 {
   const char *p;
-    
+
   switch(level)
     {
     case 11: p = "dirmngr_ldap (GnuPG)";
@@ -230,13 +230,13 @@ ldap_wrapper_main (char **argv, estream_t outstream)
   struct my_opt_s my_opt_buffer;
   my_opt_t myopt = &my_opt_buffer;
   char *malloced_buffer1 = NULL;
-  
+
   memset (&my_opt_buffer, 0, sizeof my_opt_buffer);
 
 #ifdef USE_LDAPWRAPPER
   set_strusage (my_strusage);
-  log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX); 
-  
+  log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX);
+
   /* Setup I18N and common subsystems. */
   i18n_init();
 
@@ -265,8 +265,8 @@ ldap_wrapper_main (char **argv, estream_t outstream)
         {
         case oVerbose: myopt->verbose++; break;
         case oQuiet: myopt->quiet++; break;
-	case oTimeout: 
-	  myopt->timeout.tv_sec = pargs.r.ret_int; 
+	case oTimeout:
+	  myopt->timeout.tv_sec = pargs.r.ret_int;
 	  myopt->timeout.tv_usec = 0;
           myopt->alarm_timeout = pargs.r.ret_int;
 	  break;
@@ -322,7 +322,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
       if (!myopt->port)
         myopt->port = 389;  /* make sure ports gets overridden.  */
     }
-        
+
   if (myopt->port < 0 || myopt->port > 65535)
     log_error (_("invalid port number %d\n"), myopt->port);
 
@@ -342,12 +342,12 @@ ldap_wrapper_main (char **argv, estream_t outstream)
 #ifndef HAVE_W32_SYSTEM
 # if defined(HAVE_SIGACTION) && defined(HAVE_STRUCT_SIGACTION)
       struct sigaction act;
-      
+
       act.sa_handler = catch_alarm;
       sigemptyset (&act.sa_mask);
       act.sa_flags = 0;
       if (sigaction (SIGALRM,&act,NULL))
-# else 
+# else
       if (signal (SIGALRM, catch_alarm) == SIG_ERR)
 # endif
           log_fatal ("unable to register timeout handler\n");
@@ -413,7 +413,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
             }
         }
 
-          
+
       for (pth_enter (), attr = my_ldap_first_attribute (ld, item, &berctx),
              pth_leave ();
            attr;
@@ -425,7 +425,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
 
           if (myopt->verbose > 1)
             log_info (_("          available attribute `%s'\n"), attr);
-          
+
           set_timeout (myopt);
 
           /* I case we want only one attribute we do a case
@@ -474,7 +474,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 for (idx=0; values[idx]; idx++)
                   log_info ("         length[%d]=%d\n",
                             idx, (int)values[0]->bv_len);
-              
+
             }
 
           if (myopt->multi)
@@ -487,7 +487,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
               tmp[2] = (n >> 16);
               tmp[3] = (n >> 8);
               tmp[4] = (n);
-              if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1 
+              if (es_fwrite (tmp, 5, 1, myopt->outstream) != 1
                   || es_fwrite (attr, n, 1, myopt->outstream) != 1)
                 {
                   log_error (_("error writing to stdout: %s\n"),
@@ -544,7 +544,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
             break; /* We only want to return the first attribute.  */
         }
       ber_free (berctx, 0);
-    } 
+    }
 
   if (myopt->verbose > 1 && any)
     log_info ("result has been printed\n");
@@ -623,7 +623,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   pth_leave ();
   if (!ld)
     {
-      log_error (_("LDAP init to `%s:%d' failed: %s\n"), 
+      log_error (_("LDAP init to `%s:%d' failed: %s\n"),
                  host, port, strerror (errno));
       return -1;
     }
@@ -633,7 +633,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   pth_leave ();
   if (ret)
     {
-      log_error (_("binding to `%s:%d' failed: %s\n"), 
+      log_error (_("binding to `%s:%d' failed: %s\n"),
                  host, port, strerror (errno));
       ldap_unbind (ld);
       return -1;
@@ -660,7 +660,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 #ifdef HAVE_W32CE_SYSTEM
       log_error ("searching `%s' failed: %d\n", url, rc);
 #else
-      log_error (_("searching `%s' failed: %s\n"), 
+      log_error (_("searching `%s' failed: %s\n"),
                  url, ldap_err2string (rc));
 #endif
       if (rc != LDAP_NO_SUCH_OBJECT)
@@ -707,4 +707,3 @@ process_url (my_opt_t myopt, const char *url)
   ldap_free_urldesc (ludp);
   return rc;
 }
-

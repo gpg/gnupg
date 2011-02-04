@@ -36,8 +36,8 @@ cmp_time_s (struct tm *a, struct tm *b)
       || a->tm_mon  != b->tm_mon
       || a->tm_mday != b->tm_mday
       || a->tm_hour != b->tm_hour
-      || a->tm_min  != b->tm_min 
-      || a->tm_sec  != b->tm_sec 
+      || a->tm_min  != b->tm_min
+      || a->tm_sec  != b->tm_sec
       || a->tm_wday != b->tm_wday
       || a->tm_yday != b->tm_yday
       || !a->tm_isdst != !b->tm_isdst)
@@ -51,7 +51,7 @@ static void
 test_timegm (void)
 {
   static struct {
-    int year, mon, mday, hour, min, sec; 
+    int year, mon, mday, hour, min, sec;
   } tvalues[] = {
     { -1 },
     { -2,  1 },
@@ -103,12 +103,12 @@ test_timegm (void)
           tbuf.tm_mday = tvalues[tidx].mday;
           tbuf.tm_hour = tvalues[tidx].hour;
           tbuf.tm_min  = tvalues[tidx].min;
-          tbuf.tm_sec  = tvalues[tidx].sec; 
+          tbuf.tm_sec  = tvalues[tidx].sec;
           now = mktime (&tbuf);
         }
       if (now == (time_t)(-1))
         fail (tidx);
-      
+
       tp = gmtime (&now);
       if (!tp)
         fail (tidx);
@@ -119,7 +119,7 @@ test_timegm (void)
         fail (tidx);
       if (atime != now)
         fail (tidx);
-      
+
       tp = gmtime (&atime);
       if (!tp)
         fail (tidx);
@@ -142,4 +142,3 @@ main (int argc, char **argv)
 
   return 0;
 }
-

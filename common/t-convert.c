@@ -72,8 +72,8 @@ test_hex2bin (void)
   unsigned char buffer[20];
   int len;
   int i;
-  
-  
+
+
   for (i=0; valid[i]; i++)
     {
       len = hex2bin (valid[i], buffer, sizeof buffer);
@@ -87,7 +87,7 @@ test_hex2bin (void)
     fail (0);
   if (hex2bin (valid[2], buffer, sizeof buffer) != 41)
     fail (0);
-  
+
   for (i=0; invalid[i]; i++)
     {
       len = hex2bin (invalid[i], buffer, sizeof buffer);
@@ -107,7 +107,7 @@ test_hex2bin (void)
     fail (0);
   if (hex2bin (valid2[1], buffer, 1) != 3)
     fail (0);
-  
+
   for (i=0; invalid2[i]; i++)
     {
       len = hex2bin (invalid2[i], buffer, 1);
@@ -164,8 +164,8 @@ test_hexcolon2bin (void)
   unsigned char buffer[20];
   int len;
   int i;
-  
-  
+
+
   for (i=0; valid[i]; i++)
     {
       len = hexcolon2bin (valid[i], buffer, sizeof buffer);
@@ -179,7 +179,7 @@ test_hexcolon2bin (void)
     fail (0);
   if (hexcolon2bin (valid[3], buffer, sizeof buffer) != 41)
     fail (0);
-  
+
   for (i=0; invalid[i]; i++)
     {
       len = hexcolon2bin (invalid[i], buffer, sizeof buffer);
@@ -199,7 +199,7 @@ test_hexcolon2bin (void)
     fail (0);
   if (hexcolon2bin (valid2[1], buffer, 1) != 3)
     fail (0);
-  
+
   for (i=0; invalid2[i]; i++)
     {
       len = hexcolon2bin (invalid2[i], buffer, 1);
@@ -234,10 +234,10 @@ test_bin2hex (void)
     fail (0);
   if (strcmp (p, hexstuff))
     fail (0);
-  
+
   p = bin2hex (stuff, (size_t)(-1), NULL);
   if (p)
-    fail (0); 
+    fail (0);
   if (errno != ENOMEM)
     fail (1);
 }
@@ -263,13 +263,13 @@ test_bin2hexcolon (void)
 
   p = bin2hexcolon (stuff, 20, NULL);
   if (!p)
-    fail (0); 
+    fail (0);
   if (strcmp (p, hexstuff))
     fail (0);
-  
+
   p = bin2hexcolon (stuff, (size_t)(-1), NULL);
   if (p)
-    fail (0); 
+    fail (0);
   if (errno != ENOMEM)
     fail (1);
 }
@@ -384,10 +384,10 @@ test_hex2str (void)
   for (idx=0; tests[idx].hex; idx++)
     {
       char tmpbuf[100];
-      
+
       assert (strlen (tests[idx].hex)+1 < sizeof tmpbuf);
       strcpy (tmpbuf, tests[idx].hex);
-      
+
       /* Note: we still need to use 20 as buffer length because our
          tests assume that. */
       tail = hex2str (tmpbuf, tmpbuf, 20, &count);
@@ -449,7 +449,7 @@ main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
-  
+
   test_hex2bin ();
   test_hexcolon2bin ();
   test_bin2hex ();
@@ -458,4 +458,3 @@ main (int argc, char **argv)
 
   return 0;
 }
-

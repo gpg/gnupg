@@ -22,12 +22,12 @@
 
 /* The definition of the structure is private, we only need it here,
    so it can be allocated on the stack. */
-struct private_membuf_s 
+struct private_membuf_s
 {
-  size_t len;      
-  size_t size;     
-  char *buf;       
-  int out_of_core; 
+  size_t len;
+  size_t size;
+  char *buf;
+  int out_of_core;
 };
 
 typedef struct private_membuf_s membuf_t;

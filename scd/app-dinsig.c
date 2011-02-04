@@ -22,7 +22,7 @@
    used with an interface specification described in DIN V 66291-1.
    The AID to be used is: 'D27600006601'.
 
-   The file IDs for certificates utilize the generic format: 
+   The file IDs for certificates utilize the generic format:
         Cxyz
     C being the hex digit 'C' (12).
     x being the service indicator:
@@ -41,13 +41,13 @@
          '8' .. 'D' := C.CA (certificate of a CA issue by the Root-CA).
          'E'        := C.RCA (self certified certificate of the Root-CA).
          'F'        := reserved.
-   
+
    The file IDs used by default are:
    '1F00'  EF.SSD (security service descriptor). [o,o]
    '2F02'  EF.GDO (global data objects) [m,m]
    'A000'  EF.PROT (signature log).  Cyclic file with 20 records of 53 byte.
            Read and update after user authentication. [o,o]
-   'B000'  EF.PK.RCA.DS (public keys of Root-CA).  Size is 512b or size 
+   'B000'  EF.PK.RCA.DS (public keys of Root-CA).  Size is 512b or size
            of keys. [m (unless a 'C00E' is present),m]
    'B001'  EF.PK.CA.DS (public keys of CAs).  Size is 512b or size
            of keys. [o,o]
@@ -55,12 +55,12 @@
            with n := 0 .. 7.  Size is 2k or size of cert.  Read and
            update allowed after user authentication. [m,m]
    'C00m'  EF.C.CA.DS (digital signature certificate of CA)
-           with m := 8 .. E.  Size is 1k or size of cert.  Read always 
+           with m := 8 .. E.  Size is 1k or size of cert.  Read always
            allowed, update after user authentication. [o,o]
    'C100'  EF.C.ICC.AUT (AUT certificate of ICC) [o,m]
    'C108'  EF.C.CA.AUT (AUT certificate of CA) [o,m]
    'D000'  EF.DM (display message) [-,m]
-   
+
    The letters in brackets indicate optional or mandatory files: The
    first for card terminals under full control and the second for
    "business" card terminals.
@@ -101,15 +101,15 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   /* Return the certificate of the card holder. */
   fid = 0xC000;
-  len = app_help_read_length_of_cert (app->slot, fid, &certoff); 
+  len = app_help_read_length_of_cert (app->slot, fid, &certoff);
   if (!len)
     return 0; /* Card has not been personalized. */
 
   sprintf (ct_buf, "%d", 101);
   sprintf (id_buf, "DINSIG.%04X", fid);
   send_status_info (ctrl, "CERTINFO",
-                    ct_buf, strlen (ct_buf), 
-                    id_buf, strlen (id_buf), 
+                    ct_buf, strlen (ct_buf),
+                    id_buf, strlen (id_buf),
                     NULL, (size_t)0);
 
   /* Now we need to read the certificate, so that we can get the
@@ -128,7 +128,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
       xfree (der);
       return err;
     }
-  err = ksba_cert_init_from_mem (cert, der, derlen); 
+  err = ksba_cert_init_from_mem (cert, der, derlen);
   xfree (der); der = NULL;
   if (err)
     {
@@ -143,13 +143,13 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
       log_error ("failed to calculate the keygrip for FID 0x%04X\n", fid);
       ksba_cert_release (cert);
       return gpg_error (GPG_ERR_CARD);
-    }      
+    }
   ksba_cert_release (cert);
 
   sprintf (id_buf, "DINSIG.%04X", fid);
   send_status_info (ctrl, "KEYPAIRINFO",
-                    hexkeygrip, 40, 
-                    id_buf, strlen (id_buf), 
+                    hexkeygrip, 40,
+                    id_buf, strlen (id_buf),
                     NULL, (size_t)0);
   return 0;
 }
@@ -160,7 +160,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 /* Read the certificate with id CERTID (as returned by learn_status in
    the CERTINFO status lines) and return it in the freshly allocated
    buffer put into CERT and the length of the certificate put into
-   CERTLEN. 
+   CERTLEN.
 
    FIXME: This needs some cleanups and caching with do_learn_status.
 */
@@ -179,11 +179,11 @@ do_readcert (app_t app, const char *certid,
 
   *cert = NULL;
   *certlen = 0;
-  if (strncmp (certid, "DINSIG.", 7) ) 
+  if (strncmp (certid, "DINSIG.", 7) )
     return gpg_error (GPG_ERR_INV_ID);
   certid += 7;
   if (!hexdigitp (certid) || !hexdigitp (certid+1)
-      || !hexdigitp (certid+2) || !hexdigitp (certid+3) 
+      || !hexdigitp (certid+2) || !hexdigitp (certid+3)
       || certid[4])
     return gpg_error (GPG_ERR_INV_ID);
   fid = xtoi_4 (certid);
@@ -207,7 +207,7 @@ do_readcert (app_t app, const char *certid,
                  fid, gpg_strerror (err));
       return err;
     }
-  
+
   if (!buflen || *buffer == 0xff)
     {
       log_info ("no certificate contained in FID 0x%04X\n", fid);
@@ -235,13 +235,13 @@ do_readcert (app_t app, const char *certid,
                           &ndef, &objlen, &hdrlen);
   if (err)
     goto leave;
-  
+
   if (rootca)
     ;
   else if (class == CLASS_UNIVERSAL && tag == TAG_OBJECT_ID && !constructed)
     {
       const unsigned char *save_p;
-  
+
       /* The certificate seems to be contained in a userCertificate
          container.  Skip this and assume the following sequence is
          the certificate. */
@@ -255,7 +255,7 @@ do_readcert (app_t app, const char *certid,
       save_p = p;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (err) 
+      if (err)
         goto leave;
       if ( !(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && constructed) )
         return gpg_error (GPG_ERR_INV_OBJ);
@@ -263,7 +263,7 @@ do_readcert (app_t app, const char *certid,
       assert (save_p + totobjlen <= buffer + buflen);
       memmove (buffer, save_p, totobjlen);
     }
-  
+
   *cert = buffer;
   buffer = NULL;
   *certlen = totobjlen;
@@ -284,7 +284,7 @@ verify_pin (app_t app,
   int rc;
   iso7816_pininfo_t pininfo;
 
-  if ( app->did_chv1 && !app->force_chv1 ) 
+  if ( app->did_chv1 && !app->force_chv1 )
     return 0;  /* No need to verify it again.  */
 
   memset (&pininfo, 0, sizeof pininfo);
@@ -304,7 +304,7 @@ verify_pin (app_t app,
                     gpg_strerror (rc));
           return rc;
         }
-      rc = iso7816_verify_kp (app->slot, 0x81, "", 0, &pininfo); 
+      rc = iso7816_verify_kp (app->slot, 0x81, "", 0, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
     }
@@ -355,7 +355,7 @@ verify_pin (app_t app,
              this. */
           char paddedpin[8];
           int i, ndigits;
-          
+
           for (ndigits=0, s=pinvalue; *s; ndigits++, s++)
             ;
           i = 0;
@@ -386,7 +386,7 @@ verify_pin (app_t app,
    If a PIN is required the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
    store that in the 3rd argument.  */
-static gpg_error_t 
+static gpg_error_t
 do_sign (app_t app, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
@@ -417,11 +417,11 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   /* Check that the provided ID is vaid.  This is not really needed
      but we do it to to enforce correct usage by the caller. */
-  if (strncmp (keyidstr, "DINSIG.", 7) ) 
+  if (strncmp (keyidstr, "DINSIG.", 7) )
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 7;
   if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
-      || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
+      || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3)
       || keyidstr[4])
     return gpg_error (GPG_ERR_INV_ID);
   fid = xtoi_4 (keyidstr);
@@ -439,7 +439,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
         ;
       else if (hashalgo == GCRY_MD_RMD160 && !memcmp (indata, rmd160_prefix,15))
         ;
-      else 
+      else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
     }
@@ -459,7 +459,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           hashalgo = GCRY_MD_SHA256;
           datalen  = indatalen;
         }
-      else 
+      else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
     }
@@ -476,14 +476,14 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           datalen = len + indatalen;
           memcpy (data, sha256_prefix, len);
         }
-      else 
+      else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data+len, indata, indatalen);
     }
 
   rc = verify_pin (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_compute_ds (app->slot, 0, data, datalen, 0, 
+    rc = iso7816_compute_ds (app->slot, 0, data, datalen, 0,
                              outdata, outdatalen);
   return rc;
 }
@@ -493,8 +493,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 #warning test function - works but may brick your card
 /* Handle the PASSWD command.  CHVNOSTR is currently ignored; we
    always use VHV0.  RESET_MODE is not yet implemented.  */
-static gpg_error_t 
-do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, 
+static gpg_error_t
+do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                unsigned int flags,
                gpg_error_t (*pincb)(void*, const char *, char **),
                void *pincb_arg)
@@ -526,14 +526,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   /* TRANSLATORS: Do not translate the "|*|" prefixes but
      keep it at the start of the string.  We need this elsewhere
      to get some infos on the string. */
-  err = pincb (pincb_arg, _("|N|Initial New PIN"), &pinvalue); 
+  err = pincb (pincb_arg, _("|N|Initial New PIN"), &pinvalue);
   if (err)
     {
       log_error (_("error getting new PIN: %s\n"), gpg_strerror (err));
       return err;
     }
 
-  err = iso7816_change_reference_data (app->slot, 0x81, 
+  err = iso7816_change_reference_data (app->slot, 0x81,
                                        oldpin, oldpinlen,
                                        pinvalue, strlen (pinvalue));
   xfree (pinvalue);
@@ -550,7 +550,7 @@ app_select_dinsig (app_t app)
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
   int slot = app->slot;
   int rc;
-  
+
   rc = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (!rc)
     {

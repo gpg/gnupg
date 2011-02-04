@@ -26,7 +26,7 @@ topheader == 0 && /^\/\*/  { topheader = 1 }
 topheader == 1             { print $0 }
 topheader == 1 && /\*\//   { topheader = 2; print "" }
 
-/^[ \t]+STATUS_[A-Za-z_]+/  { 
+/^[ \t]+STATUS_[A-Za-z_]+/  {
   sub (/[,\/\*]+/, "", $1);
   desc = substr($1,8);
   printf "%d\t%s\t%s\n", code, $1, desc;
@@ -37,4 +37,3 @@ topheader == 1 && /\*\//   { topheader = 2; print "" }
 END {
   print "# end of status codes."
 }
-

@@ -36,7 +36,7 @@
 #define MAX_EXTRA_CACHED_CERTS 1000
 
 /* Constants used to classify search patterns.  */
-enum pattern_class 
+enum pattern_class
   {
     PATTERN_UNKNOWN = 0,
     PATTERN_EMAIL,
@@ -66,7 +66,7 @@ struct cert_item_s
   char *issuer_dn;          /* The malloced issuer DN.  */
   ksba_sexp_t sn;           /* The malloced serial number  */
   char *subject_dn;         /* The malloced subject DN - maybe NULL.  */
-  struct 
+  struct
   {
     unsigned int loaded:1;  /* It has been explicitly loaded.  */
     unsigned int trusted:1; /* This is a trusted root certificate.  */
@@ -144,7 +144,7 @@ compare_serialno (ksba_sexp_t serial1, ksba_sexp_t serial2 )
 /* Return a malloced canonical S-Expression with the serialnumber
    converted from the hex string HEXSN.  Return NULL on memory
    error. */
-ksba_sexp_t 
+ksba_sexp_t
 hexsn_to_sexp (const char *hexsn)
 {
   char *buffer, *p;
@@ -159,8 +159,8 @@ hexsn_to_sexp (const char *hexsn)
   p = stpcpy (buffer, numbuf);
   len = unhexify (p, hexsn);
   p[len] = ')';
-  p[len+1] = 0; 
-  
+  p[len+1] = 0;
+
   return buffer;
 }
 
@@ -251,7 +251,7 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
       drop_count = MAX_EXTRA_CACHED_CERTS / 20;
       if (drop_count < 2)
         drop_count = 2;
-      
+
       log_info (_("dropping %u certificates from the cache\n"), drop_count);
       assert (idx < 256);
       for (i=idx; drop_count; i = ((i+1)%256))
@@ -277,7 +277,7 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
   cert_compute_fpr (cert, fpr);
   for (ci=cert_cache[*fpr]; ci; ci = ci->next)
     if (ci->cert && !memcmp (ci->fpr, fpr, 20))
-      return gpg_error (GPG_ERR_DUP_VALUE);          
+      return gpg_error (GPG_ERR_DUP_VALUE);
   /* Try to reuse an existing entry.  */
   for (ci=cert_cache[*fpr]; ci; ci = ci->next)
     if (!ci->cert)
@@ -350,7 +350,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
       n = strlen (p);
       if ( n < 5 || (strcmp (p+n-4,".crt") && strcmp (p+n-4,".der")))
         continue; /* Not the desired "*.crt" or "*.der" pattern.  */
-      
+
       xfree (fname);
       fname = make_filename (dirname, p, NULL);
       fp = es_fopen (fname, "rb");
@@ -417,7 +417,7 @@ void
 cert_cache_init (void)
 {
   char *dname;
-  
+
   if (initialization_done)
     return;
   init_cache_lock ();
@@ -433,7 +433,7 @@ cert_cache_init (void)
 
   initialization_done = 1;
   release_cache_lock ();
-            
+
   cert_cache_print_stats ();
 }
 
@@ -682,15 +682,15 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
   const char *s;
   int hexprefix = 0;
   int hexlength;
-  int mode = 0;   
-    
+  int mode = 0;
+
   *r_offset = *r_sn_offset = 0;
 
   /* Skip leading spaces. */
   for(s = pattern; *s && spacep (s); s++ )
     ;
 
-  switch (*s) 
+  switch (*s)
     {
     case 0:  /* Empty string is an error. */
       result = PATTERN_UNKNOWN;
@@ -732,12 +732,12 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
       break;
 
     case '#': /* Serial number or issuer DN. */
-      { 
+      {
         const char *si;
-        
+
         s++;
         if ( *s == '/')
-          { 
+          {
             /* An issuer's DN is indicated by "#/" */
             s++;
             if (!*s || spacep (s))
@@ -745,7 +745,7 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
             else
               result = PATTERN_ISSUER;
           }
-        else 
+        else
           { /* Serialnumber + optional issuer ID. */
             for (si=s; *si && *si != '/'; si++)
               if (!strchr("01234567890abcdefABCDEF", *si))
@@ -772,10 +772,10 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
       break;
 
     case ':': /* Unified fingerprint. */
-      {  
+      {
         const char *se, *si;
         int i;
-        
+
         se = strchr (++s, ':');
         if (!se)
           result = PATTERN_UNKNOWN;
@@ -793,7 +793,7 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
             else
               result = PATTERN_UNKNOWN; /* Invalid length for a fingerprint. */
           }
-      } 
+      }
       break;
 
     case '&': /* Keygrip. */
@@ -810,52 +810,52 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
       hexlength = strspn(s, "0123456789abcdefABCDEF");
 
       /* Check if a hexadecimal number is terminated by EOS or blank. */
-      if (hexlength && s[hexlength] && !spacep (s+hexlength)) 
+      if (hexlength && s[hexlength] && !spacep (s+hexlength))
         {
           /* If the "0x" prefix is used a correct termination is required. */
-          if (hexprefix) 
+          if (hexprefix)
             {
-              result = PATTERN_UNKNOWN;   
+              result = PATTERN_UNKNOWN;
               break; /* switch */
             }
           hexlength = 0;  /* Not a hex number.  */
         }
-      
+
       if (hexlength == 8 || (!hexprefix && hexlength == 9 && *s == '0'))
-        { 
+        {
           if (hexlength == 9)
             s++;
           result = PATTERN_SHORT_KEYID;
         }
       else if (hexlength == 16 || (!hexprefix && hexlength == 17 && *s == '0'))
-        { 
+        {
           if (hexlength == 17)
             s++;
           result = PATTERN_LONG_KEYID;
         }
       else if (hexlength == 32 || (!hexprefix && hexlength == 33 && *s == '0'))
-        { 
+        {
           if (hexlength == 33)
             s++;
           result = PATTERN_FINGERPRINT16;
         }
       else if (hexlength == 40 || (!hexprefix && hexlength == 41 && *s == '0'))
-        { 
+        {
           if (hexlength == 41)
             s++;
           result = PATTERN_FINGERPRINT20;
         }
       else if (!hexprefix)
-        { 
+        {
           /* The fingerprints used with X.509 are often delimited by
              colons, so we try to single this case out. */
           result = PATTERN_UNKNOWN;
           hexlength = strspn (s, ":0123456789abcdefABCDEF");
-          if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength))) 
+          if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength)))
             {
               int i, c;
 
-              for (i=0; i < 20; i++, s += 3) 
+              for (i=0; i < 20; i++, s += 3)
                 {
                   c = hextobyte(s);
                   if (c == -1 || (i < 19 && s[2] != ':'))
@@ -865,14 +865,14 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
                 result = PATTERN_FINGERPRINT20;
             }
           if (result == PATTERN_UNKNOWN) /* Default to substring match. */
-            { 
+            {
               result = PATTERN_SUBSTR;
             }
         }
       else /* A hex number with a prefix but with a wrong length.  */
         result = PATTERN_UNKNOWN;
     }
-  
+
   if (result != PATTERN_UNKNOWN)
     *r_offset = s - pattern;
   return result;
@@ -884,7 +884,7 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
    certificate, return all matching certificates by calling the
    supplied function RETFNC.  */
 gpg_error_t
-get_certs_bypattern (const char *pattern, 
+get_certs_bypattern (const char *pattern,
                      gpg_error_t (*retfnc)(void*,ksba_cert_t),
                      void *retfnc_data)
 {
@@ -904,7 +904,7 @@ get_certs_bypattern (const char *pattern,
   pattern += offset;
   switch (class)
     {
-    case PATTERN_UNKNOWN: 
+    case PATTERN_UNKNOWN:
       err = gpg_error (GPG_ERR_INV_NAME);
       break;
 
@@ -945,7 +945,7 @@ get_certs_bypattern (const char *pattern,
       if (!err && !seq)
         err = gpg_error (GPG_ERR_NOT_FOUND);
       break;
-      
+
     case PATTERN_EMAIL:
     case PATTERN_EMAIL_SUBSTR:
     case PATTERN_FINGERPRINT16:
@@ -1030,7 +1030,7 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
               break;
             }
         }
-      
+
       err = fetch_next_ksba_cert (context, &cert);
       if (err)
         {
@@ -1038,7 +1038,7 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
                      gpg_strerror (err) );
           break;
         }
-      
+
       issdn = ksba_cert_get_issuer (cert, 0);
       if (strcmp (issuer_dn, issdn))
         {
@@ -1046,7 +1046,7 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
           ksba_cert_release (cert);
           cert = NULL;
           ksba_free (issdn);
-          break; 
+          break;
         }
 
       sn = ksba_cert_get_serial (cert);
@@ -1193,7 +1193,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
               break;
             }
         }
-      
+
       err = fetch_next_ksba_cert (context, &cert);
       if (err)
         {
@@ -1201,7 +1201,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
                      gpg_strerror (err) );
           break;
         }
-      
+
       subjdn = ksba_cert_get_subject (cert, 0);
       if (strcmp (subject_dn, subjdn))
         {
@@ -1209,7 +1209,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
           ksba_cert_release (cert);
           cert = NULL;
           ksba_free (subjdn);
-          continue; 
+          continue;
         }
 
 
@@ -1257,7 +1257,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
 /* Return 0 if the certificate is a trusted certificate. Returns
    GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
    case of systems errors. */
-gpg_error_t 
+gpg_error_t
 is_trusted_cert (ksba_cert_t cert)
 {
   unsigned char fpr[20];
@@ -1365,7 +1365,7 @@ find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
         err = 0;
     }
 
- leave:  
+ leave:
   if (!err && !issuer_cert)
     err = gpg_error (GPG_ERR_NOT_FOUND);
 
@@ -1378,4 +1378,3 @@ find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
 
   return err;
 }
-

@@ -81,7 +81,7 @@ const unsigned char *find_tlv_unchecked (const unsigned char *buffer,
    and the length part from the TLV triplet.  Update BUFFER and SIZE
    on success. */
 gpg_error_t _parse_ber_header (unsigned char const **buffer, size_t *size,
-                               int *r_class, int *r_tag, 
+                               int *r_class, int *r_tag,
                                int *r_constructed,
                                int *r_ndef, size_t *r_length, size_t *r_nhdr,
                                gpg_err_source_t errsource);

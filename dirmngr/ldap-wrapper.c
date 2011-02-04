@@ -23,7 +23,7 @@
 
    1. On some systems the LDAP library uses (indirectly) pthreads and
       that is not compatible with PTh.
-  
+
    2. It is huge library in particular if TLS comes into play.  So
       problems with unfreed memory might turn up and we don't want
       this in a long running daemon.
@@ -35,7 +35,7 @@
       process to commit suicide or have our own housekepping function
       kill it after some time.  The latter also allows proper
       cancellation of a query at any point of time.
-      
+
    4. Given that we are going out to the network and usually get back
       a long response, the fork/exec overhead is acceptable.
 
@@ -129,7 +129,7 @@ read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
 {
   gpg_error_t err;
   size_t nread;
-  
+
   while (count)
     {
       err = ksba_reader_read (reader, buffer, count, &nread);
@@ -144,7 +144,7 @@ read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
 
 /* Release the wrapper context and kill a running wrapper process. */
 static void
-destroy_wrapper (struct wrapper_context_s *ctx) 
+destroy_wrapper (struct wrapper_context_s *ctx)
 {
   if (ctx->pid != (pid_t)(-1))
     {
@@ -175,18 +175,18 @@ print_log_line (struct wrapper_context_s *ctx, char *line)
       if (ctx->line && ctx->linelen)
         {
 
-          log_info ("%s\n", ctx->line); 
+          log_info ("%s\n", ctx->line);
           ctx->linelen = 0;
         }
       return;
     }
-  
+
   while ((s = strchr (line, '\n')))
     {
       *s = 0;
       if (ctx->line && ctx->linelen)
         {
-          log_info ("%s", ctx->line); 
+          log_info ("%s", ctx->line);
           ctx->linelen = 0;
           log_printf ("%s\n", line);
         }
@@ -229,7 +229,7 @@ read_log_data (struct wrapper_context_s *ctx)
   char line[256];
 
   /* We must use the pth_read function for pipes, always.  */
-  do 
+  do
     n = pth_read (ctx->log_fd, line, sizeof line - 1);
   while (n < 0 && errno == EINTR);
 
@@ -334,7 +334,7 @@ ldap_wrapper_thread (void *dummy)
             {
               gpg_error_t err;
 	      int status;
-              
+
 	      err = gnupg_wait_process ("[dirmngr_ldap]", ctx->pid, 0,
                                         &status);
               if (!err)
@@ -384,15 +384,15 @@ ldap_wrapper_thread (void *dummy)
       /* If something has been printed to the log file or we got an
          EOF from a wrapper, we now print the list of active
          wrappers.  */
-      if (any_action && DBG_LOOKUP) 
+      if (any_action && DBG_LOOKUP)
         {
           log_info ("ldap worker stati:\n");
           for (ctx = wrapper_list; ctx; ctx = ctx->next)
             log_info ("  c=%p pid=%d/%d rdr=%p ctrl=%p/%d la=%lu rdy=%d\n",
-                      ctx, 
+                      ctx,
                       (int)ctx->pid, (int)ctx->printable_pid,
                       ctx->reader,
-                      ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0, 
+                      ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
                       (unsigned long)ctx->stamp, ctx->ready);
         }
 
@@ -402,7 +402,7 @@ ldap_wrapper_thread (void *dummy)
          is not anymore in use or we are in shutdown state.  */
      again:
       for (ctx_prev=NULL, ctx=wrapper_list; ctx; ctx_prev=ctx, ctx=ctx->next)
-        if (ctx->ready 
+        if (ctx->ready
             && ((ctx->log_fd == -1 && !ctx->reader) || shutting_down))
           {
             if (ctx_prev)
@@ -470,13 +470,13 @@ ldap_wrapper_release_context (ksba_reader_t reader)
 
   if (!reader )
     return;
-    
+
   for (ctx=wrapper_list; ctx; ctx=ctx->next)
     if (ctx->reader == reader)
       {
         if (DBG_LOOKUP)
           log_info ("releasing ldap worker c=%p pid=%d/%d rdr=%p ctrl=%p/%d\n",
-                    ctx, 
+                    ctx,
                     (int)ctx->pid, (int)ctx->printable_pid,
                     ctx->reader,
                     ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
@@ -518,7 +518,7 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
 /* This is the callback used by the ldap wrapper to feed the ksba
    reader with the wrappers stdout.  See the description of
    ksba_reader_set_cb for details.  */
-static int 
+static int
 reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
 {
   struct wrapper_context_s *ctx = cb_value;
@@ -580,7 +580,7 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
                 pth_event_free (evt, PTH_FREE_THIS);
               return -1; /* EOF. */
             }
-          break; 
+          break;
         }
       nleft -= n;
       buffer += n;

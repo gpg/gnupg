@@ -137,7 +137,7 @@ test_agent_protect (void)
       "\x9B\x7B\xE8\xDD\x1F\x87\x4E\x79\x7B\x50\x12\xA7\xB4\x8B\x52\x38\xEC\x7C\xBB\xB9"
       "\x55\x87\x11\x1C\x74\xE7\x7F\xA0\xBA\xE3\x34\x5D\x61\xBF\x29\x29\x29\x00"
     };
-      
+
   struct
   {
     const char *key;
@@ -182,7 +182,7 @@ test_agent_protect (void)
 		  specs[i].ret_expected, gpg_strerror (specs[i].ret_expected));
 	  abort ();
 	}
-      
+
       if (specs[i].no_result_expected)
 	{
 	  assert (! specs[i].result);
@@ -234,14 +234,14 @@ static void
 test_make_shadow_info (void)
 {
 #if 0
-  static struct 
+  static struct
   {
-    const char *snstr; 
+    const char *snstr;
     const char *idstr;
     const char *expected;
   } data[] = {
     { "", "", NULL },
-    
+
   };
   int i;
   unsigned char *result;
@@ -305,7 +305,7 @@ main (int argc, char **argv)
   (void)argv;
 
   gcry_control (GCRYCTL_DISABLE_SECMEM);
-  
+
   test_agent_protect ();
   test_agent_unprotect ();
   test_agent_private_key_type ();

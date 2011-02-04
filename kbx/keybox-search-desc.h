@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
    This file is a temporary kludge until we can come up with solution
    to share this description between keybox and the application
    specific keydb
@@ -54,12 +54,12 @@ struct gpg_pkt_user_id_s;
 typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;
 
 /* A search descriptor.  */
-struct keydb_search_desc 
+struct keydb_search_desc
 {
   KeydbSearchMode mode;
-  int (*skipfnc)(void *, u32 *, gpg_pkt_user_id_t); 
+  int (*skipfnc)(void *, u32 *, gpg_pkt_user_id_t);
   void *skipfncvalue;
-  const unsigned char *sn; 
+  const unsigned char *sn;
   int snlen;  /* -1 := sn is a hex string */
   union {
     const char *name;

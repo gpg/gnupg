@@ -27,7 +27,7 @@
   pcsc interface but to a higher level one which resembles the code
   used in scdaemon (apdu.c) when not using Pth or while running under
   Windows.
-  
+
   The interface is binary consisting of a command tag and the length
   of the parameter list.  The calling process needs to pass the
   version number of the interface on the command line to make sure
@@ -56,7 +56,7 @@
 #define MYVERSION_LINE PGM " (GnuPG) " VERSION
 #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
 #else
-#define MYVERSION_LINE PGM 
+#define MYVERSION_LINE PGM
 #define BUGREPORT_LINE ""
 #endif
 
@@ -67,14 +67,14 @@ static int verbose;
 
 
 /* PC/SC constants and function pointer. */
-#define PCSC_SCOPE_USER      0 
-#define PCSC_SCOPE_TERMINAL  1 
-#define PCSC_SCOPE_SYSTEM    2 
-#define PCSC_SCOPE_GLOBAL    3 
+#define PCSC_SCOPE_USER      0
+#define PCSC_SCOPE_TERMINAL  1
+#define PCSC_SCOPE_SYSTEM    2
+#define PCSC_SCOPE_GLOBAL    3
 
-#define PCSC_PROTOCOL_T0     1 
-#define PCSC_PROTOCOL_T1     2 
-#define PCSC_PROTOCOL_RAW    4 
+#define PCSC_PROTOCOL_T0     1
+#define PCSC_PROTOCOL_T1     2
+#define PCSC_PROTOCOL_RAW    4
 
 #define PCSC_SHARE_EXCLUSIVE 1
 #define PCSC_SHARE_SHARED    2
@@ -85,7 +85,7 @@ static int verbose;
 #define PCSC_UNPOWER_CARD    2
 #define PCSC_EJECT_CARD      3
 
-#define PCSC_UNKNOWN    0x0001  
+#define PCSC_UNKNOWN    0x0001
 #define PCSC_ABSENT     0x0002  /* Card is absent.  */
 #define PCSC_PRESENT    0x0004  /* Card is present.  */
 #define PCSC_SWALLOWED  0x0008  /* Card is present and electrical connected. */
@@ -106,7 +106,7 @@ static int verbose;
 #define PCSC_STATE_MUTE	       0x0200  /* Unresponsive card.  */
 
 struct pcsc_io_request_s {
-  unsigned long protocol; 
+  unsigned long protocol;
   unsigned long pci_len;
 };
 
@@ -235,7 +235,7 @@ request_succeeded (const void *buffer, size_t buflen)
 
   fflush (stdout);
 }
-  
+
 
 
 static unsigned long
@@ -271,40 +271,40 @@ pcsc_error_string (long err)
     {
     case 0x0002: s = "cancelled"; break;
     case 0x000e: s = "can't dispose"; break;
-    case 0x0008: s = "insufficient buffer"; break;   
+    case 0x0008: s = "insufficient buffer"; break;
     case 0x0015: s = "invalid ATR"; break;
     case 0x0003: s = "invalid handle"; break;
-    case 0x0004: s = "invalid parameter"; break; 
+    case 0x0004: s = "invalid parameter"; break;
     case 0x0005: s = "invalid target"; break;
-    case 0x0011: s = "invalid value"; break; 
-    case 0x0006: s = "no memory"; break;  
-    case 0x0013: s = "comm error"; break;      
-    case 0x0001: s = "internal error"; break;     
-    case 0x0014: s = "unknown error"; break; 
-    case 0x0007: s = "waited too long"; break;  
+    case 0x0011: s = "invalid value"; break;
+    case 0x0006: s = "no memory"; break;
+    case 0x0013: s = "comm error"; break;
+    case 0x0001: s = "internal error"; break;
+    case 0x0014: s = "unknown error"; break;
+    case 0x0007: s = "waited too long"; break;
     case 0x0009: s = "unknown reader"; break;
-    case 0x000a: s = "timeout"; break; 
-    case 0x000b: s = "sharing violation"; break;       
+    case 0x000a: s = "timeout"; break;
+    case 0x000b: s = "sharing violation"; break;
     case 0x000c: s = "no smartcard"; break;
-    case 0x000d: s = "unknown card"; break;   
-    case 0x000f: s = "proto mismatch"; break;          
-    case 0x0010: s = "not ready"; break;               
-    case 0x0012: s = "system cancelled"; break;        
+    case 0x000d: s = "unknown card"; break;
+    case 0x000f: s = "proto mismatch"; break;
+    case 0x0010: s = "not ready"; break;
+    case 0x0012: s = "system cancelled"; break;
     case 0x0016: s = "not transacted"; break;
-    case 0x0017: s = "reader unavailable"; break; 
-    case 0x0065: s = "unsupported card"; break;        
-    case 0x0066: s = "unresponsive card"; break;       
-    case 0x0067: s = "unpowered card"; break;          
-    case 0x0068: s = "reset card"; break;              
-    case 0x0069: s = "removed card"; break;            
-    case 0x006a: s = "inserted card"; break;           
-    case 0x001f: s = "unsupported feature"; break;     
-    case 0x0019: s = "PCI too small"; break;           
-    case 0x001a: s = "reader unsupported"; break;      
-    case 0x001b: s = "duplicate reader"; break;        
-    case 0x001c: s = "card unsupported"; break;        
-    case 0x001d: s = "no service"; break;              
-    case 0x001e: s = "service stopped"; break;      
+    case 0x0017: s = "reader unavailable"; break;
+    case 0x0065: s = "unsupported card"; break;
+    case 0x0066: s = "unresponsive card"; break;
+    case 0x0067: s = "unpowered card"; break;
+    case 0x0068: s = "reset card"; break;
+    case 0x0069: s = "removed card"; break;
+    case 0x006a: s = "inserted card"; break;
+    case 0x001f: s = "unsupported feature"; break;
+    case 0x0019: s = "PCI too small"; break;
+    case 0x001a: s = "reader unsupported"; break;
+    case 0x001b: s = "duplicate reader"; break;
+    case 0x001c: s = "card unsupported"; break;
+    case 0x001d: s = "no service"; break;
+    case 0x001e: s = "service stopped"; break;
     default:     s = "unknown PC/SC error code"; break;
     }
   return s;
@@ -337,16 +337,16 @@ load_pcsc_driver (const char *libname)
   pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
 
   if (!pcsc_establish_context
-      || !pcsc_release_context  
-      || !pcsc_list_readers     
+      || !pcsc_release_context
+      || !pcsc_list_readers
       || !pcsc_get_status_change
-      || !pcsc_connect          
-      || !pcsc_reconnect          
+      || !pcsc_connect
+      || !pcsc_reconnect
       || !pcsc_disconnect
       || !pcsc_status
       || !pcsc_begin_transaction
       || !pcsc_end_transaction
-      || !pcsc_transmit         
+      || !pcsc_transmit
       /* || !pcsc_set_timeout */)
     {
       /* Note that set_timeout is currently not used and also not
@@ -355,22 +355,22 @@ load_pcsc_driver (const char *libname)
                "apdu_open_reader: invalid PC/SC driver "
                "(%d%d%d%d%d%d%d%d%d%d%d%d)\n",
                !!pcsc_establish_context,
-               !!pcsc_release_context,  
-               !!pcsc_list_readers,     
-               !!pcsc_get_status_change,     
-               !!pcsc_connect,          
-               !!pcsc_reconnect,          
+               !!pcsc_release_context,
+               !!pcsc_list_readers,
+               !!pcsc_get_status_change,
+               !!pcsc_connect,
+               !!pcsc_reconnect,
                !!pcsc_disconnect,
                !!pcsc_status,
                !!pcsc_begin_transaction,
                !!pcsc_end_transaction,
-               !!pcsc_transmit,         
+               !!pcsc_transmit,
                !!pcsc_set_timeout );
       dlclose (handle);
       exit (1);
     }
 }
-  
+
 
 
 
@@ -409,7 +409,7 @@ handle_open (unsigned char *argbuf, size_t arglen)
       request_failed (err);
       return;
     }
-  
+
   err = pcsc_list_readers (pcsc_context, NULL, NULL, &nreader);
   if (!err)
     {
@@ -477,8 +477,8 @@ handle_open (unsigned char *argbuf, size_t arglen)
       pcsc_protocol = 0;
       request_failed (err);
       return;
-    }      
-  
+    }
+
   current_atrlen = 0;
   if (!err)
     {
@@ -658,9 +658,9 @@ handle_reset (unsigned char *argbuf, size_t arglen)
       pcsc_card = 0;
       request_failed (err);
       return;
-    }      
+    }
 
-  
+
   atrlen = 33;
   nreader = sizeof reader - 1;
   err = pcsc_status (pcsc_card,
@@ -731,7 +731,7 @@ print_version (int with_help)
          "This is free software, and you are welcome to redistribute it\n"
          "under certain conditions. See the file COPYING for details.\n",
          stdout);
-        
+
   if (with_help)
     fputs ("\n"
           "Usage: " PGM " [OPTIONS] API-NUMBER [LIBNAME]\n"
@@ -741,7 +741,7 @@ print_version (int with_help)
           "  --version   print version of the program and exit\n"
           "  --help      display this help and exit\n"
           BUGREPORT_LINE, stdout );
-  
+
   exit (0);
 }
 
@@ -752,7 +752,7 @@ main (int argc, char **argv)
   int last_argc = -1;
   int api_number = 0;
   int c;
- 
+
   if (argc)
     {
       argc--; argv++;
@@ -774,7 +774,7 @@ main (int argc, char **argv)
           verbose = 1;
           argc--; argv++;
         }
-    }          
+    }
   if (argc != 1 && argc != 2)
     {
       fprintf (stderr, "usage: " PGM " API-NUMBER [LIBNAME]\n");
@@ -795,7 +795,7 @@ main (int argc, char **argv)
     {
       size_t arglen;
       unsigned char argbuffer[2048];
-      
+
       arglen = read_32 (stdin);
       if (arglen >= sizeof argbuffer - 1)
         {

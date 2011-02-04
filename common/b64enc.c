@@ -34,25 +34,25 @@
 #define B64ENC_USE_PGPCRC   32
 
 /* The base-64 character list */
-static unsigned char bintoasc[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
-                                    "abcdefghijklmnopqrstuvwxyz" 
-                                    "0123456789+/"; 
+static unsigned char bintoasc[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    "abcdefghijklmnopqrstuvwxyz"
+                                    "0123456789+/";
 
 /* Stuff required to create the OpenPGP CRC.  This crc_table has been
    created using this code:
 
    #include <stdio.h>
    #include <stdint.h>
-   
+
    #define CRCPOLY 0x864CFB
-   
+
    int
    main (void)
    {
      int i, j;
      uint32_t t;
      uint32_t crc_table[256];
-   
+
      crc_table[0] = 0;
      for (i=j=0; j < 128; j++ )
        {
@@ -70,7 +70,7 @@ static unsigned char bintoasc[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
              crc_table[i++] = t ^ CRCPOLY;
    	}
        }
-   
+
      puts ("static const u32 crc_table[256] = {");
      for (i=j=0; i < 256; i++)
        {
@@ -224,11 +224,11 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
                || my_fputs (state->title, state) == EOF
                || my_fputs ("-----\n", state) == EOF)
             goto write_error;
-          if ( (state->flags & B64ENC_USE_PGPCRC) 
+          if ( (state->flags & B64ENC_USE_PGPCRC)
                && my_fputs ("\n", state) == EOF)
             goto write_error;
         }
-        
+
       state->flags |= B64ENC_DID_HEADER;
     }
 
@@ -274,7 +274,7 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
               if (ferror (state->fp))
                 goto write_error;
             }
-          if (++quad_count >= (64/4)) 
+          if (++quad_count >= (64/4))
             {
               quad_count = 0;
               if (!(state->flags & B64ENC_NO_LINEFEEDS)
@@ -328,8 +328,8 @@ b64enc_finish (struct b64state *state)
           tmp[2] = '=';
           tmp[3] = '=';
         }
-      else 
-        { 
+      else
+        {
           tmp[1] = bintoasc[(((*radbuf<<4)&060)|((radbuf[1]>>4)&017))&077];
           tmp[2] = bintoasc[((radbuf[1] << 2) & 074) & 077];
           tmp[3] = '=';
@@ -351,7 +351,7 @@ b64enc_finish (struct b64state *state)
             goto write_error;
         }
 
-      if (++quad_count >= (64/4)) 
+      if (++quad_count >= (64/4))
         {
           quad_count = 0;
           if (!(state->flags & B64ENC_NO_LINEFEEDS)
@@ -365,7 +365,7 @@ b64enc_finish (struct b64state *state)
       && !(state->flags & B64ENC_NO_LINEFEEDS)
       && my_fputs ("\n", state) == EOF)
     goto write_error;
-  
+
   if ( (state->flags & B64ENC_USE_PGPCRC) )
     {
       /* Write the CRC.  */
@@ -420,4 +420,3 @@ b64enc_finish (struct b64state *state)
   state->lasterr = err;
   return err;
 }
-

@@ -104,7 +104,7 @@ answer_is_yes_no_quit ( const char *s )
 }
 
 /*
-   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default. 
+   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default.
  */
 int
 answer_is_okay_cancel (const char *s, int def_answer)
@@ -115,7 +115,7 @@ answer_is_okay_cancel (const char *s, int def_answer)
   const char *long_cancel = _("cancel|cancel");
   const char *short_okay = _("oO");
   const char *short_cancel = _("cC");
-  
+
   /* Note: We have to use the locale dependent compare. */
   if ( match_multistr(long_okay,s) )
     return 1;
@@ -138,4 +138,3 @@ answer_is_okay_cancel (const char *s, int def_answer)
     return 0;
   return def_answer;
 }
-

@@ -81,6 +81,6 @@ dlclose (void * hd)
       return 0;
     }
   return -1;
-}  
+}
 # endif /*__MINGW32__*/
 #endif /*LIBJNLIB_DYNLOAD_H*/

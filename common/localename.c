@@ -1,5 +1,5 @@
 /* localename.c - Determine the current selected locale.
-   Copyright (C) 1995-1999, 2000-2003, 2007, 
+   Copyright (C) 1995-1999, 2000-2003, 2007,
                  2008 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 */
 /* Written by Ulrich Drepper <drepper@gnu.org>, 1995.  */
 /* Win32 code written by Tor Lillqvist <tml@iki.fi>.  */
-/* Modified for GpgOL use by Werner Koch <wk@gnupg.org>, 2005.  */ 
+/* Modified for GpgOL use by Werner Koch <wk@gnupg.org>, 2005.  */
 /* Modified for GnuPG use by Werner Koch <wk@gnupg.org>, 2007 */
 
 #ifdef HAVE_CONFIG_H
@@ -68,7 +68,7 @@ do_nl_locale_name (int category, const char *categoryname)
 # if defined HAVE_SETLOCALE && defined HAVE_LC_MESSAGES && defined HAVE_LOCALE_NULL
   (void)categoryname;
   retval = setlocale (category, NULL);
-# else 
+# else
   /* Setting of LC_ALL overwrites all other.  */
   retval = getenv ("LC_ALL");
   if (retval == NULL || retval[0] == '\0')
@@ -114,4 +114,3 @@ gnupg_messages_locale_name (void)
 
   return s;
 }
-

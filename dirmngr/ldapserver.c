@@ -1,18 +1,18 @@
 /* dirmngr.c - LDAP access
    Copyright (C) 2008 g10 Code GmbH
-  
+
    This file is part of DirMngr.
-  
+
    DirMngr is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-  
+
    DirMngr is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-  
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -52,7 +52,7 @@ ldapserver_list_free (ldap_server_t servers)
 
    1. field: Hostname
    2. field: Portnumber
-   3. field: Username 
+   3. field: Username
    4. field: Password
    5. field: Base DN
 
@@ -88,39 +88,39 @@ ldapserver_parse_one (char *line,
 	      fail = 1;
 	    }
 	  break;
-          
+
 	case 2:
 	  if (*p)
 	    server->port = atoi (p);
 	  break;
-	  
+
 	case 3:
 	  if (*p)
 	    server->user = xstrdup (p);
 	  break;
-	  
+
 	case 4:
 	  if (*p && !server->user)
 	    {
-	      log_error (_("%s:%u: password given without user\n"), 
+	      log_error (_("%s:%u: password given without user\n"),
 			 filename, lineno);
 	      fail = 1;
 	    }
 	  else if (*p)
 	    server->pass = xstrdup (p);
 	  break;
-	  
+
 	case 5:
 	  if (*p)
 	    server->base = xstrdup (p);
 	  break;
-	  
+
 	default:
 	  /* (We silently ignore extra fields.) */
 	  break;
 	}
     }
-  
+
   if (fail)
     {
       log_info (_("%s:%u: skipping this line\n"), filename, lineno);
@@ -129,5 +129,3 @@ ldapserver_parse_one (char *line,
 
   return server;
 }
-
-

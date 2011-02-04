@@ -41,7 +41,7 @@ struct p15private_s {
 
 
 /* Allocate private data. */
-static int 
+static int
 init_private_data (CARD card)
 {
   struct p15private_s *priv;
@@ -62,10 +62,10 @@ init_private_data (CARD card)
      numer of objects and used this to figure out what the last object
      enumerated is.  We now do an enum_objects just once and keep it
      in the private data. */
-  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_PRKEY_RSA, 
+  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_PRKEY_RSA,
                               priv->prkey_rsa_objs,
                               DIM (priv->prkey_rsa_objs));
-  if (rc < 0) 
+  if (rc < 0)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
@@ -74,10 +74,10 @@ init_private_data (CARD card)
   priv->n_prkey_rsa_objs = rc;
 
   /* Read all certificate objects. */
-  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_CERT_X509, 
+  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_CERT_X509,
                               priv->cert_objs,
                               DIM (priv->cert_objs));
-  if (rc < 0) 
+  if (rc < 0)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
@@ -117,7 +117,7 @@ p15_enum_keypairs (CARD card, int idx,
   ksba_cert_t cert;
 
   rc = init_private_data (card);
-  if (rc) 
+  if (rc)
       return rc;
   priv = card->p15priv;
   nobjs = priv->n_prkey_rsa_objs;
@@ -125,7 +125,7 @@ p15_enum_keypairs (CARD card, int idx,
   if (idx >= nobjs)
     return -1;
   pinfo = priv->prkey_rsa_objs[idx]->data;
-  
+
   /* now we need to read the certificate so that we can calculate the
      keygrip */
   rc = sc_pkcs15_find_cert_by_id (card->p15card, &pinfo->id, &tmpobj);
@@ -166,7 +166,7 @@ p15_enum_keypairs (CARD card, int idx,
       log_error ("failed to calculate the keygrip of private key %d\n", idx);
       ksba_cert_release (cert);
       return gpg_error (GPG_ERR_CARD);
-    }      
+    }
   ksba_cert_release (cert);
 
   rc = 0;
@@ -181,7 +181,7 @@ p15_enum_keypairs (CARD card, int idx,
       p = stpcpy (p, "P15-5015.");
       bin2hex (pinfo->id.value, pinfo->id.len, p);
     }
-  
+
   return rc;
 }
 
@@ -196,7 +196,7 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
   int nobjs;
 
   rc = init_private_data (card);
-  if (rc) 
+  if (rc)
       return rc;
   priv = card->p15priv;
   nobjs = priv->n_cert_objs;
@@ -205,7 +205,7 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
     return -1;
   obj =  priv->cert_objs[idx];
   cinfo = obj->data;
-  
+
   if (certid)
     {
       char *p;
@@ -227,10 +227,10 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
         *type = 101;
       else if (obj->df->type == SC_PKCS15_CDF_USEFUL)
         *type = 102;
-      else 
+      else
         *type = 0; /* error -> unknown */
     }
-  
+
   return rc;
 }
 
@@ -243,7 +243,7 @@ idstr_to_id (const char *idstr, struct sc_pkcs15_id *id)
   int n;
 
   /* For now we only support the standard DF */
-  if (strncmp (idstr, "P15-5015.", 9) ) 
+  if (strncmp (idstr, "P15-5015.", 9) )
     return gpg_error (GPG_ERR_INV_ID);
   for (s=idstr+9, n=0; hexdigitp (s); s++, n++)
     ;
@@ -282,7 +282,7 @@ p15_read_cert (CARD card, const char *certidstr,
   rc = sc_pkcs15_find_cert_by_id (card->p15card, &certid, &tmpobj);
   if (rc)
     {
-      log_info ("certificate '%s' not found: %s\n", 
+      log_info ("certificate '%s' not found: %s\n",
                 certidstr, sc_strerror (rc));
       return -1;
     }
@@ -344,7 +344,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   pin = pinobj->data;
 
   /* Fixme: pack this into a verification loop */
-  /* Fixme: we might want to pass pin->min_length and 
+  /* Fixme: we might want to pass pin->min_length and
      pin->stored_length */
   rc = pincb (pincb_arg, pinobj->label, &pinvalue);
   if (rc)
@@ -369,7 +369,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
 
 
 /* See card.c for interface description */
-static int 
+static int
 p15_sign (CARD card, const char *keyidstr, int hashalgo,
           int (pincb)(void*, const char *, char **),
           void *pincb_arg,
@@ -391,11 +391,11 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
 
   cryptflags = SC_ALGORITHM_RSA_PAD_PKCS1;
 
-  outbuflen = 1024; 
+  outbuflen = 1024;
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
     return gpg_error (gpg_err_code_from_errno (errno));
-  
+
   rc = sc_pkcs15_compute_signature (card->p15card, keyobj,
                                     cryptflags,
                                     indata, indatalen,
@@ -419,7 +419,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
 
 
 /* See card.c for description */
-static int 
+static int
 p15_decipher (CARD card, const char *keyidstr,
               int (pincb)(void*, const char *, char **),
               void *pincb_arg,
@@ -453,15 +453,15 @@ p15_decipher (CARD card, const char *keyidstr,
         }
     }
 
-  outbuflen = indatalen < 256? 256 : indatalen; 
+  outbuflen = indatalen < 256? 256 : indatalen;
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
     return gpg_error (gpg_err_code_from_errno (errno));
 
-  rc = sc_pkcs15_decipher (card->p15card, keyobj, 
+  rc = sc_pkcs15_decipher (card->p15card, keyobj,
                            0,
-                           indata, indatalen, 
-                           outbuf, outbuflen); 
+                           indata, indatalen,
+                           outbuf, outbuflen);
   if (rc < 0)
     {
       log_error ("failed to decipher the data: %s\n", sc_strerror (rc));

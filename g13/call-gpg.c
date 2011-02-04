@@ -65,7 +65,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
 
   if (opt.verbose)
     log_info (_("no running gpg - starting `%s'\n"), opt.gpg_program);
-      
+
   /* Compute argv[0].  */
   if ( !(pgmname = strrchr (opt.gpg_program, '/')))
     pgmname = opt.gpg_program;
@@ -89,7 +89,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   argv[i++] = "--trust-model";
   argv[i++] = "always";
   argv[i++] = NULL;
-  
+
   i = 0;
   if (log_get_fd () != -1)
     no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
@@ -135,7 +135,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
     }
 
   *r_ctx = ctx;
-  
+
   if (DBG_ASSUAN)
     log_debug ("connection to GPG established\n");
   return 0;
@@ -151,7 +151,7 @@ release_gpg (assuan_context_t ctx)
 
 
 
-/* The data passed to the writer_thread.  */ 
+/* The data passed to the writer_thread.  */
 struct writer_thread_parms
 {
   int fd;
@@ -198,7 +198,7 @@ writer_thread (void *arg)
    variable to receive a possible write error after the thread has
    finished.  */
 static gpg_error_t
-start_writer (int fd, const void *data, size_t datalen, 
+start_writer (int fd, const void *data, size_t datalen,
               pth_t *r_tid, gpg_error_t *err_addr)
 {
   gpg_error_t err;
@@ -240,7 +240,7 @@ start_writer (int fd, const void *data, size_t datalen,
 
 
 
-/* The data passed to the reader_thread.  */ 
+/* The data passed to the reader_thread.  */
 struct reader_thread_parms
 {
   int fd;
@@ -266,7 +266,7 @@ reader_thread (void *arg)
           *parm->err_addr = gpg_error_from_syserror ();
           break;  /* Read error.  */
         }
-      
+
       put_membuf (parm->mb, buffer, nread);
     }
 
@@ -323,7 +323,7 @@ start_reader (int fd, membuf_t *mb, pth_t *r_tid, gpg_error_t *err_addr)
 
 
 
-/* Call GPG to encrypt a block of data. 
+/* Call GPG to encrypt a block of data.
 
 
  */
@@ -364,9 +364,9 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;
   close (inbound_fds[1]); inbound_fds[1] = -1;
-  
+
   /* Start a writer thread to feed the INPUT command of the server.  */
-  err = start_writer (outbound_fds[1], plain, plainlen, 
+  err = start_writer (outbound_fds[1], plain, plainlen,
                       &writer_tid, &writer_err);
   if (err)
     return err;
@@ -374,7 +374,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], &reader_mb, 
+  err = start_reader (inbound_fds[0], &reader_mb,
                       &reader_tid, &reader_err);
   if (err)
     return err;
@@ -467,7 +467,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
 
 
 
-/* Call GPG to decrypt a block of data. 
+/* Call GPG to decrypt a block of data.
 
 
  */
@@ -506,9 +506,9 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;
   close (inbound_fds[1]); inbound_fds[1] = -1;
-  
+
   /* Start a writer thread to feed the INPUT command of the server.  */
-  err = start_writer (outbound_fds[1], ciph, ciphlen, 
+  err = start_writer (outbound_fds[1], ciph, ciphlen,
                       &writer_tid, &writer_err);
   if (err)
     return err;
@@ -516,7 +516,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], &reader_mb, 
+  err = start_reader (inbound_fds[0], &reader_mb,
                       &reader_tid, &reader_err);
   if (err)
     return err;
@@ -594,5 +594,3 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
   xfree (get_membuf (&reader_mb, NULL));
   return err;
 }
-
-

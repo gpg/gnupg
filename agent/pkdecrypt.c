@@ -36,7 +36,7 @@
 int
 agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                  const unsigned char *ciphertext, size_t ciphertextlen,
-                 membuf_t *outbuf) 
+                 membuf_t *outbuf)
 {
   gcry_sexp_t s_skey = NULL, s_cipher = NULL, s_plain = NULL;
   unsigned char *shadow_info = NULL;
@@ -136,7 +136,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           put_membuf (outbuf, buf, len);
           put_membuf (outbuf, ")", 2);
         }
-    }      
+    }
 
 
  leave:
@@ -147,5 +147,3 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   xfree (shadow_info);
   return rc;
 }
-
-

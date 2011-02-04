@@ -57,7 +57,7 @@ struct audit_ctx_s
 {
   const char *failure;  /* If set a description of the internal failure.  */
   audit_type_t type;
-  
+
   log_item_t log;       /* The table with the log entries.  */
   size_t logsize;       /* The allocated size for LOG.  */
   size_t logused;       /* The used size of LOG.  */
@@ -71,17 +71,17 @@ struct audit_ctx_s
 
 
 
-static void writeout_para (audit_ctx_t ctx, 
+static void writeout_para (audit_ctx_t ctx,
                            const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 static void writeout_li (audit_ctx_t ctx, const char *oktext,
                          const char *format, ...) JNLIB_GCC_A_PRINTF(3,4);
-static void writeout_rem (audit_ctx_t ctx, 
+static void writeout_rem (audit_ctx_t ctx,
                           const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 
 
 /* Add NAME to the list of help tags.  NAME needs to be a const string
    an this function merly stores this pointer.  */
-static void 
+static void
 add_helptag (audit_ctx_t ctx, const char *name)
 {
   helptag_t item;
@@ -127,7 +127,7 @@ event2str (audit_event_t event)
 
 
 /* Create a new audit context.  In case of an error NULL is returned
-   and errno set appropriately. */ 
+   and errno set appropriately. */
 audit_ctx_t
 audit_new (void)
 {
@@ -228,7 +228,7 @@ create_log_item (audit_ctx_t ctx)
   item->cert = NULL;
 
   return item;
- 
+
 }
 
 /* Add a new event to the audit log.  If CTX is NULL, this function
@@ -329,7 +329,7 @@ audit_log_s (audit_ctx_t ctx, audit_event_t event, const char *value)
    does nothing.  This version also adds the certificate CERT and the
    result of an operation to the log.  */
 void
-audit_log_cert (audit_ctx_t ctx, audit_event_t event, 
+audit_log_cert (audit_ctx_t ctx, audit_event_t event,
                 ksba_cert_t cert, gpg_error_t err)
 {
   log_item_t item;
@@ -348,14 +348,14 @@ audit_log_cert (audit_ctx_t ctx, audit_event_t event,
   item->have_err = 1;
   if (cert)
     {
-      ksba_cert_ref (cert); 
+      ksba_cert_ref (cert);
       item->cert = cert;
     }
 }
 
 
 /* Write TEXT to the outstream.  */
-static void 
+static void
 writeout (audit_ctx_t ctx, const char *text)
 {
   if (ctx->use_html)
@@ -376,7 +376,7 @@ writeout (audit_ctx_t ctx, const char *text)
 
 
 /* Write TEXT to the outstream using a variable argument list.  */
-static void 
+static void
 writeout_v (audit_ctx_t ctx, const char *format, va_list arg_ptr)
 {
   char *buf;
@@ -440,7 +440,7 @@ leave_li (audit_ctx_t ctx)
     }
 }
 
-  
+
 /* Write TEXT as a list element.  If OKTEXT is not NULL, append it to
    the last line. */
 static void
@@ -451,7 +451,7 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
 
   if (ctx->use_html && format && oktext)
     {
-      if (!strcmp (oktext, "Yes") 
+      if (!strcmp (oktext, "Yes")
           || !strcmp (oktext, "good") )
         color = "green";
       else if (!strcmp (oktext, "No")
@@ -530,13 +530,13 @@ writeout_li (audit_ctx_t ctx, const char *oktext, const char *format, ...)
           if (color)
             es_fprintf (ctx->outstream, "<font color=\"%s\">", color);
         }
-      else  
+      else
         writeout (ctx, ":         ");
       writeout (ctx, oktext);
       if (color)
         es_fputs ("</font>", ctx->outstream);
     }
-  
+
   if (ctx->use_html)
     es_fputs ("</td></tr>\n", ctx->outstream);
   else
@@ -579,7 +579,7 @@ writeout_rem (audit_ctx_t ctx, const char *format, ...)
    look behind that event in the log. If STARTITEM is not NULL start
    search _after_that item.  */
 static log_item_t
-find_next_log_item (audit_ctx_t ctx, log_item_t startitem, 
+find_next_log_item (audit_ctx_t ctx, log_item_t startitem,
                     audit_event_t event, audit_event_t stopevent)
 {
   int idx;
@@ -725,9 +725,9 @@ list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
   startitem = find_next_log_item (ctx, startitem, AUDIT_CHAIN_BEGIN,stopevent);
   writeout_li (ctx, startitem? "Yes":"No", _("Certificate chain available"));
   if (!startitem)
-    return; 
+    return;
 
-  item = find_next_log_item (ctx, startitem, 
+  item = find_next_log_item (ctx, startitem,
                              AUDIT_CHAIN_ROOTCERT, AUDIT_CHAIN_END);
   if (!item)
     writeout_rem (ctx, "%s", _("root certificate missing"));
@@ -736,7 +736,7 @@ list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
       list_cert (ctx, item->cert, 0);
     }
   item = startitem;
-  while ( ((item = find_next_log_item (ctx, item, 
+  while ( ((item = find_next_log_item (ctx, item,
                                        AUDIT_CHAIN_CERT, AUDIT_CHAIN_END))))
     {
       list_cert (ctx, item->cert, 1);
@@ -779,7 +779,7 @@ proc_type_encrypt (audit_ctx_t ctx)
     }
 
   item = find_log_item (ctx, AUDIT_GOT_RECIPIENTS, 0);
-  snprintf (numbuf, sizeof numbuf, "%d", 
+  snprintf (numbuf, sizeof numbuf, "%d",
             item && item->have_intvalue? item->intvalue : 0);
   writeout_li (ctx, numbuf, "%s", _("Number of recipients"));
 
@@ -830,7 +830,7 @@ proc_type_sign (audit_ctx_t ctx)
   writeout_li (ctx, item? "Yes":"No", "%s", _("Data available"));
   /* Write remarks with the data hash algorithms.  We use a very
      simple scheme to avoid some duplicates.  */
-  loopitem = NULL; 
+  loopitem = NULL;
   lastalgo = 0;
   while ((loopitem = find_next_log_item
           (ctx, loopitem, AUDIT_DATA_HASH_ALGO, AUDIT_NEW_SIG)))
@@ -1033,7 +1033,7 @@ proc_type_verify (audit_ctx_t ctx)
             writeout_rem (ctx, _("data hash algorithm: %s"),
                           gcry_md_algo_name (item->intvalue));
           else if (item->event == AUDIT_BAD_DATA_HASH_ALGO)
-            writeout_rem (ctx, _("bad data hash algorithm: %s"), 
+            writeout_rem (ctx, _("bad data hash algorithm: %s"),
                           item->string? item->string:"?");
         }
     }
@@ -1066,7 +1066,7 @@ proc_type_verify (audit_ctx_t ctx)
                       gcry_md_algo_name (item->intvalue));
 
       enter_li (ctx);
-      
+
       /* List the certificate chain.  */
       list_certchain (ctx, loopitem, AUDIT_NEW_SIG);
 
@@ -1075,12 +1075,12 @@ proc_type_verify (audit_ctx_t ctx)
                                  AUDIT_CHAIN_STATUS, AUDIT_NEW_SIG);
       if (item && item->have_err)
         {
-          writeout_li (ctx, item->err? "No":"Yes", 
+          writeout_li (ctx, item->err? "No":"Yes",
                        _("Certificate chain valid"));
           if (item->err)
             writeout_rem (ctx, "%s", gpg_strerror (item->err));
         }
-      
+
       /* Show whether the root certificate is fine.  */
       item = find_next_log_item (ctx, loopitem,
                                  AUDIT_ROOT_TRUSTED, AUDIT_CHAIN_STATUS);
@@ -1115,9 +1115,9 @@ proc_type_verify (audit_ctx_t ctx)
               break;
             default: ok = gpg_strerror (item->err); break;
             }
-            
+
           writeout_li (ctx, ok, "%s", _("CRL/OCSP check of certificates"));
-          if (item->err 
+          if (item->err
               && gpg_err_code (item->err) != GPG_ERR_CERT_REVOKED
               && gpg_err_code (item->err) != GPG_ERR_NOT_ENABLED)
             add_helptag (ctx, "gpgsm.crl-problem");
@@ -1132,13 +1132,13 @@ proc_type_verify (audit_ctx_t ctx)
   /* Always list the certificates stored in the signature.  */
   item = NULL;
   count = 0;
-  while ( ((item = find_next_log_item (ctx, item, 
+  while ( ((item = find_next_log_item (ctx, item,
                                        AUDIT_SAVE_CERT, AUDIT_NEW_SIG))))
     count++;
   snprintf (numbuf, sizeof numbuf, "%d", count);
   writeout_li (ctx, numbuf, _("Included certificates"));
   item = NULL;
-  while ( ((item = find_next_log_item (ctx, item, 
+  while ( ((item = find_next_log_item (ctx, item,
                                        AUDIT_SAVE_CERT, AUDIT_NEW_SIG))))
     {
       char *name = get_cert_name (item->cert);
@@ -1169,7 +1169,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   const char *s;
   int show_raw = 0;
   char *orig_codeset;
-  
+
   if (!ctx)
     return;
 
@@ -1201,31 +1201,31 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
 
       for (idx=0,maxlen=0; idx < DIM (eventstr_msgidx); idx++)
         {
-          n = strlen (eventstr_msgstr + eventstr_msgidx[idx]);    
+          n = strlen (eventstr_msgstr + eventstr_msgidx[idx]);
           if (n > maxlen)
             maxlen = n;
         }
-      
+
       if (use_html)
         es_fputs ("<pre>\n", out);
       for (idx=0; idx < ctx->logused; idx++)
         {
-          es_fprintf (out, "log: %-*s", 
+          es_fprintf (out, "log: %-*s",
                       maxlen, event2str (ctx->log[idx].event));
           if (ctx->log[idx].have_intvalue)
-            es_fprintf (out, " i=%d", ctx->log[idx].intvalue); 
+            es_fprintf (out, " i=%d", ctx->log[idx].intvalue);
           if (ctx->log[idx].string)
             {
-              es_fputs (" s=`", out); 
-              writeout (ctx, ctx->log[idx].string); 
-              es_fputs ("'", out); 
+              es_fputs (" s=`", out);
+              writeout (ctx, ctx->log[idx].string);
+              es_fputs ("'", out);
             }
           if (ctx->log[idx].cert)
-            es_fprintf (out, " has_cert"); 
+            es_fprintf (out, " has_cert");
           if (ctx->log[idx].have_err)
             {
               es_fputs (" err=`", out);
-              writeout (ctx, gpg_strerror (ctx->log[idx].err)); 
+              writeout (ctx, gpg_strerror (ctx->log[idx].err));
               es_fputs ("'", out);
             }
           es_fputs ("\n", out);
@@ -1321,4 +1321,3 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   clear_helptags (ctx);
   i18n_switchback (orig_codeset);
 }
-

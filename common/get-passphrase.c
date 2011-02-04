@@ -79,7 +79,7 @@ start_agent (void)
      pth.  We will need a context for each thread or serialize the
      access to the agent.  */
   if (agent_ctx)
-    return 0; 
+    return 0;
 
   err = start_new_gpg_agent (&agent_ctx,
                              agentargs.errsource,
@@ -129,7 +129,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
     put_membuf (data, buffer, length);
   return 0;
 }
-  
+
 
 /* Ask for a passphrase via gpg-agent.  On success the caller needs to
    free the string stored at R_PASSPHRASE.  On error NULL will be
@@ -158,8 +158,8 @@ gnupg_get_passphrase (const char *cache_id,
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
   const char *arg1 = NULL;
-  char *arg2 = NULL;  
-  char *arg3 = NULL; 
+  char *arg2 = NULL;
+  char *arg3 = NULL;
   char *arg4 = NULL;
   membuf_t data;
 
@@ -170,7 +170,7 @@ gnupg_get_passphrase (const char *cache_id,
     return err;
 
   /* Check that the gpg-agent understands the repeat option.  */
-  if (assuan_transact (agent_ctx, 
+  if (assuan_transact (agent_ctx,
                        "GETINFO cmd_has_option GET_PASSPHRASE repeat",
                        NULL, NULL, NULL, NULL, NULL, NULL))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -186,10 +186,10 @@ gnupg_get_passphrase (const char *cache_id,
     if (!(arg4 = percent_plus_escape (desc_msg)))
       goto no_mem;
 
-  snprintf (line, DIM(line)-1, 
-            "GET_PASSPHRASE --data %s--repeat=%d -- %s %s %s %s", 
+  snprintf (line, DIM(line)-1,
+            "GET_PASSPHRASE --data %s--repeat=%d -- %s %s %s %s",
             check_quality? "--check ":"",
-            repeat, 
+            repeat,
             arg1? arg1:"X",
             arg2? arg2:"X",
             arg3? arg3:"X",
@@ -203,10 +203,10 @@ gnupg_get_passphrase (const char *cache_id,
     init_membuf_secure (&data, 64);
   else
     init_membuf (&data, 64);
-  err = assuan_transact (agent_ctx, line, 
+  err = assuan_transact (agent_ctx, line,
                          membuf_data_cb, &data,
                          default_inq_cb, NULL, NULL, NULL);
-  
+
   /* Older Pinentries return the old assuan error code for canceled
      which gets translated bt libassuan to GPG_ERR_ASS_CANCELED and
      not to the code for a user cancel.  Fix this here. */
@@ -224,7 +224,7 @@ gnupg_get_passphrase (const char *cache_id,
         wipememory (p, n);
       xfree (p);
     }
-  else 
+  else
     {
       put_membuf (&data, "", 1);
       *r_passphrase = get_membuf (&data, NULL);

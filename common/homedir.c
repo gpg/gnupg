@@ -55,7 +55,7 @@ w32_try_mkdir (const char *dir)
       CreateDirectory (wdir, NULL);
       xfree (wdir);
     }
-#else              
+#else
   CreateDirectory (dir, NULL);
 #endif
 }
@@ -115,7 +115,7 @@ standard_homedir (void)
   if (!dir)
     {
       char path[MAX_PATH];
-      
+
       /* It might be better to use LOCAL_APPDATA because this is
          defined as "non roaming" and thus more likely to be kept
          locally.  For private keys this is desired.  However, given
@@ -123,13 +123,13 @@ standard_homedir (void)
          using a system roaming services might be better than to let
          them do it manually.  A security conscious user will anyway
          use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + 6 +1);
           strcpy (stpcpy (tmp, path), "\\gnupg");
           dir = tmp;
-          
+
           /* Try to create the directory if it does not yet exists.  */
           if (access (dir, F_OK))
             w32_try_mkdir (dir);
@@ -155,7 +155,7 @@ default_homedir (void)
   if (!dir || !*dir)
     {
       static const char *saved_dir;
-      
+
       if (!saved_dir)
         {
           if (!dir || !*dir)
@@ -172,7 +172,7 @@ default_homedir (void)
               if (tmp)
                 saved_dir = tmp;
             }
-          
+
           if (!saved_dir)
             saved_dir = standard_homedir ();
         }
@@ -228,7 +228,7 @@ w32_rootdir (void)
       if (!p)
         {
           log_debug ("bad filename `%s' returned for this process\n", dir);
-          *dir = 0; 
+          *dir = 0;
         }
     }
 
@@ -247,8 +247,8 @@ w32_commondir (void)
     {
       char path[MAX_PATH];
 
-      if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + 4 +1);
           strcpy (stpcpy (tmp, path), "\\GNU");
@@ -263,7 +263,7 @@ w32_commondir (void)
           dir = xstrdup (w32_rootdir ());
         }
     }
-  
+
   return dir;
 }
 #endif /*HAVE_W32_SYSTEM*/
@@ -389,8 +389,8 @@ gnupg_cachedir (void)
       for (comp = s1; *comp; comp++)
         s1_len += 1 + strlen (*comp);
 
-      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + s1_len + 1);
 	  char *p;
@@ -475,49 +475,49 @@ gnupg_module_name (int which)
     if (!name)                                                          \
       name = xstrconcat (gnupg_ ## a (), DIRSEP_S b EXEEXT_S, NULL);    \
     return name;                                                        \
-  } while (0)                                                     
-  
+  } while (0)
+
   switch (which)
     {
     case GNUPG_MODULE_NAME_AGENT:
 #ifdef GNUPG_DEFAULT_AGENT
       return GNUPG_DEFAULT_AGENT;
-#else 
+#else
       X(bindir, "gpg-agent");
 #endif
-      
+
     case GNUPG_MODULE_NAME_PINENTRY:
 #ifdef GNUPG_DEFAULT_PINENTRY
       return GNUPG_DEFAULT_PINENTRY;
-#else 
+#else
       X(bindir, "pinentry");
 #endif
 
     case GNUPG_MODULE_NAME_SCDAEMON:
 #ifdef GNUPG_DEFAULT_SCDAEMON
       return GNUPG_DEFAULT_SCDAEMON;
-#else 
+#else
       X(bindir, "scdaemon");
 #endif
 
     case GNUPG_MODULE_NAME_DIRMNGR:
 #ifdef GNUPG_DEFAULT_DIRMNGR
       return GNUPG_DEFAULT_DIRMNGR;
-#else 
+#else
       X(bindir, "dirmngr");
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:
 #ifdef GNUPG_DEFAULT_PROTECT_TOOL
       return GNUPG_DEFAULT_PROTECT_TOOL;
-#else 
+#else
       X(libexecdir, "gpg-protect-tool");
 #endif
 
     case GNUPG_MODULE_NAME_DIRMNGR_LDAP:
 #ifdef GNUPG_DEFAULT_DIRMNGR_LDAP
       return GNUPG_DEFAULT_DIRMNGR_LDAP;
-#else 
+#else
       X(libexecdir, "dirmngr_ldap");
 #endif
 
@@ -536,7 +536,7 @@ gnupg_module_name (int which)
     case GNUPG_MODULE_NAME_GPGCONF:
       X(bindir, "gpgconf");
 
-    default: 
+    default:
       BUG ();
     }
 #undef X

@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -37,7 +37,7 @@
    allocates the array.  If r_len is not NULL, the length of the
    digest is returned; well, this can also be done by using
    gcry_md_get_algo_dlen().  If algo is 0, a SHA-1 will be used.
-   
+
    If there is a problem , the function does never return NULL but a
    digest of all 0xff.
  */
@@ -47,7 +47,7 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
 {
   gcry_md_hd_t md;
   int rc, len;
-  
+
   if (!algo)
     algo = GCRY_MD_SHA1;
 
@@ -65,7 +65,7 @@ gpgsm_get_fingerprint (ksba_cert_t cert, int algo,
       size_t buflen;
 
       assert (len >= 20);
-      if (!ksba_cert_get_user_data (cert, "sha1-fingerprint", 
+      if (!ksba_cert_get_user_data (cert, "sha1-fingerprint",
                                     array, len, &buflen)
           && buflen == 20)
         return array;
@@ -165,7 +165,7 @@ gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
   int rc;
   ksba_sexp_t p;
   size_t n;
-  
+
   p = ksba_cert_get_public_key (cert);
   if (!p)
     return NULL; /* oops */
@@ -234,7 +234,7 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
 
   p = ksba_cert_get_public_key (cert);
   if (!p)
-    return 0; 
+    return 0;
   n = gcry_sexp_canon_len (p, 0, NULL, NULL);
   if (!n)
     {
@@ -282,7 +282,7 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
    serial number for this.  In most cases the serial number is not
    that large and the resulting string can be passed on an assuan
    command line.  Everything is hexencoded with the serialnumber
-   delimited from the hash by a dot. 
+   delimited from the hash by a dot.
 
    The caller must free the string.
 */
@@ -296,7 +296,7 @@ gpgsm_get_certid (ksba_cert_t cert)
   unsigned long n;
   char *certid;
   int i;
-  
+
   p = ksba_cert_get_issuer (cert, 0);
   if (!p)
     return NULL; /* Ooops: No issuer */
@@ -341,7 +341,3 @@ gpgsm_get_certid (ksba_cert_t cert)
   xfree (serial);
   return certid;
 }
-
-
-
-

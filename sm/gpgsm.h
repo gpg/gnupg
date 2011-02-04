@@ -50,7 +50,7 @@ struct keyserver_spec
 
 
 /* A large struct named "opt" to keep global flags. */
-struct 
+struct
 {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
   int verbose;      /* verbosity level */
@@ -62,7 +62,7 @@ struct
 
   const char *homedir;         /* Configuration directory name */
   const char *config_filename; /* Name of the used config file. */
-  const char *agent_program; 
+  const char *agent_program;
 
   session_env_t session_env;
   char *lc_ctype;
@@ -74,7 +74,7 @@ struct
   char *outfile;    /* name of output file */
 
   int with_key_data;/* include raw key in the column delimted output */
-  
+
   int fingerprint;  /* list fingerprints in all key listings */
 
   int with_md5_fingerprint; /* Also print an MD5 fingerprint for
@@ -171,11 +171,11 @@ struct server_control_s
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
-  
+
   audit_ctx_t audit;  /* NULL or a context for the audit subsystem.  */
   int agent_seen;     /* Flag indicating that the gpg-agent has been
                          accessed.  */
-  
+
   int with_colons;    /* Use column delimited output format */
   int with_chain;     /* Include the certifying certs in a listing */
   int with_validation;/* Validate each key while listing. */
@@ -204,7 +204,7 @@ typedef struct base64_context_s *Base64Context;
 
 
 /* An object to keep a list of certificates. */
-struct certlist_s 
+struct certlist_s
 {
   struct certlist_s *next;
   ksba_cert_t cert;
@@ -388,7 +388,7 @@ int gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
                       unsigned char *digest, size_t digestlen, int digestalgo,
                       unsigned char **r_buf, size_t *r_buflen);
 int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
-                           ksba_const_sexp_t ciphertext, 
+                           ksba_const_sexp_t ciphertext,
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (ctrl_t ctrl,
                         ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);

@@ -18,16 +18,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
 
    1. To keep track of the CRLs actually cached and to store the meta
       information of the CRLs a simple record oriented text file is
       used.  Fields in the file are colon (':') separated and values
       containing colons or linefeeds are percent escaped (e.g. a colon
-      itself is represented as "%3A"). 
+      itself is represented as "%3A").
 
       The first field is a record type identifier, so that the file is
-      useful to keep track of other meta data too.  
+      useful to keep track of other meta data too.
 
       The name of the file is "DIR.txt".
 
@@ -55,7 +55,7 @@
                  to be done.
                  An "i" indicates an invalid cache entry which should
                  not be used but still exists so that it can be
-                 updated at NEXT_UPDATE. 
+                 updated at NEXT_UPDATE.
         Field 2: Hexadecimal encoded SHA-1 hash of the issuer DN using
                  uppercase letters.
         Field 3: Issuer DN in RFC-2253 notation.
@@ -75,7 +75,7 @@
 
       n  bytes  Serialnumber (binary) used as key
                 thus there is no need to store the length explicitly with DB2.
-      1  byte   Reason for revocation 
+      1  byte   Reason for revocation
                 (currently the KSBA reason flags are used)
       15 bytes  ISO date of revocation (e.g. 19980815T142000)
                 Note that there is no terminating 0 stored.
@@ -83,7 +83,7 @@
       The filename used is the hexadecimal (using uppercase letters)
       SHA-1 hash value of the issuer DN prefixed with a "crl-" and
       suffixed with a ".db".  Thus the length of the filename is 47.
-      
+
 
 */
 
@@ -133,7 +133,7 @@ static const char oidstr_authorityKeyIdentifier[] = "2.5.29.35";
 
 
 /* Definition of one cached item. */
-struct crl_cache_entry_s 
+struct crl_cache_entry_s
 {
   struct crl_cache_entry_s *next;
   int deleted;        /* True if marked for deletion. */
@@ -164,7 +164,7 @@ struct crl_cache_entry_s
 
 
 /* Definition of the entire cache object. */
-struct crl_cache_s 
+struct crl_cache_s
 {
   crl_cache_entry_t entries;
 };
@@ -197,7 +197,7 @@ get_current_cache (void)
 }
 
 
-/* 
+/*
    Create ae directory if it does not yet exists.  Returns on
    success, or -1 on error.
  */
@@ -221,7 +221,7 @@ create_directory_if_needed (const char *name)
           gpg_err_set_errno (save_errno);
           return -1;
         }
-    } 
+    }
   else
     closedir (dir);
   xfree (fname);
@@ -265,7 +265,7 @@ cleanup_cache_dir (int force)
           char *cdbname = make_filename (dname, de->d_name, NULL);
           int okay;
           struct stat sbuf;
-     
+
           if (force)
             okay = 1;
           else
@@ -285,7 +285,7 @@ cleanup_cache_dir (int force)
             log_info (_("not removing file `%s'\n"), cdbname);
           xfree (cdbname);
         }
-    }	  
+    }
   xfree (dname);
   closedir (dir);
   return problem;
@@ -345,7 +345,7 @@ next_line_from_file (estream_t fp, gpg_error_t *r_err)
   if (c == EOF && !len)
     return NULL;
   p[len] = 0;
-      
+
   if (largebuf)
     tmpbuf = xtryrealloc (largebuf, len+1);
   else
@@ -413,8 +413,8 @@ open_dir_file (const char *fname)
                  fname, strerror (errno));
 
       /* Make sure that the directory exists, try to create if otherwise. */
-      if (create_directory_if_needed (NULL) 
-          || create_directory_if_needed (DBDIR_D)) 
+      if (create_directory_if_needed (NULL)
+          || create_directory_if_needed (DBDIR_D))
         return NULL;
       fp = es_fopen (fname, "w");
       if (!fp)
@@ -518,7 +518,7 @@ static gpg_error_t
 open_dir (crl_cache_t *r_cache)
 {
   crl_cache_t cache;
-  char *fname; 
+  char *fname;
   char *line = NULL;
   gpg_error_t lineerr = 0;
   estream_t fp;
@@ -527,7 +527,7 @@ open_dir (crl_cache_t *r_cache)
   gpg_error_t err = 0;
   int anyerr = 0;
 
-  cache = xtrycalloc (1, sizeof *cache); 
+  cache = xtrycalloc (1, sizeof *cache);
   if (!cache)
     return gpg_error_from_syserror ();
 
@@ -591,15 +591,15 @@ open_dir (crl_cache_t *r_cache)
                 case 6: strncpy (entry->next_update, p, 15); break;
                 case 7: entry->dbfile_hash = p; break;
                 case 8: if (*p) entry->crl_number = p; break;
-                case 9: 
+                case 9:
                   if (*p)
                     entry->authority_issuer = unpercent_string (p);
                   break;
-                case 10: 
+                case 10:
                   if (*p)
                     entry->authority_serialno = unpercent_string (p);
                   break;
-                case 11: 
+                case 11:
                   if (*p)
                     entry->check_trust_anchor = xtrystrdup (p);
                   break;
@@ -629,7 +629,7 @@ open_dir (crl_cache_t *r_cache)
             }
           else
             {
-              line = NULL; 
+              line = NULL;
               *entrytail = entry;
               entrytail = &entry->next;
             }
@@ -683,9 +683,9 @@ open_dir (crl_cache_t *r_cache)
       /* Checks not leading to an immediate fail. */
       if (strlen (entry->dbfile_hash) != 32)
         log_info (_("WARNING: invalid cache file hash in `%s' line %u\n"),
-                  fname, entry->lineno); 
+                  fname, entry->lineno);
     }
-     
+
   if (anyerr)
     {
       log_error (_("detected errors in cache dir file\n"));
@@ -738,9 +738,9 @@ write_dir_line_crl (estream_t fp, crl_cache_entry_t e)
   es_putc (':', fp);
   write_percented_string (e->url, fp);
   es_putc (':', fp);
-  es_fwrite (e->this_update, 15, 1, fp); 
+  es_fwrite (e->this_update, 15, 1, fp);
   es_putc (':', fp);
-  es_fwrite (e->next_update, 15, 1, fp); 
+  es_fwrite (e->next_update, 15, 1, fp);
   es_putc (':', fp);
   es_fputs (e->dbfile_hash, fp);
   es_putc (':', fp);
@@ -802,7 +802,7 @@ update_dir (crl_cache_t cache)
 #ifndef HAVE_W32_SYSTEM
     struct utsname utsbuf;
 #endif
-    
+
 #ifdef HAVE_W32_SYSTEM
     nodename = "unknown";
 #else
@@ -853,10 +853,10 @@ update_dir (crl_cache_t cache)
               *endp = 0;
               e = find_entry ( cache->entries, fieldp);
               *endp = ':'; /* Restore orginal line. */
-              if (e && e->deleted) 
+              if (e && e->deleted)
                 {
                   /* Marked for deletion, so don't write it. */
-                  e->mark = 0; 
+                  e->mark = 0;
                 }
               else if (e)
                 {
@@ -869,7 +869,7 @@ update_dir (crl_cache_t cache)
                      because they may have been added in the meantime
                      by other instances of dirmngr. */
                   es_fprintf (fpout, "# Next line added by "
-                              "another process; our pid is %lu\n", 
+                              "another process; our pid is %lu\n",
                               (unsigned long)getpid ());
                   es_fputs (line, fpout);
                   es_putc ('\n', fpout);
@@ -882,7 +882,7 @@ update_dir (crl_cache_t cache)
               es_putc ('\n', fpout);
             }
         }
-      else 
+      else
         {
           /* Write out all non CRL lines as they are. */
           es_fputs (line, fpout);
@@ -1011,7 +1011,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
   /* We better hash some information about the cache file layout in. */
   sprintf (buffer, "%.100s/%.100s:%d", DBDIR_D, DBDIRFILE, DBDIRVERSION);
   gcry_md_write (md5, buffer, strlen (buffer));
-    
+
   for (;;)
     {
       n = es_fread (buffer, 1, 65536, fp);
@@ -1059,7 +1059,7 @@ check_dbfile (const char *fname, const char *md5hexvalue)
 
 /* Open the cache file for ENTRY.  This function implements a caching
    strategy and might close unused cache files. It is required to use
-   unlock_db_file after using the file. */ 
+   unlock_db_file after using the file. */
 static struct cdb *
 lock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
 {
@@ -1168,7 +1168,7 @@ unlock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
     log_error (_("calling unlock_db_file on a closed file\n"));
   else if (!entry->cdb_use_count)
     log_error (_("calling unlock_db_file on an unlocked file\n"));
-  else 
+  else
     {
       entry->cdb_use_count--;
       entry->cdb_lru_count++;
@@ -1196,12 +1196,12 @@ unlock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
 
 /* Find ISSUER_HASH in our cache FIRST. This may be used to enumerate
    the linked list we use to keep the CRLs of an issuer. */
-static crl_cache_entry_t 
+static crl_cache_entry_t
 find_entry (crl_cache_entry_t first, const char *issuer_hash)
 {
   while (first && (first->deleted || strcmp (issuer_hash, first->issuer_hash)))
     first = first->next;
-  return first;    
+  return first;
 }
 
 
@@ -1220,7 +1220,7 @@ crl_cache_init(void)
     }
 
   err = open_dir (&cache);
-  if (err) 
+  if (err)
     log_fatal (_("failed to create a new cache object: %s\n"),
                gpg_strerror (err));
   current_cache = cache;
@@ -1229,7 +1229,7 @@ crl_cache_init(void)
 
 /* Remove the cache information and all its resources.  Note that we
    still keep the cache on disk. */
-void 
+void
 crl_cache_deinit (void)
 {
   if (current_cache)
@@ -1241,7 +1241,7 @@ crl_cache_deinit (void)
 
 
 /* Delete the cache from disk. Return 0 on success.*/
-int 
+int
 crl_cache_flush (void)
 {
   int rc;
@@ -1258,7 +1258,7 @@ crl_cache_flush (void)
    cache has not yet expired.  We use a 30 minutes threshold here so
    that invoking this function several times won't load the CRL over
    and over.  */
-static crl_cache_result_t 
+static crl_cache_result_t
 cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
                const unsigned char *sn, size_t snlen,
                int force_refresh)
@@ -1290,7 +1290,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
   if (force_refresh)
     {
       gnupg_isotime_t tmptime;
-      
+
       if (*entry->last_refresh)
         {
           gnupg_copy_time (tmptime, entry->last_refresh);
@@ -1298,7 +1298,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
           if (strcmp (tmptime, current_time) < 0 )
             {
               log_info (_("force-crl-refresh active and %d minutes passed for"
-                          " issuer id %s; update required\n"), 
+                          " issuer id %s; update required\n"),
                         30, issuer_hash);
               return CRL_CACHE_DONTKNOW;
             }
@@ -1306,7 +1306,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
       else
         {
           log_info (_("force-crl-refresh active for"
-                      " issuer id %s; update required\n"), 
+                      " issuer id %s; update required\n"),
                     issuer_hash);
           return CRL_CACHE_DONTKNOW;
         }
@@ -1322,7 +1322,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
   cdb = lock_db_file (cache, entry);
   if (!cdb)
     return CRL_CACHE_DONTKNOW; /* Hmmm, not the best error code. */
-  
+
   if (!entry->dbfile_checked)
     {
       log_error (_("cached CRL for issuer id %s tampered; we need to update\n")
@@ -1332,7 +1332,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
     }
 
   rc = cdb_find (cdb, sn, snlen);
-  if (rc == 1) 
+  if (rc == 1)
     {
       n = cdb_datalen (cdb);
       if (n != 16)
@@ -1366,7 +1366,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
         }
       retval = CRL_CACHE_VALID;
     }
-  else 
+  else
     {
       log_error (_("error getting data from cache file: %s\n"),
                  strerror (errno));
@@ -1407,7 +1407,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
    cache has not yet expired.  We use a 30 minutes threshold here so
    that invoking this function several times won't load the CRL over
    and over.  */
-crl_cache_result_t 
+crl_cache_result_t
 crl_cache_isvalid (ctrl_t ctrl, const char *issuer_hash, const char *serialno,
                    int force_refresh)
 {
@@ -1434,7 +1434,7 @@ crl_cache_isvalid (ctrl_t ctrl, const char *issuer_hash, const char *serialno,
     xfree (snbuf);
 
   return result;
-}  
+}
 
 
 /* Check whether the certificate CERT is valid; i.e. not listed in our
@@ -1467,7 +1467,7 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
   xfree (tmp);
   for (i=0,tmp=issuerhash_hex; i < 20; i++, tmp += 2)
     sprintf (tmp, "%02X", issuerhash[i]);
-  
+
   /* Get the serial number.  */
   serial = ksba_cert_get_serial (cert);
   if (!serial)
@@ -1503,9 +1503,9 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
     case CRL_CACHE_INVALID:
       err = gpg_error (GPG_ERR_CERT_REVOKED);
       break;
-    case CRL_CACHE_DONTKNOW: 
+    case CRL_CACHE_DONTKNOW:
       err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
-    case CRL_CACHE_CANTUSE: 
+    case CRL_CACHE_CANTUSE:
       err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       break;
     default:
@@ -1514,21 +1514,21 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
 
   xfree (serial);
   return err;
-}  
+}
 
 
 /* Prepare a hash context for the signature verification.  Input is
    the CRL and the output is the hash context MD as well as the uses
    algorithm identifier ALGO. */
 static gpg_error_t
-start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo) 
+start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
 {
   gpg_error_t err;
   const char *algoid;
 
   algoid = ksba_crl_get_digest_algo (crl);
   *algo = gcry_md_map_name (algoid);
-  if (!*algo) 
+  if (!*algo)
     {
       log_error (_("unknown hash algorithm `%s'\n"), algoid? algoid:"?");
       return gpg_error (GPG_ERR_DIGEST_ALGO);
@@ -1544,7 +1544,7 @@ start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
   if (DBG_HASHING)
     gcry_md_debug (*md, "hash.cert");
 
-  ksba_crl_set_hash_function (crl, HASH_FNC, *md);  
+  ksba_crl_set_hash_function (crl, HASH_FNC, *md);
   return 0;
 }
 
@@ -1572,33 +1572,33 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
   /* Get and convert the signature value. */
   sigval = ksba_crl_get_sig_val (crl);
   n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
-  if (!n) 
+  if (!n)
     {
       log_error (_("got an invalid S-expression from libksba\n"));
       err = gpg_error (GPG_ERR_INV_SEXP);
       goto leave;
     }
   err = gcry_sexp_sscan (&s_sig, NULL, sigval, n);
-  if (err) 
+  if (err)
     {
       log_error (_("converting S-expression failed: %s\n"),
                  gcry_strerror (err));
       goto leave;
     }
-	
+
   /* Get and convert the public key for the issuer certificate. */
   if (DBG_X509)
     dump_cert ("crl_issuer_cert", issuer_cert);
   pubkey = ksba_cert_get_public_key (issuer_cert);
   n = gcry_sexp_canon_len (pubkey, 0, NULL, NULL);
-  if (!n) 
+  if (!n)
     {
       log_error (_("got an invalid S-expression from libksba\n"));
       err = gpg_error (GPG_ERR_INV_SEXP);
       goto leave;
     }
   err = gcry_sexp_sscan (&s_pkey, NULL, pubkey, n);
-  if (err) 
+  if (err)
     {
       log_error (_("converting S-expression failed: %s\n"),
                  gcry_strerror (err));
@@ -1610,10 +1610,10 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
   for (i = 0; *s && i < sizeof(algoname) - 1; s++, i++)
     algoname[i] = ascii_tolower (*s);
   algoname[i] = 0;
-  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))", 
+  err = gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
                          algoname,
                          gcry_md_get_algo_dlen (algo), gcry_md_read (md, algo));
-  if (err) 
+  if (err)
     {
       log_error (_("creating S-expression failed: %s\n"), gcry_strerror (err));
       goto leave;
@@ -1660,21 +1660,21 @@ abort_sig_check (ksba_crl_t crl, gcry_md_hd_t md)
    error.  R_TRUST_ANCHOR is set on exit to NULL or a string with the
    hexified fingerprint of the root certificate, if checking this
    certificate for trustiness is required.
-*/ 
-static int 
+*/
+static int
 crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
                   struct cdb_make *cdb, const char *fname,
                   char **r_crlissuer,
                   ksba_isotime_t thisupdate, ksba_isotime_t nextupdate,
                   char **r_trust_anchor)
-{  
+{
   gpg_error_t err;
   ksba_stop_reason_t stopreason;
   ksba_cert_t crlissuer_cert = NULL;
   gcry_md_hd_t md = NULL;
   int algo = 0;
   size_t n;
-  
+
   (void)fname;
 
   *r_crlissuer = NULL;
@@ -1697,19 +1697,19 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
           {
             if (start_sig_check (crl, &md, &algo ))
               goto failure;
-          
+
             err = ksba_crl_get_update_times (crl, thisupdate, nextupdate);
             if (err)
               {
                 log_error (_("error getting update times of CRL: %s\n"),
-                           gpg_strerror (err));	  
+                           gpg_strerror (err));
                 err = gpg_error (GPG_ERR_INV_CRL);
                 goto failure;
               }
 
             if (opt.verbose || !*nextupdate)
-              log_info (_("update times of this CRL: this=%s next=%s\n"), 
-                        thisupdate, nextupdate);   
+              log_info (_("update times of this CRL: this=%s next=%s\n"),
+                        thisupdate, nextupdate);
             if (!*nextupdate)
               {
                 log_info (_("nextUpdate not given; "
@@ -1719,7 +1719,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
               }
           }
           break;
-      
+
         case KSBA_SR_GOT_ITEM:
           {
             ksba_sexp_t serial;
@@ -1742,7 +1742,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
             if (!p)
               BUG ();
             record[0] = (reason & 0xff);
-            memcpy (record+1, rdate, 15); 
+            memcpy (record+1, rdate, 15);
             rc = cdb_make_add (cdb, p, n, record, 1+15);
             if (rc)
               {
@@ -1756,10 +1756,10 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
             ksba_free (serial);
           }
           break;
-      
+
         case KSBA_SR_END_ITEMS:
           break;
-      
+
         case KSBA_SR_READY:
           {
             char *crlissuer;
@@ -1791,7 +1791,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
                 if (opt.verbose)
                   log_info (_("locating CRL issuer certificate by "
                               "authorityKeyIdentifier\n"));
-                
+
                 s = ksba_name_enum (authid, 0);
                 if (s && *authidsn)
                   crlissuer_cert = find_cert_bysn (ctrl, s, authidsn);
@@ -1830,11 +1830,11 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
                 err = gpg_error (GPG_ERR_MISSING_CERT);
                 goto failure;
               }
-        
+
             err = finish_sig_check (crl, md, algo, crlissuer_cert);
             if (err)
               {
-                log_error (_("CRL signature verification failed: %s\n"), 
+                log_error (_("CRL signature verification failed: %s\n"),
                            gpg_strerror (err));
                 goto failure;
               }
@@ -1846,20 +1846,20 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
             if (err)
               {
                 log_error (_("error checking validity of CRL "
-                             "issuer certificate: %s\n"), 
+                             "issuer certificate: %s\n"),
                            gpg_strerror (err));
                 goto failure;
               }
 
           }
           break;
-      
+
         default:
           log_debug ("crl_parse_insert: unknown stop reason\n");
           err = gpg_error (GPG_ERR_BUG);
           goto failure;
         }
-    } 
+    }
   while (stopreason != KSBA_SR_READY);
   assert (!err);
 
@@ -1914,7 +1914,7 @@ get_auth_key_id (ksba_crl_t crl, char **serialno)
 
   if (!name)
     return xstrdup ("");
-  
+
   length = 0;
   for (idx=0; (s = ksba_name_enum (name, idx)); idx++)
     {
@@ -1954,7 +1954,7 @@ get_auth_key_id (ksba_crl_t crl, char **serialno)
          cmd_checkcrl
       cmd_loadcrl
       --fetch-crl
-      
+
  */
 gpg_error_t
 crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
@@ -1982,7 +1982,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   /* FIXME: We should acquire a mutex for the URL, so that we don't
      simultaneously enter the same CRL twice.  However this needs to be
      interweaved with the checking function.*/
- 
+
   err2 = 0;
 
   err = ksba_crl_new (&crl);
@@ -1991,7 +1991,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
       log_error (_("ksba_crl_new failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
-  
+
   err = ksba_crl_set_reader (crl, reader);
   if ( err )
     {
@@ -2030,7 +2030,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
     xfree (tmpfname);
     if (!gnupg_remove (fname))
       log_info (_("removed stale temporary cache file `%s'\n"), fname);
-    else if (errno != ENOENT) 
+    else if (errno != ENOENT)
       {
         err = gpg_error_from_syserror ();
         log_error (_("problem removing stale temporary cache file `%s': %s\n"),
@@ -2120,7 +2120,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
         err2 = gpg_error (GPG_ERR_INV_CRL);
       invalidate_crl |= 2;
     }
-  if (gpg_err_code (err) == GPG_ERR_EOF 
+  if (gpg_err_code (err) == GPG_ERR_EOF
       || gpg_err_code (err) == GPG_ERR_NO_DATA )
     err = 0;
   if (err)
@@ -2141,9 +2141,9 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  entry->release_ptr = xtrymalloc (strlen (issuer_hash) + 1 
+  entry->release_ptr = xtrymalloc (strlen (issuer_hash) + 1
                                    + strlen (issuer) + 1
-                                   + strlen (url) + 1 
+                                   + strlen (url) + 1
                                    + strlen (checksum) + 1);
   if (!entry->release_ptr)
     {
@@ -2157,8 +2157,8 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   entry->url = stpcpy (entry->issuer, issuer) + 1;
   entry->dbfile_hash = stpcpy (entry->url, url) + 1;
   strcpy (entry->dbfile_hash, checksum);
-  gnupg_copy_time (entry->this_update, thisupdate); 
-  gnupg_copy_time (entry->next_update, nextupdate); 
+  gnupg_copy_time (entry->this_update, thisupdate);
+  gnupg_copy_time (entry->next_update, nextupdate);
   gnupg_copy_time (entry->last_refresh, current_time);
   entry->crl_number = get_crl_number (crl);
   entry->authority_issuer = get_auth_key_id (crl, &entry->authority_serialno);
@@ -2172,7 +2172,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
      somehow into the list. */
   for (e = cache->entries; (e=find_entry (e, entry->issuer_hash)); e = e->next)
     e->deleted = 1;
-  
+
   /* Rename the temporary DB to the real name. */
   newfname = make_db_file_name (entry->issuer_hash);
   if (opt.verbose)
@@ -2182,7 +2182,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
      only under Windows but saving file descriptors is never bad.  */
   {
     int any;
-    do 
+    do
       {
         any = 0;
         for (e = cache->entries; e; e = e->next)
@@ -2262,8 +2262,8 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
   es_fprintf (fp, _("Begin CRL dump (retrieved via %s)\n"), e->url );
   es_fprintf (fp, " Issuer:\t%s\n", e->issuer );
   es_fprintf (fp, " Issuer Hash:\t%s\n", e->issuer_hash );
-  es_fprintf (fp, " This Update:\t%s\n", e->this_update ); 
-  es_fprintf (fp, " Next Update:\t%s\n", e->next_update ); 
+  es_fprintf (fp, " This Update:\t%s\n", e->this_update );
+  es_fprintf (fp, " Next Update:\t%s\n", e->next_update );
   es_fprintf (fp, " CRL Number :\t%s\n", e->crl_number? e->crl_number: "none");
   es_fprintf (fp, " AuthKeyId  :\t%s\n",
               e->authority_serialno? e->authority_serialno:"none");
@@ -2277,7 +2277,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
           es_putc (*s, fp);
       es_putc ('\n', fp);
     }
-  es_fprintf (fp, " Trust Check:\t%s\n", 
+  es_fprintf (fp, " Trust Check:\t%s\n",
               !e->user_trust_req? "[system]" :
               e->check_trust_anchor? e->check_trust_anchor:"[missing]");
 
@@ -2325,7 +2325,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
           warn = 1;
           continue;
         }
-    
+
       n = cdb_keylen (cdb);
       if (n > sizeof keyrecord)
         n = sizeof keyrecord;
@@ -2341,26 +2341,26 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
       for (i = 0; i < n; i++)
         es_fprintf (fp, "%02X", keyrecord[i]);
       es_fputs (":\t reasons( ", fp);
-    
+
       if (reason & KSBA_CRLREASON_UNSPECIFIED)
         es_fputs( "unspecified ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_KEY_COMPROMISE )
-        es_fputs( "key_compromise ", fp ), any = 1; 
+        es_fputs( "key_compromise ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_CA_COMPROMISE )
-        es_fputs( "ca_compromise ", fp ), any = 1; 
+        es_fputs( "ca_compromise ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_AFFILIATION_CHANGED )
-        es_fputs( "affiliation_changed ", fp ), any = 1; 
+        es_fputs( "affiliation_changed ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_SUPERSEDED )
-        es_fputs( "superseeded", fp ), any = 1; 
+        es_fputs( "superseeded", fp ), any = 1;
       if (reason & KSBA_CRLREASON_CESSATION_OF_OPERATION )
-        es_fputs( "cessation_of_operation", fp ), any = 1; 
+        es_fputs( "cessation_of_operation", fp ), any = 1;
       if (reason & KSBA_CRLREASON_CERTIFICATE_HOLD )
-        es_fputs( "certificate_hold", fp ), any = 1; 
+        es_fputs( "certificate_hold", fp ), any = 1;
       if (reason && !any)
-        es_fputs( "other", fp ); 
-      
+        es_fputs( "other", fp );
+
       es_fprintf (fp, ") rdate: %.15s\n", record+1);
-    } 
+    }
   if (rc)
     log_error (_("error reading cache entry from db: %s\n"), strerror (rc));
 
@@ -2374,8 +2374,8 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
 
 /* Print the contents of the CRL CACHE in a human readable format to
    stream FP. */
-gpg_error_t 
-crl_cache_list (estream_t fp) 
+gpg_error_t
+crl_cache_list (estream_t fp)
 {
   crl_cache_t cache = get_current_cache ();
   crl_cache_entry_t entry;
@@ -2383,7 +2383,7 @@ crl_cache_list (estream_t fp)
 
   for (entry = cache->entries;
        entry && !entry->deleted && !err;
-       entry = entry->next ) 
+       entry = entry->next )
     err = list_one_crl_entry (cache, entry, fp);
 
   return err;
@@ -2420,7 +2420,7 @@ crl_cache_load (ctrl_t ctrl, const char *filename)
 /* Locate the corresponding CRL for the certificate CERT, read and
    verify the CRL and store it in the cache.  */
 gpg_error_t
-crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert) 
+crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
 {
   gpg_error_t err;
   ksba_reader_t reader = NULL;
@@ -2441,7 +2441,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
                                                 &distpoint,
                                                 &issuername, NULL )))
     {
-      int name_seq; 
+      int name_seq;
       gpg_error_t last_err = 0;
 
       if (!distpoint && !issuername)
@@ -2463,7 +2463,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
           distpoint_uri = ksba_name_get_uri (distpoint, name_seq);
           if (!distpoint_uri)
             continue;
-          
+
           if (!strncmp (distpoint_uri, "ldap:", 5)
               || !strncmp (distpoint_uri, "ldaps:", 6))
             {
@@ -2478,9 +2478,9 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
             }
           else
             continue; /* Skip unknown schemes. */
-          
+
           any_dist_point = 1;
-          
+
           if (opt.verbose)
             log_info ("fetching CRL from `%s'\n", distpoint_uri);
           err = crl_fetch (ctrl, distpoint_uri, &reader);
@@ -2491,10 +2491,10 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
               last_err = err;
               continue; /* with the next name. */
             }
-          
+
           if (opt.verbose)
             log_info ("inserting CRL (reader %p)\n", reader);
-          err = crl_cache_insert (ctrl, distpoint_uri, reader); 
+          err = crl_cache_insert (ctrl, distpoint_uri, reader);
           if (err)
             {
               log_error (_("crl_cache_insert via DP failed: %s\n"),
@@ -2510,12 +2510,12 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
           err = last_err;
           goto leave;
         }
-      
+
       ksba_name_release (distpoint); distpoint = NULL;
 
       /* We don't do anything with issuername_uri yet but we keep the
          code for documentation. */
-      issuername_uri =  ksba_name_get_uri (issuername, 0); 
+      issuername_uri =  ksba_name_get_uri (issuername, 0);
       ksba_name_release (issuername); issuername = NULL;
 
     }
@@ -2527,7 +2527,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
     {
       if (opt.verbose)
         log_info ("no distribution point - trying issuer name\n");
-      
+
       if (reader)
         {
           crl_close_reader (reader);
@@ -2535,10 +2535,10 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
         }
 
       issuer = ksba_cert_get_issuer (cert, 0);
-      if (!issuer) 
+      if (!issuer)
         {
           log_error ("oops: issuer missing in certificate\n");
-          err = gpg_error (GPG_ERR_INV_CERT_OBJ); 
+          err = gpg_error (GPG_ERR_INV_CERT_OBJ);
           goto leave;
         }
 
@@ -2568,9 +2568,8 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
     crl_close_reader (reader);
   xfree (distpoint_uri);
   xfree (issuername_uri);
-  ksba_name_release (distpoint); 
-  ksba_name_release (issuername); 
+  ksba_name_release (distpoint);
+  ksba_name_release (issuername);
   ksba_free (issuer);
   return err;
 }
-

@@ -84,4 +84,3 @@ xstrcat2( const char *a, const char *b )
     strcpy(p+n1, b );
     return p;
 }
-

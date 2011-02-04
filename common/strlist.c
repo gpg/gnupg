@@ -63,7 +63,7 @@ strlist_t
 add_to_strlist_try (strlist_t *list, const char *string)
 {
   strlist_t sl;
-  
+
   sl = jnlib_malloc (sizeof *sl + strlen (string));
   if (sl)
     {
@@ -84,10 +84,10 @@ strlist_t
 add_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 {
   strlist_t sl;
-  
+
   if (is_utf8)
     sl = add_to_strlist( list, string );
-  else 
+  else
     {
       char *p = native_to_utf8( string );
       sl = add_to_strlist( list, p );
@@ -125,7 +125,7 @@ strlist_t
 append_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 {
   strlist_t sl;
-    
+
   if( is_utf8 )
     sl = append_to_strlist( list, string );
   else
@@ -201,4 +201,3 @@ strlist_pop (strlist_t *list)
 
   return str;
 }
-

@@ -52,7 +52,7 @@ make_canon_sexp (gcry_sexp_t sexp, unsigned char **r_buffer, size_t *r_buflen)
   *r_buffer = NULL;
   if (r_buflen)
     *r_buflen = 0;;
-  
+
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
   if (!len)
     return gpg_error (GPG_ERR_BUG);
@@ -83,7 +83,7 @@ make_canon_sexp_pad (gcry_sexp_t sexp, int secure,
   *r_buffer = NULL;
   if (r_buflen)
     *r_buflen = 0;;
-  
+
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
   if (!len)
     return gpg_error (GPG_ERR_BUG);
@@ -189,7 +189,7 @@ make_simple_sexp_from_hexstr (const char *line, size_t *nscanned)
     *nscanned = n;
   if (!n)
     return NULL;
-  len = ((n+1) & ~0x01)/2; 
+  len = ((n+1) & ~0x01)/2;
   numbufp = smklen (numbuf, sizeof numbuf, len, &numbuflen);
   buf = xtrymalloc (1 + numbuflen + len + 1 + 1);
   if (!buf)
@@ -252,7 +252,7 @@ hash_algo_from_sigval (const unsigned char *sigval)
     return 0; /* Algorithm string is missing or too long.  */
   memcpy (buffer, s, n);
   buffer[n] = 0;
-  
+
   return gcry_md_map_name (buffer);
 }
 
@@ -283,7 +283,7 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
     ;
   for (; elen && !*e; elen--, e++)
     ;
-      
+
   /* Insert a leading zero if the number would be zero or interpreted
      as negative.  */
   if (!mlen || (m[0] & 0x80))
@@ -300,7 +300,7 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
                        + strlen (part3) + 1);
   if (!keybuf)
     return NULL;
-  
+
   p = stpcpy (keybuf, part1);
   p = stpcpy (p, mlen_str);
   if (m_extra)
@@ -314,7 +314,7 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
   memcpy (p, e, elen);
   p += elen;
   p = stpcpy (p, part3);
- 
+
   if (r_len)
     *r_len = p - keybuf;
 
@@ -373,8 +373,8 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
 
           switch (*tok)
             {
-            case 'n': mpi = &rsa_n; mpi_len = &rsa_n_len; break; 
-            case 'e': mpi = &rsa_e; mpi_len = &rsa_e_len; break; 
+            case 'n': mpi = &rsa_n; mpi_len = &rsa_n_len; break;
+            case 'e': mpi = &rsa_e; mpi_len = &rsa_e_len; break;
             default:  mpi = NULL;   mpi_len = NULL; break;
             }
           if (mpi && *mpi)
@@ -425,7 +425,7 @@ get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
   const unsigned char *buf, *tok;
   size_t buflen, toklen;
   int depth;
-    
+
   *r_algo = 0;
 
   buf = keydata;

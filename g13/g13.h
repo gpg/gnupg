@@ -32,7 +32,7 @@
 #include "../common/session-env.h"
 
 /* A large struct named "opt" to keep global flags.  */
-struct 
+struct
 {
   unsigned int debug; /* Debug flags (DBG_foo_VALUE).  */
   int verbose;        /* Verbosity level.  */
@@ -43,12 +43,12 @@ struct
   const char *config_filename; /* Name of the used config file.  */
 
   /* Filename of the AGENT program.  */
-  const char *agent_program; 
+  const char *agent_program;
 
   /* Filename of the GPG program.  Unless set via an program option it
      is initialzed at the first engine startup to the standard gpg
      filename.  */
-  const char *gpg_program; 
+  const char *gpg_program;
 
   /* Environment variables passed along to the engine.  */
   char *display;
@@ -89,10 +89,10 @@ struct server_control_s
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
-  
+
   int agent_seen;     /* Flag indicating that the gpg-agent has been
                          accessed.  */
-  
+
   int with_colons;    /* Use column delimited output format */
 
   /* Type of the current container.  See the CONTTYPE_ constants.  */

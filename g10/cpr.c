@@ -1,4 +1,4 @@
-/* status.c - Status message and command-fd interface 
+/* status.c - Status message and command-fd interface
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004, 2005, 2006, 2010 Free Software Foundation, Inc.
  *
@@ -78,13 +78,13 @@ status_currently_allowed (int no)
      prompt the user. */
   switch (no)
     {
-    case STATUS_GET_BOOL:	 
-    case STATUS_GET_LINE:	 
-    case STATUS_GET_HIDDEN:	 
-    case STATUS_GOT_IT:	 
+    case STATUS_GET_BOOL:
+    case STATUS_GET_LINE:
+    case STATUS_GET_HIDDEN:
+    case STATUS_GOT_IT:
     case STATUS_IMPORTED:
-    case STATUS_IMPORT_OK:	
-    case STATUS_IMPORT_CHECK:  
+    case STATUS_IMPORT_OK:
+    case STATUS_IMPORT_CHECK:
     case STATUS_IMPORT_RES:
       return 1; /* Yes. */
     default:
@@ -98,16 +98,16 @@ void
 set_status_fd (int fd)
 {
   static int last_fd = -1;
-  
+
   if (fd != -1 && last_fd == fd)
     return;
 
   if (statusfp && statusfp != es_stdout && statusfp != es_stderr )
     es_fclose (statusfp);
   statusfp = NULL;
-  if (fd == -1) 
+  if (fd == -1)
     return;
-  
+
   if (fd == 1)
     statusfp = es_stdout;
   else if (fd == 2)
@@ -147,7 +147,7 @@ write_status_text (int no, const char *text)
 
   es_fputs ("[GNUPG:] ", statusfp);
   es_fputs (get_status_string (no), statusfp);
-  if ( text ) 
+  if ( text )
     {
       es_putc ( ' ', statusfp);
       for (; *text; text++)
@@ -156,7 +156,7 @@ write_status_text (int no, const char *text)
             es_fputs ("\\n", statusfp);
           else if (*text == '\r')
             es_fputs ("\\r", statusfp);
-          else 
+          else
             es_fputc ( *(const byte *)text, statusfp);
         }
     }
@@ -173,7 +173,7 @@ write_status_error (const char *where, gpg_error_t err)
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */
 
-  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n",
               get_status_string (STATUS_ERROR), where, err);
   if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
@@ -187,7 +187,7 @@ write_status_errcode (const char *where, int errcode)
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */
 
-  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n",
               get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
   if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
@@ -211,7 +211,7 @@ write_status_text_and_buffer (int no, const char *string,
 
   if (!statusfp || !status_currently_allowed (no))
     return;  /* Not enabled or allowed. */
-    
+
   if (wrap == -1)
     {
       lower_limit--;
@@ -220,7 +220,7 @@ write_status_text_and_buffer (int no, const char *string,
 
   text = get_status_string (no);
   count = dowrap = first = 1;
-  do 
+  do
     {
       if (dowrap)
         {
@@ -241,8 +241,8 @@ write_status_text_and_buffer (int no, const char *string,
         }
       for (esc=0, s=buffer, n=len; n && !esc; s++, n--)
         {
-          if (*s == '%' || *(const byte*)s <= lower_limit 
-              || *(const byte*)s == 127 ) 
+          if (*s == '%' || *(const byte*)s <= lower_limit
+              || *(const byte*)s == 127 )
             esc = 1;
           if (wrap && ++count > wrap)
             {
@@ -250,13 +250,13 @@ write_status_text_and_buffer (int no, const char *string,
               break;
             }
         }
-      if (esc) 
+      if (esc)
         {
           s--; n++;
         }
-      if (s != buffer) 
+      if (s != buffer)
         es_fwrite (buffer, s-buffer, 1, statusfp);
-      if ( esc ) 
+      if ( esc )
         {
           es_fprintf (statusfp, "%%%02X", *(const byte*)s );
           s++; n--;
@@ -265,7 +265,7 @@ write_status_text_and_buffer (int no, const char *string,
       len = n;
       if (dowrap && len)
         es_putc ('\n', statusfp);
-    } 
+    }
   while (len);
 
   es_putc ('\n',statusfp);
@@ -291,7 +291,7 @@ write_status_begin_signing (gcry_md_hd_t md)
       char buf[100];
       size_t buflen;
       int i;
-      
+
       /* We use a hard coded list of possible algorithms.  Using other
          algorithms than specified by OpenPGP does not make sense
          anyway.  We do this out of performance reasons: Walking all
@@ -304,7 +304,7 @@ write_status_begin_signing (gcry_md_hd_t md)
         if (i < 4 || i > 7)
           if (gcry_md_is_enabled (md, i) && buflen < DIM(buf))
             {
-              snprintf (buf+buflen, DIM(buf) - buflen - 1, 
+              snprintf (buf+buflen, DIM(buf) - buflen - 1,
                         "%sH%d", buflen? " ":"",i);
               buflen += strlen (buf+buflen);
             }
@@ -319,10 +319,10 @@ static int
 myread(int fd, void *buf, size_t count)
 {
   int rc;
-  do 
+  do
     {
       rc = read( fd, buf, count );
-    } 
+    }
   while (rc == -1 && errno == EINTR);
 
   if (!rc && count)
@@ -335,7 +335,7 @@ myread(int fd, void *buf, size_t count)
           eof_emmited++;
         }
       else /* Ctrl-D not caught - do something reasonable */
-        { 
+        {
 #ifdef HAVE_DOSISH_SYSTEM
 #ifndef HAVE_W32CE_SYSTEM
           raise (SIGINT); /* Nothing to hangup under DOS.  */
@@ -344,7 +344,7 @@ myread(int fd, void *buf, size_t count)
           raise (SIGHUP); /* No more input data.  */
 #endif
         }
-    }    
+    }
   return rc;
 }
 
@@ -358,16 +358,16 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
 {
   int i, len;
   char *string;
-  
+
   if (statusfp != es_stdout)
     es_fflush (es_stdout);
-  
+
   write_status_text (getbool? STATUS_GET_BOOL :
                      hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword);
 
-  for (string = NULL, i = len = 200; ; i++ ) 
+  for (string = NULL, i = len = 200; ; i++ )
     {
-      if (i >= len-1 ) 
+      if (i >= len-1 )
         {
           char *save = string;
           len += 100;
@@ -380,7 +380,7 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
       /* Fixme: why not use our read_line function here? */
       if ( myread( opt.command_fd, string+i, 1) != 1 || string[i] == '\n'  )
         break;
-      else if ( string[i] == CONTROL_D ) 
+      else if ( string[i] == CONTROL_D )
         {
           /* Found ETX - Cancel the line and return a sole ETX.  */
           string[0] = CONTROL_D;

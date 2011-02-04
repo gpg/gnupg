@@ -89,13 +89,13 @@ read_list (char *key, char *country, int *lnr)
                                  : GPG_ERR_INCOMPLETE_LINE);
         }
       ++*lnr;
-      
+
       /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
         ;
     }
   while (!*p || *p == '\n' || *p == '#');
-  
+
   for (i=j=0; (p[i] == ':' || hexdigitp (p+i)) && j < 40; i++)
     if ( p[i] != ':' )
       key[j++] = p[i] >= 'a'? (p[i] & 0xdf): p[i];
@@ -110,8 +110,8 @@ read_list (char *key, char *country, int *lnr)
   i++;
   while (spacep (p+i))
     i++;
-  if ( p[i] >= 'a' && p[i] <= 'z' 
-       && p[i+1] >= 'a' && p[i+1] <= 'z' 
+  if ( p[i] >= 'a' && p[i] <= 'z'
+       && p[i+1] >= 'a' && p[i+1] <= 'z'
        && (spacep (p+i+2) || p[i+2] == '\n'))
     {
       country[0] = p[i];
@@ -135,7 +135,7 @@ read_list (char *key, char *country, int *lnr)
    as maintained by gpg-agent and includes fingerprints of root
    certificates to be used for qualified (legally binding like
    handwritten) signatures.  We keep this list system wide and not
-   per user because it is not a decision of the user. 
+   per user because it is not a decision of the user.
 
    Returns: 0 if the certificate is included.  GPG_ERR_NOT_FOUND if it
    is not in the list or any other error (e.g. if no list of
@@ -210,7 +210,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
                   "equated to a handwritten signature.\n\n%s%s"
                   "Are you really sure that you want to do this?"),
                 subject? subject:"?",
-                opt.qualsig_approval? 
+                opt.qualsig_approval?
                 "":
                 _("Note, that this software is not officially approved "
                   "to create or verify such signatures.\n"),
@@ -246,7 +246,7 @@ gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)
         *p++ = *s;
     }
   *p = 0;
-  free (name); 
+  free (name);
 
 
   err = gpgsm_agent_get_confirmation (ctrl, buffer);
@@ -315,7 +315,7 @@ gpgsm_not_qualified_warning (ctrl_t ctrl, ksba_cert_t cert)
         *p++ = *s;
     }
   *p = 0;
-  free (name); 
+  free (name);
 
 
   err = gpgsm_agent_get_confirmation (ctrl, buffer);

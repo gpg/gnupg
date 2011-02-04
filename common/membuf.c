@@ -85,7 +85,7 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
   if (mb->len + len >= mb->size)
     {
       char *p;
-      
+
       mb->size += len + 1024;
       p = xtryrealloc (mb->buf, mb->size);
       if (!p)
@@ -94,7 +94,7 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
           /* Wipe out what we already accumulated.  This is required
              in case we are storing sensitive data here.  The membuf
              API does not provide another way to cleanup after an
-             error. */ 
+             error. */
           wipememory (mb->buf, mb->len);
           return;
         }
@@ -158,4 +158,3 @@ peek_membuf (membuf_t *mb, size_t *len)
     *len = mb->len;
   return p;
 }
-

@@ -66,7 +66,7 @@ card_help_get_keygrip (ksba_cert_t cert, unsigned char *array)
   int rc;
   ksba_sexp_t p;
   size_t n;
-  
+
   p = ksba_cert_get_public_key (cert);
   if (!p)
     return -1; /* oops */
@@ -109,7 +109,7 @@ card_open (CARD *rcard)
   if (!card)
     return gpg_error (gpg_err_code_from_errno (errno));
   card->reader = 0;
-  
+
   rc = sc_establish_context (&card->ctx, "scdaemon");
   if (rc)
     {
@@ -154,7 +154,7 @@ card_open (CARD *rcard)
       goto leave;
     }
 
-    
+
  leave:
   if (rc)
     card_close (card);
@@ -195,7 +195,7 @@ card_close (CARD card)
         }
 #endif
       xfree (card);
-    }      
+    }
 }
 
 /* Locate a simple TLV encoded data object in BUFFER of LENGTH and
@@ -210,7 +210,7 @@ find_simple_tlv (const unsigned char *buffer, size_t length,
   const char *s = buffer;
   size_t n = length;
   size_t len;
-    
+
   for (;;)
     {
       buffer = s;
@@ -290,7 +290,7 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
    returned if this value is not availbale.  For non-PKCS-15 cards a
    serial number is constructed by other means. Caller must free
    SERIAL unless the function returns an error. */
-int 
+int
 card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 {
 #ifdef HAVE_OPENSC
@@ -311,7 +311,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   if (!card->fnc.initialized)
     {
       card->fnc.initialized = 1;
-      /* The first use of this card tries to figure out the type of the card 
+      /* The first use of this card tries to figure out the type of the card
          and sets up the function pointers. */
       rc = sc_pkcs15_bind (card->scard, &card->p15card);
       if (rc)
@@ -326,7 +326,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
         card_p15_bind (card);
       card->fnc.initialized = 1;
     }
-      
+
 
   /* We should lookup the iso 7812-1 and 8583-3 - argh ISO
      practice is suppressing innovation - IETF rules!  So we
@@ -355,10 +355,10 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
       return gpg_error (GPG_ERR_CARD);
     }
   buflen = file->size;
-      
+
   rc = sc_read_binary (card->scard, 0, buf, buflen, 0);
   sc_file_free (file);
-  if (rc < 0) 
+  if (rc < 0)
     {
       log_error ("error reading GDO file: %s\n", sc_strerror (rc));
       return gpg_error (GPG_ERR_CARD);
@@ -381,7 +381,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 
       if (!efser)
         efser = "";
-        
+
       xfree (*serial);
       *serial = NULL;
       p = xtrymalloc (strlen (efser) + 7);
@@ -515,7 +515,7 @@ card_read_cert (CARD card, const char *certidstr,
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-int 
+int
 card_sign (CARD card, const char *keyidstr, int hashalgo,
            int (pincb)(void*, const char *, char **),
            void *pincb_arg,
@@ -543,7 +543,7 @@ card_sign (CARD card, const char *keyidstr, int hashalgo,
 /* Create the signature and return the allocated result in OUTDATA.
    If a PIN is required the PINCB will be used to ask for the PIN; it
    should return the PIN in an allocated buffer and put it into PIN.  */
-int 
+int
 card_decipher (CARD card, const char *keyidstr,
                int (pincb)(void*, const char *, char **),
                void *pincb_arg,
@@ -566,4 +566,3 @@ card_decipher (CARD card, const char *keyidstr,
     log_info ("card operation decipher result: %s\n", gpg_strerror (rc));
   return rc;
 }
-

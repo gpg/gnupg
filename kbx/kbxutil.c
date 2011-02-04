@@ -46,7 +46,7 @@ enum cmd_and_opt_values {
   oOutput	  = 'o',
   oQuiet	  = 'q',
   oVerbose	  = 'v',
-  
+
   aNoSuchCmd    = 500,   /* force other values not to be a letter */
   aFindByFpr,
   aFindByKid,
@@ -73,13 +73,13 @@ static ARGPARSE_OPTS opts[] = {
 /*   { aFindByFpr,  "find-by-fpr", 0, "|FPR| find key using it's fingerprnt" }, */
 /*   { aFindByKid,  "find-by-kid", 0, "|KID| find key using it's keyid" }, */
 /*   { aFindByUid,  "find-by-uid", 0, "|NAME| find key by user name" }, */
-  { aStats,      "stats",       0, "show key statistics" }, 
+  { aStats,      "stats",       0, "show key statistics" },
   { aImportOpenPGP, "import-openpgp", 0, "import OpenPGP keyblocks"},
   { aFindDups,    "find-dups",   0, "find duplicates" },
   { aCut,         "cut",         0, "export records" },
-  
+
   { 301, NULL, 0, N_("@\nOptions:\n ") },
-  
+
   { oFrom, "from", 4, "|N|first record to export" },
   { oTo,   "to",   4, "|N|last record to export" },
 /*   { oArmor, "armor",     0, N_("create ascii armored output")}, */
@@ -88,7 +88,7 @@ static ARGPARSE_OPTS opts[] = {
   { oVerbose, "verbose",   0, N_("verbose") },
   { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
   { oDryRun, "dry-run",   0, N_("do not make any changes") },
-  
+
   { oDebug, "debug"     ,4|16, N_("set debugging flags")},
   { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
 
@@ -144,7 +144,7 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
     case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
     case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
     case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
-    default:            level = JNLIB_LOG_ERROR; break;  
+    default:            level = JNLIB_LOG_ERROR; break;
     }
   log_logv (level, fmt, arg_ptr);
 }
@@ -236,7 +236,7 @@ read_file (const char *fname, size_t *r_length)
   FILE *fp;
   char *buf;
   size_t buflen;
-  
+
   if (!strcmp (fname, "-"))
     {
       size_t nread, bufsize = 0;
@@ -245,7 +245,7 @@ read_file (const char *fname, size_t *r_length)
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
-      do 
+      do
         {
           bufsize += NCHUNK;
           if (!buf)
@@ -278,14 +278,14 @@ read_file (const char *fname, size_t *r_length)
           log_error ("can't open `%s': %s\n", fname, strerror (errno));
           return NULL;
         }
-  
+
       if (fstat (fileno(fp), &st))
         {
           log_error ("can't stat `%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
-      
+
       buflen = st.st_size;
       buf = xtrymalloc (buflen+1);
       if (!buf)
@@ -342,7 +342,7 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
       struct _keybox_openpgp_key_info *k;
 
       k = &info->subkeys;
-      do 
+      do
         {
           printf ("sub %02X%02X%02X%02X",
                   k->keyid[4], k->keyid[5],
@@ -358,7 +358,7 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
       struct _keybox_openpgp_uid_info *u;
 
       u = &info->uids;
-      do 
+      do
         {
           printf ("uid\t\t%.*s\n", (int)u->len, image + u->off);
           u = u->next;
@@ -412,10 +412,10 @@ main( int argc, char **argv )
   ARGPARSE_ARGS pargs;
   enum cmd_and_opt_values cmd = 0;
   unsigned long from = 0, to = ULONG_MAX;
-  
+
   set_strusage( my_strusage );
   gcry_control (GCRYCTL_DISABLE_SECMEM);
-  log_set_prefix ("kbxutil", 1); 
+  log_set_prefix ("kbxutil", 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -474,51 +474,51 @@ main( int argc, char **argv )
           break;
 	}
     }
-  
+
   if (to < from)
     log_error ("record number of \"--to\" is lower than \"--from\" one\n");
 
 
   if (log_get_errorcount(0) )
     myexit(2);
-  
+
   if (!cmd)
     { /* Default is to list a KBX file */
-      if (!argc) 
+      if (!argc)
         _keybox_dump_file (NULL, 0, stdout);
       else
         {
-          for (; argc; argc--, argv++) 
+          for (; argc; argc--, argv++)
             _keybox_dump_file (*argv, 0, stdout);
         }
     }
   else if (cmd == aStats )
     {
-      if (!argc) 
+      if (!argc)
         _keybox_dump_file (NULL, 1, stdout);
       else
         {
-          for (; argc; argc--, argv++) 
+          for (; argc; argc--, argv++)
             _keybox_dump_file (*argv, 1, stdout);
         }
     }
   else if (cmd == aFindDups )
     {
-      if (!argc) 
+      if (!argc)
         _keybox_dump_find_dups (NULL, 0, stdout);
       else
         {
-          for (; argc; argc--, argv++) 
+          for (; argc; argc--, argv++)
             _keybox_dump_find_dups (*argv, 0, stdout);
         }
     }
   else if (cmd == aCut )
     {
-      if (!argc) 
+      if (!argc)
         _keybox_dump_cut_records (NULL, from, to, stdout);
       else
         {
-          for (; argc; argc--, argv++) 
+          for (; argc; argc--, argv++)
             _keybox_dump_cut_records (*argv, from, to, stdout);
         }
     }
@@ -528,12 +528,12 @@ main( int argc, char **argv )
         import_openpgp ("-");
       else
         {
-          for (; argc; argc--, argv++) 
+          for (; argc; argc--, argv++)
             import_openpgp (*argv);
         }
     }
 #if 0
-  else if ( cmd == aFindByFpr ) 
+  else if ( cmd == aFindByFpr )
     {
       char *fpr;
       if ( argc != 2 )
@@ -541,17 +541,17 @@ main( int argc, char **argv )
       fpr = format_fingerprint ( argv[1] );
       if ( !fpr )
         log_error ("invalid formatted fingerprint\n");
-      else 
+      else
         {
           kbxfile_search_by_fpr ( argv[0], fpr );
           gcry_free ( fpr );
         }
     }
-  else if ( cmd == aFindByKid ) 
+  else if ( cmd == aFindByKid )
     {
       u32 kid[2];
       int mode;
-      
+
       if ( argc != 2 )
         wrong_args ("kbxfile short-or-long-keyid");
       mode = format_keyid ( argv[1], kid );
@@ -562,7 +562,7 @@ main( int argc, char **argv )
           kbxfile_search_by_kid ( argv[0], kid, mode );
 	}
     }
-  else if ( cmd == aFindByUid ) 
+  else if ( cmd == aFindByUid )
     {
       if ( argc != 2 )
         wrong_args ("kbxfile userID");
@@ -571,7 +571,7 @@ main( int argc, char **argv )
 #endif
   else
       log_error ("unsupported action\n");
-  
+
   myexit(0);
   return 8; /*NEVER REACHED*/
 }
@@ -590,5 +590,3 @@ myexit( int rc )
 			keybox_errors_seen? 1 : 0;
     exit(rc );
 }
-
-

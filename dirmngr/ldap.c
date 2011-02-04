@@ -112,11 +112,11 @@ add_server_to_servers (const char *host, int port)
 /* Perform an LDAP query.  Returns an gpg error code or 0 on success.
    The function returns a new reader object at READER. */
 static gpg_error_t
-run_ldap_wrapper (ctrl_t ctrl, 
+run_ldap_wrapper (ctrl_t ctrl,
                   int ignore_timeout,
                   int multi_mode,
                   const char *proxy,
-                  const char *host, int port, 
+                  const char *host, int port,
                   const char *user, const char *pass,
                   const char *dn, const char *filter, const char *attr,
                   const char *url,
@@ -125,7 +125,7 @@ run_ldap_wrapper (ctrl_t ctrl,
   const char *argv[40];
   int argc;
   char portbuf[30], timeoutbuf[30];
-  
+
 
   *reader = NULL;
 
@@ -186,7 +186,7 @@ run_ldap_wrapper (ctrl_t ctrl,
     }
   argv[argc++] = url? url : "ldap://";
   argv[argc] = NULL;
-    
+
   return ldap_wrapper (ctrl, reader, argv);
 }
 
@@ -216,7 +216,7 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, const char *host, int port,
      will enlarge the list of servers to consult without a limit and
      all LDAP queries w/o a host are will then try each host in
      turn. */
-  if (!err && opt.add_new_ldapservers && !opt.ldap_proxy) 
+  if (!err && opt.add_new_ldapservers && !opt.ldap_proxy)
     {
       if (host)
         add_server_to_servers (host, port);
@@ -236,11 +236,11 @@ url_fetch_ldap (ctrl_t ctrl, const char *url, const char *host, int port,
   if (err && !(opt.ldap_proxy && opt.only_ldap_proxy))
     {
       struct ldapserver_iter iter;
-      
+
       if (DBG_LOOKUP)
         log_debug ("no hostname in URL or query failed; "
                    "trying all default hostnames\n");
-      
+
       for (ldapserver_iter_begin (&iter, ctrl);
 	   err && ! ldapserver_iter_end_p (&iter);
 	   ldapserver_iter_next (&iter))
@@ -365,19 +365,19 @@ parse_one_pattern (const char *pattern)
     default:			/* Take as substring match. */
       {
 	const char format[] = "(|(sn=*%s*)(|(cn=*%s*)(mail=*%s*)))";
-        
+
         if (*pattern)
           {
             result = xmalloc (sizeof *result
                               + strlen (format) + 3 * strlen (pattern));
             result->next = NULL;
-            result->flags = 0; 
+            result->flags = 0;
             sprintf (result->d, format, pattern, pattern, pattern);
           }
       }
       break;
     }
-  
+
   return result;
 }
 
@@ -396,9 +396,9 @@ escape4url (const char *string)
   for (s=string,n=0; *s; s++)
     if (strchr (UNENCODED_URL_CHARS, *s))
       n++;
-    else 
+    else
       n += 3;
-  
+
   buf = malloc (n+1);
   if (!buf)
     return NULL;
@@ -406,7 +406,7 @@ escape4url (const char *string)
   for (s=string,p=buf; *s; s++)
     if (strchr (UNENCODED_URL_CHARS, *s))
       *p++ = *s;
-    else 
+    else
       {
         sprintf (p, "%%%02X", *(const unsigned char *)s);
         p += 3;
@@ -454,7 +454,7 @@ make_url (char **url, const char *dn, const char *filter)
       xfree (u_filter);
       return err;
     }
- 
+
   stpcpy (stpcpy (stpcpy (stpcpy (stpcpy (stpcpy (*url, "ldap:///"),
                                           u_dn),
                                   "?"),
@@ -528,7 +528,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
   int argc;
   char portbuf[30], timeoutbuf[30];
 
-  
+
   *context = NULL;
   if (server)
     {
@@ -640,7 +640,7 @@ read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
 {
   gpg_error_t err;
   size_t nread;
-  
+
   while (count)
     {
       err = ksba_reader_read (reader, buffer, count, &nread);
@@ -681,14 +681,14 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
       if (*hdr == 'V' && okay)
         {
 #if 0  /* That code is not yet ready.  */
-       
+
           if (is_cms)
             {
               /* The certificate needs to be parsed from CMS data. */
               ksba_cms_t cms;
               ksba_stop_reason_t stopreason;
               int i;
-          
+
               err = ksba_cms_new (&cms);
               if (err)
                 goto leave;
@@ -700,7 +700,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
                   goto leave;
                 }
 
-              do 
+              do
                 {
                   err = ksba_cms_parse (cms, &stopreason);
                   if (err)
@@ -714,12 +714,12 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
                     log_error ("userSMIMECertificate is not "
                                "a certs-only message\n");
                 }
-              while (stopreason != KSBA_SR_READY);   
-      
+              while (stopreason != KSBA_SR_READY);
+
               for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
                 {
                   check_and_store (ctrl, stats, cert, 0);
-                  ksba_cert_release (cert); 
+                  ksba_cert_release (cert);
                   cert = NULL;
                 }
               if (!i)
@@ -733,7 +733,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
               *value = xtrymalloc (n);
               if (!*value)
                 return gpg_error_from_errno (errno);
-              *valuelen = n; 
+              *valuelen = n;
               err = read_buffer (context->reader, *value, n);
               break; /* Ready or error.  */
             }
@@ -750,7 +750,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
               if (!context->tmpbuf)
                 return gpg_error_from_errno (errno);
               context->tmpbufsize = n;
-            }  
+            }
           err = read_buffer (context->reader, context->tmpbuf, n);
           if (err)
             break;

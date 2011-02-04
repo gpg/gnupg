@@ -76,8 +76,8 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
   if (imagelen > 500000) /* Sanity check. */
     return gpg_error (GPG_ERR_TOO_LARGE);
-  
-  if (imagelen < 5) 
+
+  if (imagelen < 5)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
   if (!type)
@@ -90,7 +90,7 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     }
 
   image = xtrymalloc (imagelen);
-  if (!image) 
+  if (!image)
     return gpg_error_from_syserror ();
 
   image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4; image[4] = type;
@@ -100,7 +100,7 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
       xfree (image);
       return tmperr;
     }
-  
+
   rc = r_blob? _keybox_new_blob (r_blob, image, imagelen, off) : 0;
   if (rc || !r_blob)
     xfree (image);
@@ -142,7 +142,7 @@ _keybox_write_header_blob (FILE *fp)
 
   image[4] = BLOBTYPE_HEADER;
   image[5] = 1; /* Version */
-  
+
   memcpy (image+8, "KBXf", 4);
   val = time (NULL);
   /* created_at and last maintenance run. */
@@ -159,5 +159,3 @@ _keybox_write_header_blob (FILE *fp)
     return gpg_error_from_syserror ();
   return 0;
 }
-
-

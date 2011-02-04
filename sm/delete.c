@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -44,7 +44,7 @@ delete_one (ctrl_t ctrl, const char *username)
   ksba_cert_t cert = NULL;
   int duplicates = 0;
   int is_ephem = 0;
-  
+
   rc = classify_user_id (username, &desc);
   if (rc)
     {
@@ -122,8 +122,8 @@ delete_one (ctrl_t ctrl, const char *username)
       log_error (_("error locking keybox: %s\n"), gpg_strerror (rc));
       goto leave;
     }
-                   
-  do 
+
+  do
     {
       keydb_search_reset (kh);
       rc = keydb_search (kh, &desc, 1);
@@ -133,9 +133,9 @@ delete_one (ctrl_t ctrl, const char *username)
                      gpg_strerror (rc));
           goto leave;
         }
-      
+
       rc = keydb_delete (kh, duplicates ? 0 : 1);
-      if (rc) 
+      if (rc)
         goto leave;
       if (opt.verbose)
         {
@@ -166,7 +166,7 @@ gpgsm_delete (ctrl_t ctrl, strlist_t names)
       log_error ("nothing to delete\n");
       return gpg_error (GPG_ERR_NO_DATA);
     }
-  
+
   for (; names; names=names->next )
     {
       rc = delete_one (ctrl, names->d);
@@ -177,6 +177,6 @@ gpgsm_delete (ctrl_t ctrl, strlist_t names)
           return rc;
         }
     }
-  
+
   return 0;
 }

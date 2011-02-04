@@ -67,12 +67,12 @@ build_argv (char *cmdline_arg, int reserved)
         {
           argc++;
           /* Skip the remaining spaces.  */
-          while (*s==' ' || *s=='\t') 
+          while (*s==' ' || *s=='\t')
             s++;
           if (!*s)
             break;
           bs_count = 0;
-        } 
+        }
       else if (*s=='\\')
         {
           bs_count++;
@@ -84,7 +84,7 @@ build_argv (char *cmdline_arg, int reserved)
           in_quotes = !in_quotes;
           bs_count=0;
           s++;
-        } 
+        }
       else /* A regular character. */
         {
           bs_count = 0;
@@ -113,20 +113,20 @@ build_argv (char *cmdline_arg, int reserved)
           argv[argc++] = arg;
 
           /* Skip the remaining spaces. */
-          do 
+          do
             s++;
           while (*s==' ' || *s=='\t');
 
           /* Start with a new argument */
           arg = d = s;
           bs_count = 0;
-        } 
-      else if (*s=='\\') 
+        }
+      else if (*s=='\\')
         {
           *d++ = *s++;
           bs_count++;
-        } 
-      else if (*s=='\"') 
+        }
+      else if (*s=='\"')
         {
           if ( !(bs_count & 1) )
             {
@@ -137,7 +137,7 @@ build_argv (char *cmdline_arg, int reserved)
               s++;
               in_quotes = !in_quotes;
             }
-          else 
+          else
             {
               /* Preceded by an odd number of backslashes, this is
                  half that number of backslashes followed by a '\"'.  */
@@ -146,7 +146,7 @@ build_argv (char *cmdline_arg, int reserved)
               s++;
             }
           bs_count=0;
-        } 
+        }
       else /* A regular character. */
         {
           *d++ = *s++;
@@ -167,9 +167,9 @@ build_argv (char *cmdline_arg, int reserved)
 
 
 /* Our window message processing function.  */
-static LRESULT CALLBACK 
+static LRESULT CALLBACK
 wndw_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{		
+{
 
   switch (msg)
     {
@@ -239,8 +239,8 @@ handle_taskbar (void *ctx)
   DestroyIcon (nid.hIcon);
 
   fprintf (stderr, "%s: enter\n", __func__);
-  while ( (rc=GetMessage (&msg, hwnd,  0, 0)) ) 
-    { 
+  while ( (rc=GetMessage (&msg, hwnd,  0, 0)) )
+    {
       if (rc == -1)
         {
           log_error ("getMessage failed: %s\n", w32_strerror (-1));

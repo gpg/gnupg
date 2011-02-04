@@ -59,7 +59,7 @@
 /* The CID driver returns the same error codes as the status words
    used by GnuPG's apdu.h.  For ease of maintenance they should always
    match.  */
-#define CCID_DRIVER_ERR_OUT_OF_CORE    0x10001 
+#define CCID_DRIVER_ERR_OUT_OF_CORE    0x10001
 #define CCID_DRIVER_ERR_INV_VALUE      0x10002
 #define CCID_DRIVER_ERR_INCOMPLETE_CARD_RESPONSE = 0x10003
 #define CCID_DRIVER_ERR_NO_DRIVER      0x10004
@@ -80,7 +80,7 @@ typedef struct ccid_driver_s *ccid_driver_t;
 int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
 int ccid_open_reader (ccid_driver_t *handle, const char *readerid);
-int ccid_set_progress_cb (ccid_driver_t handle, 
+int ccid_set_progress_cb (ccid_driver_t handle,
                           void (*cb)(void *, const char *, int, int, int),
                           void *cb_arg);
 int ccid_shutdown_reader (ccid_driver_t handle);
@@ -93,8 +93,8 @@ int ccid_transceive (ccid_driver_t handle,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_secure (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
-                     int pin_mode, 
-                     int pinlen_min, int pinlen_max, int pin_padlen, 
+                     int pin_mode,
+                     int pinlen_min, int pinlen_max, int pin_padlen,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_escape (ccid_driver_t handle,
                             const unsigned char *data, size_t datalen,
@@ -104,6 +104,3 @@ int ccid_transceive_escape (ccid_driver_t handle,
 
 
 #endif /*CCID_DRIVER_H*/
-
-
-

@@ -72,8 +72,8 @@ enum packet_types
    follwing data on success:
 
    R_DATAPKT = Pointer to the begin of the packet data.
-   R_DATALEN = Length of this data.  This has already been checked to fit 
-               into the buffer. 
+   R_DATALEN = Length of this data.  This has already been checked to fit
+               into the buffer.
    R_PKTTYPE = The packet type.
    R_NTOTAL  = The total number of bytes of this packet
 
@@ -91,11 +91,11 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
 
   if (!len)
     return gpg_error (GPG_ERR_NO_DATA);
-  
+
   ctb = *buf++; len--;
   if ( !(ctb & 0x80) )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid CTB. */
-  
+
   pktlen = 0;
   if ((ctb & 0x40))  /* New style (OpenPGP) CTB.  */
     {
@@ -108,7 +108,7 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
       if ( c < 192 )
         pktlen = c;
       else if ( c < 224 )
-        { 
+        {
           pktlen = (c - 192) * 256;
           if (!len)
             return gpg_error (GPG_ERR_INV_PACKET); /* No 2nd length byte. */
@@ -150,7 +150,7 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
   switch (pkttype)
     {
     case PKT_SIGNATURE:
-    case PKT_SECRET_KEY:	
+    case PKT_SECRET_KEY:
     case PKT_PUBLIC_KEY:
     case PKT_SECRET_SUBKEY:
     case PKT_MARKER:
@@ -166,9 +166,9 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
       return gpg_error (GPG_ERR_UNEXPECTED);
     }
 
-  if (pktlen == 0xffffffff) 
+  if (pktlen == 0xffffffff)
       return gpg_error (GPG_ERR_INV_PACKET);
-  
+
   if (pktlen > len)
     return gpg_error (GPG_ERR_INV_PACKET); /* Packet length header too long. */
 
@@ -207,14 +207,14 @@ parse_key (const unsigned char *data, size_t datalen,
   version = *data++; datalen--;
   if (version < 2 || version > 4 )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid version. */
-  
+
   timestamp = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));
   data +=4; datalen -=4;
 
   if (version < 4)
     {
       unsigned short ndays;
-      
+
       if (datalen < 2)
         return gpg_error (GPG_ERR_INV_PACKET);
       ndays = ((data[0]<<8)|(data[1]));
@@ -234,7 +234,7 @@ parse_key (const unsigned char *data, size_t datalen,
     case 1:
     case 2:
     case 3: /* RSA */
-      npkey = 2; 
+      npkey = 2;
       break;
     case 16:
     case 20: /* Elgamal */
@@ -256,7 +256,7 @@ parse_key (const unsigned char *data, size_t datalen,
   for (i=0; i < npkey; i++ )
     {
       unsigned int nbits, nbytes;
-      
+
       if (datalen < 2)
         return gpg_error (GPG_ERR_INV_PACKET);
       nbits = ((data[0]<<8)|(data[1]));
@@ -266,14 +266,14 @@ parse_key (const unsigned char *data, size_t datalen,
         return gpg_error (GPG_ERR_INV_PACKET);
       /* For use by v3 fingerprint calculation we need to know the RSA
          modulus and exponent. */
-      if (i==0) 
+      if (i==0)
         {
-          mpi_n = data; 
+          mpi_n = data;
           mpi_n_len = nbytes;
         }
       else if (i==1)
         mpi_e_len = nbytes;
-        
+
       data += nbytes; datalen -= nbytes;
     }
   n = data - data_start;
@@ -293,12 +293,12 @@ parse_key (const unsigned char *data, size_t datalen,
       memcpy (ki->fpr, gcry_md_read (md, 0), 16);
       gcry_md_close (md);
       ki->fprlen = 16;
-      
+
       if (mpi_n_len < 8)
         {
           /* Moduli less than 64 bit are out of the specs scope.  Zero
              them out becuase this is what gpg does too. */
-          memset (ki->keyid, 0, 8); 
+          memset (ki->keyid, 0, 8);
         }
       else
         memcpy (ki->keyid, mpi_n + mpi_n_len - 8, 8);
@@ -359,7 +359,7 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
   int first = 1;
   struct _keybox_openpgp_key_info *k, **ktail = NULL;
   struct _keybox_openpgp_uid_info *u, **utail = NULL;
-  
+
   memset (info, 0, sizeof *info);
   if (nparsed)
     *nparsed = 0;
@@ -386,7 +386,7 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
         }
       else if (pkttype == PKT_PUBLIC_KEY || pkttype == PKT_SECRET_KEY)
         break; /* Next keyblock encountered - ready. */
-      
+
       if (nparsed)
         *nparsed += n;
 
@@ -424,7 +424,7 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
           if (err)
             break;
         }
-      else if( pkttype == PKT_PUBLIC_SUBKEY && datalen && *data == '#' ) 
+      else if( pkttype == PKT_PUBLIC_SUBKEY && datalen && *data == '#' )
         {
           /* Early versions of GnuPG used old PGP comment packets;
            * luckily all those comments are prefixed by a hash
@@ -488,7 +488,7 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
 
               if (pkttype == PKT_PUBLIC_KEY || pkttype == PKT_SECRET_KEY)
                 break; /* Next keyblock encountered - ready. */
-              
+
               if (nparsed)
                 *nparsed += n;
             }

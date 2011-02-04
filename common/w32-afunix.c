@@ -105,20 +105,20 @@ _w32_sock_connect (int sockfd, struct sockaddr *addr, int addrlen)
   int ret;
 
   (void)addrlen;
-      
+
   unaddr = (struct sockaddr_un *)addr;
   if (read_port_and_nonce (unaddr->sun_path, &port, nonce))
     return -1;
-      
+
   myaddr.sin_family = AF_INET;
-  myaddr.sin_port = htons (port); 
+  myaddr.sin_port = htons (port);
   myaddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-  
+
   /* Set return values.  */
   unaddr->sun_family = myaddr.sin_family;
   unaddr->sun_port = myaddr.sin_port;
   unaddr->sun_addr.s_addr = myaddr.sin_addr.s_addr;
-  
+
   ret = connect (sockfd, (struct sockaddr *)&myaddr, sizeof myaddr);
   if (!ret)
     {

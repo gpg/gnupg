@@ -33,8 +33,8 @@
           u32  Length of the entire header.  This includes all bytes
                starting at the packet type and ending with the last
                padding byte of the header.
-          u8   Number of copies of this header (1..255). 
-          u8   Number of copies of this header at the end of the 
+          u8   Number of copies of this header (1..255).
+          u8   Number of copies of this header at the end of the
                container (usually 0).
           b6   reserved
    n bytes: OpenPGP encrypted and optionally signed message.
@@ -55,7 +55,7 @@
                 b10  Value: "GnuPG/PAD\x00".
                 b(n) Padding stuff.
             Given this structure the minimum padding is 16 bytes.
-   
+
    n bytes: File system container.
    (optionally followed by copies on the header).
 */

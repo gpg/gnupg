@@ -32,7 +32,7 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#include <unistd.h> 
+#include <unistd.h>
 #include <fcntl.h>
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
@@ -40,7 +40,7 @@
 #undef USE_GNU_PTH
 #endif
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
 #include <pth.h>
 #endif
 #include <sys/wait.h>
@@ -64,7 +64,7 @@
    and some are not.  However we want to use pth_fork and pth_waitpid
    here. Using a weak symbol works but is not portable - we should
    provide a an explicit dummy pth module instead of using the
-   pragma.  */ 
+   pragma.  */
 #pragma weak pth_fork
 #pragma weak pth_waitpid
 
@@ -181,7 +181,7 @@ get_all_open_fds (void)
   array = calloc (narray, sizeof *array);
   if (!array)
     return NULL;
-  
+
   /* Note:  The list we return is ordered.  */
   for (idx=0, fd=0; fd < max_fd; fd++)
     if (!(fstat (fd, &statbuf) == -1 && errno == EBADF))
@@ -258,7 +258,7 @@ do_exec (const char *pgmname, const char *argv[],
 
   /* Close all other files. */
   close_all_fds (3, NULL);
-  
+
   if (preexec)
     preexec ();
   execv (pgmname, arg_list);
@@ -328,7 +328,7 @@ create_pipe_and_estream (int filedes[2], estream_t *r_fp,
     }
   return 0;
 }
-  
+
 
 
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
@@ -388,7 +388,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   *pid = pth_fork? pth_fork () : fork ();
 #else
   *pid = fork ();
@@ -415,7 +415,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
   if (!*pid)
-    { 
+    {
       /* This is the child. */
       gcry_control (GCRYCTL_TERM_SECMEM);
       es_fclose (outfp);
@@ -454,7 +454,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 {
   gpg_error_t err;
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   *pid = pth_fork? pth_fork () : fork ();
 #else
   *pid = fork ();
@@ -467,7 +467,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
     }
 
   if (!*pid)
-    { 
+    {
       gcry_control (GCRYCTL_TERM_SECMEM);
       /* Run child. */
       do_exec (pgmname, argv, infd, outfd, errfd, NULL);
@@ -501,7 +501,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
              && errno == EINTR)
         ;
     }
-  
+
   if (i == (pid_t)(-1))
     {
       ec = gpg_err_code_from_errno (errno);
@@ -531,7 +531,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
       log_error (_("error running `%s': terminated\n"), pgmname);
       ec = GPG_ERR_GENERAL;
     }
-  else 
+  else
     {
       if (r_exitcode)
         *r_exitcode = 0;
@@ -569,7 +569,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   if (access (pgmname, X_OK))
     return gpg_error_from_syserror ();
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   pid = pth_fork? pth_fork () : fork ();
 #else
   pid = fork ();
@@ -596,12 +596,12 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       if (envp)
         for (i=0; envp[i]; i++)
           putenv (xstrdup (envp[i]));
-      
+
       do_exec (pgmname, argv, -1, -1, -1, NULL);
 
       /*NOTREACHED*/
     }
-  
+
   if (waitpid (pid, NULL, 0) == -1)
     log_error ("waitpid failed in gnupg_spawn_process_detached: %s",
                strerror (errno));
@@ -618,6 +618,6 @@ gnupg_kill_process (pid_t pid)
 {
   if (pid != (pid_t)(-1))
     {
-      kill (pid, SIGTERM); 
+      kill (pid, SIGTERM);
     }
 }

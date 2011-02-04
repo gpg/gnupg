@@ -107,7 +107,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
     case 302:
       {
         const char *s = http_get_header (http, "Location");
-        
+
         log_info (_("URL `%s' redirected to `%s' (%u)\n"),
                   request, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
@@ -197,7 +197,7 @@ armor_data (char **r_string, const void *data, size_t datalen)
       es_fclose (fp);
       return err;
     }
-  
+
   es_rewind (fp);
   if (es_read (fp, buffer, length, &nread))
     {
@@ -207,7 +207,7 @@ armor_data (char **r_string, const void *data, size_t datalen)
     }
   buffer[nread] = 0;
   es_fclose (fp);
-  
+
   *r_string = buffer;
   return 0;
 }
@@ -252,7 +252,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       pattern = fprbuf;
       break;
     case KEYDB_SEARCH_MODE_LONG_KID:
-      snprintf (fprbuf, sizeof fprbuf, "0x%08lX%08lX", 
+      snprintf (fprbuf, sizeof fprbuf, "0x%08lX%08lX",
                 (ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       pattern = fprbuf;
       break;
@@ -268,7 +268,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
-  
+
   /* Map scheme and port.  */
   if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
     {
@@ -289,7 +289,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   {
     char *searchkey;
 
-    hostport = strconcat (scheme, "://", 
+    hostport = strconcat (scheme, "://",
                           *uri->host? uri->host: "localhost",
                           ":", portstr, NULL);
     if (!hostport)
@@ -316,7 +316,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
         goto leave;
       }
   }
-  
+
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
   if (err)
@@ -395,7 +395,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
-  
+
   /* Map scheme and port.  */
   if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
     {
@@ -414,7 +414,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   /* Build the request string.  */
   {
-    hostport = strconcat (scheme, "://", 
+    hostport = strconcat (scheme, "://",
                           *uri->host? uri->host: "localhost",
                           ":", portstr, NULL);
     if (!hostport)
@@ -433,7 +433,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
         goto leave;
       }
   }
-  
+
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
   if (err)
@@ -527,7 +527,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   armored = NULL;
 
   /* Build the request string.  */
-  hostport = strconcat (scheme, "://", 
+  hostport = strconcat (scheme, "://",
                         *uri->host? uri->host: "localhost",
                         ":", portstr, NULL);
   if (!hostport)
@@ -542,7 +542,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  
+
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, put_post_cb, &parm, &fp);
   if (err)

@@ -112,7 +112,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       *flag_off = 6;
       *flag_size = 2;
       break;
-    
+
     case KEYBOX_FLAG_OWNERTRUST:
     case KEYBOX_FLAG_VALIDITY:
     case KEYBOX_FLAG_CREATED_AT:
@@ -127,7 +127,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       if (pos+2 > length)
         return GPG_ERR_INV_OBJ; /* Out of bounds. */
       /* Serial number. */
-      nserial = get16 (buffer+pos); 
+      nserial = get16 (buffer+pos);
       pos += 2 + nserial;
       if (pos+4 > length)
         return GPG_ERR_INV_OBJ; /* Out of bounds. */
@@ -135,7 +135,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       nuids = get16 (buffer + pos); pos += 2;
       uidinfolen = get16 (buffer + pos); pos += 2;
       if (uidinfolen < 12 )
-        return GPG_ERR_INV_OBJ; 
+        return GPG_ERR_INV_OBJ;
       pos += uidinfolen*nuids;
       if (pos+4 > length)
         return GPG_ERR_INV_OBJ ; /* Out of bounds. */
@@ -143,7 +143,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       nsigs = get16 (buffer + pos); pos += 2;
       siginfolen = get16 (buffer + pos); pos += 2;
       if (siginfolen < 4 )
-        return GPG_ERR_INV_OBJ; 
+        return GPG_ERR_INV_OBJ;
       pos += siginfolen*nsigs;
       if (pos+1+1+2+4+4+4+4 > length)
         return GPG_ERR_INV_OBJ ; /* Out of bounds. */
@@ -190,7 +190,7 @@ get_flag_from_image (const unsigned char *buffer, size_t length,
       case 4: *value = get32 (buffer + pos); break;
       default: ec = GPG_ERR_BUG; break;
       }
-  
+
   return ec;
 }
 
@@ -218,7 +218,7 @@ blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
     return 0; /* out of bounds */
 
   /*serial*/
-  nserial = get16 (buffer+pos); 
+  nserial = get16 (buffer+pos);
   off = pos + 2;
   if (off+nserial > length)
     return 0; /* out of bounds */
@@ -316,7 +316,7 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
     return 0; /* out of bounds */
 
   /*serial*/
-  nserial = get16 (buffer+pos); 
+  nserial = get16 (buffer+pos);
   pos += 2 + nserial;
   if (pos+4 > length)
     return 0; /* out of bounds */
@@ -332,7 +332,7 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
   if (idx < 0)
     { /* compare all names starting with that (negated) index */
       idx = -idx;
-      
+
       for ( ;idx < nuids; idx++)
         {
           size_t mypos = pos;
@@ -409,7 +409,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
     return 0; /* out of bounds */
 
   /*serial*/
-  nserial = get16 (buffer+pos); 
+  nserial = get16 (buffer+pos);
   pos += 2 + nserial;
   if (pos+4 > length)
     return 0; /* out of bounds */
@@ -428,7 +428,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
   for (idx=1 ;idx < nuids; idx++)
     {
       size_t mypos = pos;
-      
+
       mypos += idx*uidinfolen;
       off = get32 (buffer+mypos);
       len = get32 (buffer+mypos+4);
@@ -439,7 +439,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
       len--; /* one back */
       if ( len < 3 || buffer[off+len] != '>')
         continue; /* not a proper email address */
-      len--; 
+      len--;
       if (substr)
         {
           if (ascii_memcasemem (buffer+off+1, len, name, namelen))
@@ -474,7 +474,7 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
   unsigned char array[20];
   unsigned char *rcp;
   size_t n;
-  
+
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
     return 0; /* Too short. */
@@ -527,7 +527,7 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
 
 
 /*
-  The has_foo functions are used as helpers for search 
+  The has_foo functions are used as helpers for search
 */
 static inline int
 has_short_kid (KEYBOXBLOB blob, u32 lkid)
@@ -599,7 +599,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
     return 0;
 
   namelen = strlen (name);
-  
+
   return (blob_cmp_sn (blob, sn, snlen)
           && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0));
 }
@@ -678,7 +678,7 @@ release_sn_array (struct sn_array_s *array, size_t size)
 
 */
 
-int 
+int
 keybox_search_reset (KEYBOX_HANDLE hd)
 {
   if (!hd)
@@ -697,13 +697,13 @@ keybox_search_reset (KEYBOX_HANDLE hd)
     }
   hd->error = 0;
   hd->eof = 0;
-  return 0;   
+  return 0;
 }
 
 
 /* Note: When in ephemeral mode the search function does visit all
    blobs but in standard mode, blobs flagged as ephemeral are ignored.  */
-int 
+int
 keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 {
   int rc;
@@ -722,18 +722,18 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       hd->found.blob = NULL;
     }
 
-  if (hd->error)  
+  if (hd->error)
     return hd->error; /* still in error state */
-  if (hd->eof)  
+  if (hd->eof)
     return -1; /* still EOF */
 
   /* figure out what information we need */
   need_words = any_skip = 0;
-  for (n=0; n < ndesc; n++) 
+  for (n=0; n < ndesc; n++)
     {
-      switch (desc[n].mode) 
+      switch (desc[n].mode)
         {
-        case KEYDB_SEARCH_MODE_WORDS: 
+        case KEYDB_SEARCH_MODE_WORDS:
           need_words = 1;
           break;
         case KEYDB_SEARCH_MODE_FIRST:
@@ -743,7 +743,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         default:
           break;
 	}
-      if (desc[n].skipfnc) 
+      if (desc[n].skipfnc)
         any_skip = 1;
       if (desc[n].snlen == -1 && !sn_array)
         {
@@ -776,7 +776,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       int i, odd;
       size_t snlen;
 
-      for (n=0; n < ndesc; n++) 
+      for (n=0; n < ndesc; n++)
         {
           if (!desc[n].sn)
             ;
@@ -844,14 +844,14 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       if (!hd->ephemeral && (blobflags & 2))
         continue; /* Not in ephemeral mode but blob is flagged ephemeral.  */
 
-      for (n=0; n < ndesc; n++) 
+      for (n=0; n < ndesc; n++)
         {
           switch (desc[n].mode)
             {
-            case KEYDB_SEARCH_MODE_NONE: 
+            case KEYDB_SEARCH_MODE_NONE:
               never_reached ();
               break;
-            case KEYDB_SEARCH_MODE_EXACT: 
+            case KEYDB_SEARCH_MODE_EXACT:
               if (has_subject_or_alt (blob, desc[n].u.name, 0))
                 goto found;
               break;
@@ -868,7 +868,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAILEND:
-            case KEYDB_SEARCH_MODE_WORDS: 
+            case KEYDB_SEARCH_MODE_WORDS:
               never_reached (); /* not yet implemented */
               break;
             case KEYDB_SEARCH_MODE_ISSUER:
@@ -890,7 +890,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               if (has_subject (blob, desc[n].u.name))
                 goto found;
               break;
-            case KEYDB_SEARCH_MODE_SHORT_KID: 
+            case KEYDB_SEARCH_MODE_SHORT_KID:
               if (has_short_kid (blob, desc[n].u.kid[1]))
                 goto found;
               break;
@@ -907,20 +907,20 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               if (has_keygrip (blob, desc[n].u.grip))
                 goto found;
               break;
-            case KEYDB_SEARCH_MODE_FIRST: 
+            case KEYDB_SEARCH_MODE_FIRST:
               goto found;
               break;
-            case KEYDB_SEARCH_MODE_NEXT: 
+            case KEYDB_SEARCH_MODE_NEXT:
               goto found;
               break;
-            default: 
+            default:
               rc = gpg_error (GPG_ERR_INV_VALUE);
               goto found;
             }
 	}
       continue;
-    found:  
-      for (n=any_skip?0:ndesc; n < ndesc; n++) 
+    found:
+      for (n=any_skip?0:ndesc; n < ndesc; n++)
         {
 /*            if (desc[n].skipfnc */
 /*                && desc[n].skipfnc (desc[n].skipfncvalue, aki, NULL)) */
@@ -929,7 +929,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       if (n == ndesc)
         break; /* got it */
     }
-  
+
   if (!rc)
     {
       hd->found.blob = blob;
@@ -939,7 +939,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       _keybox_release_blob (blob);
       hd->eof = 1;
     }
-  else 
+  else
     {
       _keybox_release_blob (blob);
       hd->error = rc;
@@ -1042,4 +1042,3 @@ keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)
   ec = get_flag_from_image (buffer, length, what, value);
   return ec? gpg_error (ec):0;
 }
-

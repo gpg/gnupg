@@ -60,7 +60,7 @@
 
 
 /* Control structure per connection. */
-struct server_local_s 
+struct server_local_s
 {
   /* Data used to associate an Assuan context with local server data */
   assuan_context_t assuan_ctx;
@@ -266,11 +266,11 @@ skip_options (char *line)
 
 
 /* Common code for get_cert_local and get_issuer_cert_local. */
-static ksba_cert_t 
+static ksba_cert_t
 do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
 {
   unsigned char *value;
-  size_t valuelen; 
+  size_t valuelen;
   int rc;
   char *buf;
   ksba_cert_t cert;
@@ -292,7 +292,7 @@ do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
                  command, gpg_strerror (rc));
       return NULL;
     }
-  
+
   if (!valuelen)
     {
       xfree (value);
@@ -321,7 +321,7 @@ do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
    return the current target certificate. Either return the certificate
    in a KSBA object or NULL if it is not available.
 */
-ksba_cert_t 
+ksba_cert_t
 get_cert_local (ctrl_t ctrl, const char *name)
 {
   if (!ctrl || !ctrl->server_local || !ctrl->server_local->assuan_ctx)
@@ -333,15 +333,15 @@ get_cert_local (ctrl_t ctrl, const char *name)
   return do_get_cert_local (ctrl, name, "SENDCERT");
 
 }
-       
+
 /* Ask back to return the issuing certificate for name, given as a
    regular gpgsm certificate indentificates (e.g. fingerprint or one
    of the other methods).  Alternatively, NULL may be used for NAME to
    return thecurrent target certificate. Either return the certificate
    in a KSBA object or NULL if it is not available.
-   
+
 */
-ksba_cert_t 
+ksba_cert_t
 get_issuing_cert_local (ctrl_t ctrl, const char *name)
 {
   if (!ctrl || !ctrl->server_local || !ctrl->server_local->assuan_ctx)
@@ -355,11 +355,11 @@ get_issuing_cert_local (ctrl_t ctrl, const char *name)
 
 /* Ask back to return a certificate with subject NAME and a
    subjectKeyIdentifier of KEYID. */
-ksba_cert_t 
+ksba_cert_t
 get_cert_local_ski (ctrl_t ctrl, const char *name, ksba_sexp_t keyid)
 {
   unsigned char *value;
-  size_t valuelen; 
+  size_t valuelen;
   int rc;
   char *buf;
   ksba_cert_t cert;
@@ -404,7 +404,7 @@ get_cert_local_ski (ctrl_t ctrl, const char *name, ksba_sexp_t keyid)
                  gpg_strerror (rc));
       return NULL;
     }
-  
+
   if (!valuelen)
     {
       xfree (value);
@@ -433,14 +433,14 @@ gpg_error_t
 get_istrusted_from_client (ctrl_t ctrl, const char *hexfpr)
 {
   unsigned char *value;
-  size_t valuelen; 
+  size_t valuelen;
   int rc;
   char request[100];
 
   if (!ctrl || !ctrl->server_local || !ctrl->server_local->assuan_ctx
       || !hexfpr)
     return gpg_error (GPG_ERR_INV_ARG);
-  
+
   snprintf (request, sizeof request, "ISTRUSTED %s", hexfpr);
   rc = assuan_inquire (ctrl->server_local->assuan_ctx, request,
                        &value, &valuelen, 100);
@@ -472,7 +472,7 @@ inquire_cert_and_load_crl (assuan_context_t ctx)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
   ksba_cert_t cert = NULL;
 
   err = assuan_inquire( ctx, "SENDCERT", &value, &valuelen, 0);
@@ -528,7 +528,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   return 0;
 }
 
-static const char hlp_ldapserver[] = 
+static const char hlp_ldapserver[] =
   "LDAPSERVER <data>\n"
   "\n"
   "Add a new LDAP server to the list of configured LDAP servers.\n"
@@ -557,7 +557,7 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_isvalid[] = 
+static const char hlp_isvalid[] =
   "ISVALID [--only-ocsp] [--force-default-responder]"
   " <certificate_id>|<certificate_fpr>\n"
   "\n"
@@ -590,7 +590,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
   int ocsp_mode = 0;
   int only_ocsp;
   int force_default_responder;
-  
+
   only_ocsp = has_option (line, "--only-ocsp");
   force_default_responder = has_option (line, "--force-default-responder");
   line = skip_options (line);
@@ -636,7 +636,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
-  else 
+  else
     {
       switch (crl_cache_isvalid (ctrl,
                                  issuerhash, serialno,
@@ -648,7 +648,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
         case CRL_CACHE_INVALID:
           err = gpg_error (GPG_ERR_CERT_REVOKED);
           break;
-        case CRL_CACHE_DONTKNOW: 
+        case CRL_CACHE_DONTKNOW:
           if (did_inquire)
             err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
           else if (!(err = inquire_cert_and_load_crl (ctx)))
@@ -657,7 +657,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
               goto again;
             }
           break;
-        case CRL_CACHE_CANTUSE: 
+        case CRL_CACHE_CANTUSE:
           err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
           break;
         default:
@@ -675,7 +675,7 @@ cmd_isvalid (assuan_context_t ctx, char *line)
    fingerprint consists of valid characters and prints and error
    message if it does not and returns NULL.  Fingerprints are
    considered optional and thus no explicit error is returned. NULL is
-   also returned if there is no fingerprint at all available. 
+   also returned if there is no fingerprint at all available.
    FPR must be a caller provided buffer of at least 20 bytes.
 
    Note that colons within the fingerprint are allowed to separate 2
@@ -707,7 +707,7 @@ get_fingerprint_from_line (const char *line, unsigned char *fpr)
 
 
 
-static const char hlp_checkcrl[] = 
+static const char hlp_checkcrl[] =
   "CHECKCRL [<fingerprint>]\n"
   "\n"
   "Check whether the certificate with FINGERPRINT (SHA-1 hash of the\n"
@@ -737,14 +737,14 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
 
   fpr = get_fingerprint_from_line (line, fprbuffer);
   cert = fpr? get_cert_byfpr (fpr) : NULL;
-  
+
   if (!cert)
     {
       /* We do not have this certificate yet or the fingerprint has
          not been given.  Inquire it from the client.  */
       unsigned char *value = NULL;
-      size_t valuelen; 
-      
+      size_t valuelen;
+
       err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
                            &value, &valuelen, MAX_CERT_LENGTH);
       if (err)
@@ -752,7 +752,7 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
           log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-  
+
       if (!valuelen) /* No data returned; return a comprehensible error. */
         err = gpg_error (GPG_ERR_MISSING_CERT);
       else
@@ -782,7 +782,7 @@ cmd_checkcrl (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_checkocsp[] = 
+static const char hlp_checkocsp[] =
   "CHECKOCSP [--force-default-responder] [<fingerprint>]\n"
   "\n"
   "Check whether the certificate with FINGERPRINT (SHA-1 hash of the\n"
@@ -817,20 +817,20 @@ cmd_checkocsp (assuan_context_t ctx, char *line)
   unsigned char fprbuffer[20], *fpr;
   ksba_cert_t cert;
   int force_default_responder;
-  
+
   force_default_responder = has_option (line, "--force-default-responder");
   line = skip_options (line);
 
   fpr = get_fingerprint_from_line (line, fprbuffer);
   cert = fpr? get_cert_byfpr (fpr) : NULL;
-  
+
   if (!cert)
     {
       /* We do not have this certificate yet or the fingerprint has
          not been given.  Inquire it from the client.  */
       unsigned char *value = NULL;
-      size_t valuelen; 
-      
+      size_t valuelen;
+
       err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
                            &value, &valuelen, MAX_CERT_LENGTH);
       if (err)
@@ -838,7 +838,7 @@ cmd_checkocsp (assuan_context_t ctx, char *line)
           log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
           goto leave;
         }
-  
+
       if (!valuelen) /* No data returned; return a comprehensible error. */
         err = gpg_error (GPG_ERR_MISSING_CERT);
       else
@@ -872,7 +872,7 @@ lookup_cert_by_url (assuan_context_t ctx, const char *url)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
 
   /* Fetch single certificate given it's URL.  */
   err = fetch_cert_by_url (ctrl, url, &value, &valuelen);
@@ -883,12 +883,12 @@ lookup_cert_by_url (assuan_context_t ctx, const char *url)
     }
 
   /* Send the data, flush the buffer and then send an END. */
-  err = assuan_send_data (ctx, value, valuelen);      
+  err = assuan_send_data (ctx, value, valuelen);
   if (!err)
     err = assuan_send_data (ctx, NULL, 0);
   if (!err)
     err = assuan_write_line (ctx, "END");
-  if (err) 
+  if (err)
     {
       log_error (_("error sending data: %s\n"), gpg_strerror (err));
       goto leave;
@@ -914,13 +914,13 @@ return_one_cert (void *opaque, ksba_cert_t cert)
     err = gpg_error (GPG_ERR_INV_CERT_OBJ);
   else
     {
-      err = assuan_send_data (ctx, der, derlen);      
+      err = assuan_send_data (ctx, der, derlen);
       if (!err)
         err = assuan_send_data (ctx, NULL, 0);
       if (!err)
         err = assuan_write_line (ctx, "END");
     }
-  if (err) 
+  if (err)
     log_error (_("error sending data: %s\n"), gpg_strerror (err));
   return err;
 }
@@ -929,7 +929,7 @@ return_one_cert (void *opaque, ksba_cert_t cert)
 /* Lookup certificates from the internal cache or using the ldap
    servers. */
 static int
-lookup_cert_by_pattern (assuan_context_t ctx, char *line, 
+lookup_cert_by_pattern (assuan_context_t ctx, char *line,
                         int single, int cache_only)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
@@ -940,7 +940,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
   int count = 0;
   int local_count = 0;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
   struct ldapserver_iter ldapserver_iter;
   cert_fetch_context_t fetch_context;
   int any_no_data = 0;
@@ -950,7 +950,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
     {
       while (*p && *p != ' ')
         p++;
-      if (*p) 
+      if (*p)
         *p++ = 0;
 
       if (*line)
@@ -980,7 +980,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
           if (!err)
             local_count++;
           if (!err && single)
-            goto ready; 
+            goto ready;
 
           if (gpg_err_code (err) == GPG_ERR_NO_DATA)
             {
@@ -1007,9 +1007,9 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
        ldapserver_iter_next (&ldapserver_iter))
     {
       ldap_server_t ldapserver = ldapserver_iter.server;
-      
+
       if (DBG_LOOKUP)
-        log_debug ("cmd_lookup: trying %s:%d base=%s\n", 
+        log_debug ("cmd_lookup: trying %s:%d base=%s\n",
                    ldapserver->host, ldapserver->port,
                    ldapserver->base?ldapserver->base : "[default]");
 
@@ -1063,25 +1063,25 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
               end_cert_fetch (fetch_context);
               goto leave;
             }
-          
+
           if (DBG_LOOKUP)
             log_debug ("cmd_lookup: returning one cert%s\n",
                        truncated? " (truncated)":"");
-          
+
           /* Send the data, flush the buffer and then send an END line
              as a certificate delimiter. */
-          err = assuan_send_data (ctx, value, valuelen);      
+          err = assuan_send_data (ctx, value, valuelen);
           if (!err)
             err = assuan_send_data (ctx, NULL, 0);
           if (!err)
             err = assuan_write_line (ctx, "END");
-          if (err) 
+          if (err)
             {
               log_error (_("error sending data: %s\n"), gpg_strerror (err));
               end_cert_fetch (fetch_context);
               goto leave;
             }
-          
+
           if (++count >= opt.max_replies )
             {
               truncation_forced = 1;
@@ -1100,7 +1100,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
       char str[50];
 
       sprintf (str, "%d", count);
-      assuan_write_status (ctx, "TRUNCATED", str);    
+      assuan_write_status (ctx, "TRUNCATED", str);
     }
 
   if (!err && !count && !local_count && any_no_data)
@@ -1112,7 +1112,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
 }
 
 
-static const char hlp_lookup[] = 
+static const char hlp_lookup[] =
   "LOOKUP [--url] [--single] [--cache-only] <pattern>\n"
   "\n"
   "Lookup certificates matching PATTERN. With --url the pattern is\n"
@@ -1186,7 +1186,7 @@ cmd_loadcrl (assuan_context_t ctx, char *line)
                    line, gpg_strerror (err));
       else
         {
-          err = crl_cache_insert (ctrl, line, reader); 
+          err = crl_cache_insert (ctrl, line, reader);
           if (err)
             log_error (_("processing CRL from `%s' failed: %s\n"),
                        line, gpg_strerror (err));
@@ -1239,7 +1239,7 @@ cmd_listcrls (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_cachecert[] = 
+static const char hlp_cachecert[] =
   "CACHECERT\n"
   "\n"
   "Put a certificate into the internal cache.  This command might be\n"
@@ -1259,10 +1259,10 @@ cmd_cachecert (assuan_context_t ctx, char *line)
   gpg_error_t err;
   ksba_cert_t cert = NULL;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
 
   (void)line;
-      
+
   err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
                        &value, &valuelen, MAX_CERT_LENGTH);
   if (err)
@@ -1270,7 +1270,7 @@ cmd_cachecert (assuan_context_t ctx, char *line)
       log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
-  
+
   if (!valuelen) /* No data returned; return a comprehensible error. */
     err = gpg_error (GPG_ERR_MISSING_CERT);
   else
@@ -1310,10 +1310,10 @@ cmd_validate (assuan_context_t ctx, char *line)
   gpg_error_t err;
   ksba_cert_t cert = NULL;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
 
   (void)line;
-    
+
   err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
                        &value, &valuelen, MAX_CERT_LENGTH);
   if (err)
@@ -1321,7 +1321,7 @@ cmd_validate (assuan_context_t ctx, char *line)
       log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
-  
+
   if (!valuelen) /* No data returned; return a comprehensible error. */
     err = gpg_error (GPG_ERR_MISSING_CERT);
   else
@@ -1337,7 +1337,7 @@ cmd_validate (assuan_context_t ctx, char *line)
   /* If we have this certificate already in our cache, use the cached
      version for validation because this will take care of any cached
      results. */
-  { 
+  {
     unsigned char fpr[20];
     ksba_cert_t tmpcert;
 
@@ -1377,7 +1377,7 @@ cmd_keyserver (assuan_context_t ctx, char *line)
   int clear_flag, add_flag;
   uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
                              is always initialized.  */
-      
+
   clear_flag = has_option (line, "--clear");
   line = skip_options (line);
   add_flag = !!*line;
@@ -1408,11 +1408,11 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       item->next = ctrl->keyservers;
       ctrl->keyservers = item;
     }
-  
+
   if (!add_flag && !clear_flag) /* List  configured keyservers.  */
     {
       uri_item_t u;
-      
+
       for (u=ctrl->keyservers; u; u = u->next)
         dirmngr_status (ctrl, "KEYSERVER", u->uri, NULL);
     }
@@ -1563,7 +1563,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   unsigned char *value = NULL;
-  size_t valuelen; 
+  size_t valuelen;
   unsigned char *info = NULL;
   size_t infolen;
 
@@ -1578,7 +1578,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
       log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
       goto leave;
     }
-  
+
   if (!valuelen) /* No data returned; return a comprehensible error. */
     {
       err = gpg_error (GPG_ERR_MISSING_CERT);
@@ -1597,7 +1597,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
   /* Send the key.  */
   err = ks_action_put (ctrl, value, valuelen);
-  
+
  leave:
   xfree (info);
   xfree (value);
@@ -1607,7 +1607,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_getinfo[] = 
+static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
   "Multi purpose command to return certain information.  \n"
@@ -1662,7 +1662,7 @@ cmd_killdirmngr (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void)line;
-  
+
   if (opt.system_daemon)
     {
       if (opt.system_service)
@@ -1795,7 +1795,7 @@ start_command_handler (assuan_fd_t fd)
       xfree (ctrl);
       return;
     }
-    
+
   dirmngr_init_default_ctrl (ctrl);
 
   rc = assuan_new (&ctx);
@@ -1809,7 +1809,7 @@ start_command_handler (assuan_fd_t fd)
   if (fd == ASSUAN_INVALID_FD)
     {
       assuan_fd_t filedes[2];
-      
+
       filedes[0] = assuan_fdopen (0);
       filedes[1] = assuan_fdopen (1);
       rc = assuan_init_pipe_server (ctx, filedes);
@@ -1863,7 +1863,7 @@ start_command_handler (assuan_fd_t fd)
   assuan_register_option_handler (ctx, option_handler);
   assuan_register_reset_notify (ctx, reset_notify);
 
-  for (;;) 
+  for (;;)
     {
       rc = assuan_accept (ctx);
       if (rc == -1)
@@ -1893,7 +1893,7 @@ start_command_handler (assuan_fd_t fd)
           continue;
         }
     }
-  
+
   ldap_wrapper_connection_cleanup (ctrl);
 
   ldapserver_list_free (ctrl->server_local->ldapservers);
@@ -1934,8 +1934,8 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
       assuan_context_t ctx = ctrl->server_local->assuan_ctx;
       char buf[950], *p;
       size_t n;
-      
-      p = buf; 
+
+      p = buf;
       n = 0;
       while ( (text = va_arg (arg_ptr, const char *)) )
         {

@@ -523,7 +523,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	}
 
   /* Build a list of all signators.
-   *    
+   *
    * We use the CERT flag to request the primary which must always
    * be one which is capable of signing keys.  I can't see a reason
    * why to sign keys using a subkey.  Implementation of USAGE_CERT
@@ -542,7 +542,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
       u32 duration = 0, timestamp = 0;
       byte trust_depth = 0, trust_value = 0;
 
-      if (local || nonrevocable || trust 
+      if (local || nonrevocable || trust
           || opt.cert_policy_url || opt.cert_notations)
 	force_v4 = 1;
 
@@ -983,14 +983,14 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	  if (local)
 	    {
 	      tty_printf ("\n");
-	      tty_printf 
+	      tty_printf
                 (_("The signature will be marked as non-exportable.\n"));
 	    }
 
 	  if (nonrevocable)
 	    {
 	      tty_printf ("\n");
-	      tty_printf 
+	      tty_printf
                 (_("The signature will be marked as non-revocable.\n"));
 	    }
 
@@ -1134,7 +1134,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
 
           pk = node->pkt->pkt.public_key;
           keyid_from_pk (pk, subid);
-          
+
           xfree (hexgrip);
           err = hexkeygrip_from_pk (pk, &hexgrip);
           if (err)
@@ -1165,7 +1165,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
     {
       if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	  || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-        { 
+        {
           char *desc;
 
           pk = node->pkt->pkt.public_key;
@@ -1175,11 +1175,11 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           err = hexkeygrip_from_pk (pk, &hexgrip);
           if (err)
             goto leave;
-          
+
           desc = gpg_format_keydesc (pk, 0, 1);
           err = agent_passwd (ctrl, hexgrip, desc, &cache_nonce, &passwd_nonce);
           xfree (desc);
-        
+
           if (err)
             log_log ((gpg_err_code (err) == GPG_ERR_CANCELED
                       || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
@@ -1509,7 +1509,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
   /* See whether we have a matching secret key.  */
   if (seckey_check)
-    { 
+    {
       have_seckey = !agent_probe_any_secret_key (ctrl, keyblock);
       if (have_seckey && !quiet)
 	tty_printf (_("Secret key is available.\n"));
@@ -1818,7 +1818,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    switch (count_selected_keys (keyblock))
 	      {
 	      case 0:
-		if (cpr_get_answer_is_yes 
+		if (cpr_get_answer_is_yes
                     ("keyedit.keytocard.use_primary",
                      /* TRANSLATORS: Please take care: This is about
                         moving the key and not about removing it.  */
@@ -1981,7 +1981,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	    if (!(n1 = count_selected_uids (keyblock)))
 	      tty_printf (_("You must select at least one user ID.\n"));
-	    else if (cpr_get_answer_is_yes 
+	    else if (cpr_get_answer_is_yes
                      ("keyedit.revoke.uid.okay",
                       n1 > 1 ? _("Really revoke all selected user IDs? (y/N) ")
 		      :        _("Really revoke this user ID? (y/N) ")))
@@ -2793,7 +2793,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	      if (pk->seckey_info->ivlen == 16
 		  && !memcmp (pk->seckey_info->iv,
                               "\xD2\x76\x00\x01\x24\x01", 6))
-		{	
+		{
                   /* This is an OpenPGP card. */
 		  for (i = 8; i < 14; i++)
 		    {
@@ -2803,7 +2803,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		    }
 		}
 	      else
-		{ 
+		{
                   /* Unknown card: Print all. */
 		  for (i = 0; i < pk->seckey_info->ivlen; i++)
 		    tty_printf ("%02X", pk->seckey_info->iv[i]);
@@ -3142,21 +3142,21 @@ menu_delsig (KBNODE pub_keyblock)
 
 	  if (valid)
 	    {
-	      okay = cpr_get_answer_yes_no_quit 
+	      okay = cpr_get_answer_yes_no_quit
                 ("keyedit.delsig.valid",
                  _("Delete this good signature? (y/N/q)"));
-              
+
 	      /* Only update trust if we delete a good signature.
 	         The other two cases do not affect trust. */
 	      if (okay)
 		update_trust = 1;
 	    }
 	  else if (inv_sig || other_err)
-	    okay = cpr_get_answer_yes_no_quit 
+	    okay = cpr_get_answer_yes_no_quit
               ("keyedit.delsig.invalid",
                _("Delete this invalid signature? (y/N/q)"));
 	  else if (no_key)
-	    okay = cpr_get_answer_yes_no_quit 
+	    okay = cpr_get_answer_yes_no_quit
               ("keyedit.delsig.unknown",
                _("Delete this unknown signature? (y/N/q)"));
 
@@ -3336,7 +3336,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 
       tty_printf ("\n");
 
-      answer = cpr_get_utf8 
+      answer = cpr_get_utf8
         ("keyedit.add_revoker",
          _("Enter the user ID of the designated revoker: "));
       if (answer[0] == '\0' || answer[0] == CONTROL_D)
@@ -3529,7 +3529,7 @@ menu_expire (KBNODE pub_keyblock)
 	      if ((mainkey && main_pk->version < 4)
 		  || (!mainkey && sub_pk->version < 4))
 		{
-		  log_info 
+		  log_info
                     (_("You can't change the expiration date of a v3 key\n"));
 		  return 0;
 		}
@@ -3824,7 +3824,7 @@ menu_set_primary_uid (KBNODE pub_keyblock)
 }
 
 
-/* 
+/*
  * Set preferences to new values for the selected user IDs
  */
 static int
@@ -3879,7 +3879,7 @@ menu_set_preferences (KBNODE pub_keyblock)
 		}
 	      else
 		{
-		  /* This is a selfsignature which is to be replaced 
+		  /* This is a selfsignature which is to be replaced
 		   * We have to ignore v3 signatures because they are
 		   * not able to carry the preferences.  */
 		  PKT_signature *newsig;
@@ -4006,7 +4006,7 @@ menu_set_keyserver_url (const char *url, KBNODE pub_keyblock)
 				  " ID \"%s\": ", user);
 		      tty_print_utf8_string (p, plen);
 		      tty_printf ("\n");
-		      if (!cpr_get_answer_is_yes 
+		      if (!cpr_get_answer_is_yes
                           ("keyedit.confirm_keyserver",
                            uri
                            ? _("Are you sure you want to replace it? (y/N) ")
@@ -4537,12 +4537,12 @@ ask_revoke_sig (KBNODE keyblock, KBNODE node)
       tty_printf (_("This signature expired on %s.\n"),
 		  expirestr_from_sig (sig));
       /* Use a different question so we can have different help text */
-      doit = cpr_get_answer_is_yes 
+      doit = cpr_get_answer_is_yes
         ("ask_revoke_sig.expired",
          _("Are you sure you still want to revoke it? (y/N) "));
     }
   else
-    doit = cpr_get_answer_is_yes 
+    doit = cpr_get_answer_is_yes
       ("ask_revoke_sig.one",
        _("Create a revocation certificate for this signature? (y/N) "));
 
@@ -4686,7 +4686,7 @@ menu_revsig (KBNODE keyblock)
   if (!any)
     return 0;			/* none selected */
 
-  if (!cpr_get_answer_is_yes 
+  if (!cpr_get_answer_is_yes
       ("ask_revoke_sig.okay",
        _("Really create the revocation certificates? (y/N) ")))
     return 0;			/* forget it */
@@ -4951,7 +4951,7 @@ menu_revsubkey (KBNODE pub_keyblock)
 	      return changed;
 	    }
 	  changed = 1;		/* we changed the keyblock */
-          
+
 	  pkt = xmalloc_clear (sizeof *pkt);
 	  pkt->pkttype = PKT_SIGNATURE;
 	  pkt->pkt.signature = sig;

@@ -63,15 +63,15 @@ struct mainproc_context
   md_filter_context_t mfx;
   int sigs_only;    /* Process only signatures and reject all other stuff. */
   int encrypt_only; /* Process only encryption messages. */
-    
+
   /* Name of the file with the complete signature or the file with the
      detached signature.  This is currently only used to deduce the
      file name of the data file if that has not been given. */
   const char *sigfilename;
-  
+
   /* A structure to describe the signed data in case of a detached
      signature. */
-  struct 
+  struct
   {
     /* A file descriptor of the the signed data.  Only used if not -1. */
     int data_fd;
@@ -82,7 +82,7 @@ struct mainproc_context
        is used.  This is only needed for better readability. */
     int used;
   } signed_data;
-  
+
   DEK *dek;
   int last_was_session_key;
   KBNODE list;      /* The current list of packets. */
@@ -147,7 +147,7 @@ add_gpg_control( CTX c, PACKET *pkt )
         /* New clear text signature.
          * Process the last one and reset everything */
         release_list(c);
-    }   
+    }
 
     if( c->list )  /* add another packet */
         add_kbnode( c->list, new_kbnode( pkt ));
@@ -261,7 +261,7 @@ symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
   /*log_hexdump( "thekey", dek->key, dek->keylen );*/
 
   return 0;
-}   
+}
 
 static void
 proc_symkey_enc( CTX c, PACKET *pkt )
@@ -446,7 +446,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
     for( ; list; list = list->next ) {
 	PKT_public_key *pk;
 	const char *algstr;
-        
+
         if ( failed && !list->reason )
             continue;
         if ( !failed && list->reason )
@@ -670,7 +670,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 
             /* check that we have at least the sigclass and one hash */
             if ( datalen < 2 )
-	      log_fatal("invalid control packet CTRLPKT_CLEARSIGN_START\n"); 
+	      log_fatal("invalid control packet CTRLPKT_CLEARSIGN_START\n");
             /* Note that we don't set the clearsig flag for not-dash-escaped
              * documents */
             clearsig = (*data == 0x01);
@@ -724,14 +724,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 	  {
             write_status_text (STATUS_ERROR, "proc_pkt.plaintext 89_BAD_DATA");
 	    log_inc_errorcount ();
-	    rc = gpg_error (GPG_ERR_UNEXPECTED); 
+	    rc = gpg_error (GPG_ERR_UNEXPECTED);
 	  }
       }
-    
+
     if(!rc)
       {
         rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-        if ( gpg_err_code (rc) == GPG_ERR_EACCES && !c->sigs_only ) 
+        if ( gpg_err_code (rc) == GPG_ERR_EACCES && !c->sigs_only )
           {
             /* Can't write output but we hash it anyway to check the
                signature. */
@@ -750,7 +750,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     n = new_kbnode (create_gpg_control (CTRLPKT_PLAINTEXT_MARK, NULL, 0));
     if (c->list)
         add_kbnode (c->list, n);
-    else 
+    else
         c->list = n;
 }
 
@@ -854,7 +854,7 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig,
              || sig->sig_class == 0x1f
 	     || sig->sig_class == 0x20
 	     || sig->sig_class == 0x28
-	     || sig->sig_class == 0x30	) { 
+	     || sig->sig_class == 0x30	) {
 	if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
 	    || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    return check_key_signature( c->list, node, is_selfsig );
@@ -1112,7 +1112,7 @@ list_node( CTX c, KBNODE node )
 	    switch (gpg_err_code (rc2)) {
 	      case 0:		             sigrc = '!'; break;
 	      case GPG_ERR_BAD_SIGNATURE:    sigrc = '-'; break;
-	      case GPG_ERR_NO_PUBKEY: 
+	      case GPG_ERR_NO_PUBKEY:
 	      case GPG_ERR_UNUSABLE_PUBKEY:  sigrc = '?'; break;
 	      default:		             sigrc = '%'; break;
 	    }
@@ -1124,7 +1124,7 @@ list_node( CTX c, KBNODE node )
 		|| c->list->pkt->pkttype == PKT_SECRET_KEY )
               {
                 keyid_from_pk (c->list->pkt->pkt.public_key, keyid);
-                
+
                 if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
                   is_selfsig = 1;
               }
@@ -1214,7 +1214,7 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, IOBUF a,
        messages, send a NODATA status back and return an error code.
        Using log_error is required because verify_files does not check
        error codes for each file but we want to terminate the process
-       with an error. */ 
+       with an error. */
     if (!rc && !c->any_sig_seen)
       {
 	write_status_text (STATUS_NODATA, "4");
@@ -1258,19 +1258,19 @@ proc_signature_packets_by_fd (ctrl_t ctrl,
      messages, send a NODATA status back and return an error code.
      Using log_error is required because verify_files does not check
      error codes for each file but we want to terminate the process
-     with an error. */ 
+     with an error. */
   if (!rc && !c->any_sig_seen)
     {
       write_status_text (STATUS_NODATA, "4");
       log_error (_("no signature found\n"));
       rc = gpg_error (GPG_ERR_NO_DATA);
     }
-  
+
   /* Propagate the signature seen flag upward. Do this only on success
      so that we won't issue the nodata status several times. */
   if (!rc && c->anchor && c->any_sig_seen)
     c->anchor->any_sig_seen = 1;
-  
+
   xfree ( c );
   return rc;
 }
@@ -1395,7 +1395,7 @@ do_proc_packets( CTX c, IOBUF a )
          * packet and not to reuse the current one ...  It works right
          * when there is a compression packet inbetween which adds just
          * an extra layer.
-         * Hmmm: Rewrite this whole module here?? 
+         * Hmmm: Rewrite this whole module here??
          */
 	if( pkt->pkttype != PKT_SIGNATURE && pkt->pkttype != PKT_MDC )
 	    c->have_data = pkt->pkttype == PKT_PLAINTEXT;
@@ -1514,7 +1514,7 @@ check_sig_and_print( CTX c, KBNODE node )
      O{1,n} P S{1,n}  -- standard OpenPGP signature.
      C P S{1,n}       -- cleartext signature.
 
-        
+
           O = One-Pass Signature packet.
           S = Signature packet.
           P = OpenPGP Message packet (Encrypted | Compressed | Literal)
@@ -1526,7 +1526,7 @@ check_sig_and_print( CTX c, KBNODE node )
           C = Marker packet for cleartext signatures.
 
      We reject all other messages.
-     
+
      Actually we are calling this too often, i.e. for verification of
      each message but better have some duplicate work than to silently
      introduce a bug here.
@@ -1540,7 +1540,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
     n = c->list;
     assert (n);
-    if ( n->pkt->pkttype == PKT_SIGNATURE ) 
+    if ( n->pkt->pkttype == PKT_SIGNATURE )
       {
         /* This is either "S{1,n}" case (detached signature) or
            "S{1,n} P" (old style PGP2 signature). */
@@ -1559,7 +1559,7 @@ check_sig_and_print( CTX c, KBNODE node )
         else
           goto ambiguous;
       }
-    else if (n->pkt->pkttype == PKT_ONEPASS_SIG) 
+    else if (n->pkt->pkttype == PKT_ONEPASS_SIG)
       {
         /* This is the "O{1,n} P S{1,n}" case (standard signature). */
         for (n_onepass=1, n = n->next;
@@ -1607,7 +1607,7 @@ check_sig_and_print( CTX c, KBNODE node )
         if (n || !n_sig)
           goto ambiguous;
       }
-    else 
+    else
       {
       ambiguous:
         log_error(_("can't handle this ambiguous signature data\n"));
@@ -1676,19 +1676,19 @@ check_sig_and_print( CTX c, KBNODE node )
 
     /* If the preferred keyserver thing above didn't work, our second
        try is to use the URI from a DNS PKA record. */
-    if ( rc == G10ERR_NO_PUBKEY 
+    if ( rc == G10ERR_NO_PUBKEY
 	 && opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
          && opt.keyserver_options.options&KEYSERVER_HONOR_PKA_RECORD)
       {
         const char *uri = pka_uri_from_sig (sig);
-        
+
         if (uri)
           {
             /* FIXME: We might want to locate the key using the
                fingerprint instead of the keyid. */
             int res;
             struct keyserver_spec *spec;
-            
+
             spec = parse_keyserver_uri (uri, 1, NULL, 0);
             if (spec)
               {
@@ -1772,7 +1772,7 @@ check_sig_and_print( CTX c, KBNODE node )
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
             write_status_text_and_buffer (statno, keyid_str,
                                           un->pkt->pkt.user_id->name,
-                                          un->pkt->pkt.user_id->len, 
+                                          un->pkt->pkt.user_id->len,
                                           -1 );
 
 	    p=utf8_to_native(un->pkt->pkt.user_id->name,
@@ -1817,7 +1817,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
             write_status_text_and_buffer (statno, keyid_str,
                                           un? un->pkt->pkt.user_id->name:"[?]",
-                                          un? un->pkt->pkt.user_id->len:3, 
+                                          un? un->pkt->pkt.user_id->len:3,
                                           -1 );
 
 	    if(un)
@@ -1837,7 +1837,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	    log_printf ("\n");
 	}
 
-        /* If we have a good signature and already printed 
+        /* If we have a good signature and already printed
          * the primary user ID, print all the other user IDs */
         if ( count && !rc
              && !(opt.verify_options&VERIFY_SHOW_PRIMARY_UID_ONLY)) {
@@ -1934,7 +1934,7 @@ check_sig_and_print( CTX c, KBNODE node )
                 bufp = bufp + strlen (bufp);
                 if (!vpk->flags.primary) {
                    u32 akid[2];
- 
+
                    akid[0] = vpk->main_keyid[0];
                    akid[1] = vpk->main_keyid[1];
                    free_public_key (vpk);
@@ -2097,7 +2097,7 @@ proc_tree( CTX c, KBNODE node )
             log_error (_("not a detached signature\n") );
             return;
         }
-	
+
 	for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); )
 	    check_sig_and_print( c, n1 );
     }
@@ -2171,7 +2171,7 @@ proc_tree( CTX c, KBNODE node )
 	    if( c->sigs_only ) {
                 if (c->signed_data.used && c->signed_data.data_fd != -1)
                     rc = hash_datafile_by_fd (c->mfx.md, c->mfx.md2,
-                                              c->signed_data.data_fd, 
+                                              c->signed_data.data_fd,
                                               (sig->sig_class == 0x01));
                 else
                     rc = hash_datafiles (c->mfx.md, c->mfx.md2,

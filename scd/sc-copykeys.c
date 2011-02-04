@@ -40,7 +40,7 @@
 #define _(a) (a)
 
 
-enum cmd_and_opt_values 
+enum cmd_and_opt_values
 { oVerbose	  = 'v',
   oReaderPort     = 500,
   octapiDriver,
@@ -51,7 +51,7 @@ aTest };
 
 
 static ARGPARSE_OPTS opts[] = {
-  
+
   { 301, NULL, 0, "@Options:\n " },
 
   { oVerbose, "verbose",   0, "verbose" },
@@ -85,7 +85,7 @@ my_strusage (int level)
                    "file-with-key\n"
                     "Copy keys to a smartcards\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -104,7 +104,7 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("sc-copykeys", 1); 
+  log_set_prefix ("sc-copykeys", 1);
 
   /* check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
@@ -179,7 +179,7 @@ read_file (const char *fname, size_t *r_length)
   struct stat st;
   char *buf;
   size_t buflen;
-  
+
   fp = fname? fopen (fname, "rb") : stdin;
   if (!fp)
     {
@@ -187,10 +187,10 @@ read_file (const char *fname, size_t *r_length)
                  fname? fname: "[stdin]", strerror (errno));
       return NULL;
     }
-  
+
   if (fstat (fileno(fp), &st))
     {
-      log_error ("can't stat `%s': %s\n", 
+      log_error ("can't stat `%s': %s\n",
                  fname? fname: "[stdin]", strerror (errno));
       if (fname)
         fclose (fp);
@@ -201,7 +201,7 @@ read_file (const char *fname, size_t *r_length)
   buf = xmalloc (buflen+1);
   if (fread (buf, buflen, 1, fp) != 1)
     {
-      log_error ("error reading `%s': %s\n", 
+      log_error ("error reading `%s': %s\n",
                  fname? fname: "[stdin]", strerror (errno));
       if (fname)
         fclose (fp);
@@ -223,7 +223,7 @@ read_key (const char *fname)
   size_t buflen;
   gcry_sexp_t private;
   int rc;
-  
+
   buf = read_file (fname, &buflen);
   if (!buf)
     return NULL;
@@ -233,7 +233,7 @@ read_key (const char *fname)
     {
       log_error ("gcry_sexp_new failed: %s\n", gpg_strerror (rc));
       return NULL;
-    } 
+    }
   xfree (buf);
 
   return private;
@@ -255,7 +255,7 @@ sexp_to_kparms (gcry_sexp_t sexp, unsigned long *created)
   *created = 0;
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
   if(!list)
-    return NULL; 
+    return NULL;
 
   /* quick hack to get the creation time. */
   l2 = gcry_sexp_find_token (list, "created", 0);
@@ -281,7 +281,7 @@ sexp_to_kparms (gcry_sexp_t sexp, unsigned long *created)
   /* Parameter names used with RSA. */
   elems = "nedpqu";
   array = xcalloc (strlen(elems) + 1, sizeof *array);
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
@@ -303,7 +303,7 @@ sexp_to_kparms (gcry_sexp_t sexp, unsigned long *created)
           return NULL; /* required parameter is invalid */
 	}
     }
-  
+
   gcry_sexp_release (list);
   return array;
 }
@@ -453,8 +453,8 @@ query_card (APP app)
         }
     }
 
-  xfree (serialno); 
-  xfree (disp_name); 
+  xfree (serialno);
+  xfree (disp_name);
   xfree (pubkey_url);
   xfree (fpr1);
   xfree (fpr2);
@@ -497,7 +497,7 @@ pincb (void *arg, const char *prompt, char **pinvalue)
      (q #00f7a7c..[some bytes not shown]..61#)
      (u #304559a..[some bytes not shown]..9b#))
     (uri http://foo.bar x-foo:whatever_you_want))
-   
+
 */
 static void
 copykeys (APP app, const char *fname)
@@ -520,7 +520,7 @@ copykeys (APP app, const char *fname)
   private = read_key (fname);
   if (!private)
     exit (1);
-  
+
   mpis = sexp_to_kparms (private, &creation_date);
   if (!creation_date)
     {
@@ -577,7 +577,7 @@ copykeys (APP app, const char *fname)
   /* Build the private key template as described in section 4.3.3.6 of
      the specs.
                    0xC0   <length> public exponent
-                   0xC1   <length> prime p 
+                   0xC1   <length> prime p
                    0xC2   <length> prime q  */
   template = tp = xmalloc (1+2 + 1+1+4 + 1+1+64 + 1+1+64);
   *tp++ = 0xC0;
@@ -595,7 +595,7 @@ copykeys (APP app, const char *fname)
     {
       memmove (tp+4-n, tp, 4-n);
       memset (tp, 0, 4-n);
-    }                 
+    }
   tp += 4;
 
   *tp++ = 0xC1;
@@ -713,5 +713,3 @@ copykeys (APP app, const char *fname)
   gcry_mpi_release (rsa_n);
   exit (1);
 }
-
-

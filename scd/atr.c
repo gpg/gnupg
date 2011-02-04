@@ -33,7 +33,7 @@ static int const fi_table[16] = { 0, 372, 558, 744, 1116,1488, 1860, -1,
                                   -1, 512, 768, 1024, 1536, 2048, -1, -1 };
 static int const di_table[16] = { -1, 1, 2, 4, 8, 16, -1, -1,
                                   0, -1, -2, -4, -8, -16, -32, -64};
-                                  
+
 
 /* Dump the ATR of the card at SLOT in a human readable format to
    stream FP.  */
@@ -50,7 +50,7 @@ atr_dump (int slot, FILE *fp)
   atr = atrbuffer = apdu_get_atr (slot, &atrlen);
   if (!atr)
     return gpg_error (GPG_ERR_GENERAL);
-  
+
   fprintf (fp, "Info on ATR of length %u at slot %d\n",
            (unsigned int)atrlen, slot);
   if (!atrlen)
@@ -59,7 +59,7 @@ atr_dump (int slot, FILE *fp)
       goto bailout;
     }
 
-  
+
   if (*atr == 0x3b)
     fputs ("direct convention\n", fp);
   else if (*atr == 0x3f)
@@ -98,21 +98,21 @@ atr_dump (int slot, FILE *fp)
       else
         fprintf (fp, "%d", val);
       fputs (" D=", fp);
-      val = di_table[*atr & 0x0f]; 
+      val = di_table[*atr & 0x0f];
       if (!val)
         fputs ("[impossible value]\n", fp);
       else if (val == -1)
         fputs ("RFU\n", fp);
       else if (val < 0 )
         fprintf (fp, "1/%d\n", val);
-      else 
+      else
         fprintf (fp, "%d\n", val);
-      
+
       if (!--atrlen)
         goto bailout;
       atr++;
     }
-     
+
   if (have_tb)
     {
       fprintf (fp, "TB1: II=%d PI1=%d%s\n", (*atr >> 5) & 3, *atr & 0x1f,
@@ -249,7 +249,7 @@ atr_dump (int slot, FILE *fp)
   if (n_historical + 1 > atrlen)
     fputs ("error: ATR shorter than required for historical bytes "
            "and checksum\n", fp);
-  
+
   if (n_historical)
     {
       fputs ("Historical:", fp);
@@ -375,7 +375,7 @@ atr_get_historical (int slot, unsigned char historical[])
 
   if (n_historical >= atrlen)
     goto leave; /* ATR shorter than required for historical bytes. */
-  
+
   if (n_historical)
     {
       for (idx=0; n_historical && atrlen; n_historical--, atrlen--, atr++)
@@ -394,4 +394,3 @@ atr_get_historical (int slot, unsigned char historical[])
 
   return result;
 }
-

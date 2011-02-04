@@ -45,8 +45,8 @@
 #include "sysutils.h"
 
 
-enum cmd_and_opt_values 
-{ 
+enum cmd_and_opt_values
+{
   aNull = 0,
   oVerbose	  = 'v',
   oArmor          = 'a',
@@ -54,7 +54,7 @@ enum cmd_and_opt_values
 
   oProtect        = 'p',
   oUnprotect      = 'u',
-  
+
   oNoVerbose = 500,
   oShadow,
   oShowShadowInfo,
@@ -68,13 +68,13 @@ enum cmd_and_opt_values
   oNoFailOnExist,
   oHomedir,
   oPrompt,
-  oStatusMsg, 
+  oStatusMsg,
 
   oAgentProgram
 };
 
 
-struct rsa_secret_key_s 
+struct rsa_secret_key_s
 {
   gcry_mpi_t n;	    /* public modulus */
   gcry_mpi_t e;	    /* public exponent */
@@ -95,7 +95,7 @@ static int opt_have_cert;
 static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
-static const char *opt_agent_program; 
+static const char *opt_agent_program;
 
 static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
@@ -110,7 +110,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (oShowShadowInfo,  "show-shadow-info", "return the shadow info"),
   ARGPARSE_c (oShowKeygrip, "show-keygrip", "show the \"keygrip\""),
   ARGPARSE_c (oS2Kcalibration, "s2k-calibration", "@"),
-  
+
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", "verbose"),
@@ -120,14 +120,14 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPassphrase, "passphrase", "|STRING|use passphrase STRING"),
   ARGPARSE_s_n (oHaveCert, "have-cert",
                 "certificate to export provided on STDIN"),
-  ARGPARSE_s_n (oStore,    "store", 
+  ARGPARSE_s_n (oStore,    "store",
                 "store the created key in the appropriate place"),
-  ARGPARSE_s_n (oForce,    "force", 
+  ARGPARSE_s_n (oForce,    "force",
                 "force overwriting"),
   ARGPARSE_s_n (oNoFailOnExist, "no-fail-on-exist", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"), 
-  ARGPARSE_s_s (oPrompt,  "prompt", 
-                "|ESCSTRING|use ESCSTRING as prompt in pinentry"), 
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
+  ARGPARSE_s_s (oPrompt,  "prompt",
+                "|ESCSTRING|use ESCSTRING as prompt in pinentry"),
   ARGPARSE_s_n (oStatusMsg, "enable-status-msg", "@"),
 
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
@@ -153,7 +153,7 @@ my_strusage (int level)
     case 41: p =  _("Syntax: gpg-protect-tool [options] [args]\n"
                     "Secret key maintenance tool\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -234,7 +234,7 @@ read_file (const char *fname, size_t *r_length)
   FILE *fp;
   char *buf;
   size_t buflen;
-  
+
   if (!strcmp (fname, "-"))
     {
       size_t nread, bufsize = 0;
@@ -246,7 +246,7 @@ read_file (const char *fname, size_t *r_length)
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
-      do 
+      do
         {
           bufsize += NCHUNK;
           if (!buf)
@@ -277,14 +277,14 @@ read_file (const char *fname, size_t *r_length)
           log_error ("can't open `%s': %s\n", fname, strerror (errno));
           return NULL;
         }
-  
+
       if (fstat (fileno(fp), &st))
         {
           log_error ("can't stat `%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
-      
+
       buflen = st.st_size;
       buf = xmalloc (buflen+1);
       if (fread (buf, buflen, 1, fp) != 1)
@@ -308,7 +308,7 @@ read_key (const char *fname)
   char *buf;
   size_t buflen;
   unsigned char *key;
-  
+
   buf = read_file (fname, &buflen);
   if (!buf)
     return NULL;
@@ -327,7 +327,7 @@ read_and_protect (const char *fname)
   unsigned char *result;
   size_t resultlen;
   char *pw;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -341,7 +341,7 @@ read_and_protect (const char *fname)
       log_error ("protecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -371,7 +371,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1)), 
+  rc = agent_unprotect (key, (pw=get_passphrase (1)),
                         protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -412,7 +412,7 @@ read_and_shadow (const char *fname)
   unsigned char *result;
   size_t resultlen;
   unsigned char dummy_info[] = "(8:313233342:43)";
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -426,7 +426,7 @@ read_and_shadow (const char *fname)
     }
   resultlen = gcry_sexp_canon_len (result, 0, NULL,NULL);
   assert (resultlen);
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -448,7 +448,7 @@ show_shadow_info (const char *fname)
   unsigned char *key;
   const unsigned char *info;
   size_t infolen;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -462,7 +462,7 @@ show_shadow_info (const char *fname)
     }
   infolen = gcry_sexp_canon_len (info, 0, NULL,NULL);
   assert (infolen);
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (info, infolen);
@@ -482,14 +482,14 @@ show_file (const char *fname)
   unsigned char *key;
   size_t keylen;
   char *p;
-  
+
   key = read_key (fname);
   if (!key)
     return;
 
   keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
   assert (keylen);
-  
+
   if (opt_canonical)
     {
       fwrite (key, keylen, 1, stdout);
@@ -513,7 +513,7 @@ show_keygrip (const char *fname)
   gcry_sexp_t private;
   unsigned char grip[20];
   int i;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -522,7 +522,7 @@ show_keygrip (const char *fname)
     {
       log_error ("gcry_sexp_new failed\n");
       return;
-    } 
+    }
   xfree (key);
 
   if (!gcry_pk_get_keygrip (private, grip))
@@ -550,7 +550,7 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("gpg-protect-tool", 1); 
+  log_set_prefix ("gpg-protect-tool", 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -597,7 +597,7 @@ main (int argc, char **argv )
         case oHaveCert: opt_have_cert = 1; break;
         case oPrompt: opt_prompt = pargs.r.ret_str; break;
         case oStatusMsg: opt_status_msg = 1; break;
-          
+
         default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
@@ -667,7 +667,7 @@ get_passphrase (int promptno)
   const char *desc;
   char *orig_codeset;
   int repeat = 0;
-  
+
   if (opt_passphrase)
     return xstrdup (opt_passphrase);
 
@@ -727,4 +727,3 @@ release_passphrase (char *pw)
       xfree (pw);
     }
 }
-

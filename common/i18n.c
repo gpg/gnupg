@@ -69,7 +69,7 @@ i18n_switchto_utf8 (void)
       if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
         {
 	  xfree (orig_codeset);
-	  orig_codeset = NULL; 
+	  orig_codeset = NULL;
 	}
     }
   return orig_codeset;

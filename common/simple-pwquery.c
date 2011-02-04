@@ -99,7 +99,7 @@ writen (int fd, const void *buf, size_t nbytes)
 {
   size_t nleft = nbytes;
   int nwritten;
-  
+
   while (nleft > 0)
     {
 #ifdef HAVE_W32_SYSTEM
@@ -121,7 +121,7 @@ writen (int fd, const void *buf, size_t nbytes)
       nleft -= nwritten;
       buf = (const char*)buf + nwritten;
     }
-    
+
   return 0;
 }
 
@@ -155,7 +155,7 @@ readline (int fd, char *buf, size_t buflen)
       nleft -= n;
       buf += n;
       nread += n;
-      
+
       for (; n && *p != '\n'; n--, p++)
         ;
       if (n)
@@ -166,7 +166,7 @@ readline (int fd, char *buf, size_t buflen)
         }
     }
 
-  return nread; 
+  return nread;
 }
 
 
@@ -177,8 +177,8 @@ agent_send_option (int fd, const char *name, const char *value)
   char buf[200];
   int nread;
   char *line;
-  int i; 
-  
+  int i;
+
   line = spwq_malloc (7 + strlen (name) + 1 + strlen (value) + 2);
   if (!line)
     return SPWQ_OUT_OF_CORE;
@@ -188,15 +188,15 @@ agent_send_option (int fd, const char *name, const char *value)
   spwq_free (line);
   if (i)
     return i;
-  
+
   /* get response */
   nread = readline (fd, buf, DIM(buf)-1);
   if (nread < 0)
     return -nread;
   if (nread < 3)
     return SPWQ_PROTOCOL_ERROR;
-  
-  if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
+
+  if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n'))
     return 0; /* okay */
 
   return SPWQ_ERR_RESPONSE;
@@ -204,7 +204,7 @@ agent_send_option (int fd, const char *name, const char *value)
 
 
 /* Send all available options to the agent. */
-static int 
+static int
 agent_send_all_options (int fd)
 {
   char *dft_display = NULL;
@@ -239,7 +239,7 @@ agent_send_all_options (int fd)
         return rc;
     }
 
-#if defined(HAVE_SETLOCALE) 
+#if defined(HAVE_SETLOCALE)
   {
     char *old_lc = NULL;
     char *dft_lc = NULL;
@@ -330,9 +330,9 @@ agent_open (int *rfd)
 
   *rfd = -1;
   infostr = getenv ( "GPG_AGENT_INFO" );
-  if ( !infostr || !*infostr ) 
+  if ( !infostr || !*infostr )
     infostr = default_gpg_agent_info;
-  if ( !infostr || !*infostr ) 
+  if ( !infostr || !*infostr )
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("gpg-agent is not available in this session\n"));
@@ -346,7 +346,7 @@ agent_open (int *rfd)
   infostr = p;
 
   if ( !(p = strchr ( infostr, PATHSEP_C)) || p == infostr
-       || (p-infostr)+1 >= sizeof client_addr.sun_path ) 
+       || (p-infostr)+1 >= sizeof client_addr.sun_path )
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
@@ -366,25 +366,25 @@ agent_open (int *rfd)
       return SPWQ_PROTOCOL_ERROR;
     }
 
-#ifdef HAVE_W32_SYSTEM       
+#ifdef HAVE_W32_SYSTEM
   fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
 #else
   fd = socket (AF_UNIX, SOCK_STREAM, 0);
 #endif
-  if (fd == -1) 
+  if (fd == -1)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ("can't create socket: %s\n", strerror(errno) );
 #endif
       return SPWQ_SYS_ERROR;
     }
-    
+
   memset (&client_addr, 0, sizeof client_addr);
   client_addr.sun_family = AF_UNIX;
   strcpy (client_addr.sun_path, infostr);
   len = SUN_LEN (&client_addr);
-    
-#ifdef HAVE_W32_SYSTEM       
+
+#ifdef HAVE_W32_SYSTEM
   rc = _w32_sock_connect (fd, (struct sockaddr*)&client_addr, len );
 #else
   rc = connect (fd, (struct sockaddr*)&client_addr, len );
@@ -400,7 +400,7 @@ agent_open (int *rfd)
 
   nread = readline (fd, line, DIM(line));
   if (nread < 3 || !(line[0] == 'O' && line[1] == 'K'
-                     && (line[2] == '\n' || line[2] == ' ')) ) 
+                     && (line[2] == '\n' || line[2] == ' ')) )
     {
 #ifdef SPWQ_USE_LOGGING
       log_error ( _("communication problem with gpg-agent\n"));
@@ -434,7 +434,7 @@ copy_and_escape (char *buffer, const char *text)
   int i;
   const unsigned char *s = (unsigned char *)text;
   char *p = buffer;
-  
+
 
   for (i=0; s[i]; i++)
     {
@@ -453,7 +453,7 @@ copy_and_escape (char *buffer, const char *text)
 
 
 /* Set the name of the default socket to NAME.  */
-int 
+int
 simple_pw_set_socket (const char *name)
 {
   spwq_free (default_gpg_agent_info);
@@ -482,7 +482,7 @@ simple_pw_set_socket (const char *name)
    errorcode; this error code might be 0 if the user canceled the
    operation.  The function returns NULL to indicate an error.  */
 char *
-simple_pwquery (const char *cacheid, 
+simple_pwquery (const char *cacheid,
                 const char *tryagain,
                 const char *prompt,
                 const char *description,
@@ -494,7 +494,7 @@ simple_pwquery (const char *cacheid,
   char *result = NULL;
   char *pw = NULL;
   char *p;
-  int rc, i; 
+  int rc, i;
 
   rc = agent_open (&fd);
   if (rc)
@@ -555,11 +555,11 @@ simple_pwquery (const char *cacheid,
       rc = SPWQ_PROTOCOL_ERROR;
       goto leave;
     }
-      
-  if (pw[0] == 'O' && pw[1] == 'K' && pw[2] == ' ') 
+
+  if (pw[0] == 'O' && pw[1] == 'K' && pw[2] == ' ')
     { /* we got a passphrase - convert it back from hex */
       size_t pwlen = 0;
-      
+
       for (i=3; i < nread && hexdigitp (pw+i); i+=2)
         pw[pwlen++] = xtoi_2 (pw+i);
       pw[pwlen] = 0; /* make a C String */
@@ -569,7 +569,7 @@ simple_pwquery (const char *cacheid,
   else if ((nread > 7 && !memcmp (pw, "ERR 111", 7)
             && (pw[7] == ' ' || pw[7] == '\n') )
            || ((nread > 4 && !memcmp (pw, "ERR ", 4)
-                && (strtoul (pw+4, NULL, 0) & 0xffff) == 99)) ) 
+                && (strtoul (pw+4, NULL, 0) & 0xffff) == 99)) )
     {
       /* 111 is the old Assuan code for canceled which might still
          be in use by old installations. 99 is GPG_ERR_CANCELED as
@@ -588,14 +588,14 @@ simple_pwquery (const char *cacheid,
         default: rc = SPWQ_GENERAL_ERROR; break;
         }
     }
-  else 
+  else
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("problem with the agent\n"));
 #endif
       rc = SPWQ_ERR_RESPONSE;
     }
-        
+
  leave:
   if (errorcode)
     *errorcode = rc;
@@ -659,13 +659,13 @@ simple_query (const char *query)
       rc = SPWQ_PROTOCOL_ERROR;
       goto leave;
     }
-  
-  if (response[0] == 'O' && response[1] == 'K') 
+
+  if (response[0] == 'O' && response[1] == 'K')
     /* OK, do nothing.  */;
   else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
             && (response[7] == ' ' || response[7] == '\n') )
            || ((nread > 4 && !memcmp (response, "ERR ", 4)
-                && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) ) 
+                && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) )
     {
       /* 111 is the old Assuan code for canceled which might still
          be in use by old installations. 99 is GPG_ERR_CANCELED as
@@ -675,14 +675,14 @@ simple_query (const char *query)
       log_info (_("canceled by user\n") );
 #endif
     }
-  else 
+  else
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("problem with the agent\n"));
 #endif
       rc = SPWQ_ERR_RESPONSE;
     }
-        
+
  leave:
   if (fd != -1)
     close (fd);

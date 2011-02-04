@@ -42,7 +42,7 @@ no_such_backend (int conttype)
 
 
 /* Return true if CONTTYPE is supported by us.  */
-int 
+int
 be_is_supported_conttype (int conttype)
 {
   switch (conttype)
@@ -50,7 +50,7 @@ be_is_supported_conttype (int conttype)
     case CONTTYPE_ENCFS:
       return 1;
 
-    default: 
+    default:
       return 0;
     }
 }
@@ -72,7 +72,7 @@ be_get_detached_name (int conttype, const char *fname,
   *r_isdir = 0;
   switch (conttype)
     {
-    case CONTTYPE_ENCFS: 
+    case CONTTYPE_ENCFS:
       return be_encfs_get_detached_name (fname, r_name, r_isdir);
 
     default:
@@ -86,10 +86,10 @@ be_create_new_keys (int conttype, membuf_t *mb)
 {
   switch (conttype)
     {
-    case CONTTYPE_ENCFS: 
+    case CONTTYPE_ENCFS:
       return be_encfs_create_new_keys (mb);
 
-    case CONTTYPE_TRUECRYPT: 
+    case CONTTYPE_TRUECRYPT:
       return be_truecrypt_create_new_keys (mb);
 
     default:
@@ -100,7 +100,7 @@ be_create_new_keys (int conttype, membuf_t *mb)
 
 /*  Dispatcher to the backend's create function.  */
 gpg_error_t
-be_create_container (ctrl_t ctrl, int conttype, 
+be_create_container (ctrl_t ctrl, int conttype,
                      const char *fname, int fd, tupledesc_t tuples,
                      unsigned int *r_id)
 {
@@ -108,7 +108,7 @@ be_create_container (ctrl_t ctrl, int conttype,
 
   switch (conttype)
     {
-    case CONTTYPE_ENCFS: 
+    case CONTTYPE_ENCFS:
       return be_encfs_create_container (ctrl, fname, tuples, r_id);
 
     default:
@@ -119,13 +119,13 @@ be_create_container (ctrl_t ctrl, int conttype,
 
 /*  Dispatcher to the backend's mount function.  */
 gpg_error_t
-be_mount_container (ctrl_t ctrl, int conttype, 
+be_mount_container (ctrl_t ctrl, int conttype,
                     const char *fname,  const char *mountpoint,
                     tupledesc_t tuples, unsigned int *r_id)
 {
   switch (conttype)
     {
-    case CONTTYPE_ENCFS: 
+    case CONTTYPE_ENCFS:
       return be_encfs_mount_container (ctrl, fname, mountpoint, tuples, r_id);
 
     default:

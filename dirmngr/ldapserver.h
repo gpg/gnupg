@@ -2,17 +2,17 @@
    Copyright (C) 2008 g10 Code GmbH
 
    This file is part of DirMngr.
-  
+
    DirMngr is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-  
+
    DirMngr is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-  
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
@@ -32,7 +32,7 @@ void ldapserver_list_free (ldap_server_t servers);
 
    1. field: Hostname
    2. field: Portnumber
-   3. field: Username 
+   3. field: Username
    4. field: Password
    5. field: Base DN
 

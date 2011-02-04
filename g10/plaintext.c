@@ -71,18 +71,18 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
          status message.  */
       es_fflush (es_stdout);
 
-      snprintf (status, sizeof status, 
+      snprintf (status, sizeof status,
                 "%X %lu ", (byte) pt->mode, (ulong) pt->timestamp);
       write_status_text_and_buffer (STATUS_PLAINTEXT,
 				    status, pt->name, pt->namelen, 0);
-      
+
       if (!pt->is_partial)
 	{
 	  snprintf (status, sizeof status, "%lu", (ulong) pt->len);
 	  write_status_text (STATUS_PLAINTEXT_LENGTH, status);
 	}
     }
-  
+
   /* Create the filename as C string.  */
   if (nooutput)
     ;
@@ -145,14 +145,14 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	    {
 	      xfree (tmp);
               /* FIXME: Below used to be G10ERR_CREATE_FILE */
-	      err = gpg_error (GPG_ERR_GENERAL);	
+	      err = gpg_error (GPG_ERR_GENERAL);
 	      goto leave;
 	    }
 	  xfree (fname);
 	  fname = tmp;
 	}
     }
-  
+
 #ifndef __riscos__
   if (opt.outfp && is_secured_file (es_fileno (opt.outfp)))
     {
@@ -390,7 +390,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       pt->buf = NULL;
     }
   else /* Clear text signature - don't hash the last CR,LF.   */
-    { 
+    {
       int state = 0;
 
       while ((c = iobuf_get (pt->buf)) != -1)

@@ -19,12 +19,12 @@
 
 /* This is a simple stand-alone Assuan server test program.  We don't
    want to use the assuan library because we don't want to hide errors
-   in that library. 
+   in that library.
 
    The script language is line based.  Empty lines or lines containing
    only white spaces are ignored, line with a hash sign as first non
    white space character are treated as comments.
-   
+
    A simple macro mechanism is implemnted.  Macros are expanded before
    a line is processed but after comment processing.  Macros are only
    expanded once and non existing macros expand to the empty string.
@@ -79,7 +79,7 @@
       is ignored.
 
    count-status <code>
-      Initialize the assigned variable to 0 and assign it as an counter for 
+      Initialize the assigned variable to 0 and assign it as an counter for
       status code CODE.  This command must be called with an assignment.
 
    quit
@@ -252,7 +252,7 @@ writen (int fd, const char *buffer, size_t length)
   while (length)
     {
       int nwritten = write (fd, buffer, length);
-      
+
       if (nwritten < 0)
         {
           if (errno == EINTR)
@@ -306,7 +306,7 @@ read_assuan (int fd)
             }
           while (n < 0 && errno == EINTR);
         }
-      
+
       if (opt_verbose && n >= 0 )
 	{
 	  int i;
@@ -324,7 +324,7 @@ read_assuan (int fd)
       p = buf;
       nleft -= n;
       buf += n;
-      
+
       for (; n && *p != '\n'; n--, p++)
         ;
       if (n)
@@ -369,7 +369,7 @@ read_assuan (int fd)
       recv_type = LINE_END;
       p += 3;
     }
-  else 
+  else
     die_1 ("invalid line type (%.5s)", p);
 
   return p;
@@ -451,7 +451,7 @@ start_server (const char *pgmname)
 
       close (wp[1]);
       close (rp[0]);
-      execl (pgmname, arg0, "--server", NULL); 
+      execl (pgmname, arg0, "--server", NULL);
       die_2 ("exec failed for `%s': %s", pgmname, strerror (errno));
     }
   close (wp[0]);
@@ -503,7 +503,7 @@ set_type_var (const char *name, const char *value, VARTYPE type)
   VARIABLE var;
 
   if (!name)
-    name = "?"; 
+    name = "?";
   for (var=variable_list; var && strcmp (var->name, name); var = var->next)
     ;
   if (!var)
@@ -524,7 +524,7 @@ set_type_var (const char *name, const char *value, VARTYPE type)
       if (fd != -1 && fd != 0 && fd != 1 && fd != 2)
           close (fd);
     }
-  
+
   var->type = type;
   var->count = 0;
   if (var->type == VARTYPE_COUNTER)
@@ -598,7 +598,7 @@ expand_line (char *buffer)
       p = strchr (line, '$');
       if (!p)
         return result; /* nothing more to expand */
-      
+
       if (p[1] == '$') /* quoted */
         {
           memmove (p, p+1, strlen (p+1)+1);
@@ -650,7 +650,7 @@ expand_line (char *buffer)
 
 
 /* Evaluate COND and return the result. */
-static int 
+static int
 eval_boolean (const char *cond)
 {
   int true = 1;
@@ -687,7 +687,7 @@ cmd_send (const char *assign_to, char *arg)
   (void)assign_to;
   if (opt_verbose)
     fprintf (stderr, "sending `%s'\n", arg);
-  write_assuan (server_send_fd, arg); 
+  write_assuan (server_send_fd, arg);
 }
 
 static void
@@ -776,12 +776,12 @@ cmd_openfile (const char *assign_to, char *arg)
   int fd;
   char numbuf[20];
 
-  do 
+  do
     fd = open (arg, O_RDONLY);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
     die_2 ("error opening `%s': %s", arg, strerror (errno));
-  
+
   sprintf (numbuf, "%d", fd);
   set_type_var (assign_to, numbuf, VARTYPE_FD);
 }
@@ -792,7 +792,7 @@ cmd_createfile (const char *assign_to, char *arg)
   int fd;
   char numbuf[20];
 
-  do 
+  do
     fd = open (arg, O_WRONLY|O_CREAT|O_TRUNC, 0666);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
@@ -845,7 +845,7 @@ cmd_cmpfiles (const char *assign_to, char *arg)
   size_t nread1, nread2;
   int rc = 0;
 
-  set_var (assign_to, "0"); 
+  set_var (assign_to, "0");
   for (p=arg; *p && !spacep (p); p++)
     ;
   if (!*p)
@@ -862,7 +862,7 @@ cmd_cmpfiles (const char *assign_to, char *arg)
       if (*p)
         die_0 ("cmpfiles: syntax error");
     }
-  
+
   fp1 = fopen (arg, "rb");
   if (!fp1)
     {
@@ -893,7 +893,7 @@ cmd_cmpfiles (const char *assign_to, char *arg)
     {
       if (opt_verbose)
         err ("files match");
-      set_var (assign_to, "1"); 
+      set_var (assign_to, "1");
     }
   else if (!rc)
     err ("cmpfiles: read error: %s", strerror (errno));
@@ -1089,4 +1089,3 @@ main (int argc, char **argv)
     }
   return 0;
 }
-

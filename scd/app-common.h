@@ -25,7 +25,7 @@
 #if GNUPG_MAJOR_VERSION == 1
 # ifdef ENABLE_AGENT_SUPPORT
 # include "assuan.h"
-# endif 
+# endif
 #else
 # include <ksba.h>
 #endif
@@ -47,10 +47,10 @@ struct app_ctx_s {
   /* Flag indicating that a reset has been done for that application
      and that this context is merely lingering and just should not be
      reused.  */
-  int no_reuse;            
+  int no_reuse;
 
   /* Used reader slot. */
-  int slot;     
+  int slot;
 
   /* If this is used by GnuPG 1.4 we need to know the assuan context
      in case we need to divert the operation to an already running
@@ -150,7 +150,7 @@ char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
-gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl, 
+gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);
 gpg_error_t app_readcert (app_t app, const char *certid,
                   unsigned char **cert, size_t *certlen);
@@ -223,6 +223,3 @@ gpg_error_t app_select_geldkarte (app_t app);
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/
-
-
-

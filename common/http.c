@@ -176,21 +176,21 @@ static es_cookie_io_functions_t cookie_functions =
     cookie_close
   };
 
-struct cookie_s 
+struct cookie_s
 {
   /* File descriptor or -1 if already closed. */
   int fd;
 
   /* TLS session context or NULL if not used. */
-  gnutls_session_t tls_session; 
+  gnutls_session_t tls_session;
 
   /* The remaining content length and a flag telling whether to use
      the content length.  */
-  longcounter_t content_length;  
+  longcounter_t content_length;
   unsigned int content_length_valid:1;
 
   /* Flag to communicate with the close handler. */
-  unsigned int keep_socket:1; 
+  unsigned int keep_socket:1;
 };
 typedef struct cookie_s *cookie_t;
 
@@ -210,7 +210,7 @@ typedef struct header_s *header_t;
 
 
 /* Our handle context. */
-struct http_context_s 
+struct http_context_s
 {
   unsigned int status_code;
   int sock;
@@ -258,14 +258,14 @@ init_sockets (void)
   if (initialized)
     return;
 
-  if ( WSAStartup( MAKEWORD (REQ_WINSOCK_MINOR, REQ_WINSOCK_MAJOR), &wsdata ) ) 
+  if ( WSAStartup( MAKEWORD (REQ_WINSOCK_MINOR, REQ_WINSOCK_MAJOR), &wsdata ) )
     {
-      log_error ("error initializing socket library: ec=%d\n", 
+      log_error ("error initializing socket library: ec=%d\n",
                  (int)WSAGetLastError () );
       return;
     }
-  if ( LOBYTE(wsdata.wVersion) != REQ_WINSOCK_MAJOR  
-       || HIBYTE(wsdata.wVersion) != REQ_WINSOCK_MINOR ) 
+  if ( LOBYTE(wsdata.wVersion) != REQ_WINSOCK_MAJOR
+       || HIBYTE(wsdata.wVersion) != REQ_WINSOCK_MINOR )
     {
       log_error ("socket library version is %x.%x - but %d.%d needed\n",
                  LOBYTE(wsdata.wVersion), HIBYTE(wsdata.wVersion),
@@ -290,7 +290,7 @@ static char *
 make_header_line (const char *prefix, const char *suffix,
                    const void *data, size_t len )
 {
-  static unsigned char bintoasc[] = 
+  static unsigned char bintoasc[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
@@ -308,7 +308,7 @@ make_header_line (const char *prefix, const char *suffix,
       *p++ = bintoasc[(((s[1]<<2)&074)|((s[2]>>6)&03))&077];
       *p++ = bintoasc[s[2]&077];
     }
-  if ( len == 2 ) 
+  if ( len == 2 )
     {
       *p++ = bintoasc[(s[0] >> 2) & 077];
       *p++ = bintoasc[(((s[0] <<4)&060)|((s[1] >> 4)&017))&077];
@@ -336,7 +336,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
   tls_callback = (gpg_error_t (*) (http_t, gnutls_session_t, int))cb;
 #else
   (void)cb;
-#endif  
+#endif
 }
 
 
@@ -345,14 +345,14 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
    pointer for completing the the request and to wait for the
    response. */
 gpg_error_t
-_http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
+_http_open (http_t *r_hd, http_req_t reqtype, const char *url,
             const char *auth, unsigned int flags, const char *proxy,
             void *tls_context, const char *srvtag, strlist_t headers,
             gpg_err_source_t errsource)
 {
   gpg_error_t err;
   http_t hd;
-  
+
   *r_hd = NULL;
 
   if (!(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST))
@@ -370,7 +370,7 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   err = _http_parse_uri (&hd->uri, url, 0, errsource);
   if (!err)
     err = send_request (hd, auth, proxy, srvtag, headers, errsource);
-  
+
   if (err)
     {
       if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
@@ -408,7 +408,7 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
   cookie_t cookie;
 
   /* Make sure that we are in the data. */
-  http_start_data (hd);	
+  http_start_data (hd);
 
   /* Close the write stream but keep the socket open.  */
   cookie = hd->write_cookie;
@@ -455,7 +455,7 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
    be used as an HTTP proxy and any enabled $http_proxy gets
    ignored. */
 gpg_error_t
-_http_open_document (http_t *r_hd, const char *document, 
+_http_open_document (http_t *r_hd, const char *document,
                      const char *auth, unsigned int flags, const char *proxy,
                      void *tls_context, const char *srvtag, strlist_t headers,
                      gpg_err_source_t errsource)
@@ -620,7 +620,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 
       p++;
       if (*p == '/') /* There seems to be a hostname. */
-	{ 
+	{
 	  p++;
 	  if ((p2 = strchr (p, '/')))
 	    *p2++ = 0;
@@ -678,7 +678,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
     return GPG_ERR_BAD_URI;	/* Path includes a Nul. */
   p = p2 ? p2 : NULL;
 
-  if (!p || !*p)	
+  if (!p || !*p)
     return 0; /* We don't have a query string.  Okay. */
 
   /* Now parse the query string. */
@@ -902,7 +902,7 @@ send_request (http_t hd, const char *auth,
 
   if ( (proxy && *proxy)
        || ( (hd->flags & HTTP_FLAG_TRY_PROXY)
-            && (http_proxy = getenv (HTTP_PROXY_ENV)) 
+            && (http_proxy = getenv (HTTP_PROXY_ENV))
             && *http_proxy ))
     {
       parsed_uri_t uri;
@@ -947,7 +947,7 @@ send_request (http_t hd, const char *auth,
   if (hd->sock == -1)
     {
       xfree (proxy_authstr);
-      return gpg_err_make (errsource, (save_errno 
+      return gpg_err_make (errsource, (save_errno
                                        ? gpg_err_code_from_errno (save_errno)
                                        : GPG_ERR_NOT_FOUND));
     }
@@ -987,7 +987,7 @@ send_request (http_t hd, const char *auth,
   if (auth || hd->uri->auth)
     {
       char *myauth;
-      
+
       if (auth)
         {
           myauth = xtrystrdup (auth);
@@ -1015,14 +1015,14 @@ send_request (http_t hd, const char *auth,
           return gpg_err_make (errsource, gpg_err_code_from_syserror ());
         }
     }
-  
+
   p = build_rel_path (hd->uri);
   if (!p)
     return gpg_err_make (errsource, gpg_err_code_from_syserror ());
 
   if (http_proxy && *http_proxy)
     {
-      request = es_asprintf 
+      request = es_asprintf
         ("%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
@@ -1034,13 +1034,13 @@ send_request (http_t hd, const char *auth,
   else
     {
       char portstr[35];
-        
+
       if (port == 80)
         *portstr = 0;
       else
         snprintf (portstr, sizeof portstr, ":%u", port);
 
-      request = es_asprintf 
+      request = es_asprintf
         ("%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
@@ -1099,7 +1099,7 @@ send_request (http_t hd, const char *auth,
         }
     }
   }
-  
+
  leave:
   es_free (request);
   xfree (authstr);
@@ -1228,7 +1228,7 @@ store_header (http_t hd, char *line)
   while (*p == ' ' || *p == '\t')
     p++;
   value = p;
-  
+
   for (h=hd->headers; h; h = h->next)
     if ( !strcmp (h->name, line) )
       break;
@@ -1494,9 +1494,9 @@ connect_server (const char *server, unsigned short port,
   if ( inaddr != INADDR_NONE )
     {
       struct sockaddr_in addr;
-      
+
       memset(&addr,0,sizeof(addr));
-      
+
       sock = socket(AF_INET,SOCK_STREAM,0);
       if ( sock==INVALID_SOCKET )
 	{
@@ -1504,9 +1504,9 @@ connect_server (const char *server, unsigned short port,
 	  return -1;
 	}
 
-      addr.sin_family = AF_INET; 
+      addr.sin_family = AF_INET;
       addr.sin_port = htons(port);
-      memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));      
+      memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));
 
       if (!my_connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
 	return sock;
@@ -1575,7 +1575,7 @@ connect_server (const char *server, unsigned short port,
               errno = save_errno;
               return -1;
             }
-          
+
           if (my_connect (sock, ai->ai_addr, ai->ai_addrlen))
             last_errno = errno;
           else
@@ -1608,7 +1608,7 @@ connect_server (const char *server, unsigned short port,
           xfree (serverlist);
           return -1;
         }
-      
+
       addr.sin_family = host->h_addrtype;
       if (addr.sin_family != AF_INET)
 	{
@@ -1675,7 +1675,7 @@ write_server (int sock, const char *data, size_t length)
     {
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_PTH)
       nwritten = send (sock, data, nleft, 0);
-      if ( nwritten == SOCKET_ERROR ) 
+      if ( nwritten == SOCKET_ERROR )
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
           return gpg_error (GPG_ERR_NETWORK);
@@ -1739,7 +1739,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
           if (nread == GNUTLS_E_AGAIN)
             {
               struct timeval tv;
-              
+
               tv.tv_sec = 0;
               tv.tv_usec = 50000;
               my_select (0, NULL, NULL, NULL, &tv);
@@ -1762,7 +1762,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
 #elif defined(HAVE_W32_SYSTEM)
           /* Under Windows we need to use recv for a socket.  */
           nread = recv (c->fd, buffer, size, 0);
-#else          
+#else
           nread = read (c->fd, buffer, size);
 #endif
         }
@@ -1774,7 +1774,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
       if (nread < c->content_length)
         c->content_length -= nread;
       else
-        c->content_length = 0;          
+        c->content_length = 0;
     }
 
   return nread;
@@ -1793,7 +1793,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
       int nleft = size;
       while (nleft > 0)
         {
-          nwritten = gnutls_record_send (c->tls_session, buffer, nleft); 
+          nwritten = gnutls_record_send (c->tls_session, buffer, nleft);
           if (nwritten <= 0)
             {
               if (nwritten == GNUTLS_E_INTERRUPTED)
@@ -1801,7 +1801,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
               if (nwritten == GNUTLS_E_AGAIN)
                 {
                   struct timeval tv;
-                  
+
                   tv.tv_sec = 0;
                   tv.tv_usec = 50000;
                   my_select (0, NULL, NULL, NULL, &tv);

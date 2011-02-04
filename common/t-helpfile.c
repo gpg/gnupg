@@ -52,7 +52,7 @@ main (int argc, char **argv)
   result = gnupg_get_help_string (argc? argv[0]:NULL, 0);
   if (!result)
     {
-      fprintf (stderr, 
+      fprintf (stderr,
                "Error: nothing found for `%s'\n", argc?argv[0]:"(null)");
       errcount++;
     }
@@ -64,4 +64,3 @@ main (int argc, char **argv)
 
   return !!errcount;
 }
-

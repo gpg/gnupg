@@ -174,17 +174,17 @@ iso7816_select_path (int slot, const unsigned short *path, size_t pathlen,
   int sw, p0, p1;
   unsigned char buffer[100];
   int buflen;
-  
+
   if (result || resultlen)
     {
       *result = NULL;
       *resultlen = 0;
       return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
-  
+
   if (pathlen/2 >= sizeof buffer)
     return gpg_error (GPG_ERR_TOO_LARGE);
-  
+
   for (buflen = 0; pathlen; pathlen--, path++)
     {
       buffer[buflen++] = (*path >> 8);
@@ -231,7 +231,7 @@ iso7816_list_directory (int slot, int list_dirs,
    it maps the status word and does not return it in the result
    buffer.  */
 gpg_error_t
-iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen, 
+iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
                      int handle_more,
                      unsigned char **result, size_t *resultlen)
 {
@@ -273,7 +273,7 @@ iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_check_keypad (slot, command, 
+  sw = apdu_check_keypad (slot, command,
                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
                           pininfo->padlen);
   return iso7816_map_sw (sw);
@@ -494,7 +494,7 @@ iso7816_manage_security_env (int slot, int p1, int p2,
   if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 )
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  sw = apdu_send_simple (slot, 0, 0x00, CMD_MSE, p1, p2, 
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_MSE, p1, p2,
                          data? datalen : -1, (const char*)data);
   return map_sw (sw);
 }
@@ -521,7 +521,7 @@ iso7816_compute_ds (int slot, int extended_mode,
   else if (le >= 0 && le < 256)
     le = 256;
 
-  sw = apdu_send_le (slot, extended_mode, 
+  sw = apdu_send_le (slot, extended_mode,
                      0x00, CMD_PSO, 0x9E, 0x9A,
                      datalen, (const char*)data,
                      le,
@@ -546,7 +546,7 @@ iso7816_compute_ds (int slot, int extended_mode,
    at RESULT with its length stored at RESULTLEN.  For LE see
    do_generate_keypair. */
 gpg_error_t
-iso7816_decipher (int slot, int extended_mode, 
+iso7816_decipher (int slot, int extended_mode,
                   const unsigned char *data, size_t datalen, int le,
                   int padind, unsigned char **result, size_t *resultlen)
 {
@@ -569,10 +569,10 @@ iso7816_decipher (int slot, int extended_mode,
       buf = xtrymalloc (datalen + 1);
       if (!buf)
         return gpg_error (gpg_err_code_from_errno (errno));
-      
+
       *buf = padind; /* Padding indicator. */
       memcpy (buf+1, data, datalen);
-      sw = apdu_send_le (slot, extended_mode, 
+      sw = apdu_send_le (slot, extended_mode,
                          0x00, CMD_PSO, 0x80, 0x86,
                          datalen+1, (char*)buf, le,
                          result, resultlen);
@@ -642,7 +642,7 @@ iso7816_internal_authenticate (int slot, int extended_mode,
 static gpg_error_t
 do_generate_keypair (int slot, int extended_mode, int read_only,
                      const unsigned char *data, size_t datalen,
-                     int le, 
+                     int le,
                      unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -673,7 +673,7 @@ do_generate_keypair (int slot, int extended_mode, int read_only,
 gpg_error_t
 iso7816_generate_keypair (int slot, int extended_mode,
                           const unsigned char *data, size_t datalen,
-                          int le, 
+                          int le,
                           unsigned char **result, size_t *resultlen)
 {
   return do_generate_keypair (slot, extended_mode, 0,
@@ -684,7 +684,7 @@ iso7816_generate_keypair (int slot, int extended_mode,
 gpg_error_t
 iso7816_read_public_key (int slot, int extended_mode,
                          const unsigned char *data, size_t datalen,
-                         int le, 
+                         int le,
                          unsigned char **result, size_t *resultlen)
 {
   return do_generate_keypair (slot, extended_mode, 1,
@@ -707,7 +707,7 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
     {
       result = NULL;
       n = length > 254? 254 : length;
-      sw = apdu_send_le (slot, 0, 
+      sw = apdu_send_le (slot, 0,
                          0x00, CMD_GET_CHALLENGE, 0, 0, -1, NULL, n,
                          &result, &resultlen);
       if (sw != SW_SUCCESS)
@@ -818,7 +818,7 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
         nmax = 0;
     }
   while ((read_all && sw != SW_EOF_REACHED) || (!read_all && nmax));
-  
+
   return 0;
 }
 
@@ -851,7 +851,7 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
   buffer = NULL;
   bufferlen = 0;
   sw = apdu_send_le (slot, 0, 0x00, CMD_READ_RECORD,
-                     recno, 
+                     recno,
                      short_ef? short_ef : 0x04,
                      -1, NULL,
                      0, &buffer, &bufferlen);
@@ -867,7 +867,6 @@ iso7816_read_record (int slot, int recno, int reccount, int short_ef,
     }
   *result = buffer;
   *resultlen = bufferlen;
-  
+
   return 0;
 }
-

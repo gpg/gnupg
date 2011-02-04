@@ -1,4 +1,4 @@
-/* divert-scd.c - divert operations to the scdaemon 
+/* divert-scd.c - divert operations to the scdaemon
  *	Copyright (C) 2002, 2003, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -140,7 +140,7 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
   memcpy (frame+asnlen, digest, digestlen);
   if (DBG_CRYPTO)
     log_printhex ("encoded hash:", frame, asnlen+digestlen);
-      
+
   *r_val = frame;
   *r_len = asnlen+digestlen;
   return 0;
@@ -170,11 +170,11 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
    Example:
 
      "|AN|Please enter the new security officer's PIN"
-     
+
    The text "Please ..." will get displayed and the flags 'A' and 'N'
    are considered.
  */
-static int 
+static int
 getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
@@ -291,7 +291,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                              prompt, NULL, pi2);
           if (!rc && strcmp (pi->pin, pi2->pin))
             {
-              again_text = (resetcode? 
+              again_text = (resetcode?
                             N_("Reset Code not correctly repeated; try again"):
                             is_puk?
                             N_("PUK not correctly repeated; try again"):
@@ -307,7 +307,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
     {
       char *desc;
       if ( asprintf (&desc,
-                     _("Please enter the PIN%s%s%s to unlock the card"), 
+                     _("Please enter the PIN%s%s%s to unlock the card"),
                      info? " (`":"",
                      info? info:"",
                      info? "')":"") < 0)
@@ -329,7 +329,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
 
 int
-divert_pksign (ctrl_t ctrl, 
+divert_pksign (ctrl_t ctrl,
                const unsigned char *digest, size_t digestlen, int algo,
                const unsigned char *shadow_info, unsigned char **r_sig)
 {
@@ -376,7 +376,7 @@ divert_pksign (ctrl_t ctrl,
 /* Decrypt the the value given asn an S-expression in CIPHER using the
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  */
-int  
+int
 divert_pkdecrypt (ctrl_t ctrl,
                   const unsigned char *cipher,
                   const unsigned char *shadow_info,
@@ -397,28 +397,28 @@ divert_pkdecrypt (ctrl_t ctrl,
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP);
   if (!smatch (&s, n, "enc-val"))
-    return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   if (*s != '(')
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP);
   if (!smatch (&s, n, "rsa"))
-    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
+    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
   if (*s != '(')
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP);
   if (!smatch (&s, n, "a"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   ciphertext = s;
   ciphertextlen = n;
 
@@ -439,13 +439,8 @@ divert_pkdecrypt (ctrl_t ctrl,
 }
 
 
-int  
+int
 divert_generic_cmd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
 {
   return agent_card_scd (ctrl, cmdline, getpin_cb, ctrl, assuan_context);
 }
-
-
-
-
-

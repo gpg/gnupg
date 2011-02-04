@@ -66,12 +66,12 @@ fseeko (FILE * stream, off_t newpos, int whence)
 static int
 create_tmp_file (const char *template,
                  char **r_bakfname, char **r_tmpfname, FILE **r_fp)
-{  
+{
   char *bakfname, *tmpfname;
-  
+
   *r_bakfname = NULL;
   *r_tmpfname = NULL;
-  
+
 # ifdef USE_ONLY_8DOT3
   /* Here is another Windoze bug?:
    * you cant rename("pubring.kbx.tmp", "pubring.kbx");
@@ -88,7 +88,7 @@ create_tmp_file (const char *template,
         return gpg_error_from_syserror ();
       strcpy (bakfname, template);
       strcpy (bakfname+strlen(template)-4, EXTSEP_S "kb_");
-      
+
       tmpfname = xtrymalloc (strlen (template) + 1);
       if (!tmpfname)
         {
@@ -99,14 +99,14 @@ create_tmp_file (const char *template,
       strcpy (tmpfname,template);
       strcpy (tmpfname + strlen (template)-4, EXTSEP_S "k__");
     }
-  else 
+  else
     { /* File does not end with kbx, thus we hope we are working on a
          modern file system and appending a suffix works. */
       bakfname = xtrymalloc ( strlen (template) + 5);
       if (!bakfname)
         return gpg_error_from_syserror ();
       strcpy (stpcpy (bakfname, template), EXTSEP_S "kb_");
-      
+
       tmpfname = xtrymalloc ( strlen (template) + 5);
       if (!tmpfname)
         {
@@ -121,7 +121,7 @@ create_tmp_file (const char *template,
   if (!bakfname)
     return gpg_error_from_syserror ();
   strcpy (stpcpy (bakfname,template),"~");
-  
+
   tmpfname = xtrymalloc ( strlen (template) + 5);
   if (!tmpfname)
     {
@@ -173,7 +173,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 
   /* First make a backup file except for secret keyboxes. */
   if (!secret)
-    { 
+    {
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
       gnupg_remove (bakfname);
 #endif
@@ -182,7 +182,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
           return gpg_error_from_syserror ();
 	}
     }
-  
+
   /* Then rename the file. */
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
   gnupg_remove (fname);
@@ -200,7 +200,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 	}
       return rc;
     }
-  
+
   return 0;
 }
 
@@ -212,7 +212,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
  	 3 = update
 */
 static int
-blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob, 
+blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
                int secret, off_t start_offset)
 {
   FILE *fp, *newfp;
@@ -222,14 +222,14 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   char buffer[4096];
   int nread, nbytes;
 
-  /* Open the source file. Because we do a rename, we have to check the 
+  /* Open the source file. Because we do a rename, we have to check the
      permissions of the file */
   if (access (fname, W_OK))
     return gpg_error_from_syserror ();
 
   fp = fopen (fname, "rb");
   if (mode == 1 && !fp && errno == ENOENT)
-    { 
+    {
       /* Insert mode but file does not exist:
          Create a new keybox file. */
       newfp = fopen (fname, "wb");
@@ -268,10 +268,10 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       fclose(fp);
       goto leave;
     }
-  
+
   /* prepare for insert */
   if (mode == 1)
-    { 
+    {
       /* Copy everything to the new file. */
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
         {
@@ -287,12 +287,12 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           goto leave;
         }
     }
-  
+
   /* Prepare for delete or update. */
-  if ( mode == 2 || mode == 3 ) 
-    { 
+  if ( mode == 2 || mode == 3 )
+    {
       off_t current = 0;
-      
+
       /* Copy first part to the new file. */
       while ( current < start_offset )
         {
@@ -303,7 +303,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (!nread)
             break;
           current += nread;
-          
+
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
@@ -315,24 +315,24 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           rc = gpg_error_from_syserror ();
           goto leave;
         }
-      
+
       /* Skip this blob. */
       rc = _keybox_read_blob (NULL, fp);
       if (rc)
         return rc;
     }
-  
+
   /* Do an insert or update. */
   if ( mode == 1 || mode == 3 )
-    { 
+    {
       rc = _keybox_write_blob (blob, newfp);
       if (rc)
           return rc;
     }
-  
+
   /* Copy the rest of the packet for an delete or update. */
   if (mode == 2 || mode == 3)
-    { 
+    {
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
         {
           if (fwrite (buffer, nread, 1, newfp) != 1)
@@ -347,7 +347,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           goto leave;
         }
     }
-    
+
   /* Close both files. */
   if (fclose(fp))
     {
@@ -371,7 +371,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
 
 
-#ifdef KEYBOX_WITH_X509 
+#ifdef KEYBOX_WITH_X509
 int
 keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                     unsigned char *sha1_digest)
@@ -381,12 +381,12 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
   KEYBOXBLOB blob;
 
   if (!hd)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   if (!hd->kb)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   fname = hd->kb->fname;
   if (!fname)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
 
   /* Close this one otherwise we will mess up the position for a next
      search.  Fixme: it would be better to adjust the position after
@@ -440,12 +440,12 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
   if (!hd->kb)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
   fname = hd->kb->fname;
   if (!fname)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
 
   off = _keybox_get_blob_fileoffset (hd->found.blob);
   if (off == (off_t)-1)
@@ -455,7 +455,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
   ec = _keybox_get_flag_location (buffer, length, what, &flag_pos, &flag_size);
   if (ec)
     return gpg_error (ec);
-  
+
   off += flag_pos;
 
   _keybox_close_file (hd);
@@ -477,7 +477,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
 
       switch (flag_size)
         {
-        case 1: 
+        case 1:
         case 2:
         case 4:
           if (fwrite (tmp+4-flag_size, flag_size, 1, fp) != 1)
@@ -513,10 +513,10 @@ keybox_delete (KEYBOX_HANDLE hd)
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
   if (!hd->kb)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   fname = hd->kb->fname;
   if (!fname)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
 
   off = _keybox_get_blob_fileoffset (hd->found.blob);
   if (off == (off_t)-1)
@@ -562,18 +562,18 @@ keybox_compress (KEYBOX_HANDLE hd)
   int skipped_deleted;
 
   if (!hd)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   if (!hd->kb)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
   if (hd->secret)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
   fname = hd->kb->fname;
   if (!fname)
-    return gpg_error (GPG_ERR_INV_HANDLE); 
+    return gpg_error (GPG_ERR_INV_HANDLE);
 
   _keybox_close_file (hd);
 
-  /* Open the source file. Because we do a rename, we have to check the 
+  /* Open the source file. Because we do a rename, we have to check the
      permissions of the file */
   if (access (fname, W_OK))
     return gpg_error_from_syserror ();
@@ -599,7 +599,7 @@ keybox_compress (KEYBOX_HANDLE hd)
         {
           u32 last_maint = ((buffer[20] << 24) | (buffer[20+1] << 16)
                             | (buffer[20+2] << 8) | (buffer[20+3]));
-          
+
           if ( (last_maint + 3*3600) > time (NULL) )
             {
               fclose (fp);
@@ -620,7 +620,7 @@ keybox_compress (KEYBOX_HANDLE hd)
       return rc;;
     }
 
-  
+
   /* Processing loop.  By reading using _keybox_read_blob we
      automagically skip any blobs flagged as deleted.  Thus what we
      only have to do is to check all ephemeral flagged blocks whether
@@ -665,7 +665,7 @@ keybox_compress (KEYBOX_HANDLE hd)
           continue;
         }
 
-      if (_keybox_get_flag_location (buffer, length, 
+      if (_keybox_get_flag_location (buffer, length,
                                      KEYBOX_FLAG_BLOB, &pos, &size)
           || size != 2)
         {
@@ -676,7 +676,7 @@ keybox_compress (KEYBOX_HANDLE hd)
       if ((blobflags & KEYBOX_FLAG_BLOB_EPHEMERAL))
         {
           /* This is an ephemeral blob. */
-          if (_keybox_get_flag_location (buffer, length, 
+          if (_keybox_get_flag_location (buffer, length,
                                          KEYBOX_FLAG_CREATED_AT, &pos, &size)
               || size != 4)
             created_at = 0; /* oops. */
@@ -719,4 +719,3 @@ keybox_compress (KEYBOX_HANDLE hd)
   xfree(tmpfname);
   return rc;
 }
-

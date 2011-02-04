@@ -58,7 +58,7 @@ keys is in canonical representation[3]:
     (u #304559a..[some bytes not shown]..9b#)
    )
    (uri http://foo.bar x-foo:whatever_you_want)
-)  
+)
 
 
 Protected Private Key Format
@@ -74,7 +74,7 @@ A protected key is like this:
    )
    (uri http://foo.bar x-foo:whatever_you_want)
    (comment whatever)
-)  
+)
 
 
 In this scheme the encrypted_octet_string is encrypted according to
@@ -107,13 +107,13 @@ representation) after decryption:
   (d #046129F..[some bytes not shown]..81#)
   (p #00e861b..[some bytes not shown]..f1#)
   (q #00f7a7c..[some bytes not shown]..61#)
-  (u #304559a..[some bytes not shown]..9b#) 
- ) 
+  (u #304559a..[some bytes not shown]..9b#)
+ )
  (hash sha1 #...[hashvalue]...#)
 )
 
 For padding reasons, random bytes are appended to this list - they can
-easily be stripped by looking for the end of the list. 
+easily be stripped by looking for the end of the list.
 
 The hash is calculated on the concatenation of the public key and
 secret key parameter lists: i.e it is required to hash the
@@ -150,7 +150,7 @@ to keys stored on a token:
    )
    (uri http://foo.bar x-foo:whatever_you_want)
    (comment whatever)
-)  
+)
 
 The currently used protocol is "ti-v1" (token info version 1).  The
 second list with the information has this layout:
@@ -174,7 +174,7 @@ This format is used to transfer keys between gpg and gpg-agent.
 
 
 * V is the packet version number (3 or 4).
-* PUBKEYALGO is a Libgcrypt algo name 
+* PUBKEYALGO is a Libgcrypt algo name
 * P1 .. PN are the parameters; the public parameters are never encrypted
   the secrect key parameters are encrypted if the "protection" list is
   given.  To make this more explicit each parameter is preceded by a
@@ -215,7 +215,7 @@ for the passphrase storage the name "pw-default.dat" is suggested.
     (protected mode (parms) encrypted_octet_string)
     (protected-at <isotimestamp>)
    )
-)  
+)
 
 After decryption the encrypted_octet_string yields this S-expression:
 
@@ -224,7 +224,7 @@ After decryption the encrypted_octet_string yields this S-expression:
   (value key_1 value_1)
   (value key_2 value_2)
   (value key_n value_n)
- ) 
+ )
  (hash sha1 #...[hashvalue]...#)
 )
 
@@ -260,7 +260,7 @@ Example:
     (protected mode (parms) encrypted_octet_string)
     (protected-at "20100915T111722")
    )
-)  
+)
 
 with "encrypted_octet_string" decoding to:
 
@@ -269,7 +269,7 @@ with "encrypted_octet_string" decoding to:
   (value 4:1002 "signal flags at the lock")
   (value 4:1001 "taocp")
   (value 1:0    "premature optimization is the root of all evil")
- ) 
+ )
  (hash sha1 #0102030405060708091011121314151617181920#)
 )
 

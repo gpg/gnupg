@@ -90,13 +90,13 @@ send_one_string (ctrl_t ctrl, const char *name, const char *string)
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
-static gpg_error_t 
+static gpg_error_t
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
   struct app_local_s *ld = app->app_local;
   char numbuf[100];
-  
+
   if (!strcmp (name, "X-KBLZ"))
     err = send_one_string (ctrl, name, ld->kblz);
   else if (!strcmp (name, "X-BANKINFO"))
@@ -123,24 +123,24 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   else if (!strcmp (name, "X-BALANCE"))
     {
-      snprintf (numbuf, sizeof numbuf, "%.2f", 
+      snprintf (numbuf, sizeof numbuf, "%.2f",
                 (double)ld->balance / 100 * ld->currency_mult100);
       err = send_one_string (ctrl, name, numbuf);
     }
   else if (!strcmp (name, "X-MAXAMOUNT"))
     {
-      snprintf (numbuf, sizeof numbuf, "%.2f", 
+      snprintf (numbuf, sizeof numbuf, "%.2f",
                 (double)ld->maxamount / 100 * ld->currency_mult100);
       err = send_one_string (ctrl, name, numbuf);
     }
   else if (!strcmp (name, "X-MAXAMOUNT1"))
     {
-      snprintf (numbuf, sizeof numbuf, "%.2f", 
+      snprintf (numbuf, sizeof numbuf, "%.2f",
                 (double)ld->maxamount1 / 100 * ld->currency_mult100);
       err = send_one_string (ctrl, name, numbuf);
     }
   else
-    err = gpg_error (GPG_ERR_INV_NAME); 
+    err = gpg_error (GPG_ERR_INV_NAME);
 
   return err;
 }
@@ -185,7 +185,7 @@ copy_bcd (const unsigned char *string, size_t length)
 
   if (!length)
     return xtrystrdup ("");
-      
+
   /* Skip leading zeroes. */
   for (; length && !*string; length--, string++)
     ;
@@ -196,7 +196,7 @@ copy_bcd (const unsigned char *string, size_t length)
     {
       if (!needed && !(*s & 0xf0))
         ; /* Skip the leading zero in the first nibble.  */
-      else 
+      else
         {
           if ( ((*s >> 4) & 0x0f) > 9 )
             {
@@ -216,7 +216,7 @@ copy_bcd (const unsigned char *string, size_t length)
               return NULL;
             }
         }
-      
+
     }
   if (!needed) /* If it is all zero, print a "0". */
     needed++;
@@ -227,12 +227,12 @@ copy_bcd (const unsigned char *string, size_t length)
 
   s = string;
   n = length;
-  needed = 0;  
+  needed = 0;
   for (; n ; n--, s++)
     {
       if (!needed && !(*s & 0xf0))
         ; /* Skip the leading zero in the first nibble.  */
-      else 
+      else
         {
           *dst++ = '0' + ((*s >> 4) & 0x0f);
           needed++;
@@ -247,7 +247,7 @@ copy_bcd (const unsigned char *string, size_t length)
         }
     }
   if (!needed)
-    *dst++ = '0';  
+    *dst++ = '0';
   *dst = 0;
 
   return buffer;
@@ -282,11 +282,11 @@ app_select_geldkarte (app_t app)
   size_t resultlen;
   struct app_local_s *ld;
   const char *banktype;
-  
+
   err = iso7816_select_application (slot, aid, sizeof aid, 0);
   if (err)
-    goto leave; 
-  
+    goto leave;
+
   /* Read the first record of EF_ID (SFI=0x17).  We require this
      record to be at least 24 bytes with the the first byte 0x67 and a
      correct filler byte. */
@@ -298,7 +298,7 @@ app_select_geldkarte (app_t app)
       err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
-  
+
   /* The short Bankleitzahl consists of 3 bytes at offset 1.  */
   switch (result[1])
     {
@@ -307,11 +307,11 @@ app_select_geldkarte (app_t app)
     case 0x25: banktype = "Sparkasse"; break;
     case 0x26:
     case 0x29: banktype = "Genossenschaftsbank"; break;
-    default: 
+    default:
       err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave; /* Probably not a Geldkarte. */
     }
-  
+
   app->apptype = "GELDKARTE";
   app->fnc.deinit = do_deinit;
 
@@ -339,7 +339,7 @@ app_select_geldkarte (app_t app)
       goto leave;
     }
 
-  snprintf (ld->kblz, sizeof ld->kblz, "%02X-%02X%02X", 
+  snprintf (ld->kblz, sizeof ld->kblz, "%02X-%02X%02X",
             result[1], result[2], result[3]);
   ld->banktype = banktype;
   ld->cardno = copy_bcd (result+4, 5);
@@ -348,8 +348,8 @@ app_select_geldkarte (app_t app)
       err = gpg_err_code_from_syserror ();
       goto leave;
     }
-  
-  snprintf (ld->expires, sizeof ld->expires, "20%02X-%02X", 
+
+  snprintf (ld->expires, sizeof ld->expires, "20%02X-%02X",
             result[10], result[11]);
   snprintf (ld->validfrom, sizeof ld->validfrom, "20%02X-%02X-%02X",
             result[12], result[13], result[14]);

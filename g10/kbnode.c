@@ -184,7 +184,7 @@ find_next_kbnode( KBNODE node, int pkttype )
     for( node=node->next ; node; node = node->next ) {
 	if( !pkttype )
 	    return node;
-	else if( pkttype == PKT_USER_ID 
+	else if( pkttype == PKT_USER_ID
 		 && (	node->pkt->pkttype == PKT_PUBLIC_KEY
 		     || node->pkt->pkttype == PKT_SECRET_KEY ) )
 	    return NULL;
@@ -338,7 +338,7 @@ move_kbnode( KBNODE *root, KBNODE node, KBNODE where )
 void
 dump_kbnode (KBNODE node)
 {
-  for (; node; node = node->next ) 
+  for (; node; node = node->next )
     {
       const char *s;
       switch (node->pkt->pkttype)
@@ -395,12 +395,12 @@ dump_kbnode (KBNODE node)
           log_printf ("  keyid=%08lX a=%d u=%d %c%c%c%c\n",
                       (ulong)keyid_from_pk( pk, NULL ),
                       pk->pubkey_algo, pk->pubkey_usage,
-                      pk->has_expired? 'e':'.',  
-                      pk->flags.revoked? 'r':'.',  
+                      pk->has_expired? 'e':'.',
+                      pk->flags.revoked? 'r':'.',
                       pk->flags.valid?    'v':'.',
                       pk->flags.mdc?   'm':'.');
         }
-      
+
       log_flush ();
     }
 }

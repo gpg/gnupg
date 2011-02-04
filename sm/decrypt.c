@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -33,7 +33,7 @@
 #include "keydb.h"
 #include "i18n.h"
 
-struct decrypt_filter_parm_s 
+struct decrypt_filter_parm_s
 {
   int algo;
   int mode;
@@ -53,7 +53,7 @@ struct decrypt_filter_parm_s
 
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
-static int 
+static int
 prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                     ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
@@ -84,9 +84,9 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       if (n + 7 > seskeylen )
         {
           rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
-          goto leave; 
+          goto leave;
         }
-      
+
       /* FIXME: Actually the leading zero is required but due to the way
          we encode the output in libgcrypt as an MPI we are not able to
          encode that leading zero.  However, when using a Smartcard we are
@@ -94,20 +94,20 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
          should be fixed in gpg-agent of course. */
       if (!seskey[n])
         n++;
-      
+
       if (seskey[n] != 2 )  /* Wrong block type version. */
-        { 
+        {
           rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
-          goto leave; 
+          goto leave;
         }
-      
+
       for (n++; n < seskeylen && seskey[n]; n++) /* Skip the random bytes. */
         ;
       n++; /* and the zero byte */
       if (n >= seskeylen )
-        { 
+        {
           rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
-          goto leave; 
+          goto leave;
         }
     }
 
@@ -120,7 +120,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       log_error ("error creating decryptor: %s\n", gpg_strerror (rc));
       goto leave;
     }
-                        
+
   rc = gcry_cipher_setkey (parm->hd, seskey+n, seskeylen-n);
   if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
     {
@@ -301,7 +301,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
   audit_log (ctrl->audit, AUDIT_SETUP_READY);
 
   /* Parser loop. */
-  do 
+  do
     {
       rc = ksba_cms_parse (cms, &stopreason);
       if (rc)
@@ -316,7 +316,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           int algo, mode;
           const char *algoid;
           int any_key = 0;
-          
+
           audit_log (ctrl->audit, AUDIT_GOT_DATA);
 
           algoid = ksba_cms_get_content_oid (cms, 2/* encryption algo*/);
@@ -363,7 +363,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               log_error ("error getting IV: %s\n", gpg_strerror (rc));
               goto leave;
             }
-          
+
           for (recp=0; !any_key; recp++)
             {
               char *issuer;
@@ -412,7 +412,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   if (rc)
                     {
                       log_error ("failed to get cert: %s\n", gpg_strerror (rc));
-                      goto oops;     
+                      goto oops;
                     }
 
                   /* Print the ENC_TO status line.  Note that we can
@@ -424,11 +424,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                      keyid for later use.  */
                   {
                     unsigned long kid[2];
-                    
+
                     kid[0] = gpgsm_get_short_fingerprint (cert, kid+1);
                     snprintf (kidbuf, sizeof kidbuf, "%08lX%08lX",
                               kid[1], kid[0]);
-                    gpgsm_status2 (ctrl, STATUS_ENC_TO, 
+                    gpgsm_status2 (ctrl, STATUS_ENC_TO,
                                    kidbuf, "0", "0", NULL);
                   }
 
@@ -535,7 +535,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   goto leave;
                 }
               rc = ksba_writer_write (writer,
-                                      dfparm.lastblock, 
+                                      dfparm.lastblock,
                                       dfparm.blklen - npadding);
               if (rc)
                 goto leave;
@@ -553,10 +553,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
         }
 
     }
-  while (stopreason != KSBA_SR_READY);   
+  while (stopreason != KSBA_SR_READY);
 
   rc = gpgsm_finish_writer (b64writer);
-  if (rc) 
+  if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
@@ -575,11 +575,9 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
   ksba_cms_release (cms);
   gpgsm_destroy_reader (b64reader);
   gpgsm_destroy_writer (b64writer);
-  keydb_release (kh); 
+  keydb_release (kh);
   es_fclose (in_fp);
   if (dfparm.hd)
-    gcry_cipher_close (dfparm.hd); 
+    gcry_cipher_close (dfparm.hd);
   return rc;
 }
-
-

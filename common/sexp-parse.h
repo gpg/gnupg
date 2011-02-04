@@ -51,7 +51,7 @@ sskip (unsigned char const **buf, int *depth)
   const unsigned char *s = *buf;
   size_t n;
   int d = *depth;
-  
+
   while (d > 0)
     {
       if (*s == '(')
@@ -70,7 +70,7 @@ sskip (unsigned char const **buf, int *depth)
             return gpg_error (GPG_ERR_INV_SEXP);
           n = snext (&s);
           if (!n)
-            return gpg_error (GPG_ERR_INV_SEXP); 
+            return gpg_error (GPG_ERR_INV_SEXP);
           s += n;
         }
     }
@@ -123,6 +123,6 @@ smklen (char *help_buffer, size_t help_buflen, size_t value, size_t *length)
     *length = (help_buffer + help_buflen) - p;
   return p;
 }
-    
+
 
 #endif /*SEXP_PARSE_H*/

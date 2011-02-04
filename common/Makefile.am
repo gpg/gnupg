@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -97,12 +97,12 @@ common_sources = \
 # separate source files.
 if HAVE_W32_SYSTEM
 if HAVE_W32CE_SYSTEM
-common_sources += exechelp-w32ce.c 
+common_sources += exechelp-w32ce.c
 else
-common_sources += exechelp-w32.c 
+common_sources += exechelp-w32.c
 endif
 else
-common_sources += exechelp-posix.c 
+common_sources += exechelp-posix.c
 endif
 
 # Sources only useful without PTH.
@@ -155,7 +155,7 @@ endif
 #
 # Module tests
 #
-t_jnlib_src = t-support.c t-support.h 
+t_jnlib_src = t-support.c t-support.h
 jnlib_tests = t-stringhelp t-timestuff
 if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
@@ -194,7 +194,3 @@ t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
-
-
-
-

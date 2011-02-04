@@ -82,7 +82,7 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
       adns_finish (state);
       return -1;
     }
-  if (answer->status != adns_s_ok) 
+  if (answer->status != adns_s_ok)
     {
       /* log_error ("DNS query returned an error: %s (%s)\n", */
       /*            adns_strerror (answer->status), */
@@ -112,7 +112,7 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
           *iobuf = iobuf_temp_with_content ((char*)data, datalen);
           rc = 1;
         }
-      else if (ctype == 6 && datalen && datalen < 1023 
+      else if (ctype == 6 && datalen && datalen < 1023
                && datalen >= data[0]+1 && fpr && fpr_len && url)
         {
           /* CERT type is IPGP.  We made sure tha the data is
@@ -126,7 +126,7 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
             }
           else
             *fpr = NULL;
-              
+
           if (datalen > *fpr_len + 1)
             {
               *url = xmalloc (datalen - (*fpr_len+1) + 1);
@@ -135,11 +135,11 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
             }
           else
             *url = NULL;
-          
+
           rc = 2;
         }
     }
-  
+
   adns_free (answer);
   adns_finish (state);
   return rc;

@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.  
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -1383,7 +1383,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
       n = *buffer++;
       buflen--;
       if (n == 255) /* 4 byte length header.  */
-	{			
+	{
 	  if (buflen < 4)
 	    goto too_short;
 	  n = (buffer[0] << 24) | (buffer[1] << 16)
@@ -1392,7 +1392,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
 	  buflen -= 4;
 	}
       else if (n >= 192) /* 4 byte special encoded length header.  */
-	{			
+	{
 	  if (buflen < 2)
 	    goto too_short;
 	  n = ((n - 192) << 8) + *buffer + 192;
@@ -1511,7 +1511,7 @@ parse_revkeys (PKT_signature * sig)
 						     SIGSUBPKT_REV_KEY,
 						     &len, &seq, NULL)))
     {
-      if (len == sizeof (struct revocation_key) 
+      if (len == sizeof (struct revocation_key)
           && (revkey->class & 0x80))  /* 0x80 bit must be set.  */
 	{
 	  sig->revkey = xrealloc (sig->revkey,
@@ -1574,7 +1574,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->flags.exportable = 1;
   sig->flags.revocable = 1;
   if (is_v4) /* Read subpackets.  */
-    { 
+    {
       n = read_16 (inp);
       pktlen -= 2;  /* Length of hashed data. */
       if (n > 10000)
@@ -1622,7 +1622,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   if (pktlen < 5)  /* Sanity check.  */
-    {				
+    {
       log_error ("packet(%d) too short\n", pkttype);
       rc = G10ERR_INVALID_PACKET;
       goto leave;
@@ -1634,7 +1634,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   pktlen--;
 
   if (is_v4 && sig->pubkey_algo)  /* Extract required information.  */
-    {			
+    {
       const byte *p;
       size_t len;
 
@@ -2164,7 +2164,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 	    }
 	  else /* Old version; no S2K, so we set mode to 0, hash MD5.  */
-	    { 
+	    {
               /* Note that a ski->algo > 110 is illegal, but I'm not
                  erroring on it here as otherwise there would be no
                  way to delete such a key.  */
@@ -2174,7 +2174,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		es_fprintf (listfp, "\tprotect algo: %d  (hash algo: %d)\n",
                             ski->algo, ski->s2k.hash_algo);
 	    }
-          
+
 	  /* It is really ugly that we don't know the size
 	   * of the IV here in cases we are not aware of the algorithm.
 	   * so a
@@ -2233,8 +2233,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  if (list_mode)
             es_fprintf (listfp, "\tskey[%d]: [v4 protected]\n", npkey);
 	}
-      else 
-	{	
+      else
+	{
           /* The v3 method: The mpi length is not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
@@ -2300,7 +2300,7 @@ parse_attribute_subpkts (PKT_user_id * uid)
       n = *buffer++;
       buflen--;
       if (n == 255)  /* 4 byte length header.  */
-	{			
+	{
 	  if (buflen < 4)
 	    goto too_short;
 	  n = (buffer[0] << 24) | (buffer[1] << 16)
@@ -2309,7 +2309,7 @@ parse_attribute_subpkts (PKT_user_id * uid)
 	  buflen -= 4;
 	}
       else if (n >= 192)  /* 2 byte special encoded length header.  */
-	{			
+	{
 	  if (buflen < 2)
 	    goto too_short;
 	  n = ((n - 192) << 8) + *buffer + 192;
@@ -2835,4 +2835,3 @@ create_gpg_control (ctrlpkttype_t type, const byte * data, size_t datalen)
 
   return packet;
 }
-

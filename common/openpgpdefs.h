@@ -21,7 +21,7 @@
 #ifndef GNUPG_COMMON_OPENPGPDEFS_H
 #define GNUPG_COMMON_OPENPGPDEFS_H
 
-typedef enum 
+typedef enum
   {
     PKT_NONE	      = 0,
     PKT_PUBKEY_ENC    = 1,  /* Public key encrypted packet. */
@@ -44,11 +44,11 @@ typedef enum
     PKT_MDC 	      = 19, /* Manipulation detection code packet. */
     PKT_COMMENT	      = 61, /* new comment packet (GnuPG specific). */
     PKT_GPG_CONTROL   = 63  /* internal control packet (GnuPG specific). */
-  } 
+  }
 pkttype_t;
 
 
-typedef enum 
+typedef enum
   {
     SIGSUBPKT_TEST_CRITICAL = -3,
     SIGSUBPKT_LIST_UNHASHED = -2,
@@ -76,11 +76,11 @@ typedef enum
     SIGSUBPKT_SIGNERS_UID   = 28, /* Signer's user id. */
     SIGSUBPKT_REVOC_REASON  = 29, /* Reason for revocation. */
     SIGSUBPKT_FEATURES      = 30, /* Feature flags. */
-                              
+
     SIGSUBPKT_SIGNATURE     = 32, /* Embedded signature. */
-                              
+
     SIGSUBPKT_FLAG_CRITICAL = 128
-  } 
+  }
 sigsubpkttype_t;
 
 

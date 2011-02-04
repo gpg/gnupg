@@ -52,7 +52,7 @@ decrypt_message (ctrl_t ctrl, const char *filename)
   int no_out = 0;
 
   pfx = new_progress_context ();
-  
+
   /* Open the message file.  */
   fp = iobuf_open (filename);
   if (fp && is_secured_file (iobuf_get_fd (fp)))
@@ -111,7 +111,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
     return gpg_error (GPG_ERR_BUG);
 
   pfx = new_progress_context ();
-  
+
   /* Open the message file.  */
   fp = iobuf_open_fd_or_name (input_fd, NULL, "rb");
   if (fp && is_secured_file (iobuf_get_fd (fp)))
@@ -123,7 +123,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
   if (!fp)
     {
       char xname[64];
-      
+
       err = gpg_error_from_syserror ();
       snprintf (xname, sizeof xname, "[fd %d]", input_fd);
       log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (err));
@@ -173,12 +173,12 @@ void
 decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
 {
   IOBUF fp;
-  armor_filter_context_t *afx = NULL;  
+  armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
   char *p, *output = NULL;
   int rc=0,use_stdin=0;
   unsigned int lno=0;
-  
+
   if (opt.outfile)
     {
       log_error(_("--output doesn't work for this command\n"));
@@ -222,7 +222,7 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
       if(filename==NULL)
 	break;
 
-      print_file_status(STATUS_FILE_START, filename, 3);      
+      print_file_status(STATUS_FILE_START, filename, 3);
       output = make_outfile_name(filename);
       if (!output)
         goto next_file;
@@ -267,7 +267,7 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
       reset_literals_seen();
     }
 
-  set_next_passphrase(NULL);  
+  set_next_passphrase(NULL);
   release_armor_context (afx);
   release_progress_context (pfx);
 }

@@ -53,7 +53,7 @@ struct runner_s
 
      1 = Thread not running or only the thread is still running.
      2 = Thread is running and someone is holding a reference.  */
-  int refcount; 
+  int refcount;
 
   pid_t pid;  /* PID of the backend's process (the engine).  */
   int in_fd;  /* File descriptors to read from the engine.  */
@@ -82,7 +82,7 @@ writen (int fd, const void *buf, size_t nbytes)
 {
   size_t nleft = nbytes;
   int nwritten;
-  
+
   while (nleft > 0)
     {
       nwritten = pth_write (fd, buf, nleft);
@@ -96,7 +96,7 @@ writen (int fd, const void *buf, size_t nbytes)
       nleft -= nwritten;
       buf = (const char*)buf + nwritten;
     }
-    
+
   return 0;
 }
 
@@ -150,7 +150,7 @@ runner_release (runner_t runner)
     close (runner->in_fd);
   if (runner->out_fd != -1)
     close (runner->out_fd);
-  
+
   /* Fixme: close the process. */
 
   /* Tell the engine to release its data.  */
@@ -177,7 +177,7 @@ runner_release (runner_t runner)
 /* Create a new runner context.  On success a new runner object is
    stored at R_RUNNER.  On failure NULL is stored at this address and
    an error code returned.  */
-gpg_error_t 
+gpg_error_t
 runner_new (runner_t *r_runner, const char *name)
 {
   static unsigned int namecounter; /* Global name counter.  */
@@ -215,14 +215,14 @@ runner_new (runner_t *r_runner, const char *name)
   runner->pid = (pid_t)(-1);
   runner->in_fd = -1;
   runner->out_fd = -1;
-  
+
   *r_runner = runner;
   return 0;
 }
 
 
 /* Return the identifier of RUNNER.  */
-unsigned int 
+unsigned int
 runner_get_rid (runner_t runner)
 {
   return runner->identifier;
@@ -282,8 +282,8 @@ runner_set_pid (runner_t runner, pid_t pid)
    and its private HANDLER_DATA with RUNNER.  */
 void
 runner_set_handler (runner_t runner,
-                    engine_handler_fnc_t handler, 
-                    engine_handler_cleanup_fnc_t handler_cleanup, 
+                    engine_handler_fnc_t handler,
+                    engine_handler_cleanup_fnc_t handler_cleanup,
                     void *handler_data)
 {
   if (check_already_spawned (runner, "runner_set_handler"))
@@ -325,14 +325,14 @@ runner_thread (void *arg)
             {
               buffer[pos - (c == '\n')] = 0;
               if (opt.verbose)
-                log_info ("%s%s: %s\n", 
+                log_info ("%s%s: %s\n",
                           runner->name, cont_line? "(cont)":"", buffer);
               /* We handle only complete lines and ignore any stuff we
                  possibly had to truncate.  That is - at least for the
                  encfs engine - not an issue because our changes to
                  the tool make sure that only relatively short prompt
                  lines are of interest.  */
-              if (!cont_line && runner->handler) 
+              if (!cont_line && runner->handler)
                 err = runner->handler (runner->handler_data,
                                        runner, buffer);
               pos = 0;
@@ -349,7 +349,7 @@ runner_thread (void *arg)
           if (opt.verbose)
             log_info ("%s%s: %s\n",
                       runner->name, cont_line? "(cont)":"", buffer);
-          if (!cont_line && !err && runner->handler) 
+          if (!cont_line && !err && runner->handler)
             err = runner->handler (runner->handler_data,
                                           runner, buffer);
         }
@@ -384,7 +384,7 @@ runner_thread (void *arg)
   log_debug ("runner thread releasing runner ...\n");
   {
     runner_t r, rprev;
-    
+
     for (r = running_threads, rprev = NULL; r; rprev = r, r = r->next_running)
       if (r == runner)
         {
@@ -398,7 +398,7 @@ runner_thread (void *arg)
   }
   runner_release (runner);
   log_debug ("runner thread runner released\n");
-  
+
   return NULL;
 }
 
@@ -410,7 +410,7 @@ runner_spawn (runner_t runner)
   gpg_error_t err;
   pth_attr_t tattr;
   pth_t tid;
-  
+
   if (check_already_spawned (runner, "runner_spawn"))
     return gpg_error (GPG_ERR_BUG);
 
@@ -421,7 +421,7 @@ runner_spawn (runner_t runner)
   if (runner->in_fd != -1)
     {
       estream_t fp;
-      
+
       fp = es_fdopen (runner->in_fd, "r");
       if (!fp)
         {
@@ -437,7 +437,7 @@ runner_spawn (runner_t runner)
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 128*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, runner->name);
-  
+
   tid = pth_spawn (tattr, runner_thread, runner);
   if (!tid)
     {
@@ -483,7 +483,7 @@ runner_cancel_all (void)
 {
   runner_t r;
 
-  do 
+  do
     {
       for (r = running_threads; r; r = r->next_running)
         if (r->spawned && !r->canceled)
@@ -499,7 +499,7 @@ runner_cancel_all (void)
 /* Send a line of data down to the engine.  This line may not contain
    a binary Nul or a LF character.  This function is used by the
    engine's handler.  */
-gpg_error_t 
+gpg_error_t
 runner_send_line (runner_t runner, const void *data, size_t datalen)
 {
   gpg_error_t err = 0;
@@ -533,6 +533,6 @@ runner_send_line (runner_t runner, const void *data, size_t datalen)
   if (!err)
     if (writen (runner->out_fd, "\n", 1))
       err = gpg_error_from_syserror ();
-  
+
   return err;
 }

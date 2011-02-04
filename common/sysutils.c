@@ -46,7 +46,7 @@
 # define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
 # include <windows.h>
 #endif
-#ifdef HAVE_PTH      
+#ifdef HAVE_PTH
 # include <pth.h>
 #endif
 #include <fcntl.h>
@@ -140,7 +140,7 @@ get_session_marker (size_t *rlen)
 {
   static byte marker[SIZEOF_UNSIGNED_LONG*2];
   static int initialized;
-  
+
   if (!initialized)
     {
       gcry_create_nonce (marker, sizeof marker);
@@ -253,7 +253,7 @@ gnupg_sleep (unsigned int seconds)
      the process will give up its timeslot.  */
   if (!seconds)
     {
-# ifdef HAVE_W32_SYSTEM    
+# ifdef HAVE_W32_SYSTEM
       Sleep (0);
 # else
       sleep (0);
@@ -262,7 +262,7 @@ gnupg_sleep (unsigned int seconds)
   pth_sleep (seconds);
 #else
   /* Fixme:  make sure that a sleep won't wake up to early.  */
-# ifdef HAVE_W32_SYSTEM    
+# ifdef HAVE_W32_SYSTEM
   Sleep (seconds*1000);
 # else
   sleep (seconds);
@@ -287,7 +287,7 @@ translate_sys2libc_fd (gnupg_fd_t fd, int for_write)
 
   if (fd == GNUPG_INVALID_FD)
     return -1;
-  
+
   /* Note that _open_osfhandle is currently defined to take and return
      a long.  */
   x = _open_osfhandle ((long)fd, for_write ? 1 : 0);
@@ -437,7 +437,7 @@ gnupg_tmpfile (void)
    Must be called before we open any files! */
 void
 gnupg_reopen_std (const char *pgmname)
-{  
+{
 #if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
   struct stat statbuf;
   int did_stdin = 0;
@@ -452,7 +452,7 @@ gnupg_reopen_std (const char *pgmname)
       else
 	did_stdin = 2;
     }
-  
+
   if (fstat (STDOUT_FILENO, &statbuf) == -1 && errno == EBADF)
     {
       if (open ("/dev/null",O_WRONLY) == STDOUT_FILENO)
@@ -501,7 +501,7 @@ gnupg_reopen_std (const char *pgmname)
 
 
 /* Hack required for Windows.  */
-void 
+void
 gnupg_allow_set_foregound_window (pid_t pid)
 {
   if (!pid)
@@ -543,7 +543,7 @@ gnupg_remove (const char *fname)
    defined on all systems.  The format of the modestring is
 
       "-rwxrwxrwx"
-      
+
    '-' is a don't care or not set.  'r', 'w', 'x' are read allowed,
    write allowed, execution allowed with the first group for the user,
    the second for the group and the third for all others.  If the
@@ -555,7 +555,7 @@ gnupg_mkdir (const char *name, const char *modestr)
 #ifdef HAVE_W32CE_SYSTEM
   wchar_t *wname;
   (void)modestr;
-  
+
   wname = utf8_to_wchar (name);
   if (!wname)
     return -1;
@@ -615,7 +615,7 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
 #endif
 }
 
-int 
+int
 gnupg_unsetenv (const char *name)
 {
 #ifdef HAVE_W32CE_SYSTEM
@@ -633,7 +633,7 @@ gnupg_unsetenv (const char *name)
 #ifdef HAVE_W32CE_SYSTEM
 /* There is a isatty function declaration in cegcc but it does not
    make sense, thus we redefine it.  */
-int 
+int
 _gnupg_isatty (int fd)
 {
   (void)fd;
@@ -651,10 +651,10 @@ _gnupg_getenv (const char *name)
 {
   static int initialized;
   static char *assuan_debug;
-  
+
   if (!initialized)
     {
-      assuan_debug = read_w32_registry_string (NULL, 
+      assuan_debug = read_w32_registry_string (NULL,
                                                "\\Software\\GNU\\libassuan",
                                                "debug");
       initialized = 1;
@@ -667,4 +667,3 @@ _gnupg_getenv (const char *name)
 }
 
 #endif /*HAVE_W32CE_SYSTEM*/
-

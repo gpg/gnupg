@@ -75,9 +75,9 @@ The format of the native parameter file is follows:
         This is the DN name of the subject in rfc2253 format.
      Name-Email: <string>
 	The is an email address for the altSubjectName
-     Name-DNS: <string> 
+     Name-DNS: <string>
 	The is an DNS name for the altSubjectName
-     Name-URI: <string> 
+     Name-URI: <string>
 	The is an URI for the altSubjectName
 
 Here is an example:
@@ -99,7 +99,7 @@ EOF
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -127,7 +127,7 @@ struct para_data_s {
   int lnr;
   enum para_name key;
   union {
-    unsigned int usage; 
+    unsigned int usage;
     char value[1];
   } u;
 };
@@ -157,7 +157,7 @@ static void
 release_parameter_list (struct para_data_s *r)
 {
   struct para_data_s *r2;
-  
+
   for (; r ; r = r2)
     {
       r2 = r->next;
@@ -169,7 +169,7 @@ static struct para_data_s *
 get_parameter (struct para_data_s *para, enum para_name key, int seq)
 {
   struct para_data_s *r;
-  
+
   for (r = para; r ; r = r->next)
     if ( r->key == key && !seq--)
       return r;
@@ -191,7 +191,7 @@ get_parameter_algo (struct para_data_s *para, enum para_name key)
     return -1;
   if (digitp (r->u.value))
     return atoi( r->u.value );
-  return gcry_pk_map_name (r->u.value); 
+  return gcry_pk_map_name (r->u.value);
 }
 
 /* Parse the usage parameter.  Returns 0 on success.  Note that we
@@ -204,10 +204,10 @@ parse_parameter_usage (struct para_data_s *para, enum para_name key)
   struct para_data_s *r = get_parameter (para, key, 0);
   char *p, *pn;
   unsigned int use;
-  
+
   if (!r)
     return 0; /* none (this is an optional parameter)*/
-    
+
   use = 0;
   pn = r->u.value;
   while ( (p = strsep (&pn, " \t,")) )
@@ -475,7 +475,7 @@ proc_parameters (ctrl_t ctrl,
       log_error (_("line %d: invalid algorithm\n"), r->lnr);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
-  
+
   /* Check the keylength.  NOTE: If you change this make sure that it
      macthes the gpgconflist item in gpgsm.c  */
   if (!get_parameter (para, pKEYLENGTH, 0))
@@ -491,7 +491,7 @@ proc_parameters (ctrl_t ctrl,
       xfree (cardkeyid);
       return gpg_error (GPG_ERR_INV_PARAMETER);
     }
-    
+
   /* Check the usage. */
   if (parse_parameter_usage (para, pKEYUSAGE))
     {
@@ -525,7 +525,7 @@ proc_parameters (ctrl_t ctrl,
 
   /* Check that the optional email address is okay. */
   for (seq=0; (s=get_parameter_value (para, pNAMEEMAIL, seq)); seq++)
-    { 
+    {
       if (has_invalid_email_chars (s)
           || *s == '@'
           || s[strlen(s)-1] == '@'
@@ -566,7 +566,7 @@ proc_parameters (ctrl_t ctrl,
   else /* Generate new key.  */
     {
       sprintf (numbuf, "%u", nbits);
-      snprintf ((char*)keyparms, DIM (keyparms)-1, 
+      snprintf ((char*)keyparms, DIM (keyparms)-1,
                 "(6:genkey(3:rsa(5:nbits%d:%s)))",
                 (int)strlen (numbuf), numbuf);
       rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
@@ -591,8 +591,8 @@ proc_parameters (ctrl_t ctrl,
 /* Parameters are checked, the key pair has been created.  Now
    generate the request and write it out */
 static int
-create_request (ctrl_t ctrl, 
-                struct para_data_s *para, 
+create_request (ctrl_t ctrl,
+                struct para_data_s *para,
                 const char *carddirect,
                 ksba_const_sexp_t public,
                 struct reqgen_ctrl_s *outctrl)
@@ -624,7 +624,7 @@ create_request (ctrl_t ctrl,
 
   ksba_certreq_set_hash_function (cr, HASH_FNC, md);
   ksba_certreq_set_writer (cr, outctrl->writer);
-  
+
   err = ksba_certreq_add_subject (cr, get_parameter_value (para, pNAMEDN, 0));
   if (err)
     {
@@ -720,14 +720,14 @@ create_request (ctrl_t ctrl,
       goto leave;
     }
 
-  
+
   use = get_parameter_uint (para, pKEYUSAGE);
   if (use == GCRY_PK_USAGE_SIGN)
     {
       /* For signing only we encode the bits:
          KSBA_KEYUSAGE_DIGITAL_SIGNATURE
          KSBA_KEYUSAGE_NON_REPUDIATION */
-      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1, 
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
                                         "\x03\x02\x06\xC0", 4);
     }
   else if (use == GCRY_PK_USAGE_ENCR)
@@ -735,7 +735,7 @@ create_request (ctrl_t ctrl,
       /* For encrypt only we encode the bits:
          KSBA_KEYUSAGE_KEY_ENCIPHERMENT
          KSBA_KEYUSAGE_DATA_ENCIPHERMENT */
-      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1, 
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
                                         "\x03\x02\x04\x30", 4);
     }
   else
@@ -748,7 +748,7 @@ create_request (ctrl_t ctrl,
       goto leave;
     }
 
-               
+
   do
     {
       err = ksba_certreq_build (cr, &stopreason);
@@ -790,11 +790,11 @@ create_request (ctrl_t ctrl,
           gcry_sexp_release (s_pkey);
           bin2hex (grip, 20, hexgrip);
 
-          log_info ("about to sign CSR for key: &%s\n", hexgrip); 
+          log_info ("about to sign CSR for key: &%s\n", hexgrip);
 
           if (carddirect)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
-                                     gcry_md_read(md, GCRY_MD_SHA1), 
+                                     gcry_md_read(md, GCRY_MD_SHA1),
                                      gcry_md_get_algo_dlen (GCRY_MD_SHA1),
                                      GCRY_MD_SHA1,
                                      &sigval, &siglen);
@@ -804,13 +804,13 @@ create_request (ctrl_t ctrl,
               char *desc;
 
               orig_codeset = i18n_switchto_utf8 ();
-              desc = percent_plus_escape 
+              desc = percent_plus_escape
                 (_("To complete this certificate request please enter"
                    " the passphrase for the key you just created once"
                    " more.\n"));
               i18n_switchback (orig_codeset);
               rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
-                                       gcry_md_read(md, GCRY_MD_SHA1), 
+                                       gcry_md_read(md, GCRY_MD_SHA1),
                                        gcry_md_get_algo_dlen (GCRY_MD_SHA1),
                                        GCRY_MD_SHA1,
                                        &sigval, &siglen);
@@ -821,7 +821,7 @@ create_request (ctrl_t ctrl,
               log_error ("signing failed: %s\n", gpg_strerror (rc));
               goto leave;
             }
-          
+
           err = ksba_certreq_set_sig_val (cr, sigval);
           xfree (sigval);
           if (err)
@@ -833,13 +833,13 @@ create_request (ctrl_t ctrl,
             }
         }
     }
-  while (stopreason != KSBA_SR_READY);   
+  while (stopreason != KSBA_SR_READY);
 
 
  leave:
   gcry_md_close (md);
   ksba_certreq_release (cr);
-  return rc;  
+  return rc;
 }
 
 
@@ -870,7 +870,7 @@ gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream)
     }
 
   rc = gpgsm_finish_writer (b64writer);
-  if (rc) 
+  if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
       goto leave;
@@ -883,4 +883,3 @@ gpgsm_genkey (ctrl_t ctrl, estream_t in_stream, estream_t out_stream)
   gpgsm_destroy_writer (b64writer);
   return rc;
 }
-

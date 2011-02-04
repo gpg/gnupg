@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,7 +22,7 @@
 struct rfc822parse_context;
 typedef struct rfc822parse_context *rfc822parse_t;
 
-typedef enum 
+typedef enum
   {
     RFC822PARSE_OPEN = 1,
     RFC822PARSE_CLOSE,
@@ -37,7 +37,7 @@ typedef enum
     RFC822PARSE_BEGIN_HEADER,
     RFC822PARSE_PREAMBLE,
     RFC822PARSE_EPILOGUE
-  } 
+  }
 rfc822parse_event_t;
 
 struct rfc822parse_field_context;

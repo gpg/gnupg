@@ -86,4 +86,3 @@ setup_pinentry_env (void)
 
 #endif /*!HAVE_W32_SYSTEM*/
 }
-

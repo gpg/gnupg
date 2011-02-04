@@ -83,7 +83,7 @@ struct putval_item_s
   struct putval_item_s *next;
   size_t off;  /* Offset to the value into DATA.  */
   size_t len;  /* Length of the value.  */
-  char d[1];   /* Key | Nul | value.  */ 
+  char d[1];   /* Key | Nul | value.  */
 };
 
 
@@ -97,14 +97,14 @@ static struct putval_item_s *putval_list;
    integers and there should be no problem if they are overflowing as
    callers need to check only whether a counter changed.  The actual
    values are not meaningful. */
-struct 
+struct
 {
   /* Incremented if any of the other counters below changed. */
   unsigned int any;
 
   /* Incremented if a key is added or removed from the internal privat
      key database. */
-  unsigned int key; 
+  unsigned int key;
 
   /* Incremented if a change of the card readers stati has been
      detected. */
@@ -195,7 +195,7 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-/* Skip over options.  
+/* Skip over options.
    Blanks after the options are also removed. */
 static char *
 skip_options (const char *line)
@@ -331,7 +331,7 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 
   va_start (arg_ptr, keyword);
 
-  p = buf; 
+  p = buf;
   n = 0;
   while ( (text = va_arg (arg_ptr, const char *)) )
     {
@@ -372,7 +372,7 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
 {
   char line[100];
 
-  if (!ctrl || !ctrl->server_local 
+  if (!ctrl || !ctrl->server_local
       || !ctrl->server_local->allow_pinentry_notify)
     return 0;
   snprintf (line, DIM(line)-1, "PINENTRY_LAUNCHED %lu", pid);
@@ -417,7 +417,7 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
 
 
 
-static const char hlp_geteventcounter[] = 
+static const char hlp_geteventcounter[] =
   "GETEVENTCOUNTER\n"
   "\n"
   "Return a a status line named EVENTCOUNTER with the current values\n"
@@ -475,7 +475,7 @@ bump_card_eventcounter (void)
 
 
 
-static const char hlp_istrusted[] = 
+static const char hlp_istrusted[] =
   "ISTRUSTED <hexstring_with_fingerprint>\n"
   "\n"
   "Return OK when we have an entry with this fingerprint in our\n"
@@ -512,7 +512,7 @@ cmd_istrusted (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_listtrusted[] = 
+static const char hlp_listtrusted[] =
   "LISTTRUSTED\n"
   "\n"
   "List all entries from the trustlist.";
@@ -520,7 +520,7 @@ static gpg_error_t
 cmd_listtrusted (assuan_context_t ctx, char *line)
 {
   int rc;
-  
+
   (void)line;
 
   rc = agent_listtrusted (ctx);
@@ -528,7 +528,7 @@ cmd_listtrusted (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_martrusted[] = 
+static const char hlp_martrusted[] =
   "MARKTRUSTED <hexstring_with_fingerprint> <flag> <display_name>\n"
   "\n"
   "Store a new key in into the trustlist.";
@@ -555,7 +555,7 @@ cmd_marktrusted (assuan_context_t ctx, char *line)
   for (p=line; i < 40; p++, i++)
     fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
   fpr[i] = 0;
-  
+
   while (spacep (p))
     p++;
   flag = *p++;
@@ -582,12 +582,12 @@ cmd_havekey (assuan_context_t ctx, char *line)
   gpg_error_t err;
   unsigned char buf[20];
 
-  do 
+  do
     {
       err = parse_keygrip (ctx, line, buf);
       if (err)
         return err;
-      
+
       if (!agent_key_available (buf))
         return 0; /* Found.  */
 
@@ -597,7 +597,7 @@ cmd_havekey (assuan_context_t ctx, char *line)
         line++;
     }
   while (*line);
-    
+
   /* No leave_cmd() here because errors are expected and would clutter
      the log.  */
   return gpg_error (GPG_ERR_NO_SECKEY);
@@ -623,7 +623,7 @@ cmd_sigkey (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_setkeydesc[] = 
+static const char hlp_setkeydesc[] =
   "SETKEYDESC plus_percent_escaped_string\n"
   "\n"
   "Set a description to be used for the next PKSIGN, PKDECRYPT, IMPORT_KEY\n"
@@ -710,7 +710,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
     algo = 0;
 
   line = skip_options (line);
-  
+
   if (!algo)
     {
       /* No hash option has been given: require an algo number instead  */
@@ -731,7 +731,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
   n /= 2;
   if (algo == MD_USER_TLS_MD5SHA1 && n == 36)
     ;
-  else if (n != 16 && n != 20 && n != 24 
+  else if (n != 16 && n != 20 && n != 24
            && n != 28 && n != 32 && n != 48 && n != 64)
     return set_error (GPG_ERR_ASS_PARAMETER, "unsupported length of hash");
 
@@ -748,7 +748,7 @@ cmd_sethash (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_pksign[] = 
+static const char hlp_pksign[] =
   "PKSIGN [<options>] [<cache_nonce>]\n"
   "\n"
   "Perform the actual sign operation.  Neither input nor output are\n"
@@ -762,9 +762,9 @@ cmd_pksign (assuan_context_t ctx, char *line)
   membuf_t outbuf;
   char *cache_nonce = NULL;
   char *p;
-  
+
   line = skip_options (line);
-  
+
   p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
@@ -793,7 +793,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_pkdecrypt[] = 
+static const char hlp_pkdecrypt[] =
   "PKDECRYPT [<options>]\n"
   "\n"
   "Perform the actual decrypt operation.  Input is not\n"
@@ -830,7 +830,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_genkey[] = 
+static const char hlp_genkey[] =
   "GENKEY [--no-protection] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
@@ -855,7 +855,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   membuf_t outbuf;
   char *cache_nonce = NULL;
   char *p;
-  
+
   no_protection = has_option (line, "--no-protection");
   line = skip_options (line);
 
@@ -887,7 +887,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_readkey[] = 
+static const char hlp_readkey[] =
   "READKEY <hexstring_with_keygrip>\n"
   "\n"
   "Return the public key for the given keygrip.";
@@ -929,7 +929,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_keyinfo[] = 
+static const char hlp_keyinfo[] =
   "KEYINFO [--list] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
@@ -972,22 +972,22 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
 
   /* Reformat the grip so that we use uppercase as good style. */
   bin2hex (grip, 20, hexgrip);
-      
-  if (keytype == PRIVATE_KEY_CLEAR 
+
+  if (keytype == PRIVATE_KEY_CLEAR
       || keytype == PRIVATE_KEY_PROTECTED)
     keytypestr = "D";
   else if (keytype == PRIVATE_KEY_SHADOWED)
     keytypestr = "T";
-  else 
+  else
     keytypestr = "-";
-      
+
   if (shadow_info)
     {
       err = parse_shadow_info (shadow_info, &serialno, &idstr);
       if (err)
         goto leave;
     }
-      
+
   err = agent_write_status (ctrl, "KEYINFO",
                             hexgrip,
                             keytypestr,
@@ -1019,7 +1019,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       char *dirname;
       struct dirent *dir_entry;
       char hexgrip[41];
-      
+
       dirname = make_filename_try (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
       if (!dirname)
         {
@@ -1059,7 +1059,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
         goto leave;
       err = do_one_keyinfo (ctrl, grip);
     }
-      
+
  leave:
   if (dir)
     closedir (dir);
@@ -1096,7 +1096,7 @@ send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 }
 
 
-static const char hlp_get_passphrase[] = 
+static const char hlp_get_passphrase[] =
   "GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]]\n"
   "               [--qualitybar] <cache_id>\n"
   "               [<error_message> <prompt> <description>]\n"
@@ -1215,8 +1215,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
         plus_to_blank (desc);
 
     next_try:
-      rc = agent_get_passphrase (ctrl, &response, desc, prompt, 
-                                 repeat_errtext? repeat_errtext:errtext, 
+      rc = agent_get_passphrase (ctrl, &response, desc, prompt,
+                                 repeat_errtext? repeat_errtext:errtext,
                                  opt_qualbar);
       xfree (repeat_errtext);
       repeat_errtext = NULL;
@@ -1241,7 +1241,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                 {
                   xfree (response2);
                   xfree (response);
-                  repeat_errtext = try_percent_escape 
+                  repeat_errtext = try_percent_escape
                     (_("does not match - try again"), NULL);
                   if (!repeat_errtext)
                     {
@@ -1266,7 +1266,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_clear_passphrase[] = 
+static const char hlp_clear_passphrase[] =
   "CLEAR_PASSPHRASE <cache_id>\n"
   "\n"
   "may be used to invalidate the cache entry for a passphrase.  The\n"
@@ -1292,7 +1292,7 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_get_confirmation[] = 
+static const char hlp_get_confirmation[] =
   "GET_CONFIRMATION <description>\n"
   "\n"
   "This command may be used to ask for a simple confirmation.\n"
@@ -1355,7 +1355,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_passwd[] = 
+static const char hlp_passwd[] =
   "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] <hexstring_with_keygrip>\n"
   "\n"
   "Change the passphrase/PIN for the key identified by keygrip in LINE.";
@@ -1413,7 +1413,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   ctrl->in_passwd++;
   err = agent_key_from_file (ctrl, cache_nonce, ctrl->server_local->keydesc,
-                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL, 
+                             grip, &shadow_info, CACHE_MODE_IGNORE, NULL,
                              &s_skey, &passphrase);
   if (err)
     ;
@@ -1441,7 +1441,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
               gcry_create_nonce (buf, 12);
               cache_nonce = bin2hex (buf, 12, NULL);
             }
-          if (cache_nonce 
+          if (cache_nonce
               && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, 120 /*seconds*/))
             {
@@ -1461,7 +1461,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                   gcry_create_nonce (buf, 12);
                   passwd_nonce = bin2hex (buf, 12, NULL);
                 }
-              if (passwd_nonce 
+              if (passwd_nonce
                   && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
                                        newpass, 120 /*seconds*/))
                 {
@@ -1488,7 +1488,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_preset_passphrase[] = 
+static const char hlp_preset_passphrase[] =
   "PRESET_PASSPHRASE <string_or_keygrip> <timeout> <hexstring>\n"
   "\n"
   "Set the cached passphrase/PIN for the key identified by the keygrip\n"
@@ -1517,7 +1517,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
   line++;
   while (*line && (*line == ' ' || *line == '\t'))
     line++;
-  
+
   /* Currently, only infinite timeouts are allowed.  */
   ttl = -1;
   if (line[0] != '-' || line[1] != '1')
@@ -1554,7 +1554,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_scd[] = 
+static const char hlp_scd[] =
   "SCD <commands to pass to the scdaemon>\n"
   " \n"
   "This is a general quote command to redirect everything to the\n"
@@ -1601,7 +1601,7 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
       xfree (ctrl->server_local->import_key);
       if (clearopt)
         ctrl->server_local->import_key = NULL;
-      else if (!(ctrl->server_local->import_key = 
+      else if (!(ctrl->server_local->import_key =
                  gcry_random_bytes (KEYWRAP_KEYSIZE, GCRY_STRONG_RANDOM)))
         err = gpg_error_from_syserror ();
       else
@@ -1613,7 +1613,7 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
       xfree (ctrl->server_local->export_key);
       if (clearopt)
         ctrl->server_local->export_key = NULL;
-      else if (!(ctrl->server_local->export_key = 
+      else if (!(ctrl->server_local->export_key =
             gcry_random_bytes (KEYWRAP_KEYSIZE, GCRY_STRONG_RANDOM)))
         err = gpg_error_from_syserror ();
       else
@@ -1623,7 +1623,7 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for MODE");
   assuan_end_confidential (ctx);
-  
+
   return leave_cmd (ctx, err);
 }
 
@@ -1654,7 +1654,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   gcry_sexp_t openpgp_sexp = NULL;
   char *cache_nonce = NULL;
   char *p;
-  
+
   if (!ctrl->server_local->import_key)
     {
       err = gpg_error (GPG_ERR_MISSING_KEY);
@@ -1706,7 +1706,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
   if (!realkeylen)
     goto leave; /* Invalid canonical encoded S-expression.  */
-  
+
   err = keygrip_from_canon_sexp (key, realkeylen, grip);
   if (err)
     {
@@ -1717,7 +1717,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         {
           const char *tag;
           size_t taglen;
-          
+
           tag = gcry_sexp_nth_data (openpgp_sexp, 0, &taglen);
           if (tag && taglen == 19 && !memcmp (tag, "openpgp-private-key", 19))
             ;
@@ -1739,7 +1739,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
          ask for a passphrase.  That passphrase will be returned and
          used to protect the key using the same code as for regular
          key import. */
-      
+
       err = convert_from_openpgp (ctrl, openpgp_sexp, grip,
                                   ctrl->server_local->keydesc, cache_nonce,
                                   &key, &passphrase);
@@ -1756,7 +1756,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
               gcry_create_nonce (buf, 12);
               cache_nonce = bin2hex (buf, 12, NULL);
             }
-          if (cache_nonce 
+          if (cache_nonce
               && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, 120 /*seconds*/))
             assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
@@ -1767,7 +1767,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
       if (!agent_key_available (grip))
         err = gpg_error (GPG_ERR_EEXIST);
       else
-        err = agent_ask_new_passphrase 
+        err = agent_ask_new_passphrase
           (ctrl, _("Please enter the passphrase to protect the "
                    "imported object within the GnuPG system."),
            &passphrase);
@@ -1821,7 +1821,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   int openpgp;
   char *cache_nonce;
   char *passphrase = NULL;
-  
+
   openpgp = has_option (line, "--openpgp");
   cache_nonce = option_value (line, "--cache-nonce");
   if (cache_nonce)
@@ -1870,7 +1870,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
     }
-  
+
   if (openpgp)
     {
       /* The openpgp option changes the key format into the OpenPGP
@@ -1878,7 +1878,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
          canonical S-expression.  */
       if (!passphrase)
         {
-          err = agent_ask_new_passphrase 
+          err = agent_ask_new_passphrase
             (ctrl, _("This key (or subkey) is not protected with a passphrase."
                      "  Please enter a new passphrase to export it."),
              &passphrase);
@@ -1925,7 +1925,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   assuan_begin_confidential (ctx);
   err = assuan_send_data (ctx, wrappedkey, wrappedkeylen);
   assuan_end_confidential (ctx);
-  
+
 
  leave:
   xfree (cache_nonce);
@@ -1943,7 +1943,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_getval[] = 
+static const char hlp_getval[] =
   "GETVAL <key>\n"
   "\n"
   "Return the value for KEY from the special environment as created by\n"
@@ -1962,7 +1962,7 @@ cmd_getval (assuan_context_t ctx, char *line)
   p = strchr (key, ' ');
   if (p)
     {
-      *p++ = 0; 
+      *p++ = 0;
       for (; *p == ' '; p++)
         ;
       if (*p)
@@ -1985,7 +1985,7 @@ cmd_getval (assuan_context_t ctx, char *line)
 }
 
 
-static const char hlp_putval[] = 
+static const char hlp_putval[] =
   "PUTVAL <key> [<percent_escaped_value>]\n"
   "\n"
   "The gpg-agent maintains a kind of environment which may be used to\n"
@@ -2019,7 +2019,7 @@ cmd_putval (assuan_context_t ctx, char *line)
   p = strchr (key, ' ');
   if (p)
     {
-      *p++ = 0; 
+      *p++ = 0;
       for (; *p == ' '; p++)
         ;
       if (*p)
@@ -2048,7 +2048,7 @@ cmd_putval (assuan_context_t ctx, char *line)
       xfree (vl);
     }
 
-  if (valuelen) /* Add entry. */  
+  if (valuelen) /* Add entry. */
     {
       vl = xtrymalloc (sizeof *vl + strlen (key) + valuelen);
       if (!vl)
@@ -2070,7 +2070,7 @@ cmd_putval (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_updatestartuptty[] = 
+static const char hlp_updatestartuptty[] =
   "UPDATESTARTUPTTY\n"
   "\n"
   "Set startup TTY and X11 DISPLAY variables to the values of this\n"
@@ -2080,7 +2080,7 @@ static const char hlp_updatestartuptty[] =
 static gpg_error_t
 cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
-  static const char *names[] = 
+  static const char *names[] =
     { "GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL };
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
@@ -2088,7 +2088,7 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
   int idx;
   char *lc_ctype = NULL;
   char *lc_messages = NULL;
-  
+
   (void)line;
 
   se = session_env_new ();
@@ -2102,14 +2102,14 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
         err = session_env_setenv (se, names[idx], value);
     }
 
-  if (!err && ctrl->lc_ctype) 
+  if (!err && ctrl->lc_ctype)
     if (!(lc_ctype = xtrystrdup (ctrl->lc_ctype)))
       err = gpg_error_from_syserror ();
 
   if (!err && ctrl->lc_messages)
     if (!(lc_messages = xtrystrdup (ctrl->lc_messages)))
       err = gpg_error_from_syserror ();
-   
+
   if (err)
     {
       session_env_release (se);
@@ -2142,7 +2142,7 @@ cmd_killagent (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void)line;
-  
+
   if (!opt.use_standard_socket)
     return set_error (GPG_ERR_NOT_SUPPORTED, "no --use-standard-socket");
 
@@ -2168,7 +2168,7 @@ cmd_reloadagent (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_getinfo[] = 
+static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
   "Multipurpose function to return a variety of information.\n"
@@ -2237,15 +2237,15 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       int iterator;
       const char *name, *value;
       char *string;
-      
-      iterator = 0; 
+
+      iterator = 0;
       while ((name = session_env_list_stdenvnames (&iterator, NULL)))
         {
           value = session_env_getenv_or_default
             (line[5] == 't'? opt.startup_env:ctrl->session_env, name, NULL);
           if (value)
             {
-              string = xtryasprintf ("%s=%s", name, value); 
+              string = xtryasprintf ("%s=%s", name, value);
               if (!string)
                 rc = gpg_error_from_syserror ();
               else
@@ -2308,7 +2308,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       /* The value is a version string telling us of which agent
          version the caller is aware of.  */
-      ctrl->server_local->allow_fully_canceled = 
+      ctrl->server_local->allow_fully_canceled =
         gnupg_compare_version (value, "2.1.0");
     }
   else if (!strcmp (key, "putenv"))
@@ -2378,7 +2378,7 @@ static void
 post_cmd_notify (assuan_context_t ctx, gpg_error_t err)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  
+
   (void)err;
 
   /* Switch off any I/O monitor controlled logging pausing. */
@@ -2395,7 +2395,7 @@ io_monitor (assuan_context_t ctx, void *hook, int direction,
             const char *line, size_t linelen)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  
+
   (void) hook;
 
   /* Note that we only check for the uppercase name.  This allows to
@@ -2422,7 +2422,7 @@ command_has_option (const char *cmd, const char *cmdopt)
       if (!strcmp (cmdopt, "repeat"))
           return 1;
     }
-      
+
   return 0;
 }
 
@@ -2456,8 +2456,8 @@ register_commands (assuan_context_t ctx)
     { "MARKTRUSTED",    cmd_marktrusted, hlp_martrusted },
     { "LEARN",          cmd_learn,     hlp_learn },
     { "PASSWD",         cmd_passwd,    hlp_passwd },
-    { "INPUT",          NULL }, 
-    { "OUTPUT",         NULL }, 
+    { "INPUT",          NULL },
+    { "OUTPUT",         NULL },
     { "SCD",            cmd_scd,       hlp_scd },
     { "KEYWRAP_KEY",    cmd_keywrap_key, hlp_keywrap_key },
     { "IMPORT_KEY",     cmd_import_key, hlp_import_key },
@@ -2478,7 +2478,7 @@ register_commands (assuan_context_t ctx)
                                     table[i].help);
       if (rc)
         return rc;
-    } 
+    }
   assuan_register_post_cmd_notify (ctx, post_cmd_notify);
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_option_handler (ctx, option_handler);
@@ -2517,7 +2517,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
       /* FIXME: Need to call assuan_sock_set_nonce for Windows.  But
 	 this branch is currently not used.  */
     }
-  else 
+  else
     {
       rc = assuan_init_socket_server (ctx, fd, ASSUAN_SOCKET_SERVER_ACCEPTED);
     }
@@ -2556,7 +2556,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
           log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
-      
+
       rc = assuan_process (ctx);
       if (rc)
         {
@@ -2584,4 +2584,3 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 }
-

@@ -22,7 +22,7 @@
        Unblock PUK: "222222111111"
        Reset PIN:   "333333111111")
 
-   e.g. the APDUs 00:20:00:02:08:2C:33:33:33:11:11:11:FF 
+   e.g. the APDUs 00:20:00:02:08:2C:33:33:33:11:11:11:FF
               and 00:24:01:01:08:24:12:34:FF:FF:FF:FF:FF
    should change the PIN into 1234.
 */
@@ -50,22 +50,22 @@ typedef enum
     CARD_TYPE_TCOS,
     CARD_TYPE_MICARDO,
     CARD_TYPE_BELPIC   /* Belgian eID card specs. */
-  } 
+  }
 card_type_t;
 
 /* A list card types with ATRs noticed with these cards. */
 #define X(a) ((unsigned char const *)(a))
-static struct 
+static struct
 {
   size_t atrlen;
   unsigned char const *atr;
   card_type_t type;
 } card_atr_list[] = {
   { 19, X("\x3B\xBA\x13\x00\x81\x31\x86\x5D\x00\x64\x05\x0A\x02\x01\x31\x80"
-          "\x90\x00\x8B"), 
+          "\x90\x00\x8B"),
     CARD_TYPE_TCOS },  /* SLE44 */
   { 19, X("\x3B\xBA\x14\x00\x81\x31\x86\x5D\x00\x64\x05\x14\x02\x02\x31\x80"
-          "\x90\x00\x91"), 
+          "\x90\x00\x91"),
     CARD_TYPE_TCOS }, /* SLE66S */
   { 19, X("\x3B\xBA\x96\x00\x81\x31\x86\x5D\x00\x64\x05\x60\x02\x03\x31\x80"
           "\x90\x00\x66"),
@@ -96,7 +96,7 @@ static char const pkcs15be_aid[] = { 0xA0, 0, 0, 0x01, 0x77,
 
 
 /* The PIN types as defined in pkcs#15 v1.1 */
-typedef enum 
+typedef enum
   {
     PIN_TYPE_BCD = 0,
     PIN_TYPE_ASCII_NUMERIC = 1,
@@ -130,10 +130,10 @@ typedef struct keyusage_flags_s keyusage_flags_t;
    us. To keep memory management, simple we use a linked list of
    items; i.e. one such object represents one certificate and the list
    the entire CDF. */
-struct cdf_object_s 
+struct cdf_object_s
 {
   /* Link to next item when used in a linked list. */
-  struct cdf_object_s *next; 
+  struct cdf_object_s *next;
 
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
@@ -143,7 +143,7 @@ struct cdf_object_s
      allocated memory IMAGE of IMAGELEN. */
   size_t imagelen;
   unsigned char *image;
-  
+
   /* Set to true if a length and offset is available. */
   int have_off;
   /* The offset and length of the object.  They are only valid if
@@ -164,10 +164,10 @@ typedef struct cdf_object_s *cdf_object_t;
    by us. To keep memory management, simple we use a linked list of
    items; i.e. one such object represents one certificate and the list
    the entire PrKDF. */
-struct prkdf_object_s 
+struct prkdf_object_s
 {
   /* Link to next item when used in a linked list. */
-  struct prkdf_object_s *next; 
+  struct prkdf_object_s *next;
 
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
@@ -181,7 +181,7 @@ struct prkdf_object_s
   /* The key's usage flags. */
   keyusage_flags_t usageflags;
 
-  /* The keyReference and a flag telling whether it is valid. */ 
+  /* The keyReference and a flag telling whether it is valid. */
   unsigned long key_reference;
   int key_reference_valid;
 
@@ -204,10 +204,10 @@ typedef struct prkdf_object_s *prkdf_object_t;
    processing by us. To keep memory management, simple we use a linked
    list of items; i.e. one such object represents one authentication
    object and the list the entire AOKDF. */
-struct aodf_object_s 
+struct aodf_object_s
 {
   /* Link to next item when used in a linked list. */
-  struct aodf_object_s *next; 
+  struct aodf_object_s *next;
 
   /* Length and allocated buffer with the Id of this object. */
   size_t objidlen;
@@ -219,7 +219,7 @@ struct aodf_object_s
   unsigned char *authid;
 
   /* The PIN Flags. */
-  struct 
+  struct
   {
     unsigned int case_sensitive: 1;
     unsigned int local: 1;
@@ -248,7 +248,7 @@ struct aodf_object_s
   unsigned long max_length;
   int max_length_valid;
 
-  /* The pinReference and a flag telling whether it is valid. */ 
+  /* The pinReference and a flag telling whether it is valid. */
   unsigned long pin_reference;
   int pin_reference_valid;
 
@@ -273,7 +273,7 @@ typedef struct aodf_object_s *aodf_object_t;
 
 
 /* Context local to this application. */
-struct app_local_s 
+struct app_local_s
 {
   /* The home DF. Note, that we don't yet support a multilevel
      hierachy.  Thus we assume this is directly below the MF.  */
@@ -298,7 +298,7 @@ struct app_local_s
     unsigned short useful_certificates;
     unsigned short data_objects;
     unsigned short auth_objects;
-  } odf;  
+  } odf;
 
   /* The PKCS#15 serialnumber from EF(TokeiNFo) or NULL.  Malloced. */
   unsigned char *serialno;
@@ -403,7 +403,7 @@ do_deinit (app_t app)
    desctription of the EF to be used with error messages.  On success
    BUFFER and BUFLEN contain the entire content of the EF.  The caller
    must free BUFFER only on success. */
-static gpg_error_t 
+static gpg_error_t
 select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
                         unsigned char **buffer, size_t *buflen)
 {
@@ -428,7 +428,7 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
 
 
 /* This function calls select file to read a file using a complete
-   path which may or may not start at the master file (MF). */ 
+   path which may or may not start at the master file (MF). */
 static gpg_error_t
 select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 {
@@ -440,7 +440,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 
   if (pathlen && *path != 0x3f00 )
     log_debug ("WARNING: relative path selection not yet implemented\n");
-      
+
   if (app->app_local->direct_path_selection)
     {
       err = iso7816_select_path (app->slot, path+1, pathlen-1, NULL, NULL);
@@ -594,11 +594,11 @@ prkdf_object_from_keyidstr (app_t app, const char *keyidstr,
    Example of such a file:
 
    A0 06 30 04 04 02 60 34  = Private Keys
-   A4 06 30 04 04 02 60 35  = Certificates 
+   A4 06 30 04 04 02 60 35  = Certificates
    A5 06 30 04 04 02 60 36  = TrustedCertificates
    A7 06 30 04 04 02 60 37  = DataObjects
    A8 06 30 04 04 02 60 38  = AuthObjects
-    
+
    These are all PathOrObjects using the path CHOICE element.  The
    paths are octet strings of length 2.  Using this Path CHOICE
    element is recommended, so we only implement that for now.
@@ -631,7 +631,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         {
           offset = 6;
         }
-      else if ( buflen >= 12 
+      else if ( buflen >= 12
                 && (p[0] & 0xf0) == 0xA0
                 && !memcmp (p+1, "\x0a\x30\x08\x04\x06\x3F\x00", 7)
                 && app->app_local->home_df == ((p[8]<<8)|p[9]) )
@@ -678,7 +678,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
         case 6: app->app_local->odf.useful_certificates = value; break;
         case 7: app->app_local->odf.data_objects = value; break;
         case 8: app->app_local->odf.auth_objects = value; break;
-        default: 
+        default:
           log_error ("unknown object type %d in ODF ignored\n", (p[0]&0x0f));
         }
       offset += 2;
@@ -710,7 +710,7 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
   memset (usageflags, 0, sizeof *usageflags);
   if (!derlen)
     return gpg_error (GPG_ERR_INV_OBJ);
-          
+
   unused = *der++; derlen--;
   if ((!derlen && unused) || unused/8 > derlen)
     return gpg_error (GPG_ERR_ENCODING_PROBLEM);
@@ -719,28 +719,28 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
   mask = 0;
   for (i=1; unused; i <<= 1, unused--)
     mask |= i;
-  
+
   /* First octet */
   if (derlen)
     {
       bits = *der++; derlen--;
       if (full)
         full--;
-      else 
+      else
         {
           bits &= ~mask;
-          mask = 0; 
+          mask = 0;
         }
     }
   else
     bits = 0;
   if ((bits & 0x80)) usageflags->encrypt = 1;
   if ((bits & 0x40)) usageflags->decrypt = 1;
-  if ((bits & 0x20)) usageflags->sign = 1;  
+  if ((bits & 0x20)) usageflags->sign = 1;
   if ((bits & 0x10)) usageflags->sign_recover = 1;
   if ((bits & 0x08)) usageflags->wrap = 1;
-  if ((bits & 0x04)) usageflags->unwrap = 1; 
-  if ((bits & 0x02)) usageflags->verify = 1;  
+  if ((bits & 0x04)) usageflags->unwrap = 1;
+  if ((bits & 0x02)) usageflags->verify = 1;
   if ((bits & 0x01)) usageflags->verify_recover = 1;
 
   /* Second octet. */
@@ -749,10 +749,10 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
       bits = *der++; derlen--;
       if (full)
         full--;
-      else 
+      else
         {
           bits &= ~mask;
-          mask = 0; 
+          mask = 0;
         }
     }
   else
@@ -823,14 +823,14 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
   int class, tag, constructed, ndef;
   prkdf_object_t prkdflist = NULL;
   int i;
-  
+
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No private keys. */
-  
+
   err = select_and_read_binary (app->slot, fid, "PrKDF", &buffer, &buflen);
   if (err)
     return err;
-  
+
   p = buffer;
   n = buflen;
 
@@ -995,7 +995,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
             /* Skip the native element. */
             ppp += objlen;
             nnn -= objlen;
-            
+
             err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
                                     &ndef, &objlen, &hdrlen);
             if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -1010,7 +1010,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
             /* Skip the accessFlags. */
             ppp += objlen;
             nnn -= objlen;
-            
+
             err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
                                     &ndef, &objlen, &hdrlen);
             if (gpg_err_code (err) == GPG_ERR_EOF)
@@ -1026,7 +1026,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
             for (ul=0; objlen; objlen--)
               {
                 ul <<= 8;
-                ul |= (*ppp++) & 0xff; 
+                ul |= (*ppp++) & 0xff;
                 nnn--;
             }
             key_reference = ul;
@@ -1050,7 +1050,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
         {
           pp += objlen;
           nn -= objlen;
-      
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1124,7 +1124,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
           goto parse_error;
         }
       /* Create a new PrKDF list item. */
-      prkdf = xtrycalloc (1, (sizeof *prkdf 
+      prkdf = xtrycalloc (1, (sizeof *prkdf
                               - sizeof(unsigned short)
                               + objlen/2 * sizeof(unsigned short)));
       if (!prkdf)
@@ -1175,15 +1175,15 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
             err = gpg_error (GPG_ERR_INV_OBJ);
           if (err)
             goto parse_error;
-          
+
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           prkdf->off = ul;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1192,11 +1192,11 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
             err = gpg_error (GPG_ERR_INV_OBJ);
           if (err)
             goto parse_error;
-          
+
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           prkdf->len = ul;
@@ -1235,7 +1235,7 @@ read_ef_prkdf (app_t app, unsigned short fid, prkdf_object_t *result)
       if (prkdf->usageflags.non_repudiation)
         log_printf ("%snon_repudiation", s), s = ",";
       log_printf ("\n");
-      
+
       /* Put it into the list. */
       prkdf->next = prkdflist;
       prkdflist = prkdf;
@@ -1279,14 +1279,14 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
   int class, tag, constructed, ndef;
   cdf_object_t cdflist = NULL;
   int i;
-  
+
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No certificates. */
-  
+
   err = select_and_read_binary (app->slot, fid, "CDF", &buffer, &buflen);
   if (err)
     return err;
-  
+
   p = buffer;
   n = buflen;
 
@@ -1303,7 +1303,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       unsigned long ul;
       const unsigned char *objid;
       size_t objidlen;
-      
+
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
       if (!err && (objlen > n || tag != TAG_SEQUENCE))
@@ -1410,7 +1410,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
           goto parse_error;
         }
       /* Create a new CDF list item. */
-      cdf = xtrycalloc (1, (sizeof *cdf 
+      cdf = xtrycalloc (1, (sizeof *cdf
                             - sizeof(unsigned short)
                             + objlen/2 * sizeof(unsigned short)));
       if (!cdf)
@@ -1444,15 +1444,15 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
             err = gpg_error (GPG_ERR_INV_OBJ);
           if (err)
             goto parse_error;
-          
+
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           cdf->off = ul;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1461,11 +1461,11 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
             err = gpg_error (GPG_ERR_INV_OBJ);
           if (err)
             goto parse_error;
-          
+
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           cdf->len = ul;
@@ -1480,7 +1480,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       if (cdf->have_off)
         log_printf ("[%lu/%lu]", cdf->off, cdf->len);
       log_printf ("\n");
-      
+
       /* Put it into the list. */
       cdf->next = cdflist;
       cdflist = cdf;
@@ -1552,14 +1552,14 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
   int class, tag, constructed, ndef;
   aodf_object_t aodflist = NULL;
   int i;
-  
+
   if (!fid)
     return gpg_error (GPG_ERR_NO_DATA); /* No authentication objects. */
-  
+
   err = select_and_read_binary (app->slot, fid, "AODF", &buffer, &buflen);
   if (err)
     return err;
-  
+
   p = buffer;
   n = buflen;
 
@@ -1749,7 +1749,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       {
         unsigned int bits, mask;
         int unused, full;
-        
+
         unused = *pp++; nn--; objlen--;
         if ((!objlen && unused) || unused/8 > objlen)
           {
@@ -1761,7 +1761,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         mask = 0;
         for (i=1; unused; i <<= 1, unused--)
           mask |= i;
-      
+
         /* The first octet */
         bits = 0;
         if (objlen)
@@ -1769,27 +1769,27 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             bits = *pp++; nn--; objlen--;
             if (full)
               full--;
-            else 
+            else
               {
                 bits &= ~mask;
-                mask = 0; 
+                mask = 0;
               }
           }
         if ((bits & 0x80)) /* ASN.1 bit 0. */
           aodf->pinflags.case_sensitive = 1;
         if ((bits & 0x40)) /* ASN.1 bit 1. */
           aodf->pinflags.local = 1;
-        if ((bits & 0x20)) 
+        if ((bits & 0x20))
           aodf->pinflags.change_disabled = 1;
-        if ((bits & 0x10)) 
+        if ((bits & 0x10))
           aodf->pinflags.unblock_disabled = 1;
-        if ((bits & 0x08)) 
+        if ((bits & 0x08))
           aodf->pinflags.initialized = 1;
-        if ((bits & 0x04)) 
+        if ((bits & 0x04))
           aodf->pinflags.needs_padding = 1;
-        if ((bits & 0x02)) 
+        if ((bits & 0x02))
           aodf->pinflags.unblocking_pin = 1;
-        if ((bits & 0x01)) 
+        if ((bits & 0x01))
           aodf->pinflags.so_pin = 1;
         /* The second octet. */
         bits = 0;
@@ -1798,19 +1798,19 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             bits = *pp++; nn--; objlen--;
             if (full)
               full--;
-            else 
+            else
               {
                 bits &= ~mask;
-                mask = 0; 
+                mask = 0;
               }
           }
-        if ((bits & 0x80)) 
+        if ((bits & 0x80))
           aodf->pinflags.disable_allowed = 1;
-        if ((bits & 0x40)) 
+        if ((bits & 0x40))
           aodf->pinflags.integrity_protected = 1;
-        if ((bits & 0x20)) 
+        if ((bits & 0x20))
           aodf->pinflags.confidentiality_protected = 1;
-        if ((bits & 0x10)) 
+        if ((bits & 0x10))
           aodf->pinflags.exchange_ref_data = 1;
         /* Skip remaining bits. */
         pp += objlen;
@@ -1833,7 +1833,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       for (ul=0; objlen; objlen--)
         {
           ul <<= 8;
-          ul |= (*pp++) & 0xff; 
+          ul |= (*pp++) & 0xff;
           nn--;
         }
       aodf->pintype = ul;
@@ -1853,7 +1853,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       for (ul=0; objlen; objlen--)
         {
           ul <<= 8;
-          ul |= (*pp++) & 0xff; 
+          ul |= (*pp++) & 0xff;
           nn--;
         }
       aodf->min_length = ul;
@@ -1873,7 +1873,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       for (ul=0; objlen; objlen--)
         {
           ul <<= 8;
-          ul |= (*pp++) & 0xff; 
+          ul |= (*pp++) & 0xff;
           nn--;
         }
       aodf->stored_length = ul;
@@ -1898,12 +1898,12 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           aodf->max_length = ul;
           aodf->max_length_valid = 1;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1926,12 +1926,12 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
           for (ul=0; objlen; objlen--)
             {
               ul <<= 8;
-              ul |= (*pp++) & 0xff; 
+              ul |= (*pp++) & 0xff;
               nn--;
             }
           aodf->pin_reference = ul;
           aodf->pin_reference_valid = 1;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1953,7 +1953,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             }
           aodf->pad_char = *pp++; nn--;
           aodf->pad_char_valid = 1;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1970,7 +1970,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         {
           pp += objlen;
           nn -= objlen;
-          
+
           where = __LINE__;
           err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                                   &ndef, &objlen, &hdrlen);
@@ -1987,7 +1987,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
         {
           const unsigned char *ppp = pp;
           size_t nnn = objlen;
-          
+
           pp += objlen;
           nn -= objlen;
 
@@ -2014,7 +2014,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             goto no_core;
           for (i=0; i < aodf->pathlen; i++, ppp += 2, nnn -= 2)
             aodf->path[i] = ((ppp[0] << 8) | ppp[1]);
-          
+
           if (nnn)
             {
               /* An index and length follows. */
@@ -2027,15 +2027,15 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
                 err = gpg_error (GPG_ERR_INV_OBJ);
               if (err)
                 goto parse_error;
-              
+
               for (ul=0; objlen; objlen--)
                 {
                   ul <<= 8;
-                  ul |= (*ppp++) & 0xff; 
+                  ul |= (*ppp++) & 0xff;
                   nnn--;
                 }
               aodf->off = ul;
-              
+
               where = __LINE__;
               err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
                                       &ndef, &objlen, &hdrlen);
@@ -2044,17 +2044,17 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
                 err = gpg_error (GPG_ERR_INV_OBJ);
               if (err)
                 goto parse_error;
-              
+
               for (ul=0; objlen; objlen--)
                 {
                   ul <<= 8;
-                  ul |= (*ppp++) & 0xff; 
+                  ul |= (*ppp++) & 0xff;
                   nnn--;
                 }
               aodf->len = ul;
             }
         }
-      
+
       /* Igonore further objects which might be there due to future
          extensions of pkcs#15. */
 
@@ -2126,7 +2126,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             log_printf ("[%lu/%lu]", aodf->off, aodf->len);
         }
       log_printf ("\n");
-      
+
       /* Put it into the list. */
       aodf->next = aodflist;
       aodflist = aodf;
@@ -2158,7 +2158,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
 
 
 
-/* Read and parse the EF(TokenInfo). 
+/* Read and parse the EF(TokenInfo).
 
 TokenInfo ::= SEQUENCE {
     version		INTEGER {v1(0)} (v1,...),
@@ -2174,7 +2174,7 @@ TokenInfo ::= SEQUENCE {
     holderId		[4] Label OPTIONAL,
     lastUpdate		[5] LastUpdate OPTIONAL,
     preferredLanguage	PrintableString OPTIONAL -- In accordance with
-    -- IETF RFC 1766 
+    -- IETF RFC 1766
 } (CONSTRAINED BY { -- Each AlgorithmInfo.reference value must be unique --})
 
 TokenFlags ::= BIT STRING {
@@ -2217,12 +2217,12 @@ read_ef_tokeninfo (app_t app)
   size_t n, objlen, hdrlen;
   int class, tag, constructed, ndef;
   unsigned long ul;
-  
+
   err = select_and_read_binary (app->slot, 0x5032, "TokenInfo",
                                 &buffer, &buflen);
   if (err)
     return err;
-  
+
   p = buffer;
   n = buflen;
 
@@ -2249,7 +2249,7 @@ read_ef_tokeninfo (app_t app)
   for (ul=0; objlen; objlen--)
     {
       ul <<= 8;
-      ul |= (*p++) & 0xff; 
+      ul |= (*p++) & 0xff;
       n--;
     }
   if (ul)
@@ -2266,7 +2266,7 @@ read_ef_tokeninfo (app_t app)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto leave;
-  
+
   xfree (app->app_local->serialno);
   app->app_local->serialno = xtrymalloc (objlen);
   if (!app->app_local->serialno)
@@ -2307,7 +2307,7 @@ read_p15_info (app_t app)
             return err;
         }
     }
-  
+
   /* Read the ODF so that we know the location of all directory
      files. */
   /* Fixme: We might need to get a non-standard ODF FID from TokenInfo. */
@@ -2319,13 +2319,13 @@ read_p15_info (app_t app)
   assert (!app->app_local->certificate_info);
   assert (!app->app_local->trusted_certificate_info);
   assert (!app->app_local->useful_certificate_info);
-  err = read_ef_cdf (app, app->app_local->odf.certificates, 
+  err = read_ef_cdf (app, app->app_local->odf.certificates,
                      &app->app_local->certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates, 
+    err = read_ef_cdf (app, app->app_local->odf.trusted_certificates,
                        &app->app_local->trusted_certificate_info);
   if (!err || gpg_err_code (err) == GPG_ERR_NO_DATA)
-    err = read_ef_cdf (app, app->app_local->odf.useful_certificates, 
+    err = read_ef_cdf (app, app->app_local->odf.useful_certificates,
                        &app->app_local->useful_certificate_info);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
     err = 0;
@@ -2378,7 +2378,7 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
 
       send_status_info (ctrl, "CERTINFO",
                         certtype, strlen (certtype),
-                        buf, strlen (buf), 
+                        buf, strlen (buf),
                         NULL, (size_t)0);
       xfree (buf);
     }
@@ -2480,7 +2480,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
           assert (strlen (gripstr) == 40);
           send_status_info (ctrl, "KEYPAIRINFO",
                             gripstr, 40,
-                            buf, strlen (buf), 
+                            buf, strlen (buf),
                             NULL, (size_t)0);
         }
       xfree (buf);
@@ -2491,7 +2491,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 
 
 /* This is the handler for the LEARN command.  */
-static gpg_error_t 
+static gpg_error_t
 do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 {
   gpg_error_t err;
@@ -2564,7 +2564,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       log_printf (": %s\n", gpg_strerror (err));
       goto leave;
     }
-  
+
   /* Check whether this is really a certificate.  */
   p = buffer;
   n = buflen;
@@ -2589,7 +2589,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
                           &ndef, &objlen, &hdrlen);
   if (err)
     goto leave;
-  
+
   if (!rootca
       && class == CLASS_UNIVERSAL && tag == TAG_OBJECT_ID && !constructed)
     {
@@ -2606,7 +2606,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       save_p = p;
       err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                               &ndef, &objlen, &hdrlen);
-      if (err) 
+      if (err)
         goto leave;
       if ( !(class == CLASS_UNIVERSAL && tag == TAG_SEQUENCE && constructed) )
         {
@@ -2643,7 +2643,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
    buffer to be stored at R_CERT and its length at R_CERTLEN.  A error
    code will be returned on failure and R_CERT and R_CERTLEN will be
    set to NULL/0. */
-static gpg_error_t 
+static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **r_cert, size_t *r_certlen)
 {
@@ -2662,7 +2662,7 @@ do_readcert (app_t app, const char *certid,
 
 /* Implement the GETATTR command.  This is similar to the LEARN
    command but returns just one value via the status interface. */
-static gpg_error_t 
+static gpg_error_t
 do_getattr (app_t app, ctrl_t ctrl, const char *name)
 {
   gpg_error_t err;
@@ -2737,7 +2737,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
         }
 
     }
-  return gpg_error (GPG_ERR_INV_NAME); 
+  return gpg_error (GPG_ERR_INV_NAME);
 }
 
 
@@ -2763,14 +2763,14 @@ micardo_mse (app_t app, unsigned short fid)
       log_error ("error reading EF_keyD: %s\n", gpg_strerror (err));
       return err;
     }
-  
+
   for (recno = 1, se_num = -1; ; recno++)
     {
       unsigned char *buffer;
       size_t buflen;
       size_t n, nn;
       const unsigned char *p, *pp;
-      
+
       err = iso7816_read_record (app->slot, recno, 1, 0, &buffer, &buflen);
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         break; /* ready */
@@ -2805,8 +2805,8 @@ micardo_mse (app_t app, unsigned short fid)
       log_error ("CRT for keyfile %04hX not found\n", fid);
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
-  
-  
+
+
   /* Restore the security environment to SE_NUM if needed */
   if (se_num)
     {
@@ -2837,13 +2837,13 @@ micardo_mse (app_t app, unsigned short fid)
 
 
 
-/* Handler for the PKSIGN command. 
+/* Handler for the PKSIGN command.
 
    Create the signature and return the allocated result in OUTDATA.
    If a PIN is required, the PINCB will be used to ask for the PIN;
    that callback should return the PIN in an allocated buffer and
    store that as the 3rd argument.  */
-static gpg_error_t 
+static gpg_error_t
 do_sign (app_t app, const char *keyidstr, int hashalgo,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
@@ -2892,7 +2892,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   /* Find the authentication object to this private key object. */
   for (aodf = app->app_local->auth_object_info; aodf; aodf = aodf->next)
-    if (aodf->objidlen == prkdf->authidlen 
+    if (aodf->objidlen == prkdf->authidlen
         && !memcmp (aodf->objid, prkdf->authid, prkdf->authidlen))
       break;
   if (!aodf)
@@ -2937,7 +2937,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   if (app->app_local->card_type == CARD_TYPE_BELPIC)
     {
       unsigned char mse[5];
-      
+
       mse[0] = 4;    /* Length of the template. */
       mse[1] = 0x80; /* Algorithm reference tag. */
       if (hashalgo == MD_USER_TLS_MD5SHA1)
@@ -2947,7 +2947,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       mse[3] = 0x84; /* Private key reference tag. */
       mse[4] = prkdf->key_reference_valid? prkdf->key_reference : 0x82;
 
-      err = iso7816_manage_security_env (app->slot, 
+      err = iso7816_manage_security_env (app->slot,
                                          0x41, 0xB6,
                                          mse, sizeof mse);
       no_data_padding = 1;
@@ -2987,7 +2987,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       if (strlen (pinvalue) < aodf->min_length)
         {
           log_error ("PIN is too short; minimum length is %lu\n",
-                     aodf->min_length);         
+                     aodf->min_length);
           err = gpg_error (GPG_ERR_BAD_PIN);
         }
       else if (aodf->stored_length && strlen (pinvalue) > aodf->stored_length)
@@ -3027,7 +3027,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
         case PIN_TYPE_UTF8:
           break;
         case PIN_TYPE_HALF_NIBBLE_BCD:
-          errstr = "PIN type Half-Nibble-BCD is not supported"; 
+          errstr = "PIN type Half-Nibble-BCD is not supported";
           break;
         case PIN_TYPE_ISO9564_1:
           errstr = "PIN type ISO9564-1 is not supported";
@@ -3064,7 +3064,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           for (s=pinvalue; i < aodf->stored_length && *s && s[1]; s = s+2 )
             paddedpin[i++] = (((*s - '0') << 4) | ((s[1] - '0') & 0x0f));
           if (i < aodf->stored_length && *s)
-            paddedpin[i++] = (((*s - '0') << 4) 
+            paddedpin[i++] = (((*s - '0') << 4)
                               |((aodf->pad_char_valid?aodf->pad_char:0)&0x0f));
 
           if (aodf->pinflags.needs_padding)
@@ -3130,7 +3130,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       else if (hashalgo == GCRY_MD_RMD160
                && !memcmp (indata, rmd160_prefix, 15))
         ;
-      else 
+      else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data, indata, indatalen);
     }
@@ -3141,7 +3141,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
         memcpy (data, sha1_prefix, 15);
       else if (hashalgo == GCRY_MD_RMD160)
         memcpy (data, rmd160_prefix, 15);
-      else 
+      else
         return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
       memcpy (data+15, indata, indatalen);
     }
@@ -3164,12 +3164,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   else if (prkdf->key_reference_valid)
     {
       unsigned char mse[3];
-      
+
       mse[0] = 0x84; /* Select asym. key. */
       mse[1] = 1;
       mse[2] = prkdf->key_reference;
 
-      err = iso7816_manage_security_env (app->slot, 
+      err = iso7816_manage_security_env (app->slot,
                                          0x41, 0xB6,
                                          mse, sizeof mse);
     }
@@ -3189,14 +3189,14 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 }
 
 
-/* Handler for the PKAUTH command. 
+/* Handler for the PKAUTH command.
 
    This is basically the same as the PKSIGN command but we first check
    that the requested key is suitable for authentication; that is, it
    must match the criteria used for the attribute $AUTHKEYID.  See
    do_sign for calling conventions; there is no HASHALGO, though. */
-static gpg_error_t 
-do_auth (app_t app, const char *keyidstr, 
+static gpg_error_t
+do_auth (app_t app, const char *keyidstr,
          gpg_error_t (*pincb)(void*, const char *, char **),
          void *pincb_arg,
          const void *indata, size_t indatalen,
@@ -3219,7 +3219,7 @@ do_auth (app_t app, const char *keyidstr,
     }
 
   algo = indatalen == 36? MD_USER_TLS_MD5SHA1 : GCRY_MD_SHA1;
-  return do_sign (app, keyidstr, algo, pincb, pincb_arg, 
+  return do_sign (app, keyidstr, algo, pincb, pincb_arg,
                   indata, indatalen, outdata, outdatalen);
 }
 
@@ -3273,8 +3273,8 @@ read_home_df (int slot, int *r_belpic)
 }
 
 
-/* 
-   Select the PKCS#15 application on the card in SLOT. 
+/*
+   Select the PKCS#15 application on the card in SLOT.
  */
 gpg_error_t
 app_select_p15 (app_t app)
@@ -3388,7 +3388,7 @@ app_select_p15 (app_t app)
           unsigned char *p;
 
           /* FIXME: actually get it from EF(TokenInfo). */
-          
+
           p = xtrymalloc (3 + app->serialnolen);
           if (!p)
             rc = gpg_error (gpg_err_code_from_errno (errno));

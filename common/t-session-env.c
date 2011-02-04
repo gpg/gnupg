@@ -46,7 +46,7 @@ listall (session_env_t se)
   while ( (name = session_env_listenv (se, &iterator, &value, &def)) )
     if (verbose)
       printf ("  %s%s=%s\n",  def? "[def] ":"      ", name, value);
-          
+
 }
 
 
@@ -150,7 +150,7 @@ test_all (void)
       fprintf (stderr, "failed to get default of HOME\n");
       exit (1);
     }
-      
+
   s = session_env_getenv (se, "HOME");
   if (s)
     fail(0);  /* This is a default value, thus we should not see it.  */
@@ -194,7 +194,7 @@ test_all (void)
   /* Check that the other object is clean.  */
   {
     int iterator = 0;
-    
+
     if (session_env_listenv (se_0, &iterator, NULL, NULL))
       fail (0);
   }
@@ -211,7 +211,7 @@ test_all (void)
   for (idx=0; idx < 500; idx++)
     {
       char buf[100];
-      
+
       snprintf (buf, sizeof buf, "FOO_%d=Value for %x", idx, idx);
       err = session_env_putenv (se, buf);
       if (err)
@@ -230,7 +230,7 @@ test_all (void)
   for (idx=0; idx < 500; idx++)
     {
       char buf[100];
-      
+
       snprintf (buf, sizeof buf, "FOO_%d", idx);
       err = session_env_putenv (se, buf);
       if (err)
@@ -243,7 +243,7 @@ test_all (void)
   /* Check that all are deleted.  */
   {
     int iterator = 0;
-    
+
     if (session_env_listenv (se, &iterator, NULL, NULL))
       fail (0);
   }
@@ -252,7 +252,7 @@ test_all (void)
   for (idx=0; idx < 500; idx++)
     {
       char buf[100];
-      
+
       if (!(idx % 10))
         {
           if ( !(idx % 3))
@@ -266,7 +266,7 @@ test_all (void)
     }
 
   listall (se);
-  
+
   session_env_release (se);
 
   session_env_release (se_0);
@@ -291,4 +291,3 @@ main (int argc, char **argv)
 
   return 0;
 }
-

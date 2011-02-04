@@ -456,7 +456,7 @@ create_version_record (void)
 {
   TRUSTREC rec;
   int rc;
-  
+
   memset( &rec, 0, sizeof rec );
   rec.r.ver.version     = 3;
   rec.r.ver.created     = make_timestamp();
@@ -724,7 +724,7 @@ tdbio_read_model(void)
 {
   TRUSTREC vr;
   int rc;
- 
+
   rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
   if( rc )
     log_fatal( _("%s: error reading version record: %s\n"),
@@ -1042,7 +1042,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
  */
 static int
 lookup_hashtable( ulong table, const byte *key, size_t keylen,
-		  int (*cmpfnc)(const void*, const TRUSTREC *), 
+		  int (*cmpfnc)(const void*, const TRUSTREC *),
                   const void *cmpdata, TRUSTREC *rec )
 {
     int rc;
@@ -1539,4 +1539,3 @@ tdbio_invalid(void)
   how_to_fix_the_trustdb ();
   g10_exit (2);
 }
-

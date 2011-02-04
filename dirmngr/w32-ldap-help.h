@@ -1,5 +1,5 @@
 /* w32-ldap-help.h - Map utf8 based API into a wchar_t API.
- o* Copyright (C) 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -72,7 +72,7 @@ _dirmngr_ldap_search_st (LDAP *ld, const char *base, ULONG scope,
   wchar_t **wattrs = NULL;
   int i;
 
-  if (base) 
+  if (base)
     {
       wbase = utf8_to_wchar (base);
       if (!wbase)
@@ -149,7 +149,7 @@ _dirmngr_ldap_get_values_len (LDAP *ld, LDAPMessage *msg, const char *attr)
 {
   BerValue **ret;
   wchar_t *wattr;
-  
+
   if (attr)
     {
       wattr = utf8_to_wchar (attr);

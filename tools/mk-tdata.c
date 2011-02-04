@@ -44,12 +44,12 @@ main(int argc, char **argv)
       argc -= 2;
       argv += 2;
     }
-      
+
   limit = argc ? atoi(argv[0]) : 0;
 
   srand(getpid());
 
-  for (i=0; !limit || i < limit; i++ ) 
+  for (i=0; !limit || i < limit; i++ )
     {
       if (char_mode)
         {

@@ -32,7 +32,7 @@
 #include "util.h"
 #include "exechelp.h"
 #include "sysutils.h"
-#include "status.h" 
+#include "status.h"
 #include "asshelp.h"
 
 /* The type we use for lock_agent_spawning.  */
@@ -43,7 +43,7 @@
 #endif
 
 /* The time we wait until the agent or the dirmngr are ready for
-   operation after we started them before giving up.  */ 
+   operation after we started them before giving up.  */
 #ifdef HAVE_W32CE_SYSTEM
 # define SECS_TO_WAIT_FOR_AGENT 30
 # define SECS_TO_WAIT_FOR_DIRMNGR 30
@@ -110,7 +110,7 @@ send_one_option (assuan_context_t ctx, gpg_err_source_t errsource,
 
   if (!value || !*value)
     err = 0;  /* Avoid sending empty strings.  */
-  else if (asprintf (&optstr, "OPTION %s%s=%s", 
+  else if (asprintf (&optstr, "OPTION %s%s=%s",
                      use_putenv? "putenv=":"", name, value) < 0)
     err = gpg_error_from_syserror ();
   else
@@ -136,7 +136,7 @@ send_pinentry_environment (assuan_context_t ctx,
 {
   gpg_error_t err = 0;
 #if defined(HAVE_SETLOCALE)
-  char *old_lc = NULL; 
+  char *old_lc = NULL;
 #endif
   char *dft_lc = NULL;
   const char *dft_ttyname;
@@ -144,7 +144,7 @@ send_pinentry_environment (assuan_context_t ctx,
   const char *name, *assname, *value;
   int is_default;
 
-  iterator = 0; 
+  iterator = 0;
   while ((name = session_env_list_stdenvnames (&iterator, &assname)))
     {
       value = session_env_getenv_or_default (session_env, name, NULL);
@@ -164,7 +164,7 @@ send_pinentry_environment (assuan_context_t ctx,
     }
 
 
-  dft_ttyname = session_env_getenv_or_default (session_env, "GPG_TTY", 
+  dft_ttyname = session_env_getenv_or_default (session_env, "GPG_TTY",
                                                &is_default);
   if (dft_ttyname && !is_default)
     dft_ttyname = NULL;  /* We need the default value.  */
@@ -182,7 +182,7 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_ctype || (dft_ttyname && dft_lc))
     {
-      err = send_one_option (ctx, errsource, "lc-ctype", 
+      err = send_one_option (ctx, errsource, "lc-ctype",
                              opt_lc_ctype ? opt_lc_ctype : dft_lc, 0);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
@@ -208,7 +208,7 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_messages || (dft_ttyname && dft_lc))
     {
-      err = send_one_option (ctx, errsource, "lc-messages", 
+      err = send_one_option (ctx, errsource, "lc-messages",
                              opt_lc_messages ? opt_lc_messages : dft_lc, 0);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
@@ -240,7 +240,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
 
   (void)homedir; /* Not required. */
 
-  *lock = CreateMutexW 
+  *lock = CreateMutexW
     (NULL, FALSE,
      !strcmp (name, "agent")?   L"GnuPG_spawn_agent_sentinel":
      !strcmp (name, "dirmngr")? L"GnuPG_spawn_dirmngr_sentinel":
@@ -256,7 +256,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
   waitrc = WaitForSingleObject (*lock, 1000);
   if (waitrc == WAIT_OBJECT_0)
     return 0;
-  
+
   if (waitrc == WAIT_TIMEOUT && timeout)
     {
       timeout--;
@@ -268,7 +268,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
   if (waitrc == WAIT_TIMEOUT)
     log_info ("error waiting for the spawn_%s mutex: timeout\n", name);
   else
-    log_info ("error waiting for the spawn_%s mutex: (code=%d) %s\n", 
+    log_info ("error waiting for the spawn_%s mutex: (code=%d) %s\n",
               name, waitrc, w32_strerror (-1));
   return gpg_error (GPG_ERR_GENERAL);
 #else /*!HAVE_W32_SYSTEM*/
@@ -377,11 +377,11 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           if (verbose)
             log_info (_("no running gpg-agent - starting `%s'\n"),
                       agent_program);
-          
+
           if (status_cb)
-            status_cb (status_cb_arg, STATUS_PROGRESS, 
+            status_cb (status_cb_arg, STATUS_PROGRESS,
                        "starting_agent ? 0 0", NULL);
-          
+
           if (fflush (NULL))
             {
               gpg_error_t tmperr = gpg_err_make (errsource,
@@ -392,9 +392,9 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 	      assuan_release (ctx);
               return tmperr;
             }
-          
-          argv[0] = "--use-standard-socket-p"; 
-          argv[1] = NULL;  
+
+          argv[0] = "--use-standard-socket-p";
+          argv[1] = NULL;
           err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
           if (err)
             log_debug ("starting `%s' for testing failed: %s\n",
@@ -404,7 +404,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               if (excode == -1)
                 log_debug ("running `%s' for testing failed (wait): %s\n",
                            agent_program, gpg_strerror (err));
-            }          
+            }
           gnupg_release_process (pid);
 
           if (!err && !excode)
@@ -416,8 +416,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               lock_spawn_t lock;
 
               argv[0] = "--daemon";
-              argv[1] = "--use-standard-socket"; 
-              argv[2] = NULL;  
+              argv[1] = "--use-standard-socket";
+              argv[2] = NULL;
 
               if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
                   && assuan_socket_connect (ctx, sockname, 0, 0))
@@ -463,22 +463,22 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               const char *pgmname;
               int no_close_list[3];
               int i;
-              
+
               if ( !(pgmname = strrchr (agent_program, '/')))
                 pgmname = agent_program;
               else
                 pgmname++;
-              
+
               argv[0] = pgmname;
               argv[1] = "--server";
               argv[2] = NULL;
-              
+
               i=0;
               if (log_get_fd () != -1)
                 no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
               no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
               no_close_list[i] = -1;
-              
+
               /* Connect to the agent and perform initial handshaking. */
               err = assuan_pipe_connect (ctx, agent_program, argv,
                                          no_close_list, NULL, NULL, 0);
@@ -566,7 +566,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   assuan_context_t ctx;
   const char *sockname;
   int did_success_msg = 0;
-      
+
   *r_ctx = NULL;
 
   err = assuan_new (&ctx);
@@ -595,11 +595,11 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       if (verbose)
         log_info (_("no running Dirmngr - starting `%s'\n"),
                   dirmngr_program);
-          
+
       if (status_cb)
-        status_cb (status_cb_arg, STATUS_PROGRESS, 
+        status_cb (status_cb_arg, STATUS_PROGRESS,
                    "starting_dirmngr ? 0 0", NULL);
-          
+
       if (fflush (NULL))
         {
           gpg_error_t tmperr = gpg_err_make (errsource,
@@ -609,10 +609,10 @@ start_new_dirmngr (assuan_context_t *r_ctx,
           assuan_release (ctx);
           return tmperr;
         }
-          
+
       argv[0] = "--daemon";
-      argv[1] = NULL;  
-      
+      argv[1] = NULL;
+
       if (!(err = lock_spawning (&lock, homedir, "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
@@ -623,7 +623,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
           else
             {
               int i;
-              
+
               for (i=0; i < SECS_TO_WAIT_FOR_DIRMNGR; i++)
                 {
                   if (verbose)
@@ -645,7 +645,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
                 }
             }
         }
-      
+
       unlock_spawning (&lock, "dirmngr");
     }
 #else
@@ -655,7 +655,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   (void)status_cb;
   (void)status_cb_arg;
 #endif /*USE_DIRMNGR_AUTO_START*/
- 
+
   if (err)
     {
       log_error ("connecting dirmngr at `%s' failed: %s\n",
@@ -670,4 +670,3 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   *r_ctx = ctx;
   return 0;
 }
-

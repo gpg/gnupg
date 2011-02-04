@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
 
    As of now this is only a test program for manual tests.
 
@@ -179,4 +179,3 @@ main (int argc, char **argv)
 
   return !!errcount;
 }
-

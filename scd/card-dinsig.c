@@ -21,7 +21,7 @@
    used with an interface specification described in DIN V 66291-1.
    The AID to be used is: 'D27600006601'.
 
-   The file IDs for certificates utilize the generic format: 
+   The file IDs for certificates utilize the generic format:
         Cxyz
     C being the hex digit 'C' (12).
     x being the service indicator:
@@ -40,13 +40,13 @@
          '8' .. 'D' := C.CA (certificate of a CA issue by the Root-CA).
          'E'        := C.RCA (self certified certificate of the Root-CA).
          'F'        := reserved.
-   
+
    The file IDs used by default are:
    '1F00'  EF.SSD (security service descriptor). [o,o]
    '2F02'  EF.GDO (global data objects) [m,m]
    'A000'  EF.PROT (signature log).  Cyclic file with 20 records of 53 byte.
            Read and update after user authentication. [o,o]
-   'B000'  EF.PK.RCA.DS (public keys of Root-CA).  Size is 512b or size 
+   'B000'  EF.PK.RCA.DS (public keys of Root-CA).  Size is 512b or size
            of keys. [m (unless a 'C00E' is present),m]
    'B001'  EF.PK.CA.DS (public keys of CAs).  Size is 512b or size
            of keys. [o,o]
@@ -54,12 +54,12 @@
            with n := 0 .. 7.  Size is 2k or size of cert.  Read and
            update allowed after user authentication. [m,m]
    'C00m'  EF.C.CA.DS (digital signature certificate of CA)
-           with m := 8 .. E.  Size is 1k or size of cert.  Read always 
+           with m := 8 .. E.  Size is 1k or size of cert.  Read always
            allowed, update after uder authentication. [o,o]
    'C100'  EF.C.ICC.AUT (AUT certificate of ICC) [o,m]
    'C108'  EF.C.CA.AUT (AUT certificate of CA) [o,m]
    'D000'  EF.DM (display message) [-,m]
-   
+
    The letters in brackets indicate optional or mandatory files: The
    first for card terminals under full control and the second for
    "business" card terminals.
@@ -118,7 +118,7 @@ dinsig_enum_keypairs (CARD card, int idx,
       return rc;
     }
 
-  rc = ksba_cert_init_from_mem (cert, buf, buflen); 
+  rc = ksba_cert_init_from_mem (cert, buf, buflen);
   xfree (buf);
   if (rc)
     {
@@ -132,7 +132,7 @@ dinsig_enum_keypairs (CARD card, int idx,
       log_error ("failed to calculate the keygrip at index %d\n", idx);
       ksba_cert_release (cert);
       return gpg_error (GPG_ERR_CARD);
-    }      
+    }
   ksba_cert_release (cert);
 
   /* return the iD */
@@ -146,7 +146,7 @@ dinsig_enum_keypairs (CARD card, int idx,
       else
         strcpy (*keyid, "DINSIG-DF01.C200");
     }
-  
+
   return 0;
 }
 
@@ -171,7 +171,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
     return gpg_error (GPG_ERR_INV_ID);
 
   rc = sc_select_file (card->scard, &path, &file);
-  if (rc) 
+  if (rc)
     {
       log_error ("sc_select_file failed: %s\n", sc_strerror (rc));
       return map_sc_err (rc);
@@ -184,7 +184,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
       return gpg_error (GPG_ERR_CARD);
     }
   if (file->size < 20) /* check against a somewhat arbitrary length */
-    { 
+    {
       log_error ("certificate EF too short\n");
       sc_file_free (file);
       return gpg_error (GPG_ERR_CARD);
@@ -196,7 +196,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
       sc_file_free (file);
       return tmperr;
     }
-      
+
   rc = sc_read_binary (card->scard, 0, buf, file->size, 0);
   if (rc >= 0 && rc != file->size)
     {
@@ -206,7 +206,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
       return gpg_error (GPG_ERR_CARD);
     }
   sc_file_free (file);
-  if (rc < 0) 
+  if (rc < 0)
     {
       log_error ("error reading certificate EF: %s\n", sc_strerror (rc));
       xfree (buf);
@@ -236,7 +236,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
         }
       memmove (buf, buf+9, buflen-9);
       buflen -= 9;
-    } 
+    }
 
   *cert = buf;
   *ncert = buflen;

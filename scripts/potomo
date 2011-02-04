@@ -43,18 +43,18 @@ if [ "$outfile" -nt "$infile" ]; then
   echo "potomo: '$outfile' is newer than source - keeping" 2>&1
   exit 0
 fi
-  
+
 # Note that we could use the newer msgconv.  However this tool was not
 # widely available back in 2008.
 
 fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' \
          "$infile"`
 
-case "$fromset" in 
-    utf8|utf-8|UTF8|UTF-8) 
-        echo "potomo: '$infile' keeping $fromset" >&2 
+case "$fromset" in
+    utf8|utf-8|UTF8|UTF-8)
+        echo "potomo: '$infile' keeping $fromset" >&2
         msgfmt --output-file="$outfile" "$infile"
-        ;;   
+        ;;
     *)
         echo "potomo: '$infile' converting from $fromset to utf-8" >&2
         iconv --silent --from-code=$fromset --to-code=utf-8 < "$infile" |\

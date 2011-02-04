@@ -1,7 +1,7 @@
 /* http.h  -  HTTP protocol handler
  * Copyright (C) 1999, 2000, 2001, 2003, 2006,
  *               2010 Free Software Foundation, Inc.
- *     
+ *
  * This file is part of GnuPG.
  *
  * GnuPG is free software; you can redistribute it and/or modify
@@ -18,12 +18,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GNUPG_COMMON_HTTP_H
-#define GNUPG_COMMON_HTTP_H 
+#define GNUPG_COMMON_HTTP_H
 
 #include <gpg-error.h>
 #include "../common/estream.h"
 
-struct uri_tuple_s 
+struct uri_tuple_s
 {
   struct uri_tuple_s *next;
   const char *name;	/* A pointer into name. */
@@ -34,7 +34,7 @@ struct uri_tuple_s
 };
 typedef struct uri_tuple_s *uri_tuple_t;
 
-struct parsed_uri_s 
+struct parsed_uri_s
 {
   /* All these pointers point into BUFFER; most stuff is not escaped. */
   char *scheme;	        /* Pointer to the scheme string (always lowercase). */
@@ -50,17 +50,17 @@ struct parsed_uri_s
 };
 typedef struct parsed_uri_s *parsed_uri_t;
 
-typedef enum 
+typedef enum
   {
     HTTP_REQ_GET  = 1,
     HTTP_REQ_HEAD = 2,
     HTTP_REQ_POST = 3
-  } 
+  }
 http_req_t;
 
 /* We put the flag values into an enum, so that gdb can display them. */
 enum
-  { 
+  {
     HTTP_FLAG_TRY_PROXY = 1,
     HTTP_FLAG_SHUTDOWN = 2,
     HTTP_FLAG_LOG_RESP = 8,

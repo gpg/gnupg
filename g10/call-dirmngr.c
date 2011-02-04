@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 #ifdef HAVE_LOCALE_H
@@ -77,7 +77,7 @@ struct ks_put_parm_s
    function dirmngr_deinit_session_data is called bu gpg.c to cleanup
    these resources.  Note that gpg.h defines a typedef dirmngr_local_t
    for this structure. */
-struct dirmngr_local_s 
+struct dirmngr_local_s
 {
   /* Link to other contexts which are used simultaneously.  */
   struct dirmngr_local_s *next;
@@ -132,14 +132,14 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
       /* Tell the dirmngr that we want to collect audit event. */
       /* err = assuan_transact (agent_ctx, "OPTION audit-events=1", */
       /*                        NULL, NULL, NULL, NULL, NULL, NULL); */
-      
+
       /* Set all configured keyservers.  We clear existing keyservers
          so that any keyserver configured in GPG overrides keyservers
          possibly configured in Dirmngr. */
       for (ksi = opt.keyserver; !err && ksi; ksi = ksi->next)
         {
           char *line;
-          
+
           line = xtryasprintf ("KEYSERVER%s %s",
                                ksi == opt.keyserver? " --clear":"", ksi->uri);
           if (!line)
@@ -160,7 +160,7 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
       /* audit_log_ok (ctrl->audit, AUDIT_DIRMNGR_READY, err); */
       *r_ctx = ctx;
     }
-  
+
   return err;
 }
 
@@ -189,7 +189,7 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           *r_ctx = dml->ctx;
           return 0;
         }
-      
+
       dml = xtrycalloc (1, sizeof *dml);
       if (!dml)
         return gpg_error_from_syserror ();
@@ -271,7 +271,7 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
             fixedbuf[linelen-1] = 0;
           err = parm->data_cb (parm->data_cb_value, fixedbuf);
         }
-      else 
+      else
         {
           if (linelen + 1 >= parm->helpbufsize)
             {
@@ -313,7 +313,7 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
 gpg_error_t
 gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
                        gpg_error_t (*cb)(void*, char *), void *cb_value)
-{ 
+{
   gpg_error_t err;
   assuan_context_t ctx;
   struct ks_search_parm_s parm;
@@ -387,7 +387,7 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    are able to ask for (1000-10-1)/(2+8+1) = 90 keys at once.  */
 gpg_error_t
 gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
-{ 
+{
   gpg_error_t err;
   assuan_context_t ctx;
   struct ks_get_parm_s parm;
@@ -479,9 +479,9 @@ ks_put_inq_cb (void *opaque, const char *line)
             case PKT_PUBLIC_SUBKEY:
               {
                 PKT_public_key *pk = node->pkt->pkt.public_key;
-                
+
                 keyid_from_pk (pk, NULL);
-                
+
                 es_fprintf (fp, "%s:%08lX%08lX:%u:%u:%u:%u:%s%s:\n",
                             node->pkt->pkttype==PKT_PUBLIC_KEY? "pub" : "sub",
                             (ulong)pk->keyid[0], (ulong)pk->keyid[1],
@@ -502,18 +502,18 @@ ks_put_inq_cb (void *opaque, const char *line)
                 if (!uid->attrib_data)
                   {
                     es_fprintf (fp, "uid:");
-                    
+
                     /* Quote ':', '%', and any 8-bit characters.  */
                     for (r=0; r < uid->len; r++)
                       {
-                        if (uid->name[r] == ':' 
+                        if (uid->name[r] == ':'
                             || uid->name[r]== '%'
                             || (uid->name[r]&0x80))
                           es_fprintf (fp, "%%%02X", (byte)uid->name[r]);
                         else
                           es_putc (uid->name[r], fp);
                       }
-                    
+
                     es_fprintf (fp, ":%u:%u:%s%s:\n",
                                 uid->created,uid->expiredate,
                                 uid->is_revoked? "r":"",
@@ -572,7 +572,7 @@ ks_put_inq_cb (void *opaque, const char *line)
   else
     return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
 
-  return err; 
+  return err;
 }
 
 
@@ -582,7 +582,7 @@ ks_put_inq_cb (void *opaque, const char *line)
    used to convey meta data to LDAP keyservers.  */
 gpg_error_t
 gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)
-{ 
+{
   gpg_error_t err;
   assuan_context_t ctx;
   struct ks_put_parm_s parm;

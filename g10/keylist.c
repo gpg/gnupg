@@ -239,7 +239,7 @@ status_one_subpacket (sigsubpkttype_t type, size_t len, int flags,
   if (len > 256)
     return;
 
-  snprintf (status, sizeof status, 
+  snprintf (status, sizeof status,
             "%d %u %u ", type, flags, (unsigned int) len);
 
   write_status_text_and_buffer (STATUS_SIG_SUBPACKET, status, buf, len, 0);
@@ -455,7 +455,7 @@ list_all (int secret)
               if (lastresname != resname)
                 {
                   int i;
-                  
+
                   es_fprintf (es_stdout, "%s\n", resname);
                   for (i = strlen (resname); i; i--)
                     es_putc ('-', es_stdout);
@@ -529,7 +529,7 @@ list_one (strlist_t names, int secret)
     }
   while (!getkey_next (ctx, NULL, &keyblock));
   getkey_end (ctx);
-  
+
   if (opt.check_sigs && !opt.with_colons)
     print_signature_stats (&stats);
 }
@@ -596,7 +596,7 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
 
   if (use & PUBKEY_USAGE_ENC)
     es_putc ('e', es_stdout);
-  
+
   if (use & PUBKEY_USAGE_SIG)
     {
       es_putc ('s', es_stdout);
@@ -661,7 +661,7 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
       if (disabled)
 	es_putc ('D', es_stdout);
     }
-  
+
   es_putc (':', es_stdout);
 }
 
@@ -795,10 +795,10 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
     }
   else
     s2k_char = ' ';
-  
+
   check_trustdb_stale ();
 
-  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s", 
+  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
           secret? "sec":"pub",
           s2k_char,
           nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
@@ -921,7 +921,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
             }
           else
             s2k_char = ' ';
-          
+
 	  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
                   secret? "ssb":"sub",
                   s2k_char,
@@ -1192,7 +1192,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  if (attrib_fp && node->pkt->pkt.user_id->attrib_data != NULL)
 	    dump_attribs (node->pkt->pkt.user_id, pk);
 	  /*
-	   * Fixme: We need a valid flag here too 
+	   * Fixme: We need a valid flag here too
 	   */
 	  str = uid->attrib_data ? "uat" : "uid";
 	  if (uid->is_revoked)

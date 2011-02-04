@@ -1,18 +1,18 @@
 # Makefile.am - main makefile for GnuPG
 #     	Copyright (C) 2001, 2004, 2010 Free Software Foundation, Inc.
-# 
+#
 # This file is part of GnuPG.
-# 
+#
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -23,7 +23,7 @@ AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto
 
 EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT
-DISTCLEANFILES = g10defs.h 
+DISTCLEANFILES = g10defs.h
 
 if BUILD_GPGSM
 kbx = kbx
@@ -35,11 +35,11 @@ endif
 if BUILD_GPG
 gpg = g10
 if !HAVE_W32CE_SYSTEM
-keyserver = 
+keyserver =
 endif
 else
 gpg =
-keyserver = 
+keyserver =
 endif
 if BUILD_GPGSM
 sm = sm
@@ -106,6 +106,5 @@ install-data-hook:
 	done
 endif
 
-stowinstall: 
+stowinstall:
 	$(MAKE) $(AM_MAKEFLAGS) install prefix=/usr/local/stow/gnupg
-

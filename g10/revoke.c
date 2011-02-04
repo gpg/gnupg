@@ -239,7 +239,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 
     /* get the key from the keyblock */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    if( !node ) 
+    if( !node )
       BUG ();
 
     pk=node->pkt->pkt.public_key;
@@ -482,7 +482,7 @@ gen_revoke (const char *uname)
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
-  if (!node) 
+  if (!node)
     BUG ();
 
   psk = node->pkt->pkt.public_key;
@@ -504,19 +504,19 @@ gen_revoke (const char *uname)
       rc = 0;
       goto leave;
     }
-  
+
   if (psk->version >= 4 || opt.force_v4_certs)
     {
       /* Get the reason for the revocation.  */
       reason = ask_revocation_reason (1, 0, 1);
       if (!reason)
-        { 
+        {
           /* user decided to cancel */
           rc = 0;
           goto leave;
         }
     }
-  
+
   if (!opt.armor)
     tty_printf (_("ASCII armored output forced.\n"));
 
@@ -536,7 +536,7 @@ gen_revoke (const char *uname)
       log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
       goto leave;
     }
-    
+
   if (PGP2 || PGP6 || PGP7 || PGP8)
     {
       /* Use a minimal pk for PGPx mode, since PGP can't import bare
@@ -550,15 +550,15 @@ gen_revoke (const char *uname)
       init_packet( &pkt );
       pkt.pkttype = PKT_SIGNATURE;
       pkt.pkt.signature = sig;
-        
+
       rc = build_packet (out, &pkt);
-      if (rc) 
+      if (rc)
         {
           log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
           goto leave;
         }
     }
-    
+
   /* and issue a usage notice */
   tty_printf (_(
 "Revocation certificate created.\n\n"

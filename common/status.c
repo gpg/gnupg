@@ -27,7 +27,7 @@
 
 /* Return the status string for code NO. */
 const char *
-get_status_string ( int no ) 
+get_status_string ( int no )
 {
   int idx = statusstr_msgidxof (no);
   if (idx == -1)
@@ -41,7 +41,7 @@ const char *
 get_inv_recpsgnr_code (gpg_error_t err)
 {
   const char *errstr;
-  
+
   switch (gpg_err_code (err))
     {
     case GPG_ERR_NO_PUBKEY:       errstr = "1"; break;

@@ -27,7 +27,7 @@
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
-#ifdef HAVE_PTH      
+#ifdef HAVE_PTH
 #include <pth.h>
 #endif
 #ifdef HAVE_W32CE_SYSTEM
@@ -79,7 +79,7 @@ void
 init_common_subsystems (int *argcp, char ***argvp)
 {
   /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  set_native_charset (NULL);
 
 #ifdef HAVE_W32_SYSTEM
   /* For W32 we need to initialize the socket layer.  This is because
@@ -92,12 +92,12 @@ init_common_subsystems (int *argcp, char ***argvp)
 # else
   {
     WSADATA wsadat;
-    
+
     WSAStartup (0x202, &wsadat);
   }
 # endif /*!HAVE_PTH*/
 #endif
-  
+
 #ifdef HAVE_W32CE_SYSTEM
   /* Register the sleep exit function before the estream init so that
      the sleep will be called after the estream registered atexit
@@ -173,7 +173,7 @@ parse_std_file_handles (int *argcp, char ***argvp)
       s = *argv;
       if (*s == '-' && s[1] == '&' && s[2] == 'S'
           && (s[3] == '0' || s[3] == '1' || s[3] == '2')
-          && s[4] == '=' 
+          && s[4] == '='
           && (strchr ("-01234567890", s[5]) || !strcmp (s+5, "null")))
         {
           if (s[5] == 'n')
@@ -200,6 +200,6 @@ parse_std_file_handles (int *argcp, char ***argvp)
         argv[i] = NULL;
     }
 
-  
+
 }
 #endif /*HAVE_W32CE_SYSTEM*/

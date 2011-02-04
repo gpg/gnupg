@@ -147,7 +147,7 @@ release_armor_context (armor_filter_context_t *afx)
 int
 push_armor_filter (armor_filter_context_t *afx, iobuf_t iobuf)
 {
-  int rc; 
+  int rc;
 
   afx->refcount++;
   rc = iobuf_push_filter (iobuf, armor_filter, afx);
@@ -982,7 +982,7 @@ armor_filter( void *opaque, int control,
         /* We need some space for the faked packet.  The minmum
          * required size is the PARTIAL_CHUNK size plus a byte for the
          * length itself */
-	if( size < PARTIAL_CHUNK+1 ) 
+	if( size < PARTIAL_CHUNK+1 )
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->faked )
@@ -1001,7 +1001,7 @@ armor_filter( void *opaque, int control,
 	        unsigned int hashes = afx->hashes;
                 const byte *sesmark;
                 size_t sesmarklen;
-                
+
                 sesmark = get_session_marker( &sesmarklen );
                 if ( sesmarklen > 20 )
                     BUG();
@@ -1023,7 +1023,7 @@ armor_filter( void *opaque, int control,
                 buf[n++] = 0xff; /* new format, type 63, 1 length byte */
                 n++;   /* see below */
                 memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
-                buf[n++] = CTRLPKT_CLEARSIGN_START; 
+                buf[n++] = CTRLPKT_CLEARSIGN_START;
                 buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
                 if( hashes & 1 )
                     buf[n++] = DIGEST_ALGO_RMD160;
@@ -1284,7 +1284,7 @@ make_radix64_string( const byte *data, size_t len )
 
 /***********************************************
  *  For the pipemode command we can't use the armor filter for various
- *  reasons, so we use this new unarmor_pump stuff to remove the armor 
+ *  reasons, so we use this new unarmor_pump stuff to remove the armor
  */
 
 enum unarmor_state_e {
@@ -1292,7 +1292,7 @@ enum unarmor_state_e {
     STA_bypass,
     STA_wait_newline,
     STA_wait_dash,
-    STA_first_dash, 
+    STA_first_dash,
     STA_compare_header,
     STA_found_header_wait_newline,
     STA_skip_header_lines,
@@ -1331,12 +1331,12 @@ unarmor_pump_release (UnarmorPump x)
     xfree (x);
 }
 
-/* 
+/*
  * Get the next character from the ascii armor taken from the IOBUF
  * created earlier by unarmor_pump_new().
  * Return:  c = Character
  *        256 = ignore this value
- *         -1 = End of current armor 
+ *         -1 = End of current armor
  *         -2 = Premature EOF (not used)
  *         -3 = Invalid armor
  */
@@ -1347,9 +1347,9 @@ unarmor_pump (UnarmorPump x, int c)
 
     switch (x->state) {
       case STA_init:
-        { 
+        {
             byte tmp[1];
-            tmp[0] = c; 
+            tmp[0] = c;
             if ( is_armored (tmp) )
                 x->state = c == '-'? STA_first_dash : STA_wait_newline;
             else {
@@ -1372,10 +1372,10 @@ unarmor_pump (UnarmorPump x, int c)
         x->state = STA_compare_header;
       case STA_compare_header:
         if ( "-----BEGIN PGP SIGNATURE-----"[++x->pos] == c ) {
-            if ( x->pos == 28 ) 
+            if ( x->pos == 28 )
                 x->state = STA_found_header_wait_newline;
         }
-        else 
+        else
             x->state = c == '\n'? STA_wait_dash : STA_wait_newline;
         break;
       case STA_found_header_wait_newline:
@@ -1422,7 +1422,7 @@ unarmor_pump (UnarmorPump x, int c)
                 break;
             }
         }
-        
+
         switch(x->pos) {
           case 0:
             x->val = c << 2;
@@ -1463,7 +1463,7 @@ unarmor_pump (UnarmorPump x, int c)
             x->state = STA_ready; /* not sure whether this is correct */
             break;
         }
-        
+
         switch(x->pos) {
           case 0:
             x->val = c << 2;

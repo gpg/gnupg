@@ -173,11 +173,10 @@ ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
             }
         }
     }
-  
+
   if (!any)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   else if (!err && first_err)
     err = first_err; /* fixme: Do we really want to do that?  */
   return err;
 }
-

@@ -113,7 +113,7 @@ unknown_criticals (ksba_cert_t cert)
     rc = err; /* Such an error takes precendence.  */
 
   return rc;
-} 
+}
 
 
 /* Basic check for supported policies.  */
@@ -147,7 +147,7 @@ check_cert_policy (ksba_cert_t cert)
   any_critical = !!strstr (policies, ":C");
 
   /* See whether we find ALLOWED (which is an OID) in POLICIES */
-  for (idx=0; allowed[idx]; idx++) 
+  for (idx=0; allowed[idx]; idx++)
     {
       for (haystack=policies; (p=strstr (haystack, allowed[idx]));
            haystack = p+1)
@@ -161,7 +161,7 @@ check_cert_policy (ksba_cert_t cert)
           return 0;
         }
     }
-  
+
   if (!any_critical)
     {
       log_info (_("note: non-critical certificate policy not allowed"));
@@ -243,9 +243,9 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
              certificates in case they have been revoked. */
           if (opt.verbose)
             cert_log_name (_("not checking CRL for"), ci->cert);
-          continue; 
+          continue;
         }
-      
+
       if (opt.verbose)
         cert_log_name (_("checking CRL for"), ci->cert);
       err = crl_cache_cert_isvalid (ctrl, ci->cert, 0);
@@ -324,20 +324,20 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
      that is the case this is a root certificate.  */
   ak_name_str = ksba_name_enum (ak_name, 0);
   if (ak_name_str
-      && !strcmp (ak_name_str, issuerdn) 
+      && !strcmp (ak_name_str, issuerdn)
       && !cmp_simple_canon_sexp (ak_sn, serialno))
     {
       result = 1;  /* Right, CERT is self-signed.  */
       goto leave;
-    } 
-   
+    }
+
   /* Similar for the ak_keyid. */
   if (ak_keyid && !ksba_cert_get_subj_key_id (cert, NULL, &subj_keyid)
       && !cmp_simple_canon_sexp (ak_keyid, subj_keyid))
     {
       result = 1;  /* Right, CERT is self-signed.  */
       goto leave;
-    } 
+    }
 
 
  leave:
@@ -346,13 +346,13 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
   ksba_name_release (ak_name);
   ksba_free (ak_sn);
   ksba_free (serialno);
-  return result; 
+  return result;
 }
 
 
 /* Validate the certificate CHAIN up to the trust anchor. Optionally
    return the closest expiration time in R_EXPTIME (this is useful for
-   caching issues).  MODE is one of the VALIDATE_MODE_* constants. 
+   caching issues).  MODE is one of the VALIDATE_MODE_* constants.
 
    If R_TRUST_ANCHOR is not NULL and the validation would fail only
    because the root certificate is not trusted, the hexified
@@ -392,7 +392,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
   if (DBG_X509)
     dump_cert ("subject", cert);
-  
+
   /* May the target certificate be used for this purpose?  */
   switch (mode)
     {
@@ -417,8 +417,8 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     {
       size_t buflen;
       time_t validated_at;
-      
-      err = ksba_cert_get_user_data (cert, "validated_at", 
+
+      err = ksba_cert_get_user_data (cert, "validated_at",
                                      &validated_at, sizeof (validated_at),
                                      &buflen);
       if (err || buflen != sizeof (validated_at) || !validated_at)
@@ -462,7 +462,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         }
 
       /* Handle the notBefore and notAfter timestamps.  */
-      { 
+      {
         ksba_isotime_t not_before, not_after;
 
         err = ksba_cert_get_validity (subject_cert, 0, not_before);
@@ -494,7 +494,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             log_printf (")\n");
             err = gpg_error (GPG_ERR_CERT_TOO_YOUNG);
             goto leave;
-          }    
+          }
 
         /* Now check whether the certificate has expired.  */
         if (*not_after && strcmp (current_time, not_after) > 0 )
@@ -504,7 +504,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             dump_isotime (not_after);
             log_printf (")\n");
             any_expired = 1;
-          }            
+          }
       }
 
       /* Do we have any critical extensions in the certificate we
@@ -518,14 +518,14 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       if (gpg_err_code (err) == GPG_ERR_NO_POLICY_MATCH)
         {
           any_no_policy_match = 1;
-          err = 0; 
+          err = 0;
         }
       else if (err)
         goto leave;
 
       /* Is this a self-signed certificate? */
       if (is_root_cert ( subject_cert, issuer, subject))
-        {  
+        {
           /* Yes, this is our trust anchor.  */
           if (check_cert_sig (subject_cert, subject_cert) )
             {
@@ -539,7 +539,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           err = allowed_ca (subject_cert, NULL);
           if (err)
             goto leave;  /* No. */
-          
+
           err = is_trusted_cert (subject_cert);
           if (!err)
             ; /* Yes we trust this cert.  */
@@ -560,7 +560,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
               else
                 xfree (fpr);
             }
-          else 
+          else
             {
               log_error (_("checking trustworthiness of "
                            "root certificate failed: %s\n"),
@@ -572,7 +572,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           /* Prepend the certificate to our list.  */
           {
             chain_item_t ci;
-            
+
             ci = xtrycalloc (1, sizeof *ci);
             if (!ci)
               {
@@ -666,7 +666,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                     {
                       do_list (0, lm, fp, _("found another possible matching "
                                             "CA certificate - trying again"));
-                      ksba_cert_release (issuer_cert); 
+                      ksba_cert_release (issuer_cert);
                       issuer_cert = tmp_cert;
                       goto try_another_cert;
                     }
@@ -700,7 +700,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       err = cert_use_cert_p (issuer_cert);
       if (err)
         goto leave;  /* No.  */
-      
+
       /* Prepend the certificate to our list.  */
       {
         chain_item_t ci;
@@ -743,10 +743,10 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       for (citem = chain; citem; citem = citem->next)
         cert_log_name ("  certificate", citem->cert);
     }
-  
+
   if (!err && mode != VALIDATE_MODE_CRL)
     { /* Now that everything is fine, walk the chain and check each
-         certificate for revocations. 
+         certificate for revocations.
 
          1. item in the chain  - The root certificate.
          2. item               - the CA below the root
@@ -772,7 +772,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   else if (err && opt.verbose)
     log_info ("target certificate is NOT valid\n");
 
-  
+
  leave:
   if (!err && !(r_trust_anchor && *r_trust_anchor))
     {
@@ -792,7 +792,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (err)
             {
               log_error ("set_user_data(validated_at) failed: %s\n",
-                         gpg_strerror (err)); 
+                         gpg_strerror (err));
               err = 0;
             }
         }
@@ -885,7 +885,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   s = gcry_md_algo_name (algo);
   for (i=0; *s && i < sizeof algo_name - 1; s++, i++)
     algo_name[i] = tolower (*s);
-  algo_name[i] = 0;   
+  algo_name[i] = 0;
 
   err = gcry_md_open (&md, algo, 0);
   if (err)
@@ -984,9 +984,9 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       if ( gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
                             algo_name, (int)digestlen, digest) )
         BUG ();
-      
+
     }
-      
+
   err = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
     log_debug ("gcry_pk_verify: %s\n", gpg_strerror (err));
@@ -1052,7 +1052,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
                     extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
                                    | KSBA_KEYUSAGE_NON_REPUDIATION);
                 }
-              
+
               /* This is a hack to cope with OCSP.  Note that we do
                  not yet fully comply with the requirements and that
                  the entire CRL/OCSP checking thing should undergo a
@@ -1065,7 +1065,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
             }
           ksba_free (extkeyusages);
           extkeyusages = NULL;
-          
+
           if (!any_critical)
             extusemask = ~0; /* Reset to the don't care mask. */
         }
@@ -1085,12 +1085,12 @@ cert_usage_p (ksba_cert_t cert, int mode)
 
     }
   if (err)
-    { 
+    {
       log_error (_("error getting key usage information: %s\n"),
                  gpg_strerror (err));
       ksba_free (extkeyusages);
       return err;
-    } 
+    }
 
   if (mode == 4)
     {
@@ -1103,7 +1103,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
 
   if (mode == 5)
     {
-      if (use != ~0 
+      if (use != ~0
           && (have_ocsp_signing
               || (use & (KSBA_KEYUSAGE_KEY_CERT_SIGN
                          |KSBA_KEYUSAGE_CRL_SIGN))))
@@ -1157,4 +1157,3 @@ cert_use_crl_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 6);
 }
-

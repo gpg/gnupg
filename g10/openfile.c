@@ -70,10 +70,10 @@ overwrite_filep( const char *fname )
 {
   if ( iobuf_is_pipe_filename (fname) )
     return 1; /* Writing to stdout is always okay.  */
-  
+
   if ( access( fname, F_OK ) )
     return 1; /* Does not exist.  */
-  
+
   if ( !compare_filenames (fname, NAME_OF_DEV_NULL) )
     return 1; /* Does not do any harm.  */
 
@@ -140,7 +140,7 @@ ask_outfile_name( const char *name, size_t namelen )
 
   if ( opt.batch )
     return NULL;
-  
+
   defname = name && namelen? make_printable_string (name, namelen, 0) : NULL;
 
   s = _("Enter new filename");
@@ -155,9 +155,9 @@ ask_outfile_name( const char *name, size_t namelen )
   cpr_kill_prompt ();
   tty_disable_completion ();
   xfree (prompt);
-  if ( !*fname ) 
+  if ( !*fname )
     {
-      xfree (fname); 
+      xfree (fname);
       fname = defname;
       defname = NULL;
     }
@@ -188,7 +188,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
   if (inp_fd != -1)
     {
       char xname[64];
-      
+
       *a = iobuf_fdopen_nc (inp_fd, "wb");
       if (!*a)
         {
@@ -202,7 +202,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
           log_info (_("writing to `%s'\n"), xname);
         }
     }
-  else if (iobuf_is_pipe_filename (iname) && !opt.outfile) 
+  else if (iobuf_is_pipe_filename (iname) && !opt.outfile)
     {
       *a = iobuf_create(NULL);
       if ( !*a )
@@ -217,12 +217,12 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
     {
       char *buf = NULL;
       const char *name;
-    
+
       if (opt.dry_run)
         name = NAME_OF_DEV_NULL;
       else if (opt.outfile)
         name = opt.outfile;
-      else 
+      else
         {
 #ifdef USE_ONLY_8DOT3
           if (opt.mangle_dos_filenames)
@@ -238,7 +238,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
 
               newsfx = (mode==1 ? ".asc" :
                         mode==2 ? ".sig" : ".gpg");
-          
+
               buf = xmalloc (strlen(iname)+4+1);
               strcpy (buf, iname);
               dot = strchr (buf, '.' );
@@ -253,14 +253,14 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
           if (!buf)
 #endif /* USE_ONLY_8DOT3 */
             {
-              buf = xstrconcat (iname, 
+              buf = xstrconcat (iname,
                                 (mode==1 ? EXTSEP_S "asc" :
                                  mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg"),
                                 NULL);
             }
           name = buf;
         }
-      
+
       rc = 0;
       while ( !overwrite_filep (name) )
         {
@@ -274,7 +274,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
           xfree (buf);
           name = buf = tmp;
         }
-    
+
       if ( !rc )
         {
           if (is_secured_filename (name) )
@@ -294,7 +294,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
         }
       xfree(buf);
     }
-  
+
   if (*a)
     iobuf_ioctl (*a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 
@@ -400,7 +400,7 @@ copy_options_file( const char *destdir )
                     ;
                 else if (c == '#')
                     esc = 2;
-                else 
+                else
                     any_option = 1;
             }
         }

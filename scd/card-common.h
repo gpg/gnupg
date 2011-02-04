@@ -54,7 +54,7 @@ struct card_ctx_s {
                      const void *indata, size_t indatalen,
                      unsigned char **outdata, size_t *outdatalen);
   } fnc;
-  
+
 };
 
 /*-- card.c --*/

@@ -37,31 +37,31 @@ test_percent_plus_escape (void)
     const char *string;
     const char *expect;
   } tbl[] = {
-    { 
+    {
       "",
-      "" 
-    }, { 
+      ""
+    }, {
       "a",
       "a",
-    }, { 
+    }, {
       " ",
       "+",
-    }, { 
+    }, {
       "  ",
       "++"
-    }, { 
+    }, {
       "+ +",
       "%2B+%2B"
-    }, { 
+    }, {
       "\" \"",
       "%22+%22"
-    }, { 
+    }, {
       "%22",
       "%2522"
-    }, { 
+    }, {
       "%% ",
       "%25%25+"
-    }, { 
+    }, {
       "\n ABC\t",
       "%0A+ABC%09"
     }, { NULL, NULL }
@@ -69,7 +69,7 @@ test_percent_plus_escape (void)
   char *buf, *buf2;
   int i;
   size_t len;
-  
+
   for (i=0; tbl[i].string; i++)
     {
       buf = percent_plus_escape (tbl[i].string);
@@ -105,11 +105,10 @@ main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
-  
+
   /* FIXME: We escape_unescape is not tested - only
      percent_plus_unescape.  */
   test_percent_plus_escape ();
 
   return 0;
 }
-

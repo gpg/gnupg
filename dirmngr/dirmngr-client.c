@@ -29,7 +29,7 @@
 #include <assert.h>
 
 #include <gpg-error.h>
-#include <assuan.h> 
+#include <assuan.h>
 
 #define JNLIB_NEED_LOG_LOGV
 #include "../common/logging.h"
@@ -43,7 +43,7 @@
 
 
 /* Constants for the options.  */
-enum 
+enum
   {
     oQuiet	  = 'q',
     oVerbose	  = 'v',
@@ -81,7 +81,7 @@ static ARGPARSE_OPTS opts[] = {
     N_("force the use of the default OCSP responder")},
   { 0, NULL, 0, NULL }
 };
- 
+
 
 /* The usual structure for the program flags.  */
 static struct
@@ -137,7 +137,7 @@ static const char *
 my_strusage (int level)
 {
   const char *p;
-    
+
   switch(level)
     {
     case 11: p = "dirmngr-client (GnuPG)";
@@ -182,18 +182,18 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr-client",
-                  JNLIB_LOG_WITH_PREFIX); 
+                  JNLIB_LOG_WITH_PREFIX);
 
   /* For W32 we need to initialize the socket subsystem.  Becuase we
      don't use Pth we need to do this explicit. */
-#ifdef HAVE_W32_SYSTEM  
+#ifdef HAVE_W32_SYSTEM
  {
    WSADATA wsadat;
 
    WSAStartup (0x202, &wsadat);
  }
 #endif /*HAVE_W32_SYSTEM*/
-  
+
   /* Init Assuan.  */
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
@@ -211,7 +211,7 @@ main (int argc, char **argv )
         {
         case oVerbose: opt.verbose++; break;
         case oQuiet: opt.quiet++; break;
-          
+
         case oOCSP: opt.use_ocsp++; break;
         case oPing: cmd_ping = 1; break;
         case oCacheCert: cmd_cache_cert = 1; break;
@@ -221,7 +221,7 @@ main (int argc, char **argv )
         case oLocal: opt.local = 1; break;
         case oLoadCRL: cmd_loadcrl = 1; break;
         case oPEM: opt.pem = 1; break;
-        case oSquidMode: 
+        case oSquidMode:
           opt.pem = 1;
           opt.escaped_pem = 1;
           cmd_squid_mode = 1;
@@ -235,11 +235,11 @@ main (int argc, char **argv )
     exit (2);
 
   /* Build the helptable for radix64 to bin conversion. */
-  if (opt.pem) 
+  if (opt.pem)
     {
       int i;
       unsigned char *s;
-      
+
       for (i=0; i < 256; i++ )
         asctobin[i] = 255; /* Used to detect invalid characters. */
       for (s=bintoasc, i=0; *s; s++, i++)
@@ -428,7 +428,7 @@ data_cb (void *opaque, const void *buffer, size_t length)
     }
   return 0;
 }
-  
+
 
 /* Try to connect to the dirmngr via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
@@ -470,7 +470,7 @@ start_dirmngr (int only_daemon)
 
       if (opt.verbose)
         log_info (_("no running dirmngr - starting one\n"));
-      
+
       if (!opt.dirmngr_program || !*opt.dirmngr_program)
         opt.dirmngr_program = "./dirmngr";
       if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
@@ -681,8 +681,8 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
              real LF and not a trailing percent escaped one. */
           if (c== '\n' && !escaped_c)
             goto ready;
-          break; 
-        default: 
+          break;
+        default:
           BUG();
         }
     }
@@ -729,7 +729,7 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
   buf = NULL;
   bufsize = buflen = 0;
 #define NCHUNK 8192
-  do 
+  do
     {
       bufsize += NCHUNK;
       if (!buf)
@@ -816,10 +816,10 @@ do_check (assuan_context_t ctx, const unsigned char *cert, size_t certlen)
   parm.cert = cert;
   parm.certlen = certlen;
 
-  err = assuan_transact (ctx, 
+  err = assuan_transact (ctx,
                          (opt.use_ocsp && opt.force_default_responder
-                          ? "CHECKOCSP --force-default-responder" 
-                          : opt.use_ocsp? "CHECKOCSP" : "CHECKCRL"), 
+                          ? "CHECKOCSP --force-default-responder"
+                          : opt.use_ocsp? "CHECKOCSP" : "CHECKCRL"),
                          NULL, NULL, inq_cert, &parm, status_cb, NULL);
   if (opt.verbose > 1)
     log_info ("response of dirmngr: %s\n", err? gpg_strerror (err): "okay");
@@ -887,7 +887,7 @@ do_loadcrl (assuan_context_t ctx, const char *filename)
           log_error ("error canonicalizing `%s': %s\n",
                      filename, strerror (errno));
           return gpg_error (GPG_ERR_GENERAL);
-        }      
+        }
 #else
       fname = xstrdup (filename);
 #endif
@@ -897,7 +897,7 @@ do_loadcrl (assuan_context_t ctx, const char *filename)
           return gpg_error (GPG_ERR_GENERAL);
         }
     }
-  
+
   line = xmalloc (8 + 6 + strlen (fname) * 3 + 1);
   p = stpcpy (line, "LOADCRL ");
   if (opt.url)
@@ -988,7 +988,7 @@ squid_loop_body (assuan_context_t ctx)
   gpg_error_t err;
   unsigned char *certbuf;
   size_t certbuflen = 0;
-  
+
   err = read_pem_certificate (NULL, &certbuf, &certbuflen);
   if (gpg_err_code (err) == GPG_ERR_EOF)
     return err;
@@ -1008,7 +1008,7 @@ squid_loop_body (assuan_context_t ctx)
         log_info (_("certificate is valid\n"));
       puts ("OK");
     }
-  else 
+  else
     {
       if (!opt.quiet)
         {
@@ -1020,7 +1020,7 @@ squid_loop_body (assuan_context_t ctx)
         }
       puts ("ERROR");
     }
-  
+
   fflush (stdout);
 
   return 0;

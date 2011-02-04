@@ -1,4 +1,4 @@
-/* call-dirmngr.c - Communication with the dirmngr 
+/* call-dirmngr.c - Communication with the dirmngr
  * Copyright (C) 2002, 2003, 2005, 2007, 2008,
  *               2010  Free Software Foundation, Inc.
  *
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
@@ -108,7 +108,7 @@ put_membuf (struct membuf *mb, const void *buf, size_t len)
   if (mb->len + len >= mb->size)
     {
       char *p;
-      
+
       mb->size += len + 1024;
       p = xtryrealloc (mb->buf, mb->size);
       if (!p)
@@ -169,7 +169,7 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       char *user = server->user ? server->user : "";
       char *pass = server->pass ? server->pass : "";
       char *base = server->base ? server->base : "";
-      
+
       snprintf (line, DIM (line) - 1, "LDAPSERVER %s:%i:%s:%s:%s",
 		server->host, server->port, user, pass, base);
       line[DIM (line) - 1] = 0;
@@ -201,7 +201,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
      to take care of the implicit option sending caching. */
 
   err = start_new_dirmngr (&ctx, GPG_ERR_SOURCE_DEFAULT,
-                           opt.homedir, opt.dirmngr_program, 
+                           opt.homedir, opt.dirmngr_program,
                            opt.verbose, DBG_ASSUAN,
                            gpgsm_status2, ctrl);
   prepare_dirmngr (ctrl, ctx, err);
@@ -228,7 +228,7 @@ start_dirmngr (ctrl_t ctrl)
      an error in prepare_dirmngr?  */
   if (!dirmngr_ctx)
     dirmngr_ctx_locked = 0;
-  return err;  
+  return err;
 }
 
 
@@ -324,7 +324,7 @@ inq_certificate (void *opaque, const char *line)
       for (s=line, n=0; n < 40; s++, n++)
         fpr[n] = (*s >= 'a')? (*s & 0xdf): *s;
       fpr[n] = 0;
-      
+
       if (!gpgsm_agent_istrusted (parm->ctrl, NULL, fpr, &rootca_flags))
         rc = assuan_send_data (parm->ctx, "1", 1);
       else
@@ -352,7 +352,7 @@ inq_certificate (void *opaque, const char *line)
                  "is not yet implemented\n");
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
-  else 
+  else
     { /* Send the given certificate. */
       int err;
       ksba_cert_t cert;
@@ -376,7 +376,7 @@ inq_certificate (void *opaque, const char *line)
     }
 
   xfree (ski);
-  return rc; 
+  return rc;
 }
 
 
@@ -500,7 +500,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line)-1, "ISVALID%s %s", 
+  snprintf (line, DIM(line)-1, "ISVALID%s %s",
             use_ocsp == 2? " --only-ocsp --force-default-responder":"",
             certid);
   line[DIM(line)-1] = 0;
@@ -552,7 +552,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                 {
                   /* Note the no_dirmngr flag: This avoids checking
                      this certificate over and over again. */
-                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL, 
+                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL,
                                              VALIDATE_FLAG_NO_DIRMNGR, NULL);
                   if (rc)
                     {
@@ -674,7 +674,7 @@ pattern_from_strlist (strlist_t names)
     *pattern = 0; /* is empty */
   else
     p[-1] = '\0'; /* remove trailing blank */
-  
+
   return pattern;
 }
 
@@ -711,10 +711,10 @@ lookup_status_cb (void *opaque, const char *line)
    the callback CB which will be passed cert by cert.  Note that CTRL
    is optional.  With CACHE_ONLY the dirmngr will search only its own
    key cache. */
-int 
+int
 gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
                       void (*cb)(void*, ksba_cert_t), void *cb_value)
-{ 
+{
   int rc;
   char *pattern;
   char line[ASSUAN_LINELENGTH];
@@ -753,7 +753,7 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 
       return out_of_core ();
     }
-  snprintf (line, DIM(line)-1, "LOOKUP%s %s", 
+  snprintf (line, DIM(line)-1, "LOOKUP%s %s",
             cache_only? " --cache-only":"", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
@@ -842,7 +842,7 @@ run_command_inq_cb (void *opaque, const char *line)
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
-  return rc; 
+  return rc;
 }
 
 static gpg_error_t
@@ -877,7 +877,7 @@ run_command_status_cb (void *opaque, const char *line)
 int
 gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                            int argc, char **argv)
-{ 
+{
   int rc;
   int i;
   const char *s;

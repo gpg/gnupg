@@ -1,5 +1,5 @@
 /* verify.c - Verify a messages signature
- * Copyright (C) 2001, 2002, 2003, 2007, 
+ * Copyright (C) 2001, 2002, 2003, 2007,
  *               2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -38,7 +38,7 @@ static char *
 strtimestamp_r (ksba_isotime_t atime)
 {
   char *buffer = xmalloc (15);
-  
+
   if (!atime || !*atime)
     strcpy (buffer, "none");
   else
@@ -65,7 +65,7 @@ hash_data (int fd, gcry_md_hd_t md)
       return err;
     }
 
-  do 
+  do
     {
       nread = es_fread (buffer, 1, DIM(buffer), fp);
       gcry_md_write (md, buffer, nread);
@@ -166,7 +166,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   audit_log (ctrl->audit, AUDIT_SETUP_READY);
 
   is_detached = 0;
-  do 
+  do
     {
       rc = ksba_cms_parse (cms, &stopreason);
       if (rc)
@@ -185,7 +185,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       if (stopreason == KSBA_SR_NEED_HASH
           || stopreason == KSBA_SR_BEGIN_DATA)
-        { 
+        {
           audit_log (ctrl->audit, AUDIT_GOT_DATA);
 
           /* We are now able to enable the hash algorithms */
@@ -214,7 +214,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           if (opt.extra_digest_algo)
             {
               if (DBG_X509)
-                log_debug ("enabling extra hash algorithm %d\n", 
+                log_debug ("enabling extra hash algorithm %d\n",
                            opt.extra_digest_algo);
               gcry_md_enable (data_md, opt.extra_digest_algo);
               audit_log_i (ctrl->audit, AUDIT_DATA_HASH_ALGO,
@@ -242,12 +242,12 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           audit_log_ok (ctrl->audit, AUDIT_DATA_HASHING, 0);
         }
     }
-  while (stopreason != KSBA_SR_READY);   
+  while (stopreason != KSBA_SR_READY);
 
   if (b64writer)
     {
       rc = gpgsm_finish_writer (b64writer);
-      if (rc) 
+      if (rc)
         {
           log_error ("write failed: %s\n", gpg_strerror (rc));
           audit_log_ok (ctrl->audit, AUDIT_WRITE_ERROR, rc);
@@ -269,7 +269,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
          certificate first before entering it into the DB.  This way
          we would avoid cluttering the DB with invalid
          certificates. */
-      audit_log_cert (ctrl->audit, AUDIT_SAVE_CERT, cert, 
+      audit_log_cert (ctrl->audit, AUDIT_SAVE_CERT, cert,
                       keydb_store_cert (cert, 0, NULL));
       ksba_cert_release (cert);
     }
@@ -345,7 +345,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
                              &algo, &is_enabled)
                || !is_enabled)
             {
-              log_error ("digest algo %d (%s) has not been enabled\n", 
+              log_error ("digest algo %d (%s) has not been enabled\n",
                          algo, algoid?algoid:"");
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "unsupported");
               goto next_signer;
@@ -356,7 +356,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           assert (!msgdigest);
           rc = 0;
           algoid = NULL;
-          algo = 0; 
+          algo = 0;
         }
       else /* real error */
         {
@@ -366,7 +366,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       rc = ksba_cms_get_sigattr_oids (cms, signer,
                                       "1.2.840.113549.1.9.3", &ctattr);
-      if (!rc) 
+      if (!rc)
         {
           const char *s;
 
@@ -485,9 +485,9 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               gpgsm_status (ctrl, STATUS_BADSIG, fpr);
               xfree (fpr);
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
-              goto next_signer; 
+              goto next_signer;
             }
-            
+
           audit_log_i (ctrl->audit, AUDIT_ATTR_HASH_ALGO, sigval_hash_algo);
           rc = gcry_md_open (&md, sigval_hash_algo, 0);
           if (rc)
@@ -509,13 +509,13 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "error");
               goto next_signer;
             }
-          rc = gpgsm_check_cms_signature (cert, sigval, md, 
+          rc = gpgsm_check_cms_signature (cert, sigval, md,
                                           sigval_hash_algo, &info_pkalgo);
           gcry_md_close (md);
         }
       else
         {
-          rc = gpgsm_check_cms_signature (cert, sigval, data_md, 
+          rc = gpgsm_check_cms_signature (cert, sigval, data_md,
                                           algo, &info_pkalgo);
         }
 
@@ -543,7 +543,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       audit_log (ctrl->audit, AUDIT_VALIDATE_CHAIN);
       rc = gpgsm_validate_chain (ctrl, cert,
                                  *sigtime? sigtime : "19700101T000000",
-                                 keyexptime, 0, 
+                                 keyexptime, 0,
                                  NULL, 0, &verifyflags);
       {
         char *fpr, *buf, *tstr;
@@ -556,7 +556,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           }
         else
           gpgsm_status (ctrl, STATUS_GOODSIG, fpr);
-        
+
         xfree (fpr);
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
@@ -582,7 +582,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
             gpgsm_status_with_err_code (ctrl, STATUS_TRUST_NEVER, NULL,
                                         gpg_err_code (rc));
           else
-            gpgsm_status_with_err_code (ctrl, STATUS_TRUST_UNDEFINED, NULL, 
+            gpgsm_status_with_err_code (ctrl, STATUS_TRUST_UNDEFINED, NULL,
                                         gpg_err_code (rc));
           audit_log_s (ctrl->audit, AUDIT_SIG_STATUS, "bad");
           goto next_signer;
@@ -604,7 +604,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       {
         size_t qualbuflen;
         char qualbuffer[1];
-        
+
         rc = ksba_cert_get_user_data (cert, "is_qualified", &qualbuffer,
                                       sizeof (qualbuffer), &qualbuflen);
         if (!rc && qualbuflen)
@@ -613,20 +613,20 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               {
                 log_info (_("This is a qualified signature\n"));
                 if (!opt.qualsig_approval)
-                  log_info 
+                  log_info
                     (_("Note, that this software is not officially approved "
                        "to create or verify such signatures.\n"));
               }
-          }    
+          }
         else if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
           log_error ("get_user_data(is_qualified) failed: %s\n",
-                     gpg_strerror (rc)); 
+                     gpg_strerror (rc));
       }
 
-      gpgsm_status (ctrl, STATUS_TRUST_FULLY, 
+      gpgsm_status (ctrl, STATUS_TRUST_FULLY,
                     (verifyflags & VALIDATE_FLAG_CHAIN_MODEL)?
                     "0 chain": "0 shell");
-          
+
 
     next_signer:
       rc = 0;
@@ -643,7 +643,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   ksba_cms_release (cms);
   gpgsm_destroy_reader (b64reader);
   gpgsm_destroy_writer (b64writer);
-  keydb_release (kh); 
+  keydb_release (kh);
   gcry_md_close (data_md);
   es_fclose (in_fp);
 
@@ -657,4 +657,3 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
   return rc;
 }
-

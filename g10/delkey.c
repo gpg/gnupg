@@ -92,7 +92,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 
     pk = node->pkt->pkt.public_key;
     keyid_from_pk( pk, keyid );
-    
+
     if (!force)
       {
         if (have_secret_key_with_kid (keyid))
@@ -181,7 +181,7 @@ delete_keys( strlist_t names, int secret, int allow_both )
 
     for(;names;names=names->next) {
        rc = do_delete_key (names->d, secret, force, &avail );
-       if ( rc && avail ) { 
+       if ( rc && avail ) {
 	 if ( allow_both ) {
 	   rc = do_delete_key (names->d, 1, 0, &avail );
 	   if ( !rc )

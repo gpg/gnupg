@@ -24,12 +24,12 @@
 #include "types.h"
 
 typedef struct
-{                  
+{
   int  *argc;	      /* Pointer to ARGC (value subject to change). */
   char ***argv;	      /* Pointer to ARGV (value subject to change). */
   unsigned int flags; /* Global flags.  May be set prior to calling the
                          parser.  The parser may change the value.  */
-  int err;            /* Print error description for last option. 
+  int err;            /* Print error description for last option.
                          Either 0,  ARGPARSE_PRINT_WARNING or
                          ARGPARSE_PRINT_ERROR.  */
 
@@ -78,7 +78,7 @@ typedef struct
 #define ARGPARSE_TYPE_STRING      2  /* Takes a string argument.          */
 #define ARGPARSE_TYPE_LONG        3  /* Takes a long argument.            */
 #define ARGPARSE_TYPE_ULONG       4  /* Takes an unsigned long argument.  */
-#define ARGPARSE_OPT_OPTIONAL (1<<3) /* Argument is optional.             */ 
+#define ARGPARSE_OPT_OPTIONAL (1<<3) /* Argument is optional.             */
 #define ARGPARSE_OPT_PREFIX   (1<<4) /* Allow 0x etc. prefixed values.    */
 #define ARGPARSE_OPT_COMMAND  (1<<8) /* The argument is a command.        */
 
@@ -149,7 +149,7 @@ typedef struct
 
 
 #define ARGPARSE_group(s,d) \
-     { (s), NULL, 0, (d) } 
+     { (s), NULL, 0, (d) }
 
 #define ARGPARSE_end()  { 0, NULL, 0, NULL }
 

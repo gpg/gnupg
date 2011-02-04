@@ -37,7 +37,7 @@ store_key (gcry_sexp_t private, const char *passphrase, int force)
   unsigned char *buf;
   size_t len;
   unsigned char grip[20];
-  
+
   if ( !gcry_pk_get_keygrip (private, grip) )
     {
       log_error ("can't calculate keygrip\n");
@@ -146,7 +146,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
 }
 
 
-static int 
+static int
 take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
 {
   gpg_error_t err;
@@ -164,7 +164,7 @@ take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
 }
 
 
-static int 
+static int
 take_this_one_anyway (ctrl_t ctrl, const char *desc)
 {
   return take_this_one_anyway2 (ctrl, desc, _("Take this one anyway"));
@@ -185,18 +185,18 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
   if (!pw)
     pw = "";
 
-  if (utf8_charcount (pw) < minlen ) 
+  if (utf8_charcount (pw) < minlen )
     {
       char *desc;
-      
+
       if (silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
-      desc = xtryasprintf 
+      desc = xtryasprintf
         ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
-                    "A passphrase should be at least %u character long.", 
+                    "A passphrase should be at least %u character long.",
                     "Warning: You have entered an insecure passphrase.%%0A"
-                    "A passphrase should be at least %u characters long.", 
+                    "A passphrase should be at least %u characters long.",
                     minlen), minlen );
       if (!desc)
         return gpg_error_from_syserror ();
@@ -206,17 +206,17 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         return err;
     }
 
-  if (nonalpha_count (pw) < minnonalpha ) 
+  if (nonalpha_count (pw) < minnonalpha )
     {
       char *desc;
 
       if (silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
-      desc = xtryasprintf 
+      desc = xtryasprintf
         ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
                     "A passphrase should contain at least %u digit or%%0A"
-                    "special character.", 
+                    "special character.",
                     "Warning: You have entered an insecure passphrase.%%0A"
                     "A passphrase should contain at least %u digits or%%0A"
                     "special characters.",
@@ -259,7 +259,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
                             "this is in general a bad idea!%0A"
                             "Please confirm that you do not want to "
                             "have any protection on your key."));
-      
+
       if (silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
@@ -300,7 +300,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   const char *text2 = _("Please re-enter this passphrase");
   const char *initial_errtext = NULL;
   struct pin_entry_info_s *pi, *pi2;
-  
+
   *r_passphrase = NULL;
 
   pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
@@ -336,7 +336,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
             }
         }
     }
-  
+
   if (!err && *pi->pin)
     {
       /* User wants a passphrase. */
@@ -357,7 +357,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 int
 agent_genkey (ctrl_t ctrl, const char *cache_nonce,
               const char *keyparam, size_t keyparamlen, int no_protection,
-              membuf_t *outbuf) 
+              membuf_t *outbuf)
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
   char *passphrase;
@@ -375,13 +375,13 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
   /* Get the passphrase now, cause key generation may take a while. */
   if (no_protection || !cache_nonce)
     passphrase = NULL;
-  else 
+  else
     passphrase = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
 
   if (passphrase || no_protection)
     rc = 0;
   else
-    rc = agent_ask_new_passphrase (ctrl, 
+    rc = agent_ask_new_passphrase (ctrl,
                                    _("Please enter the passphrase to%0A"
                                      "to protect your new key"),
                                    &passphrase);
@@ -416,7 +416,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
       return gpg_error (GPG_ERR_INV_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
-  
+
   /* store the secret key */
   if (DBG_CRYPTO)
     log_debug ("storing private key\n");
@@ -474,7 +474,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
    passphrase at that address. */
 gpg_error_t
 agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
-                         char **passphrase_addr) 
+                         char **passphrase_addr)
 {
   gpg_error_t err;
 
@@ -492,7 +492,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
           xfree (*passphrase_addr);
           *passphrase_addr = NULL;
         }
-      err = agent_ask_new_passphrase (ctrl, 
+      err = agent_ask_new_passphrase (ctrl,
                                       _("Please enter the new passphrase"),
                                       &pass);
       if (!err)
@@ -502,6 +502,6 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
       else
         xfree (pass);
     }
-  
+
   return err;
 }

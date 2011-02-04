@@ -31,7 +31,7 @@ static void
 my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 {
   (void)dummy;
-  
+
   /* Map the log levels.  */
   switch (level)
     {
@@ -42,7 +42,7 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
     case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
     case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
     case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
-    default:            level = JNLIB_LOG_ERROR; break;  
+    default:            level = JNLIB_LOG_ERROR; break;
     }
   log_logv (level, fmt, arg_ptr);
 }
@@ -102,7 +102,7 @@ setup_libgcrypt_logging (void)
    and "AES256".  We can't fix that in libgcrypt but it is pretty
    safe to do it in an application. */
 const char *
-gnupg_cipher_algo_name (int algo) 
+gnupg_cipher_algo_name (int algo)
 {
   const char *s;
 
@@ -139,7 +139,7 @@ void
 print_utf8_buffer2 (estream_t stream, const void *p, size_t n, int delim)
 {
   char tmp[2];
-  
+
   tmp[0] = delim;
   tmp[1] = 0;
   es_write_sanitized_utf8_buffer (stream, p, n, tmp, NULL);
@@ -197,7 +197,7 @@ is_file_compressed (const char *s, int *ret_rc)
         { 3, { 0x1f, 0x8b, 0x08, 0x00 } }, /* gzip */
         { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
     };
-    
+
     if ( iobuf_is_pipe_filename (s) || !ret_rc )
         return 0; /* We can't check stdin or no file was given */
 
@@ -225,7 +225,7 @@ is_file_compressed (const char *s, int *ret_rc)
         }
     }
 
-leave:    
+leave:
     iobuf_close( a );
     return rc;
 }
@@ -262,7 +262,7 @@ static const char*
 parse_version_number (const char *s, int *number)
 {
   int val = 0;
-  
+
   if (*s == '0' && digitp (s+1))
     return NULL; /* Leading zeros are not allowed.  */
   for (; digitp (s); s++ )
@@ -330,4 +330,3 @@ gnupg_compare_version (const char *a, const char *b)
               && a_micro == b_micro
               && strcmp (a_plvl, b_plvl) >= 0));
 }
-

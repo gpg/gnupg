@@ -130,5 +130,3 @@ enarmor_file( const char *fname )
     release_armor_context (afx);
     return rc;
 }
-
-

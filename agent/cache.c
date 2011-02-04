@@ -126,7 +126,7 @@ init_encryption (void)
   if (err)
     log_error ("error initializing cache encryption context: %s\n",
                gpg_strerror (err));
-  
+
   if (!pth_mutex_release (&encryption_lock))
     log_fatal ("failed to release cache encryption mutex\n");
 
@@ -148,7 +148,7 @@ new_data (const char *string, struct secret_data_s **r_data)
   struct secret_data_s *d, *d_enc;
   size_t length;
   int total;
-  
+
   *r_data = NULL;
 
   err = init_encryption ();
@@ -222,7 +222,7 @@ housekeeping (void)
   for (r=thecache; r; r = r->next)
     {
       unsigned long maxttl;
-      
+
       switch (r->cache_mode)
         {
         case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
@@ -334,7 +334,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
         }
       if (data)
         {
-          r->created = r->accessed = gnupg_get_time (); 
+          r->created = r->accessed = gnupg_get_time ();
           r->ttl = ttl;
           r->cache_mode = cache_mode;
           err = new_data (data, &r->pw);
@@ -350,7 +350,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
       else
         {
           strcpy (r->key, key);
-          r->created = r->accessed = gnupg_get_time (); 
+          r->created = r->accessed = gnupg_get_time ();
           r->ttl = ttl;
           r->cache_mode = cache_mode;
           err = new_data (data, &r->pw);
@@ -428,4 +428,3 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
 
   return NULL;
 }
-

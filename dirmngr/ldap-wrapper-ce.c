@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
    Alternative wrapper for use with WindowsCE.  Under WindowsCE the
    number of processes is strongly limited (32 processes including the
    kernel processes) and thus we don't use the process approach but
@@ -54,7 +54,7 @@ read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
 {
   gpg_error_t err;
   size_t nread;
-  
+
   while (count)
     {
       err = ksba_reader_read (reader, buffer, count, &nread);
@@ -132,7 +132,7 @@ outstream_cookie_writer (void *cookie_arg, const void *buffer, size_t size)
           /* Buffer is full:  Wait for space.  */
           pth_yield (NULL);
         }
-      
+
       /* Copy data.  */
       dst = cookie->buffer + cookie->buffer_len;
       while (size && cookie->buffer_len < DIM (cookie->buffer))
@@ -213,7 +213,7 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
       /* Wait for data to become available.  */
       pth_yield (NULL);
     }
-  
+
   src = cookie->buffer + cookie->buffer_pos;
   while (count && cookie->buffer_pos < cookie->buffer_len)
     {
@@ -225,7 +225,7 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
 
   if (cookie->buffer_pos == cookie->buffer_len)
     cookie->buffer_pos = cookie->buffer_len = 0;
-  
+
   /* Now there should be some space available.  We do this even if
      COUNT was zero so to give the writer end a chance to continue.  */
   pth_yield (NULL);
@@ -330,7 +330,7 @@ static void *
 ldap_wrapper_thread (void *opaque)
 {
   struct ldap_wrapper_thread_parms *parms = opaque;
-  
+
   /*err =*/ ldap_wrapper_main (parms->arg_list, parms->outstream);
 
   /* FIXME: Do we need to return ERR?  */
@@ -418,7 +418,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *r_reader, const char *argv[])
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
   pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 128*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "ldap-wrapper");
-  
+
   if (pth_spawn (tattr, ldap_wrapper_thread, parms))
     parms = NULL; /* Now owned by the thread.  */
   else

@@ -15,7 +15,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Hacked by Moritz Schulte <moritz@g10code.com>. 
+/* Hacked by Moritz Schulte <moritz@g10code.com>.
 
    Usage example:
 
@@ -24,10 +24,10 @@
    sockprox opens a new local socket (here "mysock"); the whole
    traffic between server and client is written to "/tmp/prot" in this
    case.
-  
+
      ./sockprox --server /tmp/gpg-PKdD8r/S.gpg-agent.ssh \
                 --listen mysock --protocol /tmp/prot
-  
+
    Then, redirect your ssh-agent client to sockprox by setting
    SSH_AUTH_SOCK to "mysock".
 */
@@ -441,7 +441,7 @@ run_proxy (void)
   /* ? */
 
  out:
-  
+
   pthread_attr_destroy (&thread_attr);
   fclose (protocol_file);	/* FIXME, err checking.  */
 

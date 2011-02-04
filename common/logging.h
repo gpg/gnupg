@@ -87,8 +87,3 @@ void log_printhex (const char *text, const void *buffer, size_t length);
 
 
 #endif /*LIBJNLIB_LOGGING_H*/
-
-
-
-
-

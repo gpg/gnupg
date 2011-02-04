@@ -134,10 +134,10 @@ mountinfo_del_mount (const char *container, const char *mountpoint,
           {
             /* FIXME: This does not always work because the umount may
                not have completed yet.  We should add the mountpoints
-               to an idle queue and retry a remove.  */ 
+               to an idle queue and retry a remove.  */
             if (rmdir (m->mountpoint))
               log_error ("error removing mount point `%s': %s\n",
-                         m->mountpoint, 
+                         m->mountpoint,
                          gpg_strerror (gpg_error_from_syserror ()));
           }
         m->in_use = 0;
@@ -192,8 +192,7 @@ mountinfo_dump_all (void)
 
   for (idx=0, m = mounttable; idx < mounttable_size; idx++, m++)
     if (m->in_use)
-      log_info ("mtab[%d] %s on %s type %d rid %u%s\n", 
+      log_info ("mtab[%d] %s on %s type %d rid %u%s\n",
                 idx, m->container, m->mountpoint, m->conttype, m->rid,
                 m->flags.remove?" [remove]":"");
 }
-

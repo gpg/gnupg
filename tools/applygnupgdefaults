@@ -1,4 +1,4 @@
-#!/bin/sh                                               
+#!/bin/sh
 # Apply defaults from /etc/gnupg/gpg.conf to all users             -*- sh -*-
 #
 # Copyright 2007 Free Software Foundation, Inc.
@@ -23,7 +23,7 @@ info () {
   echo "$PGM: $*" >&2
 }
 
-if [ -n "$1" ]; then 
+if [ -n "$1" ]; then
     echo "usage: $PGM" >&2
     exit 1
 fi
@@ -79,4 +79,3 @@ done
 
 [ "$(wc -c <$errorfile)" -gt 0 ] && exit 1
 exit 0
-

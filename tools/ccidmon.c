@@ -52,7 +52,7 @@ static int debug;
 static int skip_escape;
 static int usb_bus, usb_dev;
 static int sniffusb;
- 
+
 
 /* Error counter.  */
 static int any_error;
@@ -142,19 +142,19 @@ err (const char *format, ...)
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
-static unsigned int 
+static unsigned int
 convert_le_u32 (const unsigned char *buf)
 {
-  return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); 
+  return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
 }
 
 
 /* Convert a little endian stored 2 byte value into an unsigned
    integer. */
-static unsigned int 
+static unsigned int
 convert_le_u16 (const unsigned char *buf)
 {
-  return buf[0] | (buf[1] << 8); 
+  return buf[0] | (buf[1] << 8);
 }
 
 
@@ -182,7 +182,7 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
     putchar ('\n');
 }
 
- 
+
 static void
 print_p2r_header (const char *name, const unsigned char *msg, size_t msglen)
 {
@@ -359,7 +359,7 @@ print_p2r_unknown (const unsigned char *msg, size_t msglen)
 {
   char buf[100];
 
-  snprintf (buf, sizeof buf, "Unknown PC_to_RDR command 0x%02X", 
+  snprintf (buf, sizeof buf, "Unknown PC_to_RDR command 0x%02X",
             msglen? msg[0]:0);
   print_p2r_header (buf, msg, msglen);
   if (msglen < 10)
@@ -466,7 +466,7 @@ print_r2p_slotstatus (const unsigned char *msg, size_t msglen)
           msg[9] == 3? " (stopped)":"");
   print_pr_data (msg, msglen, 10);
 }
-  
+
 
 static void
 print_r2p_parameters (const unsigned char *msg, size_t msglen)
@@ -527,7 +527,7 @@ print_r2p_unknown (const unsigned char *msg, size_t msglen)
 {
   char buf[100];
 
-  snprintf (buf, sizeof buf, "Unknown RDR_to_PC command 0x%02X", 
+  snprintf (buf, sizeof buf, "Unknown RDR_to_PC command 0x%02X",
             msglen? msg[0]:0);
   print_r2p_header (buf, msg, msglen);
   if (msglen < 10)
@@ -571,7 +571,7 @@ flush_data (void)
 {
   if (!databuffer.count)
     return;
-  
+
   if (verbose)
     printf ("Address: %s\n", databuffer.address);
   if (databuffer.is_bi)
@@ -684,7 +684,7 @@ parse_line (char *line, unsigned int lineno)
   p = strtok (NULL, " ");
   if (!p)
     return; /* No data length.  */
-  
+
   datatag = strtok (NULL, " ");
   if (datatag && *datatag == '=')
     {
@@ -707,10 +707,10 @@ parse_line_sniffusb (char *line, unsigned int lineno)
     return;
   p = strtok (NULL, " \t");
   if (!p)
-    return; 
+    return;
   p = strtok (NULL, " \t");
   if (!p)
-    return; 
+    return;
 
   if (hexdigitp (p[0]) && hexdigitp (p[1])
       && hexdigitp (p[2]) && hexdigitp (p[3])
@@ -718,7 +718,7 @@ parse_line_sniffusb (char *line, unsigned int lineno)
     {
       size_t length;
       unsigned int value;
-      
+
       length = databuffer.count;
       while ((p=strtok (NULL, " \t")))
         {
@@ -791,7 +791,7 @@ parse_input (FILE *fp)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -845,7 +845,7 @@ main (int argc, char **argv)
           sniffusb = 1;
           argc--; argv++;
         }
-    }          
+    }
 
   if (argc && sniffusb)
     die ("no arguments expected when using --sniffusb\n");
@@ -855,14 +855,14 @@ main (int argc, char **argv)
   if (argc == 1)
     {
       const char *s = strchr (argv[0], ':');
-      
+
       usb_bus = atoi (argv[0]);
       if (s)
         usb_dev =  atoi (s+1);
       if (usb_bus < 1 || usb_bus > 999 || usb_dev < 1 || usb_dev > 999)
         die ("invalid bus:dev specified");
     }
-  
+
 
   signal (SIGPIPE, SIG_IGN);
 

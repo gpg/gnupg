@@ -186,7 +186,7 @@ init_ttyfp(void)
     if (my_rl_init_stream)
       my_rl_init_stream (ttyfp);
 #endif
-    
+
 
 #ifdef HAVE_TCGETATTR
     atexit( cleanup );
@@ -225,7 +225,7 @@ tty_printf( const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
 #ifdef USE_W32_CONSOLE
-    {   
+    {
         char *buf = NULL;
         int n;
 	DWORD nwritten;
@@ -233,7 +233,7 @@ tty_printf( const char *fmt, ... )
 	n = vasprintf(&buf, fmt, arg_ptr);
 	if( !buf )
 	    log_bug("vasprintf() failed\n");
-        
+
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
@@ -272,15 +272,15 @@ tty_fprintf (estream_t fp, const char *fmt, ... )
 
   va_start (arg_ptr, fmt);
 #ifdef USE_W32_CONSOLE
-  {   
+  {
     char *buf = NULL;
     int n;
     DWORD nwritten;
-    
+
     n = vasprintf(&buf, fmt, arg_ptr);
     if (!buf)
       log_bug("vasprintf() failed\n");
-    
+
     if (!WriteConsoleA( con.out, buf, n, &nwritten, NULL ))
       log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
     if (n != nwritten)
@@ -545,7 +545,7 @@ tty_get( const char *prompt )
     {
       char *line;
       char *buf;
-      
+
       if (!initialized)
 	init_ttyfp();
 

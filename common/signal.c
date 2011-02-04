@@ -45,7 +45,7 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 {
 # ifdef HAVE_SIGACTION
   struct sigaction oact, nact;
-  
+
   if (check_ign)
     {
       /* we don't want to change an IGN handler */
@@ -58,11 +58,11 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
   sigemptyset (&nact.sa_mask);
   nact.sa_flags = 0;
   sigaction ( sig, &nact, NULL);
-# else 
+# else
   RETSIGTYPE (*ohandler)(int);
-  
+
   ohandler = signal (sig, handler);
-  if (check_ign && ohandler == SIG_IGN) 
+  if (check_ign && ohandler == SIG_IGN)
     {
       /* Change it back if it was already set to IGN */
       signal (sig, SIG_IGN);
@@ -96,7 +96,7 @@ got_fatal_signal (int sig)
   if (caught_fatal_sig)
     raise (sig);
   caught_fatal_sig = 1;
-  
+
   if (cleanup_fnc)
     cleanup_fnc ();
   /* Better don't translate these messages. */
@@ -118,7 +118,7 @@ got_fatal_signal (int sig)
          this is a bug in that system, we will protect against it.  */
       if (sig < 0 || sig >= 100000)
         res = write (2, "?", 1);
-      else 
+      else
         {
           int i, value, any=0;
 
@@ -135,7 +135,7 @@ got_fatal_signal (int sig)
         }
     }
   res = write (2, " caught ... exiting\n", 20);
-  
+
   /* Reset action to default action and raise signal again */
   init_one_signal (sig, SIG_DFL, 0);
   /* Fixme: remove_lockfiles ();*/

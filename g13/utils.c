@@ -88,7 +88,7 @@ destroy_tupledesc (tupledesc_t tupledesc)
 {
   if (!tupledesc)
     return;
-  
+
   if (!--tupledesc->refcount)
     {
       xfree (tupledesc->data);
@@ -174,7 +174,6 @@ next_tuple (tupledesc_t tupledesc, unsigned int *r_tag, size_t *r_length)
           return s;
         }
     }
-  
+
   return NULL;
 }
-

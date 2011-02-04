@@ -85,7 +85,7 @@ struct learn_parm_s
   void *sinfo_cb_arg;
 };
 
-struct inq_needpin_s 
+struct inq_needpin_s
 {
   assuan_context_t ctx;
   int (*getpin_cb)(void *, const char *, char*, size_t);
@@ -169,7 +169,7 @@ agent_scd_dump_state (void)
   dump_mutex_state (&start_scd_lock);
   log_printf ("\n");
   log_info ("agent_scd_dump_state: primary_scd_ctx=%p pid=%ld reusable=%d\n",
-            primary_scd_ctx, 
+            primary_scd_ctx,
             (long)assuan_get_pid (primary_scd_ctx),
             primary_scd_ctx_reusable);
   if (socket_name)
@@ -184,7 +184,7 @@ agent_scd_dump_state (void)
    called and error checked before any SCD operation.  CTRL is the
    usual connection context and RC the error code to be passed trhough
    the function. */
-static int 
+static int
 unlock_scd (ctrl_t ctrl, int rc)
 {
   if (ctrl->scd_local->locked != 1)
@@ -313,7 +313,7 @@ start_scd (ctrl_t ctrl)
   /* Nope, it has not been started.  Fire it up now. */
   if (opt.verbose)
     log_info ("no running SCdaemon - starting it\n");
-      
+
   if (fflush (NULL))
     {
 #ifndef HAVE_W32_SYSTEM
@@ -402,9 +402,9 @@ start_scd (ctrl_t ctrl)
   if (opt.sigusr2_enabled)
     {
       char buf[100];
-      
+
 #ifdef HAVE_W32_SYSTEM
-      snprintf (buf, sizeof buf, "OPTION event-signal=%lx", 
+      snprintf (buf, sizeof buf, "OPTION event-signal=%lx",
                 (unsigned long)get_agent_scd_notify_event ());
 #else
       snprintf (buf, sizeof buf, "OPTION event-signal=%d", SIGUSR2);
@@ -422,7 +422,7 @@ start_scd (ctrl_t ctrl)
       unlock_scd (ctrl, err);
       if (ctx)
 	assuan_release (ctx);
-    } 
+    }
   else
     {
       ctrl->scd_local->ctx = ctx;
@@ -511,7 +511,7 @@ agent_scd_check_aliveness (void)
                   sl->ctx = NULL;
                 }
             }
-          
+
           primary_scd_ctx = NULL;
           primary_scd_ctx_reusable = 0;
 
@@ -560,7 +560,7 @@ agent_reset_scd (ctrl_t ctrl)
             assuan_release (ctrl->scd_local->ctx);
           ctrl->scd_local->ctx = NULL;
         }
-      
+
       /* Remove the local context from our list and release it. */
       if (!scd_local_list)
         BUG ();
@@ -569,7 +569,7 @@ agent_reset_scd (ctrl_t ctrl)
       else
         {
           struct scd_local_s *sl;
-      
+
           for (sl=scd_local_list; sl->next_local; sl = sl->next_local)
             if (sl->next_local == ctrl->scd_local)
               break;
@@ -609,7 +609,7 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->sinfo_cb (parm->sinfo_cb_arg, keyword, keywordlen, line);
     }
-  
+
   return 0;
 }
 
@@ -676,7 +676,7 @@ get_serialno_cb (void *opaque, const char *line)
       memcpy (*serialno, line, n);
       (*serialno)[n] = 0;
     }
-  
+
   return 0;
 }
 
@@ -716,7 +716,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
     put_membuf (data, buffer, length);
   return 0;
 }
-  
+
 /* Handle the NEEDPIN inquiry. */
 static gpg_error_t
 inq_needpin (void *opaque, const char *line)
@@ -731,7 +731,7 @@ inq_needpin (void *opaque, const char *line)
       line += 7;
       while (*line == ' ')
         line++;
-      
+
       pinlen = 90;
       pin = gcry_malloc_secure (pinlen);
       if (!pin)
@@ -748,7 +748,7 @@ inq_needpin (void *opaque, const char *line)
       line += 17;
       while (*line == ' ')
         line++;
-      
+
       rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, 1);
     }
   else if (!strncmp (line, "DISMISSKEYPADPROMPT", 19)
@@ -774,7 +774,7 @@ inq_needpin (void *opaque, const char *line)
         assuan_end_confidential (parm->passthru);
       if (!rc)
         {
-          if ((rest = (needrest 
+          if ((rest = (needrest
                        && !assuan_get_flag (parm->ctx, ASSUAN_CONFIDENTIAL))))
             assuan_begin_confidential (parm->ctx);
           rc = assuan_send_data (parm->ctx, value, valuelen);
@@ -783,7 +783,7 @@ inq_needpin (void *opaque, const char *line)
           xfree (value);
         }
       else
-        log_error ("error forwarding inquiry `%s': %s\n", 
+        log_error ("error forwarding inquiry `%s': %s\n",
                    line, gpg_strerror (rc));
     }
   else
@@ -837,7 +837,7 @@ agent_card_pksign (ctrl_t ctrl,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = 0;
-  snprintf (line, DIM(line)-1, 
+  snprintf (line, DIM(line)-1,
             ctrl->use_auth_call? "PKAUTH %s":"PKSIGN %s", keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
@@ -1042,7 +1042,7 @@ card_getattr_cb (void *opaque, const char *line)
       if (!parm->data)
         parm->error = errno;
     }
-  
+
   return 0;
 }
 
@@ -1070,7 +1070,7 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
   /* We assume that NAME does not need escaping. */
   if (8 + strlen (name) > DIM(line)-1)
     return gpg_error (GPG_ERR_TOO_LARGE);
-  stpcpy (stpcpy (line, "GETATTR "), name); 
+  stpcpy (stpcpy (line, "GETATTR "), name);
 
   err = start_scd (ctrl);
   if (err)
@@ -1081,10 +1081,10 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
                          card_getattr_cb, &parm);
   if (!err && parm.error)
     err = gpg_error_from_errno (parm.error);
-  
+
   if (!err && !parm.data)
     err = gpg_error (GPG_ERR_NO_DATA);
-  
+
   if (!err)
     *result = parm.data;
   else
@@ -1161,5 +1161,3 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
 
   return unlock_scd (ctrl, 0);
 }
-
-

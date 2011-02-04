@@ -17,10 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GNUPG_G10_CALL_AGENT_H
-#define GNUPG_G10_CALL_AGENT_H 
+#define GNUPG_G10_CALL_AGENT_H
 
 
-struct agent_card_info_s 
+struct agent_card_info_s
 {
   int error;         /* private. */
   char *apptype;     /* Malloced application type string.  */
@@ -56,7 +56,7 @@ struct agent_card_info_s
   struct {           /* Array with key attributes.  */
     int algo;              /* Algorithm identifier.  */
     unsigned int nbits;    /* Supported keysize.  */
-  } key_attr[3];      
+  } key_attr[3];
   struct {
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */

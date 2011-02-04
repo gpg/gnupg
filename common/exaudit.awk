@@ -30,7 +30,7 @@ topheader == 1 && /\*\//   { topheader = 2; print "" }
 /AUDIT_NULL_EVENT/   { okay = 1 }
 !okay                { next }
 /AUDIT_LAST_EVENT/   { exit }
-/AUDIT_[A-Za-z_]+/  { 
+/AUDIT_[A-Za-z_]+/  {
   sub (/[,\/\*]+/, "", $1);
   desc = tolower (substr($1,7));
   gsub (/_/," ",desc);

@@ -142,6 +142,3 @@ gpg_err_code_from_syserror (void)
   return -1;
 }
 #endif /*GPG_ERROR_H*/
-
-
-

@@ -20,7 +20,7 @@
 #ifndef LIBJNLIB_STRLIST_H
 #define LIBJNLIB_STRLIST_H
 
-struct string_list 
+struct string_list
 {
   struct string_list *next;
   unsigned int flags;
