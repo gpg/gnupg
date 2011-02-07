@@ -1,3 +1,9 @@
+2011-02-07  Werner Koch  <wk@g10code.com>
+
+	* seskey.c (encode_md_value): Truncate to MDLEN and not to QBYTES
+	which makes a difference with 521 bit ECC keys.  For clarity
+	rename QBYTES to QBITS and adjust accordingly.
+
 2011-02-04  Werner Koch  <wk@g10code.com>
 
 	* sig-check.c (do_check_messages): Remove the long deprecated

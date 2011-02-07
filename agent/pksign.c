@@ -132,8 +132,10 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   else
     return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
 
-  if ((qbits%8))
+  if (pkalgo == GCRY_PK_DSA && (qbits%8))
     {
+      /* FIXME: We check the QBITS but print a message about the hash
+         length.  */
       log_error (_("DSA requires the hash length to be a"
                    " multiple of 8 bits\n"));
       return gpg_error (GPG_ERR_INV_LENGTH);

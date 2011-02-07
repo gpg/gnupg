@@ -257,6 +257,7 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 {
   gcry_mpi_t frame;
   int pkalgo;
+  size_t mdlen;
 
   assert (hash_algo);
   assert (pk);
@@ -267,16 +268,16 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
     {
       /* It's a DSA signature, so find out the size of q.  */
 
-      size_t qbytes = gcry_mpi_get_nbits (pk->pkey[1]);
+      size_t qbits = gcry_mpi_get_nbits (pk->pkey[1]);
 
       /* pkey[1] is Q for ECDSA, which is an uncompressed point,
          i.e.  04 <x> <y>  */
       if (pkalgo == GCRY_PK_ECDSA)
-        qbytes = ecdsa_qbits_from_Q (qbytes);
+        qbits = ecdsa_qbits_from_Q (qbits);
 
       /* Make sure it is a multiple of 8 bits. */
 
-      if (qbytes%8)
+      if ((qbits%8))
 	{
 	  log_error(_("DSA requires the hash length to be a"
 		      " multiple of 8 bits\n"));
@@ -289,14 +290,12 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	 or something like that, which would look correct but allow
 	 trivial forgeries.  Yes, I know this rules out using MD5 with
 	 DSA. ;) */
-      if (qbytes < 160)
+      if (qbits < 160)
 	{
 	  log_error (_("%s key %s uses an unsafe (%zu bit) hash\n"),
-                     gcry_pk_algo_name (pkalgo), keystr_from_pk (pk), qbytes);
+                     gcry_pk_algo_name (pkalgo), keystr_from_pk (pk), qbits);
 	  return NULL;
 	}
-
-      qbytes /= 8;
 
       /* Check if we're too short.  Too long is safe as we'll
 	 automatically left-truncate.
@@ -308,24 +307,24 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
          adjust it later for general case.  (Note that the check will
          never pass for ECDSA 521 anyway as the only hash that
          intended to match it is SHA 512, but 512 < 521).  */
-      if (gcry_md_get_algo_dlen (hash_algo)
-          < ((pkalgo == GCRY_PK_ECDSA && qbytes > (521)/8) ? 512/8 : qbytes))
+      mdlen = gcry_md_get_algo_dlen (hash_algo);
+      if (mdlen < ((pkalgo == GCRY_PK_ECDSA && qbits > 521) ? 512: qbits)/8)
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash "
                        "(hash is %s\n"),
                      gcry_pk_algo_name (pkalgo),
-                     keystr_from_pk(pk), qbytes*8,
+                     keystr_from_pk(pk), qbits,
                      gcry_md_algo_name (hash_algo));
 	  return NULL;
 	}
 
-      /* By passing QBYTES as length to mpi_scan, we do the truncation
-         of the hash.
+     /* By passing MDLEN as length to mpi_scan, we do the truncation
+        of the hash.
 
-         Note that in case of ECDSA 521 the hash is always smaller
-         than the key size.  */
+        Note that in case of ECDSA 521 the hash is always smaller
+        than the key size.  */
       if (gcry_mpi_scan (&frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo), qbytes, &qbytes))
+                         gcry_md_read (md, hash_algo), mdlen, NULL))
         BUG();
     }
   else
