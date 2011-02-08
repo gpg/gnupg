@@ -1,3 +1,8 @@
+2011-02-08  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (gpg_dirmngr_ks_fetch): New.
+	* keyserver.c (keyserver_fetch): Rewrite to use dirmngr.
+
 2011-02-07  Werner Koch  <wk@g10code.com>
 
 	* seskey.c (encode_md_value): Truncate to MDLEN and not to QBYTES

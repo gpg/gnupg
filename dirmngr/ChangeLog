@@ -1,3 +1,9 @@
+2011-02-08  Werner Koch  <wk@g10code.com>
+
+	* server.c (cmd_ks_fetch): New.
+	* ks-action.c (ks_action_fetch): New.
+	* ks-engine-finger.c: New.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (dirmngr_LDADD): Remove -llber.

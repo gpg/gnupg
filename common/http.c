@@ -161,13 +161,25 @@ static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
 static int connect_server (const char *server, unsigned short port,
-                           unsigned int flags, const char *srvtag);
+                           unsigned int flags, const char *srvtag,
+                           int *r_host_not_found);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
 static ssize_t cookie_read (void *cookie, void *buffer, size_t size);
 static ssize_t cookie_write (void *cookie, const void *buffer, size_t size);
 static int cookie_close (void *cookie);
 
+
+/* A socket object used to a allow ref counting of sockets.  */
+struct my_socket_s
+{
+  int fd;       /* The actual socket - shall never be -1.  */
+  int refcount; /* Number of references to this socket.  */
+};
+typedef struct my_socket_s *my_socket_t;
+
+
+/* Cookie function structure and cookie object.  */
 static es_cookie_io_functions_t cookie_functions =
   {
     cookie_read,
@@ -178,8 +190,8 @@ static es_cookie_io_functions_t cookie_functions =
 
 struct cookie_s
 {
-  /* File descriptor or -1 if already closed. */
-  int fd;
+  /* Socket object or NULL if already closed. */
+  my_socket_t sock;
 
   /* TLS session context or NULL if not used. */
   gnutls_session_t tls_session;
@@ -213,7 +225,7 @@ typedef struct header_s *header_t;
 struct http_context_s
 {
   unsigned int status_code;
-  int sock;
+  my_socket_t sock;
   unsigned int in_data:1;
   unsigned int is_http_0_9:1;
   estream_t fp_read;
@@ -279,6 +291,77 @@ init_sockets (void)
 #endif /*HAVE_W32_SYSTEM && !HTTP_NO_WSASTARTUP*/
 
 
+/* Create a new socket object.  Returns NULL and closes FD if not
+   enough memory is available.  */
+static my_socket_t
+my_socket_new (int fd)
+{
+  my_socket_t so;
+
+  so = xtrymalloc (sizeof *so);
+  if (!so)
+    {
+      int save_errno = errno;
+      sock_close (fd);
+      gpg_err_set_errno (save_errno);
+      return NULL;
+    }
+  so->fd = fd;
+  so->refcount = 1;
+  /* log_debug ("my_socket_new(%d): object %p for fd %d created\n", */
+  /*            lnr, so, so->fd); */
+  return so;
+}
+/* #define my_socket_new(a) _my_socket_new ((a),__LINE__) */
+
+/* Bump up the reference counter for the socket object SO.  */
+static my_socket_t
+my_socket_ref (my_socket_t so)
+{
+  so->refcount++;
+  /* log_debug ("my_socket_ref(%d): object %p for fd %d refcount now %d\n", */
+  /*            lnr, so, so->fd, so->refcount); */
+  return so;
+}
+/* #define my_socket_ref(a) _my_socket_ref ((a),__LINE__) */
+
+/* Bump down the reference counter for the socket object SO.  If SO
+   has no more references, close the socket and release the
+   object.  */
+static void
+my_socket_unref (my_socket_t so)
+{
+  if (so)
+    {
+      so->refcount--;
+      /* log_debug ("my_socket_unref(%d): object %p for fd %d ref now %d\n", */
+      /*            lnr, so, so->fd, so->refcount); */
+      if (!so->refcount)
+        {
+          sock_close (so->fd);
+          xfree (so);
+        }
+    }
+}
+/* #define my_socket_unref(a) _my_socket_unref ((a),__LINE__) */
+
+
+/* This notification function is called by estream whenever stream is
+   closed.  Its purpose is to mark the the closing in the handle so
+   that a http_close won't accidentally close the estream.  The function
+   http_close removes this notification so that it won't be called if
+   http_close was used before an es_fclose.  */
+static void
+fp_onclose_notification (estream_t stream, void *opaque)
+{
+  http_t hd = opaque;
+
+  if (hd->fp_read && hd->fp_read == stream)
+    hd->fp_read = NULL;
+  else if (hd->fp_write && hd->fp_write == stream)
+    hd->fp_write = NULL;
+}
+
 
 /*
  * Helper function to create an HTTP header with hex encoded data.  A
@@ -343,7 +426,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 
 /* Start a HTTP retrieval and return on success in R_HD a context
    pointer for completing the the request and to wait for the
-   response. */
+   response.  */
 gpg_error_t
 _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
             const char *auth, unsigned int flags, const char *proxy,
@@ -362,7 +445,6 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
     return gpg_error_from_syserror ();
-  hd->sock = -1;
   hd->req_type = reqtype;
   hd->flags = flags;
   hd->tls_context = tls_context;
@@ -373,8 +455,7 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   if (err)
     {
-      if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
-        sock_close (hd->sock);
+      my_socket_unref (hd->sock);
       if (hd->fp_read)
         es_fclose (hd->fp_read);
       if (hd->fp_write)
@@ -385,6 +466,105 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
     *r_hd = hd;
   return err;
 }
+
+
+/* This function is useful to connect to a generic TCP service using
+   this http abstraction layer.  This has the advantage of providing
+   service tags and an estream interface.  */
+gpg_error_t
+_http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
+                   unsigned int flags, const char *srvtag,
+                   gpg_err_source_t errsource)
+{
+  gpg_error_t err = 0;
+  int sock;
+  http_t hd;
+  cookie_t cookie;
+  int hnf;
+
+  *r_hd = NULL;
+
+  /* Create the handle. */
+  hd = xtrycalloc (1, sizeof *hd);
+  if (!hd)
+    return gpg_error_from_syserror ();
+  hd->req_type = HTTP_REQ_OPAQUE;
+  hd->flags = flags;
+
+  /* Connect.  */
+  sock = connect_server (server, port, hd->flags, srvtag, &hnf);
+  if (sock == -1)
+    {
+      err = gpg_err_make (errsource, (hnf? GPG_ERR_UNKNOWN_HOST
+                                      :gpg_err_code_from_syserror ()));
+      xfree (hd);
+      return err;
+    }
+  hd->sock = my_socket_new (sock);
+  if (!hd->sock)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      xfree (hd);
+      return err;
+    }
+
+  /* Setup estreams for reading and writing.  */
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      goto leave;
+    }
+  cookie->sock = my_socket_ref (hd->sock);
+  hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
+  if (!hd->fp_write)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      my_socket_unref (cookie->sock);
+      xfree (cookie);
+      goto leave;
+    }
+  hd->write_cookie = cookie; /* Cookie now owned by FP_WRITE.  */
+
+  cookie = xtrycalloc (1, sizeof *cookie);
+  if (!cookie)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      goto leave;
+    }
+  cookie->sock = my_socket_ref (hd->sock);
+  hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
+  if (!hd->fp_read)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      my_socket_unref (cookie->sock);
+      xfree (cookie);
+      goto leave;
+    }
+  hd->read_cookie = cookie; /* Cookie now owned by FP_READ.  */
+
+  /* Register close notification to interlock the use of es_fclose in
+     http_close and in user code.  */
+  err = es_onclose (hd->fp_write, 1, fp_onclose_notification, hd);
+  if (!err)
+    err = es_onclose (hd->fp_read, 1, fp_onclose_notification, hd);
+
+ leave:
+  if (err)
+    {
+      if (hd->fp_read)
+        es_fclose (hd->fp_read);
+      if (hd->fp_write)
+        es_fclose (hd->fp_write);
+      my_socket_unref (hd->sock);
+      xfree (hd);
+    }
+  else
+    *r_hd = hd;
+  return err;
+}
+
+
 
 
 void
@@ -410,12 +590,12 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
   /* Make sure that we are in the data. */
   http_start_data (hd);
 
-  /* Close the write stream but keep the socket open.  */
+  /* Close the write stream.  Note that the reference counted socket
+     object keeps the actual system socket open.  */
   cookie = hd->write_cookie;
   if (!cookie)
     return gpg_err_make (errsource, GPG_ERR_INTERNAL);
 
-  cookie->keep_socket = 1;
   es_fclose (hd->fp_write);
   hd->fp_write = NULL;
   /* The close has released the cookie and thus we better set it to NULL.  */
@@ -425,14 +605,14 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
      is not required but some very old servers (e.g. the original pksd
      key server didn't worked without it.  */
   if ((hd->flags & HTTP_FLAG_SHUTDOWN))
-    shutdown (hd->sock, 1);
+    shutdown (hd->sock->fd, 1);
   hd->in_data = 0;
 
   /* Create a new cookie and a stream for reading.  */
   cookie = xtrycalloc (1, sizeof *cookie);
   if (!cookie)
     return gpg_err_make (errsource, gpg_err_code_from_syserror ());
-  cookie->fd = hd->sock;
+  cookie->sock = my_socket_ref (hd->sock);
   if (hd->uri->use_tls)
     cookie->tls_session = hd->tls_context;
 
@@ -440,12 +620,18 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
   hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
   if (!hd->fp_read)
     {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      my_socket_unref (cookie->sock);
       xfree (cookie);
       hd->read_cookie = NULL;
-      return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      return err;
     }
 
   err = parse_response (hd);
+
+  if (!err)
+    err = es_onclose (hd->fp_read, 1, fp_onclose_notification, hd);
+
   return err;
 }
 
@@ -480,8 +666,15 @@ http_close (http_t hd, int keep_read_stream)
 {
   if (!hd)
     return;
-  if (!hd->fp_read && !hd->fp_write && hd->sock != -1)
-    sock_close (hd->sock);
+
+  /* First remove the close notifications for the streams.  */
+  if (hd->fp_read)
+    es_onclose (hd->fp_read, 0, fp_onclose_notification, hd);
+  if (hd->fp_write)
+    es_onclose (hd->fp_write, 0, fp_onclose_notification, hd);
+
+  /* Now we can close the streams.  */
+  my_socket_unref (hd->sock);
   if (hd->fp_read && !keep_read_stream)
     es_fclose (hd->fp_read);
   if (hd->fp_write)
@@ -577,6 +770,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
   uri->params = uri->query = NULL;
   uri->use_tls = 0;
   uri->is_http = 0;
+  uri->opaque = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -614,14 +808,9 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 
       p = p2;
 
-      /* Find the hostname */
-      if (*p != '/')
-	return GPG_ERR_INV_URI; /* Does not start with a slash. */
-
-      p++;
-      if (*p == '/') /* There seems to be a hostname. */
+      if (*p == '/' && p[1] == '/' ) /* There seems to be a hostname. */
 	{
-	  p++;
+          p += 2;
 	  if ((p2 = strchr (p, '/')))
 	    *p2++ = 0;
 
@@ -659,6 +848,15 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 	    return GPG_ERR_BAD_URI;	/* Hostname incudes a Nul. */
 	  p = p2 ? p2 : NULL;
 	}
+      else if (uri->is_http)
+	return GPG_ERR_INV_URI; /* No Leading double slash for HTTP.  */
+      else
+        {
+          uri->opaque = 1;
+          uri->path = p;
+          return 0;
+        }
+
     } /* End global URI part. */
 
   /* Parse the pathname part */
@@ -888,7 +1086,8 @@ send_request (http_t hd, const char *auth,
   const char *http_proxy = NULL;
   char *proxy_authstr = NULL;
   char *authstr = NULL;
-  int save_errno;
+  int sock;
+  int hnf;
 
   tls_session = hd->tls_context;
   if (hd->uri->use_tls && !tls_session)
@@ -906,6 +1105,7 @@ send_request (http_t hd, const char *auth,
             && *http_proxy ))
     {
       parsed_uri_t uri;
+      int save_errno;
 
       if (proxy)
 	http_proxy = proxy;
@@ -932,32 +1132,42 @@ send_request (http_t hd, const char *auth,
             }
         }
 
-      hd->sock = connect_server (*uri->host ? uri->host : "localhost",
-				 uri->port ? uri->port : 80,
-                                 hd->flags, srvtag);
+      sock = connect_server (*uri->host ? uri->host : "localhost",
+                             uri->port ? uri->port : 80,
+                             hd->flags, srvtag, &hnf);
       save_errno = errno;
       http_release_parsed_uri (uri);
+      if (sock == -1)
+        gpg_err_set_errno (save_errno);
     }
   else
     {
-      hd->sock = connect_server (server, port, hd->flags, srvtag);
-      save_errno = errno;
+      sock = connect_server (server, port, hd->flags, srvtag, &hnf);
     }
 
-  if (hd->sock == -1)
+  if (sock == -1)
     {
       xfree (proxy_authstr);
-      return gpg_err_make (errsource, (save_errno
-                                       ? gpg_err_code_from_errno (save_errno)
-                                       : GPG_ERR_NOT_FOUND));
+      return gpg_err_make (errsource, (hnf? GPG_ERR_UNKNOWN_HOST
+                                       : gpg_err_code_from_syserror ()));
     }
+  hd->sock = my_socket_new (sock);
+  if (!hd->sock)
+    {
+      xfree (proxy_authstr);
+      return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+    }
+
+
 
 #ifdef HTTP_USE_GNUTLS
   if (hd->uri->use_tls)
     {
       int rc;
 
-      gnutls_transport_set_ptr (tls_session, (gnutls_transport_ptr_t)hd->sock);
+      my_socket_ref (hd->sock);
+      gnutls_transport_set_ptr (tls_session,
+                                (gnutls_transport_ptr_t)(hd->sock->fd));
       do
         {
           rc = gnutls_handshake (tls_session);
@@ -1069,7 +1279,7 @@ send_request (http_t hd, const char *auth,
         err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
         goto leave;
       }
-    cookie->fd = hd->sock;
+    cookie->sock = my_socket_ref (hd->sock);
     hd->write_cookie = cookie;
     if (hd->uri->use_tls)
       cookie->tls_session = tls_session;
@@ -1078,6 +1288,7 @@ send_request (http_t hd, const char *auth,
     if (!hd->fp_write)
       {
         err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+        my_socket_unref (cookie->sock);
         xfree (cookie);
         hd->write_cookie = NULL;
       }
@@ -1469,7 +1680,7 @@ start_server ()
    error.  ERRNO is set on error. */
 static int
 connect_server (const char *server, unsigned short port,
-                unsigned int flags, const char *srvtag)
+                unsigned int flags, const char *srvtag, int *r_host_not_found)
 {
   int sock = -1;
   int srvcount = 0;
@@ -1483,6 +1694,7 @@ connect_server (const char *server, unsigned short port,
   /* Not currently using the flags */
   (void)flags;
 
+  *r_host_not_found = 0;
 #ifdef HAVE_W32_SYSTEM
 
 #ifndef HTTP_NO_WSASTARTUP
@@ -1655,6 +1867,8 @@ connect_server (const char *server, unsigned short port,
                  server,
                  hostfound? strerror (last_errno):"host not found");
 #endif
+      if (!hostfound)
+        *r_host_not_found = 1;
       if (sock != -1)
 	sock_close (sock);
       gpg_err_set_errno (last_errno);
@@ -1758,12 +1972,12 @@ cookie_read (void *cookie, void *buffer, size_t size)
       do
         {
 #ifdef HAVE_PTH
-          nread = pth_read (c->fd, buffer, size);
+          nread = pth_read (c->sock->fd, buffer, size);
 #elif defined(HAVE_W32_SYSTEM)
           /* Under Windows we need to use recv for a socket.  */
-          nread = recv (c->fd, buffer, size, 0);
+          nread = recv (c->sock->fd, buffer, size, 0);
 #else
-          nread = read (c->fd, buffer, size);
+          nread = read (c->sock->fd, buffer, size);
 #endif
         }
       while (nread == -1 && errno == EINTR);
@@ -1819,7 +2033,7 @@ cookie_write (void *cookie, const void *buffer, size_t size)
   else
 #endif /*HTTP_USE_GNUTLS*/
     {
-      if ( write_server (c->fd, buffer, size) )
+      if ( write_server (c->sock->fd, buffer, size) )
         {
           gpg_err_set_errno (EIO);
           nwritten = -1;
@@ -1844,28 +2058,29 @@ cookie_close (void *cookie)
   if (c->tls_session && !c->keep_socket)
     {
       gnutls_bye (c->tls_session, GNUTLS_SHUT_RDWR);
+      my_socket_unref (c->sock);
     }
 #endif /*HTTP_USE_GNUTLS*/
-  if (c->fd != -1 && !c->keep_socket)
-    sock_close (c->fd);
+  if (c->sock && !c->keep_socket)
+    my_socket_unref (c->sock);
 
   xfree (c);
   return 0;
 }
 
 
-
 
 /**** Test code ****/
 #ifdef TEST
 
+#ifdef HTTP_USE_GNUTLS
 static gpg_error_t
 verify_callback (http_t hd, void *tls_context, int reserved)
 {
   log_info ("verification of certificates skipped\n");
   return 0;
 }
-
+#endif /*HTTP_USE_GNUTLS*/
 
 
 /* static void */
@@ -1938,7 +2153,7 @@ main (int argc, char **argv)
   http_register_tls_callback (verify_callback);
 #endif /*HTTP_USE_GNUTLS*/
 
-  rc = http_parse_uri (&uri, *argv, 0);
+  rc = http_parse_uri (&uri, *argv, 1);
   if (rc)
     {
       log_error ("`%s': %s\n", *argv, gpg_strerror (rc));
@@ -1946,35 +2161,41 @@ main (int argc, char **argv)
     }
 
   printf ("Scheme: %s\n", uri->scheme);
-  printf ("Host  : %s\n", uri->host);
-  printf ("Port  : %u\n", uri->port);
-  printf ("Path  : %s\n", uri->path);
-  for (r = uri->params; r; r = r->next)
+  if (uri->opaque)
+    printf ("Value : %s\n", uri->path);
+  else
     {
-      printf ("Params: %s", r->name);
-      if (!r->no_value)
-	{
-	  printf ("=%s", r->value);
-	  if (strlen (r->value) != r->valuelen)
-	    printf (" [real length=%d]", (int) r->valuelen);
-	}
-      putchar ('\n');
-    }
-  for (r = uri->query; r; r = r->next)
-    {
-      printf ("Query : %s", r->name);
-      if (!r->no_value)
-	{
-	  printf ("=%s", r->value);
-	  if (strlen (r->value) != r->valuelen)
-	    printf (" [real length=%d]", (int) r->valuelen);
-	}
-      putchar ('\n');
+      printf ("Auth  : %s\n", uri->auth? uri->auth:"[none]");
+      printf ("Host  : %s\n", uri->host);
+      printf ("Port  : %u\n", uri->port);
+      printf ("Path  : %s\n", uri->path);
+      for (r = uri->params; r; r = r->next)
+        {
+          printf ("Params: %s", r->name);
+          if (!r->no_value)
+            {
+              printf ("=%s", r->value);
+              if (strlen (r->value) != r->valuelen)
+                printf (" [real length=%d]", (int) r->valuelen);
+            }
+          putchar ('\n');
+        }
+      for (r = uri->query; r; r = r->next)
+        {
+          printf ("Query : %s", r->name);
+          if (!r->no_value)
+            {
+              printf ("=%s", r->value);
+              if (strlen (r->value) != r->valuelen)
+                printf (" [real length=%d]", (int) r->valuelen);
+            }
+          putchar ('\n');
+        }
     }
   http_release_parsed_uri (uri);
   uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL, 0, NULL, tls_session);
+  rc = http_open_document (&hd, *argv, NULL, 0, NULL, tls_session, NULL, NULL);
   if (rc)
     {
       log_error ("can't get `%s': %s\n", *argv, gpg_strerror (rc));
@@ -2010,6 +2231,6 @@ main (int argc, char **argv)
 
 /*
 Local Variables:
-compile-command: "gcc -I.. -I../gl -DTEST -DHAVE_CONFIG_H -Wall -O2 -g -o http-test http.c -L. -lcommon -L../jnlib -ljnlib -lgcrypt -lpth -lgnutls"
+compile-command: "gcc -I.. -I../gl -DTEST -DHAVE_CONFIG_H -Wall -O2 -g -o http-test http.c -L. -lcommon -lgcrypt -lpth -lgnutls"
 End:
 */

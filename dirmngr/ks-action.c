@@ -132,7 +132,7 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
               else
                 {
                   err = copy_stream (infp, outfp);
-                  /* Reading from the keyserver should nver fail, thus
+                  /* Reading from the keyserver should never fail, thus
                      return this error.  */
                   es_fclose (infp);
                   infp = NULL;
@@ -145,6 +145,49 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   else if (!err && first_err)
     err = first_err; /* fixme: Do we really want to do that?  */
+  return err;
+}
+
+
+/* Retrive keys from URL and write the result to the provided output
+   stream OUTFP.  */
+gpg_error_t
+ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
+{
+  gpg_error_t err = 0;
+  estream_t infp;
+  parsed_uri_t parsed_uri;  /* The broken down URI.  */
+
+  if (!url)
+    return gpg_error (GPG_ERR_INV_URI);
+
+  err = http_parse_uri (&parsed_uri, url, 1);
+  if (err)
+    return err;
+
+  if (parsed_uri->is_http)
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else if (!parsed_uri->opaque)
+    {
+      err = gpg_error (GPG_ERR_INV_URI);
+    }
+  else if (!strcmp (parsed_uri->scheme, "finger"))
+    {
+      err = ks_finger_get (ctrl, parsed_uri, &infp);
+      if (!err)
+        {
+          err = copy_stream (infp, outfp);
+          /* Reading from the finger serrver should not fail, thus
+             return this error.  */
+          es_fclose (infp);
+        }
+    }
+  else
+    err = gpg_error (GPG_ERR_INV_URI);
+
+  http_release_parsed_uri (parsed_uri);
   return err;
 }
 

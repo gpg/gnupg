@@ -354,7 +354,7 @@ gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
 
 
 
-/* Data callback for the KS_GET command. */
+/* Data callback for the KS_GET and KS_FETCH commands. */
 static gpg_error_t
 ks_get_data_cb (void *opaque, const void *data, size_t datalen)
 {
@@ -422,6 +422,65 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
   if (linelen + 2 >= ASSUAN_LINELENGTH)
     {
       err = gpg_error (GPG_ERR_TOO_MANY);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, ks_get_data_cb, &parm,
+                         NULL, NULL, NULL, NULL);
+  if (err)
+    goto leave;
+
+  es_rewind (parm.memfp);
+  *r_fp = parm.memfp;
+  parm.memfp = NULL;
+
+ leave:
+  es_fclose (parm.memfp);
+  xfree (line);
+  close_context (ctrl, ctx);
+  return err;
+}
+
+
+/* Run the KS_FETCH and pass URL as argument.  On success an estream
+   object is returned to retrieve the keys.  On error an error code is
+   returned and NULL stored at R_FP.
+
+   The url is expected to point to a small set of keys; in many cases
+   only to one key.  However, schemes like finger may return several
+   keys.  Note that the configured keyservers are ignored by the
+   KS_FETCH command.  */
+gpg_error_t
+gpg_dirmngr_ks_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct ks_get_parm_s parm;
+  char *line = NULL;
+
+  memset (&parm, 0, sizeof parm);
+
+  *r_fp = NULL;
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  line = strconcat ("KS_FETCH -- ", url, NULL);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
       goto leave;
     }
 

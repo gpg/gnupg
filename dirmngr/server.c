@@ -1541,6 +1541,34 @@ cmd_ks_get (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_ks_fetch[] =
+  "KS_FETCH <URL>\n"
+  "\n"
+  "Get the key(s) from URL.";
+static gpg_error_t
+cmd_ks_fetch (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  estream_t outfp;
+
+  /* No options for now.  */
+  line = skip_options (line);
+
+  /* Setup an output stream and perform the get.  */
+  outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+  if (!outfp)
+    err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+  else
+    {
+      err = ks_action_fetch (ctrl, line, outfp);
+      es_fclose (outfp);
+    }
+
+  return leave_cmd (ctx, err);
+}
+
+
 
 static const char hlp_ks_put[] =
   "KS_PUT\n"
@@ -1742,6 +1770,7 @@ register_commands (assuan_context_t ctx)
     { "KEYSERVER",  cmd_keyserver,  hlp_keyserver },
     { "KS_SEARCH",  cmd_ks_search,  hlp_ks_search },
     { "KS_GET",     cmd_ks_get,     hlp_ks_get },
+    { "KS_FETCH",   cmd_ks_fetch,   hlp_ks_fetch },
     { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },

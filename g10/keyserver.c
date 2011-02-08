@@ -1641,53 +1641,52 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
 }
 
 
-
 int
 keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 {
-  KEYDB_SEARCH_DESC desc;
+  gpg_error_t err;
   strlist_t sl;
-  unsigned int options=opt.keyserver_options.import_options;
+  estream_t datastream;
+  unsigned int options = opt.keyserver_options.import_options;
 
   /* Switch on fast-import, since fetch can handle more than one
      import and we don't want each set to rebuild the trustdb.
      Instead we do it once at the end. */
-  opt.keyserver_options.import_options|=IMPORT_FAST;
+  opt.keyserver_options.import_options |= IMPORT_FAST;
 
-  /* A dummy desc since we're not actually fetching a particular key
-     ID */
-  memset(&desc,0,sizeof(desc));
-  desc.mode=KEYDB_SEARCH_MODE_EXACT;
-
-  for(sl=urilist;sl;sl=sl->next)
+  for (sl=urilist; sl; sl=sl->next)
     {
-      struct keyserver_spec *spec;
+      if (!opt.quiet)
+        log_info (_("requesting key from `%s'\n"), sl->d);
 
-      spec=parse_keyserver_uri(sl->d,1,NULL,0);
-      if(spec)
-	{
-	  int rc;
+      err = gpg_dirmngr_ks_fetch (ctrl, sl->d, &datastream);
+      if (!err)
+        {
+          void *stats_handle;
 
-	  rc = keyserver_get (ctrl, &desc, 1, spec);
-	  if(rc)
-	    log_info (_("WARNING: unable to fetch URI %s: %s\n"),
-		     sl->d,g10_errstr(rc));
+          stats_handle = import_new_stats_handle();
+          import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
+                                 opt.keyserver_options.import_options);
 
-	  free_keyserver_spec(spec);
-	}
+          import_print_stats (stats_handle);
+          import_release_stats_handle (stats_handle);
+        }
       else
-	log_info (_("WARNING: unable to parse URI %s\n"),sl->d);
+        log_info (_("WARNING: unable to fetch URI %s: %s\n"),
+                  sl->d, gpg_strerror (err));
+      es_fclose (datastream);
     }
 
-  opt.keyserver_options.import_options=options;
+  opt.keyserver_options.import_options = options;
 
   /* If the original options didn't have fast import, and the trustdb
      is dirty, rebuild. */
-  if(!(opt.keyserver_options.import_options&IMPORT_FAST))
-    trustdb_check_or_update();
+  if (!(opt.keyserver_options.import_options&IMPORT_FAST))
+    trustdb_check_or_update ();
 
   return 0;
 }
+
 
 /* Import key in a CERT or pointed to by a CERT */
 int

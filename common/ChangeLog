@@ -1,3 +1,25 @@
+2011-02-08  Werner Koch  <wk@g10code.com>
+
+	* http.c (connect_server): Add arg R_HOST_NOT_FOUND.
+
+2011-02-07  Werner Koch  <wk@g10code.com>
+
+	* http.c (my_socket_new, my_socket_ref, my_socket_unref): New.
+	(cookie_close, cookie_read, cookie_write, http_close, _http_open)
+	(send_request): Replace use of an socket integer by the new socket
+	object.
+	(_http_raw_connect): New.
+	(fp_onclose_notification): New.
+	(_http_raw_connect, _http_wait_response, http_close): Register and
+	unregister this notification.
+	* http.h (http_raw_connect): New.
+
+	* http.h (parsed_uri_s): Add field IS_OPAQUE.
+	(http_req_t): Add HTTP_REQ_OPAQUE.
+	* http.c (do_parse_uri): Parse unknown schemes into PATH.
+	(my_socket_new, my_socket_ref, my_socket_unref): New.
+	(send_request): Simplify save_errno stuff.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* status.h (STATUS_DECRYPTION_INFO): New.

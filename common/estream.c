@@ -3041,9 +3041,14 @@ es_fclose (estream_t stream)
    already registered notification; for this to work the value of FNC
    and FNC_VALUE must be the same as with the registration and
    FNC_VALUE must be a unique value.  No error will be returned if
-   MODE is 0.  Unregistered should only be used in the error case
-   because it may not remove memory internall allocated for the
-   onclose handler.
+   MODE is 0.
+
+   FIXME: I think the next comment is not anymore correct:
+   Unregister should only be used in the error case because it may not
+   be able to remove memory internally allocated for the onclose
+   handler.
+
+   FIXME: Unregister is not thread safe.
 
    The notification will be called right before the stream is closed.
    It may not call any estream function for STREAM, neither direct nor

@@ -40,7 +40,8 @@ struct parsed_uri_s
   char *scheme;	        /* Pointer to the scheme string (always lowercase). */
   unsigned int is_http:1; /* This is a HTTP style URI.   */
   unsigned int use_tls:1; /* Whether TLS should be used. */
-  char *auth;           /* username/password for basic auth */
+  unsigned int opaque:1;/* Unknown scheme; PATH has the rest.  */
+  char *auth;           /* username/password for basic auth.  */
   char *host; 	        /* Host (converted to lowercase). */
   unsigned short port;  /* Port (always set if the host is set). */
   char *path; 	        /* Path. */
@@ -54,7 +55,8 @@ typedef enum
   {
     HTTP_REQ_GET  = 1,
     HTTP_REQ_HEAD = 2,
-    HTTP_REQ_POST = 3
+    HTTP_REQ_POST = 3,
+    HTTP_REQ_OPAQUE = 4  /* Internal use.  */
   }
 http_req_t;
 
@@ -78,6 +80,13 @@ gpg_error_t _http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
   _http_parse_uri ((a), (b), (c), GPG_ERR_SOURCE_DEFAULT)
 
 void http_release_parsed_uri (parsed_uri_t uri);
+
+gpg_error_t _http_raw_connect (http_t *r_hd,
+                               const char *server, unsigned short port,
+                               unsigned int flags, const char *srvtag,
+                               gpg_err_source_t errsource);
+#define http_raw_connect(a,b,c,d,e) \
+  _http_raw_connect ((a),(b),(c),(d),(e), GPG_ERR_SOURCE_DEFAULT)
 
 gpg_error_t _http_open (http_t *r_hd, http_req_t reqtype,
                         const char *url,
