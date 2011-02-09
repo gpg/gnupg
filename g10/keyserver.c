@@ -18,9 +18,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* !!! FIXME: Replace all printf by es_printf.  FIXME !!! */
-
-
 #include <config.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -501,19 +498,19 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   iobuf_writebyte(keyrec->uidbuf,0);
   iobuf_flush_temp(keyrec->uidbuf);
-  printf("(%d)\t%s  ",number,iobuf_get_temp_buffer(keyrec->uidbuf));
+  es_printf ("(%d)\t%s  ", number, iobuf_get_temp_buffer (keyrec->uidbuf));
 
-  if(keyrec->size>0)
-    printf("%d bit ",keyrec->size);
+  if (keyrec->size>0)
+    es_printf ("%d bit ", keyrec->size);
 
   if(keyrec->type)
     {
       const char *str = gcry_pk_algo_name (keyrec->type);
 
       if(str)
-	printf("%s ",str);
+	es_printf ("%s ",str);
       else
-	printf("unknown ");
+	es_printf ("unknown ");
     }
 
   switch(keyrec->desc.mode)
@@ -522,28 +519,28 @@ print_keyrec(int number,struct keyrec *keyrec)
 	 choice but to use it.  Do check --keyid-format to add a 0x if
 	 needed. */
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      printf("key %s%08lX",
-	     (opt.keyid_format==KF_0xSHORT
-	      || opt.keyid_format==KF_0xLONG)?"0x":"",
-	     (ulong)keyrec->desc.u.kid[1]);
+      es_printf ("key %s%08lX",
+                 (opt.keyid_format==KF_0xSHORT
+                  || opt.keyid_format==KF_0xLONG)?"0x":"",
+                 (ulong)keyrec->desc.u.kid[1]);
       break;
 
       /* However, if it gave us a long keyid, we can honor
 	 --keyid-format */
     case KEYDB_SEARCH_MODE_LONG_KID:
-      printf("key %s",keystr(keyrec->desc.u.kid));
+      es_printf ("key %s",keystr(keyrec->desc.u.kid));
       break;
 
     case KEYDB_SEARCH_MODE_FPR16:
-      printf("key ");
+      es_printf ("key ");
       for(i=0;i<16;i++)
-	printf("%02X",keyrec->desc.u.fpr[i]);
+	es_printf ("%02X",keyrec->desc.u.fpr[i]);
       break;
 
     case KEYDB_SEARCH_MODE_FPR20:
-      printf("key ");
+      es_printf ("key ");
       for(i=0;i<20;i++)
-	printf("%02X",keyrec->desc.u.fpr[i]);
+	es_printf ("%02X", keyrec->desc.u.fpr[i]);
       break;
 
     default:
@@ -553,24 +550,24 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->createtime>0)
     {
-      printf(", ");
-      printf(_("created: %s"),strtimestamp(keyrec->createtime));
+      es_printf (", ");
+      es_printf (_("created: %s"), strtimestamp(keyrec->createtime));
     }
 
   if(keyrec->expiretime>0)
     {
-      printf(", ");
-      printf(_("expires: %s"),strtimestamp(keyrec->expiretime));
+      es_printf (", ");
+      es_printf (_("expires: %s"), strtimestamp(keyrec->expiretime));
     }
 
-  if(keyrec->flags&1)
-    printf(" (%s)",_("revoked"));
+  if (keyrec->flags&1)
+    es_printf (" (%s)", _("revoked"));
   if(keyrec->flags&2)
-    printf(" (%s)",_("disabled"));
+    es_printf (" (%s)", _("disabled"));
   if(keyrec->flags&4)
-    printf(" (%s)",_("expired"));
+    es_printf (" (%s)", _("expired"));
 
-  printf("\n");
+  es_printf ("\n");
 }
 
 /* Returns a keyrec (which must be freed) once a key is complete, and
@@ -756,7 +753,7 @@ show_prompt (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int numdesc,
   gpg_error_t err;
   char *answer = NULL;
 
-  fflush (stdout);
+  es_fflush (es_stdout);
 
   if (count && opt.command_fd == -1)
     {

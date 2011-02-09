@@ -1,3 +1,7 @@
+2011-02-09  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c: Replace all printf by es_printf.
+
 2011-02-08  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (gpg_dirmngr_ks_fetch): New.
