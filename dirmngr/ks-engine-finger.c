@@ -1,4 +1,4 @@
-/* ks-engine-finger.c - HKP keyserver engine
+/* ks-engine-finger.c - Finger OpenPGP key access
  * Copyright (C) 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -33,7 +33,7 @@
 /* Get the key from URI which is expected to specify a finger scheme.
    On success R_FP has an open stream to read the data.  */
 gpg_error_t
-ks_finger_get (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp)
+ks_finger_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp)
 {
   gpg_error_t err;
   estream_t fp;

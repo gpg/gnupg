@@ -1,0 +1,141 @@
+/* ks-engine-http.c - HTTP OpenPGP key access
+ * Copyright (C) 2011 Free Software Foundation, Inc.
+ *
+ * This file is part of GnuPG.
+ *
+ * GnuPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GnuPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <config.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#include "dirmngr.h"
+#include "misc.h"
+#include "ks-engine.h"
+
+/* How many redirections do we allow.  */
+#define MAX_REDIRECTS 2
+
+
+/* Get the key from URL which is expected to specify a http style
+   scheme.  On success R_FP has an open stream to read the data.  */
+gpg_error_t
+ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
+{
+  gpg_error_t err;
+  http_t http = NULL;
+  int redirects_left = MAX_REDIRECTS;
+  estream_t fp = NULL;
+  char *request_buffer = NULL;
+
+  *r_fp = NULL;
+ once_more:
+  err = http_open (&http,
+                   HTTP_REQ_GET,
+                   url,
+                   /* fixme: AUTH */ NULL,
+                   0,
+                   /* fixme: proxy*/ NULL,
+                   NULL, NULL,
+                   /*FIXME curl->srvtag*/NULL);
+  if (!err)
+    {
+      fp = http_get_write_ptr (http);
+      /* Avoid caches to get the most recent copy of the key.  We set
+         both the Pragma and Cache-Control versions of the header, so
+         we're good with both HTTP 1.0 and 1.1.  */
+      es_fputs ("Pragma: no-cache\r\n"
+                "Cache-Control: no-cache\r\n", fp);
+      http_start_data (http);
+      if (es_ferror (fp))
+        err = gpg_error_from_syserror ();
+    }
+  if (err)
+    {
+      /* Fixme: After a redirection we show the old host name.  */
+      log_error (_("error connecting to `%s': %s\n"),
+                 url, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Wait for the response.  */
+  dirmngr_tick (ctrl);
+  err = http_wait_response (http);
+  if (err)
+    {
+      log_error (_("error reading HTTP response for `%s': %s\n"),
+                 url, gpg_strerror (err));
+      goto leave;
+    }
+
+  switch (http_get_status_code (http))
+    {
+    case 200:
+      err = 0;
+      break; /* Success.  */
+
+    case 301:
+    case 302:
+      {
+        const char *s = http_get_header (http, "Location");
+
+        log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+                  url, s?s:"[none]", http_get_status_code (http));
+        if (s && *s && redirects_left-- )
+          {
+            xfree (request_buffer);
+            request_buffer = xtrystrdup (s);
+            if (request_buffer)
+              {
+                url = request_buffer;
+                http_close (http, 0);
+                http = NULL;
+                goto once_more;
+              }
+            err = gpg_error_from_syserror ();
+          }
+        else
+          err = gpg_error (GPG_ERR_NO_DATA);
+        log_error (_("too many redirections\n"));
+      }
+      goto leave;
+
+    default:
+      log_error (_("error accessing `%s': http status %u\n"),
+                 url, http_get_status_code (http));
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+
+  fp = http_get_read_ptr (http);
+  if (!fp)
+    {
+      err = gpg_error (GPG_ERR_BUG);
+      goto leave;
+    }
+
+  /* Return the read stream and close the HTTP context.  */
+  *r_fp = fp;
+  http_close (http, 1);
+  http = NULL;
+
+ leave:
+  http_close (http, 0);
+  xfree (request_buffer);
+  return err;
+}

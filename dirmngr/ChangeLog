@@ -1,3 +1,11 @@
+2011-02-09  Werner Koch  <wk@g10code.com>
+
+	* ks-action.c (ks_action_fetch): Support http URLs.
+	* ks-engine-http.c: New.
+
+	* ks-engine-finger.c (ks_finger_get): Rename to ks_finger_fetch.
+	Change caller.
+
 2011-02-08  Werner Koch  <wk@g10code.com>
 
 	* server.c (cmd_ks_fetch): New.

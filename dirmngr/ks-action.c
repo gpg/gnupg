@@ -167,7 +167,12 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
 
   if (parsed_uri->is_http)
     {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      err = ks_http_fetch (ctrl, url, &infp);
+      if (!err)
+        {
+          err = copy_stream (infp, outfp);
+          es_fclose (infp);
+        }
     }
   else if (!parsed_uri->opaque)
     {
@@ -175,12 +180,10 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
     }
   else if (!strcmp (parsed_uri->scheme, "finger"))
     {
-      err = ks_finger_get (ctrl, parsed_uri, &infp);
+      err = ks_finger_fetch (ctrl, parsed_uri, &infp);
       if (!err)
         {
           err = copy_stream (infp, outfp);
-          /* Reading from the finger serrver should not fail, thus
-             return this error.  */
           es_fclose (infp);
         }
     }
