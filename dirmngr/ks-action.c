@@ -49,6 +49,50 @@ copy_stream (estream_t in, estream_t out)
 }
 
 
+/* Called by the engine's help functions to print the actual help.  */
+gpg_error_t
+ks_print_help (ctrl_t ctrl, const char *text)
+{
+  return dirmngr_status_help (ctrl, text);
+}
+
+
+/* Run the help command for the engine responsible for URI.  */
+gpg_error_t
+ks_action_help (ctrl_t ctrl, const char *url)
+{
+  gpg_error_t err;
+  parsed_uri_t parsed_uri;  /* The broken down URI.  */
+
+  if (!url || !*url)
+    {
+      ks_print_help (ctrl, "Known schemata:\n");
+      parsed_uri = NULL;
+    }
+  else
+    {
+      err = http_parse_uri (&parsed_uri, url, 1);
+      if (err)
+        return err;
+    }
+
+  /* Call all engines to geive them a chance to print a help sting.  */
+  err = ks_hkp_help (ctrl, parsed_uri);
+  if (!err)
+    err = ks_http_help (ctrl, parsed_uri);
+  if (!err)
+    err = ks_finger_help (ctrl, parsed_uri);
+  if (!err)
+    err = ks_kdns_help (ctrl, parsed_uri);
+
+  if (!parsed_uri)
+    ks_print_help (ctrl,
+                   "(Use the schema followed by a colon for specific help.)");
+  else
+    http_release_parsed_uri (parsed_uri);
+  return err;
+}
+
 
 /* Search all configured keyservers for keys matching PATTERNS and
    write the result to the provided output stream.  */
@@ -181,6 +225,15 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
   else if (!strcmp (parsed_uri->scheme, "finger"))
     {
       err = ks_finger_fetch (ctrl, parsed_uri, &infp);
+      if (!err)
+        {
+          err = copy_stream (infp, outfp);
+          es_fclose (infp);
+        }
+    }
+  else if (!strcmp (parsed_uri->scheme, "kdns"))
+    {
+      err = ks_kdns_fetch (ctrl, parsed_uri, &infp);
       if (!err)
         {
           err = copy_stream (infp, outfp);

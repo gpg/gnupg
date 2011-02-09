@@ -1359,7 +1359,7 @@ cmd_validate (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyserver[] =
-  "KEYSERVER [--clear] [<uri>]\n"
+  "KEYSERVER [--clear|--help] [<uri>]\n"
   "\n"
   "If called without arguments list all configured keyserver URLs.\n"
   "If called with option \"--clear\" remove all configured keyservers\n"
@@ -1374,13 +1374,20 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int clear_flag, add_flag;
+  int clear_flag, add_flag, help_flag;
   uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
                              is always initialized.  */
 
   clear_flag = has_option (line, "--clear");
+  help_flag = has_option (line, "--help");
   line = skip_options (line);
   add_flag = !!*line;
+
+  if (help_flag)
+    {
+      err = ks_action_help (ctrl, line);
+      goto leave;
+    }
 
   if (add_flag)
     {
@@ -1409,7 +1416,7 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       ctrl->keyservers = item;
     }
 
-  if (!add_flag && !clear_flag) /* List  configured keyservers.  */
+  if (!add_flag && !clear_flag && !help_flag) /* List configured keyservers.  */
     {
       uri_item_t u;
 
@@ -1947,7 +1954,7 @@ start_command_handler (assuan_fd_t fd)
 
 
 /* Send a status line back to the client.  KEYWORD is the status
-   keyword, the optioal string argumenst are blank separated added to
+   keyword, the optional string arguments are blank separated added to
    the line, the last argument must be a NULL. */
 gpg_error_t
 dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
@@ -1984,6 +1991,36 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
   return err;
 }
 
+
+/* Print a help status line.  TEXTLEN gives the length of the text
+   from TEXT to be printed.  The function splits text at LFs.  */
+gpg_error_t
+dirmngr_status_help (ctrl_t ctrl, const char *text)
+{
+  gpg_error_t err = 0;
+
+  if (ctrl->server_local)
+    {
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+      char buf[950], *p;
+      size_t n;
+
+      do
+        {
+          p = buf;
+          n = 0;
+          for ( ; *text && *text != '\n' && n < DIM (buf)-2; n++)
+            *p++ = *text++;
+          if (*text == '\n')
+            text++;
+          *p = 0;
+          err = assuan_write_status (ctx, "#", buf);
+        }
+      while (!err && *text);
+    }
+
+  return err;
+}
 
 /* Send a tick progress indicator back.  Fixme: This is only does for
    the currently active channel.  */

@@ -23,7 +23,11 @@
 #include "../common/estream.h"
 #include "../common/http.h"
 
+/*-- ks-action.c --*/
+gpg_error_t ks_print_help (ctrl_t ctrl, const char *text);
+
 /*-- ks-engine-hkp.c --*/
+gpg_error_t ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                            estream_t *r_fp);
 gpg_error_t ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri,
@@ -32,11 +36,17 @@ gpg_error_t ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri,
                         const void *data, size_t datalen);
 
 /*-- ks-engine-http.c --*/
+gpg_error_t ks_http_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp);
 
 
 /*-- ks-engine-finger.c --*/
+gpg_error_t ks_finger_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_finger_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp);
+
+/*-- ks-engine-kdns.c --*/
+gpg_error_t ks_kdns_help (ctrl_t ctrl, parsed_uri_t uri);
+gpg_error_t ks_kdns_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp);
 
 
 

@@ -31,6 +31,26 @@
 /* How many redirections do we allow.  */
 #define MAX_REDIRECTS 2
 
+/* Print a help output for the schemata supported by this module. */
+gpg_error_t
+ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
+{
+  const char const data[] =
+    "Handler for HTTP URLs:\n"
+    "  http://\n"
+    "Supported methods: fetch\n";
+  gpg_error_t err;
+
+  if (!uri)
+    err = ks_print_help (ctrl, "  http");
+  else if (uri->is_http)
+    err = ks_print_help (ctrl, data);
+  else
+    err = 0;
+
+  return err;
+}
+
 
 /* Get the key from URL which is expected to specify a http style
    scheme.  On success R_FP has an open stream to read the data.  */

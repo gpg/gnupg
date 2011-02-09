@@ -36,6 +36,26 @@
 /* How many redirections do we allow.  */
 #define MAX_REDIRECTS 2
 
+/* Print a help output for the schemata supported by this module. */
+gpg_error_t
+ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
+{
+  const char const data[] =
+    "Handler for HKP URLs:\n"
+    "  hkp://\n"
+    "Supported methods: search, get, put\n";
+  gpg_error_t err;
+
+  if (!uri)
+    err = ks_print_help (ctrl, "  hkp");
+  else if (uri->is_http)
+    err = ks_print_help (ctrl, data);
+  else
+    err = 0;
+
+  return err;
+}
+
 
 /* Send an HTTP request.  On success returns an estream object at
    R_FP.  HOSTPORTSTR is only used for diagnostics.  If POST_CB is not

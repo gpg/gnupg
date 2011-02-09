@@ -192,6 +192,7 @@ ksba_cert_t get_cert_local_ski (ctrl_t ctrl,
 gpg_error_t get_istrusted_from_client (ctrl_t ctrl, const char *hexfpr);
 void start_command_handler (gnupg_fd_t fd);
 gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
+gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
 
 

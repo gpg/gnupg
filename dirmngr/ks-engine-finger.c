@@ -29,6 +29,28 @@
 #include "userids.h"
 #include "ks-engine.h"
 
+/* Print a help output for the schemata supported by this module. */
+gpg_error_t
+ks_finger_help (ctrl_t ctrl, parsed_uri_t uri)
+{
+  char const data[] =
+    "Handler for FINGER:\n"
+    "  finger:<user>@<host>\n"
+    "Supported methods: fetch\n"
+    "Example:\n"
+    "  finger:joe@example.org\n";
+  gpg_error_t err;
+
+  if (!uri)
+    err = ks_print_help (ctrl, "  finger");
+  else if (!strcmp (uri->scheme, "finger"))
+    err = ks_print_help (ctrl, data);
+  else
+    err = 0;
+
+  return err;
+}
+
 
 /* Get the key from URI which is expected to specify a finger scheme.
    On success R_FP has an open stream to read the data.  */
