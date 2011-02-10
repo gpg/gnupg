@@ -1,7 +1,7 @@
 # GnuPG German translation
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
 #               2006, 2007, 2008, 2009 Free Software Foundation, Inc.
-# Walter Koch <koch@u32.de>, 1998, 1999, 2000, 2001, 2002, 
+# Walter Koch <koch@u32.de>, 1998, 1999, 2000, 2001, 2002,
 #               2003, 2004, 2005, 2006
 # Merged with the gnupg 1.9.23 translation by Werner Koch on 2006-09-25.
 #
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-01-20 15:10+0100\n"
+"PO-Revision-Date: 2011-02-10 20:53+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -3570,6 +3570,22 @@ msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (Leistungsfähigkeit selber einstellbar)\n"
 
 #, c-format
+msgid "   (%d) ECDSA and ECDH\n"
+msgstr "  (%d) ECDSA und ECDH\n"
+
+#, c-format
+msgid "  (%d) ECDSA (sign only)\n"
+msgstr "  (%d) ECDSA (nur signieren/beglaubigen)\n"
+
+#, c-format
+msgid "  (%d) ECDSA (set your own capabilities)\n"
+msgstr "  (%d) ECDSA (Leistungsfähigkeit selber einstellbar)\n"
+
+#, c-format
+msgid "  (%d) ECDH (encrypt only)\n"
+msgstr "  (%d) ECDH (nur verschlüsseln)\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-Schlüssel können zwischen %u und %u Bit lang sein.\n"
 
@@ -3584,6 +3600,10 @@ msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Die verlangte Schlüssellänge beträgt %u Bit\n"
+
+#, c-format
+msgid "rounded to %u bits\n"
+msgstr "gerundet auf %u Bit\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -4003,12 +4023,12 @@ msgid "sending key %s to %s\n"
 msgstr "sende Schlüssel %s auf %s\n"
 
 #, c-format
-msgid "WARNING: unable to fetch URI %s: %s\n"
-msgstr "WARNUNG: die URI %s kann nicht geholt werden: %s\n"
+msgid "requesting key from `%s'\n"
+msgstr "fordere Schlüssel von %s an\n"
 
 #, c-format
-msgid "WARNING: unable to parse URI %s\n"
-msgstr "WARNUNG: die URI %s kann nicht analysiert werden\n"
+msgid "WARNING: unable to fetch URI %s: %s\n"
+msgstr "WARNUNG: die URI %s kann nicht geholt werden: %s\n"
 
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
@@ -4257,6 +4277,9 @@ msgstr "Mehrdeutige Option '%s'\n"
 #, c-format
 msgid "unknown option `%s'\n"
 msgstr "Unbekannte Option '%s'\n"
+
+msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+msgstr "Der öffentliche ECDSA Schlüssel muß ein Vielfaches von 8 Bit als Länge haben\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4780,12 +4803,12 @@ msgstr ""
 "für sym. Verschlüsselung nicht vermieden werden!\n"
 
 #, c-format
-msgid "DSA key %s uses an unsafe (%zu bit) hash\n"
-msgstr "DSA-Schlüssel %s verwendet einen unsicheren (%zu Bit-) Hash\n"
+msgid "%s key %s uses an unsafe (%zu bit) hash\n"
+msgstr "%s-Schlüssel %s verwendet ein unsicheres (%zu-Bit) Hashverfahren\n"
 
 #, c-format
-msgid "DSA key %s requires a %zu bit or larger hash\n"
-msgstr "DSA-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s\n"
+msgstr "%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
@@ -7023,14 +7046,6 @@ msgstr "SIGINT empfangen - wird sofort heruntergefahren\n"
 msgid "signal %d received - no action defined\n"
 msgstr "Signal %d empfangen - keine Aktion definiert\n"
 
-#, c-format
-msgid "accept failed: %s - waiting 1s\n"
-msgstr "accept() fehlgeschlagen: %s - warte 1s\n"
-
-#, c-format
-msgid "error spawning connection handler: %s\n"
-msgstr "Fehler beim Starten des Verbindungshandler: %s\n"
-
 msgid "return all values in a record oriented format"
 msgstr "Alle Werte in einem Record Format zurückgeben"
 
@@ -7820,6 +7835,18 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "WARNING: unable to parse URI %s\n"
+#~ msgstr "WARNUNG: die URI %s kann nicht analysiert werden\n"
+
+#~ msgid "DSA key %s uses an unsafe (%zu bit) hash\n"
+#~ msgstr "DSA-Schlüssel %s verwendet einen unsicheren (%zu Bit-) Hash\n"
+
+#~ msgid "accept failed: %s - waiting 1s\n"
+#~ msgstr "accept() fehlgeschlagen: %s - warte 1s\n"
+
+#~ msgid "error spawning connection handler: %s\n"
+#~ msgstr "Fehler beim Starten des Verbindungshandler: %s\n"
 
 #~ msgid "searching for names from %s server %s\n"
 #~ msgstr "suche Namen auf %s-Server %s\n"

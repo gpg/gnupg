@@ -7,8 +7,6 @@
 # WARRANTY, to the extent permitted by law; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-exec 2>>/tmp/pinentry.err
-
 echo "OK - what's up?"
 while read cmd rest; do
   echo "cmd=$cmd rest=$rest" >&2
