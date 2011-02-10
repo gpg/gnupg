@@ -1,0 +1,89 @@
+#!/bin/sh
+# Copyright 2011 Free Software Foundation, Inc.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+. $srcdir/defs.inc || exit 3
+
+keygrips='8E06A180EFFE4C65B812150CAF19BF30C0689A4C
+          E4403F3FD7A443FAC29FEF288FA0D20AC212851E
+          0B7554421FFB14A06CB9F63FB49A85A58E97ABAC
+          303ACC892C2D786C8A789677C0BE54DA8538F903
+          9FE5C36985351524B6AFA19FDCBC1A3A750B6F5F
+          145A52CC7ED3FD41C5B0A26BE220FEED36AF24DE'
+mainkeyids='BAA59D9C
+            0F54719F
+            45AF2FFE'
+
+
+if have_pubkey_algo "ECDH"; then
+  :
+else
+  info "No ECC support due to an old Libgcrypt"
+  exit 77
+fi
+
+
+info "Preparing for ECC test."
+for i in $keygrips ; do
+  rm private-keys-v1.d/$i.key 2>/dev/null || true
+  $GPG_PRESET_PASSPHRASE --preset -P ecc $i
+done
+
+
+info "Importing ECC public keys."
+for k in $mainkeyids ; do
+  $GPG --delete-key --batch --yes $k 2>/dev/null || true
+done
+for i in 1 2 3; do
+  k="ecc-sample-$i-pub.asc"
+  if $GPG --import $srcdir/samplekeys/$k; then
+    :
+  else
+    error "$k: import failed"
+  fi
+done
+
+
+info "Importing ECC secret keys."
+# Note that the PGP generated secret keys are not self-signed, thus we
+# need to pass an appropriate option.
+for i in 1 2 3; do
+  k="ecc-sample-$i-sec.asc"
+  if [ "$i" -gt "1" ]; then
+    extraopts="--allow-non-selfsigned-uid"
+  else
+    extraopts=""
+  fi
+  if PINENTRY_USER_DATA=ecc $GPG $extraopts --import $srcdir/samplekeys/$k; then
+    :
+  else
+    error "$k: import failed"
+  fi
+done
+
+
+info "Importing ECC secret keys directly."
+for i in $keygrips ; do
+  rm private-keys-v1.d/$i.key 2>/dev/null || true
+done
+for k in $mainkeyids ; do
+  $GPG --delete-key --batch --yes $k 2>/dev/null || true
+done
+for i in 1 2 3; do
+  k="ecc-sample-$i-sec.asc"
+  if [ "$i" -gt "1" ]; then
+    extraopts="--allow-non-selfsigned-uid"
+  else
+    extraopts=""
+  fi
+  if PINENTRY_USER_DATA=ecc $GPG $extraopts --import $srcdir/samplekeys/$k; then
+    :
+  else
+    error "$k: import failed"
+  fi
+done

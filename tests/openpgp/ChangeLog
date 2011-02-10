@@ -1,3 +1,12 @@
+2011-02-10  Werner Koch  <wk@g10code.com>
+
+	* ecc.test: New.
+	* pinentry.sh: New.
+	* defs.inc: Do not create a log when running tests with envvar
+	verbose > 1.  Add pinentry-program to gpg-agent.conf.
+	* Makefile.am (sample_keys): New.
+	(EXTRA_DIST): Add them.
+
 2010-10-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (clean-local): New.
@@ -154,7 +163,7 @@
 	* verify.test:  More tests.
 	* multisig.test: Better error printing.
 	(sig_1ls1ls_valid, sig_ls_valid):  Moved to the non-valid group.
-	
+
 2006-02-14  Werner Koch  <wk@gnupg.org>
 
 	* verify.test: New.
@@ -236,7 +245,7 @@
 2002-05-10  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Add gpg_dearmor to all targets where it is used.
-	Noted by Andreas Haumer. 
+	Noted by Andreas Haumer.
 
 2002-04-19  Werner Koch  <wk@gnupg.org>
 
@@ -264,7 +273,7 @@
 
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
-	* defs.inc: Write a log file for each test. 
+	* defs.inc: Write a log file for each test.
 	* run-gpg, run-gpgm, run-gpg.patterns: Removed.  Replaced in all
 	tests by a simple macro from defs.inc.
 	* Makefile.am (CLEANFILES): Remove log files.
@@ -275,7 +284,7 @@
 	armencryptp.test, armencrypt.test, encryptp.test, seat.test,
 	encrypt-dsa.test, encrypt.test: Use --always-trust because the
 	test are not designed to check the validity.
-	
+
 2001-09-06  Werner Koch  <wk@gnupg.org>
 
 	* genkey1024.test: Simplified by using a parameter file.
@@ -303,7 +312,7 @@
 
 2001-03-20  Werner Koch  <wk@gnupg.org>
 
-	* Makefile.am: Import the pubdemo.asc file 
+	* Makefile.am: Import the pubdemo.asc file
 
 	* sigs.test (hash_algo_list): s/tiger/tiger192/
 
@@ -402,5 +411,3 @@ Mon May 18 15:40:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

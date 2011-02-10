@@ -28,7 +28,7 @@ else
 fi
 if [ -d private-keys-v1.d ]; then
     rm private-keys-v1.d/* 2>/dev/null || true
-    rmdir private-keys-v1.d 
+    rmdir private-keys-v1.d
 fi
 for i in pubring.gpg pubring.gpg~ trustdb.gpg trustdb.gpg~ ; do
   [ -d "$i" ] && rm "$i"
@@ -102,5 +102,3 @@ info "Printing the GPG version"
 $GPG --version
 
 #fixme: check that the output is as expected
-
-

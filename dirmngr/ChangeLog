@@ -1,6 +1,6 @@
 2011-02-09  Werner Koch  <wk@g10code.com>
 
-	* ks-engine-kdns.c: New.  Based on the former gpgkeys_kdns.
+	* ks-engine-kdns.c: New but only the framework.
 
 	* server.c (cmd_keyserver): Add option --help.
 	(dirmngr_status_help): New.

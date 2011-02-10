@@ -1,5 +1,112 @@
 
 no-creation-time.gpg   A key with a zero creation time.
-ecc-sample-1-pub.asc   The first ECC sample key.
-ecc-sample-1-sec.asc   The first ECC sample key (secret).
+ecc-sample-1-pub.asc   A NIST P-256 ECC sample key.
+ecc-sample-1-sec.asc   Ditto, but the secret keyblock.
+ecc-sample-2-pub.asc   A NIST P-384 ECC sample key.
+ecc-sample-2-sec.asc   Ditto, but the secret keyblock.
+ecc-sample-3-pub.asc   A NIST P-521 ECC sample key.
+ecc-sample-3-sec.asc   Ditto, but the secret keyblock.
 
+
+
+Signed message
+
+The following is an opaque ECDSA signature on a message "This is one
+line\n" (17 byte long) by the master key:
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2.1.0-ecc (GNU/Linux)
+
+owGbwMvMwCHMvVT3w66lc+cwrlFK4k5N1k3KT6nUK6ko8Zl8MSEkI7NYAYjy81IV
+cjLzUrk64lgYhDkY2FiZQNIMXJwCMO31rxgZ+tW/zesUPxWzdKWrtLGW/LkP5rXL
+V/Yvnr/EKjBbQuvZSYa/klsum6XFmTze+maVgclT6Rc6hzqqxNy6o6qdTTmLJuvp
+AQA=
+=GDv4
+-----END PGP MESSAGE----
+
+Encrypted message
+
+The following block encrypts the text "This is one line\n", 17 bytes,
+with the subkey 0x4089AB73.
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2.1.0-ecc (GNU/Linux)
+
+hH4Dd863o0CJq3MSAgMEHdIYZQx+rV1cjy7qitIOEICFFzp4cjsRX4r+rDdMcQUs
+h7VZmbP1c9C0s9sgCKwubWfkcYUl2ZOju4gy+s4MYTBb4/j8JjnJ9Bqn6LWutTXJ
+zwsdP13VIJLnhiNqISdR3/6xWQ0ICRYzwb95nUZ1c1DSVgFpjPgUvi4pgYbTpcDB
+jzILKWBfBDT/jck169XE8vgtbcqVQYZ7lZpaY9CzEbC+4dXZmV1gm5MafpTyFWgH
+VnyrZB4gad9Lp9e0RKHHcOOE7s/NeLuu
+=odUZ
+-----END PGP MESSAGE-----
+
+
+
+
+Signed message
+
+The following is an opaque ECDSA signature on a message "This is one
+line\n" (17 byte long) by the master key:
+
+-----BEGIN PGP MESSAGE-----
+Version: PGP Command Line v10.0.0 (Linux)
+
+qANQR1DIqwE7wsvMwCnM2WDcwR9SOJ/xtFISd25qcXFieqpeSUUJAxCEZGQWKwBR
+fl6qQk5mXirXoXJmVgbfYC5xmC5hzsDPjHXqbDLzpXpTBXSZV3L6bAgP3Kq7Ykmo
+7Ds1v4UfBS+3CSSon7Pzq79WLjzXXEH54MkjPxnrw+8cfMVnY7Bi18J702Nnsa7a
+9lMv/PM0/ao9CZ3KX7Q+Tv1rllTZ5Hj4V1frw431QnHfAA==
+=elKT
+-----END PGP MESSAGE-----
+
+Encrypted message
+
+The following block encrypts the text "This is one line\n", 17 bytes,
+with the subkey:
+
+-----BEGIN PGP MESSAGE-----
+Version: PGP Command Line v10.0.0 (Linux)
+
+qANQR1DBngOqi5OPmiAZRhIDAwQqIr/00cJyf+QP+VA4QKVkk77KMHdz9OVaR2XK
+0VYu0F/HPm89vL2orfm2hrAZxY9G2R0PG4Wk5Lg04UjKca/O72uWtjdPYulFidmo
+uB0QpzXFz22ZZinxeVPLPEr19Pow0EwCc95cg4HAgrD0nV9vRcTJ/+juVfvsJhAO
+isMKqrFNMvwnK5A1ECeyVXe7oLZl0lUBRhLr59QTtvf85QJjg/m5kaGy8XCJvLv3
+61pZa6KUmw89PjtPak7ebcjnINL01vwmyeg1PAyW/xjeGGvcO+R4P1b4ewyFnJyR
+svzIJcP7d4DqYOw7
+=oiTJ
+-----END PGP MESSAGE-----
+
+
+
+Signed message
+
+The following is an opaque ECDSA signature on a message "This is one
+line\n" (17 byte long) by the master key:
+
+-----BEGIN PGP MESSAGE-----
+Version: PGP Command Line v10.0.0 (Linux)
+
+qANQR1DIwA8BO8LLzMAlnO3Y8tB1vf4/xtNKSdy5qcXFiempeiUVJQxAEJKRWawA
+RPl5qQo5mXmpXIdmMLMy+AaLnoLpEubatpeJY2Lystd7Qt32q2UcvRS5kNPWtDB7
+ryufvcrWtFM7Jx8qXKDxZuqr7b9PGv1Ssk+I8TzB2O9dZC+n/jv+PAdbuu7mLe33
+Gf9pLd3weV3Qno6FOqxGa5ZszQx+uer2xH3/El9x/2pVeO4l15ScsL7qWMTmffmG
+Ic1RdzgeCfosMF+l/zVRchcLKzenEQA=
+=ATtX
+-----END PGP MESSAGE-----
+
+Encrypted message
+
+The following block encrypts the text "This is one line\n", 17 bytes,
+with the subkey:
+
+-----BEGIN PGP MESSAGE-----
+Version: PGP Command Line v10.0.0 (Linux)
+
+qANQR1DBwAIDB+qqSKgcSDgSBCMEAKpzTUxB4c56C7g09ekD9I+ttC5ER/xzDmXU
+OJmFqU5w3FllhFj4TgGxxdH+8fv4W2Ag0IKoJvIY9V1V7oUCClfqAR01QbN7jGH/
+I9GFFnH19AYEgMKgFmh14ZwN1BS6/VHh+H4apaYqapbx8/09EL+DV9zWLX4GRLXQ
+VqCR1N2rXE29MJFzGmDOCueQNkUjcbuenoCSKcNT+6xhO27U9IYVCg4BhRUDGfD6
+dhfRzBLxL+bKR9JVAe46+K8NLjRVu/bd4Iounx4UF5dBk8ERy+/8k9XantDoQgo6
+RPqCad4Dg/QqkpbK3y574ds3VFNJmc4dVpsXm7lGV5w0FBxhVNPoWNhhECMlTroX
+Rg==
+=5GqW
+-----END PGP MESSAGE-----

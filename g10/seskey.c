@@ -297,18 +297,17 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	  return NULL;
 	}
 
-      /* Check if we're too short.  Too long is safe as we'll
-	 automatically left-truncate.
 
-         FIXME:  Check against FIPS.
-         This checks would require the use of SHA512 with ECDSA 512.  I
-         think this is overkill to fail in this case.  Therefore,
-         relax the check, but only for ECDSA keys. We may need to
-         adjust it later for general case.  (Note that the check will
-         never pass for ECDSA 521 anyway as the only hash that
-         intended to match it is SHA 512, but 512 < 521).  */
+      /* ECDSA 521 is special has it is larger than the largest hash
+         we have (SHA-512).  Thus we chnage the size for further
+         processing to 512.  */
+      if (pkalgo == GCRY_PK_ECDSA && qbits > 512)
+        qbits = 512;
+
+      /* Check if we're too short.  Too long is safe as we'll
+	 automatically left-truncate.  */
       mdlen = gcry_md_get_algo_dlen (hash_algo);
-      if (mdlen < ((pkalgo == GCRY_PK_ECDSA && qbits > 521) ? 512: qbits)/8)
+      if (mdlen < qbits/8)
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash "
                        "(hash is %s\n"),
@@ -318,13 +317,10 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	  return NULL;
 	}
 
-     /* By passing MDLEN as length to mpi_scan, we do the truncation
-        of the hash.
-
-        Note that in case of ECDSA 521 the hash is always smaller
-        than the key size.  */
+     /* Note that we do the truncation by passing QBITS/8 as length to
+        mpi_scan.  */
       if (gcry_mpi_scan (&frame, GCRYMPI_FMT_USG,
-                         gcry_md_read (md, hash_algo), mdlen, NULL))
+                         gcry_md_read (md, hash_algo), qbits/8, NULL))
         BUG();
     }
   else

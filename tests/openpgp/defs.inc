@@ -58,7 +58,7 @@ error () {
     defs_error_seen=yes
     echo "$pgmname:" $* >&5
     if [ x$defs_stop_on_error != xyes ]; then
-      exit 1 
+      exit 1
     fi
 }
 
@@ -163,12 +163,12 @@ pgmname=`basename $0`
 
 [ -z "$srcdir" ] && fatal "not called from make"
 
-# 
+#
 if [ -f gnupg-test.stop ]; then
     if [ $pgmname = "version.test" ]; then
         rm gnupg-test.stop
     else
-        # Skip the rest of the tests. 
+        # Skip the rest of the tests.
         exit 77
     fi
 fi
@@ -195,22 +195,33 @@ GPG_CONNECT_AGENT="../../tools/gpg-connect-agent"
 GPGCONF="../../tools/gpgconf"
 GPG_PRESET_PASSPHRASE="../../agent/gpg-preset-passphrase"
 MKTDATA="../../tools/mk-tdata"
+PINENTRY="$(cd $srcdir && /bin/pwd)/pinentry.sh"
+# Default to empty passphrase for pinentry.sh
+PINENTRY_USER_DATA=
 
 # Make sure we have a valid option files even with VPATH builds.
-for f in gpg.conf gpg-agent.conf ; do 
+for f in gpg.conf gpg-agent.conf ; do
   if [ -f ./$f ]; then
     :
   elif [ -f $srcdir/$f.tmpl ]; then
     cat $srcdir/$f.tmpl >$f
-    if [ "$f" = "gpg.conf" ]; then
-      echo "agent-program $GPG_AGENT" >>gpg.conf
-    fi
+    case "$f" in
+      gpg.conf)
+        echo "agent-program $GPG_AGENT" >>"$f"
+        ;;
+      gpg-agent.conf)
+        echo "pinentry-program $PINENTRY" >>"$f"
+        ;;
+    esac
   fi
 done
 
-echo "Test: $pgmname"                  >  ${pgmname}.log
-echo "GNUPGHOME=$GNUPGHOME"            >> ${pgmname}.log
-exec 5>&2 2>>${pgmname}.log
-
+if [ "${verbose:-0}" -gt "1" ]; then
+  exec 5>/dev/null
+else
+  echo "Test: $pgmname"                  >  ${pgmname}.log
+  echo "GNUPGHOME=$GNUPGHOME"            >> ${pgmname}.log
+  exec 5>&2 2>>${pgmname}.log
+fi
 :
 # end
