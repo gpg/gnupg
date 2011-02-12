@@ -145,6 +145,7 @@ openpgp_oid_to_str (gcry_mpi_t a)
 {
   const unsigned char *buf;
   size_t length;
+  unsigned int lengthi;
   char *string, *p;
   int n = 0;
   unsigned long val, valmask;
@@ -157,8 +158,8 @@ openpgp_oid_to_str (gcry_mpi_t a)
       return NULL;
     }
 
-  buf = gcry_mpi_get_opaque (a, &length);
-  length = (length+7)/8;
+  buf = gcry_mpi_get_opaque (a, &lengthi);
+  length = (lengthi+7)/8;
 
   /* The first bytes gives the length; check consistency.  */
   if (!length || buf[0] != length -1)
