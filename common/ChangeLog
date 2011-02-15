@@ -1,3 +1,8 @@
+2011-02-11  Andrey Jivsov <openpgp@brainhub.org>
+
+	* openpgp-oid.c (openpgp_oid_to_str): Use unsigned int for
+	get_opaque.  Fixes a bug on 64 bit platforms.
+
 2011-02-08  Werner Koch  <wk@g10code.com>
 
 	* http.c (connect_server): Add arg R_HOST_NOT_FOUND.

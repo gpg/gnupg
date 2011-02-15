@@ -1,7 +1,3 @@
-2011-02-11  Andrey Jivsov <openpgp@brainhub.org>
-
-	* fixed --list-keys on Linux64 bit
-
 2011-02-04  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Ensure that the git pre-commit hoom has been
