@@ -1,3 +1,7 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* apdu.c (apdu_open_reader): Lock in to CCID if used once.
+
 2011-01-25  NIIBE Yutaka <gniibe@fsij.org>,
 	    Grant Olson <kgo@grant-olson.net>  (wk)
 

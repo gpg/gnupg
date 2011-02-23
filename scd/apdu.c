@@ -1,5 +1,6 @@
 /* apdu.c - ISO 7816 APDU functions and low level I/O
- * Copyright (C) 2003, 2004, 2008, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2008, 2009, 2010,
+ *               2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2355,12 +2356,25 @@ apdu_open_reader (const char *portstr, int *r_no_service)
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     {
+      static int once_available;
       int i;
       const char *s;
 
       slot = open_ccid_reader (portstr);
       if (slot != -1)
-        return slot; /* got one */
+        {
+          once_available = 1;
+          return slot; /* got one */
+        }
+
+      /* If we ever loaded successfully loaded a CCID reader we never
+         want to fallback to another driver.  This solves a problem
+         where ccid was used, the card unplugged and then scdaemon
+         tries to find a new reader and will eventually try PC/SC over
+         and over again.  To reset this flag "gpgconf --kill scdaemon"
+         can be used.  */
+      if (once_available)
+        return -1;
 
       /* If a CCID reader specification has been given, the user does
          not want a fallback to other drivers. */

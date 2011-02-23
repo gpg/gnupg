@@ -1,5 +1,5 @@
 /* gpgconf.c - Configuration utility for GnuPG
- * Copyright (C) 2003, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2007, 2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,6 +49,7 @@ enum cmd_and_opt_values
     aListConfig,
     aCheckConfig,
     aListDirs,
+    aKill,
     aReload
   };
 
@@ -57,7 +58,7 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] =
   {
     { 300, NULL, 0, N_("@Commands:\n ") },
-    
+
     { aListComponents, "list-components", 256, N_("list all components") },
     { aCheckPrograms, "check-programs", 256, N_("check all programs") },
     { aListOptions, "list-options", 256, N_("|COMPONENT|list options") },
@@ -72,9 +73,10 @@ static ARGPARSE_OPTS opts[] =
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
     { aReload,        "reload", 256, N_("reload all or a given component")},
+    { aKill,          "kill", 256,   N_("kill a given component")},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
-    
+
     { oOutput, "output",    2, N_("use as output file") },
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
@@ -180,6 +182,7 @@ main (int argc, char **argv)
         case aListConfig:
         case aCheckConfig:
         case aReload:
+        case aKill:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -189,9 +192,9 @@ main (int argc, char **argv)
 
   if (log_get_errorcount (0))
     exit (2);
-  
+
   fname = argc ? *argv : NULL;
-  
+
   switch (cmd)
     {
     case aListComponents:
@@ -238,6 +241,34 @@ main (int argc, char **argv)
                 gc_component_change_options (idx, es_stdin, get_outfp (&outfp));
             }
 	}
+      break;
+
+    case aKill:
+      if (!fname)
+	{
+	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_putc ('\n', es_stderr);
+	  es_fputs (_("Need one component argument"), es_stderr);
+	  es_putc ('\n', es_stderr);
+	  exit (2);
+	}
+      else
+        {
+          /* Kill a given component.  */
+          int idx;
+
+          idx = gc_component_find (fname);
+          if (idx < 0)
+            {
+              es_fputs (_("Component not found"), es_stderr);
+              es_putc ('\n', es_stderr);
+              exit (1);
+            }
+          else
+            {
+              gc_component_kill (idx);
+            }
+        }
       break;
 
     case aReload:
@@ -288,7 +319,7 @@ main (int argc, char **argv)
       if (gc_process_gpgconf_conf (NULL, 1, 1, NULL))
         exit (1);
       break;
-      
+
     case aListDirs:
       /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
@@ -342,6 +373,5 @@ main (int argc, char **argv)
     if (es_fclose (outfp))
       gc_error (1, errno, "error closing `%s'", opt.outfile);
 
-  return 0; 
+  return 0;
 }
-

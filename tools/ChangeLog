@@ -1,3 +1,9 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf.c: Add command --kill.
+	* gpgconf-comp.c (gc_component_kill): New.
+	(gpg_agent_runtime_change, scdaemon_runtime_change): Add kill flag.
+
 2011-02-03  Werner Koch  <wk@g10code.com>
 
 	* watchgnupg.c (print_version): Update copyright year.
@@ -1247,7 +1253,7 @@
 
 
  Copyright 2003, 2004, 2005, 2006, 2007, 2008,
-	   2009, 2010 Free Software Foundation, Inc.
+	   2009, 2010, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
