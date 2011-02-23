@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ## Process this file with automake to produce Makefile.in
@@ -73,7 +73,7 @@ common_source =  \
 	      signal.c
 
 if ENABLE_CARD_SUPPORT
-card_support_source_gpg = card-util.c 
+card_support_source_gpg = card-util.c
 card_support_source_scd = \
 	app-common.h \
 	app-openpgp.c \
@@ -83,7 +83,7 @@ card_support_source_scd = \
 card_support_source_local = cardglue.c cardglue.h tlv.c tlv.h
 else
 card_support_source_gpg =
-card_support_source_scd = 
+card_support_source_scd =
 card_support_source_local =
 endif
 
@@ -124,10 +124,10 @@ gpg_SOURCES  = gpg.c		\
 
 gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \
-	      verify.c          
+	      verify.c
 
-LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@ @LIBREADLINE@
-gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@
+LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@
+gpg_LDADD = $(LDADD) @LIBREADLINE@ @DLLIBS@ @NETLIBS@ @LIBUSB@
 
 $(PROGRAMS): $(needed_libs)
 

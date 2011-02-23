@@ -1,3 +1,7 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Add git setup checking.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* config.guess: Update to version 2010-09-24.
@@ -90,7 +94,7 @@
 2005-03-30  Werner Koch  <wk@g10code.com>
 
 	* w32installer.nsi: Allow including of WINPT source.  Include
-	libiconv source. 
+	libiconv source.
 	* mk-w32-dist: Add code to detect presence of source.  Calculate a
 	build number; add option --build-number to overide.
 
@@ -156,7 +160,7 @@
 
 2004-10-01  Werner Koch  <wk@g10code.com>
 
-	* mk-w32-dist: Updated from stable branch. 
+	* mk-w32-dist: Updated from stable branch.
 
 	* mk-gpg-texi: Changed to use the newer docbook2x-texi utility.
 
@@ -337,7 +341,7 @@
 	* to catch variations on the basic gpg man page (gpg, gpgv).  Mark
 	options.skel as a config file.  Do not include the FAQ/faq.html
 	twice (in /doc/ and /share/).
-	
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* build-riscos [__riscos__]: Set filetype of Makefile correctly.
@@ -378,7 +382,7 @@
 
 2001-08-07  Werner Koch  <wk@gnupg.org>
 
-	* autogen.sh: Adjusted --build-w32 for autoconf 2.52 
+	* autogen.sh: Adjusted --build-w32 for autoconf 2.52
 
 2001-07-09  Werner Koch  <wk@gnupg.org>
 
@@ -390,11 +394,11 @@
 
 2001-04-19  Werner Koch  <wk@gnupg.org>
 
-	* autogen.sh: Add VPATH build support for option --build-w32. 
+	* autogen.sh: Add VPATH build support for option --build-w32.
 
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
-	* config.guess, config.sub: Replaced with the current GNU CVS ones. 
+	* config.guess, config.sub: Replaced with the current GNU CVS ones.
 
 2001-01-18  Werner Koch  <wk@gnupg.org>
 

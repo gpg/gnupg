@@ -56,7 +56,7 @@ enum cmd_and_opt_values { aNull = 0,
     oVerbose	  = 'v',
     oBatch	  = 500,
     oKeyring,
-    oIgnoreTimeConflict,                      
+    oIgnoreTimeConflict,
     oStatusFD,
     oLoggerFD,
     oHomedir,
@@ -70,7 +70,7 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
     { oKeyring, "keyring"   ,2, N_("take the keys from this keyring")},
-    { oIgnoreTimeConflict, "ignore-time-conflict", 0, 
+    { oIgnoreTimeConflict, "ignore-time-conflict", 0,
                            N_("make timestamp conflicts only a warning") },
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { oLoggerFD, "logger-fd",1, "@" },
@@ -151,7 +151,7 @@ main( int argc, char **argv )
     disable_dotlock();
 
     set_native_charset (NULL); /* Try to auto set the character set */
-    
+
     pargs.argc = &argc;
     pargs.argv = &argv;
     pargs.flags=  1;  /* do not remove the args */
@@ -181,9 +181,9 @@ main( int argc, char **argv )
         keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8, 0);
     for(sl = nrings; sl; sl = sl->next )
         keydb_add_resource (sl->d, 8, 0 );
-    
+
     FREE_STRLIST(nrings);
-    
+
     if( (rc = verify_signatures( argc, argv ) ))
         log_error("verify signatures failed: %s\n", g10_errstr(rc) );
 
@@ -203,7 +203,7 @@ g10_exit( int rc )
 
 
 /* Stub:
- * We have to override the trustcheck from pkclist.c becuase 
+ * We have to override the trustcheck from pkclist.c becuase
  * this utility assumes that all keys in the keyring are trustworthy
  */
 int
@@ -216,7 +216,7 @@ void
 read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 		   byte *marginals,byte *completes,byte *cert_depth) {}
 
-/* Stub: 
+/* Stub:
  * We don't have the trustdb , so we have to provide some stub functions
  * instead
  */
@@ -336,7 +336,7 @@ check_secret_key( PKT_secret_key *sk, int n )
 }
 
 /* Stub:
- * No secret key, so no passphrase needed 
+ * No secret key, so no passphrase needed
  */
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
@@ -425,6 +425,8 @@ void init_ttyfp (void) { }
 #ifdef HAVE_LIBREADLINE
 void tty_enable_completion(rl_completion_func_t *completer) {}
 void tty_disable_completion(void) {}
+void rl_cleanup_after_signal (void) {}
+void rl_free_line_state (void) {}
 #endif
 
 /* We do not do any locking, so use these stubs here */

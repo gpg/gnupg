@@ -1,0 +1,7 @@
+# You should add
+#[filter "cleanpo"]
+#        clean = "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
+# to your config file.  Normally, autogen.sh does this for you.
+
+/??.po     filter=cleanpo
+/??_??.po  filter=cleanpo
