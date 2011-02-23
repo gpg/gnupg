@@ -5,16 +5,12 @@
 #  <armando@clerval.org> in his PGP 2.3.6i translation.
 #  I also got inspiration from it.po by Marco d'Itri <md@linux.it>
 #
-# Jaime Suárez <jsuarez@mundocripto.com>, 2001-2008.
-#              !--- Address rejected (2011-01-11)
-# Designated-Translator: none
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2008-12-14 19:34+0100\n"
-"Last-Translator: Jaime Suárez <jaime@mundocripto.com>\n"
+"Last-Translator: Jaime Suárez <jaime.suma@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
