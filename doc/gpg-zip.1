@@ -1,102 +1,136 @@
-.TH "gpg-zip" 1 "November 2006" 
-
+.\" Created from Texinfo source by yat2m 1.0
+.TH GPG-ZIP 1 2011-02-23 "GnuPG 1.4" "GNU Privacy Guard"
 .SH NAME
-gpg\-zip \- encrypt or sign files into an archive
-
+.B gpg-zip \- Encrypt or sign files into an archive
 .SH SYNOPSIS
-.B gpg\-zip
-.RB [ OPTIONS ]
-.IR filename1 " [" "filename2, ..." ]
-.IR directory1 " [" "directory2, ..." ]
+.B  gpg-zip
+.RI [ options ]
+.I filename1
+.I [ filename2, ... ]
+.I directory1
+.I [ directory2, ... ]
 
 .SH DESCRIPTION
-This manual page documents briefly the 
-.B gpg\-zip
-command.
-.PP
-.B gpg\-zip
-encrypts or signs files into an archive. It is an gpg-ized tar using the
-same format as PGP's PGP Zip.
+\fBgpg-zip\fR encrypts or signs files into an archive.  It is an
+gpg-ized tar using the same format as used by PGP's PGP Zip.
 
 .SH OPTIONS
+
+\fBgpg-zip\fR understands these options:
+
+
 .TP
-.BR \-e ", " \-\-encrypt
-Encrypt data. This option may be combined with 
-.B \-\-symmetric
-(for output that may be decrypted via a secret key or a passphrase).
+.B  --encrypt
 .TP
-.BR \-d ", " \-\-decrypt
+.B  -e
+Encrypt data.  This option may be combined with \fB--symmetric\fR (for  output that may be decrypted via a secret key or a passphrase).
+
+.TP
+.B  --decrypt
+.TP
+.B  -d
 Decrypt data.
+
 .TP
-.BR \-c ", " \-\-symmetric
+.B  --symmetric
+.TP
+.B  -c
 Encrypt with a symmetric cipher using a passphrase.  The default
 symmetric cipher used is CAST5, but may be chosen with the
-.B \-\-cipher\-algo
-option to
-.BR gpg (1).
-.TP
-.BR \-s ", " \-\-sign
-Make a signature. See
-.BR gpg (1).
-.TP
-.BR \-r ", " \-\-recipient " \fIUSER\fR"
-Encrypt for user id \fIUSER\fR. See
-.BR gpg (1).
-.TP
-.BR \-u ", " \-\-local\-user " \fIUSER\fR"
-Use \fIUSER\fR as the key to sign with. See
-.BR gpg (1).
-.TP
-.B \-\-list\-archive
-List the contents of the specified archive.
-.TP
-.BR \-o ", " \-\-output " " \fIFILE\fR
-Write output to specified file
-.IR FILE .
-.TP
-.BI \-\-gpg " GPG"
-Use the specified command instead of
-.BR gpg .
-.TP
-.BI \-\-gpg\-args " ARGS"
-Pass the specified options to
-.BR gpg (1).
-.TP
-.BI \-\-tar " TAR"
-Use the specified command instead of
-.BR tar .
-.TP
-.BI \-\-tar\-args " ARGS"
-Pass the specified options to 
-.BR tar (1).
-.TP
-.BR \-h ", " \-\-help
-Output a short usage information.
-.TP
-.B \-\-version
-Output the program version.
+\fB--cipher-algo\fR option to \fBgpg\fR.
 
-.SH DIAGNOSTICS
-The program returns \fB0\fR if everything was fine, \fB1\fR otherwise.
+.TP
+.B  --sign
+.TP
+.B  -s
+Make a signature.  See \fBgpg\fR.
+
+.TP
+.B  --recipient \fIuser\fR
+.TP
+.B  -r \fIuser\fR
+Encrypt for user id \fIuser\fR. See \fBgpg\fR.
+
+.TP
+.B  --local-user \fIuser\fR
+.TP
+.B  -u \fIuser\fR
+Use \fIuser\fR as the key to sign with.  See \fBgpg\fR.
+
+.TP
+.B  --list-archive
+List the contents of the specified archive.
+
+.TP
+.B  --output \fIfile\fR
+.TP
+.B  -o \fIfile\fR
+Write output to specified file \fIfile\fR.
+
+.TP
+.B  --gpg \fIgpgcmd\fR
+Use the specified command \fIgpgcmd\fR instead of \fBgpg\fR.
+
+.TP
+.B  --gpg-args \fIargs\fR
+Pass the specified options to \fBgpg\fR.
+
+.TP
+.B  --tar \fItarcmd\fR
+Use the specified command \fItarcmd\fR instead of \fBtar\fR.
+
+.TP
+.B  --tar-args \fIargs\fR
+Pass the specified options to \fBtar\fR.
+
+.TP
+.B  --version
+Print version of the program and exit.
+
+.TP
+.B  --help
+Display a brief help page and exit.
+
 
 .SH EXAMPLES
-Encrypt the contents of directory \fImydocs\fR for user Bob to file \fItest1\fR:
-.IP
-.B gpg\-zip \-\-encrypt \-\-output test1 \-\-gpg-args ""\-r Bob"" mydocs
-.PP
-List the contents of archive \fItest1\fR:
-.IP
-.B gpg\-zip \-\-list\-archive test1
+
+Encrypt the contents of directory \(oq\fImydocs\fR\(cq for user Bob to file
+\(oq\fItest1\fR\(cq:
+
+.RS 2
+.nf
+gpg-zip --encrypt --output test1 --gpg-args  -r Bob mydocs
+.fi
+.RE
+
+
+List the contents of archive \(oq\fItest1\fR\(cq:
+
+.RS 2
+.nf
+gpg-zip --list-archive test1
+.fi
+.RE
+
+
+.SH DIAGNOSTICS
+
+The program returns 0 if everything was fine, 1 otherwise.
+
 
 .SH SEE ALSO
-.BR gpg (1),
-.BR tar (1)
+\fBgpg\fR(1),
+\fBtar\fR(1),
 
-.SH AUTHOR
-Copyright (C) 2005 Free Software Foundation, Inc. Please report bugs to
-<\&bug-gnupg@gnu.org\&>.
+The full documentation for this tool is maintained as a Texinfo manual.
+If GnuPG and the info program are properly installed at your site, the
+command
 
-This manpage was written by \fBColin Tuckley\fR <\&colin@tuckley.org\&>
-and \fBDaniel Leidert\fR <\&daniel.leidert@wgdd.de\&> for the Debian
-distribution (but may be used by others).
+.RS 2
+.nf
+info gnupg
+.fi
+.RE
 
+should give you access to the complete manual including a menu structure
+and an index.

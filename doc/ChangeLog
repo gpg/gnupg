@@ -1,3 +1,7 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* gpg-zip.1: Update by taking a built copy from master.
+
 2010-10-05  Werner Koch  <wk@g10code.com>
 
 	* FAQ: Make it a static file with a pointer to the online location.
@@ -569,7 +573,7 @@
 
 2003-04-01  Werner Koch  <wk@gnupg.org>
 
-	* DETAILS (VALIDSIG): Add primary keys fingerprint. 
+	* DETAILS (VALIDSIG): Add primary keys fingerprint.
 
 2003-01-27  David Shaw  <dshaw@jabberwocky.com>
 
@@ -1053,7 +1057,7 @@
 
 2001-01-18  Werner Koch  <wk@gnupg.org>
 
-	* README.W32: Changed building instructions for MinGW32/CPD 0.3 
+	* README.W32: Changed building instructions for MinGW32/CPD 0.3
 
 2001-01-09  Werner Koch  <wk@gnupg.org>
 
@@ -1174,5 +1178,3 @@ Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
