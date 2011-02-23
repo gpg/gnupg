@@ -24,7 +24,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
      fi
   fi
 
-  AC_PATH_PROG(GPG_ERROR_CONFIG, gpg-error-config, no)
+  AC_PATH_TOOL(GPG_ERROR_CONFIG, gpg-error-config, no)
   min_gpg_error_version=ifelse([$1], ,0.0,$1)
   AC_MSG_CHECKING(for GPG Error - version >= $min_gpg_error_version)
   ok=no
@@ -40,7 +40,7 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
     if test "$major" -gt "$req_major"; then
         ok=yes
-    else 
+    else
         if test "$major" -eq "$req_major"; then
             if test "$minor" -ge "$req_minor"; then
                ok=yes
@@ -53,6 +53,21 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
     GPG_ERROR_LIBS=`$GPG_ERROR_CONFIG $gpg_error_config_args --libs`
     AC_MSG_RESULT([yes ($gpg_error_config_version)])
     ifelse([$2], , :, [$2])
+    if test x"$host" != x ; then
+      gpg_error_config_host=`$GPG_ERROR_CONFIG $gpg_error_config_args --host 2>/dev/null || echo none`
+      if test x"$gpg_error_config_host" != xnone ; then
+        if test x"$gpg_error_config_host" != x"$host" ; then
+  AC_MSG_WARN([[
+***
+*** The config script $GPG_ERROR_CONFIG was
+*** built for $gpg_error_config_host and thus may not match the
+*** used host $host.
+*** You may want to use the configure option --with-gpg-error-prefix
+*** to specify a matching config script.
+***]])
+        fi
+      fi
+    fi
   else
     GPG_ERROR_CFLAGS=""
     GPG_ERROR_LIBS=""
@@ -62,4 +77,3 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   AC_SUBST(GPG_ERROR_CFLAGS)
   AC_SUBST(GPG_ERROR_LIBS)
 ])
-

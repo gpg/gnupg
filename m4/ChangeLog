@@ -1,3 +1,7 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* libgcrypt.m4, gpg-error.m4: Update from their GIT masters.
+
 2010-06-08  Werner Koch  <wk@g10code.com>
 
 	* ldap.m4 (gnupg_have_ldap): Set variable.
@@ -86,7 +90,7 @@
 
 2006-07-27  Werner Koch  <wk@g10code.com>
 
-	* autobuild.m4: New. 
+	* autobuild.m4: New.
 
 2006-06-30  Werner Koch  <wk@g10code.com>
 
@@ -144,4 +148,3 @@
 	* uintmax_t.m4: New file, from gettext-0.11.5.
 	* ulonglong.m4: New file, from gettext-0.11.5.
 	* Makefile.am: New file.
-
