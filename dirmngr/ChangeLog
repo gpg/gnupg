@@ -1,3 +1,8 @@
+2011-02-23  Werner Koch  <wk@g10code.com>
+
+	* certcache.c (get_cert_bysubject): Take care of a NULL argument.
+	(find_cert_bysubject): Ditto.  Fixes bug#1300.
+
 2011-02-09  Werner Koch  <wk@g10code.com>
 
 	* ks-engine-kdns.c: New but only the framework.

@@ -652,6 +652,9 @@ get_cert_bysubject (const char *subject_dn, unsigned int seq)
   cert_item_t ci;
   int i;
 
+  if (!subject_dn)
+    return NULL;
+
   acquire_cache_read_lock ();
   for (i=0; i < 256; i++)
     {
@@ -1101,7 +1104,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
      uniquely located by the following code we can use them.  This is
      for example required by Telesec certificates where a keyId is
      used but the issuer certificate comes without a subject keyId! */
-  if (ctrl->ocsp_certs)
+  if (ctrl->ocsp_certs && subject_dn)
     {
       cert_item_t ci;
       cert_ref_t cr;
