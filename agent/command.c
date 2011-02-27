@@ -1267,15 +1267,21 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 
 
 static const char hlp_clear_passphrase[] =
-  "CLEAR_PASSPHRASE <cache_id>\n"
+  "CLEAR_PASSPHRASE [--agent] <cache_id>\n"
   "\n"
   "may be used to invalidate the cache entry for a passphrase.  The\n"
-  "function returns with OK even when there is no cached passphrase.";
+  "function returns with OK even when there is no cached passphrase.\n"
+  "The --agent option is used to clear an entry for a cacheid added by\n"
+  "the agent.\n";
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   char *cacheid = NULL;
   char *p;
+  int opt_agent;
+
+  opt_agent = has_option (line, "--agent");
+  line = skip_options (line);
 
   /* parse the stuff */
   for (p=line; *p == ' '; p++)
@@ -1287,7 +1293,8 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
   if (!cacheid || !*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
-  agent_put_cache (cacheid, CACHE_MODE_USER, NULL, 0);
+  agent_put_cache (cacheid, opt_agent ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
+	  NULL, 0);
   return 0;
 }
 
