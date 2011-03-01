@@ -1,5 +1,5 @@
 /* gettime.c - Wrapper for time functions
- *	Copyright (C) 1998, 2002, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 2002, 2007, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -179,29 +179,162 @@ scan_isodatestr( const char *string )
     return stamp;
 }
 
-/* Scan am ISO timestamp and return an Epoch based timestamp.  The only
+
+int
+isotime_p (const char *string)
+{
+  const char *s;
+  int i;
+
+  if (!*string)
+    return 0;
+  for (s=string, i=0; i < 8; i++, s++)
+    if (!digitp (s))
+      return 0;
+  if (*s != 'T')
+      return 0;
+  for (s++, i=9; i < 15; i++, s++)
+    if (!digitp (s))
+      return 0;
+  if ( !(!*s || (isascii (*s) && isspace(*s)) || *s == ':' || *s == ','))
+    return 0;  /* Wrong delimiter.  */
+
+  return 1;
+}
+
+
+/* Scan a string and return true if the string represents the human
+   readable format of an ISO time.  This format is:
+      yyyy-mm-dd[ hh[:mm[:ss]]]
+   Scanning stops at the second space or at a comma.  */
+int
+isotime_human_p (const char *string)
+{
+  const char *s;
+  int i;
+
+  if (!*string)
+    return 0;
+  for (s=string, i=0; i < 4; i++, s++)
+    if (!digitp (s))
+      return 0;
+  if (*s != '-')
+    return 0;
+  s++;
+  if (!digitp (s) || !digitp (s+1) || s[2] != '-')
+    return 0;
+  i = atoi_2 (s);
+  if (i < 1 || i > 12)
+    return 0;
+  s += 3;
+  if (!digitp (s) || !digitp (s+1))
+    return 0;
+  i = atoi_2 (s);
+  if (i < 1 || i > 31)
+    return 0;
+  s += 2;
+  if (!*s || *s == ',')
+    return 1; /* Okay; only date given.  */
+  if (!spacep (s))
+    return 0;
+  s++;
+  if (spacep (s))
+    return 1; /* Okay, second space stops scanning.  */
+  if (!digitp (s) || !digitp (s+1))
+    return 0;
+  i = atoi_2 (s);
+  if (i < 0 || i > 23)
+    return 0;
+  s += 2;
+  if (!*s || *s == ',')
+    return 1; /* Okay; only date and hour given.  */
+  if (*s != ':')
+    return 0;
+  s++;
+  if (!digitp (s) || !digitp (s+1))
+    return 0;
+  i = atoi_2 (s);
+  if (i < 0 || i > 59)
+    return 0;
+  s += 2;
+  if (!*s || *s == ',')
+    return 1; /* Okay; only date, hour and minute given.  */
+  if (*s != ':')
+    return 0;
+  s++;
+  if (!digitp (s) || !digitp (s+1))
+    return 0;
+  i = atoi_2 (s);
+  if (i < 0 || i > 60)
+    return 0;
+  s += 2;
+  if (!*s || *s == ',' || spacep (s))
+    return 1; /* Okay; date, hour and minute and second given.  */
+
+  return 0; /* Unexpected delimiter.  */
+}
+
+/* Convert a standard isotime or a human readable variant into an
+   isotime structure.  The allowed formats are those described by
+   isotime_p and isotime_human_p.  The function returns 0 on failure
+   or the length of the scanned string on success.  */
+size_t
+string2isotime (gnupg_isotime_t atime, const char *string)
+{
+  gnupg_isotime_t dummyatime;
+
+  if (!atime)
+    atime = dummyatime;
+
+  atime[0] = 0;
+  if (isotime_p (string))
+    {
+      memcpy (atime, string, 15);
+      atime[15] = 0;
+      return 15;
+    }
+  if (!isotime_human_p (string))
+    return 0;
+  atime[0] = string[0];
+  atime[1] = string[1];
+  atime[2] = string[2];
+  atime[3] = string[3];
+  atime[4] = string[5];
+  atime[5] = string[6];
+  atime[6] = string[8];
+  atime[7] = string[9];
+  atime[8] = 'T';
+  memset (atime+9, '0', 6);
+  atime[15] = 0;
+  if (!spacep (string+10))
+    return 10;
+  if (spacep (string+11))
+    return 11; /* As per def, second space stops scanning.  */
+  atime[9] = string[11];
+  atime[10] = string[12];
+  if (string[13] != ':')
+    return 13;
+  atime[11] = string[14];
+  atime[12] = string[15];
+  if (string[16] != ':')
+    return 16;
+  atime[13] = string[17];
+  atime[14] = string[18];
+  return 19;
+}
+
+
+/* Scan an ISO timestamp and return an Epoch based timestamp.  The only
    supported format is "yyyymmddThhmmss" delimited by white space, nul, a
    colon or a comma.  Returns (time_t)(-1) for an invalid string.  */
 time_t
 isotime2epoch (const char *string)
 {
-  const char *s;
   int year, month, day, hour, minu, sec;
   struct tm tmbuf;
-  int i;
 
-  if (!*string)
+  if (!isotime_p (string))
     return (time_t)(-1);
-  for (s=string, i=0; i < 8; i++, s++)
-    if (!digitp (s))
-      return (time_t)(-1);
-  if (*s != 'T')
-      return (time_t)(-1);
-  for (s++, i=9; i < 15; i++, s++)
-    if (!digitp (s))
-      return (time_t)(-1);
-  if ( !(!*s || (isascii (*s) && isspace(*s)) || *s == ':' || *s == ','))
-    return (time_t)(-1);  /* Wrong delimiter.  */
 
   year  = atoi_4 (string);
   month = atoi_2 (string + 4);
