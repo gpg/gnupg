@@ -1,5 +1,5 @@
 /* misc.c - Miscellaneous fucntions
- * Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,6 +31,9 @@
 #include "gpgsm.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../common/tlv.h"
+#include "../common/sexp-parse.h"
+
 
 /* Setup the environment so that the pinentry is able to get all
    required information.  This is used prior to an exec of the
@@ -85,4 +88,131 @@ setup_pinentry_env (void)
     }
 
 #endif /*!HAVE_W32_SYSTEM*/
+}
+
+
+
+/* Transform a sig-val style s-expression as returned by Libgcrypt to
+   one which includes an algorithm identifier encoding the public key
+   and the hash algorithm.  The public key algorithm is taken directly
+   from SIGVAL and the hash algorithm is given by MDALGO.  This is
+   required because X.509 merges the public key algorithm and the hash
+   algorithm into one OID but Libgcrypt is not aware of that.  The
+   function ignores missing parameters so that it can also be used to
+   create an siginfo value as expected by ksba_certreq_set_siginfo.
+   To create a siginfo s-expression a public-key s-expression may be
+   used instead of a sig-val.  We only support RSA for now.  */
+gpg_error_t
+transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
+                  unsigned char **r_newsigval, size_t *r_newsigvallen)
+{
+  gpg_error_t err;
+  const unsigned char *buf, *tok;
+  size_t buflen, toklen;
+  int depth, last_depth1, last_depth2;
+  int is_pubkey = 0;
+  const unsigned char *rsa_s = NULL;
+  size_t rsa_s_len;
+  const char *oid;
+  gcry_sexp_t sexp;
+
+  *r_newsigval = NULL;
+  if (r_newsigvallen)
+    *r_newsigvallen = 0;
+
+  buf = sigval;
+  buflen = sigvallen;
+  depth = 0;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (tok && toklen == 7 && !memcmp ("sig-val", tok, toklen))
+    ;
+  else if (tok && toklen == 10 && !memcmp ("public-key", tok, toklen))
+    is_pubkey = 1;
+  else
+    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+    return err;
+  if (!tok || toklen != 3 || memcmp ("rsa", tok, toklen))
+    return gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
+
+  last_depth1 = depth;
+  while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+         && depth && depth >= last_depth1)
+    {
+      if (tok)
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+        return err;
+      if (tok && toklen == 1)
+        {
+          const unsigned char **mpi;
+          size_t *mpi_len;
+
+          switch (*tok)
+            {
+            case 's': mpi = &rsa_s; mpi_len = &rsa_s_len; break;
+            default:  mpi = NULL;   mpi_len = NULL; break;
+            }
+          if (mpi && *mpi)
+            return gpg_error (GPG_ERR_DUP_VALUE);
+
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            return err;
+          if (tok && mpi)
+            {
+              *mpi = tok;
+              *mpi_len = toklen;
+            }
+        }
+
+      /* Skip to the end of the list. */
+      last_depth2 = depth;
+      while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
+             && depth && depth >= last_depth2)
+        ;
+      if (err)
+        return err;
+    }
+  if (err)
+    return err;
+
+  /* Map the hash algorithm to an OID.  */
+  switch (mdalgo)
+    {
+    case GCRY_MD_SHA1:
+      oid = "1.2.840.113549.1.1.5";  /* sha1WithRSAEncryption */
+      break;
+
+    case GCRY_MD_SHA256:
+      oid = "1.2.840.113549.1.1.11"; /* sha256WithRSAEncryption */
+      break;
+
+    case GCRY_MD_SHA384:
+      oid = "1.2.840.113549.1.1.12"; /* sha384WithRSAEncryption */
+      break;
+
+    case GCRY_MD_SHA512:
+      oid = "1.2.840.113549.1.1.13"; /* sha512WithRSAEncryption */
+      break;
+
+    default:
+      return gpg_error (GPG_ERR_DIGEST_ALGO);
+    }
+
+  if (rsa_s && !is_pubkey)
+    err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s(s%b)))",
+                           oid, (int)rsa_s_len, rsa_s);
+  else
+    err = gcry_sexp_build (&sexp, NULL, "(sig-val(%s))", oid);
+  if (err)
+    return err;
+  err = make_canon_sexp (sexp, r_newsigval, r_newsigvallen);
+  gcry_sexp_release (sexp);
+
+  return err;
 }

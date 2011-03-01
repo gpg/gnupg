@@ -1,5 +1,5 @@
 /* certreqgen-ui.c - Simple user interface for certreqgen.c
- * Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -145,6 +145,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   char *result = NULL;
   int i;
   const char *s, *s2;
+  int selfsigned;
 
   answer = NULL;
   init_membuf (&mb_email, 100);
@@ -346,6 +347,11 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   ask_mb_lines (&mb_email, "Name-URI: ");
 
 
+  /* Want a self-signed certificate?  */
+  selfsigned = tty_get_answer_is_yes
+    (_("Create self-signed certificate? (y/N) "));
+
+
   /* Put it all together.  */
   store_key_value_lf (&mb_result, "Key-Type: ", keytype);
   {
@@ -353,10 +359,12 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
     snprintf (numbuf, sizeof numbuf, "%u", nbits);
     store_key_value_lf (&mb_result, "Key-Length: ", numbuf);
   }
-  store_key_value_lf (&mb_result, "Key-Usage: ", keyusage);
-  store_key_value_lf (&mb_result, "Name-DN: ", subject_name);
   if (keygrip)
     store_key_value_lf (&mb_result, "Key-Grip: ", keygrip);
+  store_key_value_lf (&mb_result, "Key-Usage: ", keyusage);
+  if (selfsigned)
+    store_key_value_lf (&mb_result, "Serial: ", "random");
+  store_key_value_lf (&mb_result, "Name-DN: ", subject_name);
   if (store_mb_lines (&mb_result, &mb_email))
     goto mem_error;
   if (store_mb_lines (&mb_result, &mb_dns))
@@ -368,14 +376,13 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   if (!result)
     goto mem_error;
 
-  tty_printf (_("Parameters to be used for the certificate request:\n"));
+  tty_printf (_("These parameters are used:\n"));
   for (s=result; (s2 = strchr (s, '\n')); s = s2+1, i++)
     tty_printf ("    %.*s\n", (int)(s2-s), s);
   tty_printf ("\n");
 
-
-  if (!tty_get_answer_is_yes ("Really create request? (y/N) "))
-     goto leave;
+  if (!tty_get_answer_is_yes ("Proceed with creation? (y/N) "))
+    goto leave;
 
   /* Now create a parameter file and generate the key.  */
   fp = es_fopenmem (0, "w+");
@@ -386,8 +393,9 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
     }
   es_fputs (result, fp);
   es_rewind (fp);
-  tty_printf (_("Now creating certificate request.  "
-                "This may take a while ...\n"));
+  tty_printf (_("Now creating %s.  "
+                "This may take a while ...\n"),
+              selfsigned?_("self-signed certificate"):_("certificate request"));
   {
     int save_pem = ctrl->create_pem;
     ctrl->create_pem = 1; /* Force creation of PEM. */
@@ -395,7 +403,13 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
     ctrl->create_pem = save_pem;
   }
   if (!err)
-    tty_printf (_("Ready.  You should now send this request to your CA.\n"));
+    {
+      if (selfsigned)
+        tty_printf (_("Ready.\n"));
+      else
+        tty_printf
+          (_("Ready.  You should now send this request to your CA.\n"));
+    }
 
 
   goto leave;

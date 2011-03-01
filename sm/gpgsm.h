@@ -429,6 +429,10 @@ int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
 
 /*-- misc.c --*/
 void setup_pinentry_env (void);
+gpg_error_t transform_sigval (const unsigned char *sigval, size_t sigvallen,
+                              int mdalgo,
+                              unsigned char **r_newsigval,
+                              size_t *r_newsigvallen);
 
 
 

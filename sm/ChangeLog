@@ -1,3 +1,24 @@
+2011-03-01  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (pSERIAL, pISSUERDN, pNOTBEFORE, pNOTAFTER)
+	(pSIGNINGKEY, pHASHALGO): New.
+	(reqgen_ctrl_s): Remove field WRITER.
+	(read_parameters): Support new keywords.  Change arg WRITER to
+	OUT_FP; pass that to proc_parameters.
+	(proc_parameters): Add arg WRITER.  Check values of new keywords.
+	Create writer object here.  Support generation of certificates.
+	(create_request): Take new arg SIGKEY.  Allow for hash algorithms
+	other than SHA-1.  Set serialno and other values for certificate
+	creation.
+	(gpgsm_genkey): Do not create writer object but pass output stream
+	to read_parameters.
+	* certreqgen-ui.c (gpgsm_gencertreq_tty): Ask for self-signed.
+	* misc.c (transform_sigval): New.
+
+2011-02-25  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (create_request): Add arg SIGKEY.
+
 2010-11-25  Werner Koch  <wk@g10code.com>
 
 	* base64.c (gpgsm_create_writer): Remove arg FP which is not used
@@ -2876,7 +2897,7 @@ h2007-11-22  Werner Koch  <wk@g10code.com>
 
 
  Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-	   2010 Free Software Foundation, Inc.
+	   2010, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

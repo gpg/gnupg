@@ -793,7 +793,8 @@ Unattended key generation
 This feature allows unattended generation of keys controlled by a
 parameter file.  To use this feature, you use --gen-key together with
 --batch and feed the parameters either from stdin or from a file given
-on the commandline.
+on the commandline.  The description below is only for GPG; GPGSM has
+a similar feature, see the file sm/certreqgen.c for a description.
 
 The format of this file is as follows:
   o Text only, line length is limited to about 1000 chars.
@@ -1220,6 +1221,8 @@ OIDs below the GnuPG arc:
  1.3.6.1.4.1.11591.2          GnuPG
  1.3.6.1.4.1.11591.2.1          notation
  1.3.6.1.4.1.11591.2.1.1          pkaAddress
+ 1.3.6.1.4.1.11591.2.2          X.509 extensions
+ 1.3.6.1.4.1.11591.2.2.1          standaloneCertificate
  1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
 
 

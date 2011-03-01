@@ -19,8 +19,12 @@ Noteworthy changes in version 2.1.0beta2 (unreleased)
 
  * Dirmngr has taken over the function of the keyserver helpers.  Thus
    we now have a specified direct interface to keyservers via Dirmngr.
+   LDAP, DNS and mail backends are not yet implemented.
 
  * ECC support for GPG as described by draft-jivsov-openpgp-ecc-06.txt.
+
+ * New GPGSM feature to create certificates from a parameter file.
+   Add prompt to the --gen-key UI to create self-signed certificates.
 
 
 Noteworthy changes in version 2.1.0beta1 (2010-10-26)

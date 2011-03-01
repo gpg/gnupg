@@ -186,6 +186,7 @@ static struct
 
   /* GnuPG extensions */
   { "1.3.6.1.4.1.11591.2.1.1", "pkaAddress" },
+  { "1.3.6.1.4.1.11591.2.2.1", "standaloneCertificate" },
 
   /* Extensions used by the Bundesnetzagentur.  */
   { "1.3.6.1.4.1.8301.3.5", "validityModel" },
