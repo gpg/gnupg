@@ -1,3 +1,8 @@
+2011-03-01  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.texi (CSR and certificate creation): New.
+	* gpg.texi (Unattended GPG key generation): New.
+
 2010-10-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.texi (GPG Configuration Options): Clarify that show-photos
@@ -191,7 +196,7 @@
 
 	* qualified.txt: Add new BnetzA certs 12R and 13R.
 	* com-certs.pem: Ditto.
-	* examples/trustlist.txt: Ditto. 
+	* examples/trustlist.txt: Ditto.
 
 2008-06-19  Werner Koch  <wk@g10code.com>
 
@@ -477,7 +482,7 @@
 
 2007-02-18  Werner Koch  <wk@g10code.com>
 
-	* gpg.texi (GPG Esoteric Options): No card reader options for gpg2. 
+	* gpg.texi (GPG Esoteric Options): No card reader options for gpg2.
 
 2007-02-14  Werner Koch  <wk@g10code.com>
 
@@ -552,7 +557,7 @@
 
 	* instguide.texi (Installation): New.
 	* assuan.texi (Assuan): Removed.  Use the libassuan manual instead.
-	* gnupg.texi: Reflect these changes. 
+	* gnupg.texi: Reflect these changes.
 
 	* gpg.texi: Make some parts depend on the "gpgone" set
 	command. This allows us to use the same source for gpg1 and gpg2.
@@ -707,7 +712,7 @@
 	* gnupg.texi: Include gpg.texi
 
 	* tools.texi: Add a few @command markups.
-	* gpgsm.texi: Ditto 
+	* gpgsm.texi: Ditto
 	* gpg-agent.texi: Ditto.
 	* scdaemon.texi: Ditto.
 
@@ -725,7 +730,7 @@
 	expected pinentry filename.
 
         Changed license of the manual stuff to GPL.
-	
+
 	* gnupg.texi (Top): New menu item Helper Tools.
 
 	* tools.texi (Helper Tools): New.
@@ -831,7 +836,7 @@
 2002-05-14  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am, gpgsm.texi: New.
-	
+
  Copyright 2002, 2004, 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives

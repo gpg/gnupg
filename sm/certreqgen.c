@@ -19,127 +19,20 @@
  */
 
 /*
-The format of the native parameter file is follows:
-  o Text only, line length is limited to about 1000 chars.
-  o You must use UTF-8 encoding to specify non-ascii characters.
-  o Empty lines are ignored.
-  o Leading and trailing spaces are ignored.
-  o A hash sign as the first non white space character is a comment line.
-  o Control statements are indicated by a leading percent sign, the
-    arguments are separated by white space from the keyword.
-  o Parameters are specified by a keyword, followed by a colon.  Arguments
-    are separated by white space.
-  o The first parameter must be "Key-Type", control statements
-    may be placed anywhere.
-  o Key generation takes place when either the end of the parameter file
-    is reached, the next "Key-Type" parameter is encountered or at the
-    controlstatement "%commit"
-  o Control statements:
-    %echo <text>
-	Print <text>.
-    %dry-run
-	Suppress actual key generation (useful for syntax checking).
-    %commit
-	Perform the key generation.  Note that an implicit commit is done
-	at the next "Key-Type" parameter.
-    %certfile <filename>
-        [Not yet implemented!]
-	Do not write the certificate to the keyDB but to <filename>.
-        This must be given before the first
-	commit to take place, duplicate specification of the same filename
-	is ignored, the last filename before a commit is used.
-	The filename is used until a new filename is used (at commit points)
-	and all keys are written to that file.	If a new filename is given,
-	this file is created (and overwrites an existing one).
-	Both control statements must be given.
+   The format of the parameter file is described in the manual under
+   "Unattended Usage".
 
-   o The order of the parameters does not matter except for "Key-Type"
-     which must be the first parameter.  The parameters are only for the
-     generated keyblock and parameters from previous key generations are not
-     used. Some syntactically checks may be performed.
-
-     The currently defined parameters are:
-
-     Key-Type: <algo>
-	Starts a new parameter block by giving the type of the
-	primary key. The algorithm must be capable of signing.
-	This is a required parameter.  For now the only supported
-        algorithm is "rsa".
-
-     Key-Length: <length-in-bits>
-	Length of the key in bits.  Default is 2048.
-
-     Key-Grip: <hexstring>
-        This is optional and used to generate a request for an already
-        existing key.  Key-Length will be ignored when given,
-
-     Key-Usage: <usage-list>
-        Space or comma delimited list of key usage, allowed values are
-        "encrypt" and "sign".  This is used to generate the KeyUsage extension.
-        Please make sure that the algorithm is capable of this usage.  Default
-        is to allow encrypt and sign.
-
-     Name-DN: <subject_name>
-        This is the DN name of the subject in rfc2253 format.
-
-     Name-Email: <string>
-	The is an email address for the altSubjectName
-
-     Name-DNS: <string>
-	The is an DNS name for the altSubjectName
-
-     Name-URI: <string>
-	The is an URI for the altSubjectName
-
-     The following parameters are only used if a certificate (and not
-     a certificate signing request) is requested:
-
-     Serial: <sn>
-        If this parameter is given an X.509 certificate will be
-        generated.  SN is expected to be a hex string representing an
-        unsigned integer of arbitary length.  The special value
-        "random" can be used to crete a 64 bit random serial number.
-
-     Issuer-DN: <issuer_name>
-        This is the DN name of the issuer in rfc2253 format.  If it is
-        not set the subject DN will be used instead.  This creates a
-        self-signed certificate.  Only in this case a special GnuPG
-        extension will then be included in the certificate to mark it
-        as a standalone certificate.
-
-     Creation-Date: <iso-date>
-        Set the notBefore date of the certificate.  Either a date like
-        "1986-04-26" or a full timestamp like "19860426T042640" may be
-        used.  The time is considered to be UTC.  If it is not given
-        the current date is used.
-
-     Expire-Date: <iso-date>
-        Set the notBefore date of the certificate.  Either a date like
-        "1986-04-26" or a full timestamp like "19860426T042640" may be
-        used.  The time is considered to be UTC.  If it is not given a
-        default value is used.
-
-     Signing-Key: <keygrip>
-        This gives the keygrip of the key used to sign the
-        certificate.  If it is not given a self-signed certificate
-        will be created.
-
-     Hash-Algo: <hash-algo>
-        Use HASH-ALGO for this certificate.  The supported hash
-        algorithms are: "sha-1", "sha-256", "sha-384" and "sha-512".
-        "sha-1" is the default.
-
-Here is an example:
-$ cat >foo <<EOF
-%echo Generating a standard key
-Key-Type: RSA
-Key-Length: 2048
-Name-DN: CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE
-Name-Email: joe@foo.bar
-# Do a commit here, so that we can later print "done" :-)
-%commit
-%echo done
-EOF
+   Here is an example:
+     $ cat >foo <<EOF
+     %echo Generating a standard key
+     Key-Type: RSA
+     Key-Length: 2048
+     Name-DN: CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Ddorf,C=DE
+     Name-Email: joe@foo.bar
+     # Do a commit here, so that we can later print a "done"
+     %commit
+     %echo done
+     EOF
 */
 
 
