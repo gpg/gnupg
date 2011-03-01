@@ -1,3 +1,7 @@
+2011-02-25  Werner Koch  <wk@g10code.com>
+
+	* ksba.m4: Update from git master.
+
 2011-02-23  Werner Koch  <wk@g10code.com>
 
 	* libgcrypt.m4, gpg-error.m4: Update from their GIT masters.

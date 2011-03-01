@@ -1,5 +1,5 @@
 # gpg-error.m4 - autoconf macro to detect libgpg-error.
-# Copyright (C) 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2002, 2003, 2004, 2011 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -14,7 +14,8 @@ dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libgpg-error and define GPG_ERROR_CFLAGS and GPG_ERROR_LIBS
 dnl
 AC_DEFUN([AM_PATH_GPG_ERROR],
-[ AC_ARG_WITH(gpg-error-prefix,
+[ AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_ARG_WITH(gpg-error-prefix,
             AC_HELP_STRING([--with-gpg-error-prefix=PFX],
                            [prefix where GPG Error is installed (optional)]),
      gpg_error_config_prefix="$withval", gpg_error_config_prefix="")
@@ -53,10 +54,9 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
     GPG_ERROR_LIBS=`$GPG_ERROR_CONFIG $gpg_error_config_args --libs`
     AC_MSG_RESULT([yes ($gpg_error_config_version)])
     ifelse([$2], , :, [$2])
-    if test x"$host" != x ; then
-      gpg_error_config_host=`$GPG_ERROR_CONFIG $gpg_error_config_args --host 2>/dev/null || echo none`
-      if test x"$gpg_error_config_host" != xnone ; then
-        if test x"$gpg_error_config_host" != x"$host" ; then
+    gpg_error_config_host=`$GPG_ERROR_CONFIG $gpg_error_config_args --host 2>/dev/null || echo none`
+    if test x"$gpg_error_config_host" != xnone ; then
+      if test x"$gpg_error_config_host" != x"$host" ; then
   AC_MSG_WARN([[
 ***
 *** The config script $GPG_ERROR_CONFIG was
@@ -65,7 +65,6 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
 *** You may want to use the configure option --with-gpg-error-prefix
 *** to specify a matching config script.
 ***]])
-        fi
       fi
     fi
   else

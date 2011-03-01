@@ -14,6 +14,8 @@ Ales Nyakhaychyk <nyakhaychyk@i1fn.linux.by> Translations [be]
 Andrey Jivsov <openpgp@brainhub.org>  Assigns past and future changes for ECC.
     (g10/ecdh.c.  other changes to support ECC)
 
+Ben Kibbey  <bjk@luxsci.net>  Assigns past and future changes.
+
 Birger Langkjer <birger.langkjer@image.dk> Translations [da]
 
 Maxim Britov <maxim.britov@gmail.com> Translations [ru]
@@ -123,6 +125,8 @@ Werner Koch  <wk@gnupg.org>  Assigns GNU Privacy Guard and future changes.
 
 Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 
+Yutaka Niibe   Assigns Past and Future Changes
+     (scd/)
 
 
 Other authors
@@ -145,7 +149,7 @@ by Colin Tuckley and Daniel Leidert for the GNU/Debian distribution.
 Copyright
 =========
 
-GnuPG is distributed under the GNU General Public License, version 2
+GnuPG is distributed under the GNU General Public License, version 3
 or later.  A few files are under the Lesser General Public License, a
 few other files carry the all permissive license note as found at the
 bottom of this file.  Certain files in keyserver/ allow one specific
@@ -168,7 +172,7 @@ name gpg2keys_*.
 =========
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-           2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+           2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
