@@ -365,6 +365,7 @@ int agent_card_pksign (ctrl_t ctrl,
                        const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
                        void *getpin_cb_arg,
+                       int mdalgo,
                        const unsigned char *indata, size_t indatalen,
                        unsigned char **r_buf, size_t *r_buflen);
 int agent_card_pkdecrypt (ctrl_t ctrl,

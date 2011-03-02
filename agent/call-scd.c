@@ -796,13 +796,33 @@ inq_needpin (void *opaque, const char *line)
 }
 
 
+/* Helper returning a command option to describe the used hash
+   algorithm.  See scd/command.c:cmd_pksign.  */
+static const char *
+hash_algo_option (int algo)
+{
+  switch (algo)
+    {
+    case GCRY_MD_MD5   : return "--hash=md5";
+    case GCRY_MD_RMD160: return "--hash=rmd160";
+    case GCRY_MD_SHA1  : return "--hash=sha1";
+    case GCRY_MD_SHA224: return "--hash=sha224";
+    case GCRY_MD_SHA256: return "--hash=sha256";
+    case GCRY_MD_SHA384: return "--hash=sha384";
+    case GCRY_MD_SHA512: return "--hash=sha512";
+    default:             return "";
+    }
+}
 
-/* Create a signature using the current card */
+
+/* Create a signature using the current card.  MDALGO is either 0 or
+   gives the digest algorithm.  */
 int
 agent_card_pksign (ctrl_t ctrl,
                    const char *keyid,
                    int (*getpin_cb)(void *, const char *, char*, size_t),
                    void *getpin_cb_arg,
+                   int mdalgo,
                    const unsigned char *indata, size_t indatalen,
                    unsigned char **r_buf, size_t *r_buflen)
 {
@@ -837,9 +857,11 @@ agent_card_pksign (ctrl_t ctrl,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = 0;
-  snprintf (line, DIM(line)-1,
-            ctrl->use_auth_call? "PKAUTH %s":"PKSIGN %s", keyid);
-  line[DIM(line)-1] = 0;
+  if (ctrl->use_auth_call)
+    snprintf (line, sizeof line, "PKAUTH %s", keyid);
+  else
+    snprintf (line, sizeof line, "PKSIGN %s %s",
+              hash_algo_option (mdalgo), keyid);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,

@@ -1,3 +1,8 @@
+2011-03-02  Werner Koch  <wk@g10code.com>
+
+	* call-agent.c (agent_scd_pksign, agent_scd_pkdecrypt)
+	(hash_algo_option): Remove these unused functions.
+
 2011-02-10  Werner Koch  <wk@g10code.com>
 
 	* seskey.c (encode_md_value): Change last fix to avoid a

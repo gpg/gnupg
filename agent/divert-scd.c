@@ -347,7 +347,7 @@ divert_pksign (ctrl_t ctrl,
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
       rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
-                              digest, digestlen, &sigval, &siglen);
+                              algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
   else
@@ -359,7 +359,7 @@ divert_pksign (ctrl_t ctrl,
       if (!rc)
         {
           rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
-                                  data, ndata, &sigval, &siglen);
+                                  algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
     }
