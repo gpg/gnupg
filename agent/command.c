@@ -938,7 +938,7 @@ static const char hlp_keyinfo[] =
   "available keys are returned.  The information is returned as a\n"
   "status line with this format:\n"
   "\n"
-  "  KEYINFO <keygrip> <type> <serialno> <idstr>\n"
+  "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached>\n"
   "\n"
   "KEYGRIP is the keygrip.\n"
   "\n"
@@ -954,6 +954,9 @@ static const char hlp_keyinfo[] =
   "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
   "      is not known a dash is used instead.\n"
   "\n"
+  "CACHED is 1 if the key was found in the key cache. If not, a '-'\n"
+  "is used instead.\n"
+  "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
@@ -965,6 +968,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
   char *serialno = NULL;
   char *idstr = NULL;
   const char *keytypestr;
+  char *cached;
+  char *pw;
 
   err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
   if (err)
@@ -981,6 +986,10 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
   else
     keytypestr = "-";
 
+  pw = agent_get_cache (hexgrip, CACHE_MODE_NORMAL);
+  cached = pw ? "1" : "-";
+  xfree (pw);
+
   if (shadow_info)
     {
       err = parse_shadow_info (shadow_info, &serialno, &idstr);
@@ -993,6 +1002,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
                             keytypestr,
                             serialno? serialno : "-",
                             idstr? idstr : "-",
+                            cached,
                             NULL);
  leave:
   xfree (shadow_info);
