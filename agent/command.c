@@ -930,13 +930,13 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--list] <keygrip>\n"
+  "KEYINFO [--list] [--data] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
   "--list is given the keygrip is ignored and information about all\n"
   "available keys are returned.  The information is returned as a\n"
-  "status line with this format:\n"
+  "status line unless --data was specified, with this format:\n"
   "\n"
   "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached>\n"
   "\n"
@@ -959,7 +959,8 @@ static const char hlp_keyinfo[] =
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
-do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
+do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
+    int data)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -997,13 +998,25 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip)
         goto leave;
     }
 
-  err = agent_write_status (ctrl, "KEYINFO",
-                            hexgrip,
-                            keytypestr,
-                            serialno? serialno : "-",
-                            idstr? idstr : "-",
-                            cached,
-                            NULL);
+  if (!data)
+    err = agent_write_status (ctrl, "KEYINFO",
+                              hexgrip,
+                              keytypestr,
+                              serialno? serialno : "-",
+                              idstr? idstr : "-",
+                              cached,
+                              NULL);
+  else {
+    char *string = xtryasprintf ("%s %s %s %s %s\n", hexgrip, keytypestr,
+	serialno? serialno : "-", idstr? idstr : "-", cached);
+
+    if (!string)
+      err = gpg_error_from_syserror ();
+
+    err = assuan_send_data(ctx, string, strlen(string));
+    xfree(string);
+  }
+
  leave:
   xfree (shadow_info);
   xfree (serialno);
@@ -1020,8 +1033,10 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   DIR *dir = NULL;
   int list_mode;
+  int opt_data;
 
   list_mode = has_option (line, "--list");
+  opt_data = has_option (line, "--data");
   line = skip_options (line);
 
   if (list_mode)
@@ -1056,7 +1071,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           if ( hex2bin (hexgrip, grip, 20) < 0 )
             continue; /* Bad hex string.  */
 
-          err = do_one_keyinfo (ctrl, grip);
+          err = do_one_keyinfo (ctrl, grip, ctx, opt_data);
           if (err)
             goto leave;
         }
@@ -1067,7 +1082,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       err = parse_keygrip (ctx, line, grip);
       if (err)
         goto leave;
-      err = do_one_keyinfo (ctrl, grip);
+      err = do_one_keyinfo (ctrl, grip, ctx, opt_data);
     }
 
  leave:
