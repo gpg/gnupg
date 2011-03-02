@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -44,9 +44,9 @@ info_TEXINFOS = gnupg.texi
 dist_pkgdata_DATA = qualified.txt com-certs.pem $(helpfiles)
 
 nobase_dist_doc_DATA = FAQ DETAILS HACKING TRANSLATE OpenPGP KEYSERVER \
-                       $(examples)	
+                       $(examples)
 
-#dist_html_DATA = 
+#dist_html_DATA =
 
 
 gnupg_TEXINFOS = \
@@ -129,16 +129,16 @@ gnupg.texi : $(gnupg_TEXINFOS)
 online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
-	cp gnupg-logo.png gnupg.html/; \
+	cp $(srcdir)/gnupg-logo.png gnupg.html/; \
         user=werner ; dashdevel="" ; \
-        if echo "@PACKAGE_VERSION@" | grep -- "-svn" >/dev/null; then \
+        if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
           rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/ ; \
         fi ; \
 	cd gnupg.html ; \
         rsync -vr --exclude='.svn' .  \
-	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/ 
+	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/
 
 # Note that you need a recent version of emacs23 with org-mode 7.01h
 faq.txt faq.html: faq.org
@@ -160,4 +160,3 @@ faq-online: faq.txt faq.html
 	scp faq.html $${user}@ftp.gnupg.org:webspace/manuals/GnuPG-FAQ.html ; \
 	scp faq.txt  $${user}@ftp.gnupg.org:gcrypt/gnupg/GnuPG-FAQ.txt ; \
 	echo "...ready"
-
