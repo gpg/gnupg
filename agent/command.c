@@ -954,13 +954,13 @@ static const char hlp_keyinfo[] =
   "IDSTR is the IDSTR used to distinguish keys on a smartcard.  If it\n"
   "      is not known a dash is used instead.\n"
   "\n"
-  "CACHED is 1 if the key was found in the key cache. If not, a '-'\n"
-  "is used instead.\n"
+  "CACHED is 1 if the passphrase for the key was found in the key cache.\n"
+  "       If not, a '-' is used instead.\n"
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
-    int data)
+                int data)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -969,7 +969,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   char *serialno = NULL;
   char *idstr = NULL;
   const char *keytypestr;
-  char *cached;
+  const char *cached;
   char *pw;
 
   err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
@@ -987,6 +987,9 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   else
     keytypestr = "-";
 
+  /* Here we have a little race by doing the cache check separately
+     from the retrieval function.  Given that the cache flag is only a
+     hint, it should not really matter.  */
   pw = agent_get_cache (hexgrip, CACHE_MODE_NORMAL);
   cached = pw ? "1" : "-";
   xfree (pw);
@@ -1006,16 +1009,20 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                               idstr? idstr : "-",
                               cached,
                               NULL);
-  else {
-    char *string = xtryasprintf ("%s %s %s %s %s\n", hexgrip, keytypestr,
-	serialno? serialno : "-", idstr? idstr : "-", cached);
+  else
+    {
+      char *string;
 
-    if (!string)
-      err = gpg_error_from_syserror ();
-
-    err = assuan_send_data(ctx, string, strlen(string));
-    xfree(string);
-  }
+      string = xtryasprintf ("%s %s %s %s %s\n",
+                             hexgrip, keytypestr,
+                             serialno? serialno : "-",
+                             idstr? idstr : "-", cached);
+      if (!string)
+        err = gpg_error_from_syserror ();
+      else
+        err = assuan_send_data (ctx, string, strlen(string));
+      xfree (string);
+    }
 
  leave:
   xfree (shadow_info);
