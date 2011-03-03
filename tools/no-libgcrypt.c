@@ -157,5 +157,6 @@ gcry_create_nonce (void *buffer, size_t length)
 const char *
 gcry_cipher_algo_name (int algo)
 {
+  (void)algo;
   return "?";
 }

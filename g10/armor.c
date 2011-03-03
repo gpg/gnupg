@@ -1182,21 +1182,20 @@ armor_filter( void *opaque, int control,
 	    crc = afx->crc;
 	    idx = afx->idx;
 	    idx2 = afx->idx2;
-	    for(i=0; i < idx; i++ )
-		radbuf[i] = afx->radbuf[i];
 	    if( idx ) {
-		c = bintoasc[(*radbuf>>2)&077];
+		c = bintoasc[(afx->radbuf[0]>>2)&077];
 		iobuf_put(a, c);
 		if( idx == 1 ) {
-		    c = bintoasc[((*radbuf << 4) & 060) & 077];
+		    c = bintoasc[((afx->radbuf[0] << 4) & 060) & 077];
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		    iobuf_put(a, '=');
 		}
 		else { /* 2 */
-		    c = bintoasc[(((*radbuf<<4)&060)|((radbuf[1]>>4)&017))&077];
+		    c = bintoasc[(((afx->radbuf[0]<<4)&060)
+                                  |((afx->radbuf[1]>>4)&017))&077];
 		    iobuf_put(a, c);
-		    c = bintoasc[((radbuf[1] << 2) & 074) & 077];
+		    c = bintoasc[((afx->radbuf[1] << 2) & 074) & 077];
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		}

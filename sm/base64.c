@@ -484,8 +484,8 @@ plain_writer_cb (void *cb_value, const void *buffer, size_t count)
 static int
 base64_finish_write (struct writer_cb_parm_s *parm)
 {
-  unsigned char radbuf[4];
-  int i, c, idx, quad_count;
+  unsigned char *radbuf;
+  int c, idx, quad_count;
   estream_t stream = parm->stream;
 
   if (!parm->wrote_begin)
@@ -494,11 +494,10 @@ base64_finish_write (struct writer_cb_parm_s *parm)
   /* flush the base64 encoding */
   idx = parm->base64.idx;
   quad_count = parm->base64.quad_count;
-  for (i=0; i < idx; i++)
-    radbuf[i] = parm->base64.radbuf[i];
-
   if (idx)
     {
+      radbuf = parm->base64.radbuf;
+
       c = bintoasc[(*radbuf>>2)&077];
       es_putc (c, stream);
       if (idx == 1)

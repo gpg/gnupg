@@ -1,3 +1,8 @@
+2011-03-03  Werner Koch  <wk@g10code.com>
+
+	* base64.c (base64_finish_write): Do not copy to radbuf to get rid
+	of a faulty gcc 4.4 "used uninitialized" warning.
+
 2011-03-01  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (pSERIAL, pISSUERDN, pNOTBEFORE, pNOTAFTER)

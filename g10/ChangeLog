@@ -1,3 +1,8 @@
+2011-03-03  Werner Koch  <wk@g10code.com>
+
+	* armor.c (armor_filter): Don't take a copy of radbuf while
+	writing the checksum.  This works around a faulty gcc 4.4 warning.
+
 2011-03-02  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (agent_scd_pksign, agent_scd_pkdecrypt)
