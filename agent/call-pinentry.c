@@ -742,6 +742,14 @@ agent_askpin (ctrl_t ctrl,
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
 
+  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
+    {
+      if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
+        return gpg_error (GPG_ERR_CANCELED);
+      /*FIXME:  Implement loopback mode.  */
+      return gpg_error (GPG_ERR_NO_PIN_ENTRY);
+    }
+
   if (!pininfo || pininfo->max_length < 1)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!desc_text && pininfo->min_digits)
@@ -895,6 +903,14 @@ agent_get_passphrase (ctrl_t ctrl,
   if (opt.batch)
     return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 
+  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
+    {
+      if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
+        return gpg_error (GPG_ERR_CANCELED);
+
+      return gpg_error (GPG_ERR_NO_PIN_ENTRY);
+    }
+
   rc = start_pinentry (ctrl);
   if (rc)
     return rc;
@@ -981,6 +997,14 @@ agent_get_confirmation (ctrl_t ctrl,
   int rc;
   char line[ASSUAN_LINELENGTH];
 
+  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
+    {
+      if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
+        return gpg_error (GPG_ERR_CANCELED);
+
+      return gpg_error (GPG_ERR_NO_PIN_ENTRY);
+    }
+
   rc = start_pinentry (ctrl);
   if (rc)
     return rc;
@@ -1046,7 +1070,7 @@ agent_get_confirmation (ctrl_t ctrl,
 
 
 /* Pop up the PINentry, display the text DESC and a button with the
-   text OK_BTN (which may be NULL to use the default of "OK") and waut
+   text OK_BTN (which may be NULL to use the default of "OK") and wait
    for the user to hit this button.  The return value is not
    relevant.  */
 int
@@ -1054,6 +1078,9 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+
+  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
+    return gpg_error (GPG_ERR_CANCELED);
 
   rc = start_pinentry (ctrl);
   if (rc)
@@ -1122,6 +1149,9 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
   int rc;
   char line[ASSUAN_LINELENGTH];
   pth_attr_t tattr;
+
+  if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
+    return gpg_error (GPG_ERR_CANCELED);
 
   rc = start_pinentry (ctrl);
   if (rc)

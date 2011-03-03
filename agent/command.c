@@ -2402,6 +2402,24 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
   else if (!strcmp (key, "allow-pinentry-notify"))
     ctrl->server_local->allow_pinentry_notify = 1;
+  else if (!strcmp (key, "pinentry-mode"))
+    {
+      if (!strcmp (value, "ask") || !strcmp (value, "default"))
+        ctrl->pinentry_mode = PINENTRY_MODE_ASK;
+      else if (!strcmp (value, "cancel"))
+        ctrl->pinentry_mode = PINENTRY_MODE_CANCEL;
+      else if (!strcmp (value, "error"))
+        ctrl->pinentry_mode = PINENTRY_MODE_ERROR;
+      else if (!strcmp (value, "loopback"))
+        {
+          if (opt.allow_loopback_pinentry)
+            ctrl->pinentry_mode = PINENTRY_MODE_LOOPBACK;
+          else
+            err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+        }
+      else
+        err = gpg_error (GPG_ERR_INV_VALUE);
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 

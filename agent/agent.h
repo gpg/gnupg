@@ -45,6 +45,18 @@
 /* Maximum length of a digest.  */
 #define MAX_DIGEST_LEN 64
 
+
+/* Values for the pinentry mode.  */
+typedef enum
+  {
+    PINENTRY_MODE_ASK = 0, /* Ask via pinentry (default).  */
+    PINENTRY_MODE_CANCEL,  /* Always return a cancel error.  */
+    PINENTRY_MODE_ERROR,   /* Return error code for no pinentry.  */
+    PINENTRY_MODE_LOOPBACK,/* Use an inquiry to get the value.    */
+  }
+pinentry_mode_t;
+
+
 /* A large struct name "opt" to keep global flags */
 struct
 {
@@ -66,7 +78,6 @@ struct
   session_env_t startup_env;
   char *startup_lc_ctype;
   char *startup_lc_messages;
-
 
   const char *pinentry_program; /* Filename of the program to start as
                                    pinentry.  */
@@ -105,6 +116,7 @@ struct
   int ignore_cache_for_signing;
   int allow_mark_trusted;
   int allow_preset_passphrase;
+  int allow_loopback_pinentry;
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
   int ssh_support;   /* Enable ssh-agent emulation.  */
@@ -148,6 +160,9 @@ struct server_control_s
   session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
+
+  /* The current pinentry mode.  */
+  pinentry_mode_t pinentry_mode;
 
   struct {
     int algo;

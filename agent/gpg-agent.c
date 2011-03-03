@@ -105,6 +105,7 @@ enum cmd_and_opt_values
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
   oAllowPresetPassphrase,
+  oAllowLoopbackPinentry,
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
@@ -178,6 +179,8 @@ static ARGPARSE_OPTS opts[] = {
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
                              N_("allow clients to mark keys as \"trusted\"")},
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
+                             N_("allow presetting passphrase")},
+  { oAllowLoopbackPinentry, "allow-loopback-pinentry", 0,
                              N_("allow presetting passphrase")},
   { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh-agent emulation") },
   { oWriteEnvFile, "write-env-file", 2|8,
@@ -548,6 +551,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;
 
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
+
+    case oAllowLoopbackPinentry: opt.allow_loopback_pinentry = 1; break;
 
     default:
       return 0; /* not handled */

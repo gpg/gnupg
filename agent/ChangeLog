@@ -1,3 +1,16 @@
+2011-03-03  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c: Add option --allow-loopback-pinentry.
+	* command.c (option_handler): Add option pinentry-mode.
+	* agent.h (pinentry_mode_t): New enum.
+	(struct server_local_s): Add PINENTRY_MODE.
+	(struct opt): Add ALLOW_LOOPBACK_PINENTRY.
+	* call-pinentry.c (agent_askpin): Implement ask, cancel and error
+	pinentry modes.
+	(agent_get_passphrase, agent_get_confirmation): Ditto.
+	(agent_show_message): Return cancel if pinentry mode is not "ask".
+	(agent_popup_message_start): Ditto.
+
 2011-03-02  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (hash_algo_option): New.
