@@ -1,5 +1,9 @@
 2011-03-03  Werner Koch  <wk@g10code.com>
 
+	* keylist.c (print_card_key_info): Re-implement using the agent.
+	* card-util.c (card_status) [GNUPG_MAJOR_VERSION!=1]: Call
+	print_card_key_info.
+
 	* keyid.c (hash_public_key): Remove shadowing NBITS.
 
 	* misc.c (pubkey_nbits): Replace GCRY_PK_ by PUBKEY_ALGO_.

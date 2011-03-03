@@ -581,32 +581,34 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
       if ( thefpr && !fpr_is_ff (thefpr)
            && !get_pubkey_byfprint (pk, thefpr, 20))
         {
+          kbnode_t keyblock = NULL;
+
           print_pubkey_info (fp, pk);
 
 #if GNUPG_MAJOR_VERSION == 1
-          {
-            kbnode_t keyblock = NULL;
+          if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+            print_card_key_info (fp, keyblock);
+          else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
+            {
+              release_kbnode (keyblock);
+              keyblock = NULL;
 
-            if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
-              print_card_key_info (fp, keyblock);
-            else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
-              {
-                release_kbnode (keyblock);
-                keyblock = NULL;
+              if (!auto_create_card_key_stub (info.serialno,
+                                              info.fpr1valid? info.fpr1:NULL,
+                                              info.fpr2valid? info.fpr2:NULL,
+                                              info.fpr3valid? info.fpr3:NULL))
+                {
+                  if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+                    print_card_key_info (fp, keyblock);
+                }
+            }
 
-                if (!auto_create_card_key_stub (info.serialno,
-                                                info.fpr1valid? info.fpr1:NULL,
-                                                info.fpr2valid? info.fpr2:NULL,
-                                                info.fpr3valid? info.fpr3:NULL))
-                  {
-                    if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
-                      print_card_key_info (fp, keyblock);
-                  }
-              }
+#else /* GNUPG_MAJOR_VERSION != 1 */
+          if (!get_keyblock_byfprint (&keyblock, thefpr, 20))
+            print_card_key_info (fp, keyblock);
+#endif /* GNUPG_MAJOR_VERSION != 1 */
 
-            release_kbnode (keyblock);
-          }
-#endif /* GNUPG_MAJOR_VERSION == 1 */
+          release_kbnode (keyblock);
         }
       else
         tty_fprintf (fp, "[none]\n");
