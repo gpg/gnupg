@@ -569,7 +569,8 @@ get_signature_count (PKT_public_key *pk)
 {
 #ifdef ENABLE_CARD_SUPPORT
   struct agent_card_info_s info;
-#warning fixme: We should check that the correct card has been inserted
+
+  (void)pk;
   if (!agent_scd_getattr ("SIG-COUNTER",&info))
     return info.sig_counter;
   else
@@ -1453,20 +1454,17 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
     int rc, nbits;
     gcry_sexp_t sexp;
 
-#warning FIXME:  We are mixing OpenPGP And CGrypt Ids
-    assert( algo != GCRY_PK_ECDSA && algo != GCRY_PK_ECDH );
-
-    if( algo == GCRY_PK_DSA ) {
+    if( algo == PUBKEY_ALGO_DSA ) {
 	rc = gcry_sexp_build ( &sexp, NULL,
 			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
 				  key[0], key[1], key[2], key[3] );
     }
-    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+    else if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	rc = gcry_sexp_build ( &sexp, NULL,
 			      "(public-key(elg(p%m)(g%m)(y%m)))",
 				  key[0], key[1], key[2] );
     }
-    else if( algo == GCRY_PK_RSA ) {
+    else if( is_RSA (algo) ) {
 	rc = gcry_sexp_build ( &sexp, NULL,
 			      "(public-key(rsa(n%m)(e%m)))",
 				  key[0], key[1] );

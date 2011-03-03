@@ -1,5 +1,10 @@
 2011-03-03  Werner Koch  <wk@g10code.com>
 
+	* keyid.c (hash_public_key): Remove shadowing NBITS.
+
+	* misc.c (pubkey_nbits): Replace GCRY_PK_ by PUBKEY_ALGO_.
+	(get_signature_count): Remove warning.
+
 	* armor.c (armor_filter): Don't take a copy of radbuf while
 	writing the checksum.  This works around a faulty gcc 4.4 warning.
 

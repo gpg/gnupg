@@ -99,7 +99,6 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
         {
           if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
-              size_t nbits;
               const void *p;
 
               p = gcry_mpi_get_opaque (pk->pkey[i], &nbits);
