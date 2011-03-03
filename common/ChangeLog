@@ -1,3 +1,14 @@
+2011-03-03  Werner Koch  <wk@g10code.com>
+
+	* estream.c (struct estream_list): Rename to estream_list_s and
+	simplify.  A double linked list is overkill for our purpose.
+	(do_list_add, do_list_remove): Adjust accordingly.
+	(_es_get_std_stream): Ditto.
+	(do_list_iterate, estream_iterator_t): Remove; it is used only at
+	one place.
+	(es_fflush): Replace iteration function.  Also lock each stream
+	while flushing all streams.
+
 2011-02-27  Werner Koch  <wk@g10code.com>
 
 	* gettime.c (isotime2epoch): Factor check code out to ..

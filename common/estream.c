@@ -1,5 +1,5 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -254,28 +254,26 @@ typedef struct estream_internal *estream_internal_t;
 #define ESTREAM_UNLOCK(stream) ESTREAM_MUTEX_UNLOCK (stream->intern->lock)
 #define ESTREAM_TRYLOCK(stream) ESTREAM_MUTEX_TRYLOCK (stream->intern->lock)
 
-/* Stream list.  */
-
-typedef struct estream_list *estream_list_t;
-
-struct estream_list
+/* A linked list to hold active stream objects.   */
+struct estream_list_s
 {
-  estream_t car;
-  estream_list_t cdr;
-  estream_list_t *prev_cdr;
+  struct estream_list_s *next;
+  estream_t stream;  /* Entry is not used if NULL.  */
 };
-
+typedef struct estream_list_s *estream_list_t;
 static estream_list_t estream_list;
-static estream_mutex_t estream_list_lock;
-
-#define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
-#define ESTREAM_LIST_UNLOCK ESTREAM_MUTEX_UNLOCK (estream_list_lock)
 
 /* File descriptors registered to be used as the standard file handles. */
 static int custom_std_fds[3];
 static unsigned char custom_std_fds_valid[3];
 
+/* A lock object for the estream list and the custom_std_fds array.  */
+static estream_mutex_t estream_list_lock;
+#define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
+#define ESTREAM_LIST_UNLOCK ESTREAM_MUTEX_UNLOCK (estream_list_lock)
 
+
+/* Error code replacements.  */
 #ifndef EOPNOTSUPP
 # define EOPNOTSUPP ENOSYS
 #endif
@@ -372,73 +370,61 @@ map_w32_to_errno (DWORD w32_err)
  */
 
 /* Add STREAM to the list of registered stream objects.  If
-   WITH_LOCKED_LIST is true we assumed that the list of streams is
-   already locked.  */
+   WITH_LOCKED_LIST is true it is assumed that the list of streams is
+   already locked.  The implementation is straightforward: We first
+   look for an unused entry in the list and use that; if none is
+   available we put a new item at the head.  We drawback of the
+   strategy never to shorten the list is that a one time allocation of
+   many streams will lead to scanning unused entries later.  If that
+   turns out to be a problem, we may either free some items from the
+   list or append new entries at the end; or use a table.  Returns 0
+   on success; on error or non-zero is returned and ERRNO set.  */
 static int
 do_list_add (estream_t stream, int with_locked_list)
 {
-  estream_list_t list_obj;
-  int ret;
+  estream_list_t item;
 
-  list_obj = mem_alloc (sizeof (*list_obj));
-  if (! list_obj)
-    ret = -1;
-  else
+  if (!with_locked_list)
+    ESTREAM_LIST_LOCK;
+
+  for (item = estream_list; item && item->stream; item = item->next)
+    ;
+  if (!item)
     {
-      if (!with_locked_list)
-        ESTREAM_LIST_LOCK;
-      list_obj->car = stream;
-      list_obj->cdr = estream_list;
-      list_obj->prev_cdr = &estream_list;
-      if (estream_list)
-	estream_list->prev_cdr = &list_obj->cdr;
-      estream_list = list_obj;
-      if (!with_locked_list)
-        ESTREAM_LIST_UNLOCK;
-      ret = 0;
+      item = mem_alloc (sizeof *item);
+      if (item)
+        {
+          item->next = estream_list;
+          estream_list = item;
+        }
     }
+  if (item)
+    item->stream = stream;
 
-  return ret;
+  if (!with_locked_list)
+    ESTREAM_LIST_UNLOCK;
+
+  return item? 0 : -1;
 }
 
 /* Remove STREAM from the list of registered stream objects.  */
 static void
 do_list_remove (estream_t stream, int with_locked_list)
 {
-  estream_list_t list_obj;
+  estream_list_t item;
 
   if (!with_locked_list)
     ESTREAM_LIST_LOCK;
-  for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
-    if (list_obj->car == stream)
+
+  for (item = estream_list; item; item = item->next)
+    if (item->stream == stream)
       {
-	*list_obj->prev_cdr = list_obj->cdr;
-	if (list_obj->cdr)
-	  list_obj->cdr->prev_cdr = list_obj->prev_cdr;
-	mem_free (list_obj);
-	break;
+        item->stream = NULL;
+        break;
       }
+
   if (!with_locked_list)
     ESTREAM_LIST_UNLOCK;
-}
-
-/* Type of an stream-iterator-function.  */
-typedef int (*estream_iterator_t) (estream_t stream);
-
-/* Iterate over list of registered streams, calling ITERATOR for each
-   of them.  */
-static int
-do_list_iterate (estream_iterator_t iterator)
-{
-  estream_list_t list_obj;
-  int ret = 0;
-
-  ESTREAM_LIST_LOCK;
-  for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
-    ret |= (*iterator) (list_obj->car);
-  ESTREAM_LIST_UNLOCK;
-
-  return ret;
 }
 
 
@@ -487,6 +473,14 @@ do_deinit (void)
 {
   /* Flush all streams. */
   es_fflush (NULL);
+
+  /* We should release the estream_list.  However there is one
+     problem: That list is also used to search for the standard
+     estream file descriptors.  If we would remove the entire list,
+     any use of es_foo in another atexit function may re-create the
+     list and the streams with possible undesirable effects.  Given
+     that we don't close the stream either, it should not matter that
+     we keep the list and let the OS clean it up at process end.  */
 }
 
 
@@ -2905,11 +2899,11 @@ _es_get_std_stream (int fd)
 
   fd %= 3; /* We only allow 0, 1 or 2 but we don't want to return an error. */
   ESTREAM_LIST_LOCK;
-  for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
-    if (list_obj->car->intern->is_stdstream
-        && list_obj->car->intern->stdstream_fd == fd)
+  for (list_obj = estream_list; list_obj; list_obj = list_obj->next)
+    if (list_obj->stream && list_obj->stream->intern->is_stdstream
+        && list_obj->stream->intern->stdstream_fd == fd)
       {
-	stream = list_obj->car;
+	stream = list_obj->stream;
 	break;
       }
   if (!stream)
@@ -3241,8 +3235,20 @@ es_fflush (estream_t stream)
       ESTREAM_UNLOCK (stream);
     }
   else
-    err = do_list_iterate (do_fflush);
+    {
+      estream_list_t item;
 
+      err = 0;
+      ESTREAM_LIST_LOCK;
+      for (item = estream_list; item; item = item->next)
+        if (item->stream)
+          {
+            ESTREAM_LOCK (item->stream);
+            err |= do_fflush (item->stream);
+            ESTREAM_UNLOCK (item->stream);
+          }
+      ESTREAM_LIST_UNLOCK;
+    }
   return err ? EOF : 0;
 }
 
