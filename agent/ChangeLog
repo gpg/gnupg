@@ -1,3 +1,7 @@
+2011-03-03  Ben Kibbey  <bjk@luxsci.net>
+
+	* command.c (cmd_preset_passphrase): Add option --inquire.
+
 2011-03-03  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c: Add option --allow-loopback-pinentry.
