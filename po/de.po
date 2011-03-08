@@ -1,6 +1,6 @@
 # GnuPG German translation
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-#               2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+#               2006, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 # Walter Koch <koch@u32.de>, 1998, 1999, 2000, 2001, 2002,
 #               2003, 2004, 2005, 2006
 # Merged with the gnupg 1.9.23 translation by Werner Koch on 2006-09-25.
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-02-10 20:53+0100\n"
+"PO-Revision-Date: 2011-03-08 12:47+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -4279,7 +4279,9 @@ msgid "unknown option `%s'\n"
 msgstr "Unbekannte Option '%s'\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
-msgstr "Der öffentliche ECDSA Schlüssel muß ein Vielfaches von 8 Bit als Länge haben\n"
+msgstr ""
+"Der öffentliche ECDSA Schlüssel muß ein Vielfaches von 8 Bit als Länge "
+"haben\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4808,7 +4810,8 @@ msgstr "%s-Schlüssel %s verwendet ein unsicheres (%zu-Bit) Hashverfahren\n"
 
 #, c-format
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s\n"
-msgstr "%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
+msgstr ""
+"%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
@@ -5815,6 +5818,31 @@ msgid "line %d: not a valid email address\n"
 msgstr "Zeile %d: Keine gültige E-Mailadresse\n"
 
 #, c-format
+msgid "line %d: invalid serial number\n"
+msgstr "Zeile %d: Ungültige Seriennummer\n"
+
+#, c-format
+msgid "line %d: invalid issuer name label `%.*s'\n"
+msgstr "Zeile %d: ungültiger Issuer-Name-Label `%.*s'\n"
+
+#, c-format
+msgid "line %d: invalid issuer name `%s' at pos %d\n"
+msgstr "Zeile %d: ungültiger Herausgeber `%s' in Spalte %d\n"
+
+#, c-format
+msgid "line %d: invalid date given\n"
+msgstr "Zeile %d: Ungültiges Datum\n"
+
+#, c-format
+msgid "line %d: error getting signing key by keygrip `%s': %s\n"
+msgstr ""
+"Zeile %d: Fehler beim Holen des Signaturschlüssels per \"Keygrip\" `%s': %s\n"
+
+#, c-format
+msgid "line %d: invalid hash algorithm given\n"
+msgstr "Zeile %d: Ungültiges Hashverfahren\n"
+
+#, c-format
 msgid "line %d: error reading key `%s' from card: %s\n"
 msgstr "Zeile %d: Fehler beim Lesen des Schlüssels `%s' von der Karte: %s\n"
 
@@ -5918,12 +5946,23 @@ msgstr " (Optional. Beenden mit einer leeren Zeile):\n"
 msgid "Enter URIs"
 msgstr "Bitte geben Sie die URIs ein"
 
-msgid "Parameters to be used for the certificate request:\n"
-msgstr "Parameter die für die Zertifikatsanforderung benutzt werden sollen:\n"
+msgid "Create self-signed certificate? (y/N) "
+msgstr "Ein eigenbeglaubigtes Zertifikat erzeugen? (j/N) "
 
-msgid "Now creating certificate request.  This may take a while ...\n"
-msgstr ""
-"Die Zertifikatsanforderung wird erzeugt.  Dies kann einen Moment dauern ...\n"
+msgid "These parameters are used:\n"
+msgstr "Verwendete Parameter:\n"
+
+msgid "Now creating self-signed certificate.  "
+msgstr "Das eigenbeglaubigte Zertifikat wird erzeugt.  "
+
+msgid "Now creating certificate request.  "
+msgstr "Die Zertifikatsanforderung wird erzeugt.  "
+
+msgid "This may take a while ...\n"
+msgstr "Dies kann einen Moment dauern ...\n"
+
+msgid "Ready.\n"
+msgstr "Fertig.\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "Fertig.  Sie sollten nun diese Anforderung an die CA senden.\n"
@@ -7664,6 +7703,9 @@ msgstr "Prüfe die globale Konfigurationsdatei"
 msgid "reload all or a given component"
 msgstr "\"reload\" an alle oder eine Komponente senden"
 
+msgid "kill a given component"
+msgstr "\"kill\" an eine Komponente senden"
+
 msgid "use as output file"
 msgstr "Als Ausgabedatei benutzen"
 
@@ -7835,6 +7877,13 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "self-signed certificate"
+#~ msgstr "eigenbeglaubigtes Zertifikat"
+
+#~ msgid "Parameters to be used for the certificate request:\n"
+#~ msgstr ""
+#~ "Parameter die für die Zertifikatsanforderung benutzt werden sollen:\n"
 
 #~ msgid "WARNING: unable to parse URI %s\n"
 #~ msgstr "WARNUNG: die URI %s kann nicht analysiert werden\n"

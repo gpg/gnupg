@@ -393,9 +393,12 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
     }
   es_fputs (result, fp);
   es_rewind (fp);
-  tty_printf (_("Now creating %s.  "
-                "This may take a while ...\n"),
-              selfsigned?_("self-signed certificate"):_("certificate request"));
+  if (selfsigned)
+    tty_printf ("%s", _("Now creating self-signed certificate.  "));
+  else
+    tty_printf ("%s", _("Now creating certificate request.  "));
+  tty_printf ("%s", _("This may take a while ...\n"));
+
   {
     int save_pem = ctrl->create_pem;
     ctrl->create_pem = 1; /* Force creation of PEM. */

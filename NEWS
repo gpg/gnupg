@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.1.0beta2 (unreleased)
+Noteworthy changes in version 2.1.0beta2 (2011-03-08)
 -----------------------------------------------------
 
  * TMPDIR is now also honored when creating a socket using
