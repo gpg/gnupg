@@ -74,6 +74,9 @@
 #ifdef HAVE_PTY_H
 #include <pty.h>
 #endif
+#ifdef HAVE_UTMP_H
+#include <utmp.h>
+#endif
 #include <ctype.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>

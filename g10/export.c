@@ -581,11 +581,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
                              skey[0], skey[1], skey[2], skey[3], skey[4]);
       if (err)
         goto leave;
-#ifdef HAVE_GCRY_PK_GET_CURVE
       curvename = gcry_pk_get_curve (s_pubkey, 0, NULL);
-#else
-      curvename = "?";
-#endif
       gcry_sexp_release (s_pubkey);
       curveoidstr = gpg_curve_to_oid (curvename, NULL);
       if (!curveoidstr)
@@ -649,17 +645,10 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   if (err)
     goto leave;
 
-  /* Check that the public key parameters match.  Since Libgcrypt 1.5
-     and the gcry_pk_get_curve function, gcry_mpi_cmp handles opaque
-     MPI correctly and thus we don't need to to do the extra
-     opaqueness checks.  */
+  /* Check that the public key parameters match.  Note that since
+     Libgcrypt 1.5 gcry_mpi_cmp handles opaque MPI correctly.  */
   for (idx=0; idx < npkey; idx++)
-    if (0
-#ifndef HAVE_GCRY_PK_GET_CURVE
-        || gcry_mpi_get_flag (pk->pkey[idx], GCRYMPI_FLAG_OPAQUE)
-        || gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE)
-#endif
-        || gcry_mpi_cmp (pk->pkey[idx], skey[idx]))
+    if (gcry_mpi_cmp (pk->pkey[idx], skey[idx]))
       {
         err = gpg_error (GPG_ERR_BAD_PUBKEY);
         goto leave;

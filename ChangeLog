@@ -1,3 +1,9 @@
+2011-03-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libgcrypt 1.5.0.
+	(HAVE_GCRY_PK_ECDH, HAVE_GCRY_PK_GET_CURVE): Remove.
+	(utmp.h): Check for header.
+
 2011-02-25  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require libksba 1.2.

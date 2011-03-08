@@ -25,6 +25,8 @@ gpg_error_t gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
                                    gpg_error_t (*cb)(void*, char *),
                                    void *cb_value);
 gpg_error_t gpg_dirmngr_ks_get (ctrl_t ctrl, char *pattern[], estream_t *r_fp);
+gpg_error_t gpg_dirmngr_ks_fetch (ctrl_t ctrl,
+                                  const char *url, estream_t *r_fp);
 gpg_error_t gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen,
                                 kbnode_t keyblock);
 

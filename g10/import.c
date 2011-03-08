@@ -1253,11 +1253,8 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
             err = gpg_error_from_syserror ();
           else
             {
-#ifdef HAVE_GCRY_PK_GET_CURVE /* Also ensures availability of get_param.  */
               gcry_sexp_t cparam = gcry_pk_get_param (GCRY_PK_ECDSA, curve);
-#else
-              gcry_sexp_t cparam = NULL;
-#endif
+
               xfree (curve);
               if (!cparam)
                 err = gpg_error (GPG_ERR_UNKNOWN_CURVE);

@@ -28,13 +28,6 @@
 #include "i18n.h"
 #include "cvt-openpgp.h"
 
-/* Macros for compatibility with older libgcrypt versions. */
-#ifndef HAVE_GCRY_PK_ECDSA
-# define GCRY_PK_ECDH  302
-#endif
-
-
-
 
 /* Helper to pass data via the callback to do_unprotect. */
 struct try_do_unprotect_arg_s

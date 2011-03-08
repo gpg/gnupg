@@ -1,3 +1,7 @@
+2011-03-08  Werner Koch  <wk@g10code.com>
+
+	* cvt-openpgp.c (GCRY_PK_ECDH) [!HAVE_GCRY_PK_ECDH]: Remove.
+
 2011-03-03  Ben Kibbey  <bjk@luxsci.net>
 
 	* command.c (cmd_preset_passphrase): Add option --inquire.

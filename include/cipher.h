@@ -22,12 +22,6 @@
 
 #include <gcrypt.h>
 
-/* Macros for compatibility with older libgcrypt versions. */
-#ifndef HAVE_GCRY_PK_ECDH
-# define GCRY_PK_ECDH  302
-#endif
-
-
 /* Constants for OpenPGP. */
 
 #define CIPHER_ALGO_NONE	 /*  0 */  GCRY_CIPHER_NONE

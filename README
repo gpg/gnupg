@@ -30,7 +30,7 @@ OpenPGP-only version.
 BUILD INSTRUCTIONS
 ==================
 
-GnuPG 2.0 depends on the following packages:
+GnuPG 2.1 depends on the following packages:
 
   libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
   libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
@@ -76,8 +76,8 @@ You may run
 to view the default directories used by GnuPG.
 
 
-MIGRATION FROM 1.4 or 2.0
-=========================
+MIGRATION FROM 1.4 or 2.0 to 2.1
+================================
 
 The major change in 2.1 is that gpg-agent now takes care of the
 OpenPGP secret keys (those managed by GPG).  The former secring.gpg
@@ -100,9 +100,10 @@ will start the gpg-agent as needed.  In general there is no more need
 to set the GPG_AGENT_INFO environment variable.  The SSH_AUTH_SOCK
 environment variable should be set to a fixed value.
 
-GPG's smartcard commands --card-edit and --card-status as well as the
-card related sub-commands of --edit-key are not yet supported.
-However, signing and decryption with a smartcard does work.
+GPG's smartcard commands --card-edit and --card-status as well as some
+of the card related sub-commands of --edit-key are not yet fully
+supported.  However, signing and decryption with a smartcard does
+work.
 
 The Dirmngr is now part of GnuPG proper.  Thus there is no more need
 to install the separate dirmngr package.  The directroy layout of
