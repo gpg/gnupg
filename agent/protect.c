@@ -1023,70 +1023,13 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  unsigned long s2kcount,
                  unsigned char *key, size_t keylen)
 {
-  int rc;
-  gcry_md_hd_t md;
-  int pass, i;
-  int used = 0;
-  int pwlen = strlen (passphrase);
 
-  if ( (s2kmode != 0 && s2kmode != 1 && s2kmode != 3)
-      || !hashalgo || !keylen || !key || !passphrase)
-    return gpg_error (GPG_ERR_INV_VALUE);
-  if ((s2kmode == 1 ||s2kmode == 3) && !s2ksalt)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  rc = gcry_md_open (&md, hashalgo, GCRY_MD_FLAG_SECURE);
-  if (rc)
-    return rc;
-
-  for (pass=0; used < keylen; pass++)
-    {
-      if (pass)
-        {
-          gcry_md_reset (md);
-          for (i=0; i < pass; i++) /* preset the hash context */
-            gcry_md_putc (md, 0);
-	}
-
-      if (s2kmode == 1 || s2kmode == 3)
-        {
-          int len2 = pwlen + 8;
-          unsigned long count = len2;
-
-          if (s2kmode == 3)
-            {
-              count = s2kcount;
-              if (count < len2)
-                count = len2;
-            }
-
-          while (count > len2)
-            {
-              gcry_md_write (md, s2ksalt, 8);
-              gcry_md_write (md, passphrase, pwlen);
-              count -= len2;
-            }
-          if (count < 8)
-            gcry_md_write (md, s2ksalt, count);
-          else
-            {
-              gcry_md_write (md, s2ksalt, 8);
-              count -= 8;
-              gcry_md_write (md, passphrase, count);
-            }
-        }
-      else
-        gcry_md_write (md, passphrase, pwlen);
-
-      gcry_md_final (md);
-      i = gcry_md_get_algo_dlen (hashalgo);
-      if (i > keylen - used)
-        i = keylen - used;
-      memcpy  (key+used, gcry_md_read (md, hashalgo), i);
-      used += i;
-    }
-  gcry_md_close(md);
-  return 0;
+  return gcry_kdf_derive (passphrase, strlen (passphrase),
+                          s2kmode == 3? GCRY_KDF_ITERSALTED_S2K :
+                          s2kmode == 1? GCRY_KDF_SALTED_S2K :
+                          s2kmode == 0? GCRY_KDF_SIMPLE_S2K : GCRY_KDF_NONE,
+                          hashalgo, s2ksalt, 8, s2kcount,
+                          keylen, key);
 }
 
 

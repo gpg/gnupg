@@ -1,3 +1,8 @@
+2011-03-10  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (hash_passphrase): Remove.
+	(passphrase_to_dek_ext): Use gcry_kdf_derive.
+
 2011-03-03  Werner Koch  <wk@g10code.com>
 
 	* keylist.c (print_card_key_info): Re-implement using the agent.

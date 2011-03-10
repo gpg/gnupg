@@ -1,3 +1,7 @@
+2011-03-10  Werner Koch  <wk@g10code.com>
+
+	* protect.c (hash_passphrase): Use the new gcry_kdf_derive.
+
 2011-03-08  Werner Koch  <wk@g10code.com>
 
 	* cvt-openpgp.c (GCRY_PK_ECDH) [!HAVE_GCRY_PK_ECDH]: Remove.

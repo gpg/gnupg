@@ -742,6 +742,22 @@ AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
 AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
 
+# FIxme: Remove this test after libgcrypt 1.5.0 has been released.
+AC_CACHE_CHECK([whether Libgcrypt has gcry_kdf_derive],
+                gnupg_cv_gcry_kdf_derive,
+               [ _gnupg_gcry_save_cflags=$CFLAGS
+                 _gnupg_gcry_save_libs=$LIBS
+                 CFLAGS="$CFLAGS $LIBGCRYPT_CFLAGS"
+                 LIBS="$LIBS $LIBGCRYPT_LIBS"
+                 AC_TRY_LINK(
+                   [#include <gcrypt.h>],
+                   [ return gcry_kdf_derive (NULL,0,0,0,NULL,0,0,0,NULL); ],
+                   gnupg_cv_gcry_kdf_derive=yes,
+                   gnupg_cv_gcry_kdf_derive=no)
+                 LIBS=$_gnupg_gcry_save_libs
+                 CFLAGS=$_gnupg_gcry_save_cflags])
+
+
 #
 # libassuan is used for IPC
 #
@@ -1604,6 +1620,15 @@ if test "$have_libgcrypt" = "no"; then
 **  This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/
 *** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API is required.)
+***]])
+elif test "$gnupg_cv_gcry_kdf_derive" = no; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** Libgcrypt 1.5.0 has not yet been released and thus the API
+*** is a bit in a flux.  Your version misses the function
+***        gcry_kdf_derive
+*** You need to install a newer Libgcrypt version.
 ***]])
 fi
 if test "$have_libassuan" = "no"; then

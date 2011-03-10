@@ -1,6 +1,6 @@
 /* passphrase.c -  Get a passphrase
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+ *               2005, 2006, 2007, 2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -99,81 +99,6 @@ encode_s2k_iterations (int iterations)
 
   return result;
 }
-
-
-
-/* Hash a passphrase using the supplied s2k.
-   Always needs: dek->algo, s2k->mode, s2k->hash_algo.  */
-static void
-hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
-{
-  gcry_md_hd_t md;
-  int pass, i;
-  int used = 0;
-  int pwlen = strlen(pw);
-
-  assert ( s2k->hash_algo );
-  dek->keylen = openpgp_cipher_get_algo_keylen (dek->algo);
-  if ( !(dek->keylen > 0 && dek->keylen <= DIM(dek->key)) )
-    BUG();
-
-  if (gcry_md_open (&md, s2k->hash_algo, 1))
-    BUG ();
-  for (pass=0; used < dek->keylen ; pass++ )
-    {
-      if ( pass )
-        {
-          gcry_md_reset (md);
-          for (i=0; i < pass; i++ ) /* Preset the hash context.  */
-            gcry_md_putc (md, 0 );
-	}
-
-      if ( s2k->mode == 1 || s2k->mode == 3 )
-        {
-          int len2 = pwlen + 8;
-          ulong count = len2;
-
-          if ( s2k->mode == 3 )
-            {
-              count = S2K_DECODE_COUNT(s2k->count);
-              if ( count < len2 )
-                count = len2;
-	    }
-
-          /* Fixme: To avoid DoS attacks by sending an sym-encrypted
-             packet with a very high S2K count, we should either cap
-             the iteration count or CPU seconds based timeout.  */
-
-          /* A little bit complicated because we need a ulong for count. */
-          while ( count > len2 )  /* maybe iterated+salted */
-            {
-              gcry_md_write ( md, s2k->salt, 8 );
-              gcry_md_write ( md, pw, pwlen );
-              count -= len2;
-	    }
-          if ( count < 8 )
-            gcry_md_write ( md, s2k->salt, count );
-          else
-            {
-              gcry_md_write ( md, s2k->salt, 8 );
-              count -= 8;
-              gcry_md_write ( md, pw, count );
-	    }
-	}
-      else
-        gcry_md_write ( md, pw, pwlen );
-      gcry_md_final( md );
-
-      i = gcry_md_get_algo_dlen ( s2k->hash_algo );
-      if ( i > dek->keylen - used )
-        i = dek->keylen - used;
-
-      memcpy (dek->key+used, gcry_md_read (md, s2k->hash_algo), i);
-      used += i;
-    }
-  gcry_md_close(md);
-}
-
 
 
 int
@@ -655,7 +580,24 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
   if ( (!pw || !*pw) && (mode == 2 || mode == 4))
     dek->keylen = 0;
   else
-    hash_passphrase (dek, pw, s2k);
+    {
+      dek->keylen = openpgp_cipher_get_algo_keylen (dek->algo);
+      if (!(dek->keylen > 0 && dek->keylen <= DIM(dek->key)))
+        BUG ();
+      if (gcry_kdf_derive (pw, strlen (pw),
+                           s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
+                           s2k->mode == 1? GCRY_KDF_SALTED_S2K :
+                           /* */           GCRY_KDF_SIMPLE_S2K,
+                           s2k->hash_algo, s2k->salt, 8,
+                           S2K_DECODE_COUNT(s2k->count),
+                           dek->keylen, dek->key))
+        {
+          xfree (pw);
+          xfree (dek);
+	  write_status( STATUS_MISSING_PASSPHRASE );
+          return NULL;
+        }
+    }
   if (s2k_cacheid)
     memcpy (dek->s2k_cacheid, s2k_cacheid, sizeof dek->s2k_cacheid);
   xfree(last_pw);
