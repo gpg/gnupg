@@ -1,5 +1,5 @@
 /* minip12.c - A minimal pkcs-12 implementation.
- * Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2006, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -104,6 +104,12 @@ static unsigned char const oid_pbeWithSHAAnd40BitRC2_CBC[10] = {
 static unsigned char const oid_x509Certificate_for_pkcs_12[10] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x09, 0x16, 0x01 };
 
+static unsigned char const oid_pkcs5PBKDF2[9] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0C };
+static unsigned char const oid_pkcs5PBES2[9] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0D };
+static unsigned char const oid_aes128_CBC[9] = {
+  0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x02 };
 
 static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
@@ -447,9 +453,54 @@ set_key_iv (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
 }
 
 
+static int
+set_key_iv_pbes2 (gcry_cipher_hd_t chd, char *salt, size_t saltlen, int iter,
+                  const void *iv, size_t ivlen, const char *pw, int algo)
+{
+  unsigned char *keybuf;
+  size_t keylen;
+  int rc;
+
+  keylen = gcry_cipher_get_algo_keylen (algo);
+  if (!keylen)
+    return -1;
+  keybuf = gcry_malloc_secure (keylen);
+  if (!keybuf)
+    return -1;
+
+  rc = gcry_kdf_derive (pw, strlen (pw),
+                        GCRY_KDF_PBKDF2, GCRY_MD_SHA1,
+                        salt, saltlen, iter, keylen, keybuf);
+  if (rc)
+    {
+      log_error ("gcry_kdf_derive failed: %s\n", gpg_strerror (rc));
+      gcry_free (keybuf);
+      return -1;
+    }
+
+  rc = gcry_cipher_setkey (chd, keybuf, keylen);
+  gcry_free (keybuf);
+  if (rc)
+    {
+      log_error ("gcry_cipher_setkey failed: %s\n", gpg_strerror (rc));
+      return -1;
+    }
+
+
+  rc = gcry_cipher_setiv (chd, iv, ivlen);
+  if (rc)
+    {
+      log_error ("gcry_cipher_setiv failed: %s\n", gpg_strerror (rc));
+      return -1;
+    }
+  return 0;
+}
+
+
 static void
 crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
-             int iter, const char *pw, int cipher_algo, int encrypt)
+             int iter, const void *iv, size_t ivlen,
+             const char *pw, int cipher_algo, int encrypt)
 {
   gcry_cipher_hd_t chd;
   int rc;
@@ -461,8 +512,11 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
       wipememory (buffer, length);
       return;
     }
-  if (set_key_iv (chd, salt, saltlen, iter, pw,
-                  cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
+
+  if (cipher_algo == GCRY_CIPHER_AES128
+      ? set_key_iv_pbes2 (chd, salt, saltlen, iter, iv, ivlen, pw, cipher_algo)
+      : set_key_iv (chd, salt, saltlen, iter, pw,
+                    cipher_algo == GCRY_CIPHER_RFC2268_40? 5:24))
     {
       wipememory (buffer, length);
       goto leave;
@@ -495,7 +549,8 @@ crypt_block (unsigned char *buffer, size_t length, char *salt, size_t saltlen,
 static void
 decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                char *salt, size_t saltlen,
-               int iter, const char *pw, int cipher_algo,
+               int iter, const void *iv, size_t ivlen,
+               const char *pw, int cipher_algo,
                int (*check_fnc) (const void *, size_t))
 {
   static const char * const charsets[] = {
@@ -566,7 +621,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
                     charsets[charsetidx]);
         }
       memcpy (plaintext, ciphertext, length);
-      crypt_block (plaintext, length, salt, saltlen, iter,
+      crypt_block (plaintext, length, salt, saltlen, iter, iv, ivlen,
                    convertedpw? convertedpw:pw, cipher_algo, 0);
       if (check_fnc (plaintext, length))
         break; /* Decryption succeeded. */
@@ -618,12 +673,14 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   const char *where;
   char salt[20];
   size_t saltlen;
+  char iv[16];
   unsigned int iter;
   unsigned char *plain = NULL;
   int bad_pass = 0;
   unsigned char *cram_buffer = NULL;
   size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
   int is_3des = 0;
+  int is_pbes2 = 0;
   gcry_mpi_t *result = NULL;
   int result_count;
 
@@ -683,35 +740,111 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       n -= DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
       is_3des = 1;
     }
+  else if (!ti.class && ti.tag == TAG_OBJECT_ID
+           && ti.length == DIM(oid_pkcs5PBES2)
+           && !memcmp (p, oid_pkcs5PBES2, ti.length))
+    {
+      p += ti.length;
+      n -= ti.length;
+      is_pbes2 = 1;
+    }
   else
     goto bailout;
 
-  where = "rc2or3des-params";
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_SEQUENCE)
-    goto bailout;
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_OCTET_STRING
-      || ti.length < 8 || ti.length > 20 )
-    goto bailout;
-  saltlen = ti.length;
-  memcpy (salt, p, saltlen);
-  p += saltlen;
-  n -= saltlen;
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
-    goto bailout;
-  for (iter=0; ti.length; ti.length--)
+  if (is_pbes2)
     {
-      iter <<= 8;
-      iter |= (*p++) & 0xff;
-      n--;
+      where = "pkcs5PBES2-params";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OBJECT_ID
+            && ti.length == DIM(oid_pkcs5PBKDF2)
+            && !memcmp (p, oid_pkcs5PBKDF2, ti.length)))
+        goto bailout; /* Not PBKDF2.  */
+      p += ti.length;
+      n -= ti.length;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OCTET_STRING
+            && ti.length >= 8 && ti.length < sizeof salt))
+        goto bailout;  /* No salt or unsupported length.  */
+      saltlen = ti.length;
+      memcpy (salt, p, saltlen);
+      p += saltlen;
+      n -= saltlen;
+
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_INTEGER && ti.length))
+        goto bailout;  /* No valid iteration count.  */
+      for (iter=0; ti.length; ti.length--)
+        {
+          iter <<= 8;
+          iter |= (*p++) & 0xff;
+          n--;
+        }
+      /* Note: We don't support the optional parameters but assume
+         that the algorithmIdentifier follows. */
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OBJECT_ID
+            && ti.length == DIM(oid_aes128_CBC)
+            && !memcmp (p, oid_aes128_CBC, ti.length)))
+        goto bailout; /* Not AES-128.  */
+      p += ti.length;
+      n -= ti.length;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OCTET_STRING && ti.length == sizeof iv))
+        goto bailout; /* Bad IV.  */
+      memcpy (iv, p, sizeof iv);
+      p += sizeof iv;
+      n -= sizeof iv;
+    }
+  else
+    {
+      where = "rc2or3des-params";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_OCTET_STRING
+          || ti.length < 8 || ti.length > 20 )
+        goto bailout;
+      saltlen = ti.length;
+      memcpy (salt, p, saltlen);
+      p += saltlen;
+      n -= saltlen;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
+        goto bailout;
+      for (iter=0; ti.length; ti.length--)
+        {
+          iter <<= 8;
+          iter |= (*p++) & 0xff;
+          n--;
+        }
     }
 
-  where = "rc2or3des-ciphertext";
+  where = "rc2or3desoraes-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
 
@@ -735,7 +868,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   else
     goto bailout;
 
-  log_info ("%lu bytes of %s encrypted text\n",ti.length,is_3des?"3DES":"RC2");
+  log_info ("%lu bytes of %s encrypted text\n",ti.length,
+            is_pbes2?"AES128":is_3des?"3DES":"RC2");
 
   plain = gcry_malloc_secure (ti.length);
   if (!plain)
@@ -743,8 +877,10 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       log_error ("error allocating decryption buffer\n");
       goto bailout;
     }
-  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw,
-                 is_3des? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40,
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter,
+                 iv, is_pbes2?16:0, pw,
+                 is_pbes2 ? GCRY_CIPHER_AES128 :
+                 is_3des  ? GCRY_CIPHER_3DES : GCRY_CIPHER_RFC2268_40,
                  bag_decrypted_data_p);
   n = ti.length;
   startoffset = 0;
@@ -950,7 +1086,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
          that is less or equal to the cipher's block length.  We can
          reasonable assume that all valid data will be longer than
          just one block. */
-      if (n <= 8)
+      if (n <= (is_pbes2? 16:8))
         n = 0;
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
@@ -965,7 +1101,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
             { /* The optional SET. */
               p += ti.length;
               n -= ti.length;
-              if (n <= 8)
+              if (n <= (is_pbes2?16:8))
                 n = 0;
               if (n && parse_tag (&p, &n, &ti))
                 goto bailout;
@@ -1049,6 +1185,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   const char *where;
   char salt[20];
   size_t saltlen;
+  char iv[16];
   unsigned int iter;
   int len;
   unsigned char *plain = NULL;
@@ -1056,6 +1193,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   int result_count, i;
   unsigned char *cram_buffer = NULL;
   size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
+  int is_pbes2 = 0;
 
   where = "start";
   if (parse_tag (&p, &n, &ti))
@@ -1119,46 +1257,126 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
     goto bailout;
   if (parse_tag (&p, &n, &ti))
     goto bailout;
-  if (ti.class || ti.tag != TAG_OBJECT_ID
-      || ti.length != DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)
-      || memcmp (p, oid_pbeWithSHAAnd3_KeyTripleDES_CBC,
-                 DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)))
-    goto bailout;
-  p += DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
-  n -= DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
-
-  where = "3des-params";
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_SEQUENCE)
-    goto bailout;
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_OCTET_STRING
-      || ti.length < 8 || ti.length > 20)
-    goto bailout;
-  saltlen = ti.length;
-  memcpy (salt, p, saltlen);
-  p += saltlen;
-  n -= saltlen;
-  if (parse_tag (&p, &n, &ti))
-    goto bailout;
-  if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
-    goto bailout;
-  for (iter=0; ti.length; ti.length--)
+  if (ti.class == 0 && ti.tag == TAG_OBJECT_ID
+      && ti.length == DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)
+      && !memcmp (p, oid_pbeWithSHAAnd3_KeyTripleDES_CBC,
+                  DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC)))
     {
-      iter <<= 8;
-      iter |= (*p++) & 0xff;
-      n--;
+      p += DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
+      n -= DIM(oid_pbeWithSHAAnd3_KeyTripleDES_CBC);
+    }
+  else if (ti.class == 0 && ti.tag == TAG_OBJECT_ID
+           && ti.length == DIM(oid_pkcs5PBES2)
+           && !memcmp (p, oid_pkcs5PBES2, DIM(oid_pkcs5PBES2)))
+    {
+      p += DIM(oid_pkcs5PBES2);
+      n -= DIM(oid_pkcs5PBES2);
+      is_pbes2 = 1;
+    }
+  else
+    goto bailout;
+
+  if (is_pbes2)
+    {
+      where = "pkcs5PBES2-params";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OBJECT_ID
+            && ti.length == DIM(oid_pkcs5PBKDF2)
+            && !memcmp (p, oid_pkcs5PBKDF2, ti.length)))
+        goto bailout; /* Not PBKDF2.  */
+      p += ti.length;
+      n -= ti.length;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OCTET_STRING
+            && ti.length >= 8 && ti.length < sizeof salt))
+        goto bailout;  /* No salt or unsupported length.  */
+      saltlen = ti.length;
+      memcpy (salt, p, saltlen);
+      p += saltlen;
+      n -= saltlen;
+
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_INTEGER && ti.length))
+        goto bailout;  /* No valid iteration count.  */
+      for (iter=0; ti.length; ti.length--)
+        {
+          iter <<= 8;
+          iter |= (*p++) & 0xff;
+          n--;
+        }
+      /* Note: We don't support the optional parameters but assume
+         that the algorithmIdentifier follows. */
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OBJECT_ID
+            && ti.length == DIM(oid_aes128_CBC)
+            && !memcmp (p, oid_aes128_CBC, ti.length)))
+        goto bailout; /* Not AES-128.  */
+      p += ti.length;
+      n -= ti.length;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (!(!ti.class && ti.tag == TAG_OCTET_STRING && ti.length == sizeof iv))
+        goto bailout; /* Bad IV.  */
+      memcpy (iv, p, sizeof iv);
+      p += sizeof iv;
+      n -= sizeof iv;
+    }
+  else
+    {
+      where = "3des-params";
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_SEQUENCE)
+        goto bailout;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_OCTET_STRING
+          || ti.length < 8 || ti.length > 20)
+        goto bailout;
+      saltlen = ti.length;
+      memcpy (salt, p, saltlen);
+      p += saltlen;
+      n -= saltlen;
+      if (parse_tag (&p, &n, &ti))
+        goto bailout;
+      if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
+        goto bailout;
+      for (iter=0; ti.length; ti.length--)
+        {
+          iter <<= 8;
+          iter |= (*p++) & 0xff;
+          n--;
+        }
     }
 
-  where = "3des-ciphertext";
+  where = "3desoraes-ciphertext";
   if (parse_tag (&p, &n, &ti))
     goto bailout;
   if (ti.class || ti.tag != TAG_OCTET_STRING || !ti.length )
     goto bailout;
 
-  log_info ("%lu bytes of 3DES encrypted text\n", ti.length);
+  log_info ("%lu bytes of %s encrypted text\n",
+            ti.length, is_pbes2? "AES128":"3DES");
 
   plain = gcry_malloc_secure (ti.length);
   if (!plain)
@@ -1167,8 +1385,9 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
       goto bailout;
     }
   consumed += p - p_start + ti.length;
-  decrypt_block (p, plain, ti.length, salt, saltlen, iter, pw,
-                 GCRY_CIPHER_3DES,
+  decrypt_block (p, plain, ti.length, salt, saltlen, iter,
+                 iv, is_pbes2? 16:0, pw,
+                 is_pbes2? GCRY_CIPHER_AES128 : GCRY_CIPHER_3DES,
                  bag_data_p);
   n = ti.length;
   startoffset = 0;
@@ -2223,7 +2442,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
 
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-      crypt_block (buffer, buflen, salt, 8, 2048, pw,
+      crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0, pw,
                    GCRY_CIPHER_RFC2268_40, 1);
 
       /* Encode the encrypted stuff into a bag. */
@@ -2246,7 +2465,8 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
 
       /* Encrypt it. */
       gcry_randomize (salt, 8, GCRY_STRONG_RANDOM);
-      crypt_block (buffer, buflen, salt, 8, 2048, pw, GCRY_CIPHER_3DES, 1);
+      crypt_block (buffer, buflen, salt, 8, 2048, NULL, 0,
+                   pw, GCRY_CIPHER_3DES, 1);
 
       /* Encode the encrypted stuff into a bag. */
       if (cert && certlen)

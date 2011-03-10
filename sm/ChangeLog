@@ -1,3 +1,12 @@
+2011-03-10  Werner Koch  <wk@g10code.com>
+
+	* minip12.c (oid_pkcs5PBKDF2, oid_pkcs5PBES2, oid_aes128_CBC): New.
+	(set_key_iv_pbes2): New.
+	(crypt_block): Add args IV and IVLEN.  Call set_key_iv_pbes2.
+	(decrypt_block): Add args IV and IVLEN.
+	(parse_bag_encrypted_data): Hack to support PBES2 data.
+	(parse_bag_data): Ditto.
+
 2011-03-03  Werner Koch  <wk@g10code.com>
 
 	* base64.c (base64_finish_write): Do not copy to radbuf to get rid
