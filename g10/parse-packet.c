@@ -49,7 +49,7 @@ static int copy_packet (IOBUF inp, IOBUF out, int pkttype,
 			unsigned long pktlen, int partial);
 static void skip_packet (IOBUF inp, int pkttype,
 			 unsigned long pktlen, int partial);
-static void *read_rest (IOBUF inp, size_t pktlen, int partial);
+static void *read_rest (IOBUF inp, size_t pktlen);
 static int parse_marker (IOBUF inp, int pkttype, unsigned long pktlen);
 static int parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 			    PACKET * packet);
@@ -720,24 +720,35 @@ skip_packet (IOBUF inp, int pkttype, unsigned long pktlen, int partial)
 }
 
 
+/* Read PKTLEN bytes form INP and return them in a newly allocated
+   buffer.  In case of an error NULL is returned and a error messages
+   printed.  */
 static void *
-read_rest (IOBUF inp, size_t pktlen, int partial)
+read_rest (IOBUF inp, size_t pktlen)
 {
-  byte *p;
-  int i;
+  int c;
+  byte *buf, *p;
 
-  if (partial)
+  buf = xtrymalloc (pktlen);
+  if (!buf)
     {
-      log_error ("read_rest: can't store stream data\n");
-      p = NULL;
+      gpg_error_t err = gpg_error_from_syserror ();
+      log_error ("error reading rest of packet: %s\n", gpg_strerror (err));
+      return NULL;
     }
-  else
+  for (p = buf; pktlen; pktlen--)
     {
-      p = xmalloc (pktlen);
-      for (i = 0; pktlen; pktlen--, i++)
-	p[i] = iobuf_get (inp);
+      c = iobuf_get (inp);
+      if (c == -1)
+        {
+          log_error ("premature eof while reading rest of packet\n");
+          xfree (buf);
+          return NULL;
+        }
+      *p++ = c;
     }
-  return p;
+
+  return buf;
 }
 
 
@@ -1749,8 +1760,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       else
 	{
 	  sig->data[0] =
-	    gcry_mpi_set_opaque (NULL, read_rest (inp, pktlen, 0),
-				 pktlen * 8);
+	    gcry_mpi_set_opaque (NULL, read_rest (inp, pktlen), pktlen * 8);
 	  pktlen = 0;
 	}
     }
@@ -1982,8 +1992,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       /* Unknown algorithm - put data into an opaque MPI.  */
       pk->pkey[0] = gcry_mpi_set_opaque (NULL,
-                                         read_rest (inp, pktlen, 0),
-                                         pktlen * 8);
+                                         read_rest (inp, pktlen), pktlen * 8);
       pktlen = 0;
       goto leave;
     }
@@ -2227,7 +2236,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	   * up to the end of the packet into the first SKEY
 	   * element.  */
 	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
-						 read_rest (inp, pktlen, 0),
+						 read_rest (inp, pktlen),
 						 pktlen * 8);
 	  pktlen = 0;
 	  if (list_mode)
