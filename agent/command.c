@@ -938,7 +938,7 @@ static const char hlp_keyinfo[] =
   "available keys are returned.  The information is returned as a\n"
   "status line unless --data was specified, with this format:\n"
   "\n"
-  "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached>\n"
+  "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached> <protection>\n"
   "\n"
   "KEYGRIP is the keygrip.\n"
   "\n"
@@ -957,6 +957,11 @@ static const char hlp_keyinfo[] =
   "CACHED is 1 if the passphrase for the key was found in the key cache.\n"
   "       If not, a '-' is used instead.\n"
   "\n"
+  "PROTECTION describes the key protection type:\n"
+  "    'P' - The key is protected with a passphrase,\n"
+  "    'C' - The key is not protected,\n"
+  "    '-' - Unknown protection.\n"
+  "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
@@ -970,6 +975,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   char *idstr = NULL;
   const char *keytypestr;
   const char *cached;
+  const char *protectionstr;
   char *pw;
 
   err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
@@ -979,13 +985,17 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   /* Reformat the grip so that we use uppercase as good style. */
   bin2hex (grip, 20, hexgrip);
 
-  if (keytype == PRIVATE_KEY_CLEAR
-      || keytype == PRIVATE_KEY_PROTECTED)
-    keytypestr = "D";
-  else if (keytype == PRIVATE_KEY_SHADOWED)
-    keytypestr = "T";
-  else
-    keytypestr = "-";
+  switch (keytype)
+    {
+    case PRIVATE_KEY_CLEAR: protectionstr = "C"; keytypestr = "D";
+      break;
+    case PRIVATE_KEY_PROTECTED: protectionstr = "P"; keytypestr = "D";
+      break;
+    case PRIVATE_KEY_SHADOWED: protectionstr = "-"; keytypestr = "T";
+      break;
+    default: protectionstr = "-"; keytypestr = "-";
+      break;
+    }
 
   /* Here we have a little race by doing the cache check separately
      from the retrieval function.  Given that the cache flag is only a
@@ -1008,15 +1018,16 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                               serialno? serialno : "-",
                               idstr? idstr : "-",
                               cached,
+			      protectionstr,
                               NULL);
   else
     {
       char *string;
 
-      string = xtryasprintf ("%s %s %s %s %s\n",
+      string = xtryasprintf ("%s %s %s %s %s %s\n",
                              hexgrip, keytypestr,
                              serialno? serialno : "-",
-                             idstr? idstr : "-", cached);
+                             idstr? idstr : "-", cached, protectionstr);
       if (!string)
         err = gpg_error_from_syserror ();
       else

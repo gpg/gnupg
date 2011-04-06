@@ -1,3 +1,7 @@
+2011-04-06  Ben Kibbey <bjk@luxsci.net>
+
+	* command.c: (do_one_keyinfo): Add protection type field.
+
 2011-03-10  Werner Koch  <wk@g10code.com>
 
 	* protect.c (hash_passphrase): Use the new gcry_kdf_derive.
