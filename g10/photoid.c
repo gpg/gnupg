@@ -1,5 +1,5 @@
 /* photoid.c - photo ID handling code
- * Copyright (C) 2001, 2002, 2005, 2006, 2008 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005, 2006, 2008, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -139,8 +139,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
       iobuf_close(file);
 
       /* Is it a JPEG? */
-      if(photo[0]!=0xFF || photo[1]!=0xD8 ||
-	 photo[6]!='J' || photo[7]!='F' || photo[8]!='I' || photo[9]!='F')
+      if(photo[0]!=0xFF || photo[1]!=0xD8)
 	{
 	  log_error(_("`%s' is not a JPEG file\n"),filename);
 	  xfree(photo);

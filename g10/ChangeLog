@@ -1,3 +1,9 @@
+2011-04-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (generate_photo_id): Check for the JPEG magic numbers
+	instead of JFIF since some programs generate an EXIF header first.
+	This is issue 1331.
+
 2011-02-23  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (LDADD): Move LIBREADLINE to ..
