@@ -357,7 +357,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 int
 agent_genkey (ctrl_t ctrl, const char *cache_nonce,
               const char *keyparam, size_t keyparamlen, int no_protection,
-              membuf_t *outbuf)
+              int preset, membuf_t *outbuf)
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
   char *passphrase;
@@ -434,6 +434,16 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
           && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
                                passphrase, 900 /*seconds*/))
         agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
+      if (preset && !no_protection)
+	{
+	  unsigned char grip[20];
+	  char hexgrip[40+1];
+	  if (gcry_pk_get_keygrip (s_private, grip))
+	    {
+	      bin2hex(grip, 20, hexgrip);
+	      rc = agent_put_cache (hexgrip, CACHE_MODE_ANY, passphrase, 900);
+	    }
+	}
     }
   xfree (passphrase);
   passphrase = NULL;

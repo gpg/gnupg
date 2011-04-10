@@ -831,7 +831,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--no-protection] [<cache_nonce>]\n"
+  "GENKEY [--no-protection] [--preset] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
@@ -843,6 +843,9 @@ static const char hlp_genkey[] =
   "  S: D (public-key\n"
   "  S: D   (rsa (n 326487324683264) (e 10001)))\n"
   "  S: OK key created\n"
+  "\n"
+  "When the --preset option is used the passphrase for the generated\n"
+  "key will be added to the cache.\n"
   "\n";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
@@ -854,8 +857,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
   size_t valuelen;
   membuf_t outbuf;
   char *cache_nonce = NULL;
+  int opt_preset;
   char *p;
 
+  opt_preset = has_option (line, "--preset");
   no_protection = has_option (line, "--no-protection");
   line = skip_options (line);
 
@@ -874,7 +879,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   init_membuf (&outbuf, 512);
 
   rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
-                     &outbuf);
+                     opt_preset, &outbuf);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);
