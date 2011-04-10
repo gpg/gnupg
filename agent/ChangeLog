@@ -1,5 +1,9 @@
 2011-04-10  Ben Kibbey <bjk@luxsci.net>
 
+	* command.c: (cmd_passwd): Add option --preset.
+
+2011-04-10  Ben Kibbey <bjk@luxsci.net>
+
 	* command.c: (cmd_genkey): Add option --preset.
 	* genkey.c: (agent_genkey): Add parameter preset.
 

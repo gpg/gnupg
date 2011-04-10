@@ -1411,9 +1411,10 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] <hexstring_with_keygrip>\n"
+  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] <hexstring_with_keygrip>\n"
   "\n"
-  "Change the passphrase/PIN for the key identified by keygrip in LINE.";
+  "Change the passphrase/PIN for the key identified by keygrip in LINE. When\n"
+  "--preset is used then the new passphrase will be added to the cache.\n";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1427,7 +1428,9 @@ cmd_passwd (assuan_context_t ctx, char *line)
   unsigned char *shadow_info = NULL;
   char *passphrase = NULL;
   char *pend;
+  int opt_preset;
 
+  opt_preset = has_option (line, "--preset");
   cache_nonce = option_value (line, "--cache-nonce");
   if (cache_nonce)
     {
@@ -1525,6 +1528,12 @@ cmd_passwd (assuan_context_t ctx, char *line)
                   ctrl->server_local->last_passwd_nonce = passwd_nonce;
                   passwd_nonce = NULL;
                 }
+	      if (opt_preset)
+		{
+		  char hexgrip[40+1];
+		  bin2hex(grip, 20, hexgrip);
+		  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass, 900);
+		}
             }
         }
       xfree (newpass);
