@@ -217,6 +217,12 @@ typedef enum
   }
 cache_mode_t;
 
+/* The TTL is seconds used for adding a new nonce mode cache item.  */
+#define CACHE_TTL_NONCE 120
+
+/* The TTL in seconds used by the --preset option of some commands.  */
+#define CACHE_TTL_OPT_PRESET 900
+
 
 /* The type of a function to lookup a TTL by a keygrip.  */
 typedef int (*lookup_ttl_t)(const char *hexgrip);

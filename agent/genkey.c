@@ -432,7 +432,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
       if (cache_nonce
           && !no_protection
           && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
-                               passphrase, 900 /*seconds*/))
+                               passphrase, CACHE_TTL_OPT_PRESET))
         agent_write_status (ctrl, "CACHE_NONCE", cache_nonce, NULL);
       if (preset && !no_protection)
 	{
@@ -441,7 +441,8 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
 	  if (gcry_pk_get_keygrip (s_private, grip))
 	    {
 	      bin2hex(grip, 20, hexgrip);
-	      rc = agent_put_cache (hexgrip, CACHE_MODE_ANY, passphrase, 900);
+	      rc = agent_put_cache (hexgrip, CACHE_MODE_ANY, passphrase,
+                                    CACHE_TTL_OPT_PRESET);
 	    }
 	}
     }

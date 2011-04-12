@@ -1411,7 +1411,7 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] <hexstring_with_keygrip>\n"
+  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] <hexkeygrip>\n"
   "\n"
   "Change the passphrase/PIN for the key identified by keygrip in LINE. When\n"
   "--preset is used then the new passphrase will be added to the cache.\n";
@@ -1501,7 +1501,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
             }
           if (cache_nonce
               && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
-                                   passphrase, 120 /*seconds*/))
+                                   passphrase, CACHE_TTL_NONCE))
             {
               assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
               xfree (ctrl->server_local->last_cache_nonce);
@@ -1521,7 +1521,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                 }
               if (passwd_nonce
                   && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
-                                       newpass, 120 /*seconds*/))
+                                       newpass, CACHE_TTL_NONCE))
                 {
                   assuan_write_status (ctx, "PASSWD_NONCE", passwd_nonce);
                   xfree (ctrl->server_local->last_passwd_nonce);
@@ -1532,7 +1532,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
 		{
 		  char hexgrip[40+1];
 		  bin2hex(grip, 20, hexgrip);
-		  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass, 900);
+		  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
+                                         CACHE_TTL_OPT_PRESET);
 		}
             }
         }
@@ -1844,7 +1845,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
             }
           if (cache_nonce
               && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
-                                   passphrase, 120 /*seconds*/))
+                                   passphrase, CACHE_TTL_NONCE))
             assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
         }
     }

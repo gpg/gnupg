@@ -1,15 +1,18 @@
+2011-04-12  Werner Koch  <wk@g10code.com>
+
+	* agent.h (CACHE_TTL_NONCE, CACHE_TTL_OPT_PRESET): New.
+	* command.c (cmd_passwd, cmd_import_key): Use new macros.
+	* genkey.c (agent_genkey): Ditto.
+
 2011-04-10  Ben Kibbey <bjk@luxsci.net>
 
-	* command.c: (cmd_passwd): Add option --preset.
-
-2011-04-10  Ben Kibbey <bjk@luxsci.net>
-
-	* command.c: (cmd_genkey): Add option --preset.
-	* genkey.c: (agent_genkey): Add parameter preset.
+	* command.c (cmd_passwd): Add option --preset.
+	* command.c (cmd_genkey): Add option --preset.
+	* genkey.c (agent_genkey): Add parameter preset.
 
 2011-04-06  Ben Kibbey <bjk@luxsci.net>
 
-	* command.c: (do_one_keyinfo): Add protection type field.
+	* command.c (do_one_keyinfo): Add protection type field.
 
 2011-03-10  Werner Koch  <wk@g10code.com>
 
