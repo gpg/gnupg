@@ -1,3 +1,7 @@
+2011-04-01  Werner Koch  <wk@g10code.com>
+
+	* sysutils.c (get_uint_nonce): New.
+
 2011-03-03  Werner Koch  <wk@g10code.com>
 
 	* estream.c (struct estream_list): Rename to estream_list_s and

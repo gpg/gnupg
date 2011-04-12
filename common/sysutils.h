@@ -41,6 +41,7 @@ void trap_unaligned (void);
 int  disable_core_dumps (void);
 int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
+unsigned int get_uint_nonce (void);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
 void gnupg_sleep (unsigned int seconds);
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);

@@ -17,12 +17,20 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning fixme Windows part not yet done
 #include <config.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef HAVE_W32_SYSTEM
+# include <windows.h>
+#else /*!HAVE_W32_SYSTEM*/
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netdb.h>
+#endif /*!HAVE_W32_SYSTEM*/
 
 #include "dirmngr.h"
 #include "misc.h"
@@ -35,6 +43,359 @@
 
 /* How many redirections do we allow.  */
 #define MAX_REDIRECTS 2
+
+/* Objects used to maintain information about hosts.  */
+struct hostinfo_s;
+typedef struct hostinfo_s *hostinfo_t;
+struct hostinfo_s
+{
+  time_t lastfail;   /* Time we tried to connect and failed.  */
+  time_t lastused;   /* Time of last use.  */
+  int *pool;         /* A -1 terminated array with indices into
+                        HOSTTABLE or NULL if NAME is not a pool
+                        name.  */
+  int poolidx;       /* Index into POOL with the used host.  */
+  unsigned int v4:1; /* Host supports AF_INET.  */
+  unsigned int v6:1; /* Host supports AF_INET6.  */
+  unsigned int dead:1; /* Host is currently unresponsive.  */
+  char name[1];      /* The hostname.  */
+};
+
+
+/* An array of hostinfo_t for all hosts requested by the caller or
+   resolved from a pool name and its allocated size.*/
+static hostinfo_t *hosttable;
+static int hosttable_size;
+
+/* The number of host slots we initally allocate for HOSTTABLE.  */
+#define INITIAL_HOSTTABLE_SIZE 10
+
+
+/* Create a new hostinfo object, fill in NAME and put it into
+   HOSTTABLE.  Return the index into hosttable on success or -1 on
+   error. */
+static int
+create_new_hostinfo (const char *name)
+{
+  hostinfo_t hi, *newtable;
+  int newsize;
+  int idx, rc;
+
+  hi = xtrymalloc (sizeof *hi + strlen (name));
+  if (!hi)
+    return -1;
+  strcpy (hi->name, name);
+  hi->pool = NULL;
+  hi->poolidx = -1;
+  hi->lastused = (time_t)(-1);
+  hi->lastfail = (time_t)(-1);
+  hi->v4 = 0;
+  hi->v6 = 0;
+
+  /* Add it to the hosttable. */
+  for (idx=0; idx < hosttable_size; idx++)
+    if (!hosttable[idx])
+      {
+        hosttable[idx] = hi;
+        return idx;
+      }
+  /* Need to extend the hosttable.  */
+  newsize = hosttable_size + INITIAL_HOSTTABLE_SIZE;
+  newtable = xtryrealloc (hosttable, newsize * sizeof *hosttable);
+  if (!newtable)
+    {
+      xfree (hi);
+      return -1;
+    }
+  hosttable = newtable;
+  idx = hosttable_size;
+  hosttable_size = newsize;
+  rc = idx;
+  hosttable[idx++] = hi;
+  while (idx < hosttable_size)
+    hosttable[idx++] = NULL;
+
+  return rc;
+}
+
+
+/* Find the host NAME in our table.  Return the index into the
+   hosttable or -1 if not found.  */
+static int
+find_hostinfo (const char *name)
+{
+  int idx;
+
+  for (idx=0; idx < hosttable_size; idx++)
+    if (hosttable[idx] && !ascii_strcasecmp (hosttable[idx]->name, name))
+      return idx;
+  return -1;
+}
+
+
+static int
+sort_hostpool (const void *xa, const void *xb)
+{
+  int a = *(int *)xa;
+  int b = *(int *)xb;
+
+  assert (a >= 0 && a < hosttable_size);
+  assert (b >= 0 && b < hosttable_size);
+  assert (hosttable[a]);
+  assert (hosttable[b]);
+
+  return ascii_strcasecmp (hosttable[a]->name, hosttable[b]->name);
+}
+
+
+/* Select a random host.  Consult TABLE which indices into the global
+   hosttable.  Returns index into TABLE or -1 if no host could be
+   selected.  */
+static int
+select_random_host (int *table)
+{
+  int *tbl;
+  size_t tblsize;
+  int pidx, idx;
+
+  /* We create a new table so that we select only from currently alive
+     hosts.  */
+  for (idx=0, tblsize=0; (pidx = table[idx]) != -1; idx++)
+    if (hosttable[pidx] && !hosttable[pidx]->dead)
+      tblsize++;
+  if (!tblsize)
+    return -1; /* No hosts.  */
+
+  tbl = xtrymalloc (tblsize * sizeof *tbl);
+  if (!tbl)
+    return -1;
+  for (idx=0, tblsize=0; (pidx = table[idx]) != -1; idx++)
+    if (hosttable[pidx] && !hosttable[pidx]->dead)
+      tbl[tblsize++] = pidx;
+
+  if (tblsize == 1)  /* Save a get_uint_nonce.  */
+    pidx = tbl[0];
+  else
+    pidx = get_uint_nonce () % tblsize;
+
+  xfree (tbl);
+  return pidx;
+}
+
+
+/* Map the host name NAME to the actual to be used host name.  This
+   allows us to manage round robin DNS names.  We use our own strategy
+   to choose one of the hosts.  For example we skip those hosts which
+   failed for some time and we stick to one host for a time
+   independent of DNS retry times.  */
+static char *
+map_host (const char *name)
+{
+  hostinfo_t hi;
+  int idx;
+
+  /* No hostname means localhost.  */
+  if (!name || !*name)
+    return xtrystrdup ("localhost");
+
+  /* See whether the host is in our table.  */
+  idx = find_hostinfo (name);
+  if (idx == -1)
+    {
+      /* We never saw this host.  Allocate a new entry.  */
+      struct addrinfo hints, *aibuf, *ai;
+      int *reftbl;
+      size_t reftblsize;
+      int refidx;
+
+      reftblsize = 100;
+      reftbl = xmalloc (reftblsize * sizeof *reftbl);
+      if (!reftbl)
+        return NULL;
+      refidx = 0;
+
+      idx = create_new_hostinfo (name);
+      if (idx == -1)
+        {
+          xfree (reftbl);
+          return NULL;
+        }
+      hi = hosttable[idx];
+
+      /* Find all A records for this entry and put them into the pool
+         list - if any.  */
+      memset (&hints, 0, sizeof (hints));
+      hints.ai_socktype = SOCK_STREAM;
+      if (!getaddrinfo (name, NULL, &hints, &aibuf))
+        {
+          for (ai = aibuf; ai; ai = ai->ai_next)
+            {
+              char tmphost[NI_MAXHOST];
+              int tmpidx;
+              int ec;
+              int i;
+
+              if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
+                continue;
+
+              log_printhex ("getaddrinfo returned", ai->ai_addr,ai->ai_addrlen);
+              if ((ec=getnameinfo (ai->ai_addr, ai->ai_addrlen,
+                                   tmphost, sizeof tmphost,
+                                   NULL, 0, NI_NAMEREQD)))
+                log_info ("getnameinfo failed while checking `%s': %s\n",
+                          name, gai_strerror (ec));
+              else if (refidx+1 >= reftblsize)
+                {
+                  log_error ("getnameinfo returned for `%s': `%s'"
+                            " [index table full - ignored]\n", name, tmphost);
+                }
+              else
+                {
+
+                  if ((tmpidx = find_hostinfo (tmphost)) != -1)
+                    {
+                      log_info ("getnameinfo returned for `%s': `%s'"
+                                " [already known]\n", name, tmphost);
+                      if (ai->ai_family == AF_INET)
+                        hosttable[tmpidx]->v4 = 1;
+                      if (ai->ai_family == AF_INET6)
+                        hosttable[tmpidx]->v6 = 1;
+
+                      for (i=0; i < refidx; i++)
+                        if (reftbl[i] == tmpidx)
+                      break;
+                      if (!(i < refidx) && tmpidx != idx)
+                        reftbl[refidx++] = tmpidx;
+                    }
+                  else
+                    {
+                      log_info ("getnameinfo returned for `%s': `%s'\n",
+                                name, tmphost);
+                      /* Create a new entry.  */
+                      tmpidx = create_new_hostinfo (tmphost);
+                      if (tmpidx == -1)
+                        log_error ("map_host for `%s' problem: %s - `%s'"
+                                   " [ignored]\n",
+                                   name, strerror (errno), tmphost);
+                      else
+                        {
+                          if (ai->ai_family == AF_INET)
+                        hosttable[tmpidx]->v4 = 1;
+                          if (ai->ai_family == AF_INET6)
+                            hosttable[tmpidx]->v6 = 1;
+
+                          for (i=0; i < refidx; i++)
+                            if (reftbl[i] == tmpidx)
+                              break;
+                          if (!(i < refidx) && tmpidx != idx)
+                            reftbl[refidx++] = tmpidx;
+                        }
+                    }
+                }
+            }
+        }
+      reftbl[refidx] = -1;
+      if (refidx)
+        {
+          assert (!hi->pool);
+          hi->pool = xtryrealloc (reftbl, (refidx+1) * sizeof *reftbl);
+          if (!hi->pool)
+            {
+              log_error ("shrinking index table in map_host failed: %s\n",
+                         strerror (errno));
+              xfree (reftbl);
+            }
+          qsort (reftbl, refidx, sizeof *reftbl, sort_hostpool);
+        }
+      else
+        xfree (reftbl);
+    }
+
+  hi = hosttable[idx];
+  if (hi->pool)
+    {
+      /* If the currently selected host is now marked dead, force a
+         re-selection .  */
+      if (hi->poolidx >= 0 && hi->poolidx < hosttable_size
+          && hosttable[hi->poolidx] && hosttable[hi->poolidx]->dead)
+        hi->poolidx = -1;
+
+      /* Select a host if needed.  */
+      if (hi->poolidx == -1)
+        {
+          hi->poolidx = select_random_host (hi->pool);
+          if (hi->poolidx == -1)
+            {
+              log_error ("no alive host found in pool `%s'\n", name);
+              return NULL;
+            }
+        }
+
+      assert (hi->poolidx >= 0 && hi->poolidx < hosttable_size);
+      hi = hosttable[hi->poolidx];
+      assert (hi);
+    }
+
+  if (hi->dead)
+    {
+      log_error ("host `%s' marked as dead\n", hi->name);
+      return NULL;
+    }
+
+  return xtrystrdup (hi->name);
+}
+
+
+/* Mark the host NAME as dead.  */
+static void
+mark_host_dead (const char *name)
+{
+  hostinfo_t hi;
+  int idx;
+
+  if (!name || !*name || !strcmp (name, "localhost"))
+    return;
+
+  idx = find_hostinfo (name);
+  if (idx == -1)
+    return;
+  hi = hosttable[idx];
+  log_info ("marking host `%s' as dead%s\n", hi->name, hi->dead? " (again)":"");
+  hi->dead = 1;
+}
+
+
+/* Debug function to print the entire hosttable.  */
+void
+ks_hkp_print_hosttable (void)
+{
+  int idx, idx2;
+  hostinfo_t hi;
+
+  for (idx=0; idx < hosttable_size; idx++)
+    if ((hi=hosttable[idx]))
+      {
+        log_info ("hosttable %3d %s %s %s %s\n",
+                  idx, hi->v4? "4":" ", hi->v6? "6":" ",
+                  hi->dead? "d":" ", hi->name);
+        if (hi->pool)
+          {
+            log_info ("          -->");
+            for (idx2=0; hi->pool[idx2] != -1; idx2++)
+              {
+                log_printf (" %d", hi->pool[idx2]);
+                if (hi->poolidx == idx2)
+                  log_printf ("*");
+              }
+            log_printf ("\n");
+            /* for (idx2=0; hi->pool[idx2] != -1; idx2++) */
+            /*   log_info ("              (%s)\n", */
+            /*              hosttable[hi->pool[idx2]]->name); */
+          }
+      }
+}
+
+
 
 /* Print a help output for the schemata supported by this module. */
 gpg_error_t
@@ -57,6 +418,44 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 }
 
 
+/* Build the remote part or the URL from SCHEME, HOST and an optional
+   PORT.  Returns an allocated string or NULL on failure and sets
+   ERRNO.  */
+static char *
+make_host_part (const char *scheme, const char *host, unsigned short port)
+{
+  char portstr[10];
+  char *hostname;
+  char *hostport;
+
+  /* Map scheme and port.  */
+  if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
+    {
+      scheme = "https";
+      strcpy (portstr, "443");
+    }
+  else /* HKP or HTTP.  */
+    {
+      scheme = "http";
+      strcpy (portstr, "11371");
+    }
+  if (port)
+    snprintf (portstr, sizeof portstr, "%hu", port);
+  else
+    {
+      /*fixme_do_srv_lookup ()*/
+    }
+
+  hostname = map_host (host);
+  if (!hostname)
+    return NULL;
+
+  hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
+  xfree (hostname);
+  return hostport;
+}
+
+
 /* Send an HTTP request.  On success returns an estream object at
    R_FP.  HOSTPORTSTR is only used for diagnostics.  If POST_CB is not
    NULL a post request is used and that callback is called to allow
@@ -73,6 +472,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   char *request_buffer = NULL;
 
   *r_fp = NULL;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
  once_more:
   err = http_open (&http,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
@@ -244,8 +644,6 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
   char fprbuf[2+40+1];
-  const char *scheme;
-  char portstr[10];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -289,29 +687,11 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
 
-  /* Map scheme and port.  */
-  if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
-    {
-      scheme = "https";
-      strcpy (portstr, "443");
-    }
-  else /* HKP or HTTP.  */
-    {
-      scheme = "http";
-      strcpy (portstr, "11371");
-    }
-  if (uri->port)
-    snprintf (portstr, sizeof portstr, "%hu", uri->port);
-  else
-    {} /*fixme_do_srv_lookup ()*/
-
   /* Build the request string.  */
   {
     char *searchkey;
 
-    hostport = strconcat (scheme, "://",
-                          *uri->host? uri->host: "localhost",
-                          ":", portstr, NULL);
+    hostport = make_host_part (uri->scheme, uri->host, uri->port);
     if (!hostport)
       {
         err = gpg_error_from_syserror ();
@@ -382,8 +762,6 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
   char kidbuf[8+1];
-  const char *scheme;
-  char portstr[10];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -416,43 +794,23 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
 
-  /* Map scheme and port.  */
-  if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
-    {
-      scheme = "https";
-      strcpy (portstr, "443");
-    }
-  else /* HKP or HTTP.  */
-    {
-      scheme = "http";
-      strcpy (portstr, "11371");
-    }
-  if (uri->port)
-    snprintf (portstr, sizeof portstr, "%hu", uri->port);
-  else
-    {} /*fixme_do_srv_lookup ()*/
-
   /* Build the request string.  */
-  {
-    hostport = strconcat (scheme, "://",
-                          *uri->host? uri->host: "localhost",
-                          ":", portstr, NULL);
-    if (!hostport)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
+  hostport = make_host_part (uri->scheme, uri->host, uri->port);
+  if (!hostport)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
-    request = strconcat (hostport,
-                         "/pks/lookup?op=get&options=mr&search=0x",
-                         kidbuf,
-                         NULL);
-    if (!request)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
-  }
+  request = strconcat (hostport,
+                       "/pks/lookup?op=get&options=mr&search=0x",
+                       kidbuf,
+                       NULL);
+  if (!request)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
@@ -507,8 +865,6 @@ gpg_error_t
 ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 {
   gpg_error_t err;
-  const char *scheme;
-  char portstr[10];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -516,22 +872,6 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   char *armored = NULL;
 
   parm.datastring = NULL;
-
-  /* Map scheme and port.  */
-  if (!strcmp (uri->scheme,"hkps") || !strcmp (uri->scheme,"https"))
-    {
-      scheme = "https";
-      strcpy (portstr, "443");
-    }
-  else /* HKP or HTTP.  */
-    {
-      scheme = "http";
-      strcpy (portstr, "11371");
-    }
-  if (uri->port)
-    snprintf (portstr, sizeof portstr, "%hu", uri->port);
-  else
-    {} /*fixme_do_srv_lookup ()*/
 
   err = armor_data (&armored, data, datalen);
   if (err)
@@ -547,9 +887,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   armored = NULL;
 
   /* Build the request string.  */
-  hostport = strconcat (scheme, "://",
-                        *uri->host? uri->host: "localhost",
-                        ":", portstr, NULL);
+  hostport = make_host_part (uri->scheme, uri->host, uri->port);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();

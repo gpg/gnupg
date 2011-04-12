@@ -42,6 +42,7 @@
 #include "misc.h"
 #include "ldap-wrapper.h"
 #include "ks-action.h"
+#include "ks-engine.h"  /* (ks_hkp_print_hosttable) */
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -1374,18 +1375,26 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int clear_flag, add_flag, help_flag;
+  int clear_flag, add_flag, help_flag, host_flag;
   uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
                              is always initialized.  */
 
   clear_flag = has_option (line, "--clear");
   help_flag = has_option (line, "--help");
+  host_flag = has_option (line, "--print-hosttable");
   line = skip_options (line);
   add_flag = !!*line;
 
   if (help_flag)
     {
       err = ks_action_help (ctrl, line);
+      goto leave;
+    }
+
+  if (host_flag)
+    {
+      ks_hkp_print_hosttable ();
+      err = 0;
       goto leave;
     }
 

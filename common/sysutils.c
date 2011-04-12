@@ -150,6 +150,17 @@ get_session_marker (size_t *rlen)
   return marker;
 }
 
+/* Return a random number in an unsigned int. */
+unsigned int
+get_uint_nonce (void)
+{
+  unsigned int value;
+
+  gcry_create_nonce (&value, sizeof value);
+  return value;
+}
+
+
 
 #if 0 /* not yet needed - Note that this will require inclusion of
          cmacros.am in Makefile.am */

@@ -1,3 +1,13 @@
+2011-04-12  Werner Koch  <wk@g10code.com>
+
+	* ks-engine-hkp.c (ks_hkp_search, ks_hkp_get, ks_hkp_put): Factor
+	code out to ..
+	(make_host_part): new.
+	(hostinfo_s): New.
+	(create_new_hostinfo, find_hostinfo, sort_hostpool)
+	(select_random_host, map_host, mark_host_dead)
+	(ks_hkp_print_hosttable): New.
+
 2011-02-23  Werner Koch  <wk@g10code.com>
 
 	* certcache.c (get_cert_bysubject): Take care of a NULL argument.

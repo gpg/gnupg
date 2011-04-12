@@ -27,6 +27,7 @@
 gpg_error_t ks_print_help (ctrl_t ctrl, const char *text);
 
 /*-- ks-engine-hkp.c --*/
+void ks_hkp_print_hosttable (void);
 gpg_error_t ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                            estream_t *r_fp);
