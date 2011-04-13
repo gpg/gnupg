@@ -1,3 +1,7 @@
+2011-04-12  Ben Kibbey <bjk@luxsci.net>
+
+	* command.c (cmd_passwd): Fixed --preset when not previously cached.
+
 2011-04-12  Werner Koch  <wk@g10code.com>
 
 	* agent.h (CACHE_TTL_NONCE, CACHE_TTL_OPT_PRESET): New.

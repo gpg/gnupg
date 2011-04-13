@@ -1528,15 +1528,15 @@ cmd_passwd (assuan_context_t ctx, char *line)
                   ctrl->server_local->last_passwd_nonce = passwd_nonce;
                   passwd_nonce = NULL;
                 }
-	      if (opt_preset)
-		{
-		  char hexgrip[40+1];
-		  bin2hex(grip, 20, hexgrip);
-		  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
-                                         CACHE_TTL_OPT_PRESET);
-		}
             }
         }
+      if (opt_preset)
+      {
+	  char hexgrip[40+1];
+	  bin2hex(grip, 20, hexgrip);
+	  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
+		  CACHE_TTL_OPT_PRESET);
+      }
       xfree (newpass);
     }
   ctrl->in_passwd--;
