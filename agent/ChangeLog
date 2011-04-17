@@ -1,3 +1,7 @@
+2011-04-17  Ben Kibbey <bjk@luxsci.net>
+
+	* command.c (cmd_passwd): Check for an error before presetting.
+
 2011-04-12  Ben Kibbey <bjk@luxsci.net>
 
 	* command.c (cmd_passwd): Fixed --preset when not previously cached.

@@ -1530,7 +1530,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                 }
             }
         }
-      if (opt_preset)
+      if (!err && opt_preset)
       {
 	  char hexgrip[40+1];
 	  bin2hex(grip, 20, hexgrip);
