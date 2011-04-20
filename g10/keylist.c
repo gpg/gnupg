@@ -1161,7 +1161,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
           colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
 
   if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
-    es_putc (get_ownertrust (pk), es_stdout);
+    es_putc (get_ownertrust_info (pk), es_stdout);
   es_putc (':', es_stdout);
 
   es_putc (':', es_stdout);
