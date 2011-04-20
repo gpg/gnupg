@@ -1827,6 +1827,8 @@ cmd_import_key (assuan_context_t ctx, char *line)
          used to protect the key using the same code as for regular
          key import. */
 
+      xfree (key);
+      key = NULL;
       err = convert_from_openpgp (ctrl, openpgp_sexp, grip,
                                   ctrl->server_local->keydesc, cache_nonce,
                                   &key, &passphrase);

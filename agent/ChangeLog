@@ -1,3 +1,9 @@
+2011-04-20  Marcus Brinkmann  <mb@g10code.com>
+
+	* command.c (cmd_import_key): Release key from failed import
+        before converting openpgp private key in the openpgp-private-key
+        case.
+
 2011-04-17  Ben Kibbey <bjk@luxsci.net>
 
 	* command.c (cmd_passwd): Check for an error before presetting.
