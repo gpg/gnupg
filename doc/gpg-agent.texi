@@ -1348,6 +1348,12 @@ following values are defined:
   Use the @xref{option --allow-loopback-pinentry}.
 
   @end table
+
+@item cache-ttl-opt-preset
+This option sets the cache TTL for new entries created by GENKEY and
+PASSWD commands when using the @option{--preset} option.  It it is not
+used a default value is used.
+
 @end table
 
 

@@ -1,5 +1,5 @@
 /* agent.h - Global definitions for the agent
- *	Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2005, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -164,6 +164,10 @@ struct server_control_s
   /* The current pinentry mode.  */
   pinentry_mode_t pinentry_mode;
 
+  /* The TTL used for the --preset option of certain commands.  */
+  int cache_ttl_opt_preset;
+
+  /* Information on the currently used digest (for signing commands).  */
   struct {
     int algo;
     unsigned char value[MAX_DIGEST_LEN];
@@ -220,7 +224,8 @@ cache_mode_t;
 /* The TTL is seconds used for adding a new nonce mode cache item.  */
 #define CACHE_TTL_NONCE 120
 
-/* The TTL in seconds used by the --preset option of some commands.  */
+/* The TTL in seconds used by the --preset option of some commands.
+   This is the default value changeable by an OPTION command.  */
 #define CACHE_TTL_OPT_PRESET 900
 
 

@@ -1,6 +1,6 @@
 /* command.c - gpg-agent command handler
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2008, 2009, 2010  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010,
+ *               2011  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1535,7 +1535,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 	  char hexgrip[40+1];
 	  bin2hex(grip, 20, hexgrip);
 	  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
-		  CACHE_TTL_OPT_PRESET);
+                                 ctrl->cache_ttl_opt_preset);
       }
       xfree (newpass);
     }
@@ -2469,6 +2469,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         }
       else
         err = gpg_error (GPG_ERR_INV_VALUE);
+    }
+  else if (!strcmp (key, "cache-ttl-opt-preset"))
+    {
+      ctrl->cache_ttl_opt_preset = *value? atoi (value) : 0;
     }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);

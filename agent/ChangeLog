@@ -1,3 +1,11 @@
+2011-04-21  Werner Koch  <wk@g10code.com>
+
+	* agent.h (server_control_s): Add field cache_ttl_opt_preset.
+	* gpg-agent.c (agent_init_default_ctrl): Init this field.
+	* genkey.c (agent_genkey): Use this new variable.
+	* command.c (cmd_passwd): Ditto.
+	(option_handler): Add new option cache-ttl-opt-preset.
+
 2011-04-20  Marcus Brinkmann  <mb@g10code.com>
 
 	* command.c (cmd_import_key): Release key from failed import

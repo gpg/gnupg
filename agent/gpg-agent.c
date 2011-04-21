@@ -1315,6 +1315,7 @@ agent_init_default_ctrl (ctrl_t ctrl)
   ctrl->lc_messages = default_lc_messages? xtrystrdup (default_lc_messages)
                                     /**/ : NULL;
 
+  ctrl->cache_ttl_opt_preset = CACHE_TTL_OPT_PRESET;
 }
 
 
