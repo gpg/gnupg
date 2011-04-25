@@ -433,7 +433,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
 
       stats->count++;
 
-      err = classify_user_id (line, &desc);
+      err = classify_user_id (line, &desc, 0);
       if (err)
         {
           print_import_problem (ctrl, NULL, 0);

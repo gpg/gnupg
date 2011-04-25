@@ -654,7 +654,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
      Note that HKP keyservers like the 0x to be present when searching
      by keyid.  We need to re-format the fingerprint and keyids so to
      remove the gpg specific force-use-of-this-key flag ("!").  */
-  err = classify_user_id (pattern, &desc);
+  err = classify_user_id (pattern, &desc, 1);
   if (err)
     return err;
   switch (desc.mode)
@@ -772,7 +772,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
      Note that HKP keyservers like the 0x to be present when searching
      by keyid.  We need to re-format the fingerprint and keyids so to
      remove the gpg specific force-use-of-this-key flag ("!").  */
-  err = classify_user_id (keyspec, &desc);
+  err = classify_user_id (keyspec, &desc, 1);
   if (err)
     return err;
   switch (desc.mode)

@@ -1,3 +1,14 @@
+2011-04-25  Werner Koch  <wk@g10code.com>
+
+	* certlist.c (gpgsm_add_to_certlist): Mark classify_user_id for
+	use with non-OpenPGP.
+	(gpgsm_find_cert): Ditto.
+	* sign.c (get_default_signer): Ditto.
+	* keylist.c (list_internal_keys): Ditto.
+	* import.c (reimport_one): Ditto.
+	* export.c (gpgsm_export): Ditto.
+	* delete.c (delete_one): Ditto.
+
 2011-03-10  Werner Koch  <wk@g10code.com>
 
 	* minip12.c (oid_pkcs5PBKDF2, oid_pkcs5PBES2, oid_aes128_CBC): New.

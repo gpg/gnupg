@@ -1,3 +1,8 @@
+2011-04-25  Werner Koch  <wk@g10code.com>
+
+	* userids.c (classify_user_id): Add arg OPENPGP_HACK to fix
+	regression from 2009-12-08.
+
 2011-04-01  Werner Koch  <wk@g10code.com>
 
 	* sysutils.c (get_uint_nonce): New.

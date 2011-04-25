@@ -45,7 +45,7 @@ delete_one (ctrl_t ctrl, const char *username)
   int duplicates = 0;
   int is_ephem = 0;
 
-  rc = classify_user_id (username, &desc);
+  rc = classify_user_id (username, &desc, 0);
   if (rc)
     {
       log_error (_("certificate `%s' not found: %s\n"),

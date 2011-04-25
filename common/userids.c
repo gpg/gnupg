@@ -61,7 +61,7 @@
  */
 
 gpg_error_t
-classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
+classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
 {
   const char *s;
   int hexprefix = 0;
@@ -95,7 +95,12 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
 
     case '<': /* An email address.  */
       mode = KEYDB_SEARCH_MODE_MAIL;
-      s++;
+      /* FIXME: The keyring code in g10 assumes that the mail name is
+         prefixed with an '<'.  However the keybox code used for sm/
+         assumes it has been removed.  For now we use this simple hack
+         to overcome the problem.  */
+      if (!openpgp_hack)
+        s++;
       desc->u.name = s;
       break;
 

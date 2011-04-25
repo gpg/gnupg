@@ -22,7 +22,8 @@
 
 #include "../kbx/keybox-search-desc.h"
 
-gpg_error_t classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc);
+gpg_error_t classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc,
+                              int openpgp_hack);
 
 
 #endif /*GNUPG_COMMON_USERIDS_H*/

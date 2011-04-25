@@ -752,7 +752,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 
       for (ndesc=0, sl=users; sl; sl = sl->next)
         {
-          if (!(err=classify_user_id (sl->d, desc+ndesc)))
+          if (!(err=classify_user_id (sl->d, desc+ndesc, 1)))
             ndesc++;
           else
             log_error (_("key \"%s\" not found: %s\n"),

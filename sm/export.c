@@ -178,7 +178,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
     {
       for (ndesc=0, sl=names; sl; sl = sl->next)
         {
-          rc = classify_user_id (sl->d, desc+ndesc);
+          rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
             {
               log_error ("key `%s' not found: %s\n",
@@ -348,7 +348,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
       goto leave;
     }
 
-  err = classify_user_id (name, desc);
+  err = classify_user_id (name, desc, 0);
   if (err)
     {
       log_error ("key `%s' not found: %s\n",

@@ -617,7 +617,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 	{
 	  gpg_error_t err;
 
-	  err = classify_user_id (r->d, &ctx->items[n]);
+	  err = classify_user_id (r->d, &ctx->items[n], 1);
 
 	  if (ctx->items[n].exact)
 	    ctx->exact = 1;

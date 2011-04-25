@@ -626,7 +626,7 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      err = classify_user_id (tok, &work->desc);
+      err = classify_user_id (tok, &work->desc, 1);
       if (err || (work->desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && work->desc.mode != KEYDB_SEARCH_MODE_LONG_KID
                   && work->desc.mode != KEYDB_SEARCH_MODE_FPR16
@@ -996,7 +996,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
   /* Weed out descriptors that we don't support sending */
   for(;users;users=users->next)
     {
-      err = classify_user_id (users->d, &desc);
+      err = classify_user_id (users->d, &desc, 1);
       if (err || (desc.mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc.mode != KEYDB_SEARCH_MODE_LONG_KID
                   && desc.mode != KEYDB_SEARCH_MODE_FPR16
@@ -1031,7 +1031,7 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
 
   for(;users;users=users->next)
     {
-      err = classify_user_id (users->d, &desc[count]);
+      err = classify_user_id (users->d, &desc[count], 1);
       if (err || (desc[count].mode    != KEYDB_SEARCH_MODE_SHORT_KID
                   && desc[count].mode != KEYDB_SEARCH_MODE_LONG_KID
                   && desc[count].mode != KEYDB_SEARCH_MODE_FPR16
@@ -1125,7 +1125,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
       for (ndesc=0, sl=users; sl; sl = sl->next)
 	{
           gpg_error_t err;
-	  if (!(err = classify_user_id (sl->d, desc+ndesc)))
+	  if (!(err = classify_user_id (sl->d, desc+ndesc, 1)))
 	    ndesc++;
 	  else
 	    log_error (_("key \"%s\" not found: %s\n"),

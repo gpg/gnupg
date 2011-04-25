@@ -1,3 +1,13 @@
+2011-04-25  Werner Koch  <wk@g10code.com>
+
+	* delkey.c (do_delete_key): Mark classify_user_id for use with
+	OpenPGP.
+	* trustdb.c (register_trusted_key): Ditto.
+	* revoke.c (gen_revoke): Ditto.
+	* keyserver.c (keyserver_export, keyidlist, keyserver_export): Ditto.
+	* getkey.c (key_byname): Ditto.
+	* export.c (do_export_stream): Ditto.
+
 2011-04-20  Marcus Brinkmann  <mb@g10code.com>
 
 	* keylist.c (list_keyblock_colon): Use get_ownertrust_info, not

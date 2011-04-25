@@ -217,7 +217,7 @@ register_trusted_key( const char *string )
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
-  err = classify_user_id (string, &desc);
+  err = classify_user_id (string, &desc, 1);
   if (err || desc.mode != KEYDB_SEARCH_MODE_LONG_KID )
     {
       log_error(_("`%s' is not a valid long keyID\n"), string );

@@ -1205,7 +1205,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
     {
       for (ndesc=0, sl=names; sl; sl = sl->next)
         {
-          rc = classify_user_id (sl->d, desc+ndesc);
+          rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
             {
               log_error ("key `%s' not found: %s\n",
