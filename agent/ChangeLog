@@ -1,3 +1,10 @@
+2011-04-26  Werner Koch  <wk@g10code.com>
+
+	* cvt-openpgp.c (convert_to_openpgp): Use rfc4880 encoded S2K count.
+	* protect.c (get_standard_s2k_count_rfc4880): New.
+	(S2K_DECODE_COUNT): New.
+	(s2k_hash_passphrase): Use the new macro.
+
 2011-04-21  Werner Koch  <wk@g10code.com>
 
 	* agent.h (server_control_s): Add field cache_ttl_opt_preset.

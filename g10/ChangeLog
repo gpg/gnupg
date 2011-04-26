@@ -1,3 +1,8 @@
+2011-04-26  Werner Koch  <wk@g10code.com>
+
+	* export.c (transfer_format_to_openpgp): Do not apply
+	encode_s2k_iterations to S2K_COUNT.
+
 2011-04-25  Werner Koch  <wk@g10code.com>
 
 	* delkey.c (do_delete_key): Mark classify_user_id for use with

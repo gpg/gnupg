@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.1.0beta3
 -----------------------------------------------------
 
+ * Fixed regression in GPG'S secret key export function.
+
 
 Noteworthy changes in version 2.1.0beta2 (2011-03-08)
 -----------------------------------------------------

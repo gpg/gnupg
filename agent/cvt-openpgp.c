@@ -1046,7 +1046,10 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
 
   gcry_create_nonce (protect_iv, sizeof protect_iv);
   gcry_create_nonce (salt, sizeof salt);
-  s2k_count = get_standard_s2k_count ();
+  /* We need to use the encoded S2k count.  It is not possible to
+     encode it after it has been used because the encoding procedure
+     may round the value up.  */
+  s2k_count = get_standard_s2k_count_rfc4880 ();
   err = apply_protection (array, npkey, nskey, passphrase,
                           GCRY_CIPHER_AES, protect_iv, sizeof protect_iv,
                           3, GCRY_MD_SHA1, salt, s2k_count);

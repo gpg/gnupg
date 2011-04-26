@@ -626,10 +626,9 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
     }
 
   /* Do some sanity checks.  */
-  if (s2k_count <= 1024)
+  if (s2k_count > 255)
     {
-      /* The count must be larger so that encode_s2k_iterations does
-         not fall into a backward compatibility mode.  */
+      /* We expect an already encoded S2K count.  */
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
@@ -682,7 +681,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   ski->s2k.hash_algo = s2k_algo;
   assert (sizeof ski->s2k.salt == sizeof s2k_salt);
   memcpy (ski->s2k.salt, s2k_salt, sizeof s2k_salt);
-  ski->s2k.count = encode_s2k_iterations (s2k_count);
+  ski->s2k.count = s2k_count;
   assert (ivlen <= sizeof ski->iv);
   memcpy (ski->iv, iv, ivlen);
   ski->ivlen = ivlen;

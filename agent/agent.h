@@ -330,6 +330,7 @@ gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
 
 /*-- protect.c --*/
 unsigned long get_standard_s2k_count (void);
+unsigned char get_standard_s2k_count_rfc4880 (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen);
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,

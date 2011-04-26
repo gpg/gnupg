@@ -41,6 +41,9 @@
 #define PROT_CIPHER_STRING "aes"
 #define PROT_CIPHER_KEYLEN (128/8)
 
+/* Decode an rfc4880 encoded S2K count.  */
+#define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
+
 
 /* A table containing the information needed to create a protected
    private key.  */
@@ -191,6 +194,33 @@ get_standard_s2k_count (void)
   return count < 65536 ? 65536 : count;
 }
 
+
+/* Same as get_standard_s2k_count but return the count in the encoding
+   as described by rfc4880.  */
+unsigned char
+get_standard_s2k_count_rfc4880 (void)
+{
+  unsigned long iterations;
+  unsigned int count;
+  unsigned char result;
+  unsigned char c=0;
+
+  iterations = get_standard_s2k_count ();
+  if (iterations >= 65011712)
+    return 255;
+
+  /* Need count to be in the range 16-31 */
+  for (count=iterations>>6; count>=32; count>>=1)
+    c++;
+
+  result = (c<<4)|(count-16);
+
+  if (S2K_DECODE_COUNT(result) < iterations)
+    result++;
+
+  return result;
+
+}
 
 
 
@@ -1041,7 +1071,7 @@ s2k_hash_passphrase (const char *passphrase, int hashalgo,
                      unsigned char *key, size_t keylen)
 {
   return hash_passphrase (passphrase, hashalgo, s2kmode, s2ksalt,
-                          (16ul + (s2kcount & 15)) << ((s2kcount >> 4) + 6),
+                          S2K_DECODE_COUNT (s2kcount),
                           key, keylen);
 }
 
