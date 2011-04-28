@@ -1,5 +1,5 @@
 /* kbxutil.c - The Keybox utility
- * Copyright (C) 2000, 2001, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2000, 2001, 2004, 2007, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -389,8 +389,18 @@ import_openpgp (const char *filename)
         {
           if (gpg_err_code (err) == GPG_ERR_NO_DATA)
             break;
-          log_info ("%s: failed to parse OpenPGP keyblock: %s\n",
-                    filename, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_UNSUPPORTED_ALGORITHM)
+            {
+              /* This is likely a v3 key packet with a non-RSA
+                 algorithm.  These are keys from very early versions
+                 of GnuPG (pre-OpenPGP).  */
+            }
+          else
+            {
+              fflush (stdout);
+              log_info ("%s: failed to parse OpenPGP keyblock: %s\n",
+                        filename, gpg_strerror (err));
+            }
         }
       else
         {

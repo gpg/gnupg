@@ -1,5 +1,5 @@
 /* keybox-openpgp.c - OpenPGP key parsing
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,41 +35,16 @@
 
 #include <gcrypt.h>
 
-
-enum packet_types
-  {
-    PKT_NONE	           =0,
-    PKT_PUBKEY_ENC	   =1, /* public key encrypted packet */
-    PKT_SIGNATURE	   =2, /* secret key encrypted packet */
-    PKT_SYMKEY_ENC	   =3, /* session key packet (OpenPGP)*/
-    PKT_ONEPASS_SIG        =4, /* one pass sig packet (OpenPGP)*/
-    PKT_SECRET_KEY	   =5, /* secret key */
-    PKT_PUBLIC_KEY	   =6, /* public key */
-    PKT_SECRET_SUBKEY      =7, /* secret subkey (OpenPGP) */
-    PKT_COMPRESSED	   =8, /* compressed data packet */
-    PKT_ENCRYPTED	   =9, /* conventional encrypted data */
-    PKT_MARKER	          =10, /* marker packet (OpenPGP) */
-    PKT_PLAINTEXT	  =11, /* plaintext data with filename and mode */
-    PKT_RING_TRUST	  =12, /* keyring trust packet */
-    PKT_USER_ID	          =13, /* user id packet */
-    PKT_PUBLIC_SUBKEY     =14, /* public subkey (OpenPGP) */
-    PKT_OLD_COMMENT       =16, /* comment packet from an OpenPGP draft */
-    PKT_ATTRIBUTE         =17, /* PGP's attribute packet */
-    PKT_ENCRYPTED_MDC     =18, /* integrity protected encrypted data */
-    PKT_MDC 	          =19, /* manipulation detection code packet */
-    PKT_COMMENT	          =61, /* new comment packet (private) */
-    PKT_GPG_CONTROL       =63  /* internal control packet */
-  };
-
+#include "../common/openpgpdefs.h"
 
 
 /* Assume a valid OpenPGP packet at the address pointed to by BUFBTR
-   which is of amaximum length as stored at BUFLEN.  Return the header
+   which has a maximum length as stored at BUFLEN.  Return the header
    information of that packet and advance the pointer stored at BUFPTR
    to the next packet; also adjust the length stored at BUFLEN to
    match the remaining bytes. If there are no more packets, store NULL
    at BUFPTR.  Return an non-zero error code on failure or the
-   follwing data on success:
+   following data on success:
 
    R_DATAPKT = Pointer to the begin of the packet data.
    R_DATALEN = Length of this data.  This has already been checked to fit
@@ -166,8 +141,8 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
       return gpg_error (GPG_ERR_UNEXPECTED);
     }
 
-  if (pktlen == 0xffffffff)
-      return gpg_error (GPG_ERR_INV_PACKET);
+  if (pktlen == (unsigned long)(-1))
+    return gpg_error (GPG_ERR_INV_PACKET);
 
   if (pktlen > len)
     return gpg_error (GPG_ERR_INV_PACKET); /* Packet length header too long. */
@@ -201,6 +176,7 @@ parse_key (const unsigned char *data, size_t datalen,
   const unsigned char *mpi_n = NULL;
   size_t mpi_n_len = 0, mpi_e_len = 0;
   gcry_md_hd_t md;
+  int is_ecc = 0;
 
   if (datalen < 5)
     return gpg_error (GPG_ERR_INV_PACKET);
@@ -219,7 +195,6 @@ parse_key (const unsigned char *data, size_t datalen,
         return gpg_error (GPG_ERR_INV_PACKET);
       ndays = ((data[0]<<8)|(data[1]));
       data +=2; datalen -= 2;
-      if (ndays)
       expiredate = ndays? (timestamp + ndays * 86400L) : 0;
     }
   else
@@ -245,9 +220,11 @@ parse_key (const unsigned char *data, size_t datalen,
       break;
     case 18: /* ECDH */
       npkey = 3;
+      is_ecc = 1;
       break;
     case 19: /* ECDSA */
       npkey = 2;
+      is_ecc = 1;
       break;
     default: /* Unknown algorithm. */
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
@@ -259,20 +236,34 @@ parse_key (const unsigned char *data, size_t datalen,
 
       if (datalen < 2)
         return gpg_error (GPG_ERR_INV_PACKET);
-      nbits = ((data[0]<<8)|(data[1]));
-      data += 2; datalen -=2;
-      nbytes = (nbits+7) / 8;
-      if (datalen < nbytes)
-        return gpg_error (GPG_ERR_INV_PACKET);
-      /* For use by v3 fingerprint calculation we need to know the RSA
-         modulus and exponent. */
-      if (i==0)
+
+      if (is_ecc && (i == 0 || i == 2))
         {
-          mpi_n = data;
-          mpi_n_len = nbytes;
+          nbytes = data[0];
+          if (nbytes < 2 || nbytes > 254)
+            return gpg_error (GPG_ERR_INV_PACKET);
+          nbytes++; /* The size byte itself.  */
+          if (datalen < nbytes)
+            return gpg_error (GPG_ERR_INV_PACKET);
         }
-      else if (i==1)
-        mpi_e_len = nbytes;
+      else
+        {
+          nbits = ((data[0]<<8)|(data[1]));
+          data += 2;
+          datalen -= 2;
+          nbytes = (nbits+7) / 8;
+          if (datalen < nbytes)
+            return gpg_error (GPG_ERR_INV_PACKET);
+          /* For use by v3 fingerprint calculation we need to know the RSA
+             modulus and exponent. */
+          if (i==0)
+            {
+              mpi_n = data;
+              mpi_n_len = nbytes;
+            }
+          else if (i==1)
+            mpi_e_len = nbytes;
+        }
 
       data += nbytes; datalen -= nbytes;
     }
@@ -297,7 +288,7 @@ parse_key (const unsigned char *data, size_t datalen,
       if (mpi_n_len < 8)
         {
           /* Moduli less than 64 bit are out of the specs scope.  Zero
-             them out becuase this is what gpg does too. */
+             them out because this is what gpg does too. */
           memset (ki->keyid, 0, 8);
         }
       else
@@ -307,10 +298,10 @@ parse_key (const unsigned char *data, size_t datalen,
     {
       /* Its a pitty that we need to prefix the buffer with the tag
          and a length header: We can't simply pass it to the fast
-         hashing fucntion for that reason.  It might be a good idea to
+         hashing function for that reason.  It might be a good idea to
          have a scatter-gather enabled hash function. What we do here
          is to use a static buffer if this one is large enough and
-         only use the regular hash fucntions if this buffer is not
+         only use the regular hash functions if this buffer is not
          large enough. */
       if ( 3 + n < sizeof hashbuffer )
         {
@@ -344,19 +335,19 @@ parse_key (const unsigned char *data, size_t datalen,
 /* The caller must pass the address of an INFO structure which will
    get filled on success with information pertaining to the OpenPGP
    keyblock IMAGE of length IMAGELEN.  Note that a caller does only
-   need to release this INFO structure when the function returns
+   need to release this INFO structure if the function returns
    success.  If NPARSED is not NULL the actual number of bytes parsed
    will be stored at this address.  */
 gpg_error_t
 _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
-                       size_t *nparsed,
-                       keybox_openpgp_info_t info)
+                       size_t *nparsed, keybox_openpgp_info_t info)
 {
   gpg_error_t err = 0;
   const unsigned char *image_start, *data;
   size_t n, datalen;
   int pkttype;
   int first = 1;
+  int read_error = 0;
   struct _keybox_openpgp_key_info *k, **ktail = NULL;
   struct _keybox_openpgp_uid_info *u, **utail = NULL;
 
@@ -369,7 +360,10 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
     {
       err = next_packet (&image, &imagelen, &data, &datalen, &pkttype, &n);
       if (err)
-        break;
+        {
+          read_error = 1;
+          break;
+        }
 
       if (first)
         {
@@ -380,6 +374,8 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
           else
             {
               err = gpg_error (GPG_ERR_UNEXPECTED);
+              if (nparsed)
+                *nparsed += n;
               break;
             }
           first = 0;
@@ -439,9 +435,12 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
               if (err)
                 {
                   info->nsubkeys--;
-                  if (gpg_err_code (err) != GPG_ERR_UNKNOWN_ALGORITHM)
-                    break;
                   /* We ignore subkeys with unknown algorithms. */
+                  if (gpg_err_code (err) == GPG_ERR_UNKNOWN_ALGORITHM
+                      || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_ALGORITHM)
+                    err = 0;
+                  if (err)
+                    break;
                 }
               else
                 ktail = &info->subkeys.next;
@@ -459,9 +458,12 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
                 {
                   xfree (k);
                   info->nsubkeys--;
-                  if (gpg_err_code (err) != GPG_ERR_UNKNOWN_ALGORITHM)
-                    break;
                   /* We ignore subkeys with unknown algorithms. */
+                  if (gpg_err_code (err) == GPG_ERR_UNKNOWN_ALGORITHM
+                      || gpg_err_code (err) == GPG_ERR_UNSUPPORTED_ALGORITHM)
+                    err = 0;
+                  if (err)
+                    break;
                 }
               else
                 {
@@ -475,11 +477,10 @@ _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
   if (err)
     {
       _keybox_destroy_openpgp_info (info);
-      if (!first
-          && (gpg_err_code (err) == GPG_ERR_UNSUPPORTED_ALGORITHM
-              || gpg_err_code (err) == GPG_ERR_UNKNOWN_ALGORITHM))
+      if (!read_error)
         {
-          /* We are able to skip to the end of this keyblock. */
+          /* Packet parsing worked, thus we should be able to skip the
+             rest of the keyblock.  */
           while (image)
             {
               if (next_packet (&image, &imagelen,

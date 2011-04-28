@@ -1,3 +1,12 @@
+2011-04-28  Werner Koch  <wk@g10code.com>
+
+	* keybox-openpgp.c: Include ../common/openpgpdefs.h.
+	(enum packet_types): Remove.
+	(_keybox_parse_openpgp): Update NPARSED also on errors.
+	(parse_key): Take care of ecc algorithms.
+	* kbxutil.c (import_openpgp): Do not print an error for non-RSA v3
+	packets.
+
 2010-07-23  Werner Koch  <wk@g10code.com>
 
 	* keybox-blob.c (_keybox_create_x509_blob): Fix reallocation bug.
@@ -365,7 +374,7 @@
 
 
  Copyright 2001, 2002, 2003, 2004, 2005, 2006,
-	   2007, 2008 Free Software Foundation, Inc.
+	   2007, 2008, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
