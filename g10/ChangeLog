@@ -1,3 +1,9 @@
+2011-04-28  Werner Koch  <wk@g10code.com>
+
+	* ecdh.c (pk_ecdh_encrypt_with_shared_point): Remove memory leak
+	of SECRET_X in the error case.  Replace an assert by an error
+	return.
+
 2011-04-26  Werner Koch  <wk@g10code.com>
 
 	* export.c (transfer_format_to_openpgp): Do not apply
