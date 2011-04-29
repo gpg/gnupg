@@ -49,6 +49,7 @@
 #include "setenv.h"
 #include "gc-opt-flags.h"
 #include "exechelp.h"
+#include "../common/estream.h"
 
 enum cmd_and_opt_values
 { aNull = 0,
