@@ -1521,6 +1521,8 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
   KBNODE node, uidnode;
   u32 keyid[2];
   int rc = 0;
+  int nr_prev;
+  kbnode_t pub_keyblock;
 
   /* Get the key and print some info about it */
   node = find_kbnode (keyblock, PKT_SECRET_KEY);
@@ -1581,24 +1583,30 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
 
   clear_kbnode_flags (keyblock);
 
-  if (!(options&IMPORT_MERGE_ONLY) || !have_secret_key_with_kid (keyid) )
-    {
-      /* We don't have this key, insert as a new key.  */
-      kbnode_t pub_keyblock;
+  nr_prev = stats->skipped_new_keys;
 
-      /* Make a public key out of this. */
-      pub_keyblock = sec_to_pub_keyblock (keyblock);
-      if (!pub_keyblock)
-        log_error ("key %s: failed to create public key from secret key\n",
+  /* Make a public key out of the key. */
+  pub_keyblock = sec_to_pub_keyblock (keyblock);
+  if (!pub_keyblock)
+    log_error ("key %s: failed to create public key from secret key\n",
                    keystr_from_pk (pk));
-      else
-        {
-          import_one (ctrl, fname, pub_keyblock, stats,
-                      NULL, NULL, opt.import_options, 1);
-          /* Fixme: We should check for an invalid keyblock and
-             cancel the secret key import in this case.  */
-          release_kbnode (pub_keyblock);
+  else
+    {
+      /* Note that this outputs an IMPORT_OK status message for the
+	 public key block, and below we will output another one for
+	 the secret keys.  FIXME?  */
+      import_one (ctrl, fname, pub_keyblock, stats,
+		  NULL, NULL, opt.import_options, 1);
 
+      /* Fixme: We should check for an invalid keyblock and
+	 cancel the secret key import in this case.  */
+      release_kbnode (pub_keyblock);
+
+      /* At least we cancel the secret key import when the public key
+	 import was skipped due to MERGE_ONLY option and a new
+	 key.  */
+      if (stats->skipped_new_keys <= nr_prev)
+	{
           /* Read the keyblock again to get the effects of a merge.  */
           /* Fixme: we should do this based on the fingerprint or
              even better let import_one return the merged
@@ -1609,26 +1617,22 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                        keystr_from_pk (pk));
           else
             {
+	      nr_prev = stats->secret_imported;
               if (!transfer_secret_keys (ctrl, stats, keyblock))
                 {
+		  int status = 16;
                   if (!opt.quiet)
                     log_info (_("key %s: secret key imported\n"),
                               keystr_from_pk (pk));
+		  if (stats->secret_imported > nr_prev)
+		    status |= 1;
                   if (is_status_enabled ())
-                    print_import_ok (pk, 1|16);
+                    print_import_ok (pk, status);
                   check_prefs (ctrl, node);
                 }
               release_kbnode (node);
             }
         }
-    }
-  else
-    {
-      /* We don't want to merge the secret keys. */
-      log_error (_("key %s: secret key part already available\n"),
-                 keystr_from_pk (pk));
-      if (is_status_enabled ())
-        print_import_ok (pk, 16);
     }
 
   return rc;

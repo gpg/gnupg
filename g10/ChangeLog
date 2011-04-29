@@ -1,5 +1,12 @@
 2011-04-29  Marcus Brinkmann  <marcus@g10code.com>
 
+	* import.c (import_secret_one): Leave all checks to import_one.
+	Cancel secret key import if public key was skipped due to
+	merge-only request.  Fix import status for non-new secret key
+	import by checking stat counter.
+
+2011-04-29  Marcus Brinkmann  <marcus@g10code.com>
+
 	* delkey.c (do_delete_key): Access public keyblock even for secret
 	key operations.  But deleting secret key is not supported yet, so
 	give an error.  Limit secret-key-exists error case to public keys.
