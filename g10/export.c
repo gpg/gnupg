@@ -1185,7 +1185,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         iobuf_put (out, ')');
       iobuf_put (out, '\n');
     }
-  if (err == -1)
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     err = 0;
 
  leave:

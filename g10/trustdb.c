@@ -2107,7 +2107,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   desc.skipfnc = search_skipfnc;
   desc.skipfncvalue = full_trust;
   rc = keydb_search (hd, &desc, 1);
-  if (rc == -1)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       keys[nkeys].keyblock = NULL;
       return keys;
@@ -2181,7 +2181,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       keyblock = NULL;
     }
   while ( !(rc = keydb_search (hd, &desc, 1)) );
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {
       log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
       xfree (keys);

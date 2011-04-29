@@ -434,12 +434,12 @@ list_all (int secret)
 
   hd = keydb_new ();
   if (!hd)
-    rc = G10ERR_GENERAL;
+    rc = gpg_error (GPG_ERR_GENERAL);
   else
     rc = keydb_search_first (hd);
   if (rc)
     {
-      if (rc != -1)
+      if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
 	log_error ("keydb_search_first failed: %s\n", g10_errstr (rc));
       goto leave;
     }
@@ -479,7 +479,7 @@ list_all (int secret)
       keyblock = NULL;
     }
   while (!(rc = keydb_search_next (hd)));
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search_next failed: %s\n", g10_errstr (rc));
 
   if (opt.check_sigs && !opt.with_colons)
