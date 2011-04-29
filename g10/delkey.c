@@ -83,7 +83,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
 	rc = G10ERR_GENERAL;
@@ -93,7 +93,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
     pk = node->pkt->pkt.public_key;
     keyid_from_pk( pk, keyid );
 
-    if (!force)
+    if (!secret && !force)
       {
         if (have_secret_key_with_kid (keyid))
           {
@@ -146,20 +146,29 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 
 
     if( okay ) {
-	rc = keydb_delete_keyblock (hd);
-	if (rc) {
+      if (secret)
+	{
+	  log_error (_("deleting secret key not implemented\n"));
+	  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED); /* FIXME */
+	  goto leave;
+	}
+      else
+	{
+	  rc = keydb_delete_keyblock (hd);
+	  if (rc) {
 	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
 	    goto leave;
+	  }
 	}
 
-	/* Note that the ownertrust being cleared will trigger a
-           revalidation_mark().  This makes sense - only deleting keys
-           that have ownertrust set should trigger this. */
+      /* Note that the ownertrust being cleared will trigger a
+	 revalidation_mark().  This makes sense - only deleting keys
+	 that have ownertrust set should trigger this. */
 
-        if (!secret && pk && clear_ownertrusts (pk)) {
-          if (opt.verbose)
-            log_info (_("ownertrust information cleared\n"));
-        }
+      if (!secret && pk && clear_ownertrusts (pk)) {
+	if (opt.verbose)
+	  log_info (_("ownertrust information cleared\n"));
+      }
     }
 
   leave:

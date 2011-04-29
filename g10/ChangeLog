@@ -1,3 +1,9 @@
+2011-04-29  Marcus Brinkmann  <marcus@g10code.com>
+
+	* delkey.c (do_delete_key): Access public keyblock even for secret
+	key operations.  But deleting secret key is not supported yet, so
+	give an error.  Limit secret-key-exists error case to public keys.
+
 2011-04-28  Werner Koch  <wk@g10code.com>
 
 	* ecdh.c (pk_ecdh_encrypt_with_shared_point): Remove memory leak
